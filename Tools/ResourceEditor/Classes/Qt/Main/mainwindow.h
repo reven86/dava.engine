@@ -101,6 +101,7 @@ public slots:
 	void OnProjectOpen();
 	void OnProjectClose();
 	void OnSceneNew();
+    void OnSceneNewInternal();
 	void OnSceneOpen();
 	void OnSceneSave();
 	void OnSceneSaveAs();
@@ -145,6 +146,7 @@ public slots:
     void OnImageSplitter();
 	
 	void OnAddLandscape();
+    void OnAddLandscapeInternal();
     void OnAddSkybox();
     void OnAddVegetation();
 	void OnLightDialog();
@@ -242,6 +244,7 @@ protected:
 	
 	static void SetActionCheckedSilently(QAction *action, bool checked);
 
+    
 private slots:
 	void ProjectOpened(const QString &path);
 	void ProjectClosed();

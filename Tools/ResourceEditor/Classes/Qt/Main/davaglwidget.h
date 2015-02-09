@@ -56,15 +56,7 @@ public:
     int GetFPS() const;
 
     bool IsInitialized() const;
-    void Initialize2D();
-    
     bool InitializeDefaultOpenGLContext();
-    
-    static void LogContext(const char *function);
-    
-    
-    void LockOpenGLContext();
-    void UnlockOpenGlContext();
     
 signals:
     
@@ -116,17 +108,12 @@ private:
     int fps;
     
     bool isInitialized;
-    bool is2DInitialized;
     
     int currentDPR;
     int currentWidth;
     int currentHeight;
 
-    DAVA::uint64 currentContextID;
-
-    
     static QOpenGLContext * defaultContext;
-    static DAVA::uint64 defaultContextID;
 };
 
 

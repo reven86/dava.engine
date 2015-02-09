@@ -31,8 +31,6 @@ LandscapeEditorControlsPlaceholder::LandscapeEditorControlsPlaceholder(QWidget* 
 
 void LandscapeEditorControlsPlaceholder::OnOpenGLInitialized()
 {
-    DavaGLWidget::LogContext(__FUNCTION__);
-    
     DVASSERT(!customColorsPanel && !rulerToolPanel && !visibilityToolPanel && !tilemaskEditorPanel && !heightmapEditorPanel && !grassEditorPanel);
     
     customColorsPanel = new CustomColorsPanel();

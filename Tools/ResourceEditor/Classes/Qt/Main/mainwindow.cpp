@@ -1096,9 +1096,17 @@ void QtMainWindow::OnProjectClose()
     }
 }
 
+
 void QtMainWindow::OnSceneNew()
 {
-	ui->sceneTabWidget->OpenTab();
+    //ui->sceneTabWidget->OpenTab();
+    DAVA::Function<void()> fn = DAVA::MakeFunction(this, &QtMainWindow::OnSceneNewInternal);
+    DAVA::JobManager::Instance()->CreateMainJob(fn, DAVA::JobManager::JOB_MAINLAZY);
+}
+
+void QtMainWindow::OnSceneNewInternal()
+{
+    ui->sceneTabWidget->OpenTab();
 }
 
 void QtMainWindow::OnSceneOpen()
@@ -1594,6 +1602,11 @@ void QtMainWindow::UnmodalDialogFinished(int)
 }
 
 void QtMainWindow::OnAddLandscape()
+{
+    DAVA::JobManager::Instance()->CreateMainJob(DAVA::MakeFunction(this, &QtMainWindow::OnAddLandscapeInternal), DAVA::JobManager::JOB_MAINLAZY);
+}
+
+void QtMainWindow::OnAddLandscapeInternal()
 {
     Entity* entityToProcess = new Entity();
     entityToProcess->SetName(ResourceEditor::LANDSCAPE_NODE_NAME);
@@ -2396,9 +2409,6 @@ void QtMainWindow::OnHeightmapEditor()
 		return;
 	}
     
-    ui->sceneTabWidget->GetDavaWidget()->LogContext(__FUNCTION__);
-    ui->sceneTabWidget->GetDavaWidget()->LockOpenGLContext();
-
 	if (sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
 	{
 		sceneEditor->Exec(new ActionDisableHeightmapEditor(sceneEditor));
@@ -2414,8 +2424,6 @@ void QtMainWindow::OnHeightmapEditor()
 			OnLandscapeEditorToggled(sceneEditor);
 		}
 	}
-    
-    ui->sceneTabWidget->GetDavaWidget()->UnlockOpenGlContext();
 }
 
 void QtMainWindow::OnRulerTool()
@@ -2425,9 +2433,6 @@ void QtMainWindow::OnRulerTool()
 	{
 		return;
 	}
-    
-    ui->sceneTabWidget->GetDavaWidget()->LogContext(__FUNCTION__);
-
 
 	if (sceneEditor->rulerToolSystem->IsLandscapeEditingEnabled())
 	{
@@ -2455,8 +2460,6 @@ void QtMainWindow::OnTilemaskEditor()
 	}
 	
     
-    ui->sceneTabWidget->GetDavaWidget()->LogContext(__FUNCTION__);
-
 	if (sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled())
 	{
 		sceneEditor->Exec(new ActionDisableTilemaskEditor(sceneEditor));
@@ -2482,8 +2485,6 @@ void QtMainWindow::OnVisibilityTool()
 		return;
 	}
     
-    ui->sceneTabWidget->GetDavaWidget()->LogContext(__FUNCTION__);
-	
 	if (sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled())
 	{
 		sceneEditor->Exec(new ActionDisableVisibilityTool(sceneEditor));
@@ -2509,8 +2510,6 @@ void QtMainWindow::OnNotPassableTerrain()
 		return;
 	}
 	
-    ui->sceneTabWidget->GetDavaWidget()->LogContext(__FUNCTION__);
-
 	if (sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled())
 	{
 		sceneEditor->Exec(new ActionDisableNotPassable(sceneEditor));

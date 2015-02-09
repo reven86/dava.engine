@@ -103,7 +103,16 @@ public slots:
 	void SceneSaved(SceneEditor2 *scene);
 	void SceneModifyStatusChanged(SceneEditor2 *scene, bool modified);
     
+protected:
     
+    struct OpenTabData
+    {
+        int tab;
+        DAVA::Scene *scene;
+        DAVA::FilePath scenePath;
+    };
+    
+    void OpenTabInternal(const OpenTabData & tabData);
 
 protected:
 	MainTabBar *tabBar;

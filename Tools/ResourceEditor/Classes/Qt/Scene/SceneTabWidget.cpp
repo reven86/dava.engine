@@ -126,13 +126,14 @@ int SceneTabWidget::OpenTab()
         return -1;
     }
     
-	QtMainWindow::Instance()->WaitStart("Opening scene...", "Creating new scene.");
+//	QtMainWindow::Instance()->WaitStart("Opening scene...", "Creating new scene.");
     
-	SceneEditor2 *scene = new SceneEditor2();
+//    Mai
 
     DAVA::FilePath newScenePath = (QString("newscene") + QString::number(++newSceneCounter)).toStdString();
 	newScenePath.ReplaceExtension(".sc2");
 
+    SceneEditor2 *scene = new SceneEditor2();
 	scene->SetScenePath(newScenePath);
 
 	int tabIndex = tabBar->addTab(newScenePath.GetFilename().c_str());
@@ -140,10 +141,17 @@ int SceneTabWidget::OpenTab()
 
 	SetCurrentTab(tabIndex);
 
-	QtMainWindow::Instance()->WaitStop();
+//	QtMainWindow::Instance()->WaitStop();
     
 	return tabIndex;
 }
+
+
+void SceneTabWidget::OpenTabInternal(const OpenTabData & tabData)
+{
+    
+}
+
 
 bool SceneTabWidget::TestSceneCompatibility(const DAVA::FilePath &scenePath)
 {

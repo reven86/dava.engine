@@ -49,10 +49,7 @@
 #include <QMouseEvent>
 #include <QDebug>
 
-
 #include <QOpenGLContext>
-#include <QOffscreenSurface>
-#include <QOpenGLContextGroup>
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
 #include "Network/NetCore.h"
@@ -63,18 +60,15 @@
 
 
 QOpenGLContext * DavaGLWidget::defaultContext = nullptr;
-DAVA::uint64 DavaGLWidget::defaultContextID = 0;
 
 DavaGLWidget::DavaGLWidget(QWidget *parent)
 	: QOpenGLWidget(parent)
     , renderTimer(nullptr)
     , fps(60)
     , isInitialized(false)
-    , is2DInitialized(false)
     , currentDPR(1)
     , currentWidth(0)
     , currentHeight(0)
-    , currentContextID(0)
 {
     setAcceptDrops(true);
     setMouseTracking(true);
@@ -104,9 +98,6 @@ void DavaGLWidget::SetFPS(int _fps)
 
 void DavaGLWidget::initializeGL()
 {
-    context()->setShareContext(defaultContext);
-    
-    currentContextID = (DAVA::uint64)CGLGetCurrentContext();
     currentDPR = devicePixelRatio();
     
     DAVA::QtLayer::Instance()->InitializeGlWindow();
@@ -116,20 +107,14 @@ void DavaGLWidget::initializeGL()
 
 void DavaGLWidget::resizeGL(int w, int h)
 {
-    DAVA::RenderManager::Instance()->SetRenderContextId(currentContextID);
-
     currentWidth = w;
     currentHeight = h;
     
     PerformSizeChange();
-
-    DAVA::RenderManager::Instance()->SetRenderContextId(defaultContextID);
 }
 
 void DavaGLWidget::paintGL()
 {
-    DAVA::RenderManager::Instance()->SetRenderContextId(currentContextID);
-    
     QElapsedTimer frameTimer;
     frameTimer.start();
     
@@ -140,12 +125,8 @@ void DavaGLWidget::paintGL()
         PerformSizeChange();
     }                       // END OF TODO
 
-    if(is2DInitialized)
-    {
+    if(defaultContext)
         DAVA::QtLayer::Instance()->ProcessFrame();
-    }
-    
-    DAVA::RenderManager::Instance()->SetRenderContextId(defaultContextID);
     
     const DAVA::uint64 requestedFrameDelta = 1000 / fps;
     const int nextFrameDelta = (requestedFrameDelta >= frameTimer.elapsed()) ? (int)(requestedFrameDelta >= frameTimer.elapsed()): 1;
@@ -379,10 +360,6 @@ bool DavaGLWidget::InitializeDefaultOpenGLContext()
     defaultContext = QOpenGLContext::currentContext();
     DVASSERT(defaultContext);
 
-    defaultContextID = (DAVA::uint64)CGLGetCurrentContext();
-    DAVA::RenderManager::Instance()->SetRenderContextId(defaultContextID);
-
-    
     QOpenGLContext *currentContext = context();
     DVASSERT(defaultContext != currentContext);
     
@@ -391,54 +368,8 @@ bool DavaGLWidget::InitializeDefaultOpenGLContext()
     
     DVASSERT(currentContext->format() == defaultContext->format());
     
-    QOpenGLContextGroup *defGroup = defaultContext->shareGroup();
-    QOpenGLContextGroup *curGroup = currentContext->shareGroup();
-    
-    DVASSERT(defGroup == curGroup && curGroup == QOpenGLContextGroup::currentContextGroup() && curGroup);
-    
-    Initialize2D();
-    
     emit Initialized();
 
     return true;
-}
-
-void DavaGLWidget::LogContext(const char *function)
-{
-    DVASSERT(function);
-    
-    DAVA::uint64 contextID = (DAVA::uint64)CGLGetCurrentContext();
-    DAVA::Logger::Info("\n\n[* %s *]\n\tactiveContextID = %lld\n\tdefaultContextID = %lld\n", function, contextID, defaultContextID);
-    
-    QOpenGLContext *currentContext = QOpenGLContext::currentContext();
-    if(currentContext && defaultContext)
-    {
-        DVASSERT(currentContext->format() == defaultContext->format());
-        
-        QOpenGLContextGroup *defGroup = defaultContext->shareGroup();
-        QOpenGLContextGroup *curGroup = currentContext->shareGroup();
-        
-        DVASSERT(defGroup == curGroup && curGroup == QOpenGLContextGroup::currentContextGroup());
-    }
-}
-
-void DavaGLWidget::LockOpenGLContext()
-{
-    makeCurrent();
-    DAVA::RenderManager::Instance()->SetRenderContextId(currentContextID);
-}
-
-void DavaGLWidget::UnlockOpenGlContext()
-{
-    DAVA::RenderManager::Instance()->SetRenderContextId(defaultContextID);
-    doneCurrent();
-}
-
-void DavaGLWidget::Initialize2D()
-{
-    LogContext(__FUNCTION__);
-    
-    DAVA::RenderSystem2D::Instance()->Init();
-    is2DInitialized = true;
 }
 

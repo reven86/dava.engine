@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
 		a.setAttribute(Qt::AA_ShareOpenGLContexts);
     
         QSurfaceFormat fmt = QSurfaceFormat::defaultFormat();
-        
+
         QSurfaceFormat::FormatOptions opt = fmt.options();
         if((opt & QSurfaceFormat::DebugContext) == 0)
         {
@@ -170,14 +170,8 @@ int main(int argc, char *argv[])
         }
         
 		fmt.setRenderableType(QSurfaceFormat::OpenGL);
-        fmt.setProfile(QSurfaceFormat::CoreProfile);
-        
 		fmt.setVersion(3, 2);
-        fmt.setRedBufferSize(8);
-        fmt.setGreenBufferSize(8);
-        fmt.setBlueBufferSize(8);
-        fmt.setAlphaBufferSize(8);
-		fmt.setDepthBufferSize(16);
+		fmt.setDepthBufferSize(24);
 		fmt.setStencilBufferSize(8);
 		fmt.setSwapInterval(1);
 		fmt.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
@@ -215,7 +209,9 @@ int main(int argc, char *argv[])
 
 			    ProjectManager::Instance()->ProjectOpenLast();
 	            if(ProjectManager::Instance()->IsOpened())
-	                mainWindow->OnSceneNew();
+                {
+                    mainWindow->OnSceneNew();
+                }
                 
                 // start app
                 ret = a.exec();
