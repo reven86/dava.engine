@@ -144,11 +144,15 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
             {
                 char                 sname[32]; sampler_re.get_pattern( 1, countof(sname), sname );
                 const RegExp::Match* match      = sampler_re.pattern( 1 );
+                int                  sn         = strlen( sname );
 
-                int sl = sprintf( line+match->begin, "%u", sampler.size() );
-                int sn = strlen( sname );
+                DVASSERT(sampler.size()<10);
+                char ch = line[match->begin+1];
+                int  sl = sprintf( line+match->begin, "%u", sampler.size() );
                 DVASSERT(sn>=sl);
-                memset( line+match->begin+sl, ' ', sn-sl );
+                line[match->begin+1]=ch;
+                if( sn > sl )
+                    memset( line+match->begin+sl, ' ', sn-sl );
 
                 sampler.resize( sampler.size()+1 );
                 sampler.back().uid  = FastName(sname);
@@ -169,7 +173,9 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
                         int sl = sprintf( line+match->begin, "%u", s );
                         int sn = strlen( sname );
                         DVASSERT(sn>=sl);
-                        memset( line+match->begin+sl, ' ', sn-sl );
+                        line[match->begin+sl] = ',';
+                        if( sn > sl )
+                            memset( line+match->begin+sl, ' ', sn-sl );
                         
                         break;
                     }
