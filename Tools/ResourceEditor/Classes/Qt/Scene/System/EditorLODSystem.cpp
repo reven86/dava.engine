@@ -255,6 +255,7 @@ bool EditorLODSystem::CopyLastLodToLod0()
 
 bool EditorLODSystem::CanCreatePlaneLOD() const
 {
+	int lodSize = selectedLODs.size();
 	if (1 != getCurrentLODs().size())
 	{
 		return false;

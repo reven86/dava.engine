@@ -112,6 +112,7 @@ void LODEditor::SetupInternalUI()
 void LODEditor::SetupSceneSignals()
 {
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(SceneActivated(SceneEditor2 *)));
+	connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(SceneDeactivated(SceneEditor2 *)));
 	connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), SLOT(SceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
 	connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), SLOT(CommandExecuted(SceneEditor2 *, const Command2*, bool)));
 }
@@ -175,6 +176,11 @@ void LODEditor::SceneActivated(SceneEditor2 *scene)
 	LODDataChanged(scene);
 }
 
+void LODEditor::SceneDeactivated(SceneEditor2 *scene)
+{
+	UpdateWidgetVisibility(nullptr);
+}
+
 void LODEditor::LODDataChanged(SceneEditor2 *scene /* = nullptr */)
 {
 	const EditorLODSystem *currentLODSystem;
@@ -210,10 +216,7 @@ void LODEditor::LODDataChanged(SceneEditor2 *scene /* = nullptr */)
 
 	UpdateWidgetVisibility(currentLODSystem);
 
-	ui->lastLodToFrontButton->setEnabled(currentLODSystem->CanCreatePlaneLOD());
-	ui->createPlaneLodButton->setEnabled(currentLODSystem->CanCreatePlaneLOD());
-
-	UpdateDeleteLODButtons(currentLODSystem);
+	UpdateLODButtons(currentLODSystem);
 }
 
 void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continuous)
@@ -321,8 +324,7 @@ void LODEditor::InvertFrameVisibility(QFrame *frame, QPushButton *frameButton)
 
 void LODEditor::UpdateWidgetVisibility(const EditorLODSystem *editorLODSystem)
 {
-	DVASSERT(editorLODSystem);
-	bool visible = (editorLODSystem->GetSceneLodsLayersCount() != 0);
+	bool visible = editorLODSystem && (editorLODSystem->GetSceneLodsLayersCount() != 0);
     
     ui->viewLODButton->setVisible(visible);
     ui->frameViewLOD->setVisible(visible);
@@ -338,13 +340,17 @@ void LODEditor::SetForceLayerValues(const EditorLODSystem *editorLODSystem, int 
 	ui->forceLayer->setCurrentIndex(requestedIndex);
 }
 
-void LODEditor::UpdateDeleteLODButtons(const EditorLODSystem *editorLODSystem)
+void LODEditor::UpdateLODButtons(const EditorLODSystem *editorLODSystem)
 {
 	DVASSERT(editorLODSystem);
 	bool canDeleteLOD = editorLODSystem->CanDeleteLod();
 
 	ui->buttonDeleteFirstLOD->setEnabled(canDeleteLOD);
 	ui->buttonDeleteLastLOD->setEnabled(canDeleteLOD);
+
+	bool canCreatePlaneLOD = editorLODSystem->CanCreatePlaneLOD();
+	ui->lastLodToFrontButton->setEnabled(canCreatePlaneLOD);
+	ui->createPlaneLodButton->setEnabled(canCreatePlaneLOD);
 }
 
 void LODEditor::CopyLODToLod0Clicked()
