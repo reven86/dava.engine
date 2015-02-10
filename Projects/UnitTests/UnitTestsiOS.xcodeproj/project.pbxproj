@@ -554,6 +554,10 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = UnitTests_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					__DAVAENGINE_DEBUG__,
+					MEMPROF_ENABLE,
+				);
 				HEADER_SEARCH_PATHS = (
 					./../../Sources/Internal,
 					./../../Sources/External,
@@ -582,6 +586,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = UnitTests_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = MEMPROF_ENABLE;
 				HEADER_SEARCH_PATHS = (
 					./../../Sources/Internal,
 					./../../Sources/External,

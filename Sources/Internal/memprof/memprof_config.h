@@ -10,6 +10,8 @@
 #   define MEMPROF_ANDROID
 #elif defined(__DAVAENGINE_MACOS__)
 #   define MEMPROF_MACOS    1
+#elif defined(__DAVAENGINE_IPHONE__)
+#   define MEMPROF_IOS      1
 #else
 #   error "Unsupported platform"
 #endif

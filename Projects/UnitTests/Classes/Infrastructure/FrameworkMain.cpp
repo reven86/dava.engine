@@ -83,6 +83,8 @@ void FrameworkWillTerminate()
     const char8* fname = "/sdcard/unittest-memprof.log";
 #elif defined(__DAVAENGINE_MACOS__)
     const char8* fname = "/Users/max/projects/unittest-memprof.log";
+#elif defined(__DAVAENGINE_IPHONE__)
+    const char8* fname = "";
 #endif
 
 #if defined(__DAVAENGINE_WIN32__)
