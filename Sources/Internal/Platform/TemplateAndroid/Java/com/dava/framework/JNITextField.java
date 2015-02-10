@@ -451,7 +451,8 @@ public class JNITextField {
 									}
 									curPos++;
 								}
-								return TextFieldKeyPressed(_id, finalStart, dend - dstart, bytes);
+								byte []retBytes = TextFieldKeyPressed(_id, finalStart, dend - dstart, bytes);
+								return new String(retBytes, "UTF-8");
 							}
 						});
 						JNIActivity.GetActivity().PostEventToGL(t);
@@ -1157,7 +1158,7 @@ public class JNITextField {
     }
 
 	public static native void TextFieldShouldReturn(int id);
-	public static native String TextFieldKeyPressed(
+	public static native byte[] TextFieldKeyPressed(
 			int id,
 			int replacementLocation,
 			int replacementLength,

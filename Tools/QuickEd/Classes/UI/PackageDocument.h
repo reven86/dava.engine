@@ -1,13 +1,5 @@
-//
-//  UIPackageDocument.h
-//  UIEditor
-//
-//  Created by Alexey Strokachuk on 9/17/14.
-//
-//
-
-#ifndef __UIEditor__UIPackageDocument__
-#define __UIEditor__UIPackageDocument__
+#ifndef __QUICKED_PACKAGE_DOCUMENT_H__
+#define __QUICKED_PACKAGE_DOCUMENT_H__
 
 #include <QWidget>
 #include <QVariant>
@@ -30,6 +22,7 @@ namespace DAVA {
 class QAbstractItemModel;
 class QSortFilterProxyModel;
 class QUndoStack;
+class QItemSelection;
 
 class UIPackageModel;
 class PackageNode;
@@ -42,6 +35,7 @@ public:
     //QModelIndexList expandedItems;
     UIPackageModel *model;
     QSortFilterProxyModel *proxyModel;
+    QItemSelection *currentSelection;
     QString filterString;
 };
 
@@ -118,4 +112,4 @@ private:
 
 Q_DECLARE_METATYPE(PackageDocument *);
 
-#endif /* defined(__UIEditor__UIPackageDocument__) */
+#endif // __QUICKED_PACKAGE_DOCUMENT_H__

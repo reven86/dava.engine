@@ -5,8 +5,9 @@
 #include "UI/DefaultUIPackageBuilder.h"
 #include "UIControls/EditorUIPackageBuilder.h"
 #include "UIControls/LegacyEditorUIPackageLoader.h"
-#include "UIControls/PackageHierarchy/PackageNode.h"
 #include "UIControls/YamlPackageSerializer.h"
+#include "UIControls/PackageHierarchy/PackageNode.h"
+#include "UIControls/PackageHierarchy/PackageRef.h"
 
 #include <QDir>
 
@@ -193,7 +194,7 @@ bool Project::SavePackage(PackageNode *package)
 {
     YamlPackageSerializer serializer;
     package->Serialize(&serializer);
-    serializer.WriteToFile(package->GetPath());
+    serializer.WriteToFile(package->GetPackageRef()->GetPath());
     return true;
 }
 
