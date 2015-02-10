@@ -49,8 +49,6 @@ MainWindow::MainWindow(QWidget *parent) :
     appManager(0)
 {
     ui->setupUi(this);
-    ui->webView->setContextMenuPolicy(Qt::NoContextMenu);
-    ui->webView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
     ui->tableWidget->setStyleSheet(TABLE_STYLESHEET);
 
     listFontFav.setPointSize(listFontFav.pointSize() + 1);
@@ -58,15 +56,19 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setWindowTitle(QString("DAVA Launcher %1").arg(LAUNCHER_VER));
 
-    connect(ui->webView, SIGNAL(linkClicked(QUrl)), this, SLOT(OnlinkClicked(QUrl)));
+    connect(ui->textBrowser, SIGNAL(anchorClicked(QUrl)), this, SLOT(OnlinkClicked(QUrl)));
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(OnRefreshClicked()));
     connect(ui->listWidget, SIGNAL(clicked(QModelIndex)), this, SLOT(OnListItemClicked(QModelIndex)));
     connect(ui->setUrlButton, SIGNAL(clicked()), this, SLOT(OnURLClicked()));
     connect(ui->tableWidget, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(OnCellDoubleClicked(QModelIndex)));
 
     appManager = new ApplicationManager();
+    networkManager = new QNetworkAccessManager(this);
+    newsDownloader = new FileDownloader(networkManager);
 
     connect(appManager, SIGNAL(Refresh()), this, SLOT(RefreshApps()));
+    connect(newsDownloader, SIGNAL(Finished(QByteArray, QList< QPair<QByteArray, QByteArray> >, int, QString)),
+            this, SLOT(NewsDownloadFinished(QByteArray, QList< QPair<QByteArray, QByteArray> >, int, QString)));
 
     UpdateURLValue();
 
@@ -77,6 +79,8 @@ MainWindow::~MainWindow()
 {
     SafeDelete(ui);
     SafeDelete(appManager);
+    SafeDelete(newsDownloader);
+    SafeDelete(networkManager);
 }
 
 void MainWindow::OnURLClicked()
@@ -154,7 +158,7 @@ void MainWindow::OnRefreshClicked()
 
     FileManager::Instance()->ClearTempDirectory();
 
-    ConfigDownloader downloader(appManager, this);
+    ConfigDownloader downloader(appManager, networkManager, this);
     if(downloader.exec() == QDialog::Accepted)
     {
         RefreshApps();
@@ -204,9 +208,14 @@ void MainWindow::ShowWebpage()
     ui->stackedWidget->setCurrentIndex(0);
 
     const QString & webpageUrl = appManager->GetLocalConfig()->GetWebpageURL();
-    ui->webView->setUrl(QUrl(webpageUrl));
+    newsDownloader->Download(QUrl(webpageUrl));
 
     appManager->NewsShowed();
+}
+
+void MainWindow::NewsDownloadFinished(QByteArray downloadedData, QList< QPair<QByteArray, QByteArray> > rawHeaderList, int errorCode, QString errorDescr)
+{
+    ui->textBrowser->setHtml(QString(downloadedData));
 }
 
 void MainWindow::ShowTable(const QString & branchID)
@@ -329,7 +338,7 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask> & tasks)
         //self-update
         if(tasks.front().isSelfUpdate)
         {
-            SelfUpdater updater(tasks.front().version.url);
+            SelfUpdater updater(tasks.front().version.url, networkManager);
             updater.setWindowModality(Qt::ApplicationModal);
             updater.exec();
             if(updater.result() != QDialog::Rejected)
@@ -340,7 +349,7 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask> & tasks)
         if(!tasks.isEmpty())
         {
             //application update
-            UpdateDialog dialog(tasks, appManager, this);
+            UpdateDialog dialog(tasks, appManager, networkManager, this);
             connect(&dialog, SIGNAL(AppInstalled(QString, QString, AppVersion)),
                         appManager, SLOT(OnAppInstalled(QString,QString,AppVersion)));
             dialog.exec();

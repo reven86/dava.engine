@@ -32,6 +32,7 @@
 
 #include "applicationmanager.h"
 #include "buttonswidget.h"
+#include "filedownloader.h"
 #include <QMainWindow>
 #include <QListWidgetItem>
 #include <QtGui>
@@ -74,6 +75,8 @@ public slots:
     void OnCellDoubleClicked(QModelIndex index);
 
     void OnlinkClicked(QUrl url);
+    
+    void NewsDownloadFinished(QByteArray downloadedData, QList< QPair<QByteArray, QByteArray> > rawHeaderList, int errorCode, QString errorDescr);
 
 private:
     void ShowWebpage();
@@ -96,6 +99,9 @@ private:
     Ui::MainWindow *ui;
     ApplicationManager * appManager;
 
+    QNetworkAccessManager * networkManager;
+    FileDownloader * newsDownloader;
+    
     QModelIndex selectedListItem;
     QString selectedBranchID;
 

@@ -42,9 +42,10 @@
 #include <QDebug>
 #include <QTreeView>
 
-UpdateDialog::UpdateDialog(const QQueue<UpdateTask> & taskQueue, ApplicationManager * _appManager, QWidget *parent) :
+UpdateDialog::UpdateDialog(const QQueue<UpdateTask> & taskQueue, ApplicationManager * _appManager, QNetworkAccessManager * accessManager, QWidget *parent) :
     QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint),
     ui(new Ui::UpdateDialog),
+    networkManager(accessManager),
     currentDownload(0),
     tasks(taskQueue),
     currentLogItem(0),
@@ -66,8 +67,6 @@ UpdateDialog::UpdateDialog(const QQueue<UpdateTask> & taskQueue, ApplicationMana
     connect(unpacker, SIGNAL(OnComplete()), this, SLOT(UnpackComplete()));
     connect(unpacker, SIGNAL(OnError(int)), this, SLOT(UnpackError(int)));
 
-    networkManager = new QNetworkAccessManager();
-
     tasksCount = tasks.size();
 
     StartNextTask();
@@ -76,9 +75,6 @@ UpdateDialog::UpdateDialog(const QQueue<UpdateTask> & taskQueue, ApplicationMana
 UpdateDialog::~UpdateDialog()
 {
     SafeDelete(ui);
-
-    SafeDelete(networkManager);
-    SafeDelete(currentDownload);
     SafeDelete(unpacker);
 }
 

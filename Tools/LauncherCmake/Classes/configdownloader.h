@@ -34,6 +34,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QFile>
+#include "filedownloader.h"
 
 namespace Ui {
 class ConfigDownloader;
@@ -45,26 +46,20 @@ class ConfigDownloader : public QDialog
     Q_OBJECT
     
 public:
-    explicit ConfigDownloader(ApplicationManager * manager, QWidget *parent = 0);
+    explicit ConfigDownloader(ApplicationManager * manager, QNetworkAccessManager * accessManager, QWidget *parent = 0);
     ~ConfigDownloader();
 
     virtual int exec();
 
 private slots:
-    void NetworkError(QNetworkReply::NetworkError code);
-    void DownloadFinished();
-    void OnCancelClicked();
+    void DownloadFinished(QByteArray downloadedData, QList< QPair<QByteArray, QByteArray> > rawHeaderList, int errorCode, QString errorDescr);
 
 private:
     Ui::ConfigDownloader *ui;
 
-    QNetworkAccessManager * networkManager;
-    QNetworkReply * currentDownload;
+    FileDownloader * downloader;
 
     ApplicationManager * appManager;
-
-    int lastErrorCode;
-    QString lastErrorDesrc;
 };
 
 #endif // CONFIGDOWNLOADER_H

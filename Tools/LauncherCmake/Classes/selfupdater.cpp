@@ -34,17 +34,17 @@
 #include "errormessanger.h"
 #include <QProcess>
 
-SelfUpdater::SelfUpdater(const QString & arcUrl, QWidget *parent) :
+SelfUpdater::SelfUpdater(const QString & arcUrl, QNetworkAccessManager * accessManager, QWidget *parent) :
     QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint),
     ui(new Ui::SelfUpdater),
     archiveUrl(arcUrl),
+    networkManager(accessManager),
     currentDownload(0),
     unpacker(0),
     lastErrorCode(0)
 {
     ui->setupUi(this);
 
-    networkManager = new QNetworkAccessManager();
     unpacker = new ZipUnpacker();
 
     connect(this, SIGNAL(StartUpdating()), this, SLOT(OnStartUpdating()));
@@ -55,9 +55,6 @@ SelfUpdater::SelfUpdater(const QString & arcUrl, QWidget *parent) :
 SelfUpdater::~SelfUpdater()
 {
     SafeDelete(ui);
-
-    SafeDelete(networkManager);
-    SafeDelete(currentDownload);
     SafeDelete(unpacker);
 }
 

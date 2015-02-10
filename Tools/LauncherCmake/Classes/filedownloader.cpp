@@ -26,47 +26,57 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "defines.h"
+#include "filedownloader.h"
+#include <QObject>
 
-#ifndef SELFUPDATER_H
-#define SELFUPDATER_H
-
-#include "zipunpacker.h"
-#include <QDialog>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QFile>
-
-namespace Ui {
-class SelfUpdater;
+FileDownloader::FileDownloader(QNetworkAccessManager * accessManager) :
+    networkManager(accessManager),
+    currentDownload(0),
+    lastErrorCode(0)
+{
 }
 
-class SelfUpdater : public QDialog
+FileDownloader::~FileDownloader()
 {
-    Q_OBJECT
+}
+
+
+void FileDownloader::Download(QUrl url)
+{
+    Cancel();
     
-public:
-    explicit SelfUpdater(const QString & arcUrl, QNetworkAccessManager * accessManager, QWidget *parent = 0);
-    ~SelfUpdater();
+    currentDownload = networkManager->get(QNetworkRequest(url));
 
-signals:
-    void StartUpdating();
+    connect(currentDownload, SIGNAL(finished()), this, SLOT(DownloadFinished()));
+    connect(currentDownload, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(NetworkError(QNetworkReply::NetworkError)));
+}
 
-private slots:
-    void NetworkError(QNetworkReply::NetworkError code);
-    void DownloadFinished();
-    void OnStartUpdating();
+void FileDownloader::Cancel()
+{
+    if(currentDownload)
+    {
+        currentDownload->abort();
+    }
+}
 
-private:
-    Ui::SelfUpdater *ui;
-    QString archiveUrl;
+void FileDownloader::NetworkError(QNetworkReply::NetworkError code)
+{
+    lastErrorCode = code;
+    lastErrorDesc = currentDownload->errorString();
+}
 
-    QNetworkAccessManager * networkManager;
-    QNetworkReply * currentDownload;
+void FileDownloader::DownloadFinished()
+{
+    if(lastErrorCode)
+    {
+        emit Finished(QByteArray(), QList< QPair<QByteArray, QByteArray> >(), lastErrorCode, lastErrorDesc);
+    }
+    else if(currentDownload)
+    {
+        emit Finished(currentDownload->readAll(), currentDownload->rawHeaderPairs(), lastErrorCode, lastErrorDesc);
 
-    ZipUnpacker * unpacker;
-
-    int lastErrorCode;
-    QString lastErrorDesrc;
-};
-
-#endif // SELFUPDATER_H
+        currentDownload->deleteLater();
+        currentDownload = 0;
+    }
+}

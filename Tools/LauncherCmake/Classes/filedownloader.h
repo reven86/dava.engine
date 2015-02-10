@@ -27,46 +27,37 @@
 =====================================================================================*/
 
 
-#ifndef SELFUPDATER_H
-#define SELFUPDATER_H
+#ifndef FILEDOWNLOADER_H
+#define FILEDOWNLOADER_H
 
-#include "zipunpacker.h"
-#include <QDialog>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QFile>
 
-namespace Ui {
-class SelfUpdater;
-}
-
-class SelfUpdater : public QDialog
+class FileDownloader : public QObject
 {
     Q_OBJECT
     
 public:
-    explicit SelfUpdater(const QString & arcUrl, QNetworkAccessManager * accessManager, QWidget *parent = 0);
-    ~SelfUpdater();
-
+    explicit FileDownloader(QNetworkAccessManager * accessManager);
+    ~FileDownloader();
+    
 signals:
-    void StartUpdating();
+    void Finished(QByteArray downloadedData, QList< QPair<QByteArray, QByteArray> > rawHeaderList, int errorCode, QString errorDescr);
+    
+public slots:
+    void Download(QUrl url);
+    void Cancel();
 
 private slots:
     void NetworkError(QNetworkReply::NetworkError code);
     void DownloadFinished();
-    void OnStartUpdating();
-
+    
 private:
-    Ui::SelfUpdater *ui;
-    QString archiveUrl;
-
     QNetworkAccessManager * networkManager;
     QNetworkReply * currentDownload;
 
-    ZipUnpacker * unpacker;
-
     int lastErrorCode;
-    QString lastErrorDesrc;
+    QString lastErrorDesc;
 };
 
-#endif // SELFUPDATER_H
+#endif // FILEDOWNLOADER_H

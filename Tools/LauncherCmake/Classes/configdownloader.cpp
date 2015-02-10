@@ -35,73 +35,54 @@
 #include "applicationmanager.h"
 #include <QProcess>
 
-ConfigDownloader::ConfigDownloader(ApplicationManager * manager, QWidget *parent) :
+ConfigDownloader::ConfigDownloader(ApplicationManager * manager, QNetworkAccessManager * accessManager, QWidget *parent) :
     QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint),
     ui(new Ui::ConfigDownloader),
-    currentDownload(0),
-    appManager(manager),
-    lastErrorCode(0)
+    downloader(0),
+    appManager(manager)
 {
     ui->setupUi(this);
 
-    networkManager = new QNetworkAccessManager();
-
-    connect(ui->cancelButton, SIGNAL(clicked()), this, SLOT(OnCancelClicked()));
+    downloader = new FileDownloader(accessManager);
+    connect(ui->cancelButton, SIGNAL(clicked()), downloader, SLOT(Cancel));
+    
+    connect(downloader, SIGNAL(Finished(QByteArray, QList< QPair<QByteArray, QByteArray> >, int, QString)),
+            this, SLOT(DownloadFinished(QByteArray, QList< QPair<QByteArray, QByteArray> >, int, QString)));
 }
 
 ConfigDownloader::~ConfigDownloader()
 {
     SafeDelete(ui);
-
-    SafeDelete(networkManager);
+    SafeDelete(downloader);
 }
 
 int ConfigDownloader::exec()
 {
-    currentDownload = networkManager->get(QNetworkRequest(QUrl(appManager->localConfig->GetRemoteConfigURL())));
-
-    connect(currentDownload, SIGNAL(finished()), this, SLOT(DownloadFinished()));
-    connect(currentDownload, SIGNAL(error(QNetworkReply::NetworkError)),
-            this, SLOT(NetworkError(QNetworkReply::NetworkError)));
+    downloader->Download(QUrl(appManager->localConfig->GetRemoteConfigURL()));
 
     return QDialog::exec();
 }
 
-void ConfigDownloader::OnCancelClicked()
+void ConfigDownloader::DownloadFinished(QByteArray downloadedData, QList< QPair<QByteArray, QByteArray> > rawHeaderList, int errorCode, QString errorDescr)
 {
-    if(currentDownload)
+    if(errorCode)
     {
-        currentDownload->abort();
-    }
-}
-
-void ConfigDownloader::NetworkError(QNetworkReply::NetworkError code)
-{
-    lastErrorCode = code;
-    lastErrorDesrc = currentDownload->errorString();
-}
-
-void ConfigDownloader::DownloadFinished()
-{
-    if(lastErrorCode)
-    {
-        if(lastErrorCode != QNetworkReply::OperationCanceledError)
+        if(errorCode != QNetworkReply::OperationCanceledError)
         {
-            ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_NETWORK, lastErrorCode, lastErrorDesrc);
+            ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_NETWORK, errorCode, errorDescr);
         }
         reject();
     }
-    else if(currentDownload)
+    else
     {
         const QByteArray contentTypeConst("Content-Type");
-        if(!currentDownload->hasRawHeader(contentTypeConst)
-            || currentDownload->rawHeader(contentTypeConst).left(9) != QByteArray("text/html"))
+        for (QList< QPair<QByteArray, QByteArray> >::ConstIterator it = rawHeaderList.begin(); it != rawHeaderList.end(); ++it)
         {
-            appManager->ParseRemoteConfigData(currentDownload->readAll());
+            if((*it).first == contentTypeConst && (*it).second.left(9) != QByteArray("text/html"))
+            {
+                appManager->ParseRemoteConfigData(downloadedData);
+            }
         }
-
-        currentDownload->deleteLater();
-        currentDownload = 0;
 
         accept();
     }
