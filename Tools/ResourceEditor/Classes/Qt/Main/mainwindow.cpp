@@ -425,7 +425,7 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
             // according to reference of QKeyEvent, it's impossible to get scanCode on mac os
             // so we use platform depending nativeVirtualKey()
             int32 systemKeyCode = keyEvent->nativeVirtualKey();
-            int32 davaKey = DAVA::InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey(systemKeyCode);
+            int32 davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(systemKeyCode);
             // translate davaKey to ascii to find out real key pressed
             // offset between ascii and letters in davakey table - 29 positions
             int32 qtKey = davaKey + 29;
