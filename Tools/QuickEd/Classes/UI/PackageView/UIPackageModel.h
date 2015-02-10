@@ -11,6 +11,7 @@ class PackageDocument;
 class PackageNode;
 class ControlNode;
 class PackageBaseNode;
+class PackageControlsNode;
 
 class UIPackageModel : public QAbstractItemModel
 {
@@ -37,12 +38,15 @@ public:
     
     void InsertItem(const QString &name, int dstRow, const QModelIndex &dstParent);
     void InsertItem(ControlNode *node, int dstRow, const QModelIndex &dstParent);
+    void InsertImportedPackage(PackageControlsNode *node, int dstRow, const QModelIndex &dstParent);
     void MoveItem(const QModelIndex &srcItem, int dstRow, const QModelIndex &dstParent);
     void CopyItem(const QModelIndex &srcItem, int dstRow, const QModelIndex &dstParent);
     void RemoveItem(const QModelIndex &srcItem);
 
     void InsertNode(ControlNode *node, const QModelIndex &parent, int row);
-    void RemoveNode(ControlNode *node);
+    void RemoveNode(PackageBaseNode *node);
+    void RemoveControlNode(ControlNode *node);
+    void RemovePackageControlsNode(PackageControlsNode *node);
 private:
     PackageNode *root;
     PackageDocument *document;

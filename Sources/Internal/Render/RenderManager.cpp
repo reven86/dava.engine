@@ -29,7 +29,6 @@
 
 #include "Render/RenderManager.h"
 #include "Render/Texture.h"
-#include "Render/2D/Sprite.h"
 #include "Utils/Utils.h"
 #include "Core/Core.h"
 #include "Render/Shader.h"
@@ -65,9 +64,6 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
 //	Logger::FrameworkDebug("[RenderManager] created");
 
     GPUFamilyDescriptor::SetupGPUParameters();
-    
-	renderOrientation = 0;
-	currentRenderTarget = 0;
 	
 	currentRenderEffect = 0;
 
@@ -209,13 +205,8 @@ void RenderManager::Init(int32 _frameBufferWidth, int32 _frameBufferHeight)
 void RenderManager::Reset()
 {
 	ResetColor();
-
-	currentRenderTarget = NULL;
-}
-
-int32 RenderManager::GetRenderOrientation()
-{
-	return renderOrientation;
+    
+    lastBindedFBO = fboViewFramebuffer;
 }
 
 void RenderManager::SetColor(float32 r, float32 g, float32 b, float32 a)
@@ -257,17 +248,6 @@ void RenderManager::ResetColor()
 {
 	currentState.ResetColor();
 }
-	
-/*void RenderManager::SetTexture(Texture *texture, uint32 textureLevel)
-{	
-    currentState.SetTexture(texture, textureLevel);
-}
-	
-Texture *RenderManager::GetTexture(uint32 textureLevel)
-{
-    DVASSERT(textureLevel < RenderState::MAX_TEXTURE_LEVELS);
-	return currentState.currentTexture[textureLevel];	
-}*/
     
 void RenderManager::SetShader(Shader * _shader)
 {
@@ -293,44 +273,10 @@ void RenderManager::InitFBO(GLuint _viewRenderbuffer, GLuint _viewFramebuffer)
 	fboViewFramebuffer = _viewFramebuffer;
 }
 
-void RenderManager::SetRenderTarget(Sprite *renderTarget)
+Size2i RenderManager::GetFramebufferSize()
 {
-	RenderTarget rt;
-	rt.spr = currentRenderTarget;
-	rt.orientation = renderOrientation;
-	renderTargetStack.push(rt);
-    
-	SetHWRenderTargetSprite(renderTarget);
+    return Size2i(frameBufferWidth, frameBufferHeight);
 }
-
-void RenderManager::SetRenderTarget(Texture * renderTarget)
-{
-	SetHWRenderTargetTexture(renderTarget);
-}
-
-void RenderManager::RestoreRenderTarget()
-{
-	RenderTarget rt = renderTargetStack.top();
-	renderTargetStack.pop();
-	SetHWRenderTargetSprite(rt.spr);
-}
-
-bool RenderManager::IsRenderTarget()
-{
-	return currentRenderTarget != NULL;
-}
-    
-/*
-bool RenderManager::IsDepthTestEnabled()
-{
-    return (hardwareState.state & RenderStateBlock::STATE_DEPTH_TEST) != 0;
-}
-
-bool RenderManager::IsDepthWriteEnabled()
-{
-    return (depthWriteEnabled & RenderStateBlock::STATE_DEPTH_WRITE) != 0;
-}
-*/
 
 void RenderManager::SetRenderEffect(Shader * renderEffect)
 {
@@ -419,50 +365,6 @@ void RenderManager::ClearStats()
 {
     stats.Clear();
 }
-    
-void RenderManager::RectFromRenderOrientationToViewport(Rect & rect)
-{
-
-}
-
-//const Matrix4 & RenderManager::GetMatrix(eMatrixType type)
-//{
-//    return matrices[type];
-//}
-
-//const Matrix3 & RenderManager::GetNormalMatrix()
-//{
-//    if (uniformMatrixFlags[UNIFORM_MATRIX_NORMAL] == 0)
-//    {
-//        //GetUniformMatrix(UNIFORM_MATRIX_MODELVIEWPROJECTION);
-//        const Matrix4 & modelViewMatrix = GetMatrix(MATRIX_MODELVIEW);
-//        
-//        modelViewMatrix.GetInverse(uniformMatrices[UNIFORM_MATRIX_NORMAL]);
-//        uniformMatrices[UNIFORM_MATRIX_NORMAL].Transpose();
-//        uniformMatrixNormal = uniformMatrices[UNIFORM_MATRIX_NORMAL];
-//        uniformMatrixFlags[UNIFORM_MATRIX_NORMAL] = 1; // matrix is ready
-//    }
-//    return uniformMatrixNormal;
-//}
-
-//const Matrix4 & RenderManager::GetUniformMatrix(eUniformMatrixType type)
-//{
-//    if (uniformMatrixFlags[type] == 0)
-//    {
-//        if (type == UNIFORM_MATRIX_MODELVIEWPROJECTION)
-//        {
-//            uniformMatrices[type] =  matrices[MATRIX_MODELVIEW] * matrices[MATRIX_PROJECTION];
-//        }
-//        uniformMatrixFlags[type] = 1; // matrix is ready
-//    }
-//    return uniformMatrices[type];
-//}
-//    
-//void RenderManager::ClearUniformMatrices()
-//{
-//    for (int32 k = 0; k < UNIFORM_MATRIX_COUNT; ++k)
-//        uniformMatrixFlags[k] = 0;
-//}
     
 void RenderManager::Stats::Clear()
 {

@@ -34,14 +34,9 @@
 
 ////Global launcher defines
 
-#define LAUNCHER_VER "0.9 build 7"
+#define LAUNCHER_VER "0.9 build 6"
 
 #define LOCAL_CONFIG_NAME "localConfig.yaml"
-#ifdef Q_OS_DARWIN
-#define REMOTE_CONFIG_URL_DEFAULT "http://winserver.corp.wargaming.local/dava.framework/mac/launcher/launcher_config.yaml"
-#else
-#define REMOTE_CONFIG_URL_DEFAULT "http://winserver.corp.wargaming.local/dava.framework/win/launcher/launcher_config.yaml"
-#endif
 
 ////YAML config keys
 

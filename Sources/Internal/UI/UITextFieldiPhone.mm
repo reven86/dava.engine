@@ -248,18 +248,21 @@ namespace DAVA
         textFieldHolder->textField.frame = nativeRect;
     }
 	
-    void UITextFieldiPhone::SetText(std::wstring & string)
+    void UITextFieldiPhone::SetText(const WideString & string)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         NSString* text = [[ [ NSString alloc ] initWithBytes : (char*)string.data()
                                                          length : string.size() * sizeof(wchar_t)
                                                        encoding : CFStringConvertEncodingToNSStringEncoding ( kCFStringEncodingUTF32LE ) ] autorelease];
 
-        textFieldHolder->textField.text = (NSString*)TruncateText(text, textFieldHolder->cppTextField->GetMaxLength());
+        NSString* truncatedText = (NSString*)TruncateText(text, textFieldHolder->cppTextField->GetMaxLength());
+        [textFieldHolder->textField setText:truncatedText];
+        [truncatedText release];
+
         [textFieldHolder->textField.undoManager removeAllActions];
     }
 	
-    void UITextFieldiPhone::GetText(std::wstring & string) const
+    void UITextFieldiPhone::GetText(WideString & string) const
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         

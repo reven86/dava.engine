@@ -1341,7 +1341,7 @@ namespace DAVA
 
         if(clipContents)
         {//WARNING: for now clip contents don't work for rotating controls if you have any ideas you are welcome
-            RenderSystem2D::Instance()->ClipPush();
+            RenderSystem2D::Instance()->PushClip();
             RenderSystem2D::Instance()->ClipRect(drawData.GetAABBox());
         }
 
@@ -1360,16 +1360,16 @@ namespace DAVA
 
         if(clipContents)
         {
-            RenderSystem2D::Instance()->ClipPop();
+            RenderSystem2D::Instance()->PopClip();
         }
 
         if(debugDrawEnabled)
         {
-            RenderSystem2D::Instance()->ClipPush();
+            RenderSystem2D::Instance()->PushClip();
             RenderSystem2D::Instance()->RemoveClip();
             DrawDebugRect(drawData, false);
             DrawPivotPoint(unrotatedRect);
-            RenderSystem2D::Instance()->ClipPop();
+            RenderSystem2D::Instance()->PopClip();
         }
     }
 
@@ -1381,7 +1381,7 @@ namespace DAVA
     void UIControl::DrawDebugRect(const UIGeometricData &gd, bool useAlpha)
     {
         Color oldColor = RenderManager::Instance()->GetColor();
-        RenderSystem2D::Instance()->ClipPush();
+        RenderSystem2D::Instance()->PushClip();
 
         if (useAlpha)
         {
@@ -1406,7 +1406,7 @@ namespace DAVA
             RenderHelper::Instance()->DrawRect( gd.GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND );
         }
 
-        RenderSystem2D::Instance()->ClipPop();
+        RenderSystem2D::Instance()->PopClip();
         RenderManager::Instance()->SetColor(oldColor);
     }
 
@@ -1426,7 +1426,7 @@ namespace DAVA
         static const float32 PIVOT_POINT_MARK_HALF_LINE_LENGTH = 13.0f;
 
         Color oldColor = RenderManager::Instance()->GetColor();
-        RenderSystem2D::Instance()->ClipPush();
+        RenderSystem2D::Instance()->PushClip();
         RenderManager::Instance()->SetColor(Color(1.0f, 0.0f, 0.0f, 1.0f));
 
         Vector2 pivotPointCenter = drawRect.GetPosition() + GetPivotPoint();
@@ -1445,7 +1445,7 @@ namespace DAVA
         lineEndPoint.x += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
         RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderState::RENDERSTATE_2D_BLEND);
 
-        RenderSystem2D::Instance()->ClipPop();
+        RenderSystem2D::Instance()->PopClip();
         RenderManager::Instance()->SetColor(oldColor);
     }
 
