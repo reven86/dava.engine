@@ -27,19 +27,44 @@
 =====================================================================================*/
 
 
-#include "GamepadManager.h"
-#include "GamepadDevice.h"
+#ifndef CONFIGDOWNLOADER_H
+#define CONFIGDOWNLOADER_H
 
-namespace DAVA
-{
+#include <QDialog>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QFile>
 
-    // Not implemented for macos, win and android. See working iOS implementation in GamepadManager.mm
-
-    GamepadManager::GamepadManager()
-    { }
-
-    GamepadDevice *GamepadManager::GetCurrentGamepad()
-    {
-        return NULL;
-    }
+namespace Ui {
+class ConfigDownloader;
 }
+
+class ApplicationManager;
+class ConfigDownloader : public QDialog
+{
+    Q_OBJECT
+    
+public:
+    explicit ConfigDownloader(ApplicationManager * manager, QWidget *parent = 0);
+    ~ConfigDownloader();
+
+    virtual int exec();
+
+private slots:
+    void NetworkError(QNetworkReply::NetworkError code);
+    void DownloadFinished();
+    void OnCancelClicked();
+
+private:
+    Ui::ConfigDownloader *ui;
+
+    QNetworkAccessManager * networkManager;
+    QNetworkReply * currentDownload;
+
+    ApplicationManager * appManager;
+
+    int lastErrorCode;
+    QString lastErrorDesrc;
+};
+
+#endif // CONFIGDOWNLOADER_H

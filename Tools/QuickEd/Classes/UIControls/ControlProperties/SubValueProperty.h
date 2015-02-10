@@ -1,11 +1,3 @@
-//
-//  SubValueProperty.h
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 30.9.14.
-//
-//
-
 #ifndef __UI_EDITOR_SUB_VALUE_PROPERTY__
 #define __UI_EDITOR_SUB_VALUE_PROPERTY__
 

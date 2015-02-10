@@ -2,6 +2,7 @@
 
 #include "UIPackageModel.h"
 #include "UIControls/PackageHierarchy/ControlNode.h"
+#include "UIControls/PackageHierarchy/PackageControlsNode.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // MoveItemModelCommand
@@ -84,18 +85,25 @@ void CopyItemModelCommand::redo()
 // InsertControlNodeCommand
 ////////////////////////////////////////////////////////////////////////////////
 
-InsertControlNodeCommand::InsertControlNodeCommand(UIPackageModel *_package, const QString &controlName, int dstRow, const QModelIndex &dstParent, QUndoCommand *parent)
+InsertControlNodeCommand::InsertControlNodeCommand(UIPackageModel *_package, const QString &_controlName, int dstRow, const QModelIndex &dstParent, QUndoCommand *parent)
+    : InsertControlNodeCommand(_package, nullptr, dstRow, dstParent, parent)
+{
+    controlName = _controlName;
+}
+
+InsertControlNodeCommand::InsertControlNodeCommand(UIPackageModel *_package, ControlNode *_control, int dstRow, const QModelIndex &dstParent, QUndoCommand * parent)
     : BasePackageModelCommand(_package, "Insert Control", parent)
     , dstRow(dstRow)
     , dstParent(dstParent)
-    , controlName(controlName)
+    , controlName("")
+    , control(SafeRetain(_control))
 {
     
 }
 
 InsertControlNodeCommand::~InsertControlNodeCommand()
 {
-    
+    SafeRelease(control);
 }
 
 void InsertControlNodeCommand::undo()
@@ -106,8 +114,45 @@ void InsertControlNodeCommand::undo()
 
 void InsertControlNodeCommand::redo()
 {
-    GetModel()->InsertItem(controlName, dstRow, dstParent);
+    if (control)
+        GetModel()->InsertItem(control, dstRow, dstParent);
+    else
+        GetModel()->InsertItem(controlName, dstRow, dstParent);
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+// RemoveControlNodeCommand
+////////////////////////////////////////////////////////////////////////////////
+
+InsertImportedPackageCommand::InsertImportedPackageCommand(UIPackageModel *_package, PackageControlsNode *_importedPackage, int _dstRow, const QModelIndex &_dstParent, QUndoCommand * parent)
+    : BasePackageModelCommand(_package, "Insert Package", parent)
+    , dstRow(_dstRow)
+    , dstParent(_dstParent)
+    , importedPackage(SafeRetain(_importedPackage))
+{
+    
+}
+
+InsertImportedPackageCommand::~InsertImportedPackageCommand()
+{
+    SafeRelease(importedPackage);
+}
+
+void InsertImportedPackageCommand::undo()
+{
+    QModelIndex dstIndex = GetModel()->index(dstRow, 0, dstParent);
+    GetModel()->RemoveItem(dstIndex);
+}
+
+void InsertImportedPackageCommand::redo()
+{
+    GetModel()->InsertImportedPackage(importedPackage, dstRow, dstParent);
+}
+
+//int dstRow;
+//QPersistentModelIndex dstParent;
+//PackageControlsNode *importedPackage;
 
 ////////////////////////////////////////////////////////////////////////////////
 // RemoveControlNodeCommand
