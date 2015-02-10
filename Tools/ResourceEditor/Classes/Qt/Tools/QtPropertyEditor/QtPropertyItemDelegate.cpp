@@ -79,8 +79,6 @@ QSize QtPropertyItemDelegate::sizeHint(const QStyleOptionViewItem &option, const
     static const int baseText = 17;
     static const int extra = 5;
 
-    s.setHeight( s.height() + extra );
-
     auto *data = qobject_cast<QtPropertyDataDavaVariant *>( model->itemFromIndex( index ) );
     if ( data != nullptr )
     {
@@ -89,10 +87,12 @@ QSize QtPropertyItemDelegate::sizeHint(const QStyleOptionViewItem &option, const
             const auto& text = data->GetValue().toString();
             if ( !text.isEmpty() && text.contains( '\n' ) )
             {
-                s.setHeight( baseText + extra );
+                s.setHeight( baseText );
             }
         }
     }
+
+    s.setHeight( s.height() + extra );
 
     return s;
 }

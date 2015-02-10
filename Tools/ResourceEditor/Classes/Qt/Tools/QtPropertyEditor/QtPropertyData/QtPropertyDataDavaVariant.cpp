@@ -996,12 +996,6 @@ QWidget* QtPropertyDataDavaVariant::CreateEditorInternal(QWidget *parent, const 
                 }
                 break;
 
-            //case DAVA::VariantType::TYPE_INT32:
-            //    break;
-
-            //case DAVA::VariantType::TYPE_STRING:
-            //    break;
-
             default:
                 break;
         }
