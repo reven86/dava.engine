@@ -57,9 +57,8 @@ DistanceSlider::DistanceSlider(QWidget *parent /*= 0*/)
     splitter->setGeometry(geometry());
     splitter->setOrientation(Qt::Horizontal);
     splitter->setMinimumHeight(20);
-    
+	splitter->setChildrenCollapsible(false);
 //    splitter->setOpaqueResize(false); need uncomment if moving will be slow
-    
     
     layout->addWidget(splitter);
     layout->setSpacing(0);

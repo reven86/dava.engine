@@ -152,6 +152,14 @@ void EditorLODSystem::CollectLODDataFromScene()
 			++currentLodsLayersCount;
 		}
 	}
+	if (!allSceneModeEnabled)
+	{
+		if (!forceDistanceEnabled && forceLayer != DAVA::LodComponent::INVALID_LOD_LAYER && forceLayer >= currentLodsLayersCount)
+		{
+			SetForceLayer(currentLodsLayersCount - 1);
+			return;
+		}
+	}
 }
 
 void EditorLODSystem::AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> &triangles, DAVA::LodComponent *lod, bool onlyVisibleBatches)
@@ -441,13 +449,5 @@ void EditorLODSystem::UpdateAllSceneModeEnabled()
 		ResetForceState(lod);
 	}
 	CollectLODDataFromScene();
-	if (!allSceneModeEnabled)
-	{
-		if (!forceDistanceEnabled && forceLayer >= currentLodsLayersCount)
-		{
-			SetForceLayer(currentLodsLayersCount - 1);
-			return;
-		}
-	}
 	UpdateForceData();
 }
