@@ -2,6 +2,7 @@
 #include <DAVAEngine.h>
 #include <QLineEdit>
 #include <QAction>
+#include <QItemSelection>
 
 #include "UI/PackageView/UIPackageModel.h"
 #include "UI/PackageView/UIFilteredPackageModel.h"
@@ -13,6 +14,8 @@
 #include "UIControls/PackageHierarchy/PackageNode.h"
 #include "UIControls/PackageHierarchy/PackageControlsNode.h"
 #include "UIControls/PackageHierarchy/ControlNode.h"
+#include "UIControls/PackageHierarchy/PackageRef.h"
+
 
 using namespace DAVA;
 
@@ -28,6 +31,8 @@ PackageDocument::PackageDocument(Project *_project, PackageNode *_package, QObje
     treeContext.proxyModel = new UIFilteredPackageModel(this);
     treeContext.proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     treeContext.proxyModel->setSourceModel(treeContext.model);
+
+    treeContext.currentSelection = new QItemSelection();
 
     graphicsContext = new GraphicsViewContext();
     connect(this, SIGNAL(activeRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), graphicsContext, SLOT(OnActiveRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
@@ -54,6 +59,8 @@ PackageDocument::~PackageDocument()
 
     SafeDelete(treeContext.model);
     SafeDelete(treeContext.proxyModel);
+    SafeDelete(treeContext.currentSelection);
+
     disconnect(this, SIGNAL(activeRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), graphicsContext, SLOT(OnActiveRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
     disconnect(this, SIGNAL(selectedRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), graphicsContext, SLOT(OnSelectedControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
 
@@ -79,7 +86,7 @@ void PackageDocument::ClearModified()
 
 const DAVA::FilePath &PackageDocument::PackageFilePath() const
 {
-    return package->GetPath();
+    return package->GetPackageRef()->GetPath();
 }
 
 void PackageDocument::OnSelectionRootControlChanged(const QList<ControlNode*> &activatedRootControls, const QList<ControlNode*> &deactivatedRootControls)

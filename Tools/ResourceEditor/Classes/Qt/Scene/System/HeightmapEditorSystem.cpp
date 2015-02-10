@@ -247,7 +247,8 @@ Image* HeightmapEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fi
 	Texture *srcTex = Texture::CreateFromFile(filePath);
 	Sprite *srcSprite = Sprite::CreateFromTexture(srcTex, 0, 0, (float32)srcTex->GetWidth(), (float32)srcTex->GetHeight(), true);
 	
-	RenderManager::Instance()->SetRenderTarget(dstSprite);
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(dstSprite);
 	
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 		
@@ -263,7 +264,7 @@ Image* HeightmapEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fi
     
     RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopRenderTarget();
 	
 	Image *retImage = dstSprite->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
 	

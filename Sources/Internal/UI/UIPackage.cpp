@@ -97,4 +97,18 @@ void UIPackage::RemoveControl(UIControl *control)
     }
 }
 
+RefPtr<UIPackage> UIPackage::Clone() const
+{
+    RefPtr<UIPackage> package(new UIPackage());
+
+    package->controls.resize(controls.size());
+
+    std::transform(controls.begin(), controls.end(), package->controls.begin(),
+    [](UIControl *control)->UIControl *
+    {
+        return control->Clone();
+    });
+    return package;
+}
+
 }

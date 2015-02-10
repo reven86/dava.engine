@@ -154,20 +154,17 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
     const float32 physicalTargetWidth = (float32)notPassableMapSprite->GetTexture()->GetWidth();
     const float32 dx = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(physicalTargetWidth / (float32)(heightmap->Size() - 1));
 	
-	RenderManager* renderManager = RenderManager::Instance();
-    RenderSystem2D * renderSystem2d = RenderSystem2D::Instance();
-	RenderHelper* renderHelper = RenderHelper::Instance();
-	
-	renderManager->SetRenderTarget(notPassableMapSprite);
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(notPassableMapSprite);
 	
 	const Rect drawRect(forRect.x * dx, (heightmap->Size() - (forRect.y + forRect.dy)) * dx, (forRect.dx - 1)* dx, (forRect.dy - 1) * dx);
-    renderSystem2d->ClipPush();
-    renderSystem2d->SetClip(drawRect);
-	
-    renderSystem2d->Setup2DMatrices();
-    renderSystem2d->UpdateClip();
+    
+    RenderSystem2D::Instance()->PushClip();
+    RenderSystem2D::Instance()->SetClip(drawRect);
+    RenderSystem2D::Instance()->Setup2DMatrices();
+    RenderSystem2D::Instance()->UpdateClip();
 
-	renderManager->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
 	const int32 lastY = (int32)(forRect.y + forRect.dy);
 	const int32 lastX = (int32)(forRect.x + forRect.dx);
@@ -193,22 +190,20 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 
 			if(PickColor(tanRight, color))
 			{
-				renderManager->SetColor(color);
-				renderHelper->DrawLine(Vector2(xdx, ydx), Vector2((xdx + dx), ydx), DAVA::RenderState::RENDERSTATE_2D_BLEND);
+                RenderManager::Instance()->SetColor(color);
+                RenderHelper::Instance()->DrawLine(Vector2(xdx, ydx), Vector2((xdx + dx), ydx), DAVA::RenderState::RENDERSTATE_2D_BLEND);
 			}
 			
 			if(PickColor(tanBottom, color))
 			{
-				renderManager->SetColor(color);
-				renderHelper->DrawLine(Vector2(xdx, ydx), Vector2(xdx, (ydx - dx)), DAVA::RenderState::RENDERSTATE_2D_BLEND);
+                RenderManager::Instance()->SetColor(color);
+                RenderHelper::Instance()->DrawLine(Vector2(xdx, ydx), Vector2(xdx, (ydx - dx)), DAVA::RenderState::RENDERSTATE_2D_BLEND);
 			}
 			
 		}
 	}
 	
-	renderManager->ResetColor();
-	
-    renderSystem2d->ClipPop();
-	
-	renderManager->RestoreRenderTarget();
+    RenderManager::Instance()->ResetColor();
+    RenderSystem2D::Instance()->PopClip();
+    RenderSystem2D::Instance()->PopRenderTarget();
 }

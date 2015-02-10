@@ -2,6 +2,7 @@
 
 #include "PackageControlsNode.h"
 #include "../PackageSerializer.h"
+#include "PackageRef.h"
 
 using namespace DAVA;
 
@@ -24,12 +25,44 @@ void ImportedPackagesNode::Add(PackageControlsNode *node)
     packageControlsNode.push_back(SafeRetain(node));
 }
 
+void ImportedPackagesNode::InsertBelow(PackageControlsNode *node, const PackageControlsNode *belowThis)
+{
+    DVASSERT(node->GetParent() == NULL);
+    node->SetParent(this);
+    auto it = find(packageControlsNode.begin(), packageControlsNode.end(), belowThis);
+    if (it != packageControlsNode.end())
+    {
+        packageControlsNode.insert(it, SafeRetain(node));
+    }
+    else
+    {
+        packageControlsNode.push_back(SafeRetain(node));
+    }
+}
+
+void ImportedPackagesNode::Remove(PackageControlsNode *node)
+{
+    auto it = find(packageControlsNode.begin(), packageControlsNode.end(), node);
+    if (it != packageControlsNode.end())
+    {
+        DVASSERT(node->GetParent() == this);
+        node->SetParent(NULL);
+        
+        packageControlsNode.erase(it);
+        SafeRelease(node);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
 int ImportedPackagesNode::GetCount() const
 {
     return (int) packageControlsNode.size();
 }
 
-PackageBaseNode *ImportedPackagesNode::Get(int index) const
+PackageControlsNode *ImportedPackagesNode::Get(int index) const
 {
     return packageControlsNode[index];
 }
@@ -41,12 +74,12 @@ String ImportedPackagesNode::GetName() const
 
 PackageControlsNode *ImportedPackagesNode::FindPackageControlsNodeByName(const DAVA::String &name) const
 {
-    for (auto it = packageControlsNode.begin(); it != packageControlsNode.end(); ++it)
+    for (PackageControlsNode *node : packageControlsNode)
     {
-        if ((*it)->GetName() == name)
-            return *it;
+        if (node->GetPackageRef()->GetName() == name)
+            return node;
     }
-    return NULL;
+    return nullptr;
 }
 
 int ImportedPackagesNode::GetFlags() const
@@ -59,7 +92,21 @@ void ImportedPackagesNode::Serialize(PackageSerializer *serializer) const
     serializer->BeginArray("ImportedPackages");
     
     for (PackageControlsNode *controlsNode : packageControlsNode)
-        serializer->PutValue(controlsNode->GetPackagePath().GetFrameworkPath());
+        serializer->PutValue(controlsNode->GetPackageRef()->GetPath().GetFrameworkPath());
+    
+    serializer->EndArray();
+}
+
+void ImportedPackagesNode::Serialize(PackageSerializer *serializer, const DAVA::Set<PackageRef*> &packageRefs) const
+{
+    serializer->BeginArray("ImportedPackages");
+    
+    for (PackageControlsNode *controlsNode : packageControlsNode)
+    {
+        PackageRef *ref = controlsNode->GetPackageRef();
+        if (packageRefs.find(ref) != packageRefs.end())
+            serializer->PutValue(ref->GetPath().GetFrameworkPath());
+    }
     
     serializer->EndArray();
 }
