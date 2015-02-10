@@ -121,7 +121,7 @@ void DefaultScreen::SystemDraw(const UIGeometricData &geometricData)
     Color oldColor = RenderManager::Instance()->GetColor();
 
     Matrix4 wt = Matrix4::MakeTranslation(Vector3(pos)) * Matrix4::MakeScale(Vector3(scale.x, scale.y, 1.f));
-    RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &wt, UPDATE_SEMANTIC_ALWAYS);
+    RenderManager::SetDynamicParam(PARAM_VIEW, &wt, UPDATE_SEMANTIC_ALWAYS);
 
     RenderManager::Instance()->SetColor(ScreenWrapper::Instance()->GetBackgroundFrameColor());
     RenderHelper::Instance()->FillRect(ScreenWrapper::Instance()->GetBackgroundFrameRect(), RenderState::RENDERSTATE_2D_BLEND);
@@ -130,7 +130,7 @@ void DefaultScreen::SystemDraw(const UIGeometricData &geometricData)
    // For Preview mode display only what is inside the preview rectangle.
     if (previewEnabled)
     {
-        RenderSystem2D::Instance()->ClipPush();
+        RenderSystem2D::Instance()->PushClip();
         
         Rect previewClipRect;
         previewClipRect.SetSize(PreviewController::Instance()->GetTransformData().screenSize);
@@ -141,7 +141,7 @@ void DefaultScreen::SystemDraw(const UIGeometricData &geometricData)
 
     if (previewEnabled)
     {
-        RenderSystem2D::Instance()->ClipPop();
+        RenderSystem2D::Instance()->PopClip();
     }
     else if (inputState == InputStateSelectorControl)
     {
@@ -1853,7 +1853,7 @@ void DefaultScreen::DrawGuides()
         }
     }
 
-    RenderSystem2D::Instance()->ClipPush();
+    RenderSystem2D::Instance()->PushClip();
     RenderSystem2D::Instance()->SetClip(rect);
     Color oldColor = RenderManager::Instance()->GetColor();
 
@@ -1863,7 +1863,7 @@ void DefaultScreen::DrawGuides()
     RenderHelper::Instance()->DrawLines(unselectedGuides, RenderState::RENDERSTATE_2D_BLEND);
 
     RenderManager::Instance()->SetColor(oldColor);
-    RenderSystem2D::Instance()->ClipPop();
+    RenderSystem2D::Instance()->PopClip();
 }
 
 // Screen scale/position is changed.
