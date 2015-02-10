@@ -121,10 +121,15 @@ ControlNode *PackageControlsNode::FindControlNodeByName(const DAVA::String &name
 
 void PackageControlsNode::Serialize(PackageSerializer *serializer) const
 {
+    Serialize(serializer, nodes);
+}
+
+void PackageControlsNode::Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const
+{
     serializer->BeginArray("Controls");
     
     for (auto it = nodes.begin(); it != nodes.end(); ++it)
-        (*it)->Serialize(serializer);
+        (*it)->Serialize(serializer, packageRef);
     
     serializer->EndArray();
 }

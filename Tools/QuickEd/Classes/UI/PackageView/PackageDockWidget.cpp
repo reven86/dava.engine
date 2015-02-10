@@ -13,7 +13,9 @@
 
 #include "ui_PackageDockWidget.h"
 #include "UIPackageModel.h"
-#include "DAVAEngine.h"
+
+#include "QtModelPackageCommandExecutor.h"
+
 #include "UI/PackageView/UIFilteredPackageModel.h"
 #include "UI/PackageDocument.h"
 #include "UI/PackageView/PackageModelCommands.h"
@@ -24,6 +26,7 @@
 #include "UIControls/PackageHierarchy/PackageControlsNode.h"
 #include "UIControls/PackageHierarchy/PackageRef.h"
 #include "UIControls/YamlPackageSerializer.h"
+#include "UIControls/EditorUIPackageBuilder.h"
 
 #include "Project.h"
 #include "Utils/QtDavaConvertion.h"
@@ -253,23 +256,21 @@ void PackageDockWidget::OnCopy()
     QItemSelection selected = document->GetTreeContext()->proxyModel->mapSelectionToSource(ui->treeView->selectionModel()->selection());
     QModelIndexList selectedIndexList = selected.indexes();
     QClipboard *clipboard = QApplication::clipboard();
-    
+
+    Vector<ControlNode*> nodes;
     if (!selectedIndexList.empty())
     {
-        ScopedPtr<UIPackage> virtualUIPackage(new UIPackage());
-        ScopedPtr<PackageRef> packageRef(new PackageRef(FilePath(), virtualUIPackage));
-        ScopedPtr<PackageNode> virtualPackage(new PackageNode(packageRef));
-        
         for (QModelIndex &index : selectedIndexList)
         {
             PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
             ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
-            if (controlNode)
-                virtualPackage->AddControlWithResolvingDependencies(controlNode);
+            
+            if (controlNode && controlNode->GetCreationType() != ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
+                nodes.push_back(controlNode);
         }
-        
+
         YamlPackageSerializer serializer;
-        virtualPackage->Serialize(&serializer);
+        document->GetPackage()->Serialize(&serializer, nodes);
         String str = serializer.WriteToString();
         QMimeData data;
         data.setText(QString(str.c_str()));
@@ -283,36 +284,25 @@ void PackageDockWidget::OnPaste()
     QModelIndexList selectedIndexList = selected.indexes();
     QClipboard *clipboard = QApplication::clipboard();
     
-    if (!selectedIndexList.empty())
+    if (!selectedIndexList.empty() && clipboard && clipboard->mimeData())
     {
-//        FilePath path(packagePath.toStdString());
-//        String fwPath = path.GetFrameworkPath();
-//        
-//        EditorUIPackageBuilder builder;
-//        UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(path);
-//        if (newPackage)
-//        {
-//            SafeRelease(newPackage);
-//            RefPtr<PackageNode> packageNode = builder.GetPackageNode();
-//
-//            ScopedPtr<UIPackage> virtualUIPackage(new UIPackage());
-//            ScopedPtr<PackageNode> virtualPackage(new PackageNode(virtualUIPackage, FilePath()));
-//            
-//            for (QModelIndex &index : selectedIndexList)
-//            {
-//                PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-//                ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
-//                if (controlNode)
-//                    virtualPackage->AddControlWithResolvingDependencies(controlNode);
-//            }
-//            
-//            YamlPackageSerializer serializer;
-//            virtualPackage->Serialize(&serializer);
-//            String str = serializer.WriteToString();
-//            QMimeData data;
-//            data.setText(QString(str.c_str()));
-//            clipboard->setMimeData(&data);
-//        }
+        QModelIndex &index = selectedIndexList.first();
+        
+        PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+        ControlNode *controlNode = dynamic_cast<ControlNode*>(node); // control node may be null
+        
+        String string = clipboard->mimeData()->text().toStdString();
+        RefPtr<YamlParser> parser(YamlParser::CreateAndParseString(string));
+        
+        if (parser.Valid() && parser->GetRootNode())
+        {
+            document->UndoStack()->beginMacro("Paste");
+            ScopedPtr<QtModelPackageCommandExecutor> commandExecutor(new QtModelPackageCommandExecutor(document));
+            EditorUIPackageBuilder builder(document->GetPackage(), controlNode, commandExecutor);
+            UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(parser->GetRootNode(), "");
+            SafeRelease(newPackage);
+            document->UndoStack()->endMacro();
+        }
     }
 }
 

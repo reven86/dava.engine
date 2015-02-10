@@ -14,6 +14,8 @@ public:
     virtual ~ImportedPackagesNode();
 
     void Add(PackageControlsNode *node);
+    void InsertBelow(PackageControlsNode *node, const PackageControlsNode *belowThis);
+    void Remove(PackageControlsNode *node);
     virtual int GetCount() const override;
     virtual PackageControlsNode *Get(int index) const override;
     
@@ -23,6 +25,7 @@ public:
     virtual int GetFlags() const override;
     
     void Serialize(PackageSerializer *serializer) const;
+    void Serialize(PackageSerializer *serializer, const DAVA::Set<PackageRef*> &packageRefs) const;
     
 private:
     DAVA::Vector<PackageControlsNode*> packageControlsNode;

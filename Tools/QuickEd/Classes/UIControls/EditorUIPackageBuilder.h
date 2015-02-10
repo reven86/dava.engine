@@ -7,11 +7,12 @@
 class PackageNode;
 class ControlNode;
 class PropertiesSection;
+class PackageCommandExecutor;
 
 class EditorUIPackageBuilder : public DAVA::AbstractUIPackageBuilder
 {
 public:
-    EditorUIPackageBuilder();
+    EditorUIPackageBuilder(PackageNode *basePackage = nullptr, ControlNode *insertingTarget = nullptr, PackageCommandExecutor *executor = nullptr);
     virtual ~EditorUIPackageBuilder();
      
     virtual DAVA::RefPtr<DAVA::UIPackage> BeginPackage(const DAVA::FilePath &packagePath) override;
@@ -38,7 +39,7 @@ public:
     virtual void ProcessProperty(const DAVA::InspMember *member, const DAVA::VariantType &value) override;
 
     DAVA::RefPtr<PackageNode> GetPackageNode() const;
-    
+
 private:
     struct ControlDescr {
         ControlNode *node;
@@ -53,10 +54,14 @@ private:
     
 private:
     PackageNode *packageNode;
+    PackageNode *basePackage;
+    ControlNode *insertingTarget;
     
     DAVA::List<ControlDescr> controlsStack;
     DAVA::BaseObject *currentObject;
     PropertiesSection *currentSection;
+    
+    PackageCommandExecutor *commandExecutor;
 };
 
 #endif // __EDITOR_UI_PACKAGE_BUILDER_H__

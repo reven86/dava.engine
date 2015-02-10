@@ -5,10 +5,9 @@
 
 using namespace DAVA;
 
-ControlPrototype::ControlPrototype(ControlNode *_controlNode, PackageRef *_packageRef, bool _isPackageImported)
+ControlPrototype::ControlPrototype(ControlNode *_controlNode, PackageRef *_packageRef)
     : controlNode(SafeRetain(_controlNode))
-    , packageRef(_packageRef)
-    , isPackageImported(_isPackageImported)
+    , packageRef(SafeRetain(_packageRef))
 {
     DVASSERT(packageRef);
 }
@@ -24,9 +23,9 @@ ControlNode *ControlPrototype::GetControlNode() const
     return controlNode;
 }
 
-String ControlPrototype::GetName() const
+String ControlPrototype::GetName(bool withPackage) const
 {
-    if (isPackageImported)
+    if (withPackage)
         return packageRef->GetName() + "/" + controlNode->GetName();
     else
         return controlNode->GetName();

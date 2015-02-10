@@ -9,20 +9,19 @@ class ControlNode;
 class ControlPrototype : public DAVA::BaseObject
 {
 public:
-    ControlPrototype(ControlNode *_controlNode, PackageRef *_packageRef, bool isPackageImported);
+    ControlPrototype(ControlNode *_controlNode, PackageRef *_packageRef);
     
 protected:
     virtual ~ControlPrototype();
     
 public:
     ControlNode *GetControlNode() const;
-    DAVA::String GetName() const;
+    DAVA::String GetName(bool withPackage) const;
     PackageRef *GetPackageRef() const;
     
 private:
     ControlNode *controlNode;
     PackageRef *packageRef;
-    bool isPackageImported;
 };
 
 #endif //__QUICKED_CONTROL_PROTOTYPE_H__

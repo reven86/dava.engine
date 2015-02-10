@@ -35,7 +35,8 @@ public:
 
     ControlNode *FindControlNodeByName(const DAVA::String &name) const;
     void Serialize(PackageSerializer *serializer) const;
-    
+    void Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const;
+
 
 private:
     DAVA::UIPackage *GetPackage() const;

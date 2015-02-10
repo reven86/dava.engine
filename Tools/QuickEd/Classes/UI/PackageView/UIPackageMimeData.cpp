@@ -18,6 +18,7 @@ bool UIPackageMimeData::hasFormat(const QString &mimetype) const
 QStringList UIPackageMimeData::formats() const
 {
     QStringList types;
+    types << "text/plain";
     types << "application/packageModel";
     return types;
 }

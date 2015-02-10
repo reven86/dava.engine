@@ -27,13 +27,15 @@ public:
     
     ImportedPackagesNode *GetImportedPackagesNode() const;
     PackageControlsNode *GetPackageControlsNode() const;
-    
+
+    PackageControlsNode *FindImportedPackage(const DAVA::FilePath &path);
+
     void Serialize(PackageSerializer *serializer) const;
+    void Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const;
     
-    void AddControlWithResolvingDependencies(ControlNode *sourceControl);
     
 private:
-    void CollectPackages(DAVA::Set<DAVA::FilePath> &packages, ControlNode *node) const;
+    void CollectPackages(DAVA::Set<PackageRef*> &packageRefs, ControlNode *node) const;
     
 private:
     PackageRef *packageRef;

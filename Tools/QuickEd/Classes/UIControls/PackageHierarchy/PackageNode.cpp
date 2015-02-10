@@ -21,9 +21,9 @@ PackageNode::PackageNode(PackageRef *_packageRef)
 PackageNode::~PackageNode()
 {
     SafeRelease(packageRef);
-    importedPackagesNode->SetParent(NULL);
+    importedPackagesNode->SetParent(nullptr);
     SafeRelease(importedPackagesNode);
-    packageControlsNode->SetParent(NULL);
+    packageControlsNode->SetParent(nullptr);
     SafeRelease(packageControlsNode);
 }
 
@@ -39,7 +39,7 @@ PackageBaseNode *PackageNode::Get(int index) const
     else if (index == 1)
         return packageControlsNode;
     else
-        return NULL;
+        return nullptr;
 }
 
 String PackageNode::GetName() const
@@ -67,59 +67,52 @@ PackageControlsNode *PackageNode::GetPackageControlsNode() const
     return packageControlsNode;
 }
 
+PackageControlsNode *PackageNode::FindImportedPackage(const DAVA::FilePath &path)
+{
+    for (int32 index = 0; index < importedPackagesNode->GetCount(); index++)
+    {
+        if (importedPackagesNode->Get(index)->GetPackageRef()->GetPath() == path)
+            return importedPackagesNode->Get(index);
+    }
+    return nullptr;
+}
+
 void PackageNode::Serialize(PackageSerializer *serializer) const
 {
     serializer->BeginMap("Header");
     serializer->PutValue("version", String("0"));
     serializer->EndMap();
-
+    
     importedPackagesNode->Serialize(serializer);
     packageControlsNode->Serialize(serializer);
 }
 
-void PackageNode::AddControlWithResolvingDependencies(ControlNode *sourceControl)
+void PackageNode::Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const
 {
-    Set<FilePath> newPackages;
-    CollectPackages(newPackages, sourceControl);
+    serializer->BeginMap("Header");
+    serializer->PutValue("version", String("0"));
+    serializer->EndMap();
     
-    for (const FilePath &path : newPackages)
-    {
-        bool found = false;
-        for (int32 index = 0; index < importedPackagesNode->GetCount(); index++)
-        {
-            PackageControlsNode *controlNode = importedPackagesNode->Get(index);
-            if (controlNode->GetPackageRef()->GetPath() == path)
-            {
-                found = true;
-                break;
-            }
-        }
-        if (!found)
-        {
-            ScopedPtr<PackageRef> ref(new PackageRef(path, nullptr));
-            ScopedPtr<PackageControlsNode> newPackageControlsNode(new PackageControlsNode(nullptr, ref));
-            importedPackagesNode->Add(newPackageControlsNode);
-        }
-    }
-    
-    ScopedPtr<ControlNode> dest(sourceControl->Clone());
-    packageControlsNode->Add(dest);
+    Set<PackageRef*> usedImportedPackages;
+    for (ControlNode *node : nodes)
+        CollectPackages(usedImportedPackages, node);
+
+    importedPackagesNode->Serialize(serializer, usedImportedPackages);
+    packageControlsNode->Serialize(serializer, nodes);
 }
 
-
-void PackageNode::CollectPackages(Set<FilePath> &packages, ControlNode *node) const
+void PackageNode::CollectPackages(Set<PackageRef*> &packageRefs, ControlNode *node) const
 {
     if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
     {
         ControlPrototype *prototype = node->GetPrototype();
         if (prototype)
         {
-            
-            if (packages.find(prototype->GetPackageRef()->GetPath()) == packages.end())
-                packages.insert(prototype->GetPackageRef()->GetPath());
+            if (packageRefs.find(prototype->GetPackageRef()) == packageRefs.end())
+                packageRefs.insert(prototype->GetPackageRef());
         }
     }
     
     for (int32 index = 0; index < node->GetCount(); index++)
-        CollectPackages(packages, node->Get(index));
+        CollectPackages(packageRefs, node->Get(index));
 }
