@@ -110,7 +110,7 @@ struct StretchDrawData
 class VboPool
 {
 public:
-    VboPool(uint32 size, uint8 count);
+    VboPool(uint32 verticesCount, uint32 format, uint32 indicesCount, uint8 buffersCount);
     ~VboPool();
 
     void Next();
@@ -119,13 +119,12 @@ public:
 
     inline RenderDataObject* GetRenderDataObject() const;
 
-    static const uint32 vertexFormat;
-
 private:
     RenderDataObject * currentDataObject;
     Vector<RenderDataObject*> dataObjects;
     uint8 currentDataObjectIndex;
     uint32 vertexStride;
+    uint32 vertexFormat;
 };
 
 class RenderSystem2D : public Singleton<RenderSystem2D>

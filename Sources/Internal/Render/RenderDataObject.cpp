@@ -72,18 +72,22 @@ RenderDataObject::RenderDataObject()
     vboBuffer = 0;
     vertexAttachmentActive = false;
     
+    indexFormat = EIF_16;
+    indices = 0;
+    indexBuffer = 0;
+
 #if defined (__DAVAENGINE_ANDROID__)
+    forceVerticesCount = 0;
+    forceIndicesCount = 0;
     savedVertexCount = 0;
     savedIndices = NULL;
+    savedVertexBufferType = BDT_STATIC_DRAW;
+    savedIndexBufferType = BDT_STATIC_DRAW;
     isLost = false;
     buildIndexBuffer = false;
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
-    indexFormat = EIF_16;
-    indices = 0;
-    indexBuffer = 0;
     indexCount = 0;
-
 }
 
 RenderDataObject::~RenderDataObject()
@@ -218,6 +222,7 @@ void RenderDataObject::BuildVertexBufferInternal(int32 vertexCount, eBufferDrawT
 
 #if defined (__DAVAENGINE_ANDROID__)
     savedVertexCount = vertexCount;
+    savedVertexBufferType = type;
 #endif //#if defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glBufferData(GL_ARRAY_BUFFER, vertexCount * stride, streamArray[0]->pointer, BUFFERDRAWTYPE_MAP[type]));
 
@@ -243,9 +248,9 @@ void RenderDataObject::SetIndices(eIndexFormat _format, uint8 * _indices, int32 
 #endif //#if defined (__DAVAENGINE_ANDROID__)
 }
 
-void RenderDataObject::BuildIndexBuffer(bool synchronously)
+void RenderDataObject::BuildIndexBuffer(eBufferDrawType type, bool synchronously)
 {
-	uint32 jobId = JobManager::Instance()->CreateMainJob(MakeFunction(this, &RenderDataObject::BuildIndexBufferInternal));
+	uint32 jobId = JobManager::Instance()->CreateMainJob(Bind(MakeFunction(this, &RenderDataObject::BuildIndexBufferInternal), type));
 
 	if(synchronously)
 	{
@@ -253,7 +258,7 @@ void RenderDataObject::BuildIndexBuffer(bool synchronously)
 	}
 }
 
-void RenderDataObject::BuildIndexBufferInternal()
+void RenderDataObject::BuildIndexBufferInternal(eBufferDrawType type)
 {
 	DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
@@ -261,6 +266,7 @@ void RenderDataObject::BuildIndexBufferInternal()
     
 #if defined (__DAVAENGINE_ANDROID__)
     buildIndexBuffer = true;
+    savedIndexBufferType = type;
 #endif
     
 #if defined(__DAVAENGINE_OPENGL_ARB_VBO__)
@@ -348,6 +354,7 @@ void RenderDataObject::UpdateVertexBuffer(int32 offset, int32 vertexCount, bool 
 void RenderDataObject::UpdateVertexBufferInternal(int32 offset, int32 vertexCount)
 {
     DVASSERT(Thread::IsMainThread());
+
 #if defined (__DAVAENGINE_OPENGL__)
     DVASSERT(vboBuffer);
 
@@ -366,14 +373,9 @@ void RenderDataObject::UpdateVertexBufferInternal(int32 offset, int32 vertexCoun
     }
     int32 stride = streamArray[0]->stride;
 
-#if defined (__DAVAENGINE_ANDROID__)
-    savedVertexCount = vertexCount;
-#endif //#if defined (__DAVAENGINE_ANDROID__)
-
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vboBuffer));
     RENDER_VERIFY(glBufferSubData(GL_ARRAY_BUFFER, offset * stride, vertexCount * stride, streamArray[0]->pointer));
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, 0));
-
 #endif // #if defined (__DAVAENGINE_OPENGL__)
 
     streamArray[0]->pointer = 0;
@@ -399,14 +401,9 @@ void RenderDataObject::UpdateIndexBufferInternal(int32 offset)
 #if defined (__DAVAENGINE_OPENGL__)
     DVASSERT(indexBuffer);
 
-#if defined (__DAVAENGINE_ANDROID__)
-    buildIndexBuffer = true;
-#endif
-
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer));
     RENDER_VERIFY(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * INDEX_FORMAT_SIZE[indexFormat], indexCount * INDEX_FORMAT_SIZE[indexFormat], indices));
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-
 #endif // #if defined (__DAVAENGINE_OPENGL__)
 }
 
@@ -430,21 +427,24 @@ void RenderDataObject::Invalidate()
     {
         isLost = false;
 
-        if(!HasVertexAttachment() && savedVertexCount)
+        if(!HasVertexAttachment() && (savedVertexCount || forceVerticesCount))
         {
             uint32 size = streamArray.size();
             for (uint32 k = 0; k < size; ++k)
             {
-                streamArray[k]->pointer = streamArray[k]->savedPointerData;
+            	streamArray[k]->pointer = streamArray[k]->savedPointerData;
             }
-
-            BuildVertexBuffer(savedVertexCount);
+            BuildVertexBuffer(forceVerticesCount > 0 ? forceVerticesCount : savedVertexCount, savedVertexBufferType);
         }
 
         if(buildIndexBuffer && savedIndices)
         {
+        	if(forceIndicesCount)
+        	{
+        		indexCount = forceIndicesCount;
+        	}
             indices = savedIndices;
-            BuildIndexBuffer();
+            BuildIndexBuffer(savedIndexBufferType);
         }
     }
     else

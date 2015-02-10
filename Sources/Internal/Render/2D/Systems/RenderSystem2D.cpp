@@ -44,6 +44,7 @@ namespace DAVA
 #define MAX_INDECES 8192
 #define VBO_POOL_SIZE 10
 #define RESERVED_BATCHES 1024
+#define VBO_FORMAT (EVF_VERTEX | EVF_TEXCOORD0 | EVF_COLOR)
 
 FastName RenderSystem2D::FLAT_COLOR_SHADER("~res:/Shaders/renderer2dColor");
 FastName RenderSystem2D::TEXTURE_FLAT_COLOR_SHADER("~res:/Shaders/renderer2dTexture");
@@ -62,20 +63,21 @@ Shader * RenderSystem2D::TEXTURE_ADD_COLOR = 0;
 Shader * RenderSystem2D::TEXTURE_ADD_COLOR_ALPHA_TEST = 0;
 Shader * RenderSystem2D::TEXTURE_ADD_COLOR_IMAGE_A8 = 0;
 
-const uint32 VboPool::vertexFormat = EVF_VERTEX | EVF_TEXCOORD0 | EVF_COLOR;
-    
-VboPool::VboPool(uint32 size, uint8 count)
+VboPool::VboPool(uint32 verticesCount, uint32 format, uint32 indicesCount, uint8 buffersCount)
 {
-    vertexStride = GetVertexSize(VboPool::vertexFormat);
-    for (uint8 i = 0; i < count; ++i)
+	vertexFormat = format;
+    vertexStride = GetVertexSize(vertexFormat);
+    for (uint8 i = 0; i < buffersCount; ++i)
     {
         RenderDataObject* obj = new RenderDataObject();
+        obj->SetForceVerticesCount(verticesCount);
         obj->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
         obj->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, 0);
         obj->SetStream(EVF_COLOR, TYPE_UNSIGNED_BYTE, 4, vertexStride, 0);
-        obj->BuildVertexBuffer(size, BDT_DYNAMIC_DRAW, false);
-        obj->SetIndices(EIF_16, 0, size * 2);
-        obj->BuildIndexBuffer(false);
+        obj->BuildVertexBuffer(verticesCount, BDT_DYNAMIC_DRAW, false);
+        obj->SetForceIndicesCount(indicesCount);
+        obj->SetIndices(EIF_16, 0, indicesCount);
+        obj->BuildIndexBuffer(BDT_DYNAMIC_DRAW, false);
         dataObjects.push_back(obj);
     }
     currentDataObjectIndex = 0;
@@ -130,8 +132,8 @@ void RenderSystem2D::Init()
 #if USE_BATCHING
     if(!pool)
     {
-        pool = new VboPool(MAX_VERTEXES, VBO_POOL_SIZE);
-        vboTemp = new float32[MAX_VERTEXES * GetVertexSize(VboPool::vertexFormat)];
+        pool = new VboPool(MAX_VERTEXES, VBO_FORMAT, MAX_INDECES, VBO_POOL_SIZE);
+        vboTemp = new float32[MAX_VERTEXES * GetVertexSize(VBO_FORMAT)];
         iboTemp = new uint16[MAX_INDECES];
     }
 #else

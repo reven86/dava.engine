@@ -264,7 +264,7 @@ void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderData
                 sortBufferItem.SetRenderDataObjectAttachment(vertexRDO);
                 sortBufferItem.sortDirection = sortData.sortDirection;
                 
-                sortBufferItem.rdo->BuildIndexBuffer(true);
+                sortBufferItem.rdo->BuildIndexBuffer(BDT_STATIC_DRAW, true);
                 sortBufferItem.rdo->AttachVertices(vertexRDO);
                 
                 SafeRelease(indexBuffer);
