@@ -1099,13 +1099,6 @@ void QtMainWindow::OnProjectClose()
 
 void QtMainWindow::OnSceneNew()
 {
-    //ui->sceneTabWidget->OpenTab();
-    DAVA::Function<void()> fn = DAVA::MakeFunction(this, &QtMainWindow::OnSceneNewInternal);
-    DAVA::JobManager::Instance()->CreateMainJob(fn, DAVA::JobManager::JOB_MAINLAZY);
-}
-
-void QtMainWindow::OnSceneNewInternal()
-{
     ui->sceneTabWidget->OpenTab();
 }
 
@@ -2697,22 +2690,17 @@ bool QtMainWindow::OpenScene( const QString & path )
 
 			DAVA::FilePath scenePath = DAVA::FilePath(path.toStdString());
 
-			WaitStart("Opening scene...", scenePath.GetAbsolutePathname().c_str());
-
 			int index = ui->sceneTabWidget->OpenTab(scenePath);
-
-            WaitStop();
 
             if(index != -1)
 			{
-				ui->sceneTabWidget->SetCurrentTab(index);
 				AddRecent(path);
 
                 // close empty default scene
-                if(-1 != needCloseIndex)
-                {
-                    ui->sceneTabWidget->CloseTab(needCloseIndex);
-                }
+//                if(-1 != needCloseIndex)
+//                {
+//                    ui->sceneTabWidget->CloseTab(needCloseIndex);
+//                }
 
 				ret = true;
 			}
@@ -2757,7 +2745,7 @@ bool QtMainWindow::IsAnySceneChanged()
 	for(int i = 0; i < count; ++i)
 	{
 		SceneEditor2 *scene = ui->sceneTabWidget->GetTabScene(i);
-		if(scene->IsChanged())
+		if(scene && scene->IsChanged())
 		{
 			return true;
 		}

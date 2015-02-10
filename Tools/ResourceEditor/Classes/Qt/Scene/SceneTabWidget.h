@@ -103,18 +103,20 @@ public slots:
 	void SceneSaved(SceneEditor2 *scene);
 	void SceneModifyStatusChanged(SceneEditor2 *scene, bool modified);
     
+protected slots:
+    
+    void OnCloseWaitDialog();
+    
 protected:
     
-    struct OpenTabData
-    {
-        int tab;
-        DAVA::Scene *scene;
-        DAVA::FilePath scenePath;
-    };
+    void OpenTabInternal(const DAVA::FilePath scenePathname, int tabIndex);
+    void CloseTabInternal(SceneEditor2 *scene, int index);
     
-    void OpenTabInternal(const OpenTabData & tabData);
-
 protected:
+    
+    void CloseWaitDialog();
+    
+    
 	MainTabBar *tabBar;
 	DavaGLWidget *davaWidget;
 	DAVA::UIScreen *davaUIScreen;

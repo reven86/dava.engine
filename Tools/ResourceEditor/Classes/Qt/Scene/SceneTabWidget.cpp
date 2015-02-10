@@ -121,37 +121,86 @@ void SceneTabWidget::ReleaseDAVAUI()
 
 int SceneTabWidget::OpenTab()
 {
-    if(davaWidget->IsInitialized() == false)
+	QtMainWindow::Instance()->WaitStart("Opening scene...", "Creating new scene.");
+    
+    DAVA::FilePath scenePath = (QString("newscene") + QString::number(++newSceneCounter)).toStdString();
+	scenePath.ReplaceExtension(".sc2");
+
+    int tabIndex = tabBar->addTab(scenePath.GetFilename().c_str());
+    tabBar->setTabToolTip(tabIndex, scenePath.GetAbsolutePathname().c_str());
+
+    DAVA::Function<void()> fn = DAVA::Bind(DAVA::MakeFunction(this, &SceneTabWidget::OpenTabInternal), scenePath, tabIndex);
+    DAVA::JobManager::Instance()->CreateMainJob(fn, DAVA::JobManager::JOB_MAINLAZY);
+
+	return tabIndex;
+}
+
+int SceneTabWidget::OpenTab(const DAVA::FilePath &scenePath)
+{
+    HideScenePreview();
+    
+    int tabIndex = FindTab(scenePath);
+    if(tabIndex != -1)
+    {
+        SetCurrentTab(tabIndex);
+        return tabIndex;
+    }
+    
+    if (!TestSceneCompatibility(scenePath))
     {
         return -1;
     }
     
-//	QtMainWindow::Instance()->WaitStart("Opening scene...", "Creating new scene.");
+    QtMainWindow::Instance()->WaitStart("Opening scene...", scenePath.GetAbsolutePathname().c_str());
+
+    tabIndex = tabBar->addTab(scenePath.GetFilename().c_str());
+    tabBar->setTabToolTip(tabIndex, scenePath.GetAbsolutePathname().c_str());
     
-//    Mai
-
-    DAVA::FilePath newScenePath = (QString("newscene") + QString::number(++newSceneCounter)).toStdString();
-	newScenePath.ReplaceExtension(".sc2");
-
-    SceneEditor2 *scene = new SceneEditor2();
-	scene->SetScenePath(newScenePath);
-
-	int tabIndex = tabBar->addTab(newScenePath.GetFilename().c_str());
-	SetTabScene(tabIndex, scene);
-
-	SetCurrentTab(tabIndex);
-
-//	QtMainWindow::Instance()->WaitStop();
+    DAVA::Function<void()> fn = DAVA::Bind(DAVA::MakeFunction(this, &SceneTabWidget::OpenTabInternal), scenePath, tabIndex);
+    DAVA::JobManager::Instance()->CreateMainJob(fn, DAVA::JobManager::JOB_MAINLAZY);
     
-	return tabIndex;
+    return tabIndex;
 }
 
-
-void SceneTabWidget::OpenTabInternal(const OpenTabData & tabData)
+void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tabIndex)
 {
+    SceneEditor2 *scene = new SceneEditor2();
+    scene->SetScenePath(scenePathname);
     
+    if(scenePathname.Exists())
+    {
+        bool sceneWasLoaded = scene->Load(scenePathname);
+        if(!sceneWasLoaded)
+        {
+//            QMessageBox::critical( this, "Open scene error.", "Unexpected opening error. See logs for more info." );
+        }
+    }
+    
+    SetTabScene(tabIndex, scene);
+    SetCurrentTab(tabIndex);
+ 
+    
+    
+//    SceneEditor2 *scene = new SceneEditor2();
+//    bool sceneWasLoaded = scene->Load(scenePath);
+//    if(sceneWasLoaded)
+//    {
+//        SetTabScene(tabIndex, scene);
+//        SetCurrentTab(tabIndex);
+//    }
+//    else
+//    {
+//        SafeRelease(scene);
+//        QMessageBox::critical( this, "Open scene error.", "Unexpected opening error. See logs for more info." );
+//    }
+
+    QTimer::singleShot(1, this, SLOT(OnCloseWaitDialog()));
 }
 
+void SceneTabWidget::OnCloseWaitDialog()
+{
+    QtMainWindow::Instance()->WaitStop();
+}
 
 bool SceneTabWidget::TestSceneCompatibility(const DAVA::FilePath &scenePath)
 {
@@ -190,42 +239,6 @@ bool SceneTabWidget::TestSceneCompatibility(const DAVA::FilePath &scenePath)
     return true;
 }
 
-int SceneTabWidget::OpenTab(const DAVA::FilePath &scenePath)
-{
-	HideScenePreview();
-
-	int tabIndex = FindTab(scenePath);
-	if(tabIndex != -1)
-	{
-		SetCurrentTab(tabIndex);
-		return tabIndex;
-	}
-
-    if (!TestSceneCompatibility(scenePath))
-    {
-        return -1;
-    }
-
-    SceneEditor2 *scene = new SceneEditor2();
-    
-    bool sceneWasLoaded = scene->Load(scenePath);
-	if(sceneWasLoaded)
-	{
-		tabIndex = tabBar->addTab(scenePath.GetFilename().c_str());
-		SetTabScene(tabIndex, scene);
-
-		tabBar->setTabToolTip(tabIndex, scenePath.GetAbsolutePathname().c_str());
-
-        SetCurrentTab(tabIndex);
-    }
-	else
-	{
-        SafeRelease(scene);
-        QMessageBox::critical( this, "Open scene error.", "Unexpected opening error. See logs for more info." );
-	}
-    
-	return tabIndex;
-}
 
 bool SceneTabWidget::CloseTab(int index)
 {
@@ -244,12 +257,25 @@ bool SceneTabWidget::CloseTab(int index)
         SceneSignals::Instance()->EmitDeactivated(scene);
     }
     
-    tabBar->removeTab(index);
+//    tabBar->removeTab(index);
 
-    SafeRelease(scene);
+//    DAVA::Function<void()> fn = DAVA::Bind(DAVA::MakeFunction(&DAVA::SafeRelease<SceneEditor2>), scene);
+//    DAVA::JobManager::Instance()->CreateMainJob(fn, DAVA::JobManager::JOB_MAINLAZY);
+
+    
+    DAVA::Function<void()> fn = DAVA::Bind(DAVA::MakeFunction(this, &SceneTabWidget::CloseTabInternal), scene, index);
+    DAVA::JobManager::Instance()->CreateMainJob(fn, DAVA::JobManager::JOB_MAINLAZY);
 
     return true;
 }
+
+void SceneTabWidget::CloseTabInternal(SceneEditor2 *scene, int index)
+{
+    DVASSERT(scene);
+    scene->Release();
+    tabBar->removeTab(index);
+}
+
 
 int SceneTabWidget::GetCurrentTab() const
 {
@@ -567,7 +593,7 @@ int SceneTabWidget::FindTab( const DAVA::FilePath & scenePath )
 	for(int i = 0; i < tabBar->count(); ++i)
 	{
 		SceneEditor2 *tabScene = GetTabScene(i);
-		if(tabScene->GetScenePath() == scenePath)
+		if(tabScene && (tabScene->GetScenePath() == scenePath))
 		{
 			return i;
 		}

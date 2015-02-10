@@ -95,7 +95,7 @@ private:
 
 	virtual void Quit();
     DAVA_DEPRECATED(virtual void ShowAssertMessage(const char * message));
-
+    
     DAVA::UIEvent MapMouseEventToDAVA(const QMouseEvent *event) const;
     DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button) const;
 
@@ -108,12 +108,16 @@ private:
     int fps;
     
     bool isInitialized;
+    bool isPainting;
     
     int currentDPR;
     int currentWidth;
     int currentHeight;
 
     static QOpenGLContext * defaultContext;
+    
+    DAVA::String assertMessage;
+    
 };
 
 

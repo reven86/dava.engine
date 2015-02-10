@@ -101,7 +101,6 @@ public slots:
 	void OnProjectOpen();
 	void OnProjectClose();
 	void OnSceneNew();
-    void OnSceneNewInternal();
 	void OnSceneOpen();
 	void OnSceneSave();
 	void OnSceneSaveAs();

@@ -66,6 +66,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     , renderTimer(nullptr)
     , fps(60)
     , isInitialized(false)
+    , isPainting(false)
     , currentDPR(1)
     , currentWidth(0)
     , currentHeight(0)
@@ -115,6 +116,11 @@ void DavaGLWidget::resizeGL(int w, int h)
 
 void DavaGLWidget::paintGL()
 {
+    if(isPainting) return; //magic for qt
+    
+    isPainting = true;
+    
+    
     QElapsedTimer frameTimer;
     frameTimer.start();
     
@@ -125,8 +131,9 @@ void DavaGLWidget::paintGL()
         PerformSizeChange();
     }                       // END OF TODO
 
-    if(defaultContext)
-        DAVA::QtLayer::Instance()->ProcessFrame();
+    DAVA::QtLayer::Instance()->ProcessFrame();
+    
+    isPainting = false;
     
     const DAVA::uint64 requestedFrameDelta = 1000 / fps;
     const int nextFrameDelta = (requestedFrameDelta >= frameTimer.elapsed()) ? (int)(requestedFrameDelta >= frameTimer.elapsed()): 1;
