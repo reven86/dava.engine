@@ -864,16 +864,18 @@ void TextBlock::CalculateCacheParams()
         for (int32 line = 0; line < (int32)multilineStrings.size(); ++line)
         {
             Font::StringMetrics stringSize = font->GetStringMetrics(multilineStrings[line]);
+            stringSize.drawRect.dx += stringSize.drawRect.x;
+            stringSize.drawRect.x = 0;
             stringSizes.push_back(stringSize.width);
             if(requestedSize.dx >= 0)
             {
                 textSize.width = Max(textSize.width, Min(stringSize.width, (int)drawSize.x));
-                textSize.drawRect.dx = Max(textSize.drawRect.dx, Min(stringSize.drawRect.dx + stringSize.drawRect.x, (int)drawSize.x));
+                textSize.drawRect.dx = Max(textSize.drawRect.dx, Min(stringSize.drawRect.dx, (int)drawSize.x));
             }
             else
             {
                 textSize.width = Max(textSize.width, stringSize.width);
-                textSize.drawRect.dx = Max(textSize.drawRect.dx, stringSize.drawRect.dx + stringSize.drawRect.x);
+                textSize.drawRect.dx = Max(textSize.drawRect.dx, stringSize.drawRect.dx);
             }
 #if defined(LOCALIZATION_DEBUG)
             if(textSize.width < stringSize.width)
@@ -887,9 +889,6 @@ void TextBlock::CalculateCacheParams()
                 textSize.drawRect.y = stringSize.drawRect.y;
             }
         }
-        // Translate right/bottom edge to width/height
-        textSize.drawRect.dx -= textSize.drawRect.x;
-        textSize.drawRect.dy -= textSize.drawRect.y;
     }
 
     if (requestedSize.dx >= 0 && useJustify)
@@ -1073,7 +1072,7 @@ void TextBlock::SplitTextToStrings(const WideString& string, Vector2 const& targ
                 {
                     bidiHelper.ReorderString(line, isRtl);
                 }
-                CleanLine(line, pos < textLength - 1, isRtl);
+                CleanLine(line, pos < textLength - 1);
                 resultVector.push_back(line);
                 currentWidth = 0.f;
                 lastPossibleBreak = 0;
@@ -1100,7 +1099,7 @@ void TextBlock::SplitTextToStrings(const WideString& string, Vector2 const& targ
         {
             bidiHelper.ReorderString(line, isRtl);
         }
-        CleanLine(line, true, isRtl);
+        CleanLine(line, true);
         resultVector.push_back(line);
         currentWidth = 0.f;
         lastPossibleBreak = 0;
@@ -1196,12 +1195,12 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString& string, Vector2 co
     resultVector.push_back(currentLine);
 }
 
-void TextBlock::CleanLine(WideString& string, bool trim /*= false*/, bool rtl /*= false*/)
+void TextBlock::CleanLine(WideString& string, bool trimRight)
 {
     WideString out = StringUtils::RemoveNonPrintable(string, 1);
-    if (trim)
+    if (trimRight)
     {
-    	out = !rtl ? StringUtils::TrimRight(out) : StringUtils::TrimLeft(out);
+        out = StringUtils::TrimRight(out);
     }
     string.swap(out);
 }
