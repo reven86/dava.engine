@@ -262,21 +262,13 @@ QVariant QtPropertyDataDavaVariant::GetToolTip() const
             break;
         } // end switch
     }
-
     if (!ret.isValid())
     {
-        const auto value = GetValue().toString();
-        const auto alias = GetValueAlias().toString();
-
-        if ( alias.isEmpty() ||
-            ( !value.isEmpty() && value.contains( '\n' )) )
-        {
-            ret = value;
-        }
-        else
-        {
-            ret = GetValueAlias();
-        }
+        ret = GetValueAlias();
+    }
+    if (!ret.isValid())
+    {
+        ret = GetValue();
     }
 
     return ret;
@@ -319,14 +311,6 @@ QVariant QtPropertyDataDavaVariant::GetValueAlias() const
 		    }
         }
 	}
-    else
-    {
-        const auto text = FromDavaVariant( curVariantValue ).toString();
-        if ( !text.isEmpty() && text.contains( '\n' ) )
-        {
-            ret = text.simplified();
-        }
-    }
 
 	return ret;
 }
