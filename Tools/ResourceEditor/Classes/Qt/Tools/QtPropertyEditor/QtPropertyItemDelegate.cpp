@@ -76,21 +76,7 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 QSize QtPropertyItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
 	auto s = QStyledItemDelegate::sizeHint(option, index);
-    static const int baseText = 17;
     static const int extra = 5;
-
-    auto *data = qobject_cast<QtPropertyDataDavaVariant *>( model->itemFromIndex( index ) );
-    if ( data != nullptr )
-    {
-        if ( data->GetVariantValue().GetType() == DAVA::VariantType::TYPE_STRING )
-        {
-            const auto& text = data->GetValue().toString();
-            if ( !text.isEmpty() && text.contains( '\n' ) )
-            {
-                s.setHeight( baseText );
-            }
-        }
-    }
 
     s.setHeight( s.height() + extra );
 
