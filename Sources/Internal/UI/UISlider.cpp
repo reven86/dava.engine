@@ -281,18 +281,18 @@ void UISlider::CustomDraw(const UIGeometricData &geometricData)
     if (minBackground)
 	{
 		minBackground->SetParentColor(GetBackground()->GetDrawColor());
-		RenderSystem2D::Instance()->ClipPush();
+		RenderSystem2D::Instance()->PushClip();
         RenderSystem2D::Instance()->ClipRect(Rect(screenXMin, screenYMin, clipPointAbsolute - screenXMin, screenYMax));
 		minBackground->Draw(geometricData);
-		RenderSystem2D::Instance()->ClipPop();
+		RenderSystem2D::Instance()->PopClip();
 	}
 	if (maxBackground)
 	{
 		maxBackground->SetParentColor(GetBackground()->GetDrawColor());
-		RenderSystem2D::Instance()->ClipPush();
+		RenderSystem2D::Instance()->PushClip();
         RenderSystem2D::Instance()->ClipRect(Rect(clipPointAbsolute, screenYMin, screenXMax - clipPointAbsolute, screenYMax));
 		maxBackground->Draw(geometricData);
-		RenderSystem2D::Instance()->ClipPop();
+		RenderSystem2D::Instance()->PopClip();
 	}
 
 	if (!minBackground && !maxBackground)

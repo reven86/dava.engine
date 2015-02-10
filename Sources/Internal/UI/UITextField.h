@@ -83,6 +83,8 @@ public:
 	 */
 	virtual bool TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, WideString & replacementString);
 
+    virtual void TextFieldOnTextChanged(UITextField * textField, const WideString& newText, const WideString& oldText);
+    
     virtual bool IsTextFieldShouldSetFocusedOnAppear(UITextField * textField);
     virtual bool IsTextFieldCanLostFocus(UITextField * textField);
 	

@@ -100,9 +100,10 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     nextScreen = _nextScreen;
     prevScreen = _prevScreen;
 
-    RenderManager::Instance()->SetRenderTarget(renderTargetPrevScreen);
-    //	RenderManager::Instance()->SetVirtualViewOffset();
-    RenderManager::Instance()->ResetColor(); //SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    RenderSystem2D::Instance()->PushRenderTarget();
+
+    RenderSystem2D::Instance()->SetRenderTarget(renderTargetPrevScreen);
+    RenderManager::Instance()->ResetColor();
     RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
     RenderManager::Instance()->FlushState();
     RenderManager::Instance()->Clear(Color(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
@@ -127,20 +128,14 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     RenderManager::Instance()->SetRenderState(alphaClearStateHandle);
     RenderManager::Instance()->FlushState();
     RenderManager::Instance()->ClearWithColor(0.0, 0.0, 0.0, 1.0);
-    //    RenderManager::Instance()->SetColor(1.0, 0.0, 0.0, 1.0);
-    //    RenderHelper::Instance()->FillRect(Rect(screenRect.x, screenRect.y, screenRect.dx / 2, screenRect.dy));
-    //    
-    RenderManager::Instance()->RestoreRenderTarget();
 
     nextScreen->LoadGroup();
-
     nextScreen->SystemWillAppear();
 
     //
 
-    RenderManager::Instance()->SetRenderTarget(renderTargetNextScreen);
-    //	RenderManager::Instance()->SetVirtualViewOffset();
-    RenderManager::Instance()->ResetColor(); //SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    RenderSystem2D::Instance()->SetRenderTarget(renderTargetNextScreen);
+    RenderManager::Instance()->ResetColor();
     RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
     RenderManager::Instance()->FlushState();
     RenderManager::Instance()->Clear(Color(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
@@ -149,16 +144,12 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     UIControlSystem::Instance()->GetSystem<UIUpdateSystem>()->SystemUpdate(nextScreen, timeElapsed);
     UIControlSystem::Instance()->GetSystem<UIRenderSystem>()->SystemDraw(nextScreen, UIControlSystem::Instance()->GetBaseGeometricData());
     
-    //    RenderManager::Instance()->SetColor(0.0, 1.0, 0.0, 1.0);
-    //    RenderHelper::Instance()->FillRect(Rect(screenRect.x, screenRect.y, screenRect.dx / 2, screenRect.dy));
-
-
     /*clear alpha*/
     RenderManager::Instance()->SetRenderState(alphaClearStateHandle);
     RenderManager::Instance()->FlushState();
     RenderManager::Instance()->ClearWithColor(0.0, 0.0, 0.0, 1.0);
 
-    RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopRenderTarget();
 
     //  Debug images. Left here for future bugs :)
     //    Image * image = renderTargetPrevScreen->GetTexture()->CreateImageFromMemory();

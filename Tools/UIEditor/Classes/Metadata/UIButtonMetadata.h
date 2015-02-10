@@ -44,6 +44,9 @@ class UIButtonMetadata : public UITextControlMetadata
 {
     Q_OBJECT
 
+    Q_PROPERTY(bool Multiline READ GetMultiline WRITE SetMultiline);
+    Q_PROPERTY(bool MultilineBySymbol READ GetMultilineBySymbol WRITE SetMultilineBySymbol);
+
 public:
     UIButtonMetadata(QObject* parent = 0);    
 
@@ -172,6 +175,13 @@ protected:
     virtual float GetTextBottomMargin() const;
     virtual void SetTextBottomMargin(float value);
 
+    // Multiline for button texts.
+    virtual bool GetMultiline() const;
+    virtual void SetMultiline(const bool value);
+    
+    virtual bool GetMultilineBySymbol() const;
+    virtual void SetMultilineBySymbol(const bool value);
+
     // For UI Button localized text depends on state, so overriding this function.
     virtual UIControl::eControlState GetCurrentStateForLocalizedText() const;
     
@@ -273,6 +283,13 @@ protected:
     
     void UpdatePropertyDirtyFlagForShadowOffsetXY();
     void UpdatePropertyDirtyFlagForShadowColor();
+
+    // Multiline/multiline by symbol.
+    bool GetMultilineForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForMultiline();
+
+    bool GetMultilineBySymbolForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForMultilineBySymbol();
 
     // Recover dirty flags.
     void RecoverPropertyDirtyFlags();

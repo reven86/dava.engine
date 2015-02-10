@@ -143,6 +143,8 @@ public:
 
 
 private:
+    void CopyTouchData(UIEvent* dst, const UIEvent* src);
+
     Vector<UIEvent> totalInputs;
     UIControl *exclusiveInputLocker;
     int32 inputCounter;

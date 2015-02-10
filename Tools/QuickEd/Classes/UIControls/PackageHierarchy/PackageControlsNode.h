@@ -4,12 +4,19 @@
 #include "PackageBaseNode.h"
 #include "ControlNode.h"
 
+namespace DAVA
+{
+    class UIPackage;
+}
+
 class PackageSerializer;
+class PackageNode;
+class PackageRef;
 
 class PackageControlsNode : public PackageBaseNode
 {
 public:
-    PackageControlsNode(PackageBaseNode *parent, DAVA::UIPackage *package);
+    PackageControlsNode(PackageNode *parent, PackageRef *packageRef);
     virtual ~PackageControlsNode();
     
     void Add(ControlNode *node);
@@ -21,21 +28,25 @@ public:
     virtual DAVA::String GetName() const;
     void SetName(const DAVA::String &name);
     
-    DAVA::UIPackage *GetPackage() const;
-    const DAVA::FilePath &GetPackagePath() const;
+    PackageRef *GetPackageRef() const;
     
     virtual int GetFlags() const override;
     void SetReadOnly();
 
     ControlNode *FindControlNodeByName(const DAVA::String &name) const;
     void Serialize(PackageSerializer *serializer) const;
-    
+    void Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const;
+
+
+private:
+    DAVA::UIPackage *GetPackage() const;
 
 private:
     DAVA::String name;
     DAVA::Vector<ControlNode*> nodes;
-    DAVA::UIPackage *package;
     bool readOnly;
+    
+    PackageRef *packageRef;
 };
 
 #endif // __UI_EDITOR_PACKAGE_CONTROLS_NODE_H__

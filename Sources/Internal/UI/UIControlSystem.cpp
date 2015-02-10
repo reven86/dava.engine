@@ -463,7 +463,6 @@ void UIControlSystem::NotifyListenersDidSwitch( UIScreen* screen )
         screenSwitchListenersCopy[i]->OnScreenDidSwitch( screen );
 }
 
-
 void UIControlSystem::UI3DViewAdded()
 {
     ui3DViewCount++;

@@ -248,11 +248,11 @@ void UIStaticText::CustomDraw(const UIGeometricData &geometricData)
     if (textBlock->GetFont() && textBlock->GetFont()->GetFontType() == Font::TYPE_DISTANCE)
     {
         // Correct rect and setup position and scale for distance fonts
-        textBlockRect.x = textBlockRect.x - pivotPoint.x * geometricData.scale.x;
-        textBlockRect.y = textBlockRect.y - pivotPoint.y * geometricData.scale.y;
         textBlockRect.dx *= geometricData.scale.dx;
         textBlockRect.dy *= geometricData.scale.dy;
         textBlock->SetScale(geometricData.scale);
+		textBlock->SetAngle(geometricData.angle);
+		textBlock->SetPivot(pivotPoint*geometricData.scale);
     }
     textBlock->SetRectSize(textBlockRect.GetSize());
     textBlock->SetPosition(textBlockRect.GetPosition());

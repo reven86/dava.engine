@@ -483,11 +483,7 @@ void UIInputSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInputs
 					}
 					
 					(*it).phase = (*wit).phase;
-					(*it).timestamp = (*wit).timestamp;
-					(*it).physPoint = (*wit).physPoint;
-                    (*it).point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual((*it).physPoint);
-					(*it).tapCount = (*wit).tapCount;
-					(*it).inputHandledType = (*wit).inputHandledType;
+                    CopyTouchData(&(*it), &(*wit));
 					break;
 				}
 			}
@@ -505,14 +501,8 @@ void UIInputSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInputs
 						{
 							(*it).activeState = UIEvent::ACTIVITY_STATE_CHANGED;
 						}
-						
-						(*it).phase = (*wit).phase;
-						(*it).timestamp = (*wit).timestamp;
-						(*it).physPoint = (*wit).physPoint;
-						(*it).point = (*wit).point;
-                        (*it).point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual((*it).physPoint);
-						(*it).tapCount = (*wit).tapCount;
-						(*it).inputHandledType = (*wit).inputHandledType;
+
+                        CopyTouchData(&(*it), &(*wit));
 						break;
 					}
 				}
@@ -735,7 +725,17 @@ void UIInputSystem::SetExclusiveInputLocker(UIControl *locker, int32 lockEventId
     }
 	exclusiveInputLocker = SafeRetain(locker);
 }
-	
+
+void UIInputSystem::CopyTouchData(UIEvent* dst, const UIEvent* src)
+{
+    dst->timestamp = src->timestamp;
+    dst->physPoint = src->physPoint;
+    dst->point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(src->physPoint);
+    dst->tapCount = src->tapCount;
+    dst->inputHandledType = src->inputHandledType;
 }
+
+}
+
 
 
