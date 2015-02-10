@@ -45,7 +45,7 @@ class UIPackage;
 class UIControlFactory;
 class UIControlBackground;
     
-class UIPackageLoader : AbstractUIPackageLoader
+class UIPackageLoader : public AbstractUIPackageLoader
 {
 public:
     UIPackageLoader(AbstractUIPackageBuilder *builder);

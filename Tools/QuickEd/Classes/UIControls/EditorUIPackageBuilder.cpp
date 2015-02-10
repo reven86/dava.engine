@@ -39,6 +39,11 @@ EditorUIPackageBuilder::~EditorUIPackageBuilder()
     insertingTarget = nullptr;
 }
 
+UIPackage * EditorUIPackageBuilder::FindInCache(const String &packagePath) const
+{
+    return nullptr;
+}
+
 RefPtr<UIPackage> EditorUIPackageBuilder::BeginPackage(const FilePath &packagePath)
 {
     DVASSERT(packageNode == nullptr);

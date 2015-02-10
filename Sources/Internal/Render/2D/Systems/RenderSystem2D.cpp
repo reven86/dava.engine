@@ -50,6 +50,7 @@ RenderSystem2D::RenderSystem2D() :
 spriteRenderObject(0),
 spriteVertexStream(0),
 spriteTexCoordStream(0),
+currentRenderTarget(0),
 spriteClipping(true),
 clipChanged(false)
 {
@@ -116,11 +117,31 @@ void RenderSystem2D::Reset()
     defaultSpriteDrawState.renderState = RenderState::RENDERSTATE_2D_BLEND;
     defaultSpriteDrawState.shader = TEXTURE_MUL_FLAT_COLOR;
 }
-    
+
+void RenderSystem2D::Setup2DProjection()
+{
+    Matrix4 glOrtho;
+    if (currentRenderTarget)
+    {
+        glOrtho.glOrtho(0.0f, (float32)currentRenderTarget->GetTexture()->GetWidth(),
+                        0.0f, (float32)currentRenderTarget->GetTexture()->GetHeight(),
+                       -1.0f, 1.0f);
+    }
+    else
+    {
+        Size2i targetSize = RenderManager::Instance()->GetFramebufferSize();
+        glOrtho.glOrtho(0.0f, (float32)targetSize.dx, (float32)targetSize.dy, 0.0f, -1.0f, 1.0f);
+    }
+
+    projMatrix = virtualToPhysicalMatrix * glOrtho;
+    RenderManager::SetDynamicParam(PARAM_PROJ, &projMatrix, UPDATE_SEMANTIC_ALWAYS);
+}
+
 void RenderSystem2D::Setup2DMatrices()
 {
     RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-    RenderManager::SetDynamicParam(PARAM_VIEW, &viewMatrix, (pointer_size)&viewMatrix);
+    RenderManager::SetDynamicParam(PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    Setup2DProjection();
 }
 
 void RenderSystem2D::ScreenSizeChanged()
@@ -132,7 +153,10 @@ void RenderSystem2D::ScreenSizeChanged()
     
     glTranslate.glTranslate(realDrawOffset.x, realDrawOffset.y, 0.0f);
     glScale.glScale(scale.x, scale.y, 1.0f);
-    viewMatrix = glScale * glTranslate;
+
+    virtualToPhysicalMatrix = glScale * glTranslate;
+
+    Setup2DProjection();
 }
 
 void RenderSystem2D::SetClip(const Rect &rect)
@@ -148,27 +172,22 @@ void RenderSystem2D::RemoveClip()
 
 void RenderSystem2D::ClipRect(const Rect &rect)
 {
-    Rect r = currentClip;
-    if(r.dx < 0)
+    if (currentClip.dx < 0 || currentClip.dy < 0)
     {
-        r.dx = (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx;
+        SetClip(rect);
     }
-    if(r.dy < 0)
+    else
     {
-        r.dy = (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
+        SetClip(currentClip.Intersection(rect));
     }
-    
-    r = r.Intersection(rect);
-    
-    SetClip(r);
 }
 
-void RenderSystem2D::ClipPush()
+void RenderSystem2D::PushClip()
 {
     clipStack.push(currentClip);
 }
 
-void RenderSystem2D::ClipPop()
+void RenderSystem2D::PopClip()
 {
     if(clipStack.empty())
     {
@@ -189,12 +208,12 @@ void RenderSystem2D::UpdateClip()
     {
         if (currentClip.dx < 0.f || currentClip.dx < 0.f) //disable clip
         {
-            RenderManager::Instance()->SetHWClip(currentClip);
+            RenderManager::Instance()->SetClip(currentClip);
         }
         else
         {
             RenderManager::ComputeWorldViewMatrixIfRequired();
-            const Matrix4 & transformMx = RenderManager::GetDynamicParamMatrix(PARAM_WORLD_VIEW);
+            Matrix4 transformMx = RenderManager::GetDynamicParamMatrix(PARAM_VIEW) * virtualToPhysicalMatrix;
 
             Vector3 clipTopLeftCorner(currentClip.x, currentClip.y, 0.f);
             Vector3 clipBottomRightCorner(currentClip.x + currentClip.dx, currentClip.y + currentClip.dy, 0.f);
@@ -203,10 +222,47 @@ void RenderSystem2D::UpdateClip()
             clipBottomRightCorner = clipBottomRightCorner * transformMx;
 
             Rect transformedClip(Vector2(clipTopLeftCorner.data), Vector2((clipBottomRightCorner - clipTopLeftCorner).data));
-            RenderManager::Instance()->SetHWClip(transformedClip);
+            RenderManager::Instance()->SetClip(transformedClip);
         }
         clipChanged = false;
     }
+}
+
+void RenderSystem2D::PushRenderTarget()
+{
+    renderTargetStack.push(currentRenderTarget);
+}
+
+void RenderSystem2D::PopRenderTarget()
+{
+    DVASSERT(renderTargetStack.size());
+
+    SetRenderTarget(renderTargetStack.top());
+    renderTargetStack.pop();
+}
+
+void RenderSystem2D::SetRenderTarget(Sprite * target)
+{
+    currentRenderTarget = target;
+
+    Rect viewport;
+    if (currentRenderTarget)
+    {
+        viewport.dx = (float32)currentRenderTarget->GetTexture()->GetWidth();
+        viewport.dy = (float32)currentRenderTarget->GetTexture()->GetHeight();
+        RenderManager::Instance()->SetRenderTarget(currentRenderTarget->GetTexture());
+    }
+    else
+    {
+        Size2i framebufferSize = RenderManager::Instance()->GetFramebufferSize();
+        viewport.dx = (float32)framebufferSize.dx;
+        viewport.dy = (float32)framebufferSize.dy;
+        RenderManager::Instance()->SetRenderTarget(0);
+    }
+
+    RenderManager::Instance()->SetViewport(viewport);
+
+    Setup2DProjection();
 }
 
 void RenderSystem2D::SetSpriteClipping(bool clipping)
@@ -234,7 +290,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
     {
         if (sprite->clipPolygon)
         {
-            ClipPush();
+            PushClip();
             Rect clipRect;
             if (sprite->flags & Sprite::EST_SCALE)
             {
@@ -268,7 +324,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
 
         if (sprite->clipPolygon)
         {
-            ClipPop();
+            PopClip();
         }
     }
 }

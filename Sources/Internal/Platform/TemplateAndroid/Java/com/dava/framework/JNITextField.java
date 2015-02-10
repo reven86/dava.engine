@@ -1118,7 +1118,18 @@ public class JNITextField {
     {
         if (id != NO_ACTIVE_TEXTFIELD)
         {
-              TextFieldKeyboardHidden(id);
+        	JNIActivity.GetActivity().runOnUiThread(new Runnable()
+        	{
+        		@Override
+    			public void run() 
+        		{
+        			JNIActivity activity = JNIActivity.GetActivity();
+        			View view = activity.getWindow().getDecorView();
+        			JNIActivity.HideNavigationBar(view);
+        		}
+        		
+        	});
+            TextFieldKeyboardHidden(id);
         }
 	}
     
