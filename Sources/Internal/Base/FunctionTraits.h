@@ -479,7 +479,7 @@ typename FuncTraits<F>::ObjFunctionType MakeFunction(typename FuncTraits<F>::Par
 }
 
 template<typename F, typename T>
-typename FuncTraits<F>::ObjFunctionType MakeFunction(const PointerOwner<T> &owner, const F& fn)
+typename FuncTraits<F>::ObjFunctionType MakeFunction(const PointerWrapper<T> &owner, const F& fn)
 {
     return typename FuncTraits<F>::ObjFunctionType(owner, fn);
 }

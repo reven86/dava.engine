@@ -43,6 +43,9 @@ public:
 	RefCounter() : refCount(1)
 	{}
 
+    virtual ~RefCounter()
+    {}
+
 	void Retain()
 	{
         AtomicIncrement(refCount);
@@ -116,90 +119,73 @@ struct FunctionPointerHolder
 // ObjectPointerHolder class 
 // Class to store a pointer to the object. It can delete the object if this object is RefCounter class
 // ====================================================================================================================================================
-struct OwnerRule
+struct WrappingRule
 {
+    virtual void Own(void *pointer) const = 0;
     virtual void Retain(void* pointer) const = 0;
     virtual void Release(void* pointer) const = 0;
 };
 
 template<typename T>
-struct OwnerEmptyRule : OwnerRule
+struct WrappingDefaultRule : WrappingRule
 {
-    virtual void Retain(T *pointer) const { }
-    virtual void Release(T* pointer) const { }
+    void Own(void *pointer) const override { }
+    void Retain(void *pointer) const override { }
+    void Release(void* pointer) const override { }
 };
 
 template<typename T>
-struct OwnerRetainReleaseRule : public OwnerRule
+struct WrappingRetainReleaseRule : public WrappingRule
 {
-    virtual void Retain(void* pointer) const override { ((T *)pointer)->Retain(); }
-    virtual void Release(void* pointer) const override { ((T *)pointer)->Release(); }
+    void Own(void *pointer) const override { ((T *)pointer)->Retain(); };
+    void Retain(void* pointer) const override { ((T *)pointer)->Retain(); }
+    void Release(void* pointer) const override { ((T *)pointer)->Release(); }
 };
 
 template<typename T>
-struct PointerOwner
+struct WrappingOwnedRetainReleaseRule : public WrappingRetainReleaseRule<T>
+{
+    void Own(void *pointer) const override { };
+};
+
+template<typename T>
+struct PointerWrapper
 {
 protected:
-    PointerOwner(T *_pointer, OwnerRule* _rule)
+    PointerWrapper(T *_pointer, WrappingRule* _rule)
         : pointer(_pointer)
         , staticRule(_rule)
-    {
-        staticRule->Retain(pointer);
-    }
+    { }
 
 public:
-    PointerOwner& operator=(const PointerOwner& owner)
+    template<typename Rule>
+    static PointerWrapper<T> Wrap(T *_pointer)
     {
-        if(this != &owner)
-        {
-            staticRule->Release(pointer);
-            pointer = owner.pointer;
-            staticRule = owner.staticRule;
-            staticRule->Retain(pointer);
-        }
-        return *this;
+        static Rule rule;
+        return PointerWrapper<T>(_pointer, &rule);
     }
 
-    PointerOwner(const PointerOwner& owner)
+    template<template<typename> class Rule>
+    static PointerWrapper<T> Wrap(T *_pointer)
     {
-        pointer = owner.pointer;
-        staticRule = owner.staticRule;
-        staticRule->Retain(pointer);
+        static Rule<T> rule;
+        return PointerWrapper<T>(_pointer, &rule);
     }
 
-    ~PointerOwner()
+    static PointerWrapper<T> WrapRetainRelease(T *_pointer)
     {
-        staticRule->Release(pointer);
-    }
-
-    template<typename R>
-    static PointerOwner<T> Own(T *_pointer)
-    {
-        static R rule;
-        return PointerOwner<T>(_pointer, &rule);
-    }
-
-    template<template<typename> class R>
-    static PointerOwner<T> Own(T *_pointer)
-    {
-        static R<T> rule;
-        return PointerOwner<T>(_pointer, &rule);
-    }
-
-    static PointerOwner<T> OwnRetainRelease(T *_pointer)
-    {
-        return Own<OwnerRetainReleaseRule>(_pointer);
+        return Wrap<WrappingRetainReleaseRule>(_pointer);
     }
 
     T* pointer;
-    OwnerRule* staticRule;
+    WrappingRule* staticRule;
 };
 
 struct ObjectPointerHolder
 {
 public:
     void *object;
-    OwnerRule *rule;
+    WrappingRule *rule;
 
     ObjectPointerHolder()
         : object(NULL)
@@ -220,16 +206,25 @@ public:
     }
 
     template<typename T>
-    ObjectPointerHolder(const PointerOwner<T> &owner)
+    ObjectPointerHolder(const PointerWrapper<T> &owner)
         : object(owner.pointer)
         , rule(owner.staticRule)
     {
-        rule->Retain(object);
+        rule->Own(object);
     }
 
     ~ObjectPointerHolder()
     {
         rule->Release(object);
+    }
+
+    ObjectPointerHolder(ObjectPointerHolder&& holder)
+    {
+        object = holder.object;
+        rule = holder.rule;
+
+        holder.object = NULL;
+        holder.rule = NULL;
     }
 
     ObjectPointerHolder(const ObjectPointerHolder& holder)
@@ -255,7 +250,7 @@ public:
 protected:
     void SetDefaultRule()
     {
-        static OwnerEmptyRule<void> defaultRule;
+        static WrappingDefaultRule<void> defaultRule;
         rule = &defaultRule;
     }
 };

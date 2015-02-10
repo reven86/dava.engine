@@ -152,7 +152,7 @@ FilePath DLC::GetMetaStorePath() const
     
 void DLC::PostEvent(DLCEvent event)
 {
-    Function<void()> fn = Bind(MakeFunction(PointerOwner<DLC>::OwnRetainRelease(this), &DLC::FSM), event);
+    Function<void()> fn = Bind(MakeFunction(PointerWrapper<DLC>::WrapRetainRelease(this), &DLC::FSM), event);
 	JobManager::Instance()->CreateMainJob(fn);
 }
 
@@ -832,7 +832,7 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
         dlcContext.patchInProgress = false;
     }
 
-	Function<void()> fn(PointerOwner<DLC>::OwnRetainRelease(this), &DLC::StepPatchFinish);
+	Function<void()> fn(PointerWrapper<DLC>::WrapRetainRelease(this), &DLC::StepPatchFinish);
 	JobManager::Instance()->CreateMainJob(fn);
 }
 
