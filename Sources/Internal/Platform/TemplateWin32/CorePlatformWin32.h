@@ -80,7 +80,6 @@ private:
 	bool isLeftButtonPressed;
 	bool isMiddleButtonPressed;
 	Vector<DAVA::UIEvent> allTouches;
-};	
 };
 
 } // end namespace DAVA
