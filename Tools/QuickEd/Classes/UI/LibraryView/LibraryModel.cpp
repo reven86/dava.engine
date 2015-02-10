@@ -40,8 +40,7 @@ LibraryModel::LibraryModel(PackageNode *node, QObject *parent) : QAbstractItemMo
         ImportedPackagesNode *importedPackage = (ImportedPackagesNode*) node->GetImportedPackagesNode()->Get(i);
         for (int j = 0; j < importedPackage->GetCount(); j++)
         {
-            ControlNode *node = static_cast<ControlNode*>(importedPackage->Get(j));
-            defaultControls.push_back(importedPackage->GetName() + "/" + node->GetName());
+            defaultControls.push_back(importedPackage->GetName() + "/" + importedPackage->Get(j)->GetName());
         }
     }
 }

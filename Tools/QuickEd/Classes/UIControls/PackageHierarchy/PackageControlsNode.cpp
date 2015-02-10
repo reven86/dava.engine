@@ -4,15 +4,17 @@
 
 #include "../PackageSerializer.h"
 #include "PackageNode.h"
+#include "PackageRef.h"
+#include "UI/UIPackage.h"
+#include "UI/UIControl.h"
 
 using namespace DAVA;
 
-PackageControlsNode::PackageControlsNode(PackageNode *_parent, UIPackage *_package, const FilePath &_packagePath)
+PackageControlsNode::PackageControlsNode(PackageNode *_parent, PackageRef *_packageRef)
     : PackageBaseNode(_parent)
     , name("Controls")
     , readOnly(false)
-    , package(SafeRetain(_package))
-    , packagePath(_packagePath)
+    , packageRef(SafeRetain(_packageRef))
 {
 }
 
@@ -22,7 +24,7 @@ PackageControlsNode::~PackageControlsNode()
         node->Release();
     nodes.clear();
     
-    SafeRelease(package);
+    SafeRelease(packageRef);
 }
 
 void PackageControlsNode::Add(ControlNode *node)
@@ -30,7 +32,7 @@ void PackageControlsNode::Add(ControlNode *node)
     DVASSERT(node->GetParent() == nullptr);
     node->SetParent(this);
     nodes.push_back(SafeRetain(node));
-    package->AddControl(node->GetControl());
+    GetPackage()->AddControl(node->GetControl());
 }
 
 void PackageControlsNode::InsertBelow(ControlNode *node, const ControlNode *belowThis)
@@ -40,12 +42,12 @@ void PackageControlsNode::InsertBelow(ControlNode *node, const ControlNode *belo
     auto it = find(nodes.begin(), nodes.end(), belowThis);
     if (it != nodes.end())
     {
-        package->InsertControlBelow(node->GetControl(), (*it)->GetControl());
+        GetPackage()->InsertControlBelow(node->GetControl(), (*it)->GetControl());
         nodes.insert(it, SafeRetain(node));
     }
     else
     {
-        package->AddControl(node->GetControl());
+        GetPackage()->AddControl(node->GetControl());
         nodes.push_back(SafeRetain(node));
     }
 }
@@ -58,7 +60,7 @@ void PackageControlsNode::Remove(ControlNode *node)
         DVASSERT(node->GetParent() == this);
         node->SetParent(NULL);
 
-        package->RemoveControl(node->GetControl());
+        GetPackage()->RemoveControl(node->GetControl());
         nodes.erase(it);
         SafeRelease(node);
     }
@@ -88,14 +90,9 @@ void PackageControlsNode::SetName(const DAVA::String &name)
     this->name = name;
 }
 
-UIPackage *PackageControlsNode::GetPackage() const
+PackageRef *PackageControlsNode::GetPackageRef() const
 {
-    return package;
-}
-
-const FilePath &PackageControlsNode::GetPackagePath() const
-{
-    return packagePath;
+    return packageRef;
 }
 
 int PackageControlsNode::GetFlags() const
@@ -124,10 +121,20 @@ ControlNode *PackageControlsNode::FindControlNodeByName(const DAVA::String &name
 
 void PackageControlsNode::Serialize(PackageSerializer *serializer) const
 {
+    Serialize(serializer, nodes);
+}
+
+void PackageControlsNode::Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const
+{
     serializer->BeginArray("Controls");
     
     for (auto it = nodes.begin(); it != nodes.end(); ++it)
-        (*it)->Serialize(serializer);
+        (*it)->Serialize(serializer, packageRef);
     
     serializer->EndArray();
+}
+
+UIPackage *PackageControlsNode::GetPackage() const
+{
+    return packageRef->GetPackage();
 }

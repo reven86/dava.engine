@@ -13,14 +13,20 @@
 
 #include "ui_PackageDockWidget.h"
 #include "UIPackageModel.h"
-#include "DAVAEngine.h"
+
+#include "QtModelPackageCommandExecutor.h"
+
 #include "UI/PackageView/UIFilteredPackageModel.h"
 #include "UI/PackageDocument.h"
 #include "UI/PackageView/PackageModelCommands.h"
 #include "UIControls/PackageHierarchy/PackageBaseNode.h"
 #include "UIControls/PackageHierarchy/ControlNode.h"
+#include "UIControls/PackageHierarchy/PackageNode.h"
 #include "UIControls/PackageHierarchy/ImportedPackagesNode.h"
 #include "UIControls/PackageHierarchy/PackageControlsNode.h"
+#include "UIControls/PackageHierarchy/PackageRef.h"
+#include "UIControls/YamlPackageSerializer.h"
+#include "UIControls/EditorUIPackageBuilder.h"
 
 #include "Project.h"
 #include "Utils/QtDavaConvertion.h"
@@ -90,6 +96,7 @@ void PackageDockWidget::SetDocument(PackageDocument *newDocument)
     if (document)
     {
         ui->treeView->setModel(document->GetTreeContext()->proxyModel);
+        ui->treeView->selectionModel()->select(*document->GetTreeContext()->currentSelection, QItemSelectionModel::ClearAndSelect);
         ui->treeView->expandToDepth(0);
         ui->treeView->setColumnWidth(0, ui->treeView->size().width());
 
@@ -168,10 +175,14 @@ void PackageDockWidget::OnSelectionChanged(const QItemSelection &proxySelected, 
     QItemSelection selected = document->GetTreeContext()->proxyModel->mapSelectionToSource(proxySelected);
     QItemSelection deselected = document->GetTreeContext()->proxyModel->mapSelectionToSource(proxyDeselected);
     
-    QModelIndexList selectedIndexList = selected.indexes();
+    QItemSelection *currentSelection = document->GetTreeContext()->currentSelection;
+    currentSelection->merge(deselected, QItemSelectionModel::Deselect);
+    currentSelection->merge(selected, QItemSelectionModel::Select);
+    
+    QModelIndexList selectedIndexList = currentSelection->indexes();
     if (!selectedIndexList.empty())
     {
-        foreach(QModelIndex index, selectedIndexList)
+        for(QModelIndex &index : selectedIndexList)
         {
             PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
             if (node->GetControl())
@@ -187,24 +198,24 @@ void PackageDockWidget::OnSelectionChanged(const QItemSelection &proxySelected, 
         }
     }
 
-    QModelIndexList deselectedIndexList = deselected.indexes();
-    if (!selectedIndexList.empty())
-    {
-        foreach(QModelIndex index, deselectedIndexList)
-        {
-            PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-            if (node->GetControl())
-            {
-                deselectedControl.push_back(static_cast<ControlNode*>(node));
-                
-                while(node->GetParent() && node->GetParent()->GetControl())
-                    node = node->GetParent();
-                
-                if (deselectedRootControl.indexOf(static_cast<ControlNode*>(node)) < 0)
-                    deselectedRootControl.push_back(static_cast<ControlNode*>(node));
-            }
-        }
-    }
+//    QModelIndexList deselectedIndexList = deselected.indexes();
+//    if (!selectedIndexList.empty())
+//    {
+//        foreach(QModelIndex index, deselectedIndexList)
+//        {
+//            PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+//            if (node->GetControl())
+//            {
+//                deselectedControl.push_back(static_cast<ControlNode*>(node));
+//                
+//                while(node->GetParent() && node->GetParent()->GetControl())
+//                    node = node->GetParent();
+//                
+//                if (deselectedRootControl.indexOf(static_cast<ControlNode*>(node)) < 0)
+//                    deselectedRootControl.push_back(static_cast<ControlNode*>(node));
+//            }
+//        }
+//    }
 
     RefreshActions(selectedIndexList);
 
@@ -242,21 +253,57 @@ void PackageDockWidget::OnImport()
 
 void PackageDockWidget::OnCopy()
 {
-//    QItemSelection selected = document->GetTreeContext()->proxyModel->mapSelectionToSource(ui->treeView->selectionModel()->selection());
-//    QModelIndexList selectedIndexList = selected.indexes();
-//    QClipboard *clipboard = QApplication::clipboard();
-//    
-//    if (!selectedIndexList.empty())
-//    {
-//        clipboard->setMimeData(<#QMimeData *data#>)
-//        //foreach(QModelIndex index, selectedIndexList)
-//        
-//    }
+    QItemSelection selected = document->GetTreeContext()->proxyModel->mapSelectionToSource(ui->treeView->selectionModel()->selection());
+    QModelIndexList selectedIndexList = selected.indexes();
+    QClipboard *clipboard = QApplication::clipboard();
+
+    Vector<ControlNode*> nodes;
+    if (!selectedIndexList.empty())
+    {
+        for (QModelIndex &index : selectedIndexList)
+        {
+            PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+            ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
+            
+            if (controlNode && controlNode->GetCreationType() != ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
+                nodes.push_back(controlNode);
+        }
+
+        YamlPackageSerializer serializer;
+        document->GetPackage()->Serialize(&serializer, nodes);
+        String str = serializer.WriteToString();
+        QMimeData data;
+        data.setText(QString(str.c_str()));
+        clipboard->setMimeData(&data);
+    }
 }
 
 void PackageDockWidget::OnPaste()
 {
-
+    QItemSelection selected = document->GetTreeContext()->proxyModel->mapSelectionToSource(ui->treeView->selectionModel()->selection());
+    QModelIndexList selectedIndexList = selected.indexes();
+    QClipboard *clipboard = QApplication::clipboard();
+    
+    if (!selectedIndexList.empty() && clipboard && clipboard->mimeData())
+    {
+        QModelIndex &index = selectedIndexList.first();
+        
+        PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+        ControlNode *controlNode = dynamic_cast<ControlNode*>(node); // control node may be null
+        
+        String string = clipboard->mimeData()->text().toStdString();
+        RefPtr<YamlParser> parser(YamlParser::CreateAndParseString(string));
+        
+        if (parser.Valid() && parser->GetRootNode())
+        {
+            document->UndoStack()->beginMacro("Paste");
+            ScopedPtr<QtModelPackageCommandExecutor> commandExecutor(new QtModelPackageCommandExecutor(document));
+            EditorUIPackageBuilder builder(document->GetPackage(), controlNode, commandExecutor);
+            UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(parser->GetRootNode(), "");
+            SafeRelease(newPackage);
+            document->UndoStack()->endMacro();
+        }
+    }
 }
 
 void PackageDockWidget::OnCut()

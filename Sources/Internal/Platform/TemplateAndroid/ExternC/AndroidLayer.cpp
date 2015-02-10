@@ -64,11 +64,14 @@ extern "C"
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeFinishing(JNIEnv * env, jobject classthis);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnDestroy(JNIEnv * env, jobject classthis);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnAccelerometer(JNIEnv * env, jobject classthis, jfloat x, jfloat y, jfloat z);
+	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnGamepadAvailable(JNIEnv * env, jobject classthis, jboolean isAvailable);
+	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnGamepadTriggersAvailable(JNIEnv * env, jobject classthis, jboolean isAvailable);
 
 	//JNIGLSurfaceView
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnInput(JNIEnv * env, jobject classthis, jint action, jint source, jint groupSize, jobject activeInputs, jobject allInputs);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnKeyDown(JNIEnv * env, jobject classthis, jint keyCode);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnKeyUp(JNIEnv * env, jobject classthis, jint keyCode);
+	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnGamepadElement(JNIEnv * env, jobject classthis, jint elementKey, jfloat value, jboolean isKeycode);
 
 	//JNIRenderer
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIRenderer_nativeResize(JNIEnv * env, jobject classthis, jint w, jint h);
@@ -291,6 +294,22 @@ void Java_com_dava_framework_JNIActivity_nativeOnAccelerometer(JNIEnv * env, job
 	}
 }
 
+void Java_com_dava_framework_JNIActivity_nativeOnGamepadAvailable(JNIEnv * env, jobject classthis, jboolean isAvailable)
+{
+	if(core)
+	{
+		core->OnGamepadAvailable(isAvailable);
+	}
+}
+
+void Java_com_dava_framework_JNIActivity_nativeOnGamepadTriggersAvailable(JNIEnv * env, jobject classthis, jboolean isAvailable)
+{
+	if(core)
+	{
+		core->OnGamepadTriggersAvailable(isAvailable);
+	}
+}
+
 namespace
 {
 	DAVA::int32 GetPhase(DAVA::int32 action, DAVA::int32 source)
@@ -404,6 +423,13 @@ void Java_com_dava_framework_JNIGLSurfaceView_nativeOnKeyUp(JNIEnv * env, jobjec
 	}
 }
 
+void Java_com_dava_framework_JNIGLSurfaceView_nativeOnGamepadElement(JNIEnv * env, jobject classthis, jint elementKey, jfloat value, jboolean isKeycode)
+{
+	if(core)
+	{
+		core->OnGamepadElement(elementKey, value, isKeycode);
+	}
+}
 // END OF JNIGLSurfaceView
 
 

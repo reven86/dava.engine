@@ -8,6 +8,7 @@
 class PackageSerializer;
 class PackageNode;
 class ControlPrototype;
+class PackageRef;
 
 class ControlNode : public PackageBaseNode
 {
@@ -26,10 +27,10 @@ private:
 public:
     static ControlNode *CreateFromControl(DAVA::UIControl *control);
     
-    static ControlNode *CreateFromPrototype(ControlPrototype *prototype);
+    static ControlNode *CreateFromPrototype(ControlNode *sourceNode, PackageRef *nodePackage);
     
 private:
-    static ControlNode *CreateFromPrototypeImpl(ControlNode *prototypeChild, bool root);
+    static ControlNode *CreateFromPrototypeImpl(ControlNode *sourceNode, PackageRef *nodePackage, bool root);
 
 public:
     ControlNode *Clone();
@@ -43,7 +44,7 @@ public:
     
     virtual DAVA::String GetName() const;
     DAVA::UIControl *GetControl() const;
-    DAVA::String GetPrototypeName() const;
+    ControlPrototype *GetPrototype() const;
 
     virtual int GetFlags() const override;
     void SetReadOnly();
@@ -52,11 +53,15 @@ public:
 
     PropertiesRoot *GetPropertiesRoot() const {return propertiesRoot; }
     
-    void Serialize(PackageSerializer *serializer) const;
+    void Serialize(PackageSerializer *serializer, PackageRef *currentPackage) const;
     
 private:
     void CollectPrototypeChildrenWithChanges(DAVA::Vector<ControlNode*> &out) const;
     bool HasNonPrototypeChildren() const;
+    
+private:
+    void AddControlToInstances(ControlNode *control);
+    void RemoveControlFromInstances(ControlNode *control);
 
 private:
     DAVA::UIControl *control;
@@ -64,6 +69,7 @@ private:
     DAVA::Vector<ControlNode*>nodes;
     
     ControlPrototype *prototype;
+    DAVA::Vector<ControlNode*> instances; // week
 
     eCreationType creationType;
     
