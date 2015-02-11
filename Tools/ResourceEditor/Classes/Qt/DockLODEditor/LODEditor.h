@@ -36,7 +36,7 @@
 
 namespace Ui
 {
-	class LODEditor;
+    class LODEditor;
 }
 
 class QLabel;
@@ -49,11 +49,11 @@ class Command2;
 
 class LODEditor: public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	explicit LODEditor(QWidget* parent = 0);
-	~LODEditor();
+    explicit LODEditor(QWidget* parent = 0);
+    ~LODEditor();
 
 protected slots:
     void LODEditorSettingsButtonReleased();
@@ -64,24 +64,24 @@ protected slots:
     void ForceDistanceChanged(int distance);
 
     void SceneActivated(SceneEditor2 *scene);
-	void SceneDeactivated(SceneEditor2 *scene);
-	void SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
-	void SolidChanged(SceneEditor2 *scene, const DAVA::Entity *entity, bool value); 
-	void CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
+    void SceneDeactivated(SceneEditor2 *scene);
+    void SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
+    void SolidChanged(SceneEditor2 *scene, const DAVA::Entity *entity, bool value); 
+    void CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
 
     void LODDataChanged(SceneEditor2 *scene = nullptr);
 
     void LODDistanceChangedBySpinbox(double value);
     void LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continuous);
 
-	void ForceLayerActivated(int index);
-	void EditorModeChanged(int newMode);
+    void ForceLayerActivated(int index);
+    void EditorModeChanged(int newMode);
 
     //TODO: remove after lod editing implementation
     void CopyLODToLod0Clicked();
     void CreatePlaneLODClicked();
-	void DeleteFirstLOD();
-	void DeleteLastLOD();
+    void DeleteFirstLOD();
+    void DeleteLastLOD();
     
 protected:
     void SetupInternalUI();
@@ -90,27 +90,27 @@ protected:
     void SetupSceneSignals();
       
     void SetSpinboxValue(QDoubleSpinBox *spinbox, double value);
-	void CreateForceLayerValues(int layersCount);
+    void CreateForceLayerValues(int layersCount);
    
-	void InvertFrameVisibility(QFrame *frame, QPushButton *frameButton);
+    void InvertFrameVisibility(QFrame *frame, QPushButton *frameButton);
 
-	void SetForceLayerValues(const EditorLODSystem *editorLODSystem, int layersCount);
-	void UpdateWidgetVisibility(const EditorLODSystem *editorLODSystem);
-	void UpdateLODButtons(const EditorLODSystem *editorLODSystem);
+    void SetForceLayerValues(const EditorLODSystem *editorLODSystem, int layersCount);
+    void UpdateWidgetVisibility(const EditorLODSystem *editorLODSystem);
+    void UpdateLODButtons(const EditorLODSystem *editorLODSystem);
 
-	EditorLODSystem *GetCurrentEditorLODSystem();
+    EditorLODSystem *GetCurrentEditorLODSystem();
 
 private:
-	Ui::LODEditor *ui;
+    Ui::LODEditor *ui;
     QtPosSaver posSaver;
 
-	struct DistanceWidget
-	{
-		QLabel *name;
-		QDoubleSpinBox *distance;
-		void SetVisible(bool visible);
-	};
-	DAVA::Map<DAVA::uint32, DistanceWidget> distanceWidgets;
+    struct DistanceWidget
+    {
+        QLabel *name;
+        QDoubleSpinBox *distance;
+        void SetVisible(bool visible);
+    };
+    DAVA::Map<DAVA::uint32, DistanceWidget> distanceWidgets;
 
     
 };

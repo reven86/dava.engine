@@ -40,122 +40,122 @@ class Command2;
 
 class EditorLODSystem : public DAVA::SceneSystem
 {
-	friend class SceneEditor2;
-	friend class EntityModificationSystem;
+    friend class SceneEditor2;
+    friend class EntityModificationSystem;
 
 public:
-	EditorLODSystem(DAVA::Scene * scene);
-	virtual ~EditorLODSystem();
+    EditorLODSystem(DAVA::Scene * scene);
+    virtual ~EditorLODSystem();
 
-	void AddEntity(DAVA::Entity * entity) override;
-	void RemoveEntity(DAVA::Entity * entity) override;
+    void AddEntity(DAVA::Entity * entity) override;
+    void RemoveEntity(DAVA::Entity * entity) override;
 
-	void UpdateDistances(const DAVA::Map<DAVA::uint32, DAVA::float32> & lodDistances);
+    void UpdateDistances(const DAVA::Map<DAVA::uint32, DAVA::float32> & lodDistances);
 
-	DAVA::FilePath GetDefaultTexturePathForPlaneEntity() const;
+    DAVA::FilePath GetDefaultTexturePathForPlaneEntity() const;
 
-	static void AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> &triangles, DAVA::LodComponent *lod, bool onlyVisibleBatches);
-	
-	bool CheckSelectedContainsEntity(const DAVA::Entity *arg) const;
+    static void AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> &triangles, DAVA::LodComponent *lod, bool onlyVisibleBatches);
+    
+    bool CheckSelectedContainsEntity(const DAVA::Entity *arg) const;
 
-	void SolidChanged(const DAVA::Entity *entity, bool value);
+    void SolidChanged(const DAVA::Entity *entity, bool value);
 
-	bool CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath);
-	bool CanCreatePlaneLOD() const;
-	//TODO: remove after lod editing implementation
-	DAVA_DEPRECATED(bool CopyLastLodToLod0());
+    bool CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath);
+    bool CanCreatePlaneLOD() const;
+    //TODO: remove after lod editing implementation
+    DAVA_DEPRECATED(bool CopyLastLodToLod0());
 
-	bool CanDeleteLod() const;
+    bool CanDeleteLod() const;
 
-	bool DeleteFirstLOD();
-	bool DeleteLastLOD();
+    bool DeleteFirstLOD();
+    bool DeleteLastLOD();
 
-	void SceneSelectionChanged(const EntityGroup *selected, const EntityGroup *deselected);
+    void SceneSelectionChanged(const EntityGroup *selected, const EntityGroup *deselected);
 
-	inline DAVA::uint32 GetLayerTriangles(DAVA::uint32 layerNum) const;
+    inline DAVA::uint32 GetLayerTriangles(DAVA::uint32 layerNum) const;
 
-	inline DAVA::float32 GetLayerDistance(DAVA::uint32 layerNum) const;
-	void SetLayerDistance(DAVA::uint32 layerNum, DAVA::float32 distance);
+    inline DAVA::float32 GetLayerDistance(DAVA::uint32 layerNum) const;
+    void SetLayerDistance(DAVA::uint32 layerNum, DAVA::float32 distance);
 
-	inline DAVA::uint32 GetSceneLodsLayersCount() const;
+    inline DAVA::uint32 GetSceneLodsLayersCount() const;
 
-	inline bool GetForceDistanceEnabled() const;
-	void SetForceDistanceEnabled(bool enable);
+    inline bool GetForceDistanceEnabled() const;
+    void SetForceDistanceEnabled(bool enable);
 
-	inline DAVA::float32 GetForceDistance() const;
-	void SetForceDistance(DAVA::float32 distance);
+    inline DAVA::float32 GetForceDistance() const;
+    void SetForceDistance(DAVA::float32 distance);
 
-	inline DAVA::int32 GetForceLayer() const;
-	void SetForceLayer(DAVA::int32 layer);
+    inline DAVA::int32 GetForceLayer() const;
+    void SetForceLayer(DAVA::int32 layer);
 
-	void CollectLODDataFromScene();
+    void CollectLODDataFromScene();
 
-	inline bool GetAllSceneModeEnabled() const;
-	void SetAllSceneModeEnabled(bool enabled);
+    inline bool GetAllSceneModeEnabled() const;
+    void SetAllSceneModeEnabled(bool enabled);
 protected:
-	void AddSelectedLODsRecursive(DAVA::Entity *entity);
-	void RemoveSelectedLODsRecursive(DAVA::Entity *entity);
+    void AddSelectedLODsRecursive(DAVA::Entity *entity);
+    void RemoveSelectedLODsRecursive(DAVA::Entity *entity);
 
-	void UpdateForceLayer();
-	void UpdateForceDistance();
-	void UpdateAllSceneModeEnabled();
-	void UpdateForceData();
-	void ResetForceState(DAVA::Entity *entity);
-	void ResetForceState(DAVA::LodComponent *lodComponent);
+    void UpdateForceLayer();
+    void UpdateForceDistance();
+    void UpdateAllSceneModeEnabled();
+    void UpdateForceData();
+    void ResetForceState(DAVA::Entity *entity);
+    void ResetForceState(DAVA::LodComponent *lodComponent);
 
-	DAVA::uint32 currentLodsLayersCount;
-	bool forceDistanceEnabled;
-	DAVA::float32 forceDistance;
-	DAVA::int32 forceLayer;	
-	bool allSceneModeEnabled;
+    DAVA::uint32 currentLodsLayersCount;
+    bool forceDistanceEnabled;
+    DAVA::float32 forceDistance;
+    DAVA::int32 forceLayer;    
+    bool allSceneModeEnabled;
 
-	std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> lodTrianglesCount;
-	std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS > lodDistances;
+    std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> lodTrianglesCount;
+    std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS > lodDistances;
 
-	DAVA::Deque<DAVA::LodComponent *> sceneLODs;
-	DAVA::Deque<DAVA::LodComponent *> selectedLODs;
-	EntityGroup sceneEntities;
-	inline const DAVA::Deque<DAVA::LodComponent *> &GetCurrentLODs() const;
+    DAVA::Deque<DAVA::LodComponent *> sceneLODs;
+    DAVA::Deque<DAVA::LodComponent *> selectedLODs;
+    EntityGroup sceneEntities;
+    inline const DAVA::Deque<DAVA::LodComponent *> &GetCurrentLODs() const;
 };
 
 inline DAVA::uint32 EditorLODSystem::GetLayerTriangles(DAVA::uint32 layerNum) const
 {
-	return lodTrianglesCount[layerNum];
+    return lodTrianglesCount[layerNum];
 }
 
 inline DAVA::float32 EditorLODSystem::GetLayerDistance(DAVA::uint32 layerNum) const
 {
-	return lodDistances[layerNum];
+    return lodDistances[layerNum];
 }
 
 inline DAVA::uint32 EditorLODSystem::GetSceneLodsLayersCount() const
 {
-	return currentLodsLayersCount;
+    return currentLodsLayersCount;
 }
 
 inline bool EditorLODSystem::GetForceDistanceEnabled() const
 {
-	return forceDistanceEnabled;
+    return forceDistanceEnabled;
 }
 
 inline DAVA::float32 EditorLODSystem::GetForceDistance() const
 {
-	return forceDistance;
+    return forceDistance;
 }
 
 inline DAVA::int32 EditorLODSystem::GetForceLayer() const
 {
-	return forceLayer;
+    return forceLayer;
 }
 
 inline bool EditorLODSystem::GetAllSceneModeEnabled() const
 {
-	return allSceneModeEnabled;
+    return allSceneModeEnabled;
 }
 
 inline const DAVA::Deque<DAVA::LodComponent *> &EditorLODSystem::GetCurrentLODs() const
 {
-	return allSceneModeEnabled ? sceneLODs : selectedLODs;
+    return allSceneModeEnabled ? sceneLODs : selectedLODs;
 }
 
 #endif // __SCENE_LOD_SYSTEM_H__
