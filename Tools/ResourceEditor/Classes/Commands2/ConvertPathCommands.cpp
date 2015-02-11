@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "Base/BaseTypes.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 #include "Commands2/ConvertPathCommands.h"
 
 ExpandPathCommand::ExpandPathCommand(DAVA::PathComponent* pathComponent)
@@ -44,14 +45,26 @@ ExpandPathCommand::ExpandPathCommand(DAVA::PathComponent* pathComponent)
     const DAVA::Vector<DAVA::PathComponent::Waypoint *> & waypoints = pathComponent->GetPoints();
     DAVA::uint32 waypointsCount = waypoints.size();
     entityAddCommands.reserve(waypointsCount);
+    bool hasStartWaypoint = false;
     for (DAVA::uint32 wpIdx=0; wpIdx < waypointsCount; ++wpIdx)
     {
         DAVA::PathComponent::Waypoint * waypoint = waypoints[wpIdx];
         DVASSERT(waypoint);
 
+        if (waypoint->IsStarting()) 
+            hasStartWaypoint = true;
+
         DAVA::ScopedPtr<DAVA::Entity> wpEntity(CreateWaypointEntity(waypoint,pathComponent->GetName()));
         mapWaypoint2Entity[waypoint] = wpEntity;
         entityAddCommands.push_back(new EntityAddCommand(wpEntity, pathEntity));
+    }
+    
+    // set start waypoint manually
+    if (!hasStartWaypoint && waypointsCount > 0)
+    {
+        DAVA::Entity* entity = entityAddCommands[0]->GetEntity();
+        DAVA::WaypointComponent* comp = GetWaypointComponent(entity);
+        comp->SetStarting(true);
     }
 
     // add edge components
@@ -105,6 +118,7 @@ DAVA::Entity* ExpandPathCommand::CreateWaypointEntity(const DAVA::PathComponent:
 
     wpComponent->SetPathName(pathname);
     wpComponent->SetProperties(waypoint->GetProperties());
+    wpComponent->SetStarting(waypoint->IsStarting());
     wpEntity->AddComponent(wpComponent);
     wpEntity->SetName(waypoint->name);
 
@@ -176,7 +190,7 @@ CollapsePathCommand::CollapsePathCommand(DAVA::PathComponent* pathComponent)
         DAVA::Entity* wpEntity = *it;
         DVASSERT(wpEntity);
 
-        DAVA::WaypointComponent* wpComponent = static_cast<DAVA::WaypointComponent*>(wpEntity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT,0));
+        DAVA::WaypointComponent* wpComponent = GetWaypointComponent(wpEntity);
         DVASSERT(wpComponent);
 
         if (wpComponent->GetPathName() == pathName)
@@ -203,7 +217,7 @@ CollapsePathCommand::CollapsePathCommand(DAVA::PathComponent* pathComponent)
     for (DAVA::uint32 i=0; i < entityCount && itEntity != itEnd; ++i, ++itEntity)
     {
         DAVA::Entity* wpEntity = *itEntity;
-        DAVA::WaypointComponent* wpComponent = static_cast<DAVA::WaypointComponent*>(wpEntity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT,0));
+        DAVA::WaypointComponent* wpComponent = GetWaypointComponent(wpEntity);
 
         DAVA::PathComponent::Waypoint* waypoint = waypointsVec[i];
         DVASSERT(waypoint);
@@ -256,6 +270,7 @@ void CollapsePathCommand::InitWaypoint(DAVA::PathComponent::Waypoint* waypoint, 
 {
     waypoint->name = wpEntity->GetName();
     waypoint->SetProperties(wpComponent->GetProperties());
+    waypoint->SetStarting(wpComponent->IsStarting()); 
     DAVA::Matrix4 m = wpEntity->GetLocalTransform();
     waypoint->position = m.GetTranslationVector();
 }

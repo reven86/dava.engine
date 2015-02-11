@@ -98,7 +98,7 @@ void WayEditSystem::ProcessSelection()
         for(size_t i = 0; i < count; ++i)
         {
             Entity * entity = currentSelection.GetEntity(i);
-            if(entity->GetComponent(Component::WAYPOINT_COMPONENT) && GetPathComponent(entity->GetParent()))
+            if(GetWaypointComponent(entity) && GetPathComponent(entity->GetParent()))
             {
                 selectedWaypoints.Add(entity);
             }
@@ -117,7 +117,7 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
             if (NULL != collObjects && collObjects->Size() > 0)
             {
                 DAVA::Entity *underEntity = collObjects->GetEntity(0);
-                if (underEntity->GetComponent(Component::WAYPOINT_COMPONENT) && GetPathComponent(underEntity->GetParent()))
+                if (GetWaypointComponent(underEntity) && GetPathComponent(underEntity->GetParent()))
                 {
                     underCursorPathEntity = underEntity;
                 }
@@ -257,6 +257,7 @@ DAVA::Entity* WayEditSystem::CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 
 
     DAVA::WaypointComponent *wc = new DAVA::WaypointComponent();
     wc->SetPathName(pc->GetName());
+    wc->SetStarting(childrenCount==0);
     waypoint->AddComponent(wc);
 
     DAVA::Matrix4 pm = parent->GetWorldTransform();
@@ -290,7 +291,7 @@ void WayEditSystem::ProcessCommand(const Command2 *command, bool redo)
 
 void WayEditSystem::Draw()
 {
-    const EntityGroup & group = (currentSelection.Size()) ? currentSelection : prevSelectedWaypoints;
+    const EntityGroup & selectionGroup = (currentSelection.Size()) ? currentSelection : prevSelectedWaypoints;
 
     const uint32 count = waypointEntities.size();
     for(uint32 i = 0; i < count; ++i)
@@ -304,6 +305,8 @@ void WayEditSystem::Draw()
             continue;
         }
         
+        DAVA::WaypointComponent* wpComponent = GetWaypointComponent(e);
+        DVASSERT(wpComponent);
 
         RenderManager::SetDynamicParam(PARAM_WORLD, &e->GetWorldTransform(), (pointer_size)&e->GetWorldTransform());
         
@@ -311,13 +314,14 @@ void WayEditSystem::Draw()
         
         float32 redValue = 0.0f;
         float32 greenValue = 0.0f;
+        float32 blueValue = wpComponent->IsStarting() ? 1.0f : 0.0f;
         
         if(e == underCursorPathEntity)
         {
             redValue = 0.6f;
             greenValue = 0.6f;
         }
-        else if(group.HasEntity(e))
+        else if(selectionGroup.HasEntity(e))
         {
             redValue = 1.0f;
         }
@@ -326,9 +330,9 @@ void WayEditSystem::Draw()
             greenValue = 1.0f;
         }
         
-        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(redValue, greenValue, 0.0f, 0.3f));
+        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(redValue, greenValue, blueValue, 0.3f));
         DAVA::RenderHelper::Instance()->FillBox(worldBox, wayDrawState);
-        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(redValue, greenValue, 0.0f, 1.0f));
+        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(redValue, greenValue, blueValue, 1.0f));
         DAVA::RenderHelper::Instance()->DrawBox(worldBox, 1.0f, wayDrawState);
     }
 }

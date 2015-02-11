@@ -447,7 +447,17 @@ PathComponent * GetPathComponent(const Entity *fromEntity)
     }
 
         return NULL;
+}
+
+WaypointComponent * GetWaypointComponent(const Entity *fromEntity)
+{
+    if (fromEntity)
+    {
+        return (WaypointComponent*)fromEntity->GetComponent(Component::WAYPOINT_COMPONENT);
     }
+
+    return NULL;
+}
 
 SnapToLandscapeControllerComponent * GetSnapToLandscapeControllerComponent(const Entity * fromEntity)
 {
