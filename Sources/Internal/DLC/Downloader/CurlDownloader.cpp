@@ -514,6 +514,8 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     }
     CleanupDownload();
     
+    ResetStatistics(0);
+    
     // wait for save of rest file part from memory
     // if data saving is slower than data downloading
     do
