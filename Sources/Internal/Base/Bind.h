@@ -673,7 +673,7 @@ namespace DAVA
  	{
 		typedef Bound_1<typename FuncTraits<F>::FunctionType, P1> BoundType;
 		BoundType *b = new BoundType(MakeFunction(fn), p1);
-        return typename BoundType::OutgoingFunctionType(PointerWrapper<BoundType>::Wrap<WrappingOwnedRetainReleaseRule>(b), &BoundType::invoke);
+        return typename BoundType::OutgoingFunctionType(PointerWrapper<BoundType>::template Wrap<WrappingOwnedRetainReleaseRule>(b), &BoundType::invoke);
  	}
 
   	template<typename F, typename P1, typename P2>
@@ -681,7 +681,7 @@ namespace DAVA
   	{
 		typedef Bound_2<typename FuncTraits<F>::FunctionType, P1, P2> BoundType;
   		BoundType *b = new BoundType(MakeFunction(fn), p1, p2);
-        return typename BoundType::OutgoingFunctionType(PointerWrapper<BoundType>::Wrap<WrappingOwnedRetainReleaseRule>(b), &BoundType::invoke);
+        return typename BoundType::OutgoingFunctionType(PointerWrapper<BoundType>::template Wrap<WrappingOwnedRetainReleaseRule>(b), &BoundType::invoke);
   	}
 
 	template<typename F, typename P1, typename P2,  typename P3>
@@ -689,7 +689,7 @@ namespace DAVA
 	{
 		typedef Bound_3<typename FuncTraits<F>::FunctionType, P1, P2, P3> BoundType;
 		BoundType *b = new BoundType(MakeFunction(fn), p1, p2, p3);
-        return typename BoundType::OutgoingFunctionType(PointerWrapper<BoundType>::Wrap<WrappingOwnedRetainReleaseRule>(b), &BoundType::invoke);
+        return typename BoundType::OutgoingFunctionType(PointerWrapper<BoundType>::template Wrap<WrappingOwnedRetainReleaseRule>(b), &BoundType::invoke);
 	}
 
 	template<typename F, typename P1, typename P2,  typename P3,  typename P4>
@@ -697,7 +697,7 @@ namespace DAVA
 	{
 		typedef Bound_4<typename FuncTraits<F>::FunctionType, P1, P2, P3, P4> BoundType;
 		BoundType *b = new BoundType(MakeFunction(fn), p1, p2, p3, p4);
-        return typename BoundType::OutgoingFunctionType(PointerWrapper<BoundType>::Wrap<WrappingOwnedRetainReleaseRule>(b), &BoundType::invoke);
+        return typename BoundType::OutgoingFunctionType(PointerWrapper<BoundType>::template Wrap<WrappingOwnedRetainReleaseRule>(b), &BoundType::invoke);
 	}
 
 	template<typename F, typename P1, typename P2,  typename P3,  typename P4,  typename P5>
@@ -705,7 +705,7 @@ namespace DAVA
 	{
 		typedef Bound_5<typename FuncTraits<F>::FunctionType, P1, P2, P3, P4, P5> BoundType;
 		BoundType *b = new BoundType(MakeFunction(fn), p1, p2, p3, p4, p5);
-        return typename BoundType::OutgoingFunctionType(PointerWrapper<BoundType>::Wrap<WrappingOwnedRetainReleaseRule>(b), &BoundType::invoke);
+        return typename BoundType::OutgoingFunctionType(PointerWrapper<BoundType>::template Wrap<WrappingOwnedRetainReleaseRule>(b), &BoundType::invoke);
 	}
 
 	template<typename F, typename P1, typename P2,  typename P3,  typename P4,  typename P5,  typename P6>
@@ -713,7 +713,7 @@ namespace DAVA
 	{
 		typedef Bound_6<typename FuncTraits<F>::FunctionType, P1, P2, P3, P4, P5, P6> BoundType;
 		BoundType *b = new BoundType(MakeFunction(fn), p1, p2, p3, p4, p5, p6);
-        return typename BoundType::OutgoingFunctionType(PointerWrapper<BoundType>::Wrap<WrappingOwnedRetainReleaseRule>(b), &BoundType::invoke);
+        return typename BoundType::OutgoingFunctionType(PointerWrapper<BoundType>::template Wrap<WrappingOwnedRetainReleaseRule>(b), &BoundType::invoke);
     }
 
 	template<typename F, typename P1, typename P2,  typename P3,  typename P4,  typename P5,  typename P6,  typename P7>
@@ -721,7 +721,7 @@ namespace DAVA
 	{
 		typedef Bound_7<typename FuncTraits<F>::FunctionType, P1, P2, P3, P4, P5, P6, P7> BoundType;
 		BoundType *b = new BoundType(MakeFunction(fn), p1, p2, p3, p4, p5, p6, p7);
-        return typename BoundType::OutgoingFunctionType(PointerWrapper<BoundType>::Wrap<WrappingOwnedRetainReleaseRule>(b), &BoundType::invoke);
+        return typename BoundType::OutgoingFunctionType(PointerWrapper<BoundType>::template Wrap<WrappingOwnedRetainReleaseRule>(b), &BoundType::invoke);
 	}
 
 	template<typename F, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7, typename P8>
@@ -729,7 +729,7 @@ namespace DAVA
 	{
 		typedef Bound_8<typename FuncTraits<F>::FunctionType, P1, P2, P3, P4, P5, P6, P7, P8> BoundType;
 		BoundType *b = new BoundType(MakeFunction(fn), p1, p2, p3, p4, p5, p6, p7, p8);
-        return  typename BoundType::OutgoingFunctionType(PointerWrapper<BoundType>::Wrap<WrappingOwnedRetainReleaseRule>(b), &BoundType::invoke);
+        return  typename BoundType::OutgoingFunctionType(PointerWrapper<BoundType>::template Wrap<WrappingOwnedRetainReleaseRule>(b), &BoundType::invoke);
     }
 };
 
