@@ -47,9 +47,6 @@ protected:
 public:
     UIParticles(const Rect &rect = Rect());
 
-    void Update(float32 timeElapsed) override;
-    void Draw(const UIGeometricData &geometricData) override;
-
     void WillAppear() override;
 
     UIParticles* Clone() override;

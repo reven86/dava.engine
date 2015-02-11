@@ -112,7 +112,7 @@ void UIRenderSystem::SystemDraw(UIControl* control, const UIGeometricData& geome
 
     if (control->GetClipContents())
     {//WARNING: for now clip contents don't work for rotating controls if you have any ideas you are welcome
-        RenderSystem2D::Instance()->ClipPush();
+        RenderSystem2D::Instance()->PushClip();
         RenderSystem2D::Instance()->ClipRect(drawData.GetAABBox());
     }
 
@@ -160,16 +160,16 @@ void UIRenderSystem::SystemDraw(UIControl* control, const UIGeometricData& geome
 
     if (control->GetClipContents())
     {
-        RenderSystem2D::Instance()->ClipPop();
+        RenderSystem2D::Instance()->PopClip();
     }
 
     if (control->GetDebugDraw())
     {
-        RenderSystem2D::Instance()->ClipPush();
+        RenderSystem2D::Instance()->PushClip();
         RenderSystem2D::Instance()->RemoveClip();
         DrawDebugRect(control, drawData, false);
         DrawPivotPoint(control, unrotatedRect);
-        RenderSystem2D::Instance()->ClipPop();
+        RenderSystem2D::Instance()->PopClip();
     }
 
     if (component && component->customAfterSystemDraw != (int)NULL)
@@ -182,7 +182,7 @@ void UIRenderSystem::SystemDraw(UIControl* control, const UIGeometricData& geome
 void UIRenderSystem::DrawDebugRect(UIControl* control, const UIGeometricData& geometricData, bool useAlpha)
 {
     Color oldColor = RenderManager::Instance()->GetColor();
-    RenderSystem2D::Instance()->ClipPush();
+    RenderSystem2D::Instance()->PushClip();
 
     if (useAlpha)
     {
@@ -207,7 +207,7 @@ void UIRenderSystem::DrawDebugRect(UIControl* control, const UIGeometricData& ge
         RenderHelper::Instance()->DrawRect(geometricData.GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND);
     }
 
-    RenderSystem2D::Instance()->ClipPop();
+    RenderSystem2D::Instance()->PopClip();
     RenderManager::Instance()->SetColor(oldColor);
 }
 
@@ -227,7 +227,7 @@ void UIRenderSystem::DrawPivotPoint(UIControl* control, const Rect& drawRect)
     static const float32 PIVOT_POINT_MARK_HALF_LINE_LENGTH = 13.0f;
 
     Color oldColor = RenderManager::Instance()->GetColor();
-    RenderSystem2D::Instance()->ClipPush();
+    RenderSystem2D::Instance()->PushClip();
     RenderManager::Instance()->SetColor(Color(1.0f, 0.0f, 0.0f, 1.0f));
 
     Vector2 pivotPointCenter = drawRect.GetPosition() + control->GetPivotPoint();
@@ -246,7 +246,7 @@ void UIRenderSystem::DrawPivotPoint(UIControl* control, const Rect& drawRect)
     lineEndPoint.x += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
     RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderState::RENDERSTATE_2D_BLEND);
 
-    RenderSystem2D::Instance()->ClipPop();
+    RenderSystem2D::Instance()->PopClip();
     RenderManager::Instance()->SetColor(oldColor);
 }
 
