@@ -164,8 +164,10 @@ void mem_profiler::internal_deallocate(void* ptr)
             ndeletions += 1;
 #if defined(MEMPROF_IOS) || defined(MEMPROF_MACOS)
             deletionSize += malloc_size(ptr);
-            needLog = false;
+#elif defined(MEMPROF_WIN32)
+            deletionSize += _msize(ptr);
 #endif
+            needLog = false;
             malloc_hook::do_free(ptr);
         }
         
