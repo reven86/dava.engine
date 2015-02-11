@@ -83,6 +83,7 @@ private:
     uint32_t     next_order_no;
     uint32_t     tag_depth;
     uint32_t     ndeletions;
+    uint32_t     deletionSize = 0;
     bookmark_t   tag_bookmarks[TAG_DEPTH];
     mem_stat_t   stat[MEM_COUNT][TAG_DEPTH];
     

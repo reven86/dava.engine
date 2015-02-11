@@ -186,7 +186,16 @@ void* calloc(size_t count, size_t elem_size)
     return ptr;
     */
 }
-
+void * memalign(size_t alignment, size_t size)
+{
+    return malloc_hook::hooked_malloc(size);
+}
+char *strdup(const char *s)
+{
+    char * ret =(char * )malloc_hook::hooked_malloc(strlen(s)+1);
+    strcpy(ret, s);
+    return ret;
+}
 #endif  // defined(MEMPROF_MACOS) || defined(MEMPROF_IOS) || defined(MEMPROF_ANDROID)
 
 #endif

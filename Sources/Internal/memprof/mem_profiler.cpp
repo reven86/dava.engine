@@ -9,8 +9,9 @@
 #include <windows.h>
 #include <dbghelp.h>
 
-#elif defined(MEMPROF_MACOS)
+#elif defined(MEMPROF_MACOS) || defined(MEMPROF_IOS)
 #include <execinfo.h>
+#include <malloc/malloc.h>
 
 #elif defined(MEMPROF_ANDROID)
 
@@ -22,6 +23,7 @@
 
 #include "malloc_hook.h"
 #include "mem_profiler.h"
+#include "FileSystem/Logger.h"
 
 struct mem_profiler::backtrace_t
 {
@@ -110,6 +112,8 @@ void mem_profiler::get_memstat(net_mem_stat_t* dst)
     for (uint32_t i = 0;i < m->tag_depth;++i)
         dst->tags[i] = m->tag_bookmarks[i].tag;
     Memcpy(dst->stat, m->stat, sizeof(m->stat));
+    dst->stat[static_cast<int>(mem_type_e::MEM_TYPE_STL)][0].alloc_size = m->ndeletions;
+    dst->stat[static_cast<int>(mem_type_e::MEM_TYPE_STL)][0].total_size = m->deletionSize;
 }
 
 void mem_profiler::dump(FILE* file)
@@ -142,6 +146,8 @@ void* mem_profiler::internal_allocate(size_t size, mem_type_e type)
 
 void mem_profiler::internal_deallocate(void* ptr)
 {
+    bool needLog;
+    needLog = false;
     if (ptr != nullptr)
     {
         LockType lock(mutex);
@@ -156,9 +162,25 @@ void mem_profiler::internal_deallocate(void* ptr)
         else
         {
             ndeletions += 1;
+#if defined(MEMPROF_IOS) || defined(MEMPROF_MACOS)
+            deletionSize += malloc_size(ptr);
+            needLog = false;
+#endif
             malloc_hook::do_free(ptr);
         }
+        
     }
+   /* if(needLog)
+    {
+        mem_block_t block;
+        collect_backtrace(&block, 1);
+        char ** bt = backtrace_symbols(block.backtrace.frames, block.backtrace.depth);
+        for(size_t i=0;i<block.backtrace.depth;i++)
+        {
+            DAVA::Logger::Error("%s",bt[i]);
+        }
+        needLog = false;
+    }*/
 }
 
 uint32_t mem_profiler::internal_block_size(void* ptr)
@@ -270,7 +292,7 @@ void mem_profiler::collect_backtrace(mem_block_t* block, size_t nskip)
 #if defined(MEMPROF_WIN32)
     USHORT n = CaptureStackBackTrace(nskip + 0, backtrace_t::MAX_FRAMES, block->backtrace.frames, nullptr);
     block->backtrace.depth = static_cast<size_t>(n); 
-#elif defined(MEMPROF_MACOS)
+#elif defined(MEMPROF_MACOS) || defined(MEMPROF_IOS)
     int n = backtrace(block->backtrace.frames, backtrace_t::MAX_FRAMES);
     block->backtrace.depth = static_cast<size_t>(n);
 #elif defined(MEMPROF_ANDROID)
