@@ -170,6 +170,11 @@ ControlPrototype *ControlNode::GetPrototype() const
     return prototype;
 }
 
+const Vector<ControlNode*> &ControlNode::GetInstances() const
+{
+    return instances;
+}
+
 int ControlNode::GetFlags() const
 {
     int flag = 0;
@@ -196,6 +201,11 @@ void ControlNode::SetReadOnly()
     readOnly = true;
     for (auto it = nodes.begin(); it != nodes.end(); ++it)
         (*it)->SetReadOnly();
+}
+
+BaseProperty *ControlNode::GetPropertyByPath(const DAVA::Vector<DAVA::String> &path)
+{
+    return propertiesRoot->GetPropertyByPath(path);
 }
 
 void ControlNode::Serialize(PackageSerializer *serializer, PackageRef *currentPackage) const

@@ -14,7 +14,7 @@
 #include "ui_PackageDockWidget.h"
 #include "UIPackageModel.h"
 
-#include "QtModelPackageCommandExecutor.h"
+#include "UI/QtModelPackageCommandExecutor.h"
 
 #include "UI/PackageView/UIFilteredPackageModel.h"
 #include "UI/PackageDocument.h"
@@ -297,8 +297,7 @@ void PackageDockWidget::OnPaste()
         if (parser.Valid() && parser->GetRootNode())
         {
             document->UndoStack()->beginMacro("Paste");
-            ScopedPtr<QtModelPackageCommandExecutor> commandExecutor(new QtModelPackageCommandExecutor(document));
-            EditorUIPackageBuilder builder(document->GetPackage(), controlNode, commandExecutor);
+            EditorUIPackageBuilder builder(document->GetPackage(), controlNode, document->GetCommandExecutor());
             UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(parser->GetRootNode(), "");
             SafeRelease(newPackage);
             document->UndoStack()->endMacro();

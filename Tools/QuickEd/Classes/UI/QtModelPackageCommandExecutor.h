@@ -14,6 +14,9 @@ public:
     void InsertControlIntoPackage(ControlNode *control, PackageControlsNode *package) override;
     void InsertControlIntoParentControl(ControlNode *control, ControlNode *parentControl) override;
     void AddImportedPackageIntoPackage(PackageControlsNode *importedPackageControls, PackageNode *package) override;
+    
+    void ChangeProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &value) override;
+    void ResetProperty(ControlNode *node, BaseProperty *property) override;
 
 private:
     PackageDocument *document;

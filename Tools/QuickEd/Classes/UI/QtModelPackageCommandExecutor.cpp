@@ -1,9 +1,11 @@
 #include "QtModelPackageCommandExecutor.h"
 
-#include "PackageModelCommands.h"
-#include "UIPackageModel.h"
 
-#include "UI/PackageDocument.h"
+#include "PackageDocument.h"
+
+#include "UI/PropertiesView/ChangePropertyValueCommand.h"
+#include "UI/PackageView/PackageModelCommands.h"
+#include "UI/PackageView/UIPackageModel.h"
 
 #include "UIControls/PackageHierarchy/PackageControlsNode.h"
 #include "UIControls/PackageHierarchy/ControlNode.h"
@@ -51,4 +53,46 @@ void QtModelPackageCommandExecutor::AddImportedPackageIntoPackage(PackageControl
     int32 dstRow = package->GetImportedPackagesNode()->GetCount();
     
     document->UndoStack()->push(new InsertImportedPackageCommand(model, importedPackageControls, dstRow, dstParent));
+}
+
+void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &value)
+{
+    document->UndoStack()->beginMacro("Change Property");
+    document->UndoStack()->push(new ChangePropertyValueCommand(property, value));
+    const Vector<ControlNode*> &instances = node->GetInstances();
+    for (ControlNode *node : instances)
+    {
+        Vector<String> path = property->GetPath();
+        BaseProperty *nodeProperty = node->GetPropertyByPath(path);
+        if (nodeProperty)
+        {
+            document->UndoStack()->push(new ChangeDefaultValueCommand(nodeProperty, value));
+        }
+        else
+        {
+            DVASSERT(false);
+        }
+    }
+    document->UndoStack()->endMacro();
+}
+
+void QtModelPackageCommandExecutor::ResetProperty(ControlNode *node, BaseProperty *property)
+{
+    document->UndoStack()->beginMacro("Reset Property");
+    document->UndoStack()->push(new ChangePropertyValueCommand(property));
+    const Vector<ControlNode*> &instances = node->GetInstances();
+    for (ControlNode *node : instances)
+    {
+        Vector<String> path = property->GetPath();
+        BaseProperty *nodeProperty = node->GetPropertyByPath(path);
+        if (nodeProperty)
+        {
+            document->UndoStack()->push(new ChangeDefaultValueCommand(nodeProperty, property->GetDefaultValue()));
+        }
+        else
+        {
+            DVASSERT(false);
+        }
+    }
+    document->UndoStack()->endMacro();
 }

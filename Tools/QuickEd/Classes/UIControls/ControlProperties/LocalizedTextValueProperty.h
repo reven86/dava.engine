@@ -9,13 +9,13 @@ public:
     LocalizedTextValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, ValueProperty *sourceProperty, eCopyType copyType);
     virtual ~LocalizedTextValueProperty();
     
-    virtual int GetCount() const override;
-    virtual BaseProperty *GetProperty(int index) const override;
+    int GetCount() const override;
+    BaseProperty *GetProperty(int index) const override;
 
-    virtual DAVA::VariantType GetValue() const override;
-    virtual void SetValue(const DAVA::VariantType &newValue) override;
-    virtual void ResetValue() override;
-  
+    DAVA::VariantType GetValue() const override;
+protected:
+    void ApplyValue(const DAVA::VariantType &value) override;
+    
 protected:
     DAVA::WideString text;
 };
