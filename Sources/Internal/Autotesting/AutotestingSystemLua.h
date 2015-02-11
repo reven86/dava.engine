@@ -89,6 +89,9 @@ public:
     void OnError(const String &errorMessage);
     void OnTestFinished();
     
+    size_t GetAllocatedMemory() const;
+    size_t GetUsedMemory() const;
+    
     float32 GetTimeElapsed();
     
 	// Test organization API

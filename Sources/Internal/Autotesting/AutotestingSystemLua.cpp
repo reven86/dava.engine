@@ -28,7 +28,7 @@ extern "C" int luaopen_Polygon2(lua_State *l);
 
 namespace DAVA
 {
-static const int32 LUA_MEMORY_POOL_SIZE = 1024 * 1024 * 5;
+static const int32 LUA_MEMORY_POOL_SIZE = 1024 * 1024 * 10;
     
 void* lua_allocator(void *ud, void *ptr, size_t osize, size_t nsize)
 {
@@ -37,9 +37,13 @@ void* lua_allocator(void *ud, void *ptr, size_t osize, size_t nsize)
         free_ex(ptr, ud);
         return NULL;
     } else if (osize == 0) {
-        return malloc_ex(nsize, ud);
+        void* mem = malloc_ex(nsize, ud);
+        DVASSERT(mem);
+        return mem;
     } else {
-        return realloc_ex(ptr, nsize, ud);
+        void* mem = realloc_ex(ptr, nsize, ud);
+        DVASSERT(mem);
+        return mem;
     }
 }
 
@@ -312,6 +316,16 @@ void AutotestingSystemLua::OnTestFinished()
 {
 	Logger::Info("AutotestingSystemLua::OnTestFinished");
 	AutotestingSystem::Instance()->OnTestsFinished();
+}
+
+size_t AutotestingSystemLua::GetAllocatedMemory() const
+{
+    return get_used_size(memoryPool);
+}
+    
+size_t AutotestingSystemLua::GetUsedMemory() const
+{
+    return lua_gc(luaState, LUA_GCCOUNT, 0) * 1024 + lua_gc(luaState, LUA_GCCOUNTB, 0);
 }
 
 void AutotestingSystemLua::OnStepStart(const String &stepName)
