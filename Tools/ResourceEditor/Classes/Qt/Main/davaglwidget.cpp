@@ -117,7 +117,6 @@ void DavaGLWidget::resizeGL(int w, int h)
 void DavaGLWidget::paintGL()
 {
     if(isPainting) return; //magic for qt
-    
     isPainting = true;
     
     

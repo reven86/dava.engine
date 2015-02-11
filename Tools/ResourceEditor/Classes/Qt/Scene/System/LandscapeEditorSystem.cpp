@@ -47,7 +47,9 @@ LandscapeEditorSystem::LandscapeEditorSystem(Scene* scene, const DAVA::FilePath 
 
 {
 	cursorTexture = Texture::CreateFromFile(cursorPathname);
-	cursorTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
+    
+    DAVA::Function<void()> fn = DAVA::Bind(DAVA::MakeFunction(cursorTexture, &DAVA::Texture::SetWrapMode), Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
+    DAVA::JobManager::Instance()->CreateMainJob(fn);
     
     collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
 	selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;

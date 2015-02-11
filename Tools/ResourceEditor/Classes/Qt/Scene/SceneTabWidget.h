@@ -103,10 +103,6 @@ public slots:
 	void SceneSaved(SceneEditor2 *scene);
 	void SceneModifyStatusChanged(SceneEditor2 *scene, bool modified);
     
-protected slots:
-    
-    void OnCloseWaitDialog();
-    
 protected:
     
     void OpenTabInternal(const DAVA::FilePath scenePathname, int tabIndex);

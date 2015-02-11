@@ -130,8 +130,8 @@ int SceneTabWidget::OpenTab()
     tabBar->setTabToolTip(tabIndex, scenePath.GetAbsolutePathname().c_str());
 
     DAVA::Function<void()> fn = DAVA::Bind(DAVA::MakeFunction(this, &SceneTabWidget::OpenTabInternal), scenePath, tabIndex);
-    DAVA::JobManager::Instance()->CreateMainJob(fn, DAVA::JobManager::JOB_MAINLAZY);
-
+//    DAVA::JobManager::Instance()->CreateMainJob(fn, DAVA::JobManager::JOB_MAINLAZY);
+    DAVA::JobManager::Instance()->CreateWorkerJob(fn);
 	return tabIndex;
 }
 
@@ -157,7 +157,7 @@ int SceneTabWidget::OpenTab(const DAVA::FilePath &scenePath)
     tabBar->setTabToolTip(tabIndex, scenePath.GetAbsolutePathname().c_str());
     
     DAVA::Function<void()> fn = DAVA::Bind(DAVA::MakeFunction(this, &SceneTabWidget::OpenTabInternal), scenePath, tabIndex);
-    DAVA::JobManager::Instance()->CreateMainJob(fn, DAVA::JobManager::JOB_MAINLAZY);
+    DAVA::JobManager::Instance()->CreateWorkerJob(fn);
     
     return tabIndex;
 }
@@ -172,33 +172,13 @@ void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tab
         bool sceneWasLoaded = scene->Load(scenePathname);
         if(!sceneWasLoaded)
         {
-//            QMessageBox::critical( this, "Open scene error.", "Unexpected opening error. See logs for more info." );
+            QMessageBox::critical( this, "Open scene error.", "Unexpected opening error. See logs for more info." );
         }
     }
     
     SetTabScene(tabIndex, scene);
     SetCurrentTab(tabIndex);
- 
-    
-    
-//    SceneEditor2 *scene = new SceneEditor2();
-//    bool sceneWasLoaded = scene->Load(scenePath);
-//    if(sceneWasLoaded)
-//    {
-//        SetTabScene(tabIndex, scene);
-//        SetCurrentTab(tabIndex);
-//    }
-//    else
-//    {
-//        SafeRelease(scene);
-//        QMessageBox::critical( this, "Open scene error.", "Unexpected opening error. See logs for more info." );
-//    }
 
-    QTimer::singleShot(1, this, SLOT(OnCloseWaitDialog()));
-}
-
-void SceneTabWidget::OnCloseWaitDialog()
-{
     QtMainWindow::Instance()->WaitStop();
 }
 
