@@ -116,7 +116,7 @@ void Entity::DetachComponent(const Vector<Component *>::iterator & it)
   
 Component * Entity::GetComponent(uint32 componentType, uint32 index) const
 {
-    Component * ret = 0;
+    Component * ret = nullptr;
     uint32 maxCount = family->GetComponentsCount(componentType);
     if(index < maxCount)
     {
@@ -861,7 +861,7 @@ void Entity::SetSolid(bool isSolid)
 	props->SetBool(SCENE_NODE_IS_SOLID_PROPERTY_NAME, isSolid);
 }
     
-bool Entity::GetSolid()
+bool Entity::GetSolid() const
 {
     KeyedArchive *props = GetCustomPropertiesArchieve(this);
     if(props)

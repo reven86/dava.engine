@@ -34,8 +34,8 @@
 // framework
 #include "Entity/SceneSystem.h"
 #include "DAVAEngine.h"
+#include "Scene/EntityGroup.h"
 
-class EntityGroup;
 class Command2;
 
 class EditorLODSystem : public DAVA::SceneSystem
@@ -52,12 +52,16 @@ public:
 
 	void UpdateDistances(const DAVA::Map<DAVA::uint32, DAVA::float32> & lodDistances);
 
-	bool CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath);
-	bool CanCreatePlaneLOD() const;
 	DAVA::FilePath GetDefaultTexturePathForPlaneEntity() const;
 
 	static void AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> &triangles, DAVA::LodComponent *lod, bool onlyVisibleBatches);
+	
+	bool CheckSelectedContainsEntity(const DAVA::Entity *arg) const;
 
+	void SolidChanged(const DAVA::Entity *entity, bool value);
+
+	bool CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath);
+	bool CanCreatePlaneLOD() const;
 	//TODO: remove after lod editing implementation
 	DAVA_DEPRECATED(bool CopyLastLodToLod0());
 
@@ -91,7 +95,7 @@ public:
 protected:
 	void AddSelectedLODsRecursive(DAVA::Entity *entity);
 	void RemoveSelectedLODsRecursive(DAVA::Entity *entity);
-	
+
 	void UpdateForceLayer();
 	void UpdateForceDistance();
 	void UpdateAllSceneModeEnabled();
@@ -110,7 +114,8 @@ protected:
 
 	DAVA::Deque<DAVA::LodComponent *> sceneLODs;
 	DAVA::Deque<DAVA::LodComponent *> selectedLODs;
-	inline const DAVA::Deque<DAVA::LodComponent *> &getCurrentLODs() const;
+	EntityGroup sceneEntities;
+	inline const DAVA::Deque<DAVA::LodComponent *> &GetCurrentLODs() const;
 };
 
 inline DAVA::uint32 EditorLODSystem::GetLayerTriangles(DAVA::uint32 layerNum) const
@@ -148,7 +153,7 @@ inline bool EditorLODSystem::GetAllSceneModeEnabled() const
 	return allSceneModeEnabled;
 }
 
-inline const DAVA::Deque<DAVA::LodComponent *> &EditorLODSystem::getCurrentLODs() const
+inline const DAVA::Deque<DAVA::LodComponent *> &EditorLODSystem::GetCurrentLODs() const
 {
 	return allSceneModeEnabled ? sceneLODs : selectedLODs;
 }

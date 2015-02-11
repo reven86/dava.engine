@@ -48,6 +48,7 @@
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 
+#include "Scene/System/EditorLODSystem.h"
 
 
 const FastName MATERIAL_FOR_REBIND = FastName("Global");

@@ -286,7 +286,7 @@ public:
     uint32 GetDebugFlags() const;
     	
     void SetSolid(bool isSolid);
-    bool GetSolid();
+    bool GetSolid() const;
 
 	void SetLocked(bool isLocked);
 	bool GetLocked();

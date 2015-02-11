@@ -114,6 +114,7 @@ void LODEditor::SetupSceneSignals()
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(SceneActivated(SceneEditor2 *)));
 	connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(SceneDeactivated(SceneEditor2 *)));
 	connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), SLOT(SceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
+	connect(SceneSignals::Instance(), SIGNAL(SolidChanged(SceneEditor2 *, const DAVA::Entity *, bool)), this, SLOT(SolidChanged(SceneEditor2 *, const DAVA::Entity *, bool)));
 	connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), SLOT(CommandExecuted(SceneEditor2 *, const Command2*, bool)));
 }
 
@@ -431,6 +432,14 @@ void LODEditor::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *se
 	DVASSERT(selected);
 	DVASSERT(deselected);
 	scene->editorLODSystem->SceneSelectionChanged(selected, deselected);
+	LODDataChanged(scene);
+}
+
+void LODEditor::SolidChanged(SceneEditor2 *scene, const Entity *entity, bool value)
+{
+	DVASSERT(scene);
+	DVASSERT(entity);
+	scene->editorLODSystem->SolidChanged(entity, value);
 	LODDataChanged(scene);
 }
 
