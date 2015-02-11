@@ -69,7 +69,23 @@ int32 LogLevelToAndtoid(Logger::eLogLevel ll)
 
 void Logger::PlatformLog(eLogLevel ll, const char8* text)
 {
-	__android_log_print(LogLevelToAndtoid(ll), androidLogTag.c_str(), text, "");
+    size_t len = strlen(text);
+    // about limit on android: http://stackoverflow.com/questions/8888654/android-set-max-length-of-logcat-messages
+    const size_t limit = 4000;
+
+    char8* str = const_cast<char*>(text);
+
+    while(len > limit)
+    {
+        char8 lastChar = str[limit];
+        str[limit] = nullptr;
+        __android_log_print(LogLevelToAndtoid(ll), androidLogTag.c_str(), str, "");
+        str[limit] = lastChar;
+        str += limit;
+        len -= limit;
+    }
+
+    __android_log_print(LogLevelToAndtoid(ll), androidLogTag.c_str(), str, "");
 }
 
 void Logger::PlatformLog(eLogLevel ll, const char16* text)

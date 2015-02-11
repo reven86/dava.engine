@@ -53,6 +53,7 @@
 #include "Tests/NetworkTest.h"
 #include "Tests/JNITest.h"
 #include "Tests/DataVaultTest.h"
+#include "Tests/UnlimitedLogOutputTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -89,6 +90,7 @@ void GameCore::RegisterTests()
     new JobManagerTest();
     new Cpp14Test ();
     new NetworkTest();
+    new UnlimitedLogOutputTest();
     //$UNITTEST_CTOR
 }
 

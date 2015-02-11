@@ -160,6 +160,10 @@ protected:
 
     
     bool consoleModeEnabled;
+
+private:
+    void Output(eLogLevel ll, const char8* formadedMsg);
+    void Output(eLogLevel ll, const char16* formadedMsg);
 };
 
 class LoggerOutput
