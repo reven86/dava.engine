@@ -109,14 +109,6 @@ protected:
     Function<void (uint64)> notifyProgress;
     
 private:
-    struct MeasureSpeedUnit
-    {
-        uint64 dataSizeCame;
-        uint64 deltaTime;
-    };
-    
-    List<MeasureSpeedUnit> sizeTime;
-    List<float64> currentSpeeds;
     uint64 dataToDownloadLeft;
     DownloadStatistics statistics;
 
