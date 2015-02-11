@@ -38,8 +38,6 @@
 namespace DAVA 
 {
     
-#define MAKE_COMPONENT_MASK(x) ((uint64)1 << (uint64)x)
-
 class Entity;
 class Component : public Serializable, public InspBase
 {
@@ -82,7 +80,8 @@ public:
         WAYPOINT_COMPONENT,
         EDGE_COMPONENT,
 
-        COMPONENT_COUNT
+        COMPONENT_COUNT,
+        FIRST_USER_DEFINED_COMPONENT = COMPONENT_COUNT
     };
 
 public:
@@ -123,7 +122,11 @@ public:
 		);
 };
 
-#define IMPLEMENT_COMPONENT_TYPE(TYPE) virtual uint32 GetType() const { return TYPE; };
+#define IMPLEMENT_COMPONENT_TYPE(TYPE) \
+    virtual uint32 GetType() const { return TYPE; }; \
+    static const uint32 C_TYPE = TYPE; 
+
+#define MAKE_COMPONENT_MASK(x) ((uint64)1 << (uint64)x)
     
 template<template <typename> class Container, class T>
 void Component::GetDataNodes(Container<T> & container)
