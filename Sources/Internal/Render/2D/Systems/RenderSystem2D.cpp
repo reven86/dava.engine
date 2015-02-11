@@ -40,11 +40,14 @@ namespace DAVA
 {
 
 #define USE_BATCHING 1
-#define MAX_VERTEXES 4096
-#define MAX_INDECES 8192
-#define VBO_POOL_SIZE 10
-#define RESERVED_BATCHES 1024
-#define VBO_FORMAT (EVF_VERTEX | EVF_TEXCOORD0 | EVF_COLOR)
+
+#if USE_BATCHING
+const uint32 MAX_VERTEXES = 4096;
+const uint32 MAX_INDECES = MAX_VERTEXES * 2;
+const uint32 VBO_POOL_SIZE = 10;
+const uint32 RESERVED_BATCHES = 1024;
+const uint32 VBO_FORMAT = EVF_VERTEX | EVF_TEXCOORD0 | EVF_COLOR;
+#endif
 
 FastName RenderSystem2D::FLAT_COLOR_SHADER("~res:/Shaders/renderer2dColor");
 FastName RenderSystem2D::TEXTURE_FLAT_COLOR_SHADER("~res:/Shaders/renderer2dTexture");
