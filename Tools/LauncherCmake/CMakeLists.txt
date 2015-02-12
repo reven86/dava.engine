@@ -26,9 +26,9 @@ include_directories   ( "ThirdParty/yaml/include" )
 add_definitions       ( -DQUAZIP_STATIC )
 
 
-if ( MSVC )
-    set( LIB_RELEASE    msvcrt.lib  ${CMAKE_CURRENT_LIST_DIR}/ThirdParty/zlib.lib   )
-    set( LIB_DEBUG      msvcrtd.lib ${CMAKE_CURRENT_LIST_DIR}/ThirdParty/zlibd.lib  )
+if ( WIN32 )
+    set( LIB_RELEASE    "msvcrt.lib"  "${CMAKE_CURRENT_LIST_DIR}/ThirdParty/zlib.lib"   )
+    set( LIB_DEBUG      "msvcrtd.lib" "${CMAKE_CURRENT_LIST_DIR}/ThirdParty/zlibd.lib"  )
     
 endif()
 
@@ -52,10 +52,10 @@ set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/icon.icns  )
 set( MACOS_DATA           ${CMAKE_CURRENT_LIST_DIR}/Data/* )
 
-set( ADDED_SRC            ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS}  )
+set( ADDED_SRC            ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS}  Launcher.rc )
 
 set( LIBRARIES            ${QT_LIBRARIES}  quazip yaml-cpp  )
-set( LIBRARIES_RELEASE    ${LIB_RELEASE}}   )
+set( LIBRARIES_RELEASE    ${LIB_RELEASE} )
 set( LIBRARIES_DEBUG      ${LIB_DEBUG} )
 set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 
