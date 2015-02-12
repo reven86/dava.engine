@@ -16,7 +16,7 @@
 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURP§E ARE
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
     DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -46,6 +46,7 @@
 
 #include "FileSystem/Logger.h"
 #include "Platform/SystemTimer.h"
+#include "Platform/DateTime.h"
 
 // system stuff
 #include "Utils/Utils.h"
@@ -77,7 +78,6 @@
 
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
-#include "Input/GamepadManager.h"
 #include "Input/GamepadDevice.h"
 
 // Localization
@@ -145,6 +145,7 @@
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIPackage.h"
+#include "UI/UIPackagesCache.h"
 #include "UI/UIPackageLoader.h"
 #include "UI/DefaultUIPackageBuilder.h"
 #include "UI/UIEvent.h"
@@ -259,6 +260,7 @@
 #include "Scene3D/Systems/SpeedTreeUpdateSystem.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene3D/Systems/FoliageSystem.h"
+#include "Scene3D/Systems/ParticleEffectSystem.h"
 
 //Components
 #include "Scene3D/Components/ComponentHelpers.h"
@@ -281,6 +283,10 @@
 #include "Scene3D/Components/SpeedTreeComponent.h"
 #include "Scene3D/Components/WindComponent.h"
 #include "Scene3D/Components/WaveComponent.h"
+#include "Scene3D/Components/Waypoint/PathComponent.h"
+#include "Scene3D/Components/Controller/WASDControllerComponent.h"
+#include "Scene3D/Components/Controller/RotationControllerComponent.h"
+#include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
 
 // Application core 
 #include "Core/Core.h"

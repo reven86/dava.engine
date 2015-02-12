@@ -387,7 +387,7 @@ void ImposterNode::DrawImposter()
 	meshFinalMatrix = /*worldTransform **/ cameraMatrix;
 
 	RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, meshFinalMatrix);
-	RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST);
+    RenderManager::Instance()->SetRenderEffect(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST);
 
 	RenderManager::Instance()->SetColor(1.f, 1.f, 1.f, 1.f);
 

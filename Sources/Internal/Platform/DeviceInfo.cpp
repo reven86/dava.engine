@@ -37,6 +37,8 @@
 namespace DAVA
 {
 
+DeviceInfo::ScreenInfo DeviceInfo::screenInfo;
+
 DeviceInfo::ePlatform DeviceInfo::GetPlatform()
 {
 	ePlatform platform = PLATFORM_UNKNOWN;
@@ -65,6 +67,12 @@ String DeviceInfo::GetPlatformString()
     return GlobalEnumMap<ePlatform>::Instance()->ToString(GetPlatform());
 }
 
+
+DeviceInfo::ScreenInfo & DeviceInfo::GetScreenInfo()
+{
+	return screenInfo;
+}
+
 #ifndef __DAVAENGINE_ANDROID__
 int DeviceInfo::GetZBufferSize()
 {
@@ -83,7 +91,9 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
 
 int32 DeviceInfo::GetCpuCount()
 {
-    return -1;
+	SYSTEM_INFO sysinfo;
+	GetSystemInfo(&sysinfo);
+	return sysinfo.dwNumberOfProcessors;
 }
 
 #endif

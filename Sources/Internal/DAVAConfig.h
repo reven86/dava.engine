@@ -35,13 +35,12 @@
 #ifndef __DAVAENGINE_CONFIG_H__
 #define __DAVAENGINE_CONFIG_H__
 
-// debug definition
-#if defined(DAVA_DEBUG)
-    #define __DAVAENGINE_DEBUG__
+#ifndef __DAVAENGINE_AUTOTESTING__
+#define __DAVAENGINE_AUTOTESTING__
 #endif
-
-
-
+#ifndef AUTOTESTING_LUA
+#define AUTOTESTING_LUA
+#endif
 
 //#define ENABLE_MEMORY_MANAGER
 
@@ -65,10 +64,8 @@
 // enabled the assertion message will be displayed even in release builds.
 #if defined(__DAVAENGINE_DEBUG__)   //always enable full DVASSERT service for debug configurations
     #define ENABLE_ASSERT_LOGGING
-#ifndef __DAVAENGINE_AUTOTESTING__
     #define ENABLE_ASSERT_MESSAGE
     #define ENABLE_ASSERT_BREAK
-#endif
 #else //not defined __DAVAENGINE_DEBUG__    // can disable or select any dvassert service
     #define ENABLE_ASSERT_LOGGING
     #define ENABLE_ASSERT_MESSAGE
@@ -84,6 +81,16 @@
 
 #define REBUILD_TANGENT_SPACE_ON_IMPORT
 
+// add define for "override" key word if std < c++11
+#if __cplusplus <= 199711L
+#   if defined(_MSC_VER)
+#       if _MSC_VER < 1600 // before 2010 msvc
+#           define override
+#       endif
+#   else
+#       define override
+#   endif // _MSC_VER
+#endif
 
 #endif // __DAVAENGINE_CONFIG_H__
 

@@ -48,7 +48,7 @@ public:
 	bool DisableLandscapeEdititing();
 
 	virtual void Process(DAVA::float32 timeElapsed);
-	void ProcessUIEvent(DAVA::UIEvent *event);
+	virtual void Input(DAVA::UIEvent *event);
 
 	void SetLineWidth(int32 width);
 	int32 GetLineWidth();

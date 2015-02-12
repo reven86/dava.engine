@@ -349,21 +349,21 @@ void PreviewController::MakeScreenshot(const String& fileName, DefaultScreen* sc
     Rect scaledScreenRect = rawScreenRect;
     scaledScreenRect.SetSize(rawScreenRect.GetSize() * screen->GetScale());
 
-    float32 virToPhysFactor = Core::Instance()->GetVirtualToPhysicalFactor();
     Rect textureRect = scaledScreenRect;
-    textureRect.SetSize(textureRect.GetSize() * virToPhysFactor);
+    textureRect.SetSize(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(textureRect.GetSize()));
     ScopedPtr<Texture> texture(Texture::CreateFBO((int32)ceilf(textureRect.dx), (int32)ceilf(textureRect.dy),
                                                   FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER));
 
     ScopedPtr<Sprite> screenshot(Sprite::Create(""));
     screenshot->InitFromTexture(texture, 0, 0, textureRect.dx, textureRect.dy, -1, -1, true);
     
-    RenderManager::Instance()->SetRenderTarget(screenshot);
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(screenshot);
     RenderManager::Instance()->ClearWithColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // The clipping rectangle defines on scale and preview mode.
     Rect clipRect = rawScreenRect;
-    clipRect.SetSize(clipRect.GetSize() * virToPhysFactor);
+    clipRect.SetSize(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(clipRect.GetSize()));
     if (IsPreviewEnabled())
     {
         clipRect.SetSize(GetTransformData().screenSize);
@@ -377,19 +377,19 @@ void PreviewController::MakeScreenshot(const String& fileName, DefaultScreen* sc
         clipRect = textureRect;
     }
 
-    RenderManager::Instance()->ClipPush();
-    RenderManager::Instance()->SetClip(clipRect);
+    RenderSystem2D::Instance()->PushClip();
+    RenderSystem2D::Instance()->SetClip(clipRect);
 
     // Draw the screen with the scale requested, but without any offset.
-    RenderManager::Instance()->SetDrawScale(screen->GetScale());
-	RenderManager::Instance()->SetDrawTranslate(Vector2(0.0f, 0.0f));
+    Matrix4 wt = Matrix4::MakeScale(Vector3(screen->GetScale().x, screen->GetScale().y, 1.f));
+    RenderManager::SetDynamicParam(PARAM_VIEW, &wt, UPDATE_SEMANTIC_ALWAYS);
     
     screen->GetScreenControl()->SetScreenshotMode(true);
     screen->GetScreenControl()->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
     screen->GetScreenControl()->SetScreenshotMode(false);
 
-    RenderManager::Instance()->ClipPop();
-    RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopClip();
+    RenderSystem2D::Instance()->PopRenderTarget();
 
     ScopedPtr<Image> image(texture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND));
     

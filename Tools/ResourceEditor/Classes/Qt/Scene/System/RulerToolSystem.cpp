@@ -43,8 +43,8 @@
 RulerToolSystem::RulerToolSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	curToolSize(0)
-,	previewEnabled(true)
 ,	lineWidth(1)
+,	previewEnabled(true)
 {
 }
 
@@ -127,7 +127,7 @@ void RulerToolSystem::Process(DAVA::float32 timeElapsed)
 	}
 }
 
-void RulerToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void RulerToolSystem::Input(DAVA::UIEvent *event)
 {
 	if (!IsLandscapeEditingEnabled())
 	{
@@ -280,7 +280,8 @@ void RulerToolSystem::DrawPoints()
 	Sprite* sprite = drawSystem->GetRulerToolProxy()->GetSprite();
 	Texture* targetTexture = sprite->GetTexture();
 
-	RenderManager::Instance()->SetRenderTarget(sprite);
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(sprite);
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
 	Vector<Vector3> points;
@@ -333,7 +334,7 @@ void RulerToolSystem::DrawPoints()
 	}
 
 	RenderManager::Instance()->ResetColor();
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopRenderTarget();
     
 	drawSystem->GetRulerToolProxy()->UpdateSprite();
 }

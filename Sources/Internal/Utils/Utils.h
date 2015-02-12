@@ -54,10 +54,8 @@ inline String WStringToString(const WideString& s);
 
 WideString GetDeviceName();
 	
-#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 void DisableSleepTimer();
 void EnableSleepTimer();
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 	
 //int SplitString(const String& input, const String& delimiter, std::vector<String>& results, bool includeEmpties = true);
 void Split(const String & inputString, const String & delims, Vector<String> & tokens, bool skipDuplicated = false, bool trimNotEmpty = false);
@@ -108,7 +106,7 @@ inline String WStringToString(const WideString& s)
 
     
 template<class T>
-void FindAndRemoveExchangingWithLast(Vector<T> & array, const T & object)
+bool FindAndRemoveExchangingWithLast(Vector<T> & array, const T & object)
 {
     uint32 size = (uint32)array.size();
     for (uint32 k = 0; k < size; ++k)
@@ -116,9 +114,13 @@ void FindAndRemoveExchangingWithLast(Vector<T> & array, const T & object)
         {
             array[k] = array[size - 1];
             array.pop_back();
-            return;
+            return true;
         }
+    
+    return false;
 }
+    
+    
 template<class T>
 void RemoveExchangingWithLast(Vector<T> & array, uint32 index)
 {

@@ -47,6 +47,7 @@ namespace ResourceEditor
 	static const DAVA::FastName SWITCH_NODE_NAME = DAVA::FastName("SwitchNode");
 	static const DAVA::FastName PARTICLE_EFFECT_NODE_NAME = DAVA::FastName("Particle Effect");
 	static const DAVA::FastName WIND_NODE_NAME = DAVA::FastName("Wind");
+    static const DAVA::FastName PATH_NODE_NAME = DAVA::FastName("Path");
 	static const String LAYER_NODE_NAME = "Layer";
 	static const DAVA::FastName ENTITY_NAME = DAVA::FastName("Entity");
 
@@ -202,6 +203,8 @@ namespace ResourceEditor
     static const String LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT     = "Warning: custom color texture is absent. Default texture will be created.";
 
 	static const String ADD_SWITCH_NODE_DIALOG_NO_CHILDREN			= "Error: switch node must be created with state nodes.";
+    static const String ADD_SWITCH_NODE_DIALOG_NO_RENDER_OBJECTS    = "Error: entities should contain render components with mesh render objects.";
+    static const String ADD_SWITCH_NODE_DIALOG_DENY_SRC_SWITCH      = "Error: entities should not contain switch components";
 	static const String SCENE_TREE_WRONG_REF_TO_OWNER				= "Wrong reference(s) to owner: ";
 
 }

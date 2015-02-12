@@ -45,6 +45,7 @@ namespace DAVA
 class UIControl;
 class UIGeometricData;
 struct TiledDrawData;
+struct StretchDrawData;
 
     /**
      \ingroup controlsystem
@@ -193,6 +194,11 @@ public:
      */
     virtual void SetFrame(int32 drawFrame);
     /**
+     \brief Sets Sprite frame you want to use.
+     \param[in] frameName Sprite frame name.
+     */
+	virtual void SetFrame(const FastName& frameName);
+    /**
      \brief Sets size of the left and right unscalable sprite part.
         Middle sprite part would be scaled along a full control width.
         Used for DRAW_STRETCH_HORIZONTAL, DRAW_STRETCH_BOTH draw types.
@@ -254,6 +260,7 @@ public:
         Default color is Color(1,1,1,1).
      \param[in] geometricData Control geometric data.
      */
+
     virtual void Draw(const UIGeometricData &geometricData);
 
     /**
@@ -325,34 +332,15 @@ protected:
 
 private:
 	TiledDrawData *tiledData;
-
-    struct StretchDrawData
-    {
-        Vector<Vector2> vertices;
-        Vector<Vector2> transformedVertices;
-        Vector<Vector2> texCoords;
-        static const uint16 indeces[18 * 3];
-
-        void GenerateStretchData();
-        void GenerateTransformData();
-        uint32 GetVertexInTrianglesCount() const;
-
-        Sprite *sprite;
-        int32 frame;
-        Vector2 size;
-        int32 type;
-        float32 leftStretchCap;
-        float32 topStretchCap;
-        Matrix3 transformMatr;
-    };
-    
     StretchDrawData *stretchData;
     
     UIMargins* margins;
 
 public:
     void ReleaseDrawData(); // Delete all spec draw data
-
+#if defined(LOCALIZATION_DEBUG)
+    const Sprite::DrawState & GetLastDrawState()const;
+#endif
 protected:
     ~UIControlBackground();
     Color drawColor;
@@ -360,52 +348,26 @@ protected:
     Shader *shader;
     
     UniqueHandle renderState;
+#if defined(LOCALIZATION_DEBUG)
+    Sprite::DrawState lastDrawState;
+#endif
     
 public:
     
-    int GetBgDrawType() const {
-        return GetDrawType();
-    }
+    // for introspection
     
-    void SetBgDrawType(int type) { // TODO: FIXME: type
-        SetDrawType((UIControlBackground::eDrawType) type);
-    }
-    
-    FilePath GetBgSprite() const {
-        if (GetSprite() == NULL)
-            return "";
-        else if (GetSprite()->GetRelativePathname().GetType() == FilePath::PATH_IN_MEMORY)
-            return "";
-        else
-            return Sprite::GetPathString(GetSprite());
-    }
-    
-    void SetBgSprite(const FilePath &path) {
-        if (path == "")
-            SetSprite(NULL, 0);
-        else
-            SetSprite(path, GetFrame());
-    }
-    
-    int32 GetBgColorInherit() const {
-        return GetColorInheritType();
-    }
-    
-    void SetBgColorInherit(int32 type) {
-        SetColorInheritType((UIControlBackground::eColorInheritType) type);
-    }
-    
-    int32 GetBgPerPixelAccuracy() const {
-        return GetPerPixelAccuracyType();
-    }
-    
-    void SetBgPerPixelAccuracy(int32 type) {
-        SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType) type);
-    }
+    inline int GetBgDrawType() const;
+    inline void SetBgDrawType(int type);
+    inline FilePath GetBgSpritePath() const;
+    inline void SetBgSpriteFromPath(const FilePath &path);
+    inline int32 GetBgColorInherit() const;
+    inline void SetBgColorInherit(int32 type);
+    inline int32 GetBgPerPixelAccuracy() const;
+    inline void SetBgPerPixelAccuracy(int32 type);
     
     INTROSPECTION_EXTEND(UIControlBackground, BaseObject,
                          PROPERTY("drawType", InspDesc("Draw Type", GlobalEnumMap<eDrawType>::Instance()), GetBgDrawType, SetBgDrawType, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("sprite", "Sprite", GetBgSprite, SetBgSprite, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("sprite", "Sprite", GetBgSpritePath, SetBgSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("frame", "Sprite Frame", GetFrame, SetFrame, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("spriteModification", "Spirte Modification", GetModification, SetModification, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
@@ -465,6 +427,55 @@ inline Vector4 UIControlBackground::UIMargins::AsVector4() const
 {
     return Vector4(left, top, right, bottom);
 }
+
+int UIControlBackground::GetBgDrawType() const
+{
+    return GetDrawType();
+}
+
+void UIControlBackground::SetBgDrawType(int type)
+{ // TODO: FIXME: type
+    SetDrawType((UIControlBackground::eDrawType) type);
+}
+
+FilePath UIControlBackground::GetBgSpritePath() const
+{
+    if (GetSprite() == NULL)
+        return "";
+    else if (GetSprite()->GetRelativePathname().GetType() == FilePath::PATH_IN_MEMORY)
+        return "";
+    else
+        return Sprite::GetPathString(GetSprite());
+}
+
+void UIControlBackground::SetBgSpriteFromPath(const FilePath &path)
+{
+    if (path == "")
+        SetSprite(NULL, 0);
+    else
+        SetSprite(path, GetFrame());
+}
+
+int32 UIControlBackground::GetBgColorInherit() const
+{
+    return GetColorInheritType();
+}
+
+void UIControlBackground::SetBgColorInherit(int32 type)
+{
+    SetColorInheritType((UIControlBackground::eColorInheritType) type);
+}
+
+int32 UIControlBackground::GetBgPerPixelAccuracy() const
+{
+    return GetPerPixelAccuracyType();
+}
+
+void UIControlBackground::SetBgPerPixelAccuracy(int32 type)
+{
+    SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType) type);
+}
+
 
 };
 

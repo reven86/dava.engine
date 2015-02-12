@@ -118,12 +118,13 @@ void CustomColorsProxy::UpdateSpriteFromConfig()
 		return;
 	}
 		
-	RenderManager::Instance()->SetRenderTarget(customColorsSprite);
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(customColorsSprite);
 	Vector<Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
 	if (customColors.size())
 	{
 		Color color = customColors.front();
 		RenderManager::Instance()->ClearWithColor(color.r, color.g, color.b, color.a);
 	}
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopRenderTarget();
 }

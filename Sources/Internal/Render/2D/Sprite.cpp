@@ -43,6 +43,7 @@
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/DynamicMemoryFile.h"
 #include "Render/Texturedescriptor.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #define NEW_PPA
@@ -65,7 +66,7 @@ Sprite::DrawState::DrawState()
     Reset();
     
     renderState = RenderState::RENDERSTATE_2D_BLEND;
-    shader = RenderManager::TEXTURE_MUL_FLAT_COLOR;
+    shader = RenderSystem2D::TEXTURE_MUL_FLAT_COLOR;
 }
 
 Sprite::Sprite()
@@ -83,7 +84,8 @@ Sprite::Sprite()
 	size.dy = 24;
 	frameCount = 0;
 
-	isPreparedForTiling = false;
+    isPreparedForTiling = false;
+    textureInVirtualSpace = false;
 
 	modification = 0;
 	flags = 0;
@@ -235,18 +237,20 @@ void Sprite::InitFromFile(File *file)
 	rectsAndOffsets = new float32*[frameCount];
 	frameTextureIndex = new int32[frameCount];
 
-
+	frameNames.resize(frameCount);
 	for (int32 i = 0; i < frameCount; i++)
 	{
 		frameVertices[i] = new GLfloat[8];
 		texCoords[i] = new GLfloat[8];
 		rectsAndOffsets[i] = new GLfloat[6];
-
+    	char frameName[128] = {0};
+    	
 		int32 x, y, dx, dy, xOff, yOff;
 
 		file->ReadLine(tempBuf, 1024);
-		sscanf(tempBuf, "%d %d %d %d %d %d %d", &x, &y, &dx, &dy, &xOff, &yOff, &frameTextureIndex[i]);
-
+		sscanf(tempBuf, "%d %d %d %d %d %d %d %s", &x, &y, &dx, &dy, &xOff, &yOff, &frameTextureIndex[i], frameName);
+		frameNames[i] = (*frameName == '\0') ? FastName() : FastName(frameName);
+        
         Rect rect = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Rect((float32)xOff, (float32)yOff, (float32)dx, (float32)dy), resourceSizeIndex);
 
 		rectsAndOffsets[i][0] = (float32)x;
@@ -293,7 +297,6 @@ void Sprite::InitFromFile(File *file)
 		texCoords[i][6] = ((GLfloat)dx - xof) / textures[frameTextureIndex[i]]->width;
 		texCoords[i][7] = ((GLfloat)dy - yof) / textures[frameTextureIndex[i]]->height;
 	}
-
 	defaultPivotPoint.x = 0;
 	defaultPivotPoint.y = 0;
 }
@@ -335,11 +338,13 @@ void Sprite::InitAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat
 	t->Release();
 
 	this->type = SPRITE_RENDER_TARGET;
+    this->textureInVirtualSpace = contentScaleIncluded;
 
 	// Clear created render target first
-	RenderManager::Instance()->SetRenderTarget(this);
-	RenderManager::Instance()->ClearWithColor(0, 0, 0, 0);
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(this);
+    RenderManager::Instance()->ClearWithColor(0, 0, 0, 0);
+    RenderSystem2D::Instance()->PopRenderTarget();
 }
 
 Sprite* Sprite::CreateFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, bool contentScaleIncluded)
@@ -481,33 +486,34 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 
 	resourceSizeIndex = VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex();
 
-	this->type = SPRITE_FROM_TEXTURE;
-	this->textureCount = 1;
-	this->textures = new Texture*[this->textureCount];
-	this->textureNames = new FilePath[this->textureCount];
+    type = SPRITE_FROM_TEXTURE;
+    textureCount = 1;
+    textures = new Texture*[textureCount];
+    textureNames = new FilePath[textureCount];
+    textureInVirtualSpace = contentScaleIncluded;
 
 
-	this->textures[0] = SafeRetain(fromTexture);
-	if(this->textures[0])
-	{
-		this->textureNames[0] = this->textures[0]->GetPathname();
-	}
+    textures[0] = SafeRetain(fromTexture);
+    if(textures[0])
+    {
+        textureNames[0] = textures[0]->GetPathname();
+    }
 
-	this->defaultPivotPoint.x = 0;
-	this->defaultPivotPoint.y = 0;
-	this->frameCount = 1;
+    defaultPivotPoint.x = 0;
+	defaultPivotPoint.y = 0;
+	frameCount = 1;
 
-	this->texCoords = new GLfloat*[this->frameCount];
-	this->frameVertices = new GLfloat*[this->frameCount];
-	this->rectsAndOffsets = new GLfloat*[this->frameCount];
-	this->frameTextureIndex = new int32[this->frameCount];
+    texCoords = new GLfloat*[frameCount];
+    frameVertices = new GLfloat*[frameCount];
+    rectsAndOffsets = new GLfloat*[frameCount];
+    frameTextureIndex = new int32[frameCount];
 
-	for (int i = 0;	i < this->frameCount; i++)
-	{
-		this->frameVertices[i] = new GLfloat[8];
-		this->texCoords[i] = new GLfloat[8];
-		this->rectsAndOffsets[i] = new GLfloat[6];
-		this->frameTextureIndex[i] = 0;
+    for (int i = 0;	i < frameCount; i++)
+    {
+        frameVertices[i] = new GLfloat[8];
+        texCoords[i] = new GLfloat[8];
+        rectsAndOffsets[i] = new GLfloat[6];
+        frameTextureIndex[i] = 0;
 
 		float32 x, y, dx,dy, xOff, yOff;
 		x = offset.x;
@@ -517,49 +523,72 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 		xOff = 0;
 		yOff = 0;
 
-		this->rectsAndOffsets[i][0] = (float32)x;
-		this->rectsAndOffsets[i][1] = (float32)y;
-		this->rectsAndOffsets[i][2] = size.x;
-		this->rectsAndOffsets[i][3] = size.y;
-		this->rectsAndOffsets[i][4] = (float32)xOff;
-		this->rectsAndOffsets[i][5] = (float32)yOff;
-
-		this->frameVertices[i][0] = (float32)xOff;
-		this->frameVertices[i][1] = (float32)yOff;
-		this->frameVertices[i][2] = (float32)xOff + size.x;
-		this->frameVertices[i][3] = (float32)yOff;
-		this->frameVertices[i][4] = (float32)xOff;
-		this->frameVertices[i][5] = (float32)(yOff + size.y);
-		this->frameVertices[i][6] = (float32)(xOff + size.x);
-		this->frameVertices[i][7] = (float32)(yOff + size.y);
+        float32* rectAndOffset = rectsAndOffsets[i];
+        rectAndOffset[0] = x;
+        rectAndOffset[1] = y;
+        rectAndOffset[2] = size.x;
+        rectAndOffset[3] = size.y;
+        rectAndOffset[4] = xOff;
+        rectAndOffset[5] = yOff;
 
 
-		dx += x;
-		dy += y;
+        float32* frameVerts = frameVertices[i];
+        frameVerts[0] = xOff;
+        frameVerts[1] = yOff;
+        frameVerts[2] = xOff + size.x;
+        frameVerts[3] = yOff;
+        frameVerts[4] = xOff;
+        frameVerts[5] = (yOff + size.y);
+        frameVerts[6] = (xOff + size.x);
+        frameVerts[7] = (yOff + size.y);
 
-		this->texCoords[i][0] = (GLfloat)x / this->textures[this->frameTextureIndex[i]]->width;
-		this->texCoords[i][1] = (GLfloat)y / this->textures[this->frameTextureIndex[i]]->height;
-		this->texCoords[i][2] = (GLfloat)dx / this->textures[this->frameTextureIndex[i]]->width;
-		this->texCoords[i][3] = (GLfloat)y / this->textures[this->frameTextureIndex[i]]->height;
-		this->texCoords[i][4] = (GLfloat)x / this->textures[this->frameTextureIndex[i]]->width;
-		this->texCoords[i][5] = (GLfloat)dy / this->textures[this->frameTextureIndex[i]]->height;
-		this->texCoords[i][6] = (GLfloat)dx / this->textures[this->frameTextureIndex[i]]->width;
-		this->texCoords[i][7] = (GLfloat)dy / this->textures[this->frameTextureIndex[i]]->height;
+        dx += x;
+        dy += y;
 
+        int32 frameIndex = frameTextureIndex[i];
+        Texture* texture = textures[frameIndex];
+        float32* texCoord = texCoords[i];
+        
+        if (targetWidth != -1 &&
+            targetHeight != -1 &&
+            targetWidth != texture->width &&
+            targetHeight != texture->height)
+        {
+            texCoord[0] = x / targetWidth;
+            texCoord[1] = y / targetHeight;
+            texCoord[2] = dx / targetWidth;
+            texCoord[3] = y / targetHeight;
+            texCoord[4] = x / targetWidth;
+            texCoord[5] = dy / targetHeight;
+            texCoord[6] = dx / targetWidth;
+            texCoord[7] = dy / targetHeight;
+        } else
+        {
+            texCoord[0] = x / texture->width;
+            texCoord[1] = y / texture->height;
+            texCoord[2] = dx / texture->width;
+            texCoord[3] = y / texture->height;
+            texCoord[4] = x / texture->width;
+            texCoord[5] = dy / texture->height;
+            texCoord[6] = dx / texture->width;
+            texCoord[7] = dy / texture->height;
+        }
 	}
 
 	// DF-1984 - Set available sprite relative path name here. Use FBO sprite name only if sprite name is empty.
-    if (this->relativePathname.IsEmpty())
-        this->relativePathname = spriteName.IsEmpty() ? Format("FBO sprite %d", fboCounter) : spriteName;
+    if (relativePathname.IsEmpty())
+    {
+        relativePathname = spriteName.IsEmpty() ? Format("FBO sprite %d", fboCounter) : spriteName;
+    }
 
     spriteMapMutex.Lock();
-	spriteMap[FILEPATH_MAP_KEY(this->relativePathname)] = this;
+    spriteMap[FILEPATH_MAP_KEY(relativePathname)] = this;
     spriteMapMutex.Unlock();
 
-	fboCounter++;
-	this->Reset();
-	
-	RegisterTextureStates();
+    fboCounter++;
+    Reset();
+
+    RegisterTextureStates();
 }
 
 void Sprite::SetOffsetsForFrame(int frame, float32 xOff, float32 yOff)
@@ -671,6 +700,22 @@ void Sprite::SetDefaultPivotPoint(float32 x, float32 y)
 void Sprite::SetDefaultPivotPoint(const Vector2 &newPivotPoint)
 {
     defaultPivotPoint = newPivotPoint;
+}
+
+int32 Sprite::GetFrameByName(const FastName& frameName) const
+{
+	if (!frameName.IsValid())
+    {
+		return INVALID_FRAME_INDEX;
+    }
+    
+    for (int32 i = 0; i < frameCount; i++)
+	{
+    	if (frameNames[i] == frameName)
+        	return i;
+    }
+    
+    return INVALID_FRAME_INDEX;
 }
 
 void Sprite::SetModification(int32 modif)

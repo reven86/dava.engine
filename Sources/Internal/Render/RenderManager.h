@@ -33,7 +33,6 @@
 #include "Render/RenderBase.h"
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "Render/2D/Sprite.h"
 #include "Platform/Mutex.h"
 #include "Platform/Thread.h"
 #include "Render/RenderEffect.h"
@@ -79,17 +78,6 @@ protected:
 class RenderManager : public Singleton<RenderManager>
 {
 public:
-    static FastName FLAT_COLOR_SHADER;
-    static FastName TEXTURE_MUL_FLAT_COLOR_SHADER;
-    
-    static Shader * FLAT_COLOR;
-    static Shader * TEXTURE_MUL_FLAT_COLOR;
-    static Shader * TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST;
-    static Shader * TEXTURE_MUL_FLAT_COLOR_IMAGE_A8;
-    static Shader * TEXTURE_MUL_COLOR;
-    static Shader * TEXTURE_MUL_COLOR_ALPHA_TEST;
-    static Shader * TEXTURE_MUL_COLOR_IMAGE_A8;
-    
     struct Caps
 	{
 		Caps() 
@@ -254,19 +242,8 @@ public:
 	void Unlock();
 	
     /**
-     === Viewport and orientation 
+     === Viewport
      */
-
-	/** 
-	 \brief 
-	 \param[in] orientation
-	 */
-	void SetRenderOrientation(int32 orientation);
-	/** 
-	 \brief 
-	 \returns 
-	 */
-	int32 GetRenderOrientation();
     
     /**
         \brief 
@@ -373,31 +350,13 @@ public:
 	void ClearStencilBuffer(int32 stencil = 0);
 
 	/** 
-	 \brief Sets the sprite to use as a render target. Sprite should be created with CreateAsRenderTarget method.
-			Call RestoreRenderTarget when you finish drawing to your sprite 
-	 \param[in] renderTarget - Render target sprite. If NULL 0 render manager will draw to the screen.
-	 */
-	void SetRenderTarget(Sprite *renderTarget);
-
-	/** 
-	 \brief Sets the texture to use as a render target. Texture should be created with CreateFBO method.
-			Call RestoreRenderTarget when you finish drawing to your texture 
-	 \param[in] renderTarget - Render target texture.
-	 */
-	void SetRenderTarget(Texture * renderTarget);
-
-	/** 
-        \brief Restores the previous render target
-	 */
-	void RestoreRenderTarget();
-
-	/** 
 	 \brief Checks is render target using for drawing now
 	 \param[out] true if render manager sets to a render targe. false if render manager draws to the screen now
 	 */
-	bool IsRenderTarget();
+	inline bool IsRenderTarget();
        
-	
+    Size2i GetFramebufferSize();
+
 	/** 
         \brief Sets the effect for the rendering. 
         \param[in] renderEffect - if 0, sets the effect to none
@@ -539,18 +498,8 @@ public:
     inline void RetainTextureState(UniqueHandle handle);
 	inline void ReleaseTextureState(UniqueHandle handle);
 	inline void SetTextureState(UniqueHandle requestedState);
-		
-protected:
-    //do nothing right now
-    DAVA_DEPRECATED(void RectFromRenderOrientationToViewport(Rect & rect));
 
 public:
-	typedef struct RenderTarget_t 
-    {
-        Sprite *spr;
-        int orientation;
-    } RenderTarget;
-
     Matrix4 projMatrix;
 	
 	// fbo data
@@ -567,10 +516,6 @@ public:
 
     int32 cachedEnabledStreams;
     uint32 cachedAttributeMask;
-    
-    int32 renderOrientation;
-	Sprite *currentRenderTarget;
-	std::stack<RenderTarget> renderTargetStack;
 
 	Shader * currentRenderEffect;
 	
@@ -594,9 +539,8 @@ public:
     Mutex renderStateMutex;
     Mutex textureStateMutex;
 	
-	void SetHWClip(const Rect &rect);
-	void SetHWRenderTargetSprite(Sprite *renderTarget);
-	void SetHWRenderTargetTexture(Texture * renderTarget);
+	void SetClip(const Rect &rect);
+	void SetRenderTarget(Texture * renderTarget);
     
     enum eClearBuffers
     {
@@ -882,7 +826,7 @@ inline UniqueHandle RenderManager::SubclassRenderState(UniqueHandle parentStateH
     LockRenderState();
     const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(parentStateHandle);
     RenderStateData derivedState;
-    memcpy(&derivedState, &parentState, sizeof(derivedState));
+    Memcpy(&derivedState, &parentState, sizeof(derivedState));
     UnlockRenderState();
     
     derivedState.sourceFactor = srcBlend;
@@ -945,7 +889,10 @@ inline void RenderManager::SetTextureState(UniqueHandle requestedState)
     currentState.textureState = requestedState;
 }
 
-    
+inline bool RenderManager::IsRenderTarget()
+{
+    return lastBindedFBO != (int32)fboViewFramebuffer;
+}
 
     
 };

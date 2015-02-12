@@ -17,7 +17,7 @@ namespace Ui {
     class PackageDockWidget;
 }
 
-class PackageDocument;
+class Document;
 class ControlNode;
 
 class PackageDockWidget : public QDockWidget
@@ -27,12 +27,23 @@ public:
     explicit PackageDockWidget(QWidget *parent = 0);
     virtual ~PackageDockWidget();
 
-    void SetDocument(PackageDocument *newDocument);
+    void SetDocument(Document *newDocument);
+
+private:
+    void RefreshActions(const QModelIndexList &indexList);
+    void RefreshAction(QAction *action, bool enabled, bool visible);
 
 private slots:
     void OnSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void filterTextChanged(const QString &);
-    void OnRemove();
+    void OnImport();
+    void OnCopy();
+    void OnPaste();
+    void OnCut();
+    void OnDelete();
+    
+    void OnControlSelectedInEditor(ControlNode *node);
+    void OnAllControlsDeselectedInEditor();
 
 signals:
     void SelectionRootControlChanged(const QList<ControlNode*> &activatedRootControls, const QList<ControlNode*> &deactivatedRootControls);
@@ -40,7 +51,12 @@ signals:
 
 private:
     Ui::PackageDockWidget *ui;
-    PackageDocument *document;
+    Document *document;
+    QAction *importPackageAction;
+    QAction *copyAction;
+    QAction *pasteAction;
+    QAction *cutAction;
+    QAction *delAction;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

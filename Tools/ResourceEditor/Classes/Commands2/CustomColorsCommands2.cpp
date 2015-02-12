@@ -163,19 +163,22 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
 											   image->GetWidth(), image->GetHeight(), false);
 	Sprite* sprite = Sprite::CreateFromTexture(texture, 0, 0, (float32)texture->GetWidth(), (float32)texture->GetHeight());
 	
-	RenderManager::Instance()->SetRenderTarget(customColorsSprite);
+    RenderSystem2D::Instance()->PushRenderTarget();
+	RenderSystem2D::Instance()->SetRenderTarget(customColorsSprite);
 	
     Rect rect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(updatedRect);
     
-	RenderSystem2D::Instance()->ClipPush();
+    RenderSystem2D::Instance()->PushClip();
     RenderSystem2D::Instance()->SetClip(rect);
 
     Sprite::DrawState drawState;
     drawState.SetPosition(rect.x, rect.y);
+    
+    RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(sprite, &drawState);
 	
-    RenderSystem2D::Instance()->ClipPop();
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopClip();
+    RenderSystem2D::Instance()->PopRenderTarget();
 	
 	customColorsProxy->UpdateRect(updatedRect);
 	

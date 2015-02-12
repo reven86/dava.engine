@@ -158,8 +158,6 @@ void Box2DGameObjectManager::Draw()
         
 		box2DWorld->SetDebugDraw(debugDraw);
 		box2DWorld->DrawDebugData();
-
-        RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, UPDATE_SEMANTIC_ALWAYS);
 	}
 }
 	
@@ -310,9 +308,9 @@ void Box2DGameObjectManager::PostSolve(b2Contact* contact, const b2ContactImpuls
 	}
 }
 
-void Box2DGameObjectManager::RemoveObject(Box2DGameObject * _object)
+void Box2DGameObjectManager::RemoveObject(GameObject * _object)
 {
-    if(b2Body *body = _object->GetBox2DBody())
+    if(b2Body *body = ((Box2DGameObject *)_object)->GetBox2DBody())
         body->SetActive(false);
     GameObjectManager::RemoveObject(_object);
 }

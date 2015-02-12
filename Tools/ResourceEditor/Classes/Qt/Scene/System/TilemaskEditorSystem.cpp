@@ -170,9 +170,12 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 			Vector2 toolSize = Vector2(cursorSize, cursorSize);
 			Vector2 toolPos = cursorPosition - toolSize / 2.f;
 
+            RenderSystem2D::Instance()->Setup2DMatrices();
+
 			if (activeDrawingType == TILEMASK_DRAW_NORMAL)
 			{
-				RenderManager::Instance()->SetRenderTarget(toolSprite);
+                RenderSystem2D::Instance()->PushRenderTarget();
+				RenderSystem2D::Instance()->SetRenderTarget(toolSprite);
                 
                 Sprite::DrawState drawState;
 				drawState.SetScaleSize(toolSize.x, toolSize.y,
@@ -182,7 +185,7 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
                 drawState.SetPosition(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(toolPos));
                 RenderSystem2D::Instance()->Draw(toolImageSprite, &drawState);
                 
-				RenderManager::Instance()->RestoreRenderTarget();
+                RenderSystem2D::Instance()->PopRenderTarget();
 
 				toolSpriteUpdated = true;
 			}
@@ -201,7 +204,7 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 
 				Rect dstRect = Rect(posTo, toolSize);
 				Vector2 spriteDeltaPos = dstRect.GetPosition() - posFrom;
-				Rect textureRect = Rect(spriteDeltaPos, dstSprite->GetSize());
+				Rect textureRect = Rect(spriteDeltaPos, Vector2(dstSprite->GetTexture()->GetWidth(), dstSprite->GetTexture()->GetHeight()));
 				textureRect.ClampToRect(dstRect);
 				if (dstRect.dx == 0.f || dstRect.dy == 0.f)
 				{
@@ -210,20 +213,17 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 
                 dstRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(dstRect);
                 
-				RenderManager::Instance()->SetRenderTarget(toolSprite);
-				RenderSystem2D::Instance()->ClipPush();
+                RenderSystem2D::Instance()->PushRenderTarget();
+                RenderSystem2D::Instance()->SetRenderTarget(toolSprite);
+				RenderSystem2D::Instance()->PushClip();
                 RenderSystem2D::Instance()->SetClip(dstRect);
                 
                 Sprite::DrawState drawState;
                 drawState.SetPosition(spriteDeltaPos.x, spriteDeltaPos.y);
                 drawState.SetRenderState(noBlendDrawState);
                 RenderSystem2D::Instance()->Draw(dstSprite, &drawState);
-                
-                RenderSystem2D::Instance()->ClipPop();
-				RenderManager::Instance()->RestoreRenderTarget();
 
-				RenderManager::Instance()->SetRenderTarget(stencilSprite);
-                RenderSystem2D::Instance()->ClipPush();
+                RenderSystem2D::Instance()->SetRenderTarget(stencilSprite);
                 RenderSystem2D::Instance()->SetClip(dstRect);
                 
                 drawState.Reset();
@@ -234,8 +234,8 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
                 drawState.SetRenderState(noBlendDrawState);
                 RenderSystem2D::Instance()->Draw(toolImageSprite, &drawState);
                 
-                RenderSystem2D::Instance()->ClipPop();
-				RenderManager::Instance()->RestoreRenderTarget();
+                RenderSystem2D::Instance()->PopClip();
+                RenderSystem2D::Instance()->PopRenderTarget();
 
 				toolSpriteUpdated = true;
 			}
@@ -246,7 +246,7 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 	}
 }
 
-void TilemaskEditorSystem::ProcessUIEvent(UIEvent* event)
+void TilemaskEditorSystem::Input(UIEvent* event)
 {
 	if (!IsLandscapeEditingEnabled())
 	{
@@ -369,19 +369,21 @@ void TilemaskEditorSystem::UpdateBrushTool()
 	Sprite* srcSprite = drawSystem->GetLandscapeProxy()->GetTilemaskSprite(LandscapeProxy::TILEMASK_SPRITE_SOURCE);
 	Sprite* dstSprite = drawSystem->GetLandscapeProxy()->GetTilemaskSprite(LandscapeProxy::TILEMASK_SPRITE_DESTINATION);
     
-	RenderManager::Instance()->SetRenderTarget(dstSprite);
-
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(dstSprite);
+    RenderSystem2D::Instance()->Setup2DMatrices();
+    
 	Shader* shader = tileMaskEditorShader;
 	if (activeDrawingType == TILEMASK_DRAW_COPY_PASTE)
 	{
 		shader = tileMaskCopyPasteShader;
 	}
 
-    spriteTempVertices[0] = spriteTempVertices[4] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(srcSprite->GetFrameVerticesForFrame(0)[0]);
-    spriteTempVertices[5] = spriteTempVertices[7] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(srcSprite->GetFrameVerticesForFrame(0)[5]);
-    spriteTempVertices[1] = spriteTempVertices[3] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(srcSprite->GetFrameVerticesForFrame(0)[1]);
-    spriteTempVertices[2] = spriteTempVertices[6] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(srcSprite->GetFrameVerticesForFrame(0)[2]);
-
+    spriteTempVertices[0] = spriteTempVertices[4] = srcSprite->GetFrameVerticesForFrame(0)[0];
+    spriteTempVertices[5] = spriteTempVertices[7] = srcSprite->GetFrameVerticesForFrame(0)[5];
+    spriteTempVertices[1] = spriteTempVertices[3] = srcSprite->GetFrameVerticesForFrame(0)[1];
+    spriteTempVertices[2] = spriteTempVertices[6] = srcSprite->GetFrameVerticesForFrame(0)[2];
+    
     spriteVertexStream->Set(TYPE_FLOAT, 2, 0, spriteTempVertices);
     spriteTexCoordStream->Set(TYPE_FLOAT, 2, 0, srcSprite->GetTextureCoordsForFrame(0));
 
@@ -422,25 +424,23 @@ void TilemaskEditorSystem::UpdateBrushTool()
 
 	RenderManager::Instance()->HWDrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
     
-	RenderManager::Instance()->RestoreRenderTarget();
 	RenderManager::Instance()->SetColor(Color::White);
 
 	RenderManager::Instance()->ReleaseTextureState(textureState);
     
-//	srcSprite->GetTexture()->GenerateMipmaps();
-//	dstSprite->GetTexture()->GenerateMipmaps();
 	drawSystem->GetLandscapeProxy()->SetTilemaskTexture(dstSprite->GetTexture());
 	drawSystem->GetLandscapeProxy()->SwapTilemaskSprites();
 
-	RenderManager::Instance()->SetRenderTarget(toolSprite);
+    RenderSystem2D::Instance()->SetRenderTarget(toolSprite);
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopRenderTarget();
 
 	if (activeDrawingType == TILEMASK_DRAW_COPY_PASTE)
-	{
-		RenderManager::Instance()->SetRenderTarget(stencilSprite);
-		RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-		RenderManager::Instance()->RestoreRenderTarget();
+    {
+        RenderSystem2D::Instance()->PushRenderTarget();
+        RenderSystem2D::Instance()->SetRenderTarget(stencilSprite);
+        RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+        RenderSystem2D::Instance()->PopRenderTarget();
 	}
 }
 
@@ -449,9 +449,9 @@ Image* TilemaskEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fil
 	Sprite *dstSprite = Sprite::CreateAsRenderTarget(sideSize, sideSize, FORMAT_RGBA8888, true);
 	Texture *srcTex = Texture::CreateFromFile(filePath);
 	Sprite *srcSprite = Sprite::CreateFromTexture(srcTex, 0, 0, (float32)srcTex->GetWidth(), (float32)srcTex->GetHeight(),true);
-	
-	RenderManager::Instance()->SetRenderTarget(dstSprite);
-	
+
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(dstSprite);
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.0f);
 	RenderManager::Instance()->SetColor(Color::White);
 	
@@ -462,8 +462,10 @@ Image* TilemaskEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fil
                            srcSprite->GetHeight());
 	drawState.SetPosition(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(Vector2((dstSprite->GetTexture()->GetWidth() - sideSize)/2.0f,
                                   (dstSprite->GetTexture()->GetHeight() - sideSize) / 2.0f)));
+    
+    RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopRenderTarget();
 	
 	SafeRelease(toolImageSprite);
 	toolImageSprite = SafeRetain(dstSprite);
@@ -574,14 +576,17 @@ void TilemaskEditorSystem::CreateMaskFromTexture(Texture* texture)
 	{
 		Sprite *oldMask = Sprite::CreateFromTexture(texture, 0, 0,
 													(float32)texture->GetWidth(), (float32)texture->GetHeight(), true);
-		
-		RenderManager::Instance()->SetRenderTarget(sprite);
+        
+        RenderSystem2D::Instance()->PushRenderTarget();
+        RenderSystem2D::Instance()->SetRenderTarget(sprite);
         Sprite::DrawState drawState;
         drawState.SetPosition(0.f, 0.f);
         drawState.SetRenderState(noBlendDrawState);
+        
+        RenderSystem2D::Instance()->Setup2DMatrices();
         RenderSystem2D::Instance()->Draw(oldMask, &drawState);
         
-		RenderManager::Instance()->RestoreRenderTarget();
+        RenderSystem2D::Instance()->PopRenderTarget();
 		
 		SafeRelease(oldMask);
 	}

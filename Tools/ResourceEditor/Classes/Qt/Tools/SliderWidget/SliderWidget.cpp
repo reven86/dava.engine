@@ -32,10 +32,10 @@ const int SliderWidget::DEF_LOWEST_VALUE = -999;
 const int SliderWidget::DEF_HIGHEST_VALUE = 999;
 
 SliderWidget::SliderWidget(QWidget* parent)
-:	QWidget(parent)
-,	isRangeChangingBlocked(true)
-,	rangeBoundMax(DEF_HIGHEST_VALUE)
-,	rangeBoundMin(DEF_LOWEST_VALUE)
+: QWidget(parent)
+, isRangeChangingBlocked(true)
+, rangeBoundMin(DEF_LOWEST_VALUE)
+, rangeBoundMax(DEF_HIGHEST_VALUE)
 {
 	InitUI();
 	Init(true, 10, 0, 0);

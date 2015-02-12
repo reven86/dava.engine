@@ -7,19 +7,21 @@
 #include <QUndoStack>
 #include "DAVAEngine.h"
 
-class PackageDocument;
+class Document;
 class PackageNode;
 class ControlNode;
 class PackageBaseNode;
+class PackageControlsNode;
 
 class UIPackageModel : public QAbstractItemModel
 {
     Q_OBJECT
     
 public:
-    UIPackageModel(PackageDocument *document);
+    UIPackageModel(Document *document);
     virtual ~UIPackageModel();
     
+    virtual QModelIndex indexByNode(PackageBaseNode *node) const;
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     virtual QModelIndex parent(const QModelIndex &child) const override;
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const  override;
@@ -36,15 +38,18 @@ public:
     
     void InsertItem(const QString &name, int dstRow, const QModelIndex &dstParent);
     void InsertItem(ControlNode *node, int dstRow, const QModelIndex &dstParent);
+    void InsertImportedPackage(PackageControlsNode *node, int dstRow, const QModelIndex &dstParent);
     void MoveItem(const QModelIndex &srcItem, int dstRow, const QModelIndex &dstParent);
     void CopyItem(const QModelIndex &srcItem, int dstRow, const QModelIndex &dstParent);
     void RemoveItem(const QModelIndex &srcItem);
 
     void InsertNode(ControlNode *node, const QModelIndex &parent, int row);
-    void RemoveNode(ControlNode *node);
+    void RemoveNode(PackageBaseNode *node);
+    void RemoveControlNode(ControlNode *node);
+    void RemovePackageControlsNode(PackageControlsNode *node);
 private:
     PackageNode *root;
-    PackageDocument *document;
+    Document *document;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_MODEL_H__

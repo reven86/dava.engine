@@ -32,6 +32,8 @@
 
 #include <math.h>
 
+#include "Vector.h"
+
 namespace DAVA
 {
 /**	
@@ -114,25 +116,25 @@ inline bool Rect::PointInside(const Vector2 & point) const
 
 inline bool Rect::RectIntersects(const Rect & rect) const
 {
-	float32 left1, left2;
-	float32 right1, right2;
-	float32 top1, top2;
-	float32 bottom1, bottom2;
+	float32 top1 = y;
+	float32 top2 = rect.y;
+	float32 bottom1 = y + dy;
+	float32 bottom2 = rect.y + rect.dy;
 
-	left1 = x;
-	left2 = rect.x;
-	right1 = x + dx;
-	right2 = rect.x + rect.dx;
-	top1 = y;
-	top2 = rect.y;
-	bottom1 = y + dy;
-	bottom2 = rect.y + rect.dy;
+	if (bottom1 < top2)
+        return(false);
+	if (top1 > bottom2)
+        return(false);
 
-	if (bottom1 < top2) return(false);
-	if (top1 > bottom2) return(false);
+    float32 left1 = x;
+    float32 left2 = rect.x;
+    float32 right1 = x + dx;
+    float32 right2 = rect.x + rect.dx;
 
-	if (right1 < left2) return(false);
-	if (left1 > right2) return(false);
+	if (right1 < left2)
+        return(false);
+	if (left1 > right2)
+        return(false);
 
 	return(true);
 }

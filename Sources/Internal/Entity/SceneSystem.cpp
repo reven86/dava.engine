@@ -47,7 +47,7 @@ SceneSystem::~SceneSystem()
     
 void SceneSystem::RegisterEntity(Entity * entity)
 {
-    uint32 requiredComponents = this->GetRequiredComponents();
+    uint64 requiredComponents = this->GetRequiredComponents();
     bool needAdd = ((requiredComponents & entity->GetAvailableComponentFlags()) == requiredComponents);
 
     if (needAdd)
@@ -56,7 +56,7 @@ void SceneSystem::RegisterEntity(Entity * entity)
     
 void SceneSystem::UnregisterEntity(Entity * entity)
 {
-    uint32 requiredComponents = this->GetRequiredComponents();
+    uint64 requiredComponents = this->GetRequiredComponents();
     bool needRemove = ((requiredComponents & entity->GetAvailableComponentFlags()) == requiredComponents);
 
     if (needRemove)
@@ -65,9 +65,9 @@ void SceneSystem::UnregisterEntity(Entity * entity)
     
 bool SceneSystem::IsEntityComponentFitsToSystem(Entity * entity, Component * component)
 {
-    uint32 entityComponentFlags = entity->GetAvailableComponentFlags();
-    uint32 componentToCheckType = 1 << component->GetType();
-    uint32 requiredBySystemComponents = this->GetRequiredComponents();
+    uint64 entityComponentFlags = entity->GetAvailableComponentFlags();
+    uint64 componentToCheckType = MAKE_COMPONENT_MASK(component->GetType());
+    uint64 requiredBySystemComponents = this->GetRequiredComponents();
 
     bool isAllRequiredComponentsAvailable = ((entityComponentFlags & requiredBySystemComponents) == requiredBySystemComponents);
     bool isComponentMarkedForCheckAvailable = ((requiredBySystemComponents & componentToCheckType) == componentToCheckType);
@@ -149,7 +149,7 @@ void SceneSystem::SetLocked(bool locked)
 	this->locked = locked;
 }
 
-bool SceneSystem::IsLocked()
+bool SceneSystem::IsLocked() const
 {
 	return locked;
 }

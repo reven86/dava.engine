@@ -7,26 +7,29 @@
 class PackageNode;
 class ControlNode;
 class PropertiesSection;
+class PackageCommandExecutor;
 
 class EditorUIPackageBuilder : public DAVA::AbstractUIPackageBuilder
 {
 public:
-    EditorUIPackageBuilder();
+    EditorUIPackageBuilder(PackageNode *basePackage = nullptr, ControlNode *insertingTarget = nullptr, PackageCommandExecutor *executor = nullptr);
     virtual ~EditorUIPackageBuilder();
-    
-    virtual DAVA::UIPackage *BeginPackage(const DAVA::FilePath &packagePath) override;
+
+    virtual DAVA::UIPackage *FindInCache(const DAVA::String &packagePath) const override;
+
+    virtual DAVA::RefPtr<DAVA::UIPackage> BeginPackage(const DAVA::FilePath &packagePath) override;
     virtual void EndPackage() override;
     
-    virtual DAVA::UIPackage *ProcessImportedPackage(const DAVA::String &packagePath, DAVA::AbstractUIPackageLoader *loader) override;
+    virtual DAVA::RefPtr<DAVA::UIPackage> ProcessImportedPackage(const DAVA::String &packagePath, DAVA::AbstractUIPackageLoader *loader) override;
     
     virtual DAVA::UIControl *BeginControlWithClass(const DAVA::String &className) override;
     virtual DAVA::UIControl *BeginControlWithCustomClass(const DAVA::String &customClassName, const DAVA::String &className) override;
     virtual DAVA::UIControl *BeginControlWithPrototype(const DAVA::String &packageName, const DAVA::String &prototypeName, const DAVA::String &customClassName, DAVA::AbstractUIPackageLoader *loader) override;
     virtual DAVA::UIControl *BeginControlWithPath(const DAVA::String &pathName) override;
     virtual DAVA::UIControl *BeginUnknownControl(const DAVA::YamlNode *node) override;
-    virtual void EndControl() override;
+    virtual void EndControl(bool isRoot) override;
     
-    virtual void BeginControlPropretiesSection(const DAVA::String &name) override;
+    virtual void BeginControlPropertiesSection(const DAVA::String &name) override;
     virtual void EndControlPropertiesSection() override;
     
     virtual DAVA::UIControlBackground *BeginBgPropertiesSection(int index, bool sectionHasProperties) override;
@@ -37,10 +40,8 @@ public:
     
     virtual void ProcessProperty(const DAVA::InspMember *member, const DAVA::VariantType &value) override;
 
-    PackageNode *GetPackageNode() const {
-        return packageNode;
-    }
-    
+    DAVA::RefPtr<PackageNode> GetPackageNode() const;
+
 private:
     struct ControlDescr {
         ControlNode *node;
@@ -55,10 +56,14 @@ private:
     
 private:
     PackageNode *packageNode;
+    PackageNode *basePackage;
+    ControlNode *insertingTarget;
     
     DAVA::List<ControlDescr> controlsStack;
     DAVA::BaseObject *currentObject;
     PropertiesSection *currentSection;
+    
+    PackageCommandExecutor *commandExecutor;
 };
 
 #endif // __EDITOR_UI_PACKAGE_BUILDER_H__

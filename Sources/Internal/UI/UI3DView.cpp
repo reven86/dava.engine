@@ -37,6 +37,9 @@
 #include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
+#include "Scene3D/Systems/Controller/RotationControllerSystem.h"
+#include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
+#include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 
 namespace DAVA 
 {
@@ -102,18 +105,13 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
     const Rect & viewportRect = geometricData.GetUnrotatedRect();
     viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
     
-    int32 renderOrientation = RenderManager::Instance()->GetRenderOrientation();
-    
     Rect viewportSave = RenderManager::Instance()->GetViewport();
     RenderManager::Instance()->SetViewport(viewportRc);
     
-    
     if (scene)
         scene->Draw();
-
         
     RenderManager::Instance()->SetViewport(viewportSave);
-    RenderManager::Instance()->SetRenderOrientation(renderOrientation);
 	
 	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
     RenderSystem2D::Instance()->Setup2DMatrices();
@@ -160,5 +158,16 @@ void UI3DView::WillBecomeInvisible()
         UIControlSystem::Instance()->UI3DViewRemoved();
     }
 }
+    
+void UI3DView::Input(UIEvent *currentInput)
+{
+    if(scene)
+    {
+        scene->Input(currentInput);
+    }
+    
+    UIControl::Input(currentInput);
+}
+    
 
 }

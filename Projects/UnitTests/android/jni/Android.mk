@@ -16,6 +16,7 @@ LOCAL_MODULE := UnitTestsLib
 # set path for includes
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
 LOCAL_C_INCLUDES += $(MY_PROJECT_ROOT)/Classes
+LOCAL_C_INCLUDES += $(MY_PROJECT_ROOT)/Classes/OldTests
 LOCAL_C_INCLUDES += $(MY_PROJECT_ROOT)/Classes/Infrastructure
 LOCAL_C_INCLUDES += $(DAVA_ROOT)/Sources/Tools
 
@@ -27,10 +28,7 @@ LOCAL_SRC_FILES := \
 	$(subst $(LOCAL_PATH)/,, \
 	$(wildcard $(MY_PROJECT_ROOT)/Classes/*.cpp) \
 	$(wildcard $(MY_PROJECT_ROOT)/Classes/Infrastructure/*.cpp) \
-	$(wildcard $(MY_PROJECT_ROOT)/Classes/SFML/*.cpp) \
-	$(wildcard $(MY_PROJECT_ROOT)/Classes/SFML/Network/*.cpp) \
-	$(wildcard $(MY_PROJECT_ROOT)/Classes/SFML/Network/Unix/*.cpp) \
-	$(wildcard $(MY_PROJECT_ROOT)/Classes/SFML/System/*.cpp) \
+	$(wildcard $(MY_PROJECT_ROOT)/Classes/Tests/*.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TeamcityOutput/*.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TexturePacker/CommandLineParser.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Internal/Platform/TemplateAndroid/ExternC/*.cpp) )
@@ -41,6 +39,7 @@ ifneq ($(filter $(TARGET_ARCH_ABI), armeabi-v7a armeabi-v7a-hard),)
 LOCAL_ARM_NEON := true
 LOCAL_NEON_CFLAGS := -mfloat-abi=softfp -mfpu=neon -march=armv7
 endif
+LOCAL_CPPFLAGS += -std=c++1y
 
 # set included libraries
 LOCAL_STATIC_LIBRARIES := libInternal

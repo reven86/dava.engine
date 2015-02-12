@@ -215,6 +215,7 @@ public:
     static const FastName PARAM_SHADOW_COLOR;
     static const FastName PARAM_DECAL_TILE_SCALE;
     static const FastName PARAM_DECAL_TILE_COLOR;
+    static const FastName PARAM_DETAIL_TILE_SCALE;
     static const FastName PARAM_RCP_SCREEN_SIZE;
     static const FastName PARAM_SCREEN_OFFSET;
     
@@ -228,7 +229,7 @@ public:
 	static const FastName FLAG_TEXTURE0_ANIMATION_SHIFT;
 	static const FastName FLAG_WAVE_ANIMATION;
 	static const FastName FLAG_FAST_NORMALIZATION;    
-    static const FastName FLAG_TILED_DECAL;
+    static const FastName FLAG_TILED_DECAL_MASK;
 	static const FastName FLAG_FLATCOLOR;
     static const FastName FLAG_DISTANCEATTENUATION;
     static const FastName FLAG_SPECULAR;
@@ -311,7 +312,13 @@ public:
 	//setting properties via special setters
 	inline uint8 GetDynamicBindFlags() const;
 	//}END TODO
-	
+
+    /**
+    \brief Returns using material flags.
+    \param[in] reference vector
+    */
+    inline void GetFlags(Vector<FastName> &flagsCollection) const;
+
     /**
 	 \brief Renders given polygon group with the current material.
      \param[in] polygonGroup polygon group to render.
@@ -967,12 +974,12 @@ void NMaterial::SetRenderLayers(uint32 bitmask)
 }
 
 inline NMaterial::RenderPassInstance::RenderPassInstance() :
-textureIndexMap(8),
 dirtyState(false),
 texturesDirty(true),
+propsDirty(true),
+textureIndexMap(8),
 activeUniformsCachePtr(NULL),
-activeUniformsCacheSize(0),
-propsDirty(true)
+activeUniformsCacheSize(0)
 {
     renderState.shader = NULL;
 }
@@ -1125,6 +1132,17 @@ inline uint8 NMaterial::GetDynamicBindFlags() const
     return dynamicBindFlags;
 }
 
+inline void NMaterial::GetFlags(Vector<FastName> &flagsCollection) const
+{
+    flagsCollection.reserve(flagsCollection.size() + materialSetFlags.size());
+
+    const HashMap<FastName, int32>& hash = materialSetFlags;
+    for (HashMap<FastName, int32>::iterator it = hash.begin(); it != hash.end(); ++it)
+    {
+        flagsCollection.push_back((*it).first);
+    }
+}
+
 inline IlluminationParams::IlluminationParams(NMaterial* parentMaterial) :
                                                                 isUsed(true),
                                                                 castShadow(true),
@@ -1217,8 +1235,8 @@ inline const FilePath& NMaterial::TextureBucket::GetPath() const
 
 inline NMaterial::UniformCacheEntry::UniformCacheEntry() :
 uniform(NULL),
-prop(NULL),
-index(-1)
+index(-1),
+prop(NULL)
 {
 }
 

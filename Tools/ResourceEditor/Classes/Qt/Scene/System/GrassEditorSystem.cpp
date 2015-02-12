@@ -43,18 +43,16 @@
 
 #include <QApplication>
 
-static const float32 DENSITY_THRESHOLD = 0.1f;
-
 GrassEditorSystem::GrassEditorSystem(Scene* scene)
 : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/squareCursor.tex")
 , inDrawState(false)
-, vegetationMap(NULL)
-, vegetationMapCopy(NULL)
-, curHeight(8)
-, curDensity(8)
 , curBrushMode(BRUSH_REPLACE)
 , curBrushAffect(AFFECT_ALL)
+, curHeight(8)
+, curDensity(8)
 , curLayer(0)
+, vegetationMap(NULL)
+, vegetationMapCopy(NULL)
 , curVegetation(NULL)
 {
 }
@@ -69,7 +67,7 @@ GrassEditorSystem::~GrassEditorSystem()
 void GrassEditorSystem::Update(DAVA::float32 timeElapsed)
 { }
 
-void GrassEditorSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void GrassEditorSystem::Input(DAVA::UIEvent *event)
 {
     if(enabled && NULL != vegetationMap)
     {

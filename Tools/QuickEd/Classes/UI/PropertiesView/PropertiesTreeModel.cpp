@@ -1,10 +1,3 @@
-//
-//  PropertiesTreeModel.cpp
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 12.9.14.
-//
-//
 
 #include "PropertiesTreeModel.h"
 
@@ -15,24 +8,26 @@
 #include <QUndoStack>
 
 #include "UIControls/ControlProperties/BaseProperty.h"
+#include "UIControls/PackageHierarchy/ControlNode.h"
 #include "Utils/QtDavaConvertion.h"
 #include "ChangePropertyValueCommand.h"
-#include "UI/PackageDocument.h"
-#include "PropertiesViewContext.h"
+#include "UI/Document.h"
+#include "UI/QtModelPackageCommandExecutor.h"
+#include "UI/PropertiesContext.h"
 
 using namespace DAVA;
 
-PropertiesTreeModel::PropertiesTreeModel(BaseProperty *propertiesRoot, PropertiesViewContext *context, QObject *parent)
+PropertiesTreeModel::PropertiesTreeModel(ControlNode *_controlNode, PropertiesContext *context, QObject *parent)
     : QAbstractItemModel(parent)
-    , root(NULL)
-    , propertiesViewContext(context)
+    , controlNode(nullptr)
+    , propertiesContext(context)
 {
-    root = SafeRetain(propertiesRoot);
+    controlNode = SafeRetain(_controlNode);
 }
 
 PropertiesTreeModel::~PropertiesTreeModel()
 {
-    SafeRelease(root);
+    SafeRelease(controlNode);
 }
 
 QModelIndex PropertiesTreeModel::index(int row, int column, const QModelIndex &parent) const
@@ -41,7 +36,7 @@ QModelIndex PropertiesTreeModel::index(int row, int column, const QModelIndex &p
         return QModelIndex();
     
     if (!parent.isValid())
-        return createIndex(row, column, root->GetProperty(row));
+        return createIndex(row, column, controlNode->GetPropertiesRoot()->GetProperty(row));
     
     BaseProperty *property = static_cast<BaseProperty*>(parent.internalPointer());
     return createIndex(row, column, property->GetProperty(row));
@@ -55,7 +50,7 @@ QModelIndex PropertiesTreeModel::parent(const QModelIndex &child) const
     BaseProperty *property = static_cast<BaseProperty*>(child.internalPointer());
     BaseProperty *parent = property->GetParent();
     
-    if (parent == NULL || parent == root)
+    if (parent == NULL || parent == controlNode->GetPropertiesRoot())
         return QModelIndex();
 
     if (parent->GetParent())
@@ -70,14 +65,14 @@ int PropertiesTreeModel::rowCount(const QModelIndex &parent) const
         return 0;
     
     if (!parent.isValid())
-        return root ? root->GetCount() : 0;
+        return controlNode->GetPropertiesRoot() ? controlNode->GetPropertiesRoot()->GetCount() : 0;
     
     return static_cast<BaseProperty*>(parent.internalPointer())->GetCount();
 }
 
 int PropertiesTreeModel::columnCount(const QModelIndex &parent) const
 {
-    if (!parent.isValid() || parent.internalPointer() == root)
+    if (!parent.isValid() || parent.internalPointer() == controlNode->GetPropertiesRoot())
         return 2;
     
     return 2;
@@ -107,6 +102,15 @@ QVariant PropertiesTreeModel::data(const QModelIndex &index, int role) const
             }
             break;
 
+        case Qt::ToolTipRole:
+            {
+                if (index.column() == 0)
+                    return QVariant(property->GetName().c_str());
+
+                return makeQVariant(property);
+            }
+            break;
+
         case Qt::EditRole:
             {
                 QVariant var;
@@ -127,7 +131,7 @@ QVariant PropertiesTreeModel::data(const QModelIndex &index, int role) const
             break;
 
         case Qt::BackgroundRole:
-            return property->GetType() == BaseProperty::TYPE_HEADER ? Qt::lightGray : Qt::white;
+            return property->GetType() == BaseProperty::TYPE_HEADER ? QColor(Qt::lightGray) : QColor(Qt::white);
             
         case Qt::FontRole:
             {
@@ -158,8 +162,9 @@ bool PropertiesTreeModel::setData(const QModelIndex &index, const QVariant &valu
             if (property->GetValue().GetType() == VariantType::TYPE_BOOLEAN)
             {
                 VariantType newVal(value != Qt::Unchecked);
-                QUndoCommand *command = new ChangePropertyValueCommand(property, newVal);
-                propertiesViewContext->Document()->UndoStack()->push(command);
+                propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
+                QModelIndex siblingIndex = index.sibling(index.row(), index.column()-1);
+                emit dataChanged(siblingIndex, index);
                 return true;
             }
         }
@@ -178,19 +183,17 @@ bool PropertiesTreeModel::setData(const QModelIndex &index, const QVariant &valu
                 initVariantType(newVal, value);
             }
 
-            QUndoCommand *command = new ChangePropertyValueCommand(property, newVal);
-            propertiesViewContext->Document()->UndoStack()->push(command);
+            propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
 
             QModelIndex siblingIndex = index.sibling(index.row(), index.column()-1);
-            emit dataChanged(siblingIndex, siblingIndex);
+            emit dataChanged(siblingIndex, index);
             return true;
         }
         break;
 
     case DAVA::ResetRole:
         {
-            QUndoCommand *command = new ChangePropertyValueCommand(property);
-            propertiesViewContext->Document()->UndoStack()->push(command);
+            propertiesContext->GetDocument()->GetCommandExecutor()->ResetProperty(controlNode, property);
             emit dataChanged(index.sibling(index.row(), index.column()-1), index);
             return true;
         }
@@ -290,7 +293,7 @@ QVariant PropertiesTreeModel::makeQVariant(const BaseProperty *property) const
             return QColorToHex(ColorToQColor(val.AsColor()));
 
         case VariantType::TYPE_FILEPATH:
-            return StringToQString(val.AsFilePath().GetAbsolutePathname());
+            return StringToQString(val.AsFilePath().GetStringValue());
             
         case VariantType::TYPE_BYTE_ARRAY:
         case VariantType::TYPE_KEYED_ARCHIVE:

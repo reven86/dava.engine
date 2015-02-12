@@ -37,8 +37,6 @@
 
 #include "UI/UIControlBackground.h"
 
-#define MAX_VERTEXES 4096
-
 namespace DAVA
 {
 
@@ -90,104 +88,149 @@ struct TiledDrawData
     Matrix3 transformMatr;
 };
 
+struct StretchDrawData
+{
+    Vector<Vector2> vertices;
+    Vector<Vector2> transformedVertices;
+    Vector<Vector2> texCoords;
+    static const uint16 indeces[18 * 3];
+
+    void GenerateStretchData();
+    void GenerateTransformData();
+    uint32 GetVertexInTrianglesCount() const;
+
+    Sprite *sprite;
+    int32 frame;
+    Vector2 size;
+    int32 type;
+    Vector2 stretchCap;
+    Matrix3 transformMatr;
+};
+
 class VboPool
 {
 public:
-    VboPool(uint32 size, uint8 count);
+    VboPool(uint32 verticesCount, uint32 format, uint32 indicesCount, uint8 buffersCount);
+    ~VboPool();
+
     void Next();
+    void SetVertexData(uint32 offset, uint32 count, float32 * data);
+    void SetIndexData(uint32 offset, uint32 count, uint8 * data);
 
-    void SetVertexData(uint32 count, float32 * data);
-    void SetIndexData(uint32 count, uint8 * data);
-
-    void MapBuffers();
-    void UnmapBuffers();
-    void RenewBuffers(uint32 size);
-    void MapVertexBuffer();
-    void UnmapVertexBuffer();
-    void MapIndexBuffer();
-    void UnmapIndexBuffer();
-    
-    RenderDataObject* GetDataObject() const;
-    float32 * GetVertexBufferPointer() const;
-    uint16 * GetIndexBufferPointer() const;
-    uint32 GetVertexBufferSize() const;
-    uint32 GetIndexBufferSize() const;
+    inline RenderDataObject* GetRenderDataObject() const;
 
 private:
+    RenderDataObject * currentDataObject;
     Vector<RenderDataObject*> dataObjects;
     uint8 currentDataObjectIndex;
-    int32	vertexStride;
-    int32	vertexFormat;
-
-    RenderDataObject * currentDataObject;
-    uint32 currentVertexBufferSize;
-    uint32 currentIndexBufferSize;
-    float32 * currentVertexBufferPointer;
-    uint16 * currentIndexBufferPointer;
+    uint32 vertexStride;
+    uint32 vertexFormat;
 };
 
 class RenderSystem2D : public Singleton<RenderSystem2D>
 {
 public:
+    static FastName FLAT_COLOR_SHADER;
+    static FastName TEXTURE_FLAT_COLOR_SHADER;
+
+    static Shader * FLAT_COLOR;
+    static Shader * TEXTURE_MUL_FLAT_COLOR;
+    static Shader * TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST;
+    static Shader * TEXTURE_MUL_FLAT_COLOR_IMAGE_A8;
+    static Shader * TEXTURE_ADD_FLAT_COLOR;
+    static Shader * TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST;
+    static Shader * TEXTURE_ADD_FLAT_COLOR_IMAGE_A8;
+    static Shader * TEXTURE_MUL_COLOR;
+    static Shader * TEXTURE_MUL_COLOR_ALPHA_TEST;
+    static Shader * TEXTURE_MUL_COLOR_IMAGE_A8;
+    static Shader * TEXTURE_ADD_COLOR;
+    static Shader * TEXTURE_ADD_COLOR_ALPHA_TEST;
+    static Shader * TEXTURE_ADD_COLOR_IMAGE_A8;
+
+
     RenderSystem2D();
     virtual ~RenderSystem2D();
     
-    void Draw(Sprite * sprite, Sprite::DrawState * state);
-	void DrawStretched(Sprite * sprite, Sprite::DrawState * state, Vector2 streatchCap, Rect drawRect, UIControlBackground::eDrawType type);
-    void DrawTiled(Sprite * sprite, Sprite::DrawState * state, const Vector2& streatchCap, const UIGeometricData &gd, TiledDrawData ** pTiledData);
-    void DrawFilled(Sprite * sprite, Sprite::DrawState * state, const UIGeometricData& gd);
+    void Init();
 
-    void PushBatch(UniqueHandle state, UniqueHandle texture, Shader * shader, const Rect& clip);
+    void Draw(Sprite * sprite, Sprite::DrawState * drawState = 0);
+    void DrawStretched(Sprite * sprite, Sprite::DrawState * drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData &gd, StretchDrawData ** pStreachData);
+    void DrawTiled(Sprite * sprite, Sprite::DrawState * drawState, const Vector2& streatchCap, const UIGeometricData &gd, TiledDrawData ** pTiledData);
+
+    void PushBatch(UniqueHandle state, UniqueHandle texture, Shader * shader, const Rect& clip,
+        uint32 vertexCount, const float32* vertexPointer, const float32* texCoordPointer,
+        uint32 indexCount, const uint16* indexPointer,
+        const Color& color);
     
     void Reset();
     void Flush();
     
     void SetClip(const Rect &rect);
-	void ClipRect(const Rect &rect);
+	void IntersectClipRect(const Rect &rect);
 	void RemoveClip();
     
-	void ClipPush();
-	void ClipPop();
-    
+	void PushClip();
+	void PopClip();
+    void UpdateClip();
+
+    void PushRenderTarget();
+    void PopRenderTarget();
+    void SetRenderTarget(Sprite * target);
+
     void ScreenSizeChanged();
-    
+
     void Setup2DMatrices();
     
+    void SetSpriteClipping(bool clipping);
+
 private:
-    Matrix4 viewMatrix;
+    bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
+    static Shader* GetShaderForBatching(Shader* inputShader);
+    
+    void Setup2DProjection();
+
+    Matrix4 virtualToPhysicalMatrix;
+    Matrix4 projMatrix;
 	std::stack<Rect> clipStack;
 	Rect currentClip;
     
+    std::stack<Sprite *> renderTargetStack;
+    Sprite * currentRenderTarget;
+
     RenderDataObject * spriteRenderObject;
     RenderDataStream * spriteVertexStream;
-	RenderDataStream * spriteTexCoordStream;
-    RenderDataStream * spriteColorStream;
+    RenderDataStream * spriteTexCoordStream;
 
     float32 spriteTempVertices[8];
     Vector<Vector2> spriteClippedTexCoords;
-	Vector<Vector2> spriteClippedVertices;
+    Vector<Vector2> spriteClippedVertices;
     ePrimitiveType spritePrimitiveToDraw;
     int32 spriteVertexCount;
     int32 spriteIndexCount;
 
     Sprite::DrawState defaultSpriteDrawState;
 
-    Vector<float32> vertexBuffer2;
-    Vector<uint16> indexBuffer2;
+    float32* vboTemp;
+    uint16* iboTemp;
 
+    bool spriteClipping;
+    bool clipChanged;
+    
     Vector<RenderBatch2D> batches;
     RenderBatch2D currentBatch;
     uint32 vertexIndex;
     uint32 indexIndex;
 
-    uint32 vboIDs[3];
-
-    bool useBatching;
-    bool useVBO;
-
     VboPool* pool;
 
 };
+
+//Inline implementations
+    
+inline RenderDataObject* VboPool::GetRenderDataObject() const
+{
+    return currentDataObject;
+}
     
 } // ns
 

@@ -24,12 +24,12 @@ namespace
 
 ValueSlider::ValueSlider(QWidget* parent)
     : QWidget(parent)
-      , minVal(0)
-      , maxVal(1)
-      , val(0)
-      , clickVal(0)
-      , mouse(new MouseHelper(this))
-      , digitsAfterDot(6)
+    , minVal(0)
+    , maxVal(1)
+    , val(0)
+    , digitsAfterDot(6)
+    , mouse(new MouseHelper(this))
+    , clickVal(0)
 {
     connect(mouse, SIGNAL( mousePress( const QPoint& ) ), SLOT( OnMousePress( const QPoint& ) ));
     connect(mouse, SIGNAL( mouseMove( const QPoint& ) ), SLOT( OnMouseMove( const QPoint& ) ));

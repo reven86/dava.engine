@@ -54,9 +54,10 @@
 
 #include "Project.h"
 #include "UI/FileSystemView/FileSystemDockWidget.h"
-#include "UI/PackageDocument.h"
+#include "UI/Document.h"
 #include "UI/UIPackageLoader.h"
 #include "Utils/QtDavaConvertion.h"
+#include "UIControls/PackageHierarchy/PackageNode.h"
 
 const QString APP_NAME = "QuickEd";
 const QString APP_COMPANY = "DAVA";
@@ -166,6 +167,9 @@ void MainWindow::CurrentTabChanged(int index)
         disconnect(activeDocument->UndoStack(), SIGNAL(cleanChanged(bool)), this, SLOT(OnCleanChanged(bool)));
         disconnect(ui->packageTreeDock, SIGNAL(SelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
         disconnect(ui->packageTreeDock, SIGNAL(SelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+
+        disconnect(activeDocument, SIGNAL(controlSelectedInEditor(ControlNode*)), ui->packageTreeDock, SLOT(OnControlSelectedInEditor(ControlNode*)));
+        disconnect(activeDocument, SIGNAL(allControlsDeselectedInEditor()), ui->packageTreeDock, SLOT(OnAllControlsDeselectedInEditor()));
         activeDocument->UndoStack()->setActive(false);
     }
     
@@ -186,8 +190,13 @@ void MainWindow::CurrentTabChanged(int index)
     {
         connect(ui->packageTreeDock, SIGNAL(SelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
         connect(ui->packageTreeDock, SIGNAL(SelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+
+        connect(activeDocument, SIGNAL(controlSelectedInEditor(ControlNode*)), ui->packageTreeDock, SLOT(OnControlSelectedInEditor(ControlNode*)));
+        connect(activeDocument, SIGNAL(allControlsDeselectedInEditor()), ui->packageTreeDock, SLOT(OnAllControlsDeselectedInEditor()));
+
         activeDocument->UndoStack()->setActive(true);
         connect(activeDocument->UndoStack(), SIGNAL(cleanChanged(bool)), this, SLOT(OnCleanChanged(bool)));
+
     }
 
     UpdateSaveButtons();
@@ -201,7 +210,7 @@ void MainWindow::TabCloseRequested(int index)
 
 bool MainWindow::CloseTab(int index)
 {
-    PackageDocument *document = GetTabDocument(index);
+    Document *document = GetTabDocument(index);
 //     if (!project->SavePackage(document->Package()))
 //         return false;
     
@@ -490,11 +499,11 @@ void MainWindow::OnOpenProject()
 
 void MainWindow::OnSaveDocument()
 {
-    PackageDocument * document = GetCurrentTabDocument();
+    Document * document = GetCurrentTabDocument();
     if (!document || !document->IsModified())
         return;
 
-    DVVERIFY(project->SavePackage(activeDocument->Package()));
+    DVVERIFY(project->SavePackage(activeDocument->GetPackage()));
     activeDocument->ClearModified();
 }
 
@@ -502,10 +511,10 @@ void MainWindow::OnSaveAllDocuments()
 {
 	for (int i = 0; i < ui->tabBar->count(); ++i)
     {
-        PackageDocument * document = GetTabDocument(i);
+        Document * document = GetTabDocument(i);
         if (!document)
             continue;
-        DVVERIFY(project->SavePackage(document->Package()));
+        DVVERIFY(project->SavePackage(document->GetPackage()));
         document->ClearModified();
     }
 }
@@ -532,10 +541,10 @@ void MainWindow::OnOpenPackageFile(const QString &path)
             int index = GetTabIndexByPath(path);
             if (index == -1)
             {
-                PackageNode *package = project->OpenPackage(path);
-                if (package)
+                RefPtr<PackageNode> package = project->OpenPackage(path);
+                if (package.Get() != NULL)
                 {
-                    index = CreateTabContent(package);
+                    index = CreateTabContent(package.Get());
                 }
             }
             
@@ -713,10 +722,10 @@ void MainWindow::UpdateSaveButtons()
 int MainWindow::CreateTabContent(PackageNode *package)
 {
     int oldIndex = ui->tabBar->currentIndex();
-    PackageDocument *document = new PackageDocument(package, this);
+    Document *document = new Document(project, package, this);
     
     QVariant var;
-    var.setValue<PackageDocument *>(document);
+    var.setValue<Document *>(document);
 
     ui->tabBar->blockSignals(true);//block currentTabChanged signal, because tabData is empty
     int index = ui->tabBar->addTab(QString(document->PackageFilePath().GetBasename().c_str()));
@@ -732,12 +741,12 @@ int MainWindow::CreateTabContent(PackageNode *package)
     return index;
 }
 
-PackageDocument *MainWindow::GetCurrentTabDocument() const
+Document *MainWindow::GetCurrentTabDocument() const
 {
     int index = ui->tabBar->currentIndex();
     if(index>=0)
     {
-        return ui->tabBar->tabData(index).value<PackageDocument*>();
+        return ui->tabBar->tabData(index).value<Document*>();
     }
 
     return NULL;
@@ -750,7 +759,7 @@ int MainWindow::GetTabIndexByPath(const QString &fileName) const
     
     for(int index = 0; index < ui->tabBar->count(); ++index)
     {
-        PackageDocument *document = ui->tabBar->tabData(index).value<PackageDocument *>();
+        Document *document = ui->tabBar->tabData(index).value<Document *>();
         if (document->PackageFilePath() == davaPath)
             return index;
     }
@@ -758,9 +767,9 @@ int MainWindow::GetTabIndexByPath(const QString &fileName) const
     return -1;
 }
 
-PackageDocument *MainWindow::GetTabDocument(int index) const
+Document *MainWindow::GetTabDocument(int index) const
 {
-    PackageDocument *document = ui->tabBar->tabData(index).value<PackageDocument *>();
+    Document *document = ui->tabBar->tabData(index).value<Document *>();
     return document;
 }
 

@@ -10,8 +10,8 @@
 #include "ui_PackageGraphicsWidget.h"
 #include <QLineEdit>
 #include "EditScreen.h"
-#include "UI/PackageDocument.h"
-#include "UI/GraphicView/GraphicsViewContext.h"
+#include "UI/Document.h"
+#include "UI/PreviewContext.h"
 
 
 static const int SCALE_PERCENTAGES[] =
@@ -41,7 +41,7 @@ PackageGraphicsWidget::PackageGraphicsWidget(QWidget *parent)
     ui->davaGLWidget->setMaximumSize(1, 1);
     ui->davaGLWidget->setFocusPolicy(Qt::StrongFocus);
     ui->davaGLWidget->installEventFilter(this);
-    connect(ui->davaGLWidget, SIGNAL(resized()), this, SLOT(OnGLWidgetResized()));
+    connect(ui->davaGLWidget, SIGNAL(Resized(int, int)), this, SLOT(OnGLWidgetResized(int, int)));
 
     ui->horizontalRuler->hide();
     ui->verticalRuler->hide();
@@ -73,7 +73,7 @@ PackageGraphicsWidget::~PackageGraphicsWidget()
     delete ui;
 }
 
-void PackageGraphicsWidget::SetDocument(PackageDocument *newDocument)
+void PackageGraphicsWidget::SetDocument(Document *newDocument)
 {
     if (document)
     {
@@ -93,7 +93,7 @@ void PackageGraphicsWidget::SetDocument(PackageDocument *newDocument)
     }
     else
     {
-        context = document->GetGraphicsContext();
+        context = document->GetPreviewContext();
         ui->davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
         UIScreenManager::Instance()->GetScreen()->AddControl(context->GetViewControl());
         context->SetViewControlSize(GetGLViewSize());
@@ -168,15 +168,16 @@ void PackageGraphicsWidget::OnCanvasScaleChanged(int newScale)
     }
 }
 
-void PackageGraphicsWidget::OnGLWidgetResized()
+void PackageGraphicsWidget::OnGLWidgetResized(int width, int height)
 {
-    const QSize &viewSize = GetGLViewSize();
-    Vector2 screenSize((float32)viewSize.width(), (float32)viewSize.height());
+    Vector2 screenSize((float32)width, (float32)height);
 
     UIScreenManager::Instance()->GetScreen()->SetSize(screenSize);
 
     if (context)
-        context->SetViewControlSize(viewSize);
+    {
+        context->SetViewControlSize(QSize(width, height));
+    }
 }
 
 void PackageGraphicsWidget::OnVScrollbarMoved(int vPosition)

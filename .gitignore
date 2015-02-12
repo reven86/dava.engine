@@ -5,6 +5,7 @@
 build/     # ignore all files in the build/ directory
 /build     # ignore all files in the build/ directory
 /build/    # ignore all files in the build/ directory
+_build/    # ignore all files in the _build/ directory
 xcuserdata/
 /xcuserdata
 /xcuserdata/
@@ -37,3 +38,7 @@ ddd
 /testproj/
 fmod.log
 *.user
+/DavaConfig.in
+*.xccheckout
+Projects/UnitTests/android/assets
+

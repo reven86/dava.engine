@@ -147,10 +147,10 @@ void RenderPass::ClearBuffers(uint32 clearBuffers)
 
 
 MainForwardRenderPass::MainForwardRenderPass(const FastName & name, RenderPassID id):RenderPass(name, id),
-    reflectionTexture(NULL), 
-    refractionTexture(NULL), 
-    reflectionPass(NULL), 
-    refractionPass(NULL), 
+    reflectionPass(NULL),
+    refractionPass(NULL),
+    reflectionTexture(NULL),
+    refractionTexture(NULL),
     needWaterPrepass(false)
 {
     const RenderLayerManager * renderLayerManager = RenderLayerManager::Instance();
@@ -187,10 +187,8 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
 
     Rect viewportSave = RenderManager::Instance()->GetViewport();
     uint32 currFboId = RenderManager::Instance()->HWglGetLastFBO();
-    int32 currRenderOrientation = RenderManager::Instance()->GetRenderOrientation();
-    //RenderManager::Instance()->SetRenderOrientation(Core::SCREEN_ORIENTATION_TEXTURE);
         
-    RenderManager::Instance()->SetHWRenderTargetTexture(reflectionTexture);
+    RenderManager::Instance()->SetRenderTarget(reflectionTexture);
     //discard everything here
     RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE));
 
@@ -202,7 +200,7 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
     RenderManager::Instance()->DiscardFramebufferHW(RenderManager::DEPTH_ATTACHMENT|RenderManager::STENCIL_ATTACHMENT);
         
         
-    RenderManager::Instance()->SetHWRenderTargetTexture(refractionTexture);
+    RenderManager::Instance()->SetRenderTarget(refractionTexture);
         
     RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE));
 
@@ -213,7 +211,6 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
     RenderManager::Instance()->DiscardFramebufferHW(RenderManager::DEPTH_ATTACHMENT|RenderManager::STENCIL_ATTACHMENT);
         
     RenderManager::Instance()->HWglBindFBO(currFboId?currFboId:RenderManager::Instance()->GetFBOViewFramebuffer());
-    RenderManager::Instance()->SetRenderOrientation(currRenderOrientation);
     RenderManager::Instance()->SetViewport(viewportSave);
 
     renderSystem->GetDrawCamera()->SetupDynamicParameters();    		

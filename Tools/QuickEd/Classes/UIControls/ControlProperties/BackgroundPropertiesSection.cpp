@@ -2,9 +2,12 @@
 
 #include "ValueProperty.h"
 
+#include "UI/UIControl.h"
+#include "../PackageSerializer.h"
+
 using namespace DAVA;
 
-BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl *control, int bgNum, const BackgroundPropertiesSection *sourceSection) : control(NULL), bg(NULL), bgNum(bgNum)
+BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl *control, int bgNum, const BackgroundPropertiesSection *sourceSection, eCopyType copyType) : control(NULL), bg(NULL), bgNum(bgNum)
 {
     this->control = SafeRetain(control);
     
@@ -21,11 +24,9 @@ BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl *control, int
         for (int j = 0; j < insp->MembersCount(); j++)
         {
             const InspMember *member = insp->Member(j);
-            ValueProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
-            if (sourceProp && sourceProp->GetValue() != member->Value(bg))
-                member->SetValue(bg, sourceProp->GetValue());
             
-            ValueProperty *prop = new ValueProperty(bg, member);
+            ValueProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
+            ValueProperty *prop = new ValueProperty(bg, member, sourceProp, copyType);
             AddProperty(prop);
             SafeRelease(prop);
         }
@@ -54,7 +55,7 @@ void BackgroundPropertiesSection::CreateControlBackground()
         for (int j = 0; j < insp->MembersCount(); j++)
         {
             const InspMember *member = insp->Member(j);
-            ValueProperty *prop = new ValueProperty(bg, member);
+            ValueProperty *prop = new ValueProperty(bg, member, NULL, COPY_VALUES);
             AddProperty(prop);
             SafeRelease(prop);
         }
@@ -66,16 +67,20 @@ DAVA::String BackgroundPropertiesSection::GetName() const
     return control->GetBackgroundComponentName(bgNum);
 }
 
-void BackgroundPropertiesSection::AddPropertiesToNode(YamlNode *node) const
+bool BackgroundPropertiesSection::HasChanges() const
 {
-    if (bg)
+    return bg && PropertiesSection::HasChanges();
+}
+
+void BackgroundPropertiesSection::Serialize(PackageSerializer *serializer) const
+{
+    if (HasChanges())
     {
-        YamlNode *mapNode = YamlNode::CreateMapNode(false);
-        for (auto it = children.begin(); it != children.end(); ++it)
-            (*it)->AddPropertiesToNode(mapNode);
-        if (mapNode->GetCount() > 0)
-            node->Add(GetName(), mapNode);
-        else
-            SafeRelease(mapNode);
+        serializer->BeginMap(GetName());
+        
+        for (const auto child : children)
+            child->Serialize(serializer);
+
+        serializer->EndMap();
     }
 }

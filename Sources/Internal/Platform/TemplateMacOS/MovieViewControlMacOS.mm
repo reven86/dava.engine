@@ -243,7 +243,7 @@ enum MoviePlayerHelperPlaybackState
     movieViewRect.size.height = convertedRect.dy;
 
     movieViewRect.origin.x = convertedRect.x;
-    movieViewRect.origin.y = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - (convertedRect.y - convertedRect.dy);
+    movieViewRect.origin.y = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - convertedRect.y - convertedRect.dy;
 
     movieViewRect.origin.x += DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
     movieViewRect.origin.y += DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;

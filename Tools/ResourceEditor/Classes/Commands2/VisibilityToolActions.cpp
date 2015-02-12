@@ -112,23 +112,21 @@ void ActionDisableVisibilityTool::Redo()
 }
 
 
-ActionSetVisibilityPoint::ActionSetVisibilityPoint(Image* originalImage,
-												   Sprite* cursorSprite,
-												   VisibilityToolProxy* visibilityToolProxy,
-												   const Vector2& visibilityPoint)
+ActionSetVisibilityPoint::ActionSetVisibilityPoint(Image* _originalImage,
+												   Sprite* _cursorSprite,
+												   VisibilityToolProxy* _visibilityToolProxy,
+												   const Vector2& _visibilityPoint,
+                                                   const Vector2& _cursorSize)
 :	CommandAction(CMDID_VISIBILITY_TOOL_SET_POINT, "Set Visibility Point")
 {
-//	this->undoImage = SafeRetain(originalImage);
-	this->cursorSprite = SafeRetain(cursorSprite);
-	this->visibilityToolProxy = SafeRetain(visibilityToolProxy);
-//	this->undoVisibilityPoint = visibilityToolProxy->GetVisibilityPoint();
-	this->redoVisibilityPoint = visibilityPoint;
-//	this->undoVisibilityPointSet = visibilityToolProxy->IsVisibilityPointSet();
+    cursorSprite = SafeRetain(_cursorSprite);
+    visibilityToolProxy = SafeRetain(_visibilityToolProxy);
+    redoVisibilityPoint = _visibilityPoint;
+    cursorSize = _cursorSize;
 }
 
 ActionSetVisibilityPoint::~ActionSetVisibilityPoint()
 {
-//	SafeRelease(undoImage);
 	SafeRelease(cursorSprite);
 	SafeRelease(visibilityToolProxy);
 }
@@ -136,49 +134,23 @@ ActionSetVisibilityPoint::~ActionSetVisibilityPoint()
 void ActionSetVisibilityPoint::Redo()
 {
 	Sprite* visibilityToolSprite = visibilityToolProxy->GetSprite();
-	RenderManager::Instance()->SetRenderTarget(visibilityToolSprite);
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(visibilityToolSprite);
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
     Sprite::DrawState drawState;
-    drawState.SetPosition(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(redoVisibilityPoint - cursorSprite->GetSize() / 2.f));
+    drawState.SetPosition(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(redoVisibilityPoint - cursorSize / 2.f));
+    drawState.SetScaleSize(cursorSize.x, cursorSize.y, cursorSprite->GetWidth(), cursorSprite->GetHeight());
+    
+    RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(cursorSprite, &drawState);
 
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopRenderTarget();
 
 	visibilityToolProxy->UpdateVisibilityPointSet(true);
 	visibilityToolProxy->UpdateRect(Rect(0.f, 0.f, visibilityToolSprite->GetWidth(), visibilityToolSprite->GetHeight()));
 	visibilityToolProxy->SetVisibilityPoint(redoVisibilityPoint);
 }
-
-//void ActionSetVisibilityPoint::Undo()
-//{
-//	Sprite* visibilityToolSprite = visibilityToolProxy->GetSprite();
-//	RenderManager::Instance()->SetRenderTarget(visibilityToolSprite);
-//	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-//	
-//	if (undoImage)
-//	{
-//		Texture* drawTexture = Texture::CreateFromData(undoImage->GetPixelFormat(),
-//													   undoImage->GetData(),
-//													   undoImage->GetWidth(),
-//													   undoImage->GetHeight(),
-//													   false);
-//		Sprite* drawSprite = Sprite::CreateFromTexture(drawTexture, 0, 0, undoImage->GetWidth(), undoImage->GetHeight());
-//		
-//		drawSprite->SetPosition(0.f, 0.f);
-//		drawSprite->Draw();
-//		
-//		SafeRelease(drawSprite);
-//		SafeRelease(drawTexture);
-//		
-//		visibilityToolProxy->UpdateRect(Rect(0.f, 0.f, undoImage->GetWidth(), undoImage->GetHeight()));
-//	}
-//	
-//	RenderManager::Instance()->RestoreRenderTarget();
-//	
-//	visibilityToolProxy->SetVisibilityPoint(undoVisibilityPoint);
-//	visibilityToolProxy->UpdateVisibilityPointSet(undoVisibilityPointSet);
-//}
 
 
 ActionSetVisibilityArea::ActionSetVisibilityArea(Image* originalImage,
@@ -223,12 +195,16 @@ void ActionSetVisibilityArea::ApplyImage(DAVA::Image *image)
 	texture->GeneratePixelesation();
 	Sprite* sprite = Sprite::CreateFromTexture(texture, 0, 0, (float32)image->GetWidth(), (float32)image->GetHeight());
 
-	RenderManager::Instance()->SetRenderTarget(visibilityToolSprite);
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(visibilityToolSprite);
 
     Rect rect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(updatedRect);
     
-	RenderSystem2D::Instance()->ClipPush();
+    RenderSystem2D::Instance()->PushClip();
     RenderSystem2D::Instance()->SetClip(rect);
+    
+    RenderSystem2D::Instance()->Setup2DMatrices();
+    RenderSystem2D::Instance()->UpdateClip();
 
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
     
@@ -236,8 +212,8 @@ void ActionSetVisibilityArea::ApplyImage(DAVA::Image *image)
     drawState.SetPosition(rect.x, rect.y);
     RenderSystem2D::Instance()->Draw(sprite, &drawState);
 
-    RenderSystem2D::Instance()->ClipPop();
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopClip();
+    RenderSystem2D::Instance()->PopRenderTarget();
 
 	visibilityToolProxy->UpdateRect(updatedRect);
 

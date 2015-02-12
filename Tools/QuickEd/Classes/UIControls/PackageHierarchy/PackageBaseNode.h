@@ -1,7 +1,12 @@
 #ifndef __UI_EDITOR_UI_PACKAGE_MODEL_NODE__
 #define __UI_EDITOR_UI_PACKAGE_MODEL_NODE__
 
-#include "DAVAEngine.h"
+#include "Base/BaseObject.h"
+
+namespace DAVA
+{
+    class UIControl;
+}
 
 class PackageBaseNode : public DAVA::BaseObject
 {
@@ -16,11 +21,13 @@ public:
 
 public:
     PackageBaseNode(PackageBaseNode *parent);
+protected:
     virtual ~PackageBaseNode();
-    
+
+public:
     virtual int GetCount() const = 0;
     virtual PackageBaseNode *Get(int index) const = 0;
-    int GetIndex(PackageBaseNode *node) const;
+    int GetIndex(const PackageBaseNode *node) const;
     
     PackageBaseNode *GetParent() const;
     void SetParent(PackageBaseNode *parent);

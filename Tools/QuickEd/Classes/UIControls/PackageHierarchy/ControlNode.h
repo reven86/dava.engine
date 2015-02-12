@@ -5,6 +5,11 @@
 
 #include "UIControls/ControlProperties/PropertiesRoot.h"
 
+class PackageSerializer;
+class PackageNode;
+class ControlPrototype;
+class PackageRef;
+
 class ControlNode : public PackageBaseNode
 {
 public:
@@ -15,21 +20,32 @@ public:
         CREATED_FROM_PROTOTYPE_CHILD
     };
     
-public:
-    ControlNode(DAVA::UIControl *control);
-    ControlNode(ControlNode *node, DAVA::UIPackage *prototypePackage, eCreationType creationType = CREATED_FROM_PROTOTYPE);
+private:
+    ControlNode(DAVA::UIControl *control, PropertiesRoot *propertiesRoot, eCreationType creationType);
     virtual ~ControlNode();
 
+public:
+    static ControlNode *CreateFromControl(DAVA::UIControl *control);
+    
+    static ControlNode *CreateFromPrototype(ControlNode *sourceNode, PackageRef *nodePackage);
+    
+private:
+    static ControlNode *CreateFromPrototypeImpl(ControlNode *sourceNode, PackageRef *nodePackage, bool root);
+
+public:
+    ControlNode *Clone();
+    
     void Add(ControlNode *node);
     void InsertBelow(ControlNode *node, const ControlNode *belowThis);
     void Remove(ControlNode *node);
     virtual int GetCount() const override;
-    virtual PackageBaseNode *Get(int index) const override;
+    virtual ControlNode *Get(int index) const override;
     ControlNode *FindByName(const DAVA::String &name) const;
     
     virtual DAVA::String GetName() const;
     DAVA::UIControl *GetControl() const;
-    DAVA::String GetPrototypeName() const;
+    ControlPrototype *GetPrototype() const;
+    const DAVA::Vector<ControlNode*> &GetInstances() const;
 
     virtual int GetFlags() const override;
     void SetReadOnly();
@@ -37,15 +53,26 @@ public:
     eCreationType GetCreationType() const { return creationType; }
 
     PropertiesRoot *GetPropertiesRoot() const {return propertiesRoot; }
-    DAVA::YamlNode *Serialize(DAVA::YamlNode *prototypeChildren) const;
+    BaseProperty *GetPropertyByPath(const DAVA::Vector<DAVA::String> &path);
+
+    
+    void Serialize(PackageSerializer *serializer, PackageRef *currentPackage) const;
+    
+private:
+    void CollectPrototypeChildrenWithChanges(DAVA::Vector<ControlNode*> &out) const;
+    bool HasNonPrototypeChildren() const;
+    
+private:
+    void AddControlToInstances(ControlNode *control);
+    void RemoveControlFromInstances(ControlNode *control);
 
 private:
     DAVA::UIControl *control;
     PropertiesRoot *propertiesRoot;
     DAVA::Vector<ControlNode*>nodes;
     
-    ControlNode *prototype;
-    DAVA::UIPackage *prototypePackage;
+    ControlPrototype *prototype;
+    DAVA::Vector<ControlNode*> instances; // week
 
     eCreationType creationType;
     

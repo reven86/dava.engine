@@ -37,6 +37,7 @@
 #include "Platform/SystemTimer.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Image/ImageSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA
 {
@@ -328,7 +329,8 @@ namespace DAVA
                         //camera->SetupDynamicParameters();
                         // Do Render
                         
-                        RenderManager::Instance()->SetRenderTarget(renderTargetSprite);
+                        RenderSystem2D::Instance()->PushRenderTarget();
+                        RenderSystem2D::Instance()->SetRenderTarget(renderTargetSprite);
                         RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT));
                         
                         //camera->SetupDynamicParameters();
@@ -347,7 +349,7 @@ namespace DAVA
                         timeRendering = SystemTimer::Instance()->GetAbsoluteNano() - timeRendering;
                         timeTotalRendering += timeRendering;
                         
-                        RenderManager::Instance()->RestoreRenderTarget();
+                        RenderSystem2D::Instance()->PopRenderTarget();
                         
                         size_t size = recordedBatches.size();
                         /*
@@ -495,14 +497,22 @@ namespace DAVA
         recordedBatches.push_back(std::pair<RenderBatch*, OcclusionQueryPoolHandle>(batch, handle));
     }
     
-    
+    AABBox3 bbox;
+    uint32 sizeX;
+    uint32 sizeY;
+    uint32 sizeZ;
+    uint32  blockCount;
+    uint32  objectCount;
+    uint32 * data;
+    float32* cellHeightOffset;
+
     StaticOcclusionData::StaticOcclusionData()
-    : data(0)
-    , objectCount(0)
-    , blockCount(0)
-    , sizeX(5)
+    : sizeX(5)
     , sizeY(5)
     , sizeZ(2)
+    , blockCount(0)
+    , objectCount(0)
+    , data(0)
     , cellHeightOffset(0)
     {
         

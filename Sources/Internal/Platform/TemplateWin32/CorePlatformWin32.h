@@ -41,35 +41,22 @@ namespace DAVA {
 class CoreWin32Platform : public CoreWin32PlatformBase
 {
 public:
-	virtual eScreenMode GetScreenMode();
-	virtual void SwitchScreenToMode(eScreenMode screenMode); 
-	virtual void GetAvailableDisplayModes(List<DisplayMode> & availableModes);
+	eScreenMode GetScreenMode() override;
+	void SwitchScreenToMode(eScreenMode screenMode) override; 
+	void GetAvailableDisplayModes(List<DisplayMode> & availableModes) override;
 
-	virtual DisplayMode GetCurrentDisplayMode();
+	DisplayMode GetCurrentDisplayMode() override;
 
-	virtual bool CreateWin32Window(HINSTANCE hInstance); //true if window created, if false, need to quit the app
-	virtual void Run();
+	bool CreateWin32Window(HINSTANCE hInstance); //true if window created, if false, need to quit the app
+	void Run();
 
-	virtual void ToggleFullscreen();
+	void ToggleFullscreen() override;
 
-	virtual void SetIcon(int32 iconId);
+	void SetIcon(int32 iconId) override;
 
-	void InitOpenGL();
-	void ReleaseOpenGL();
-
-	HDC hDC;
-	HGLRC hRC;
-	HANDLE hMutex;
 #if defined(__DAVAENGINE_DIRECTX9__)
 	LPDIRECT3D9 d3d9;
 #endif 
-
-/*	int32 screenWidth;
-	int32 screenHeight;
-	int32 bpp;
-
-	bool isFullscreen;
-	bool isInFullscreenNow;	*/
 
 	DisplayMode currentMode;
 	DisplayMode fullscreenMode;
@@ -81,10 +68,20 @@ private:
 	static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 	static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
 
+	void OnMouseEvent(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData);
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
 	RECT GetWindowedRectForDisplayMode(DisplayMode & dm);
+	int32 MoveTouchsToVector(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent> *outTouches);
+
 	bool willQuit;
 
-};	
+	bool isRightButtonPressed;
+	bool isLeftButtonPressed;
+	bool isMiddleButtonPressed;
+	Vector<DAVA::UIEvent> allTouches;
 };
+
+} // end namespace DAVA
 #endif // #if defined(__DAVAENGINE_WIN32__)
 #endif // __DAVAENGINE_CORE_PLATFORM_MAC_OS_H__

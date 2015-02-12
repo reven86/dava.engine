@@ -39,12 +39,38 @@ int BaseProperty::GetIndex(BaseProperty *property) const
     return -1;
 }
 
+bool BaseProperty::HasChanges() const
+{
+    for (int i = 0; i < GetCount(); i++)
+    {
+        if (GetProperty(i)->HasChanges())
+            return true;
+    }
+    return false;
+}
+
+void BaseProperty::Serialize(PackageSerializer *serializer) const
+{
+    for (int i = 0; i < GetCount(); i++)
+        GetProperty(i)->Serialize(serializer);
+}
+
 DAVA::VariantType BaseProperty::GetValue() const
 {
     return DAVA::VariantType();
 }
 
 void BaseProperty::SetValue(const DAVA::VariantType &/*newValue*/)
+{
+    // Do nothing by default
+}
+
+VariantType BaseProperty::GetDefaultValue() const
+{
+    return VariantType();
+}
+
+void BaseProperty::SetDefaultValue(const DAVA::VariantType &newValue)
 {
     // Do nothing by default
 }
@@ -62,4 +88,55 @@ void BaseProperty::ResetValue()
 bool BaseProperty::IsReplaced() const
 {
     return false; // false by default
+}
+
+Vector<String> BaseProperty::GetPath() const
+{
+    const BaseProperty *p = this;
+    
+    int32 count = 0;
+    while (p && p->parent)
+    {
+        count++;
+        p = p->parent;
+    }
+
+    Vector<String> path;
+    path.resize(count);
+    
+    p = this;
+    while (p && p->parent)
+    {
+        path[count - 1] = (p->GetName());
+        p = p->parent;
+        count--;
+    }
+    
+    DVASSERT(count == 0);
+    
+    return path;
+}
+
+BaseProperty *BaseProperty::GetPropertyByPath(const Vector<String> &path)
+{
+    BaseProperty *prop = this;
+    
+    for (const String &name : path)
+    {
+        BaseProperty *child = nullptr;
+        for (int32 index = 0; index < prop->GetCount(); index++)
+        {
+            BaseProperty *candidate = prop->GetProperty(index);
+            if (candidate->GetName() == name)
+            {
+                child = candidate;
+                break;
+            }
+        }
+        prop = child;
+        if (!prop)
+            break;
+    }
+    
+    return prop;
 }

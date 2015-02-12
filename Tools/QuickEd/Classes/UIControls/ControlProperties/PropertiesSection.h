@@ -1,11 +1,3 @@
-//
-//  PropertiesSection.h
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 30.9.14.
-//
-//
-
 #ifndef __UI_EDITOR_PROPERTIES_SECTION_H__
 #define __UI_EDITOR_PROPERTIES_SECTION_H__
 
@@ -17,8 +9,11 @@ class PropertiesSection : public BaseProperty
 {
 public:
     PropertiesSection();
+
+protected:
     virtual ~PropertiesSection();
     
+public:
     void AddProperty(ValueProperty *section);
     virtual int GetCount() const override;
     virtual BaseProperty *GetProperty(int index) const override;

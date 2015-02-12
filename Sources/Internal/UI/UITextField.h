@@ -83,6 +83,8 @@ public:
 	 */
 	virtual bool TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, WideString & replacementString);
 
+    virtual void TextFieldOnTextChanged(UITextField * textField, const WideString& newText, const WideString& oldText);
+    
     virtual bool IsTextFieldShouldSetFocusedOnAppear(UITextField * textField);
     virtual bool IsTextFieldCanLostFocus(UITextField * textField);
 	
@@ -354,7 +356,7 @@ public:
 
     String GetFontPresetName() const;
 
-    void SetFontPresetName(const String &presetName);
+    void SetFontByPresetName(const String &presetName);
 
 protected:
 	WideString text;
@@ -398,7 +400,7 @@ private:
 public:
     INTROSPECTION_EXTEND(UITextField, UIControl,
         PROPERTY("text", "Text", GetText, SetText, I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("font", "Font preset", GetFontPresetName, SetFontPresetName, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("font", "Font preset", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("textalign", InspDesc("Text Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetTextAlign, SetTextAlign, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("textcolor", "Text color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("maxLength", "Max text lenght", GetMaxLength, SetMaxLength, I_SAVE | I_VIEW | I_EDIT)

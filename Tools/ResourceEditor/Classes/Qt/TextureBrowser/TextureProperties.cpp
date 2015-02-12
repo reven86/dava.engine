@@ -37,8 +37,8 @@
 TextureProperties::TextureProperties( QWidget *parent /*= 0*/ )
 	: QtPropertyEditor(parent)
 	, curTextureDescriptor(NULL)
+	, curGPU(DAVA::GPU_PNG)
 	, skipPropSizeChanged(false)
-    , curGPU(DAVA::GPU_PNG)
 {
 	SetEditTracking(true);
 }
@@ -125,7 +125,7 @@ void TextureProperties::MipMapSizesInit(int baseWidth, int baseHeight)
 			shownKey.sprintf("%dx%d", baseWidth, baseHeight);
 		}
 
-		enumSizes.Register(level, shownKey.toAscii());
+		enumSizes.Register(level, shownKey.toLatin1());
 		availableSizes[level] = size;
 
 		level++;

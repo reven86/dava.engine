@@ -95,12 +95,10 @@ void UIScreen::SystemDraw(const UIGeometricData &geometricData)
 	{
 		FillScreenBorders(geometricData);
 		UIControl::SystemDraw(geometricData);
-        RenderSystem2D::Instance()->Flush();
 	}
 	else if (fillBorderOrder == FILL_BORDER_AFTER_DRAW)
 	{
 		UIControl::SystemDraw(geometricData);
-        RenderSystem2D::Instance()->Flush();
 		FillScreenBorders(geometricData);
 	}
 	else 
@@ -111,6 +109,8 @@ void UIScreen::SystemDraw(const UIGeometricData &geometricData)
 
 void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
 {
+    RenderSystem2D::Instance()->Flush();
+
 	RenderManager::Instance()->SetColor(0, 0, 0, 1.0f);
 	UIGeometricData drawData;
 	drawData.position = relativePosition;

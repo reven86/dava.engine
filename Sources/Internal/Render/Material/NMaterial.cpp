@@ -97,6 +97,7 @@ const FastName NMaterial::PARAM_LIGHTMAP_SIZE("lightmapSize");
 const FastName NMaterial::PARAM_SHADOW_COLOR("shadowColor");
 const FastName NMaterial::PARAM_DECAL_TILE_SCALE("decalTileCoordScale");
 const FastName NMaterial::PARAM_DECAL_TILE_COLOR("decalTileColor");
+const FastName NMaterial::PARAM_DETAIL_TILE_SCALE("detailTileCoordScale");
 const FastName NMaterial::PARAM_RCP_SCREEN_SIZE("rcpScreenSize");
 const FastName NMaterial::PARAM_SCREEN_OFFSET("screenOffset");
 
@@ -110,7 +111,7 @@ const FastName NMaterial::FLAG_TEXTURESHIFT = FastName("TEXTURE0_SHIFT_ENABLED")
 const FastName NMaterial::FLAG_TEXTURE0_ANIMATION_SHIFT = FastName("TEXTURE0_ANIMATION_SHIFT");
 const FastName NMaterial::FLAG_WAVE_ANIMATION = FastName("WAVE_ANIMATION");
 const FastName NMaterial::FLAG_FAST_NORMALIZATION = FastName("FAST_NORMALIZATION");
-const FastName NMaterial::FLAG_TILED_DECAL = FastName("TILED_DECAL");
+const FastName NMaterial::FLAG_TILED_DECAL_MASK = FastName("TILED_DECAL_MASK");
 const FastName NMaterial::FLAG_FLATCOLOR = FastName("FLATCOLOR");
 const FastName NMaterial::FLAG_DISTANCEATTENUATION = FastName("DISTANCE_ATTENUATION");
 const FastName NMaterial::FLAG_SPECULAR = FastName("SPECULAR");
@@ -204,25 +205,25 @@ void IlluminationParams::SetParent(NMaterial* parentMaterial)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-NMaterial::NMaterial() :
-materialType(NMaterial::MATERIALTYPE_NONE),
-materialKey(0),
-parent(NULL),
-requiredVertexFormat(0),
-lightCount(0),
-illuminationParams(NULL),
-materialSetFlags(8),
-baseTechnique(NULL),
-activePassInstance(NULL),
-activeRenderPass(NULL),
-instancePasses(4),
-textures(8),
-dynamicBindFlags(0),
-materialTemplate(NULL),
-materialProperties(16),
-instancePassRenderStates(4),
-materialSortKey(0)
+    
+NMaterial::NMaterial()
+    : materialType(NMaterial::MATERIALTYPE_NONE)
+    , materialKey(0)
+    , materialProperties(16)
+    , textures(8)
+    , parent(NULL)
+    , requiredVertexFormat(0)
+    , lightCount(0)
+    , dynamicBindFlags(0)
+    , materialSortKey(0)
+    , baseTechnique(NULL)
+    , instancePasses(4)
+    , instancePassRenderStates(4)
+    , activePassInstance(NULL)
+    , activeRenderPass(NULL)
+    , illuminationParams(NULL)
+    , materialTemplate(NULL)
+    , materialSetFlags(8)
 {
 	memset(lights, 0, sizeof(lights));
 }

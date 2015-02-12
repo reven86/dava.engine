@@ -45,12 +45,12 @@
 
 CustomColorsSystem::CustomColorsSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
-,	editingIsEnabled(false)
 ,	curToolSize(0)
-,	drawColor(Color(0.f, 0.f, 0.f, 0.f))
 ,	toolImageSprite(NULL)
-,	originalImage(NULL)
+,	drawColor(Color(0.f, 0.f, 0.f, 0.f))
 ,	colorIndex(0)
+,	editingIsEnabled(false)
+,	originalImage(NULL)
 {
     cursorSize = 120;
 
@@ -165,7 +165,7 @@ void CustomColorsSystem::Process(DAVA::float32 timeElapsed)
 	}
 }
 
-void CustomColorsSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void CustomColorsSystem::Input(DAVA::UIEvent *event)
 {
 	if (!IsLandscapeEditingEnabled())
 	{
@@ -234,8 +234,8 @@ void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
 {
 	Sprite* colorSprite = drawSystem->GetCustomColorsProxy()->GetSprite();
 	
-	RenderManager::Instance()->SetRenderTarget(colorSprite);
-
+    RenderSystem2D::Instance()->PushRenderTarget();
+	RenderSystem2D::Instance()->SetRenderTarget(colorSprite);
 	RenderManager::Instance()->SetColor(drawColor);
 
 	Vector2 spriteSize = Vector2(cursorSize, cursorSize);
@@ -246,14 +246,17 @@ void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
     updatedRect.SetSize(spriteSize);
     AddRectToAccumulator(updatedRect);
 	
-    spriteSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(spritePos);
+    spriteSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(spriteSize);
+    spritePos = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(spritePos);
 
     Sprite::DrawState drawState;
 	drawState.SetScaleSize(spriteSize.x, spriteSize.y, toolImageSprite->GetWidth(), toolImageSprite->GetHeight());
     drawState.SetPosition(spritePos);
+    
+    RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(toolImageSprite, &drawState);
 	
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopRenderTarget();
 	RenderManager::Instance()->SetColor(Color::White);
 	
 	drawSystem->GetLandscapeProxy()->SetCustomColorsTexture(colorSprite->GetTexture());
@@ -361,11 +364,13 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
 		{
 			StoreOriginalState();
 		}
-		RenderManager::Instance()->SetRenderTarget(drawSystem->GetCustomColorsProxy()->GetSprite());
+        RenderSystem2D::Instance()->PushRenderTarget();
+        RenderSystem2D::Instance()->SetRenderTarget(drawSystem->GetCustomColorsProxy()->GetSprite());
         
+        RenderSystem2D::Instance()->Setup2DMatrices();
         RenderSystem2D::Instance()->Draw(sprite);
         
-		RenderManager::Instance()->RestoreRenderTarget();
+        RenderSystem2D::Instance()->PopRenderTarget();
 		AddRectToAccumulator(Rect(Vector2(0.f, 0.f), Vector2(texture->GetWidth(), texture->GetHeight())));
 
 		SafeRelease(sprite);

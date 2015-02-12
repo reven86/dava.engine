@@ -38,12 +38,17 @@ namespace DAVA
 
 int32 AtomicIncrement( int32 &value )
 {
-    return (int32)__sync_fetch_and_add((int *)&value, 1);
+    return (int32)(__atomic_inc((int *)&value) + 1);
 }
 
 int32 AtomicDecrement( int32 &value )
 {
-	return (int32)__sync_fetch_and_sub((int *)&value, 1) - 1;
+	return (int32)(__atomic_dec((int *)&value) - 1);
+}
+
+bool AtomicCompareAndSwap(const int32 oldVal, const int32 newVal, volatile int32 &value)
+{
+    return (oldVal == __atomic_cmpxchg(oldVal, newVal, &value));
 }
 
 };

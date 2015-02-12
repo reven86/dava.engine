@@ -45,7 +45,7 @@ class UIPackage;
 class UIControlFactory;
 class UIControlBackground;
     
-class UIPackageLoader : AbstractUIPackageLoader
+class UIPackageLoader : public AbstractUIPackageLoader
 {
 public:
     UIPackageLoader(AbstractUIPackageBuilder *builder);
@@ -53,6 +53,7 @@ public:
 
 public:
     virtual UIPackage *LoadPackage(const FilePath &packagePath) override;
+    virtual UIPackage *LoadPackage(const YamlNode *rootNode, const FilePath &packagePath);
     virtual bool LoadControlByName(const String &name) override;
 
 private:
@@ -64,16 +65,18 @@ private:
     virtual VariantType ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node);
 
 private:
-    enum eItemStatus {
+    enum eItemStatus
+    {
         STATUS_WAIT,
         STATUS_LOADING,
         STATUS_LOADED
     };
     
-    struct QueueItem {
+    struct QueueItem
+    {
         String name;
         const YamlNode *node;
-        int status;
+        int32 status;
     };
     Vector<QueueItem> loadingQueue;
     AbstractUIPackageBuilder *builder;

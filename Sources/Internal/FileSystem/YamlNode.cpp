@@ -706,7 +706,7 @@ bool YamlNode::InitStringFromVariantType(const VariantType &varType)
         break;
     case VariantType::TYPE_FLOAT:
         {
-            InternalSetString(Format("%.4f", varType.AsFloat()), SR_PLAIN_REPRESENTATION);
+            InternalSetString(Format("%f", varType.AsFloat()), SR_PLAIN_REPRESENTATION);
         }
         break;
     case VariantType::TYPE_STRING:
@@ -721,7 +721,7 @@ bool YamlNode::InitStringFromVariantType(const VariantType &varType)
         break;
     case VariantType::TYPE_FILEPATH:
         {
-            InternalSetString(varType.AsFilePath().GetAbsolutePathname(), SR_DOUBLE_QUOTED_REPRESENTATION);
+            InternalSetString(varType.AsFilePath().GetStringValue(), SR_DOUBLE_QUOTED_REPRESENTATION);
         }
         break;
     case VariantType::TYPE_UINT32:

@@ -60,6 +60,7 @@ public:
 	
 	inline Color();
 	inline Color(float32 r, float32 g, float32 b, float32 a);
+    inline Color(uint32 rgba);
     inline explicit Color(const Vector4 & vector);
 	
 	inline const Color & operator += (const Color & _v);
@@ -71,6 +72,8 @@ public:
 	//! Comparison operators
 	inline bool operator == (const Color & _v) const;
 	inline bool operator != (const Color & _v) const;
+
+    inline uint32 GetRGBA() const;
 };
 
 //! with color
@@ -105,6 +108,14 @@ inline Color::Color(const Vector4 & vector)
     g = vector.y;
     b = vector.z;
     a = vector.w;
+}
+inline  Color::Color(uint32 rgba)
+{
+    for (int i = 0; i < 4; i++)
+    {
+        uint32 intVal = ((rgba >> (8 * i)) & 0xff);
+        color[3 - i] = (float32)intVal / 255.0f;
+    }
 }
 
 //! On operations
@@ -162,6 +173,14 @@ inline bool Color::operator != (const Color & _v) const
 	return ((r != _v.r) || (g != _v.g) || (b != _v.b) || (a != _v.a));
 }
 
+inline uint32 Color::GetRGBA() const
+{
+    return (((uint32)(a*255.f)) << 24) 
+        | (((uint32)(b*255.f)) << 16) 
+        | (((uint32)(g*255.f)) << 8) 
+        | ((uint32)(r*255.f));
+}
+
 //! operators
 inline Color operator - (const Color & _v1, const Color & _v2)
 {
@@ -216,7 +235,6 @@ inline Color operator / (float32 _f, const Color & _v)
 {
 	return Color(_f / _v.r, _f / _v.g , _f / _v.b, _f / _v.a);
 }
-	
 
 };
 

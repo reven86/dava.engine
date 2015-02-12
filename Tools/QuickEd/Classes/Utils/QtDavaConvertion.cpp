@@ -39,7 +39,7 @@ DAVA::Color QColorToColor( const QColor& qtColor )
 
 QColor ColorToQColor( const DAVA::Color& davaColor )
 {
-    return QColor(davaColor.r * 0xFF, davaColor.g * 0xFF, davaColor.b * 0xFF, davaColor.a * 0xFF);
+    return QColor((int)DAVA::Round(davaColor.r * 255.0f), (int)DAVA::Round(davaColor.g * 255.0f), (int)DAVA::Round(davaColor.b * 255.0f), (int)DAVA::Round(davaColor.a * 255.0f));
 }
 
 DAVA::Vector2 QVector2DToVector2( const QVector2D &vector )

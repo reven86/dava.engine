@@ -80,6 +80,8 @@ void SettingsManager::Init()
 	CreateValue(Settings::Scene_CameraFOV, DAVA::VariantType(70.0f));
 	CreateValue(Settings::Scene_CameraNear, DAVA::VariantType(1.0f));
 	CreateValue(Settings::Scene_CameraFar, DAVA::VariantType(5000.0f));
+    CreateValue(Settings::Scene_CameraHeightOnLandscape, DAVA::VariantType(2.0f));
+    CreateValue(Settings::Scene_CameraHeightOnLandscapeStep, DAVA::VariantType(0.5f));
     CreateValue(Settings::Scene_SelectionSequent, DAVA::VariantType(false));
     CreateValue(Settings::Scene_SelectionDrawMode, DAVA::VariantType((DAVA::int32) SS_DRAW_DEFAULT), DAVA::InspDesc("Selection draw modes", GlobalEnumMap<SelectionSystemDrawMode>::Instance(), DAVA::InspDesc::T_FLAGS));
     CreateValue(Settings::Scene_CollisionDrawMode, DAVA::VariantType((DAVA::int32) CS_DRAW_DEFAULT), DAVA::InspDesc("Collision draw modes", GlobalEnumMap<CollisionSystemDrawMode>::Instance(), DAVA::InspDesc::T_FLAGS));
@@ -88,7 +90,8 @@ void SettingsManager::Init()
     CreateValue(Settings::Scene_DebugBoxScale, DAVA::VariantType(DAVA::float32(1.0)));
     CreateValue(Settings::Scene_DebugBoxUserScale, DAVA::VariantType(DAVA::float32(1.0)));
     CreateValue(Settings::Scene_DebugBoxParticleScale, DAVA::VariantType(DAVA::float32(1.0)));
-	CreateValue(Settings::Scene_DragAndDropWithShift, DAVA::VariantType(false));
+    CreateValue(Settings::Scene_DebugBoxWaypointScale, DAVA::VariantType(DAVA::float32(1.0)));
+    CreateValue(Settings::Scene_DragAndDropWithShift, DAVA::VariantType(false));
 
     CreateValue(Settings::Scene_Sound_SoundObjectDraw, DAVA::VariantType(false));
     CreateValue(Settings::Scene_Sound_SoundObjectBoxColor, DAVA::VariantType(DAVA::Color(0.0f, 0.8f, 0.4f, 0.2f)));
@@ -121,7 +124,6 @@ void SettingsManager::Init()
     CreateValue(Settings::General_ColorMultiplyMax, DAVA::VariantType((DAVA::float32)2.0));
 
     const DAVA::uint32 levels[] = { DAVA::Logger::LEVEL_FRAMEWORK, DAVA::Logger::LEVEL_DEBUG, DAVA::Logger::LEVEL_INFO, DAVA::Logger::LEVEL_WARNING, DAVA::Logger::LEVEL_ERROR };
-    const int nLevels = sizeof(levels) / sizeof(*levels);
     CreateValue(Settings::Internal_LogLevelFilter, DAVA::VariantType((DAVA::uint8 *)levels, sizeof(levels)));
     CreateValue(Settings::Internal_LogTextFilter, DAVA::VariantType(DAVA::String()));
 }

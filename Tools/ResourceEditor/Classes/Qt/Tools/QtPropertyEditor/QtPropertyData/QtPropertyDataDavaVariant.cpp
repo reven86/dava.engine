@@ -33,6 +33,7 @@
 #include "Tools/QtFileDialog/QtFileDialog.h"
 #include "Tools/QtPropertyEditor/QtPropertyWidgets/FlagSelectorCombo.h"
 #include "Tools/ColorPicker/ColorPicker.h"
+#include "Tools/Widgets/MultilineEditor.h"
 
 #include <QListWidget>
 #include <QDoubleSpinBox>
@@ -53,8 +54,8 @@ QtPropertyDataDavaVariant::QtPropertyDataDavaVariant(const DAVA::VariantType &va
 	: curVariantValue(value)
 	, allowedValuesLocked(false)
 	, allowedButton(NULL)
-    , isSettingMeFromChilds(false)
-    , allowedValueType(Default)
+	, allowedValueType(Default)
+	, isSettingMeFromChilds(false)
 {
 	InitFlags();
 	ChildsCreate();
@@ -286,7 +287,6 @@ QVariant QtPropertyDataDavaVariant::GetValueAlias() const
 	{
         if (allowedValueType == TypeFlags)
         {
-            const quint64 val = FromDavaVariant(curVariantValue).toULongLong();
             const QString alias = GetFlagsList().join(" | ");
             ret = alias;
         }
@@ -484,6 +484,16 @@ void QtPropertyDataDavaVariant::ChildsCreate()
 			QObject::connect(filePathBtn, SIGNAL(released()), this, SLOT(FilePathOWPressed()));
 		}
 		break;
+    case DAVA::VariantType::TYPE_STRING:
+        {
+            QToolButton *editMultiline = AddButton( QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED );
+            editMultiline->setIcon( QIcon( ":/QtIcons/pencil.png" ) );
+            editMultiline->setIconSize( QSize( 14, 14 ) );
+            editMultiline->setAutoRaise( true );
+            editMultiline->setToolTip( "Open multiline editor" );
+            connect( editMultiline, &QToolButton::clicked, this, &QtPropertyDataDavaVariant::MultilineEditClicked );
+        }
+        break;
 	case DAVA::VariantType::TYPE_KEYED_ARCHIVE:
 	case DAVA::VariantType::TYPE_MATRIX2:
 	case DAVA::VariantType::TYPE_MATRIX3:
@@ -986,9 +996,6 @@ QWidget* QtPropertyDataDavaVariant::CreateEditorInternal(QWidget *parent, const 
                 }
                 break;
 
-            case DAVA::VariantType::TYPE_INT32:
-                break;
-
             default:
                 break;
         }
@@ -1063,6 +1070,27 @@ bool QtPropertyDataDavaVariant::EditorDoneInternal(QWidget *editor)
 	allowedValuesLocked = false;
 
 	return ret;
+}
+
+void QtPropertyDataDavaVariant::MultilineEditClicked()
+{
+    DVASSERT( curVariantValue.type == DAVA::VariantType::TYPE_STRING );
+
+    MultilineEditor editor( GetOWViewport() );
+    QEventLoop loop;
+
+    connect( &editor, &MultilineEditor::done, &loop, &QEventLoop::quit );
+
+    editor.setWindowFlags( Qt::Window );
+    editor.setWindowModality( Qt::WindowModal );
+    editor.SetText( curVariantValue.AsString().c_str() );
+    editor.show();
+    loop.exec();
+
+    if ( editor.IsAccepted() )
+    {
+        SetValue( editor.GetText(), VALUE_EDITED );
+    }
 }
 
 void QtPropertyDataDavaVariant::ColorOWPressed()

@@ -26,8 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Main/mainwindow.h"
 #include "Scene/SceneTabWidget.h"
+
+#include "Main/Request.h"
+#include "Main/mainwindow.h"
 #include "Scene/SceneEditor2.h"
 #include "Tools/QtLabelWithActions/QtLabelWithActions.h"
 #include "Tools/MimeData/MimeDataHelper2.h"
@@ -35,6 +37,8 @@
 #include "MaterialEditor/MaterialAssignSystem.h"
 
 #include "Platform/SystemTimer.h"
+
+#include "Qt/Main/davaglwidget.h"
 
 #include <QVBoxLayout>
 #include <QResizeEvent>
@@ -45,16 +49,9 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 	: QWidget(parent)
 	, davaUIScreenID(0)
 	, dava3DViewMargin(3)
+	, previewDialog(NULL)
 	, newSceneCounter(0)
 	, curScene(NULL)
-	, previewDialog(NULL)
-	/*
-	, curModifAxis(ST_AXIS_X)
-	, curModifMode(ST_MODIF_MOVE)
-	, curPivotPoint(ST_PIVOT_COMMON_CENTER)
-	, curSelDrawMode(ST_SELDRAW_DRAW_CORNERS | ST_SELDRAW_FILL_SHAPE)
-	, curColDrawMode(ST_COLL_DRAW_NOTHING)
-	*/
 {
 	this->setMouseTracking(true);
 
@@ -66,11 +63,11 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 	tabBar->setMovable(true);
 	tabBar->setUsesScrollButtons(true);
 	tabBar->setExpanding(false);
-	tabBar->setMinimumHeight(tabBar->sizeHint().height());
+	tabBar->setMinimumSize(1, 1);
 
 	// davawidget to display DAVAEngine content
 	davaWidget = new DavaGLWidget(this);
-	davaWidget->setFocusPolicy(Qt::StrongFocus);
+	//davaWidget->setFocusPolicy(Qt::StrongFocus);
 	davaWidget->installEventFilter(this);
     
 	// put tab bar and davawidget into vertical layout
@@ -80,20 +77,6 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 	layout->setMargin(0);
 	layout->setSpacing(1);
 	setLayout(layout);
-	
-	// create top widget for tool buttons
-	toolWidgetContainer = new QWidget(QtMainWindow::Instance());
-	toolWidgetContainer->setMaximumHeight(16);
-	toolWidgetContainer->setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-	toolWidgetContainer->setAttribute(Qt::WA_NoSystemBackground, true);
-	toolWidgetContainer->setAttribute(Qt::WA_TranslucentBackground, true);  
-	toolWidgetContainer->setAttribute(Qt::WA_PaintOnScreen); // as pointed by Caveman (thanks!)
-	toolWidgetLayout = new QHBoxLayout();
-	toolWidgetLayout->setMargin(1);
-	toolWidgetLayout->setSpacing(1);
-	toolWidgetLayout->setAlignment(Qt::AlignLeft);
-	toolWidgetContainer->setLayout(toolWidgetLayout);
-
 	setAcceptDrops(true);
     
 	// create DAVA UI
@@ -117,8 +100,6 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 	//QtLabelWithActions *objectTypesLabel1 = new QtLabelWithActions();
 	//objectTypesLabel1->setMenu(QtMainWindow::Instance()->GetUI()->menuView);
 	//objectTypesLabel1->setDefaultAction(QtMainWindow::Instance()->GetUI()->actionNoObject);
-
-	AddToolWidget(new QPushButton(QIcon(":/QtIcons/edit_redo.png"), "11"));
 }
 
 SceneTabWidget::~SceneTabWidget()
@@ -131,8 +112,8 @@ SceneTabWidget::~SceneTabWidget()
 
 void SceneTabWidget::InitDAVAUI()
 {
-	dava3DView = new DAVAUI3DView(this, DAVA::Rect(dava3DViewMargin, dava3DViewMargin, 0, 0));
-	//dava3DView->SetDebugDraw(true);
+    dava3DView = new DAVA::UI3DView(DAVA::Rect(dava3DViewMargin, dava3DViewMargin, 0, 0));
+    dava3DView->SetInputEnabled(true, true);
 
 	davaUIScreen = new DAVA::UIScreen();
 	davaUIScreen->AddControl(dava3DView);
@@ -273,7 +254,6 @@ int SceneTabWidget::GetCurrentTab() const
 void SceneTabWidget::SetCurrentTab(int index)
 {
     davaWidget->setEnabled(false);
-    toolWidgetContainer->setVisible(false);
 
     if(index >= 0 && index < tabBar->count())
 	{
@@ -299,7 +279,6 @@ void SceneTabWidget::SetCurrentTab(int index)
 			curScene->selectionSystem->SetLocked(false);
 
 			davaWidget->setEnabled(true);
-			// toolWidgetContainer->setVisible(true); //VK: disabled for future.
 		}
 	}
 }
@@ -329,14 +308,6 @@ int SceneTabWidget::GetTabCount() const
 	return tabBar->count();
 }
 
-void SceneTabWidget::ProcessDAVAUIEvent(DAVA::UIEvent *event)
-{
-	SceneEditor2* scene = GetTabScene(tabBar->currentIndex());
-	if(NULL != scene)
-	{
-		scene->PostUIEvent(event);
-	}
-}
 
 void SceneTabWidget::TabBarCurrentChanged(int index)
 {
@@ -501,8 +472,6 @@ bool SceneTabWidget::eventFilter(QObject *object, QEvent *event)
 		{
 			scene->SetViewportRect(dava3DView->GetRect());
 		}
-
-		UpdateToolWidget();
 	}
 
 	return QWidget::eventFilter(object, event);
@@ -556,16 +525,6 @@ void SceneTabWidget::UpdateTabName(int index)
 	}
 }
 
-void SceneTabWidget::UpdateToolWidget()
-{
-	QRect rect = davaWidget->geometry();
-	QPoint leftTop = davaWidget->mapToGlobal(QPoint(2, 2));
-	QPoint rightBot = davaWidget->mapToGlobal(QPoint(rect.width() - 2 * 2, 16));
-
-	//toolWidgetContainer->setGeometry(QRect(toolWidgetContainer->mapFromParent(mapFromGlobal(leftTop)), mapFromGlobal(rightBot)));
-	toolWidgetContainer->setGeometry(QRect(leftTop, rightBot));
-}
-
 SceneEditor2* SceneTabWidget::GetCurrentScene() const
 {
 	return curScene;
@@ -594,15 +553,6 @@ void SceneTabWidget::HideScenePreview()
 	{
 		previewDialog->Close();
 	}
-}
-
-void SceneTabWidget::AddToolWidget(QWidget *widget)
-{
-    if(widget)
-    {
-        widget->setParent(toolWidgetContainer);
-		toolWidgetLayout->addWidget(widget);
-    }
 }
 
 DavaGLWidget * SceneTabWidget::GetDavaWidget() const

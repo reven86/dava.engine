@@ -35,12 +35,12 @@
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
-#include "JniExtensions.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
 
-class JniTextField: public JniExtension
+class JniTextField
 {
 public:
 	JniTextField(uint32_t id);
@@ -69,16 +69,32 @@ public:
 	void SetCursorPos(uint32 pos);
 	void SetMaxLength(int32_t value);
 
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
-public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
-
 private:
 	uint32_t id;
+	JNI::JavaClass jniTextField;
+	Function<void (jint, jfloat, jfloat, jfloat, jfloat)> create;
+	Function<void (jint)> destroy;
+	Function<void (jint, jfloat, jfloat, jfloat, jfloat)> updateRect;
+	Function<void (jint, jstring)> setText;
+	Function<void (jint, jfloat, jfloat, jfloat, jfloat)> setTextColor;
+	Function<void (jint, jfloat)> setFontSize;
+	Function<void (jint, jboolean)> setIsPassword;
+	Function<void (jint, jint)> setTextAlign;
+	Function<void (jint, jboolean)> setTextUseRtlAlign;
+	Function<void (jint, jboolean)> setInputEnabled;
+	Function<void (jint, jint)> setAutoCapitalizationType;
+	Function<void (jint, jint)> setAutoCorrectionType;
+	Function<void (jint, jint)> setSpellCheckingType;
+	Function<void (jint, jint)> setKeyboardAppearanceType;
+	Function<void (jint, jint)> setKeyboardType;
+	Function<void (jint, jint)> setReturnKeyType;
+	Function<void (jint, jboolean)> setEnableReturnKeyAutomatically;
+	Function<void (jint, jboolean)> setVisible;
+	Function<void (jint)> openKeyboard;
+	Function<void (jint)> closeKeyboard;
+	Function<jint (jint)> getCursorPos;
+	Function<void (jint, jint)> setCursorPos;
+	Function<void (jint, jint)> setMaxLength;
 };
 
 class UITextFieldAndroid
@@ -121,11 +137,13 @@ public:
 	void SetMaxLength(DAVA::int32 value);
 
 	bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString &text);
+	void TextFieldOnTextChanged(const WideString& newText, const WideString& oldText);
 	void TextFieldShouldReturn();
 	void TextFieldKeyboardShown(const Rect& rect);
 	void TextFieldKeyboardHidden();
 	void TextFieldFocusChanged(bool hasFocus);
 	static bool TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, WideString &text);
+	static void TextFieldOnTextChanged(uint32_t id, const WideString& newText, const WideString& oldText);
 	static void TextFieldShouldReturn(uint32_t id);
 	static void TextFieldKeyboardShown(uint32_t id, const Rect& rect);
 	static void TextFieldKeyboardHidden(uint32_t id);

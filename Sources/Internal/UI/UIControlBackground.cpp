@@ -42,46 +42,23 @@
 namespace DAVA
 {
 
-const uint16 UIControlBackground::StretchDrawData::indeces[18 * 3] = {
-    0, 1, 4,
-    1, 5, 4,
-    1, 2, 5,
-    2, 6, 5,
-    2, 3, 6,
-    3, 7, 6,
-            
-    4, 5, 8,
-    5, 9, 8,
-    5, 6, 9,
-    6, 10, 9,
-    6, 7, 10,
-    7, 11, 10,
-            
-    8, 9, 12,
-    9, 12, 13,
-    9, 10, 13,
-    10, 14, 13,
-    10, 11, 14,
-    11, 15, 14
-};
-
 UIControlBackground::UIControlBackground()
-:	spr(NULL)
-,	frame(0)
-,	align(ALIGN_HCENTER|ALIGN_VCENTER)
-,	type(DRAW_ALIGNED)
-,	color(Color::White)
-,	drawColor(Color::White)
-,	leftStretchCap(0)
-,	topStretchCap(0)
-,	spriteModification(0)
-,	colorInheritType(COLOR_IGNORE_PARENT)
-,	perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
-,	lastDrawPos(0, 0)
-,	tiledData(NULL)
+:   color(Color::White)
+,   spr(NULL)
+,   align(ALIGN_HCENTER|ALIGN_VCENTER)
+,   type(DRAW_ALIGNED)
+,   spriteModification(0)
+,   leftStretchCap(0)
+,   topStretchCap(0)
+,   colorInheritType(COLOR_IGNORE_PARENT)
+,   frame(0)
+,   lastDrawPos(0, 0)
+,   perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
+,   tiledData(NULL)
 ,   stretchData(NULL)
-,	shader(SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR))
 ,   margins(NULL)
+,   drawColor(Color::White)
+,   shader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR))
 ,   renderState(RenderState::RENDERSTATE_2D_BLEND)
 {
 }
@@ -195,6 +172,16 @@ void UIControlBackground::SetFrame(int32 drawFrame)
     frame = drawFrame;
 }
 
+void UIControlBackground::SetFrame(const FastName& frameName)
+{
+    DVASSERT(spr);
+    int32 frameInd = spr->GetFrameByName(frameName);
+    if (frameInd != Sprite::INVALID_FRAME_INDEX)
+    {
+    	SetFrame(frameInd);
+    }
+}
+
 void UIControlBackground::SetAlign(int32 drawAlign)
 {
     align = drawAlign;
@@ -295,6 +282,8 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
     Rect drawRect = geometricData.GetUnrotatedRect();
 
     RenderManager::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
+
+    RenderSystem2D::Instance()->UpdateClip();
 
     Sprite::DrawState drawState;
     drawState.SetRenderState(renderState);
@@ -513,13 +502,23 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
         break;
 
         case DRAW_FILL:
-        	RenderSystem2D::Instance()->DrawFilled(spr, &drawState, geometricData);
+            RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
+            if (geometricData.angle != 0.0f)
+            {
+                Polygon2 poly;
+                geometricData.GetPolygon(poly);
+                RenderHelper::Instance()->FillPolygon(poly, drawState.GetRenderState());
+            }
+            else
+            {
+                RenderHelper::Instance()->FillRect(geometricData.GetUnrotatedRect(), drawState.GetRenderState());
+            }
         break;
 
         case DRAW_STRETCH_BOTH:
         case DRAW_STRETCH_HORIZONTAL:
         case DRAW_STRETCH_VERTICAL:
-            RenderSystem2D::Instance()->DrawStretched(spr, &drawState, Vector2(leftStretchCap, topStretchCap), drawRect, type);
+            RenderSystem2D::Instance()->DrawStretched(spr, &drawState, Vector2(leftStretchCap, topStretchCap), type, geometricData, &stretchData);
         break;
 
         case DRAW_TILED:
@@ -528,11 +527,18 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
         default:
             break;
     }
-
+#if defined(LOCALIZATION_DEBUG)
+    lastDrawState = drawState;
+#endif
     RenderManager::Instance()->ResetColor();
 
 }
-
+#if defined(LOCALIZATION_DEBUG)
+const Sprite::DrawState & UIControlBackground::GetLastDrawState() const
+{
+    return lastDrawState;
+}
+#endif
 void UIControlBackground::ReleaseDrawData()
 {
     SafeDelete(tiledData);

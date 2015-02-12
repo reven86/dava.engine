@@ -21,14 +21,15 @@ namespace DAVA {
 }
 
 class BaseProperty;
-class PropertiesViewContext;
+class ControlNode;
+class PropertiesContext;
 
 class PropertiesTreeModel : public QAbstractItemModel
 {
     Q_OBJECT
     
 public:
-    PropertiesTreeModel(BaseProperty *propertiesRoot, PropertiesViewContext *context, QObject *parent = NULL);
+    PropertiesTreeModel(ControlNode *controlNode, PropertiesContext *context, QObject *parent = NULL);
     virtual ~PropertiesTreeModel();
     
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
@@ -47,8 +48,8 @@ private:
     void initVariantType(DAVA::VariantType &var, const QVariant &val) const;
     
 private:
-    BaseProperty *root;
-    PropertiesViewContext *propertiesViewContext;
+    ControlNode *controlNode;
+    PropertiesContext *propertiesContext;
 };
 
 #endif // __UI_EDITOR_PROPERTIES_TREE_MODEL_H__

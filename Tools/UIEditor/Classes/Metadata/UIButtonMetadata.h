@@ -44,6 +44,9 @@ class UIButtonMetadata : public UITextControlMetadata
 {
     Q_OBJECT
 
+    Q_PROPERTY(bool Multiline READ GetMultiline WRITE SetMultiline);
+    Q_PROPERTY(bool MultilineBySymbol READ GetMultilineBySymbol WRITE SetMultilineBySymbol);
+
 public:
     UIButtonMetadata(QObject* parent = 0);    
 
@@ -116,6 +119,12 @@ protected:
 	virtual bool GetTextUseRtlAlign();
     virtual void SetTextUseRtlAlign(bool value);
 
+    virtual bool GetTextMultiline() const;
+    virtual void SetTextMultiline(bool value);
+
+    virtual bool GetTextMultilineBySymbol() const;
+    virtual void SetTextMultilineBySymbol(bool value);
+
     virtual int GetFittingType() const;
     virtual void SetFittingType(int value);
 
@@ -166,6 +175,13 @@ protected:
     virtual float GetTextBottomMargin() const;
     virtual void SetTextBottomMargin(float value);
 
+    // Multiline for button texts.
+    virtual bool GetMultiline() const;
+    virtual void SetMultiline(const bool value);
+    
+    virtual bool GetMultilineBySymbol() const;
+    virtual void SetMultilineBySymbol(const bool value);
+
     // For UI Button localized text depends on state, so overriding this function.
     virtual UIControl::eControlState GetCurrentStateForLocalizedText() const;
     
@@ -204,6 +220,13 @@ protected:
 	// Text use RTL align
 	bool GetTextUseRtlAlignForState(UIControl::eControlState state) const;
     void UpdatePropertyDirtyFlagForTextUseRtlAlign();
+
+    // Text multiline
+    bool GetTextMultilineForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForTextMultiline();
+
+    bool GetTextMultilineBySymbolForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForTextMultilineBySymbol();
 	
     // Draw Type.
     void UpdatePropertyDirtyFlagForDrawType();
@@ -260,6 +283,13 @@ protected:
     
     void UpdatePropertyDirtyFlagForShadowOffsetXY();
     void UpdatePropertyDirtyFlagForShadowColor();
+
+    // Multiline/multiline by symbol.
+    bool GetMultilineForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForMultiline();
+
+    bool GetMultilineBySymbolForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForMultilineBySymbol();
 
     // Recover dirty flags.
     void RecoverPropertyDirtyFlags();

@@ -42,7 +42,7 @@ class MainWindow;
 
 class QFileDialog;
 class Project;
-class PackageDocument;
+class Document;
 class QUndoGroup;
 class PackageNode;
 
@@ -53,7 +53,9 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    
+
+    Project *GetProject() const { return project; }
+
 protected:
 	virtual void closeEvent(QCloseEvent * event);
 
@@ -114,8 +116,8 @@ private:
     bool CheckAndUnlockProject(const QString& projectPath);
 
     int GetTabIndexByPath(const QString &fileName) const;
-    PackageDocument *GetCurrentTabDocument() const;
-    PackageDocument *GetTabDocument(int index) const;
+    Document *GetCurrentTabDocument() const;
+    Document *GetTabDocument(int index) const;
 
 private:
     Ui::MainWindow *ui;
@@ -129,7 +131,7 @@ private:
     QString screenShotFolder;
      
     Project *project;
-    PackageDocument *activeDocument;
+    Document *activeDocument;
     QUndoGroup *undoGroup;
     QAction *undoAction;
     QAction *redoAction;

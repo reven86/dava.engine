@@ -146,7 +146,7 @@ void UISlider::SetValue(float32 value)
     
     if (needSendEvent)
     {
-        PerformEventWithData(EVENT_VALUE_CHANGED, (void*)true);
+        PerformEvent(EVENT_VALUE_CHANGED);
     }
 }
 
@@ -247,12 +247,12 @@ void UISlider::Input(UIEvent *currentInput)
 	{
 		if(oldVal != currentValue)
 		{
-			PerformEvent(EVENT_VALUE_CHANGED);
+			PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
 		}
 	}else if (currentInput->phase == UIEvent::PHASE_ENDED) 
 	{
 		/* if not continuos always perform event because last move position almost always the same as end pos */
-		PerformEvent(EVENT_VALUE_CHANGED);
+		PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
 	}
 
 	RecalcButtonPos();
@@ -273,18 +273,18 @@ void UISlider::Draw(const UIGeometricData &geometricData)
     if (minBackground)
 	{
 		minBackground->SetParentColor(GetBackground()->GetDrawColor());
-		RenderSystem2D::Instance()->ClipPush();
-        RenderSystem2D::Instance()->ClipRect(Rect(screenXMin, screenYMin, clipPointAbsolute - screenXMin, screenYMax));
+		RenderSystem2D::Instance()->PushClip();
+        RenderSystem2D::Instance()->IntersectClipRect(Rect(screenXMin, screenYMin, clipPointAbsolute - screenXMin, screenYMax));
 		minBackground->Draw(geometricData);
-		RenderSystem2D::Instance()->ClipPop();
+		RenderSystem2D::Instance()->PopClip();
 	}
 	if (maxBackground)
 	{
 		maxBackground->SetParentColor(GetBackground()->GetDrawColor());
-		RenderSystem2D::Instance()->ClipPush();
-        RenderSystem2D::Instance()->ClipRect(Rect(clipPointAbsolute, screenYMin, screenXMax - clipPointAbsolute, screenYMax));
+		RenderSystem2D::Instance()->PushClip();
+        RenderSystem2D::Instance()->IntersectClipRect(Rect(clipPointAbsolute, screenYMin, screenXMax - clipPointAbsolute, screenYMax));
 		maxBackground->Draw(geometricData);
-		RenderSystem2D::Instance()->ClipPop();
+		RenderSystem2D::Instance()->PopClip();
 	}
 
 	if (!minBackground && !maxBackground)
@@ -615,7 +615,7 @@ void UISlider::CopyBackgroundAndRemoveControl(UIControl* from, UIControlBackgrou
 
 int32 UISlider::GetBackgroundComponentsCount() const
 {
-    return 3;
+    return BACKGROUND_COMPONENTS_COUNT;
 }
 
 UIControlBackground *UISlider::GetBackgroundComponent(int32 index) const
@@ -639,7 +639,7 @@ UIControlBackground *UISlider::GetBackgroundComponent(int32 index) const
 
 UIControlBackground *UISlider::CreateBackgroundComponent(int32 index) const
 {
-    DVASSERT(0 <= index && index < 3);
+    DVASSERT(0 <= index && index < BACKGROUND_COMPONENTS_COUNT);
     return new UIControlBackground();
 }
 
@@ -650,21 +650,9 @@ void UISlider::SetBackgroundComponent(int32 index, UIControlBackground *bg)
 
 String UISlider::GetBackgroundComponentName(int32 index) const
 {
-    switch (index)
-    {
-        case 0:
-            return "Background";
-            
-        case 1:
-            return "min";
-            
-        case 2:
-            return "max";
-            
-        default:
-            DVASSERT(false);
-            return NULL;
-    }
+    DVASSERT(0 <= index && index < BACKGROUND_COMPONENTS_COUNT);
+    static const String names[BACKGROUND_COMPONENTS_COUNT] = {"Background", "min", "max"};
+    return names[index];
 }
 
 } // ns

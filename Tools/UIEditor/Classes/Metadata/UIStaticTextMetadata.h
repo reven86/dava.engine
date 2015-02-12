@@ -41,10 +41,7 @@ namespace DAVA {
 class UIStaticTextMetadata : public UITextControlMetadata
 {
     Q_OBJECT
-	// Text properties
-    Q_PROPERTY(bool Multiline READ GetMultiline WRITE SetMultiline);
-    Q_PROPERTY(bool MultilineBySymbol READ GetMultilineBySymbol WRITE SetMultilineBySymbol);
-
+	
 public:
     UIStaticTextMetadata(QObject* parent = 0);
 
@@ -91,11 +88,11 @@ protected:
 	virtual QColor GetShadowColor() const;
 	virtual void SetShadowColor(const QColor& value);
 
-	virtual bool GetMultiline() const;
-	virtual void SetMultiline(const bool value);
+	virtual bool GetTextMultiline() const;
+	virtual void SetTextMultiline(bool value);
 
-	virtual bool GetMultilineBySymbol() const;
-	virtual void SetMultilineBySymbol(const bool value);
+	virtual bool GetTextMultilineBySymbol() const;
+	virtual void SetTextMultilineBySymbol(bool value);
     
     virtual int GetFittingType() const;
     virtual void SetFittingType(int value);

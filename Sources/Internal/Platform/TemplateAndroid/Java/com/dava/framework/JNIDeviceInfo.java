@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
+
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
@@ -25,6 +26,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.provider.Settings.Secure;
+import android.util.Log;
 
 public class JNIDeviceInfo {
 	final static String TAG = "JNIDeviceInfo";
@@ -58,7 +60,7 @@ public class JNIDeviceInfo {
 
 	public static void GetTimeZone()
 	{
-		SetJString(TimeZone.getDefault().getDisplayName(Locale.US));
+		SetJString(TimeZone.getDefault().getID());
 	}
 
 	public static void GetUDID()
@@ -89,6 +91,23 @@ public class JNIDeviceInfo {
 	public static int GetZBufferSize()
 	{
 		return JNIConfigChooser.GetDepthBufferSize();
+	}
+	
+	public static String GetHTTPProxyHost()
+	{		
+		return System.getProperty("http.proxyHost");
+	}
+	
+	public static int GetHTTPProxyPort()
+	{
+		String portStr = System.getProperty("http.proxyPort");
+	    int proxyPort = Integer.parseInt((portStr != null ? portStr : "-1"));
+	    return proxyPort;
+	}
+	
+	public static String GetHTTPNonProxyHosts()
+	{
+		return System.getProperty("http.nonProxyHosts");
 	}
 	
 	static final int GPU_UNKNOWN = -1;
@@ -218,17 +237,45 @@ public class JNIDeviceInfo {
 			this.freeSpace = freeSpace;
 		}
 	}
+	
+	private static class StorageCapacity
+	{
+	    public long capacity = 0;
+	    public long free = 0;
+	}
 
-	public static StorageInfo GetInternalStorageInfo()
+	private static StorageCapacity getCapacityAndFreeSpace(String path)
+	{
+        StatFs statFs = new StatFs(path);
+
+		StorageCapacity sc = new StorageCapacity();
+		
+		fillCapacityAndFreeSpace(statFs, sc);
+        return sc;
+    }
+
+	
+    @SuppressWarnings("deprecation")
+    private static void fillCapacityAndFreeSpace(StatFs statFs,
+            StorageCapacity st) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) // 4.2
+		{
+		    st.capacity = statFs.getBlockCountLong() * statFs.getBlockSizeLong();
+		    st.free = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
+		} else
+		{
+		    // do not remove (long) conversion may return negative values
+		    st.capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
+		    st.free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
+		}
+    }
+	
+    public static StorageInfo GetInternalStorageInfo()
 	{
 		String path = Environment.getDataDirectory().getPath();
 		path += "/";
-		StatFs statFs = new StatFs(path);
-
-		long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
-		long free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
-
-		return new StorageInfo(path, false, false, capacity, free);
+		StorageCapacity st = getCapacityAndFreeSpace(path);
+		return new StorageInfo(path, false, false, st.capacity, st.free);
 	}
 
 	public static boolean IsPrimaryExternalStoragePresent()
@@ -242,21 +289,19 @@ public class JNIDeviceInfo {
 		return false;
 	}
 
-	public static StorageInfo GetPrimaryExternalStorageInfo()
+    public static StorageInfo GetPrimaryExternalStorageInfo()
 	{
 		if (IsPrimaryExternalStoragePresent())
 		{
 			String path = Environment.getExternalStorageDirectory().getPath();
 			path += "/";
-			StatFs statFs = new StatFs(path);
-
-            long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
-            long free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
+			
+			StorageCapacity st = getCapacityAndFreeSpace(path);
 
             boolean isEmulated = Environment.isExternalStorageEmulated();
             boolean isReadOnly = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY);
 
-            return new StorageInfo(path, isReadOnly, isEmulated, capacity, free);
+            return new StorageInfo(path, isReadOnly, isEmulated, st.capacity, st.free);
         }
 
 		return new StorageInfo("", false, false, -1, -1);
@@ -313,19 +358,22 @@ public class JNIDeviceInfo {
 							continue;
 						}
 
-			            long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
-			            long free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
+						StorageCapacity sc = new StorageCapacity();
+						
+						fillCapacityAndFreeSpace(statFs, sc);
 
-						infos.add(new StorageInfo(mountPoint, readonly, false, capacity, free));
+						infos.add(new StorageInfo(mountPoint, readonly, false, sc.capacity, sc.free));
 					}
 				}
 			}
 		}
 		catch (FileNotFoundException e)
 		{
+		    Log.e(TAG, e.getMessage());
 		}
 		catch (IOException e)
 		{
+		    Log.e(TAG, e.getMessage());
 		}
 		finally
 		{
@@ -337,6 +385,7 @@ public class JNIDeviceInfo {
 				}
 				catch (IOException e)
 				{
+				    Log.e(TAG, e.getMessage());
 				}
 			}
 		}

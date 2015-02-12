@@ -44,6 +44,11 @@ int32 AtomicDecrement( int32 &value )
     return (int32)InterlockedDecrement((LONG volatile*)&value);
 }
 
+bool AtomicCompareAndSwap(const int32 oldVal, const int32 newVal, volatile int32 &value)
+{
+	return (oldVal == (int32)InterlockedCompareExchange((LONG volatile*)&value, (LONG)newVal, (LONG)oldVal));
+}
+
 };
 
 #endif //#if defined(__DAVAENGINE_WIN32__)

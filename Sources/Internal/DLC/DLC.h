@@ -206,7 +206,7 @@ protected:
     void StepDownloadPatchCancel();
 
     void StepPatchBegin();
-    void StepPatchFinish(BaseObject *caller, void *callerData, void *userData);
+    void StepPatchFinish();
     void StepPatchCancel();
 
     void StepClean();
@@ -219,9 +219,6 @@ protected:
     bool WriteUint32(const FilePath &path, uint32 value);
 
     String MakePatchUrl(uint32 localVer, uint32 removeVer);
-    
-private:
-    void PostEventJob(BaseObject *caller, void *callerData, void *userData);
 };
 
 }

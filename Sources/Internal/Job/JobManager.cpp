@@ -1,237 +1,254 @@
 /*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
+Copyright (c) 2008, binaryzebra
+All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
+* Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+* Neither the name of the binaryzebra nor the
+names of its contributors may be used to endorse or promote products
+derived from this software without specific prior written permission.
 
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "Job/JobManager.h"
-#include "Job/JobQueue.h"
-#include "Job/Job.h"
 #include "Debug/DVAssert.h"
 #include "Base/ScopedPtr.h"
 #include "Platform/Thread.h"
-#include "Job/JobWaiter.h"
+#include "Thread/LockGuard.h"
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
 
-JobManager::JobManager()
+JobManager::JobManager() 
+: mainJobIDCounter(1)
+, mainJobLastExecutedID(0)
+, workerDoneSem(0)
 {
-	mainQueue = new MainThreadJobQueue();
+    uint32 cpuCoresCount = DeviceInfo::GetCpuCount();
+    workerThreads.reserve(cpuCoresCount);
+
+    for(uint32 i = 0; i < cpuCoresCount; ++i)
+    {
+        JobThread * thread = new JobThread(&workerQueue, &workerDoneSem);
+        workerThreads.push_back(thread);
+    }
 }
 
 JobManager::~JobManager()
 {
-	SafeDelete(mainQueue);
+    for(uint32 i = 0; i < workerThreads.size(); ++i)
+    {
+        SafeDelete(workerThreads[i]);
+    }
+
+    workerThreads.clear();
 }
 
 void JobManager::Update()
 {
-	UpdateMainQueue();
-}
+    LockGuard<Mutex> guard(mainQueueMutex);
 
-void JobManager::UpdateMainQueue()
-{
-	mainQueue->Update();
-}
-
-ScopedPtr<Job> JobManager::CreateJob(eThreadType threadType, const Message & message, uint32 flags)
-{
-	const Thread::Id & creatorThreadId = Thread::GetCurrentId();
-	ScopedPtr<Job> job(new Job(message, creatorThreadId, flags));
-
-	if(THREAD_MAIN == threadType)
-	{	
-		if(Thread::IsMainThread())
-		{
-			job->SetPerformedOn(Job::PERFORMED_ON_CREATOR_THREAD);
-			job->Perform();
-		}
-		else
-		{
-			job->SetPerformedOn(Job::PERFORMED_ON_MAIN_THREAD);
-			OnJobCreated(job);
-			mainQueue->AddJob(job);
-		}
-	}
-    else if(threadType == THREAD_MAIN_FORCE_ENQUEUE)
+    if(!mainJobs.empty())
     {
-        job->SetPerformedOn(Job::PERFORMED_ON_MAIN_THREAD);
-        OnJobCreated(job);
-        mainQueue->AddJob(job);
+        // extract all jobs from queue
+        while(!mainJobs.empty())
+        {
+            curMainJob = mainJobs.front();
+            mainJobs.pop_front();
+
+            if(curMainJob.type == JOB_MAINBG)
+            {
+                // TODO:
+                // need implementation
+                // be careful with job ID, because waiting depends on id order
+                // ...
+
+                DVASSERT(false);
+            }
+
+            if(curMainJob.invokerThreadId != 0 && curMainJob.fn != 0)
+            {
+                // unlock queue mutex until function execution finished
+                mainQueueMutex.Unlock();
+                curMainJob.fn();
+                mainJobLastExecutedID = curMainJob.id;
+                mainQueueMutex.Lock();
+            }
+
+            curMainJob = MainJob();
+        }
+
+        {
+            // signal that jobs are finished
+            LockGuard<Mutex> cvguard(mainCVMutex);
+            Thread::Broadcast(&mainCV);
+        }
     }
-	else
-	{
-		DVASSERT(0);
-	}
-
-	return job;
 }
 
-
-
-void JobManager::OnJobCreated(Job * job)
+uint32 JobManager::GetWorkersCount() const
 {
-	jobsDoneMutex.Lock();
-
-	jobsPerCreatorThread[job->creatorThreadId]++;
-
-	jobsDoneMutex.Unlock();
+    return workerThreads.size();
 }
 
-void JobManager::OnJobCompleted(Job * job)
+uint32 JobManager::CreateMainJob(const Function<void()>& fn, eMainJobType mainJobType)
 {
-	job->SetState(Job::STATUS_DONE);
+    uint32 jobID = 0;
 
-	if(Job::PERFORMED_ON_MAIN_THREAD == job->PerformedWhere())
-	{
-		jobsDoneMutex.Lock();
-		//check jobs done for ThreadId
-		Map<Thread::Id, uint32>::iterator iter = jobsPerCreatorThread.find(job->creatorThreadId);
-		if(iter != jobsPerCreatorThread.end())
-		{
-			uint32 & jobsCount = (*iter).second;
-			DVASSERT(jobsCount> 0);
-			jobsCount--;
-			if(0 == jobsCount)
-			{
-				jobsPerCreatorThread.erase(iter);
-				CheckAndCallWaiterForThreadId(job->creatorThreadId);
-			}
+    // if we are already in main thread and requested job shouldn't executed lazy
+    // perform that job immediately
+    if(Thread::IsMainThread() && mainJobType != JOB_MAINLAZY)
+    {
+        fn();
+    }
+    else
+    {
+        // reserve job ID
+        jobID = AtomicIncrement((int32&) mainJobIDCounter);
 
-			//check specific job done
-			CheckAndCallWaiterForJobInstance(job);
-		}
+        // push requested job into queue
+        MainJob job;
+        job.fn = fn;
+        job.invokerThreadId = Thread::GetCurrentId();
+        job.type = mainJobType;
+        job.id = jobID;
 
-		jobsDoneMutex.Unlock();
-	}
+        {
+            LockGuard<Mutex> guard(mainQueueMutex);
+            mainJobs.push_back(job);
+        }
+    }
+
+    return jobID;
 }
 
-JobManager::eWaiterRegistrationResult JobManager::RegisterWaiterForCreatorThread(ThreadIdJobWaiter * waiter)
+void JobManager::WaitMainJobs(Thread::Id invokerThreadId /* = 0 */)
 {
-	JobManager::eWaiterRegistrationResult result = JobManager::WAITER_RETURN_IMMEDIATELY;
-	const Thread::Id threadId = waiter->GetThreadId();
-
-	jobsDoneMutex.Lock();
-	//check if all desired jobs are already done
-	Map<Thread::Id, uint32>::iterator iter = jobsPerCreatorThread.find(threadId);
-	if(iter != jobsPerCreatorThread.end())
-	{
-		uint32 & jobsCount = (*iter).second;
-		if(0 == jobsCount)
-		{
-			//default value: result = JobManager::WAITER_RETURN_IMMEDIATELY;
-		}
-		else
-		{
-			result = JobManager::WAITER_WILL_WAIT;
-			waitersPerCreatorThread[threadId] = waiter;
-		}
-	}
-
-	jobsDoneMutex.Unlock();
-
-	return result;
+    CommonWaitMainJob(Bind(&JobManager::HasMainJobs, this, invokerThreadId));
 }
 
-void JobManager::UnregisterWaiterForCreatorThread(ThreadIdJobWaiter * waiter)
+void JobManager::WaitMainJobID(uint32 mainJobID)
 {
-	jobsDoneMutex.Lock();
-
-	Map<Thread::Id,  ThreadIdJobWaiter *>::iterator it = waitersPerCreatorThread.find(waiter->GetThreadId());
-	if(waitersPerCreatorThread.end() != it)
-	{
-		waitersPerCreatorThread.erase(it);
-	}
-
-	jobsDoneMutex.Unlock();
+    CommonWaitMainJob(Bind(&JobManager::HasMainJobID, this, mainJobID));
 }
 
-void JobManager::CheckAndCallWaiterForThreadId(const Thread::Id & threadId)
+void JobManager::CommonWaitMainJob(const Function<bool()> &hasJobsFn)
 {
-	Map<Thread::Id,  ThreadIdJobWaiter *>::iterator it = waitersPerCreatorThread.find(threadId);
-	if(waitersPerCreatorThread.end() != it)
-	{
-		ThreadIdJobWaiter* waiter = it->second;
+    if(Thread::IsMainThread())
+    {
+        // if wait was invoked from main-thread 
+        // and there are some jobs user is waiting for
+        // we should immediately execute them 
+        if(hasJobsFn())
+        {
+            // just run update, it will execute all of main-thread jobs
+            Update();
 
-		waiter->GetMutex()->Lock();
-		Thread::Broadcast(waiter->GetConditionalVariable());
-		waiter->GetMutex()->Unlock();
+            // assert is something goes wrong
+            DVASSERT(!hasJobsFn() && "Job exepected to be executed at this point, but seems it is still in queue");
+        }
+    }
+    else
+    {
+        // If main thread is locked by WaitWorkerJobs this instruction will unlock
+        // main thread, allowing it to perform all scheduled main-thread jobs
+        workerDoneSem.Post();
 
-		waitersPerCreatorThread.erase(it);
-	}
+        // Now check if there are some jobs in the queue and wait for them
+        LockGuard<Mutex> guard(mainCVMutex);
+        while(hasJobsFn())
+        {
+            Thread::Wait(&mainCV, &mainCVMutex);
+        }
+    }
 }
 
-//===================================
-
-JobManager::eWaiterRegistrationResult JobManager::RegisterWaiterForJobInstance(JobInstanceWaiter * waiter)
+bool JobManager::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)
 {
-	JobManager::eWaiterRegistrationResult result = JobManager::WAITER_WILL_WAIT;
+    bool ret = false;
 
-	Job * job = waiter->GetJob();
-	
-	if(Job::STATUS_DONE == job->GetState())
-	{
-		result = JobManager::WAITER_RETURN_IMMEDIATELY;
-	}
-	else
-	{
-		jobsDoneMutex.Lock();
-		waitersPerJob[job] = waiter;
-		jobsDoneMutex.Unlock();
-	}
+    // tread id = 0 as current thread id, so we should get it
+    if(0 == invokerThreadId)
+    {
+        invokerThreadId = Thread::GetCurrentId();
+    }
 
-	return result;
+    {
+        LockGuard<Mutex> guard(mainQueueMutex);
+        if(curMainJob.invokerThreadId == invokerThreadId)
+        {
+            ret = true;
+        }
+        else
+        {
+            Deque<MainJob>::const_iterator i = mainJobs.begin();
+            Deque<MainJob>::const_iterator end = mainJobs.end();
+            for(; i != end; ++i)
+            {
+                if(i->invokerThreadId == invokerThreadId)
+                {
+                    ret = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    return ret;
 }
 
-void JobManager::UnregisterWaiterForJobInstance(JobInstanceWaiter * waiter)
+bool JobManager::HasMainJobID(uint32 mainJobID)
 {
-	jobsDoneMutex.Lock();
-
-	Map<Job *, JobInstanceWaiter *>::iterator it = waitersPerJob.find(waiter->GetJob());
-	if(waitersPerJob.end() != it)
-	{
-		waitersPerJob.erase(it);
-	}
-
-	jobsDoneMutex.Unlock();
+    return (mainJobID > mainJobLastExecutedID);
 }
 
-void JobManager::CheckAndCallWaiterForJobInstance(Job * job)
+void JobManager::CreateWorkerJob(const Function<void()>& fn)
 {
-	Map<Job *, JobInstanceWaiter *>::iterator it = waitersPerJob.find(job);
-	if(waitersPerJob.end() != it)
-	{
-		JobInstanceWaiter* waiter = it->second;
+    workerQueue.Push(fn);
+    workerQueue.Signal();
+}
 
-		waiter->GetMutex()->Lock();
-		Thread::Broadcast(waiter->GetConditionalVariable());
-		waiter->GetMutex()->Unlock();
+void JobManager::WaitWorkerJobs()
+{
+    while(HasWorkerJobs())
+    {
+        if(Thread::IsMainThread())
+        {
+            // We want to be able to wait worker jobs, but at the same time
+            // allow any worker job execute main job. Potentially this will cause
+            // dead lock, but there is a simple solution:
+            // 
+            // Every time, worker job is trying to execute WaitMainJobs it will 
+            // post workerDoneSem semaphore, that will give a chance to execute main jobs
+            // in the following Update() call
+            //
+            Update();
+        }
 
-		waitersPerJob.erase(it);
-	}
+        workerDoneSem.Wait();
+    }
+}
+
+bool JobManager::HasWorkerJobs()
+{
+    return !workerQueue.IsEmpty();
 }
 
 }

@@ -32,16 +32,19 @@
 #include <QHelpEvent>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QDebug>
 
 #include "QtPropertyItemDelegate.h"
 #include "QtPropertyModel.h"
 #include "QtPropertyData.h"
+#include "QtPropertyData/QtPropertyDataDavaVariant.h"
 
 QtPropertyItemDelegate::QtPropertyItemDelegate(QAbstractItemView *_view, QtPropertyModel *_model, QWidget *parent /* = 0 */)
 	: QStyledItemDelegate(parent)
 	, model(_model)
 	, lastHoverData(NULL)
     , view(_view)
+    , editorDataWasSet(false)
 {
     DVASSERT(view);
     view->viewport()->installEventFilter(this);
@@ -62,7 +65,16 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 		drawOptionalButtons(painter, opt, index, NORMAL);
 	}
 
-	QStyledItemDelegate::paint(painter, opt, index);
+    auto *data = qobject_cast<QtPropertyDataDavaVariant *>( model->itemFromIndex( index ) );
+    if (
+        (data != nullptr) &&
+        (data->GetVariantValue().GetType() == DAVA::VariantType::TYPE_STRING) &&
+        (data->GetVariantValue().AsString().find( '\n' ) != DAVA::String::npos) )
+    {
+        opt.text = opt.text.simplified();
+    }
+
+    view->style()->drawControl( QStyle::CE_ItemViewItem, &opt, painter, view );
 
 	if(index.column() == 1)
 	{
@@ -72,8 +84,26 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 
 QSize QtPropertyItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-	QSize s = QStyledItemDelegate::sizeHint(option, index);
-    return QSize(s.width(), s.height() + 5);
+	auto s = QStyledItemDelegate::sizeHint(option, index);
+    static const int baseText = 17;
+    static const int extra = 5;
+
+    auto *data = qobject_cast<QtPropertyDataDavaVariant *>( model->itemFromIndex( index ) );
+    if ( data != nullptr )
+    {
+        if ( data->GetVariantValue().GetType() == DAVA::VariantType::TYPE_STRING )
+        {
+            const auto& text = data->GetValue().toString();
+            if ( !text.isEmpty() && text.contains( '\n' ) )
+            {
+                s.setHeight( baseText );
+            }
+        }
+    }
+
+    s.setHeight( s.height() + extra );
+
+    return s;
 }
 
 QWidget* QtPropertyItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -82,7 +112,6 @@ QWidget* QtPropertyItemDelegate::createEditor(QWidget *parent, const QStyleOptio
 
 	if(model == index.model())
 	{
-        int paddingRight = 0;
 		QtPropertyData* data = model->itemFromIndex(index);
 
 		if(NULL != data)
@@ -99,12 +128,18 @@ QWidget* QtPropertyItemDelegate::createEditor(QWidget *parent, const QStyleOptio
 	}
 
     activeEditor = editWidget;
+    editorDataWasSet = false;
 
     return editWidget;
 }
 
 void QtPropertyItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
+    if ( editorDataWasSet )
+    {
+        return;
+    }
+
 	bool doneByInternalEditor = false;
 
 	if(model == index.model())
@@ -120,6 +155,8 @@ void QtPropertyItemDelegate::setEditorData(QWidget *editor, const QModelIndex &i
 	{
 		QStyledItemDelegate::setEditorData(editor, index);
 	}
+
+    editorDataWasSet = true;
 }
 
 bool QtPropertyItemDelegate::editorEvent(QEvent * event, QAbstractItemModel * _model, const QStyleOptionViewItem & option, const QModelIndex & index)
@@ -282,7 +319,7 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
 				}
 				else
 				{
-					QPixmap pix = QPixmap::grabWidget(btn);
+					QPixmap pix = btn->grab();
 					painter->drawPixmap(owXPos, owYPos, pix);
 				}
 
