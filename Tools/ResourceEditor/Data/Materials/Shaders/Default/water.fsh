@@ -19,6 +19,7 @@ precision highp float;
 
 
 uniform samplerCube cubemap;
+uniform lowp vec3 reflectionTintColor;
 
 #if defined(VERTEX_LIT)
 varying mediump vec3 reflectionDirectionInWorldSpace;
@@ -31,8 +32,7 @@ uniform lowp vec3 reflectanceColor;
 varying highp vec2 varTexCoord0;
 varying highp vec2 varTexCoord1;
 varying highp vec2 varTexCoordDecal;
-#else
-uniform lowp vec3 reflectionTintColor;
+
 #endif
 
 #elif defined(PIXEL_LIT)
@@ -52,19 +52,8 @@ varying highp vec2 varTexCoord1;
 
 uniform lowp vec3 refractionTintColor;
 
-#if defined(REAL_REFLECTION) //ULTRA
-    uniform lowp vec3 reflectionTintColor0;
-    uniform lowp float fresnelBias0;
-    uniform mediump float fresnelPow0;
-#elif defined(FRESNEL_TO_ALPHA) //HIGH
-    uniform lowp vec3 reflectionTintColor1;
-    uniform lowp float fresnelBias1;
-    uniform mediump float fresnelPow1;
-#elif defined(CONST_REFRACTION_COLOR) //MEDIUM
-    uniform lowp vec3 reflectionTintColor2;
-    uniform lowp float fresnelBias2;
-    uniform mediump float fresnelPow2;
-#endif
+uniform lowp float fresnelBias;
+uniform mediump float fresnelPow;
 
 #if defined CONST_REFRACTION_COLOR
 uniform lowp vec3 refractionConstColor;
@@ -127,7 +116,7 @@ void main()
 		//gl_FragColor = vec4((textureColor0 *textureColorDecal* decalTintColor * 2.0 + reflectionColor * reflectanceColor) * textureColor1 * 2.0, 1.0);
 		//gl_FragColor = vec4(((textureColor0 + textureColor1)* decalTintColor + reflectionColor * reflectanceColor) * textureColorDecal * 2.0, 1.0);
 		//gl_FragColor = vec4((textureColorDecal* decalTintColor * reflectionColor * reflectanceColor) * (textureColor0 + textureColor1) * 2.0, 1.0);
-		gl_FragColor = vec4(((textureColor0 + textureColor1) * decalTintColor * textureColorDecal * reflectionColor) , 1.0);
+		gl_FragColor = vec4(((textureColor0 * textureColor1) * 3.0 * decalTintColor * textureColorDecal + reflectionColor * reflectanceColor) , 1.0);
 	#else
 		gl_FragColor = vec4(reflectionColor * reflectionTintColor, 1.0);
 	#endif
@@ -145,15 +134,7 @@ void main()
     //compute shininess and fresnel
     lowp vec3 cameraToPointInTangentSpaceNorm = normalize(cameraToPointInTangentSpace);    
     lowp float lambertFactor = max (dot (-cameraToPointInTangentSpaceNorm, normal), 0.0);
-	
-	#if defined(REAL_REFLECTION) //ULTRA
-        lowp float fresnel = FresnelShlick(lambertFactor, fresnelBias0, fresnelPow0);
-    #elif defined(FRESNEL_TO_ALPHA) //HIGH
-        lowp float fresnel = FresnelShlick(lambertFactor, fresnelBias1, fresnelPow1);
-    #elif defined(CONST_REFRACTION_COLOR) //MEDIUM
-        lowp float fresnel = FresnelShlick(lambertFactor, fresnelBias2, fresnelPow2);
-    #endif
-	
+    lowp float fresnel = FresnelShlick(lambertFactor, fresnelBias, fresnelPow);
 #if defined (SPECULAR)
     lowp vec3 halfVec = normalize(normalize(varLightVec)-cameraToPointInTangentSpaceNorm);
     lowp vec3 resSpecularColor = pow (max (dot (halfVec, normal), 0.0), materialSpecularShininess) * materialLightSpecularColor;
@@ -179,7 +160,7 @@ void main()
         screenPos.y=1.0-screenPos.y;
         lowp vec3 refractionColor = texture2D(dynamicRefraction, screenPos+waveOffset*refractionDistortion).rgb;        
     #endif	    
-    lowp vec3 resColor = mix(refractionColor*refractionTintColor, reflectionColor*reflectionTintColor0, fresnel);
+    lowp vec3 resColor = mix(refractionColor*refractionTintColor, reflectionColor*reflectionTintColor, fresnel);
     #if defined (SPECULAR)
         resColor+=resSpecularColor;
     #endif
@@ -189,12 +170,7 @@ void main()
     lowp vec3 reflectionVectorInTangentSpace = reflect(cameraToPointInTangentSpaceNorm, normal);
 	reflectionVectorInTangentSpace.z = abs(reflectionVectorInTangentSpace.z); //prevent reflection through surface
     lowp vec3 reflectionVectorInWorldSpace = (tbnToWorldMatrix * reflectionVectorInTangentSpace);    
-
-	#if defined(FRESNEL_TO_ALPHA) //HIGH
-        lowp vec3 reflectionColor = textureCube(cubemap, reflectionVectorInWorldSpace).rgb * reflectionTintColor1;
-    #elif defined(CONST_REFRACTION_COLOR) //MEDIUM
-        lowp vec3 reflectionColor = textureCube(cubemap, reflectionVectorInWorldSpace).rgb * reflectionTintColor2;
-    #endif
+    lowp vec3 reflectionColor = textureCube(cubemap, reflectionVectorInWorldSpace).rgb * reflectionTintColor;
     
     #if defined (FRESNEL_TO_ALPHA)	
 		lowp vec3 resColor = reflectionColor;
