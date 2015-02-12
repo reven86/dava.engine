@@ -101,7 +101,14 @@ public:
 
     inline  Entity* GetChild(int32 index) const;
 	inline  int32   GetChildrenCount() const;
+    inline const Vector<Entity*> &GetChildren() const;
 
+    /**
+    Requests that the children vector capacity be at least enough to contain n elements.
+    \brief Get number of elements.
+    \returns none.
+    */
+    void reserveChildrenCount(DAVA::Vector<Entity*>::size_type n);
     
 	virtual bool FindNodesByNamePart(const String & namePart, List<Entity *> &outNodeList);
     
@@ -357,12 +364,14 @@ public:
 	static const char* SCENE_NODE_IS_LOCKED_PROPERTY_NAME;
 
 	void FindComponentsByTypeRecursive(Component::eType type, List<DAVA::Entity*> & components);
-    
+        
+    void UpdateFamily();
+
+    //TODO: move to protected
     Vector<Entity*> children;
     
-    void UpdateFamily();
-    
 protected:
+
     void RemoveAllComponents();
     void LoadComponentsV6(KeyedArchive *compsArch, SerializationContext * serializationContext);
     void LoadComponentsV7(KeyedArchive *compsArch, SerializationContext * serializationContext);
@@ -515,6 +524,11 @@ inline Entity * Entity::GetChild (int32 index) const
 inline int32 Entity::GetChildrenCount () const
 {
     return (int32)children.size();
+}
+
+inline const Vector<Entity*> &Entity::GetChildren() const
+{
+    return children;
 }
 
 inline uint32 Entity::GetComponentCount ()

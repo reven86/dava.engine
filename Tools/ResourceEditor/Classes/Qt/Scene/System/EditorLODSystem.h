@@ -31,12 +31,9 @@
 #ifndef __SCENE_LOD_SYSTEM_H__
 #define __SCENE_LOD_SYSTEM_H__
 
-// framework
-#include "Entity/SceneSystem.h"
-#include "DAVAEngine.h"
-#include "Scene/EntityGroup.h"
-
 class Command2;
+class SceneEditor2;
+class EntityGroup;
 
 class EditorLODSystem : public DAVA::SceneSystem
 {
@@ -75,7 +72,7 @@ public:
     inline DAVA::uint32 GetLayerTriangles(DAVA::uint32 layerNum) const;
 
     inline DAVA::float32 GetLayerDistance(DAVA::uint32 layerNum) const;
-    void SetLayerDistance(DAVA::uint32 layerNum, DAVA::float32 distance);
+    void SetLayerDistance(DAVA::int32 layerNum, DAVA::float32 distance);
 
     inline DAVA::uint32 GetSceneLodsLayersCount() const;
 
@@ -103,18 +100,17 @@ protected:
     void ResetForceState(DAVA::Entity *entity);
     void ResetForceState(DAVA::LodComponent *lodComponent);
 
-    DAVA::uint32 currentLodsLayersCount;
+    DAVA::int32 currentLodsLayersCount;
     bool forceDistanceEnabled;
     DAVA::float32 forceDistance;
     DAVA::int32 forceLayer;    
     bool allSceneModeEnabled;
 
     std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> lodTrianglesCount;
-    std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS > lodDistances;
+    std::array<DAVA::float32, DAVA::LodComponent::MAX_LOD_LAYERS > lodDistances;
 
     DAVA::Deque<DAVA::LodComponent *> sceneLODs;
     DAVA::Deque<DAVA::LodComponent *> selectedLODs;
-    EntityGroup sceneEntities;
     inline const DAVA::Deque<DAVA::LodComponent *> &GetCurrentLODs() const;
 };
 

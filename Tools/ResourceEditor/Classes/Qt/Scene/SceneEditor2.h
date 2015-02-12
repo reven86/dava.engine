@@ -42,8 +42,6 @@
 #include "Commands2/CommandStack.h"
 #include "Settings/SettingsManager.h"
 
-#include "Scene/System/CameraSystem.h"
-#include "Scene/System/CollisionSystem.h"
 #include "Scene/System/GridSystem.h"
 #include "Scene/System/HoodSystem.h"
 #include "Scene/System/SelectionSystem.h"
@@ -70,6 +68,8 @@
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 
+class SceneCollisionSystem;
+class SceneCameraSystem;
 class EditorLODSystem;
 class FogSettingsChangedReceiver;
 

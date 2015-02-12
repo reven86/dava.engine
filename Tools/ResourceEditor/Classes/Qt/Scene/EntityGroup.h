@@ -60,6 +60,8 @@ public:
 
 	size_t Size() const;
 	DAVA::Entity* GetEntity(size_t i) const;
+    inline const DAVA::Vector<EntityGroupItem> &GetEntityGroupItems() const;
+
 	EntityGroupItem* GetItem(size_t i) const;
 
 	DAVA::AABBox3 GetBbox(size_t i) const;
@@ -83,5 +85,11 @@ protected:
 	DAVA::Vector<EntityGroupItem> entities;
 	DAVA::AABBox3 entitiesBbox;
 };
+
+inline const DAVA::Vector<EntityGroupItem> &EntityGroup::GetEntityGroupItems() const
+{
+    return entities;
+}
+
 
 #endif // __ENTITY_GROUP_H__

@@ -1,5 +1,8 @@
-﻿#include "EditorLODSystem.h"
-
+﻿// framework
+#include "DAVAEngine.h"
+#include "EditorLODSystem.h"
+#include "Scene/EntityGroup.h"
+#include "Entity/SceneSystem.h"
 #include "Scene/SceneSignals.h"
 #include "Commands2/ChangeLODDistanceCommand.h"
 #include "Commands2/CreatePlaneLODCommand.h"
@@ -23,7 +26,6 @@ EditorLODSystem::~EditorLODSystem(void)
 void EditorLODSystem::AddEntity(DAVA::Entity * entity)
 {
     DVASSERT(entity);
-    sceneEntities.Add(entity);
     DAVA::LodComponent *tmpComponent = GetLodComponent(entity);
     DVASSERT(tmpComponent);
     sceneLODs.push_back(tmpComponent);
@@ -32,7 +34,6 @@ void EditorLODSystem::AddEntity(DAVA::Entity * entity)
 void EditorLODSystem::RemoveEntity(DAVA::Entity * entity)
 {
     DVASSERT(entity);
-    sceneEntities.Rem(entity);
     DAVA::LodComponent *tmpComponent = GetLodComponent(entity);
     DVASSERT(tmpComponent);
     sceneLODs.erase(std::remove(sceneLODs.begin(), sceneLODs.end(), tmpComponent), sceneLODs.end());
@@ -50,10 +51,9 @@ void EditorLODSystem::AddSelectedLODsRecursive(DAVA::Entity *entity)
     {
         return;
     }
-    auto count = entity->GetChildrenCount();
-    for (auto i = 0; i < count; i++)
+    for (auto &child : entity->GetChildren())
     {
-        AddSelectedLODsRecursive(entity->GetChild(i));
+        AddSelectedLODsRecursive(child);
     }
 }
 
@@ -65,10 +65,9 @@ void EditorLODSystem::RemoveSelectedLODsRecursive(DAVA::Entity *entity)
     {
         selectedLODs.erase(std::remove(selectedLODs.begin(), selectedLODs.end(), tmpComponent), selectedLODs.end());
     }
-    auto count = entity->GetChildrenCount();
-    for (auto i = 0; i < count; i++)
+    for (auto &child : entity->GetChildren())
     {
-        RemoveSelectedLODsRecursive(entity->GetChild(i));
+        RemoveSelectedLODsRecursive(child);
     }
 }
 
@@ -87,19 +86,17 @@ void EditorLODSystem::UpdateDistances(const DAVA::Map<DAVA::uint32, DAVA::float3
 void EditorLODSystem::SceneSelectionChanged(const EntityGroup *selected, const EntityGroup *deselected)
 {
     const size_t deselectedCount = deselected->Size();
-    for (auto i = 0; i < deselectedCount; ++i)
+    for (auto &entityGroupItem : selected->GetEntityGroupItems())
     {
         if (!allSceneModeEnabled)
         {
-            ResetForceState(deselected->GetEntity(i));
+            ResetForceState(entityGroupItem.entity);
         }
-        //RemoveSelectedLODsRecursive(deselected->GetEntity(i));
     }
     selectedLODs.clear();
-    const size_t selectedCount = selected->Size();
-    for (auto i = 0; i < selectedCount; ++i)
+    for (auto &entityGroupItem : selected->GetEntityGroupItems())
     {
-        AddSelectedLODsRecursive(selected->GetEntity(i));
+        AddSelectedLODsRecursive(entityGroupItem.entity);
     }
     if (allSceneModeEnabled)
     {
@@ -117,10 +114,9 @@ void EditorLODSystem::ResetForceState(DAVA::Entity *entity)
     {
         ResetForceState(tmpComponent);
     }
-    auto count = entity->GetChildrenCount();
-    for (auto i = 0; i < count; i++)
+    for (auto &child : entity->GetChildren())
     {
-        ResetForceState(entity->GetChild(i));
+        ResetForceState(child);
     }
 }
 
@@ -177,12 +173,12 @@ void EditorLODSystem::AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodCompone
         return;
     }
     RenderObject * ro = GetRenderObject(en);
-    if (!ro)
+    if (nullptr == ro)
     {
         return;
     }
     DAVA::uint32 batchCount = ro->GetRenderBatchCount();
-    for (auto i = 0; i < batchCount; ++i)
+    for (DAVA::uint32 i = 0; i < batchCount; ++i)
     {
         DAVA::int32 lodIndex = 0;
         DAVA::int32 switchIndex = 0;
@@ -201,18 +197,20 @@ void EditorLODSystem::AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodCompone
 
                 bool batchIsVisible = false;
                 DAVA::uint32 activeBatchCount = ro->GetActiveRenderBatchCount();
-                for (auto a = 0; a < activeBatchCount && !batchIsVisible; ++a)
+                for (DAVA::uint32 a = 0; a < activeBatchCount && !batchIsVisible; ++a)
                 {
                     RenderBatch *visibleBatch = ro->GetActiveRenderBatch(a);
                     batchIsVisible = (visibleBatch == rb);
                 }
 
-                if(batchIsVisible == false) // need to skip this render batch
+                if (batchIsVisible == false) // need to skip this render batch
+                {
                     continue;
+                }
             }
 
             PolygonGroup *pg = rb->GetPolygonGroup();
-            if(pg)
+            if(nullptr != pg)
             {
                 DVASSERT(lodIndex < DAVA::LodComponent::MAX_LOD_LAYERS);
                 DVASSERT(lodIndex >= 0);
@@ -246,19 +244,18 @@ void EditorLODSystem::SolidChanged(const Entity *entity, bool value)
         return;
     }
 
-    auto count = entity->GetChildrenCount();
     if (value)
     {
-        for (auto i = 0; i < count; ++i)
+        for (auto &child : entity->GetChildren())
         {
-            AddSelectedLODsRecursive(entity->GetChild(i));
+            AddSelectedLODsRecursive(child);
         }
     }
     else
     {
-        for (auto i = 0; i < count; ++i)
+        for (auto &child : entity->GetChildren())
         {
-            RemoveSelectedLODsRecursive(entity->GetChild(i));
+            RemoveSelectedLODsRecursive(child);
         }
     }
     CollectLODDataFromScene();
@@ -325,7 +322,7 @@ FilePath EditorLODSystem::GetDefaultTexturePathForPlaneEntity() const
 
     FilePath entityPath = static_cast<SceneEditor2*>(GetScene())->GetScenePath();
     KeyedArchive * properties = GetCustomPropertiesArchieve(entity);
-    if (properties && properties->IsKeyExists(ResourceEditor::EDITOR_REFERENCE_TO_OWNER))
+    if (nullptr != properties && properties->IsKeyExists(ResourceEditor::EDITOR_REFERENCE_TO_OWNER))
     {
         entityPath = FilePath(properties->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, entityPath.GetAbsolutePathname()));
     }
@@ -406,7 +403,7 @@ bool EditorLODSystem::DeleteLastLOD()
     return true;
 }
 
-void EditorLODSystem::SetLayerDistance(DAVA::uint32 layerNum, DAVA::float32 distance)
+void EditorLODSystem::SetLayerDistance(DAVA::int32 layerNum, DAVA::float32 distance)
 {
     DVASSERT(layerNum < currentLodsLayersCount);
     lodDistances[layerNum] = distance;

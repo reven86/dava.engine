@@ -671,6 +671,11 @@ bool Entity::FindNodesByNamePart(const String &namePart, List<Entity *> &outNode
 		
 	return isFind;
 }
+
+void Entity::reserveChildrenCount(DAVA::Vector<Entity*>::size_type n)
+{
+    children.reserve(n);
+}
 	
 AABBox3 Entity::GetWTMaximumBoundingBoxSlow()
 {
