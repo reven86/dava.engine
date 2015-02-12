@@ -120,6 +120,7 @@ elseif( IOS )
 
     set_source_files_properties( ${CMAKE_CURRENT_LIST_DIR}/Platform/ThreadPosix.cpp 
                                  ${CMAKE_CURRENT_LIST_DIR}/Notification/LocalNotificationIOS.cpp
+                                 ${CMAKE_CURRENT_LIST_DIR}/DataStorage/iOS/ICloudKeyValue.cpp                                 
                                  PROPERTIES COMPILE_FLAGS "-x objective-c++" )  
 
 

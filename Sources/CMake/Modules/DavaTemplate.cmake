@@ -27,9 +27,12 @@ macro( setup_main_executable )
 add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
 
 if( IOS )
-    file ( GLOB_RECURSE RESOURCES_LIST ${IOS_DATA} )
+    set( CMAKE_IOS_SDK_ROOT Latest IOS )
+
+    list( APPEND RESOURCES_LIST ${MACOS_DATA} )    
     list( APPEND RESOURCES_LIST ${IOS_XIB} )
     list( APPEND RESOURCES_LIST ${IOS_PLIST} )
+    list( APPEND RESOURCES_LIST ${IOS_ICO} )
 
 elseif( MACOS )
     file ( GLOB DYLIB_FILES    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.dylib)
@@ -116,17 +119,18 @@ if( ANDROID )
 
 elseif( IOS )
     set_target_properties ( ${PROJECT_NAME} PROPERTIES
-        MACOSX_BUNDLE_INFO_PLIST ${IOS_PLISTT} 
-        RESOURCE                "${IOS_XIB}"
+        MACOSX_BUNDLE_INFO_PLIST "${IOS_PLISTT}" 
+        RESOURCE                 "${RESOURCES_LIST}"
         XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
     )
+    set( CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer" )
 
-    get_target_property ( TARGET_LOC ${PROJECT_NAME} LOCATION )
-    string ( REGEX REPLACE /Contents/MacOS/${PROJECT_NAME} "" TARGET_LOC ${TARGET_LOC} )
-    add_custom_command( TARGET ${PROJECT_NAME} PRE_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy_directory ${IOS_DATA} ${TARGET_LOC}/Data
-      COMMAND ${CMAKE_COMMAND} -E copy ${IOS_PLISTT} ${CMAKE_BINARY_DIR}/CMakeFiles/${PROJECT_NAME}.dir/Info.plist
-    )
+    #get_target_property ( TARGET_LOC ${PROJECT_NAME} LOCATION )
+    #string ( REGEX REPLACE /Contents/MacOS/${PROJECT_NAME} "" TARGET_LOC ${TARGET_LOC} )
+    #add_custom_command( TARGET ${PROJECT_NAME} PRE_BUILD
+      #COMMAND ${CMAKE_COMMAND} -E copy_directory ${IOS_DATA} ${TARGET_LOC}/Data
+     # COMMAND ${CMAKE_COMMAND} -E copy ${IOS_PLISTT} ${CMAKE_BINARY_DIR}/CMakeFiles/${PROJECT_NAME}.dir/Info.plist
+    #)
 
 elseif( MACOS )
     set_target_properties ( ${PROJECT_NAME} PROPERTIES
