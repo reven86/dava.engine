@@ -1582,6 +1582,121 @@ void UIButtonMetadata::UpdatePropertyDirtyFlagForMargins()
     }
 }
 
+bool UIButtonMetadata::GetMultiline() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return false;
+    }
+    
+    return GetMultilineForState(uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetMultiline(const bool value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    // Need  to keep multilineBySymbol value.
+    bool multilineBySymbol = GetMultilineBySymbolForState(uiControlStates[0]);
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+    {
+        UIControl::eControlState state = uiControlStates[i];
+        UIStaticText* stateTextControl = GetActiveUIButton()->GetStateTextControl(state);
+        if (stateTextControl)
+        {
+            stateTextControl->SetMultiline(value, multilineBySymbol);
+        }
+    }
+
+    UpdateExtraDataLocalizationKey();
+    UpdatePropertyDirtyFlagForMultiline();
+}
+
+bool UIButtonMetadata::GetMultilineForState(UIControl::eControlState state) const
+{
+    UIStaticText* textControl = GetActiveUIButton()->GetStateTextControl(state);
+    if (textControl)
+    {
+        return textControl->GetMultiline();
+    }
+
+    return false;
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForMultiline()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetMultilineForState(curState) !=
+                              GetMultilineForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::TEXT_PROPERTY_MULTILINE, curStateDirty);
+    }
+}
+
+bool UIButtonMetadata::GetMultilineBySymbol() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return false;
+    }
+    
+    return GetMultilineBySymbolForState(uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetMultilineBySymbol(const bool value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    // Need  to keep multiline value.
+    bool multiline = GetMultilineForState(uiControlStates[0]);
+
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+    {
+        UIControl::eControlState state = uiControlStates[i];
+        UIStaticText* stateTextControl = GetActiveUIButton()->GetStateTextControl(state);
+        if (stateTextControl)
+        {
+            stateTextControl->SetMultiline(multiline, value);
+        }
+    }
+    
+    UpdateExtraDataLocalizationKey();
+    UpdatePropertyDirtyFlagForMultilineBySymbol();
+}
+
+bool UIButtonMetadata::GetMultilineBySymbolForState(UIControl::eControlState state) const
+{
+    UIStaticText* textControl = GetActiveUIButton()->GetStateTextControl(state);
+    if (textControl)
+    {
+        return textControl->GetMultilineBySymbol();
+    }
+    
+    return false;
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForMultilineBySymbol()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetMultilineBySymbolForState(curState) !=
+                              GetMultilineBySymbolForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::TEXT_PROPERTY_MULTILINE_BY_SYMBOL, curStateDirty);
+    }
+}
+
 void UIButtonMetadata::UpdatePropertyDirtyFlagForTextMargins()
 {
     int statesCount = UIControlStateHelper::GetUIControlStatesCount();
@@ -1628,6 +1743,9 @@ void UIButtonMetadata::RecoverPropertyDirtyFlags()
     UpdatePropertyDirtyFlagForShadowOffsetXY();
 
     UpdatePropertyDirtyFlagForMargins();
+    
+    UpdatePropertyDirtyFlagForMultiline();
+    UpdatePropertyDirtyFlagForMultilineBySymbol();
 }
 
 void UIButtonMetadata::UpdateExtraDataLocalizationKey()

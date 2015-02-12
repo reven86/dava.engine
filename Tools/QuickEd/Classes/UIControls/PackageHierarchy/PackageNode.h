@@ -6,13 +6,16 @@
 class ImportedPackagesNode;
 class PackageControlsNode;
 class PackageSerializer;
+class ControlNode;
+class PackageRef;
 
 class PackageNode : public PackageBaseNode
 {
 public:
-    PackageNode(DAVA::UIPackage *package, const DAVA::FilePath &path);
+    PackageNode(PackageRef *_packageRef);
 private:
     virtual ~PackageNode();
+    
 public:
     virtual int GetCount() const override;
     virtual PackageBaseNode *Get(int index) const override;
@@ -20,17 +23,22 @@ public:
     virtual DAVA::String GetName() const override;
     int GetFlags() const override;
     
-    DAVA::UIPackage *GetPackage() const;
-    const DAVA::FilePath &GetPath() const;
+    PackageRef *GetPackageRef() const;
     
     ImportedPackagesNode *GetImportedPackagesNode() const;
     PackageControlsNode *GetPackageControlsNode() const;
-    
+
+    PackageControlsNode *FindImportedPackage(const DAVA::FilePath &path);
+
     void Serialize(PackageSerializer *serializer) const;
+    void Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const;
+    
     
 private:
-    DAVA::UIPackage *package;
-    DAVA::FilePath path;
+    void CollectPackages(DAVA::Set<PackageRef*> &packageRefs, ControlNode *node) const;
+    
+private:
+    PackageRef *packageRef;
     
     ImportedPackagesNode *importedPackagesNode;
     PackageControlsNode *packageControlsNode;

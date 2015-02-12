@@ -322,6 +322,45 @@ namespace DAVA
 		FrameworkWillTerminate();
 	}
 
+/*	void CoreWin32Platform::InitOpenGL()
+	{
+		hDC = GetDC(hWindow);
+
+		PIXELFORMATDESCRIPTOR pfd;
+		ZeroMemory( &pfd, sizeof( pfd ) );
+		pfd.nSize = sizeof( pfd );
+		pfd.nVersion = 1;
+		pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+		pfd.iPixelType = PFD_TYPE_RGBA;
+		pfd.cColorBits = 24;
+		pfd.cDepthBits = 16;
+		pfd.iLayerType = PFD_MAIN_PLANE;
+		int iFormat = ChoosePixelFormat(hDC, &pfd);
+		SetPixelFormat(hDC, iFormat, &pfd);
+
+		hRC = wglCreateContext(hDC);
+		Thread::secondaryContext = wglCreateContext(hDC);
+		Thread::currentDC = hDC;
+		
+		wglShareLists(Thread::secondaryContext, hRC);
+		wglMakeCurrent(hDC, hRC);
+
+		Thread * t = Thread::Create(Message());
+		t->EnableCopyContext();
+		t->Start();
+
+		glewInit();
+		const GLubyte * extensions = glGetString(GL_EXTENSIONS);
+		Logger::FrameworkDebug("[CoreWin32Platform] gl extensions: %s", (const char*)extensions);
+	}*/
+
+	void CoreWin32Platform::ReleaseOpenGL()
+	{
+		wglMakeCurrent(0, 0);
+		wglDeleteContext(hRC);
+		ReleaseDC(hWindow, hDC);		
+	}
+	
 	RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode & dm)
 	{
 		RECT clientSize;
@@ -667,7 +706,7 @@ namespace DAVA
 
 		case WM_KEYUP:
 			{
-				InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed((int32)wParam);
+				InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed((int32)wParam);
 			};
 			break;
 
@@ -688,7 +727,7 @@ namespace DAVA
 				ev.keyChar = 0;
 				ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
 				ev.tapCount = 1;
-				ev.tid = InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey((int32)wParam);
+				ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey((int32)wParam);
 
 				touches.push_back(ev);
 
@@ -696,7 +735,7 @@ namespace DAVA
 				touches.pop_back();
 				UIControlSystem::Instance()->OnInput(0, touches, core->allTouches);
 
-				InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed((int32)wParam);
+				InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed((int32)wParam);
 			};
 			break;
 
@@ -728,17 +767,12 @@ namespace DAVA
             GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, 
                 sizeof(RAWINPUTHEADER));
             LPBYTE lpb = new BYTE[dwSize];
-            if (lpb == nullptr)
-            {
+            if (lpb == NULL)
                 return 0;
-            }
 
-            if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize,
-                sizeof(RAWINPUTHEADER)) != dwSize)
-            {
-                Logger::FrameworkDebug(
-                    TEXT("GetRawInputData does not return correct size !\n"));
-            }
+            if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, 
+                sizeof(RAWINPUTHEADER)) != dwSize )
+                OutputDebugString (TEXT("GetRawInputData does not return correct size !\n")); 
 
             RAWINPUT* raw = (RAWINPUT*)lpb;
 
@@ -778,23 +812,10 @@ namespace DAVA
 
             break;
         }
-        case WM_MOUSEMOVE:
-        {
-            // if we have WebView (Ole Windows control) we need to 
-            // change focus if user move to main window to get WM_INPUT
-            CoreWin32Platform* corePlatform = static_cast<CoreWin32Platform*>(Core::Instance());
-            HWND mainWinowHandler = corePlatform->GetWindow();
-            if (GetFocus() != mainWinowHandler)
-            {
-                POINT p = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-                HWND windowUnderCursor = WindowFromPoint(p);
-                if (windowUnderCursor == mainWinowHandler)
-                {
-                    SetFocus(mainWinowHandler);
-                }
-            }
-        }
+		case WM_MOUSEMOVE:
+            //OnMouseEvent(message, wParam, lParam);
 			break;
+
 		case WM_NCMOUSEMOVE:
 			if (!mouseCursorShown)
 			{	

@@ -30,12 +30,10 @@
 #include "Render/RenderBase.h"
 #include "Render/RenderManager.h"
 #include "Render/Texture.h"
-#include "Render/2D/Sprite.h"
 #include "Utils/Utils.h"
 #include "Core/Core.h"
 #include "Render/OGLHelpers.h"
 #include "Render/Shader.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/FileSystem.h"
@@ -220,15 +218,10 @@ bool RenderManager::IsDeviceLost()
 void RenderManager::BeginFrame()
 {
     stats.Clear();
-    SetViewport(Rect(0, 0, -1, -1));
+    SetViewport(Rect(0, 0, (float32)frameBufferWidth, (float32)frameBufferHeight));
 	
-	SetRenderOrientation(Core::Instance()->GetScreenOrientation());
-	DVASSERT(!currentRenderTarget);
-	DVASSERT(renderTargetStack.empty());
 	Reset();
 	isInsideDraw = true;
-    
-    RenderSystem2D::Instance()->Reset();
 }
 
 void RenderManager::EndFrame()
@@ -272,11 +265,6 @@ void RenderManager::MakeGLScreenShot()
     tempData = new uint8[imageDataSize];
 
     RENDER_VERIFY(glBindFramebuffer(GL_FRAMEBUFFER, fboViewRenderbuffer));
-//#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-//    glBindFramebuffer(GL_FRAMEBUFFER_BINDING_OES, fboViewRenderbuffer);
-//#else
-//    glBindFramebuffer(GL_FRAMEBUFFER_BINDING_EXT, fboViewRenderbuffer);
-//#endif
     
     RENDER_VERIFY(glPixelStorei( GL_UNPACK_ALIGNMENT, 1 ));
     RENDER_VERIFY(glReadPixels(0, 0, width, height, formatDescriptor.format, formatDescriptor.type, (GLvoid *)tempData));
@@ -315,48 +303,17 @@ void RenderManager::MakeGLScreenShot()
     
 void RenderManager::SetViewport(const Rect & rect)
 {
-    viewport = rect;
-    if ((viewport.dx < 0.0f) && (viewport.dy < 0.0f))
+    Rect viewportRect = viewport = rect;
+
+    if (!IsRenderTarget())
     {
-        if (currentRenderTarget)
-        {
-            viewport.dx = (float32)currentRenderTarget->GetTexture()->GetWidth();
-            viewport.dy = (float32)currentRenderTarget->GetTexture()->GetHeight();
-        }
-        else
-        {
-            viewport.dx = (float32)frameBufferWidth;
-            viewport.dy = (float32)frameBufferHeight;
-        }
-    }
-    else if (renderOrientation != Core::SCREEN_ORIENTATION_TEXTURE)
-    {
-        viewport.y = frameBufferHeight - viewport.y - viewport.dy;
+        viewportRect.y = frameBufferHeight - viewportRect.y - viewportRect.dy;
     }
     
-    RENDER_VERIFY(glViewport((int32)viewport.x, (int32)viewport.y, (int32)viewport.dx, (int32)viewport.dy));
+    RENDER_VERIFY(glViewport((int32)viewportRect.x, (int32)viewportRect.y, (int32)viewportRect.dx, (int32)viewportRect.dy));
 }
 
 // Viewport management
-void RenderManager::SetRenderOrientation(int32 orientation)
-{
-	renderOrientation = orientation;
-	
-    if (orientation != Core::SCREEN_ORIENTATION_TEXTURE)
-    {
-        projMatrix.glOrtho(0.0f, (float32)frameBufferWidth, (float32)frameBufferHeight, 0.0f, -1.0f, 1.0f);
-    }
-    else
-    {
-        projMatrix.glOrtho(0.0f, (float32)currentRenderTarget->GetTexture()->GetWidth(),
-                           0.0f, (float32)currentRenderTarget->GetTexture()->GetHeight(), -1.0f, 1.0f);
-    }
-    
-    SetDynamicParam(PARAM_PROJ, &projMatrix, UPDATE_SEMANTIC_ALWAYS);
-
-	RENDER_VERIFY(;);
-}
-
 void RenderManager::SetCullOrder(eCullOrder cullOrder)
 {
     glFrontFace(cullOrder);
@@ -507,7 +464,7 @@ void RenderManager::Clear(const Color & color, float32 depth, int32 stencil)
     RENDER_VERIFY(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 }
 
-void RenderManager::SetHWClip(const Rect &rect)
+void RenderManager::SetClip(const Rect &rect)
 {
 	if(rect.dx < 0 || rect.dy < 0)
 	{
@@ -521,7 +478,7 @@ void RenderManager::SetHWClip(const Rect &rect)
 	int32 width = x2 - x;
 	int32 height = y2 - y;
     
-    if (renderOrientation != Core::SCREEN_ORIENTATION_TEXTURE)
+    if (!IsRenderTarget())
     {
         y = frameBufferHeight - y - height;
     }
@@ -530,38 +487,13 @@ void RenderManager::SetHWClip(const Rect &rect)
 	RENDER_VERIFY(glScissor(x, y, width, height));
 }
 
-
-void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
+void RenderManager::SetRenderTarget(Texture * renderTarget)
 {
-    currentRenderTarget = renderTarget;
-    
-	if (renderTarget == NULL)
-	{
+    if (renderTarget)
+	    HWglBindFBO(renderTarget->fboID);
+    else
         HWglBindFBO(fboViewFramebuffer);
-        
-        SetViewport(Rect(0, 0, -1, -1));
-
-		SetRenderOrientation(Core::Instance()->GetScreenOrientation());
-	}
-	else
-	{
-		renderOrientation = Core::SCREEN_ORIENTATION_TEXTURE;
-        
-		HWglBindFBO(renderTarget->GetTexture()->fboID);
-        
-        SetViewport(Rect(0, 0, -1, -1));
-
-        projMatrix.glOrtho(0.0f, (float32)renderTarget->GetTexture()->width, 0.0f, (float32)renderTarget->GetTexture()->height, -1.0f, 1.0f);
-        SetDynamicParam(PARAM_PROJ, &projMatrix, UPDATE_SEMANTIC_ALWAYS);
-	}
 }
-
-void RenderManager::SetHWRenderTargetTexture(Texture * renderTarget)
-{
-	renderOrientation = Core::SCREEN_ORIENTATION_TEXTURE;
-	HWglBindFBO(renderTarget->fboID);
-}
-
 
 void RenderManager::DiscardFramebufferHW(uint32 attachments)
 {
@@ -714,46 +646,10 @@ void RenderManager::AttachRenderData()
         cachedAttributeMask = currentAttributeMask;
     }
 }
-
-
-//void RenderManager::InitGL20()
-//{
-//    colorOnly = 0;
-//    colorWithTexture = 0;
-//    
-//    
-//    colorOnly = new Shader();
-//    colorOnly->LoadFromYaml("~res:/Shaders/Default/fixed_func_color_only.shader");
-//    colorWithTexture = new Shader();
-//    colorWithTexture->LoadFromYaml("~res:/Shaders/Default/fixed_func_texture.shader");
-//        
-//    
-//}
-//
-//void RenderManager::ReleaseGL20()
-//{
-//    SafeRelease(colorOnly);
-//    SafeRelease(colorWithTexture);
-//}
-//
-
-    
     
 int32 RenderManager::HWglGetLastTextureID(int textureType)
 {
     return lastBindedTexture[textureType];
-
-    
-//#if defined(__DAVAENGINE_ANDROID__)
-//    return lastBindedTexture;
-//#else //#if defined(__DAVAENGINE_ANDROID__)
-//    int32 saveId = 0;
-//    glGetIntegerv(GL_TEXTURE_BINDING_2D, &saveId);
-//    //    GLenum err = glGetError();
-//    //    if (err != GL_NO_ERROR)
-//    //        Logger::Error("%s file:%s line:%d gl failed with errorcode: 0x%08x", "glGetIntegerv(GL_TEXTURE_BINDING_2D, saveId)", __FILE__, __LINE__, err);
-//    return saveId;
-//#endif //#if defined(__DAVAENGINE_ANDROID__)
 }
 	
 void RenderManager::HWglBindTexture(int32 tId, uint32 textureType)
@@ -767,41 +663,12 @@ void RenderManager::HWglBindTexture(int32 tId, uint32 textureType)
 int32 RenderManager::HWglGetLastFBO()
 {
     return lastBindedFBO;
-//    int32 saveFBO = 0;
-//#if defined(__DAVAENGINE_IPHONE__)
-//    RENDER_VERIFY(glGetIntegerv(GL_FRAMEBUFFER_BINDING_OES, &saveFBO));
-//#elif defined(__DAVAENGINE_ANDROID__)
-//    saveFBO = lastBindedFBO;
-//#else //Non ES platforms
-//    glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &saveFBO);
-//    
-//    //    GLenum err = glGetError();
-//    //    if (err != GL_NO_ERROR)
-//    //        Logger::Error("%s file:%s line:%d gl failed with errorcode: 0x%08x", "glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &saveFBO)", __FILE__, __LINE__, err);
-//    
-//#endif //PLATFORMS
-//    
-//    return saveFBO;
 }
 
 void RenderManager::HWglBindFBO(const int32 fbo)
 {
-    //	if(0 != fbo)
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo);	// Unbind the FBO for now
-//#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-//        glBindFramebufferOES(GL_FRAMEBUFFER_OES, fbo);	// Unbind the FBO for now
-//#else //Non ES platforms
-//        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);	// Unbind the FBO for now
-//#endif //PLATFORMS
-        
-        //		GLenum err = glGetError();
-        //		if (err != GL_NO_ERROR)
-        //			Logger::Error("%s file:%s line:%d gl failed with errorcode: 0x%08x", "glBindFramebuffer(GL_FRAMEBUFFER_, tId)", __FILE__, __LINE__, err);
-        
-        
-        lastBindedFBO = fbo;
-    }
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    lastBindedFBO = fbo;
 }
     
 void RenderManager::DiscardDepth()

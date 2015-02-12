@@ -53,9 +53,14 @@ public:
 
     virtual DAVA::VariantType GetValue() const;
     virtual void SetValue(const DAVA::VariantType &newValue);
+    virtual DAVA::VariantType GetDefaultValue() const;
+    virtual void SetDefaultValue(const DAVA::VariantType &newValue);
     virtual const EnumMap *GetEnumMap() const;
     virtual void ResetValue();
     virtual bool IsReplaced() const;
+
+    DAVA::Vector<DAVA::String> GetPath() const;
+    BaseProperty *GetPropertyByPath(const DAVA::Vector<DAVA::String> &path);
 
 private:
     BaseProperty *parent;
