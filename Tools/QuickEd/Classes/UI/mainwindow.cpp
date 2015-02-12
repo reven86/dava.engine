@@ -111,7 +111,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->fileSystemDockWidget->setEnabled(false);
     ui->packageWidget->setEnabled(false);
     ui->previewWidget->setEnabled(false);
-    ui->libraryDockWidget->setEnabled(false);
+    ui->libraryWidget->setEnabled(false);
     
     RebuildRecentMenu();
 }
@@ -178,12 +178,12 @@ void MainWindow::CurrentTabChanged(int index)
     ui->propertiesWidget->setEnabled(activeDocument != NULL);
     ui->packageWidget->setEnabled(activeDocument != NULL);
     ui->previewWidget->setEnabled(activeDocument != NULL);
-    ui->libraryDockWidget->setEnabled(activeDocument != NULL);
+    ui->libraryWidget->setEnabled(activeDocument != NULL);
     
     ui->packageWidget->SetDocument(activeDocument);
     ui->previewWidget->SetDocument(activeDocument);
     ui->propertiesWidget->SetContext(activeDocument ? activeDocument->GetPropertiesContext() : NULL);
-    ui->libraryDockWidget->SetDocument(activeDocument);
+    ui->libraryWidget->SetDocument(activeDocument);
 //    ui->packageLibraryWidget->SetDocument(activeDocument);
     
     if (activeDocument)
@@ -295,7 +295,7 @@ void MainWindow::SetupViewMenu()
     ui->menuView->addAction(ui->propertiesWidget->toggleViewAction());
     ui->menuView->addAction(ui->fileSystemDockWidget->toggleViewAction());
     ui->menuView->addAction(ui->packageWidget->toggleViewAction());
-    ui->menuView->addAction(ui->libraryDockWidget->toggleViewAction());
+    ui->menuView->addAction(ui->libraryWidget->toggleViewAction());
     ui->menuView->addAction(ui->consoleDockWidget->toggleViewAction());
 
     ui->menuView->addSeparator();

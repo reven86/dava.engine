@@ -1,23 +1,23 @@
-#include "LibraryDockWidget.h"
-#include "ui_LibraryDockWidget.h"
+#include "LibraryWidget.h"
+#include "ui_LibraryWidget.h"
 
 #include "UI/Document.h"
 #include "UI/LibraryContext.h"
 
-LibraryDockWidget::LibraryDockWidget(QWidget *parent)
+LibraryWidget::LibraryWidget(QWidget *parent)
     : QDockWidget(parent)
-    , ui(new Ui::LibraryDockWidget())
+    , ui(new Ui::LibraryWidget())
     , document(NULL)
 {
     ui->setupUi(this);
 }
 
-LibraryDockWidget::~LibraryDockWidget()
+LibraryWidget::~LibraryWidget()
 {
     delete ui;
 }
 
-void LibraryDockWidget::SetDocument(Document *newDocument)
+void LibraryWidget::SetDocument(Document *newDocument)
 {
     if (document)
     {

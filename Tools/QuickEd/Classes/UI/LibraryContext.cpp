@@ -1,7 +1,7 @@
 #include "LibraryContext.h"
 
 #include "Document.h"
-#include "LibraryView/LibraryModel.h"
+#include "Library/LibraryModel.h"
 
 LibraryContext::LibraryContext(Document *_document) : QObject(_document), document(_document)
 {

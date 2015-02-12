@@ -190,7 +190,7 @@
     <number>1</number>
    </attribute>
   </widget>
-  <widget class="LibraryDockWidget" name="libraryDockWidget">
+  <widget class="LibraryWidget" name="libraryWidget">
    <property name="minimumSize">
     <size>
      <width>100</width>
@@ -457,9 +457,9 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>LibraryDockWidget</class>
+   <class>LibraryWidget</class>
    <extends>QDockWidget</extends>
-   <header>UI/LibraryView/LibraryDockWidget.h</header>
+   <header>UI/Library/LibraryWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
