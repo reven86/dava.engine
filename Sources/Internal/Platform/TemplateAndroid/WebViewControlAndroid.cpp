@@ -28,34 +28,41 @@
 
 
 
-#include "WebViewControl.h"
 #include "FileSystem/Logger.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 #include "ExternC/AndroidLayer.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Platform/TemplateAndroid/WebViewControlAndroid.h"
+
+#include "Render/Texture.h"
+#include "Render/2D/Sprite.h"
+#include "UI/UIWebView.h"
+
 
 namespace DAVA
 {
 
 int32 WebViewControl::webViewIdCount = 0;
-int32 WebViewControl::requestId = 0;
 JniWebView::CONTROLS_MAP JniWebView::controls;
 
 JniWebView::JniWebView()
 	: jniWebView("com/dava/framework/JNIWebView")
 {
-
 	initialize = jniWebView.GetStaticMethod<void, jint, jfloat, jfloat, jfloat, jfloat>("Initialize");
 	deinitialize = jniWebView.GetStaticMethod<void, jint>("Deinitialize");
 	openURL = jniWebView.GetStaticMethod<void, jint, jstring>("OpenURL");
 	loadHtmlString = jniWebView.GetStaticMethod<void, jint, jstring>("LoadHtmlString");
-	executeJScript = jniWebView.GetStaticMethod<void, jint, jint, jstring>("ExecuteJScript");
+	executeJScript = jniWebView.GetStaticMethod<void, jint, jstring>("ExecuteJScript");
+	getCookie = jniWebView.GetStaticMethod<jstring, jstring, jstring>("GetCookie");
+	getCookies = jniWebView.GetStaticMethod<jobjectArray, jstring>("GetCookies");
 	deleteCookies = jniWebView.GetStaticMethod<void, jstring>("DeleteCookies");
 	openFromBuffer = jniWebView.GetStaticMethod<void, jint, jstring, jstring>("OpenFromBuffer");
 	setRect = jniWebView.GetStaticMethod<void, jint, jfloat, jfloat, jfloat, jfloat>("SetRect");
 	setVisible = jniWebView.GetStaticMethod<void, jint, jboolean>("SetVisible");
 	setBackgroundTransparency = jniWebView.GetStaticMethod<void, jint, jboolean>("SetBackgroundTransparency");
+	setRenderToTexture = jniWebView.GetStaticMethod<void, jint, jboolean>("setRenderToTexture");
+	isRenderToTexture = jniWebView.GetStaticMethod<jboolean, jint>("isRenderToTexture");
 }
 
 void JniWebView::Initialize(WebViewControl* control, int id, const Rect& controlRect)
@@ -92,13 +99,13 @@ void JniWebView::LoadHtmlString(int id, const String& htmlString)
 	env->DeleteLocalRef(jHtmlStringToOpen);
 }
 
-void JniWebView::ExecuteJScript(int id, int requestId, const String& scriptString)
+void JniWebView::ExecuteJScript(int id, const String& scriptString)
 {
 	JNIEnv *env = JNI::GetEnv();
 
 	jstring jScriptToExecute = env->NewStringUTF(scriptString.c_str());
 
-	executeJScript(id, requestId, jScriptToExecute);
+	executeJScript(id, jScriptToExecute);
 
 	env->DeleteLocalRef(jScriptToExecute);
 }
@@ -117,20 +124,16 @@ String JniWebView::GetCookie(const String& targetUrl, const String& cookieName)
 {
 	JNIEnv *env = JNI::GetEnv();
 
-	jmethodID mid = env->GetStaticMethodID(jniWebView, "GetCookie", JNI::SignatureString::FromTypes<jstring, jstring, jstring>().c_str());
 	String returnStr = "";
 
-	if (mid)
-	{
-		jstring jTargetURL = env->NewStringUTF(targetUrl.c_str());
-		jstring jName = env->NewStringUTF(cookieName.c_str());
-		jobject item = env->CallStaticObjectMethod(jniWebView, mid, jTargetURL, jName);
+    jstring jTargetURL = env->NewStringUTF(targetUrl.c_str());
+    jstring jName = env->NewStringUTF(cookieName.c_str());
+    jobject item = getCookie(jTargetURL, jName);
 
-		JNI::CreateStringFromJni(jstring(item), returnStr);
+    JNI::CreateStringFromJni(jstring(item), returnStr);
 
-		env->DeleteLocalRef(jTargetURL);
-		env->DeleteLocalRef(jName);
-	}
+    env->DeleteLocalRef(jTargetURL);
+    env->DeleteLocalRef(jName);
 
 	return returnStr;
 }
@@ -139,33 +142,29 @@ Map<String, String> JniWebView::GetCookies(const String& targetUrl)
 {
 	JNIEnv *env = JNI::GetEnv();
 
-	jmethodID mid = env->GetStaticMethodID(jniWebView, "GetCookies", JNI::SignatureString::FromTypes<jobjectArray, jstring>().c_str());
 	Map<String, String> cookiesMap;
 
-	if (mid)
-	{
-		jstring jTargetURL = env->NewStringUTF(targetUrl.c_str());
+	jstring jTargetURL = env->NewStringUTF(targetUrl.c_str());
 
-		jobjectArray jArray = (jobjectArray) env->CallStaticObjectMethod(jniWebView, mid, jTargetURL);
-		if (jArray)
-		{
-			jsize size = env->GetArrayLength(jArray);
-			for (jsize i = 0; i < size; ++i)
-			{
-				jobject item = env->GetObjectArrayElement(jArray, i);
-				String cookiesString = "";
-				JNI::CreateStringFromJni(jstring(item), cookiesString);
+    jobjectArray jArray = getCookies(jTargetURL);
+    if (jArray)
+    {
+        jsize size = env->GetArrayLength(jArray);
+        for (jsize i = 0; i < size; ++i)
+        {
+            jobject item = env->GetObjectArrayElement(jArray, i);
+            String cookiesString = "";
+            JNI::CreateStringFromJni(jstring(item), cookiesString);
 
-				Vector<String> cookieEntry;
-				Split(cookiesString, "=", cookieEntry);
+            Vector<String> cookieEntry;
+            Split(cookiesString, "=", cookieEntry);
 
-				DVASSERT(1 < cookieEntry.size());
-				cookiesMap[cookieEntry[0]] = cookieEntry[1];
-			}
-		}
+            DVASSERT(1 < cookieEntry.size());
+            cookiesMap[cookieEntry[0]] = cookieEntry[1];
+        }
+    }
 
-		env->DeleteLocalRef(jTargetURL);
-	}
+    env->DeleteLocalRef(jTargetURL);
 
 	return cookiesMap;
 }
@@ -199,12 +198,22 @@ void JniWebView::SetBackgroundTransparency(int id, bool enabled)
 	setBackgroundTransparency(id, enabled);
 }
 
+void JniWebView::SetRenderToTexture(int id, bool renderToTexture)
+{
+    setRenderToTexture(id, renderToTexture);
+}
+
+bool JniWebView::IsRenderToTexture(int id)
+{
+    return isRenderToTexture(id) == 0 ? false : true;
+}
+
 IUIWebViewDelegate::eAction JniWebView::URLChanged(int id, const String& newURL)
 {
 	CONTROLS_MAP::iterator iter = controls.find(id);
 	if (iter == controls.end())
 	{
-		Logger::Debug("Error web view id=%d", id);
+		Logger::Error("Error web view id=%d", id);
 		return IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 	}
 
@@ -213,15 +222,15 @@ IUIWebViewDelegate::eAction JniWebView::URLChanged(int id, const String& newURL)
 	if (!delegate)
 		return IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 
-	return delegate->URLChanged(control->webView, newURL, true);
+	return delegate->URLChanged(&control->webView, newURL, true);
 }
 
-void JniWebView::PageLoaded(int id)
+void JniWebView::PageLoaded(int id, int* rawPixels, int width, int height)
 {
 	CONTROLS_MAP::iterator iter = controls.find(id);
 	if (iter == controls.end())
 	{
-		Logger::Debug("Error web view id=%d", id);
+		Logger::Error("Error web view id=%d", id);
 		return;
 	}
 
@@ -229,16 +238,37 @@ void JniWebView::PageLoaded(int id)
 	IUIWebViewDelegate *delegate = control->delegate;
 	if (delegate)
 	{
-		delegate->PageLoaded(control->webView);
+		delegate->PageLoaded(&control->webView);
+	}
+
+	UIWebView& webView = control->GetUIWebView();
+	if (rawPixels)
+	{
+		{
+		    Texture* tex = Texture::CreateFromData(FORMAT_RGBA8888,
+		            reinterpret_cast<uint8*>(rawPixels), width, height, false);
+            Rect rect = webView.GetRect();
+            {
+                Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, rect.dx,
+                        rect.dy);
+                webView.GetBackground()->SetSprite(spr, 0);
+                SafeRelease(spr);
+            }
+            SafeRelease(tex);
+		}
+	} else
+	{
+		// reset sprite to prevent render old sprite under native webveiw
+		webView.SetSprite(nullptr, 0);
 	}
 }
 
-void JniWebView::OnExecuteJScript(int id, int requestId, const String& result)
+void JniWebView::OnExecuteJScript(int id, const String& result)
 {
 	CONTROLS_MAP::iterator iter = controls.find(id);
 	if (iter == controls.end())
 	{
-		Logger::Debug("Error web view id=%d", id);
+		Logger::Error("Error web view id=%d", id);
 		return;
 	}
 
@@ -246,15 +276,15 @@ void JniWebView::OnExecuteJScript(int id, int requestId, const String& result)
 	IUIWebViewDelegate *delegate = control->delegate;
 	if (delegate)
 	{
-		delegate->OnExecuteJScript(control->webView, requestId, result);
+		delegate->OnExecuteJScript(&control->webView, result);
 	}
 }
 
-WebViewControl::WebViewControl()
+WebViewControl::WebViewControl(UIWebView& uiWebView):
+	webViewId(-1),
+	delegate(nullptr),
+	webView(uiWebView)
 {
-	delegate = NULL;
-	webView = NULL;
-
 	webViewId = webViewIdCount++;
 }
 
@@ -300,12 +330,10 @@ Map<String, String> WebViewControl::GetCookies(const String& url) const
 	return jniWebView.GetCookies(url);
 }
 
-int32 WebViewControl::ExecuteJScript(const String& scriptString)
+void WebViewControl::ExecuteJScript(const String& scriptString)
 {
-	requestId++;
 	JniWebView jniWebView;
-	jniWebView.ExecuteJScript(webViewId, requestId, scriptString);
-	return requestId;
+	jniWebView.ExecuteJScript(webViewId, scriptString);
 }
 
 void WebViewControl::OpenFromBuffer(const String& data, const FilePath& urlToOpen)
@@ -326,16 +354,26 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 	jniWebView.SetVisible(webViewId, isVisible);
 }
 
-void WebViewControl::SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView)
+void WebViewControl::SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView*)
 {
-	this->delegate = delegate;
-	this->webView = webView;
+    this->delegate = delegate;
 }
 
 void WebViewControl::SetBackgroundTransparency(bool enabled)
 {
 	JniWebView jniWebView;
 	jniWebView.SetBackgroundTransparency(webViewId, enabled);
+}
+
+void WebViewControl::SetRenderToTexture(bool value)
+{
+    JniWebView jniWebView;
+    jniWebView.SetRenderToTexture(webViewId, value);
+}
+bool WebViewControl::IsRenderToTexture() const
+{
+    JniWebView jniWebView;
+    return jniWebView.IsRenderToTexture(webViewId);
 }
 
 }//namespace DAVA

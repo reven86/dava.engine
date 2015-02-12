@@ -8,7 +8,7 @@ namespace Ui {
     class LibraryDockWidget;
 }
 
-class PackageDocument;
+class Document;
 
 class LibraryDockWidget: public QDockWidget
 {
@@ -18,11 +18,11 @@ public:
     virtual ~LibraryDockWidget();
 
 public:
-    void SetDocument(PackageDocument *newDocument);
+    void SetDocument(Document *newDocument);
     
 private:
     Ui::LibraryDockWidget *ui;
-    PackageDocument *document;
+    Document *document;
 };
 
 #endif /* defined(__UIEditor__LibraryDockWidget__) */

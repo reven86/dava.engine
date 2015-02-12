@@ -170,6 +170,9 @@ enum PixelFormat
 	FORMAT_ETC2_RGBA,
 	FORMAT_ETC2_RGB_A1,
 
+    FORMAT_BGR888, // windows BMP format
+    FORMAT_BGRA8888, // android web view format only for ImageConvert
+
     FORMAT_COUNT,
     FORMAT_CLOSEST = 255 // fit PixelFormat at 8bits (PixelFormat format:8;)
 };

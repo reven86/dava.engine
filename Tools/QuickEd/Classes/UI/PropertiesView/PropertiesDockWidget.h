@@ -18,7 +18,7 @@ namespace Ui {
     class PropertiesDockWidget;
 }
 
-class PropertiesViewContext;
+class PropertiesContext;
 class ControlNode;
 
 class PropertiesDockWidget : public QDockWidget
@@ -28,7 +28,7 @@ public:
     PropertiesDockWidget(QWidget *parent = NULL);
     virtual ~PropertiesDockWidget();
     
-    void SetContext(PropertiesViewContext *newContext);
+    void SetContext(PropertiesContext *newContext);
 
 protected:
     void SetControl(ControlNode *controlNode);
@@ -38,7 +38,7 @@ private slots:
 
 private:
     Ui::PropertiesDockWidget *ui;
-    PropertiesViewContext *context;
+    PropertiesContext *context;
 };
 
 #endif // __UI_EDITOR_PROPERTIES_TREE_WIDGET_H__
