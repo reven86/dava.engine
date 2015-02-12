@@ -15,7 +15,7 @@ public class JNIApplication extends Application
 			String internalExternalDocumentsPath, String appPath, 
 			String logTag, String packageName, String commandLineParams); 
 	private native void OnConfigurationChanged(); 
-	private native void OnLowMemory(); 
+	private native void OnLowMemoryWarning(); 
 	private native void OnTerminate(); 
 	
 	private String externalDocumentsDir;
@@ -61,7 +61,7 @@ public class JNIApplication extends Application
 	@Override
 	public void onConfigurationChanged(Configuration newConfig)
 	{
-		Log.i(JNIConst.LOG_TAG, String.format("[Application::onConfigurationChanged]")); 
+		Log.i(JNIConst.LOG_TAG, "[Application::onConfigurationChanged]"); 
 
 		super.onConfigurationChanged(newConfig);
 		
@@ -69,7 +69,7 @@ public class JNIApplication extends Application
 
 		if (IsApplicationShouldBeRestarted())
 		{
-			Log.w(JNIConst.LOG_TAG, String.format("[Application::onConfigurationChanged] Application should now be closed"));
+			Log.w(JNIConst.LOG_TAG, "[Application::onConfigurationChanged] Application should now be closed");
 			System.exit(0);
 		}
 	}
@@ -77,9 +77,9 @@ public class JNIApplication extends Application
 	@Override
 	public void onLowMemory()
 	{
-		Log.w(JNIConst.LOG_TAG, String.format("[Application::onLowMemory]")); 
+		Log.w(JNIConst.LOG_TAG, "[Application::onLowMemory]"); 
 
-		OnLowMemory();
+		OnLowMemoryWarning();
 
 		super.onLowMemory(); 
 	}
@@ -87,7 +87,7 @@ public class JNIApplication extends Application
 	@Override
 	public void onTerminate()
 	{
-    	Log.w(JNIConst.LOG_TAG, String.format("[Application::onTerminate]")); 
+    	Log.w(JNIConst.LOG_TAG, "[Application::onTerminate]"); 
 
 /*    	This method is for use in emulated process environments. 
  * 		It will never be called on a production Android device, 

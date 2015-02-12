@@ -35,11 +35,39 @@ namespace DAVA
 {
 
 struct RGB888
+{
+    uint8 r;
+    uint8 g;
+    uint8 b;
+};
+
+struct BGR888
+{
+    uint8 b;
+    uint8 g;
+    uint8 r;
+};
+
+struct BGRA8888
+{
+    uint8 b;
+    uint8 g;
+    uint8 r;
+    uint8 a;
+};
+
+struct ConverBGRA8888toRGBA8888
+{
+    // input and output is the same memory
+    inline void operator()(const BGRA8888* input, uint32* output)
     {
-        uint8 r;
-        uint8 g;
-        uint8 b;
-    };
+        BGRA8888 in = *input;
+        BGRA8888 tmp = in;
+        tmp.b = in.r;
+        tmp.r = in.b;
+        *output = *reinterpret_cast<uint32*>(&tmp);
+    }
+};
 
 struct ConvertRGBA8888toRGB888
 {
@@ -57,6 +85,16 @@ struct ConvertRGB888toRGBA8888
     inline void operator()(const RGB888 *input, uint32 * output)
     {
         *output = ((0xFF) << 24) | (input->b << 16) | (input->g << 8) | input->r;
+    }
+};
+
+struct ConvertBGR888toRGB888
+{
+    inline void operator()(const BGR888 *input, RGB888* output)
+    {
+        output->r = input->r;
+        output->g = input->g;
+        output->b = input->b;
     }
 };
     
@@ -341,7 +379,7 @@ public:
         }
     }
 
-	static void ConvertImageDirect(Image *scrImage, Image *dstImage)
+	static void ConvertImageDirect(const Image *scrImage, Image *dstImage)
 	{
 		ConvertImageDirect(scrImage->format, dstImage->format, scrImage->data, scrImage->width, scrImage->height, scrImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(scrImage->format), 
 			dstImage->data, dstImage->width, dstImage->height, dstImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(dstImage->format));
@@ -375,6 +413,21 @@ public:
 			ConvertDirect<uint8, uint32, ConvertA8toRGBA8888> convert;
 			convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
 		}
+        else if(inFormat == FORMAT_BGR888 && outFormat == FORMAT_RGB888)
+        {
+            ConvertDirect<BGR888, RGB888, ConvertBGR888toRGB888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if(inFormat == FORMAT_BGRA8888 && outFormat == FORMAT_RGBA8888)
+        {
+            ConvertDirect<BGRA8888, uint32, ConverBGRA8888toRGBA8888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else
+        {
+            Logger::FrameworkDebug("Unsupported image conversion from format %d to %d", inFormat, outFormat);
+            DVASSERT(false);
+        }
 	}
 
 	static void DownscaleTwiceBillinear(	PixelFormat inFormat,

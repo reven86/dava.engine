@@ -17,7 +17,7 @@ namespace Ui {
     class PackageDockWidget;
 }
 
-class PackageDocument;
+class Document;
 class ControlNode;
 
 class PackageDockWidget : public QDockWidget
@@ -27,7 +27,7 @@ public:
     explicit PackageDockWidget(QWidget *parent = 0);
     virtual ~PackageDockWidget();
 
-    void SetDocument(PackageDocument *newDocument);
+    void SetDocument(Document *newDocument);
 
 private:
     void RefreshActions(const QModelIndexList &indexList);
@@ -51,7 +51,7 @@ signals:
 
 private:
     Ui::PackageDockWidget *ui;
-    PackageDocument *document;
+    Document *document;
     QAction *importPackageAction;
     QAction *copyAction;
     QAction *pasteAction;

@@ -7,7 +7,7 @@
 #include <QUndoStack>
 #include "DAVAEngine.h"
 
-class PackageDocument;
+class Document;
 class PackageNode;
 class ControlNode;
 class PackageBaseNode;
@@ -18,7 +18,7 @@ class UIPackageModel : public QAbstractItemModel
     Q_OBJECT
     
 public:
-    UIPackageModel(PackageDocument *document);
+    UIPackageModel(Document *document);
     virtual ~UIPackageModel();
     
     virtual QModelIndex indexByNode(PackageBaseNode *node) const;
@@ -49,7 +49,7 @@ public:
     void RemovePackageControlsNode(PackageControlsNode *node);
 private:
     PackageNode *root;
-    PackageDocument *document;
+    Document *document;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_MODEL_H__

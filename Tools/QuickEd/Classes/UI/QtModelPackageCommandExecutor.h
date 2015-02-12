@@ -3,12 +3,12 @@
 
 #include "UIControls/PackageCommandExecutor.h"
 
-class PackageDocument;
+class Document;
 
 class QtModelPackageCommandExecutor : public PackageCommandExecutor
 {
 public:
-    QtModelPackageCommandExecutor(PackageDocument *_document);
+    QtModelPackageCommandExecutor(Document *_document);
     virtual ~QtModelPackageCommandExecutor();
     
     void InsertControlIntoPackage(ControlNode *control, PackageControlsNode *package) override;
@@ -19,7 +19,7 @@ public:
     void ResetProperty(ControlNode *node, BaseProperty *property) override;
 
 private:
-    PackageDocument *document;
+    Document *document;
 };
 
 #endif // __QUICKED_QT_MODEL_PACKAGE_COMMAND_EXECUTOR_H__

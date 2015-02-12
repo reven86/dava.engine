@@ -6,18 +6,20 @@
 #include <QSize>
 #include "DAVAEngine.h"
 
-#include "ControlSelectionListener.h"
+#include "GraphicView/ControlSelectionListener.h"
 
 class PackageCanvas;
 class ControlNode;
 class CheckeredCanvas;
 
-class GraphicsViewContext: public QObject, ControlSelectionListener
+class Document;
+
+class PreviewContext: public QObject, ControlSelectionListener
 {
     Q_OBJECT
 public:
-    GraphicsViewContext();
-    ~GraphicsViewContext();
+    PreviewContext(Document *document);
+    virtual ~PreviewContext();
 
     void SetViewControlSize(const QSize &newSize);
     void SetCanvasControlSize(const QSize &newSize);
