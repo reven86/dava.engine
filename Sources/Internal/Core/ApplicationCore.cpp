@@ -39,7 +39,7 @@
 #include "Notification/LocalNotificationController.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
-namespace DAVA 
+namespace DAVA
 {
 
 ApplicationCore::ApplicationCore()
@@ -61,6 +61,7 @@ ApplicationCore::~ApplicationCore()
 void ApplicationCore::Update(float32 timeElapsed)
 {
 	TIME_PROFILE("ApplicationCore::Update");
+
 	SoundSystem::Instance()->Update(timeElapsed);
 	AnimationManager::Instance()->Update(timeElapsed);    
 	UIControlSystem::Instance()->Update();
@@ -71,7 +72,7 @@ void ApplicationCore::Draw()
 	TIME_PROFILE("ApplicationCore::Draw");
 
     FrameOcclusionQueryManager::Instance()->ResetFrameStats();
-	UIControlSystem::Instance()->Draw();
+    UIControlSystem::Instance()->Draw();
     FrameOcclusionQueryManager::Instance()->ProccesRenderedFrame();
 }
 

@@ -286,11 +286,14 @@ public:
     uint32 GetDebugFlags() const;
     	
     void SetSolid(bool isSolid);
-    bool GetSolid();
+    bool GetSolid() const;
 
 	void SetLocked(bool isLocked);
-	bool GetLocked();
+	bool GetLocked() const;
 
+    void SetNotRemovable(bool notRemovabe);
+    bool GetNotRemovable() const;
+    
     /**
         \brief function returns maximum bounding box of scene in world coordinates.
         \returns bounding box
@@ -355,6 +358,7 @@ public:
 	// Property names.
 	static const char* SCENE_NODE_IS_SOLID_PROPERTY_NAME;
 	static const char* SCENE_NODE_IS_LOCKED_PROPERTY_NAME;
+    static const char* SCENE_NODE_IS_NOT_REMOVABLE_PROPERTY_NAME;
 
 	void FindComponentsByTypeRecursive(Component::eType type, List<DAVA::Entity*> & components);
     

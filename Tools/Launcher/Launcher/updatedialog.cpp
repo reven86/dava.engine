@@ -113,7 +113,7 @@ void UpdateDialog::StartNextTask()
 
         if(task.isRemoveBranch)
         {
-            AddTopLogValue(QString("Removing branch %1:").arg(task.branchID));
+            AddTopLogValue(QString("Removing branch %1:").arg(appManager->GetString(task.branchID)));
 
             if(appManager->RemoveBranch(task.branchID))
             {
@@ -144,7 +144,10 @@ void UpdateDialog::StartNextTask()
             connect(currentDownload, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(NetworkError(QNetworkReply::NetworkError)));
             connect(currentDownload, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(DownloadProgress(qint64,qint64)));
 
-            AddTopLogValue(QString("Installing %1 (%2) %3:").arg(task.appID).arg(task.branchID).arg(task.version.id));
+            AddTopLogValue(QString("%1 - %2:")
+                           .arg(appManager->GetString(task.appID))
+                           .arg(appManager->GetString(task.branchID))
+                           );
 
             AddLogValue("Downloading file...");
         }
