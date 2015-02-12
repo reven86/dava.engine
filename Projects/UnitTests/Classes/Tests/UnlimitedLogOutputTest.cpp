@@ -68,33 +68,12 @@ public:
 
         errorMessage += ostr.str();
     }
-
-    void Output(Logger::eLogLevel ll, const char16* text) override
-    {
-        std::ostringstream ostr;
-        WideString msgFromLogger{ text };
-
-        if (bufSize != msgFromLogger.length())
-        {
-            ostr << "size of buffer do not match! bufSize == " << bufSize
-                << " msgFromLogger.length == " << msgFromLogger.length() << "\n";
-        }
-        const WideString lastNChars = msgFromLogger.substr(
-            msgFromLogger.size() - messageEnd.size(), messageEnd.size());
-
-        if (lastNChars != wideMessageEnd)
-        {
-            ostr << WStringToString(wideMessageEnd) << " != "
-                << WStringToString(lastNChars) << "\n";
-        }
-        errorMessage += ostr.str();
-    }
 };
 
 UnlimitedLogOutputTest::UnlimitedLogOutputTest ()
 : TestTemplate<UnlimitedLogOutputTest> ("UnlimitedLogOutputTest")
 {
-    RegisterFunction (this, &UnlimitedLogOutputTest::TestFunc, String ("TestFunc"), NULL);
+    RegisterFunction (this, &UnlimitedLogOutputTest::TestFunc, String ("TestFunc"), nullptr);
 }
 
 void UnlimitedLogOutputTest::TestFunc (PerfFuncData * data)
@@ -113,21 +92,6 @@ void UnlimitedLogOutputTest::TestFunc (PerfFuncData * data)
     }
 
     Logger::Instance()->Info("%s", str.c_str());
-
-#ifndef __DAVAENGINE_ANDROID__
-
-    WideString wstr(bufSize, L'B');
-
-    startIndex = bufSize - wideMessageEnd.size();
-
-    for (auto wc : wideMessageEnd)
-    {
-        wstr[startIndex++] = wc;
-    }
-
-    Logger::Instance()->Info(L"%ls", wstr.c_str());
-
-#endif // not __DAVAENGINE_ANDROID__
 
     Logger::RemoveCustomOutput(&testOutput);
 

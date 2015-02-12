@@ -78,37 +78,6 @@ String ConvertCFormatListToString(const char8* format, va_list pargs)
     return String("never happen! ");
 }
 
-WideString ConvertCFormatListToWideString(const char16* format, va_list pargs)
-{
-    // Allocate a buffer on the stack that's big enough for us almost
-    // all the time.  Be prepared to allocate dynamically if it doesn't fit.
-    WideString dynamicbuf;
-    dynamicbuf.resize(4096 * 2);
-
-    while (true)
-    {
-        va_list copy;
-        va_copy(copy, pargs);
-        int needed = vswprintf(&dynamicbuf[0], dynamicbuf.size(), format, copy);
-        va_end(copy);
-        // NB. C99 (which modern Linux and OS X follow) says vsnprintf
-        // failure returns the length it would have needed.  But older
-        // glibc and current Windows return -1 for failure, i.e., not
-        // telling us how much was needed.
-        if (needed < static_cast<int>(dynamicbuf.size()) && needed >= 0)
-        {
-            // It fit fine so we're done.
-            return dynamicbuf;
-        }
-        // vsnprintf reported that it wanted to write more characters
-        // than we allocated.  So try again using a dynamic buffer.  This
-        // doesn't happen very often if we chose our initial size well.
-        dynamicbuf.resize(dynamicbuf.size() * 2);
-    }
-    DVASSERT(false);
-    return WideString(L"never happen! ");
-}
-
 void Logger::Logv(eLogLevel ll, const char8* text, va_list li)
 {
     if (!text || text[0] == '\0') return;
@@ -125,31 +94,6 @@ void Logger::Logv(eLogLevel ll, const char8* text, va_list li)
     if (needMoreBuff < 0 || needMoreBuff > static_cast<int>(size))
     {
         String formatedMessage = ConvertCFormatListToString(text, li);
-        // always send log to custom subscribers
-        Output(ll, formatedMessage.c_str());
-    }
-    else
-    {
-        Output(ll, &stackbuf[0]);
-    }
-}
-
-void Logger::Logv(eLogLevel ll, const char16* text, va_list li)
-{
-    if (!text || text[0] == '\0') return;
-
-    // try use stack first
-    const size_t size = 4096;
-    std::array<char16, size> stackbuf;
-
-    va_list copy;
-    va_copy(copy, li);
-    int needMoreBuff = vswprintf(&stackbuf[0], size, text, copy);
-    va_end(copy);
-
-    if (needMoreBuff < 0 || needMoreBuff > static_cast<int>(size))
-    {
-        WideString formatedMessage = ConvertCFormatListToWideString(text, li);
         // always send log to custom subscribers
         Output(ll, formatedMessage.c_str());
     }
@@ -209,16 +153,6 @@ void Logger::Log(eLogLevel ll, const char8* text, ...)
 	va_end(vl);
 }	
 
-void Logger::Log(eLogLevel ll, const char16* text, ...)
-{
-	if (ll < logLevel) return; 
-	
-	va_list vl;
-	va_start(vl, text);
-	Logv(ll, text, vl);
-	va_end(vl);
-}
-	
 void Logger::FrameworkDebug( const char8 * text, ... )
 {
 	va_list vl;
@@ -273,42 +207,6 @@ void Logger::FrameworkDebug( const char16 * text, ... )
 	va_end(vl);
 }
 
-void Logger::Debug(const char16 * text, ...)
-{
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_DEBUG, text, vl);
-	va_end(vl);
-}
-
-void Logger::Info(const char16 * text, ...)
-{
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_INFO, text, vl);
-	va_end(vl);
-}	
-
-void Logger::Warning(const char16 * text, ...)
-{
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_WARNING, text, vl);
-	va_end(vl);
-}
-
-void Logger::Error(const char16 * text, ...)
-{
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_ERROR, text, vl);
-	va_end(vl);
-}
-
 void Logger::AddCustomOutput(DAVA::LoggerOutput *lo)
 {
 	if(Logger::Instance() && lo)
@@ -357,26 +255,9 @@ void Logger::FileLog(eLogLevel ll, const char8* text)
 		if(file)
 		{
             char8 prefix[128];
-            snprintf(prefix, 127, "[%s] ", GetLogLevelString(ll));
+            snprintf(prefix, 128, "[%s] ", GetLogLevelString(ll));
             file->Write(prefix, sizeof(char) * strlen(prefix));
             file->Write(text, sizeof(char) * strlen(text));
-            file->Release();
-		}
-	}
-}
-
-void Logger::FileLog(eLogLevel ll, const char16* text)
-{
-	if(FileSystem::Instance())
-	{
-        File *file = File::Create(logFilename, File::APPEND | File::WRITE);
-		if(file)
-		{
-            char16 prefix[128];
-            swprintf(prefix, 127, L"[%s] ",  StringToWString(GetLogLevelString(ll)).c_str());
-
-            file->Write(prefix, sizeof(wchar_t) * wcslen(prefix));
-            file->Write(text, sizeof(wchar_t) * wcslen(text));
             file->Release();
 		}
 	}
@@ -390,14 +271,6 @@ void Logger::CustomLog(eLogLevel ll, const char8* text)
 	}
 }
 
-void Logger::CustomLog(eLogLevel ll, const char16* text)
-{
-	for(size_t i = 0; i < customOutputs.size(); ++i)
-	{
-		customOutputs[i]->Output(ll, text);
-	}
-}
-    
 void Logger::EnableConsoleMode()
 {
     consoleModeEnabled = true;
@@ -407,11 +280,6 @@ void Logger::EnableConsoleMode()
 void Logger::ConsoleLog(DAVA::Logger::eLogLevel ll, const char8 *text)
 {
     printf("[%s] %s", GetLogLevelString(ll), text);
-}
-
-void Logger::ConsoleLog(DAVA::Logger::eLogLevel ll, const char16 *text)
-{
-    wprintf(L"[%s] %s", StringToWString(GetLogLevelString(ll)).c_str(), text);
 }
 
 void Logger::Output(eLogLevel ll, const char8* formadedMsg)
@@ -438,31 +306,7 @@ void Logger::Output(eLogLevel ll, const char8* formadedMsg)
     }
 }
 
-void Logger::Output(eLogLevel ll, const char16* formadedMsg)
-{
-    CustomLog(ll, formadedMsg);
-
-    // print platform log or write log to file
-    // only if log level is acceptable
-    if (ll >= logLevel)
-    {
-        if (consoleModeEnabled)
-        {
-            ConsoleLog(ll, formadedMsg);
-        }
-        else
-        {
-            PlatformLog(ll, formadedMsg);
-        }
-
-        if (!logFilename.IsEmpty())
-        {
-            FileLog(ll, formadedMsg);
-        }
-    }
-}
-
-}
+} // end namespace DAVA
 
 
 
