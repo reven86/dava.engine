@@ -40,46 +40,52 @@
 namespace DAVA {
 
 class JniWebView;
+class UIWebView;
 
 // Web View Control - Android version.
 class WebViewControl : public IWebViewControl
 {
 	friend class JniWebView;
 public:
-	WebViewControl();
+	WebViewControl(UIWebView& uiWebView);
 	virtual ~WebViewControl();
 	
 	// Initialize the control.
-	virtual void Initialize(const Rect& rect);
+	void Initialize(const Rect& rect) override;
 	
 	// Open the URL requested.
-	virtual void OpenURL(const String& urlToOpen);
+	void OpenURL(const String& urlToOpen) override;
 	// Load html page from string
-	virtual void LoadHtmlString(const WideString& htmlString);
+	void LoadHtmlString(const WideString& htmlString) override;
 	// Delete all cookies associated with target URL
-	virtual void DeleteCookies(const String& targetUrl);
+	void DeleteCookies(const String& targetUrl) override;
 	// Get cookie for specific domain and name
-	virtual String GetCookie(const String& url, const String& name) const;
+	String GetCookie(const String& url, const String& name) const override;
 	// Get the list of cookies for specific domain
-	virtual Map<String, String> GetCookies(const String& url) const;
+	Map<String, String> GetCookies(const String& url) const override;
 	// Perform Java script
-	virtual int32 ExecuteJScript(const String& scriptString);
+	void ExecuteJScript(const String& scriptString) override;
 	
-	void OpenFromBuffer(const String& string, const FilePath& basePath);
+	void OpenFromBuffer(const String& string, const FilePath& basePath) override;
 
 	// Size/pos/visibility changes.
-	virtual void SetRect(const Rect& rect);
-	virtual void SetVisible(bool isVisible, bool hierarchic);
+	void SetRect(const Rect& rect) override;
+	void SetVisible(bool isVisible, bool hierarchic) override;
 
-	virtual void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView);
-	virtual void SetBackgroundTransparency(bool enabled);
+	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView*) override;
+	void SetBackgroundTransparency(bool enabled) override;
+
+	void SetRenderToTexture(bool value) override;
+    bool IsRenderToTexture() const override;
+
+    UIWebView& GetUIWebView() const {return webView;}
 
 private:
-	static int32 webViewIdCount;
 	int32 webViewId;
 	IUIWebViewDelegate *delegate;
-	UIWebView* webView;
-	static int32 requestId;
+	UIWebView& webView;
+
+	static int32 webViewIdCount;
 };
 
 class JniWebView
@@ -94,7 +100,7 @@ public:
 	void DeleteCookies(const String& targetUrl);
 	String GetCookie(const String& targetUrl, const String& name);
 	Map<String, String> GetCookies(const String& targetUrl);
-	void ExecuteJScript(int id, int requestId, const String& scriptString);
+	void ExecuteJScript(int id, const String& scriptString);
 	void OpenFromBuffer(int id, const String& string, const String& basePath);
 
 	void SetRect(int id, const Rect& rect);
@@ -102,9 +108,12 @@ public:
 
 	void SetBackgroundTransparency(int id, bool isVisible);
 
+	void SetRenderToTexture(int id, bool renderToTexture);
+	bool IsRenderToTexture(int id);
+
 	static IUIWebViewDelegate::eAction URLChanged(int id, const String& newURL);
-	static void PageLoaded(int id);
-	static void OnExecuteJScript(int id, int requestId, const String& result);
+	static void PageLoaded(int id, int* rawPixels, int width, int height);
+	static void OnExecuteJScript(int id, const String& result);
 
 private:
 	typedef std::map<int, WebViewControl*> CONTROLS_MAP;
@@ -116,12 +125,16 @@ private:
 	Function<void (jint)> deinitialize;
 	Function<void (jint, jstring)> openURL;
 	Function<void (jint, jstring)> loadHtmlString;
-	Function<void (jint, jint, jstring)> executeJScript;
+	Function<void (jint, jstring)> executeJScript;
+	Function<jstring (jstring, jstring)> getCookie;
+	Function<jobjectArray (jstring)> getCookies;
 	Function<void (jstring)> deleteCookies;
 	Function<void (jint, jstring, jstring)> openFromBuffer;
 	Function<void (jint, jfloat, jfloat, jfloat, jfloat)> setRect;
 	Function<void (jint, jboolean)> setVisible;
 	Function<void (jint, jboolean)> setBackgroundTransparency;
+	Function<void (jint, jboolean)> setRenderToTexture;
+	Function<jboolean (jint)>       isRenderToTexture;
 };
 
 };

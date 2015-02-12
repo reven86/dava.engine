@@ -227,7 +227,7 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 		get_backtrace_symbols(frames, size, symbols);
 #endif
 
-		for (int i = 0; i < size; ++i)
+		for (ssize_t i = 0; i < size; ++i)
 		{
 			JniCrashReporter::CrashStep step;
 #ifdef DESYM_STACK
@@ -241,26 +241,26 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 			const map_info_t* mi = find_map_info(map_info, frames[i].absolute_pc);
 			if (mi)
 			{
-				char s[256];
+				char s[256] = {0};
 				const backtrace_frame_t* frame = &frames[i];
 				snprintf(s,256, "0x%08x", (frame->absolute_pc - mi->start));
-				step.function = std::string(s);
-				if (mi->name[0])
+				step.function = s;
+				if (mi->name)
 				{
-					step.module = std::string(strdup(mi->name)) + " ";
+					step.module = String(mi->name) + " ";
 				}
-#ifdef TEAMCITY_BUILD_TYPE_ID				
+#ifdef TEAMCITY_BUILD_TYPE_ID
 				if (i == 0)
 				{
 					JniCrashReporter::CrashStep buildId;
 					buildId.module = TEAMCITY_BUILD_TYPE_ID;
-					char fakeFunction[64];
-					snprintf(fakeFunction, 64,"CrashApp::CrashedSignal%dAddr0x%08x()",signal,siginfo->si_addr);
-					buildId.function = std::string(fakeFunction);
+					char fakeFunction[64] = {0};
+					snprintf(fakeFunction, 64,"CrashApp::CrashedSignal%dAddr0x%p()",signal,siginfo->si_addr);
+					buildId.function = fakeFunction;
 					buildId.fileLine = (frame->absolute_pc - mi->start);
 					crashSteps.push_back(buildId);
 				}
-#endif				
+#endif
 
 			}
 

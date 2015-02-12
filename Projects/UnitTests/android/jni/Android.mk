@@ -16,6 +16,7 @@ LOCAL_MODULE := UnitTestsLib
 # set path for includes
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
 LOCAL_C_INCLUDES += $(MY_PROJECT_ROOT)/Classes
+LOCAL_C_INCLUDES += $(MY_PROJECT_ROOT)/Classes/OldTests
 LOCAL_C_INCLUDES += $(MY_PROJECT_ROOT)/Classes/Infrastructure
 LOCAL_C_INCLUDES += $(DAVA_ROOT)/Sources/Tools
 
