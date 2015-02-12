@@ -10,7 +10,7 @@
 LogModel::LogModel(QObject* parent)
     : QStandardItemModel(parent)
 {
-    connect(this, SIGNAL( logged( int, const QString& ) ), SLOT( OnAddMessage( int, const QString& ) ));
+    connect(this, &LogModel::logged, this, &LogModel::AddMessage);
 }
 
 LogModel::~LogModel()
@@ -30,7 +30,7 @@ void LogModel::Output(DAVA::Logger::eLogLevel ll, const DAVA::char16* text)
     emit const_cast<LogModel *>(this)->logged(ll, str);
 }
 
-void LogModel::OnAddMessage(int ll, const QString& text)
+void LogModel::AddMessage(int ll, const QString& text)
 {
     const QList<QStandardItem *>& row = CreateItem(ll, normalize(text));
     appendRow(row);

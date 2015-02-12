@@ -81,8 +81,7 @@ bool CoreWin32PlatformQt::SetupWindow(HINSTANCE _hInstance, HWND _hWindow)
     return true;
 }
 
-static Vector<DAVA::UIEvent> activeTouches;
-int32 MoveTouchsToVector(UINT message, WPARAM wParam, LPARAM lParam, Vector<UIEvent> *outTouches)
+int32 CoreWin32PlatformQt::MoveTouchsToVector(UINT message, WPARAM wParam, LPARAM lParam, Vector<UIEvent> *outTouches)
 {
 		
 	int button = 0;
@@ -117,7 +116,7 @@ int32 MoveTouchsToVector(UINT message, WPARAM wParam, LPARAM lParam, Vector<UIEv
 
 	if(phase == UIEvent::PHASE_DRAG)
 	{
-		for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+		for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
 			Vector2 p((float32)GET_X_LPARAM(lParam), (float32)GET_Y_LPARAM(lParam));
 
@@ -128,7 +127,7 @@ int32 MoveTouchsToVector(UINT message, WPARAM wParam, LPARAM lParam, Vector<UIEv
 	}
 
 	bool isFind = false;
-	for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+	for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 	{
 		if(it->tid == button)
 		{
@@ -157,21 +156,21 @@ int32 MoveTouchsToVector(UINT message, WPARAM wParam, LPARAM lParam, Vector<UIEv
 		//			newTouch.timestamp = curEvent.timestamp;
 		//			newTouch.tapCount = curEvent.clickCount;
 		newTouch.phase = phase;
-		activeTouches.push_back(newTouch);
+		allTouches.push_back(newTouch);
 	}
 
-	for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+	for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 	{
 		outTouches->push_back(*it);
 	}
 
 	if(phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
 	{
-		for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+		for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
 			if(it->tid == button)
 			{
-				activeTouches.erase(it);
+				allTouches.erase(it);
 				break;
 			}
 		}
@@ -195,7 +194,7 @@ bool CoreWin32PlatformQt::WinEvent(MSG *message, long *result)
 	{
 	case WM_KEYUP:
 		{
-			InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed((int32)message->wParam);
+			InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed((int32)message->wParam);
 
 			// translate this to WM_CHAR message
 			TranslateMessage(message);
@@ -205,26 +204,20 @@ bool CoreWin32PlatformQt::WinEvent(MSG *message, long *result)
 	case WM_KEYDOWN:
 		{
 			Vector<DAVA::UIEvent> touches;
-			Vector<DAVA::UIEvent> emptyTouches;
-
-			for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
-			{
-				touches.push_back(*it);
-			}
 
 			DAVA::UIEvent ev;
 			ev.keyChar = 0;
 			ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
 			ev.tapCount = 1;
-			ev.tid = InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey((int32)message->wParam);
+			ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey((int32)message->wParam);
 
 			touches.push_back(ev);
 
-			UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+			UIControlSystem::Instance()->OnInput(0, touches, allTouches);
 			touches.pop_back();
-			UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+			UIControlSystem::Instance()->OnInput(0, touches, allTouches);
 
-			InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed((int32)message->wParam);
+			InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed((int32)message->wParam);
 
 			// translate this to WM_CHAR message
 			TranslateMessage(message);
@@ -236,12 +229,6 @@ bool CoreWin32PlatformQt::WinEvent(MSG *message, long *result)
 			if(message->wParam > 27) //TODO: remove this elegant check
 			{
 				Vector<DAVA::UIEvent> touches;
-				Vector<DAVA::UIEvent> emptyTouches;
-
-				for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
-				{
-					touches.push_back(*it);
-				}
 
 				DAVA::UIEvent ev;
 				ev.keyChar = (char16)message->wParam;
@@ -251,9 +238,9 @@ bool CoreWin32PlatformQt::WinEvent(MSG *message, long *result)
 
 				touches.push_back(ev);
 
-				UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+				UIControlSystem::Instance()->OnInput(0, touches, allTouches);
 				touches.pop_back();
-				UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+				UIControlSystem::Instance()->OnInput(0, touches, allTouches);
 			}
 
 			if (result)
@@ -273,11 +260,10 @@ bool CoreWin32PlatformQt::WinEvent(MSG *message, long *result)
 	case WM_MOUSEMOVE:
 		{
 			Vector<DAVA::UIEvent> touches;
-			Vector<DAVA::UIEvent> emptyTouches;
 
 			int32 touchPhase = MoveTouchsToVector(message->message, message->wParam, message->lParam, &touches);
 
-			UIControlSystem::Instance()->OnInput(touchPhase, emptyTouches, touches);
+			UIControlSystem::Instance()->OnInput(touchPhase, touches, allTouches);
 
 			touches.clear();
 		}

@@ -205,7 +205,8 @@ Sprite* ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Tex
 	int32 height = texture->GetHeight();
     
 	Sprite* resSprite = Sprite::CreateAsRenderTarget((float32)width, (float32)height, FORMAT_RGBA8888, true);
-	RenderManager::Instance()->SetRenderTarget(resSprite);
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(resSprite);
     
     RenderManager::Instance()->SetColor(Color::White);
     
@@ -221,8 +222,7 @@ Sprite* ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Tex
     
     Rect rect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(updatedRect);
     
-    RenderManager::Instance()->Reset();
-    RenderSystem2D::Instance()->ClipPush();
+    RenderSystem2D::Instance()->PushClip();
     RenderSystem2D::Instance()->SetClip(rect);
     
     RenderManager::Instance()->SetColor(Color::White);
@@ -241,9 +241,8 @@ Sprite* ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Tex
 	SafeRelease(s);
 	SafeRelease(t);
     
-    RenderSystem2D::Instance()->ClipPop();
-	
-    RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopClip();
+    RenderSystem2D::Instance()->PopRenderTarget();
     
 	return resSprite;
 }
@@ -252,8 +251,9 @@ void ModifyTilemaskCommand::ApplyImageToSprite(Image* image, Sprite* dstSprite)
 {
     Rect rect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(updatedRect);
     
-	RenderManager::Instance()->SetRenderTarget(dstSprite);
-    RenderSystem2D::Instance()->ClipPush();
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(dstSprite);
+    RenderSystem2D::Instance()->PushClip();
     RenderSystem2D::Instance()->SetClip(rect);
 
     RenderManager::Instance()->SetColor(Color::White);
@@ -269,8 +269,8 @@ void ModifyTilemaskCommand::ApplyImageToSprite(Image* image, Sprite* dstSprite)
     RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
     
-    RenderSystem2D::Instance()->ClipPop();
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopClip();
+    RenderSystem2D::Instance()->PopRenderTarget();
 	
 	SafeRelease(texture);
 	SafeRelease(srcSprite);

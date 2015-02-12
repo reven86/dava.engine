@@ -100,8 +100,6 @@ namespace DAVA
 
 	}
 
-	LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
 	bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
 	{	
 		this->hInstance = hInstance;
@@ -257,6 +255,10 @@ namespace DAVA
 		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+
+        isRightButtonPressed = false;
+        isLeftButtonPressed = false;
+        isMiddleButtonPressed = false;
 
 		return true;
 	}
@@ -480,11 +482,7 @@ namespace DAVA
 		SendMessage(hWindow, WM_SETICON, ICON_BIG, (LPARAM)smallIcon);
 	}
 
-    bool isRightButtonPressed = false;
-    bool isLeftButtonPressed = false;
-    bool isMiddleButtonPressed = false;
-	static Vector<DAVA::UIEvent> activeTouches;
-	int32 MoveTouchsToVector(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent> *outTouches)
+	int32 CoreWin32Platform::MoveTouchsToVector(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent> *outTouches)
 	{
 		int button = 0;
         int phase = -1;
@@ -546,7 +544,7 @@ namespace DAVA
             return phase;
 
 		bool isFind = false;
-		for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+		for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
 			if(it->tid == button)
 			{
@@ -567,21 +565,21 @@ namespace DAVA
 			newTouch.physPoint.x = (float32)GET_X_LPARAM(lParam);
 			newTouch.physPoint.y = (float32)GET_Y_LPARAM(lParam);
 			newTouch.phase = phase;
-			activeTouches.push_back(newTouch);
+			allTouches.push_back(newTouch);
 		}
 
-		for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+		for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
 			outTouches->push_back(*it);
 		}
 
 		if(phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
 		{
-			for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+			for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 			{
 				if(it->tid == button)
 				{
-					activeTouches.erase(it);
+					allTouches.erase(it);
 					break;
 				}
 			}
@@ -647,10 +645,9 @@ namespace DAVA
 		}
 	}
 
-	void OnMouseEvent(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData)
+	void CoreWin32Platform::OnMouseEvent(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData)
     {
         Vector<DAVA::UIEvent> touches;
-        Vector<DAVA::UIEvent> emptyTouches;
         int32 touchPhase = -1;
 
         if (HIWORD(wParam) || mouseButtonsDownMask > 0) // isPoint inside window or some clicks already captured
@@ -676,7 +673,7 @@ namespace DAVA
 		}
 
         if(touchPhase != -1)
-            UIControlSystem::Instance()->OnInput(touchPhase, emptyTouches, touches);
+            UIControlSystem::Instance()->OnInput(touchPhase, touches, allTouches);
 
 		if (RenderManager::Instance()->GetCursor() != 0 && mouseCursorShown)
 		{
@@ -692,8 +689,9 @@ namespace DAVA
 		HandleMouseButtonsReleased(buttsFlags);
 	}
 
-	LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+	LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
+		CoreWin32Platform* core = static_cast< CoreWin32Platform* >(Core::Instance());
 #ifndef WM_MOUSEWHEEL
 #define WM_MOUSEWHEEL 0x020A
 #endif
@@ -708,7 +706,7 @@ namespace DAVA
 
 		case WM_KEYUP:
 			{
-				InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed((int32)wParam);
+				InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed((int32)wParam);
 			};
 			break;
 
@@ -724,26 +722,20 @@ namespace DAVA
 				}
 
 				Vector<DAVA::UIEvent> touches;
-				Vector<DAVA::UIEvent> emptyTouches;
-
-				for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
-				{
-					touches.push_back(*it);
-				}
 
 				DAVA::UIEvent ev;
 				ev.keyChar = 0;
 				ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
 				ev.tapCount = 1;
-				ev.tid = InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey((int32)wParam);
+				ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey((int32)wParam);
 
 				touches.push_back(ev);
 
-				UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+				UIControlSystem::Instance()->OnInput(0, touches, core->allTouches);
 				touches.pop_back();
-				UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+				UIControlSystem::Instance()->OnInput(0, touches, core->allTouches);
 
-				InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed((int32)wParam);
+				InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed((int32)wParam);
 			};
 			break;
 
@@ -752,12 +744,6 @@ namespace DAVA
 			if(wParam > 27) //TODO: remove this elegant check
 			{
 				Vector<DAVA::UIEvent> touches;
-				Vector<DAVA::UIEvent> emptyTouches;
-
-				for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
-				{
-					touches.push_back(*it);
-				}
 
 				DAVA::UIEvent ev;
 				ev.keyChar = (char16)wParam;
@@ -767,9 +753,9 @@ namespace DAVA
 
 				touches.push_back(ev);
 
-				UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+				UIControlSystem::Instance()->OnInput(0, touches, core->allTouches);
 				touches.pop_back();
-				UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+				UIControlSystem::Instance()->OnInput(0, touches, core->allTouches);
 			}
 		}
 		break;
@@ -819,7 +805,7 @@ namespace DAVA
 
                 bool isInside = (x > clientRect.left && x < clientRect.right && y > clientRect.top && y < clientRect.bottom) || InputSystem::Instance()->IsCursorPining();
 
-                OnMouseEvent(raw->data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y), raw->data.mouse.usButtonData); // only move, drag and wheel events
+                core->OnMouseEvent(raw->data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y), raw->data.mouse.usButtonData); // only move, drag and wheel events
             }
 
             SafeDeleteArray(lpb);

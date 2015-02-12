@@ -55,8 +55,7 @@ set( LIBRARIES                  ${QT_LIBRARIES} TextureTool )
 set( LIBRARIES_RELEASE        )
 set( LIBRARIES_DEBUG          )
 set( ADDED_BINARY_DIR           ${QT5_PATH_WIN}/bin )
-
-set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG" )
+set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
 
 setup_main_executable()
 

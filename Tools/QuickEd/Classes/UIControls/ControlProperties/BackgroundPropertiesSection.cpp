@@ -2,6 +2,9 @@
 
 #include "ValueProperty.h"
 
+#include "UI/UIControl.h"
+#include "../PackageSerializer.h"
+
 using namespace DAVA;
 
 BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl *control, int bgNum, const BackgroundPropertiesSection *sourceSection, eCopyType copyType) : control(NULL), bg(NULL), bgNum(bgNum)
@@ -64,16 +67,20 @@ DAVA::String BackgroundPropertiesSection::GetName() const
     return control->GetBackgroundComponentName(bgNum);
 }
 
-void BackgroundPropertiesSection::AddPropertiesToNode(YamlNode *node) const
+bool BackgroundPropertiesSection::HasChanges() const
 {
-    if (bg)
+    return bg && PropertiesSection::HasChanges();
+}
+
+void BackgroundPropertiesSection::Serialize(PackageSerializer *serializer) const
+{
+    if (HasChanges())
     {
-        YamlNode *mapNode = YamlNode::CreateMapNode(false);
-        for (auto it = children.begin(); it != children.end(); ++it)
-            (*it)->AddPropertiesToNode(mapNode);
-        if (mapNode->GetCount() > 0)
-            node->Add(GetName(), mapNode);
-        else
-            SafeRelease(mapNode);
+        serializer->BeginMap(GetName());
+        
+        for (const auto child : children)
+            child->Serialize(serializer);
+
+        serializer->EndMap();
     }
 }

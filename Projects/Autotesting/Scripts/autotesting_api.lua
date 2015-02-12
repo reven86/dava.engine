@@ -161,7 +161,7 @@ function GetParameter(name, default)
     end
     if testData and testData[name] then
         return testData[name]
-    elseif default then
+    elseif default ~= nil then
         return default
     end
     OnError("Couldn't find value for variable " .. name)

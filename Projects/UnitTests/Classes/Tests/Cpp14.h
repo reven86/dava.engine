@@ -41,6 +41,7 @@ public:
     Cpp14Test ();
 
     void CompileTest (PerfFuncData * data);
+    void ScopeExit (PerfFuncData * data);
 };
 
 #endif //__CPP14_TEST_H__

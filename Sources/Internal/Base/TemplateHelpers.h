@@ -33,6 +33,8 @@
 #include <typeinfo>
 #include "NullType.h"
 #include "TypeList.h"
+#include <type_traits>
+#include <utility>
 
 namespace DAVA
 {
@@ -46,6 +48,17 @@ struct CompileTimeError<true>
 {};
     
 #define COMPILER_ASSERT(expr) DAVA::CompileTimeError<(expr)>();
+
+// Template for intergal constant types
+template<typename T, T Value>
+struct IntegralConstant
+{
+    static const T value = Value;
+};
+
+// Specializations for boolean constants
+typedef IntegralConstant<bool, false>   FalseType;
+typedef IntegralConstant<bool, true>    TrueType;
 
 template<bool C, typename T = void>
 struct EnableIf
@@ -230,7 +243,7 @@ public:
 template<class C, class O>
 C DynamicTypeCheck(O* pObject)
 {
-#ifdef DAVA_DEBUG
+#ifdef __DAVAENGINE_DEBUG__
     if(!pObject) return static_cast<C>(pObject);
         
     C c = dynamic_cast<C>(pObject);
@@ -272,8 +285,54 @@ C cast_if_equal(O* pObject)
 	}
 	return 0;
 }
+
+
+//ScopeGuard is borrowed from https://github.com/facebook/folly
+template <typename FunctionType>
+class ScopeGuardImpl
+{
+public:
+   explicit ScopeGuardImpl(const FunctionType& fn) : function_(fn) {}
+
+   explicit ScopeGuardImpl(FunctionType&& fn) : function_(std::move(fn)) {}
+
+   ScopeGuardImpl(ScopeGuardImpl&& other) : function_(std::move(other.function_)) {}
+
+   ~ScopeGuardImpl()
+   {
+       execute();
+   }
+   
+private:
+   void* operator new(std::size_t) = delete;
+   void execute() { function_(); }
+   FunctionType function_;
+};
+
+enum class ScopeGuardOnExit {};
+
+template <typename FunctionType>
+ScopeGuardImpl<typename std::decay<FunctionType>::type>
+operator+(ScopeGuardOnExit, FunctionType&& fn)
+{
+   return ScopeGuardImpl<typename std::decay<FunctionType>::type>(std::forward<FunctionType>(fn));
+}
     
 };
+
+#ifndef DF_ANONYMOUS_VARIABLE
+#define DF_CONCATENATE_IMPL(s1, s2) s1##s2
+#define DF_CONCATENATE(s1, s2) DF_CONCATENATE_IMPL(s1, s2)
+#ifdef __COUNTER__
+#define DF_ANONYMOUS_VARIABLE(str) DF_CONCATENATE(str, __COUNTER__)
+#else
+#define DF_ANONYMOUS_VARIABLE(str) DF_CONCATENATE(str, __LINE__)
+#endif
+#endif
+
+#define SCOPE_EXIT \
+ auto DF_ANONYMOUS_VARIABLE(SCOPE_EXIT_STATE) \
+ = ::DAVA::ScopeGuardOnExit() + [&]()
 
 #endif // __DAVAENGINE_TEMPLATEHELPERS_H__
 
