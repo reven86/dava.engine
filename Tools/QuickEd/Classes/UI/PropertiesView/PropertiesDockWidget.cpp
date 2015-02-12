@@ -13,9 +13,9 @@
 
 #include "ui_PropertiesDockWidget.h"
 #include "PropertiesTreeModel.h"
-#include "UI/PackageDocument.h"
+#include "UI/Document.h"
+#include "UI/PropertiesContext.h"
 #include "UI/PropertiesView/PropertiesTreeItemDelegate.h"
-#include "PropertiesViewContext.h"
 #include "UIControls/PackageHierarchy/ControlNode.h"
 
 using namespace DAVA;
@@ -34,11 +34,11 @@ PropertiesDockWidget::~PropertiesDockWidget()
     ui = NULL;
 }
 
-void PropertiesDockWidget::SetContext(PropertiesViewContext *newContext)
+void PropertiesDockWidget::SetContext(PropertiesContext *newContext)
 {
     if (context)
     {
-        disconnect(context->Document(), SIGNAL(controlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), this, SLOT(OnControlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+        disconnect(context->GetDocument(), SIGNAL(controlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), this, SLOT(OnControlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
         ui->treeView->setModel(NULL);
         //ui->filterLine->setEnabled(false);
         //ui->treeView->setEnabled(false);
@@ -50,7 +50,7 @@ void PropertiesDockWidget::SetContext(PropertiesViewContext *newContext)
     {
         //ui->treeView->setModel(document->GetTreeContext()->proxyModel);
         //ui->filterLine->setText(document->GetTreeContext()->filterString);
-        connect(context->Document(), SIGNAL(controlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), this, SLOT(OnControlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+        connect(context->GetDocument(), SIGNAL(controlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), this, SLOT(OnControlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
         //ui->filterLine->setEnabled(true);
         //ui->treeView->setEnabled(true);
     }

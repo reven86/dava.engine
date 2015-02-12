@@ -29,36 +29,20 @@ class PackageNode;
 class DavaGLWidget;
 class QtModelPackageCommandExecutor;
 
-class TreeViewContext
-{
-public:
-    QPoint scrollPosition;
-    //QModelIndexList expandedItems;
-    UIPackageModel *model;
-    QSortFilterProxyModel *proxyModel;
-    QItemSelection *currentSelection;
-    QString filterString;
-};
+class PackageContext;
+class PropertiesContext;
+class LibraryContext;
+class PreviewContext;
 
-class LibraryViewContext
-{
-public:
-    QPoint scrollPosition;
-    //QModelIndexList expandedItems;
-    QAbstractItemModel *model;
-};
-
-class GraphicsViewContext;
-class PropertiesViewContext;
 class PackageNode;
 class ControlNode;
 
-class PackageDocument: public QObject
+class Document : public QObject
 {
     Q_OBJECT
 public:
-    PackageDocument(Project * project, PackageNode *package, QObject *parent = NULL);
-    ~PackageDocument();
+    Document(Project * project, PackageNode *package, QObject *parent = NULL);
+    virtual ~Document();
     
     bool IsModified() const;
     void ClearModified();
@@ -69,15 +53,10 @@ public:
     const QList<ControlNode*> &GetSelectedControls() const { return selectedControls; }
     const QList<ControlNode*> &GetActiveRootControls() const { return activeRootControls; }
     
-    const TreeViewContext *GetTreeContext() const { return &treeContext; };
-    const GraphicsViewContext *GetGraphicsContext() const {return graphicsContext; };
-    const PropertiesViewContext *GetPropertiesContext() const {return propertiesContext; };
-    const LibraryViewContext *GetLibraryContext() const {return &libraryContext; };
-
-    TreeViewContext *GetTreeContext() { return &treeContext; };
-    GraphicsViewContext *GetGraphicsContext() {return graphicsContext; };
-    PropertiesViewContext *GetPropertiesContext() {return propertiesContext; };
-    LibraryViewContext *GetLibraryContext() {return &libraryContext; };
+    PackageContext *GetPackageContext() const { return packageContext; };
+    PropertiesContext *GetPropertiesContext() const {return propertiesContext; };
+    LibraryContext *GetLibraryContext() const {return libraryContext; };
+    PreviewContext *GetPreviewContext() const {return previewContext; };
 
     QUndoStack *UndoStack() const { return undoStack; }
     
@@ -105,15 +84,17 @@ private:
     PackageNode *package;
     QList<ControlNode *> selectedControls;
     QList<ControlNode *> activeRootControls;
-    TreeViewContext treeContext;
-    GraphicsViewContext *graphicsContext;
-    PropertiesViewContext *propertiesContext;
-    LibraryViewContext libraryContext;
+
+    PackageContext *packageContext;
+    PropertiesContext *propertiesContext;
+    LibraryContext *libraryContext;
+    PreviewContext *previewContext;
+    
     QtModelPackageCommandExecutor *commandExecutor;
 
     QUndoStack *undoStack;
 };
 
-Q_DECLARE_METATYPE(PackageDocument *);
+Q_DECLARE_METATYPE(Document *);
 
 #endif // __QUICKED_PACKAGE_DOCUMENT_H__

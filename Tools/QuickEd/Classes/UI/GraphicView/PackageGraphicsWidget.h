@@ -1,13 +1,5 @@
-//
-//  PackageGraphicsWidget.h
-//  UIEditor
-//
-//  Created by Alexey Strokachuk on 9/17/14.
-//
-//
-
-#ifndef __UIEditor__ScreenTabWidget__
-#define __UIEditor__ScreenTabWidget__
+#ifndef __QUICKED_PACKAGE_GRAPHICS_WIDGET_H__
+#define __QUICKED_PACKAGE_GRAPHICS_WIDGET_H__
 
 #include <QWidget>
 
@@ -15,8 +7,8 @@ namespace Ui {
     class PackageGraphicsWidget;
 }
 
-class PackageDocument;
-class GraphicsViewContext;
+class Document;
+class PreviewContext;
 
 enum ScreenId
 {
@@ -31,7 +23,7 @@ public:
     PackageGraphicsWidget(QWidget *parent = NULL);
     ~PackageGraphicsWidget();
     
-    void SetDocument(PackageDocument *newDocument);
+    void SetDocument(Document *newDocument);
 
 private slots:
     // Zoom.
@@ -55,8 +47,8 @@ private:
 
 private:
     Ui::PackageGraphicsWidget *ui;
-    PackageDocument *document;
-    GraphicsViewContext *context;
+    Document *document;
+    PreviewContext *context;
 };
 
-#endif /* defined(__UIEditor__ScreenTabWidget__) */
+#endif // __QUICKED_PACKAGE_GRAPHICS_WIDGET_H__

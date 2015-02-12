@@ -10,8 +10,8 @@
 #include "ui_PackageGraphicsWidget.h"
 #include <QLineEdit>
 #include "EditScreen.h"
-#include "UI/PackageDocument.h"
-#include "UI/GraphicView/GraphicsViewContext.h"
+#include "UI/Document.h"
+#include "UI/PreviewContext.h"
 
 
 static const int SCALE_PERCENTAGES[] =
@@ -73,7 +73,7 @@ PackageGraphicsWidget::~PackageGraphicsWidget()
     delete ui;
 }
 
-void PackageGraphicsWidget::SetDocument(PackageDocument *newDocument)
+void PackageGraphicsWidget::SetDocument(Document *newDocument)
 {
     if (document)
     {
@@ -93,7 +93,7 @@ void PackageGraphicsWidget::SetDocument(PackageDocument *newDocument)
     }
     else
     {
-        context = document->GetGraphicsContext();
+        context = document->GetPreviewContext();
         ui->davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
         UIScreenManager::Instance()->GetScreen()->AddControl(context->GetViewControl());
         context->SetViewControlSize(GetGLViewSize());
