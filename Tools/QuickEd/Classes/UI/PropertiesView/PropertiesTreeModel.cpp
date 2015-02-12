@@ -1,10 +1,3 @@
-//
-//  PropertiesTreeModel.cpp
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 12.9.14.
-//
-//
 
 #include "PropertiesTreeModel.h"
 
@@ -15,24 +8,26 @@
 #include <QUndoStack>
 
 #include "UIControls/ControlProperties/BaseProperty.h"
+#include "UIControls/PackageHierarchy/ControlNode.h"
 #include "Utils/QtDavaConvertion.h"
 #include "ChangePropertyValueCommand.h"
 #include "UI/PackageDocument.h"
+#include "UI/QtModelPackageCommandExecutor.h"
 #include "PropertiesViewContext.h"
 
 using namespace DAVA;
 
-PropertiesTreeModel::PropertiesTreeModel(BaseProperty *propertiesRoot, PropertiesViewContext *context, QObject *parent)
+PropertiesTreeModel::PropertiesTreeModel(ControlNode *_controlNode, PropertiesViewContext *context, QObject *parent)
     : QAbstractItemModel(parent)
-    , root(NULL)
+    , controlNode(nullptr)
     , propertiesViewContext(context)
 {
-    root = SafeRetain(propertiesRoot);
+    controlNode = SafeRetain(_controlNode);
 }
 
 PropertiesTreeModel::~PropertiesTreeModel()
 {
-    SafeRelease(root);
+    SafeRelease(controlNode);
 }
 
 QModelIndex PropertiesTreeModel::index(int row, int column, const QModelIndex &parent) const
@@ -41,7 +36,7 @@ QModelIndex PropertiesTreeModel::index(int row, int column, const QModelIndex &p
         return QModelIndex();
     
     if (!parent.isValid())
-        return createIndex(row, column, root->GetProperty(row));
+        return createIndex(row, column, controlNode->GetPropertiesRoot()->GetProperty(row));
     
     BaseProperty *property = static_cast<BaseProperty*>(parent.internalPointer());
     return createIndex(row, column, property->GetProperty(row));
@@ -55,7 +50,7 @@ QModelIndex PropertiesTreeModel::parent(const QModelIndex &child) const
     BaseProperty *property = static_cast<BaseProperty*>(child.internalPointer());
     BaseProperty *parent = property->GetParent();
     
-    if (parent == NULL || parent == root)
+    if (parent == NULL || parent == controlNode->GetPropertiesRoot())
         return QModelIndex();
 
     if (parent->GetParent())
@@ -70,14 +65,14 @@ int PropertiesTreeModel::rowCount(const QModelIndex &parent) const
         return 0;
     
     if (!parent.isValid())
-        return root ? root->GetCount() : 0;
+        return controlNode->GetPropertiesRoot() ? controlNode->GetPropertiesRoot()->GetCount() : 0;
     
     return static_cast<BaseProperty*>(parent.internalPointer())->GetCount();
 }
 
 int PropertiesTreeModel::columnCount(const QModelIndex &parent) const
 {
-    if (!parent.isValid() || parent.internalPointer() == root)
+    if (!parent.isValid() || parent.internalPointer() == controlNode->GetPropertiesRoot())
         return 2;
     
     return 2;
@@ -167,8 +162,9 @@ bool PropertiesTreeModel::setData(const QModelIndex &index, const QVariant &valu
             if (property->GetValue().GetType() == VariantType::TYPE_BOOLEAN)
             {
                 VariantType newVal(value != Qt::Unchecked);
-                QUndoCommand *command = new ChangePropertyValueCommand(property, newVal);
-                propertiesViewContext->Document()->UndoStack()->push(command);
+//                QUndoCommand *command = new ChangePropertyValueCommand(property, newVal);
+//                propertiesViewContext->Document()->UndoStack()->push(command);
+                propertiesViewContext->Document()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
                 return true;
             }
         }
@@ -187,8 +183,9 @@ bool PropertiesTreeModel::setData(const QModelIndex &index, const QVariant &valu
                 initVariantType(newVal, value);
             }
 
-            QUndoCommand *command = new ChangePropertyValueCommand(property, newVal);
-            propertiesViewContext->Document()->UndoStack()->push(command);
+//            QUndoCommand *command = new ChangePropertyValueCommand(property, newVal);
+//            propertiesViewContext->Document()->UndoStack()->push(command);
+            propertiesViewContext->Document()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
 
             QModelIndex siblingIndex = index.sibling(index.row(), index.column()-1);
             emit dataChanged(siblingIndex, siblingIndex);
@@ -198,8 +195,9 @@ bool PropertiesTreeModel::setData(const QModelIndex &index, const QVariant &valu
 
     case DAVA::ResetRole:
         {
-            QUndoCommand *command = new ChangePropertyValueCommand(property);
-            propertiesViewContext->Document()->UndoStack()->push(command);
+//            QUndoCommand *command = new ChangePropertyValueCommand(property);
+//            propertiesViewContext->Document()->UndoStack()->push(command);
+            propertiesViewContext->Document()->GetCommandExecutor()->ResetProperty(controlNode, property);
             emit dataChanged(index.sibling(index.row(), index.column()-1), index);
             return true;
         }

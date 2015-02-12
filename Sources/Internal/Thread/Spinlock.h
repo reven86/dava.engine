@@ -69,7 +69,7 @@ protected:
 inline void Spinlock::Lock()
 {
     // try to set spin = 1
-    while(!AtomicCompareAndSwap(0, 1, spin))
+    while(!AtomicCompareAndSwap(0, 1, (int&) spin))
     {
         // wait till spin become equal to 0
         while(0 != spin) 
@@ -80,13 +80,13 @@ inline void Spinlock::Lock()
 inline void Spinlock::Unlock()
 {
     // set spin = 0
-    AtomicCompareAndSwap(1, 0, spin);
+    AtomicCompareAndSwap(1, 0, (int&) spin);
 }
 
 inline bool Spinlock::TryLock()
 {
     // try to set spin = 1
-    return AtomicCompareAndSwap(0, 1, spin);
+    return AtomicCompareAndSwap(0, 1, (int&) spin);
 }
 
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)

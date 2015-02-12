@@ -147,7 +147,7 @@ void ShowErrorDialog(const DAVA::String &errorMessage)
 
 bool IsKeyModificatorPressed(int32 key)
 {
-	return InputSystem::Instance()->GetKeyboard()->IsKeyPressed(key);
+	return InputSystem::Instance()->GetKeyboard().IsKeyPressed(key);
 }
 
 bool IsKeyModificatorsPressed()

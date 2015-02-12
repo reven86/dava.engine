@@ -15,6 +15,7 @@ macro( setup_main_executable )
 add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
 
 if( APPLE )
+    set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
 
     file ( GLOB_RECURSE RESOURCES_LIST ${MACOS_DATA} )
     foreach ( FILE ${RESOURCES_LIST} )
