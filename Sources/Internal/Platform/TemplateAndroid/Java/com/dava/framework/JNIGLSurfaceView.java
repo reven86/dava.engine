@@ -30,9 +30,12 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	private native void nativeOnInput(int action, int source, int groupSize, ArrayList< InputRunnable.InputEvent > activeInputs, ArrayList< InputRunnable.InputEvent > allInputs);
 	private native void nativeOnKeyDown(int keyCode);
 	private native void nativeOnKeyUp(int keyCode);
+	private native void nativeOnGamepadElement(int elementKey, float value, boolean isKeycode);
+	
+	private Integer[] gamepadAxises = null;
 	
 	MOGAListener mogaListener = null;
-
+	
 	boolean[] pressedKeys = new boolean[KeyEvent.getMaxKeyCode() + 1];
 
 	public int lastDoubleActionIdx = -1;
@@ -87,6 +90,11 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		setDebugFlags(0);
 		
 		doubleTapDetector = new GestureDetector(JNIActivity.GetActivity(), new DoubleTapListener(this));
+	}
+	
+	public void SetAvailableGamepadAxises(Integer[] axises)
+	{
+		gamepadAxises = axises;
 	}
 	
     @Override
@@ -164,19 +172,6 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				this.time = time;
 			}
 		}
-		
-		final int [] axis = {
-				MotionEvent.AXIS_X,
-				MotionEvent.AXIS_Y,
-				MotionEvent.AXIS_Z,
-				MotionEvent.AXIS_RX,
-				MotionEvent.AXIS_RY,
-				MotionEvent.AXIS_RZ,
-				MotionEvent.AXIS_LTRIGGER,
-				MotionEvent.AXIS_RTRIGGER,
-				MotionEvent.AXIS_HAT_X,
-				MotionEvent.AXIS_HAT_Y,
-		};
 
 		ArrayList<InputEvent> activeEvents;
 		ArrayList<InputEvent> allEvents;
@@ -204,8 +199,8 @@ public class JNIGLSurfaceView extends GLSurfaceView
 						allEvents.add(ev);
 					}
 					if((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
-						for (int a = 0; a < axis.length; ++a) {
-							InputEvent ev = new InputEvent(a + 1, event.getHistoricalAxisValue(axis[a], i, historyStep), 0, tapCount, event.getHistoricalEventTime(historyStep));
+						for (int a = 0; a < gamepadAxises.length; ++a) {
+							InputEvent ev = new InputEvent(gamepadAxises[a], event.getHistoricalAxisValue(gamepadAxises[a], i, historyStep), 0, tapCount, event.getHistoricalEventTime(historyStep));
 
 							allEvents.add(ev);
 						}
@@ -221,8 +216,8 @@ public class JNIGLSurfaceView extends GLSurfaceView
 					allEvents.add(ev);
 				}
 				if((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
-					for (int a = 0; a < axis.length; ++a) {
-						InputEvent ev = new InputEvent(a + 1, event.getAxisValue(axis[a], i), 0, tapCount, event.getEventTime());
+					for (int a = 0; a < gamepadAxises.length; ++a) {
+						InputEvent ev = new InputEvent(gamepadAxises[a], event.getAxisValue(gamepadAxises[a], i), 0, tapCount, event.getEventTime());
 						allEvents.add(ev);
 					}
 				}
@@ -266,8 +261,26 @@ public class JNIGLSurfaceView extends GLSurfaceView
     	}
 
 		@Override
-		public void run() {
-			nativeOnInput(action, source, groupSize, activeEvents, allEvents);
+		public void run() 
+		{
+			if ((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
+			{
+				for(InputEvent event : allEvents)
+				{
+					if(event.tid == MotionEvent.AXIS_Y || event.tid == MotionEvent.AXIS_RZ || event.tid == MotionEvent.AXIS_RY) 
+					{
+						nativeOnGamepadElement(event.tid, -event.x, false);
+					} 
+					else 
+					{
+						nativeOnGamepadElement(event.tid, event.x, false);
+					}
+				}
+			}
+			else 
+			{
+				nativeOnInput(action, source, groupSize, activeEvents, allEvents);
+			}
 		}
     }
 
@@ -279,7 +292,14 @@ public class JNIGLSurfaceView extends GLSurfaceView
     	
     	@Override
     	public void run() {
-    		nativeOnKeyDown(keyCode);
+    		if(KeyEvent.isGamepadButton(keyCode))
+    		{
+    			nativeOnGamepadElement(keyCode, 1.f, true);
+    		}
+    		else
+    		{
+    			nativeOnKeyDown(keyCode);
+    		}
     	}
     }
     
@@ -310,7 +330,16 @@ public class JNIGLSurfaceView extends GLSurfaceView
     	}
     	
     	pressedKeys[keyCode] = false;
-        nativeOnKeyUp(keyCode);
+    	
+    	if(KeyEvent.isGamepadButton(keyCode))
+    	{
+    		nativeOnGamepadElement(keyCode, 0.f, true);
+    	}
+    	else
+    	{
+    		nativeOnKeyUp(keyCode);
+    	}
+    	
     	return super.onKeyUp(keyCode, event);
     }
     
@@ -359,7 +388,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 			else if(event.getAction() == com.bda.controller.KeyEvent.ACTION_UP)
 			{
 		    	pressedKeys[keyCode] = false;
-		        nativeOnKeyUp(keyCode);
+		        nativeOnGamepadElement(keyCode, 0.f, true);
 			}
 		}
 		@Override

@@ -131,7 +131,19 @@ VariantType ValueProperty::GetValue() const
 void ValueProperty::SetValue(const DAVA::VariantType &newValue)
 {
     replaced = true;
-    member->SetValue(object, newValue);
+    ApplyValue(newValue);
+}
+
+VariantType ValueProperty::GetDefaultValue() const
+{
+    return defaultValue;
+}
+
+void ValueProperty::SetDefaultValue(const DAVA::VariantType &newValue)
+{
+    defaultValue = newValue;
+    if (!replaced)
+        ApplyValue(newValue);
 }
 
 const EnumMap *ValueProperty::GetEnumMap() const
@@ -146,7 +158,7 @@ const EnumMap *ValueProperty::GetEnumMap() const
 void ValueProperty::ResetValue()
 {
     replaced = false;
-    member->SetValue(object, defaultValue);
+    ApplyValue(defaultValue);
 }
 
 bool ValueProperty::IsReplaced() const
@@ -289,3 +301,7 @@ void ValueProperty::SetSubValue(int index, const DAVA::VariantType &newValue)
     }
 }
 
+void ValueProperty::ApplyValue(const DAVA::VariantType &value)
+{
+    member->SetValue(object, value);
+}

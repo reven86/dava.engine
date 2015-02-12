@@ -52,11 +52,11 @@ void Cpp14Test::CompileTest (PerfFuncData * data)
 
 void Cpp14Test::ScopeExit (PerfFuncData * data)
 {
-//    int32 i = 0;
-//    {
-//        SCOPE_EXIT{ ++i; };
-//        TEST_VERIFY(0 == i);
-//    }
-//    TEST_VERIFY(1 == i);
+   int32 i = 0;
+   {
+       SCOPE_EXIT{ ++i; };
+       TEST_VERIFY(0 == i);
+   }
+   TEST_VERIFY(1 == i);
     
 }

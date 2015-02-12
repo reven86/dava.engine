@@ -31,16 +31,8 @@ VariantType LocalizedTextValueProperty::GetValue() const
     return VariantType(text);
 }
 
-void LocalizedTextValueProperty::SetValue(const DAVA::VariantType &newValue)
+void LocalizedTextValueProperty::ApplyValue(const DAVA::VariantType &value)
 {
-    ValueProperty::SetValue(newValue);
-    text = newValue.AsWideString();
-    GetMember()->SetValue(GetBaseObject(), VariantType(LocalizedString(text)));
-}
-
-void LocalizedTextValueProperty::ResetValue()
-{
-    ValueProperty::ResetValue();
-    text = GetMember()->Value(GetBaseObject()).AsWideString();
+    text = value.AsWideString();
     GetMember()->SetValue(GetBaseObject(), VariantType(LocalizedString(text)));
 }

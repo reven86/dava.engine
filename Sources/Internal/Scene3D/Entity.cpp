@@ -63,6 +63,8 @@ uint64 vectorComponentsMask = MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT
 // Property Names
 const char* Entity::SCENE_NODE_IS_SOLID_PROPERTY_NAME = "editor.isSolid";
 const char* Entity::SCENE_NODE_IS_LOCKED_PROPERTY_NAME = "editor.isLocked";
+const char* Entity::SCENE_NODE_IS_NOT_REMOVABLE_PROPERTY_NAME = "editor.isNotRemovable";
+    
 	
 Entity::Entity()
 : scene(0)
@@ -861,7 +863,7 @@ void Entity::SetSolid(bool isSolid)
 	props->SetBool(SCENE_NODE_IS_SOLID_PROPERTY_NAME, isSolid);
 }
     
-bool Entity::GetSolid()
+bool Entity::GetSolid() const
 {
     KeyedArchive *props = GetCustomPropertiesArchieve(this);
     if(props)
@@ -877,7 +879,7 @@ void Entity::SetLocked(bool isLocked)
 	props->SetBool(SCENE_NODE_IS_LOCKED_PROPERTY_NAME, isLocked);
 }
 	
-bool Entity::GetLocked()
+bool Entity::GetLocked() const
 {
     KeyedArchive *props = GetCustomPropertiesArchieve(this);
     if(props)
@@ -887,6 +889,23 @@ bool Entity::GetLocked()
 	return false;
 }
 	
+void Entity::SetNotRemovable(bool notRemovable)
+{
+    KeyedArchive *props = GetOrCreateCustomProperties(this)->GetArchive();
+    props->SetBool(SCENE_NODE_IS_NOT_REMOVABLE_PROPERTY_NAME, notRemovable);
+}
+
+bool Entity::GetNotRemovable() const
+{
+    KeyedArchive *props = GetCustomPropertiesArchieve(this);
+    if(props)
+    {
+        return props->GetBool(SCENE_NODE_IS_NOT_REMOVABLE_PROPERTY_NAME, false);
+    }
+    return false;
+}
+
+    
 void Entity::GetDataNodes(Set<DataNode*> & dataNodes)
 {
     size_t size = components.size();
