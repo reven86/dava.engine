@@ -1490,6 +1490,10 @@ namespace DAVA
         {
             return false;
         }
+        if (customSystemProcessInput != 0 && customSystemProcessInput(currentInput))
+        {
+        	return true;
+        }
 
         switch (currentInput->phase)
         {

@@ -1189,6 +1189,9 @@ public:
      \returns true if control processed this input.
      */
     virtual bool SystemProcessInput(UIEvent *currentInput);// Internal method used by ControlSystem
+
+    Function<bool(UIEvent *currentInput)> customSystemProcessInput;
+
     /**
      \brief Calls when input processd by control is cancelled.
         Internal method used by ControlSystem.
