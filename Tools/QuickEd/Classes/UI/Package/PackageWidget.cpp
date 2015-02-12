@@ -1,25 +1,17 @@
-//
-//  PackageTreeWidget.cpp
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 10.9.14.
-//
-//
-
-#include "PackageDockWidget.h"
+#include "PackageWidget.h"
 
 #include <QClipboard>
 #include <QFileDialog>
 
-#include "ui_PackageDockWidget.h"
+#include "ui_PackageWidget.h"
 #include "UIPackageModel.h"
 
 #include "UI/QtModelPackageCommandExecutor.h"
 
-#include "UI/PackageView/UIFilteredPackageModel.h"
+#include "UI/Package/UIFilteredPackageModel.h"
 #include "UI/Document.h"
 #include "UI/PackageContext.h"
-#include "UI/PackageView/PackageModelCommands.h"
+#include "UI/Package/PackageModelCommands.h"
 #include "UIControls/PackageHierarchy/PackageBaseNode.h"
 #include "UIControls/PackageHierarchy/ControlNode.h"
 #include "UIControls/PackageHierarchy/PackageNode.h"
@@ -34,9 +26,9 @@
 
 using namespace DAVA;
 
-PackageDockWidget::PackageDockWidget(QWidget *parent)
+PackageWidget::PackageWidget(QWidget *parent)
     : QDockWidget(parent)
-    , ui(new Ui::PackageDockWidget())
+    , ui(new Ui::PackageWidget())
     , document(NULL)
 {
     ui->setupUi(this);
@@ -74,7 +66,7 @@ PackageDockWidget::PackageDockWidget(QWidget *parent)
     ui->treeView->addAction(delAction);
 }
 
-PackageDockWidget::~PackageDockWidget()
+PackageWidget::~PackageWidget()
 {
     disconnect(ui->filterLine, SIGNAL(textChanged(const QString &)), this, SLOT(filterTextChanged(const QString &)));
     ui->treeView->setModel(NULL);
@@ -82,7 +74,7 @@ PackageDockWidget::~PackageDockWidget()
     ui = NULL;
 }
 
-void PackageDockWidget::SetDocument(Document *newDocument)
+void PackageWidget::SetDocument(Document *newDocument)
 {
     if (document)
     {
@@ -108,7 +100,7 @@ void PackageDockWidget::SetDocument(Document *newDocument)
     }
 }
 
-void PackageDockWidget::RefreshActions(const QModelIndexList &indexList)
+void PackageWidget::RefreshActions(const QModelIndexList &indexList)
 {
     bool editActionEnabled = !indexList.empty();
     bool editActionVisible = editActionEnabled;
@@ -159,13 +151,13 @@ void PackageDockWidget::RefreshActions(const QModelIndexList &indexList)
     RefreshAction(importPackageAction, editImportPackageEnabled, editImportPackageVisible);
 }
 
-void PackageDockWidget::RefreshAction( QAction *action, bool enabled, bool visible )
+void PackageWidget::RefreshAction( QAction *action, bool enabled, bool visible )
 {
     action->setDisabled(!enabled);
     action->setVisible(visible);
 }
 
-void PackageDockWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
+void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
 {
     QList<ControlNode*> selectedRootControl;
     QList<ControlNode*> deselectedRootControl;
@@ -227,7 +219,7 @@ void PackageDockWidget::OnSelectionChanged(const QItemSelection &proxySelected, 
     emit SelectionControlChanged(selectedControl, deselectedControl);
 }
 
-void PackageDockWidget::OnImport()
+void PackageWidget::OnImport()
 {
     return;
     QString dir;
@@ -252,7 +244,7 @@ void PackageDockWidget::OnImport()
     }
 }
 
-void PackageDockWidget::OnCopy()
+void PackageWidget::OnCopy()
 {
     QItemSelection selected = document->GetPackageContext()->GetFilterProxyModel()->mapSelectionToSource(ui->treeView->selectionModel()->selection());
     QModelIndexList selectedIndexList = selected.indexes();
@@ -279,7 +271,7 @@ void PackageDockWidget::OnCopy()
     }
 }
 
-void PackageDockWidget::OnPaste()
+void PackageWidget::OnPaste()
 {
     QItemSelection selected = document->GetPackageContext()->GetFilterProxyModel()->mapSelectionToSource(ui->treeView->selectionModel()->selection());
     QModelIndexList selectedIndexList = selected.indexes();
@@ -306,12 +298,12 @@ void PackageDockWidget::OnPaste()
     }
 }
 
-void PackageDockWidget::OnCut()
+void PackageWidget::OnCut()
 {
 
 }
 
-void PackageDockWidget::OnDelete()
+void PackageWidget::OnDelete()
 {
     QModelIndexList list = ui->treeView->selectionModel()->selectedIndexes();
     if (!list.empty())
@@ -328,7 +320,7 @@ void PackageDockWidget::OnDelete()
     }
 }
 
-void PackageDockWidget::filterTextChanged(const QString &filterText)
+void PackageWidget::filterTextChanged(const QString &filterText)
 {
     if (document)
     {
@@ -337,7 +329,7 @@ void PackageDockWidget::filterTextChanged(const QString &filterText)
     }
 }
 
-void PackageDockWidget::OnControlSelectedInEditor(ControlNode *node)
+void PackageWidget::OnControlSelectedInEditor(ControlNode *node)
 {
     QModelIndex srcIndex = document->GetPackageContext()->GetModel()->indexByNode(node);
     QModelIndex dstIndex = document->GetPackageContext()->GetFilterProxyModel()->mapFromSource(srcIndex);
@@ -346,7 +338,7 @@ void PackageDockWidget::OnControlSelectedInEditor(ControlNode *node)
     ui->treeView->scrollTo(dstIndex);
 }
 
-void PackageDockWidget::OnAllControlsDeselectedInEditor()
+void PackageWidget::OnAllControlsDeselectedInEditor()
 {
     
 }

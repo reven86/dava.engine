@@ -109,7 +109,7 @@ MainWindow::MainWindow(QWidget *parent)
     
     ui->propertiesDockWidget->setEnabled(false);
     ui->fileSystemDockWidget->setEnabled(false);
-    ui->packageTreeDock->setEnabled(false);
+    ui->packageWidget->setEnabled(false);
     ui->previewWidget->setEnabled(false);
     ui->libraryDockWidget->setEnabled(false);
     
@@ -165,22 +165,22 @@ void MainWindow::CurrentTabChanged(int index)
     if (activeDocument)
     {
         disconnect(activeDocument->UndoStack(), SIGNAL(cleanChanged(bool)), this, SLOT(OnCleanChanged(bool)));
-        disconnect(ui->packageTreeDock, SIGNAL(SelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-        disconnect(ui->packageTreeDock, SIGNAL(SelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+        disconnect(ui->packageWidget, SIGNAL(SelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+        disconnect(ui->packageWidget, SIGNAL(SelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
 
-        disconnect(activeDocument, SIGNAL(controlSelectedInEditor(ControlNode*)), ui->packageTreeDock, SLOT(OnControlSelectedInEditor(ControlNode*)));
-        disconnect(activeDocument, SIGNAL(allControlsDeselectedInEditor()), ui->packageTreeDock, SLOT(OnAllControlsDeselectedInEditor()));
+        disconnect(activeDocument, SIGNAL(controlSelectedInEditor(ControlNode*)), ui->packageWidget, SLOT(OnControlSelectedInEditor(ControlNode*)));
+        disconnect(activeDocument, SIGNAL(allControlsDeselectedInEditor()), ui->packageWidget, SLOT(OnAllControlsDeselectedInEditor()));
         activeDocument->UndoStack()->setActive(false);
     }
     
     activeDocument = GetTabDocument(ui->tabBar->currentIndex());
     
     ui->propertiesDockWidget->setEnabled(activeDocument != NULL);
-    ui->packageTreeDock->setEnabled(activeDocument != NULL);
+    ui->packageWidget->setEnabled(activeDocument != NULL);
     ui->previewWidget->setEnabled(activeDocument != NULL);
     ui->libraryDockWidget->setEnabled(activeDocument != NULL);
     
-    ui->packageTreeDock->SetDocument(activeDocument);
+    ui->packageWidget->SetDocument(activeDocument);
     ui->previewWidget->SetDocument(activeDocument);
     ui->propertiesDockWidget->SetContext(activeDocument ? activeDocument->GetPropertiesContext() : NULL);
     ui->libraryDockWidget->SetDocument(activeDocument);
@@ -188,11 +188,11 @@ void MainWindow::CurrentTabChanged(int index)
     
     if (activeDocument)
     {
-        connect(ui->packageTreeDock, SIGNAL(SelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-        connect(ui->packageTreeDock, SIGNAL(SelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+        connect(ui->packageWidget, SIGNAL(SelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+        connect(ui->packageWidget, SIGNAL(SelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
 
-        connect(activeDocument, SIGNAL(controlSelectedInEditor(ControlNode*)), ui->packageTreeDock, SLOT(OnControlSelectedInEditor(ControlNode*)));
-        connect(activeDocument, SIGNAL(allControlsDeselectedInEditor()), ui->packageTreeDock, SLOT(OnAllControlsDeselectedInEditor()));
+        connect(activeDocument, SIGNAL(controlSelectedInEditor(ControlNode*)), ui->packageWidget, SLOT(OnControlSelectedInEditor(ControlNode*)));
+        connect(activeDocument, SIGNAL(allControlsDeselectedInEditor()), ui->packageWidget, SLOT(OnAllControlsDeselectedInEditor()));
 
         activeDocument->UndoStack()->setActive(true);
         connect(activeDocument->UndoStack(), SIGNAL(cleanChanged(bool)), this, SLOT(OnCleanChanged(bool)));
@@ -294,7 +294,7 @@ void MainWindow::SetupViewMenu()
     // Setup the common menu actions.
     ui->menuView->addAction(ui->propertiesDockWidget->toggleViewAction());
     ui->menuView->addAction(ui->fileSystemDockWidget->toggleViewAction());
-    ui->menuView->addAction(ui->packageTreeDock->toggleViewAction());
+    ui->menuView->addAction(ui->packageWidget->toggleViewAction());
     ui->menuView->addAction(ui->libraryDockWidget->toggleViewAction());
     ui->menuView->addAction(ui->consoleDockWidget->toggleViewAction());
 

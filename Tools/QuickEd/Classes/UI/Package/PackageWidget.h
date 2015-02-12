@@ -1,11 +1,3 @@
-//
-//  PackageTreeWidget.h
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 10.9.14.
-//
-//
-
 #ifndef __UI_EDITOR_UI_PACKAGE_WIDGET__
 #define __UI_EDITOR_UI_PACKAGE_WIDGET__
 
@@ -14,18 +6,18 @@
 #include <QItemSelectionModel>
 
 namespace Ui {
-    class PackageDockWidget;
+    class PackageWidget;
 }
 
 class Document;
 class ControlNode;
 
-class PackageDockWidget : public QDockWidget
+class PackageWidget : public QDockWidget
 {
     Q_OBJECT
 public:
-    explicit PackageDockWidget(QWidget *parent = 0);
-    virtual ~PackageDockWidget();
+    explicit PackageWidget(QWidget *parent = 0);
+    virtual ~PackageWidget();
 
     void SetDocument(Document *newDocument);
 
@@ -50,7 +42,7 @@ signals:
     void SelectionControlChanged(const QList<ControlNode*> &activatedControls, const QList<ControlNode*> &deactivatedControls);
 
 private:
-    Ui::PackageDockWidget *ui;
+    Ui::PackageWidget *ui;
     Document *document;
     QAction *importPackageAction;
     QAction *copyAction;

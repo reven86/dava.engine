@@ -1,8 +1,8 @@
 #include "PackageContext.h"
 
 #include "Document.h"
-#include "PackageView/UIPackageModel.h"
-#include "PackageView/UIFilteredPackageModel.h"
+#include "Package/UIPackageModel.h"
+#include "Package/UIFilteredPackageModel.h"
 
 #include <QItemSelection>
 

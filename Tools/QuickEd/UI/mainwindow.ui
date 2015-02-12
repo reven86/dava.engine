@@ -170,7 +170,7 @@
     <number>1</number>
    </attribute>
   </widget>
-  <widget class="PackageDockWidget" name="packageTreeDock">
+  <widget class="PackageWidget" name="packageWidget">
    <property name="minimumSize">
     <size>
      <width>200</width>
@@ -463,9 +463,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>PackageDockWidget</class>
+   <class>PackageWidget</class>
    <extends>QDockWidget</extends>
-   <header>UI/PackageView/PackageDockWidget.h</header>
+   <header>UI/Package/PackageWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

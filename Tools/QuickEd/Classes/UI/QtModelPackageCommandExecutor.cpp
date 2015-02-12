@@ -4,8 +4,8 @@
 #include "PackageContext.h"
 
 #include "UI/PropertiesView/ChangePropertyValueCommand.h"
-#include "UI/PackageView/PackageModelCommands.h"
-#include "UI/PackageView/UIPackageModel.h"
+#include "UI/Package/PackageModelCommands.h"
+#include "UI/Package/UIPackageModel.h"
 
 #include "UIControls/PackageHierarchy/PackageControlsNode.h"
 #include "UIControls/PackageHierarchy/ControlNode.h"
