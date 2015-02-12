@@ -107,7 +107,7 @@ MainWindow::MainWindow(QWidget *parent)
 	InitMenu();
 	RestoreMainWindowState();
     
-    ui->propertiesDockWidget->setEnabled(false);
+    ui->propertiesWidget->setEnabled(false);
     ui->fileSystemDockWidget->setEnabled(false);
     ui->packageWidget->setEnabled(false);
     ui->previewWidget->setEnabled(false);
@@ -175,14 +175,14 @@ void MainWindow::CurrentTabChanged(int index)
     
     activeDocument = GetTabDocument(ui->tabBar->currentIndex());
     
-    ui->propertiesDockWidget->setEnabled(activeDocument != NULL);
+    ui->propertiesWidget->setEnabled(activeDocument != NULL);
     ui->packageWidget->setEnabled(activeDocument != NULL);
     ui->previewWidget->setEnabled(activeDocument != NULL);
     ui->libraryDockWidget->setEnabled(activeDocument != NULL);
     
     ui->packageWidget->SetDocument(activeDocument);
     ui->previewWidget->SetDocument(activeDocument);
-    ui->propertiesDockWidget->SetContext(activeDocument ? activeDocument->GetPropertiesContext() : NULL);
+    ui->propertiesWidget->SetContext(activeDocument ? activeDocument->GetPropertiesContext() : NULL);
     ui->libraryDockWidget->SetDocument(activeDocument);
 //    ui->packageLibraryWidget->SetDocument(activeDocument);
     
@@ -292,7 +292,7 @@ void MainWindow::InitMenu()
 void MainWindow::SetupViewMenu()
 {
     // Setup the common menu actions.
-    ui->menuView->addAction(ui->propertiesDockWidget->toggleViewAction());
+    ui->menuView->addAction(ui->propertiesWidget->toggleViewAction());
     ui->menuView->addAction(ui->fileSystemDockWidget->toggleViewAction());
     ui->menuView->addAction(ui->packageWidget->toggleViewAction());
     ui->menuView->addAction(ui->libraryDockWidget->toggleViewAction());

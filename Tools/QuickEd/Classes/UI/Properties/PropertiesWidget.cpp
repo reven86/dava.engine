@@ -1,40 +1,32 @@
-//
-//  PropertiesTreeWidget.cpp
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 12.9.14.
-//
-//
-
-#include "PropertiesDockWidget.h"
+#include "PropertiesWidget.h"
 
 #include <qitemeditorfactory>
 #include <qstyleditemdelegate>
 
-#include "ui_PropertiesDockWidget.h"
+#include "ui_PropertiesWidget.h"
 #include "PropertiesTreeModel.h"
 #include "UI/Document.h"
 #include "UI/PropertiesContext.h"
-#include "UI/PropertiesView/PropertiesTreeItemDelegate.h"
+#include "UI/Properties/PropertiesTreeItemDelegate.h"
 #include "UIControls/PackageHierarchy/ControlNode.h"
 
 using namespace DAVA;
 
-PropertiesDockWidget::PropertiesDockWidget(QWidget *parent)
+PropertiesWidget::PropertiesWidget(QWidget *parent)
     : QDockWidget(parent)
-    , ui(new Ui::PropertiesDockWidget())
+    , ui(new Ui::PropertiesWidget())
     , context(NULL)
 {
     ui->setupUi(this);
 }
 
-PropertiesDockWidget::~PropertiesDockWidget()
+PropertiesWidget::~PropertiesWidget()
 {
     delete ui;
     ui = NULL;
 }
 
-void PropertiesDockWidget::SetContext(PropertiesContext *newContext)
+void PropertiesWidget::SetContext(PropertiesContext *newContext)
 {
     if (context)
     {
@@ -56,7 +48,7 @@ void PropertiesDockWidget::SetContext(PropertiesContext *newContext)
     }
 }
 
-void PropertiesDockWidget::OnControlsSelectionChanged(const QList<ControlNode*> &activatedControls, const QList<ControlNode*> &deactivatedControls)
+void PropertiesWidget::OnControlsSelectionChanged(const QList<ControlNode*> &activatedControls, const QList<ControlNode*> &deactivatedControls)
 {
     if (!activatedControls.empty())
         SetControl(activatedControls.front());
@@ -64,7 +56,7 @@ void PropertiesDockWidget::OnControlsSelectionChanged(const QList<ControlNode*> 
         SetControl(NULL);
 }
 
-void PropertiesDockWidget::SetControl(ControlNode *controlNode)
+void PropertiesWidget::SetControl(ControlNode *controlNode)
 {
     if (controlNode)
     {

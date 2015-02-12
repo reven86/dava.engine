@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PropertiesDockWidget</class>
- <widget class="QDockWidget" name="PropertiesDockWidget">
+ <class>PropertiesWidget</class>
+ <widget class="QDockWidget" name="PropertiesWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -53,7 +53,7 @@
   <customwidget>
    <class>PropertiesTreeView</class>
    <extends>QTreeView</extends>
-   <header>UI/PropertiesView/PropertiesTreeView.h</header>
+   <header>UI/Properties/PropertiesTreeView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

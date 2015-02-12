@@ -1,13 +1,5 @@
-//
-//  PropertiesTreeWidget.h
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 12.9.14.
-//
-//
-
-#ifndef __UI_EDITOR_PROPERTIES_TREE_WIDGET_H__
-#define __UI_EDITOR_PROPERTIES_TREE_WIDGET_H__
+#ifndef __QUICKED_PROPERTIES_WIDGET_H__
+#define __QUICKED_PROPERTIES_WIDGET_H__
 
 #include <QWidget>
 #include <QDockWidget>
@@ -15,18 +7,18 @@
 #include "DAVAEngine.h"
 
 namespace Ui {
-    class PropertiesDockWidget;
+    class PropertiesWidget;
 }
 
 class PropertiesContext;
 class ControlNode;
 
-class PropertiesDockWidget : public QDockWidget
+class PropertiesWidget : public QDockWidget
 {
     Q_OBJECT
 public:
-    PropertiesDockWidget(QWidget *parent = NULL);
-    virtual ~PropertiesDockWidget();
+    PropertiesWidget(QWidget *parent = NULL);
+    virtual ~PropertiesWidget();
     
     void SetContext(PropertiesContext *newContext);
 
@@ -37,8 +29,8 @@ private slots:
     void OnControlsSelectionChanged(const QList<ControlNode*> &activatedControls, const QList<ControlNode*> &deactivatedControls);
 
 private:
-    Ui::PropertiesDockWidget *ui;
+    Ui::PropertiesWidget *ui;
     PropertiesContext *context;
 };
 
-#endif // __UI_EDITOR_PROPERTIES_TREE_WIDGET_H__
+#endif //__QUICKED_PROPERTIES_WIDGET_H__

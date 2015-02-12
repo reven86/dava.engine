@@ -3,7 +3,7 @@
 #include "Document.h"
 #include "PackageContext.h"
 
-#include "UI/PropertiesView/ChangePropertyValueCommand.h"
+#include "UI/Properties/ChangePropertyValueCommand.h"
 #include "UI/Package/PackageModelCommands.h"
 #include "UI/Package/UIPackageModel.h"
 

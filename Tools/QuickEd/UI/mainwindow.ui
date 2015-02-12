@@ -142,7 +142,7 @@
    <addaction name="actionPixelized"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <widget class="PropertiesDockWidget" name="propertiesDockWidget">
+  <widget class="PropertiesWidget" name="propertiesWidget">
    <property name="minimumSize">
     <size>
      <width>200</width>
@@ -479,9 +479,9 @@
    <header>UI/Preview/PreviewWidget.h</header>
   </customwidget>
   <customwidget>
-   <class>PropertiesDockWidget</class>
+   <class>PropertiesWidget</class>
    <extends>QDockWidget</extends>
-   <header>UI/PropertiesView/PropertiesDockWidget.h</header>
+   <header>UI/Properties/PropertiesWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
