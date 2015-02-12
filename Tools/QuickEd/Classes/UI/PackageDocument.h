@@ -27,6 +27,7 @@ class QItemSelection;
 class UIPackageModel;
 class PackageNode;
 class DavaGLWidget;
+class QtModelPackageCommandExecutor;
 
 class TreeViewContext
 {
@@ -79,6 +80,8 @@ public:
     LibraryViewContext *GetLibraryContext() {return &libraryContext; };
 
     QUndoStack *UndoStack() const { return undoStack; }
+    
+    QtModelPackageCommandExecutor *GetCommandExecutor() const;
 
 signals:
     void controlsSelectionChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
@@ -106,6 +109,7 @@ private:
     GraphicsViewContext *graphicsContext;
     PropertiesViewContext *propertiesContext;
     LibraryViewContext libraryContext;
+    QtModelPackageCommandExecutor *commandExecutor;
 
     QUndoStack *undoStack;
 };

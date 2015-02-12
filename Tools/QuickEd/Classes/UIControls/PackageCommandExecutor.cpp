@@ -41,3 +41,13 @@ void DefaultPackageCommandExecutor::AddImportedPackageIntoPackage(PackageControl
 {
     package->GetImportedPackagesNode()->Add(importedPackageControls);
 }
+
+void DefaultPackageCommandExecutor::ChangeProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &value)
+{
+    property->SetValue(value);
+}
+
+void DefaultPackageCommandExecutor::ResetProperty(ControlNode *node, BaseProperty *property)
+{
+    property->ResetValue();
+}

@@ -16,6 +16,7 @@
 #include "UIControls/PackageHierarchy/ControlNode.h"
 #include "UIControls/PackageHierarchy/PackageRef.h"
 
+#include "QtModelPackageCommandExecutor.h"
 
 using namespace DAVA;
 
@@ -23,7 +24,8 @@ PackageDocument::PackageDocument(Project *_project, PackageNode *_package, QObje
 : QObject(parent)
 , project(_project)
 , package(SafeRetain(_package))
-, graphicsContext(NULL)
+, graphicsContext(nullptr)
+, commandExecutor(nullptr)
 {
     undoStack = new QUndoStack(this);
 
@@ -51,6 +53,8 @@ PackageDocument::PackageDocument(Project *_project, PackageNode *_package, QObje
 
     if (!activeRootControls.empty())
         emit activeRootControlsChanged(activeRootControls, QList<ControlNode*>());
+    
+    commandExecutor = new QtModelPackageCommandExecutor(this);
 }
 
 PackageDocument::~PackageDocument()
@@ -72,6 +76,8 @@ PackageDocument::~PackageDocument()
     SafeDelete(libraryContext.model);
     
     SafeRelease(package);
+    
+    SafeRelease(commandExecutor);
 }
 
 bool PackageDocument::IsModified() const
@@ -87,6 +93,11 @@ void PackageDocument::ClearModified()
 const DAVA::FilePath &PackageDocument::PackageFilePath() const
 {
     return package->GetPackageRef()->GetPath();
+}
+
+QtModelPackageCommandExecutor *PackageDocument::GetCommandExecutor() const
+{
+    return commandExecutor;
 }
 
 void PackageDocument::OnSelectionRootControlChanged(const QList<ControlNode*> &activatedRootControls, const QList<ControlNode*> &deactivatedRootControls)

@@ -69,7 +69,7 @@ void PropertiesDockWidget::SetControl(ControlNode *controlNode)
     if (controlNode)
     {
         QStyledItemDelegate *itemDelegate = new PropertiesTreeItemDelegate(this);
-        PropertiesTreeModel *model = new PropertiesTreeModel(controlNode->GetPropertiesRoot(), context, this);
+        PropertiesTreeModel *model = new PropertiesTreeModel(controlNode, context, this);
 //        QItemEditorFactory *itemEditorFactory = new QItemEditorFactory();
 //        itemEditorFactory->registerEditor( QVariant::Vector2D, new QStandardItemEditorCreator<Vector2Edit>());
 //        itemDelegate->setItemEditorFactory(itemEditorFactory);
