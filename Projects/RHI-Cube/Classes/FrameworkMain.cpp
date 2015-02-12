@@ -66,8 +66,8 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("bpp", 32);
     appOptions->SetString(String("title"), String("RHI Cube"));
 
-    DAVA::Core::Instance()->SetVirtualScreenSize(1024, 768);
-    DAVA::Core::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
+//    DAVA::Core::Instance()->SetVirtualScreenSize(1024, 768);
+//    DAVA::Core::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
 #endif 
 
     GameCore * core = new GameCore();
