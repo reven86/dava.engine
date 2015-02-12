@@ -2,6 +2,7 @@
 #include "ui_LibraryDockWidget.h"
 
 #include "UI/Document.h"
+#include "UI/LibraryContext.h"
 
 LibraryDockWidget::LibraryDockWidget(QWidget *parent)
     : QDockWidget(parent)
@@ -28,7 +29,7 @@ void LibraryDockWidget::SetDocument(Document *newDocument)
     
     if (document)
     {
-        ui->treeView->setModel(document->GetLibraryContext()->model);
+        ui->treeView->setModel(document->GetLibraryContext()->GetModel());
         ui->treeView->expandToDepth(0);
         ui->treeView->setColumnWidth(0, ui->treeView->size().width());
         

@@ -29,16 +29,9 @@ class PackageNode;
 class DavaGLWidget;
 class QtModelPackageCommandExecutor;
 
-class LibraryViewContext
-{
-public:
-    QPoint scrollPosition;
-    //QModelIndexList expandedItems;
-    QAbstractItemModel *model;
-};
-
 class PackageContext;
 class PropertiesContext;
+class LibraryContext;
 class GraphicsViewContext;
 
 class PackageNode;
@@ -62,12 +55,11 @@ public:
     
     PackageContext *GetPackageContext() const { return packageContext; };
     PropertiesContext *GetPropertiesContext() const {return propertiesContext; };
+    LibraryContext *GetLibraryContext() const {return libraryContext; };
 
     const GraphicsViewContext *GetGraphicsContext() const {return graphicsContext; };
-    const LibraryViewContext *GetLibraryContext() const {return &libraryContext; };
 
     GraphicsViewContext *GetGraphicsContext() {return graphicsContext; };
-    LibraryViewContext *GetLibraryContext() {return &libraryContext; };
 
     QUndoStack *UndoStack() const { return undoStack; }
     
@@ -98,8 +90,8 @@ private:
 
     PackageContext *packageContext;
     PropertiesContext *propertiesContext;
+    LibraryContext *libraryContext;
     GraphicsViewContext *graphicsContext;
-    LibraryViewContext libraryContext;
     
     QtModelPackageCommandExecutor *commandExecutor;
 

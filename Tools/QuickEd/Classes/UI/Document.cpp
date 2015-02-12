@@ -17,6 +17,7 @@
 
 #include "PackageContext.h"
 #include "PropertiesContext.h"
+#include "LibraryContext.h"
 
 #include "QtModelPackageCommandExecutor.h"
 
@@ -32,18 +33,17 @@ Document::Document(Project *_project, PackageNode *_package, QObject *parent)
     undoStack = new QUndoStack(this);
 
     packageContext = new PackageContext(this);
-
+    propertiesContext = new PropertiesContext(this);
+    libraryContext = new LibraryContext(this);
     graphicsContext = new GraphicsViewContext();
+    
     connect(this, SIGNAL(activeRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), graphicsContext, SLOT(OnActiveRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
     connect(this, SIGNAL(controlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), graphicsContext, SLOT(OnSelectedControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
 
     connect(graphicsContext, SIGNAL(ControlNodeSelected(ControlNode*)), this, SLOT(OnControlSelectedInEditor(ControlNode*)));
     connect(graphicsContext, SIGNAL(AllControlsDeselected()), this, SLOT(OnAllControlDeselectedInEditor()));
 
-    propertiesContext = new PropertiesContext(this);
     
-    libraryContext.model = new LibraryModel(package, this);
-
     PackageControlsNode *controlsNode = package->GetPackageControlsNode();
     for (int32 index = 0; index < controlsNode->GetCount(); ++index)
         activeRootControls.push_back(controlsNode->Get(index));
@@ -58,8 +58,8 @@ Document::~Document()
 {
     SafeDelete(packageContext);
     SafeDelete(propertiesContext);
+    SafeDelete(libraryContext);
     SafeDelete(graphicsContext);
-    SafeDelete(libraryContext.model);
     
     SafeRelease(package);
     
