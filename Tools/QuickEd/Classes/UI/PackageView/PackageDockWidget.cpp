@@ -18,6 +18,7 @@
 
 #include "UI/PackageView/UIFilteredPackageModel.h"
 #include "UI/Document.h"
+#include "UI/PackageContext.h"
 #include "UI/PackageView/PackageModelCommands.h"
 #include "UIControls/PackageHierarchy/PackageBaseNode.h"
 #include "UIControls/PackageHierarchy/ControlNode.h"
@@ -95,12 +96,12 @@ void PackageDockWidget::SetDocument(Document *newDocument)
     
     if (document)
     {
-        ui->treeView->setModel(document->GetTreeContext()->proxyModel);
-        ui->treeView->selectionModel()->select(*document->GetTreeContext()->currentSelection, QItemSelectionModel::ClearAndSelect);
+        ui->treeView->setModel(document->GetPackageContext()->GetFilterProxyModel());
+        ui->treeView->selectionModel()->select(*document->GetPackageContext()->GetCurrentSelection(), QItemSelectionModel::ClearAndSelect);
         ui->treeView->expandToDepth(0);
         ui->treeView->setColumnWidth(0, ui->treeView->size().width());
 
-        ui->filterLine->setText(document->GetTreeContext()->filterString);
+        ui->filterLine->setText(document->GetPackageContext()->GetFilterString());
         connect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(OnSelectionChanged(const QItemSelection &, const QItemSelection &)));
         //ui->filterLine->setEnabled(true);
         //ui->treeView->setEnabled(true);
@@ -116,7 +117,7 @@ void PackageDockWidget::RefreshActions(const QModelIndexList &indexList)
     bool editImportPackageVisible = editImportPackageEnabled;
 
     bool editControlsEnabled = !indexList.empty();
-    bool editControlsVisible = editControlsEnabled;
+    //bool editControlsVisible = editControlsEnabled;
 
     foreach(QModelIndex index, indexList)
     {
@@ -172,10 +173,10 @@ void PackageDockWidget::OnSelectionChanged(const QItemSelection &proxySelected, 
     QList<ControlNode*> selectedControl;
     QList<ControlNode*> deselectedControl;
     
-    QItemSelection selected = document->GetTreeContext()->proxyModel->mapSelectionToSource(proxySelected);
-    QItemSelection deselected = document->GetTreeContext()->proxyModel->mapSelectionToSource(proxyDeselected);
+    QItemSelection selected = document->GetPackageContext()->GetFilterProxyModel()->mapSelectionToSource(proxySelected);
+    QItemSelection deselected = document->GetPackageContext()->GetFilterProxyModel()->mapSelectionToSource(proxyDeselected);
     
-    QItemSelection *currentSelection = document->GetTreeContext()->currentSelection;
+    QItemSelection *currentSelection = document->GetPackageContext()->GetCurrentSelection();
     currentSelection->merge(deselected, QItemSelectionModel::Deselect);
     currentSelection->merge(selected, QItemSelectionModel::Select);
     
@@ -253,7 +254,7 @@ void PackageDockWidget::OnImport()
 
 void PackageDockWidget::OnCopy()
 {
-    QItemSelection selected = document->GetTreeContext()->proxyModel->mapSelectionToSource(ui->treeView->selectionModel()->selection());
+    QItemSelection selected = document->GetPackageContext()->GetFilterProxyModel()->mapSelectionToSource(ui->treeView->selectionModel()->selection());
     QModelIndexList selectedIndexList = selected.indexes();
     QClipboard *clipboard = QApplication::clipboard();
 
@@ -280,7 +281,7 @@ void PackageDockWidget::OnCopy()
 
 void PackageDockWidget::OnPaste()
 {
-    QItemSelection selected = document->GetTreeContext()->proxyModel->mapSelectionToSource(ui->treeView->selectionModel()->selection());
+    QItemSelection selected = document->GetPackageContext()->GetFilterProxyModel()->mapSelectionToSource(ui->treeView->selectionModel()->selection());
     QModelIndexList selectedIndexList = selected.indexes();
     QClipboard *clipboard = QApplication::clipboard();
     
@@ -316,9 +317,9 @@ void PackageDockWidget::OnDelete()
     if (!list.empty())
     {
         QModelIndex &index = list.first();
-        QModelIndex srcIndex = document->GetTreeContext()->proxyModel->mapToSource(index);
+        QModelIndex srcIndex = document->GetPackageContext()->GetFilterProxyModel()->mapToSource(index);
         ControlNode *sourceNode = dynamic_cast<ControlNode*>(static_cast<PackageBaseNode*>(srcIndex.internalPointer()));
-        UIPackageModel *model = document->GetTreeContext()->model;
+        UIPackageModel *model = document->GetPackageContext()->GetModel();
         if (sourceNode && (sourceNode->GetCreationType() == ControlNode::CREATED_FROM_CLASS || sourceNode->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE))
         {
             RemoveControlNodeCommand *cmd = new RemoveControlNodeCommand(model, srcIndex.row(), srcIndex.parent());
@@ -331,15 +332,15 @@ void PackageDockWidget::filterTextChanged(const QString &filterText)
 {
     if (document)
     {
-        document->GetTreeContext()->proxyModel->setFilterFixedString(filterText);
+        document->GetPackageContext()->GetFilterProxyModel()->setFilterFixedString(filterText);
         ui->treeView->expandAll();
     }
 }
 
 void PackageDockWidget::OnControlSelectedInEditor(ControlNode *node)
 {
-    QModelIndex srcIndex = document->GetTreeContext()->model->indexByNode(node);
-    QModelIndex dstIndex = document->GetTreeContext()->proxyModel->mapFromSource(srcIndex);
+    QModelIndex srcIndex = document->GetPackageContext()->GetModel()->indexByNode(node);
+    QModelIndex dstIndex = document->GetPackageContext()->GetFilterProxyModel()->mapFromSource(srcIndex);
     ui->treeView->selectionModel()->select(dstIndex, QItemSelectionModel::ClearAndSelect);
     ui->treeView->expand(dstIndex);
     ui->treeView->scrollTo(dstIndex);

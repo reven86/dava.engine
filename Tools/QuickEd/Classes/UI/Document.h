@@ -29,17 +29,6 @@ class PackageNode;
 class DavaGLWidget;
 class QtModelPackageCommandExecutor;
 
-class TreeViewContext
-{
-public:
-    QPoint scrollPosition;
-    //QModelIndexList expandedItems;
-    UIPackageModel *model;
-    QSortFilterProxyModel *proxyModel;
-    QItemSelection *currentSelection;
-    QString filterString;
-};
-
 class LibraryViewContext
 {
 public:
@@ -48,6 +37,7 @@ public:
     QAbstractItemModel *model;
 };
 
+class PackageContext;
 class GraphicsViewContext;
 class PropertiesViewContext;
 class PackageNode;
@@ -69,12 +59,13 @@ public:
     const QList<ControlNode*> &GetSelectedControls() const { return selectedControls; }
     const QList<ControlNode*> &GetActiveRootControls() const { return activeRootControls; }
     
-    const TreeViewContext *GetTreeContext() const { return &treeContext; };
+    const PackageContext *GetPackageContext() const { return packageContext; };
+    PackageContext *GetPackageContext() { return packageContext; };
+    
     const GraphicsViewContext *GetGraphicsContext() const {return graphicsContext; };
     const PropertiesViewContext *GetPropertiesContext() const {return propertiesContext; };
     const LibraryViewContext *GetLibraryContext() const {return &libraryContext; };
 
-    TreeViewContext *GetTreeContext() { return &treeContext; };
     GraphicsViewContext *GetGraphicsContext() {return graphicsContext; };
     PropertiesViewContext *GetPropertiesContext() {return propertiesContext; };
     LibraryViewContext *GetLibraryContext() {return &libraryContext; };
@@ -105,7 +96,7 @@ private:
     PackageNode *package;
     QList<ControlNode *> selectedControls;
     QList<ControlNode *> activeRootControls;
-    TreeViewContext treeContext;
+    PackageContext *packageContext;
     GraphicsViewContext *graphicsContext;
     PropertiesViewContext *propertiesContext;
     LibraryViewContext libraryContext;

@@ -16,25 +16,22 @@
 #include "UIControls/PackageHierarchy/ControlNode.h"
 #include "UIControls/PackageHierarchy/PackageRef.h"
 
+#include "PackageContext.h"
+
 #include "QtModelPackageCommandExecutor.h"
 
 using namespace DAVA;
 
 Document::Document(Project *_project, PackageNode *_package, QObject *parent)
-: QObject(parent)
-, project(_project)
-, package(SafeRetain(_package))
-, graphicsContext(nullptr)
-, commandExecutor(nullptr)
+    : QObject(parent)
+    , project(_project)
+    , package(SafeRetain(_package))
+    , graphicsContext(nullptr)
+    , commandExecutor(nullptr)
 {
     undoStack = new QUndoStack(this);
 
-    treeContext.model = new UIPackageModel(this);
-    treeContext.proxyModel = new UIFilteredPackageModel(this);
-    treeContext.proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    treeContext.proxyModel->setSourceModel(treeContext.model);
-
-    treeContext.currentSelection = new QItemSelection();
+    packageContext = new PackageContext(this);
 
     graphicsContext = new GraphicsViewContext();
     connect(this, SIGNAL(activeRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), graphicsContext, SLOT(OnActiveRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
@@ -59,11 +56,7 @@ Document::Document(Project *_project, PackageNode *_package, QObject *parent)
 
 Document::~Document()
 {
-    treeContext.proxyModel->setSourceModel(NULL);
-
-    SafeDelete(treeContext.model);
-    SafeDelete(treeContext.proxyModel);
-    SafeDelete(treeContext.currentSelection);
+    SafeDelete(packageContext);
 
     disconnect(this, SIGNAL(activeRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), graphicsContext, SLOT(OnActiveRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
     disconnect(this, SIGNAL(selectedRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), graphicsContext, SLOT(OnSelectedControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));

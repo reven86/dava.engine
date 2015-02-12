@@ -1,6 +1,7 @@
 #include "QtModelPackageCommandExecutor.h"
 
 #include "Document.h"
+#include "PackageContext.h"
 
 #include "UI/PropertiesView/ChangePropertyValueCommand.h"
 #include "UI/PackageView/PackageModelCommands.h"
@@ -26,7 +27,7 @@ QtModelPackageCommandExecutor::~QtModelPackageCommandExecutor()
 
 void QtModelPackageCommandExecutor::InsertControlIntoPackage(ControlNode *control, PackageControlsNode *package)
 {
-    UIPackageModel *model = document->GetTreeContext()->model;
+    UIPackageModel *model = document->GetPackageContext()->GetModel();
 
     QModelIndex dstParent = model->indexByNode(package);
     int32 dstRow = package->GetCount();
@@ -36,7 +37,7 @@ void QtModelPackageCommandExecutor::InsertControlIntoPackage(ControlNode *contro
 
 void QtModelPackageCommandExecutor::InsertControlIntoParentControl(ControlNode *control, ControlNode *parentControl)
 {
-    UIPackageModel *model = document->GetTreeContext()->model;
+    UIPackageModel *model = document->GetPackageContext()->GetModel();
     
     QModelIndex dstParent = model->indexByNode(parentControl);
     int32 dstRow = parentControl->GetCount();
@@ -46,7 +47,7 @@ void QtModelPackageCommandExecutor::InsertControlIntoParentControl(ControlNode *
 
 void QtModelPackageCommandExecutor::AddImportedPackageIntoPackage(PackageControlsNode *importedPackageControls, PackageNode *package)
 {
-    UIPackageModel *model = document->GetTreeContext()->model;
+    UIPackageModel *model = document->GetPackageContext()->GetModel();
     
     QModelIndex dstParent = model->indexByNode(package->GetImportedPackagesNode());
     int32 dstRow = package->GetImportedPackagesNode()->GetCount();
