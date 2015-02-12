@@ -20,6 +20,7 @@
     <ClInclude Include="Classes\Infrastructure\UITestTemplate.h" />
     <ClInclude Include="Classes\Tests\ComponentsTest.h" />
     <ClInclude Include="Classes\Tests\Cpp14.h" />
+    <ClInclude Include="Classes\Tests\DataVaultTest.h" />
     <ClInclude Include="Classes\Tests\DateTimeTest.h" />
     <ClInclude Include="Classes\Tests\FileListTest.h" />
     <ClInclude Include="Classes\Tests\FileSystemTest.h" />
@@ -45,6 +46,7 @@
     <ClCompile Include="Classes\Infrastructure\TextureUtils.cpp" />
     <ClCompile Include="Classes\Tests\ComponentsTest.cpp" />
     <ClCompile Include="Classes\Tests\Cpp14.cpp" />
+    <ClCompile Include="Classes\Tests\DataVaultTest.cpp" />
     <ClCompile Include="Classes\Tests\DateTimeTest.cpp" />
     <ClCompile Include="Classes\Tests\FileListTest.cpp" />
     <ClCompile Include="Classes\Tests\FileSystemTest.cpp" />

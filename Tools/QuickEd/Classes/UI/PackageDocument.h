@@ -1,13 +1,5 @@
-//
-//  UIPackageDocument.h
-//  UIEditor
-//
-//  Created by Alexey Strokachuk on 9/17/14.
-//
-//
-
-#ifndef __UIEditor__UIPackageDocument__
-#define __UIEditor__UIPackageDocument__
+#ifndef __QUICKED_PACKAGE_DOCUMENT_H__
+#define __QUICKED_PACKAGE_DOCUMENT_H__
 
 #include <QWidget>
 #include <QVariant>
@@ -30,10 +22,12 @@ namespace DAVA {
 class QAbstractItemModel;
 class QSortFilterProxyModel;
 class QUndoStack;
+class QItemSelection;
 
 class UIPackageModel;
 class PackageNode;
 class DavaGLWidget;
+class QtModelPackageCommandExecutor;
 
 class TreeViewContext
 {
@@ -42,6 +36,7 @@ public:
     //QModelIndexList expandedItems;
     UIPackageModel *model;
     QSortFilterProxyModel *proxyModel;
+    QItemSelection *currentSelection;
     QString filterString;
 };
 
@@ -85,14 +80,22 @@ public:
     LibraryViewContext *GetLibraryContext() {return &libraryContext; };
 
     QUndoStack *UndoStack() const { return undoStack; }
+    
+    QtModelPackageCommandExecutor *GetCommandExecutor() const;
 
 signals:
     void controlsSelectionChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
     void activeRootControlsChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
-    
+
+    void controlSelectedInEditor(ControlNode *activatedControls);
+    void allControlsDeselectedInEditor();
+
 public slots:
     void OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
     void OnSelectionControlChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
+
+    void OnControlSelectedInEditor(ControlNode *activatedControls);
+    void OnAllControlDeselectedInEditor();
 
 private:
     void UpdateControlCanvas();
@@ -106,10 +109,11 @@ private:
     GraphicsViewContext *graphicsContext;
     PropertiesViewContext *propertiesContext;
     LibraryViewContext libraryContext;
+    QtModelPackageCommandExecutor *commandExecutor;
 
     QUndoStack *undoStack;
 };
 
 Q_DECLARE_METATYPE(PackageDocument *);
 
-#endif /* defined(__UIEditor__UIPackageDocument__) */
+#endif // __QUICKED_PACKAGE_DOCUMENT_H__

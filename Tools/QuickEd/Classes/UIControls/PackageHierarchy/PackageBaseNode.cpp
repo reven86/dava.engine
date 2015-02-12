@@ -12,7 +12,7 @@ PackageBaseNode::~PackageBaseNode()
     parent = nullptr;
 }
 
-int PackageBaseNode::GetIndex(PackageBaseNode *node) const
+int PackageBaseNode::GetIndex(const PackageBaseNode *node) const
 {
     for (int i = 0; i < GetCount(); i++)
     {

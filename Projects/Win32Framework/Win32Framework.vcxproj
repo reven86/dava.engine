@@ -283,6 +283,10 @@
     <ClInclude Include="..\..\Sources\Internal\Core\PerformanceSettings.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbClient.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbObject.h" />
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.h" />
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\DataStorage.h" />
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.h" />
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.h" />
     <ClInclude Include="..\..\Sources\Internal\DAVAClassRegistrator.h" />
     <ClInclude Include="..\..\Sources\Internal\DAVAConfig.h" />
     <ClInclude Include="..\..\Sources\Internal\DAVAEngine.h" />
@@ -357,7 +361,6 @@
     <ClInclude Include="..\..\Sources\Internal\Input\Accelerometer.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\AccelerometeriPhone.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\GamepadDevice.h" />
-    <ClInclude Include="..\..\Sources\Internal\Input\GamepadManager.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\InputCallback.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\InputSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\KeyboardDevice.h" />
@@ -806,6 +809,9 @@
     <ClCompile Include="..\..\Sources\Internal\Core\PerformanceSettings.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbClient.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbObject.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DAVAClassRegistrator.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Animation\AnimatedObject.cpp" />
@@ -871,7 +877,6 @@
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlParser.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\Accelerometer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\GamepadDevice.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Input\GamepadManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\InputSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\KeyboardDevice.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Job\JobManager.cpp" />

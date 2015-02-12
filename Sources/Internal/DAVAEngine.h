@@ -78,7 +78,6 @@
 
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
-#include "Input/GamepadManager.h"
 #include "Input/GamepadDevice.h"
 
 // Localization
@@ -261,6 +260,7 @@
 #include "Scene3D/Systems/SpeedTreeUpdateSystem.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene3D/Systems/FoliageSystem.h"
+#include "Scene3D/Systems/ParticleEffectSystem.h"
 
 //Components
 #include "Scene3D/Components/ComponentHelpers.h"

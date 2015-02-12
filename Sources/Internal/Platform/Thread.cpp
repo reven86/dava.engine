@@ -50,7 +50,7 @@ ConditionalVariable::ConditionalVariable()
     int32 ret = pthread_cond_init(&cv, 0);
     if (0 != ret)
     {
-        Logger::FrameworkDebug("[ConditionalVariable::ConditionalVariable()]: pthread_cond_init error code %d", ret);
+        Logger::Error("[ConditionalVariable::ConditionalVariable()]: pthread_cond_init error code %d", ret);
     }
 }
 
@@ -59,7 +59,7 @@ ConditionalVariable::~ConditionalVariable()
     int32 ret = pthread_cond_destroy(&cv);
     if (0 != ret)
     {
-        Logger::FrameworkDebug("[ConditionalVariable::~ConditionalVariable()]: pthread_cond_destroy error code %d", ret);
+        Logger::Error("[ConditionalVariable::~ConditionalVariable()]: pthread_cond_destroy error code %d", ret);
     }
 }
 
@@ -171,7 +171,7 @@ void Thread::Wait(ConditionalVariable * cv, Mutex * mutex)
 
     if ((ret = pthread_cond_wait(&cv->cv, (pthread_mutex_t*)(&mutex->mutex))))
     {
-        Logger::FrameworkDebug("[Thread::Wait]: pthread_cond_wait error code %d", ret);
+        Logger::Error("[Thread::Wait]: pthread_cond_wait error code %d", ret);
     }
 }
 
@@ -180,7 +180,7 @@ void Thread::Signal(ConditionalVariable * cv)
     int32 ret = pthread_cond_signal(&cv->cv);
     if (ret)
     {
-        Logger::FrameworkDebug("[Thread::Signal]: pthread_cond_signal error code %d", ret);
+        Logger::Error("[Thread::Signal]: pthread_cond_signal error code %d", ret);
     }
 }
     
@@ -189,7 +189,7 @@ void Thread::Broadcast(ConditionalVariable * cv)
     int32 ret = pthread_cond_broadcast(&cv->cv);
     if (ret)
     {
-        Logger::FrameworkDebug("[Thread::Broadcast]: pthread_cond_broadcast error code %d", ret);
+        Logger::Error("[Thread::Broadcast]: pthread_cond_broadcast error code %d", ret);
     }
 }
     

@@ -160,6 +160,12 @@
     <Filter Include="Internal\Scene3D\Systems\Controller">
       <UniqueIdentifier>{dc214c6e-aa38-43ad-93ff-6dc237488743}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\DataStorage">
+      <UniqueIdentifier>{6ed00645-b5a9-4746-a914-a3dcb592fd92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\DataStorage\Windows">
+      <UniqueIdentifier>{0497b98a-b930-4fb6-8a65-92f3f18b2754}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Internal\Scene3D\Components\Waypoint">
       <UniqueIdentifier>{a6ae9957-6b3c-4e7f-a03d-1e52ed923446}</UniqueIdentifier>
     </Filter>
@@ -1320,9 +1326,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\StaticOcclusionComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Input\GamepadManager.h">
-      <Filter>Internal\Input</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Input\GamepadDevice.h">
       <Filter>Internal\Input</Filter>
     </ClInclude>
@@ -1653,6 +1656,18 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.h">
       <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.h">
+      <Filter>Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.h">
+      <Filter>Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\DataStorage.h">
+      <Filter>Internal\DataStorage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.h">
+      <Filter>Internal\DataStorage\Windows</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\EdgeComponent.h">
       <Filter>Internal\Scene3D\Components\Waypoint</Filter>
@@ -2766,9 +2781,6 @@
     <ClCompile Include="..\..\Sources\Internal\Utils\UtilsWin32.cpp">
       <Filter>Internal\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Input\GamepadManager.cpp">
-      <Filter>Internal\Input</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Input\GamepadDevice.cpp">
       <Filter>Internal\Input</Filter>
     </ClCompile>
@@ -3084,6 +3096,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.cpp">
       <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.cpp">
+      <Filter>Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.cpp">
+      <Filter>Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.cpp">
+      <Filter>Internal\DataStorage\Windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\EdgeComponent.cpp">
       <Filter>Internal\Scene3D\Components\Waypoint</Filter>

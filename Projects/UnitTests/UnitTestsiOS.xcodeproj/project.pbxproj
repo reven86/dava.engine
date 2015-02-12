@@ -47,6 +47,7 @@
 		CC11987A1A38BF27006931D7 /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC1198691A38BF27006931D7 /* StringFormatTest.cpp */; };
 		CC11987B1A38BF27006931D7 /* TextSizeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC11986B1A38BF27006931D7 /* TextSizeTest.cpp */; };
 		CCB2B8F71A656699003A5D44 /* Cpp14.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCB2B8F51A656699003A5D44 /* Cpp14.cpp */; };
+		D73A575D1A739E34009FF184 /* DataVaultTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73A575B1A739E34009FF184 /* DataVaultTest.cpp */; };
 		FE76D9EF1163F2F0009E83B6 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9ED1163F2F0009E83B6 /* OpenGLES.framework */; };
 		FE76D9F71163F304009E83B6 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9F51163F304009E83B6 /* AVFoundation.framework */; };
 		FE76D9F81163F304009E83B6 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9F61163F304009E83B6 /* CoreAudio.framework */; };
@@ -152,6 +153,9 @@
 		CC11986C1A38BF27006931D7 /* TextSizeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TextSizeTest.h; path = Tests/TextSizeTest.h; sourceTree = "<group>"; };
 		CCB2B8F51A656699003A5D44 /* Cpp14.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cpp14.cpp; path = Tests/Cpp14.cpp; sourceTree = "<group>"; };
 		CCB2B8F61A656699003A5D44 /* Cpp14.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cpp14.h; path = Tests/Cpp14.h; sourceTree = "<group>"; };
+		D73A575B1A739E34009FF184 /* DataVaultTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataVaultTest.cpp; path = Tests/DataVaultTest.cpp; sourceTree = "<group>"; };
+		D73A575C1A739E34009FF184 /* DataVaultTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DataVaultTest.h; path = Tests/DataVaultTest.h; sourceTree = "<group>"; };
+		D73A577A1A764453009FF184 /* UnitTests.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = UnitTests.entitlements; sourceTree = "<group>"; };
 		E80D2FB0164D518100C13D70 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		FE76D9EC1163F2F0009E83B6 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		FE76D9ED1163F2F0009E83B6 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -257,6 +261,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				D73A577A1A764453009FF184 /* UnitTests.entitlements */,
 				1770DF4617DF497600000391 /* MediaPlayer.framework */,
 				E80D2FB0164D518100C13D70 /* libbz2.dylib */,
 				5CDC2532156CE20F00742348 /* libz.dylib */,
@@ -319,6 +324,8 @@
 		5C7BE30F156E0EF400F9F538 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				D73A575B1A739E34009FF184 /* DataVaultTest.cpp */,
+				D73A575C1A739E34009FF184 /* DataVaultTest.h */,
 				CCB2B8F51A656699003A5D44 /* Cpp14.cpp */,
 				CCB2B8F61A656699003A5D44 /* Cpp14.h */,
 				50194D641A52D91500557DAB /* NetworkTest.cpp */,
@@ -411,6 +418,9 @@
 							com.apple.GameCenter = {
 								enabled = 0;
 							};
+							com.apple.iCloud = {
+								enabled = 1;
+							};
 						};
 					};
 				};
@@ -498,6 +508,7 @@
 				CC1198771A38BF27006931D7 /* MemoryAllocatorsTest.cpp in Sources */,
 				CC1198781A38BF27006931D7 /* SaveImageTest.cpp in Sources */,
 				FEC9200F13BA2D7D006F347F /* iPhoneProjectDelegate.mm in Sources */,
+				D73A575D1A739E34009FF184 /* DataVaultTest.cpp in Sources */,
 				FEC9201013BA2D7D006F347F /* main.mm in Sources */,
 				001CF9281A02539600751045 /* TeamcityOutput.cpp in Sources */,
 				CC11984B1A38BF0D006931D7 /* FrameworkMain.cpp in Sources */,
@@ -536,6 +547,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_ENTITLEMENTS = UnitTests.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -565,6 +577,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_ENTITLEMENTS = UnitTests.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -632,6 +645,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_ENTITLEMENTS = UnitTests.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
