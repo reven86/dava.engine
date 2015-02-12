@@ -621,7 +621,7 @@ void GameCore::DrawTank()
     //world *= Matrix4::MakeScale(Vector3(0.5f, 0.5f, 0.5f));
 
     view_proj.Identity();
-    view_proj.BuildProjectionFovLH(75.0f, Core::Instance()->GetPhysicalScreenWidth() / Core::Instance()->GetPhysicalScreenHeight(), 1.0f, 1000.0f);
+    view_proj.BuildProjectionFovLH(75.0f, float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx) / float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy), 1.0f, 1000.0f);
 
 
     rhi::ConstBuffer::SetConst(tank.fp_const, 0, 1, clr);
@@ -722,7 +722,7 @@ GameCore::rhiDraw()
     //world *= Matrix4::MakeScale(Vector3(0.5f, 0.5f, 0.5f));
     
     view_proj.Identity();
-    view_proj.BuildProjectionFovLH( 75.0f, Core::Instance()->GetPhysicalScreenWidth()/Core::Instance()->GetPhysicalScreenHeight(), 1.0f,1000.0f );
+    view_proj.BuildProjectionFovLH(75.0f, float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx) / float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy), 1.0f, 1000.0f);
     
     
     rhi::ConstBuffer::SetConst( cube.fp_const, 0, 1, clr );
@@ -842,7 +842,7 @@ GameCore::manticoreDraw()
     //world *= Matrix4::MakeScale(Vector3(0.5f, 0.5f, 0.5f));
     
     view_proj.Identity();
-    view_proj.BuildProjectionFovLH( 75.0f, Core::Instance()->GetPhysicalScreenWidth()/Core::Instance()->GetPhysicalScreenHeight(), 1.0f,1000.0f );
+    view_proj.BuildProjectionFovLH(75.0f, float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx) / float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy), 1.0f, 1000.0f);
     
     
     rhi::ConstBuffer::SetConst( cube.fp_const, 0, 1, clr );

@@ -77,21 +77,12 @@ void ApplicationCore::Update(float32 timeElapsed)
 void ApplicationCore::Draw()
 {
 	TIME_PROFILE("ApplicationCore::Draw");
-<<<<<<< HEAD
 /*
-=======
-
-    FrameOcclusionQueryManager::Instance()->ResetFrameStats();
->>>>>>> development
 	UIControlSystem::Instance()->Draw();	
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Draw();
 #endif
-<<<<<<< HEAD
 */
-=======
-    FrameOcclusionQueryManager::Instance()->ProccesRenderedFrame();
->>>>>>> development
 }
 
 void ApplicationCore::BeginFrame()

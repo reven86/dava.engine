@@ -77,7 +77,7 @@ static uint32           activeCounterCount  = 0;
 static uint64           totalTime0          = 0;
 static uint64           totalTime           = 0;
 //- static uint32           maxNameLen          = 32;
-static Spinlock         counterSync;
+///static Spinlock         counterSync;
 
 
 
@@ -101,7 +101,7 @@ public:
 
     void        reset()                         
                 { 
-                    counterSync.Lock();
+///                    counterSync.Lock();
 
                     t         = 0; 
                     count     = 0; 
@@ -109,11 +109,11 @@ public:
                     useCount  = 0;
                     parentId  = InvalidIndex;
                                                     
-                    counterSync.Unlock();
+///                    counterSync.Unlock();
                 }
     void        start()
                 {
-                    counterSync.Lock();
+///                    counterSync.Lock();
 
                     if( !useCount ) 
                     {
@@ -132,11 +132,11 @@ public:
                     ++count;
                     ++useCount;
                                                     
-                    counterSync.Unlock();
+///                    counterSync.Unlock();
                 }
     void        stop()                          
                 { 
-                    counterSync.Lock();
+///                    counterSync.Lock();
 
                     if( useCount == 1 )
                     {
@@ -147,7 +147,7 @@ public:
                     if( --useCount == 0 )
                         t += CurTimeUs() - t0; 
                                                     
-                    counterSync.Unlock();
+///                    counterSync.Unlock();
                 }
 
 
