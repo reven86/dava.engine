@@ -109,16 +109,6 @@ public:
     virtual void Log(eLogLevel ll, const char8* text, ...);
     virtual void Logv(eLogLevel ll, const char8* text, va_list li);
 
-    //! Prints out a text into the log
-    //! \param text: Text to print out.
-    //! \param ll: Log level of the text. If the text is an error, set
-    //! it to ELL_ERROR, if it is warning set it to ELL_WARNING, and if it
-    //! is just an informational text, set it to ELL_INFORMATION. Texts are
-    //! filtered with these levels. If you want to be a text displayed,
-    //! independent on what level filter is set, use ELL_NONE.
-    virtual void Log(eLogLevel ll, const char16* text, ...);
-    virtual void Logv(eLogLevel ll, const char16* text, va_list li);
-
     static void FrameworkDebug(const char8 * text, ...);
     static void Debug(const char8 * text, ...);
     static void Warning(const char8 * text, ...);

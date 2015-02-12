@@ -69,6 +69,9 @@ String ConvertCFormatListToString(const char8* format, va_list pargs)
             // It fit fine so we're done.
             return dynamicbuf;
         }
+        // you you want to print 1Mb with one call may be you format
+        // string incorrect?
+        DVASSERT(dynamicbuf.size() < 1024 * 1024);
         // vsnprintf reported that it wanted to write more characters
         // than we allocated.  So try again using a dynamic buffer.  This
         // doesn't happen very often if we chose our initial size well.
@@ -195,15 +198,6 @@ void Logger::Error(const char8 * text, ...)
 	va_start(vl, text);
     if (Logger::Instance())
         Logger::Instance()->Logv(LEVEL_ERROR, text, vl);
-	va_end(vl);
-}
-
-void Logger::FrameworkDebug( const char16 * text, ... )
-{
-	va_list vl;
-	va_start(vl, text);
-	if (Logger::Instance())
-		Logger::Instance()->Logv(LEVEL_FRAMEWORK, text, vl);
 	va_end(vl);
 }
 
