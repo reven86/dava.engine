@@ -1786,6 +1786,7 @@
     <ClInclude Include="..\..\Sources\Internal\Network\PeerDesription.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Autotesting\dlmalloc.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -3196,5 +3197,6 @@
     <ClCompile Include="..\..\Sources\Internal\Network\PeerDesriptionSerialize.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\dlmalloc.c" />
   </ItemGroup>
 </Project>
