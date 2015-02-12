@@ -70,6 +70,11 @@ OpenGLWindow::OpenGLWindow() : QWindow()
     context = nullptr;
     paintDevice = nullptr;
     setSurfaceType(QWindow::OpenGLSurface);
+    
+    setKeyboardGrabEnabled(true);
+    setMouseGrabEnabled(true);
+    
+    currentDPR = 2;
 }
 
 OpenGLWindow::~OpenGLWindow()
@@ -77,18 +82,15 @@ OpenGLWindow::~OpenGLWindow()
     
 }
 
-
 void OpenGLWindow::render()
 {
     if (!paintDevice)
     {
         paintDevice = new QOpenGLPaintDevice;
     }
-    
+
     paintDevice->setSize(size());
 
-//    DAVA::QtLayer::Instance()->ProcessFrame();
-    
     QPainter painter(paintDevice);
     render(&painter);
 }
@@ -108,7 +110,19 @@ void OpenGLWindow::renderNow()
     if (!context)
     {
         context = new QOpenGLContext(this);
-        context->setFormat(requestedFormat());
+        
+        QSurfaceFormat fmt = requestedFormat();
+        
+        fmt.setOption(fmt.options() | QSurfaceFormat::DebugContext);
+
+        fmt.setRenderableType(QSurfaceFormat::OpenGL);
+        fmt.setVersion(3, 2);
+        fmt.setDepthBufferSize(24);
+        fmt.setStencilBufferSize(8);
+        fmt.setSwapInterval(1);
+        fmt.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+        
+        context->setFormat(fmt);
         context->create();
         
         needsInitialize = true;
@@ -150,6 +164,196 @@ bool OpenGLWindow::event(QEvent *event)
 }
 
 
+void OpenGLWindow::keyPressEvent(QKeyEvent *e)
+{
+    const Qt::KeyboardModifiers modifiers = e->modifiers();
+    
+    if(modifiers & Qt::ShiftModifier)
+    {
+        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyPressed(DAVA::DVKEY_SHIFT);
+    }
+    if(modifiers & Qt::ControlModifier)
+    {
+        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyPressed(DAVA::DVKEY_CTRL);
+    }
+    if(modifiers & Qt::AltModifier)
+    {
+        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyPressed(DAVA::DVKEY_ALT);
+    }
+    
+    char davaKey = MapQtKeyToDAVA(e);
+    if(davaKey)
+    {
+        DAVA::QtLayer::Instance()->KeyPressed(davaKey, e->count(), e->timestamp());
+    }
+}
+
+void OpenGLWindow::keyReleaseEvent(QKeyEvent *e)
+{
+    int key = e->key();
+    
+    if(Qt::Key_Shift == key)
+    {
+        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyUnpressed(DAVA::DVKEY_SHIFT);
+    }
+    else if(Qt::Key_Control == key)
+    {
+        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyUnpressed(DAVA::DVKEY_CTRL);
+    }
+    else if(Qt::Key_Alt == key)
+    {
+        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyUnpressed(DAVA::DVKEY_ALT);
+    }
+
+    char davaKey = MapQtKeyToDAVA(e);
+    if(davaKey)
+    {
+        DAVA::QtLayer::Instance()->KeyReleased(davaKey);
+    }
+}
+
+DAVA::char16 OpenGLWindow::MapQtKeyToDAVA(const QKeyEvent *event)
+{
+    switch(event->key())
+    {
+        case Qt::Key_W:
+            return DAVA::DVKEY_W;
+
+        case Qt::Key_A:
+            return DAVA::DVKEY_A;
+
+        case Qt::Key_S:
+            return DAVA::DVKEY_S;
+
+        case Qt::Key_D:
+            return DAVA::DVKEY_D;
+
+        case Qt::Key_T:
+            return DAVA::DVKEY_T;
+
+        case Qt::Key_Z:
+            return DAVA::DVKEY_Z;
+
+            
+        default: break;
+    }
+    
+    return 0;
+}
+
+
+
+void OpenGLWindow::mouseMoveEvent(QMouseEvent * event)
+{
+    const Qt::MouseButtons buttons = event->buttons();
+    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
+    davaEvent.phase = DAVA::UIEvent::PHASE_DRAG;
+    
+    
+    bool dragWasApplied = false;
+    if(buttons & Qt::LeftButton)
+    {
+        dragWasApplied = true;
+        davaEvent.tid = MapQtButtonToDAVA(Qt::LeftButton);
+        DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+    }
+    if(buttons & Qt::RightButton)
+    {
+        dragWasApplied = true;
+        davaEvent.tid = MapQtButtonToDAVA(Qt::RightButton);
+        DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+    }
+    if(buttons & Qt::MiddleButton)
+    {
+        dragWasApplied = true;
+        davaEvent.tid = MapQtButtonToDAVA(Qt::MiddleButton);
+        DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+    }
+    
+    if(!dragWasApplied)
+    {
+        davaEvent.phase = DAVA::UIEvent::PHASE_MOVE;
+        davaEvent.tid = MapQtButtonToDAVA(Qt::LeftButton);
+        DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+    }
+}
+
+void OpenGLWindow::mousePressEvent(QMouseEvent * event)
+{
+    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
+    davaEvent.phase = DAVA::UIEvent::PHASE_BEGAN;
+    
+    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+}
+
+void OpenGLWindow::mouseReleaseEvent(QMouseEvent * event)
+{
+    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
+    davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
+    
+    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+}
+
+void OpenGLWindow::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
+    davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
+    davaEvent.tapCount = 2;
+    
+    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+}
+
+#ifndef QT_NO_WHEELEVENT
+void OpenGLWindow::wheelEvent(QWheelEvent *event)
+{
+    DAVA::UIEvent davaEvent;
+    
+    int numDegrees = event->delta() / 8;
+    int numSteps = numDegrees / 15;
+    
+    davaEvent.point = davaEvent.physPoint = Vector2(numSteps, numSteps);
+    davaEvent.tid = DAVA::UIEvent::PHASE_WHEEL;
+    davaEvent.phase = DAVA::UIEvent::PHASE_WHEEL;
+    
+    davaEvent.timestamp = event->timestamp();
+    davaEvent.tapCount = 1;
+    
+    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+}
+#endif //QT_NO_WHEELEVENT
+
+DAVA::UIEvent OpenGLWindow::MapMouseEventToDAVA(const QMouseEvent *event) const
+{
+    DAVA::UIEvent davaEvent;
+    QPoint pos = event->pos();
+    davaEvent.point = davaEvent.physPoint = Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
+    davaEvent.tid = MapQtButtonToDAVA(event->button());
+    davaEvent.timestamp = event->timestamp();
+    davaEvent.tapCount = 1;
+    
+    return davaEvent;
+}
+
+DAVA::UIEvent::eButtonID OpenGLWindow::MapQtButtonToDAVA(const Qt::MouseButton button) const
+{
+    switch (button)
+    {
+        case Qt::LeftButton:
+            return DAVA::UIEvent::BUTTON_1;
+            
+        case Qt::RightButton:
+            return DAVA::UIEvent::BUTTON_2;
+            
+        case Qt::MiddleButton:
+            return DAVA::UIEvent::BUTTON_3;
+            
+        default:
+            break;
+    }
+    
+    return DAVA::UIEvent::BUTTON_NONE;
+}
+
 ///=======================
 DavaGLWidget::DavaGLWidget(QWidget *parent)
     : QWidget(parent)
@@ -175,11 +379,12 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     openGlWindow = new OpenGLWindow();
     connect(openGlWindow, SIGNAL(Exposed()), this, SLOT(OnWindowExposed()));
     
-    QWidget *w = createWindowContainer(openGlWindow);
-    
     QBoxLayout *lay = new QBoxLayout(QBoxLayout::TopToBottom, this);
     setLayout(lay);
     
+    lay->setMargin(0);
+    
+    QWidget *w = createWindowContainer(openGlWindow);
     layout()->addWidget(w);
 }
 
@@ -198,12 +403,17 @@ void DavaGLWidget::SetFPS(int _fps)
 
 void DavaGLWidget::OnWindowExposed()
 {
+    if(isInitialized) return;
+    
+    isInitialized = true;
+
     currentDPR = devicePixelRatio();
     
     DAVA::QtLayer::Instance()->InitializeGlWindow();
+
+    
     PerformSizeChange();
 
-    isInitialized = true;
     
     emit Initialized();
     
@@ -219,11 +429,9 @@ void DavaGLWidget::OnRenderTimer()
         PerformSizeChange();
     }                       // END OF TODO
     
-    QCoreApplication::postEvent(openGlWindow, new QEvent(QEvent::UpdateRequest));
-    DVASSERT(QOpenGLContext::currentContext() == openGlWindow->context);
-
     DAVA::QtLayer::Instance()->ProcessFrame();
-
+    
+    QCoreApplication::postEvent(openGlWindow, new QEvent(QEvent::UpdateRequest));
     
     renderTimer->singleShot(16, this, SLOT(OnRenderTimer()));
 }
@@ -239,168 +447,6 @@ void DavaGLWidget::resizeEvent(QResizeEvent *e)
 }
 
 
-void DavaGLWidget::keyPressEvent(QKeyEvent *e)
-{
-    char16 keyChar = e->nativeVirtualKey();
-    const Qt::KeyboardModifiers modifiers = e->modifiers();
-    
-    if(modifiers & Qt::ShiftModifier)
-    {
-        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyPressed(DAVA::DVKEY_SHIFT);
-    }
-    if(modifiers & Qt::ControlModifier)
-    {
-        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyPressed(DAVA::DVKEY_CTRL);
-    }
-    if(modifiers & Qt::AltModifier)
-    {
-        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyPressed(DAVA::DVKEY_ALT);
-    }
-    
-    if(keyChar)
-    {
-        char16 davaKey = DAVA::InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey(keyChar);
-        DAVA::QtLayer::Instance()->KeyPressed(keyChar, davaKey, e->count(), e->timestamp());
-    }
-}
-
-void DavaGLWidget::keyReleaseEvent(QKeyEvent *e)
-{
-    int key = e->key();
-    char16 keyChar = e->nativeVirtualKey();
-
-    if(Qt::Key_Shift == key)
-    {
-        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyUnpressed(DAVA::DVKEY_SHIFT);
-    }
-    else if(Qt::Key_Control == key)
-    {
-        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyUnpressed(DAVA::DVKEY_CTRL);
-    }
-    else if(Qt::Key_Alt == key)
-    {
-        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyUnpressed(DAVA::DVKEY_ALT);
-    }
-    
-    if(keyChar)
-    {
-        char16 davaKey = DAVA::InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey(keyChar);
-        DAVA::QtLayer::Instance()->KeyReleased(keyChar, davaKey);
-    }
-}
-
-
-void DavaGLWidget::mouseMoveEvent(QMouseEvent * event)
-{
-    const Qt::MouseButtons buttons = event->buttons();
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
-    davaEvent.phase = DAVA::UIEvent::PHASE_DRAG;
-
-    
-    bool dragWasApplied = false;
-    if(buttons & Qt::LeftButton)
-    {
-        dragWasApplied = true;
-        davaEvent.tid = MapQtButtonToDAVA(Qt::LeftButton);
-        DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-    }
-    if(buttons & Qt::RightButton)
-    {
-        dragWasApplied = true;
-        davaEvent.tid = MapQtButtonToDAVA(Qt::RightButton);
-        DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-    }
-    if(buttons & Qt::MiddleButton)
-    {
-        dragWasApplied = true;
-        davaEvent.tid = MapQtButtonToDAVA(Qt::MiddleButton);
-        DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-    }
-
-    if(!dragWasApplied)
-    {
-        davaEvent.phase = DAVA::UIEvent::PHASE_MOVE;
-        davaEvent.tid = MapQtButtonToDAVA(Qt::LeftButton);
-        DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-    }
-}
-
-void DavaGLWidget::mousePressEvent(QMouseEvent * event)
-{
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
-    davaEvent.phase = DAVA::UIEvent::PHASE_BEGAN;
-
-    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-}
-
-void DavaGLWidget::mouseReleaseEvent(QMouseEvent * event)
-{
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
-    davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
-    
-    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-}
-
-void DavaGLWidget::mouseDoubleClickEvent(QMouseEvent *event)
-{
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
-    davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
-    davaEvent.tapCount = 2;
-    
-    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-}
-
-#ifndef QT_NO_WHEELEVENT
-void DavaGLWidget::wheelEvent(QWheelEvent *event)
-{
-    DAVA::UIEvent davaEvent;
-    
-    int numDegrees = event->delta() / 8;
-    int numSteps = numDegrees / 15;
-    
-    davaEvent.point = davaEvent.physPoint = Vector2(numSteps, numSteps);
-    davaEvent.tid = DAVA::UIEvent::PHASE_WHEEL;
-    davaEvent.phase = DAVA::UIEvent::PHASE_WHEEL;
-
-    davaEvent.timestamp = event->timestamp();
-    davaEvent.tapCount = 1;
-    
-    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-}
-#endif //QT_NO_WHEELEVENT
-
-DAVA::UIEvent DavaGLWidget::MapMouseEventToDAVA(const QMouseEvent *event) const
-{
-    DAVA::UIEvent davaEvent;
-    QPoint pos = event->pos();
-    davaEvent.point = davaEvent.physPoint = Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
-    davaEvent.tid = MapQtButtonToDAVA(event->button());
-    davaEvent.timestamp = event->timestamp();
-    davaEvent.tapCount = 1;
-
-    return davaEvent;
-}
-
-DAVA::UIEvent::eButtonID DavaGLWidget::MapQtButtonToDAVA(const Qt::MouseButton button) const
-{
-    switch (button)
-    {
-        case Qt::LeftButton:
-            return DAVA::UIEvent::BUTTON_1;
-
-        case Qt::RightButton:
-            return DAVA::UIEvent::BUTTON_2;
-
-        case Qt::MiddleButton:
-            return DAVA::UIEvent::BUTTON_3;
-
-        default:
-            break;
-    }
-    
-    return DAVA::UIEvent::BUTTON_NONE;
-}
-
 void DavaGLWidget::dragEnterEvent(QDragEnterEvent *event)
 {
     event->setDropAction(Qt::LinkAction);
@@ -409,15 +455,15 @@ void DavaGLWidget::dragEnterEvent(QDragEnterEvent *event)
 
 void DavaGLWidget::dragMoveEvent(QDragMoveEvent *event)
 {
-	DAVA::UIEvent davaEvent;
-    QPoint pos = event->pos();
-    davaEvent.point = davaEvent.physPoint = Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
-    davaEvent.tid = MapQtButtonToDAVA(Qt::LeftButton);
-    davaEvent.timestamp = 0;
-    davaEvent.tapCount = 1;
-    davaEvent.phase = DAVA::UIEvent::PHASE_MOVE;
-
-    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+//	DAVA::UIEvent davaEvent;
+//    QPoint pos = event->pos();
+//    davaEvent.point = davaEvent.physPoint = Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
+//    davaEvent.tid = MapQtButtonToDAVA(Qt::LeftButton);
+//    davaEvent.timestamp = 0;
+//    davaEvent.tapCount = 1;
+//    davaEvent.phase = DAVA::UIEvent::PHASE_MOVE;
+//
+//    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
 
     event->setDropAction(Qt::LinkAction);
 	event->accept();

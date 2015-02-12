@@ -129,9 +129,8 @@ int SceneTabWidget::OpenTab()
     int tabIndex = tabBar->addTab(scenePath.GetFilename().c_str());
     tabBar->setTabToolTip(tabIndex, scenePath.GetAbsolutePathname().c_str());
 
-    DAVA::Function<void()> fn = DAVA::Bind(DAVA::MakeFunction(this, &SceneTabWidget::OpenTabInternal), scenePath, tabIndex);
-    DAVA::JobManager::Instance()->CreateMainJob(fn);
-//    DAVA::JobManager::Instance()->CreateWorkerJob(fn);
+    OpenTabInternal(scenePath, tabIndex);
+    
 	return tabIndex;
 }
 
@@ -156,8 +155,7 @@ int SceneTabWidget::OpenTab(const DAVA::FilePath &scenePath)
     tabIndex = tabBar->addTab(scenePath.GetFilename().c_str());
     tabBar->setTabToolTip(tabIndex, scenePath.GetAbsolutePathname().c_str());
     
-    DAVA::Function<void()> fn = DAVA::Bind(DAVA::MakeFunction(this, &SceneTabWidget::OpenTabInternal), scenePath, tabIndex);
-    DAVA::JobManager::Instance()->CreateWorkerJob(fn);
+    OpenTabInternal(scenePath, tabIndex);
     
     return tabIndex;
 }

@@ -75,8 +75,8 @@ public:
     void ShowAsserMessage(const char * message);
     bool IsDAVAEngineEnabled() const { return isDAVAEngineEnabled; };
     
-    void KeyPressed(char16 key, char16 davaKey, int32 count, uint64 timestamp);
-    void KeyReleased(char16 key, char16 davaKey);
+    void KeyPressed(char16 key, int32 count, uint64 timestamp);
+    void KeyReleased(char16 key);
 
     void MouseEvent(const UIEvent & event);
     

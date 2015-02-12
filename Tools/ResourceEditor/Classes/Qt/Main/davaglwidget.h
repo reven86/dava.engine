@@ -72,9 +72,29 @@ protected:
     bool event(QEvent *event) override;
     void exposeEvent(QExposeEvent *event) override;
     
+    
+    void keyPressEvent(QKeyEvent *) override;
+    void keyReleaseEvent(QKeyEvent *) override;
+    
+    void mouseMoveEvent(QMouseEvent * event) override;
+    void mousePressEvent(QMouseEvent * event) override;
+    void mouseReleaseEvent(QMouseEvent * event) override;
+    
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+    
+#ifndef QT_NO_WHEELEVENT
+    void wheelEvent(QWheelEvent *) override;
+#endif
+    
+    DAVA::UIEvent MapMouseEventToDAVA(const QMouseEvent *event) const;
+    DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button) const;
+    
+    DAVA::char16 MapQtKeyToDAVA(const QKeyEvent *event);
+    
 private:
-
-public:
+    
+    int currentDPR;
+    
     QOpenGLContext *context;
     QOpenGLPaintDevice *paintDevice;
 };
@@ -110,20 +130,6 @@ protected slots:
 private:
     
     void resizeEvent(QResizeEvent *) override;
-
-    void keyPressEvent(QKeyEvent *) override;
-    void keyReleaseEvent(QKeyEvent *) override;
-    
-    void mouseMoveEvent(QMouseEvent * event) override;
-    void mousePressEvent(QMouseEvent * event) override;
-    void mouseReleaseEvent(QMouseEvent * event) override;
-    
-    void mouseDoubleClickEvent(QMouseEvent *event) override;
-    
-#ifndef QT_NO_WHEELEVENT
-    void wheelEvent(QWheelEvent *) override;
-#endif
-
     
 	virtual void dropEvent(QDropEvent *);
 	virtual void dragMoveEvent(QDragMoveEvent *);
@@ -132,11 +138,7 @@ private:
 	virtual void Quit();
     DAVA_DEPRECATED(virtual void ShowAssertMessage(const char * message));
     
-    DAVA::UIEvent MapMouseEventToDAVA(const QMouseEvent *event) const;
-    DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button) const;
-
     void PerformSizeChange();
-    
     
 private:
     
