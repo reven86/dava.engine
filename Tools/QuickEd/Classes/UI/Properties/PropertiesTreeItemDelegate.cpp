@@ -16,7 +16,7 @@
 
 #include "DAVAEngine.h"
 #include "QtControls/Vector2DEdit.h"
-#include "UIControls/ControlProperties/BaseProperty.h"
+#include "Model/ControlProperties/BaseProperty.h"
 #include "Utils/QtDavaConvertion.h"
 #include "Vector2PropertyDelegate.h"
 #include "EnumPropertyDelegate.h"

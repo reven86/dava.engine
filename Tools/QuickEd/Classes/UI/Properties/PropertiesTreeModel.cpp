@@ -7,8 +7,8 @@
 #include <QVector2D>
 #include <QUndoStack>
 
-#include "UIControls/ControlProperties/BaseProperty.h"
-#include "UIControls/PackageHierarchy/ControlNode.h"
+#include "Model/ControlProperties/BaseProperty.h"
+#include "Model/PackageHierarchy/ControlNode.h"
 #include "Utils/QtDavaConvertion.h"
 #include "ChangePropertyValueCommand.h"
 #include "UI/Document.h"

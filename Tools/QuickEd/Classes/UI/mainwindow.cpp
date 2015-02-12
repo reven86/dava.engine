@@ -57,7 +57,7 @@
 #include "UI/Document.h"
 #include "UI/UIPackageLoader.h"
 #include "Utils/QtDavaConvertion.h"
-#include "UIControls/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/PackageNode.h"
 
 const QString APP_NAME = "QuickEd";
 const QString APP_COMPANY = "DAVA";

@@ -3,7 +3,7 @@
 
 #include "PackageBaseNode.h"
 
-#include "UIControls/ControlProperties/PropertiesRoot.h"
+#include "Model/ControlProperties/PropertiesRoot.h"
 
 class PackageSerializer;
 class PackageNode;

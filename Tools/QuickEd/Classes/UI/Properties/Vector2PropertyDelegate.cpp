@@ -3,7 +3,7 @@
 #include <QLineEdit>
 #include <QApplication>
 #include "QtControls/Vector2DEdit.h"
-#include "UIControls/ControlProperties/BaseProperty.h"
+#include "Model/ControlProperties/BaseProperty.h"
 #include "Utils/QtDavaConvertion.h"
 #include "PropertiesTreeModel.h"
 #include "PropertiesTreeItemDelegate.h"

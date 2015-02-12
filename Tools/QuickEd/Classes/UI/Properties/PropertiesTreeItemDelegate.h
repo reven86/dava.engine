@@ -5,7 +5,7 @@
 #include <QVector2D>
 #include <QLineEdit>
 #include <QStyledItemDelegate>
-#include "UIControls/ControlProperties/BaseProperty.h"
+#include "Model/ControlProperties/BaseProperty.h"
 #include "FileSystem/VariantType.h"
 class AbstractPropertyDelegate;
 class QToolButton;

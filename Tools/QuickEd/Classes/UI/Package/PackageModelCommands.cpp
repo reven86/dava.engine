@@ -1,8 +1,8 @@
 #include "PackageModelCommands.h"
 
 #include "UIPackageModel.h"
-#include "UIControls/PackageHierarchy/ControlNode.h"
-#include "UIControls/PackageHierarchy/PackageControlsNode.h"
+#include "Model/PackageHierarchy/ControlNode.h"
+#include "Model/PackageHierarchy/PackageControlsNode.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // MoveItemModelCommand

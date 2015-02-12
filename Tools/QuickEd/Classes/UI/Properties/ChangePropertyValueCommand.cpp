@@ -1,5 +1,5 @@
 #include "ChangePropertyValueCommand.h"
-#include "UIControls/ControlProperties/BaseProperty.h"
+#include "Model/ControlProperties/BaseProperty.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // ChangePropertyValueCommand

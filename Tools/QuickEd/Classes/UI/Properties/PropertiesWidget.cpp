@@ -8,7 +8,7 @@
 #include "UI/Document.h"
 #include "UI/PropertiesContext.h"
 #include "UI/Properties/PropertiesTreeItemDelegate.h"
-#include "UIControls/PackageHierarchy/ControlNode.h"
+#include "Model/PackageHierarchy/ControlNode.h"
 
 using namespace DAVA;
 

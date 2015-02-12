@@ -8,10 +8,10 @@
 #include "UI/Package/UIFilteredPackageModel.h"
 #include "UI/Library/LibraryModel.h"
 
-#include "UIControls/PackageHierarchy/PackageNode.h"
-#include "UIControls/PackageHierarchy/PackageControlsNode.h"
-#include "UIControls/PackageHierarchy/ControlNode.h"
-#include "UIControls/PackageHierarchy/PackageRef.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/PackageControlsNode.h"
+#include "Model/PackageHierarchy/ControlNode.h"
+#include "Model/PackageHierarchy/PackageRef.h"
 
 #include "PackageContext.h"
 #include "PropertiesContext.h"

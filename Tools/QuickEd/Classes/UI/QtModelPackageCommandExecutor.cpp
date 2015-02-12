@@ -7,10 +7,10 @@
 #include "UI/Package/PackageModelCommands.h"
 #include "UI/Package/UIPackageModel.h"
 
-#include "UIControls/PackageHierarchy/PackageControlsNode.h"
-#include "UIControls/PackageHierarchy/ControlNode.h"
-#include "UIControls/PackageHierarchy/PackageNode.h"
-#include "UIControls/PackageHierarchy/ImportedPackagesNode.h"
+#include "Model/PackageHierarchy/PackageControlsNode.h"
+#include "Model/PackageHierarchy/ControlNode.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/ImportedPackagesNode.h"
 
 using namespace DAVA;
 

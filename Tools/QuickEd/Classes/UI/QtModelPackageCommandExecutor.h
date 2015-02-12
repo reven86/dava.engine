@@ -1,7 +1,7 @@
 #ifndef __QUICKED_QT_MODEL_PACKAGE_COMMAND_EXECUTOR_H__
 #define __QUICKED_QT_MODEL_PACKAGE_COMMAND_EXECUTOR_H__
 
-#include "UIControls/PackageCommandExecutor.h"
+#include "Model/PackageCommandExecutor.h"
 
 class Document;
 
