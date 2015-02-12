@@ -272,11 +272,3 @@ if(UNIX)
 	install(FILES ${PC_FILE} DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
 endif()
 
-
-###
-### Extras
-###
-if(YAML_CPP_BUILD_TOOLS)
-	add_subdirectory(test)
-	add_subdirectory(util)
-endif()
