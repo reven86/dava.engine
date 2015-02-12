@@ -126,7 +126,7 @@ Branch Branch::LoadFromYamlNode(const YAML::Node * node)
 ConfigParser::ConfigParser(const QByteArray & configData) :
     launcherVersion(LAUNCHER_VER),
     webPageURL(""),
-    remoteConfigURL(REMOTE_CONFIG_URL_DEFAULT),
+    remoteConfigURL(""),
     newsID("0")
 {
     if(configData.size())
@@ -153,7 +153,7 @@ ConfigParser::ConfigParser(const QByteArray & configData) :
                 launcherVersion = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_VERSION_KEY), LAUNCHER_VER);
                 launcherURL = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_URL_KEY));
                 webPageURL = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_WEBPAGE_KEY));
-                remoteConfigURL = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_REMOTE_URL_KEY), REMOTE_CONFIG_URL_DEFAULT);
+                remoteConfigURL = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_REMOTE_URL_KEY));
                 newsID = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_NEWSID_KEY));
                 favorites = GetArrayValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_FAVORITES_KEY));
 

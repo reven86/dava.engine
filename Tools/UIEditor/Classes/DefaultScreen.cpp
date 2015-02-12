@@ -1013,7 +1013,7 @@ void DefaultScreen::MouseInputBegin(const DAVA::UIEvent* event)
 			{
 				//Don't check active controls size anymore - we have to be able to deselect any control
 				if (/*HierarchyTreeController::Instance()->GetActiveControlNodes().size() > 1 &&*/
-					InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_SHIFT))
+					InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
 				{
 					lastSelectedControl = selectedControlNode;
 					//If controls was selected with SHIFT key pressed - we don't need mouseUp selection
@@ -1022,7 +1022,7 @@ void DefaultScreen::MouseInputBegin(const DAVA::UIEvent* event)
 			}
 			else
 			{
-				if (!InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_SHIFT))
+				if (!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
 					HierarchyTreeController::Instance()->ResetSelectedControl();
 					
 				HierarchyTreeController::Instance()->SelectControl(selectedControlNode);
@@ -1127,7 +1127,7 @@ void DefaultScreen::MouseInputDrag(const DAVA::UIEvent* event)
 	if (inputState == InputStateDrag)
 	{
 		//If control key is pressed - we are going to copy control(s)
-		if (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_CTRL) && !copyControlsInProcess)
+		if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL) && !copyControlsInProcess)
 		{
 			CopySelectedControls();
 		}	
@@ -1230,7 +1230,7 @@ void DefaultScreen::HandleMouseLeftButtonClick(const Vector2& point)
 	{
 		if (!HierarchyTreeController::Instance()->IsControlSelected(selectedControlNode))
 		{
-			if (!InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_SHIFT))
+			if (!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
 				HierarchyTreeController::Instance()->ResetSelectedControl();
 
 				HierarchyTreeController::Instance()->SelectControl(selectedControlNode);
@@ -1328,14 +1328,14 @@ void DefaultScreen::KeyboardInput(const DAVA::UIEvent* event)
 		}break;
 		case DVKEY_C:
 		{
-			if (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_CTRL))
+			if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
 			{
 				CopyPasteController::Instance()->CopyControls(HierarchyTreeController::Instance()->GetActiveControlNodes());
 			}
 		}break;
 		case DVKEY_V:
 		{
-			if (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_CTRL))
+			if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
 			{
                 const HierarchyTreeController::SELECTEDCONTROLNODES &selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();                
                 if (selectedList.empty())

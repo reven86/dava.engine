@@ -322,45 +322,6 @@ namespace DAVA
 		FrameworkWillTerminate();
 	}
 
-/*	void CoreWin32Platform::InitOpenGL()
-	{
-		hDC = GetDC(hWindow);
-
-		PIXELFORMATDESCRIPTOR pfd;
-		ZeroMemory( &pfd, sizeof( pfd ) );
-		pfd.nSize = sizeof( pfd );
-		pfd.nVersion = 1;
-		pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-		pfd.iPixelType = PFD_TYPE_RGBA;
-		pfd.cColorBits = 24;
-		pfd.cDepthBits = 16;
-		pfd.iLayerType = PFD_MAIN_PLANE;
-		int iFormat = ChoosePixelFormat(hDC, &pfd);
-		SetPixelFormat(hDC, iFormat, &pfd);
-
-		hRC = wglCreateContext(hDC);
-		Thread::secondaryContext = wglCreateContext(hDC);
-		Thread::currentDC = hDC;
-		
-		wglShareLists(Thread::secondaryContext, hRC);
-		wglMakeCurrent(hDC, hRC);
-
-		Thread * t = Thread::Create(Message());
-		t->EnableCopyContext();
-		t->Start();
-
-		glewInit();
-		const GLubyte * extensions = glGetString(GL_EXTENSIONS);
-		Logger::FrameworkDebug("[CoreWin32Platform] gl extensions: %s", (const char*)extensions);
-	}*/
-
-	void CoreWin32Platform::ReleaseOpenGL()
-	{
-		wglMakeCurrent(0, 0);
-		wglDeleteContext(hRC);
-		ReleaseDC(hWindow, hDC);		
-	}
-	
 	RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode & dm)
 	{
 		RECT clientSize;
@@ -706,7 +667,7 @@ namespace DAVA
 
 		case WM_KEYUP:
 			{
-				InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed((int32)wParam);
+				InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed((int32)wParam);
 			};
 			break;
 
@@ -727,7 +688,7 @@ namespace DAVA
 				ev.keyChar = 0;
 				ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
 				ev.tapCount = 1;
-				ev.tid = InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey((int32)wParam);
+				ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey((int32)wParam);
 
 				touches.push_back(ev);
 
@@ -735,7 +696,7 @@ namespace DAVA
 				touches.pop_back();
 				UIControlSystem::Instance()->OnInput(0, touches, core->allTouches);
 
-				InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed((int32)wParam);
+				InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed((int32)wParam);
 			};
 			break;
 

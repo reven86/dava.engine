@@ -1201,7 +1201,7 @@ void TextBlock::CleanLine(WideString& string, bool trim /*= false*/, bool rtl /*
     WideString out = StringUtils::RemoveNonPrintable(string, 1);
     if (trim)
     {
-    	out = !rtl ? StringUtils::TrimRight(out) : StringUtils::TrimLeft(out);
+        out = !rtl ? StringUtils::TrimRight(out) : StringUtils::TrimLeft(out);
     }
     string.swap(out);
 }

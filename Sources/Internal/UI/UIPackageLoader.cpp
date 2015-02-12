@@ -85,6 +85,11 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
         return SafeRetain(package.Get());
     }
     
+    return LoadPackage(rootNode, packagePath);
+}
+    
+UIPackage *UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath &packagePath)
+{
     const YamlNode *headerNode = rootNode->Get("Header");
     if (!headerNode)
         return NULL;
@@ -94,7 +99,7 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
         return NULL;
     
     RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
-
+    
     const YamlNode *importedPackagesNode = rootNode->Get("ImportedPackages");
     if (importedPackagesNode)
     {
@@ -102,7 +107,7 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
         for (int32 i = 0; i < count; i++)
             builder->ProcessImportedPackage(importedPackagesNode->Get(i)->AsString(), this);
     }
-
+    
     const YamlNode *controlsNode = rootNode->Get("Controls");
     if (controlsNode)
     {
@@ -126,13 +131,14 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
                 loadingQueue[i].status = STATUS_LOADED;
             }
         }
-
+        
         loadingQueue.clear();
     }
     builder->EndPackage();
     
     return SafeRetain(package.Get());
 }
+
     
 bool UIPackageLoader::LoadControlByName(const String &name)
 {
