@@ -1,13 +1,5 @@
-//
-//  PackageGraphicsWidget.cpp
-//  UIEditor
-//
-//  Created by Alexey Strokachuk on 9/17/14.
-//
-//
-
-#include "PackageGraphicsWidget.h"
-#include "ui_PackageGraphicsWidget.h"
+#include "PreviewWidget.h"
+#include "ui_PreviewWidget.h"
 #include <QLineEdit>
 #include "EditScreen.h"
 #include "UI/Document.h"
@@ -24,9 +16,9 @@ static const int SCALE_PERCENTAGES[] =
 static const int32 DEFAULT_SCALE_PERCENTAGE_INDEX = 4; // 100%
 static const char* PERCENTAGE_FORMAT = "%1 %";
 
-PackageGraphicsWidget::PackageGraphicsWidget(QWidget *parent)
+PreviewWidget::PreviewWidget(QWidget *parent)
 : QWidget(parent)
-, ui(new Ui::PackageGraphicsWidget())
+, ui(new Ui::PreviewWidget())
 , document(NULL)
 , context(NULL)
 {
@@ -68,12 +60,12 @@ PackageGraphicsWidget::PackageGraphicsWidget(QWidget *parent)
     ui->verticalRuler->SetOrientation(RulerWidget::Vertical);
 }
 
-PackageGraphicsWidget::~PackageGraphicsWidget()
+PreviewWidget::~PreviewWidget()
 {
     delete ui;
 }
 
-void PackageGraphicsWidget::SetDocument(Document *newDocument)
+void PreviewWidget::SetDocument(Document *newDocument)
 {
     if (document)
     {
@@ -109,13 +101,13 @@ void PackageGraphicsWidget::SetDocument(Document *newDocument)
     }
 }
 
-void PackageGraphicsWidget::OnScaleByZoom(int scaleDelta)
+void PreviewWidget::OnScaleByZoom(int scaleDelta)
 {
     //int newScale = controlWorkspace->GetScreenScale() + scaleDelta;
     //controlWorkspace->SetScreenScale(newScale);
 }
 
-void PackageGraphicsWidget::OnScaleByComboIndex(int index)
+void PreviewWidget::OnScaleByComboIndex(int index)
 {
     if (index < 0 || index >= (int)COUNT_OF(SCALE_PERCENTAGES) || !context)
     {
@@ -127,7 +119,7 @@ void PackageGraphicsWidget::OnScaleByComboIndex(int index)
     context->SetCanvasControlScale(scaleValue);
 }
 
-void PackageGraphicsWidget::OnScaleByComboText()
+void PreviewWidget::OnScaleByComboText()
 {
 	// Firstly verify whether the value is already set.
 	QString curTextValue = ui->scaleCombo->currentText().trimmed();
@@ -147,17 +139,17 @@ void PackageGraphicsWidget::OnScaleByComboText()
 	//controlWorkspace->SetScreenScale(scaleValue);
 }
 
-void PackageGraphicsWidget::OnZoomInRequested()
+void PreviewWidget::OnZoomInRequested()
 {
 	OnScaleByZoom(10);
 }
 
-void PackageGraphicsWidget::OnZoomOutRequested()
+void PreviewWidget::OnZoomOutRequested()
 {
 	OnScaleByZoom(-10);
 }
 
-void PackageGraphicsWidget::OnCanvasScaleChanged(int newScale)
+void PreviewWidget::OnCanvasScaleChanged(int newScale)
 {
     QString newScaleText = QString(PERCENTAGE_FORMAT).arg(newScale);
     if (ui->scaleCombo->currentText() != newScaleText )
@@ -168,7 +160,7 @@ void PackageGraphicsWidget::OnCanvasScaleChanged(int newScale)
     }
 }
 
-void PackageGraphicsWidget::OnGLWidgetResized(int width, int height)
+void PreviewWidget::OnGLWidgetResized(int width, int height)
 {
     Vector2 screenSize((float32)width, (float32)height);
 
@@ -180,7 +172,7 @@ void PackageGraphicsWidget::OnGLWidgetResized(int width, int height)
     }
 }
 
-void PackageGraphicsWidget::OnVScrollbarMoved(int vPosition)
+void PreviewWidget::OnVScrollbarMoved(int vPosition)
 {
     if (context)
     {
@@ -190,7 +182,7 @@ void PackageGraphicsWidget::OnVScrollbarMoved(int vPosition)
     }
 }
 
-void PackageGraphicsWidget::OnHScrollbarMoved(int hPosition)
+void PreviewWidget::OnHScrollbarMoved(int hPosition)
 {
     if (context)
     {
@@ -200,7 +192,7 @@ void PackageGraphicsWidget::OnHScrollbarMoved(int hPosition)
     }
 }
 
-void PackageGraphicsWidget::OnScrollPositionChanged(const QPoint &newPosition)
+void PreviewWidget::OnScrollPositionChanged(const QPoint &newPosition)
 {
     QPoint scrollbarPosition(-newPosition.x(), -newPosition.y());
 
@@ -219,7 +211,7 @@ void PackageGraphicsWidget::OnScrollPositionChanged(const QPoint &newPosition)
     }
 }
 
-void PackageGraphicsWidget::OnScrollAreaChanged(const QSize &viewSize, const QSize &contentSize)
+void PreviewWidget::OnScrollAreaChanged(const QSize &viewSize, const QSize &contentSize)
 {
     QSize maximumPosition(contentSize - viewSize);
 
@@ -255,7 +247,7 @@ void PackageGraphicsWidget::OnScrollAreaChanged(const QSize &viewSize, const QSi
     }
 }
 
-QSize PackageGraphicsWidget::GetGLViewSize() const
+QSize PreviewWidget::GetGLViewSize() const
 {
     return ui->davaGLWidget->size();
 }

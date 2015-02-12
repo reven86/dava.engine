@@ -47,7 +47,7 @@
      </widget>
     </item>
     <item>
-     <widget class="PackageGraphicsWidget" name="packageGraphicsWidget" native="true"/>
+     <widget class="PreviewWidget" name="previewWidget" native="true"/>
     </item>
    </layout>
   </widget>
@@ -474,9 +474,9 @@
    <header>qtabbar.h</header>
   </customwidget>
   <customwidget>
-   <class>PackageGraphicsWidget</class>
+   <class>PreviewWidget</class>
    <extends>QWidget</extends>
-   <header>UI/GraphicView/packagegraphicswidget.h</header>
+   <header>UI/Preview/PreviewWidget.h</header>
   </customwidget>
   <customwidget>
    <class>PropertiesDockWidget</class>

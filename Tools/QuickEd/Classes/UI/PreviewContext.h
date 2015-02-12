@@ -6,7 +6,7 @@
 #include <QSize>
 #include "DAVAEngine.h"
 
-#include "GraphicView/ControlSelectionListener.h"
+#include "Preview/ControlSelectionListener.h"
 
 class PackageCanvas;
 class ControlNode;

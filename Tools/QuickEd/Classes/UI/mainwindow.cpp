@@ -110,7 +110,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->propertiesDockWidget->setEnabled(false);
     ui->fileSystemDockWidget->setEnabled(false);
     ui->packageTreeDock->setEnabled(false);
-    ui->packageGraphicsWidget->setEnabled(false);
+    ui->previewWidget->setEnabled(false);
     ui->libraryDockWidget->setEnabled(false);
     
     RebuildRecentMenu();
@@ -177,11 +177,11 @@ void MainWindow::CurrentTabChanged(int index)
     
     ui->propertiesDockWidget->setEnabled(activeDocument != NULL);
     ui->packageTreeDock->setEnabled(activeDocument != NULL);
-    ui->packageGraphicsWidget->setEnabled(activeDocument != NULL);
+    ui->previewWidget->setEnabled(activeDocument != NULL);
     ui->libraryDockWidget->setEnabled(activeDocument != NULL);
     
     ui->packageTreeDock->SetDocument(activeDocument);
-    ui->packageGraphicsWidget->SetDocument(activeDocument);
+    ui->previewWidget->SetDocument(activeDocument);
     ui->propertiesDockWidget->SetContext(activeDocument ? activeDocument->GetPropertiesContext() : NULL);
     ui->libraryDockWidget->SetDocument(activeDocument);
 //    ui->packageLibraryWidget->SetDocument(activeDocument);

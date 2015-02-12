@@ -1,10 +1,10 @@
-#ifndef __QUICKED_PACKAGE_GRAPHICS_WIDGET_H__
-#define __QUICKED_PACKAGE_GRAPHICS_WIDGET_H__
+#ifndef __QUICKED_PREVIEW_WIDGET_H__
+#define __QUICKED_PREVIEW_WIDGET_H__
 
 #include <QWidget>
 
 namespace Ui {
-    class PackageGraphicsWidget;
+    class PreviewWidget;
 }
 
 class Document;
@@ -16,12 +16,12 @@ enum ScreenId
     EDIT_SCREEN = 0,
 };
 
-class PackageGraphicsWidget: public QWidget
+class PreviewWidget : public QWidget
 {
     Q_OBJECT
 public:
-    PackageGraphicsWidget(QWidget *parent = NULL);
-    ~PackageGraphicsWidget();
+    PreviewWidget(QWidget *parent = nullptr);
+    virtual ~PreviewWidget();
     
     void SetDocument(Document *newDocument);
 
@@ -46,9 +46,9 @@ private:
     QSize GetGLViewSize() const;
 
 private:
-    Ui::PackageGraphicsWidget *ui;
+    Ui::PreviewWidget *ui;
     Document *document;
     PreviewContext *context;
 };
 
-#endif // __QUICKED_PACKAGE_GRAPHICS_WIDGET_H__
+#endif // __QUICKED_PREVIEW_WIDGET_H__

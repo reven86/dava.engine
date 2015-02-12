@@ -1,6 +1,6 @@
 #include "PreviewContext.h"
 
-#include "UI/GraphicView/EditScreen.h"
+#include "UI/Preview/EditScreen.h"
 #include "UIControls/PackageHierarchy/ControlNode.h"
 #include "Document.h"
 
