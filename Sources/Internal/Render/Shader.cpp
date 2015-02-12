@@ -965,7 +965,7 @@ bool Shader::IsAutobindUniform(eShaderSemantic semantic)
 
 void Shader::Bind()
 {
-//    if (activeProgram != program)
+    if (activeProgram != program)
     {
         //Logger::FrameworkDebug(Format("Bind: %d", program).c_str());
         RENDERER_UPDATE_STATS(shaderBindCount++);

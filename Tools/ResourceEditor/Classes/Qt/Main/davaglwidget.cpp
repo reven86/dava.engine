@@ -405,6 +405,8 @@ void DavaGLWidget::OnWindowExposed()
 {
     if(isInitialized) return;
     
+    DAVA::Shader::ClearActive();
+
     isInitialized = true;
 
     currentDPR = devicePixelRatio();
@@ -417,6 +419,7 @@ void DavaGLWidget::OnWindowExposed()
     
     emit Initialized();
     
+    
     renderTimer->singleShot(16, this, SLOT(OnRenderTimer()));
 }
 
@@ -428,7 +431,8 @@ void DavaGLWidget::OnRenderTimer()
         currentDPR = dpr;
         PerformSizeChange();
     }                       // END OF TODO
-    
+
+    DAVA::Shader::ClearActive();
     DAVA::QtLayer::Instance()->ProcessFrame();
     
     QCoreApplication::postEvent(openGlWindow, new QEvent(QEvent::UpdateRequest));
