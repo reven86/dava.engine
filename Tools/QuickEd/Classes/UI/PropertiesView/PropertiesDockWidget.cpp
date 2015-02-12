@@ -14,8 +14,8 @@
 #include "ui_PropertiesDockWidget.h"
 #include "PropertiesTreeModel.h"
 #include "UI/Document.h"
+#include "UI/PropertiesContext.h"
 #include "UI/PropertiesView/PropertiesTreeItemDelegate.h"
-#include "PropertiesViewContext.h"
 #include "UIControls/PackageHierarchy/ControlNode.h"
 
 using namespace DAVA;
@@ -34,7 +34,7 @@ PropertiesDockWidget::~PropertiesDockWidget()
     ui = NULL;
 }
 
-void PropertiesDockWidget::SetContext(PropertiesViewContext *newContext)
+void PropertiesDockWidget::SetContext(PropertiesContext *newContext)
 {
     if (context)
     {

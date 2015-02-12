@@ -8,7 +8,6 @@
 #include "UI/PackageView/UIFilteredPackageModel.h"
 #include "UI/DavaGLWidget.h"
 #include "UI/GraphicView/GraphicsViewContext.h"
-#include "UI/PropertiesView/PropertiesViewContext.h"
 #include "UI/LibraryView/LibraryModel.h"
 
 #include "UIControls/PackageHierarchy/PackageNode.h"
@@ -17,6 +16,7 @@
 #include "UIControls/PackageHierarchy/PackageRef.h"
 
 #include "PackageContext.h"
+#include "PropertiesContext.h"
 
 #include "QtModelPackageCommandExecutor.h"
 
@@ -40,7 +40,7 @@ Document::Document(Project *_project, PackageNode *_package, QObject *parent)
     connect(graphicsContext, SIGNAL(ControlNodeSelected(ControlNode*)), this, SLOT(OnControlSelectedInEditor(ControlNode*)));
     connect(graphicsContext, SIGNAL(AllControlsDeselected()), this, SLOT(OnAllControlDeselectedInEditor()));
 
-    propertiesContext = new PropertiesViewContext(this);
+    propertiesContext = new PropertiesContext(this);
     
     libraryContext.model = new LibraryModel(package, this);
 
@@ -57,15 +57,8 @@ Document::Document(Project *_project, PackageNode *_package, QObject *parent)
 Document::~Document()
 {
     SafeDelete(packageContext);
-
-    disconnect(this, SIGNAL(activeRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), graphicsContext, SLOT(OnActiveRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-    disconnect(this, SIGNAL(selectedRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), graphicsContext, SLOT(OnSelectedControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-
-    disconnect(graphicsContext, SIGNAL(ControlNodeSelected(ControlNode*)), this, SLOT(OnControlSelectedInEditor(ControlNode*)));
-    disconnect(graphicsContext, SIGNAL(AllControlsDeselected()), this, SLOT(OnAllControlDeselectedInEditor()));
-
-    SafeDelete(graphicsContext);
     SafeDelete(propertiesContext);
+    SafeDelete(graphicsContext);
     SafeDelete(libraryContext.model);
     
     SafeRelease(package);

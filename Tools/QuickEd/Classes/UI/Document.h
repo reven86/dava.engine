@@ -38,8 +38,9 @@ public:
 };
 
 class PackageContext;
+class PropertiesContext;
 class GraphicsViewContext;
-class PropertiesViewContext;
+
 class PackageNode;
 class ControlNode;
 
@@ -59,15 +60,13 @@ public:
     const QList<ControlNode*> &GetSelectedControls() const { return selectedControls; }
     const QList<ControlNode*> &GetActiveRootControls() const { return activeRootControls; }
     
-    const PackageContext *GetPackageContext() const { return packageContext; };
-    PackageContext *GetPackageContext() { return packageContext; };
-    
+    PackageContext *GetPackageContext() const { return packageContext; };
+    PropertiesContext *GetPropertiesContext() const {return propertiesContext; };
+
     const GraphicsViewContext *GetGraphicsContext() const {return graphicsContext; };
-    const PropertiesViewContext *GetPropertiesContext() const {return propertiesContext; };
     const LibraryViewContext *GetLibraryContext() const {return &libraryContext; };
 
     GraphicsViewContext *GetGraphicsContext() {return graphicsContext; };
-    PropertiesViewContext *GetPropertiesContext() {return propertiesContext; };
     LibraryViewContext *GetLibraryContext() {return &libraryContext; };
 
     QUndoStack *UndoStack() const { return undoStack; }
@@ -96,10 +95,12 @@ private:
     PackageNode *package;
     QList<ControlNode *> selectedControls;
     QList<ControlNode *> activeRootControls;
+
     PackageContext *packageContext;
+    PropertiesContext *propertiesContext;
     GraphicsViewContext *graphicsContext;
-    PropertiesViewContext *propertiesContext;
     LibraryViewContext libraryContext;
+    
     QtModelPackageCommandExecutor *commandExecutor;
 
     QUndoStack *undoStack;

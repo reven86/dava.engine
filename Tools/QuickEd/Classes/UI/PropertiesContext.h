@@ -1,13 +1,17 @@
 #ifndef __PROPERTIESVIEWCONTEXT_H__
 #define __PROPERTIESVIEWCONTEXT_H__
 
+#include <QObject>
+
 class Document;
 
-class PropertiesViewContext
+class PropertiesContext : public QObject
 {
+    
+    Q_OBJECT
 public:
-    PropertiesViewContext(Document *doc);
-    ~PropertiesViewContext();
+    PropertiesContext(Document *doc);
+    virtual ~PropertiesContext();
 
     Document *GetDocument() const;
     //QPoint scrollPosition;
