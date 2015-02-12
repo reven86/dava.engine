@@ -15,7 +15,9 @@ namespace DAVA
 
 SmartDLC::SmartDLC()
     : isEnabled(false)
-    , downloadUrl("https://dl.google.com/android/ndk/android-ndk32-r10-darwin-x86.tar.bz2")
+//    , downloadUrl("https://dl.google.com/android/ndk/android-ndk32-r10-darwin-x86.tar.bz2")
+    , downloadUrl("http://10.128.108.182/DLC_Blitz/r469302/r0-469302.adreno.patch")
+//    , downloadUrl("http://dl.wargaming.net/wotblitz/dlc/r469302/r0-469302.adreno.patch")
     , savePath("~doc:/test.patch")
     , currentState(END)
     , currentDownloadID(0)
@@ -31,7 +33,7 @@ SmartDLC::~SmartDLC()
 void SmartDLC::Enable()
 {
     isEnabled = true;
-    DownloadManager::Instance()->SetDownloadSpeedLimit(512*1024);
+    DownloadManager::Instance()->SetDownloadSpeedLimit(0);
     UpdateState(START);
 }
 void SmartDLC::Disable()
@@ -49,7 +51,7 @@ void SmartDLC::UpdateState(State nextState)
             if (END == currentState && 0 == currentDownloadID)
             {
                 Logger::Error("DL START %d, %s", currentDownloadID,  savePath.GetAbsolutePathname().c_str());
-                currentDownloadID = DownloadManager::Instance()->Download(downloadUrl, savePath, FULL);
+                currentDownloadID = DownloadManager::Instance()->Download(downloadUrl, savePath, FULL, 1);
                 break;
             }
         case RESUME:
