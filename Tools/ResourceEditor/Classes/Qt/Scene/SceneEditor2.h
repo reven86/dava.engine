@@ -42,8 +42,8 @@
 #include "Commands2/CommandStack.h"
 #include "Settings/SettingsManager.h"
 
+//TODO: move all includes to .cpp file
 #include "Scene/System/GridSystem.h"
-#include "Scene/System/HoodSystem.h"
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/System/ModifSystem.h"
 #include "Scene/System/LandscapeEditorDrawSystem.h"
@@ -68,8 +68,11 @@
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 
-class SceneCollisionSystem;
 class SceneCameraSystem;
+class SceneCollisionSystem;
+
+class HoodSystem;
+
 class EditorLODSystem;
 class FogSettingsChangedReceiver;
 

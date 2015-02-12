@@ -48,8 +48,10 @@
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 
-#include "Scene/System/CollisionSystem.h"
 #include "Scene/System/CameraSystem.h"
+#include "Scene/System/CollisionSystem.h"
+#include "Scene/System/HoodSystem.h"
+
 #include "Scene/System/EditorLODSystem.h"
 
 
