@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PackageGraphicsWidget</class>
- <widget class="QWidget" name="PackageGraphicsWidget">
+ <class>PreviewWidget</class>
+ <widget class="QWidget" name="PreviewWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
