@@ -42,7 +42,8 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
         RegExp  sampler_re;
         RegExp  texture_re;
         
-        prop_re.compile( "\\s*DECLARE_PROP__(DYNAMIC|STATIC)_(GLOBAL|LOCAL)\\s*\\(\\s*(float4x4|float4|float1)\\s*\\,\\s*([a-zA-Z_]+[a-zA-Z_0-9]+)\\s*\\,\\s*\\\"(.*)\\\"\\s*\\)" );
+//-        prop_re.compile( "\\s*DECLARE_PROP__(DYNAMIC|STATIC)_(GLOBAL|LOCAL)\\s*\\(\\s*(float4x4|float4|float1)\\s*\\,\\s*([a-zA-Z_]+[a-zA-Z_0-9]+)\\s*\\,\\s*\\\"(.*)\\\"\\s*\\)" );
+        prop_re.compile( "\\s?property\\s+(float|float4|float4x4)\\s+([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:(.*)\\:(.*);" );
         sampler_re.compile( "\\s*DECL_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\)" );
         texture_re.compile( "\\s?FP_TEXTURE2D\\s?\\(\\s?([a-zA-Z0-9_]+)\\s?\\," );
     
@@ -59,34 +60,36 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
                 prop.resize( prop.size()+1 );
 
                 ShaderProp& p           = prop.back();
-                char        storage[32];prop_re.get_pattern( 1, countof(storage), storage );
-                char        scope[32];  prop_re.get_pattern( 2, countof(scope), scope );
-                char        ts[32];     prop_re.get_pattern( 3, countof(ts), ts );
-                char        uid[32];    prop_re.get_pattern( 4, countof(uid), uid );
-                char        script[256];prop_re.get_pattern( 5, countof(script), script );
+                char        type[32];   prop_re.get_pattern( 1, countof(type), type );
+                char        uid[32];    prop_re.get_pattern( 2, countof(uid), uid );
+                char        tags[128];  prop_re.get_pattern( 3, countof(tags), tags );
+                char        script[256];prop_re.get_pattern( 4, countof(script), script );
 
-                p.uid     = FastName(uid);
-                p.type    = (stricmp( ts, "float4x4" ) == 0)  
-                            ? ShaderProp::TYPE_FLOAT4X4  
-                            : ((stricmp( ts, "float1" ) == 0) ? ShaderProp::TYPE_FLOAT1 : ShaderProp::TYPE_FLOAT4);
-                p.scope   = (stricmp( scope, "local" ) == 0)
-                            ? ShaderProp::SCOPE_LOCAL
-                            : ShaderProp::SCOPE_GLOBAL;
-                p.storage = (stricmp( storage, "dynamic" ) == 0)
-                            ? ShaderProp::STORAGE_DYNAMIC
-                            : ShaderProp::STORAGE_STATIC;
+                p.uid   = FastName(uid);
+                p.scope = ShaderProp::SCOPE_SHARED;
+
+                if     ( stricmp( type, "float" ) == 0 )    p.type = ShaderProp::TYPE_FLOAT1;
+                else if( stricmp( type, "float4" ) == 0 )   p.type = ShaderProp::TYPE_FLOAT4;
+                else if( stricmp( type, "float4x4" ) == 0 ) p.type = ShaderProp::TYPE_FLOAT4X4;
+
+                char    scope[64];
+                char    tag[64];
+
+                sscanf( "%s,%s", scope, tags );
+                if     ( stricmp( scope, "shared" ) ==0 )   p.scope = ShaderProp::SCOPE_SHARED;
+                else if( stricmp( scope, "unique" ) ==0 )   p.scope = ShaderProp::SCOPE_UNIQUE;
+                p.tag = FastName(tag);
+                
                 memset( p.defaultValue, 0, sizeof(p.defaultValue) );
-
                 if( !IsEmptyString( script ) )
                 {
                 }
-
 
                 buf_t*  cbuf = 0;
 
                 for( std::vector<buf_t>::iterator b=buf.begin(),b_end=buf.end(); b!=b_end; ++b )
                 {
-                    if( b->scope == p.scope  &&  b->storage == p.storage )
+                    if( b->scope == p.scope  &&  b->tag == p.tag )
                     {
                         cbuf = &(buf[b-buf.begin()]);
                         break;
@@ -100,7 +103,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
                     cbuf = &(buf.back());
 
                     cbuf->scope     = p.scope;
-                    cbuf->storage   = p.storage;
+                    cbuf->tag       = p.tag;
                     cbuf->regCount  = 0;
                 }
 

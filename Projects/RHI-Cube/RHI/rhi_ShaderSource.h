@@ -43,14 +43,13 @@ namespace rhi
 struct 
 ShaderProp 
 {
-    enum Type { TYPE_FLOAT1, TYPE_FLOAT4, TYPE_FLOAT4X4 };
-    enum Scope { SCOPE_LOCAL, SCOPE_GLOBAL };
-    enum Storage { STORAGE_STATIC, STORAGE_DYNAMIC };
+    enum Type   { TYPE_FLOAT1, TYPE_FLOAT4, TYPE_FLOAT4X4 };
+    enum Scope  { SCOPE_UNIQUE, SCOPE_SHARED };
 
     FastName    uid;
     Type        type;
     Scope       scope;
-    Storage     storage;
+    FastName    tag;
     uint32      bufferindex;
     uint32      bufferReg;
     uint32      bufferRegCount;
@@ -96,7 +95,7 @@ private:
     buf_t
     {
         ShaderProp::Scope   scope;
-        ShaderProp::Storage storage;
+        FastName            tag;
         uint32              regCount;
     };
 
