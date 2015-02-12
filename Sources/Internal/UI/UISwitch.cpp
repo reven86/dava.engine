@@ -151,17 +151,17 @@ void UISwitch::AddControl(UIControl *control)
 	if (control->GetName() == UISWITCH_BUTTON_LEFT_NAME && buttonLeft != control)
 	{
         SafeRelease(buttonLeft);
-		buttonLeft = DynamicTypeCheck<UIButton*>(control);
+		buttonLeft = SafeRetain(DynamicTypeCheck<UIButton*>(control));
 	}
 	else if (control->GetName() == UISWITCH_BUTTON_TOGGLE_NAME && toggle != control)
 	{
         SafeRelease(toggle);
-		toggle = DynamicTypeCheck<UIButton*>(control);
+        toggle = SafeRetain(DynamicTypeCheck<UIButton*>(control));
 	}
 	else if (control->GetName() == UISWITCH_BUTTON_RIGHT_NAME && buttonRight != control)
 	{
         SafeRelease(buttonRight);
-		buttonRight = DynamicTypeCheck<UIButton*>(control);
+        buttonRight = SafeRetain(DynamicTypeCheck<UIButton*>(control));
 	}
 }
 
