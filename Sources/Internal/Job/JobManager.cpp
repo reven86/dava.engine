@@ -84,7 +84,7 @@ void JobManager::Update()
                 DVASSERT(false);
             }
 
-            if(curMainJob.invokerThreadId != 0 && curMainJob.fn != NULL)
+            if(curMainJob.invokerThreadId != 0 && curMainJob.fn != 0)
             {
                 // unlock queue mutex until function execution finished
                 mainQueueMutex.Unlock();

@@ -291,6 +291,12 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
 	Set<DAVA::NMaterial *> materials;
 	matSystem->BuildMaterialList(scene, materials);
 
+    const QVector<ProjectManager::AvailableMaterialTemplate> *materialTemplates = 0;
+    if (ProjectManager::Instance())
+    {
+        materialTemplates = ProjectManager::Instance()->GetAvailableMaterialTemplates();
+    }
+
 	DAVA::Map<DAVA::Texture *, DAVA::String> texturesMap;
 	auto endItMaterials = materials.end();
 	for(auto it = materials.begin(); it != endItMaterials; ++it)
@@ -335,6 +341,23 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
                     if(!qualityGroupIsOk)
                     {
                         errorsLog.insert(Format("Material \"%s\" has unknown quality group \"%s\"", (*it)->GetMaterialName().c_str(), materialGroup.c_str()));
+                    }
+                }
+
+                if (materialTemplates && (*it)->GetMaterialTemplateName() != NMaterialName::SHADOW_VOLUME) //ShadowVolume material is non-assignable and it's okey
+                {
+                    bool templateFound = false;
+                    for (int i = 0; i < materialTemplates->size(); ++i)
+                    {
+                        if (!strcmp(materialTemplates->at(i).path.toStdString().c_str(), (*it)->GetMaterialTemplateName().c_str()))
+                        {
+                            templateFound = true;
+                            break;
+                        }
+                    }
+                    if (!templateFound)
+                    {
+                        errorsLog.insert(Format("Material \"%s\" has non-assignable template", (*it)->GetMaterialName().c_str()));
                     }
                 }
             }

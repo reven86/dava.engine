@@ -154,6 +154,8 @@ void PixelFormatDescriptor::InitializePixelFormatDescriptors()
         caps = RenderManager::Instance()->GetCaps();
     }
 
+    DVASSERT(FORMAT_COUNT == 33); // add new format below
+
 	SetPixelDescription(FORMAT_INVALID, FastName("WRONG FORMAT"), 0);
 	SetPixelDescription(FORMAT_RGBA8888, FastName("RGBA8888"), 32, GL_UNSIGNED_BYTE, GL_RGBA, GL_RGBA, true, false);
 	SetPixelDescription(FORMAT_RGBA5551, FastName("RGBA5551"), 16, GL_UNSIGNED_SHORT_5_5_5_1, GL_RGBA, GL_RGBA, true, false);
@@ -199,6 +201,10 @@ void PixelFormatDescriptor::InitializePixelFormatDescriptors()
 	SetPixelDescription(FORMAT_ETC2_RGB, FastName("ETC2_RGB"), 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGB8_ETC2, GL_COMPRESSED_RGB8_ETC2, caps.isOpenGLES3Supported, true);
 	SetPixelDescription(FORMAT_ETC2_RGBA, FastName("ETC2_RGBA"), 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA8_ETC2_EAC, GL_COMPRESSED_RGBA8_ETC2_EAC, caps.isOpenGLES3Supported, true);
 	SetPixelDescription(FORMAT_ETC2_RGB_A1, FastName("ETC2_RGB_A1"), 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2, GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2, caps.isOpenGLES3Supported, true);
+
+#if defined (__DAVAENGINE_WIN32__)
+    SetPixelDescription(FORMAT_BGR888, FastName("BGR888"), 24, GL_UNSIGNED_BYTE, GL_BGR, GL_RGB, false, false);
+#endif
 }
 
 void PixelFormatDescriptor::SetPixelDescription(const PixelFormat formatID, const FastName &name, uint8 size, GLenum type, GLenum format, GLenum internalFormat, bool hardwareSupported, bool compressed)

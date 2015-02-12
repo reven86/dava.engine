@@ -428,7 +428,7 @@ DumpInternal( const std::vector<CounterInfo>& result, bool showPercents=false )
             text_len = Snprinf( text+indent*2, sizeof(text)-indent*2, "%u", i );
         
         text[indent*2+text_len] = ' ';
-        text_len = max_name_len+2+Snprinf( text+max_name_len+2, sizeof(text)-max_name_len-2, " %-5u  %u us", result[i].count, result[i].timeUs );
+        text_len = max_name_len+2+Snprinf( text+max_name_len+2, sizeof(text)-max_name_len-2, " %-5u  %llu us", result[i].count, result[i].timeUs );
 
         if( showPercents )
         {

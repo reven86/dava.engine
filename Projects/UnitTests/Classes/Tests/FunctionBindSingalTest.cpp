@@ -302,17 +302,17 @@ void FunctionBindSignalTest::TestFunction(TestTemplate<FunctionBindSignalTest>::
 		// operators
 		// ==================================================================================
 		Function<int()> null_f0;
-		Function<int()> null_f0_1 = NULL;
+		Function<int()> null_f0_1 = 0;
 
         TEST_VERIFY(null_f0 == null_f0_1);
-        TEST_VERIFY(null_f0 == NULL);
-        TEST_VERIFY(null_f0_1 == NULL);
+        TEST_VERIFY(null_f0 == 0);
+        TEST_VERIFY(null_f0_1 == 0);
         TEST_VERIFY(class_f0 == &A::classFn0);
 
 		null_f0 = static_f0;
         TEST_VERIFY(null_f0() == staticFn0());
-		null_f0 = NULL;
-        TEST_VERIFY(null_f0 == NULL);
+		null_f0 = 0;
+        TEST_VERIFY(null_f0 == 0);
 
 		null_f0 = object_f0;
         TEST_VERIFY(null_f0() == object_f0());
@@ -330,7 +330,6 @@ void FunctionBindSignalTest::TestFunction(TestTemplate<FunctionBindSignalTest>::
 		Function<int()>		bound_f0 = Bind(class_f0, &aa);
 		Function<int(A*)>	bound_f0_1 = Bind(class_f0, _1);
         
-        bound_f0 = bound_f0;
         bound_f0();
 
         TEST_VERIFY(bound_f0() == class_f0(&aa));

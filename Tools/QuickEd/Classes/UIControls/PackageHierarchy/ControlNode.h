@@ -45,6 +45,7 @@ public:
     virtual DAVA::String GetName() const;
     DAVA::UIControl *GetControl() const;
     ControlPrototype *GetPrototype() const;
+    const DAVA::Vector<ControlNode*> &GetInstances() const;
 
     virtual int GetFlags() const override;
     void SetReadOnly();
@@ -52,6 +53,8 @@ public:
     eCreationType GetCreationType() const { return creationType; }
 
     PropertiesRoot *GetPropertiesRoot() const {return propertiesRoot; }
+    BaseProperty *GetPropertyByPath(const DAVA::Vector<DAVA::String> &path);
+
     
     void Serialize(PackageSerializer *serializer, PackageRef *currentPackage) const;
     
