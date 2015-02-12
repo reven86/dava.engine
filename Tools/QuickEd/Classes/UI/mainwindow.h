@@ -45,6 +45,7 @@ class Project;
 class Document;
 class QUndoGroup;
 class PackageNode;
+class DocumentWidgets;
 
 class MainWindow : public QMainWindow
 {
@@ -132,6 +133,7 @@ private:
      
     Project *project;
     Document *activeDocument;
+    DocumentWidgets *documentWidgets;
     QUndoGroup *undoGroup;
     QAction *undoAction;
     QAction *redoAction;

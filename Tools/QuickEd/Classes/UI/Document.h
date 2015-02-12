@@ -19,6 +19,8 @@ namespace DAVA {
     class UIScreen;
 }
 
+class DocumentWidgets;
+
 class QAbstractItemModel;
 class QSortFilterProxyModel;
 class QUndoStack;
@@ -43,6 +45,9 @@ class Document : public QObject
 public:
     Document(Project * project, PackageNode *package, QObject *parent = NULL);
     virtual ~Document();
+    
+    void ConnectToWidgets(DocumentWidgets *widgets);
+    void DisconnectFromWidgets(DocumentWidgets *widgets);
     
     bool IsModified() const;
     void ClearModified();
@@ -87,8 +92,8 @@ private:
 
     PackageContext *packageContext;
     PropertiesContext *propertiesContext;
-    LibraryContext *libraryContext;
     PreviewContext *previewContext;
+    LibraryContext *libraryContext;
     
     QtModelPackageCommandExecutor *commandExecutor;
 

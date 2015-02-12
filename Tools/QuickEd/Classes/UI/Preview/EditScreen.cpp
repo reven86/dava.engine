@@ -71,9 +71,8 @@ bool CheckeredCanvas::SystemInput(UIEvent *currentInput)
                 while (parentControl->GetParent() != nullptr && parentControl->GetParent() != this)
                     parentControl = parentControl->GetParent();
 
-                DVASSERT(parentControl->GetParent() == this);
-                
-                listener->OnControlSelected(parentControl, control);
+                if (parentControl->GetParent() == this)
+                    listener->OnControlSelected(parentControl, control);
             }
         }
         else
