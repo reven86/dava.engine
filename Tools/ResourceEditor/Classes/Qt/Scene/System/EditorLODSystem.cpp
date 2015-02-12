@@ -168,7 +168,7 @@ void EditorLODSystem::CollectLODDataFromScene()
 void EditorLODSystem::AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> &triangles, DAVA::LodComponent *lod, bool onlyVisibleBatches)
 {
     Entity * en = lod->GetEntity();
-    if (GetEffectComponent(en))
+    if (nullptr != GetEffectComponent(en))
     {
         return;
     }

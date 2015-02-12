@@ -71,9 +71,9 @@ void LODEditor::SetupInternalUI()
     ui->viewLODButton->setStyleSheet("Text-align:left");
     ui->editLODButton->setStyleSheet("Text-align:left");
     
-    connect(ui->lodEditorSettingsButton, &QPushButton::released, this, &LODEditor::LODEditorSettingsButtonReleased);
-    connect(ui->viewLODButton, &QPushButton::released, this, &LODEditor::ViewLODButtonReleased);
-    connect(ui->editLODButton, &QPushButton::released, this, &LODEditor::EditLODButtonReleased);
+    connect(ui->lodEditorSettingsButton, &QPushButton::clicked, this, &LODEditor::LODEditorSettingsButtonReleased);
+    connect(ui->viewLODButton, &QPushButton::clicked, this, &LODEditor::ViewLODButtonReleased);
+    connect(ui->editLODButton, &QPushButton::clicked, this, &LODEditor::EditLODButtonReleased);
     
     connect(ui->enableForceDistance, &QCheckBox::toggled, this, &LODEditor::ForceDistanceStateChanged);
     connect(ui->enableForceDistance, &QCheckBox::toggled, ui->forceSlider, &QWidget::setEnabled);
