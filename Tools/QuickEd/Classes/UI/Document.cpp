@@ -6,8 +6,6 @@
 
 #include "UI/PackageView/UIPackageModel.h"
 #include "UI/PackageView/UIFilteredPackageModel.h"
-#include "UI/DavaGLWidget.h"
-#include "UI/GraphicView/GraphicsViewContext.h"
 #include "UI/LibraryView/LibraryModel.h"
 
 #include "UIControls/PackageHierarchy/PackageNode.h"
@@ -18,6 +16,8 @@
 #include "PackageContext.h"
 #include "PropertiesContext.h"
 #include "LibraryContext.h"
+#include "PreviewContext.h"
+#include "UI/PreviewContext.h"
 
 #include "QtModelPackageCommandExecutor.h"
 
@@ -27,7 +27,8 @@ Document::Document(Project *_project, PackageNode *_package, QObject *parent)
     : QObject(parent)
     , project(_project)
     , package(SafeRetain(_package))
-    , graphicsContext(nullptr)
+    , packageContext(nullptr),
+propertiesContext(nullptr), libraryContext(nullptr), previewContext(nullptr)
     , commandExecutor(nullptr)
 {
     undoStack = new QUndoStack(this);
@@ -35,13 +36,13 @@ Document::Document(Project *_project, PackageNode *_package, QObject *parent)
     packageContext = new PackageContext(this);
     propertiesContext = new PropertiesContext(this);
     libraryContext = new LibraryContext(this);
-    graphicsContext = new GraphicsViewContext();
+    previewContext = new PreviewContext(this);
     
-    connect(this, SIGNAL(activeRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), graphicsContext, SLOT(OnActiveRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-    connect(this, SIGNAL(controlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), graphicsContext, SLOT(OnSelectedControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+    connect(this, SIGNAL(activeRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), previewContext, SLOT(OnActiveRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+    connect(this, SIGNAL(controlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), previewContext, SLOT(OnSelectedControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
 
-    connect(graphicsContext, SIGNAL(ControlNodeSelected(ControlNode*)), this, SLOT(OnControlSelectedInEditor(ControlNode*)));
-    connect(graphicsContext, SIGNAL(AllControlsDeselected()), this, SLOT(OnAllControlDeselectedInEditor()));
+    connect(previewContext, SIGNAL(ControlNodeSelected(ControlNode*)), this, SLOT(OnControlSelectedInEditor(ControlNode*)));
+    connect(previewContext, SIGNAL(AllControlsDeselected()), this, SLOT(OnAllControlDeselectedInEditor()));
 
     
     PackageControlsNode *controlsNode = package->GetPackageControlsNode();
@@ -59,7 +60,7 @@ Document::~Document()
     SafeDelete(packageContext);
     SafeDelete(propertiesContext);
     SafeDelete(libraryContext);
-    SafeDelete(graphicsContext);
+    SafeDelete(previewContext);
     
     SafeRelease(package);
     

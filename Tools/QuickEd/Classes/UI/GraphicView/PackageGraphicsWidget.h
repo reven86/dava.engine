@@ -8,7 +8,7 @@ namespace Ui {
 }
 
 class Document;
-class GraphicsViewContext;
+class PreviewContext;
 
 enum ScreenId
 {
@@ -48,7 +48,7 @@ private:
 private:
     Ui::PackageGraphicsWidget *ui;
     Document *document;
-    GraphicsViewContext *context;
+    PreviewContext *context;
 };
 
 #endif // __QUICKED_PACKAGE_GRAPHICS_WIDGET_H__

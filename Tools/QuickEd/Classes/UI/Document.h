@@ -32,7 +32,7 @@ class QtModelPackageCommandExecutor;
 class PackageContext;
 class PropertiesContext;
 class LibraryContext;
-class GraphicsViewContext;
+class PreviewContext;
 
 class PackageNode;
 class ControlNode;
@@ -56,10 +56,7 @@ public:
     PackageContext *GetPackageContext() const { return packageContext; };
     PropertiesContext *GetPropertiesContext() const {return propertiesContext; };
     LibraryContext *GetLibraryContext() const {return libraryContext; };
-
-    const GraphicsViewContext *GetGraphicsContext() const {return graphicsContext; };
-
-    GraphicsViewContext *GetGraphicsContext() {return graphicsContext; };
+    PreviewContext *GetPreviewContext() const {return previewContext; };
 
     QUndoStack *UndoStack() const { return undoStack; }
     
@@ -91,7 +88,7 @@ private:
     PackageContext *packageContext;
     PropertiesContext *propertiesContext;
     LibraryContext *libraryContext;
-    GraphicsViewContext *graphicsContext;
+    PreviewContext *previewContext;
     
     QtModelPackageCommandExecutor *commandExecutor;
 
