@@ -36,9 +36,9 @@ using namespace DAVA;
 
 namespace
 {
-    const uint32 bufSize = 4100; // more then 4096
-    const String messageEnd = { "test" };
-    const WideString wideMessageEnd = { L"TEST" };
+    const uint32 bufSize{ 4100 }; // more then 4096
+    const String messageEnd{ "test" };
+    const WideString wideMessageEnd{ L"TEST" };
 
     String errorMessage;
 }
