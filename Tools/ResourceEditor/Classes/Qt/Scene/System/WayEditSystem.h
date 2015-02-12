@@ -70,7 +70,7 @@ protected:
     DAVA::Entity* CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 pos);
     DAVA::Entity* CopyWayPoint(DAVA::Entity* waypoint);
 
-    
+    EntityGroup FilterPrevSelection(DAVA::Entity *parentEntity);
     EntityGroup GetEntitiesForAddEdges(DAVA::Entity *nextEntity);
     void AddEdges(const EntityGroup & group, DAVA::Entity *nextEntity);
     

@@ -382,5 +382,11 @@ void PathComponent::Reset()
 {
     for_each(waypoints.begin(), waypoints.end(), SafeDelete<PathComponent::Waypoint>);
 }
+
+PathComponent::Waypoint* PathComponent::GetStartWaypoint() const
+{
+    auto found = find_if(waypoints.begin(), waypoints.end(), [](PathComponent::Waypoint* wp){return wp->IsStarting();});
+    return (found == waypoints.end() ? nullptr : *found);
+}
     
 }

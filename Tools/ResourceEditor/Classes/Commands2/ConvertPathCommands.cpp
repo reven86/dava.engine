@@ -65,6 +65,7 @@ ExpandPathCommand::ExpandPathCommand(DAVA::PathComponent* pathComponent)
         DAVA::Entity* entity = entityAddCommands[0]->GetEntity();
         DAVA::WaypointComponent* comp = GetWaypointComponent(entity);
         comp->SetStarting(true);
+        entity->SetNotRemovable(true);
     }
 
     // add edge components
@@ -118,9 +119,15 @@ DAVA::Entity* ExpandPathCommand::CreateWaypointEntity(const DAVA::PathComponent:
 
     wpComponent->SetPathName(pathname);
     wpComponent->SetProperties(waypoint->GetProperties());
-    wpComponent->SetStarting(waypoint->IsStarting());
     wpEntity->AddComponent(wpComponent);
     wpEntity->SetName(waypoint->name);
+
+    if (waypoint->IsStarting())
+    {
+        wpComponent->SetStarting(true);
+        wpEntity->SetNotRemovable(true);
+    }
+    
 
     DAVA::Matrix4 m;
     m.SetTranslationVector(waypoint->position);
@@ -270,7 +277,7 @@ void CollapsePathCommand::InitWaypoint(DAVA::PathComponent::Waypoint* waypoint, 
 {
     waypoint->name = wpEntity->GetName();
     waypoint->SetProperties(wpComponent->GetProperties());
-    waypoint->SetStarting(wpComponent->IsStarting()); 
+    waypoint->SetStarting(wpComponent->IsStarting());
     DAVA::Matrix4 m = wpEntity->GetLocalTransform();
     waypoint->position = m.GetTranslationVector();
 }
