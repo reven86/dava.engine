@@ -154,16 +154,14 @@ void ModifyTilemaskCommand::Undo()
     
     RenderManager::Instance()->SetColor(Color::White);
     
-    Sprite* srcSprite = landscapeProxy->GetTilemaskSprite(LandscapeProxy::TILEMASK_SPRITE_SOURCE);
-	ApplyImageToSprite(undoImageMask, srcSprite);
+    Texture * srcTex = landscapeProxy->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE);
+    ApplyImageToTexture(undoImageMask, srcTex);
     
-	Texture* maskTexture = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK);
+	Texture * maskTexture = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK);
 
-	Sprite* sprite;
-	sprite = ApplyImageToTexture(undoImageMask, maskTexture);
-    
-	landscapeProxy->SetTilemaskTexture(sprite->GetTexture());
-	SafeRelease(sprite);
+	Texture* texture = ApplyImageToTexture(undoImageMask, maskTexture);
+    landscapeProxy->SetTilemaskTexture(texture);
+    SafeRelease(texture);
 
 	landscapeProxy->UpdateFullTiledTexture();
 	landscapeProxy->DecreaseTilemaskChanges();
@@ -177,14 +175,13 @@ void ModifyTilemaskCommand::Redo()
 {
     RenderSystem2D::Instance()->Setup2DMatrices();
     
-	ApplyImageToSprite(redoImageMask, landscapeProxy->GetTilemaskSprite(LandscapeProxy::TILEMASK_SPRITE_SOURCE));
+	ApplyImageToTexture(redoImageMask, landscapeProxy->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE));
 
-	Texture* maskTexture = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK);
+	Texture * maskTexture = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK);
     
-	Sprite* sprite = NULL;
-	sprite = ApplyImageToTexture(redoImageMask, maskTexture);
-	landscapeProxy->SetTilemaskTexture(sprite->GetTexture());
-	SafeRelease(sprite);
+	Texture * texture = ApplyImageToTexture(redoImageMask, maskTexture);
+    landscapeProxy->SetTilemaskTexture(texture);
+    SafeRelease(texture);
 
 	landscapeProxy->UpdateFullTiledTexture();
 	landscapeProxy->IncreaseTilemaskChanges();
@@ -199,81 +196,60 @@ Entity* ModifyTilemaskCommand::GetEntity() const
 	return NULL;
 }
 
-Sprite* ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Texture *texture)
+Texture * ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Texture *texture)
 {
 	int32 width = texture->GetWidth();
 	int32 height = texture->GetHeight();
     
-	Sprite* resSprite = Sprite::CreateAsRenderTarget((float32)width, (float32)height, FORMAT_RGBA8888, true);
-    RenderSystem2D::Instance()->PushRenderTarget();
-    RenderSystem2D::Instance()->SetRenderTarget(resSprite);
-    
+	Texture* resTexture = Texture::CreateFBO(width, height, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+    RenderHelper::Instance()->Set2DRenderTarget(resTexture);
     RenderManager::Instance()->SetColor(Color::White);
+    RenderHelper::Instance()->DrawTexture(texture, RenderState::RENDERSTATE_2D_OPAQUE);
     
-	Sprite* s = Sprite::CreateFromTexture(texture, 0, 0, (float32)width, (float32)height);
-    
-    Sprite::DrawState drawState;
-    drawState.SetRenderState(noBlendDrawState);
-	drawState.SetPosition(0.f, 0.f);
-
-    RenderSystem2D::Instance()->Setup2DMatrices();
-    RenderSystem2D::Instance()->Draw(s, &drawState);
-	SafeRelease(s);
-    
-    Rect rect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(updatedRect);
-    
-    RenderSystem2D::Instance()->PushClip();
-    RenderSystem2D::Instance()->SetClip(rect);
+    RenderManager::Instance()->SetClip(updatedRect);
     
     RenderManager::Instance()->SetColor(Color::White);
     RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
     RenderManager::Instance()->FlushState();
 
-	Texture* t = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
-										 image->GetWidth(), image->GetHeight(), false);
-	s = Sprite::CreateFromTexture(t, 0, 0, (float32)t->GetWidth(), (float32)t->GetHeight());
+	Texture* t = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), image->GetWidth(), image->GetHeight(), false);
+
+    RenderHelper::Instance()->DrawTexture(t, RenderState::RENDERSTATE_2D_OPAQUE, updatedRect);
     
-    drawState.Reset();
-	drawState.SetPosition(rect.x, rect.y);
-    drawState.SetRenderState(noBlendDrawState);
-    RenderSystem2D::Instance()->Draw(s, &drawState);
-    
-	SafeRelease(s);
 	SafeRelease(t);
     
-    RenderSystem2D::Instance()->PopClip();
-    RenderSystem2D::Instance()->PopRenderTarget();
+    RenderManager::Instance()->SetClip(Rect(0.f, 0.f, -1.f, -1.));
+    RenderManager::Instance()->SetRenderTarget(0);
     
-	return resSprite;
+    return resTexture;
 }
 
 void ModifyTilemaskCommand::ApplyImageToSprite(Image* image, Sprite* dstSprite)
 {
-    Rect rect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(updatedRect);
-    
-    RenderSystem2D::Instance()->PushRenderTarget();
-    RenderSystem2D::Instance()->SetRenderTarget(dstSprite);
-    RenderSystem2D::Instance()->PushClip();
-    RenderSystem2D::Instance()->SetClip(rect);
+ //   Rect rect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(updatedRect);
+ //   
+ //   RenderSystem2D::Instance()->SetRenderTarget(dstSprite);
+ //   RenderSystem2D::Instance()->PushClip();
+ //   RenderSystem2D::Instance()->SetClip(rect);
 
-    RenderManager::Instance()->SetColor(Color::White);
-	
-	Texture* texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
-											   image->GetWidth(), image->GetHeight(), false);
-	Sprite* srcSprite = Sprite::CreateFromTexture(texture, 0, 0, image->GetWidth(), image->GetHeight());
-	
-    Sprite::DrawState drawState;
-    drawState.SetRenderState(noBlendDrawState);
-	drawState.SetPosition(rect.x, rect.y);
-    
-    RenderSystem2D::Instance()->Setup2DMatrices();
-    RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
-    
-    RenderSystem2D::Instance()->PopClip();
-    RenderSystem2D::Instance()->PopRenderTarget();
-	
-	SafeRelease(texture);
-	SafeRelease(srcSprite);
+ //   RenderManager::Instance()->SetColor(Color::White);
+	//
+	//Texture* texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
+	//										   image->GetWidth(), image->GetHeight(), false);
+	//Sprite* srcSprite = Sprite::CreateFromTexture(texture, 0, 0, image->GetWidth(), image->GetHeight());
+	//
+ //   Sprite::DrawState drawState;
+ //   drawState.SetRenderState(noBlendDrawState);
+	//drawState.SetPosition(rect.x, rect.y);
+ //   
+ //   RenderSystem2D::Instance()->Setup2DMatrices();
+ //   RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
+ //   
+ //   RenderSystem2D::Instance()->PopClip();
+ //   RenderSystem2D::Instance()->PopRenderTarget();
+	//
+	//SafeRelease(texture);
+	//SafeRelease(srcSprite);
 }
 
 

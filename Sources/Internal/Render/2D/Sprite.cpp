@@ -316,37 +316,6 @@ Sprite* Sprite::Create(const FilePath &spriteName)
 	return spr;
 }
 
-Sprite* Sprite::CreateAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat textureFormat, bool contentScaleIncluded)
-{
-	Sprite * sprite = new Sprite();
-	sprite->InitAsRenderTarget(sprWidth, sprHeight, textureFormat, contentScaleIncluded);
-	return sprite;
-}
-
-void Sprite::InitAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat textureFormat, bool contentScaleIncluded)
-{
-    Vector2 spriteSize(sprWidth, sprHeight);
-	if (!contentScaleIncluded)
-	{
-        spriteSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(spriteSize);
-	}
-
-	Texture *t = Texture::CreateFBO((int32)ceilf(spriteSize.x), (int32)ceilf(spriteSize.y), textureFormat, Texture::DEPTH_NONE);
-
-	this->InitFromTexture(t, 0, 0, spriteSize.x, spriteSize.y, -1, -1, true);
-
-	t->Release();
-
-	this->type = SPRITE_RENDER_TARGET;
-    this->textureInVirtualSpace = contentScaleIncluded;
-
-	// Clear created render target first
-    RenderSystem2D::Instance()->PushRenderTarget();
-	RenderSystem2D::Instance()->SetRenderTarget(this);
-	RenderManager::Instance()->ClearWithColor(0, 0, 0, 0);
-    RenderSystem2D::Instance()->PopRenderTarget();
-}
-
 Sprite* Sprite::CreateFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, bool contentScaleIncluded)
 {
 	DVASSERT(fromTexture);

@@ -82,7 +82,7 @@ protected:
 	LandscapeProxy* landscapeProxy;
 	Rect updatedRect;
 
-	Sprite* ApplyImageToTexture(Image* image, Texture* texture);
+	Texture * ApplyImageToTexture(Image* image, Texture* texture);
 	void ApplyImageToSprite(Image* image, Sprite* dstSprite);
 	
 	UniqueHandle noBlendDrawState;

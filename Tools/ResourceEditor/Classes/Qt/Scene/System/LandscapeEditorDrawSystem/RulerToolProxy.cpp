@@ -34,12 +34,12 @@ RulerToolProxy::RulerToolProxy(int32 size)
 :	size(size)
 ,	spriteChanged(false)
 {
-	rulerToolSprite = Sprite::CreateAsRenderTarget((float32)size, (float32)size, FORMAT_RGBA8888, true);
+	rulerToolTexture = Texture::CreateFBO((float32)size, (float32)size, FORMAT_RGBA8888, Texture::DEPTH_NONE);
 }
 
 RulerToolProxy::~RulerToolProxy()
 {
-	SafeRelease(rulerToolSprite);
+	SafeRelease(rulerToolTexture);
 }
 
 int32 RulerToolProxy::GetSize()
@@ -47,22 +47,22 @@ int32 RulerToolProxy::GetSize()
 	return size;
 }
 
-Sprite* RulerToolProxy::GetSprite()
+Texture* RulerToolProxy::GetTexture()
 {
-	return rulerToolSprite;
+	return rulerToolTexture;
 }
 
-bool RulerToolProxy::IsSpriteChanged()
+bool RulerToolProxy::IsTextureChanged()
 {
 	return spriteChanged;
 }
 
-void RulerToolProxy::ResetSpriteChanged()
+void RulerToolProxy::ResetTextureChanged()
 {
 	spriteChanged = false;
 }
 
-void RulerToolProxy::UpdateSprite()
+void RulerToolProxy::UpdateTexture()
 {
 	spriteChanged = true;
 }

@@ -74,10 +74,6 @@ public:
 	void PopClip();
     void UpdateClip();
 
-    void PushRenderTarget();
-    void PopRenderTarget();
-    void SetRenderTarget(Sprite * target);
-
     void ScreenSizeChanged();
 
     void Setup2DMatrices();
@@ -95,9 +91,6 @@ private:
     Matrix4 projMatrix;
 	std::stack<Rect> clipStack;
 	Rect currentClip;
-    
-    std::stack<Sprite *> renderTargetStack;
-    Sprite * currentRenderTarget;
 
 	float32 spriteTempVertices[8];
     RenderDataObject * spriteRenderObject;
@@ -105,7 +98,7 @@ private:
 	RenderDataStream * spriteTexCoordStream;
 	ePrimitiveType spritePrimitiveToDraw;
 	int32 spriteVertexCount;
-    
+
     Sprite::DrawState defaultSpriteDrawState;
 
     Vector<Vector2> spriteClippedTexCoords;

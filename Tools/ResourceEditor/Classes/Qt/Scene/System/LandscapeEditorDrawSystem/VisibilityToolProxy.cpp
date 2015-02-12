@@ -37,12 +37,12 @@ VisibilityToolProxy::VisibilityToolProxy(int32 size)
 ,	visibilityPoint(Vector2(-1.f, -1.f))
 ,	isVisibilityPointSet(false)
 {
-	visibilityToolSprite = Sprite::CreateAsRenderTarget((float32)size, (float32)size, FORMAT_RGBA8888, true);
+    visibilityToolTexture = Texture::CreateFBO((uint32)size, (uint32)size, FORMAT_RGBA8888, Texture::DEPTH_NONE);
 }
 
 VisibilityToolProxy::~VisibilityToolProxy()
 {
-	SafeRelease(visibilityToolSprite);
+	SafeRelease(visibilityToolTexture);
 }
 
 int32 VisibilityToolProxy::GetSize()
@@ -50,24 +50,24 @@ int32 VisibilityToolProxy::GetSize()
 	return size;
 }
 
-Sprite* VisibilityToolProxy::GetSprite()
+Texture* VisibilityToolProxy::GetTexture()
 {
-	return visibilityToolSprite;
+	return visibilityToolTexture;
 }
 
-void VisibilityToolProxy::ResetSpriteChanged()
+void VisibilityToolProxy::ResetTextureChanged()
 {
 	spriteChanged = false;
 }
 
-bool VisibilityToolProxy::IsSpriteChanged()
+bool VisibilityToolProxy::IsTextureChanged()
 {
 	return spriteChanged;
 }
 
 Rect VisibilityToolProxy::GetChangedRect()
 {
-	if (IsSpriteChanged())
+	if (IsTextureChanged())
 	{
 		return changedRect;
 	}

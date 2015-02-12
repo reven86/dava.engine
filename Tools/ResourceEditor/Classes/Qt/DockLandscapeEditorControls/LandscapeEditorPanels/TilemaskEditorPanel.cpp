@@ -263,27 +263,17 @@ void TilemaskEditorPanel::SplitImageToChannels(Image* image, Image*& r, Image*& 
 		uint32 width = image->GetWidth();
 		uint32 height = image->GetHeight();
 
-		Texture* t = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
-											 width, height, false);
-		Sprite* s = Sprite::CreateFromTexture(t, 0, 0, width, height);
+        Texture* t = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), width, height, false);
+		Texture* fbo = Texture::CreateFBO(width, height, FORMAT_RGBA8888, Texture::DEPTH_NONE);
 
-		Sprite* sprite = Sprite::CreateAsRenderTarget(width, height, FORMAT_RGBA8888);
-        RenderSystem2D::Instance()->PushRenderTarget();
-        RenderSystem2D::Instance()->SetRenderTarget(sprite);
-        
-        Sprite::DrawState drawState;
-		drawState.SetPosition(0.f, 0.f);
-        drawState.SetRenderState(noBlendDrawState);
-        
-        RenderSystem2D::Instance()->Setup2DMatrices();
-        RenderSystem2D::Instance()->Draw(s, &drawState);
-        RenderSystem2D::Instance()->PopRenderTarget();
+        RenderHelper::Instance()->Set2DRenderTarget(fbo);
+        RenderHelper::Instance()->DrawTexture(t, RenderState::RENDERSTATE_2D_OPAQUE);
+        RenderManager::Instance()->SetRenderTarget(0);
 
-		image = sprite->GetTexture()->CreateImageFromMemory(noBlendDrawState);
+        image = fbo->CreateImageFromMemory(noBlendDrawState);
 		image->ResizeCanvas(width, height);
 
-		SafeRelease(sprite);
-		SafeRelease(s);
+        SafeRelease(fbo);
 		SafeRelease(t);
 	}
 	else

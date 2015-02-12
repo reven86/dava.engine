@@ -144,19 +144,6 @@ public:
 	 */
 	static Sprite* Create(const FilePath &spriteName);// Creating sprite by name
 
-	/**
-	 \brief Function to create sprite as render target.
-
-	 \param sprWidth width of requested render target
-	 \param sprHeight height of requested render target
-	 \param textureFormat texture pixel format
-	 \param contentScaleIncluded set true if content scale already taken into account. Just send false if you don't know how it's works.
-
-	 \return sprite pointer or 0 if it will be impossible to create such render target
-	 */
-	static Sprite* CreateAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat textureFormat, bool contentScaleIncluded = false);
-	void InitAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat textureFormat, bool contentScaleIncluded = false);
-
 	/*
 		\brief Function to create sprite
 		\param spriteName path to sprite name

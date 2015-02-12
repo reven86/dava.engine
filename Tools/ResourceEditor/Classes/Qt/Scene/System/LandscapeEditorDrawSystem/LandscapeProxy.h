@@ -113,7 +113,7 @@ public:
 	Image* GetTilemaskImageCopy();
 
 	void InitTilemaskSprites();
-	Sprite* GetTilemaskSprite(int32 number);
+	Texture * GetTilemaskTexture(int32 number);
 	void SwapTilemaskSprites();
 
 protected:
@@ -131,7 +131,7 @@ protected:
 	bool texturesEnabled[TEXTURE_TYPES_COUNT];
 
 	Image* tilemaskImageCopy;
-	Sprite* tilemaskSprites[TILEMASK_SPRITES_COUNT];
+	Texture* tilemaskTextures[TILEMASK_SPRITES_COUNT];
 
 	int32 tilemaskWasChanged;
 

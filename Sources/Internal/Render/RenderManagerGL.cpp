@@ -305,7 +305,7 @@ void RenderManager::SetViewport(const Rect & rect)
 {
     Rect viewportRect = viewport = rect;
 
-    if (!IsRenderTarget())
+    if (currentRenderTarget == 0)
     {
         viewportRect.y = frameBufferHeight - viewportRect.y - viewportRect.dy;
     }
@@ -478,7 +478,7 @@ void RenderManager::SetClip(const Rect &rect)
 	int32 width = x2 - x;
 	int32 height = y2 - y;
     
-    if (!IsRenderTarget())
+    if (currentRenderTarget == 0)
     {
         y = frameBufferHeight - y - height;
     }
@@ -489,6 +489,7 @@ void RenderManager::SetClip(const Rect &rect)
 
 void RenderManager::SetRenderTarget(Texture * renderTarget)
 {
+    currentRenderTarget = renderTarget;
     if (renderTarget)
 	    HWglBindFBO(renderTarget->fboID);
     else
