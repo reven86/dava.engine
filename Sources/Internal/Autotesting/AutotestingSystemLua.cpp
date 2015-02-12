@@ -242,9 +242,9 @@ String AutotestingSystemLua::GetPlatform()
 
 String AutotestingSystemLua::GetDeviceName()
 {
-	if (0 == strncmp(AUTOTESTING_PLATFORM_NAME, "Android", 256u))
+    if (DeviceInfo::GetPlatformString() == "Android")
 	{
-		    return DeviceInfo::GetModel();
+        return DeviceInfo::GetModel();
 	}
 	return WStringToString(DeviceInfo::GetName());
 }
