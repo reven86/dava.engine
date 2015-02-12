@@ -48,7 +48,7 @@ namespace DAVA
 {
 
 class KeyboardDevice;
-class GamepadManager;
+class GamepadDevice;
 
 class InputSystem : public Singleton<InputSystem>
 {
@@ -80,10 +80,10 @@ public:
     void OnBeforeUpdate();
     void OnAfterUpdate();
     
-    KeyboardDevice *GetKeyboard();
-    GamepadManager *GetGamepadManager();
+    inline KeyboardDevice & GetKeyboard();
+    inline GamepadDevice  & GetGamepadDevice();
 
-    bool IsCursorPining();
+    inline bool IsCursorPining();
     void SetCursorPining(bool isPin);
     
     inline void EnableMultitouch(bool enabled);
@@ -92,13 +92,28 @@ public:
 protected:
     
     KeyboardDevice *keyboard;
-    GamepadManager *gamepadManager;
+    GamepadDevice *gamepad;
 
     Vector<InputCallback> callbacks;
     bool pinCursor;
     
     bool isMultitouchEnabled;
 };
+
+inline bool InputSystem::IsCursorPining()
+{
+    return pinCursor;
+}
+
+inline KeyboardDevice & InputSystem::GetKeyboard()
+{
+    return *keyboard;
+}
+
+inline GamepadDevice & InputSystem::GetGamepadDevice()
+{
+    return *gamepad;
+}
 
 inline void InputSystem::EnableMultitouch(bool enabled)
 {

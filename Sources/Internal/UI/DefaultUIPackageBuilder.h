@@ -44,6 +44,8 @@ public:
     DefaultUIPackageBuilder(UIPackagesCache *_packagesCache = nullptr);
     virtual ~DefaultUIPackageBuilder();
     
+    virtual UIPackage *FindInCache(const String &packagePath) const override;
+
     virtual RefPtr<UIPackage> BeginPackage(const FilePath &packagePath) override;
     virtual void EndPackage() override;
     

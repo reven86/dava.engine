@@ -160,8 +160,26 @@
     <Filter Include="Internal\Scene3D\Systems\Controller">
       <UniqueIdentifier>{dc214c6e-aa38-43ad-93ff-6dc237488743}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\DataStorage">
+      <UniqueIdentifier>{6ed00645-b5a9-4746-a914-a3dcb592fd92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\DataStorage\Windows">
+      <UniqueIdentifier>{0497b98a-b930-4fb6-8a65-92f3f18b2754}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Internal\Scene3D\Components\Waypoint">
       <UniqueIdentifier>{a6ae9957-6b3c-4e7f-a03d-1e52ed923446}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Network">
+      <UniqueIdentifier>{fbd90c04-d90b-434c-a9c5-9777bb3cbbb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Network\Base">
+      <UniqueIdentifier>{2bea0d8c-2886-4354-b3e4-345bf610ea57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Network\Private">
+      <UniqueIdentifier>{118eb54a-7eae-4770-878f-7960c40ed24c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Network\Services">
+      <UniqueIdentifier>{d2eefec1-4620-43a6-b8f5-b6703672b2b0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1308,9 +1326,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\StaticOcclusionComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Input\GamepadManager.h">
-      <Filter>Internal\Input</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Input\GamepadDevice.h">
       <Filter>Internal\Input</Filter>
     </ClInclude>
@@ -1642,6 +1657,18 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.h">
       <Filter>Internal\Scene3D\Systems\Controller</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.h">
+      <Filter>Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.h">
+      <Filter>Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\DataStorage.h">
+      <Filter>Internal\DataStorage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.h">
+      <Filter>Internal\DataStorage\Windows</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\EdgeComponent.h">
       <Filter>Internal\Scene3D\Components\Waypoint</Filter>
     </ClInclude>
@@ -1653,6 +1680,108 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIPackagesCache.h">
       <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\Buffer.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimerTemplate.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\Endpoint.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\IfAddress.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\IOLoop.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\IPAddress.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\NetworkUtils.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\TCPAcceptor.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\TCPAcceptorTemplate.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\TCPSocket.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\TCPSocketTemplate.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\UDPSocket.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\UDPSocketTemplate.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\ITransport.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\NetController.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\ProtoDecoder.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\ProtoDriver.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\ProtoTypes.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPClientTransport.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\LogConsumer.h">
+      <Filter>Internal\Network\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\NetLogger.h">
+      <Filter>Internal\Network\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\IChannel.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\IController.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\NetConfig.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\NetCore.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\NetService.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\NetworkCommon.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\ServiceRegistrar.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\Announcer.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\Discoverer.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\SimpleEchoServer.h">
+      <Filter>Internal\Network\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\PeerDesription.h">
+      <Filter>Internal\Network</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2652,9 +2781,6 @@
     <ClCompile Include="..\..\Sources\Internal\Utils\UtilsWin32.cpp">
       <Filter>Internal\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Input\GamepadManager.cpp">
-      <Filter>Internal\Input</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Input\GamepadDevice.cpp">
       <Filter>Internal\Input</Filter>
     </ClCompile>
@@ -2971,6 +3097,15 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.cpp">
       <Filter>Internal\Scene3D\Systems\Controller</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.cpp">
+      <Filter>Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.cpp">
+      <Filter>Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.cpp">
+      <Filter>Internal\DataStorage\Windows</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\EdgeComponent.cpp">
       <Filter>Internal\Scene3D\Components\Waypoint</Filter>
     </ClCompile>
@@ -2982,6 +3117,78 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIPackagesCache.cpp">
       <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\Endpoint.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\IfAddress.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\IOLoop.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\IPAddress.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\NetworkUtils.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\TCPAcceptor.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\TCPSocket.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\UDPSocket.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\NetController.cpp">
+      <Filter>Internal\Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\ProtoDecoder.cpp">
+      <Filter>Internal\Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\ProtoDriver.cpp">
+      <Filter>Internal\Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\TCPClientTransport.cpp">
+      <Filter>Internal\Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.cpp">
+      <Filter>Internal\Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\LogConsumer.cpp">
+      <Filter>Internal\Network\Services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\NetLogger.cpp">
+      <Filter>Internal\Network\Services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\NetConfig.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\NetCore.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\NetService.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\ServiceRegistrar.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\Announcer.cpp">
+      <Filter>Internal\Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\Discoverer.cpp">
+      <Filter>Internal\Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\PeerDesription.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\PeerDesriptionSerialize.cpp">
+      <Filter>Internal\Network</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

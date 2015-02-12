@@ -58,7 +58,9 @@ public:
     void AddControl(UIControl *control);
     void InsertControlBelow(UIControl *control, const UIControl *belowThis);
     void RemoveControl(UIControl *control);
-    
+
+
+    RefPtr<UIPackage> Clone() const;
 private:
     Vector<UIControl *> controls;
 };

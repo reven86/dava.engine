@@ -1,11 +1,3 @@
-//
-//  ValueProperty.h
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 30.9.14.
-//
-//
-
 #ifndef __UI_EDITOR_VALUE_PROPERTY__
 #define __UI_EDITOR_VALUE_PROPERTY__
 
@@ -28,14 +20,16 @@ public:
     virtual bool HasChanges() const override;
     virtual void Serialize(PackageSerializer *serializer) const override;
 
-    virtual DAVA::String GetName() const;
-    virtual ePropertyType GetType() const;
-    virtual eEditFrags GetEditFlag() const { return EF_CAN_RESET; };
+    virtual DAVA::String GetName() const override;
+    virtual ePropertyType GetType() const override;
+    virtual eEditFrags GetEditFlag() const  override{ return EF_CAN_RESET; };
 
-    virtual DAVA::VariantType GetValue() const;
-    virtual void SetValue(const DAVA::VariantType &newValue);
-    virtual void ResetValue();
-    virtual bool IsReplaced() const;
+    virtual DAVA::VariantType GetValue() const override;
+    virtual void SetValue(const DAVA::VariantType &newValue) override;
+    virtual DAVA::VariantType GetDefaultValue() const override;
+    virtual void SetDefaultValue(const DAVA::VariantType &newValue) override;
+    virtual void ResetValue() override;
+    virtual bool IsReplaced() const override;
     
     virtual DAVA::String GetSubValueName(int index) const;
     virtual DAVA::VariantType GetSubValue(int index) const;
@@ -49,8 +43,11 @@ public:
         return member;
     }
     
-    virtual const EnumMap *GetEnumMap() const;
+    virtual const EnumMap *GetEnumMap() const override;
 
+protected:
+    virtual void ApplyValue(const DAVA::VariantType &value);
+    
 private:
     DAVA::BaseObject *object;
     const DAVA::InspMember *member;

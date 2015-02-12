@@ -38,6 +38,7 @@
 #include <QNetworkReply>
 #include <QQueue>
 
+class ConfigDownloader;
 class ApplicationManager: public QObject
 {
     Q_OBJECT
@@ -67,21 +68,16 @@ signals:
 public slots:
     void OnAppInstalled(const QString & branchID, const QString & appID, const AppVersion & version);
 
-private slots:
-    void NetworkError(QNetworkReply::NetworkError code);
-    void DownloadFinished();
-
 private:
     void LoadLocalConfig(const QString & configPath);
-    void DownloadRemoteConfig(const QUrl & url);
+    void ParseRemoteConfigData(const QByteArray & data);
 
     QString localConfigFilePath;
 
     ConfigParser * localConfig;
     ConfigParser * remoteConfig;
 
-    QNetworkAccessManager * networkManager;
-    QNetworkReply * currentDownload;
+    friend class ConfigDownloader;
 };
 
 #endif // APPLICATIONMANAGER_H

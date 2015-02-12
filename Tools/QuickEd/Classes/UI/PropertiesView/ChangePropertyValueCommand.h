@@ -13,6 +13,22 @@ public:
 
     virtual void undo();
     virtual void redo();
+    
+private:
+    BaseProperty *property;
+    DAVA::VariantType oldValue;
+    DAVA::VariantType newValue;
+};
+
+class ChangeDefaultValueCommand: public QUndoCommand
+{
+    
+public:
+    ChangeDefaultValueCommand(BaseProperty *property, const DAVA::VariantType &newValue, QUndoCommand *parent = 0);
+    virtual ~ChangeDefaultValueCommand();
+    
+    virtual void undo();
+    virtual void redo();
 private:
     BaseProperty *property;
     DAVA::VariantType oldValue;
