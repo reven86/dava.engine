@@ -311,7 +311,7 @@ void VegetationFixedGeometry::GenerateVertices(uint32 maxClusters,
             uint32 clusterIndexY = clusterIndex / maxClusterRowSize;
             
             uint32 matrixIndex = (clusterIndexX / maxClusters) + tilesPerRow * (clusterIndexY / maxClusters); //0...15
-            DVASSERT(matrixIndex >= 0 && matrixIndex < (tilesPerRow * tilesPerRow));
+            DVASSERT(matrixIndex < (tilesPerRow * tilesPerRow));
             
             uint32 matrixIndexX = matrixIndex % tilesPerRow;
             uint32 matrixIndexY = matrixIndex / tilesPerRow;
@@ -442,7 +442,7 @@ void VegetationFixedGeometry::PrepareIndexBufferData(uint32 indexBufferIndex,
                 {
                     size_t vertexIndex = baseIndex + clusterIndices[clusterIndexIndex];
                     
-                    DVASSERT(vertexIndex >= 0 && vertexIndex < vertexData.size());
+                    DVASSERT(vertexIndex < vertexData.size());
                     
                     VegetationVertex& vertex = vertexData[vertexIndex];
                     vertex.tangent.x = (float32)resolutionIndex;
