@@ -235,23 +235,11 @@ bool SceneTabWidget::CloseTab(int index)
         SceneSignals::Instance()->EmitDeactivated(scene);
     }
     
-//    tabBar->removeTab(index);
+    SafeRelease(scene);
+    tabBar->removeTab(index);
 
-//    DAVA::Function<void()> fn = DAVA::Bind(DAVA::MakeFunction(&DAVA::SafeRelease<SceneEditor2>), scene);
-//    DAVA::JobManager::Instance()->CreateMainJob(fn, DAVA::JobManager::JOB_MAINLAZY);
-
-    
-    DAVA::Function<void()> fn = DAVA::Bind(DAVA::MakeFunction(this, &SceneTabWidget::CloseTabInternal), scene, index);
-    DAVA::JobManager::Instance()->CreateMainJob(fn, DAVA::JobManager::JOB_MAINLAZY);
 
     return true;
-}
-
-void SceneTabWidget::CloseTabInternal(SceneEditor2 *scene, int index)
-{
-    DVASSERT(scene);
-    scene->Release();
-    tabBar->removeTab(index);
 }
 
 

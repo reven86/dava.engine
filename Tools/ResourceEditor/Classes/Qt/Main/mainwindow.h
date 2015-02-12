@@ -145,7 +145,6 @@ public slots:
     void OnImageSplitter();
 	
 	void OnAddLandscape();
-    void OnAddLandscapeInternal();
     void OnAddSkybox();
     void OnAddVegetation();
 	void OnLightDialog();

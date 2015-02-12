@@ -106,7 +106,6 @@ public slots:
 protected:
     
     void OpenTabInternal(const DAVA::FilePath scenePathname, int tabIndex);
-    void CloseTabInternal(SceneEditor2 *scene, int index);
     
 protected:
     

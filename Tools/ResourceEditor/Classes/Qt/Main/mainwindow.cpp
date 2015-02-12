@@ -1596,11 +1596,6 @@ void QtMainWindow::UnmodalDialogFinished(int)
 
 void QtMainWindow::OnAddLandscape()
 {
-    DAVA::JobManager::Instance()->CreateMainJob(DAVA::MakeFunction(this, &QtMainWindow::OnAddLandscapeInternal), DAVA::JobManager::JOB_MAINLAZY);
-}
-
-void QtMainWindow::OnAddLandscapeInternal()
-{
     Entity* entityToProcess = new Entity();
     entityToProcess->SetName(ResourceEditor::LANDSCAPE_NODE_NAME);
     entityToProcess->SetLocked(true);
@@ -2697,10 +2692,10 @@ bool QtMainWindow::OpenScene( const QString & path )
 				AddRecent(path);
 
                 // close empty default scene
-//                if(-1 != needCloseIndex)
-//                {
-//                    ui->sceneTabWidget->CloseTab(needCloseIndex);
-//                }
+                if(-1 != needCloseIndex)
+                {
+                    ui->sceneTabWidget->CloseTab(needCloseIndex);
+                }
 
 				ret = true;
 			}

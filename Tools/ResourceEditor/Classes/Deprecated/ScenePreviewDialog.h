@@ -48,8 +48,6 @@ public:
     virtual void Close();
     
 protected:
-    
-    void ShowInternal(const FilePath &scenePathname);
 
     virtual const Rect GetDialogRect() const;
     virtual void UpdateSize();

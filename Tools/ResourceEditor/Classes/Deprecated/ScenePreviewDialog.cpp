@@ -83,61 +83,6 @@ void ScenePreviewDialog::Show(const FilePath &scenePathname)
         draggableDialog->RemoveControl(errorMessage);
     }
     
-    DAVA::Function<void()> fn = DAVA::Bind(DAVA::MakeFunction(this, &ScenePreviewDialog::ShowInternal), scenePathname);
-    DAVA::JobManager::Instance()->CreateMainJob(fn, DAVA::JobManager::JOB_MAINLAZY);
-//    int32 error = preview->OpenScene(scenePathname);
-//    if(SceneFileV2::ERROR_NO_ERROR == error)
-//    {
-//        if(!preview->GetParent())
-//        {
-//            draggableDialog->AddControl(preview);
-//        }
-//    }
-//    else
-//    {
-//        switch (error)
-//        {
-//            case SceneFileV2::ERROR_FAILED_TO_CREATE_FILE:
-//            {
-//                errorMessage->SetText(LocalizedString(L"library.errormessage.failedtocreeatefile"));
-//                break;
-//            }
-//                
-//            case SceneFileV2::ERROR_FILE_WRITE_ERROR:
-//            {
-//                errorMessage->SetText(LocalizedString(L"library.errormessage.filewriteerror"));
-//                break;
-//            }
-//                
-//            case SceneFileV2::ERROR_VERSION_IS_TOO_OLD:
-//            {
-//                errorMessage->SetText(LocalizedString(L"library.errormessage.versionistooold"));
-//                break;
-//            }
-//                
-//            case ScenePreviewControl::ERROR_CANNOT_OPEN_FILE:
-//            {
-//                errorMessage->SetText(LocalizedString(L"library.errormessage.cannotopenfile"));
-//                break;
-//            }
-//                
-//            case ScenePreviewControl::ERROR_WRONG_EXTENSION:
-//            {
-//                errorMessage->SetText(LocalizedString(L"library.errormessage.wrongextension"));
-//                break;
-//            }
-//                
-//            default:
-//                errorMessage->SetText(LocalizedString(L"library.errormessage.unknownerror"));
-//                break;
-//        }
-//        
-//        draggableDialog->AddControl(errorMessage);
-//    }
-}
-
-void ScenePreviewDialog::ShowInternal(const DAVA::FilePath &scenePathname)
-{
     int32 error = preview->OpenScene(scenePathname);
     if(SceneFileV2::ERROR_NO_ERROR == error)
     {
@@ -188,6 +133,7 @@ void ScenePreviewDialog::ShowInternal(const DAVA::FilePath &scenePathname)
         draggableDialog->AddControl(errorMessage);
     }
 }
+
 
 void ScenePreviewDialog::OnClose(BaseObject *, void *, void *)
 {
