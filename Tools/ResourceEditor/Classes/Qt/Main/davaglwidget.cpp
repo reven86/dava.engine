@@ -49,7 +49,6 @@
 #include <QMouseEvent>
 #include <QDebug>
 
-#include <QOpenGLContext>
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
 #include "Network/NetCore.h"
@@ -58,15 +57,105 @@
 #include "Main/mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QOpenGLContext>
+#include <QPainter>
+#include <QOpenGLPaintDevice>
 
-QOpenGLContext * DavaGLWidget::defaultContext = nullptr;
+#include <QBoxLayout>
 
+
+
+OpenGLWindow::OpenGLWindow() : QWindow()
+{
+    context = nullptr;
+    paintDevice = nullptr;
+    setSurfaceType(QWindow::OpenGLSurface);
+}
+
+OpenGLWindow::~OpenGLWindow()
+{
+    
+}
+
+
+void OpenGLWindow::render()
+{
+    if (!paintDevice)
+    {
+        paintDevice = new QOpenGLPaintDevice;
+    }
+    
+    paintDevice->setSize(size());
+
+//    DAVA::QtLayer::Instance()->ProcessFrame();
+    
+    QPainter painter(paintDevice);
+    render(&painter);
+}
+
+void OpenGLWindow::render(QPainter *painter)
+{
+    Q_UNUSED(painter);
+}
+
+void OpenGLWindow::renderNow()
+{
+    if (!isExposed())
+        return;
+    
+    bool needsInitialize = false;
+    
+    if (!context)
+    {
+        context = new QOpenGLContext(this);
+        context->setFormat(requestedFormat());
+        context->create();
+        
+        needsInitialize = true;
+    }
+    
+    context->makeCurrent(this);
+    
+    if (needsInitialize)
+    {
+        initializeOpenGLFunctions();
+    }
+    
+    render();
+    
+    context->swapBuffers(this);
+}
+
+void OpenGLWindow::exposeEvent(QExposeEvent *event)
+{
+    Q_UNUSED(event);
+    
+    if (isExposed())
+    {
+        renderNow();
+        
+        emit Exposed();
+    }
+}
+
+bool OpenGLWindow::event(QEvent *event)
+{
+    if(event->type() == QEvent::UpdateRequest)
+    {
+        renderNow();
+        return true;
+    }
+    
+    return QWindow::event(event);
+}
+
+
+///=======================
 DavaGLWidget::DavaGLWidget(QWidget *parent)
-	: QOpenGLWidget(parent)
+    : QWidget(parent)
     , renderTimer(nullptr)
     , fps(60)
     , isInitialized(false)
-    , isPainting(false)
     , currentDPR(1)
     , currentWidth(0)
     , currentHeight(0)
@@ -82,6 +171,16 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     
     SetFPS(60);
     renderTimer = new QTimer(this);
+    
+    openGlWindow = new OpenGLWindow();
+    connect(openGlWindow, SIGNAL(Exposed()), this, SLOT(OnWindowExposed()));
+    
+    QWidget *w = createWindowContainer(openGlWindow);
+    
+    QBoxLayout *lay = new QBoxLayout(QBoxLayout::TopToBottom, this);
+    setLayout(lay);
+    
+    layout()->addWidget(w);
 }
 
 DavaGLWidget::~DavaGLWidget()
@@ -97,53 +196,46 @@ void DavaGLWidget::SetFPS(int _fps)
 }
 
 
-void DavaGLWidget::initializeGL()
+void DavaGLWidget::OnWindowExposed()
 {
     currentDPR = devicePixelRatio();
     
     DAVA::QtLayer::Instance()->InitializeGlWindow();
-    
-    isInitialized = true;
-}
-
-void DavaGLWidget::resizeGL(int w, int h)
-{
-    currentWidth = w;
-    currentHeight = h;
-    
     PerformSizeChange();
+
+    isInitialized = true;
+    
+    emit Initialized();
+    
+    renderTimer->singleShot(16, this, SLOT(OnRenderTimer()));
 }
 
-void DavaGLWidget::paintGL()
+void DavaGLWidget::OnRenderTimer()
 {
-    if(isPainting) return; //magic for qt
-    isPainting = true;
-    
-    
-    QElapsedTimer frameTimer;
-    frameTimer.start();
-    
     const int dpr = devicePixelRatio();
     if(dpr != currentDPR)   //TODO: move to event processing section
     {
         currentDPR = dpr;
         PerformSizeChange();
     }                       // END OF TODO
+    
+    QCoreApplication::postEvent(openGlWindow, new QEvent(QEvent::UpdateRequest));
+    DVASSERT(QOpenGLContext::currentContext() == openGlWindow->context);
 
     DAVA::QtLayer::Instance()->ProcessFrame();
-    
-    isPainting = false;
-    
-    const DAVA::uint64 requestedFrameDelta = 1000 / fps;
-    const int nextFrameDelta = (requestedFrameDelta >= frameTimer.elapsed()) ? (int)(requestedFrameDelta >= frameTimer.elapsed()): 1;
 
-    renderTimer->singleShot(nextFrameDelta, this, SLOT(OnRenderTimer()));
+    
+    renderTimer->singleShot(16, this, SLOT(OnRenderTimer()));
 }
 
-
-void DavaGLWidget::OnRenderTimer()
+void DavaGLWidget::resizeEvent(QResizeEvent *e)
 {
-    update();
+    currentWidth = e->size().width();
+    currentHeight = e->size().height();
+    
+    QWidget::resizeEvent(e);
+    
+    PerformSizeChange();
 }
 
 
@@ -354,28 +446,9 @@ void DavaGLWidget::ShowAssertMessage(const char * message)
 
 void DavaGLWidget::PerformSizeChange()
 {
-    DAVA::QtLayer::Instance()->Resize(currentWidth * currentDPR, currentHeight * currentDPR);
+    if(IsInitialized())
+        DAVA::QtLayer::Instance()->Resize(currentWidth * currentDPR, currentHeight * currentDPR);
     
     emit Resized(currentWidth, currentHeight, currentDPR);
-}
-
-bool DavaGLWidget::InitializeDefaultOpenGLContext()
-{
-    DVASSERT(nullptr == defaultContext);
-
-    defaultContext = QOpenGLContext::currentContext();
-    DVASSERT(defaultContext);
-
-    QOpenGLContext *currentContext = context();
-    DVASSERT(defaultContext != currentContext);
-    
-    currentContext->setShareContext(defaultContext);
-    defaultContext->setShareContext(context());
-    
-    DVASSERT(currentContext->format() == defaultContext->format());
-    
-    emit Initialized();
-
-    return true;
 }
 

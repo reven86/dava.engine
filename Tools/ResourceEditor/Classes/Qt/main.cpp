@@ -205,8 +205,6 @@ int main(int argc, char *argv[])
 	            mainWindow->EnableGlobalTimeout(true);
 	            mainWindow->show();
 
-	            mainWindow->GetSceneWidget()->GetDavaWidget()->InitializeDefaultOpenGLContext();
-
 			    ProjectManager::Instance()->ProjectOpenLast();
 	            if(ProjectManager::Instance()->IsOpened())
                 {

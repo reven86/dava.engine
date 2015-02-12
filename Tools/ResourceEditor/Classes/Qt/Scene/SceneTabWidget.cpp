@@ -130,8 +130,8 @@ int SceneTabWidget::OpenTab()
     tabBar->setTabToolTip(tabIndex, scenePath.GetAbsolutePathname().c_str());
 
     DAVA::Function<void()> fn = DAVA::Bind(DAVA::MakeFunction(this, &SceneTabWidget::OpenTabInternal), scenePath, tabIndex);
-//    DAVA::JobManager::Instance()->CreateMainJob(fn, DAVA::JobManager::JOB_MAINLAZY);
-    DAVA::JobManager::Instance()->CreateWorkerJob(fn);
+    DAVA::JobManager::Instance()->CreateMainJob(fn);
+//    DAVA::JobManager::Instance()->CreateWorkerJob(fn);
 	return tabIndex;
 }
 

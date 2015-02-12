@@ -42,8 +42,47 @@
 class QOpenGLContext;
 class QOffscreenSurface;
 
+
+#include <QOpenGLFunctions>
+#include <QWindow>
+
+class QOpenGLPaintDevice;
+class QOpenGLContext;
+class QPainter;
+class QExposeEvent;
+class OpenGLWindow : public QWindow, protected QOpenGLFunctions
+{
+    Q_OBJECT
+public:
+    OpenGLWindow();
+    ~OpenGLWindow();
+    
+    void render(QPainter *painter);
+    void render();
+    
+    void renderNow();
+
+signals:
+    
+    void Exposed();
+    
+    
+protected:
+    
+    bool event(QEvent *event) override;
+    void exposeEvent(QExposeEvent *event) override;
+    
+private:
+
+public:
+    QOpenGLContext *context;
+    QOpenGLPaintDevice *paintDevice;
+};
+
+
+
 class DavaGLWidget
-	: public QOpenGLWidget
+    : public QWidget
 	, public DAVA::QtLayerDelegate
 {
     Q_OBJECT
@@ -56,7 +95,6 @@ public:
     int GetFPS() const;
 
     bool IsInitialized() const;
-    bool InitializeDefaultOpenGLContext();
     
 signals:
     
@@ -66,15 +104,13 @@ signals:
 
 protected slots:
     
+    void OnWindowExposed();
     void OnRenderTimer();
-
-protected:
-    void initializeGL() override;
-    void resizeGL(int w, int h) override;
-    void paintGL() override;
     
 private:
     
+    void resizeEvent(QResizeEvent *) override;
+
     void keyPressEvent(QKeyEvent *) override;
     void keyReleaseEvent(QKeyEvent *) override;
     
@@ -108,16 +144,14 @@ private:
     int fps;
     
     bool isInitialized;
-    bool isPainting;
     
     int currentDPR;
     int currentWidth;
     int currentHeight;
 
-    static QOpenGLContext * defaultContext;
-    
     DAVA::String assertMessage;
     
+    OpenGLWindow *openGlWindow;
 };
 
 
