@@ -93,8 +93,6 @@ protected:
     
 private:
     
-    int currentDPR;
-    
     QOpenGLContext *context;
     QOpenGLPaintDevice *paintDevice;
 };

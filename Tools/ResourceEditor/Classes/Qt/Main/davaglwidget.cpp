@@ -73,8 +73,6 @@ OpenGLWindow::OpenGLWindow() : QWindow()
     
     setKeyboardGrabEnabled(true);
     setMouseGrabEnabled(true);
-    
-    currentDPR = 2;
 }
 
 OpenGLWindow::~OpenGLWindow()
@@ -326,6 +324,8 @@ DAVA::UIEvent OpenGLWindow::MapMouseEventToDAVA(const QMouseEvent *event) const
 {
     DAVA::UIEvent davaEvent;
     QPoint pos = event->pos();
+    
+    int currentDPR = devicePixelRatio();
     davaEvent.point = davaEvent.physPoint = Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
     davaEvent.tid = MapQtButtonToDAVA(event->button());
     davaEvent.timestamp = event->timestamp();
