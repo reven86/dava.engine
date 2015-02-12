@@ -102,8 +102,8 @@ void TileTexturePreviewWidget::InitWithColors()
 	setColumnCount(2);
 	setRootIsDecorated(false);
 	header()->setStretchLastSection(false);
-	header()->setResizeMode(0, QHeaderView::Stretch);
-	header()->setResizeMode(1, QHeaderView::ResizeToContents);
+	header()->setSectionResizeMode(0, QHeaderView::Stretch);
+	header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
 	setIconSize(QSize(TEXTURE_PREVIEW_WIDTH_SMALL, TEXTURE_PREVIEW_HEIGHT));
 
 	blockSignals(blocked);
@@ -331,7 +331,9 @@ Image* TileTexturePreviewWidget::MultiplyImageWithColor(DAVA::Image *image, cons
     Sprite::DrawState drawState;
 	drawState.SetPosition(0.f, 0.f);
     drawState.SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
-	srcSprite->Draw(&drawState);
+    
+    RenderSystem2D::Instance()->Setup2DMatrices();
+    RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
 
 	RenderManager::Instance()->ResetColor();
 	RenderManager::Instance()->RestoreRenderTarget();

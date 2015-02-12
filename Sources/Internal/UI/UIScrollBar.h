@@ -73,6 +73,7 @@ public:
     
     virtual void Draw(const UIGeometricData &geometricData);
 	virtual void AddControl(UIControl *control);
+    virtual void RemoveControl(UIControl *control);
 	virtual UIControl *Clone();
 	virtual void CopyDataFrom(UIControl *srcControl);
 	

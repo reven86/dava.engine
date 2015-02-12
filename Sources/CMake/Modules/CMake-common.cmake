@@ -2,7 +2,10 @@ include ( CMakeDependentOption )
 include ( CMakeParseArguments  )
 include ( GlobalVariables      )
 include ( MergeStaticLibrarees )
+include ( FileTreeCheck        )
+include ( DavaTemplate         )
 
+set ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
 # Macro for precompiled headers
 macro (enable_pch)
@@ -105,6 +108,16 @@ macro (define_source_folders )
         set( PROJECT_SOURCE_FILES  ) 
         set( PROJECT_SOURCE_FILES_CPP  ) 
         set( PROJECT_SOURCE_FILES_HPP  ) 
+         
+        IF( ARG_SRC_ROOT )
+            FOREACH( FOLDER_ITEM ${ARG_SRC_ROOT} )
+                get_filename_component ( PATH ${FOLDER_ITEM} REALPATH ) 
+                list ( APPEND  DAVA_FOLDERS ${PATH} ) 
+            ENDFOREACH()
+        ELSE()
+            list ( APPEND DAVA_FOLDERS ${CMAKE_CURRENT_SOURCE_DIR} ) 
+        ENDIF()
+
     ENDIF()
     
     set( SOURCE_FOLDERS  )
@@ -121,7 +134,9 @@ macro (define_source_folders )
             define_source_files ( GLOB_CPP_PATTERNS ${CPP_PATTERNS}
                                   GLOB_H_PATTERNS   ${FOLDER_ITEM}/*.h ${FOLDER_ITEM}/*.hpp )
                                   
-            FILE( GLOB SOURCE_FOLDERS "${FOLDER_ITEM}/*" )
+            FILE( GLOB LIST_SOURCE_FOLDERS "${FOLDER_ITEM}/*" )
+
+            list ( APPEND SOURCE_FOLDERS  ${LIST_SOURCE_FOLDERS} ) 
             list ( APPEND PROJECT_SOURCE_FILES_CPP  ${CPP_FILES} ) 
             list ( APPEND PROJECT_SOURCE_FILES_HPP  ${H_FILES}   ) 
             list ( APPEND PROJECT_SOURCE_FILES      ${CPP_FILES} ${H_FILES} )
@@ -137,8 +152,7 @@ macro (define_source_folders )
         list ( APPEND PROJECT_SOURCE_FILES      ${CPP_FILES} ${H_FILES} )
 
     ENDIF()
-    
-
+  
              
     FOREACH(FOLDER_ITEM ${SOURCE_FOLDERS})
         IF( IS_DIRECTORY "${FOLDER_ITEM}" )
@@ -154,9 +168,9 @@ macro (define_source_folders )
             IF( ${NOT_FIND_ERASE_ITEM} )
                 FILE(GLOB FIND_CMAKELIST "${FOLDER_ITEM}/CMakeLists.txt")
                 IF( FIND_CMAKELIST )
-                    add_subdirectory (${FOLDER_NAME})
+                    add_subdirectory ( ${FOLDER_ITEM} )
                     list ( APPEND PROJECT_SOURCE_FILES ${${FOLDER_NAME}_CPP_FILES} ${${FOLDER_NAME}_H_FILES} )    
-    		    list ( APPEND PROJECT_SOURCE_FILES_CPP  ${${FOLDER_NAME}_CPP_FILES} ) 
+    		        list ( APPEND PROJECT_SOURCE_FILES_CPP  ${${FOLDER_NAME}_CPP_FILES} ) 
                     list ( APPEND PROJECT_SOURCE_FILES_HPP  ${${FOLDER_NAME}_H_FILES}   ) 
                 ELSE()
                     list (APPEND PROJECT_SOURCE_FILES ${CPP_FILES} ${H_FILES})
@@ -171,26 +185,80 @@ endmacro ()
 #
 macro ( generate_source_groups_project )
 
-    file (GLOB_RECURSE FILE_LIST "*" )
-    
-    FOREACH( ITEM ${FILE_LIST} )
-        get_filename_component ( FILE_PATH ${ITEM} PATH ) 
+    cmake_parse_arguments ( ARG "RECURSIVE_CALL"  "ROOT_DIR;GROUP_PREFIX" "SRC_ROOT;GROUP_FOLDERS" ${ARGN} )
 
-        IF( "${FILE_PATH}" STREQUAL "${CMAKE_CURRENT_LIST_DIR}" )
-            STRING(REGEX REPLACE "${CMAKE_CURRENT_LIST_DIR}" "" FILE_GROUP ${FILE_PATH} )
-        ELSE()
-            STRING(REGEX REPLACE "${CMAKE_CURRENT_LIST_DIR}/" "" FILE_GROUP ${FILE_PATH} )
-            STRING(REGEX REPLACE "/" "\\\\" FILE_GROUP ${FILE_GROUP})
-        ENDIF()
+    IF( ARG_ROOT_DIR )
+        get_filename_component ( ROOT_DIR ${ARG_ROOT_DIR} REALPATH ) 
 
-        source_group( "${FILE_GROUP}" FILES ${ITEM} )
+    else()
+        set( ROOT_DIR ${CMAKE_CURRENT_LIST_DIR} )
+
+    ENDIF()
+
+    IF( ARG_GROUP_PREFIX )
+        set( GROUP_PREFIX  "${ARG_GROUP_PREFIX}\\" )
+    else()
+        set( GROUP_PREFIX "" )
+    ENDIF()
+
+
+    IF( ARG_SRC_ROOT ) 
+        set( SRC_ROOT_LIST  )
+
+        FOREACH( SRC_ITEM ${ARG_SRC_ROOT} )
+
+            IF( "${SRC_ITEM}" STREQUAL "*" )
+                list ( APPEND SRC_ROOT_LIST "*" )
+            ELSE()
+                get_filename_component ( SRC_ITEM ${SRC_ITEM} REALPATH ) 
+                list ( APPEND SRC_ROOT_LIST ${SRC_ITEM}/* )
+            ENDIF()
+        ENDFOREACH()
+
+    else()
+        set( SRC_ROOT_LIST "*" )
+
+    ENDIF()
+
+
+    FOREACH( SRC_ROOT_ITEM ${SRC_ROOT_LIST} )
+      
+        file ( GLOB_RECURSE FILE_LIST ${SRC_ROOT_ITEM} )        
+
+        FOREACH( ITEM ${FILE_LIST} )
+            get_filename_component ( FILE_PATH ${ITEM} PATH ) 
+
+            IF( "${FILE_PATH}" STREQUAL "${ROOT_DIR}" )
+                STRING(REGEX REPLACE "${ROOT_DIR}" "" FILE_GROUP ${FILE_PATH} )
+            ELSE()
+                STRING(REGEX REPLACE "${ROOT_DIR}/" "" FILE_GROUP ${FILE_PATH} )
+                STRING(REGEX REPLACE "/" "\\\\" FILE_GROUP ${FILE_GROUP})
+            ENDIF()
+            source_group( "${GROUP_PREFIX}${FILE_GROUP}" FILES ${ITEM} )
+
+            #message( "<> "${GROUP_PREFIX}" ][ "${FILE_GROUP}" ][ "${ITEM} )
+        ENDFOREACH()
+
     ENDFOREACH()
-    
-endmacro ()
 
+    IF( NOT ARG_RECURSIVE_CALL )
+        FOREACH( GROUP_ITEM ${ARG_GROUP_FOLDERS} )
+            if( IS_DIRECTORY "${${GROUP_ITEM}}" )
+                generate_source_groups_project( RECURSIVE_CALL GROUP_PREFIX ${GROUP_ITEM}  ROOT_DIR ${${GROUP_ITEM}}  SRC_ROOT ${${GROUP_ITEM}}  )
+            else()
+                source_group( "${GROUP_ITEM}" FILES ${${GROUP_ITEM}} )
+            endif()
+
+        ENDFOREACH()
+    ENDIF()
+
+endmacro ()
 
 #
 macro ( install_libraries TARGET_NAME )
+
+IF( DAVA_INSTALL )
+
 install(
         TARGETS
         ${TARGET_NAME}
@@ -215,6 +283,7 @@ install(
         PATTERN
         "*.hpp" )
 
+ENDIF()
 
 endmacro ()
 

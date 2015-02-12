@@ -21,7 +21,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -48,7 +48,7 @@ public class JNITextField {
 	static private volatile int lastClosedTextField = NO_ACTIVE_TEXTFIELD;
 	static private volatile boolean readyToClose = false;
 	static private SoftKeyboardStateHelper keyboardHelper = null;
-	static private FrameLayout keyboardLayout = null;
+	static private AttachedFrameLayout keyboardLayout = null;
 	static private Handler handler = new Handler();
 	static private int lastSelectedImeMode = 0;
     static private int lastSelectedInputType = 0;
@@ -60,6 +60,47 @@ public class JNITextField {
 		public boolean visible = false;
 	}
 	static Map<Integer, NativeEditText> controls = new HashMap<Integer, NativeEditText>();
+	
+	static class AttachedFrameLayout extends FrameLayout implements View.OnAttachStateChangeListener {
+		
+		private boolean isAttached = false;
+		
+		public AttachedFrameLayout(Context context) {
+	        super(context);
+	        addOnAttachStateChangeListener(this);
+	    }
+		
+		public AttachedFrameLayout(Context context, AttributeSet attrs,
+				int defStyle) {
+			super(context, attrs, defStyle);
+			addOnAttachStateChangeListener(this);
+		}
+
+		public AttachedFrameLayout(Context context, AttributeSet attrs) {
+			super(context, attrs);
+			addOnAttachStateChangeListener(this);
+		}
+
+		public boolean isAttached() {
+			return isAttached;
+		}
+
+		@Override
+		public void onViewAttachedToWindow(View v) {
+			if(v == this) {
+				isAttached = true;
+			}
+		}
+
+		@Override
+		public void onViewDetachedFromWindow(View v) {
+			if(v == this) {
+				isAttached = false;
+			}
+		}
+		
+		
+	}
 	
 	private static NativeEditText GetNativeEditText(int id) {
 		if (!controls.containsKey(id)) {
@@ -101,6 +142,10 @@ public class JNITextField {
 			});
 			JNIActivity.GetActivity().runOnUiThread(inTask);
 			try {
+				if (JNIActivity.GetActivity().GetIsPausing())
+				{
+					return null;
+				}
 				return inTask.get();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -159,8 +204,11 @@ public class JNITextField {
 	        params.gravity = Gravity.LEFT | Gravity.TOP;
 	        params.token = windowToken;
 	        
-	        keyboardLayout = new FrameLayout(JNIActivity.GetActivity());
+	        keyboardLayout = new AttachedFrameLayout(JNIActivity.GetActivity());
 	        manager.addView(keyboardLayout, params);	
+
+	        // Set UI flags for detect correct size when navigation bar hiden
+	        JNIActivity.HideNavigationBar(keyboardLayout);
 		}
 		
 		if(keyboardHelper == null && keyboardLayout != null)
@@ -224,7 +272,14 @@ public class JNITextField {
 	
 	public static void DestroyKeyboardLayout(WindowManager manager) {
 		if(manager != null && keyboardLayout != null) {
-			manager.removeView(keyboardLayout);
+			try {
+				if(keyboardLayout.isAttached()) {
+					manager.removeView(keyboardLayout);
+				}
+			} catch (IllegalArgumentException ex) {
+				// Handle situation when keyboardLayout deleated from manager already
+				Log.w(JNIConst.LOG_TAG, "DestroyKeyboardLayout: " + ex.getMessage());
+			}
 			keyboardLayout = null;
 		}
 		if(keyboardHelper != null) {

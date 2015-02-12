@@ -10,9 +10,15 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.CookieSyncManager;
+import android.webkit.JsResult;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.CookieManager;
 import android.widget.FrameLayout;
 
 @SuppressLint("UseSparseArrays")
@@ -30,6 +36,9 @@ public class JNIWebView {
 		@Override
 		public void onPageFinished(WebView view, String url) {
 			super.onPageFinished(view, url);
+			JNIActivity activity = JNIActivity.GetActivity();
+			if (null == activity || activity.GetIsPausing())
+				return;
 			JNIActivity.GetActivity().PostEventToGL(new Runnable() {
 				@Override
 				public void run() {
@@ -54,6 +63,9 @@ public class JNIWebView {
 		
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, final String url) {
+			if (null == JNIActivity.GetActivity() || JNIActivity.GetActivity().GetIsPausing())
+				return false;
+			
 			FutureTask<Integer> task = PostOnUrlChangeTask(url);
 			
 			while (!task.isDone()) {
@@ -111,6 +123,9 @@ public class JNIWebView {
 	public static void Initialize(final int id, final float x, final float y, final float dx, final float dy)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -130,10 +145,34 @@ public class JNIWebView {
 				webView.getSettings().setJavaScriptEnabled(true);
 				webView.getSettings().setLoadWithOverviewMode(true);
 				webView.getSettings().setUseWideViewPort(false);
+				if (android.os.Build.VERSION.SDK_INT >= 11)
+				{
 				webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+				}
+				webView.setWebChromeClient(new InternalWebClient(id));
+				webView.setOnTouchListener(new View.OnTouchListener()
+				{
+				    @Override
+				    public boolean onTouch(View v, MotionEvent event)
+				    {
+				        switch (event.getAction())
+				        {
+				            case MotionEvent.ACTION_DOWN:
+				            case MotionEvent.ACTION_UP:
+				                if (!v.hasFocus())
+				                {
+				                    v.requestFocus();
+				                }
+				                break;
+				        }
+				        return false;
+				    }
+				});
 				
 				activity.addContentView(webView, params);
 				views.put(id, webView);
+				
+				CookieSyncManager.createInstance(activity.getApplicationContext()); 
 			}
 		});
 	}
@@ -141,6 +180,9 @@ public class JNIWebView {
 	public static void Deinitialize(final int id)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -160,6 +202,9 @@ public class JNIWebView {
 	public static void OpenURL(final int id, final String url)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -174,11 +219,33 @@ public class JNIWebView {
 		});
 	}
 	
+	public static void LoadHtmlString(final int id, final String htmlString)
+	{
+		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
+		activity.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				if (!views.containsKey(id))
+				{
+					Log.d(TAG, String.format("Unknown view id %d", id));
+					return;
+				}
+				WebView webView = views.get(id);
+				webView.loadData(htmlString, "text/html", null);
+			}
+		});
+	}
+		
 	public static void OpenFromBuffer(final int id, final String data, final String baseUrl)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
-		activity.runOnUiThread(new Runnable() {
-			
+		if (null == activity || activity.GetIsPausing())
+			return;
+
+		activity.runOnUiThread(new Runnable() {			
 			@Override
 			public void run() {
 				if (!views.containsKey(id))
@@ -193,9 +260,98 @@ public class JNIWebView {
 		});
 	}
 	
+	public static void ExecuteJScript(final int id, final int requestId, final String scriptString)
+	{
+		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+		activity.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				if (!views.containsKey(id))
+				{
+					Log.d(TAG, String.format("Unknown view id %d", id));
+					return;
+				}
+				WebView webView = views.get(id);
+				//String a = "javascript:function call_back_func(){return \"" + requestId +", \" + " + scriptString + ";}javascript:alert(call_back_func())";
+				String a = "javascript:function call_back_func(){return \"" + requestId +", \" + eval(\"" + scriptString + "\");}javascript:alert(call_back_func())";
+				webView.loadUrl(a);
+			}
+		});
+	}
+	
+	public static void DeleteCookies(final String targetURL)
+	{
+		// The CookieSyncManager is used to synchronize the browser cookie store between RAM and permanent storage. 		
+		CookieManager cookieManager = CookieManager.getInstance();
+		if (cookieManager.hasCookies())
+		{
+		   	// Get cookies for specific URL and change their expiration date
+		   	// This should force android system to remove these cookies
+		   	String cookiestring = cookieManager.getCookie(targetURL);
+		   	String[] cookies =  cookiestring.split(";");
+		    
+		   	for (int i=0; i<cookies.length; i++) 
+		   	{
+		   		String[] cookieparts = cookies[i].split("=");
+		   		cookieManager.setCookie(targetURL, cookieparts[0].trim()+"=; Expires=Mon, 31 Dec 2012 23:59:59 GMT");
+		   	}
+		   	// Synchronize cookies storage
+		   	CookieSyncManager.getInstance().sync();
+		    
+		   	// Check if cookies were removed - if not - delete all cookies
+		   	cookiestring = cookieManager.getCookie(targetURL);
+		   	cookies =  cookiestring.split(";");
+		   	if (cookies.length > 0)
+		   	{
+		   		cookieManager.removeExpiredCookie();
+		   		// Synchronize cookies storage
+		   		CookieSyncManager.getInstance().sync();
+		   	}	
+		}
+	}	
+	
+	public static String GetCookie(final String targetURL, final String cookieName)
+	{		
+		// The CookieSyncManager is used to synchronize the browser cookie store between RAM and permanent storage. 
+	    CookieManager cookieManager = CookieManager.getInstance();
+
+	    if (cookieManager.hasCookies())
+	    {
+	    	// Get cookies for specific URL
+	    	String cookieString = cookieManager.getCookie(targetURL);	
+	    	String[] cookies =  cookieString.split(";");
+
+	    	for (int i=0; i<cookies.length; i++) 
+	    	{
+	    		String[] cookieparts = cookies[i].split("=");
+	    		if (cookieparts[0].trim().compareTo(cookieName) == 0)
+	    		{
+	    			return cookieparts[1];		
+	    		}			    		
+	    	}
+	    }
+	    
+	    return "";
+	}
+	
+	public static Object[] GetCookies(final String targetURL)
+	{
+		// The CookieSyncManager is used to synchronize the browser cookie store between RAM and permanent storage. 
+	    CookieManager cookieManager = CookieManager.getInstance();
+	    // Get cookies for specific URL and put them into array
+	    String cookieString = cookieManager.getCookie(targetURL);
+	    String[] cookies =  cookieString.split(";");	    
+	    return cookies;
+	}
+
 	public static void SetRect(final int id, final float x, final float y, final float dx, final float dy)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -219,6 +375,9 @@ public class JNIWebView {
 	public static void SetVisible(final int id, final boolean isVisible)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -236,6 +395,9 @@ public class JNIWebView {
 	public static void SetBackgroundTransparency(final int id, final boolean enabled)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable()
 		{
 			@Override
@@ -252,6 +414,52 @@ public class JNIWebView {
 		});
 	}
 	
+	static class InternalWebClient extends WebChromeClient {
+		int id;
+		
+		InternalWebClient(int id) {
+			this.id = id;
+		}
+		
+		@Override
+		public boolean onJsAlert(WebView view, String url, String message,
+				JsResult result) {
+
+			class jsCallback implements Callable<Void> {
+				int id;
+				int requestId;
+				String result;
+				
+				jsCallback(int id, int requestId, String result){
+					this.id = id;
+					this.requestId = requestId;
+					this.result = result;
+				}
+
+				@Override
+				public Void call() throws Exception {
+					OnExecuteJScript(this.id, this.requestId, this.result);
+					return null;
+				}
+				
+			}
+			
+			int split = message.indexOf(",");
+			if (split > 0)
+			{
+				FutureTask<Void> task = new FutureTask<Void>(new jsCallback(
+						id,
+						Integer.parseInt((String) message.subSequence(0, split)),
+						(String) message.subSequence(split + 2, message.length())));
+			
+				JNIActivity.GetActivity().PostEventToGL(task);
+			}
+			
+			result.confirm();
+			return true;
+		}
+	}
+	
 	static protected void RelinkNativeControls() {
 		for (WebView view: views.values()) {
 			ViewGroup viewGroup = (ViewGroup) view.getParent();
@@ -262,4 +470,5 @@ public class JNIWebView {
 	
 	private static native int OnUrlChange(int id, String url);
 	private static native int OnPageLoaded(int id);
+	private static native void OnExecuteJScript(int id, int requestId, String result);
 }

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -22,6 +23,9 @@ import com.bda.controller.StateEvent;
 public class JNIGLSurfaceView extends GLSurfaceView
 {
 	private JNIRenderer mRenderer = null;
+	// we have to add flag to distinguish second call to onResume()
+	// during Activity.onResume or Activity.onWindowsFocusChanged(focus)
+	private boolean alreadyResumed = false;
 
 	private native void nativeOnInput(int action, int id, float x, float y, double time, int source, int tapCount);
 	private native void nativeOnKeyDown(int keyCode);
@@ -29,22 +33,22 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	
 	MOGAListener mogaListener = null;
 
-	boolean[] pressedKeys = new boolean[KeyEvent.getMaxKeyCode()];
+	boolean[] pressedKeys = new boolean[KeyEvent.getMaxKeyCode() + 1];
 
 	public int lastDoubleActionIdx = -1;
 	
 	class DoubleTapListener extends GestureDetector.SimpleOnGestureListener{
-		JNIGLSurfaceView view;
+		JNIGLSurfaceView glview;
 		
 		DoubleTapListener(JNIGLSurfaceView view) {
-			this.view = view;
+			this.glview = view;
 		}
 		
 		@Override
 		public boolean onDoubleTap(MotionEvent e) {
 			lastDoubleActionIdx = e.getActionIndex();
 			
-			view.queueEvent(new InputRunnable(e, 2));
+			glview.queueEvent(new InputRunnable(e, 2));
 			return true;
 		}
 	}
@@ -67,7 +71,10 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	{
 		this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 
-		//setPreserveEGLContextOnPause(true);
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
+		{
+			setPreserveEGLContextOnPause(true);
+		}
 		setEGLContextFactory(new JNIContextFactory());
 		setEGLConfigChooser(new JNIConfigChooser());
 
@@ -76,11 +83,6 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		setRenderMode(RENDERMODE_CONTINUOUSLY);
 		
 		mogaListener = new MOGAListener(this);
-		
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
-		{
-			setPreserveEGLContextOnPause(true);
-		}
 		
 		setDebugFlags(0);
 		
@@ -104,20 +106,35 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		super.onSizeChanged(w, h, oldw, oldh);
 	}
 	
-	@Override
-	public void onPause()
-	{
-		super.onPause();
-		setRenderMode(RENDERMODE_WHEN_DIRTY);
-		mRenderer.OnPause();
-	}
-	
-	@Override
-	public void onResume()
-	{
-		super.onResume();
-		setRenderMode(RENDERMODE_CONTINUOUSLY);
-	};
+    @Override
+    public void onPause() {
+        Log.d(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onPause");
+        setRenderMode(RENDERMODE_WHEN_DIRTY);
+        queueEvent(new Runnable() {
+            public void run() {
+                mRenderer.OnPause();
+            }
+        });
+        // destroy eglCondext(or unbind), eglScreen, eglSurface
+        super.onPause();
+        alreadyResumed = false;
+    }
+
+    @Override
+    public void onResume() {
+        Log.d(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onResume");
+        if (!alreadyResumed) {
+            // first call parent to restore eglContext
+            super.onResume();
+            queueEvent(new Runnable() {
+                public void run() {
+                    mRenderer.OnResume();
+                }
+            });
+            setRenderMode(RENDERMODE_CONTINUOUSLY);
+            alreadyResumed = true;
+        }
+    };
 
 	Map<Integer, Integer> tIdMap = new HashMap<Integer, Integer>();
 	int nexttId = 1;
@@ -283,6 +300,12 @@ public class JNIGLSurfaceView extends GLSurfaceView
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+    	// Check keyCode value for pressedKeys array limit
+    	if(keyCode >= pressedKeys.length)
+    	{
+    		return super.onKeyDown(keyCode, event);
+    	}
+    	
     	if(pressedKeys[keyCode] == false)
     		queueEvent(new KeyInputRunnable(keyCode));
     	pressedKeys[keyCode] = true;
@@ -295,6 +318,12 @@ public class JNIGLSurfaceView extends GLSurfaceView
     
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+    	// Check keyCode value for pressedKeys array limit
+    	if(keyCode >= pressedKeys.length)
+    	{
+    		return super.onKeyUp(keyCode, event);
+    	}
+    	
     	pressedKeys[keyCode] = false;
         nativeOnKeyUp(keyCode);
     	return super.onKeyUp(keyCode, event);

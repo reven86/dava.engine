@@ -32,13 +32,18 @@
 #include "UI/UIScreen.h"
 #include "FileSystem/Logger.h"
 #include "Render/RenderManager.h"
+#include "Render/OcclusionQuery.h"
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/Replay.h"
 #include "Debug/Stats.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA 
 {
+
+const FastName FRAME_QUERY_UI_DRAW("OcclusionStatsUIDraw");
+
 UIControlSystem::~UIControlSystem()
 {
 	SafeRelease(currentScreen); 
@@ -323,6 +328,8 @@ void UIControlSystem::Draw()
 {
     TIME_PROFILE("UIControlSystem::Draw");
 
+    FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
+
     drawCounter = 0;
     if (!ui3DViewCount)
     {
@@ -332,11 +339,10 @@ void UIControlSystem::Draw()
         RenderManager::Instance()->Clear(Color(0,0,0,0), 1.0f, 0);        
         RenderManager::Instance()->SetRenderState(prevState);
     }
-//	if(currentScreen && (!currentPopup || currentPopup->isTransparent))
+
 	if (currentScreen)
 	{
 		currentScreen->SystemDraw(baseGeometricData);
-//		currentScreen->SystemDraw(Rect(0, 0, RenderManager::Instance()->GetScreenWidth(), RenderManager::Instance()->GetScreenHeight()));
 	}
 
 	popupContainer->SystemDraw(baseGeometricData);
@@ -346,6 +352,8 @@ void UIControlSystem::Draw()
 		frameSkip--;
 	}
     //Logger::Info("UIControlSystem::draws: %d", drawCounter);
+
+    FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 }
 	
 void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetControl)
@@ -397,7 +405,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 			for(Vector<UIEvent>::const_iterator it = activeInputs.begin(); it != activeInputs.end(); ++it) 
 			{
 				UIEvent ev = *it;
-				RecalculatePointToVirtual(ev.physPoint, ev.point);
+                ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
 				Replay::Instance()->RecordEvent(&ev);
 			}
 
@@ -406,7 +414,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 			for(Vector<UIEvent>::const_iterator it = allInputs.begin(); it != allInputs.end(); ++it) 
 			{
 				UIEvent ev = *it;
-				RecalculatePointToVirtual(ev.physPoint, ev.point);
+                ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
 				Replay::Instance()->RecordEvent(&ev);
 			}
 		}
@@ -434,7 +442,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 					(*it).phase = (*wit).phase;
 					(*it).timestamp = (*wit).timestamp;
 					(*it).physPoint = (*wit).physPoint;
-					RecalculatePointToVirtual((*it).physPoint, (*it).point);
+                    (*it).point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual((*it).physPoint);
 					(*it).tapCount = (*wit).tapCount;
 					(*it).inputHandledType = (*wit).inputHandledType;
 					break;
@@ -459,7 +467,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 						(*it).timestamp = (*wit).timestamp;
 						(*it).physPoint = (*wit).physPoint;
 						(*it).point = (*wit).point;
-						RecalculatePointToVirtual((*it).physPoint, (*it).point);
+                        (*it).point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual((*it).physPoint);
 						(*it).tapCount = (*wit).tapCount;
 						(*it).inputHandledType = (*wit).inputHandledType;
 						break;
@@ -487,7 +495,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
                 Vector<UIEvent>::reference curr(totalInputs.back());
 				curr.activeState = UIEvent::ACTIVITY_STATE_CHANGED;
                 //curr.phase = UIEvent::PHASE_BEGAN;
-				RecalculatePointToVirtual(curr.physPoint, curr.point);
+                curr.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(curr.physPoint);
 			}
 		}
 		for (Vector<UIEvent>::const_iterator wit = allInputs.begin(); wit != allInputs.end(); wit++) 
@@ -507,7 +515,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
                 
                 Vector<UIEvent>::reference curr(totalInputs.back());
 				curr.activeState = UIEvent::ACTIVITY_STATE_CHANGED;
-				RecalculatePointToVirtual(curr.physPoint, curr.point);
+                curr.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(curr.physPoint);
 			}
 		}
 		
@@ -678,10 +686,7 @@ UIControl *UIControlSystem::GetExclusiveInputLocker()
     
 void UIControlSystem::ScreenSizeChanged()
 {
-    popupContainer->SystemScreenSizeDidChanged(Rect(Core::Instance()->GetVirtualScreenXMin()
-                                                 , Core::Instance()->GetVirtualScreenYMin()
-                                                 , Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin()
-                                                 , Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin()));
+    popupContainer->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
 }
 
 void UIControlSystem::SetHoveredControl(UIControl *newHovered)
@@ -736,61 +741,10 @@ UIControl *UIControlSystem::GetFocusedControl()
 {
     return focusedControl;
 }
-    
 
-	
 const UIGeometricData &UIControlSystem::GetBaseGeometricData() const
 {
 	return baseGeometricData;	
-}
-	
-void UIControlSystem::SetInputScreenAreaSize(int32 width, int32 height)
-{
-    inputWidth = width;
-    inputHeight = height;
-}
-
-void UIControlSystem::CalculateScaleMultipliers()
-{
-	
-	float32 w, h;
-	w = (float32)Core::Instance()->GetVirtualScreenWidth() / (float32)inputWidth;
-	h = (float32)Core::Instance()->GetVirtualScreenHeight() / (float32)inputHeight;
-	inputOffset.x = inputOffset.y = 0;
-	if(w > h)
-	{
-		scaleFactor = w;
-		inputOffset.y = 0.5f * ((float32)Core::Instance()->GetVirtualScreenHeight() - (float32)inputHeight * scaleFactor);
-	}
-	else
-	{
-		scaleFactor = h;
-		inputOffset.x = 0.5f * ((float32)Core::Instance()->GetVirtualScreenWidth() - (float32)inputWidth * scaleFactor);
-	}
-}
-
-void UIControlSystem::RecalculatePointToPhysical(const Vector2 &virtualPoint, Vector2 &physicalPoint)
-{
-    Vector2 calcPoint(virtualPoint);
-    
-    calcPoint -= inputOffset;
-    calcPoint /= scaleFactor;
-    
-    physicalPoint = calcPoint;
-}
-
-void UIControlSystem::RecalculatePointToVirtual(const Vector2 &physicalPoint, Vector2 &virtualPoint)
-{
-	if(Replay::IsPlayback())
-	{
-		return;
-	}
-
-	
-    virtualPoint = physicalPoint;
-	
-	virtualPoint *= scaleFactor;
-	virtualPoint += inputOffset;
 }
 
 void UIControlSystem::ReplayEvents()
@@ -848,7 +802,7 @@ void UIControlSystem::RemoveScreenSwitchListener(ScreenSwitchListener * listener
 void UIControlSystem::NotifyListenersWillSwitch( UIScreen* screen )
 {
     Vector<ScreenSwitchListener*> screenSwitchListenersCopy = screenSwitchListeners;
-    uint32 listenersCount = screenSwitchListenersCopy.size();
+    uint32 listenersCount = (uint32)screenSwitchListenersCopy.size();
     for(uint32 i = 0; i < listenersCount; ++i)
         screenSwitchListenersCopy[i]->OnScreenWillSwitch( screen );
 }
@@ -856,7 +810,7 @@ void UIControlSystem::NotifyListenersWillSwitch( UIScreen* screen )
 void UIControlSystem::NotifyListenersDidSwitch( UIScreen* screen )
 {
     Vector<ScreenSwitchListener*> screenSwitchListenersCopy = screenSwitchListeners;
-    uint32 listenersCount = screenSwitchListenersCopy.size();
+    uint32 listenersCount = (uint32)screenSwitchListenersCopy.size();
     for(uint32 i = 0; i < listenersCount; ++i)
         screenSwitchListenersCopy[i]->OnScreenDidSwitch( screen );
 }

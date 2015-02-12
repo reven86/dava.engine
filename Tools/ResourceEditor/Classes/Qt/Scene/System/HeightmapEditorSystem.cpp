@@ -138,7 +138,7 @@ void HeightmapEditorSystem::Process(DAVA::float32 timeElapsed)
 	}
 }
 
-void HeightmapEditorSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void HeightmapEditorSystem::Input(DAVA::UIEvent *event)
 {
 	if (!IsLandscapeEditingEnabled())
 	{
@@ -254,13 +254,15 @@ Image* HeightmapEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fi
 	RenderManager::Instance()->SetColor(Color::White);
 	
     Sprite::DrawState drawState;
-    drawState.SetScaleSize((float32)sideSize / Core::GetVirtualToPhysicalFactor(),
-                           (float32)sideSize / Core::GetVirtualToPhysicalFactor(),
+    drawState.SetScaleSize(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX((float32)sideSize),
+                           VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY((float32)sideSize),
                            srcSprite->GetWidth(),
                            srcSprite->GetHeight());
-    drawState.SetPosition(Vector2((dstSprite->GetTexture()->GetWidth() - sideSize)/2.0f,
-                                  (dstSprite->GetTexture()->GetHeight() - sideSize)/2.0f) / Core::GetVirtualToPhysicalFactor());
-	srcSprite->Draw(&drawState);
+    drawState.SetPosition(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(
+        Vector2((dstSprite->GetTexture()->GetWidth() - sideSize) / 2.0f, (dstSprite->GetTexture()->GetHeight() - sideSize) / 2.0f)));
+    
+    RenderSystem2D::Instance()->Setup2DMatrices();
+    RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
 	RenderManager::Instance()->RestoreRenderTarget();
 	
 	Image *retImage = dstSprite->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);

@@ -38,7 +38,7 @@
 #include "Render/2D/Sprite.h"
 #include "Render/2D/Font.h"
 #include "Platform/Mutex.h"
-#include <Utils/StringUtils.h>
+#include <Utils/BiDiHelper.h>
 
 namespace DAVA
 {
@@ -90,11 +90,24 @@ public:
 
     virtual Font * GetFont();
     virtual const WideString & GetText();
+    virtual const WideString & GetVisualText();
     virtual const Vector<WideString> & GetMultilineStrings();
     virtual bool GetMultiline();
     virtual bool GetMultilineBySymbol();
     virtual int32 GetFittingOption();
     
+    /**
+    \brief Get the render size.
+    \returns size in pixels
+    */
+    virtual float32	GetRenderSize();
+
+    /**
+    \brief Set the render size.
+    \param[in] size in points
+    */
+    virtual void SetRenderSize(float32 renderSize);
+	
     Sprite * GetSprite();
     bool IsSpriteReady();
     const Vector2& GetSpriteOffset();
@@ -109,6 +122,10 @@ public:
     const Vector<int32> & GetStringSizes() const;
     
     void ForcePrepare(Texture *texture);
+#if defined(LOCALIZATION_DEBUG)
+    int32 GetFittingOptionUsed();
+	bool IsVisualTextCroped();
+#endif
 
     /**
      * \brief Sets BiDi transformation support enabled.
@@ -120,15 +137,24 @@ public:
      * \brief Is BiDi trasformations support enabled.
      * \return true if BiDi trasformations supported.
      */
-    static const bool & IsBiDiSupportEnabled();
-    
+    static bool IsBiDiSupportEnabled();
+    TextBlockRender* GetRenderer(){ return textBlockRender; }
+
+    /**
+    * \brief Clean line.
+    * \param [in,out] string The string.
+    * \param trimRight (Optional) true to trim right.
+    */
+    static void CleanLine(WideString& string, bool trimRight = false);
+
 protected:
-    TextBlock();
-    ~TextBlock();
-    
-    void Prepare(Texture *texture = NULL);
-    void PrepareInternal(BaseObject * caller, void * param, void *callerData);
-    void CalculateCacheParams();
+
+	TextBlock();
+	virtual ~TextBlock();
+	
+ 	void Prepare(Texture *texture = NULL);
+	void PrepareInternal();
+	void CalculateCacheParams();
 
 	int32 GetVisualAlignNoMutexLock() const; // Return align for displaying BiDi-text (w/o mutex lock)
 
@@ -137,8 +163,7 @@ protected:
      * \param string The string.
      * \param targetRectSize Size of the target rectangle.
      * \param [out] resultVector The result vector.
-     * \param forceRtl Flag for force RTL transformation
-     *  splited lines.
+     * \param forceRtl Flag for force RTL transformation splited lines.
      */
     void SplitTextToStrings(const WideString & string, const Vector2 & targetRectSize, Vector<WideString> & resultVector, const bool forceRtl);
 
@@ -147,20 +172,13 @@ protected:
      * \param string The string.
      * \param targetRectSize Size of the target rectangle.
      * \param [out] resultVector The result vector.
-     * \param forceRtl Flag for force RTL transformation
-     *  splited lines.
+     * \param forceRtl Flag for force RTL transformation splited lines.
      */
     void SplitTextBySymbolsToStrings(const WideString & string, const Vector2 & targetRectSize, Vector<WideString> & resultVector, const bool forceRtl);
 
-    /**
-     * \brief Clean line.
-     * \param [in,out] string The string.
-     * \param trimRight (Optional) true to trim right.
-     */
-    void CleanLine(WideString& string, bool trimRight = false);
+   
 
     Vector2 rectSize;
-    bool needRedraw;
     Vector2 requestedSize;
 
     Vector2 cacheFinalSize;
@@ -168,6 +186,7 @@ protected:
     Vector2 cacheTextSize;
 
     float32 originalFontSize;
+    float32 renderSize;
     
     int32 cacheDx;
     int32 cacheDy;
@@ -176,6 +195,10 @@ protected:
     int32 cacheOy;
 
     int32 fittingType;
+#if defined(LOCALIZATION_DEBUG)
+    int32 fittingTypeUsed;
+    bool visualTextCroped;
+#endif //LOCALIZATION_DEBUG
     Vector2 position;
     Vector2 pivotPoint;
     int32 align;
@@ -195,15 +218,19 @@ protected:
     bool isPredrawed:1;
     bool cacheUseJustify:1;
     bool treatMultilineAsSingleLine:1;
+	bool needPrepareInternal:1;
 
     static bool isBiDiSupportEnabled;   //!< true if BiDi transformation support enabled
+    static BiDiHelper bidiHelper;
 
     friend class TextBlockRender;
     friend class TextBlockSoftwareRender;
     friend class TextBlockGraphicsRender;
     friend class TextBlockDistanceRender;
+    
     TextBlockRender* textBlockRender;
     TextureInvalidater *textureInvalidater;
+	Texture *textureForInvalidation;
 };
 
 }; //end of namespace

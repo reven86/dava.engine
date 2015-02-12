@@ -30,6 +30,7 @@
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #include "Platform/TemplateWin32/WindowsSpecifics.h"
 #include "Platform/Thread.h"
+#include "Platform/DeviceInfo.h"
 #include "Utils/Utils.h"
 
 #if defined(__DAVAENGINE_WIN32__)
@@ -195,12 +196,16 @@ namespace DAVA
 #elif defined(__DAVAENGINE_OPENGL__)
 ///		RenderManager::Create(Core::RENDERER_OPENGL);
 #endif
+<<<<<<< HEAD
 ///		RenderManager::Instance()->Create(hInstance, hWindow);
+=======
+		RenderManager::Instance()->Create(hInstance, hWindow);
+        RenderSystem2D::Instance()->Init();
+>>>>>>> development
 
 		FrameworkDidLaunched();
 		KeyedArchive * options = Core::GetOptions();
 
-		//fullscreenMode = GetCurrentDisplayMode();
 		fullscreenMode = GetCurrentDisplayMode();//FindBestMode(fullscreenMode);
 		if (options)
 		{
@@ -252,10 +257,17 @@ namespace DAVA
 
         RegisterRawInputDevices(&Rid, 1, sizeof(Rid));
 
+<<<<<<< HEAD
 ///		RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
 ///		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
 		UIControlSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
 		Core::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+=======
+		RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
+		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
+        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
+        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+>>>>>>> development
 
 		return true;
 	}
@@ -399,8 +411,8 @@ namespace DAVA
 
 		RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
 		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
-		UIControlSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-		Core::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
+        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 	}
 
 	Core::eScreenMode CoreWin32Platform::GetScreenMode()
@@ -820,6 +832,8 @@ namespace DAVA
 
                 OnMouseEvent(raw->data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y), raw->data.mouse.usButtonData); // only move, drag and wheel events
             }
+
+            SafeDeleteArray(lpb);
 
             break;
         }

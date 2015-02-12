@@ -116,6 +116,12 @@ protected:
 	virtual bool GetTextUseRtlAlign();
     virtual void SetTextUseRtlAlign(bool value);
 
+    virtual bool GetTextMultiline() const;
+    virtual void SetTextMultiline(bool value);
+
+    virtual bool GetTextMultilineBySymbol() const;
+    virtual void SetTextMultilineBySymbol(bool value);
+
     virtual int GetFittingType() const;
     virtual void SetFittingType(int value);
 
@@ -204,6 +210,13 @@ protected:
 	// Text use RTL align
 	bool GetTextUseRtlAlignForState(UIControl::eControlState state) const;
     void UpdatePropertyDirtyFlagForTextUseRtlAlign();
+
+    // Text multiline
+    bool GetTextMultilineForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForTextMultiline();
+
+    bool GetTextMultilineBySymbolForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForTextMultilineBySymbol();
 	
     // Draw Type.
     void UpdatePropertyDirtyFlagForDrawType();

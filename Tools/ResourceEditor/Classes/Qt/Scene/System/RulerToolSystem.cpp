@@ -43,8 +43,8 @@
 RulerToolSystem::RulerToolSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	curToolSize(0)
-,	previewEnabled(true)
 ,	lineWidth(1)
+,	previewEnabled(true)
 {
 }
 
@@ -127,7 +127,7 @@ void RulerToolSystem::Process(DAVA::float32 timeElapsed)
 	}
 }
 
-void RulerToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void RulerToolSystem::Input(DAVA::UIEvent *event)
 {
 	if (!IsLandscapeEditingEnabled())
 	{
@@ -308,7 +308,7 @@ void RulerToolSystem::DrawPoints()
 		const Vector3 landSize = boundingBox.max - boundingBox.min;
 		Vector3 offsetPoint = boundingBox.min;
 
-		float32 koef = (float32)targetTexture->GetWidth() / landSize.x / Core::GetVirtualToPhysicalFactor();
+        float32 koef = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX((float32)targetTexture->GetWidth() / landSize.x);
 
 		Vector3 startPoint = points[0];
 		for (uint32 i = 1; i < pointsCount; ++i)

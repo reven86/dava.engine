@@ -34,6 +34,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "Thread/LockGuard.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #define NOT_DEF_CHAR 0xffff
 
@@ -221,7 +222,6 @@ Font * DFFont::Clone() const
     dfFont->fontInternal = SafeRetain(fontInternal);
     dfFont->fontTexture = SafeRetain(fontTexture);
     dfFont->size = size;
-    dfFont->renderSize = renderSize;
     dfFont->fontTextureHandler = fontTextureHandler;
     RenderManager::Instance()->RetainTextureState(fontTextureHandler);
 
@@ -362,7 +362,7 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
         }
         float32 charWidth = (charDescription.xAdvance + nextKerning) * sizeScale;
         if (charSizes)
-            charSizes->push_back(charWidth * Core::GetVirtualToPhysicalFactor());
+            charSizes->push_back(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(charWidth));
         lastX += charWidth;
         
         charDrawed++;
@@ -384,7 +384,7 @@ float32 DFFont::GetSpread() const
 
 float32 DFFont::GetSizeScale() const
 {
-    return renderSize / fontInternal->baseSize;
+    return size / fontInternal->baseSize;
 }
     
 bool DFFont::LoadTexture(const FilePath & path)

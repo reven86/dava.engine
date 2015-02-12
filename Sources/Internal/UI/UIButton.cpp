@@ -398,6 +398,32 @@ void UIButton::SetStateTextUseRtlAlign(int32 state, bool value)
     }
 }
 
+void UIButton::SetStateTextMultiline(int32 state, bool value)
+{
+    for (int i = 0; i < DRAW_STATE_COUNT && state; i++)
+    {
+        if (state & 0x01)
+        {
+            UIStaticText* text = GetOrCreateTextBlock((eButtonDrawState)i);
+            text->SetMultiline(value, text->GetMultilineBySymbol());
+        }
+        state >>= 1;
+    }
+}
+
+void UIButton::SetStateTextMultilineBySymbol(int32 state, bool value)
+{
+    for (int i = 0; i < DRAW_STATE_COUNT && state; i++)
+    {
+        if (state & 0x01)
+        {
+            UIStaticText* text = GetOrCreateTextBlock((eButtonDrawState)i);
+            text->SetMultiline(text->GetMultiline(), value);
+        }
+        state >>= 1;
+    }
+}
+
 void UIButton::SetStateMargins(int32 state, const UIControlBackground::UIMargins* margins)
 {
     for(int i = 0; i < DRAW_STATE_COUNT && state; i++)
@@ -518,9 +544,11 @@ void UIButton::SetBackground(eButtonDrawState drawState, UIControlBackground *ne
         SafeRelease(background);
         background = SafeRetain(newBackground);
     }
-    
+
+    SafeRetain(newBackground);
     SafeRelease(stateBacks[drawState]);
-    stateBacks[drawState] = SafeRetain(newBackground);
+    stateBacks[drawState] = newBackground;
+    
     selectedBackground = GetActualBackgroundForState(controlState);
 }
 
@@ -1044,17 +1072,20 @@ int32 UIButton::GetBackgroundComponentsCount() const
     
 UIControlBackground *UIButton::GetBackgroundComponent(int32 index) const
 {
+    DVASSERT(0 <= index && index < DRAW_STATE_COUNT);
     return stateBacks[index];
 }
  
 UIControlBackground *UIButton::CreateBackgroundComponent(int32 index) const
 {
+    DVASSERT(0 <= index && index < DRAW_STATE_COUNT);
     UIControlBackground *bg = GetActualBackground((eButtonDrawState) index);
     return bg ? bg->Clone() : CreateDefaultBackground();
 }
 
 void UIButton::SetBackgroundComponent(int32 drawState, UIControlBackground *newBackground)
 {
+    DVASSERT(0 <= drawState && drawState < DRAW_STATE_COUNT);
     SetBackground((eButtonDrawState) drawState, newBackground);
 }
 
@@ -1070,17 +1101,20 @@ int32 UIButton::GetInternalControlsCount() const
     
 UIControl *UIButton::GetInternalControl(int32 index) const
 {
+    DVASSERT(0 <= index && index < DRAW_STATE_COUNT);
     return stateTexts[index];
 }
 
 UIControl *UIButton::CreateInternalControl(int32 index) const
 {
+    DVASSERT(0 <= index && index < DRAW_STATE_COUNT);
     UIStaticText* targetTextBlock = GetActualTextBlock((eButtonDrawState) index);
     return targetTextBlock ? targetTextBlock->Clone() : CreateDefaultTextBlock();
 }
     
 void UIButton::SetInternalControl(int32 index, UIControl *control)
 {
+    DVASSERT(0 <= index && index < DRAW_STATE_COUNT);
     SetTextBlock((eButtonDrawState) index, DynamicTypeCheck<UIStaticText*>(control));
 }
     

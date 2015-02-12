@@ -1,4 +1,3 @@
-
 if ( GLOBAL_VAR_FOUND )
     return ()
 endif ()
@@ -8,78 +7,91 @@ if( APPLE AND NOT IOS )
 	set ( MACOS 1 )
 endif ()
 
+#global paths
+
 set ( DAVA_LIBRARY                     "DavaFramework" )
 set ( DAVA_ROOT_DIR                    "${CMAKE_CURRENT_LIST_DIR}/../../.." )
+set ( DAVA_PREDEFINED_TARGETS_FOLDER   "CMAKE" )
 
+get_filename_component( DAVA_ROOT_DIR ${DAVA_ROOT_DIR} ABSOLUTE )
+
+set ( DAVA_TOOLS_BIN_DIR               "${DAVA_ROOT_DIR}/Tools/Bin" )
+set ( DAVA_TOOLS_DIR                   "${DAVA_ROOT_DIR}/Sources/Tools" )
 set ( DAVA_ENGINE_DIR                  "${DAVA_ROOT_DIR}/Sources/Internal" )
 set ( DAVA_THIRD_PARTY_ROOT_PATH       "${DAVA_ROOT_DIR}/Libs" )
 set ( DAVA_CONFIGURE_FILES_PATH        "${DAVA_ROOT_DIR}/Sources/CMake/ConfigureFiles" )
+set ( DAVA_SCRIPTS_FILES_PATH          "${DAVA_ROOT_DIR}/Sources/CMake/Scripts" )
 set ( DAVA_THIRD_PARTY_INCLUDES_PATH   "${DAVA_THIRD_PARTY_ROOT_PATH}/include" 
                                        "${DAVA_ENGINE_DIR}/../External" 
                                        "${DAVA_ENGINE_DIR}/../Tools" 
                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/glew/include" 
                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod/include" 
+                                       "${DAVA_THIRD_PARTY_ROOT_PATH}/lua/include" 
                                       ) 
 
-
 set( DAVA_SPEEDTREE_ROOT_DIR            "${DAVA_ROOT_DIR}/../dava.speedtree" )                                      
-set( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast" )                                      
+set( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast" ) 
+                                   
+get_filename_component( DAVA_SPEEDTREE_ROOT_DIR ${DAVA_SPEEDTREE_ROOT_DIR} ABSOLUTE )
+get_filename_component( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR} ABSOLUTE )
 
-                                     
+set ( DAVA_BINARY_WIN32_DIR            "${DAVA_TOOLS_BIN_DIR}" "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin"  )
+
 
 if     ( ANDROID )
     set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/${ANDROID_NDK_ABI_NAME}" ) 
     
 elseif ( IOS     ) 
     set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/ios" ) 
-    
+  
 elseif ( MACOS )
     set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/mac" ) 
 
-else   ()
+elseif ( WIN32)
     set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win" ) 
     
 endif  ()
 
-set ( DAVA_INCLUDE_DIR ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
+#compiller flags
 
-#ImageMagick
-if( MACOS ) 
+if     ( ANDROID )
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-invalid-offsetof" )  
+    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -Wno-invalid-offsetof -frtti" )    
+    
+elseif ( IOS     ) 
+    set ( CMAKE_C_FLAGS    "-mno-thumb"  )
+    set ( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden" )
+  
+elseif ( MACOS )
+    set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
 
-        set( IMAGE_MAGICK ImageMagick-6.7.4 )
+elseif ( WIN32)
+    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP" ) 
+    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP" ) 
+    set ( CMAKE_EXE_LINKER_FLAGS_RELEASE "/ENTRY:mainCRTStartup" )
+    
+endif  ()
 
-	set ( DAVA_IMAGE_MAGICK_INCLUDES_PATH  
-	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/${IMAGE_MAGICK}/include/ImageMagick"
-	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/${IMAGE_MAGICK}/delegates/include" 
-	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/${IMAGE_MAGICK}/" 
-	     )
-
-	set ( DAVA_IMAGE_MAGICK_LIBRARIES_PATH  
-	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/${IMAGE_MAGICK}" )  
-
-	file ( GLOB DAVA_IMAGE_MAGICK_LIBRARIES_RELEASE  ${DAVA_IMAGE_MAGICK_LIBRARIES_PATH}/lib/*.a ${DAVA_IMAGE_MAGICK_LIBRARIES_PATH}/delegates/lib/*.a )
-
-	file ( GLOB DAVA_IMAGE_MAGICK_LIBRARIES_DEBUG    "${DAVA_IMAGE_MAGICK_LIBRARIES_RELEASE}" )
-
-elseif( IOS ) 
-
-elseif( WIN32 )
-
-        set( IMAGE_MAGICK ImageMagick-6.7.4-Windows )
-
-	set ( DAVA_IMAGE_MAGICK_INCLUDES_PATH  
-	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/${IMAGE_MAGICK}"
-	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/${IMAGE_MAGICK}/Magick++/lib" )
-
-	set ( DAVA_IMAGE_MAGICK_LIBRARIES_PATH  
-	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/${IMAGE_MAGICK}/VisualMagick/lib" )  
-
-	file ( GLOB DAVA_IMAGE_MAGICK_LIBRARIES_RELEASE  "${DAVA_IMAGE_MAGICK_LIBRARIES_PATH}/CORE_RL_*.lib" )
-	file ( GLOB DAVA_IMAGE_MAGICK_LIBRARIES_DEBUG    "${DAVA_IMAGE_MAGICK_LIBRARIES_PATH}/CORE_DB_*.lib" )
+#DavaConfig
+if( NOT EXISTS "${DAVA_ROOT_DIR}/DavaConfig.in")
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/DavaConfigTemplate.in
+                    ${DAVA_ROOT_DIR}/DavaConfig.in COPYONLY )
 
 endif()
 
+set ( DAVA_INCLUDE_DIR ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
+configure_file( ${DAVA_ROOT_DIR}/DavaConfig.in 
+                ${CMAKE_CURRENT_BINARY_DIR}/config.in )
 
-
+file( STRINGS ${CMAKE_CURRENT_BINARY_DIR}/config.in ConfigContents )
+foreach(NameAndValue ${ConfigContents})
+  string(REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue})
+  string(REGEX MATCH "^[^=]+" Name ${NameAndValue})
+  string(REPLACE "${Name}=" "" Value ${NameAndValue})
+  string(REGEX REPLACE " " "" Name   "${Name}")
+  string(REGEX REPLACE " " "" Value  "${Value}")
+  set( ${Name} "${Value}" )
+#  message("---" [${Name}] "  " [${Value}] )
+endforeach()                                     
 

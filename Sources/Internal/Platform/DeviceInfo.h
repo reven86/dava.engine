@@ -40,6 +40,29 @@ namespace DAVA
 class DeviceInfo
 {
 public:
+	struct ScreenInfo
+	{
+		int32 width;
+		int32 height;
+		int32 scale;
+		
+		ScreenInfo()
+		{
+			width = 0;
+			height = 0;
+			scale = 1;
+		}
+		
+		ScreenInfo(int32 w, int32 h, int32 _scale)
+		{
+			width = w;
+			height = h;
+			scale = _scale;
+		}
+	};
+
+	
+public:
 	enum ePlatform
 	{
 		PLATFORM_MACOS = 0,
@@ -99,7 +122,11 @@ public:
         FilePath path;
 
         StorageInfo()
-        :   type(STORAGE_TYPE_UNKNOWN)
+            : type(STORAGE_TYPE_UNKNOWN)
+            , totalSpace(0)
+            , freeSpace(0)
+            , readOnly(false)
+            , emulated(false)
         {}
     };
 
@@ -113,11 +140,24 @@ public:
 	static String GetTimeZone();
     static String GetUDID();
     static WideString GetName();
+        static String GetHTTPProxyHost();
+	static String GetHTTPNonProxyHosts();
+	static int GetHTTPProxyPort();
+	
+   	static ScreenInfo & GetScreenInfo();
+    //internal?
     static int GetZBufferSize();
     static eGPUFamily GetGPUFamily();
     static NetworkInfo GetNetworkInfo();
+
     static List<StorageInfo> GetStoragesList();
     static int32 GetCpuCount();
+
+
+    static void InitializeScreenInfo();
+
+private:
+    static ScreenInfo screenInfo;
 };
 
 };

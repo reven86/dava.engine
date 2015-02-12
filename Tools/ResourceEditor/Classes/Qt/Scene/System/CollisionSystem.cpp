@@ -137,8 +137,6 @@ int SceneCollisionSystem::GetDrawMode() const
 
 const EntityGroup* SceneCollisionSystem::ObjectsRayTest(const DAVA::Vector3 &from, const DAVA::Vector3 &to)
 {
-	DAVA::Entity *retEntity = NULL;
-
 	// check if cache is available 
 	if(rayIntersectCached && lastRayFrom == from && lastRayTo == to)
 	{
@@ -334,7 +332,7 @@ void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
 	}
 }
 
-void SceneCollisionSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void SceneCollisionSystem::Input(DAVA::UIEvent *event)
 {
 	// don't have to update last mouse pos when event is not from the mouse
 	if (event->phase != UIEvent::PHASE_KEYCHAR && event->phase != UIEvent::PHASE_JOYSTICK)
@@ -604,9 +602,9 @@ void SceneCollisionSystem::DestroyFromEntity(DAVA::Entity * entity)
 // -----------------------------------------------------------------------------------------------
 
 SceneCollisionDebugDrawer::SceneCollisionDebugDrawer()
-	: manager(DAVA::RenderManager::Instance())
+	: dbgMode(0)
+	, manager(DAVA::RenderManager::Instance())
 	, helper(DAVA::RenderHelper::Instance())
-	, dbgMode(0)
 {
     renderState = DAVA::RenderState::RENDERSTATE_2D_BLEND;
     manager->RetainRenderState(renderState);

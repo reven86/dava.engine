@@ -38,18 +38,19 @@ namespace DAVA
 	
 const int32 DEFAULT_TOUCH_TRESHOLD = 15;  // Default value for finger touch tresshold
 
+
 UIScrollViewContainer::UIScrollViewContainer(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)
-:	UIControl(rect, rectInAbsoluteCoordinates),
-	mainTouch(-1),
-	touchTreshold(DEFAULT_TOUCH_TRESHOLD),
-	enableHorizontalScroll(true),
-	enableVerticalScroll(true),
-    scrollStartMovement(false),
-	newPos(0.f, 0.f),
-	oldPos(0.f, 0.f),
-	lockTouch(false),
-	state(STATE_NONE),
-    currentScroll(NULL)
+: UIControl(rect, rectInAbsoluteCoordinates)
+, state(STATE_NONE)
+, touchTreshold(DEFAULT_TOUCH_TRESHOLD)
+, mainTouch(-1)
+, oldPos(0.f, 0.f)
+, newPos(0.f, 0.f)
+, currentScroll(NULL)
+, lockTouch(false)
+, scrollStartMovement(false)
+, enableHorizontalScroll(true)
+, enableVerticalScroll(true)
 {
 	this->SetInputEnabled(true);
 	this->SetMultiInput(true);
@@ -258,9 +259,12 @@ void UIScrollViewContainer::WillDisappear()
 {
     mainTouch = -1;
     lockTouch = false;
-	UIScrollView *scrollView = cast_if_equal<UIScrollView*>(this->GetParent());
-    scrollView->GetHorizontalScroll()->GetPosition(0, 1.0f, true);
-    scrollView->GetVerticalScroll()->GetPosition(0, 1.0f, true);
+    UIScrollView *scrollView = dynamic_cast<UIScrollView*>(GetParent());
+    if (scrollView)
+    {
+        scrollView->GetHorizontalScroll()->GetPosition(0, 1.0f, true);
+        scrollView->GetVerticalScroll()->GetPosition(0, 1.0f, true);
+    }
     state = STATE_NONE;
 }
 

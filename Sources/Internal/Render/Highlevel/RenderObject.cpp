@@ -36,21 +36,21 @@
 namespace DAVA
 {
 
-
+    
 static const int32 DEFAULT_FLAGS = RenderObject::VISIBLE | RenderObject::VISIBLE_STATIC_OCCLUSION;
 
 RenderObject::RenderObject()
-    :   type(TYPE_RENDEROBJECT)
+    :   startClippingPlane(0)
+    ,   renderSystem(0)
+    ,   type(TYPE_RENDEROBJECT)
     ,   flags(DEFAULT_FLAGS)
-    ,   removeIndex(-1)
-	,   treeNodeIndex(INVALID_TREE_NODE_INDEX)
-    ,   staticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX)
-	,   startClippingPlane(0)
     ,   debugFlags(0)
+    ,   removeIndex(-1)
+    ,   treeNodeIndex(INVALID_TREE_NODE_INDEX)
+    ,   staticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX)
     ,   worldTransform(0)
-	,	renderSystem(0)
-	,	lodIndex(-1)
-	,	switchIndex(-1)
+    ,	lodIndex(-1)
+    ,	switchIndex(-1)
 {
     lights[0] = NULL;
     lights[1] = NULL;
@@ -177,7 +177,7 @@ void RenderObject::ReplaceRenderBatch(uint32 batchIndex, RenderBatch * newBatch)
 void RenderObject::SetRenderBatchLODIndex(uint32 batchIndex, int32 newLodIndex)
 {
     uint32 size = (uint32)renderBatchArray.size();
-    DVASSERT(batchIndex < size && batchIndex >= 0);
+    DVASSERT(batchIndex < size);
 
     IndexedRenderBatch & iBatch = renderBatchArray[batchIndex];
     iBatch.lodIndex = newLodIndex;
@@ -188,7 +188,7 @@ void RenderObject::SetRenderBatchLODIndex(uint32 batchIndex, int32 newLodIndex)
 void RenderObject::SetRenderBatchSwitchIndex(uint32 batchIndex, int32 newSwitchIndex)
 {
     uint32 size = (uint32)renderBatchArray.size();
-    DVASSERT(batchIndex < size && batchIndex >= 0);
+    DVASSERT(batchIndex < size);
 
     IndexedRenderBatch & iBatch = renderBatchArray[batchIndex];
     iBatch.switchIndex = newSwitchIndex;

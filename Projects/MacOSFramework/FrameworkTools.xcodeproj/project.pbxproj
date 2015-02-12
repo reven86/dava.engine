@@ -430,9 +430,7 @@
 					./../../Libs/include,
 					./../../Libs/lua/include,
 					./../../Sources/Tools,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
-					"./../../Libs/ImageMagick-6.7.4/",
+					../../Libs/IMagickHelpLib,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					/opt/local/lib,
@@ -476,9 +474,7 @@
 					./../../Libs/include,
 					./../../Libs/lua/include,
 					./../../Sources/Tools,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
-					"./../../Libs/ImageMagick-6.7.4/",
+					../../Libs/IMagickHelpLib,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					/opt/local/lib,
@@ -501,9 +497,7 @@
 					./../../Libs/include,
 					./../../Libs/lua/include,
 					./../../Sources/Tools,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
-					"./../../Libs/ImageMagick-6.7.4/",
+					../../Libs/IMagickHelpLib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -522,9 +516,7 @@
 					./../../Libs/include,
 					./../../Libs/lua/include,
 					./../../Sources/Tools,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
-					"./../../Libs/ImageMagick-6.7.4/",
+					../../Libs/IMagickHelpLib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -544,9 +536,7 @@
 					./../../Libs/include,
 					./../../Libs/lua/include,
 					./../../Sources/Tools,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
-					"./../../Libs/ImageMagick-6.7.4/",
+					../../Libs/IMagickHelpLib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = FrameworkToolsQt;
@@ -566,9 +556,7 @@
 					./../../Libs/include,
 					./../../Libs/lua/include,
 					./../../Sources/Tools,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
-					"./../../Libs/ImageMagick-6.7.4/",
+					../../Libs/IMagickHelpLib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = FrameworkToolsQt;
@@ -588,9 +576,7 @@
 					./../../Libs/include,
 					./../../Libs/lua/include,
 					./../../Sources/Tools,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
-					"./../../Libs/ImageMagick-6.7.4/",
+					../../Libs/IMagickHelpLib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = FrameworkToolsNPAPI;
@@ -610,9 +596,7 @@
 					./../../Libs/include,
 					./../../Libs/lua/include,
 					./../../Sources/Tools,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
-					"./../../Libs/ImageMagick-6.7.4/",
+					../../Libs/IMagickHelpLib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = FrameworkToolsNPAPI;

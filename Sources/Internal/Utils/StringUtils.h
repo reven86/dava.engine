@@ -63,48 +63,49 @@ void GetLineBreaks(const WideString& string, Vector<uint8>& breaks, const char8*
 
 /**
 * \brief Trims the given string.
-* \param [in,out] string The string.
+* \param [in] string The string.
+* \return output string.
 */
 WideString Trim(const WideString& string);
 
 /**
 * \brief Trim left.
-* \param [in,out] string The string.
+* \param [in] string The string.
+* \return output string.
 */
 WideString TrimLeft(const WideString& string);
 
 /**
 * \brief Trim right.
-* \param [in,out] string The string.
+* \param [in] string The string.
+* \return output string.
 */
 WideString TrimRight(const WideString& string);
 
 /**
- * \brief Query if 't' is space.
+* \brief Remove from line non-pritable characters and replace 
+*        unicode spaces into ASCII space.
+* \param [in] string The string.
+* \param [in] tabRule The kind of process \t symbol: -1 - keep tab symbol, 0..n - replace tab with 0..n spaces.
+* \return output string.
+*/
+WideString RemoveNonPrintable(const WideString& string, const int8 tabRule = -1);
+
+/**
+ * \brief Query if 't' is all kind of spaces or linebreak. Using this function for trim whitespaces.
  * \param t The char16 to process.
  * \return true if space, false if not.
  */
 inline bool IsWhitespace(char16 t)
 {
-    return iswspace(static_cast<wint_t>(t)) != 0;
+    return iswspace(static_cast<wint_t>(t)) != 0
+        || t == 0x00A0 // Non-break space
+        || t == 0x200B // Zero-width space
+        || t == 0x200E // Zero-width Left-to-right zero-width character
+        || t == 0x200F // Zero-width Right-to-left zero-width non-Arabic character
+        || t == 0x061C // Right-to-left zero-width Arabic character
+        ;
 }
-
-/**
- * \brief Prepare string for BiDi transformation (shape arabic string). Need for correct splitting.
- * \param [in] logicalStr The logical string.
- * \param [out] preparedStr The prepared string.
- * \param [out] isRTL If non-null, store in isRTL true if line contains Right-to-left text.
- * \return true if it succeeds, false if it fails.
- */
-bool BiDiPrepare(const WideString& logicalStr, WideString& preparedStr, bool* isRTL);
-
-/**
- * \brief Reorder characters in string based.
- * \param [in,out] string The string.
- * \param forceRtl (Optional) true if input text is mixed and must be processed as RTL.
- * \return true if it succeeds, false if it fails.
- */
-bool BiDiReorder(WideString& string, const bool forceRtl = false);
 
 }
 }

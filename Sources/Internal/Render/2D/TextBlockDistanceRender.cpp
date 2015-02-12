@@ -30,6 +30,8 @@
 #include "Render/RenderManager.h"
 #include "Core/Core.h"
 #include "Render/ShaderCache.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA 
 {
@@ -141,8 +143,13 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 	{
 		yOffset += (int32)((textBlock->rectSize.dy - renderRect.dy) * 0.5f);
 	}
-    RenderManager::Instance()->PushDrawMatrix();
-    RenderManager::Instance()->SetDrawTranslate(Vector2((float32)xOffset, (float32)yOffset));
+
+    //TODO: temporary crutch until 2D render became fully stateless
+    const Matrix4 * oldMatrix = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD);
+    
+    Matrix4 offsetMatrix;
+    offsetMatrix.glTranslate((float32)xOffset, (float32)yOffset, 0.f);
+    RenderManager::SetDynamicParam(PARAM_WORLD, &offsetMatrix, UPDATE_SEMANTIC_ALWAYS);
 
     RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
     RenderManager::Instance()->SetTextureState(dfFont->GetTextureHandler());
@@ -161,7 +168,7 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
     
 	RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, charDrawed * 6, EIF_16, this->indexBuffer);
     
-    RenderManager::Instance()->PopDrawMatrix();
+    RenderManager::SetDynamicParam(PARAM_WORLD, oldMatrix, (pointer_size)oldMatrix);
 }
 	
 Font::StringMetrics TextBlockDistanceRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
@@ -174,7 +181,7 @@ Font::StringMetrics TextBlockDistanceRender::DrawTextML(const WideString& drawTe
 										   int32 xOffset, uint32 yOffset,
 										   int32 lineSize)
 {
-	return InternalDrawText(drawText, xOffset, yOffset, (int32)ceilf(Core::GetVirtualToPhysicalFactor() * w), lineSize);
+    return InternalDrawText(drawText, xOffset, yOffset, (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)w)), lineSize);
 }
 	
 Font::StringMetrics TextBlockDistanceRender::InternalDrawText(const WideString& drawText, int32 x, int32 y, int32 w, int32 lineSize)

@@ -52,8 +52,8 @@ WideString StringUtils::Trim(const WideString& string)
     WideString::const_iterator it = string.begin();
     WideString::const_iterator end = string.end();
     WideString::const_reverse_iterator rit = string.rbegin();
-    while (it != end && iswspace(*it)) ++it;
-    while (rit.base() != it && iswspace(*rit)) ++rit;
+    while (it != end && IsWhitespace(*it)) ++it;
+    while (rit.base() != it && IsWhitespace(*rit)) ++rit;
     return WideString(it, rit.base());
 }
 
@@ -61,7 +61,7 @@ WideString StringUtils::TrimLeft(const WideString& string)
 {
     WideString::const_iterator it = string.begin();
     WideString::const_iterator end = string.end();
-    while (it != end && iswspace(*it)) ++it;
+    while (it != end && IsWhitespace(*it)) ++it;
     return WideString(it, end);
 }
 
@@ -69,126 +69,46 @@ WideString StringUtils::TrimRight(const WideString& string)
 {
     WideString::const_reverse_iterator rit = string.rbegin();
     WideString::const_reverse_iterator rend = string.rend();
-    while (rit != rend && iswspace(*rit)) ++rit;
+    while (rit != rend && IsWhitespace(*rit)) ++rit;
     return WideString(rend.base(), rit.base());
 }
 
-bool StringUtils::BiDiPrepare(const WideString& logicalStr, WideString& preparedStr, bool* isRTL)
+WideString StringUtils::RemoveNonPrintable(const WideString & string, const int8 tabRule /*= -1*/)
 {
-    static const uint32 MAX_LINE_LENGTH = 65535;
-    static FriBidiFlags flags = FRIBIDI_FLAGS_DEFAULT | FRIBIDI_FLAGS_ARABIC;
-
-    String inputUTF = UTF8Utils::EncodeToUTF8(logicalStr);
-    uint32 utf_len = (uint32)inputUTF.length();
-    
-    FriBidiChar* logical = new FriBidiChar[utf_len + 1];
-    uint32 fribidi_len = fribidi_charset_to_unicode(FRIBIDI_CHAR_SET_UTF8, inputUTF.c_str(), utf_len, logical);
-    if (fribidi_len == 0)
+    WideString out;
+    WideString::const_iterator it = string.begin();
+    WideString::const_iterator end = string.end();
+    for (; it != end; ++it)
     {
-        SAFE_DELETE(logical);
-        return false;
+        switch (*it)
+        {
+        case L'\n':
+        case L'\r':
+        case 0x200B: // Zero-width space
+        case 0x200E: // Zero-width Left-to-right zero-width character
+        case 0x200F: // Zero-width Right-to-left zero-width non-Arabic character
+        case 0x061C: // Right-to-left zero-width Arabic character
+            // Skip this characters (remove it)
+            break;
+        case L'\t':
+            if(tabRule < 0)
+            {
+                out.push_back(*it); // Leave tab symbol
+            }
+            else
+            {
+                out.append(tabRule, L' '); // Replace tab with (tabRule x spaces)
+            }
+            break;
+        case 0x00A0: // Non-break space
+            out.push_back(L' ');
+            break;
+        default:
+            out.push_back(*it);
+            break;
+        }
     }
-    
-    FriBidiCharType* bidi_types = new FriBidiCharType[fribidi_len];
-    if (!bidi_types)
-    {
-        SAFE_DELETE(logical);
-        return false;
-    }
-
-    fribidi_get_bidi_types(logical, fribidi_len, bidi_types);
-
-    FriBidiLevel* embedding_levels = new FriBidiLevel[fribidi_len];
-    if (!embedding_levels)
-    {
-        SAFE_DELETE(logical);
-        return false;
-    }
-
-    FriBidiParType base_dir = FRIBIDI_PAR_ON;
-    FriBidiLevel max_level = fribidi_get_par_embedding_levels(bidi_types, fribidi_len, &base_dir, embedding_levels) - 1;
-    if (max_level < 0)
-    {
-        SAFE_DELETE(logical);
-        return false;
-    }
-
-    FriBidiChar* visual = new FriBidiChar[fribidi_len + 1];
-    Memcpy(visual, logical, fribidi_len * sizeof(*visual));
-
-    /* Arabic joining */
-    FriBidiArabicProp * ar_props = new FriBidiArabicProp[fribidi_len];
-    fribidi_get_joining_types(logical, fribidi_len, ar_props);
-    fribidi_join_arabic(bidi_types, fribidi_len, embedding_levels, ar_props);
-    fribidi_shape(flags, embedding_levels, fribidi_len, ar_props, visual);
-    SAFE_DELETE(ar_props);
-    
-    char outstring[MAX_LINE_LENGTH];
-    utf_len = fribidi_unicode_to_charset(FRIBIDI_CHAR_SET_UTF8, visual, fribidi_len, outstring);
-    UTF8Utils::EncodeToWideString(reinterpret_cast<unsigned char*>(outstring), utf_len, preparedStr);
-    if (isRTL)
-    {
-        *isRTL = FRIBIDI_IS_RTL(base_dir);
-    }
-
-    SAFE_DELETE(logical);
-    SAFE_DELETE(visual);
-    return true;
-}
-
-bool StringUtils::BiDiReorder(WideString& string, const bool forceRtl)
-{
-    static const uint32 MAX_LINE_LENGTH = 65535;
-    static FriBidiFlags flags = FRIBIDI_FLAGS_DEFAULT | FRIBIDI_FLAGS_ARABIC;
-
-    String inputUTF = UTF8Utils::EncodeToUTF8(string);
-    uint32 utf_len = (uint32)inputUTF.length();
-
-    FriBidiChar* logical = new FriBidiChar[utf_len + 1];
-    uint32 fribidi_len = fribidi_charset_to_unicode(FRIBIDI_CHAR_SET_UTF8, inputUTF.c_str(), utf_len, logical);
-    if (fribidi_len == 0)
-    {
-        SAFE_DELETE(logical);
-        return false;
-    }
-
-    FriBidiCharType* bidi_types = new FriBidiCharType[fribidi_len];
-    if (!bidi_types)
-    {
-        SAFE_DELETE(logical);
-        return false;
-    }
-
-    fribidi_get_bidi_types(logical, fribidi_len, bidi_types);
-
-    FriBidiLevel* embedding_levels = new FriBidiLevel[fribidi_len];
-    if (!embedding_levels)
-    {
-        SAFE_DELETE(logical);
-        return false;
-    }
-
-    FriBidiParType base_dir = forceRtl ? (FRIBIDI_PAR_RTL) : (FRIBIDI_PAR_ON);
-    FriBidiLevel max_level = fribidi_get_par_embedding_levels(bidi_types, fribidi_len, &base_dir, embedding_levels) - 1;
-    if (max_level < 0)
-    {
-        SAFE_DELETE(logical);
-        return false;
-    }
-
-    FriBidiChar* visual = new FriBidiChar[fribidi_len + 1];
-    Memcpy(visual, logical, fribidi_len * sizeof(*visual));
-
-    fribidi_boolean status = fribidi_reorder_line(flags, bidi_types, fribidi_len, 0, base_dir, embedding_levels, visual, NULL);
-
-    char outstring[MAX_LINE_LENGTH];
-    fribidi_len = fribidi_remove_bidi_marks(visual, fribidi_len, NULL, NULL, NULL);
-    utf_len = fribidi_unicode_to_charset(FRIBIDI_CHAR_SET_UTF8, visual, fribidi_len, outstring);
-    UTF8Utils::EncodeToWideString(reinterpret_cast<unsigned char*>(outstring), utf_len, string);
-
-    SAFE_DELETE(logical);
-    SAFE_DELETE(visual);
-    return status != 0;
+    return out;
 }
 
 }

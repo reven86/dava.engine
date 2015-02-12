@@ -27,8 +27,10 @@
 =====================================================================================*/
 
 #include "Base/BaseTypes.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #if defined(__DAVAENGINE_IPHONE__)
 
+#include "Platform/DeviceInfo.h"
 
 #import <UIKit/UIKit.h>
 #import "HelperAppDelegate.h"
@@ -41,32 +43,38 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 {
 	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 	DAVA::Core * core = new DAVA::Core();
+    core->SetCommandLine(argc, argv);
 	core->CreateSingletons();
-	FrameworkDidLaunched();
 	
-	{//detecting physical screen size and initing core system with this size
-		
-		::UIScreen* mainScreen = [::UIScreen mainScreen];
-		unsigned int width = [mainScreen bounds].size.width;
-		unsigned int height = [mainScreen bounds].size.height;
-        eScreenOrientation orientation = Instance()->GetScreenOrientation();
-        //if (UIDeviceOrientationIsLandscape([[UIDevice currentDevice] orientation]))
-        if ((orientation==SCREEN_ORIENTATION_LANDSCAPE_LEFT)||(orientation==SCREEN_ORIENTATION_LANDSCAPE_RIGHT)||(orientation==SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE))
-        {
-            width = [mainScreen bounds].size.height;
-            height = [mainScreen bounds].size.width;
-        }
-		unsigned int scale = [HelperAppDelegate GetScale];
-		
-		DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
-		DAVA::Core::Instance()->SetPhysicalScreenSize(width*scale, height*scale);
+    FrameworkDidLaunched();
+    
+	//detecting physical screen size and initing core system with this size
+    const DeviceInfo::ScreenInfo & screenInfo = DeviceInfo::GetScreenInfo();
+    int32 width = screenInfo.width;
+    int32 height = screenInfo.height;
+    
+	eScreenOrientation orientation = Instance()->GetScreenOrientation();
+	if ((orientation==SCREEN_ORIENTATION_LANDSCAPE_LEFT)||
+		(orientation==SCREEN_ORIENTATION_LANDSCAPE_RIGHT)||
+		(orientation==SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE))
+	{
+        width = screenInfo.height;
+        height = screenInfo.width;
 	}
+		
+	int32 scale = 1;
+    if(DAVA::Core::IsAutodetectContentScaleFactor())
+    {
+        scale = screenInfo.scale;
+    }
+		
+	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width * scale, height * scale);
 		
 	int retVal = UIApplicationMain(argc, argv, nil, nil);
 	
 	[pool release];
-	
-	return retVal;		
+	return retVal;
 }
 
 DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
@@ -122,14 +130,6 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 
 - (void)applicationWillResignActive:(UIApplication *)application
 {
-#if defined(__DAVAENGINE_OPENGL__)
-//    https://developer.apple.com/library/ios/documentation/3ddrawing/conceptual/opengles_programmingguide/ImplementingaMultitasking-awareOpenGLESApplication/ImplementingaMultitasking-awareOpenGLESApplication.html#//apple_ref/doc/uid/TP40008793-CH5-SW5
-//  see Background Apps May Not Execute Commands on the Graphics Hardware
-    
-    glFinish();
-#endif
-    
-    
     DAVA::ApplicationCore * core = DAVA::Core::Instance()->GetApplicationCore();
     if(core)
     {
@@ -139,6 +139,13 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     {
         DAVA::Core::Instance()->SetIsActive(false);
     }
+    
+#if defined(__DAVAENGINE_OPENGL__)
+    //    https://developer.apple.com/library/ios/documentation/3ddrawing/conceptual/opengles_programmingguide/ImplementingaMultitasking-awareOpenGLESApplication/ImplementingaMultitasking-awareOpenGLESApplication.html#//apple_ref/doc/uid/TP40008793-CH5-SW5
+    //  see Background Apps May Not Execute Commands on the Graphics Hardware
+    
+    glFinish();
+#endif
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
@@ -155,6 +162,13 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 //        NSLog(@"Sent to background by home button/switching to other app");
 //    }
 	DAVA::Core::Instance()->GoBackground(isLock);
+    
+#if defined(__DAVAENGINE_OPENGL__)
+    //    https://developer.apple.com/library/ios/documentation/3ddrawing/conceptual/opengles_programmingguide/ImplementingaMultitasking-awareOpenGLESApplication/ImplementingaMultitasking-awareOpenGLESApplication.html#//apple_ref/doc/uid/TP40008793-CH5-SW5
+    //  see Background Apps May Not Execute Commands on the Graphics Hardware
+    
+    glFinish();
+#endif
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application

@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.8)
-project      ( UnitTest )
+project      ( UnitTestsLib )
 
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 
@@ -7,8 +7,11 @@ find_package ( DavaFramework REQUIRED )
 
 include      ( CMake-common )
 
+if( ANDROID )
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -std=c++11" )
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-invalid-offsetof" )
 
-if( IOS )
+elseif( IOS )
     set( PLATFORM_SPECIFIC_FOLDER "iOSSpecific" )
 
     set( CMAKE_IOS_SDK_ROOT Latest IOS )
@@ -36,8 +39,6 @@ elseif( MACOS )
     file ( GLOB DYLIB_FILES ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.dylib)
     set_source_files_properties( ${DYLIB_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks )
 
-
-
     file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/*.xib" )
 
     list( APPEND RESOURCES_LIST ${XIB_LIST} )
@@ -50,6 +51,7 @@ endif()
 
 
 include_directories   ( "Classes" )
+include_directories   ( "Classes/Infrastructure" )
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
@@ -57,21 +59,52 @@ add_definitions( -D_CRT_SECURE_NO_DEPRECATE )
 
 set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG" )
 
+set( TeamcityOutput          ${DAVA_TOOLS_DIR}/TeamcityOutput  )
+set( PackerTools             ${DAVA_TOOLS_DIR}/TexturePacker )
 
-define_source_folders ( SRC_ROOT "Classes" ${PLATFORM_SPECIFIC_FOLDER} GLOB_ERASE_FOLDERS "_build" )
-generate_source_groups_project ()
-                               
-add_executable  ( UnitTest MACOSX_BUNDLE
-    ${PROJECT_SOURCE_FILES} 
-    ${RESOURCES_LIST}
-)
+set( PackerToolsSCR          ${DAVA_TOOLS_DIR}/TexturePacker/CommandLineParser.h 
+                             ${DAVA_TOOLS_DIR}/TexturePacker/CommandLineParser.cpp )
 
-target_link_libraries( UnitTest
-    ${DAVA_LIBRARY}
-    ${LIBRARIES}
-)
 
-if( IOS )
+
+define_source_folders ( SRC_ROOT "Classes" ${TeamcityOutput}  ${PLATFORM_SPECIFIC_FOLDER} 
+                        GLOB_ERASE_FOLDERS "_build"  )
+
+generate_source_groups_project ( ROOT_DIR "Classes"  GROUP_FOLDERS TeamcityOutput PackerTools )
+
+if( ANDROID )
+    
+    add_library( ${PROJECT_NAME} SHARED 
+        ${PROJECT_SOURCE_FILES}  ${PackerToolsSCR} )
+
+else()                             
+    add_executable  ( ${PROJECT_NAME} MACOSX_BUNDLE
+        ${PROJECT_SOURCE_FILES} 
+        ${RESOURCES_LIST} ${PackerToolsSCR} )
+
+endif()
+
+
+if( ANDROID )
+
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/android/AndroidManifest.xml ${CMAKE_BINARY_DIR} )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/Java ${CMAKE_BINARY_DIR}/src )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/android/src ${CMAKE_BINARY_DIR}/src )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/android/res ${CMAKE_BINARY_DIR}/res )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/jar ${CMAKE_BINARY_DIR}/libs )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/Data ${CMAKE_BINARY_DIR}/assets/Data )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-web.png  ${CMAKE_BINARY_DIR} )     
+    
+    file ( GLOB SO_FILES ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.so )
+
+    execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME} )
+    foreach ( FILE ${SO_FILES} )
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${FILE}  ${CMAKE_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME} )
+    endforeach ()
+
+    set_target_properties( ${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/ )
+
+elseif( IOS )
 
     set_target_properties ( ${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_LIST_DIR}/TemplateProjectiPhone-Info.plist 
                             RESOURCE "${XIB_LIST}"
@@ -82,7 +115,7 @@ if( IOS )
     string ( REGEX REPLACE /Contents/MacOS/${PROJECT_NAME} "" TARGET_LOC ${TARGET_LOC} )
     add_custom_command( TARGET ${PROJECT_NAME} PRE_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/Data ${TARGET_LOC}/Data
-      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/TemplateProjectiPhone-Info.plist ${CMAKE_BINARY_DIR}/CMakeFiles/UnitTest.dir/Info.plist
+      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/TemplateProjectiPhone-Info.plist ${CMAKE_BINARY_DIR}/CMakeFiles/${PROJECT_NAME}.dir/Info.plist
     )
 
 elseif( MACOS )    
@@ -109,12 +142,17 @@ elseif( MACOS )
 
 endif()
 
+target_link_libraries( ${PROJECT_NAME}
+    ${DAVA_LIBRARY}
+    ${LIBRARIES}
+)
+
 foreach ( FILE ${LIBRARIES_DEBUG} )
-    target_link_libraries  ( UnitTest debug ${FILE} )
+    target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )
 endforeach ()
 
 foreach ( FILE ${LIBRARIES_RELEASE} )
-    target_link_libraries  ( UnitTest optimized ${FILE} )
+    target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
 endforeach ()
 
 

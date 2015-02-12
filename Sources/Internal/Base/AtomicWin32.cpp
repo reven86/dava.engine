@@ -52,4 +52,3 @@ bool AtomicCompareAndSwap(const int32 oldVal, const int32 newVal, int32 &value)
 };
 
 #endif //#if defined(__DAVAENGINE_WIN32__)
-

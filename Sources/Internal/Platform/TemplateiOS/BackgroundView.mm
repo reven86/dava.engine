@@ -38,12 +38,6 @@
     DAVA::NativeViewPool<UITextFieldHolder> textFieldPool;
 }
 
-- (void)drawRect:(CGRect)rect
-{
-    // Do nothing to reduce fill usage.
-}
-
-
 - (UIView *) PrepareView: (UIView *)view
 {
     if([view superview] == nil)
@@ -77,10 +71,6 @@
     [textField setHidden:YES];
     textFieldPool.ReleaseView(textField);
 }
-
-
-
-
 
 
 @end

@@ -504,7 +504,7 @@ void VegetationRenderObject::PrepareToRenderMultipleMaterials(Camera *camera)
             uint32 indexBufferIndex = treeNode->data.rdoIndex;
             Vector<VegetationSortedBufferItem>& indexBufferVector = rdoVector[indexBufferIndex];
             
-            DVASSERT(indexBufferIndex >= 0 && indexBufferIndex < rdoVector.size());
+            DVASSERT(indexBufferIndex < rdoVector.size());
             
             size_t directionIndex = SelectDirectionIndex(cameraDirection, indexBufferVector);
             rb->SetRenderDataObject(indexBufferVector[directionIndex].rdo);
@@ -608,7 +608,7 @@ void VegetationRenderObject::PrepareToRenderSingleMaterial(Camera *camera)
         uint32 indexBufferIndex = treeNode->data.rdoIndex;
         Vector<VegetationSortedBufferItem>& indexBufferVector = rdoVector[indexBufferIndex];
         
-        DVASSERT(indexBufferIndex >= 0 && indexBufferIndex < rdoVector.size());
+        DVASSERT(indexBufferIndex < rdoVector.size());
         
         size_t directionIndex = SelectDirectionIndex(cameraDirection, indexBufferVector);
         rb->SetRenderDataObject(indexBufferVector[directionIndex].rdo);
@@ -887,10 +887,10 @@ void VegetationRenderObject::InitHeightTextureFromHeightmap(Heightmap* heightMap
         heightmapScale = Vector2((1.0f * heightmap->Size()) / pow2Size,
                                  (1.0f * heightmap->Size()) / pow2Size);
         
-        ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &VegetationRenderObject::SetupHeightmapParameters, tx));
-        JobInstanceWaiter waiter(job);
-        waiter.Wait();
-        
+        Function<void()> fn = Bind(MakeFunction(this, &VegetationRenderObject::SetupHeightmapParameters), tx);
+        uint32 jobID = JobManager::Instance()->CreateMainJob(fn);
+        JobManager::Instance()->WaitMainJobID(jobID);
+
         heightmapTexture = SafeRetain(tx);
         
         if(vegetationGeometry != NULL)
@@ -1029,11 +1029,8 @@ void VegetationRenderObject::GetDataNodes(Set<DataNode*> & dataNodes)
     }
 }
 
-void VegetationRenderObject::SetupHeightmapParameters(BaseObject * caller,
-                                                    void * param,
-                                                    void *callerData)
+void VegetationRenderObject::SetupHeightmapParameters(Texture* tx)
 {
-    Texture* tx = (Texture*)param;
     tx->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
     tx->SetMinMagFilter(Texture::FILTER_NEAREST, Texture::FILTER_NEAREST);
 }

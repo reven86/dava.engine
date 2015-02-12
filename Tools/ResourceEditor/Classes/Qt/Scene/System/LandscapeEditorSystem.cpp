@@ -40,10 +40,10 @@ LandscapeEditorSystem::LandscapeEditorSystem(Scene* scene, const DAVA::FilePath 
     : SceneSystem(scene)
     , enabled(false)
     , cursorSize(0)
-    , isIntersectsLandscape(false)
-    , landscapeSize(0)
     , cursorPosition(-100.f, -100.f)
     , prevCursorPos(-1.f, -1.f)
+    , isIntersectsLandscape(false)
+    , landscapeSize(0)
 
 {
 	cursorTexture = Texture::CreateFromFile(cursorPathname);

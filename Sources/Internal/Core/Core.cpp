@@ -51,6 +51,7 @@
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Render/Image/ImageSystem.h"
 #include "Scene3D/SceneCache.h"
+<<<<<<< HEAD
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
 #include "Notification/LocalNotificationController.h"
@@ -69,6 +70,15 @@
 
 #define PROF__TEST1             40
 
+=======
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "DLC/Downloader/DownloadManager.h"
+#include "DLC/Downloader/CurlDownloader.h"
+#include "Render/OcclusionQuery.h"
+#include "Notification/LocalNotificationController.h"
+#include "Platform/DeviceInfo.h"
+>>>>>>> development
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -94,6 +104,7 @@ namespace DAVA
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 	static bool useAutodetectContentScaleFactor = false;
 #endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+<<<<<<< HEAD
 
 	float Core::virtualToPhysical = 0;
 	float Core::physicalToVirtual = 0;
@@ -105,15 +116,27 @@ Core::Core()
 {
 	globalFrameIndex = 1;
 	isActive = false;
+=======
+    
+static ApplicationCore * core = 0;
+
+Core::Core()
+{
+    globalFrameIndex = 1;
+    isActive = false;
+>>>>>>> development
     isAutotesting = false;
 	firstRun = true;
 	isConsoleMode = false;
 	options = new KeyedArchive();
+<<<<<<< HEAD
 	fixedProportions = true;
     
     desirableIndex = 0;
 
     EnableReloadResourceOnResize(true);
+=======
+>>>>>>> development
 }
 
 Core::~Core()
@@ -168,12 +191,23 @@ void Core::CreateSingletons()
     new VersionInfo();
     new ImageSystem();
     new SceneCache();
+<<<<<<< HEAD
 	
+=======
+    new FrameOcclusionQueryManager();
+	
+    new VirtualCoordinatesSystem();
+    new RenderSystem2D();
+>>>>>>> development
 
 #if defined(__DAVAENGINE_ANDROID__)
     new AssetsManager();
 #endif
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> development
 #if defined __DAVAENGINE_IPHONE__
 	new AccelerometeriPhoneImpl();
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -190,9 +224,19 @@ void Core::CreateSingletons()
 
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
+<<<<<<< HEAD
 
     new LocalNotificationController();
     
+=======
+    
+    new LocalNotificationController();
+
+    DeviceInfo::InitializeScreenInfo();
+    
+    UIControlBackground::CreateRenderObject();
+
+>>>>>>> development
     RegisterDAVAClasses();
     CheckDataTypeSizes();
 }
@@ -207,6 +251,11 @@ void Core::CreateRenderManager()
         
 void Core::ReleaseSingletons()
 {
+<<<<<<< HEAD
+=======
+	UIControlBackground::ReleaseRenderObject();
+
+>>>>>>> development
 	LocalNotificationController::Instance()->Release();
     DownloadManager::Instance()->Release();
 	PerformanceSettings::Instance()->Release();
@@ -226,6 +275,12 @@ void Core::ReleaseSingletons()
     SoundSystem::Instance()->Release();
 	Random::Instance()->Release();
 	RenderLayerManager::Instance()->Release();
+<<<<<<< HEAD
+=======
+    FrameOcclusionQueryManager::Instance()->Release();
+    VirtualCoordinatesSystem::Instance()->Release();
+    RenderSystem2D::Instance()->Release();
+>>>>>>> development
 	RenderManager::Instance()->Release();
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Release();
@@ -291,6 +346,7 @@ bool Core::IsAutodetectContentScaleFactor()
 }
 #endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
+<<<<<<< HEAD
 	
 float32 Core::GetVirtualToPhysicalFactor()
 {
@@ -302,10 +358,13 @@ float32 Core::GetPhysicalToVirtualFactor()
 	return physicalToVirtual;
 }
 
+=======
+>>>>>>> development
 Core::eScreenOrientation Core::GetScreenOrientation()
 {
 	return (Core::eScreenOrientation)screenOrientation;
 }
+<<<<<<< HEAD
 
 void Core::CalculateScaleMultipliers()
 {
@@ -489,6 +548,8 @@ float32 Core::GetVirtualScreenYMax()
 {
 	return ((float32)(screenHeight - drawOffset.y) * physicalToVirtual);
 }
+=======
+>>>>>>> development
 	
 Core::eScreenMode Core::GetScreenMode()
 {
@@ -630,6 +691,7 @@ ApplicationCore * Core::GetApplicationCore()
 {
 	return core;
 }
+<<<<<<< HEAD
 
 struct 
 DummyData
@@ -657,6 +719,15 @@ NAME_COUNTER(PROF__RHI_SETMATPARAM,"material.bind-param");
 	{
 		Core::Instance()->CalculateScaleMultipliers();
 		/*  Question to Hottych: Does it really necessary here? 
+=======
+	
+void Core::SystemAppStarted()
+{
+	if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
+	{
+		VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
+		/*  Question to Hottych: Does it really necessary here?
+>>>>>>> development
             RenderManager::Instance()->SetRenderOrientation(Core::Instance()->GetScreenOrientation());
          */
 	}
@@ -667,7 +738,11 @@ NAME_COUNTER(PROF__RHI_SETMATPARAM,"material.bind-param");
     FilePath file = "~res:/Autotesting/id.yaml";
     if (file.Exists())
     {
+<<<<<<< HEAD
         AutotestingSystem::Instance()->OnAppStarted();
+=======
+    AutotestingSystem::Instance()->OnAppStarted();
+>>>>>>> development
         isAutotesting = true;
     }
     else
@@ -688,8 +763,11 @@ void Core::SystemAppFinished()
 
 void Core::SystemProcessFrame()
 {
+<<<<<<< HEAD
 profiler::Start();
 START_TIMING(PROF__FRAME);
+=======
+>>>>>>> development
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 	static bool isInit = false;
 	static EGLuint64NV frequency;
@@ -737,9 +815,15 @@ START_TIMING(PROF__FRAME);
 #endif //#if !defined(__DAVAENGINE_ANDROID__)
 
 		// recalc frame inside begin / end frame
+<<<<<<< HEAD
 		if (Core::Instance()->needTorecalculateMultipliers) 
 		{
 			Core::Instance()->CalculateScaleMultipliers();
+=======
+		if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
+		{
+			VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
+>>>>>>> development
 			RenderManager::Instance()->SetRenderOrientation(screenOrientation);
             UIScreenManager::Instance()->ScreenSizeChanged();
             UIControlSystem::Instance()->ScreenSizeChanged();
@@ -762,6 +846,7 @@ START_TIMING(PROF__FRAME);
 			}
 		}
 		
+<<<<<<< HEAD
 START_TIMING(PROF__FRAME_UPDATE);
 ///		LocalNotificationController::Instance()->Update();
 ///        DownloadManager::Instance()->Update();
@@ -774,21 +859,38 @@ START_TIMING(PROF__FRAME_DRAW);
 
 		core->EndFrame();
 STOP_TIMING(PROF__FRAME_DRAW);
+=======
+		LocalNotificationController::Instance()->Update();
+        DownloadManager::Instance()->Update();
+		JobManager::Instance()->Update();
+		core->Update(frameDelta);
+        InputSystem::Instance()->OnAfterUpdate();
+		core->Draw();
+
+		core->EndFrame();
+>>>>>>> development
 // #ifdef __DAVAENGINE_DIRECTX9__
 // 		core->BeginFrame();
 // #endif
 	}
     Stats::Instance()->EndFrame();
 	globalFrameIndex++;
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> development
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 	EGLuint64NV end = eglGetSystemTimeNV() / frequency;
 	EGLuint64NV interval = end - start;
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
+<<<<<<< HEAD
 STOP_TIMING(PROF__FRAME);
 profiler::Stop();
 //profiler::Dump();
 profiler::DumpAverage();
+=======
+>>>>>>> development
 }
 
 	
@@ -823,6 +925,7 @@ uint32 Core::GetGlobalFrameIndex()
 {
 	return globalFrameIndex;
 }
+<<<<<<< HEAD
 
 float32 GetScreenWidth()
 {
@@ -839,6 +942,18 @@ void Core::SetCommandLine(int argc, char *argv[])
     commandLine.reserve(argc);
 	for (int k = 0; k < argc; ++k)
 		commandLine.push_back(argv[k]);
+=======
+	
+void Core::SetCommandLine(int argc, char *argv[])
+{
+    commandLine.assign(argv, argv + argc);
+}
+
+void Core::SetCommandLine(const DAVA::String& cmdLine)
+{
+    commandLine.clear();
+    Split(cmdLine, " ", commandLine);
+>>>>>>> development
 }
 
 Vector<String> & Core::GetCommandLine()
@@ -856,11 +971,14 @@ void Core::EnableConsoleMode()
 	isConsoleMode = true;
 }
 
+<<<<<<< HEAD
 bool Core::NeedToRecalculateMultipliers()
 {
 	return needTorecalculateMultipliers;
 }
 
+=======
+>>>>>>> development
 void Core::SetIsActive(bool _isActive)
 {
 	isActive = _isActive;
@@ -871,12 +989,16 @@ Core::eDeviceFamily Core::GetDeviceFamily()
 {
     return DEVICE_DESKTOP;
 }
+<<<<<<< HEAD
 #endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)    
     
 void Core::EnableReloadResourceOnResize(bool enable)
 {
     enabledReloadResourceOnResize = enable;
 }
+=======
+#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+>>>>>>> development
     
 uint32 Core::GetScreenDPI()
 {
@@ -887,6 +1009,7 @@ void Core::SetIcon(int32 /*iconId*/)
 {
 };
 
+<<<<<<< HEAD
 DAVA::float32 Core::GetRequestedVirtualScreenWidth()
 {
     return requestedVirtualScreenWidth;
@@ -898,3 +1021,7 @@ DAVA::float32 Core::GetRequestedVirtualScreenHeight()
 }
 
 };
+=======
+};
+
+>>>>>>> development

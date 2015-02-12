@@ -1,19 +1,13 @@
-cmake_minimum_required (VERSION 2.8)
-project ( ResourceEditor )
+cmake_minimum_required( VERSION 3.0)
 
-set          ( CMakeHelloWorld_VERSION_MAJOR 1 )
-set          ( CMakeHelloWorld_VERSION_MINOR 0 )
+set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
-set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
+project               ( ResourceEditor )
+set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
+include               ( CMake-common )
 
-find_package ( Qt4           REQUIRED )
-find_package ( DavaFramework REQUIRED )
-
-include      ( CMake-common )
-include      ( ${QT_USE_FILE} )
-
-define_source_folders ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build" )
-generate_source_groups_project ()
+find_package          ( QT5           REQUIRED )
+find_package          ( DavaFramework REQUIRED )
 
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}/Sources" )
@@ -22,10 +16,10 @@ include_directories   ( "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/include" )
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
-include_directories   ( ${DAVA_IMAGE_MAGICK_INCLUDES_PATH} ) 
+include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib ) 
 include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/FCollada )
 include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/External/Cg/include )
-
+             
 
 include_directories   (.)
 include_directories   ( "../TextureTools" )
@@ -53,114 +47,54 @@ add_definitions       (
 -D_CRT_SECURE_NO_DEPRECATE
 -D__DAVAENGINE_RESOURCEEDITOR__
 -DDAVA_QT
-#-D__DAVAENGINE_BEAST__
 -DDAVA_FMOD
--DDAVA_DEBUG
+-D_DISABLE_IMAGE_MAGICK
 )
 
-if( MSVC )
-    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP" ) 
-    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP /fp:fast /Zi /GS- /D _SECURE_SCL=0" )
-    
-    set( LIBRARIES "gdi32.lib" "glu32.lib" #"winmm.lib" "opengl32.lib"
-                   "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/lib/beast32.lib"  )
-
-    set( LIBRARIES_DEBUG   "msvcrtd.lib"  )    
-    set( LIBRARIES_RELEASE "msvcrt.lib"   ) 
-
-endif()
-
-set ( PROJECT_SOURCE_FILES ${PROJECT_SOURCE_FILES} "${DAVA_SPEEDTREE_ROOT_DIR}/Sources/SpeedTreeImporter.h" 
-                                                   "${DAVA_SPEEDTREE_ROOT_DIR}/Sources/SpeedTreeImporter.cpp" )
 
 file              ( GLOB_RECURSE QT_LIST "Classes/Qt/*.h"  )
-qt4_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
+qt5_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
 
 file              ( GLOB UI_LIST "DataQt/*.ui" )
-qt4_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
+qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 
 file              ( GLOB RCC_LIST "DataQt/*.qrc" )
-qt4_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
+qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
-add_subdirectory  ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
+if( MSVC )
+    add_definitions( -D__DAVAENGINE_BEAST__ )
+    set( BEAST_WRAPPER "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper" )
+    set( BEAST_LIB     "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/lib/beast32.lib" )
 
-if( MACOS )
-    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
-
-    file ( GLOB_RECURSE RESOURCES_LIST "${CMAKE_CURRENT_LIST_DIR}/Data/*" )
-    foreach ( FILE ${RESOURCES_LIST} )
-
-        get_filename_component ( FILE_PATH ${FILE} PATH ) 
-        STRING(REGEX REPLACE "${CMAKE_CURRENT_LIST_DIR}/" "" FILE_GROUP ${FILE_PATH} )
-
-        set_source_files_properties( ${FILE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/${FILE_GROUP} )
-    endforeach ()
-
-
-    file ( GLOB DYLIB_FILES ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.dylib)
-
-    set_source_files_properties( ${DYLIB_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks )
-
-    list ( APPEND RESOURCES_LIST  ${DYLIB_FILES} ) 
-    list ( APPEND LIBRARIES       ${DYLIB_FILES} )
-    
-elseif( WIN32 )
-    file ( GLOB_RECURSE BEAST_LIST "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper/*.cpp"  
-                                   "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper/*.h" 
-                                  )
 endif()
 
-                               
-add_executable  ( ${PROJECT_NAME} MACOSX_BUNDLE
-    ${MOC_APP_SRCS} 
-    ${UI_APP_HDRS} 
-    ${RCC_APP_SRCS} 
-    ${PROJECT_SOURCE_FILES} 
-    "${DAVA_SPEEDTREE_ROOT_DIR}/Sources/SpeedTreeImporter.cpp"
-    ${BEAST_LIST}
-    ${RESOURCES_LIST} 
-)
+set ( SpeedTreeImporter  ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
+set ( BEAST              ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper )
+set ( Generated          ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+
+define_source_folders          ( SRC_ROOT "Classes" ${BEAST_WRAPPER} ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
+generate_source_groups_project ( SRC_ROOT "Classes" "Data" "DataQt" GROUP_FOLDERS SpeedTreeImporter BEAST Generated  )
+add_subdirectory               ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
+
+
+set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
+set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
+set( MACOS_DATA           ${CMAKE_CURRENT_LIST_DIR}/Data/* )
+set( MACOS_DYLIB          ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
+set( ADDED_SRC            ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS}  )
+set( LIBRARIES            ${BEAST_LIB} TextureTool )
+set( LIBRARIES_RELEASE    ${QT_LIBRARIES} )
+set( LIBRARIES_DEBUG      ${QT_LIBRARIES} )
+set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
+
+setup_main_executable()
 
 if( APPLE )
-    
-    set( BUILD_MODE $<CONFIG> ) #$<$<CONFIG:debug>:Debug>$<$<CONFIG:release>:Release> )
-
-    ADD_CUSTOM_COMMAND(
-    TARGET ${PROJECT_NAME}
-    POST_BUILD
-        COMMAND   
-        install_name_tool -change ./libfmodex.dylib    @executable_path/../Frameworks/libfmodex.dylib ${CMAKE_BINARY_DIR}/${BUILD_MODE}/${PROJECT_NAME}.app/Contents/Frameworks/libfmodevent.dylib  
-
-        COMMAND   
-        install_name_tool -change ./libfmodevent.dylib @executable_path/../Frameworks/libfmodevent.dylib ${CMAKE_BINARY_DIR}/${BUILD_MODE}/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}    
-
-        COMMAND   
-        install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib ${CMAKE_BINARY_DIR}/${BUILD_MODE}/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}    
+    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
+        COMMAND install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Frameworks/libIMagickHelper.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}            
     )
 
-elseif( MSVC )
-    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"")
-
 endif()
 
 
-target_link_libraries ( ${PROJECT_NAME}
-    ${DAVA_LIBRARY}
-    ${QT_LIBRARIES} 
-    ${LIBRARIES} 
-    TextureTool
-)
-
-if (MSVC) 
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
-endif()
- 
-foreach ( FILE ${LIBRARIES_DEBUG} )
-    target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )
-endforeach ()
-
-foreach ( FILE ${LIBRARIES_RELEASE} )
-    target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
-endforeach ()
 
