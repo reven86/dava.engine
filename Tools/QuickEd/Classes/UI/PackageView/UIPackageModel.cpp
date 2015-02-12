@@ -7,7 +7,7 @@
 #include "Base/ObjectFactory.h"
 
 #include "UI/IconHelper.h"
-#include "UI/PackageDocument.h"
+#include "UI/Document.h"
 #include "Utils/QtDavaConvertion.h"
 #include "UIControls/PackageHierarchy/PackageNode.h"
 #include "UIControls/PackageHierarchy/ControlNode.h"
@@ -21,7 +21,7 @@
 
 using namespace DAVA;
 
-UIPackageModel::UIPackageModel(PackageDocument *document)
+UIPackageModel::UIPackageModel(Document *document)
     : QAbstractItemModel(document)
     , root(NULL)
     , document(document)

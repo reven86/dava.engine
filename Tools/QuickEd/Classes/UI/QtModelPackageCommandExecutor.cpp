@@ -1,7 +1,6 @@
 #include "QtModelPackageCommandExecutor.h"
 
-
-#include "PackageDocument.h"
+#include "Document.h"
 
 #include "UI/PropertiesView/ChangePropertyValueCommand.h"
 #include "UI/PackageView/PackageModelCommands.h"
@@ -14,7 +13,7 @@
 
 using namespace DAVA;
 
-QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(PackageDocument *_document)
+QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(Document *_document)
     : document(_document)
 {
     

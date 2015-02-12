@@ -1,6 +1,8 @@
 #include "PropertiesViewContext.h"
 
-PropertiesViewContext::PropertiesViewContext( PackageDocument *doc ) : document(doc)
+#include "UI/Document.h"
+
+PropertiesViewContext::PropertiesViewContext(Document *doc) : document(doc)
 {
 
 }
@@ -10,7 +12,7 @@ PropertiesViewContext::~PropertiesViewContext()
 
 }
 
-PackageDocument * PropertiesViewContext::Document() const
+Document * PropertiesViewContext::GetDocument() const
 {
     return document;
 }

@@ -1,7 +1,7 @@
 #include "LibraryDockWidget.h"
 #include "ui_LibraryDockWidget.h"
 
-#include "UI/PackageDocument.h"
+#include "UI/Document.h"
 
 LibraryDockWidget::LibraryDockWidget(QWidget *parent)
     : QDockWidget(parent)
@@ -16,7 +16,7 @@ LibraryDockWidget::~LibraryDockWidget()
     delete ui;
 }
 
-void LibraryDockWidget::SetDocument(PackageDocument *newDocument)
+void LibraryDockWidget::SetDocument(Document *newDocument)
 {
     if (document)
     {

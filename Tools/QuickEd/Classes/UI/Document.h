@@ -53,12 +53,12 @@ class PropertiesViewContext;
 class PackageNode;
 class ControlNode;
 
-class PackageDocument: public QObject
+class Document : public QObject
 {
     Q_OBJECT
 public:
-    PackageDocument(Project * project, PackageNode *package, QObject *parent = NULL);
-    ~PackageDocument();
+    Document(Project * project, PackageNode *package, QObject *parent = NULL);
+    virtual ~Document();
     
     bool IsModified() const;
     void ClearModified();
@@ -114,6 +114,6 @@ private:
     QUndoStack *undoStack;
 };
 
-Q_DECLARE_METATYPE(PackageDocument *);
+Q_DECLARE_METATYPE(Document *);
 
 #endif // __QUICKED_PACKAGE_DOCUMENT_H__

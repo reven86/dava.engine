@@ -11,7 +11,7 @@
 #include "UIControls/PackageHierarchy/ControlNode.h"
 #include "Utils/QtDavaConvertion.h"
 #include "ChangePropertyValueCommand.h"
-#include "UI/PackageDocument.h"
+#include "UI/Document.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 #include "PropertiesViewContext.h"
 
@@ -162,9 +162,9 @@ bool PropertiesTreeModel::setData(const QModelIndex &index, const QVariant &valu
             if (property->GetValue().GetType() == VariantType::TYPE_BOOLEAN)
             {
                 VariantType newVal(value != Qt::Unchecked);
-//                QUndoCommand *command = new ChangePropertyValueCommand(property, newVal);
-//                propertiesViewContext->Document()->UndoStack()->push(command);
-                propertiesViewContext->Document()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
+                propertiesViewContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
+                QModelIndex siblingIndex = index.sibling(index.row(), index.column()-1);
+                emit dataChanged(siblingIndex, index);
                 return true;
             }
         }
@@ -183,21 +183,17 @@ bool PropertiesTreeModel::setData(const QModelIndex &index, const QVariant &valu
                 initVariantType(newVal, value);
             }
 
-//            QUndoCommand *command = new ChangePropertyValueCommand(property, newVal);
-//            propertiesViewContext->Document()->UndoStack()->push(command);
-            propertiesViewContext->Document()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
+            propertiesViewContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
 
             QModelIndex siblingIndex = index.sibling(index.row(), index.column()-1);
-            emit dataChanged(siblingIndex, siblingIndex);
+            emit dataChanged(siblingIndex, index);
             return true;
         }
         break;
 
     case DAVA::ResetRole:
         {
-//            QUndoCommand *command = new ChangePropertyValueCommand(property);
-//            propertiesViewContext->Document()->UndoStack()->push(command);
-            propertiesViewContext->Document()->GetCommandExecutor()->ResetProperty(controlNode, property);
+            propertiesViewContext->GetDocument()->GetCommandExecutor()->ResetProperty(controlNode, property);
             emit dataChanged(index.sibling(index.row(), index.column()-1), index);
             return true;
         }

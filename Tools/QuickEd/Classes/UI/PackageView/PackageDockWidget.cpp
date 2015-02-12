@@ -17,7 +17,7 @@
 #include "UI/QtModelPackageCommandExecutor.h"
 
 #include "UI/PackageView/UIFilteredPackageModel.h"
-#include "UI/PackageDocument.h"
+#include "UI/Document.h"
 #include "UI/PackageView/PackageModelCommands.h"
 #include "UIControls/PackageHierarchy/PackageBaseNode.h"
 #include "UIControls/PackageHierarchy/ControlNode.h"
@@ -81,7 +81,7 @@ PackageDockWidget::~PackageDockWidget()
     ui = NULL;
 }
 
-void PackageDockWidget::SetDocument(PackageDocument *newDocument)
+void PackageDockWidget::SetDocument(Document *newDocument)
 {
     if (document)
     {

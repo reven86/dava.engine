@@ -1,19 +1,18 @@
 #ifndef __PROPERTIESVIEWCONTEXT_H__
 #define __PROPERTIESVIEWCONTEXT_H__
 
-#include <QPointer>
-#include "UI/PackageDocument.h"
+class Document;
 
 class PropertiesViewContext
 {
 public:
-    PropertiesViewContext(PackageDocument *doc);
+    PropertiesViewContext(Document *doc);
     ~PropertiesViewContext();
 
-    PackageDocument *Document() const;
+    Document *GetDocument() const;
     //QPoint scrollPosition;
 private:
-    QPointer<PackageDocument> document;
+    Document *document;
 };
 
 #endif // __PROPERTIESVIEWCONTEXT_H__

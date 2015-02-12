@@ -1,4 +1,4 @@
-#include "PackageDocument.h"
+#include "Document.h"
 #include <DAVAEngine.h>
 #include <QLineEdit>
 #include <QAction>
@@ -20,7 +20,7 @@
 
 using namespace DAVA;
 
-PackageDocument::PackageDocument(Project *_project, PackageNode *_package, QObject *parent)
+Document::Document(Project *_project, PackageNode *_package, QObject *parent)
 : QObject(parent)
 , project(_project)
 , package(SafeRetain(_package))
@@ -57,7 +57,7 @@ PackageDocument::PackageDocument(Project *_project, PackageNode *_package, QObje
     commandExecutor = new QtModelPackageCommandExecutor(this);
 }
 
-PackageDocument::~PackageDocument()
+Document::~Document()
 {
     treeContext.proxyModel->setSourceModel(NULL);
 
@@ -80,27 +80,27 @@ PackageDocument::~PackageDocument()
     SafeRelease(commandExecutor);
 }
 
-bool PackageDocument::IsModified() const
+bool Document::IsModified() const
 {
     return !undoStack->isClean();
 }
 
-void PackageDocument::ClearModified()
+void Document::ClearModified()
 {
     undoStack->setClean();
 }
 
-const DAVA::FilePath &PackageDocument::PackageFilePath() const
+const DAVA::FilePath &Document::PackageFilePath() const
 {
     return package->GetPackageRef()->GetPath();
 }
 
-QtModelPackageCommandExecutor *PackageDocument::GetCommandExecutor() const
+QtModelPackageCommandExecutor *Document::GetCommandExecutor() const
 {
     return commandExecutor;
 }
 
-void PackageDocument::OnSelectionRootControlChanged(const QList<ControlNode*> &activatedRootControls, const QList<ControlNode*> &deactivatedRootControls)
+void Document::OnSelectionRootControlChanged(const QList<ControlNode*> &activatedRootControls, const QList<ControlNode*> &deactivatedRootControls)
 {
     activeRootControls.clear();
     foreach(ControlNode *control, activatedRootControls)
@@ -111,7 +111,7 @@ void PackageDocument::OnSelectionRootControlChanged(const QList<ControlNode*> &a
     emit activeRootControlsChanged(activeRootControls, deactivatedRootControls);
 }
 
-void PackageDocument::OnSelectionControlChanged(const QList<ControlNode*> &activatedControls, const QList<ControlNode*> &deactivatedControls)
+void Document::OnSelectionControlChanged(const QList<ControlNode*> &activatedControls, const QList<ControlNode*> &deactivatedControls)
 {
     selectedControls.clear();
     
@@ -123,12 +123,12 @@ void PackageDocument::OnSelectionControlChanged(const QList<ControlNode*> &activ
     emit controlsSelectionChanged(activatedControls, deactivatedControls);
 }
 
-void PackageDocument::OnControlSelectedInEditor(ControlNode *activatedControl)
+void Document::OnControlSelectedInEditor(ControlNode *activatedControl)
 {
     emit controlSelectedInEditor(activatedControl);
 }
 
-void PackageDocument::OnAllControlDeselectedInEditor()
+void Document::OnAllControlDeselectedInEditor()
 {
     emit allControlsDeselectedInEditor();
 }
