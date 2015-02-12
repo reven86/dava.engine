@@ -11,7 +11,7 @@ extern "C"{
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-#include "tlsf.h"
+#include "dlmalloc.h"
 };
 
 // directly include wrapped module here to compile only if __DAVAENGINE_AUTOTESTING__ is defined
@@ -29,24 +29,19 @@ extern "C" int luaopen_Polygon2(lua_State *l);
 namespace DAVA
 {
 static const int32 LUA_MEMORY_POOL_SIZE = 1024 * 1024 * 10;
-    
+
 void* lua_allocator(void *ud, void *ptr, size_t osize, size_t nsize)
 {
     if (nsize == 0)
     {
-        free_ex(ptr, ud);
+        mspace_free(ud, ptr);
         return NULL;
-    } else if (osize == 0) {
-        void* mem = malloc_ex(nsize, ud);
-        DVASSERT(mem);
-        return mem;
     } else {
-        void* mem = realloc_ex(ptr, nsize, ud);
+        void* mem = mspace_realloc(ud, ptr, nsize);
         DVASSERT(mem);
         return mem;
     }
 }
-
 
 AutotestingSystemLua::AutotestingSystemLua() : delegate(NULL), luaState(NULL), memoryPool(NULL)
 {
@@ -64,8 +59,7 @@ AutotestingSystemLua::~AutotestingSystemLua()
 	lua_close(luaState);
 	luaState = NULL;
     
-    destroy_memory_pool(memoryPool);
-    delete [] memoryPool;
+    destroy_mspace(memoryPool);
 }
 
 void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
@@ -86,9 +80,8 @@ void AutotestingSystemLua::InitFromFile(const String &luaFilePath)
 	autotestingLocalizationSystem->SetCurrentLocale(LocalizationSystem::Instance()->GetCurrentLocale());
 	autotestingLocalizationSystem->Init();
 
-    memoryPool = new uint8[LUA_MEMORY_POOL_SIZE];
-    init_memory_pool(LUA_MEMORY_POOL_SIZE, memoryPool);
-    
+    memoryPool = create_mspace(LUA_MEMORY_POOL_SIZE, 0);
+    mspace_set_footprint_limit(memoryPool, LUA_MEMORY_POOL_SIZE);
     luaState = lua_newstate(lua_allocator, memoryPool);
 	luaL_openlibs(luaState);
 
@@ -108,16 +101,21 @@ void AutotestingSystemLua::InitFromFile(const String &luaFilePath)
 		AutotestingSystem::Instance()->OnError("Initialization of 'autotesting_api.lua' was failed.");
 	}
 
-	String setPackagePathScript = Format("SetPackagePath('~res:/Autotesting/')");
-	if (!RunScript(setPackagePathScript))
-	{
-		AutotestingSystem::Instance()->OnError("Run of '" + setPackagePathScript + "' was failed.");
-	}
+    lua_getglobal(luaState, "SetPackagePath");
+    lua_pushstring(luaState, "~res:/Autotesting/");
+    if (lua_pcall(luaState, 1, 1, 0))
+    {
+        const char* err = lua_tostring(luaState, -1);
+        AutotestingSystem::Instance()->OnError(Format("AutotestingSystemLua::InitFromFile SetPackagePath error: %s", err));
+    }
 
 	if (!LoadScriptFromFile(luaFilePath))
 	{
 		AutotestingSystem::Instance()->OnError("Load of '" + luaFilePath + "' was failed failed");
 	}
+
+    lua_getglobal(luaState, "ResumeTest");
+    resumeTestFunctionRef = luaL_ref(luaState, LUA_REGISTRYINDEX);
 
 	AutotestingSystem::Instance()->OnInit();
 	String baseName = FilePath(luaFilePath).GetBasename();
@@ -293,7 +291,13 @@ String AutotestingSystemLua::GetTestParameter(const String &device)
 
 void AutotestingSystemLua::Update(float32 timeElapsed)
 {
-	RunScript("ResumeTest()"); //TODO: time 
+    lua_rawgeti(luaState, LUA_REGISTRYINDEX, resumeTestFunctionRef);
+    if (lua_pcall(luaState, 0, 1, 0))
+    {
+        const char* err = lua_tostring(luaState, -1);
+        Logger::Error("AutotestingSystemLua::Update error: %s", err);
+    }
+
 }
 
 float32 AutotestingSystemLua::GetTimeElapsed()
@@ -320,7 +324,8 @@ void AutotestingSystemLua::OnTestFinished()
 
 size_t AutotestingSystemLua::GetAllocatedMemory() const
 {
-    return get_used_size(memoryPool);
+    const mallinfo& info = mspace_mallinfo(memoryPool);
+    return info.uordblks;
 }
     
 size_t AutotestingSystemLua::GetUsedMemory() const

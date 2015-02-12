@@ -181,7 +181,8 @@ protected:
     
 #endif //SWIG
 private:
-    DAVA::uint8* memoryPool;
+    void* memoryPool;
+    int resumeTestFunctionRef;
 };
 
 };
