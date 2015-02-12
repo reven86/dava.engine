@@ -50,40 +50,40 @@ public:
         const char * function;
         int32 fileLine;
     };
-	JniCrashReporter();
+    JniCrashReporter();
     void ThrowJavaExpetion(const Vector<CrashStep>& chashSteps);
        
 private:
-	JNI::JavaClass jniCrashReporter;
-	Function<void (jstringArray, jstringArray, jintArray)> throwJavaExpetion;
+    JNI::JavaClass jniCrashReporter;
+    Function<void (jstringArray, jstringArray, jintArray)> throwJavaExpetion;
 
-	JNI::JavaClass jniString;
+    JNI::JavaClass jniString;
 };
     
 class AndroidCrashReport
 {
 public:
-	static void Init();
-	static void ThrowExeption(const String& message);
-	static void Unload();
+    static void Init();
+    static void ThrowExeption(const String& message);
+    static void Unload();
 
 private:
-	static void SignalHandler(int signal, siginfo_t *info, void *uapVoid);
-	static void OnStackFrame(pointer_size addr);
-	static JniCrashReporter::CrashStep FormatTeamcityIdStep(int32 addr);
+    static void SignalHandler(int signal, siginfo_t *info, void *uapVoid);
+    static void OnStackFrame(pointer_size addr);
+    static JniCrashReporter::CrashStep FormatTeamcityIdStep(int32 addr);
 private:
-	static stack_t s_sigstk;
-	
-	//pre allocated here to be used inside signal handler
-	static Vector<JniCrashReporter::CrashStep> crashSteps;
+    static stack_t s_sigstk;
+    
+    //pre allocated here to be used inside signal handler
+    static Vector<JniCrashReporter::CrashStep> crashSteps;
     static const size_t functionStringSize = 30;
     static const size_t maxStackSize = 256;
-	
-	static const char * teamcityBuildNamePrototype;
-	static const char * teamcityBuildNamePrototypeEnd;
-	static const char * teamcityBuildNamePrototypePlaceHolder;
-	
-	static char * teamcityBuildName;
+    
+    static const char * teamcityBuildNamePrototype;
+    static const char * teamcityBuildNamePrototypeEnd;
+    static const char * teamcityBuildNamePrototypePlaceHolder;
+    
+    static char * teamcityBuildName;
     static char functionString[maxStackSize][functionStringSize];
 };
 

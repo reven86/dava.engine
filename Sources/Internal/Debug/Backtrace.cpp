@@ -142,7 +142,7 @@ public:
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
         bt->size = backtrace(bt->array, MAX_BACKTRACE_DEPTH);
 #elif defined(__DAVAENGINE_WIN32__)
-        bt->size = CaptureStackBackTrace( 0, MAX_BACKTRACE_DEPTH, bt->array, NULL);
+        bt->size = CaptureStackBackTrace( 0, MAX_BACKTRACE_DEPTH, bt->array, nullptr);
 #endif
         pointer_size hash = 0;
         for (uint32 k = 0; k < bt->size; ++k)
@@ -180,10 +180,10 @@ public:
             char * tokens[100];
             int32 tokenCount = 0;
             tokens[tokenCount++] = strtok(temp," \t");
-            while (tokens[tokenCount - 1] != NULL)
+            while (tokens[tokenCount - 1] != nullptr)
             {
                 //Logger::FrameworkDebug("%s\n",tokens[tokenCount]);
-                tokens[tokenCount++] = strtok (NULL, " \t");
+                tokens[tokenCount++] = strtok (nullptr, " \t");
                 if (tokenCount > 5)break;
             }
             
@@ -191,7 +191,7 @@ public:
             {
                 int status = -2;
                 char* ret = abi::__cxa_demangle(tokens[3],
-                                                NULL, &funcnamesize, &status);
+                                                nullptr, &funcnamesize, &status);
                 if (status == 0) 
                 {
                     //funcname = ret; // use possibly realloc()-ed string
@@ -218,7 +218,7 @@ public:
         
         process = GetCurrentProcess();
         
-        SymInitialize( process, NULL, TRUE );
+        SymInitialize( process, nullptr, TRUE );
         
         symbol               = ( SYMBOL_INFO * )calloc( sizeof( SYMBOL_INFO ) + 256 * sizeof( char ), 1 );
         symbol->MaxNameLen   = 255;
@@ -243,13 +243,13 @@ public:
         free(log->strings);
     }
 #if defined(__DAVAENGINE_ANDROID__)
-	void OnStackFrame(pointer_size addr)
+	void OnStackFrame(pointer_size addr,const char * functName)
 	{
         DAVA::BacktraceInterface * backtraceProvider = DAVA::AndroidBacktraceChooser::ChooseBacktraceAndroid();
-        const char * libName = NULL;
+        const char * libName = nullptr;
         pointer_size relAddres = 0;
         backtraceProvider->GetMemoryMap()->Resolve(addr,&libName,&relAddres);
-        Logger::FrameworkDebug("%p : %s\n", relAddres, libName);
+        Logger::FrameworkDebug("%p : %s (%s)\n", relAddres, libName,functName);
 	}
 #endif
     void PrintBackTraceToLog()
@@ -283,7 +283,7 @@ public:
        
         if(backtraceProvider != nullptr)
         {
-            backtraceProvider->Backtrace(OnStackFrame,NULL,0);
+            backtraceProvider->PrintableBacktrace(OnStackFrame,nullptr,0);
         }
 #endif
     }

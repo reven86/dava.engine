@@ -14,6 +14,34 @@
  * limitations under the License.
  *
  */
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
 #ifndef __DAVAENGINE_LIBUNWIND_STAB_H__
 #define __DAVAENGINE_LIBUNWIND_STAB_H__
 
@@ -270,16 +298,16 @@ typedef enum
 arm_regnum_t;
 typedef enum
 {
-    UNW_REG_IP = UNW_TDEP_IP,		/* (rw) instruction pointer (pc) */
-    UNW_REG_SP = UNW_TDEP_SP,		/* (ro) stack pointer */
-    UNW_REG_EH = UNW_TDEP_EH,		/* (rw) exception-handling reg base */
+    UNW_REG_IP = UNW_TDEP_IP,        /* (rw) instruction pointer (pc) */
+    UNW_REG_SP = UNW_TDEP_SP,        /* (ro) stack pointer */
+    UNW_REG_EH = UNW_TDEP_EH,        /* (rw) exception-handling reg base */
     UNW_REG_LAST = UNW_TDEP_LAST_REG
 }
 unw_frame_regnum_t;
 
 typedef uint32_t unw_word_t;
 /* FIXME for ARM. Too big?  What do other things use for similar tasks?  */
-#define UNW_TDEP_CURSOR_LEN	4096
+#define UNW_TDEP_CURSOR_LEN    4096
 typedef struct unw_cursor
 {
     unw_word_t opaque[UNW_TDEP_CURSOR_LEN];
@@ -299,22 +327,22 @@ typedef unw_tdep_context_t unw_context_t;
  registers.  FIXME: Not ideal, may not be sufficient for all libunwind
  use cases.  Stores pc+8, which is only approximately correct, really.  */
 #ifndef __thumb__
-#define unw_tdep_getcontext(uc) (({					\
-unw_tdep_context_t *unw_ctx = (uc);					\
-register unsigned long *unw_base asm ("r0") = unw_ctx->regs;		\
-__asm__ __volatile__ (						\
-"stmia %[base], {r0-r15}"						\
-: : [base] "r" (unw_base) : "memory");				\
+#define unw_tdep_getcontext(uc) (({                    \
+unw_tdep_context_t *unw_ctx = (uc);                    \
+register unsigned long *unw_base asm ("r0") = unw_ctx->regs;        \
+__asm__ __volatile__ (                        \
+"stmia %[base], {r0-r15}"                        \
+: : [base] "r" (unw_base) : "memory");                \
 }), 0)
 #else /* __thumb__ */
-#define unw_tdep_getcontext(uc) (({					\
-unw_tdep_context_t *unw_ctx = (uc);					\
-register unsigned long *unw_base asm ("r0") = unw_ctx->regs;		\
-__asm__ __volatile__ (						\
-".align 2\nbx pc\nnop\n.code 32\n"					\
-"stmia %[base], {r0-r15}\n"						\
-"orr %[base], pc, #1\nbx %[base]"					\
-: [base] "+r" (unw_base) : : "memory", "cc");			\
+#define unw_tdep_getcontext(uc) (({                    \
+unw_tdep_context_t *unw_ctx = (uc);                    \
+register unsigned long *unw_base asm ("r0") = unw_ctx->regs;        \
+__asm__ __volatile__ (                        \
+".align 2\nbx pc\nnop\n.code 32\n"                    \
+"stmia %[base], {r0-r15}\n"                        \
+"orr %[base], pc, #1\nbx %[base]"                    \
+: [base] "+r" (unw_base) : : "memory", "cc");            \
 }), 0)
 #endif
 typedef struct
@@ -327,17 +355,17 @@ typedef struct
 unw_tdep_proc_info_t;
 typedef struct unw_proc_info
 {
-    unw_word_t start_ip;	/* first IP covered by this procedure */
-    unw_word_t end_ip;		/* first IP NOT covered by this procedure */
-    unw_word_t lsda;		/* address of lang.-spec. data area (if any) */
-    unw_word_t handler;		/* optional personality routine */
-    unw_word_t gp;		/* global-pointer value for this procedure */
-    unw_word_t flags;		/* misc. flags */
+    unw_word_t start_ip;    /* first IP covered by this procedure */
+    unw_word_t end_ip;        /* first IP NOT covered by this procedure */
+    unw_word_t lsda;        /* address of lang.-spec. data area (if any) */
+    unw_word_t handler;        /* optional personality routine */
+    unw_word_t gp;        /* global-pointer value for this procedure */
+    unw_word_t flags;        /* misc. flags */
     
-    int format;			/* unwind-info format (arch-specific) */
-    int unwind_info_size;	/* size of the information (if applicable) */
-    void *unwind_info;		/* unwind-info (arch-specific) */
-    unw_tdep_proc_info_t extra;	/* target-dependent auxiliary proc-info */
+    int format;            /* unwind-info format (arch-specific) */
+    int unwind_info_size;    /* size of the information (if applicable) */
+    void *unwind_info;        /* unwind-info (arch-specific) */
+    unw_tdep_proc_info_t extra;    /* target-dependent auxiliary proc-info */
 }
 unw_proc_info_t;
 typedef struct unw_map_cursor
@@ -414,6 +442,9 @@ extern t_unw_map_cursor_destroy unw_map_cursor_destroy ;
 
 typedef int (*t_unw_map_cursor_get_next) (unw_map_cursor_t *, unw_map_t *);
 extern t_unw_map_cursor_get_next unw_map_cursor_get_next ;
+
+typedef int (*t_unw_get_proc_name) (unw_cursor_t *cp, char *bufp, size_t len, unw_word_t *offp);
+extern t_unw_get_proc_name unw_get_proc_name ;
 
 ///------------------------------------------------------------------------
 ///--- function to load libunwind dynamicly

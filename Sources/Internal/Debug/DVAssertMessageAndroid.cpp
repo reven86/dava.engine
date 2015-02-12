@@ -37,6 +37,7 @@
 #include "ExternC/AndroidLayer.h"
 
 #include "AndroidCrashReport.h"
+#include "Debug/Backtrace.h"
 
 using namespace DAVA;
 
@@ -49,7 +50,7 @@ void DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 	jstring jStrMessage = env->NewStringUTF(message);
 	showMessage(jStrMessage);
 	env->DeleteLocalRef(jStrMessage);
-
+    PrintBackTraceToLog();
 	AndroidCrashReport::ThrowExeption(message);
 }
 
