@@ -310,19 +310,14 @@ void RenderSystem2D::RemoveClip()
 
 void RenderSystem2D::IntersectClipRect(const Rect &rect)
 {
-    Rect r = currentClip;
-    if(r.dx < 0)
+    if (currentClip.dx < 0 || currentClip.dy < 0)
     {
-        r.dx = (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx;
+        SetClip(rect);
     }
-    if(r.dy < 0)
+    else
     {
-        r.dy = (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
+        SetClip(currentClip.Intersection(rect));
     }
-
-    r = r.Intersection(rect);
-
-    SetClip(r);
 }
 
 void RenderSystem2D::PushClip()

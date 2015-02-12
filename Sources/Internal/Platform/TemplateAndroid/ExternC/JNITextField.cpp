@@ -40,7 +40,7 @@ extern "C"
 		DAVA::UITextFieldAndroid::TextFieldShouldReturn(id);
 	}
 
-	jstring Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env, jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jbyteArray replacementString)
+	jbyteArray Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env, jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jbyteArray replacementString)
 	{
 		DAVA::WideString string;
 
@@ -54,7 +54,11 @@ extern "C"
 		bool res = DAVA::UITextFieldAndroid::TextFieldKeyPressed(id, replacementLocation, replacementLength, string);
 		DAVA::String returnStr = res ? DAVA::UTF8Utils::EncodeToUTF8(string) : "";
 
-		return env->NewStringUTF(returnStr.c_str());
+		jbyteArray r = env->NewByteArray(returnStr.length());
+		if (r == NULL)
+			return NULL;
+		env->SetByteArrayRegion(r, 0, returnStr.length(), (const jbyte*)returnStr.c_str());
+		return r;
 	}
 
 	void Java_com_dava_framework_JNITextField_TextFieldOnTextChanged(JNIEnv* env, jobject classthis, uint32_t id, jbyteArray newText, jbyteArray oldText)

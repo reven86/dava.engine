@@ -1,7 +1,12 @@
 #ifndef __UI_EDITOR_UI_PACKAGE_MODEL_NODE__
 #define __UI_EDITOR_UI_PACKAGE_MODEL_NODE__
 
-#include "DAVAEngine.h"
+#include "Base/BaseObject.h"
+
+namespace DAVA
+{
+    class UIControl;
+}
 
 class PackageBaseNode : public DAVA::BaseObject
 {
