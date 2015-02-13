@@ -34,6 +34,7 @@
     <ClInclude Include="Classes\Tests\MemoryAllocatorsTest.h" />
     <ClInclude Include="Classes\Tests\NetworkTest.h" />
     <ClInclude Include="Classes\Tests\SaveImageTest.h" />
+    <ClInclude Include="Classes\Tests\SpinLockTest.h" />
     <ClInclude Include="Classes\Tests\SplitTest.h" />
     <ClInclude Include="Classes\Tests\StringFormatTest.h" />
     <ClInclude Include="Classes\Tests\TextSizeTest.h" />
@@ -60,6 +61,7 @@
     <ClCompile Include="Classes\Tests\MemoryAllocatorsTest.cpp" />
     <ClCompile Include="Classes\Tests\NetworkTest.cpp" />
     <ClCompile Include="Classes\Tests\SaveImageTest.cpp" />
+    <ClCompile Include="Classes\Tests\SpinLockTest.cpp" />
     <ClCompile Include="Classes\Tests\SplitTest.cpp" />
     <ClCompile Include="Classes\Tests\StringFormatTest.cpp" />
     <ClCompile Include="Classes\Tests\TextSizeTest.cpp" />

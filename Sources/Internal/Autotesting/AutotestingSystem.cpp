@@ -335,7 +335,6 @@ void AutotestingSystem::ForceQuit(const String & errorMessage)
 	Logger::Error("AutotestingSystem::ForceQuit %s",errorMessage.c_str());
 
 	ExitApp();
-	Core::Instance()->Quit();
 }
 
 void AutotestingSystem::MakeScreenShot()
@@ -465,10 +464,6 @@ bool AutotestingSystem::IsTouchDown(int32 id)
 
 void AutotestingSystem::ExitApp()
 {
-	//Realize JobManager::JOB_MAINLAZY
-	if (AutotestingDB::Instance())
-		AutotestingDB::Instance()->Release();
-
 	if (needExitApp)
 	{
 		return;

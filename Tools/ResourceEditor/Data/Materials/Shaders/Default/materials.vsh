@@ -1,7 +1,3 @@
-<CONFIG>
-uniform vec2 decalTileCoordScale = vec2(1.0, 1.0);
-<VERTEX_SHADER>
-
 #ifdef GL_ES
 // define default precision for float, vec, mat.
 precision highp float;
@@ -27,7 +23,7 @@ attribute vec3 inTexCoord0;
 attribute vec2 inTexCoord0;
 #endif
 
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
 attribute vec2 inTexCoord1;
 #endif
 
@@ -164,8 +160,12 @@ uniform vec3 boundingBoxSize;
 	
 #endif
 
-#if defined(TILED_DECAL)
+#if defined(TILED_DECAL_MASK)
 uniform vec2 decalTileCoordScale;
+#endif
+
+#if defined(MATERIAL_DETAIL)
+uniform vec2 detailTileCoordScale;
 #endif
 
 // OUTPUT ATTRIBUTES
@@ -175,11 +175,15 @@ varying vec3 varTexCoord0;
 varying vec2 varTexCoord0;
 #endif
 
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
 varying vec2 varTexCoord1;
 #endif
 
-#if defined(TILED_DECAL)
+#if defined(MATERIAL_DETAIL)
+varying mediump vec2 varDetailTexCoord;
+#endif
+
+#if defined(TILED_DECAL_MASK)
 varying vec2 varDecalTileTexCoord;
 #endif
 
@@ -776,11 +780,15 @@ void main()
     varTexCoord0 += tex0ShiftPerSecond * globalTime;
 #endif
 	
-#if defined(TILED_DECAL)
+#if defined(TILED_DECAL_MASK)
     varDecalTileTexCoord = varTexCoord0 * decalTileCoordScale;
 #endif
     
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
+#if defined(MATERIAL_DETAIL)
+    varDetailTexCoord = varTexCoord0 * detailTileCoordScale;
+#endif
+	
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
 	
 	#if defined(SETUP_LIGHTMAP)
 		varLightmapSize = lightmapSize;

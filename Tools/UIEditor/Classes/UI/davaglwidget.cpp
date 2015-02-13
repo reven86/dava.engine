@@ -168,7 +168,7 @@ void DavaGLWidget::focusOutEvent(QFocusEvent *e)
 {
 	QWidget::focusOutEvent(e);
 
-	DAVA::InputSystem::Instance()->GetKeyboard()->ClearAllKeys();
+	DAVA::InputSystem::Instance()->GetKeyboard().ClearAllKeys();
 	DAVA::QtLayer::Instance()->LockKeyboardInput(false);
 }
 
