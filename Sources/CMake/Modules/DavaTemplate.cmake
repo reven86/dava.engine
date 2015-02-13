@@ -27,9 +27,6 @@ macro( setup_main_executable )
 add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
  
 if( IOS )
-    set( CMAKE_IOS_SDK_ROOT Latest IOS )
-    set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
-
     list( APPEND RESOURCES_LIST ${MACOS_DATA} )    
     list( APPEND RESOURCES_LIST ${IOS_XIB} )
     list( APPEND RESOURCES_LIST ${IOS_PLIST} )
