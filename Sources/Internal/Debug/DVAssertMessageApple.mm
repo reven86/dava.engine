@@ -35,7 +35,7 @@
 #include <AppKit/NSAlert.h>
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "UI/UIScreenManager.h"
-#import "UIAlertViewModal.h"
+#import "UIAlertView_Modal.h"
 #import "UIDismissionHandlerAlertView.h"
 #endif
 
