@@ -46,13 +46,18 @@ namespace DAVA
 
 #endif
 
+namespace
+{
+const size_t defaultBufferSize{4096};
+}
+
 
 String ConvertCFormatListToString(const char8* format, va_list pargs)
 {
     // Allocate a buffer on the stack that's big enough for us almost
     // all the time.  Be prepared to allocate dynamically if it doesn't fit.
     String dynamicbuf;
-    dynamicbuf.resize(4096 * 2);
+    dynamicbuf.resize(defaultBufferSize * 2);
 
     while (true)
     {
@@ -69,7 +74,7 @@ String ConvertCFormatListToString(const char8* format, va_list pargs)
             // It fit fine so we're done.
             return dynamicbuf;
         }
-        // you you want to print 1Mb with one call may be you format
+        // do you really want to print 1Mb with one call may be your format
         // string incorrect?
         DVASSERT(dynamicbuf.size() < 1024 * 1024);
         // vsnprintf reported that it wanted to write more characters
@@ -86,15 +91,14 @@ void Logger::Logv(eLogLevel ll, const char8* text, va_list li)
     if (!text || text[0] == '\0') return;
 
     // try use stack first
-    const size_t size = 4096;
-    std::array<char8, size> stackbuf;
+    std::array<char8, defaultBufferSize> stackbuf;
 
     va_list copy;
     va_copy(copy, li);
-    int needMoreBuff = vsnprintf(&stackbuf[0], size, text, copy);
+    int needMoreBuff = vsnprintf(&stackbuf[0], defaultBufferSize, text, copy);
     va_end(copy);
 
-    if (needMoreBuff < 0 || needMoreBuff > static_cast<int>(size))
+    if (needMoreBuff < 0 || needMoreBuff > static_cast<int>(defaultBufferSize))
     {
         String formatedMessage = ConvertCFormatListToString(text, li);
         // always send log to custom subscribers
