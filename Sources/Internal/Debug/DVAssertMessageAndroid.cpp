@@ -43,6 +43,8 @@ using namespace DAVA;
 
 void DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 {
+    Logger::FrameworkDebug("DAVA BACKTRACE PRINTING");
+    PrintBackTraceToLog();
 	JNI::JavaClass msg("com/dava/framework/JNIAssert");
 	auto showMessage = msg.GetStaticMethod<void, jstring>("Assert");
 
@@ -50,7 +52,7 @@ void DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 	jstring jStrMessage = env->NewStringUTF(message);
 	showMessage(jStrMessage);
 	env->DeleteLocalRef(jStrMessage);
-    PrintBackTraceToLog();
+    
 	AndroidCrashReport::ThrowExeption(message);
 }
 

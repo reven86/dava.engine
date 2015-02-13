@@ -39,6 +39,7 @@
 #pragma comment(lib, "Dbghelp.lib")
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "../Platform/TemplateAndroid/BacktraceAndroid/AndroidBacktraceChooser.h"
+#include <cxxabi.h>
 #endif
 
 #include <cstdlib>
@@ -249,7 +250,16 @@ public:
         const char * libName = nullptr;
         pointer_size relAddres = 0;
         backtraceProvider->GetMemoryMap()->Resolve(addr,&libName,&relAddres);
-        Logger::FrameworkDebug("%p : %s (%s)\n", relAddres, libName,functName);
+        
+        int     status;
+        char   * realname = nullptr;
+
+        //returns allocated string with malloc
+        realname = abi::__cxa_demangle(functName, 0, 0, &status);
+         
+        Logger::FrameworkDebug("DAVA BACKTRACE:%p : %s (%s)\n", relAddres, libName,realname);
+        free(realname);
+         
 	}
 #endif
     void PrintBackTraceToLog()
@@ -283,7 +293,12 @@ public:
        
         if(backtraceProvider != nullptr)
         {
+            Logger::FrameworkDebug("DAVA BACKTRACE PRINTING");
             backtraceProvider->PrintableBacktrace(OnStackFrame,nullptr,0);
+        }
+        else
+        {
+            Logger::FrameworkDebug("DAVA BACKTRACE NO BACKTRACE INTERFACE PROVIDER!");
         }
 #endif
     }
