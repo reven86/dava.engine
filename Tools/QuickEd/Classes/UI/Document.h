@@ -19,6 +19,8 @@ namespace DAVA {
     class UIScreen;
 }
 
+class DocumentWidgets;
+
 class QAbstractItemModel;
 class QSortFilterProxyModel;
 class QUndoStack;
@@ -44,6 +46,9 @@ public:
     Document(Project * project, PackageNode *package, QObject *parent = NULL);
     virtual ~Document();
     
+    void ConnectToWidgets(DocumentWidgets *widgets);
+    void DisconnectFromWidgets(DocumentWidgets *widgets);
+    
     bool IsModified() const;
     void ClearModified();
     const DAVA::FilePath &PackageFilePath() const;
@@ -63,7 +68,7 @@ public:
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
 
 signals:
-    void controlsSelectionChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
+//    void controlsSelectionChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
     void activeRootControlsChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
 
     void controlSelectedInEditor(ControlNode *activatedControls);
@@ -87,8 +92,8 @@ private:
 
     PackageContext *packageContext;
     PropertiesContext *propertiesContext;
-    LibraryContext *libraryContext;
     PreviewContext *previewContext;
+    LibraryContext *libraryContext;
     
     QtModelPackageCommandExecutor *commandExecutor;
 

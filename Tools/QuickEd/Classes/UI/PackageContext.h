@@ -7,7 +7,7 @@
 
 class QSortFilterProxyModel;
 class QItemSelection;
-class UIPackageModel;
+class PackageModel;
 class Document;
 
 class PackageContext : public QObject
@@ -19,7 +19,7 @@ public:
     virtual ~PackageContext();
     
     Document *GetDocument() const;
-    UIPackageModel *GetModel() const;
+    PackageModel *GetModel() const;
     QSortFilterProxyModel *GetFilterProxyModel() const;
     const QString &GetFilterString() const;
     
@@ -29,7 +29,7 @@ private:
     Document *document;
 
     QPoint scrollPosition;
-    UIPackageModel *model;
+    PackageModel *model;
     QSortFilterProxyModel *proxyModel;
     QItemSelection *currentSelection;
     QString filterString;

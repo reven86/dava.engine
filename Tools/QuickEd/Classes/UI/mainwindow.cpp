@@ -55,9 +55,10 @@
 #include "Project.h"
 #include "UI/FileSystemView/FileSystemDockWidget.h"
 #include "UI/Document.h"
+#include "UI/DocumentWidgets.h"
 #include "UI/UIPackageLoader.h"
 #include "Utils/QtDavaConvertion.h"
-#include "UIControls/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/PackageNode.h"
 
 const QString APP_NAME = "QuickEd";
 const QString APP_COMPANY = "DAVA";
@@ -70,10 +71,11 @@ static const char* COLOR_PROPERTY_ID = "color";
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , backgroundFrameUseCustomColorAction(NULL)
-    , backgroundFrameSelectCustomColorAction(NULL)
-    , project(NULL)
-    , activeDocument(NULL)
+    , backgroundFrameUseCustomColorAction(nullptr)
+    , backgroundFrameSelectCustomColorAction(nullptr)
+    , project(nullptr)
+    , activeDocument(nullptr)
+    , documentWidgets(nullptr)
 {
     undoGroup = new QUndoGroup(this);
     undoAction = undoGroup->createUndoAction(undoGroup);
@@ -107,11 +109,9 @@ MainWindow::MainWindow(QWidget *parent)
 	InitMenu();
 	RestoreMainWindowState();
     
-    ui->propertiesDockWidget->setEnabled(false);
     ui->fileSystemDockWidget->setEnabled(false);
-    ui->packageTreeDock->setEnabled(false);
-    ui->packageGraphicsWidget->setEnabled(false);
-    ui->libraryDockWidget->setEnabled(false);
+    
+    documentWidgets = new DocumentWidgets(this, ui->packageWidget, ui->propertiesWidget, ui->previewWidget, ui->libraryWidget);
     
     RebuildRecentMenu();
 }
@@ -123,6 +123,9 @@ MainWindow::~MainWindow()
     delete undoAction;
     delete redoAction;
     delete undoGroup;
+    
+    delete documentWidgets;
+    documentWidgets = nullptr;
 }
 
 void MainWindow::SaveMainWindowState()
@@ -164,39 +167,16 @@ void MainWindow::CurrentTabChanged(int index)
 {
     if (activeDocument)
     {
+        activeDocument->DisconnectFromWidgets(documentWidgets);
         disconnect(activeDocument->UndoStack(), SIGNAL(cleanChanged(bool)), this, SLOT(OnCleanChanged(bool)));
-        disconnect(ui->packageTreeDock, SIGNAL(SelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-        disconnect(ui->packageTreeDock, SIGNAL(SelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-
-        disconnect(activeDocument, SIGNAL(controlSelectedInEditor(ControlNode*)), ui->packageTreeDock, SLOT(OnControlSelectedInEditor(ControlNode*)));
-        disconnect(activeDocument, SIGNAL(allControlsDeselectedInEditor()), ui->packageTreeDock, SLOT(OnAllControlsDeselectedInEditor()));
-        activeDocument->UndoStack()->setActive(false);
     }
     
     activeDocument = GetTabDocument(ui->tabBar->currentIndex());
     
-    ui->propertiesDockWidget->setEnabled(activeDocument != NULL);
-    ui->packageTreeDock->setEnabled(activeDocument != NULL);
-    ui->packageGraphicsWidget->setEnabled(activeDocument != NULL);
-    ui->libraryDockWidget->setEnabled(activeDocument != NULL);
-    
-    ui->packageTreeDock->SetDocument(activeDocument);
-    ui->packageGraphicsWidget->SetDocument(activeDocument);
-    ui->propertiesDockWidget->SetContext(activeDocument ? activeDocument->GetPropertiesContext() : NULL);
-    ui->libraryDockWidget->SetDocument(activeDocument);
-//    ui->packageLibraryWidget->SetDocument(activeDocument);
-    
     if (activeDocument)
     {
-        connect(ui->packageTreeDock, SIGNAL(SelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-        connect(ui->packageTreeDock, SIGNAL(SelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-
-        connect(activeDocument, SIGNAL(controlSelectedInEditor(ControlNode*)), ui->packageTreeDock, SLOT(OnControlSelectedInEditor(ControlNode*)));
-        connect(activeDocument, SIGNAL(allControlsDeselectedInEditor()), ui->packageTreeDock, SLOT(OnAllControlsDeselectedInEditor()));
-
-        activeDocument->UndoStack()->setActive(true);
+        activeDocument->ConnectToWidgets(documentWidgets);
         connect(activeDocument->UndoStack(), SIGNAL(cleanChanged(bool)), this, SLOT(OnCleanChanged(bool)));
-
     }
 
     UpdateSaveButtons();
@@ -292,10 +272,10 @@ void MainWindow::InitMenu()
 void MainWindow::SetupViewMenu()
 {
     // Setup the common menu actions.
-    ui->menuView->addAction(ui->propertiesDockWidget->toggleViewAction());
+    ui->menuView->addAction(ui->propertiesWidget->toggleViewAction());
     ui->menuView->addAction(ui->fileSystemDockWidget->toggleViewAction());
-    ui->menuView->addAction(ui->packageTreeDock->toggleViewAction());
-    ui->menuView->addAction(ui->libraryDockWidget->toggleViewAction());
+    ui->menuView->addAction(ui->packageWidget->toggleViewAction());
+    ui->menuView->addAction(ui->libraryWidget->toggleViewAction());
     ui->menuView->addAction(ui->consoleDockWidget->toggleViewAction());
 
     ui->menuView->addSeparator();
@@ -542,7 +522,7 @@ void MainWindow::OnOpenPackageFile(const QString &path)
             if (index == -1)
             {
                 RefPtr<PackageNode> package = project->OpenPackage(path);
-                if (package.Get() != NULL)
+                if (package.Get() != nullptr)
                 {
                     index = CreateTabContent(package.Get());
                 }
@@ -610,7 +590,7 @@ bool MainWindow::CloseProject()
         this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
         
         delete project;
-        project = NULL;
+        project = nullptr;
 	}
     UpdateSaveButtons();
 	return true;
@@ -749,7 +729,7 @@ Document *MainWindow::GetCurrentTabDocument() const
         return ui->tabBar->tabData(index).value<Document*>();
     }
 
-    return NULL;
+    return nullptr;
 }
 
 int MainWindow::GetTabIndexByPath(const QString &fileName) const
