@@ -1,5 +1,6 @@
-#ifndef __CHANGEPROPERTYVALUECOMMAND_H__
-#define __CHANGEPROPERTYVALUECOMMAND_H__
+#ifndef __QUICKED_CHANGE_PROPERTY_VALUE_COMMAND_H__
+#define __QUICKED_CHANGE_PROPERTY_VALUE_COMMAND_H__
+
 #include <QUndoStack>
 #include "FileSystem/VariantType.h"
 
@@ -20,20 +21,4 @@ private:
     DAVA::VariantType newValue;
 };
 
-class ChangeDefaultValueCommand: public QUndoCommand
-{
-    
-public:
-    ChangeDefaultValueCommand(BaseProperty *property, const DAVA::VariantType &newValue, QUndoCommand *parent = 0);
-    virtual ~ChangeDefaultValueCommand();
-    
-    virtual void undo();
-    virtual void redo();
-private:
-    BaseProperty *property;
-    DAVA::VariantType oldValue;
-    DAVA::VariantType newValue;
-    bool revertToDefault;
-};
-
-#endif // __CHANGEPROPERTYVALUECOMMAND_H__
+#endif // __QUICKED_CHANGE_PROPERTY_VALUE_COMMAND_H__

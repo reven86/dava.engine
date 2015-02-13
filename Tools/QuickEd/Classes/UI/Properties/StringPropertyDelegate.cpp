@@ -2,7 +2,7 @@
 #include <QLineEdit>
 #include <QLayout>
 #include "DAVAEngine.h"
-#include "PropertiesTreeModel.h"
+#include "PropertiesModel.h"
 #include "Utils/QtDavaConvertion.h"
 #include "PropertiesTreeItemDelegate.h"
 

@@ -4,7 +4,7 @@
 #include "Model/ControlProperties/BaseProperty.h"
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
-#include "PropertiesTreeModel.h"
+#include "PropertiesModel.h"
 
 EnumPropertyDelegate::EnumPropertyDelegate(PropertiesTreeItemDelegate *delegate)
     : BasePropertyDelegate(delegate)

@@ -6,12 +6,12 @@
 #include <QPersistentModelIndex>
 #include <QStringList>
 
-class UIPackageMimeData: public QMimeData
+class PackageMimeData: public QMimeData
 {
     Q_OBJECT
 public:
-    UIPackageMimeData();
-    ~UIPackageMimeData();
+    PackageMimeData();
+    virtual ~PackageMimeData();
     
     void SetIndex(const QModelIndex &_index ){ index = _index;}
     const QModelIndex &GetIndex() const{ return index;}

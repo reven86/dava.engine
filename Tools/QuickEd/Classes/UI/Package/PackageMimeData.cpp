@@ -1,21 +1,21 @@
-#include "UIPackageMimeData.h"
+#include "PackageMimeData.h"
 
-UIPackageMimeData::UIPackageMimeData()
+PackageMimeData::PackageMimeData()
 {
 }
 
-UIPackageMimeData::~UIPackageMimeData()
+PackageMimeData::~PackageMimeData()
 {
 }
 
-bool UIPackageMimeData::hasFormat(const QString &mimetype) const
+bool PackageMimeData::hasFormat(const QString &mimetype) const
 {
     if (mimetype == "application/packageModel")
         return true;
     return QMimeData::hasFormat(mimetype);
 }
 
-QStringList UIPackageMimeData::formats() const
+QStringList PackageMimeData::formats() const
 {
     QStringList types;
     types << "text/plain";
@@ -23,7 +23,7 @@ QStringList UIPackageMimeData::formats() const
     return types;
 }
 
-QVariant UIPackageMimeData::retrieveData(const QString &mimetype, QVariant::Type preferredType) const
+QVariant PackageMimeData::retrieveData(const QString &mimetype, QVariant::Type preferredType) const
 {
     if (mimetype == "application/packageModel")
         return QVariant(QVariant::UserType);

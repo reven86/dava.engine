@@ -5,7 +5,7 @@
 #include "QtControls/Vector2DEdit.h"
 #include "Model/ControlProperties/BaseProperty.h"
 #include "Utils/QtDavaConvertion.h"
-#include "PropertiesTreeModel.h"
+#include "PropertiesModel.h"
 #include "PropertiesTreeItemDelegate.h"
 
 Vector2PropertyDelegate::Vector2PropertyDelegate(PropertiesTreeItemDelegate *delegate)

@@ -7,7 +7,7 @@
 #include <QColorDialog>
 
 #include "PropertiesTreeItemDelegate.h"
-#include "PropertiesTreeModel.h"
+#include "PropertiesModel.h"
 #include "Utils/QtDavaConvertion.h"
 
 

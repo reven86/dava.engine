@@ -4,8 +4,8 @@
 #include <QAction>
 #include <QItemSelection>
 
-#include "UI/Package/UIPackageModel.h"
-#include "UI/Package/UIFilteredPackageModel.h"
+#include "UI/Package/PackageModel.h"
+#include "UI/Package/FilteredPackageModel.h"
 #include "UI/Library/LibraryModel.h"
 #include "UI/PreviewContext.h"
 

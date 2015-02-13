@@ -1,5 +1,5 @@
 
-#include "PropertiesTreeModel.h"
+#include "PropertiesModel.h"
 
 #include <QPoint>
 #include <QColor>
@@ -10,14 +10,14 @@
 #include "Model/ControlProperties/BaseProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Utils/QtDavaConvertion.h"
-#include "ChangePropertyValueCommand.h"
+#include "UI/Commands/ChangePropertyValueCommand.h"
 #include "UI/Document.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 #include "UI/PropertiesContext.h"
 
 using namespace DAVA;
 
-PropertiesTreeModel::PropertiesTreeModel(ControlNode *_controlNode, PropertiesContext *context, QObject *parent)
+PropertiesModel::PropertiesModel(ControlNode *_controlNode, PropertiesContext *context, QObject *parent)
     : QAbstractItemModel(parent)
     , controlNode(nullptr)
     , propertiesContext(context)
@@ -25,12 +25,12 @@ PropertiesTreeModel::PropertiesTreeModel(ControlNode *_controlNode, PropertiesCo
     controlNode = SafeRetain(_controlNode);
 }
 
-PropertiesTreeModel::~PropertiesTreeModel()
+PropertiesModel::~PropertiesModel()
 {
     SafeRelease(controlNode);
 }
 
-QModelIndex PropertiesTreeModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex PropertiesModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
         return QModelIndex();
@@ -42,7 +42,7 @@ QModelIndex PropertiesTreeModel::index(int row, int column, const QModelIndex &p
     return createIndex(row, column, property->GetProperty(row));
 }
 
-QModelIndex PropertiesTreeModel::parent(const QModelIndex &child) const
+QModelIndex PropertiesModel::parent(const QModelIndex &child) const
 {
     if (!child.isValid())
         return QModelIndex();
@@ -59,7 +59,7 @@ QModelIndex PropertiesTreeModel::parent(const QModelIndex &child) const
         return createIndex(0, 0, parent);
 }
 
-int PropertiesTreeModel::rowCount(const QModelIndex &parent) const
+int PropertiesModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.column() > 0)
         return 0;
@@ -70,7 +70,7 @@ int PropertiesTreeModel::rowCount(const QModelIndex &parent) const
     return static_cast<BaseProperty*>(parent.internalPointer())->GetCount();
 }
 
-int PropertiesTreeModel::columnCount(const QModelIndex &parent) const
+int PropertiesModel::columnCount(const QModelIndex &parent) const
 {
     if (!parent.isValid() || parent.internalPointer() == controlNode->GetPropertiesRoot())
         return 2;
@@ -78,7 +78,7 @@ int PropertiesTreeModel::columnCount(const QModelIndex &parent) const
     return 2;
 }
 
-QVariant PropertiesTreeModel::data(const QModelIndex &index, int role) const
+QVariant PropertiesModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
@@ -149,7 +149,7 @@ QVariant PropertiesTreeModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-bool PropertiesTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (!index.isValid())
         return false;
@@ -201,7 +201,7 @@ bool PropertiesTreeModel::setData(const QModelIndex &index, const QVariant &valu
     }
     return false;
 }
-Qt::ItemFlags PropertiesTreeModel::flags(const QModelIndex &index) const
+Qt::ItemFlags PropertiesModel::flags(const QModelIndex &index) const
 {
     if (index.column() != 1)
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
@@ -213,7 +213,7 @@ Qt::ItemFlags PropertiesTreeModel::flags(const QModelIndex &index) const
     return flags;
 }
 
-QVariant PropertiesTreeModel::headerData(int section, Qt::Orientation /*orientation*/, int role) const
+QVariant PropertiesModel::headerData(int section, Qt::Orientation /*orientation*/, int role) const
 {
     if (role == Qt::DisplayRole)
     {
@@ -225,7 +225,7 @@ QVariant PropertiesTreeModel::headerData(int section, Qt::Orientation /*orientat
     return QVariant();
 }
 
-QVariant PropertiesTreeModel::makeQVariant(const BaseProperty *property) const
+QVariant PropertiesModel::makeQVariant(const BaseProperty *property) const
 {
     const VariantType &val = property->GetValue();
     switch (val.GetType())
@@ -311,7 +311,7 @@ QVariant PropertiesTreeModel::makeQVariant(const BaseProperty *property) const
     return QString();
 }
 
-void PropertiesTreeModel::initVariantType(DAVA::VariantType &var, const QVariant &val) const
+void PropertiesModel::initVariantType(DAVA::VariantType &var, const QVariant &val) const
 {
     switch (var.GetType())
     {

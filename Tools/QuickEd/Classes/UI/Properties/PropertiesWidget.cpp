@@ -4,7 +4,7 @@
 #include <qstyleditemdelegate>
 
 #include "ui_PropertiesWidget.h"
-#include "PropertiesTreeModel.h"
+#include "PropertiesModel.h"
 #include "UI/Document.h"
 #include "UI/PropertiesContext.h"
 #include "UI/Properties/PropertiesTreeItemDelegate.h"
@@ -61,7 +61,7 @@ void PropertiesWidget::SetControl(ControlNode *controlNode)
     if (controlNode)
     {
         QStyledItemDelegate *itemDelegate = new PropertiesTreeItemDelegate(this);
-        PropertiesTreeModel *model = new PropertiesTreeModel(controlNode, context, this);
+        PropertiesModel *model = new PropertiesModel(controlNode, context, this);
 //        QItemEditorFactory *itemEditorFactory = new QItemEditorFactory();
 //        itemEditorFactory->registerEditor( QVariant::Vector2D, new QStandardItemEditorCreator<Vector2Edit>());
 //        itemDelegate->setItemEditorFactory(itemEditorFactory);
