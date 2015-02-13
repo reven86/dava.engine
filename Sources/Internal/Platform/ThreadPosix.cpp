@@ -92,7 +92,7 @@ void Thread::KillNative()
 #endif
     if (0 != ret)
     {
-        Logger::FrameworkDebug("[Thread::Cancel] for android: id = %d, error = %d", Thread::GetCurrentId(), ret);
+        Logger::FrameworkDebug("[Thread::Cancel] cannot kill thread: id = %d, error = %d", Thread::GetCurrentId(), ret);
     }
 }
 

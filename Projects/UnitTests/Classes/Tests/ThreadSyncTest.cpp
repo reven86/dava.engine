@@ -160,11 +160,9 @@ void ThreadSyncTest::TestThread(PerfFuncData * data)
     TEST_VERIFY(Thread::STATE_KILLED == infiniteThread->GetState());
 
     TEST_VERIFY(0 != shortThread);
-    TEST_VERIFY(0 != shortThread->Release());
     TEST_VERIFY(0 == shortThread->Release());
     shortThread = NULL;
 
-    TEST_VERIFY(0 != infiniteThread->Release());
     TEST_VERIFY(0 == infiniteThread->Release());
     infiniteThread = NULL;
 

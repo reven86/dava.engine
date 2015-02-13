@@ -105,6 +105,7 @@ void Thread::Kill()
     {
         KillNative();
         state = STATE_KILLED;
+        Release();
     }
 }
 
