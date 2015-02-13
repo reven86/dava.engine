@@ -80,7 +80,7 @@ void ThreadSyncTest::ThreadSyncTestFunction(PerfFuncData * data)
 void ThreadSyncTest::InfiniteThreadFunction(BaseObject * caller, void * callerData, void * userData)
 {
     Thread *thread = static_cast<Thread *>(caller);
-    while(thread && Thread::STATE_CANCELLING != thread->GetState())
+    while(thread && !thread->IsCancelling())
     {
         Thread::Sleep(200);
     }
@@ -94,7 +94,7 @@ void ThreadSyncTest::ShortThreadFunction(BaseObject * caller, void * callerData,
     while(thread && i-- > 0)
     {
         Thread::Sleep(1);
-        if (Thread::STATE_CANCELLING == thread->GetState())
+        if (thread->IsCancelling())
             break;
     }
 }
@@ -120,7 +120,7 @@ void ThreadSyncTest::TestThread(PerfFuncData * data)
 
     infiniteThread->Cancel();
     infiniteThread->Join();
-    TEST_VERIFY(Thread::STATE_CANCELLED == infiniteThread->GetState());
+    TEST_VERIFY(Thread::STATE_ENDED == infiniteThread->GetState());
 
     Thread *shortThread = Thread::Create(Message(this, &ThreadSyncTest::ShortThreadFunction));
     shortThread->Start();

@@ -118,20 +118,6 @@ void Thread::KillAll()
     }
 }
 
-void Thread::Cancel()
-{
-    // it is possible to cancel thread just after creating or starting and the problem is - thred changes state
-    // to STATE_RUNNING insite threaded function - so that could not happens in that case. Need some time.
-    DVASSERT(STATE_CREATED != state);
-
-    // Important - DO NOT try to wait RUNNING state because that state wll not appear if thread is not started!!!
-    // You can wait RUNNING state, but not from thred which should call Start() for created Thread.
-    if (STATE_RUNNING == state)
-    {
-        state = STATE_CANCELLING;
-    }
-}
-
 void Thread::CancelAll()
 {
 	LockGuard<Mutex> locker(threadListMutex);
@@ -147,6 +133,7 @@ Thread::Thread(const Message& _msg)
     : BaseObject()
     , msg(_msg)
     , state(STATE_CREATED)
+    , isCancelling(false)
     , id(0)
     , name("DAVA::Thread")
 {
@@ -198,24 +185,10 @@ void Thread::ThreadFunction(void *param)
     Thread * t = (Thread *)param;
     t->id = GetCurrentId();
 
-    if (STATE_CREATED == t->state)
-    {
-        t->state = STATE_RUNNING;
-        t->msg(t);
-    }
+    t->state = STATE_RUNNING;
+    t->msg(t);
 
-    switch(t->state)
-    {
-    case STATE_CANCELLING:
-        t->state = STATE_CANCELLED;
-        break;
-    case STATE_RUNNING:
-        t->state = STATE_ENDED;
-        break;
-    default:
-        break;
-    }
-
+    t->state = STATE_ENDED;
     t->Release();
 }
     
