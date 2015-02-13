@@ -89,6 +89,7 @@ protected:
 	virtual bool EditorDoneInternal(QWidget *editor);
 
 protected slots:
+    void MultilineEditClicked();
 	void ColorOWPressed();
 	void FilePathOWPressed();
 	void AllowedOWPressed();

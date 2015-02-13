@@ -194,13 +194,13 @@ void QtLayer::KeyPressed(char16 key, int32 count, uint64 timestamp)
     touches.pop_back();
     UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
     
-    InputSystem::Instance()->GetKeyboard()->OnKeyPressed(key);
+    InputSystem::Instance()->GetKeyboard().OnKeyPressed(key);
 }
 
 
 void QtLayer::KeyReleased(char16 key)
 {
-    InputSystem::Instance()->GetKeyboard()->OnKeyUnpressed(key);
+    InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(key);
 }
     
     

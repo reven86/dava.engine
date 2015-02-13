@@ -168,15 +168,15 @@ void OpenGLWindow::keyPressEvent(QKeyEvent *e)
     
     if(modifiers & Qt::ShiftModifier)
     {
-        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyPressed(DAVA::DVKEY_SHIFT);
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed(DAVA::DVKEY_SHIFT);
     }
     if(modifiers & Qt::ControlModifier)
     {
-        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyPressed(DAVA::DVKEY_CTRL);
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed(DAVA::DVKEY_CTRL);
     }
     if(modifiers & Qt::AltModifier)
     {
-        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyPressed(DAVA::DVKEY_ALT);
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed(DAVA::DVKEY_ALT);
     }
     
     char davaKey = MapQtKeyToDAVA(e);
@@ -192,15 +192,15 @@ void OpenGLWindow::keyReleaseEvent(QKeyEvent *e)
     
     if(Qt::Key_Shift == key)
     {
-        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyUnpressed(DAVA::DVKEY_SHIFT);
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(DAVA::DVKEY_SHIFT);
     }
     else if(Qt::Key_Control == key)
     {
-        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyUnpressed(DAVA::DVKEY_CTRL);
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(DAVA::DVKEY_CTRL);
     }
     else if(Qt::Key_Alt == key)
     {
-        DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyUnpressed(DAVA::DVKEY_ALT);
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(DAVA::DVKEY_ALT);
     }
 
     char davaKey = MapQtKeyToDAVA(e);
@@ -405,7 +405,7 @@ void DavaGLWidget::OnWindowExposed()
 {
     if(isInitialized) return;
     
-    DAVA::Shader::ClearActive();
+    DAVA::Shader::Unbind();
 
     isInitialized = true;
 
@@ -432,7 +432,7 @@ void DavaGLWidget::OnRenderTimer()
         PerformSizeChange();
     }                       // END OF TODO
 
-    DAVA::Shader::ClearActive();
+    DAVA::Shader::Unbind();
     DAVA::QtLayer::Instance()->ProcessFrame();
     
     QCoreApplication::postEvent(openGlWindow, new QEvent(QEvent::UpdateRequest));

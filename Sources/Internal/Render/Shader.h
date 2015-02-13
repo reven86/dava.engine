@@ -200,7 +200,6 @@ protected:
 public:
     Shader();
     
-    static void ClearActive() { activeProgram = 0; }
     
     Shader * Clone();
     

@@ -202,10 +202,6 @@ void LandscapeProxy::SetRulerToolTextureEnabled(bool enabled)
 
 void LandscapeProxy::UpdateDisplayedTexture()
 {
-	//RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
-	//RenderManager::Instance()->SetTextureState(fullTiledTextureState);
-	//RenderManager::Instance()->FlushState();
-
 	int32 fullTiledWidth = fullTiledTexture->GetWidth();
 	int32 fullTiledHeight = fullTiledTexture->GetHeight();
 	Sprite* fullTiledSprite = Sprite::CreateFromTexture(fullTiledTexture, 0, 0,
@@ -381,7 +377,6 @@ void LandscapeProxy::UpdateFullTiledTexture(bool force)
 		UpdateDisplayedTexture();
 	}
 }
-
 
 
 Vector3 LandscapeProxy::PlacePoint(const Vector3& point)

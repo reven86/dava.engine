@@ -156,7 +156,6 @@
 		171F938616CE6F28007038AB /* UIWebView.h in Headers */ = {isa = PBXBuildFile; fileRef = 171F938416CE6F28007038AB /* UIWebView.h */; };
 		1723D46F16CCF1C00039CCC2 /* ParticleForce.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1799E52416CCEC030058061F /* ParticleForce.cpp */; };
 		1723D47016CCF1C00039CCC2 /* ParticleForce.h in Headers */ = {isa = PBXBuildFile; fileRef = 1799E52516CCEC030058061F /* ParticleForce.h */; };
-		176395A91863373800EADDA2 /* GamepadManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A0114540185567784808C54 /* GamepadManager.cpp */; };
 		176395AA1863373D00EADDA2 /* GamepadDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A011951C57E3EEDBCB3EF43 /* GamepadDevice.cpp */; };
 		176DE8F9174B5561007A983B /* AnimatedObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ABF16BD24E400732C04 /* AnimatedObject.h */; };
 		176DE8FA174B5561007A983B /* Animation.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AC116BD24E400732C04 /* Animation.h */; };
@@ -1160,13 +1159,11 @@
 		9A0113CA721C6632B457850E /* NSStringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A0117BC4FCDDBD612834A56 /* NSStringUtils.h */; };
 		9A011406799F94AD1085EC6B /* NSStringUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9A0117CD6FF0DC015977B410 /* NSStringUtils.mm */; };
 		9A0114637D598239F4C36EA3 /* GamepadDevice.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A01179DABA55A139AC4C1DF /* GamepadDevice.h */; };
-		9A0114DFC94738EDBF7B7A79 /* GamepadManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A01174F88AF59687E8EA7B1 /* GamepadManager.h */; };
 		9A0115E50EC8E654C56C365F /* LocalNotificationDelayed.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A0110F5E349822B888989E3 /* LocalNotificationDelayed.h */; };
 		9A0115FF346D24C6D31FB7DE /* NSStringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A0117BC4FCDDBD612834A56 /* NSStringUtils.h */; };
 		9A01170EFA9FE9E1E40EF728 /* LocalNotificationDelayed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A011B2DD58E89DAEA9C7F24 /* LocalNotificationDelayed.cpp */; };
 		9A01188C3CE745EA32A7DD33 /* GamepadDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A011951C57E3EEDBCB3EF43 /* GamepadDevice.cpp */; };
 		9A0119BB5A87470F66DDC213 /* LocalNotificationDelayed.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A0110F5E349822B888989E3 /* LocalNotificationDelayed.h */; };
-		9A0119EF8F7D1F04F61B31DF /* GamepadManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A0114540185567784808C54 /* GamepadManager.cpp */; };
 		9A011A0E66E935605A13844E /* NSStringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A0117BC4FCDDBD612834A56 /* NSStringUtils.h */; };
 		9A011AFAEF51F2EB520F50C1 /* LocalNotificationDelayed.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A0110F5E349822B888989E3 /* LocalNotificationDelayed.h */; };
 		9A011F52159862F0BF8B01DD /* LocalNotificationDelayed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A011B2DD58E89DAEA9C7F24 /* LocalNotificationDelayed.cpp */; };
@@ -2976,8 +2973,6 @@
 		84CB6717191FC8850086483D /* LibPVRHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibPVRHelper.cpp; path = Image/LibPVRHelper.cpp; sourceTree = "<group>"; };
 		84CB6718191FC8850086483D /* LibPVRHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibPVRHelper.h; path = Image/LibPVRHelper.h; sourceTree = "<group>"; };
 		9A0110F5E349822B888989E3 /* LocalNotificationDelayed.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationDelayed.h; sourceTree = "<group>"; };
-		9A0114540185567784808C54 /* GamepadManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GamepadManager.cpp; sourceTree = "<group>"; };
-		9A01174F88AF59687E8EA7B1 /* GamepadManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GamepadManager.h; sourceTree = "<group>"; };
 		9A01179DABA55A139AC4C1DF /* GamepadDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GamepadDevice.h; sourceTree = "<group>"; };
 		9A0117BC4FCDDBD612834A56 /* NSStringUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSStringUtils.h; sourceTree = "<group>"; };
 		9A0117CD6FF0DC015977B410 /* NSStringUtils.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NSStringUtils.mm; sourceTree = "<group>"; };
@@ -4431,8 +4426,6 @@
 				E8989B8C16BD24E400732C04 /* KeyboardDevice.cpp */,
 				E8989B8D16BD24E400732C04 /* KeyboardDevice.h */,
 				9A01179DABA55A139AC4C1DF /* GamepadDevice.h */,
-				9A01174F88AF59687E8EA7B1 /* GamepadManager.h */,
-				9A0114540185567784808C54 /* GamepadManager.cpp */,
 				9A011951C57E3EEDBCB3EF43 /* GamepadDevice.cpp */,
 			);
 			path = Input;
@@ -6153,7 +6146,6 @@
 				E8F43E27186C3D02006796CB /* MaterialSystem.h in Headers */,
 				50C16DAE1A52D7B9003C307A /* IPAddress.h in Headers */,
 				9A0114637D598239F4C36EA3 /* GamepadDevice.h in Headers */,
-				9A0114DFC94738EDBF7B7A79 /* GamepadManager.h in Headers */,
 				D7CC263D19C43C7C00A3B754 /* LocalNotificationNotImplemented.h in Headers */,
 				9A0113CA721C6632B457850E /* NSStringUtils.h in Headers */,
 				9A011AFAEF51F2EB520F50C1 /* LocalNotificationDelayed.h in Headers */,
@@ -7541,7 +7533,6 @@
 				024DF6E917FDE4C400138748 /* FMODSoundEvent.cpp in Sources */,
 				024DF6F517FDE4C400138748 /* FMODSoundSystem.cpp in Sources */,
 				84CB6719191FC8850086483D /* Image.cpp in Sources */,
-				9A0119EF8F7D1F04F61B31DF /* GamepadManager.cpp in Sources */,
 				9A01188C3CE745EA32A7DD33 /* GamepadDevice.cpp in Sources */,
 				9A0113B8BF882FE443A0B1A5 /* NSStringUtils.mm in Sources */,
 				E89EDE631A2E16FA0036E993 /* KeyedArchive_wrap.cxx in Sources */,
@@ -7592,7 +7583,6 @@
 				E898A1B816BD265400732C04 /* CoreMacOS.cpp in Sources */,
 				E898A1B916BD265400732C04 /* CoreMacOS_CarbonWindow.cpp in Sources */,
 				E898A1BA16BD265400732C04 /* CoreMacOS_OpenGL.cpp in Sources */,
-				176395A91863373800EADDA2 /* GamepadManager.cpp in Sources */,
 				E898A1BB16BD265400732C04 /* MongodbClient.cpp in Sources */,
 				E898A1BC16BD265400732C04 /* MongodbObject.cpp in Sources */,
 				644C86DD19476A7100964F91 /* VegetationFixedGeometry.cpp in Sources */,
