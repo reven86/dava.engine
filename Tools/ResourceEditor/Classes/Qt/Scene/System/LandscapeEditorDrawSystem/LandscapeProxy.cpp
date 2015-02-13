@@ -32,11 +32,11 @@
 #include "CustomLandscape.h"
 
 LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
-:	displayingTexture(0)
-,	mode(MODE_ORIGINAL_LANDSCAPE)
+:   tilemaskImageCopy(NULL)
 ,	tilemaskWasChanged(0)
-,	tilemaskImageCopy(NULL)
 ,	fullTiledTexture(NULL)
+,   displayingTexture(0)
+,	mode(MODE_ORIGINAL_LANDSCAPE)
 ,	fullTiledTextureState(InvalidUniqueHandle)
 ,	cursorTexture(NULL)
 {
@@ -65,6 +65,8 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
     customLandscape->Create();
 	customLandscape->SetTexture(Landscape::TEXTURE_TILE_FULL, baseLandscape->GetTexture(Landscape::TEXTURE_TILE_FULL));
 	customLandscape->SetAABBox(baseLandscape->GetBoundingBox());
+    
+    displayingTexture = Texture::CreateFBO(2048, 2048, FORMAT_RGBA8888, Texture::DEPTH_NONE);
 }
 
 LandscapeProxy::~LandscapeProxy()
@@ -109,12 +111,6 @@ void LandscapeProxy::SetRenderer(LandscapeRenderer *renderer)
 LandscapeRenderer* LandscapeProxy::GetRenderer()
 {
 	return customLandscape->GetRenderer();
-}
-
-void LandscapeProxy::SetDisplayingTexture(DAVA::Texture *texture)
-{
-	SafeRelease(displayingTexture);
-	displayingTexture = SafeRetain(texture);
 }
 
 const AABBox3 & LandscapeProxy::GetLandscapeBoundingBox()
@@ -202,12 +198,7 @@ void LandscapeProxy::SetRulerToolTextureEnabled(bool enabled)
 
 void LandscapeProxy::UpdateDisplayedTexture()
 {
-	int32 fullTiledWidth = fullTiledTexture->GetWidth();
-	int32 fullTiledHeight = fullTiledTexture->GetHeight();
-
-    Texture * dstTex = Texture::CreateFBO((uint32)fullTiledWidth, (uint32)fullTiledHeight, FORMAT_RGBA8888, Texture::DEPTH_NONE);
-
-    RenderHelper::Instance()->Set2DRenderTarget(dstTex);
+    RenderHelper::Instance()->Set2DRenderTarget(displayingTexture);
     RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
     RenderManager::Instance()->SetColor(Color::White);
     RenderHelper::Instance()->DrawTexture(fullTiledTexture, RenderState::RENDERSTATE_2D_BLEND);
@@ -239,9 +230,7 @@ void LandscapeProxy::UpdateDisplayedTexture()
 	}
 
     RenderManager::Instance()->SetRenderTarget(0);
-
-	SafeRelease(displayingTexture);
-    displayingTexture = dstTex;
+    RenderSystem2D::Instance()->Setup2DMatrices();
 
 	customLandscape->SetTexture(Landscape::TEXTURE_TILE_FULL, displayingTexture);
 	customLandscape->UpdateTextureState();

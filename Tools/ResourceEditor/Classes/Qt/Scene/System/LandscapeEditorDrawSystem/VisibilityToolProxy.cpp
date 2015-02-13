@@ -38,6 +38,9 @@ VisibilityToolProxy::VisibilityToolProxy(int32 size)
 ,	isVisibilityPointSet(false)
 {
     visibilityToolTexture = Texture::CreateFBO((uint32)size, (uint32)size, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+    RenderHelper::Instance()->Set2DRenderTarget(visibilityToolTexture);
+    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+    RenderManager::Instance()->SetRenderTarget(0);
 }
 
 VisibilityToolProxy::~VisibilityToolProxy()

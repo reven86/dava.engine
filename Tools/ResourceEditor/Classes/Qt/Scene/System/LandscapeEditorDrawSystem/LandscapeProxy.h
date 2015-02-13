@@ -64,7 +64,6 @@ public:
 	LandscapeProxy(Landscape* landscape, Entity* node);
 
 	void SetMode(LandscapeProxy::eLandscapeMode mode);
-	void SetDisplayingTexture(Texture* texture);
 	
 	void SetRenderer(LandscapeRenderer* renderer);
 	LandscapeRenderer* GetRenderer();

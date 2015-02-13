@@ -152,7 +152,6 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 	const float32 tanCoef = angleHeightDelta / angleCellDistance;
 	
     const float32 targetWidth = (float32)notPassableTexture->GetWidth();
-    const float32 targetHeight = (float32)notPassableTexture->GetHeight();
     const float32 dx = targetWidth / (float32)(heightmap->Size() - 1);
 
 	const Rect drawRect(forRect.x * dx, (heightmap->Size() - (forRect.y + forRect.dy)) * dx, (forRect.dx - 1)* dx, (forRect.dy - 1) * dx);
