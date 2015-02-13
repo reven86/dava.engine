@@ -202,7 +202,7 @@ private:
 	Message	msg;
 	eThreadState state;
     
-    bool isCancelling;
+    volatile bool isCancelling;
 
     /**
     \brief Native thread handle - variable which used to thread manipulations
