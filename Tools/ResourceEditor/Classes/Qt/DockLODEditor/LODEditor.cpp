@@ -272,21 +272,21 @@ void LODEditor::LODDistanceChangedBySpinbox(double value)
 
 void LODEditor::UpdateSpinboxesBorders()
 {
-    switch (GetCurrentEditorLODSystem()->GetCurrentLodsLayersCount())
+    distanceWidgets[1].distance->setMinimum(LodComponent::MIN_LOD_DISTANCE);
+    DAVA::uint32 count = GetCurrentEditorLODSystem()->GetCurrentLodsLayersCount();
+    for (DAVA::uint32  i = 1; i < count; ++i) //we don't work with zero level and zero spinbox
     {
-    case 4:
-        distanceWidgets[2].distance->setMaximum(GetCurrentEditorLODSystem()->GetLayerDistance(3));
-        distanceWidgets[3].distance->setMinimum(GetCurrentEditorLODSystem()->GetLayerDistance(2));
-    case 3:
-        distanceWidgets[2].distance->setMinimum(GetCurrentEditorLODSystem()->GetLayerDistance(1));
-    case 2:
-        distanceWidgets[1].distance->setMaximum(GetCurrentEditorLODSystem()->GetLayerDistance(2));
-    }
-    for (DAVA::uint32 i = GetCurrentEditorLODSystem()->GetCurrentLodsLayersCount(), k = 0; k < i; ++k)
-    {
-        SetSpinboxValue(distanceWidgets[k].distance, GetCurrentEditorLODSystem()->GetLayerDistance(k));
-    }
+        int val = GetCurrentEditorLODSystem()->GetLayerDistance(i - 1);
+        distanceWidgets[i].distance->setMinimum(GetCurrentEditorLODSystem()->GetLayerDistance(i - 1));
 
+        if (i < count - 1)
+        {
+            int val = GetCurrentEditorLODSystem()->GetLayerDistance(i + 1);
+            distanceWidgets[i].distance->setMaximum(GetCurrentEditorLODSystem()->GetLayerDistance(i + 1));
+        }
+        SetSpinboxValue(distanceWidgets[i].distance, GetCurrentEditorLODSystem()->GetLayerDistance(i));
+    }
+    distanceWidgets[count - 1].distance->setMaximum(LodComponent::MAX_LOD_DISTANCE);
 }
 
 void LODEditor::SetSpinboxValue(QDoubleSpinBox *spinbox, double value)
