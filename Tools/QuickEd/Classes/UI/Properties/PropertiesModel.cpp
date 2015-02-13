@@ -17,8 +17,8 @@
 
 using namespace DAVA;
 
-PropertiesModel::PropertiesModel(ControlNode *_controlNode, PropertiesContext *context, QObject *parent)
-    : QAbstractItemModel(parent)
+PropertiesModel::PropertiesModel(ControlNode *_controlNode, PropertiesContext *context)
+    : QAbstractItemModel(context)
     , controlNode(nullptr)
     , propertiesContext(context)
 {
@@ -28,6 +28,25 @@ PropertiesModel::PropertiesModel(ControlNode *_controlNode, PropertiesContext *c
 PropertiesModel::~PropertiesModel()
 {
     SafeRelease(controlNode);
+}
+
+void PropertiesModel::emityPropertyChanged(BaseProperty *property)
+{
+    QModelIndex nameIndex = indexByProperty(property, 0);
+    QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
+    emit dataChanged(nameIndex, valueIndex);
+}
+
+QModelIndex PropertiesModel::indexByProperty(BaseProperty *property, int column)
+{
+    BaseProperty *parent = property->GetParent();
+    if (parent == NULL)
+        return QModelIndex();
+    
+    if (parent)
+        return createIndex(parent->GetIndex(property), column, property);
+    else
+        return createIndex(0, column, parent);
 }
 
 QModelIndex PropertiesModel::index(int row, int column, const QModelIndex &parent) const
@@ -163,8 +182,8 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
             {
                 VariantType newVal(value != Qt::Unchecked);
                 propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
-                QModelIndex siblingIndex = index.sibling(index.row(), index.column()-1);
-                emit dataChanged(siblingIndex, index);
+//                QModelIndex siblingIndex = index.sibling(index.row(), index.column()-1);
+//                emit dataChanged(siblingIndex, index);
                 return true;
             }
         }
@@ -185,8 +204,8 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
 
             propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
 
-            QModelIndex siblingIndex = index.sibling(index.row(), index.column()-1);
-            emit dataChanged(siblingIndex, index);
+//            QModelIndex siblingIndex = index.sibling(index.row(), index.column()-1);
+//            emit dataChanged(siblingIndex, index);
             return true;
         }
         break;
@@ -194,7 +213,7 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
     case DAVA::ResetRole:
         {
             propertiesContext->GetDocument()->GetCommandExecutor()->ResetProperty(controlNode, property);
-            emit dataChanged(index.sibling(index.row(), index.column()-1), index);
+//            emit dataChanged(index.sibling(index.row(), index.column()-1), index);
             return true;
         }
         break;

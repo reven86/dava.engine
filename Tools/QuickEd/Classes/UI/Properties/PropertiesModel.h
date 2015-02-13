@@ -21,8 +21,12 @@ class PropertiesModel : public QAbstractItemModel
     Q_OBJECT
     
 public:
-    PropertiesModel(ControlNode *controlNode, PropertiesContext *context, QObject *parent = NULL);
+    PropertiesModel(ControlNode *controlNode, PropertiesContext *context);
     virtual ~PropertiesModel();
+    
+    ControlNode *GetControlNode() const {return controlNode; }
+    void emityPropertyChanged(BaseProperty *property);
+    QModelIndex indexByProperty(BaseProperty *property, int column = 0);
     
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     virtual QModelIndex parent(const QModelIndex &child) const override;
@@ -35,6 +39,7 @@ public:
     virtual QVariant headerData(int section, Qt::Orientation orientation,
                                 int role = Qt::DisplayRole) const override;
 
+    
 private:
     QVariant makeQVariant(const BaseProperty *property) const;
     void initVariantType(DAVA::VariantType &var, const QVariant &val) const;

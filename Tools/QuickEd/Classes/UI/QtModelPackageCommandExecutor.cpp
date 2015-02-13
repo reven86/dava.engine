@@ -59,7 +59,7 @@ void QtModelPackageCommandExecutor::AddImportedPackageIntoPackage(PackageControl
 void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &value)
 {
     document->UndoStack()->beginMacro("Change Property");
-    document->UndoStack()->push(new ChangePropertyValueCommand(property, value));
+    document->UndoStack()->push(new ChangePropertyValueCommand(document, property, value));
     const Vector<ControlNode*> &instances = node->GetInstances();
     for (ControlNode *node : instances)
     {
@@ -80,7 +80,7 @@ void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, BaseProper
 void QtModelPackageCommandExecutor::ResetProperty(ControlNode *node, BaseProperty *property)
 {
     document->UndoStack()->beginMacro("Reset Property");
-    document->UndoStack()->push(new ChangePropertyValueCommand(property));
+    document->UndoStack()->push(new ChangePropertyValueCommand(document, property));
     const Vector<ControlNode*> &instances = node->GetInstances();
     for (ControlNode *node : instances)
     {

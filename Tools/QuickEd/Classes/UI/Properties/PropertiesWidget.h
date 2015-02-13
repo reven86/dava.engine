@@ -12,6 +12,7 @@ namespace Ui {
 
 class PropertiesContext;
 class ControlNode;
+class PropertiesModel;
 
 class PropertiesWidget : public QDockWidget
 {
@@ -22,11 +23,8 @@ public:
     
     void SetContext(PropertiesContext *newContext);
 
-protected:
-    void SetControl(ControlNode *controlNode);
-    
 private slots:
-    void OnControlsSelectionChanged(const QList<ControlNode*> &activatedControls, const QList<ControlNode*> &deactivatedControls);
+    void OnModelChanged(PropertiesModel *model);
 
 private:
     Ui::PropertiesWidget *ui;

@@ -145,14 +145,18 @@ void Document::OnSelectionRootControlChanged(const QList<ControlNode*> &activate
 
 void Document::OnSelectionControlChanged(const QList<ControlNode*> &activatedControls, const QList<ControlNode*> &deactivatedControls)
 {
-    selectedControls.clear();
-    
-    foreach(ControlNode *control, activatedControls)
+    for (ControlNode *control : deactivatedControls)
     {
-        selectedControls.push_back(control);
+        auto it = std::find(selectedControls.begin(), selectedControls.end(), control);
+        if (it != selectedControls.end())
+            selectedControls.erase(it);
     }
-
-    emit controlsSelectionChanged(activatedControls, deactivatedControls);
+    
+    for (ControlNode *control : activatedControls)
+        selectedControls.push_back(control);
+    
+    
+    propertiesContext->SetActiveNode(activatedControls.empty() ? nullptr : activatedControls.first());
 }
 
 void Document::OnControlSelectedInEditor(ControlNode *activatedControl)

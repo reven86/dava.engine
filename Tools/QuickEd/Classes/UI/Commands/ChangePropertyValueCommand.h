@@ -5,17 +5,20 @@
 #include "FileSystem/VariantType.h"
 
 class BaseProperty;
+class Document;
+
 class ChangePropertyValueCommand: public QUndoCommand
 {
 public:
-    explicit ChangePropertyValueCommand(BaseProperty *property, const DAVA::VariantType &newValue, QUndoCommand *parent = 0);
-    explicit ChangePropertyValueCommand(BaseProperty *property, QUndoCommand *parent = 0);
+    explicit ChangePropertyValueCommand(Document *document, BaseProperty *property, const DAVA::VariantType &newValue, QUndoCommand *parent = 0);
+    explicit ChangePropertyValueCommand(Document *document, BaseProperty *property, QUndoCommand *parent = 0);
     virtual ~ChangePropertyValueCommand();
 
     virtual void undo();
     virtual void redo();
     
 private:
+    Document *document;
     BaseProperty *property;
     DAVA::VariantType oldValue;
     DAVA::VariantType newValue;

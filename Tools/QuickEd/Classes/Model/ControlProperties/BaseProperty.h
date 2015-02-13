@@ -61,6 +61,8 @@ public:
 
     DAVA::Vector<DAVA::String> GetPath() const;
     BaseProperty *GetPropertyByPath(const DAVA::Vector<DAVA::String> &path);
+    BaseProperty *GetRootProperty();
+    const BaseProperty *GetRootProperty() const;
 
 private:
     BaseProperty *parent;
