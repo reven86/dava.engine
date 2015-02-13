@@ -238,12 +238,8 @@ void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bo
     for (auto layer : changedLayers)
     {
         double value = ui->distanceSlider->GetDistance(layer);
-        if (!continuous)
-        {
-            lodDistances[layer] = value;
-        }
+        lodDistances[layer] = value;
     }
-    if (!continuous)
     {
         GetCurrentEditorLODSystem()->UpdateDistances(lodDistances);
         UpdateSpinboxesBorders();
