@@ -200,7 +200,7 @@ void LODEditor::LODDataChanged(SceneEditor2 *scene /* = nullptr */)
         currentLODSystem = GetCurrentEditorLODSystem();
     }
 
-    DAVA::uint32 lodLayersCount = currentLODSystem->GetSceneLodsLayersCount();
+    DAVA::uint32 lodLayersCount = currentLODSystem->GetCurrentLodsLayersCount();
     DVASSERT(lodLayersCount <= DAVA::LodComponent::MAX_LOD_LAYERS);
 
     ui->distanceSlider->SetLayersCount(lodLayersCount);
@@ -238,16 +238,16 @@ void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bo
     for (auto layer : changedLayers)
     {
         double value = ui->distanceSlider->GetDistance(layer);
-        SetSpinboxValue(distanceWidgets[layer].distance, value);
-
         if (!continuous)
         {
             lodDistances[layer] = value;
         }
     }
-
-    GetCurrentEditorLODSystem()->UpdateDistances(lodDistances);
-
+    if (!continuous)
+    {
+        GetCurrentEditorLODSystem()->UpdateDistances(lodDistances);
+        UpdateSpinboxesBorders();
+    }
     ui->distanceSlider->LockDistances(false);
 }
 
@@ -262,11 +262,31 @@ void LODEditor::LODDistanceChangedBySpinbox(double value)
     int lodLevel = spinBox->property(ResourceEditor::TAG.c_str()).toInt();
 
     GetCurrentEditorLODSystem()->SetLayerDistance(lodLevel, value);
+
+    UpdateSpinboxesBorders();
+
+    const bool wasBlocked = ui->distanceSlider->blockSignals(true);
+    ui->distanceSlider->SetDistance(lodLevel, value);
+    ui->distanceSlider->blockSignals(wasBlocked);
+}
+
+void LODEditor::UpdateSpinboxesBorders()
+{
+    switch (GetCurrentEditorLODSystem()->GetCurrentLodsLayersCount())
     {
-        const bool wasBlocked = ui->distanceSlider->blockSignals(true);
-        ui->distanceSlider->SetDistance(lodLevel, value);
-        ui->distanceSlider->blockSignals(wasBlocked);
+    case 4:
+        distanceWidgets[2].distance->setMaximum(GetCurrentEditorLODSystem()->GetLayerDistance(3));
+        distanceWidgets[3].distance->setMinimum(GetCurrentEditorLODSystem()->GetLayerDistance(2));
+    case 3:
+        distanceWidgets[2].distance->setMinimum(GetCurrentEditorLODSystem()->GetLayerDistance(1));
+    case 2:
+        distanceWidgets[1].distance->setMaximum(GetCurrentEditorLODSystem()->GetLayerDistance(2));
     }
+    for (DAVA::uint32 i = GetCurrentEditorLODSystem()->GetCurrentLodsLayersCount(), k = 0; k < i; ++k)
+    {
+        SetSpinboxValue(distanceWidgets[k].distance, GetCurrentEditorLODSystem()->GetLayerDistance(k));
+    }
+
 }
 
 void LODEditor::SetSpinboxValue(QDoubleSpinBox *spinbox, double value)
@@ -331,7 +351,7 @@ void LODEditor::InvertFrameVisibility(QFrame *frame, QPushButton *frameButton)
 
 void LODEditor::UpdateWidgetVisibility(const EditorLODSystem *editorLODSystem)
 {
-    bool visible = nullptr != editorLODSystem && (editorLODSystem->GetSceneLodsLayersCount() != 0);
+    bool visible = nullptr != editorLODSystem && (editorLODSystem->GetCurrentLodsLayersCount() != 0);
     
     ui->viewLODButton->setVisible(visible);
     ui->frameViewLOD->setVisible(visible);
@@ -378,7 +398,7 @@ void LODEditor::CreatePlaneLODClicked()
 
     FilePath defaultTexturePath = GetCurrentEditorLODSystem()->GetDefaultTexturePathForPlaneEntity();
 
-    PlaneLODDialog dialog(GetCurrentEditorLODSystem()->GetSceneLodsLayersCount(), defaultTexturePath, this);
+    PlaneLODDialog dialog(GetCurrentEditorLODSystem()->GetCurrentLodsLayersCount(), defaultTexturePath, this);
     if(dialog.exec() == QDialog::Accepted)
     {
         QtMainWindow::Instance()->WaitStart("Creating Plane LOD", "Please wait...");

@@ -74,7 +74,7 @@ public:
     inline DAVA::float32 GetLayerDistance(DAVA::uint32 layerNum) const;
     void SetLayerDistance(DAVA::int32 layerNum, DAVA::float32 distance);
 
-    inline DAVA::uint32 GetSceneLodsLayersCount() const;
+    inline DAVA::uint32 GetCurrentLodsLayersCount() const;
 
     inline bool GetForceDistanceEnabled() const;
     void SetForceDistanceEnabled(bool enable);
@@ -124,7 +124,7 @@ inline DAVA::float32 EditorLODSystem::GetLayerDistance(DAVA::uint32 layerNum) co
     return lodDistances[layerNum];
 }
 
-inline DAVA::uint32 EditorLODSystem::GetSceneLodsLayersCount() const
+inline DAVA::uint32 EditorLODSystem::GetCurrentLodsLayersCount() const
 {
     return currentLodsLayersCount;
 }

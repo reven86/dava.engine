@@ -167,7 +167,7 @@ void DistanceSlider::SplitterMoved(int pos, int index)
 		int fullSize = 0;
 		int splitterWidth = splitter->geometry().width() - splitter->handleWidth() * (layersCount - 1);
 
-		for(int i = 0; i < sizes.size(); ++i)
+		for(int i = 0; i < splitter->count(); ++i)
 		{
 			int sz = sizes.at(i);
 			double value = fullSize * scaleSize / splitterWidth;

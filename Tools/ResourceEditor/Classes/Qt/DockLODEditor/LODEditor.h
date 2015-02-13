@@ -86,7 +86,8 @@ protected slots:
 protected:
     void SetupInternalUI();
     void InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int index);
-    
+    void UpdateSpinboxesBorders();
+
     void SetupSceneSignals();
       
     void SetSpinboxValue(QDoubleSpinBox *spinbox, double value);
