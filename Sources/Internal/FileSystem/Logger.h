@@ -127,31 +127,24 @@ public:
     const char8 * GetLogLevelString(eLogLevel ll);
 
 private:
-    eLogLevel logLevel;
-    FilePath logFilename;
-    Vector<LoggerOutput *> customOutputs;
-
     void PlatformLog(eLogLevel ll, const char8* text);
     void FileLog(eLogLevel ll, const char8* text);
     void CustomLog(eLogLevel ll, const char8* text);
     void ConsoleLog(eLogLevel ll, const char8* text);
+    void Output(eLogLevel ll, const char8* formatedMsg);
 
+    eLogLevel logLevel;
+    FilePath logFilename;
+    Vector<LoggerOutput *> customOutputs;
     bool consoleModeEnabled;
 
-private:
-    void Output(eLogLevel ll, const char8* formadedMsg);
 };
 
 class LoggerOutput
 {
 public:
-    LoggerOutput()
-    {
-    }
-
-    virtual ~LoggerOutput()
-    {
-    }
+    LoggerOutput() = default;
+    virtual ~LoggerOutput() = default;
 
     virtual void Output(Logger::eLogLevel ll, const char8* text) = 0;
 };
