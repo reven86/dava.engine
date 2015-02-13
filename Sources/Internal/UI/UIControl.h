@@ -1190,7 +1190,7 @@ public:
      */
     virtual bool SystemProcessInput(UIEvent *currentInput);// Internal method used by ControlSystem
 
-    Function<bool(UIEvent *currentInput)> customSystemProcessInput;
+    Function<bool(UIControl*,UIEvent*)> customSystemProcessInput;
 
     /**
      \brief Calls when input processd by control is cancelled.
