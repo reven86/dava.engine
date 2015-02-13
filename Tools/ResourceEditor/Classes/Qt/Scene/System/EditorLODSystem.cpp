@@ -51,7 +51,8 @@ void EditorLODSystem::AddSelectedLODsRecursive(DAVA::Entity *entity)
     {
         return;
     }
-    for (auto i = entity->GetChildrenCount() - 1; i >= 0;  --i)
+    DAVA::int32 count = entity->GetChildrenCount();
+    for (DAVA::int32 i = 0; i < count; ++i)
     {
         AddSelectedLODsRecursive(entity->GetChild(i));
     }
@@ -65,7 +66,8 @@ void EditorLODSystem::RemoveSelectedLODsRecursive(DAVA::Entity *entity)
     {
         selectedLODs.erase(std::remove(selectedLODs.begin(), selectedLODs.end(), tmpComponent), selectedLODs.end());
     }
-    for (auto i = entity->GetChildrenCount() - 1; i >= 0; --i)
+    DAVA::int32 count = entity->GetChildrenCount();
+    for (DAVA::int32 i = 0; i < count; ++i)
     {
         RemoveSelectedLODsRecursive(entity->GetChild(i));
     }
@@ -85,18 +87,19 @@ void EditorLODSystem::UpdateDistances(const DAVA::Map<DAVA::uint32, DAVA::float3
 
 void EditorLODSystem::SceneSelectionChanged(const EntityGroup *selected, const EntityGroup *deselected)
 {
-    const size_t deselectedCount = deselected->Size();
-    for (auto &entityGroupItem : selected->GetEntityGroupItems())
+    if (!allSceneModeEnabled)
     {
-        if (!allSceneModeEnabled)
+        size_t deselectedSize = deselected->Size();
+        for (size_t i = 0; i < deselectedSize; ++i)
         {
-            ResetForceState(entityGroupItem.entity);
+            ResetForceState(deselected->GetEntity(i));
         }
     }
     selectedLODs.clear();
-    for (auto &entityGroupItem : selected->GetEntityGroupItems())
+    size_t selectedSize = selected->Size();
+    for (size_t i = 0; i < selectedSize; ++i)
     {
-        AddSelectedLODsRecursive(entityGroupItem.entity);
+        AddSelectedLODsRecursive(selected->GetEntity(i));
     }
     if (allSceneModeEnabled)
     {
@@ -114,7 +117,8 @@ void EditorLODSystem::ResetForceState(DAVA::Entity *entity)
     {
         ResetForceState(tmpComponent);
     }
-    for (auto i = entity->GetChildrenCount() - 1; i >= 0; --i)
+    DAVA::int32 count = entity->GetChildrenCount();
+    for (DAVA::int32 i = 0; i < count; ++i)
     {
         ResetForceState(entity->GetChild(i));
     }
@@ -229,7 +233,9 @@ bool EditorLODSystem::CheckSelectedContainsEntity(const DAVA::Entity *arg) const
         {
             const Entity *entity = lod->GetEntity();
             if (entity == arg)
+            {
                 return true;
+            }
         }
         return false;
     }
@@ -246,14 +252,16 @@ void EditorLODSystem::SolidChanged(const Entity *entity, bool value)
 
     if (value)
     {
-        for (auto i = entity->GetChildrenCount() - 1; i >= 0; --i)
+        DAVA::int32 count = entity->GetChildrenCount();
+        for (DAVA::int32 i = 0; i < count; ++i)
         {
             AddSelectedLODsRecursive(entity->GetChild(i));
         }
     }
     else
     {
-        for (auto i = entity->GetChildrenCount() - 1; i >= 0; --i)
+        DAVA::int32 count = entity->GetChildrenCount();
+        for (DAVA::int32 i = 0; i < count; ++i)
         {
             RemoveSelectedLODsRecursive(entity->GetChild(i));
         }
