@@ -51,9 +51,9 @@ void EditorLODSystem::AddSelectedLODsRecursive(DAVA::Entity *entity)
     {
         return;
     }
-    for (auto &child : entity->GetChildren())
+    for (auto i = entity->GetChildrenCount() - 1; i >= 0;  --i)
     {
-        AddSelectedLODsRecursive(child);
+        AddSelectedLODsRecursive(entity->GetChild(i));
     }
 }
 
@@ -65,9 +65,9 @@ void EditorLODSystem::RemoveSelectedLODsRecursive(DAVA::Entity *entity)
     {
         selectedLODs.erase(std::remove(selectedLODs.begin(), selectedLODs.end(), tmpComponent), selectedLODs.end());
     }
-    for (auto &child : entity->GetChildren())
+    for (auto i = entity->GetChildrenCount() - 1; i >= 0; --i)
     {
-        RemoveSelectedLODsRecursive(child);
+        RemoveSelectedLODsRecursive(entity->GetChild(i));
     }
 }
 
@@ -114,9 +114,9 @@ void EditorLODSystem::ResetForceState(DAVA::Entity *entity)
     {
         ResetForceState(tmpComponent);
     }
-    for (auto &child : entity->GetChildren())
+    for (auto i = entity->GetChildrenCount() - 1; i >= 0; --i)
     {
-        ResetForceState(child);
+        ResetForceState(entity->GetChild(i));
     }
 }
 
@@ -246,16 +246,16 @@ void EditorLODSystem::SolidChanged(const Entity *entity, bool value)
 
     if (value)
     {
-        for (auto &child : entity->GetChildren())
+        for (auto i = entity->GetChildrenCount() - 1; i >= 0; --i)
         {
-            AddSelectedLODsRecursive(child);
+            AddSelectedLODsRecursive(entity->GetChild(i));
         }
     }
     else
     {
-        for (auto &child : entity->GetChildren())
+        for (auto i = entity->GetChildrenCount() - 1; i >= 0; --i)
         {
-            RemoveSelectedLODsRecursive(child);
+            RemoveSelectedLODsRecursive(entity->GetChild(i));
         }
     }
     CollectLODDataFromScene();

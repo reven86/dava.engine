@@ -118,7 +118,7 @@ void Entity::DetachComponent(const Vector<Component *>::iterator & it)
   
 Component * Entity::GetComponent(uint32 componentType, uint32 index) const
 {
-    Component * ret = nullptr;
+    Component * ret = 0;
     uint32 maxCount = family->GetComponentsCount(componentType);
     if(index < maxCount)
     {
@@ -672,11 +672,6 @@ bool Entity::FindNodesByNamePart(const String &namePart, List<Entity *> &outNode
 	}
 		
 	return isFind;
-}
-
-void Entity::reserveChildrenCount(DAVA::Vector<Entity*>::size_type n)
-{
-    children.reserve(n);
 }
 	
 AABBox3 Entity::GetWTMaximumBoundingBoxSlow()

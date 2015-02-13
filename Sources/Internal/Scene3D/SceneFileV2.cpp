@@ -481,7 +481,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     rootNode->SetName(rootNodePathName.GetFilename().c_str());
 	rootNode->SetScene(0);
     
-    rootNode->reserveChildrenCount(header.nodeCount);
+    rootNode->children.reserve(header.nodeCount);
     for (int ci = 0; ci < header.nodeCount; ++ci)
     {
         LoadHierarchy(0, &globalMaterial, rootNode, file, 1);
@@ -819,7 +819,7 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
         }
 
         int32 childrenCount = archive->GetInt32("#childrenCount", 0);
-        node->reserveChildrenCount(childrenCount);
+        node->children.reserve(childrenCount);
         for(int ci = 0; ci < childrenCount; ++ci)
         {
             LoadHierarchy(scene, globalMaterial, node, file, level + 1);
