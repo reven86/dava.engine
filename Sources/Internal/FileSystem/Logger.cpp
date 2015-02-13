@@ -54,8 +54,6 @@ const size_t defaultBufferSize{4096};
 
 String ConvertCFormatListToString(const char8* format, va_list pargs)
 {
-    // Allocate a buffer on the stack that's big enough for us almost
-    // all the time.  Be prepared to allocate dynamically if it doesn't fit.
     String dynamicbuf;
     dynamicbuf.resize(defaultBufferSize * 2);
 
@@ -76,10 +74,9 @@ String ConvertCFormatListToString(const char8* format, va_list pargs)
         }
         // do you really want to print 1Mb with one call may be your format
         // string incorrect?
-        DVASSERT(dynamicbuf.size() < 1024 * 1024);
-        // vsnprintf reported that it wanted to write more characters
-        // than we allocated.  So try again using a dynamic buffer.  This
-        // doesn't happen very often if we chose our initial size well.
+        DVASSERT_MSG(dynamicbuf.size() < 1024 * 1024,
+                DAVA::Format("format: {%s}", format).c_str());
+
         dynamicbuf.resize(dynamicbuf.size() * 2);
     }
     DVASSERT(false);
