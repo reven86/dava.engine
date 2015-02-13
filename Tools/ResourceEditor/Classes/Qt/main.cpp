@@ -68,6 +68,9 @@
 #include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
 
+
+#include <QOpenGLContext>
+
 void UnpackHelpDoc();
 void FixOSXFonts();
 
@@ -114,6 +117,10 @@ int main(int argc, char *argv[])
         new SceneValidator();
 
 #if defined (__DAVAENGINE_MACOS__)
+
+        DAVA::QtLayer::Instance()->CreateConsoleOpenGLContext();
+
+        
         DAVA::QtLayer::Instance()->InitializeGlWindow();
 
         DAVA::QtLayer::Instance()->Resize(0, 0);

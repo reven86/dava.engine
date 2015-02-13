@@ -26,37 +26,22 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_CONSOLE_OPENGL_VIEW__
+#define __DAVAENGINE_CONSOLE_OPENGL_VIEW__
 
-#include "Platform/Qt5/QtLayer.h"
-
+#include "DAVAEngine.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 
-#import "Platform/Qt5/MacOS/ConsoleOpenGLView.h"
-#import "AppKit/NSView.h"
+#import <Cocoa/Cocoa.h>
+#import <OpenGL/OpenGL.h>
 
-
-namespace DAVA 
+@interface ConsoleOpenGLView : NSOpenGLView
 {
-
-void * QtLayer::CreateAutoreleasePool()
-{
-    NSAutoreleasePool * autoreleasePool = [[NSAutoreleasePool alloc] init];
-    return autoreleasePool;
 }
 
-void QtLayer::ReleaseAutoreleasePool(void *pool)
-{
-    NSAutoreleasePool * autoreleasePool = (NSAutoreleasePool *)pool;
-    [autoreleasePool release];
-}
+@end
 
-void QtLayer::CreateConsoleOpenGLContext()
-{
-    ConsoleOpenGLView *view = [[ConsoleOpenGLView alloc]initWithFrame: NSMakeRect(0, 0, 0, 0)];
-}
-    
-};
+#endif //#if defined(__DAVAENGINE_MACOS__)
 
-
-#endif // #if defined(__DAVAENGINE_MACOS__)
+#endif //__DAVAENGINE_CONSOLE_OPENGL_VIEW__
