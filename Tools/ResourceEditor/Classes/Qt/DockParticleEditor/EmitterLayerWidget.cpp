@@ -909,14 +909,12 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 
     if (sprite)
     {
-        Vector2 virtualTargetSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(Vector2(SPRITE_SIZE, SPRITE_SIZE));
         Texture * renderTexture = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888, Texture::DEPTH_NONE);
-        RenderManager::Instance()->SetRenderTarget(renderTexture);
-        RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, SPRITE_SIZE, SPRITE_SIZE));
+        RenderHelper::Instance()->Set2DRenderTarget(renderTexture);
         RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
         Sprite::DrawState drawState;
-        drawState.SetScaleSize(virtualTargetSize.x, virtualTargetSize.x, sprite->GetWidth(), sprite->GetHeight());
+        drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, sprite->GetWidth(), sprite->GetHeight());
         RenderSystem2D::Instance()->Draw(sprite, &drawState);
 
         RenderManager::Instance()->SetRenderTarget(0);
