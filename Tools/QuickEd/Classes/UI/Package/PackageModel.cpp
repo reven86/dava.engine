@@ -35,6 +35,12 @@ PackageModel::~PackageModel()
     SafeRelease(root);
 }
 
+void PackageModel::emitNodeChanged(PackageBaseNode *node)
+{
+    QModelIndex index = indexByNode(node);
+    emit dataChanged(index, index);
+}
+
 QModelIndex PackageModel::indexByNode(PackageBaseNode *node) const
 {
     PackageBaseNode *parent = node->GetParent();

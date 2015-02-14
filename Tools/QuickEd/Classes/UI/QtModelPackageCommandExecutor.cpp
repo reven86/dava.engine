@@ -59,15 +59,15 @@ void QtModelPackageCommandExecutor::AddImportedPackageIntoPackage(PackageControl
 void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &value)
 {
     document->UndoStack()->beginMacro("Change Property");
-    document->UndoStack()->push(new ChangePropertyValueCommand(document, property, value));
+    document->UndoStack()->push(new ChangePropertyValueCommand(document, node, property, value));
     const Vector<ControlNode*> &instances = node->GetInstances();
-    for (ControlNode *node : instances)
+    for (ControlNode *instance : instances)
     {
         Vector<String> path = property->GetPath();
-        BaseProperty *nodeProperty = node->GetPropertyByPath(path);
+        BaseProperty *nodeProperty = instance->GetPropertyByPath(path);
         if (nodeProperty)
         {
-            document->UndoStack()->push(new ChangeDefaultValueCommand(nodeProperty, value));
+            document->UndoStack()->push(new ChangeDefaultValueCommand(document, instance, nodeProperty, value));
         }
         else
         {
@@ -80,15 +80,15 @@ void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, BaseProper
 void QtModelPackageCommandExecutor::ResetProperty(ControlNode *node, BaseProperty *property)
 {
     document->UndoStack()->beginMacro("Reset Property");
-    document->UndoStack()->push(new ChangePropertyValueCommand(document, property));
+    document->UndoStack()->push(new ChangePropertyValueCommand(document, node, property));
     const Vector<ControlNode*> &instances = node->GetInstances();
-    for (ControlNode *node : instances)
+    for (ControlNode *instance : instances)
     {
         Vector<String> path = property->GetPath();
-        BaseProperty *nodeProperty = node->GetPropertyByPath(path);
+        BaseProperty *nodeProperty = instance->GetPropertyByPath(path);
         if (nodeProperty)
         {
-            document->UndoStack()->push(new ChangeDefaultValueCommand(nodeProperty, property->GetDefaultValue()));
+            document->UndoStack()->push(new ChangeDefaultValueCommand(document, instance, nodeProperty, property->GetDefaultValue()));
         }
         else
         {

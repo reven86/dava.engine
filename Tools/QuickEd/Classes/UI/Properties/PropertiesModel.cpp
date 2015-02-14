@@ -30,7 +30,7 @@ PropertiesModel::~PropertiesModel()
     SafeRelease(controlNode);
 }
 
-void PropertiesModel::emityPropertyChanged(BaseProperty *property)
+void PropertiesModel::emitPropertyChanged(BaseProperty *property)
 {
     QModelIndex nameIndex = indexByProperty(property, 0);
     QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
@@ -182,8 +182,6 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
             {
                 VariantType newVal(value != Qt::Unchecked);
                 propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
-//                QModelIndex siblingIndex = index.sibling(index.row(), index.column()-1);
-//                emit dataChanged(siblingIndex, index);
                 return true;
             }
         }
@@ -203,9 +201,6 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
             }
 
             propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
-
-//            QModelIndex siblingIndex = index.sibling(index.row(), index.column()-1);
-//            emit dataChanged(siblingIndex, index);
             return true;
         }
         break;
@@ -213,13 +208,13 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
     case DAVA::ResetRole:
         {
             propertiesContext->GetDocument()->GetCommandExecutor()->ResetProperty(controlNode, property);
-//            emit dataChanged(index.sibling(index.row(), index.column()-1), index);
             return true;
         }
         break;
     }
     return false;
 }
+
 Qt::ItemFlags PropertiesModel::flags(const QModelIndex &index) const
 {
     if (index.column() != 1)
