@@ -1,4 +1,4 @@
-#include "UIPackageModel.h"
+#include "PackageModel.h"
 
 #include <qicon.h>
 #include <QAction>
@@ -15,13 +15,13 @@
 #include "Model/PackageHierarchy/ImportedPackagesNode.h"
 #include "Model/PackageHierarchy/ControlPrototype.h"
 #include "Model/YamlPackageSerializer.h"
-#include "PackageModelCommands.h"
+#include "UI/Commands/PackageModelCommands.h"
 
-#include "UIPackageMimeData.h"
+#include "PackageMimeData.h"
 
 using namespace DAVA;
 
-UIPackageModel::UIPackageModel(Document *document)
+PackageModel::PackageModel(Document *document)
     : QAbstractItemModel(document)
     , root(NULL)
     , document(document)
@@ -29,13 +29,19 @@ UIPackageModel::UIPackageModel(Document *document)
     root = SafeRetain(document->GetPackage());
 }
 
-UIPackageModel::~UIPackageModel()
+PackageModel::~PackageModel()
 {
     document = NULL;
     SafeRelease(root);
 }
 
-QModelIndex UIPackageModel::indexByNode(PackageBaseNode *node) const
+void PackageModel::emitNodeChanged(PackageBaseNode *node)
+{
+    QModelIndex index = indexByNode(node);
+    emit dataChanged(index, index);
+}
+
+QModelIndex PackageModel::indexByNode(PackageBaseNode *node) const
 {
     PackageBaseNode *parent = node->GetParent();
     if (parent == NULL)
@@ -47,7 +53,7 @@ QModelIndex UIPackageModel::indexByNode(PackageBaseNode *node) const
         return createIndex(0, 0, parent);
 }
 
-QModelIndex UIPackageModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex PackageModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
         return QModelIndex();
@@ -59,7 +65,7 @@ QModelIndex UIPackageModel::index(int row, int column, const QModelIndex &parent
     return createIndex(row, column, node->Get(row));
 }
 
-QModelIndex UIPackageModel::parent(const QModelIndex &child) const
+QModelIndex PackageModel::parent(const QModelIndex &child) const
 {
     if (!child.isValid())
         return QModelIndex();
@@ -75,7 +81,7 @@ QModelIndex UIPackageModel::parent(const QModelIndex &child) const
         return createIndex(0, 0, parent);
 }
 
-int UIPackageModel::rowCount(const QModelIndex &parent) const
+int PackageModel::rowCount(const QModelIndex &parent) const
 {
     if (!parent.isValid())
         return root ? root->GetCount() : 0;
@@ -83,12 +89,12 @@ int UIPackageModel::rowCount(const QModelIndex &parent) const
     return static_cast<PackageBaseNode*>(parent.internalPointer())->GetCount();
 }
 
-int UIPackageModel::columnCount(const QModelIndex &/*parent*/) const
+int PackageModel::columnCount(const QModelIndex &/*parent*/) const
 {
     return 1;
 }
 
-QVariant UIPackageModel::data(const QModelIndex &index, int role) const
+QVariant PackageModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
@@ -155,7 +161,7 @@ QVariant UIPackageModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-bool UIPackageModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool PackageModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (!index.isValid())
         return false;
@@ -171,7 +177,7 @@ bool UIPackageModel::setData(const QModelIndex &index, const QVariant &value, in
     return false;
 }
 
-Qt::ItemFlags UIPackageModel::flags(const QModelIndex &index) const
+Qt::ItemFlags PackageModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
         return Qt::NoItemFlags;
@@ -187,12 +193,12 @@ Qt::ItemFlags UIPackageModel::flags(const QModelIndex &index) const
     return flags;
 }
 
-Qt::DropActions UIPackageModel::supportedDropActions() const
+Qt::DropActions PackageModel::supportedDropActions() const
 {
     return Qt::CopyAction | Qt::MoveAction;
 }
 
-QStringList UIPackageModel::mimeTypes() const
+QStringList PackageModel::mimeTypes() const
 {
     QStringList types;
     types << "application/packageModel";
@@ -200,9 +206,9 @@ QStringList UIPackageModel::mimeTypes() const
     return types;
 }
 
-QMimeData *UIPackageModel::mimeData(const QModelIndexList &indexes) const
+QMimeData *PackageModel::mimeData(const QModelIndexList &indexes) const
 {
-    UIPackageMimeData *mimeData = new UIPackageMimeData();
+    PackageMimeData *mimeData = new PackageMimeData();
     
     Vector<ControlNode*> nodes;
     foreach (QModelIndex index, indexes)
@@ -226,7 +232,7 @@ QMimeData *UIPackageModel::mimeData(const QModelIndexList &indexes) const
     return mimeData;
 }
 
-bool UIPackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
     if (action == Qt::IgnoreAction)
         return true;
@@ -241,7 +247,7 @@ bool UIPackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, 
 
     if (data->hasFormat("application/packageModel"))
     {
-        const UIPackageMimeData *controlMimeData = dynamic_cast<const UIPackageMimeData*>(data);
+        const PackageMimeData *controlMimeData = dynamic_cast<const PackageMimeData*>(data);
         if (!controlMimeData)
             return false;
         
@@ -300,7 +306,7 @@ bool UIPackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, 
     return false;
 }
 
-void UIPackageModel::InsertItem(const QString &name, int dstRow, const QModelIndex &dstParent)
+void PackageModel::InsertItem(const QString &name, int dstRow, const QModelIndex &dstParent)
 {
     String controlName = QStringToString(name);
     size_t slashIndex = controlName.find("/");
@@ -349,14 +355,14 @@ void UIPackageModel::InsertItem(const QString &name, int dstRow, const QModelInd
     }
 }
 
-void UIPackageModel::InsertItem(ControlNode *node, int dstRow, const QModelIndex &dstParent)
+void PackageModel::InsertItem(ControlNode *node, int dstRow, const QModelIndex &dstParent)
 {
     beginInsertRows(dstParent, dstRow, dstRow);
     InsertNode(node, dstParent, dstRow);
     endInsertRows();
 }
 
-void UIPackageModel::InsertImportedPackage(PackageControlsNode *node, int dstRow, const QModelIndex &dstParent)
+void PackageModel::InsertImportedPackage(PackageControlsNode *node, int dstRow, const QModelIndex &dstParent)
 {
     beginInsertRows(dstParent, dstRow, dstRow);
     
@@ -383,7 +389,7 @@ void UIPackageModel::InsertImportedPackage(PackageControlsNode *node, int dstRow
     endInsertRows();
 }
 
-void UIPackageModel::MoveItem(const QModelIndex &srcItem, int dstRow, const QModelIndex &dstParent)
+void PackageModel::MoveItem(const QModelIndex &srcItem, int dstRow, const QModelIndex &dstParent)
 {
     ControlNode *sourceNode(dynamic_cast<ControlNode*>(static_cast<PackageBaseNode*>(srcItem.internalPointer())));
     if (sourceNode)
@@ -403,7 +409,7 @@ void UIPackageModel::MoveItem(const QModelIndex &srcItem, int dstRow, const QMod
     }
 }
 
-void UIPackageModel::CopyItem(const QModelIndex &srcItem, int dstRow, const QModelIndex &dstParent)
+void PackageModel::CopyItem(const QModelIndex &srcItem, int dstRow, const QModelIndex &dstParent)
 {
     ControlNode *sourceNode = dynamic_cast<ControlNode*>(static_cast<PackageBaseNode*>(srcItem.internalPointer()));
     if (sourceNode)
@@ -422,14 +428,14 @@ void UIPackageModel::CopyItem(const QModelIndex &srcItem, int dstRow, const QMod
     }
 }
 
-void UIPackageModel::RemoveItem(const QModelIndex &srcItem)
+void PackageModel::RemoveItem(const QModelIndex &srcItem)
 {
     beginRemoveRows(srcItem.parent(), srcItem.row(), srcItem.row());
     RemoveNode(static_cast<PackageBaseNode*>(srcItem.internalPointer()));
     endRemoveRows();
 }
 
-void UIPackageModel::InsertNode(ControlNode *node, const QModelIndex &parent, int dstRow)
+void PackageModel::InsertNode(ControlNode *node, const QModelIndex &parent, int dstRow)
 {
     if (parent.isValid())
     {
@@ -477,7 +483,7 @@ void UIPackageModel::InsertNode(ControlNode *node, const QModelIndex &parent, in
     }
 }
 
-void UIPackageModel::RemoveNode(PackageBaseNode *node)
+void PackageModel::RemoveNode(PackageBaseNode *node)
 {
     ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
     if (controlNode)
@@ -491,7 +497,7 @@ void UIPackageModel::RemoveNode(PackageBaseNode *node)
     }
 }
 
-void UIPackageModel::RemoveControlNode(ControlNode *node)
+void PackageModel::RemoveControlNode(ControlNode *node)
 {
     PackageBaseNode *parentNode = node->GetParent();
     if ((parentNode->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) == 0)
@@ -520,7 +526,7 @@ void UIPackageModel::RemoveControlNode(ControlNode *node)
     }
 }
 
-void UIPackageModel::RemovePackageControlsNode(PackageControlsNode *node)
+void PackageModel::RemovePackageControlsNode(PackageControlsNode *node)
 {
     PackageBaseNode *parentNode = node->GetParent();
     ImportedPackagesNode *importedPackagesNode = dynamic_cast<ImportedPackagesNode*>(parentNode);

@@ -4,14 +4,14 @@
 #include <QUndoCommand>
 #include <QModelIndex>
 
-class UIPackageModel;
+class PackageModel;
 class ControlNode;
 class PackageControlsNode;
 
 class BasePackageModelCommand: public QUndoCommand
 {
 public:
-    BasePackageModelCommand(UIPackageModel *_packageModel, const QString &text, QUndoCommand * parent = 0)
+    BasePackageModelCommand(PackageModel *_packageModel, const QString &text, QUndoCommand * parent = 0)
     : QUndoCommand(text, parent)
     , packageModel(_packageModel)
     {}
@@ -20,18 +20,18 @@ public:
     {
     }
     
-    UIPackageModel *GetModel() {
+    PackageModel *GetModel() {
         return packageModel;
     }
     
 private:
-    UIPackageModel *packageModel;
+    PackageModel *packageModel;
 };
 
 class MoveItemModelCommand: public BasePackageModelCommand
 {
 public:
-    MoveItemModelCommand(UIPackageModel *_package, const QModelIndex &srcIndex, int dstRow, const QModelIndex &dstParent, QUndoCommand * parent = 0);
+    MoveItemModelCommand(PackageModel *_package, const QModelIndex &srcIndex, int dstRow, const QModelIndex &dstParent, QUndoCommand * parent = 0);
     ~MoveItemModelCommand();
     
     virtual void undo();
@@ -46,7 +46,7 @@ private:
 class CopyItemModelCommand: public BasePackageModelCommand
 {
 public:
-    CopyItemModelCommand(UIPackageModel *_package, const QModelIndex &srcIndex, int dstRow, const QModelIndex &dstParent, QUndoCommand * parent = 0);
+    CopyItemModelCommand(PackageModel *_package, const QModelIndex &srcIndex, int dstRow, const QModelIndex &dstParent, QUndoCommand * parent = 0);
     ~CopyItemModelCommand();
     
     virtual void undo();
@@ -61,8 +61,8 @@ private:
 class InsertControlNodeCommand: public BasePackageModelCommand
 {
 public:
-    InsertControlNodeCommand(UIPackageModel *_package, const QString &controlName, int dstRow, const QModelIndex &dstParent, QUndoCommand * parent = 0);
-    InsertControlNodeCommand(UIPackageModel *_package, ControlNode *control, int dstRow, const QModelIndex &dstParent, QUndoCommand * parent = 0);
+    InsertControlNodeCommand(PackageModel *_package, const QString &controlName, int dstRow, const QModelIndex &dstParent, QUndoCommand * parent = 0);
+    InsertControlNodeCommand(PackageModel *_package, ControlNode *control, int dstRow, const QModelIndex &dstParent, QUndoCommand * parent = 0);
     ~InsertControlNodeCommand();
     
     virtual void undo();
@@ -77,7 +77,7 @@ private:
 class InsertImportedPackageCommand: public BasePackageModelCommand
 {
 public:
-    InsertImportedPackageCommand(UIPackageModel *_package, PackageControlsNode *_importedPackage, int dstRow, const QModelIndex &dstParent, QUndoCommand * parent = 0);
+    InsertImportedPackageCommand(PackageModel *_package, PackageControlsNode *_importedPackage, int dstRow, const QModelIndex &dstParent, QUndoCommand * parent = 0);
     ~InsertImportedPackageCommand();
     
     virtual void undo();
@@ -92,7 +92,7 @@ private:
 class RemoveControlNodeCommand: public BasePackageModelCommand
 {
 public:
-    RemoveControlNodeCommand(UIPackageModel *_package, int row, const QModelIndex &parentIndex, QUndoCommand *parent = 0);
+    RemoveControlNodeCommand(PackageModel *_package, int row, const QModelIndex &parentIndex, QUndoCommand *parent = 0);
     ~RemoveControlNodeCommand();
     
     virtual void undo();

@@ -1,6 +1,6 @@
 #include "PackageModelCommands.h"
 
-#include "UIPackageModel.h"
+#include "UI/Package/PackageModel.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 
@@ -8,7 +8,7 @@
 // MoveItemModelCommand
 ////////////////////////////////////////////////////////////////////////////////
 
-MoveItemModelCommand::MoveItemModelCommand(UIPackageModel *_package, const QModelIndex &srcIndex, int _dstRow, const QModelIndex &_dstParent, QUndoCommand *parent)
+MoveItemModelCommand::MoveItemModelCommand(PackageModel *_package, const QModelIndex &srcIndex, int _dstRow, const QModelIndex &_dstParent, QUndoCommand *parent)
     : BasePackageModelCommand(_package, "Move item", parent)
     , srcRow(srcIndex.row())
     , dstRow(_dstRow)
@@ -53,7 +53,7 @@ void MoveItemModelCommand::redo()
 // CopyItemModelCommand
 ////////////////////////////////////////////////////////////////////////////////
 
-CopyItemModelCommand::CopyItemModelCommand(UIPackageModel *_package, const QModelIndex &srcIndex, int _dstRow, const QModelIndex &_dstParent, QUndoCommand *parent)
+CopyItemModelCommand::CopyItemModelCommand(PackageModel *_package, const QModelIndex &srcIndex, int _dstRow, const QModelIndex &_dstParent, QUndoCommand *parent)
     : BasePackageModelCommand(_package, "Move item", parent)
     , srcRow(srcIndex.row())
     , dstRow(_dstRow)
@@ -85,13 +85,13 @@ void CopyItemModelCommand::redo()
 // InsertControlNodeCommand
 ////////////////////////////////////////////////////////////////////////////////
 
-InsertControlNodeCommand::InsertControlNodeCommand(UIPackageModel *_package, const QString &_controlName, int dstRow, const QModelIndex &dstParent, QUndoCommand *parent)
+InsertControlNodeCommand::InsertControlNodeCommand(PackageModel *_package, const QString &_controlName, int dstRow, const QModelIndex &dstParent, QUndoCommand *parent)
     : InsertControlNodeCommand(_package, nullptr, dstRow, dstParent, parent)
 {
     controlName = _controlName;
 }
 
-InsertControlNodeCommand::InsertControlNodeCommand(UIPackageModel *_package, ControlNode *_control, int dstRow, const QModelIndex &dstParent, QUndoCommand * parent)
+InsertControlNodeCommand::InsertControlNodeCommand(PackageModel *_package, ControlNode *_control, int dstRow, const QModelIndex &dstParent, QUndoCommand * parent)
     : BasePackageModelCommand(_package, "Insert Control", parent)
     , dstRow(dstRow)
     , dstParent(dstParent)
@@ -125,7 +125,7 @@ void InsertControlNodeCommand::redo()
 // RemoveControlNodeCommand
 ////////////////////////////////////////////////////////////////////////////////
 
-InsertImportedPackageCommand::InsertImportedPackageCommand(UIPackageModel *_package, PackageControlsNode *_importedPackage, int _dstRow, const QModelIndex &_dstParent, QUndoCommand * parent)
+InsertImportedPackageCommand::InsertImportedPackageCommand(PackageModel *_package, PackageControlsNode *_importedPackage, int _dstRow, const QModelIndex &_dstParent, QUndoCommand * parent)
     : BasePackageModelCommand(_package, "Insert Package", parent)
     , dstRow(_dstRow)
     , dstParent(_dstParent)
@@ -158,7 +158,7 @@ void InsertImportedPackageCommand::redo()
 // RemoveControlNodeCommand
 ////////////////////////////////////////////////////////////////////////////////
 
-RemoveControlNodeCommand::RemoveControlNodeCommand(UIPackageModel *_package, int row, const QModelIndex &parentIndex, QUndoCommand *parent)
+RemoveControlNodeCommand::RemoveControlNodeCommand(PackageModel *_package, int row, const QModelIndex &parentIndex, QUndoCommand *parent)
     : BasePackageModelCommand(_package, "Remove Control", parent)
     , parentIndex(parentIndex)
     , row(row)

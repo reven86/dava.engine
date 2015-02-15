@@ -3,7 +3,7 @@
 #include <QToolButton>
 #include <QAction>
 
-#include "PropertiesTreeModel.h"
+#include "PropertiesModel.h"
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
 

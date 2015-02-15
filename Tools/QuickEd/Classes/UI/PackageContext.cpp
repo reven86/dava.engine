@@ -1,8 +1,8 @@
 #include "PackageContext.h"
 
 #include "Document.h"
-#include "Package/UIPackageModel.h"
-#include "Package/UIFilteredPackageModel.h"
+#include "Package/PackageModel.h"
+#include "Package/FilteredPackageModel.h"
 
 #include <QItemSelection>
 
@@ -11,8 +11,8 @@ using namespace DAVA;
 PackageContext::PackageContext(Document *_document)
     : QObject(_document), document(_document)
 {
-    model = new UIPackageModel(document);
-    proxyModel = new UIFilteredPackageModel(this);
+    model = new PackageModel(document);
+    proxyModel = new FilteredPackageModel(this);
     proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     proxyModel->setSourceModel(model);
     
@@ -37,7 +37,7 @@ Document *PackageContext::GetDocument() const
     return document;
 }
 
-UIPackageModel *PackageContext::GetModel() const
+PackageModel *PackageContext::GetModel() const
 {
     return model;
 }

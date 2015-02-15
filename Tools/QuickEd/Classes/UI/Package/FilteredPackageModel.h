@@ -1,15 +1,15 @@
 #ifndef __UI_EDITOR_FILTERED_PACKAGE_MODEL_H__
 #define __UI_EDITOR_FILTERED_PACKAGE_MODEL_H__
 
-#include "UIFilteredPackageModel.h"
+#include "FilteredPackageModel.h"
 #include <QSortFilterProxyModel>
 
-class UIFilteredPackageModel: public QSortFilterProxyModel
+class FilteredPackageModel: public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
-    UIFilteredPackageModel(QObject *parent = NULL);
-    ~UIFilteredPackageModel();
+    FilteredPackageModel(QObject *parent = NULL);
+    virtual ~FilteredPackageModel();
 
 protected:
     virtual bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;

@@ -1,5 +1,5 @@
-#ifndef __UI_EDITOR_UI_PACKAGE_MODEL_H__
-#define __UI_EDITOR_UI_PACKAGE_MODEL_H__
+#ifndef __QUICKED_PACKAGE_MODEL_H__
+#define __QUICKED_PACKAGE_MODEL_H__
 
 #include <QAbstractItemModel>
 #include <QMimeData>
@@ -13,14 +13,16 @@ class ControlNode;
 class PackageBaseNode;
 class PackageControlsNode;
 
-class UIPackageModel : public QAbstractItemModel
+class PackageModel : public QAbstractItemModel
 {
     Q_OBJECT
     
 public:
-    UIPackageModel(Document *document);
-    virtual ~UIPackageModel();
+    PackageModel(Document *document);
+    virtual ~PackageModel();
     
+    void emitNodeChanged(PackageBaseNode *node);
+
     virtual QModelIndex indexByNode(PackageBaseNode *node) const;
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     virtual QModelIndex parent(const QModelIndex &child) const override;
@@ -52,4 +54,4 @@ private:
     Document *document;
 };
 
-#endif // __UI_EDITOR_UI_PACKAGE_MODEL_H__
+#endif // __QUICKED_PACKAGE_MODEL_H__

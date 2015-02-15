@@ -1,13 +1,5 @@
-//
-//  PropertiesTreeModel.h
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 12.9.14.
-//
-//
-
-#ifndef __UI_EDITOR_PROPERTIES_TREE_MODEL_H__
-#define __UI_EDITOR_PROPERTIES_TREE_MODEL_H__
+#ifndef __QUICKED_PROPERTIES_MODEL_H__
+#define __QUICKED_PROPERTIES_MODEL_H__
 
 #include <QAbstractItemModel>
 #include "DAVAEngine.h"
@@ -24,13 +16,17 @@ class BaseProperty;
 class ControlNode;
 class PropertiesContext;
 
-class PropertiesTreeModel : public QAbstractItemModel
+class PropertiesModel : public QAbstractItemModel
 {
     Q_OBJECT
     
 public:
-    PropertiesTreeModel(ControlNode *controlNode, PropertiesContext *context, QObject *parent = NULL);
-    virtual ~PropertiesTreeModel();
+    PropertiesModel(ControlNode *controlNode, PropertiesContext *context);
+    virtual ~PropertiesModel();
+    
+    ControlNode *GetControlNode() const {return controlNode; }
+    void emitPropertyChanged(BaseProperty *property);
+    QModelIndex indexByProperty(BaseProperty *property, int column = 0);
     
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     virtual QModelIndex parent(const QModelIndex &child) const override;
@@ -43,6 +39,7 @@ public:
     virtual QVariant headerData(int section, Qt::Orientation orientation,
                                 int role = Qt::DisplayRole) const override;
 
+    
 private:
     QVariant makeQVariant(const BaseProperty *property) const;
     void initVariantType(DAVA::VariantType &var, const QVariant &val) const;
@@ -52,4 +49,4 @@ private:
     PropertiesContext *propertiesContext;
 };
 
-#endif // __UI_EDITOR_PROPERTIES_TREE_MODEL_H__
+#endif // __QUICKED_PROPERTIES_MODEL_H__
