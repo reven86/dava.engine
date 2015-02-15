@@ -81,6 +81,16 @@ elseif ( IOS     )
     set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
     set (CMAKE_OSX_ARCHITECTURES armv7 armv7s i386 arm64 )
 
+    if( NOT IOS_BUNDLE_IDENTIFIER )
+        set( IOS_BUNDLE_IDENTIFIER com.davaconsulting.${PROJECT_NAME} )
+        
+    endif()
+    
+    # Fix try_compile
+    set( MACOSX_BUNDLE_GUI_IDENTIFIER  ${IOS_BUNDLE_IDENTIFIER} )
+    set( CMAKE_MACOSX_BUNDLE YES )
+    set( CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer" )
+
 elseif ( MACOS )
     set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
