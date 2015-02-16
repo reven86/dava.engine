@@ -493,7 +493,6 @@
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,
 					__DAVAENGINE_DEBUG__,
-					MEMPROF_ENABLE,
 				);
 				HEADER_SEARCH_PATHS = (
 					./../../Sources/Internal,
@@ -516,7 +515,6 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,
-					MEMPROF_ENABLE,
 				);
 				HEADER_SEARCH_PATHS = (
 					./../../Sources/Internal,

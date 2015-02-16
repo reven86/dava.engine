@@ -51,16 +51,16 @@ namespace DAVA
 
 struct MemoryManager::MemoryBlock
 {
-    uint32 mark;            // Mark to distinguish profiled memory blocks
-    uint32 pool;            // Allocation pool block belongs to
+    size_t mark;            // Mark to distinguish profiled memory blocks
+    size_t pool;            // Allocation pool block belongs to
     MemoryBlock* prev;      // Pointer to previous block
     MemoryBlock* next;      // Pointer to next block
-    uint32 allocByApp;      // Size requested by application
-    uint32 allocTotal;      // Total allocated size
-    uint32 orderNo;         // Block order number
-    uint32 padding;
+    size_t allocByApp;      // Size requested by application
+    size_t allocTotal;      // Total allocated size
+    size_t orderNo;         // Block order number
+    size_t padding;
 };
-
+    
 char8 MemoryManager::tagNames[MAX_TAG_COUNT][MAX_NAME_LENGTH] = {
     "application"
 };

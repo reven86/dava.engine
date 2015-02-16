@@ -95,7 +95,6 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 
 #include "Core/Core.h"
 #include "Core/ApplicationCore.h"
-#include "Debug/MemoryManager.h"
 #include "UI/UIScreenManager.h"
 
 

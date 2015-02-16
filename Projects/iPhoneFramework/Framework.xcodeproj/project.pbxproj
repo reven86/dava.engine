@@ -159,7 +159,6 @@
 		02FD7F451924997C007762C0 /* List.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80816B9326D002BD35F /* List.h */; };
 		02FD7F461924997C007762C0 /* ListAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80916B9326D002BD35F /* ListAllocator.h */; };
 		02FD7F471924997C007762C0 /* FMODFileSoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 0282B8B118BC8C88006F1EE4 /* FMODFileSoundEvent.h */; };
-		02FD7F481924997C007762C0 /* MemoryManager.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80B16B9326D002BD35F /* MemoryManager.h */; };
 		02FD7F491924997C007762C0 /* Replay.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80D16B9326D002BD35F /* Replay.h */; };
 		02FD7F4A1924997C007762C0 /* Stats.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80F16B9326D002BD35F /* Stats.h */; };
 		02FD7F4C1924997C007762C0 /* ParticleRenderObject.h in Headers */ = {isa = PBXBuildFile; fileRef = EA10607618892B7C00CB99A3 /* ParticleRenderObject.h */; };
@@ -495,7 +494,6 @@
 		02FD80B31924997C007762C0 /* UIParticles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EAADA0031892A48E001E1AA2 /* UIParticles.cpp */; };
 		02FD80B41924997C007762C0 /* DAVAEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C80216B9326D002BD35F /* DAVAEngine.cpp */; };
 		02FD80B51924997C007762C0 /* Backtrace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C80516B9326D002BD35F /* Backtrace.cpp */; };
-		02FD80B61924997C007762C0 /* MemoryManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C80A16B9326D002BD35F /* MemoryManager.cpp */; };
 		02FD80B71924997C007762C0 /* Replay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C80C16B9326D002BD35F /* Replay.cpp */; };
 		02FD80B81924997C007762C0 /* Stats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C80E16B9326D002BD35F /* Stats.cpp */; };
 		02FD80BC1924997C007762C0 /* Component.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C81B16B9326D002BD35F /* Component.cpp */; };
@@ -961,18 +959,16 @@
 		50C7D604186082D600D8936D /* StaticOcclusionRenderPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50C7D600186082D600D8936D /* StaticOcclusionRenderPass.cpp */; };
 		50FB9D5A1A8A015300BDB8A2 /* MemProfService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D581A8A015300BDB8A2 /* MemProfService.cpp */; };
 		50FB9D5B1A8A015300BDB8A2 /* MemProfService.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D591A8A015300BDB8A2 /* MemProfService.h */; };
-		50FB9D6A1A8A03EE00BDB8A2 /* internal_alloc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D5E1A8A03EE00BDB8A2 /* internal_alloc.cpp */; };
-		50FB9D6B1A8A03EE00BDB8A2 /* internal_alloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D5F1A8A03EE00BDB8A2 /* internal_alloc.h */; };
-		50FB9D6C1A8A03EE00BDB8A2 /* internal_allocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D601A8A03EE00BDB8A2 /* internal_allocator.h */; };
-		50FB9D6D1A8A03EE00BDB8A2 /* malloc_hook.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D611A8A03EE00BDB8A2 /* malloc_hook.cpp */; };
-		50FB9D6E1A8A03EE00BDB8A2 /* malloc_hook.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D621A8A03EE00BDB8A2 /* malloc_hook.h */; };
-		50FB9D6F1A8A03EE00BDB8A2 /* mem_profiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D631A8A03EE00BDB8A2 /* mem_profiler.cpp */; };
-		50FB9D701A8A03EE00BDB8A2 /* mem_profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D641A8A03EE00BDB8A2 /* mem_profiler.h */; };
-		50FB9D711A8A03EE00BDB8A2 /* mem_profiler_types.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D651A8A03EE00BDB8A2 /* mem_profiler_types.h */; };
-		50FB9D721A8A03EE00BDB8A2 /* memprof.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D661A8A03EE00BDB8A2 /* memprof.h */; };
-		50FB9D731A8A03EE00BDB8A2 /* memprof_config.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D671A8A03EE00BDB8A2 /* memprof_config.h */; };
-		50FB9D741A8A03EE00BDB8A2 /* new_hook.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D681A8A03EE00BDB8A2 /* new_hook.cpp */; };
-		50FB9D751A8A03EE00BDB8A2 /* profiled_allocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D691A8A03EE00BDB8A2 /* profiled_allocator.h */; };
+		50FB9DBB1A925A2D00BDB8A2 /* AllocPools.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9DB11A925A2D00BDB8A2 /* AllocPools.h */; };
+		50FB9DBC1A925A2D00BDB8A2 /* AllocThunk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9DB21A925A2D00BDB8A2 /* AllocThunk.cpp */; };
+		50FB9DBD1A925A2D00BDB8A2 /* AllocThunk.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9DB31A925A2D00BDB8A2 /* AllocThunk.h */; };
+		50FB9DBE1A925A2D00BDB8A2 /* MallocHook.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9DB41A925A2D00BDB8A2 /* MallocHook.cpp */; };
+		50FB9DBF1A925A2D00BDB8A2 /* MallocHook.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9DB51A925A2D00BDB8A2 /* MallocHook.h */; };
+		50FB9DC01A925A2D00BDB8A2 /* MemoryManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9DB61A925A2D00BDB8A2 /* MemoryManager.cpp */; };
+		50FB9DC11A925A2D00BDB8A2 /* MemoryManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9DB71A925A2D00BDB8A2 /* MemoryManager.h */; };
+		50FB9DC21A925A2D00BDB8A2 /* MemoryManagerAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9DB81A925A2D00BDB8A2 /* MemoryManagerAllocator.h */; };
+		50FB9DC31A925A2D00BDB8A2 /* MemoryManagerTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9DB91A925A2D00BDB8A2 /* MemoryManagerTypes.h */; };
+		50FB9DC41A925A2D00BDB8A2 /* OperatorNewHook.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9DBA1A925A2D00BDB8A2 /* OperatorNewHook.cpp */; };
 		5C77ABBF14C7703800E92D28 /* libpng_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C77ABBE14C7703800E92D28 /* libpng_ios.a */; };
 		5C97964714E3E75000FFFA14 /* libxml_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97964514E3E75000FFFA14 /* libxml_ios.a */; };
 		5C97964814E3E75000FFFA14 /* libyaml_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97964614E3E75000FFFA14 /* libyaml_ios.a */; };
@@ -1144,7 +1140,6 @@
 		B79723F01A125F96009421F3 /* BiDiHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = B79723ED1A125F96009421F3 /* BiDiHelper.h */; };
 		B79723F11A125F96009421F3 /* BiDiHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = B79723ED1A125F96009421F3 /* BiDiHelper.h */; };
 		B7D6C97419C9856B0095250A /* libfribidi_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C97319C9856B0095250A /* libfribidi_ios.a */; };
-		B89EE4F11A81113E002675DB /* MemoryManagerDebugNew.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B89EE4F01A81113E002675DB /* MemoryManagerDebugNew.cpp */; };
 		B8FC01741A823420001015B7 /* mem_malloc.h in Headers */ = {isa = PBXBuildFile; fileRef = B8FC01731A823420001015B7 /* mem_malloc.h */; };
 		B8FC01751A823420001015B7 /* mem_malloc.h in Headers */ = {isa = PBXBuildFile; fileRef = B8FC01731A823420001015B7 /* mem_malloc.h */; };
 		C13E6DB8186861FA00D1B2CE /* DFFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C13E6DB6186861FA00D1B2CE /* DFFont.cpp */; };
@@ -1420,8 +1415,6 @@
 		E8B3CADC16B9326E002BD35F /* DVAssert.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80716B9326D002BD35F /* DVAssert.h */; };
 		E8B3CADD16B9326E002BD35F /* List.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80816B9326D002BD35F /* List.h */; };
 		E8B3CADE16B9326E002BD35F /* ListAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80916B9326D002BD35F /* ListAllocator.h */; };
-		E8B3CADF16B9326E002BD35F /* MemoryManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C80A16B9326D002BD35F /* MemoryManager.cpp */; };
-		E8B3CAE016B9326E002BD35F /* MemoryManager.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80B16B9326D002BD35F /* MemoryManager.h */; };
 		E8B3CAE116B9326E002BD35F /* Replay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C80C16B9326D002BD35F /* Replay.cpp */; };
 		E8B3CAE216B9326E002BD35F /* Replay.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80D16B9326D002BD35F /* Replay.h */; };
 		E8B3CAE316B9326E002BD35F /* Stats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C80E16B9326D002BD35F /* Stats.cpp */; };
@@ -2076,18 +2069,16 @@
 		50C7D601186082D600D8936D /* StaticOcclusionRenderPass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusionRenderPass.h; sourceTree = "<group>"; };
 		50FB9D581A8A015300BDB8A2 /* MemProfService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemProfService.cpp; sourceTree = "<group>"; };
 		50FB9D591A8A015300BDB8A2 /* MemProfService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemProfService.h; sourceTree = "<group>"; };
-		50FB9D5E1A8A03EE00BDB8A2 /* internal_alloc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = internal_alloc.cpp; sourceTree = "<group>"; };
-		50FB9D5F1A8A03EE00BDB8A2 /* internal_alloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = internal_alloc.h; sourceTree = "<group>"; };
-		50FB9D601A8A03EE00BDB8A2 /* internal_allocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = internal_allocator.h; sourceTree = "<group>"; };
-		50FB9D611A8A03EE00BDB8A2 /* malloc_hook.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = malloc_hook.cpp; sourceTree = "<group>"; };
-		50FB9D621A8A03EE00BDB8A2 /* malloc_hook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = malloc_hook.h; sourceTree = "<group>"; };
-		50FB9D631A8A03EE00BDB8A2 /* mem_profiler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mem_profiler.cpp; sourceTree = "<group>"; };
-		50FB9D641A8A03EE00BDB8A2 /* mem_profiler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mem_profiler.h; sourceTree = "<group>"; };
-		50FB9D651A8A03EE00BDB8A2 /* mem_profiler_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mem_profiler_types.h; sourceTree = "<group>"; };
-		50FB9D661A8A03EE00BDB8A2 /* memprof.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = memprof.h; sourceTree = "<group>"; };
-		50FB9D671A8A03EE00BDB8A2 /* memprof_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = memprof_config.h; sourceTree = "<group>"; };
-		50FB9D681A8A03EE00BDB8A2 /* new_hook.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = new_hook.cpp; sourceTree = "<group>"; };
-		50FB9D691A8A03EE00BDB8A2 /* profiled_allocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = profiled_allocator.h; sourceTree = "<group>"; };
+		50FB9DB11A925A2D00BDB8A2 /* AllocPools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocPools.h; sourceTree = "<group>"; };
+		50FB9DB21A925A2D00BDB8A2 /* AllocThunk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllocThunk.cpp; sourceTree = "<group>"; };
+		50FB9DB31A925A2D00BDB8A2 /* AllocThunk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocThunk.h; sourceTree = "<group>"; };
+		50FB9DB41A925A2D00BDB8A2 /* MallocHook.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MallocHook.cpp; sourceTree = "<group>"; };
+		50FB9DB51A925A2D00BDB8A2 /* MallocHook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MallocHook.h; sourceTree = "<group>"; };
+		50FB9DB61A925A2D00BDB8A2 /* MemoryManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryManager.cpp; sourceTree = "<group>"; };
+		50FB9DB71A925A2D00BDB8A2 /* MemoryManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryManager.h; sourceTree = "<group>"; };
+		50FB9DB81A925A2D00BDB8A2 /* MemoryManagerAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryManagerAllocator.h; sourceTree = "<group>"; };
+		50FB9DB91A925A2D00BDB8A2 /* MemoryManagerTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryManagerTypes.h; sourceTree = "<group>"; };
+		50FB9DBA1A925A2D00BDB8A2 /* OperatorNewHook.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OperatorNewHook.cpp; sourceTree = "<group>"; };
 		5C0105D11577993400E0B939 /* libmongodb_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmongodb_ios.a; path = ../../Libs/libs/libmongodb_ios.a; sourceTree = "<group>"; };
 		5C77ABBE14C7703800E92D28 /* libpng_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng_ios.a; path = ../../Libs/libs/libpng_ios.a; sourceTree = "<group>"; };
 		5C97964514E3E75000FFFA14 /* libxml_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libxml_ios.a; path = ../../Libs/libs/libxml_ios.a; sourceTree = "<group>"; };
@@ -2215,7 +2206,6 @@
 		B79723EC1A125F96009421F3 /* BiDiHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BiDiHelper.cpp; sourceTree = "<group>"; };
 		B79723ED1A125F96009421F3 /* BiDiHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BiDiHelper.h; sourceTree = "<group>"; };
 		B7D6C97319C9856B0095250A /* libfribidi_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfribidi_ios.a; path = ../../Libs/libs/libfribidi_ios.a; sourceTree = "<group>"; };
-		B89EE4F01A81113E002675DB /* MemoryManagerDebugNew.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryManagerDebugNew.cpp; sourceTree = "<group>"; };
 		B8FC01731A823420001015B7 /* mem_malloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mem_malloc.h; sourceTree = "<group>"; };
 		C13E6DB6186861FA00D1B2CE /* DFFont.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DFFont.cpp; sourceTree = "<group>"; };
 		C13E6DB7186861FA00D1B2CE /* DFFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DFFont.h; sourceTree = "<group>"; };
@@ -2435,8 +2425,6 @@
 		E8B3C80716B9326D002BD35F /* DVAssert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DVAssert.h; sourceTree = "<group>"; };
 		E8B3C80816B9326D002BD35F /* List.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = List.h; sourceTree = "<group>"; };
 		E8B3C80916B9326D002BD35F /* ListAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ListAllocator.h; sourceTree = "<group>"; };
-		E8B3C80A16B9326D002BD35F /* MemoryManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryManager.cpp; sourceTree = "<group>"; };
-		E8B3C80B16B9326D002BD35F /* MemoryManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryManager.h; sourceTree = "<group>"; };
 		E8B3C80C16B9326D002BD35F /* Replay.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Replay.cpp; sourceTree = "<group>"; };
 		E8B3C80D16B9326D002BD35F /* Replay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Replay.h; sourceTree = "<group>"; };
 		E8B3C80E16B9326D002BD35F /* Stats.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Stats.cpp; sourceTree = "<group>"; };
@@ -3135,23 +3123,21 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
-		50FB9D5D1A8A03EE00BDB8A2 /* memprof */ = {
+		50FB9DB01A925A2D00BDB8A2 /* MemoryManager */ = {
 			isa = PBXGroup;
 			children = (
-				50FB9D5E1A8A03EE00BDB8A2 /* internal_alloc.cpp */,
-				50FB9D5F1A8A03EE00BDB8A2 /* internal_alloc.h */,
-				50FB9D601A8A03EE00BDB8A2 /* internal_allocator.h */,
-				50FB9D611A8A03EE00BDB8A2 /* malloc_hook.cpp */,
-				50FB9D621A8A03EE00BDB8A2 /* malloc_hook.h */,
-				50FB9D631A8A03EE00BDB8A2 /* mem_profiler.cpp */,
-				50FB9D641A8A03EE00BDB8A2 /* mem_profiler.h */,
-				50FB9D651A8A03EE00BDB8A2 /* mem_profiler_types.h */,
-				50FB9D661A8A03EE00BDB8A2 /* memprof.h */,
-				50FB9D671A8A03EE00BDB8A2 /* memprof_config.h */,
-				50FB9D681A8A03EE00BDB8A2 /* new_hook.cpp */,
-				50FB9D691A8A03EE00BDB8A2 /* profiled_allocator.h */,
+				50FB9DB11A925A2D00BDB8A2 /* AllocPools.h */,
+				50FB9DB21A925A2D00BDB8A2 /* AllocThunk.cpp */,
+				50FB9DB31A925A2D00BDB8A2 /* AllocThunk.h */,
+				50FB9DB41A925A2D00BDB8A2 /* MallocHook.cpp */,
+				50FB9DB51A925A2D00BDB8A2 /* MallocHook.h */,
+				50FB9DB61A925A2D00BDB8A2 /* MemoryManager.cpp */,
+				50FB9DB71A925A2D00BDB8A2 /* MemoryManager.h */,
+				50FB9DB81A925A2D00BDB8A2 /* MemoryManagerAllocator.h */,
+				50FB9DB91A925A2D00BDB8A2 /* MemoryManagerTypes.h */,
+				50FB9DBA1A925A2D00BDB8A2 /* OperatorNewHook.cpp */,
 			);
-			path = memprof;
+			path = MemoryManager;
 			sourceTree = "<group>";
 		};
 		64493DDB19476F4700AB2715 /* Vegetation */ = {
@@ -3411,19 +3397,11 @@
 		E8B3C7BD16B9326D002BD35F /* Base */ = {
 			isa = PBXGroup;
 			children = (
-				4F25830A19BDC94000C28926 /* Bind.h */,
-				4F25830B19BDC94000C28926 /* FunctionTraits.h */,
-				4F25830C19BDC94000C28926 /* NullType.h */,
-				4F25830D19BDC94000C28926 /* TypeHolders.h */,
-				4F25830E19BDC94000C28926 /* TypeList.h */,
-				E89C58F218B24832002C25FE /* Atomic.h */,
-				E89C58F318B24832002C25FE /* AtomicMacOS.mm */,
+				E8B3C7E216B9326D002BD35F /* Radix */,
 				17816B7E17B2748900B067E1 /* AllocatorFactory.cpp */,
 				17816B7F17B2748900B067E1 /* AllocatorFactory.h */,
-				E8679182175F62D600C5A6A2 /* EnumMap.cpp */,
-				E8679183175F62D600C5A6A2 /* EnumMap.h */,
-				E867917A175F620400C5A6A2 /* GlobalEnum.cpp */,
-				E867917B175F620400C5A6A2 /* GlobalEnum.h */,
+				E89C58F218B24832002C25FE /* Atomic.h */,
+				E89C58F318B24832002C25FE /* AtomicMacOS.mm */,
 				E8B3C7BE16B9326D002BD35F /* BaseMath.cpp */,
 				E8B3C7BF16B9326D002BD35F /* BaseMath.h */,
 				E8B3C7C016B9326D002BD35F /* BaseObject.cpp */,
@@ -3431,10 +3409,13 @@
 				E8B3C7C216B9326D002BD35F /* BaseObjectChecker.cpp */,
 				E8B3C7C316B9326D002BD35F /* BaseObjectChecker.h */,
 				E8B3C7C416B9326D002BD35F /* BaseTypes.h */,
+				4F25830A19BDC94000C28926 /* Bind.h */,
 				E8B3C7C516B9326D002BD35F /* Data.cpp */,
 				E8B3C7C616B9326D002BD35F /* Data.h */,
 				E8B3C7C716B9326D002BD35F /* DynamicObjectCache.cpp */,
 				E8B3C7C816B9326D002BD35F /* DynamicObjectCache.h */,
+				E8679182175F62D600C5A6A2 /* EnumMap.cpp */,
+				E8679183175F62D600C5A6A2 /* EnumMap.h */,
 				E8B3C7C916B9326D002BD35F /* EventDispatcher.cpp */,
 				E8B3C7CA16B9326D002BD35F /* EventDispatcher.h */,
 				E8B3C7CB16B9326D002BD35F /* Exception.h */,
@@ -3443,6 +3424,9 @@
 				E8B3C7CE16B9326D002BD35F /* FastNameMap.h */,
 				E8B3C7CF16B9326D002BD35F /* FixedSizePoolAllocator.cpp */,
 				E8B3C7D016B9326D002BD35F /* FixedSizePoolAllocator.h */,
+				4F25830B19BDC94000C28926 /* FunctionTraits.h */,
+				E867917A175F620400C5A6A2 /* GlobalEnum.cpp */,
+				E867917B175F620400C5A6A2 /* GlobalEnum.h */,
 				E8B3C7D116B9326D002BD35F /* Hash.h */,
 				E8B3C7D216B9326D002BD35F /* HashMap.h */,
 				E8B3C7D316B9326D002BD35F /* Introspection.h */,
@@ -3455,18 +3439,20 @@
 				E8B3C7D916B9326D002BD35F /* Message.cpp */,
 				E8B3C7DA16B9326D002BD35F /* Message.h */,
 				E8B3C7DB16B9326D002BD35F /* Meta.h */,
+				4F25830C19BDC94000C28926 /* NullType.h */,
 				E8B3C7DC16B9326D002BD35F /* ObjectCreator.h */,
 				E8B3C7DD16B9326D002BD35F /* ObjectFactory.cpp */,
 				E8B3C7DE16B9326D002BD35F /* ObjectFactory.h */,
 				E8B3C7DF16B9326D002BD35F /* Observable.cpp */,
 				E8B3C7E016B9326D002BD35F /* Observable.h */,
 				E8B3C7E116B9326D002BD35F /* Observer.h */,
-				E8B3C7E216B9326D002BD35F /* Radix */,
 				E8B3C7E516B9326D002BD35F /* RefPtr.h */,
 				E8B3C7E616B9326D002BD35F /* ScopedPtr.h */,
 				E8B3C7E716B9326D002BD35F /* Singleton.h */,
 				E8B3C7E816B9326D002BD35F /* StaticSingleton.h */,
 				E8B3C7E916B9326D002BD35F /* TemplateHelpers.h */,
+				4F25830D19BDC94000C28926 /* TypeHolders.h */,
+				4F25830E19BDC94000C28926 /* TypeList.h */,
 			);
 			path = Base;
 			sourceTree = "<group>";
@@ -3521,26 +3507,23 @@
 		E8B3C80416B9326D002BD35F /* Debug */ = {
 			isa = PBXGroup;
 			children = (
-				B89EE4F01A81113E002675DB /* MemoryManagerDebugNew.cpp */,
-				17D7E5F417A6C06B00861981 /* UIDismissionHandlerAlertView.h */,
-				17D7E5F517A6C06B00861981 /* UIDismissionHandlerAlertView.mm */,
-				CC247FEC16D69F1700183D40 /* DVAssertMessage.cpp */,
-				CC247FED16D69F1700183D40 /* DVAssertMessage.h */,
-				CC247FEE16D69F1700183D40 /* DVAssertMessageApple.mm */,
-				CC247FEF16D69F1700183D40 /* UIAlertView_Modal.h */,
-				CC247FF016D69F1700183D40 /* UIAlertView_Modal.m */,
 				E8B3C80516B9326D002BD35F /* Backtrace.cpp */,
 				E8B3C80616B9326D002BD35F /* Backtrace.h */,
 				E8B3C80716B9326D002BD35F /* DVAssert.h */,
+				CC247FEC16D69F1700183D40 /* DVAssertMessage.cpp */,
+				CC247FED16D69F1700183D40 /* DVAssertMessage.h */,
+				CC247FEE16D69F1700183D40 /* DVAssertMessageApple.mm */,
 				E8B3C80816B9326D002BD35F /* List.h */,
 				E8B3C80916B9326D002BD35F /* ListAllocator.h */,
-				E8B3C80A16B9326D002BD35F /* MemoryManager.cpp */,
-				E8B3C80B16B9326D002BD35F /* MemoryManager.h */,
+				B8FC01731A823420001015B7 /* mem_malloc.h */,
 				E8B3C80C16B9326D002BD35F /* Replay.cpp */,
 				E8B3C80D16B9326D002BD35F /* Replay.h */,
 				E8B3C80E16B9326D002BD35F /* Stats.cpp */,
 				E8B3C80F16B9326D002BD35F /* Stats.h */,
-				B8FC01731A823420001015B7 /* mem_malloc.h */,
+				CC247FEF16D69F1700183D40 /* UIAlertView_Modal.h */,
+				CC247FF016D69F1700183D40 /* UIAlertView_Modal.m */,
+				17D7E5F417A6C06B00861981 /* UIDismissionHandlerAlertView.h */,
+				17D7E5F517A6C06B00861981 /* UIDismissionHandlerAlertView.mm */,
 			);
 			path = Debug;
 			sourceTree = "<group>";
@@ -4369,27 +4352,27 @@
 		FECFB32D12E5904400C71562 /* Internal */ = {
 			isa = PBXGroup;
 			children = (
-				50FB9D5D1A8A03EE00BDB8A2 /* memprof */,
-				D7C556261A7A117000175ED9 /* DataStorage */,
 				E8B3C7A116B9326D002BD35F /* Animation */,
 				E8B3C7B116B9326D002BD35F /* Autotesting */,
 				E8B3C7BD16B9326D002BD35F /* Base */,
 				E8B3C7EA16B9326D002BD35F /* Collision */,
 				E8B3C7F116B9326D002BD35F /* Core */,
 				E8B3C7FC16B9326D002BD35F /* Database */,
+				D7C556261A7A117000175ED9 /* DataStorage */,
 				021414141819851100925E51 /* DAVAClassRegistrator.cpp */,
 				021414151819851100925E51 /* DAVAClassRegistrator.h */,
 				E8B3C80116B9326D002BD35F /* DAVAConfig.h */,
 				E8B3C80216B9326D002BD35F /* DAVAEngine.cpp */,
 				E8B3C80316B9326D002BD35F /* DAVAEngine.h */,
+				E8B3C81916B9326D002BD35F /* DoxygenDocumenation.h */,
 				E8B3C80416B9326D002BD35F /* Debug */,
 				E8B3C81016B9326D002BD35F /* DLC */,
-				E8B3C81916B9326D002BD35F /* DoxygenDocumenation.h */,
 				E8B3C81A16B9326D002BD35F /* Entity */,
 				E8B3C83C16B9326D002BD35F /* FileSystem */,
 				E8B3C86716B9326D002BD35F /* Input */,
 				CC84B03518211BB600934482 /* Job */,
 				E8B3C87216B9326D002BD35F /* Math */,
+				50FB9DB01A925A2D00BDB8A2 /* MemoryManager */,
 				50194D681A52D92600557DAB /* Network */,
 				D7CC264E19C517E500A3B754 /* Notification */,
 				E8B3C8A816B9326D002BD35F /* Particles */,
@@ -4494,7 +4477,6 @@
 				D7FEF16019864E5C00B2C7AF /* ZLibStream.h in Headers */,
 				02FD7F461924997C007762C0 /* ListAllocator.h in Headers */,
 				02FD7F471924997C007762C0 /* FMODFileSoundEvent.h in Headers */,
-				02FD7F481924997C007762C0 /* MemoryManager.h in Headers */,
 				02FD7F491924997C007762C0 /* Replay.h in Headers */,
 				02FD7F4A1924997C007762C0 /* Stats.h in Headers */,
 				64493DF919476F4700AB2715 /* TextureSheet.h in Headers */,
@@ -4902,12 +4884,10 @@
 				50C7D5FD186082B100D8936D /* StaticOcclusionComponent.h in Headers */,
 				E8B3CA9516B9326E002BD35F /* MongodbUpdateObject.h in Headers */,
 				E8B3CA9916B9326E002BD35F /* BaseMath.h in Headers */,
-				50FB9D6E1A8A03EE00BDB8A2 /* malloc_hook.h in Headers */,
 				E8525D161A30910400FDF76E /* RotationControllerComponent.h in Headers */,
 				E8B3CA9B16B9326E002BD35F /* BaseObject.h in Headers */,
 				50194DAD1A52D92600557DAB /* TCPAcceptor.h in Headers */,
 				E8B3CA9D16B9326E002BD35F /* BaseObjectChecker.h in Headers */,
-				50FB9D6B1A8A03EE00BDB8A2 /* internal_alloc.h in Headers */,
 				E8B3CA9E16B9326E002BD35F /* BaseTypes.h in Headers */,
 				32B074C319E53C0C0069981A /* UIPackage.h in Headers */,
 				641A620018CE0F61003359E7 /* FoliageSystem.h in Headers */,
@@ -4928,7 +4908,6 @@
 				50194DB61A52D92600557DAB /* IController.h in Headers */,
 				E8B3CAAC16B9326E002BD35F /* HashMap.h in Headers */,
 				E8B3CAAD16B9326E002BD35F /* Introspection.h in Headers */,
-				50FB9D711A8A03EE00BDB8A2 /* mem_profiler_types.h in Headers */,
 				E8B3CAAE16B9326E002BD35F /* IntrospectionBase.h in Headers */,
 				50194DBE1A52D92600557DAB /* ITransport.h in Headers */,
 				E8B3CAAF16B9326E002BD35F /* IntrospectionCollection.h in Headers */,
@@ -4941,7 +4920,6 @@
 				E8B3CAB516B9326E002BD35F /* Meta.h in Headers */,
 				E8B3CAB616B9326E002BD35F /* ObjectCreator.h in Headers */,
 				E8B3CAB816B9326E002BD35F /* ObjectFactory.h in Headers */,
-				50FB9D751A8A03EE00BDB8A2 /* profiled_allocator.h in Headers */,
 				E8B3CABA16B9326E002BD35F /* Observable.h in Headers */,
 				E8B3CABB16B9326E002BD35F /* Observer.h in Headers */,
 				E8B3CABD16B9326E002BD35F /* Radix.h in Headers */,
@@ -4972,8 +4950,6 @@
 				501620741A5ED5FC00E5A914 /* PeerDesription.h in Headers */,
 				647EFC75195F0AC40073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */,
 				0282B8B318BC8C88006F1EE4 /* FMODFileSoundEvent.h in Headers */,
-				E8B3CAE016B9326E002BD35F /* MemoryManager.h in Headers */,
-				50FB9D731A8A03EE00BDB8A2 /* memprof_config.h in Headers */,
 				50194DAB1A52D92600557DAB /* NetworkUtils.h in Headers */,
 				E8B3CAE216B9326E002BD35F /* Replay.h in Headers */,
 				E8B3CAE416B9326E002BD35F /* Stats.h in Headers */,
@@ -4990,7 +4966,6 @@
 				84D18C0919201BEF009E3E90 /* LibPVRHelper.h in Headers */,
 				E8B3CB1516B9326E002BD35F /* File.h in Headers */,
 				D7C5563D1A7A117000175ED9 /* ICloudKeyValue.h in Headers */,
-				50FB9D6C1A8A03EE00BDB8A2 /* internal_allocator.h in Headers */,
 				E8B3CB1716B9326E002BD35F /* FileList.h in Headers */,
 				E8B3CB1916B9326E002BD35F /* FilePath.h in Headers */,
 				E8B3CB1B16B9326E002BD35F /* FileSystem.h in Headers */,
@@ -5027,12 +5002,14 @@
 				E8B3CB4B16B9326E002BD35F /* Math2D.h in Headers */,
 				0264E3111A42F79500BD7279 /* JobThread.h in Headers */,
 				647EFC7D195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */,
+				50FB9DC11A925A2D00BDB8A2 /* MemoryManager.h in Headers */,
 				E8B3CB4C16B9326E002BD35F /* Math2DTemplateClasses.h in Headers */,
 				E8B3CB4D16B9326E002BD35F /* MathConstants.h in Headers */,
 				024BD5BF1A2C9299000BECC1 /* VirtualCoordinatesSystem.h in Headers */,
 				E8B3CB4E16B9326E002BD35F /* MathDefines.h in Headers */,
 				E8B3CB4F16B9326E002BD35F /* MathHelpers.h in Headers */,
 				50194DB01A52D92600557DAB /* TCPSocket.h in Headers */,
+				50FB9DC21A925A2D00BDB8A2 /* MemoryManagerAllocator.h in Headers */,
 				E8B3CB5016B9326E002BD35F /* Matrix2.h in Headers */,
 				A611714E1860C2A500E18F8C /* StaticOcclusionSystem.h in Headers */,
 				D7FEF14F19864E5C00B2C7AF /* bs_common.h in Headers */,
@@ -5075,7 +5052,6 @@
 				E8B3CB7816B9326E002BD35F /* ParticleEmitter.h in Headers */,
 				E8B3CB7E16B9326E002BD35F /* ParticleLayer.h in Headers */,
 				E8B3CB8416B9326E002BD35F /* ParticlePropertyLine.h in Headers */,
-				50FB9D701A8A03EE00BDB8A2 /* mem_profiler.h in Headers */,
 				E8B3CB8F16B9326E002BD35F /* Mutex.h in Headers */,
 				E8B3CB9F16B9326E002BD35F /* SystemTimer.h in Headers */,
 				E8B3CBA016B9326E002BD35F /* EAGLView.h in Headers */,
@@ -5218,10 +5194,10 @@
 				E8B3CCA016B9326E002BD35F /* SceneAnimationMixer.h in Headers */,
 				E8B3CCA216B9326E002BD35F /* SceneFile.h in Headers */,
 				E8B3CCA416B9326E002BD35F /* SceneFileV2.h in Headers */,
+				50FB9DBB1A925A2D00BDB8A2 /* AllocPools.h in Headers */,
 				02FD7EBE19237D33007762C0 /* WindComponent.h in Headers */,
 				E8B3CCA616B9326E002BD35F /* SceneManager.h in Headers */,
 				D7FEF15719864E5C00B2C7AF /* BSDiff.h in Headers */,
-				50FB9D721A8A03EE00BDB8A2 /* memprof.h in Headers */,
 				E8525D2D1A30911400FDF76E /* SnapToLandscapeControllerSystem.h in Headers */,
 				E8586C4719F924D1004FD709 /* NativeViewPool.h in Headers */,
 				E8B3CCAA16B9326E002BD35F /* SceneNodeAnimation.h in Headers */,
@@ -5233,6 +5209,7 @@
 				15D311921982861500919AAA /* YamlEmitter.h in Headers */,
 				E8B3CCB016B9326E002BD35F /* ShadowVolumeNode.h in Headers */,
 				E8B3CCB216B9326E002BD35F /* SkeletonNode.h in Headers */,
+				50FB9DC31A925A2D00BDB8A2 /* MemoryManagerTypes.h in Headers */,
 				E8B3CCB416B9326E002BD35F /* SpriteNode.h in Headers */,
 				64493E1219476F4700AB2715 /* VegetationPropertyNames.h in Headers */,
 				E8B3CCB716B9326E002BD35F /* SwitchNode.h in Headers */,
@@ -5277,6 +5254,7 @@
 				4F34E1AB1A234D86000681BB /* Semaphore.h in Headers */,
 				84D18C0319201BEF009E3E90 /* LibDdsHelper.h in Headers */,
 				17FFF905193F03AA003D51DA /* MongodbClient.h in Headers */,
+				50FB9DBD1A925A2D00BDB8A2 /* AllocThunk.h in Headers */,
 				E8B3CD0816B9326E002BD35F /* UIListCell.h in Headers */,
 				E8B3CD0A16B9326E002BD35F /* UILoadingTransition.h in Headers */,
 				E8B3CD0C16B9326E002BD35F /* UIMoveInTransition.h in Headers */,
@@ -5356,6 +5334,7 @@
 				A6E4FDF61761D40200B48E41 /* CustomPropertiesComponent.h in Headers */,
 				A6E4FDFC1761D83100B48E41 /* ActionUpdateSystem.h in Headers */,
 				50194DA11A52D92600557DAB /* DeadlineTimerTemplate.h in Headers */,
+				50FB9DBF1A925A2D00BDB8A2 /* MallocHook.h in Headers */,
 				A6A1E86A1785688600AA3A86 /* CRC32.h in Headers */,
 				4FDDEC5A17A6920D00D9DDEA /* MaterialOptimazer.h in Headers */,
 				A66BC2F217AB98E800B6252E /* SkyboxSystem.h in Headers */,
@@ -5527,7 +5506,6 @@
 				02FD80B31924997C007762C0 /* UIParticles.cpp in Sources */,
 				02FD80B41924997C007762C0 /* DAVAEngine.cpp in Sources */,
 				02FD80B51924997C007762C0 /* Backtrace.cpp in Sources */,
-				02FD80B61924997C007762C0 /* MemoryManager.cpp in Sources */,
 				E84E5BE81988D99200686C14 /* OGLHelpers.cpp in Sources */,
 				02FD80B71924997C007762C0 /* Replay.cpp in Sources */,
 				02FD80B81924997C007762C0 /* Stats.cpp in Sources */,
@@ -5899,7 +5877,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E8B3CA7E16B9326E002BD35F /* AnimatedObject.cpp in Sources */,
-				50FB9D6A1A8A03EE00BDB8A2 /* internal_alloc.cpp in Sources */,
 				E8B3CA8016B9326E002BD35F /* Animation.cpp in Sources */,
 				50194DC81A52D92600557DAB /* TCPServerTransport.cpp in Sources */,
 				E8ADAEC818CA1325000B251C /* PixelFormatDescriptor.cpp in Sources */,
@@ -5944,7 +5921,6 @@
 				E8B3CAD816B9326E002BD35F /* DAVAEngine.cpp in Sources */,
 				E8B3CADA16B9326E002BD35F /* Backtrace.cpp in Sources */,
 				C13E6DB8186861FA00D1B2CE /* DFFont.cpp in Sources */,
-				E8B3CADF16B9326E002BD35F /* MemoryManager.cpp in Sources */,
 				E8B3CAE116B9326E002BD35F /* Replay.cpp in Sources */,
 				E8B3CAE316B9326E002BD35F /* Stats.cpp in Sources */,
 				50194DA61A52D92600557DAB /* IOLoop.cpp in Sources */,
@@ -6005,7 +5981,6 @@
 				84D18C0019201BEF009E3E90 /* ImageSystem.cpp in Sources */,
 				024BD5BD1A2C9299000BECC1 /* VirtualCoordinatesSystem.cpp in Sources */,
 				D7FEF14B19864E5C00B2C7AF /* DownloadManager.cpp in Sources */,
-				B89EE4F11A81113E002675DB /* MemoryManagerDebugNew.cpp in Sources */,
 				E8B3CB7516B9326E002BD35F /* Particle.cpp in Sources */,
 				E8B3CB7716B9326E002BD35F /* ParticleEmitter.cpp in Sources */,
 				E8B3CB7D16B9326E002BD35F /* ParticleLayer.cpp in Sources */,
@@ -6069,7 +6044,6 @@
 				E8B3CC0116B9326E002BD35F /* RenderSystem.cpp in Sources */,
 				32B074BD19E53C0C0069981A /* UIControlHelpers.cpp in Sources */,
 				CC0D7B531A76066700309408 /* WaypointComponent.cpp in Sources */,
-				50FB9D6F1A8A03EE00BDB8A2 /* mem_profiler.cpp in Sources */,
 				E8B3CC0316B9326E002BD35F /* ShadowRect.cpp in Sources */,
 				32F29AB51A7B733800EB2325 /* UIPackagesCache.cpp in Sources */,
 				02FD7EC319237D43007762C0 /* SpeedTreeUpdateSystem.cpp in Sources */,
@@ -6129,7 +6103,6 @@
 				15D311901982861500919AAA /* YamlEmitter.cpp in Sources */,
 				E8B3CC6216B9326E002BD35F /* BoneNode.cpp in Sources */,
 				E8B3CC6816B9326E002BD35F /* BulletComponent.cpp in Sources */,
-				50FB9D741A8A03EE00BDB8A2 /* new_hook.cpp in Sources */,
 				E8B3CC6A16B9326E002BD35F /* CameraComponent.cpp in Sources */,
 				A69C9399186C377C00EAC8BC /* RenderTechnique.cpp in Sources */,
 				E8B3CC6C16B9326E002BD35F /* DebugRenderComponent.cpp in Sources */,
@@ -6193,6 +6166,7 @@
 				E8B3CCE916B9326E002BD35F /* TheoraPlayer.cpp in Sources */,
 				E8B3CCEB16B9326E002BD35F /* UI3DView.cpp in Sources */,
 				E8B3CCED16B9326E002BD35F /* UIButton.cpp in Sources */,
+				50FB9DC01A925A2D00BDB8A2 /* MemoryManager.cpp in Sources */,
 				E8B3CCEF16B9326E002BD35F /* UIControl.cpp in Sources */,
 				D7CC267119C517E500A3B754 /* LocalNotificationProgress.cpp in Sources */,
 				E8B3CCF116B9326E002BD35F /* UIControlBackground.cpp in Sources */,
@@ -6263,6 +6237,7 @@
 				E8525D181A30910400FDF76E /* SnapToLandscapeControllerComponent.cpp in Sources */,
 				A6AFDEDA187187D3006E43A1 /* RenderPassManager.cpp in Sources */,
 				CC24801516DD17F300183D40 /* UserComponent.cpp in Sources */,
+				50FB9DC41A925A2D00BDB8A2 /* OperatorNewHook.cpp in Sources */,
 				11CB614919C338DF00B48A92 /* AnimationData.cpp in Sources */,
 				0282B8B218BC8C88006F1EE4 /* FMODFileSoundEvent.cpp in Sources */,
 				647EFC73195F0AC40073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */,
@@ -6273,6 +6248,7 @@
 				D7FEF15319864E5C00B2C7AF /* bs_patch.c in Sources */,
 				024BD5B91A2C9299000BECC1 /* RenderSystem2D.cpp in Sources */,
 				A6AFDEFC1871C3D1006E43A1 /* SpeedTreeObject.cpp in Sources */,
+				50FB9DBC1A925A2D00BDB8A2 /* AllocThunk.cpp in Sources */,
 				A6DBFA7E1887E3D5006BE11C /* NMaterialNames.cpp in Sources */,
 				E8CBDFC716EE10EE00F70C8F /* UTF8UtilsMac.mm in Sources */,
 				E9E7982F16F0B45100745AF5 /* UISwitch.cpp in Sources */,
@@ -6286,7 +6262,6 @@
 				CCC7A4AA16F1D8480061EA5D /* Entity.cpp in Sources */,
 				CCC7A4AE16F1D88C0061EA5D /* UpdateSystem.cpp in Sources */,
 				64493E1419476F4700AB2715 /* VegetationRenderData.cpp in Sources */,
-				50FB9D6D1A8A03EE00BDB8A2 /* malloc_hook.cpp in Sources */,
 				497BF6E216F751ED00AC57C6 /* DeviceInfoiOS.mm in Sources */,
 				5016207F1A61693A00E5A914 /* Discoverer.cpp in Sources */,
 				E8B6B3C61705DEB4004F665E /* DeviceInfo.cpp in Sources */,
@@ -6331,6 +6306,7 @@
 				A695E52B18113315008A0F20 /* RenderBatchArray.cpp in Sources */,
 				A695E52D18113315008A0F20 /* RenderHierarchy.cpp in Sources */,
 				A695E53218113327008A0F20 /* SerializationContext.cpp in Sources */,
+				50FB9DBE1A925A2D00BDB8A2 /* MallocHook.cpp in Sources */,
 				17D4116B1973E4B700CF6BC0 /* Reachability.mm in Sources */,
 				9A0116F3967F43C036364993 /* GamepadDevice.mm in Sources */,
 				624C87F218C6160F00E1049D /* DateTime.cpp in Sources */,
@@ -6548,7 +6524,6 @@
 					FT2_BUILD_LIBRARY,
 					__DAVAENGINE_DEBUG__,
 					DAVA_FMOD,
-					MEMPROF_ENABLE,
 				);
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
@@ -6602,7 +6577,6 @@
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,
 					DAVA_FMOD,
-					MEMPROF_ENABLE,
 				);
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
