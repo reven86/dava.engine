@@ -687,7 +687,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Systems\UISystem.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UI3DView.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIAggregatorControl.h" />

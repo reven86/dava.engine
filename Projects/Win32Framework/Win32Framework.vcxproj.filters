@@ -184,9 +184,6 @@
     <Filter Include="Internal\UI\Components">
       <UniqueIdentifier>{67f835b5-b545-4435-b494-f65f572ca435}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Internal\UI\Systems">
-      <UniqueIdentifier>{317f0e7f-e8d5-435b-b72f-1f5602a02a39}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1791,9 +1788,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h">
       <Filter>Internal\UI\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\Systems\UISystem.h">
-      <Filter>Internal\UI\Systems</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
