@@ -157,6 +157,7 @@ void Document::OnSelectionControlChanged(const QList<ControlNode*> &activatedCon
     
     
     propertiesContext->SetActiveNode(activatedControls.empty() ? nullptr : activatedControls.first());
+    previewContext->OnSelectedControlsChanged(activatedControls, deactivatedControls);
 }
 
 void Document::OnControlSelectedInEditor(ControlNode *activatedControl)
