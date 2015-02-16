@@ -215,7 +215,7 @@
 	textField.autocorrectionType = [self convertAutoCorrectionType: (DAVA::UITextField::eAutoCorrectionType)cppTextField->GetAutoCorrectionType()];
 	
 #if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_5_0
-	textField.spellCheckingType = [self convertSpellCheckingType: cppTextField->GetSpellCheckingType()];
+// RESTORE:	textField.spellCheckingType = [self convertSpellCheckingType: cppTextField->GetSpellCheckingType()];
 #endif
 	textField.enablesReturnKeyAutomatically = [self convertEnablesReturnKeyAutomatically: cppTextField->IsEnableReturnKeyAutomatically()];
 	textField.keyboardAppearance = [self convertKeyboardAppearanceType: (DAVA::UITextField::eKeyboardAppearanceType)cppTextField->GetKeyboardAppearanceType()];

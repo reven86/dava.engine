@@ -4301,10 +4301,6 @@
 				17675C1A19472C1400054F8F /* CRCAdditionInterface.h in Headers */,
 				02FD7FB71924997C007762C0 /* LandscapeCursor.h in Headers */,
 				02FD7FB81924997C007762C0 /* Light.h in Headers */,
-<<<<<<< HEAD
-				3267C4AF19E5501A003CF16F /* ComponentIndices.h in Headers */,
-=======
->>>>>>> development
 				02FD7FB91924997C007762C0 /* Mesh.h in Headers */,
 				02FD7FBA1924997C007762C0 /* RenderBatch.h in Headers */,
 				02FD7FBB1924997C007762C0 /* RenderDataSource.h in Headers */,
@@ -6124,7 +6120,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_CXX_LIBRARY = "libc++";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -6139,10 +6135,7 @@
 					FT2_BUILD_LIBRARY,
 					DAVA_DEBUG,
 					DAVA_FMOD,
-<<<<<<< HEAD
 					__DAVAENGINE_DEBUG__,
-=======
->>>>>>> development
 				);
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
@@ -6161,6 +6154,7 @@
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
 				);
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../Libs/freetype/lib\"",
@@ -6170,10 +6164,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-<<<<<<< HEAD
 				VALID_ARCHS = "armv7 armv7s";
-=======
->>>>>>> development
 			};
 			name = Debug;
 		};
@@ -6181,7 +6172,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_CXX_LIBRARY = "libc++";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../..\"",
@@ -6193,10 +6184,6 @@
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,
 					DAVA_FMOD,
-<<<<<<< HEAD
-					AUTOTESTING_LUA,
-=======
->>>>>>> development
 				);
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
@@ -6215,6 +6202,7 @@
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
 				);
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../Libs/freetype/lib\"",
@@ -6224,10 +6212,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-<<<<<<< HEAD
 				VALID_ARCHS = "armv7 armv7s";
-=======
->>>>>>> development
 			};
 			name = Release;
 		};
@@ -6278,11 +6263,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-<<<<<<< HEAD
 				VALID_ARCHS = "armv7 armv7s";
-=======
-				VALID_ARCHS = "arm64 armv7 armv7s i386";
->>>>>>> development
 				WARNING_CFLAGS = "";
 			};
 			name = Debug;
@@ -6333,11 +6314,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-<<<<<<< HEAD
 				VALID_ARCHS = "armv7 armv7s";
-=======
-				VALID_ARCHS = "arm64 armv7 armv7s i386";
->>>>>>> development
 				WARNING_CFLAGS = "";
 			};
 			name = Release;
@@ -6388,11 +6365,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-<<<<<<< HEAD
 				VALID_ARCHS = "armv7 armv7s";
-=======
-				VALID_ARCHS = "arm64 armv7 armv7s i386";
->>>>>>> development
 				WARNING_CFLAGS = "";
 			};
 			name = AdHoc;
@@ -6401,7 +6374,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_CXX_LIBRARY = "libc++";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../..\"",
@@ -6426,6 +6399,7 @@
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
 				);
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../Libs/freetype/lib\"",
@@ -6435,10 +6409,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-<<<<<<< HEAD
 				VALID_ARCHS = "armv7 armv7s";
-=======
->>>>>>> development
 			};
 			name = AdHoc;
 		};
@@ -6488,11 +6459,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-<<<<<<< HEAD
 				VALID_ARCHS = "armv7 armv7s";
-=======
-				VALID_ARCHS = "arm64 armv7 armv7s i386";
->>>>>>> development
 				WARNING_CFLAGS = "";
 			};
 			name = Distribution;
@@ -6501,7 +6468,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_CXX_LIBRARY = "libc++";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../..\"",
@@ -6526,6 +6493,7 @@
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
 				);
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../Libs/freetype/lib\"",
@@ -6535,10 +6503,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-<<<<<<< HEAD
 				VALID_ARCHS = "armv7 armv7s";
-=======
->>>>>>> development
 			};
 			name = Distribution;
 		};

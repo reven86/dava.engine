@@ -13,7 +13,6 @@
 		74AF6341188530CD00070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF6340188530CD00070C35 /* Security.framework */; };
 		76762412196D5F6C00E4CC65 /* libFrameworkTools.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 76359F15196C20D300DF2A57 /* libFrameworkTools.a */; };
 		87228BCC1A88AB8B00508E38 /* PreProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87228BC51A88AB8B00508E38 /* PreProcess.cpp */; };
-		87228BCD1A88AB8B00508E38 /* RegExp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87228BC71A88AB8B00508E38 /* RegExp.cpp */; };
 		87228BCE1A88AB8B00508E38 /* rhi_Manticore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87228BC91A88AB8B00508E38 /* rhi_Manticore.cpp */; };
 		87228BCF1A88AB8B00508E38 /* rhi_ShaderSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87228BCA1A88AB8B00508E38 /* rhi_ShaderSource.cpp */; };
 		877172B41A49A03D00776647 /* libfmodevent.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 877172B21A49A03D00776647 /* libfmodevent.dylib */; };
@@ -141,8 +140,6 @@
 		76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FrameworkTools.xcodeproj; path = ../MacOSFramework/FrameworkTools.xcodeproj; sourceTree = "<group>"; };
 		87228BC51A88AB8B00508E38 /* PreProcess.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PreProcess.cpp; path = RHI/PreProcess.cpp; sourceTree = "<group>"; };
 		87228BC61A88AB8B00508E38 /* PreProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PreProcess.h; path = RHI/PreProcess.h; sourceTree = "<group>"; };
-		87228BC71A88AB8B00508E38 /* RegExp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RegExp.cpp; path = RHI/RegExp.cpp; sourceTree = "<group>"; };
-		87228BC81A88AB8B00508E38 /* RegExp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RegExp.h; path = RHI/RegExp.h; sourceTree = "<group>"; };
 		87228BC91A88AB8B00508E38 /* rhi_Manticore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rhi_Manticore.cpp; path = RHI/rhi_Manticore.cpp; sourceTree = "<group>"; };
 		87228BCA1A88AB8B00508E38 /* rhi_ShaderSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rhi_ShaderSource.cpp; path = RHI/rhi_ShaderSource.cpp; sourceTree = "<group>"; };
 		87228BCB1A88AB8B00508E38 /* rhi_ShaderSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rhi_ShaderSource.h; path = RHI/rhi_ShaderSource.h; sourceTree = "<group>"; };
@@ -331,8 +328,6 @@
 			children = (
 				87228BC51A88AB8B00508E38 /* PreProcess.cpp */,
 				87228BC61A88AB8B00508E38 /* PreProcess.h */,
-				87228BC71A88AB8B00508E38 /* RegExp.cpp */,
-				87228BC81A88AB8B00508E38 /* RegExp.h */,
 				87228BC91A88AB8B00508E38 /* rhi_Manticore.cpp */,
 				87228BCA1A88AB8B00508E38 /* rhi_ShaderSource.cpp */,
 				87228BCB1A88AB8B00508E38 /* rhi_ShaderSource.h */,
@@ -539,7 +534,6 @@
 				87CE38B31A4AED600014567D /* preproc.cpp in Sources */,
 				87CE389B1A4AED210014567D /* rhi_ShaderCache.cpp in Sources */,
 				FEC3CA811283557F00541220 /* FrameworkMain.cpp in Sources */,
-				87228BCD1A88AB8B00508E38 /* RegExp.cpp in Sources */,
 				87CE38AD1A4AED600014567D /* _mcpp.cpp in Sources */,
 				FEC3CA821283557F00541220 /* GameCore.cpp in Sources */,
 				87CE38AE1A4AED600014567D /* directive.cpp in Sources */,
@@ -593,8 +587,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
-				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -620,7 +614,7 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
 					/Users/a_podverbnyy/code/dava.framework/Libs/fmod/lib/macos,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_NAME = "RHI-Cube";
 			};
 			name = Debug;
@@ -629,8 +623,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
-				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
@@ -650,7 +644,7 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
 					/Users/a_podverbnyy/code/dava.framework/Libs/fmod/lib/macos,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_NAME = "RHI-Cube";
 			};
 			name = Release;
@@ -670,7 +664,7 @@
 					/opt/local/include/,
 					../../Libs/include,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -694,7 +688,7 @@
 					/opt/local/include/,
 					../../Libs/include,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-fvisibility=hidden",

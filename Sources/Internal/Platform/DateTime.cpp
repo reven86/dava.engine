@@ -184,6 +184,8 @@ void DateTime::LocalTimeThreadSafe(tm* resultLocalTime, const time_t *unixTimest
 // like 1969-07-21T02:56:15Z
 bool DateTime::ParseISO8601Date(const DAVA::String& src)
 {
+return false;
+/*
     // 1969-07-21T02:56:15Z
     // 1969-07-20T21:56:15-05:00
     if (src.length() < (strlen("1969-07-21T02:56:15Z")))
@@ -322,6 +324,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
     innerTime = InternalTimeGm(&parseTime) - timeZoneOffset;
     UpdateLocalTimeStructure();
     return true;
+*/
 }
 
     /*

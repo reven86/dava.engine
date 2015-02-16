@@ -6,7 +6,6 @@
     #include "FileSystem/DynamicMemoryFile.h"
     using DAVA::DynamicMemoryFile;
 
-    #include "RegExp.h"
     #include "PreProcess.h"
 
     #include <regex>
@@ -72,7 +71,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
                 char    scope[64];
                 char    tag[64];
 
-                sscanf( "%s,%s", scope, tags );
+                sscanf( "%s,%s", scope, tags.c_str() );
                 if     ( stricmp( scope, "shared" ) ==0 )   p.scope = ShaderProp::SCOPE_SHARED;
                 else if( stricmp( scope, "unique" ) ==0 )   p.scope = ShaderProp::SCOPE_UNIQUE;
                 p.tag = FastName(tag);

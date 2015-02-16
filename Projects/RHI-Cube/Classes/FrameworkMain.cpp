@@ -50,8 +50,8 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("width", WIDTH);
     appOptions->SetInt32("height", HEIGHT);
 
-    DAVA::Core::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
-    DAVA::Core::Instance()->RegisterAvailableResourceSize(WIDTH, HEIGHT, "Gfx");
+///    DAVA::Core::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
+///    DAVA::Core::Instance()->RegisterAvailableResourceSize(WIDTH, HEIGHT, "Gfx");
 
 #else
     KeyedArchive * appOptions = new KeyedArchive();

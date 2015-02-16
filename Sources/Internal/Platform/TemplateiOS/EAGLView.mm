@@ -184,14 +184,11 @@ CALayer* GetAppViewLayer() { return _ViewLayer; }
         DAVA::Size2i physicalScreen = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
         DAVA::RenderManager::Instance()->Init(physicalScreen.dx, physicalScreen.dy);
         DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
-<<<<<<< HEAD
-*/        
+*/
 		self.multipleTouchEnabled = YES;
-=======
-        DAVA::RenderSystem2D::Instance()->Init();
+//        DAVA::RenderSystem2D::Instance()->Init();
         
 		self.multipleTouchEnabled = (DAVA::InputSystem::Instance()->GetMultitouchEnabled()) ? YES : NO;
->>>>>>> development
 		animating = FALSE;
 		displayLinkSupported = FALSE;
 		animationFrameInterval = 1;

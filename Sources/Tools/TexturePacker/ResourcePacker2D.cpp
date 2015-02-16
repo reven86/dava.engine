@@ -38,13 +38,6 @@
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
 
-<<<<<<< HEAD
-//#include <Magick++.h>
-//#include <magick/MagickCore.h>
-//#include <magick/property.h>
-
-=======
->>>>>>> development
 #include "Render/GPUFamilyDescriptor.h"
 #include "FramePathHelper.h"
 
@@ -305,14 +298,8 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 	}
 		
 	return defFile;
-
-<<<<<<< HEAD
-		return 0;
-    }
- */
+*/
 	return 0;
-=======
->>>>>>> development
 }
 
 Vector<String> ResourcePacker2D::ProcessFlags(const FilePath & flagsPathname)

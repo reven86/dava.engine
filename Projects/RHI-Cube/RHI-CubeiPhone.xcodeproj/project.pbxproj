@@ -25,7 +25,6 @@
 		875FBAD31A5BCA380092136F /* ios_gl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 875FBAD21A5BCA380092136F /* ios_gl.mm */; };
 		87D2FCBE1A84C09F00C09586 /* rhi_Manticore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87D2FCBA1A84C09F00C09586 /* rhi_Manticore.cpp */; };
 		87D2FCC81A88A0C400C09586 /* PreProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87D2FCC21A88A0C400C09586 /* PreProcess.cpp */; };
-		87D2FCC91A88A0C400C09586 /* RegExp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87D2FCC41A88A0C400C09586 /* RegExp.cpp */; };
 		87D2FCCA1A88A0C400C09586 /* rhi_ShaderSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87D2FCC61A88A0C400C09586 /* rhi_ShaderSource.cpp */; };
 		87F3800A1A5AA26A00085E07 /* rhi_ShaderCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87F380071A5AA26A00085E07 /* rhi_ShaderCache.cpp */; };
 		87F3800B1A5AA26A00085E07 /* rhi_VertexLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87F380091A5AA26A00085E07 /* rhi_VertexLayout.cpp */; };
@@ -124,8 +123,6 @@
 		87D2FCBA1A84C09F00C09586 /* rhi_Manticore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rhi_Manticore.cpp; path = RHI/rhi_Manticore.cpp; sourceTree = "<group>"; };
 		87D2FCC21A88A0C400C09586 /* PreProcess.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PreProcess.cpp; path = RHI/PreProcess.cpp; sourceTree = "<group>"; };
 		87D2FCC31A88A0C400C09586 /* PreProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PreProcess.h; path = RHI/PreProcess.h; sourceTree = "<group>"; };
-		87D2FCC41A88A0C400C09586 /* RegExp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RegExp.cpp; path = RHI/RegExp.cpp; sourceTree = "<group>"; };
-		87D2FCC51A88A0C400C09586 /* RegExp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RegExp.h; path = RHI/RegExp.h; sourceTree = "<group>"; };
 		87D2FCC61A88A0C400C09586 /* rhi_ShaderSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rhi_ShaderSource.cpp; path = RHI/rhi_ShaderSource.cpp; sourceTree = "<group>"; };
 		87D2FCC71A88A0C400C09586 /* rhi_ShaderSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rhi_ShaderSource.h; path = RHI/rhi_ShaderSource.h; sourceTree = "<group>"; };
 		87F380021A5AA22E00085E07 /* rhi_Base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rhi_Base.h; sourceTree = "<group>"; };
@@ -333,8 +330,6 @@
 			children = (
 				87D2FCC21A88A0C400C09586 /* PreProcess.cpp */,
 				87D2FCC31A88A0C400C09586 /* PreProcess.h */,
-				87D2FCC41A88A0C400C09586 /* RegExp.cpp */,
-				87D2FCC51A88A0C400C09586 /* RegExp.h */,
 				87D2FCC61A88A0C400C09586 /* rhi_ShaderSource.cpp */,
 				87D2FCC71A88A0C400C09586 /* rhi_ShaderSource.h */,
 				87D2FCBA1A84C09F00C09586 /* rhi_Manticore.cpp */,
@@ -534,7 +529,6 @@
 				FEC9201013BA2D7D006F347F /* main.mm in Sources */,
 				87F3801F1A5AA29A00085E07 /* directive.cpp in Sources */,
 				87F380281A5AA29A00085E07 /* system.cpp in Sources */,
-				87D2FCC91A88A0C400C09586 /* RegExp.cpp in Sources */,
 				E878726419A210D9007AAA6B /* GameCore.cpp in Sources */,
 				87F380231A5AA29A00085E07 /* mcpp_main.cpp in Sources */,
 				875FBAD31A5BCA380092136F /* ios_gl.mm in Sources */,
@@ -563,6 +557,8 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -579,7 +575,7 @@
 					./../../Libs/include,
 				);
 				INFOPLIST_FILE = "RHI-CubeiPhone-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/Users/a_podverbnyy/code/dava.framework/Libs/libs,
@@ -601,6 +597,8 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -611,7 +609,7 @@
 					./../../Libs/include,
 				);
 				INFOPLIST_FILE = "RHI-CubeiPhone-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/Users/a_podverbnyy/code/dava.framework/Libs/libs,
@@ -662,6 +660,8 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -672,7 +672,7 @@
 					./../../Libs/include,
 				);
 				INFOPLIST_FILE = "RHI-CubeiPhone-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/Users/a_podverbnyy/code/dava.framework/Libs/libs,

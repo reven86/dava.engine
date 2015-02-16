@@ -114,7 +114,7 @@ namespace DAVA
 	Vector2 CoreMacOSPlatform::GetMousePosition()
 	{
 		NSPoint p = [mainWindowController->mainWindow mouseLocationOutsideOfEventStream]; //[NSEvent locationInWindow]; 
-		p = [mainWindowController->openGLView convertPointFromBase: p];
+// RESTORE:		p = [mainWindowController->openGLView convertPointFromBase: p];
 
         Vector2 mouseLocation;
 		mouseLocation.x = p.x;
@@ -297,6 +297,7 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 // Action method wired up to fire when the user clicks the "Go FullScreen" button.  We remain in this method until the user exits FullScreen mode.
 - (void) switchToFullScreen
 {
+/*
     [self beginFullScreen];
 	CGDisplayErr err;
  	
@@ -321,7 +322,7 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 	
 	CFDictionaryRef displayMode;
 	boolean_t exactMatch;
-	
+
 	displayMode = CGDisplayBestModeForParameters (kCGDirectMainDisplay, bpp, width, height, &exactMatch);
 
 	if (exactMatch)
@@ -344,7 +345,7 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
         NSOpenGLPFAScreenMask, CGDisplayIDToOpenGLDisplayMask(kCGDirectMainDisplay),
         // Attributes Common to FullScreen and non-FullScreen
 
-        NSOpenGLPFANoRecovery,	/* disable all failure recovery systems         */
+        NSOpenGLPFANoRecovery,	// disable all failure recovery systems
 
 #ifdef __DAVAENGINE_MACOS_VERSION_10_6__
         NSOpenGLPFAColorSize, static_cast<NSOpenGLPixelFormatAttribute>([openGLView displayBitsPerPixel:kCGDirectMainDisplay]), //24,
@@ -568,6 +569,7 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
         [self startAnimationTimer];
     }
 	[self endFullScreen];
+*/
 }
 
 - (void) keyDown:(NSEvent *)event

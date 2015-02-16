@@ -72,7 +72,7 @@ Allocate( const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf )
 
     desc.depthAttachment.texture            = _Metal_DefDepthBuf;
     desc.depthAttachment.loadAction         = (passConf.depthBuffer.loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
-    desc.depthAttachment.storeAction        = (passConf.depthBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLLoadActionDontCare;
+    desc.depthAttachment.storeAction        = (passConf.depthBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
     desc.depthAttachment.clearDepth         = passConf.depthBuffer.clearDepth;
     
     pass->cmdBuf.resize( cmdBufCount );
@@ -281,7 +281,7 @@ void
 DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
 {
     CommandBuffer_t*    cb    = CommandBufferPool::Get( cmdBuf );
-    MTLPrimitiveType    ptype = PRIMITIVE_TRIANGLELIST;
+    MTLPrimitiveType    ptype = MTLPrimitiveTypeTriangle;
     unsigned            v_cnt = 0;
     
     switch( type )
@@ -302,7 +302,7 @@ void
 DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
 {
     CommandBuffer_t*    cb    = CommandBufferPool::Get( cmdBuf );
-    MTLPrimitiveType    ptype = PRIMITIVE_TRIANGLELIST;
+    MTLPrimitiveType    ptype = MTLPrimitiveTypeTriangle;
     unsigned            i_cnt = 0;
     id<MTLBuffer>       ib    = IndexBufferMetal::GetBuffer( cb->cur_ib );
     

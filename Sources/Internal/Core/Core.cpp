@@ -508,9 +508,18 @@ START_TIMING(PROF__FRAME);
     Stats::Instance()->BeginFrame();
     TIME_PROFILE("Core::SystemProcessFrame");
     
-	if (!core) return;
-	if (!isActive)return;
-	
+	if( !core )
+    {
+        profiler::Stop();
+        return;
+    }
+    
+    if( !isActive )
+    {
+        profiler::Stop();
+        return;
+    }
+    
 	SystemTimer::Instance()->Start();
 
 	/**

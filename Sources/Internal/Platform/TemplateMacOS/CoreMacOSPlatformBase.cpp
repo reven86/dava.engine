@@ -57,22 +57,33 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 	
 DisplayMode CoreMacOSPlatformBase::GetCurrentDisplayMode()
 {
-    CFDictionaryRef currentMode = CGDisplayCurrentMode(kCGDirectMainDisplay);
-        
-    // look at each mode in the available list
-    //CFDictionaryRef modeSystem = (CFDictionaryRef)CFArrayGetValueAtIndex(currentMode, mode);
-        
-    DisplayMode mode;
-    mode.width = GetModeWidth(currentMode);
-    mode.height = GetModeHeight(currentMode);
-    mode.refreshRate = GetModeRefreshRate(currentMode);
-    mode.bpp = GetModeBitsPerPixel(currentMode);
-
+    CGDisplayModeRef    m    = CGDisplayCopyDisplayMode( CGMainDisplayID() );
+    CFStringRef         fmt  = CGDisplayModeCopyPixelEncoding( m );
+    DisplayMode         mode;
+    int                 bpp  = 0;
+    
+    if( CFStringCompare( fmt, CFSTR(kIO30BitDirectPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo )
+        bpp = 30;
+    else if( CFStringCompare( fmt, CFSTR(IO32BitDirectPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo )
+        bpp = 32;
+    else if( CFStringCompare( fmt, CFSTR(IO16BitDirectPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo )
+        bpp = 16;
+    else if( CFStringCompare( fmt, CFSTR(IO8BitIndexedPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo )
+        bpp = 8;
+    
+    
+    mode.width       = CGDisplayModeGetWidth( m );
+    mode.height      = CGDisplayModeGetHeight( m );
+    mode.refreshRate = CGDisplayModeGetRefreshRate( m );
+    mode.bpp         = bpp;
+    
     return mode;
 }
 
 void CoreMacOSPlatformBase::GetAvailableDisplayModes(List<DisplayMode> & availableModes)
 {
+    availableModes.push_back( GetCurrentDisplayMode() );
+/*
     CFArrayRef availableModesSystem = CGDisplayAvailableModes(kCGDirectMainDisplay);
     int32 numberOfAvailableModes = CFArrayGetCount(availableModesSystem);
 
@@ -88,6 +99,7 @@ void CoreMacOSPlatformBase::GetAvailableDisplayModes(List<DisplayMode> & availab
         mode.bpp = GetModeBitsPerPixel(modeSystem);
         availableModes.push_back(mode);
     }
+*/
 }
 
 }

@@ -436,7 +436,7 @@
 					/opt/local/lib,
 					./../../Libs/libs,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
@@ -480,7 +480,7 @@
 					/opt/local/lib,
 					./../../Libs/libs,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -488,6 +488,8 @@
 		A698542E17CE38C0001E9FDE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				EXECUTABLE_PREFIX = lib;
 				HEADER_SEARCH_PATHS = (
 					./../../Sources/Internal,
@@ -499,7 +501,7 @@
 					./../../Sources/Tools,
 					../../Libs/IMagickHelpLib,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -507,6 +509,8 @@
 		A698542F17CE38C0001E9FDE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				EXECUTABLE_PREFIX = lib;
 				HEADER_SEARCH_PATHS = (
 					./../../Sources/Internal,
@@ -518,7 +522,7 @@
 					./../../Sources/Tools,
 					../../Libs/IMagickHelpLib,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
