@@ -113,8 +113,8 @@ int main(int argc, char *argv[])
 
 #if defined (__DAVAENGINE_MACOS__)
         DAVA::QtLayer::Instance()->CreateConsoleOpenGLContext();
-        DAVA::QtLayer::Instance()->InitializeGlWindow();
-        DAVA::QtLayer::Instance()->Resize(0, 0);
+//        DAVA::QtLayer::Instance()->InitializeGlWindow();
+//        DAVA::QtLayer::Instance()->Resize(0, 0);
 #elif defined (__DAVAENGINE_WIN32__)
         QApplication a(argc, argv);
         

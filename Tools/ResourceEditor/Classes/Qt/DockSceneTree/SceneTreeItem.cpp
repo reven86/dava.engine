@@ -392,6 +392,7 @@ void SceneTreeItemEntity::DoSync(QStandardItem *rootItem, DAVA::Entity *entity)
 
 						SceneTreeItem *item = (SceneTreeItem *) rootItem->child(row);
 						DAVA::ParticleEmitter *itemEmitter = SceneTreeItemParticleEmitter::GetEmitter(item);
+                        emitterSet.remove(itemEmitter);
 					}
 
 					if(NULL == item)

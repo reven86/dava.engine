@@ -64,10 +64,8 @@
 
 #if defined( Q_OS_WIN )
 #include <QtPlatformheaders/QWGLNativeContext>
-#elif defined( Q_OS_MAC )QCocoaNativeContext
-#include <QtPlatformheaders/QCocoaNativeContext>
+#elif defined( Q_OS_MAC )
 #endif
-
 
 
 OpenGLWindow::OpenGLWindow()
@@ -157,11 +155,10 @@ quint64 OpenGLWindow::GetRenderContextId() const
 #if defined( Q_OS_WIN )
     QWGLNativeContext nativeContext = context->nativeHandle().value< QWGLNativeContext >();
     id = reinterpret_cast<quint64>( nativeContext.context() );
-#elif defined( Q_OS_MAC )QCocoaNativeContext
-    QCocoaNativeContext nativeContext = context->nativeHandle().value< QCocoaNativeContext >();
-    //(quint64)nativeContext->CGLContextObj();
-    // (uint64)CGLGetCurrentContext();
-    //id = reinterpret_cast<quint64>( nativeContext.context() );
+#elif defined( Q_OS_MAC )
+    //QCocoaNativeContext nativeContext = context->nativeHandle().value< QCocoaNativeContext >();
+    //id = reinterpret_cast<quint64>( nativeContext.context()->CGLContextObj() );
+    id = reinterpret_cast<quint64>(CGLGetCurrentContext());
 #endif
 
     return id;
