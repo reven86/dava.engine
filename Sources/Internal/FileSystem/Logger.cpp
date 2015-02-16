@@ -58,13 +58,13 @@ String ConvertCFormatListToString(const char8* format, va_list pargs)
     {
         va_list copy;
         va_copy(copy, pargs);
-        int needed = vsnprintf(&dynamicbuf[0], dynamicbuf.size(), format, copy);
+        int32 needed = vsnprintf(&dynamicbuf[0], dynamicbuf.size(), format, copy);
         va_end(copy);
         // NB. C99 (which modern Linux and OS X follow) says vsnprintf
         // failure returns the length it would have needed.  But older
         // glibc and current Windows return -1 for failure, i.e., not
         // telling us how much was needed.
-        if (needed < static_cast<int>(dynamicbuf.size()) && needed >= 0)
+        if (needed < static_cast<int32>(dynamicbuf.size()) && needed >= 0)
         {
             // It fit fine so we're done.
             return dynamicbuf;
@@ -90,10 +90,10 @@ void Logger::Logv(eLogLevel ll, const char8* text, va_list li)
 
     va_list copy;
     va_copy(copy, li);
-    int needMoreBuff = vsnprintf(&stackbuf[0], defaultBufferSize, text, copy);
+    int32 needMoreBuff = vsnprintf(&stackbuf[0], defaultBufferSize, text, copy);
     va_end(copy);
 
-    if (needMoreBuff < 0 || needMoreBuff > static_cast<int>(defaultBufferSize))
+    if (needMoreBuff < 0 || needMoreBuff > static_cast<int32>(defaultBufferSize))
     {
         String formatedMessage = ConvertCFormatListToString(text, li);
         // always send log to custom subscribers
@@ -165,8 +165,9 @@ void Logger::FrameworkDebug(const char8 * text, ...)
 {
     va_list vl;
     va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_FRAMEWORK, text, vl);
+    Logger* log = Logger::Instance();
+    if (nullptr != log)
+        log->Logv(LEVEL_FRAMEWORK, text, vl);
     va_end(vl);
 }
 
@@ -174,8 +175,9 @@ void Logger::Debug(const char8 * text, ...)
 {
     va_list vl;
     va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_DEBUG, text, vl);
+    Logger* log = Logger::Instance();
+    if (nullptr != log)
+        log->Logv(LEVEL_DEBUG, text, vl);
     va_end(vl);
 }
 
@@ -183,8 +185,9 @@ void Logger::Info(const char8 * text, ...)
 {
     va_list vl;
     va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_INFO, text, vl);
+    Logger* log = Logger::Instance();
+    if (nullptr != log)
+        log->Logv(LEVEL_INFO, text, vl);
     va_end(vl);
 }
 
@@ -192,8 +195,9 @@ void Logger::Warning(const char8 * text, ...)
 {
     va_list vl;
     va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_WARNING, text, vl);
+    Logger* log = Logger::Instance();
+    if (nullptr != log)
+        log->Logv(LEVEL_WARNING, text, vl);
     va_end(vl);
 }
 
@@ -201,22 +205,25 @@ void Logger::Error(const char8 * text, ...)
 {
     va_list vl;
     va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_ERROR, text, vl);
+    Logger* log = Logger::Instance();
+    if (nullptr != log)
+        log->Logv(LEVEL_ERROR, text, vl);
     va_end(vl);
 }
 
 void Logger::AddCustomOutput(DAVA::LoggerOutput *lo)
 {
-    if (Logger::Instance() && lo)
-        Logger::Instance()->customOutputs.push_back(lo);
+    Logger* log = Logger::Instance();
+    if (nullptr != log && nullptr != lo)
+        log->customOutputs.push_back(lo);
 }
 
 void Logger::RemoveCustomOutput(DAVA::LoggerOutput *lo)
 {
-    if (Logger::Instance() && lo)
+    Logger* log = Logger::Instance();
+    if (nullptr != log && nullptr != lo)
     {
-        auto& outputs = Logger::Instance()->customOutputs;
+        auto& outputs = log->customOutputs;
 
         outputs.erase(std::remove(outputs.begin(), outputs.end(), lo));
     }
@@ -242,10 +249,10 @@ void Logger::SetLogPathname(const FilePath & filepath)
 
 void Logger::FileLog(eLogLevel ll, const char8* text)
 {
-    if (FileSystem::Instance())
+    if (nullptr != FileSystem::Instance())
     {
         File *file = File::Create(logFilename, File::APPEND | File::WRITE);
-        if (file)
+        if (nullptr != file)
         {
             std::array<char8, 128> prefix;
             snprintf(&prefix[0], prefix.size(), "[%s] ", GetLogLevelString(ll));
@@ -298,4 +305,3 @@ void Logger::Output(eLogLevel ll, const char8* formatedMsg)
 }
 
 } // end namespace DAVA
-
