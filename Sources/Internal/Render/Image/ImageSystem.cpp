@@ -36,7 +36,7 @@
 
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/LibJpegHelper.h"
-#include "Render/Image/LibDdsHelper.h"
+//#include "Render/Image/LibDdsHelper.h"
 #include "Render/Image/LibPngHelpers.h"
 #include "Render/Image/LibPVRHelper.h"
 
@@ -46,7 +46,7 @@ namespace DAVA
 ImageSystem::ImageSystem()
 {
     wrappers[FILE_FORMAT_PNG] = new LibPngWrapper();
-    wrappers[FILE_FORMAT_DDS] = new LibDdsHelper();
+    wrappers[FILE_FORMAT_DDS] = nullptr;//new LibDdsHelper();
     wrappers[FILE_FORMAT_PVR] = new LibPVRHelper();
     wrappers[FILE_FORMAT_JPEG] = new LibJpegWrapper();
 }

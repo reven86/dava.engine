@@ -235,7 +235,6 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\Image.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageFormatInterface.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageSystem.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelpers.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.cpp" />
@@ -711,7 +710,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\ImageConvert.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\ImageFormatInterface.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\ImageSystem.h" />
-    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelpers.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.h" />
