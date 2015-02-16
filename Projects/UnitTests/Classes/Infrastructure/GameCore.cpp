@@ -54,11 +54,12 @@
 #include "Tests/JNITest.h"
 #include "Tests/DataVaultTest.h"
 #include "Tests/SpinLockTest.h"
+#include "Tests/StaticTextFieldTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
 {
-    //runOnlyThisTest = "TestClassName";
+    runOnlyThisTest = "StaticTextFieldTest";
 }
 
 void GameCore::OnError()
@@ -91,6 +92,7 @@ void GameCore::RegisterTests()
     new Cpp14Test ();
     new NetworkTest();
     new SpinLockTest();
+    new StaticTextFieldTest();
     //$UNITTEST_CTOR
 }
 

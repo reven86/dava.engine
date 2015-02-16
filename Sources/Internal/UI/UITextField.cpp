@@ -888,9 +888,7 @@ WideString UITextField::GetVisibleText() const
     if (!isPassword)
         return text;
     
-    WideString text = this->text;
-    text.replace(0, text.length(), text.length(), L'*');
-    return text;
+    return WideString(L'*', text.length());
 }
 	
 int32 UITextField::GetAutoCapitalizationType() const
@@ -1005,6 +1003,13 @@ void UITextField::SetInputEnabled(bool isEnabled, bool hierarchic)
 	textFieldiPhone->SetInputEnabled(isEnabled);
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetInputEnabled(isEnabled);
+#endif
+}
+
+void UITextField::SetRenderToTexture(bool value)
+{
+#ifdef __DAVAENGINE_WIN32__
+    // do nothing
 #endif
 }
 

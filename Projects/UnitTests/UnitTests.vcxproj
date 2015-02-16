@@ -36,6 +36,7 @@
     <ClInclude Include="Classes\Tests\SaveImageTest.h" />
     <ClInclude Include="Classes\Tests\SpinLockTest.h" />
     <ClInclude Include="Classes\Tests\SplitTest.h" />
+    <ClInclude Include="Classes\Tests\StaticTextFieldTest.h" />
     <ClInclude Include="Classes\Tests\StringFormatTest.h" />
     <ClInclude Include="Classes\Tests\TextSizeTest.h" />
   </ItemGroup>
@@ -63,6 +64,7 @@
     <ClCompile Include="Classes\Tests\SaveImageTest.cpp" />
     <ClCompile Include="Classes\Tests\SpinLockTest.cpp" />
     <ClCompile Include="Classes\Tests\SplitTest.cpp" />
+    <ClCompile Include="Classes\Tests\StaticTextFieldTest.cpp" />
     <ClCompile Include="Classes\Tests\StringFormatTest.cpp" />
     <ClCompile Include="Classes\Tests\TextSizeTest.cpp" />
     <ClCompile Include="Win32Specific\main.cpp" />
