@@ -13,18 +13,21 @@ add_definitions       (
 include_directories            ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib ) 
 include_directories            ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )  
 
-if( IOS )
-
+if( IOS OR ANDROID )
     set( ADDED_CPP_PATTERNS TeamcityOutput/*.cpp  TexturePacker/CommandLineParser.cpp )
     set( ADDED_H_PATTERNS   TeamcityOutput/*.h   TexturePacker/CommandLineParser.h    )
 
-    set_source_files_properties( ${CMAKE_CURRENT_LIST_DIR}/TeamcityOutput/TeamcityOutput.cpp 
-                                 PROPERTIES COMPILE_FLAGS "-x objective-c++" )  
 else()
     set( ADDED_CPP_PATTERNS TeamcityOutput/*.cpp TextureCompression/*.cpp TexturePacker/*.cpp )
     set( ADDED_H_PATTERNS   TeamcityOutput/*.h   TextureCompression/*.h   TexturePacker/*.h   )
 
 endif()
+
+if( IOS )
+    set_source_files_properties( ${CMAKE_CURRENT_LIST_DIR}/TeamcityOutput/TeamcityOutput.cpp 
+                                 PROPERTIES COMPILE_FLAGS "-x objective-c++" )  
+endif()
+
 
 define_source_files (
 GLOB_CPP_PATTERNS  ${ADDED_CPP_PATTERNS}
