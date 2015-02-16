@@ -68,7 +68,7 @@ public:
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
 
 signals:
-    void controlsSelectionChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
+//    void controlsSelectionChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
     void activeRootControlsChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
 
     void controlSelectedInEditor(ControlNode *activatedControls);
