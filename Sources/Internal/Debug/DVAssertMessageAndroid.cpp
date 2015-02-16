@@ -44,7 +44,7 @@ using namespace DAVA;
 void DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 {
     Logger::FrameworkDebug("DAVA BACKTRACE PRINTING");
-    PrintBackTraceToLog();
+    PrintBackTraceToLog(Logger::LEVEL_ERROR);
 	JNI::JavaClass msg("com/dava/framework/JNIAssert");
 	auto showMessage = msg.GetStaticMethod<void, jstring>("Assert");
 

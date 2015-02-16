@@ -31,7 +31,7 @@
 #define __DAVAENGINE_BACKTRACE_H__
 
 #include "Base/BaseTypes.h"
-
+#include "FileSystem/Logger.h"
 namespace DAVA
 {
 //namespace Backtrace 
@@ -69,7 +69,7 @@ namespace DAVA
     void CreateBacktraceLog(Backtrace * backtrace, BacktraceLog * log);
     void ReleaseBacktraceLog(BacktraceLog * log);
         
-    void PrintBackTraceToLog();
+    void PrintBackTraceToLog(Logger::eLogLevel logLevel = Logger::eLogLevel::LEVEL_FRAMEWORK);
 //};
 };
 

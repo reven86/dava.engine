@@ -29,6 +29,7 @@
 
 
 #include "Debug/Backtrace.h"
+#include "Base/Bind.h"
 #include "FileSystem/Logger.h"
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <execinfo.h>
@@ -244,7 +245,7 @@ public:
         free(log->strings);
     }
 #if defined(__DAVAENGINE_ANDROID__)
-	void OnStackFrame(pointer_size addr,const char * functName)
+	void OnStackFrame(Logger::eLogLevel logLevel,pointer_size addr,const char * functName)
 	{
         DAVA::BacktraceInterface * backtraceProvider = DAVA::AndroidBacktraceChooser::ChooseBacktraceAndroid();
         const char * libName = nullptr;
@@ -257,12 +258,12 @@ public:
         //returns allocated string with malloc
         realname = abi::__cxa_demangle(functName, 0, 0, &status);
          
-        Logger::FrameworkDebug("DAVA BACKTRACE:%p : %s (%s)\n", relAddres, libName,realname);
+        Logger::Instance()->Log(logLevel,"DAVA BACKTRACE:%p : %s (%s)\n", relAddres, libName,realname);
         free(realname);
          
 	}
 #endif
-    void PrintBackTraceToLog()
+    void PrintBackTraceToLog(Logger::eLogLevel logLevel )
     {
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #define BACKTRACE_SIZ 100
@@ -274,7 +275,7 @@ public:
         strings = backtrace_symbols(array, size);
         
         for (i = 0; i < size; ++i) {
-            Logger::FrameworkDebug("%p : %s\n", array[i], strings[i]);
+            Logger::Instance()->Log(logLevel,"%p : %s\n", array[i], strings[i]);
         }
         free(strings);
 #elif defined(__DAVAENGINE_WIN32__)
@@ -288,13 +289,16 @@ public:
          );        
      */
 #endif
+       
+
 #if defined(__DAVAENGINE_ANDROID__)
         BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
        
         if(backtraceProvider != nullptr)
         {
+            Function<void (Logger::eLogLevel,pointer_size,const char * )> onStackFrame = &OnStackFrame;
             Logger::FrameworkDebug("DAVA BACKTRACE PRINTING");
-            backtraceProvider->PrintableBacktrace(OnStackFrame,nullptr,0);
+            backtraceProvider->PrintableBacktrace(  Bind(onStackFrame, logLevel,_1,_2),nullptr,0);
         }
         else
         {
