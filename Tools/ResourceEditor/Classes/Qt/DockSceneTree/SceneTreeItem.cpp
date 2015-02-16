@@ -386,12 +386,9 @@ void SceneTreeItemEntity::DoSync(QStandardItem *rootItem, DAVA::Entity *entity)
 					repeatStep = false;
 
 					// remove items that we already add
-					while(emitterSet.contains(itemEmitter))
+					if (emitterSet.contains(itemEmitter))
 					{
 						rootItem->removeRow(row);
-
-						SceneTreeItem *item = (SceneTreeItem *) rootItem->child(row);
-						DAVA::ParticleEmitter *itemEmitter = SceneTreeItemParticleEmitter::GetEmitter(item);
 					}
 
 					if(NULL == item)

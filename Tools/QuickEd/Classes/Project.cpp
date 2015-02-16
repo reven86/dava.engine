@@ -3,10 +3,11 @@
 #include "EditorFontManager.h"
 #include "UI/UIPackageLoader.h"
 #include "UI/DefaultUIPackageBuilder.h"
-#include "UIControls/EditorUIPackageBuilder.h"
-#include "UIControls/LegacyEditorUIPackageLoader.h"
-#include "UIControls/PackageHierarchy/PackageNode.h"
-#include "UIControls/YamlPackageSerializer.h"
+#include "Model/EditorUIPackageBuilder.h"
+#include "Model/LegacyEditorUIPackageLoader.h"
+#include "Model/YamlPackageSerializer.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/PackageRef.h"
 
 #include <QDir>
 
@@ -193,7 +194,7 @@ bool Project::SavePackage(PackageNode *package)
 {
     YamlPackageSerializer serializer;
     package->Serialize(&serializer);
-    serializer.WriteToFile(package->GetPath());
+    serializer.WriteToFile(package->GetPackageRef()->GetPath());
     return true;
 }
 

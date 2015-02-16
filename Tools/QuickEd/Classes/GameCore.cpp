@@ -39,6 +39,7 @@
 #include "EditorSettings.h"
 #include "Helpers/ResourcesManageHelper.h"
 #include "FileSystem/ResourceArchive.h"
+#include "Autotesting/AutotestingSystem.h"
 #include "version.h"
 
 using namespace DAVA;
@@ -53,6 +54,7 @@ GameCore::GameCore()
 
     new GridVisualizer();
     new RulerController();
+    new AutotestingSystem();
 
 	// Unpack the help data, if needed.
 	UnpackHelp();
@@ -68,6 +70,8 @@ GameCore::~GameCore()
 
     EditorSettings::Instance()->Release();
     EditorFontManager::Instance()->Release();
+    
+    AutotestingSystem::Instance()->Release();
 }
 
 void GameCore::OnAppStarted()

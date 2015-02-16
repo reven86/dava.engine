@@ -39,7 +39,11 @@
 #include "Notification/LocalNotificationController.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
-namespace DAVA 
+#ifdef __DAVAENGINE_AUTOTESTING__
+#include "Autotesting/AutotestingSystem.h"
+#endif
+
+namespace DAVA
 {
 
 ApplicationCore::ApplicationCore()
@@ -61,7 +65,10 @@ ApplicationCore::~ApplicationCore()
 void ApplicationCore::Update(float32 timeElapsed)
 {
 	TIME_PROFILE("ApplicationCore::Update");
-	SoundSystem::Instance()->Update(timeElapsed);
+#ifdef __DAVAENGINE_AUTOTESTING__
+    AutotestingSystem::Instance()->Update(timeElapsed);
+#endif
+    SoundSystem::Instance()->Update(timeElapsed);
 	AnimationManager::Instance()->Update(timeElapsed);    
 	UIControlSystem::Instance()->Update();
 }
@@ -71,7 +78,10 @@ void ApplicationCore::Draw()
 	TIME_PROFILE("ApplicationCore::Draw");
 
     FrameOcclusionQueryManager::Instance()->ResetFrameStats();
-	UIControlSystem::Instance()->Draw();
+    UIControlSystem::Instance()->Draw();
+#ifdef __DAVAENGINE_AUTOTESTING__
+    AutotestingSystem::Instance()->Draw();
+#endif
     FrameOcclusionQueryManager::Instance()->ProccesRenderedFrame();
 }
 
