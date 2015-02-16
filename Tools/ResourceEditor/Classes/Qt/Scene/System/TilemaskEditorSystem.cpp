@@ -42,22 +42,22 @@
 
 TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
-,	editingIsEnabled(false)
 ,	curToolSize(0)
 ,	toolImage(NULL)
 ,	toolImageTexture(NULL)
 ,	strength(0.25f)
-,	toolImagePath("")
 ,	tileTextureNum(0)
-,	toolTexture(NULL)
 ,	stencilTexture(NULL)
 ,	toolSpriteUpdated(false)
-,	needCreateUndo(false)
-,	toolImageIndex(0)
 ,	drawingType(TILEMASK_DRAW_NORMAL)
 ,	copyPasteFrom(-1.f, -1.f)
 ,	copyPasteTo(-1.f, -1.f)
 ,	textureLevel(Landscape::TEXTURE_TILE_MASK)
+,	editingIsEnabled(false)
+,	toolImageIndex(0)
+,	needCreateUndo(false)
+,	toolTexture(NULL)
+,	toolImagePath("")
 {
     cursorSize = 120;
     

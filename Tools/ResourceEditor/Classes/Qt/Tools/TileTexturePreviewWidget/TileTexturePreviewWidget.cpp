@@ -330,12 +330,12 @@ Image* TileTexturePreviewWidget::MultiplyImageWithColor(DAVA::Image *image, cons
     RenderManager::Instance()->SetColor(color);
     RenderHelper::Instance()->Set2DRenderTarget(dstTexture);
     RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 1.f);
-    RenderHelper::Instance()->DrawTexture(srcTexture, RenderState::RENDERSTATE_2D_BLEND);
+    RenderHelper::Instance()->DrawTexture(srcTexture, RenderState::RENDERSTATE_2D_BLEND, Rect(0.f, 0.f, (float32)width, (float32)height));
 
 	RenderManager::Instance()->ResetColor();
     RenderManager::Instance()->SetRenderTarget(0);
 
-    Image* res = dstTexture->CreateImageFromMemory(RenderState::RENDERSTATE_3D_BLEND);
+    Image* res = dstTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
 
     SafeRelease(dstTexture);
 	SafeRelease(srcTexture);

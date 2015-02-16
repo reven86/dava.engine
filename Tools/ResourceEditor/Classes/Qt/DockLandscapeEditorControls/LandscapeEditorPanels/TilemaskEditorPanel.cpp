@@ -23,21 +23,12 @@ TilemaskEditorPanel::TilemaskEditorPanel(QWidget* parent)
 ,	frameStrength(NULL)
 ,	frameTileTexturesPreview(NULL)
 {
-    DAVA::RenderStateData noBlendStateData;
-    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, noBlendStateData);
-	
-    noBlendStateData.sourceFactor = DAVA::BLEND_ONE;
-	noBlendStateData.destFactor = DAVA::BLEND_ZERO;
-	
-	noBlendDrawState = DAVA::RenderManager::Instance()->CreateRenderState(noBlendStateData);
-
 	InitUI();
 	ConnectToSignals();
 }
 
 TilemaskEditorPanel::~TilemaskEditorPanel()
 {
-	RenderManager::Instance()->ReleaseRenderState(noBlendDrawState);
 }
 
 bool TilemaskEditorPanel::GetEditorEnabled()
@@ -270,7 +261,7 @@ void TilemaskEditorPanel::SplitImageToChannels(Image* image, Image*& r, Image*& 
         RenderHelper::Instance()->DrawTexture(t, RenderState::RENDERSTATE_2D_OPAQUE);
         RenderManager::Instance()->SetRenderTarget(0);
 
-        image = fbo->CreateImageFromMemory(noBlendDrawState);
+        image = fbo->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
 		image->ResizeCanvas(width, height);
 
         SafeRelease(fbo);
@@ -339,7 +330,7 @@ void TilemaskEditorPanel::UpdateTileTextures()
 	int32 count = (int32)sceneEditor->tilemaskEditorSystem->GetTileTextureCount();
 	Image** images = new Image*[count];
 
-    Image* image = sceneEditor->tilemaskEditorSystem->GetTileTexture(0)->CreateImageFromMemory(noBlendDrawState);
+    Image* image = sceneEditor->tilemaskEditorSystem->GetTileTexture(0)->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
     
     image->ResizeCanvas(iconSize.width(), iconSize.height());
     
