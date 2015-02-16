@@ -68,10 +68,13 @@ public:
 
 	void EmitChanged();
 
+    bool IsEntityGroupRemoving() const;
+
 	DAVA::Entity* Load(const DAVA::FilePath& sc2path, bool optimize);
 
 protected:
 	bool structureChanged;
+    bool isEntityGroupRemoving = false;
 
 	virtual void Process(DAVA::float32 timeElapsed);
 	void Draw();
@@ -94,5 +97,10 @@ protected:
 
 	void SearchEntityByRef(DAVA::Entity *parent, const DAVA::FilePath &refToOwner, DAVA::Set<DAVA::Entity *> &result);
 };
+
+inline bool StructureSystem::IsEntityGroupRemoving() const
+{
+    return isEntityGroupRemoving;
+}
 
 #endif // __SCENE_STRUCTURE_SYSTEM_H__

@@ -63,11 +63,15 @@ void WayEditSystem::AddEntity(DAVA::Entity * entity)
 }
 void WayEditSystem::RemoveEntity(DAVA::Entity * removedPoint)
 {
+    SceneEditor2 *sceneEditor = static_cast<SceneEditor2 *>(GetScene());
     DAVA::FindAndRemoveExchangingWithLast(waypointEntities, removedPoint);
 
-    if (isEnabled)
+    if (isEnabled && sceneEditor->structureSystem->IsEntityGroupRemoving())
     {
-        SceneEditor2 *sceneEditor = static_cast<SceneEditor2 *>(GetScene());
+        bool useOwnBatch = sceneEditor->IsBatchStarted() == false;
+        if (useOwnBatch)
+            sceneEditor->BeginBatch("Substitute removing waypoint");
+
         DAVA::EdgeComponent* edge;
 
         // get points aiming at removed point, remove edges
@@ -146,6 +150,9 @@ void WayEditSystem::RemoveEntity(DAVA::Entity * removedPoint)
                 sceneEditor->Exec(new AddComponentCommand(srcPoint, edge));
             }
         }
+
+        if (useOwnBatch)
+            sceneEditor->EndBatch();
     }
 }
 

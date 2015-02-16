@@ -119,10 +119,10 @@ void StructureSystem::Remove(const EntityGroup &entityGroup)
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
 	if(NULL != sceneEditor && entityGroup.Size() > 0)
 	{
-		if(entityGroup.Size() > 1)
-		{
-			sceneEditor->BeginBatch("Remove entities");
-		}
+        isEntityGroupRemoving = true;
+
+        sceneEditor->BeginBatch("Remove entities");
+
 
 		for(size_t i = 0; i < entityGroup.Size(); ++i)
 		{
@@ -133,10 +133,9 @@ void StructureSystem::Remove(const EntityGroup &entityGroup)
             }
 		}
 
-		if(entityGroup.Size() > 1)
-		{
-			sceneEditor->EndBatch();
-		}
+        sceneEditor->EndBatch();
+
+        isEntityGroupRemoving = false;
 
 		EmitChanged();
 	}
