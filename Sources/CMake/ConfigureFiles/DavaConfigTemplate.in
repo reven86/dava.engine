@@ -6,9 +6,9 @@ QT4_PATH_MAC             = $ENV{QT_HOME}
 QT5_PATH_MAC             = $ENV{HOME}/Qt/5.3/clang_64
 
 ANDROID_KEY_STORE        = ${DAVA_ROOT_DIR}/Sources/CMake/Data/DavaTest.keystore
-ANDROID_KEY_ALIAS        = wotmob
-ANDROID_STORE_PASSWORD   = LkmD3RAm
-ANDROID_ALIAS_PASSWORD   = LuXEY7vt
+ANDROID_KEY_ALIAS        = test
+ANDROID_STORE_PASSWORD   = qazwsx
+ANDROID_ALIAS_PASSWORD   = qazwsx
 
 ANDROID_NDK              = $ENV{NDK_HOME}
 ANDROID_ABI              = armeabi-v7a with NEON 
