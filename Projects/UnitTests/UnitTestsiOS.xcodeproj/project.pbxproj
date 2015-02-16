@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		001CF9281A02539600751045 /* TeamcityOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 001CF9261A02539600751045 /* TeamcityOutput.cpp */; };
 		0264E31F1A43002200BD7279 /* JobManagerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0264E31D1A43002200BD7279 /* JobManagerTest.cpp */; };
+		030C3B851A8BA336001447AE /* UnlimitedLogOutputTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 030C3B841A8BA336001447AE /* UnlimitedLogOutputTest.cpp */; };
 		032D348C1A0912B5007509C3 /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 032D348A1A0912B5007509C3 /* CommandLineParser.cpp */; };
 		03987A451A91FC4400487C19 /* StaticTextFieldTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03987A431A91FC4400487C19 /* StaticTextFieldTest.cpp */; };
 		03CC526E1A890F3600EDDB5E /* SpinLockTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03CC526D1A890F3600EDDB5E /* SpinLockTest.cpp */; };
@@ -90,6 +91,7 @@
 		001CF9271A02539600751045 /* TeamcityOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TeamcityOutput.h; sourceTree = "<group>"; };
 		0264E31D1A43002200BD7279 /* JobManagerTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JobManagerTest.cpp; path = Tests/JobManagerTest.cpp; sourceTree = "<group>"; };
 		0264E31E1A43002200BD7279 /* JobManagerTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JobManagerTest.h; path = Tests/JobManagerTest.h; sourceTree = "<group>"; };
+		030C3B841A8BA336001447AE /* UnlimitedLogOutputTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnlimitedLogOutputTest.cpp; path = Tests/UnlimitedLogOutputTest.cpp; sourceTree = "<group>"; };
 		032D348A1A0912B5007509C3 /* CommandLineParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CommandLineParser.cpp; path = ../../../Sources/Tools/TexturePacker/CommandLineParser.cpp; sourceTree = "<group>"; };
 		032D348B1A0912B5007509C3 /* CommandLineParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CommandLineParser.h; path = ../../../Sources/Tools/TexturePacker/CommandLineParser.h; sourceTree = "<group>"; };
 		03987A431A91FC4400487C19 /* StaticTextFieldTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StaticTextFieldTest.cpp; path = Tests/StaticTextFieldTest.cpp; sourceTree = "<group>"; };
@@ -331,6 +333,7 @@
 			children = (
 				03987A431A91FC4400487C19 /* StaticTextFieldTest.cpp */,
 				03987A441A91FC4400487C19 /* StaticTextFieldTest.h */,
+				030C3B841A8BA336001447AE /* UnlimitedLogOutputTest.cpp */,
 				03CC526D1A890F3600EDDB5E /* SpinLockTest.cpp */,
 				D73A575B1A739E34009FF184 /* DataVaultTest.cpp */,
 				D73A575C1A739E34009FF184 /* DataVaultTest.h */,
@@ -537,6 +540,7 @@
 				CC1198721A38BF27006931D7 /* HashMapTest.cpp in Sources */,
 				CC11984C1A38BF0D006931D7 /* GameCore.cpp in Sources */,
 				CC11986D1A38BF27006931D7 /* ComponentsTest.cpp in Sources */,
+				030C3B851A8BA336001447AE /* UnlimitedLogOutputTest.cpp in Sources */,
 				03CC526E1A890F3600EDDB5E /* SpinLockTest.cpp in Sources */,
 				CC11986E1A38BF27006931D7 /* DateTimeTest.cpp in Sources */,
 			);
