@@ -4,12 +4,12 @@
 # then start server inside this script to listen unit test log output
 # example:
 # win32: 
-# > cd to dava.framework/Projects/UnitTests/Reports
+# > cd to dava.framework/Projects/PerfomanceTests/Reports
 # > python start_unit_tests.py
 # mac os x: 
 # make DerivedData relative to project go to Xcode->Preferences->Location->DerivedData select relative
 # build project
-# > cd to dava.framework/Projects/UnitTests/Reports
+# > cd to dava.framework/Projects/PerfomanceTests/Reports
 # > python start_unit_tests.py
 # android:
 # deploy application to device first
@@ -33,7 +33,7 @@ def get_postfix(platform):
     else:
         return ''
 
-PRJ_NAME_BASE = "UnitTests"
+PRJ_NAME_BASE = "PerfomanceTests"
 PRJ_POSTFIX = get_postfix(sys.platform)
 
 start_on_android = False
@@ -71,7 +71,7 @@ def start_unittests_on_android_device():
 
 
 if start_on_ios:
-    # ../build/ios-deploy -d --noninteractive -b ../build/UnitTests.app
+    # ../build/ios-deploy -d --noninteractive -b ../build/PerfomanceTests.app
     sub_process = subprocess.Popen(["./ios-deploy", "-d", "--noninteractive", "-b", "../build/" +
                                     PRJ_NAME_BASE + PRJ_POSTFIX],
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -87,13 +87,13 @@ elif sys.platform == 'win32':
                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 elif sys.platform == "darwin":
     if os.path.exists("./" + PRJ_NAME_BASE + PRJ_POSTFIX):
-        # if run on teamcity current dir is: Projects/UnitTests/DerivedData/TemplateProjectMacOS/Build/Products/Release
+        # if run on teamcity current dir is: Projects/PerfomanceTests/DerivedData/TemplateProjectMacOS/Build/Products/Release
         app_path = "./" + PRJ_NAME_BASE + PRJ_POSTFIX + "/Contents/MacOS/" + PRJ_NAME_BASE
     else:
-        # run on local machine from dir: UnitTests/Report
+        # run on local machine from dir: PerfomanceTests/Report
         # Warning! To make DerivedData relative to project go to
         # Xcode->Preferences->Location->DerivedData select relative
-        app_path = "../DerivedData/TemplateProjectMacOS/Build/Products/Release/UnitTests.app/Contents/MacOS/" \
+        app_path = "../DerivedData/TemplateProjectMacOS/Build/Products/Release/PerfomanceTests.app/Contents/MacOS/" \
                    + PRJ_NAME_BASE
     sub_process = subprocess.Popen([app_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
