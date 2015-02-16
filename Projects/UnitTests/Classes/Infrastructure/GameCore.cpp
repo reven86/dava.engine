@@ -54,6 +54,7 @@
 #include "Tests/JNITest.h"
 #include "Tests/DataVaultTest.h"
 #include "Tests/UnlimitedLogOutputTest.h"
+#include "Tests/SpinLockTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -91,6 +92,7 @@ void GameCore::RegisterTests()
     new Cpp14Test ();
     new NetworkTest();
     new UnlimitedLogOutputTest();
+    new SpinLockTest();
     //$UNITTEST_CTOR
 }
 

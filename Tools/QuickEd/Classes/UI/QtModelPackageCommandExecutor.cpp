@@ -1,20 +1,21 @@
 #include "QtModelPackageCommandExecutor.h"
 
+#include "Document.h"
+#include "PackageContext.h"
 
-#include "PackageDocument.h"
+#include "UI/Commands/ChangePropertyValueCommand.h"
+#include "UI/Commands/ChangeDefaultValueCommand.h"
+#include "UI/Commands/PackageModelCommands.h"
+#include "UI/Package/PackageModel.h"
 
-#include "UI/PropertiesView/ChangePropertyValueCommand.h"
-#include "UI/PackageView/PackageModelCommands.h"
-#include "UI/PackageView/UIPackageModel.h"
-
-#include "UIControls/PackageHierarchy/PackageControlsNode.h"
-#include "UIControls/PackageHierarchy/ControlNode.h"
-#include "UIControls/PackageHierarchy/PackageNode.h"
-#include "UIControls/PackageHierarchy/ImportedPackagesNode.h"
+#include "Model/PackageHierarchy/PackageControlsNode.h"
+#include "Model/PackageHierarchy/ControlNode.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/ImportedPackagesNode.h"
 
 using namespace DAVA;
 
-QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(PackageDocument *_document)
+QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(Document *_document)
     : document(_document)
 {
     
@@ -27,7 +28,7 @@ QtModelPackageCommandExecutor::~QtModelPackageCommandExecutor()
 
 void QtModelPackageCommandExecutor::InsertControlIntoPackage(ControlNode *control, PackageControlsNode *package)
 {
-    UIPackageModel *model = document->GetTreeContext()->model;
+    PackageModel *model = document->GetPackageContext()->GetModel();
 
     QModelIndex dstParent = model->indexByNode(package);
     int32 dstRow = package->GetCount();
@@ -37,7 +38,7 @@ void QtModelPackageCommandExecutor::InsertControlIntoPackage(ControlNode *contro
 
 void QtModelPackageCommandExecutor::InsertControlIntoParentControl(ControlNode *control, ControlNode *parentControl)
 {
-    UIPackageModel *model = document->GetTreeContext()->model;
+    PackageModel *model = document->GetPackageContext()->GetModel();
     
     QModelIndex dstParent = model->indexByNode(parentControl);
     int32 dstRow = parentControl->GetCount();
@@ -47,7 +48,7 @@ void QtModelPackageCommandExecutor::InsertControlIntoParentControl(ControlNode *
 
 void QtModelPackageCommandExecutor::AddImportedPackageIntoPackage(PackageControlsNode *importedPackageControls, PackageNode *package)
 {
-    UIPackageModel *model = document->GetTreeContext()->model;
+    PackageModel *model = document->GetPackageContext()->GetModel();
     
     QModelIndex dstParent = model->indexByNode(package->GetImportedPackagesNode());
     int32 dstRow = package->GetImportedPackagesNode()->GetCount();
@@ -58,15 +59,15 @@ void QtModelPackageCommandExecutor::AddImportedPackageIntoPackage(PackageControl
 void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &value)
 {
     document->UndoStack()->beginMacro("Change Property");
-    document->UndoStack()->push(new ChangePropertyValueCommand(property, value));
+    document->UndoStack()->push(new ChangePropertyValueCommand(document, node, property, value));
     const Vector<ControlNode*> &instances = node->GetInstances();
-    for (ControlNode *node : instances)
+    for (ControlNode *instance : instances)
     {
         Vector<String> path = property->GetPath();
-        BaseProperty *nodeProperty = node->GetPropertyByPath(path);
+        BaseProperty *nodeProperty = instance->GetPropertyByPath(path);
         if (nodeProperty)
         {
-            document->UndoStack()->push(new ChangeDefaultValueCommand(nodeProperty, value));
+            document->UndoStack()->push(new ChangeDefaultValueCommand(document, instance, nodeProperty, value));
         }
         else
         {
@@ -79,15 +80,15 @@ void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, BaseProper
 void QtModelPackageCommandExecutor::ResetProperty(ControlNode *node, BaseProperty *property)
 {
     document->UndoStack()->beginMacro("Reset Property");
-    document->UndoStack()->push(new ChangePropertyValueCommand(property));
+    document->UndoStack()->push(new ChangePropertyValueCommand(document, node, property));
     const Vector<ControlNode*> &instances = node->GetInstances();
-    for (ControlNode *node : instances)
+    for (ControlNode *instance : instances)
     {
         Vector<String> path = property->GetPath();
-        BaseProperty *nodeProperty = node->GetPropertyByPath(path);
+        BaseProperty *nodeProperty = instance->GetPropertyByPath(path);
         if (nodeProperty)
         {
-            document->UndoStack()->push(new ChangeDefaultValueCommand(nodeProperty, property->GetDefaultValue()));
+            document->UndoStack()->push(new ChangeDefaultValueCommand(document, instance, nodeProperty, property->GetDefaultValue()));
         }
         else
         {

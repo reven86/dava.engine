@@ -11,6 +11,7 @@
 		0264E31F1A43002200BD7279 /* JobManagerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0264E31D1A43002200BD7279 /* JobManagerTest.cpp */; };
 		030C3B851A8BA336001447AE /* UnlimitedLogOutputTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 030C3B841A8BA336001447AE /* UnlimitedLogOutputTest.cpp */; };
 		032D348C1A0912B5007509C3 /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 032D348A1A0912B5007509C3 /* CommandLineParser.cpp */; };
+		03CC526E1A890F3600EDDB5E /* SpinLockTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03CC526D1A890F3600EDDB5E /* SpinLockTest.cpp */; };
 		1770DF4717DF497600000391 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1770DF4617DF497600000391 /* MediaPlayer.framework */; };
 		17D4116E1973E95F00CF6BC0 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17D4116D1973E95F00CF6BC0 /* SystemConfiguration.framework */; };
 		17DD1618193F512600B73BEE /* liblua_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17DD1617193F512600B73BEE /* liblua_ios.a */; };
@@ -92,6 +93,7 @@
 		030C3B841A8BA336001447AE /* UnlimitedLogOutputTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnlimitedLogOutputTest.cpp; path = Tests/UnlimitedLogOutputTest.cpp; sourceTree = "<group>"; };
 		032D348A1A0912B5007509C3 /* CommandLineParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CommandLineParser.cpp; path = ../../../Sources/Tools/TexturePacker/CommandLineParser.cpp; sourceTree = "<group>"; };
 		032D348B1A0912B5007509C3 /* CommandLineParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CommandLineParser.h; path = ../../../Sources/Tools/TexturePacker/CommandLineParser.h; sourceTree = "<group>"; };
+		03CC526D1A890F3600EDDB5E /* SpinLockTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SpinLockTest.cpp; path = Tests/SpinLockTest.cpp; sourceTree = "<group>"; };
 		1770DF4617DF497600000391 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		17D4116D1973E95F00CF6BC0 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		17DD1617193F512600B73BEE /* liblua_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblua_ios.a; path = ../../Libs/libs/liblua_ios.a; sourceTree = "<group>"; };
@@ -327,6 +329,7 @@
 			isa = PBXGroup;
 			children = (
 				030C3B841A8BA336001447AE /* UnlimitedLogOutputTest.cpp */,
+				03CC526D1A890F3600EDDB5E /* SpinLockTest.cpp */,
 				D73A575B1A739E34009FF184 /* DataVaultTest.cpp */,
 				D73A575C1A739E34009FF184 /* DataVaultTest.h */,
 				CCB2B8F51A656699003A5D44 /* Cpp14.cpp */,
@@ -532,6 +535,7 @@
 				CC11984C1A38BF0D006931D7 /* GameCore.cpp in Sources */,
 				CC11986D1A38BF27006931D7 /* ComponentsTest.cpp in Sources */,
 				030C3B851A8BA336001447AE /* UnlimitedLogOutputTest.cpp in Sources */,
+				03CC526E1A890F3600EDDB5E /* SpinLockTest.cpp in Sources */,
 				CC11986E1A38BF27006931D7 /* DateTimeTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
