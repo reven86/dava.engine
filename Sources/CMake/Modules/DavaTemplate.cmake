@@ -67,6 +67,8 @@ endif()
 
 
 if( ANDROID )
+    set( LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME}" CACHE PATH "Output directory for Android libs" )
+
     set( ANDROID_MIN_SDK_VERSION     ${ANDROID_NATIVE_API_LEVEL} )
     set( ANDROID_TARGET_SDK_VERSION  ${ANDROID_NATIVE_API_LEVEL} )
 
@@ -114,6 +116,7 @@ if( ANDROID )
     ADD_CUSTOM_COMMAND(
     TARGET ${PROJECT_NAME}
     POST_BUILD
+        COMMAND  android update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path .
         COMMAND  ant release
     )
 
