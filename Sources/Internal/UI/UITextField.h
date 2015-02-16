@@ -189,7 +189,7 @@ public:
 	void SetSpriteAlign(int32 align) override;
     
 	const WideString & GetText();
-	void SetText(const WideString& text);
+	virtual void SetText(const WideString& text);
     
     WideString GetAppliedChanges(int32 replacementLocation,
             int32 replacementLength, const WideString& replacementString);
@@ -380,6 +380,7 @@ protected:
 	bool isPassword;
 	bool enableReturnKeyAutomatically;
 	bool showCursor;
+	bool isRenderToTexture;
 
     void RenderText();
 private:

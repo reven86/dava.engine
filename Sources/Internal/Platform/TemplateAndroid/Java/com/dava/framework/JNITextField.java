@@ -1135,19 +1135,16 @@ public class JNITextField {
 	}
     
     public static void HideAllTextFields() {
-    	for (Iterator<NativeEditText> iter = controls.values().iterator(); iter.hasNext();) {
-			NativeEditText textField = iter.next();
+    	for (NativeEditText textField : controls.values()) {
 			textField.editText.setVisibility(View.GONE);
 		}
     }
     
     public static void ShowVisibleTextFields() {
     	JNIActivity.GetActivity().runOnUiThread(new Runnable() {
-			
 			@Override
 			public void run() {
-				for (Iterator<NativeEditText> iter = controls.values().iterator(); iter.hasNext();) {						
-					NativeEditText textField = iter.next();
+				for (NativeEditText textField : controls.values()) {
 					if(textField.visible)
 					{
 						textField.editText.setVisibility(View.VISIBLE);

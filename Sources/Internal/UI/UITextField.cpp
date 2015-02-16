@@ -96,6 +96,7 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,   staticText(NULL)
 ,   textFont(NULL)
 #endif
+,   isRenderToTexture{false}
 {
 #if defined(__DAVAENGINE_ANDROID__)
 	textFieldAndroid = new UITextFieldAndroid(this);
@@ -1020,6 +1021,9 @@ bool UITextField::IsRenderToTexture() const
 #ifdef __DAVAENGINE_WIN32__
     return false;
 #elif defined(__DAVAENGINE_MACOS__)
+    return false;
+#elif defined(__DAVAENGINE_ANDROID__)
+    // TODO implement me
     return false;
 #endif
 }

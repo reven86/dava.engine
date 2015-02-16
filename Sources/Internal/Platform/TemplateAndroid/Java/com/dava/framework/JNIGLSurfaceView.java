@@ -1,8 +1,6 @@
 package com.dava.framework;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import android.content.Context;
 import android.graphics.PixelFormat;
