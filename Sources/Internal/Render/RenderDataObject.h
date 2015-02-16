@@ -156,14 +156,14 @@ inline bool RenderDataObject::HasVertexAttachment() const
     return vertexAttachmentActive;
 }
 
-inline void RenderDataObject::SetForceVerticesCount(int count)
+inline void RenderDataObject::SetForceVerticesCount(int32 count)
 {
 #if defined (__DAVAENGINE_ANDROID__)
 	forceVerticesCount = count;
 #endif
 }
 
-inline void RenderDataObject::SetForceIndicesCount(int count)
+inline void RenderDataObject::SetForceIndicesCount(int32 count)
 {
 #if defined (__DAVAENGINE_ANDROID__)
 	forceIndicesCount = count;
