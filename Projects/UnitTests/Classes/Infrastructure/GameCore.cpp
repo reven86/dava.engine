@@ -114,6 +114,10 @@ void GameCore::OnAppStarted()
     RunOnlyThisTest();
     RegisterTests();
     RunTests();
+/*
+    GeneralInfo* gi = MemoryManager::GetGeneralInfo();
+    for (int i = 0;i < gi->tagCount + gi->allocPoolCount;++i)
+        Logger::Debug("%s", gi->names[i]);
 
     MemoryManager::EnterTagScope(1);
     {
@@ -122,6 +126,7 @@ void GameCore::OnAppStarted()
         v.resize(100);
     }
     MemoryManager::LeaveTagScope();
+*/
 }
 
 GameCore::GameCore() 

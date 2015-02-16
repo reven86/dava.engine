@@ -54,10 +54,15 @@ struct AllocPoolStat
     uint32 maxBlockSize;    // Max allocated block size
 };
 
-struct A
+struct GeneralInfo
 {
-    uint32 id;
-    char8 name[1];
+    static const size_t NAME_LENGTH = 16;
+    
+    uint32 tagCount;
+    uint32 allocPoolCount;
+    uint32 counterCount;
+    uint32 poolCounterCount;
+    char8 names[1][NAME_LENGTH];
 };
 
 }   // namespace DAVA

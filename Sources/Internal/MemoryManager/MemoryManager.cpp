@@ -69,7 +69,7 @@ char8 MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT][MAX_NAME_LENGTH] = {
     "internal",
     "application"
 };
-
+    
 void MemoryManager::RegisterAllocPoolName(size_t index, const char8* name)
 {
     DVASSERT(name != nullptr && 0 < strlen(name) && strlen(name) < MAX_NAME_LENGTH);
@@ -139,8 +139,8 @@ void MemoryManager::Dealloc(void* ptr)
         }
         else
         {
-            statGeneral.fixedStat.ghostBlockCount += 1;
-            statGeneral.fixedStat.ghostSize += 0;       // TODO: get memory block size from pointer
+            statGeneral.ghostBlockCount += 1;
+            statGeneral.ghostSize += 0;       // TODO: get memory block size from pointer
             MallocHook::Free(ptr);
         }
     }
@@ -165,7 +165,7 @@ void MemoryManager::LeaveScope()
     // TODO: perform action on tag leave
     for (size_t i = 0;i < MAX_ALLOC_POOL_COUNT;++i)
     {
-        statAllocPool[tagDepth][i].fixedStat = AllocPoolStat();
+        statAllocPool[tagDepth][i] = AllocPoolStat();
         // TODO: clear additional counters on tag leave
     }
     tagDepth -= 1;
@@ -233,12 +233,12 @@ void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, uint32 poolIndex)
     for (size_t i = 0;i <= tagDepth;++i)
     {
         // Calculate fixed statistics for allocation pool
-        statAllocPool[i][poolIndex].fixedStat.allocByApp += block->allocByApp;
-        statAllocPool[i][poolIndex].fixedStat.allocTotal += block->allocTotal;
-        statAllocPool[i][poolIndex].fixedStat.blockCount += 1;
+        statAllocPool[i][poolIndex].allocByApp += block->allocByApp;
+        statAllocPool[i][poolIndex].allocTotal += block->allocTotal;
+        statAllocPool[i][poolIndex].blockCount += 1;
 
-        if (block->allocByApp > statAllocPool[i][poolIndex].fixedStat.maxBlockSize)
-            statAllocPool[i][poolIndex].fixedStat.maxBlockSize = block->allocByApp;
+        if (block->allocByApp > statAllocPool[i][poolIndex].maxBlockSize)
+            statAllocPool[i][poolIndex].maxBlockSize = block->allocByApp;
 
         // Compute additional counters for allocation pool
         // ...
@@ -249,17 +249,68 @@ void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, uint32 poolIndex)
 {
     for (size_t i = 0;i <= tagDepth;++i)
     {
-        assert(statAllocPool[i][poolIndex].fixedStat.blockCount >= 1);
-        assert(statAllocPool[i][poolIndex].fixedStat.allocByApp >= block->allocByApp);
-        assert(statAllocPool[i][poolIndex].fixedStat.allocTotal >= block->allocTotal);
+        assert(statAllocPool[i][poolIndex].blockCount >= 1);
+        assert(statAllocPool[i][poolIndex].allocByApp >= block->allocByApp);
+        assert(statAllocPool[i][poolIndex].allocTotal >= block->allocTotal);
 
         // Calculate fixed statistics for allocation pool
-        statAllocPool[i][poolIndex].fixedStat.allocByApp -= block->allocByApp;
-        statAllocPool[i][poolIndex].fixedStat.allocTotal -= block->allocTotal;
-        statAllocPool[i][poolIndex].fixedStat.blockCount -= 1;
+        statAllocPool[i][poolIndex].allocByApp -= block->allocByApp;
+        statAllocPool[i][poolIndex].allocTotal -= block->allocTotal;
+        statAllocPool[i][poolIndex].blockCount -= 1;
 
         // Compute additional counters for allocation pool
         // ...
+    }
+}
+
+GeneralInfo* MemoryManager::GetGeneralInfo()
+{
+    GeneralInfo temp;
+    temp.tagCount = CalcNamesCount(tagNames[0], tagNames[0] + MAX_TAG_COUNT * MAX_NAME_LENGTH);
+    temp.allocPoolCount = CalcNamesCount(allocPoolNames[0], allocPoolNames[0] + MAX_ALLOC_POOL_COUNT * MAX_NAME_LENGTH);
+    temp.counterCount = 0;
+    temp.poolCounterCount = 0;
+    
+    const size_t ntotal = temp.tagCount + temp.allocPoolCount + temp.counterCount + temp.poolCounterCount;
+    
+    uint8* buf = new uint8[sizeof(GeneralInfo) + (ntotal - 1) * MAX_NAME_LENGTH];
+    GeneralInfo* result = new (buf) GeneralInfo;
+    result->tagCount = temp.tagCount;
+    result->allocPoolCount = temp.allocPoolCount;
+    result->counterCount = temp.counterCount;
+    result->poolCounterCount = temp.poolCounterCount;
+    
+    size_t curIndex = 0;
+    CopyNames(result->names[curIndex], tagNames[0], temp.tagCount);
+    curIndex += temp.tagCount;
+    CopyNames(result->names[curIndex], allocPoolNames[0], temp.allocPoolCount);
+    curIndex += temp.allocPoolCount;
+    return result;
+}
+
+size_t MemoryManager::CalcNamesCount(const char8* begin, const char* end)
+{
+    size_t n = 0;
+    while (begin < end)
+    {
+        if (begin[0] == '\0')
+            break;
+        n += 1;
+        begin += MAX_NAME_LENGTH;
+    }
+    return n;
+}
+
+void MemoryManager::CopyNames(char8* dst, const char8* src, size_t n)
+{
+    const size_t LENGTH = MAX_NAME_LENGTH > GeneralInfo::NAME_LENGTH ? GeneralInfo::NAME_LENGTH : MAX_NAME_LENGTH;
+    for (size_t i = 0;i < n;++i)
+    {
+        strncpy(dst, src, LENGTH);
+        dst[LENGTH - 1] = '\0';
+        
+        dst += GeneralInfo::NAME_LENGTH;
+        src += MAX_NAME_LENGTH;
     }
 }
 

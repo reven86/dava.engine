@@ -50,27 +50,12 @@ class MemoryManager final
     static const uint32 BLOCK_DELETED = 0xACCA;
     static const size_t BLOCK_ALIGN = 16;
 
-    static const size_t COUNTERS_COUNT = 0;
-    static const size_t POOL_COUNTER_COUNT = 0;
-
-    struct GeneralStat
-    {
-        GeneralAllocStat fixedStat;
-        uint32 counters[1];
-    };
-
-    struct PoolStat
-    {
-        AllocPoolStat fixedStat;
-        uint32 counters[1];
-    };
-
 public:
     static const size_t MAX_TAG_DEPTH = 8;              // Maximum depth of tag stack
     static const size_t DEFAULT_TAG = 0;                // Default tag which corresponds to whole application time line
 
-    static const size_t MAX_ALLOC_POOL_COUNT = 16;      // Max supported count of allocation pools
-    static const size_t MAX_TAG_COUNT = 16;             // Max supported count of tags
+    static const size_t MAX_ALLOC_POOL_COUNT = 4;       // Max supported count of allocation pools
+    static const size_t MAX_TAG_COUNT = 4;              // Max supported count of tags
     static const size_t MAX_NAME_LENGTH = 16;           // Max length of name: tag, allocation type, counter
 
 public:
@@ -88,11 +73,8 @@ public:
 
     static void EnterTagScope(uint32 tag);
     static void LeaveTagScope();
-
-    static size_t GetTagDescription();
-    static size_t GetAllocTypeDescription();
-    static size_t GetCounterDescription();
-    static size_t GetAllocTypeCounterDescription();
+    
+    static GeneralInfo* GetGeneralInfo();
     
 private:
     void* Alloc(size_t size, uint32 poolIndex);
@@ -109,6 +91,9 @@ private:
 
     void UpdateStatAfterAlloc(MemoryBlock* block, uint32 poolIndex);
     void UpdateStatAfterDealloc(MemoryBlock* block, uint32 poolIndex);
+    
+    static size_t CalcNamesCount(const char8* begin, const char* end);
+    static void CopyNames(char8* dst, const char8* src, size_t n);
 
 #if 0
     void collect_backtrace(mem_block_t* block, size_t nskip);
@@ -125,8 +110,8 @@ private:
     size_t tagDepth;                    // Current tag depth
     uint32 tagStack[MAX_TAG_DEPTH];     // Current active tags
     uint32 tagBegin[MAX_TAG_DEPTH];     // Block numbers from which each tag begins
-    GeneralStat statGeneral;            // General statistics
-    PoolStat statAllocPool[MAX_TAG_DEPTH][MAX_ALLOC_POOL_COUNT];    // Statistics for each allocation pool divided by tags
+    GeneralAllocStat statGeneral;       // General statistics
+    AllocPoolStat statAllocPool[MAX_TAG_DEPTH][MAX_ALLOC_POOL_COUNT];    // Statistics for each allocation pool divided by tags
     
     typedef DAVA::Spinlock MutexType;
     typedef DAVA::LockGuard<MutexType> LockType;
