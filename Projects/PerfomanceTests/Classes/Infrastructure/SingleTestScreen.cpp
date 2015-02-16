@@ -26,15 +26,71 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "SingleTestScreen.h"
 
-#include "BaseScreen.h"
 
+SingleTestScreen::SingleTestScreen(BaseTest* _test, uint32 _fixedTime, uint32 _fixedFramesCount, float32 _fixedDelta, uint32 _targetFrame) : 
+	singleTest(_test), targetFrame(_targetFrame), fixedTime(_fixedTime),
+	fixedDelta(_fixedDelta), fixedFramesCount(_fixedFramesCount), currentFrame(0)
+{
+	singleTest->SetupTest(fixedFramesCount, fixedDelta, fixedTime);
+}
 
-BaseScreen::BaseScreen()
+SingleTestScreen::~SingleTestScreen()
 {
 }
 
-
-BaseScreen::~BaseScreen()
+void SingleTestScreen::OnStart()
 {
+}
+
+void SingleTestScreen::OnFinish()
+{
+
+}
+
+void SingleTestScreen::BeginFrame()
+{
+	RenderManager::Instance()->BeginFrame();
+	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+
+	singleTest->BeginFrame();
+}
+
+void SingleTestScreen::EndFrame()
+{
+	singleTest->EndFrame();
+	if (singleTest->IsFinished())
+	{
+		singleTest->FinishTest();
+	}
+
+	currentFrame++;
+
+	RenderManager::Instance()->EndFrame();
+	RenderManager::Instance()->ProcessStats();
+}
+
+void SingleTestScreen::Update(float32 timeElapsed)
+{
+	if (targetFrame > 0)
+	{
+		if (currentFrame > (targetFrame + BaseTest::FRAME_OFFSET))
+		{
+			singleTest->Update();
+		}
+		else
+		{
+			singleTest->Update(fixedDelta);
+		}
+	}
+	else
+	{
+		singleTest->Update(timeElapsed);	
+	}	
+}
+
+void SingleTestScreen::Draw()
+{
+	singleTest->Draw();
 }

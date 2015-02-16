@@ -26,21 +26,55 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __$UNITTEST_GUARD_IFDEF$_TEST_H__
-#define __$UNITTEST_GUARD_IFDEF$_TEST_H__
+#ifndef __SINGLE_TEST_SCREEN_H__
+#define __SINGLE_TEST_SCREEN_H__
 
 #include "DAVAEngine.h"
-#include "TestTemplate.h"
+#include "BaseScreen.h"
+#include "BaseTest.h"
 
 using namespace DAVA;
 
-class $UNITTEST_CLASSNAME$ : public TestTemplate < $UNITTEST_CLASSNAME$ >
+class SingleTestScreen : public BaseScreen
 {
 public:
-    $UNITTEST_CLASSNAME$ ();
+	SingleTestScreen(BaseTest* test, uint32 fixedTime, uint32 fixedFramesCount, float32 fixedDelta, uint32 targetFrame);
 
-    void TestFunc (PerfFuncData * data);
+	virtual void OnStart() override;
+	virtual void OnFinish() override;
+
+	virtual void BeginFrame() override;
+	virtual void EndFrame() override;
+
+	virtual void Update(float32 timeElapsed) override;
+	virtual void Draw() override;
+	
+	virtual bool IsFinished() const override;
+
+	bool isDebuggableTest() const;
+
+protected:
+	virtual ~SingleTestScreen();
+
+private:
+	BaseTest* singleTest;
+
+	uint32 currentFrame;
+	uint32 targetFrame;
+
+	uint32 fixedTime;
+	uint32 fixedFramesCount;
+	float32 fixedDelta;
 };
 
-#endif //__$UNITTEST_GUARD_IFDEF$_TEST_H__
+inline bool SingleTestScreen::IsFinished() const
+{
+	return singleTest->IsFinished();
+}
+
+inline bool SingleTestScreen::isDebuggableTest() const
+{
+	return targetFrame > 0;
+}
+
+#endif

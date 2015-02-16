@@ -26,15 +26,40 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __REPORT_SCREEN_H__
+#define __REPORT_SCREEN_H__
 
+#include "DAVAEngine.h"
 #include "BaseScreen.h"
+#include "BaseTest.h"
 
+using namespace DAVA;
 
-BaseScreen::BaseScreen()
+class ReportScreen : public BaseScreen
 {
-}
+public:
+	ReportScreen(Vector<BaseTest*>& testsChain);
 
+	virtual void OnStart() override;
+	virtual void OnFinish() override;
 
-BaseScreen::~BaseScreen()
-{
-}
+	virtual void BeginFrame() override;
+	virtual void EndFrame() override;
+
+	virtual void Update(float32 timeElapsed) override;
+	virtual void Draw() override;
+
+	virtual bool IsFinished() const;
+
+	void CreateReportScreen();
+
+protected:
+	virtual ~ReportScreen();
+
+private:
+
+	Vector<BaseTest*> testsChain; 
+};
+
+#endif
+

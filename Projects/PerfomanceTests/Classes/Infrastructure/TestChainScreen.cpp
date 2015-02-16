@@ -26,18 +26,77 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "TestChainScreen.h"
 
-#include "$UNITTEST_CLASSNAME$.h"
 
-using namespace DAVA;
-
-$UNITTEST_CLASSNAME$::$UNITTEST_CLASSNAME$ ()
-: TestTemplate<$UNITTEST_CLASSNAME$> ("$UNITTEST_CLASSNAME$")
+TestChainScreen::TestChainScreen(const Vector<BaseTest*>& _testsChain, uint32 _fixedTime, uint32 _fixedFramesCount, float32 _fixedDelta) : 
+testsChain(_testsChain), currentTest(nullptr), currentTestIndex(0), testsFinished(false),
+	fixedTime(_fixedTime), fixedFramesCount(_fixedFramesCount), fixedDelta(_fixedDelta)
 {
-    RegisterFunction (this, &$UNITTEST_CLASSNAME$::TestFunc, String ("TestFunc"), NULL);
+	currentTest = testsChain[currentTestIndex];
+	currentTest->SetupTest(fixedFramesCount, fixedDelta, fixedTime);
 }
 
-void $UNITTEST_CLASSNAME$::TestFunc (PerfFuncData * data)
+TestChainScreen::~TestChainScreen()
 {
-    TEST_VERIFY (false);
+}
+
+bool TestChainScreen::IsFinished() const
+{
+	return testsFinished;
+}
+
+void TestChainScreen::OnStart()
+{
+}
+
+void TestChainScreen::OnFinish()
+{
+
+}
+
+void TestChainScreen::BeginFrame()
+{
+	RenderManager::Instance()->BeginFrame();
+	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+
+	currentTest->BeginFrame();
+}
+
+void TestChainScreen::EndFrame()
+{
+	if (currentTest->IsFinished())
+	{
+		currentTest->FinishTest();
+		currentTest->ReleaseTest();
+
+		currentTestIndex++;
+
+		if (currentTestIndex < testsChain.size())
+		{
+			currentTest = testsChain[currentTestIndex];
+			currentTest->SetupTest(fixedFramesCount, fixedDelta, fixedTime);
+		}
+		else
+		{
+			testsFinished = true;
+		}
+	}
+	else
+	{
+		currentTest->EndFrame();
+	}
+
+	RenderManager::Instance()->EndFrame();
+	RenderManager::Instance()->ProcessStats();
+}
+
+void TestChainScreen::Update(float32 timeElapsed)
+{
+	currentTest->Update(timeElapsed);
+}
+
+void TestChainScreen::Draw()
+{
+	currentTest->Draw();
 }

@@ -33,7 +33,9 @@
 #include "DAVAEngine.h"
 #include "TeamCityTestsOutput.h"
 
-#include "Tests/PerfomanceTest.h"
+#include "SingleTestScreen.h"
+#include "TestChainScreen.h"
+#include "ReportScreen.h"
 
 #include <list>
 #include <fstream>
@@ -81,34 +83,14 @@ public:
 
     void LogMessage(const String &message);
     
-protected:
-    
-	void RegisterTests();
-    String CreateOutputLogFile();
-    String ReadLogFile();
-    
-    void CreateDocumentsFolder();
-    File * CreateDocumentsFile(const String &filePathname);
-    
 private:
-    void InitLogging();
-	void CreateReportScreen();
+    void InitTestProcessor();
+	void RegisterTests();
 
-	String runOnlyThisTest;
-	bool showReport;
+	Vector<BaseTest*> testsChain;
 
-	uint32 currentTestIndex;
-	BaseTest* currentTest;
-
-	uint32 fixedFramesCount;
-	float32 fixedDelta;
-
-	uint32 fixedTime;
-
-	Vector<BaseTest*> testList;
-
-	String logFilePath;
-	std::ofstream logFile;
+	ReportScreen* reportScreen;
+	BaseScreen* currentScreen;
 
 	TeamcityTestsOutput teamCityOutput;
 };

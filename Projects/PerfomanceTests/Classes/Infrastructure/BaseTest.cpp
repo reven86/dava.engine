@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "BaseTest.h"
 
+const float32 BaseTest::FRAME_OFFSET = 1;
 
 BaseTest::BaseTest(const String& _testName) :
 		frameNumber(0), fixedDelta(0.0f), 
@@ -39,7 +40,7 @@ BaseTest::BaseTest(const String& _testName) :
 
 BaseTest::~BaseTest()
 {
-	
+	ReleaseTest();
 }
 
 void BaseTest::FinishTest()
@@ -57,8 +58,6 @@ void BaseTest::SetupTest(uint32 framesCount, float32 fixedDelta, uint32 maxTestT
 	this->fixedDelta = fixedDelta;
 	this->targetFramesCount = framesCount;
 	this->targetTestTime = maxTestTime;
-
-	// skip statistics of first and second frame
 }
 
 void BaseTest::Draw()
@@ -69,7 +68,7 @@ void BaseTest::Draw()
 
 void BaseTest::Update(float32 timeElapsed)
 {
-	if (frameNumber > 1)
+	if (frameNumber > FRAME_OFFSET)
 	{
 		if (fixedDelta > 0)
 		{

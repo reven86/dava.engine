@@ -26,111 +26,47 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __BASE_TEST_H__
-#define __BASE_TEST_H__
+#ifndef __TEST_CHAIN_SCREEN_H__
+#define __TEST_CHAIN_SCREEN_H__
 
 #include "DAVAEngine.h"
-#include <list>
+#include "BaseScreen.h"
 
-using std::list;
+#include "Tests/PerfomanceTest.h"
+
 using namespace DAVA;
 
-class BaseTest : public BaseObject
+class TestChainScreen : public BaseScreen
 {
 public:
-	BaseTest(const String& testName);
-	~BaseTest();
+	TestChainScreen(const Vector<BaseTest*>& testsChain, uint32 fixedTime, uint32 fixedFramesCount, float32 fixedDelta);
 
-	struct FrameInfo
-	{
-		FrameInfo() {}
-		FrameInfo(float32 delta, uint32 frame) : delta(delta), frame(frame) {}
-			
-		float32 delta;
-		uint32 frame;
-	};
+	virtual void OnStart() override;
+	virtual void OnFinish() override;
 
-	virtual void SetupTest(uint32 framesCount, float32 fixedDelta, uint32 maxTestTime);
-	virtual void FinishTest();
-	virtual void ReleaseTest();
+	virtual void BeginFrame() override;
+	virtual void EndFrame() override;
 
-	bool IsFinished() const;
+	virtual void Update(float32 timeElapsed) override;
+	virtual void Draw() override;
 
-	virtual void BeginFrame();
-	virtual void EndFrame();
+	virtual bool IsFinished() const override;
 
-	void Update();
-	virtual void Update(float32 timeElapsed);
-	virtual void Draw();
+protected:
+	virtual ~TestChainScreen();
 
-	const List<FrameInfo>& GetFramesInfo() const;
-	const String& GetName() const;
-
-	float32 GetTestTime() const;
-	uint64 GetElapsedTime() const;
-
-	Scene* GetScene() const;
-
-	static const float32 FRAME_OFFSET;
 private:
-	List<FrameInfo> frames;
-	String testName;
-	
-	uint32 frameNumber;
-	float32 testTime;
-	uint64 startTime;
-	uint64 elapsedTime;
 
-	uint32 targetFramesCount;
+	Vector<BaseTest*> testsChain;
+	BaseTest* currentTest;
+
+	uint32 currentTestIndex;
+
+	uint32 fixedTime;
+	uint32 fixedFramesCount;
 	float32 fixedDelta;
 
-	uint32 targetTestTime;
-
-	Scene* pScene;
+	bool testsFinished;
 };
-
-inline const List<BaseTest::FrameInfo>& BaseTest::GetFramesInfo() const
-{
-	return frames;
-}
-
-inline Scene* BaseTest::GetScene() const
-{
-	return pScene;
-}
-
-inline bool BaseTest::IsFinished() const
-{
-	if (targetFramesCount > 0 && frameNumber >= (targetFramesCount + 2))
-	{
-		return true;
-	}
-	if (targetTestTime > 0 && (testTime * 1000) >= targetTestTime)
-	{
-		return true;
-	}
-
-	return false;
-}
-
-inline const String& BaseTest::GetName() const
-{
-	return testName;
-}
-
-inline uint64 BaseTest::GetElapsedTime() const
-{
-	return elapsedTime;
-}
-
-inline float32 BaseTest::GetTestTime() const
-{
-	return testTime;
-}
-
-inline void BaseTest::Update()
-{
-	pScene->Update(0.0f);
-}
 
 #endif

@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "PerfomanceTest.h"
 
-const String PerfomanceTest::TEST_NAME = "Performance Test";
+const String PerfomanceTest::TEST_NAME = "Performance_Test";
 
 PerfomanceTest::PerfomanceTest() : 
 	BaseTest(TEST_NAME)
