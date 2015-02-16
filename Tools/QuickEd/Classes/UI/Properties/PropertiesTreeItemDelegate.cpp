@@ -20,7 +20,7 @@
 #include "Utils/QtDavaConvertion.h"
 #include "Vector2PropertyDelegate.h"
 #include "EnumPropertyDelegate.h"
-#include "PropertiesTreeModel.h"
+#include "PropertiesModel.h"
 #include "StringPropertyDelegate.h"
 #include "FilePathPropertyDelegate.h"
 #include "ColorPropertyDelegate.h"

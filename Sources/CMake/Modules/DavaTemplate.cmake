@@ -27,9 +27,6 @@ macro( setup_main_executable )
 add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
  
 if( IOS )
-    set( CMAKE_IOS_SDK_ROOT Latest IOS )
-    set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
-
     list( APPEND RESOURCES_LIST ${MACOS_DATA} )    
     list( APPEND RESOURCES_LIST ${IOS_XIB} )
     list( APPEND RESOURCES_LIST ${IOS_PLIST} )
@@ -42,12 +39,13 @@ elseif( MACOS )
 
     list ( APPEND DYLIB_FILES     "${DYLIB_FILES}" "${MACOS_DYLIB}" )  
 
-    list ( APPEND RESOURCES_LIST  ${MACOS_DATA}  )
-    list ( APPEND RESOURCES_LIST  ${DYLIB_FILES} ) 
-    list ( APPEND RESOURCES_LIST  ${MACOS_PLIST} )
-    list ( APPEND RESOURCES_LIST  ${MACOS_ICO}   )
+    list( APPEND RESOURCES_LIST  ${MACOS_DATA}  )
+    list( APPEND RESOURCES_LIST  ${DYLIB_FILES} ) 
+    list( APPEND RESOURCES_LIST  ${MACOS_XIB}   )    
+    list( APPEND RESOURCES_LIST  ${MACOS_PLIST} )
+    list( APPEND RESOURCES_LIST  ${MACOS_ICO}   )
 
-    list ( APPEND LIBRARIES       ${DYLIB_FILES} )
+    list( APPEND LIBRARIES      ${DYLIB_FILES} )
 
 endif()
 
@@ -102,14 +100,7 @@ if( ANDROID )
     if( ANDROID_ICO )
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${ANDROID_ICO}  ${CMAKE_BINARY_DIR} )     
     endif()
-
-    ADD_CUSTOM_COMMAND(
-    TARGET ${PROJECT_NAME}
-    POST_BUILD
-        COMMAND  android update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path . 
-        COMMAND  ant release
-    )
-        
+      
     file ( GLOB SO_FILES ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.so )
     execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME} )
     foreach ( FILE ${SO_FILES} )
@@ -118,20 +109,19 @@ if( ANDROID )
 
     set_target_properties( ${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/ )
 
+    ADD_CUSTOM_COMMAND(
+    TARGET ${PROJECT_NAME}
+    POST_BUILD
+        COMMAND  android update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path . 
+        COMMAND  ant release
+    )
+
 elseif( IOS )
     set_target_properties ( ${PROJECT_NAME} PROPERTIES
         MACOSX_BUNDLE_INFO_PLIST "${IOS_PLISTT}" 
         RESOURCE                 "${RESOURCES_LIST}"
         XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
     )
-    set( CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer" )
-
-    #get_target_property ( TARGET_LOC ${PROJECT_NAME} LOCATION )
-    #string ( REGEX REPLACE /Contents/MacOS/${PROJECT_NAME} "" TARGET_LOC ${TARGET_LOC} )
-    #add_custom_command( TARGET ${PROJECT_NAME} PRE_BUILD
-      #COMMAND ${CMAKE_COMMAND} -E copy_directory ${IOS_DATA} ${TARGET_LOC}/Data
-     # COMMAND ${CMAKE_COMMAND} -E copy ${IOS_PLISTT} ${CMAKE_BINARY_DIR}/CMakeFiles/${PROJECT_NAME}.dir/Info.plist
-    #)
 
 elseif( MACOS )
     set_target_properties ( ${PROJECT_NAME} PROPERTIES

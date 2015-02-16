@@ -4,8 +4,8 @@
 #include <QAction>
 #include <QItemSelection>
 
-#include "UI/Package/UIPackageModel.h"
-#include "UI/Package/UIFilteredPackageModel.h"
+#include "UI/Package/PackageModel.h"
+#include "UI/Package/FilteredPackageModel.h"
 #include "UI/Library/LibraryModel.h"
 #include "UI/PreviewContext.h"
 
@@ -145,14 +145,19 @@ void Document::OnSelectionRootControlChanged(const QList<ControlNode*> &activate
 
 void Document::OnSelectionControlChanged(const QList<ControlNode*> &activatedControls, const QList<ControlNode*> &deactivatedControls)
 {
-    selectedControls.clear();
-    
-    foreach(ControlNode *control, activatedControls)
+    for (ControlNode *control : deactivatedControls)
     {
-        selectedControls.push_back(control);
+        auto it = std::find(selectedControls.begin(), selectedControls.end(), control);
+        if (it != selectedControls.end())
+            selectedControls.erase(it);
     }
-
-    emit controlsSelectionChanged(activatedControls, deactivatedControls);
+    
+    for (ControlNode *control : activatedControls)
+        selectedControls.push_back(control);
+    
+    
+    propertiesContext->SetActiveNode(activatedControls.empty() ? nullptr : activatedControls.first());
+    previewContext->OnSelectedControlsChanged(activatedControls, deactivatedControls);
 }
 
 void Document::OnControlSelectedInEditor(ControlNode *activatedControl)

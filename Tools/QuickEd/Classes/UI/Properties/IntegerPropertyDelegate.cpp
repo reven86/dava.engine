@@ -2,7 +2,7 @@
 #include <QSpinBox>
 #include <QLayout>
 #include "FileSystem/VariantType.h"
-#include "PropertiesTreeModel.h"
+#include "PropertiesModel.h"
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
 

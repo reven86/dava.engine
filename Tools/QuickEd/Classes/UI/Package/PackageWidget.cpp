@@ -4,14 +4,14 @@
 #include <QFileDialog>
 
 #include "ui_PackageWidget.h"
-#include "UIPackageModel.h"
+#include "PackageModel.h"
 
 #include "UI/QtModelPackageCommandExecutor.h"
 
-#include "UI/Package/UIFilteredPackageModel.h"
+#include "UI/Package/FilteredPackageModel.h"
 #include "UI/Document.h"
 #include "UI/PackageContext.h"
-#include "UI/Package/PackageModelCommands.h"
+#include "UI/Commands/PackageModelCommands.h"
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
@@ -311,7 +311,7 @@ void PackageWidget::OnDelete()
         QModelIndex &index = list.first();
         QModelIndex srcIndex = document->GetPackageContext()->GetFilterProxyModel()->mapToSource(index);
         ControlNode *sourceNode = dynamic_cast<ControlNode*>(static_cast<PackageBaseNode*>(srcIndex.internalPointer()));
-        UIPackageModel *model = document->GetPackageContext()->GetModel();
+        PackageModel *model = document->GetPackageContext()->GetModel();
         if (sourceNode && (sourceNode->GetCreationType() == ControlNode::CREATED_FROM_CLASS || sourceNode->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE))
         {
             RemoveControlNodeCommand *cmd = new RemoveControlNodeCommand(model, srcIndex.row(), srcIndex.parent());

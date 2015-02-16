@@ -50,7 +50,7 @@ if     ( ANDROID )
     set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/${ANDROID_NDK_ABI_NAME}" ) 
     
 elseif ( IOS     ) 
-    set ( DAVA_THIRD_PARTY_LIBRARIES _PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/ios" ) 
+    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/ios" ) 
   
 elseif ( MACOS )
     set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/mac" ) 
@@ -76,6 +76,20 @@ elseif ( IOS     )
     set( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
+
+    set( CMAKE_IOS_SDK_ROOT Latest IOS )
+    set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
+    set (CMAKE_OSX_ARCHITECTURES armv7 armv7s i386 arm64 )
+
+    if( NOT IOS_BUNDLE_IDENTIFIER )
+        set( IOS_BUNDLE_IDENTIFIER com.davaconsulting.${PROJECT_NAME} )
+        
+    endif()
+    
+    # Fix try_compile
+    set( MACOSX_BUNDLE_GUI_IDENTIFIER  ${IOS_BUNDLE_IDENTIFIER} )
+    set( CMAKE_MACOSX_BUNDLE YES )
+    set( CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer" )
 
 elseif ( MACOS )
     set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
