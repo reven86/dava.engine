@@ -9,6 +9,7 @@
     #include "RegExp.h"
     #include "PreProcess.h"
 
+    #include <regex>
 
 
 namespace rhi
@@ -38,39 +39,35 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
 
     if( in )
     {
-        RegExp  prop_re;
-        RegExp  sampler_re;
-        RegExp  texture_re;
-        
-//-        prop_re.compile( "\\s*DECLARE_PROP__(DYNAMIC|STATIC)_(GLOBAL|LOCAL)\\s*\\(\\s*(float4x4|float4|float1)\\s*\\,\\s*([a-zA-Z_]+[a-zA-Z_0-9]+)\\s*\\,\\s*\\\"(.*)\\\"\\s*\\)" );
-        prop_re.compile( "\\s?property\\s+(float|float4|float4x4)\\s+([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:(.*)\\:(.*);" );
-        sampler_re.compile( "\\s*DECL_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\)" );
-        texture_re.compile( "\\s?FP_TEXTURE2D\\s?\\(\\s?([a-zA-Z0-9_]+)\\s?\\," );
-    
+        std::regex  prop_re(".*property\\s*(float|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:(.*)\\:(.*);.*");
+        std::regex  sampler_re(".*DECL_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
+        std::regex  texture_re(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
 
         _Reset();
 
         while( !in->IsEof() )
         {
-            char    line[1024];
-            uint32  lineLen = in->ReadLine( line, sizeof(line) );
+            char        line[1024];
+            uint32      lineLen = in->ReadLine( line, sizeof(line) );
+            std::cmatch match;
 
-            if( prop_re.test( line ) )
+
+            if( std::regex_match( line, match, prop_re ) )
             {
                 prop.resize( prop.size()+1 );
 
-                ShaderProp& p           = prop.back();
-                char        type[32];   prop_re.get_pattern( 1, countof(type), type );
-                char        uid[32];    prop_re.get_pattern( 2, countof(uid), uid );
-                char        tags[128];  prop_re.get_pattern( 3, countof(tags), tags );
-                char        script[256];prop_re.get_pattern( 4, countof(script), script );
+                ShaderProp& p      = prop.back();
+                std::string type   = match[1].str();
+                std::string uid    = match[2].str();
+                std::string tags   = match[3].str();
+                std::string script = match[4].str();
 
                 p.uid   = FastName(uid);
                 p.scope = ShaderProp::SCOPE_SHARED;
 
-                if     ( stricmp( type, "float" ) == 0 )    p.type = ShaderProp::TYPE_FLOAT1;
-                else if( stricmp( type, "float4" ) == 0 )   p.type = ShaderProp::TYPE_FLOAT4;
-                else if( stricmp( type, "float4x4" ) == 0 ) p.type = ShaderProp::TYPE_FLOAT4X4;
+                if     ( stricmp( type.c_str(), "float" ) == 0 )    p.type = ShaderProp::TYPE_FLOAT1;
+                else if( stricmp( type.c_str(), "float4" ) == 0 )   p.type = ShaderProp::TYPE_FLOAT4;
+                else if( stricmp( type.c_str(), "float4x4" ) == 0 ) p.type = ShaderProp::TYPE_FLOAT4X4;
 
                 char    scope[64];
                 char    tag[64];
@@ -81,7 +78,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
                 p.tag = FastName(tag);
                 
                 memset( p.defaultValue, 0, sizeof(p.defaultValue) );
-                if( !IsEmptyString( script ) )
+                if( script.length() )
                 {
                 }
 
@@ -143,46 +140,47 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
                     cbuf->regCount     += p.bufferRegCount;
                 }
             }
-            else if( sampler_re.test( line ) )
+            else if( std::regex_match( line, match, sampler_re ) )
             {
-                char                 sname[32]; sampler_re.get_pattern( 1, countof(sname), sname );
-                const RegExp::Match* match      = sampler_re.pattern( 1 );
-                int                  sn         = strlen( sname );
+                std::string sname   = match[1].str();
+                int         mbegin  = strstr( line, sname.c_str() ) - line;
+                int         sn      = sname.length();
 
                 DVASSERT(sampler.size()<10);
-                char ch = line[match->begin+1];
-                int  sl = sprintf( line+match->begin, "%u", sampler.size() );
+                char ch = line[mbegin+1];
+                int  sl = sprintf( line+mbegin, "%u", sampler.size() );
                 DVASSERT(sn>=sl);
-                line[match->begin+1]=ch;
+                line[mbegin+1]=ch;
                 if( sn > sl )
-                    memset( line+match->begin+sl, ' ', sn-sl );
-
+                    memset( line+mbegin+sl, ' ', sn-sl );
                 sampler.resize( sampler.size()+1 );
                 sampler.back().uid  = FastName(sname);
 
                 code.append( line, strlen(line) );
                 code.push_back( '\n' );
             }
-            else if( texture_re.test( line ) )
+//            else if( texture_re.test( line ) )
+            else if( std::regex_match( line, match, texture_re ) )
             {
-                const RegExp::Match* match      = texture_re.pattern( 1 );
-                char                 sname[32]; texture_re.get_pattern( 1, countof(sname), sname );
-                FastName             uid        ( sname );
-
+                std::string sname   = match[1].str();
+                int         mbegin  = strstr( line, sname.c_str() ) - line;
+                FastName    uid     ( sname );
+                
                 for( unsigned s=0; s!=sampler.size(); ++s )
                 {
                     if( sampler[s].uid == uid )
                     {
-                        int sl = sprintf( line+match->begin, "%u", s );
-                        int sn = strlen( sname );
+                        int sl = sprintf( line+mbegin, "%u", s );
+                        int sn = sname.length();
                         DVASSERT(sn>=sl);
-                        line[match->begin+sl] = ',';
+                        line[mbegin+sl] = ',';
                         if( sn > sl )
-                            memset( line+match->begin+sl, ' ', sn-sl );
+                            memset( line+mbegin+sl, ' ', sn-sl );
                         
                         break;
                     }
                 }
+
                 code.append( line, strlen(line) );
                 code.push_back( '\n' );
             }
