@@ -45,27 +45,14 @@ ExpandPathCommand::ExpandPathCommand(DAVA::PathComponent* pathComponent)
     const DAVA::Vector<DAVA::PathComponent::Waypoint *> & waypoints = pathComponent->GetPoints();
     DAVA::uint32 waypointsCount = waypoints.size();
     entityAddCommands.reserve(waypointsCount);
-    bool hasStartWaypoint = false;
     for (DAVA::uint32 wpIdx=0; wpIdx < waypointsCount; ++wpIdx)
     {
         DAVA::PathComponent::Waypoint * waypoint = waypoints[wpIdx];
         DVASSERT(waypoint);
 
-        if (waypoint->IsStarting()) 
-            hasStartWaypoint = true;
-
         DAVA::ScopedPtr<DAVA::Entity> wpEntity(CreateWaypointEntity(waypoint,pathComponent->GetName()));
         mapWaypoint2Entity[waypoint] = wpEntity;
         entityAddCommands.push_back(new EntityAddCommand(wpEntity, pathEntity));
-    }
-    
-    // set start waypoint manually
-    if (!hasStartWaypoint && waypointsCount > 0)
-    {
-        DAVA::Entity* entity = entityAddCommands[0]->GetEntity();
-        DAVA::WaypointComponent* comp = GetWaypointComponent(entity);
-        comp->SetStarting(true);
-        entity->SetNotRemovable(true);
     }
 
     // add edge components

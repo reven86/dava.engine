@@ -79,7 +79,7 @@ void WayEditSystem::RemoveEntity(DAVA::Entity * removedPoint)
         for (auto waypoint : waypointEntities)
         {
             uint count = waypoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
-            for (uint i = 0; i < count; ++i)
+            for (uint32 i = 0; i < count; ++i)
             {
                 edge = static_cast<EdgeComponent*>(waypoint->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
                 DVASSERT(edge);
@@ -96,7 +96,7 @@ void WayEditSystem::RemoveEntity(DAVA::Entity * removedPoint)
         DAVA::List<DAVA::Entity*> breachPoints;
         DAVA::Entity* dest;
         uint count = removedPoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
-        for (uint i = 0; i < count; ++i)
+        for (uint32 i = 0; i < count; ++i)
         {
             edge = static_cast<EdgeComponent*>(removedPoint->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
             DVASSERT(edge);
@@ -105,7 +105,6 @@ void WayEditSystem::RemoveEntity(DAVA::Entity * removedPoint)
             if(dest)
             {
                 breachPoints.push_back(dest);
-                //sceneEditor->Exec(new RemoveComponentCommand(removedPoint, edge));
             }
 
         }
@@ -117,7 +116,7 @@ void WayEditSystem::RemoveEntity(DAVA::Entity * removedPoint)
             {
                 DAVA::EdgeComponent* edge;
                 uint count = src->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
-                for (uint i = 0; i < count; ++i)
+                for (uint32 i = 0; i < count; ++i)
                 {
                     edge = static_cast<EdgeComponent*>(src->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
                     DVASSERT(edge);
@@ -127,7 +126,7 @@ void WayEditSystem::RemoveEntity(DAVA::Entity * removedPoint)
                 return false;
             };
 
-            if (count_if(waypointEntities.begin(), waypointEntities.end(), HasEdgeToBreachPoint) > 1)
+            if (any_of(waypointEntities.begin(), waypointEntities.end(), HasEdgeToBreachPoint))
             {
                 auto delPoint = breachPoint++;
                 breachPoints.erase(delPoint);
@@ -263,9 +262,9 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
                     EntityGroup validPrevPoints = FilterPrevSelection(currentWayParent);
                     if (!validPrevPoints.Size())
                     {
-                        if (currentWayParent->GetComponentCount(DAVA::Component::WAYPOINT_COMPONENT) > 0)
+                        if (currentWayParent->GetChildrenCount() > 0)
                         {
-                            // any existing waypoints should be selected first
+                            // current path has waypoints but none of them was selected. Point adding is denied
                             return;
                         }
                     }

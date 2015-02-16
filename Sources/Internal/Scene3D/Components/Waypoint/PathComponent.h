@@ -73,7 +73,7 @@ public:
             MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
             MEMBER(position, "Waypoint position", I_SAVE | I_EDIT | I_VIEW)
             MEMBER(properties, "Waypoint Properties", I_SAVE | I_EDIT | I_VIEW)
-            MEMBER(isStarting, "Is waypoint starting", I_VIEW)
+            //MEMBER(isStarting, "Is waypoint starting", I_VIEW) // still editable on property editor. TODO: uncomment when fixed this
             COLLECTION(edges, "Edges", I_SAVE | I_VIEW | I_EDIT)
         );
     };
