@@ -57,10 +57,6 @@
 #include "Deprecated/ControlsFactory.h"
 
 #include "Platform/Qt5/QtLayer.h"
-#if defined (__DAVAENGINE_MACOS__)
-#elif defined (__DAVAENGINE_WIN32__)
-	#include "Platform/Qt5/Win32/CorePlatformWin32Qt.h"
-#endif
 
 #ifdef __DAVAENGINE_BEAST__
 #include "BeastProxyImpl.h"
@@ -83,8 +79,7 @@ int main(int argc, char *argv[])
 	new DAVA::QtLayer();
 	DAVA::PVRConverter::Instance()->SetPVRTexTool(String("~res:/PVRTexToolCLI"));
 #elif defined (__DAVAENGINE_WIN32__)
-	HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle(NULL);
-	DAVA::Core::Run(argc, argv, hInstance);
+	DAVA::Core::Run(argc, argv);
     new DAVA::QtLayer();
 	DAVA::PVRConverter::Instance()->SetPVRTexTool(String("~res:/PVRTexToolCLI.exe"));
 #else

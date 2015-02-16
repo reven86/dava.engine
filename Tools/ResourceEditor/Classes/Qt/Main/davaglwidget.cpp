@@ -37,8 +37,7 @@
 #if defined (__DAVAENGINE_MACOS__)
     #include "Platform/Qt5/MacOS/CoreMacOSPlatformQt.h"
 #elif defined (__DAVAENGINE_WIN32__)
-    #include "Platform/Qt5/Win32/CorePlatformWin32Qt.h"
-#endif //#if defined (__DAVAENGINE_MACOS__)
+#endif
 
 #include "davaglwidget.h"
 
@@ -63,9 +62,17 @@
 
 #include <QBoxLayout>
 
+#if defined( Q_OS_WIN )
+#include <QtPlatformheaders/QWGLNativeContext>
+#elif defined( Q_OS_MAC )QCocoaNativeContext
+#include <QtPlatformheaders/QCocoaNativeContext>
+#endif
 
 
-OpenGLWindow::OpenGLWindow() : QWindow()
+
+OpenGLWindow::OpenGLWindow()
+    : QWindow()
+    , QOpenGLFunctions()
 {
     context = nullptr;
     paintDevice = nullptr;
@@ -77,7 +84,6 @@ OpenGLWindow::OpenGLWindow() : QWindow()
 
 OpenGLWindow::~OpenGLWindow()
 {
-    
 }
 
 void OpenGLWindow::render()
@@ -114,7 +120,7 @@ void OpenGLWindow::renderNow()
         fmt.setOption(fmt.options() | QSurfaceFormat::DebugContext);
 
         fmt.setRenderableType(QSurfaceFormat::OpenGL);
-        fmt.setVersion(3, 2);
+        fmt.setVersion(2, 0);
         fmt.setDepthBufferSize(24);
         fmt.setStencilBufferSize(8);
         fmt.setSwapInterval(1);
@@ -131,11 +137,34 @@ void OpenGLWindow::renderNow()
     if (needsInitialize)
     {
         initializeOpenGLFunctions();
+#ifdef Q_OS_WIN
+        glewInit();
+#endif
     }
     
     render();
     
     context->swapBuffers(this);
+}
+
+quint64 OpenGLWindow::GetRenderContextId() const
+{
+    if ( !context )
+        return 0;
+
+    quint64 id = 0;
+
+#if defined( Q_OS_WIN )
+    QWGLNativeContext nativeContext = context->nativeHandle().value< QWGLNativeContext >();
+    id = reinterpret_cast<quint64>( nativeContext.context() );
+#elif defined( Q_OS_MAC )QCocoaNativeContext
+    QCocoaNativeContext nativeContext = context->nativeHandle().value< QCocoaNativeContext >();
+    //(quint64)nativeContext->CGLContextObj();
+    // (uint64)CGLGetCurrentContext();
+    //id = reinterpret_cast<quint64>( nativeContext.context() );
+#endif
+
+    return id;
 }
 
 void OpenGLWindow::exposeEvent(QExposeEvent *event)
@@ -301,7 +330,6 @@ void OpenGLWindow::mouseDoubleClickEvent(QMouseEvent *event)
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
 }
 
-#ifndef QT_NO_WHEELEVENT
 void OpenGLWindow::wheelEvent(QWheelEvent *event)
 {
     DAVA::UIEvent davaEvent;
@@ -318,7 +346,6 @@ void OpenGLWindow::wheelEvent(QWheelEvent *event)
     
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
 }
-#endif //QT_NO_WHEELEVENT
 
 DAVA::UIEvent OpenGLWindow::MapMouseEventToDAVA(const QMouseEvent *event) const
 {
@@ -377,7 +404,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     renderTimer = new QTimer(this);
     
     openGlWindow = new OpenGLWindow();
-    connect(openGlWindow, SIGNAL(Exposed()), this, SLOT(OnWindowExposed()));
+    connect( openGlWindow, &OpenGLWindow::Exposed, this, &DavaGLWidget::OnWindowExposed );
     
     QBoxLayout *lay = new QBoxLayout(QBoxLayout::TopToBottom, this);
     setLayout(lay);
@@ -411,7 +438,7 @@ void DavaGLWidget::OnWindowExposed()
 
     currentDPR = devicePixelRatio();
     
-    DAVA::QtLayer::Instance()->InitializeGlWindow();
+    DAVA::QtLayer::Instance()->InitializeGlWindow( openGlWindow->GetRenderContextId() );
 
     
     PerformSizeChange();
@@ -419,8 +446,8 @@ void DavaGLWidget::OnWindowExposed()
     
     emit Initialized();
     
-    
-    renderTimer->singleShot(16, this, SLOT(OnRenderTimer()));
+    QTimer::singleShot( 16, this, &DavaGLWidget::OnRenderTimer );
+    //renderTimer->singleShot(16, this, SLOT(OnRenderTimer()));
 }
 
 void DavaGLWidget::OnRenderTimer()
@@ -437,7 +464,8 @@ void DavaGLWidget::OnRenderTimer()
     
     QCoreApplication::postEvent(openGlWindow, new QEvent(QEvent::UpdateRequest));
     
-    renderTimer->singleShot(16, this, SLOT(OnRenderTimer()));
+    QTimer::singleShot( 16, this, &DavaGLWidget::OnRenderTimer );
+    //renderTimer->singleShot(16, this, SLOT(OnRenderTimer()));
 }
 
 void DavaGLWidget::resizeEvent(QResizeEvent *e)
@@ -501,4 +529,3 @@ void DavaGLWidget::PerformSizeChange()
     
     emit Resized(currentWidth, currentHeight, currentDPR);
 }
-

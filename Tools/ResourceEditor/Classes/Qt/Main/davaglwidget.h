@@ -50,7 +50,10 @@ class QOpenGLPaintDevice;
 class QOpenGLContext;
 class QPainter;
 class QExposeEvent;
-class OpenGLWindow : public QWindow, protected QOpenGLFunctions
+
+class OpenGLWindow
+    : public QWindow
+    , protected QOpenGLFunctions
 {
     Q_OBJECT
 public:
@@ -59,19 +62,16 @@ public:
     
     void render(QPainter *painter);
     void render();
-    
     void renderNow();
 
+    quint64 GetRenderContextId() const;
+
 signals:
-    
     void Exposed();
     
-    
 protected:
-    
     bool event(QEvent *event) override;
     void exposeEvent(QExposeEvent *event) override;
-    
     
     void keyPressEvent(QKeyEvent *) override;
     void keyReleaseEvent(QKeyEvent *) override;
@@ -82,9 +82,7 @@ protected:
     
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     
-#ifndef QT_NO_WHEELEVENT
     void wheelEvent(QWheelEvent *) override;
-#endif
     
     DAVA::UIEvent MapMouseEventToDAVA(const QMouseEvent *event) const;
     DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button) const;
@@ -92,7 +90,6 @@ protected:
     DAVA::char16 MapQtKeyToDAVA(const QKeyEvent *event);
     
 private:
-    
     QOpenGLContext *context;
     QOpenGLPaintDevice *paintDevice;
 };

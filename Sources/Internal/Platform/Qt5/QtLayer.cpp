@@ -139,9 +139,9 @@ void QtLayer::ProcessFrame()
     RenderManager::Instance()->Unlock();
 }
     
-void QtLayer::InitializeGlWindow()
+void QtLayer::InitializeGlWindow(uint64 glContextId)
 {
-    RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
+    RenderManager::Instance()->SetRenderContextId(glContextId);
 }
 
 
@@ -271,8 +271,14 @@ void QtLayer::MouseEvent(const UIEvent & event)
 
     
 #if defined (__DAVAENGINE_WIN32__)
-void* QtLayer::CreateAutoreleasePool() {}
-void QtLayer::ReleaseAutoreleasePool(void *pool) {}
-#endif //
+void* QtLayer::CreateAutoreleasePool()
+{
+    return nullptr;
+}
+void QtLayer::ReleaseAutoreleasePool(void *pool)
+{
+    (void)pool;
+}
+#endif
 
 };

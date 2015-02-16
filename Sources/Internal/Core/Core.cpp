@@ -78,6 +78,7 @@
 #ifdef __DAVAENGINE_AUTOTESTING__
 #include "Autotesting/AutotestingSystem.h"
 #endif
+//#include "PerformanceSettings.h"
 
 namespace DAVA 
 {

@@ -61,7 +61,7 @@ public:
     void AppStarted();
     void AppFinished();
 
-    void InitializeGlWindow();
+    void InitializeGlWindow(uint64 glContextId);
     
     void CreateConsoleOpenGLContext();
     
