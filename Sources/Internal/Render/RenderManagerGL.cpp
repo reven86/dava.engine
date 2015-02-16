@@ -650,15 +650,14 @@ void RenderManager::AttachRenderData()
     
 int32 RenderManager::HWglGetLastTextureID(int textureType)
 {
-    return lastBindedTexture[textureType];
+    int32 ret = 0;
+    RENDER_VERIFY(glGetIntegerv((Texture::TEXTURE_2D == textureType) ? GL_TEXTURE_BINDING_2D : GL_TEXTURE_BINDING_CUBE_MAP, &ret));
+    return ret;
 }
 	
 void RenderManager::HWglBindTexture(int32 tId, uint32 textureType)
 {
     RENDER_VERIFY(glBindTexture((Texture::TEXTURE_2D == textureType) ? GL_TEXTURE_2D : GL_TEXTURE_CUBE_MAP, tId));
-
-    lastBindedTexture[textureType] = tId;
-    lastBindedTextureType = textureType;
 }
 
 int32 RenderManager::HWglGetLastFBO()

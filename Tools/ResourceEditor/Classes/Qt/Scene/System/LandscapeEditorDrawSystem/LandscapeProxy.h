@@ -145,7 +145,6 @@ protected:
 	void UpdateDisplayedTexture();
 	
 	UniqueHandle noBlendDrawState;
-	UniqueHandle fullTiledTextureState;
 	Texture* cursorTexture;
 };
 

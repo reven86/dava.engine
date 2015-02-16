@@ -88,12 +88,6 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
 #if defined (__DAVAENGINE_OPENGL__)
     bufferBindingId[0] = 0;
     bufferBindingId[1] = 0;
-    
-	for(uint32 i  = 0; i < Texture::TEXTURE_TYPE_COUNT; ++i)
-	{
-		lastBindedTexture[i] = 0;
-	}
-	lastBindedTextureType = Texture::TEXTURE_2D;
 	
     lastBindedFBO = 0;
 	

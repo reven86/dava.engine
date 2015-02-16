@@ -37,7 +37,6 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
 ,	fullTiledTexture(NULL)
 ,   displayingTexture(0)
 ,	mode(MODE_ORIGINAL_LANDSCAPE)
-,	fullTiledTextureState(InvalidUniqueHandle)
 ,	cursorTexture(NULL)
 {
 	DVASSERT(landscape != NULL);
@@ -81,11 +80,6 @@ LandscapeProxy::~LandscapeProxy()
 	SafeRelease(fullTiledTexture);
 
     SafeRelease(cursorTexture);
-
-	if (fullTiledTextureState != InvalidUniqueHandle)
-	{
-		RenderManager::Instance()->ReleaseTextureState(fullTiledTextureState);
-	}
 
 	RenderManager::Instance()->ReleaseRenderState(noBlendDrawState);
 }
@@ -325,15 +319,6 @@ void LandscapeProxy::UpdateFullTiledTexture(bool force)
 		SetMode(MODE_ORIGINAL_LANDSCAPE);
 		fullTiledTexture = baseLandscape->CreateLandscapeTexture();
 		SetMode(oldMode);
-
-		TextureStateData textureStateData;
-		textureStateData.SetTexture(0, fullTiledTexture);
-		UniqueHandle uniqueHandle = RenderManager::Instance()->CreateTextureState(textureStateData);
-		if (fullTiledTextureState != InvalidUniqueHandle)
-		{
-			RenderManager::Instance()->ReleaseTextureState(fullTiledTextureState);
-		}
-		fullTiledTextureState = uniqueHandle;
 
 		UpdateDisplayedTexture();
 	}

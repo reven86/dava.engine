@@ -441,9 +441,6 @@ public:
     
     int32 HWglGetLastTextureID(int textureType);
     void HWglBindTexture(int32 tId, uint32 textureType = Texture::TEXTURE_2D);
-    int32 lastBindedTexture[Texture::TEXTURE_TYPE_COUNT];
-	uint32 lastBindedTextureType;
-
     
     int32 HWglGetLastFBO();
     void HWglBindFBO(const int32 fbo);
@@ -877,7 +874,10 @@ inline void RenderManager::RetainTextureState(UniqueHandle handle)
 inline void RenderManager::ReleaseTextureState(UniqueHandle handle)
 {
     LockTextureState();
-    uniqueTextureStates.ReleaseUnique(handle);
+    if(uniqueTextureStates.ReleaseUnique(handle) == 0 && hardwareState.textureState == handle)
+    {
+        hardwareState.textureState = InvalidUniqueHandle;
+    }
     UnlockTexturerState();
 }
 

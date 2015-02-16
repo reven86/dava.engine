@@ -51,8 +51,8 @@ public:
 	const T& GetUnique(UniqueHandle handle);
 	bool IsUnique(const T& objRef);
 	
-	void RetainUnique(UniqueHandle handle);
-	void ReleaseUnique(UniqueHandle handle);
+	int32 RetainUnique(UniqueHandle handle);
+	int32 ReleaseUnique(UniqueHandle handle);
 	
 private:
 
@@ -143,7 +143,7 @@ bool UniqueStateSet<T>::IsUnique(const T& objRef)
 }
 
 template<typename T>
-void UniqueStateSet<T>::ReleaseUnique(UniqueHandle handle)
+int32 UniqueStateSet<T>::ReleaseUnique(UniqueHandle handle)
 {
 	refCounters[handle] -= 1;
     
@@ -154,6 +154,7 @@ void UniqueStateSet<T>::ReleaseUnique(UniqueHandle handle)
 		values[handle].Clear();
 		freeSlotCount++;
 	}
+    return refCounters[handle];
 }
 
 template<typename T>
@@ -175,10 +176,11 @@ int32 UniqueStateSet<T>::CountFreeSlots()
 }
 
 template<typename T>
-void UniqueStateSet<T>::RetainUnique(UniqueHandle handle)
+int32 UniqueStateSet<T>::RetainUnique(UniqueHandle handle)
 {
     DVASSERT(refCounters[handle] > 0);
 	refCounters[handle] += 1;
+    return refCounters[handle];
 }
 };
 

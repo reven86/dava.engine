@@ -272,7 +272,7 @@ void Texture::ReleaseTextureDataInternal(uint32 textureType, uint32 textureID, u
 
 	//VI: reset texture for the current texture type in order to avoid
 	//issue when cubemap texture was deleted while being binded to the state
-    if(RenderManager::Instance()->lastBindedTexture[textureType] == textureID)
+    if(RenderManager::Instance()->HWglGetLastTextureID(textureType) == textureID)
 	{
 		RenderManager::Instance()->HWglBindTexture(0, textureType);
 	}
