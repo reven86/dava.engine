@@ -109,10 +109,11 @@ if( ANDROID )
 
     set_target_properties( ${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/ )
 
+    execute_process( COMMAND  android update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path . )
+
     ADD_CUSTOM_COMMAND(
     TARGET ${PROJECT_NAME}
     POST_BUILD
-        COMMAND  android update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path . 
         COMMAND  ant release
     )
 
