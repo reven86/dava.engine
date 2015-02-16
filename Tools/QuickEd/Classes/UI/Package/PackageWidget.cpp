@@ -11,7 +11,6 @@
 #include "UI/Package/FilteredPackageModel.h"
 #include "UI/Document.h"
 #include "UI/PackageContext.h"
-#include "UI/Commands/PackageModelCommands.h"
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
@@ -308,15 +307,15 @@ void PackageWidget::OnDelete()
     QModelIndexList list = ui->treeView->selectionModel()->selectedIndexes();
     if (!list.empty())
     {
-        QModelIndex &index = list.first();
-        QModelIndex srcIndex = document->GetPackageContext()->GetFilterProxyModel()->mapToSource(index);
-        ControlNode *sourceNode = dynamic_cast<ControlNode*>(static_cast<PackageBaseNode*>(srcIndex.internalPointer()));
-        PackageModel *model = document->GetPackageContext()->GetModel();
-        if (sourceNode && (sourceNode->GetCreationType() == ControlNode::CREATED_FROM_CLASS || sourceNode->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE))
+        Vector<ControlNode*> nodes;
+        for (QModelIndex &index : list)
         {
-            RemoveControlNodeCommand *cmd = new RemoveControlNodeCommand(model, srcIndex.row(), srcIndex.parent());
-            document->UndoStack()->push(cmd);
+            QModelIndex srcIndex = document->GetPackageContext()->GetFilterProxyModel()->mapToSource(index);
+            ControlNode *sourceNode = dynamic_cast<ControlNode*>(static_cast<PackageBaseNode*>(srcIndex.internalPointer()));
+            if (sourceNode)
+                nodes.push_back(sourceNode);
         }
+        document->GetCommandExecutor()->RemoveControls(nodes);
     }
 }
 

@@ -212,10 +212,13 @@ void EditorUIPackageBuilder::EndControl(bool isRoot)
         {
             if (basePackage)
             {
+                ControlsContainerNode *container;
                 if (insertingTarget)
-                    commandExecutor->InsertControlIntoParentControl(lastControl, insertingTarget);
+                    container = insertingTarget;
                 else
-                    commandExecutor->InsertControlIntoPackage(lastControl, packageNode->GetPackageControlsNode());
+                    container = packageNode->GetPackageControlsNode();
+                
+                commandExecutor->InsertControl(lastControl, container, container->GetCount());
             }
             else
             {

@@ -2,6 +2,7 @@
 #define __UI_EDITOR_CONTROL_NODE__
 
 #include "PackageBaseNode.h"
+#include "ControlsContainerNode.h"
 
 #include "Model/ControlProperties/PropertiesRoot.h"
 
@@ -10,7 +11,7 @@ class PackageNode;
 class ControlPrototype;
 class PackageRef;
 
-class ControlNode : public PackageBaseNode
+class ControlNode : public ControlsContainerNode
 {
 public:
     enum eCreationType
@@ -35,11 +36,12 @@ private:
 public:
     ControlNode *Clone();
     
-    void Add(ControlNode *node);
-    void InsertBelow(ControlNode *node, const ControlNode *belowThis);
-    void Remove(ControlNode *node);
-    virtual int GetCount() const override;
-    virtual ControlNode *Get(int index) const override;
+    void Add(ControlNode *node) override;
+    void InsertAtIndex(int index, ControlNode *node) override;
+    void InsertBelow(ControlNode *node, const ControlNode *belowThis) override;
+    void Remove(ControlNode *node) override;
+    int GetCount() const override;
+    ControlNode *Get(int index) const override;
     ControlNode *FindByName(const DAVA::String &name) const;
     
     virtual DAVA::String GetName() const;
@@ -47,7 +49,7 @@ public:
     ControlPrototype *GetPrototype() const;
     const DAVA::Vector<ControlNode*> &GetInstances() const;
 
-    virtual int GetFlags() const override;
+    int GetFlags() const override;
     void SetReadOnly();
     
     eCreationType GetCreationType() const { return creationType; }

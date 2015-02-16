@@ -14,10 +14,11 @@ public:
     virtual ~ImportedPackagesNode();
 
     void Add(PackageControlsNode *node);
+    void InsertAtIndex(DAVA::int32 index, PackageControlsNode *node);
     void InsertBelow(PackageControlsNode *node, const PackageControlsNode *belowThis);
     void Remove(PackageControlsNode *node);
     virtual int GetCount() const override;
-    virtual PackageControlsNode *Get(int index) const override;
+    virtual PackageControlsNode *Get(DAVA::int32 index) const override;
     
     virtual DAVA::String GetName() const;
     PackageControlsNode *FindPackageControlsNodeByName(const DAVA::String &name) const;

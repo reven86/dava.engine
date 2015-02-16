@@ -11,7 +11,7 @@
 using namespace DAVA;
 
 PackageControlsNode::PackageControlsNode(PackageNode *_parent, PackageRef *_packageRef)
-    : PackageBaseNode(_parent)
+    : ControlsContainerNode(_parent)
     , name("Controls")
     , readOnly(false)
     , packageRef(SafeRetain(_packageRef))
@@ -33,6 +33,15 @@ void PackageControlsNode::Add(ControlNode *node)
     node->SetParent(this);
     nodes.push_back(SafeRetain(node));
     GetPackage()->AddControl(node->GetControl());
+}
+
+void PackageControlsNode::InsertAtIndex(int index, ControlNode *node)
+{
+    DVASSERT(node->GetParent() == NULL);
+    node->SetParent(this);
+
+    nodes.insert(nodes.begin() + index, SafeRetain(node));
+    GetPackage()->InsertControlAtIndex(index, node->GetControl());
 }
 
 void PackageControlsNode::InsertBelow(ControlNode *node, const ControlNode *belowThis)
