@@ -226,7 +226,7 @@ void LODEditor::LODDataChanged(SceneEditor2 *scene /* = nullptr */)
     UpdateLODButtons(currentLODSystem);
 }
 
-void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continuous)
+void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continious)
 {
     if (changedLayers.empty())
     {
@@ -234,16 +234,17 @@ void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bo
     }
 
     ui->distanceSlider->LockDistances(true);
-    DAVA::Map<DAVA::uint32, DAVA::float32> lodDistances;
-    for (auto layer : changedLayers)
+
+    if (!continious)
     {
-        double value = ui->distanceSlider->GetDistance(layer);
-        lodDistances[layer] = value;
-    }
-    {
+        DAVA::Map<DAVA::uint32, DAVA::float32> lodDistances;
+        for (auto layer : changedLayers)
+        {
+            lodDistances[layer] = ui->distanceSlider->GetDistance(layer);
+        }
         GetCurrentEditorLODSystem()->UpdateDistances(lodDistances);
-        UpdateSpinboxesBorders();
     }
+    UpdateSpinboxesBorders();
     ui->distanceSlider->LockDistances(false);
 }
 
@@ -269,18 +270,18 @@ void LODEditor::LODDistanceChangedBySpinbox(double value)
 void LODEditor::UpdateSpinboxesBorders()
 {
     distanceWidgets[1].distance->setMinimum(LodComponent::MIN_LOD_DISTANCE);
-    DAVA::uint32 count = GetCurrentEditorLODSystem()->GetCurrentLodsLayersCount();
+    DAVA::uint32 count = ui->distanceSlider->GetLayersCount();
     for (DAVA::uint32  i = 1; i < count; ++i) //we don't work with zero level and zero spinbox
     {
-        int val = GetCurrentEditorLODSystem()->GetLayerDistance(i - 1);
-        distanceWidgets[i].distance->setMinimum(GetCurrentEditorLODSystem()->GetLayerDistance(i - 1));
+        int val = ui->distanceSlider->GetDistance(i - 1);
+        distanceWidgets[i].distance->setMinimum(ui->distanceSlider->GetDistance(i - 1));
 
         if (i < count - 1)
         {
-            int val = GetCurrentEditorLODSystem()->GetLayerDistance(i + 1);
-            distanceWidgets[i].distance->setMaximum(GetCurrentEditorLODSystem()->GetLayerDistance(i + 1));
+            int val = ui->distanceSlider->GetDistance(i + 1);
+            distanceWidgets[i].distance->setMaximum(ui->distanceSlider->GetDistance(i + 1));
         }
-        SetSpinboxValue(distanceWidgets[i].distance, GetCurrentEditorLODSystem()->GetLayerDistance(i));
+        SetSpinboxValue(distanceWidgets[i].distance, ui->distanceSlider->GetDistance(i));
     }
     distanceWidgets[count - 1].distance->setMaximum(LodComponent::MAX_LOD_DISTANCE);
 }

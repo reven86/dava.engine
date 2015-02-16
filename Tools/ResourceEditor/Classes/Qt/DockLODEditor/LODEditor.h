@@ -72,7 +72,7 @@ protected slots:
     void LODDataChanged(SceneEditor2 *scene = nullptr);
 
     void LODDistanceChangedBySpinbox(double value);
-    void LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continuous);
+    void LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continious);
 
     void ForceLayerActivated(int index);
     void EditorModeChanged(int newMode);

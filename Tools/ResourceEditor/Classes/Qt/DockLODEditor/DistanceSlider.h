@@ -81,6 +81,7 @@ public:
     ~DistanceSlider();
 
     void SetLayersCount(int count);
+    inline int GetLayersCount() const;
 
     void SetDistance(int layer, double value);
     double GetDistance(int layer) const;
@@ -105,5 +106,10 @@ private:
     
     int stretchSize[DAVA::LodComponent::MAX_LOD_LAYERS];
 };
+
+inline int DistanceSlider::GetLayersCount() const
+{
+    return layersCount;
+}
 
 #endif // __DISTANCE_SLIDER_H__

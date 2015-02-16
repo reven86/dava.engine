@@ -154,8 +154,6 @@ void DistanceSlider::SplitterMoved(int pos, int index)
         QList<int> sizes = splitter->sizes();
         
         double scaleSize = GetScaleSize();
-
-        Qt::MouseButtons mouseBtnState = QApplication::mouseButtons();
     
         QVector<int> changedLayers;
 
@@ -178,7 +176,7 @@ void DistanceSlider::SplitterMoved(int pos, int index)
     
         if(changedLayers.size() > 0)
         {
-            emit DistanceChanged(changedLayers);
+            emit DistanceChanged(changedLayers, QApplication::mouseButtons() & Qt::LeftButton);
         }
     }
 }

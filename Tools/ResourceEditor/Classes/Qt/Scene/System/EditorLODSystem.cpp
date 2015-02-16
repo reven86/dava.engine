@@ -159,13 +159,10 @@ void EditorLODSystem::CollectLODDataFromScene()
             ++currentLodsLayersCount;
         }
     }
-    if (!allSceneModeEnabled)
+    if (!forceDistanceEnabled && forceLayer >= currentLodsLayersCount)
     {
-        if (!forceDistanceEnabled && forceLayer != DAVA::LodComponent::INVALID_LOD_LAYER && forceLayer >= currentLodsLayersCount)
-        {
-            SetForceLayer(currentLodsLayersCount - 1);
-            return;
-        }
+        SetForceLayer(currentLodsLayersCount - 1);
+        return;
     }
 }
 
@@ -465,8 +462,9 @@ void EditorLODSystem::UpdateForceDistance()
 {
     for (auto &lod : GetCurrentLODs())
     {
-        lod->SetForceDistance(forceDistance);
         lod->SetForceLodLayer(DAVA::LodComponent::INVALID_LOD_LAYER);
+        lod->currentLod = DAVA::LodComponent::INVALID_LOD_LAYER;
+        lod->SetForceDistance(forceDistance);
     }
 }
 
@@ -484,8 +482,9 @@ void EditorLODSystem::UpdateForceLayer()
 {
     for (auto &lod : GetCurrentLODs())
     {
-        lod->SetForceLodLayer(forceLayer);
+        lod->SetForceDistance(DAVA::LodComponent::INVALID_DISTANCE);
         lod->currentLod = DAVA::LodComponent::INVALID_LOD_LAYER;
+        lod->SetForceLodLayer(forceLayer);
     }
 }
 
