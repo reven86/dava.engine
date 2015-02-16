@@ -71,8 +71,6 @@ void FrameworkDidLaunched()
     DAVA::Core::Instance()->SetOptions(appOptions);
 }
 
-#include "memprof/mem_profiler.h"
-
 void FrameworkWillTerminate()
 {
 	Logger::Debug("FrameworkWillTerminate");

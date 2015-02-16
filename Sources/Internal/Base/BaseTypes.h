@@ -135,30 +135,10 @@
 //#endif 
 //#define __DAVAENGINE_IPHONE__
 
-//#if defined(ENABLE_MEMORY_MANAGER)
-//#include "Base/STLDebugAllocator.h"
-//#define DAVADefaultSTLAllocator std::allocator
-//#else
-//#define DAVADefaultSTLAllocator std::allocator
-//#endif
-
-#if defined(MEMPROF_ENABLE)
-#include "memprof/profiled_allocator.h"
-#endif
-
-namespace DAVA
-{
-
-#if defined(MEMPROF_ENABLE)
-template<typename T>
-using DAVADefaultSTLAllocator = std::allocator<T>;
-//using DAVADefaultSTLAllocator = profiled_allocator<T>;
-#else
-template<typename T>
-using DAVADefaultSTLAllocator = std::allocator<T>;
-#endif
-
-}
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+#include "MemoryManager/AllocPools.h"
+#include "MemoryManager/MemoryManagerAllocator.h"
+#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
 namespace DAVA
 {
@@ -203,76 +183,44 @@ typedef wchar_t     char16;
 typedef float       float32;
 typedef double      float64;
 
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+template<typename T>
+using DefaultSTLAllocator = std::allocator<T>;
+#else
+template<typename T>
+using DefaultSTLAllocator = std::allocator<T>;
+#endif
+
 template<typename CharT>
-using BasicString = std::basic_string<CharT, std::char_traits<CharT>, DAVADefaultSTLAllocator<CharT>>;
+using BasicString = std::basic_string<CharT, std::char_traits<CharT>, DefaultSTLAllocator<CharT>>;
 
 typedef BasicString<char8>      String;
 typedef BasicString<wchar_t>    WideString;
 
-/*
-typedef std::string		String;
-#if defined(__DAVAENGINE_ANDROID__)
-	typedef std::basic_string<wchar_t>	WideString;
-#else //#if defined(__DAVAENGINE_ANDROID__)
-	typedef std::wstring	WideString;
-#endif //#if defined(__DAVAENGINE_ANDROID__)
-*/
-
-//template <typename _Ty, typename _Ax = std::allocator(_Ty)> 
-//class List : public std::list<_Ty, _Ax>  {};
+template<typename T>
+using List = std::list<T, DefaultSTLAllocator<T>>;
 
 template<typename T>
-using List = std::list<T, DAVADefaultSTLAllocator<T>>;
+using Vector = std::vector<T, DefaultSTLAllocator<T>>;
 
 template<typename T>
-using Vector = std::vector<T, DAVADefaultSTLAllocator<T>>;
-
-template<typename T>
-using Deque = std::deque<T, DAVADefaultSTLAllocator<T>>;
-
-//template <  typename _E,
-//            typename _A = DAVADefaultSTLAllocator <_E> >
-//class List : public std::list< _E, _A> {};
-    
-//template < typename _E,
-//           typename _A = DAVADefaultSTLAllocator < _E> >
-//class Vector : public std::vector< _E, _A>
-//{
-//public:
-//    typedef _E	   value_type;
-//    typedef size_t size_type;
-//    explicit Vector(size_type n, const value_type & value = value_type()) : std::vector< _E, _A >(n, value) {}
-//    Vector() : std::vector< _E, _A >() {}
-//};
-
-//template < typename _E> class Vector : public std::vector< _E>
-//{
-//public:
-//    typedef _E	   value_type;
-//    typedef size_t size_type;
-//    explicit Vector(size_type n, const value_type & value = value_type()) : std::vector< _E>(n, value) {}
-//    Vector() : std::vector< _E>() {}
-//};
+using Deque = std::deque<T, DefaultSTLAllocator<T>>;
 
 template <  class _Key,
             class _Compare = std::less<_Key>,
-            class _Alloc = DAVADefaultSTLAllocator<_Key> >
+            class _Alloc = DefaultSTLAllocator<_Key> >
 class Set : public std::set< _Key, _Compare, _Alloc > {};
     
-    
-//template < class _E , class _A = DAVADefaultSTLAllocator<_E> >
-//class Deque : public std::deque< _E, _A> {};
-
 template<	class _Kty,
 			class _Ty,
 			class _Pr = std::less<_Kty>,
-			class _Alloc = DAVADefaultSTLAllocator<std::pair<const _Kty, _Ty> > >
+			class _Alloc = DefaultSTLAllocator<std::pair<const _Kty, _Ty> > >
 class Map : public std::map<_Kty, _Ty, _Pr, _Alloc> {};
 
 template<	class _Kty,
 			class _Ty,
 			class _Pr = std::less<_Kty>,
-			class _Alloc = DAVADefaultSTLAllocator<std::pair<const _Kty, _Ty> > >
+			class _Alloc = DefaultSTLAllocator<std::pair<const _Kty, _Ty> > >
 class MultiMap : public std::multimap<_Kty, _Ty, _Pr, _Alloc> {};
 
 template < class T, class Container = Deque<T> >
@@ -325,9 +273,9 @@ inline T Clamp(T val, T a, T b)
 #define Memcpy memcpy
 #define Memset memset
 #define Memmove memmove
-#define Alloc malloc
-#define Free free
-#define Realloc realloc
+//#define Alloc malloc
+//#define Free free
+//#define Realloc realloc
 
 template <class TYPE>
 void SafeDelete(TYPE * &d)

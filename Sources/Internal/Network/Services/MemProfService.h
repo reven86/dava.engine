@@ -5,13 +5,18 @@
 #include "Base/BaseTypes.h"
 #include "Network/NetService.h"
 
-#include "memprof/mem_profiler_types.h"
-#include "memprof/internal_allocator.h"
+#include "MemoryManager/MemoryManagerAllocator.h"
+#include "MemoryManager/MemoryManagerTypes.h"
 
 namespace DAVA
 {
 namespace Net
 {
+
+struct net_mem_stat_t
+{
+    int n;
+};
 
 class MemProfService : public NetService
 {    
@@ -40,9 +45,9 @@ private:
     size_t maxQueueSize;
     uint32 timestamp;
 
-#if defined(MEMPROF_ENABLE)
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
     template<typename T>
-    using my_alloc = internal_allocator<T>;
+    using my_alloc = MemoryManagerAllocator<T, ALLOC_POOL_INTERNAL>;
 #else
     template<typename T>
     using my_alloc = std::allocator<T>;

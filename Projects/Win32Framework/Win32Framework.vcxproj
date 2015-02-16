@@ -107,7 +107,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>./../../Libs/lua/include;$(ProjectDir)../../Sources/Internal;$(ProjectDir)/../../Sources/External;$(ProjectDir)/../../Sources/External/Freetype;$(ProjectDir)/../../Sources/External/Yaml;$(ProjectDir)/../../Libs/include;$(ProjectDir)/../../Libs/glew/include;$(ProjectDir)/../../Libs/freetype/include;$(DXSDK_DIR)/include;$(ProjectDir)/../../Libs/fmod/include;$(ProjectDir)/../../Libs/lua/include;$(ProjectDir)../../Sources/Tools;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;__DAVAENGINE_DEBUG__;CURL_STATICLIB;DAVA_FMOD;MEMPROF_ENABLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;__DAVAENGINE_DEBUG__;CURL_STATICLIB;DAVA_FMOD;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -150,7 +150,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>./../../Libs/lua/include;$(ProjectDir)/../../Libs/fmod/include;./../../Sources/Internal;./../../Sources/External;./../../Sources/External/Freetype;./../../Sources/External/Yaml;./../../Libs/include;./../../Libs/glew/include;$(DXSDK_DIR)/include;./../../Libs/freetype/include;$(ProjectDir)/../../Libs/lua/include;%(AdditionalIncludeDirectories);$(ProjectDir)../../Sources/Tools</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;CURL_STATICLIB;DAVA_FMOD;MEMPROF_ENABLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;CURL_STATICLIB;DAVA_FMOD;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -279,7 +279,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Radix\Radix.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\ScopedPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Serializable.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\STLDebugAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\TemplateHelpers.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\PerformanceSettings.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbClient.h" />
@@ -294,8 +293,6 @@
     <ClInclude Include="..\..\Sources\Internal\DAVAVersion.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\Backtrace.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\DVAssertMessage.h" />
-    <ClInclude Include="..\..\Sources\Internal\Debug\MemoryManagerDebugNew.h" />
-    <ClInclude Include="..\..\Sources\Internal\Debug\MemoryManagerTypes.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\Stats.h" />
     <ClInclude Include="..\..\Sources\Internal\Animation\AnimatedObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Animation\Animation.h" />
@@ -329,7 +326,6 @@
     <ClInclude Include="..\..\Sources\Internal\Debug\DVAssert.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\List.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\ListAllocator.h" />
-    <ClInclude Include="..\..\Sources\Internal\Debug\MemoryManager.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\Replay.h" />
     <ClInclude Include="..\..\Sources\Internal\DLC\DLC.h" />
     <ClInclude Include="..\..\Sources\Internal\DLC\Downloader\CurlDownloader.h" />
@@ -394,14 +390,12 @@
     <ClInclude Include="..\..\Sources\Internal\Math\Sphere.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Spline.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Vector.h" />
-    <ClInclude Include="..\..\Sources\Internal\memprof\internal_alloc.h" />
-    <ClInclude Include="..\..\Sources\Internal\memprof\internal_allocator.h" />
-    <ClInclude Include="..\..\Sources\Internal\memprof\malloc_hook.h" />
-    <ClInclude Include="..\..\Sources\Internal\memprof\memprof.h" />
-    <ClInclude Include="..\..\Sources\Internal\memprof\memprof_config.h" />
-    <ClInclude Include="..\..\Sources\Internal\memprof\mem_profiler.h" />
-    <ClInclude Include="..\..\Sources\Internal\memprof\mem_profiler_types.h" />
-    <ClInclude Include="..\..\Sources\Internal\memprof\profiled_allocator.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocPools.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocThunk.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MallocHook.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManager.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerTypes.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\Buffer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimerTemplate.h" />
@@ -854,8 +848,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Debug\MemoryManager.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Debug\MemoryManagerDebugNew.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\Replay.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\Stats.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DLC\DLC.cpp" />
@@ -908,10 +900,10 @@
     <ClCompile Include="..\..\Sources\Internal\Math\RectPacker.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Vector.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\memprof\internal_alloc.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\memprof\malloc_hook.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\memprof\mem_profiler.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\memprof\new_hook.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocThunk.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\MallocHook.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\MemoryManager.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\OperatorNewHook.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Base\Endpoint.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Base\IfAddress.cpp" />

@@ -1,5 +1,3 @@
-#include "memprof/mem_profiler.h"
-
 #include "Network/Services/MemProfService.h"
 
 namespace DAVA

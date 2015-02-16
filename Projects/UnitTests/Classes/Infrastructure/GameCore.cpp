@@ -34,6 +34,8 @@
 #include "TexturePacker/CommandLineParser.h"
 #include "Utils/Utils.h"
 
+#include "MemoryManager/MemoryManager.h"
+
 #include "Tests/MathTest.h"
 #include "Tests/FunctionBindSingalTest.h"
 #include "Tests/ImageSizeTest.h"
@@ -55,8 +57,6 @@
 #include "Tests/JNITest.h"
 #include "Tests/DataVaultTest.h"
 //$UNITTEST_INCLUDE
-
-#include "memprof/mem_profiler.h"
 
 void GameCore::RunOnlyThisTest()
 {
@@ -114,6 +114,14 @@ void GameCore::OnAppStarted()
     RunOnlyThisTest();
     RegisterTests();
     RunTests();
+
+    MemoryManager::EnterTagScope(1);
+    {
+        int* p = new int[10];
+        std::vector<char, MemoryManagerAllocator<char, 2>> v;
+        v.resize(100);
+    }
+    MemoryManager::LeaveTagScope();
 }
 
 GameCore::GameCore() 
@@ -124,6 +132,8 @@ GameCore::GameCore()
     , loggerInUse(false)
     , memprofInUse(false)
 {
+    MemoryManager::RegisterAllocPoolName(2, "STL");
+    MemoryManager::RegisterTagName(1, "TAG_1");
 }
 
 GameCore::~GameCore()
