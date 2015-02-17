@@ -422,11 +422,11 @@ bool DateTime::ParseRFC822Date(const DAVA::String& src)
     
     // Get the day, month, and year.
     int32 day;
-    char monthStr[20];
+    char monthStr[20] = {0};
     int32 month;
     int32 year;
     
-    if (sscanf(s,"%d%s%d",&day,monthStr,&year) != 3) return false;
+    if (sscanf(s,"%d%19s%d",&day,monthStr,&year) != 3) return false;
     SKIP_NON_WHITESPACE
     SKIP_WHITESPACE
     SKIP_NON_WHITESPACE
@@ -469,8 +469,8 @@ bool DateTime::ParseRFC822Date(const DAVA::String& src)
     SKIP_WHITESPACE
     
     if(*s == '+') s++;
-    char zoneStr[20];
-    if(sscanf(s,"%s",zoneStr) != 1)
+    char zoneStr[20] = {0};
+    if(sscanf(s,"%19s",zoneStr) != 1)
     {
         strcpy(zoneStr,"GMT");
     }

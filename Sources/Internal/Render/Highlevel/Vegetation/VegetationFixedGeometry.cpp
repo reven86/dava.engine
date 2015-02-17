@@ -311,7 +311,7 @@ void VegetationFixedGeometry::GenerateVertices(uint32 maxClusters,
             uint32 clusterIndexY = clusterIndex / maxClusterRowSize;
             
             uint32 matrixIndex = (clusterIndexX / maxClusters) + tilesPerRow * (clusterIndexY / maxClusters); //0...15
-            DVASSERT(matrixIndex >= 0 && matrixIndex < (tilesPerRow * tilesPerRow));
+            DVASSERT(matrixIndex < (tilesPerRow * tilesPerRow));
             
             uint32 matrixIndexX = matrixIndex % tilesPerRow;
             uint32 matrixIndexY = matrixIndex / tilesPerRow;
@@ -442,7 +442,7 @@ void VegetationFixedGeometry::PrepareIndexBufferData(uint32 indexBufferIndex,
                 {
                     size_t vertexIndex = baseIndex + clusterIndices[clusterIndexIndex];
                     
-                    DVASSERT(vertexIndex >= 0 && vertexIndex < vertexData.size());
+                    DVASSERT(vertexIndex < vertexData.size());
                     
                     VegetationVertex& vertex = vertexData[vertexIndex];
                     vertex.tangent.x = (float32)resolutionIndex;
@@ -549,7 +549,7 @@ void VegetationFixedGeometry::GenerateRenderDataObjects(VegetationRenderData& re
     vertexRenderDataObject->SetStream(EVF_BINORMAL, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].binormal));
     vertexRenderDataObject->SetStream(EVF_TANGENT, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].tangent));
     vertexRenderDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, sizeof(VegetationVertex), &(vertexData[0].texCoord0));
-    vertexRenderDataObject->BuildVertexBuffer(vertexData.size(), true);
+    vertexRenderDataObject->BuildVertexBuffer(vertexData.size(), BDT_STATIC_DRAW, true);
     
     size_t totalIndexObjectArrayCount = indexRenderDataObject.size();
     for(size_t indexArrayIndex = 0; indexArrayIndex < totalIndexObjectArrayCount; ++indexArrayIndex)
@@ -563,7 +563,7 @@ void VegetationFixedGeometry::GenerateRenderDataObjects(VegetationRenderData& re
             size_t directionCount = directionArray.size();
             for(size_t directionIndex = 0; directionIndex < directionCount; ++directionIndex)
             {
-                directionArray[directionIndex].rdo->BuildIndexBuffer(true);
+                directionArray[directionIndex].rdo->BuildIndexBuffer(BDT_STATIC_DRAW, true);
                 directionArray[directionIndex].rdo->AttachVertices(vertexRenderDataObject);
             }
         }
