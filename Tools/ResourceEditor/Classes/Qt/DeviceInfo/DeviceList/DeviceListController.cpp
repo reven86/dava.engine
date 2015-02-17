@@ -111,7 +111,7 @@ IChannelListener* DeviceListController::CreateMemProfiler(uint32 serviceId, void
     {
         QModelIndex index = model->index(row, 0);
         DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-        return services.memprof;
+        return services.memprof->NetObject();
     }
     return NULL;
 }

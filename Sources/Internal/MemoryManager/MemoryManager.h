@@ -75,6 +75,10 @@ public:
     static void LeaveTagScope();
     
     static GeneralInfo* GetGeneralInfo();
+    static void FreeGeneralInfo(const GeneralInfo* ptr);
+
+    static CurrentAllocStat* GetCurrentAllocStat();
+    static void FreeCurrentAllocStat(const CurrentAllocStat* ptr);
     
 private:
     void* Alloc(size_t size, uint32 poolIndex);

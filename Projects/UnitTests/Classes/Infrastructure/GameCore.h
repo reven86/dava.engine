@@ -35,7 +35,7 @@
 
 #include "Network/PeerDesription.h"
 #include "Network/Services/NetLogger.h"
-#include "Network/Services/MemProfService.h"
+#include "Network/Services/MMNetServer.h"
 
 #include <fstream>
 
@@ -125,8 +125,8 @@ private:
     Net::IChannelListener* CreateLogger(uint32 serviceId, void* context);
     void DeleteLogger(Net::IChannelListener* obj, void* context);
     
-    Net::IChannelListener* CreateMemProfiler(uint32 serviceId, void* context);
-    void DeleteMemProfiler(Net::IChannelListener* obj, void* context);
+    Net::IChannelListener* CreateMMServer(uint32 serviceId, void* context);
+    void DeleteMMServer(Net::IChannelListener* obj, void* context);
 
     //////////////////////////////////
 
@@ -149,11 +149,11 @@ private:
     TeamcityTestsOutput teamCityOutput;
     
     Net::NetLogger netLogger;
-    Net::MemProfService memprof;
+    Net::MMNetServer netMM;
     Net::PeerDescription peerDescr;
     
     bool loggerInUse;
-    bool memprofInUse;
+    bool mmInUse;
 };
 
 

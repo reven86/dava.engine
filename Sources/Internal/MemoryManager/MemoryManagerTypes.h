@@ -57,12 +57,23 @@ struct AllocPoolStat
 struct GeneralInfo
 {
     static const size_t NAME_LENGTH = 16;
-    
+
     uint32 tagCount;
     uint32 allocPoolCount;
     uint32 counterCount;
     uint32 poolCounterCount;
     char8 names[1][NAME_LENGTH];
+};
+
+struct CurrentAllocStat
+{
+    static const size_t MAX_TAG_DEPTH = 8;
+
+    uint32 nextBlockNo;
+    uint32 tagDepth;
+    uint32 tagStack[MAX_TAG_DEPTH];
+    GeneralAllocStat generalStat;
+    AllocPoolStat poolStat[1];
 };
 
 }   // namespace DAVA

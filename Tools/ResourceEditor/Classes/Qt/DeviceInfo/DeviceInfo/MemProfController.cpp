@@ -1,5 +1,7 @@
 #include <Utils/UTF8Utils.h>
 
+#include "Base/FunctionTraits.h"
+
 #include "MemProfWidget.h"
 #include "MemProfController.h"
 
@@ -12,6 +14,8 @@ MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr
     , peer(peerDescr)
 {
     ShowView();
+    netClient.SetCallbacks(MakeFunction(this, &MemProfController::ChannelOpen),
+                           MakeFunction(this, &MemProfController::ChannelClosed));
 }
 
 MemProfController::~MemProfController() {}
@@ -42,24 +46,21 @@ void MemProfController::ChannelOpen()
     view->ClearStat();
 }
 
-void MemProfController::ChannelClosed(const char8* message)
+void MemProfController::ChannelClosed(char8* message)
 {
     view->ChangeStatus("disconnected", message);
-    for (auto* x : v)
-        delete x;
-    v.clear();
 }
 
 void MemProfController::PacketReceived(const void* packet, size_t length)
 {
-    const net_mem_stat_t* src = static_cast<const net_mem_stat_t*>(packet);
+    /*const net_mem_stat_t* src = static_cast<const net_mem_stat_t*>(packet);
     if (sizeof(net_mem_stat_t) == length)
     {
         net_mem_stat_t* dst = new net_mem_stat_t;
         *dst = *src;
         v.push_back(dst);
         view->UpdateStat(dst);
-    }
+    }*/
 }
 
 void MemProfController::Output(const String& msg)

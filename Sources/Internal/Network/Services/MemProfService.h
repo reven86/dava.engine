@@ -5,7 +5,6 @@
 #include "Base/BaseTypes.h"
 #include "Network/NetService.h"
 
-#include "MemoryManager/MemoryManagerAllocator.h"
 #include "MemoryManager/MemoryManagerTypes.h"
 
 namespace DAVA
@@ -29,7 +28,6 @@ public:
     void ChannelOpen() override;
     void ChannelClosed(const char8* message) override;
     void PacketReceived(const void* packet, size_t length) override;
-    void PacketSent() override;
     void PacketDelivered() override;
     
 private:
@@ -45,16 +43,7 @@ private:
     size_t maxQueueSize;
     uint32 timestamp;
 
-#if defined(DAVA_MEMORY_PROFILING_ENABLE)
-    template<typename T>
-    using my_alloc = MemoryManagerAllocator<T, ALLOC_POOL_INTERNAL>;
-#else
-    template<typename T>
-    using my_alloc = std::allocator<T>;
-#endif
-    //Deque<net_mem_stat_t*> queue;
-    std::deque<net_mem_stat_t*, my_alloc<net_mem_stat_t*>> queue;
-    my_alloc<net_mem_stat_t> alloc;
+    Deque<net_mem_stat_t*> queue;
 };
 
 }   // namespace Net

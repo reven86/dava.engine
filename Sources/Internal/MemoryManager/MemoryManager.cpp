@@ -288,6 +288,23 @@ GeneralInfo* MemoryManager::GetGeneralInfo()
     return result;
 }
 
+void MemoryManager::FreeGeneralInfo(const GeneralInfo* ptr)
+{
+    delete [] reinterpret_cast<const uint8*>(ptr);
+}
+
+CurrentAllocStat* MemoryManager::GetCurrentAllocStat()
+{
+    CurrentAllocStat temp;
+
+    return nullptr;
+}
+
+void MemoryManager::FreeCurrentAllocStat(const CurrentAllocStat* ptr)
+{
+    delete[] reinterpret_cast<const uint8*>(ptr);
+}
+
 size_t MemoryManager::CalcNamesCount(const char8* begin, const char* end)
 {
     size_t n = 0;

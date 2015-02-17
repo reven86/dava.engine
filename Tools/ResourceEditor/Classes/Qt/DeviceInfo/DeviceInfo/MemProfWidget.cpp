@@ -1,6 +1,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 
+#include "Base/BaseTypes.h"
 #include "MemProfWidget.h"
 #include "qcustomplot.h"
 
@@ -14,9 +15,6 @@ MemProfWidget::MemProfWidget(QWidget *parent)
     CreateUI();
     
     plot = ui->plot;
-    
-    prevOrder = (uint32_t)-1;
-    offset = 0;
     
     plot->addGraph();
     plot->graph(0)->setPen(QPen(Qt::blue));
@@ -70,7 +68,7 @@ void MemProfWidget::ClearStat()
     plot->graph(1)->rescaleValueAxis(true);
     plot->replot();
 }
-
+/*
 void MemProfWidget::UpdateStat(const net_mem_stat_t* stat)
 {
     uint32_t alloc = 0;
@@ -91,7 +89,8 @@ void MemProfWidget::UpdateStat(const net_mem_stat_t* stat)
     UpdateLabels(stat, alloc, total);
     offset += 1;
 }
-
+*/
+/*
 void MemProfWidget::UpdateLabels(const net_mem_stat_t* stat, uint32_t alloc, uint32_t total)
 {
     uint32_t nblocks = 0;
@@ -110,10 +109,10 @@ void MemProfWidget::UpdateLabels(const net_mem_stat_t* stat, uint32_t alloc, uin
     //labels[R].max_block_size->setNum(int(stat->stat[i][0].max_block_size));
     labels[R].nblocks->setNum(int(nblocks));
 }
-
+*/
 void MemProfWidget::CreateUI()
 {
-    const char* t[MEMPROF_MEM_COUNT + 1] = {
+    const char* t[] = {
         "Internal use",
         "Allocated by new",
         "Allicated for STL",
@@ -122,7 +121,7 @@ void MemProfWidget::CreateUI()
         "Total"
     };
     QGridLayout* l = new QGridLayout();
-    for (int i = 0;i < MEMPROF_MEM_COUNT + 1;++i)
+    for (int i = 0;i < COUNT_OF(t);++i)
     {
         labels[i].title = new QLabel(t[i]);
         labels[i].alloc = new QLabel("0");
