@@ -184,6 +184,9 @@
 #
 # ------------------------------------------------------------------------------
 
+set     ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Modules/" ) 
+include ( GlobalVariables )
+
 cmake_minimum_required( VERSION 2.6.3 )
 
 if( DEFINED CMAKE_CROSSCOMPILING )
