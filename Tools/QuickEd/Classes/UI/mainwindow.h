@@ -107,13 +107,15 @@ private:
 
     bool CheckAndUnlockProject(const QString& projectPath);
 
+    void ConnectToWidgets(Document *document);
+    void DisconnectFromWidgets(Document *document);
+
     int GetTabIndexByPath(const QString &fileName) const;
     Document *GetCurrentTabDocument() const;
     Document *GetTabDocument(int index) const;
 
 private:
     Ui::MainWindow *ui;
-
     // Background Frame Color menu actions.
     QList<QAction*> backgroundFramePredefinedColorActions;
     QAction* backgroundFrameUseCustomColorAction;

@@ -45,10 +45,7 @@ class Document : public QObject
 public:
     Document(Project * project, PackageNode *package, QObject *parent = NULL);
     virtual ~Document();
-    
-    void ConnectToWidgets(DocumentWidgets *widgets);
-    void DisconnectFromWidgets(DocumentWidgets *widgets);
-    
+       
     bool IsModified() const;
     void ClearModified();
     const DAVA::FilePath &PackageFilePath() const;
@@ -63,7 +60,7 @@ public:
     LibraryContext *GetLibraryContext() const {return libraryContext; };
     PreviewContext *GetPreviewContext() const {return previewContext; };
 
-    QUndoStack *UndoStack() const { return undoStack; }
+    QUndoStack *UndoStack() { return undoStack; }
     
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
 
