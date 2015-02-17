@@ -1042,7 +1042,7 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
     spriteVertexCount = (int32)sd.transformedVertices.size();
     spriteIndexCount = sd.GetVertexInTrianglesCount();
 
-    PushBatch(state->renderState, sprite->GetTextureHandle(state->frame), TEXTURE_MUL_FLAT_COLOR, currentClip,
+    PushBatch(state->renderState, textureHandle, TEXTURE_MUL_FLAT_COLOR, currentClip,
         spriteVertexCount, (float32*)&sd.transformedVertices.front(), (float32*)&sd.texCoords.front(),
         spriteIndexCount, sd.indeces,
         RenderManager::Instance()->GetColor());
@@ -1142,7 +1142,7 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
     spriteVertexCount = (int32)td.transformedVertices.size();
     spriteIndexCount = (int32)td.indeces.size();
 
-    PushBatch(state->renderState, sprite->GetTextureHandle(state->frame), TEXTURE_MUL_FLAT_COLOR, currentClip,
+    PushBatch(state->renderState, textureHandle, TEXTURE_MUL_FLAT_COLOR, currentClip,
         spriteVertexCount, (float32*)&td.transformedVertices.front(), (float32*)&td.texCoords.front(),
         spriteIndexCount, &td.indeces.front(),
         RenderManager::Instance()->GetColor());
