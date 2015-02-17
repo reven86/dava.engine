@@ -62,7 +62,7 @@ inline void checkFloatFormat( const WideString &formatStr, float32 value, TestTe
     WideString checkStr = StringToWString(tmpFormated);
     if( data )
         data->testData.message = "\"" + WStringToString(testStr) + "\" == \"" + WStringToString(checkStr) + "\"";
-    TEST_VERIFY( testStr == checkStr );
+    TEST_VERIFY( testStr == checkStr ); //-V595
     if( data )
         data->testData.message.clear();
 }

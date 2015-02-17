@@ -152,7 +152,6 @@ int32 CoreWin32PlatformQt::MoveTouchsToVector(UINT message, WPARAM wParam, LPARA
 			it->phase = phase;
 			//				it->timestamp = curEvent.timestamp;
 			//				it->tapCount = curEvent.clickCount;
-			it->phase = phase;
 
 			break;
 		}

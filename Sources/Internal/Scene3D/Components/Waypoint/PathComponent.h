@@ -51,6 +51,7 @@ public:
         Waypoint();
         ~Waypoint();
         Waypoint(const Waypoint&);
+        Waypoint & operator= (const Waypoint&) = delete;
         
         FastName name;
         Vector3 position;
@@ -78,6 +79,7 @@ public:
         Edge();
         ~Edge();
         Edge(const Edge&);
+        Edge & operator= (const Edge&) = delete;
         
         Waypoint * destination;
 

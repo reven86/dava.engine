@@ -40,7 +40,7 @@
 
 namespace DAVA
 {
-static const String RENDER_STATES_NAMES[] = 
+static const Array<String, 10> RENDER_STATES_NAMES 
 {
 	"STATE_BLEND",
 	"STATE_DEPTH_TEST",
@@ -876,7 +876,8 @@ void RenderState::GetCurrentStateStrings(uint32 state, Vector<String> & statesSt
 {
 	statesStrs.clear();
 
-	for(uint32 bit = 0; bit < 32; bit++)
+    size_t size = RENDER_STATES_NAMES.size ();
+    for (uint32 bit = 0; bit < size; bit++)
 	{
 		uint32 tempState = 1 << bit;
 		if (state & tempState)

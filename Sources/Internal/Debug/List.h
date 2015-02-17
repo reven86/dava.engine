@@ -59,6 +59,8 @@ public:
 
 	public:
 
+        Iterator (const Iterator&) = delete;
+
 		// ***************************************************
 		//! \brief    	operator++ - postincrement the iterator
 		//! 

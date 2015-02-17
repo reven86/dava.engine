@@ -100,9 +100,9 @@ namespace DAVA
 
 	}
 
-	bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
+	bool CoreWin32Platform::CreateWin32Window(HINSTANCE _hInstance)
 	{	
-		this->hInstance = hInstance;
+		hInstance = _hInstance;
 
 		//single instance check
 		TCHAR fileName[MAX_PATH];
@@ -728,8 +728,6 @@ namespace DAVA
             GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, 
                 sizeof(RAWINPUTHEADER));
             LPBYTE lpb = new BYTE[dwSize];
-            if (lpb == NULL)
-                return 0;
 
             if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, 
                 sizeof(RAWINPUTHEADER)) != dwSize )

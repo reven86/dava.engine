@@ -2045,37 +2045,37 @@ uint32 LibPVRHelper::GetCubemapLayout(const PVRFile *pvrFile)
             {
                 case 'X':
                 {
-                    layout = layout | (Texture::CUBE_FACE_POSITIVE_X << (index * 4));
+                    layout = (Texture::CUBE_FACE_POSITIVE_X << (index * 4));
                     break;
                 }
                         
                 case 'x':
                 {
-                    layout = layout | (Texture::CUBE_FACE_NEGATIVE_X << (index * 4));
+                    layout = (Texture::CUBE_FACE_NEGATIVE_X << (index * 4));
                     break;
                 }
                         
                 case 'Y':
                 {
-                    layout = layout | (Texture::CUBE_FACE_POSITIVE_Y << (index * 4));
+                    layout = (Texture::CUBE_FACE_POSITIVE_Y << (index * 4));
                     break;
                 }
                         
                 case 'y':
                 {
-                    layout = layout | (Texture::CUBE_FACE_NEGATIVE_Y << (index * 4));
+                    layout = (Texture::CUBE_FACE_NEGATIVE_Y << (index * 4));
                     break;
                 }
                         
                 case 'Z':
                 {
-                    layout = layout | (Texture::CUBE_FACE_POSITIVE_Z << (index * 4));
+                    layout = (Texture::CUBE_FACE_POSITIVE_Z << (index * 4));
                     break;
                 }
                         
                 case 'z':
                 {
-                    layout = layout | (Texture::CUBE_FACE_NEGATIVE_Z << (index * 4));
+                    layout = (Texture::CUBE_FACE_NEGATIVE_Z << (index * 4));
                     break;
                 }
             }

@@ -53,6 +53,7 @@ protected:
 public:
 	Camera();
     Camera(const Camera & c);
+    Camera & operator=(const Camera & c) = delete;
 	
     /**
         \brief Setup perspective camera with basic camera params.

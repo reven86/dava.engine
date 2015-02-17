@@ -280,19 +280,19 @@ void FileSystemTest::FileOperationsTestFunction(PerfFuncData * data)
     TEST_VERIFY(NULL != f1);
     TEST_VERIFY(NULL != f2);
 
-    if (!f2 || !f2)
+    if (!f1 || !f2)
         return;
 
-    uint32 size = f1->GetSize();
-    TEST_VERIFY(size == f2->GetSize());
+    uint32 fileSize = f1->GetSize();
+    TEST_VERIFY(fileSize == f2->GetSize());
 
-    char8 *buf1 = new char8[size];
-    char8 *buf2 = new char8[size];
+    char8 *buf1 = new char8[fileSize];
+    char8 *buf2 = new char8[fileSize];
 
     do
     {
-        uint32 res1 = f1->ReadLine(buf1, size);
-        uint32 res2 = f2->ReadLine(buf2, size);
+        uint32 res1 = f1->ReadLine(buf1, fileSize);
+        uint32 res2 = f2->ReadLine(buf2, fileSize);
         TEST_VERIFY(res1 == res2);
         TEST_VERIFY(!Memcmp(buf1, buf2, res1));
 

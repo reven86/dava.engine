@@ -60,7 +60,7 @@ private:
 	
 	Vector<T> values;
 	Vector<int32> refCounters;
-	uint32 freeSlotCount;
+	int32 freeSlotCount;
 };
 
 template<typename T>

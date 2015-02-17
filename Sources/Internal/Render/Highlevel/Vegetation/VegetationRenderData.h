@@ -66,6 +66,7 @@ struct VegetationSortedBufferItem
         
     inline VegetationSortedBufferItem();
     inline VegetationSortedBufferItem(const VegetationSortedBufferItem& src);
+    VegetationSortedBufferItem & operator= (const VegetationSortedBufferItem& src) = delete;
     inline ~VegetationSortedBufferItem();
     inline void SetRenderDataObject(RenderDataObject* dataObject);
     inline void SetRenderDataObjectAttachment(RenderDataObject* dataObject);

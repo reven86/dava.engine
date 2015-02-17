@@ -403,14 +403,7 @@ int32 do_div(int64 &n, int32 base)
                         }
                     }
                     
-                    if (qualifier == 'h')
-                    {
-                        *str++ = (char16) va_arg(args, int32);
-                    }
-                    else
-                    {
-                        *str++ = (char16) va_arg(args, int32);
-                    }
+                    *str++ = (char16) va_arg(args, int32);
                     
                     while (--field_width > 0)
                     {
@@ -428,14 +421,7 @@ int32 do_div(int64 &n, int32 base)
                         }
                     }
                     
-                    if (qualifier == 'l' || qualifier == 'w')
-                    {
-                        *str++ = (char16) va_arg(args, int32);
-                    }
-                    else
-                    {
-                        *str++ = (char16) va_arg(args, int32);
-                    }
+                    *str++ = (char16) va_arg(args, int32);
                     
                     while (--field_width > 0)
                     {

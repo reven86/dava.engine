@@ -57,17 +57,14 @@ LocalNotificationProgress *const LocalNotificationController::CreateNotification
 {
 	LocalNotificationProgress *note = new LocalNotificationProgress();
     
-    if (NULL != note)
-    {
-        note->SetText(text);
-        note->SetTitle(title);
-        note->SetProgressCurrent(current);
-        note->SetProgressTotal(maximum);
-        note->SetAction(Message());
+    note->SetText(text);
+    note->SetTitle(title);
+    note->SetProgressCurrent(current);
+    note->SetProgressTotal(maximum);
+    note->SetAction(Message());
 
-        LockGuard<Mutex> guard(notificationsListMutex);
-        notificationsList.push_back(note);
-    }
+    LockGuard<Mutex> guard(notificationsListMutex);
+    notificationsList.push_back(note);
 
     return note;
 }
@@ -76,15 +73,12 @@ LocalNotificationText *const LocalNotificationController::CreateNotificationText
 {
 	LocalNotificationText *note = new LocalNotificationText();
 
-    if (NULL != note)
-    {
-        note->SetText(text);
-        note->SetTitle(title);
-        note->SetAction(Message());
+    note->SetText (text);
+    note->SetTitle (title);
+    note->SetAction (Message ());
 
-        LockGuard<Mutex> guard(notificationsListMutex);
-        notificationsList.push_back(note);
-    }
+    LockGuard<Mutex> guard (notificationsListMutex);
+    notificationsList.push_back (note);
 
     return note;
 }

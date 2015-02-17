@@ -381,7 +381,7 @@ void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent *effect, float32
 		
 		//prepare forces as they will now actually change in time even for already generated particles
 		static Vector<Vector3> currForceValues;
-		int32 forcesCount;
+		int32 forcesCount = 0;
 		if (group.head)
 		{
 			forcesCount = group.layer->forces.size();			

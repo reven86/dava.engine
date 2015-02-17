@@ -79,14 +79,11 @@ protected:
     template<typename T> static YamlParser * CreateAndParse(const T & data)
     {
         YamlParser * parser = new YamlParser();
-        if (parser)
+        bool parseResult = parser->Parse(data);
+        if(!parseResult)
         {
-            bool parseResult = parser->Parse(data);
-            if(!parseResult)
-            {
-                SafeRelease(parser);
-                return 0;
-            }
+            SafeRelease(parser);
+            return 0;
         }
         return parser;
     }

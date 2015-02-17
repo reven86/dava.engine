@@ -54,6 +54,7 @@ class StaticOcclusionData
 {
 public:
     StaticOcclusionData();
+    StaticOcclusionData (const StaticOcclusionData & other) = delete;
     ~StaticOcclusionData();
     
     void Init(uint32 sizeX, uint32 sizeY, uint32 sizeZ, uint32 objectCount, const AABBox3 & bbox, const float32 *_cellHeightOffset);

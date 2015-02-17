@@ -79,6 +79,7 @@ struct IlluminationParams : public InspBase
     inline IlluminationParams(NMaterial* parentMaterial = NULL);
  
     inline IlluminationParams(const IlluminationParams & params);
+    IlluminationParams & operator= (const IlluminationParams & params) = delete;
     
     inline int32 GetLightmapSize() const;
     void SetLightmapSize(const int32 &size);

@@ -998,10 +998,10 @@ void VegetationRenderObject::InitLodRanges()
     Vector2 smallestUnitSize = GetVegetationUnitWorldSize(RESOLUTION_SCALE[0]);
     
     resolutionRanges[0].x = lodRanges.x * smallestUnitSize.x;
-    resolutionRanges[0].y = lodRanges.y * smallestUnitSize.x;
+    resolutionRanges[0].y = lodRanges.y * smallestUnitSize.x;//-V537
 
     resolutionRanges[1].x = lodRanges.y * smallestUnitSize.x;
-    resolutionRanges[1].y = lodRanges.z * smallestUnitSize.x;
+    resolutionRanges[1].y = lodRanges.z * smallestUnitSize.x;//-V537
 
     resolutionRanges[2].x = lodRanges.z * smallestUnitSize.x;
     resolutionRanges[2].y = visibleClippingDistances.x;//RESOLUTION_RANGES[2].x * 1000.0f;
@@ -1254,7 +1254,7 @@ VegetationCustomGeometrySerializationDataPtr VegetationRenderObject::LoadCustomG
         Vector<Vector<VegetationIndex> >& layerIndices = indices[indices.size() - 1];
         
         uint32 lodCount = layerArchive->GetUInt32("cgsd.layer.lodCount");
-        for(uint32 lodIndex = 0; lodIndex < lodCount; ++lodIndex)
+        for(uint32 _lodIndex = 0; _lodIndex < lodCount; ++_lodIndex)
         {
             layerPositions.push_back(Vector<Vector3>());
             layerTexCoords.push_back(Vector<Vector2>());
@@ -1266,7 +1266,7 @@ VegetationCustomGeometrySerializationDataPtr VegetationRenderObject::LoadCustomG
             Vector<Vector3>& lodNormals = layerNormals[layerNormals.size() - 1];
             Vector<VegetationIndex>& lodIndices = layerIndices[layerIndices.size() - 1];
             
-            KeyedArchive* lodArchive = layerArchive->GetArchive(Format("cgsd.lod.%d", lodIndex));
+            KeyedArchive* lodArchive = layerArchive->GetArchive(Format("cgsd.lod.%d", _lodIndex));
             
             uint32 posCount = lodArchive->GetUInt32("cgsd.lod.posCount");
             for(uint32 i = 0; i < posCount; ++i)
@@ -1427,9 +1427,9 @@ void VegetationRenderObject::CollectMetrics(VegetationMetrics& metrics)
         for(size_t i = 0; i < visibleCellCount; ++i)
         {
             AbstractQuadTreeNode<VegetationSpatialData>* spatialData = visibleCells[i];
-            uint32 lodIndex = MapCellSquareToResolutionIndex(spatialData->data.width * spatialData->data.height);
+            uint32 _lodIndex = MapCellSquareToResolutionIndex(spatialData->data.width * spatialData->data.height);
             
-            metrics.quadTreeLeafCountPerLOD[lodIndex] += 1;
+            metrics.quadTreeLeafCountPerLOD[_lodIndex] += 1;
         }
         
         for(size_t renderDataIndex = 0; renderDataIndex < renderDataCount; ++renderDataIndex)
@@ -1449,30 +1449,30 @@ void VegetationRenderObject::CollectMetrics(VegetationMetrics& metrics)
                     metrics.polyCountPerLayerPerLod[layerIndex].resize(renderDataObj->polyCountPerInstance[layerIndex].size());
                 }
                 
-                for(size_t lodIndex = 0; lodIndex < maxLodCount; ++lodIndex)
+                for(size_t _lodIndex = 0; _lodIndex < maxLodCount; ++_lodIndex)
                 {
-                    metrics.instanceCountPerLOD[lodIndex] += renderDataObj->instanceCount[layerIndex][lodIndex];
-                    metrics.polyCountPerLOD[lodIndex] += (renderDataObj->polyCountPerInstance[layerIndex][lodIndex] * renderDataObj->instanceCount[layerIndex][lodIndex]);
+                    metrics.instanceCountPerLOD[_lodIndex] += renderDataObj->instanceCount[layerIndex][_lodIndex];
+                    metrics.polyCountPerLOD[_lodIndex] += (renderDataObj->polyCountPerInstance[layerIndex][_lodIndex] * renderDataObj->instanceCount[layerIndex][_lodIndex]);
                     
-                    metrics.instanceCountPerLayer[layerIndex] += renderDataObj->instanceCount[layerIndex][lodIndex];
-                    metrics.polyCountPerLayer[layerIndex] += (renderDataObj->polyCountPerInstance[layerIndex][lodIndex] * renderDataObj->instanceCount[layerIndex][lodIndex]);
+                    metrics.instanceCountPerLayer[layerIndex] += renderDataObj->instanceCount[layerIndex][_lodIndex];
+                    metrics.polyCountPerLayer[layerIndex] += (renderDataObj->polyCountPerInstance[layerIndex][_lodIndex] * renderDataObj->instanceCount[layerIndex][_lodIndex]);
                     
-                    metrics.polyCountPerLayerPerLod[layerIndex][lodIndex] += renderDataObj->polyCountPerInstance[layerIndex][lodIndex];
+                    metrics.polyCountPerLayerPerLod[layerIndex][_lodIndex] += renderDataObj->polyCountPerInstance[layerIndex][_lodIndex];
                 }
             }
         
             for(size_t i = 0; i < visibleCellCount; ++i)
             {
                 AbstractQuadTreeNode<VegetationSpatialData>* spatialData = visibleCells[i];
-                uint32 lodIndex = MapCellSquareToResolutionIndex(spatialData->data.width * spatialData->data.height);
+                uint32 _lodIndex = MapCellSquareToResolutionIndex(spatialData->data.width * spatialData->data.height);
                 
                 for(size_t layerIndex = 0; layerIndex < layerCount; ++layerIndex)
                 {
-                    metrics.visibleInstanceCountPerLOD[lodIndex] += renderDataObj->instanceCount[layerIndex][lodIndex];
-                    metrics.visiblePolyCountPerLOD[lodIndex] += (renderDataObj->polyCountPerInstance[layerIndex][lodIndex] * renderDataObj->instanceCount[layerIndex][lodIndex]);
+                    metrics.visibleInstanceCountPerLOD[_lodIndex] += renderDataObj->instanceCount[layerIndex][_lodIndex];
+                    metrics.visiblePolyCountPerLOD[_lodIndex] += (renderDataObj->polyCountPerInstance[layerIndex][_lodIndex] * renderDataObj->instanceCount[layerIndex][_lodIndex]);
                     
-                    metrics.visibleInstanceCountPerLayer[layerIndex] += renderDataObj->instanceCount[layerIndex][lodIndex];
-                    metrics.visiblePolyCountPerLayer[layerIndex] += (renderDataObj->polyCountPerInstance[layerIndex][lodIndex] * renderDataObj->instanceCount[layerIndex][lodIndex]);
+                    metrics.visibleInstanceCountPerLayer[layerIndex] += renderDataObj->instanceCount[layerIndex][_lodIndex];
+                    metrics.visiblePolyCountPerLayer[layerIndex] += (renderDataObj->polyCountPerInstance[layerIndex][_lodIndex] * renderDataObj->instanceCount[layerIndex][_lodIndex]);
                 }
             }
         }

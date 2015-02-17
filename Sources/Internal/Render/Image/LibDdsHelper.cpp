@@ -1115,12 +1115,6 @@ bool LibDdsHelper::AddCRCIntoMetaData(const FilePath &filePathname) const
 	}
     uint32 fileSize = fileRead->GetSize();
     char *fileBuffer = new char[fileSize];
-	if(!fileBuffer)
-	{
-		Logger::Error("[LibDdsHelper::AddCRCIntoMetaData]: cannot allocate buffer for file data");
-		SafeRelease(fileRead);
-		return false;
-	}
     if(fileRead->Read(fileBuffer, fileSize) != fileSize)
 	{
 		Logger::Error("[LibDdsHelper::AddCRCIntoMetaData]: cannot read from file %s", fileNameStr.c_str());

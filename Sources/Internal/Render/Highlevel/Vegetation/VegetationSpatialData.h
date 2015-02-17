@@ -53,6 +53,7 @@ struct VegetationSpatialData
     uint8 clippingPlane;
     
     inline VegetationSpatialData();
+    VegetationSpatialData (const VegetationSpatialData& src) = delete;
     inline VegetationSpatialData& operator=(const VegetationSpatialData& src);
     inline static bool IsEmpty(uint32 cellValue);
     inline bool IsRenderable() const;

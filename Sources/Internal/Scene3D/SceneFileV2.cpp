@@ -1153,15 +1153,8 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
         renderComponent->SetRenderObject(mesh);
         newMeshInstanceNode->AddComponent(renderComponent);
         
-		if(parent)
-		{
-			parent->InsertBeforeNode(newMeshInstanceNode, oldMeshInstanceNode);
-			parent->RemoveNode(oldMeshInstanceNode);
-		}
-		else
-		{
-			DVASSERT(0 && "How we appeared here");
-		}
+		parent->InsertBeforeNode(newMeshInstanceNode, oldMeshInstanceNode);
+		parent->RemoveNode(oldMeshInstanceNode);
 		newMeshInstanceNode->Release();
 		mesh->Release();
         return true;

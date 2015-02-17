@@ -85,14 +85,8 @@ namespace DAVA
             , type(_type)
 		{}
 
-        InspDesc & operator=(const InspDesc &desc)
-        {
-            text = desc.text;
-            enumMap = desc.enumMap;
-            type = desc.type;
-
-            return *this;
-        }
+        InspDesc & operator=(const InspDesc &desc) = default;
+        InspDesc (const InspDesc &desc) = default;
 	};
 
 	// Базовое представление члена интроспекции

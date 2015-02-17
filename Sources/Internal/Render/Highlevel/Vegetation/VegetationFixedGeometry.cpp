@@ -234,16 +234,16 @@ void VegetationFixedGeometry::Build(Vector<VegetationRenderData*>& renderDataArr
     
 }
     
-void VegetationFixedGeometry::GenerateVertices(uint32 maxClusters,
+void VegetationFixedGeometry::GenerateVertices(uint32 _maxClusters,
                     size_t maxTotalClusters,
                     uint32 maxClusterRowSize,
                     uint32 tilesPerRow,
-                    Vector2 unitSize,
+                    Vector2 _unitSize,
                     Vector<uint32>& layerOffsets,
                     VegetationRenderData& renderData)
 {
-    uint32 clustersPerTile = maxClusters * maxClusters;
-    float32 atomicOffsetY = unitSize.y / clustersPerTile;
+    uint32 clustersPerTile = _maxClusters * _maxClusters;
+    float32 atomicOffsetY = _unitSize.y / clustersPerTile;
     
     Vector<uint32> shuffleDepth;
     shuffleDepth.reserve(maxTotalClusters);
@@ -299,7 +299,7 @@ void VegetationFixedGeometry::GenerateVertices(uint32 maxClusters,
         }
         
         float32 clusterVisualSize = cellData.geometryScale.x * (clusterBBox.max.x - clusterBBox.min.x);
-        uint32 clustersInRow = (uint32)(unitSize.x / clusterVisualSize);
+        uint32 clustersInRow = (uint32)(_unitSize.x / clusterVisualSize);
         if(clustersInRow <= 0)
         {
             clustersInRow = 1;
@@ -310,13 +310,13 @@ void VegetationFixedGeometry::GenerateVertices(uint32 maxClusters,
             uint32 clusterIndexX = clusterIndex % maxClusterRowSize;
             uint32 clusterIndexY = clusterIndex / maxClusterRowSize;
             
-            uint32 matrixIndex = (clusterIndexX / maxClusters) + tilesPerRow * (clusterIndexY / maxClusters); //0...15
+            uint32 matrixIndex = (clusterIndexX / _maxClusters) + tilesPerRow * (clusterIndexY / _maxClusters); //0...15
             DVASSERT(matrixIndex < (tilesPerRow * tilesPerRow));
             
             uint32 matrixIndexX = matrixIndex % tilesPerRow;
             uint32 matrixIndexY = matrixIndex / tilesPerRow;
             
-            Vector2 matrixCellStart(unitSize.x * matrixIndexX, unitSize.y * matrixIndexY);
+            Vector2 matrixCellStart(_unitSize.x * matrixIndexX, _unitSize.y * matrixIndexY);
             
             float32 randomOffsetX = clusterVisualSize * (clusterIndex % clustersInRow) + clusterVisualSize * (0.5f - (float32)Random::Instance()->RandFloat());//unitSize.x * Random::Instance()->RandFloat();
             float32 randomOffsetY = atomicOffsetY * shuffleDepth[clusterIndex]; //unitSize.y * Random::Instance()->RandFloat();
@@ -331,7 +331,7 @@ void VegetationFixedGeometry::GenerateVertices(uint32 maxClusters,
                 VegetationVertex& vertex = vertexData[vertexIndex];
                 
                 vertex.coord.x = clusterCenter.x + clusterVertices[clusterVertexIndex].x * cellData.geometryScale.x;
-                vertex.coord.y = clusterCenter.y + clusterVertices[clusterVertexIndex].y * cellData.geometryScale.x;
+                vertex.coord.y = clusterCenter.y + clusterVertices[clusterVertexIndex].y * cellData.geometryScale.x; //-V537
                 vertex.coord.z = clusterCenter.z + clusterVertices[clusterVertexIndex].z * cellData.geometryScale.y;
                 
                 vertex.normal = clusterNormals[clusterVertexIndex];

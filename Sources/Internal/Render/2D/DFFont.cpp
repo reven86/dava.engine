@@ -100,27 +100,27 @@ bool DFFontInternalData::InitFromConfig(const DAVA::FilePath &path)
     }
         
     baseSize = configNode->Get("size")->AsFloat();
-    const YamlNode* paddingTop = configNode->Get("padding_top");
-    if (paddingTop)
-        this->paddingTop = paddingTop->AsFloat();
-    const YamlNode* paddingLeft = configNode->Get("padding_left");
-    if (paddingLeft)
-        this->paddingLeft = paddingLeft->AsFloat();
-    const YamlNode* paddingBottom = configNode->Get("padding_bottop");
-    if (paddingBottom)
-        this->paddingBottom = paddingBottom->AsFloat();
-    const YamlNode* paddingRight = configNode->Get("padding_right");
-    if (paddingRight)
-        this->paddingRight = paddingRight->AsFloat();
-    const YamlNode* lineHeight = configNode->Get("lineHeight");
-    if (lineHeight)
-        this->lineHeight = lineHeight->AsFloat();
-	const YamlNode* baselineHeight = configNode->Get("baselineHeight");
-	if (baselineHeight)
-		this->baselineHeight = baselineHeight->AsFloat();
-    const YamlNode* spread = configNode->Get("spread");
-    if (spread)
-        this->spread = spread->AsFloat();
+    const YamlNode* _paddingTop = configNode->Get("padding_top");
+    if (_paddingTop)
+        paddingTop = _paddingTop->AsFloat();
+    const YamlNode* _paddingLeft = configNode->Get("padding_left");
+    if (_paddingLeft)
+        paddingLeft = _paddingLeft->AsFloat();
+    const YamlNode* _paddingBottom = configNode->Get("padding_bottop");
+    if (_paddingBottom)
+        paddingBottom = _paddingBottom->AsFloat();
+    const YamlNode* _paddingRight = configNode->Get("padding_right");
+    if (_paddingRight)
+        paddingRight = _paddingRight->AsFloat();
+    const YamlNode* _lineHeight = configNode->Get("lineHeight");
+    if (_lineHeight)
+        lineHeight = _lineHeight->AsFloat();
+	const YamlNode* _baselineHeight = configNode->Get("baselineHeight");
+	if (_baselineHeight)
+		baselineHeight = _baselineHeight->AsFloat();
+    const YamlNode* _spread = configNode->Get("spread");
+    if (_spread)
+        spread = _spread->AsFloat();
         
     const MultiMap<String, YamlNode*> charsMap = charsNode->AsMap();
     MultiMap<String, YamlNode*>::const_iterator charsMapEnd = charsMap.end();

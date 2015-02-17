@@ -74,15 +74,12 @@ public:
 MongodbClient * MongodbClient::Create(const String &ip, int32 port)
 {
 	MongodbClient * client = new MongodbClient();
-	if (client)
-	{
-        bool ret = client->Connect(ip, port);
-        if(!ret)
-        {
-            SafeRelease(client);
-            Logger::Error("[MongodbClient] can't connect to database");
-        }
-	}
+    bool ret = client->Connect(ip, port);
+    if(!ret)
+    {
+        SafeRelease(client);
+        Logger::Error("[MongodbClient] can't connect to database");
+    }
 	return client;
 }
 	

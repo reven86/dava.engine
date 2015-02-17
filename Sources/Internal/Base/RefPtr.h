@@ -63,7 +63,7 @@ public:
 		SafeRelease(_ptr);
 	}
 		
-	RefPtr(const RefPtr<T> & rp)
+	RefPtr(const RefPtr & rp)
 	{
 		_ptr = rp._ptr;
 		

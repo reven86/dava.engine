@@ -198,14 +198,7 @@ namespace DAVA
 			{
 				if(backward != 0.f && slowDown != 0.f)
 				{
-					if(slowDown != 0.f)
-					{
-						speed -= virtualViewSize * timeDelta / slowDown / backward;
-					}
-					else
-					{
-						speed -= virtualViewSize * timeDelta * 4 / backward;
-					}
+					speed -= virtualViewSize * timeDelta / slowDown / backward;
 					position += speed * timeDelta;
 					if(position < 0.f)
 					{

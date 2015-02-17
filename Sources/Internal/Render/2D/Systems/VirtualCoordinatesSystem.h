@@ -158,7 +158,7 @@ inline float32 VirtualCoordinatesSystem::AlignVirtualToPhysicalX(const float32 &
     return floorf(value / physicalToVirtual + 0.5f) * physicalToVirtual;
 }
 
-inline float32 VirtualCoordinatesSystem::AlignVirtualToPhysicalY(const float32 & value) const
+inline float32 VirtualCoordinatesSystem::AlignVirtualToPhysicalY(const float32 & value) const //-V524
 {
     return floorf(value / physicalToVirtual + 0.5f) * physicalToVirtual;
 }
@@ -168,7 +168,7 @@ inline float32 VirtualCoordinatesSystem::ConvertPhysicalToVirtualX(const float32
     return physicalToVirtual * value;
 }
 
-inline float32 VirtualCoordinatesSystem::ConvertPhysicalToVirtualY(const float32 & value) const
+inline float32 VirtualCoordinatesSystem::ConvertPhysicalToVirtualY(const float32 & value) const //-V524
 {
     return physicalToVirtual * value;
 }
@@ -178,7 +178,7 @@ inline float32 VirtualCoordinatesSystem::ConvertVirtualToPhysicalX(const float32
     return virtualToPhysical * value;
 }
 
-inline float32 VirtualCoordinatesSystem::ConvertVirtualToPhysicalY(const float32 & value) const
+inline float32 VirtualCoordinatesSystem::ConvertVirtualToPhysicalY(const float32 & value) const //-V524
 {
     return virtualToPhysical * value;
 }

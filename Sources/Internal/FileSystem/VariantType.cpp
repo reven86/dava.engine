@@ -261,7 +261,7 @@ void VariantType::SetByteArray(const uint8 *array, int32 arraySizeInBytes)
 {
     ReleasePointer();
 	type = TYPE_BYTE_ARRAY;
-    pointerValue = (void*)new Vector<uint8>;
+    pointerValue = new Vector<uint8>;
     ((Vector<uint8>*)pointerValue)->resize(arraySizeInBytes);
     memcpy(&((Vector<uint8>*)pointerValue)->front(), array, arraySizeInBytes);
 }
@@ -284,14 +284,14 @@ void VariantType::SetInt64(const int64 & value)
 {
     ReleasePointer();
     type = TYPE_INT64;
-    int64Value = new int64(value);
+    int64Value = new int64(value); //-V508
 }
 
 void VariantType::SetUInt64(const uint64 & value)
 {
     ReleasePointer();
     type = TYPE_UINT64;
-    uint64Value = new uint64(value);
+    uint64Value = new uint64(value); //-V508
 }
 
 void VariantType::SetVector2(const Vector2 & value)
@@ -739,7 +739,7 @@ bool VariantType::Write(File * fp) const
     case TYPE_COLOR:
 		{
             written = fp->Write(colorValue->color, sizeof(float32) * 4);
-            if (written != sizeof(sizeof(float32) * 4))return false;
+            if (written != (sizeof(float32) * 4))return false;
 		}
         break;
     case TYPE_FASTNAME:
@@ -844,7 +844,7 @@ bool VariantType::Read(File * fp)
 			read = fp->Read(&len, 4);
 			if (read != 4)return false;
 			
-            pointerValue = (void*)new Vector<uint8>;
+            pointerValue = new Vector<uint8>;
             ((Vector<uint8>*)pointerValue)->resize(len);
 			read = fp->Read(&((Vector<uint8>*)pointerValue)->front(), len);
 			if (read != len)return false;

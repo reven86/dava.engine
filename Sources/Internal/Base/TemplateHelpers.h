@@ -248,9 +248,8 @@ C DynamicTypeCheck(O* pObject)
         
     C c = dynamic_cast<C>(pObject);
     if (!c)
-    {//assert emulation )
-        int *i = 0;
-        *(i) = 0;
+    {
+        abort ();
     }
     return c;
 #else

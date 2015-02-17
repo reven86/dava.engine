@@ -41,7 +41,6 @@ class Singleton
 public:
 	Singleton()
 	{
-		// TODO: Add assertion here DVASSERT(instance == 0 && "Singleton object should be initialized only once");
 		if (instance == 0)
 		{
 			instance = (T*)this;
@@ -56,16 +55,8 @@ public:
     
 	void Release()
 	{
-		if (this)
-		{
-			delete this;
-			instance = 0;
-		}else {
-			// TODO: add DebugBreak();
-			//DVASSERT(0 && "Attempt to delete singleton second time");
-		}
-
-		return;
+		delete this;
+		instance = 0;
 	}
 private:
 	static T * instance;

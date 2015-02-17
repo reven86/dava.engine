@@ -1871,10 +1871,10 @@ namespace DAVA
             node->Set("position", position);
         }
         // Size
-        const Vector2 &size = GetSize();
-        if (baseControl->GetSize() != size)
+        const Vector2 &_size = GetSize();
+        if (baseControl->GetSize() != _size)
         {
-            node->Set("size", size);
+            node->Set("size", _size);
         }
         // Pivot
         if (baseControl->GetPivotPoint() != GetPivotPoint())
@@ -2087,49 +2087,49 @@ namespace DAVA
         const YamlNode * leftAlignNode = node->Get("leftAlign");
         if (leftAlignNode)
         {
-            float32 leftAlign = leftAlignNode->AsFloat();
+            float32 _leftAlign = leftAlignNode->AsFloat();
             SetLeftAlignEnabled(true, false);
-            SetLeftAlign(leftAlign, false);
+            SetLeftAlign(_leftAlign, false);
         }
 
         const YamlNode * hcenterAlignNode = node->Get("hcenterAlign");
         if (hcenterAlignNode)
         {
-            float32 hcenterAlign = hcenterAlignNode->AsFloat();
+            float32 _hcenterAlign = hcenterAlignNode->AsFloat();
             SetHCenterAlignEnabled(true, false);
-            SetHCenterAlign(hcenterAlign, false);
+            SetHCenterAlign(_hcenterAlign, false);
         }
 
         const YamlNode * rightAlignNode = node->Get("rightAlign");
         if (rightAlignNode)
         {
-            float32 rightAlign = rightAlignNode->AsFloat();
+            float32 _rightAlign = rightAlignNode->AsFloat();
             SetRightAlignEnabled(true, false);
-            SetRightAlign(rightAlign, false);
+            SetRightAlign(_rightAlign, false);
         }
 
         const YamlNode * topAlignNode = node->Get("topAlign");
         if (topAlignNode)
         {
-            float32 topAlign = topAlignNode->AsFloat();
+            float32 _topAlign = topAlignNode->AsFloat();
             SetTopAlignEnabled(true, false);
-            SetTopAlign(topAlign, false);
+            SetTopAlign(_topAlign, false);
         }
 
         const YamlNode * vcenterAlignNode = node->Get("vcenterAlign");
         if (vcenterAlignNode)
         {
-            float32 vcenterAlign = vcenterAlignNode->AsFloat();
+            float32 _vcenterAlign = vcenterAlignNode->AsFloat();
             SetVCenterAlignEnabled(true, false);
-            SetVCenterAlign(vcenterAlign, false);
+            SetVCenterAlign(_vcenterAlign, false);
         }
 
         const YamlNode * bottomAlignNode = node->Get("bottomAlign");
         if (bottomAlignNode)
         {
-            float32 bottomAlign = bottomAlignNode->AsFloat();
+            float32 _bottomAlign = bottomAlignNode->AsFloat();
             SetBottomAlignEnabled(true, false);
-            SetBottomAlign(bottomAlign, false);
+            SetBottomAlign(_bottomAlign, false);
         }
 
         const YamlNode * visibleNode = node->Get("visible");

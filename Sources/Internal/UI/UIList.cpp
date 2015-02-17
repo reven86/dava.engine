@@ -198,14 +198,7 @@ void UIList::SetScrollPosition(float32 newScrollPos)
         FullRefresh();
     }
 
-    if(orientation == ORIENTATION_HORIZONTAL)
-    {
-        scroll->SetPosition(-newScrollPos);
-    }
-    else
-    {
-        scroll->SetPosition(-newScrollPos);
-    }
+    scroll->SetPosition(-newScrollPos);
 }
 
 void UIList::ResetScrollPosition()
@@ -371,7 +364,7 @@ void UIList::Update(float32 timeElapsed)
         {
             float32 borderPos;
             float32 rPos;
-            float32 size = 0.0f;
+            float32 _size = 0.0f;
             float32 off;
             if(orientation == ORIENTATION_HORIZONTAL)
             {
@@ -393,14 +386,14 @@ void UIList::Update(float32 timeElapsed)
                 fc = delegate->CellAtIndex(this, i);
                 if(orientation == ORIENTATION_HORIZONTAL)
                 {
-                    size = delegate->CellWidth(this, i);
+                    _size = delegate->CellWidth(this, i);
                 }
                 else
                 {
-                    size = delegate->CellHeight(this, i);
+                    _size = delegate->CellHeight(this, i);
                 }
-                AddCellAtPos(fc, rPos - off, size, i);
-                rPos += size;
+                AddCellAtPos(fc, rPos - off, _size, i);
+                rPos += _size;
                     //			scroll->SetElementSize((float32)(rPos - off));
             }
         }
@@ -422,7 +415,7 @@ void UIList::Update(float32 timeElapsed)
         {
             float32 borderPos;
             float32 rPos;
-            float32 size = 0.0f;
+            float32 _size = 0.0f;
             float32 off;
             if(orientation == ORIENTATION_HORIZONTAL)
             {
@@ -442,14 +435,14 @@ void UIList::Update(float32 timeElapsed)
                 fc = delegate->CellAtIndex(this, i);
                 if(orientation == ORIENTATION_HORIZONTAL)
                 {
-                    size = delegate->CellWidth(this, i);
+                    _size = delegate->CellWidth(this, i);
                 }
                 else
                 {
-                    size = delegate->CellHeight(this, i);
+                    _size = delegate->CellHeight(this, i);
                 }
-                rPos -= size;
-                AddCellAtPos(fc, rPos - off, size, i);
+                rPos -= _size;
+                AddCellAtPos(fc, rPos - off, _size, i);
             }
         }
     }

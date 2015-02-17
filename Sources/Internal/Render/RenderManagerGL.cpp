@@ -567,8 +567,8 @@ void RenderManager::AttachRenderData()
         }
     }
     
-    bool vboChanged = ((NULL == attachedRenderData) || (NULL == currentRenderData) || (!currentRenderData->HasVertexAttachment()) || (attachedRenderData->vboBuffer != currentRenderData->vboBuffer) || (0 == currentRenderData->vboBuffer));
-    bool iboChanged = ((NULL == attachedRenderData) || (NULL == currentRenderData) || (!currentRenderData->HasVertexAttachment()) || (attachedRenderData->indexBuffer != currentRenderData->indexBuffer) || (0 == currentRenderData->indexBuffer));
+    bool vboChanged = ((!currentRenderData->HasVertexAttachment()) || (attachedRenderData->vboBuffer != currentRenderData->vboBuffer) || (0 == currentRenderData->vboBuffer));
+    bool iboChanged = ((!currentRenderData->HasVertexAttachment()) || (attachedRenderData->indexBuffer != currentRenderData->indexBuffer) || (0 == currentRenderData->indexBuffer));
     
     attachedRenderData = currentRenderData;
     

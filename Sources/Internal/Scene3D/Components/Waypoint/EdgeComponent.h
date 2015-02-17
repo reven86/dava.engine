@@ -50,6 +50,7 @@ public:
 
 	EdgeComponent();
     EdgeComponent(const EdgeComponent&);
+    EdgeComponent& operator=(const EdgeComponent&) = delete;
 	virtual Component * Clone(Entity * toEntity);
 	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
 	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);

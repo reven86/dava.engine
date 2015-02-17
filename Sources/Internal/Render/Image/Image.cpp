@@ -345,7 +345,7 @@ void Image::InsertImage(const Image* image, uint32 dstX, uint32 dstY,
 		return;
 	}
 
-	if (image == NULL || dstX >= width || dstY >= height ||
+	if (dstX >= width || dstY >= height ||
 		srcX >= image->GetWidth() || srcY >= image->GetHeight())
 	{
 		return;

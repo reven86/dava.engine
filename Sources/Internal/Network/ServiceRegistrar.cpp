@@ -45,14 +45,15 @@ bool ServiceRegistrar::Register(uint32 serviceId, ServiceCreator creator, Servic
     // Duplicate services are not allowed in registrar
     if (std::find(registrar.begin(), registrar.end(), serviceId) == registrar.end())
     {
-        // If name hasn'y been set then generate name string based on service ID
+        const char8* nameForCopy = name;
+        // If name hasn't been set then generate name string based on service ID
         char8 generatedName[Entry::MAX_NAME_LENGTH];
-        if (NULL == name)
+        if (NULL == nameForCopy)
         {
             Snprintf(generatedName, COUNT_OF(generatedName), "service-%u", serviceId);
-            name = generatedName;
+            nameForCopy = generatedName;
         }
-        registrar.push_back(Entry(serviceId, name, creator, deleter));
+        registrar.push_back (Entry (serviceId, nameForCopy, creator, deleter));
         return true;
     }
     return false;

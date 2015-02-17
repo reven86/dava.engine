@@ -234,11 +234,6 @@ int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFo
 	rowbytes = png_get_rowbytes(png_ptr, info_ptr);
 	
     uint8 *image_data = new uint8 [rowbytes * height];
-	if (image_data == 0)
-	{
-		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-		return 4;
-    }
 	
 	if ((row_pointers = (png_bytepp)malloc(height*sizeof(png_bytep))) == NULL)
 	{

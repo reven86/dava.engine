@@ -650,9 +650,9 @@ bool PolygonGroup::IsFloatDataEqual(const float32 ** meshData, const float32 ** 
 		for (uint32 i = 0; i < count; ++i)
 		{
 			float32 x1 = **meshData;
-			*meshData += sizeof(float32);
+            (*meshData)++;
 			float32 x2 = **optData;
-			*optData += sizeof(float32);
+            (*optData)++;
 			if (!FLOAT_EQUAL_EPS(x1, x2, 0.00001f))
 				return false;
 		}
@@ -695,7 +695,7 @@ void PolygonGroup::OptimizeVertices(uint32 newVertexFormat, float32 eplison)
 {	
 	int32 newVertexStride = GetVertexSize(newVertexFormat);
 	uint8 * newMeshData = new uint8[newVertexStride * vertexCount];
-	memset(newMeshData, 0, sizeof(newVertexStride * vertexCount));
+	memset(newMeshData, 0, newVertexStride * vertexCount);
 	
 	const uint8 * tmpMesh = meshData;
 	uint8 * tmpNewMesh = newMeshData;

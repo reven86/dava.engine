@@ -168,10 +168,7 @@ bool RenderTechniqueSingleton::LoadRenderTechniqueFromYamlNode(const YamlNode * 
             }
             
             RenderState * renderState = new RenderState();
-            if (renderStepNode)
-            {
-                renderState->LoadFromYamlNode(renderStepNode);
-            }
+            renderState->LoadFromYamlNode(renderStepNode);
             
             targetTechnique->AddRenderTechniquePass(renderPassName,
 													shaderName,

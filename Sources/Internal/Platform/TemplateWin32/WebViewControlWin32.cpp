@@ -859,9 +859,9 @@ int32 WebBrowserContainer::ExecuteJScript(const String& targetScript)
 	::SysFreeString(scriptBody);
 	::SysFreeString(scriptType);
 
-	if (m_pDisp) m_pDisp->Release(); 
-	if (pHtmWin2) pHtmWin2->Release();
-	if (pHtmDoc2) pHtmDoc2->Release();
+	m_pDisp->Release(); 
+	pHtmWin2->Release();
+	pHtmDoc2->Release();
 
 	return 0;
 }

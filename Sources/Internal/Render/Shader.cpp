@@ -879,7 +879,7 @@ void Shader::DeleteShaders()
     //DVASSERT(fragmentShader != 0);
     //DVASSERT(program != 0);
     
-	Function<void()> fn = DAVA::Bind(MakeFunction(this, &Shader::DeleteShadersInternal), program, vertexShader, fragmentShader);
+	Function<void()> fn = DAVA::Bind(MakeFunction(&Shader::DeleteShadersInternal), program, vertexShader, fragmentShader);
 	JobManager::Instance()->CreateMainJob(fn);
 
     vertexShader = 0;
@@ -887,21 +887,21 @@ void Shader::DeleteShaders()
     program = 0;
 }
 
-void Shader::DeleteShadersInternal(GLuint program, GLuint vertexShader, GLuint fragmentShader)
+void Shader::DeleteShadersInternal(GLuint _program, GLuint _vertexShader, GLuint _fragmentShader)
 {
-	if(program)
+	if(_program)
 	{
-		if(vertexShader)
-			RENDER_VERIFY(glDetachShader(program, vertexShader));
-		if(fragmentShader)
-			RENDER_VERIFY(glDetachShader(program, fragmentShader));
-		RENDER_VERIFY(glDeleteProgram(program));
+		if(_vertexShader)
+			RENDER_VERIFY(glDetachShader(_program, _vertexShader));
+		if(_fragmentShader)
+			RENDER_VERIFY(glDetachShader(_program, _fragmentShader));
+		RENDER_VERIFY(glDeleteProgram(_program));
 	}
 
-	if(vertexShader)
-		RENDER_VERIFY(glDeleteShader(vertexShader));
-	if(fragmentShader)
-		RENDER_VERIFY(glDeleteShader(fragmentShader));
+	if(_vertexShader)
+		RENDER_VERIFY(glDeleteShader(_vertexShader));
+	if(_fragmentShader)
+		RENDER_VERIFY(glDeleteShader(_fragmentShader));
 }
 
 /* Create and compile a shader from the provided source(s) */
@@ -1276,7 +1276,14 @@ void Shader::Dump()
     for (int32 k = 0; k < activeAttributes; ++k)
     {
         int32 flagIndex = GetAttributeIndexByName(attributeNames[k]);
-        Logger::FrameworkDebug("Attribute: %s location: %d vertexFormatIndex:%x", attributeNames[k].c_str(), vertexFormatAttribIndeces[flagIndex], flagIndex);
+        if (flagIndex == -1)
+        {
+            Logger::FrameworkDebug ("Attribute: %s location is -1", attributeNames[k].c_str ());
+        }
+        else
+        {
+            Logger::FrameworkDebug ("Attribute: %s location: %d vertexFormatIndex:%x", attributeNames[k].c_str (), vertexFormatAttribIndeces[flagIndex], flagIndex);
+        }
     }
     
     RENDER_VERIFY(glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &activeUniforms));

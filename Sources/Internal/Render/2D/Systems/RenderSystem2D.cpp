@@ -206,7 +206,7 @@ void RenderSystem2D::UpdateClip()
 {
     if (clipChanged)
     {
-        if (currentClip.dx < 0.f || currentClip.dx < 0.f) //disable clip
+        if (currentClip.dx < 0.f || currentClip.dy < 0.f) //disable clip
         {
             RenderManager::Instance()->SetClip(currentClip);
         }
@@ -393,7 +393,7 @@ void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState 
             {//SCALE
                 x += (spriteSize.dx - rectsAndOffsets[frame][2] - rectsAndOffsets[frame][4] * 2) * scaleX;
                 y += (spriteSize.dy - rectsAndOffsets[frame][3] - rectsAndOffsets[frame][5] * 2) * scaleY;
-                if(!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
+                if(!state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
                 {
                     spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][0] * scaleX + x;//x2 do not change this sequence. This is because of the cache reason
                     spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][5] * scaleY + y;//y1
@@ -412,7 +412,7 @@ void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState 
             {//NOT SCALE
                 x += (spriteSize.dx - rectsAndOffsets[frame][2] - rectsAndOffsets[frame][4] * 2);
                 y += (spriteSize.dy - rectsAndOffsets[frame][3] - rectsAndOffsets[frame][5] * 2);
-                if(!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
+                if(!state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
                 {
                     spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][0] + x;//x2 do not change this sequence. This is because of the cache reason
                     spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][5] + y;//y1
@@ -435,7 +435,7 @@ void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState 
                 if(sprite->flags & Sprite::EST_SCALE)
                 {//SCALE
                     x += (spriteSize.dx - rectsAndOffsets[frame][2] - rectsAndOffsets[frame][4] * 2) * scaleX;
-                    if(!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
+                    if(!state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
                     {
                         spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][2] * scaleX + x;//x1
                         spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][5] * scaleY + y;//y2
@@ -453,7 +453,7 @@ void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState 
                 else
                 {//NOT SCALE
                     x += (spriteSize.dx - rectsAndOffsets[frame][2] - rectsAndOffsets[frame][4] * 2);
-                    if(!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
+                    if(!state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
                     {
                         spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][2] + x;//x1
                         spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][5] + y;//y2
@@ -474,7 +474,7 @@ void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState 
                 if(sprite->flags & Sprite::EST_SCALE)
                 {//SCALE
                     y += (spriteSize.dy - rectsAndOffsets[frame][3] - rectsAndOffsets[frame][5] * 2) * scaleY;
-                    if(!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
+                    if(!state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
                     {
                         spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][0] * scaleX + x;//x1
                         spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][1] * scaleY + y;//y2
@@ -492,7 +492,7 @@ void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState 
                 else
                 {//NOT SCALE
                     y += (spriteSize.dy - rectsAndOffsets[frame][3] - rectsAndOffsets[frame][5] * 2);
-                    if(!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
+                    if(!state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
                     {
                         spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][0] + x;//x1
                         spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][1] + y;//y2
@@ -515,7 +515,7 @@ void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState 
     {//NO MODIFERS
         if(sprite->flags & Sprite::EST_SCALE)
         {//SCALE
-            if(!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
+            if(!state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
             {
                 spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][0] * scaleX + x;//x1
                 spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][5] * scaleY + y;//y2
@@ -532,7 +532,7 @@ void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState 
         }
         else
         {//NOT SCALE
-            if(!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
+            if(!state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
             {
                 spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][0] + x;//x1
                 spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][5] + y;//y2

@@ -617,12 +617,19 @@ int32 FTInternalFont::LoadString(const WideString& str)
 		if (!(loadGlyphError = FT_Load_Glyph( face, glyph.index, FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING))  &&
 			!(getGlyphError = FT_Get_Glyph(face->glyph, &glyph.image)))
 		{
-			if(prevRsbDelta - face->glyph->lsb_delta >= 32 )
-				glyph.delta = -1 << 6;
-			else if(prevRsbDelta - face->glyph->lsb_delta < -32)
-				glyph.delta = 1 << 6;
-			else
-				glyph.delta = 0;
+            if (prevRsbDelta - face->glyph->lsb_delta >= 32)
+            {
+                //-V610_LEFT_SIGN_OFF
+                glyph.delta = -1 << 6;
+            }
+            else if (prevRsbDelta - face->glyph->lsb_delta < -32)
+            {
+                glyph.delta = 1 << 6;
+            }
+            else
+            {
+                glyph.delta = 0;
+            }
 		}
         else
         {

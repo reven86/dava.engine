@@ -476,10 +476,10 @@ YamlNode * UIStaticText::SaveToYamlNode(UIYamlLoader * loader)
     }
 
     // ShadowOffset
-    const Vector2 &shadowOffset = GetShadowOffset();
-    if (baseControl->GetShadowOffset() != shadowOffset)
+    const Vector2 &_shadowOffset = GetShadowOffset();
+    if (baseControl->GetShadowOffset() != _shadowOffset)
     {
-        node->Set("shadowoffset", shadowOffset);
+        node->Set("shadowoffset", _shadowOffset);
     }
 
     //Text

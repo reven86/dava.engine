@@ -49,9 +49,9 @@ struct TextureSheetCell
     uint32 geometryId;
     Vector2 geometryScale;
         
-    inline TextureSheetCell();
-        
-    inline TextureSheetCell& operator=(const TextureSheetCell& src);
+    TextureSheetCell();
+    TextureSheetCell& operator=(const TextureSheetCell& src) = default;
+    TextureSheetCell (const TextureSheetCell& src) = default;
 };
 
 /**
@@ -73,19 +73,6 @@ inline TextureSheetCell::TextureSheetCell() :
     geometryId(0),
     geometryScale(1.0f, 1.0f)
 {
-}
-    
-inline TextureSheetCell& TextureSheetCell::operator=(const TextureSheetCell& src)
-{
-    coords[0] = src.coords[0];
-    coords[1] = src.coords[1];
-    coords[2] = src.coords[2];
-    coords[3] = src.coords[3];
-        
-    geometryId = src.geometryId;
-    geometryScale = src.geometryScale;
-        
-    return *this;
 }
 
 };

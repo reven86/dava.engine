@@ -79,6 +79,8 @@ public:
 
     RenderState();
     ~RenderState();
+    RenderState (const RenderState & renderState) = delete;
+    RenderState & operator=(const RenderState & renderState) = delete;
         
     Core::eRenderer renderer;
     
@@ -187,11 +189,6 @@ public:
 	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
     
     static void InitDefaultStates();
-
-private:
-	RenderState(const RenderState & renderState);
-	RenderState * operator=(const RenderState & renderState);
-
 public:
 
 #if defined(__DAVAENGINE_DIRECTX9__)

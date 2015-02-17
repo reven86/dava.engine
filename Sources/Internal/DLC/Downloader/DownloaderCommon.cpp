@@ -62,7 +62,7 @@ DownloadPart::DownloadPart(Downloader *currentDownloader)
 bool DownloadPart::SaveToBuffer(char8 *srcBuf, uint32 size)
 {
     DVASSERT(downloadSize - progress >= size);
-    if (downloadSize - progress > 0)
+    if (progress <= downloadSize)
     {
         Memcpy(dataBuffer + progress, srcBuf, size);
         progress += size;

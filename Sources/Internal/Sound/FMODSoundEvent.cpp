@@ -86,31 +86,37 @@ bool FMODSoundEvent::Trigger()
     
     FMOD::Event * fmodEvent = 0;
     FMOD_RESULT result = fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_DEFAULT, &fmodEvent);
-    if(result == FMOD_OK)
+    bool ret = false;
+    if (fmodEvent)
     {
-        ApplyParamsToEvent(fmodEvent);
+        if (result == FMOD_OK)
+        {
+            ApplyParamsToEvent (fmodEvent);
 
-		FMOD_VERIFY(fmodEvent->setVolume(volume));
-		FMOD_RESULT startResult = fmodEvent->start();
-		if(startResult == FMOD_OK)
-		{
-			FMOD_VERIFY(fmodEvent->setCallback(FMODEventCallback, this));
-			fmodEventInstances.push_back(fmodEvent);
-			Retain();
-		}
-		else if(startResult != FMOD_ERR_EVENT_FAILED) //'just fail' max playbacks behavior
-		{
-			Logger::Error("[FMODSoundEvent::Trigger()] Failed to start event by %d on eventID: %s", startResult, eventName.c_str());
-		}
+            FMOD_VERIFY (fmodEvent->setVolume (volume));
+            FMOD_RESULT startResult = fmodEvent->start ();
+            if (startResult == FMOD_OK)
+            {
+                FMOD_VERIFY (fmodEvent->setCallback (FMODEventCallback, this));
+                fmodEventInstances.push_back (fmodEvent);
+                Retain ();
+            }
+            else if (startResult != FMOD_ERR_EVENT_FAILED) //'just fail' max playbacks behavior
+            {
+                Logger::Error ("[FMODSoundEvent::Trigger()] Failed to start event by %d on eventID: %s", startResult, eventName.c_str ());
+            }
+        }
+        else if (result != FMOD_ERR_EVENT_FAILED) //'just fail' max playbacks behavior
+        {
+            Logger::Error ("[FMODSoundEvent::Trigger()] Failed to retrieve event by %d on eventID: %s", result, eventName.c_str ());
+        }
+
+        PerformEvent (EVENT_TRIGGERED);
+
+        ret = true;
     }
-    else if(result != FMOD_ERR_EVENT_FAILED) //'just fail' max playbacks behavior
-    {
-        Logger::Error("[FMODSoundEvent::Trigger()] Failed to retrieve event by %d on eventID: %s", result, eventName.c_str());
-    }
 
-    PerformEvent(EVENT_TRIGGERED);
-
-    return fmodEvent != 0;
+    return ret;
 }
 
 void FMODSoundEvent::SetPosition(const Vector3 & _position)

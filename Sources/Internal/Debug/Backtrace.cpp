@@ -226,7 +226,7 @@ public:
         {
             SymFromAddr( process, (DWORD64)( backtrace->array[i] ), 0, symbol );
             log->strings[i] = (char*)malloc(512);
-			_snprintf(log->strings[i], 512, "%i: %s - 0x%0X\n", backtrace->size - i - 1, symbol->Name, symbol->Address);
+			_snprintf(log->strings[i], 512, "%i: %s - 0x%0llX\n", backtrace->size - i - 1, symbol->Name, symbol->Address);
             //printf( "%i: %s - 0x%0X\n", frames - i - 1, symbol->Name, symbol->Address );
         }
         

@@ -278,7 +278,6 @@ Heightmap * Heightmap::Clone(DAVA::Heightmap *clonedHeightmap)
 Heightmap * Heightmap::CreateHeightmapForSize(int32 newSize)
 {
     Heightmap *createdHeightmap = new Heightmap();
-    if(!createdHeightmap)   return NULL;
     
     createdHeightmap->AllocateData(newSize);
     

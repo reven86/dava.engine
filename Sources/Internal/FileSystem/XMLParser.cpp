@@ -59,26 +59,19 @@ namespace DAVA
 //			Logger::FrameworkDebug("[XMLParser::ParseFile] dataSize = %d", dataSize);
 
 			uint8 *data = new uint8[dataSize];
-			if(data)
-			{
-				int32 readBytes = xmlFile->Read(data, dataSize);
+			int32 readBytes = xmlFile->Read(data, dataSize);
 //				Logger::FrameworkDebug("[XMLParser::ParseFile] readBytes = %d", readBytes);
-				if(readBytes == dataSize)
-				{
-					retValue = XMLParser::ParseBytes(data, dataSize, delegateptr);
-				}
-				else
-				{
-					Logger::Error("[XMLParser::ParseFile] readBytes != dataSize");
-				}
-
-				//TODO: VK: need to delete?
-				SafeDeleteArray(data);
+			if(readBytes == dataSize)
+			{
+				retValue = XMLParser::ParseBytes(data, dataSize, delegateptr);
 			}
 			else
 			{
-				Logger::Error("[XMLParser::ParseFile] can't allocate data");
+				Logger::Error("[XMLParser::ParseFile] readBytes != dataSize");
 			}
+
+			//TODO: VK: need to delete?
+			SafeDeleteArray(data);
 
 			//TODO: VK: need to delete?
 			SafeRelease(xmlFile);

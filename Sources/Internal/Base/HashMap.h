@@ -103,7 +103,8 @@ public:
 		friend class HashMap<K, V>;
         
 		HashMapIterator();
-		HashMapIterator(const HashMapIterator &i);
+		HashMapIterator(const HashMapIterator &i) = default;
+        HashMapIterator & operator=(const HashMapIterator &i) = default;
 		HashMapIterator(const HashMap *map);
         
 		inline bool operator==(const HashMapIterator &i) const;
@@ -563,14 +564,6 @@ HashMap<K, V>::HashMapIterator::HashMapIterator()
 , current_index(0)
 , table(NULL)
 , current_item(NULL)
-{ }
-
-template <typename K, typename V>
-HashMap<K, V>::HashMapIterator::HashMapIterator(const typename HashMap<K, V>::HashMapIterator &i)
-	: szTable(i.szTable)
-	, current_index(i.current_index)
-	, table(i.table)
-	, current_item(i.current_item)
 { }
 
 template <typename K, typename V>
