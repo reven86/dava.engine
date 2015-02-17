@@ -67,7 +67,7 @@ const QString APP_GEOMETRY = "geometry";
 const QString APP_STATE = "windowstate";
 
 
-static const char* COLOR_PROPERTY_ID = "color";
+const char* COLOR_PROPERTY_ID = "color";
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -145,12 +145,7 @@ void MainWindow::RestoreMainWindowState()
 void MainWindow::closeEvent(QCloseEvent * event)
 {
     // Ask user to save the project before closing.
-    if (!CloseProject())
-    {
-        event->ignore();
-        return;
-    }
-
+    CloseProject();
     QMainWindow::closeEvent(event);
 }
 
@@ -331,10 +326,7 @@ void MainWindow::UpdateMenu()
 
 void MainWindow::OnNewProject()
 {
-    if (!CloseProject())
-    {
-        return;
-    }
+    CloseProject();
 	QString projectDir = QFileDialog::getExistingDirectory(this, 
                                                             tr("Choose new project folder"),
 											                ResourcesManageHelper::GetDefaultDirectory());			
@@ -442,10 +434,8 @@ void MainWindow::OnCloseProject()
 
 void MainWindow::OnExitApplication()
 {
-	if (CloseProject())
-	{
-		QCoreApplication::exit();
-	}
+    CloseProject();
+	QCoreApplication::exit();
 }
 
 void MainWindow::OnOpenPackageFile(const QString &path)
@@ -471,7 +461,8 @@ void MainWindow::OnOpenPackageFile(const QString &path)
 
 void MainWindow::OpenProject(const QString &path)
 {    
-    if (!CloseProject() || !CheckAndUnlockProject(path))
+    CloseProject();
+    if (!CheckAndUnlockProject(path))
     {
         return;
     }
@@ -486,15 +477,13 @@ void MainWindow::OpenProject(const QString &path)
     }
     else
     {
-        QMessageBox msgBox;
-        msgBox.setText(tr("Error while loading project"));
-        msgBox.exec();
+        QMessageBox::warning(this, tr("Error"), tr("Error while loading project"));
     }
 }
 
-bool MainWindow::CloseProject()
+void MainWindow::CloseProject()
 {
-    if (project)
+    if (nullptr != project)
     {
         CloseAllTabs();
         ui->fileSystemDockWidget->setEnabled(false);
@@ -505,7 +494,6 @@ bool MainWindow::CloseProject()
         project = nullptr;
 	}
     UpdateSaveButtons();
-	return true;
 }
 
 void MainWindow::UpdateProjectSettings(const QString& projectPath)
@@ -535,14 +523,14 @@ void MainWindow::OnPixelizationStateChanged()
 
 void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
 {
+    DVASSERT(action);
     Color newColor;
-
     if (action == backgroundFrameSelectCustomColorAction)
     {
         // Need to select new Background Frame color.
         QColor curColor = ColorToQColor(EditorSettings::Instance()->GetCustomBackgroundFrameColor());
         QColor color = QColorDialog::getColor(curColor, this, "Select color", QColorDialog::ShowAlphaChannel);
-        if (color.isValid() == false)
+        if (!color.isValid())
         {
             return;
         }
@@ -589,7 +577,6 @@ void MainWindow::UpdateSaveButtons()
     bool enableSingleSave = activeDocument && activeDocument->IsModified();
     ui->actionSaveDocument->setEnabled(enableSingleSave);
 
-
     bool enableMultiSave = ui->tabBar->count() > 0;
     ui->actionSaveAllDocuments->setEnabled(enableMultiSave);
 }
@@ -619,7 +606,7 @@ int MainWindow::CreateTabContent(PackageNode *package)
 Document *MainWindow::GetCurrentTabDocument() const
 {
     int index = ui->tabBar->currentIndex();
-    if(index>=0)
+    if(index >= 0)
     {
         return ui->tabBar->tabData(index).value<Document*>();
     }
@@ -636,7 +623,9 @@ int MainWindow::GetTabIndexByPath(const QString &fileName) const
     {
         Document *document = ui->tabBar->tabData(index).value<Document *>();
         if (document->PackageFilePath() == davaPath)
+        {
             return index;
+        }
     }
     
     return -1;
@@ -644,16 +633,16 @@ int MainWindow::GetTabIndexByPath(const QString &fileName) const
 
 Document *MainWindow::GetTabDocument(int index) const
 {
-    Document *document = ui->tabBar->tabData(index).value<Document *>();
-    return document;
+    return ui->tabBar->tabData(index).value<Document *>();
 }
 
 void MainWindow::OnCleanChanged(bool clean)
 {
     QString tabText(activeDocument->PackageFilePath().GetBasename().c_str());
-    if(!clean)
+    if (!clean)
+    {
         tabText.append("*");
-
+    }
     ui->tabBar->setTabText(ui->tabBar->currentIndex(), tabText);
 
     UpdateSaveButtons();

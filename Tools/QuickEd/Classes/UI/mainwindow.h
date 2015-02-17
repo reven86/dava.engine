@@ -92,7 +92,7 @@ private slots:
 
 private:
     void OpenProject(const QString &path);
-	bool CloseProject();
+	void CloseProject();
 	
 	void InitMenu();
     void SetupViewMenu();
