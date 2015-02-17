@@ -29,7 +29,7 @@ using namespace DAVA;
 PackageWidget::PackageWidget(QWidget *parent)
     : QDockWidget(parent)
     , ui(new Ui::PackageWidget())
-    , document(NULL)
+    , document(nullptr)
 {
     ui->setupUi(this);
     ui->treeView->header()->setSectionResizeMode/*setResizeMode*/(QHeaderView::ResizeToContents);
@@ -68,10 +68,7 @@ PackageWidget::PackageWidget(QWidget *parent)
 
 PackageWidget::~PackageWidget()
 {
-    disconnect(ui->filterLine, SIGNAL(textChanged(const QString &)), this, SLOT(filterTextChanged(const QString &)));
-    ui->treeView->setModel(NULL);
     delete ui;
-    ui = NULL;
 }
 
 void PackageWidget::SetDocument(Document *newDocument)
@@ -79,9 +76,7 @@ void PackageWidget::SetDocument(Document *newDocument)
     if (document)
     {
         disconnect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(OnSelectionChanged(const QItemSelection &, const QItemSelection &)));
-        ui->treeView->setModel(NULL);
-        //ui->filterLine->setEnabled(false);
-        //ui->treeView->setEnabled(false);
+        ui->treeView->setModel(nullptr);
     }
     
     document = newDocument;
@@ -95,8 +90,6 @@ void PackageWidget::SetDocument(Document *newDocument)
 
         ui->filterLine->setText(document->GetPackageContext()->GetFilterString());
         connect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(OnSelectionChanged(const QItemSelection &, const QItemSelection &)));
-        //ui->filterLine->setEnabled(true);
-        //ui->treeView->setEnabled(true);
     }
 }
 

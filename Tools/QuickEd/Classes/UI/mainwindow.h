@@ -76,10 +76,7 @@ private slots:
 	void RebuildRecentMenu();
 
     void SetBackgroundColorMenuTriggered(QAction* action);
-
-    // Repack and Reload.
-    void OnRepackAndReloadSprites();
-    
+ 
     // Pixelization.
     void OnPixelizationStateChanged();
 
@@ -88,8 +85,8 @@ private slots:
     void CurrentTabChanged(int index);
     void TabCloseRequested(int index);
     int CreateTabContent(PackageNode *package);
-    bool CloseTab(int index);
-    bool CloseAllTabs();
+    void CloseTab(int index);
+    void CloseAllTabs();
 
     void OnOpenPackageFile(const QString &path);
 
@@ -105,12 +102,6 @@ private:
 	// Save/restore positions of DockWidgets and main window geometry
 	void SaveMainWindowState();
 	void RestoreMainWindowState();
-
-	// Save the full project or changes only.
-	void DoSaveProject(bool changesOnly);
-
-    // Repack and reload sprites.
-    void RepackAndReloadSprites();
 
     void UpdateSaveButtons();
 
