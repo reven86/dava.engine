@@ -295,7 +295,7 @@ void MemoryManager::FreeGeneralInfo(const GeneralInfo* ptr)
 
 CurrentAllocStat* MemoryManager::GetCurrentAllocStat()
 {
-    CurrentAllocStat temp;
+    //CurrentAllocStat temp;
 
     return nullptr;
 }

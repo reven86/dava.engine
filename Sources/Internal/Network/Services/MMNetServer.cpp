@@ -34,6 +34,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
+#include <cstdlib>
+
 namespace DAVA
 {
 namespace Net
@@ -75,7 +77,7 @@ void MMNetServer::ChannelClosed(const char8* message)
     commInited = false;
 
     for (auto x : parcels)
-        delete [] x.buffer;
+        delete [] static_cast<uint8*>(x.buffer);
     parcels.clear();
 }
 
