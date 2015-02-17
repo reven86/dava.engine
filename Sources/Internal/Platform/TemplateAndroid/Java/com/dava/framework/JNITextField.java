@@ -1,5 +1,6 @@
 package com.dava.framework;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -15,12 +16,14 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.os.IBinder;
+import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -448,7 +451,8 @@ public class JNITextField {
 									}
 									curPos++;
 								}
-								return TextFieldKeyPressed(_id, finalStart, dend - dstart, bytes);
+								byte []retBytes = TextFieldKeyPressed(_id, finalStart, dend - dstart, bytes);
+								return new String(retBytes, "UTF-8");
 							}
 						});
 						JNIActivity.GetActivity().PostEventToGL(t);
@@ -569,6 +573,33 @@ public class JNITextField {
                         }
                     }
                 });
+				
+				text.addTextChangedListener(new TextWatcher() {
+					private String oldText = "";
+					
+					@Override
+					public void onTextChanged(CharSequence s, int start, int before, int count) {
+					}
+					
+					@Override
+					public void beforeTextChanged(CharSequence s, int start, int count,
+							int after) {
+						oldText = (s == null) ? "" : s.toString();
+					}
+					
+					@Override
+					public void afterTextChanged(Editable s) {
+						try {
+							byte []newBytes = s.toString().getBytes("UTF-8");
+							byte []oldBytes = oldText.getBytes("UTF-8");
+							TextFieldOnTextChanged(id, newBytes, oldBytes);
+						} catch (UnsupportedEncodingException e) {
+							Log.w(JNIConst.LOG_TAG, e.getMessage());
+							// Send changed text event with two empty strings
+							TextFieldOnTextChanged(id, new byte[]{}, new byte[]{});
+						}
+					}
+				});
 				
 				controls.put(id, nativeEditText);
 				return null;
@@ -1088,7 +1119,18 @@ public class JNITextField {
     {
         if (id != NO_ACTIVE_TEXTFIELD)
         {
-              TextFieldKeyboardHidden(id);
+        	JNIActivity.GetActivity().runOnUiThread(new Runnable()
+        	{
+        		@Override
+    			public void run() 
+        		{
+        			JNIActivity activity = JNIActivity.GetActivity();
+        			View view = activity.getWindow().getDecorView();
+        			JNIActivity.HideNavigationBar(view);
+        		}
+        		
+        	});
+            TextFieldKeyboardHidden(id);
         }
 	}
     
@@ -1116,11 +1158,12 @@ public class JNITextField {
     }
 
 	public static native void TextFieldShouldReturn(int id);
-	public static native String TextFieldKeyPressed(
+	public static native byte[] TextFieldKeyPressed(
 			int id,
 			int replacementLocation,
 			int replacementLength,
 			byte[] byteArray);
+	public static native void TextFieldOnTextChanged(int id, byte[] newText, byte[] oldText);
 	public static native void TextFieldKeyboardShown(int id, int x, int y, int dx, int dy);
 	public static native void TextFieldKeyboardHidden(int id);
 	public static native void TextFieldFocusChanged(int id, final boolean hasFocus);

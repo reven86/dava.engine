@@ -28,33 +28,22 @@
 
 
 #include "UIPackage.h"
-#include "FileSystem/YamlNode.h"
-#include "FileSystem/YamlEmitter.h"
-#include "FileSystem/YamlParser.h"
+
 #include "UI/UIControl.h"
 
 namespace DAVA
 {
 
-UIPackage::UIPackage(const FilePath &path)
-    : packagePath(path)
+UIPackage::UIPackage()
 {
 }
 
 UIPackage::~UIPackage()
 {
-    for (auto iter = controls.begin(); iter != controls.end(); ++iter)
-        SafeRelease(*iter);
-    controls.clear();
+    for (UIControl *control : controls)
+        control->Release();
     
-    for (auto it = importedPackages.begin(); it != importedPackages.end(); ++it)
-        SafeRelease(*it);
-    importedPackages.clear();
-}
-
-String UIPackage::GetName() const
-{
-    return packagePath.GetBasename();
+    controls.clear();
 }
 
 DAVA::int32 UIPackage::GetControlsCount() const
@@ -64,15 +53,13 @@ DAVA::int32 UIPackage::GetControlsCount() const
     
 UIControl * UIPackage::GetControl(const String &name) const
 {
-    Vector<UIControl *>::const_iterator iter = controls.begin();
-    Vector<UIControl *>::const_iterator end = controls.end();
-    for (; iter != end; ++iter)
+    for (UIControl *control : controls)
     {
-        if ((*iter)->GetName() == name)
-            return *iter;
+        if (control->GetName() == name)
+            return control;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 UIControl * UIPackage::GetControl(int32 index) const
@@ -86,6 +73,11 @@ void UIPackage::AddControl(UIControl *control)
     controls.push_back(SafeRetain(control));
 }
     
+void UIPackage::InsertControlAtIndex(DAVA::int32 index, UIControl *control)
+{
+    controls.insert(controls.begin() + index, SafeRetain(control));
+}
+
 void UIPackage::InsertControlBelow(UIControl *control, const UIControl *belowThis)
 {
     auto it = find(controls.begin(), controls.end(), belowThis);
@@ -110,30 +102,18 @@ void UIPackage::RemoveControl(UIControl *control)
     }
 }
 
-int32 UIPackage::GetPackagesCount() const
+RefPtr<UIPackage> UIPackage::Clone() const
 {
-    return (int32) importedPackages.size();
-}
+    RefPtr<UIPackage> package(new UIPackage());
 
-UIPackage *UIPackage::GetPackage(int32 index) const
-{
-    return importedPackages[index];
-}
+    package->controls.resize(controls.size());
 
-UIPackage *UIPackage::GetPackage(const String name) const
-{
-    for (auto it = importedPackages.begin(); it != importedPackages.end(); ++it)
+    std::transform(controls.begin(), controls.end(), package->controls.begin(),
+    [](UIControl *control)->UIControl *
     {
-        if ((*it)->GetName() == name)
-            return *it;
-    }
-    return NULL;
-}
-
-void UIPackage::AddPackage(UIPackage *package)
-{
-    if (std::find(importedPackages.begin(), importedPackages.end(), package) == importedPackages.end())
-        importedPackages.push_back(SafeRetain(package));
+        return control->Clone();
+    });
+    return package;
 }
 
 }

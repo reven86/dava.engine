@@ -141,12 +141,15 @@ public:
     TextBlockRender* GetRenderer(){ return textBlockRender; }
 
     /**
-    * \brief Clean line.
-    * \param [in,out] string The string.
-    * \param trimRight (Optional) true to trim right.
-    */
-    static void CleanLine(WideString& string, bool trimRight = false);
+     * \brief Clean line.
+     * \param [in,out] string The string.
+     * \param trim (Optional) true to trim.
+     * \param rtl (Optional) true to trim for rtl text.
+     */
+    static void CleanLine(WideString& string, bool trim = false, bool rtl = false);
 
+	void SetAngle(const float _angle);
+	void SetPivot(const Vector2 & _pivot);
 protected:
 
 	TextBlock();
@@ -229,6 +232,9 @@ protected:
     TextBlockRender* textBlockRender;
     TextureInvalidater *textureInvalidater;
 	Texture *textureForInvalidation;
+
+	float angle;
+	Vector2 pivot;
 };
 
 }; //end of namespace

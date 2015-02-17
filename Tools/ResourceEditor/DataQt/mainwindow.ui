@@ -18,8 +18,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>800</width>
-    <height>600</height>
+    <width>0</width>
+    <height>0</height>
    </size>
   </property>
   <property name="contextMenuPolicy">
@@ -199,7 +199,7 @@
      <x>0</x>
      <y>0</y>
      <width>1126</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -431,6 +431,7 @@
     <addaction name="actionGridCopy"/>
     <addaction name="actionBatchProcess"/>
     <addaction name="actionCreateTestSkinnedObject"/>
+    <addaction name="actionDeviceList"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -1937,6 +1938,11 @@
   <action name="actionCreateTestSkinnedObject">
    <property name="text">
     <string>Create Test Skinned Object</string>
+   </property>
+  </action>
+  <action name="actionDeviceList">
+   <property name="text">
+    <string>Device List</string>
    </property>
   </action>
   <action name="actionWayEditor">

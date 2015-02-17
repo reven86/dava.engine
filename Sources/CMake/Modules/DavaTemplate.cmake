@@ -15,6 +15,9 @@ macro( setup_main_executable )
 add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
 
 if( APPLE )
+    set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
+
+    set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
 
     file ( GLOB_RECURSE RESOURCES_LIST ${MACOS_DATA} )
     foreach ( FILE ${RESOURCES_LIST} )
@@ -56,6 +59,9 @@ if( APPLE )
 
         COMMAND   
         install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}   
+
+        COMMAND   
+        install_name_tool -change ./libTextureConverter.dylib @executable_path/../Frameworks/libTextureConverter.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}   
     )
 
     set_target_properties ( ${PROJECT_NAME} PROPERTIES

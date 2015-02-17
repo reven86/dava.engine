@@ -167,6 +167,7 @@ QIcon SceneTreeItemEntity::ItemIcon() const
 	static QIcon windIcon(":/QtIcons/wind.png");
     static QIcon soIcon(":/QtIcons/so.png");
     static QIcon pathIcon(":/QtIcons/path.png");
+    static QIcon grassIcon(":/QtIcons/grass.png");
 
 	QIcon ret;
 
@@ -192,6 +193,10 @@ QIcon SceneTreeItemEntity::ItemIcon() const
 		{
 			ret = switchIcon;
 		}
+        else if (NULL != DAVA::GetVegetation(entity))
+        {
+            ret = grassIcon;
+        }
 		else if(NULL != DAVA::GetRenderObject(entity))
 		{
 			ret = renderobjIcon;
@@ -381,12 +386,9 @@ void SceneTreeItemEntity::DoSync(QStandardItem *rootItem, DAVA::Entity *entity)
 					repeatStep = false;
 
 					// remove items that we already add
-					while(emitterSet.contains(itemEmitter))
+					if (emitterSet.contains(itemEmitter))
 					{
 						rootItem->removeRow(row);
-
-						SceneTreeItem *item = (SceneTreeItem *) rootItem->child(row);
-						DAVA::ParticleEmitter *itemEmitter = SceneTreeItemParticleEmitter::GetEmitter(item);
 					}
 
 					if(NULL == item)

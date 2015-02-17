@@ -35,12 +35,17 @@
 
 namespace DAVA
 {
+    
+class UIPackagesCache;
+    
 class DefaultUIPackageBuilder : public AbstractUIPackageBuilder
 {
 public:
-    DefaultUIPackageBuilder();
+    DefaultUIPackageBuilder(UIPackagesCache *_packagesCache = nullptr);
     virtual ~DefaultUIPackageBuilder();
     
+    virtual UIPackage *FindInCache(const String &packagePath) const override;
+
     virtual RefPtr<UIPackage> BeginPackage(const FilePath &packagePath) override;
     virtual void EndPackage() override;
     
@@ -65,22 +70,15 @@ public:
     virtual void ProcessProperty(const InspMember *member, const VariantType &value) override;
     
 private:
-    struct ControlDescr
-    {
-        UIControl *control;
-        bool addToParent;
-        
-        ControlDescr();
-        ControlDescr(UIControl *node, bool addToParent);
-        ControlDescr(const ControlDescr &descr);
-        ~ControlDescr();
-        ControlDescr &operator=(const ControlDescr &descr);
-    };
+    class PackageDescr;
+    struct ControlDescr;
+    
+    Vector<PackageDescr*> packagesStack;
+    Vector<ControlDescr*> controlsStack;
 
-    UIPackage *package;
-    Map<String, UIPackage*> importedPackages;
-    List<ControlDescr> controlsStack;
+    UIPackagesCache *cache;
     BaseObject *currentObject;
+    
 };
 }
 

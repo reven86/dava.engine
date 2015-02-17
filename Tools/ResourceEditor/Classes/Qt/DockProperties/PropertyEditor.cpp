@@ -48,6 +48,7 @@
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataMetaObject.h"
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/HeightmapValidator.h"
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/TexturePathValidator.h"
+#include "Tools/QtPropertyEditor/QtPropertyDataValidator/ScenePathValidator.h"
 #include "Commands2/MetaObjModifyCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/ConvertToShadowCommand.h"
@@ -88,10 +89,13 @@ PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSig
 	posSaver.Attach(this, "DocPropetyEditor");
 
 	DAVA::VariantType v = posSaver.LoadValue("splitPos");
-	if(v.GetType() == DAVA::VariantType::TYPE_INT32) header()->resizeSection(0, v.AsInt32());
+	if(v.GetType() == DAVA::VariantType::TYPE_INT32)
+	{
+        header()->resizeSection( 0, v.AsInt32() );
+    }
 
     Ui::MainWindow* mainUi = QtMainWindow::Instance()->GetUI();
-    connect(mainUi->actionAddActionComponent, SIGNAL(triggered()), SLOT(OnAddActionComponent()));
+    connect( mainUi->actionAddActionComponent, SIGNAL( triggered() ), SLOT( OnAddActionComponent() ) );
     connect(mainUi->actionAddQualitySettingsComponent, SIGNAL(triggered()), SLOT(OnAddModelTypeComponent()));
     connect(mainUi->actionAddStaticOcclusionComponent, SIGNAL(triggered()), SLOT(OnAddStaticOcclusionComponent()));
     connect(mainUi->actionAddSoundComponent, SIGNAL(triggered()), this, SLOT(OnAddSoundComponent()));
@@ -224,6 +228,8 @@ void PropertyEditor::ResetProperties()
                         bool isRemovable = true;
                         switch (component->GetType())
                         {
+                        case Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT:
+                        case Component::DEBUG_RENDER_COMPONENT:
                         case Component::TRANSFORM_COMPONENT:
                         case Component::CUSTOM_PROPERTIES_COMPONENT:    // Disable removing, because custom properties are created automatically
                             isRemovable = false;
@@ -373,13 +379,13 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 				// Add optional button to edit action component
 				QtPropertyToolButton * editActions = CreateButton(data, QIcon(":/QtIcons/settings.png"), "Edit action component");
                 editActions->setEnabled(isSingleSelection);
-				QObject::connect(editActions, SIGNAL(pressed()), this, SLOT(ActionEditComponent()));
+				QObject::connect(editActions, SIGNAL(clicked()), this, SLOT(ActionEditComponent()));
 			}
             else if(DAVA::MetaInfo::Instance<DAVA::SoundComponent>() == meta)
             {
                 QtPropertyToolButton * editSound = CreateButton(data, QIcon( ":/QtIcons/settings.png" ), "Edit sound component");
                 editSound->setAutoRaise(true);
-                QObject::connect(editSound, SIGNAL(pressed()), this, SLOT(ActionEditSoundComponent()));
+                QObject::connect(editSound, SIGNAL(clicked()), this, SLOT(ActionEditSoundComponent()));
             }
             else if(DAVA::MetaInfo::Instance<DAVA::WaveComponent>() == meta)
             {
@@ -387,7 +393,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                 triggerWave->setIcon(QIcon(":/QtIcons/clone.png"));
                 triggerWave->setAutoRaise(true);
 
-                QObject::connect(triggerWave, SIGNAL(pressed()), this, SLOT(OnTriggerWaveComponent()));
+                QObject::connect(triggerWave, SIGNAL(clicked()), this, SLOT(OnTriggerWaveComponent()));
             }
 			else if(DAVA::MetaInfo::Instance<DAVA::RenderObject>() == meta)
 			{
@@ -399,7 +405,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                     {
                         QtPropertyToolButton * cloneBatches = CreateButton(data, QIcon(":/QtIcons/clone_batches.png"), "Clone batches for LODs correction");
                         cloneBatches->setEnabled(isSingleSelection);
-                        QObject::connect(cloneBatches, SIGNAL(pressed()), this, SLOT(CloneRenderBatchesToFixSwitchLODs()));
+                        QObject::connect(cloneBatches, SIGNAL(clicked()), this, SLOT(CloneRenderBatchesToFixSwitchLODs()));
                     }
                 }
 			}
@@ -407,7 +413,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			{
 				QtPropertyToolButton * deleteButton = CreateButton(data, QIcon(":/QtIcons/remove.png"), "Delete RenderBatch");
                 deleteButton->setEnabled(isSingleSelection);
-				QObject::connect(deleteButton, SIGNAL(pressed()), this, SLOT(DeleteRenderBatch()));
+				QObject::connect(deleteButton, SIGNAL(clicked()), this, SLOT(DeleteRenderBatch()));
 
 				QtPropertyDataIntrospection *introData = dynamic_cast<QtPropertyDataIntrospection *>(data);
 				if(NULL != introData)
@@ -420,7 +426,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 					    {
 						    QtPropertyToolButton * convertButton = CreateButton(data, QIcon(":/QtIcons/shadow.png"), "Convert To ShadowVolume");
                             convertButton->setEnabled(isSingleSelection);
-						    connect(convertButton, SIGNAL(pressed()), this, SLOT(ConvertToShadow()));
+						    connect(convertButton, SIGNAL(clicked()), this, SLOT(ConvertToShadow()));
 					    }
 
                         PolygonGroup* group = batch->GetPolygonGroup();
@@ -435,7 +441,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                             {
                                 QtPropertyToolButton * rebuildTangentButton = CreateButton(data, QIcon(":/QtIcons/external.png"), "Rebuild tangent space");
                                 rebuildTangentButton->setEnabled(isSingleSelection);
-                                connect(rebuildTangentButton, SIGNAL(pressed()), this, SLOT(RebuildTangentSpace()));
+                                connect(rebuildTangentButton, SIGNAL(clicked()), this, SLOT(RebuildTangentSpace()));
                             }
                         }
                     }
@@ -445,7 +451,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			{
 				QtPropertyToolButton * goToMaterialButton = CreateButton(data, QIcon(":/QtIcons/3d.png"), "Edit material");
                 goToMaterialButton->setEnabled(isSingleSelection);
-				QObject::connect(goToMaterialButton, SIGNAL(pressed()), this, SLOT(ActionEditMaterial()));
+				QObject::connect(goToMaterialButton, SIGNAL(clicked()), this, SLOT(ActionEditMaterial()));
 			}
             else if(DAVA::MetaInfo::Instance<DAVA::FilePath>() == meta)
 			{
@@ -457,6 +463,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 						PATH_IMAGE,
 						PATH_HEIGHTMAP,
 						PATH_TEXT,
+                        PATH_SCENE,
 						PATH_NOT_SPECIFIED
 					};
 
@@ -474,6 +481,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 					PathDescriptor("texture", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
 					PathDescriptor("lightmap", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
 					PathDescriptor("vegetationTexture", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
+                    PathDescriptor("customGeometry", "All (*.sc2);;SC2 (*.sc2);", PathDescriptor::PATH_SCENE),
 					PathDescriptor("textureSheet", "All (*.txt);;TXT (*.tex)", PathDescriptor::PATH_TEXT),
 					PathDescriptor("densityMap", "All (*.png);;PNG (*.png)", PathDescriptor::PATH_IMAGE),
 				};
@@ -513,6 +521,9 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 					case PathDescriptor::PATH_TEXT:
 						variantData->SetValidator(new PathValidator(pathList));
 						break;
+                    case PathDescriptor::PATH_SCENE:
+                        variantData->SetValidator(new ScenePathValidator(pathList));
+                        break;
 
 					default:
 						break;
