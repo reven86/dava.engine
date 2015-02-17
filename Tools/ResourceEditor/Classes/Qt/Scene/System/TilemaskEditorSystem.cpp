@@ -45,32 +45,24 @@ TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
 ,	curToolSize(0)
 ,	toolImage(NULL)
 ,	toolImageTexture(NULL)
-,	strength(0.25f)
 ,	tileTextureNum(0)
-,	stencilTexture(NULL)
-,	toolSpriteUpdated(false)
 ,	drawingType(TILEMASK_DRAW_NORMAL)
+,	strength(0.25f)
+,	toolImagePath("")
+,	toolImageIndex(0)
 ,	copyPasteFrom(-1.f, -1.f)
 ,	copyPasteTo(-1.f, -1.f)
-,	textureLevel(Landscape::TEXTURE_TILE_MASK)
 ,	editingIsEnabled(false)
-,	toolImageIndex(0)
-,	needCreateUndo(false)
+,	stencilTexture(NULL)
 ,	toolTexture(NULL)
-,	toolImagePath("")
+,	toolSpriteUpdated(false)
+,	needCreateUndo(false)
+,	textureLevel(Landscape::TEXTURE_TILE_MASK)
 {
     cursorSize = 120;
     
     tileMaskEditorShader = SafeRetain(ShaderCache::Instance()->Get(FastName("~res:/Materials/Shaders/Landscape/tilemask-editor"), FastNameSet()));
     tileMaskCopyPasteShader = SafeRetain(ShaderCache::Instance()->Get(FastName("~res:/Materials/Shaders/Landscape/tilemask-editor-copypaste"), FastNameSet()));
-
-    DAVA::RenderStateData noBlendStateData;
-    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, noBlendStateData);
-    
-	noBlendStateData.sourceFactor = DAVA::BLEND_ONE;
-	noBlendStateData.destFactor = DAVA::BLEND_ZERO;
-	
-	noBlendDrawState = DAVA::RenderManager::Instance()->CreateRenderState(noBlendStateData);
 
     spriteRenderObject = new RenderDataObject();
     spriteVertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
@@ -86,8 +78,6 @@ TilemaskEditorSystem::~TilemaskEditorSystem()
 	SafeRelease(toolTexture);
 	SafeRelease(stencilTexture);
     SafeRelease(spriteRenderObject);
-
-	RenderManager::Instance()->ReleaseRenderState(noBlendDrawState);
 }
 
 LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditing()
@@ -202,20 +192,23 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 					return;
 				}
 
-                RenderManager::Instance()->SetClip(dstRect);
 
                 RenderHelper::Instance()->Set2DRenderTarget(toolTexture);
-                RenderHelper::Instance()->DrawTexture(dstTex, RenderState::RENDERSTATE_2D_BLEND, textureRect);
+                RenderManager::Instance()->SetClip(dstRect);
+                RenderHelper::Instance()->DrawTexture(dstTex, RenderState::RENDERSTATE_2D_OPAQUE, textureRect);
 
                 RenderHelper::Instance()->Set2DRenderTarget(stencilTexture);
+                RenderManager::Instance()->SetClip(dstRect);
                 RenderHelper::Instance()->DrawTexture(toolImageTexture, RenderState::RENDERSTATE_2D_OPAQUE, toolRect);
-
-                RenderManager::Instance()->SetRenderTarget(0);
+                
                 RenderManager::Instance()->SetClip(Rect(0.f, 0.f, -1.f, -1.f));
+                RenderManager::Instance()->SetRenderTarget(0);
 
 				toolSpriteUpdated = true;
 			}
 
+            RenderSystem2D::Instance()->Setup2DMatrices();
+            
 			AddRectToAccumulator(toolRect);
 		}
 	}
@@ -233,7 +226,7 @@ void TilemaskEditorSystem::Input(UIEvent* event)
 	if (event->tid == UIEvent::BUTTON_1)
 	{
 		Vector3 point;
-		
+
 		switch(event->phase)
 		{
 			case UIEvent::PHASE_BEGAN:
@@ -265,7 +258,7 @@ void TilemaskEditorSystem::Input(UIEvent* event)
 				}
 				break;
 				
-			case UIEvent::PHASE_DRAG:
+            case UIEvent::PHASE_DRAG:
 				break;
 				
 			case UIEvent::PHASE_ENDED:
@@ -345,6 +338,7 @@ void TilemaskEditorSystem::UpdateBrushTool()
     Texture* dstTexture = drawSystem->GetLandscapeProxy()->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_DESTINATION);
     
     RenderHelper::Instance()->Set2DRenderTarget(dstTexture);
+    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
     
 	Shader* shader = tileMaskEditorShader;
 	if (activeDrawingType == TILEMASK_DRAW_COPY_PASTE)
@@ -376,7 +370,7 @@ void TilemaskEditorSystem::UpdateBrushTool()
 
     RenderManager::Instance()->SetShader(shader);
     RenderManager::Instance()->SetRenderData(spriteRenderObject);
-	RenderManager::Instance()->SetRenderState(noBlendDrawState);
+    RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_OPAQUE);
 	RenderManager::Instance()->SetTextureState(textureState);
 	RenderManager::Instance()->FlushState();
 	RenderManager::Instance()->AttachRenderData();
@@ -552,7 +546,8 @@ void TilemaskEditorSystem::CreateMaskFromTexture(Texture* texture)
 
 void TilemaskEditorSystem::Draw()
 {
-	if (!IsLandscapeEditingEnabled())
+    Rect oldViewport = RenderManager::Instance()->GetViewport();
+    if (!IsLandscapeEditingEnabled())
 	{
 		return;
 	}
@@ -568,6 +563,7 @@ void TilemaskEditorSystem::Draw()
 		CreateUndoPoint();
 		needCreateUndo = false;
 	}
+    RenderManager::Instance()->SetViewport(oldViewport);
 }
 
 void TilemaskEditorSystem::CreateUndoPoint()

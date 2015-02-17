@@ -119,21 +119,13 @@ ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* landscapeProxy, con
     
 	this->updatedRect = updatedRect;
 	this->landscapeProxy = SafeRetain(landscapeProxy);
-	
-    DAVA::RenderStateData noBlendStateData;
-    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_2D_BLEND, noBlendStateData);
-    
-	noBlendStateData.sourceFactor = DAVA::BLEND_ONE;
-	noBlendStateData.destFactor = DAVA::BLEND_ZERO;
-	
-	noBlendDrawState = DAVA::RenderManager::Instance()->CreateRenderState(noBlendStateData);
 
 	Image* originalMask = landscapeProxy->GetTilemaskImageCopy();
 
 	undoImageMask = Image::CopyImageRegion(originalMask, updatedRect);
 
     RenderManager::Instance()->SetColor(Color::White);
-	Image* currentImageMask = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK)->CreateImageFromMemory(noBlendDrawState);
+    Image* currentImageMask = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK)->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
 
 	redoImageMask = Image::CopyImageRegion(currentImageMask, updatedRect);
 	SafeRelease(currentImageMask);
@@ -144,22 +136,18 @@ ModifyTilemaskCommand::~ModifyTilemaskCommand()
 	SafeRelease(undoImageMask);
 	SafeRelease(redoImageMask);
 	SafeRelease(landscapeProxy);
-
-	RenderManager::Instance()->ReleaseRenderState(noBlendDrawState);
 }
 
 void ModifyTilemaskCommand::Undo()
 {
-    RenderSystem2D::Instance()->Setup2DMatrices();
-    
     RenderManager::Instance()->SetColor(Color::White);
     
     Texture * srcTex = landscapeProxy->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE);
     ApplyImageToTexture(undoImageMask, srcTex);
     
 	Texture * maskTexture = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK);
-
-	Texture* texture = ApplyImageToTexture(undoImageMask, maskTexture);
+	Texture* texture = MixImageWithTexture(undoImageMask, maskTexture);
+    
     landscapeProxy->SetTilemaskTexture(texture);
     SafeRelease(texture);
 
@@ -173,13 +161,12 @@ void ModifyTilemaskCommand::Undo()
 
 void ModifyTilemaskCommand::Redo()
 {
-    RenderSystem2D::Instance()->Setup2DMatrices();
-    
 	ApplyImageToTexture(redoImageMask, landscapeProxy->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE));
 
 	Texture * maskTexture = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK);
     
-	Texture * texture = ApplyImageToTexture(redoImageMask, maskTexture);
+	Texture * texture = MixImageWithTexture(redoImageMask, maskTexture);
+    
     landscapeProxy->SetTilemaskTexture(texture);
     SafeRelease(texture);
 
@@ -196,7 +183,7 @@ Entity* ModifyTilemaskCommand::GetEntity() const
 	return NULL;
 }
 
-Texture * ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Texture *texture)
+Texture * ModifyTilemaskCommand::MixImageWithTexture(DAVA::Image *image, DAVA::Texture *texture)
 {
 	int32 width = texture->GetWidth();
 	int32 height = texture->GetHeight();
@@ -204,52 +191,30 @@ Texture * ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::T
 	Texture* resTexture = Texture::CreateFBO(width, height, FORMAT_RGBA8888, Texture::DEPTH_NONE);
     RenderHelper::Instance()->Set2DRenderTarget(resTexture);
     RenderManager::Instance()->SetColor(Color::White);
+    
     RenderHelper::Instance()->DrawTexture(texture, RenderState::RENDERSTATE_2D_OPAQUE);
-    
-    RenderManager::Instance()->SetClip(updatedRect);
-    
-    RenderManager::Instance()->SetColor(Color::White);
-    RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
-    RenderManager::Instance()->FlushState();
 
 	Texture* t = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), image->GetWidth(), image->GetHeight(), false);
-
     RenderHelper::Instance()->DrawTexture(t, RenderState::RENDERSTATE_2D_OPAQUE, updatedRect);
     
 	SafeRelease(t);
     
-    RenderManager::Instance()->SetClip(Rect(0.f, 0.f, -1.f, -1.));
     RenderManager::Instance()->SetRenderTarget(0);
     
     return resTexture;
 }
 
-void ModifyTilemaskCommand::ApplyImageToSprite(Image* image, Sprite* dstSprite)
+void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture * dstTex)
 {
- //   Rect rect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(updatedRect);
- //   
- //   RenderSystem2D::Instance()->SetRenderTarget(dstSprite);
- //   RenderSystem2D::Instance()->PushClip();
- //   RenderSystem2D::Instance()->SetClip(rect);
-
- //   RenderManager::Instance()->SetColor(Color::White);
-	//
-	//Texture* texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
-	//										   image->GetWidth(), image->GetHeight(), false);
-	//Sprite* srcSprite = Sprite::CreateFromTexture(texture, 0, 0, image->GetWidth(), image->GetHeight());
-	//
- //   Sprite::DrawState drawState;
- //   drawState.SetRenderState(noBlendDrawState);
-	//drawState.SetPosition(rect.x, rect.y);
- //   
- //   RenderSystem2D::Instance()->Setup2DMatrices();
- //   RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
- //   
- //   RenderSystem2D::Instance()->PopClip();
- //   RenderSystem2D::Instance()->PopRenderTarget();
-	//
-	//SafeRelease(texture);
-	//SafeRelease(srcSprite);
+    Texture* texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
+                                               image->GetWidth(), image->GetHeight(), false);
+    
+    RenderHelper::Instance()->Set2DRenderTarget(dstTex);
+    RenderManager::Instance()->SetColor(Color::White);
+    
+    RenderHelper::Instance()->DrawTexture(texture, RenderState::RENDERSTATE_2D_OPAQUE, updatedRect);
+    
+    RenderManager::Instance()->SetRenderTarget(0);
 }
 
 

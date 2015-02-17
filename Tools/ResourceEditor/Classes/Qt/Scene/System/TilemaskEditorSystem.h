@@ -136,8 +136,6 @@ protected:
 
 	MetaObjModifyCommand* CreateTileColorCommand(Landscape::eTextureLevel level,
 												 const Color& color);
-	
-	UniqueHandle noBlendDrawState;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__) */
