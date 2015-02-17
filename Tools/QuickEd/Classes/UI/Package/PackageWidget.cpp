@@ -156,6 +156,43 @@ void PackageWidget::RefreshAction( QAction *action, bool enabled, bool visible )
     action->setVisible(visible);
 }
 
+void PackageWidget::CollectSelectedNodes(Vector<ControlNode*> &nodes)
+{
+    QItemSelection selected = document->GetPackageContext()->GetFilterProxyModel()->mapSelectionToSource(ui->treeView->selectionModel()->selection());
+    QModelIndexList selectedIndexList = selected.indexes();
+    
+    if (!selectedIndexList.empty())
+    {
+        for (QModelIndex &index : selectedIndexList)
+        {
+            PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+            ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
+            
+            if (controlNode && controlNode->GetCreationType() != ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
+                nodes.push_back(controlNode);
+        }
+    }
+}
+
+void PackageWidget::CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &nodes)
+{
+    QClipboard *clipboard = QApplication::clipboard();
+    if (!nodes.empty())
+    {
+        YamlPackageSerializer serializer;
+        document->GetPackage()->Serialize(&serializer, nodes);
+        String str = serializer.WriteToString();
+        QMimeData data;
+        data.setText(QString(str.c_str()));
+        clipboard->setMimeData(&data);
+    }
+}
+
+void PackageWidget::RemoveNodes(const DAVA::Vector<ControlNode*> &nodes)
+{
+    document->GetCommandExecutor()->RemoveControls(nodes);
+}
+
 void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
 {
     QList<ControlNode*> selectedRootControl;
@@ -245,29 +282,9 @@ void PackageWidget::OnImport()
 
 void PackageWidget::OnCopy()
 {
-    QItemSelection selected = document->GetPackageContext()->GetFilterProxyModel()->mapSelectionToSource(ui->treeView->selectionModel()->selection());
-    QModelIndexList selectedIndexList = selected.indexes();
-    QClipboard *clipboard = QApplication::clipboard();
-
     Vector<ControlNode*> nodes;
-    if (!selectedIndexList.empty())
-    {
-        for (QModelIndex &index : selectedIndexList)
-        {
-            PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-            ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
-            
-            if (controlNode && controlNode->GetCreationType() != ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
-                nodes.push_back(controlNode);
-        }
-
-        YamlPackageSerializer serializer;
-        document->GetPackage()->Serialize(&serializer, nodes);
-        String str = serializer.WriteToString();
-        QMimeData data;
-        data.setText(QString(str.c_str()));
-        clipboard->setMimeData(&data);
-    }
+    CollectSelectedNodes(nodes);
+    CopyNodesToClipboard(nodes);
 }
 
 void PackageWidget::OnPaste()
@@ -280,43 +297,38 @@ void PackageWidget::OnPaste()
     {
         QModelIndex &index = selectedIndexList.first();
         
-        PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-        ControlNode *controlNode = dynamic_cast<ControlNode*>(node); // control node may be null
+        ControlsContainerNode *node = dynamic_cast<ControlsContainerNode*>(static_cast<PackageBaseNode*>(index.internalPointer()));
         
-        String string = clipboard->mimeData()->text().toStdString();
-        RefPtr<YamlParser> parser(YamlParser::CreateAndParseString(string));
-        
-        if (parser.Valid() && parser->GetRootNode())
+        if (node && (node->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) == 0)
         {
-            document->UndoStack()->beginMacro("Paste");
-            EditorUIPackageBuilder builder(document->GetPackage(), controlNode, document->GetCommandExecutor());
-            UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(parser->GetRootNode(), "");
-            SafeRelease(newPackage);
-            document->UndoStack()->endMacro();
+            String string = clipboard->mimeData()->text().toStdString();
+            RefPtr<YamlParser> parser(YamlParser::CreateAndParseString(string));
+            
+            if (parser.Valid() && parser->GetRootNode())
+            {
+                document->UndoStack()->beginMacro("Paste");
+                EditorUIPackageBuilder builder(document->GetPackage(), node, -1, document->GetCommandExecutor());
+                UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(parser->GetRootNode(), "");
+                SafeRelease(newPackage);
+                document->UndoStack()->endMacro();
+            }
         }
     }
 }
 
 void PackageWidget::OnCut()
 {
-
+    Vector<ControlNode*> nodes;
+    CollectSelectedNodes(nodes);
+    CopyNodesToClipboard(nodes);
+    RemoveNodes(nodes);
 }
 
 void PackageWidget::OnDelete()
 {
-    QModelIndexList list = ui->treeView->selectionModel()->selectedIndexes();
-    if (!list.empty())
-    {
-        Vector<ControlNode*> nodes;
-        for (QModelIndex &index : list)
-        {
-            QModelIndex srcIndex = document->GetPackageContext()->GetFilterProxyModel()->mapToSource(index);
-            ControlNode *sourceNode = dynamic_cast<ControlNode*>(static_cast<PackageBaseNode*>(srcIndex.internalPointer()));
-            if (sourceNode)
-                nodes.push_back(sourceNode);
-        }
-        document->GetCommandExecutor()->RemoveControls(nodes);
-    }
+    Vector<ControlNode*> nodes;
+    CollectSelectedNodes(nodes);
+    RemoveNodes(nodes);
 }
 
 void PackageWidget::filterTextChanged(const QString &filterText)

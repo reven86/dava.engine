@@ -17,6 +17,7 @@
 #include "Model/PackageHierarchy/ControlPrototype.h"
 #include "Model/PackageHierarchy/ControlsContainerNode.h"
 #include "Model/YamlPackageSerializer.h"
+#include "Model/EditorUIPackageBuilder.h"
 
 #include "PackageMimeData.h"
 
@@ -270,46 +271,59 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     }
     else if (data->hasFormat("text/plain") && data->hasText())
     {
+        String string = data->text().toStdString();
+        RefPtr<YamlParser> parser(YamlParser::CreateAndParseString(string));
         
-        String controlName = QStringToString(data->text());
-        size_t slashIndex = controlName.find("/");
-        ControlNode *node = nullptr;
-        
-        if (slashIndex != String::npos)
+        if (parser.Valid() && parser->GetRootNode())
         {
-            String packName = controlName.substr(0, slashIndex);
-            controlName = controlName.substr(slashIndex + 1, controlName.size() - slashIndex - 1);
-            PackageControlsNode *packageControls = root->GetImportedPackagesNode()->FindPackageControlsNodeByName(packName);
-            if (packageControls)
-            {
-                ControlNode *prototypeControl = packageControls->FindControlNodeByName(controlName);
-                if (prototypeControl)
-                {
-                    node = ControlNode::CreateFromPrototype(prototypeControl, packageControls->GetPackageRef());
-                }
-            }
+            document->UndoStack()->beginMacro("Paste");
+            EditorUIPackageBuilder builder(document->GetPackage(), parentNode, rowIndex, document->GetCommandExecutor());
+            UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(parser->GetRootNode(), "");
+            SafeRelease(newPackage);
+            document->UndoStack()->endMacro();
         }
         else
         {
-            UIControl *control = ObjectFactory::Instance()->New<UIControl>(controlName);
-            if (control)
+            String controlName = QStringToString(data->text());
+            size_t slashIndex = controlName.find("/");
+            ControlNode *node = nullptr;
+            
+            if (slashIndex != String::npos)
             {
-                node = ControlNode::CreateFromControl(control);
-                SafeRelease(control);
+                String packName = controlName.substr(0, slashIndex);
+                controlName = controlName.substr(slashIndex + 1, controlName.size() - slashIndex - 1);
+                PackageControlsNode *packageControls = root->GetImportedPackagesNode()->FindPackageControlsNodeByName(packName);
+                if (packageControls)
+                {
+                    ControlNode *prototypeControl = packageControls->FindControlNodeByName(controlName);
+                    if (prototypeControl)
+                    {
+                        node = ControlNode::CreateFromPrototype(prototypeControl, packageControls->GetPackageRef());
+                    }
+                }
             }
             else
             {
-                ControlNode *prototypeControl = root->GetPackageControlsNode()->FindControlNodeByName(controlName);
-                if (prototypeControl)
+                UIControl *control = ObjectFactory::Instance()->New<UIControl>(controlName);
+                if (control)
                 {
-                    node = ControlNode::CreateFromPrototype(prototypeControl, root->GetPackageControlsNode()->GetPackageRef());
+                    node = ControlNode::CreateFromControl(control);
+                    SafeRelease(control);
+                }
+                else
+                {
+                    ControlNode *prototypeControl = root->GetPackageControlsNode()->FindControlNodeByName(controlName);
+                    if (prototypeControl)
+                    {
+                        node = ControlNode::CreateFromPrototype(prototypeControl, root->GetPackageControlsNode()->GetPackageRef());
+                    }
                 }
             }
-        }
-        
-        if (node)
-        {
-            document->GetCommandExecutor()->InsertControl(node, parentNode, rowIndex);
+            
+            if (node)
+            {
+                document->GetCommandExecutor()->InsertControl(node, parentNode, rowIndex);
+            }
         }
         return true;
     }
