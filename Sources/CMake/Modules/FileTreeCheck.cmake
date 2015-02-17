@@ -1,4 +1,3 @@
-include ( GlobalVariables      )
 
 FIND_PROGRAM( PYTHON_BINARY python )
 
