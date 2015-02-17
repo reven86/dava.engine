@@ -1,3 +1,7 @@
+if ( GLOBAL_VAR_FOUND )
+    return ()
+endif ()
+set ( GLOBAL_VAR_FOUND 1 )
 
 if( APPLE AND NOT IOS )
 	set ( MACOS 1 )
