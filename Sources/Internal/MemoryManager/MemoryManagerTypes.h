@@ -41,7 +41,10 @@ struct GeneralAllocStat
 {
     uint32 ghostBlockCount;     // Number of blocks allocated bypassing memory manager
     uint32 ghostSize;           // Size of bypassed blocks
+    uint32 padding[2];
 };
+
+static_assert(sizeof(GeneralAllocStat) % 16 == 0, "sizeof(GeneralAllocStat) % 16 == 0");
 
 /*
  AllocPoolStat - memory statistics calculated ever for every allocation pool
@@ -54,27 +57,65 @@ struct AllocPoolStat
     uint32 maxBlockSize;    // Max allocated block size
 };
 
-struct GeneralInfo
+static_assert(sizeof(AllocPoolStat) % 16 == 0, "sizeof(AllocPoolStat) % 16 == 0");
+
+/*
+ MMTagStack holds stack of tags
+*/
+struct MMTagStack
+{
+    static const size_t MAX_DEPTH = 8;
+    
+    uint32 depth;
+    uint32 padding[3];
+    uint32 stack[MAX_DEPTH];
+    uint32 begin[MAX_DEPTH];
+};
+
+static_assert(sizeof(MMTagStack) % 16 == 0, "sizeof(MMTagStack) % 16 == 0");
+
+/*
+ MMItemName is used to store name of tag, allocation pool, etc
+ It's desirable that name is not too long and size of struct is multiple of 16
+*/
+struct MMItemName
 {
     static const size_t NAME_LENGTH = 16;
-
-    uint32 tagCount;
-    uint32 allocPoolCount;
-    uint32 counterCount;
-    uint32 poolCounterCount;
-    char8 names[1][NAME_LENGTH];
+    
+    char8 name[NAME_LENGTH];
 };
 
-struct CurrentAllocStat
+static_assert(sizeof(MMItemName) % 16 == 0, "sizeof(MMItemName) % 16 == 0");
+
+/*
+ MMStatConfig represents memory manager configuration: number and names of registered tags and allocation pools
+*/
+struct MMStatConfig
 {
-    static const size_t MAX_TAG_DEPTH = 8;
-
-    uint32 nextBlockNo;
-    uint32 tagDepth;
-    uint32 tagStack[MAX_TAG_DEPTH];
-    GeneralAllocStat generalStat;
-    AllocPoolStat poolStat[1];
+    uint32 maxTagCount;         // Max possible tag count
+    uint32 maxAllocPoolCount;   // Max possible count of allocation pools
+    uint32 tagCount;            // Number of registered tags
+    uint32 allocPoolCount;      // Number of registered allocation pools
+    MMItemName names[1];        // Item names: elements in range [0, tagCount) - tag names
+                                //             elements in range [tagCount, tagCount + allocPoolCount) - allocation pool names
 };
+
+static_assert(sizeof(MMStatConfig) % 16 == 0, "sizeof(MMStatConfig) % 16 == 0");
+
+/*
+ MMStat represents current memory allocation statistics
+*/
+struct MMStat
+{
+    uint64 timestamp;       // Some kind of timestamp (not necessary real time), filled by statistic transmitter
+    uint32 allocCount;      // Total number of allocation occured
+    uint32 allocPoolCount;  // Duplicate from MMStatConfig::allocPoolCount
+    MMTagStack tags;
+    GeneralAllocStat generalStat;
+    AllocPoolStat poolStat[1];  // Array size should be calculated as: tags.depth * allocPoolCount
+};
+
+static_assert(sizeof(MMStat) % 16 == 0, "sizeof(MMStat) % 16 == 0");
 
 }   // namespace DAVA
 

@@ -61,33 +61,38 @@ struct MemoryManager::MemoryBlock
     size_t padding;
 };
     
-char8 MemoryManager::tagNames[MAX_TAG_COUNT][MAX_NAME_LENGTH] = {
-    "application"
+MMItemName MemoryManager::tagNames[MAX_TAG_COUNT] = {
+    {"application"}
 };
 
-char8 MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT][MAX_NAME_LENGTH] = {
-    "internal",
-    "application"
+MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT] = {
+    {"internal"},
+    {"application"}
 };
+
+size_t MemoryManager::registeredTagCount = 1;
+size_t MemoryManager::registeredAllocPoolCount = 2;
     
 void MemoryManager::RegisterAllocPoolName(size_t index, const char8* name)
 {
-    DVASSERT(name != nullptr && 0 < strlen(name) && strlen(name) < MAX_NAME_LENGTH);
+    DVASSERT(name != nullptr && 0 < strlen(name) && strlen(name) < MMItemName::NAME_LENGTH);
     DVASSERT(FIRST_CUSTOM_ALLOC_POOL <= index && index < MAX_ALLOC_POOL_COUNT);
-    DVASSERT(allocPoolNames[index - 1][0] != '\0');     // Names should be registered sequentially with no gap
+    DVASSERT(allocPoolNames[index - 1].name[0] != '\0');     // Names should be registered sequentially with no gap
 
-    strncpy(allocPoolNames[index], name, MAX_NAME_LENGTH);
-    allocPoolNames[index][MAX_NAME_LENGTH - 1] = '\0';
+    strncpy(allocPoolNames[index].name, name, MMItemName::NAME_LENGTH);
+    allocPoolNames[index].name[MMItemName::NAME_LENGTH - 1] = '\0';
+    registeredAllocPoolCount += 1;
 }
 
 void MemoryManager::RegisterTagName(size_t index, const char8* name)
 {
-    DVASSERT(name != nullptr && 0 < strlen(name) && strlen(name) < MAX_NAME_LENGTH);
+    DVASSERT(name != nullptr && 0 < strlen(name) && strlen(name) < MMItemName::NAME_LENGTH);
     DVASSERT(DEFAULT_TAG != index && index < MAX_TAG_COUNT);
-    DVASSERT(tagNames[index - 1][0] != '\0');       // Names should be registered sequentially with no gap
+    DVASSERT(tagNames[index - 1].name[0] != '\0');       // Names should be registered sequentially with no gap
 
-    strncpy(tagNames[index], name, MAX_NAME_LENGTH);
-    tagNames[index][MAX_NAME_LENGTH - 1] = '\0';
+    strncpy(tagNames[index].name, name, MMItemName::NAME_LENGTH);
+    tagNames[index].name[MMItemName::NAME_LENGTH - 1] = '\0';
+    registeredTagCount += 1;
 }
 
 MemoryManager* MemoryManager::Instance()
@@ -149,26 +154,26 @@ void MemoryManager::Dealloc(void* ptr)
 void MemoryManager::EnterScope(uint32 tag)
 {
     assert(tag != DEFAULT_TAG);
-    assert(tagDepth < MAX_TAG_DEPTH - 1);
+    assert(tags.depth < MMTagStack::MAX_DEPTH - 1);
 
     LockType lock(mutex);
-    tagDepth += 1;
-    tagStack[tagDepth] = tag;
-    tagBegin[tagDepth] = nextBlockNo;
+    tags.depth += 1;
+    tags.stack[tags.depth] = tag;
+    tags.begin[tags.depth] = nextBlockNo;
 }
 
 void MemoryManager::LeaveScope()
 {
-    assert(tagDepth > 0);
+    assert(tags.depth > 0);
 
     LockType lock(mutex);
     // TODO: perform action on tag leave
     for (size_t i = 0;i < MAX_ALLOC_POOL_COUNT;++i)
     {
-        statAllocPool[tagDepth][i] = AllocPoolStat();
+        statAllocPool[tags.depth][i] = AllocPoolStat();
         // TODO: clear additional counters on tag leave
     }
-    tagDepth -= 1;
+    tags.depth -= 1;
 }
 
 void MemoryManager::InsertBlock(MemoryBlock* block)
@@ -230,7 +235,7 @@ MemoryManager::MemoryBlock* MemoryManager::FindBlockByOrderNo(uint32 orderNo)
 
 void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, uint32 poolIndex)
 {
-    for (size_t i = 0;i <= tagDepth;++i)
+    for (size_t i = 0;i <= tags.depth;++i)
     {
         // Calculate fixed statistics for allocation pool
         statAllocPool[i][poolIndex].allocByApp += block->allocByApp;
@@ -247,7 +252,7 @@ void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, uint32 poolIndex)
 
 void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, uint32 poolIndex)
 {
-    for (size_t i = 0;i <= tagDepth;++i)
+    for (size_t i = 0;i <= tags.depth;++i)
     {
         assert(statAllocPool[i][poolIndex].blockCount >= 1);
         assert(statAllocPool[i][poolIndex].allocByApp >= block->allocByApp);
@@ -263,71 +268,50 @@ void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, uint32 poolIndex)
     }
 }
 
-GeneralInfo* MemoryManager::GetGeneralInfo()
+size_t MemoryManager::CalcStatConfigSize()
 {
-    GeneralInfo temp;
-    temp.tagCount = CalcNamesCount(tagNames[0], tagNames[0] + MAX_TAG_COUNT * MAX_NAME_LENGTH);
-    temp.allocPoolCount = CalcNamesCount(allocPoolNames[0], allocPoolNames[0] + MAX_ALLOC_POOL_COUNT * MAX_NAME_LENGTH);
-    temp.counterCount = 0;
-    temp.poolCounterCount = 0;
+    return sizeof(MMStatConfig) + sizeof(MMItemName) * (registeredTagCount + registeredAllocPoolCount - 1);
+}
+
+void MemoryManager::GetStatConfig(MMStatConfig* config)
+{
+    DVASSERT(config != nullptr);
     
-    const size_t ntotal = temp.tagCount + temp.allocPoolCount + temp.counterCount + temp.poolCounterCount;
+    config->maxTagCount = MAX_TAG_COUNT;
+    config->maxAllocPoolCount = MAX_ALLOC_POOL_COUNT;
+    config->tagCount = static_cast<uint32>(registeredTagCount);
+    config->allocPoolCount = static_cast<uint32>(registeredAllocPoolCount);
     
-    uint8* buf = new uint8[sizeof(GeneralInfo) + (ntotal - 1) * MAX_NAME_LENGTH];
-    GeneralInfo* result = new (buf) GeneralInfo;
-    result->tagCount = temp.tagCount;
-    result->allocPoolCount = temp.allocPoolCount;
-    result->counterCount = temp.counterCount;
-    result->poolCounterCount = temp.poolCounterCount;
+    size_t k = 0;
+    for (size_t i = 0;i < registeredTagCount;++i, ++k)
+        config->names[k] = tagNames[i];
+    for (size_t i = 0;i < registeredAllocPoolCount;++i, ++k)
+        config->names[k] = allocPoolNames[i];
+}
+
+size_t MemoryManager::CalcStatSizeInternal() const
+{
+    return sizeof(MMStat) + sizeof(AllocPoolStat) * (tags.depth + registeredAllocPoolCount - 1);
+}
+
+void MemoryManager::GetStatInternal(MMStat* stat)
+{
+    DVASSERT(stat != nullptr);
     
-    size_t curIndex = 0;
-    CopyNames(result->names[curIndex], tagNames[0], temp.tagCount);
-    curIndex += temp.tagCount;
-    CopyNames(result->names[curIndex], allocPoolNames[0], temp.allocPoolCount);
-    curIndex += temp.allocPoolCount;
-    return result;
-}
-
-void MemoryManager::FreeGeneralInfo(const GeneralInfo* ptr)
-{
-    delete [] reinterpret_cast<const uint8*>(ptr);
-}
-
-CurrentAllocStat* MemoryManager::GetCurrentAllocStat()
-{
-    //CurrentAllocStat temp;
-
-    return nullptr;
-}
-
-void MemoryManager::FreeCurrentAllocStat(const CurrentAllocStat* ptr)
-{
-    delete[] reinterpret_cast<const uint8*>(ptr);
-}
-
-size_t MemoryManager::CalcNamesCount(const char8* begin, const char* end)
-{
-    size_t n = 0;
-    while (begin < end)
+    LockType lock(mutex);
+    stat->timestamp = 0;
+    stat->allocCount = nextBlockNo;
+    stat->allocPoolCount = static_cast<uint32>(registeredAllocPoolCount);
+    stat->tags = tags;
+    stat->generalStat = statGeneral;
+    
+    size_t k = 0;
+    for (uint32 i = 0;i <= tags.depth;++i)
     {
-        if (begin[0] == '\0')
-            break;
-        n += 1;
-        begin += MAX_NAME_LENGTH;
-    }
-    return n;
-}
-
-void MemoryManager::CopyNames(char8* dst, const char8* src, size_t n)
-{
-    const size_t LENGTH = MAX_NAME_LENGTH > GeneralInfo::NAME_LENGTH ? GeneralInfo::NAME_LENGTH : MAX_NAME_LENGTH;
-    for (size_t i = 0;i < n;++i)
-    {
-        strncpy(dst, src, LENGTH);
-        dst[LENGTH - 1] = '\0';
-        
-        dst += GeneralInfo::NAME_LENGTH;
-        src += MAX_NAME_LENGTH;
+        for (uint32 j = 0;j < stat->allocPoolCount;++j, ++k)
+        {
+            stat->poolStat[k] = statAllocPool[i][j];
+        }
     }
 }
 
@@ -345,140 +329,6 @@ void mem_profiler::collect_backtrace(mem_block_t* block, size_t nskip)
 #endif
 }
 #endif
-
-#if 0   // disable dumps
-void mem_profiler::internal_dump(FILE* file)
-{
-    //LockType lock(mutex);
-    
-    for (size_t i = static_cast<size_t>(mem_type_e::MEM_TYPE_INTERNAL);i < static_cast<size_t>(mem_type_e::MEM_TYPE_COUNT);++i)
-        internal_dump_memory_type(file, i);
-    fprintf(file, "External deletions: %u\n", ndeletions);
-#ifdef TEST_VECTOR
-    fprintf(file, "v size: %u\n", v.size());
-    fprintf(file, "v capacity: %u\n", v.capacity());
-#endif
-}
-
-void mem_profiler::internal_dump_memory_type(FILE* file, size_t mem_index)
-{
-    static const char* mem_descr[] = {
-        "INTERNAL",
-        "NEW", 
-        "STL",
-        "CLASS",
-        "OTHER"
-    };
-    fprintf(file, "stat: mem_type=%s, tag_depth=%u\n", mem_descr[mem_index], tag_depth);
-    for (uint32_t i = 0;i <= tag_depth;++i)
-    {
-        fprintf(file, "  tag            : %u\n", tag_bookmarks[i].tag);
-        fprintf(file, "  alloc_size     : %u  ", stat[mem_index][i].alloc_size);
-        if (stat[mem_index][i].alloc_size > 0)
-            fprintf(file, "!!!!!!!");
-        fprintf(file, "\n");
-        fprintf(file, "  total_size     : %u\n", stat[mem_index][i].total_size);
-        fprintf(file, "  peak_alloc_size: %u\n", stat[mem_index][i].peak_alloc_size);
-        fprintf(file, "  peak_total_size: %u\n", stat[mem_index][i].peak_total_size);
-        fprintf(file, "  max_block_size : %u\n", stat[mem_index][i].max_block_size);
-        fprintf(file, "  nblocks        : %u\n", stat[mem_index][i].nblocks);
-        if (stat[mem_index][i].nblocks > 0)
-        {
-            mem_block_t* cur = head;
-            while (cur != nullptr)
-            {
-                if (static_cast<size_t>(cur->type) == mem_index)
-                {
-                    fprintf(file, "    ptr=%p, alloc_size=%u, total_size=%u, order=%u, tag=%u", cur + 1, cur->alloc_size, cur->total_size, cur->order_no, cur->cur_tag);
-                    if (cur->mark == BLOCK_DELETED)
-                        fprintf(file, "        DELETED");
-                    fprintf(file, "\n");
-                    internal_dump_backtrace(file, cur);
-                }
-                cur = cur->next;
-            }
-        }
-        fprintf(file, "  ========================\n");
-    }
-}
-
-void mem_profiler::internal_dump_backtrace(FILE* file, mem_block_t* block)
-{
-#if defined(MEMPROF_WIN32)
-    HANDLE hprocess = GetCurrentProcess();
-    SymInitialize(hprocess, nullptr, TRUE);
-
-    const size_t NAME_LENGTH = 128;
-    uint8_t symbol_buf[sizeof(SYMBOL_INFO) + NAME_LENGTH];
-    SYMBOL_INFO* symbol = new (symbol_buf) SYMBOL_INFO();
-    symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-    symbol->MaxNameLen = NAME_LENGTH;
-
-    for (size_t i = 0;i < block->backtrace.depth;++i)
-    {
-        SymFromAddr(hprocess, reinterpret_cast<DWORD64>(block->backtrace.frames[i]), 0, symbol);
-        fprintf(file, "        addr=%p, func=%s\n", block->backtrace.frames[i], symbol->Name);
-    }
-
-    SymCleanup(hprocess);
-#elif defined(MEMPROF_MACOS)
-    if (block->backtrace.depth > 0)
-    {
-        /*if (!sym)
-        {
-            void* buf = internal_allocate(sizeof(sym_map_t), mem_type_e::MEM_TYPE_INTERNAL);
-            sym = new (buf) sym_map_t;
-        }
-        
-        int32_t div = (int32_t)block->backtrace.depth - 1;
-        for (;div >= 0;--div)
-        {
-            uintptr_t key = reinterpret_cast<uintptr_t>(block->backtrace.frames[div]);
-            auto i = sym->find(key);
-            if (i == sym->end())
-                break;
-        }
-        
-        if (div >= 0)
-        {
-            char** symbols = backtrace_symbols(block->backtrace.frames, static_cast<int>(div));
-            for (int32_t i = 0;i < div;++i)
-            {
-                size_tstrlen(symbols[i]);
-            }
-            free(symbols);
-        }*/
-        
-        char** symbols = backtrace_symbols(block->backtrace.frames, static_cast<int>(block->backtrace.depth));
-        for (size_t i = 0;i < block->backtrace.depth;++i)
-        {
-            fprintf(file, "        addr=%p, func=%s\n", block->backtrace.frames[i], symbols[i]);
-        }
-        free(symbols);
-    }
-#elif defined(MEMPROF_ANDROID)
-    for (size_t i = 0;i < block->backtrace.depth;++i)
-    {
-        fprintf(file, "        addr=%p, func=%s\n", block->backtrace.frames[i], "");    //symbols[i]);
-    }
-#endif
-}
-
-void mem_profiler::internal_dump_tag(const bookmark_t& bookmark)
-{
-    /*
-    printf("Leave tag: %u\n", bookmark.tag);
-    for (size_t i = bookmark.begin;i < bookmark.end;++i)
-    {
-        mem_block_t* block = find_block(i);
-        if (block == nullptr) continue;
-        printf("  ptr=%p, alloc_size=%u, total_size=%u, order=%u\n", block + 1, block->alloc_size, block->total_size, block->order_no);
-        dump_backtrace(block);
-    }
-    */
-}
-
-#endif  // disable dumps
 
 }   // namespace DAVA
 

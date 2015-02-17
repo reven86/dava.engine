@@ -77,7 +77,7 @@ void MMNetServer::ChannelClosed(const char8* message)
     commInited = false;
 
     for (auto x : parcels)
-        delete [] static_cast<uint8*>(x.buffer);
+        DestroyParcel(x);
     parcels.clear();
 }
 
@@ -90,7 +90,7 @@ void MMNetServer::PacketReceived(const void* packet, size_t length)
     switch (cmd)
     {
     case eMMProtoCmd::INIT_COMM:
-        ProcessInitCommunication(hdr, static_cast<const uint8*>(packet)+sizeof(MMProtoHeader), length - sizeof(MMProtoHeader));
+        ProcessInitCommunication(hdr, static_cast<const uint8*>(packet) + sizeof(MMProtoHeader), length - sizeof(MMProtoHeader));
         break;
     }
 }
@@ -101,10 +101,9 @@ void MMNetServer::PacketDelivered()
 
     if (!commInited)
     {
-        Parcel parcel = parcels.front();
-        MMProtoHeader* hdr = static_cast<MMProtoHeader*>(parcel.buffer);
-        if (static_cast<uint32>(eMMProtoCmd::INIT_COMM) == hdr->cmd)
-            commInited = true;
+        // As reply to eMMProtoCmd::INIT_COMM is always first delivered packet after connection
+        // so we can simply set
+        commInited = true;
     }
 
     parcels.pop_front();
@@ -117,32 +116,25 @@ void MMNetServer::PacketDelivered()
 
 void MMNetServer::ProcessInitCommunication(const MMProtoHeader* hdr, const void* packet, size_t length)
 {
-    GeneralInfo* generalInfo = hdr->sessionId != sessionId ? MemoryManager::GetGeneralInfo()
-                                                           : nullptr;
-    ReplyInitSession(generalInfo);
-    delete [] reinterpret_cast<uint8*>(generalInfo);    // TODO: i don't like such cast and delete
-}
-
-void MMNetServer::ReplyInitSession(const GeneralInfo* generalInfo)
-{
-    size_t generalInfoSize = 0;
-    if (generalInfo != nullptr)
+    size_t dataSize = 0;
+    if (hdr->sessionId != sessionId)
     {
-        const size_t ntotal = generalInfo->tagCount + generalInfo->allocPoolCount + generalInfo->counterCount + generalInfo->poolCounterCount;
-        generalInfoSize = sizeof(GeneralInfo) + (ntotal - 1) * GeneralInfo::NAME_LENGTH;
+        dataSize = MemoryManager::CalcStatConfigSize();
     }
-
-    Parcel parcel = CreateParcel(sizeof(MMProtoHeader) + generalInfoSize);
-
-    MMProtoHeader* hdr = static_cast<MMProtoHeader*>(parcel.buffer);
-    hdr->sessionId = sessionId;
-    hdr->cmd = static_cast<uint32>(eMMProtoCmd::INIT_COMM);
-    hdr->status = static_cast<uint32>(eMMProtoStatus::ACK);
-    hdr->length = static_cast<uint32>(generalInfoSize);
-
-    if (generalInfo != nullptr)
-        Memcpy(hdr + 1, generalInfo, generalInfoSize);
-
+    
+    Parcel parcel = CreateParcel(sizeof(MMProtoHeader) + dataSize);
+    if (dataSize > 0)
+    {
+        MMStatConfig* config = reinterpret_cast<MMStatConfig*>(static_cast<uint8*>(parcel.buffer) + sizeof(MMProtoHeader));
+        MemoryManager::GetStatConfig(config);
+    }
+    
+    MMProtoHeader* outHdr = static_cast<MMProtoHeader*>(parcel.buffer);
+    outHdr->sessionId = sessionId;
+    outHdr->cmd = static_cast<uint32>(eMMProtoCmd::INIT_COMM);
+    outHdr->status = static_cast<uint32>(eMMProtoStatus::ACK);
+    outHdr->length = static_cast<uint32>(dataSize);
+    
     EnqueueAndSend(parcel);
 }
 
@@ -153,6 +145,11 @@ MMNetServer::Parcel MMNetServer::CreateParcel(size_t parcelSize)
         new uint8[parcelSize]
     };
     return parcel;
+}
+
+void MMNetServer::DestroyParcel(Parcel parcel)
+{
+    delete [] static_cast<uint8*>(parcel.buffer);
 }
 
 void MMNetServer::EnqueueAndSend(Parcel parcel)

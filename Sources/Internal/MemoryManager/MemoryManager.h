@@ -74,11 +74,11 @@ public:
     static void EnterTagScope(uint32 tag);
     static void LeaveTagScope();
     
-    static GeneralInfo* GetGeneralInfo();
-    static void FreeGeneralInfo(const GeneralInfo* ptr);
-
-    static CurrentAllocStat* GetCurrentAllocStat();
-    static void FreeCurrentAllocStat(const CurrentAllocStat* ptr);
+    static size_t CalcStatConfigSize();
+    static void GetStatConfig(MMStatConfig* config);
+    
+    static size_t CalcStatSize();
+    static void GetStat(MMStat* stat);
     
 private:
     void* Alloc(size_t size, uint32 poolIndex);
@@ -96,24 +96,17 @@ private:
     void UpdateStatAfterAlloc(MemoryBlock* block, uint32 poolIndex);
     void UpdateStatAfterDealloc(MemoryBlock* block, uint32 poolIndex);
     
-    static size_t CalcNamesCount(const char8* begin, const char* end);
-    static void CopyNames(char8* dst, const char8* src, size_t n);
-
+    size_t CalcStatSizeInternal() const;
+    void GetStatInternal(MMStat* stat);
+    
 #if 0
     void collect_backtrace(mem_block_t* block, size_t nskip);
-
-    void internal_dump(FILE* file);
-    void internal_dump_memory_type(FILE* file, size_t index);
-    void internal_dump_tag(const bookmark_t& bookmark);
-    void internal_dump_backtrace(FILE* file, mem_block_t* block);
 #endif
 
 private:
     MemoryBlock* head;                  // Linked list of memory blocks
     uint32 nextBlockNo;                 // Next assigned number to next allocated memory block
-    size_t tagDepth;                    // Current tag depth
-    uint32 tagStack[MAX_TAG_DEPTH];     // Current active tags
-    uint32 tagBegin[MAX_TAG_DEPTH];     // Block numbers from which each tag begins
+    MMTagStack tags;                    // Active tags
     GeneralAllocStat statGeneral;       // General statistics
     AllocPoolStat statAllocPool[MAX_TAG_DEPTH][MAX_ALLOC_POOL_COUNT];    // Statistics for each allocation pool divided by tags
     
@@ -122,8 +115,11 @@ private:
     MutexType mutex;
     
 private:
-    static char8 tagNames[MAX_TAG_COUNT][MAX_NAME_LENGTH];               // Names of tags
-    static char8 allocPoolNames[MAX_ALLOC_POOL_COUNT][MAX_NAME_LENGTH];  // Names of allocation pools
+    static MMItemName tagNames[MAX_TAG_COUNT];                  // Names of tags
+    static MMItemName allocPoolNames[MAX_ALLOC_POOL_COUNT];     // Names of allocation pools
+    
+    static size_t registeredTagCount;                           // Number of registered tags including predefined
+    static size_t registeredAllocPoolCount;                     // Number of registered allocation pools including predefined
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -150,6 +146,16 @@ inline void MemoryManager::EnterTagScope(uint32 tag)
 inline void MemoryManager::LeaveTagScope()
 {
     Instance()->LeaveScope();
+}
+
+inline size_t MemoryManager::CalcStatSize()
+{
+    return Instance()->CalcStatSizeInternal();
+}
+
+inline void MemoryManager::GetStat(MMStat* stat)
+{
+    Instance()->GetStatInternal(stat);
 }
 
 }   // namespace DAVA

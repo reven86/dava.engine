@@ -93,12 +93,11 @@ void MMNetClient::PacketDelivered()
 
 void MMNetClient::ProcessInitCommunication(const MMProtoHeader* hdr, const void* packet, size_t length)
 {
-    const GeneralInfo* generalInfo = nullptr;
-
+    const MMStatConfig* config = nullptr;
     if (hdr->length > 0)
     {
         sessionId = hdr->sessionId;
-        generalInfo = reinterpret_cast<const GeneralInfo*>(hdr + 1);
+        config = reinterpret_cast<const MMStatConfig*>(hdr + 1);
     }
     commInited = true;
 

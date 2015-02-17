@@ -69,9 +69,8 @@ public:
 private:
     void ProcessInitCommunication(const MMProtoHeader* hdr, const void* packet, size_t length);
 
-    void ReplyInitSession(const GeneralInfo* generalInfo);
-
     Parcel CreateParcel(size_t parcelSize);
+    void DestroyParcel(Parcel parcel);
     void EnqueueAndSend(Parcel parcel);
 
 private:
