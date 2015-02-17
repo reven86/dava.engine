@@ -38,7 +38,9 @@
 #define __DAVAENGINE_AUTOTESTING__
 #define AUTOTESTING_LUA
 
+#ifndef DAVA_MEMORY_PROFILING_DISABLE
 #define DAVA_MEMORY_PROFILING_ENABLE
+#endif
 
 //#define ENABLE_BASE_OBJECT_CHECKS // separate thing to check if you release BaseObjects properly. Need to be disabled for release configurations 
 
