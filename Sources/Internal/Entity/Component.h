@@ -95,7 +95,7 @@ public:
 	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
 	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
 
-	Entity* GetEntity();
+	inline Entity* GetEntity() const;
 	virtual void SetEntity(Entity * entity);
     
     /**
@@ -120,6 +120,11 @@ public:
 	INTROSPECTION(Component, 
 		MEMBER(entity, "entity", I_SAVE)
 		);
+};
+
+inline Entity* Component::GetEntity() const
+{
+	return entity;
 };
 
 #define IMPLEMENT_COMPONENT_TYPE(TYPE) \

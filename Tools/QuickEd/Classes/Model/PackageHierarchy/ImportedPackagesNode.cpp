@@ -25,6 +25,15 @@ void ImportedPackagesNode::Add(PackageControlsNode *node)
     packageControlsNode.push_back(SafeRetain(node));
 }
 
+void ImportedPackagesNode::InsertAtIndex(DAVA::int32 index, PackageControlsNode *node)
+{
+    DVASSERT(node->GetParent() == NULL);
+    node->SetParent(this);
+    node->SetReadOnly();
+    
+    packageControlsNode.insert(packageControlsNode.begin() + index, SafeRetain(node));
+}
+
 void ImportedPackagesNode::InsertBelow(PackageControlsNode *node, const PackageControlsNode *belowThis)
 {
     DVASSERT(node->GetParent() == NULL);
