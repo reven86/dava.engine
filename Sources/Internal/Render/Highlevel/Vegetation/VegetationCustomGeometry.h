@@ -121,7 +121,7 @@ private:
         
         CustomGeometryEntityData();
         CustomGeometryEntityData(const CustomGeometryEntityData& src);
-        CustomGeometryEntityData operator=(const CustomGeometryEntityData& src) = delete;
+        CustomGeometryEntityData & operator=(const CustomGeometryEntityData& src) = delete;
         ~CustomGeometryEntityData();
         
         void SetMaterial(NMaterial* mat);
