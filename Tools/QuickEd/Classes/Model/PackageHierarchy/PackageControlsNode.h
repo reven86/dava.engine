@@ -22,7 +22,6 @@ public:
     
     void Add(ControlNode *node) override;
     void InsertAtIndex(int index, ControlNode *node) override;
-    void InsertBelow(ControlNode *node, const ControlNode *belowThis) override;
     void Remove(ControlNode *node) override;
     int GetCount() const override;
     ControlNode *Get(int index) const override;

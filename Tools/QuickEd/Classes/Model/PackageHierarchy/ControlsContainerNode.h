@@ -16,7 +16,6 @@ protected:
 public:
     virtual void Add(ControlNode *node) = 0;
     virtual void InsertAtIndex(int index, ControlNode *node) = 0;
-    virtual void InsertBelow(ControlNode *node, const ControlNode *belowThis) = 0;
     virtual void Remove(ControlNode *node) = 0;
 
 };

@@ -41,7 +41,6 @@ public:
     
     void InsertControlNode(ControlNode *node, ControlsContainerNode *dest, int row);
     void RemoveControlNode(ControlNode *node, ControlsContainerNode *parent);
-    void MoveControlNode(ControlNode *node, ControlsContainerNode *src, int srcRow, ControlsContainerNode *dest, int destRow);
     void InsertImportedPackage(PackageControlsNode *node, PackageNode *dest, int destRow);
     void RemoveImportedPackage(PackageControlsNode *node, PackageNode *parent);
     

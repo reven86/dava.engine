@@ -34,21 +34,6 @@ void ImportedPackagesNode::InsertAtIndex(DAVA::int32 index, PackageControlsNode 
     packageControlsNode.insert(packageControlsNode.begin() + index, SafeRetain(node));
 }
 
-void ImportedPackagesNode::InsertBelow(PackageControlsNode *node, const PackageControlsNode *belowThis)
-{
-    DVASSERT(node->GetParent() == NULL);
-    node->SetParent(this);
-    auto it = find(packageControlsNode.begin(), packageControlsNode.end(), belowThis);
-    if (it != packageControlsNode.end())
-    {
-        packageControlsNode.insert(it, SafeRetain(node));
-    }
-    else
-    {
-        packageControlsNode.push_back(SafeRetain(node));
-    }
-}
-
 void ImportedPackagesNode::Remove(PackageControlsNode *node)
 {
     auto it = find(packageControlsNode.begin(), packageControlsNode.end(), node);

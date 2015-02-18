@@ -44,23 +44,6 @@ void PackageControlsNode::InsertAtIndex(int index, ControlNode *node)
     GetPackage()->InsertControlAtIndex(index, node->GetControl());
 }
 
-void PackageControlsNode::InsertBelow(ControlNode *node, const ControlNode *belowThis)
-{
-    DVASSERT(node->GetParent() == NULL);
-    node->SetParent(this);
-    auto it = find(nodes.begin(), nodes.end(), belowThis);
-    if (it != nodes.end())
-    {
-        GetPackage()->InsertControlBelow(node->GetControl(), (*it)->GetControl());
-        nodes.insert(it, SafeRetain(node));
-    }
-    else
-    {
-        GetPackage()->AddControl(node->GetControl());
-        nodes.push_back(SafeRetain(node));
-    }
-}
-
 void PackageControlsNode::Remove(ControlNode *node)
 {
     auto it = find(nodes.begin(), nodes.end(), node);

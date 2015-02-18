@@ -60,6 +60,11 @@ void DefaultPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*
     DVASSERT_MSG(false, "Implement me"); // TODO implement
 }
 
+void DefaultPackageCommandExecutor::RemoveControl(ControlNode* node)
+{
+    DVASSERT_MSG(false, "Implement me"); // TODO implement
+}
+
 void DefaultPackageCommandExecutor::RemoveControls(const DAVA::Vector<ControlNode*> &nodes)
 {
     DVASSERT_MSG(false, "Implement me"); // TODO implement

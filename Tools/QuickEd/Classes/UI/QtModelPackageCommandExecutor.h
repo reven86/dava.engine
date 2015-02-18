@@ -23,6 +23,7 @@ public:
     void InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
     void CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
     void MoveControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
+    void RemoveControl(ControlNode* node) override;
     void RemoveControls(const DAVA::Vector<ControlNode*> &nodes) override;
 
 private:
