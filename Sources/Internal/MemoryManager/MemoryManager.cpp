@@ -32,13 +32,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cassert>
 
-#if defined(MEMPROF_WIN32)
+#if defined(__DAVAENGINE_WIN32__)
 #include <windows.h>
 #include <dbghelp.h>
-#elif defined(MEMPROF_MACOS) || defined(MEMPROF_IOS)
+
+#define NOINLINE    __declspec(noinline)
+
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <execinfo.h>
 #include <malloc/malloc.h>
-#elif defined(MEMPROF_ANDROID)
+
+#define NOINLINE    __attribute__((noinline))
+#elif defined(__DAVAENGINE_ANDROID__)
 #endif
 
 #include "Debug/DVAssert.h"
@@ -48,6 +53,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
+
+struct MemoryManager::Backtrace
+{
+    void* frames[16];
+};
 
 struct MemoryManager::MemoryBlock
 {
@@ -59,8 +69,9 @@ struct MemoryManager::MemoryBlock
     size_t allocTotal;      // Total allocated size
     size_t orderNo;         // Block order number
     size_t padding;
+    Backtrace backtrace;
 };
-    
+
 MMItemName MemoryManager::tagNames[MAX_TAG_COUNT] = {
     {"application"}
 };
@@ -103,7 +114,7 @@ MemoryManager* MemoryManager::Instance()
     return &mm;
 }
 
-void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
+NOINLINE void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
 {
     // TODO: what should be done when size is 0
     assert(0 <= poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT);
@@ -121,6 +132,7 @@ void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
         block->allocByApp = size;
         block->allocTotal = totalSize;
         block->orderNo = nextBlockNo++;
+        CollectBacktrace(block, 1);
 
         InsertBlock(block);
         UpdateStatAfterAlloc(block, poolIndex);
@@ -315,20 +327,136 @@ void MemoryManager::GetStatInternal(MMStat* stat)
     }
 }
 
-#if 0
-void mem_profiler::collect_backtrace(mem_block_t* block, size_t nskip)
+template<typename T>
+inline T* Offset(void* ptr, size_t byteOffset)
 {
-#if defined(MEMPROF_WIN32)
-    USHORT n = CaptureStackBackTrace(nskip + 0, backtrace_t::MAX_FRAMES, block->backtrace.frames, nullptr);
-    block->backtrace.depth = static_cast<size_t>(n); 
-#elif defined(MEMPROF_MACOS) || defined(MEMPROF_IOS)
+    return reinterpret_cast<T*>(static_cast<uint8*>(ptr) + byteOffset);
+}
+
+size_t MemoryManager::GetDumpInternal(size_t userSize, void** buf, uint32 blockRangeBegin, uint32 blockRangeEnd)
+{
+    DVASSERT(userSize % 16 == 0);
+
+    ObtainAllBacktraceSymbols();
+    MemoryBlock* firstBlock = nullptr;
+    MemoryBlock* lastBlock = nullptr;
+    size_t nblocks = GetBlockRange(blockRangeBegin, blockRangeEnd, &firstBlock, &lastBlock);
+    size_t nsymbols = symbols.size();
+
+    size_t bufSize = userSize + sizeof(MMDump) + sizeof(MMBlock) * nblocks + sizeof(MMSymbol) * nsymbols;
+
+    *buf = MallocHook::Malloc(bufSize);
+    MMDump* dump = Offset<MMDump>(*buf, userSize);
+    MMSymbol* sym = Offset<MMSymbol>(*buf, userSize + sizeof(MMDump) + sizeof(MMBlock) * nblocks);
+
+    dump->timestampBegin = 0;
+    dump->timestampEnd = 0;
+    dump->blockCount = static_cast<uint32>(nblocks);
+    dump->nameCount = static_cast<uint32>(nsymbols);
+    dump->blockBegin = firstBlock->orderNo;
+    dump->blockEnd = lastBlock->orderNo;
+
+    size_t iBlock = 0;
+    size_t nblocksToCheck = 0;
+    while (firstBlock != nullptr)
+    {
+        dump->blocks[iBlock].addr = reinterpret_cast<uint64>(firstBlock + 1);
+        dump->blocks[iBlock].allocByApp = firstBlock->allocByApp;
+        dump->blocks[iBlock].allocTotal = firstBlock->allocTotal;
+        dump->blocks[iBlock].pool = firstBlock->pool;
+        dump->blocks[iBlock].orderNo = firstBlock->orderNo;
+        for (size_t x = 0;x < 16;++x)
+            dump->blocks[iBlock].backtrace.frames[x] = reinterpret_cast<uint64>(firstBlock->backtrace.frames[x]);
+        iBlock += 1;
+        nblocksToCheck += 1;
+        if (firstBlock == lastBlock)
+            break;
+        firstBlock = firstBlock->next;
+    }
+
+    size_t iSym = 0;
+    for (auto i = symbols.cbegin(), e = symbols.cend();i != e;++i)
+    {
+        void* addr = (*i).first;
+        const InternalString& s = (*i).second;
+
+        sym[iSym].addr = reinterpret_cast<uint64>(addr);
+        strncpy(sym[iSym].name, s.c_str(), MMSymbol::NAME_LENGTH);
+        sym[iSym].name[MMSymbol::NAME_LENGTH - 1] = '\0';
+        iSym += 1;
+    }
+    return bufSize;
+}
+
+void MemoryManager::FreeDumpInternal(void* ptr)
+{
+    MallocHook::Free(ptr);
+}
+
+size_t MemoryManager::GetBlockRange(uint32 rangeBegin, uint32 rangeEnd, MemoryBlock** begin, MemoryBlock** end)
+{
+    size_t nblocks = 0;
+    MemoryBlock* cur = head;
+    while (cur != nullptr && cur->orderNo >= rangeEnd)
+        cur = cur->next;
+    *begin = cur;
+    MemoryBlock* prev = cur;
+    while (cur != nullptr && cur->orderNo > rangeBegin)
+    {
+        nblocks += 1;
+        prev = cur;
+        cur = cur->next;
+    }
+    *end = cur != nullptr ? cur : prev;
+    return nblocks;
+}
+
+NOINLINE void MemoryManager::CollectBacktrace(MemoryBlock* block, size_t nskip)
+{
+    Memset(&block->backtrace, 0, sizeof(block->backtrace));
+#if defined(__DAVAENGINE_WIN32__)
+    USHORT n = CaptureStackBackTrace(nskip + 1, COUNT_OF(block->backtrace.frames), block->backtrace.frames, nullptr);
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     int n = backtrace(block->backtrace.frames, backtrace_t::MAX_FRAMES);
     block->backtrace.depth = static_cast<size_t>(n);
-#elif defined(MEMPROF_ANDROID)
-    block->backtrace.depth = 0;
+#elif defined(__DAVAENGINE_ANDROID__)
 #endif
 }
-#endif
+
+void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
+{
+    HANDLE hprocess = GetCurrentProcess();
+    if (!symInited)
+    {
+        SymInitialize(hprocess, nullptr, TRUE);
+        symInited = true;
+    }
+
+    const size_t NAME_LENGTH = 256;
+    uint8 buf[sizeof(SYMBOL_INFO) + NAME_LENGTH];
+    SYMBOL_INFO* symInfo = reinterpret_cast<SYMBOL_INFO*>(buf);
+    symInfo->SizeOfStruct = sizeof(SYMBOL_INFO);
+    symInfo->MaxNameLen = NAME_LENGTH;
+
+    for (size_t i = 0;i < COUNT_OF(backtrace->frames) && backtrace->frames[i] != nullptr;++i)
+    {
+        if (symbols.find(backtrace->frames[i]) == symbols.cend())
+        {
+            if (SymFromAddr(hprocess, reinterpret_cast<DWORD64>(backtrace->frames[i]), 0, symInfo))
+                symbols.emplace(std::make_pair(backtrace->frames[i], symInfo->Name));
+        }
+    }
+}
+
+void MemoryManager::ObtainAllBacktraceSymbols()
+{
+    MemoryBlock* cur = head;
+    while (cur != nullptr)
+    {
+        ObtainBacktraceSymbols(&cur->backtrace);
+        cur = cur->next;
+    }
+}
 
 }   // namespace DAVA
 

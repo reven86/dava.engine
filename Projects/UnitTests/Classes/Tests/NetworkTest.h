@@ -36,6 +36,8 @@
 #include <Network/Services/NetLogger.h>
 #include <Network/NetCore.h>
 
+#include "MemoryManager/MemoryManagerAllocator.h"
+
 #include "TestTemplate.h"
 
 using DAVA::Net::IChannel;
@@ -85,7 +87,10 @@ private:
     bool loggerInUse;
     DAVA::Net::NetLogger logger;
 
-    DAVA::Vector<char> v;
+    //DAVA::Vector<char> v;
+    std::vector<char, DAVA::MemoryManagerAllocator<char, 2>> v1;
+    std::vector<char, DAVA::MemoryManagerAllocator<char, 3>> v2;
+
     DAVA::Net::PeerDescription peerDescr;
     Vector<uint8> peerDescrSerialized;
 
