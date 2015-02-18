@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Scene3D/Components/Waypoint/WaypointComponent.h"
 #include "Scene3D/Components/Waypoint/EdgeComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+//#include "FileSystem/VariantType.h"
 
 #include "Commands2/ConvertPathCommands.h"
 
@@ -68,7 +69,6 @@ static DAVA::Color PathColorPallete[] =
 };
 
 static const uint32 PALLETE_SIZE = COUNT_OF(PathColorPallete);
-
 static const String PATH_COLOR_PROP_NAME = "pathColor";
 
 
@@ -106,7 +106,16 @@ void PathSystem::AddEntity(DAVA::Entity * entity)
         if(!props->IsKeyExists(PATH_COLOR_PROP_NAME))
         {
             const DAVA::Color & color = GetNextPathColor();
-            props->SetVector4(PATH_COLOR_PROP_NAME, DAVA::Vector4(color.r, color.g, color.b, color.a));
+            props->SetColor(PATH_COLOR_PROP_NAME, color);
+        }
+        else
+        {
+            auto& archive = props->GetArchieveData();
+            auto& entry = archive.find(PATH_COLOR_PROP_NAME)->second;
+            if (entry->GetType() == VariantType::TYPE_VECTOR4)
+            {
+                props->SetColor(PATH_COLOR_PROP_NAME,DAVA::Color(entry->AsVector4()));
+            }
         }
     }
 }
@@ -169,14 +178,16 @@ void PathSystem::DrawInEditableMode()
             const DAVA::uint32 edgesCount = waypoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
             if(edgesCount)
             {
-                const Vector3 startPosition = GetTransformComponent(waypoint)->GetWorldTransform().GetTranslationVector();
+                Vector3 startPosition = GetTransformComponent(waypoint)->GetWorldTransform().GetTranslationVector();
+                startPosition.z += WAYPOINTS_DRAW_LIFTING;
                 for(DAVA::uint32 e = 0; e < edgesCount; ++e)
                 {
                     DAVA::EdgeComponent * edge = static_cast<DAVA::EdgeComponent *>(waypoint->GetComponent(DAVA::Component::EDGE_COMPONENT, e));
                     DAVA::Entity *nextEntity = edge->GetNextEntity();
                     if(nextEntity && nextEntity->GetParent())
                     {
-                        const Vector3 finishPosition = GetTransformComponent(nextEntity)->GetWorldTransform().GetTranslationVector();
+                        Vector3 finishPosition = GetTransformComponent(nextEntity)->GetWorldTransform().GetTranslationVector();
+                        finishPosition.z += WAYPOINTS_DRAW_LIFTING;
                         DrawArrow(startPosition, finishPosition);
                     }
                 }
@@ -214,7 +225,10 @@ void PathSystem::DrawInViewOnlyMode()
         const DAVA::uint32 waypointsCount = (const DAVA::uint32)waypoints.size();
         for(DAVA::uint32 w = 0; w < waypointsCount; ++w)
         {
-            const DAVA::AABBox3 wpBoundingBox(waypoints[w]->position, boxScale);
+            Vector3 startPosition = waypoints[w]->position;
+            startPosition.z += WAYPOINTS_DRAW_LIFTING;
+
+            const DAVA::AABBox3 wpBoundingBox(startPosition, boxScale);
             
             DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.3f, 0.3f, 0.0f, 0.3f));
             DAVA::RenderHelper::Instance()->FillBox(wpBoundingBox, pathDrawState);
@@ -227,12 +241,11 @@ void PathSystem::DrawInViewOnlyMode()
             {
                 RenderManager::Instance()->SetColor(pathColor);
 
-                
-                const Vector3 & startPosition = waypoints[w]->position;
                 for(DAVA::uint32 e = 0; e < edgesCount; ++e)
                 {
                     const DAVA::PathComponent::Edge *edge = waypoints[w]->edges[e];
-                    const Vector3 & finishPosition = edge->destination->position;
+                    Vector3 finishPosition = edge->destination->position;
+                    finishPosition.z += WAYPOINTS_DRAW_LIFTING;
                     DrawArrow(startPosition, finishPosition);
                 }
             }
@@ -254,7 +267,7 @@ DAVA::Color PathSystem::GetPathColor(DAVA::Entity *path)
     KeyedArchive *props = GetCustomPropertiesArchieve(path);
     if(props)
     {
-        return DAVA::Color(props->GetVector4(PATH_COLOR_PROP_NAME));
+        return props->GetColor(PATH_COLOR_PROP_NAME);
     }
     
     return DAVA::Color::White;

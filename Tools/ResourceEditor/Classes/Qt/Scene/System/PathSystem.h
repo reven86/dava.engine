@@ -34,6 +34,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Scene/System/SelectionSystem.h"
 
+static const uint32 WAYPOINTS_DRAW_LIFTING = 3;
+
 class SceneEditor2;
 class PathSystem: public DAVA::SceneSystem
 {
