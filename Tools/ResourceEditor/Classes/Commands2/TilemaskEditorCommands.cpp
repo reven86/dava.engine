@@ -140,16 +140,8 @@ ModifyTilemaskCommand::~ModifyTilemaskCommand()
 
 void ModifyTilemaskCommand::Undo()
 {
-    RenderManager::Instance()->SetColor(Color::White);
-    
-    Texture * srcTex = landscapeProxy->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE);
-    ApplyImageToTexture(undoImageMask, srcTex);
-    
-	Texture * maskTexture = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK);
-	Texture* texture = MixImageWithTexture(undoImageMask, maskTexture);
-    
-    landscapeProxy->SetTilemaskTexture(texture);
-    SafeRelease(texture);
+    ApplyImageToTexture(undoImageMask, landscapeProxy->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE));
+    ApplyImageToTexture(undoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK));
 
 	landscapeProxy->UpdateFullTiledTexture();
 	landscapeProxy->DecreaseTilemaskChanges();
@@ -162,13 +154,7 @@ void ModifyTilemaskCommand::Undo()
 void ModifyTilemaskCommand::Redo()
 {
 	ApplyImageToTexture(redoImageMask, landscapeProxy->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE));
-
-	Texture * maskTexture = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK);
-    
-	Texture * texture = MixImageWithTexture(redoImageMask, maskTexture);
-
-    landscapeProxy->SetTilemaskTexture(texture);
-    SafeRelease(texture);
+    ApplyImageToTexture(redoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK));
 
 	landscapeProxy->UpdateFullTiledTexture();
 	landscapeProxy->IncreaseTilemaskChanges();
@@ -181,28 +167,6 @@ void ModifyTilemaskCommand::Redo()
 Entity* ModifyTilemaskCommand::GetEntity() const
 {
 	return NULL;
-}
-
-Texture * ModifyTilemaskCommand::MixImageWithTexture(DAVA::Image *image, DAVA::Texture *texture)
-{
-	int32 width = texture->GetWidth();
-	int32 height = texture->GetHeight();
-    
-	Texture* resTexture = Texture::CreateFBO(width, height, FORMAT_RGBA8888, Texture::DEPTH_NONE);
-    RenderHelper::Instance()->Set2DRenderTarget(resTexture);
-    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-    RenderManager::Instance()->SetColor(Color::White);
-
-    RenderHelper::Instance()->DrawTexture(texture, RenderState::RENDERSTATE_2D_OPAQUE);
-
-	Texture* t = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), image->GetWidth(), image->GetHeight(), false);
-    RenderHelper::Instance()->DrawTexture(t, RenderState::RENDERSTATE_2D_OPAQUE, updatedRect);
-
-	SafeRelease(t);
-    
-    RenderManager::Instance()->SetRenderTarget(0);
-    
-    return resTexture;
 }
 
 void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture * dstTex)
