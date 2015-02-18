@@ -166,7 +166,7 @@ void ModifyTilemaskCommand::Redo()
 	Texture * maskTexture = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK);
     
 	Texture * texture = MixImageWithTexture(redoImageMask, maskTexture);
-    
+
     landscapeProxy->SetTilemaskTexture(texture);
     SafeRelease(texture);
 
@@ -190,13 +190,14 @@ Texture * ModifyTilemaskCommand::MixImageWithTexture(DAVA::Image *image, DAVA::T
     
 	Texture* resTexture = Texture::CreateFBO(width, height, FORMAT_RGBA8888, Texture::DEPTH_NONE);
     RenderHelper::Instance()->Set2DRenderTarget(resTexture);
+    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
     RenderManager::Instance()->SetColor(Color::White);
-    
+
     RenderHelper::Instance()->DrawTexture(texture, RenderState::RENDERSTATE_2D_OPAQUE);
 
 	Texture* t = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), image->GetWidth(), image->GetHeight(), false);
     RenderHelper::Instance()->DrawTexture(t, RenderState::RENDERSTATE_2D_OPAQUE, updatedRect);
-    
+
 	SafeRelease(t);
     
     RenderManager::Instance()->SetRenderTarget(0);

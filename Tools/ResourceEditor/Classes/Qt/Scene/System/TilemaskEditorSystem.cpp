@@ -163,8 +163,9 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 
 			if (activeDrawingType == TILEMASK_DRAW_NORMAL)
 			{
-				RenderHelper::Instance()->Set2DRenderTarget(toolTexture);
-                RenderHelper::Instance()->DrawTexture(toolImageTexture, RenderState::RENDERSTATE_2D_BLEND, toolRect);
+                RenderHelper::Instance()->Set2DRenderTarget(toolTexture);
+                RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+                RenderHelper::Instance()->DrawTexture(toolImageTexture, RenderState::RENDERSTATE_2D_OPAQUE, toolRect);
 
                 RenderManager::Instance()->SetRenderTarget(0);
 
@@ -194,10 +195,12 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 
 
                 RenderHelper::Instance()->Set2DRenderTarget(toolTexture);
+                RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
                 RenderManager::Instance()->SetClip(dstRect);
                 RenderHelper::Instance()->DrawTexture(dstTex, RenderState::RENDERSTATE_2D_OPAQUE, textureRect);
 
                 RenderHelper::Instance()->Set2DRenderTarget(stencilTexture);
+                RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
                 RenderManager::Instance()->SetClip(dstRect);
                 RenderHelper::Instance()->DrawTexture(toolImageTexture, RenderState::RENDERSTATE_2D_OPAQUE, toolRect);
                 
@@ -336,7 +339,7 @@ void TilemaskEditorSystem::UpdateBrushTool()
 {
 	Texture* srcTexture = drawSystem->GetLandscapeProxy()->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE);
     Texture* dstTexture = drawSystem->GetLandscapeProxy()->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_DESTINATION);
-    
+
     RenderHelper::Instance()->Set2DRenderTarget(dstTexture);
     RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
     
@@ -399,23 +402,11 @@ void TilemaskEditorSystem::UpdateBrushTool()
 	RenderManager::Instance()->SetColor(Color::White);
 
 	RenderManager::Instance()->ReleaseTextureState(textureState);
-    
+
 	drawSystem->GetLandscapeProxy()->SetTilemaskTexture(dstTexture);
 	drawSystem->GetLandscapeProxy()->SwapTilemaskSprites();
 
-    RenderManager::Instance()->SetRenderTarget(toolTexture);
-    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)toolTexture->GetWidth(), (float32)toolTexture->GetHeight()));
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-
     RenderManager::Instance()->SetRenderTarget(0);
-
-	if (activeDrawingType == TILEMASK_DRAW_COPY_PASTE)
-    {
-        RenderManager::Instance()->SetRenderTarget(stencilTexture);
-        RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)stencilTexture->GetWidth(), (float32)stencilTexture->GetHeight()));
-        RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-        RenderManager::Instance()->SetRenderTarget(0);
-	}
 }
 
 Image* TilemaskEditorSystem::CreateToolImage(int32 sideSize, const FilePath& filePath)

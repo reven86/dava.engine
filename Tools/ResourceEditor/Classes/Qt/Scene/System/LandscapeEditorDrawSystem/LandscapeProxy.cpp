@@ -195,7 +195,7 @@ void LandscapeProxy::UpdateDisplayedTexture()
     RenderHelper::Instance()->Set2DRenderTarget(displayingTexture);
     RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
     RenderManager::Instance()->SetColor(Color::White);
-    RenderHelper::Instance()->DrawTexture(fullTiledTexture, RenderState::RENDERSTATE_2D_BLEND);
+    RenderHelper::Instance()->DrawTexture(fullTiledTexture, RenderState::RENDERSTATE_2D_OPAQUE);
 
 	Texture* notPassableTexture = texturesToBlend[TEXTURE_TYPE_NOT_PASSABLE];
 	if (notPassableTexture && texturesEnabled[TEXTURE_TYPE_NOT_PASSABLE])
@@ -383,6 +383,13 @@ void LandscapeProxy::InitTilemaskSprites()
         uint32 texSize = (uint32)GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK)->GetWidth();
 		tilemaskTextures[TILEMASK_SPRITE_SOURCE] = Texture::CreateFBO(texSize, texSize, FORMAT_RGBA8888, Texture::DEPTH_NONE);
         tilemaskTextures[TILEMASK_SPRITE_DESTINATION] = Texture::CreateFBO(texSize, texSize, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+
+        RenderHelper::Instance()->Set2DRenderTarget(tilemaskTextures[TILEMASK_SPRITE_SOURCE]);
+        RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+        RenderHelper::Instance()->Set2DRenderTarget(tilemaskTextures[TILEMASK_SPRITE_DESTINATION]);
+        RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+
+        RenderManager::Instance()->SetRenderTarget(0);
 	}
 }
 
