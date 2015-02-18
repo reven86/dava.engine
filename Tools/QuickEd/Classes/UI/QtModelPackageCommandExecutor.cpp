@@ -39,20 +39,7 @@ void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, BaseProper
 {
     BeginMacro("Change Property");
     PushCommand(new ChangePropertyValueCommand(document, node, property, value));
-    const Vector<ControlNode*> &instances = node->GetInstances();
-    for (ControlNode *instance : instances)
-    {
-        Vector<String> path = property->GetPath();
-        BaseProperty *nodeProperty = instance->GetPropertyByPath(path);
-        if (nodeProperty)
-        {
-            PushCommand(new ChangeDefaultValueCommand(document, instance, nodeProperty, value));
-        }
-        else
-        {
-            DVASSERT(false);
-        }
-    }
+    ChangeDefaultProperties(node->GetInstances(), property, value);
     EndMacro();
 }
 
@@ -60,20 +47,7 @@ void QtModelPackageCommandExecutor::ResetProperty(ControlNode *node, BasePropert
 {
     BeginMacro("Reset Property");
     PushCommand(new ChangePropertyValueCommand(document, node, property));
-    const Vector<ControlNode*> &instances = node->GetInstances();
-    for (ControlNode *instance : instances)
-    {
-        Vector<String> path = property->GetPath();
-        BaseProperty *nodeProperty = instance->GetPropertyByPath(path);
-        if (nodeProperty)
-        {
-            PushCommand(new ChangeDefaultValueCommand(document, instance, nodeProperty, property->GetDefaultValue()));
-        }
-        else
-        {
-            DVASSERT(false);
-        }
-    }
+    ChangeDefaultProperties(node->GetInstances(), property, property->GetDefaultValue());
     EndMacro();
 }
 
@@ -187,6 +161,24 @@ void QtModelPackageCommandExecutor::RemoveControls(const DAVA::Vector<ControlNod
         for (ControlNode *node : nodes)
             RemoveControl(node);
         EndMacro();
+    }
+}
+
+void QtModelPackageCommandExecutor::ChangeDefaultProperties(const DAVA::Vector<ControlNode *> &instances, BaseProperty *property, const DAVA::VariantType &value)
+{
+    for (ControlNode *instance : instances)
+    {
+        Vector<String> path = property->GetPath();
+        BaseProperty *nodeProperty = instance->GetPropertyByPath(path);
+        if (nodeProperty)
+        {
+            PushCommand(new ChangeDefaultValueCommand(document, instance, nodeProperty, value));
+            ChangeDefaultProperties(instance->GetInstances(), nodeProperty, nodeProperty->GetValue());
+        }
+        else
+        {
+            DVASSERT(false);
+        }
     }
 }
 
