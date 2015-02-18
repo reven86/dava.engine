@@ -267,9 +267,9 @@ String AutotestingSystemLua::GetPlatform()
 
 String AutotestingSystemLua::GetDeviceName()
 {
-	if (DeviceInfo::GetPlatformString() == "Android")
+    if (DeviceInfo::GetPlatformString() == "Android")
 	{
-		return DeviceInfo::GetModel();
+        return DeviceInfo::GetModel();
 	}
 	return WStringToString(DeviceInfo::GetName());
 }

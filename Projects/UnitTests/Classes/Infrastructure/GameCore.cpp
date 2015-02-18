@@ -53,6 +53,8 @@
 #include "Tests/NetworkTest.h"
 #include "Tests/JNITest.h"
 #include "Tests/DataVaultTest.h"
+#include "Tests/SpinLockTest.h"
+#include "Tests/ThreadSyncTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -67,6 +69,7 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
+    new ThreadSyncTest();
     new DataVaultTest();
 #if defined(__DAVAENGINE_ANDROID__)
     new JNITest();
@@ -89,6 +92,7 @@ void GameCore::RegisterTests()
     new JobManagerTest();
     new Cpp14Test ();
     new NetworkTest();
+    new SpinLockTest();
     //$UNITTEST_CTOR
 }
 

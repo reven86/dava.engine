@@ -62,6 +62,8 @@ int32 LogLevelToAndtoid(Logger::eLogLevel ll)
 		case Logger::LEVEL_ERROR:
 			androidLL = ANDROID_LOG_ERROR;
 			break;
+		default:
+		    break;
 	}
 
 	return androidLL;
