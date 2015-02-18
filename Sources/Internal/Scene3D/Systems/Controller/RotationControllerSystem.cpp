@@ -117,8 +117,8 @@ void RotationControllerSystem::Input(UIEvent *event)
                     }
                     else if(event->tid == DAVA::UIEvent::BUTTON_3)
                     {
-                        KeyboardDevice *keyboard = InputSystem::Instance()->GetKeyboard();
-                        if(keyboard->IsKeyPressed(DVKEY_ALT))
+                        KeyboardDevice &keyboard = InputSystem::Instance()->GetKeyboard();
+                        if(keyboard.IsKeyPressed(DVKEY_ALT))
                         {
                             RotatePositionAroundPoint(camera, rotationPoint);
                         }
