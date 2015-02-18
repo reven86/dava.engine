@@ -43,6 +43,7 @@
 		CC1197D01A38BBBA006931D7 /* libFrameworkTools.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CC1197C51A38BB7E006931D7 /* libFrameworkTools.a */; };
 		CC4FD2291A5174A3004FAF22 /* Cpp14.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC4FD2271A5174A3004FAF22 /* Cpp14.cpp */; };
 		D73A573D1A739B3B009FF184 /* DataVaultTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73A573B1A739B3B009FF184 /* DataVaultTest.cpp */; };
+		D7C4C78B1A8DD41B005FEC04 /* ThreadSyncTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7C4C7891A8DD41B005FEC04 /* ThreadSyncTest.cpp */; };
 		FE444EEB1153A1D500F5EFD6 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE444EEA1153A1D500F5EFD6 /* OpenGL.framework */; };
 		FE9892E511638EF700500198 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = FE9892E111638EF700500198 /* InfoPlist.strings */; };
 		FE9892E611638EF700500198 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = FE9892E311638EF700500198 /* MainMenu.xib */; };
@@ -189,6 +190,8 @@
 		CC4FD2281A5174A3004FAF22 /* Cpp14.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cpp14.h; path = Classes/Tests/Cpp14.h; sourceTree = "<group>"; };
 		D73A573B1A739B3B009FF184 /* DataVaultTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataVaultTest.cpp; path = Classes/Tests/DataVaultTest.cpp; sourceTree = "<group>"; };
 		D73A573C1A739B3B009FF184 /* DataVaultTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DataVaultTest.h; path = Classes/Tests/DataVaultTest.h; sourceTree = "<group>"; };
+		D7C4C7891A8DD41B005FEC04 /* ThreadSyncTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ThreadSyncTest.cpp; path = Classes/Tests/ThreadSyncTest.cpp; sourceTree = "<group>"; };
+		D7C4C78A1A8DD41B005FEC04 /* ThreadSyncTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ThreadSyncTest.h; path = Classes/Tests/ThreadSyncTest.h; sourceTree = "<group>"; };
 		FE444EEA1153A1D500F5EFD6 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		FE5288A4132FA5EB000FE4F0 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		FE9892E211638EF700500198 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = MacOSSpecific/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -327,6 +330,8 @@
 		CC11978D1A38BACC006931D7 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				D7C4C7891A8DD41B005FEC04 /* ThreadSyncTest.cpp */,
+				D7C4C78A1A8DD41B005FEC04 /* ThreadSyncTest.h */,
 				031EECB61A890D4000DCC760 /* SpinLockTest.cpp */,
 				D73A573B1A739B3B009FF184 /* DataVaultTest.cpp */,
 				D73A573C1A739B3B009FF184 /* DataVaultTest.h */,
@@ -574,6 +579,7 @@
 				CC1197B61A38BAE1006931D7 /* MemoryAllocatorsTest.cpp in Sources */,
 				CC1197B41A38BAE1006931D7 /* LocalizationTest.cpp in Sources */,
 				CC1197B81A38BAE1006931D7 /* SplitTest.cpp in Sources */,
+				D7C4C78B1A8DD41B005FEC04 /* ThreadSyncTest.cpp in Sources */,
 				CC11978C1A38BAB9006931D7 /* TextureUtils.cpp in Sources */,
 				031EECB71A890D4000DCC760 /* SpinLockTest.cpp in Sources */,
 				CC1197BA1A38BAE1006931D7 /* TextSizeTest.cpp in Sources */,
