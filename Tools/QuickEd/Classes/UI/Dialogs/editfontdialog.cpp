@@ -48,6 +48,8 @@
 #include "Helpers/WidgetSignalsBlocker.h"
 #include "EditorFontManager.h"
 
+using namespace DAVA;
+
 //static const QString FONT_TABLE_NAME_COLUMN = "Font Name";
 //static const QString FONT_TABLE_TYPE_COLUMN = "Font Type";
 //static const QString FONT_TYPE_BASIC = "Basic";

@@ -59,6 +59,8 @@
 #include "Utils/QtDavaConvertion.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 
+using namespace DAVA;
+
 QT_BEGIN_NAMESPACE
 const QString APP_NAME = "QuickEd";
 const QString APP_COMPANY = "DAVA";

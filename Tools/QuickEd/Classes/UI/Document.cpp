@@ -37,21 +37,22 @@ Document::Document(Project *_project, PackageNode *_package, QObject *parent)
     propertiesContext = new PropertiesContext(this);
     libraryContext = new LibraryContext(this);
     previewContext = new PreviewContext(this);
-    
+
     connect(this, SIGNAL(activeRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), previewContext, SLOT(OnActiveRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
     connect(this, SIGNAL(controlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), previewContext, SLOT(OnSelectedControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
 
     connect(previewContext, SIGNAL(ControlNodeSelected(ControlNode*)), this, SLOT(OnControlSelectedInEditor(ControlNode*)));
     connect(previewContext, SIGNAL(AllControlsDeselected()), this, SLOT(OnAllControlDeselectedInEditor()));
 
-    
+
     PackageControlsNode *controlsNode = package->GetPackageControlsNode();
     for (int32 index = 0; index < controlsNode->GetCount(); ++index)
         activeRootControls.push_back(controlsNode->Get(index));
 
     if (!activeRootControls.empty())
+    {
         emit activeRootControlsChanged(activeRootControls, QList<ControlNode*>());
-    
+    }
     commandExecutor = new QtModelPackageCommandExecutor(this);
 }
 
