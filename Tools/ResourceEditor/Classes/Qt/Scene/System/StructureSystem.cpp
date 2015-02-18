@@ -119,23 +119,31 @@ void StructureSystem::Remove(const EntityGroup &entityGroup)
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
 	if(NULL != sceneEditor && entityGroup.Size() > 0)
 	{
-        isEntityGroupRemoving = true;
-
-        sceneEditor->BeginBatch("Remove entities");
-
-
-		for(size_t i = 0; i < entityGroup.Size(); ++i)
-		{
-            DAVA::Entity *entity = entityGroup.GetEntity(i);
-            if(entity->GetNotRemovable() == false)
+        if (sceneEditor->wayEditSystem->IsWayEditEnabled())
+        {
+            sceneEditor->wayEditSystem->RemovePointsGroup(entityGroup);
+        }
+        else
+        {
+            if (entityGroup.Size() > 1)
             {
-                sceneEditor->Exec(new EntityRemoveCommand(entity));
+                sceneEditor->BeginBatch("Remove entities");
             }
-		}
 
-        sceneEditor->EndBatch();
+            for (size_t i = 0; i < entityGroup.Size(); ++i)
+            {
+                DAVA::Entity *entity = entityGroup.GetEntity(i);
+                if (entity->GetNotRemovable() == false)
+                {
+                    sceneEditor->Exec(new EntityRemoveCommand(entity));
+                }
+            }
 
-        isEntityGroupRemoving = false;
+            if (entityGroup.Size() > 1)
+            {
+                sceneEditor->EndBatch();
+            }
+        }
 
 		EmitChanged();
 	}

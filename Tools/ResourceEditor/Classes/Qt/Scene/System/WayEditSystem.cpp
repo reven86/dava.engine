@@ -35,6 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Scene/System/PathSystem.h"
 #include "Scene/SceneEditor2.h"
 #include "Commands2/EntityAddCommand.h"
+#include "Commands2/EntityRemoveCommand.h"
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
 #include "Utils/Utils.h"
@@ -63,95 +64,109 @@ void WayEditSystem::AddEntity(DAVA::Entity * entity)
 }
 void WayEditSystem::RemoveEntity(DAVA::Entity * removedPoint)
 {
-    SceneEditor2 *sceneEditor = static_cast<SceneEditor2 *>(GetScene());
     DAVA::FindAndRemoveExchangingWithLast(waypointEntities, removedPoint);
+}
 
-    if (isEnabled && sceneEditor->structureSystem->IsEntityGroupRemoving())
+void WayEditSystem::RemovePointsGroup(const EntityGroup &entityGroup)
+{
+    SceneEditor2 *sceneEditor = static_cast<SceneEditor2 *>(GetScene());
+
+    sceneEditor->BeginBatch("Remove entities");
+
+    size_t size = entityGroup.Size();
+    for (size_t i = 0; i < size; ++i)
     {
-        bool useOwnBatch = sceneEditor->IsBatchStarted() == false;
-        if (useOwnBatch)
-            sceneEditor->BeginBatch("Substitute removing waypoint");
-
-        DAVA::EdgeComponent* edge;
-
-        // get points aiming at removed point, remove edges
-        DAVA::List<DAVA::Entity*> srcPoints;
-        for (auto waypoint : waypointEntities)
+        DAVA::Entity* entity = entityGroup.GetEntity(i);
+        if (entity->GetNotRemovable() == false)
         {
-            uint count = waypoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
-            for (uint32 i = 0; i < count; ++i)
-            {
-                edge = static_cast<EdgeComponent*>(waypoint->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
-                DVASSERT(edge);
-                if (edge->GetNextEntity() == removedPoint)
-                {
-                    sceneEditor->Exec(new RemoveComponentCommand(waypoint, edge));
-                    srcPoints.push_back(waypoint);
-                    break;
-                }
-
-            }
+            RemoveWayPoint(entity);
         }
-        // get points aimed by removed point, remove edges
-        DAVA::List<DAVA::Entity*> breachPoints;
-        DAVA::Entity* dest;
-        uint count = removedPoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
+    }
+
+    sceneEditor->EndBatch();
+}
+
+void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
+{
+    SceneEditor2 *sceneEditor = static_cast<SceneEditor2 *>(GetScene());
+    sceneEditor->Exec(new EntityRemoveCommand(removedPoint));
+
+    DAVA::EdgeComponent* edge;
+
+    // get points aiming at removed point, remove edges
+    DAVA::List<DAVA::Entity*> srcPoints;
+    for (auto waypoint : waypointEntities)
+    {
+        uint count = waypoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
         for (uint32 i = 0; i < count; ++i)
         {
-            edge = static_cast<EdgeComponent*>(removedPoint->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
+            edge = static_cast<EdgeComponent*>(waypoint->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
             DVASSERT(edge);
-
-            dest = edge->GetNextEntity();
-            if(dest)
+            if (edge->GetNextEntity() == removedPoint)
             {
-                breachPoints.push_back(dest);
+                sceneEditor->Exec(new RemoveComponentCommand(waypoint, edge));
+                srcPoints.push_back(waypoint);
+                break;
             }
 
         }
+    }
+    // get points aimed by removed point, remove edges
+    DAVA::List<DAVA::Entity*> breachPoints;
+    DAVA::Entity* dest;
+    uint count = removedPoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
+    for (uint32 i = 0; i < count; ++i)
+    {
+        edge = static_cast<EdgeComponent*>(removedPoint->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
+        DVASSERT(edge);
 
-        // detect really breached points
-        for (auto breachPoint = breachPoints.begin(); breachPoint != breachPoints.end();)
+        dest = edge->GetNextEntity();
+        if(dest)
         {
-            auto HasEdgeToBreachPoint = [&](DAVA::Entity* src)
-            {
-                DAVA::EdgeComponent* edge;
-                uint count = src->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
-                for (uint32 i = 0; i < count; ++i)
-                {
-                    edge = static_cast<EdgeComponent*>(src->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
-                    DVASSERT(edge);
-                    if (edge->GetNextEntity() == *breachPoint)
-                        return true;
-                }
-                return false;
-            };
-
-            if (any_of(waypointEntities.begin(), waypointEntities.end(), HasEdgeToBreachPoint))
-            {
-                auto delPoint = breachPoint++;
-                breachPoints.erase(delPoint);
-            }
-            else
-                ++breachPoint;
+            breachPoints.push_back(dest);
         }
 
-        // link source points and breached points
-        for (auto breachPoint : breachPoints)
+    }
+
+    // detect really breached points
+    for (auto breachPoint = breachPoints.begin(); breachPoint != breachPoints.end();)
+    {
+        auto HasEdgeToBreachPoint = [&](DAVA::Entity* src)
         {
-            for (auto srcPoint : srcPoints)
+            DAVA::EdgeComponent* edge;
+            uint count = src->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
+            for (uint32 i = 0; i < count; ++i)
             {
-                if (srcPoint == breachPoint)
-                    continue;
-
-                DAVA::EdgeComponent *edge = new DAVA::EdgeComponent();
-                edge->SetNextEntity(breachPoint);
-
-                sceneEditor->Exec(new AddComponentCommand(srcPoint, edge));
+                edge = static_cast<EdgeComponent*>(src->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
+                DVASSERT(edge);
+                if (edge->GetNextEntity() == *breachPoint)
+                    return true;
             }
-        }
+            return false;
+        };
 
-        if (useOwnBatch)
-            sceneEditor->EndBatch();
+        if (any_of(waypointEntities.begin(), waypointEntities.end(), HasEdgeToBreachPoint))
+        {
+            auto delPoint = breachPoint++;
+            breachPoints.erase(delPoint);
+        }
+        else
+            ++breachPoint;
+    }
+
+    // link source points and breached points
+    for (auto breachPoint : breachPoints)
+    {
+        for (auto srcPoint : srcPoints)
+        {
+            if (srcPoint == breachPoint)
+                continue;
+
+            DAVA::EdgeComponent *edge = new DAVA::EdgeComponent();
+            edge->SetNextEntity(breachPoint);
+
+            sceneEditor->Exec(new AddComponentCommand(srcPoint, edge));
+        }
     }
 }
 
