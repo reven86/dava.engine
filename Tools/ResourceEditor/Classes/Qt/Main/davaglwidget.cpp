@@ -57,7 +57,6 @@
 #include "ui_mainwindow.h"
 
 #include <QOpenGLContext>
-#include <QPainter>
 #include <QOpenGLPaintDevice>
 
 #include <QBoxLayout>
@@ -91,15 +90,10 @@ void OpenGLWindow::render()
         paintDevice = new QOpenGLPaintDevice;
     }
 
-    paintDevice->setSize(size());
-
-    QPainter painter(paintDevice);
-    render(&painter);
-}
-
-void OpenGLWindow::render(QPainter *painter)
-{
-    Q_UNUSED(painter);
+    if(paintDevice->size() != size())
+    {
+        paintDevice->setSize(size());
+    }
 }
 
 void OpenGLWindow::renderNow()
@@ -428,8 +422,6 @@ void DavaGLWidget::SetFPS(int _fps)
 void DavaGLWidget::OnWindowExposed()
 {
     if(isInitialized) return;
-    
-    DAVA::Shader::Unbind();
 
     isInitialized = true;
 
@@ -456,7 +448,6 @@ void DavaGLWidget::OnRenderTimer()
         PerformSizeChange();
     }                       // END OF TODO
 
-    DAVA::Shader::Unbind();
     DAVA::QtLayer::Instance()->ProcessFrame();
     
     QCoreApplication::postEvent(openGlWindow, new QEvent(QEvent::UpdateRequest));

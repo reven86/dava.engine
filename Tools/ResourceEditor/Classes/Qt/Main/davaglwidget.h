@@ -48,7 +48,6 @@ class QOffscreenSurface;
 
 class QOpenGLPaintDevice;
 class QOpenGLContext;
-class QPainter;
 class QExposeEvent;
 
 class OpenGLWindow
@@ -60,7 +59,6 @@ public:
     OpenGLWindow();
     ~OpenGLWindow();
     
-    void render(QPainter *painter);
     void render();
     void renderNow();
 
