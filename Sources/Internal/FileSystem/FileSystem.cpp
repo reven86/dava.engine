@@ -760,8 +760,41 @@ void FileSystem::Init()
 }
 #endif
 
+bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& filePath2)
+{
+    ScopedPtr<File> f1(File::Create(filePath1, File::OPEN | File::READ));
+    ScopedPtr<File> f2(File::Create(filePath2, File::OPEN | File::READ));
+
+    if (nullptr == static_cast<File *>(f1) || nullptr == static_cast<File *>(f2))
+    {
+        Logger::Error("Couldn't copmare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    String tmpStr1("");
+    String tmpStr2("");
+    uint32 count1 = 0;
+    uint32 count2 = 0;
+    bool feof1 = false;
+    bool feof2 = false;
+
+    do
+    {
+        count1 = f1->ReadLine(tmpStr1);
+        count2 = f2->ReadLine(tmpStr2);
+
+        if (count1 != count2 && 0 != tmpStr1.compare(tmpStr2))
+        {
+            return false;
+        }
+        feof1 = f1->IsEof();
+        feof2 = f2->IsEof();
+
+        if (feof1 != feof2)
+        {
+            return false;
+        }
+    } while (!feof1 && !feof2);
+
+    return true;
 }
-
-
-
-

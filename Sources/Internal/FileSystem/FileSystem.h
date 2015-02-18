@@ -253,6 +253,11 @@ public:
 	 */
 	void MarkFolderAsNoMedia(const FilePath &folder);
 
+    /**
+    \brief Compares two files to check if theirs content is same. Ignores lineendings
+    */
+    bool CompareTextFiles(const FilePath &filePath1, const FilePath &filePath2);
+
 private:
     
 	virtual eCreateDirectoryResult CreateExactDirectory(const FilePath & filePath);

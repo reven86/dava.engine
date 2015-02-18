@@ -84,7 +84,7 @@ void LocalizationTest::TestFunction(TestTemplate<LocalizationTest>::PerfFuncData
 
 	localizationSystem->Cleanup();
 
-	bool res = CompareFiles(srcFile, cpyFile);
+    bool res = FileSystem::Instance()->CompareTextFiles(srcFile, cpyFile);
 
 	String s = Format("Localization test %d: %s - %s", currentTest, files[currentTest].c_str(), (res ? "passed" : "fail"));
 	Logger::Debug(s.c_str());
@@ -93,44 +93,4 @@ void LocalizationTest::TestFunction(TestTemplate<LocalizationTest>::PerfFuncData
 	TEST_VERIFY(res);
 
 	++currentTest;
-}
-
-bool LocalizationTest::CompareFiles(const FilePath& file1, const FilePath& file2)
-{
-    ScopedPtr<File> f1(File::Create(file1, File::OPEN | File::READ));
-    ScopedPtr<File> f2(File::Create(file2, File::OPEN | File::READ));
-
-	if (nullptr == static_cast<File *>(f1) || nullptr == static_cast<File *>(f2))
-    {
-        Logger::Error("Couldn't copmare file %s and file %s, can't open", file1.GetAbsolutePathname().c_str(), file2.GetAbsolutePathname().c_str());
-        return false;
-    }
-
-    String tmpStr1("");
-    String tmpStr2("");
-    uint32 count1 = 0;
-    uint32 count2 = 0;
-    bool feof1 = false;
-    bool feof2 = false;
-
-    do
-    {
-        count1 = f1->ReadString(tmpStr1);
-        count2 = f2->ReadString(tmpStr2);
-        
-        if (count1 != count2 && 0 != tmpStr1.compare(tmpStr2))
-        {
-            return false;
-        }
-        feof1 = f1->IsEof();
-        feof2 = f2->IsEof();
-        
-        if (feof1 != feof2)
-        {
-            return false;
-        }
-    } while(!feof1);
-    
-
-	return true;
 }

@@ -252,6 +252,32 @@ uint32 File::ReadLine(void * pointerToData, uint32 bufferSize)
 	return (uint32)(inPtr - (uint8*)pointerToData);
 }
 
+uint32 File::ReadLine(String &destinationString)
+{
+    uint32 bytesRead = 0;
+    while (!IsEof())
+    {
+        uint8 nextChar;
+        uint32 actuallyRead = Read(&nextChar, 1);
+        if (actuallyRead != 1)break;
+
+        if (nextChar == '\n')break;
+        if (nextChar == 0)break;
+
+        if (nextChar == '\r')
+        {
+            if (Read(&nextChar, 1) && nextChar != '\n')
+            {
+                Seek(-1, File::SEEK_FROM_CURRENT);
+            }
+            break;
+        }
+        destinationString += nextChar;
+        bytesRead += actuallyRead;
+    }
+    return bytesRead;
+}
+
 uint32 File::GetPos()
 {
 	if (!file) return 0;

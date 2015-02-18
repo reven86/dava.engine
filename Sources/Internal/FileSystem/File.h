@@ -170,7 +170,13 @@ public:
 		\return number of bytes actually read
 	*/
 	virtual uint32 ReadLine(void * destinationBuffer, uint32 bufferSize);
-	
+
+    /**
+    \brief Read one line from text file to destinationString
+    \param[in, out] destinationString function write data to this string
+    \return number of bytes actually read
+    */
+    virtual uint32 ReadLine(String &destinationString);
 	
 	/**
 		\brief Read string line from file to destination buffer with destinationBufferSize
