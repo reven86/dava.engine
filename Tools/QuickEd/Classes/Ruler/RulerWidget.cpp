@@ -31,6 +31,7 @@
 #include <QPainter>
 #include <QApplication>
 #include <sstream>
+#include <math.h>
 
 using namespace DAVA;
 
