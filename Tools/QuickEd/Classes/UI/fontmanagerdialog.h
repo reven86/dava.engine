@@ -38,7 +38,9 @@ class QStringList;
 class QItemSelectionModel;
 class QStandardItem;
 
-class DAVA::Font;
+namespace DAVA {
+    class Font;
+}
 
 namespace Ui {
 class FontManagerDialog;

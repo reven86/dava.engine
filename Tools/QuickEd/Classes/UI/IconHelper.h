@@ -33,7 +33,9 @@
 #include <QString>
 #include "DAVAEngine.h"
 
-class DAVA::UIControl;
+namespace DAVA {
+    class UIControl;
+}
 class IconHelper
 {
 public:
