@@ -1,16 +1,10 @@
 #ifndef __QUICKED_PACKAGE_DOCUMENT_H__
 #define __QUICKED_PACKAGE_DOCUMENT_H__
 
-#include <QWidget>
-#include <QVariant>
 #include <QPointer>
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Project.h"
-
-namespace Ui {
-    class PackageDocument;
-}
 
 namespace DAVA {
     class UIPackage;
@@ -19,18 +13,9 @@ namespace DAVA {
     class UIScreen;
 }
 
-class DocumentWidgets;
-
-class QAbstractItemModel;
-class QSortFilterProxyModel;
 class QUndoStack;
-class QItemSelection;
 
-class UIPackageModel;
-class PackageNode;
-class DavaGLWidget;
 class QtModelPackageCommandExecutor;
-
 class PackageContext;
 class PropertiesContext;
 class LibraryContext;
@@ -43,26 +28,27 @@ class Document : public QObject
 {
     Q_OBJECT
 public:
-    Document(Project * project, PackageNode *package, QObject *parent = NULL);
+    Document(Project * project, PackageNode *package, QObject *parent = nullptr);
     virtual ~Document();
        
     bool IsModified() const;
     void ClearModified();
+    void SetActive(bool active);
     const DAVA::FilePath &PackageFilePath() const;
-    PackageNode *GetPackage() const {return package;}
-    Project *GetProject() const { return project; }
+    inline PackageNode *GetPackage() const;
+    inline Project *GetProject() const;
     
-    const QList<ControlNode*> &GetSelectedControls() const { return selectedControls; }
-    const QList<ControlNode*> &GetActiveRootControls() const { return activeRootControls; }
+    inline const QList<ControlNode*> &GetSelectedControls() const;
+    inline const QList<ControlNode*> &GetActiveRootControls() const;
     
-    PackageContext *GetPackageContext() const { return packageContext; };
-    PropertiesContext *GetPropertiesContext() const {return propertiesContext; };
-    LibraryContext *GetLibraryContext() const {return libraryContext; };
-    PreviewContext *GetPreviewContext() const {return previewContext; };
+    inline PackageContext *GetPackageContext() const;
+    inline PropertiesContext *GetPropertiesContext() const;
+    inline LibraryContext *GetLibraryContext() const;
+    inline PreviewContext *GetPreviewContext() const;
 
-    QUndoStack *UndoStack() { return undoStack; }
+    inline QUndoStack *UndoStack() const;
     
-    QtModelPackageCommandExecutor *GetCommandExecutor() const;
+    inline QtModelPackageCommandExecutor *GetCommandExecutor() const;
 
 signals:
 //    void controlsSelectionChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
@@ -98,5 +84,56 @@ private:
 };
 
 Q_DECLARE_METATYPE(Document *);
+
+inline PackageNode *Document::GetPackage() const 
+{ 
+    return package; 
+}
+
+inline Project *Document::GetProject() const 
+{
+    return project;
+}
+
+inline const QList<ControlNode*> &Document::GetSelectedControls() const 
+{
+    return selectedControls;
+}
+
+inline const QList<ControlNode*> &Document::GetActiveRootControls() const 
+{ 
+    return activeRootControls; 
+}
+
+inline PackageContext *Document::GetPackageContext() const 
+{ 
+    return packageContext; 
+}
+
+inline PropertiesContext *Document::GetPropertiesContext() const 
+{ 
+    return propertiesContext; 
+}
+
+inline LibraryContext *Document::GetLibraryContext() const 
+{ 
+    return libraryContext; 
+}
+
+inline PreviewContext *Document::GetPreviewContext() const 
+{ 
+    return previewContext; 
+}
+
+inline QUndoStack *Document::UndoStack() const 
+{ 
+    return undoStack; 
+}
+
+inline QtModelPackageCommandExecutor *Document::GetCommandExecutor() const
+{
+    return commandExecutor;
+}
+
 
 #endif // __QUICKED_PACKAGE_DOCUMENT_H__

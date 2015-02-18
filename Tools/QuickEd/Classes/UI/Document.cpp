@@ -1,13 +1,6 @@
 #include "Document.h"
 #include <DAVAEngine.h>
-#include <QLineEdit>
-#include <QAction>
-#include <QItemSelection>
-
-#include "UI/Package/PackageModel.h"
-#include "UI/Package/FilteredPackageModel.h"
-#include "UI/Library/LibraryModel.h"
-#include "UI/PreviewContext.h"
+#include <QUndoStack>
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
@@ -84,16 +77,6 @@ void Document::ClearModified()
     undoStack->setClean();
 }
 
-const DAVA::FilePath &Document::PackageFilePath() const
-{
-    return package->GetPackageRef()->GetPath();
-}
-
-QtModelPackageCommandExecutor *Document::GetCommandExecutor() const
-{
-    return commandExecutor;
-}
-
 void Document::OnSelectionRootControlChanged(const QList<ControlNode*> &activatedRootControls, const QList<ControlNode*> &deactivatedRootControls)
 {
     activeRootControls.clear();
@@ -130,4 +113,14 @@ void Document::OnControlSelectedInEditor(ControlNode *activatedControl)
 void Document::OnAllControlDeselectedInEditor()
 {
     emit allControlsDeselectedInEditor();
+}
+
+void Document::SetActive(bool active)
+{
+    undoStack->setActive(active);
+}
+
+const DAVA::FilePath &Document::PackageFilePath() const
+{
+    return package->GetPackageRef()->GetPath();
 }
