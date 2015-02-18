@@ -1,7 +1,8 @@
 #include "PackageModel.h"
 
-#include <qicon.h>
+#include <QIcon>
 #include <QAction>
+#include <QUrl>
 
 #include "DAVAEngine.h"
 #include "Base/ObjectFactory.h"
@@ -205,6 +206,7 @@ QStringList PackageModel::mimeTypes() const
     QStringList types;
     types << PackageMimeData::MIME_TYPE;
     types << "text/plain";
+    types << "text/uri-list";
     return types;
 }
 
@@ -247,10 +249,8 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
         rowIndex = rowCount(QModelIndex());
 
     ControlsContainerNode *parentNode = dynamic_cast<ControlsContainerNode*>(static_cast<PackageBaseNode*>(parent.internalPointer()));
-    if (!parentNode)
-        return false;
     
-    if (data->hasFormat(PackageMimeData::MIME_TYPE))
+    if (parentNode && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
         const PackageMimeData *controlMimeData = dynamic_cast<const PackageMimeData*>(data);
         if (!controlMimeData)
@@ -269,7 +269,22 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
         
         return true;
     }
-    else if (data->hasFormat("text/plain") && data->hasText())
+    else if (data->hasFormat("text/uri-list") && data->hasText())
+    {
+        QStringList list = data->text().split("\n");
+        for (const QString &str : list)
+        {
+            QUrl url(str);
+            if (url.isLocalFile())
+            {
+                FilePath path(url.toLocalFile().toStdString());
+                if (document->GetPackage()->FindImportedPackage(path) == nullptr)
+                {
+                }
+            }
+        }
+    }
+    else if (parentNode && data->hasFormat("text/plain") && data->hasText())
     {
         String string = data->text().toStdString();
         RefPtr<YamlParser> parser(YamlParser::CreateAndParseString(string));

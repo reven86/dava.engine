@@ -136,7 +136,7 @@ void QtModelPackageCommandExecutor::RemoveControl(ControlNode* node)
             node->Retain();
             PushCommand(new RemoveControlCommand(model, node, src, srcIndex));
             
-            const Vector<ControlNode*> &instances = node->GetInstances();
+            Vector<ControlNode*> instances = node->GetInstances();
             RemoveControls(instances);
             
             node->Release();
@@ -181,6 +181,7 @@ void QtModelPackageCommandExecutor::ChangeDefaultProperties(const DAVA::Vector<C
         }
     }
 }
+
 
 QUndoStack *QtModelPackageCommandExecutor::GetUndoStack()
 {
