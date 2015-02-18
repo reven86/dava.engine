@@ -39,6 +39,7 @@ namespace Net
 enum class eMMProtoCmd
 {
     INIT_COMM,
+    CUR_STAT
 };
 
 enum class eMMProtoStatus

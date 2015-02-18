@@ -27,7 +27,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "Debug/DVAssert.h"
+#include "FileSystem/Logger.h"
 
+#include <Platform/SystemTimer.h>
 #include "MemoryManager/MemoryManager.h"
 
 #include "MMNetServer.h"
@@ -35,6 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
 #include <cstdlib>
+#include <ctime>
 
 namespace DAVA
 {
@@ -43,12 +46,14 @@ namespace Net
 
 MMNetServer::MMNetServer()
     : NetService()
-    , sessionId(rand())
+    , sessionId(0)
     , commInited(false)
-    , statPeriod(1000)
+    , timerBegin(0)
+    , statPeriod(250)
     , periodCounter(0)
 {
-
+    srand(static_cast<unsigned int>(time(nullptr)));
+    sessionId = rand();
 }
 
 MMNetServer::~MMNetServer()
@@ -63,13 +68,14 @@ void MMNetServer::Update(float32 timeElapsed)
     periodCounter += static_cast<size_t>(timeElapsed * 1000.0f);
     if (periodCounter >= statPeriod)
     {
+        SendMemoryStat();
         periodCounter = 0;
     }
 }
 
 void MMNetServer::ChannelOpen()
 {
-
+    timerBegin = SystemTimer::Instance()->AbsoluteMS();
 }
 
 void MMNetServer::ChannelClosed(const char8* message)
@@ -104,8 +110,10 @@ void MMNetServer::PacketDelivered()
         // As reply to eMMProtoCmd::INIT_COMM is always first delivered packet after connection
         // so we can simply set
         commInited = true;
+        Logger::Debug("MMNetServer::PacketDelivered: communication established");
     }
 
+    DestroyParcel(parcels.front());
     parcels.pop_front();
     if (!parcels.empty())
     {
@@ -127,6 +135,15 @@ void MMNetServer::ProcessInitCommunication(const MMProtoHeader* hdr, const void*
     {
         MMStatConfig* config = reinterpret_cast<MMStatConfig*>(static_cast<uint8*>(parcel.buffer) + sizeof(MMProtoHeader));
         MemoryManager::GetStatConfig(config);
+
+        Logger::Debug("MMNetServer::ProcessInitCommunication: new session %u", sessionId);
+        Logger::Debug("   dataSize=%u", (uint32)dataSize);
+        Logger::Debug("   maxTags=%u, ntags=%u", config->maxTagCount, config->tagCount);
+        for (uint32 i = 0;i < config->tagCount;++i)
+            Logger::Debug("      %d, %s", i, config->names[i].name);
+        Logger::Debug("   maxPools=%u, npools=%u", config->maxAllocPoolCount, config->allocPoolCount);
+        for (uint32 i = 0;i < config->allocPoolCount;++i)
+            Logger::Debug("      %d, %s", i, config->names[i + config->tagCount].name);
     }
     
     MMProtoHeader* outHdr = static_cast<MMProtoHeader*>(parcel.buffer);
@@ -135,6 +152,25 @@ void MMNetServer::ProcessInitCommunication(const MMProtoHeader* hdr, const void*
     outHdr->status = static_cast<uint32>(eMMProtoStatus::ACK);
     outHdr->length = static_cast<uint32>(dataSize);
     
+    EnqueueAndSend(parcel);
+}
+
+void MMNetServer::SendMemoryStat()
+{
+    size_t dataSize = MemoryManager::CalcStatSize();
+    Parcel parcel = CreateParcel(sizeof(MMProtoHeader) + dataSize);
+
+    MMProtoHeader* hdr = static_cast<MMProtoHeader*>(parcel.buffer);
+    MMStat* stat = reinterpret_cast<MMStat*>(hdr + 1);
+
+    MemoryManager::GetStat(stat);
+    stat->timestamp = SystemTimer::Instance()->AbsoluteMS() - timerBegin;
+
+    hdr->sessionId = sessionId;
+    hdr->cmd = static_cast<uint32>(eMMProtoCmd::CUR_STAT);
+    hdr->status = static_cast<uint32>(eMMProtoStatus::ACK);
+    hdr->length = static_cast<uint32>(dataSize);
+
     EnqueueAndSend(parcel);
 }
 

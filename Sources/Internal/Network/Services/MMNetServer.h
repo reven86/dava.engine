@@ -44,10 +44,6 @@ namespace Net
 
 class MMNetServer : public NetService
 {
-    enum {
-        STAGE_INIT_SESSION
-    };
-
     struct Parcel
     {
         size_t size;
@@ -68,6 +64,7 @@ public:
 
 private:
     void ProcessInitCommunication(const MMProtoHeader* hdr, const void* packet, size_t length);
+    void SendMemoryStat();
 
     Parcel CreateParcel(size_t parcelSize);
     void DestroyParcel(Parcel parcel);
@@ -76,6 +73,7 @@ private:
 private:
     uint32 sessionId;
     bool commInited;
+    uint64 timerBegin;
     size_t statPeriod;
     size_t periodCounter;
 

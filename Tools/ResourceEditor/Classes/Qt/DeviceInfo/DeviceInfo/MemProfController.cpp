@@ -15,7 +15,8 @@ MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr
 {
     ShowView();
     netClient.SetCallbacks(MakeFunction(this, &MemProfController::ChannelOpen),
-                           MakeFunction(this, &MemProfController::ChannelClosed));
+                           MakeFunction(this, &MemProfController::ChannelClosed),
+                           MakeFunction(this, &MemProfController::CurrentStat));
 }
 
 MemProfController::~MemProfController() {}
@@ -40,10 +41,22 @@ void MemProfController::ShowView()
     view->raise();
 }
 
-void MemProfController::ChannelOpen()
+void MemProfController::ChannelOpen(DAVA::MMStatConfig* config)
 {
     view->ChangeStatus("connected", nullptr);
     view->ClearStat();
+
+    Logger::Debug("MemProfController::ChannelOpen");
+    if (config)
+    {
+        Logger::Debug("   maxTags=%u, ntags=%u", config->maxTagCount, config->tagCount);
+        for (uint32 i = 0;i < config->tagCount;++i)
+            Logger::Debug("      %d, %s", i, config->names[i].name);
+        Logger::Debug("   maxPools=%u, npools=%u", config->maxAllocPoolCount, config->allocPoolCount);
+        for (uint32 i = 0;i < config->allocPoolCount;++i)
+            Logger::Debug("      %d, %s", i, config->names[i + config->tagCount].name);
+    }
+    view->SetStatConfig(config);
 }
 
 void MemProfController::ChannelClosed(char8* message)
@@ -51,16 +64,9 @@ void MemProfController::ChannelClosed(char8* message)
     view->ChangeStatus("disconnected", message);
 }
 
-void MemProfController::PacketReceived(const void* packet, size_t length)
+void MemProfController::CurrentStat(DAVA::MMStat* stat)
 {
-    /*const net_mem_stat_t* src = static_cast<const net_mem_stat_t*>(packet);
-    if (sizeof(net_mem_stat_t) == length)
-    {
-        net_mem_stat_t* dst = new net_mem_stat_t;
-        *dst = *src;
-        v.push_back(dst);
-        view->UpdateStat(dst);
-    }*/
+    view->UpdateStat(stat);
 }
 
 void MemProfController::Output(const String& msg)

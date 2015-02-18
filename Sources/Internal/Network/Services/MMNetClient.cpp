@@ -53,10 +53,11 @@ MMNetClient::~MMNetClient()
 
 }
 
-void MMNetClient::SetCallbacks(ChOpenCallback onOpen, ChClosedCallback onClosed)
+void MMNetClient::SetCallbacks(ChOpenCallback onOpen, ChClosedCallback onClosed, StatCallback onStat)
 {
     openCallback = onOpen;
     closeCallback = onClosed;
+    statCallback = onStat;
 }
 
 void MMNetClient::ChannelOpen()
@@ -81,7 +82,10 @@ void MMNetClient::PacketReceived(const void* packet, size_t length)
     switch (cmd)
     {
     case eMMProtoCmd::INIT_COMM:
-        ProcessInitCommunication(hdr, static_cast<const uint8*>(packet)+sizeof(MMProtoHeader), length - sizeof(MMProtoHeader));
+        ProcessInitCommunication(hdr, static_cast<const uint8*>(packet) + sizeof(MMProtoHeader), length - sizeof(MMProtoHeader));
+        break;
+    case eMMProtoCmd::CUR_STAT:
+        ProcessCurrentStatistics(hdr, static_cast<const uint8*>(packet)+sizeof(MMProtoHeader), length - sizeof(MMProtoHeader));
         break;
     }
 }
@@ -101,7 +105,13 @@ void MMNetClient::ProcessInitCommunication(const MMProtoHeader* hdr, const void*
     }
     commInited = true;
 
-    openCallback();
+    openCallback(const_cast<MMStatConfig*>(config));
+}
+
+void MMNetClient::ProcessCurrentStatistics(const MMProtoHeader* hdr, const void* packet, size_t length)
+{
+    const MMStat* stat = static_cast<const MMStat*>(packet);
+    statCallback(const_cast<MMStat*>(stat));
 }
 
 void MMNetClient::SendInitSession()

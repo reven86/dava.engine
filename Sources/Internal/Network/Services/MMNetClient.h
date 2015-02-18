@@ -44,14 +44,15 @@ namespace Net
 class MMNetClient : public NetService
 {
 public:
-    typedef Function<void ()> ChOpenCallback;
+    typedef Function<void(MMStatConfig*)> ChOpenCallback;
     typedef Function<void (char8*)> ChClosedCallback;       // TODO: change to void(const char*) after fixing TypeTraits and Function
+    typedef Function<void(MMStat*)> StatCallback;
 
 public:
     MMNetClient();
     virtual ~MMNetClient();
 
-    void SetCallbacks(ChOpenCallback onOpen, ChClosedCallback onClosed);
+    void SetCallbacks(ChOpenCallback onOpen, ChClosedCallback onClosed, StatCallback onStat);
 
     // Overriden methods from NetService
     void ChannelOpen() override;
@@ -61,6 +62,7 @@ public:
 
 private:
     void ProcessInitCommunication(const MMProtoHeader* hdr, const void* packet, size_t length);
+    void ProcessCurrentStatistics(const MMProtoHeader* hdr, const void* packet, size_t length);
 
     void SendInitSession();
 
@@ -73,6 +75,7 @@ private:
 
     ChOpenCallback openCallback;
     ChClosedCallback closeCallback;
+    StatCallback statCallback;
 };
 
 }   // namespace Net

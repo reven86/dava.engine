@@ -19,9 +19,9 @@ public:
 
     void ShowView();
 
-    void ChannelOpen();
+    void ChannelOpen(DAVA::MMStatConfig* config);
     void ChannelClosed(DAVA::char8* message);
-    void PacketReceived(const void* packet, size_t length);
+    void CurrentStat(DAVA::MMStat* stat);
 
     DAVA::Net::IChannelListener* NetObject() { return &netClient; }
 
