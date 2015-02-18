@@ -37,7 +37,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "AllocPools.h"
 #include "AllocThunk.h"
-
+// windows bug with max ?
+#undef max
 namespace DAVA
 {
 

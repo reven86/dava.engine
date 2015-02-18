@@ -1,8 +1,9 @@
+
 #include <Utils/UTF8Utils.h>
 
 #include "MemProfWidget.h"
 #include "MemProfController.h"
-
+#include "MemProfInfoModel.h"
 using namespace DAVA;
 using namespace DAVA::Net;
 
@@ -12,6 +13,10 @@ MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr
     , peer(peerDescr)
 {
     ShowView();
+    model = new MemProfInfoModel();
+  
+   
+    view->SetModel(model);
 }
 
 MemProfController::~MemProfController() {}
@@ -52,12 +57,14 @@ void MemProfController::ChannelClosed(const char8* message)
 
 void MemProfController::PacketReceived(const void* packet, size_t length)
 {
-    const net_mem_stat_t* src = static_cast<const net_mem_stat_t*>(packet);
-    if (sizeof(net_mem_stat_t) == length)
+    const  MemoryProfDataChunk* src = static_cast<const MemoryProfDataChunk*>(packet);
+    if (sizeof(MemoryProfDataChunk) == length)
     {
-        net_mem_stat_t* dst = new net_mem_stat_t;
+        MemoryProfDataChunk* dst = new MemoryProfDataChunk();
         *dst = *src;
         v.push_back(dst);
+        model->addMoreData(*dst);
+        
         view->UpdateStat(dst);
     }
 }

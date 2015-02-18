@@ -3,16 +3,20 @@
 
 #include <QWidget>
 #include <QScopedPointer>
+#include <QTableView.h>
 
-#include "memprof/mem_profiler_types.h"
 
+#include "MemoryManager/MemoryManagerTypes.h"
+#include "MemoryManager/MemoryManager.h"
 namespace Ui {
     class MemProfWidget;
 } // namespace Ui
 
 class QLabel;
 class QCustomPlot;
-
+class MemProfPlot;
+class MemProfInfoModel;
+class MemoryProfDataChunk;
 class MemProfWidget : public QWidget
 {
     Q_OBJECT
@@ -27,18 +31,21 @@ public:
     void ChangeStatus(const char* status, const char* reason);
     
     void ClearStat();
-    void UpdateStat(const net_mem_stat_t* stat);
+    void UpdateStat(const MemoryProfDataChunk* stat);
     
+    void SetModel(MemProfInfoModel * model);
+
 private:
-    void UpdateLabels(const net_mem_stat_t* stat, uint32_t alloc, uint32_t total);
+    void UpdateLabels(const  MemoryProfDataChunk* stat, DAVA::uint32 alloc, DAVA::uint32 total);
     void CreateUI();
+
     
 private:
     QScopedPointer<Ui::MemProfWidget> ui;
-    QCustomPlot* plot;
+    MemProfPlot* plot;
     
-    uint32_t offset;
-    uint32_t prevOrder;
+    DAVA::uint32 offset;
+    DAVA::uint32 prevOrder;
     
     struct label_pack
     {
@@ -48,7 +55,8 @@ private:
         QLabel* max_block_size;
         QLabel* nblocks;
     };
-    label_pack labels[MEMPROF_MEM_COUNT + 1];
+    MemProfInfoModel * model;
+    QTableView * dataView;
 };
 
 #endif // __DEVICELOGWIDGET_H__

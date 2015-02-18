@@ -2,20 +2,21 @@
 #include <QVBoxLayout>
 
 #include "MemProfWidget.h"
-#include "qcustomplot.h"
-
+#include "MemProfPlot.h"
+#include "MemProfInfoModel.h"
 #include "ui_MemProfWidget.h"
-
+#include "MemoryManager/MemoryManager.h"
 MemProfWidget::MemProfWidget(QWidget *parent)
     : QWidget(parent, Qt::Window)
     , ui(new Ui::MemProfWidget())
 {
+    model = nullptr;
     ui->setupUi(this);
     CreateUI();
     
     plot = ui->plot;
     
-    prevOrder = (uint32_t)-1;
+    prevOrder = (DAVA::uint32)-1;
     offset = 0;
     
     plot->addGraph();
@@ -32,10 +33,11 @@ MemProfWidget::MemProfWidget(QWidget *parent)
     plot->xAxis2->setTickLabels(false);
     plot->yAxis2->setVisible(true);
     plot->yAxis2->setTickLabels(false);
-    
+   // plot->setInteraction(QCP::Interaction)
     connect(plot->xAxis, SIGNAL(rangeChanged(QCPRange)), plot->xAxis2, SLOT(setRange(QCPRange)));
     connect(plot->yAxis, SIGNAL(rangeChanged(QCPRange)), plot->yAxis2, SLOT(setRange(QCPRange)));
     
+
     //plot->graph(0)->setData(x, y0);
     //plot->graph(1)->setData(x, y1);
     
@@ -61,7 +63,14 @@ void MemProfWidget::ChangeStatus(const char* status, const char* reason)
     }
     ui->labelStatus->setText(s);
 }
-
+void MemProfWidget::SetModel(MemProfInfoModel * model)
+{
+    this->model = model;
+    if (dataView != nullptr)
+    {
+        dataView->setModel(model);
+    }
+}
 void MemProfWidget::ClearStat()
 {
     plot->graph(0)->clearData();
@@ -71,15 +80,15 @@ void MemProfWidget::ClearStat()
     plot->replot();
 }
 
-void MemProfWidget::UpdateStat(const net_mem_stat_t* stat)
+void MemProfWidget::UpdateStat(const MemoryProfDataChunk* stat)
 {
-    uint32_t alloc = 0;
-    uint32_t total = 0;
-    for (int i = 0;i < MEMPROF_MEM_COUNT;++i)
+    DAVA::uint32 alloc = 0;
+    DAVA::uint32 total = 0;
+   /* for (int i = 0;i < DAVA::MemoryManager::MAX_ALLOC_POOL_COUNT;++i)
     {
-        alloc += stat->stat[i][0].alloc_size;
-        total += stat->stat[i][0].total_size;
-    }
+        alloc += stat->stat[i][0].allocByApp;
+        total += stat->stat[i][0].allocTotal;
+    }*/
 
     //plot->graph(0)->addData(stat->timestamp, total);
     plot->graph(0)->addData(offset, (double)alloc/1000.0);
@@ -92,49 +101,17 @@ void MemProfWidget::UpdateStat(const net_mem_stat_t* stat)
     offset += 1;
 }
 
-void MemProfWidget::UpdateLabels(const net_mem_stat_t* stat, uint32_t alloc, uint32_t total)
+void MemProfWidget::UpdateLabels(const MemoryProfDataChunk* stat, DAVA::uint32 alloc, DAVA::uint32 total)
 {
-    uint32_t nblocks = 0;
-    for (int i = 0;i < MEMPROF_MEM_COUNT;++i)
-    {
-        labels[i].alloc->setNum(int(stat->stat[i][0].alloc_size));
-        labels[i].total->setNum(int(stat->stat[i][0].total_size));
-        labels[i].max_block_size->setNum(int(stat->stat[i][0].max_block_size));
-        labels[i].nblocks->setNum(int(stat->stat[i][0].nblocks));
-        nblocks += stat->stat[i][0].nblocks;
-    }
+    DAVA::uint32 nblocks = 0;
+   
     
-    const int R = MEMPROF_MEM_COUNT;
-    labels[R].alloc->setNum(int(alloc));
-    labels[R].total->setNum(int(total));
-    //labels[R].max_block_size->setNum(int(stat->stat[i][0].max_block_size));
-    labels[R].nblocks->setNum(int(nblocks));
 }
 
 void MemProfWidget::CreateUI()
 {
-    const char* t[MEMPROF_MEM_COUNT + 1] = {
-        "Internal use",
-        "Allocated by new",
-        "Allicated for STL",
-        "Allocated for class",
-        "Other alloc",
-        "Total"
-    };
-    QGridLayout* l = new QGridLayout();
-    for (int i = 0;i < MEMPROF_MEM_COUNT + 1;++i)
-    {
-        labels[i].title = new QLabel(t[i]);
-        labels[i].alloc = new QLabel("0");
-        labels[i].total = new QLabel("0");
-        labels[i].max_block_size = new QLabel("0");
-        labels[i].nblocks = new QLabel("0");
-        
-        l->addWidget(labels[i].title, i, 0);
-        l->addWidget(labels[i].alloc, i, 1);
-        l->addWidget(labels[i].total, i, 2);
-        l->addWidget(labels[i].max_block_size, i, 3);
-        l->addWidget(labels[i].nblocks, i, 4);
-    }
-    ui->verticalLayout_2->addLayout(l);
+   
+    dataView = new QTableView();
+
+    ui->verticalLayout_2->addWidget(dataView);
 }

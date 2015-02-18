@@ -7,10 +7,11 @@
 #include <Network/PeerDesription.h>
 #include <Network/NetService.h>
 
-#include "memprof/mem_profiler_types.h"
+#include "MemoryManager/MemoryManager.h"
 
 class MemProfWidget;
-
+class MemProfInfoModel;
+struct MemoryProfDataChunk;
 class MemProfController : public QObject
                         , public DAVA::Net::NetService
 {
@@ -34,7 +35,8 @@ private:
     QPointer<QWidget> parentWidget;
     DAVA::Net::PeerDescription peer;
     
-    DAVA::Vector<net_mem_stat_t*> v;
+    DAVA::Vector<MemoryProfDataChunk*> v;
+    MemProfInfoModel * model;
 };
 
 #endif // __MEMPROFCONTROLLER_H__
