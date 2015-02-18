@@ -47,12 +47,15 @@ public:
     typedef Function<void(MMStatConfig*)> ChOpenCallback;
     typedef Function<void (char8*)> ChClosedCallback;       // TODO: change to void(const char*) after fixing TypeTraits and Function
     typedef Function<void(MMStat*)> StatCallback;
+    typedef Function<void(MMDump*)> DumpCallback;
 
 public:
     MMNetClient();
     virtual ~MMNetClient();
 
-    void SetCallbacks(ChOpenCallback onOpen, ChClosedCallback onClosed, StatCallback onStat);
+    void SetCallbacks(ChOpenCallback onOpen, ChClosedCallback onClosed, StatCallback onStat, DumpCallback onDump);
+
+    void RequestDump();
 
     // Overriden methods from NetService
     void ChannelOpen() override;
@@ -63,8 +66,10 @@ public:
 private:
     void ProcessInitCommunication(const MMProtoHeader* hdr, const void* packet, size_t length);
     void ProcessCurrentStatistics(const MMProtoHeader* hdr, const void* packet, size_t length);
+    void ProcessDump(const MMProtoHeader* hdr, const void* packet, size_t length);
 
     void SendInitSession();
+    void SendDumpRequest();
 
 private:
     uint32 sessionId;
@@ -76,6 +81,7 @@ private:
     ChOpenCallback openCallback;
     ChClosedCallback closeCallback;
     StatCallback statCallback;
+    DumpCallback dumpCallback;
 };
 
 }   // namespace Net

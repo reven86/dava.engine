@@ -16,7 +16,8 @@ MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr
     ShowView();
     netClient.SetCallbacks(MakeFunction(this, &MemProfController::ChannelOpen),
                            MakeFunction(this, &MemProfController::ChannelClosed),
-                           MakeFunction(this, &MemProfController::CurrentStat));
+                           MakeFunction(this, &MemProfController::CurrentStat),
+                           MakeFunction(this, &MemProfController::Dump));
 }
 
 MemProfController::~MemProfController() {}
@@ -67,6 +68,11 @@ void MemProfController::ChannelClosed(char8* message)
 void MemProfController::CurrentStat(DAVA::MMStat* stat)
 {
     view->UpdateStat(stat);
+}
+
+void MemProfController::Dump(DAVA::MMDump* dump)
+{
+
 }
 
 void MemProfController::Output(const String& msg)

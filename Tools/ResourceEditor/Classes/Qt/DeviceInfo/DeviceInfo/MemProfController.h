@@ -22,6 +22,7 @@ public:
     void ChannelOpen(DAVA::MMStatConfig* config);
     void ChannelClosed(DAVA::char8* message);
     void CurrentStat(DAVA::MMStat* stat);
+    void Dump(DAVA::MMDump* dump);
 
     DAVA::Net::IChannelListener* NetObject() { return &netClient; }
 

@@ -64,6 +64,7 @@ public:
 
 private:
     void ProcessInitCommunication(const MMProtoHeader* hdr, const void* packet, size_t length);
+    void ProcessDump(const MMProtoHeader* hdr, const void* packet, size_t length);
     void SendMemoryStat();
 
     Parcel CreateParcel(size_t parcelSize);
