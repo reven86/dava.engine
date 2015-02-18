@@ -12,6 +12,7 @@ class PackageNode;
 class ControlNode;
 class PackageBaseNode;
 class PackageControlsNode;
+class ControlsContainerNode;
 
 class PackageModel : public QAbstractItemModel
 {
@@ -38,17 +39,11 @@ public:
     virtual QMimeData *mimeData(const QModelIndexList &indexes) const override;
     virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
     
-    void InsertItem(const QString &name, int dstRow, const QModelIndex &dstParent);
-    void InsertItem(ControlNode *node, int dstRow, const QModelIndex &dstParent);
-    void InsertImportedPackage(PackageControlsNode *node, int dstRow, const QModelIndex &dstParent);
-    void MoveItem(const QModelIndex &srcItem, int dstRow, const QModelIndex &dstParent);
-    void CopyItem(const QModelIndex &srcItem, int dstRow, const QModelIndex &dstParent);
-    void RemoveItem(const QModelIndex &srcItem);
-
-    void InsertNode(ControlNode *node, const QModelIndex &parent, int row);
-    void RemoveNode(PackageBaseNode *node);
-    void RemoveControlNode(ControlNode *node);
-    void RemovePackageControlsNode(PackageControlsNode *node);
+    void InsertControlNode(ControlNode *node, ControlsContainerNode *dest, int row);
+    void RemoveControlNode(ControlNode *node, ControlsContainerNode *parent);
+    void InsertImportedPackage(PackageControlsNode *node, PackageNode *dest, int destRow);
+    void RemoveImportedPackage(PackageControlsNode *node, PackageNode *parent);
+    
 private:
     PackageNode *root;
     Document *document;

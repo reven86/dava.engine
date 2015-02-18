@@ -1,14 +1,26 @@
-//
-//  InsertControlCommand.h
-//  QuickEd
-//
-//  Created by Dmitry Belsky on 14.2.15.
-//
-//
+#ifndef __QUICKED_INSERT_CONTROL_COMMAND_H__
+#define __QUICKED_INSERT_CONTROL_COMMAND_H__
 
-#ifndef __QuickEd__InsertControlCommand__
-#define __QuickEd__InsertControlCommand__
+#include <QUndoStack>
 
-#include <stdio.h>
+class PackageModel;
+class ControlNode;
+class ControlsContainerNode;
 
-#endif /* defined(__QuickEd__InsertControlCommand__) */
+class InsertControlCommand : public QUndoCommand
+{
+public:
+    InsertControlCommand(PackageModel *_model, ControlNode *node, ControlsContainerNode *dest, int index, QUndoCommand *parent = nullptr);
+    virtual ~InsertControlCommand();
+ 
+    void undo() override;
+    void redo() override;
+
+private:
+    PackageModel *model;
+    ControlNode *node;
+    ControlsContainerNode *dest;
+    int index;
+};
+
+#endif // __QUICKED_INSERT_CONTROL_COMMAND_H__

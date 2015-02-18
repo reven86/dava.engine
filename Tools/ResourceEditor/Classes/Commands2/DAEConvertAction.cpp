@@ -32,7 +32,6 @@
 #include "Collada/ColladaConvert.h"
 
 #include "Deprecated/SceneValidator.h"
-#include "DockLODEditor/EditorLODData.h"
 
 #include "Scene/SceneHelper.h"
 #include "Commands2/ConvertToShadowCommand.h"
