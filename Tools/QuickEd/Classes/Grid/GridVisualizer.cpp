@@ -28,8 +28,7 @@
 
 #include "GridVisualizer.h"
 
-namespace DAVA
-{
+using namespace DAVA;
 // Construction/destruction.
 GridVisualizer::GridVisualizer() :
     curScale(0.0f)
@@ -60,5 +59,3 @@ void GridVisualizer::DrawGridIfNeeded(const Rect& rect, UniqueHandle renderState
 
     RenderHelper::Instance()->DrawGrid(rect, gridSize, gridColor, renderState);
 }
-
-};
