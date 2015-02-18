@@ -1,4 +1,5 @@
-
+set( ADDED_CPP_PATTERNS *.cpp Components/*.cpp   )  
+set( ADDED_H_PATTERNS   *.р   Components/*.h     )
 
 if( WIN32 )
     set( ERASE_FILES 	UITextFieldAndroid.cpp 
@@ -24,6 +25,9 @@ elseif( IOS )
 
 endif()
 
-define_source_files (PARENT_SCOPE GLOB_ERASE_FILES ${ERASE_FILES} )
-
+define_source_files( PARENT_SCOPE 
+  GLOB_CPP_PATTERNS    ${ADDED_CPP_PATTERNS}
+  GLOB_H_PATTERNS      ${ADDED_H_PATTERNS}
+  GLOB_ERASE_FILES     ${ERASE_FILES} 
+)
 

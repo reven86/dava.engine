@@ -46,9 +46,9 @@ int32 AtomicDecrement( int32 &value )
 	return (int32)(__atomic_dec((int *)&value) - 1);
 }
 
-bool AtomicCompareAndSwap(const int32 oldVal, const int32 newVal, int32 &value)
+bool AtomicCompareAndSwap(const int32 oldVal, const int32 newVal, volatile int32 &value)
 {
-    return (oldVal == __atomic_cmpxchg(oldVal, newVal, (volatile int *)&value));
+    return (oldVal == __atomic_cmpxchg(oldVal, newVal, &value));
 }
 
 };

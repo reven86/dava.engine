@@ -10,6 +10,7 @@
 		001CF9281A02539600751045 /* TeamcityOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 001CF9261A02539600751045 /* TeamcityOutput.cpp */; };
 		0264E31F1A43002200BD7279 /* JobManagerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0264E31D1A43002200BD7279 /* JobManagerTest.cpp */; };
 		032D348C1A0912B5007509C3 /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 032D348A1A0912B5007509C3 /* CommandLineParser.cpp */; };
+		03CC526E1A890F3600EDDB5E /* SpinLockTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03CC526D1A890F3600EDDB5E /* SpinLockTest.cpp */; };
 		1770DF4717DF497600000391 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1770DF4617DF497600000391 /* MediaPlayer.framework */; };
 		17D4116E1973E95F00CF6BC0 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17D4116D1973E95F00CF6BC0 /* SystemConfiguration.framework */; };
 		17DD1618193F512600B73BEE /* liblua_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17DD1617193F512600B73BEE /* liblua_ios.a */; };
@@ -49,6 +50,7 @@
 		CCB2B8F71A656699003A5D44 /* Cpp14.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCB2B8F51A656699003A5D44 /* Cpp14.cpp */; };
 		E8EC658D1A7FCB8800332AE6 /* FormatsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8EC658B1A7FCB8800332AE6 /* FormatsTest.cpp */; };
 		D73A575D1A739E34009FF184 /* DataVaultTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73A575B1A739E34009FF184 /* DataVaultTest.cpp */; };
+		D7C4C7E01A94A28F005FEC04 /* ThreadSyncTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7C4C7DE1A94A28F005FEC04 /* ThreadSyncTest.cpp */; };
 		FE76D9EF1163F2F0009E83B6 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9ED1163F2F0009E83B6 /* OpenGLES.framework */; };
 		FE76D9F71163F304009E83B6 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9F51163F304009E83B6 /* AVFoundation.framework */; };
 		FE76D9F81163F304009E83B6 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9F61163F304009E83B6 /* CoreAudio.framework */; };
@@ -91,6 +93,7 @@
 		0264E31E1A43002200BD7279 /* JobManagerTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JobManagerTest.h; path = Tests/JobManagerTest.h; sourceTree = "<group>"; };
 		032D348A1A0912B5007509C3 /* CommandLineParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CommandLineParser.cpp; path = ../../../Sources/Tools/TexturePacker/CommandLineParser.cpp; sourceTree = "<group>"; };
 		032D348B1A0912B5007509C3 /* CommandLineParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CommandLineParser.h; path = ../../../Sources/Tools/TexturePacker/CommandLineParser.h; sourceTree = "<group>"; };
+		03CC526D1A890F3600EDDB5E /* SpinLockTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SpinLockTest.cpp; path = Tests/SpinLockTest.cpp; sourceTree = "<group>"; };
 		1770DF4617DF497600000391 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		17D4116D1973E95F00CF6BC0 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		17DD1617193F512600B73BEE /* liblua_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblua_ios.a; path = ../../Libs/libs/liblua_ios.a; sourceTree = "<group>"; };
@@ -157,6 +160,8 @@
 		D73A575B1A739E34009FF184 /* DataVaultTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataVaultTest.cpp; path = Tests/DataVaultTest.cpp; sourceTree = "<group>"; };
 		D73A575C1A739E34009FF184 /* DataVaultTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DataVaultTest.h; path = Tests/DataVaultTest.h; sourceTree = "<group>"; };
 		D73A577A1A764453009FF184 /* UnitTests.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = UnitTests.entitlements; sourceTree = "<group>"; };
+		D7C4C7DE1A94A28F005FEC04 /* ThreadSyncTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ThreadSyncTest.cpp; path = Tests/ThreadSyncTest.cpp; sourceTree = "<group>"; };
+		D7C4C7DF1A94A28F005FEC04 /* ThreadSyncTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ThreadSyncTest.h; path = Tests/ThreadSyncTest.h; sourceTree = "<group>"; };
 		E80D2FB0164D518100C13D70 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		E8EC658B1A7FCB8800332AE6 /* FormatsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FormatsTest.cpp; path = Tests/FormatsTest.cpp; sourceTree = "<group>"; };
 		E8EC658C1A7FCB8800332AE6 /* FormatsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FormatsTest.h; path = Tests/FormatsTest.h; sourceTree = "<group>"; };
@@ -329,6 +334,9 @@
 			children = (
 				E8EC658B1A7FCB8800332AE6 /* FormatsTest.cpp */,
 				E8EC658C1A7FCB8800332AE6 /* FormatsTest.h */,
+				D7C4C7DE1A94A28F005FEC04 /* ThreadSyncTest.cpp */,
+				D7C4C7DF1A94A28F005FEC04 /* ThreadSyncTest.h */,
+				03CC526D1A890F3600EDDB5E /* SpinLockTest.cpp */,
 				D73A575B1A739E34009FF184 /* DataVaultTest.cpp */,
 				D73A575C1A739E34009FF184 /* DataVaultTest.h */,
 				CCB2B8F51A656699003A5D44 /* Cpp14.cpp */,
@@ -527,6 +535,7 @@
 				CC11984A1A38BF0D006931D7 /* BaseScreen.cpp in Sources */,
 				E8EC658D1A7FCB8800332AE6 /* FormatsTest.cpp in Sources */,
 				032D348C1A0912B5007509C3 /* CommandLineParser.cpp in Sources */,
+				D7C4C7E01A94A28F005FEC04 /* ThreadSyncTest.cpp in Sources */,
 				CC11987B1A38BF27006931D7 /* TextSizeTest.cpp in Sources */,
 				CC1198791A38BF27006931D7 /* SplitTest.cpp in Sources */,
 				50194D661A52D91500557DAB /* NetworkTest.cpp in Sources */,
@@ -534,6 +543,7 @@
 				CC1198721A38BF27006931D7 /* HashMapTest.cpp in Sources */,
 				CC11984C1A38BF0D006931D7 /* GameCore.cpp in Sources */,
 				CC11986D1A38BF27006931D7 /* ComponentsTest.cpp in Sources */,
+				03CC526E1A890F3600EDDB5E /* SpinLockTest.cpp in Sources */,
 				CC11986E1A38BF27006931D7 /* DateTimeTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
