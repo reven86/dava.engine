@@ -175,7 +175,7 @@ void BacktraceCorkscrewImpl::Backtrace(Function<void(pointer_size)> onFrame,
         size = unwind_backtrace(frames.data(), 0, 255);
     }
 
-    for (int i = 0; i < size; ++i)
+    for (size_t i = 0; i < size; ++i)
     {
         onFrame(static_cast<pointer_size>(frames[i].absolute_pc));
     }

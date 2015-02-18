@@ -67,35 +67,38 @@ static int fatalSignals[] = {
 // unfortunatly "man signal" does not list sprintf as signal safe 
 //so it depends on particular implementation
 static char map[] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
-template< typename T>
-void ToHex(T value, char * str, int size,bool endline)
+
+template<class T>
+void ToHex(T integer, char* buffPtr, size_t buffSize, bool finishWithNullChar)
 {
-    if(size < 4) 
+    static_assert(std::is_integral<T>::value, "use only integral types");
+
+    auto numBytes = sizeof(T);
+
+    auto fullSize = 2 + (numBytes * 2) + finishWithNullChar; // 2 == strlen("0x")
+    if (fullSize > buffSize)
     {
-        return;
-    }
-    int strLen = static_cast<int>(sizeof(value)*2)+(endline?3:2);
-    if(strLen > size)
-    {
-        strLen = size;
+        fullSize = buffSize;
     }
 
-    if(endline)
+    // current char empty so move on full_size - 1
+    buffPtr += (fullSize - 1);
+    if (finishWithNullChar)
     {
-        str[strLen-1] = '\0';
+        *buffPtr-- = '\0';
+        fullSize--;
     }
-    str[0] = '0';
-    str[1] = 'x';
-    for(int i = strLen-2; i >= 2; i--)
+    fullSize -= 2;
+    for (; fullSize > 0; --fullSize)
     {
-        T tmp =(0xF & value);
-        str[i] = tmp;
-        str[i] = map[str[i]];
-        value = value >> 4;
+        char low = (integer & 0xF);
+        *buffPtr-- = map[low];
+        integer >>= 4;
     }
-    if(endline)
-        str[size-1] = '\0';
-}    
+    *buffPtr-- = 'x';
+    *buffPtr-- = '0';
+
+} 
 
 static int fatalSignalsCount = (sizeof(fatalSignals) / sizeof(fatalSignals[0]));
 

@@ -212,7 +212,7 @@ void BacktraceUnwindImpl::BacktraceInternal(Function<void(pointer_size)> onFrame
         {
             std::array<char,256> procName;
             unw_word_t frameOffset;
-            unw_get_proc_name(&cursor,procName.data(),255,&frameOffset);
+            unw_get_proc_name(&cursor,procName.data(),procName.size(),&frameOffset);
             onFrameName(static_cast<pointer_size>(ip),procName.data());
             
         }
