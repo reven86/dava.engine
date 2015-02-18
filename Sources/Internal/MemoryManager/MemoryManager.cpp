@@ -266,17 +266,20 @@ void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, uint32 poolIndex)
 {
     for (size_t i = 0;i <= tags.depth;++i)
     {
-        assert(statAllocPool[i][poolIndex].blockCount >= 1);
-        assert(statAllocPool[i][poolIndex].allocByApp >= block->allocByApp);
-        assert(statAllocPool[i][poolIndex].allocTotal >= block->allocTotal);
+        if (block->orderNo >= tags.begin[i])
+        {
+            assert(statAllocPool[i][poolIndex].blockCount >= 1);
+            assert(statAllocPool[i][poolIndex].allocByApp >= block->allocByApp);
+            assert(statAllocPool[i][poolIndex].allocTotal >= block->allocTotal);
 
-        // Calculate fixed statistics for allocation pool
-        statAllocPool[i][poolIndex].allocByApp -= block->allocByApp;
-        statAllocPool[i][poolIndex].allocTotal -= block->allocTotal;
-        statAllocPool[i][poolIndex].blockCount -= 1;
+            // Calculate fixed statistics for allocation pool
+            statAllocPool[i][poolIndex].allocByApp -= block->allocByApp;
+            statAllocPool[i][poolIndex].allocTotal -= block->allocTotal;
+            statAllocPool[i][poolIndex].blockCount -= 1;
 
-        // Compute additional counters for allocation pool
-        // ...
+            // Compute additional counters for allocation pool
+            // ...
+        }
     }
 }
 
@@ -303,7 +306,7 @@ void MemoryManager::GetStatConfig(MMStatConfig* config)
 
 size_t MemoryManager::CalcStatSizeInternal() const
 {
-    return sizeof(MMStat) + sizeof(AllocPoolStat) * (tags.depth + registeredAllocPoolCount - 1);
+    return sizeof(MMStat) + sizeof(AllocPoolStat) * ((tags.depth + 1) * registeredAllocPoolCount - 1);
 }
 
 void MemoryManager::GetStatInternal(MMStat* stat)
@@ -417,14 +420,15 @@ NOINLINE void MemoryManager::CollectBacktrace(MemoryBlock* block, size_t nskip)
 #if defined(__DAVAENGINE_WIN32__)
     USHORT n = CaptureStackBackTrace(nskip + 1, COUNT_OF(block->backtrace.frames), block->backtrace.frames, nullptr);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-    int n = backtrace(block->backtrace.frames, backtrace_t::MAX_FRAMES);
-    block->backtrace.depth = static_cast<size_t>(n);
+    int n = backtrace(block->backtrace.frames, COUNT_OF(block->backtrace.frames));
+    n = n;
 #elif defined(__DAVAENGINE_ANDROID__)
 #endif
 }
 
 void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
 {
+#if defined(__DAVAENGINE_WIN32__)
     HANDLE hprocess = GetCurrentProcess();
     if (!symInited)
     {
@@ -446,6 +450,9 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
                 symbols.emplace(std::make_pair(backtrace->frames[i], symInfo->Name));
         }
     }
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+
+#endif
 }
 
 void MemoryManager::ObtainAllBacktraceSymbols()

@@ -101,6 +101,8 @@ void MMNetServer::PacketReceived(const void* packet, size_t length)
     case eMMProtoCmd::DUMP:
         ProcessDump(hdr, static_cast<const uint8*>(packet)+sizeof(MMProtoHeader), length - sizeof(MMProtoHeader));
         break;
+    default:
+        break;
     }
 }
 

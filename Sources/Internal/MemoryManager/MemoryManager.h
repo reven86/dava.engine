@@ -45,6 +45,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace DAVA
 {
 
+template<typename T>
+class WhatsUp;
+
 class MemoryManager final
 {
     struct MemoryBlock;
@@ -129,8 +132,7 @@ private:
     using InternalAllocator = MemoryManagerAllocator<T, ALLOC_POOL_INTERNAL>;
 
     typedef std::basic_string<char8, std::char_traits<char8>, InternalAllocator<char8>> InternalString;
-    typedef std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void*, InternalString>>> SymbolMap;
-    typedef std::unordered_set<void*, std::hash<void*>, std::equal_to<void*>, InternalAllocator<void*>> AddrSet;
+    typedef std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>> SymbolMap;
 
     SymbolMap symbols;
     bool symInited;

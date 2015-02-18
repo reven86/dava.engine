@@ -1,4 +1,4 @@
-#include "..\Classes\Qt\DeviceInfo\DeviceInfo\MemProfInfoModel.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/MemProfInfoModel.h"
 
 MemProfInfoModel::~MemProfInfoModel()
 {
