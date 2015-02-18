@@ -98,6 +98,9 @@ void MMNetServer::PacketReceived(const void* packet, size_t length)
     case eMMProtoCmd::INIT_COMM:
         ProcessInitCommunication(hdr, static_cast<const uint8*>(packet) + sizeof(MMProtoHeader), length - sizeof(MMProtoHeader));
         break;
+    case eMMProtoCmd::DUMP:
+        ProcessDump(hdr, static_cast<const uint8*>(packet)+sizeof(MMProtoHeader), length - sizeof(MMProtoHeader));
+        break;
     }
 }
 
@@ -152,6 +155,29 @@ void MMNetServer::ProcessInitCommunication(const MMProtoHeader* hdr, const void*
     outHdr->status = static_cast<uint32>(eMMProtoStatus::ACK);
     outHdr->length = static_cast<uint32>(dataSize);
     
+    EnqueueAndSend(parcel);
+}
+
+void MMNetServer::ProcessDump(const MMProtoHeader* hdr, const void* packet, size_t length)
+{
+    void* buf = nullptr;
+    uint64 timerStart = SystemTimer::Instance()->AbsoluteMS();
+    size_t dataSize = MemoryManager::GetDump(sizeof(MMProtoHeader), &buf, 0, uint32(-1));
+
+    Parcel parcel;
+    parcel.size = dataSize;
+    parcel.buffer = buf;
+
+    MMProtoHeader* outHdr = static_cast<MMProtoHeader*>(parcel.buffer);
+    MMDump* dump = reinterpret_cast<MMDump*>(outHdr + 1);
+    dump->timestampBegin = timerStart - timerBegin;
+    dump->timestampEnd = SystemTimer::Instance()->AbsoluteMS() - timerBegin;
+
+    outHdr->sessionId = sessionId;
+    outHdr->cmd = static_cast<uint32>(eMMProtoCmd::DUMP);
+    outHdr->status = static_cast<uint32>(eMMProtoStatus::ACK);
+    outHdr->length = static_cast<uint32>(dataSize - sizeof(MMProtoHeader));
+
     EnqueueAndSend(parcel);
 }
 

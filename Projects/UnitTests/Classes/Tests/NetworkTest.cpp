@@ -33,6 +33,8 @@
 #include <Utils/UTF8Utils.h>
 #include <Utils/StringFormat.h>
 
+#include "MemoryManager/MemoryManager.h"
+
 #include <Network/Base/IPAddress.h>
 #include <Network/Base/Endpoint.h>
 
@@ -237,10 +239,59 @@ void NetworkTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
         Logger::Error("This is ERROR message");
     else if (obj == btnPacket)
     {
-        Logger::Debug("#1. DEBUG");
+        /*Logger::Debug("#1. DEBUG");
         Logger::Info("#2. INFO");
         Logger::Warning("#3. WARN");
         Logger::Error("#4. ERROR");
+
+        if (v2.empty())
+            v2.resize(1111111);
+        else
+        {
+            v2.clear();
+            v2.shrink_to_fit();
+        }*/
+        void* buf = nullptr;
+        size_t sz = MemoryManager::GetDump(0, &buf, 0, uint32(-1));
+        MMDump* dump = static_cast<MMDump*>(buf);
+        MMSymbol* sym = reinterpret_cast<MMSymbol*>(static_cast<uint8*>(buf)+sizeof(MMDump) + sizeof(MMBlock) * dump->blockCount);
+
+        FILE* f = fopen("dump.log", "wb");
+        if (f)
+        {
+            fprintf(f, "General info\n");
+            fprintf(f, "  blockCount=%u\n", dump->blockCount);
+            fprintf(f, "  nameCount=%u\n", dump->nameCount);
+            fprintf(f, "  blockBegin=%u\n", dump->blockBegin);
+            fprintf(f, "  blockEnd=%u\n", dump->blockEnd);
+
+            fprintf(f, "Blocks\n");
+            for (uint32 i = 0;i < dump->blockCount;++i)
+            {
+                if (dump->blocks[i].pool == 0) continue;
+                fprintf(f, "%4d: addr=%08llX, allocByApp=%u, allocTotal=%u, orderNo=%u, pool=%u\n", i + 1,
+                        dump->blocks[i].addr,
+                        dump->blocks[i].allocByApp, dump->blocks[i].allocTotal, dump->blocks[i].orderNo, dump->blocks[i].pool);
+                for (size_t j = 0;j < 16;++j)
+                {
+                    uint64 addr = dump->blocks[i].backtrace.frames[j];
+                    const char* s = "";
+                    MMSymbol* n = std::find_if(sym, sym + dump->nameCount, [addr](const MMSymbol& mms) -> bool {
+                        return mms.addr == addr;
+                    });
+                    if (n != sym + dump->nameCount)
+                        s = n->name;
+                    fprintf(f, "        %08llX    %s\n", dump->blocks[i].backtrace.frames[j], s);
+                }
+            }
+
+            fprintf(f, "Symbols\n");
+            for (uint32 i = 0;i < dump->nameCount;++i)
+            {
+                fprintf(f, "  %4d: %08llX; %s\n", i + 1, sym[i].addr, sym[i].name);
+            }
+            fclose(f);
+        }
     }
     else if (obj == btnPeriodic)
     {
@@ -261,12 +312,12 @@ void NetworkTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
         Logger::Info("Restarting network..");
         //NetCore::Instance()->RestartAllControllers();
         //Vector<char> v(1000000);
-        if (v.empty())
-            v.resize(1000000);
+        if (v1.empty())
+            v1.resize(1000000);
         else
         {
-            v.clear();
-            v.shrink_to_fit();
+            v1.clear();
+            v1.shrink_to_fit();
         }
     }
     else if (obj == btnQuit)

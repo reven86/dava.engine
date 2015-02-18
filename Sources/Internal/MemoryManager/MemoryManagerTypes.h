@@ -117,6 +117,48 @@ struct MMStat
 
 static_assert(sizeof(MMStat) % 16 == 0, "sizeof(MMStat) % 16 == 0");
 
+struct MMBacktrace
+{
+    uint64 frames[16];
+};
+
+struct MMSymbol
+{
+    static const size_t NAME_LENGTH = 136;
+    uint64 addr;
+    char8 name[NAME_LENGTH];
+};
+
+static_assert(sizeof(MMSymbol) % 16 == 0, "sizeof(MMSymbol) % 16 == 0");
+
+struct MMBlock
+{
+    uint64 addr;
+    uint32 allocByApp;
+    uint32 allocTotal;
+    uint32 pool;
+    uint32 orderNo;
+    uint32 padding[2];
+    MMBacktrace backtrace;
+};
+
+static_assert(sizeof(MMBlock) % 16 == 0, "sizeof(MMBlock) % 16 == 0");
+
+struct MMDump
+{
+    uint64 timestampBegin;
+    uint64 timestampEnd;
+    uint32 blockCount;
+    uint32 nameCount;
+    uint32 blockBegin;
+    uint32 blockEnd;
+    //uint32 tag;
+    //uint32 x;
+    MMBlock blocks[1];
+};
+
+static_assert(sizeof(MMDump) % 16 == 0, "sizeof(MMDump) % 16 == 0");
+
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_MEMPROFILERTYPES_H__

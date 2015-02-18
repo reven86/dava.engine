@@ -33,6 +33,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
+#include <unordered_map>
+#include <unordered_set>
+
 #include "Thread/Spinlock.h"
 #include "Thread/LockGuard.h"
 
@@ -45,6 +48,7 @@ namespace DAVA
 class MemoryManager final
 {
     struct MemoryBlock;
+    struct Backtrace;
 
     static const uint32 BLOCK_MARK = 0xBA0BAB;
     static const uint32 BLOCK_DELETED = 0xACCA;
@@ -79,7 +83,10 @@ public:
     
     static size_t CalcStatSize();
     static void GetStat(MMStat* stat);
-    
+
+    static size_t GetDump(size_t userSize, void** buf, uint32 blockRangeBegin, uint32 blockRangeEnd);
+    static void FreeDump(void* ptr);
+
 private:
     void* Alloc(size_t size, uint32 poolIndex);
     void Dealloc(void* ptr);
@@ -98,10 +105,14 @@ private:
     
     size_t CalcStatSizeInternal() const;
     void GetStatInternal(MMStat* stat);
-    
-#if 0
-    void collect_backtrace(mem_block_t* block, size_t nskip);
-#endif
+
+    size_t GetDumpInternal(size_t userSize, void** buf, uint32 blockRangeBegin, uint32 blockRangeEnd);
+    void FreeDumpInternal(void* ptr);
+    size_t GetBlockRange(uint32 rangeBegin, uint32 rangeEnd, MemoryBlock** begin, MemoryBlock** end);
+
+    void CollectBacktrace(MemoryBlock* block, size_t nskip);
+    void ObtainBacktraceSymbols(const Backtrace* backtrace);
+    void ObtainAllBacktraceSymbols();
 
 private:
     MemoryBlock* head;                  // Linked list of memory blocks
@@ -114,6 +125,16 @@ private:
     typedef DAVA::LockGuard<MutexType> LockType;
     MutexType mutex;
     
+    template<typename T>
+    using InternalAllocator = MemoryManagerAllocator<T, ALLOC_POOL_INTERNAL>;
+
+    typedef std::basic_string<char8, std::char_traits<char8>, InternalAllocator<char8>> InternalString;
+    typedef std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void*, InternalString>>> SymbolMap;
+    typedef std::unordered_set<void*, std::hash<void*>, std::equal_to<void*>, InternalAllocator<void*>> AddrSet;
+
+    SymbolMap symbols;
+    bool symInited;
+
 private:
     static MMItemName tagNames[MAX_TAG_COUNT];                  // Names of tags
     static MMItemName allocPoolNames[MAX_ALLOC_POOL_COUNT];     // Names of allocation pools
@@ -156,6 +177,16 @@ inline size_t MemoryManager::CalcStatSize()
 inline void MemoryManager::GetStat(MMStat* stat)
 {
     Instance()->GetStatInternal(stat);
+}
+
+inline size_t MemoryManager::GetDump(size_t userSize, void** buf, uint32 blockRangeBegin, uint32 blockRangeEnd)
+{
+    return Instance()->GetDumpInternal(userSize, buf, blockRangeBegin, blockRangeEnd);
+}
+
+inline void MemoryManager::FreeDump(void* ptr)
+{
+    Instance()->FreeDumpInternal(ptr);
 }
 
 }   // namespace DAVA

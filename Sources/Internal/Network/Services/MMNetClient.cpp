@@ -53,11 +53,20 @@ MMNetClient::~MMNetClient()
 
 }
 
-void MMNetClient::SetCallbacks(ChOpenCallback onOpen, ChClosedCallback onClosed, StatCallback onStat)
+void MMNetClient::SetCallbacks(ChOpenCallback onOpen, ChClosedCallback onClosed, StatCallback onStat, DumpCallback onDump)
 {
     openCallback = onOpen;
     closeCallback = onClosed;
     statCallback = onStat;
+    dumpCallback = onDump;
+}
+
+void MMNetClient::RequestDump()
+{
+    if (commInited && !outbufBusy)
+    {
+        SendDumpRequest();
+    }
 }
 
 void MMNetClient::ChannelOpen()
@@ -87,6 +96,9 @@ void MMNetClient::PacketReceived(const void* packet, size_t length)
     case eMMProtoCmd::CUR_STAT:
         ProcessCurrentStatistics(hdr, static_cast<const uint8*>(packet)+sizeof(MMProtoHeader), length - sizeof(MMProtoHeader));
         break;
+    case eMMProtoCmd::DUMP:
+        ProcessDump(hdr, static_cast<const uint8*>(packet)+sizeof(MMProtoHeader), length - sizeof(MMProtoHeader));
+        break;
     }
 }
 
@@ -114,11 +126,29 @@ void MMNetClient::ProcessCurrentStatistics(const MMProtoHeader* hdr, const void*
     statCallback(const_cast<MMStat*>(stat));
 }
 
+void MMNetClient::ProcessDump(const MMProtoHeader* hdr, const void* packet, size_t length)
+{
+    const MMDump* dump = static_cast<const MMDump*>(packet);
+    dumpCallback(const_cast<MMDump*>(dump));
+}
+
 void MMNetClient::SendInitSession()
 {
     MMProtoHeader* hdr = reinterpret_cast<MMProtoHeader*>(outbuf);
     hdr->sessionId = sessionId;
     hdr->cmd = static_cast<uint32>(eMMProtoCmd::INIT_COMM);
+    hdr->status = 0;
+    hdr->length = 0;
+
+    outbufBusy = true;
+    Send(hdr);
+}
+
+void MMNetClient::SendDumpRequest()
+{
+    MMProtoHeader* hdr = reinterpret_cast<MMProtoHeader*>(outbuf);
+    hdr->sessionId = sessionId;
+    hdr->cmd = static_cast<uint32>(eMMProtoCmd::DUMP);
     hdr->status = 0;
     hdr->length = 0;
 
