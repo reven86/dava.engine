@@ -85,8 +85,6 @@ void Downloader::CalcStatistics(uint32 dataCame)
 {
     dataToDownloadLeft -= dataCame;
     
-    static const uint32 currentSpeedWindowRange = 500;
-    
     static uint64 curTime = SystemTimer::Instance()->AbsoluteMS();
     static uint64 prevTime = curTime;
     static uint64 timeDelta = 0;
