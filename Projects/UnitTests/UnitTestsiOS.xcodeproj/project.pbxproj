@@ -49,6 +49,7 @@
 		CC11987B1A38BF27006931D7 /* TextSizeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC11986B1A38BF27006931D7 /* TextSizeTest.cpp */; };
 		CCB2B8F71A656699003A5D44 /* Cpp14.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCB2B8F51A656699003A5D44 /* Cpp14.cpp */; };
 		D73A575D1A739E34009FF184 /* DataVaultTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73A575B1A739E34009FF184 /* DataVaultTest.cpp */; };
+		D7C4C7E01A94A28F005FEC04 /* ThreadSyncTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7C4C7DE1A94A28F005FEC04 /* ThreadSyncTest.cpp */; };
 		FE76D9EF1163F2F0009E83B6 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9ED1163F2F0009E83B6 /* OpenGLES.framework */; };
 		FE76D9F71163F304009E83B6 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9F51163F304009E83B6 /* AVFoundation.framework */; };
 		FE76D9F81163F304009E83B6 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9F61163F304009E83B6 /* CoreAudio.framework */; };
@@ -158,6 +159,8 @@
 		D73A575B1A739E34009FF184 /* DataVaultTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataVaultTest.cpp; path = Tests/DataVaultTest.cpp; sourceTree = "<group>"; };
 		D73A575C1A739E34009FF184 /* DataVaultTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DataVaultTest.h; path = Tests/DataVaultTest.h; sourceTree = "<group>"; };
 		D73A577A1A764453009FF184 /* UnitTests.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = UnitTests.entitlements; sourceTree = "<group>"; };
+		D7C4C7DE1A94A28F005FEC04 /* ThreadSyncTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ThreadSyncTest.cpp; path = Tests/ThreadSyncTest.cpp; sourceTree = "<group>"; };
+		D7C4C7DF1A94A28F005FEC04 /* ThreadSyncTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ThreadSyncTest.h; path = Tests/ThreadSyncTest.h; sourceTree = "<group>"; };
 		E80D2FB0164D518100C13D70 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		FE76D9EC1163F2F0009E83B6 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		FE76D9ED1163F2F0009E83B6 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -326,6 +329,8 @@
 		5C7BE30F156E0EF400F9F538 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				D7C4C7DE1A94A28F005FEC04 /* ThreadSyncTest.cpp */,
+				D7C4C7DF1A94A28F005FEC04 /* ThreadSyncTest.h */,
 				03CC526D1A890F3600EDDB5E /* SpinLockTest.cpp */,
 				D73A575B1A739E34009FF184 /* DataVaultTest.cpp */,
 				D73A575C1A739E34009FF184 /* DataVaultTest.h */,
@@ -524,6 +529,7 @@
 				CCB2B8F71A656699003A5D44 /* Cpp14.cpp in Sources */,
 				CC11984A1A38BF0D006931D7 /* BaseScreen.cpp in Sources */,
 				032D348C1A0912B5007509C3 /* CommandLineParser.cpp in Sources */,
+				D7C4C7E01A94A28F005FEC04 /* ThreadSyncTest.cpp in Sources */,
 				CC11987B1A38BF27006931D7 /* TextSizeTest.cpp in Sources */,
 				CC1198791A38BF27006931D7 /* SplitTest.cpp in Sources */,
 				50194D661A52D91500557DAB /* NetworkTest.cpp in Sources */,
