@@ -773,27 +773,20 @@ bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& fil
 
     String tmpStr1("");
     String tmpStr2("");
-    uint32 count1 = 0;
-    uint32 count2 = 0;
     bool feof1 = false;
     bool feof2 = false;
 
     do
     {
-        count1 = f1->ReadLine(tmpStr1);
-        count2 = f2->ReadLine(tmpStr2);
+        tmpStr1 = f1->ReadLine();
+        tmpStr2 = f2->ReadLine();
 
-        if (count1 != count2 && 0 != tmpStr1.compare(tmpStr2))
+        if (tmpStr1.size() != tmpStr2.size() && 0 != tmpStr1.compare(tmpStr2))
         {
             return false;
         }
         feof1 = f1->IsEof();
         feof2 = f2->IsEof();
-
-        if (feof1 != feof2)
-        {
-            return false;
-        }
     } while (!feof1 && !feof2);
 
     return true;
@@ -819,7 +812,6 @@ bool FileSystem::CompareBinaryFiles(const FilePath &filePath1, const FilePath &f
 
     do
     {
-
         uint32 actuallyRead1 = f1->Read(buffer1, bufferSize);
         uint32 actuallyRead2 = f2->Read(buffer2, bufferSize);
 
@@ -832,8 +824,14 @@ bool FileSystem::CompareBinaryFiles(const FilePath &filePath1, const FilePath &f
         res = 0 == Memcmp(buffer1, buffer2, actuallyRead1);
     } while (res && !f1->IsEof() && !f2->IsEof());
 
+    if (res && f1->IsEof() != f2->IsEof())
+    {
+        res = false;
+    }
+    
     SafeDelete(buffer1);
     SafeDelete(buffer2);
+
     return res;
 }
 
