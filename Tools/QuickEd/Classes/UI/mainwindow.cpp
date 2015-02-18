@@ -277,9 +277,6 @@ void MainWindow::InitMenu()
 	//Help contents dialog
     connect(ui->actionHelp, SIGNAL(triggered()), this, SLOT(OnShowHelp()));
 
-    // Reload.
-    connect(ui->actionRepack_And_Reload, SIGNAL(triggered()), this, SLOT(OnRepackAndReloadSprites()));
-
     // Pixelization.
     ui->actionPixelized->setChecked(EditorSettings::Instance()->IsPixelized());
     connect(ui->actionPixelized, SIGNAL(triggered()), this, SLOT(OnPixelizationStateChanged()));
@@ -364,7 +361,6 @@ void MainWindow::UpdateMenu()
     ui->actionClose_project->setEnabled(false);
     ui->actionFontManager->setEnabled(false);
     ui->actionLocalizationManager->setEnabled(false);
-    ui->actionRepack_And_Reload->setEnabled(false);
 }
 
 void MainWindow::OnNewProject()

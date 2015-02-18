@@ -28,16 +28,18 @@ PropertiesWidget::~PropertiesWidget()
 
 void PropertiesWidget::SetDocument(Document *document)
 {
-    DVASSERT(document);
-    PropertiesContext *newContext = document->GetPropertiesContext();
-    if (nullptr != context)
+    if (nullptr != context) //remove previous context
     {
         disconnect(context, SIGNAL(ModelChanged(PropertiesModel*)), this, SLOT(OnModelChanged(PropertiesModel*)));
         ui->treeView->setModel(nullptr);
     }
-
-    context = newContext;
-
+    /*set new context*/
+    if (nullptr == document)
+    {
+        context = nullptr;
+        return;
+    }
+    context = document->GetPropertiesContext();
     if (nullptr != context)
     {
         connect(context, SIGNAL(ModelChanged(PropertiesModel*)), this, SLOT(OnModelChanged(PropertiesModel*)));

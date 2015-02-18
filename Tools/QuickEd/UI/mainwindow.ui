@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1024</width>
-    <height>700</height>
+    <height>840</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -33,7 +33,16 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item>
@@ -138,7 +147,6 @@
    <addaction name="actionSaveAllDocuments"/>
    <addaction name="actionClose_project"/>
    <addaction name="separator"/>
-   <addaction name="actionRepack_And_Reload"/>
    <addaction name="actionPixelized"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
