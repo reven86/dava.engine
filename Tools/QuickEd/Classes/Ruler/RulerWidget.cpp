@@ -30,8 +30,7 @@
 
 #include <QPainter>
 #include <QApplication>
-#include <sstream>
-#include <math.h>
+#include "DAVAEngine.h"
 
 using namespace DAVA;
 
