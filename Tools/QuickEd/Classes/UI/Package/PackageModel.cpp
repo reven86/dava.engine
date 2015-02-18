@@ -109,7 +109,7 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
     switch(role)
     {
         case Qt::DisplayRole:
-            return StringToQString(node->GetName() + Format(" %d", node->GetRetainCount()));
+            return StringToQString(node->GetName());
             
         case Qt::DecorationRole:
             return node->GetControl() != NULL ? QIcon(IconHelper::GetIconPathForUIControl(node->GetControl())) : QVariant();
