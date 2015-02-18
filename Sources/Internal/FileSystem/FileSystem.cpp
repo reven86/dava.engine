@@ -799,4 +799,42 @@ bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& fil
     return true;
 }
 
+bool FileSystem::CompareBinaryFiles(const FilePath &filePath1, const FilePath &filePath2)
+{
+    ScopedPtr<File> f1(File::Create(filePath1, File::OPEN | File::READ));
+    ScopedPtr<File> f2(File::Create(filePath2, File::OPEN | File::READ));
+
+    if (nullptr == static_cast<File *>(f1) || nullptr == static_cast<File *>(f2))
+    {
+        Logger::Error("Couldn't copmare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    const uint32 bufferSize = 16*1024*1024;
+
+    uint8 *buffer1 = new uint8[bufferSize];
+    uint8 *buffer2 = new uint8[bufferSize];
+
+    bool res = false;
+
+    do
+    {
+
+        uint32 actuallyRead1 = f1->Read(buffer1, bufferSize);
+        uint32 actuallyRead2 = f2->Read(buffer2, bufferSize);
+
+        if (actuallyRead1 != actuallyRead2)
+        {
+            res = false;
+            break;
+        }
+
+        res = 0 == Memcmp(buffer1, buffer2, actuallyRead1);
+    } while (res && !f1->IsEof() && !f2->IsEof());
+
+    SafeDelete(buffer1);
+    SafeDelete(buffer2);
+    return res;
+}
+
 }
