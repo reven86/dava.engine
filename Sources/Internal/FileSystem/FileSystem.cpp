@@ -798,3 +798,5 @@ bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& fil
 
     return true;
 }
+
+}
