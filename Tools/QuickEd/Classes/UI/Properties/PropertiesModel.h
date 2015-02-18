@@ -25,7 +25,7 @@ public:
     virtual ~PropertiesModel();
     
     ControlNode *GetControlNode() const {return controlNode; }
-    void emityPropertyChanged(BaseProperty *property);
+    void emitPropertyChanged(BaseProperty *property);
     QModelIndex indexByProperty(BaseProperty *property, int column = 0);
     
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;

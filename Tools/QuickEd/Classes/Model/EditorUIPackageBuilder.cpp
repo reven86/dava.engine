@@ -20,10 +20,11 @@ using namespace DAVA;
 const String EXCEPTION_CLASS_UI_TEXT_FIELD = "UITextField";
 const String EXCEPTION_CLASS_UI_LIST = "UIList";
 
-EditorUIPackageBuilder::EditorUIPackageBuilder(PackageNode *_basePackage, ControlNode *_insertingTarget, PackageCommandExecutor *_commandExecutor)
+EditorUIPackageBuilder::EditorUIPackageBuilder(PackageNode *_basePackage, ControlsContainerNode *_insertingTarget, int32 _insertingIndex, PackageCommandExecutor *_commandExecutor)
     : packageNode(nullptr)
     , basePackage(_basePackage)
     , insertingTarget(_insertingTarget)
+    , insertingIndex(_insertingIndex)
     , currentObject(nullptr)
     , commandExecutor(SafeRetain(_commandExecutor))
 {
@@ -77,7 +78,8 @@ RefPtr<UIPackage> EditorUIPackageBuilder::ProcessImportedPackage(const String &p
         // store state
         PackageNode *prevPackageNode = packageNode;
         PackageNode *prevBasePackage = basePackage;
-        ControlNode *prevInsertingTarget = insertingTarget;
+        ControlsContainerNode *prevInsertingTarget = insertingTarget;
+        int32 prevInsertingIndex = insertingIndex;
         DAVA::List<ControlDescr> prevControlsStack = controlsStack;
         
         DAVA::BaseObject *prevObj = currentObject;
@@ -86,6 +88,7 @@ RefPtr<UIPackage> EditorUIPackageBuilder::ProcessImportedPackage(const String &p
         // clear state
         packageNode = nullptr;
         insertingTarget = nullptr;
+        insertingIndex = -1;
         basePackage = nullptr;
         controlsStack.clear();
         currentObject = nullptr;
@@ -107,6 +110,7 @@ RefPtr<UIPackage> EditorUIPackageBuilder::ProcessImportedPackage(const String &p
         packageNode = prevPackageNode;
         basePackage = prevBasePackage;
         insertingTarget = prevInsertingTarget;
+        insertingIndex = prevInsertingIndex;
         controlsStack = prevControlsStack;
         currentObject = prevObj;
         currentSection = prevSect;
@@ -212,10 +216,16 @@ void EditorUIPackageBuilder::EndControl(bool isRoot)
         {
             if (basePackage)
             {
+                ControlsContainerNode *container;
                 if (insertingTarget)
-                    commandExecutor->InsertControlIntoParentControl(lastControl, insertingTarget);
+                    container = insertingTarget;
                 else
-                    commandExecutor->InsertControlIntoPackage(lastControl, packageNode->GetPackageControlsNode());
+                    container = packageNode->GetPackageControlsNode();
+                
+                int32 index = insertingIndex;
+                if (index == -1)
+                    index = container->GetCount();
+                commandExecutor->InsertControl(lastControl, container, index);
             }
             else
             {
