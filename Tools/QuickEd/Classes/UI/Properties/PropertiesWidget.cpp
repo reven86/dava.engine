@@ -49,7 +49,6 @@ void PropertiesWidget::SetDocument(Document *document)
 
 void PropertiesWidget::OnModelChanged(PropertiesModel *model)
 {
-    DVASSERT(model);
     ui->treeView->setModel(model);
     ui->treeView->expandToDepth(0);
     ui->treeView->resizeColumnToContents(0);
