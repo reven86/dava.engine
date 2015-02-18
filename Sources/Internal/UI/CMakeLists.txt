@@ -1,5 +1,5 @@
-set( ADDED_CPP_PATTERNS *.cpp Components/*.cpp   )  
-set( ADDED_H_PATTERNS   *.р   Components/*.h     )
+set( ADDED_CPP_PATTERNS *.cpp *.mm Components/*.cpp   )  
+set( ADDED_H_PATTERNS   *.h   Components/*.h     )
 
 if( WIN32 )
     set( ERASE_FILES 	UITextFieldAndroid.cpp 
