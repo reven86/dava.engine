@@ -50,6 +50,7 @@ public:
 	virtual void DidAppear();
 
 	void TestFunction(PerfFuncData * data);
+    void TestFunctionExtended(PerfFuncData * data);
 };
 
 #endif // __FUNCTION_BIND_SIGNAL_TEST__
