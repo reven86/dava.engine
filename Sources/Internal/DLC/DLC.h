@@ -37,7 +37,7 @@
 namespace DAVA
 {
 
-class DLC : public BaseObject
+class DLC
 {
 public:
     enum DLCError
