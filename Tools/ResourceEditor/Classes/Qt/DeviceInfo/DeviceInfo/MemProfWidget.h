@@ -3,20 +3,23 @@
 
 #include <QWidget>
 #include <QScopedPointer>
-#include <QTableView.h>
+#include <qtableview.h>
+#include "Base/BaseTypes.h"
 
-
-#include "MemoryManager/MemoryManagerTypes.h"
-#include "MemoryManager/MemoryManager.h"
 namespace Ui {
     class MemProfWidget;
 } // namespace Ui
 
 class QLabel;
 class QCustomPlot;
-class MemProfPlot;
+class QFrame;
 class MemProfInfoModel;
-class MemoryProfDataChunk;
+namespace DAVA
+{
+struct MMStatConfig;
+struct MMStat;
+}
+
 class MemProfWidget : public QWidget
 {
     Q_OBJECT
@@ -31,32 +34,37 @@ public:
     void ChangeStatus(const char* status, const char* reason);
     
     void ClearStat();
-    void UpdateStat(const MemoryProfDataChunk* stat);
+    void SetStatConfig(const DAVA::MMStatConfig* config);
+    void UpdateStat(const DAVA::MMStat* stat);
     
-    void SetModel(MemProfInfoModel * model);
-
 private:
-    void UpdateLabels(const  MemoryProfDataChunk* stat, DAVA::uint32 alloc, DAVA::uint32 total);
+    void UpdateLabels(const DAVA::MMStat* stat, DAVA::uint32 alloc, DAVA::uint32 total);
     void CreateUI();
-
+    void CreateLabels(const DAVA::MMStatConfig* config);
+    void Deletelabels();
     
 private:
     QScopedPointer<Ui::MemProfWidget> ui;
-    MemProfPlot* plot;
-    
-    DAVA::uint32 offset;
-    DAVA::uint32 prevOrder;
-    
+    QCustomPlot* plot;
+
+    DAVA::uint32 tagCount;
+    DAVA::uint32 allocPoolCount;
+
+    QFrame* frame;
     struct label_pack
     {
+        label_pack() : title(nullptr), alloc(nullptr), total(nullptr), max_block_size(nullptr), nblocks(nullptr) {}
+        ~label_pack();
         QLabel* title;
         QLabel* alloc;
         QLabel* total;
         QLabel* max_block_size;
         QLabel* nblocks;
     };
+    label_pack* labels;
     MemProfInfoModel * model;
-    QTableView * dataView;
+    QTableView * tableView;
+
 };
 
 #endif // __DEVICELOGWIDGET_H__

@@ -18,12 +18,10 @@ MemProfService::~MemProfService()
 {
     for (auto* x : queue)
     {
-        alloc.destroy(x);
-        alloc.deallocate(x, sizeof(net_mem_stat_t));
-        //delete x;
+        delete x;
     }
 }
-    
+
 void MemProfService::OnUpdate(float32 timeElapsed)
 {
     passed += static_cast<uint32>(timeElapsed * 1000.0f);
@@ -55,11 +53,6 @@ void MemProfService::ChannelClosed(const char8* message)
 }
 
 void MemProfService::PacketReceived(const void* packet, size_t length)
-{
-    
-}
-
-void MemProfService::PacketSent()
 {
     
 }
@@ -102,9 +95,7 @@ void MemProfService::RemoveFirstMessage()
     if(!queue.empty())
     {
         net_mem_stat_t* h = queue.front();
-        alloc.destroy(h);
-        alloc.deallocate(h, sizeof(net_mem_stat_t));
-        //delete h;
+        delete h;
         queue.pop_front();
     }
 }

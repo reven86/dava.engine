@@ -114,19 +114,6 @@ void GameCore::OnAppStarted()
     RunOnlyThisTest();
     RegisterTests();
     RunTests();
-/*
-    GeneralInfo* gi = MemoryManager::GetGeneralInfo();
-    for (int i = 0;i < gi->tagCount + gi->allocPoolCount;++i)
-        Logger::Debug("%s", gi->names[i]);
-
-    MemoryManager::EnterTagScope(1);
-    {
-        int* p = new int[10];
-        std::vector<char, MemoryManagerAllocator<char, 2>> v;
-        v.resize(100);
-    }
-    MemoryManager::LeaveTagScope();
-*/
 }
 
 GameCore::GameCore() 
@@ -135,7 +122,7 @@ GameCore::GameCore()
     , currentTestIndex(0)
     , netLogger(true)
     , loggerInUse(false)
-    , memprofInUse(false)
+    , mmInUse(false)
 {
     MemoryManager::RegisterAllocPoolName(2, "STL");
     MemoryManager::RegisterTagName(1, "TAG_1");
@@ -248,7 +235,7 @@ void GameCore::Update(float32 timeElapsed)
 {
     ProcessTests();
     ApplicationCore::Update(timeElapsed);
-    memprof.OnUpdate(timeElapsed);
+    netMM.Update(timeElapsed);
 }
 
 void GameCore::Draw()
@@ -424,7 +411,7 @@ void GameCore::InitNetwork()
     using namespace DAVA::Net;
     
     NetCore::Instance()->RegisterService(SERVICE_LOG, MakeFunction(this, &GameCore::CreateLogger), MakeFunction(this, &GameCore::DeleteLogger));
-    NetCore::Instance()->RegisterService(SERVICE_MEMPROF, MakeFunction(this, &GameCore::CreateMemProfiler), MakeFunction(this, &GameCore::DeleteMemProfiler));
+    NetCore::Instance()->RegisterService(SERVICE_MEMPROF, MakeFunction(this, &GameCore::CreateMMServer), MakeFunction(this, &GameCore::DeleteMMServer));
     
     NetConfig config(SERVER_ROLE);
     config.AddTransport(TRANSPORT_TCP, Endpoint(9999));
@@ -468,17 +455,17 @@ void GameCore::DeleteLogger(Net::IChannelListener* obj, void* context)
     loggerInUse = false;
 }
 
-Net::IChannelListener* GameCore::CreateMemProfiler(uint32 serviceId, void* context)
+Net::IChannelListener* GameCore::CreateMMServer(uint32 serviceId, void* context)
 {
-    if (!memprofInUse)
+    if (!mmInUse)
     {
-        memprofInUse = true;
-        return &memprof;
+        mmInUse = true;
+        return &netMM;
     }
     return nullptr;
 }
 
-void GameCore::DeleteMemProfiler(Net::IChannelListener* obj, void* context)
+void GameCore::DeleteMMServer(Net::IChannelListener* obj, void* context)
 {
-    memprofInUse = false;
+    mmInUse = false;
 }

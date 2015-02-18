@@ -4,16 +4,12 @@
 #include <QObject>
 #include <QPointer>
 
-#include <Network/PeerDesription.h>
-#include <Network/NetService.h>
-
-#include "MemoryManager/MemoryManager.h"
+#include "Network/PeerDesription.h"
+#include "Network/Services/MMNetClient.h"
 
 class MemProfWidget;
-class MemProfInfoModel;
-struct MemoryProfDataChunk;
+
 class MemProfController : public QObject
-                        , public DAVA::Net::NetService
 {
     Q_OBJECT
     
@@ -23,9 +19,11 @@ public:
 
     void ShowView();
 
-    virtual void ChannelOpen();
-    virtual void ChannelClosed(const DAVA::char8* message);
-    virtual void PacketReceived(const void* packet, size_t length);
+    void ChannelOpen(DAVA::MMStatConfig* config);
+    void ChannelClosed(DAVA::char8* message);
+    void CurrentStat(DAVA::MMStat* stat);
+
+    DAVA::Net::IChannelListener* NetObject() { return &netClient; }
 
 private:
     void Output(const DAVA::String& msg);
@@ -34,9 +32,7 @@ private:
     QPointer<MemProfWidget> view;
     QPointer<QWidget> parentWidget;
     DAVA::Net::PeerDescription peer;
-    
-    DAVA::Vector<MemoryProfDataChunk*> v;
-    MemProfInfoModel * model;
+    DAVA::Net::MMNetClient netClient;
 };
 
 #endif // __MEMPROFCONTROLLER_H__

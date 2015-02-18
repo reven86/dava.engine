@@ -1,9 +1,10 @@
-
 #include <Utils/UTF8Utils.h>
+
+#include "Base/FunctionTraits.h"
 
 #include "MemProfWidget.h"
 #include "MemProfController.h"
-#include "MemProfInfoModel.h"
+
 using namespace DAVA;
 using namespace DAVA::Net;
 
@@ -13,10 +14,9 @@ MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr
     , peer(peerDescr)
 {
     ShowView();
-    model = new MemProfInfoModel();
-  
-   
-    view->SetModel(model);
+    netClient.SetCallbacks(MakeFunction(this, &MemProfController::ChannelOpen),
+                           MakeFunction(this, &MemProfController::ChannelClosed),
+                           MakeFunction(this, &MemProfController::CurrentStat));
 }
 
 MemProfController::~MemProfController() {}
@@ -41,32 +41,33 @@ void MemProfController::ShowView()
     view->raise();
 }
 
-void MemProfController::ChannelOpen()
+void MemProfController::ChannelOpen(DAVA::MMStatConfig* config)
 {
     view->ChangeStatus("connected", nullptr);
     view->ClearStat();
+
+    Logger::Debug("MemProfController::ChannelOpen");
+    if (config)
+    {
+        Logger::Debug("   maxTags=%u, ntags=%u", config->maxTagCount, config->tagCount);
+        for (uint32 i = 0;i < config->tagCount;++i)
+            Logger::Debug("      %d, %s", i, config->names[i].name);
+        Logger::Debug("   maxPools=%u, npools=%u", config->maxAllocPoolCount, config->allocPoolCount);
+        for (uint32 i = 0;i < config->allocPoolCount;++i)
+            Logger::Debug("      %d, %s", i, config->names[i + config->tagCount].name);
+    }
+    view->SetStatConfig(config);
+    
 }
 
-void MemProfController::ChannelClosed(const char8* message)
+void MemProfController::ChannelClosed(char8* message)
 {
     view->ChangeStatus("disconnected", message);
-    for (auto* x : v)
-        delete x;
-    v.clear();
 }
 
-void MemProfController::PacketReceived(const void* packet, size_t length)
+void MemProfController::CurrentStat(DAVA::MMStat* stat)
 {
-    const  MemoryProfDataChunk* src = static_cast<const MemoryProfDataChunk*>(packet);
-    if (sizeof(MemoryProfDataChunk) == length)
-    {
-        MemoryProfDataChunk* dst = new MemoryProfDataChunk();
-        *dst = *src;
-        v.push_back(dst);
-        model->addMoreData(*dst);
-        
-        view->UpdateStat(dst);
-    }
+    view->UpdateStat(stat);
 }
 
 void MemProfController::Output(const String& msg)

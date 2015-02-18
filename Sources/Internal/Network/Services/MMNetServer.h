@@ -26,42 +26,63 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_MMNETSERVER_H__
+#define __DAVAENGINE_MMNETSERVER_H__
+
 #include "Base/BaseTypes.h"
+
+#include "Network/NetService.h"
+#include "MemoryManager/MemoryManagerTypes.h"
+#include "MMNetProto.h"
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
-#include "MemoryManager.h"
-
-/*
-* http://en.cppreference.com/w/cpp/memory/new/operator_new
-* The single-object version is called by the standard library implementations of all other versions,
-* so replacing that one function is sufficient to handle all deallocations.	(since C++11)
-*/
-
-#if defined(__DAVAENGINE_WIN32__)
-#define NOEXCEPT    throw()
-#else
-#define NOEXCEPT    noexcept
-#endif
-
-void* operator new(size_t size)
+namespace DAVA
 {
-    return DAVA::MemoryManager::Allocate(size, DAVA::ALLOC_POOL_APP);
-}
-
-void operator delete(void* ptr) NOEXCEPT
+namespace Net
 {
-    DAVA::MemoryManager::Deallocate(ptr);
-}
 
-void* operator new [](size_t size)
+class MMNetServer : public NetService
 {
-    return DAVA::MemoryManager::Allocate(size, DAVA::ALLOC_POOL_APP);
-}
+    struct Parcel
+    {
+        size_t size;
+        void* buffer;
+    };
 
-void operator delete[](void* ptr) NOEXCEPT
-{
-    DAVA::MemoryManager::Deallocate(ptr);
-}
+public:
+    MMNetServer();
+    virtual ~MMNetServer();
+
+    void Update(float32 timeElapsed);
+
+    // Overriden methods from NetService
+    void ChannelOpen() override;
+    void ChannelClosed(const char8* message) override;
+    void PacketReceived(const void* packet, size_t length) override;
+    void PacketDelivered() override;
+
+private:
+    void ProcessInitCommunication(const MMProtoHeader* hdr, const void* packet, size_t length);
+    void SendMemoryStat();
+
+    Parcel CreateParcel(size_t parcelSize);
+    void DestroyParcel(Parcel parcel);
+    void EnqueueAndSend(Parcel parcel);
+
+private:
+    uint32 sessionId;
+    bool commInited;
+    uint64 timerBegin;
+    size_t statPeriod;
+    size_t periodCounter;
+
+    Deque<Parcel> parcels;
+};
+
+}   // namespace Net
+}   // namespace DAVA
 
 #endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
+
+#endif  // __DAVAENGINE_MMNETSERVER_H__
