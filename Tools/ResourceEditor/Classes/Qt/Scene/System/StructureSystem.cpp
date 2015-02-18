@@ -121,6 +121,8 @@ void StructureSystem::Remove(const EntityGroup &entityGroup)
 	{
         if (sceneEditor->wayEditSystem->IsWayEditEnabled())
         {
+            // waypoint editor need to be the first recipient of waypoint remove event
+            // as it generates other add-remove commands that need to be in single batch
             sceneEditor->wayEditSystem->RemovePointsGroup(entityGroup);
         }
         else
