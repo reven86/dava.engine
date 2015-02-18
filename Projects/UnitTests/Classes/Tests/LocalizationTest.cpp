@@ -97,35 +97,40 @@ void LocalizationTest::TestFunction(TestTemplate<LocalizationTest>::PerfFuncData
 
 bool LocalizationTest::CompareFiles(const FilePath& file1, const FilePath& file2)
 {
-	File* f1 = File::Create(file1, File::OPEN | File::READ);
-	File* f2 = File::Create(file2, File::OPEN | File::READ);
+    ScopedPtr<File> f1(File::Create(file1, File::OPEN | File::READ));
+    ScopedPtr<File> f2(File::Create(file2, File::OPEN | File::READ));
 
-	bool res = (f1 && f2);
+	if (nullptr == static_cast<File *>(f1) || nullptr == static_cast<File *>(f2))
+    {
+        Logger::Error("Couldn't copmare file %s and file %s, can't open", file1.GetAbsolutePathname().c_str(), file2.GetAbsolutePathname().c_str());
+        return false;
+    }
 
-	if (res)
-	{
-		int32 size = Max(f1->GetSize(), f2->GetSize());
+    String tmpStr1("");
+    String tmpStr2("");
+    uint32 count1 = 0;
+    uint32 count2 = 0;
+    bool feof1 = false;
+    bool feof2 = false;
 
-		char* buf1 = new char[size];
-		char* buf2 = new char[size];
+    do
+    {
+        count1 = f1->ReadString(tmpStr1);
+        count2 = f2->ReadString(tmpStr2);
+        
+        if (count1 != count2 && 0 != tmpStr1.compare(tmpStr2))
+        {
+            return false;
+        }
+        feof1 = f1->IsEof();
+        feof2 = f2->IsEof();
+        
+        if (feof1 != feof2)
+        {
+            return false;
+        }
+    } while(!feof1);
+    
 
-        int32 read1;
-        int32 read2;
-
-        read1 = f1->Read(buf1, size);
-        read2 = f2->Read(buf2, size);
-
-
-        res &= (read1 == read2);
-        res &= !memcmp(buf1, buf2, read1);
-
-
-		delete[] buf1;
-		delete[] buf2;
-	}
-
-	SafeRelease(f1);
-	SafeRelease(f2);
-
-	return res;
+	return true;
 }
