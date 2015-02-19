@@ -150,6 +150,10 @@ void ThreadSyncTest::TestThread(PerfFuncData * data)
     Thread::Id itid = infiniteThread->GetId();
     Thread::Id stid = shortThread->GetId();
     TEST_VERIFY(itid != stid);
+/*
+ 
+//  Disable because it affects all threads including JobManager threads and worker threads,
+//  so this test is intrusive
 
     Thread::KillAll();
     
@@ -167,6 +171,7 @@ void ThreadSyncTest::TestThread(PerfFuncData * data)
     infiniteThread = NULL;
 
 	Logger::Debug("[ThreadSyncTest] Done.");
+*/
 }
 
 

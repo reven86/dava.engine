@@ -24,14 +24,13 @@ set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DAVA_PREDEFINED_TARGET
 
 if( ANDROID )
     find_package( ZLIB )
- 
+
     set ( LIST_LIBRARIES
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpng_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfreetype_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libyaml_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libmongodb_android.a"
-         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libdxt_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libjpeg_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcurl_android.a"
@@ -43,13 +42,22 @@ if( ANDROID )
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodevent.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodex.so"
-         "libEGL.so"
-         "libGLESv1_CM.so"
-         "liblog.so"
-         "libandroid.so"
+         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libTextureConverter_android.a"
+         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libbox2d.a"
+         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_android.a"
+         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so"
+         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_android.a"
+         )
+
+    list ( APPEND LIST_LIBRARIES
+         "-lEGL"
+         "-lGLESv1_CM"
+         "-llog"
+         "-landroid"
          "-lGLESv2"
-         "-lstdc++" )
-        
+         "-lstdc++" 
+         )
+
     list ( APPEND LIST_SHARED_LIBRARIES ${LIST_LIBRARIES} )
 
     set ( FRAMEWORK_DEFINITIONS  ${FRAMEWORK_DEFINITIONS} -D__ANDROID__ )
@@ -117,6 +125,7 @@ elseif( IOS )
 
     set_source_files_properties( ${CMAKE_CURRENT_LIST_DIR}/Platform/ThreadPosix.cpp 
                                  ${CMAKE_CURRENT_LIST_DIR}/Notification/LocalNotificationIOS.cpp
+                                 ${CMAKE_CURRENT_LIST_DIR}/DataStorage/iOS/ICloudKeyValue.cpp                                 
                                  PROPERTIES COMPILE_FLAGS "-x objective-c++" )  
 
 
@@ -139,7 +148,6 @@ if( ZLIB_FOUND )
     list (APPEND LIST_SHARED_LIBRARIES          ${ZLIB_LIBRARY}     )
 endif()
 
-
 # Define source 
 define_source_folders  ()
 generate_source_groups_project ()
@@ -151,6 +159,7 @@ include_directories    ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 set                    ( DAVA_INCLUDE_DIR ${DAVA_INCLUDE_DIR} ${ADD_ENGINE_INCLUDES_DIR} PARENT_SCOPE )
 
 add_definitions        ( ${FRAMEWORK_DEFINITIONS} )
+
 add_library            ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${RESOURCE} )
 
 if( LINK_THIRD_PARTY )                 
@@ -158,7 +167,6 @@ if( LINK_THIRD_PARTY )
    MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} DEBUG   "${LIST_SHARED_LIBRARIES_DEBUG}" )
    MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} RELEASE "${LIST_SHARED_LIBRARIES_RELEASE}" )
 endif()
-
 
 target_link_libraries  ( ${PROJECT_NAME} ${LIST_SHARED_LIBRARIES} ${LIST_ADDED_SHARED_LIBRARIES} )  
 
@@ -171,4 +179,5 @@ foreach ( FILE ${LIST_SHARED_LIBRARIES_RELEASE} )
 endforeach ()
 
 install_libraries( ${PROJECT_NAME} )
+
 
