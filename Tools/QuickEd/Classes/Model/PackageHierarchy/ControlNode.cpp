@@ -11,10 +11,10 @@
 using namespace DAVA;
 
 ControlNode::ControlNode(UIControl *control, PropertiesRoot *_propertiesRoot, eCreationType creationType)
-    : PackageBaseNode(NULL)
+    : ControlsContainerNode(nullptr)
     , control(SafeRetain(control))
     , propertiesRoot(SafeRetain(_propertiesRoot))
-    , prototype(NULL)
+    , prototype(nullptr)
     , creationType(creationType)
     , readOnly(false)
 {
@@ -47,6 +47,12 @@ ControlNode *ControlNode::CreateFromControl(DAVA::UIControl *control)
 ControlNode *ControlNode::CreateFromPrototype(ControlNode *sourceNode, PackageRef *nodePackage)
 {
     ControlNode *node = CreateFromPrototypeImpl(sourceNode, nodePackage, true);
+    return node;
+}
+
+ControlNode *ControlNode::CreateFromPrototypeChild(ControlNode *sourceNode, PackageRef *nodePackage)
+{
+    ControlNode *node = CreateFromPrototypeImpl(sourceNode, nodePackage, false);
     return node;
 }
 
@@ -93,27 +99,29 @@ ControlNode *ControlNode::Clone()
 
 void ControlNode::Add(ControlNode *node)
 {
-    DVASSERT(node->GetParent() == NULL);
+    DVASSERT(node->GetParent() == nullptr);
     node->SetParent(this);
     nodes.push_back(SafeRetain(node));
     control->AddControl(node->GetControl());
     node->GetControl()->UpdateLayout();
 }
 
-void ControlNode::InsertBelow(ControlNode *node, const ControlNode *belowThis)
+void ControlNode::InsertAtIndex(int index, ControlNode *node)
 {
-    DVASSERT(node->GetParent() == NULL);
-    node->SetParent(this);
-    auto it = find(nodes.begin(), nodes.end(), belowThis);
-    if (it != nodes.end())
+    if (index >= nodes.size())
     {
-        control->InsertChildBelow(node->GetControl(), (*it)->GetControl());
-        nodes.insert(it, SafeRetain(node));
+        Add(node);
     }
     else
     {
-        control->AddControl(node->GetControl());
-        nodes.push_back(SafeRetain(node));
+        DVASSERT(node->GetParent() == nullptr);
+        node->SetParent(this);
+        
+        UIControl *belowThis = nodes[index]->GetControl();
+        
+        nodes.insert(nodes.begin() + index, SafeRetain(node));
+        control->InsertChildBelow(node->GetControl(), belowThis);
+        node->GetControl()->UpdateLayout();
     }
 }
 
@@ -123,7 +131,7 @@ void ControlNode::Remove(ControlNode *node)
     if (it != nodes.end())
     {
         DVASSERT(node->GetParent() == this);
-        node->SetParent(NULL);
+        node->SetParent(nullptr);
 
         node->GetControl()->RemoveFromParent();
         nodes.erase(it);
@@ -152,7 +160,7 @@ ControlNode *ControlNode::FindByName(const DAVA::String &name) const
         if ((*it)->GetName() == name)
             return *it;
     }
-    return NULL;
+    return nullptr;
 }
 
 String ControlNode::GetName() const
@@ -208,6 +216,18 @@ BaseProperty *ControlNode::GetPropertyByPath(const DAVA::Vector<DAVA::String> &p
     return propertiesRoot->GetPropertyByPath(path);
 }
 
+void ControlNode::MarkAsRemoved()
+{
+    if (prototype)
+        prototype->GetControlNode()->RemoveControlFromInstances(this);
+}
+
+void ControlNode::MarkAsAlive()
+{
+    if (prototype)
+        prototype->GetControlNode()->AddControlToInstances(this);
+}
+
 void ControlNode::Serialize(PackageSerializer *serializer, PackageRef *currentPackage) const
 {
     serializer->BeginMap();
@@ -229,7 +249,7 @@ void ControlNode::Serialize(PackageSerializer *serializer, PackageRef *currentPa
     {
         String path = GetName();
         PackageBaseNode *p = GetParent();
-        while (p != NULL && p->GetControl() != NULL && static_cast<ControlNode*>(p)->GetCreationType() != CREATED_FROM_PROTOTYPE)
+        while (p != nullptr && p->GetControl() != nullptr && static_cast<ControlNode*>(p)->GetCreationType() != CREATED_FROM_PROTOTYPE)
         {
             path = p->GetName() + "/" + path;
             p = p->GetParent();
@@ -302,24 +322,12 @@ void ControlNode::AddControlToInstances(ControlNode *control)
 {
     auto it = std::find(instances.begin(), instances.end(), control);
     if (it == instances.end())
-    {
         instances.push_back(control);
-    }
-    else
-    {
-        DVASSERT(false);
-    }
 }
 
 void ControlNode::RemoveControlFromInstances(ControlNode *control)
 {
     auto it = std::find(instances.begin(), instances.end(), control);
     if (it != instances.end())
-    {
         instances.erase(it);
-    }
-    else
-    {
-        DVASSERT(false);
-    }
 }

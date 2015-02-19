@@ -125,8 +125,6 @@ protected:
     Semaphore workerDoneSem;
     JobQueueWorker workerQueue;
     Vector<JobThread*> workerThreads;
-
-    void CommonWaitMainJob(const Function<bool()> &hasJobsFn);
 };
 
 }
