@@ -43,14 +43,17 @@ public:
 	RefCounter() : refCount(1)
 	{}
 
-	void AddRef()
+    virtual ~RefCounter()
+    {}
+
+	void Retain()
 	{
-		AtomicIncrement(refCount);
+        AtomicIncrement(refCount);
 	}
 
-	void RemRef()
+	void Release()
 	{
-		if(0 == AtomicDecrement(refCount))
+		if (0 == AtomicDecrement(refCount))
 		{
 			delete this;
 		}
@@ -116,98 +119,140 @@ struct FunctionPointerHolder
 // ObjectPointerHolder class 
 // Class to store a pointer to the object. It can delete the object if this object is RefCounter class
 // ====================================================================================================================================================
+struct WrappingRule
+{
+    virtual void Own(void *pointer) const = 0;
+    virtual void Retain(void* pointer) const = 0;
+    virtual void Release(void* pointer) const = 0;
+};
+
+template<typename T>
+struct WrappingDefaultRule : WrappingRule
+{
+    void Own(void *pointer) const override { }
+    void Retain(void *pointer) const override { }
+    void Release(void* pointer) const override { }
+};
+
+template<typename T>
+struct WrappingRetainReleaseRule : public WrappingRule
+{
+    void Own(void *pointer) const override { ((T *)pointer)->Retain(); };
+    void Retain(void* pointer) const override { ((T *)pointer)->Retain(); }
+    void Release(void* pointer) const override { ((T *)pointer)->Release(); }
+};
+
+template<typename T>
+struct WrappingOwnedRetainReleaseRule : public WrappingRetainReleaseRule<T>
+{
+    void Own(void *pointer) const override { };
+};
+
+template<typename T>
+struct PointerWrapper
+{
+protected:
+    PointerWrapper(T *_pointer, WrappingRule* _rule)
+        : pointer(_pointer)
+        , staticRule(_rule)
+    { }
+
+public:
+    template<typename Rule>
+    static PointerWrapper<T> Wrap(T *_pointer)
+    {
+        static Rule rule;
+        return PointerWrapper<T>(_pointer, &rule);
+    }
+
+    template<template<typename> class Rule>
+    static PointerWrapper<T> Wrap(T *_pointer)
+    {
+        static Rule<T> rule;
+        return PointerWrapper<T>(_pointer, &rule);
+    }
+
+    static PointerWrapper<T> WrapRetainRelease(T *_pointer)
+    {
+        return Wrap<WrappingRetainReleaseRule>(_pointer);
+    }
+
+    T* pointer;
+    WrappingRule* staticRule;
+};
+
 struct ObjectPointerHolder
 {
 public:
-	void *object;
+    void *object;
+    WrappingRule *rule;
 
-	ObjectPointerHolder() 
-		: object(NULL)
-		, type(Holder_Regular)
-	{}
+    ObjectPointerHolder()
+        : object(NULL)
+    {
+        SetDefaultRule();
+    }
 
     ObjectPointerHolder(void *obj)
         : object(obj)
-        , type(Holder_Regular)
-    { }
+    {
+        SetDefaultRule();
+    }
 
     ObjectPointerHolder(const void *obj)
-        : object(const_cast<void*>(obj))
-        , type(Holder_Regular)
-    { }
+        : object(const_cast<void *>(obj))
+    {
+        SetDefaultRule();
+    }
 
-    ObjectPointerHolder(RefCounter *obj) 
-        : object(obj)
-        , type(Holder_RefCounter)
-    {}
+    template<typename T>
+    ObjectPointerHolder(const PointerWrapper<T> &owner)
+        : object(owner.pointer)
+        , rule(owner.staticRule)
+    {
+        rule->Own(object);
+    }
 
-	~ObjectPointerHolder()
-	{
-		RemRef();
-	}
+    ~ObjectPointerHolder()
+    {
+        rule->Release(object);
+    }
 
- 	ObjectPointerHolder(const ObjectPointerHolder& holder)
- 	{
- 		type = holder.type;
- 		object = holder.object;
- 
- 		AddRef();
- 	}
- 
- 	ObjectPointerHolder& operator=(const ObjectPointerHolder& holder)
- 	{
+    ObjectPointerHolder(ObjectPointerHolder&& holder)
+    {
+        object = holder.object;
+        rule = holder.rule;
+
+        holder.object = NULL;
+        holder.rule = NULL;
+    }
+
+    ObjectPointerHolder(const ObjectPointerHolder& holder)
+    {
+        object = holder.object;
+        rule = holder.rule;
+        rule->Retain(object);
+    }
+
+    ObjectPointerHolder& operator=(const ObjectPointerHolder& holder)
+    {
         if(this != &holder)
         {
-            RemRef();
- 
-            type = holder.type;
+            rule->Release(object);
             object = holder.object;
- 
-            AddRef();
+            rule = holder.rule;
+            rule->Retain(object);
         }
- 
- 		return *this;
- 	}
- 
+
+        return *this;
+    }
+
 protected:
-	enum HoldedType
-	{
-		Holder_Regular,
-		Holder_RefCounter
-	};
-
-	HoldedType type;
-
- 	inline void RemRef()
- 	{
-		switch (type)
-		{
-		case Holder_RefCounter:
-			if (NULL != object)
-			{
-				((RefCounter *)object)->RemRef();
-				object = NULL;
-			}
-			break;
-		default:
-			break;
-		}
-	}
- 
- 	inline void AddRef()
- 	{
-		switch (type)
-		{
-		case Holder_RefCounter:
-			if (NULL != object)
-			{
-				((RefCounter *)object)->AddRef();
-			}
-			break;
-		default:
-			break;
-		}
- 	}
+    void SetDefaultRule()
+    {
+        static WrappingDefaultRule<void> defaultRule;
+        rule = &defaultRule;
+    }
 };
 
 // ====================================================================================================================================================
