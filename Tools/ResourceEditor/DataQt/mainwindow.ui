@@ -276,7 +276,6 @@
     <addaction name="actionCubemapEditor"/>
     <addaction name="actionImageSplitter"/>
     <addaction name="actionHeightmap_Delta_Tool"/>
-    <addaction name="actionMemoryDumpViewer"/>
     <addaction name="separator"/>
     <addaction name="actionShowSettings"/>
    </widget>
@@ -1944,11 +1943,6 @@
   <action name="actionDeviceList">
    <property name="text">
     <string>Device List</string>
-   </property>
-  </action>
-  <action name="actionMemoryDumpViewer">
-   <property name="text">
-    <string>Memory Dump Viewer</string>
    </property>
   </action>
   <action name="actionWayEditor">

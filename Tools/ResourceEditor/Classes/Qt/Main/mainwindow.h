@@ -214,7 +214,6 @@ public slots:
     void OnBatchProcessScene();
     
     void OnSnapCameraToLandscape(bool);
-    void OnMemoryDumpViewerOpen();
     
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);
