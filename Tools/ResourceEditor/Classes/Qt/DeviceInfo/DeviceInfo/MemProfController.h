@@ -26,6 +26,9 @@ public:
 
     DAVA::Net::IChannelListener* NetObject() { return &netClient; }
 
+public slots:
+    void OnDumpPressed();
+    
 private:
     void Output(const DAVA::String& msg);
 

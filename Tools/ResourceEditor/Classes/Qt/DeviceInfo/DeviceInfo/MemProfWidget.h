@@ -13,6 +13,8 @@ namespace Ui {
 class QLabel;
 class QCustomPlot;
 class QFrame;
+class QToolBar;
+
 class MemProfInfoModel;
 namespace DAVA
 {
@@ -25,7 +27,8 @@ class MemProfWidget : public QWidget
     Q_OBJECT
 
 signals:
-
+    void OnDumpButton();
+    
 public:
     explicit MemProfWidget(QWidget *parent = NULL);
     ~MemProfWidget();
@@ -50,6 +53,7 @@ private:
     DAVA::uint32 tagCount;
     DAVA::uint32 allocPoolCount;
 
+    QToolBar* toolbar;
     QFrame* frame;
     struct label_pack
     {
@@ -62,6 +66,7 @@ private:
         QLabel* nblocks;
     };
     label_pack* labels;
+    
     MemProfInfoModel * model;
     QTableView * tableView;
 

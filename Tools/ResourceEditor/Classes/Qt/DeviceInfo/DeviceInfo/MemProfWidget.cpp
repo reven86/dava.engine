@@ -1,5 +1,6 @@
 #include <QLabel>
 #include <QFrame>
+#include <QToolBar>
 #include <QGridLayout>
 #include <QVBoxLayout>
 
@@ -26,13 +27,19 @@ MemProfWidget::MemProfWidget(QWidget *parent)
     , ui(new Ui::MemProfWidget())
     , tagCount(0)
     , allocPoolCount(0)
-    , labels(nullptr)
+    , toolbar(nullptr)
     , frame(nullptr)
-    , model(model)
+    , labels(nullptr)
+    , model(nullptr)
     , tableView(nullptr)
 {
     ui->setupUi(this);
 
+    toolbar = new QToolBar;
+    QAction* actionDump = toolbar->addAction("Memory dump");
+    connect(actionDump, SIGNAL(triggered()), this, SIGNAL(OnDumpButton()));
+    ui->verticalLayout_2->insertWidget(0, toolbar);
+    
     plot = ui->plot;
     
     plot->addGraph();
@@ -59,6 +66,7 @@ MemProfWidget::MemProfWidget(QWidget *parent)
     //plot->graph(0)->rescaleAxes();
     //plot->graph(1)->rescaleAxes(true);
     plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    
     tableView = new QTableView(this);
     model = new MemProfInfoModel();
     tableView->setModel(model);

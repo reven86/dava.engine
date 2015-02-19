@@ -230,16 +230,28 @@ void NetworkTest::DestroyUI()
 void NetworkTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
 {
     if (obj == btnDebug)
+    {
+        MemoryManager::EnterTagScope(1);
         Logger::Debug("This is DEBUG message");
+    }
     else if (obj == btnInfo)
+    {
         Logger::Info("This is INFO message");
+        MemoryManager::LeaveTagScope();
+    }
     else if (obj == btnWarn)
+    {
+        MemoryManager::EnterTagScope(2);
         Logger::Warning("This is WARN message");
+    }
     else if (obj == btnError)
+    {
         Logger::Error("This is ERROR message");
+        MemoryManager::LeaveTagScope();
+    }
     else if (obj == btnPacket)
     {
-        /*Logger::Debug("#1. DEBUG");
+        Logger::Debug("#1. DEBUG");
         Logger::Info("#2. INFO");
         Logger::Warning("#3. WARN");
         Logger::Error("#4. ERROR");
@@ -250,13 +262,21 @@ void NetworkTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
         {
             v2.clear();
             v2.shrink_to_fit();
-        }*/
+        }
+        /*
         void* buf = nullptr;
         size_t sz = MemoryManager::GetDump(0, &buf, 0, uint32(-1));
         MMDump* dump = static_cast<MMDump*>(buf);
         MMSymbol* sym = reinterpret_cast<MMSymbol*>(static_cast<uint8*>(buf)+sizeof(MMDump) + sizeof(MMBlock) * dump->blockCount);
 
-        FILE* f = fopen("dump.log", "wb");
+        const char* fname =
+#if defined(__DAVAENGINE_WIN32__)
+            "dump.log"
+#elif defined(__DAVAENGINE_MACOS__)
+            "/Users/max/dump.log"
+#endif
+        ;
+        FILE* f = fopen(fname, "wb");
         if (f)
         {
             fprintf(f, "General info\n");
@@ -292,6 +312,7 @@ void NetworkTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
             }
             fclose(f);
         }
+        */
     }
     else if (obj == btnPeriodic)
     {

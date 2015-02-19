@@ -127,6 +127,7 @@ GameCore::GameCore()
     MemoryManager::RegisterAllocPoolName(2, "STL");
     MemoryManager::RegisterAllocPoolName(3, "Custom");
     MemoryManager::RegisterTagName(1, "TAG_1");
+    MemoryManager::RegisterTagName(2, "TAG_2");
 }
 
 GameCore::~GameCore()

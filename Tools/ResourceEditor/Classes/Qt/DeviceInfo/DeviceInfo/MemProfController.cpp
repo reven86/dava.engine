@@ -1,3 +1,5 @@
+#include <QMessageBox>
+
 #include <Utils/UTF8Utils.h>
 
 #include "Base/FunctionTraits.h"
@@ -22,6 +24,11 @@ MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr
 
 MemProfController::~MemProfController() {}
 
+void MemProfController::OnDumpPressed()
+{
+    
+}
+
 void MemProfController::ShowView()
 {
     if (NULL == view)
@@ -35,6 +42,7 @@ void MemProfController::ShowView()
         view->setWindowFlags(Qt::Window);
         view->setWindowTitle(title);
 
+        connect(view, SIGNAL(OnDumpButton()), this, SLOT(OnDumpPressed()));
         connect(this, &QObject::destroyed, view, &QObject::deleteLater);
     }
     view->showNormal();
