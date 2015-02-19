@@ -28,9 +28,10 @@ private:
     void CollectSelectedNodes(DAVA::Vector<ControlNode*> &nodes);
     void CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &nodes);
     void RemoveNodes(const DAVA::Vector<ControlNode*> &nodes);
+    QList<QPersistentModelIndex> GetExpandedIndexes() const;
     
 private slots:
-    void OnSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+    void OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected);
     void filterTextChanged(const QString &);
     void OnImport();
     void OnCopy();
