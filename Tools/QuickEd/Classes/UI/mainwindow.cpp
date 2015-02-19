@@ -61,14 +61,14 @@
 
 using namespace DAVA;
 
-QT_BEGIN_NAMESPACE
-const QString APP_NAME = "QuickEd";
-const QString APP_COMPANY = "DAVA";
-const QString APP_GEOMETRY = "geometry";
-const QString APP_STATE = "windowstate";
-
-
-const char* COLOR_PROPERTY_ID = "color";
+namespace
+{
+    const QString APP_NAME = "QuickEd";
+    const QString APP_COMPANY = "DAVA";
+    const QString APP_GEOMETRY = "geometry";
+    const QString APP_STATE = "windowstate";
+    const char* COLOR_PROPERTY_ID = "color";
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -92,13 +92,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->mainToolbar->addAction(undoAction);
     ui->mainToolbar->addAction(redoAction);
-	setWindowTitle(ResourcesManageHelper::GetProjectTitle());
-    
+    setWindowTitle(ResourcesManageHelper::GetProjectTitle());
+
     ui->tabBar->setTabsClosable(true);
     ui->tabBar->setUsesScrollButtons(true);
     connect(ui->tabBar, SIGNAL(currentChanged(int)), this, SLOT(CurrentTabChanged(int)));
     connect(ui->tabBar, SIGNAL(tabCloseRequested(int)), this, SLOT(TabCloseRequested(int)));
- 
+
     setUnifiedTitleAndToolBarOnMac(true);
 
     connect(ui->actionFontManager, SIGNAL(triggered()), this, SLOT(OnOpenFontManager()));
@@ -106,39 +106,39 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->fileSystemDockWidget, SIGNAL(OpenPackageFile(const QString&)), this, SLOT(OnOpenPackageFile(const QString&)));
 
-	InitMenu();
-	RestoreMainWindowState();
-    
+    InitMenu();
+    RestoreMainWindowState();
+
     ui->fileSystemDockWidget->setEnabled(false);
-       
+
     RebuildRecentMenu();
 }
 
 MainWindow::~MainWindow()
 {
-	SaveMainWindowState();
-    delete ui;    
+    SaveMainWindowState();
+    delete ui;
 }
 
 void MainWindow::SaveMainWindowState()
 {
-	QSettings settings(APP_COMPANY, APP_NAME);
+    QSettings settings(APP_COMPANY, APP_NAME);
     settings.setValue(APP_GEOMETRY, saveGeometry());
     settings.setValue(APP_STATE, saveState());
 }
 
 void MainWindow::RestoreMainWindowState()
 {
-	QSettings settings(APP_COMPANY, APP_NAME);
-	// Check settings befor applying it
-	if (!settings.value(APP_GEOMETRY).isNull() && settings.value(APP_GEOMETRY).isValid())
-	{
-    	restoreGeometry(settings.value(APP_GEOMETRY).toByteArray());
-	}
-	if (!settings.value(APP_STATE).isNull() && settings.value(APP_STATE).isValid())
-	{
-    	restoreState(settings.value(APP_STATE).toByteArray());
-	}
+    QSettings settings(APP_COMPANY, APP_NAME);
+    // Check settings befor applying it
+    if (!settings.value(APP_GEOMETRY).isNull() && settings.value(APP_GEOMETRY).isValid())
+    {
+        restoreGeometry(settings.value(APP_GEOMETRY).toByteArray());
+    }
+    if (!settings.value(APP_STATE).isNull() && settings.value(APP_STATE).isValid())
+    {
+        restoreState(settings.value(APP_STATE).toByteArray());
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent * event)
@@ -155,7 +155,7 @@ void MainWindow::ConnectToWidgets(Document *document)
     ui->previewWidget->setEnabled(true);
     ui->propertiesWidget->setEnabled(true);
     ui->libraryWidget->setEnabled(true);
-    
+
     ui->packageWidget->SetDocument(document);
     ui->previewWidget->SetDocument(document);
     ui->propertiesWidget->SetDocument(document);
@@ -199,9 +199,9 @@ void MainWindow::CurrentTabChanged(int index)
         DisconnectFromWidgets(activeDocument);
         disconnect(activeDocument->UndoStack(), SIGNAL(cleanChanged(bool)), this, SLOT(OnCleanChanged(bool)));
     }
-    
+
     activeDocument = GetTabDocument(ui->tabBar->currentIndex());
-    
+
     if (nullptr != activeDocument)
     {
         ConnectToWidgets(activeDocument);
@@ -220,7 +220,7 @@ void MainWindow::TabCloseRequested(int index)
 void MainWindow::CloseTab(int index)
 {
     Document *document = GetTabDocument(index);
-    
+
     ui->tabBar->removeTab(index);
     undoGroup->removeStack(document->UndoStack());
     SafeDelete(document);
@@ -228,7 +228,7 @@ void MainWindow::CloseTab(int index)
 
 void MainWindow::CloseAllTabs()
 {
-    while(ui->tabBar->count())
+    while (ui->tabBar->count())
     {
         CloseTab(0);
     }
@@ -236,45 +236,45 @@ void MainWindow::CloseAllTabs()
 
 void MainWindow::OnOpenFontManager()
 {
-    FontManagerDialog fontManager;
+    FontManagerDialog fontManager(false, QString(), this);
     fontManager.exec();
 }
 
 void MainWindow::OnOpenLocalizationManager()
 {
-    LocalizationEditorDialog localizationManagerDialog;
+    LocalizationEditorDialog localizationManagerDialog(this);
     localizationManagerDialog.exec();
 }
 
 void MainWindow::OnShowHelp()
 {
-	FilePath docsPath = ResourcesManageHelper::GetDocumentationPath().toStdString() + "index.html";
-	QString docsFile = QString::fromStdString("file:///" + docsPath.GetAbsolutePathname());
-	QDesktopServices::openUrl(QUrl(docsFile));
+    FilePath docsPath = ResourcesManageHelper::GetDocumentationPath().toStdString() + "index.html";
+    QString docsFile = QString::fromStdString("file:///" + docsPath.GetAbsolutePathname());
+    QDesktopServices::openUrl(QUrl(docsFile));
 }
 
 void MainWindow::InitMenu()
 {
     SetupViewMenu();
 
-	connect(ui->actionNew_project, SIGNAL(triggered()), this, SLOT(OnNewProject()));
-	connect(ui->actionSaveDocument, SIGNAL(triggered()), this, SLOT(OnSaveDocument()));
-	connect(ui->actionSaveAllDocuments, SIGNAL(triggered()), this, SLOT(OnSaveAllDocuments()));
+    connect(ui->actionNew_project, SIGNAL(triggered()), this, SLOT(OnNewProject()));
+    connect(ui->actionSaveDocument, SIGNAL(triggered()), this, SLOT(OnSaveDocument()));
+    connect(ui->actionSaveAllDocuments, SIGNAL(triggered()), this, SLOT(OnSaveAllDocuments()));
     connect(ui->actionOpen_project, SIGNAL(triggered()), this, SLOT(OnOpenProject()));
-	connect(ui->actionClose_project, SIGNAL(triggered()), this, SLOT(OnCloseProject()));
+    connect(ui->actionClose_project, SIGNAL(triggered()), this, SLOT(OnCloseProject()));
 
-	connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(OnExitApplication()));
+    connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(OnExitApplication()));
     connect(ui->menuRecent, SIGNAL(triggered(QAction *)), this, SLOT(RecentMenuTriggered(QAction *)));
 
-	// Remap zoom in/out shorcuts for windows platform
+    // Remap zoom in/out shorcuts for windows platform
 #if defined(__DAVAENGINE_WIN32__)
-	QList<QKeySequence> shortcuts;
-	shortcuts.append(QKeySequence(Qt::CTRL + Qt::Key_Equal));
-	shortcuts.append(QKeySequence(Qt::CTRL + Qt::Key_Plus));
-	ui->actionZoomIn->setShortcuts(shortcuts);
+    QList<QKeySequence> shortcuts;
+    shortcuts.append(QKeySequence(Qt::CTRL + Qt::Key_Equal));
+    shortcuts.append(QKeySequence(Qt::CTRL + Qt::Key_Plus));
+    ui->actionZoomIn->setShortcuts(shortcuts);
 #endif
 
-	//Help contents dialog
+    //Help contents dialog
     connect(ui->actionHelp, SIGNAL(triggered()), this, SLOT(OnShowHelp()));
 
     // Pixelization.
@@ -294,7 +294,7 @@ void MainWindow::SetupViewMenu()
 
     ui->menuView->addSeparator();
     ui->menuView->addAction(ui->mainToolbar->toggleViewAction());
-    
+
     // Setup the Background Color menu.
     QMenu* setBackgroundColorMenu = new QMenu("Background Color");
     ui->menuView->addSeparator();
@@ -315,13 +315,13 @@ void MainWindow::SetupViewMenu()
 
     Color curBackgroundColor = EditorSettings::Instance()->GetCurrentBackgroundFrameColor();
     int32 itemsCount = COUNT_OF(colorsMap);
-    
+
     bool isCustomColor = true;
-    for (int32 i = 0; i < itemsCount; i ++)
+    for (int32 i = 0; i < itemsCount; i++)
     {
         QAction* colorAction = new QAction(colorsMap[i].colorName, setBackgroundColorMenu);
-		colorAction->setProperty(COLOR_PROPERTY_ID, colorsMap[i].color);
-        
+        colorAction->setProperty(COLOR_PROPERTY_ID, colorsMap[i].color);
+
         Color curColor = QColorToColor(colorsMap[i].color);
         if (curColor == curBackgroundColor)
         {
@@ -330,22 +330,22 @@ void MainWindow::SetupViewMenu()
 
         colorAction->setCheckable(true);
         colorAction->setChecked(curColor == curBackgroundColor);
-        
+
         backgroundFramePredefinedColorActions.append(colorAction);
-		setBackgroundColorMenu->addAction(colorAction);
-	}
-	
+        setBackgroundColorMenu->addAction(colorAction);
+    }
+
     backgroundFrameUseCustomColorAction = new QAction("Custom", setBackgroundColorMenu);
-	backgroundFrameUseCustomColorAction->setProperty(COLOR_PROPERTY_ID, ColorToQColor(curBackgroundColor));
+    backgroundFrameUseCustomColorAction->setProperty(COLOR_PROPERTY_ID, ColorToQColor(curBackgroundColor));
     backgroundFrameUseCustomColorAction->setCheckable(true);
     backgroundFrameUseCustomColorAction->setChecked(isCustomColor);
     setBackgroundColorMenu->addAction(backgroundFrameUseCustomColorAction);
-    
+
     setBackgroundColorMenu->addSeparator();
-    
+
     backgroundFrameSelectCustomColorAction = new QAction("Select Custom Color...", setBackgroundColorMenu);
     setBackgroundColorMenu->addAction(backgroundFrameSelectCustomColorAction);
-    
+
     connect(setBackgroundColorMenu, SIGNAL(triggered(QAction*)), this, SLOT(SetBackgroundColorMenuTriggered(QAction*)));
 
     // Another actions below the Set Background Color.
@@ -366,16 +366,14 @@ void MainWindow::UpdateMenu()
 void MainWindow::OnNewProject()
 {
     CloseProject();
-	QString projectDir = QFileDialog::getExistingDirectory(this, 
-                                                            tr("Choose new project folder"),
-											                ResourcesManageHelper::GetDefaultDirectory());			
-    if (projectDir.isNull() || projectDir.isEmpty())
+    QString projectDir = QFileDialog::getExistingDirectory(this,
+        tr("Choose new project folder"),
+        ResourcesManageHelper::GetDefaultDirectory());
+    if (projectDir.isEmpty())
     {
         return;
     }
-    // Convert directory path into Unix-style path
-	projectDir = ResourcesManageHelper::ConvertPathToUnixStyle(projectDir);
-    ui->fileSystemDockWidget->SetProjectDir(projectDir);
+    ui->fileSystemDockWidget->SetProjectDir(QDir::fromNativeSeparators(projectDir));
 }
 
 void MainWindow::RebuildRecentMenu()
@@ -390,18 +388,18 @@ void MainWindow::RebuildRecentMenu()
         recentProject->setData(projectPath);
         ui->menuRecent->addAction(recentProject);
     }
-    ui->menuRecent->setEnabled(projectCount);
+    ui->menuRecent->setEnabled(projectCount > 0);
 }
 
 void MainWindow::RecentMenuTriggered(QAction *recentProjectAction)
 {
     QString projectPath = recentProjectAction->data().toString();
 
-    if (projectPath.isNull())
+    if (projectPath.isEmpty())
     {
         return;
     }
-    
+
     OpenProject(projectPath);
 }
 
@@ -426,18 +424,15 @@ bool MainWindow::CheckAndUnlockProject(const QString& projectPath)
 
 void MainWindow::OnOpenProject()
 {
-	QString projectPath = QFileDialog::getOpenFileName(this, tr("Select a project file"),
-														ResourcesManageHelper::GetDefaultDirectory(),
-														tr( "Project (*.uieditor)"));
-    if (projectPath.isNull() || projectPath.isEmpty())
+    QString projectPath = QFileDialog::getOpenFileName(this, tr("Select a project file"),
+        ResourcesManageHelper::GetDefaultDirectory(),
+        tr("Project (*.uieditor)"));
+    if (projectPath.isEmpty())
     {
         return;
     }
-    
-	// Convert file path into Unix-style path
-	projectPath = ResourcesManageHelper::ConvertPathToUnixStyle(projectPath);
-    
-    OpenProject(projectPath);
+
+    OpenProject(QDir::fromNativeSeparators(projectPath));
 }
 
 void MainWindow::OnSaveDocument()
@@ -445,7 +440,7 @@ void MainWindow::OnSaveDocument()
     Document * document = GetCurrentTabDocument();
     if (nullptr == document || !document->IsModified())
     {
-    	return;
+        return;
     }
 
     DVVERIFY(project->SavePackage(activeDocument->GetPackage()));
@@ -454,7 +449,7 @@ void MainWindow::OnSaveDocument()
 
 void MainWindow::OnSaveAllDocuments()
 {
-	for (int i = 0; i < ui->tabBar->count(); ++i)
+    for (int i = 0; i < ui->tabBar->count(); ++i)
     {
         Document * document = GetTabDocument(i);
         if (nullptr == document)
@@ -468,13 +463,13 @@ void MainWindow::OnSaveAllDocuments()
 
 void MainWindow::OnCloseProject()
 {
-	CloseProject();
+    CloseProject();
 }
 
 void MainWindow::OnExitApplication()
 {
     CloseProject();
-	QCoreApplication::exit();
+    QCoreApplication::exit();
 }
 
 void MainWindow::OnOpenPackageFile(const QString &path)
@@ -499,13 +494,13 @@ void MainWindow::OnOpenPackageFile(const QString &path)
 }
 
 void MainWindow::OpenProject(const QString &path)
-{    
+{
     CloseProject();
     if (!CheckAndUnlockProject(path))
     {
         return;
     }
-    
+
     project = new Project();
     if (project->Open(path))
     {
@@ -528,26 +523,26 @@ void MainWindow::CloseProject()
         ui->fileSystemDockWidget->setEnabled(false);
 
         this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
-        
+
         delete project;
         project = nullptr;
-	}
+    }
     UpdateSaveButtons();
 }
 
 void MainWindow::UpdateProjectSettings(const QString& projectPath)
 {
-	// Add file to recent project files list
-	EditorSettings::Instance()->AddLastOpenedFile(projectPath.toStdString());
-	
-	// Save to settings default project directory
-	QFileInfo fileInfo(projectPath);
-	QString projectDir = fileInfo.absoluteDir().absolutePath();
-	EditorSettings::Instance()->SetProjectPath(projectDir.toStdString());
+    // Add file to recent project files list
+    EditorSettings::Instance()->AddLastOpenedFile(projectPath.toStdString());
 
-	// Update window title
-	this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
-    
+    // Save to settings default project directory
+    QFileInfo fileInfo(projectPath);
+    QString projectDir = fileInfo.absoluteDir().absolutePath();
+    EditorSettings::Instance()->SetProjectPath(projectDir.toStdString());
+
+    // Update window title
+    this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
+
     // Apply the pixelization value.
     Texture::SetPixelization(EditorSettings::Instance()->IsPixelized());
 }
@@ -590,10 +585,10 @@ void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
 
     EditorSettings::Instance()->SetCurrentBackgroundFrameColor(newColor);
     //ScreenWrapper::Instance()->SetBackgroundFrameColor(newColor);
-    
+
     // Update the check marks.
     bool colorFound = false;
-    foreach (QAction* colorAction, backgroundFramePredefinedColorActions)
+    foreach(QAction* colorAction, backgroundFramePredefinedColorActions)
     {
         Color color = QColorToColor(colorAction->property(COLOR_PROPERTY_ID).value<QColor>());
         if (color == newColor)
@@ -624,7 +619,7 @@ int MainWindow::CreateTabContent(PackageNode *package)
 {
     int oldIndex = ui->tabBar->currentIndex();
     Document *document = new Document(project, package, this);
-    
+
     QVariant var;
     var.setValue<Document *>(document);
 
@@ -632,20 +627,20 @@ int MainWindow::CreateTabContent(PackageNode *package)
     int index = ui->tabBar->addTab(QString(document->PackageFilePath().GetBasename().c_str()));
     ui->tabBar->setTabData(index, var);
     ui->tabBar->blockSignals(false);
-    
+
     undoGroup->addStack(document->UndoStack());
     if (oldIndex < 0)
     {
         CurrentTabChanged(index);
     }
-    
+
     return index;
 }
 
 Document *MainWindow::GetCurrentTabDocument() const
 {
     int index = ui->tabBar->currentIndex();
-    if(index >= 0)
+    if (index >= 0)
     {
         return ui->tabBar->tabData(index).value<Document*>();
     }
@@ -657,8 +652,8 @@ int MainWindow::GetTabIndexByPath(const QString &fileName) const
 {
     QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath();
     FilePath davaPath(canonicalFilePath.toStdString());
-    
-    for(int index = 0; index < ui->tabBar->count(); ++index)
+
+    for (int index = 0; index < ui->tabBar->count(); ++index)
     {
         Document *document = ui->tabBar->tabData(index).value<Document *>();
         if (document->PackageFilePath() == davaPath)
@@ -666,7 +661,7 @@ int MainWindow::GetTabIndexByPath(const QString &fileName) const
             return index;
         }
     }
-    
+
     return -1;
 }
 
@@ -686,5 +681,3 @@ void MainWindow::OnCleanChanged(bool clean)
 
     UpdateSaveButtons();
 }
-
-QT_END_NAMESPACE

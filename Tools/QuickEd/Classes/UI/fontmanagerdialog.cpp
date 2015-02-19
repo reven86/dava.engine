@@ -53,7 +53,7 @@ static const QString FONT_TYPE_DISTANCE = "Distance";
 static const QString LOAD_FONT_ERROR_MESSAGE = "Can't load font %1! Try again or select another one.";
 static const QString LOAD_FONT_ERROR_INFO_TEXT = "An error occured while loading font...";
 
-FontManagerDialog::FontManagerDialog(bool okButtonEnable,  const QString& graphicsFontPath, QDialog *parent) :
+FontManagerDialog::FontManagerDialog(bool okButtonEnable, const QString& graphicsFontPath, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::FontManagerDialog)
 {    

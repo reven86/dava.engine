@@ -40,6 +40,7 @@ void SwitchToRenerObjectConverter::ConsumeSwitchedRenderObjects(Entity * scene)
 
 void SwitchToRenerObjectConverter::SerachForSwitch(Entity * currentNode)
 {
+    DVASSERT(currentNode);
     for (int32 c = 0; c < currentNode->GetChildrenCount(); ++c)
     {
         Entity * childNode = currentNode->GetChild(c);
@@ -57,11 +58,11 @@ bool SwitchToRenerObjectConverter::MergeSwitch(Entity * entity)
     Vector<Entity*> entitiesToRemove;
 
     SwitchComponent * sw = GetSwitchComponent(entity);
-    if (sw)
+    if (nullptr != sw)
     {
         RenderComponent * rc = GetRenderComponent(entity);
         RenderObject * ro = 0;
-        if (!rc)
+        if (nullptr == rc)
         {
             ro = new Mesh();
             rc = new RenderComponent(ro);
@@ -87,7 +88,7 @@ bool SwitchToRenerObjectConverter::MergeSwitch(Entity * entity)
             if (1 == i) // crash model
             {
                 KeyedArchive *childProps = GetCustomPropertiesArchieve(sourceEntity);
-                if (childProps && childProps->IsKeyExists("CollisionType"))
+                if (nullptr != childProps && childProps->IsKeyExists("CollisionType"))
                 {
                     KeyedArchive *entityProps = GetOrCreateCustomProperties(entity)->GetArchive();
                     entityProps->SetInt32("CollisionTypeCrashed", childProps->GetInt32("CollisionType", 0));
@@ -96,7 +97,7 @@ bool SwitchToRenerObjectConverter::MergeSwitch(Entity * entity)
             //end of custom properties
 
             Vector<std::pair<Entity*, RenderObject*> > renderPairs;
-            if (sourceRenderObject)
+            if (nullptr != sourceRenderObject)
             {
                 renderPairs.push_back(std::make_pair(sourceEntity, sourceRenderObject));
             }
@@ -107,13 +108,13 @@ bool SwitchToRenerObjectConverter::MergeSwitch(Entity * entity)
                 sourceRenderObject = renderPairs[0].second;
             }
 
-            if (sourceRenderObject)
+            if (nullptr != sourceRenderObject)
             {
                 TransformComponent * sourceTransform = GetTransformComponent(sourceEntity);
                 if (sourceTransform->GetLocalTransform() != Matrix4::IDENTITY)
                 {
-                    PolygonGroup * pg = sourceRenderObject->GetRenderBatchCount() > 0 ? sourceRenderObject->GetRenderBatch(0)->GetPolygonGroup() : 0;
-                    if (pg && bakedPolygonGroups.end() == bakedPolygonGroups.find(pg))
+                    PolygonGroup * pg = sourceRenderObject->GetRenderBatchCount() > 0 ? sourceRenderObject->GetRenderBatch(0)->GetPolygonGroup() : nullptr;
+                    if (nullptr != pg && bakedPolygonGroups.end() == bakedPolygonGroups.find(pg))
                     {
                         sourceRenderObject->BakeGeometry(sourceTransform->GetLocalTransform());
                         bakedPolygonGroups.insert(pg);
@@ -121,7 +122,7 @@ bool SwitchToRenerObjectConverter::MergeSwitch(Entity * entity)
                 }
 
                 uint32 sourceSize = sourceRenderObject->GetRenderBatchCount();
-                while (sourceSize)
+                while (0 != sourceSize)
                 {
                     int32 lodIndex, switchIndex;
                     RenderBatch * sourceRenderBatch = sourceRenderObject->GetRenderBatch(0, lodIndex, switchIndex);
@@ -136,7 +137,7 @@ bool SwitchToRenerObjectConverter::MergeSwitch(Entity * entity)
             renderPairs[0].first->RemoveComponent(Component::RENDER_COMPONENT);
 
             LodComponent * lc = GetLodComponent(sourceEntity);
-            if ((0 != lc) && (0 == GetLodComponent(entity)))
+            if ((nullptr != lc) && (nullptr == GetLodComponent(entity)))
             {
                 LodComponent * newLod = (LodComponent*)lc->Clone(entity);
                 entity->AddComponent(newLod);
@@ -163,7 +164,7 @@ bool SwitchToRenerObjectConverter::MergeSwitch(Entity * entity)
 void SwitchToRenerObjectConverter::FindRenderObjectsRecursive(Entity * fromEntity, Vector<std::pair<Entity*, RenderObject*> > & entityAndObjectPairs)
 {
     RenderObject * ro = GetRenderObject(fromEntity);
-    if (ro && ro->GetType() == RenderObject::TYPE_MESH)
+    if (nullptr != ro && ro->GetType() == RenderObject::TYPE_MESH)
     {
         entityAndObjectPairs.push_back(std::make_pair(fromEntity, ro));
     }

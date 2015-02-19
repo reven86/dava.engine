@@ -48,7 +48,7 @@ void TreeToAnimatedTreeConverter::CalculateAnimationParams(SpeedTreeObject * obj
     {
         RenderBatch * rb = object->GetRenderBatch(k);
         PolygonGroup * pg = rb->GetPolygonGroup();
-        if (pg)
+        if (nullptr != pg)
         {
             int32 vertexFormat = pg->GetFormat();
             DVASSERT((vertexFormat & EVF_FLEXIBILITY) > 0);
@@ -115,10 +115,16 @@ void TreeToAnimatedTreeConverter::ConvertingPathRecursive(Entity * node)
     }
 
     RenderComponent *rc = GetRenderComponent(node);
-    if (!rc) return;
+    if (nullptr == rc)
+    {
+        return;
+    }
 
     RenderObject *ro = rc->GetRenderObject();
-    if (!ro) return;
+    if (nullptr == ro) 
+    {
+        return;
+    }
 
     bool isSpeedTree = false;
 
@@ -133,7 +139,7 @@ void TreeToAnimatedTreeConverter::ConvertingPathRecursive(Entity * node)
         return;
 
     SpeedTreeObject * treeObject = cast_if_equal<SpeedTreeObject*>(ro);
-    if (!treeObject)
+    if (nullptr == treeObject)
     {
         treeObject = new SpeedTreeObject();
         ro->Clone(treeObject);

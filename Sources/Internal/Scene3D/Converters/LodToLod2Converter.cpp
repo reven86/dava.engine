@@ -66,11 +66,11 @@ bool LodToLod2Converter::MergeLod(Entity * entity)
     Set<Entity*> entitiesToRemove;
 
     LodComponent * lod = GetLodComponent(entity);
-    if (lod)
+    if (nullptr != lod)
     {
         RenderComponent * rc = GetRenderComponent(entity);
-        RenderObject * ro = 0;
-        if (!rc)
+        RenderObject * ro = nullptr;
+        if (nullptr == rc)
         {
             ro = new Mesh();
             rc = new RenderComponent(ro);
@@ -129,7 +129,7 @@ bool LodToLod2Converter::MergeLod(Entity * entity)
                 RenderObject * sourceRenderObject = GetRenderObject(sourceEntity);
 
                 Vector<std::pair<Entity*, RenderObject*> >sourceRenderObjects;
-                if (sourceRenderObject)
+                if (nullptr != sourceRenderObject)
                 {
                     sourceRenderObjects.push_back(std::make_pair(sourceEntity, sourceRenderObject));
                     sourceRenderObject->Retain();
@@ -146,7 +146,7 @@ bool LodToLod2Converter::MergeLod(Entity * entity)
                     if (sourceTransform->GetLocalTransform() != Matrix4::IDENTITY)
                     {
                         PolygonGroup * pg = sourceRenderObject->GetRenderBatchCount() > 0 ? sourceRenderObject->GetRenderBatch(0)->GetPolygonGroup() : 0;
-                        if (pg && bakedPolygonGroups.end() == bakedPolygonGroups.find(pg))
+                        if (nullptr != pg && bakedPolygonGroups.end() == bakedPolygonGroups.find(pg))
                         {
                             Matrix4 totalTransform = sourceRenderObjects[j].first->AccamulateTransformUptoFarParent(entity);
                             sourceRenderObject->BakeGeometry(totalTransform);
@@ -155,7 +155,7 @@ bool LodToLod2Converter::MergeLod(Entity * entity)
                     }
 
                     uint32 sourceRenderBatchCount = sourceRenderObject->GetRenderBatchCount();
-                    while (sourceRenderBatchCount)
+                    while (0 != sourceRenderBatchCount)
                     {
                         RenderBatch * sourceRenderBatch = sourceRenderObject->GetRenderBatch(0);
                         sourceRenderBatch->Retain();
@@ -193,7 +193,7 @@ bool LodToLod2Converter::MergeLod(Entity * entity)
 void LodToLod2Converter::FindAndEraseRenderObjectsRecursive(Entity * fromEntity, Vector<std::pair<Entity*, RenderObject*> > & entitiesAndRenderObjects)
 {
     RenderObject * ro = GetRenderObject(fromEntity);
-    if (ro && ro->GetType() == RenderObject::TYPE_MESH)
+    if (nullptr != ro && ro->GetType() == RenderObject::TYPE_MESH)
     {
         ro->Retain();
         entitiesAndRenderObjects.push_back(std::make_pair(fromEntity, ro));

@@ -51,7 +51,7 @@ class FontManagerDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit FontManagerDialog(bool okButtonEnable = false, const QString& graphicsFontPath = QString(), QDialog *parent = 0);
+    explicit FontManagerDialog(bool okButtonEnable = false, const QString& graphicsFontPath = QString(), QWidget *parent = 0);
     ~FontManagerDialog();
     //Return created font
     DAVA::Font * ResultFont();
