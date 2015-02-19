@@ -308,9 +308,6 @@ void WayEditSystem::Draw()
         RenderManager::SetDynamicParam(PARAM_WORLD, &e->GetWorldTransform(), (pointer_size)&e->GetWorldTransform());
         
         AABBox3 worldBox = selectionSystem->GetSelectionAABox(e);
-        DAVA::Vector3 center = worldBox.GetCenter();
-        worldBox.min.z += WAYPOINTS_DRAW_LIFTING;
-        worldBox.max.z += WAYPOINTS_DRAW_LIFTING;
 
         float32 redValue = 0.0f;
         float32 greenValue = 0.0f;

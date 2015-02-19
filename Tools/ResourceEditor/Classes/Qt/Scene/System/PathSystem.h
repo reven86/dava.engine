@@ -33,8 +33,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Base/FastName.h"
 
 #include "Scene/System/SelectionSystem.h"
+#include "Scene3D/Components/Waypoint/PathComponent.h"
 
-static const uint32 WAYPOINTS_DRAW_LIFTING = 3;
+static const DAVA::uint32 WAYPOINTS_DRAW_LIFTING = 1;
 
 class SceneEditor2;
 class PathSystem: public DAVA::SceneSystem
@@ -54,12 +55,10 @@ public:
     virtual void Process(DAVA::float32 timeElapsed);
 
     DAVA::Entity * GetCurrrentPath() const;
-    
     const DAVA::Vector<DAVA::Entity *> & GetPathes() const;
     
-    DAVA::FastName GeneratePathName() const;
-    const DAVA::Color & GetNextPathColor() const;
-    
+    DAVA::PathComponent* CreatePathComponent();
+
 protected:
     
     void Draw();
@@ -70,8 +69,9 @@ protected:
     
     void ProcessCommand(const Command2 *command, bool redo);
 
-    
-    DAVA::Color GetPathColor(DAVA::Entity *path);
+    DAVA::FastName GeneratePathName() const;
+    const DAVA::Color & GetNextPathColor() const;
+
     SceneEditor2* GetSceneEditor() const;
     
     

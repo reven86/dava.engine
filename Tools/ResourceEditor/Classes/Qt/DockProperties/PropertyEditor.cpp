@@ -1479,10 +1479,8 @@ void PropertyEditor::OnAddSkeletonComponent()
 
 void PropertyEditor::OnAddPathComponent()
 {
-    PathComponent *pathComponent = static_cast<PathComponent *> (Component::CreateByType(Component::PATH_COMPONENT));
-
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-    pathComponent->SetName(curScene->pathSystem->GeneratePathName());
+    PathComponent* pathComponent = curScene->pathSystem->CreatePathComponent();
 
     OnAddComponent(pathComponent);
     SafeDelete(pathComponent);

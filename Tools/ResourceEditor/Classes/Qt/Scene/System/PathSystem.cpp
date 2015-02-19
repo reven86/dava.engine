@@ -32,7 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Scene3D/Components/Waypoint/WaypointComponent.h"
 #include "Scene3D/Components/Waypoint/EdgeComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
-//#include "FileSystem/VariantType.h"
 
 #include "Commands2/ConvertPathCommands.h"
 
@@ -99,23 +98,20 @@ void PathSystem::AddEntity(DAVA::Entity * entity)
         currentPath = entity;
     }
     
-    //validate color
-    KeyedArchive *props = GetCustomPropertiesArchieve(entity);
-    if(props)
+    // extract color data from custom properties for old scenes
+    PathComponent* pc = GetPathComponent(entity);
+    if (pc && pc->GetColor() == Color())
     {
-        if(!props->IsKeyExists(PATH_COLOR_PROP_NAME))
-        {
-            const DAVA::Color & color = GetNextPathColor();
-            props->SetColor(PATH_COLOR_PROP_NAME, color);
-        }
-        else
+        KeyedArchive *props = GetCustomPropertiesArchieve(entity);
+        if (props && props->IsKeyExists(PATH_COLOR_PROP_NAME))
         {
             auto& archive = props->GetArchieveData();
             auto& entry = archive.find(PATH_COLOR_PROP_NAME)->second;
             if (entry->GetType() == VariantType::TYPE_VECTOR4)
             {
-                props->SetColor(PATH_COLOR_PROP_NAME,DAVA::Color(entry->AsVector4()));
+                pc->SetColor(DAVA::Color(entry->AsVector4()));
             }
+            props->DeleteKey(PATH_COLOR_PROP_NAME);
         }
     }
 }
@@ -166,9 +162,14 @@ void PathSystem::DrawInEditableMode()
         {   // we don't need draw hidden pathes
             continue;
         }
+
+        PathComponent* pc = GetPathComponent(path);
+        if (!pc)
+        {
+            continue;
+        }
         
-        DAVA::Color color = GetPathColor(path);
-        RenderManager::Instance()->SetColor(color);
+        RenderManager::Instance()->SetColor(pc->GetColor());
         
         const DAVA::uint32 childrenCount = path->GetChildrenCount();
         for(DAVA::uint32 c = 0; c < childrenCount; ++c)
@@ -218,16 +219,11 @@ void PathSystem::DrawInViewOnlyMode()
      
         RenderManager::SetDynamicParam(PARAM_WORLD, &path->GetWorldTransform(), (pointer_size)&path->GetWorldTransform());
 
-        DAVA::Color pathColor = GetPathColor(path);
-
-        
         const Vector<PathComponent::Waypoint *> & waypoints = pathComponent->GetPoints();
         const DAVA::uint32 waypointsCount = (const DAVA::uint32)waypoints.size();
         for(DAVA::uint32 w = 0; w < waypointsCount; ++w)
         {
             Vector3 startPosition = waypoints[w]->position;
-            startPosition.z += WAYPOINTS_DRAW_LIFTING;
-
             const DAVA::AABBox3 wpBoundingBox(startPosition, boxScale);
             
             DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.3f, 0.3f, 0.0f, 0.3f));
@@ -239,11 +235,12 @@ void PathSystem::DrawInViewOnlyMode()
             const DAVA::uint32 edgesCount = (const DAVA::uint32)waypoints[w]->edges.size();
             if(edgesCount)
             {
-                RenderManager::Instance()->SetColor(pathColor);
+                RenderManager::Instance()->SetColor(pathComponent->GetColor());
 
                 for(DAVA::uint32 e = 0; e < edgesCount; ++e)
                 {
                     const DAVA::PathComponent::Edge *edge = waypoints[w]->edges[e];
+                    startPosition.z += WAYPOINTS_DRAW_LIFTING;
                     Vector3 finishPosition = edge->destination->position;
                     finishPosition.z += WAYPOINTS_DRAW_LIFTING;
                     DrawArrow(startPosition, finishPosition);
@@ -256,21 +253,6 @@ void PathSystem::DrawInViewOnlyMode()
 void PathSystem::DrawArrow(const DAVA::Vector3 & start, const DAVA::Vector3 & finish)
 {
     RenderHelper::Instance()->DrawArrow(start, finish, (finish - start).Length() / 4.f, 7.f, pathDrawState);
-}
-
-
-
-DAVA::Color PathSystem::GetPathColor(DAVA::Entity *path)
-{
-    DVASSERT(path);
-    
-    KeyedArchive *props = GetCustomPropertiesArchieve(path);
-    if(props)
-    {
-        return props->GetColor(PATH_COLOR_PROP_NAME);
-    }
-    
-    return DAVA::Color::White;
 }
 
 SceneEditor2* PathSystem::GetSceneEditor() const
@@ -433,4 +415,11 @@ void PathSystem::EnablePathEdit(bool enable)
     }
 }
 
+DAVA::PathComponent* PathSystem::CreatePathComponent()
+{
+    DAVA::PathComponent *pc = new PathComponent();
+    pc->SetName(GeneratePathName());
+    pc->SetColor(GetNextPathColor());
+    return pc;
+}
 
