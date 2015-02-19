@@ -194,7 +194,7 @@ bool CoreWin32PlatformQt::WinEvent(MSG *message, long *result)
 	{
 	case WM_KEYUP:
 		{
-			InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed((int32)message->wParam);
+			InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed((int32)message->wParam);
 
 			// translate this to WM_CHAR message
 			TranslateMessage(message);
@@ -209,7 +209,7 @@ bool CoreWin32PlatformQt::WinEvent(MSG *message, long *result)
 			ev.keyChar = 0;
 			ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
 			ev.tapCount = 1;
-			ev.tid = InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey((int32)message->wParam);
+			ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey((int32)message->wParam);
 
 			touches.push_back(ev);
 
@@ -217,7 +217,7 @@ bool CoreWin32PlatformQt::WinEvent(MSG *message, long *result)
 			touches.pop_back();
 			UIControlSystem::Instance()->OnInput(0, touches, allTouches);
 
-			InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed((int32)message->wParam);
+			InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed((int32)message->wParam);
 
 			// translate this to WM_CHAR message
 			TranslateMessage(message);

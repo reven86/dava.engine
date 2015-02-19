@@ -91,6 +91,9 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     nextScreen = _nextScreen;
     prevScreen = _prevScreen;
 
+    RenderSystem2D::Instance()->Flush();
+    RenderSystem2D::Instance()->Reset();
+	
     RenderSystem2D::Instance()->PushRenderTarget();
 
     RenderSystem2D::Instance()->SetRenderTarget(renderTargetPrevScreen);
@@ -115,6 +118,9 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
         SafeRelease(prevScreen);
     }
 
+    RenderSystem2D::Instance()->Flush();
+    RenderSystem2D::Instance()->Reset();
+    
     /*clear alpha*/
     RenderManager::Instance()->SetRenderState(alphaClearStateHandle);
     RenderManager::Instance()->FlushState();
@@ -134,6 +140,9 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     float32 timeElapsed = SystemTimer::FrameDelta();
     nextScreen->SystemUpdate(timeElapsed);
     nextScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
+
+    RenderSystem2D::Instance()->Flush();
+    RenderSystem2D::Instance()->Reset();
 
     /*clear alpha*/
     RenderManager::Instance()->SetRenderState(alphaClearStateHandle);

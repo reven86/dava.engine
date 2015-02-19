@@ -345,7 +345,7 @@ extern void FrameworkWillTerminate();
 	ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
 	ev.timestamp = timestamp;
 	ev.tapCount = 1;
-	ev.tid = DAVA::InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey(event->data.key.keyCode);
+	ev.tid = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(event->data.key.keyCode);
 
 	touches.push_back(ev);
 
@@ -353,16 +353,16 @@ extern void FrameworkWillTerminate();
 	touches.pop_back();
 	DAVA::UIControlSystem::Instance()->OnInput(0, touches, allTouches);
 
-	DAVA::InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed(event->data.key.keyCode);
+	DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(event->data.key.keyCode);
 	if (event->data.key.modifierFlags & NSCommandKeyMask)
 	{
-		DAVA::InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed(event->data.key.keyCode);
+		DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(event->data.key.keyCode);
 	}
 }
 
 -(void) keyUp:(NPCocoaEvent*) event
 {
-	DAVA::InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed(event->data.key.keyCode);
+	DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(event->data.key.keyCode);
 }
 
 -(void) flagsChanged:(NPCocoaEvent*) event
@@ -389,11 +389,11 @@ extern void FrameworkWillTerminate();
 		{
 			if (newModifiers & masks[i])
 			{
-				DAVA::InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed(keyCodes[i]);
+				DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(keyCodes[i]);
 			}
 			else
 			{
-				DAVA::InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed(keyCodes[i]);
+				DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCodes[i]);
 			}
 		}
 	}

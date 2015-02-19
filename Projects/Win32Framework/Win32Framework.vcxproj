@@ -114,7 +114,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -360,7 +360,6 @@
     <ClInclude Include="..\..\Sources\Internal\Input\Accelerometer.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\AccelerometeriPhone.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\GamepadDevice.h" />
-    <ClInclude Include="..\..\Sources\Internal\Input\GamepadManager.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\InputCallback.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\InputSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\KeyboardDevice.h" />
@@ -695,6 +694,7 @@
     <ClInclude Include="..\..\Sources\Internal\Thread\Semaphore.h" />
     <ClInclude Include="..\..\Sources\Internal\Thread\Spinlock.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
@@ -887,7 +887,6 @@
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlParser.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\Accelerometer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\GamepadDevice.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Input\GamepadManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\InputSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\KeyboardDevice.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Job\JobManager.cpp" />
@@ -1181,6 +1180,7 @@
     <ClCompile Include="..\..\Sources\Internal\Sound\FMODSoundEvent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Sound\FMODSoundSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp" />

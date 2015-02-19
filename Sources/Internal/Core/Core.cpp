@@ -175,8 +175,6 @@ void Core::CreateSingletons()
 
     DeviceInfo::InitializeScreenInfo();
     
-    UIControlBackground::CreateRenderObject();
-
     RegisterDAVAClasses();
     CheckDataTypeSizes();
 
@@ -205,8 +203,6 @@ void Core::ReleaseSingletons()
 #ifdef __DAVAENGINE_AUTOTESTING__
 	AutotestingSystem::Instance()->Release();
 #endif
-
-	UIControlBackground::ReleaseRenderObject();
 
 	LocalNotificationController::Instance()->Release();
     DownloadManager::Instance()->Release();

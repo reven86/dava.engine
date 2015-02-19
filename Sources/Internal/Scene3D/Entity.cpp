@@ -63,11 +63,13 @@ uint64 vectorComponentsMask = MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT
 // Property Names
 const char* Entity::SCENE_NODE_IS_SOLID_PROPERTY_NAME = "editor.isSolid";
 const char* Entity::SCENE_NODE_IS_LOCKED_PROPERTY_NAME = "editor.isLocked";
+const char* Entity::SCENE_NODE_IS_NOT_REMOVABLE_PROPERTY_NAME = "editor.isNotRemovable";
+    
 	
 Entity::Entity()
-: scene(0)
-, parent(0)
-, tag(0)
+    : scene(nullptr)
+    , parent(nullptr)
+    , tag(0)
 {
 	flags = NODE_VISIBLE | NODE_UPDATABLE | NODE_LOCAL_MATRIX_IDENTITY;
     UpdateFamily();
@@ -80,7 +82,7 @@ Entity::~Entity()
     GlobalEventSystem::Instance()->RemoveAllEvents(this);
 	RemoveAllChildren();	
 	RemoveAllComponents();	
-	SetScene(0);
+	SetScene(nullptr);
 }
 
 bool ComponentLessPredicate(Component * left, Component * right)
@@ -111,12 +113,12 @@ void Entity::DetachComponent(const Vector<Component *>::iterator & it)
     
     components.erase(it);
     UpdateFamily();
-    c->SetEntity(0);
+    c->SetEntity(nullptr);
 }
   
 Component * Entity::GetComponent(uint32 componentType, uint32 index) const
 {
-    Component * ret = 0;
+    Component * ret = nullptr;
     uint32 maxCount = family->GetComponentsCount(componentType);
     if(index < maxCount)
     {
@@ -244,9 +246,9 @@ void Entity::RemoveNode(Entity * node)
 			children.erase(t);
 			if (node)
 			{
-				node->SetScene(0);
+                node->SetScene(nullptr);
                 node->SetIndexInParent(ENTITY_INDEX_MASK);
-				node->SetParent(0);
+                node->SetParent(nullptr);
 				node->Release();
 			}
 			break;
@@ -257,7 +259,7 @@ void Entity::RemoveNode(Entity * node)
 		
 Entity* Entity::GetNextChild(Entity *child)
 {
-	Entity* next = NULL;
+    Entity* next = nullptr;
 		
 	for(uint32 i = 0; i < children.size(); i++)
 	{
@@ -292,8 +294,8 @@ void Entity::RemoveAllChildren()
 	for (Vector<Entity*>::iterator t = children.begin(); t != children.end(); ++t)
 	{
 		Entity *node = *t;
-		node->SetScene(0);
-		node->SetParent(0);
+        node->SetScene(nullptr);
+        node->SetParent(nullptr);
 		node->Release();
 	}
 	children.clear();
@@ -789,12 +791,12 @@ void Entity::Load(KeyedArchive * archive, SerializationContext * serializationCo
     
 void Entity::LoadComponentsV6(KeyedArchive *compsArch, SerializationContext * serializationContext)
 {
-	if(NULL != compsArch)
+    if (nullptr != compsArch)
 	{
 		for(uint32 i = 0; i < COMPONENT_COUNT_V6; ++i)
 		{
 			KeyedArchive *compArch = compsArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
-			if(NULL != compArch)
+            if (nullptr != compArch)
 			{
 				uint32 compType = compArch->GetUInt32("comp.type", 0xFFFFFFFF);
 				if(compType != 0xFFFFFFFF)
@@ -815,7 +817,7 @@ void Entity::LoadComponentsV6(KeyedArchive *compsArch, SerializationContext * se
 					//}VI
 						
 					Component *comp = Component::CreateByType(compType);
-					if(NULL != comp)
+                    if (nullptr != comp)
 					{
 						if(compType == Component::TRANSFORM_COMPONENT)
 							RemoveComponent(compType);
@@ -830,17 +832,17 @@ void Entity::LoadComponentsV6(KeyedArchive *compsArch, SerializationContext * se
 		
 void Entity::LoadComponentsV7(KeyedArchive *compsArch, SerializationContext * serializationContext)
 {
-	if(NULL != compsArch)
+    if (nullptr != compsArch)
 	{
 		uint32 componentCount = compsArch->GetUInt32("count");
 		for(uint32 i = 0; i < componentCount; ++i)
 		{
 			KeyedArchive *compArch = compsArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
-			if(NULL != compArch)
+            if (nullptr != compArch)
 			{
 				String componentType = compArch->GetString("comp.typename");
 				Component* comp = ObjectFactory::Instance()->New<Component>(componentType);
-				if(NULL != comp)
+                if (nullptr != comp)
 				{
 					if(comp->GetType() == Component::TRANSFORM_COMPONENT)
 					{
@@ -861,10 +863,10 @@ void Entity::SetSolid(bool isSolid)
 	props->SetBool(SCENE_NODE_IS_SOLID_PROPERTY_NAME, isSolid);
 }
     
-bool Entity::GetSolid()
+bool Entity::GetSolid() const
 {
     KeyedArchive *props = GetCustomPropertiesArchieve(this);
-    if(props)
+    if (nullptr != props)
     {
         return props->GetBool(SCENE_NODE_IS_SOLID_PROPERTY_NAME, false);
     }
@@ -877,16 +879,33 @@ void Entity::SetLocked(bool isLocked)
 	props->SetBool(SCENE_NODE_IS_LOCKED_PROPERTY_NAME, isLocked);
 }
 	
-bool Entity::GetLocked()
+bool Entity::GetLocked() const
 {
     KeyedArchive *props = GetCustomPropertiesArchieve(this);
-    if(props)
+    if (nullptr != props)
     {
         return props->GetBool(SCENE_NODE_IS_LOCKED_PROPERTY_NAME, false);
     }
 	return false;
 }
 	
+void Entity::SetNotRemovable(bool notRemovable)
+{
+    KeyedArchive *props = GetOrCreateCustomProperties(this)->GetArchive();
+    props->SetBool(SCENE_NODE_IS_NOT_REMOVABLE_PROPERTY_NAME, notRemovable);
+}
+
+bool Entity::GetNotRemovable() const
+{
+    KeyedArchive *props = GetCustomPropertiesArchieve(this);
+    if (nullptr != props)
+    {
+        return props->GetBool(SCENE_NODE_IS_NOT_REMOVABLE_PROPERTY_NAME, false);
+    }
+    return false;
+}
+
+    
 void Entity::GetDataNodes(Set<DataNode*> & dataNodes)
 {
     size_t size = components.size();
@@ -944,7 +963,7 @@ void Entity::RemoveFlagRecursive(int32 flagToRemove)
 	
 bool Entity::IsLodMain(Entity *childToCheck)
 {
-	if (!parent || !IsLodPart())
+    if (nullptr == parent || !IsLodPart())
 	{
 		return true;
 	}
@@ -956,7 +975,7 @@ String Entity::GetPathID(Entity * root)
 {
 	String result;
 	Entity * curr = this;
-	Entity * parent = NULL;
+    Entity * parent = nullptr;
 	int32 sz, i;
 		
 	while (curr != root)
@@ -992,7 +1011,7 @@ Entity * Entity::GetNodeByPathID(Entity * root, String pathID)
 			if (index >=0 && result->GetChildrenCount() > index)
 				result = result->GetChild(index);
 			else
-				return NULL;
+                return nullptr;
 			continue;
 		}
 		index = index * 10 + val - '0';
@@ -1029,12 +1048,12 @@ void Entity::SetVisible(const bool &isVisible)
 	{
 		AddFlag(NODE_VISIBLE);
 			
-		if(renderComponent)
+        if (nullptr != renderComponent)
 		{
 			RenderObject * renderObject = renderComponent->GetRenderObject();
 			renderObject->SetFlags(renderObject->GetFlags() | RenderObject::VISIBLE);
 			if ((renderObject->GetFlags() & RenderObject::NEED_UPDATE) &&
-				renderObject->GetRenderSystem() != NULL)
+                renderObject->GetRenderSystem() != nullptr)
 			{
 				renderObject->GetRenderSystem()->MarkForUpdate(renderObject);
 			}
@@ -1043,7 +1062,7 @@ void Entity::SetVisible(const bool &isVisible)
 	else
 	{
 		RemoveFlag(NODE_VISIBLE);
-		if(renderComponent)
+        if (nullptr != renderComponent)
 		{
 			RenderObject * renderObject = renderComponent->GetRenderObject();
 			renderObject->SetFlags(renderObject->GetFlags() & ~RenderObject::VISIBLE);
@@ -1051,7 +1070,7 @@ void Entity::SetVisible(const bool &isVisible)
 	}
         
     ParticleEffectComponent *effect = GetEffectComponent(this);
-    if (effect)
+    if (nullptr != effect)
         effect->SetRenderObjectVisible(isVisible);
 		
 	int32 count = GetChildrenCount();
@@ -1067,7 +1086,7 @@ void Entity::SetUpdatable(bool isUpdatable)
 	if(isUpdatable)
 	{
 		AddFlag(NODE_UPDATABLE);
-		if(renderComponent)
+        if (nullptr != renderComponent)
 		{
 			renderComponent->GetRenderObject()->SetFlags(renderComponent->GetRenderObject()->GetFlags() | RenderObject::VISIBLE);
 		}
@@ -1075,7 +1094,7 @@ void Entity::SetUpdatable(bool isUpdatable)
 	else
 	{
 		RemoveFlag(NODE_UPDATABLE);
-		if(renderComponent)
+        if (nullptr != renderComponent)
 		{
 			renderComponent->GetRenderObject()->SetFlags(renderComponent->GetRenderObject()->GetFlags() & ~RenderObject::VISIBLE);
 		}
@@ -1109,7 +1128,7 @@ Matrix4 Entity::AccamulateTransformUptoFarParent(Entity * farParent)
 void Entity::FindComponentsByTypeRecursive(Component::eType type, List<DAVA::Entity*> & components)
 {
 	Component * component = GetComponent(type);
-	if (component)
+    if (nullptr != component)
 	{
 		components.push_back(this);
 	}
@@ -1120,7 +1139,6 @@ void Entity::FindComponentsByTypeRecursive(Component::eType type, List<DAVA::Ent
 		GetChild(i)->FindComponentsByTypeRecursive(type, components);
 	}
 }
-	
 	
 	
 };
