@@ -169,12 +169,12 @@ public:
 		\param[in] bufferSize size of [pointerToData] buffer
 		\return number of bytes actually read
 	*/
-	virtual uint32 ReadLine(void * destinationBuffer, uint32 bufferSize);
+    uint32 ReadLine(void * destinationBuffer, uint32 bufferSize);
 
     /**
     \brief Read one line from text file without line endings
      */
-    virtual String ReadLine();
+    String ReadLine();
 	
 	/**
 		\brief Read string line from file to destination buffer with destinationBufferSize

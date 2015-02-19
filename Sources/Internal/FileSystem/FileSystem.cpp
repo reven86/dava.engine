@@ -807,6 +807,12 @@ bool FileSystem::CompareBinaryFiles(const FilePath &filePath1, const FilePath &f
 
     uint8 *buffer1 = new uint8[bufferSize];
     uint8 *buffer2 = new uint8[bufferSize];
+    
+    SCOPE_EXIT
+    {
+        SafeDelete(buffer1);
+        SafeDelete(buffer2);
+    };
 
     bool res = false;
 
@@ -828,9 +834,6 @@ bool FileSystem::CompareBinaryFiles(const FilePath &filePath1, const FilePath &f
     {
         res = false;
     }
-    
-    SafeDelete(buffer1);
-    SafeDelete(buffer2);
 
     return res;
 }
