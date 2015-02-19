@@ -128,12 +128,7 @@ void NetworkTest::Update(float32 timeElapsed)
         timeCounter += timeElapsed;
         if (timeCounter >= 1.0f)
         {
-            //Logger::Info("Periodic: timeCounter=%.1f, frameCount=%u", timeCounter, frameCount);
-            //v3.resize(v3.size() + 10);
-            v3.resize(v3.capacity() + 10);
-            char s[100];
-            Snprinf(s, COUNT_OF(s), "size=%u, capacity=%u\n", v3.size(), v3.capacity());
-            OutputDebugString(s);
+            Logger::Info("Periodic: timeCounter=%.1f, frameCount=%u", timeCounter, frameCount);
             frameCount = 0;
             timeCounter = 0.0f;
         }
