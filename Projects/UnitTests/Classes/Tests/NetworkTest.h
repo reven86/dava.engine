@@ -90,6 +90,8 @@ private:
     //DAVA::Vector<char> v;
     std::vector<char, DAVA::MemoryManagerAllocator<char, 2>> v1;
     std::vector<char, DAVA::MemoryManagerAllocator<char, 3>> v2;
+    //std::vector<char, DAVA::MemoryManagerAllocator<char, 2>> v3;
+    std::vector<char> v3;
 
     DAVA::Net::PeerDescription peerDescr;
     Vector<uint8> peerDescrSerialized;

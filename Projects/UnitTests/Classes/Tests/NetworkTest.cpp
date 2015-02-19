@@ -128,7 +128,12 @@ void NetworkTest::Update(float32 timeElapsed)
         timeCounter += timeElapsed;
         if (timeCounter >= 1.0f)
         {
-            Logger::Info("Periodic: timeCounter=%.1f, frameCount=%u", timeCounter, frameCount);
+            //Logger::Info("Periodic: timeCounter=%.1f, frameCount=%u", timeCounter, frameCount);
+            //v3.resize(v3.size() + 10);
+            v3.resize(v3.capacity() + 10);
+            char s[100];
+            Snprinf(s, COUNT_OF(s), "size=%u, capacity=%u\n", v3.size(), v3.capacity());
+            OutputDebugString(s);
             frameCount = 0;
             timeCounter = 0.0f;
         }
@@ -320,12 +325,15 @@ void NetworkTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
         if (periodicFlag)
         {
             btnPeriodic->SetStateText(0xFF, L"Periodic on");
-            Logger::Info("Periodic on");
+            //Logger::Info("Periodic on");
+            //v3.resize(v3.size() + 10);
         }
         else
         {
             btnPeriodic->SetStateText(0xFF, L"Periodic off");
-            Logger::Info("Periodic off");
+            //Logger::Info("Periodic off");
+            v3.clear();
+            v3.shrink_to_fit();
         }
     }
     else if (obj == btnRestart)
