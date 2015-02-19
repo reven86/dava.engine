@@ -880,7 +880,13 @@ inline void RenderManager::RetainTextureState(UniqueHandle handle)
 inline void RenderManager::ReleaseTextureState(UniqueHandle handle)
 {
     LockTextureState();
-    uniqueTextureStates.ReleaseUnique(handle);
+    if(uniqueTextureStates.ReleaseUnique(handle) == 0)
+    {
+        if(hardwareState.textureState == handle)
+            hardwareState.textureState = InvalidUniqueHandle;
+        if(currentState.textureState == handle)
+            currentState.textureState = InvalidUniqueHandle;
+    }
     UnlockTexturerState();
 }
 
