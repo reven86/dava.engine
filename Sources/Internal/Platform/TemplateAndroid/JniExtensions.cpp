@@ -64,7 +64,7 @@ jmethodID JniExtension::GetMethodID(const char *methodName, const char *paramCod
 
 	if (!mid)
 	{
-		Logger::Error("get method id of %s.%s error ", GetJavaClassName(), methodName);
+		Logger::Error("get method id of %s.%s%s error ", GetJavaClassName(), methodName, paramCode);
 	}
 
 	return mid;
