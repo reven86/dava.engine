@@ -38,7 +38,9 @@ using namespace DAVA;
 class BaseTest : public BaseObject
 {
 public:
-	BaseTest(const String& testName);
+	BaseTest(const String& testName, uint32 frames, float32 delta, uint32 debugFrame);
+	BaseTest(const String& testName, uint32 time);
+
 	~BaseTest();
 
 	struct FrameInfo
@@ -50,11 +52,13 @@ public:
 		uint32 frame;
 	};
 
-	virtual void SetupTest(uint32 framesCount, float32 fixedDelta, uint32 maxTestTime);
+	virtual void SetupTest();
 	virtual void FinishTest();
 	virtual void ReleaseTest();
 
-	bool IsFinished() const;
+	bool IsPerformed() const;
+	bool IsDebuggable() const;
+	uint32 GetDebugFrame() const;
 
 	virtual void BeginFrame();
 	virtual void EndFrame();
@@ -68,6 +72,8 @@ public:
 
 	float32 GetTestTime() const;
 	uint64 GetElapsedTime() const;
+
+	uint32 GetFrameNumber() const; 
 
 	Scene* GetScene() const;
 
@@ -85,8 +91,9 @@ private:
 	float32 fixedDelta;
 
 	uint32 targetTestTime;
+	uint32 debugFrame;
 
-	Scene* pScene;
+	Scene* scene;
 };
 
 inline const List<BaseTest::FrameInfo>& BaseTest::GetFramesInfo() const
@@ -96,10 +103,10 @@ inline const List<BaseTest::FrameInfo>& BaseTest::GetFramesInfo() const
 
 inline Scene* BaseTest::GetScene() const
 {
-	return pScene;
+	return scene;
 }
 
-inline bool BaseTest::IsFinished() const
+inline bool BaseTest::IsPerformed() const
 {
 	if (targetFramesCount > 0 && frameNumber >= (targetFramesCount + 2))
 	{
@@ -130,7 +137,22 @@ inline float32 BaseTest::GetTestTime() const
 
 inline void BaseTest::Update()
 {
-	pScene->Update(0.0f);
+	scene->Update(0.0f);
+}
+
+inline uint32 BaseTest::GetDebugFrame() const
+{
+	return debugFrame;
+}
+
+inline uint32 BaseTest::GetFrameNumber() const
+{
+	return frameNumber;
+}
+
+inline bool BaseTest::IsDebuggable() const
+{
+	return debugFrame > 0;
 }
 
 #endif

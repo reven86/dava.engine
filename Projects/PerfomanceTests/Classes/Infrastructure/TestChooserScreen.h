@@ -26,77 +26,40 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "TestChainScreen.h"
+#ifndef __TEST_CHOOSER_SCREEN_H__
+#define __TEST_CHOOSER_SCREEN_H__
+
+#include "DAVAEngine.h"
+#include "BaseScreen.h"
+#include "BaseTest.h"
 
 
-TestChainScreen::TestChainScreen(const Vector<BaseTest*>& _testsChain) : 
-testsChain(_testsChain),
-currentTest(nullptr),
-currentTestIndex(0),
-testsFinished(false)
+class TestChooserScreen: public BaseScreen
 {
-	currentTest = testsChain[currentTestIndex];
-	currentTest->SetupTest();
-}
+public:
+	TestChooserScreen(const Vector<BaseTest*>& testsChain);
 
-TestChainScreen::~TestChainScreen()
-{
-}
+	virtual bool IsFinished() const override;
 
-bool TestChainScreen::IsFinished() const
-{
-	return testsFinished;
-}
+	virtual void BeginFrame() override;
+	virtual void EndFrame() override;
 
-void TestChainScreen::OnStart(HashMap<String, BaseObject*>& params)
-{
-}
+	virtual void OnStart(HashMap<String, BaseObject*>& params) override;
+	virtual void OnFinish(HashMap<String, BaseObject*>& params) override;
 
-void TestChainScreen::OnFinish(HashMap<String, BaseObject*>& params)
-{
+	virtual void Update(float32 timeElapsed) override;
+	virtual void Draw() override;
 
-}
+protected:
+	virtual ~TestChooserScreen();
 
-void TestChainScreen::BeginFrame()
-{
-	RenderManager::Instance()->BeginFrame();
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+private:
 
-	currentTest->BeginFrame();
-}
+	void CreateChooserUI();
 
-void TestChainScreen::EndFrame()
-{
-	if (currentTest->IsPerformed())
-	{
-		currentTest->FinishTest();
-		currentTestIndex++;
+	Vector<BaseTest*> testChain;
+	BaseTest* testForRun;
+};
 
-		if (currentTestIndex < testsChain.size())
-		{
-			currentTest = testsChain[currentTestIndex];
-			currentTest->SetupTest();
-		}
-		else
-		{
-			testsFinished = true;
-		}
-	}
-	else
-	{
-		currentTest->EndFrame();
-	}
+#endif
 
-	RenderManager::Instance()->EndFrame();
-	RenderManager::Instance()->ProcessStats();
-}
-
-void TestChainScreen::Update(float32 timeElapsed)
-{
-	currentTest->Update(timeElapsed);
-}
-
-void TestChainScreen::Draw()
-{
-	currentTest->Draw();
-}

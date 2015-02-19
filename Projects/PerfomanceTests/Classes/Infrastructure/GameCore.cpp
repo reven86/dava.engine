@@ -40,13 +40,21 @@
 
 using namespace DAVA;
 
-GameCore::GameCore() : reportScreen(nullptr), currentScreen(nullptr)
+GameCore::GameCore() :
+currentScreen(nullptr),
+screenIndex(0)
+
 {
 }
 
 GameCore::~GameCore()
 {
-	for each (BaseTest* test in testsChain)
+	for each (BaseScreen* screen in screenChain)
+	{
+		screen->Release();
+	}
+
+	for each (BaseTest* test in testChain)
 	{
 		test->Release();
 	}
@@ -56,19 +64,21 @@ void GameCore::OnAppStarted()
 {
 	RegisterTests();
 
-	if (testsChain.size() > 0)
+	if (testChain.size() > 0)
 	{
-		InitTestProcessor();
+		InitScreenChain();
+
+		currentScreen = screenChain[screenIndex];
+		currentScreen->OnStart(params);
 	}
 	else
 	{
 		Core::Instance()->Quit();
 	}
 }
-
+ 
 void GameCore::OnAppFinished()
 {
-    DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
 }
 
 void GameCore::OnSuspend()
@@ -117,13 +127,20 @@ void GameCore::EndFrame()
 {
 	currentScreen->EndFrame();
 
-	if (currentScreen->IsFinished() && reportScreen == nullptr)
+	if (currentScreen->IsFinished())
 	{
-		reportScreen = new ReportScreen(testsChain);
-		reportScreen->CreateReportScreen();
+		screenIndex++;
+		currentScreen->OnFinish(params);
 
-		currentScreen->Release();
-		currentScreen = reportScreen;
+		if (screenIndex < screenChain.size())
+		{
+			currentScreen = screenChain[screenIndex];
+			currentScreen->OnStart(params);
+		}
+		else
+		{
+			Core::Instance()->Quit();
+		}
 	}
 }
 
@@ -151,102 +168,31 @@ void GameCore::Draw()
 
 void GameCore::RegisterTests()
 {
-	testsChain.push_back(new PerfomanceTest());
-	testsChain.push_back(new PerfomanceTest());
-	testsChain.push_back(new PerfomanceTest());
+	testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
+	//testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
+	//testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
 }
 
-void GameCore::InitTestProcessor()
+void GameCore::InitScreenChain()
 {
-	bool fixedFrames = CommandLineParser::Instance()->CommandIsFound("-fixed_frames");
-	bool fixedTime = CommandLineParser::Instance()->CommandIsFound("-fixed_time");
+	bool allTests = CommandLineParser::Instance()->CommandIsFound("all");
+	bool allWithUI = CommandLineParser::Instance()->CommandIsFound("all_ui");
 
-	bool debugTest = CommandLineParser::Instance()->CommandIsFound("-run_test_d");
-	bool singleTestTime = CommandLineParser::Instance()->CommandIsFound("-run_test_t");
-	bool singleTestFrame = CommandLineParser::Instance()->CommandIsFound("-run_test_f");
-
-	if (fixedFrames || fixedTime)
+	if (allTests)
 	{
-		uint32 fixedFramesCount = 0;
-		float32 fixedDelta = 0.0f;
-		uint32 fixedTime = 0;
-
-		if (fixedFrames)
-		{
-			String frames = CommandLineParser::Instance()->GetCommandParamAdditional("-fixed_frames", 0);
-			String delta = CommandLineParser::Instance()->GetCommandParamAdditional("-fixed_frames", 1);
-
-			fixedFramesCount = atoi(frames.c_str());
-			fixedDelta = strtof(delta.c_str(), nullptr);
-		}
-		else
-		{
-			String time = CommandLineParser::Instance()->GetCommandParamAdditional("-fixed_time", 0);
-			fixedTime = atoi(time.c_str());
-		}
-
-		currentScreen = new TestChainScreen(testsChain, fixedTime, fixedFramesCount, fixedDelta);
+		screenChain.push_back(new TestChainScreen(testChain));
 	}
-
-	if (singleTestTime || debugTest || singleTestFrame)
+	else if (allWithUI)
 	{
-		String testName;
-		uint32 targetFrame = 0;
-
-		uint32 fixedFramesCount = 0;
-		float32 fixedDelta = 0.0f;
-		uint32 fixedTime = 0;
-
-		if (singleTestTime)
-		{	
-			testName = CommandLineParser::Instance()->GetCommandParamAdditional("-run_test_t", 0);
-			String time = CommandLineParser::Instance()->GetCommandParamAdditional("-run_test_t", 1);
-			fixedTime = atoi(time.c_str());
-		}
-
-		if (singleTestFrame)
-		{
-			testName = CommandLineParser::Instance()->GetCommandParamAdditional("-run_test_f", 0);
-			String frames = CommandLineParser::Instance()->GetCommandParamAdditional("-run_test_f", 1);
-			String delta = CommandLineParser::Instance()->GetCommandParamAdditional("-run_test_f", 2);
-
-			fixedFramesCount = atoi(frames.c_str());
-			fixedDelta = strtof(delta.c_str(), nullptr);
-		}
-
-		if (debugTest)
-		{
-			testName = CommandLineParser::Instance()->GetCommandParamAdditional("-run_test_d", 0);
-			String target = CommandLineParser::Instance()->GetCommandParamAdditional("-run_test_d", 1);
-			String delta = CommandLineParser::Instance()->GetCommandParamAdditional("-run_test_d", 2);
-
-			targetFrame = atoi(target.c_str());
-			fixedDelta = strtof(delta.c_str(), nullptr);
-		}
-	
-		BaseTest* testForRun = nullptr;
-
-		for each (BaseTest* test in testsChain)
-		{
-			if (test->GetName() == testName)
-			{
-				testForRun = test;
-				break;
-			}
-		}
-
-		currentScreen = new SingleTestScreen(testForRun, fixedTime, fixedFramesCount, fixedDelta, targetFrame);
+		screenChain.push_back(new TestChainScreen(testChain));
+		screenChain.push_back(new ReportScreen(testChain));
+	} 
+	else
+	{
+		screenChain.push_back(new TestChooserScreen(testChain));
+		screenChain.push_back(new SingleTestScreen());
 	}
-
-	Logger::Instance()->AddCustomOutput(&teamCityOutput);
 }
-
-void GameCore::LogMessage(const String &message)
-{
-    DAVA::Logger::Error(message.c_str());
-}
-
-
 
 
 

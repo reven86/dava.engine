@@ -39,10 +39,10 @@ using namespace DAVA;
 class TestChainScreen : public BaseScreen
 {
 public:
-	TestChainScreen(const Vector<BaseTest*>& testsChain, uint32 fixedTime, uint32 fixedFramesCount, float32 fixedDelta);
+	TestChainScreen(const Vector<BaseTest*>& testsChain);
 
-	virtual void OnStart() override;
-	virtual void OnFinish() override;
+	virtual void OnStart(HashMap<String, BaseObject*>& params) override;
+	virtual void OnFinish(HashMap<String, BaseObject*>& params) override;
 
 	virtual void BeginFrame() override;
 	virtual void EndFrame() override;
@@ -61,10 +61,6 @@ private:
 	BaseTest* currentTest;
 
 	uint32 currentTestIndex;
-
-	uint32 fixedTime;
-	uint32 fixedFramesCount;
-	float32 fixedDelta;
 
 	bool testsFinished;
 };

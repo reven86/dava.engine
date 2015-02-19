@@ -30,13 +30,34 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 const float32 BaseTest::FRAME_OFFSET = 1;
 
-BaseTest::BaseTest(const String& _testName) :
-		frameNumber(0), fixedDelta(0.0f), 
-		targetFramesCount(0), targetTestTime(0),
-		testTime(0), startTime(0), testName(_testName)
+BaseTest::BaseTest(const String& _testName, uint32 frames, float32 delta, uint32 _debugFrame) :
+frameNumber(0),
+fixedDelta(delta),
+targetFramesCount(frames), 
+targetTestTime(0),
+testTime(0),
+startTime(0),
+testName(_testName),
+debugFrame(_debugFrame)
+
 {
-	pScene = new Scene();
+	scene = new Scene();
 }
+
+BaseTest::BaseTest(const String& _testName, uint32 time) :
+frameNumber(0), 
+fixedDelta(0.0f),
+targetFramesCount(0),
+targetTestTime(time),
+testTime(0),
+startTime(0),
+testName(_testName),
+debugFrame(0)
+
+{
+	scene = new Scene();
+}
+
 
 BaseTest::~BaseTest()
 {
@@ -50,19 +71,16 @@ void BaseTest::FinishTest()
 
 void BaseTest::ReleaseTest()
 {
-	SafeRelease(pScene);
+	SafeRelease(scene);
 }
 
-void BaseTest::SetupTest(uint32 framesCount, float32 fixedDelta, uint32 maxTestTime)
+void BaseTest::SetupTest()
 {
-	this->fixedDelta = fixedDelta;
-	this->targetFramesCount = framesCount;
-	this->targetTestTime = maxTestTime;
 }
 
 void BaseTest::Draw()
 {
-	pScene->Draw();
+	scene->Draw();
 	frameNumber++;
 }
 
@@ -72,11 +90,11 @@ void BaseTest::Update(float32 timeElapsed)
 	{
 		if (fixedDelta > 0)
 		{
-			pScene->Update(fixedDelta);
+			scene->Update(fixedDelta);
 		}
 		else
 		{
-			pScene->Update(timeElapsed);
+			scene->Update(timeElapsed);
 		}
 		
 		frames.push_back(FrameInfo(timeElapsed, frameNumber));
@@ -84,7 +102,7 @@ void BaseTest::Update(float32 timeElapsed)
 	}
 	else
 	{
-		pScene->Update(0.0f);
+		scene->Update(0.0f);
 	}	
 }
 

@@ -38,10 +38,10 @@ using namespace DAVA;
 class ReportScreen : public BaseScreen
 {
 public:
-	ReportScreen(Vector<BaseTest*>& testsChain);
+	ReportScreen(const Vector<BaseTest*>& testsChain);
 
-	virtual void OnStart() override;
-	virtual void OnFinish() override;
+	virtual void OnStart(HashMap<String, BaseObject*>& params) override;
+	virtual void OnFinish(HashMap<String, BaseObject*>& params) override;
 
 	virtual void BeginFrame() override;
 	virtual void EndFrame() override;
@@ -58,7 +58,7 @@ protected:
 
 private:
 
-	Vector<BaseTest*> testsChain; 
+	Vector<BaseTest*> testChain; 
 };
 
 #endif

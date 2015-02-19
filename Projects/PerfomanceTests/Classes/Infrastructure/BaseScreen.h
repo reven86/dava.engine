@@ -43,12 +43,13 @@ public:
 	virtual void BeginFrame() = 0;
 	virtual void EndFrame() = 0;
 
-	virtual void OnStart() = 0;
-	virtual void OnFinish() = 0;
+	virtual void OnStart(HashMap<String, BaseObject*>& params) = 0;
+	virtual void OnFinish(HashMap<String, BaseObject*>& params) = 0;
 
 	virtual void Update(float32 timeElapsed) = 0;
 	virtual void Draw() = 0;
 
+	static const String TEST_FOR_RUN;
 protected:
 	virtual ~BaseScreen();
 };

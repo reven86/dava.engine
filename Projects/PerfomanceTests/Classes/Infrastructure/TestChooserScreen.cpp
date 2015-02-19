@@ -25,78 +25,80 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+#include "TestChooserScreen.h"
 
-#include "TestChainScreen.h"
 
-
-TestChainScreen::TestChainScreen(const Vector<BaseTest*>& _testsChain) : 
-testsChain(_testsChain),
-currentTest(nullptr),
-currentTestIndex(0),
-testsFinished(false)
+TestChooserScreen::TestChooserScreen(const Vector<BaseTest*>& _testsChain) : 
+	testForRun(nullptr)
 {
-	currentTest = testsChain[currentTestIndex];
-	currentTest->SetupTest();
+	testChain = _testsChain;
 }
 
-TestChainScreen::~TestChainScreen()
+
+TestChooserScreen::~TestChooserScreen()
 {
 }
 
-bool TestChainScreen::IsFinished() const
+void TestChooserScreen::OnStart(HashMap<String, BaseObject*>& params)
 {
-	return testsFinished;
+	CreateChooserUI();
 }
 
-void TestChainScreen::OnStart(HashMap<String, BaseObject*>& params)
-{
-}
-
-void TestChainScreen::OnFinish(HashMap<String, BaseObject*>& params)
+void TestChooserScreen::OnFinish(HashMap<String, BaseObject*>& params)
 {
 
 }
 
-void TestChainScreen::BeginFrame()
+bool TestChooserScreen::IsFinished() const
 {
+	return testForRun != nullptr;
+}
+
+void TestChooserScreen::BeginFrame()
+{
+	RenderSystem2D::Instance()->Reset();
 	RenderManager::Instance()->BeginFrame();
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-
-	currentTest->BeginFrame();
 }
 
-void TestChainScreen::EndFrame()
+void TestChooserScreen::EndFrame()
 {
-	if (currentTest->IsPerformed())
-	{
-		currentTest->FinishTest();
-		currentTestIndex++;
-
-		if (currentTestIndex < testsChain.size())
-		{
-			currentTest = testsChain[currentTestIndex];
-			currentTest->SetupTest();
-		}
-		else
-		{
-			testsFinished = true;
-		}
-	}
-	else
-	{
-		currentTest->EndFrame();
-	}
-
 	RenderManager::Instance()->EndFrame();
 	RenderManager::Instance()->ProcessStats();
 }
 
-void TestChainScreen::Update(float32 timeElapsed)
+void TestChooserScreen::Update(float32 timeElapsed)
 {
-	currentTest->Update(timeElapsed);
+	UIControlSystem::Instance()->Update();
 }
 
-void TestChainScreen::Draw()
+void TestChooserScreen::Draw()
 {
-	currentTest->Draw();
+	UIControlSystem::Instance()->Draw();
+}
+
+void TestChooserScreen::CreateChooserUI()
+{
+	UIScreen* chooserScreen = new UIScreen();
+
+	UIScreenManager::Instance()->RegisterScreen(0, chooserScreen);
+	UIScreenManager::Instance()->SetFirst(0);
+
+	Font* font = FTFont::Create("./Data/Fonts/korinna.ttf");
+	uint32 offsetY = 150;
+	uint32 testNumber = 0;
+
+	for each (BaseTest* test in testChain)
+	{
+		if (test->GetDebugFrame() > 0)
+		{
+			UIButton* button = new UIButton();
+
+			button->SetPosition(Vector2(10.0f, 10.0f));
+			button->SetStateFont(UIButton::DRAW_STATE_UNPRESSED, font);
+			button->SetStateText(UIButton::DRAW_STATE_UNPRESSED, UTF8Utils::EncodeToWideString(test->GetName()));
+			button->SetStateTextAlign(UIButton::DRAW_STATE_UNPRESSED, ALIGN_LEFT | ALIGN_VCENTER);
+			button->SetSize(Vector2(150.0f, 10.0f));
+		}
+	}
 }

@@ -29,22 +29,28 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "SingleTestScreen.h"
 
 
-SingleTestScreen::SingleTestScreen(BaseTest* _test, uint32 _fixedTime, uint32 _fixedFramesCount, float32 _fixedDelta, uint32 _targetFrame) : 
-	singleTest(_test), targetFrame(_targetFrame), fixedTime(_fixedTime),
-	fixedDelta(_fixedDelta), fixedFramesCount(_fixedFramesCount), currentFrame(0)
+SingleTestScreen::SingleTestScreen(): 
+testForRun(nullptr)
 {
-	singleTest->SetupTest(fixedFramesCount, fixedDelta, fixedTime);
 }
 
 SingleTestScreen::~SingleTestScreen()
 {
 }
 
-void SingleTestScreen::OnStart()
+void SingleTestScreen::OnStart(HashMap<String, BaseObject*>& params)
 {
+	auto it = params.find(TEST_FOR_RUN);
+	if (it != params.end())
+	{
+		testForRun = static_cast<BaseTest*>(it->second);
+		testForRun->SetupTest();
+	}
+
+	DVASSERT(testForRun != nullptr);
 }
 
-void SingleTestScreen::OnFinish()
+void SingleTestScreen::OnFinish(HashMap<String, BaseObject*>& params)
 {
 
 }
@@ -54,18 +60,16 @@ void SingleTestScreen::BeginFrame()
 	RenderManager::Instance()->BeginFrame();
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
-	singleTest->BeginFrame();
+	testForRun->BeginFrame();
 }
 
 void SingleTestScreen::EndFrame()
 {
-	singleTest->EndFrame();
-	if (singleTest->IsFinished())
+	testForRun->EndFrame();
+	if (testForRun->IsPerformed())
 	{
-		singleTest->FinishTest();
+		testForRun->FinishTest();
 	}
-
-	currentFrame++;
 
 	RenderManager::Instance()->EndFrame();
 	RenderManager::Instance()->ProcessStats();
@@ -73,24 +77,18 @@ void SingleTestScreen::EndFrame()
 
 void SingleTestScreen::Update(float32 timeElapsed)
 {
-	if (targetFrame > 0)
+	if (testForRun->IsDebuggable() 
+		&& testForRun->GetFrameNumber() > (testForRun->GetDebugFrame() + BaseTest::FRAME_OFFSET))
 	{
-		if (currentFrame > (targetFrame + BaseTest::FRAME_OFFSET))
-		{
-			singleTest->Update();
-		}
-		else
-		{
-			singleTest->Update(fixedDelta);
-		}
+		testForRun->Update();
 	}
 	else
 	{
-		singleTest->Update(timeElapsed);	
+		testForRun->Update(timeElapsed);	
 	}	
 }
 
 void SingleTestScreen::Draw()
 {
-	singleTest->Draw();
+	testForRun->Draw();
 }

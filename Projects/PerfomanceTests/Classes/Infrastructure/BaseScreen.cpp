@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "BaseScreen.h"
 
+const String BaseScreen::TEST_FOR_RUN = "TEST_FOR_RUN";
 
 BaseScreen::BaseScreen()
 {

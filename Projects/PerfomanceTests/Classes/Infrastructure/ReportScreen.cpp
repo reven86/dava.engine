@@ -29,7 +29,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ReportScreen.h"
 
 
-ReportScreen::ReportScreen(Vector<BaseTest*>& _testsChain) : testsChain(_testsChain)
+ReportScreen::ReportScreen(const Vector<BaseTest*>& _testChain) : 
+testChain(_testChain)
+
 {
 }
 
@@ -38,12 +40,12 @@ ReportScreen::~ReportScreen()
 {
 }
 
-void ReportScreen::OnStart()
+void ReportScreen::OnStart(HashMap<String, BaseObject*>& params)
 {
-
+	CreateReportScreen();
 }
 
-void ReportScreen::OnFinish()
+void ReportScreen::OnFinish(HashMap<String, BaseObject*>& params)
 {
 
 }
@@ -78,20 +80,20 @@ bool ReportScreen::IsFinished() const
 
 void ReportScreen::CreateReportScreen()
 {
-	UIScreen* pReportScreen = new UIScreen();
+	UIScreen* reportScreen = new UIScreen();
 
-	UIScreenManager::Instance()->RegisterScreen(0, pReportScreen);
+	UIScreenManager::Instance()->RegisterScreen(0, reportScreen);
 	UIScreenManager::Instance()->SetFirst(0);
 
-	Font* pFont = FTFont::Create("./Data/Fonts/korinna.ttf");
+	Font* font = FTFont::Create("./Data/Fonts/korinna.ttf");
 	uint32 offsetY = 150;
 	uint32 testNumber = 0;
 
-	for each (BaseTest* pTest in testsChain)
+	for each (BaseTest* test in testChain)
 	{
-		if (pTest->IsFinished())
+		if (test->IsPerformed())
 		{
-			List<BaseTest::FrameInfo> frameInfoList = pTest->GetFramesInfo();
+			List<BaseTest::FrameInfo> frameInfoList = test->GetFramesInfo();
 
 			float32 minDelta = FLT_MAX;
 			float32 maxDelta = FLT_MIN;
@@ -100,7 +102,7 @@ void ReportScreen::CreateReportScreen()
 			float32 testTime = 0.0f;
 			float32 elapsedTime = 0.0f;
 
-			uint32 framesCount = pTest->GetFramesInfo().size();
+			uint32 framesCount = test->GetFramesInfo().size();
 
 			for each (BaseTest::FrameInfo frameInfo in frameInfoList)
 			{
@@ -119,144 +121,144 @@ void ReportScreen::CreateReportScreen()
 
 			averageDelta /= framesCount;
 
-			testTime = pTest->GetTestTime();
-			elapsedTime = pTest->GetElapsedTime() / 1000.0f;
+			testTime = test->GetTestTime();
+			elapsedTime = test->GetElapsedTime() / 1000.0f;
 
-			UIStaticText* pTestNameText = new UIStaticText();
-			pTestNameText->SetFont(pFont);
-			pTestNameText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			pTestNameText->SetPosition(Vector2(10.0f, 10.0f + offsetY * testNumber));
-			pTestNameText->SetText(UTF8Utils::EncodeToWideString(pTest->GetName() + ":"));
-			pTestNameText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			pTestNameText->SetSize(Vector2(150.0f, 10.0f));
+			UIStaticText* testNameText = new UIStaticText();
+			testNameText->SetFont(font);
+			testNameText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+			testNameText->SetPosition(Vector2(10.0f, 10.0f + offsetY * testNumber));
+			testNameText->SetText(UTF8Utils::EncodeToWideString(test->GetName() + ":"));
+			testNameText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
+			testNameText->SetSize(Vector2(150.0f, 10.0f));
 
-			UIStaticText* pUpDelimiter = new UIStaticText();
-			pUpDelimiter->SetFont(pFont);
-			pUpDelimiter->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			pUpDelimiter->SetPosition(Vector2(5.0f, 25.0f + offsetY * testNumber));
-			pUpDelimiter->SetText(UTF8Utils::EncodeToWideString("======================="));
-			pUpDelimiter->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			pUpDelimiter->SetSize(Vector2(150.0f, 10.0f));
+			UIStaticText* upDelimiter = new UIStaticText();
+			upDelimiter->SetFont(font);
+			upDelimiter->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+			upDelimiter->SetPosition(Vector2(5.0f, 25.0f + offsetY * testNumber));
+			upDelimiter->SetText(UTF8Utils::EncodeToWideString("======================="));
+			upDelimiter->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
+			upDelimiter->SetSize(Vector2(150.0f, 10.0f));
 
-			UIStaticText* pMinDeltaText = new UIStaticText();
-			pMinDeltaText->SetFont(pFont);
-			pMinDeltaText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			pMinDeltaText->SetPosition(Vector2(10.0f, 40.0f + offsetY * testNumber));
-			pMinDeltaText->SetText(UTF8Utils::EncodeToWideString("Min delta: "));
-			pMinDeltaText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			pMinDeltaText->SetSize(Vector2(150.0f, 10.0f));
+			UIStaticText* minDeltaText = new UIStaticText();
+			minDeltaText->SetFont(font);
+			minDeltaText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+			minDeltaText->SetPosition(Vector2(10.0f, 40.0f + offsetY * testNumber));
+			minDeltaText->SetText(UTF8Utils::EncodeToWideString("Min delta: "));
+			minDeltaText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
+			minDeltaText->SetSize(Vector2(150.0f, 10.0f));
 
-			UIStaticText* pMinDeltaValue = new UIStaticText();
-			pMinDeltaValue->SetFont(pFont);
-			pMinDeltaValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
-			pMinDeltaValue->SetPosition(Vector2(100.0f, 40.0f + offsetY * testNumber));
-			pMinDeltaValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(minDelta)));
-			pMinDeltaValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			pMinDeltaValue->SetSize(Vector2(100.0f, 10.0f));
+			UIStaticText* minDeltaValue = new UIStaticText();
+			minDeltaValue->SetFont(font);
+			minDeltaValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
+			minDeltaValue->SetPosition(Vector2(100.0f, 40.0f + offsetY * testNumber));
+			minDeltaValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(minDelta)));
+			minDeltaValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
+			minDeltaValue->SetSize(Vector2(100.0f, 10.0f));
 
-			UIStaticText* pMaxDeltaText = new UIStaticText();
-			pMaxDeltaText->SetFont(pFont);
-			pMaxDeltaText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			pMaxDeltaText->SetPosition(Vector2(10.0f, 55.0f + offsetY * testNumber));
-			pMaxDeltaText->SetText(UTF8Utils::EncodeToWideString("Max delta: "));
-			pMaxDeltaText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			pMaxDeltaText->SetSize(Vector2(150.0f, 10.0f));
+			UIStaticText* maxDeltaText = new UIStaticText();
+			maxDeltaText->SetFont(font);
+			maxDeltaText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+			maxDeltaText->SetPosition(Vector2(10.0f, 55.0f + offsetY * testNumber));
+			maxDeltaText->SetText(UTF8Utils::EncodeToWideString("Max delta: "));
+			maxDeltaText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
+			maxDeltaText->SetSize(Vector2(150.0f, 10.0f));
 
-			UIStaticText* pMaxDeltaValue = new UIStaticText();
-			pMaxDeltaValue->SetFont(pFont);
-			pMaxDeltaValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
-			pMaxDeltaValue->SetPosition(Vector2(100.0f, 55.0f + offsetY * testNumber));
-			pMaxDeltaValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(maxDelta)));
-			pMaxDeltaValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			pMaxDeltaValue->SetSize(Vector2(100.0f, 10.0f));
+			UIStaticText* maxDeltaValue = new UIStaticText();
+			maxDeltaValue->SetFont(font);
+			maxDeltaValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
+			maxDeltaValue->SetPosition(Vector2(100.0f, 55.0f + offsetY * testNumber));
+			maxDeltaValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(maxDelta)));
+			maxDeltaValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
+			maxDeltaValue->SetSize(Vector2(100.0f, 10.0f));
 
-			UIStaticText* pAverageDeltaText = new UIStaticText();
-			pAverageDeltaText->SetFont(pFont);
-			pAverageDeltaText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			pAverageDeltaText->SetPosition(Vector2(10.0f, 70.0f + offsetY * testNumber));
-			pAverageDeltaText->SetText(UTF8Utils::EncodeToWideString("Average delta: "));
-			pAverageDeltaText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			pAverageDeltaText->SetSize(Vector2(150.0f, 10.0f));
+			UIStaticText* averageDeltaText = new UIStaticText();
+			averageDeltaText->SetFont(font);
+			averageDeltaText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+			averageDeltaText->SetPosition(Vector2(10.0f, 70.0f + offsetY * testNumber));
+			averageDeltaText->SetText(UTF8Utils::EncodeToWideString("Average delta: "));
+			averageDeltaText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
+			averageDeltaText->SetSize(Vector2(150.0f, 10.0f));
 
-			UIStaticText* pAverageDeltaValue = new UIStaticText();
-			pAverageDeltaValue->SetFont(pFont);
-			pAverageDeltaValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
-			pAverageDeltaValue->SetPosition(Vector2(100.0f, 70.0f + offsetY * testNumber));
-			pAverageDeltaValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(averageDelta)));
-			pAverageDeltaValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			pAverageDeltaValue->SetSize(Vector2(100.0f, 10.0f));
+			UIStaticText* averageDeltaValue = new UIStaticText();
+			averageDeltaValue->SetFont(font);
+			averageDeltaValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
+			averageDeltaValue->SetPosition(Vector2(100.0f, 70.0f + offsetY * testNumber));
+			averageDeltaValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(averageDelta)));
+			averageDeltaValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
+			averageDeltaValue->SetSize(Vector2(100.0f, 10.0f));
 
-			UIStaticText* pTestTimeText = new UIStaticText();
-			pTestTimeText->SetFont(pFont);
-			pTestTimeText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			pTestTimeText->SetPosition(Vector2(10.0f, 85.0f + offsetY * testNumber));
-			pTestTimeText->SetText(UTF8Utils::EncodeToWideString("Test time: "));
-			pTestTimeText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			pTestTimeText->SetSize(Vector2(150.0f, 10.0f));
+			UIStaticText* testTimeText = new UIStaticText();
+			testTimeText->SetFont(font);
+			testTimeText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+			testTimeText->SetPosition(Vector2(10.0f, 85.0f + offsetY * testNumber));
+			testTimeText->SetText(UTF8Utils::EncodeToWideString("Test time: "));
+			testTimeText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
+			testTimeText->SetSize(Vector2(150.0f, 10.0f));
 
-			UIStaticText* pTestTimeValue = new UIStaticText();
-			pTestTimeValue->SetFont(pFont);
-			pTestTimeValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
-			pTestTimeValue->SetPosition(Vector2(100.0f, 85.0f + offsetY * testNumber));
-			pTestTimeValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(testTime)));
-			pTestTimeValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			pTestTimeValue->SetSize(Vector2(100.0f, 10.0f));
+			UIStaticText* testTimeValue = new UIStaticText();
+			testTimeValue->SetFont(font);
+			testTimeValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
+			testTimeValue->SetPosition(Vector2(100.0f, 85.0f + offsetY * testNumber));
+			testTimeValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(testTime)));
+			testTimeValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
+			testTimeValue->SetSize(Vector2(100.0f, 10.0f));
 
-			UIStaticText* pElapsedTimeText = new UIStaticText();
-			pElapsedTimeText->SetFont(pFont);
-			pElapsedTimeText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			pElapsedTimeText->SetPosition(Vector2(10.0f, 100.0f + offsetY * testNumber));
-			pElapsedTimeText->SetText(UTF8Utils::EncodeToWideString("Elapsed time: "));
-			pElapsedTimeText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			pElapsedTimeText->SetSize(Vector2(150.0f, 10.0f));
+			UIStaticText* elapsedTimeText = new UIStaticText();
+			elapsedTimeText->SetFont(font);
+			elapsedTimeText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+			elapsedTimeText->SetPosition(Vector2(10.0f, 100.0f + offsetY * testNumber));
+			elapsedTimeText->SetText(UTF8Utils::EncodeToWideString("Elapsed time: "));
+			elapsedTimeText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
+			elapsedTimeText->SetSize(Vector2(150.0f, 10.0f));
 
-			UIStaticText* pElapsedTimeValue = new UIStaticText();
-			pElapsedTimeValue->SetFont(pFont);
-			pElapsedTimeValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
-			pElapsedTimeValue->SetPosition(Vector2(100.0f, 100.0f + offsetY * testNumber));
-			pElapsedTimeValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(elapsedTime)));
-			pElapsedTimeValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			pElapsedTimeValue->SetSize(Vector2(100.0f, 10.0f));
+			UIStaticText* elapsedTimeValue = new UIStaticText();
+			elapsedTimeValue->SetFont(font);
+			elapsedTimeValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
+			elapsedTimeValue->SetPosition(Vector2(100.0f, 100.0f + offsetY * testNumber));
+			elapsedTimeValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(elapsedTime)));
+			elapsedTimeValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
+			elapsedTimeValue->SetSize(Vector2(100.0f, 10.0f));
 
-			UIStaticText* pFramesText = new UIStaticText();
-			pFramesText->SetFont(pFont);
-			pFramesText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			pFramesText->SetPosition(Vector2(10.0f, 115.0f + offsetY * testNumber));
-			pFramesText->SetText(UTF8Utils::EncodeToWideString("Frames rendered: "));
-			pFramesText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			pFramesText->SetSize(Vector2(150.0f, 10.0f));
+			UIStaticText* framesText = new UIStaticText();
+			framesText->SetFont(font);
+			framesText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+			framesText->SetPosition(Vector2(10.0f, 115.0f + offsetY * testNumber));
+			framesText->SetText(UTF8Utils::EncodeToWideString("Frames rendered: "));
+			framesText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
+			framesText->SetSize(Vector2(150.0f, 10.0f));
 
-			UIStaticText* pFramesValue = new UIStaticText();
-			pFramesValue->SetFont(pFont);
-			pFramesValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
-			pFramesValue->SetPosition(Vector2(100.0f, 115.0f + offsetY * testNumber));
-			pFramesValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(framesCount)));
-			pFramesValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			pFramesValue->SetSize(Vector2(100.0f, 10.0f));
+			UIStaticText* framesValue = new UIStaticText();
+			framesValue->SetFont(font);
+			framesValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
+			framesValue->SetPosition(Vector2(100.0f, 115.0f + offsetY * testNumber));
+			framesValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(framesCount)));
+			framesValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
+			framesValue->SetSize(Vector2(100.0f, 10.0f));
 
-			UIStaticText* pDownDelimiter = new UIStaticText();
-			pDownDelimiter->SetFont(pFont);
-			pDownDelimiter->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			pDownDelimiter->SetPosition(Vector2(5.0f, 130.0f + offsetY * testNumber));
-			pDownDelimiter->SetText(UTF8Utils::EncodeToWideString("======================="));
-			pDownDelimiter->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			pDownDelimiter->SetSize(Vector2(150.0f, 10.0f));
+			UIStaticText* downDelimiter = new UIStaticText();
+			downDelimiter->SetFont(font);
+			downDelimiter->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+			downDelimiter->SetPosition(Vector2(5.0f, 130.0f + offsetY * testNumber));
+			downDelimiter->SetText(UTF8Utils::EncodeToWideString("======================="));
+			downDelimiter->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
+			downDelimiter->SetSize(Vector2(150.0f, 10.0f));
 
-			pReportScreen->AddControl(pTestNameText);
-			pReportScreen->AddControl(pUpDelimiter);
-			pReportScreen->AddControl(pMinDeltaText);
-			pReportScreen->AddControl(pMinDeltaValue);
-			pReportScreen->AddControl(pMaxDeltaText);
-			pReportScreen->AddControl(pMaxDeltaValue);
-			pReportScreen->AddControl(pAverageDeltaText);
-			pReportScreen->AddControl(pAverageDeltaValue);
-			pReportScreen->AddControl(pTestTimeText);
-			pReportScreen->AddControl(pTestTimeValue);
-			pReportScreen->AddControl(pElapsedTimeText);
-			pReportScreen->AddControl(pElapsedTimeValue);
-			pReportScreen->AddControl(pFramesText);
-			pReportScreen->AddControl(pFramesValue);
-			pReportScreen->AddControl(pDownDelimiter);
+			reportScreen->AddControl(testNameText);
+			reportScreen->AddControl(upDelimiter);
+			reportScreen->AddControl(minDeltaText);
+			reportScreen->AddControl(minDeltaValue);
+			reportScreen->AddControl(maxDeltaText);
+			reportScreen->AddControl(maxDeltaValue);
+			reportScreen->AddControl(averageDeltaText);
+			reportScreen->AddControl(averageDeltaValue);
+			reportScreen->AddControl(testTimeText);
+			reportScreen->AddControl(testTimeValue);
+			reportScreen->AddControl(elapsedTimeText);
+			reportScreen->AddControl(elapsedTimeValue);
+			reportScreen->AddControl(framesText);
+			reportScreen->AddControl(framesValue);
+			reportScreen->AddControl(downDelimiter);
 
 			testNumber++;
 		}

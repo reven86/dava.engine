@@ -31,11 +31,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class PerfomanceTest : public BaseTest
 {
 public:
-	PerfomanceTest();
-	~PerfomanceTest();
+	PerfomanceTest(uint32 frames, float32 delta, uint32 targetFrame);
+	PerfomanceTest(uint32 time);
 
-	virtual void SetupTest(uint32 framesCount, float32 fixedDelta, uint32 maxTestTime) override;
+	virtual void SetupTest() override;
 	virtual void Update(float32 timeElapsed) override;
+
+protected:
+		virtual ~PerfomanceTest();
 
 private:
 	static const String TEST_NAME;

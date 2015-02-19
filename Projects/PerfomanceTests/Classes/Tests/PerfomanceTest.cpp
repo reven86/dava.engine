@@ -30,48 +30,56 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 const String PerfomanceTest::TEST_NAME = "Performance_Test";
 
-PerfomanceTest::PerfomanceTest() : 
-	BaseTest(TEST_NAME)
+PerfomanceTest::PerfomanceTest(uint32 frames, float32 delta, uint32 targetFrame) : 
+	BaseTest(TEST_NAME, frames, delta, targetFrame)
 {
+
 }
+
+PerfomanceTest::PerfomanceTest(uint32 time) : 
+	BaseTest(TEST_NAME, time)
+{
+
+}
+
 PerfomanceTest::~PerfomanceTest()
 {
 }
 
-void PerfomanceTest::SetupTest(uint32 framesCount, float32 fixedDelta, uint32 maxTestTime)
+void PerfomanceTest::SetupTest()
 {
-	BaseTest::SetupTest(framesCount, fixedDelta, maxTestTime);
+	BaseTest::SetupTest();
 
-	Camera* pCamera = new Camera();
-	pCamera->SetPosition(Vector3(-40, 4, 60));
-	pCamera->SetTarget(Vector3(-40, -6, 53));
-	pCamera->SetUp(Vector3(0.0f, 0.0f, 1.0f));
-	pCamera->SetLeft(Vector3(-1.0f, 0.0f, 0.0f));
-	pCamera->SetFOV(70.0f);
-	pCamera->SetZFar(5000);
-	pCamera->SetZNear(1);
+	Camera* camera = new Camera();
+	camera->SetPosition(Vector3(-40, 4, 60));
+	camera->SetTarget(Vector3(-40, -6, 53));
+	camera->SetUp(Vector3(0.0f, 0.0f, 1.0f));
+	camera->SetLeft(Vector3(-1.0f, 0.0f, 0.0f));
+	camera->SetFOV(70.0f);
+	camera->SetZFar(5000);
+	camera->SetZNear(1);
 
-	GetScene()->SetCurrentCamera(pCamera);
+	GetScene()->SetCurrentCamera(camera);
 
-	Entity* pRootEntity = GetScene()->GetRootNode(FilePath("Data/3d/Maps/newscene.sc2"));
-	GetScene()->AddNode(pRootEntity);
+	Entity* rootEntity = GetScene()->GetRootNode(FilePath("Data/3d/Maps/newscene.sc2"));
+	GetScene()->AddNode(rootEntity);
 }
 
 void PerfomanceTest::Update(float32 timeElapsed)
 {
-	Entity* pEntity = GetScene()->FindByName("s_stone01.sc2");
+	Entity* entity = GetScene()->FindByName("s_stone01.sc2");
 
-	Matrix4 localTransform = pEntity->GetLocalTransform();
+	Matrix4 localTransform = entity->GetLocalTransform();
 	Matrix4 newTransform = Matrix4::MakeRotation(Vector3(0.0f, 0.0f, 1.0f), DAVA::DegToRad(1.0f));
 
 	newTransform *= localTransform;
-	pEntity->SetLocalTransform(newTransform);
+	entity->SetLocalTransform(newTransform);
 
-	Camera* pCamera = GetScene()->GetCurrentCamera();
+	Camera* camera = GetScene()->GetCurrentCamera();
 	Matrix4 cameraMatrix;
-	Vector3 pos = pCamera->GetPosition();
+	Vector3 pos = camera->GetPosition();
 	cameraMatrix = Matrix4::MakeTranslation(pos) * Matrix4::MakeRotation(Vector3(0.0f, 0.0f, 1.0f), DAVA::DegToRad(1.0f));
-	pCamera->SetPosition(cameraMatrix.GetTranslationVector());
+	camera->SetPosition(cameraMatrix.GetTranslationVector());
 
 	BaseTest::Update(timeElapsed);
 }

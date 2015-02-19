@@ -36,6 +36,7 @@
 #include "SingleTestScreen.h"
 #include "TestChainScreen.h"
 #include "ReportScreen.h"
+#include "TestChooserScreen.h"
 
 #include <list>
 #include <fstream>
@@ -44,14 +45,6 @@ using namespace DAVA;
 
 class GameCore : public ApplicationCore
 {
-    struct ErrorData
-    {
-        int32 line;
-        String command;
-        String filename;
-        String testName;
-        String testMessage;
-    };
 
 protected:
     virtual ~GameCore();
@@ -79,20 +72,18 @@ public:
     virtual void Update(DAVA::float32 update) override;
     virtual void Draw() override;
 	virtual void EndFrame() override;
-
-
-    void LogMessage(const String &message);
     
 private:
-    void InitTestProcessor();
+    void InitScreenChain();
 	void RegisterTests();
 
-	Vector<BaseTest*> testsChain;
+	HashMap<String, BaseObject*> params;
+	Vector<BaseTest*> testChain;
 
-	ReportScreen* reportScreen;
 	BaseScreen* currentScreen;
+	Vector<BaseScreen*> screenChain;
 
-	TeamcityTestsOutput teamCityOutput;
+	uint32 screenIndex;
 };
 
 

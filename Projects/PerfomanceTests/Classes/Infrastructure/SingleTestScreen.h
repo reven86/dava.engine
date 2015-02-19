@@ -38,10 +38,10 @@ using namespace DAVA;
 class SingleTestScreen : public BaseScreen
 {
 public:
-	SingleTestScreen(BaseTest* test, uint32 fixedTime, uint32 fixedFramesCount, float32 fixedDelta, uint32 targetFrame);
+	SingleTestScreen();
 
-	virtual void OnStart() override;
-	virtual void OnFinish() override;
+	virtual void OnStart(HashMap<String, BaseObject*>& params) override;
+	virtual void OnFinish(HashMap<String, BaseObject*>& params) override;
 
 	virtual void BeginFrame() override;
 	virtual void EndFrame() override;
@@ -57,24 +57,17 @@ protected:
 	virtual ~SingleTestScreen();
 
 private:
-	BaseTest* singleTest;
-
-	uint32 currentFrame;
-	uint32 targetFrame;
-
-	uint32 fixedTime;
-	uint32 fixedFramesCount;
-	float32 fixedDelta;
+	BaseTest* testForRun;
 };
 
 inline bool SingleTestScreen::IsFinished() const
 {
-	return singleTest->IsFinished();
+	return testForRun->IsPerformed() && testForRun->GetDebugFrame() == 0;
 }
 
 inline bool SingleTestScreen::isDebuggableTest() const
 {
-	return targetFrame > 0;
+	return testForRun->GetDebugFrame() > 0;
 }
 
 #endif
