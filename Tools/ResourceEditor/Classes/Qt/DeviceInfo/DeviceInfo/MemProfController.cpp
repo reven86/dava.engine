@@ -26,7 +26,7 @@ MemProfController::~MemProfController() {}
 
 void MemProfController::OnDumpPressed()
 {
-    
+    netClient.RequestDump();
 }
 
 void MemProfController::ShowView()
@@ -81,7 +81,54 @@ void MemProfController::CurrentStat(DAVA::MMStat* stat)
 
 void MemProfController::Dump(DAVA::MMDump* dump)
 {
+    static int dumpIndex = 1;
 
+    MMSymbol* sym = reinterpret_cast<MMSymbol*>(reinterpret_cast<uint8*>(dump)+sizeof(MMDump) + sizeof(MMBlock) * dump->blockCount);
+    char fname[100];
+    const char* prefix = 
+#if defined(__DAVAENGINE_WIN32__)
+        ""
+#elif defined(__DAVAENGINE_MACOS__)
+        "/Users/max/"
+#endif
+        ;
+    Snprintf(fname, COUNT_OF(fname), "%sdump_%d.log", prefix, dumpIndex++);
+    FILE* f = fopen(fname, "wb");
+    if (f)
+    {
+        fprintf(f, "General info\n");
+        fprintf(f, "  blockCount=%u\n", dump->blockCount);
+        fprintf(f, "  nameCount=%u\n", dump->nameCount);
+        fprintf(f, "  blockBegin=%u\n", dump->blockBegin);
+        fprintf(f, "  blockEnd=%u\n", dump->blockEnd);
+
+        fprintf(f, "Blocks\n");
+        for (uint32 i = 0;i < dump->blockCount;++i)
+        {
+            if (dump->blocks[i].pool == 0) continue;
+            fprintf(f, "%4d: addr=%08llX, allocByApp=%u, allocTotal=%u, orderNo=%u, pool=%u\n", i + 1,
+                    dump->blocks[i].addr,
+                    dump->blocks[i].allocByApp, dump->blocks[i].allocTotal, dump->blocks[i].orderNo, dump->blocks[i].pool);
+            for (size_t j = 0;j < 16;++j)
+            {
+                uint64 addr = dump->blocks[i].backtrace.frames[j];
+                const char* s = "";
+                MMSymbol* n = std::find_if(sym, sym + dump->nameCount, [addr](const MMSymbol& mms) -> bool {
+                    return mms.addr == addr;
+                });
+                if (n != sym + dump->nameCount)
+                    s = n->name;
+                fprintf(f, "        %08llX    %s\n", dump->blocks[i].backtrace.frames[j], s);
+            }
+        }
+
+        fprintf(f, "Symbols\n");
+        for (uint32 i = 0;i < dump->nameCount;++i)
+        {
+            fprintf(f, "  %4d: %08llX; %s\n", i + 1, sym[i].addr, sym[i].name);
+        }
+        fclose(f);
+    }
 }
 
 void MemProfController::Output(const String& msg)

@@ -118,8 +118,17 @@ void MMNetServer::PacketDelivered()
         Logger::Debug("MMNetServer::PacketDelivered: communication established");
     }
 
-    DestroyParcel(parcels.front());
-    parcels.pop_front();
+    {
+        Parcel parcel = parcels.front();
+        parcels.pop_front();
+
+        MMProtoHeader* hdr = static_cast<MMProtoHeader*>(parcel.buffer);
+        if (hdr->cmd == static_cast<uint32>(eMMProtoCmd::DUMP))
+            MemoryManager::FreeDump(parcel.buffer);
+        else
+            DestroyParcel(parcel);
+    }
+
     if (!parcels.empty())
     {
         Parcel next = parcels.front();
