@@ -75,27 +75,5 @@ void FrameworkDidLaunched()
 
 void FrameworkWillTerminate()
 {
-	Logger::Debug("FrameworkWillTerminate");
 
-#if defined(__DAVAENGINE_WIN32__)
-    const char8* fname = "c:\\projects\\unittest-memprof.log";
-#elif defined(__DAVAENGINE_ANDROID__)
-    const char8* fname = "/sdcard/unittest-memprof.log";
-#elif defined(__DAVAENGINE_MACOS__)
-    const char8* fname = "/Users/max/projects/unittest-memprof.log";
-#elif defined(__DAVAENGINE_IPHONE__)
-    const char8* fname = "";
-#endif
-
-#if defined(__DAVAENGINE_WIN32__)
-    FILE* file = nullptr;
-    fopen_s(&file, fname, "wb");
-#else
-    FILE* file = fopen(fname, "wb");
-#endif
-    if (file)
-    {
-        //MEMPROF_DUMP(file);
-        fclose(file);
-    }
 }
