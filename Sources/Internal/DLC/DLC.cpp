@@ -98,6 +98,7 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
 
 DLC::~DLC()
 {
+    DVASSERT((dlcState == DS_INIT || dlcState == DS_READY || dlcState == DS_DONE) && "DLC can be safely destroyed only in certain modes");
 }
 
 void DLC::Check()
@@ -152,7 +153,7 @@ FilePath DLC::GetMetaStorePath() const
     
 void DLC::PostEvent(DLCEvent event)
 {
-	Function<void()> fn = Bind(MakeFunction(this, &DLC::FSM), event);
+    Function<void()> fn = Bind(MakeFunction(this, &DLC::FSM), event);
 	JobManager::Instance()->CreateMainJob(fn);
 }
 

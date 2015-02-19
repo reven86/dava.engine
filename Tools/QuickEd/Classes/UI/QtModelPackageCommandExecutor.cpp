@@ -6,7 +6,6 @@
 #include "UI/Commands/ChangePropertyValueCommand.h"
 #include "UI/Commands/ChangeDefaultValueCommand.h"
 #include "UI/Commands/InsertControlCommand.h"
-#include "UI/Commands/MoveControlCommand.h"
 #include "UI/Commands/RemoveControlCommand.h"
 #include "UI/Commands/InsertImportedPackageCommand.h"
 
@@ -40,20 +39,7 @@ void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, BaseProper
 {
     BeginMacro("Change Property");
     PushCommand(new ChangePropertyValueCommand(document, node, property, value));
-    const Vector<ControlNode*> &instances = node->GetInstances();
-    for (ControlNode *instance : instances)
-    {
-        Vector<String> path = property->GetPath();
-        BaseProperty *nodeProperty = instance->GetPropertyByPath(path);
-        if (nodeProperty)
-        {
-            PushCommand(new ChangeDefaultValueCommand(document, instance, nodeProperty, value));
-        }
-        else
-        {
-            DVASSERT(false);
-        }
-    }
+    ChangeDefaultProperties(node->GetInstances(), property, value);
     EndMacro();
 }
 
@@ -61,40 +47,40 @@ void QtModelPackageCommandExecutor::ResetProperty(ControlNode *node, BasePropert
 {
     BeginMacro("Reset Property");
     PushCommand(new ChangePropertyValueCommand(document, node, property));
-    const Vector<ControlNode*> &instances = node->GetInstances();
-    for (ControlNode *instance : instances)
-    {
-        Vector<String> path = property->GetPath();
-        BaseProperty *nodeProperty = instance->GetPropertyByPath(path);
-        if (nodeProperty)
-        {
-            PushCommand(new ChangeDefaultValueCommand(document, instance, nodeProperty, property->GetDefaultValue()));
-        }
-        else
-        {
-            DVASSERT(false);
-        }
-    }
+    ChangeDefaultProperties(node->GetInstances(), property, property->GetDefaultValue());
     EndMacro();
 }
 
 void QtModelPackageCommandExecutor::InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex)
 {
+    BeginMacro("Insert Control");
     PackageModel *model = document->GetPackageContext()->GetModel();
     PushCommand(new InsertControlCommand(model, control, dest, destIndex));
+    
+    ControlNode *destControl = dynamic_cast<ControlNode*>(dest);
+    if (destControl)
+    {
+        const Vector<ControlNode*> &instances = destControl->GetInstances();
+        for (ControlNode *instance : instances)
+        {
+            ControlNode *copy = ControlNode::CreateFromPrototypeChild(control, document->GetPackage()->GetPackageRef());
+            InsertControl(copy, instance, destIndex);
+            SafeRelease(copy);
+        }
+    }
+    EndMacro();
 }
 
 void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex)
 {
     if (!nodes.empty())
     {
-        PackageModel *model = document->GetPackageContext()->GetModel();
         BeginMacro("Copy Controls");
         int index = destIndex;
         for (ControlNode *node : nodes)
         {
             ControlNode *copy = node->Clone();
-            PushCommand(new InsertControlCommand(model, copy, dest, index));
+            InsertControl(copy, dest, index);
             SafeRelease(copy);
             index++;
         }
@@ -107,8 +93,7 @@ void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*
 {
     if (!nodes.empty())
     {
-        PackageModel *model = document->GetPackageContext()->GetModel();
-        BeginMacro("Copy Controls");
+        BeginMacro("Move Controls");
         int index = destIndex;
         for (ControlNode *node : nodes)
         {
@@ -119,8 +104,11 @@ void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*
                 
                 if (src == dest && index > srcIndex)
                     index--;
-                
-                PushCommand(new MoveControlCommand(model, node, src, srcIndex, dest, index));
+
+                node->Retain();
+                RemoveControl(node);
+                InsertControl(node, dest, index);
+                node->Release();
                 
                 index++;
             }
@@ -134,37 +122,66 @@ void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*
     }
 }
 
+void QtModelPackageCommandExecutor::RemoveControl(ControlNode* node)
+{
+    PackageModel *model = document->GetPackageContext()->GetModel();
+
+    ControlsContainerNode *src = dynamic_cast<ControlsContainerNode*>(node->GetParent());
+    if (src)
+    {
+        ControlNode *srcControl = dynamic_cast<ControlNode*>(src);
+        if (srcControl == nullptr || srcControl->GetCreationType() == ControlNode::CREATED_FROM_CLASS || srcControl->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
+        {
+            int32 srcIndex = src->GetIndex(node);
+            node->Retain();
+            PushCommand(new RemoveControlCommand(model, node, src, srcIndex));
+            
+            Vector<ControlNode*> instances = node->GetInstances();
+            RemoveControls(instances);
+            
+            node->Release();
+        }
+        else
+        {
+            // do nothing
+        }
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+
+}
+
 void QtModelPackageCommandExecutor::RemoveControls(const DAVA::Vector<ControlNode*> &nodes)
 {
     if (!nodes.empty())
     {
-        PackageModel *model = document->GetPackageContext()->GetModel();
         BeginMacro("Remove Controls");
         for (ControlNode *node : nodes)
-        {
-            ControlsContainerNode *src = dynamic_cast<ControlsContainerNode*>(node->GetParent());
-            if (src)
-            {
-                ControlNode *srcControl = dynamic_cast<ControlNode*>(src);
-                if (srcControl == nullptr || srcControl->GetCreationType() == ControlNode::CREATED_FROM_CLASS || srcControl->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
-                {
-                    int32 srcIndex = src->GetIndex(node);
-                    PushCommand(new RemoveControlCommand(model, node, src, srcIndex));
-                }
-                else
-                {
-                    // do nothing
-                }
-            }
-            else
-            {
-                DVASSERT(false);
-            }
-        }
-        
+            RemoveControl(node);
         EndMacro();
     }
 }
+
+void QtModelPackageCommandExecutor::ChangeDefaultProperties(const DAVA::Vector<ControlNode *> &instances, BaseProperty *property, const DAVA::VariantType &value)
+{
+    for (ControlNode *instance : instances)
+    {
+        Vector<String> path = property->GetPath();
+        BaseProperty *nodeProperty = instance->GetPropertyByPath(path);
+        if (nodeProperty)
+        {
+            PushCommand(new ChangeDefaultValueCommand(document, instance, nodeProperty, value));
+            ChangeDefaultProperties(instance->GetInstances(), nodeProperty, nodeProperty->GetValue());
+        }
+        else
+        {
+            DVASSERT(false);
+        }
+    }
+}
+
 
 QUndoStack *QtModelPackageCommandExecutor::GetUndoStack()
 {

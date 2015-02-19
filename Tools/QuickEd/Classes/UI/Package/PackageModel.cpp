@@ -1,7 +1,8 @@
 #include "PackageModel.h"
 
-#include <qicon.h>
+#include <QIcon>
 #include <QAction>
+#include <QUrl>
 
 #include "DAVAEngine.h"
 #include "Base/ObjectFactory.h"
@@ -205,6 +206,7 @@ QStringList PackageModel::mimeTypes() const
     QStringList types;
     types << PackageMimeData::MIME_TYPE;
     types << "text/plain";
+    types << "text/uri-list";
     return types;
 }
 
@@ -247,10 +249,8 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
         rowIndex = rowCount(QModelIndex());
 
     ControlsContainerNode *parentNode = dynamic_cast<ControlsContainerNode*>(static_cast<PackageBaseNode*>(parent.internalPointer()));
-    if (!parentNode)
-        return false;
     
-    if (data->hasFormat(PackageMimeData::MIME_TYPE))
+    if (parentNode && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
         const PackageMimeData *controlMimeData = dynamic_cast<const PackageMimeData*>(data);
         if (!controlMimeData)
@@ -269,20 +269,38 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
         
         return true;
     }
-    else if (data->hasFormat("text/plain") && data->hasText())
+    else if (data->hasFormat("text/uri-list") && data->hasText())
+    {
+        QStringList list = data->text().split("\n");
+        for (const QString &str : list)
+        {
+            QUrl url(str);
+            if (url.isLocalFile())
+            {
+                FilePath path(url.toLocalFile().toStdString());
+                if (document->GetPackage()->FindImportedPackage(path) == nullptr)
+                {
+                }
+            }
+        }
+    }
+    else if (parentNode && data->hasFormat("text/plain") && data->hasText())
     {
         String string = data->text().toStdString();
         RefPtr<YamlParser> parser(YamlParser::CreateAndParseString(string));
         
+        bool completed = false;
         if (parser.Valid() && parser->GetRootNode())
         {
             document->UndoStack()->beginMacro("Paste");
             EditorUIPackageBuilder builder(document->GetPackage(), parentNode, rowIndex, document->GetCommandExecutor());
             UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(parser->GetRootNode(), "");
+            completed = newPackage != nullptr;
             SafeRelease(newPackage);
             document->UndoStack()->endMacro();
         }
-        else
+        
+        if (!completed)
         {
             String controlName = QStringToString(data->text());
             size_t slashIndex = controlName.find("/");
@@ -323,6 +341,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
             if (node)
             {
                 document->GetCommandExecutor()->InsertControl(node, parentNode, rowIndex);
+                SafeRelease(node);
             }
         }
         return true;
@@ -346,19 +365,6 @@ void PackageModel::RemoveControlNode(ControlNode *node, ControlsContainerNode *p
     beginRemoveRows(parentIndex, index, index);
     parent->Remove(node);
     endRemoveRows();
-}
-
-void PackageModel::MoveControlNode(ControlNode *node, ControlsContainerNode *src, int srcRow, ControlsContainerNode *dest, int destRow)
-{
-    QPersistentModelIndex srcIndex = indexByNode(src);
-    QPersistentModelIndex destIndex = indexByNode(dest);
-    
-    beginMoveRows(srcIndex, srcRow, srcRow, destIndex, destRow);
-    node->Retain();
-    src->Remove(node);
-    dest->InsertAtIndex(destRow, node);
-    node->Release();
-    endMoveRows();
 }
 
 void PackageModel::InsertImportedPackage(PackageControlsNode *node, PackageNode *dest, int destRow)

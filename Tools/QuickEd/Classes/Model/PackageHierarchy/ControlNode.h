@@ -29,6 +29,7 @@ public:
     static ControlNode *CreateFromControl(DAVA::UIControl *control);
     
     static ControlNode *CreateFromPrototype(ControlNode *sourceNode, PackageRef *nodePackage);
+    static ControlNode *CreateFromPrototypeChild(ControlNode *sourceNode, PackageRef *nodePackage);
     
 private:
     static ControlNode *CreateFromPrototypeImpl(ControlNode *sourceNode, PackageRef *nodePackage, bool root);
@@ -38,7 +39,6 @@ public:
     
     void Add(ControlNode *node) override;
     void InsertAtIndex(int index, ControlNode *node) override;
-    void InsertBelow(ControlNode *node, const ControlNode *belowThis) override;
     void Remove(ControlNode *node) override;
     int GetCount() const override;
     ControlNode *Get(int index) const override;
@@ -57,9 +57,12 @@ public:
     PropertiesRoot *GetPropertiesRoot() const {return propertiesRoot; }
     BaseProperty *GetPropertyByPath(const DAVA::Vector<DAVA::String> &path);
 
-    
+
+    void MarkAsRemoved();
+    void MarkAsAlive();
+
     void Serialize(PackageSerializer *serializer, PackageRef *currentPackage) const;
-    
+
 private:
     void CollectPrototypeChildrenWithChanges(DAVA::Vector<ControlNode*> &out) const;
     bool HasNonPrototypeChildren() const;
