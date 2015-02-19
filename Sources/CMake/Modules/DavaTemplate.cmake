@@ -113,19 +113,26 @@ if( ANDROID )
 
     execute_process( COMMAND  android update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path . )
 
-    ADD_CUSTOM_COMMAND(
-    TARGET ${PROJECT_NAME}
-    POST_BUILD
+    add_custom_target( ant-configure ALL
         COMMAND  android update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path .
         COMMAND  ant release
     )
 
+    add_dependencies( ant-configure ${PROJECT_NAME} )
+
+
 elseif( IOS )
-    set_target_properties ( ${PROJECT_NAME} PROPERTIES
+    set_target_properties( ${PROJECT_NAME} PROPERTIES
         MACOSX_BUNDLE_INFO_PLIST "${IOS_PLISTT}" 
         RESOURCE                 "${RESOURCES_LIST}"
         XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
     )
+
+    foreach ( TARGET ${PROJECT_NAME} ${DAVA_LIBRARY}  )
+        set_xcode_property( ${TARGET} GCC_GENERATE_DEBUGGING_SYMBOLS[variant=Debug] YES )
+        set_xcode_property( ${TARGET} IPHONEOS_DEPLOYMENT_TARGET "7.0" )
+        set_xcode_property( ${TARGET} ONLY_ACTIVE_ARCH YES )
+    endforeach ()
 
 elseif( MACOS )
     set_target_properties ( ${PROJECT_NAME} PROPERTIES
