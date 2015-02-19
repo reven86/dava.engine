@@ -47,12 +47,16 @@ if( ANDROID )
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_android.a"
-         "libEGL.so"
-         "libGLESv1_CM.so"
-         "liblog.so"
-         "libandroid.so"
+         )
+
+    list ( APPEND LIST_LIBRARIES
+         "-lEGL"
+         "-lGLESv1_CM"
+         "-llog"
+         "-landroid"
          "-lGLESv2"
-         "-lstdc++" )
+         "-lstdc++" 
+         )
 
     list ( APPEND LIST_SHARED_LIBRARIES ${LIST_LIBRARIES} )
 

@@ -31,6 +31,7 @@ elseif( IOS )
 
 elseif( WIN32 )
     set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
+    set( EXECUTABLE_FLAG WIN32 )
 
 endif()
 
@@ -69,6 +70,5 @@ set( LIBRARIES                  TextureTool )
 set( LIBRARIES_RELEASE          )
 set( LIBRARIES_DEBUG            )
 set( ADDED_BINARY_DIR           )
-set( EXECUTABLE_FLAG            WIN32 )
 
 setup_main_executable()

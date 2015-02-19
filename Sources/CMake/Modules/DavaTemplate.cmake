@@ -67,6 +67,8 @@ endif()
 
 
 if( ANDROID )
+    set( LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME}" CACHE PATH "Output directory for Android libs" )
+
     set( ANDROID_MIN_SDK_VERSION     ${ANDROID_NATIVE_API_LEVEL} )
     set( ANDROID_TARGET_SDK_VERSION  ${ANDROID_NATIVE_API_LEVEL} )
 
@@ -109,19 +111,28 @@ if( ANDROID )
 
     set_target_properties( ${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/ )
 
-    ADD_CUSTOM_COMMAND(
-    TARGET ${PROJECT_NAME}
-    POST_BUILD
-        COMMAND  android update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path . 
+    execute_process( COMMAND  android update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path . )
+
+    add_custom_target( ant-configure ALL
+        COMMAND  android update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path .
         COMMAND  ant release
     )
 
+    add_dependencies( ant-configure ${PROJECT_NAME} )
+
+
 elseif( IOS )
-    set_target_properties ( ${PROJECT_NAME} PROPERTIES
+    set_target_properties( ${PROJECT_NAME} PROPERTIES
         MACOSX_BUNDLE_INFO_PLIST "${IOS_PLISTT}" 
         RESOURCE                 "${RESOURCES_LIST}"
         XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
     )
+
+    foreach ( TARGET ${PROJECT_NAME} ${DAVA_LIBRARY}  )
+        set_xcode_property( ${TARGET} GCC_GENERATE_DEBUGGING_SYMBOLS[variant=Debug] YES )
+        set_xcode_property( ${TARGET} IPHONEOS_DEPLOYMENT_TARGET "7.0" )
+        set_xcode_property( ${TARGET} ONLY_ACTIVE_ARCH YES )
+    endforeach ()
 
 elseif( MACOS )
     set_target_properties ( ${PROJECT_NAME} PROPERTIES

@@ -41,11 +41,15 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
+#include "Components/UIComponent.h"
+
 namespace DAVA
 {
 
     UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)
     {
+        UpdateFamily();
+
         parent = NULL;
         controlState = STATE_NORMAL;
         visible = true;
@@ -1342,7 +1346,7 @@ namespace DAVA
         if(clipContents)
         {//WARNING: for now clip contents don't work for rotating controls if you have any ideas you are welcome
             RenderSystem2D::Instance()->PushClip();
-            RenderSystem2D::Instance()->ClipRect(drawData.GetAABBox());
+            RenderSystem2D::Instance()->IntersectClipRect(drawData.GetAABBox());
         }
 
         Draw(drawData);
@@ -1489,6 +1493,10 @@ namespace DAVA
            && UIControlSystem::Instance()->GetExclusiveInputLocker() != this)
         {
             return false;
+        }
+        if (customSystemProcessInput != 0 && customSystemProcessInput(this, currentInput))
+        {
+        	return true;
         }
 
         switch (currentInput->phase)
@@ -2762,4 +2770,96 @@ namespace DAVA
             }
         }
     }
+
+    /* Components */
+    bool CotrolComponentLessPredicate(Component * left, Component * right)
+    {
+        return left->GetType() < right->GetType();
+    }
+
+    void UIControl::AddComponent(Component * component)
+    {
+        DynamicTypeCheck<UIComponent*>(component)->SetControl(this);
+        components.push_back(component);
+        std::stable_sort(components.begin(), components.end(), CotrolComponentLessPredicate);
+        UpdateFamily();
+    }
+
+    void UIControl::DetachComponent(const Vector<Component *>::iterator & it)
+    {
+        UIComponent * c = DynamicTypeCheck<UIComponent*>(*it);
+        components.erase(it);
+        UpdateFamily();
+        c->SetControl(0);
+    }
+
+    Component * UIControl::GetComponent(uint32 componentType, uint32 index) const
+    {
+        Component * ret = 0;
+        uint32 maxCount = family->GetComponentsCount(componentType);
+        if (index < maxCount)
+        {
+            ret = components[family->GetComponentIndex(componentType, index)];
+        }
+        return ret;
+    }
+
+    Component * UIControl::GetOrCreateComponent(uint32 componentType, uint32 index)
+    {
+        Component * ret = GetComponent(componentType, index);
+        if (!ret)
+        {
+            ret = Component::CreateByType(componentType);
+            AddComponent(ret);
+        }
+
+        return ret;
+    }
+
+    inline void UIControl::UpdateFamily()
+    {
+        family = EntityFamily::GetOrCreate(components);
+    }
+
+    inline void UIControl::RemoveAllComponents()
+    {
+        while (!components.empty())
+        {
+            RemoveComponent(--components.end());
+        }
+    }
+
+    void UIControl::RemoveComponent(const Vector<Component *>::iterator & it)
+    {
+        if (it != components.end())
+        {
+            UIComponent * c = DynamicTypeCheck<UIComponent*>(*it);
+            DetachComponent(it);
+            SafeDelete(c);
+        }
+    }
+
+    void UIControl::RemoveComponent(uint32 componentType, uint32 index)
+    {
+        Component * c = GetComponent(componentType, index);
+        if (c)
+        {
+            RemoveComponent(c);
+        }
+    }
+
+    void UIControl::RemoveComponent(Component * component)
+    {
+        DetachComponent(component);
+        SafeDelete(component);
+    }
+
+    void UIControl::DetachComponent(Component * component)
+    {
+        DVASSERT(component);
+        auto it = std::find(components.begin(), components.end(), component);
+        DetachComponent(it);
+    }
+    /* Components */
+
 }
