@@ -1,9 +1,18 @@
 #include "ChangePropertyValueCommand.h"
 
 #include "Model/ControlProperties/BaseProperty.h"
+#include "Model/PackageHierarchy/ControlNode.h"
+#include "UI/Document.h"
+#include "UI/PropertiesContext.h"
+#include "UI/PackageContext.h"
+#include "UI/Properties/PropertiesModel.h"
+#include "UI/Package/PackageModel.h"
 
-ChangePropertyValueCommand::ChangePropertyValueCommand( BaseProperty *prop, const DAVA::VariantType &newVal, QUndoCommand *parent /*= 0*/ )
+
+ChangePropertyValueCommand::ChangePropertyValueCommand(Document *_document, ControlNode *_node, BaseProperty *prop, const DAVA::VariantType &newVal, QUndoCommand *parent /*= 0*/ )
     : QUndoCommand(parent)
+    , document(_document)
+    , node(SafeRetain(_node))
     , property(SafeRetain(prop))
     , newValue(newVal)
 {
@@ -14,8 +23,10 @@ ChangePropertyValueCommand::ChangePropertyValueCommand( BaseProperty *prop, cons
     setText( QString("change %1").arg(QString(property->GetName().c_str())));
 }
 
-ChangePropertyValueCommand::ChangePropertyValueCommand( BaseProperty *prop, QUndoCommand *parent /*= 0*/ )
+ChangePropertyValueCommand::ChangePropertyValueCommand(Document *_document, ControlNode *_node, BaseProperty *prop, QUndoCommand *parent /*= 0*/ )
     : QUndoCommand(parent)
+    , document(_document)
+    , node(SafeRetain(_node))
     , property(SafeRetain(prop))
 {
     if (property->IsReplaced())
@@ -27,7 +38,9 @@ ChangePropertyValueCommand::ChangePropertyValueCommand( BaseProperty *prop, QUnd
 
 ChangePropertyValueCommand::~ChangePropertyValueCommand()
 {
+    SafeRelease(node);
     SafeRelease(property);
+    document = nullptr;
 }
 
 void ChangePropertyValueCommand::undo()
@@ -36,6 +49,13 @@ void ChangePropertyValueCommand::undo()
         property->ResetValue();
     else
         property->SetValue(oldValue);
+
+    PropertiesModel *model = document->GetPropertiesContext()->GetModel();
+    if (model && model->GetControlNode()->GetPropertiesRoot() == property->GetRootProperty())
+        model->emitPropertyChanged(property);
+
+    PackageModel *packageModel = document->GetPackageContext()->GetModel();
+    packageModel->emitNodeChanged(node);
 }
 
 void ChangePropertyValueCommand::redo()
@@ -44,5 +64,11 @@ void ChangePropertyValueCommand::redo()
         property->ResetValue();
     else
         property->SetValue(newValue);
+    
+    PropertiesModel *propertiesModel = document->GetPropertiesContext()->GetModel();
+    if (propertiesModel && propertiesModel->GetControlNode()->GetPropertiesRoot() == property->GetRootProperty())
+        propertiesModel->emitPropertyChanged(property);
+    
+    PackageModel *packageModel = document->GetPackageContext()->GetModel();
+    packageModel->emitNodeChanged(node);
 }
-

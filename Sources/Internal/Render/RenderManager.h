@@ -820,7 +820,7 @@ inline UniqueHandle RenderManager::SubclassRenderState(UniqueHandle parentStateH
     LockRenderState();
     const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(parentStateHandle);
     RenderStateData derivedState;
-    memcpy(&derivedState, &parentState, sizeof(derivedState));
+    Memcpy(&derivedState, &parentState, sizeof(derivedState));
     UnlockRenderState();
     
     derivedState.sourceFactor = srcBlend;

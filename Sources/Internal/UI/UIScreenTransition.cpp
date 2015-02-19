@@ -91,6 +91,8 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     nextScreen = _nextScreen;
     prevScreen = _prevScreen;
 
+    RenderSystem2D::Instance()->Flush();
+
     Texture * textureTargetPrev = renderTargetPrevScreen->GetTexture();
     RenderManager::Instance()->SetRenderTarget(textureTargetPrev);
     RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)textureTargetPrev->GetWidth(), (float32)textureTargetPrev->GetHeight()));
@@ -115,6 +117,9 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
         SafeRelease(prevScreen);
     }
 
+    RenderSystem2D::Instance()->Flush();
+    RenderSystem2D::Instance()->Reset();
+    
     /*clear alpha*/
     RenderManager::Instance()->SetRenderState(alphaClearStateHandle);
     RenderManager::Instance()->FlushState();
@@ -137,6 +142,9 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     float32 timeElapsed = SystemTimer::FrameDelta();
     nextScreen->SystemUpdate(timeElapsed);
     nextScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
+
+    RenderSystem2D::Instance()->Flush();
+    RenderSystem2D::Instance()->Reset();
 
     /*clear alpha*/
     RenderManager::Instance()->SetRenderState(alphaClearStateHandle);

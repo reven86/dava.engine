@@ -140,3 +140,19 @@ BaseProperty *BaseProperty::GetPropertyByPath(const Vector<String> &path)
     
     return prop;
 }
+
+BaseProperty *BaseProperty::GetRootProperty()
+{
+    BaseProperty *property = this;
+    while (property->parent)
+        property = property->parent;
+    return property;
+}
+
+const BaseProperty *BaseProperty::GetRootProperty() const
+{
+    const BaseProperty *property = this;
+    while (property->parent)
+        property = property->parent;
+    return property;
+}
