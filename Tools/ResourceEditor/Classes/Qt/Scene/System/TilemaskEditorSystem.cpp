@@ -199,12 +199,12 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
                 RenderManager::Instance()->SetClip(dstRect);
                 RenderHelper::Instance()->DrawTexture(dstTex, RenderState::RENDERSTATE_2D_OPAQUE, textureRect);
 
+                RenderManager::Instance()->SetClip(Rect(0.f, 0.f, -1.f, -1.f));
+
                 RenderHelper::Instance()->Set2DRenderTarget(stencilTexture);
                 RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-                RenderManager::Instance()->SetClip(dstRect);
                 RenderHelper::Instance()->DrawTexture(toolImageTexture, RenderState::RENDERSTATE_2D_OPAQUE, toolRect);
                 
-                RenderManager::Instance()->SetClip(Rect(0.f, 0.f, -1.f, -1.f));
                 RenderManager::Instance()->SetRenderTarget(0);
 
 				toolSpriteUpdated = true;

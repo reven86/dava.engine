@@ -14,7 +14,11 @@ void main()
 	vec4 colorNew = texture2D(texture1, varTexCoord0);
 	vec4 stencil  = texture2D(texture2, varTexCoord0);
 
-    vec3 outColor3 = mix(colorOld.rgb, colorNew.rgb, stencil.rgb);
+	vec4 outColor = colorNew;
+	if( stencil.a < 0.05)
+	{
+		outColor = colorOld;
+	}
 
-	gl_FragColor = vec4(outColor3, colorOld.a);
+	gl_FragColor = outColor;
 }
