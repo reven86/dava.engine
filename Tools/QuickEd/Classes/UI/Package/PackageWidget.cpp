@@ -89,7 +89,7 @@ void PackageWidget::SetDocument(Document *newDocument)
     {
         ui->treeView->setUpdatesEnabled(false);
         ui->treeView->setModel(document->GetPackageContext()->GetFilterProxyModel());
-        foreach(const QPersistentModelIndex &index, document->GetPackageContext()->GetExpandedIndexes())
+        for(const auto &index : document->GetPackageContext()->GetExpandedIndexes())
         {
             if (index.isValid())
             {
@@ -115,7 +115,7 @@ void PackageWidget::RefreshActions(const QModelIndexList &indexList)
     bool editControlsEnabled = !indexList.empty();
     //bool editControlsVisible = editControlsEnabled;
 
-    foreach(QModelIndex index, indexList)
+    for(const auto &index : indexList)
     {
         PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
 

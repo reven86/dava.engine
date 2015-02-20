@@ -38,7 +38,7 @@ QSortFilterProxyModel *PackageContext::GetFilterProxyModel()
     return &proxyModel;
 }
 
-const QItemSelection &PackageContext::GetCurrentItemSelection()
+const QItemSelection &PackageContext::GetCurrentItemSelection() const
 {
     return currentItemSelection;
 }
@@ -59,7 +59,7 @@ const QList<QPersistentModelIndex> &PackageContext::GetExpandedIndexes() const
     return expandedIndexes;
 }
 
-void PackageContext::SetExpandedIndexes(QList<QPersistentModelIndex> _expandedIndexes)
+void PackageContext::SetExpandedIndexes(const QList<QPersistentModelIndex> &_expandedIndexes)
 {
     
     expandedIndexes = _expandedIndexes;
