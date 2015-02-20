@@ -8,6 +8,8 @@ namespace DAVA
     class UIControl;
 }
 
+class ControlNode;
+
 class PackageBaseNode : public DAVA::BaseObject
 {
 public:
@@ -38,6 +40,12 @@ public:
     virtual int GetFlags() const = 0;
     
     virtual void debugDump(int depth);
+    
+    virtual bool IsEditingSupported();
+    virtual bool IsInsertingSupported();
+    virtual bool CanInsertControl(ControlNode *node, DAVA::int32 pos);
+    virtual bool CanRemove();
+    virtual bool CanCopy();
     
 private:
     PackageBaseNode *parent;

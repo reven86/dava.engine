@@ -52,6 +52,12 @@ public:
     int GetFlags() const override;
     void SetReadOnly();
     
+    virtual bool IsEditingSupported() override;
+    virtual bool IsInsertingSupported() override;
+    virtual bool CanInsertControl(ControlNode *node, DAVA::int32 pos) override;
+    virtual bool CanRemove() override;
+    virtual bool CanCopy() override;
+
     eCreationType GetCreationType() const { return creationType; }
 
     PropertiesRoot *GetPropertiesRoot() const {return propertiesRoot; }

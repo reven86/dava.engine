@@ -211,6 +211,40 @@ void ControlNode::SetReadOnly()
         (*it)->SetReadOnly();
 }
 
+bool ControlNode::IsEditingSupported()
+{
+    return !readOnly;
+}
+
+bool ControlNode::IsInsertingSupported()
+{
+    return !readOnly;
+}
+
+bool ControlNode::CanInsertControl(ControlNode *node, DAVA::int32 pos)
+{
+    if (readOnly)
+        return false;
+    
+    if (pos >= nodes.size())
+        return true;
+    
+    if (nodes[pos + 1]->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)
+        return false;
+    
+    return true;
+}
+
+bool ControlNode::CanRemove()
+{
+    return !readOnly && creationType != CREATED_FROM_PROTOTYPE_CHILD;
+}
+
+bool ControlNode::CanCopy()
+{
+    return creationType != CREATED_FROM_PROTOTYPE_CHILD;
+}
+
 BaseProperty *ControlNode::GetPropertyByPath(const DAVA::Vector<DAVA::String> &path)
 {
     return propertiesRoot->GetPropertyByPath(path);

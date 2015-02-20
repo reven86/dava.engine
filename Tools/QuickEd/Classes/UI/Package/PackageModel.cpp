@@ -220,7 +220,7 @@ QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
         {
             PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
             ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
-            if (controlNode && controlNode->GetCreationType() != ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
+            if (controlNode && controlNode->CanCopy())
             {
                 mimeData->AddControlNode(controlNode);
             }
@@ -228,7 +228,7 @@ QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
     }
     
     YamlPackageSerializer serializer;
-    document->GetPackage()->Serialize(&serializer, mimeData->GetControlNodes());
+    root->Serialize(&serializer, mimeData->GetControlNodes());
     String str = serializer.WriteToString();
     mimeData->setText(QString::fromStdString(str));
 
@@ -278,7 +278,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
             if (url.isLocalFile())
             {
                 FilePath path(url.toLocalFile().toStdString());
-                if (document->GetPackage()->FindImportedPackage(path) == nullptr)
+                if (root->FindImportedPackage(path) == nullptr)
                 {
                 }
             }
@@ -287,20 +287,8 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     else if (parentNode && data->hasFormat("text/plain") && data->hasText())
     {
         String string = data->text().toStdString();
-        RefPtr<YamlParser> parser(YamlParser::CreateAndParseString(string));
         
-        bool completed = false;
-        if (parser.Valid() && parser->GetRootNode())
-        {
-            document->UndoStack()->beginMacro("Paste");
-            EditorUIPackageBuilder builder(document->GetPackage(), parentNode, rowIndex, document->GetCommandExecutor());
-            UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(parser->GetRootNode(), "");
-            completed = newPackage != nullptr;
-            SafeRelease(newPackage);
-            document->UndoStack()->endMacro();
-        }
-        
-        if (!completed)
+        if (!document->GetCommandExecutor()->Paste(root, parentNode, rowIndex, string))
         {
             String controlName = QStringToString(data->text());
             size_t slashIndex = controlName.find("/");

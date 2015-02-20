@@ -15,6 +15,8 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/ImportedPackagesNode.h"
+#include "Model/YamlPackageSerializer.h"
+#include "Model/EditorUIPackageBuilder.h"
 
 using namespace DAVA;
 
@@ -49,6 +51,24 @@ void QtModelPackageCommandExecutor::ResetProperty(ControlNode *node, BasePropert
     PushCommand(new ChangePropertyValueCommand(document, node, property));
     ChangeDefaultProperties(node->GetInstances(), property, property->GetDefaultValue());
     EndMacro();
+}
+
+void QtModelPackageCommandExecutor::ChangeDefaultProperties(const DAVA::Vector<ControlNode *> &instances, BaseProperty *property, const DAVA::VariantType &value)
+{
+    for (ControlNode *instance : instances)
+    {
+        Vector<String> path = property->GetPath();
+        BaseProperty *nodeProperty = instance->GetPropertyByPath(path);
+        if (nodeProperty)
+        {
+            PushCommand(new ChangeDefaultValueCommand(document, instance, nodeProperty, value));
+            ChangeDefaultProperties(instance->GetInstances(), nodeProperty, nodeProperty->GetValue());
+        }
+        else
+        {
+            DVASSERT(false);
+        }
+    }
 }
 
 void QtModelPackageCommandExecutor::InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex)
@@ -164,24 +184,23 @@ void QtModelPackageCommandExecutor::RemoveControls(const DAVA::Vector<ControlNod
     }
 }
 
-void QtModelPackageCommandExecutor::ChangeDefaultProperties(const DAVA::Vector<ControlNode *> &instances, BaseProperty *property, const DAVA::VariantType &value)
+bool QtModelPackageCommandExecutor::Paste(PackageNode *root, ControlsContainerNode *dest, int32 destIndex, const DAVA::String &data)
 {
-    for (ControlNode *instance : instances)
+    RefPtr<YamlParser> parser(YamlParser::CreateAndParseString(data));
+    if (parser.Valid() && parser->GetRootNode())
     {
-        Vector<String> path = property->GetPath();
-        BaseProperty *nodeProperty = instance->GetPropertyByPath(path);
-        if (nodeProperty)
-        {
-            PushCommand(new ChangeDefaultValueCommand(document, instance, nodeProperty, value));
-            ChangeDefaultProperties(instance->GetInstances(), nodeProperty, nodeProperty->GetValue());
-        }
-        else
-        {
-            DVASSERT(false);
-        }
+        BeginMacro("Paste");
+        EditorUIPackageBuilder builder(root, dest, destIndex, this);
+        UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(parser->GetRootNode(), "");
+        bool completed = newPackage != nullptr;
+        SafeRelease(newPackage);
+        EndMacro();
+        
+        if (completed)
+            return true;
     }
+    return false;
 }
-
 
 QUndoStack *QtModelPackageCommandExecutor::GetUndoStack()
 {

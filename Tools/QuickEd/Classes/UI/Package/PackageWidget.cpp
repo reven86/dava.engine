@@ -101,53 +101,77 @@ void PackageWidget::SetDocument(Document *newDocument)
 
 void PackageWidget::RefreshActions(const QModelIndexList &indexList)
 {
-    bool editActionEnabled = !indexList.empty();
-    bool editActionVisible = editActionEnabled;
-
-    bool editImportPackageEnabled = !indexList.empty();
-    bool editImportPackageVisible = editImportPackageEnabled;
-
-    bool editControlsEnabled = !indexList.empty();
+//    bool editActionEnabled = !indexList.empty();
+//    bool editActionVisible = editActionEnabled;
+//
+//    bool editImportPackageEnabled = !indexList.empty();
+//    bool editImportPackageVisible = editImportPackageEnabled;
+//
+//    bool editControlsEnabled = !indexList.empty();
     //bool editControlsVisible = editControlsEnabled;
 
-    foreach(QModelIndex index, indexList)
+//    for (QModelIndex index : indexList)
+//    {
+//        PackageBaseNode *node  = static_cast<PackageBaseNode*>(index.internalPointer());
+//        if (!node->GetControl())
+//        {
+//            editActionEnabled &= false;
+//            editActionVisible &= false;
+//        }
+//        else
+//        {
+//            if ((node->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) != 0)
+//            {
+//                editActionEnabled &= false;
+//            }
+//        }
+//
+//        ImportedPackagesNode *importNode = dynamic_cast<ImportedPackagesNode *>(node);
+//        if (!importNode)
+//        {
+//            editImportPackageEnabled &= false;
+//            editImportPackageVisible &= false;
+//        }
+//
+//        PackageControlsNode *controlsNode = dynamic_cast<PackageControlsNode *>(node);
+//        if (controlsNode)
+//        {
+//            editControlsEnabled &= false;
+//            editControlsEnabled &= false;
+//        }
+//    }
+
+//    RefreshAction(copyAction , editActionEnabled, editActionVisible);
+//    RefreshAction(pasteAction, editActionEnabled, editActionVisible);
+//    RefreshAction(cutAction  , editActionEnabled, editActionVisible);
+//    RefreshAction(delAction  , editActionEnabled, editActionVisible);
+//
+//    RefreshAction(importPackageAction, editImportPackageEnabled, editImportPackageVisible);
+    
+    bool canInsert = !indexList.empty();
+    bool canRemove = !indexList.empty();
+    bool canCopy = !indexList.empty();
+    
+    for (QModelIndex index : indexList)
     {
         PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+        if (!node->CanCopy())
+            canCopy = false;
 
-        if (!node->GetControl())
-        {
-            editActionEnabled &= false;
-            editActionVisible &= false;
-        }
-        else
-        {
-            if ((node->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) != 0)
-            {
-                editActionEnabled &= false;
-            }
-        }
+        if (!node->IsInsertingSupported())
+            canInsert = false;
 
-        ImportedPackagesNode *importNode = dynamic_cast<ImportedPackagesNode *>(node);
-        if (!importNode)
-        {
-            editImportPackageEnabled &= false;
-            editImportPackageVisible &= false;
-        }
-
-        PackageControlsNode *controlsNode = dynamic_cast<PackageControlsNode *>(node);
-        if (controlsNode)
-        {
-            editControlsEnabled &= false;
-            editControlsEnabled &= false;
-        }
+        if (!node->CanRemove())
+            canRemove = false;
     }
+    
+    RefreshAction(copyAction, canCopy, true);
+    RefreshAction(pasteAction, canInsert, true);
+    RefreshAction(cutAction, canCopy && canRemove, true);
+    RefreshAction(delAction, canRemove, true);
 
-    RefreshAction(copyAction , editActionEnabled, editActionVisible);
-    RefreshAction(pasteAction, editActionEnabled, editActionVisible);
-    RefreshAction(cutAction  , editActionEnabled, editActionVisible);
-    RefreshAction(delAction  , editActionEnabled, editActionVisible);
+    RefreshAction(importPackageAction, false, false);
 
-    RefreshAction(importPackageAction, editImportPackageEnabled, editImportPackageVisible);
 }
 
 void PackageWidget::RefreshAction( QAction *action, bool enabled, bool visible )
@@ -168,7 +192,7 @@ void PackageWidget::CollectSelectedNodes(Vector<ControlNode*> &nodes)
             PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
             ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
             
-            if (controlNode && controlNode->GetCreationType() != ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
+            if (controlNode && controlNode->CanCopy())
                 nodes.push_back(controlNode);
         }
     }
