@@ -149,6 +149,13 @@ function StopTest()
 end
 
 -- DB communication
+function ToBoolean(str)
+    if str == "True" or str == "true" then
+        return true
+    end
+    return false
+end
+
 function SaveArchiveToDB(name, archive, document)
     Log(string.format("Save '%s' archive to '%s' document", name, tostring(document)), "Debug")
     autotestingSystem:SaveKeyedArchiveToDB(name, archive, document)
@@ -180,7 +187,7 @@ function MakeScreenshot(skip)
     if skip ~= nil then
         skip = skip
     else
-        skip = GetParameter("SkipScreenshot", false)
+        skip = ToBoolean(GetParameter("SkipScreenshot", "false"))
     end
     local name = autotestingSystem:MakeScreenshot(skip)
     coroutine.yield()
