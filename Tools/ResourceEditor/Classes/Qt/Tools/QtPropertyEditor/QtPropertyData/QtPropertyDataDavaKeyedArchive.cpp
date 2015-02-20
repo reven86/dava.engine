@@ -326,6 +326,7 @@ KeyedArchiveItemWidget::KeyedArchiveItemWidget(DAVA::KeyedArchive *_arch, int de
 
 		QObject::connect(presetWidget, SIGNAL(activated(int)), this, SLOT(PreSetSelected(int)));
 	}
+    presetWidget->setMaxVisibleItems(presetWidget->count());
 
 	grLayout->addWidget(defaultBtn, ++row, 2, 1, 1);
 
