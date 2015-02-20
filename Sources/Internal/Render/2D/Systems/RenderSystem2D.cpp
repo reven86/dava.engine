@@ -42,8 +42,8 @@ namespace DAVA
 #define USE_BATCHING 1
 
 #if USE_BATCHING
-static const uint32 MAX_VERTEXES = 4096;
-static const uint32 MAX_INDECES = MAX_VERTEXES * 2;
+static const uint32 MAX_VERTICES = 4096;
+static const uint32 MAX_INDECES = MAX_VERTICES * 2;
 static const uint32 VBO_POOL_SIZE = 10;
 static const uint32 RESERVED_BATCHES = 1024;
 static const uint32 VBO_FORMAT = EVF_VERTEX | EVF_TEXCOORD0 | EVF_COLOR;
@@ -68,6 +68,8 @@ Shader * RenderSystem2D::TEXTURE_ADD_COLOR_IMAGE_A8 = 0;
 
 VboPool::VboPool(uint32 verticesCount, uint32 format, uint32 indicesCount, uint8 buffersCount)
 {
+    verticesLimit = verticesCount;
+    indicesLimit = indicesCount;
 	vertexFormat = format;
     vertexStride = GetVertexSize(vertexFormat);
     for (uint8 i = 0; i < buffersCount; ++i)
@@ -135,8 +137,8 @@ void RenderSystem2D::Init()
 #if USE_BATCHING
     if(!pool)
     {
-        pool = new VboPool(MAX_VERTEXES, VBO_FORMAT, MAX_INDECES, VBO_POOL_SIZE);
-        vboTemp = new float32[MAX_VERTEXES * GetVertexSize(VBO_FORMAT)];
+        pool = new VboPool(MAX_VERTICES, VBO_FORMAT, MAX_INDECES, VBO_POOL_SIZE);
+        vboTemp = new float32[MAX_VERTICES * GetVertexSize(VBO_FORMAT)];
         iboTemp = new uint16[MAX_INDECES];
     }
 #else
@@ -528,6 +530,17 @@ void RenderSystem2D::PushBatch(UniqueHandle state, UniqueHandle texture, Shader*
     uint32 indexCount, const uint16* indexPointer,
     const Color& color)
 {
+    if (vertexIndex + vertexCount > pool->GetVerticesLimit())
+    {
+        Logger::Warning("RenderSystem2D: Too much vertices in one frame on UI (%d of %d)", vertexIndex + vertexCount, pool->GetVerticesLimit());
+        Flush();
+    }
+    else if (indexIndex + indexCount > pool->GetIndicesLimit())
+    {
+        Logger::Warning("RenderSystem2D: Too much indices in one frame on UI (%d of %d)", indexIndex + indexCount, pool->GetIndicesLimit());
+        Flush();
+    }
+
     Shader * convShader = GetShaderForBatching(shader);
 
     uint32 vi = vertexIndex * 6;
