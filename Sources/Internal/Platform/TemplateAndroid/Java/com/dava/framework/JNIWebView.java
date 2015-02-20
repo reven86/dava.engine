@@ -180,12 +180,11 @@ public class JNIWebView {
             // original bitmap.
             Bitmap cacheImage = view.getDrawingCache();
             if (cacheImage != null) {
-                bitmapCache = Bitmap.createBitmap(view.getDrawingCache());
+                bitmapCache = Bitmap.createBitmap(cacheImage);
             }
 
             view.setDrawingCacheEnabled(false);
             return bitmapCache;
-            // return b;
         };
 
         @Override

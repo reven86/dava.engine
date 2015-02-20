@@ -158,6 +158,16 @@ void JniTextField::SetVisible(bool isVisible)
     setVisible(id, isVisible);
 }
 
+void JniTextField::SetRenderToTexture(bool value)
+{
+    setRenderToTexture(id, value);
+}
+
+bool JniTextField::IsRenderToTexture() const
+{
+    return JNI_TRUE == isRenderToTexture(id);
+}
+
 void JniTextField::OpenKeyboard()
 {
     openKeyboard(id);
@@ -296,6 +306,18 @@ void UITextFieldAndroid::SetInputEnabled(bool value)
 {
     JniTextField jniTextField(id);
     jniTextField.SetInputEnabled(value);
+}
+
+void UITextFieldAndroid::SetRenderToTexture(bool value)
+{
+    JniTextField  jniTextField(id);
+    jniTextField.SetRenderToTexture(value);
+}
+
+bool UITextFieldAndroid::IsRenderToTexture() const
+{
+    JniTextField jniTextField(id);
+    return jniTextField.IsRenderToTexture();
 }
 
 // Keyboard traits.
@@ -504,7 +526,37 @@ void UITextFieldAndroid::TextFieldFocusChanged(bool hasFocus)
 void UITextFieldAndroid::TextFieldFocusChanged(uint32_t id, bool hasFocus)
 {
     UITextFieldAndroid* control = GetUITextFieldAndroid(id);
-    if (!control)
-        return;
+    DVASSERT(control);
     control->TextFieldFocusChanged(hasFocus);
+}
+
+void UITextFieldAndroid::TextFieldUpdateTexture(uint32_t id, int32* rawPixels,
+        int width, int height)
+{
+    UITextFieldAndroid* control = GetUITextFieldAndroid(id);
+    DVASSERT(control);
+    DVASSERT(control->textField);
+
+    UITextField& textField = *control->textField;
+
+    if (rawPixels)
+    {
+        {
+            Texture* tex = Texture::CreateFromData(FORMAT_RGBA8888,
+                    reinterpret_cast<uint8*>(rawPixels), width, height, false);
+            Rect rect = textField.GetRect();
+            {
+                Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, rect.dx,
+                        rect.dy);
+                textField.GetBackground()->SetSprite(spr, 0);
+                SafeRelease(spr);
+            }
+            SafeRelease(tex);
+        }
+    }
+    else
+    {
+        // reset sprite to prevent render old sprite under android view
+        textField.SetSprite(nullptr, 0);
+    }
 }

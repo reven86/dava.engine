@@ -1013,6 +1013,10 @@ void UITextField::SetRenderToTexture(bool value)
     // do nothing
 #elif defined(__DAVAENGINE_MACOS__)
     // do nothing
+#elif defined(__DAVAENGINE_ANDROID__)
+    textFieldAndroid->SetRenderToTexture(value);
+#else
+    static_assert(false, "implement new platform");
 #endif
 }
     
@@ -1023,8 +1027,9 @@ bool UITextField::IsRenderToTexture() const
 #elif defined(__DAVAENGINE_MACOS__)
     return false;
 #elif defined(__DAVAENGINE_ANDROID__)
-    // TODO implement me
-    return false;
+    return textFieldAndroid->IsRenderToTexture();
+#else
+    static_assert(false, "implement new platform");
 #endif
 }
 
