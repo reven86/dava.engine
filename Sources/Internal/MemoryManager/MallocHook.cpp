@@ -35,11 +35,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(__DAVAENGINE_WIN32__)
 #include <detours/detours.h>
-#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_ANDROID__) 
 #include <dlfcn.h>
+#include "AndroidMallocHelper.h"
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#include <dlfcn.h>
+#include <malloc/malloc.h>
 #else
 #error "Unknown platform"
 #endif
+
 
 #include "MallocHook.h"
 #include "AllocPools.h"
@@ -131,7 +136,19 @@ void MallocHook::Free(void* ptr)
 {
     RealFree(ptr);
 }
-
+size_t MallocHook::MallocSize(void * ptr)
+{
+#if defined(__DAVAENGINE_WIN32__)
+    return _msize(ptr);
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+    return malloc_size(ptr);
+#elif defined(__DAVAENGINE_ANDROID__) 
+    return androidMallocSize(ptr);
+#else
+    return 0;
+#endif
+    
+}
 void MallocHook::Install()
 {
 #if defined(__DAVAENGINE_WIN32__)

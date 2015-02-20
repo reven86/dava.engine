@@ -44,6 +44,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define NOINLINE    __attribute__((noinline))
 #elif defined(__DAVAENGINE_ANDROID__)
+#define NOINLINE    __attribute__((noinline))
+
 #endif
 
 #include "Debug/DVAssert.h"
