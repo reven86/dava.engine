@@ -19,18 +19,18 @@ class PackageModel : public QAbstractItemModel
     Q_OBJECT
     
 public:
-    PackageModel(Document *document);
+    PackageModel(Document *document, QObject *parent = 0);
     virtual ~PackageModel();
     
     void emitNodeChanged(PackageBaseNode *node);
 
-    virtual QModelIndex indexByNode(PackageBaseNode *node) const;
+    QModelIndex indexByNode(PackageBaseNode *node) const;
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     virtual QModelIndex parent(const QModelIndex &child) const override;
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const  override;
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const  override;
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+    virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
     virtual Qt::ItemFlags flags(const QModelIndex &index) const override;
 
