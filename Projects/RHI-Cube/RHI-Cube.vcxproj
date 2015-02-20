@@ -85,7 +85,6 @@
     <ClCompile Include="MCPP\system.cpp" />
     <ClCompile Include="MCPP\_mcpp.cpp" />
     <ClCompile Include="RHI\PreProcess.cpp" />
-    <ClCompile Include="RHI\RegExp.cpp" />
     <ClCompile Include="RHI\rhi_Manticore.cpp" />
     <ClCompile Include="RHI\rhi_ShaderCache.cpp" />
     <ClCompile Include="RHI\rhi_ShaderSource.cpp" />
@@ -103,7 +102,6 @@
     <ClInclude Include="MCPP\system.h" />
     <ClInclude Include="MCPP\_mcpp.h" />
     <ClInclude Include="RHI\PreProcess.h" />
-    <ClInclude Include="RHI\RegExp.h" />
     <ClInclude Include="RHI\rhi_Pool.h" />
     <ClInclude Include="RHI\rhi_RingBuffer.h" />
     <ClInclude Include="RHI\rhi_ShaderCache.h" />
