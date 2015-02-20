@@ -1276,6 +1276,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
         if (!texture)
             return;
 
+        RenderSystem2D::Instance()->Flush();
         RenderSystem2D::Instance()->UpdateClip();
 
         Rect destRect(_dstRect);

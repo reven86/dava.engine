@@ -101,6 +101,8 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     RenderManager::Instance()->FlushState();
     RenderManager::Instance()->Clear(Color(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
 
+    RenderSystem2D::Instance()->Setup2DMatrices();
+
     if (prevScreen)
     {
         prevScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
@@ -118,8 +120,7 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     }
 
     RenderSystem2D::Instance()->Flush();
-    RenderSystem2D::Instance()->Reset();
-    
+
     /*clear alpha*/
     RenderManager::Instance()->SetRenderState(alphaClearStateHandle);
     RenderManager::Instance()->FlushState();
@@ -137,19 +138,21 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     RenderManager::Instance()->FlushState();
     RenderManager::Instance()->Clear(Color(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
 
-    RenderManager::Instance()->SetRenderTarget(0);
+    RenderSystem2D::Instance()->Setup2DMatrices();
 
     float32 timeElapsed = SystemTimer::FrameDelta();
     nextScreen->SystemUpdate(timeElapsed);
     nextScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
 
     RenderSystem2D::Instance()->Flush();
-    RenderSystem2D::Instance()->Reset();
 
     /*clear alpha*/
     RenderManager::Instance()->SetRenderState(alphaClearStateHandle);
     RenderManager::Instance()->FlushState();
     RenderManager::Instance()->ClearWithColor(0.0, 0.0, 0.0, 1.0);
+    RenderManager::Instance()->SetRenderTarget(0);
+
+    RenderSystem2D::Instance()->Setup2DMatrices();
 
     //  Debug images. Left here for future bugs :)
     //    Image * image = renderTargetPrevScreen->GetTexture()->CreateImageFromMemory();
