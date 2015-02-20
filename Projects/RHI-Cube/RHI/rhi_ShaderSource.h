@@ -44,10 +44,11 @@ struct
 ShaderProp 
 {
     enum Type   { TYPE_FLOAT1, TYPE_FLOAT4, TYPE_FLOAT4X4 };
-    enum Scope  { SCOPE_UNIQUE, SCOPE_SHARED };
+    enum Scope  { SCOPE_GLOBAL, SCOPE_SHARED, SCOPE_UNIQUE };
 
     FastName    uid;
     Type        type;
+    uint32      arraySize;
     Scope       scope;
     FastName    tag;
     uint32      bufferindex;

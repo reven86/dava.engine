@@ -39,6 +39,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
     if( in )
     {
         std::regex  prop_re(".*property\\s*(float|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:(.*)\\:(.*);.*");
+        std::regex  aprop_re(".*property\\s*(float|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\[([0-9+])\\]\\s*\\:(.*)\\:(.*);.*");
         std::regex  sampler_re(".*DECL_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
         std::regex  texture_re(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
 
@@ -49,31 +50,52 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
             char        line[1024];
             uint32      lineLen = in->ReadLine( line, sizeof(line) );
             std::cmatch match;
-
+            bool        propDef     = false;
+            bool        propArray   = false;
 
             if( std::regex_match( line, match, prop_re ) )
+            {
+                propDef   = true;
+                propArray = false;
+            }
+            else if( std::regex_match( line, match, aprop_re ) )
+            {
+                propDef   = true;
+                propArray = true;
+            }
+
+
+            if( propDef )
             {
                 prop.resize( prop.size()+1 );
 
                 ShaderProp& p      = prop.back();
                 std::string type   = match[1].str();
                 std::string uid    = match[2].str();
-                std::string tags   = match[3].str();
-                std::string script = match[4].str();
+                std::string tags   = (propArray) ? match[4].str() : match[3].str();
+                std::string arr_sz = (propArray) ? match[3].str() : "";
+                std::string script = (propArray) ? match[5].str() : match[4].str();
 
-                p.uid   = FastName(uid);
-                p.scope = ShaderProp::SCOPE_SHARED;
+                p.uid       = FastName(uid);
+                p.scope     = ShaderProp::SCOPE_UNIQUE;
+                p.arraySize = (propArray) ? atoi(arr_sz.c_str()) : 1;
 
                 if     ( stricmp( type.c_str(), "float" ) == 0 )    p.type = ShaderProp::TYPE_FLOAT1;
                 else if( stricmp( type.c_str(), "float4" ) == 0 )   p.type = ShaderProp::TYPE_FLOAT4;
                 else if( stricmp( type.c_str(), "float4x4" ) == 0 ) p.type = ShaderProp::TYPE_FLOAT4X4;
 
+                if( propArray )
+                {
+                    DVASSERT(p.type == ShaderProp::TYPE_FLOAT4 || p.type == ShaderProp::TYPE_FLOAT4X4);
+                }
+
                 char    scope[64];
                 char    tag[64];
 
-                sscanf( "%s,%s", scope, tags.c_str() );
-                if     ( stricmp( scope, "shared" ) ==0 )   p.scope = ShaderProp::SCOPE_SHARED;
-                else if( stricmp( scope, "unique" ) ==0 )   p.scope = ShaderProp::SCOPE_UNIQUE;
+                sscanf( tags.c_str(), "%s,%s", scope, tag );
+                if     ( stricmp( scope, "shared" ) == 0 )  p.scope = ShaderProp::SCOPE_SHARED;
+                else if( stricmp( scope, "global" ) == 0 )  p.scope = ShaderProp::SCOPE_GLOBAL;
+                else if( stricmp( scope, "unique" ) == 0 )  p.scope = ShaderProp::SCOPE_UNIQUE;
                 p.tag = FastName(tag);
                 
                 memset( p.defaultValue, 0, sizeof(p.defaultValue) );
@@ -81,7 +103,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
                 {
                 }
 
-                buf_t*  cbuf = 0;
+                buf_t*  cbuf = nullptr;
 
                 for( std::vector<buf_t>::iterator b=buf.begin(),b_end=buf.end(); b!=b_end; ++b )
                 {
@@ -134,7 +156,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
                 else
                 {
                     p.bufferReg        = cbuf->regCount;
-                    p.bufferRegCount   = (p.type == ShaderProp::TYPE_FLOAT4)  ? 1  : 4;
+                    p.bufferRegCount   = p.arraySize * ((p.type == ShaderProp::TYPE_FLOAT4)  ? 1  : 4);
 
                     cbuf->regCount     += p.bufferRegCount;
                 }
@@ -158,7 +180,6 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
                 code.append( line, strlen(line) );
                 code.push_back( '\n' );
             }
-//            else if( texture_re.test( line ) )
             else if( std::regex_match( line, match, texture_re ) )
             {
                 std::string sname   = match[1].str();
@@ -240,21 +261,57 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
                     }   break;
 
                     case ShaderProp::TYPE_FLOAT4 :
-                        var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    float4 %s = %cP_Buffer%u[%u];\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg );
-                        break;
+                    {
+                        if( p->arraySize == 1 )
+                        {
+                            var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    float4 %s = %cP_Buffer%u[%u];\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg );
+                        }
+                        else
+                        {
+                            var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    float4 %s[%u];\n", p->uid.c_str(), p->arraySize );
+                            for( unsigned i=0; i!=p->arraySize; ++i )
+                            {
+                                var_len += Snprinf
+                                ( 
+                                    var_def+var_len, sizeof(var_def)-var_len, 
+                                    "      %s[%u] = %cP_Buffer%u[%u];\n", p->uid.c_str(), i, pt, p->bufferindex, p->bufferReg+i
+                                );
+                            }
+                        }
+                    }   break;
 
                     case ShaderProp::TYPE_FLOAT4X4 :
                     {
-                        var_len += Snprinf
-                        ( 
-                            var_def+var_len, sizeof(var_def)-var_len, 
-                            "    float4x4 %s = float4x4( %cP_Buffer%u[%u], %cP_Buffer%u[%u], %cP_Buffer%u[%u], %cP_Buffer%u[%u] );\n", 
-                            p->uid.c_str(), 
-                            pt, p->bufferindex, p->bufferReg+0,
-                            pt, p->bufferindex, p->bufferReg+1,
-                            pt, p->bufferindex, p->bufferReg+2,
-                            pt, p->bufferindex, p->bufferReg+3
-                        );
+                        if( p->arraySize == 1 )
+                        {
+                            var_len += Snprinf
+                            ( 
+                                var_def+var_len, sizeof(var_def)-var_len, 
+                                "    float4x4 %s = float4x4( %cP_Buffer%u[%u], %cP_Buffer%u[%u], %cP_Buffer%u[%u], %cP_Buffer%u[%u] );\n", 
+                                p->uid.c_str(), 
+                                pt, p->bufferindex, p->bufferReg+0,
+                                pt, p->bufferindex, p->bufferReg+1,
+                                pt, p->bufferindex, p->bufferReg+2,
+                                pt, p->bufferindex, p->bufferReg+3
+                            );
+                        }
+                        else
+                        {
+                            var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    float4x4 %s[%u];\n", p->uid.c_str(), p->arraySize );
+                            for( unsigned i=0; i!=p->arraySize; ++i )
+                            {
+                                var_len += Snprinf
+                                ( 
+                                    var_def+var_len, sizeof(var_def)-var_len, 
+                                    "      float4x4 %s[%i] = float4x4( %cP_Buffer%u[%u], %cP_Buffer%u[%u], %cP_Buffer%u[%u], %cP_Buffer%u[%u] );\n", 
+                                    p->uid.c_str(), i,
+                                    pt, p->bufferindex, p->bufferReg+i*4+0,
+                                    pt, p->bufferindex, p->bufferReg+i*4+1,
+                                    pt, p->bufferindex, p->bufferReg+i*4+2,
+                                    pt, p->bufferindex, p->bufferReg+i*4+3
+                                );
+                            }
+                        }
                     }   break;
                 };
             }
