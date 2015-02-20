@@ -24,18 +24,17 @@
 
 using namespace DAVA;
 
-PackageModel::PackageModel(Document *document, QObject *parent)
+PackageModel::PackageModel(PackageNode *_root, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent)
     : QAbstractItemModel(parent)
-    , root(nullptr)
-    , document(document)
+    , root(SafeRetain(_root))
+    , commandExecutor(SafeRetain(_commandExecutor))
 {
-    root = SafeRetain(document->GetPackage());
 }
 
 PackageModel::~PackageModel()
 {
-    document = nullptr;
     SafeRelease(root);
+    SafeRelease(commandExecutor);
 }
 
 void PackageModel::emitNodeChanged(PackageBaseNode *node)
@@ -261,9 +260,9 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
             return false;
         
         if (action == Qt::CopyAction)
-            document->GetCommandExecutor()->CopyControls(srcNodes, parentNode, rowIndex);
+            commandExecutor->CopyControls(srcNodes, parentNode, rowIndex);
         else if (action == Qt::MoveAction)
-            document->GetCommandExecutor()->MoveControls(srcNodes, parentNode, rowIndex);
+            commandExecutor->MoveControls(srcNodes, parentNode, rowIndex);
         else
             return false;
         
@@ -288,7 +287,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     {
         String string = data->text().toStdString();
         
-        if (!document->GetCommandExecutor()->Paste(root, parentNode, rowIndex, string))
+        if (!commandExecutor->Paste(root, parentNode, rowIndex, string))
         {
             String controlName = QStringToString(data->text());
             size_t slashIndex = controlName.find("/");
@@ -328,7 +327,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
             
             if (node)
             {
-                document->GetCommandExecutor()->InsertControl(node, parentNode, rowIndex);
+                commandExecutor->InsertControl(node, parentNode, rowIndex);
                 SafeRelease(node);
             }
         }

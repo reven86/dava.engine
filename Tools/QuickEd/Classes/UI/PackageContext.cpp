@@ -11,7 +11,7 @@ using namespace DAVA;
 PackageContext::PackageContext(Document *_document)
     : QObject(_document)
     , document(_document)
-    , model(_document, this)
+    , model(_document->GetPackage(), _document->GetCommandExecutor(), this)
     , proxyModel(this)
 {
     proxyModel.setFilterCaseSensitivity(Qt::CaseInsensitive);
