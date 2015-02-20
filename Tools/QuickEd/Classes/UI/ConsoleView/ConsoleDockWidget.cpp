@@ -23,11 +23,6 @@ void ConsoleDockWidget::Output( DAVA::Logger::eLogLevel ll, const DAVA::char8* t
     Output(ll, QString(text));
 }
 
-void ConsoleDockWidget::Output( DAVA::Logger::eLogLevel ll, const DAVA::char16* text )
-{
-    Output(ll, WideStringToQString(text));
-}
-
 void ConsoleDockWidget::Output( DAVA::Logger::eLogLevel ll, const QString &rawText ) const
 {
     QString text = rawText;
