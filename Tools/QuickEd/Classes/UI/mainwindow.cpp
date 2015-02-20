@@ -151,6 +151,13 @@ void MainWindow::closeEvent(QCloseEvent * event)
 void MainWindow::ConnectToWidgets(Document *document)
 {
     DVASSERT(document);
+
+    connect(ui->packageWidget, SIGNAL(SelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), document, SLOT(OnSelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+    connect(ui->packageWidget, SIGNAL(SelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), document, SLOT(OnSelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+
+    connect(document, SIGNAL(controlSelectedInEditor(ControlNode*)), ui->packageWidget, SLOT(OnControlSelectedInEditor(ControlNode*)));
+    connect(document, SIGNAL(allControlsDeselectedInEditor()), ui->packageWidget, SLOT(OnAllControlsDeselectedInEditor()));
+
     ui->packageWidget->setEnabled(true);
     ui->previewWidget->setEnabled(true);
     ui->propertiesWidget->setEnabled(true);
@@ -161,12 +168,6 @@ void MainWindow::ConnectToWidgets(Document *document)
     ui->propertiesWidget->SetDocument(document);
     ui->libraryWidget->SetDocument(document);
 
-    connect(ui->packageWidget, SIGNAL(SelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), document, SLOT(OnSelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-    connect(ui->packageWidget, SIGNAL(SelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), document, SLOT(OnSelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-
-    connect(document, SIGNAL(controlSelectedInEditor(ControlNode*)), ui->packageWidget, SLOT(OnControlSelectedInEditor(ControlNode*)));
-    connect(document, SIGNAL(allControlsDeselectedInEditor()), ui->packageWidget, SLOT(OnAllControlsDeselectedInEditor()));
-
     document->UndoStack()->setActive(true);
 }
 
@@ -174,6 +175,12 @@ void MainWindow::DisconnectFromWidgets(Document *document)
 {
     DVASSERT(document);
     document->UndoStack()->setActive(false);
+
+    disconnect(ui->packageWidget, SIGNAL(SelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), document, SLOT(OnSelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+    disconnect(ui->packageWidget, SIGNAL(SelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), document, SLOT(OnSelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+
+    disconnect(document, SIGNAL(controlSelectedInEditor(ControlNode*)), ui->packageWidget, SLOT(OnControlSelectedInEditor(ControlNode*)));
+    disconnect(document, SIGNAL(allControlsDeselectedInEditor()), ui->packageWidget, SLOT(OnAllControlsDeselectedInEditor()));
 
     ui->packageWidget->setEnabled(false);
     ui->previewWidget->setEnabled(false);
@@ -185,11 +192,7 @@ void MainWindow::DisconnectFromWidgets(Document *document)
     ui->propertiesWidget->SetDocument(nullptr);
     ui->libraryWidget->SetDocument(nullptr);
 
-    disconnect(ui->packageWidget, SIGNAL(SelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), document, SLOT(OnSelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-    disconnect(ui->packageWidget, SIGNAL(SelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), document, SLOT(OnSelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
 
-    disconnect(document, SIGNAL(controlSelectedInEditor(ControlNode*)), ui->packageWidget, SLOT(OnControlSelectedInEditor(ControlNode*)));
-    disconnect(document, SIGNAL(allControlsDeselectedInEditor()), ui->packageWidget, SLOT(OnAllControlsDeselectedInEditor()));
 }
 
 void MainWindow::CurrentTabChanged(int index)

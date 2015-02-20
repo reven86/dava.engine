@@ -48,7 +48,7 @@ protected:
     
     struct LODInfo
     {
-        DAVA::uint32 trianglesOnLod[DAVA::LodComponent::MAX_LOD_LAYERS];
+		std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> trianglesOnLod;
         DAVA::uint32 trianglesOnObjects;
         
         void Clear()

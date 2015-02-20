@@ -229,6 +229,14 @@ void UIScreenManager::BlockDrawing()
 	EAGLView * view = (EAGLView *)controller.view;
     [view performSelector: @selector(blockDrawing)];
 }
+    
+void UIScreenManager::UnblockDrawing()
+{
+    Screen & glController = screens[glControllerId];
+    UIViewController * controller = (UIViewController *)glController.value;
+    EAGLView * view = (EAGLView *)controller.view;
+    [view performSelector: @selector(unblockDrawing)];
+}
 	
 }
 
