@@ -40,7 +40,10 @@ enum class eMMProtoCmd
 {
     INIT_COMM,
     CUR_STAT,
-    DUMP
+    DUMP,
+    DUMP_BEGIN,
+    DUMP_CHUNK,
+    DUMP_END
 };
 
 enum class eMMProtoStatus
@@ -52,9 +55,14 @@ enum class eMMProtoStatus
 struct MMProtoHeader
 {
     uint32 sessionId;
-    uint32 cmd;
-    uint32 status;
-    uint32 length;
+    uint32 cmd;             // Command
+    uint32 status;          // 
+    uint32 length;          // Length of data attached to command, or zero if no data
+};
+
+struct MM
+{
+
 };
 
 static_assert(sizeof(MMProtoHeader) == 16, "sizeof(MMProtoHeader) == 16");

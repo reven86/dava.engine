@@ -19,7 +19,8 @@ MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr
     netClient.SetCallbacks(MakeFunction(this, &MemProfController::ChannelOpen),
                            MakeFunction(this, &MemProfController::ChannelClosed),
                            MakeFunction(this, &MemProfController::CurrentStat),
-                           MakeFunction(this, &MemProfController::Dump));
+                           MakeFunction(this, &MemProfController::Dump),
+                           MakeFunction(this, &MemProfController::DumpDone));
 }
 
 MemProfController::~MemProfController() {}
@@ -50,7 +51,7 @@ void MemProfController::ShowView()
     view->raise();
 }
 
-void MemProfController::ChannelOpen(DAVA::MMStatConfig* config)
+void MemProfController::ChannelOpen(const DAVA::MMStatConfig* config)
 {
     view->ChangeStatus("connected", nullptr);
     view->ClearStat();
@@ -69,21 +70,26 @@ void MemProfController::ChannelOpen(DAVA::MMStatConfig* config)
     
 }
 
-void MemProfController::ChannelClosed(char8* message)
+void MemProfController::ChannelClosed(const char8* message)
 {
     view->ChangeStatus("disconnected", message);
 }
 
-void MemProfController::CurrentStat(DAVA::MMStat* stat)
+void MemProfController::CurrentStat(const DAVA::MMStat* stat)
 {
     view->UpdateStat(stat);
 }
 
-void MemProfController::Dump(DAVA::MMDump* dump)
+void MemProfController::Dump(size_t total, size_t recv)
+{
+
+}
+
+void MemProfController::DumpDone(const DAVA::MMDump* dump)
 {
     static int dumpIndex = 1;
 
-    MMSymbol* sym = reinterpret_cast<MMSymbol*>(reinterpret_cast<uint8*>(dump)+sizeof(MMDump) + sizeof(MMBlock) * dump->blockCount);
+    const MMSymbol* sym = reinterpret_cast<const MMSymbol*>(reinterpret_cast<const uint8*>(dump)+sizeof(MMDump) + sizeof(MMBlock) * dump->blockCount);
     char fname[100];
     const char* prefix = 
 #if defined(__DAVAENGINE_WIN32__)
@@ -98,7 +104,7 @@ void MemProfController::Dump(DAVA::MMDump* dump)
     {
         fprintf(f, "General info\n");
         fprintf(f, "  blockCount=%u\n", dump->blockCount);
-        fprintf(f, "  nameCount=%u\n", dump->nameCount);
+        fprintf(f, "  nameCount=%u\n", dump->symbolCount);
         fprintf(f, "  blockBegin=%u\n", dump->blockBegin);
         fprintf(f, "  blockEnd=%u\n", dump->blockEnd);
 
@@ -113,17 +119,17 @@ void MemProfController::Dump(DAVA::MMDump* dump)
             {
                 uint64 addr = dump->blocks[i].backtrace.frames[j];
                 const char* s = "";
-                MMSymbol* n = std::find_if(sym, sym + dump->nameCount, [addr](const MMSymbol& mms) -> bool {
+                const MMSymbol* n = std::find_if(sym, sym + dump->symbolCount, [addr](const MMSymbol& mms) -> bool {
                     return mms.addr == addr;
                 });
-                if (n != sym + dump->nameCount)
+                if (n != sym + dump->symbolCount)
                     s = n->name;
                 fprintf(f, "        %08llX    %s\n", dump->blocks[i].backtrace.frames[j], s);
             }
         }
 
         fprintf(f, "Symbols\n");
-        for (uint32 i = 0;i < dump->nameCount;++i)
+        for (uint32 i = 0;i < dump->symbolCount;++i)
         {
             fprintf(f, "  %4d: %08llX; %s\n", i + 1, sym[i].addr, sym[i].name);
         }

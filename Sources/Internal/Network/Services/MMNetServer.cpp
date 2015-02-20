@@ -118,21 +118,29 @@ void MMNetServer::PacketDelivered()
         Logger::Debug("MMNetServer::PacketDelivered: communication established");
     }
 
+    Parcel& parcel = parcels.front();
+    parcel.nsent += parcel.chunk;
+    if (parcel.nsent >= parcel.size)
     {
-        Parcel parcel = parcels.front();
         parcels.pop_front();
-
         MMProtoHeader* hdr = static_cast<MMProtoHeader*>(parcel.buffer);
         if (hdr->cmd == static_cast<uint32>(eMMProtoCmd::DUMP))
             MemoryManager::FreeDump(parcel.buffer);
         else
             DestroyParcel(parcel);
     }
+    else
+    {
+        parcel.nsent += parcel.chunk;
+        size_t n = std::min(parcel.chunk, parcel.size - parcel.nsent);
+        Send((uint8*)parcel.buffer + parcel.nsent, n);
+    }
 
     if (!parcels.empty())
     {
-        Parcel next = parcels.front();
-        Send(next.buffer, next.size);
+        Parcel& next = parcels.front();
+        size_t n = std::min(next.chunk, next.size);
+        Send(next.buffer, n);
     }
 }
 
@@ -178,6 +186,8 @@ void MMNetServer::ProcessDump(const MMProtoHeader* hdr, const void* packet, size
     Parcel parcel;
     parcel.size = dataSize;
     parcel.buffer = buf;
+    parcel.nsent = 0;
+    parcel.chunk = 10 * 1024;
 
     MMProtoHeader* outHdr = static_cast<MMProtoHeader*>(parcel.buffer);
     MMDump* dump = reinterpret_cast<MMDump*>(outHdr + 1);
@@ -215,6 +225,8 @@ MMNetServer::Parcel MMNetServer::CreateParcel(size_t parcelSize)
 {
     Parcel parcel = {
         parcelSize,
+        0,
+        10 * 1024,
         new uint8[parcelSize]
     };
     return parcel;
@@ -230,7 +242,10 @@ void MMNetServer::EnqueueAndSend(Parcel parcel)
     bool wasEmpty = parcels.empty();
     parcels.push_back(parcel);
     if (wasEmpty)
-        Send(parcel.buffer, parcel.size);
+    {
+        size_t n = std::min(parcel.chunk, parcel.size);
+        Send(parcel.buffer, n);
+    }
 }
 
 }   // namespace Net

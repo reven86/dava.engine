@@ -47,6 +47,8 @@ class MMNetServer : public NetService
     struct Parcel
     {
         size_t size;
+        size_t nsent;
+        size_t chunk;
         void* buffer;
     };
 
@@ -74,6 +76,7 @@ private:
 private:
     uint32 sessionId;
     bool commInited;
+    //bool sendingDump;
     uint64 timerBegin;
     size_t statPeriod;
     size_t periodCounter;

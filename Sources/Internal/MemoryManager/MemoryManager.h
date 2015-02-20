@@ -65,14 +65,23 @@ public:
     static const size_t MAX_TAG_COUNT = 4;              // Max supported count of tags
     static const size_t MAX_NAME_LENGTH = 16;           // Max length of name: tag, allocation type, counter
 
+    typedef void (*TagCallback)(void* arg, uint32 tag, uint32 tagBegin, uint32 tagEnd);
+
 public:
     MemoryManager() = default;
     ~MemoryManager() = default;
+
+    MemoryManager(const MemoryManager&) = delete;
+    MemoryManager& operator = (const MemoryManager&) = delete;
+    MemoryManager(MemoryManager&&) = delete;
+    MemoryManager& operator = (MemoryManager&&) = delete;
 
     static void RegisterAllocPoolName(size_t index, const char8* name);
     static void RegisterTagName(size_t index, const char8* name);
 
     static MemoryManager* Instance();
+
+    static void InstallTagCallback(TagCallback callback, void* arg);
 
     static void* Allocate(size_t size, uint32 poolIndex);
     static void Deallocate(void* ptr);
@@ -128,6 +137,9 @@ private:
     typedef DAVA::LockGuard<MutexType> LockType;
     MutexType mutex;
     
+    TagCallback tagCallback;
+    void* callbackArg;
+
     template<typename T>
     using InternalAllocator = MemoryManagerAllocator<T, ALLOC_POOL_INTERNAL>;
 

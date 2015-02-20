@@ -19,10 +19,11 @@ public:
 
     void ShowView();
 
-    void ChannelOpen(DAVA::MMStatConfig* config);
-    void ChannelClosed(DAVA::char8* message);
-    void CurrentStat(DAVA::MMStat* stat);
-    void Dump(DAVA::MMDump* dump);
+    void ChannelOpen(const DAVA::MMStatConfig* config);
+    void ChannelClosed(const DAVA::char8* message);
+    void CurrentStat(const DAVA::MMStat* stat);
+    void Dump(size_t total, size_t recv);
+    void DumpDone(const DAVA::MMDump* dump);
 
     DAVA::Net::IChannelListener* NetObject() { return &netClient; }
 

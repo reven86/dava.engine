@@ -44,6 +44,9 @@ MMNetClient::MMNetClient()
     , sessionId(0)
     , commInited(false)
     , outbufBusy(false)
+    , gettingDump(false)
+    , dumpSize(0)
+    , dumpRecv(0)
 {
 
 }
@@ -53,12 +56,13 @@ MMNetClient::~MMNetClient()
 
 }
 
-void MMNetClient::SetCallbacks(ChOpenCallback onOpen, ChClosedCallback onClosed, StatCallback onStat, DumpCallback onDump)
+void MMNetClient::SetCallbacks(ChOpenCallback onOpen, ChClosedCallback onClosed, StatCallback onStat, DumpGetCallback onDumpGet, DumpDoneCallback onDumpDone)
 {
     openCallback = onOpen;
     closeCallback = onClosed;
     statCallback = onStat;
-    dumpCallback = onDump;
+    dumpGetCallback = onDumpGet;
+    dumpDoneCallback = onDumpDone;
 }
 
 void MMNetClient::RequestDump()
@@ -79,12 +83,18 @@ void MMNetClient::ChannelClosed(const char8* message)
     commInited = false;
     outbufBusy = false;
 
-    closeCallback(const_cast<char8*>(message)); // TODO: remove const_cast after fixing TypeTraits and Function
+    closeCallback(message);
 }
 
 void MMNetClient::PacketReceived(const void* packet, size_t length)
 {
     DVASSERT(length >= sizeof(MMProtoHeader));
+
+    if (gettingDump)
+    {
+        ProcessDumpNext(packet, length);
+        return;
+    }
 
     const MMProtoHeader* hdr = static_cast<const MMProtoHeader*>(packet);
     const eMMProtoCmd cmd = static_cast<eMMProtoCmd>(hdr->cmd);
@@ -117,19 +127,46 @@ void MMNetClient::ProcessInitCommunication(const MMProtoHeader* hdr, const void*
     }
     commInited = true;
 
-    openCallback(const_cast<MMStatConfig*>(config));
+    openCallback(config);
 }
 
 void MMNetClient::ProcessCurrentStatistics(const MMProtoHeader* hdr, const void* packet, size_t length)
 {
     const MMStat* stat = static_cast<const MMStat*>(packet);
-    statCallback(const_cast<MMStat*>(stat));
+    statCallback(stat);
 }
 
 void MMNetClient::ProcessDump(const MMProtoHeader* hdr, const void* packet, size_t length)
 {
     const MMDump* dump = static_cast<const MMDump*>(packet);
-    dumpCallback(const_cast<MMDump*>(dump));
+
+    gettingDump = true;
+    dumpSize = sizeof(MMDump) + sizeof(MMBlock) * dump->blockCount + sizeof(MMSymbol) * dump->symbolCount;
+    dumpRecv = length;
+
+    dumpV.resize(dumpSize);
+    Memcpy(dumpV.data(), packet, dumpRecv);
+
+    dumpGetCallback(dumpSize, dumpRecv);
+}
+
+void MMNetClient::ProcessDumpNext(const void* packet, size_t length)
+{
+    DVASSERT(dumpRecv + length < dumpSize);
+
+    Memcpy(dumpV.data() + dumpRecv, packet, length);
+    dumpRecv += length;
+
+    if (dumpRecv < dumpSize)
+    {
+        dumpGetCallback(dumpSize, dumpRecv);
+    }
+    else
+    {
+        MMDump* dump = reinterpret_cast<MMDump*>(dumpV.data());
+        dumpDoneCallback(dump);
+        gettingDump = false;
+    }
 }
 
 void MMNetClient::SendInitSession()

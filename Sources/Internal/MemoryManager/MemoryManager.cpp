@@ -59,7 +59,7 @@ struct MemoryManager::Backtrace
     void* frames[16];
 };
 
-struct MemoryManager::MemoryBlock
+/*struct MemoryManager::MemoryBlock
 {
     size_t mark;            // Mark to distinguish profiled memory blocks
     size_t pool;            // Allocation pool block belongs to
@@ -70,6 +70,20 @@ struct MemoryManager::MemoryBlock
     size_t orderNo;         // Block order number
     size_t padding;
     Backtrace backtrace;
+};*/
+
+struct MemoryManager::MemoryBlock
+{
+    //size_t mark;            // Mark to distinguish profiled memory blocks
+    size_t pool;            // Allocation pool block belongs to
+    MemoryBlock* prev;      // Pointer to previous block
+    MemoryBlock* next;      // Pointer to next block
+    size_t allocByApp;      // Size requested by application
+    size_t allocTotal;      // Total allocated size
+    size_t orderNo;         // Block order number
+    size_t padding;
+    Backtrace backtrace;
+    size_t mark;            // Mark to distinguish profiled memory blocks
 };
 
 MMItemName MemoryManager::tagNames[MAX_TAG_COUNT] = {
@@ -112,6 +126,13 @@ MemoryManager* MemoryManager::Instance()
     static MallocHook hook;
     static MemoryManager mm;
     return &mm;
+}
+
+void MemoryManager::InstallTagCallback(TagCallback callback, void* arg)
+{
+    MemoryManager* mm = Instance();
+    mm->tagCallback = callback;
+    mm->callbackArg = arg;
 }
 
 NOINLINE void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
@@ -178,14 +199,23 @@ void MemoryManager::LeaveScope()
 {
     assert(tags.depth > 0);
 
-    LockType lock(mutex);
-    // TODO: perform action on tag leave
-    for (size_t i = 0;i < MAX_ALLOC_POOL_COUNT;++i)
+    uint32 tag;
+    uint32 tagBegin;
+    uint32 tagEnd;
     {
-        statAllocPool[tags.depth][i] = AllocPoolStat();
-        // TODO: clear additional counters on tag leave
+        LockType lock(mutex);
+        tag = tags.stack[tags.depth];
+        tagBegin = tags.begin[tags.depth];
+        tagEnd = nextBlockNo;
+        for (size_t i = 0;i < MAX_ALLOC_POOL_COUNT;++i)
+        {
+            statAllocPool[tags.depth][i] = AllocPoolStat();
+            // TODO: clear additional counters on tag leave
+        }
+        tags.depth -= 1;
     }
-    tags.depth -= 1;
+    if (tagCallback != nullptr)
+        tagCallback(callbackArg, tag, tagBegin, tagEnd);
 }
 
 void MemoryManager::InsertBlock(MemoryBlock* block)
@@ -355,9 +385,11 @@ size_t MemoryManager::GetDumpInternal(size_t userSize, void** buf, uint32 blockR
     dump->timestampBegin = 0;
     dump->timestampEnd = 0;
     dump->blockCount = static_cast<uint32>(nblocks);
-    dump->nameCount = static_cast<uint32>(nsymbols);
+    dump->symbolCount = static_cast<uint32>(nsymbols);
     dump->blockBegin = firstBlock->orderNo;
     dump->blockEnd = lastBlock->orderNo;
+    dump->type = 0;
+    dump->tag = 0;
 
     size_t iBlock = 0;
     size_t nblocksToCheck = 0;
