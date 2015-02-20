@@ -367,7 +367,6 @@ namespace DAVA
 
 		uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
 		Logger::Info("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
-		skipScreenshot = false; // return default value
 	}
 
 	void AutotestingSystem::OnTestsFinished()

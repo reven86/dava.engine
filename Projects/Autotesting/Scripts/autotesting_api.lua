@@ -177,8 +177,11 @@ function WriteString(name, text)
 end
 
 function MakeScreenshot(skip)
-    local skip = skip or false
-    print("MakeScreenshot" .. tostring(skip))
+    if skip ~= nil then
+        skip = skip
+    else
+        skip = GetParameter("SkipScreenshot", false)
+    end
     local name = autotestingSystem:MakeScreenshot(skip)
     coroutine.yield()
     return name
