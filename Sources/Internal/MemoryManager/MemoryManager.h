@@ -76,6 +76,9 @@ public:
 
     static void* Allocate(size_t size, uint32 poolIndex);
     static void Deallocate(void* ptr);
+    
+    static void* Reallocate(void * ptr, size_t size);
+
     static size_t BlockSize(void* ptr);
 
     static void EnterTagScope(uint32 tag);
@@ -93,6 +96,7 @@ public:
 private:
     void* Alloc(size_t size, uint32 poolIndex);
     void Dealloc(void* ptr);
+    void * Realloc(void *ptr, size_t size);
 
     void EnterScope(uint32 tag);
     void LeaveScope();
@@ -155,7 +159,10 @@ inline void MemoryManager::Deallocate(void* ptr)
 {
     Instance()->Dealloc(ptr);
 }
-
+inline void* MemoryManager::Reallocate(void * ptr, size_t size)
+{
+    return Instance()->Realloc(ptr, size);
+}
 inline size_t MemoryManager::BlockSize(void* ptr)
 {
     return Instance()->ProfiledBlockSize(ptr);

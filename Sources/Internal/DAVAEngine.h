@@ -34,6 +34,7 @@
 #include "DAVAConfig.h"
 //#include "Debug/MemoryManager.h"
 #include "Debug/Stats.h"
+#include "MemoryManager/MemoryProfiler.h"
 //#include "Debug/Backtrace.h"
 
 #include "Base/BaseTypes.h"

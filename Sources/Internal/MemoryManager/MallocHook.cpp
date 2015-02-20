@@ -57,25 +57,9 @@ static void* HookedMalloc(size_t size)
 
 static void* HookedRealloc(void* ptr, size_t newSize)
 {
-    if (nullptr == ptr)
+    if (ptr == nullptr)
         return malloc(newSize);
-
-    size_t oldSize = DAVA::MemoryManager::BlockSize(ptr);
-    if (oldSize > 0)
-    {
-        void* newPtr = malloc(newSize);
-        if (newPtr != nullptr)
-        {
-            size_t n = oldSize > newSize ? newSize : oldSize;
-            memcpy(newPtr, ptr, n);
-            free(ptr);
-            return newPtr;
-        }
-        else
-            return nullptr;
-    }
-    else
-        return DAVA::MallocHook::Realloc(ptr, newSize);
+    return DAVA::MemoryManager::Reallocate(ptr, newSize);
 }
 
 static void* HookedCalloc(size_t count, size_t elemSize)
@@ -97,7 +81,7 @@ static char* HookedStrdup(const char* src)
     char* dst = nullptr;
     if (src != nullptr)
     {
-        dst = static_cast<char*>(malloc(strlen(src)));
+        dst = static_cast<char*>(malloc(strlen(src)+1));
         if (dst != nullptr)
             strcpy(dst, src);
     }

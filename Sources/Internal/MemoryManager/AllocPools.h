@@ -37,6 +37,7 @@ enum ePredefAllocPools
 {
     ALLOC_POOL_INTERNAL = 0,        // Allocation pool for memory used by memory manager
     ALLOC_POOL_APP,                 // Allocation pool used for all other application memory allocations, except custom if any
+    ALLOC_POOL_FMOD,
     PREDEF_POOL_COUNT,
     FIRST_CUSTOM_ALLOC_POOL = PREDEF_POOL_COUNT   // First custom allocation pool must be FIRST_CUSTOM_ALLOC_POOL
 };
