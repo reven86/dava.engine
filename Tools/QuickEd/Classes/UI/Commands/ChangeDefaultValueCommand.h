@@ -8,7 +8,7 @@ class Document;
 class ControlNode;
 class BaseProperty;
 
-class ChangeDefaultValueCommand: public QUndoCommand
+class ChangeDefaultValueCommand : public QUndoCommand
 {
     
 public:

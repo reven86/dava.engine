@@ -12,11 +12,6 @@
 #include "Properties/PropertiesWidget.h"
 #include "Library/LibraryWidget.h"
 
-#include "PackageContext.h"
-#include "PropertiesContext.h"
-#include "LibraryContext.h"
-#include "PreviewContext.h"
-
 #include "QtModelPackageCommandExecutor.h"
 
 using namespace DAVA;
@@ -39,7 +34,6 @@ Document::Document(Project *_project, PackageNode *_package, QObject *parent)
     previewContext = new PreviewContext(this);
 
     connect(this, SIGNAL(activeRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), previewContext, SLOT(OnActiveRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-    connect(this, SIGNAL(controlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), previewContext, SLOT(OnSelectedControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
 
     connect(previewContext, SIGNAL(ControlNodeSelected(ControlNode*)), this, SLOT(OnControlSelectedInEditor(ControlNode*)));
     connect(previewContext, SIGNAL(AllControlsDeselected()), this, SLOT(OnAllControlDeselectedInEditor()));
@@ -67,6 +61,8 @@ Document::~Document()
     
     SafeRelease(commandExecutor);
 }
+
+
 
 bool Document::IsModified() const
 {

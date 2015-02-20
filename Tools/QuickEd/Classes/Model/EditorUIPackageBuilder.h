@@ -8,11 +8,12 @@ class PackageNode;
 class ControlNode;
 class PropertiesSection;
 class PackageCommandExecutor;
+class ControlsContainerNode;
 
 class EditorUIPackageBuilder : public DAVA::AbstractUIPackageBuilder
 {
 public:
-    EditorUIPackageBuilder(PackageNode *basePackage = nullptr, ControlNode *insertingTarget = nullptr, PackageCommandExecutor *executor = nullptr);
+    EditorUIPackageBuilder(PackageNode *basePackage = nullptr, ControlsContainerNode *insertingTarget = nullptr, DAVA::int32 insertingIndx = -1, PackageCommandExecutor *executor = nullptr);
     virtual ~EditorUIPackageBuilder();
 
     virtual DAVA::UIPackage *FindInCache(const DAVA::String &packagePath) const override;
@@ -57,7 +58,8 @@ private:
 private:
     PackageNode *packageNode;
     PackageNode *basePackage;
-    ControlNode *insertingTarget;
+    ControlsContainerNode *insertingTarget;
+    DAVA::int32 insertingIndex;
     
     DAVA::List<ControlDescr> controlsStack;
     DAVA::BaseObject *currentObject;

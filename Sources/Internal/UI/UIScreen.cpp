@@ -32,6 +32,7 @@
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Platform/SystemTimer.h"
+#include <Render/2D/Systems/RenderSystem2D.h>
 
 namespace DAVA 
 {
@@ -108,6 +109,8 @@ void UIScreen::SystemDraw(const UIGeometricData &geometricData)
 
 void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
 {
+    RenderSystem2D::Instance()->Flush();
+
 	RenderManager::Instance()->SetColor(0, 0, 0, 1.0f);
 	UIGeometricData drawData;
 	drawData.position = relativePosition;
