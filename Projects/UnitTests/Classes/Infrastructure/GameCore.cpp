@@ -56,6 +56,7 @@
 #include "Tests/UnlimitedLogOutputTest.h"
 #include "Tests/SpinLockTest.h"
 #include "Tests/StaticTextFieldTest.h"
+#include "Tests/ThreadSyncTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -70,6 +71,7 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
+    new ThreadSyncTest();
     new DataVaultTest();
 #if defined(__DAVAENGINE_ANDROID__)
     new JNITest();

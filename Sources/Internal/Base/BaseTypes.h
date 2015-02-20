@@ -124,6 +124,7 @@
 #include <set>
 #include <stack>
 #include <queue>
+#include <array>
 
 #if defined(__DAVAENGINE_WIN32__)
 #pragma warning( pop )
