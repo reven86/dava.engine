@@ -27,10 +27,10 @@ public:
     QSortFilterProxyModel *GetFilterProxyModel();
     const QString &GetFilterString() const;
 
-    const QItemSelection &GetCurrentItemSelection();
+    const QItemSelection &GetCurrentItemSelection() const;
     void SetCurrentItemSelection(const QItemSelection &currentItemSelection);
     const QList<QPersistentModelIndex> &GetExpandedIndexes() const;
-    void SetExpandedIndexes(QList<QPersistentModelIndex> expandedIndexes);
+    void SetExpandedIndexes(const QList<QPersistentModelIndex> &expandedIndexes);
     
 private:
     Document *document;
