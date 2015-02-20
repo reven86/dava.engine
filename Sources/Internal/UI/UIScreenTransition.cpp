@@ -91,6 +91,8 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     nextScreen = _nextScreen;
     prevScreen = _prevScreen;
 
+    Rect oldViewport = RenderManager::Instance()->GetViewport();
+    
     RenderSystem2D::Instance()->Flush();
 
     Texture * textureTargetPrev = renderTargetPrevScreen->GetTexture();
@@ -150,8 +152,9 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     RenderManager::Instance()->SetRenderState(alphaClearStateHandle);
     RenderManager::Instance()->FlushState();
     RenderManager::Instance()->ClearWithColor(0.0, 0.0, 0.0, 1.0);
+    
     RenderManager::Instance()->SetRenderTarget(0);
-
+    RenderManager::Instance()->SetViewport(oldViewport);
     RenderSystem2D::Instance()->Setup2DMatrices();
 
     //  Debug images. Left here for future bugs :)
