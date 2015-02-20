@@ -365,7 +365,7 @@ void CurlDownloader::SaveChunkHandler(BaseObject * caller, void * callerData, vo
         {
             Thread::Sleep(1);
         }
-    } while(hasChunksToSave && !thisThread->IsCancelling());
+    } while(hasChunksToSave || !thisThread->IsCancelling());
     
     chunksMutex.Lock();
     List<DataChunkInfo *>::iterator endC = chunksToSave.end();

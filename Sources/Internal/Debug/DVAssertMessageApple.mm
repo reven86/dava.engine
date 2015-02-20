@@ -40,17 +40,25 @@
 #endif
 
 
-void DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
+bool DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 {
+    bool breakExecution = false;
 #if defined(__DAVAENGINE_MACOS__)
     NSString *contents = [NSString stringWithUTF8String:content];
     
     NSAlert *alert = [[NSAlert alloc] init];
     [alert setMessageText:@"Assert"];
     [alert setInformativeText:contents];
-	
+    [alert addButtonWithTitle:@"Ok"];
+    if (ALWAYS_MODAL == modalType)
+    {
+        [alert addButtonWithTitle:@"Break"];
+    }
 	// Modal Types are ignored on MacOS - there is no way to show non-modal alerts on this platform.
-    [alert runModal];
+    if ([alert runModal] == NSAlertSecondButtonReturn)
+    {
+        breakExecution = true;
+    }
     [alert release];
 	//VI: no need to release contents since its created on autorelease pool
     //[contents release];
@@ -67,39 +75,26 @@ void DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 			UIScreenManager::Instance()->BlockDrawing();
 			
 			// Yuri Coder, 2013/07/19. Always display new Alert View in case of ASSERT.
-			UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Assert" message:contents delegate:nil cancelButtonTitle:@"OK" otherButtonTitles: nil];
-			[alert performSelectorOnMainThread:@selector(showModal) withObject:nil waitUntilDone:YES];
+			UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Assert" message:contents delegate:nil cancelButtonTitle:@"Ok" otherButtonTitles:@"Break", nil];
+            
+            long breakButtonIndex = [alert firstOtherButtonIndex];
+            
+            [alert performSelectorOnMainThread:@selector(showModal) withObject:nil waitUntilDone:YES];
+            
+            if ( [alert getClickedButtonIndex] == breakButtonIndex)
+            {
+                breakExecution = true;
+            }
+            
+            UIScreenManager::Instance()->UnblockDrawing();
 			break;
 		}
 
 		default:
 		{
-			bool needRecreateAlertView = true;
-			if (messageBoxPtr)
-			{
-				// An alert already opened - dismiss it and re-create with the new message.
-				UIDismissionHandlerAlertView* alert = (UIDismissionHandlerAlertView*)messageBoxPtr;
-				NSString* curAlertMessage = [alert getMessage];
-				if (curAlertMessage)
-				{
-					contents = [curAlertMessage stringByAppendingFormat:@"%@\n", contents];
-				}
-				
-				// Don't allow too long strings.
-				if ([contents length] <= MAX_WARNING_MESSAGE_LENGTH)
-				{
-					[alert dismiss:NO];
-					messageBoxPtr = NULL;
-				}
-				else
-				{
-					// Leave the current Alert View as-is.
-					needRecreateAlertView = false;
-					return;
-				}
-			}
-
-			if (needRecreateAlertView)
+            // if we already open one Alert messagebox skip all new
+            // while waiting user click Ok
+			if (NULL == messageBoxPtr)
 			{
 				// Create the new alert message and show it.
 				UIDismissionHandlerAlertView* alert =
@@ -115,6 +110,6 @@ void DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 	}
     
 #endif
-
+    return breakExecution;
 }
 

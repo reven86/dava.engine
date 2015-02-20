@@ -37,10 +37,11 @@ void* DVAssertMessage::messageBoxPtr = NULL;
 
 #if defined (ENABLE_ASSERT_MESSAGE)
 
-void DVAssertMessage::ShowMessage(eModalType modalType, const char8 * text, ...)
+bool DVAssertMessage::ShowMessage(eModalType modalType, const char8 * text, ...)
 {
+    bool userClickBreak = false;
 	// we don't need to show assert window for console mode
-	if(Core::Instance()->IsConsoleMode()) return; 
+	if(Core::Instance()->IsConsoleMode()) return userClickBreak; // TODO what to do here? is loging only in console mode?
 
 	va_list vl;
 	va_start(vl, text);
@@ -50,17 +51,20 @@ void DVAssertMessage::ShowMessage(eModalType modalType, const char8 * text, ...)
 	vsnprintf(tmp, sizeof(tmp)-2, text, vl);
 	strcat(tmp, "\n");
 
-	InnerShow(modalType, tmp);
+	userClickBreak = InnerShow(modalType, tmp);
 
 	va_end(vl);
+    
+    return userClickBreak;
 }
 
 
 #else
 
-void DVAssertMessage::ShowMessage(eModalType /*modalType*/, const char8 * /*text*/, ...)
+bool DVAssertMessage::ShowMessage(eModalType /*modalType*/, const char8 * /*text*/, ...)
 {
 	// Do nothing here.
+    return false;
 }
 
 #endif	// ENABLE_ASSERT_MESSAGE
