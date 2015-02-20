@@ -45,6 +45,7 @@ public:
     static void* Malloc(size_t size);
     static void* Realloc(void* ptr, size_t newSize);
     static void Free(void* ptr);
+    static size_t MallocSize(void * ptr);
 
 private:
     static void Install();

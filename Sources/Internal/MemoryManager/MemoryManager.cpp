@@ -44,6 +44,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define NOINLINE    __attribute__((noinline))
 #elif defined(__DAVAENGINE_ANDROID__)
+#define NOINLINE    __attribute__((noinline))
+
 #endif
 
 #include "Debug/DVAssert.h"
@@ -92,11 +94,12 @@ MMItemName MemoryManager::tagNames[MAX_TAG_COUNT] = {
 
 MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT] = {
     {"internal"},
-    {"application"}
+    {"application"},
+    {"FMOD"}
 };
 
 size_t MemoryManager::registeredTagCount = 1;
-size_t MemoryManager::registeredAllocPoolCount = 2;
+size_t MemoryManager::registeredAllocPoolCount = ePredefAllocPools::PREDEF_POOL_COUNT;
     
 void MemoryManager::RegisterAllocPoolName(size_t index, const char8* name)
 {
@@ -183,7 +186,28 @@ void MemoryManager::Dealloc(void* ptr)
         }
     }
 }
+void * MemoryManager::Realloc(void *ptr, size_t newSize)
+{
+    
+    assert(ptr);// This realloc must not be called with ptr == nullptr
 
+    size_t oldSize = DAVA::MemoryManager::BlockSize(ptr);
+    if (oldSize > 0)
+    {
+        void* newPtr = malloc(newSize);
+        if (newPtr != nullptr)
+        {
+            size_t n = oldSize > newSize ? newSize : oldSize;
+            memcpy(newPtr, ptr, n);
+            free(ptr);
+            return newPtr;
+        }
+        else
+            return nullptr;
+    }
+    else
+        return DAVA::MallocHook::Realloc(ptr, newSize);
+}
 void MemoryManager::EnterScope(uint32 tag)
 {
     assert(tag != DEFAULT_TAG);

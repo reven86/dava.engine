@@ -35,8 +35,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "MemoryManager.h"
 
-#define MEMORY_PROFILER_REGISTER_TAG(index, name)           DAVA::MemoryManager::RegisterAllocPoolName(index, name)
-#define MEMORY_PROFILER_REGISTER_ALLOC_POOL(index, name)    DAVA::MemoryManager::RegisterTagName(index, name)
+#define MEMORY_PROFILER_REGISTER_TAG(index, name)           DAVA::MemoryManager::RegisterTagName(index, name)
+#define MEMORY_PROFILER_REGISTER_ALLOC_POOL(index, name)    DAVA::MemoryManager::RegisterAllocPoolName(index, name)
 
 #define MEMORY_PROFILER_ENTER_TAG(tag)                      DAVA::MemoryManager::Instance()->EnterTagScope(tag)
 #define MEMORY_PROFILER_LEAVE_TAG()                         DAVA::MemoryManager::Instance()->LeaveTagScope()

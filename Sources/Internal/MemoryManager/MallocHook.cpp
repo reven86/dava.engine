@@ -35,11 +35,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(__DAVAENGINE_WIN32__)
 #include <detours/detours.h>
-#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_ANDROID__) 
 #include <dlfcn.h>
+#include "AndroidMallocHelper.h"
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#include <dlfcn.h>
+#include <malloc/malloc.h>
 #else
 #error "Unknown platform"
 #endif
+
 
 #include "MallocHook.h"
 #include "AllocPools.h"
@@ -52,25 +57,9 @@ static void* HookedMalloc(size_t size)
 
 static void* HookedRealloc(void* ptr, size_t newSize)
 {
-    if (nullptr == ptr)
+    if (ptr == nullptr)
         return malloc(newSize);
-
-    size_t oldSize = DAVA::MemoryManager::BlockSize(ptr);
-    if (oldSize > 0)
-    {
-        void* newPtr = malloc(newSize);
-        if (newPtr != nullptr)
-        {
-            size_t n = oldSize > newSize ? newSize : oldSize;
-            memcpy(newPtr, ptr, n);
-            free(ptr);
-            return newPtr;
-        }
-        else
-            return nullptr;
-    }
-    else
-        return DAVA::MallocHook::Realloc(ptr, newSize);
+    return DAVA::MemoryManager::Reallocate(ptr, newSize);
 }
 
 static void* HookedCalloc(size_t count, size_t elemSize)
@@ -92,7 +81,7 @@ static char* HookedStrdup(const char* src)
     char* dst = nullptr;
     if (src != nullptr)
     {
-        dst = static_cast<char*>(malloc(strlen(src)));
+        dst = static_cast<char*>(malloc(strlen(src)+1));
         if (dst != nullptr)
             strcpy(dst, src);
     }
@@ -131,7 +120,19 @@ void MallocHook::Free(void* ptr)
 {
     RealFree(ptr);
 }
-
+size_t MallocHook::MallocSize(void * ptr)
+{
+#if defined(__DAVAENGINE_WIN32__)
+    return _msize(ptr);
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+    return malloc_size(ptr);
+#elif defined(__DAVAENGINE_ANDROID__) 
+    return androidMallocSize(ptr);
+#else
+    return 0;
+#endif
+    
+}
 void MallocHook::Install()
 {
 #if defined(__DAVAENGINE_WIN32__)
