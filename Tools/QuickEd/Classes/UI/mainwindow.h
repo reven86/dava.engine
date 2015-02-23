@@ -76,7 +76,10 @@ private slots:
 	void RebuildRecentMenu();
 
     void SetBackgroundColorMenuTriggered(QAction* action);
- 
+
+    // Repack and Reload.
+    void OnRepackAndReloadSprites();
+    
     // Pixelization.
     void OnPixelizationStateChanged();
 
@@ -85,14 +88,14 @@ private slots:
     void CurrentTabChanged(int index);
     void TabCloseRequested(int index);
     int CreateTabContent(PackageNode *package);
-    void CloseTab(int index);
-    void CloseAllTabs();
+    bool CloseTab(int index);
+    bool CloseAllTabs();
 
     void OnOpenPackageFile(const QString &path);
 
 private:
     void OpenProject(const QString &path);
-	void CloseProject();
+	bool CloseProject();
 	
 	void InitMenu();
     void SetupViewMenu();
@@ -103,12 +106,15 @@ private:
 	void SaveMainWindowState();
 	void RestoreMainWindowState();
 
+	// Save the full project or changes only.
+	void DoSaveProject(bool changesOnly);
+
+    // Repack and reload sprites.
+    void RepackAndReloadSprites();
+
     void UpdateSaveButtons();
 
     bool CheckAndUnlockProject(const QString& projectPath);
-
-    void ConnectToWidgets(Document *document);
-    void DisconnectFromWidgets(Document *document);
 
     int GetTabIndexByPath(const QString &fileName) const;
     Document *GetCurrentTabDocument() const;
@@ -116,6 +122,7 @@ private:
 
 private:
     Ui::MainWindow *ui;
+
     // Background Frame Color menu actions.
     QList<QAction*> backgroundFramePredefinedColorActions;
     QAction* backgroundFrameUseCustomColorAction;
