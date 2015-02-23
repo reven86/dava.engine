@@ -24,9 +24,9 @@
 
 using namespace DAVA;
 
-PackageModel::PackageModel(Document *document)
-    : QAbstractItemModel(document)
-    , root(NULL)
+PackageModel::PackageModel(Document *document, QObject *parent)
+    : QAbstractItemModel(parent)
+    , root(nullptr)
     , document(document)
 {
     root = SafeRetain(document->GetPackage());
@@ -34,7 +34,7 @@ PackageModel::PackageModel(Document *document)
 
 PackageModel::~PackageModel()
 {
-    document = NULL;
+    document = nullptr;
     SafeRelease(root);
 }
 
@@ -47,7 +47,7 @@ void PackageModel::emitNodeChanged(PackageBaseNode *node)
 QModelIndex PackageModel::indexByNode(PackageBaseNode *node) const
 {
     PackageBaseNode *parent = node->GetParent();
-    if (parent == NULL)
+    if (parent == nullptr)
         return QModelIndex();
     
     if (parent)
@@ -75,7 +75,7 @@ QModelIndex PackageModel::parent(const QModelIndex &child) const
 
     PackageBaseNode *node = static_cast<PackageBaseNode*>(child.internalPointer());
     PackageBaseNode *parent = node->GetParent();
-    if (parent == NULL || parent == root)
+    if (nullptr == parent || parent == root)
         return QModelIndex();
     
     if (parent->GetParent())
@@ -113,7 +113,7 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
             return StringToQString(node->GetName());
             
         case Qt::DecorationRole:
-            return node->GetControl() != NULL ? QIcon(IconHelper::GetIconPathForUIControl(node->GetControl())) : QVariant();
+            return node->GetControl() != nullptr ? QIcon(IconHelper::GetIconPathForUIControl(node->GetControl())) : QVariant();
             
         case Qt::CheckStateRole:
             if (node->GetControl())
@@ -122,7 +122,7 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
                 return QVariant();
             
         case Qt::ToolTipRole:
-            if (node->GetControl() != NULL)
+            if (node->GetControl() != nullptr)
             {
                 ControlNode *controlNode = DynamicTypeCheck<ControlNode *>(node);
                 QString toolTip = QString("class: ") + controlNode->GetControl()->GetControlClassName().c_str();
