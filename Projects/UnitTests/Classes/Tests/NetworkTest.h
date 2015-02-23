@@ -88,8 +88,8 @@ private:
     DAVA::Net::NetLogger logger;
 
     //DAVA::Vector<char> v;
-    std::vector<char, DAVA::MemoryManagerAllocator<char, 2>> v1;
-    std::vector<char, DAVA::MemoryManagerAllocator<char, 3>> v2;
+    std::vector<char, DAVA::MemoryManagerAllocator<char, 3>> v1;
+    std::vector<char, DAVA::MemoryManagerAllocator<char, 4>> v2;
     //std::vector<char, DAVA::MemoryManagerAllocator<char, 2>> v3;
     std::vector<char> v3;
 

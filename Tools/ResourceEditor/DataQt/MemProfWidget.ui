@@ -38,6 +38,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QProgressBar" name="dumpProgress">
+     <property name="value">
+      <number>0</number>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QVBoxLayout" name="verticalLayout_2"/>
    </item>
   </layout>
@@ -49,12 +56,12 @@
    <header>qcustomplot.h</header>
    <container>1</container>
   </customwidget>
-   <customwidget>
-     <class>MemProfPlot</class>
-     <extends>QCustomPlot</extends>
-     <header>MemProfPlot.h</header>
-     <container>1</container>
-   </customwidget>
+  <customwidget>
+   <class>MemProfPlot</class>
+   <extends>QCustomPlot</extends>
+   <header>MemProfPlot.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources>
   <include location="QtIcons.qrc"/>

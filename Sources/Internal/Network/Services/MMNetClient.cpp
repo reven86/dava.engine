@@ -109,6 +109,8 @@ void MMNetClient::PacketReceived(const void* packet, size_t length)
     case eMMProtoCmd::DUMP:
         ProcessDump(hdr, static_cast<const uint8*>(packet)+sizeof(MMProtoHeader), length - sizeof(MMProtoHeader));
         break;
+    default:
+        break;
     }
 }
 
@@ -148,11 +150,18 @@ void MMNetClient::ProcessDump(const MMProtoHeader* hdr, const void* packet, size
     Memcpy(dumpV.data(), packet, dumpRecv);
 
     dumpGetCallback(dumpSize, dumpRecv);
+
+    if (dumpRecv >= dumpSize)
+    {
+        MMDump* dump = reinterpret_cast<MMDump*>(dumpV.data());
+        dumpDoneCallback(dump);
+        gettingDump = false;
+    }
 }
 
 void MMNetClient::ProcessDumpNext(const void* packet, size_t length)
 {
-    DVASSERT(dumpRecv + length < dumpSize);
+    DVASSERT(dumpRecv + length <= dumpSize);
 
     Memcpy(dumpV.data() + dumpRecv, packet, length);
     dumpRecv += length;

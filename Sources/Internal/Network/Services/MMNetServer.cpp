@@ -115,7 +115,6 @@ void MMNetServer::PacketDelivered()
         // As reply to eMMProtoCmd::INIT_COMM is always first delivered packet after connection
         // so we can simply set
         commInited = true;
-        Logger::Debug("MMNetServer::PacketDelivered: communication established");
     }
 
     Parcel& parcel = parcels.front();
@@ -128,19 +127,18 @@ void MMNetServer::PacketDelivered()
             MemoryManager::FreeDump(parcel.buffer);
         else
             DestroyParcel(parcel);
+
+        if (!parcels.empty())
+        {
+            Parcel& next = parcels.front();
+            size_t n = std::min(next.chunk, next.size);
+            Send(next.buffer, n);
+        }
     }
     else
     {
-        parcel.nsent += parcel.chunk;
         size_t n = std::min(parcel.chunk, parcel.size - parcel.nsent);
         Send((uint8*)parcel.buffer + parcel.nsent, n);
-    }
-
-    if (!parcels.empty())
-    {
-        Parcel& next = parcels.front();
-        size_t n = std::min(next.chunk, next.size);
-        Send(next.buffer, n);
     }
 }
 
@@ -158,14 +156,14 @@ void MMNetServer::ProcessInitCommunication(const MMProtoHeader* hdr, const void*
         MMStatConfig* config = reinterpret_cast<MMStatConfig*>(static_cast<uint8*>(parcel.buffer) + sizeof(MMProtoHeader));
         MemoryManager::GetStatConfig(config);
 
-        Logger::Debug("MMNetServer::ProcessInitCommunication: new session %u", sessionId);
+        /*Logger::Debug("MMNetServer::ProcessInitCommunication: new session %u", sessionId);
         Logger::Debug("   dataSize=%u", (uint32)dataSize);
         Logger::Debug("   maxTags=%u, ntags=%u", config->maxTagCount, config->tagCount);
         for (uint32 i = 0;i < config->tagCount;++i)
             Logger::Debug("      %d, %s", i, config->names[i].name);
         Logger::Debug("   maxPools=%u, npools=%u", config->maxAllocPoolCount, config->allocPoolCount);
         for (uint32 i = 0;i < config->allocPoolCount;++i)
-            Logger::Debug("      %d, %s", i, config->names[i + config->tagCount].name);
+            Logger::Debug("      %d, %s", i, config->names[i + config->tagCount].name);*/
     }
     
     MMProtoHeader* outHdr = static_cast<MMProtoHeader*>(parcel.buffer);
@@ -183,11 +181,7 @@ void MMNetServer::ProcessDump(const MMProtoHeader* hdr, const void* packet, size
     uint64 timerStart = SystemTimer::Instance()->AbsoluteMS();
     size_t dataSize = MemoryManager::GetDump(sizeof(MMProtoHeader), &buf, 0, uint32(-1));
 
-    Parcel parcel;
-    parcel.size = dataSize;
-    parcel.buffer = buf;
-    parcel.nsent = 0;
-    parcel.chunk = 10 * 1024;
+    Parcel parcel = CreateParcel(dataSize, buf);
 
     MMProtoHeader* outHdr = static_cast<MMProtoHeader*>(parcel.buffer);
     MMDump* dump = reinterpret_cast<MMDump*>(outHdr + 1);
@@ -226,8 +220,19 @@ MMNetServer::Parcel MMNetServer::CreateParcel(size_t parcelSize)
     Parcel parcel = {
         parcelSize,
         0,
-        10 * 1024,
+        CHUNK_SIZE,
         new uint8[parcelSize]
+    };
+    return parcel;
+}
+
+MMNetServer::Parcel MMNetServer::CreateParcel(size_t parcelSize, void* buf)
+{
+    Parcel parcel = {
+        parcelSize,
+        0,
+        CHUNK_SIZE,
+        buf
     };
     return parcel;
 }

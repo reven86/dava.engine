@@ -82,12 +82,14 @@ void MemProfController::CurrentStat(const DAVA::MMStat* stat)
 
 void MemProfController::Dump(size_t total, size_t recv)
 {
-
+    view->UpdateProgress(total, recv);
 }
 
 void MemProfController::DumpDone(const DAVA::MMDump* dump)
 {
     static int dumpIndex = 1;
+
+    view->UpdateProgress(100, 100);
 
     const MMSymbol* sym = reinterpret_cast<const MMSymbol*>(reinterpret_cast<const uint8*>(dump)+sizeof(MMDump) + sizeof(MMBlock) * dump->blockCount);
     char fname[100];
