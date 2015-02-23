@@ -111,7 +111,6 @@ void Document::DisconnectFromWidgets(DocumentWidgets *widgets)
     widgets->GetPreviewWidget()->SetDocument(nullptr);
     widgets->GetPropertiesWidget()->SetDocument(nullptr);
     widgets->GetLibraryWidget()->SetDocument(nullptr);
-
 }
 
 bool Document::IsModified() const
