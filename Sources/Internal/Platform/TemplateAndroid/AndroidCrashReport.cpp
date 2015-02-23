@@ -127,7 +127,7 @@ void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
         fileLines[i] = chashSteps[i].fileLine;
     }
     env->SetIntArrayRegion(jFileLineArray, 0, chashSteps.size(), fileLines);
-
+    LOGE("Fabric handeling crashes - 5");
     throwJavaExpetion(jModuleArray, jFunctionArray, jFileLineArray);
 
     delete [] fileLines;
@@ -236,12 +236,12 @@ void AndroidCrashReport::OnStackFrame(pointer_size addr)
 }
 void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void *sigcontext)
 {
-    if(signal<SIG_NUMBER_MAX)
+    /*if(signal<SIG_NUMBER_MAX)
     {
         sa_old[signal].sa_sigaction(signal, siginfo, sigcontext);
-    }
-
-    alarm(500);
+    }*/
+    LOGE("Fabric handeling crash!");
+    alarm(50);
     //kill the app if it freezes
     
     BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
@@ -258,8 +258,9 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
         step.module = "There is no cpp stack";
         crashSteps.push_back(step);
     }
-    
+    LOGE("Fabric handeling crashes - 2");
     JniCrashReporter crashReport;
+    LOGE("Fabric handeling crashes - 3");
     crashReport.ThrowJavaExpetion(crashSteps);
 }
 void AndroidCrashReport::Unload()
@@ -277,6 +278,7 @@ void AndroidCrashReport::ThrowExeption(const String& message)
     crashSteps.push_back(step);
 
     JniCrashReporter crashReport;
+    LOGE("Fabric handeling crashes - 4");
     crashReport.ThrowJavaExpetion(crashSteps);
 }
 
