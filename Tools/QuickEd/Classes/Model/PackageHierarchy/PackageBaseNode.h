@@ -41,11 +41,12 @@ public:
     
     virtual void debugDump(int depth);
     
-    virtual bool IsEditingSupported();
-    virtual bool IsInsertingSupported();
-    virtual bool CanInsertControl(ControlNode *node, DAVA::int32 pos);
-    virtual bool CanRemove();
-    virtual bool CanCopy();
+    virtual bool IsEditingSupported() const;
+    virtual bool IsInsertingSupported() const;
+    virtual bool CanInsertControl(ControlNode *node, DAVA::int32 pos) const;
+    virtual bool CanInsertImportedPackage() const;
+    virtual bool CanRemove() const;
+    virtual bool CanCopy() const;
     
 private:
     PackageBaseNode *parent;

@@ -52,27 +52,32 @@ void PackageBaseNode::debugDump(int depth)
         Get(i)->debugDump(depth + 2);
 }
 
-bool PackageBaseNode::IsEditingSupported()
+bool PackageBaseNode::IsEditingSupported() const
 {
     return false;
 }
 
-bool PackageBaseNode::IsInsertingSupported()
+bool PackageBaseNode::IsInsertingSupported() const
 {
     return false;
 }
 
-bool PackageBaseNode::CanInsertControl(ControlNode *node, DAVA::int32 pos)
+bool PackageBaseNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
 {
     return false;
 }
 
-bool PackageBaseNode::CanRemove()
+bool PackageBaseNode::CanInsertImportedPackage() const
 {
     return false;
 }
 
-bool PackageBaseNode::CanCopy()
+bool PackageBaseNode::CanRemove() const
+{
+    return false;
+}
+
+bool PackageBaseNode::CanCopy() const
 {
     return false;
 }

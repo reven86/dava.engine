@@ -41,6 +41,8 @@ Document::Document(Project *_project, PackageNode *_package, QObject *parent)
 {
     undoStack = new QUndoStack(this);
 
+    commandExecutor = new QtModelPackageCommandExecutor(this);
+
     packageContext = new PackageContext(this);
     propertiesContext = new PropertiesContext(this);
     libraryContext = new LibraryContext(this);
@@ -58,8 +60,6 @@ Document::Document(Project *_project, PackageNode *_package, QObject *parent)
 
     if (!activeRootControls.empty())
         emit activeRootControlsChanged(activeRootControls, QList<ControlNode*>());
-    
-    commandExecutor = new QtModelPackageCommandExecutor(this);
 }
 
 Document::~Document()

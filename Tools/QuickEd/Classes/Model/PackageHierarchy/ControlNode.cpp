@@ -207,40 +207,41 @@ int ControlNode::GetFlags() const
 void ControlNode::SetReadOnly()
 {
     readOnly = true;
+    propertiesRoot->SetReadOnly();
     for (auto it = nodes.begin(); it != nodes.end(); ++it)
         (*it)->SetReadOnly();
 }
 
-bool ControlNode::IsEditingSupported()
+bool ControlNode::IsEditingSupported() const
 {
     return !readOnly;
 }
 
-bool ControlNode::IsInsertingSupported()
+bool ControlNode::IsInsertingSupported() const
 {
     return !readOnly;
 }
 
-bool ControlNode::CanInsertControl(ControlNode *node, DAVA::int32 pos)
+bool ControlNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
 {
     if (readOnly)
         return false;
     
-    if (pos >= nodes.size())
-        return true;
+    if (pos < nodes.size() && nodes[pos]->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)
+        return false;
     
-    if (nodes[pos + 1]->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)
+    if (node && node->IsInstancedFrom(this))
         return false;
     
     return true;
 }
 
-bool ControlNode::CanRemove()
+bool ControlNode::CanRemove() const
 {
     return !readOnly && creationType != CREATED_FROM_PROTOTYPE_CHILD;
 }
 
-bool ControlNode::CanCopy()
+bool ControlNode::CanCopy() const
 {
     return creationType != CREATED_FROM_PROTOTYPE_CHILD;
 }
@@ -349,6 +350,34 @@ bool ControlNode::HasNonPrototypeChildren() const
         if (child->GetCreationType() != CREATED_FROM_PROTOTYPE_CHILD)
             return true;
     }
+    return false;
+}
+
+bool ControlNode::IsInstancedFrom(const ControlNode *prototypeControl) const
+{
+    const ControlNode *test = this;
+    
+    while (test)
+    {
+        ControlPrototype *prototype = test->GetPrototype();
+        if (prototype != nullptr)
+        {
+            if (prototype->GetControlNode() == prototypeControl)
+                return true;
+            test = prototype->GetControlNode();
+        }
+        else
+        {
+            test = nullptr;
+        }
+    }
+    
+    for (const ControlNode *child : nodes)
+    {
+        if (child->IsInstancedFrom(prototypeControl))
+            return true;
+    }
+    
     return false;
 }
 

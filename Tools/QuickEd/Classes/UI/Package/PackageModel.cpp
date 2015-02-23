@@ -187,9 +187,9 @@ Qt::ItemFlags PackageModel::flags(const QModelIndex &index) const
     Qt::ItemFlags flags = QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable;
     
     const PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-    if ((node->GetFlags() & PackageBaseNode::FLAGS_CONTROL) != 0)
+    if (node->CanCopy())
         flags |= Qt::ItemIsDragEnabled;
-    if ((node->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) == 0)
+    if (node->IsInsertingSupported())
         flags |= Qt::ItemIsDropEnabled;
     
     return flags;
