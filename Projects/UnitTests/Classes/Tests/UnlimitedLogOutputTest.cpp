@@ -53,21 +53,28 @@ public:
         std::ostringstream ostr;
         String msgFromLogger{ text };
 
-        if (bufSize != msgFromLogger.length())
+        if (currentMessageRawSize + 1 != msgFromLogger.length())
         {
             ostr << "size of buffer do not match! bufSize == " << bufSize
                 << " msgFromLogger.length == " << msgFromLogger.length() << "\n";
         }
         const String lastNChars = msgFromLogger.substr(
-            msgFromLogger.size() - messageEnd.size(), messageEnd.size());
+            msgFromLogger.size() - (messageEnd.size() + 1), messageEnd.size());
 
         if (lastNChars != messageEnd)
         {
             ostr << messageEnd + " != " + lastNChars + "\n";
         }
 
+        if (msgFromLogger.back() != '\n')
+        {
+            ostr << "last char should always be \\n\n";
+        }
+
         errorMessage += ostr.str();
     }
+
+    size_t currentMessageRawSize = 0;
 };
 
 UnlimitedLogOutputTest::UnlimitedLogOutputTest ()
@@ -82,17 +89,20 @@ void UnlimitedLogOutputTest::TestFunc (PerfFuncData * data)
 
     Logger::AddCustomOutput(&testOutput);
 
-    String str(bufSize, 'a');
-
-    size_t startIndex = bufSize - messageEnd.size();
-
-    for (auto c : messageEnd)
+    for (auto bufSizeLocal : { 10, static_cast<int32>(bufSize), 4095, 4096, 4097})
     {
-        str[startIndex++] = c;
+        String str(bufSizeLocal, 'a');
+        size_t startIndex = bufSizeLocal - messageEnd.size();
+
+        for (auto c : messageEnd)
+        {
+            str[startIndex++] = c;
+        }
+
+        testOutput.currentMessageRawSize = bufSizeLocal;
+
+        Logger::Instance()->Info("%s", str.c_str());
     }
-
-    Logger::Instance()->Info("%s", str.c_str());
-
     Logger::RemoveCustomOutput(&testOutput);
 
     if (!errorMessage.empty())
