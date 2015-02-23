@@ -21,7 +21,7 @@ QWidget *StringPropertyDelegate::createEditor( QWidget * parent, const QStyleOpt
 {
     QLineEdit *lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
-    connect(lineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(OnValueChanged()));
+    connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(OnValueChanged()));
 
     return lineEdit;
 }

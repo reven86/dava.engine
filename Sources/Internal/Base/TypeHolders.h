@@ -188,7 +188,7 @@ public:
     WrappingRule *rule;
 
     ObjectPointerHolder()
-        : object(NULL)
+        : object(nullptr)
     {
         SetDefaultRule();
     }
@@ -215,7 +215,10 @@ public:
 
     ~ObjectPointerHolder()
     {
-        rule->Release(object);
+        if(nullptr != rule)
+        {
+            rule->Release(object);
+        }
     }
 
     ObjectPointerHolder(ObjectPointerHolder&& holder)
@@ -223,8 +226,8 @@ public:
         object = holder.object;
         rule = holder.rule;
 
-        holder.object = NULL;
-        holder.rule = NULL;
+        holder.object = nullptr;
+        holder.rule = nullptr;
     }
 
     ObjectPointerHolder(const ObjectPointerHolder& holder)
