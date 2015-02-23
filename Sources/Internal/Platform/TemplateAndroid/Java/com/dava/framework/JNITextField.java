@@ -278,6 +278,7 @@ public class JNITextField {
         TextField tf = controls.get(id);
         if (null == tf) {
             Log.e(TAG, String.format("Unknown control id:%d", id));
+            throw new RuntimeException("can't find JNITextField by id:"+id);
         }
         return tf;
     }
@@ -437,15 +438,19 @@ public class JNITextField {
 
     public static void Create(final int id, final float x, final float y,
             final float dx, final float dy) {
-        if (controls.containsKey(id)) {
-            Log.e(TAG, String.format("Control with id:%d already created", id));
-            return;
-        }
 
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 JNIActivity activity = JNIActivity.GetActivity();
+                if (null == activity || activity.GetIsPausing())
+                    return;
+
+                if (controls.containsKey(id)) {
+                    Log.e(TAG, String.format("Control with id:%d already created", id));
+                    return;
+                }
+                
                 final TextField text = new TextField(id, activity);
 
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
@@ -705,13 +710,10 @@ public class JNITextField {
     }
 
     static void Destroy(final int id) {
-        final EditText editText = GetTextField(id);
-        if (editText == null)
-            return;
-
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                final EditText editText = GetTextField(id);
                 editText.clearFocus(); // Clear focus before destroying to try
                                        // to close keyboard
                 ViewGroup parent = (ViewGroup) editText.getParent();
@@ -1031,20 +1033,18 @@ public class JNITextField {
         });
     }
 
-    public static void SetVisible(int id, boolean isVisible) {
-        final TextField textField = GetTextField(id);
-        final boolean visible = isVisible;
-        if (textField == null)
-            return;
+    public static void SetVisible(final int id, final boolean isVisible) {
 
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (!visible && textField.hasFocus()) {
+                final TextField textField = GetTextField(id);
+                
+                if (!isVisible && textField.hasFocus()) {
                     // Clear focus before hiding to try to close keyboard
                     textField.clearFocus(); 
                 }
-                textField.setVisible(visible);
+                textField.setVisible(isVisible);
             }
         });
     }
