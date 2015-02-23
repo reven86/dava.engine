@@ -34,6 +34,12 @@ public:
     int GetFlags() const override;
     void SetReadOnly();
 
+    virtual bool IsEditingSupported() const override;
+    virtual bool IsInsertingSupported() const override;
+    virtual bool CanInsertControl(ControlNode *node, DAVA::int32 pos) const override;
+    virtual bool CanRemove() const override;
+    virtual bool CanCopy() const override;
+
     ControlNode *FindControlNodeByName(const DAVA::String &name) const;
     void Serialize(PackageSerializer *serializer) const;
     void Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const;

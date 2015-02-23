@@ -81,6 +81,11 @@ int ImportedPackagesNode::GetFlags() const
     return FLAG_READ_ONLY;
 }
 
+bool ImportedPackagesNode::CanInsertImportedPackage() const
+{
+    return true;
+}
+
 void ImportedPackagesNode::Serialize(PackageSerializer *serializer) const
 {
     serializer->BeginArray("ImportedPackages");
