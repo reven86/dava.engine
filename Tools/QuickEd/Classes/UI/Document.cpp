@@ -41,6 +41,8 @@ Document::Document(Project *_project, PackageNode *_package, QObject *parent)
 {
     undoStack = new QUndoStack(this);
 
+    commandExecutor = new QtModelPackageCommandExecutor(this);
+
     packageContext = new PackageContext(this);
     propertiesContext = new PropertiesContext(this);
     libraryContext = new LibraryContext(this);
@@ -58,8 +60,6 @@ Document::Document(Project *_project, PackageNode *_package, QObject *parent)
 
     if (!activeRootControls.empty())
         emit activeRootControlsChanged(activeRootControls, QList<ControlNode*>());
-    
-    commandExecutor = new QtModelPackageCommandExecutor(this);
 }
 
 Document::~Document()
@@ -84,7 +84,7 @@ void Document::ConnectToWidgets(DocumentWidgets *widgets)
     connect(this, SIGNAL(controlSelectedInEditor(ControlNode*)), widgets->GetPackageWidget(), SLOT(OnControlSelectedInEditor(ControlNode*)));
     connect(this, SIGNAL(allControlsDeselectedInEditor()), widgets->GetPackageWidget(), SLOT(OnAllControlsDeselectedInEditor()));
     
-    widgets->GetPropertiesWidget()->SetContext(propertiesContext);
+    widgets->GetPropertiesWidget()->SetDocument(this);
     widgets->GetPackageWidget()->SetDocument(this);
     widgets->GetPreviewWidget()->SetDocument(this);
     widgets->GetLibraryWidget()->SetDocument(this);
@@ -109,9 +109,8 @@ void Document::DisconnectFromWidgets(DocumentWidgets *widgets)
 
     widgets->GetPackageWidget()->SetDocument(nullptr);
     widgets->GetPreviewWidget()->SetDocument(nullptr);
-    widgets->GetPropertiesWidget()->SetContext(nullptr);
+    widgets->GetPropertiesWidget()->SetDocument(nullptr);
     widgets->GetLibraryWidget()->SetDocument(nullptr);
-
 }
 
 bool Document::IsModified() const
