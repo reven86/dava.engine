@@ -121,7 +121,7 @@ void TreeToAnimatedTreeConverter::ConvertingPathRecursive(Entity * node)
     }
 
     RenderObject *ro = rc->GetRenderObject();
-    if (nullptr == ro) 
+    if (nullptr == ro)
     {
         return;
     }
@@ -136,8 +136,9 @@ void TreeToAnimatedTreeConverter::ConvertingPathRecursive(Entity * node)
     }
 
     if (!isSpeedTree)
+    {
         return;
-
+    }
     SpeedTreeObject * treeObject = cast_if_equal<SpeedTreeObject*>(ro);
     if (nullptr == treeObject)
     {

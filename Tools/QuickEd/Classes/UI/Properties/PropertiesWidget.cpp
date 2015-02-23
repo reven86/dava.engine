@@ -37,9 +37,12 @@ void PropertiesWidget::SetDocument(Document *document)
     if (nullptr == document)
     {
         context = nullptr;
-        return;
     }
-    context = document->GetPropertiesContext();
+    else
+    {
+        context = document->GetPropertiesContext();
+    }
+
     if (nullptr != context)
     {
         connect(context, SIGNAL(ModelChanged(PropertiesModel*)), this, SLOT(OnModelChanged(PropertiesModel*)));
@@ -50,6 +53,9 @@ void PropertiesWidget::SetDocument(Document *document)
 void PropertiesWidget::OnModelChanged(PropertiesModel *model)
 {
     ui->treeView->setModel(model);
-    ui->treeView->expandToDepth(0);
-    ui->treeView->resizeColumnToContents(0);
+    if (nullptr != model)
+    {
+        ui->treeView->expandToDepth(0);
+        ui->treeView->resizeColumnToContents(0);
+    }
 }
