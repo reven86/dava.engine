@@ -102,7 +102,7 @@ void Entity::AddComponent(Component * component)
 		scene->RegisterComponent(this, component);
 }
 
-void Entity::DetachComponent(const Vector<Component *>::iterator & it)
+void Entity::DetachComponent(Vector<Component *>::iterator & it)
 {
     Component * c = *it;
 
@@ -111,7 +111,13 @@ void Entity::DetachComponent(const Vector<Component *>::iterator & it)
         scene->UnregisterComponent (this, c);
     }
     
-    components.erase(it);
+    // it might be changed in UnregisterComponent, refresh them
+    it = std::find(components.begin(), components.end(), c);
+
+    if (it != components.end())
+    {
+        components.erase(it);
+    }
     UpdateFamily();
     c->SetEntity(0);
 }

@@ -63,6 +63,8 @@ public:
     virtual void AddEntity(DAVA::Entity * entity);
     virtual void RemoveEntity(DAVA::Entity * entity);
 
+    void UnregisterComponent(DAVA::Entity* entity, DAVA::Component * component) override;
+
 
 protected:
     void Draw();

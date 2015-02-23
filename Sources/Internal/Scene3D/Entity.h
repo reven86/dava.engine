@@ -387,8 +387,8 @@ private:
         
 	Vector<Component *> components;
     EntityFamily * family;
-    void DetachComponent(const Vector<Component *>::iterator & it);
-    void RemoveComponent(const Vector<Component *>::iterator & it);
+    void DetachComponent(Vector<Component *>::iterator & it);
+    void RemoveComponent(Vector<Component *>::iterator & it);
 
    	friend class Scene;
     
@@ -539,7 +539,7 @@ inline void Entity::RemoveAllComponents ()
     }
 }
 
-inline void Entity::RemoveComponent (const Vector<Component *>::iterator & it)
+inline void Entity::RemoveComponent (Vector<Component *>::iterator & it)
 {
     if (it != components.end ())
     {

@@ -229,6 +229,7 @@ void PropertyEditor::ResetProperties()
                         case Component::DEBUG_RENDER_COMPONENT:
                         case Component::TRANSFORM_COMPONENT:
                         case Component::CUSTOM_PROPERTIES_COMPONENT:    // Disable removing, because custom properties are created automatically
+                        case Component::WAYPOINT_COMPONENT:             // waypoint entity has to be with waypoint component
                             isRemovable = false;
                             break;
                         }
