@@ -128,8 +128,8 @@ GameCore::GameCore()
     , loggerInUse(false)
     , mmInUse(false)
 {
-    MemoryManager::RegisterAllocPoolName(2, "STL");
-    MemoryManager::RegisterAllocPoolName(3, "Custom");
+    MemoryManager::RegisterAllocPoolName(3, "STL");
+    MemoryManager::RegisterAllocPoolName(4, "Custom");
     MemoryManager::RegisterTagName(1, "TAG_1");
     MemoryManager::RegisterTagName(2, "TAG_2");
 }

@@ -39,6 +39,8 @@ public:
     void ClearStat();
     void SetStatConfig(const DAVA::MMStatConfig* config);
     void UpdateStat(const DAVA::MMStat* stat);
+
+    void UpdateProgress(size_t total, size_t recv);
     
 private:
     void UpdateLabels(const DAVA::MMStat* stat, DAVA::uint32 alloc, DAVA::uint32 total);

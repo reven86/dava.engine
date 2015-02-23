@@ -52,6 +52,8 @@ class MMNetServer : public NetService
         void* buffer;
     };
 
+    static const size_t CHUNK_SIZE = 60 * 1024;
+
 public:
     MMNetServer();
     virtual ~MMNetServer();
@@ -70,6 +72,7 @@ private:
     void SendMemoryStat();
 
     Parcel CreateParcel(size_t parcelSize);
+    Parcel CreateParcel(size_t parcelSize, void* buf);
     void DestroyParcel(Parcel parcel);
     void EnqueueAndSend(Parcel parcel);
 

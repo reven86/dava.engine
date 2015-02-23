@@ -134,6 +134,12 @@ void MemProfWidget::UpdateStat(const MMStat* stat)
     UpdateLabels(stat, alloc, total);
 }
 
+void MemProfWidget::UpdateProgress(size_t total, size_t recv)
+{
+    int v = static_cast<int>(double(recv) / double(total) * 100.0);
+    ui->dumpProgress->setValue(v);
+}
+
 void MemProfWidget::UpdateLabels(const DAVA::MMStat* stat, DAVA::uint32 alloc, DAVA::uint32 total)
 {
     uint32 nblocks = 0;
