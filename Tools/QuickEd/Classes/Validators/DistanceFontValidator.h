@@ -31,10 +31,6 @@
 
 #include "BaseValidator.h"
 
-#include <DAVAEngine.h>
-
-using namespace DAVA;
-
 class DistanceFontValidator: public BaseValidator
 {
 public:
@@ -46,7 +42,7 @@ protected:
 
     virtual void ErrorNotifyInternal(const QVariant &v) const;
 
-    String notifyMessage;
+    QString notifyMessage;
 };
 
 #endif /* defined(__UIEDITOR__DISTANCEFONTVALIDATOR__) */
