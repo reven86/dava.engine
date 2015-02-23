@@ -9,6 +9,7 @@
 #include "MemProfWidget.h"
 #include "qcustomplot.h"
 #include "MemProfInfoModel.h"
+#include "MemoryItemStyleDelegate.h"
 #include "ui_MemProfWidget.h"
 
 using namespace DAVA;
@@ -70,6 +71,7 @@ MemProfWidget::MemProfWidget(QWidget *parent)
     tableView = new QTableView(this);
     model = new MemProfInfoModel();
     tableView->setModel(model);
+    tableView->setItemDelegate(new MemoryItemStyleDelegate(tableView));
 }
 
 MemProfWidget::~MemProfWidget() 

@@ -12,9 +12,9 @@ MemProfInfoModel::MemProfInfoModel()
 int MemProfInfoModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
 
-    if (timedData.size() == 0 || timedData.last().size() == 0)
+    if (timedData.size() == 0 || timedData.last().statData.size() == 0)
         return 0;
-    DAVA::uint32 tagDepth = timedData.last()[0].size();
+    DAVA::uint32 tagDepth = timedData.last().statData[0].size();
 
     return  tagDepth;
 
@@ -24,7 +24,7 @@ int MemProfInfoModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/)
 {
     if (timedData.size() == 0)
         return 0;
-    DAVA::uint32 poolCount = timedData.last().size();
+    DAVA::uint32 poolCount = timedData.last().statData.size();
     return poolCount;
 }
 
@@ -37,19 +37,26 @@ QVariant MemProfInfoModel::data(const QModelIndex& index, int role/* = Qt::Displ
     auto & latestData = timedData.last();
     int pool = index.row();
     int tag = index.column();
-    if (tag >= latestData.size() || pool >= latestData[tag].size())
+    if (tag >= latestData.statData.size() || pool >= latestData.statData[tag].size())
         return QVariant();
-    return latestData[tag][pool].allocByApp;
+    return latestData.statData[tag][pool].allocByApp;
 }
 QVariant MemProfInfoModel::headerData(int section, Qt::Orientation orientation,
     int role /*= Qt::DisplayRole*/) const
 {
     if (role != Qt::DisplayRole)
         return QVariant();
+    if (timedData.size() == 0)
+        return QVariant();
 
+   
 
-    if (orientation == Qt::Horizontal && tagNames.size()>section)
-        return tagNames[section];
+    if (orientation == Qt::Horizontal && tagNames.size() > section)
+    {
+        const TagsStat & stat = timedData.last();
+        auto tagName = stat.tagNames[section ];
+        return tagNames[tagName];
+    }
     else if (poolNames.size() > section)
         return poolNames[section];
 
@@ -67,14 +74,19 @@ void MemProfInfoModel::addMoreData(const DAVA::MMStat * data)
     DAVA::int32 rows = rowCount(), columns = columnCount();
 
     beginResetModel();
-    TagsStat tagsStat(data->tags.depth + 1);
-    for (size_t i = 0; i < tagsStat.size(); i++)
+    TagsStat tagsStat;
+    tagsStat.statData.resize(data->tags.depth + 1);
+    tagsStat.tagNames.resize(data->tags.depth + 1);
+    for (size_t i = 0; i < tagsStat.statData.size(); i++)
     {
-        tagsStat[i].resize(data->allocPoolCount);
-        for (size_t u = 0; u < tagsStat[i].size(); u++)
+        auto tagID = data->tags.stack[i];
+        tagsStat.tagNames[i] = tagID;
+        tagsStat.statData[i].resize(data->allocPoolCount);
+        for (size_t u = 0; u < tagsStat.statData[i].size(); u++)
         {
-            tagsStat[i][u].allocByApp = data->poolStat[data->allocPoolCount*i + u].allocByApp;
-            tagsStat[i][u].allocTotal = data->poolStat[data->allocPoolCount*i + u].allocTotal;
+           
+            tagsStat.statData[i][u].allocByApp = data->poolStat[data->allocPoolCount*i + u].allocByApp;
+            tagsStat.statData[i][u].allocTotal = data->poolStat[data->allocPoolCount*i + u].allocTotal;
         }
     }
 

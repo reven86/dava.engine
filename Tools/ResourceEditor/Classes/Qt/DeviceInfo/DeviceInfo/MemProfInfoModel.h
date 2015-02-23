@@ -37,13 +37,20 @@ public:
     void addMoreData(const DAVA::MMStat * data);
     void setConfig(const DAVA::MMStatConfig* statConfig);
 private:
+    QString formatMemoryData(int memoryData);
     struct MemData
     {
         DAVA::uint32 allocByApp;
         DAVA::uint32 allocTotal;
     };
     using PoolsStat = DAVA::Vector < MemData > ;
-    using TagsStat = DAVA::Vector < PoolsStat >;
+    using TagsStatVector = DAVA::Vector < PoolsStat >;
+    struct TagsStat
+    {
+        TagsStatVector statData;
+        DAVA::Vector<int> tagNames;
+    };
+    
     QMap<int, TagsStat > timedData;
     DAVA::Vector<QString> tagNames;
     DAVA::Vector<QString> poolNames;
