@@ -65,6 +65,9 @@ public:
     void ChannelClosed(const char8* message) override;
     void PacketReceived(const void* packet, size_t length) override;
     void PacketDelivered() override;
+    
+    bool Empty();
+    void Dump();
 
 private:
     void ProcessInitCommunication(const MMProtoHeader* hdr, const void* packet, size_t length);
@@ -83,6 +86,7 @@ private:
     uint64 timerBegin;
     size_t statPeriod;
     size_t periodCounter;
+    volatile bool allDone;
 
     Deque<Parcel> parcels;
 };

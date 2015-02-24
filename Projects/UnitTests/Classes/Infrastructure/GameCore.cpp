@@ -167,7 +167,7 @@ File * GameCore::CreateDocumentsFile(const String &filePathname)
 void GameCore::OnAppFinished()
 {
 	Logger::Debug("GameCore::OnAppFinished");
-    DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
+    //DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
 
     int32 screensSize = screens.size();
     for(int32 i = 0; i < screensSize; ++i)
@@ -177,21 +177,16 @@ void GameCore::OnAppFinished()
     screens.clear();
     
     netLogger.Uninstall();
-/*
-#if defined(__DAVAENGINE_WIN32__)
-    const char8* fname = "c:\\projects\\unittest-memprof.log";
-#elif defined(__DAVAENGINE_ANDROID__)
-    const char8* fname = "/sdcard/unittest-memprof.log";
-#elif defined(__DAVAENGINE_MACOS__)
-    const char8* fname = "/Users/max/projects/unittest-memprof.log";
-#endif
-    FILE* file = fopen(fname, "wb");
-    if (file)
+    
+    netMM.Dump();
+    while(true)
     {
-        MEMPROF_DUMP(file);
-        fclose(file);
+        volatile bool f = netMM.Empty();
+        if (!f)
+            Net::NetCore::Instance()->Poll();
+        else
+            break;
     }
-*/
 }
 
 void GameCore::OnSuspend()
@@ -395,7 +390,7 @@ void GameCore::InitLogging()
         runOnlyThisTest = CommandLineParser::Instance()->GetCommandParam("-only_test");
     }
 
-    Logger::Instance()->AddCustomOutput(&teamCityOutput);
+    //Logger::Instance()->AddCustomOutput(&teamCityOutput);
 }
 
 bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const

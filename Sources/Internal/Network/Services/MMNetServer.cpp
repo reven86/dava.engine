@@ -51,6 +51,7 @@ MMNetServer::MMNetServer()
     , timerBegin(0)
     , statPeriod(250)
     , periodCounter(0)
+    , allDone(true)
 {
     srand(static_cast<unsigned int>(time(nullptr)));
     sessionId = rand();
@@ -59,6 +60,19 @@ MMNetServer::MMNetServer()
 MMNetServer::~MMNetServer()
 {
 
+}
+
+bool MMNetServer::Empty()
+{
+    if (!IsChannelOpen())
+        return true;
+    return allDone;
+}
+
+void MMNetServer::Dump()
+{
+    if (IsChannelOpen())
+        ProcessDump(nullptr, nullptr, 0);
 }
 
 void MMNetServer::Update(float32 timeElapsed)
@@ -80,6 +94,7 @@ void MMNetServer::ChannelOpen()
 
 void MMNetServer::ChannelClosed(const char8* message)
 {
+    allDone = true;
     commInited = false;
 
     for (auto x : parcels)
@@ -134,6 +149,8 @@ void MMNetServer::PacketDelivered()
             size_t n = std::min(next.chunk, next.size);
             Send(next.buffer, n);
         }
+        else
+            allDone = true;
     }
     else
     {
@@ -244,6 +261,7 @@ void MMNetServer::DestroyParcel(Parcel parcel)
 
 void MMNetServer::EnqueueAndSend(Parcel parcel)
 {
+    allDone = false;
     bool wasEmpty = parcels.empty();
     parcels.push_back(parcel);
     if (wasEmpty)
