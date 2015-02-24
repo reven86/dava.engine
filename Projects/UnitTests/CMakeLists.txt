@@ -4,10 +4,10 @@ include      ( CMake-common )
 include      ( FindDavaFramework )
 
 if( ANDROID )
-    project      ( UnitTestsLib )
+    project ( UnitTestsLib )
 
 else()
-    project      ( UnitTests )
+    project ( UnitTests )
 
 endif()
 

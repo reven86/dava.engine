@@ -1,6 +1,6 @@
 #
 
-if( APPLE AND NOT IOS )
+if( APPLE AND NOT IOS AND NOT ANDROID )
 	set ( MACOS 1 )
 endif ()
 

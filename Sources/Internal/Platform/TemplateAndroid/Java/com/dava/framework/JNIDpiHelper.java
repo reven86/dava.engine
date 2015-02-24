@@ -7,6 +7,6 @@ public class JNIDpiHelper {
 	{
 		DisplayMetrics dm = new DisplayMetrics();
 		JNIActivity.GetActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
-		return (int)dm.ydpi;
+		return (int)dm.densityDpi;
 	}
 }

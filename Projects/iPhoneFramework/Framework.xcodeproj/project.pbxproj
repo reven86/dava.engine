@@ -785,7 +785,6 @@
 		02FD81F51924997C007762C0 /* libfmodevent_iphonesimulator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E3D11734165D00C501BC /* libfmodevent_iphonesimulator.a */; };
 		02FD81F61924997C007762C0 /* libfmodex_iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E3A2172967F300C501BC /* libfmodex_iphoneos.a */; };
 		02FD81F71924997C007762C0 /* libfmodex_iphonesimulator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E3A3172967F300C501BC /* libfmodex_iphonesimulator.a */; };
-		02FD81F81924997C007762C0 /* libTextureConverter_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C1DC1F071717FD3C001C5EC3 /* libTextureConverter_macos.a */; };
 		02FD81F91924997C007762C0 /* liblua_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C7E76D4216DF6CC70041ED9A /* liblua_ios.a */; };
 		02FD81FA1924997C007762C0 /* libcurl_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E81F2B0416BFF65700C4545E /* libcurl_ios.a */; };
 		02FD81FB1924997C007762C0 /* libdxt_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 496526CF167F173400107C70 /* libdxt_ios.a */; };
@@ -1142,7 +1141,6 @@
 		C172EC2F18C9F9D4004309CF /* TextBlockRender.h in Headers */ = {isa = PBXBuildFile; fileRef = C172EC2718C9F9D4004309CF /* TextBlockRender.h */; };
 		C172EC3018C9F9D4004309CF /* TextBlockSoftwareRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC2818C9F9D4004309CF /* TextBlockSoftwareRender.cpp */; };
 		C172EC3118C9F9D4004309CF /* TextBlockSoftwareRender.h in Headers */ = {isa = PBXBuildFile; fileRef = C172EC2918C9F9D4004309CF /* TextBlockSoftwareRender.h */; };
-		C1DC1F081717FD3C001C5EC3 /* libTextureConverter_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C1DC1F071717FD3C001C5EC3 /* libTextureConverter_macos.a */; };
 		C70B565B1753CB5E008966FA /* KeyedArchiveSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C70B56591753CB5E008966FA /* KeyedArchiveSwig.cpp */; };
 		C7E76D3116DF69370041ED9A /* AutotestingSystemLua.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7E76D2116DF69370041ED9A /* AutotestingSystemLua.cpp */; };
 		C7E76D3216DF69370041ED9A /* AutotestingSystemLua.h in Headers */ = {isa = PBXBuildFile; fileRef = C7E76D2216DF69370041ED9A /* AutotestingSystemLua.h */; };
@@ -2863,7 +2861,6 @@
 				02FD81F51924997C007762C0 /* libfmodevent_iphonesimulator.a in Frameworks */,
 				02FD81F61924997C007762C0 /* libfmodex_iphoneos.a in Frameworks */,
 				02FD81F71924997C007762C0 /* libfmodex_iphonesimulator.a in Frameworks */,
-				02FD81F81924997C007762C0 /* libTextureConverter_macos.a in Frameworks */,
 				02FD81F91924997C007762C0 /* liblua_ios.a in Frameworks */,
 				B786014A1A08EAEB0041F817 /* libfribidi_ios.a in Frameworks */,
 				02FD81FA1924997C007762C0 /* libcurl_ios.a in Frameworks */,
@@ -2897,7 +2894,6 @@
 				02F6403C173A597A0053F038 /* libfmodevent_iphonesimulator.a in Frameworks */,
 				02F6403D173A597A0053F038 /* libfmodex_iphoneos.a in Frameworks */,
 				02F6403E173A597A0053F038 /* libfmodex_iphonesimulator.a in Frameworks */,
-				C1DC1F081717FD3C001C5EC3 /* libTextureConverter_macos.a in Frameworks */,
 				C7E76D4316DF6CC70041ED9A /* liblua_ios.a in Frameworks */,
 				E81F2B0516BFF65700C4545E /* libcurl_ios.a in Frameworks */,
 				496526D0167F173400107C70 /* libdxt_ios.a in Frameworks */,

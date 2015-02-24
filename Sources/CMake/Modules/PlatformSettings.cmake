@@ -39,4 +39,8 @@ elseif ( WIN32)
     set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP" ) 
     set ( CMAKE_EXE_LINKER_FLAGS_RELEASE "/ENTRY:mainCRTStartup" )
     
+    if( WARNINGS_AS_ERRORS_WIN32 )
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
+    endif  ()
+
 endif  ()
