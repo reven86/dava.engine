@@ -22,6 +22,8 @@ import com.bda.controller.StateEvent;
 
 public class JNIGLSurfaceView extends GLSurfaceView
 {
+	private static final int MAX_KEYS = 256; // Maximum number of keycodes which used in native code
+
 	private JNIRenderer mRenderer = null;
 	// we have to add flag to distinguish second call to onResume()
 	// during Activity.onResume or Activity.onWindowsFocusChanged(focus)
@@ -36,7 +38,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	
 	MOGAListener mogaListener = null;
 	
-	boolean[] pressedKeys = new boolean[KeyEvent.getMaxKeyCode() + 1];
+	boolean[] pressedKeys = new boolean[MAX_KEYS]; // Use MAX_KEYS for mapping keycodes to native
 
 	public int lastDoubleActionIdx = -1;
 	
@@ -305,8 +307,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-    	// Check keyCode value for pressedKeys array limit
-    	if(keyCode >= pressedKeys.length)
+    	if(keyCode >= MAX_KEYS) // Ignore too big keycodes
     	{
     		return super.onKeyDown(keyCode, event);
     	}
@@ -323,8 +324,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
     
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-    	// Check keyCode value for pressedKeys array limit
-    	if(keyCode >= pressedKeys.length)
+    	if(keyCode >= MAX_KEYS) // Ignore too big keycodes
     	{
     		return super.onKeyUp(keyCode, event);
     	}
@@ -379,6 +379,10 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		public void onKeyEvent(com.bda.controller.KeyEvent event)
 		{
 			int keyCode = event.getKeyCode();
+            if(keyCode >= MAX_KEYS) // Ignore too big keycodes
+            {
+                return;
+            }
 			if(event.getAction() == com.bda.controller.KeyEvent.ACTION_DOWN)
 			{
 		    	if(pressedKeys[keyCode] == false)
