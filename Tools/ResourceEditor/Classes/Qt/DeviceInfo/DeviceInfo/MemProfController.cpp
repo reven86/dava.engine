@@ -100,6 +100,16 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump)
         "/Users/max/"
 #endif
         ;
+    {
+        Snprintf(fname, COUNT_OF(fname), "%sdump_%d.bin", prefix, dumpIndex);
+        FILE* f = fopen(fname, "wb");
+        if (f)
+        {
+            size_t dumpSize = sizeof(MMDump) + sizeof(MMBlock) * dump->blockCount + sizeof(MMSymbol) * dump->symbolCount;
+            fwrite(dump, 1, dumpSize, f);
+            fclose(f);
+        }
+    }
     Snprintf(fname, COUNT_OF(fname), "%sdump_%d.log", prefix, dumpIndex++);
     FILE* f = fopen(fname, "wb");
     if (f)
