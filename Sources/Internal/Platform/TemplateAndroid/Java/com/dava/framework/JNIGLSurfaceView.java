@@ -1,14 +1,15 @@
 package com.dava.framework;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.Pair;
 import android.view.GestureDetector;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -33,6 +34,8 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	private native void nativeOnGamepadElement(int elementKey, float value, boolean isKeycode);
 	
 	private Integer[] gamepadAxises = null;
+	private Integer[] overridedGamepadKeys = null;
+	private ArrayList< Pair<Integer, Integer> > gamepadButtonsAxisMap = new ArrayList< Pair<Integer, Integer> >();
 	
 	MOGAListener mogaListener = null;
 	
@@ -90,11 +93,27 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		setDebugFlags(0);
 		
 		doubleTapDetector = new GestureDetector(JNIActivity.GetActivity(), new DoubleTapListener(this));
+
+		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_L2, MotionEvent.AXIS_LTRIGGER));
+		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_L2, MotionEvent.AXIS_BRAKE));
+		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_R2, MotionEvent.AXIS_RTRIGGER));
+		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_R2, MotionEvent.AXIS_GAS));
 	}
 	
 	public void SetAvailableGamepadAxises(Integer[] axises)
 	{
 		gamepadAxises = axises;
+		
+		Set<Integer> overridedKeys = new HashSet<Integer>();
+		for(Pair<Integer, Integer> p : gamepadButtonsAxisMap) {
+			for(Integer a : axises) {
+				if(a == p.second) {
+					overridedKeys.add(p.first);
+				}
+			}
+		}
+		
+		overridedGamepadKeys = overridedKeys.toArray(new Integer[0]);
 	}
 	
     @Override
@@ -283,7 +302,18 @@ public class JNIGLSurfaceView extends GLSurfaceView
 			}
 		}
     }
-
+	
+	boolean IsGamepadButton(int keyCode)
+	{
+		for(Integer o : overridedGamepadKeys) {
+			if(o == keyCode) {
+				return false;
+			}
+		}
+		
+		return KeyEvent.isGamepadButton(keyCode);
+	}
+	
     class KeyInputRunnable implements Runnable {
     	int keyCode;
     	public KeyInputRunnable(int keyCode) {
@@ -292,7 +322,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
     	
     	@Override
     	public void run() {
-    		if(KeyEvent.isGamepadButton(keyCode))
+    		if(IsGamepadButton(keyCode))
     		{
     			nativeOnGamepadElement(keyCode, 1.f, true);
     		}
@@ -331,7 +361,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
     	
     	pressedKeys[keyCode] = false;
     	
-    	if(KeyEvent.isGamepadButton(keyCode))
+    	if(IsGamepadButton(keyCode))
     	{
     		nativeOnGamepadElement(keyCode, 0.f, true);
     	}
