@@ -358,7 +358,7 @@ Font::StringMetrics GraphicsFont::GetStringMetrics(const WideString& str, Vector
 
 Font::StringMetrics GraphicsFont::DrawString(float32 x, float32 y, const WideString & string, int32 justifyWidth, int32 spaceAddon, Vector<float32> *charSizes, bool draw) const
 {
-	const uint32 length = string.length();
+	const uint32 length = static_cast<uint32>(string.length());
 	if(length == 0) return Font::StringMetrics();
 
 	uint32 countSpace = 0;

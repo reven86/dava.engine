@@ -110,7 +110,7 @@ void JobManager::Update()
 
 uint32 JobManager::GetWorkersCount() const
 {
-    return workerThreads.size();
+    return static_cast<uint32>(workerThreads.size());
 }
 
 uint32 JobManager::CreateMainJob(const Function<void()>& fn, eMainJobType mainJobType)

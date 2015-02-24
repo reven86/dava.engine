@@ -244,7 +244,7 @@ void RenderState::Flush(RenderState * hardwareState) const
         {
             if(currentTextureData.textures[i] != hardwareTextureData.textures[i])
             {
-                SetTextureLevelInHW(i, currentTextureData.textures[i]);
+                SetTextureLevelInHW(static_cast<uint32>(i), currentTextureData.textures[i]);
             }
         }
         

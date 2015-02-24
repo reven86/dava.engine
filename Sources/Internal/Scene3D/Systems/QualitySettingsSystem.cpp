@@ -240,7 +240,7 @@ void QualitySettingsSystem::SetCurTextureQuality(const FastName &name)
     {
         if(textureQualities[i].name == name)
         {
-            curTextureQuality = i;
+            curTextureQuality = static_cast<int32>(i);
             return;
         }
     }
@@ -294,7 +294,7 @@ void QualitySettingsSystem::SetCurSFXQuality(const FastName &name)
     {
         if(soundQualities[i].name == name)
         {
-            curSoundQuality = i;
+            curSoundQuality = static_cast<int32>(i);
             return;
         }
     }
@@ -448,7 +448,7 @@ bool QualitySettingsSystem::IsOptionEnabled( const FastName & option ) const
 
 int32 QualitySettingsSystem::GetOptionsCount() const
 {
-    return qualityOptions.size();
+    return static_cast<int32>(qualityOptions.size());
 }
 
 FastName QualitySettingsSystem::GetOptionName(int32 index) const
