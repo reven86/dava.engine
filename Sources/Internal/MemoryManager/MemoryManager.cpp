@@ -40,7 +40,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <execinfo.h>
-#include <malloc/malloc.h>
+#include <dlfcn.h>
+#include <cxxabi.h>
 
 #define NOINLINE    __attribute__((noinline))
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -140,6 +141,9 @@ void MemoryManager::InstallTagCallback(TagCallback callback, void* arg)
 
 NOINLINE void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
 {
+    if (poolIndex == 0)
+        return MallocHook::Malloc(size);
+        
     // TODO: what should be done when size is 0
     assert(0 <= poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT);
 
@@ -507,7 +511,29 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
         }
     }
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-
+    for (size_t i = 0;i < COUNT_OF(backtrace->frames) && backtrace->frames[i] != nullptr;++i)
+    {
+        if (symbols.find(backtrace->frames[i]) == symbols.cend())
+        {
+            Dl_info dlinfo;
+            /*
+             https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man3/dladdr.3.html#//apple_ref/doc/man/3/dladdr
+             If an image containing addr cannot be found, dladdr() returns 0.  On success, a non-zero value is returned.
+             If the image containing addr is found, but no nearest symbol was found, the dli_sname and dli_saddr fields are set to NULL.
+            */
+            if (dladdr(backtrace->frames[i], &dlinfo) != 0 && dlinfo.dli_sname != nullptr)
+            {
+                char buf[1024];
+                int status = 0;
+                size_t n = COUNT_OF(buf);
+                abi::__cxa_demangle(dlinfo.dli_sname, buf, &n, &status);
+                if (0 == status)
+                    symbols.emplace(std::make_pair(backtrace->frames[i], buf));
+                else
+                    symbols.emplace(std::make_pair(backtrace->frames[i], dlinfo.dli_sname));
+            }
+        }
+    }
 #endif
 }
 
