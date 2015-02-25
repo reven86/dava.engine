@@ -145,7 +145,7 @@ NOINLINE void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
         return MallocHook::Malloc(size);
         
     // TODO: what should be done when size is 0
-    assert(0 <= poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT);
+    assert(poolIndex < MAX_ALLOC_POOL_COUNT);
 
     size_t totalSize = sizeof(MemoryBlock) + size;
     if (totalSize & (BLOCK_ALIGN - 1))
@@ -528,7 +528,7 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
             */
             if (dladdr(backtrace->frames[i], &dlinfo) != 0 && dlinfo.dli_sname != nullptr)
             {
-                char buf[1024];
+                char buf[1024 * 4];
                 int status = 0;
                 size_t n = COUNT_OF(buf);
                 abi::__cxa_demangle(dlinfo.dli_sname, buf, &n, &status);
