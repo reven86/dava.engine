@@ -33,6 +33,16 @@
 
 #include <iostream>
 
+#ifdef __DAVAENGINE_ANDROID__
+
+#include <android/log.h>
+#define  LOG_TAG    "TeamcityOutput"
+
+#elif  defined(__DAVAENGINE_IPHONE__)
+#import "UIKit/UIKit.h"
+
+#endif
+
 
 namespace DAVA
 {
@@ -88,11 +98,6 @@ String TeamcityOutput::NormalizeString(const char8 *text) const
     
     return str;
 }
-    
-#ifdef __DAVAENGINE_ANDROID__
-#include <android/log.h>
-#define  LOG_TAG    "TeamcityOutput"
-#endif
 
 void TeamcityOutput::PlatformOutput(const String &text) const
 {

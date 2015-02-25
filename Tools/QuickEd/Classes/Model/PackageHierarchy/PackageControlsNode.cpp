@@ -44,23 +44,6 @@ void PackageControlsNode::InsertAtIndex(int index, ControlNode *node)
     GetPackage()->InsertControlAtIndex(index, node->GetControl());
 }
 
-void PackageControlsNode::InsertBelow(ControlNode *node, const ControlNode *belowThis)
-{
-    DVASSERT(node->GetParent() == NULL);
-    node->SetParent(this);
-    auto it = find(nodes.begin(), nodes.end(), belowThis);
-    if (it != nodes.end())
-    {
-        GetPackage()->InsertControlBelow(node->GetControl(), (*it)->GetControl());
-        nodes.insert(it, SafeRetain(node));
-    }
-    else
-    {
-        GetPackage()->AddControl(node->GetControl());
-        nodes.push_back(SafeRetain(node));
-    }
-}
-
 void PackageControlsNode::Remove(ControlNode *node)
 {
     auto it = find(nodes.begin(), nodes.end(), node);
@@ -116,6 +99,31 @@ void PackageControlsNode::SetReadOnly()
     {
         (*it)->SetReadOnly();
     }
+}
+
+bool PackageControlsNode::IsEditingSupported() const
+{
+    return false;
+}
+
+bool PackageControlsNode::IsInsertingSupported() const
+{
+    return !readOnly;
+}
+
+bool PackageControlsNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
+{
+    return !readOnly;
+}
+
+bool PackageControlsNode::CanRemove() const
+{
+    return false;
+}
+
+bool PackageControlsNode::CanCopy() const
+{
+    return false;
 }
 
 ControlNode *PackageControlsNode::FindControlNodeByName(const DAVA::String &name) const

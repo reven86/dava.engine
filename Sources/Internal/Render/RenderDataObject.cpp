@@ -181,13 +181,16 @@ void RenderDataObject::BuildVertexBuffer(int32 vertexCount, eBufferDrawType type
 {
 	DVASSERT(!vertexAttachmentActive);
 
-	Function<void()> fn = Bind(MakeFunction(this, &RenderDataObject::BuildVertexBufferInternal), vertexCount, type);
-	uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
-
+	Function<void()> fn = Bind(MakeFunction(PointerWrapper<RenderDataObject>::WrapRetainRelease(this), &RenderDataObject::BuildVertexBufferInternal), vertexCount, type);
 	if(synchronously)
-	{
+    {
+        uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
 		JobManager::Instance()->WaitMainJobID(jobId);
 	}
+    else
+    {
+        JobManager::Instance()->CreateMainJob(fn);
+    }
 }
 
 void RenderDataObject::BuildVertexBufferInternal(int32 vertexCount, eBufferDrawType type)
@@ -250,12 +253,13 @@ void RenderDataObject::SetIndices(eIndexFormat _format, uint8 * _indices, int32 
 
 void RenderDataObject::BuildIndexBuffer(eBufferDrawType type, bool synchronously)
 {
-	uint32 jobId = JobManager::Instance()->CreateMainJob(Bind(MakeFunction(this, &RenderDataObject::BuildIndexBufferInternal), type));
+	Function<void ()> fn = Bind(MakeFunction(PointerWrapper<RenderDataObject>::WrapRetainRelease(this), &RenderDataObject::BuildIndexBufferInternal), type);
+    uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
 
-	if(synchronously)
-	{
-		JobManager::Instance()->WaitMainJobID(jobId);
-	}
+    if(synchronously)
+    {
+        JobManager::Instance()->WaitMainJobID(jobId);
+    }
 }
 
 void RenderDataObject::BuildIndexBufferInternal(eBufferDrawType type)

@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QDockWidget>
 #include <QItemSelectionModel>
+#include "Base/BaseTypes.h"
 
 namespace Ui {
     class PackageWidget;
@@ -24,9 +25,13 @@ public:
 private:
     void RefreshActions(const QModelIndexList &indexList);
     void RefreshAction(QAction *action, bool enabled, bool visible);
-
+    void CollectSelectedNodes(DAVA::Vector<ControlNode*> &nodes);
+    void CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &nodes);
+    void RemoveNodes(const DAVA::Vector<ControlNode*> &nodes);
+    QList<QPersistentModelIndex> GetExpandedIndexes() const;
+    
 private slots:
-    void OnSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+    void OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected);
     void filterTextChanged(const QString &);
     void OnImport();
     void OnCopy();

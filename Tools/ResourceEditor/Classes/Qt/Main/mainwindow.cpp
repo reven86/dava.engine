@@ -134,10 +134,8 @@
 
 #include "Commands2/ConvertPathCommands.h"
 
-
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
-
 
 
 QtMainWindow::QtMainWindow(QWidget *parent)

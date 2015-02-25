@@ -48,6 +48,8 @@ public:
     virtual ePropertyType GetType() const = 0;
     virtual eEditFrags GetEditFlag() const { return EF_NONE; };
 
+    bool IsReadOnly() const;
+    void SetReadOnly();
     virtual bool CanRemove() const {return false; }
     virtual bool CanCreate() const {return false; }
 
@@ -66,6 +68,7 @@ public:
 
 private:
     BaseProperty *parent;
+    bool readOnly;
 };
 
 

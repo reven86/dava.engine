@@ -65,14 +65,16 @@
 #include "Base/TemplateHelpers.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/ShadowVolume.h"
-
 #include "Scene3D/SpriteNode.h"
 #include "Render/Highlevel/SpriteObject.h"
+#include "Render/Highlevel/RenderObject.h"
 
 #include "Render/Material/NMaterial.h"
 #include "Scene3D/Systems/MaterialSystem.h"
 #include "Render/Highlevel/RenderFastNames.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
+#include "Scene3D/Components/RenderComponent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
@@ -80,6 +82,7 @@
 #include "Scene3D/Converters/LodToLod2Converter.h"
 #include "Scene3D/Converters/SwitchToRenerObjectConverter.h"
 #include "Scene3D/Converters/TreeToAnimatedTreeConverter.h"
+
 
 namespace DAVA
 {

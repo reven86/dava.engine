@@ -42,7 +42,11 @@
 		CC1197BA1A38BAE1006931D7 /* TextSizeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC1197AA1A38BAE1006931D7 /* TextSizeTest.cpp */; };
 		CC1197D01A38BBBA006931D7 /* libFrameworkTools.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CC1197C51A38BB7E006931D7 /* libFrameworkTools.a */; };
 		CC4FD2291A5174A3004FAF22 /* Cpp14.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC4FD2271A5174A3004FAF22 /* Cpp14.cpp */; };
+		E8BE2FE21A80CD0C00AC96C2 /* libTextureConverter.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E8BE2FE11A80CD0C00AC96C2 /* libTextureConverter.dylib */; };
+		E8BE2FEB1A80CD4700AC96C2 /* libTextureConverter.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = E8BE2FE81A80CD2900AC96C2 /* libTextureConverter.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		E8EC65721A7FA3D700332AE6 /* FormatsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8EC65701A7FA3D700332AE6 /* FormatsTest.cpp */; };
 		D73A573D1A739B3B009FF184 /* DataVaultTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73A573B1A739B3B009FF184 /* DataVaultTest.cpp */; };
+		D7C4C78B1A8DD41B005FEC04 /* ThreadSyncTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7C4C7891A8DD41B005FEC04 /* ThreadSyncTest.cpp */; };
 		FE444EEB1153A1D500F5EFD6 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE444EEA1153A1D500F5EFD6 /* OpenGL.framework */; };
 		FE9892E511638EF700500198 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = FE9892E111638EF700500198 /* InfoPlist.strings */; };
 		FE9892E611638EF700500198 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = FE9892E311638EF700500198 /* MainMenu.xib */; };
@@ -117,6 +121,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E8BE2FEA1A80CD3800AC96C2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 6;
+			files = (
+				E8BE2FEB1A80CD4700AC96C2 /* libTextureConverter.dylib in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -187,8 +201,14 @@
 		CC1197BE1A38BB7E006931D7 /* FrameworkTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FrameworkTools.xcodeproj; path = ../MacOSFramework/FrameworkTools.xcodeproj; sourceTree = "<group>"; };
 		CC4FD2271A5174A3004FAF22 /* Cpp14.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cpp14.cpp; path = Classes/Tests/Cpp14.cpp; sourceTree = "<group>"; };
 		CC4FD2281A5174A3004FAF22 /* Cpp14.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cpp14.h; path = Classes/Tests/Cpp14.h; sourceTree = "<group>"; };
+		E8BE2FE11A80CD0C00AC96C2 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTextureConverter.dylib; path = ../../Tools/Bin/libTextureConverter.dylib; sourceTree = "<group>"; };
+		E8BE2FE81A80CD2900AC96C2 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libTextureConverter.dylib; sourceTree = "<group>"; };
+		E8EC65701A7FA3D700332AE6 /* FormatsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FormatsTest.cpp; path = Classes/Tests/FormatsTest.cpp; sourceTree = "<group>"; };
+		E8EC65711A7FA3D700332AE6 /* FormatsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FormatsTest.h; path = Classes/Tests/FormatsTest.h; sourceTree = "<group>"; };
 		D73A573B1A739B3B009FF184 /* DataVaultTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataVaultTest.cpp; path = Classes/Tests/DataVaultTest.cpp; sourceTree = "<group>"; };
 		D73A573C1A739B3B009FF184 /* DataVaultTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DataVaultTest.h; path = Classes/Tests/DataVaultTest.h; sourceTree = "<group>"; };
+		D7C4C7891A8DD41B005FEC04 /* ThreadSyncTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ThreadSyncTest.cpp; path = Classes/Tests/ThreadSyncTest.cpp; sourceTree = "<group>"; };
+		D7C4C78A1A8DD41B005FEC04 /* ThreadSyncTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ThreadSyncTest.h; path = Classes/Tests/ThreadSyncTest.h; sourceTree = "<group>"; };
 		FE444EEA1153A1D500F5EFD6 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		FE5288A4132FA5EB000FE4F0 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		FE9892E211638EF700500198 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = MacOSSpecific/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -205,6 +225,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E8BE2FE21A80CD0C00AC96C2 /* libTextureConverter.dylib in Frameworks */,
 				CC1197D01A38BBBA006931D7 /* libFrameworkTools.a in Frameworks */,
 				74AF6341188530CD00070C35 /* Security.framework in Frameworks */,
 				1767A19B183D227A000DE581 /* CoreMedia.framework in Frameworks */,
@@ -273,6 +294,7 @@
 		29B97314FDCFA39411CA2CEA /* TemplateProjectMacOS */ = {
 			isa = PBXGroup;
 			children = (
+				E8BE2FE81A80CD2900AC96C2 /* libTextureConverter.dylib */,
 				02E9E45C173A43A900C501BC /* libfmodevent.dylib */,
 				02E9E45D173A43A900C501BC /* libfmodex.dylib */,
 				CC1197BE1A38BB7E006931D7 /* FrameworkTools.xcodeproj */,
@@ -311,6 +333,7 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E8BE2FE11A80CD0C00AC96C2 /* libTextureConverter.dylib */,
 				74AF6340188530CD00070C35 /* Security.framework */,
 				1767A19A183D227A000DE581 /* CoreMedia.framework */,
 				1767A198183D1E7F000DE581 /* AVKit.framework */,
@@ -327,6 +350,10 @@
 		CC11978D1A38BACC006931D7 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				E8EC65701A7FA3D700332AE6 /* FormatsTest.cpp */,
+				E8EC65711A7FA3D700332AE6 /* FormatsTest.h */,
+				D7C4C7891A8DD41B005FEC04 /* ThreadSyncTest.cpp */,
+				D7C4C78A1A8DD41B005FEC04 /* ThreadSyncTest.h */,
 				031EECB61A890D4000DCC760 /* SpinLockTest.cpp */,
 				D73A573B1A739B3B009FF184 /* DataVaultTest.cpp */,
 				D73A573C1A739B3B009FF184 /* DataVaultTest.h */,
@@ -420,6 +447,7 @@
 				8D11072E0486CEB800E47090 /* Frameworks */,
 				020AB208174639BB0082F336 /* CopyFiles */,
 				FE0D6CE9128AE7DE00ECAE3B /* ShellScript */,
+				E8BE2FEA1A80CD3800AC96C2 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -564,6 +592,7 @@
 				CC11978A1A38BAB9006931D7 /* GameCore.cpp in Sources */,
 				CC1197AF1A38BAE1006931D7 /* FileSystemTest.cpp in Sources */,
 				CC1197B51A38BAE1006931D7 /* MathTest.cpp in Sources */,
+				E8EC65721A7FA3D700332AE6 /* FormatsTest.cpp in Sources */,
 				CC1197AE1A38BAE1006931D7 /* FileListTest.cpp in Sources */,
 				CC1197891A38BAB9006931D7 /* FrameworkMain.cpp in Sources */,
 				CC1197881A38BAB9006931D7 /* BaseScreen.cpp in Sources */,
@@ -574,6 +603,7 @@
 				CC1197B61A38BAE1006931D7 /* MemoryAllocatorsTest.cpp in Sources */,
 				CC1197B41A38BAE1006931D7 /* LocalizationTest.cpp in Sources */,
 				CC1197B81A38BAE1006931D7 /* SplitTest.cpp in Sources */,
+				D7C4C78B1A8DD41B005FEC04 /* ThreadSyncTest.cpp in Sources */,
 				CC11978C1A38BAB9006931D7 /* TextureUtils.cpp in Sources */,
 				031EECB71A890D4000DCC760 /* SpinLockTest.cpp in Sources */,
 				CC1197BA1A38BAE1006931D7 /* TextSizeTest.cpp in Sources */,
@@ -639,6 +669,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					/Users/victorkleschenko/Work/WoT/dava.framework/Tools/Bin,
 				);
 				OTHER_LDFLAGS = "-headerpad_max_install_names";
 				PRODUCT_NAME = UnitTests;
@@ -672,6 +703,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					/Users/victorkleschenko/Work/WoT/dava.framework/Tools/Bin,
 				);
 				OTHER_LDFLAGS = "-headerpad_max_install_names";
 				PRODUCT_NAME = UnitTests;

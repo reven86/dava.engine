@@ -320,11 +320,7 @@ bool AutotestingSystemLua::SaveKeyedArchiveToDB(const String &archiveName, Keyed
 	return AutotestingDB::Instance()->SaveKeyedArchiveToDB(archiveName, archive, docName);
 }
 
-String AutotestingSystemLua::MakeScreenshot()
-{
-	Logger::Info("AutotestingSystemLua::MakeScreenshot");
-	AutotestingSystem::Instance()->MakeScreenShot();
-	return AutotestingSystem::Instance()->GetScreenShotName();
+String AutotestingSystemLua::MakeScreenshot(bool toDb){	Logger::Info("AutotestingSystemLua::MakeScreenshot");	AutotestingSystem::Instance()->MakeScreenShot(toDb);	return AutotestingSystem::Instance()->GetScreenShotName();
 }
 
 UIControl* AutotestingSystemLua::GetScreen()

@@ -25,11 +25,12 @@ RemoveControlCommand::~RemoveControlCommand()
 
 void RemoveControlCommand::undo()
 {
+    node->MarkAsAlive();
     model->InsertControlNode(node, dest, index);
 }
 
 void RemoveControlCommand::redo()
 {
+    node->MarkAsRemoved();
     model->RemoveControlNode(node, dest);
 }
-
