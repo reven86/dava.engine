@@ -402,7 +402,7 @@ size_t MemoryManager::GetDumpInternal(size_t userSize, void** buf, uint32 blockR
     MemoryBlock* firstBlock = nullptr;
     MemoryBlock* lastBlock = nullptr;
     size_t nblocks = GetBlockRange(blockRangeBegin, blockRangeEnd, &firstBlock, &lastBlock);
-    size_t nsymbols = symbols.size();
+    size_t nsymbols = symbols->size();
 
     size_t bufSize = userSize + sizeof(MMDump) + sizeof(MMBlock) * nblocks + sizeof(MMSymbol) * nsymbols;
 
@@ -438,7 +438,7 @@ size_t MemoryManager::GetDumpInternal(size_t userSize, void** buf, uint32 blockR
     }
 
     size_t iSym = 0;
-    for (auto i = symbols.cbegin(), e = symbols.cend();i != e;++i)
+    for (auto i = symbols->cbegin(), e = symbols->cend();i != e;++i)
     {
         void* addr = (*i).first;
         const InternalString& s = (*i).second;
@@ -488,6 +488,11 @@ NOINLINE void MemoryManager::CollectBacktrace(MemoryBlock* block, size_t nskip)
 
 void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
 {
+    if (nullptr == symbols)
+    {
+        symbols = new SymbolMap;
+    }
+
 #if defined(__DAVAENGINE_WIN32__)
     HANDLE hprocess = GetCurrentProcess();
     if (!symInited)
@@ -504,16 +509,16 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
 
     for (size_t i = 0;i < COUNT_OF(backtrace->frames) && backtrace->frames[i] != nullptr;++i)
     {
-        if (symbols.find(backtrace->frames[i]) == symbols.cend())
+        if (symbols->find(backtrace->frames[i]) == symbols->cend())
         {
             if (SymFromAddr(hprocess, reinterpret_cast<DWORD64>(backtrace->frames[i]), 0, symInfo))
-                symbols.emplace(std::make_pair(backtrace->frames[i], symInfo->Name));
+                symbols->emplace(std::make_pair(backtrace->frames[i], symInfo->Name));
         }
     }
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     for (size_t i = 0;i < COUNT_OF(backtrace->frames) && backtrace->frames[i] != nullptr;++i)
     {
-        if (symbols.find(backtrace->frames[i]) == symbols.cend())
+        if (symbols->find(backtrace->frames[i]) == symbols->cend())
         {
             Dl_info dlinfo;
             /*
@@ -528,9 +533,9 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
                 size_t n = COUNT_OF(buf);
                 abi::__cxa_demangle(dlinfo.dli_sname, buf, &n, &status);
                 if (0 == status)
-                    symbols.emplace(std::make_pair(backtrace->frames[i], buf));
+                    symbols->emplace(std::make_pair(backtrace->frames[i], buf));
                 else
-                    symbols.emplace(std::make_pair(backtrace->frames[i], dlinfo.dli_sname));
+                    symbols->emplace(std::make_pair(backtrace->frames[i], dlinfo.dli_sname));
             }
         }
     }

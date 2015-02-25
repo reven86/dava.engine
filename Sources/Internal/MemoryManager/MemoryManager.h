@@ -150,7 +150,7 @@ private:
     typedef std::basic_string<char8, std::char_traits<char8>, InternalAllocator<char8>> InternalString;
     typedef std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>> SymbolMap;
 
-    SymbolMap symbols;
+    SymbolMap* symbols;
     bool symInited;
 
 private:
