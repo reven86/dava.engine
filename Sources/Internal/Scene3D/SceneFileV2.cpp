@@ -1363,8 +1363,8 @@ void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
     RenderObject * ro = GetRenderObject(node);
     if (ro)
     {
-        const FastName FLAG_TILED_DECAL = FastName("TILED_DECAL");
-        const FastName FLAG_FOG_EXP = FastName("FOG_EXP");
+        static const FastName FLAG_TILED_DECAL = FastName("TILED_DECAL");
+        static const FastName FLAG_FOG_EXP = FastName("FOG_EXP");
 
         uint32 batchCount = ro->GetRenderBatchCount();
         for (uint32 ri = 0; ri < batchCount; ++ri)
