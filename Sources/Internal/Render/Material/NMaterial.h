@@ -220,7 +220,6 @@ public:
     static const FastName PARAM_SCREEN_OFFSET;
     
 	static const FastName FLAG_VERTEXFOG;
-	static const FastName FLAG_FOG_EXP;
 	static const FastName FLAG_FOG_LINEAR;
     static const FastName FLAG_FOG_HALFSPACE;
     static const FastName FLAG_FOG_HALFSPACE_LINEAR;
