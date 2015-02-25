@@ -90,7 +90,7 @@ namespace DAVA
 		}
 		int32 result = deviceArchive->GetInt32(parameter.c_str(), -9999);
 		SafeRelease(dbUpdateObject);
-		Logger::Debug("AutotestingDB::GetIntTestParameter return deviceName=%s value: %s", deviceName.c_str(), result);
+		Logger::Debug("AutotestingDB::GetIntTestParameter return deviceName=%s value: %d", deviceName.c_str(), result);
 		return result;
 	}
 
@@ -163,7 +163,8 @@ namespace DAVA
 		{
 			FileSystem::Instance()->CreateDirectory(logsFolder);
 		}
-		logFilePath = logsFolder + Format("/%s_%s.log", autoSys->groupName.c_str(), autoSys->testFileName.c_str());
+        autoSys->testIndex++;
+        logFilePath = logsFolder + Format("/%s:%s:%s:%d.log", autoSys->groupName.c_str(), autoSys->testFileName.c_str(), autoSys->runId.c_str(), autoSys->testIndex);
 		if (FileSystem::Instance()->IsFile(logFilePath))
 		{
 			FileSystem::Instance()->DeleteFile(logFilePath);
@@ -172,14 +173,17 @@ namespace DAVA
 			autoSys->deviceName.c_str(), DeviceInfo::GetModel().c_str(), DeviceInfo::GetVersion().c_str());
 		WriteLog(message.c_str());
 		DateTime time = DateTime::Now();
-		String currentDay = Format("%d-%d-%d", time.GetYear(), time.GetMonth(), time.GetDay());
-		message = Format("BuildDate:%s\nLaunchDate:%s\nRunId:%s\n", autoSys->buildDate.c_str(), currentDay.c_str(), autoSys->runId.c_str());
+        //Get time.GetMonth() return month number - 1. Ex for 01(Jan) it return 00(Jan).
+		String currentDay = Format("%d-%d-%d", time.GetYear(), time.GetMonth() + 1, time.GetDay());
+		message = Format("BuildDate:%s\nLaunchDate:%s\nRunId:%s\nBuildId:%s\n", autoSys->buildDate.c_str(), currentDay.c_str(), autoSys->runId.c_str(), autoSys->buildId.c_str());
 		WriteLog(message.c_str());
 		message = Format("Client:%s\nClientRevision:%s\nFramework:%s\nFrameworkRevision:%s\n", autoSys->branch.c_str(), autoSys->branchRev.c_str(),
 			autoSys->framework.c_str(), autoSys->frameworkRev.c_str());
+        WriteLog(message.c_str());
+        message = Format("TestGroup:%s\nFileName:%s\n", autoSys->groupName.c_str(), autoSys->testFileName.c_str());
 		WriteLog(message.c_str());
 	}
-
+    
 	void AutotestingDB::WriteLog(const char8 *text, ...)
 	{
 		if (!text || text[0] == '\0') return;
@@ -255,8 +259,8 @@ namespace DAVA
 
 	bool AutotestingDB::SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive *archive)
 	{
-		String fileName = Format("/%s_%s_%s.yaml", autoSys->groupName.c_str(), autoSys->testFileName.c_str(), archiveName.c_str());
-		Logger::Debug("AutotestingDB::Save keyed archive '%s' to device.", fileName.c_str());
+		String fileName = Format("/%s:%s:%s:%d:%s.yaml", autoSys->groupName.c_str(), autoSys->testFileName.c_str(), autoSys->runId.c_str(), autoSys->testIndex, archiveName.c_str());
+        Logger::Debug("AutotestingDB::Save keyed archive '%s' to device.", fileName.c_str());
 		return archive->SaveToYamlFile(logsFolder + fileName);
 	}
 
@@ -351,12 +355,11 @@ namespace DAVA
 		{
 			autoSys->ForceQuit(Format("Couldn't find archive for %s device", autoSys->deviceName.c_str()));
 		}
-
 		deviceArchive->SetString("Started", "1");
 		deviceArchive->SetString("BuildId", autoSys->buildId.c_str());
 		deviceArchive->SetString("Framework", autoSys->framework.c_str());
 		deviceArchive->SetString("Branch", autoSys->branch.c_str());
-
+        deviceArchive->SetInt32("TestIndex", autoSys->testIndex);
 		SaveToDB(dbUpdateObject);
 		SafeRelease(dbUpdateObject);
 	}

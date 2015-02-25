@@ -155,28 +155,28 @@ namespace DAVA
 	// Get test parameters from autotesting db
 	void AutotestingSystem::FetchParametersFromDB()
 	{
-		deviceName = AutotestingSystemLua::Instance()->GetDeviceName();
+        deviceName = AutotestingSystemLua::Instance()->GetDeviceName();
 		Logger::Debug("AutotestingSystem::FetchParametersFromDB");
-		groupName = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Group");
-		if (groupName == "not_found")
-		{
-			ForceQuit("Couldn't get Group parameter from DB.");
-		}
-
-		testFileName = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Filename");
-		if (testFileName == "not_found")
-		{
-			ForceQuit("Couldn't get Filename parameter from DB.");
-		}
-
-		testsDate = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Date");
-		if (testsDate == "not_found")
-		{
-			ForceQuit("Couldn't get Date parameter from DB.");
-		}
-		runId = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "RunId");
-
-		Logger::Debug("AutotestingSystem::FetchParametersFromDB TestDate=%s Group=%s Filename=%s", testsDate.c_str(), groupName.c_str(), testFileName.c_str());
+        groupName = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Group");
+        if (groupName == "not_found")
+        {
+            ForceQuit("Couldn't get 'Group' parameter from DB.");
+        }
+        testFileName = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Filename");
+        if (groupName == "not_found")
+        {
+            ForceQuit("Couldn't get 'Filename' parameter from DB.");
+        }
+        runId = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "RunId");
+        if (runId == "not_found")
+        {
+            ForceQuit("Couldn't get 'RunId' parameter from DB.");
+        }
+        testIndex = AutotestingDB::Instance()->GetIntTestParameter(deviceName, "TestIndex");
+        if (testIndex == -999)
+        {
+            ForceQuit("Couldn't get TestIndex parameter from DB.");
+        }
 	}
 
 	// Read DB parameters from config file and set connection to it
@@ -301,6 +301,8 @@ namespace DAVA
 		AutotestingDB::Instance()->Log("ERROR", errorMessage);
 
 		MakeScreenShot();
+        
+        AutotestingDB::Instance()->Log("ERROR", screenShotName);
 
 		if (isDB && deviceId != "not-initialized")
 		{
@@ -325,7 +327,7 @@ namespace DAVA
 	{
 		Logger::Debug("AutotestingSystem::MakeScreenShot");
 		String currentDateTime = GetCurrentTimeString();
-		screenShotName = Format("%s_%s_%s_%s", runId.c_str(), deviceName.c_str(), groupName.c_str(), currentDateTime.c_str());
+		screenShotName = Format("%s:%s:%s:%d", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex);
 		Logger::Debug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
 		RenderManager::Instance()->RequestGLScreenShot(this);
 	}
