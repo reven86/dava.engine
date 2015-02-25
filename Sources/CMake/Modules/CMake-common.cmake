@@ -1,6 +1,6 @@
 include ( GlobalVariables      )
 
-if( ANDROID )
+if( ANDROID AND NOT CMAKE_TOOLCHAIN_FILE )
     set( CMAKE_TOOLCHAIN_FILE ${DAVA_ROOT_DIR}/Sources/CMake/Toolchains/android.toolchain.cmake )
     find_package( AndroidTools REQUIRED )
 
@@ -16,7 +16,7 @@ if( ANDROID )
     set (CMAKE_MAKE_PROGRAM "${MAKE_PROGRAM}" CACHE STRING   "Program used to build from makefiles.")
     mark_as_advanced(CMAKE_MAKE_PROGRAM)
 
-elseif( IOS )
+elseif( IOS AND NOT CMAKE_TOOLCHAIN_FILE )
     set( CMAKE_TOOLCHAIN_FILE ${DAVA_ROOT_DIR}/Sources/CMake/Toolchains/ios.toolchain.cmake )
  
 endif()
