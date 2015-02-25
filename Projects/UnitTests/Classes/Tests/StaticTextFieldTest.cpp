@@ -61,6 +61,14 @@ StaticTextFieldTest::StaticTextFieldTest()
 
 void StaticTextFieldTest::LoadResources()
 {
+
+    volatile int i = 0;
+    while(i > 0)
+    {
+        Thread::Sleep(1000);
+        --i;
+    }
+
     uiTextField1 = new UITextField(Rect(300, 100, 400, 40));
     uiTextField1->SetVisible(true);
     uiTextField1->SetRenderToTexture(true);

@@ -83,6 +83,7 @@ public class JNITextField {
         boolean visible = false; 
         
         volatile boolean isRenderToTexture = false;
+        volatile boolean stopRecursion = false;
         Bitmap bitmapCache = null;
         
         int pixels[] = null;
@@ -98,6 +99,8 @@ public class JNITextField {
         public void setRenderToTexture(boolean value)
         {
             isRenderToTexture = value;
+            invalidate();
+            restoreVisibility();
         }
         
         public boolean isRenderToTexture()
@@ -129,8 +132,14 @@ public class JNITextField {
         public void onDraw(Canvas canvas) {
             super.onDraw(canvas);
 
-            if (isRenderToTexture) {
-                Bitmap bitmap = renderToBitmap();
+            if (isRenderToTexture && !stopRecursion) {
+                stopRecursion = true;
+                Bitmap bitmap = getDrawingCache(); //renderToBitmap();
+                stopRecursion = false;
+                if (bitmap == null)
+                {
+                    throw new RuntimeException("null ptr");
+                }
 
                 if (bitmap != null) {
                     if (pixels == null 
@@ -149,28 +158,28 @@ public class JNITextField {
             }
         }
         
-        private Bitmap renderToBitmap() {
-
-            if (bitmapCache != null) {
-                bitmapCache.recycle();
-            }
-
-            // we need to do it every time because this only works with
-            // scrolling
-            setDrawingCacheEnabled(true);
-            buildDrawingCache();
-            // Returns an immutable bitmap from the source bitmap.
-            // The new bitmap may be the same object as source, or a copy may
-            // have been made. It is initialized with the same density as the
-            // original bitmap.
-            Bitmap cacheImage = getDrawingCache();
-            if (cacheImage != null) {
-                bitmapCache = Bitmap.createBitmap(cacheImage);
-            }
-
-            setDrawingCacheEnabled(false);
-            return bitmapCache;
-        };
+//        private Bitmap renderToBitmap() {
+//
+//            if (bitmapCache != null) {
+//                bitmapCache.recycle();
+//            }
+//
+//            // we need to do it every time because this only works with
+//            // scrolling
+//            setDrawingCacheEnabled(true);
+//            buildDrawingCache();
+//            // Returns an immutable bitmap from the source bitmap.
+//            // The new bitmap may be the same object as source, or a copy may
+//            // have been made. It is initialized with the same density as the
+//            // original bitmap.
+//            Bitmap cacheImage = getDrawingCache();
+//            if (cacheImage != null) {
+//                bitmapCache = Bitmap.createBitmap(cacheImage);
+//            }
+//
+//            setDrawingCacheEnabled(false);
+//            return bitmapCache;
+//        };
         
         public void setVisible(boolean value) {
             // remember visibility to restore recreate view later
@@ -183,13 +192,13 @@ public class JNITextField {
                 if (isRenderToTexture) {
                     switch (currentVisibility) {
                     case View.GONE:
-                        setVisibility(nextVisibility);
+                        setVisibility(View.VISIBLE);
                         break;
                     case View.VISIBLE:
-                        setVisibility(View.GONE);
-                        setVisibility(nextVisibility);
                         break;
                     case View.INVISIBLE:
+                        setVisibility(View.GONE);
+                        setVisibility(View.VISIBLE);
                         break;
                     default:
                         break;
@@ -198,7 +207,7 @@ public class JNITextField {
                     if (View.INVISIBLE == currentVisibility) {
                         setVisibility(View.GONE);
                     }
-                    setVisibility(nextVisibility);
+                    setVisibility(View.VISIBLE);
                 }
             } else { // INVISIBLE
                 if (isRenderToTexture) {
@@ -278,6 +287,7 @@ public class JNITextField {
         TextField tf = controls.get(id);
         if (null == tf) {
             Log.e(TAG, String.format("Unknown control id:%d", id));
+            // better crush inside android VM then in c++ with SIGSEGV
             throw new RuntimeException("can't find JNITextField by id:"+id);
         }
         return tf;
@@ -438,7 +448,6 @@ public class JNITextField {
 
     public static void Create(final int id, final float x, final float y,
             final float dx, final float dy) {
-
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -464,6 +473,8 @@ public class JNITextField {
                 text.setTextColor(Color.WHITE);
                 text.setVisibility(View.GONE);
                 text.setImeOptions(STABLE_IME_OPTIONS);
+                // for static render to texture
+                text.setDrawingCacheEnabled(true);
 
                 activity.addContentView(text, params);
 
@@ -726,73 +737,60 @@ public class JNITextField {
 
     public static void UpdateRect(final int id, final float x, final float y,
             final float dx, final float dy) {
-        final EditText editText = GetTextField(id);
-        if (editText == null)
-            return;
-
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                EditText editText = GetTextField(id);
+                
                 FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) editText
                         .getLayoutParams();
                 params.leftMargin = Math.round(x);
                 params.topMargin = Math.round(y);
                 params.width = Math.round(dx);
                 params.height = Math.round(dy);
+                
                 editText.setLayoutParams(params);
             }
         });
     }
 
-    public static void SetText(int id, final String string) {
-        final EditText text = GetTextField(id);
-        if (text == null)
-            return;
-
+    public static void SetText(final int id, final String string) {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                final EditText text = GetTextField(id);
                 text.setText(string);
             }
         });
     }
 
-    public static void SetTextColor(int id, final float r, final float g,
+    public static void SetTextColor(final int id, final float r, final float g,
             final float b, final float a) {
-        final EditText text = GetTextField(id);
-        if (text == null)
-            return;
-
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                final EditText text = GetTextField(id);
                 text.setTextColor(Color.argb((int) (255 * a), (int) (255 * r),
                         (int) (255 * g), (int) (255 * b)));
             }
         });
     }
 
-    public static void SetFontSize(int id, final float size) {
-        final EditText text = GetTextField(id);
-        if (text == null)
-            return;
-
+    public static void SetFontSize(final int id, final float size) {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                final EditText text = GetTextField(id);
                 text.setTextSize(TypedValue.COMPLEX_UNIT_PX, (int) size);
             }
         });
     }
 
-    public static void SetIsPassword(int id, final boolean isPassword) {
-        final EditText text = GetTextField(id);
-        if (text == null)
-            return;
-
+    public static void SetIsPassword(final int id, final boolean isPassword) {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                final EditText text = GetTextField(id);
                 if (isPassword) {
                     text.setInputType(EditorInfo.TYPE_CLASS_TEXT
                             | EditorInfo.TYPE_TEXT_VARIATION_PASSWORD);
@@ -804,14 +802,11 @@ public class JNITextField {
         });
     }
 
-    public static void SetTextUseRtlAlign(int id, final boolean useRtlAlign) {
-        final EditText text = GetTextField(id);
-        if (text == null)
-            return;
-
+    public static void SetTextUseRtlAlign(final int id, final boolean useRtlAlign) {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                EditText text = GetTextField(id);
                 int gravity = text.getGravity();
                 if (useRtlAlign) {
                     text.setGravity(gravity | Gravity.RELATIVE_LAYOUT_DIRECTION);
@@ -823,14 +818,11 @@ public class JNITextField {
         });
     }
 
-    public static void SetTextAlign(int id, final int align) {
-        final EditText text = GetTextField(id);
-        if (text == null)
-            return;
-
+    public static void SetTextAlign(final int id, final int align) {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                EditText text = GetTextField(id);
                 boolean isRelative = (text.getGravity() & Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK) > 0;
 
                 int gravityH = Gravity.LEFT;
@@ -856,28 +848,22 @@ public class JNITextField {
         });
     }
 
-    public static void SetInputEnabled(int id, final boolean value) {
-        final EditText text = GetTextField(id);
-        if (text == null)
-            return;
-
+    public static void SetInputEnabled(final int id, final boolean value) {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                EditText text = GetTextField(id);
                 text.setEnabled(value);
             }
         });
     }
 
-    public static void SetAutoCapitalizationType(int id,
+    public static void SetAutoCapitalizationType(final int id,
             final int autoCapitalizationType) {
-        final EditText text = GetTextField(id);
-        if (text == null)
-            return;
-
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                final EditText text = GetTextField(id);
                 int autoCapitalizationFlag = text.getInputType();
                 autoCapitalizationFlag &= ~(InputType.TYPE_TEXT_FLAG_CAP_WORDS
                         | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
@@ -900,15 +886,12 @@ public class JNITextField {
         });
     }
 
-    public static void SetAutoCorrectionType(int id,
+    public static void SetAutoCorrectionType(final int id,
             final int autoCorrectionType) {
-        final EditText text = GetTextField(id);
-        if (text == null)
-            return;
-
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                TextField text = GetTextField(id);
                 int autoCorrectionFlag = text.getInputType();
                 switch (autoCorrectionType) {
                 case 0: // AUTO_CORRECTION_TYPE_DEFAULT
@@ -920,20 +903,16 @@ public class JNITextField {
                     autoCorrectionFlag &= ~(InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
                     break;
                 }
-                ;
                 text.setInputType(autoCorrectionFlag);
             }
         });
     }
 
-    public static void SetSpellCheckingType(int id, final int spellCheckingType) {
-        final EditText text = GetTextField(id);
-        if (text == null)
-            return;
-
+    public static void SetSpellCheckingType(final int id, final int spellCheckingType) {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                final EditText text = GetTextField(id);
                 int spellCheckingFlag = text.getInputType();
                 switch (spellCheckingType) {
                 case 0: // SPELL_CHECKING_TYPE_DEFAULT
@@ -950,15 +929,11 @@ public class JNITextField {
         });
     }
 
-    public static void SetKeyboardType(int id, final int keyboardType) {
-        final EditText text = GetTextField(id);
-        if (text == null)
-            return;
-
+    public static void SetKeyboardType(final int id, final int keyboardType) {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
+                final EditText text = GetTextField(id);
                 int inputFlags = text.getInputType();
                 inputFlags &= ~(InputType.TYPE_CLASS_NUMBER
                         | InputType.TYPE_CLASS_TEXT
@@ -996,13 +971,11 @@ public class JNITextField {
         });
     }
 
-    public static void SetReturnKeyType(int id, final int returnKeyType) {
-        final EditText text = GetTextField(id);
-        if (text == null)
-            return;
+    public static void SetReturnKeyType(final int id, final int returnKeyType) {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                final EditText text = GetTextField(id);
                 int imeOptions = 0;// EditorInfo.IME_ACTION_DONE;
                 switch (returnKeyType) {
                 case 1: // RETURN_KEY_GO,
@@ -1034,7 +1007,6 @@ public class JNITextField {
     }
 
     public static void SetVisible(final int id, final boolean isVisible) {
-
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -1050,13 +1022,10 @@ public class JNITextField {
     }
 
     public static void OpenKeyboard(final int id) {
-        final EditText text = GetTextField(id);
-        if (text == null || text.hasFocus())
-            return;
-
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                final EditText text = GetTextField(id);
                 boolean result = text.requestFocus();
                 if (result == false) {
                     Log.e(TAG, "OpenKeyboard can't took focus");
@@ -1065,57 +1034,45 @@ public class JNITextField {
         });
     }
 
-    public static void CloseKeyboard(int id) {
-        final EditText text = GetTextField(id);
-        if (text == null || !text.hasFocus())
-            return;
-
+    public static void CloseKeyboard(final int id) {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                final EditText text = GetTextField(id);
                 text.clearFocus();
             }
         });
     }
 
     public static void SetEnableReturnKeyAutomatically(int id, boolean value) {
-        Log.d(TAG, "SetEnableReturnKeyAutomatically not supported on android");
+        Log.e(TAG, "SetEnableReturnKeyAutomatically not supported on android");
     }
 
     public static void SetKeyboardAppearanceType(int id, int value) {
-        Log.d(TAG, "SetKeyboardAppearanceType not supported on android");
+        Log.e(TAG, "SetKeyboardAppearanceType not supported on android");
     }
 
     public static int GetCursorPos(int id) {
         final EditText text = GetTextField(id);
-        if (text == null)
-            return 0;
-
         int pos = text.getSelectionStart();
         return pos;
     }
 
-    public static void SetCursorPos(int id, final int pos) {
-        final EditText text = GetTextField(id);
-        if (text == null)
-            return;
-
+    public static void SetCursorPos(final int id, final int pos) {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                final EditText text = GetTextField(id);
                 text.setSelection(pos);
             }
         });
     }
 
-    public static void SetMaxLength(int id, final int maxLength) {
-        final TextField nativeEditText = GetTextField(id);
-        if (nativeEditText == null)
-            return;
-
+    public static void SetMaxLength(final int id, final int maxLength) {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                final TextField nativeEditText = GetTextField(id);
                 if (maxLength > 0) {
                     nativeEditText.maxLengthFilter = new InputFilter.LengthFilter(
                             maxLength);
@@ -1175,29 +1132,18 @@ public class JNITextField {
         });
     }
     
-    public static void SetRenderToTexture(int id, boolean value)
-    {
-        final TextField text = GetTextField(id);
-        final boolean needRenderToTexture = value;
-        if (text == null)
-            return;
-
+    public static void SetRenderToTexture(final int id, final boolean value) {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                text.setRenderToTexture(needRenderToTexture);
+                final TextField text = GetTextField(id);
+                text.setRenderToTexture(value);
             }
         });
     }
     
-    public static boolean IsRenderToTexture(int id)
-    {
+    public static boolean IsRenderToTexture(final int id) {
         final TextField text = GetTextField(id);
-        if(null == text)
-        {
-            Log.e(TAG, "not found JNITextField by id == " + id);
-            return false;
-        }
         return text.isRenderToTexture();
     }
 

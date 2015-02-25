@@ -56,6 +56,8 @@ JniTextField::JniTextField(uint32_t id)
     setReturnKeyType = jniTextField.GetStaticMethod<void, jint, jint>("SetReturnKeyType");
     setEnableReturnKeyAutomatically = jniTextField.GetStaticMethod<void, jint, jboolean>("SetEnableReturnKeyAutomatically");
     setVisible = jniTextField.GetStaticMethod<void, jint, jboolean>("SetVisible");
+    setRenderToTexture = jniTextField.GetStaticMethod<void, jint, jboolean>("SetRenderToTexture");
+    isRenderToTexture = jniTextField.GetStaticMethod<jboolean, jint>("IsRenderToTexture");
     openKeyboard = jniTextField.GetStaticMethod<void, jint>("OpenKeyboard");
     closeKeyboard = jniTextField.GetStaticMethod<void, jint>("CloseKeyboard");
     getCursorPos = jniTextField.GetStaticMethod<jint, jint>("GetCursorPos");

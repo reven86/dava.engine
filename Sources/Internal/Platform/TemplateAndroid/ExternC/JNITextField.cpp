@@ -101,11 +101,11 @@ extern "C"
         DAVA::UITextFieldAndroid::TextFieldFocusChanged(id, hasFocus);
     }
 
-    void Java_com_dava_framework_JNITextField_TextFieldTextureUpdate(JNIEnv* env,
+    void Java_com_dava_framework_JNITextField_TextFieldUpdateTexture(JNIEnv* env,
             jobject classthis, uint32_t id, jintArray pixels, int width, int height)
     {
-        DVASSERT(width);
-        DVASSERT(height);
+        DVASSERT(width > 0);
+        DVASSERT(height > 0);
 
         jboolean isCopy = JNI_FALSE;
         jint* rawData = env->GetIntArrayElements(pixels, &isCopy);
