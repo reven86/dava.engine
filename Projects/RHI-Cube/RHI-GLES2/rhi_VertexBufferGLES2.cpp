@@ -52,12 +52,38 @@ Create( uint32 size, uint32 options )
     DVASSERT(size);
     if( size )
     {
-        GLuint  b = 0;
+        GLuint      b    = 0;
+        GLCommand   cmd1 = { GLCommand::GEN_BUFFERS, {1,(uint64)(&b)} };
+        
+        ExecGL( &cmd1, 1 );
+        if( cmd1.result == GL_NO_ERROR )
+        {
+            GLCommand   cmd2 = { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, b } };
 
+            ExecGL( &cmd2, 1 );
+            if( cmd2.result == GL_NO_ERROR )
+            {
+                void*   data = malloc( size );
+
+                if( data )
+                {
+                    handle = VertexBufferGLES2Pool::Alloc();
+                    VertexBufferGLES2_t*    vb = VertexBufferGLES2Pool::Get( handle );
+
+                    vb->data   = data;
+                    vb->size   = size;
+                    vb->uid    = b;
+                    vb->mapped = false;
+                }
+            }
+        }
+
+/*
         glGenBuffers( 1, &b );
         glBindBuffer( GL_ARRAY_BUFFER, b );
 
         if( glGetError() == GL_NO_ERROR )
+
         {
 //            void*   data = VidMem()->alloc_aligned( size, 16 );
             void*   data = malloc( size );
@@ -73,6 +99,7 @@ Create( uint32 size, uint32 options )
                 vb->mapped = false;
             }
         }
+*/
     }
 
     return handle;
@@ -90,8 +117,10 @@ Delete( Handle vb )
     {
         if( self->data )
         {
-            GL_CALL(glDeleteBuffers( 1, &self->uid ));
-//            VidMem()->free( self->_data );
+            GLCommand   cmd = { GLCommand::DELETE_BUFFERS, { 1, (uint64)(&self->uid) } };
+//-            GL_CALL(glDeleteBuffers( 1, &self->uid ));
+            ExecGL( &cmd, 1 );
+
             free( self->data );
 
             self->data = 0;
@@ -116,11 +145,23 @@ Update( Handle vb, const void* data, uint32 offset, uint32 size )
 
     if( offset+size <= self->size )
     {
+        GLCommand   cmd[] = 
+        {
+            { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, self->uid } },
+            { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), GL_STATIC_DRAW } },
+            { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, 0 } }
+        };
+
+        memcpy( ((uint8*)self->data)+offset, data, size );
+        ExecGL( cmd, countof(cmd) );
+        success = cmd[1].result == GL_NO_ERROR;
+/*
         memcpy( ((uint8*)self->data)+offset, data, size );
         glBindBuffer( GL_ARRAY_BUFFER, self->uid );
         glBufferData( GL_ARRAY_BUFFER, self->size, self->data, GL_STATIC_DRAW );
         success = glGetError() == GL_NO_ERROR;
         glBindBuffer( GL_ARRAY_BUFFER, 0 );
+*/    
     }
 
     return success;
@@ -151,10 +192,20 @@ Unmap( Handle vb )
     VertexBufferGLES2_t*    self = VertexBufferGLES2Pool::Get( vb );
 
     DVASSERT(self->mapped);
-    
+
+    GLCommand   cmd[] = 
+    {
+        { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, self->uid } },
+        { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), GL_STATIC_DRAW } },
+        { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, 0 } }
+    };
+
+    ExecGL( cmd, countof(cmd) );
+/*    
     GL_CALL(glBindBuffer( GL_ARRAY_BUFFER, self->uid ));
     GL_CALL(glBufferData( GL_ARRAY_BUFFER, self->size, self->data, GL_STATIC_DRAW ));
     GL_CALL(glBindBuffer( GL_ARRAY_BUFFER, 0 ));
+*/
     self->mapped = false;
 }
 

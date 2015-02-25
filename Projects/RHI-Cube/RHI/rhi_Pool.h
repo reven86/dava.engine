@@ -31,6 +31,7 @@
 #define __RHI_POOL_H__
 
 #include "../rhi_Base.h"
+#include "Platform/FWSpinlock.h"
 
 namespace rhi
 {
@@ -72,13 +73,15 @@ private:
         uint32  generation:8;
     };
 
-    static Entry*   Object;
-    static unsigned ObjectCount;
+    static Entry*           Object;
+    static unsigned         ObjectCount;
+    static DAVA::Spinlock   ObjectSync;
 };
 
 #define RHI_IMPL_POOL(T,RT) \
 template<> rhi::Pool<T,RT>::Entry*  rhi::Pool<T,RT>::Object      = 0; \
 template<> unsigned                 rhi::Pool<T,RT>::ObjectCount = 1024; \
+template<> DAVA::Spinlock           rhi::Pool<T,RT>::ObjectSync  = DAVA::Spinlock();  \
 
 
 //------------------------------------------------------------------------------
@@ -88,6 +91,8 @@ inline Handle
 Pool<T,RT>::Alloc()
 {
     uint32  handle = InvalidHandle;
+
+    ObjectSync.Lock();
 
     if( !Object )
     {
@@ -115,6 +120,8 @@ Pool<T,RT>::Alloc()
         }
     }
     
+    ObjectSync.Unlock();
+    
     return handle;
 }
 
@@ -132,8 +139,10 @@ Pool<T,RT>::Free( Handle h )
     Entry*  e     = Object + index;
 
     DVASSERT(e->allocated);
+    ObjectSync.Lock();    
     e->allocated = false;
-}
+    ObjectSync.Unlock();
+ }
 
 
 //------------------------------------------------------------------------------

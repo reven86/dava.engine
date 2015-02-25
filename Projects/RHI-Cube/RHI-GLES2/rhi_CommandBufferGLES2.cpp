@@ -9,6 +9,7 @@
     #include "FileSystem/Logger.h"
     using DAVA::Logger;
     #include "Core/Core.h"
+    #include "Platform/Thread.h"
     #include "Base/Profiler.h"
 
     #include "_gl.h"
@@ -83,7 +84,15 @@ RHI_IMPL_POOL(RenderPass_t,RESOURCE_RENDER_PASS);
     
 const uint64   CommandBuffer_t::EndCmd = 0xFFFFFFFF;
 
-static std::vector<Handle>  _CmdQueue;
+static const unsigned       _CmdQueueCount              = 3;
+static unsigned             _CurCmdQueueIndex           = 0;
+static std::vector<Handle>  _CmdQueue[_CmdQueueCount];
+static std::vector<uint32>  _RenderQueue;
+static uint32               _CurRenderQueueSize         = 0;
+static DAVA::Spinlock       _CmdQueueSync;
+
+static DAVA::Thread*        RenderThread;
+
 
 namespace RenderPass
 {
@@ -116,7 +125,7 @@ Allocate( const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf )
 void
 Begin( Handle pass )
 {
-    _CmdQueue.push_back( pass );
+    _CmdQueue[_CurCmdQueueIndex].push_back( pass );
 }
 
 void
@@ -147,7 +156,7 @@ Allocate()
 void
 Submit( Handle cb )
 {
-    _CmdQueue.push_back( cb );
+    _CmdQueue[_CurCmdQueueIndex].push_back( cb );
 }
 
 
@@ -640,28 +649,44 @@ SCOPED_NAMED_TIMING("CommandBuffer_t::Execute");
 
 //------------------------------------------------------------------------------
 
-void
-Present()
+static void
+_ExecuteQueuedCommands()
 {
-    for( unsigned i=0; i!=_CmdQueue.size(); ++i )
-    {
-        RenderPass_t*   pass = RenderPassPool::Get( _CmdQueue[i] );
-
-        for( unsigned b=0; b!=pass->cmdBuf.size(); ++b )
-        {
-            Handle           cb_h = pass->cmdBuf[b];
-            CommandBuffer_t* cb   = CommandBufferPool::Get( cb_h );
-
-            cb->Execute();
-            CommandBufferPool::Free( cb_h );
-        }
-
-        RenderPassPool::Free( _CmdQueue[i] );
-    }
-    _CmdQueue.clear();
-
+    static std::vector<uint32>  queue_i;
     
- 
+    _CmdQueueSync.Lock();
+    _CurRenderQueueSize = _RenderQueue.size();
+    queue_i.clear();
+    queue_i.swap( _RenderQueue );
+    _CmdQueueSync.Unlock();
+
+    for( unsigned i=0; i!=queue_i.size(); ++i )
+    {
+        std::vector<Handle>*    cmd_queue = _CmdQueue + queue_i[i];    
+        
+        for( unsigned i=0; i!=cmd_queue->size(); ++i )
+        {
+            RenderPass_t*   pass = RenderPassPool::Get( (*cmd_queue)[i] );
+
+            for( unsigned b=0; b!=pass->cmdBuf.size(); ++b )
+            {
+                Handle           cb_h = pass->cmdBuf[b];
+                CommandBuffer_t* cb   = CommandBufferPool::Get( cb_h );
+
+                cb->Execute();
+                CommandBufferPool::Free( cb_h );
+            }
+
+            RenderPassPool::Free( (*cmd_queue)[i] );
+        }
+        cmd_queue->clear();
+    }
+
+    _CmdQueueSync.Lock();
+    _CurRenderQueueSize = 0;
+    _CmdQueueSync.Unlock();
+
+
 #if defined(__DAVAENGINE_WIN32__)
     
     HWND    wnd = (HWND)DAVA::Core::Instance()->NativeWindowHandle();
@@ -676,6 +701,193 @@ Present()
 
 #endif
 }
+
+
+//------------------------------------------------------------------------------
+
+void
+Present()
+{
+    uint32  sz = 0;
+
+    // CRAP: busy wait
+    do
+    {
+        _CmdQueueSync.Lock();
+        sz = uint32(_RenderQueue.size()) + _CurRenderQueueSize;
+        _CmdQueueSync.Unlock();        
+    } while( sz >= _CmdQueueCount );
+
+    _CmdQueueSync.Lock();
+    _RenderQueue.push_back( _CurCmdQueueIndex );    
+    if( ++_CurCmdQueueIndex >= _CmdQueueCount )
+        _CurCmdQueueIndex = 0;
+    _CmdQueueSync.Unlock();
+    
+
+    _ExecuteQueuedCommands(); 
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+_RenderFunc( DAVA::BaseObject* obj, void*, void* )
+{
+    Logger::Info( "RHI render-thread started" );
+
+    while( true )
+    {
+        size_t  cnt = 0;
+        
+        // CRAP: busy-wait
+        do
+        {
+            _CmdQueueSync.Lock();
+            cnt = _RenderQueue.size();
+            _CmdQueueSync.Unlock();
+        } while( cnt == 0 );
+
+
+        _ExecuteQueuedCommands(); 
+    }
+
+    Logger::Info( "RHI render-thread stopped" );
+}
+
+void
+InitializeRenderThread()
+{
+    RenderThread = DAVA::Thread::Create( DAVA::Message(&_RenderFunc) );
+
+//    RenderThread->Start();    
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+UninitializeRenderThread()
+{
+///    RenderThread->Join();
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+ExecGL( GLCommand* command, uint32 cmdCount )
+{
+    for( GLCommand* cmd=command,*cmdEnd=command+cmdCount; cmd!=cmdEnd; ++cmd )
+    {
+        const uint64*   arg = cmd->arg;
+
+        switch( cmd->func )
+        {
+            case GLCommand::GEN_BUFFERS :
+            {
+                glGenBuffers( (GLsizei)(arg[0]), (GLuint*)(arg[1]) );
+                cmd->result = glGetError();
+            }   break;
+
+            case GLCommand::BIND_BUFFER :
+            {
+                glBindBuffer( (GLenum)(arg[0]), (GLuint)(arg[1]) );
+                cmd->result = glGetError();
+            }   break;
+
+            case GLCommand::DELETE_BUFFERS :
+            {
+                glDeleteBuffers( (GLsizei)(arg[0]), (GLuint*)(arg[1]) );
+                cmd->result = glGetError();
+            }   break;
+
+            case GLCommand::BUFFER_DATA :
+            {
+                glBufferData( (GLenum)(arg[0]), (GLsizei)(arg[1]), (const void*)(arg[2]), (GLenum)(arg[3]) );
+                cmd->result = glGetError();
+            }   break;
+
+            case GLCommand::GEN_TEXTURES :
+            {
+                glGenTextures( (GLsizei)(arg[0]), (GLuint*)(arg[1]) );
+                cmd->result = glGetError();
+            }   break;
+            
+            case GLCommand::DELETE_TEXTURES :
+            {
+                glDeleteTextures( (GLsizei)(arg[0]), (GLuint*)(arg[1]) );
+                cmd->result = glGetError();
+            }   break;
+
+            case GLCommand::BIND_TEXTURE :
+            {
+                glBindTexture( (GLenum)(cmd->arg[0]), (GLuint)(cmd->arg[1]) );
+                cmd->result = glGetError();
+            }   break;
+
+            case GLCommand::TEX_PARAMETER_I :
+            {
+                glTexParameteri( (GLenum)(arg[0]), (GLenum)(arg[1]), (GLuint)(arg[2]) );
+                cmd->result = glGetError();
+            }   break;
+
+            case GLCommand::TEX_IMAGE2D :
+            {
+                glTexImage2D( (GLenum)(arg[0]), (GLint)(arg[1]), (GLint)(arg[2]), (GLsizei)(arg[3]), (GLsizei)(arg[4]), (GLint)(arg[5]), (GLenum)(arg[6]), (GLenum)(arg[7]), (const GLvoid*)(arg[8]) );
+                cmd->result = glGetError();
+            }   break;
+
+            case GLCommand::CREATE_SHADER :
+            {
+                cmd->result = glCreateShader( (GLenum)(arg[0]) );
+            }   break;
+
+            case GLCommand::SHADER_SOURCE :
+            {
+                glShaderSource( (GLuint)(arg[0]), (GLsizei)(arg[1]), (const GLchar**)(arg[2]), (const GLint*)(arg[3]) );
+                cmd->result = glGetError();
+            }   break;
+
+            case GLCommand::COMPILE_SHADER :
+            {
+                glCompileShader( (GLuint)(arg[0]) );
+                cmd->result = glGetError();
+            }   break;
+
+            case GLCommand::GET_SHADER_IV :
+            {
+                glGetShaderiv( (GLuint)(arg[0]), (GLenum)(arg[1]), (GLint*)(arg[2]) );
+                cmd->result = glGetError();
+            }   break;
+
+            case GLCommand::GET_SHADER_INFO_LOG :
+            {
+                glGetShaderInfoLog( (GLuint)(arg[0]), GLsizei(arg[1]), (GLsizei*)(arg[2]), (GLchar*)(arg[3]) );
+                cmd->result = glGetError();
+            }   break;
+
+            case GLCommand::GET_PROGRAM_IV :
+            {
+                glGetProgramiv( (GLuint)(arg[0]), (GLenum)(arg[1]), (GLint*)(arg[2]) );
+                cmd->result = glGetError();
+            }   break;
+
+            case GLCommand::GET_ACTIVE_UNIFORM :
+            {
+                glGetActiveUniform( (GLuint)(arg[0]), (GLuint)(arg[1]), (GLsizei)(arg[2]), (GLsizei*)(arg[3]), (GLint*)(arg[4]), (GLenum*)(arg[5]), (GLchar*)(arg[6]) );
+                cmd->result = glGetError();
+            }   break;
+
+            case GLCommand::GET_UNIFORM_LOCATION :
+            {
+                cmd->result = glGetUniformLocation( (GLuint)(arg[0]), (const GLchar*)(arg[1]) );
+            }   break;        
+
+        }
+    }
+}
+
 
 
 } // namespace rhi

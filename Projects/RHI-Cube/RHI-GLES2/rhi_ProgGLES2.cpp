@@ -8,6 +8,7 @@
     using DAVA::Logger;
     #include "Base/BaseTypes.h"
 
+    #include "rhi_GLES2.h"
     #include "_gl.h"
 
     #include <stdio.h>
@@ -53,6 +54,42 @@ ProgGLES2::Construct( const char* srcCode )
 {
     bool        success = false;
     int         stype   = (type==PROG_VERTEX) ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER;
+    GLCommand   cmd1    = { GLCommand::CREATE_SHADER, { uint64(stype) } };
+
+    ExecGL( &cmd1, 1 );
+
+    if( cmd1.result )
+    {
+        unsigned    s           = cmd1.result;
+        int         status;
+        char        info[1024]  = "";
+        GLCommand   cmd2[]      =
+        {
+            { GLCommand::SHADER_SOURCE, { s, 1, uint64(&srcCode), 0 } },
+            { GLCommand::COMPILE_SHADER, { s } },
+            { GLCommand::GET_SHADER_IV, { s, GL_COMPILE_STATUS, uint64(&status) } },
+            { GLCommand::GET_SHADER_INFO_LOG, { s, countof(info), 0, uint64(info) } }
+        };
+
+        ExecGL( cmd2, countof(cmd2) );
+
+        if( status )
+        {
+            shader  = s;
+            success = true;            
+        }
+        else
+        {
+            Logger::Error( "%sprog-compile failed:", (type==PROG_VERTEX) ? "v" : "f" );
+            Logger::Info( info );
+        }
+    }
+    
+    return success;
+
+/*
+    bool        success = false;
+    int         stype   = (type==PROG_VERTEX) ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER;
     unsigned    s       = glCreateShader( stype );
 
     if( s )
@@ -83,6 +120,7 @@ ProgGLES2::Construct( const char* srcCode )
     }
 
     return success;
+*/
 }
 
 
@@ -122,6 +160,51 @@ ProgGLES2::GetProgParams( unsigned progUid )
         }
     }
 #else
+
+    for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
+    {
+        cbuf[i].location = InvalidIndex;
+        cbuf[i].count    = 0;
+    }
+
+    GLint       cnt  = 0;
+    GLCommand   cmd1 = { GLCommand::GET_PROGRAM_IV, { progUid, GL_ACTIVE_UNIFORMS, uint64(&cnt) } };
+    
+    ExecGL( &cmd1, 1 );
+
+    for( unsigned u=0; u!=cnt; ++u )
+    {    
+        char        name[64];
+        GLsizei     length;
+        GLint       size;
+        GLenum      utype;
+        GLCommand   cmd2    = { GLCommand::GET_ACTIVE_UNIFORM, { progUid, u, uint64(sizeof(name)-1), uint64(&length), uint64(&size), uint64(&utype), uint64(name) } };
+        
+        ExecGL( &cmd2, 1 );
+        
+        for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
+        {
+            char    n[16];   sprintf( n, "%s_Buffer%u[0]", (type == PROG_VERTEX)?"VP":"FP", i );
+            
+            if( !strcmp( name, n ) )
+            {            
+                int         loc;
+                GLCommand   cmd3 = { GLCommand::GET_UNIFORM_LOCATION, { progUid, uint64(name) } };
+
+                ExecGL( &cmd3, 1 );
+                loc = cmd3.result;
+
+                if( loc != -1 )
+                {
+                    cbuf[i].location = loc;
+                    cbuf[i].count    = size;
+                    break;
+                }
+            }
+        }
+    }
+
+/*
     GLint   cnt = 0;
     
     glGetProgramiv( progUid, GL_ACTIVE_UNIFORMS, &cnt );
@@ -160,8 +243,34 @@ ProgGLES2::GetProgParams( unsigned progUid )
             }
         }
     }
+*/    
 #endif // DV_USE_UNIFORMBUFFER_OBJECT
 
+
+    // get texture location
+    {
+        char        tname[countof(texunitLoc)][16];
+        GLCommand   cmd[countof(texunitLoc)];
+
+        for( unsigned i=0; i!=countof(texunitLoc); ++i )
+        {
+            char    name[16];   
+
+            Snprinf( name, countof(name), "Texture%u", i );
+            cmd[i].func   = GLCommand::GET_UNIFORM_LOCATION;
+            cmd[i].arg[0] = progUid;
+            cmd[i].arg[1] = uint64(tname[i]);
+        }
+
+        ExecGL( cmd, countof(cmd) );
+        for( unsigned i=0; i!=countof(texunitLoc); ++i )
+        {
+            int loc = cmd[i].result;
+            
+            texunitLoc[i] = (loc != -1)  ? loc  : InvalidIndex;
+        }
+    }
+/*
     for( unsigned i=0; i!=countof(texunitLoc); ++i )
     {
         char    name[16];   Snprinf( name, countof(name), "Texture%u", i );
@@ -169,7 +278,7 @@ ProgGLES2::GetProgParams( unsigned progUid )
 
         texunitLoc[i] = (loc != -1)  ? loc  : InvalidIndex;
     }
-
+*/
     texunitInited = false;
 }
 

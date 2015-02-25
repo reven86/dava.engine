@@ -168,6 +168,8 @@ Initialize()
             glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE );
             glDebugMessageCallback( &_OGLErrorCallback, 0 );
             #endif
+
+            InitializeRenderThread();
         }
         else
         {
@@ -194,6 +196,8 @@ Initialize()
     Logger::Info( "  GPU vendor   : %s", glGetString( GL_VENDOR ) );
     Logger::Info( "  GPU          : %s", glGetString( GL_RENDERER ) );
     Logger::Info( "  GLSL version : %s", glGetString( GL_SHADING_LANGUAGE_VERSION ) );
+
+    InitializeRenderThread();
     
 #if 0
     glEnable( GL_DEBUG_OUTPUT );
@@ -219,6 +223,8 @@ Initialize()
     Logger::Info( "  GPU          : %s", glGetString( GL_RENDERER ) );
     Logger::Info( "  GLSL version : %s", glGetString( GL_SHADING_LANGUAGE_VERSION ) );
         
+    InitializeRenderThread();
+
 #if 0
     glEnable( GL_DEBUG_OUTPUT );
     glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE );
@@ -235,6 +241,7 @@ Initialize()
 void
 Uninitialize()
 {
+    UninitializeRenderThread();
 }
 
 } // namespace rhi

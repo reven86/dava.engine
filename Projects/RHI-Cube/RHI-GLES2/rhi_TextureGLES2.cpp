@@ -77,7 +77,8 @@ Create( unsigned width, unsigned height, TextureFormat format, uint32 options )
 {
     Handle  handle = InvalidHandle;
     GLuint  uid    = InvalidIndex;
-    
+
+/*
     glGenTextures( 1, &uid );
     GL_CALL(glBindTexture( GL_TEXTURE_2D, uid ));
 //    GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR ));
@@ -85,10 +86,26 @@ Create( unsigned width, unsigned height, TextureFormat format, uint32 options )
 glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0 );
 glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0 );
     GL_CALL(glBindTexture( GL_TEXTURE_2D, 0 ));
+*/
+
+    GLCommand   cmd1 = { GLCommand::GEN_TEXTURES, { 1, (uint64)(&uid) } };
+
+    ExecGL( &cmd1, 1 );
+    if( cmd1.result == GL_NO_ERROR )
+    {
+        GLCommand   cmd2[] =
+        {
+            { GLCommand::BIND_TEXTURE, {GL_TEXTURE_2D, uid} },
+            { GLCommand::TEX_PARAMETER_I, {GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0} },
+            { GLCommand::TEX_PARAMETER_I, {GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0} },
+            { GLCommand::BIND_TEXTURE, {GL_TEXTURE_2D, 0} }
+        };
+
+        ExecGL( cmd2, countof(cmd2) );
+    }
 
     if( uid != InvalidIndex )
     {
-//        void*   mem = VidMem()->alloc_aligned( width*height*4, 16 );
         void*   mem = ::malloc( width*height*4 );
 
         if( mem )
@@ -137,10 +154,19 @@ Unmap( Handle tex )
 
     DVASSERT(self->_is_mapped);
 
+    GLCommand   cmd[] =
+    {
+        { GLCommand::BIND_TEXTURE, {GL_TEXTURE_2D, self->_uid} },
+        { GLCommand::TEX_IMAGE2D, {GL_TEXTURE_2D, 0, GL_RGBA, self->_width, self->_height, 0, GL_BGRA, GL_UNSIGNED_BYTE, (uint64)(self->_data)} },
+        { GLCommand::BIND_TEXTURE, {GL_TEXTURE_2D, 0} }
+    };
+
+    ExecGL( cmd, countof(cmd) );
+/*
     GL_CALL(glBindTexture( GL_TEXTURE_2D, self->_uid ));
     GL_CALL(glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, self->_width, self->_height, 0, GL_BGRA, GL_UNSIGNED_BYTE, self->_data ));
     GL_CALL(glBindTexture( GL_TEXTURE_2D, 0 ));
-
+*/
     self->_is_mapped = false;
 }
 

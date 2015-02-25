@@ -64,6 +64,43 @@ void    SetToRHI( Handle ps, void* instData );
 void*   Instance( Handle ps );
 }
 
+void    InitializeRenderThread();
+void    UninitializeRenderThread();
+
+struct
+GLCommand
+{
+    enum 
+    Func
+    { 
+        GEN_BUFFERS, 
+        BIND_BUFFER, 
+        DELETE_BUFFERS, 
+        BUFFER_DATA,
+
+        GEN_TEXTURES,
+        BIND_TEXTURE,
+        DELETE_TEXTURES,
+        TEX_PARAMETER_I,
+        TEX_IMAGE2D,
+
+        CREATE_SHADER,
+        SHADER_SOURCE,
+        COMPILE_SHADER,
+        GET_SHADER_IV,
+        GET_SHADER_INFO_LOG,
+        GET_PROGRAM_IV,
+        GET_ACTIVE_UNIFORM,
+        GET_UNIFORM_LOCATION
+    };
+
+    Func    func;
+    uint64  arg[12];
+    int     result;
+};
+
+void     ExecGL( GLCommand* cmd, uint32 cmdCount );
+
 
 //==============================================================================
 }
