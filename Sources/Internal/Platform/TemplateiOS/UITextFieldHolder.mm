@@ -467,8 +467,6 @@
 
 - (void)keyboardFrameDidChange:(NSNotification *)notification
 {
-    NSDictionary* userInfo = notification.userInfo;
-
     // Remember the last keyboard frame here, since it might be incorrect in keyboardDidShow.
     lastKeyboardFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
 }
