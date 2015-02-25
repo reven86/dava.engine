@@ -55,6 +55,7 @@
 #include "Tests/Cpp14.h"
 #include "Tests/NetworkTest.h"
 #include "Tests/JNITest.h"
+#include "Tests/FormatsTest.h"
 #include "Tests/DataVaultTest.h"
 #include "Tests/UnlimitedLogOutputTest.h"
 #include "Tests/SpinLockTest.h"
@@ -74,7 +75,6 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
-	/*
     new ThreadSyncTest();
     new DataVaultTest();
 #if defined(__DAVAENGINE_ANDROID__)
@@ -96,8 +96,8 @@ void GameCore::RegisterTests()
     new TextSizeTest();
     new KeyedArchiveYamlTest();
     new JobManagerTest();
-    new Cpp14Test ();
-    */
+    new Cpp14Test();
+    new FormatsTest();
     new NetworkTest();
     new UnlimitedLogOutputTest();
     new SpinLockTest();
@@ -111,7 +111,7 @@ using namespace DAVA;
 
 void GameCore::OnAppStarted()
 {
-	Logger::Debug("GameCore::OnAppStarted");
+    Logger::Debug("GameCore::OnAppStarted");
     
     InitLogging();
     InitNetwork();
@@ -166,7 +166,7 @@ File * GameCore::CreateDocumentsFile(const String &filePathname)
 
 void GameCore::OnAppFinished()
 {
-	Logger::Debug("GameCore::OnAppFinished");
+    Logger::Debug("GameCore::OnAppFinished");
     //DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
 
     int32 screensSize = screens.size();

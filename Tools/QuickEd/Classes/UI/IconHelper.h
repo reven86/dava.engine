@@ -33,13 +33,14 @@
 #include <QString>
 #include "DAVAEngine.h"
 
-using namespace DAVA;
-
+namespace DAVA {
+    class UIControl;
+}
 class IconHelper
 {
 public:
 	static QString GetIconPathForClassName(const QString& className);
-	static QString GetIconPathForUIControl(UIControl* uiControl);
+	static QString GetIconPathForUIControl(DAVA::UIControl* uiControl);
 
     static QString GetCustomIconPath();
 };
