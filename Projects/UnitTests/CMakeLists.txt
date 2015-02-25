@@ -7,6 +7,7 @@ if( ANDROID )
 
 endif()
 
+set          ( WARNINGS_AS_ERRORS_WIN32 true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 
 include      ( CMake-common )

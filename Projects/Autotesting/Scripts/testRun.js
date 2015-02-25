@@ -1,4 +1,4 @@
 
 var target = UIATarget.localTarget();
 
-target.delay( 5400 );
+target.delay( 7200 );

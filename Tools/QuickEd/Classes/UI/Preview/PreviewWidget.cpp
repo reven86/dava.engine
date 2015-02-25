@@ -5,6 +5,7 @@
 #include "UI/Document.h"
 #include "UI/PreviewContext.h"
 
+using namespace DAVA;
 
 static const int SCALE_PERCENTAGES[] =
 {

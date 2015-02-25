@@ -8,6 +8,7 @@
 #include <QItemSelection>
 #include <QSortFilterProxyModel>
 #include "Package/PackageModel.h"
+#include "Package/FilteredPackageModel.h"
 
 class QSortFilterProxyModel;
 class QItemSelection;
@@ -37,7 +38,7 @@ private:
 
     QPoint scrollPosition;
     PackageModel model;
-    QSortFilterProxyModel proxyModel;
+    FilteredPackageModel proxyModel;
     QString filterString;
     QItemSelection currentItemSelection;
     QList<QPersistentModelIndex> expandedIndexes;
