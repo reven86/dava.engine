@@ -131,7 +131,6 @@ private:
     uint32 currentFrameZ;
     Camera * cameras[6];
     StaticOcclusionRenderPass * staticOcclusionRenderPass;
-    Sprite * renderTargetSprite;
     Texture * renderTargetTexture;
 
     StaticOcclusionData * currentData;

@@ -424,8 +424,6 @@ void SceneEditor2::Draw()
 		materialSystem->Draw();
 	}
  
-    //VI: need to call Setup2DDrawing in order to draw 2d to render targets correctly
-    Setup2DDrawing();
 	tilemaskEditorSystem->Draw();
     //VI: restore 3d camera state
     Setup3DDrawing();

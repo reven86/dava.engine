@@ -308,43 +308,12 @@ Sprite* Sprite::Create(const FilePath &spriteName)
 	if (!spr)
 	{
 		Texture *pinkTexture = Texture::CreatePink();
-		spr = CreateFromTexture(Vector2(16.f, 16.f), pinkTexture, Vector2(0.f, 0.f), Vector2(16.f, 16.f), spriteName);
+		spr = CreateFromTexture(pinkTexture, 0, 0, 16, 16, 16.f, 16.f, spriteName);
 		spr->type = SPRITE_FROM_FILE;
 
 		pinkTexture->Release();
 	}
 	return spr;
-}
-
-Sprite* Sprite::CreateAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat textureFormat, bool contentScaleIncluded)
-{
-	Sprite * sprite = new Sprite();
-	sprite->InitAsRenderTarget(sprWidth, sprHeight, textureFormat, contentScaleIncluded);
-	return sprite;
-}
-
-void Sprite::InitAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat textureFormat, bool contentScaleIncluded)
-{
-    Vector2 spriteSize(sprWidth, sprHeight);
-	if (!contentScaleIncluded)
-	{
-        spriteSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(spriteSize);
-	}
-
-	Texture *t = Texture::CreateFBO((int32)ceilf(spriteSize.x), (int32)ceilf(spriteSize.y), textureFormat, Texture::DEPTH_NONE);
-
-	this->InitFromTexture(t, 0, 0, spriteSize.x, spriteSize.y, -1, -1, true);
-
-	t->Release();
-
-	this->type = SPRITE_RENDER_TARGET;
-    this->textureInVirtualSpace = contentScaleIncluded;
-
-	// Clear created render target first
-    RenderSystem2D::Instance()->PushRenderTarget();
-    RenderSystem2D::Instance()->SetRenderTarget(this);
-    RenderManager::Instance()->ClearWithColor(0, 0, 0, 0);
-    RenderSystem2D::Instance()->PopRenderTarget();
 }
 
 Sprite* Sprite::CreateFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, bool contentScaleIncluded)
@@ -356,12 +325,12 @@ Sprite* Sprite::CreateFromTexture(Texture *fromTexture, int32 xOffset, int32 yOf
 	return spr;
 }
 
-Sprite * Sprite::CreateFromTexture(const Vector2 & spriteSize, Texture * fromTexture, const Vector2 & textureRegionOffset, const Vector2 & textureRegionSize, const FilePath &spriteName /* = FilePath()*/)
+Sprite * Sprite::CreateFromTexture(Texture *fromTexture, int32 textureRegionOffsetX, int32 textureRegionOffsetY, int32 textureRegionWidth, int32 textureRegionHeigth, float32 sprWidth, float32 sprHeight, const FilePath &spriteName /* = FilePath()*/)
 {
 	DVASSERT(fromTexture);
 	Sprite *spr = new Sprite();
 	DVASSERT_MSG(spr, "Render Target Sprite Creation failed");
-	spr->InitFromTexture(fromTexture, (int32)textureRegionOffset.x, (int32)textureRegionOffset.y, textureRegionSize.x, textureRegionSize.y, (int32)spriteSize.x, (int32)spriteSize.y, false, spriteName);
+    spr->InitFromTexture(fromTexture, textureRegionOffsetX, textureRegionOffsetY, sprWidth, sprHeight, textureRegionWidth, textureRegionHeigth, false, spriteName);
 	return spr;
 }
 
@@ -518,8 +487,8 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 		float32 x, y, dx,dy, xOff, yOff;
 		x = offset.x;
 		y = offset.y;
-        dx = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size.x);
-        dy = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(size.y);
+        dx = (targetWidth == -1) ? VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size.x) : (float32)targetWidth;
+        dy = (targetHeight == -1) ? VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(size.y) : (float32)targetHeight;
 		xOff = 0;
 		yOff = 0;
 
@@ -549,30 +518,14 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
         Texture* texture = textures[frameIndex];
         float32* texCoord = texCoords[i];
         
-        if (targetWidth != -1 &&
-            targetHeight != -1 &&
-            targetWidth != texture->width &&
-            targetHeight != texture->height)
-        {
-            texCoord[0] = x / targetWidth;
-            texCoord[1] = y / targetHeight;
-            texCoord[2] = dx / targetWidth;
-            texCoord[3] = y / targetHeight;
-            texCoord[4] = x / targetWidth;
-            texCoord[5] = dy / targetHeight;
-            texCoord[6] = dx / targetWidth;
-            texCoord[7] = dy / targetHeight;
-        } else
-        {
-            texCoord[0] = x / texture->width;
-            texCoord[1] = y / texture->height;
-            texCoord[2] = dx / texture->width;
-            texCoord[3] = y / texture->height;
-            texCoord[4] = x / texture->width;
-            texCoord[5] = dy / texture->height;
-            texCoord[6] = dx / texture->width;
-            texCoord[7] = dy / texture->height;
-        }
+        texCoord[0] = x / texture->width;
+        texCoord[1] = y / texture->height;
+        texCoord[2] = dx / texture->width;
+        texCoord[3] = y / texture->height;
+        texCoord[4] = x / texture->width;
+        texCoord[5] = dy / texture->height;
+        texCoord[6] = dx / texture->width;
+        texCoord[7] = dy / texture->height;
 	}
 
 	// DF-1984 - Set available sprite relative path name here. Use FBO sprite name only if sprite name is empty.
