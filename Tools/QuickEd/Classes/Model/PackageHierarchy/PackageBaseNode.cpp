@@ -51,3 +51,33 @@ void PackageBaseNode::debugDump(int depth)
     for (int i = 0; i < GetCount(); i++)
         Get(i)->debugDump(depth + 2);
 }
+
+bool PackageBaseNode::IsEditingSupported() const
+{
+    return false;
+}
+
+bool PackageBaseNode::IsInsertingSupported() const
+{
+    return false;
+}
+
+bool PackageBaseNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
+{
+    return false;
+}
+
+bool PackageBaseNode::CanInsertImportedPackage() const
+{
+    return false;
+}
+
+bool PackageBaseNode::CanRemove() const
+{
+    return false;
+}
+
+bool PackageBaseNode::CanCopy() const
+{
+    return false;
+}

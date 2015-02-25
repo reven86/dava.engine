@@ -28,8 +28,10 @@
 
 #include "DistanceFontValidator.h"
 #include "TextureDescriptorUtils.h"
-
+#include "DAVAEngine.h"
 #include <QMessageBox>
+
+using namespace DAVA;
 
 DistanceFontValidator::DistanceFontValidator()
 :   notifyMessage("")
@@ -45,13 +47,13 @@ bool DistanceFontValidator::ValidateInternal(QVariant& v)
 
         if (pngPath.IsEmpty() || !pngPath.Exists())
         {
-            notifyMessage = Format(".png file for Distance Field Font was not found. Font will not be displayed correctly.");
+            notifyMessage = ".png file for Distance Field Font was not found. Font will not be displayed correctly.";
             return false;
         }
 
         if (texPath.IsEmpty() || !texPath.Exists())
         {
-            notifyMessage = Format(".tex file for Distance Field Font was not found and could not be created. Font will not be displayed correctly.");
+            notifyMessage = ".tex file for Distance Field Font was not found and could not be created. Font will not be displayed correctly.";
             return false;
         }
 
@@ -89,5 +91,5 @@ void DistanceFontValidator::FixupInternal(QVariant& v) const
 
 void DistanceFontValidator::ErrorNotifyInternal(const QVariant &v) const
 {
-    QMessageBox::warning(NULL, "Broken Distance Field font", notifyMessage.c_str(), QMessageBox::Ok);
+    QMessageBox::warning(NULL, "Broken Distance Field font", notifyMessage, QMessageBox::Ok);
 }

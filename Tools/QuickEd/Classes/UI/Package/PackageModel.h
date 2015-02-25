@@ -7,19 +7,19 @@
 #include <QUndoStack>
 #include "DAVAEngine.h"
 
-class Document;
 class PackageNode;
 class ControlNode;
 class PackageBaseNode;
 class PackageControlsNode;
 class ControlsContainerNode;
+class QtModelPackageCommandExecutor;
 
 class PackageModel : public QAbstractItemModel
 {
     Q_OBJECT
     
 public:
-    PackageModel(Document *document, QObject *parent = 0);
+    PackageModel(PackageNode *root, QtModelPackageCommandExecutor *commandExecutor, QObject *parent = 0);
     virtual ~PackageModel();
     
     void emitNodeChanged(PackageBaseNode *node);
@@ -46,7 +46,7 @@ public:
     
 private:
     PackageNode *root;
-    Document *document;
+    QtModelPackageCommandExecutor *commandExecutor;
 };
 
 #endif // __QUICKED_PACKAGE_MODEL_H__
