@@ -870,7 +870,7 @@ Entity * SceneFileV2::LoadCamera(Scene * scene, KeyedArchive * archive)
     Entity * cameraEntity = LoadEntity(scene, archive);
     
     Camera * cameraObject = new Camera();
-    cameraObject->Load(archive);
+    cameraObject->LoadObject(archive);
     
     cameraEntity->AddComponent(new CameraComponent(cameraObject));
     SafeRelease(cameraObject);

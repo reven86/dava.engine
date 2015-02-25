@@ -255,7 +255,7 @@ RenderObject * RenderObject::Clone(RenderObject *newObject)
 
 void RenderObject::Save(KeyedArchive * archive, SerializationContext* serializationContext)
 {
-	AnimatedObject::Save(archive);
+	AnimatedObject::SaveObject(archive);
 
 	if(NULL != archive)
 	{
@@ -324,7 +324,7 @@ void RenderObject::Load(KeyedArchive * archive, SerializationContext *serializat
 			}
 		}
 
-	AnimatedObject::Load(archive);
+	AnimatedObject::LoadObject(archive);
 }
 
 void RenderObject::BindDynamicParameters(Camera * camera)
