@@ -370,7 +370,7 @@ void LodSystem::LodMerger::MergeChildLods()
 	Vector<Entity*> allLods;
 	GetLodComponentsRecursive(toEntity, allLods);
 
-	uint32 count = static_cast<int32>(allLods.size());
+	uint32 count = static_cast<uint32>(allLods.size());
 	for(uint32 i = 0; i < count; ++i)
 	{
         if(i == 0)

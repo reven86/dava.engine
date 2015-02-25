@@ -336,7 +336,7 @@ uint32 FrameOcclusionQueryManager::GetFrameStats(const FastName & queryName) con
 
 void FrameOcclusionQueryManager::GetQueriesNames(Vector<FastName> & names) const
 {
-    for (auto& query : frameQueries)
+    for (auto query : frameQueries)
     {
         names.emplace_back(query->queryName);
     }

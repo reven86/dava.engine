@@ -149,7 +149,7 @@ void SoundUpdateSystem::RemoveEntity(Entity * entity)
 
 void SoundUpdateSystem::AddAutoTriggerSound(Entity * soundOwner, SoundEvent * sound)
 {
-    int32 soundsCount = static_cast<uint32>(autoTriggerSounds.size());
+    int32 soundsCount = static_cast<int32>(autoTriggerSounds.size());
     for(int32 i = 0; i < soundsCount; ++i)
     {
         if(autoTriggerSounds[i].owner == soundOwner && autoTriggerSounds[i].soundEvent == sound)
