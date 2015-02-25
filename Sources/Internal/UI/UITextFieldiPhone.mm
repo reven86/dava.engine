@@ -65,14 +65,14 @@ namespace DAVA
         BackgroundView* backgroundView = [appDelegate glController].backgroundView;
         
         UITextFieldHolder * textFieldHolder= [backgroundView CreateTextField];
-        textFieldHolder.davaTextField = (DAVA::UITextField *)tf;
+        [textFieldHolder setTextField:(DAVA::UITextField *)tf];
 
         objcClassPtr = textFieldHolder;
     }
     UITextFieldiPhone::~UITextFieldiPhone()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        textFieldHolder.davaTextField = (DAVA::UITextField *)nil;
+        [textFieldHolder setTextField:(DAVA::UITextField *)nil];
         
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
         BackgroundView* backgroundView = [appDelegate glController].backgroundView;

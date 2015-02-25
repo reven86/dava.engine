@@ -2471,9 +2471,10 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
             image->format = FORMAT_RGBA8888;
                 
             //Setup temporary variables.
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
             uint8* pTempDecompData = image->data;
             uint8* pTempCompData = (uint8*)pTextureData + GetMipMapLayerOffset(fileMipMapLevel, faceIndex, compressedHeader);
-                
+#endif
             if((FORMAT_PVR4 == formatDescriptor.formatID) || (FORMAT_PVR2 == formatDescriptor.formatID))
             {
 #if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)

@@ -37,7 +37,7 @@
 
 @implementation UITextFieldHolder
 
-@synthesize davaTextField;
+//@synthesize davaTextField;
 
 - (id) init
 {
