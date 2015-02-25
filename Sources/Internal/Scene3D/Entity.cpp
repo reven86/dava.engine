@@ -1000,7 +1000,7 @@ Entity * Entity::GetNodeByPathID(Entity * root, String pathID)
 	Entity * result = root;
 	int32 offs = 0;
 	int32 index = 0;
-	int32 sz = pathID.size();
+	int32 sz = static_cast<int32>(pathID.size());
 	char val;
 	while (offs < sz)
 	{

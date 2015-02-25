@@ -128,8 +128,8 @@ void FMODSoundEvent::SetVelocity(const Vector3 & velocity)
     if(is3D && fmodEventInstances.size())
 	{
 		Vector<FMOD::Event *> instancesCopy(fmodEventInstances);
-		int32 instancesCount = instancesCopy.size();
-		for(int32 i = 0; i < instancesCount; ++i)
+		size_t instancesCount = instancesCopy.size();
+		for(size_t i = 0; i < instancesCount; ++i)
 		{
             FMOD_VERIFY(instancesCopy[i]->set3DAttributes(0, (FMOD_VECTOR*)&velocity, 0));
 		}
@@ -143,8 +143,8 @@ void FMODSoundEvent::SetVolume(float32 _volume)
         volume = _volume;
 
 		Vector<FMOD::Event *> instancesCopy(fmodEventInstances);
-		int32 instancesCount = instancesCopy.size();
-		for(int32 i = 0; i < instancesCount; ++i)
+		size_t instancesCount = instancesCopy.size();
+		for(size_t i = 0; i < instancesCount; ++i)
 		{
             FMOD_VERIFY(instancesCopy[i]->setVolume(volume));
 		}
@@ -156,8 +156,8 @@ void FMODSoundEvent::UpdateInstancesPosition()
     if(is3D)
     {
 		Vector<FMOD::Event *> instancesCopy(fmodEventInstances);
-		int32 instancesCount = instancesCopy.size();
-		for(int32 i = 0; i < instancesCount; ++i)
+		size_t instancesCount = instancesCopy.size();
+		for(size_t i = 0; i < instancesCount; ++i)
 		{
             FMOD_VERIFY(instancesCopy[i]->set3DAttributes((FMOD_VECTOR*)&position, 0, isDirectional ? (FMOD_VECTOR*)&direction : NULL));
 		}
@@ -169,8 +169,8 @@ void FMODSoundEvent::Stop(bool force /* = false */)
     SoundSystem * soundSystem = SoundSystem::Instance();
 
 	Vector<FMOD::Event *> instancesCopy(fmodEventInstances);
-	int32 instancesCount = instancesCopy.size();
-	for(int32 i = 0; i < instancesCount; ++i)
+	size_t instancesCount = instancesCopy.size();
+	for(size_t i = 0; i < instancesCount; ++i)
 	{
         FMOD::Event * fEvent = instancesCopy[i];
 		FMOD_VERIFY(fEvent->setCallback(0, 0));
@@ -189,8 +189,8 @@ bool FMODSoundEvent::IsActive() const
 
 void FMODSoundEvent::SetPaused(bool paused)
 {
-	int32 instancesCount = fmodEventInstances.size();
-	for(int32 i = 0; i < instancesCount; ++i)
+	size_t instancesCount = fmodEventInstances.size();
+	for(size_t i = 0; i < instancesCount; ++i)
         fmodEventInstances[i]->setPaused(paused);
 }
     
@@ -199,8 +199,8 @@ void FMODSoundEvent::SetParameterValue(const FastName & paramName, float32 value
     paramsValues[paramName] = value;
 
 	Vector<FMOD::Event *> instancesCopy(fmodEventInstances);
-	int32 instancesCount = instancesCopy.size();
-	for(int32 i = 0; i < instancesCount; ++i)
+	size_t instancesCount = instancesCopy.size();
+	for(size_t i = 0; i < instancesCount; ++i)
 	{
         FMOD::EventParameter * param = 0;
         FMOD_VERIFY(instancesCopy[i]->getParameter(paramName.c_str(), &param));

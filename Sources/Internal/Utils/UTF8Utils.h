@@ -49,7 +49,7 @@ public:
 		\param[in] size size of buffer allocated for this string
 		\param[out] resultString result unicode string
 	 */
-	static void  EncodeToWideString(const uint8 * string, int32 size, WideString & resultString);
+	static void  EncodeToWideString(const uint8 * string, size_t size, WideString & resultString);
 
     /**
         \brief convert UTF8 string to WideString

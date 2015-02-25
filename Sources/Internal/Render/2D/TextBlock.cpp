@@ -1054,7 +1054,7 @@ void TextBlock::SplitTextToStrings(const WideString& string, Vector2 const& targ
     uint32 lastPossibleBreak = 0;
 
     uint32 fromPos = 0;
-    uint32 textLength = string.length();
+    uint32 textLength = static_cast<uint32>(string.length());
     for (uint32 pos = 0; pos < textLength; ++pos)
     {
         char16 ch = string[pos];

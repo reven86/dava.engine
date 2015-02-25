@@ -181,7 +181,7 @@ void StaticOcclusionBuildSystem::CollectEntitiesForOcclusionRecursively(Vector<E
     
 void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * messageData, void * callerData)
 {
-    if (activeIndex == -1)return; // System inactive
+    if (activeIndex == static_cast<uint32>(-1))return; // System inactive
     
     SetCamera(GetScene()->GetCurrentCamera());
 
@@ -339,7 +339,7 @@ void StaticOcclusionBuildSystem::FinishBuildOcclusion(DAVA::BaseObject *bo, void
     
 bool StaticOcclusionBuildSystem::IsInBuild() const
 {
-    return (-1 != activeIndex);
+    return (static_cast<uint32>(-1) != activeIndex);
 }
 
 uint32 StaticOcclusionBuildSystem::GetBuildStatus() const
@@ -652,7 +652,7 @@ void StaticOcclusionSystem::RemoveEntity(Entity * entity)
 
 void StaticOcclusionSystem::ClearOcclusionObjects()
 {
-    for (int32 i=0, sz = indexedRenderObjects.size(); i<sz; ++i)
+    for (size_t i=0, sz = indexedRenderObjects.size(); i<sz; ++i)
     {
         if (indexedRenderObjects[i])
             indexedRenderObjects[i]->SetStaticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX);

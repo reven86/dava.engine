@@ -133,6 +133,8 @@ namespace DAVA
 			case UIControlContentHorizontalAlignmentRight:
 				textFieldHolder->textField.textAlignment = textFieldHolder->useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentRight;
 				break;
+            default:
+                break;
 		}
     }
 	
@@ -353,8 +355,8 @@ namespace DAVA
         }
 
         ::UITextField* textField = textFieldHolder->textField;
-        int pos = [textField offsetFromPosition: textField.beginningOfDocument
-                                     toPosition: textField.selectedTextRange.start];
+        int32 pos = static_cast<int32>([textField offsetFromPosition: textField.beginningOfDocument
+                                     toPosition: textField.selectedTextRange.start]);
         return pos;
     }
 
@@ -374,7 +376,7 @@ namespace DAVA
         }
         if (pos > textLength)
         {
-            pos = textLength - 1;
+            pos = static_cast<uint32>(textLength - 1);
         }
 
         UITextPosition *start = [textField positionFromPosition:[textField beginningOfDocument] offset:pos];
