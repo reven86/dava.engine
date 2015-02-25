@@ -387,7 +387,6 @@ const FilePath & FileSystem::GetCurrentWorkingDirectory()
 
 FilePath FileSystem::GetCurrentExecutableDirectory()
 {
-    char tempDir[2048];
     FilePath currentExecuteDirectory;
 #if defined(__DAVAENGINE_WIN32__)
     ::GetModuleFileNameA( NULL, tempDir, 2048 );

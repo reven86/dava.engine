@@ -93,7 +93,8 @@ TextBlock * TextBlock::Create(const Vector2 & size)
 
 
 TextBlock::TextBlock()
-    : cacheFinalSize(0.f, 0.f)
+    : scale(1.f, 1.f)
+    , cacheFinalSize(0.f, 0.f)
     , cacheTextSize(0.f,0.f)
     , renderSize(1.f)
     , cacheDx(0)
@@ -102,7 +103,6 @@ TextBlock::TextBlock()
     , cacheOx(0)
     , cacheOy(0)
     , textureForInvalidation(NULL)
-    , scale(1.f, 1.f)
 	, angle(0.f)
 {
     font = NULL;
