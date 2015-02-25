@@ -760,7 +760,7 @@ void FileSystem::Init()
 }
 #endif
 
-bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& filePath2)
+bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& filePath2, const bool ignoreEmptyLines)
 {
     ScopedPtr<File> f1(File::Create(filePath1, File::OPEN | File::READ));
     ScopedPtr<File> f2(File::Create(filePath2, File::OPEN | File::READ));
@@ -776,20 +776,40 @@ bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& fil
     bool feof1 = false;
     bool feof2 = false;
 
+    bool checkOneMoreString = false;
     do
     {
-        tmpStr1 = f1->ReadLine();
-        tmpStr2 = f2->ReadLine();
-
+        
+        do
+        {
+            tmpStr1 = f1->ReadLine();
+        } while (!f1->IsEof() && ignoreEmptyLines && tmpStr1.empty());
+        
+        do
+        {
+            tmpStr2 = f2->ReadLine();
+        } while (!f2->IsEof() && ignoreEmptyLines && tmpStr2.empty());
+        
+         
         if (tmpStr1.size() != tmpStr2.size() && 0 != tmpStr1.compare(tmpStr2))
         {
             return false;
         }
         feof1 = f1->IsEof();
         feof2 = f2->IsEof();
-    } while (!feof1 && !feof2);
 
-    return true;
+        if (!ignoreEmptyLines)
+        {
+            checkOneMoreString = !feof1 && !feof2;
+        }
+        else
+        {
+            checkOneMoreString = !feof1 || !feof2;
+        }
+
+    } while (checkOneMoreString);
+
+    return (feof1 == feof2);
 }
 
 bool FileSystem::CompareBinaryFiles(const FilePath &filePath1, const FilePath &filePath2)

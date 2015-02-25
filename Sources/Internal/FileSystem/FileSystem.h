@@ -257,9 +257,10 @@ public:
     \brief Compares two files to check if theirs content is same. Ignores lineendings
     \param[in] filePath1 - path to one of files to compare
     \param[in] filePath2 - path to one of files to compare
+    \param[in] ignoreEmptyLines - ignores any empty lines
     \returns true if files are equals and false if not
     */
-    bool CompareTextFiles(const FilePath &filePath1, const FilePath &filePath2);
+    bool CompareTextFiles(const FilePath &filePath1, const FilePath &filePath2, const bool ignoreEmptyLines = false);
 
     /**
     \brief Compares two files to check if theirs content is same.

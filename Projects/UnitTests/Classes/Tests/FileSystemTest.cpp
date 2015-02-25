@@ -343,13 +343,14 @@ void FileSystemTest::CompareFilesTest(PerfFuncData * data)
 {
     String folder = "~doc:/FileSystemTest/";
     FilePath textFilePath = folder + "text";
+    FilePath textFilePath2 = folder + "text2";
     FilePath binaryFilePath = folder + "binary";
     File *text = File::Create(textFilePath, File::CREATE | File::WRITE);
     File *binary = File::Create(binaryFilePath, File::CREATE | File::WRITE);
     
     text->WriteLine("1");
     
-    binary->Write("1");
+    binary->Write("1\n");
     
     SafeRelease(text);
     SafeRelease(binary);
@@ -366,4 +367,53 @@ void FileSystemTest::CompareFilesTest(PerfFuncData * data)
     FileSystem::Instance()->DeleteFile(textFilePath);
     FileSystem::Instance()->DeleteFile(cpyFilePath);
     FileSystem::Instance()->DeleteFile(binaryFilePath);
+
+    text = File::Create(textFilePath, File::CREATE | File::WRITE);
+    text->WriteLine("");
+    text->WriteLine("");
+    text->WriteLine("1");
+    SafeRelease(text);
+
+    text = File::Create(textFilePath2, File::CREATE | File::WRITE);
+    text->WriteLine("1");
+    SafeRelease(text);
+    
+
+    TEST_VERIFY(!FileSystem::Instance()->CompareTextFiles(textFilePath, textFilePath2));
+    TEST_VERIFY(!FileSystem::Instance()->CompareBinaryFiles(textFilePath, textFilePath2));
+
+    FileSystem::Instance()->DeleteFile(textFilePath);
+    FileSystem::Instance()->DeleteFile(textFilePath2);
+
+    text = File::Create(textFilePath, File::CREATE | File::WRITE);
+    text->WriteLine("1");
+
+    SafeRelease(text);
+
+    text = File::Create(textFilePath2, File::CREATE | File::WRITE);
+    text->WriteLine("1");
+    SafeRelease(text);
+
+
+    TEST_VERIFY(FileSystem::Instance()->CompareTextFiles(textFilePath, textFilePath2));
+    TEST_VERIFY(FileSystem::Instance()->CompareBinaryFiles(textFilePath, textFilePath2));
+
+    FileSystem::Instance()->DeleteFile(textFilePath);
+    FileSystem::Instance()->DeleteFile(textFilePath2);
+
+    text = File::Create(textFilePath, File::CREATE | File::WRITE);
+
+    text->Write("1\r\n");
+    SafeRelease(text);
+
+    text = File::Create(textFilePath2, File::CREATE | File::WRITE);
+    text->Write("1\n");
+    SafeRelease(text);
+
+
+     TEST_VERIFY(FileSystem::Instance()->CompareTextFiles(textFilePath, textFilePath2, false));
+    TEST_VERIFY(!FileSystem::Instance()->CompareBinaryFiles(textFilePath, textFilePath2));
+
+    FileSystem::Instance()->DeleteFile(textFilePath);
+    FileSystem::Instance()->DeleteFile(textFilePath2);
 }

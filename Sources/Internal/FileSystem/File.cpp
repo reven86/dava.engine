@@ -261,16 +261,28 @@ String File::ReadLine()
         uint32 actuallyRead = Read(&nextChar, 1);
         if (actuallyRead != 1)break;
 
-        if (nextChar == '\n')break;
-        if (nextChar == 0)break;
-
-        if (nextChar == '\r')
+        if (0 == nextChar || '\r' == nextChar || '\n' == nextChar)
         {
-            if (Read(&nextChar, 1) && nextChar != '\n')
+            int32 seek = -1;
+            if (1 == Read(&nextChar, 1) && nextChar == '\r')
+            {
+                seek -= 1;
+            }
+
+            if (1 == Read(&nextChar, 1) && nextChar == '\n')
+            {
+                seek -= 1;
+            }
+
+            if (1 == Read(&nextChar, 1))
             {
                 Seek(-1, File::SEEK_FROM_CURRENT);
             }
-            break;
+
+            if (0 > seek)
+            {
+                break;
+            }
         }
         destinationString += nextChar;
     }
