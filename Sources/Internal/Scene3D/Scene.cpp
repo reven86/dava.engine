@@ -1079,7 +1079,7 @@ void Scene::Load(KeyedArchive * archive)
 }*/
     
 
-SceneFileV2::eError Scene::Save(const DAVA::FilePath & pathname, bool saveForGame /*= false*/)
+SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath & pathname, bool saveForGame /*= false*/)
 {
     ScopedPtr<SceneFileV2> file(new SceneFileV2());
 	file->EnableDebugLog(false);
