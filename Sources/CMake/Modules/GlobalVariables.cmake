@@ -69,11 +69,15 @@ endif  ()
 
 if     ( ANDROID )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -Wno-invalid-offsetof" )
-    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -Wno-invalid-offsetof -frtti" )    
+    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -Wno-invalid-offsetof -frtti" )
+
+    if( WARNINGS_AS_ERRORS )
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+    endif  ()
     
 elseif ( IOS     ) 
-    set( CMAKE_C_FLAGS    "-mno-thumb"  )
-    set( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden" )
+    set( CMAKE_C_FLAGS    ""  )
+    set( CMAKE_CXX_FLAGS  "-fvisibility=hidden" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
 
@@ -91,6 +95,10 @@ elseif ( IOS     )
     set( CMAKE_MACOSX_BUNDLE YES )
     set( CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer" )
 
+    if( WARNINGS_AS_ERRORS )
+    	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+    endif ()
+
 elseif ( MACOS )
     set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
@@ -101,7 +109,7 @@ elseif ( WIN32 )
     set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP" ) 
     set ( CMAKE_EXE_LINKER_FLAGS_RELEASE "/ENTRY:mainCRTStartup" )
 
-    if( WARNINGS_AS_ERRORS_WIN32 )
+    if( WARNINGS_AS_ERRORS )
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
     endif  ()
 
