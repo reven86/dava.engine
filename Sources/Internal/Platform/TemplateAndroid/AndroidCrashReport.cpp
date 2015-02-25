@@ -36,7 +36,7 @@
 #include <unistd.h>
 #include <cstdio>
 #include <cstring>
-
+#include <jni.h>
 #include "ExternC/AndroidLayer.h"
 
 #include "BacktraceAndroid/BacktraceInterface.h"
@@ -54,7 +54,7 @@ const char * AndroidCrashReport::teamcityBuildNamePrototype = "CrashApp::Crashed
 const char * AndroidCrashReport::teamcityBuildNamePrototypeEnd = "()";
 const char * AndroidCrashReport::teamcityBuildNamePrototypePlaceHolder = "FFFFFFFFFF";
 char AndroidCrashReport::functionString[AndroidCrashReport::maxStackSize][AndroidCrashReport::functionStringSize];
-
+JniCrashReporter * AndroidCrashReport::crashReporter = nullptr;
 static int fatalSignals[] = {
     SIGABRT,
     SIGBUS,
@@ -103,22 +103,37 @@ void ToHex(T integer, char* buffPtr, size_t buffSize, bool finishWithNullChar)
 static int fatalSignalsCount = (sizeof(fatalSignals) / sizeof(fatalSignals[0]));
 
 stack_t AndroidCrashReport::s_sigstk;
-
-JniCrashReporter::JniCrashReporter()
-    : jniCrashReporter("com/dava/framework/JNICrashReporter")
-    , jniString("java/lang/String")
+jclass AndroidCrashReport::classID;
+jclass AndroidCrashReport::stringID;
+jmethodID AndroidCrashReport::mid;
+JniCrashReporter::JniCrashReporter(JNIEnv* env)
 {
-    throwJavaExpetion = jniCrashReporter.GetStaticMethod<void, jstringArray, jstringArray, jintArray>("ThrowJavaExpetion");
+    if(env == nullptr)
+        env = JNI::GetEnv();
+    
+    env->ExceptionClear();
+    jclass tmpClassID = env->FindClass("com/dava/framework/JNICrashReporter");
+    classID = (jclass)env->NewGlobalRef(tmpClassID);
+    
+   
+    jclass tmpStringID = env->FindClass( "java/lang/String");
+    stringID = (jclass)env->NewGlobalRef(tmpStringID);
+    mid = env->GetStaticMethodID( classID,"ThrowJavaExpetion", "([Ljava/lang/String;[Ljava/lang/String;[I)V");
+  
+    env->DeleteLocalRef(tmpClassID);
+    env->DeleteLocalRef(tmpStringID);
 }
 
 void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
 {
+    LOGE("Fabric handeling crashes - 7");
     JNIEnv *env = JNI::GetEnv();
-
-    jobjectArray jModuleArray = env->NewObjectArray(chashSteps.size(), jniString, 0);
-    jobjectArray jFunctionArray = env->NewObjectArray(chashSteps.size(), jniString, 0);
+    //env->ExceptionClear();
+    LOGE("Fabric handeling crashes - 8");
+    jobjectArray jModuleArray = env->NewObjectArray(chashSteps.size(), stringID, 0);
+    jobjectArray jFunctionArray = env->NewObjectArray(chashSteps.size(), stringID, 0);
     jintArray jFileLineArray = env->NewIntArray(chashSteps.size());
-
+    LOGE("Fabric handeling crashes - 9");
     int* fileLines = new int[chashSteps.size()];
     for (uint i = 0; i < chashSteps.size(); ++i)
     {
@@ -128,17 +143,22 @@ void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
     }
     env->SetIntArrayRegion(jFileLineArray, 0, chashSteps.size(), fileLines);
     LOGE("Fabric handeling crashes - 5");
-    throwJavaExpetion(jModuleArray, jFunctionArray, jFileLineArray);
-
-    delete [] fileLines;
+   // env->ExceptionClear();
+    LOGE("Fabric handeling crashes - 5.5");
+   // env->ExceptionClear();
+    env->CallStaticVoidMethod(classID,mid,jModuleArray,jFunctionArray,jFileLineArray);
+    //throwJavaExpetion(jModuleArray, jFunctionArray, jFileLineArray);
+    LOGE("Fabric handeling crashes - 6");
+   // delete [] fileLines;
 }
 
 
 
 static struct sigaction *sa_old;
-void AndroidCrashReport::Init()
+void AndroidCrashReport::Init(JNIEnv* env)
 {
 #if defined(CRASH_HANDLER_CUSTOMSIGNALS)
+    crashReporter = new JniCrashReporter(env);
     //creating custom signal handler
     //this is legacy implementation and uses some asynch unsafe functions
     BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
@@ -236,12 +256,12 @@ void AndroidCrashReport::OnStackFrame(pointer_size addr)
 }
 void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void *sigcontext)
 {
-    /*if(signal<SIG_NUMBER_MAX)
+    if(signal<SIG_NUMBER_MAX)
     {
         sa_old[signal].sa_sigaction(signal, siginfo, sigcontext);
-    }*/
+    }
     LOGE("Fabric handeling crash!");
-    alarm(50);
+    alarm(500);
     //kill the app if it freezes
     
     BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
@@ -259,9 +279,9 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
         crashSteps.push_back(step);
     }
     LOGE("Fabric handeling crashes - 2");
-    JniCrashReporter crashReport;
+   // JniCrashReporter crashReport;
     LOGE("Fabric handeling crashes - 3");
-    crashReport.ThrowJavaExpetion(crashSteps);
+    crashReporter->ThrowJavaExpetion(crashSteps);
 }
 void AndroidCrashReport::Unload()
 {

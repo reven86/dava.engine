@@ -50,20 +50,20 @@ public:
         const char * function;
         int32 fileLine;
     };
-    JniCrashReporter();
+    JniCrashReporter(JNIEnv* env = nullptr);
     void ThrowJavaExpetion(const Vector<CrashStep>& chashSteps);
        
 private:
-    JNI::JavaClass jniCrashReporter;
-    Function<void (jstringArray, jstringArray, jintArray)> throwJavaExpetion;
-
-    JNI::JavaClass jniString;
+    static jclass classID;
+    static jclass stringID;
+    static jmethodID mid;
+  
 };
     
 class AndroidCrashReport
 {
 public:
-    static void Init();
+    static void Init(JNIEnv* env);
     static void ThrowExeption(const String& message);
     static void Unload();
 
@@ -85,6 +85,7 @@ private:
     
     static char * teamcityBuildName;
     static char functionString[maxStackSize][functionStringSize];
+    static JniCrashReporter * crashReporter;
 };
 
 

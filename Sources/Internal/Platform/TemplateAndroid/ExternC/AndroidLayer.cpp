@@ -119,7 +119,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 
 	androidDelegate = new AndroidDelegate(vm);
 
-	DAVA::AndroidCrashReport::Init();
+	 DAVA::AndroidCrashReport::Init(env);
 
 	return JNI_VERSION_1_6;
 }
@@ -142,6 +142,7 @@ void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
 	{
 		DAVA::Logger::Warning("[InitApplication] CoreAndroidPlatform has been created");
 	}
+   
 }
 
 void DeinitApplication()
