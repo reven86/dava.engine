@@ -23,6 +23,7 @@ public:
     PackageControlsNode *FindPackageControlsNodeByName(const DAVA::String &name) const;
 
     virtual int GetFlags() const override;
+    bool CanInsertImportedPackage() const;
     
     void Serialize(PackageSerializer *serializer) const;
     void Serialize(PackageSerializer *serializer, const DAVA::Set<PackageRef*> &packageRefs) const;
@@ -30,7 +31,5 @@ public:
 private:
     DAVA::Vector<PackageControlsNode*> packageControlsNode;
 };
-
-
 
 #endif //__UI_EDITOR_IMPORTED_PACKAGES_NODE_H__

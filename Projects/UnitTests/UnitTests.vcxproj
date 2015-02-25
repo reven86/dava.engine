@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -24,6 +24,7 @@
     <ClInclude Include="Classes\Tests\DateTimeTest.h" />
     <ClInclude Include="Classes\Tests\FileListTest.h" />
     <ClInclude Include="Classes\Tests\FileSystemTest.h" />
+    <ClInclude Include="Classes\Tests\FormatsTest.h" />
     <ClInclude Include="Classes\Tests\FunctionBindSingalTest.h" />
     <ClInclude Include="Classes\Tests\HashMapTest.h" />
     <ClInclude Include="Classes\Tests\ImageSizeTest.h" />
@@ -52,6 +53,7 @@
     <ClCompile Include="Classes\Tests\DateTimeTest.cpp" />
     <ClCompile Include="Classes\Tests\FileListTest.cpp" />
     <ClCompile Include="Classes\Tests\FileSystemTest.cpp" />
+    <ClCompile Include="Classes\Tests\FormatsTest.cpp" />
     <ClCompile Include="Classes\Tests\FunctionBindSingalTest.cpp" />
     <ClCompile Include="Classes\Tests\HashMapTest.cpp" />
     <ClCompile Include="Classes\Tests\ImageSizeTest.cpp" />

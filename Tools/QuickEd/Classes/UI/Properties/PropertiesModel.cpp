@@ -154,13 +154,13 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
             
         case Qt::FontRole:
             {
-                if (property->IsReplaced())
+                if (property->IsReplaced() || property->IsReadOnly())
                 {
                     QFont myFont;
-                    myFont.setBold(true);
+                    myFont.setBold(property->IsReplaced());
+                    myFont.setItalic(property->IsReadOnly());
                     return myFont;
                 }
-//                return QVariant();
             }
             break;
     }
@@ -174,6 +174,9 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
         return false;
 
     BaseProperty *property = static_cast<BaseProperty*>(index.internalPointer());
+    if (property->IsReadOnly())
+        return false;
+    
     switch (role)
     {
     case Qt::CheckStateRole:
@@ -222,7 +225,7 @@ Qt::ItemFlags PropertiesModel::flags(const QModelIndex &index) const
     
     BaseProperty* prop = static_cast<BaseProperty*>(index.internalPointer());
     Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
-    if (prop->GetType() == BaseProperty::TYPE_ENUM || prop->GetType() == BaseProperty::TYPE_FLAGS || prop->GetType() == BaseProperty::TYPE_VARIANT)
+    if (!prop->IsReadOnly() && (prop->GetType() == BaseProperty::TYPE_ENUM || prop->GetType() == BaseProperty::TYPE_FLAGS || prop->GetType() == BaseProperty::TYPE_VARIANT))
         flags |= Qt::ItemIsEditable;
     return flags;
 }

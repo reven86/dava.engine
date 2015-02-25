@@ -29,6 +29,8 @@
 
 #include "IconHelper.h"
 
+using namespace DAVA;
+
 QString IconHelper::GetIconPathForClassName(const QString &className)
 {
 	QString s = ":/Icons/QtControlIcons/" + className.toLower() + ".png";
