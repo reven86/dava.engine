@@ -21,5 +21,7 @@ set                   ( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
 add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/ResourceEditor" ${CMAKE_CURRENT_BINARY_DIR}/ResourceEditor )
 add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/QuickEd"        ${CMAKE_CURRENT_BINARY_DIR}/QuickEd )
 add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/UIEditor"       ${CMAKE_CURRENT_BINARY_DIR}/UIEditor )
+add_subdirectory      ( "${DAVA_ROOT_DIR}/Projects/UnitTests"   ${CMAKE_CURRENT_BINARY_DIR}/UnitTests )
+
 
 
