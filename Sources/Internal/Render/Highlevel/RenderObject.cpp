@@ -37,7 +37,7 @@ namespace DAVA
 {
 
     
-static const int32 DEFAULT_FLAGS = RenderObject::VISIBLE | RenderObject::VISIBLE_STATIC_OCCLUSION;
+static const int32 DEFAULT_FLAGS = RenderObject::VISIBLE | RenderObject::VISIBLE_STATIC_OCCLUSION | RenderObject::VISIBLE_QUALITY;
 
 RenderObject::RenderObject()
     :   startClippingPlane(0)

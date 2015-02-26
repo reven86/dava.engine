@@ -115,7 +115,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 			}
 		}
 		
-		overridedGamepadKeys = overridedKeys.toArray(new Integer[0]);
+		overridedGamepadKeys = overridedKeys.toArray(new Integer[overridedKeys.size()]);
 	}
 	
     @Override
