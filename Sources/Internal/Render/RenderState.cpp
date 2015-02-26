@@ -236,9 +236,7 @@ void RenderState::Flush(RenderState * hardwareState) const
         if(InvalidUniqueHandle == hardwareState->textureState)
         {
             const TextureStateData& currentTextureData = RenderManager::Instance()->GetTextureState(textureState);
-            uint32 minIndex = currentTextureData.minmaxTextureIndex & 0x000000FF;
-            uint32 maxIndex = (currentTextureData.minmaxTextureIndex & 0x0000FF00) >> 8;
-            for(size_t i = minIndex; i <= maxIndex; ++i)
+            for (size_t i = 0; i < MAX_TEXTURE_COUNT; ++i)
             {
                 SetTextureLevelInHW(i, currentTextureData.textures[i]);
             }

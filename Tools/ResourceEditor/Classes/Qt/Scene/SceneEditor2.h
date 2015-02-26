@@ -213,7 +213,6 @@ protected:
 
 	bool wasChanged; //deprecated
     
-    void Setup2DDrawing();
     void Setup3DDrawing();
 
 private:

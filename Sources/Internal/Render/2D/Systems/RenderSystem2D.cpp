@@ -373,7 +373,7 @@ void RenderSystem2D::SetSpriteClipping(bool clipping)
 
 bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState * drawState)
 {
-    if (RenderManager::Instance()->GetRenderTarget() != 0)
+    if (RenderManager::Instance()->GetRenderTarget() != nullptr)
         return true;
 
     Rect clipRect = currentClip;

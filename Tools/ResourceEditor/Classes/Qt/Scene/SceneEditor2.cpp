@@ -719,11 +719,6 @@ void SceneEditor2::MarkAsChanged()
 	}
 }
 
-void SceneEditor2::Setup2DDrawing()
-{
-    RenderSystem2D::Instance()->Setup2DMatrices();
-}
-
 void SceneEditor2::Setup3DDrawing()
 {
     if (drawCamera)

@@ -305,7 +305,7 @@ void RenderManager::SetViewport(const Rect & rect)
 {
     Rect viewportRect = viewport = rect;
 
-    if (currentRenderTarget == 0)
+    if (currentRenderTarget == nullptr)
     {
         viewportRect.y = frameBufferHeight - viewportRect.y - viewportRect.dy;
     }
@@ -478,7 +478,7 @@ void RenderManager::SetClip(const Rect &rect)
 	int32 width = x2 - x;
 	int32 height = y2 - y;
     
-    if (currentRenderTarget == 0)
+    if (currentRenderTarget == nullptr)
     {
         y = frameBufferHeight - y - height;
     }
