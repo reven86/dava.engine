@@ -80,9 +80,10 @@ public class JNITextField {
     {
         final public int id;
         public InputFilter maxLengthFilter = null;
-        boolean visible = false; 
+        boolean logicVisible = false; 
         
         volatile boolean isRenderToTexture = false;
+        // fix for recursive call onDraw on render to texture
         volatile boolean stopRecursion = false;
         Bitmap bitmapCache = null;
         
@@ -98,9 +99,10 @@ public class JNITextField {
         
         public void setRenderToTexture(boolean value)
         {
+            Log.v(TAG, "setRenderToTexture value = " + value);
             isRenderToTexture = value;
-            invalidate();
             restoreVisibility();
+            updateStaticTesture();
         }
         
         public boolean isRenderToTexture()
@@ -134,110 +136,120 @@ public class JNITextField {
 
             if (isRenderToTexture && !stopRecursion) {
                 stopRecursion = true;
-                Bitmap bitmap = getDrawingCache(); //renderToBitmap();
+                renderToTexture();
                 stopRecursion = false;
-                if (bitmap == null)
-                {
-                    throw new RuntimeException("null ptr");
-                }
-
-                if (bitmap != null) {
-                    if (pixels == null 
-                        || width != bitmap.getWidth()
-                        || height != bitmap.getHeight()) {
-                        width = bitmap.getWidth();
-                        height = bitmap.getHeight();
-                        pixels = new int[width * height];
-                    }
-                    // copy ARGB pixels values into our buffer
-                    bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-                }
-                JNIActivity activity = JNIActivity.GetActivity();
-                UpdateTexture task = new UpdateTexture(id, pixels, width, height);
-                activity.PostEventToGL(task);
             }
         }
-        
-//        private Bitmap renderToBitmap() {
-//
-//            if (bitmapCache != null) {
-//                bitmapCache.recycle();
-//            }
-//
-//            // we need to do it every time because this only works with
-//            // scrolling
-//            setDrawingCacheEnabled(true);
-//            buildDrawingCache();
-//            // Returns an immutable bitmap from the source bitmap.
-//            // The new bitmap may be the same object as source, or a copy may
-//            // have been made. It is initialized with the same density as the
-//            // original bitmap.
-//            Bitmap cacheImage = getDrawingCache();
-//            if (cacheImage != null) {
-//                bitmapCache = Bitmap.createBitmap(cacheImage);
-//            }
-//
-//            setDrawingCacheEnabled(false);
-//            return bitmapCache;
-//        };
+
+        private void renderToTexture() {
+            assert true == stopRecursion;
+            
+            Bitmap bitmap = getDrawingCache(); //renderToBitmap();
+            if (bitmap == null) // could be if onDraw not called yet
+            {
+                
+                bitmap = Bitmap.createBitmap( getLayoutParams().width, getLayoutParams().height, Bitmap.Config.ARGB_8888);
+                Canvas c = new Canvas(bitmap);
+                layout(getLeft(), getTop(), getRight(), getBottom());
+                draw(c);
+
+                
+                
+//                if (getVisibility() != View.INVISIBLE)
+//                {
+//                    Log.e(TAG, "render into texture but visibilite not INVISIBLE");
+//                }
+//                invalidate();
+//                buildDrawingCache();
+//                bitmap = getDrawingCache();
+//                if (bitmap == null)
+//                {
+//                    Log.e(TAG, "can't draw first time TextField");
+//                    return;
+//                }
+            }
+
+            if (bitmap != null) {
+                if (pixels == null 
+                    || width != bitmap.getWidth()
+                    || height != bitmap.getHeight()) {
+                    width = bitmap.getWidth();
+                    height = bitmap.getHeight();
+                    pixels = new int[width * height];
+                }
+                // copy ARGB pixels values into our buffer
+                bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+            }
+            JNIActivity activity = JNIActivity.GetActivity();
+            UpdateTexture task = new UpdateTexture(id, pixels, width, height);
+            activity.PostEventToGL(task);
+        }
         
         public void setVisible(boolean value) {
             // remember visibility to restore recreate view later
-            visible = value;
+            logicVisible = value;
             
-            int nextVisibility = value ? View.VISIBLE : View.INVISIBLE;
             int currentVisibility = getVisibility();
 
-            if (View.VISIBLE == nextVisibility) {
-                if (isRenderToTexture) {
-                    switch (currentVisibility) {
-                    case View.GONE:
-                        setVisibility(View.VISIBLE);
-                        break;
-                    case View.VISIBLE:
-                        break;
-                    case View.INVISIBLE:
-                        setVisibility(View.GONE);
-                        setVisibility(View.VISIBLE);
-                        break;
-                    default:
-                        break;
-                    }
-                } else {
-                    if (View.INVISIBLE == currentVisibility) {
-                        setVisibility(View.GONE);
-                    }
-                    setVisibility(View.VISIBLE);
-                }
-            } else { // INVISIBLE
-                if (isRenderToTexture) {
-                    switch (currentVisibility) {
-                    case View.GONE:
-                        setVisibility(View.INVISIBLE);
-                        break;
-                    case View.VISIBLE:
-                        setVisibility(View.GONE);
-                        setVisibility(View.INVISIBLE);
-                        break;
-                    case View.INVISIBLE:
-                        break;
-                    default:
-                        break;
-                    }
-                } else {
+            if (isRenderToTexture)
+            {
+                switch (currentVisibility) {
+                case View.GONE:
+                    setVisibility(View.INVISIBLE);
+                    break;
+                case View.VISIBLE:
                     setVisibility(View.GONE);
+                    setVisibility(View.INVISIBLE);
+                    break;
+                case View.INVISIBLE:
+                    break;
+                default:
+                    break;
                 }
-            } // end if VISIBLE
+            } 
+            else
+            {
+                switch (currentVisibility) {
+                case View.GONE:
+                    setVisibility(View.VISIBLE);
+                    break;
+                case View.VISIBLE:
+                    if (!logicVisible)
+                    {
+                        setVisibility(View.GONE);
+                    }
+                    break;
+                case View.INVISIBLE:
+                    if (logicVisible)
+                    {
+                        setVisibility(View.GONE);
+                        setVisibility(View.VISIBLE);
+                    }
+                    break;
+                default:
+                    break;
+                }
+            }
         }
         
         public boolean isVisible()
         {
-            return visible;
+            return logicVisible;
         }
         
         public void restoreVisibility()
         {
-            setVisible(visible);
+            setVisible(logicVisible);
+        }
+        
+        public void updateStaticTesture()
+        {
+            if (isRenderToTexture && !stopRecursion)
+            {
+                stopRecursion = true;
+                renderToTexture();
+                stopRecursion = false;
+            }
         }
     }
 
@@ -758,8 +770,10 @@ public class JNITextField {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                final EditText text = GetTextField(id);
+                final TextField text = GetTextField(id);
+                Log.v(TAG, "set text:" + string);
                 text.setText(string);
+                text.updateStaticTesture();
             }
         });
     }
@@ -769,9 +783,10 @@ public class JNITextField {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                final EditText text = GetTextField(id);
+                final TextField text = GetTextField(id);
                 text.setTextColor(Color.argb((int) (255 * a), (int) (255 * r),
                         (int) (255 * g), (int) (255 * b)));
+                text.updateStaticTesture();
             }
         });
     }
@@ -780,8 +795,9 @@ public class JNITextField {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                final EditText text = GetTextField(id);
+                final TextField text = GetTextField(id);
                 text.setTextSize(TypedValue.COMPLEX_UNIT_PX, (int) size);
+                text.updateStaticTesture();
             }
         });
     }
@@ -790,7 +806,7 @@ public class JNITextField {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                final EditText text = GetTextField(id);
+                final TextField text = GetTextField(id);
                 if (isPassword) {
                     text.setInputType(EditorInfo.TYPE_CLASS_TEXT
                             | EditorInfo.TYPE_TEXT_VARIATION_PASSWORD);
@@ -798,6 +814,7 @@ public class JNITextField {
                     text.setInputType(text.getInputType()
                             & ~(EditorInfo.TYPE_TEXT_VARIATION_PASSWORD));
                 }
+                text.updateStaticTesture();
             }
         });
     }
@@ -806,7 +823,7 @@ public class JNITextField {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                EditText text = GetTextField(id);
+                TextField text = GetTextField(id);
                 int gravity = text.getGravity();
                 if (useRtlAlign) {
                     text.setGravity(gravity | Gravity.RELATIVE_LAYOUT_DIRECTION);
@@ -814,6 +831,7 @@ public class JNITextField {
                     text.setGravity(gravity
                             & ~Gravity.RELATIVE_LAYOUT_DIRECTION);
                 }
+                text.updateStaticTesture();
             }
         });
     }
@@ -822,7 +840,7 @@ public class JNITextField {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                EditText text = GetTextField(id);
+                TextField text = GetTextField(id);
                 boolean isRelative = (text.getGravity() & Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK) > 0;
 
                 int gravityH = Gravity.LEFT;
@@ -844,6 +862,7 @@ public class JNITextField {
                     gravityH |= Gravity.RELATIVE_LAYOUT_DIRECTION;
                 }
                 text.setGravity(gravityH | gravityV);
+                text.updateStaticTesture();
             }
         });
     }
