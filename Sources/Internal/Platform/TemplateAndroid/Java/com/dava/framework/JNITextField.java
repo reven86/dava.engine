@@ -31,6 +31,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -91,10 +92,15 @@ public class JNITextField {
         int width = 0;
         int height = 0;
         
-        TextField(int id, Context ctx)
+        int viewWidth;
+        int viewHeight;
+        
+        TextField(int id, Context ctx, int startWidth, int startHeight)
         {
             super(ctx);
             this.id = id;
+            viewWidth = startWidth;
+            viewHeight = startHeight;
         }
         
         public void setRenderToTexture(boolean value)
@@ -144,24 +150,44 @@ public class JNITextField {
         private void renderToTexture() {
             assert true == stopRecursion;
             
+            boolean destroyBitmap = false;
+            
             Bitmap bitmap = getDrawingCache(); //renderToBitmap();
             if (bitmap == null) // could be if onDraw not called yet
             {
-                
-                bitmap = Bitmap.createBitmap( getLayoutParams().width, getLayoutParams().height, Bitmap.Config.ARGB_8888);
+//                
+//                bitmap = Bitmap.createBitmap( getLayoutParams().width, getLayoutParams().height, Bitmap.Config.ARGB_8888);
+//                Canvas c = new Canvas(bitmap);
+//                layout(getLeft(), getTop(), getRight(), getBottom());
+//                draw(c);
+//----------------------------------------
+                if (viewHeight == 0 || viewHeight == 0)
+                {
+                    // TextField not fully constructed yet
+                    return;
+                }
+                int specWidth = MeasureSpec.makeMeasureSpec(viewWidth, MeasureSpec.AT_MOST);
+                int specHeight = MeasureSpec.makeMeasureSpec(viewHeight, MeasureSpec.AT_MOST);
+                measure(specWidth, specHeight);
+                int measuredWidth = getMeasuredWidth();
+                int measuredHeight = getMeasuredHeight();
+                bitmap = Bitmap.createBitmap(measuredWidth, measuredHeight, Bitmap.Config.ARGB_8888);
                 Canvas c = new Canvas(bitmap);
-                layout(getLeft(), getTop(), getRight(), getBottom());
+                layout(0, 0, measuredWidth, measuredHeight);
                 draw(c);
 
+                destroyBitmap = true;
+//------------------------------------------
                 
-                
-//                if (getVisibility() != View.INVISIBLE)
-//                {
-//                    Log.e(TAG, "render into texture but visibilite not INVISIBLE");
-//                }
-//                invalidate();
+//                int prevVisibility = getVisibility();
+//                setVisibility(View.VISIBLE);
+//                
+//                setDrawingCacheEnabled(false);
+//                setDrawingCacheEnabled(true);
 //                buildDrawingCache();
 //                bitmap = getDrawingCache();
+//                
+//                setVisibility(prevVisibility);
 //                if (bitmap == null)
 //                {
 //                    Log.e(TAG, "can't draw first time TextField");
@@ -179,6 +205,11 @@ public class JNITextField {
                 }
                 // copy ARGB pixels values into our buffer
                 bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+                
+                if (destroyBitmap)
+                {
+                    bitmap.recycle();
+                }
             }
             JNIActivity activity = JNIActivity.GetActivity();
             UpdateTexture task = new UpdateTexture(id, pixels, width, height);
@@ -471,11 +502,13 @@ public class JNITextField {
                     Log.e(TAG, String.format("Control with id:%d already created", id));
                     return;
                 }
+                int viewWidth = Math.round(dx);
+                int viewHeight = Math.round(dy);
                 
-                final TextField text = new TextField(id, activity);
+                final TextField text = new TextField(id, activity, viewWidth, viewHeight);
 
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                        Math.round(dx), Math.round(dy));
+                        viewWidth, viewHeight);
                 params.leftMargin = Math.round(x);
                 params.topMargin = Math.round(y);
                 params.gravity = Gravity.LEFT | Gravity.TOP;
@@ -752,7 +785,7 @@ public class JNITextField {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                EditText editText = GetTextField(id);
+                TextField editText = GetTextField(id);
                 
                 FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) editText
                         .getLayoutParams();
@@ -760,6 +793,9 @@ public class JNITextField {
                 params.topMargin = Math.round(y);
                 params.width = Math.round(dx);
                 params.height = Math.round(dy);
+                
+                editText.viewWidth = params.width;
+                editText.viewHeight = params.height;
                 
                 editText.setLayoutParams(params);
             }
