@@ -227,13 +227,15 @@ uint32 File::ReadString(String & destinationString)
 uint32 File::ReadLine(void * pointerToData, uint32 bufferSize)
 {
 	uint8 *inPtr = (uint8*)pointerToData;
-	while(!IsEof())
+    while (0 < bufferSize && !IsEof())
 	{
         uint8 nextChar;
         if (GetNextChar(&nextChar))
         {
             *inPtr = nextChar;
             inPtr++;
+            bufferSize--;
+            DVASSERT_MSG(0 < bufferSize, "Small buffer!!!");
         }
         else
         {
