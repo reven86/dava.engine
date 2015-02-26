@@ -75,7 +75,7 @@ bool SceneProcessor::Execute(DAVA::Scene *currentScene)
                 newScene->AddNode(root);
                 DVASSERT(root->GetChildrenCount() == 1);
                 entityProcessor->ProcessEntity(root->GetChild(0), currentEntity->GetName(), true);
-                newScene->Save(referenceToOwner);
+                newScene->SaveScene(referenceToOwner);
                 SafeRelease(newScene);
             }
         }

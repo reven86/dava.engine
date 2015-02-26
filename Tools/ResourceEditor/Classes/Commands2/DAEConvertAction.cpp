@@ -71,7 +71,7 @@ void DAEConvertAction::ConvertFromSceToSc2() const
     
     
     FilePath sc2Path = FilePath::CreateWithNewExtension(daePath, ".sc2");
-    scene->Save(sc2Path);
+    scene->SaveScene(sc2Path);
     scene->Release();
 }
 
