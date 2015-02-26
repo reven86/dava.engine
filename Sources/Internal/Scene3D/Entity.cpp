@@ -111,13 +111,7 @@ void Entity::DetachComponent(Vector<Component *>::iterator & it)
         scene->UnregisterComponent (this, c);
     }
     
-    // it might be changed in UnregisterComponent, refresh them
-    it = std::find(components.begin(), components.end(), c);
-
-    if (it != components.end())
-    {
-        components.erase(it);
-    }
+    components.erase(it);
     UpdateFamily();
     c->SetEntity(nullptr);
 }
