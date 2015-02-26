@@ -169,8 +169,12 @@ public:
 		\param[in] bufferSize size of [pointerToData] buffer
 		\return number of bytes actually read
 	*/
-	virtual uint32 ReadLine(void * destinationBuffer, uint32 bufferSize);
-	
+    uint32 ReadLine(void * destinationBuffer, uint32 bufferSize);
+
+    /**
+    \brief Read one line from text file without line endings
+     */
+    String ReadLine();
 	
 	/**
 		\brief Read string line from file to destination buffer with destinationBufferSize
@@ -205,7 +209,11 @@ public:
 	virtual bool IsEof();
 	
     static String GetModificationDate(const FilePath & filePathname);
-    
+
+private:
+    // reads 1 byte from current line in the file and sets it in next char if it is not a line ending char. Returns true if read was successful.
+    bool GetNextChar(uint8 *nextChar);
+
 private:
 	FILE	*	file;
 	uint32		size;
