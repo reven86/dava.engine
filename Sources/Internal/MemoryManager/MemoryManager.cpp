@@ -35,18 +35,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined(__DAVAENGINE_WIN32__)
 #include <windows.h>
 #include <dbghelp.h>
-
-#define NOINLINE    __declspec(noinline)
-
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <execinfo.h>
 #include <dlfcn.h>
 #include <cxxabi.h>
-
-#define NOINLINE    __attribute__((noinline))
 #elif defined(__DAVAENGINE_ANDROID__)
-#define NOINLINE    __attribute__((noinline))
-
 #endif
 
 #include "Debug/DVAssert.h"
@@ -62,31 +55,19 @@ struct MemoryManager::Backtrace
     void* frames[16];
 };
 
-/*struct MemoryManager::MemoryBlock
-{
-    size_t mark;            // Mark to distinguish profiled memory blocks
-    size_t pool;            // Allocation pool block belongs to
-    MemoryBlock* prev;      // Pointer to previous block
-    MemoryBlock* next;      // Pointer to next block
-    size_t allocByApp;      // Size requested by application
-    size_t allocTotal;      // Total allocated size
-    size_t orderNo;         // Block order number
-    size_t padding;
-    Backtrace backtrace;
-};*/
-
 struct MemoryManager::MemoryBlock
 {
-    //size_t mark;            // Mark to distinguish profiled memory blocks
-    size_t pool;            // Allocation pool block belongs to
+    Backtrace backtrace;
     MemoryBlock* prev;      // Pointer to previous block
     MemoryBlock* next;      // Pointer to next block
+    void* realBlockStart;   // Pointer to real block start
+    size_t backtraceHash;
     size_t allocByApp;      // Size requested by application
     size_t allocTotal;      // Total allocated size
     size_t orderNo;         // Block order number
-    size_t padding;
-    Backtrace backtrace;
-    size_t mark;            // Mark to distinguish profiled memory blocks
+    size_t pool;            // Allocation pool block belongs to
+    size_t mark;            // Mark to distinguish tracked memory blocks
+    size_t padding[3];
 };
 
 MMItemName MemoryManager::tagNames[MAX_TAG_COUNT] = {
@@ -139,13 +120,10 @@ void MemoryManager::InstallTagCallback(TagCallback callback, void* arg)
     mm->callbackArg = arg;
 }
 
-NOINLINE void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
+DAVA_NOINLINE void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
 {
-    if (poolIndex == 0)
-        return MallocHook::Malloc(size);
-        
-    // TODO: what should be done when size is 0
-    assert(poolIndex < MAX_ALLOC_POOL_COUNT);
+    assert(size > 0);
+    assert(IsInternalAllocationPool(poolIndex) || poolIndex < MAX_ALLOC_POOL_COUNT);
 
     size_t totalSize = sizeof(MemoryBlock) + size;
     if (totalSize & (BLOCK_ALIGN - 1))
@@ -159,12 +137,72 @@ NOINLINE void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
         block->pool = poolIndex;
         block->allocByApp = size;
         block->allocTotal = totalSize;
-        block->orderNo = nextBlockNo++;
-        CollectBacktrace(block, 1);
+        block->realBlockStart = static_cast<void*>(block);
+        block->backtraceHash = 0;
+        if (!IsInternalAllocationPool(poolIndex))
+        {
+            block->orderNo = nextBlockNo++;
+            CollectBacktrace(block, 1);
 
-        InsertBlock(block);
-        UpdateStatAfterAlloc(block, poolIndex);
+            InsertBlock(block);
+            UpdateStatAfterAlloc(block, poolIndex);
+        }
+        else
+        {
+            Memset(block->backtrace.frames, 0, sizeof(block->backtrace.frames));
+            block->next = nullptr;
+            block->prev = nullptr;
+            block->orderNo = 0;
+        }
         return static_cast<void*>(block + 1);
+    }
+    return nullptr;
+}
+
+DAVA_NOINLINE void* MemoryManager::AlignedAlloc(size_t size, size_t align, uint32 poolIndex)
+{
+    // TODO: check whether align is power of 2
+
+    assert(size > 0);
+    assert(IsInternalAllocationPool(poolIndex) || poolIndex < MAX_ALLOC_POOL_COUNT);
+
+    if (align < BLOCK_ALIGN)
+        align = BLOCK_ALIGN;
+
+    size_t totalSize = sizeof(MemoryBlock) + size + (align - 1);
+    if (totalSize & (BLOCK_ALIGN - 1))
+        totalSize += (BLOCK_ALIGN - (totalSize & (BLOCK_ALIGN - 1)));
+
+    LockType lock(mutex);
+    void* realPtr = MallocHook::Malloc(totalSize);
+    if (realPtr != nullptr)
+    {
+        // Some pointer arithmetics
+        uintptr_t x = uintptr_t(realPtr) + sizeof(MemoryBlock);
+        x += align - (x & (align - 1));
+
+        MemoryBlock* block = reinterpret_cast<MemoryBlock*>(x - sizeof(MemoryBlock));
+        block->mark = BLOCK_MARK;
+        block->pool = poolIndex;
+        block->allocByApp = size;
+        block->allocTotal = totalSize;
+        block->realBlockStart = realPtr;
+        block->backtraceHash = 0;
+        if (!IsInternalAllocationPool(poolIndex))
+        {
+            block->orderNo = nextBlockNo++;
+            CollectBacktrace(block, 1);
+
+            InsertBlock(block);
+            UpdateStatAfterAlloc(block, poolIndex);
+        }
+        else
+        {
+            block->next = nullptr;
+            block->prev = nullptr;
+            block->orderNo = 0;
+        }
+        return reinterpret_cast<void*>(x);
     }
     return nullptr;
 }
@@ -174,36 +212,44 @@ void MemoryManager::Dealloc(void* ptr)
     if (ptr != nullptr)
     {
         LockType lock(mutex);
-        MemoryBlock* block = IsProfiledBlock(ptr);
+        MemoryBlock* block = IsTrackedBlock(ptr);
         if (block != nullptr)
         {
             block->mark = BLOCK_DELETED;
-            RemoveBlock(block);
-            UpdateStatAfterDealloc(block, block->pool);
-            MallocHook::Free(block);
+            if (!IsInternalAllocationPool(block->pool))
+            {
+                RemoveBlock(block);
+                UpdateStatAfterDealloc(block, block->pool);
+            }
+            else
+            {
+                int h = 0;
+                h = 4;
+            }
+            MallocHook::Free(block->realBlockStart);
         }
         else
         {
             statGeneral.ghostBlockCount += 1;
-            statGeneral.ghostSize += 0;       // TODO: get memory block size from pointer
+            statGeneral.ghostSize += MallocHook::MallocSize(ptr);
             MallocHook::Free(ptr);
         }
     }
 }
-void * MemoryManager::Realloc(void *ptr, size_t newSize)
-{
-    
-    assert(ptr);// This realloc must not be called with ptr == nullptr
 
-    size_t oldSize = DAVA::MemoryManager::BlockSize(ptr);
-    if (oldSize > 0)
+void* MemoryManager::Realloc(void* ptr, size_t newSize)
+{
+    assert(ptr);    // This realloc must not be called with ptr == nullptr
+
+    MemoryBlock* block = IsTrackedBlock(ptr);
+    if (block != nullptr)
     {
         void* newPtr = malloc(newSize);
         if (newPtr != nullptr)
         {
-            size_t n = oldSize > newSize ? newSize : oldSize;
+            size_t n = block->allocByApp > newSize ? newSize : block->allocByApp;
             memcpy(newPtr, ptr, n);
-            free(ptr);
+            free(block->realBlockStart);
             return newPtr;
         }
         else
@@ -212,6 +258,7 @@ void * MemoryManager::Realloc(void *ptr, size_t newSize)
     else
         return DAVA::MallocHook::Realloc(ptr, newSize);
 }
+
 void MemoryManager::EnterScope(uint32 tag)
 {
     assert(tag != DEFAULT_TAG);
@@ -238,7 +285,6 @@ void MemoryManager::LeaveScope()
         for (size_t i = 0;i < MAX_ALLOC_POOL_COUNT;++i)
         {
             statAllocPool[tags.depth][i] = AllocPoolStat();
-            // TODO: clear additional counters on tag leave
         }
         tags.depth -= 1;
     }
@@ -273,22 +319,10 @@ void MemoryManager::RemoveBlock(MemoryBlock* block)
         head = head->next;
 }
 
-MemoryManager::MemoryBlock* MemoryManager::IsProfiledBlock(void* ptr)
+MemoryManager::MemoryBlock* MemoryManager::IsTrackedBlock(void* ptr)
 {
     MemoryBlock* block = static_cast<MemoryBlock*>(ptr) - 1;
     return BLOCK_MARK == block->mark ? block : nullptr;
-}
-
-size_t MemoryManager::ProfiledBlockSize(void* ptr)
-{
-    if (ptr != nullptr)
-    {
-        // TODO: is lock necessary here
-        LockType lock(mutex);
-        MemoryBlock* block = IsProfiledBlock(ptr);
-        return block != nullptr ? block->allocByApp : 0;
-    }
-    return 0;
 }
 
 MemoryManager::MemoryBlock* MemoryManager::FindBlockByOrderNo(uint32 orderNo)
@@ -314,9 +348,6 @@ void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, uint32 poolIndex)
 
         if (block->allocByApp > statAllocPool[i][poolIndex].maxBlockSize)
             statAllocPool[i][poolIndex].maxBlockSize = block->allocByApp;
-
-        // Compute additional counters for allocation pool
-        // ...
     }
 }
 
@@ -334,9 +365,6 @@ void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, uint32 poolIndex)
             statAllocPool[i][poolIndex].allocByApp -= block->allocByApp;
             statAllocPool[i][poolIndex].allocTotal -= block->allocTotal;
             statAllocPool[i][poolIndex].blockCount -= 1;
-
-            // Compute additional counters for allocation pool
-            // ...
         }
     }
 }
@@ -474,7 +502,7 @@ size_t MemoryManager::GetBlockRange(uint32 rangeBegin, uint32 rangeEnd, MemoryBl
     return nblocks;
 }
 
-NOINLINE void MemoryManager::CollectBacktrace(MemoryBlock* block, size_t nskip)
+DAVA_NOINLINE void MemoryManager::CollectBacktrace(MemoryBlock* block, size_t nskip)
 {
     Memset(&block->backtrace, 0, sizeof(block->backtrace));
 #if defined(__DAVAENGINE_WIN32__)

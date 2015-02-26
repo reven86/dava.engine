@@ -33,6 +33,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
+// Introduce DAVA_NOINLINE to tell compiler not no inline 
+#if defined(__DAVAENGINE_WIN32__)
+#define DAVA_NOINLINE   __declspec(noinline)
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#define DAVA_NOINLINE   __attribute__((noinline))
+#elif defined(__DAVAENGINE_ANDROID__)
+#define DAVA_NOINLINE   __attribute__((noinline))
+#endif
+
 #include <unordered_map>
 #include <unordered_set>
 
@@ -45,9 +54,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace DAVA
 {
 
-template<typename T>
-class WhatsUp;
-
+/*
+ MemoryManager
+*/
 class MemoryManager final
 {
     struct MemoryBlock;
@@ -67,7 +76,8 @@ public:
 
     typedef void (*TagCallback)(void* arg, uint32 tag, uint32 tagBegin, uint32 tagEnd);
 
-public:
+private:
+    // Make ctor and dtor private to disallow external creation of MemoryManager
     MemoryManager() = default;
     ~MemoryManager() = default;
 
@@ -76,44 +86,44 @@ public:
     MemoryManager(MemoryManager&&) = delete;
     MemoryManager& operator = (MemoryManager&&) = delete;
 
+public:
+    static MemoryManager* Instance();
+
     static void RegisterAllocPoolName(size_t index, const char8* name);
     static void RegisterTagName(size_t index, const char8* name);
-
-    static MemoryManager* Instance();
 
     static void InstallTagCallback(TagCallback callback, void* arg);
 
     static void* Allocate(size_t size, uint32 poolIndex);
-    static void Deallocate(void* ptr);
-    
     static void* Reallocate(void * ptr, size_t size);
-
-    static size_t BlockSize(void* ptr);
+    static void Deallocate(void* ptr);
 
     static void EnterTagScope(uint32 tag);
     static void LeaveTagScope();
-    
+
     static size_t CalcStatConfigSize();
     static void GetStatConfig(MMStatConfig* config);
-    
+
     static size_t CalcStatSize();
     static void GetStat(MMStat* stat);
 
     static size_t GetDump(size_t userSize, void** buf, uint32 blockRangeBegin, uint32 blockRangeEnd);
     static void FreeDump(void* ptr);
 
+    static bool IsInternalAllocationPool(uint32 poolIndex);
+
 private:
-    void* Alloc(size_t size, uint32 poolIndex);
+    DAVA_NOINLINE void* Alloc(size_t size, uint32 poolIndex);
+    DAVA_NOINLINE void* AlignedAlloc(size_t size, size_t align, uint32 poolIndex);
     void Dealloc(void* ptr);
-    void * Realloc(void *ptr, size_t size);
+    void* Realloc(void *ptr, size_t size);
 
     void EnterScope(uint32 tag);
     void LeaveScope();
 
     void InsertBlock(MemoryBlock* block);
     void RemoveBlock(MemoryBlock* block);
-    MemoryBlock* IsProfiledBlock(void* ptr);
-    size_t ProfiledBlockSize(void* ptr);
+    MemoryBlock* IsTrackedBlock(void* ptr);
     MemoryBlock* FindBlockByOrderNo(uint32 orderNo);
 
     void UpdateStatAfterAlloc(MemoryBlock* block, uint32 poolIndex);
@@ -126,7 +136,7 @@ private:
     void FreeDumpInternal(void* ptr);
     size_t GetBlockRange(uint32 rangeBegin, uint32 rangeEnd, MemoryBlock** begin, MemoryBlock** end);
 
-    void CollectBacktrace(MemoryBlock* block, size_t nskip);
+    DAVA_NOINLINE void CollectBacktrace(MemoryBlock* block, size_t nskip);
     void ObtainBacktraceSymbols(const Backtrace* backtrace);
     void ObtainAllBacktraceSymbols();
 
@@ -145,7 +155,7 @@ private:
     void* callbackArg;
 
     template<typename T>
-    using InternalAllocator = MemoryManagerAllocator<T, ALLOC_POOL_INTERNAL>;
+    using InternalAllocator = MemoryManagerAllocator<T, -1>;
 
     typedef std::basic_string<char8, std::char_traits<char8>, InternalAllocator<char8>> InternalString;
     typedef std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>> SymbolMap;
@@ -171,13 +181,10 @@ inline void MemoryManager::Deallocate(void* ptr)
 {
     Instance()->Dealloc(ptr);
 }
+
 inline void* MemoryManager::Reallocate(void * ptr, size_t size)
 {
     return Instance()->Realloc(ptr, size);
-}
-inline size_t MemoryManager::BlockSize(void* ptr)
-{
-    return Instance()->ProfiledBlockSize(ptr);
 }
 
 inline void MemoryManager::EnterTagScope(uint32 tag)
@@ -210,19 +217,12 @@ inline void MemoryManager::FreeDump(void* ptr)
     Instance()->FreeDumpInternal(ptr);
 }
 
+inline bool MemoryManager::IsInternalAllocationPool(uint32 poolIndex)
+{
+    return static_cast<int32>(poolIndex) < 0;
+}
+
 }   // namespace DAVA
-
-#define MEMPROF_INIT()      mem_profiler::instance()
-#define MEMPROF_ENTER(tag)  mem_profiler::instance()->enter_scope(tag)
-#define MEMPROF_LEAVE()     mem_profiler::instance()->leave_scope()
-#define MEMPROF_DUMP(file)  mem_profiler::instance()->dump(file)
-
-#else   // defined(DAVA_MEMORY_PROFILING_ENABLE)
-
-#define MEMPROF_INIT()
-#define MEMPROF_ENTER(tag)
-#define MEMPROF_LEAVE()
-#define MEMPROF_DUMP(file)
 
 #endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
