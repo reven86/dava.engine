@@ -215,6 +215,7 @@ public:
     static const FastName PARAM_SHADOW_COLOR;
     static const FastName PARAM_DECAL_TILE_SCALE;
     static const FastName PARAM_DECAL_TILE_COLOR;
+    static const FastName PARAM_DETAIL_TILE_SCALE;
     static const FastName PARAM_RCP_SCREEN_SIZE;
     static const FastName PARAM_SCREEN_OFFSET;
     
@@ -228,16 +229,19 @@ public:
 	static const FastName FLAG_TEXTURE0_ANIMATION_SHIFT;
 	static const FastName FLAG_WAVE_ANIMATION;
 	static const FastName FLAG_FAST_NORMALIZATION;    
-    static const FastName FLAG_TILED_DECAL;
+    static const FastName FLAG_TILED_DECAL_MASK;
 	static const FastName FLAG_FLATCOLOR;
     static const FastName FLAG_DISTANCEATTENUATION;
     static const FastName FLAG_SPECULAR;
+    static const FastName FLAG_SEPARATE_NORMALMAPS;
 
     static const FastName FLAG_SPHERICAL_LIT;
 
     static const FastName FLAG_TANGENT_SPACE_WATER_REFLECTIONS;
     
     static const FastName FLAG_DEBUG_UNITY_Z_NORMAL;
+    static const FastName FLAG_DEBUG_Z_NORMAL_SCALE;
+    static const FastName FLAG_DEBUG_NORMAL_ROTATION;
 
     static const FastName FLAG_SKINNING;
     

@@ -405,6 +405,7 @@ void RenderManager::ProcessStats()
         Logger::FrameworkDebug("== Frame stats: DrawArraysCount: %d DrawElementCount: %d ==", stats.drawArraysCalls, stats.drawElementsCalls);
         for (int32 k = 0; k < PRIMITIVETYPE_COUNT; ++k)
             Logger::FrameworkDebug("== Primitive Stats: %d ==", stats.primitiveCount[k]);
+        Logger::FrameworkDebug("== SpriteDrawCount: %d  ==", stats.spriteDrawCount);
     }
 }
     

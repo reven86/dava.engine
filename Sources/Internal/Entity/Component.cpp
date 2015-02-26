@@ -149,11 +149,6 @@ void Component::SetEntity(Entity * _entity)
 	entity = _entity;
 }
 
-Entity* Component::GetEntity() 
-{ 
-	return entity;
-};
-
 void Component::GetDataNodes(Set<DAVA::DataNode *> &dataNodes)
 {
     //Empty as default

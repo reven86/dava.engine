@@ -134,10 +134,8 @@
 
 #include "Commands2/ConvertPathCommands.h"
 
-
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
-
 
 
 QtMainWindow::QtMainWindow(QWidget *parent)
@@ -379,21 +377,31 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
 
 	if(qApp == obj && ProjectManager::Instance()->IsOpened())
 	{
-		if(QEvent::ApplicationActivate == eventType)
+		if(QEvent::ApplicationStateChange == eventType)
 		{
-			if(QtLayer::Instance())
-			{
-				QtLayer::Instance()->OnResume();
-				Core::Instance()->GetApplicationCore()->OnResume();
-			}
-		}
-		else if(QEvent::ApplicationDeactivate == eventType)
-		{
-			if(QtLayer::Instance())
-			{
-				QtLayer::Instance()->OnSuspend();
-				Core::Instance()->GetApplicationCore()->OnSuspend();
-			}
+            QApplicationStateChangeEvent* stateChangeEvent = static_cast<QApplicationStateChangeEvent*>(event);
+            Qt::ApplicationState state = stateChangeEvent->applicationState();
+            switch (state)
+            {
+            case Qt::ApplicationInactive:
+            {
+                if (QtLayer::Instance())
+                {
+                    QtLayer::Instance()->OnSuspend();
+                }
+                break;
+            }
+            case Qt::ApplicationActive:
+            {
+                if (QtLayer::Instance())
+                {
+                    QtLayer::Instance()->OnResume();
+                }
+                break;
+            }
+            default:
+                break;
+            }
 		}
 	}
 
@@ -415,7 +423,7 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
             // according to reference of QKeyEvent, it's impossible to get scanCode on mac os
             // so we use platform depending nativeVirtualKey()
             int32 systemKeyCode = keyEvent->nativeVirtualKey();
-            int32 davaKey = DAVA::InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey(systemKeyCode);
+            int32 davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(systemKeyCode);
             // translate davaKey to ascii to find out real key pressed
             // offset between ascii and letters in davakey table - 29 positions
             int32 qtKey = davaKey + 29;

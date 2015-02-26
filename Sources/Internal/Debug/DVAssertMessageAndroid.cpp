@@ -41,19 +41,20 @@
 
 using namespace DAVA;
 
-void DVAssertMessage::InnerShow(eModalType modalType, const char* message)
+bool DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 {
     Logger::FrameworkDebug("DAVA BACKTRACE PRINTING");
     PrintBackTraceToLog(Logger::LEVEL_ERROR);
 	JNI::JavaClass msg("com/dava/framework/JNIAssert");
-	auto showMessage = msg.GetStaticMethod<void, jstring>("Assert");
+	auto showMessage = msg.GetStaticMethod<jboolean, jboolean, jstring>("Assert");
 
 	JNIEnv *env = JNI::GetEnv();
 	jstring jStrMessage = env->NewStringUTF(message);
-	showMessage(jStrMessage);
+    bool waitUserInput = (ALWAYS_MODAL == modalType);
+	jboolean breakExecution = showMessage(waitUserInput, jStrMessage);
 	env->DeleteLocalRef(jStrMessage);
-    
-	AndroidCrashReport::ThrowExeption(message);
+
+	return breakExecution == JNI_FALSE? false : true;
 }
 
 #endif

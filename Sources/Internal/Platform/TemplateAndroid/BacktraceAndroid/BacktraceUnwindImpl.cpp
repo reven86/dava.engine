@@ -170,11 +170,11 @@ const MemoryMapInterface * BacktraceUnwindImpl::GetMemoryMap() const
 //handler safe function
 void BacktraceUnwindImpl::Backtrace(Function<void(pointer_size)> onFrame,  void * context , void * siginfo )
 {
-     BacktraceInternal(onFrame,nullptr,context,siginfo);
+     BacktraceInternal(onFrame,NULL,context,siginfo);
 }
 void BacktraceUnwindImpl::PrintableBacktrace(Function<void (pointer_size,const char * str)> onFrame,  void * context , void * siginfo)
 {
-    BacktraceInternal(nullptr,onFrame,context,siginfo);
+    BacktraceInternal(NULL,onFrame,context,siginfo);
 }
 void BacktraceUnwindImpl::BacktraceInternal(Function<void(pointer_size)> onFrame,
             Function<void (pointer_size,const char * str)> onFrameName, 
@@ -182,7 +182,7 @@ void BacktraceUnwindImpl::BacktraceInternal(Function<void(pointer_size)> onFrame
 {
     PreBacktrace();
     unw_context_t uctx;
-    if (context != nullptr)
+    if (context != NULL)
     {
         ConvertContextARM((ucontext_t*) context, &uctx);
     }
@@ -204,11 +204,11 @@ void BacktraceUnwindImpl::BacktraceInternal(Function<void(pointer_size)> onFrame
         }
 
         unw_get_reg(&cursor, UNW_REG_IP, &ip);
-        if(onFrame != nullptr)
+        if(onFrame != NULL)
         {
             onFrame(static_cast<pointer_size>(ip));
         }
-        if(onFrameName != nullptr)
+        if(onFrameName != NULL)
         {
             std::array<char,256> procName;
             unw_word_t frameOffset;

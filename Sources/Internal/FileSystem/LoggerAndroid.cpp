@@ -62,6 +62,8 @@ int32 LogLevelToAndtoid(Logger::eLogLevel ll)
 		case Logger::LEVEL_ERROR:
 			androidLL = ANDROID_LOG_ERROR;
 			break;
+		default:
+		    break;
 	}
 
 	return androidLL;
@@ -69,12 +71,23 @@ int32 LogLevelToAndtoid(Logger::eLogLevel ll)
 
 void Logger::PlatformLog(eLogLevel ll, const char8* text)
 {
-	__android_log_print(LogLevelToAndtoid(ll), androidLogTag.c_str(), text, "");
-}
+    size_t len = strlen(text);
+    // about limit on android: http://stackoverflow.com/questions/8888654/android-set-max-length-of-logcat-messages
+    const size_t limit{4000};
 
-void Logger::PlatformLog(eLogLevel ll, const char16* text)
-{
-	wprintf(L"%s", text);
+    char8* str = const_cast<char*>(text);
+
+    while(len > limit)
+    {
+        char8 lastChar = str[limit];
+        str[limit] = '\0';
+        __android_log_print(LogLevelToAndtoid(ll), androidLogTag.c_str(), str, "");
+        str[limit] = lastChar;
+        str += limit;
+        len -= limit;
+    }
+
+    __android_log_print(LogLevelToAndtoid(ll), androidLogTag.c_str(), str, "");
 }
 
 void Logger::SetTag(const char8 *logTag)
@@ -82,7 +95,6 @@ void Logger::SetTag(const char8 *logTag)
 	androidLogTag = Format("%s", logTag);
 }
 
-
-}
+} // end namespace DAVA
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)

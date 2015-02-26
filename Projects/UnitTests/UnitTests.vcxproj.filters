@@ -70,10 +70,19 @@
     <ClCompile Include="Classes\Tests\Cpp14.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Tests\FormatsTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
     <ClCompile Include="Classes\Tests\DataVaultTest.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
     <ClCompile Include="Classes\Tests\NetworkTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Tests\SpinLockTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Tests\ThreadSyncTest.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
   </ItemGroup>
@@ -150,10 +159,19 @@
     <ClInclude Include="Classes\Tests\Cpp14.h">
       <Filter>Tests</Filter>
     </ClInclude>
+    <ClInclude Include="Classes\Tests\FormatsTest.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
     <ClInclude Include="Classes\Tests\DataVaultTest.h">
       <Filter>Tests</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Tests\NetworkTest.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Tests\SpinLockTest.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Tests\ThreadSyncTest.h">
       <Filter>Tests</Filter>
     </ClInclude>
   </ItemGroup>

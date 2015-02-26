@@ -257,7 +257,7 @@ namespace DAVA
 
         textFieldHolder->textField.text = (NSString*)TruncateText(text, textFieldHolder->cppTextField->GetMaxLength());
         [textFieldHolder->textField.undoManager removeAllActions];
-        
+
         // Notify UITextFieldDelegate::TextFieldOnTextChanged event
         [textFieldHolder->textField sendActionsForControlEvents:UIControlEventEditingChanged];
     }

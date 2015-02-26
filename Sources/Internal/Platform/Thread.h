@@ -97,8 +97,6 @@ public:
 		STATE_CREATED = 0,
 		STATE_RUNNING,
         STATE_ENDED,
-        STATE_CANCELLING,
-		STATE_CANCELLED,
         STATE_KILLED
 	};
     
@@ -144,7 +142,10 @@ public:
 
     /** Ask to cancel thred. User should to check state variable
     */
-    void Cancel();
+    inline void Cancel();
+    /** Check if someone asked thiead to cancel
+     */
+    inline bool IsCancelling() const;
     static void CancelAll();
     /**
         Wrapp pthread wait, signal and broadcast
@@ -200,6 +201,8 @@ private:
 
 	Message	msg;
 	eThreadState state;
+    
+    volatile bool isCancelling;
 
     /**
     \brief Native thread handle - variable which used to thread manipulations
@@ -240,6 +243,16 @@ inline String Thread::GetName()
 inline Thread::eThreadState Thread::GetState() const
 {
     return state;
+}
+
+inline void Thread::Cancel()
+{
+    isCancelling = true;
+}
+    
+inline bool Thread::IsCancelling() const
+{
+    return isCancelling;
 }
 
 inline Thread::Id Thread::GetId() const
