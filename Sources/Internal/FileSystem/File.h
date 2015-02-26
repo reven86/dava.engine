@@ -209,7 +209,11 @@ public:
 	virtual bool IsEof();
 	
     static String GetModificationDate(const FilePath & filePathname);
-    
+
+private:
+    // reads 1 byte from current line in the file and sets it in next char if it is not a line ending char. Returns true if read was successful.
+    bool GetNextChar(uint8 *nextChar);
+
 private:
 	FILE	*	file;
 	uint32		size;

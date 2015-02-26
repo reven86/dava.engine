@@ -760,7 +760,7 @@ void FileSystem::Init()
 }
 #endif
 
-bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& filePath2, const bool ignoreEmptyLines)
+bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& filePath2)
 {
     ScopedPtr<File> f1(File::Create(filePath1, File::OPEN | File::READ));
     ScopedPtr<File> f2(File::Create(filePath2, File::OPEN | File::READ));
@@ -771,26 +771,28 @@ bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& fil
         return false;
     }
 
-    String tmpStr1("");
-    String tmpStr2("");
+    String tmpStr1;
+    bool end1;
+    String tmpStr2;
+    bool end2;
     bool feof1 = false;
     bool feof2 = false;
 
-    bool checkOneMoreString = false;
     do
     {
-        
-        do
+        tmpStr1 = f1->ReadLine();
+        end1 = HasLineEnding(f1);
+
+        tmpStr2 = f2->ReadLine();
+        end2 = HasLineEnding(f2);
+
+        // if one file have no line ending and another - have - we tryes to compare binary file with text file
+        // if we have no line endings - then we tryes to compare binary files - comparision is correct
+        if (end1 != end2)
         {
-            tmpStr1 = f1->ReadLine();
-        } while (!f1->IsEof() && ignoreEmptyLines && tmpStr1.empty());
-        
-        do
-        {
-            tmpStr2 = f2->ReadLine();
-        } while (!f2->IsEof() && ignoreEmptyLines && tmpStr2.empty());
-        
-         
+            return false;
+        }
+
         if (tmpStr1.size() != tmpStr2.size() && 0 != tmpStr1.compare(tmpStr2))
         {
             return false;
@@ -798,18 +800,27 @@ bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& fil
         feof1 = f1->IsEof();
         feof2 = f2->IsEof();
 
-        if (!ignoreEmptyLines)
-        {
-            checkOneMoreString = !feof1 && !feof2;
-        }
-        else
-        {
-            checkOneMoreString = !feof1 || !feof2;
-        }
-
-    } while (checkOneMoreString);
+    } while (!feof1 && !feof2);
 
     return (feof1 == feof2);
+}
+
+bool FileSystem::HasLineEnding(File *f)
+{
+    bool isHave = false;
+    uint8 prevChar;
+    f->Seek(-1, File::SEEK_FROM_CURRENT);
+    if (1 == f->Read(&prevChar, 1))
+    {
+        isHave = '\n' == prevChar;
+    }
+
+    // make sure that we have eof if it was before HasLineEnding call
+    if (1 == f->Read(&prevChar, 1))
+    {
+        f->Seek(-1, File::SEEK_FROM_CURRENT);
+    }
+    return isHave;
 }
 
 bool FileSystem::CompareBinaryFiles(const FilePath &filePath1, const FilePath &filePath2)
