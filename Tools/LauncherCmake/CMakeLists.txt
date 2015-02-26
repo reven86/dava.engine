@@ -44,13 +44,12 @@ qt5_add_resources     ( RCC_APP_SRCS  ${RCC_LIST} )
 set                   ( Generated  ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 
 define_source_folders          ( SRC_ROOT "Classes"  )
-generate_source_groups_project ( SRC_ROOT "Classes" "Data" "DataQt"  )
+generate_source_groups_project ( SRC_ROOT "Classes" "DataQt"  )
 
 list( APPEND QT_LIBRARIES  Qt5::Network )
 
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/icon.icns  )
-set( MACOS_DATA           ${CMAKE_CURRENT_LIST_DIR}/Data/* )
 
 set( ADDED_SRC            ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS}  Launcher.rc )
 

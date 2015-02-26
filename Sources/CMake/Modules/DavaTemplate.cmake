@@ -33,12 +33,10 @@ if( IOS )
     list( APPEND RESOURCES_LIST ${IOS_ICO} )
 
 elseif( MACOS )
-    file ( GLOB DYLIB_FILES    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.dylib)
-    
     set_source_files_properties( ${DYLIB_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources )
 
     if ( NOT NOT_USE_DAVA_LIBRARY )
-        list ( APPEND DYLIB_FILES   "${DYLIB_FILES}"  )  
+        file ( GLOB DYLIB_FILES    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.dylib)
     endif()
     
     list ( APPEND DYLIB_FILES  "${MACOS_DYLIB}" )  
