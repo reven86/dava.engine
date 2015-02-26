@@ -116,7 +116,7 @@ inline Scene* BaseTest::GetScene() const
 
 inline bool BaseTest::IsFinished() const
 {
-	if (targetFramesCount > 0 && frameNumber >= (targetFramesCount + FRAME_OFFSET + 1))
+	if (targetFramesCount > 0 && frameNumber >= (targetFramesCount + FRAME_OFFSET))
 	{
 		return true;
 	}
