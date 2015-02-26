@@ -389,11 +389,13 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
 {
     FilePath currentExecuteDirectory;
 #if defined(__DAVAENGINE_WIN32__)
-    ::GetModuleFileNameA( NULL, tempDir, 2048 );
-    currentExecuteDirectory = FilePath(tempDir).GetDirectory();
+    std::array<char, 2048> tempDir;
+    ::GetModuleFileNameA( NULL, tempDir.data(), tempDir.size() );
+    currentExecuteDirectory = FilePath(tempDir.data()).GetDirectory();
 #elif defined(__DAVAENGINE_MACOS__)
-    proc_pidpath(getpid(), tempDir, sizeof(tempDir));
-    currentExecuteDirectory = FilePath(dirname(tempDir));
+    std::array<char, 2048> tempDir;
+    proc_pidpath(getpid(), tempDir.data(), tempDir.size());
+    currentExecuteDirectory = FilePath(dirname(tempDir.data()));
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 	DVASSERT(0);
 #endif //PLATFORMS
