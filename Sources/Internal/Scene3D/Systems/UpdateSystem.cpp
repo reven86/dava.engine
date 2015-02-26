@@ -74,7 +74,7 @@ void UpdateSystem::RemoveEntity(Entity * entity)
 		IUpdatableBeforeTransform * updateBeforeTransform = dynamic_cast<IUpdatableBeforeTransform*>(object);
 		if(updateBeforeTransform)
 		{
-			uint32 size = updatesBeforeTransform.size();
+			uint32 size = static_cast<uint32>(updatesBeforeTransform.size());
 			for(uint32 i = 0; i < size; ++i)
 			{
 				if(updatesBeforeTransform[i] == updateBeforeTransform)
@@ -89,7 +89,7 @@ void UpdateSystem::RemoveEntity(Entity * entity)
 		IUpdatableAfterTransform * updateAfterTransform = dynamic_cast<IUpdatableAfterTransform*>(object);
 		if(updateAfterTransform)
 		{
-			uint32 size = updatesAfterTransform.size();
+			uint32 size = static_cast<uint32>(updatesAfterTransform.size());
 			for(uint32 i = 0; i < size; ++i)
 			{
 				if(updatesAfterTransform[i] == updateAfterTransform)
@@ -112,7 +112,7 @@ void UpdateSystem::UpdatePreTransform(float32 timeElapsed)
 {
     TIME_PROFILE("UpdateSystem::UpdatePreTransform");
 
-	uint32 size = updatesBeforeTransform.size();
+	uint32 size = static_cast<uint32>(updatesBeforeTransform.size());
 	for(uint32 i = 0; i < size; ++i)
 	{
 		updatesBeforeTransform[i]->UpdateBeforeTransform(timeElapsed);
@@ -123,7 +123,7 @@ void UpdateSystem::UpdatePostTransform(float32 timeElapsed)
 {
     TIME_PROFILE("UpdateSystem::UpdatePostTransform");
 
-	uint32 size = updatesAfterTransform.size();
+	uint32 size = static_cast<uint32>(updatesAfterTransform.size());
 	for(uint32 i = 0; i < size; ++i)
 	{
 		updatesAfterTransform[i]->UpdateAfterTransform(timeElapsed);

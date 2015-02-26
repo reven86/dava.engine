@@ -506,7 +506,7 @@ void NMaterial::Load(KeyedArchive * archive,
 
 		    const VariantType* propVariant = it->second;
 		    DVASSERT(VariantType::TYPE_BYTE_ARRAY == propVariant->type);
-		    DVASSERT(propVariant->AsByteArraySize() >= (sizeof(uint32) +sizeof(uint32)));
+		    DVASSERT(propVariant->AsByteArraySize() >= static_cast<int32>(sizeof(uint32) +sizeof(uint32)));
 		
 		    const uint8* ptr = propVariant->AsByteArray();
 		
@@ -870,7 +870,7 @@ const FastName& NMaterial::GetTextureName(uint32 index) const
 
 uint32 NMaterial::GetTextureCount() const
 {
-	return textures.size();
+	return static_cast<uint32>(textures.size());
 }
 
 void NMaterial::SetPropertyValue(const FastName & keyName,

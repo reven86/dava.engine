@@ -68,7 +68,7 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 
     SetCamera(GetScene()->GetCurrentCamera());
 
-    uint32 size = entities.size();
+    uint32 size = static_cast<uint32>(entities.size());
 	for(uint32 i = 0; i < size; ++i)
 	{
         Entity * entity = entities[i];
@@ -277,7 +277,7 @@ void DebugRenderSystem::RemoveEntity(Entity * entity)
     }
 
 	
-    uint32 size = entities.size();
+    uint32 size = static_cast<uint32>(entities.size());
 	for(uint32 i = 0; i < size; ++i)
 	{
 		if(entities[i] == entity)

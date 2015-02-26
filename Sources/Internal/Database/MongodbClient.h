@@ -75,8 +75,8 @@ public:
     MongodbObject * FindObjectByKey(const String &key);
     bool FindObjectByKey(const String &key, MongodbObject *foundObject);
 
-    bool SaveObject(MongodbObject *object);
-    bool SaveObject(MongodbObject *newObject, MongodbObject *oldObject);
+    bool SaveDBObject(MongodbObject *object);
+    bool SaveDBObject(MongodbObject *newObject, MongodbObject *oldObject);
 
     
     bool SaveBinary(const String &key, uint8 *data, int32 dataSize);
