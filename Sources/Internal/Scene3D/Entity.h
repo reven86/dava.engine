@@ -83,8 +83,8 @@ public:
 
     Component * GetComponent(uint32 componentType, uint32 index = 0) const;
     Component * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
-    uint32 GetComponentCount();
-    uint32 GetComponentCount(uint32 componentType);
+    uint32 GetComponentCount() const;
+    uint32 GetComponentCount(uint32 componentType) const;
     
     inline uint64 GetAvailableComponentFlags();
 
@@ -521,7 +521,7 @@ inline int32 Entity::GetChildrenCount () const
     return (int32)children.size();
 }
 
-inline uint32 Entity::GetComponentCount ()
+inline uint32 Entity::GetComponentCount () const
 {
     return components.size ();
 }
@@ -577,7 +577,7 @@ inline Scene * Entity::GetScene ()
     return scene;
 }
 
-inline uint32 Entity::GetComponentCount (uint32 componentType)
+inline uint32 Entity::GetComponentCount (uint32 componentType) const
 {
     return family->GetComponentsCount (componentType);
 }
