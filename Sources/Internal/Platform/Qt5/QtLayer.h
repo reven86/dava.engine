@@ -63,8 +63,6 @@ public:
 
     void InitializeGlWindow(uint64 glContextId);
     
-    void CreateConsoleOpenGLContext();
-    
 	void Resize(int32 width, int32 height);
     void ProcessFrame();
 

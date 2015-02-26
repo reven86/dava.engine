@@ -66,12 +66,12 @@
 #elif defined( Q_OS_MAC )
 #endif
 
+#include "Classes/Qt/FrameworkBinding/FrameworkLoop.h"
+
 
 OpenGLWindow::OpenGLWindow()
     : QWindow()
-    , QOpenGLFunctions()
 {
-    context = nullptr;
     paintDevice = nullptr;
     setSurfaceType(QWindow::OpenGLSurface);
     
@@ -87,7 +87,7 @@ void OpenGLWindow::render()
 {
     if (!paintDevice)
     {
-        paintDevice = new QOpenGLPaintDevice;
+        paintDevice = new QOpenGLPaintDevice();
     }
 
     if(paintDevice->size() != size())
@@ -100,62 +100,10 @@ void OpenGLWindow::renderNow()
 {
     if (!isExposed())
         return;
-    
-    bool needsInitialize = false;
-    
-    if (!context)
-    {
-        context = new QOpenGLContext(this);
-        
-        QSurfaceFormat fmt = requestedFormat();
-        
-        fmt.setOption(fmt.options() | QSurfaceFormat::DebugContext);
 
-        fmt.setRenderableType(QSurfaceFormat::OpenGL);
-        fmt.setVersion(2, 0);
-        fmt.setDepthBufferSize(24);
-        fmt.setStencilBufferSize(8);
-        fmt.setSwapInterval(1);
-        fmt.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-        
-        context->setFormat(fmt);
-        context->create();
-        
-        needsInitialize = true;
-    }
-    
-    context->makeCurrent(this);
-    
-    if (needsInitialize)
-    {
-        initializeOpenGLFunctions();
-#ifdef Q_OS_WIN
-        glewInit();
-#endif
-    }
-    
     render();
-    
-    context->swapBuffers(this);
-}
-
-quint64 OpenGLWindow::GetRenderContextId() const
-{
-    if ( !context )
-        return 0;
-
-    quint64 id = 0;
-
-#if defined( Q_OS_WIN )
-    QWGLNativeContext nativeContext = context->nativeHandle().value< QWGLNativeContext >();
-    id = reinterpret_cast<quint64>( nativeContext.context() );
-#elif defined( Q_OS_MAC )
-    //QCocoaNativeContext nativeContext = context->nativeHandle().value< QCocoaNativeContext >();
-    //id = reinterpret_cast<quint64>( nativeContext.context()->CGLContextObj() );
-    id = reinterpret_cast<quint64>(CGLGetCurrentContext());
-#endif
-
-    return id;
+    auto context = FrameworkLoop::Instance()->Context();
+    context->swapBuffers( this );
 }
 
 void OpenGLWindow::exposeEvent(QExposeEvent *event)
@@ -165,7 +113,6 @@ void OpenGLWindow::exposeEvent(QExposeEvent *event)
     if (isExposed())
     {
         renderNow();
-        
         emit Exposed();
     }
 }
@@ -180,7 +127,6 @@ bool OpenGLWindow::event(QEvent *event)
     
     return QWindow::event(event);
 }
-
 
 void OpenGLWindow::keyPressEvent(QKeyEvent *e)
 {
@@ -258,8 +204,6 @@ DAVA::char16 OpenGLWindow::MapQtKeyToDAVA(const QKeyEvent *event)
     
     return 0;
 }
-
-
 
 void OpenGLWindow::mouseMoveEvent(QMouseEvent * event)
 {
@@ -375,8 +319,6 @@ DAVA::UIEvent::eButtonID OpenGLWindow::MapQtButtonToDAVA(const Qt::MouseButton b
 ///=======================
 DavaGLWidget::DavaGLWidget(QWidget *parent)
     : QWidget(parent)
-    , renderTimer(nullptr)
-    , fps(60)
     , isInitialized(false)
     , currentDPR(1)
     , currentWidth(0)
@@ -389,18 +331,12 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     setMinimumSize(100, 100);
     
-    DAVA::QtLayer::Instance()->SetDelegate(this);
-    
-    SetFPS(60);
-    renderTimer = new QTimer(this);
-    
     openGlWindow = new OpenGLWindow();
     connect( openGlWindow, &OpenGLWindow::Exposed, this, &DavaGLWidget::OnWindowExposed );
     
-    QBoxLayout *lay = new QBoxLayout(QBoxLayout::TopToBottom, this);
-    setLayout(lay);
-    
-    lay->setMargin(0);
+    QBoxLayout *l = new QBoxLayout(QBoxLayout::TopToBottom, this);
+    l->setMargin( 0 );
+    setLayout( l );
     
     QWidget *w = createWindowContainer(openGlWindow);
     layout()->addWidget(w);
@@ -410,50 +346,24 @@ DavaGLWidget::~DavaGLWidget()
 {
 }
 
-void DavaGLWidget::SetFPS(int _fps)
+OpenGLWindow* DavaGLWidget::GetGLWindow()
 {
-    DVASSERT(0 != fps);
-    
-    DAVA::RenderManager::Instance()->SetFPS(fps);
-    fps = _fps;
+    return openGlWindow;
 }
-
 
 void DavaGLWidget::OnWindowExposed()
 {
-    if(isInitialized) return;
-
-    isInitialized = true;
+    disconnect( openGlWindow, &OpenGLWindow::Exposed, this, &DavaGLWidget::OnWindowExposed );
 
     currentDPR = devicePixelRatio();
     
-    DAVA::QtLayer::Instance()->InitializeGlWindow( openGlWindow->GetRenderContextId() );
-
+    const auto contextId = FrameworkLoop::Instance()->GetRenderContextId();
+    DAVA::QtLayer::Instance()->InitializeGlWindow( contextId );
     
+    isInitialized = true;
+
     PerformSizeChange();
-
-    
     emit Initialized();
-    
-    QTimer::singleShot( 16, this, &DavaGLWidget::OnRenderTimer );
-    //renderTimer->singleShot(16, this, SLOT(OnRenderTimer()));
-}
-
-void DavaGLWidget::OnRenderTimer()
-{
-    const int dpr = devicePixelRatio();
-    if(dpr != currentDPR)   //TODO: move to event processing section
-    {
-        currentDPR = dpr;
-        PerformSizeChange();
-    }                       // END OF TODO
-
-    DAVA::QtLayer::Instance()->ProcessFrame();
-    
-    QCoreApplication::postEvent(openGlWindow, new QEvent(QEvent::UpdateRequest));
-    
-    QTimer::singleShot( 16, this, &DavaGLWidget::OnRenderTimer );
-    //renderTimer->singleShot(16, this, SLOT(OnRenderTimer()));
 }
 
 void DavaGLWidget::resizeEvent(QResizeEvent *e)
@@ -462,10 +372,8 @@ void DavaGLWidget::resizeEvent(QResizeEvent *e)
     currentHeight = e->size().height();
     
     QWidget::resizeEvent(e);
-    
     PerformSizeChange();
 }
-
 
 void DavaGLWidget::dragEnterEvent(QDragEnterEvent *event)
 {
@@ -498,21 +406,9 @@ void DavaGLWidget::dropEvent(QDropEvent *event)
 	event->accept();
 }
 
-
-void DavaGLWidget::Quit()
-{
-    exit(0);
-}
-
-void DavaGLWidget::ShowAssertMessage(const char * message)
-{
-    QMessageBox::critical(this, "", message);
-}
-
-
 void DavaGLWidget::PerformSizeChange()
 {
-    if(IsInitialized())
+    if(isInitialized)
         DAVA::QtLayer::Instance()->Resize(currentWidth * currentDPR, currentHeight * currentDPR);
     
     emit Resized(currentWidth, currentHeight, currentDPR);

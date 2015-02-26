@@ -42,9 +42,8 @@
 class QOpenGLContext;
 class QOffscreenSurface;
 
-
-#include <QOpenGLFunctions>
 #include <QWindow>
+
 
 class QOpenGLPaintDevice;
 class QOpenGLContext;
@@ -52,7 +51,6 @@ class QExposeEvent;
 
 class OpenGLWindow
     : public QWindow
-    , protected QOpenGLFunctions
 {
     Q_OBJECT
 public:
@@ -61,8 +59,6 @@ public:
     
     void render();
     void renderNow();
-
-    quint64 GetRenderContextId() const;
 
 signals:
     void Exposed();
@@ -88,7 +84,6 @@ protected:
     DAVA::char16 MapQtKeyToDAVA(const QKeyEvent *event);
     
 private:
-    QOpenGLContext *context;
     QOpenGLPaintDevice *paintDevice;
 };
 
@@ -96,47 +91,30 @@ private:
 
 class DavaGLWidget
     : public QWidget
-	, public DAVA::QtLayerDelegate
 {
     Q_OBJECT
     
 public:
-    explicit DavaGLWidget(QWidget *parent = 0);
+    explicit DavaGLWidget(QWidget *parent = nullptr);
     ~DavaGLWidget();
 
-    void SetFPS(int fps);
-    int GetFPS() const;
-
-    bool IsInitialized() const;
+    OpenGLWindow *GetGLWindow();
     
 signals:
-    
     void Initialized();
     void Resized(int width, int height, int dpr);
 	void OnDrop(const QMimeData *mimeData);
 
-protected slots:
-    
+private slots:
     void OnWindowExposed();
-    void OnRenderTimer();
     
 private:
-    
     void resizeEvent(QResizeEvent *) override;
-    
-	virtual void dropEvent(QDropEvent *);
-	virtual void dragMoveEvent(QDragMoveEvent *);
-	virtual void dragEnterEvent(QDragEnterEvent *);
+	void dropEvent(QDropEvent *) override;
+	void dragMoveEvent(QDragMoveEvent *) override;
+	void dragEnterEvent(QDragEnterEvent *) override;
 
-	virtual void Quit();
-    DAVA_DEPRECATED(virtual void ShowAssertMessage(const char * message));
-    
     void PerformSizeChange();
-    
-private:
-    
-    QTimer * renderTimer;
-    int fps;
     
     bool isInitialized;
     
@@ -144,21 +122,8 @@ private:
     int currentWidth;
     int currentHeight;
 
-    DAVA::String assertMessage;
-    
     OpenGLWindow *openGlWindow;
 };
 
-
-inline int DavaGLWidget::GetFPS() const
-{
-    return fps;
-}
-
-
-inline bool DavaGLWidget::IsInitialized() const
-{
-    return isInitialized;
-}
 
 #endif // DAVAGLWIDGET_H

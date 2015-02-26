@@ -64,27 +64,28 @@
 #include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
 
+#include "FrameworkBinding/DavaLoop.h"
+#include "FrameworkBinding/FrameworkLoop.h"
 
 #include <QOpenGLContext>
 
 void UnpackHelpDoc();
 void FixOSXFonts();
 
+void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine );
+void RunGui( int argc, char *argv[], CommandLineManager& cmdLine );
+
 int main(int argc, char *argv[])
 {
-	int ret = 0;
-
 #if defined (__DAVAENGINE_MACOS__)
-    DAVA::Core::Run(argc, argv);
-	new DAVA::QtLayer();
-	DAVA::PVRConverter::Instance()->SetPVRTexTool(String("~res:/PVRTexToolCLI"));
+    const String pvrTexToolPath = "~res:/PVRTexToolCLI";
 #elif defined (__DAVAENGINE_WIN32__)
-	DAVA::Core::Run(argc, argv);
-    new DAVA::QtLayer();
-	DAVA::PVRConverter::Instance()->SetPVRTexTool(String("~res:/PVRTexToolCLI.exe"));
-#else
-	DVASSERT(false && "Wrong platform")
+    const String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
 #endif
+
+    DAVA::Core::Run( argc, argv );
+    new DAVA::QtLayer();
+    DAVA::PVRConverter::Instance()->SetPVRTexTool( pvrTexToolPath );
 
 	DAVA::Logger::Instance()->SetLogFilename("ResEditor.txt");
 
@@ -94,16 +95,14 @@ int main(int argc, char *argv[])
 	new BeastProxy();
 #endif //__DAVAENGINE_BEAST__
 
-
 	new SettingsManager();
-    //TODO convert old settings to new gpu values
     SettingsManager::UpdateGPUSettings();
-    //END of TODO
     
 	new EditorConfig();
     ParticleEmitter::FORCE_DEEP_CLONE = true;
 
 	CommandLineManager cmdLine;
+
 	if(cmdLine.IsEnabled())
 	{
 		Core::Instance()->EnableConsoleMode();
@@ -149,86 +148,18 @@ int main(int argc, char *argv[])
 	}
     else
     {
-        
-#ifdef Q_OS_MAC
-		FixOSXFonts();  // Must be called before creating QApplication instance
-#endif
-
-		QApplication a(argc, argv);
-    
-		a.setAttribute(Qt::AA_UseHighDpiPixmaps);
-		a.setAttribute(Qt::AA_ShareOpenGLContexts);
-    
-        QSurfaceFormat fmt = QSurfaceFormat::defaultFormat();
-
-        QSurfaceFormat::FormatOptions opt = fmt.options();
-        if((opt & QSurfaceFormat::DebugContext) == 0)
-        {
-            fmt.setOption(opt | QSurfaceFormat::DebugContext);
-        }
-        
-		fmt.setRenderableType(QSurfaceFormat::OpenGL);
-		fmt.setVersion(3, 2);
-		fmt.setDepthBufferSize(24);
-		fmt.setStencilBufferSize(8);
-		fmt.setSwapInterval(1);
-		fmt.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-        
-		QSurfaceFormat::setDefaultFormat(fmt);
-
-        const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
-        const QString appUidPath = QCryptographicHash::hash( (appUid + a.applicationDirPath() ).toUtf8(), QCryptographicHash::Sha1 ).toHex();
-        RunGuard runGuard( appUidPath );
-        if ( runGuard.tryToRun() )
-        {
-            LicenceDialog licenceDlg;
-            if ( licenceDlg.process() )
-            {
-	            DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
-
-	            new SceneValidator();
-	            new TextureCache();
-
-			    LocalizationSystem::Instance()->SetCurrentLocale("en");
-			    LocalizationSystem::Instance()->InitWithDirectory("~res:/Strings/");
-
-			    DAVA::Texture::SetDefaultGPU((eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
-
-			    // check and unpack help documents
-			    UnpackHelpDoc();
-
-			    // create and init UI
-			    QtMainWindow *mainWindow = new QtMainWindow();
-
-	            mainWindow->EnableGlobalTimeout(true);
-	            mainWindow->show();
-
-			    ProjectManager::Instance()->ProjectOpenLast();
-	            if(ProjectManager::Instance()->IsOpened())
-                {
-                    mainWindow->OnSceneNew();
-                }
-                
-                // start app
-                ret = a.exec();
-                
-	            mainWindow->Release();
-	            mainWindow = nullptr;
-                ControlsFactory::ReleaseFonts();
-                
-                SceneValidator::Instance()->Release();
-                TextureCache::Instance()->Release();
-            }
-        }
+        RunGui( argc, argv, cmdLine );
     }
 
-	EditorConfig::Instance()->Release();
-	SettingsManager::Instance()->Release();
-	BeastProxy::Instance()->Release();
-	DAVA::QtLayer::Instance()->Release();
-	DAVA::Core::Instance()->Release();
+    //EditorConfig::Instance()->Release();
+    //SettingsManager::Instance()->Release();
+    //BeastProxy::Instance()->Release();
+    //DAVA::Core::Instance()->Release();
+    //FrameworkLoop::Instance()->Release();
+    //DavaLoop::Instance()->Release();
+    //DAVA::QtLayer::Instance()->Release();
 
-    return ret;
+    return 0;
 }
 
 void UnpackHelpDoc()
@@ -259,4 +190,78 @@ void FixOSXFonts()
         QFont::insertSubstitution( ".Lucida Grande UI", "Lucida Grande" );
     }
 #endif
+}
+
+void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
+{
+}
+
+void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
+{
+#ifdef Q_OS_MAC
+    FixOSXFonts();  // Must be called before creating QApplication instance
+#endif
+
+    QApplication a( argc, argv );
+
+    const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
+    const QString appUidPath = QCryptographicHash::hash( ( appUid + QApplication::applicationDirPath() ).toUtf8(), QCryptographicHash::Sha1 ).toHex();
+    RunGuard runGuard( appUidPath );
+    if ( !runGuard.tryToRun() )
+        return;
+
+    a.setAttribute( Qt::AA_UseHighDpiPixmaps );
+    a.setAttribute( Qt::AA_ShareOpenGLContexts );
+
+    DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
+
+    new SceneValidator();
+    new TextureCache();
+
+    LocalizationSystem::Instance()->SetCurrentLocale( "en" );
+    LocalizationSystem::Instance()->InitWithDirectory( "~res:/Strings/" );
+
+    DAVA::Texture::SetDefaultGPU( (eGPUFamily)SettingsManager::GetValue( Settings::Internal_TextureViewGPU ).AsInt32() );
+
+    // check and unpack help documents
+    UnpackHelpDoc();
+
+    new DavaLoop();
+    new FrameworkLoop();
+
+    // create and init UI
+    QtMainWindow *mainWindow = new QtMainWindow();
+
+    mainWindow->EnableGlobalTimeout( true );
+    mainWindow->show();
+    auto glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
+    FrameworkLoop::Instance()->SetOpenGLWindow( glWidget->GetGLWindow() );
+
+    ProjectManager::Instance()->ProjectOpenLast();
+    if ( ProjectManager::Instance()->IsOpened() )
+    {
+        mainWindow->OnSceneNew();
+    }
+
+    DavaLoop::Instance()->StartLoop( FrameworkLoop::Instance() );
+
+    // start app
+    QApplication::exec();
+
+    glWidget->setParent( nullptr );
+    mainWindow->Release();
+
+    TextureCache::Instance()->Release();
+    SceneValidator::Instance()->Release();
+    EditorConfig::Instance()->Release();
+    SettingsManager::Instance()->Release();
+    BeastProxy::Instance()->Release();
+    Core::Instance()->Release();
+
+    FrameworkLoop::Instance()->Release();
+    QtLayer::Instance()->Release();
+    DavaLoop::Instance()->Release();
+    delete glWidget;
+
+    ControlsFactory::ReleaseFonts();
 }

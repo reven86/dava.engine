@@ -108,10 +108,6 @@ protected:
     void OpenTabInternal(const DAVA::FilePath scenePathname, int tabIndex);
     
 protected:
-    
-    void CloseWaitDialog();
-    
-    
 	MainTabBar *tabBar;
 	DavaGLWidget *davaWidget;
 	DAVA::UIScreen *davaUIScreen;
@@ -120,8 +116,8 @@ protected:
 	const int dava3DViewMargin;
 
 	void InitDAVAUI();
-	void ReleaseDAVAUI();
-	void UpdateTabName(int index);
+    void ReleaseDAVAUI();
+    void UpdateTabName(int index);
 
 	void SetTabScene(int index, SceneEditor2* scene);
 
