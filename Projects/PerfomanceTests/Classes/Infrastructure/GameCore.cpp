@@ -41,37 +41,17 @@
 using namespace DAVA;
 
 GameCore::GameCore() :
-currentScreen(nullptr),
-screenIndex(0)
+	testFlowController(nullptr)
 
 {
-}
-
-GameCore::~GameCore()
-{
-	for each (BaseScreen* screen in screenChain)
-	{
-		screen->Release();
-	}
-
-	for each (BaseTest* test in testChain)
-	{
-		test->Release();
-	}
 }
 
 void GameCore::OnAppStarted()
 {
 	RegisterTests();
+	InitScreenController();
 
-	if (testChain.size() > 0)
-	{
-		InitScreenChain();
-
-		currentScreen = screenChain[screenIndex];
-		currentScreen->OnStart(params);
-	}
-	else
+	if (testChain.empty())
 	{
 		Core::Instance()->Quit();
 	}
@@ -79,6 +59,11 @@ void GameCore::OnAppStarted()
  
 void GameCore::OnAppFinished()
 {
+	testFlowController->Finish();
+	for each (BaseTest* test in testChain)
+	{
+		SafeRelease(test);
+	}
 }
 
 void GameCore::OnSuspend()
@@ -120,78 +105,54 @@ void GameCore::OnForeground()
 
 void GameCore::BeginFrame()
 {
-	currentScreen->BeginFrame();
+	ApplicationCore::BeginFrame();
+	testFlowController->BeginFrame();
 }
 
 void GameCore::EndFrame()
 {
-	currentScreen->EndFrame();
-
-	if (currentScreen->IsFinished())
-	{
-		screenIndex++;
-		currentScreen->OnFinish(params);
-
-		if (screenIndex < screenChain.size())
-		{
-			currentScreen = screenChain[screenIndex];
-			currentScreen->OnStart(params);
-		}
-		else
-		{
-			Core::Instance()->Quit();
-		}
-	}
+	ApplicationCore::EndFrame();
+	testFlowController->EndFrame();
 }
 
 void GameCore::Update(float32 timeElapsed)
 {
-	currentScreen->Update(timeElapsed);
-
-	KeyboardDevice& keyb = DAVA::InputSystem::Instance()->GetKeyboard();
-
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-	bool backPressed = keyb.IsKeyPressed(DAVA::DVKEY_ESCAPE);
-	if (backPressed)
-	{
-		Core::Instance()->Quit();
-	}
-
-#endif
-
+	ApplicationCore::Update(timeElapsed);
 }
 
 void GameCore::Draw()	
 {
-	currentScreen->Draw();
+	ApplicationCore::Draw();
 }
 
 void GameCore::RegisterTests()
 {
 	testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
-	//testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
-	//testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
+	testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
+	testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
+	testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
+	testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
 }
 
-void GameCore::InitScreenChain()
+void GameCore::InitScreenController()
 {
 	bool allTests = CommandLineParser::Instance()->CommandIsFound("all");
 	bool allWithUI = CommandLineParser::Instance()->CommandIsFound("all_ui");
 
 	if (allTests)
 	{
-		screenChain.push_back(new TestChainScreen(testChain));
+		testFlowController = new TestChainFlowController(false);
 	}
 	else if (allWithUI)
 	{
-		screenChain.push_back(new TestChainScreen(testChain));
-		screenChain.push_back(new ReportScreen(testChain));
+		testFlowController = new TestChainFlowController(true);
 	} 
 	else
 	{
-		screenChain.push_back(new TestChooserScreen(testChain));
-		screenChain.push_back(new SingleTestScreen());
+		testFlowController = new SingleTestFlowController();
 	}
+
+	testFlowController->Init(testChain);
 }
 
 

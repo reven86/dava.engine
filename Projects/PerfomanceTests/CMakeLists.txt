@@ -11,6 +11,8 @@ include_directories   ( ${DAVA_INCLUDE_DIR} )
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Infrastructure" )
+include_directories   ( "Classes/Controller" )
+include_directories   ( "Classes/Screen" )
 
 set( TeamcityOutput          ${DAVA_TOOLS_DIR}/TeamcityOutput  )
 set( PackerTools             ${DAVA_TOOLS_DIR}/TexturePacker )

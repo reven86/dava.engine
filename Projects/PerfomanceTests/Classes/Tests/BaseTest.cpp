@@ -26,48 +26,100 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __SINGLE_TEST_SCREEN_H__
-#define __SINGLE_TEST_SCREEN_H__
-
-#include "DAVAEngine.h"
-#include "BaseScreen.h"
 #include "BaseTest.h"
 
-using namespace DAVA;
+const float32 BaseTest::FRAME_OFFSET = 5;
 
-class SingleTestScreen : public BaseScreen
+BaseTest::BaseTest(const String& _testName, uint32 frames, float32 delta, uint32 _debugFrame) :
+		frameNumber(0)
+	,	fixedDelta(delta)
+	,	targetFramesCount(frames)
+	,	targetTestTime(0)
+	,	testTime(0.0f)
+	,	startTime(0)
+	,	testName(_testName)
+	,	debugFrame(_debugFrame)
+	,	debuggable(false)
+
 {
-public:
-	SingleTestScreen();
-
-	virtual void OnStart(HashMap<String, BaseObject*>& params) override;
-	virtual void OnFinish(HashMap<String, BaseObject*>& params) override;
-
-	virtual void BeginFrame() override;
-	virtual void EndFrame() override;
-
-	virtual void Update(float32 timeElapsed) override;
-	virtual void Draw() override;
-	
-	virtual bool IsFinished() const override;
-
-	bool isDebuggableTest() const;
-
-protected:
-	virtual ~SingleTestScreen();
-
-private:
-	BaseTest* testForRun;
-};
-
-inline bool SingleTestScreen::IsFinished() const
-{
-	return testForRun->IsPerformed() && testForRun->GetDebugFrame() == 0;
 }
 
-inline bool SingleTestScreen::isDebuggableTest() const
+BaseTest::BaseTest(const String& _testName, uint32 _time) :
+		frameNumber(0)
+	,	fixedDelta(0.0f)
+	,	targetFramesCount(0)
+	,	targetTestTime(_time)
+	,	testTime(0.0f)
+	,	startTime(0)
+	,	testName(_testName)
+	,	debugFrame(0)
+	,	debuggable(false)
+
 {
-	return testForRun->GetDebugFrame() > 0;
 }
 
-#endif
+void BaseTest::LoadResources()
+{
+	scene = new Scene();
+	sceneView = new UI3DView(RenderManager::Instance()->viewport, true);
+	sceneView->SetScene(scene);
+
+	AddControl(sceneView);
+}
+
+void BaseTest::UnloadResources()
+{
+	SafeRelease(scene);
+}
+
+void BaseTest::OnFinish()
+{
+	elapsedTime = SystemTimer::Instance()->FrameStampTimeMS() - startTime;
+}
+
+void BaseTest::Update(float32 timeElapsed)
+{
+	bool frameForDebug = GetFrameNumber() > (GetDebugFrame() + BaseTest::FRAME_OFFSET);
+	float32 delta = timeElapsed;
+
+	if (IsDebuggable())
+	{
+		if (frameForDebug)
+		{
+			delta = 0.0f;
+		}
+		else
+		{
+			PerformTestLogic();
+		}
+	}
+	else
+	{
+		delta = 0.0f;
+
+		if (frameNumber > FRAME_OFFSET)
+		{
+			delta = fixedDelta > 0 ? fixedDelta : timeElapsed;
+
+			frames.push_back(FrameInfo(timeElapsed, frameNumber));
+			testTime += timeElapsed;
+
+			PerformTestLogic();
+		}
+	}
+
+	BaseScreen::Update(delta);
+}
+
+void BaseTest::BeginFrame()
+{
+	if (frameNumber > (FRAME_OFFSET - 1) && startTime == 0)
+	{
+		startTime = SystemTimer::Instance()->FrameStampTimeMS();
+	}
+}
+
+void BaseTest::EndFrame()
+{
+	frameNumber++;
+}

@@ -26,24 +26,49 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "BaseTest.h"
+#include "SingleTestFlowController.h"
 
-class PerfomanceTest : public BaseTest
+SingleTestFlowController::SingleTestFlowController() :
+		testForRun(nullptr)
+	,	testChooserScreen(nullptr)
+	,	currentScreen(nullptr)
 {
-public:
-	PerfomanceTest(uint32 frames, float32 delta, uint32 targetFrame);
-	PerfomanceTest(uint32 time);
+}
 
-protected:
+void SingleTestFlowController::Init(Vector<BaseTest*>& _testChain)
+{
+	TestFlowController::Init(_testChain);
 
-	void LoadResources() override;
-	void UnloadResources() override;
+	testChooserScreen = new TestChooserScreen(testChain);
+	currentScreen = testChooserScreen;
+}
 
-	void PerformTestLogic() override;
+void SingleTestFlowController::BeginFrame()
+{
+	if (!currentScreen->IsRegistered())
+	{
+		currentScreen->RegisterScreen();
+		currentScreen->OnStart();
+	}
 
-private:
-	static const String TEST_NAME;
+	currentScreen->BeginFrame();
+}
 
-	Entity* stoneEntity;
-};
+void SingleTestFlowController::EndFrame()
+{
+	currentScreen->EndFrame();
 
+	if (nullptr == testForRun)
+	{
+		if (testChooserScreen->IsFinished())
+		{
+			testForRun = testChooserScreen->GetTestForRun();
+			testForRun->SetDebuggable(true);
+			currentScreen = testForRun;
+		}
+	}
+	else if (testForRun->IsFinished())
+	{
+		testForRun->OnFinish();
+	}
+}

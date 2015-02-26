@@ -26,95 +26,10 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "BaseTest.h"
+#include "TestFlowController.h"
 
-const float32 BaseTest::FRAME_OFFSET = 1;
-
-BaseTest::BaseTest(const String& _testName, uint32 frames, float32 delta, uint32 _debugFrame) :
-frameNumber(0),
-fixedDelta(delta),
-targetFramesCount(frames), 
-targetTestTime(0),
-testTime(0),
-startTime(0),
-testName(_testName),
-debugFrame(_debugFrame)
-
+void TestFlowController::Init(Vector<BaseTest*>& _testChain)
 {
-	scene = new Scene();
-}
-
-BaseTest::BaseTest(const String& _testName, uint32 time) :
-frameNumber(0), 
-fixedDelta(0.0f),
-targetFramesCount(0),
-targetTestTime(time),
-testTime(0),
-startTime(0),
-testName(_testName),
-debugFrame(0)
-
-{
-	scene = new Scene();
-}
-
-
-BaseTest::~BaseTest()
-{
-	ReleaseTest();
-}
-
-void BaseTest::FinishTest()
-{
-	elapsedTime = SystemTimer::Instance()->FrameStampTimeMS() - startTime;
-}
-
-void BaseTest::ReleaseTest()
-{
-	SafeRelease(scene);
-}
-
-void BaseTest::SetupTest()
-{
-}
-
-void BaseTest::Draw()
-{
-	scene->Draw();
-	frameNumber++;
-}
-
-void BaseTest::Update(float32 timeElapsed)
-{
-	if (frameNumber > FRAME_OFFSET)
-	{
-		if (fixedDelta > 0)
-		{
-			scene->Update(fixedDelta);
-		}
-		else
-		{
-			scene->Update(timeElapsed);
-		}
-		
-		frames.push_back(FrameInfo(timeElapsed, frameNumber));
-		testTime += timeElapsed;
-	}
-	else
-	{
-		scene->Update(0.0f);
-	}	
-}
-
-void BaseTest::BeginFrame()
-{
-	if (frameNumber > 0 && startTime == 0)
-	{
-		startTime = SystemTimer::Instance()->FrameStampTimeMS();
-	}
-}
-
-void BaseTest::EndFrame()
-{
-
+	DVASSERT(!_testChain.empty());
+	testChain = _testChain;
 }

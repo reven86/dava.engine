@@ -26,77 +26,29 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "TestChainScreen.h"
+#ifndef __SINGLE_TEST_CONTROLLER_H__
+#define __SINGLE_TEST_CONTROLLER_H__
 
+#include "TestFlowController.h"
+#include "Infrastructure/Screen/TestChooserScreen.h"
+#include "Tests/BaseTest.h"
 
-TestChainScreen::TestChainScreen(const Vector<BaseTest*>& _testsChain) : 
-testsChain(_testsChain),
-currentTest(nullptr),
-currentTestIndex(0),
-testsFinished(false)
+class SingleTestFlowController : public TestFlowController
 {
-	currentTest = testsChain[currentTestIndex];
-	currentTest->SetupTest();
-}
+public:
+	SingleTestFlowController();
 
-TestChainScreen::~TestChainScreen()
-{
-}
+	void Init(Vector<BaseTest*>& testChain) override;
 
-bool TestChainScreen::IsFinished() const
-{
-	return testsFinished;
-}
+	void BeginFrame() override;
+	void EndFrame() override;
 
-void TestChainScreen::OnStart(HashMap<String, BaseObject*>& params)
-{
-}
+private:
 
-void TestChainScreen::OnFinish(HashMap<String, BaseObject*>& params)
-{
+	BaseTest* testForRun;
+	TestChooserScreen* testChooserScreen;
 
-}
+	BaseScreen* currentScreen;
+};
 
-void TestChainScreen::BeginFrame()
-{
-	RenderManager::Instance()->BeginFrame();
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-
-	currentTest->BeginFrame();
-}
-
-void TestChainScreen::EndFrame()
-{
-	if (currentTest->IsPerformed())
-	{
-		currentTest->FinishTest();
-		currentTestIndex++;
-
-		if (currentTestIndex < testsChain.size())
-		{
-			currentTest = testsChain[currentTestIndex];
-			currentTest->SetupTest();
-		}
-		else
-		{
-			testsFinished = true;
-		}
-	}
-	else
-	{
-		currentTest->EndFrame();
-	}
-
-	RenderManager::Instance()->EndFrame();
-	RenderManager::Instance()->ProcessStats();
-}
-
-void TestChainScreen::Update(float32 timeElapsed)
-{
-	currentTest->Update(timeElapsed);
-}
-
-void TestChainScreen::Draw()
-{
-	currentTest->Draw();
-}
+#endif

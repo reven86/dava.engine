@@ -26,43 +26,33 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __TEST_CHAIN_SCREEN_H__
-#define __TEST_CHAIN_SCREEN_H__
+#ifndef __REPORT_SCREEN_H__
+#define __REPORT_SCREEN_H__
 
 #include "DAVAEngine.h"
 #include "BaseScreen.h"
-
-#include "Tests/PerfomanceTest.h"
+#include "Tests/BaseTest.h"
 
 using namespace DAVA;
 
-class TestChainScreen : public BaseScreen
+class ReportScreen : public BaseScreen
 {
 public:
-	TestChainScreen(const Vector<BaseTest*>& testsChain);
+	ReportScreen(const Vector<BaseTest*>& testsChain);
 
-	virtual void OnStart(HashMap<String, BaseObject*>& params) override;
-	virtual void OnFinish(HashMap<String, BaseObject*>& params) override;
-
-	virtual void BeginFrame() override;
-	virtual void EndFrame() override;
-
-	virtual void Update(float32 timeElapsed) override;
-	virtual void Draw() override;
-
-	virtual bool IsFinished() const override;
+	bool IsFinished() const override;
 
 protected:
-	virtual ~TestChainScreen();
+
+	void LoadResources() override;
+	void UnloadResources() override;
 
 private:
+	void CreateReportScreen();
 
-	Vector<BaseTest*> testsChain;
-	BaseTest* currentTest;
-
-	uint32 currentTestIndex;
-
-	bool testsFinished;
+	Vector<BaseTest*> testChain; 
+	Font* reportFont;
 };
 
 #endif
+

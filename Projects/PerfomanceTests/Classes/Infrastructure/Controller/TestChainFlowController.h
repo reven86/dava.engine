@@ -26,69 +26,33 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "SingleTestScreen.h"
+#ifndef __TEST_CHAIN_FLOW_CONTROLLER_H__
+#define __TEST_CHAIN_FLOW_CONTROLLER_H__
 
+#include "TestFlowController.h"
+#include "Infrastructure/Screen/ReportScreen.h"
 
-SingleTestScreen::SingleTestScreen(): 
-testForRun(nullptr)
+class TestChainFlowController: public TestFlowController
 {
-}
+public:
+	TestChainFlowController(bool showUIReport);
 
-SingleTestScreen::~SingleTestScreen()
-{
-}
+	void Init(Vector<BaseTest*>& testChain) override;
 
-void SingleTestScreen::OnStart(HashMap<String, BaseObject*>& params)
-{
-	auto it = params.find(TEST_FOR_RUN);
-	if (it != params.end())
-	{
-		testForRun = static_cast<BaseTest*>(it->second);
-		testForRun->SetupTest();
-	}
+	void BeginFrame() override;
+	void EndFrame() override;
 
-	DVASSERT(testForRun != nullptr);
-}
+private:
 
-void SingleTestScreen::OnFinish(HashMap<String, BaseObject*>& params)
-{
+	ReportScreen* reportScreen;
+	BaseScreen* currentScreen;
+	BaseTest* currentTest;
 
-}
+	uint32 currentTestIndex;
 
-void SingleTestScreen::BeginFrame()
-{
-	RenderManager::Instance()->BeginFrame();
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+	bool showUIReport;
+	bool reportCreated;
+	bool testsFinished;
+};
 
-	testForRun->BeginFrame();
-}
-
-void SingleTestScreen::EndFrame()
-{
-	testForRun->EndFrame();
-	if (testForRun->IsPerformed())
-	{
-		testForRun->FinishTest();
-	}
-
-	RenderManager::Instance()->EndFrame();
-	RenderManager::Instance()->ProcessStats();
-}
-
-void SingleTestScreen::Update(float32 timeElapsed)
-{
-	if (testForRun->IsDebuggable() 
-		&& testForRun->GetFrameNumber() > (testForRun->GetDebugFrame() + BaseTest::FRAME_OFFSET))
-	{
-		testForRun->Update();
-	}
-	else
-	{
-		testForRun->Update(timeElapsed);	
-	}	
-}
-
-void SingleTestScreen::Draw()
-{
-	testForRun->Draw();
-}
+#endif

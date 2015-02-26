@@ -26,16 +26,34 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __BASE_SCREEN_H__
+#define __BASE_SCREEN_H__
 
-#include "BaseScreen.h"
+#include "DAVAEngine.h"
 
-const String BaseScreen::TEST_FOR_RUN = "TEST_FOR_RUN";
+using namespace DAVA;
 
-BaseScreen::BaseScreen()
+class BaseScreen : public UIScreen
 {
-}
+public:
+	BaseScreen();
 
+	virtual void OnStart() {};
+	virtual void OnFinish() {};
+	virtual void RegisterScreen();
 
-BaseScreen::~BaseScreen()
-{
-}
+	virtual bool IsRegistered() const;
+	virtual bool IsFinished() const;
+
+	virtual void BeginFrame() {};
+	virtual void EndFrame() {};
+
+	static uint32 SCREEN_INDEX;
+
+protected:
+
+	int32 currentScreenIndex;
+};
+
+#endif
+

@@ -26,24 +26,63 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "BaseTest.h"
+#include "TestChainFlowController.h"
 
-class PerfomanceTest : public BaseTest
+TestChainFlowController::TestChainFlowController(bool _showUIReport) :
+		currentTest(nullptr)
+	,	currentScreen(nullptr)
+	,	currentTestIndex(0)
+	,	showUIReport(_showUIReport)
+	,	testsFinished(false)
+	,	reportCreated(false)
+
 {
-public:
-	PerfomanceTest(uint32 frames, float32 delta, uint32 targetFrame);
-	PerfomanceTest(uint32 time);
+}
 
-protected:
+void TestChainFlowController::Init(Vector<BaseTest*>& _testChain)
+{
+	TestFlowController::Init(_testChain);
 
-	void LoadResources() override;
-	void UnloadResources() override;
+	currentTest = testChain[currentTestIndex];
+	currentScreen = currentTest;
+}
 
-	void PerformTestLogic() override;
+void TestChainFlowController::BeginFrame()
+{
+	if (!currentScreen->IsRegistered())
+	{
+		currentScreen->RegisterScreen();
+		currentScreen->OnStart();
+	}
 
-private:
-	static const String TEST_NAME;
+	currentTest->BeginFrame();
+}
 
-	Entity* stoneEntity;
-};
+void TestChainFlowController::EndFrame()
+{
+	if (currentTest->IsFinished() && !testsFinished) 
+	{
+		currentTest->OnFinish();
+		currentTestIndex++;
 
+		testsFinished = testChain.size() == currentTestIndex;
+
+		if (!testsFinished)
+		{
+			currentTest = testChain[currentTestIndex];
+			currentScreen = currentTest;
+		}
+	}
+
+	if (testsFinished && !reportCreated && showUIReport)
+	{
+		currentScreen = new ReportScreen(testChain);
+		reportCreated = true;
+	}
+	if (testsFinished && !showUIReport)
+	{
+		Core::Instance()->Quit();
+	}
+
+	currentScreen->EndFrame();
+}

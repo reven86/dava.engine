@@ -26,33 +26,31 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __BASE_SCREEN_H__
-#define __BASE_SCREEN_H__
 
-#include "DAVAEngine.h"
+#include "BaseScreen.h"
 
-using namespace DAVA;
+uint32 BaseScreen::SCREEN_INDEX = 0;
 
-class BaseScreen : public BaseObject
+BaseScreen::BaseScreen() :
+	currentScreenIndex(-1)
 {
-public:
-	BaseScreen();
+}
 
-	virtual bool IsFinished() const = 0;
+void BaseScreen::RegisterScreen()
+{
+	UIScreenManager::Instance()->RegisterScreen(SCREEN_INDEX, this);
+	UIScreenManager::Instance()->SetScreen(SCREEN_INDEX);
+	
+	currentScreenIndex = SCREEN_INDEX;
+	SCREEN_INDEX++;
+}
 
-	virtual void BeginFrame() = 0;
-	virtual void EndFrame() = 0;
+bool BaseScreen::IsRegistered() const
+{
+	return this == UIScreenManager::Instance()->GetScreen(currentScreenIndex);
+}
 
-	virtual void OnStart(HashMap<String, BaseObject*>& params) = 0;
-	virtual void OnFinish(HashMap<String, BaseObject*>& params) = 0;
-
-	virtual void Update(float32 timeElapsed) = 0;
-	virtual void Draw() = 0;
-
-	static const String TEST_FOR_RUN;
-protected:
-	virtual ~BaseScreen();
-};
-
-#endif
-
+bool BaseScreen::IsFinished() const 
+{ 
+	return false; 
+}

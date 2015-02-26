@@ -26,40 +26,26 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __REPORT_SCREEN_H__
-#define __REPORT_SCREEN_H__
+#ifndef __TEST_FLOW_CONTROLLER_H__
+#define __TEST_FLOW_CONTROLLER_H__
 
 #include "DAVAEngine.h"
-#include "BaseScreen.h"
-#include "BaseTest.h"
+#include "Tests/BaseTest.h"
 
-using namespace DAVA;
-
-class ReportScreen : public BaseScreen
+class TestFlowController
 {
 public:
-	ReportScreen(const Vector<BaseTest*>& testsChain);
 
-	virtual void OnStart(HashMap<String, BaseObject*>& params) override;
-	virtual void OnFinish(HashMap<String, BaseObject*>& params) override;
+	virtual void Init(Vector<BaseTest*>& registeredTests);
+	virtual void Finish() {};
 
-	virtual void BeginFrame() override;
-	virtual void EndFrame() override;
+	virtual void Update(float32 delta) {};
 
-	virtual void Update(float32 timeElapsed) override;
-	virtual void Draw() override;
-
-	virtual bool IsFinished() const;
-
-	void CreateReportScreen();
+	virtual void BeginFrame() = 0;
+	virtual void EndFrame() = 0;
 
 protected:
-	virtual ~ReportScreen();
-
-private:
-
-	Vector<BaseTest*> testChain; 
+	Vector<BaseTest*> testChain;
 };
 
-#endif
-
+#endif 

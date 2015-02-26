@@ -33,10 +33,11 @@
 #include "DAVAEngine.h"
 #include "TeamCityTestsOutput.h"
 
-#include "SingleTestScreen.h"
-#include "TestChainScreen.h"
-#include "ReportScreen.h"
-#include "TestChooserScreen.h"
+#include "Infrastructure/Controller/TestFlowController.h"
+#include "Infrastructure/Controller/TestChainFlowController.h"
+#include "Infrastructure/Controller/SingleTestFlowController.h"
+
+#include "Tests/PerfomanceTest.h"
 
 #include <list>
 #include <fstream>
@@ -45,9 +46,6 @@ using namespace DAVA;
 
 class GameCore : public ApplicationCore
 {
-
-protected:
-    virtual ~GameCore();
 public:    
     GameCore();
 
@@ -74,16 +72,11 @@ public:
 	virtual void EndFrame() override;
     
 private:
-    void InitScreenChain();
+    void InitScreenController();
 	void RegisterTests();
 
-	HashMap<String, BaseObject*> params;
 	Vector<BaseTest*> testChain;
-
-	BaseScreen* currentScreen;
-	Vector<BaseScreen*> screenChain;
-
-	uint32 screenIndex;
+	TestFlowController* testFlowController;
 };
 
 

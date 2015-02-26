@@ -31,35 +31,38 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "DAVAEngine.h"
 #include "BaseScreen.h"
-#include "BaseTest.h"
-
+#include "Tests/BaseTest.h"
 
 class TestChooserScreen: public BaseScreen
 {
 public:
 	TestChooserScreen(const Vector<BaseTest*>& testsChain);
 
-	virtual bool IsFinished() const override;
+	bool IsFinished() const override;
+	void OnFinish() override;
 
-	virtual void BeginFrame() override;
-	virtual void EndFrame() override;
-
-	virtual void OnStart(HashMap<String, BaseObject*>& params) override;
-	virtual void OnFinish(HashMap<String, BaseObject*>& params) override;
-
-	virtual void Update(float32 timeElapsed) override;
-	virtual void Draw() override;
+	BaseTest* GetTestForRun() const;
 
 protected:
-	virtual ~TestChooserScreen();
+
+	void OnButtonPressed(BaseObject *obj, void *data, void *callerData);
+
+	void LoadResources() override;
+	void UnloadResources() override;
 
 private:
-
 	void CreateChooserUI();
 
 	Vector<BaseTest*> testChain;
 	BaseTest* testForRun;
+
+	Font* chooserFont;
 };
+
+inline BaseTest* TestChooserScreen::GetTestForRun() const
+{
+	return testForRun;
+}
 
 #endif
 
