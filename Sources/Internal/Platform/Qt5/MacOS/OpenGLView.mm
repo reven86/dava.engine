@@ -264,7 +264,7 @@
 -(void)moveTouchsToVector:(int)touchPhase curEvent:(NSEvent*)curEvent outTouches:(Vector<UIEvent>*)outTouches
 {
 	int button = 0;
-	if(curEvent.type == NSLeftMouseDown || curEvent.type == NSLeftMouseUp || curEvent.type == NSLeftMouseDragged || curEvent.type == NSMouseMoved)
+	if(curEvent.type == NSLeftMouseDown || curEvent.type == NSLeftMouseUp || curEvent.type == NSLeftMouseDragged)
 	{
 		button = 1;
 	}
@@ -272,7 +272,7 @@
 	{
 		button = 2;
 	}
-	else 
+	else if(curEvent.type != NSMouseMoved)
 	{
 		button = curEvent.buttonNumber + 1;
 	}
