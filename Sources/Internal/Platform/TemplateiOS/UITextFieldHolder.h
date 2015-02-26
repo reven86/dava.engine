@@ -50,8 +50,6 @@
     CGRect lastKeyboardFrame;
 }
 
-//@property (nonatomic, setter=setTextField:) DAVA::UITextField * davaTextField;
-
 - (void) setTextField:(DAVA::UITextField *) tf;
 - (id) init;
 - (void) dealloc;
