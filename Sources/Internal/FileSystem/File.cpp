@@ -227,13 +227,15 @@ uint32 File::ReadString(String & destinationString)
 uint32 File::ReadLine(void * pointerToData, uint32 bufferSize)
 {
 	uint8 *inPtr = (uint8*)pointerToData;
-	while(!IsEof())
+    while (0 < bufferSize && !IsEof())
 	{
         uint8 nextChar;
         if (GetNextChar(&nextChar))
         {
             *inPtr = nextChar;
             inPtr++;
+            bufferSize--;
+            DVASSERT_MSG(0 < bufferSize, "Small buffer!!!");
         }
         else
         {
@@ -281,19 +283,7 @@ bool File::GetNextChar(uint8 *nextChar)
     else if ('\r' == *nextChar)
     {
         // we don't need to return \r as a charracter
-        actuallyRead = Read(nextChar, 1);
-        if (1 == actuallyRead)
-        {
-            if ('\n' == *nextChar)
-            {
-                // there was a last charracter in string ended by \r\n, then we cannot read more
-                return false;
-            }
-        }
-
-        // there are wrong \r - have no \n and if there is another text - return !IsEof() == true
-        // if there are eof - then \r is a last charracter and we cannot read next char - return !IsEof() == false.
-        return !IsEof();
+        return GetNextChar(nextChar);
     }
     else if ('\n' == *nextChar)
     {
