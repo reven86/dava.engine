@@ -105,6 +105,7 @@ int main(int argc, char *argv[])
 
 	if(cmdLine.IsEnabled())
 	{
+        /*
 		Core::Instance()->EnableConsoleMode();
         DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_WARNING);
 
@@ -145,6 +146,7 @@ int main(int argc, char *argv[])
 #endif //defined (__DAVAENGINE_WIN32__)
         
 		SceneValidator::Instance()->Release();
+         */
 	}
     else
     {
@@ -233,7 +235,6 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     QtMainWindow *mainWindow = new QtMainWindow();
 
     mainWindow->EnableGlobalTimeout( true );
-    mainWindow->show();
     auto glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
     FrameworkLoop::Instance()->SetOpenGLWindow( glWidget->GetGLWindow() );
 
@@ -244,6 +245,7 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     }
 
     DavaLoop::Instance()->StartLoop( FrameworkLoop::Instance() );
+    mainWindow->show();
 
     // start app
     QApplication::exec();

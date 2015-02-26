@@ -50,11 +50,6 @@ void QtLayer::ReleaseAutoreleasePool(void *pool)
     NSAutoreleasePool * autoreleasePool = (NSAutoreleasePool *)pool;
     [autoreleasePool release];
 }
-
-void QtLayer::CreateConsoleOpenGLContext()
-{
-    ConsoleOpenGLView *view = [[ConsoleOpenGLView alloc]initWithFrame: NSMakeRect(0, 0, 0, 0)];
-}
     
 };
 
