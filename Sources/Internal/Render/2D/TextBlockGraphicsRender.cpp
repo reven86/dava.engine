@@ -69,10 +69,16 @@ void TextBlockGraphicsRender::PreDraw()
 		return;
 	
 	isPredrawed = true;
-    //RenderSystem2D::Instance()->PushRenderTarget();
-    //RenderSystem2D::Instance()->SetRenderTarget(sprite);
-    //DrawText();
-    //RenderSystem2D::Instance()->PopRenderTarget();
+
+    Texture * rt = sprite->GetTexture();
+    Rect oldviewport = RenderManager::Instance()->GetViewport();
+
+    RenderManager::Instance()->SetRenderTarget(rt);
+    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)rt->GetWidth(), (float32)rt->GetHeight()));
+    DrawText();
+
+    RenderManager::Instance()->SetRenderTarget(0);
+    RenderManager::Instance()->SetViewport(oldviewport);
 }
 	
 Font::StringMetrics TextBlockGraphicsRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)

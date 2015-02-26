@@ -119,7 +119,6 @@ public:
 	{
 			SPRITE_FROM_FILE = 0
 		,	SPRITE_FROM_TEXTURE
-		,	SPRITE_RENDER_TARGET
 	};
 
 	enum eRectsAndOffsets

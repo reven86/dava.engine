@@ -232,17 +232,17 @@ void Sprite::InitFromFile(File *file)
 	file->ReadLine(tempBuf, 1024);
 	sscanf(tempBuf, "%d", &frameCount);
 
-	texCoords = new GLfloat*[frameCount];
-	frameVertices = new GLfloat*[frameCount];
+	texCoords = new float32*[frameCount];
+	frameVertices = new float32*[frameCount];
 	rectsAndOffsets = new float32*[frameCount];
 	frameTextureIndex = new int32[frameCount];
 
 	frameNames.resize(frameCount);
 	for (int32 i = 0; i < frameCount; i++)
 	{
-		frameVertices[i] = new GLfloat[8];
-		texCoords[i] = new GLfloat[8];
-		rectsAndOffsets[i] = new GLfloat[6];
+		frameVertices[i] = new float32[8];
+		texCoords[i] = new float32[8];
+		rectsAndOffsets[i] = new float32[6];
     	char frameName[128] = {0};
     	
 		int32 x, y, dx, dy, xOff, yOff;
@@ -288,14 +288,14 @@ void Sprite::InitFromFile(File *file)
 		dx += x;
 		dy += y;
 
-		texCoords[i][0] = ((GLfloat)x + xof) / textures[frameTextureIndex[i]]->width;
-		texCoords[i][1] = ((GLfloat)y + yof) / textures[frameTextureIndex[i]]->height;
-		texCoords[i][2] = ((GLfloat)dx - xof) / textures[frameTextureIndex[i]]->width;
-		texCoords[i][3] = ((GLfloat)y + yof) / textures[frameTextureIndex[i]]->height;
-		texCoords[i][4] = ((GLfloat)x + xof) / textures[frameTextureIndex[i]]->width;
-		texCoords[i][5] = ((GLfloat)dy - yof) / textures[frameTextureIndex[i]]->height;
-		texCoords[i][6] = ((GLfloat)dx - xof) / textures[frameTextureIndex[i]]->width;
-		texCoords[i][7] = ((GLfloat)dy - yof) / textures[frameTextureIndex[i]]->height;
+		texCoords[i][0] = ((float32)x + xof) / textures[frameTextureIndex[i]]->width;
+        texCoords[i][1] = ((float32)y + yof) / textures[frameTextureIndex[i]]->height;
+        texCoords[i][2] = ((float32)dx - xof) / textures[frameTextureIndex[i]]->width;
+        texCoords[i][3] = ((float32)y + yof) / textures[frameTextureIndex[i]]->height;
+        texCoords[i][4] = ((float32)x + xof) / textures[frameTextureIndex[i]]->width;
+        texCoords[i][5] = ((float32)dy - yof) / textures[frameTextureIndex[i]]->height;
+        texCoords[i][6] = ((float32)dx - xof) / textures[frameTextureIndex[i]]->width;
+        texCoords[i][7] = ((float32)dy - yof) / textures[frameTextureIndex[i]]->height;
 	}
 	defaultPivotPoint.x = 0;
 	defaultPivotPoint.y = 0;
@@ -472,16 +472,16 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 	defaultPivotPoint.y = 0;
 	frameCount = 1;
 
-    texCoords = new GLfloat*[frameCount];
-    frameVertices = new GLfloat*[frameCount];
-    rectsAndOffsets = new GLfloat*[frameCount];
+    texCoords = new float32*[frameCount];
+    frameVertices = new float32*[frameCount];
+    rectsAndOffsets = new float32*[frameCount];
     frameTextureIndex = new int32[frameCount];
 
     for (int i = 0;	i < frameCount; i++)
     {
-        frameVertices[i] = new GLfloat[8];
-        texCoords[i] = new GLfloat[8];
-        rectsAndOffsets[i] = new GLfloat[6];
+        frameVertices[i] = new float32[8];
+        texCoords[i] = new float32[8];
+        rectsAndOffsets[i] = new float32[6];
         frameTextureIndex[i] = 0;
 
 		float32 x, y, dx,dy, xOff, yOff;
