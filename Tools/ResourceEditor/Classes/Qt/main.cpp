@@ -237,6 +237,7 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     mainWindow->EnableGlobalTimeout( true );
     auto glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
     FrameworkLoop::Instance()->SetOpenGLWindow( glWidget->GetGLWindow() );
+    mainWindow->show();
 
     ProjectManager::Instance()->ProjectOpenLast();
     if ( ProjectManager::Instance()->IsOpened() )
@@ -245,7 +246,6 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     }
 
     DavaLoop::Instance()->StartLoop( FrameworkLoop::Instance() );
-    mainWindow->show();
 
     // start app
     QApplication::exec();
