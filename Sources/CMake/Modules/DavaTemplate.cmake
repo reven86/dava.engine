@@ -79,6 +79,8 @@ if( QT_PREFIX )
 
 else()
     if( WIN32 )
+        add_definitions        ( -D_UNICODE 
+                                 -DUNICODE )
         list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.cpp 
                                 ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.h  )
 
