@@ -83,8 +83,8 @@ else()
                                 ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.h  )
 
     elseif( MACOS )
-        list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateMacOS/NPAPICorePlatformMacOS.cpp 
-                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/NPAPICorePlatformMacOS.h )
+        #list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateMacOS/NPAPICorePlatformMacOS.cpp 
+        #                        ${DAVA_PLATFORM_SRC}/TemplateMacOS/NPAPICorePlatformMacOS.h )
 
     endif()
 
