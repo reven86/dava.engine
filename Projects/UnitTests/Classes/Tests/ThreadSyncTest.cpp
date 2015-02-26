@@ -51,7 +51,9 @@ void ThreadSyncTest::UnloadResources()
 void ThreadSyncTest::SomeThreadFunc(BaseObject * caller, void * callerData, void * userData)
 {
     someValue = 0;
+    cvMutex.Lock();
     Thread::Signal(&cv);
+    cvMutex.Unlock();
 }
 
 void ThreadSyncTest::ThreadSleepTestFunction(PerfFuncData * data)
@@ -65,12 +67,13 @@ void ThreadSyncTest::ThreadSleepTestFunction(PerfFuncData * data)
 
 void ThreadSyncTest::ThreadSyncTestFunction(PerfFuncData * data)
 {
-	someThread = Thread::Create(Message(this, &ThreadSyncTest::SomeThreadFunc));
+    cvMutex.Lock();
+    someThread = Thread::Create(Message(this, &ThreadSyncTest::SomeThreadFunc));
     someValue = -1;
     someThread->Start();
-    Mutex mutex;
-    mutex.Lock();
-    Thread::Wait(&cv, &mutex);
+    Thread::Wait(&cv, &cvMutex);
+    cvMutex.Unlock();
+
     TEST_VERIFY(someValue == 0);
     someThread->Join();
     TEST_VERIFY(0 == someThread->Release());
@@ -128,10 +131,12 @@ void ThreadSyncTest::TestThread(PerfFuncData * data)
     TEST_VERIFY(Thread::STATE_ENDED == shortThread->GetState());
 
     TEST_VERIFY(0 == shortThread->Release());
-	shortThread = NULL;
-	TEST_VERIFY(0 == infiniteThread->Release());
-	infiniteThread = NULL;
-
+    shortThread = NULL;
+    TEST_VERIFY(0 == infiniteThread->Release());
+    infiniteThread = NULL;
+/*
+    //  Disable because it affects all threads including JobManager threads and worker threads,
+    //  so this test is intrusive
     infiniteThread = Thread::Create(Message(this, &ThreadSyncTest::InfiniteThreadFunction));
     shortThread = Thread::Create(Message(this, &ThreadSyncTest::ShortThreadFunction));
 
@@ -140,7 +145,7 @@ void ThreadSyncTest::TestThread(PerfFuncData * data)
 
     Thread::Sleep(50);
     timeout = 3000;
-    while (timeout-- > 0 
+    while (timeout-- > 0
         && Thread::STATE_RUNNING != infiniteThread->GetState()
         && Thread::STATE_RUNNING != shortThread->GetState())
     {
@@ -150,10 +155,12 @@ void ThreadSyncTest::TestThread(PerfFuncData * data)
     Thread::Id itid = infiniteThread->GetId();
     Thread::Id stid = shortThread->GetId();
     TEST_VERIFY(itid != stid);
-/*
- 
-//  Disable because it affects all threads including JobManager threads and worker threads,
-//  so this test is intrusive
+
+    infiniteThread->Kill();
+    TEST_VERIFY(0 == shortThread->Release());
+
+    shortThread->Kill();
+    TEST_VERIFY(0 == shortThread->Release());
 
     Thread::KillAll();
     

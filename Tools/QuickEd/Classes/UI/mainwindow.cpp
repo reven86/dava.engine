@@ -65,8 +65,10 @@ const QString APP_COMPANY = "DAVA";
 const QString APP_GEOMETRY = "geometry";
 const QString APP_STATE = "windowstate";
 
-
 static const char* COLOR_PROPERTY_ID = "color";
+
+
+using namespace DAVA;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)

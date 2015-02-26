@@ -1,16 +1,15 @@
 cmake_minimum_required (VERSION 3.0)
-
-project      ( UnitTests )
-
-if( ANDROID )
-    project      ( UnitTestsLib )
-
-endif()
-
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
-
 include      ( CMake-common )
 include      ( FindDavaFramework )
+
+if( ANDROID )
+    project ( UnitTestsLib )
+
+else()
+    project ( UnitTests )
+
+endif()
 
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Infrastructure" )

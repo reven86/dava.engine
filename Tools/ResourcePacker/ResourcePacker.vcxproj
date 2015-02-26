@@ -98,7 +98,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>FrameworkTools.lib;Win32Framework.lib;kernel32.lib;user32.lib;gdi32.lib;odbc32.lib;odbccp32.lib;ole32.lib;oleaut32.lib;winmm.lib;wsock32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>./../../Projects/Win32Framework/FrameworkTools/$(Configuration);./../../Projects/Win32Framework/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./../../Projects/Win32Framework/FrameworkTools/$(Configuration);./../../Projects/Win32Framework/$(Configuration);./../../Tools/Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
