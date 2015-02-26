@@ -65,11 +65,10 @@ ApplicationCore::~ApplicationCore()
 void ApplicationCore::Update(float32 timeElapsed)
 {
 	TIME_PROFILE("ApplicationCore::Update");
-
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Update(timeElapsed);
 #endif
-	SoundSystem::Instance()->Update(timeElapsed);
+    SoundSystem::Instance()->Update(timeElapsed);
 	AnimationManager::Instance()->Update(timeElapsed);    
 	UIControlSystem::Instance()->Update();
 }
@@ -90,10 +89,12 @@ void ApplicationCore::BeginFrame()
 {
     RenderSystem2D::Instance()->Reset();
 	RenderManager::Instance()->BeginFrame();
+    RenderSystem2D::Instance()->Reset();
 }
 
 void ApplicationCore::EndFrame()
 {
+    RenderSystem2D::Instance()->Flush();
 	RenderManager::Instance()->EndFrame();
     RenderManager::Instance()->ProcessStats();
 }

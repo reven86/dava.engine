@@ -48,6 +48,11 @@
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 
+#include "Scene/System/CameraSystem.h"
+#include "Scene/System/CollisionSystem.h"
+#include "Scene/System/HoodSystem.h"
+
+#include "Scene/System/EditorLODSystem.h"
 
 
 const FastName MATERIAL_FOR_REBIND = FastName("Global");
@@ -150,6 +155,9 @@ SceneEditor2::SceneEditor2()
     pathSystem = new PathSystem(this);
     AddSystem(pathSystem, MAKE_COMPONENT_MASK(Component::PATH_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     
+	editorLODSystem = new EditorLODSystem(this);
+	AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT));
+
 	SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
 
 	SceneSignals::Instance()->EmitOpened(this);

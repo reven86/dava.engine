@@ -18,7 +18,6 @@ public:
 private:
     // DAVA::LoggerOutput
     virtual void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) override;
-    virtual void Output(DAVA::Logger::eLogLevel ll, const DAVA::char16* text) override;
 private:
     void Output(DAVA::Logger::eLogLevel ll, const QString &text) const;
 private:

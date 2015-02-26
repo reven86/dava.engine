@@ -255,11 +255,11 @@ namespace DAVA
                                                          length : string.size() * sizeof(wchar_t)
                                                        encoding : CFStringConvertEncodingToNSStringEncoding ( kCFStringEncodingUTF32LE ) ] autorelease];
 
-        NSString* truncatedText = (NSString*)TruncateText(text, textFieldHolder->cppTextField->GetMaxLength());
-        [textFieldHolder->textField setText:truncatedText];
-        [truncatedText release];
-
+        textFieldHolder->textField.text = (NSString*)TruncateText(text, textFieldHolder->cppTextField->GetMaxLength());
         [textFieldHolder->textField.undoManager removeAllActions];
+
+        // Notify UITextFieldDelegate::TextFieldOnTextChanged event
+        [textFieldHolder->textField sendActionsForControlEvents:UIControlEventEditingChanged];
     }
 	
     void UITextFieldiPhone::GetText(WideString & string) const

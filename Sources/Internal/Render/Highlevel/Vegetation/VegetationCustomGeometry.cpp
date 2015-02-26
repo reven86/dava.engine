@@ -211,7 +211,7 @@ void VegetationCustomGeometry::Build(Vector<VegetationRenderData*>& renderDataAr
         vertexRDO->SetStream(EVF_BINORMAL, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].binormal));
         vertexRDO->SetStream(EVF_TANGENT, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].tangent));
         vertexRDO->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, sizeof(VegetationVertex), &(vertexData[0].texCoord0));
-        vertexRDO->BuildVertexBuffer(vertexData.size(), true);
+        vertexRDO->BuildVertexBuffer(vertexData.size(), BDT_STATIC_DRAW, true);
         
         Vector<Vector<Vector<VegetationSortedBufferItem> > >& indexBuffers = renderData->GetIndexBuffers();
         
@@ -245,7 +245,7 @@ void VegetationCustomGeometry::Build(Vector<VegetationRenderData*>& renderDataAr
                     sortBufferItem.SetRenderDataObjectAttachment(vertexRDO);
                     sortBufferItem.sortDirection = sortData.sortDirection;
                     
-                    sortBufferItem.rdo->BuildIndexBuffer(true);
+                    sortBufferItem.rdo->BuildIndexBuffer(BDT_STATIC_DRAW, true);
                     sortBufferItem.rdo->AttachVertices(vertexRDO);
                     
                     SafeRelease(indexBuffer);

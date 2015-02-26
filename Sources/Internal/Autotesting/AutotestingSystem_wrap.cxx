@@ -2639,17 +2639,18 @@ SWIG_Lua_dostring(lua_State *L, const char *str) {
 #define SWIGTYPE_p_float swig_types[12]
 #define SWIGTYPE_p_int swig_types[13]
 #define SWIGTYPE_p_long_long swig_types[14]
-#define SWIGTYPE_p_short swig_types[15]
-#define SWIGTYPE_p_signed_char swig_types[16]
-#define SWIGTYPE_p_std__string swig_types[17]
-#define SWIGTYPE_p_std__wstring swig_types[18]
-#define SWIGTYPE_p_unsigned_char swig_types[19]
-#define SWIGTYPE_p_unsigned_int swig_types[20]
-#define SWIGTYPE_p_unsigned_long_long swig_types[21]
-#define SWIGTYPE_p_unsigned_short swig_types[22]
-#define SWIGTYPE_p_wchar_t swig_types[23]
-static swig_type_info *swig_types[25];
-static swig_module_info swig_module = {swig_types, 24, 0, 0, 0, 0};
+#define SWIGTYPE_p_lua_State swig_types[15]
+#define SWIGTYPE_p_short swig_types[16]
+#define SWIGTYPE_p_signed_char swig_types[17]
+#define SWIGTYPE_p_std__string swig_types[18]
+#define SWIGTYPE_p_std__wstring swig_types[19]
+#define SWIGTYPE_p_unsigned_char swig_types[20]
+#define SWIGTYPE_p_unsigned_int swig_types[21]
+#define SWIGTYPE_p_unsigned_long_long swig_types[22]
+#define SWIGTYPE_p_unsigned_short swig_types[23]
+#define SWIGTYPE_p_wchar_t swig_types[24]
+static swig_type_info *swig_types[26];
+static swig_module_info swig_module = {swig_types, 25, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -6407,17 +6408,44 @@ fail:
 static int _wrap_AutotestingSystemLua_MakeScreenshot(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
+  bool arg2 ;
   DAVA::String result;
   
-  SWIG_check_num_args("DAVA::AutotestingSystemLua::MakeScreenshot",1,1)
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::MakeScreenshot",2,2)
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::MakeScreenshot",1,"DAVA::AutotestingSystemLua *");
+  if(!lua_isboolean(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::MakeScreenshot",2,"bool");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
     SWIG_fail_ptr("AutotestingSystemLua_MakeScreenshot",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
   }
   
-  result = (arg1)->MakeScreenshot();
+  arg2 = (lua_toboolean(L, 2)!=0);
+  result = (arg1)->MakeScreenshot(arg2);
   lua_pushlstring(L,(&result)->data(),(&result)->size()); SWIG_arg++;
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_AutotestingSystemLua_GetLuaState(lua_State* L) {
+  int SWIG_arg = 0;
+  DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
+  lua_State *result = 0 ;
+  
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::GetLuaState",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::GetLuaState",1,"DAVA::AutotestingSystemLua *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
+    SWIG_fail_ptr("AutotestingSystemLua_GetLuaState",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
+  }
+  
+  result = (lua_State *)(arg1)->GetLuaState();
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_lua_State,0); SWIG_arg++; 
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -6481,6 +6509,7 @@ static swig_lua_method swig_AutotestingSystemLua_methods[]= {
     { "WriteString", _wrap_AutotestingSystemLua_WriteString},
     { "ReadString", _wrap_AutotestingSystemLua_ReadString},
     { "MakeScreenshot", _wrap_AutotestingSystemLua_MakeScreenshot},
+    { "GetLuaState", _wrap_AutotestingSystemLua_GetLuaState},
     {0,0}
 };
 static swig_lua_method swig_AutotestingSystemLua_meta[] = {
@@ -6571,6 +6600,7 @@ static swig_type_info _swigt__p_double = {"_p_double", "DAVA::float64 *|double *
 static swig_type_info _swigt__p_float = {"_p_float", "float *|DAVA::float32 *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_int = {"_p_int", "int *|DAVA::int32 *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_long_long = {"_p_long_long", "DAVA::int64 *|long long *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_lua_State = {"_p_lua_State", "lua_State *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_short = {"_p_short", "DAVA::int16 *|short *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_signed_char = {"_p_signed_char", "signed char *|DAVA::int8 *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_std__string = {"_p_std__string", "std::string *|DAVA::String *", 0, 0, (void*)&_wrap_class_string, 0};
@@ -6597,6 +6627,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_float,
   &_swigt__p_int,
   &_swigt__p_long_long,
+  &_swigt__p_lua_State,
   &_swigt__p_short,
   &_swigt__p_signed_char,
   &_swigt__p_std__string,
@@ -6623,6 +6654,7 @@ static swig_cast_info _swigc__p_double[] = {  {&_swigt__p_double, 0, 0, 0},{0, 0
 static swig_cast_info _swigc__p_float[] = {  {&_swigt__p_float, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_int[] = {  {&_swigt__p_int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_long_long[] = {  {&_swigt__p_long_long, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_lua_State[] = {  {&_swigt__p_lua_State, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_short[] = {  {&_swigt__p_short, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_signed_char[] = {  {&_swigt__p_signed_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_std__string[] = {  {&_swigt__p_std__string, 0, 0, 0},{0, 0, 0, 0}};
@@ -6649,6 +6681,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_float,
   _swigc__p_int,
   _swigc__p_long_long,
+  _swigc__p_lua_State,
   _swigc__p_short,
   _swigc__p_signed_char,
   _swigc__p_std__string,

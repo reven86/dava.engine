@@ -42,7 +42,6 @@ public:
 	virtual ~QtLayerDelegate() {}
 
 	virtual void Quit() = 0;
-    virtual void ShowAssertMessage(const char * message) = 0;
 };
 
 

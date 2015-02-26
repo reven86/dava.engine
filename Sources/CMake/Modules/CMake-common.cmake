@@ -4,7 +4,6 @@ include ( GlobalVariables      )
 include ( MergeStaticLibrarees )
 include ( FileTreeCheck        )
 include ( DavaTemplate         )
-include ( AndroidApk           )
 
 set ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
