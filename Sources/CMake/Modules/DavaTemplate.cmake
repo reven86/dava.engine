@@ -39,7 +39,6 @@ elseif( MACOS )
 
     if ( NOT NOT_USE_DAVA_LIBRARY )
         list ( APPEND DYLIB_FILES   "${DYLIB_FILES}"  )  
-
     endif()
     
     list ( APPEND DYLIB_FILES  "${MACOS_DYLIB}" )  
@@ -202,6 +201,11 @@ list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
 
 file_tree_check( "${DAVA_FOLDERS}" )
 
+if ( NOT NOT_USE_DAVA_LIBRARY )    
+    list( APPEND LIBRARIES ${DAVA_LIBRARY} )
+endif()
+
+target_link_libraries( ${PROJECT_NAME} ${LIBRARIES} )
 
 foreach ( FILE ${LIBRARIES_DEBUG} )
     target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )
