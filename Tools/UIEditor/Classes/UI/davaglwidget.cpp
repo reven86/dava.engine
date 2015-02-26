@@ -168,7 +168,7 @@ void DavaGLWidget::focusOutEvent(QFocusEvent *e)
 {
 	QWidget::focusOutEvent(e);
 
-	DAVA::InputSystem::Instance()->GetKeyboard()->ClearAllKeys();
+	DAVA::InputSystem::Instance()->GetKeyboard().ClearAllKeys();
 	DAVA::QtLayer::Instance()->LockKeyboardInput(false);
 }
 
@@ -362,9 +362,4 @@ Vector2 DavaGLWidget::GuideToInternal(const QPoint& pos)
     internalPos.y = Round(internalPos.y);
     
     return internalPos;
-}
-
-void DavaGLWidget::ShowAssertMessage(const char * message)
-{
-	QMessageBox::critical(this, "", message);
 }

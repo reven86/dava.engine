@@ -1,9 +1,17 @@
 
-QT4_PATH_WIN           = $ENV{QT_HOME}
-QT5_PATH_WIN           = $ENV{QT5_HOME}
-ANDROID_NDK_PATH_WIN   = $ENV{NDK_HOME}
+QT4_PATH_WIN             = $ENV{QT_HOME}
+QT5_PATH_WIN             = $ENV{QT5_HOME}
 
+QT4_PATH_MAC             = $ENV{QT_HOME}
+QT5_PATH_MAC             = $ENV{HOME}/Qt/5.3/clang_64
 
-QT4_PATH_MAC           = $ENV{QT_HOME}
-QT5_PATH_MAC           = $ENV{HOME}/Qt/5.3/clang_64
-ANDROID_NDK_PATH_MAC   = $ENV{NDK_HOME}
+ANDROID_KEY_STORE        = ${DAVA_ROOT_DIR}/Sources/CMake/Data/DavaTest.keystore
+ANDROID_KEY_ALIAS        = test
+ANDROID_STORE_PASSWORD   = qazwsx
+ANDROID_ALIAS_PASSWORD   = qazwsx
+
+ANDROID_NDK              = $ENV{NDK_HOME}
+ANDROID_ABI              = armeabi-v7a with NEON 
+ANDROID_NATIVE_API_LEVEL = 14 
+ANDROID_TARGET_API_LEVEL = 21 
+

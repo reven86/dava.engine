@@ -33,9 +33,7 @@
 
 #include "DAVAEngine.h"
 
-using namespace DAVA;
-
-class EditorSettings: public Singleton<EditorSettings>
+class EditorSettings: public DAVA::Singleton<EditorSettings>
 {
 
 public: 
@@ -48,39 +46,39 @@ public:
 	EditorSettings();
     virtual ~EditorSettings();
 
-    KeyedArchive *GetSettings();
+    DAVA::KeyedArchive *GetSettings();
     void Save();
 	
-	void SetProjectPath(const String &projectPath);
-    String GetProjectPath();
+    void SetProjectPath(const DAVA::String &projectPath);
+    DAVA::String GetProjectPath();
 	
-    int32 GetLastOpenedCount();
-    String GetLastOpenedFile(int32 index);
-    void AddLastOpenedFile(const String & pathToFile);
+    DAVA::int32 GetLastOpenedCount();
+    DAVA::String GetLastOpenedFile(DAVA::int32 index);
+    void AddLastOpenedFile(const DAVA::String & pathToFile);
 
-	void SetUIEditorVersion(const String& editorVersion);
-	String GetUIEditorVersion();
+    void SetUIEditorVersion(const DAVA::String& editorVersion);
+    DAVA::String GetUIEditorVersion();
 
     // Whether "Pixelized" or "Smooth" images representation is used.
     void SetPixelized(bool value);
     bool IsPixelized() const;
 
-    Color GetGrigColor() const;
-    void SetGrigColor(const Color& color);
+    DAVA::Color GetGrigColor() const;
+    void SetGrigColor(const DAVA::Color& color);
 
     // Background Frame colors.
-    Color GetCurrentBackgroundFrameColor() const;
-    void SetCurrentBackgroundFrameColor(const Color& color);
+    DAVA::Color GetCurrentBackgroundFrameColor() const;
+    void SetCurrentBackgroundFrameColor(const DAVA::Color& color);
     
-    Color GetCustomBackgroundFrameColor() const;
-    void SetCustomBackgroundFrameColor(const Color& color);
+    DAVA::Color GetCustomBackgroundFrameColor() const;
+    void SetCustomBackgroundFrameColor(const DAVA::Color& color);
 
 protected:
-    Color GetColor(const String& colorName, const Color& defaultColor) const;
-    void SetColor(const String& colorName, const Color& color);
+    DAVA::Color GetColor(const DAVA::String& colorName, const DAVA::Color& defaultColor) const;
+    void SetColor(const DAVA::String& colorName, const DAVA::Color& color);
 
 private:
-	KeyedArchive *settings;
+    DAVA::KeyedArchive *settings;
 };
 
 #endif //UIEditor_EditorSettings_h

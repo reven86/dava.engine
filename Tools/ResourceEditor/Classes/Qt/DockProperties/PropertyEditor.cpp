@@ -89,10 +89,13 @@ PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSig
 	posSaver.Attach(this, "DocPropetyEditor");
 
 	DAVA::VariantType v = posSaver.LoadValue("splitPos");
-	if(v.GetType() == DAVA::VariantType::TYPE_INT32) header()->resizeSection(0, v.AsInt32());
+	if(v.GetType() == DAVA::VariantType::TYPE_INT32)
+	{
+        header()->resizeSection( 0, v.AsInt32() );
+    }
 
     Ui::MainWindow* mainUi = QtMainWindow::Instance()->GetUI();
-    connect(mainUi->actionAddActionComponent, SIGNAL(triggered()), SLOT(OnAddActionComponent()));
+    connect( mainUi->actionAddActionComponent, SIGNAL( triggered() ), SLOT( OnAddActionComponent() ) );
     connect(mainUi->actionAddQualitySettingsComponent, SIGNAL(triggered()), SLOT(OnAddModelTypeComponent()));
     connect(mainUi->actionAddStaticOcclusionComponent, SIGNAL(triggered()), SLOT(OnAddStaticOcclusionComponent()));
     connect(mainUi->actionAddSoundComponent, SIGNAL(triggered()), this, SLOT(OnAddSoundComponent()));
@@ -376,13 +379,13 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 				// Add optional button to edit action component
 				QtPropertyToolButton * editActions = CreateButton(data, QIcon(":/QtIcons/settings.png"), "Edit action component");
                 editActions->setEnabled(isSingleSelection);
-				QObject::connect(editActions, SIGNAL(pressed()), this, SLOT(ActionEditComponent()));
+				QObject::connect(editActions, SIGNAL(clicked()), this, SLOT(ActionEditComponent()));
 			}
             else if(DAVA::MetaInfo::Instance<DAVA::SoundComponent>() == meta)
             {
                 QtPropertyToolButton * editSound = CreateButton(data, QIcon( ":/QtIcons/settings.png" ), "Edit sound component");
                 editSound->setAutoRaise(true);
-                QObject::connect(editSound, SIGNAL(pressed()), this, SLOT(ActionEditSoundComponent()));
+                QObject::connect(editSound, SIGNAL(clicked()), this, SLOT(ActionEditSoundComponent()));
             }
             else if(DAVA::MetaInfo::Instance<DAVA::WaveComponent>() == meta)
             {
@@ -390,7 +393,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                 triggerWave->setIcon(QIcon(":/QtIcons/clone.png"));
                 triggerWave->setAutoRaise(true);
 
-                QObject::connect(triggerWave, SIGNAL(pressed()), this, SLOT(OnTriggerWaveComponent()));
+                QObject::connect(triggerWave, SIGNAL(clicked()), this, SLOT(OnTriggerWaveComponent()));
             }
 			else if(DAVA::MetaInfo::Instance<DAVA::RenderObject>() == meta)
 			{
@@ -402,7 +405,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                     {
                         QtPropertyToolButton * cloneBatches = CreateButton(data, QIcon(":/QtIcons/clone_batches.png"), "Clone batches for LODs correction");
                         cloneBatches->setEnabled(isSingleSelection);
-                        QObject::connect(cloneBatches, SIGNAL(pressed()), this, SLOT(CloneRenderBatchesToFixSwitchLODs()));
+                        QObject::connect(cloneBatches, SIGNAL(clicked()), this, SLOT(CloneRenderBatchesToFixSwitchLODs()));
                     }
                 }
 			}
@@ -410,7 +413,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			{
 				QtPropertyToolButton * deleteButton = CreateButton(data, QIcon(":/QtIcons/remove.png"), "Delete RenderBatch");
                 deleteButton->setEnabled(isSingleSelection);
-				QObject::connect(deleteButton, SIGNAL(pressed()), this, SLOT(DeleteRenderBatch()));
+				QObject::connect(deleteButton, SIGNAL(clicked()), this, SLOT(DeleteRenderBatch()));
 
 				QtPropertyDataIntrospection *introData = dynamic_cast<QtPropertyDataIntrospection *>(data);
 				if(NULL != introData)
@@ -423,7 +426,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 					    {
 						    QtPropertyToolButton * convertButton = CreateButton(data, QIcon(":/QtIcons/shadow.png"), "Convert To ShadowVolume");
                             convertButton->setEnabled(isSingleSelection);
-						    connect(convertButton, SIGNAL(pressed()), this, SLOT(ConvertToShadow()));
+						    connect(convertButton, SIGNAL(clicked()), this, SLOT(ConvertToShadow()));
 					    }
 
                         PolygonGroup* group = batch->GetPolygonGroup();
@@ -438,7 +441,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                             {
                                 QtPropertyToolButton * rebuildTangentButton = CreateButton(data, QIcon(":/QtIcons/external.png"), "Rebuild tangent space");
                                 rebuildTangentButton->setEnabled(isSingleSelection);
-                                connect(rebuildTangentButton, SIGNAL(pressed()), this, SLOT(RebuildTangentSpace()));
+                                connect(rebuildTangentButton, SIGNAL(clicked()), this, SLOT(RebuildTangentSpace()));
                             }
                         }
                     }
@@ -448,7 +451,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			{
 				QtPropertyToolButton * goToMaterialButton = CreateButton(data, QIcon(":/QtIcons/3d.png"), "Edit material");
                 goToMaterialButton->setEnabled(isSingleSelection);
-				QObject::connect(goToMaterialButton, SIGNAL(pressed()), this, SLOT(ActionEditMaterial()));
+				QObject::connect(goToMaterialButton, SIGNAL(clicked()), this, SLOT(ActionEditMaterial()));
 			}
             else if(DAVA::MetaInfo::Instance<DAVA::FilePath>() == meta)
 			{
@@ -525,6 +528,41 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 					default:
 						break;
 				}
+            }
+            else if(DAVA::MetaInfo::Instance<DAVA::QualitySettingsComponent>() == meta)
+            {
+                DAVA::QualitySettingsSystem* qss = DAVA::QualitySettingsSystem::Instance();
+                QtPropertyDataDavaVariant *modelTypeData = (QtPropertyDataDavaVariant *)data->ChildGet("modelType");
+                if(NULL != modelTypeData)
+                {
+                    modelTypeData->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Undefined");
+                    for(int i = 0; i < qss->GetOptionsCount(); ++i)
+                    {
+                        modelTypeData->AddAllowedValue(DAVA::VariantType(qss->GetOptionName(i)));
+                    }
+                }
+
+                QtPropertyDataDavaVariant *groupData = (QtPropertyDataDavaVariant *) data->ChildGet("requiredGroup");
+                if(NULL != groupData)
+                {
+                    groupData->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Undefined");
+                    for(size_t i = 0; i < qss->GetMaterialQualityGroupCount(); ++i)
+                    {
+                        groupData->AddAllowedValue(DAVA::VariantType(qss->GetMaterialQualityGroupName(i)));
+                    }
+                }
+
+                DAVA::FastName curGroup = groupData->GetVariantValue().AsFastName();
+
+                QtPropertyDataDavaVariant *requiredQualityData = (QtPropertyDataDavaVariant *)data->ChildGet("requiredQuality");
+                if(NULL != requiredQualityData)
+                {
+                    requiredQualityData->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Undefined");
+                    for(size_t i = 0; i < qss->GetMaterialQualityCount(curGroup); ++i)
+                    {
+                        requiredQualityData->AddAllowedValue(DAVA::VariantType(qss->GetMaterialQualityName(curGroup, i)));
+                    }
+                }
             }
 		}
 
@@ -809,6 +847,26 @@ void PropertyEditor::OnItemEdited(const QModelIndex &index) // TODO: fix undo/re
             curScene->EndBatch();
         }
 	}
+
+    // this code it used to reload QualitySettingComponent field, when some changes made by user
+    // because of QualitySettingComponent->requiredQuality directly depends from QualitySettingComponent->requiredGroup
+    if(propData->GetName() == "requiredGroup")
+    {
+        QtPropertyDataDavaVariant *requiredQualityData = (QtPropertyDataDavaVariant *)propData->Parent()->ChildGet("requiredQuality");
+        if(NULL != requiredQualityData)
+        {
+            requiredQualityData->ClearAllowedValues();
+
+            DAVA::FastName curGroup = ((QtPropertyDataDavaVariant *)propData)->GetVariantValue().AsFastName();
+            requiredQualityData->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Undefined");
+            for(size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityCount(curGroup); ++i)
+            {
+                requiredQualityData->AddAllowedValue(DAVA::VariantType(DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityName(curGroup, i)));
+            }
+        }
+
+        propData->Parent()->EmitDataChanged(QtPropertyData::VALUE_SOURCE_CHANGED);
+    }
 }
 
 void PropertyEditor::mouseReleaseEvent(QMouseEvent *event)
