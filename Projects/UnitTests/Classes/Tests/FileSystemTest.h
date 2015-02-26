@@ -50,6 +50,7 @@ private:
 	void DocTestFunctionCheckCopy(PerfFuncData * data);
 	void DocTestFunction(PerfFuncData * data);
 	void FileOperationsTestFunction(PerfFuncData * data);
+    void CompareFilesTest(PerfFuncData * data);
     
 protected:
     bool RecursiveCopy(const FilePath & src, const FilePath &dst);
