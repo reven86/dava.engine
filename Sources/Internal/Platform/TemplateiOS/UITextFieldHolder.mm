@@ -37,8 +37,6 @@
 
 @implementation UITextFieldHolder
 
-//@synthesize davaTextField;
-
 - (id) init
 {
 	if (self = [super init])
