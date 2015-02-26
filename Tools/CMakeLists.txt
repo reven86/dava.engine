@@ -12,7 +12,7 @@ add_subdirectory      ( "${DAVA_ROOT_DIR}/Sources/Tools"        ${CMAKE_CURRENT_
 
 set                   ( IGNORE_FILE_TREE_CHECK 1 )#tmp
 set                   ( TEXTURE_TOOL_FOUND 1 )
-
+set                   ( DAVA_MEGASOLUTION  1 )
 
 set                   ( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
 set                   ( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
