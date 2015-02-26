@@ -15,7 +15,7 @@ using namespace DAVA;
 PropertiesWidget::PropertiesWidget(QWidget *parent)
     : QDockWidget(parent)
     , ui(new Ui::PropertiesWidget())
-    , context(NULL)
+    , context(nullptr)
 {
     ui->setupUi(this);
     ui->treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
@@ -24,20 +24,26 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
 PropertiesWidget::~PropertiesWidget()
 {
     delete ui;
-    ui = NULL;
 }
 
-void PropertiesWidget::SetContext(PropertiesContext *newContext)
+void PropertiesWidget::SetDocument(Document *document)
 {
-    if (context)
+    if (nullptr != context) //remove previous context
     {
         disconnect(context, SIGNAL(ModelChanged(PropertiesModel*)), this, SLOT(OnModelChanged(PropertiesModel*)));
         ui->treeView->setModel(nullptr);
     }
+    /*set new context*/
+    if (nullptr == document)
+    {
+        context = nullptr;
+    }
+    else
+    {
+        context = document->GetPropertiesContext();
+    }
 
-    context = newContext;
-
-    if (context)
+    if (nullptr != context)
     {
         connect(context, SIGNAL(ModelChanged(PropertiesModel*)), this, SLOT(OnModelChanged(PropertiesModel*)));
         ui->treeView->setModel(context->GetModel());
@@ -47,8 +53,7 @@ void PropertiesWidget::SetContext(PropertiesContext *newContext)
 void PropertiesWidget::OnModelChanged(PropertiesModel *model)
 {
     ui->treeView->setModel(model);
-    
-    if (model)
+    if (nullptr != model)
     {
         ui->treeView->expandToDepth(0);
         ui->treeView->resizeColumnToContents(0);

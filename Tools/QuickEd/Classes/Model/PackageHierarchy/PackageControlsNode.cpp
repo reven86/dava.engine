@@ -101,6 +101,31 @@ void PackageControlsNode::SetReadOnly()
     }
 }
 
+bool PackageControlsNode::IsEditingSupported() const
+{
+    return false;
+}
+
+bool PackageControlsNode::IsInsertingSupported() const
+{
+    return !readOnly;
+}
+
+bool PackageControlsNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
+{
+    return !readOnly;
+}
+
+bool PackageControlsNode::CanRemove() const
+{
+    return false;
+}
+
+bool PackageControlsNode::CanCopy() const
+{
+    return false;
+}
+
 ControlNode *PackageControlsNode::FindControlNodeByName(const DAVA::String &name) const
 {
     for (auto it = nodes.begin(); it != nodes.end(); ++it)

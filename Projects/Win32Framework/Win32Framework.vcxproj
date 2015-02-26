@@ -120,9 +120,9 @@
     </ClCompile>
     <Lib>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>lua_wind.lib;unibreak_wind.lib;fribidid.lib;freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;TextureConverterD.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;WinInet.lib;libeay32.lib;ssleay32.lib;libuvd.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua_wind.lib;unibreak_wind.lib;fribidid.lib;freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;WinInet.lib;libeay32.lib;ssleay32.lib;TextureConverterD.lib;libuvd.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
-      <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;./../../Tools/Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">

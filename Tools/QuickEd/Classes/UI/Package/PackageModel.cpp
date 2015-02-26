@@ -24,18 +24,17 @@
 
 using namespace DAVA;
 
-PackageModel::PackageModel(Document *document)
-    : QAbstractItemModel(document)
-    , root(NULL)
-    , document(document)
+PackageModel::PackageModel(PackageNode *_root, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent)
+    : QAbstractItemModel(parent)
+    , root(SafeRetain(_root))
+    , commandExecutor(SafeRetain(_commandExecutor))
 {
-    root = SafeRetain(document->GetPackage());
 }
 
 PackageModel::~PackageModel()
 {
-    document = NULL;
     SafeRelease(root);
+    SafeRelease(commandExecutor);
 }
 
 void PackageModel::emitNodeChanged(PackageBaseNode *node)
@@ -47,7 +46,7 @@ void PackageModel::emitNodeChanged(PackageBaseNode *node)
 QModelIndex PackageModel::indexByNode(PackageBaseNode *node) const
 {
     PackageBaseNode *parent = node->GetParent();
-    if (parent == NULL)
+    if (parent == nullptr)
         return QModelIndex();
     
     if (parent)
@@ -75,7 +74,7 @@ QModelIndex PackageModel::parent(const QModelIndex &child) const
 
     PackageBaseNode *node = static_cast<PackageBaseNode*>(child.internalPointer());
     PackageBaseNode *parent = node->GetParent();
-    if (parent == NULL || parent == root)
+    if (nullptr == parent || parent == root)
         return QModelIndex();
     
     if (parent->GetParent())
@@ -113,7 +112,7 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
             return StringToQString(node->GetName());
             
         case Qt::DecorationRole:
-            return node->GetControl() != NULL ? QIcon(IconHelper::GetIconPathForUIControl(node->GetControl())) : QVariant();
+            return node->GetControl() != nullptr ? QIcon(IconHelper::GetIconPathForUIControl(node->GetControl())) : QVariant();
             
         case Qt::CheckStateRole:
             if (node->GetControl())
@@ -122,7 +121,7 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
                 return QVariant();
             
         case Qt::ToolTipRole:
-            if (node->GetControl() != NULL)
+            if (node->GetControl() != nullptr)
             {
                 ControlNode *controlNode = DynamicTypeCheck<ControlNode *>(node);
                 QString toolTip = QString("class: ") + controlNode->GetControl()->GetControlClassName().c_str();
@@ -188,9 +187,9 @@ Qt::ItemFlags PackageModel::flags(const QModelIndex &index) const
     Qt::ItemFlags flags = QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable;
     
     const PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-    if ((node->GetFlags() & PackageBaseNode::FLAGS_CONTROL) != 0)
+    if (node->CanCopy())
         flags |= Qt::ItemIsDragEnabled;
-    if ((node->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) == 0)
+    if (node->IsInsertingSupported())
         flags |= Qt::ItemIsDropEnabled;
     
     return flags;
@@ -220,7 +219,7 @@ QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
         {
             PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
             ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
-            if (controlNode && controlNode->GetCreationType() != ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
+            if (controlNode && controlNode->CanCopy())
             {
                 mimeData->AddControlNode(controlNode);
             }
@@ -228,7 +227,7 @@ QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
     }
     
     YamlPackageSerializer serializer;
-    document->GetPackage()->Serialize(&serializer, mimeData->GetControlNodes());
+    root->Serialize(&serializer, mimeData->GetControlNodes());
     String str = serializer.WriteToString();
     mimeData->setText(QString::fromStdString(str));
 
@@ -261,9 +260,9 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
             return false;
         
         if (action == Qt::CopyAction)
-            document->GetCommandExecutor()->CopyControls(srcNodes, parentNode, rowIndex);
+            commandExecutor->CopyControls(srcNodes, parentNode, rowIndex);
         else if (action == Qt::MoveAction)
-            document->GetCommandExecutor()->MoveControls(srcNodes, parentNode, rowIndex);
+            commandExecutor->MoveControls(srcNodes, parentNode, rowIndex);
         else
             return false;
         
@@ -278,7 +277,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
             if (url.isLocalFile())
             {
                 FilePath path(url.toLocalFile().toStdString());
-                if (document->GetPackage()->FindImportedPackage(path) == nullptr)
+                if (root->FindImportedPackage(path) == nullptr)
                 {
                 }
             }
@@ -287,20 +286,8 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     else if (parentNode && data->hasFormat("text/plain") && data->hasText())
     {
         String string = data->text().toStdString();
-        RefPtr<YamlParser> parser(YamlParser::CreateAndParseString(string));
         
-        bool completed = false;
-        if (parser.Valid() && parser->GetRootNode())
-        {
-            document->UndoStack()->beginMacro("Paste");
-            EditorUIPackageBuilder builder(document->GetPackage(), parentNode, rowIndex, document->GetCommandExecutor());
-            UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(parser->GetRootNode(), "");
-            completed = newPackage != nullptr;
-            SafeRelease(newPackage);
-            document->UndoStack()->endMacro();
-        }
-        
-        if (!completed)
+        if (!commandExecutor->Paste(root, parentNode, rowIndex, string))
         {
             String controlName = QStringToString(data->text());
             size_t slashIndex = controlName.find("/");
@@ -340,7 +327,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
             
             if (node)
             {
-                document->GetCommandExecutor()->InsertControl(node, parentNode, rowIndex);
+                commandExecutor->InsertControl(node, parentNode, rowIndex);
                 SafeRelease(node);
             }
         }

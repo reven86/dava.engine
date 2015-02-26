@@ -334,7 +334,7 @@ enum eAlign
     
 //#if defined(__DAVAENGINE_IPHONE__)
 #ifdef __thumb__
-#error "This file should be compiled in ARM mode only."
+//#error "This file should be compiled in ARM mode only."
     // Note in Xcode, right click file, Get Info->Build, Other compiler flags = "-marm"
 #endif
 //#endif//#if !defined(__DAVAENGINE_ANDROID__)
