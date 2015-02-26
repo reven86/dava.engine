@@ -285,7 +285,7 @@ void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
 	{
 		button = 2;
 	}
-	else 
+	else if(curEvent.type != NSMouseMoved)
 	{
 		button = curEvent.buttonNumber + 1;
 	}
