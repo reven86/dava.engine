@@ -2,7 +2,7 @@
 
 using namespace DAVA;
 
-BaseProperty::BaseProperty() : parent(NULL)
+BaseProperty::BaseProperty() : parent(NULL), readOnly(false)
 {
     
 }

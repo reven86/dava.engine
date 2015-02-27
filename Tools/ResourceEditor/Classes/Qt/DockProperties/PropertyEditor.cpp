@@ -529,6 +529,41 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 						break;
 				}
             }
+            else if(DAVA::MetaInfo::Instance<DAVA::QualitySettingsComponent>() == meta)
+            {
+                DAVA::QualitySettingsSystem* qss = DAVA::QualitySettingsSystem::Instance();
+                QtPropertyDataDavaVariant *modelTypeData = (QtPropertyDataDavaVariant *)data->ChildGet("modelType");
+                if(NULL != modelTypeData)
+                {
+                    modelTypeData->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Undefined");
+                    for(int i = 0; i < qss->GetOptionsCount(); ++i)
+                    {
+                        modelTypeData->AddAllowedValue(DAVA::VariantType(qss->GetOptionName(i)));
+                    }
+                }
+
+                QtPropertyDataDavaVariant *groupData = (QtPropertyDataDavaVariant *) data->ChildGet("requiredGroup");
+                if(NULL != groupData)
+                {
+                    groupData->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Undefined");
+                    for(size_t i = 0; i < qss->GetMaterialQualityGroupCount(); ++i)
+                    {
+                        groupData->AddAllowedValue(DAVA::VariantType(qss->GetMaterialQualityGroupName(i)));
+                    }
+                }
+
+                DAVA::FastName curGroup = groupData->GetVariantValue().AsFastName();
+
+                QtPropertyDataDavaVariant *requiredQualityData = (QtPropertyDataDavaVariant *)data->ChildGet("requiredQuality");
+                if(NULL != requiredQualityData)
+                {
+                    requiredQualityData->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Undefined");
+                    for(size_t i = 0; i < qss->GetMaterialQualityCount(curGroup); ++i)
+                    {
+                        requiredQualityData->AddAllowedValue(DAVA::VariantType(qss->GetMaterialQualityName(curGroup, i)));
+                    }
+                }
+            }
 		}
 
 		// go through childs
@@ -812,6 +847,26 @@ void PropertyEditor::OnItemEdited(const QModelIndex &index) // TODO: fix undo/re
             curScene->EndBatch();
         }
 	}
+
+    // this code it used to reload QualitySettingComponent field, when some changes made by user
+    // because of QualitySettingComponent->requiredQuality directly depends from QualitySettingComponent->requiredGroup
+    if(propData->GetName() == "requiredGroup")
+    {
+        QtPropertyDataDavaVariant *requiredQualityData = (QtPropertyDataDavaVariant *)propData->Parent()->ChildGet("requiredQuality");
+        if(NULL != requiredQualityData)
+        {
+            requiredQualityData->ClearAllowedValues();
+
+            DAVA::FastName curGroup = ((QtPropertyDataDavaVariant *)propData)->GetVariantValue().AsFastName();
+            requiredQualityData->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Undefined");
+            for(size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityCount(curGroup); ++i)
+            {
+                requiredQualityData->AddAllowedValue(DAVA::VariantType(DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityName(curGroup, i)));
+            }
+        }
+
+        propData->Parent()->EmitDataChanged(QtPropertyData::VALUE_SOURCE_CHANGED);
+    }
 }
 
 void PropertyEditor::mouseReleaseEvent(QMouseEvent *event)
