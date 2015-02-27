@@ -105,97 +105,65 @@ int main(int argc, char *argv[])
 
 	if(cmdLine.IsEnabled())
 	{
-        /*
-		Core::Instance()->EnableConsoleMode();
-        DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_WARNING);
-
-        new SceneValidator();
-
-#if defined (__DAVAENGINE_MACOS__)
-        DAVA::QtLayer::Instance()->CreateConsoleOpenGLContext();
-//        DAVA::QtLayer::Instance()->InitializeGlWindow();
-//        DAVA::QtLayer::Instance()->Resize(0, 0);
-#elif defined (__DAVAENGINE_WIN32__)
-        QApplication a(argc, argv);
-        
-        DavaGLWidget* davaGL = new DavaGLWidget();
-#else
-        DVASSERT(false && "Wrong platform");
-#endif //#if defined (__DAVAENGINE_MACOS__)
-        
-        RenderManager::Instance()->Init(0, 0);
-
-		cmdLine.InitalizeTool();
-		if(!cmdLine.IsToolInitialized())
-		{
-			cmdLine.PrintUsageForActiveTool();
-		}
-		else
-		{
-            //Trick for correct loading of sprites.
-            VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
-            VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
-            
-			cmdLine.Process();
-			cmdLine.PrintResults();
-		}
-
-#if defined (__DAVAENGINE_MACOS__)
-#elif defined (__DAVAENGINE_WIN32__)
-        SafeDelete(davaGL);
-#endif //defined (__DAVAENGINE_WIN32__)
-        
-		SceneValidator::Instance()->Release();
-         */
+        RunConsole( argc, argv, cmdLine );
 	}
     else
     {
         RunGui( argc, argv, cmdLine );
     }
 
-    //EditorConfig::Instance()->Release();
-    //SettingsManager::Instance()->Release();
-    //BeastProxy::Instance()->Release();
-    //DAVA::Core::Instance()->Release();
-    //FrameworkLoop::Instance()->Release();
-    //DavaLoop::Instance()->Release();
-    //DAVA::QtLayer::Instance()->Release();
-
     return 0;
 }
 
-void UnpackHelpDoc()
-{
-	DAVA::String editorVer =SettingsManager::GetValue(Settings::Internal_EditorVersion).AsString();
-	DAVA::FilePath docsPath = FilePath(ResourceEditor::DOCUMENTATION_PATH);
-	if(editorVer != RESOURCE_EDITOR_VERSION || !docsPath.Exists())
-	{
-		DAVA::Logger::Info("Unpacking Help...");
-		DAVA::ResourceArchive * helpRA = new DAVA::ResourceArchive();
-		if(helpRA->Open("~res:/Help.docs"))
-		{
-			DAVA::FileSystem::Instance()->DeleteDirectory(docsPath);
-			DAVA::FileSystem::Instance()->CreateDirectory(docsPath, true);
-			helpRA->UnpackToFolder(docsPath);
-		}
-		DAVA::SafeRelease(helpRA);
-	}
-	SettingsManager::SetValue(Settings::Internal_EditorVersion, VariantType(String(RESOURCE_EDITOR_VERSION)));
-}
-
-void FixOSXFonts()
-{
-#ifdef Q_OS_MAC
-    if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_8)
-    {
-        // fix Mac OS X 10.9 (mavericks) font issue
-        QFont::insertSubstitution( ".Lucida Grande UI", "Lucida Grande" );
-    }
-#endif
-}
 
 void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 {
+    Core::Instance()->EnableConsoleMode();
+    DAVA::Logger::Instance()->SetLogLevel( DAVA::Logger::LEVEL_WARNING );
+
+    QApplication a( argc, argv );
+
+    const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
+    const QString appUidPath = QCryptographicHash::hash( ( appUid + QApplication::applicationDirPath() ).toUtf8(), QCryptographicHash::Sha1 ).toHex();
+    RunGuard runGuard( appUidPath );
+    if ( !runGuard.tryToRun() )
+        return;
+
+    new SceneValidator();
+
+    new DavaLoop();
+    new FrameworkLoop();
+
+    FrameworkLoop::Instance()->Context();   // create context
+    RenderManager::Instance()->Init( 0, 0 );
+
+    cmdLine.InitalizeTool();
+    if ( !cmdLine.IsToolInitialized() )
+    {
+        cmdLine.PrintUsageForActiveTool();
+    }
+    else
+    {
+        //Trick for correct loading of sprites.
+        VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
+        VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize( 1, 1, "Gfx" );
+
+        cmdLine.Process();
+        cmdLine.PrintResults();
+    }
+
+    SceneValidator::Instance()->Release();
+
+    TextureCache::Instance()->Release();
+    SceneValidator::Instance()->Release();
+    EditorConfig::Instance()->Release();
+    SettingsManager::Instance()->Release();
+    BeastProxy::Instance()->Release();
+    Core::Instance()->Release();
+
+    FrameworkLoop::Instance()->Release();
+    QtLayer::Instance()->Release();
+    DavaLoop::Instance()->Release();
 }
 
 void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
@@ -266,4 +234,34 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     delete glWidget;
 
     ControlsFactory::ReleaseFonts();
+}
+
+void UnpackHelpDoc()
+{
+    DAVA::String editorVer = SettingsManager::GetValue( Settings::Internal_EditorVersion ).AsString();
+    DAVA::FilePath docsPath = FilePath( ResourceEditor::DOCUMENTATION_PATH );
+    if ( editorVer != RESOURCE_EDITOR_VERSION || !docsPath.Exists() )
+    {
+        DAVA::Logger::Info( "Unpacking Help..." );
+        DAVA::ResourceArchive * helpRA = new DAVA::ResourceArchive();
+        if ( helpRA->Open( "~res:/Help.docs" ) )
+        {
+            DAVA::FileSystem::Instance()->DeleteDirectory( docsPath );
+            DAVA::FileSystem::Instance()->CreateDirectory( docsPath, true );
+            helpRA->UnpackToFolder( docsPath );
+        }
+        DAVA::SafeRelease( helpRA );
+    }
+    SettingsManager::SetValue( Settings::Internal_EditorVersion, VariantType( String( RESOURCE_EDITOR_VERSION ) ) );
+}
+
+void FixOSXFonts()
+{
+#ifdef Q_OS_MAC
+    if ( QSysInfo::MacintoshVersion > QSysInfo::MV_10_8 )
+    {
+        // fix Mac OS X 10.9 (mavericks) font issue
+        QFont::insertSubstitution( ".Lucida Grande UI", "Lucida Grande" );
+    }
+#endif
 }
