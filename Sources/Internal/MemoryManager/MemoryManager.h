@@ -155,7 +155,7 @@ private:
     void* callbackArg;
 
     template<typename T>
-    using InternalAllocator = MemoryManagerAllocator<T, -1>;
+    using InternalAllocator = MemoryManagerAllocator<T, uint32(-1)>;
 
     typedef std::basic_string<char8, std::char_traits<char8>, InternalAllocator<char8>> InternalString;
     typedef std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>> SymbolMap;
