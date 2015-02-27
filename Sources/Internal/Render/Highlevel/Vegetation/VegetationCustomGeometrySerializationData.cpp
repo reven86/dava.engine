@@ -156,12 +156,12 @@ void VegetationCustomGeometrySerializationData::Load(Vector<NMaterial*>& materia
 
 uint32 VegetationCustomGeometrySerializationData::GetLayerCount() const
 {
-    return materials.size();
+    return static_cast<uint32>(materials.size());
 }
 
 uint32 VegetationCustomGeometrySerializationData::GetLodCount(uint32 layerIndex) const
 {
-    return positions[layerIndex].size();
+    return static_cast<uint32>(positions[layerIndex].size());
 }
 
 NMaterial* VegetationCustomGeometrySerializationData::GetMaterial(uint32 layerIndex)

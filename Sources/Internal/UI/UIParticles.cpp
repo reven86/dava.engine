@@ -42,11 +42,11 @@ Camera *UIParticles::defaultCamera = nullptr;
 
 UIParticles::UIParticles(const Rect &rect)
     : UIControl(rect)
+    , isAutostart(false)
+    , startDelay(0.0f)
     , effect(nullptr)
     , system(new ParticleEffectSystem(nullptr, true))
     , updateTime(0)
-    , isAutostart(false)
-    , startDelay(0.0f)
     , delayedActionType(UIParticles::actionNone)
     , delayedActionTime(0.0f)
     , delayedDeleteAllParticles(false)

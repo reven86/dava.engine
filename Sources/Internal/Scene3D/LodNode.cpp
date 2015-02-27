@@ -311,14 +311,14 @@ void LodNode::SetCurrentLod(LodData *newLod)
     {
         if (currentLod) 
         {
-            int32 size = currentLod->nodes.size();
+            int32 size = static_cast<int32>(currentLod->nodes.size());
             for (int i = 0; i < size; i++) 
             {
                 currentLod->nodes[i]->SetUpdatable(false);
             }
         }
         currentLod = newLod;
-        int32 size = currentLod->nodes.size();
+        int32 size = static_cast<int32>(currentLod->nodes.size());
         for (int i = 0; i < size; i++) 
         {
             currentLod->nodes[i]->SetUpdatable(true);
@@ -342,13 +342,13 @@ void LodNode::Update(float32 timeElapsed)
             {
                 if (oldLod) 
                 {
-                    int32 size = oldLod->nodes.size();
+                    int32 size = static_cast<int32>(oldLod->nodes.size());
                     for (int i = 0; i < size; i++) 
                     {
                         oldLod->nodes[i]->SetUpdatable(false);
                     }
                 }
-                int32 size = currentLod->nodes.size();
+                int32 size = static_cast<int32>(currentLod->nodes.size());
                 for (int i = 0; i < size; i++) 
                 {
                     currentLod->nodes[i]->SetUpdatable(true);

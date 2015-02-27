@@ -137,7 +137,7 @@ void EdgeAdjacency::FillEdge(Edge & edge, int32 index0, int32 index1)
 
 int32 EdgeAdjacency::GetEdgeIndex(Edge & edge)
 {
-	int32 edgesCount = edges.size();
+	int32 edgesCount = static_cast<int32>(edges.size());
 	for(int32 i = 0; i < edgesCount; ++i)
 	{
 		if(edges[i].IsEqual(edge))
@@ -160,7 +160,7 @@ int32 EdgeAdjacency::GetEdgesWithTwoTrianglesCount()
 {
 	int32 ret = 0;
 
-	int32 size = edges.size();
+	int32 size = static_cast<int32>(edges.size());
 	for(int32 i = 0; i < size; ++i)
 	{
 		if(edges[i].sharedTriangles.size() == 2)

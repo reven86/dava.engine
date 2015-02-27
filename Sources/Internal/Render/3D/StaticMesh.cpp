@@ -83,7 +83,7 @@ void StaticMesh::AddNode(DataNode * node)
     if (group)
     {
         group->Retain();
-        group->SetDataIndex(children.size());
+        group->SetDataIndex(static_cast<int32>(children.size()));
         children.push_back(node);
     }
 }

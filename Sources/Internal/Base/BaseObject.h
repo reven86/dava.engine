@@ -130,8 +130,8 @@ public:
      */
     const String & GetClassName() const;
     
-    virtual void Save(KeyedArchive * archive);
-	virtual void Load(KeyedArchive * archive);
+    virtual void SaveObject(KeyedArchive * archive);
+	virtual void LoadObject(KeyedArchive * archive);
     
     static BaseObject * LoadFromArchive(KeyedArchive * archive);
     

@@ -111,7 +111,7 @@ File * File::CreateFromSystemPath(const FilePath &filename, uint32 attributes)
 
 		if (!file) return NULL;
 		fseek(file, 0, SEEK_END);
-		size = ftell(file);
+		size = static_cast<uint32>(ftell(file));
         fseek(file, 0, SEEK_SET);
     }
 	else if ((attributes & File::CREATE) && (attributes & File::WRITE))
@@ -124,7 +124,7 @@ File * File::CreateFromSystemPath(const FilePath &filename, uint32 attributes)
 		file = fopen(filename.GetAbsolutePathname().c_str(),"ab");
 		if (!file)return NULL;
 		fseek(file, 0, SEEK_END);
-		size = ftell(file);
+		size = static_cast<uint32>(ftell(file));
 	}
 	else 
 	{

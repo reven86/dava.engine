@@ -66,7 +66,7 @@
 #endif
 
 #if defined(__DAVAENGINE_IPHONE__)
-#include "Input/AccelerometeriPhone.h"
+// not used
 #elif defined(__DAVAENGINE_ANDROID__)
 #	include "Input/AccelerometerAndroid.h"
 #endif //PLATFORMS
@@ -159,7 +159,7 @@ void Core::CreateSingletons()
 #endif
 	
 #if defined __DAVAENGINE_IPHONE__
-	new AccelerometeriPhoneImpl();
+	// not used
 #elif defined(__DAVAENGINE_ANDROID__)
 	new AccelerometerAndroidImpl();
 #endif //#if defined __DAVAENGINE_IPHONE__

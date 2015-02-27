@@ -211,7 +211,7 @@ SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveFor
 {
 	ExtractEditorEntities();
 
-	DAVA::SceneFileV2::eError err = Scene::Save(path, saveForGame);
+	DAVA::SceneFileV2::eError err = Scene::SaveScene(path, saveForGame);
 	if(DAVA::SceneFileV2::ERROR_NO_ERROR == err)
 	{
 		curScenePath = path;
