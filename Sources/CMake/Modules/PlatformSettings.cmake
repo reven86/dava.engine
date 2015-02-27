@@ -2,7 +2,7 @@
 macro( set_dava_target_properties TARGET_NAME )
     if( WARNINGS_AS_ERRORS )
        if( APPLE )
-            set_target_properties ( ${TARGET_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_TREAT_WARNINGS_AS_ERRORS  YES ) 
+            set_target_properties ( ${TARGET_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_TREAT_WARNINGS_AS_ERRORS  NO ) 
 
         endif()
 
