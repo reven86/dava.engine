@@ -1358,6 +1358,49 @@ void SceneFileV2::ReplaceOldNodes(Entity * currentNode)
 	}
 }
 
+void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
+{
+    RenderObject * ro = GetRenderObject(node);
+    if (ro)
+    {
+        static const FastName FLAG_TILED_DECAL = FastName("TILED_DECAL");
+        static const FastName FLAG_FOG_EXP = FastName("FOG_EXP");
+
+        uint32 batchCount = ro->GetRenderBatchCount();
+        for (uint32 ri = 0; ri < batchCount; ++ri)
+        {
+            int32 flagValue = 0;
+            RenderBatch * batch = ro->GetRenderBatch(ri);
+            NMaterial * material = batch->GetMaterial();
+
+            while (material)
+            {
+                flagValue = material->GetFlagValue(FLAG_FOG_EXP);
+                if ((flagValue & NMaterial::FlagInherited) == 0)
+                {
+                    material->ResetFlag(FLAG_FOG_EXP);
+                }
+
+                flagValue = material->GetFlagValue(FLAG_TILED_DECAL);
+                if ((flagValue & NMaterial::FlagInherited) == 0)
+                {
+                    NMaterial::eFlagValue flag = ((flagValue & NMaterial::FlagOn) == NMaterial::FlagOn) ? NMaterial::FlagOn : NMaterial::FlagOff;
+                    material->SetFlag(NMaterial::FLAG_TILED_DECAL_MASK, flag);
+                    material->ResetFlag(FLAG_TILED_DECAL);
+                }
+
+                material = material->GetParent();
+            }
+        }
+    }
+
+    uint32 size = node->GetChildrenCount();
+    for (uint32 i = 0; i < size; ++i)
+    {
+        Entity * child = node->GetChild(i);
+        RemoveDeprecatedMaterialFlags(child);
+    }
+}
 
 void SceneFileV2::RebuildTangentSpace(Entity *entity)
 {
@@ -1460,6 +1503,11 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
     if (header.version < PREREQUIRED_BINORMAL_SCENE_VERSION)
     {     
         RebuildTangentSpace(rootNode);
+    }
+
+    if (header.version < DEPRECATED_MATERIAL_FLAGS_SCENE_VERSION)
+    {
+        RemoveDeprecatedMaterialFlags(rootNode);
     }
 
     QualitySettingsSystem::Instance()->UpdateEntityAfterLoad(rootNode);
