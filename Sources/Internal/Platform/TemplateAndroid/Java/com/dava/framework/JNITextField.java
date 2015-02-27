@@ -155,16 +155,22 @@ public class JNITextField {
             Bitmap bitmap = getDrawingCache(); //renderToBitmap();
             if (bitmap == null) // could be if onDraw not called yet
             {
-                if (viewHeight == 0 || viewHeight == 0)
+                if (viewHeight <= 0 || viewHeight <= 0)
                 {
                     // TextField not fully constructed yet
                     return;
                 }
-                int specWidth = MeasureSpec.makeMeasureSpec(viewWidth, MeasureSpec.AT_MOST);
-                int specHeight = MeasureSpec.makeMeasureSpec(viewHeight, MeasureSpec.AT_MOST);
+                int specWidth = MeasureSpec.makeMeasureSpec(viewWidth, MeasureSpec.EXACTLY);
+                int specHeight = MeasureSpec.makeMeasureSpec(viewHeight, MeasureSpec.EXACTLY);
                 measure(specWidth, specHeight);
                 int measuredWidth = getMeasuredWidth();
                 int measuredHeight = getMeasuredHeight();
+                if (measuredHeight <= 0 || measuredWidth <= 0)
+                {
+                    Log.e(TAG, "can't measure layout for TextField with id:"
+                            + id + " w = " + viewWidth + " h = " + viewHeight);
+                    return;
+                }
                 bitmap = Bitmap.createBitmap(measuredWidth, measuredHeight, Bitmap.Config.ARGB_8888);
                 Canvas c = new Canvas(bitmap);
                 layout(0, 0, measuredWidth, measuredHeight);
