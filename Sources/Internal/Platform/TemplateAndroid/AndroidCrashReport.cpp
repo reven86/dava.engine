@@ -283,6 +283,7 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 void AndroidCrashReport::Unload()
 {
 #if defined(CRASH_HANDLER_CUSTOMSIGNALS)
+    SafeDelete(crashReporter);
     AndroidBacktraceChooser::ReleaseBacktraceInterface();
 #endif
 }
