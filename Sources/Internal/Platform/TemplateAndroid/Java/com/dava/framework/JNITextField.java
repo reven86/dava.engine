@@ -107,7 +107,7 @@ public class JNITextField {
             Log.v(TAG, "setRenderToTexture value = " + value);
             isRenderToTexture = value;
             restoreVisibility();
-            updateStaticTextsture();
+            updateStaticTexture();
         }
         
         public boolean isRenderToTexture()
@@ -251,7 +251,7 @@ public class JNITextField {
             setVisible(logicVisible);
         }
         
-        public void updateStaticTextsture()
+        public void updateStaticTexture()
         {
             if (isRenderToTexture && !stopRecursion)
             {
@@ -787,7 +787,7 @@ public class JNITextField {
                 final TextField text = GetTextField(id);
                 Log.v(TAG, "set text:" + string);
                 text.setText(string);
-                text.updateStaticTextsture();
+                text.updateStaticTexture();
             }
         });
     }
@@ -800,7 +800,7 @@ public class JNITextField {
                 final TextField text = GetTextField(id);
                 text.setTextColor(Color.argb((int) (255 * a), (int) (255 * r),
                         (int) (255 * g), (int) (255 * b)));
-                text.updateStaticTextsture();
+                text.updateStaticTexture();
             }
         });
     }
@@ -811,7 +811,7 @@ public class JNITextField {
             public void run() {
                 final TextField text = GetTextField(id);
                 text.setTextSize(TypedValue.COMPLEX_UNIT_PX, (int) size);
-                text.updateStaticTextsture();
+                text.updateStaticTexture();
             }
         });
     }
@@ -828,7 +828,7 @@ public class JNITextField {
                     text.setInputType(text.getInputType()
                             & ~(EditorInfo.TYPE_TEXT_VARIATION_PASSWORD));
                 }
-                text.updateStaticTextsture();
+                text.updateStaticTexture();
             }
         });
     }
@@ -845,7 +845,7 @@ public class JNITextField {
                     text.setGravity(gravity
                             & ~Gravity.RELATIVE_LAYOUT_DIRECTION);
                 }
-                text.updateStaticTextsture();
+                text.updateStaticTexture();
             }
         });
     }
@@ -876,7 +876,7 @@ public class JNITextField {
                     gravityH |= Gravity.RELATIVE_LAYOUT_DIRECTION;
                 }
                 text.setGravity(gravityH | gravityV);
-                text.updateStaticTextsture();
+                text.updateStaticTexture();
             }
         });
     }
