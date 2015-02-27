@@ -123,14 +123,12 @@ JniCrashReporter::JniCrashReporter(JNIEnv* env)
 
 void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
 {
-    LOGE("Fabric handeling crashes - 7");
     JNIEnv *env = JNI::GetEnv();
-    //env->ExceptionClear();
-    LOGE("Fabric handeling crashes - 8");
+   
     jobjectArray jModuleArray = env->NewObjectArray(chashSteps.size(), stringID, 0);
     jobjectArray jFunctionArray = env->NewObjectArray(chashSteps.size(), stringID, 0);
     jintArray jFileLineArray = env->NewIntArray(chashSteps.size());
-    LOGE("Fabric handeling crashes - 9");
+   
     int* fileLines = new int[chashSteps.size()];
     for (uint i = 0; i < chashSteps.size(); ++i)
     {
@@ -139,14 +137,9 @@ void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
         fileLines[i] = chashSteps[i].fileLine;
     }
     env->SetIntArrayRegion(jFileLineArray, 0, chashSteps.size(), fileLines);
-    LOGE("Fabric handeling crashes - 5");
-   // env->ExceptionClear();
-    LOGE("Fabric handeling crashes - 5.5");
-   // env->ExceptionClear();
     env->CallStaticVoidMethod(classID,mid,jModuleArray,jFunctionArray,jFileLineArray);
-    //throwJavaExpetion(jModuleArray, jFunctionArray, jFileLineArray);
-    LOGE("Fabric handeling crashes - 6");
-   // delete [] fileLines;
+   
+    delete [] fileLines;
 }
 
 
@@ -247,7 +240,6 @@ void AndroidCrashReport::OnStackFrame(pointer_size addr)
     step.module = libName;
     step.function = functionString[crashSteps.size()];
     step.fileLine = relAddres;
-    //LOGE("FRAME_STACK frame stack 0x%lx %s %s",step.fileLine,step.function, step.module);
     crashSteps.push_back(step);
 
 }
@@ -257,7 +249,6 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
     {
         sa_old[signal].sa_sigaction(signal, siginfo, sigcontext);
     }
-    LOGE("Fabric handeling crash!");
     alarm(500);
     //kill the app if it freezes
     
@@ -275,9 +266,6 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
         step.module = "There is no cpp stack";
         crashSteps.push_back(step);
     }
-    LOGE("Fabric handeling crashes - 2");
-   // JniCrashReporter crashReport;
-    LOGE("Fabric handeling crashes - 3");
     crashReporter->ThrowJavaExpetion(crashSteps);
 }
 void AndroidCrashReport::Unload()
