@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cassert>
 
 #if defined(__DAVAENGINE_WIN32__)
-#include <windows.h>
 #include <dbghelp.h>
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <execinfo.h>
@@ -42,6 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #elif defined(__DAVAENGINE_ANDROID__)
 #endif
 
+#include "Base/Hash.h"
 #include "Debug/DVAssert.h"
 
 #include "MallocHook.h"
@@ -52,12 +52,23 @@ namespace DAVA
 
 struct MemoryManager::Backtrace
 {
-    void* frames[16];
+    //size_t hash;
+    void* frames[BACKTRACE_DEPTH];
 };
+
+size_t MemoryManager::BacktraceHash(const MemoryManager::Backtrace& backtrace)
+{
+    uint32 hash = HashValue_N(reinterpret_cast<const char*>(backtrace.frames), sizeof(backtrace.frames));
+    return hash;
+}
+
+bool MemoryManager::BacktraceEqualTo(const MemoryManager::Backtrace& left, const MemoryManager::Backtrace& right)
+{
+    return 0 == Memcmp(left.frames, right.frames, sizeof(left.frames));
+}
 
 struct MemoryManager::MemoryBlock
 {
-    Backtrace backtrace;
     MemoryBlock* prev;      // Pointer to previous block
     MemoryBlock* next;      // Pointer to next block
     void* realBlockStart;   // Pointer to real block start
@@ -81,7 +92,13 @@ MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT] = {
 
 size_t MemoryManager::registeredTagCount = 1;
 size_t MemoryManager::registeredAllocPoolCount = ePredefAllocPools::PREDEF_POOL_COUNT;
-    
+
+MemoryManager::MemoryManager()
+{
+    backtraces = new (&backtraceStorage) BacktraceSet(1024, &BacktraceHash, &BacktraceEqualTo);
+    symbols = new (&symbolStorage) SymbolMap;
+}
+
 void MemoryManager::RegisterAllocPoolName(size_t index, const char8* name)
 {
     DVASSERT(name != nullptr && 0 < strlen(name) && strlen(name) < MMItemName::NAME_LENGTH);
@@ -107,6 +124,7 @@ void MemoryManager::RegisterTagName(size_t index, const char8* name)
 MemoryManager* MemoryManager::Instance()
 {
     static_assert(sizeof(MemoryManager::MemoryBlock) % 16 == 0, "sizeof(MemoryManager::MemoryBlock) % 16 == 0");
+    static_assert(sizeof(MemoryManager::Backtrace) % 16 == 0, "sizeof(MemoryManager::Backtrace) % 16 == 0");
     static MallocHook hook;
     static MemoryManager mm;
     return &mm;
@@ -146,18 +164,25 @@ DAVA_NOINLINE void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
         block->realBlockStart = static_cast<void*>(block);
         if (!IsInternalAllocationPool(poolIndex))
         {
-            // Lock is required only here:
-            //  - collecting backtrace
-            //  - updating statistics
-            //  - inserting block into internal list
-            LockType lock(mutex);
+            Backtrace backtrace;
+            {
+                // Lock is required only here:
+                //  - collecting backtrace
+                //  - updating statistics
+                //  - inserting block into internal list
+                LockType lock(mutex);
 
-            block->orderNo = nextBlockNo++;
-            block->backtraceHash = 0;
-            CollectBacktrace(block, 1);
+                block->orderNo = nextBlockNo++;
+                block->backtraceHash = 0;
+                CollectBacktrace(&backtrace, 1);
 
-            InsertBlock(block);
-            UpdateStatAfterAlloc(block, poolIndex);
+                InsertBlock(block);
+                UpdateStatAfterAlloc(block, poolIndex);
+            }
+            {
+                LockType backtraceLock(backtraceMutex);
+                backtraces->insert(backtrace);
+            }
         }
         else
         {
@@ -167,6 +192,7 @@ DAVA_NOINLINE void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
 
             // For internal allocation pool lock is required only for updating statistics
             // TODO: update stat for internal block
+            LockType lock(mutex);
         }
         return static_cast<void*>(block + 1);
     }
@@ -213,18 +239,25 @@ DAVA_NOINLINE void* MemoryManager::AlignedAlloc(size_t size, size_t align, uint3
         block->realBlockStart = realPtr;
         if (!IsInternalAllocationPool(poolIndex))
         {
-            // Lock is required only here:
-            //  - collecting backtrace
-            //  - updating statistics
-            //  - inserting block into internal list
-            LockType lock(mutex);
+            Backtrace backtrace;
+            {
+                // Lock is required only here:
+                //  - collecting backtrace
+                //  - updating statistics
+                //  - inserting block into internal list
+                LockType lock(mutex);
 
-            block->orderNo = nextBlockNo++;
-            block->backtraceHash = 0;
-            CollectBacktrace(block, 1);
+                block->orderNo = nextBlockNo++;
+                block->backtraceHash = 0;
+                CollectBacktrace(&backtrace, 1);
 
-            InsertBlock(block);
-            UpdateStatAfterAlloc(block, poolIndex);
+                InsertBlock(block);
+                UpdateStatAfterAlloc(block, poolIndex);
+            }
+            {
+                LockType backtraceLock(backtraceMutex);
+                backtraces->insert(backtrace);
+            }
         }
         else
         {
@@ -234,6 +267,7 @@ DAVA_NOINLINE void* MemoryManager::AlignedAlloc(size_t size, size_t align, uint3
 
             // For internal allocation pool lock is required only for updating statistics
             // TODO: update stat for internal block
+            LockType lock(mutex);
         }
         return reinterpret_cast<void*>(aligned);
     }
@@ -470,16 +504,24 @@ size_t MemoryManager::GetDumpInternal(size_t userSize, void** buf, uint32 blockR
     MemoryBlock* lastBlock = nullptr;
     size_t nblocks = GetBlockRange(blockRangeBegin, blockRangeEnd, &firstBlock, &lastBlock);
     size_t nsymbols = symbols->size();
+    size_t nbacktraces = backtraces->size();
 
-    size_t bufSize = userSize + sizeof(MMDump) + sizeof(MMBlock) * nblocks + sizeof(MMSymbol) * nsymbols;
+    size_t bufSize = userSize
+        + sizeof(MMDump)
+        + sizeof(MMBlock) * nblocks
+        + sizeof(MMBacktrace) * nbacktraces
+        + sizeof(MMSymbol) * nsymbols;
 
     *buf = MallocHook::Malloc(bufSize);
     MMDump* dump = Offset<MMDump>(*buf, userSize);
-    MMSymbol* sym = Offset<MMSymbol>(*buf, userSize + sizeof(MMDump) + sizeof(MMBlock) * nblocks);
+    MMBlock* blocks = Offset<MMBlock>(dump, sizeof(MMDump));
+    MMBacktrace* bt = Offset<MMBacktrace>(blocks, sizeof(MMBlock) * nblocks);
+    MMSymbol* sym = Offset<MMSymbol>(bt, sizeof(MMBacktrace) * nbacktraces);
 
     dump->timestampBegin = 0;
     dump->timestampEnd = 0;
     dump->blockCount = static_cast<uint32>(nblocks);
+    dump->backtraceCount = static_cast<uint32>(nbacktraces);
     dump->symbolCount = static_cast<uint32>(nsymbols);
     dump->blockBegin = firstBlock->orderNo;
     dump->blockEnd = lastBlock->orderNo;
@@ -490,13 +532,12 @@ size_t MemoryManager::GetDumpInternal(size_t userSize, void** buf, uint32 blockR
     size_t nblocksToCheck = 0;
     while (firstBlock != nullptr)
     {
-        dump->blocks[iBlock].addr = reinterpret_cast<uint64>(firstBlock + 1);
-        dump->blocks[iBlock].allocByApp = firstBlock->allocByApp;
-        dump->blocks[iBlock].allocTotal = firstBlock->allocTotal;
-        dump->blocks[iBlock].pool = firstBlock->pool;
-        dump->blocks[iBlock].orderNo = firstBlock->orderNo;
-        for (size_t x = 0;x < 16;++x)
-            dump->blocks[iBlock].backtrace.frames[x] = reinterpret_cast<uint64>(firstBlock->backtrace.frames[x]);
+        blocks[iBlock].addr = reinterpret_cast<uint64>(firstBlock + 1);
+        blocks[iBlock].allocByApp = firstBlock->allocByApp;
+        blocks[iBlock].allocTotal = firstBlock->allocTotal;
+        blocks[iBlock].pool = firstBlock->pool;
+        blocks[iBlock].orderNo = firstBlock->orderNo;
+        blocks[iBlock].backtraceHash = static_cast<uint32>(firstBlock->backtraceHash);
         iBlock += 1;
         nblocksToCheck += 1;
         if (firstBlock == lastBlock)
@@ -504,8 +545,17 @@ size_t MemoryManager::GetDumpInternal(size_t userSize, void** buf, uint32 blockR
         firstBlock = firstBlock->next;
     }
 
+    size_t iBt = 0;
+    for (auto& i = backtraces->cbegin(), e = backtraces->cend();i != e;++i)
+    {
+        const Backtrace& o = *i;
+        for (size_t i = 0;i < 16;++i)
+            bt[iBt].frames[i] = reinterpret_cast<uint64>(o.frames[i]);
+        iBt += 1;
+    }
+
     size_t iSym = 0;
-    for (auto i = symbols->cbegin(), e = symbols->cend();i != e;++i)
+    for (auto& i = symbols->cbegin(), e = symbols->cend();i != e;++i)
     {
         void* addr = (*i).first;
         const InternalString& s = (*i).second;
@@ -541,24 +591,20 @@ size_t MemoryManager::GetBlockRange(uint32 rangeBegin, uint32 rangeEnd, MemoryBl
     return nblocks;
 }
 
-DAVA_NOINLINE void MemoryManager::CollectBacktrace(MemoryBlock* block, size_t nskip)
+DAVA_NOINLINE size_t MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t nskip)
 {
-    Memset(&block->backtrace, 0, sizeof(block->backtrace));
+    Memset(backtrace, 0, sizeof(Backtrace));
 #if defined(__DAVAENGINE_WIN32__)
-    USHORT n = CaptureStackBackTrace(nskip + 1, COUNT_OF(block->backtrace.frames), block->backtrace.frames, nullptr);
+    return CaptureStackBackTrace(nskip + 1, COUNT_OF(backtrace->frames), backtrace->frames, nullptr);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-    int n = backtrace(block->backtrace.frames, COUNT_OF(block->backtrace.frames));
+    retunr backtrace(backtrace->frames, COUNT_OF(backtrace->frames));
 #elif defined(__DAVAENGINE_ANDROID__)
+    return 0;
 #endif
 }
 
 void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
 {
-    if (nullptr == symbols)
-    {
-        symbols = new SymbolMap;
-    }
-
 #if defined(__DAVAENGINE_WIN32__)
     HANDLE hprocess = GetCurrentProcess();
     if (!symInited)
@@ -610,11 +656,9 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
 
 void MemoryManager::ObtainAllBacktraceSymbols()
 {
-    MemoryBlock* cur = head;
-    while (cur != nullptr)
+    for (const auto& x : *backtraces)
     {
-        ObtainBacktraceSymbols(&cur->backtrace);
-        cur = cur->next;
+        ObtainBacktraceSymbols(&x);
     }
 }
 

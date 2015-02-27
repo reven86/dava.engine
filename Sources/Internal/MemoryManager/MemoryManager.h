@@ -36,10 +36,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Introduce DAVA_NOINLINE to tell compiler not no inline 
 #if defined(__DAVAENGINE_WIN32__)
 #define DAVA_NOINLINE   __declspec(noinline)
+#define DAVA_ALIGNOF(x) __alignof(x)
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #define DAVA_NOINLINE   __attribute__((noinline))
+#define DAVA_ALIGNOF(x) alignof(x)
 #elif defined(__DAVAENGINE_ANDROID__)
 #define DAVA_NOINLINE   __attribute__((noinline))
+#define DAVA_ALIGNOF(x) alignof(x)
 #endif
 
 #include <unordered_map>
@@ -59,14 +62,21 @@ namespace DAVA
 */
 class MemoryManager final
 {
-    struct MemoryBlock;
-    struct Backtrace;
-
     static const uint32 BLOCK_MARK = 0xBA0BAB;
     static const uint32 BLOCK_DELETED = 0xACCA;
     static const size_t BLOCK_ALIGN = 16;
 
+    struct MemoryBlock;
+    struct Backtrace;
+    /*{
+        void* frames[BACKTRACE_DEPTH];
+    };*/
+
+    static size_t BacktraceHash(const MemoryManager::Backtrace& backtrace);
+    static bool BacktraceEqualTo(const MemoryManager::Backtrace& left, const MemoryManager::Backtrace& right);
+
 public:
+    static const size_t BACKTRACE_DEPTH = 16;
     static const size_t MAX_TAG_DEPTH = 8;              // Maximum depth of tag stack
     static const size_t DEFAULT_TAG = 0;                // Default tag which corresponds to whole application time line
 
@@ -78,7 +88,7 @@ public:
 
 private:
     // Make ctor and dtor private to disallow external creation of MemoryManager
-    MemoryManager() = default;
+    MemoryManager();// = default;
     ~MemoryManager() = default;
 
     MemoryManager(const MemoryManager&) = delete;
@@ -136,7 +146,7 @@ private:
     void FreeDumpInternal(void* ptr);
     size_t GetBlockRange(uint32 rangeBegin, uint32 rangeEnd, MemoryBlock** begin, MemoryBlock** end);
 
-    DAVA_NOINLINE void CollectBacktrace(MemoryBlock* block, size_t nskip);
+    DAVA_NOINLINE size_t CollectBacktrace(Backtrace* backtrace, size_t nskip);
     void ObtainBacktraceSymbols(const Backtrace* backtrace);
     void ObtainAllBacktraceSymbols();
 
@@ -150,6 +160,7 @@ private:
     typedef DAVA::Spinlock MutexType;
     typedef DAVA::LockGuard<MutexType> LockType;
     MutexType mutex;
+    MutexType backtraceMutex;
     
     TagCallback tagCallback;
     void* callbackArg;
@@ -160,8 +171,15 @@ private:
     typedef std::basic_string<char8, std::char_traits<char8>, InternalAllocator<char8>> InternalString;
     typedef std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>> SymbolMap;
 
+    typedef std::unordered_set<Backtrace, size_t(*)(const Backtrace&), bool(*)(const Backtrace&, const Backtrace&), InternalAllocator<Backtrace>> BacktraceSet;
+
+    std::aligned_storage_t<sizeof(BacktraceSet), DAVA_ALIGNOF(BacktraceSet)> backtraceStorage;
+    std::aligned_storage_t<sizeof(SymbolMap), DAVA_ALIGNOF(SymbolMap)> symbolStorage;
+    BacktraceSet* backtraces;
     SymbolMap* symbols;
+#if defined(__DAVAENGINE_WIN32__)
     bool symInited;
+#endif
 
 private:
     static MMItemName tagNames[MAX_TAG_COUNT];                  // Names of tags

@@ -125,8 +125,8 @@ void MemProfWidget::UpdateStat(const MMStat* stat)
         total += stat->poolStat[i].allocTotal;
     }
 
-    plot->graph(0)->addData(double(stat->timestamp), (double)alloc / 1000.0);
-    plot->graph(1)->addData(double(stat->timestamp), (double)total / 1000.0);
+    plot->graph(0)->addData(double(stat->timestamp) / 1000., (double)alloc / (1024. * 1024.));
+    plot->graph(1)->addData(double(stat->timestamp) / 1000., (double)total / (1024. * 1024.));
     plot->graph(0)->rescaleAxes();
     plot->graph(1)->rescaleAxes(true);
     plot->replot();

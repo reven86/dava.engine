@@ -138,8 +138,8 @@ struct MMBlock
     uint32 allocTotal;
     uint32 pool;
     uint32 orderNo;
-    uint32 padding[2];
-    MMBacktrace backtrace;
+    uint32 backtraceHash;
+    uint32 padding;
 };
 
 static_assert(sizeof(MMBlock) % 16 == 0, "sizeof(MMBlock) % 16 == 0");
@@ -148,14 +148,16 @@ struct MMDump
 {
     uint64 timestampBegin;      //
     uint64 timestampEnd;        //
-    uint32 blockCount;          // Number of block in dump
+    uint32 blockCount;          // Number of blocks in dump
+    uint32 backtraceCount;      // Number of backtraces in dump
     uint32 symbolCount;         // Number of symbols in dump
     uint32 blockBegin;          // Order number of first block in dump
     uint32 blockEnd;            // Order number of last block in dump
     uint32 type;                // Dump type: user request, tag ended, checkpoint
     uint32 tag;                 // What tag has ended
-    uint32 padding[2];
-    MMBlock blocks[1];
+    uint32 padding;
+    //MMBlock blocks[];
+    //MMBacktrace backtraces[];
     //MMSymbol symbols[];
 };
 

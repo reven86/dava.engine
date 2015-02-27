@@ -1,5 +1,7 @@
 #include <QMessageBox>
 
+#include <unordered_map>
+
 #include <Utils/UTF8Utils.h>
 
 #include "Base/FunctionTraits.h"
@@ -85,13 +87,35 @@ void MemProfController::Dump(size_t total, size_t recv)
     view->UpdateProgress(total, recv);
 }
 
+template<typename T>
+inline T* Offset(void* ptr, size_t byteOffset)
+{
+    return reinterpret_cast<T*>(static_cast<uint8*>(ptr)+byteOffset);
+}
+
+template<typename T>
+inline const T* Offset(const void* ptr, size_t byteOffset)
+{
+    return reinterpret_cast<const T*>(static_cast<const uint8*>(ptr)+byteOffset);
+}
+
 void MemProfController::DumpDone(const DAVA::MMDump* dump)
 {
+    using namespace DAVA;
+
     static int dumpIndex = 1;
 
     view->UpdateProgress(100, 100);
 
-    const MMSymbol* sym = reinterpret_cast<const MMSymbol*>(reinterpret_cast<const uint8*>(dump)+sizeof(MMDump) + sizeof(MMBlock) * dump->blockCount);
+    std::unordered_map<uint64, String> symbolMap;
+
+    const MMBlock* blocks = Offset<MMBlock>(dump, sizeof(MMDump));
+    const MMBacktrace* bt = Offset<MMBacktrace>(blocks, sizeof(MMBlock) * dump->blockCount);
+    const MMSymbol* symbols = Offset<MMSymbol>(bt, sizeof(MMBacktrace) * dump->backtraceCount);
+
+    for (size_t i = 0, n = dump->symbolCount;i < n;++i)
+        symbolMap.emplace(std::make_pair(symbols[i].addr, symbols[i].name));
+
     char fname[100];
     const char* prefix = 
 #if defined(__DAVAENGINE_WIN32__)
@@ -105,7 +129,10 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump)
         FILE* f = fopen(fname, "wb");
         if (f)
         {
-            size_t dumpSize = sizeof(MMDump) + sizeof(MMBlock) * dump->blockCount + sizeof(MMSymbol) * dump->symbolCount;
+            size_t dumpSize = sizeof(MMDump) 
+                + sizeof(MMBlock) * dump->blockCount 
+                + sizeof(MMBacktrace) * dump->backtraceCount
+                + sizeof(MMSymbol) * dump->symbolCount;
             fwrite(dump, 1, dumpSize, f);
             fclose(f);
         }
@@ -116,6 +143,7 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump)
     {
         fprintf(f, "General info\n");
         fprintf(f, "  blockCount=%u\n", dump->blockCount);
+        fprintf(f, "  backtraceCount=%u\n", dump->backtraceCount);
         fprintf(f, "  nameCount=%u\n", dump->symbolCount);
         fprintf(f, "  blockBegin=%u\n", dump->blockBegin);
         fprintf(f, "  blockEnd=%u\n", dump->blockEnd);
@@ -123,10 +151,11 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump)
         fprintf(f, "Blocks\n");
         for (uint32 i = 0;i < dump->blockCount;++i)
         {
-            fprintf(f, "%4d: addr=%08llX, allocByApp=%u, allocTotal=%u, orderNo=%u, pool=%u\n", i + 1,
-                    dump->blocks[i].addr,
-                    dump->blocks[i].allocByApp, dump->blocks[i].allocTotal, dump->blocks[i].orderNo, dump->blocks[i].pool);
-            for (size_t j = 0;j < 16;++j)
+            fprintf(f, "%4d: addr=%08llX, allocByApp=%u, allocTotal=%u, orderNo=%u, pool=%u, hash=%u\n", i + 1,
+                    blocks[i].addr,
+                    blocks[i].allocByApp, blocks[i].allocTotal, blocks[i].orderNo, blocks[i].pool,
+                    blocks[i].backtraceHash);
+            /*for (size_t j = 0;j < 16;++j)
             {
                 uint64 addr = dump->blocks[i].backtrace.frames[j];
                 const char* s = "";
@@ -136,13 +165,14 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump)
                 if (n != sym + dump->symbolCount)
                     s = n->name;
                 fprintf(f, "        %08llX    %s\n", dump->blocks[i].backtrace.frames[j], s);
-            }
+            }*/
         }
 
         fprintf(f, "Symbols\n");
-        for (uint32 i = 0;i < dump->symbolCount;++i)
+        int isym = 0;
+        for (auto& x : symbolMap)
         {
-            fprintf(f, "  %4d: %08llX; %s\n", i + 1, sym[i].addr, sym[i].name);
+            fprintf(f, "  %4d: %08llX; %s\n", isym + 1, x.first, x.second);
         }
         fclose(f);
     }

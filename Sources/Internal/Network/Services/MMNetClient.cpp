@@ -143,7 +143,10 @@ void MMNetClient::ProcessDump(const MMProtoHeader* hdr, const void* packet, size
     const MMDump* dump = static_cast<const MMDump*>(packet);
 
     gettingDump = true;
-    dumpSize = sizeof(MMDump) + sizeof(MMBlock) * dump->blockCount + sizeof(MMSymbol) * dump->symbolCount;
+    dumpSize = sizeof(MMDump) 
+        + sizeof(MMBlock) * dump->blockCount 
+        + sizeof(MMBacktrace) * dump->backtraceCount
+        + sizeof(MMSymbol) * dump->symbolCount;
     dumpRecv = length;
 
     dumpV.resize(dumpSize);
