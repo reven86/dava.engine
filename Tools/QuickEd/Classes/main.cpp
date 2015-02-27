@@ -29,7 +29,7 @@
 
 #include <QApplication>
 #include "UI/mainwindow.h"
-
+#include "BaseController.h"
 #include "DAVAEngine.h"
 
 #if defined (__DAVAENGINE_MACOS__)
@@ -60,8 +60,8 @@ int main(int argc, char *argv[])
     int result = 0;
     // MainWindow have to be released prior to the framework, so use separate scope for it.
     {
-        MainWindow w;
-        w.show();
+        BaseController c;
+        c.start();
         result = a.exec();
     }
 

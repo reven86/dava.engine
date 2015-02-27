@@ -663,7 +663,7 @@ void LocalizationEditorDialog::OnOpenLocalizationFileButtonClicked()
 	if(!fileDirectory.isNull() && !fileDirectory.isEmpty())
     {
 		// Convert directory path into Unix-style path
-		fileDirectory = ResourcesManageHelper::ConvertPathToUnixStyle(fileDirectory);
+		fileDirectory = QDir::toNativeSeparators(fileDirectory);
 
 		if (ResourcesManageHelper::ValidateResourcePath(fileDirectory))
         {

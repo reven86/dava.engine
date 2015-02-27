@@ -245,11 +245,6 @@ bool QtModelPackageCommandExecutor::IsNodeInHierarchy(const PackageBaseNode *nod
     return false;
 }
 
-QUndoStack *QtModelPackageCommandExecutor::GetUndoStack()
-{
-    return document->UndoStack();
-}
-
 void QtModelPackageCommandExecutor::PushCommand(QUndoCommand *cmd)
 {
     GetUndoStack()->push(cmd);
@@ -263,4 +258,9 @@ void QtModelPackageCommandExecutor::BeginMacro(const QString &name)
 void QtModelPackageCommandExecutor::EndMacro()
 {
     GetUndoStack()->endMacro();
+}
+
+QUndoStack *QtModelPackageCommandExecutor::GetUndoStack()
+{
+    return document->GetUndoStack();
 }

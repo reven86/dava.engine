@@ -309,19 +309,10 @@ void PackageWidget::OnPaste()
         
         ControlsContainerNode *node = dynamic_cast<ControlsContainerNode*>(static_cast<PackageBaseNode*>(index.internalPointer()));
         
-        if (node && (node->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) == 0)
+        if (nullptr != node && (node->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) == 0)
         {
             String string = clipboard->mimeData()->text().toStdString();
-            RefPtr<YamlParser> parser(YamlParser::CreateAndParseString(string));
-            
-            if (parser.Valid() && parser->GetRootNode())
-            {
-                document->UndoStack()->beginMacro("Paste");
-                EditorUIPackageBuilder builder(document->GetPackage(), node, -1, document->GetCommandExecutor());
-                UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(parser->GetRootNode(), "");
-                SafeRelease(newPackage);
-                document->UndoStack()->endMacro();
-            }
+            document->GetCommandExecutor()->Paste(document->GetPackage(), node, -1, string);
         }
     }
 }

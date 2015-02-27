@@ -25,9 +25,5 @@ void ConsoleDockWidget::Output( DAVA::Logger::eLogLevel ll, const DAVA::char8* t
 
 void ConsoleDockWidget::Output( DAVA::Logger::eLogLevel ll, const QString &rawText ) const
 {
-    QString text = rawText;
-    if (text[text.length()-1] == '\n')
-        text.remove(text.length()-1, 1);
-
-    ui->plainTextEdit->appendPlainText(text);
+    ui->plainTextEdit->appendPlainText(rawText.trimmed());
 }

@@ -66,47 +66,52 @@
 
 using namespace DAVA;
 
+namespace
+{
 // True type fonts resource folder path
-static const String FONTS_RES_PATH("~res:/Fonts/");
+const String FONTS_RES_PATH("~res:/Fonts/");
 // Graphics fonts definition resource folder path
-static const String GRAPHICS_FONTS_RES_PATH("~res:/Fonts/");
+const String GRAPHICS_FONTS_RES_PATH("~res:/Fonts/");
 // Resource folder header
-static const QString RES_HEADER = "~res:";
+const QString RES_HEADER = "~res:";
 // Button background image path
-static const QString BACKGROUND_IMAGE_PATH("~res:/Images/buttonBg.png");
+const QString BACKGROUND_IMAGE_PATH("~res:/Images/buttonBg.png");
 // Documentation path.
-static const QString DOCUMENTATION_PATH = "~doc:/UIEditorHelp/";
+const QString DOCUMENTATION_PATH = "~doc:/UIEditorHelp/";
 
 // Additional text constants
-static const QString GFX = "/Gfx/";
-static const QString FONTS = "/Fonts/";
-static const QString UI = "/UI/";
+const QString GFX = "/Gfx/";
+const QString FONTS = "/Fonts/";
+const QString UI = "/UI/";
 // Project DATASOURCE folder
-static const QString PROJECT_DATASOURCE = "%1/DataSource";
+const QString PROJECT_DATASOURCE = "%1/DataSource";
 // Project DATA folder
-static const QString PROJECT_DATA = "%1/Data";
+const QString PROJECT_DATA = "%1/Data";
 // Platform directory path
-static const QString PROJECT_PLATFORM_PATH = PROJECT_DATA + "/UI/";
+const QString PROJECT_PLATFORM_PATH = PROJECT_DATA + "/UI/";
 // Project file path
-static const QString PROJECT_FILE_PATH = "%1/ui.uieditor";
+const QString PROJECT_FILE_PATH = "%1/ui.uieditor";
 // Project GFX folder for sprites psd files
-static const QString PROJECT_DATASOURCE_GFX = PROJECT_DATASOURCE + GFX;
+const QString PROJECT_DATASOURCE_GFX = PROJECT_DATASOURCE + GFX;
 // Project GFX folder for graphics fonts sprites psd files
-static const QString PROJECT_DATASOURCE_GRAPHICS_FONTS = PROJECT_DATASOURCE_GFX + FONTS;
+const QString PROJECT_DATASOURCE_GRAPHICS_FONTS = PROJECT_DATASOURCE_GFX + FONTS;
 // Project converted sprites folder
-static const QString PROJECT_DATA_GFX = PROJECT_DATA + GFX;
+const QString PROJECT_DATA_GFX = PROJECT_DATA + GFX;
 // Project converted graphics fonts sprites folder
-static const QString PROJECT_DATA_GRAPHICS_FONTS = PROJECT_DATA_GFX + FONTS;
+const QString PROJECT_DATA_GRAPHICS_FONTS = PROJECT_DATA_GFX + FONTS;
 // Default project title
-static const QString PROJECT_TITLE = "UIEdtior";
+const QString PROJECT_TITLE = "UIEdtior";
 
 // Resource wrong location error message
-static const QString RES_WRONG_LOCATION_ERROR_MESSAGE = "Resource %1 is not located inside project 'Data' folder. It can't be linked with project or control!";
+const QString RES_WRONG_LOCATION_ERROR_MESSAGE = "Resource %1 is not located inside project 'Data' folder. It can't be linked with project or control!";
 
 //Available fonts extensions
-static const QStringList FONTS_EXTENSIONS_FILTER = (QStringList() << "*.ttf" << "*.otf" << "*.fon" << "*.fnt" << "*.def" << "*.df");
+const QStringList FONTS_EXTENSIONS_FILTER = (QStringList() << "*.ttf" << "*.otf" << "*.fon" << "*.fnt" << "*.def" << "*.df");
 
+}
 QString ResourcesManageHelper::projectTitle;
+
+QString ResourcesManageHelper::projectPath;
 
 QString ResourcesManageHelper::GetFontAbsolutePath(const QString& resourceFileName, bool graphicsFont)
 {	
@@ -237,14 +242,14 @@ QString ResourcesManageHelper::GetDocumentationPath()
 	return DOCUMENTATION_PATH;
 }
 
+void ResourcesManageHelper::SetProjectPath(const QString &path)
+{
+    projectPath = path;
+}
+
 QString ResourcesManageHelper::GetProjectPath()
 {
-    MainWindow * win = qobject_cast<MainWindow *>(qApp->activeWindow());//TODO remove ugly code
-    if (win && win->GetProject())
-    {
-        return win->GetProject()->GetProjectDir();
-    }
-    return QString();
+    return projectPath;
 }
 
 QString ResourcesManageHelper::GetProjectTitle()
@@ -333,12 +338,4 @@ void ResourcesManageHelper::ShowErrorMessage(const QString& messageParam)
 	messageBox.setText(QString(RES_WRONG_LOCATION_ERROR_MESSAGE).arg(messageParam));
 	messageBox.setStandardButtons(QMessageBox::Ok);
 	messageBox.exec();
-}
-
-QString ResourcesManageHelper::ConvertPathToUnixStyle(const QString& inputString)
-{
-	// Replace simple slash to unix style slash
-	QString outputString = inputString;
-	outputString.replace(QString("\\") ,QString("/"));
-	return outputString;
 }
