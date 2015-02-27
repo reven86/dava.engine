@@ -201,7 +201,6 @@
 
 DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb):
     webViewPtr(0),
-    webViewDelegatePtr(0),
     webViewURLDelegatePtr(0),
     rightSwipeGesturePtr(0),
     leftSwipeGesturePtr(0),

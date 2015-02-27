@@ -1085,7 +1085,7 @@ inline NMaterial* NMaterial::GetParent() const
 
 inline uint32 NMaterial::GetChildrenCount() const
 {
-    return children.size();
+    return static_cast<uint32>(children.size());
 }
 
 inline NMaterial* NMaterial::GetChild(uint32 index) const

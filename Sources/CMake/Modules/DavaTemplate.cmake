@@ -65,6 +65,7 @@ else()
 
 endif()
 
+set_dava_target_properties( ${PROJECT_NAME} )
 
 if( ANDROID )
     set( LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME}" CACHE PATH "Output directory for Android libs" )
@@ -191,6 +192,7 @@ elseif ( MSVC )
      endif()
 
 endif()
+
 
 list ( APPEND DAVA_FOLDERS ${DAVA_ENGINE_DIR} )
 list ( APPEND DAVA_FOLDERS ${FILE_TREE_CHECK_FOLDERS} )
