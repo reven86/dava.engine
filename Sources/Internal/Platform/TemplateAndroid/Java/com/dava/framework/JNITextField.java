@@ -107,7 +107,7 @@ public class JNITextField {
             Log.v(TAG, "setRenderToTexture value = " + value);
             isRenderToTexture = value;
             restoreVisibility();
-            updateStaticTesture();
+            updateStaticTextsture();
         }
         
         public boolean isRenderToTexture()
@@ -149,17 +149,12 @@ public class JNITextField {
         private void renderToTexture() {
             assert true == stopRecursion;
             
+            // if we do not create bitmap do not recycle it
             boolean destroyBitmap = false;
             
             Bitmap bitmap = getDrawingCache(); //renderToBitmap();
             if (bitmap == null) // could be if onDraw not called yet
             {
-//                
-//                bitmap = Bitmap.createBitmap( getLayoutParams().width, getLayoutParams().height, Bitmap.Config.ARGB_8888);
-//                Canvas c = new Canvas(bitmap);
-//                layout(getLeft(), getTop(), getRight(), getBottom());
-//                draw(c);
-//----------------------------------------
                 if (viewHeight == 0 || viewHeight == 0)
                 {
                     // TextField not fully constructed yet
@@ -176,22 +171,6 @@ public class JNITextField {
                 draw(c);
 
                 destroyBitmap = true;
-//------------------------------------------
-                
-//                int prevVisibility = getVisibility();
-//                setVisibility(View.VISIBLE);
-//                
-//                setDrawingCacheEnabled(false);
-//                setDrawingCacheEnabled(true);
-//                buildDrawingCache();
-//                bitmap = getDrawingCache();
-//                
-//                setVisibility(prevVisibility);
-//                if (bitmap == null)
-//                {
-//                    Log.e(TAG, "can't draw first time TextField");
-//                    return;
-//                }
             }
 
             if (bitmap != null) {
@@ -272,7 +251,7 @@ public class JNITextField {
             setVisible(logicVisible);
         }
         
-        public void updateStaticTesture()
+        public void updateStaticTextsture()
         {
             if (isRenderToTexture && !stopRecursion)
             {
@@ -283,7 +262,7 @@ public class JNITextField {
         }
     }
 
-    static Map<Integer, TextField> controls = new HashMap<Integer, TextField>();
+    static Map<Integer, TextField> textFields = new HashMap<Integer, TextField>();
 
     static class AttachedFrameLayout extends FrameLayout implements
             View.OnAttachStateChangeListener {
@@ -326,7 +305,7 @@ public class JNITextField {
     }
 
     private static TextField GetTextField(int id) {
-        TextField tf = controls.get(id);
+        TextField tf = textFields.get(id);
         if (null == tf) {
             Log.e(TAG, String.format("Unknown control id:%d", id));
             // better crush inside android VM then in c++ with SIGSEGV
@@ -497,7 +476,7 @@ public class JNITextField {
                 if (null == activity || activity.GetIsPausing())
                     return;
 
-                if (controls.containsKey(id)) {
+                if (textFields.containsKey(id)) {
                     Log.e(TAG, String.format("Control with id:%d already created", id));
                     return;
                 }
@@ -759,7 +738,7 @@ public class JNITextField {
                     }
                 });
 
-                controls.put(id, text);
+                textFields.put(id, text);
             }
         });
     }
@@ -774,7 +753,7 @@ public class JNITextField {
                 ViewGroup parent = (ViewGroup) editText.getParent();
                 if (parent != null)
                     parent.removeView(editText);
-                controls.remove(id);
+                textFields.remove(id);
             }
         });
     }
@@ -808,7 +787,7 @@ public class JNITextField {
                 final TextField text = GetTextField(id);
                 Log.v(TAG, "set text:" + string);
                 text.setText(string);
-                text.updateStaticTesture();
+                text.updateStaticTextsture();
             }
         });
     }
@@ -821,7 +800,7 @@ public class JNITextField {
                 final TextField text = GetTextField(id);
                 text.setTextColor(Color.argb((int) (255 * a), (int) (255 * r),
                         (int) (255 * g), (int) (255 * b)));
-                text.updateStaticTesture();
+                text.updateStaticTextsture();
             }
         });
     }
@@ -832,7 +811,7 @@ public class JNITextField {
             public void run() {
                 final TextField text = GetTextField(id);
                 text.setTextSize(TypedValue.COMPLEX_UNIT_PX, (int) size);
-                text.updateStaticTesture();
+                text.updateStaticTextsture();
             }
         });
     }
@@ -849,7 +828,7 @@ public class JNITextField {
                     text.setInputType(text.getInputType()
                             & ~(EditorInfo.TYPE_TEXT_VARIATION_PASSWORD));
                 }
-                text.updateStaticTesture();
+                text.updateStaticTextsture();
             }
         });
     }
@@ -866,7 +845,7 @@ public class JNITextField {
                     text.setGravity(gravity
                             & ~Gravity.RELATIVE_LAYOUT_DIRECTION);
                 }
-                text.updateStaticTesture();
+                text.updateStaticTextsture();
             }
         });
     }
@@ -897,7 +876,7 @@ public class JNITextField {
                     gravityH |= Gravity.RELATIVE_LAYOUT_DIRECTION;
                 }
                 text.setGravity(gravityH | gravityV);
-                text.updateStaticTesture();
+                text.updateStaticTextsture();
             }
         });
     }
@@ -1140,7 +1119,7 @@ public class JNITextField {
     static protected void RelinkNativeControls() {
         final JNIActivity activity = JNIActivity.GetActivity();
         
-        for (TextField control : controls.values()) {
+        for (TextField control : textFields.values()) {
             ViewGroup viewGroup = (ViewGroup) control.getParent();
             viewGroup.removeView(control);
             activity.addContentView(control, control.getLayoutParams());
@@ -1170,7 +1149,7 @@ public class JNITextField {
     }
 
     public static void HideAllTextFields() {
-        for (TextField textField: controls.values()) {
+        for (TextField textField: textFields.values()) {
             textField.setVisibility(View.GONE);
         }
     }
@@ -1179,7 +1158,7 @@ public class JNITextField {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                for (TextField textField : controls.values()) {
+                for (TextField textField : textFields.values()) {
                     textField.restoreVisibility();
                 }
             }
