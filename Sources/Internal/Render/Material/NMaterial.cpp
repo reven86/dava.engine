@@ -102,7 +102,6 @@ const FastName NMaterial::PARAM_RCP_SCREEN_SIZE("rcpScreenSize");
 const FastName NMaterial::PARAM_SCREEN_OFFSET("screenOffset");
 
 const FastName NMaterial::FLAG_VERTEXFOG = FastName("VERTEX_FOG");
-const FastName NMaterial::FLAG_FOG_EXP = FastName("FOG_EXP");
 const FastName NMaterial::FLAG_FOG_LINEAR = FastName("FOG_LINEAR");
 const FastName NMaterial::FLAG_FOG_HALFSPACE = FastName("FOG_HALFSPACE");
 const FastName NMaterial::FLAG_FOG_HALFSPACE_LINEAR = FastName("FOG_HALFSPACE_LINEAR");
