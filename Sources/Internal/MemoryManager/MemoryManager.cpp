@@ -121,12 +121,19 @@ void MemoryManager::InstallTagCallback(TagCallback callback, void* arg)
 
 DAVA_NOINLINE void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
 {
-    assert(size > 0);
     assert(IsInternalAllocationPool(poolIndex) || poolIndex < MAX_ALLOC_POOL_COUNT);
+
+    // On zero-sized allocation request allocate 1 byte to return unique memory block
+    if (0 == size)
+    {
+        size = 1;
+    }
 
     size_t totalSize = sizeof(MemoryBlock) + size;
     if (totalSize & (BLOCK_ALIGN - 1))
+    {
         totalSize += (BLOCK_ALIGN - (totalSize & (BLOCK_ALIGN - 1)));
+    }
 
     MemoryBlock* block = static_cast<MemoryBlock*>(MallocHook::Malloc(totalSize));
     if (block != nullptr)
@@ -168,17 +175,26 @@ DAVA_NOINLINE void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
 
 DAVA_NOINLINE void* MemoryManager::AlignedAlloc(size_t size, size_t align, uint32 poolIndex)
 {
+    // On zero-sized allocation request allocate 1 byte to return unique memory block
+    if (0 == size)
+    {
+        size = 1;
+    }
+
     // TODO: check whether size is integral multiple of align
     assert(align > 0 && 0 == (align & (align - 1)));    // Check whether align is power of 2
-    assert(size > 0);
     assert(IsInternalAllocationPool(poolIndex) || poolIndex < MAX_ALLOC_POOL_COUNT);
 
     if (align < BLOCK_ALIGN)
+    {
         align = BLOCK_ALIGN;
+    }
 
     size_t totalSize = sizeof(MemoryBlock) + size + (align - 1);
     if (totalSize & (BLOCK_ALIGN - 1))
+    {
         totalSize += (BLOCK_ALIGN - (totalSize & (BLOCK_ALIGN - 1)));
+    }
 
     LockType lock(mutex);
     void* realPtr = MallocHook::Malloc(totalSize);
