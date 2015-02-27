@@ -467,7 +467,7 @@ void QualitySettingsSystem::UpdateEntityAfterLoad(Entity *entity)
 	Vector<Entity *> entitiesWithQualityComponent;
 	entity->GetChildEntitiesWithComponent(entitiesWithQualityComponent, Component::QUALITY_SETTINGS_COMPONENT);
 
-    for (uint32 i = 0, sz = entitiesWithQualityComponent.size(); i< sz; ++i)
+    for (size_t i = 0, sz = entitiesWithQualityComponent.size(); i< sz; ++i)
     {
         if (!IsQualityVisible(entitiesWithQualityComponent[i]))
         {
