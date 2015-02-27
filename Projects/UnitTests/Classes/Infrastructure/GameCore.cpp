@@ -178,7 +178,7 @@ void GameCore::OnAppFinished()
     
     netLogger.Uninstall();
     
-    netMM.Dump();
+    /*netMM.Dump();
     while(true)
     {
         volatile bool f = netMM.Empty();
@@ -186,7 +186,7 @@ void GameCore::OnAppFinished()
             Net::NetCore::Instance()->Poll();
         else
             break;
-    }
+    }*/
 }
 
 void GameCore::OnSuspend()
