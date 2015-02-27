@@ -21,8 +21,7 @@ if     ( ANDROID )
     set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -Wno-invalid-offsetof -frtti" )    
     
 elseif ( IOS     ) 
-    set( CMAKE_C_FLAGS    "${CMAKE_C_FLAGS} -mno-thumb"  )
-    set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -mno-thumb -fvisibility=hidden" )
+    set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fvisibility=hidden" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
 
