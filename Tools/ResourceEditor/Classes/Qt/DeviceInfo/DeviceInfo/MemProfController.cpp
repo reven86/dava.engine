@@ -123,7 +123,6 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump)
         fprintf(f, "Blocks\n");
         for (uint32 i = 0;i < dump->blockCount;++i)
         {
-            if (dump->blocks[i].pool == 0) continue;
             fprintf(f, "%4d: addr=%08llX, allocByApp=%u, allocTotal=%u, orderNo=%u, pool=%u\n", i + 1,
                     dump->blocks[i].addr,
                     dump->blocks[i].allocByApp, dump->blocks[i].allocTotal, dump->blocks[i].orderNo, dump->blocks[i].pool);

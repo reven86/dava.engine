@@ -263,10 +263,6 @@ void NetworkTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
             v2.clear();
             v2.shrink_to_fit();
         }
-        /*void* buf = nullptr;
-        size_t size = MemoryManager::GetDump(0, &buf, 0, 100);
-        size = size;
-        MemoryManager::FreeDump(buf);*/
     }
     else if (obj == btnPeriodic)
     {
@@ -275,7 +271,7 @@ void NetworkTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
         {
             btnPeriodic->SetStateText(0xFF, L"Periodic on");
             //Logger::Info("Periodic on");
-            //v3.resize(v3.size() + 10);
+            v3.resize(v3.size() + 10);
         }
         else
         {
