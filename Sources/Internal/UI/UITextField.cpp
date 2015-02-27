@@ -91,12 +91,12 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 :	UIControl(rect, rectInAbsoluteCoordinates)
 ,	text()
 ,	delegate(0)
-,	cursorBlinkingTime(0.0f)
+,	cursorBlinkingTime{0.0f}
+,   isRenderToTexture{false}
 #if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
 ,   staticText(NULL)
 ,   textFont(NULL)
 #endif
-,   isRenderToTexture{false}
 {
 #if defined(__DAVAENGINE_ANDROID__)
 	textFieldAndroid = new UITextFieldAndroid(this);
