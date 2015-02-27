@@ -1,4 +1,15 @@
 
+macro( set_dava_target_properties TARGET_NAME )
+    if( WARNINGS_AS_ERRORS )
+       if( APPLE )
+            set_target_properties ( ${TARGET_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_TREAT_WARNINGS_AS_ERRORS  YES ) 
+
+        endif()
+
+    endif()
+
+endmacro()
+
 #compiller flags
 if( NOT DISABLE_DUBUG )
     set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -D__DAVAENGINE_DEBUG__" )
@@ -9,10 +20,6 @@ if     ( ANDROID )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -Wno-invalid-offsetof" )
     set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -Wno-invalid-offsetof -frtti" )    
     
-    if( WARNINGS_AS_ERRORS)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
-    endif  ()
-
 elseif ( IOS     ) 
     set( CMAKE_C_FLAGS    "${CMAKE_C_FLAGS} -mno-thumb"  )
     set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -mno-thumb -fvisibility=hidden" )
@@ -32,30 +39,38 @@ elseif ( IOS     )
     set( CMAKE_MACOSX_BUNDLE YES )
     set( CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer" )
 
-    if( WARNINGS_AS_ERRORS)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
-    endif  ()
-
 elseif ( MACOS )
     set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
 
-    if( WARNINGS_AS_ERRORS)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
-    endif  ()
 elseif ( WIN32)
     set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP" ) 
     set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP" ) 
     set ( CMAKE_EXE_LINKER_FLAGS_RELEASE "/ENTRY:mainCRTStartup" )
-    
-    if( WARNINGS_AS_ERRORS)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
-    endif  ()
 
 endif  ()
 
+##
 
+if( WARNINGS_AS_ERRORS )
+
+    if( ANDROID )
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror" ) # warnings as errors
+
+    elseif( APPLE )
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror" ) # warnings as errors
+
+    elseif( WIN32 )
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX" )
+
+    endif()
+
+endif()
+
+
+
+##
 if     ( ANDROID )
     set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/${ANDROID_NDK_ABI_NAME}" ) 
     

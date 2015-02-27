@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 3.0)
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 set          ( WARNINGS_AS_ERRORS true)
+
 include      ( CMake-common )
 include      ( FindDavaFramework )
 
@@ -20,21 +21,19 @@ include_directories   ( ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
 
 if( ANDROID )
     set( PLATFORM_SPECIFIC_FOLDER ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror") # warnings as errors
+
 elseif( MACOS )
     set( PLATFORM_SPECIFIC_FOLDER "MacOSSpecific" )
     file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/*.xib" )
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror") # warnings as errors
-    set_property (TARGET ${PROJECT_NAME} PROPERTY XCODE_ATTRIBUTE_${XCODE_PROPERTY} "-Werror") # warnings as errors
+
 elseif( IOS )
     set( PLATFORM_SPECIFIC_FOLDER "iOSSpecific" )
     set( IOS_ADD_SRC ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/UnitTests.entitlements )
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror") # warnings as errors
-    set_property (TARGET ${PROJECT_NAME} PROPERTY XCODE_ATTRIBUTE_${XCODE_PROPERTY} "-Werror") # warnings as errors
+
 elseif( WIN32 )
     set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
     set( EXECUTABLE_FLAG WIN32 )
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
+
 endif()
 
 add_subdirectory(               ${DAVA_TOOLS_DIR} ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
