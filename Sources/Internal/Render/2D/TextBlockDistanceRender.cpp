@@ -88,7 +88,7 @@ void TextBlockDistanceRender::Prepare(Texture *texture /*= NULL*/)
     uint32 charCount = 0;
     if (!textBlock->isMultilineEnabled || textBlock->treatMultilineAsSingleLine)
     {
-        charCount = textBlock->visualText.length();
+        charCount = static_cast<uint32>(textBlock->visualText.length());
     }
     else
     {

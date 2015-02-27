@@ -419,8 +419,8 @@ namespace DAVA
         
         
         // Invisible on every frame
-        uint32 invisibleObjectCount =  (uint32)renderObjectsArray.size() - frameGlobalVisibleInfo.size();
-        uint32 visibleCount = frameGlobalVisibleInfo.size();
+        uint32 invisibleObjectCount =  static_cast<uint32>((uint32)renderObjectsArray.size() - frameGlobalVisibleInfo.size());
+        uint32 visibleCount = static_cast<uint32>(frameGlobalVisibleInfo.size());
         //    for (Map<RenderObject*, uint32>::iterator it = frameGlobalOccludedInfo.begin(), end = frameGlobalOccludedInfo.end(); it != end; ++it)
         //    {
         //        if (renderFrameCount == it->second)
@@ -448,7 +448,7 @@ namespace DAVA
             if (findIt != equalVisibilityArray.end())
             {
                 Vector<RenderObject*> & equalObjects = findIt->second;
-                uint32 size = equalObjects.size();
+                uint32 size = static_cast<uint32>(equalObjects.size());
                 for (uint32 k = 0; k < size; ++k)
                 {
                     DVASSERT(equalObjects[k]->GetStaticOcclusionIndex() != INVALID_STATIC_OCCLUSION_INDEX);

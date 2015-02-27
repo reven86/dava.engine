@@ -230,7 +230,7 @@ int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFo
     
 	png_read_update_info(png_ptr, info_ptr);
 	
-	rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+	rowbytes = static_cast<uint32>(png_get_rowbytes(png_ptr, info_ptr));
 	
     uint8 *image_data = new uint8 [rowbytes * height];
 	if (image_data == 0)

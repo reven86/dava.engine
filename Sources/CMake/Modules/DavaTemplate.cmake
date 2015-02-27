@@ -109,12 +109,13 @@ else()
 
 endif()
 
+set_dava_target_properties( ${PROJECT_NAME} )
 
 if( ANDROID )
     set( LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME}" CACHE PATH "Output directory for Android libs" )
 
     set( ANDROID_MIN_SDK_VERSION     ${ANDROID_NATIVE_API_LEVEL} )
-    set( ANDROID_TARGET_SDK_VERSION  ${ANDROID_NATIVE_API_LEVEL} )
+    set( ANDROID_TARGET_SDK_VERSION  ${ANDROID_TARGET_API_LEVEL} )
 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/AndroidManifest.in
                     ${CMAKE_CURRENT_BINARY_DIR}/AndroidManifest.xml )
@@ -155,14 +156,17 @@ if( ANDROID )
 
     set_target_properties( ${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/ )
 
-    execute_process( COMMAND  android update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path . )
+    execute_process( COMMAND ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path . )
 
-    add_custom_target( ant-configure ALL
-        COMMAND  android update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path .
-        COMMAND  ant release
-    )
+    if( NOT CMAKE_EXTRA_GENERATOR )
+        add_custom_target( ant-configure ALL
+            COMMAND  ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path .
+            COMMAND  ${ANT_COMMAND} release
+        )
 
-    add_dependencies( ant-configure ${PROJECT_NAME} )
+        add_dependencies( ant-configure ${PROJECT_NAME} )
+
+    endif()
 
 
 elseif( IOS )
@@ -232,6 +236,7 @@ elseif ( MSVC )
      endif()
 
 endif()
+
 
 list ( APPEND DAVA_FOLDERS ${DAVA_ENGINE_DIR} )
 list ( APPEND DAVA_FOLDERS ${FILE_TREE_CHECK_FOLDERS} )

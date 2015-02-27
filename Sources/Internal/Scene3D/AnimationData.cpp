@@ -113,7 +113,7 @@ void AnimationData::Save(KeyedArchive * archive, SerializationContext * serializ
 	DataNode::Save(archive, serializationContext);
 
 	archive->SetFloat("duration", duration);
-	archive->SetInt32("keyCount", keys.size());
+	archive->SetInt32("keyCount", static_cast<int32>(keys.size()));
 	archive->SetMatrix4("invPose", invPose);
 
 	for (uint32 keyIndex = 0; keyIndex < keys.size(); ++keyIndex)
