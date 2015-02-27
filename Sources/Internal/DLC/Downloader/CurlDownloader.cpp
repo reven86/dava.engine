@@ -695,7 +695,7 @@ DownloadError CurlDownloader::ErrorForEasyHandle(CURL *easyHandle, CURLcode stat
 DownloadError CurlDownloader::TakeMostImportantReturnValue(const Vector<DownloadError> &errorList) const
 {
     char8 errorCount = sizeof(errorsByPriority)/sizeof(ErrorWithPriority);
-    char8 retIndex = errorCount - 1; // last error in the list is the less important.
+    int32 retIndex = errorCount - 1; // last error in the list is the less important.
     char8 priority = errorsByPriority[retIndex].priority; //priority of less important error
     
     // iterate over download results
@@ -703,7 +703,7 @@ DownloadError CurlDownloader::TakeMostImportantReturnValue(const Vector<Download
     for (Vector<DownloadError>::const_iterator it = errorList.begin(); it != end; ++it)
     {
         // find error in the priority map
-        for (char8 i = 0; i < errorCount; ++i)
+        for (int32 i = 0; i < errorCount; ++i)
         {
             // yes, that is the error
             if (errorsByPriority[i].error == (*it))

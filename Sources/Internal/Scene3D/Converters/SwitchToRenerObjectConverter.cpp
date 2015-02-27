@@ -152,7 +152,7 @@ bool SwitchToRenerObjectConverter::MergeSwitch(Entity * entity)
         }
     }
 
-    uint32 entitiesToRemoveCount = entitiesToRemove.size();
+    uint32 entitiesToRemoveCount = static_cast<uint32>(entitiesToRemove.size());
     for (uint32 i = 0; i < entitiesToRemoveCount; ++i)
     {
         entitiesToRemove[i]->GetParent()->RemoveNode(entitiesToRemove[i]);

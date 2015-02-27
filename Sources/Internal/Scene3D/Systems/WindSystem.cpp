@@ -82,7 +82,7 @@ void WindSystem::AddEntity(Entity * entity)
 
 void WindSystem::RemoveEntity(Entity * entity)
 {
-    int32 windsCount = winds.size();
+    int32 windsCount = static_cast<int32>(winds.size());
     for(int32 i = 0; i < windsCount; ++i)
     {
         WindInfo * info = winds[i];
@@ -102,7 +102,7 @@ void WindSystem::Process(float32 timeElapsed)
     if(!isAnimationEnabled || !isVegetationAnimationEnabled)
         return;
 
-    int32 windCount = winds.size();
+    int32 windCount = static_cast<int32>(winds.size());
     for(int32 i = 0; i < windCount; ++i)
     {
         winds[i]->timeValue += timeElapsed * winds[i]->component->GetWindSpeed();
@@ -112,7 +112,7 @@ void WindSystem::Process(float32 timeElapsed)
 Vector3 WindSystem::GetWind(const Vector3 & inPosition) const
 {
     Vector3 ret;
-    int32 windCount = winds.size();
+    int32 windCount = static_cast<int32>(winds.size());
     for(int32 i = 0; i < windCount; ++i)
     {
         WindInfo * info = winds[i];

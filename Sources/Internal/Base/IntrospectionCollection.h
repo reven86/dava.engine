@@ -63,7 +63,7 @@ namespace DAVA
 
 			if(NULL != object)
 			{
-				size = ((CollectionT *) object)->size();
+				size = static_cast<int>(((CollectionT *) object)->size());
 			}
 
 			return size;

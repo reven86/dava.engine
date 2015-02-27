@@ -132,7 +132,7 @@ bool KeyedArchive::Save(File *archive)
     
     archive->Write(header, 2);
     archive->Write(&version, 2);
-    uint32 size = objectMap.size();
+    uint32 size = static_cast<uint32>(objectMap.size());
     archive->Write(&size, 4);
     
 	for (Map<String, VariantType*>::iterator it = objectMap.begin(); it != objectMap.end(); ++it)
@@ -542,11 +542,11 @@ uint32 KeyedArchive::Count(const String &key)
 {
 	if(key.empty())
 	{
-		return objectMap.size();
+		return static_cast<uint32>(objectMap.size());
 	}
 	else
 	{
-		return objectMap.count(key);
+		return static_cast<uint32>(objectMap.count(key));
 	}
 }
 

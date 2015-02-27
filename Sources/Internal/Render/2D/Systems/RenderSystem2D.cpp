@@ -120,15 +120,13 @@ void VboPool::SetIndexData(uint32 offset, uint32 count, uint8* data)
 }
 
 RenderSystem2D::RenderSystem2D() 
-    : pool(NULL)
+    : currentRenderTarget(0)
     , spriteRenderObject(0)
-    , spriteVertexStream(0)
-    , spriteTexCoordStream(0)
-    , currentRenderTarget(0)
-    , spriteClipping(true)
-    , clipChanged(false)
     , vboTemp(NULL)
     , iboTemp(NULL)
+    , spriteClipping(true)
+    , clipChanged(false)
+    , pool(NULL)
 {
 }
 
