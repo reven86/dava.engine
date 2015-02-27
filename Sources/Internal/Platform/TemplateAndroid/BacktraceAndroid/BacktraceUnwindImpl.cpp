@@ -123,10 +123,8 @@ pointer_size MemoryMapUnwindIterator::GetAddrEnd() const
     return now->end;
 }
 BacktraceUnwindImpl::BacktraceUnwindImpl()
+    :processMap{nullptr},loaded(false)
 {
-    // TODO Auto-generated constructor stub
-    processMap = nullptr;
-    loaded = false;
 }
 
 BacktraceUnwindImpl::~BacktraceUnwindImpl()
@@ -182,7 +180,7 @@ void BacktraceUnwindImpl::BacktraceInternal(Function<void(pointer_size)> onFrame
 {
     PreBacktrace();
     unw_context_t uctx;
-    if (context != NULL)
+    if (context != nullptr)
     {
         ConvertContextARM((ucontext_t*) context, &uctx);
     }

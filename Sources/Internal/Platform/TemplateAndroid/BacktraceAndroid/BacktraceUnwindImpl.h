@@ -74,8 +74,8 @@ public:
     void BuildMemoryMap() override;
     const MemoryMapInterface * GetMemoryMap() const override;
     //handler safe function
-    void Backtrace(Function<void(pointer_size)> onFrame, void * context = NULL , void * siginfo = NULL) override;
-    void PrintableBacktrace(Function<void (pointer_size,const char * str)> onFrame,  void * context = NULL , void * siginfo = NULL) override;
+    void Backtrace(Function<void(pointer_size)> onFrame, void * context = nullptr , void * siginfo = nullptr) override;
+    void PrintableBacktrace(Function<void (pointer_size,const char * str)> onFrame,  void * context = nullptr , void * siginfo = nullptr) override;
 protected:
     BacktraceUnwindImpl();
     void BacktraceInternal(Function<void(pointer_size)> onFrame,
