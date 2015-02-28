@@ -68,9 +68,6 @@ class MemoryManager final
 
     struct MemoryBlock;
     struct Backtrace;
-    /*{
-        void* frames[BACKTRACE_DEPTH];
-    };*/
 
     static size_t BacktraceHash(const MemoryManager::Backtrace& backtrace);
     static bool BacktraceEqualTo(const MemoryManager::Backtrace& left, const MemoryManager::Backtrace& right);

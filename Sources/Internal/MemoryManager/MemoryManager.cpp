@@ -95,7 +95,7 @@ size_t MemoryManager::registeredAllocPoolCount = ePredefAllocPools::PREDEF_POOL_
 
 MemoryManager::MemoryManager()
 {
-    backtraces = new (&backtraceStorage) BacktraceSet(1024, &BacktraceHash, &BacktraceEqualTo);
+    backtraces = new (&backtraceStorage) BacktraceSet(0, &BacktraceHash, &BacktraceEqualTo);
     symbols = new (&symbolStorage) SymbolMap;
 }
 
@@ -546,7 +546,7 @@ size_t MemoryManager::GetDumpInternal(size_t userSize, void** buf, uint32 blockR
     }
 
     size_t iBt = 0;
-    for (auto& i = backtraces->cbegin(), e = backtraces->cend();i != e;++i)
+    for (auto i = backtraces->cbegin(), e = backtraces->cend();i != e;++i)
     {
         const Backtrace& o = *i;
         for (size_t i = 0;i < 16;++i)
@@ -555,7 +555,7 @@ size_t MemoryManager::GetDumpInternal(size_t userSize, void** buf, uint32 blockR
     }
 
     size_t iSym = 0;
-    for (auto& i = symbols->cbegin(), e = symbols->cend();i != e;++i)
+    for (auto i = symbols->cbegin(), e = symbols->cend();i != e;++i)
     {
         void* addr = (*i).first;
         const InternalString& s = (*i).second;
@@ -597,7 +597,7 @@ DAVA_NOINLINE size_t MemoryManager::CollectBacktrace(Backtrace* backtrace, size_
 #if defined(__DAVAENGINE_WIN32__)
     return CaptureStackBackTrace(nskip + 1, COUNT_OF(backtrace->frames), backtrace->frames, nullptr);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-    retunr backtrace(backtrace->frames, COUNT_OF(backtrace->frames));
+    return ::backtrace(backtrace->frames, COUNT_OF(backtrace->frames));
 #elif defined(__DAVAENGINE_ANDROID__)
     return 0;
 #endif
