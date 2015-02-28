@@ -19,3 +19,6 @@ if( NOT ANDROID_COMMAND )
     exit()
 
 endif()
+
+message( ANT_COMMAND     " - ${ANT_COMMAND}" )
+message( ANDROID_COMMAND " - ${ANDROID_COMMAND}" )
