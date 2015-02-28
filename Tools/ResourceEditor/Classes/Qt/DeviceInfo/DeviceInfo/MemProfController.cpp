@@ -172,7 +172,7 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump)
         int isym = 0;
         for (auto& x : symbolMap)
         {
-            fprintf(f, "  %4d: %08llX; %s\n", isym + 1, x.first, x.second);
+            fprintf(f, "  %4d: %08llX; %s\n", isym + 1, x.first, x.second.c_str());
         }
         fclose(f);
     }
