@@ -538,7 +538,7 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData * data, Qt::DropAction ac
 						}
                         
                         //5. disabled drop waypoints to different pathes
-                        if(entity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT) || entity->GetComponent(DAVA::Component::PATH_COMPONENT))
+                        if(GetWaypointComponent(entity) || GetPathComponent(entity))
                         {
                             if(entity->GetParent() != targetEntity)
                             {

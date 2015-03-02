@@ -72,6 +72,7 @@ public:
 
 	bool InModifState() const;
 	bool InCloneState() const;
+    bool InCloneDoneState() const;
 	bool ModifCanStart(const EntityGroup &selectedEntities) const;
 
 	virtual void RemoveEntity(DAVA::Entity * entity);
