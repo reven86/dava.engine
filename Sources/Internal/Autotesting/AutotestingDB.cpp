@@ -278,7 +278,6 @@ namespace DAVA
 	{
 		if (dbClient)
 		{
-			//Logger::Info("Image: datasize %d, %d x %d", image->dataSize, image->GetHeight(), image->GetWidth());
             dbClient->SaveBufferToGridFS(Format("%s_%dx%d", name.c_str(), image->GetWidth(), image->GetHeight()),
                 reinterpret_cast<char*>(image->GetData()), image->dataSize);
 		}

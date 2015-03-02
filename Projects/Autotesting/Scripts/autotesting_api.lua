@@ -176,10 +176,8 @@ function WriteString(name, text)
     coroutine.yield()
 end
 
-function MakeScreenshot(skip)
-    local skip = skip or false
-    print("MakeScreenshot" .. tostring(skip))
-    local name = autotestingSystem:MakeScreenshot(skip)
+function MakeScreenshot()
+    local name = autotestingSystem:MakeScreenshot()
     coroutine.yield()
     return name
 end

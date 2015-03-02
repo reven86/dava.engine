@@ -99,9 +99,6 @@ namespace DAVA
 			return;
 		}
 
-		FetchParametersFromIdTxt();
-		deviceName = luaSystem->GetDeviceName();
-
 		SetUpConnectionToDB();
 
 		FetchParametersFromDB();
@@ -167,6 +164,7 @@ namespace DAVA
 	// Get test parameters from autotesting db
 	void AutotestingSystem::FetchParametersFromDB()
 	{
+        deviceName = AutotestingSystemLua::Instance()->GetDeviceName();
         Logger::Info("AutotestingSystem::FetchParametersFromDB");
         groupName = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Group");
         if (groupName == "not_found")
@@ -324,11 +322,11 @@ namespace DAVA
 		ExitApp();
 	}
 
-	void AutotestingSystem::MakeScreenShot(bool skip)
+	void AutotestingSystem::MakeScreenShot()
 	{
 		Logger::Info("AutotestingSystem::MakeScreenShot");
 		String currentDateTime = GetCurrentTimeString();
-		screenShotName = Format("%s_%s_%s_%s", runId.c_str(), deviceName.c_str(), groupName.c_str(), currentDateTime.c_str());
+		screenShotName = Format("%s:%s:%s:%d:%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
 		Logger::Debug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
 		RenderManager::Instance()->RequestGLScreenShot(this);
 	}
