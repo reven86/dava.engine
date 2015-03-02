@@ -29,6 +29,9 @@ public class JNIWebView {
     final static Paint paint = new Paint();
 
     public static class WebViewWrapper extends android.webkit.WebView {
+        
+        boolean stopRecursion = false;
+        
         public WebViewWrapper(Context context) {
             super(context);
         }
@@ -46,6 +49,19 @@ public class JNIWebView {
         InternalViewClient getInternalViewClient() {
             assert client != null;
             return client;
+        }
+        
+        @Override
+        protected
+        void onDraw(Canvas canvas)
+        {
+            super.onDraw(canvas);
+            if (client.isRenderToTexture() && !stopRecursion)
+            {
+                stopRecursion = true;
+                Log.v(TAG, "inside render no recursion");
+                stopRecursion = false;
+            }
         }
     }
 
@@ -133,6 +149,8 @@ public class JNIWebView {
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
 
+            Log.v(TAG, "onPageFinished");
+            
             JNIActivity activity = JNIActivity.GetActivity();
             if (null == activity || activity.GetIsPausing()) {
                 return;
@@ -179,6 +197,10 @@ public class JNIWebView {
             // have been made. It is initialized with the same density as the
             // original bitmap.
             Bitmap cacheImage = view.getDrawingCache();
+            if (cacheImage == null)
+            {
+                
+            }
             if (cacheImage != null) {
                 bitmapCache = Bitmap.createBitmap(cacheImage);
             }
@@ -287,7 +309,7 @@ public class JNIWebView {
                 webView.getSettings().setLoadWithOverviewMode(true);
                 webView.getSettings().setUseWideViewPort(false);
 
-                if (android.os.Build.VERSION.SDK_INT >= 11) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
                     webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
                 }
                 webView.setWebChromeClient(new InternalWebClient(id));
