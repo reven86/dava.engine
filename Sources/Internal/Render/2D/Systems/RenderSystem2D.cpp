@@ -381,6 +381,8 @@ void RenderSystem2D::PopRenderTarget()
 
 void RenderSystem2D::SetRenderTarget(Sprite * target)
 {
+    Flush();
+
     currentRenderTarget = target;
 
     Rect viewport;
