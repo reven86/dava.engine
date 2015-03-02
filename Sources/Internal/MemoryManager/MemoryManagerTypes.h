@@ -34,14 +34,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace DAVA
 {
 
+struct MMConst
+{
+    static const size_t BACKTRACE_DEPTH = 16;
+    static const size_t MAX_TAG_DEPTH = 8;              // Maximum depth of tag stack
+    static const size_t DEFAULT_TAG = 0;                // Default tag which corresponds to whole application time line
+    
+    static const size_t MAX_ALLOC_POOL_COUNT = 6;       // Max supported count of allocation pools
+    static const size_t MAX_TAG_COUNT = 4;              // Max supported count of tags
+    static const size_t MAX_NAME_LENGTH = 16;           // Max length of name: tag, allocation type, counter
+};
+
 /*
  GeneralAllocStat - general memory statistics
 */
 struct GeneralAllocStat
 {
+    uint32 allocInternal;       // Size of memory allocated for memory manager internal use: symbol table, etc
+    uint32 internalBlockCount;  // Number of internal memory blocks
     uint32 ghostBlockCount;     // Number of blocks allocated bypassing memory manager
-    uint32 ghostSize;           // Size of bypassed blocks
-    uint32 padding[2];
+    uint32 ghostSize;           // Size of bypassed memory
 };
 
 static_assert(sizeof(GeneralAllocStat) % 16 == 0, "sizeof(GeneralAllocStat) % 16 == 0");
@@ -64,12 +76,10 @@ static_assert(sizeof(AllocPoolStat) % 16 == 0, "sizeof(AllocPoolStat) % 16 == 0"
 */
 struct MMTagStack
 {
-    static const size_t MAX_DEPTH = 8;
-    
     uint32 depth;
     uint32 padding[3];
-    uint32 stack[MAX_DEPTH];
-    uint32 begin[MAX_DEPTH];
+    uint32 stack[MMConst::MAX_TAG_DEPTH];
+    uint32 begin[MMConst::MAX_TAG_DEPTH];
 };
 
 static_assert(sizeof(MMTagStack) % 16 == 0, "sizeof(MMTagStack) % 16 == 0");
@@ -80,9 +90,7 @@ static_assert(sizeof(MMTagStack) % 16 == 0, "sizeof(MMTagStack) % 16 == 0");
 */
 struct MMItemName
 {
-    static const size_t NAME_LENGTH = 16;
-    
-    char8 name[NAME_LENGTH];
+    char8 name[MMConst::MAX_NAME_LENGTH];
 };
 
 static_assert(sizeof(MMItemName) % 16 == 0, "sizeof(MMItemName) % 16 == 0");
@@ -119,7 +127,7 @@ static_assert(sizeof(MMStat) % 16 == 0, "sizeof(MMStat) % 16 == 0");
 
 struct MMBacktrace
 {
-    uint64 frames[16];
+    uint64 frames[MMConst::BACKTRACE_DEPTH];
 };
 
 struct MMSymbol

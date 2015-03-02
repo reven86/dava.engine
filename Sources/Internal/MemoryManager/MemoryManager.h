@@ -45,6 +45,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DAVA_ALIGNOF(x) alignof(x)
 #endif
 
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -63,7 +64,6 @@ namespace DAVA
 class MemoryManager final
 {
     static const uint32 BLOCK_MARK = 0xBA0BAB;
-    static const uint32 BLOCK_DELETED = 0xACCA;
     static const size_t BLOCK_ALIGN = 16;
 
     struct MemoryBlock;
@@ -73,19 +73,11 @@ class MemoryManager final
     static bool BacktraceEqualTo(const MemoryManager::Backtrace& left, const MemoryManager::Backtrace& right);
 
 public:
-    static const size_t BACKTRACE_DEPTH = 16;
-    static const size_t MAX_TAG_DEPTH = 8;              // Maximum depth of tag stack
-    static const size_t DEFAULT_TAG = 0;                // Default tag which corresponds to whole application time line
-
-    static const size_t MAX_ALLOC_POOL_COUNT = 6;       // Max supported count of allocation pools
-    static const size_t MAX_TAG_COUNT = 4;              // Max supported count of tags
-    static const size_t MAX_NAME_LENGTH = 16;           // Max length of name: tag, allocation type, counter
-
     typedef void (*TagCallback)(void* arg, uint32 tag, uint32 tagBegin, uint32 tagEnd);
 
 private:
     // Make ctor and dtor private to disallow external creation of MemoryManager
-    MemoryManager();// = default;
+    MemoryManager() = default;
     ~MemoryManager() = default;
 
     MemoryManager(const MemoryManager&) = delete;
@@ -102,6 +94,7 @@ public:
     static void InstallTagCallback(TagCallback callback, void* arg);
 
     static void* Allocate(size_t size, uint32 poolIndex);
+    static void* AlignedAllocate(size_t size, size_t align, uint32 poolIndex);
     static void* Reallocate(void * ptr, size_t size);
     static void Deallocate(void* ptr);
 
@@ -152,7 +145,7 @@ private:
     uint32 nextBlockNo;                 // Next assigned number to next allocated memory block
     MMTagStack tags;                    // Active tags
     GeneralAllocStat statGeneral;       // General statistics
-    AllocPoolStat statAllocPool[MAX_TAG_DEPTH][MAX_ALLOC_POOL_COUNT];    // Statistics for each allocation pool divided by tags
+    AllocPoolStat statAllocPool[MMConst::MAX_TAG_DEPTH][MMConst::MAX_ALLOC_POOL_COUNT];    // Statistics for each allocation pool divided by tags
     
     typedef DAVA::Spinlock MutexType;
     typedef DAVA::LockGuard<MutexType> LockType;
@@ -163,15 +156,17 @@ private:
     void* callbackArg;
 
     template<typename T>
-    using InternalAllocator = MemoryManagerAllocator<T, uint32(-1)>;
+    using InternalAllocator = MemoryManagerAllocator<T, unsigned(-1)>;
 
     typedef std::basic_string<char8, std::char_traits<char8>, InternalAllocator<char8>> InternalString;
     typedef std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>> SymbolMap;
 
     typedef std::unordered_set<Backtrace, size_t(*)(const Backtrace&), bool(*)(const Backtrace&, const Backtrace&), InternalAllocator<Backtrace>> BacktraceSet;
 
-    std::aligned_storage_t<sizeof(BacktraceSet), DAVA_ALIGNOF(BacktraceSet)> backtraceStorage;
-    std::aligned_storage_t<sizeof(SymbolMap), DAVA_ALIGNOF(SymbolMap)> symbolStorage;
+    // Room for symbol table map and backtrace set
+    // Use std::aligned_storage<...>::type as std::aligned_storage_t<...> doesn't work on Android
+    std::aligned_storage<sizeof(BacktraceSet), DAVA_ALIGNOF(BacktraceSet)>::type backtraceStorage;
+    std::aligned_storage<sizeof(SymbolMap), DAVA_ALIGNOF(SymbolMap)>::type symbolStorage;
     BacktraceSet* backtraces;
     SymbolMap* symbols;
 #if defined(__DAVAENGINE_WIN32__)
@@ -179,8 +174,8 @@ private:
 #endif
 
 private:
-    static MMItemName tagNames[MAX_TAG_COUNT];                  // Names of tags
-    static MMItemName allocPoolNames[MAX_ALLOC_POOL_COUNT];     // Names of allocation pools
+    static MMItemName tagNames[MMConst::MAX_TAG_COUNT];                  // Names of tags
+    static MMItemName allocPoolNames[MMConst::MAX_ALLOC_POOL_COUNT];     // Names of allocation pools
     
     static size_t registeredTagCount;                           // Number of registered tags including predefined
     static size_t registeredAllocPoolCount;                     // Number of registered allocation pools including predefined
@@ -192,14 +187,19 @@ inline void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
     return Instance()->Alloc(size, poolIndex);
 }
 
-inline void MemoryManager::Deallocate(void* ptr)
+inline void* MemoryManager::AlignedAllocate(size_t size, size_t align, uint32 poolIndex)
 {
-    Instance()->Dealloc(ptr);
+    return Instance()->AlignedAlloc(size, align, poolIndex);
 }
 
 inline void* MemoryManager::Reallocate(void * ptr, size_t size)
 {
     return Instance()->Realloc(ptr, size);
+}
+    
+inline void MemoryManager::Deallocate(void* ptr)
+{
+    Instance()->Dealloc(ptr);
 }
 
 inline void MemoryManager::EnterTagScope(uint32 tag)

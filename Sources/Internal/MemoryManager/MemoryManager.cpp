@@ -52,8 +52,7 @@ namespace DAVA
 
 struct MemoryManager::Backtrace
 {
-    //size_t hash;
-    void* frames[BACKTRACE_DEPTH];
+    void* frames[MMConst::BACKTRACE_DEPTH];
 };
 
 size_t MemoryManager::BacktraceHash(const MemoryManager::Backtrace& backtrace)
@@ -81,11 +80,11 @@ struct MemoryManager::MemoryBlock
     size_t padding[3];
 };
 
-MMItemName MemoryManager::tagNames[MAX_TAG_COUNT] = {
+MMItemName MemoryManager::tagNames[MMConst::MAX_TAG_COUNT] = {
     {"application"}
 };
 
-MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT] = {
+MMItemName MemoryManager::allocPoolNames[MMConst::MAX_ALLOC_POOL_COUNT] = {
     {"application"},
     {"FMOD"}
 };
@@ -93,31 +92,25 @@ MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT] = {
 size_t MemoryManager::registeredTagCount = 1;
 size_t MemoryManager::registeredAllocPoolCount = ePredefAllocPools::PREDEF_POOL_COUNT;
 
-MemoryManager::MemoryManager()
-{
-    backtraces = new (&backtraceStorage) BacktraceSet(0, &BacktraceHash, &BacktraceEqualTo);
-    symbols = new (&symbolStorage) SymbolMap;
-}
-
 void MemoryManager::RegisterAllocPoolName(size_t index, const char8* name)
 {
-    DVASSERT(name != nullptr && 0 < strlen(name) && strlen(name) < MMItemName::NAME_LENGTH);
-    DVASSERT(FIRST_CUSTOM_ALLOC_POOL <= index && index < MAX_ALLOC_POOL_COUNT);
+    DVASSERT(name != nullptr && 0 < strlen(name) && strlen(name) < MMConst::MAX_NAME_LENGTH);
+    DVASSERT(FIRST_CUSTOM_ALLOC_POOL <= index && index < MMConst::MAX_ALLOC_POOL_COUNT);
     DVASSERT(allocPoolNames[index - 1].name[0] != '\0');     // Names should be registered sequentially with no gap
 
-    strncpy(allocPoolNames[index].name, name, MMItemName::NAME_LENGTH);
-    allocPoolNames[index].name[MMItemName::NAME_LENGTH - 1] = '\0';
+    strncpy(allocPoolNames[index].name, name, MMConst::MAX_NAME_LENGTH);
+    allocPoolNames[index].name[MMConst::MAX_NAME_LENGTH - 1] = '\0';
     registeredAllocPoolCount += 1;
 }
 
 void MemoryManager::RegisterTagName(size_t index, const char8* name)
 {
-    DVASSERT(name != nullptr && 0 < strlen(name) && strlen(name) < MMItemName::NAME_LENGTH);
-    DVASSERT(DEFAULT_TAG != index && index < MAX_TAG_COUNT);
+    DVASSERT(name != nullptr && 0 < strlen(name) && strlen(name) < MMConst::MAX_NAME_LENGTH);
+    DVASSERT(MMConst::DEFAULT_TAG != index && index < MMConst::MAX_TAG_COUNT);
     DVASSERT(tagNames[index - 1].name[0] != '\0');       // Names should be registered sequentially with no gap
 
-    strncpy(tagNames[index].name, name, MMItemName::NAME_LENGTH);
-    tagNames[index].name[MMItemName::NAME_LENGTH - 1] = '\0';
+    strncpy(tagNames[index].name, name, MMConst::MAX_NAME_LENGTH);
+    tagNames[index].name[MMConst::MAX_NAME_LENGTH - 1] = '\0';
     registeredTagCount += 1;
 }
 
@@ -139,7 +132,7 @@ void MemoryManager::InstallTagCallback(TagCallback callback, void* arg)
 
 DAVA_NOINLINE void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
 {
-    assert(IsInternalAllocationPool(poolIndex) || poolIndex < MAX_ALLOC_POOL_COUNT);
+    assert(IsInternalAllocationPool(poolIndex) || poolIndex < MMConst::MAX_ALLOC_POOL_COUNT);
 
     // On zero-sized allocation request allocate 1 byte to return unique memory block
     if (0 == size)
@@ -181,6 +174,10 @@ DAVA_NOINLINE void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
             }
             {
                 LockType backtraceLock(backtraceMutex);
+                if (nullptr == backtraces)
+                {
+                    backtraces = new (&backtraceStorage) BacktraceSet(0, &BacktraceHash, &BacktraceEqualTo);
+                }
                 backtraces->insert(backtrace);
             }
         }
@@ -209,7 +206,7 @@ DAVA_NOINLINE void* MemoryManager::AlignedAlloc(size_t size, size_t align, uint3
 
     // TODO: check whether size is integral multiple of align
     assert(align > 0 && 0 == (align & (align - 1)));    // Check whether align is power of 2
-    assert(IsInternalAllocationPool(poolIndex) || poolIndex < MAX_ALLOC_POOL_COUNT);
+    assert(IsInternalAllocationPool(poolIndex) || poolIndex < MMConst::MAX_ALLOC_POOL_COUNT);
 
     if (align < BLOCK_ALIGN)
     {
@@ -256,6 +253,10 @@ DAVA_NOINLINE void* MemoryManager::AlignedAlloc(size_t size, size_t align, uint3
             }
             {
                 LockType backtraceLock(backtraceMutex);
+                if (nullptr == backtraces)
+                {
+                    backtraces = new (&backtraceStorage) BacktraceSet(0, &BacktraceHash, &BacktraceEqualTo);
+                }
                 backtraces->insert(backtrace);
             }
         }
@@ -274,6 +275,30 @@ DAVA_NOINLINE void* MemoryManager::AlignedAlloc(size_t size, size_t align, uint3
     return nullptr;
 }
 
+void* MemoryManager::Realloc(void* ptr, size_t newSize)
+{
+    assert(ptr != nullptr);     // This realloc must not be called with ptr == nullptr
+    
+    MemoryBlock* block = IsTrackedBlock(ptr);
+    if (block != nullptr)
+    {
+        void* newPtr = malloc(newSize);
+        if (newPtr != nullptr)
+        {
+            size_t n = block->allocByApp > newSize ? newSize : block->allocByApp;
+            memcpy(newPtr, ptr, n);
+            free(ptr);
+            return newPtr;
+        }
+        else
+            return nullptr;
+    }
+    else
+    {
+        return DAVA::MallocHook::Realloc(ptr, newSize);
+    }
+}
+    
 void MemoryManager::Dealloc(void* ptr)
 {
     if (ptr != nullptr)
@@ -281,7 +306,6 @@ void MemoryManager::Dealloc(void* ptr)
         MemoryBlock* block = IsTrackedBlock(ptr);
         if (block != nullptr)
         {
-            block->mark = BLOCK_DELETED;
             if (!IsInternalAllocationPool(block->pool))
             {
                 // Lock is required only here:
@@ -308,34 +332,10 @@ void MemoryManager::Dealloc(void* ptr)
     }
 }
 
-void* MemoryManager::Realloc(void* ptr, size_t newSize)
-{
-    assert(ptr != nullptr);     // This realloc must not be called with ptr == nullptr
-
-    MemoryBlock* block = IsTrackedBlock(ptr);
-    if (block != nullptr)
-    {
-        void* newPtr = malloc(newSize);
-        if (newPtr != nullptr)
-        {
-            size_t n = block->allocByApp > newSize ? newSize : block->allocByApp;
-            memcpy(newPtr, ptr, n);
-            free(ptr);
-            return newPtr;
-        }
-        else
-            return nullptr;
-    }
-    else
-    {
-        return DAVA::MallocHook::Realloc(ptr, newSize);
-    }
-}
-
 void MemoryManager::EnterScope(uint32 tag)
 {
-    assert(tag != DEFAULT_TAG);
-    assert(tags.depth < MMTagStack::MAX_DEPTH - 1);
+    assert(tag != MMConst::DEFAULT_TAG);
+    assert(tags.depth < MMConst::MAX_TAG_DEPTH - 1);
 
     LockType lock(mutex);
     tags.depth += 1;
@@ -355,7 +355,7 @@ void MemoryManager::LeaveScope()
         tag = tags.stack[tags.depth];
         tagBegin = tags.begin[tags.depth];
         tagEnd = nextBlockNo;
-        for (size_t i = 0;i < MAX_ALLOC_POOL_COUNT;++i)
+        for (size_t i = 0;i < MMConst::MAX_ALLOC_POOL_COUNT;++i)
         {
             statAllocPool[tags.depth][i] = AllocPoolStat();
         }
@@ -420,7 +420,7 @@ void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, uint32 poolIndex)
         statAllocPool[i][poolIndex].blockCount += 1;
 
         if (block->allocByApp > statAllocPool[i][poolIndex].maxBlockSize)
-            statAllocPool[i][poolIndex].maxBlockSize = block->allocByApp;
+            statAllocPool[i][poolIndex].maxBlockSize = static_cast<uint32>(block->allocByApp);
     }
 }
 
@@ -451,8 +451,8 @@ void MemoryManager::GetStatConfig(MMStatConfig* config)
 {
     DVASSERT(config != nullptr);
     
-    config->maxTagCount = MAX_TAG_COUNT;
-    config->maxAllocPoolCount = MAX_ALLOC_POOL_COUNT;
+    config->maxTagCount = MMConst::MAX_TAG_COUNT;
+    config->maxAllocPoolCount = MMConst::MAX_ALLOC_POOL_COUNT;
     config->tagCount = static_cast<uint32>(registeredTagCount);
     config->allocPoolCount = static_cast<uint32>(registeredAllocPoolCount);
     
@@ -523,8 +523,8 @@ size_t MemoryManager::GetDumpInternal(size_t userSize, void** buf, uint32 blockR
     dump->blockCount = static_cast<uint32>(nblocks);
     dump->backtraceCount = static_cast<uint32>(nbacktraces);
     dump->symbolCount = static_cast<uint32>(nsymbols);
-    dump->blockBegin = firstBlock->orderNo;
-    dump->blockEnd = lastBlock->orderNo;
+    dump->blockBegin = static_cast<uint32>(firstBlock->orderNo);
+    dump->blockEnd = static_cast<uint32>(lastBlock->orderNo);
     dump->type = 0;
     dump->tag = 0;
 
@@ -533,10 +533,10 @@ size_t MemoryManager::GetDumpInternal(size_t userSize, void** buf, uint32 blockR
     while (firstBlock != nullptr)
     {
         blocks[iBlock].addr = reinterpret_cast<uint64>(firstBlock + 1);
-        blocks[iBlock].allocByApp = firstBlock->allocByApp;
-        blocks[iBlock].allocTotal = firstBlock->allocTotal;
-        blocks[iBlock].pool = firstBlock->pool;
-        blocks[iBlock].orderNo = firstBlock->orderNo;
+        blocks[iBlock].allocByApp = static_cast<uint32>(firstBlock->allocByApp);
+        blocks[iBlock].allocTotal = static_cast<uint32>(firstBlock->allocTotal);
+        blocks[iBlock].pool = static_cast<uint32>(firstBlock->pool);
+        blocks[iBlock].orderNo = static_cast<uint32>(firstBlock->orderNo);
         blocks[iBlock].backtraceHash = static_cast<uint32>(firstBlock->backtraceHash);
         iBlock += 1;
         nblocksToCheck += 1;
@@ -605,12 +605,17 @@ DAVA_NOINLINE size_t MemoryManager::CollectBacktrace(Backtrace* backtrace, size_
 
 void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
 {
+    if (nullptr == symbols)
+    {
+        symbols = new (&symbolStorage) SymbolMap;
+    }
+    
 #if defined(__DAVAENGINE_WIN32__)
     HANDLE hprocess = GetCurrentProcess();
-    if (!symInited)
+    if (nullptr == symbols)
     {
+        symbols = new (&symbolStorage) SymbolMap;
         SymInitialize(hprocess, nullptr, TRUE);
-        symInited = true;
     }
 
     const size_t NAME_LENGTH = 256;
@@ -632,12 +637,12 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
     {
         if (symbols->find(backtrace->frames[i]) == symbols->cend())
         {
-            Dl_info dlinfo;
             /*
              https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man3/dladdr.3.html#//apple_ref/doc/man/3/dladdr
              If an image containing addr cannot be found, dladdr() returns 0.  On success, a non-zero value is returned.
              If the image containing addr is found, but no nearest symbol was found, the dli_sname and dli_saddr fields are set to NULL.
             */
+            Dl_info dlinfo;
             if (dladdr(backtrace->frames[i], &dlinfo) != 0 && dlinfo.dli_sname != nullptr)
             {
                 char buf[1024 * 4];

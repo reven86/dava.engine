@@ -59,7 +59,7 @@
   <customwidget>
    <class>MemProfPlot</class>
    <extends>QCustomPlot</extends>
-   <header>MemProfPlot.h</header>
+   <header>Classes/Qt/DeviceInfo/DeviceInfo/MemProfPlot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

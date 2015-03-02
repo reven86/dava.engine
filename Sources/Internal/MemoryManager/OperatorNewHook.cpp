@@ -39,9 +39,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #if defined(__DAVAENGINE_WIN32__)
-#define NOEXCEPT    throw()
+#define DAVA_NOEXCEPT    throw()
 #else
-#define NOEXCEPT    noexcept
+#define DAVA_NOEXCEPT    noexcept
 #endif
 
 void* operator new(size_t size)
@@ -49,7 +49,7 @@ void* operator new(size_t size)
     return DAVA::MemoryManager::Allocate(size, DAVA::ALLOC_POOL_APP);
 }
 
-void operator delete(void* ptr) NOEXCEPT
+void operator delete(void* ptr) DAVA_NOEXCEPT
 {
     DAVA::MemoryManager::Deallocate(ptr);
 }
@@ -59,7 +59,7 @@ void* operator new [](size_t size)
     return DAVA::MemoryManager::Allocate(size, DAVA::ALLOC_POOL_APP);
 }
 
-void operator delete[](void* ptr) NOEXCEPT
+void operator delete[](void* ptr) DAVA_NOEXCEPT
 {
     DAVA::MemoryManager::Deallocate(ptr);
 }
