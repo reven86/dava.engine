@@ -69,6 +69,16 @@
 #include "Classes/Qt/FrameworkBinding/FrameworkLoop.h"
 
 
+namespace
+{
+    
+    const QSize cMinSize = QSize( 200, 200 );
+
+}
+
+
+
+
 OpenGLWindow::OpenGLWindow()
     : QWindow()
 {
@@ -77,6 +87,8 @@ OpenGLWindow::OpenGLWindow()
     
     setKeyboardGrabEnabled(true);
     setMouseGrabEnabled(true);
+
+    setMinimumSize( cMinSize );
 }
 
 OpenGLWindow::~OpenGLWindow()
@@ -329,7 +341,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 
     setFocusPolicy( Qt::StrongFocus );
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-    setMinimumSize(100, 100);
+    setMinimumSize(cMinSize);
     
     openGlWindow = new OpenGLWindow();
     connect( openGlWindow, &OpenGLWindow::Exposed, this, &DavaGLWidget::OnWindowExposed );

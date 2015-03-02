@@ -13,6 +13,9 @@
 #elif defined( Q_OS_MAC )
 #endif
 
+#include "Classes/Qt/Main/davaglwidget.h"
+
+
 FrameworkLoop::FrameworkLoop()
     : LoopItem()
 {
@@ -26,24 +29,25 @@ FrameworkLoop::~FrameworkLoop()
     DAVA::QtLayer::Instance()->SetDelegate( nullptr );
 }
 
-void FrameworkLoop::SetOpenGLWindow( QWindow* w )
+void FrameworkLoop::SetOpenGLWindow( DavaGLWidget* w )
 {
     DVASSERT( w != nullptr );
-    openGlWindow = w;
-    DAVA::QtLayer::Instance()->InitializeGlWindow( GetRenderContextId() );
+    glWidget = w;
+    //DAVA::QtLayer::Instance()->InitializeGlWindow( GetRenderContextId() );
     connect( w, &QObject::destroyed, this, &FrameworkLoop::onWindowDestroyed );
+    connect( w, &DavaGLWidget::Initialized, this, &FrameworkLoop::onWindowInitialized );
 }
 
 QOpenGLContext* FrameworkLoop::Context()
 {
     if ( context.isNull() )
     {
-        context = new QOpenGLContext( openGlWindow );
+        context = new QOpenGLContext( glWidget );
 
         QSurfaceFormat fmt;
-        if ( openGlWindow != nullptr )
+        if ( glWidget != nullptr )
         {
-            fmt = openGlWindow->requestedFormat();
+            fmt = glWidget->GetGLWindow()->requestedFormat();
         }
 
         fmt.setOption( fmt.options() | QSurfaceFormat::DebugContext );
@@ -58,20 +62,20 @@ QOpenGLContext* FrameworkLoop::Context()
         context->setFormat( fmt );
         context->create();
 
-        if ( openGlWindow != nullptr )
+        if ( glWidget != nullptr )
         {
-            context->makeCurrent( openGlWindow );
+            context->makeCurrent( glWidget->GetGLWindow() );
         }
         
-        openGlFunctions.reset( new QOpenGLFunctions() );
+        openGlFunctions.reset( new QOpenGLFunctions( context ) );
         openGlFunctions->initializeOpenGLFunctions();
     #ifdef Q_OS_WIN
         glewInit();
     #endif
     }
-    else if ( openGlWindow != nullptr )
+    else if ( glWidget != nullptr )
     {
-        context->makeCurrent( openGlWindow );
+        context->makeCurrent( glWidget->GetGLWindow() );
     }
 
     return context.data();
@@ -100,10 +104,10 @@ quint64 FrameworkLoop::GetRenderContextId() const
 void FrameworkLoop::ProcessFrame()
 {
     DAVA::QtLayer::Instance()->ProcessFrame();
-    if ( openGlWindow != nullptr )
+    if ( glWidget != nullptr )
     {
         QEvent updateEvent( QEvent::UpdateRequest );
-        QApplication::sendEvent( openGlWindow, &updateEvent );
+        QApplication::sendEvent( glWidget, &updateEvent );
     }
 }
 
@@ -125,4 +129,9 @@ void FrameworkLoop::onWindowDestroyed()
     //auto rm = DAVA::RenderManager::Instance();
     //if ( rm != nullptr )
     //    rm->SetRenderContextId( GetRenderContextId() );
+}
+
+void FrameworkLoop::onWindowInitialized()
+{
+    DAVA::QtLayer::Instance()->InitializeGlWindow( GetRenderContextId() );
 }

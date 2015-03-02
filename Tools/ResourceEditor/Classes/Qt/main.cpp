@@ -134,7 +134,17 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
     new DavaLoop();
     new FrameworkLoop();
 
-    FrameworkLoop::Instance()->Context();   // create context
+    auto glWidget = new DavaGLWidget();
+    FrameworkLoop::Instance()->SetOpenGLWindow( glWidget );
+
+    DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
+
+    // Delayed initialization throught event loop
+    QObject::connect( glWidget, &DavaGLWidget::Initialized, &a, &QApplication::quit );
+    glWidget->show();
+    a.exec();
+    glWidget->hide();
+
     RenderManager::Instance()->Init( 0, 0 );
 
     cmdLine.InitalizeTool();
@@ -153,9 +163,6 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
     }
 
     SceneValidator::Instance()->Release();
-
-    TextureCache::Instance()->Release();
-    SceneValidator::Instance()->Release();
     EditorConfig::Instance()->Release();
     SettingsManager::Instance()->Release();
     BeastProxy::Instance()->Release();
@@ -164,6 +171,8 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
     FrameworkLoop::Instance()->Release();
     QtLayer::Instance()->Release();
     DavaLoop::Instance()->Release();
+
+    delete glWidget;
 }
 
 void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
@@ -183,8 +192,6 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     a.setAttribute( Qt::AA_UseHighDpiPixmaps );
     a.setAttribute( Qt::AA_ShareOpenGLContexts );
 
-    DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
-
     new SceneValidator();
     new TextureCache();
 
@@ -200,11 +207,11 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     new FrameworkLoop();
 
     // create and init UI
-    QtMainWindow *mainWindow = new QtMainWindow();
+    auto mainWindow = new QtMainWindow();
 
     mainWindow->EnableGlobalTimeout( true );
     auto glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
-    FrameworkLoop::Instance()->SetOpenGLWindow( glWidget->GetGLWindow() );
+    FrameworkLoop::Instance()->SetOpenGLWindow( glWidget );
     mainWindow->show();
 
     ProjectManager::Instance()->ProjectOpenLast();
@@ -214,6 +221,8 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     }
 
     DavaLoop::Instance()->StartLoop( FrameworkLoop::Instance() );
+
+    DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
 
     // start app
     QApplication::exec();

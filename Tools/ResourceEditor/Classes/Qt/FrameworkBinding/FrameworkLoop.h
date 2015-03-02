@@ -12,6 +12,7 @@
 class QWindow;
 class QOpenGLFunctions;
 class QOpenGLContext;
+class DavaGLWidget;
 
 
 class FrameworkLoop
@@ -25,7 +26,7 @@ public:
     FrameworkLoop();
     ~FrameworkLoop();
 
-    void SetOpenGLWindow( QWindow *w );
+    void SetOpenGLWindow( DavaGLWidget *w );
     QOpenGLContext * Context();
     quint64 GetRenderContextId() const;
 
@@ -38,11 +39,12 @@ public:
 
 private slots:
     void onWindowDestroyed();
+    void onWindowInitialized();
 
 private:
     QPointer< QOpenGLContext > context;
     QScopedPointer< QOpenGLFunctions > openGlFunctions;
-    QPointer< QWindow > openGlWindow;
+    QPointer< DavaGLWidget > glWidget;
 };
 
 
