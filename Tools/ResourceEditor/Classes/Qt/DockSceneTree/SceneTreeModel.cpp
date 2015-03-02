@@ -538,7 +538,7 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData * data, Qt::DropAction ac
 						}
                         
                         // 5. or we are dropping waypoint outside of its path
-                        if(entity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT))
+                        if(GetWaypointComponent(entity))
                         {
                             if(entity->GetParent() != targetEntity)
                             {
@@ -548,7 +548,7 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData * data, Qt::DropAction ac
                         }
 
                         // 6. or we are dropping path inside of another path
-                        if (entity->GetComponent(DAVA::Component::PATH_COMPONENT) && targetEntity && targetEntity->GetComponent(DAVA::Component::PATH_COMPONENT))
+                        if (GetPathComponent(entity) && targetEntity && GetPathComponent(targetEntity))
                         {
                             ret = false;
                             break;

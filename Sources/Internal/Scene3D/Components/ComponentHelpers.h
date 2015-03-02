@@ -62,6 +62,8 @@ class WaveComponent;
 class SpeedTreeObject;
 class AnimationComponent;
 class PathComponent;
+class WaypointComponent;
+class EdgeComponent;
 class SnapToLandscapeControllerComponent;
 
 ParticleEffectComponent * GetEffectComponent(const Entity *fromEntity);
@@ -109,6 +111,8 @@ CustomPropertiesComponent * GetOrCreateCustomProperties(Entity *fromEntity);
 KeyedArchive * GetCustomPropertiesArchieve(const Entity *fromEntity);
 
 PathComponent * GetPathComponent(const Entity *fromEntity);
+WaypointComponent* GetWaypointComponent(const Entity* fromEntity);
+EdgeComponent* FindEdgeComponent(const Entity *fromEntity, const Entity *toEntity);
 
 }
 
