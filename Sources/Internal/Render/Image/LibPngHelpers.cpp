@@ -48,7 +48,6 @@
 
 using namespace DAVA;
 
-
 #define PNG_DEBUG 3
 
 namespace

@@ -93,7 +93,6 @@ protected:
     DAVA::float32 ToNearestInteger(DAVA::float32 value);
 
 	virtual void Quit();
-	virtual void ShowAssertMessage(const char * message);
 
 private:
 	Ui::DavaGLWidget *ui;

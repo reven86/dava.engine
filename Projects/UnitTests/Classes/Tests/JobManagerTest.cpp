@@ -32,11 +32,28 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Job/JobManager.h"
 #include "Utils/Random.h"
 
+#define JOBS_COUNT 500
+
 struct JobManagerTestData
 {
-    JobManagerTestData() : mainThreadVar(0), testThreadVar(0) { }
+    JobManagerTestData() : mainThreadVar(0), testThreadVar(0), ownedMainJobsVar(-1) {}
     uint32 mainThreadVar;
     uint32 testThreadVar;
+
+    int32 ownedMainJobsVar;
+};
+
+class TestJobOwner : public BaseObject
+{
+public:
+    TestJobOwner(int32 * _outData) : resultData(_outData), anyData(0) {}
+    virtual ~TestJobOwner() { (*resultData) = anyData; };
+
+    void AnyFunction() { AtomicIncrement(anyData); };
+
+protected:
+    int32 * resultData;
+    int32 anyData;
 };
 
 static void testCalc(uint32 *var)
@@ -94,7 +111,8 @@ void JobManagerTest::TestMainJobs(PerfFuncData *data)
 
     thread->Join();
 
-    TEST_VERIFY((testData.mainThreadVar == testData.testThreadVar))
+    TEST_VERIFY((testData.mainThreadVar == testData.testThreadVar));
+    TEST_VERIFY((testData.ownedMainJobsVar == JOBS_COUNT));
 }
 
 void JobManagerTest::TestWorkerJobs(PerfFuncData *data)
@@ -107,7 +125,7 @@ void JobManagerTest::ThreadFunc(BaseObject * bo, void * userParam, void * caller
 {
     JobManagerTestData *data = (JobManagerTestData*) userParam;
 
-    for(uint32 i = 0; i < 500; i++)
+    for (uint32 i = 0; i < JOBS_COUNT; i++)
     {
         uint32 count = 50;
         uint32 n = Random::Instance()->Rand(count);
@@ -134,5 +152,11 @@ void JobManagerTest::ThreadFunc(BaseObject * bo, void * userParam, void * caller
         }
     }
 
+    TestJobOwner * jobOwner = new TestJobOwner(&data->ownedMainJobsVar);
+    for (uint32 i = 0; i < JOBS_COUNT; ++i)
+    {
+        JobManager::Instance()->CreateMainJob(MakeFunction(PointerWrapper<TestJobOwner>::WrapRetainRelease(jobOwner), &TestJobOwner::AnyFunction));
+    }
+    jobOwner->Release();
     JobManager::Instance()->WaitMainJobs();
 }

@@ -52,7 +52,8 @@ bool ServiceRegistrar::Register(uint32 serviceId, ServiceCreator creator, Servic
             Snprintf(generatedName, COUNT_OF(generatedName), "service-%u", serviceId);
             name = generatedName;
         }
-        registrar.push_back(Entry(serviceId, name, creator, deleter));
+        Entry en(serviceId, name, creator, deleter);
+        registrar.push_back(en);
         return true;
     }
     return false;

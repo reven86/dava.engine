@@ -4,7 +4,8 @@
 #include <QWidget>
 #include <QDockWidget>
 
-#include "DAVAEngine.h"
+class Document;
+class PropertiesContext;
 
 namespace Ui {
     class PropertiesWidget;
@@ -20,8 +21,7 @@ class PropertiesWidget : public QDockWidget
 public:
     PropertiesWidget(QWidget *parent = NULL);
     virtual ~PropertiesWidget();
-    
-    void SetContext(PropertiesContext *newContext);
+    void SetDocument(Document *document);
 
 private slots:
     void OnModelChanged(PropertiesModel *model);

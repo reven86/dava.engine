@@ -785,7 +785,6 @@
 		02FD81F51924997C007762C0 /* libfmodevent_iphonesimulator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E3D11734165D00C501BC /* libfmodevent_iphonesimulator.a */; };
 		02FD81F61924997C007762C0 /* libfmodex_iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E3A2172967F300C501BC /* libfmodex_iphoneos.a */; };
 		02FD81F71924997C007762C0 /* libfmodex_iphonesimulator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E3A3172967F300C501BC /* libfmodex_iphonesimulator.a */; };
-		02FD81F81924997C007762C0 /* libTextureConverter_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C1DC1F071717FD3C001C5EC3 /* libTextureConverter_macos.a */; };
 		02FD81F91924997C007762C0 /* liblua_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C7E76D4216DF6CC70041ED9A /* liblua_ios.a */; };
 		02FD81FA1924997C007762C0 /* libcurl_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E81F2B0416BFF65700C4545E /* libcurl_ios.a */; };
 		02FD81FB1924997C007762C0 /* libdxt_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 496526CF167F173400107C70 /* libdxt_ios.a */; };
@@ -812,10 +811,10 @@
 		11CB614A19C338DF00B48A92 /* AnimationData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11CB614719C338DF00B48A92 /* AnimationData.cpp */; };
 		11CB614B19C338DF00B48A92 /* AnimationData.h in Headers */ = {isa = PBXBuildFile; fileRef = 11CB614819C338DF00B48A92 /* AnimationData.h */; };
 		11CB614C19C338DF00B48A92 /* AnimationData.h in Headers */ = {isa = PBXBuildFile; fileRef = 11CB614819C338DF00B48A92 /* AnimationData.h */; };
-		11EF97A41A94B39400404E79 /* dlmalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 11EF97A21A94B39400404E79 /* dlmalloc.c */; };
-		11EF97A51A94B39400404E79 /* dlmalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 11EF97A21A94B39400404E79 /* dlmalloc.c */; };
-		11EF97A61A94B39400404E79 /* dlmalloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 11EF97A31A94B39400404E79 /* dlmalloc.h */; };
-		11EF97A71A94B39400404E79 /* dlmalloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 11EF97A31A94B39400404E79 /* dlmalloc.h */; };
+		11EF98EA1AA4509300404E79 /* dlmalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 11EF98E81AA4509300404E79 /* dlmalloc.c */; };
+		11EF98EB1AA4509300404E79 /* dlmalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 11EF98E81AA4509300404E79 /* dlmalloc.c */; };
+		11EF98EC1AA4509300404E79 /* dlmalloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 11EF98E91AA4509300404E79 /* dlmalloc.h */; };
+		11EF98ED1AA4509300404E79 /* dlmalloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 11EF98E91AA4509300404E79 /* dlmalloc.h */; };
 		150353931A02D5AA00C90B4F /* DefaultUIPackageBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1503538F1A02D5AA00C90B4F /* DefaultUIPackageBuilder.h */; };
 		150353941A02D5AA00C90B4F /* DefaultUIPackageBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1503538F1A02D5AA00C90B4F /* DefaultUIPackageBuilder.h */; };
 		150353951A02D5AA00C90B4F /* DefaultUIPackageBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 150353901A02D5AA00C90B4F /* DefaultUIPackageBuilder.cpp */; };
@@ -1146,7 +1145,6 @@
 		C172EC2F18C9F9D4004309CF /* TextBlockRender.h in Headers */ = {isa = PBXBuildFile; fileRef = C172EC2718C9F9D4004309CF /* TextBlockRender.h */; };
 		C172EC3018C9F9D4004309CF /* TextBlockSoftwareRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC2818C9F9D4004309CF /* TextBlockSoftwareRender.cpp */; };
 		C172EC3118C9F9D4004309CF /* TextBlockSoftwareRender.h in Headers */ = {isa = PBXBuildFile; fileRef = C172EC2918C9F9D4004309CF /* TextBlockSoftwareRender.h */; };
-		C1DC1F081717FD3C001C5EC3 /* libTextureConverter_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C1DC1F071717FD3C001C5EC3 /* libTextureConverter_macos.a */; };
 		C70B565B1753CB5E008966FA /* KeyedArchiveSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C70B56591753CB5E008966FA /* KeyedArchiveSwig.cpp */; };
 		C7E76D3116DF69370041ED9A /* AutotestingSystemLua.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7E76D2116DF69370041ED9A /* AutotestingSystemLua.cpp */; };
 		C7E76D3216DF69370041ED9A /* AutotestingSystemLua.h in Headers */ = {isa = PBXBuildFile; fileRef = C7E76D2216DF69370041ED9A /* AutotestingSystemLua.h */; };
@@ -1950,8 +1948,8 @@
 		1146E10D19D0066F009E5FAB /* AnimationComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationComponent.h; sourceTree = "<group>"; };
 		11CB614719C338DF00B48A92 /* AnimationData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimationData.cpp; sourceTree = "<group>"; };
 		11CB614819C338DF00B48A92 /* AnimationData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationData.h; sourceTree = "<group>"; };
-		11EF97A21A94B39400404E79 /* dlmalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dlmalloc.c; sourceTree = "<group>"; };
-		11EF97A31A94B39400404E79 /* dlmalloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dlmalloc.h; sourceTree = "<group>"; };
+		11EF98E81AA4509300404E79 /* dlmalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dlmalloc.c; sourceTree = "<group>"; };
+		11EF98E91AA4509300404E79 /* dlmalloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dlmalloc.h; sourceTree = "<group>"; };
 		1503538F1A02D5AA00C90B4F /* DefaultUIPackageBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DefaultUIPackageBuilder.h; sourceTree = "<group>"; };
 		150353901A02D5AA00C90B4F /* DefaultUIPackageBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DefaultUIPackageBuilder.cpp; sourceTree = "<group>"; };
 		150353911A02D5AA00C90B4F /* AbstractUIPackageBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractUIPackageBuilder.h; sourceTree = "<group>"; };
@@ -2869,7 +2867,6 @@
 				02FD81F51924997C007762C0 /* libfmodevent_iphonesimulator.a in Frameworks */,
 				02FD81F61924997C007762C0 /* libfmodex_iphoneos.a in Frameworks */,
 				02FD81F71924997C007762C0 /* libfmodex_iphonesimulator.a in Frameworks */,
-				02FD81F81924997C007762C0 /* libTextureConverter_macos.a in Frameworks */,
 				02FD81F91924997C007762C0 /* liblua_ios.a in Frameworks */,
 				B786014A1A08EAEB0041F817 /* libfribidi_ios.a in Frameworks */,
 				02FD81FA1924997C007762C0 /* libcurl_ios.a in Frameworks */,
@@ -2903,7 +2900,6 @@
 				02F6403C173A597A0053F038 /* libfmodevent_iphonesimulator.a in Frameworks */,
 				02F6403D173A597A0053F038 /* libfmodex_iphoneos.a in Frameworks */,
 				02F6403E173A597A0053F038 /* libfmodex_iphonesimulator.a in Frameworks */,
-				C1DC1F081717FD3C001C5EC3 /* libTextureConverter_macos.a in Frameworks */,
 				C7E76D4316DF6CC70041ED9A /* liblua_ios.a in Frameworks */,
 				E81F2B0516BFF65700C4545E /* libcurl_ios.a in Frameworks */,
 				496526D0167F173400107C70 /* libdxt_ios.a in Frameworks */,
@@ -3368,8 +3364,8 @@
 				E8B3C7B716B9326D002BD35F /* AutotestingSystem.h */,
 				E8B3C7B916B9326D002BD35F /* MongodbUpdateObject.cpp */,
 				E8B3C7BA16B9326D002BD35F /* MongodbUpdateObject.h */,
-				11EF97A21A94B39400404E79 /* dlmalloc.c */,
-				11EF97A31A94B39400404E79 /* dlmalloc.h */,
+				11EF98E81AA4509300404E79 /* dlmalloc.c */,
+				11EF98E91AA4509300404E79 /* dlmalloc.h */,
 			);
 			path = Autotesting;
 			sourceTree = "<group>";
@@ -4672,7 +4668,7 @@
 				02FD800B1924997C007762C0 /* Scene.h in Headers */,
 				02FD800C1924997C007762C0 /* SceneAnimationMixer.h in Headers */,
 				02FD800D1924997C007762C0 /* SceneFile.h in Headers */,
-				11EF97A71A94B39400404E79 /* dlmalloc.h in Headers */,
+				11EF98ED1AA4509300404E79 /* dlmalloc.h in Headers */,
 				02FD800E1924997C007762C0 /* SceneFileV2.h in Headers */,
 				02FD800F1924997C007762C0 /* SceneManager.h in Headers */,
 				02FD80101924997C007762C0 /* SceneNodeAnimation.h in Headers */,
@@ -5234,7 +5230,7 @@
 				17FFF905193F03AA003D51DA /* MongodbClient.h in Headers */,
 				E8B3CD0816B9326E002BD35F /* UIListCell.h in Headers */,
 				E8B3CD0A16B9326E002BD35F /* UILoadingTransition.h in Headers */,
-				11EF97A61A94B39400404E79 /* dlmalloc.h in Headers */,
+				11EF98EC1AA4509300404E79 /* dlmalloc.h in Headers */,
 				E8B3CD0C16B9326E002BD35F /* UIMoveInTransition.h in Headers */,
 				02FD7EC619237D43007762C0 /* WindSystem.h in Headers */,
 				A6AFDED218718538006E43A1 /* ShadowBlendMode.h in Headers */,
@@ -5484,7 +5480,7 @@
 				02FD80B61924997C007762C0 /* MemoryManager.cpp in Sources */,
 				E84E5BE81988D99200686C14 /* OGLHelpers.cpp in Sources */,
 				02FD80B71924997C007762C0 /* Replay.cpp in Sources */,
-				11EF97A51A94B39400404E79 /* dlmalloc.c in Sources */,
+				11EF98EB1AA4509300404E79 /* dlmalloc.c in Sources */,
 				02FD80B81924997C007762C0 /* Stats.cpp in Sources */,
 				02FD80BC1924997C007762C0 /* Component.cpp in Sources */,
 				02FD80BD1924997C007762C0 /* SceneSystem.cpp in Sources */,
@@ -6165,7 +6161,7 @@
 				E8B3CD0516B9326E002BD35F /* UIList.cpp in Sources */,
 				E8B3CD0716B9326E002BD35F /* UIListCell.cpp in Sources */,
 				E8B3CD0916B9326E002BD35F /* UILoadingTransition.cpp in Sources */,
-				11EF97A41A94B39400404E79 /* dlmalloc.c in Sources */,
+				11EF98EA1AA4509300404E79 /* dlmalloc.c in Sources */,
 				E8B3CD0B16B9326E002BD35F /* UIMoveInTransition.cpp in Sources */,
 				E8B3CD0D16B9326E002BD35F /* UIPopup.cpp in Sources */,
 				E8B3CD0F16B9326E002BD35F /* UIScreen.cpp in Sources */,

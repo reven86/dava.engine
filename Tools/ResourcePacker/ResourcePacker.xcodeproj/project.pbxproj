@@ -17,6 +17,8 @@
 		E8951AF71737775600755339 /* GameCore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8951AF41737775600755339 /* GameCore.cpp */; };
 		E8C4C6AC1729BBAE004B0B3B /* libFramework.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FEC3E2EF133A9A5A00442ADD /* libFramework.a */; };
 		E8C513BC19A612B700EDAF35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E8C513BB19A612B700EDAF35 /* Security.framework */; };
+		E8CE88021A80EBBB00B0BDC2 /* libTextureConverter.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E8CE88011A80EBBB00B0BDC2 /* libTextureConverter.dylib */; };
+		E8CE88091A80EBFA00B0BDC2 /* libTextureConverter.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = E8CE88011A80EBBB00B0BDC2 /* libTextureConverter.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		E8F8A259173A3A6A0090C110 /* libfmodevent.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E8F8A257173A3A6A0090C110 /* libfmodevent.dylib */; };
 		E8F8A25A173A3A6A0090C110 /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E8F8A258173A3A6A0090C110 /* libfmodex.dylib */; };
 		E8F8A25D173A43330090C110 /* libfmodevent.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = E8F8A257173A3A6A0090C110 /* libfmodevent.dylib */; };
@@ -84,6 +86,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		E8CE88081A80EBEA00B0BDC2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 6;
+			files = (
+				E8CE88091A80EBFA00B0BDC2 /* libTextureConverter.dylib in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E8F8A25C173A43250090C110 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -111,6 +123,7 @@
 		E8951AF41737775600755339 /* GameCore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GameCore.cpp; path = Classes/GameCore.cpp; sourceTree = "<group>"; };
 		E8951AF51737775600755339 /* GameCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GameCore.h; path = Classes/GameCore.h; sourceTree = "<group>"; };
 		E8C513BB19A612B700EDAF35 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		E8CE88011A80EBBB00B0BDC2 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTextureConverter.dylib; path = ../Bin/libTextureConverter.dylib; sourceTree = "<group>"; };
 		E8F8A257173A3A6A0090C110 /* libfmodevent.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodevent.dylib; path = ../../Libs/fmod/lib/macos/libfmodevent.dylib; sourceTree = "<group>"; };
 		E8F8A258173A3A6A0090C110 /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodex.dylib; path = ../../Libs/fmod/lib/macos/libfmodex.dylib; sourceTree = "<group>"; };
 		FEC3E2EA133A9A5A00442ADD /* Framework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Framework.xcodeproj; path = ../../Projects/MacOSFramework/Framework.xcodeproj; sourceTree = SOURCE_ROOT; };
@@ -130,6 +143,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E8CE88021A80EBBB00B0BDC2 /* libTextureConverter.dylib in Frameworks */,
 				E8C513BC19A612B700EDAF35 /* Security.framework in Frameworks */,
 				E8766CF21949B63B00868291 /* AVFoundation.framework in Frameworks */,
 				E8766CEB1949B63600868291 /* CoreMedia.framework in Frameworks */,
@@ -219,6 +233,7 @@
 		FEC3E46E133A9AAB00442ADD /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E8CE88011A80EBBB00B0BDC2 /* libTextureConverter.dylib */,
 				E8C513BB19A612B700EDAF35 /* Security.framework */,
 				E8766CF11949B63B00868291 /* AVFoundation.framework */,
 				E8766CEA1949B63600868291 /* CoreMedia.framework */,
@@ -246,6 +261,7 @@
 				8DD76F660486A84900D96B5E /* Frameworks */,
 				E8C4C84E165F6F54009DB9E1 /* ShellScript */,
 				E8F8A25C173A43250090C110 /* CopyFiles */,
+				E8CE88081A80EBEA00B0BDC2 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -397,6 +413,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../Libs/fmod/lib/macos",
+					/Users/victorkleschenko/Work/WoT/dava.framework/Tools/Bin,
 				);
 				OTHER_LDFLAGS = "-L../../Libs/IMagickHelpLib";
 				PRODUCT_NAME = ResourcePacker;
@@ -420,6 +437,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../Libs/fmod/lib/macos",
+					/Users/victorkleschenko/Work/WoT/dava.framework/Tools/Bin,
 				);
 				OTHER_LDFLAGS = "-L../../Libs/IMagickHelpLib";
 				PRODUCT_NAME = ResourcePacker;

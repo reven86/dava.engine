@@ -43,138 +43,112 @@
 
 #include "FileSystem/FilePath.h"
 
+#include <cstdarg>
+
 namespace DAVA 
 {
 
 class LoggerOutput;
 
-class Logger : public Singleton<Logger>
+class Logger: public Singleton<Logger>
 {
 public:
-	enum eLogLevel
-	{
-		//! Highest log level if it set all message printed out. Use it to separate framework logs from project logs
-		LEVEL_FRAMEWORK = 0,
+    enum eLogLevel
+    {
+        //! Highest log level if it set all message printed out. Use it to separate framework logs from project logs
+        LEVEL_FRAMEWORK = 0,
 
-		//! Highest log level at project. If it set all message printed out. 
-		LEVEL_DEBUG,
+        //! Highest log level at project. If it set all message printed out.
+        LEVEL_DEBUG,
 
-		//! Normal log level prints only message not related to debug
-		LEVEL_INFO,
+        //! Normal log level prints only message not related to debug
+        LEVEL_INFO,
 
-		//! Warning messages (for usage if we reached some limits)
-		LEVEL_WARNING,
+        //! Warning messages (for usage if we reached some limits)
+        LEVEL_WARNING,
 
-		//! Error messages (critical situations)
-		LEVEL_ERROR,
+        //! Error messages (critical situations)
+        LEVEL_ERROR,
 
-		//! Disable logs
-		LEVEL__DISABLE
-	};
-	
-	Logger();
-	virtual ~Logger();
+        //! Disable logs
+        LEVEL__DISABLE
+    };
 
-	//! Enables/disables logging to file. Disabled by default.
-	//! \param[in] filename: name of log file. Empty string disables logging to file, 
-	//! non-empty creates log file in working directory.
-	virtual void SetLogFilename(const String & filename);
+    Logger();
+    virtual ~Logger();
 
-	//! Enables/disables logging to file. Disabled by default.
-	//! \param[in] filepath: path to log file. Empty string disables logging to file, 
-	//! non-empty creates log file described by filepath.
-	virtual void SetLogPathname(const FilePath & filepath);
-	
-	//! Returns the current set log level.
-	virtual eLogLevel GetLogLevel();
-	
-	//! Sets a new log level. With this value, texts which are sent to
-	//! the logger are filtered out. For example setting this value to
-	//! ELL_WARNING, only warnings and
-	//! errors are printed out. Setting it to ELL_INFORMATION, which is
-	//! the default setting, warnings,
-	//! errors and informational texts are printed out.
-	//! \param ll: new log level filter value.
-	virtual void SetLogLevel(eLogLevel ll);
-	
-	//! Prints out a text into the log
-	//! \param text: Text to print out.
-	//! \param ll: Log level of the text. If the text is an error, set
-	//! it to ELL_ERROR, if it is warning set it to ELL_WARNING, and if it
-	//! is just an informational text, set it to ELL_INFORMATION. Texts are
-	//! filtered with these levels. If you want to be a text displayed,
-	//! independent on what level filter is set, use ELL_NONE.
-	virtual void Log(eLogLevel ll, const char8* text, ...);
-	virtual void Logv(eLogLevel ll, const char8* text, va_list li);
-	
-	//! Prints out a text into the log
-	//! \param text: Text to print out.
-	//! \param ll: Log level of the text. If the text is an error, set
-	//! it to ELL_ERROR, if it is warning set it to ELL_WARNING, and if it
-	//! is just an informational text, set it to ELL_INFORMATION. Texts are
-	//! filtered with these levels. If you want to be a text displayed,
-	//! independent on what level filter is set, use ELL_NONE.
-	virtual void Log(eLogLevel ll, const char16* text, ...);
-	virtual void Logv(eLogLevel ll, const char16* text, va_list li);
+    //! Enables/disables logging to file. Disabled by default.
+    //! \param[in] filename: name of log file. Empty string disables logging to file,
+    //! non-empty creates log file in working directory.
+    virtual void SetLogFilename(const String & filename);
 
-	static void FrameworkDebug(const char8 * text, ...);
-	static void Debug(const char8 * text, ...);
-	static void Warning(const char8 * text, ...);
-	static void Info(const char8 * text, ...);
-	static void Error(const char8 * text, ...);
+    //! Enables/disables logging to file. Disabled by default.
+    //! \param[in] filepath: path to log file. Empty string disables logging to file,
+    //! non-empty creates log file described by filepath.
+    virtual void SetLogPathname(const FilePath & filepath);
 
-	static void FrameworkDebug(const char16 * text, ...);
-	static void Debug(const char16 * text, ...);
-	static void Warning(const char16 * text, ...);
-	static void Info(const char16 * text, ...);
-	static void Error(const char16 * text, ...);
+    //! Returns the current set log level.
+    virtual eLogLevel GetLogLevel();
 
-	static void AddCustomOutput(DAVA::LoggerOutput *lo);
-	static void RemoveCustomOutput(DAVA::LoggerOutput *lo);
+    //! Sets a new log level. With this value, texts which are sent to
+    //! the logger are filtered out. For example setting this value to
+    //! ELL_WARNING, only warnings and
+    //! errors are printed out. Setting it to ELL_INFORMATION, which is
+    //! the default setting, warnings,
+    //! errors and informational texts are printed out.
+    //! \param ll: new log level filter value.
+    virtual void SetLogLevel(eLogLevel ll);
+
+    //! Prints out a text into the log
+    //! \param text: Text to print out.
+    //! \param ll: Log level of the text. If the text is an error, set
+    //! it to ELL_ERROR, if it is warning set it to ELL_WARNING, and if it
+    //! is just an informational text, set it to ELL_INFORMATION. Texts are
+    //! filtered with these levels. If you want to be a text displayed,
+    //! independent on what level filter is set, use ELL_NONE.
+    virtual void Log(eLogLevel ll, const char8* text, ...);
+    virtual void Logv(eLogLevel ll, const char8* text, va_list li);
+
+    static void FrameworkDebug(const char8 * text, ...);
+    static void Debug(const char8 * text, ...);
+    static void Warning(const char8 * text, ...);
+    static void Info(const char8 * text, ...);
+    static void Error(const char8 * text, ...);
+
+    static void AddCustomOutput(DAVA::LoggerOutput *lo);
+    static void RemoveCustomOutput(DAVA::LoggerOutput *lo);
 
 #if defined(__DAVAENGINE_ANDROID__)
     static void SetTag(const char8 *logTag);
 #endif    
-    
+
     void EnableConsoleMode();
 
     const char8 * GetLogLevelString(eLogLevel ll);
 
-protected:	
-	eLogLevel logLevel;
-	FilePath logFilename;
-	Vector<LoggerOutput *> customOutputs;
-
-
-	void PlatformLog(eLogLevel ll, const char8* text);
-	void PlatformLog(eLogLevel ll, const char16* text);
-
-	void FileLog(eLogLevel ll, const char8* text);
-	void FileLog(eLogLevel ll, const char16* text);
-
-	void CustomLog(eLogLevel ll, const char8* text);
-	void CustomLog(eLogLevel ll, const char16* text);
-
+private:
+    void PlatformLog(eLogLevel ll, const char8* text);
+    void FileLog(eLogLevel ll, const char8* text);
+    void CustomLog(eLogLevel ll, const char8* text);
     void ConsoleLog(eLogLevel ll, const char8* text);
-	void ConsoleLog(eLogLevel ll, const char16* text);
+    void Output(eLogLevel ll, const char8* formatedMsg);
 
-    
+    eLogLevel logLevel;
+    FilePath logFilename;
+    Vector<LoggerOutput *> customOutputs;
     bool consoleModeEnabled;
+
 };
 
 class LoggerOutput
 {
 public:
-	LoggerOutput()
-	{}
+    LoggerOutput() = default;
+    virtual ~LoggerOutput() = default;
 
-	virtual ~LoggerOutput()
-	{}
-
-	virtual void Output(Logger::eLogLevel ll, const char8* text) = 0;
-	virtual void Output(Logger::eLogLevel ll, const char16* text) = 0;
+    virtual void Output(Logger::eLogLevel ll, const char8* text) = 0;
 };
 
-};
+} // end namespace DAVA
 
 #endif // __DAVAENGINE_LOGGER_H__
