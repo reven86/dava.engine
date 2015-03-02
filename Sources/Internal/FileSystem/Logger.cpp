@@ -1,372 +1,311 @@
 /*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
+ Copyright (c) 2008, binaryzebra
+ All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
+ * Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+ * Neither the name of the binaryzebra nor the
+ names of its contributors may be used to endorse or promote products
+ derived from this software without specific prior written permission.
 
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
+ THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ =====================================================================================*/
 
 #include "FileSystem/Logger.h"
 #include "FileSystem/FileSystem.h"
 #include "Debug/DVAssert.h"
-#include <stdarg.h>
+#include <cstdarg>
+#include <array>
 
 #include "Utils/Utils.h"
 
-namespace DAVA 
+namespace DAVA
 {
 
 #if defined(__DAVAENGINE_WIN32__)
 
 #define vsnprintf _vsnprintf
-#define vswprintf _vsnwprintf
 #define snprintf _snprintf
 
 #endif
 
+namespace
+{
+const size_t defaultBufferSize{ 4096 };
+}
+
+String ConvertCFormatListToString(const char8* format, va_list pargs)
+{
+    String dynamicbuf;
+    dynamicbuf.resize(defaultBufferSize * 2);
+
+    while (true)
+    {
+        va_list copy;
+        va_copy(copy, pargs);
+        int32 charactersWritten = vsnprintf(&dynamicbuf[0], dynamicbuf.size(), format, copy);
+        va_end(copy);
+        // NB. C99 (which modern Linux and OS X follow) says vsnprintf
+        // failure returns the length it would have needed.  But older
+        // glibc and current Windows return -1 for failure, i.e., not
+        // telling us how much was needed.
+        if (charactersWritten < static_cast<int32>(dynamicbuf.size()) && charactersWritten >= 0)
+        {
+            dynamicbuf.resize(charactersWritten);
+            return dynamicbuf;
+        }
+        // do you really want to print 1Mb with one call may be your format
+        // string incorrect?
+        DVASSERT_MSG(dynamicbuf.size() < 1024 * 1024,
+                DAVA::Format("format: {%s}", format).c_str());
+
+        dynamicbuf.resize(dynamicbuf.size() * 2);
+    }
+    DVASSERT(false);
+    return String("never happen! ");
+}
+
 void Logger::Logv(eLogLevel ll, const char8* text, va_list li)
 {
-    if(!text || text[0] == '\0') return;
-    
-	char tmp[4096] = {0};
+    if (!text || text[0] == '\0')
+        return;
 
-	vsnprintf(tmp, sizeof(tmp) - 2, text, li);
-	strcat(tmp, "\n");
+    // try use stack first
+    std::array<char8, defaultBufferSize> stackbuf;
 
-	// always send log to custom subscribers
-	CustomLog(ll, tmp);
+    va_list copy;
+    va_copy(copy, li);
+    int32 charactersWritten = vsnprintf(&stackbuf[0], defaultBufferSize - 1, text, copy);
+    va_end(copy);
 
-	// print platform log or write log to file
-	// only if log level is acceptable
-	if (ll >= logLevel)
-	{
-        if(consoleModeEnabled)
-        {
-            ConsoleLog(ll, tmp);
-        }
-        else
-        {
-            PlatformLog(ll, tmp);
-        }
+    if (charactersWritten < 0 || charactersWritten >= static_cast<int32>(defaultBufferSize - 1))
+    {
+        String formatedMessage = ConvertCFormatListToString(text, li);
+        formatedMessage += '\n';
 
-		if(!logFilename.IsEmpty())
-		{
-			FileLog(ll, tmp);
-		}
-	}
+        Output(ll, formatedMessage.c_str());
+    }
+    else
+    {
+        stackbuf[charactersWritten] = '\n';
+        stackbuf[charactersWritten + 1] = '\0';
+
+        Output(ll, &stackbuf[0]);
+    }
 }
 
-void Logger::Logv(eLogLevel ll, const char16* text, va_list li)
+static const std::array<const char8*, 5> logLevelString
 {
-    if(!text || text[0] == '\0') return;
-
-	wchar_t tmp[4096] = {0};
-
-	vswprintf(tmp, sizeof(tmp)/sizeof(wchar_t) - 2, text, li);
-	wcscat(tmp, L"\n");
-
-	// always send log to custom subscribers
-	CustomLog(ll, tmp);
-
-	// print platform log or write log to file
-	// only if log level is acceptable
-	if (ll >= logLevel)
-	{
-        if(consoleModeEnabled)
-        {
-            ConsoleLog(ll, tmp);
-        }
-        else
-        {
-            PlatformLog(ll, tmp);
-        }
-
-		if(!logFilename.IsEmpty())
-		{
-			FileLog(ll, tmp);
-		}
-
-	}
-}
-
-static const char8 * logLevelString[5] =
-{	
-	"framwork",
-	"debug",
-	"info",
-	"warning",
-	"error" 
+    {
+        "framwork",
+        "debug",
+        "info",
+        "warning",
+        "error"
+    }
 };
-	
-Logger::Logger()
+
+Logger::Logger():
+    logLevel{LEVEL_FRAMEWORK},
+    consoleModeEnabled{false}
 {
-	logLevel = LEVEL_FRAMEWORK;
-	SetLogFilename(String());
-    
-    consoleModeEnabled = false;
+    SetLogFilename(String());
 }
 
 Logger::~Logger()
 {
-	for(size_t i = 0; i < customOutputs.size(); ++i)
-	{
-		delete customOutputs[i];
-	}
+    for (auto logOutput : customOutputs)
+    {
+        delete logOutput;
+    }
 }
-	
+
 Logger::eLogLevel Logger::GetLogLevel()
 {
-	return logLevel;
+    return logLevel;
 }
-	
+
 const char8 * Logger::GetLogLevelString(eLogLevel ll)
 {
-	return logLevelString[ll];
+#ifndef __DAVAENGINE_WIN32__
+    static_assert(logLevelString.size() == LEVEL__DISABLE,
+            "please update strings values");
+#endif
+    return logLevelString[ll];
 }
-	
+
 void Logger::SetLogLevel(eLogLevel ll)
 {
-	logLevel = ll;
+    logLevel = ll;
 }
-	
+
 void Logger::Log(eLogLevel ll, const char8* text, ...)
 {
-	if (ll < logLevel)return; 
-	
-	va_list vl;
-	va_start(vl, text);
-	Logv(ll, text, vl);
-	va_end(vl);
-}	
+    if (ll < logLevel)
+        return;
 
-void Logger::Log(eLogLevel ll, const char16* text, ...)
-{
-	if (ll < logLevel) return; 
-	
-	va_list vl;
-	va_start(vl, text);
-	Logv(ll, text, vl);
-	va_end(vl);
+    va_list vl;
+    va_start(vl, text);
+    Logv(ll, text, vl);
+    va_end(vl);
 }
-	
-void Logger::FrameworkDebug( const char8 * text, ... )
+
+void Logger::FrameworkDebug(const char8 * text, ...)
 {
-	va_list vl;
-	va_start(vl, text);
-	if (Logger::Instance())
-		Logger::Instance()->Logv(LEVEL_FRAMEWORK, text, vl);
-	va_end(vl);
+    va_list vl;
+    va_start(vl, text);
+    Logger* log = Logger::Instance();
+    if (nullptr != log)
+        log->Logv(LEVEL_FRAMEWORK, text, vl);
+    va_end(vl);
 }
 
 void Logger::Debug(const char8 * text, ...)
 {
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_DEBUG, text, vl);
-	va_end(vl);
+    va_list vl;
+    va_start(vl, text);
+    Logger* log = Logger::Instance();
+    if (nullptr != log)
+        log->Logv(LEVEL_DEBUG, text, vl);
+    va_end(vl);
 }
-	
+
 void Logger::Info(const char8 * text, ...)
 {
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_INFO, text, vl);
-	va_end(vl);
-}	
-	
+    va_list vl;
+    va_start(vl, text);
+    Logger* log = Logger::Instance();
+    if (nullptr != log)
+        log->Logv(LEVEL_INFO, text, vl);
+    va_end(vl);
+}
+
 void Logger::Warning(const char8 * text, ...)
 {
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_WARNING, text, vl);
-	va_end(vl);
+    va_list vl;
+    va_start(vl, text);
+    Logger* log = Logger::Instance();
+    if (nullptr != log)
+        log->Logv(LEVEL_WARNING, text, vl);
+    va_end(vl);
 }
-	
+
 void Logger::Error(const char8 * text, ...)
 {
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_ERROR, text, vl);
-	va_end(vl);
-}
-
-void Logger::FrameworkDebug( const char16 * text, ... )
-{
-	va_list vl;
-	va_start(vl, text);
-	if (Logger::Instance())
-		Logger::Instance()->Logv(LEVEL_FRAMEWORK, text, vl);
-	va_end(vl);
-}
-
-void Logger::Debug(const char16 * text, ...)
-{
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_DEBUG, text, vl);
-	va_end(vl);
-}
-
-void Logger::Info(const char16 * text, ...)
-{
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_INFO, text, vl);
-	va_end(vl);
-}	
-
-void Logger::Warning(const char16 * text, ...)
-{
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_WARNING, text, vl);
-	va_end(vl);
-}
-
-void Logger::Error(const char16 * text, ...)
-{
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_ERROR, text, vl);
-	va_end(vl);
+    va_list vl;
+    va_start(vl, text);
+    Logger* log = Logger::Instance();
+    if (nullptr != log)
+        log->Logv(LEVEL_ERROR, text, vl);
+    va_end(vl);
 }
 
 void Logger::AddCustomOutput(DAVA::LoggerOutput *lo)
 {
-	if(Logger::Instance() && lo)
-		Logger::Instance()->customOutputs.push_back(lo);
+    Logger* log = Logger::Instance();
+    if (nullptr != log && nullptr != lo)
+        log->customOutputs.push_back(lo);
 }
 
 void Logger::RemoveCustomOutput(DAVA::LoggerOutput *lo)
 {
-	if(Logger::Instance() && lo)
-	{
-		Vector<LoggerOutput *>::const_iterator endIt = Logger::Instance()->customOutputs.end();
-		for(Vector<LoggerOutput *>::iterator it = Logger::Instance()->customOutputs.begin(); it != endIt; ++it)
-		{
-			if((*it) == lo)
-			{
-				Logger::Instance()->customOutputs.erase(it);
-				break;
-			}
-		}
-	}
+    Logger* log = Logger::Instance();
+    if (nullptr != log && nullptr != lo)
+    {
+        auto& outputs = log->customOutputs;
+
+        outputs.erase(std::remove(outputs.begin(), outputs.end(), lo));
+    }
 }
 
 void Logger::SetLogFilename(const String & filename)
 {
-	if(filename.empty())
-	{
+    if (filename.empty())
+    {
         logFilename = FilePath();
-	}
-	else
-	{
-		logFilename = FileSystem::Instance()->GetCurrentDocumentsDirectory() + filename;
-	}
+    }
+    else
+    {
+        logFilename = FileSystem::Instance()->GetCurrentDocumentsDirectory()
+                + filename;
+    }
 }
 
 void Logger::SetLogPathname(const FilePath & filepath)
 {
-	logFilename = filepath;
+    logFilename = filepath;
 }
-
 
 void Logger::FileLog(eLogLevel ll, const char8* text)
 {
-	if(FileSystem::Instance())
-	{
+    if (nullptr != FileSystem::Instance())
+    {
         File *file = File::Create(logFilename, File::APPEND | File::WRITE);
-		if(file)
-		{
-            char8 prefix[128];
-            snprintf(prefix, 127, "[%s] ", GetLogLevelString(ll));
-            file->Write(prefix, sizeof(char) * strlen(prefix));
-            file->Write(text, sizeof(char) * strlen(text));
+        if (nullptr != file)
+        {
+            std::array<char8, 128> prefix;
+            snprintf(&prefix[0], prefix.size(), "[%s] ", GetLogLevelString(ll));
+            file->Write(prefix.data(), strlen(prefix.data()));
+            file->Write(text, strlen(text));
             file->Release();
-		}
-	}
-}
-
-void Logger::FileLog(eLogLevel ll, const char16* text)
-{
-	if(FileSystem::Instance())
-	{
-        File *file = File::Create(logFilename, File::APPEND | File::WRITE);
-		if(file)
-		{
-            char16 prefix[128];
-            swprintf(prefix, 127, L"[%s] ",  StringToWString(GetLogLevelString(ll)).c_str());
-
-            file->Write(prefix, sizeof(wchar_t) * wcslen(prefix));
-            file->Write(text, sizeof(wchar_t) * wcslen(text));
-            file->Release();
-		}
-	}
+        }
+    }
 }
 
 void Logger::CustomLog(eLogLevel ll, const char8* text)
 {
-	for(size_t i = 0; i < customOutputs.size(); ++i)
-	{
-		customOutputs[i]->Output(ll, text);
-	}
+    for (auto output : customOutputs)
+    {
+        output->Output(ll, text);
+    }
 }
 
-void Logger::CustomLog(eLogLevel ll, const char16* text)
-{
-	for(size_t i = 0; i < customOutputs.size(); ++i)
-	{
-		customOutputs[i]->Output(ll, text);
-	}
-}
-    
 void Logger::EnableConsoleMode()
 {
     consoleModeEnabled = true;
 }
 
-    
 void Logger::ConsoleLog(DAVA::Logger::eLogLevel ll, const char8 *text)
 {
     printf("[%s] %s", GetLogLevelString(ll), text);
 }
 
-void Logger::ConsoleLog(DAVA::Logger::eLogLevel ll, const char16 *text)
+void Logger::Output(eLogLevel ll, const char8* formatedMsg)
 {
-    wprintf(L"[%s] %s", StringToWString(GetLogLevelString(ll)).c_str(), text);
+    CustomLog(ll, formatedMsg);
+    // print platform log or write log to file
+    // only if log level is acceptable
+    if (ll >= logLevel)
+    {
+        if (consoleModeEnabled)
+        {
+            ConsoleLog(ll, formatedMsg);
+        }
+        else
+        {
+            PlatformLog(ll, formatedMsg);
+        }
+
+        if (!logFilename.IsEmpty())
+        {
+            FileLog(ll, formatedMsg);
+        }
+    }
 }
 
-
-}
-
-
-
+} // end namespace DAVA

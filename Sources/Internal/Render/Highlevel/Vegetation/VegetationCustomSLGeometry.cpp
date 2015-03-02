@@ -117,7 +117,7 @@ VegetationCustomSLGeometry::VegetationCustomSLGeometry(const Vector<VegetationLa
                                                    const uint32* _resolutionClusterStride,
                                                    uint32 _resolutionClusterStrideCount,
                                                    const Vector3& _worldSize,
-                                                   VegetationCustomGeometrySerializationData* geometryData)
+                                                   const VegetationCustomGeometrySerializationDataPtr& geometryData)
 {
     maxClusters = _maxClusters;
     
@@ -230,7 +230,7 @@ void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderData
     vertexRDO->SetStream(EVF_BINORMAL, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].binormal));
     vertexRDO->SetStream(EVF_TANGENT, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].tangent));
     vertexRDO->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, sizeof(VegetationVertex), &(vertexData[0].texCoord0));
-    vertexRDO->BuildVertexBuffer(vertexData.size(), true);
+    vertexRDO->BuildVertexBuffer(vertexData.size(), BDT_STATIC_DRAW, true);
     
     Vector<Vector<Vector<VegetationSortedBufferItem> > >& indexBuffers = renderData->GetIndexBuffers();
     
@@ -264,7 +264,7 @@ void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderData
                 sortBufferItem.SetRenderDataObjectAttachment(vertexRDO);
                 sortBufferItem.sortDirection = sortData.sortDirection;
                 
-                sortBufferItem.rdo->BuildIndexBuffer(true);
+                sortBufferItem.rdo->BuildIndexBuffer(BDT_STATIC_DRAW, true);
                 sortBufferItem.rdo->AttachVertices(vertexRDO);
                 
                 SafeRelease(indexBuffer);
@@ -728,7 +728,7 @@ void VegetationCustomSLGeometry::GenerateSortedClusterIndexData(Vector3& cameraP
     std::stable_sort(sourceIndices.begin(), sourceIndices.end(), PolygonByDistanceCompareFunction);
 }
 
-void VegetationCustomSLGeometry::InitCustomGeometry(VegetationCustomGeometrySerializationData* geometryData)
+void VegetationCustomSLGeometry::InitCustomGeometry(const VegetationCustomGeometrySerializationDataPtr& geometryData)
 {
     uint32 layerCount = geometryData->GetLayerCount();
     for(uint32 layerIndex = 0; layerIndex < layerCount; ++layerIndex)

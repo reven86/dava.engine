@@ -144,6 +144,8 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 		yOffset += (int32)((textBlock->rectSize.dy - renderRect.dy) * 0.5f);
 	}
 
+    RenderSystem2D::Instance()->Flush();
+    
     //TODO: temporary crutch until 2D render became fully stateless
     const Matrix4 * oldMatrix = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD);
     

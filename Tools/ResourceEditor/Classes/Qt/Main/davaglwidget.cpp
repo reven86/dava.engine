@@ -55,6 +55,9 @@
 	#include "Win32/CorePlatformWin32Qt.h"
 #endif //#if defined (__DAVAENGINE_MACOS__)
 
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+#include "Network/NetCore.h"
+#endif
 
 #include "Classes/Qt/Main/mainwindow.h"
 #include "ui_mainwindow.h"
@@ -314,7 +317,7 @@ void DavaGLWidget::focusOutEvent(QFocusEvent *e)
     // UnregisterEventFilter();
     QWidget::focusOutEvent( e );
     
-    DAVA::InputSystem::Instance()->GetKeyboard()->ClearAllKeys();
+    DAVA::InputSystem::Instance()->GetKeyboard().ClearAllKeys();
 	DAVA::QtLayer::Instance()->LockKeyboardInput(false);
 
 #if defined(Q_OS_WIN)
@@ -447,11 +450,6 @@ void DavaGLWidget::Render()
 void DavaGLWidget::Quit()
 {
     exit(0);
-}
-
-void DavaGLWidget::ShowAssertMessage(const char * message)
-{
-    QMessageBox::critical(this, "", message);
 }
 
 void DavaGLWidget::RegisterEventFilter()

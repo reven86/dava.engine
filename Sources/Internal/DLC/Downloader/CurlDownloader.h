@@ -45,7 +45,7 @@ protected:
     /**
         \brief Interrupts current download.
      */
-    virtual void Interrupt();
+    void Interrupt() override;
     /**
         \brief Init an easy handle for use it later for any Curl operation. Setups all common paramaters.
         Returns a pointer to CURL easy handle. NULL if there was an init error.
@@ -57,7 +57,7 @@ protected:
      \param[out] retSize - place result to
      \param[in] timeout - operation timeout
      */
-    virtual DownloadError GetSize(const String &url, uint64 &retSize, int32 timeout);
+    DownloadError GetSize(const String &url, uint64 &retSize, int32 timeout) override;
     /**
      \brief Main downloading operation. Should call SaveData to store data.
      \param[in] url - destination file Url
@@ -65,7 +65,12 @@ protected:
      \param[in] partsCount - quantity of download threads
      \param[in] timeout - operation timeout
      */
-    virtual DownloadError Download(const String &url, const FilePath &savePath, uint8 partsCount, int32 timeout);
+    DownloadError Download(const String &url, const FilePath &savePath, uint8 partsCount, int32 timeout) override;
+    /**
+     \brief Sets maximum allowed download speed. -1 means unlimited.
+     \param[in] limit - speed limit in bytes per second.
+     */
+    void SetDownloadSpeedLimit(const uint64 limit) override;
 
 private:
     /**
@@ -165,6 +170,7 @@ private:
     int32 operationTimeout;
     uint64 remoteFileSize;
     uint64 sizeToDownload;
+    uint64 downloadSpeedLimit;
 
     static ErrorWithPriority errorsByPriority[];
     

@@ -26,130 +26,207 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/BaseTypes.h"
 
-#import "GamepadDevice.h"
+#if defined(__DAVAENGINE_IPHONE__)
+
 #import <GameController/GameController.h>
+
+#include "GamepadDevice.h"
 #include "UI/UIEvent.h"
 #include "Input/InputSystem.h"
 
+@interface GamepadIOS : NSObject
+- (id)initWithParent:(DAVA::GamepadDevice *)parent;
+@end
+
 namespace DAVA
 {
-    UIEvent createJoystickEvent(int32 eventId, float64 time, float32 x, float32 y = 0.0f) {
-        UIEvent newEvent;
-        newEvent.tid = eventId;
-        newEvent.physPoint.x = x;
-        newEvent.physPoint.y = y;
-        newEvent.point.x = x;
-        newEvent.point.y = y;
-        newEvent.phase = UIEvent::PHASE_JOYSTICK;
-        newEvent.tapCount = 1;
-        newEvent.timestamp = time;
-        return newEvent;
-    }
 
-
-    GamepadDevice::GamepadDevice(void *gameController)
+void GamepadDevice::InitInternal()
+{
+    if(NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1)
     {
-        GCController *controller = (GCController *)gameController;
-        [controller retain];
-        m_gameController = controller;
-        if(controller.extendedGamepad) {
-            controller.extendedGamepad.buttonA.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-                ProcessElementStateChange(DAVA::eDavaGamepadElement_ButtonA , value);
-            };
-            controller.extendedGamepad.buttonB.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-                ProcessElementStateChange(DAVA::eDavaGamepadElement_ButtonB , value);
-            };
-            controller.extendedGamepad.buttonX.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-                ProcessElementStateChange(DAVA::eDavaGamepadElement_ButtonX , value);
-            };
-            controller.extendedGamepad.buttonY.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-                ProcessElementStateChange(DAVA::eDavaGamepadElement_ButtonY , value);
-            };
-            controller.extendedGamepad.leftShoulder.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-                ProcessElementStateChange(DAVA::eDavaGamepadElement_LShoulderButton , value);
-            };
-            controller.extendedGamepad.rightShoulder.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-                ProcessElementStateChange(DAVA::eDavaGamepadElement_RShoulderButton , value);
-            };
-            controller.extendedGamepad.leftTrigger.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-                ProcessElementStateChange(DAVA::eDavaGamepadElement_LTrigger , value);
-            };
-            controller.extendedGamepad.rightTrigger.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-                ProcessElementStateChange(DAVA::eDavaGamepadElement_RTrigger , value);
-            };
-        } else {
-            controller.gamepad.buttonA.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-                ProcessElementStateChange(DAVA::eDavaGamepadElement_ButtonA , value);
-            };
-            controller.gamepad.buttonB.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-                ProcessElementStateChange(DAVA::eDavaGamepadElement_ButtonB , value);
-            };
-            controller.gamepad.buttonX.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-                ProcessElementStateChange(DAVA::eDavaGamepadElement_ButtonX , value);
-            };
-            controller.gamepad.buttonY.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-                ProcessElementStateChange(DAVA::eDavaGamepadElement_ButtonY , value);
-            };
-            controller.gamepad.leftShoulder.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-                ProcessElementStateChange(DAVA::eDavaGamepadElement_LShoulderButton , value);
-            };
-            controller.gamepad.rightShoulder.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-                ProcessElementStateChange(DAVA::eDavaGamepadElement_RShoulderButton , value);
-            };
-        }
+        [[[GamepadIOS alloc] initWithParent:this] autorelease];
     }
-
-    GamepadDevice::~GamepadDevice()
-    {
-        [(GCController *)m_gameController release];
-    }
-
-    void GamepadDevice::ProcessElementStateChange(eDavaGamepadElement element, float32 value) {
-        UIEvent event = createJoystickEvent(element, 0.0, value);
-        InputSystem::Instance()->ProcessInputEvent(&event);
-    }
-
-    eDavaGamepadProfile GamepadDevice::GetProfile()
-    {
-        return [(GCController *)m_gameController extendedGamepad] ? eDavaGamepadProfile_ExtendedProfile : eDavaGamepadProfile_SimpleProfile;
-    }
-
-    float32 GamepadDevice::GetElementState(eDavaGamepadElement element)
-    {
-        GCController *controller = (GCController *)m_gameController;
-        switch(element) {
-            case eDavaGamepadElement_ButtonA:
-                return controller.gamepad.buttonA.value;
-            case eDavaGamepadElement_ButtonB:
-                return controller.gamepad.buttonB.value;
-            case eDavaGamepadElement_ButtonX:
-                return controller.gamepad.buttonX.value;
-            case eDavaGamepadElement_ButtonY:
-                return controller.gamepad.buttonY.value;
-            case eDavaGamepadElement_LShoulderButton:
-                return controller.gamepad.leftShoulder.value;
-            case eDavaGamepadElement_RShoulderButton:
-                return controller.gamepad.rightShoulder.value;
-            case eDavaGamepadElement_DPadX:
-                return controller.gamepad.dpad.xAxis.value;
-            case eDavaGamepadElement_DPadY:
-                return controller.gamepad.dpad.yAxis.value;
-            case eDavaGamepadElement_LTrigger:
-                return controller.extendedGamepad.leftTrigger.value;
-            case eDavaGamepadElement_RTrigger:
-                return controller.extendedGamepad.rightTrigger.value;
-            case eDavaGamepadElement_LThumbstickX:
-                return controller.extendedGamepad.leftThumbstick.xAxis.value;
-            case eDavaGamepadElement_LThumbstickY:
-                return controller.extendedGamepad.leftThumbstick.yAxis.value;
-            case eDavaGamepadElement_RThumbstickX:
-                return controller.extendedGamepad.rightThumbstick.xAxis.value;
-            case eDavaGamepadElement_RThumbstickY:
-                return controller.extendedGamepad.rightThumbstick.yAxis.value;
-            default:
-                return 0.0f; // ofc better to throw some exception
-        }
-    }
-
 }
+
+void ProcessElementHandler(GamepadDevice * device, GamepadDevice::eDavaGamepadElement element, float32 value)
+{
+    device->SystemProcessElement(element, value);
+    
+    UIEvent newEvent;
+    newEvent.tid = element;
+    newEvent.physPoint.x = value;
+    newEvent.point.x = value;
+    newEvent.phase = UIEvent::PHASE_JOYSTICK;
+    newEvent.tapCount = 1;
+    
+    InputSystem::Instance()->ProcessInputEvent(&newEvent);
+}
+
+void GamepadDevice::OnControllerConnected(void * gameControllerObject)
+{
+    if(!gameControllerObject)
+    {
+        Reset();
+        
+        return;
+    }
+    
+    SetAvailable(true);
+    
+    GCController *controller = (GCController *)gameControllerObject;
+    [controller retain];
+    
+    profile = [controller extendedGamepad] ? GAMEPAD_PROFILE_EXTENDED : GAMEPAD_PROFILE_SIMPLE;
+    
+    if(controller.extendedGamepad)
+    {
+        controller.extendedGamepad.buttonA.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_BUTTON_A, value);
+        };
+        controller.extendedGamepad.buttonB.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_BUTTON_B, value);
+        };
+        controller.extendedGamepad.buttonX.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_BUTTON_X , value);
+        };
+        controller.extendedGamepad.buttonY.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_BUTTON_Y, value);
+        };
+        
+        controller.extendedGamepad.leftShoulder.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_BUTTON_LS, value);
+        };
+        controller.extendedGamepad.rightShoulder.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_BUTTON_RS, value);
+        };
+        controller.extendedGamepad.leftTrigger.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_LT, value);
+        };
+        controller.extendedGamepad.rightTrigger.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_RT, value);
+        };
+        
+        controller.extendedGamepad.leftThumbstick.xAxis.valueChangedHandler = ^(GCControllerAxisInput *axis, float value) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_AXIS_LX, value);
+        };
+        controller.extendedGamepad.leftThumbstick.yAxis.valueChangedHandler = ^(GCControllerAxisInput *axis, float value) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_AXIS_LY, value);
+        };
+        controller.extendedGamepad.rightThumbstick.xAxis.valueChangedHandler = ^(GCControllerAxisInput *axis, float value) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_AXIS_RX, value);
+        };
+        controller.extendedGamepad.rightThumbstick.yAxis.valueChangedHandler = ^(GCControllerAxisInput *axis, float value) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_AXIS_RY, value);
+        };
+        
+        controller.extendedGamepad.dpad.xAxis.valueChangedHandler = ^(GCControllerAxisInput *axis, float value) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_DPAD_X, value);
+        };
+        controller.extendedGamepad.dpad.yAxis.valueChangedHandler = ^(GCControllerAxisInput *axis, float value) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_DPAD_Y, value);
+        };
+    }
+    else
+    {
+        controller.gamepad.buttonA.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_BUTTON_A, value);
+        };
+        controller.gamepad.buttonB.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_BUTTON_B, value);
+        };
+        controller.gamepad.buttonX.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_BUTTON_X , value);
+        };
+        controller.gamepad.buttonY.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_BUTTON_Y, value);
+        };
+        
+        controller.gamepad.leftShoulder.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_BUTTON_LS, value);
+        };
+        controller.gamepad.rightShoulder.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_BUTTON_RS, value);
+        };
+        
+        controller.gamepad.dpad.xAxis.valueChangedHandler = ^(GCControllerAxisInput *axis, float value) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_DPAD_X, value);
+        };
+        controller.gamepad.dpad.yAxis.valueChangedHandler = ^(GCControllerAxisInput *axis, float value) {
+            ProcessElementHandler(this, GAMEPAD_ELEMENT_DPAD_Y, value);
+        };
+    }
+}
+    
+}
+
+@implementation GamepadIOS
+{
+@private
+    bool isListening;
+    DAVA::GamepadDevice *parent;
+}
+
+- (id)initWithParent:(DAVA::GamepadDevice *)_parent
+{
+    self = [super init];
+    if (self)
+    {
+        isListening = NO;
+        parent = _parent;
+        [self startListening];
+    }
+    
+    return self;
+}
+
+- (void)dealloc
+{
+    [self stopListening];
+    [super dealloc];
+}
+
+- (void)startListening
+{
+    if(!isListening)
+    {
+        [self findController];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(gameControllerDidConnect) name:@"GCControllerDidConnectNotification" object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(gameControllerDidDisconnect) name:@"GCControllerDidDisconnectNotification" object:nil];
+        isListening = YES;
+    }
+}
+
+- (void)stopListening
+{
+    if(isListening)
+    {
+        [[NSNotificationCenter defaultCenter] removeObserver:self];
+        isListening = NO;
+    }
+}
+
+- (void)gameControllerDidConnect
+{
+    [self findController];
+}
+
+- (void)gameControllerDidDisconnect
+{
+    ((DAVA::GamepadDevice *)parent)->OnControllerConnected(0);
+}
+
+- (void)findController
+{
+    NSArray *controllers = [GCController controllers];
+    if(controllers.count)
+    {
+        ((DAVA::GamepadDevice *)parent)->OnControllerConnected((void *)[controllers objectAtIndex:0]);
+    }
+}
+
+@end
+
+#endif

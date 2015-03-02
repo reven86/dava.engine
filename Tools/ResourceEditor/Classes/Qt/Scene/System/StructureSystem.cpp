@@ -126,9 +126,12 @@ void StructureSystem::Remove(const EntityGroup &entityGroup)
 
 		for(size_t i = 0; i < entityGroup.Size(); ++i)
 		{
-			sceneEditor->Exec(new EntityRemoveCommand(entityGroup.GetEntity(i)));
+            DAVA::Entity *entity = entityGroup.GetEntity(i);
+            if(entity->GetNotRemovable() == false)
+            {
+                sceneEditor->Exec(new EntityRemoveCommand(entity));
+            }
 		}
-
 
 		if(entityGroup.Size() > 1)
 		{

@@ -118,6 +118,10 @@
 #include "DebugTools/VersionInfoWidget/VersionInfoWidget.h"
 #include "Classes/Qt/RunActionEventWidget/RunActionEventWidget.h"
 #include "Classes/Qt/DockConsole/LogWidget.h"
+#include "Classes/Qt/DockConsole/LogModel.h"
+
+#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListWidget.h"
+#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListController.h"
 
 #include "Classes/Commands2/PaintHeightDeltaAction.h"
 
@@ -130,10 +134,8 @@
 
 #include "Commands2/ConvertPathCommands.h"
 
-
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
-
 
 
 QtMainWindow::QtMainWindow(QWidget *parent)
@@ -375,21 +377,31 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
 
 	if(qApp == obj && ProjectManager::Instance()->IsOpened())
 	{
-		if(QEvent::ApplicationActivate == eventType)
+		if(QEvent::ApplicationStateChange == eventType)
 		{
-			if(QtLayer::Instance())
-			{
-				QtLayer::Instance()->OnResume();
-				Core::Instance()->GetApplicationCore()->OnResume();
-			}
-		}
-		else if(QEvent::ApplicationDeactivate == eventType)
-		{
-			if(QtLayer::Instance())
-			{
-				QtLayer::Instance()->OnSuspend();
-				Core::Instance()->GetApplicationCore()->OnSuspend();
-			}
+            QApplicationStateChangeEvent* stateChangeEvent = static_cast<QApplicationStateChangeEvent*>(event);
+            Qt::ApplicationState state = stateChangeEvent->applicationState();
+            switch (state)
+            {
+            case Qt::ApplicationInactive:
+            {
+                if (QtLayer::Instance())
+                {
+                    QtLayer::Instance()->OnSuspend();
+                }
+                break;
+            }
+            case Qt::ApplicationActive:
+            {
+                if (QtLayer::Instance())
+                {
+                    QtLayer::Instance()->OnResume();
+                }
+                break;
+            }
+            default:
+                break;
+            }
 		}
 	}
 
@@ -411,7 +423,7 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
             // according to reference of QKeyEvent, it's impossible to get scanCode on mac os
             // so we use platform depending nativeVirtualKey()
             int32 systemKeyCode = keyEvent->nativeVirtualKey();
-            int32 davaKey = DAVA::InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey(systemKeyCode);
+            int32 davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(systemKeyCode);
             // translate davaKey to ascii to find out real key pressed
             // offset between ascii and letters in davakey table - 29 positions
             int32 qtKey = davaKey + 29;
@@ -602,6 +614,7 @@ void QtMainWindow::SetupDocks()
     // Console dock
 	{
         LogWidget *logWidget = new LogWidget();
+        DAVA::Logger::AddCustomOutput(logWidget->Model());
         dockConsole = new QDockWidget(logWidget->windowTitle(), this);
         dockConsole->setWidget(logWidget);
         dockConsole->setObjectName(QString( "dock_%1" ).arg(dockConsole->widget()->objectName()));
@@ -770,6 +783,7 @@ void QtMainWindow::SetupActions()
         connect(act, SIGNAL(triggered()), SLOT(DebugVersionInfo()));
 #endif
 	}
+    connect( ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList );
 
     QObject::connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
 
@@ -3076,6 +3090,21 @@ void QtMainWindow::DebugColorPicker()
     ColorPicker *cp = new ColorPicker(this);
 
     cp->Exec();
+}
+
+void QtMainWindow::DebugDeviceList()
+{
+    // Create controller and window if they are not exist
+    // Pointer deviceListController automatically becomes NULL on window destruction
+    if (NULL == deviceListController)
+    {
+        DeviceListWidget *w = new DeviceListWidget(this);
+        w->setAttribute(Qt::WA_DeleteOnClose);
+
+        deviceListController = new DeviceListController(w);
+        deviceListController->SetView(w);
+    }
+    deviceListController->ShowView();
 }
 
 void QtMainWindow::OnGenerateHeightDelta()

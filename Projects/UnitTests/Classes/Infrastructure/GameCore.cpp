@@ -50,7 +50,13 @@
 #include "Tests/KeyedArchiveYamlTest.h"
 #include "Tests/JobManagerTest.h"
 #include "Tests/Cpp14.h"
+#include "Tests/NetworkTest.h"
 #include "Tests/JNITest.h"
+#include "Tests/FormatsTest.h"
+#include "Tests/DataVaultTest.h"
+#include "Tests/UnlimitedLogOutputTest.h"
+#include "Tests/SpinLockTest.h"
+#include "Tests/ThreadSyncTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -65,8 +71,10 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
+    new ThreadSyncTest();
+    new DataVaultTest();
 #if defined(__DAVAENGINE_ANDROID__)
-	new JNITest();
+    new JNITest();
 #endif
     new MathTest();
     new FunctionBindSignalTest();
@@ -84,7 +92,12 @@ void GameCore::RegisterTests()
     new TextSizeTest();
     new KeyedArchiveYamlTest();
     new JobManagerTest();
-    new Cpp14Test ();
+    new Cpp14Test();
+    new FormatsTest();
+    new NetworkTest();
+    new UnlimitedLogOutputTest();
+    new SpinLockTest();
+    //$UNITTEST_CTOR
 }
 
 #include <fstream>

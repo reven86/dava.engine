@@ -32,26 +32,60 @@
 namespace DAVA
 {
 
-    // Not implemented for macos, win and android. See working iOS implementation in GamepadManager.mm
+GamepadDevice::GamepadDevice()
+{
+    Reset();
 
-    GamepadDevice::GamepadDevice()
-    { }
+    InitInternal();
+}
+    
+void GamepadDevice::Reset()
+{
+    isAvailable = false;
+    profile = GAMEPAD_PROFILE_EXTENDED;
+    Memset(elementValues, 0, sizeof(float32) * GAMEPAD_ELEMENT_COUNT);
+}
 
-    GamepadDevice::~GamepadDevice()
-    { }
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+void GamepadDevice::InitInternal()
+{
 
-    eDavaGamepadProfile GamepadDevice::GetProfile()
-    {
-        return eDavaGamepadProfile_None;
-    }
+}
+#endif
 
-    float32 GamepadDevice::GetElementState(eDavaGamepadElement element)
-    {
-        return 0;
-    }
+#if defined(__DAVAENGINE_ANDROID__)
+void GamepadDevice::InitInternal()
+{
+    Memset(keyTranslator, INVALID_DAVAKEY, MAX_TRANSLATOR_KEYS);
+    Memset(axisTranslator, INVALID_DAVAKEY, MAX_TRANSLATOR_KEYS);
+    
+    keyTranslator[0x60] = (uint8)GAMEPAD_ELEMENT_BUTTON_A;     //BUTTON_A
+    keyTranslator[0x61] = (uint8)GAMEPAD_ELEMENT_BUTTON_B;     //BUTTON_B
+    keyTranslator[0x63] = (uint8)GAMEPAD_ELEMENT_BUTTON_X;     //BUTTON_X
+    keyTranslator[0x64] = (uint8)GAMEPAD_ELEMENT_BUTTON_Y;     //BUTTON_Y
+    
+    keyTranslator[0x66] = (uint8)GAMEPAD_ELEMENT_BUTTON_LS;    //BUTTON_L1
+    keyTranslator[0x67] = (uint8)GAMEPAD_ELEMENT_BUTTON_RS;    //BUTTON_R1
+    keyTranslator[0x68] = (uint8)GAMEPAD_ELEMENT_LT;           //BUTTON_L2
+    keyTranslator[0x69] = (uint8)GAMEPAD_ELEMENT_RT;           //BUTTON_R2
+    
+    keyTranslator[0x13] = (uint8)GAMEPAD_ELEMENT_DPAD_Y;       //DPAD_UP
+    keyTranslator[0x14] = (uint8)GAMEPAD_ELEMENT_DPAD_Y;       //DPAD_DOWN
+    keyTranslator[0x15] = (uint8)GAMEPAD_ELEMENT_DPAD_X;       //DPAD_LEFT
+    keyTranslator[0x16] = (uint8)GAMEPAD_ELEMENT_DPAD_X;       //DPAD_RIGHT
+    
+    axisTranslator[0x11] = (uint8)GAMEPAD_ELEMENT_LT;           //AXIS_LTRIGGER
+    axisTranslator[0x12] = (uint8)GAMEPAD_ELEMENT_RT;           //AXIS_RTRIGGER
+    axisTranslator[0x17] = (uint8)GAMEPAD_ELEMENT_LT;           //AXIS_BRAKE
+    axisTranslator[0x16] = (uint8)GAMEPAD_ELEMENT_RT;           //AXIS_GAS
+    
+    axisTranslator[0x00] = (uint8)GAMEPAD_ELEMENT_AXIS_LX;      //AXIS_X
+    axisTranslator[0x01] = (uint8)GAMEPAD_ELEMENT_AXIS_LY;      //AXIS_Y
+    axisTranslator[0x0B] = (uint8)GAMEPAD_ELEMENT_AXIS_RX;      //AXIS_Z
+    axisTranslator[0x0E] = (uint8)GAMEPAD_ELEMENT_AXIS_RY;      //AXIS_RZ
+    axisTranslator[0x0C] = (uint8)GAMEPAD_ELEMENT_AXIS_RX;      //AXIS_RX
+    axisTranslator[0x0D] = (uint8)GAMEPAD_ELEMENT_AXIS_RY;      //AXIS_RY
+}
+#endif
 
-    void GamepadDevice::ProcessElementStateChange(eDavaGamepadElement element, float32 value)
-    {
-
-    }
 }

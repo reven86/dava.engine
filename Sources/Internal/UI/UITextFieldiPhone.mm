@@ -38,7 +38,7 @@
 #include "Core/Core.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#import <HelperAppDelegate.h>
+#import <Platform/TemplateiOS/HelperAppDelegate.h>
 
 void CreateTextField(DAVA::UITextField  * tf)
 {
@@ -248,7 +248,7 @@ namespace DAVA
         textFieldHolder->textField.frame = nativeRect;
     }
 	
-    void UITextFieldiPhone::SetText(std::wstring & string)
+    void UITextFieldiPhone::SetText(const WideString & string)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         NSString* text = [[ [ NSString alloc ] initWithBytes : (char*)string.data()
@@ -257,9 +257,12 @@ namespace DAVA
 
         textFieldHolder->textField.text = (NSString*)TruncateText(text, textFieldHolder->cppTextField->GetMaxLength());
         [textFieldHolder->textField.undoManager removeAllActions];
+
+        // Notify UITextFieldDelegate::TextFieldOnTextChanged event
+        [textFieldHolder->textField sendActionsForControlEvents:UIControlEventEditingChanged];
     }
 	
-    void UITextFieldiPhone::GetText(std::wstring & string) const
+    void UITextFieldiPhone::GetText(WideString & string) const
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         

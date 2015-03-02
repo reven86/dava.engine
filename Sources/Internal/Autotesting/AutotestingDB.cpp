@@ -44,11 +44,11 @@ namespace DAVA
 	{
 		DVASSERT(NULL == dbClient);
 
-		dbClient = MongodbClient::Create(dbHost.c_str(), dbPort);
+		dbClient = MongodbClient::Create(dbHost, dbPort);
 		if (dbClient)
 		{
-			dbClient->SetDatabaseName(dbName.c_str());
-			dbClient->SetCollectionName(collection.c_str());
+			dbClient->SetDatabaseName(dbName);
+			dbClient->SetCollectionName(collection);
 		}
 		return (NULL != dbClient);
 	}
@@ -64,7 +64,7 @@ namespace DAVA
 
 	String AutotestingDB::GetStringTestParameter(const String &deviceName, const String &parameter)
 	{
-		Logger::Debug("AutotestingDB::GetStringTestParameter deviceName=%s, parameter=%s", deviceName.c_str(), parameter.c_str());
+		Logger::Info("AutotestingDB::GetStringTestParameter deviceName=%s, parameter=%s", deviceName.c_str(), parameter.c_str());
 		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");
 		KeyedArchive *deviceArchive = currentRunArchive->GetArchive(deviceName.c_str());
@@ -74,13 +74,13 @@ namespace DAVA
 		}
 		String result = deviceArchive->GetString(parameter.c_str(), "not_found");
 		SafeRelease(dbUpdateObject);
-		Logger::Debug("AutotestingDB::GetStringTestParameter return deviceName=%s value: %s", deviceName.c_str(), result.c_str());
+		Logger::Info("AutotestingDB::GetStringTestParameter return deviceName=%s value: %s", deviceName.c_str(), result.c_str());
 		return result;
 	}
 
 	int32 AutotestingDB::GetIntTestParameter(const String &deviceName, const String &parameter)
 	{
-		Logger::Debug("AutotestingDB::GetIntTestParameter deviceName=%s, parameter=%s", deviceName.c_str(), parameter.c_str());
+		Logger::Info("AutotestingDB::GetIntTestParameter deviceName=%s, parameter=%s", deviceName.c_str(), parameter.c_str());
 		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");
 		KeyedArchive *deviceArchive = currentRunArchive->GetArchive(deviceName.c_str());
@@ -90,16 +90,9 @@ namespace DAVA
 		}
 		int32 result = deviceArchive->GetInt32(parameter.c_str(), -9999);
 		SafeRelease(dbUpdateObject);
-		Logger::Debug("AutotestingDB::GetIntTestParameter return deviceName=%s value: %d", deviceName.c_str(), result);
+		Logger::Info("AutotestingDB::GetIntTestParameter return deviceName=%s value: %d", deviceName.c_str(), result);
 		return result;
 	}
-
-	/* WTF?!
-	Design for AutotestDB:
-	Doc for current build: id = Date_BuildNum_Device
-	Doc for current test group: id = GroupName
-	Doc for current test: id = TestNum
-	*/
 
 	// BUILD Level
 	KeyedArchive *AutotestingDB::FindBuildArchive(MongodbUpdateObject *dbUpdateObject, const String &auxArg)
@@ -197,12 +190,12 @@ namespace DAVA
 		va_start(vl, text);
 		char tmp[4096] = { 0 };
 		vsnprintf(tmp, sizeof(tmp) - 2, text, vl);
-		file->Write(text, sizeof(char)  *strlen(tmp));
+		file->Write(text, sizeof(char) *strlen(tmp));
 		file->Release();
 		va_end(vl);
 	}
 
-	void AutotestingDB::Log(const String &level, const String &message)
+    void AutotestingDB::Log(const String &level, const String &message)
 	{
 		String textLog = Format("[%s:%s] %s\n", autoSys->GetCurrentTimeString().c_str(), level.c_str(), message.c_str());
 		WriteLog(textLog.c_str());
@@ -211,7 +204,7 @@ namespace DAVA
 	// DEPRECATED: Rewrite for new DB conception
 	String AutotestingDB::ReadCommand(const String &device)
 	{
-		Logger::Debug("AutotestingDB::ReadCommand device=%s", device.c_str());
+		Logger::Info("AutotestingDB::ReadCommand device=%s", device.c_str());
 
 		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive *currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_multiplayer");
@@ -221,53 +214,53 @@ namespace DAVA
 
 		SafeRelease(dbUpdateObject);
 
-		Logger::Debug("AutotestingDB::ReadCommand device=%s: '%s'", device.c_str(), result.c_str());
+		Logger::Info("AutotestingDB::ReadCommand device=%s: '%s'", device.c_str(), result.c_str());
 		return result;
 	}
 
 	// DEPRECATED: Rewrite for new DB conception
 	String AutotestingDB::ReadState(const String &device)
 	{
-		Logger::Debug("AutotestingDB::ReadState device=%s", device.c_str());
+		Logger::Info("AutotestingDB::ReadState device=%s", device.c_str());
 
 
 		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive *currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_multiplayer");
 		String result;
 
-		result = currentRunArchive->GetString(device.c_str(), "not_found");
+		result = currentRunArchive->GetString(device, "not_found");
 		SafeRelease(dbUpdateObject);
-		Logger::Debug("AutotestingDB::ReadState device=%s: '%s'", device.c_str(), result.c_str());
+		Logger::Info("AutotestingDB::ReadState device=%s: '%s'", device.c_str(), result.c_str());
 		return result;
 	}
 
 	// DEPRECATED: Rewrite for new DB conception
 	String AutotestingDB::ReadString(const String &name)
 	{
-		Logger::Debug("AutotestingSystem::ReadString name=%s", name.c_str());
+		Logger::Info("AutotestingSystem::ReadString name=%s", name.c_str());
 
 		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive *currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_aux");
 		String result;
 
-		result = currentRunArchive->GetString(name.c_str(), "not_found");
+		result = currentRunArchive->GetString(name, "not_found");
 
 		SafeRelease(dbUpdateObject);
-		Logger::Debug("AutotestingSystem::ReadString name=%name: '%s'", name.c_str(), result.c_str());
+		Logger::Info("AutotestingSystem::ReadString name=%name: '%s'", name.c_str(), result.c_str());
 		return result;
 	}
 
 	bool AutotestingDB::SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive *archive)
 	{
 		String fileName = Format("/%s:%s:%s:%d:%s.yaml", autoSys->groupName.c_str(), autoSys->testFileName.c_str(), autoSys->runId.c_str(), autoSys->testIndex, archiveName.c_str());
-        Logger::Debug("AutotestingDB::Save keyed archive '%s' to device.", fileName.c_str());
+        Logger::Info("AutotestingDB::Save keyed archive '%s' to device.", fileName.c_str());
 		return archive->SaveToYamlFile(logsFolder + fileName);
 	}
 
 	bool AutotestingDB::SaveToDB(MongodbUpdateObject *dbUpdateObject)
 	{
 		uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
-		Logger::Debug("AutotestingSystem::SaveToDB");
+		Logger::Info("AutotestingSystem::SaveToDB");
 
 		bool ret = dbUpdateObject->SaveToDB(dbClient);
 
@@ -277,7 +270,7 @@ namespace DAVA
 		}
 
 		uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
-		Logger::Debug("AutotestingSystem::SaveToDB FINISH result time %d", finishTime - startTime);
+		Logger::Info("AutotestingSystem::SaveToDB FINISH result time %d", finishTime - startTime);
 		return ret;
 	}
 
@@ -285,16 +278,16 @@ namespace DAVA
 	{
 		if (dbClient)
 		{
-			//Logger::Debug("Image: datasize %d, %d x %d", image->dataSize, image->GetHeight(), image->GetWidth());
-			dbClient->SaveBufferToGridFS(Format("%s_%dx%d", name.c_str(), image->GetWidth(), image->GetHeight()),
-				reinterpret_cast<char*>(image->GetData()), image->dataSize);
+			//Logger::Info("Image: datasize %d, %d x %d", image->dataSize, image->GetHeight(), image->GetWidth());
+            dbClient->SaveBufferToGridFS(Format("%s_%dx%d", name.c_str(), image->GetWidth(), image->GetHeight()),
+                reinterpret_cast<char*>(image->GetData()), image->dataSize);
 		}
 	}
 
 	// DEPRECATED: Rewrite for new DB conception
 	void AutotestingDB::WriteCommand(const String &device, const String &command)
 	{
-		Logger::Debug("AutotestingDB::WriteCommand device=%s command=%s", device.c_str(), command.c_str());
+		Logger::Info("AutotestingDB::WriteCommand device=%s command=%s", device.c_str(), command.c_str());
 
 		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive *currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_multiplayer");
@@ -303,30 +296,26 @@ namespace DAVA
 
 		SaveToDB(dbUpdateObject);
 		SafeRelease(dbUpdateObject);
-		//Logger::Debug("AutotestingSystem::WriteCommand finish");
 	}
 
 	// DEPRECATED: Rewrite for new DB conception
 	void AutotestingDB::WriteState(const String &device, const String &state)
 	{
-		Logger::Debug("AutotestingDB::WriteState device=%s state=%s", device.c_str(), state.c_str());
+		Logger::Info("AutotestingDB::WriteState device=%s state=%s", device.c_str(), state.c_str());
 
 		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive *currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_multiplayer");
 
 		currentRunArchive->SetString(device, state);
 
-		//SafeRelease(multiplayerArchive);
 		SaveToDB(dbUpdateObject);
 		SafeRelease(dbUpdateObject);
-
-		//Logger::Debug("AutotestingSystem::WriteState finish");
 	}
 
 	// DEPRECATED: Rewrite for new DB conception
 	void AutotestingDB::WriteString(const String &name, const String &text)
 	{
-		Logger::Debug("AutotestingSystem::WriteString name=%s text=%s", name.c_str(), text.c_str());
+		Logger::Info("AutotestingSystem::WriteString name=%s text=%s", name.c_str(), text.c_str());
 
 		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive *currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_aux");
@@ -336,13 +325,13 @@ namespace DAVA
 		SaveToDB(dbUpdateObject);
 		SafeRelease(dbUpdateObject);
 
-		Logger::Debug("AutotestingSystem::WriteString finish");
+		Logger::Info("AutotestingSystem::WriteString finish");
 	}
 
 	// auxiliary methods
 	void AutotestingDB::SetTestStarted()
 	{
-		Logger::Debug("AutotestingSystem::SetTestStarted for test: %s", autoSys->testFileName.c_str());
+		Logger::Info("AutotestingSystem::SetTestStarted for test: %s", autoSys->testFileName.c_str());
 		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");
 		if (!currentRunArchive)

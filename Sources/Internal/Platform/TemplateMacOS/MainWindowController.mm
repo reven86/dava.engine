@@ -741,6 +741,8 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
+    mainWindowController->openGLView.willQuit = true;
+    
 	Core::Instance()->SystemAppFinished();
 	FrameworkWillTerminate();
     Core::Instance()->ReleaseSingletons();

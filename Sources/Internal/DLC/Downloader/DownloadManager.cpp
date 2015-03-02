@@ -158,9 +158,12 @@ void DownloadManager::Update()
     {
         for (Deque<CallbackData>::iterator it = callbackMessagesQueue.begin(); it != callbackMessagesQueue.end();)
         {
-           CallbackData cbData = (*it);
-           it = callbackMessagesQueue.erase(it);
-           callNotify(cbData.id, cbData.status);
+            CallbackData cbData = (*it);
+            it = callbackMessagesQueue.erase(it);
+            if (callNotify != 0)
+            {
+                callNotify(cbData.id, cbData.status);
+            }
         }
     }
     callbackMutex.Unlock();
@@ -459,6 +462,11 @@ bool DownloadManager::GetError(const uint32 &taskId, DownloadError &error)
 const DownloadStatistics * const DownloadManager::GetStatistics() const
 {
     return downloader->GetStatistics();
+}
+    
+void DownloadManager::SetDownloadSpeedLimit(const uint64 limit)
+{
+    downloader->SetDownloadSpeedLimit(limit);
 }
 
 void DownloadManager::ClearQueue(Deque<DownloadTaskDescription *> &queue)
