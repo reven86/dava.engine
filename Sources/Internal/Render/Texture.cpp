@@ -272,7 +272,7 @@ void Texture::ReleaseTextureDataInternal(uint32 textureType, uint32 textureID, u
 
 	//VI: reset texture for the current texture type in order to avoid
 	//issue when cubemap texture was deleted while being binded to the state
-    if(RenderManager::Instance()->lastBindedTexture[textureType] == textureID)
+    if(RenderManager::Instance()->lastBindedTexture[textureType] == static_cast<int32>(textureID))
 	{
 		RenderManager::Instance()->HWglBindTexture(0, textureType);
 	}
@@ -1349,7 +1349,7 @@ int32 Texture::GetBaseMipMap() const
         const TextureQuality *curTxQuality = QualitySettingsSystem::Instance()->GetTxQuality(QualitySettingsSystem::Instance()->GetCurTextureQuality());
         if(NULL != curTxQuality)
         {
-            return curTxQuality->albedoBaseMipMapLevel;
+            return static_cast<int32>(curTxQuality->albedoBaseMipMapLevel);
         }
     }
 

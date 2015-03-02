@@ -100,7 +100,7 @@ public:
 	
 	inline uint32 GetPassCount() const
 	{
-		return renderTechniquePassArray.size();
+		return static_cast<uint32>(renderTechniquePassArray.size());
 	}
 	
 	inline uint16 GetTechniqueId() const

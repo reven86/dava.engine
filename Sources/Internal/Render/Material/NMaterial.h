@@ -220,7 +220,6 @@ public:
     static const FastName PARAM_SCREEN_OFFSET;
     
 	static const FastName FLAG_VERTEXFOG;
-	static const FastName FLAG_FOG_EXP;
 	static const FastName FLAG_FOG_LINEAR;
     static const FastName FLAG_FOG_HALFSPACE;
     static const FastName FLAG_FOG_HALFSPACE_LINEAR;
@@ -233,12 +232,15 @@ public:
 	static const FastName FLAG_FLATCOLOR;
     static const FastName FLAG_DISTANCEATTENUATION;
     static const FastName FLAG_SPECULAR;
+    static const FastName FLAG_SEPARATE_NORMALMAPS;
 
     static const FastName FLAG_SPHERICAL_LIT;
 
     static const FastName FLAG_TANGENT_SPACE_WATER_REFLECTIONS;
     
     static const FastName FLAG_DEBUG_UNITY_Z_NORMAL;
+    static const FastName FLAG_DEBUG_Z_NORMAL_SCALE;
+    static const FastName FLAG_DEBUG_NORMAL_ROTATION;
 
     static const FastName FLAG_SKINNING;
     
@@ -1083,7 +1085,7 @@ inline NMaterial* NMaterial::GetParent() const
 
 inline uint32 NMaterial::GetChildrenCount() const
 {
-    return children.size();
+    return static_cast<uint32>(children.size());
 }
 
 inline NMaterial* NMaterial::GetChild(uint32 index) const

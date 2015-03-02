@@ -123,8 +123,8 @@ uint32 YamlNode::GetCount() const
 {
     switch (GetType())
     {
-        case TYPE_MAP: return objectMap->unordered.size();
-        case TYPE_ARRAY: return objectArray->array.size();
+        case TYPE_MAP: return static_cast<uint32>(objectMap->unordered.size());
+        case TYPE_ARRAY: return static_cast<uint32>(objectArray->array.size());
         default: break;
     }
     return 0;//string nodes does not contain content
@@ -368,7 +368,7 @@ VariantType YamlNode::AsVariantType() const
         if(innerTypeName == DAVA::VariantType::TYPENAME_BYTE_ARRAY)
         {
             const Vector<YamlNode*> &byteArrayNoodes = it->second->AsVector();
-            int32 size = byteArrayNoodes.size();
+            int32 size = static_cast<int32>(byteArrayNoodes.size());
             uint8* innerArray = new uint8[size];
             for (int32 i = 0; i < size; ++i)
             {

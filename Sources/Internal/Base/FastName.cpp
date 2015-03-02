@@ -110,7 +110,7 @@ void FastName::Init(const char * name)
         else
         {
             // index will be a new row in names table
-            index = db->namesTable.size();
+            index = static_cast<int32>(db->namesTable.size());
             db->namesTable.resize(index + 1);
             db->namesRefCounts.resize(index + 1);
         }

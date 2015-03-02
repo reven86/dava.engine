@@ -249,7 +249,7 @@ void CreateBacktraceLog(Backtrace * backtrace, BacktraceLog * log)
     {
         log->strings[i] = (char*)mem_malloc(512);
         
-        int len = strlen(strings[i]);
+        size_t len = strlen(strings[i]);
         char * temp = (char*)mem_malloc(sizeof(char) * len + 100);
         strcpy(temp, strings[i]);
 
@@ -334,7 +334,7 @@ void PrintBackTraceToLog()
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #define BACKTRACE_SIZ 100
     void    *array[BACKTRACE_SIZ];
-    size_t  size, i;
+    int32  size, i;
     char    **strings;
     
     size = backtrace(array, BACKTRACE_SIZ);

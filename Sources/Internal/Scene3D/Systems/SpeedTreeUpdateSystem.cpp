@@ -94,7 +94,7 @@ void SpeedTreeUpdateSystem::AddEntity(Entity * entity)
 
 void SpeedTreeUpdateSystem::RemoveEntity(Entity * entity)
 {
-    uint32 treeCount = allTrees.size();
+    uint32 treeCount = static_cast<uint32>(allTrees.size());
     for(uint32 i = 0; i < treeCount; ++i)
     {
         if(allTrees[i]->entity == entity)
@@ -125,7 +125,7 @@ void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
     WaveSystem * waveSystem = GetScene()->waveSystem;
 
     //Update trees
-    uint32 treeCount = allTrees.size();
+    uint32 treeCount = static_cast<uint32>(allTrees.size());
     for(uint32 i = 0; i < treeCount; ++i)
     {
 		SpeedTreeComponent * component = allTrees[i];
@@ -170,7 +170,7 @@ void SpeedTreeUpdateSystem::HandleEvent(Observable * observable)
     {
         isAnimationEnabled = options->IsOptionEnabled(RenderOptions::SPEEDTREE_ANIMATIONS);
         
-        uint32 treeCount = allTrees.size();
+        uint32 treeCount = static_cast<uint32>(allTrees.size());
         for(uint32 i = 0; i < treeCount; ++i)
         {
             UpdateAnimationFlag(allTrees[i]->entity);

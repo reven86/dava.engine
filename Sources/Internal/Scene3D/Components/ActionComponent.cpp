@@ -97,7 +97,7 @@ namespace DAVA
 
         StopSwitch(switchIndex);
         uint32 markedCount = 0;
-        uint32 count = actions.size();
+        uint32 count = static_cast<uint32>(actions.size());
         for ( uint32 i = 0; i < count; ++i )
         {
             Action& action = actions[i].action;
@@ -127,7 +127,7 @@ namespace DAVA
             return;
 
         uint32 markedCount = 0;
-        uint32 count = actions.size();
+        uint32 count = static_cast<uint32>(actions.size());
         for ( uint32 i = 0; i < count; ++i )
         {
             Action& action = actions[i].action;
@@ -158,7 +158,7 @@ namespace DAVA
 
         StopUser(name);
         uint32 markedCount = 0;
-        uint32 count = actions.size();
+        uint32 count = static_cast<uint32>(actions.size());
         for (uint32 i = 0; i < count; ++i)
         {
             Action& action = actions[i].action;
@@ -197,7 +197,7 @@ namespace DAVA
 			entity->GetScene()->actionSystem->UnWatch(this);
 		}
 		
-		uint32 count = actions.size();
+		uint32 count = static_cast<uint32>(actions.size());
 		for(uint32 i = 0; i < count; ++i)
 		{
 			actions[i].active = false;
@@ -209,7 +209,7 @@ namespace DAVA
 	void ActionComponent::StopSwitch(int32 switchIndex)
 	{
 		uint32 markedCount = 0;
-		uint32 count = actions.size();
+		uint32 count = static_cast<uint32>(actions.size());
 		for(uint32 i = 0; i < count; ++i)
 		{
             Action& action = actions[i].action;
@@ -239,7 +239,7 @@ namespace DAVA
     void ActionComponent::StopUser(const FastName& name)
     {
         uint32 markedCount = 0;
-        uint32 count = actions.size();
+        uint32 count = static_cast<uint32>(actions.size());
         for ( uint32 i = 0; i < count; ++i )
         {
             Action& action = actions[i].action;
@@ -291,7 +291,7 @@ namespace DAVA
 		
 		uint32 activeActionCount = 0;
         uint32 markedCount = 0;
-		uint32 count = actions.size();
+		uint32 count = static_cast<uint32>(actions.size());
 		for(uint32 i = 0; i < count; ++i)
 		{
 			if(actions[i].active)
@@ -323,7 +323,7 @@ namespace DAVA
 	
 	uint32 ActionComponent::GetCount()
 	{
-		return actions.size();
+		return static_cast<uint32>(actions.size());
 	}
 	
 	ActionComponent::Action& ActionComponent::Get(uint32 index)
@@ -338,7 +338,7 @@ namespace DAVA
 		if(started && !allActionsActive)
 		{
 			uint32 activeActionCount = 0;
-			uint32 count = actions.size();
+			uint32 count = static_cast<uint32>(actions.size());
 			for(uint32 i = 0; i < count; ++i)
 			{
 				ActionContainer& container = actions[i];
@@ -377,7 +377,7 @@ namespace DAVA
 		ActionComponent* actionComponent = new ActionComponent();
 		actionComponent->SetEntity(toEntity);
 		
-		uint32 count = actions.size();
+		uint32 count = static_cast<uint32>(actions.size());
 		actionComponent->actions.resize(count);
 		for(uint32 i = 0; i < count; ++i)
 		{
@@ -396,7 +396,7 @@ namespace DAVA
 		
 		if(NULL != archive)
 		{
-			uint32 count = actions.size();
+			uint32 count = static_cast<uint32>(actions.size());
 			archive->SetUInt32("ac.actionCount", count);
 			
 			for(uint32 i = 0; i < count; ++i)

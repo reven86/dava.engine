@@ -102,7 +102,6 @@ const FastName NMaterial::PARAM_RCP_SCREEN_SIZE("rcpScreenSize");
 const FastName NMaterial::PARAM_SCREEN_OFFSET("screenOffset");
 
 const FastName NMaterial::FLAG_VERTEXFOG = FastName("VERTEX_FOG");
-const FastName NMaterial::FLAG_FOG_EXP = FastName("FOG_EXP");
 const FastName NMaterial::FLAG_FOG_LINEAR = FastName("FOG_LINEAR");
 const FastName NMaterial::FLAG_FOG_HALFSPACE = FastName("FOG_HALFSPACE");
 const FastName NMaterial::FLAG_FOG_HALFSPACE_LINEAR = FastName("FOG_HALFSPACE_LINEAR");
@@ -115,12 +114,16 @@ const FastName NMaterial::FLAG_TILED_DECAL_MASK = FastName("TILED_DECAL_MASK");
 const FastName NMaterial::FLAG_FLATCOLOR = FastName("FLATCOLOR");
 const FastName NMaterial::FLAG_DISTANCEATTENUATION = FastName("DISTANCE_ATTENUATION");
 const FastName NMaterial::FLAG_SPECULAR = FastName("SPECULAR");
+const FastName NMaterial::FLAG_SEPARATE_NORMALMAPS = FastName("SEPARATE_NORMALMAPS");
 
 const FastName NMaterial::FLAG_SPHERICAL_LIT = FastName("SPHERICAL_LIT");
 
 const FastName NMaterial::FLAG_TANGENT_SPACE_WATER_REFLECTIONS = FastName("TANGENT_SPACE_WATER_REFLECTIONS");
 
 const FastName NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL = FastName("DEBUG_UNITY_Z_NORMAL");
+const FastName NMaterial::FLAG_DEBUG_Z_NORMAL_SCALE = FastName("DEBUG_Z_NORMAL_SCALE");
+const FastName NMaterial::FLAG_DEBUG_NORMAL_ROTATION = FastName("DEBUG_NORMAL_ROTATION");
+
 
 const FastName NMaterial::FLAG_SKINNING = FastName("SKINNING");
 
@@ -147,7 +150,9 @@ static FastName RUNTIME_ONLY_FLAGS[] =
 	NMaterial::FLAG_TEXTUREONLY,
 	NMaterial::FLAG_SETUPLIGHTMAP,
 
-    NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL,    
+    NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL,
+    NMaterial::FLAG_DEBUG_Z_NORMAL_SCALE,
+    NMaterial::FLAG_DEBUG_NORMAL_ROTATION,
 	
 	NMaterial::FLAG_VIEWALBEDO,
 	NMaterial::FLAG_VIEWAMBIENT,
@@ -500,7 +505,7 @@ void NMaterial::Load(KeyedArchive * archive,
 
 		    const VariantType* propVariant = it->second;
 		    DVASSERT(VariantType::TYPE_BYTE_ARRAY == propVariant->type);
-		    DVASSERT(propVariant->AsByteArraySize() >= (sizeof(uint32) +sizeof(uint32)));
+		    DVASSERT(propVariant->AsByteArraySize() >= static_cast<int32>(sizeof(uint32) +sizeof(uint32)));
 		
 		    const uint8* ptr = propVariant->AsByteArray();
 		
@@ -864,7 +869,7 @@ const FastName& NMaterial::GetTextureName(uint32 index) const
 
 uint32 NMaterial::GetTextureCount() const
 {
-	return textures.size();
+	return static_cast<uint32>(textures.size());
 }
 
 void NMaterial::SetPropertyValue(const FastName & keyName,
