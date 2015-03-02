@@ -537,14 +537,21 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData * data, Qt::DropAction ac
 							break;
 						}
                         
-                        //5. disabled drop waypoints to different pathes
-                        if(entity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT) || entity->GetComponent(DAVA::Component::PATH_COMPONENT))
+                        // 5. or we are dropping waypoint outside of its path
+                        if(entity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT))
                         {
                             if(entity->GetParent() != targetEntity)
                             {
                                 ret = false;
                                 break;
                             }
+                        }
+
+                        // 6. or we are dropping path inside of another path
+                        if (entity->GetComponent(DAVA::Component::PATH_COMPONENT) && targetEntity && targetEntity->GetComponent(DAVA::Component::PATH_COMPONENT))
+                        {
+                            ret = false;
+                            break;
                         }
 					}
 				}

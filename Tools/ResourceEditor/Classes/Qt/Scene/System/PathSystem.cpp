@@ -78,6 +78,7 @@ PathSystem::PathSystem(DAVA::Scene * scene)
 {
     pathDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::RenderStateData::STATE_COLORMASK_ALL |
                                                                           DAVA::RenderStateData::STATE_DEPTH_TEST);
+    sceneEditor = static_cast<SceneEditor2 *>(GetScene());
 }
 
 PathSystem::~PathSystem()
@@ -114,6 +115,9 @@ void PathSystem::AddEntity(DAVA::Entity * entity)
             props->DeleteKey(PATH_COLOR_PROP_NAME);
         }
     }
+
+    if (isEditingEnabled)
+        ExpandPathEntity(entity);
 }
 
 void PathSystem::RemoveEntity(DAVA::Entity * entity)
@@ -201,7 +205,6 @@ void PathSystem::DrawInViewOnlyMode()
 {
     RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
 
-    SceneEditor2 *sceneEditor = GetSceneEditor();
     EntityGroup gruop = sceneEditor->selectionSystem->GetSelection();
 
     const DAVA::float32 boxScale = SettingsManager::GetValue(Settings::Scene_DebugBoxWaypointScale).AsFloat();
@@ -255,14 +258,8 @@ void PathSystem::DrawArrow(const DAVA::Vector3 & start, const DAVA::Vector3 & fi
     RenderHelper::Instance()->DrawArrow(start, finish, (finish - start).Length() / 4.f, 7.f, pathDrawState);
 }
 
-SceneEditor2* PathSystem::GetSceneEditor() const
-{
-    return static_cast<SceneEditor2 *>(GetScene());
-}
-
 void PathSystem::Process(DAVA::float32 timeElapsed)
 {
-    SceneEditor2 *sceneEditor = GetSceneEditor();
     const EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
     if(currentSelection != selection)
     {
@@ -322,7 +319,7 @@ void PathSystem::ProcessCommand(const Command2 *command, bool redo)
         }
     }
     
-    //Enable system without runnig commands
+    //Enable system without running commands
     if(CMDID_COLLAPSE_PATH == commandId)
     {
         isEditingEnabled = !redo;
@@ -371,25 +368,14 @@ const DAVA::Color & PathSystem::GetNextPathColor() const
 
 void PathSystem::EnablePathEdit(bool enable)
 {
-    SceneEditor2 *sceneEditor = GetSceneEditor();
-    DVASSERT(sceneEditor);
-
     isEditingEnabled = enable;
     if(isEditingEnabled)
     {
         sceneEditor->BeginBatch("Expand pathes to entities");
 
-        const DAVA::uint32 parentsCount = pathes.size();
-        for(DAVA::uint32 p = 0; p < parentsCount; ++p)
+        for (auto path : pathes)
         {
-            DAVA::Entity * pathParent = pathes[p];
-            DAVA::uint32 pathComponentCount = pathParent->GetComponentCount(DAVA::Component::PATH_COMPONENT);
-            for (DAVA::uint32 i=0; i<pathComponentCount; ++i)
-            {
-                DAVA::PathComponent* pathComponent = static_cast<DAVA::PathComponent*>(pathParent->GetComponent(DAVA::Component::PATH_COMPONENT,i));
-                DVASSERT(pathComponent);
-                sceneEditor->Exec(new ExpandPathCommand(pathComponent));
-            }
+            ExpandPathEntity(path);
         }
 
         sceneEditor->EndBatch();
@@ -398,20 +384,34 @@ void PathSystem::EnablePathEdit(bool enable)
     {
         sceneEditor->BeginBatch("Collapse entities to pathes");
 
-        const DAVA::uint32 parentsCount = pathes.size();
-        for(DAVA::uint32 p = 0; p < parentsCount; ++p)
+        for (auto path : pathes)
         {
-            DAVA::Entity * pathParent = pathes[p];
-            DAVA::uint32 pathComponentCount = pathParent->GetComponentCount(DAVA::Component::PATH_COMPONENT);
-            for (DAVA::uint32 i=0; i<pathComponentCount; ++i)
-            {
-                DAVA::PathComponent* pathComponent = static_cast<DAVA::PathComponent*>(pathParent->GetComponent(DAVA::Component::PATH_COMPONENT,i));
-                DVASSERT(pathComponent);
-                sceneEditor->Exec(new CollapsePathCommand(pathComponent));
-            }
+            CollapsePathEntity(path);
         }
 
         sceneEditor->EndBatch();
+    }
+}
+
+void PathSystem::ExpandPathEntity(const DAVA::Entity* pathEntity)
+{
+    DAVA::uint32 pathComponentCount = pathEntity->GetComponentCount(DAVA::Component::PATH_COMPONENT);
+    for (DAVA::uint32 i = 0; i < pathComponentCount; ++i)
+    {
+        DAVA::PathComponent* pathComponent = static_cast<DAVA::PathComponent*>(pathEntity->GetComponent(DAVA::Component::PATH_COMPONENT, i));
+        DVASSERT(pathComponent);
+        sceneEditor->Exec(new ExpandPathCommand(pathComponent));
+    }
+}
+
+void PathSystem::CollapsePathEntity(const DAVA::Entity* pathEntity)
+{
+    DAVA::uint32 pathComponentCount = pathEntity->GetComponentCount(DAVA::Component::PATH_COMPONENT);
+    for (DAVA::uint32 i = 0; i < pathComponentCount; ++i)
+    {
+        DAVA::PathComponent* pathComponent = static_cast<DAVA::PathComponent*>(pathEntity->GetComponent(DAVA::Component::PATH_COMPONENT, i));
+        DVASSERT(pathComponent);
+        sceneEditor->Exec(new CollapsePathCommand(pathComponent));
     }
 }
 

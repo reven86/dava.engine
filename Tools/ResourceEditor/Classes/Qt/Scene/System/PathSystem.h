@@ -72,9 +72,11 @@ protected:
     DAVA::FastName GeneratePathName() const;
     const DAVA::Color & GetNextPathColor() const;
 
-    SceneEditor2* GetSceneEditor() const;
-    
-    
+    void ExpandPathEntity(const DAVA::Entity*);
+    void CollapsePathEntity(const DAVA::Entity*);
+
+    SceneEditor2* sceneEditor;
+
     DAVA::UniqueHandle pathDrawState;
     
     DAVA::Vector<DAVA::Entity *> pathes;
