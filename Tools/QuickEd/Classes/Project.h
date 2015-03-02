@@ -1,5 +1,5 @@
-#ifndef __UI_EDITOR_PROJECT_H__
-#define __UI_EDITOR_PROJECT_H__
+#ifndef QUICKED__PROJECT_H__
+#define QUICKED__PROJECT_H__
 
 #include <QObject>
 #include "DAVAEngine.h"
@@ -43,4 +43,4 @@ private:
 
 };
 
-#endif // __UI_EDITOR_PROJECT_H__
+#endif // QUICKED__PROJECT_H__

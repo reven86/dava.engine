@@ -17,7 +17,7 @@ BaseController::BaseController(QObject *parent)
     , currentIndex(-1)
 {
     mainWindow.CreateUndoRedoActions(undoGroup);
-    connect(&mainWindow, &MainWindow::TabClosed, this, &BaseController::CloseScene);
+    connect(&mainWindow, &MainWindow::TabClosed, this, &BaseController::CloseDocument);
     connect(mainWindow.GetPackageWidget(), &PackageWidget::SelectionControlChanged, this, &BaseController::OnSelectionControlChanged);
     connect(mainWindow.GetPackageWidget(), &PackageWidget::SelectionRootControlChanged, this, &BaseController::OnSelectionRootControlChanged);
     connect(&mainWindow, &MainWindow::CloseProject, this, &BaseController::CloseProject);
@@ -74,7 +74,7 @@ void BaseController::RecentMenu(QAction *recentProjectAction)
     OpenProject(projectPath);
 }
 
-int BaseController::CreateScene(PackageNode *package)
+int BaseController::CreateDocument(PackageNode *package)
 {
     std::shared_ptr<Document> document(new Document(&project, package, this));
     //TODO : implement this to Add Document
@@ -90,7 +90,7 @@ void BaseController::CloseProject()
 {
     for (int i = 0; i < documents.size(); i++)
     {
-        CloseScene(i);
+        CloseDocument(i);
     }
 }
 
@@ -145,7 +145,7 @@ void BaseController::OnAllControlDeselectedInEditor()
     documents[CurrentIndex()]->OnAllControlDeselectedInEditor();
 }
 
-void BaseController::OnOpenPackageFile(QString path)
+void BaseController::OnOpenPackageFile(const QString &path)
 {
     if (!path.isEmpty())
     {
@@ -155,14 +155,14 @@ void BaseController::OnOpenPackageFile(QString path)
             DAVA::RefPtr<PackageNode> package = project.OpenPackage(path);
             if (nullptr != package)
             {
-                index = CreateScene(package.Get());
+                index = CreateDocument(package.Get());
             }
         }
         mainWindow.SetCurrentTab(index);
     }
 }
 
-void BaseController::CloseScene(int index)
+void BaseController::CloseDocument(int index)
 {
     DVASSERT(index >= 0);
     DVASSERT(index < Count()); 

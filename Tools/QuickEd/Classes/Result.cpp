@@ -1,6 +1,6 @@
 #include "result.h"
 
-Result::Result(ResultType type, QString error)
+Result::Result(ResultType type, const QString &error)
 {
     if (type != Result::Count)
     {
@@ -9,7 +9,12 @@ Result::Result(ResultType type, QString error)
     }
 }
 
-Result Result::addError(Result::ResultType type, QString errorText)
+Result::operator bool() const
+{
+    return types.isEmpty() || types.contains(StupidError) || types.contains(CriticalError);
+}
+
+Result Result::addError(Result::ResultType type, const QString &errorText)
 {
     types << type;
     errors << errorText;
