@@ -140,9 +140,11 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
     DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
 
     // Delayed initialization throught event loop
-    QObject::connect( glWidget, &DavaGLWidget::Initialized, &a, &QApplication::quit );
     glWidget->show();
+#ifdef Q_OS_WIN
+    QObject::connect( glWidget, &DavaGLWidget::Initialized, &a, &QApplication::quit );
     a.exec();
+#endif
     glWidget->hide();
 
     RenderManager::Instance()->Init( 0, 0 );

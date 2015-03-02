@@ -107,7 +107,7 @@ void FrameworkLoop::ProcessFrame()
     if ( glWidget != nullptr )
     {
         QEvent updateEvent( QEvent::UpdateRequest );
-        QApplication::sendEvent( glWidget, &updateEvent );
+        QApplication::sendEvent( glWidget->GetGLWindow(), &updateEvent );
     }
 }
 
