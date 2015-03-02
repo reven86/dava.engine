@@ -973,8 +973,6 @@
 		50F706CC1A93C126009506C9 /* MMNetProto.h in Headers */ = {isa = PBXBuildFile; fileRef = 50F706C71A93C126009506C9 /* MMNetProto.h */; };
 		50F706CD1A93C126009506C9 /* MMNetServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50F706C81A93C126009506C9 /* MMNetServer.cpp */; };
 		50F706CE1A93C126009506C9 /* MMNetServer.h in Headers */ = {isa = PBXBuildFile; fileRef = 50F706C91A93C126009506C9 /* MMNetServer.h */; };
-		50FB9D541A876B0900BDB8A2 /* MemProfService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D521A876B0900BDB8A2 /* MemProfService.cpp */; };
-		50FB9D551A876B0900BDB8A2 /* MemProfService.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D531A876B0900BDB8A2 /* MemProfService.h */; };
 		50FB9DA31A92446700BDB8A2 /* AllocPools.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D991A92446700BDB8A2 /* AllocPools.h */; };
 		50FB9DA41A92446700BDB8A2 /* AllocThunk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D9A1A92446700BDB8A2 /* AllocThunk.cpp */; };
 		50FB9DA51A92446700BDB8A2 /* AllocThunk.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D9B1A92446700BDB8A2 /* AllocThunk.h */; };
@@ -2906,8 +2904,6 @@
 		50F706C71A93C126009506C9 /* MMNetProto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMNetProto.h; sourceTree = "<group>"; };
 		50F706C81A93C126009506C9 /* MMNetServer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MMNetServer.cpp; sourceTree = "<group>"; };
 		50F706C91A93C126009506C9 /* MMNetServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMNetServer.h; sourceTree = "<group>"; };
-		50FB9D521A876B0900BDB8A2 /* MemProfService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemProfService.cpp; sourceTree = "<group>"; };
-		50FB9D531A876B0900BDB8A2 /* MemProfService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemProfService.h; sourceTree = "<group>"; };
 		50FB9D991A92446700BDB8A2 /* AllocPools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocPools.h; sourceTree = "<group>"; };
 		50FB9D9A1A92446700BDB8A2 /* AllocThunk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllocThunk.cpp; sourceTree = "<group>"; };
 		50FB9D9B1A92446700BDB8A2 /* AllocThunk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocThunk.h; sourceTree = "<group>"; };
@@ -3974,8 +3970,6 @@
 				50C16DA01A52D7B9003C307A /* LogConsumer.h */,
 				50C16DA11A52D7B9003C307A /* NetLogger.cpp */,
 				50C16DA21A52D7B9003C307A /* NetLogger.h */,
-				50FB9D521A876B0900BDB8A2 /* MemProfService.cpp */,
-				50FB9D531A876B0900BDB8A2 /* MemProfService.h */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -5778,7 +5772,6 @@
 				E8989DD416BD24E500732C04 /* ObjectFactory.h in Headers */,
 				50C16DB31A52D7B9003C307A /* TCPAcceptorTemplate.h in Headers */,
 				E8989DD616BD24E500732C04 /* Observable.h in Headers */,
-				50FB9D551A876B0900BDB8A2 /* MemProfService.h in Headers */,
 				E8989DD716BD24E500732C04 /* Observer.h in Headers */,
 				E8989DD916BD24E500732C04 /* Radix.h in Headers */,
 				E8989DDA16BD24E500732C04 /* RefPtr.h in Headers */,
@@ -7185,7 +7178,6 @@
 				50C16DCD1A52D7B9003C307A /* TCPServerTransport.cpp in Sources */,
 				A6D82798187716F30006A5DD /* Color.cpp in Sources */,
 				E8989D9C16BD24E500732C04 /* Animation.cpp in Sources */,
-				50FB9D541A876B0900BDB8A2 /* MemProfService.cpp in Sources */,
 				E8989D9E16BD24E500732C04 /* AnimationManager.cpp in Sources */,
 				E8989DA016BD24E500732C04 /* BezierSplineAnimation.cpp in Sources */,
 				E8989DA216BD24E500732C04 /* Interpolation.cpp in Sources */,

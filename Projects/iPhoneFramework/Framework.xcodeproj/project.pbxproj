@@ -954,15 +954,12 @@
 		50C7D5FC186082B100D8936D /* StaticOcclusionComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50C7D5FA186082B100D8936D /* StaticOcclusionComponent.cpp */; };
 		50C7D5FD186082B100D8936D /* StaticOcclusionComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 50C7D5FB186082B100D8936D /* StaticOcclusionComponent.h */; };
 		50C7D604186082D600D8936D /* StaticOcclusionRenderPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50C7D600186082D600D8936D /* StaticOcclusionRenderPass.cpp */; };
-		50F706B81A93B224009506C9 /* MemProfServiceTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 50F706B21A93B224009506C9 /* MemProfServiceTypes.h */; };
 		50F706B91A93B224009506C9 /* MMNetClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50F706B31A93B224009506C9 /* MMNetClient.cpp */; };
 		50F706BA1A93B224009506C9 /* MMNetClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 50F706B41A93B224009506C9 /* MMNetClient.h */; };
 		50F706BB1A93B224009506C9 /* MMNetProto.h in Headers */ = {isa = PBXBuildFile; fileRef = 50F706B51A93B224009506C9 /* MMNetProto.h */; };
 		50F706BC1A93B224009506C9 /* MMNetServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50F706B61A93B224009506C9 /* MMNetServer.cpp */; };
 		50F706BD1A93B224009506C9 /* MMNetServer.h in Headers */ = {isa = PBXBuildFile; fileRef = 50F706B71A93B224009506C9 /* MMNetServer.h */; };
 		50F706BF1A93B235009506C9 /* SimpleEchoServer.h in Headers */ = {isa = PBXBuildFile; fileRef = 50F706BE1A93B235009506C9 /* SimpleEchoServer.h */; };
-		50FB9D5A1A8A015300BDB8A2 /* MemProfService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D581A8A015300BDB8A2 /* MemProfService.cpp */; };
-		50FB9D5B1A8A015300BDB8A2 /* MemProfService.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D591A8A015300BDB8A2 /* MemProfService.h */; };
 		50FB9DBB1A925A2D00BDB8A2 /* AllocPools.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9DB11A925A2D00BDB8A2 /* AllocPools.h */; };
 		50FB9DBC1A925A2D00BDB8A2 /* AllocThunk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9DB21A925A2D00BDB8A2 /* AllocThunk.cpp */; };
 		50FB9DBD1A925A2D00BDB8A2 /* AllocThunk.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9DB31A925A2D00BDB8A2 /* AllocThunk.h */; };
@@ -2069,15 +2066,12 @@
 		50C7D5FF186082D600D8936D /* StaticOcclusion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusion.h; sourceTree = "<group>"; };
 		50C7D600186082D600D8936D /* StaticOcclusionRenderPass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusionRenderPass.cpp; sourceTree = "<group>"; };
 		50C7D601186082D600D8936D /* StaticOcclusionRenderPass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusionRenderPass.h; sourceTree = "<group>"; };
-		50F706B21A93B224009506C9 /* MemProfServiceTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemProfServiceTypes.h; sourceTree = "<group>"; };
 		50F706B31A93B224009506C9 /* MMNetClient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MMNetClient.cpp; sourceTree = "<group>"; };
 		50F706B41A93B224009506C9 /* MMNetClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMNetClient.h; sourceTree = "<group>"; };
 		50F706B51A93B224009506C9 /* MMNetProto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMNetProto.h; sourceTree = "<group>"; };
 		50F706B61A93B224009506C9 /* MMNetServer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MMNetServer.cpp; sourceTree = "<group>"; };
 		50F706B71A93B224009506C9 /* MMNetServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMNetServer.h; sourceTree = "<group>"; };
 		50F706BE1A93B235009506C9 /* SimpleEchoServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimpleEchoServer.h; sourceTree = "<group>"; };
-		50FB9D581A8A015300BDB8A2 /* MemProfService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemProfService.cpp; sourceTree = "<group>"; };
-		50FB9D591A8A015300BDB8A2 /* MemProfService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemProfService.h; sourceTree = "<group>"; };
 		50FB9DB11A925A2D00BDB8A2 /* AllocPools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocPools.h; sourceTree = "<group>"; };
 		50FB9DB21A925A2D00BDB8A2 /* AllocThunk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllocThunk.cpp; sourceTree = "<group>"; };
 		50FB9DB31A925A2D00BDB8A2 /* AllocThunk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocThunk.h; sourceTree = "<group>"; };
@@ -3116,14 +3110,11 @@
 			isa = PBXGroup;
 			children = (
 				50F706BE1A93B235009506C9 /* SimpleEchoServer.h */,
-				50F706B21A93B224009506C9 /* MemProfServiceTypes.h */,
 				50F706B31A93B224009506C9 /* MMNetClient.cpp */,
 				50F706B41A93B224009506C9 /* MMNetClient.h */,
 				50F706B51A93B224009506C9 /* MMNetProto.h */,
 				50F706B61A93B224009506C9 /* MMNetServer.cpp */,
 				50F706B71A93B224009506C9 /* MMNetServer.h */,
-				50FB9D581A8A015300BDB8A2 /* MemProfService.cpp */,
-				50FB9D591A8A015300BDB8A2 /* MemProfService.h */,
 				50194D9A1A52D92600557DAB /* LogConsumer.cpp */,
 				50194D9B1A52D92600557DAB /* LogConsumer.h */,
 				50194D9C1A52D92600557DAB /* NetLogger.cpp */,
@@ -4937,7 +4928,6 @@
 				E8B3CABB16B9326E002BD35F /* Observer.h in Headers */,
 				E8B3CABD16B9326E002BD35F /* Radix.h in Headers */,
 				84D18BFF19201BEF009E3E90 /* ImageFormatInterface.h in Headers */,
-				50F706B81A93B224009506C9 /* MemProfServiceTypes.h in Headers */,
 				E8B3CABE16B9326E002BD35F /* RefPtr.h in Headers */,
 				E8B3CABF16B9326E002BD35F /* ScopedPtr.h in Headers */,
 				B79723F01A125F96009421F3 /* BiDiHelper.h in Headers */,
@@ -5005,7 +4995,6 @@
 				E8B3CB3916B9326E002BD35F /* Accelerometer.h in Headers */,
 				E8B3CB3F16B9326E002BD35F /* InputSystem.h in Headers */,
 				0264E3091A42F79500BD7279 /* JobManager.h in Headers */,
-				50FB9D5B1A8A015300BDB8A2 /* MemProfService.h in Headers */,
 				E8B3CB4116B9326E002BD35F /* KeyboardDevice.h in Headers */,
 				E8B3CB4316B9326E002BD35F /* AABBox2.h in Headers */,
 				D7FEF15F19864E5C00B2C7AF /* ZLibStream.h in Headers */,
@@ -5973,7 +5962,6 @@
 				5016207D1A61693A00E5A914 /* Announcer.cpp in Sources */,
 				84D18BFB19201BEF009E3E90 /* Image.cpp in Sources */,
 				E8B3CB3816B9326E002BD35F /* Accelerometer.cpp in Sources */,
-				50FB9D5A1A8A015300BDB8A2 /* MemProfService.cpp in Sources */,
 				64493E0A19476F4700AB2715 /* VegetationGeometry.cpp in Sources */,
 				E8B3CB3E16B9326E002BD35F /* InputSystem.cpp in Sources */,
 				E8B3CB4016B9326E002BD35F /* KeyboardDevice.cpp in Sources */,

@@ -426,8 +426,6 @@
     <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPClientTransport.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\ServiceRegistrar.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MemProfService.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MemProfServiceTypes.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetClient.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetProto.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetServer.h" />
@@ -930,7 +928,6 @@
     <ClCompile Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\ServiceRegistrar.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Services\LogConsumer.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Network\Services\MemProfService.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetClient.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetServer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Services\NetLogger.cpp" />
