@@ -111,7 +111,7 @@ File * File::CreateFromSystemPath(const FilePath &filename, uint32 attributes)
 
 		if (!file) return NULL;
 		fseek(file, 0, SEEK_END);
-		size = ftell(file);
+		size = static_cast<uint32>(ftell(file));
         fseek(file, 0, SEEK_SET);
     }
 	else if ((attributes & File::CREATE) && (attributes & File::WRITE))
@@ -124,7 +124,7 @@ File * File::CreateFromSystemPath(const FilePath &filename, uint32 attributes)
 		file = fopen(filename.GetAbsolutePathname().c_str(),"ab");
 		if (!file)return NULL;
 		fseek(file, 0, SEEK_END);
-		size = ftell(file);
+		size = static_cast<uint32>(ftell(file));
 	}
 	else 
 	{
@@ -227,29 +227,74 @@ uint32 File::ReadString(String & destinationString)
 uint32 File::ReadLine(void * pointerToData, uint32 bufferSize)
 {
 	uint8 *inPtr = (uint8*)pointerToData;
-	while(!IsEof())
+    while (0 < bufferSize && !IsEof())
 	{
-		uint8 nextChar;
-		uint32 actuallyRead = Read(&nextChar, 1);
-        if(actuallyRead != 1)break;
-        
-		if(nextChar == '\n')break;
-		if(nextChar == 0)break;
-
-		if(nextChar == '\r')
-		{
-			if(Read(&nextChar, 1) && nextChar != '\n')
-			{
-				Seek(-1, File::SEEK_FROM_CURRENT);
-			}
-			break;
-		}
-		*inPtr = nextChar;
-		inPtr++;
+        uint8 nextChar;
+        if (GetNextChar(&nextChar))
+        {
+            *inPtr = nextChar;
+            inPtr++;
+            bufferSize--;
+            DVASSERT_MSG(0 < bufferSize, "Small buffer!!!");
+        }
+        else
+        {
+            break;
+        }
 	}
 	*inPtr = 0;
 
 	return (uint32)(inPtr - (uint8*)pointerToData);
+}
+
+String File::ReadLine()
+{
+    String destinationString;
+    while (!IsEof())
+    {
+        uint8 nextChar;
+        if (GetNextChar(&nextChar))
+        {
+            destinationString += nextChar;
+        }
+        else
+        {
+            break;
+        }
+    }
+    return destinationString;
+}
+
+
+bool File::GetNextChar(uint8 *nextChar)
+{
+    uint32 actuallyRead = Read(nextChar, 1);
+    if (actuallyRead != 1)
+    {
+        //seems IsEof()
+        return false;
+    }
+
+    if (0 == *nextChar)
+    {
+        // 0 terminated string
+        return false;
+    }
+    else if ('\r' == *nextChar)
+    {
+        // we don't need to return \r as a charracter
+        return GetNextChar(nextChar);
+    }
+    else if ('\n' == *nextChar)
+    {
+        // there was a last charracter in string ended by \n, then we cannot read more
+        return false;
+    }
+    else
+    {
+        // some regular charracter readed
+        return true;
+    }
 }
 
 uint32 File::GetPos()

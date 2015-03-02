@@ -1480,7 +1480,7 @@ SWIGINTERN int SWIG_Lua_iterate_bases(lua_State *L, swig_type_info * SWIGUNUSED 
       for(i=0;i<bases_count;i++) {
         /* Iteration through class bases */
 #if (SWIG_LUA_TARGET == SWIG_LUA_FLAVOR_LUA)
-        lua_rawgeti(L,bases_table,i+1);
+        lua_rawgeti(L,bases_table,static_cast<int>(i+1));
         base_swig_type = 0;
         if(lua_isnil(L,-1)) {
           valid = 0;

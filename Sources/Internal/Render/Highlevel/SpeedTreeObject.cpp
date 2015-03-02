@@ -133,7 +133,7 @@ void SpeedTreeObject::Save(KeyedArchive *archive, SerializationContext *serializ
 {
     RenderObject::Save(archive, serializationContext);
 
-    int32 shCount = sphericalHarmonics.size();
+    int32 shCount = static_cast<int32>(sphericalHarmonics.size());
     if(shCount)
     {
         archive->SetInt32("sto.SHBasisCount", shCount);

@@ -1756,7 +1756,7 @@ void UIControl::SetAndApplyBottomAlignEnabled(bool isEnabled)
 /* Components */
 inline uint32 UIControl::GetComponentCount() const
 {
-    return components.size();
+    return static_cast<uint32>(components.size());
 }
 
 inline uint32 UIControl::GetComponentCount(uint32 componentType) const
