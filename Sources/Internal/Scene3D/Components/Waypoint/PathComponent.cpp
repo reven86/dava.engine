@@ -55,6 +55,7 @@ PathComponent::Waypoint::Waypoint(const Waypoint& cp)
     name = cp.name;
     position = cp.position;
     edges = cp.edges;
+    isStarting = cp.isStarting;
     SetProperties(cp.GetProperties());
 }
 
@@ -185,6 +186,7 @@ Component * PathComponent::Clone(Entity * toEntity)
 
             newWaypoint->name = waypoint->name;
             newWaypoint->position = waypoint->position;
+            newWaypoint->isStarting = waypoint->isStarting;
             newWaypoint->SetProperties(waypoint->GetProperties());
 
             const uint32 edgesCount = static_cast<uint32>(waypoint->edges.size());
@@ -230,6 +232,7 @@ void PathComponent::Serialize(KeyedArchive *archive, SerializationContext *seria
 
                 wpArchieve->SetFastName("name", wp->name);
                 wpArchieve->SetVector3("position", wp->position);
+                wpArchieve->SetBool("isStarting", wp->isStarting);
                 if(wp->GetProperties())
                 {
                     wpArchieve->SetArchive("properties", wp->GetProperties());
@@ -295,6 +298,8 @@ void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
     waypoints.resize(waypointCount);
     std::generate(waypoints.begin(), waypoints.end(), NewWaypoint);
 
+    bool startingWaypointExists = false;
+
     for(uint32 w = 0; w < waypointCount; ++w)
     {
         Waypoint *wp = waypoints[w];
@@ -304,6 +309,9 @@ void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
 
         wp->name = wpArchieve->GetFastName("name");
         wp->position = wpArchieve->GetVector3("position");
+        wp->isStarting = wpArchieve->GetBool("isStarting");
+        if (wp->isStarting)
+            startingWaypointExists = true;
         
         KeyedArchive *wpProperties = wpArchieve->GetArchive("properties");
         wp->SetProperties(wpProperties);
@@ -325,6 +333,11 @@ void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
             
             wp->edges.push_back(edge);
         }
+    }
+
+    if (!startingWaypointExists && waypointCount > 0)
+    {
+        waypoints[0]->isStarting = true;
     }
 }
 
@@ -381,6 +394,12 @@ PathComponent::Waypoint * PathComponent::GetWaypoint(const FastName & name)
 void PathComponent::Reset()
 {
     for_each(waypoints.begin(), waypoints.end(), SafeDelete<PathComponent::Waypoint>);
+}
+
+PathComponent::Waypoint* PathComponent::GetStartWaypoint() const
+{
+    auto found = find_if(waypoints.begin(), waypoints.end(), [](PathComponent::Waypoint* wp){return wp->IsStarting();});
+    return (found == waypoints.end() ? nullptr : *found);
 }
     
 }
