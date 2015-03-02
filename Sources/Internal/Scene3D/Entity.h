@@ -523,7 +523,7 @@ inline int32 Entity::GetChildrenCount () const
 
 inline uint32 Entity::GetComponentCount ()
 {
-    return components.size ();
+    return static_cast<uint32>(components.size ());
 }
 
 inline void Entity::UpdateFamily ()

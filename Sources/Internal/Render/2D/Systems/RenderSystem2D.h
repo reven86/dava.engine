@@ -197,8 +197,6 @@ private:
 	Rect currentClip;
 
     RenderDataObject * spriteRenderObject;
-    RenderDataStream * spriteVertexStream;
-    RenderDataStream * spriteTexCoordStream;
 
     float32 spriteTempVertices[8];
     Vector<Vector2> spriteClippedTexCoords;

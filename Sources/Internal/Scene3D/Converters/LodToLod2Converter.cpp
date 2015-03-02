@@ -92,14 +92,14 @@ bool LodToLod2Converter::MergeLod(Entity * entity)
 
         Vector<LodComponent::LodData*> lodData;
         lod->GetLodData(lodData);
-        uint32 size = lodData.size();
+        uint32 size = static_cast<uint32>(lodData.size());
 
         //search for same entity in different lods
         Set<Entity*> uniqueLodEntities;
         for (uint32 i = 0; i < size; ++i)
         {
             LodComponent::LodData * data = lodData[i];
-            uint32 entitiesCount = data->nodes.size();
+            uint32 entitiesCount = static_cast<uint32>(data->nodes.size());
             for (uint32 j = 0; j < entitiesCount; ++j)
             {
                 Entity * sourceEntity = data->nodes[j];
@@ -120,7 +120,7 @@ bool LodToLod2Converter::MergeLod(Entity * entity)
         for (uint32 i = 0; i < size; ++i)
         {
             LodComponent::LodData * data = lodData[i];
-            uint32 entitiesCount = data->nodes.size();
+            uint32 entitiesCount = static_cast<uint32>(data->nodes.size());
             for (uint32 j = 0; j < entitiesCount; ++j)
             {
                 emptyEntities++;
@@ -139,7 +139,7 @@ bool LodToLod2Converter::MergeLod(Entity * entity)
                     FindAndEraseRenderObjectsRecursive(sourceEntity, sourceRenderObjects);
                 }
 
-                uint32 sourceRenderObjectsCount = sourceRenderObjects.size();
+                uint32 sourceRenderObjectsCount = static_cast<uint32>(sourceRenderObjects.size());
                 for (uint32 j = 0; j < sourceRenderObjectsCount; ++j)
                 {
                     sourceRenderObject = sourceRenderObjects[j].second;

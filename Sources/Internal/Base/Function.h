@@ -215,48 +215,48 @@ namespace DAVA
 		FunctionBase(ClassFunctionConstType8 fn) : fnPointerHolder(fn) { invoker8 = &ClassInvokerImpl8; }
 
 		// constructors for object member functions
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType0 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker0 = &ObjectInvokerImpl0<O>; }
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType1 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker1 = &ObjectInvokerImpl1<O>; }
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType2 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker2 = &ObjectInvokerImpl2<O>; }
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType3 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker3 = &ObjectInvokerImpl3<O>; }
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType4 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker4 = &ObjectInvokerImpl4<O>; }
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType5 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker5 = &ObjectInvokerImpl5<O>; }
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType6 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker6 = &ObjectInvokerImpl6<O>; }
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType7 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker7 = &ObjectInvokerImpl7<O>; }
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType8 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker8 = &ObjectInvokerImpl8<O>; }
+		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType0 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker0 = &ObjectInvokerImpl0<O>; }
+		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType1 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker1 = &ObjectInvokerImpl1<O>; }
+		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType2 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker2 = &ObjectInvokerImpl2<O>; }
+		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType3 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker3 = &ObjectInvokerImpl3<O>; }
+		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType4 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker4 = &ObjectInvokerImpl4<O>; }
+		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType5 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker5 = &ObjectInvokerImpl5<O>; }
+		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType6 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker6 = &ObjectInvokerImpl6<O>; }
+		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType7 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker7 = &ObjectInvokerImpl7<O>; }
+		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType8 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker8 = &ObjectInvokerImpl8<O>; }
 
 		// constructors for object member const functions
-		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType0 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker0 = &ObjectInvokerImpl0<O>; }
-		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType1 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker1 = &ObjectInvokerImpl1<O>; }
-		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType2 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker2 = &ObjectInvokerImpl2<O>; }
-		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType3 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker3 = &ObjectInvokerImpl3<O>; }
-		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType4 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker4 = &ObjectInvokerImpl4<O>; }
-		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType5 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker5 = &ObjectInvokerImpl5<O>; }
-		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType6 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker6 = &ObjectInvokerImpl6<O>; }
-		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType7 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker7 = &ObjectInvokerImpl7<O>; }
-		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType8 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker8 = &ObjectInvokerImpl8<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType0 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker0 = &ObjectInvokerImpl0<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType1 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker1 = &ObjectInvokerImpl1<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType2 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker2 = &ObjectInvokerImpl2<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType3 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker3 = &ObjectInvokerImpl3<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType4 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker4 = &ObjectInvokerImpl4<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType5 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker5 = &ObjectInvokerImpl5<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType6 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker6 = &ObjectInvokerImpl6<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType7 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker7 = &ObjectInvokerImpl7<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType8 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker8 = &ObjectInvokerImpl8<O>; }
 
         // constructors for object member functions
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType0 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker0 = &ObjectInvokerImpl0<O>; }
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType1 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker1 = &ObjectInvokerImpl1<O>; }
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType2 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker2 = &ObjectInvokerImpl2<O>; }
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType3 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker3 = &ObjectInvokerImpl3<O>; }
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType4 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker4 = &ObjectInvokerImpl4<O>; }
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType5 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker5 = &ObjectInvokerImpl5<O>; }
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType6 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker6 = &ObjectInvokerImpl6<O>; }
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType7 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker7 = &ObjectInvokerImpl7<O>; }
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType8 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker8 = &ObjectInvokerImpl8<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType0 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker0 = &ObjectInvokerImpl0<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType1 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker1 = &ObjectInvokerImpl1<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType2 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker2 = &ObjectInvokerImpl2<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType3 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker3 = &ObjectInvokerImpl3<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType4 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker4 = &ObjectInvokerImpl4<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType5 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker5 = &ObjectInvokerImpl5<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType6 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker6 = &ObjectInvokerImpl6<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType7 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker7 = &ObjectInvokerImpl7<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionType8 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker8 = &ObjectInvokerImpl8<O>; }
 
         // constructors for object member const functions
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType0 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker0 = &ObjectInvokerImpl0<O>; }
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType1 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker1 = &ObjectInvokerImpl1<O>; }
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType2 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker2 = &ObjectInvokerImpl2<O>; }
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType3 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker3 = &ObjectInvokerImpl3<O>; }
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType4 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker4 = &ObjectInvokerImpl4<O>; }
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType5 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker5 = &ObjectInvokerImpl5<O>; }
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType6 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker6 = &ObjectInvokerImpl6<O>; }
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType7 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker7 = &ObjectInvokerImpl7<O>; }
-        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType8 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker8 = &ObjectInvokerImpl8<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType0 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker0 = &ObjectInvokerImpl0<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType1 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker1 = &ObjectInvokerImpl1<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType2 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker2 = &ObjectInvokerImpl2<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType3 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker3 = &ObjectInvokerImpl3<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType4 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker4 = &ObjectInvokerImpl4<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType5 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker5 = &ObjectInvokerImpl5<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType6 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker6 = &ObjectInvokerImpl6<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType7 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker7 = &ObjectInvokerImpl7<O>; }
+        template<typename O> FunctionBase(const PointerWrapper<O> &obj, typename ObjectType<O>::ObjectFunctionConstType8 fn) : fnPointerHolder(fn), objPointerHolder(obj) { invoker8 = &ObjectInvokerImpl8<O>; }
 
 		// operators
 		bool operator==(const FunctionBase &f) const { return (fnPointerHolder == f.fnPointerHolder && objPointerHolder.object == f.objPointerHolder.object);	}

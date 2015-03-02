@@ -238,7 +238,7 @@ void RenderState::Flush(RenderState * hardwareState) const
             const TextureStateData& currentTextureData = RenderManager::Instance()->GetTextureState(textureState);
             for (size_t i = 0; i < MAX_TEXTURE_COUNT; ++i)
             {
-                SetTextureLevelInHW(i, currentTextureData.textures[i]);
+                SetTextureLevelInHW(static_cast<uint32>(i), currentTextureData.textures[i]);
             }
         }
         else

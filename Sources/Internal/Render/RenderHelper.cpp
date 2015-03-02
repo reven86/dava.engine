@@ -325,7 +325,7 @@ void RenderHelper::DrawLines(const Vector<float32>& linePoints, UniqueHandle ren
     RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
 
-    RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_LINELIST, 0, linePoints.size() / 2);
+    RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_LINELIST, 0, static_cast<int32>(linePoints.size() / 2));
 }
 
 
@@ -935,7 +935,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 		
 		//draw
 		
-		int32 size = triangleIndices.size()/3;
+		int32 size = static_cast<int32>(triangleIndices.size()/3);
 		for (int i = 0; i < size; i++)
 		{
 			Vector3 p1 = points[triangleIndices[i]] + center;
@@ -1001,7 +1001,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 
 		//fill
 
-		int32 size = triangleIndices.size()/3;
+		int32 size = static_cast<int32>(triangleIndices.size()/3);
 		for (int i = 0; i < size; i++)
 		{
 			Vector3 p1 = points[triangleIndices[i]] + center;
