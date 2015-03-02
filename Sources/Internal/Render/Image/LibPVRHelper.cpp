@@ -1978,7 +1978,7 @@ bool LibPVRHelper::GetCRCFromMetaData(const PVRFile *pvrFile, uint32* outputCRC)
         
     bool crcRead = false;
         
-    uint32 metaDataCount = pvrFile->metaDatablocks.size();
+    uint32 metaDataCount = static_cast<uint32>(pvrFile->metaDatablocks.size());
     for(uint32 i = 0; i < metaDataCount; ++i)
     {
         const MetaDataBlock * block = pvrFile->metaDatablocks[i];
@@ -2220,7 +2220,7 @@ bool LibPVRHelper::WriteFileFromMipMapFiles(const FilePath & outputFilePath, con
 {
     DVASSERT(imgPaths.size());
         
-    int32 levelsCount = imgPaths.size();
+    int32 levelsCount = static_cast<int32>(imgPaths.size());
         
     Vector<PVRFile *> pvrFiles;
     pvrFiles.reserve(levelsCount);
@@ -2243,7 +2243,7 @@ bool LibPVRHelper::WriteFileFromMipMapFiles(const FilePath & outputFilePath, con
         
     uint8 * dataPtr = allCompressedData;
         
-    int32 pvrFilesCount = pvrFiles.size();
+    int32 pvrFilesCount = static_cast<int32>(pvrFiles.size());
     for(int32 i = 0; i < pvrFilesCount; ++i)
     {
         PVRFile * leveli = pvrFiles[i];
@@ -2471,9 +2471,10 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
             image->format = FORMAT_RGBA8888;
                 
             //Setup temporary variables.
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
             uint8* pTempDecompData = image->data;
             uint8* pTempCompData = (uint8*)pTextureData + GetMipMapLayerOffset(fileMipMapLevel, faceIndex, compressedHeader);
-                
+#endif
             if((FORMAT_PVR4 == formatDescriptor.formatID) || (FORMAT_PVR2 == formatDescriptor.formatID))
             {
 #if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)

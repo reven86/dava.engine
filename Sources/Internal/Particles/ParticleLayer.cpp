@@ -256,7 +256,7 @@ template <class T> void UpdatePropertyLineKeys(PropertyLine<T> * line, float32 s
 	if (!line)	
 		return;	
 	Vector<typename PropertyLine<T>::PropertyKey> &keys = line->GetValues();
-	int32 size = keys.size();		
+	int32 size = static_cast<int32>(keys.size());
 	int32 i;
 	for (i=0; i<size; ++i)
 	{
@@ -279,7 +279,7 @@ template <class T> void UpdatePropertyLineOnLoad(PropertyLine<T> * line, float32
 	if (!line)
 		return;
 	Vector<typename PropertyLine<T>::PropertyKey> &keys = line->GetValues();
-	int32 size = keys.size();		
+	int32 size = static_cast<int32>(keys.size());
 	int32 i;
 	/*drop keys before*/
 	for (i=0; i<size; ++i)
@@ -298,7 +298,7 @@ template <class T> void UpdatePropertyLineOnLoad(PropertyLine<T> * line, float32
 	}	
 	
 	/*drop keys after*/
-	size = keys.size();
+	size = static_cast<int32>(keys.size());
 	for (i=0; i<size; i++)
 	{
 		if (keys[i].t>endTime)
@@ -534,7 +534,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
              {
                  Vector3 varriationToAdd = forceVariation->GetValue(0);
                  Vector<typename PropertyLine<Vector3>::PropertyKey> &keys = force->GetValues();		                 
-                 for (int i=0, sz = keys.size(); i<sz; ++i)
+                 for (size_t i=0, sz = keys.size(); i<sz; ++i)
                  {			
                      keys[i].value+=varriationToAdd;
                  }
@@ -675,7 +675,7 @@ void ParticleLayer::UpdateSizeLine(PropertyLine<Vector2> *line, bool rescaleSize
 	if ((!rescaleSize)&&(!swapXY)) return; //nothing to update
     
 	Vector<typename PropertyLine<Vector2>::PropertyKey> &keys = PropertyLineHelper::GetValueLine(line)->GetValues();		
-	for (int i=0, sz = keys.size(); i<sz; ++i)
+	for (size_t i=0, sz = keys.size(); i<sz; ++i)
 	{			
 		if (rescaleSize)
 		{
@@ -903,8 +903,8 @@ void ParticleLayer::FillSizeOverlifeXY(RefPtr< PropertyLine<float32> > sizeOverL
 
 	RefPtr<PropertyLineKeyframes<Vector2> > sizeOverLifeXYKeyframes =
 		RefPtr<PropertyLineKeyframes<Vector2> >(new PropertyLineKeyframes<Vector2>);
-	int32 propsCount = wrappedPropertyValues.size();
-	for (int32 i = 0; i < propsCount; i ++)
+	size_t propsCount = wrappedPropertyValues.size();
+	for (size_t i = 0; i < propsCount; i ++)
 	{
 		Vector2 curValue(wrappedPropertyValues[i].v, wrappedPropertyValues[i].v);
 		sizeOverLifeXYKeyframes->AddValue(wrappedPropertyValues[i].t, curValue);

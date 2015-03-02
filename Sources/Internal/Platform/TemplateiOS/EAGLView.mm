@@ -330,7 +330,7 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 //			newTouch.point.y = p.y;
 //		}
 		newTouch.timestamp = curTouch.timestamp;
-		newTouch.tapCount = curTouch.tapCount;
+        newTouch.tapCount = static_cast<DAVA::int32>(curTouch.tapCount);
 		
 		switch(curTouch.phase)
 		{

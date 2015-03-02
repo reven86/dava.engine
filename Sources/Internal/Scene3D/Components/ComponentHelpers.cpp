@@ -53,6 +53,7 @@
 #include "Scene3D/Components/WindComponent.h"
 #include "Scene3D/Components/WaveComponent.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
+#include "Scene3D/Components/Waypoint/EdgeComponent.h"
 #include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
 
 namespace DAVA
@@ -447,7 +448,32 @@ PathComponent * GetPathComponent(const Entity *fromEntity)
     }
 
         return nullptr;
+}
+
+WaypointComponent * GetWaypointComponent(const Entity *fromEntity)
+{
+    if (fromEntity)
+    {
+        return (WaypointComponent*)fromEntity->GetComponent(Component::WAYPOINT_COMPONENT);
     }
+
+    return NULL;
+}
+
+EdgeComponent* FindEdgeComponent(const Entity *fromEntity, const Entity *toEntity)
+{
+    uint32 count = fromEntity->GetComponentCount(Component::EDGE_COMPONENT);
+    for (uint32 i = 0; i < count; ++i)
+    {
+        EdgeComponent* edge = static_cast<EdgeComponent*>(fromEntity->GetComponent(Component::EDGE_COMPONENT, i));
+        DVASSERT(edge);
+        if (edge->GetNextEntity() == toEntity)
+        {
+            return edge;
+        }
+    }
+    return nullptr;
+}
 
 SnapToLandscapeControllerComponent * GetSnapToLandscapeControllerComponent(const Entity *fromEntity)
 {

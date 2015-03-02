@@ -70,7 +70,7 @@ void WASDControllerSystem::Process(float32 timeElapsed)
 {
     float32 actualMoveSpeed = moveSpeed * timeElapsed;
 
-    const uint32 size = entities.size();
+    const uint32 size = static_cast<uint32>(entities.size());
     if(0 == size) return;
     
     KeyboardDevice &keyboard = InputSystem::Instance()->GetKeyboard();

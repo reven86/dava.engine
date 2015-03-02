@@ -56,7 +56,7 @@ void RenderPass::AddRenderLayer(RenderLayer * layer, const FastName & afterLayer
 {
 	if(LAST_LAYER != afterLayer)
 	{
-		uint32 size = renderLayers.size();
+		uint32 size = static_cast<uint32>(renderLayers.size());
 		for(uint32 i = 0; i < size; ++i)
 		{
 			const FastName & name = renderLayers[i]->GetName();

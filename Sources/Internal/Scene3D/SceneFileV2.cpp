@@ -758,6 +758,7 @@ bool SceneFileV2::SaveHierarchy(Entity * node, File * file, int32 level)
 
 void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entity * parent, File * file, int32 level)
 {
+    bool keepUnusedQualityEntities = QualitySettingsSystem::Instance()->GetKeepUnusedEntities();
     KeyedArchive * archive = new KeyedArchive();
     archive->Load(file);
 
@@ -816,7 +817,7 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
             Logger::FrameworkDebug("%s %s(%s)", GetIndentString('-', level).c_str(), name.c_str(), node->GetClassName().c_str());
         }
 
-        if(!skipNode && QualitySettingsSystem::Instance()->NeedLoadEntity(node))
+        if (!skipNode && (keepUnusedQualityEntities||QualitySettingsSystem::Instance()->IsQualityVisible(node)))
         {
             parent->AddNode(node);
         }
@@ -870,7 +871,7 @@ Entity * SceneFileV2::LoadCamera(Scene * scene, KeyedArchive * archive)
     Entity * cameraEntity = LoadEntity(scene, archive);
     
     Camera * cameraObject = new Camera();
-    cameraObject->Load(archive);
+    cameraObject->LoadObject(archive);
     
     cameraEntity->AddComponent(new CameraComponent(cameraObject));
     SafeRelease(cameraObject);
@@ -1357,6 +1358,49 @@ void SceneFileV2::ReplaceOldNodes(Entity * currentNode)
 	}
 }
 
+void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
+{
+    RenderObject * ro = GetRenderObject(node);
+    if (ro)
+    {
+        static const FastName FLAG_TILED_DECAL = FastName("TILED_DECAL");
+        static const FastName FLAG_FOG_EXP = FastName("FOG_EXP");
+
+        uint32 batchCount = ro->GetRenderBatchCount();
+        for (uint32 ri = 0; ri < batchCount; ++ri)
+        {
+            int32 flagValue = 0;
+            RenderBatch * batch = ro->GetRenderBatch(ri);
+            NMaterial * material = batch->GetMaterial();
+
+            while (material)
+            {
+                flagValue = material->GetFlagValue(FLAG_FOG_EXP);
+                if ((flagValue & NMaterial::FlagInherited) == 0)
+                {
+                    material->ResetFlag(FLAG_FOG_EXP);
+                }
+
+                flagValue = material->GetFlagValue(FLAG_TILED_DECAL);
+                if ((flagValue & NMaterial::FlagInherited) == 0)
+                {
+                    NMaterial::eFlagValue flag = ((flagValue & NMaterial::FlagOn) == NMaterial::FlagOn) ? NMaterial::FlagOn : NMaterial::FlagOff;
+                    material->SetFlag(NMaterial::FLAG_TILED_DECAL_MASK, flag);
+                    material->ResetFlag(FLAG_TILED_DECAL);
+                }
+
+                material = material->GetParent();
+            }
+        }
+    }
+
+    uint32 size = node->GetChildrenCount();
+    for (uint32 i = 0; i < size; ++i)
+    {
+        Entity * child = node->GetChild(i);
+        RemoveDeprecatedMaterialFlags(child);
+    }
+}
 
 void SceneFileV2::RebuildTangentSpace(Entity *entity)
 {
@@ -1461,6 +1505,11 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
         RebuildTangentSpace(rootNode);
     }
 
+    if (header.version < DEPRECATED_MATERIAL_FLAGS_SCENE_VERSION)
+    {
+        RemoveDeprecatedMaterialFlags(rootNode);
+    }
+
     QualitySettingsSystem::Instance()->UpdateEntityAfterLoad(rootNode);
     
 //    for (int32 k = 0; k < rootNode->GetChildrenCount(); ++k)
@@ -1503,14 +1552,14 @@ void SceneFileV2::SetVersion(const VersionInfo::SceneVersion& version)
 }
 
 SceneArchive::~SceneArchive()
-{    
-    for (int32 i=0, sz = dataNodes.size(); i<sz; ++i)
+{
+    for(auto& node : dataNodes)
     {
-        SafeRelease(dataNodes[i]);
+        SafeRelease(node);
     }
-    for (int32 i=0, sz = children.size(); i<sz; ++i)
+    for(auto& child : children)
     {
-        SafeRelease(children[i]);
+        SafeRelease(child);
     }
 }
 
@@ -1535,9 +1584,9 @@ void SceneArchive::SceneArchiveHierarchyNode::LoadHierarchy(File *file)
 SceneArchive::SceneArchiveHierarchyNode::~SceneArchiveHierarchyNode()
 {
     SafeRelease(archive);
-    for (int32 i=0, sz = children.size(); i<sz; ++i)
+    for(auto& child : children)
     {
-        SafeRelease(children[i]);
+        SafeRelease(child);
     }
 }
 

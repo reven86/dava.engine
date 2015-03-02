@@ -58,6 +58,7 @@ class QualitySettingsSystem: public StaticSingleton<QualitySettingsSystem>
 public:
     static const FastName QUALITY_OPTION_VEGETATION_ANIMATION;
     static const FastName QUALITY_OPTION_STENCIL_SHADOW;
+    static const FastName QUALITY_OPTION_WATER_DECORATIONS;
 
     QualitySettingsSystem();
 
@@ -101,17 +102,20 @@ public:
     int32 GetOptionsCount() const;
     FastName GetOptionName(int32 index) const;
 
-    bool NeedLoadEntity(const Entity *entity);
+    bool IsQualityVisible(const Entity *entity);
     
 	void UpdateEntityAfterLoad(Entity *entity);
 
     int32 GetPrerequiredVertexFormat();
     void SetPrerequiredVertexFormat(int32 format);
-     
+
+    void SetKeepUnusedEntities(bool keep);
+    bool GetKeepUnusedEntities();
+         
+    void UpdateEntityVisibility(Entity *e);    
 
 protected:
-
-	void RemoveModelsByType(const Vector<Entity *> & models);
+    void UpdateEntityVisibilityRecursively(Entity *e, bool qualityVisible);	
 
 protected:
     struct TXQ
@@ -146,7 +150,20 @@ protected:
 	FastNameMap<bool> qualityOptions;
 
     int32 prerequiredVertexFromat;
+
+    bool keepUnusedQualityEntities; //for editor to prevent cutting entities with unused quality
 };
+
+
+inline void QualitySettingsSystem::SetKeepUnusedEntities(bool keep)
+{
+    keepUnusedQualityEntities = keep;
+}
+
+inline bool QualitySettingsSystem::GetKeepUnusedEntities()
+{
+    return keepUnusedQualityEntities;
+}
 	
 }
 

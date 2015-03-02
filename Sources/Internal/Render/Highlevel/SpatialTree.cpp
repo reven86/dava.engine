@@ -219,7 +219,7 @@ void QuadTree::RecalculateNodeZLimits(uint16 nodeId)
 			currNode.bbox.max.z = Max(currNode.bbox.max.z, nodes[childId].bbox.max.z);
 		}
 	}
-	for (int32 i=0, size = currNode.objects.size(); i<size; i++)
+	for (size_t i=0, size = currNode.objects.size(); i<size; i++)
 	{
 		const AABBox3 &objBox = currNode.objects[i]->GetWorldBoundingBox();
 		currNode.bbox.min.z = Min(currNode.bbox.min.z, objBox.min.z);
@@ -362,7 +362,7 @@ void QuadTree::ObjectUpdated(RenderObject * renderObject)
 	if (reverseIndex!=baseIndex)
 	{
 		//remove from base
-		int32 objectsSize = nodes[baseIndex].objects.size();
+		int32 objectsSize = static_cast<int32>(nodes[baseIndex].objects.size());
 		int32 objIndex = 0;
 		for (; objIndex<objectsSize; ++objIndex)
 		{
@@ -428,7 +428,7 @@ void QuadTree::ObjectUpdated(RenderObject * renderObject)
 void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags)
 {		
 	QuadTreeNode& currNode = nodes[nodeId];	
-	int32 objectsSize = currNode.objects.size();
+	int32 objectsSize = static_cast<int32>(currNode.objects.size());
 	int32 clipBoxCount = (currNode.nodeInfo&QuadTreeNode::NUM_CHILD_NODES_MASK) + objectsSize; //still can sometime try to clip node with only invisible objects
 	
 	
@@ -511,7 +511,7 @@ void QuadTree::Clip(Camera * camera, VisibilityArray * _visibilityArray, uint32 
 void QuadTree::GetObjects(uint16 nodeId, uint8 clippingFlags, const AABBox3 & bbox, VisibilityArray * visibilityArray)
 {
     QuadTreeNode& currNode = nodes[nodeId];
-    int32 objectsSize = currNode.objects.size();
+    int32 objectsSize = static_cast<int32>(currNode.objects.size());
 
     
 //    if (!clippingFlags) //node is fully inside frustum - no need to clip anymore
@@ -576,7 +576,7 @@ void QuadTree::Update()
 			if (startNode!=targetNode)
 			{
 				//remove from base
-				int32 objectsSize = nodes[startNode].objects.size();
+				int32 objectsSize = static_cast<int32>(nodes[startNode].objects.size());
 				int32 objIndex = 0;
 				for (; objIndex<objectsSize; ++objIndex)
 				{
@@ -618,7 +618,7 @@ void QuadTree::DebugDraw(const Matrix4& cameraMatrix)
 void QuadTree::DebugDrawNode(uint16 nodeId)
 {	
 	RenderManager::Instance()->SetColor(0.2f, 0.2f, 1.0f, 1.0f);	
-	for (int32 i = 0, size = nodes[nodeId].objects.size(); i<size; ++i)
+	for (int32 i = 0, size = static_cast<int32>(nodes[nodeId].objects.size()); i<size; ++i)
 	{
 		RenderHelper::Instance()->DrawBox(nodes[nodeId].objects[i]->GetWorldBoundingBox(), 1.0f, debugDrawStateHandle);
 	}

@@ -187,7 +187,6 @@
 		02FD7F631924997C007762C0 /* YamlArchive.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C86416B9326D002BD35F /* YamlArchive.h */; };
 		02FD7F641924997C007762C0 /* YamlParser.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C86616B9326D002BD35F /* YamlParser.h */; };
 		02FD7F651924997C007762C0 /* Accelerometer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C86916B9326D002BD35F /* Accelerometer.h */; };
-		02FD7F661924997C007762C0 /* AccelerometeriPhone.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C86C16B9326D002BD35F /* AccelerometeriPhone.h */; };
 		02FD7F671924997C007762C0 /* InputSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C86F16B9326D002BD35F /* InputSystem.h */; };
 		02FD7F681924997C007762C0 /* KeyboardDevice.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C87116B9326D002BD35F /* KeyboardDevice.h */; };
 		02FD7F691924997C007762C0 /* AABBox2.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C87416B9326D002BD35F /* AABBox2.h */; };
@@ -523,7 +522,6 @@
 		02FD80D21924997C007762C0 /* YamlArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C86316B9326D002BD35F /* YamlArchive.cpp */; };
 		02FD80D31924997C007762C0 /* YamlParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C86516B9326D002BD35F /* YamlParser.cpp */; };
 		02FD80D41924997C007762C0 /* Accelerometer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C86816B9326D002BD35F /* Accelerometer.cpp */; };
-		02FD80D51924997C007762C0 /* AccelerometeriPhone.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C86D16B9326D002BD35F /* AccelerometeriPhone.mm */; };
 		02FD80D61924997C007762C0 /* InputSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C86E16B9326D002BD35F /* InputSystem.cpp */; };
 		02FD80D71924997C007762C0 /* KeyboardDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C87016B9326D002BD35F /* KeyboardDevice.cpp */; };
 		02FD80D81924997C007762C0 /* musicios.mm in Sources */ = {isa = PBXBuildFile; fileRef = 029BAE521859B81700478671 /* musicios.mm */; };
@@ -1453,8 +1451,6 @@
 		E8B3CB3716B9326E002BD35F /* YamlParser.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C86616B9326D002BD35F /* YamlParser.h */; };
 		E8B3CB3816B9326E002BD35F /* Accelerometer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C86816B9326D002BD35F /* Accelerometer.cpp */; };
 		E8B3CB3916B9326E002BD35F /* Accelerometer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C86916B9326D002BD35F /* Accelerometer.h */; };
-		E8B3CB3C16B9326E002BD35F /* AccelerometeriPhone.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C86C16B9326D002BD35F /* AccelerometeriPhone.h */; };
-		E8B3CB3D16B9326E002BD35F /* AccelerometeriPhone.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C86D16B9326D002BD35F /* AccelerometeriPhone.mm */; };
 		E8B3CB3E16B9326E002BD35F /* InputSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C86E16B9326D002BD35F /* InputSystem.cpp */; };
 		E8B3CB3F16B9326E002BD35F /* InputSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C86F16B9326D002BD35F /* InputSystem.h */; };
 		E8B3CB4016B9326E002BD35F /* KeyboardDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C87016B9326D002BD35F /* KeyboardDevice.cpp */; };
@@ -2195,7 +2191,6 @@
 		C172EC2718C9F9D4004309CF /* TextBlockRender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextBlockRender.h; sourceTree = "<group>"; };
 		C172EC2818C9F9D4004309CF /* TextBlockSoftwareRender.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextBlockSoftwareRender.cpp; sourceTree = "<group>"; };
 		C172EC2918C9F9D4004309CF /* TextBlockSoftwareRender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextBlockSoftwareRender.h; sourceTree = "<group>"; };
-		C1DC1F071717FD3C001C5EC3 /* libTextureConverter_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libTextureConverter_macos.a; path = ../../Libs/libs/libTextureConverter_macos.a; sourceTree = "<group>"; };
 		C70B56591753CB5E008966FA /* KeyedArchiveSwig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KeyedArchiveSwig.cpp; sourceTree = "<group>"; };
 		C7E76D2116DF69370041ED9A /* AutotestingSystemLua.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutotestingSystemLua.cpp; sourceTree = "<group>"; };
 		C7E76D2216DF69370041ED9A /* AutotestingSystemLua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutotestingSystemLua.h; sourceTree = "<group>"; };
@@ -2453,8 +2448,6 @@
 		E8B3C86616B9326D002BD35F /* YamlParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YamlParser.h; sourceTree = "<group>"; };
 		E8B3C86816B9326D002BD35F /* Accelerometer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Accelerometer.cpp; sourceTree = "<group>"; };
 		E8B3C86916B9326D002BD35F /* Accelerometer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Accelerometer.h; sourceTree = "<group>"; };
-		E8B3C86C16B9326D002BD35F /* AccelerometeriPhone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AccelerometeriPhone.h; sourceTree = "<group>"; };
-		E8B3C86D16B9326D002BD35F /* AccelerometeriPhone.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AccelerometeriPhone.mm; sourceTree = "<group>"; };
 		E8B3C86E16B9326D002BD35F /* InputSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InputSystem.cpp; sourceTree = "<group>"; };
 		E8B3C86F16B9326D002BD35F /* InputSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InputSystem.h; sourceTree = "<group>"; };
 		E8B3C87016B9326D002BD35F /* KeyboardDevice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KeyboardDevice.cpp; sourceTree = "<group>"; };
@@ -2965,7 +2958,6 @@
 				02E9E3D11734165D00C501BC /* libfmodevent_iphonesimulator.a */,
 				02E9E3A2172967F300C501BC /* libfmodex_iphoneos.a */,
 				02E9E3A3172967F300C501BC /* libfmodex_iphonesimulator.a */,
-				C1DC1F071717FD3C001C5EC3 /* libTextureConverter_macos.a */,
 				C7E76D4216DF6CC70041ED9A /* liblua_ios.a */,
 				E81F2B0416BFF65700C4545E /* libcurl_ios.a */,
 				496526CF167F173400107C70 /* libdxt_ios.a */,
@@ -3573,8 +3565,6 @@
 			children = (
 				E8B3C86816B9326D002BD35F /* Accelerometer.cpp */,
 				E8B3C86916B9326D002BD35F /* Accelerometer.h */,
-				E8B3C86C16B9326D002BD35F /* AccelerometeriPhone.h */,
-				E8B3C86D16B9326D002BD35F /* AccelerometeriPhone.mm */,
 				E8B3C86E16B9326D002BD35F /* InputSystem.cpp */,
 				E8B3C86F16B9326D002BD35F /* InputSystem.h */,
 				E8B3C87016B9326D002BD35F /* KeyboardDevice.cpp */,
@@ -4479,7 +4469,6 @@
 				02FD7F641924997C007762C0 /* YamlParser.h in Headers */,
 				02FD7F651924997C007762C0 /* Accelerometer.h in Headers */,
 				E8C486F7196BD2390082E634 /* LockGuard.h in Headers */,
-				02FD7F661924997C007762C0 /* AccelerometeriPhone.h in Headers */,
 				02FD7F671924997C007762C0 /* InputSystem.h in Headers */,
 				64493E0F19476F4700AB2715 /* VegetationMaterialTransformer.h in Headers */,
 				02FD7F681924997C007762C0 /* KeyboardDevice.h in Headers */,
@@ -4956,7 +4945,6 @@
 				E8B3CB3516B9326E002BD35F /* YamlArchive.h in Headers */,
 				E8B3CB3716B9326E002BD35F /* YamlParser.h in Headers */,
 				E8B3CB3916B9326E002BD35F /* Accelerometer.h in Headers */,
-				E8B3CB3C16B9326E002BD35F /* AccelerometeriPhone.h in Headers */,
 				E8B3CB3F16B9326E002BD35F /* InputSystem.h in Headers */,
 				0264E3091A42F79500BD7279 /* JobManager.h in Headers */,
 				E8B3CB4116B9326E002BD35F /* KeyboardDevice.h in Headers */,
@@ -5507,7 +5495,6 @@
 				02FD80D31924997C007762C0 /* YamlParser.cpp in Sources */,
 				02FD80D41924997C007762C0 /* Accelerometer.cpp in Sources */,
 				026A1DED19DAF26600813AEF /* SkinnedMesh.cpp in Sources */,
-				02FD80D51924997C007762C0 /* AccelerometeriPhone.mm in Sources */,
 				02FD80D61924997C007762C0 /* InputSystem.cpp in Sources */,
 				64493E0B19476F4700AB2715 /* VegetationGeometry.cpp in Sources */,
 				02FD80D71924997C007762C0 /* KeyboardDevice.cpp in Sources */,
@@ -5921,7 +5908,6 @@
 				5016207D1A61693A00E5A914 /* Announcer.cpp in Sources */,
 				84D18BFB19201BEF009E3E90 /* Image.cpp in Sources */,
 				E8B3CB3816B9326E002BD35F /* Accelerometer.cpp in Sources */,
-				E8B3CB3D16B9326E002BD35F /* AccelerometeriPhone.mm in Sources */,
 				64493E0A19476F4700AB2715 /* VegetationGeometry.cpp in Sources */,
 				E8B3CB3E16B9326E002BD35F /* InputSystem.cpp in Sources */,
 				E8B3CB4016B9326E002BD35F /* KeyboardDevice.cpp in Sources */,
@@ -6312,6 +6298,7 @@
 					__DAVAENGINE_DEBUG__,
 					DAVA_FMOD,
 				);
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6357,6 +6344,7 @@
 					FT2_BUILD_LIBRARY,
 					DAVA_FMOD,
 				);
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6397,6 +6385,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6437,6 +6426,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6485,6 +6475,7 @@
 					__DAVAENGINE_DEBUG__,
 					DAVA_FMOD,
 				);
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6509,10 +6500,10 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
 				);
+				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				USE_HEADERMAP = NO;
-				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = Debug;
 		};
@@ -6520,12 +6511,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = (
-					armv7,
-					armv7s,
-					arm64,
-					i386,
-				);
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../..\"",
@@ -6538,6 +6523,7 @@
 					FT2_BUILD_LIBRARY,
 					DAVA_FMOD,
 				);
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6562,10 +6548,10 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
 				);
+				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				USE_HEADERMAP = NO;
-				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = Release;
 		};
@@ -6573,7 +6559,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = (
-					i386,
 					arm64,
 					armv7s,
 					armv7,
@@ -6617,7 +6602,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "arm64 armv7 armv7s i386";
+				VALID_ARCHS = "arm64 armv7 armv7s";
 				WARNING_CFLAGS = "";
 			};
 			name = Debug;
@@ -6626,7 +6611,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = (
-					i386,
 					arm64,
 					armv7s,
 					armv7,
@@ -6668,7 +6652,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "arm64 armv7 armv7s i386";
+				VALID_ARCHS = "arm64 armv7 armv7s";
 				WARNING_CFLAGS = "";
 			};
 			name = Release;
@@ -6677,7 +6661,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = (
-					i386,
 					arm64,
 					armv7s,
 					armv7,
@@ -6719,7 +6702,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "arm64 armv7 armv7s i386";
+				VALID_ARCHS = "arm64 armv7 armv7s";
 				WARNING_CFLAGS = "";
 			};
 			name = AdHoc;
@@ -6728,12 +6711,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = (
-					armv7,
-					armv7s,
-					arm64,
-					i386,
-				);
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../..\"",
@@ -6741,6 +6718,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6765,10 +6743,10 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
 				);
+				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				USE_HEADERMAP = NO;
-				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = AdHoc;
 		};
@@ -6776,7 +6754,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = (
-					i386,
 					arm64,
 					armv7s,
 					armv7,
@@ -6818,7 +6795,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "arm64 armv7 armv7s i386";
+				VALID_ARCHS = "arm64 armv7 armv7s";
 				WARNING_CFLAGS = "";
 			};
 			name = Distribution;
@@ -6827,12 +6804,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = (
-					armv7,
-					armv7s,
-					arm64,
-					i386,
-				);
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../..\"",
@@ -6840,6 +6811,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6864,10 +6836,10 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
 				);
+				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				USE_HEADERMAP = NO;
-				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = Distribution;
 		};
