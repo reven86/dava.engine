@@ -15,65 +15,47 @@ using namespace DAVA;
 PropertiesWidget::PropertiesWidget(QWidget *parent)
     : QDockWidget(parent)
     , ui(new Ui::PropertiesWidget())
-    , context(NULL)
+    , context(nullptr)
 {
     ui->setupUi(this);
+    ui->treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
 }
 
 PropertiesWidget::~PropertiesWidget()
 {
     delete ui;
-    ui = NULL;
 }
 
-void PropertiesWidget::SetContext(PropertiesContext *newContext)
+void PropertiesWidget::SetDocument(Document *document)
 {
-    if (context)
+    if (nullptr != context) //remove previous context
     {
-        disconnect(context->GetDocument(), SIGNAL(controlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), this, SLOT(OnControlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-        ui->treeView->setModel(NULL);
-        //ui->filterLine->setEnabled(false);
-        //ui->treeView->setEnabled(false);
+        disconnect(context, SIGNAL(ModelChanged(PropertiesModel*)), this, SLOT(OnModelChanged(PropertiesModel*)));
+        ui->treeView->setModel(nullptr);
     }
-
-    context = newContext;
-
-    if (context)
+    /*set new context*/
+    if (nullptr == document)
     {
-        //ui->treeView->setModel(document->GetTreeContext()->proxyModel);
-        //ui->filterLine->setText(document->GetTreeContext()->filterString);
-        connect(context->GetDocument(), SIGNAL(controlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), this, SLOT(OnControlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-        //ui->filterLine->setEnabled(true);
-        //ui->treeView->setEnabled(true);
+        context = nullptr;
     }
-}
-
-void PropertiesWidget::OnControlsSelectionChanged(const QList<ControlNode*> &activatedControls, const QList<ControlNode*> &deactivatedControls)
-{
-    if (!activatedControls.empty())
-        SetControl(activatedControls.front());
     else
-        SetControl(NULL);
+    {
+        context = document->GetPropertiesContext();
+    }
+
+    if (nullptr != context)
+    {
+        connect(context, SIGNAL(ModelChanged(PropertiesModel*)), this, SLOT(OnModelChanged(PropertiesModel*)));
+        ui->treeView->setModel(context->GetModel());
+    }
 }
 
-void PropertiesWidget::SetControl(ControlNode *controlNode)
+void PropertiesWidget::OnModelChanged(PropertiesModel *model)
 {
-    if (controlNode)
+    ui->treeView->setModel(model);
+    if (nullptr != model)
     {
-        QStyledItemDelegate *itemDelegate = new PropertiesTreeItemDelegate(this);
-        PropertiesModel *model = new PropertiesModel(controlNode, context, this);
-//        QItemEditorFactory *itemEditorFactory = new QItemEditorFactory();
-//        itemEditorFactory->registerEditor( QVariant::Vector2D, new QStandardItemEditorCreator<Vector2Edit>());
-//        itemDelegate->setItemEditorFactory(itemEditorFactory);
-
-        //QItemEditorFactory::setDefaultFactory(itemEditorFactory);
-        ui->treeView->setItemDelegate(itemDelegate);
-        ui->treeView->setModel(model);
         ui->treeView->expandToDepth(0);
         ui->treeView->resizeColumnToContents(0);
-    }
-    else
-    {
-        ui->treeView->setModel(NULL);
     }
 }

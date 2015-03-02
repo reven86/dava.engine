@@ -2,6 +2,7 @@
 #define __UI_EDITOR_PACKAGE_CONTROLS_NODE_H__
 
 #include "PackageBaseNode.h"
+#include "PackageControlsNode.h"
 #include "ControlNode.h"
 
 namespace DAVA
@@ -13,30 +14,35 @@ class PackageSerializer;
 class PackageNode;
 class PackageRef;
 
-class PackageControlsNode : public PackageBaseNode
+class PackageControlsNode : public ControlsContainerNode
 {
 public:
     PackageControlsNode(PackageNode *parent, PackageRef *packageRef);
     virtual ~PackageControlsNode();
     
-    void Add(ControlNode *node);
-    void InsertBelow(ControlNode *node, const ControlNode *belowThis);
-    void Remove(ControlNode *node);
-    virtual int GetCount() const override;
-    virtual ControlNode *Get(int index) const override;
+    void Add(ControlNode *node) override;
+    void InsertAtIndex(int index, ControlNode *node) override;
+    void Remove(ControlNode *node) override;
+    int GetCount() const override;
+    ControlNode *Get(int index) const override;
 
-    virtual DAVA::String GetName() const;
+    DAVA::String GetName() const override;
     void SetName(const DAVA::String &name);
     
     PackageRef *GetPackageRef() const;
     
-    virtual int GetFlags() const override;
+    int GetFlags() const override;
     void SetReadOnly();
+
+    virtual bool IsEditingSupported() const override;
+    virtual bool IsInsertingSupported() const override;
+    virtual bool CanInsertControl(ControlNode *node, DAVA::int32 pos) const override;
+    virtual bool CanRemove() const override;
+    virtual bool CanCopy() const override;
 
     ControlNode *FindControlNodeByName(const DAVA::String &name) const;
     void Serialize(PackageSerializer *serializer) const;
     void Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const;
-
 
 private:
     DAVA::UIPackage *GetPackage() const;

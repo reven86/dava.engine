@@ -30,13 +30,11 @@
 #define __RULERCONTROLLER__H__
 
 #include "DAVAEngine.h"
-using namespace DAVA;
-
 #include "RulerSettings.h"
 
 #include <QObject>
 
-class RulerController : public QObject, public Singleton<RulerController>
+class RulerController : public QObject, public DAVA::Singleton<RulerController>
 {
     Q_OBJECT
     
@@ -46,14 +44,14 @@ public:
     virtual ~RulerController();
 
     // Set the screen view pos and scale.
-    void SetViewPos(const Vector2& startPos);
-    void SetScale(float32 scale);
+    void SetViewPos(const DAVA::Vector2& startPos);
+    void SetScale(DAVA::float32 scale);
 
     // Update the rulers by sending "settings changed" signal to them.
     void UpdateRulers();
 
     // Update the ruler markers with the mouse position.
-    void UpdateRulerMarkers(const Vector2& curMousePos);
+    void UpdateRulerMarkers(const DAVA::Vector2& curMousePos);
 
 signals:
     // Horizontal/Vertical ruler settings are changed.
@@ -72,8 +70,8 @@ protected:
 
 private:
     // Screen view pos and scale.
-    Vector2 screenViewPos;
-    float32 screenScale;
+    DAVA::Vector2 screenViewPos;
+    DAVA::float32 screenScale;
     
     // Ruler settings.
     RulerSettings horisontalRulerSettings;

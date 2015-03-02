@@ -62,31 +62,33 @@ class WaveComponent;
 class SpeedTreeObject;
 class AnimationComponent;
 class PathComponent;
+class WaypointComponent;
+class EdgeComponent;
 class SnapToLandscapeControllerComponent;
 
-ParticleEffectComponent * GetEffectComponent(Entity * fromEntity);
-AnimationComponent * GetAnimationComponent(Entity *fromEntity);
-TransformComponent * GetTransformComponent(Entity * fromEntity);
+ParticleEffectComponent * GetEffectComponent(const Entity *fromEntity);
+AnimationComponent * GetAnimationComponent(const Entity *fromEntity);
+TransformComponent * GetTransformComponent(const Entity *fromEntity);
 RenderComponent * GetRenderComponent(const Entity *fromEntity);
-SkeletonComponent * GetSkeletonComponent(Entity * fromEntity);
-RenderObject * GetRenderObject(const Entity * fromEntity);
-SkyboxRenderObject * GetSkybox(const Entity * fromEntity);
-VegetationRenderObject * GetVegetation(const Entity * fromEntity);
-SpeedTreeObject * GetSpeedTreeObject(const Entity * fromEntity);
-SnapToLandscapeControllerComponent * GetSnapToLandscapeControllerComponent(const Entity * fromEntity);
+SkeletonComponent * GetSkeletonComponent(const Entity *fromEntity);
+RenderObject * GetRenderObject(const Entity *fromEntity);
+SkyboxRenderObject * GetSkybox(const Entity *fromEntity);
+VegetationRenderObject * GetVegetation(const Entity *fromEntity);
+SpeedTreeObject * GetSpeedTreeObject(const Entity *fromEntity);
+SnapToLandscapeControllerComponent * GetSnapToLandscapeControllerComponent(const Entity *fromEntity);
 
-Light *GetLight(Entity * fromEntity);
-LightComponent *GetLightComponent(Entity * fromEntity);
-Landscape *GetLandscape(Entity * fromEntity);
+Light *GetLight(const Entity *fromEntity);
+LightComponent *GetLightComponent(const Entity *fromEntity);
+Landscape *GetLandscape(const Entity *fromEntity);
 
-Camera * GetCamera(Entity * fromEntity);
+Camera * GetCamera(const Entity *fromEntity);
 
-SoundComponent * GetSoundComponent(Entity * fromEntity);
+SoundComponent * GetSoundComponent(const Entity *fromEntity);
 
-LodComponent * GetLodComponent(Entity *fromEntity);
-SwitchComponent* GetSwitchComponent(Entity *fromEntity);
+LodComponent * GetLodComponent(const Entity *fromEntity);
+SwitchComponent* GetSwitchComponent(const Entity *fromEntity);
     
-uint32 GetLodLayersCount(Entity *fromEntity);
+uint32 GetLodLayersCount(const Entity *fromEntity);
 uint32 GetLodLayersCount(LodComponent *fromComponent);
     
     
@@ -98,9 +100,9 @@ Landscape * FindLandscape(Entity * rootEntity);
 Entity * FindVegetationEntity(Entity * rootEntity);
 VegetationRenderObject* FindVegetation(Entity * rootEntity);
 
-SpeedTreeComponent * GetSpeedTreeComponent(Entity * fromEntity);
-WindComponent * GetWindComponent(Entity * fromEntity);
-WaveComponent * GetWaveComponent(Entity * fromEntity);
+SpeedTreeComponent * GetSpeedTreeComponent(const Entity *fromEntity);
+WindComponent * GetWindComponent(const Entity *fromEntity);
+WaveComponent * GetWaveComponent(const Entity *fromEntity);
 
 QualitySettingsComponent * GetQualitySettingsComponent(const Entity *fromEntity);
     
@@ -109,6 +111,8 @@ CustomPropertiesComponent * GetOrCreateCustomProperties(Entity *fromEntity);
 KeyedArchive * GetCustomPropertiesArchieve(const Entity *fromEntity);
 
 PathComponent * GetPathComponent(const Entity *fromEntity);
+WaypointComponent* GetWaypointComponent(const Entity* fromEntity);
+EdgeComponent* FindEdgeComponent(const Entity *fromEntity, const Entity *toEntity);
 
 }
 

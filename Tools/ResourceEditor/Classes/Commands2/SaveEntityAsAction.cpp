@@ -69,7 +69,7 @@ void SaveEntityAsAction::Redo()
 			scene->AddNode(clone);
 		}
 
-        scene->Save(sc2Path);
+        scene->SaveScene(sc2Path);
 
 		scene->Release();
 	}

@@ -387,14 +387,15 @@ const FilePath & FileSystem::GetCurrentWorkingDirectory()
 
 FilePath FileSystem::GetCurrentExecutableDirectory()
 {
-    char tempDir[2048];
     FilePath currentExecuteDirectory;
 #if defined(__DAVAENGINE_WIN32__)
-    ::GetModuleFileNameA( NULL, tempDir, 2048 );
-    currentExecuteDirectory = FilePath(tempDir).GetDirectory();
+    std::array<char, 2048> tempDir;
+    ::GetModuleFileNameA( NULL, tempDir.data(), tempDir.size() );
+    currentExecuteDirectory = FilePath(tempDir.data()).GetDirectory();
 #elif defined(__DAVAENGINE_MACOS__)
-    proc_pidpath(getpid(), tempDir, sizeof(tempDir));
-    currentExecuteDirectory = FilePath(dirname(tempDir));
+    std::array<char, 2048> tempDir;
+    proc_pidpath(getpid(), tempDir.data(), tempDir.size());
+    currentExecuteDirectory = FilePath(dirname(tempDir.data()));
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 	DVASSERT(0);
 #endif //PLATFORMS
@@ -760,8 +761,113 @@ void FileSystem::Init()
 }
 #endif
 
+bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& filePath2)
+{
+    ScopedPtr<File> f1(File::Create(filePath1, File::OPEN | File::READ));
+    ScopedPtr<File> f2(File::Create(filePath2, File::OPEN | File::READ));
+
+    if (nullptr == static_cast<File *>(f1) || nullptr == static_cast<File *>(f2))
+    {
+        Logger::Error("Couldn't copmare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    String tmpStr1;
+    bool end1;
+    String tmpStr2;
+    bool end2;
+    bool feof1 = false;
+    bool feof2 = false;
+
+    do
+    {
+        tmpStr1 = f1->ReadLine();
+        end1 = HasLineEnding(f1);
+
+        tmpStr2 = f2->ReadLine();
+        end2 = HasLineEnding(f2);
+
+        // if one file have no line ending and another - have - we tryes to compare binary file with text file
+        // if we have no line endings - then we tryes to compare binary files - comparision is correct
+        if (end1 != end2)
+        {
+            return false;
+        }
+
+        if (tmpStr1.size() != tmpStr2.size() && 0 != tmpStr1.compare(tmpStr2))
+        {
+            return false;
+        }
+        feof1 = f1->IsEof();
+        feof2 = f2->IsEof();
+
+    } while (!feof1 && !feof2);
+
+    return (feof1 == feof2);
 }
 
+bool FileSystem::HasLineEnding(File *f)
+{
+    bool isHave = false;
+    uint8 prevChar;
+    f->Seek(-1, File::SEEK_FROM_CURRENT);
+    if (1 == f->Read(&prevChar, 1))
+    {
+        isHave = '\n' == prevChar;
+    }
 
+    // make sure that we have eof if it was before HasLineEnding call
+    if (1 == f->Read(&prevChar, 1))
+    {
+        f->Seek(-1, File::SEEK_FROM_CURRENT);
+    }
+    return isHave;
+}
 
+bool FileSystem::CompareBinaryFiles(const FilePath &filePath1, const FilePath &filePath2)
+{
+    ScopedPtr<File> f1(File::Create(filePath1, File::OPEN | File::READ));
+    ScopedPtr<File> f2(File::Create(filePath2, File::OPEN | File::READ));
 
+    if (nullptr == static_cast<File *>(f1) || nullptr == static_cast<File *>(f2))
+    {
+        Logger::Error("Couldn't copmare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    const uint32 bufferSize = 16*1024*1024;
+
+    uint8 *buffer1 = new uint8[bufferSize];
+    uint8 *buffer2 = new uint8[bufferSize];
+    
+    SCOPE_EXIT
+    {
+        SafeDelete(buffer1);
+        SafeDelete(buffer2);
+    };
+
+    bool res = false;
+
+    do
+    {
+        uint32 actuallyRead1 = f1->Read(buffer1, bufferSize);
+        uint32 actuallyRead2 = f2->Read(buffer2, bufferSize);
+
+        if (actuallyRead1 != actuallyRead2)
+        {
+            res = false;
+            break;
+        }
+
+        res = 0 == Memcmp(buffer1, buffer2, actuallyRead1);
+    } while (res && !f1->IsEof() && !f2->IsEof());
+
+    if (res && f1->IsEof() != f2->IsEof())
+    {
+        res = false;
+    }
+
+    return res;
+}
+
+}

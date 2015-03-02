@@ -38,10 +38,11 @@ FileSystemTest::FileSystemTest()
     bool dataPrepared = RecursiveCopy("~res:/TestData/FileSystemTest/", "~doc:/TestData/FileSystemTest/");
     DVASSERT(dataPrepared);
 
-	RegisterFunction(this, &FileSystemTest::ResTestFunction, String("ResTestFunction"), NULL);
-	RegisterFunction(this, &FileSystemTest::DocTestFunctionCheckCopy, String("DocTestFunctionCheckCopy"), NULL);
-	RegisterFunction(this, &FileSystemTest::DocTestFunction, String("DocTestFunction"), NULL);
-	RegisterFunction(this, &FileSystemTest::FileOperationsTestFunction, String("FileTestFunction"), NULL);
+	RegisterFunction(this, &FileSystemTest::ResTestFunction, String("ResTestFunction"), nullptr);
+	RegisterFunction(this, &FileSystemTest::DocTestFunctionCheckCopy, String("DocTestFunctionCheckCopy"), nullptr);
+	RegisterFunction(this, &FileSystemTest::DocTestFunction, String("DocTestFunction"), nullptr);
+	RegisterFunction(this, &FileSystemTest::FileOperationsTestFunction, String("FileTestFunction"), nullptr);
+    RegisterFunction(this, &FileSystemTest::CompareFilesTest, String("CompareFilesTest"), nullptr);
 }
 
 void FileSystemTest::LoadResources()
@@ -148,7 +149,7 @@ void FileSystemTest::DocTestFunctionCheckCopy(PerfFuncData * data)
                 FilePath pathname = files->GetPathname(ifi);
                 
                 File *file = File::Create(pathname, File::OPEN | File::READ);
-                TEST_VERIFY(file != NULL);
+                TEST_VERIFY(file != nullptr);
                 
                 if(!file) continue;
                 
@@ -336,4 +337,79 @@ void FileSystemTest::FileOperationsTestFunction(PerfFuncData * data)
     SafeRelease(f2);
 
     FileSystem::Instance()->DeleteFile(copyTo);
+}
+
+void FileSystemTest::CompareFilesTest(PerfFuncData * data)
+{
+    String folder = "~doc:/FileSystemTest/";
+    FilePath textFilePath = folder + "text";
+    FilePath textFilePath2 = folder + "text2";
+    FilePath binaryFilePath = folder + "binary";
+    File *text = File::Create(textFilePath, File::CREATE | File::WRITE);
+    File *binary = File::Create(binaryFilePath, File::CREATE | File::WRITE);
+
+    text->WriteLine("1");
+    binary->Write("1");
+    SafeRelease(text);
+    SafeRelease(binary);
+    FilePath cpyFilePath = folder + "cpy";
+    FileSystem::Instance()->CopyFile(textFilePath, cpyFilePath);
+    TEST_VERIFY(FileSystem::Instance()->CompareTextFiles(textFilePath, cpyFilePath));
+    TEST_VERIFY(FileSystem::Instance()->CompareBinaryFiles(textFilePath, cpyFilePath));
+    TEST_VERIFY(!FileSystem::Instance()->CompareTextFiles(textFilePath, binaryFilePath));
+    TEST_VERIFY(!FileSystem::Instance()->CompareBinaryFiles(textFilePath, binaryFilePath));
+    FileSystem::Instance()->DeleteFile(textFilePath);
+    FileSystem::Instance()->DeleteFile(cpyFilePath);
+    FileSystem::Instance()->DeleteFile(binaryFilePath);
+
+    text = File::Create(textFilePath, File::CREATE | File::WRITE);
+    text->WriteLine("");
+    text->WriteLine("");
+    text->WriteLine("1");
+    SafeRelease(text);
+    text = File::Create(textFilePath2, File::CREATE | File::WRITE);
+    text->WriteLine("1");
+    SafeRelease(text);
+    TEST_VERIFY(!FileSystem::Instance()->CompareTextFiles(textFilePath, textFilePath2));
+    TEST_VERIFY(!FileSystem::Instance()->CompareBinaryFiles(textFilePath, textFilePath2));
+    FileSystem::Instance()->DeleteFile(textFilePath);
+    FileSystem::Instance()->DeleteFile(textFilePath2);
+
+    text = File::Create(textFilePath, File::CREATE | File::WRITE);
+    text->WriteLine("");
+    text->WriteLine("1");
+    text->WriteLine("");
+    SafeRelease(text);
+    text = File::Create(textFilePath2, File::CREATE | File::WRITE);
+    text->WriteLine("1");
+    SafeRelease(text);
+    TEST_VERIFY(!FileSystem::Instance()->CompareTextFiles(textFilePath, textFilePath2));
+    TEST_VERIFY(!FileSystem::Instance()->CompareBinaryFiles(textFilePath, textFilePath2));
+    FileSystem::Instance()->DeleteFile(textFilePath);
+    FileSystem::Instance()->DeleteFile(textFilePath2);
+    
+    text = File::Create(textFilePath, File::CREATE | File::WRITE);
+    text->WriteLine("1");
+    SafeRelease(text);
+    text = File::Create(textFilePath2, File::CREATE | File::WRITE);
+    text->WriteLine("1");
+    SafeRelease(text);
+    TEST_VERIFY(FileSystem::Instance()->CompareTextFiles(textFilePath, textFilePath2));
+    TEST_VERIFY(FileSystem::Instance()->CompareBinaryFiles(textFilePath, textFilePath2));
+    FileSystem::Instance()->DeleteFile(textFilePath);
+    FileSystem::Instance()->DeleteFile(textFilePath2);
+
+    text = File::Create(textFilePath, File::CREATE | File::WRITE);
+    text->Write("1");
+    text->Write("\r");
+    text->Write("\n");
+    SafeRelease(text);
+    text = File::Create(textFilePath2, File::CREATE | File::WRITE);
+    text->Write("1");
+    text->Write("\n");
+    SafeRelease(text);
+    TEST_VERIFY(FileSystem::Instance()->CompareTextFiles(textFilePath, textFilePath2));
+    TEST_VERIFY(!FileSystem::Instance()->CompareBinaryFiles(textFilePath, textFilePath2));
+    FileSystem::Instance()->DeleteFile(textFilePath);
+    FileSystem::Instance()->DeleteFile(textFilePath2);
 }

@@ -1,44 +1,52 @@
 #include "PackageModel.h"
 
-#include <qicon.h>
+#include <QIcon>
 #include <QAction>
+#include <QUrl>
 
 #include "DAVAEngine.h"
 #include "Base/ObjectFactory.h"
 
 #include "UI/IconHelper.h"
 #include "UI/Document.h"
+#include "UI/QtModelPackageCommandExecutor.h"
 #include "Utils/QtDavaConvertion.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ImportedPackagesNode.h"
 #include "Model/PackageHierarchy/ControlPrototype.h"
+#include "Model/PackageHierarchy/ControlsContainerNode.h"
 #include "Model/YamlPackageSerializer.h"
-#include "UI/Commands/PackageModelCommands.h"
+#include "Model/EditorUIPackageBuilder.h"
 
 #include "PackageMimeData.h"
 
 using namespace DAVA;
 
-PackageModel::PackageModel(Document *document)
-    : QAbstractItemModel(document)
-    , root(NULL)
-    , document(document)
+PackageModel::PackageModel(PackageNode *_root, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent)
+    : QAbstractItemModel(parent)
+    , root(SafeRetain(_root))
+    , commandExecutor(SafeRetain(_commandExecutor))
 {
-    root = SafeRetain(document->GetPackage());
 }
 
 PackageModel::~PackageModel()
 {
-    document = NULL;
     SafeRelease(root);
+    SafeRelease(commandExecutor);
+}
+
+void PackageModel::emitNodeChanged(PackageBaseNode *node)
+{
+    QModelIndex index = indexByNode(node);
+    emit dataChanged(index, index);
 }
 
 QModelIndex PackageModel::indexByNode(PackageBaseNode *node) const
 {
     PackageBaseNode *parent = node->GetParent();
-    if (parent == NULL)
+    if (parent == nullptr)
         return QModelIndex();
     
     if (parent)
@@ -66,7 +74,7 @@ QModelIndex PackageModel::parent(const QModelIndex &child) const
 
     PackageBaseNode *node = static_cast<PackageBaseNode*>(child.internalPointer());
     PackageBaseNode *parent = node->GetParent();
-    if (parent == NULL || parent == root)
+    if (nullptr == parent || parent == root)
         return QModelIndex();
     
     if (parent->GetParent())
@@ -104,7 +112,7 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
             return StringToQString(node->GetName());
             
         case Qt::DecorationRole:
-            return node->GetControl() != NULL ? QIcon(IconHelper::GetIconPathForUIControl(node->GetControl())) : QVariant();
+            return node->GetControl() != nullptr ? QIcon(IconHelper::GetIconPathForUIControl(node->GetControl())) : QVariant();
             
         case Qt::CheckStateRole:
             if (node->GetControl())
@@ -113,7 +121,7 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
                 return QVariant();
             
         case Qt::ToolTipRole:
-            if (node->GetControl() != NULL)
+            if (node->GetControl() != nullptr)
             {
                 ControlNode *controlNode = DynamicTypeCheck<ControlNode *>(node);
                 QString toolTip = QString("class: ") + controlNode->GetControl()->GetControlClassName().c_str();
@@ -179,9 +187,9 @@ Qt::ItemFlags PackageModel::flags(const QModelIndex &index) const
     Qt::ItemFlags flags = QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable;
     
     const PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-    if ((node->GetFlags() & PackageBaseNode::FLAGS_CONTROL) != 0)
+    if (node->CanCopy())
         flags |= Qt::ItemIsDragEnabled;
-    if ((node->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) == 0)
+    if (node->IsInsertingSupported())
         flags |= Qt::ItemIsDropEnabled;
     
     return flags;
@@ -195,31 +203,31 @@ Qt::DropActions PackageModel::supportedDropActions() const
 QStringList PackageModel::mimeTypes() const
 {
     QStringList types;
-    types << "application/packageModel";
+    types << PackageMimeData::MIME_TYPE;
     types << "text/plain";
+    types << "text/uri-list";
     return types;
 }
 
-QMimeData *PackageModel::mimeData(const QModelIndexList &indexes) const
+QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
 {
     PackageMimeData *mimeData = new PackageMimeData();
     
-    Vector<ControlNode*> nodes;
-    foreach (QModelIndex index, indexes)
+    for (const QModelIndex &index : indices)
     {
         if (index.isValid())
         {
-            mimeData->SetIndex(index);
-            
             PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
             ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
-            if (controlNode && controlNode->GetCreationType() != ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
-                nodes.push_back(controlNode);
+            if (controlNode && controlNode->CanCopy())
+            {
+                mimeData->AddControlNode(controlNode);
+            }
         }
     }
     
     YamlPackageSerializer serializer;
-    document->GetPackage()->Serialize(&serializer, nodes);
+    root->Serialize(&serializer, mimeData->GetControlNodes());
     String str = serializer.WriteToString();
     mimeData->setText(QString::fromStdString(str));
 
@@ -239,297 +247,127 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     else
         rowIndex = rowCount(QModelIndex());
 
-    if (data->hasFormat("application/packageModel"))
+    ControlsContainerNode *parentNode = dynamic_cast<ControlsContainerNode*>(static_cast<PackageBaseNode*>(parent.internalPointer()));
+    
+    if (parentNode && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
         const PackageMimeData *controlMimeData = dynamic_cast<const PackageMimeData*>(data);
         if (!controlMimeData)
             return false;
-        
-        if (column > 0)
-            return false;
 
-        QModelIndex srcIndex = controlMimeData->GetIndex();
-        QModelIndex srcParent = srcIndex.parent();
-        QModelIndex dstParent = parent;
-        int dstRow = rowIndex;
+        const Vector<ControlNode *> &srcNodes = controlMimeData->GetControlNodes();
+        if (srcNodes.empty())
+            return false;
         
         if (action == Qt::CopyAction)
-        {
-            QUndoCommand *changeCommand = new CopyItemModelCommand(this, srcIndex, dstRow, dstParent);
-            document->UndoStack()->push(changeCommand);
-            return true;
-        }
+            commandExecutor->CopyControls(srcNodes, parentNode, rowIndex);
         else if (action == Qt::MoveAction)
+            commandExecutor->MoveControls(srcNodes, parentNode, rowIndex);
+        else
+            return false;
+        
+        return true;
+    }
+    else if (data->hasFormat("text/uri-list") && data->hasText())
+    {
+        QStringList list = data->text().split("\n");
+        for (const QString &str : list)
         {
-            int srcRow = srcIndex.row();
-            
-            if (srcIndex == dstParent)
+            QUrl url(str);
+            if (url.isLocalFile())
             {
-                return false;
+                FilePath path(url.toLocalFile().toStdString());
+                if (root->FindImportedPackage(path) == nullptr)
+                {
+                }
             }
-            
-            if (srcParent == dstParent && (dstRow == srcRow || dstRow == srcRow + 1))
-            {
-                return false;
-            }
-
-            ControlNode *sourceNode = dynamic_cast<ControlNode*>(static_cast<PackageBaseNode*>(index(srcRow, 0, srcParent).internalPointer()));
-            if (!sourceNode || (sourceNode->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) != 0)
-            {
-                return false;
-            }
-
-            document->UndoStack()->push(new MoveItemModelCommand(this, srcIndex, dstRow, dstParent));
-            return true;
-        }
-        else if (action == Qt::LinkAction)
-        {
-            DVASSERT(false);
-            return true;
         }
     }
-    else if (data->hasFormat("text/plain") && data->hasText())
+    else if (parentNode && data->hasFormat("text/plain") && data->hasText())
     {
-        QModelIndex dstParent = parent;
-        int dstRow = rowIndex;
-        QUndoCommand *changeCommand = new InsertControlNodeCommand(this, data->text(), dstRow, dstParent);
-        document->UndoStack()->push(changeCommand);
+        String string = data->text().toStdString();
+        
+        if (!commandExecutor->Paste(root, parentNode, rowIndex, string))
+        {
+            String controlName = QStringToString(data->text());
+            size_t slashIndex = controlName.find("/");
+            ControlNode *node = nullptr;
+            
+            if (slashIndex != String::npos)
+            {
+                String packName = controlName.substr(0, slashIndex);
+                controlName = controlName.substr(slashIndex + 1, controlName.size() - slashIndex - 1);
+                PackageControlsNode *packageControls = root->GetImportedPackagesNode()->FindPackageControlsNodeByName(packName);
+                if (packageControls)
+                {
+                    ControlNode *prototypeControl = packageControls->FindControlNodeByName(controlName);
+                    if (prototypeControl)
+                    {
+                        node = ControlNode::CreateFromPrototype(prototypeControl, packageControls->GetPackageRef());
+                    }
+                }
+            }
+            else
+            {
+                UIControl *control = ObjectFactory::Instance()->New<UIControl>(controlName);
+                if (control)
+                {
+                    node = ControlNode::CreateFromControl(control);
+                    SafeRelease(control);
+                }
+                else
+                {
+                    ControlNode *prototypeControl = root->GetPackageControlsNode()->FindControlNodeByName(controlName);
+                    if (prototypeControl)
+                    {
+                        node = ControlNode::CreateFromPrototype(prototypeControl, root->GetPackageControlsNode()->GetPackageRef());
+                    }
+                }
+            }
+            
+            if (node)
+            {
+                commandExecutor->InsertControl(node, parentNode, rowIndex);
+                SafeRelease(node);
+            }
+        }
         return true;
     }
 
     return false;
 }
 
-void PackageModel::InsertItem(const QString &name, int dstRow, const QModelIndex &dstParent)
+void PackageModel::InsertControlNode(ControlNode *node, ControlsContainerNode *dest, int row)
 {
-    String controlName = QStringToString(name);
-    size_t slashIndex = controlName.find("/");
-    ControlNode *node = NULL;
-    
-    if (slashIndex != String::npos)
-    {
-        String packName = controlName.substr(0, slashIndex);
-        controlName = controlName.substr(slashIndex + 1, controlName.size() - slashIndex - 1);
-        PackageControlsNode *packageControls = root->GetImportedPackagesNode()->FindPackageControlsNodeByName(packName);
-        if (packageControls)
-        {
-            ControlNode *prototypeControl = packageControls->FindControlNodeByName(controlName);
-            if (prototypeControl)
-            {
-                node = ControlNode::CreateFromPrototype(prototypeControl, packageControls->GetPackageRef());
-            }
-        }
-    }
-    else
-    {
-        UIControl *control = ObjectFactory::Instance()->New<UIControl>(controlName);
-        if (control)
-        {
-            node = ControlNode::CreateFromControl(control);
-            SafeRelease(control);
-        }
-        else
-        {
-            ControlNode *prototypeControl = root->GetPackageControlsNode()->FindControlNodeByName(controlName);
-            if (prototypeControl)
-            {
-                node = ControlNode::CreateFromPrototype(prototypeControl, root->GetPackageControlsNode()->GetPackageRef());
-            }
-        }
-    }
-    
-    if (node)
-    {
-        InsertItem(node, dstRow, dstParent);
-        SafeRelease(node);
-    }
-    else
-    {
-        DVASSERT(false);
-    }
-}
-
-void PackageModel::InsertItem(ControlNode *node, int dstRow, const QModelIndex &dstParent)
-{
-    beginInsertRows(dstParent, dstRow, dstRow);
-    InsertNode(node, dstParent, dstRow);
+    QModelIndex destIndex = indexByNode(dest);
+    beginInsertRows(destIndex, row, row);
+    dest->InsertAtIndex(row, node);
     endInsertRows();
 }
 
-void PackageModel::InsertImportedPackage(PackageControlsNode *node, int dstRow, const QModelIndex &dstParent)
+void PackageModel::RemoveControlNode(ControlNode *node, ControlsContainerNode *parent)
 {
-    beginInsertRows(dstParent, dstRow, dstRow);
-    
-    if (dstParent.isValid())
-    {
-        PackageBaseNode *parentNode = static_cast<PackageBaseNode*>(dstParent.internalPointer());
-        ImportedPackagesNode *importedPackagesNode = dynamic_cast<ImportedPackagesNode*>(parentNode);
-        
-        if (importedPackagesNode)
-        {
-            const QModelIndex &insertBelowIndex = index(dstRow, 0, dstParent);
-            PackageControlsNode *belowThis = static_cast<PackageControlsNode*>(insertBelowIndex.internalPointer());
-            if (belowThis)
-                importedPackagesNode->InsertBelow(node, belowThis);
-            else
-                importedPackagesNode->Add(node);
-        }
-    }
-    else
-    {
-        DVASSERT(false);
-    }
-    
-    endInsertRows();
-}
-
-void PackageModel::MoveItem(const QModelIndex &srcItem, int dstRow, const QModelIndex &dstParent)
-{
-    ControlNode *sourceNode(dynamic_cast<ControlNode*>(static_cast<PackageBaseNode*>(srcItem.internalPointer())));
-    if (sourceNode)
-    {
-        beginMoveRows(srcItem.parent(), srcItem.row(), srcItem.row(), dstParent, dstRow);
-        {
-            SafeRetain(sourceNode);
-            RemoveNode(sourceNode);
-            InsertNode(sourceNode, dstParent, dstRow);
-            SafeRelease(sourceNode);
-        }
-        endMoveRows();
-    }
-    else
-    {
-        DVASSERT(false);
-    }
-}
-
-void PackageModel::CopyItem(const QModelIndex &srcItem, int dstRow, const QModelIndex &dstParent)
-{
-    ControlNode *sourceNode = dynamic_cast<ControlNode*>(static_cast<PackageBaseNode*>(srcItem.internalPointer()));
-    if (sourceNode)
-    {
-        beginInsertRows(dstParent, dstRow, dstRow);
-        {
-            ControlNode* node = sourceNode->Clone();
-            InsertNode(node, dstParent, dstRow);
-            SafeRelease(node);
-        }
-        endInsertRows();
-    }
-    else
-    {
-        DVASSERT(false);
-    }
-}
-
-void PackageModel::RemoveItem(const QModelIndex &srcItem)
-{
-    beginRemoveRows(srcItem.parent(), srcItem.row(), srcItem.row());
-    RemoveNode(static_cast<PackageBaseNode*>(srcItem.internalPointer()));
+    QModelIndex parentIndex = indexByNode(parent);
+    int index = parent->GetIndex(node);
+    beginRemoveRows(parentIndex, index, index);
+    parent->Remove(node);
     endRemoveRows();
 }
 
-void PackageModel::InsertNode(ControlNode *node, const QModelIndex &parent, int dstRow)
+void PackageModel::InsertImportedPackage(PackageControlsNode *node, PackageNode *dest, int destRow)
 {
-    if (parent.isValid())
-    {
-        PackageBaseNode *parentNode = static_cast<PackageBaseNode*>(parent.internalPointer());
-        if ((parentNode->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) == 0)
-        {
-            const QModelIndex &insertBelowIndex = index(dstRow, 0, parent);
-            if ((parentNode->GetFlags() & PackageBaseNode::FLAGS_CONTROL) != 0)
-            {
-                ControlNode *parentControl = dynamic_cast<ControlNode*>(parentNode);
-                if (parentControl)
-                {
-                    ControlNode *belowThis = static_cast<ControlNode*>(insertBelowIndex.internalPointer());
-                    if (belowThis)
-                        parentControl->InsertBelow(node, belowThis);
-                    else
-                        parentControl->Add(node);
-                }
-                else
-                {
-                    DVASSERT(false);
-                }
-            }
-            else
-            {
-                PackageControlsNode *parentControls = dynamic_cast<PackageControlsNode*>(parentNode);
-                if (parentControls)
-                {
-                    ControlNode *belowThis = static_cast<ControlNode*>(insertBelowIndex.internalPointer());
-                    if (belowThis)
-                        parentControls->InsertBelow(node, belowThis);
-                    else
-                        parentControls->Add(node);
-                }
-                else
-                {
-                    DVASSERT(false);
-                }
-            }
-        }
-    }
-    else
-    {
-        DVASSERT(false);
-    }
+    QModelIndex destIndex = indexByNode(dest);
+    beginInsertRows(destIndex, destRow, destRow);
+    dest->GetImportedPackagesNode()->InsertAtIndex(destRow, node);
+    endInsertRows();
 }
 
-void PackageModel::RemoveNode(PackageBaseNode *node)
+void PackageModel::RemoveImportedPackage(PackageControlsNode *node, PackageNode *parent)
 {
-    ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
-    if (controlNode)
-    {
-        RemoveControlNode(controlNode);
-    }
-    else
-    {
-        PackageControlsNode *packageControlsNode = dynamic_cast<PackageControlsNode*>(node);
-        RemovePackageControlsNode(packageControlsNode);
-    }
+    QModelIndex parentIndex = indexByNode(parent);
+    int index = parent->GetIndex(node);
+    beginRemoveRows(parentIndex, index, index);
+    parent->GetImportedPackagesNode()->Remove(node);
+    endRemoveRows();
 }
 
-void PackageModel::RemoveControlNode(ControlNode *node)
-{
-    PackageBaseNode *parentNode = node->GetParent();
-    if ((parentNode->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) == 0)
-    {
-        PackageControlsNode *controls = dynamic_cast<PackageControlsNode*>(parentNode);
-        if (controls)
-        {
-            controls->Remove(node);
-        }
-        else
-        {
-            ControlNode *parentControl = dynamic_cast<ControlNode*>(parentNode);
-            if (parentControl)
-            {
-                parentControl->Remove(node);
-            }
-            else
-            {
-                DVASSERT(false);
-            }
-        }
-    }
-    else
-    {
-        DVASSERT(false);
-    }
-}
-
-void PackageModel::RemovePackageControlsNode(PackageControlsNode *node)
-{
-    PackageBaseNode *parentNode = node->GetParent();
-    ImportedPackagesNode *importedPackagesNode = dynamic_cast<ImportedPackagesNode*>(parentNode);
-    if (importedPackagesNode)
-    {
-        importedPackagesNode->Remove(node);
-    }
-    else
-    {
-        DVASSERT(false);
-    }
-}

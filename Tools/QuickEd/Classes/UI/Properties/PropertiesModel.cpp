@@ -17,8 +17,8 @@
 
 using namespace DAVA;
 
-PropertiesModel::PropertiesModel(ControlNode *_controlNode, PropertiesContext *context, QObject *parent)
-    : QAbstractItemModel(parent)
+PropertiesModel::PropertiesModel(ControlNode *_controlNode, PropertiesContext *context)
+    : QAbstractItemModel(context)
     , controlNode(nullptr)
     , propertiesContext(context)
 {
@@ -28,6 +28,25 @@ PropertiesModel::PropertiesModel(ControlNode *_controlNode, PropertiesContext *c
 PropertiesModel::~PropertiesModel()
 {
     SafeRelease(controlNode);
+}
+
+void PropertiesModel::emitPropertyChanged(BaseProperty *property)
+{
+    QModelIndex nameIndex = indexByProperty(property, 0);
+    QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
+    emit dataChanged(nameIndex, valueIndex);
+}
+
+QModelIndex PropertiesModel::indexByProperty(BaseProperty *property, int column)
+{
+    BaseProperty *parent = property->GetParent();
+    if (parent == NULL)
+        return QModelIndex();
+    
+    if (parent)
+        return createIndex(parent->GetIndex(property), column, property);
+    else
+        return createIndex(0, column, parent);
 }
 
 QModelIndex PropertiesModel::index(int row, int column, const QModelIndex &parent) const
@@ -135,13 +154,13 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
             
         case Qt::FontRole:
             {
-                if (property->IsReplaced())
+                if (property->IsReplaced() || property->IsReadOnly())
                 {
                     QFont myFont;
-                    myFont.setBold(true);
+                    myFont.setBold(property->IsReplaced());
+                    myFont.setItalic(property->IsReadOnly());
                     return myFont;
                 }
-//                return QVariant();
             }
             break;
     }
@@ -155,6 +174,9 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
         return false;
 
     BaseProperty *property = static_cast<BaseProperty*>(index.internalPointer());
+    if (property->IsReadOnly())
+        return false;
+    
     switch (role)
     {
     case Qt::CheckStateRole:
@@ -163,8 +185,6 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
             {
                 VariantType newVal(value != Qt::Unchecked);
                 propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
-                QModelIndex siblingIndex = index.sibling(index.row(), index.column()-1);
-                emit dataChanged(siblingIndex, index);
                 return true;
             }
         }
@@ -184,9 +204,6 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
             }
 
             propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
-
-            QModelIndex siblingIndex = index.sibling(index.row(), index.column()-1);
-            emit dataChanged(siblingIndex, index);
             return true;
         }
         break;
@@ -194,13 +211,13 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
     case DAVA::ResetRole:
         {
             propertiesContext->GetDocument()->GetCommandExecutor()->ResetProperty(controlNode, property);
-            emit dataChanged(index.sibling(index.row(), index.column()-1), index);
             return true;
         }
         break;
     }
     return false;
 }
+
 Qt::ItemFlags PropertiesModel::flags(const QModelIndex &index) const
 {
     if (index.column() != 1)
@@ -208,7 +225,7 @@ Qt::ItemFlags PropertiesModel::flags(const QModelIndex &index) const
     
     BaseProperty* prop = static_cast<BaseProperty*>(index.internalPointer());
     Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
-    if (prop->GetType() == BaseProperty::TYPE_ENUM || prop->GetType() == BaseProperty::TYPE_FLAGS || prop->GetType() == BaseProperty::TYPE_VARIANT)
+    if (!prop->IsReadOnly() && (prop->GetType() == BaseProperty::TYPE_ENUM || prop->GetType() == BaseProperty::TYPE_FLAGS || prop->GetType() == BaseProperty::TYPE_VARIANT))
         flags |= Qt::ItemIsEditable;
     return flags;
 }

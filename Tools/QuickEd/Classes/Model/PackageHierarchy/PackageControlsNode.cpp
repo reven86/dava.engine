@@ -11,7 +11,7 @@
 using namespace DAVA;
 
 PackageControlsNode::PackageControlsNode(PackageNode *_parent, PackageRef *_packageRef)
-    : PackageBaseNode(_parent)
+    : ControlsContainerNode(_parent)
     , name("Controls")
     , readOnly(false)
     , packageRef(SafeRetain(_packageRef))
@@ -35,21 +35,13 @@ void PackageControlsNode::Add(ControlNode *node)
     GetPackage()->AddControl(node->GetControl());
 }
 
-void PackageControlsNode::InsertBelow(ControlNode *node, const ControlNode *belowThis)
+void PackageControlsNode::InsertAtIndex(int index, ControlNode *node)
 {
     DVASSERT(node->GetParent() == NULL);
     node->SetParent(this);
-    auto it = find(nodes.begin(), nodes.end(), belowThis);
-    if (it != nodes.end())
-    {
-        GetPackage()->InsertControlBelow(node->GetControl(), (*it)->GetControl());
-        nodes.insert(it, SafeRetain(node));
-    }
-    else
-    {
-        GetPackage()->AddControl(node->GetControl());
-        nodes.push_back(SafeRetain(node));
-    }
+
+    nodes.insert(nodes.begin() + index, SafeRetain(node));
+    GetPackage()->InsertControlAtIndex(index, node->GetControl());
 }
 
 void PackageControlsNode::Remove(ControlNode *node)
@@ -107,6 +99,31 @@ void PackageControlsNode::SetReadOnly()
     {
         (*it)->SetReadOnly();
     }
+}
+
+bool PackageControlsNode::IsEditingSupported() const
+{
+    return false;
+}
+
+bool PackageControlsNode::IsInsertingSupported() const
+{
+    return !readOnly;
+}
+
+bool PackageControlsNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
+{
+    return !readOnly;
+}
+
+bool PackageControlsNode::CanRemove() const
+{
+    return false;
+}
+
+bool PackageControlsNode::CanCopy() const
+{
+    return false;
 }
 
 ControlNode *PackageControlsNode::FindControlNodeByName(const DAVA::String &name) const

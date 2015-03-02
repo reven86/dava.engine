@@ -35,6 +35,9 @@
 #include "Animation/AnimatedObject.h"
 #include "Animation/Interpolation.h"
 
+#include "Scene3D/EntityFamily.h"
+#include "Scene3D/Entity.h"
+
 namespace DAVA
 {
 class UIYamlLoader;
@@ -1189,6 +1192,9 @@ public:
      \returns true if control processed this input.
      */
     virtual bool SystemProcessInput(UIEvent *currentInput);// Internal method used by ControlSystem
+
+    Function<bool(UIControl*,UIEvent*)> customSystemProcessInput;
+
     /**
      \brief Calls when input processd by control is cancelled.
         Internal method used by ControlSystem.
@@ -1437,6 +1443,42 @@ private:
                                 bool firstSideAlignEnabled, bool centerAlignEnabled, bool secondSideAlignEnabled,
                                 float32 &firstSideAlign, float32 &centerAlign, float32 &secondSideAlign);
     
+/* Components */
+public:
+    void AddComponent(Component * component);
+    void RemoveComponent(Component * component);
+    void RemoveComponent(uint32 componentType, uint32 index = 0);
+    void RemoveAllComponents();
+    void DetachComponent(Component * component);
+
+    Component * GetComponent(uint32 componentType, uint32 index = 0) const;
+    Component * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
+
+    template<class T> inline T* GetComponent(uint32 index = 0) const
+    {
+        return DynamicTypeCheck<T*>(GetComponent(T::C_TYPE, index));
+    }
+    template<class T> inline T* GetOrCreateComponent(uint32 index = 0)
+    {
+        return DynamicTypeCheck<T*>(GetOrCreateComponent(T::C_TYPE, index));
+    }
+    template<class T> inline uint32 GetComponentCount() const
+    {
+        return GetComponentCount(T::C_TYPE);
+    }
+
+    inline uint32 GetComponentCount() const;
+    inline uint32 GetComponentCount(uint32 componentType) const;
+    inline uint64 GetAvailableComponentFlags() const;
+
+private:
+    Vector<Component *> components;
+    EntityFamily * family;
+    void DetachComponent(const Vector<Component *>::iterator & it);
+    void RemoveComponent(const Vector<Component *>::iterator & it);
+    void UpdateFamily();
+/* Components */
+
 public:
     inline bool GetSystemVisible() const;
     void SystemNotifyVisibilityChanged();
@@ -1710,6 +1752,24 @@ void UIControl::SetAndApplyBottomAlignEnabled(bool isEnabled)
 {
     SetBottomAlignEnabled(isEnabled, true);
 }
+
+/* Components */
+inline uint32 UIControl::GetComponentCount() const
+{
+    return static_cast<uint32>(components.size());
+}
+
+inline uint32 UIControl::GetComponentCount(uint32 componentType) const
+{
+    return family->GetComponentsCount(componentType);
+}
+
+inline uint64 UIControl::GetAvailableComponentFlags() const
+{
+    return family->GetComponentsFlags();
+}
+/* Components */
+
 };
 
 

@@ -272,7 +272,7 @@ void Texture::ReleaseTextureDataInternal(uint32 textureType, uint32 textureID, u
 
 	//VI: reset texture for the current texture type in order to avoid
 	//issue when cubemap texture was deleted while being binded to the state
-    if(RenderManager::Instance()->lastBindedTexture[textureType] == textureID)
+    if(RenderManager::Instance()->lastBindedTexture[textureType] == static_cast<int32>(textureID))
 	{
 		RenderManager::Instance()->HWglBindTexture(0, textureType);
 	}
@@ -685,7 +685,7 @@ void Texture::SetParamsFromImages(const Vector<Image *> * images)
 
 void Texture::FlushDataToRenderer(Vector<Image *> * images)
 {
-	Function<void()> fn = Bind(MakeFunction(this, &Texture::FlushDataToRendererInternal), images);
+    Function<void()> fn = Bind(MakeFunction(PointerWrapper<Texture>::WrapRetainRelease(this), &Texture::FlushDataToRendererInternal), images);
 	JobManager::Instance()->CreateMainJob(fn);
 }
 
@@ -932,7 +932,7 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, DepthFormat
 #if defined(__DAVAENGINE_OPENGL__)
 void Texture::HWglCreateFBOBuffers()
 {
-	JobManager::Instance()->CreateMainJob(MakeFunction(this, &Texture::HWglCreateFBOBuffersInternal));
+    JobManager::Instance()->CreateMainJob(MakeFunction(PointerWrapper<Texture>::WrapRetainRelease(this), &Texture::HWglCreateFBOBuffersInternal));
 }
 
 void Texture::HWglCreateFBOBuffersInternal()
@@ -1349,7 +1349,7 @@ int32 Texture::GetBaseMipMap() const
         const TextureQuality *curTxQuality = QualitySettingsSystem::Instance()->GetTxQuality(QualitySettingsSystem::Instance()->GetCurTextureQuality());
         if(NULL != curTxQuality)
         {
-            return curTxQuality->albedoBaseMipMapLevel;
+            return static_cast<int32>(curTxQuality->albedoBaseMipMapLevel);
         }
     }
 

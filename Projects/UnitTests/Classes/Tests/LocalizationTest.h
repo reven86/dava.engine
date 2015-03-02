@@ -33,7 +33,7 @@
 #include "DAVAEngine.h"
 using namespace DAVA;
 
-#include "TestTemplate.h"
+#include "Infrastructure/TestTemplate.h"
 
 class LocalizationTest : public TestTemplate<LocalizationTest>
 {
@@ -59,8 +59,6 @@ private:
 
 	FilePath srcDir;
 	FilePath cpyDir;
-
-	bool CompareFiles(const FilePath& file1, const FilePath& file2);
 };
 
 #endif /* defined(__TEMPLATEPROJECTMACOS__LOCALIZATIONTEST__) */

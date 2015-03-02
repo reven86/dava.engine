@@ -16,7 +16,7 @@
 
 #import "UIAlertView_Modal.h"
 
-NSInteger returnButtonIndex;
+NSInteger returnButtonIndex = -1;
 
 @implementation UIAlertView (Modal)
 
@@ -28,10 +28,10 @@ NSInteger returnButtonIndex;
 	[self autorelease];
 
 	// This view must be modal, so wait for result
-	NSRunLoop *theRL = [NSRunLoop currentRunLoop];
-	while (returnButtonIndex == -1)
+	[NSRunLoop currentRunLoop];
+	while (-1 == returnButtonIndex)
 	{
-		[[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1f]];
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
     }
 
     return returnButtonIndex;
@@ -40,6 +40,11 @@ NSInteger returnButtonIndex;
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
     returnButtonIndex = buttonIndex;
+}
+
+- (NSInteger)getClickedButtonIndex
+{
+    return returnButtonIndex;
 }
 
 @end

@@ -33,7 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "Core/Core.h"
 
-#define InvalidUniqueHandle (static_cast<DAVA::uint32>(-1))
+const DAVA::uint32 InvalidUniqueHandle = -1;
 
 namespace DAVA
 {
@@ -80,11 +80,11 @@ UniqueHandle UniqueStateSet<T>::MakeUnique(const T& objRef)
 {
 	DVASSERT(!IsUnique(objRef));
 	
-	size_t freeSlot = InvalidUniqueHandle;
+	uint32 freeSlot = InvalidUniqueHandle;
 	UniqueHandle handle = InvalidUniqueHandle;
 	
-	size_t count = values.size();
-	for(size_t i = 0; i < count; ++i)
+	uint32 count = static_cast<uint32>(values.size());
+	for(uint32 i = 0; i < count; ++i)
 	{
         DVASSERT(refCounters[i] >= 0);
         
@@ -115,7 +115,7 @@ UniqueHandle UniqueStateSet<T>::MakeUnique(const T& objRef)
 		{
 			values.push_back(T());
 			refCounters.push_back(0);
-			handle = values.size() - 1;
+			handle = static_cast<UniqueHandle>(values.size() - 1);
 		}
 		
 		values[handle] = objRef;

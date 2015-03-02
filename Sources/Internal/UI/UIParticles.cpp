@@ -30,6 +30,7 @@
 
 #include "UI/UIParticles.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Systems/ParticleEffectSystem.h"
@@ -41,11 +42,11 @@ Camera *UIParticles::defaultCamera = nullptr;
 
 UIParticles::UIParticles(const Rect &rect)
     : UIControl(rect)
+    , isAutostart(false)
+    , startDelay(0.0f)
     , effect(nullptr)
     , system(new ParticleEffectSystem(nullptr, true))
     , updateTime(0)
-    , isAutostart(false)
-    , startDelay(0.0f)
     , delayedActionType(UIParticles::actionNone)
     , delayedActionTime(0.0f)
     , delayedDeleteAllParticles(false)
@@ -224,6 +225,8 @@ void UIParticles::Draw(const UIGeometricData & geometricData)
 {
     if ( !effect || effect->state == ParticleEffectComponent::STATE_STOPPED)
         return;
+
+    RenderSystem2D::Instance()->Flush();
 
     matrix.CreateRotation(Vector3::UnitZ, -geometricData.angle);
     matrix.SetTranslationVector(Vector3(geometricData.position.x, geometricData.position.y, 0));

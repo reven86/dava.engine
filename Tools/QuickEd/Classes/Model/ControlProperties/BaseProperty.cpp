@@ -1,16 +1,8 @@
-//
-//  BaseProperty.cpp
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 12.9.14.
-//
-//
-
 #include "BaseProperty.h"
 
 using namespace DAVA;
 
-BaseProperty::BaseProperty() : parent(NULL)
+BaseProperty::BaseProperty() : parent(NULL), readOnly(false)
 {
     
 }
@@ -53,6 +45,18 @@ void BaseProperty::Serialize(PackageSerializer *serializer) const
 {
     for (int i = 0; i < GetCount(); i++)
         GetProperty(i)->Serialize(serializer);
+}
+
+bool BaseProperty::IsReadOnly() const
+{
+    return readOnly;
+}
+
+void BaseProperty::SetReadOnly()
+{
+    readOnly = true;
+    for (int i = 0; i < GetCount(); i++)
+        GetProperty(i)->SetReadOnly();
 }
 
 DAVA::VariantType BaseProperty::GetValue() const
@@ -139,4 +143,20 @@ BaseProperty *BaseProperty::GetPropertyByPath(const Vector<String> &path)
     }
     
     return prop;
+}
+
+BaseProperty *BaseProperty::GetRootProperty()
+{
+    BaseProperty *property = this;
+    while (property->parent)
+        property = property->parent;
+    return property;
+}
+
+const BaseProperty *BaseProperty::GetRootProperty() const
+{
+    const BaseProperty *property = this;
+    while (property->parent)
+        property = property->parent;
+    return property;
 }

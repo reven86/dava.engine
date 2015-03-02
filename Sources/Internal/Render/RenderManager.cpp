@@ -405,6 +405,7 @@ void RenderManager::ProcessStats()
         Logger::FrameworkDebug("== Frame stats: DrawArraysCount: %d DrawElementCount: %d ==", stats.drawArraysCalls, stats.drawElementsCalls);
         for (int32 k = 0; k < PRIMITIVETYPE_COUNT; ++k)
             Logger::FrameworkDebug("== Primitive Stats: %d ==", stats.primitiveCount[k]);
+        Logger::FrameworkDebug("== SpriteDrawCount: %d  ==", stats.spriteDrawCount);
     }
 }
     
@@ -440,7 +441,6 @@ uint64 RenderManager::GetRenderContextId()
 	return renderContextId;
 }
 	
-
 void RenderManager::VerifyRenderContext()
 {
 	
@@ -464,9 +464,8 @@ void RenderManager::VerifyRenderContext()
 	//And after returning from file selection dialog the opengl context is completely wrong until the end of current event loop.
 	//In order to fix call QApplication::processEvents in case of Qt or equivalent in case of native app or
 	//postpone result processing via delayed selector execution.
-    
-    DVASSERT(curRenderContext == renderContextId);
-
+	DVASSERT(curRenderContext == renderContextId);
+	
 #endif
 }
     

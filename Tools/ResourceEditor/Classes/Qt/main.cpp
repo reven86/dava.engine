@@ -100,6 +100,7 @@ int main(int argc, char *argv[])
     
 	new EditorConfig();
     ParticleEmitter::FORCE_DEEP_CLONE = true;
+    QualitySettingsSystem::Instance()->SetKeepUnusedEntities(true);
 
 	CommandLineManager cmdLine;
 

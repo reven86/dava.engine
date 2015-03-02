@@ -38,9 +38,7 @@ class QtLayerDelegate
 {
 public:
     
-    virtual void Quit() = 0;
-    virtual void ShowAssertMessage(const char * message) = 0;
-    
+    virtual void Quit() = 0;  
 };
     
 class QtLayer: public Singleton<QtLayer>
@@ -74,7 +72,7 @@ public:
 
 	virtual void* GetOpenGLView() { return NULL; };
     
-    void ShowAsserMessage(const char * message);
+    bool ShowAsserMessage(const char * message);
     bool IsDAVAEngineEnabled() const { return isDAVAEngineEnabled; };
 protected:
     
