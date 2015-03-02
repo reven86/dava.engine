@@ -45,6 +45,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/System/CollisionSystem.h"
 
+class SceneEditor2;
+
 class WayEditSystem : public DAVA::SceneSystem
 {
     friend class SceneEditor2;
