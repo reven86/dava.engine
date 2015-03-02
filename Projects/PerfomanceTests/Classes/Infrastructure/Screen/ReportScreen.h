@@ -29,29 +29,33 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __REPORT_SCREEN_H__
 #define __REPORT_SCREEN_H__
 
-#include "DAVAEngine.h"
 #include "BaseScreen.h"
+#include "Infrastructure/Utils/ControlHelpers.h"
 #include "Tests/BaseTest.h"
-
-using namespace DAVA;
 
 class ReportScreen : public BaseScreen
 {
 public:
-	ReportScreen(const Vector<BaseTest*>& testsChain);
-
-	bool IsFinished() const override;
-
+    ReportScreen(const Vector<BaseTest*>& testsChain);
+    
+    bool IsFinished() const override;
+    
 protected:
-
-	void LoadResources() override;
-	void UnloadResources() override;
+    
+    void LoadResources() override;
+    void UnloadResources() override;
 
 private:
-	void CreateReportScreen();
+    void CreateReportScreen();
+    
+    Vector<BaseTest*> testChain;
 
-	Vector<BaseTest*> testChain; 
-	Font* reportFont;
+    static const String MIN_DELTA;
+    static const String MAX_DELTA;
+    static const String AVERAGE_DELTA;
+    static const String TEST_TIME;
+    static const String ELAPSED_TIME;
+    static const String FRAMES_RENDERED;
 };
 
 #endif

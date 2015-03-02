@@ -29,143 +29,140 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __BASE_TEST_H__
 #define __BASE_TEST_H__
 
-#include "DAVAEngine.h"
 #include "Infrastructure/Screen/BaseScreen.h"
-#include <list>
-
-using std::list;
-using namespace DAVA;
 
 class BaseTest : public BaseScreen
 {
 public:
+    
+    struct FrameInfo
+    {
+        FrameInfo() {}
+        FrameInfo(float32 delta, uint32 frame) : delta(delta), frame(frame) {}
 
-	struct FrameInfo
-	{
-		FrameInfo() {}
-		FrameInfo(float32 delta, uint32 frame) : delta(delta), frame(frame) {}
+        float32 delta;
+        uint32 frame;
+    };
 
-		float32 delta;
-		uint32 frame;
-	};
-
-	BaseTest(const String& testName, uint32 frames, float32 delta, uint32 debugFrame);
-	BaseTest(const String& testName, uint32 time);
-
-	void OnFinish() override;
-
-	void SetDebuggable(bool value);
-	bool IsDebuggable() const;
-	bool IsFinished() const override;
-
-	void BeginFrame() override;
-	void EndFrame() override;
-	void Update(float32 timeElapsed) override;
-
-	const List<FrameInfo>& GetFramesInfo() const;
-	const String& GetName() const;
-
-	float32 GetTestTime() const;
-	float32 GetFixedDelta() const;
-	uint64 GetElapsedTime() const;
-	uint32 GetFrameNumber() const; 
-	uint32 GetDebugFrame() const;
-
-	Scene* GetScene() const;
-
-	static const float32 FRAME_OFFSET;
-
+    BaseTest(const String& testName, uint32 frames, float32 delta, uint32 debugFrame);
+    BaseTest(const String& testName, uint32 time);
+    
+    void OnFinish() override;
+    
+    void SetDebuggable(bool value);
+    bool IsDebuggable() const;
+    bool IsFinished() const override;
+    
+    void BeginFrame() override;
+    void EndFrame() override;
+    void Update(float32 timeElapsed) override;
+    
+    const List<FrameInfo>& GetFramesInfo() const;
+    const String& GetName() const;
+    
+    float32 GetTestTime() const;
+    float32 GetFixedDelta() const;
+    uint64 GetElapsedTime() const;
+    uint32 GetFrameNumber() const; 
+    uint32 GetDebugFrame() const;
+    
+    Scene* GetScene() const;
+    
+    static const float32 FRAME_OFFSET;
+    
 protected:
+    
+    virtual ~BaseTest() {};
 
-	void LoadResources() override;
-	void UnloadResources() override;
-
-	virtual void PerformTestLogic() = 0;
-
+    void LoadResources() override;
+    void UnloadResources() override;
+    
+    virtual void PerformTestLogic() = 0;
+    
 private:
-
-	List<FrameInfo> frames;
-	String testName;
-	
-	uint32 frameNumber;
-	float32 testTime;
-	uint64 startTime;
-	uint64 elapsedTime;
-
-	uint32 targetFramesCount;
-	float32 fixedDelta;
-
-	uint32 targetTestTime;
-	uint32 debugFrame;
-
-	Scene* scene;
-	UI3DView* sceneView;
-
-	bool debuggable;
+    
+    List<FrameInfo> frames;
+    String testName;
+    
+    uint32 frameNumber;
+    float32 testTime;
+    uint64 startTime;
+    uint64 elapsedTime;
+    
+    uint32 targetFramesCount;
+    float32 fixedDelta;
+    
+    uint32 targetTestTime;
+    uint32 debugFrame;
+    
+    Scene* scene;
+    UI3DView* sceneView;
+    
+    bool debuggable;
 };
 
 inline const List<BaseTest::FrameInfo>& BaseTest::GetFramesInfo() const
 {
-	return frames;
+    return frames;
 }
 
 inline Scene* BaseTest::GetScene() const
 {
-	return scene;
+    return scene;
 }
 
 inline bool BaseTest::IsFinished() const
 {
-	if (targetFramesCount > 0 && frameNumber >= (targetFramesCount + FRAME_OFFSET))
-	{
-		return true;
-	}
-	if (targetTestTime > 0 && (testTime * 1000) >= targetTestTime)
-	{
-		return true;
-	}
-
-	return false;
+    if (targetFramesCount > 0 && frameNumber >= (targetFramesCount + FRAME_OFFSET))
+    {
+        return true;
+    }
+    if (targetTestTime > 0 && (testTime * 1000) >= targetTestTime)
+    {
+        return true;
+    }
+    
+    return false;
 }
 
 inline const String& BaseTest::GetName() const
 {
-	return testName;
+    return testName;
 }
 
 inline uint64 BaseTest::GetElapsedTime() const
 {
-	return elapsedTime;
+    return elapsedTime;
 }
 
 inline float32 BaseTest::GetTestTime() const
 {
-	return testTime;
+    return testTime;
 }
 
 inline uint32 BaseTest::GetDebugFrame() const
 {
-	return debugFrame;
+    return debugFrame;
 }
 
 inline uint32 BaseTest::GetFrameNumber() const
 {
-	return frameNumber;
+    return frameNumber;
 }
 
 inline bool BaseTest::IsDebuggable() const
 {
-	return debuggable;
+    return debuggable;
 }
 
 inline void BaseTest::SetDebuggable(bool value)
 {
-	debuggable = value;
+    debuggable = value;
 }
 
 inline float32 BaseTest::GetFixedDelta() const
 {
-	return fixedDelta;
+    return fixedDelta;
 }
 
 #endif

@@ -35,24 +35,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class TestChainFlowController: public TestFlowController
 {
 public:
-	TestChainFlowController(bool showUIReport);
-
-	void Init(Vector<BaseTest*>& testChain) override;
-
-	void BeginFrame() override;
-	void EndFrame() override;
+    TestChainFlowController(bool showUIReport);
+    
+    void Init(Vector<BaseTest*>& testChain) override;
+    
+    void BeginFrame() override;
+    void EndFrame() override;
 
 private:
-
-	ReportScreen* reportScreen;
-	BaseScreen* currentScreen;
-	BaseTest* currentTest;
-
-	uint32 currentTestIndex;
-
-	bool showUIReport;
-	bool reportCreated;
-	bool testsFinished;
+    
+    ReportScreen* reportScreen;
+    BaseScreen* currentScreen;
+    BaseTest* currentTest;
+    
+    uint32 currentTestIndex;
+    
+    bool showUIReport;
+    bool reportCreated;
+    bool testsFinished;
 };
 
 #endif

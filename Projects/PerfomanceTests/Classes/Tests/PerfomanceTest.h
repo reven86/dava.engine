@@ -31,19 +31,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class PerfomanceTest : public BaseTest
 {
 public:
-	PerfomanceTest(uint32 frames, float32 delta, uint32 targetFrame);
-	PerfomanceTest(uint32 time);
-
+    PerfomanceTest(uint32 frames, float32 delta, uint32 targetFrame);
+    PerfomanceTest(uint32 time);
+    
 protected:
-
-	void LoadResources() override;
-	void UnloadResources() override;
-
-	void PerformTestLogic() override;
-
+    
+    void LoadResources() override;
+    void UnloadResources() override;
+    
+    void PerformTestLogic() override;
+    
 private:
-	static const String TEST_NAME;
-
-	Entity* stoneEntity;
+    static const String TEST_NAME;
+    
+    Entity* stoneEntity;
 };
 

@@ -40,9 +40,9 @@
 
 using namespace DAVA;
 
-GameCore::GameCore() :
-	testFlowController(nullptr)
-
+GameCore::GameCore()
+    :   testFlowController(nullptr)
+    
 {
 }
 
@@ -60,48 +60,13 @@ void GameCore::OnAppStarted()
 void GameCore::OnAppFinished()
 {
 	testFlowController->Finish();
+    SafeRelease(testFlowController);
+
 	for each (BaseTest* test in testChain)
 	{
 		SafeRelease(test);
 	}
 }
-
-void GameCore::OnSuspend()
-{
-//    Logger::Debug("GameCore::OnSuspend");
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    ApplicationCore::OnSuspend();
-#endif
-
-}
-
-void GameCore::OnResume()
-{
-    Logger::Debug("GameCore::OnResume");
-    ApplicationCore::OnResume();
-}
-
-
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-void GameCore::OnDeviceLocked()
-{
-//    Logger::Debug("GameCore::OnDeviceLocked");
-    //Core::Instance()->Quit();
-}
-
-void GameCore::OnBackground()
-{
-    Logger::Debug("GameCore::OnBackground");
-}
-
-void GameCore::OnForeground()
-{
-    Logger::Debug("GameCore::OnForeground");
-    ApplicationCore::OnForeground();
-}
-
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-
 
 void GameCore::BeginFrame()
 {
@@ -115,21 +80,8 @@ void GameCore::EndFrame()
 	testFlowController->EndFrame();
 }
 
-void GameCore::Update(float32 timeElapsed)
-{
-	ApplicationCore::Update(timeElapsed);
-}
-
-void GameCore::Draw()	
-{
-	ApplicationCore::Draw();
-}
-
 void GameCore::RegisterTests()
 {
-	testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
-	testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
-	testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
 	testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
 	testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
 }
@@ -152,7 +104,7 @@ void GameCore::InitScreenController()
 		testFlowController = new SingleTestFlowController();
 	}
 
-	testFlowController->Init(testChain);
+    testFlowController->Init(testChain);
 }
 
 

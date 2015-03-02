@@ -28,61 +28,61 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "TestChainFlowController.h"
 
-TestChainFlowController::TestChainFlowController(bool _showUIReport) :
-		currentTest(nullptr)
-	,	currentScreen(nullptr)
-	,	currentTestIndex(0)
-	,	showUIReport(_showUIReport)
-	,	testsFinished(false)
-	,	reportCreated(false)
-
+TestChainFlowController::TestChainFlowController(bool _showUIReport)
+    :   currentTest(nullptr)
+    ,   currentScreen(nullptr)
+    ,   currentTestIndex(0)
+    ,   showUIReport(_showUIReport)
+    ,   testsFinished(false)
+    ,   reportCreated(false)
+    
 {
 }
 
 void TestChainFlowController::Init(Vector<BaseTest*>& _testChain)
 {
-	TestFlowController::Init(_testChain);
-
-	currentTest = testChain[currentTestIndex];
-	currentScreen = currentTest;
+    TestFlowController::Init(_testChain);
+    
+    currentTest = testChain[currentTestIndex];
+    currentScreen = currentTest;
 }
 
 void TestChainFlowController::BeginFrame()
 {
-	if (!currentScreen->IsRegistered())
-	{
-		currentScreen->RegisterScreen();
-		currentScreen->OnStart();
-	}
-
-	currentTest->BeginFrame();
+    if (!currentScreen->IsRegistered())
+    {   
+        currentScreen->RegisterScreen();
+        currentScreen->OnStart();
+    }
+    
+    currentScreen->BeginFrame();
 }
 
 void TestChainFlowController::EndFrame()
 {
-	if (currentTest->IsFinished() && !testsFinished) 
-	{
-		currentTest->OnFinish();
-		currentTestIndex++;
-
-		testsFinished = testChain.size() == currentTestIndex;
-
-		if (!testsFinished)
-		{
-			currentTest = testChain[currentTestIndex];
-			currentScreen = currentTest;
-		}
-	}
-
-	if (testsFinished && !reportCreated && showUIReport)
-	{
-		currentScreen = new ReportScreen(testChain);
-		reportCreated = true;
-	}
-	if (testsFinished && !showUIReport)
-	{
-		Core::Instance()->Quit();
-	}
-
-	currentScreen->EndFrame();
+    if (currentTest->IsFinished() && !testsFinished) 
+    {
+        currentTest->OnFinish();
+        currentTestIndex++;
+        
+        testsFinished = testChain.size() == currentTestIndex;
+        
+        if (!testsFinished)
+        {
+            currentTest = testChain[currentTestIndex];
+            currentScreen = currentTest;
+        }
+    }
+    
+    if (testsFinished && !reportCreated && showUIReport)
+    {
+        currentScreen = new ReportScreen(testChain);
+        reportCreated = true;
+    }   
+    if (testsFinished && !showUIReport)
+    {
+        Core::Instance()->Quit();
+    }
+    
+    currentScreen->EndFrame();
 }

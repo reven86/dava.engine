@@ -29,39 +29,38 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __TEST_CHOOSER_SCREEN_H__
 #define __TEST_CHOOSER_SCREEN_H__
 
-#include "DAVAEngine.h"
 #include "BaseScreen.h"
 #include "Tests/BaseTest.h"
 
 class TestChooserScreen: public BaseScreen
 {
 public:
-	TestChooserScreen(const Vector<BaseTest*>& testsChain);
-
-	bool IsFinished() const override;
-	void OnFinish() override;
-
-	BaseTest* GetTestForRun() const;
+    TestChooserScreen(const Vector<BaseTest*>& testsChain);
+    
+    bool IsFinished() const override;
+    void OnFinish() override;
+    
+    BaseTest* GetTestForRun() const;
 
 protected:
-
-	void OnButtonPressed(BaseObject *obj, void *data, void *callerData);
-
-	void LoadResources() override;
-	void UnloadResources() override;
-
+    
+    void OnButtonPressed(BaseObject *obj, void *data, void *callerData);
+    
+    void LoadResources() override;
+    void UnloadResources() override;
+    
 private:
-	void CreateChooserUI();
-
-	Vector<BaseTest*> testChain;
-	BaseTest* testForRun;
-
-	Font* chooserFont;
+    void CreateChooserUI();
+    
+    Vector<BaseTest*> testChain;
+    BaseTest* testForRun;
+    
+    Font* chooserFont;
 };
 
 inline BaseTest* TestChooserScreen::GetTestForRun() const
 {
-	return testForRun;
+    return testForRun;
 }
 
 #endif

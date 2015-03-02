@@ -30,56 +30,56 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 const String PerfomanceTest::TEST_NAME = "Performance_Test";
 
-PerfomanceTest::PerfomanceTest(uint32 frames, float32 delta, uint32 targetFrame) : 
-		BaseTest(TEST_NAME, frames, delta, targetFrame)
-	,	stoneEntity(nullptr)
+PerfomanceTest::PerfomanceTest(uint32 frames, float32 delta, uint32 targetFrame)
+    :   BaseTest(TEST_NAME, frames, delta, targetFrame)
+    ,   stoneEntity(nullptr)
 {
 }
 
-PerfomanceTest::PerfomanceTest(uint32 time) : 
-		BaseTest(TEST_NAME, time)
-	,	stoneEntity(nullptr)
+PerfomanceTest::PerfomanceTest(uint32 time)
+    :   BaseTest(TEST_NAME, time)
+    ,   stoneEntity(nullptr)
 {
 }
 
 void PerfomanceTest::LoadResources()
 {
-	BaseTest::LoadResources();
+    BaseTest::LoadResources();
 
-	Camera* camera = new Camera();
-	camera->SetPosition(Vector3(-40, 4, 60));
-	camera->SetTarget(Vector3(-40, -6, 53));
-	camera->SetUp(Vector3(0.0f, 0.0f, 1.0f));
-	camera->SetLeft(Vector3(-1.0f, 0.0f, 0.0f));
-	camera->SetFOV(70.0f);
-	camera->SetZFar(5000);
-	camera->SetZNear(1);
+    Camera* camera = new Camera();
+    camera->SetPosition(Vector3(-40, 4, 60));
+    camera->SetTarget(Vector3(-40, -6, 53));
+    camera->SetUp(Vector3(0.0f, 0.0f, 1.0f));
+    camera->SetLeft(Vector3(-1.0f, 0.0f, 0.0f));
+    camera->SetFOV(70.0f);
+    camera->SetZFar(5000);
+    camera->SetZNear(1);
 
-	GetScene()->SetCurrentCamera(camera);
+    GetScene()->SetCurrentCamera(camera);
 
-	Entity* rootEntity = GetScene()->GetRootNode(FilePath("Data/3d/Maps/newscene.sc2"));
-	GetScene()->AddNode(rootEntity);
+    Entity* rootEntity = GetScene()->GetRootNode(FilePath("~res:/3d/Maps/newscene.sc2"));
+    GetScene()->AddNode(rootEntity);
 
-	stoneEntity = GetScene()->FindByName("s_stone01.sc2");
+    stoneEntity = GetScene()->FindByName("e_stone01.sc2");
 }
 
 void PerfomanceTest::UnloadResources()
 {
-	BaseTest::UnloadResources();
+    BaseTest::UnloadResources();
 }
 
 void PerfomanceTest::PerformTestLogic()
 {
-	const Matrix4& localTransform = stoneEntity->GetLocalTransform();
-	Matrix4 newTransform = Matrix4::MakeRotation(Vector3(0.0f, 0.0f, 1.0f), DAVA::DegToRad(1.0f));
-
-	newTransform *= localTransform;
-	stoneEntity->SetLocalTransform(newTransform);
-
-	Camera* camera = GetScene()->GetCurrentCamera();
-	const Vector3& pos = camera->GetPosition();
-
-	Matrix4 cameraMatrix;
-	cameraMatrix = Matrix4::MakeTranslation(pos) * Matrix4::MakeRotation(Vector3(0.0f, 0.0f, 1.0f), DAVA::DegToRad(1.0f));
-	camera->SetPosition(cameraMatrix.GetTranslationVector());
+    const Matrix4& localTransform = stoneEntity->GetLocalTransform();
+    Matrix4 newTransform = Matrix4::MakeRotation(Vector3(0.0f, 0.0f, 1.0f), DAVA::DegToRad(1.0f));
+    
+    newTransform *= localTransform;
+    stoneEntity->SetLocalTransform(newTransform);
+    
+    Camera* camera = GetScene()->GetCurrentCamera();
+    const Vector3& pos = camera->GetPosition();
+    
+    Matrix4 cameraMatrix;
+    cameraMatrix = Matrix4::MakeTranslation(pos) * Matrix4::MakeRotation(Vector3(0.0f, 0.0f, 1.0f), DAVA::DegToRad(1.0f));
+    camera->SetPosition(cameraMatrix.GetTranslationVector());
 }

@@ -29,23 +29,25 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __TEST_FLOW_CONTROLLER_H__
 #define __TEST_FLOW_CONTROLLER_H__
 
-#include "DAVAEngine.h"
 #include "Tests/BaseTest.h"
 
-class TestFlowController
+class TestFlowController : public BaseObject
 {
 public:
-
-	virtual void Init(Vector<BaseTest*>& registeredTests);
-	virtual void Finish() {};
-
-	virtual void Update(float32 delta) {};
-
-	virtual void BeginFrame() = 0;
-	virtual void EndFrame() = 0;
-
+    
+    virtual void Init(Vector<BaseTest*>& registeredTests);
+    virtual void Finish() {};
+    
+    virtual void Update(float32 delta) {};
+    
+    virtual void BeginFrame() = 0;
+    virtual void EndFrame() = 0;
+    
 protected:
-	Vector<BaseTest*> testChain;
+
+    virtual ~TestFlowController() {};
+
+    Vector<BaseTest*> testChain;
 };
 
 #endif 

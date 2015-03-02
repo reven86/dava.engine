@@ -30,96 +30,96 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 const float32 BaseTest::FRAME_OFFSET = 5;
 
-BaseTest::BaseTest(const String& _testName, uint32 frames, float32 delta, uint32 _debugFrame) :
-		frameNumber(0)
-	,	fixedDelta(delta)
-	,	targetFramesCount(frames)
-	,	targetTestTime(0)
-	,	testTime(0.0f)
-	,	startTime(0)
-	,	testName(_testName)
-	,	debugFrame(_debugFrame)
-	,	debuggable(false)
+BaseTest::BaseTest(const String& _testName, uint32 frames, float32 delta, uint32 _debugFrame)
+    :   frameNumber(0)
+    ,   fixedDelta(delta)
+    ,   targetFramesCount(frames)
+    ,   targetTestTime(0)
+    ,   testTime(0.0f)
+    ,   startTime(0)
+    ,   testName(_testName)
+    ,   debugFrame(_debugFrame)
+    ,   debuggable(false)
 
 {
 }
 
-BaseTest::BaseTest(const String& _testName, uint32 _time) :
-		frameNumber(0)
-	,	fixedDelta(0.0f)
-	,	targetFramesCount(0)
-	,	targetTestTime(_time)
-	,	testTime(0.0f)
-	,	startTime(0)
-	,	testName(_testName)
-	,	debugFrame(0)
-	,	debuggable(false)
+BaseTest::BaseTest(const String& _testName, uint32 _time)
+    :   frameNumber(0)
+    ,   fixedDelta(0.0f)
+    ,   targetFramesCount(0)
+    ,   targetTestTime(_time)
+    ,   testTime(0.0f)
+    ,   startTime(0)
+    ,   testName(_testName)
+    ,   debugFrame(0)
+    ,   debuggable(false)
 
 {
 }
 
 void BaseTest::LoadResources()
 {
-	scene = new Scene();
-	sceneView = new UI3DView(RenderManager::Instance()->viewport, true);
-	sceneView->SetScene(scene);
+    scene = new Scene();
+    sceneView = new UI3DView(RenderManager::Instance()->viewport, true);
+    sceneView->SetScene(scene);
 
-	AddControl(sceneView);
+    AddControl(sceneView);
 }
 
 void BaseTest::UnloadResources()
 {
-	SafeRelease(scene);
+    SafeRelease(scene);
 }
 
 void BaseTest::OnFinish()
 {
-	elapsedTime = SystemTimer::Instance()->FrameStampTimeMS() - startTime;
+    elapsedTime = SystemTimer::Instance()->FrameStampTimeMS() - startTime;
 }
 
 void BaseTest::Update(float32 timeElapsed)
 {
-	bool frameForDebug = GetFrameNumber() > (GetDebugFrame() + BaseTest::FRAME_OFFSET);
-	float32 delta = timeElapsed;
+    bool frameForDebug = GetFrameNumber() > (GetDebugFrame() + BaseTest::FRAME_OFFSET);
+    float32 delta = timeElapsed;
+    
+    if (IsDebuggable())
+    {
+        if (frameForDebug)
+        {
+            delta = 0.0f;
+        }
+        else
+        {
+            PerformTestLogic();
+        }
+    }
+    else
+    {
+        delta = 0.0f;
+        
+        if (frameNumber > FRAME_OFFSET)
+        {
+            delta = fixedDelta > 0 ? fixedDelta : timeElapsed;
+            
+            frames.push_back(FrameInfo(timeElapsed, frameNumber));  
+            testTime += timeElapsed;
+            
+            PerformTestLogic();
+        }   
+    }
 
-	if (IsDebuggable())
-	{
-		if (frameForDebug)
-		{
-			delta = 0.0f;
-		}
-		else
-		{
-			PerformTestLogic();
-		}
-	}
-	else
-	{
-		delta = 0.0f;
-
-		if (frameNumber > FRAME_OFFSET)
-		{
-			delta = fixedDelta > 0 ? fixedDelta : timeElapsed;
-
-			frames.push_back(FrameInfo(timeElapsed, frameNumber));
-			testTime += timeElapsed;
-
-			PerformTestLogic();
-		}
-	}
-
-	BaseScreen::Update(delta);
+    BaseScreen::Update(delta);
 }
 
 void BaseTest::BeginFrame()
 {
-	if (frameNumber > (FRAME_OFFSET - 1) && startTime == 0)
-	{
-		startTime = SystemTimer::Instance()->FrameStampTimeMS();
-	}
+    if (frameNumber > (FRAME_OFFSET - 1) && 0 == startTime)
+    {
+        startTime = SystemTimer::Instance()->FrameStampTimeMS();
+    }
 }
 
 void BaseTest::EndFrame()
 {
-	frameNumber++;
+    frameNumber++;
 }

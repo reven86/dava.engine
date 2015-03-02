@@ -39,10 +39,7 @@
 
 #include "Tests/PerfomanceTest.h"
 
-#include <list>
 #include <fstream>
-
-using namespace DAVA;
 
 class GameCore : public ApplicationCore
 {
@@ -56,19 +53,8 @@ public:
     
     virtual void OnAppStarted() override;
     virtual void OnAppFinished() override;
-    
-    virtual void OnSuspend() override;
-    virtual void OnResume() override;
-
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    virtual void OnBackground();
-    virtual void OnForeground();
-    virtual void OnDeviceLocked();
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
     virtual void BeginFrame() override;
-    virtual void Update(DAVA::float32 update) override;
-    virtual void Draw() override;
 	virtual void EndFrame() override;
     
 private:

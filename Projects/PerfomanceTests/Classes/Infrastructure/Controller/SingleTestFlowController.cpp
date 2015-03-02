@@ -28,47 +28,48 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "SingleTestFlowController.h"
 
-SingleTestFlowController::SingleTestFlowController() :
-		testForRun(nullptr)
-	,	testChooserScreen(nullptr)
-	,	currentScreen(nullptr)
+SingleTestFlowController::SingleTestFlowController()
+    :   testForRun(nullptr)
+    ,   testChooserScreen(nullptr)
+    ,   currentScreen(nullptr)
+
 {
 }
 
 void SingleTestFlowController::Init(Vector<BaseTest*>& _testChain)
 {
-	TestFlowController::Init(_testChain);
-
-	testChooserScreen = new TestChooserScreen(testChain);
-	currentScreen = testChooserScreen;
+    TestFlowController::Init(_testChain);
+    
+    testChooserScreen = new TestChooserScreen(testChain);
+    currentScreen = testChooserScreen;
 }
 
 void SingleTestFlowController::BeginFrame()
 {
-	if (!currentScreen->IsRegistered())
-	{
-		currentScreen->RegisterScreen();
-		currentScreen->OnStart();
-	}
-
-	currentScreen->BeginFrame();
+    if (!currentScreen->IsRegistered())
+    {
+        currentScreen->RegisterScreen();
+        currentScreen->OnStart();
+    }
+    
+    currentScreen->BeginFrame();
 }
 
 void SingleTestFlowController::EndFrame()
 {
-	currentScreen->EndFrame();
-
-	if (nullptr == testForRun)
-	{
-		if (testChooserScreen->IsFinished())
-		{
-			testForRun = testChooserScreen->GetTestForRun();
-			testForRun->SetDebuggable(true);
-			currentScreen = testForRun;
-		}
-	}
-	else if (testForRun->IsFinished())
-	{
-		testForRun->OnFinish();
-	}
+    currentScreen->EndFrame();
+    
+    if (nullptr == testForRun)
+    {
+        if (testChooserScreen->IsFinished())
+        {
+            testForRun = testChooserScreen->GetTestForRun();
+            testForRun->SetDebuggable(true);
+            currentScreen = testForRun;
+        }
+    }
+    else if (testForRun->IsFinished())
+    {
+        testForRun->OnFinish();
+    }
 }

@@ -28,206 +28,102 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ReportScreen.h"
 
+const String ReportScreen::MIN_DELTA = "MinDeltaValue";
+const String ReportScreen::MAX_DELTA = "MaxDeltaValue";
+const String ReportScreen::AVERAGE_DELTA = "AverageDeltaValue";
+const String ReportScreen::TEST_TIME = "TestTimeValue";
+const String ReportScreen::ELAPSED_TIME = "ElapsedTimeValue";
+const String ReportScreen::FRAMES_RENDERED = "FramesRenderedValue";
 
-ReportScreen::ReportScreen(const Vector<BaseTest*>& _testChain) : 
-		testChain(_testChain)
-	,	reportFont(nullptr)
+ReportScreen::ReportScreen(const Vector<BaseTest*>& _testChain)
+    :   testChain(_testChain)
 {
 }
 
 bool ReportScreen::IsFinished() const
 {
-	return false;
+    return false;
 }
 
 void ReportScreen::LoadResources()
 {
-	CreateReportScreen();
+    CreateReportScreen();
 }
 
 void ReportScreen::UnloadResources()
 {
-	SafeRelease(reportFont);
 }
 
 void ReportScreen::CreateReportScreen()
 {
-	reportFont = FTFont::Create("./Data/Fonts/korinna.ttf");
+    UIControl* reportItem = new UIControl();
 
-	uint32 offsetY = 150;
-	uint32 testNumber = 0;
+    UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
+    UIYamlLoader::Load(reportItem, ControlHelpers::GetPathToUIYaml("ReportItem.yaml"));
+    
+    uint32 offsetY = 150;
+    uint32 testNumber = 0;
+    
+    for (BaseTest* test : testChain)
+    {
+        if (test->IsFinished())
+        {
+            List<BaseTest::FrameInfo> frameInfoList = test->GetFramesInfo();
+            
+            float32 minDelta = FLT_MAX;
+            float32 maxDelta = FLT_MIN;
+            float32 averageDelta = 0.0f;
+            
+            float32 testTime = 0.0f;
+            float32 elapsedTime = 0.0f;
+            
+            uint32 framesCount = test->GetFramesInfo().size();
+            
+            for (BaseTest::FrameInfo frameInfo : frameInfoList)
+            {
+                if (frameInfo.delta > maxDelta)
+                {
+                    maxDelta = frameInfo.delta;
+                }
+                if (frameInfo.delta < minDelta)
+                {
+                    minDelta = frameInfo.delta;
+                }
 
-	for each (BaseTest* test in testChain)
-	{
-		if (test->IsFinished())
-		{
-			List<BaseTest::FrameInfo> frameInfoList = test->GetFramesInfo();
+                averageDelta += frameInfo.delta;
+            }
 
-			float32 minDelta = FLT_MAX;
-			float32 maxDelta = FLT_MIN;
-			float32 averageDelta = 0.0f;
+            averageDelta /= framesCount;
 
-			float32 testTime = 0.0f;
-			float32 elapsedTime = 0.0f;
+            testTime = test->GetTestTime();
+            elapsedTime = test->GetElapsedTime() / 1000.0f;
 
-			uint32 framesCount = test->GetFramesInfo().size();
+            UIControl* reportItemCopy = reportItem->Clone();
+            reportItemCopy->SetPosition(Vector2(0.0f, 0.0f + testNumber * offsetY));
 
-			for each (BaseTest::FrameInfo frameInfo in frameInfoList)
-			{
-				if (frameInfo.delta > maxDelta)
-				{
-					maxDelta = frameInfo.delta;
-				}
-				if (frameInfo.delta < minDelta)
-				{
-					minDelta = frameInfo.delta;
-				}
+            UIStaticText* minDeltaText = static_cast<UIStaticText*>(reportItemCopy->FindByName(MIN_DELTA));
+            minDeltaText->SetText(UTF8Utils::EncodeToWideString(std::to_string(minDelta)));
 
-				averageDelta += frameInfo.delta;
-			}
+            UIStaticText* maxDeltaText = static_cast<UIStaticText*>(reportItemCopy->FindByName(MAX_DELTA));
+            maxDeltaText->SetText(UTF8Utils::EncodeToWideString(std::to_string(maxDelta)));
 
-			averageDelta /= framesCount;
+            UIStaticText* averageDeltaText = static_cast<UIStaticText*>(reportItemCopy->FindByName(AVERAGE_DELTA));
+            averageDeltaText->SetText(UTF8Utils::EncodeToWideString(std::to_string(averageDelta)));
 
-			testTime = test->GetTestTime();
-			elapsedTime = test->GetElapsedTime() / 1000.0f;
+            UIStaticText* testTimeText = static_cast<UIStaticText*>(reportItemCopy->FindByName(TEST_TIME));
+            testTimeText->SetText(UTF8Utils::EncodeToWideString(std::to_string(testTime)));
 
-			UIStaticText* testNameText = new UIStaticText();
-			testNameText->SetFont(reportFont);
-			testNameText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			testNameText->SetPosition(Vector2(10.0f, 10.0f + offsetY * testNumber));
-			testNameText->SetText(UTF8Utils::EncodeToWideString(test->GetName() + ":"));
-			testNameText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			testNameText->SetSize(Vector2(150.0f, 10.0f));
+            UIStaticText* elapsedTimeText = static_cast<UIStaticText*>(reportItemCopy->FindByName(ELAPSED_TIME));
+            elapsedTimeText->SetText(UTF8Utils::EncodeToWideString(std::to_string(elapsedTime)));
 
-			UIStaticText* upDelimiter = new UIStaticText();
-			upDelimiter->SetFont(reportFont);
-			upDelimiter->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			upDelimiter->SetPosition(Vector2(5.0f, 25.0f + offsetY * testNumber));
-			upDelimiter->SetText(UTF8Utils::EncodeToWideString("======================="));
-			upDelimiter->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			upDelimiter->SetSize(Vector2(150.0f, 10.0f));
+            UIStaticText* framesRenderedText = static_cast<UIStaticText*>(reportItemCopy->FindByName(FRAMES_RENDERED));
+            framesRenderedText->SetText(UTF8Utils::EncodeToWideString(std::to_string(framesCount)));
 
-			UIStaticText* minDeltaText = new UIStaticText();
-			minDeltaText->SetFont(reportFont);
-			minDeltaText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			minDeltaText->SetPosition(Vector2(10.0f, 40.0f + offsetY * testNumber));
-			minDeltaText->SetText(UTF8Utils::EncodeToWideString("Min delta: "));
-			minDeltaText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			minDeltaText->SetSize(Vector2(150.0f, 10.0f));
+            AddControl(reportItemCopy);
+            
+            testNumber++;
+        }
+    }
 
-			UIStaticText* minDeltaValue = new UIStaticText();
-			minDeltaValue->SetFont(reportFont);
-			minDeltaValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
-			minDeltaValue->SetPosition(Vector2(100.0f, 40.0f + offsetY * testNumber));
-			minDeltaValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(minDelta)));
-			minDeltaValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			minDeltaValue->SetSize(Vector2(100.0f, 10.0f));
-
-			UIStaticText* maxDeltaText = new UIStaticText();
-			maxDeltaText->SetFont(reportFont);
-			maxDeltaText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			maxDeltaText->SetPosition(Vector2(10.0f, 55.0f + offsetY * testNumber));
-			maxDeltaText->SetText(UTF8Utils::EncodeToWideString("Max delta: "));
-			maxDeltaText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			maxDeltaText->SetSize(Vector2(150.0f, 10.0f));
-
-			UIStaticText* maxDeltaValue = new UIStaticText();
-			maxDeltaValue->SetFont(reportFont);
-			maxDeltaValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
-			maxDeltaValue->SetPosition(Vector2(100.0f, 55.0f + offsetY * testNumber));
-			maxDeltaValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(maxDelta)));
-			maxDeltaValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			maxDeltaValue->SetSize(Vector2(100.0f, 10.0f));
-
-			UIStaticText* averageDeltaText = new UIStaticText();
-			averageDeltaText->SetFont(reportFont);
-			averageDeltaText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			averageDeltaText->SetPosition(Vector2(10.0f, 70.0f + offsetY * testNumber));
-			averageDeltaText->SetText(UTF8Utils::EncodeToWideString("Average delta: "));
-			averageDeltaText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			averageDeltaText->SetSize(Vector2(150.0f, 10.0f));
-
-			UIStaticText* averageDeltaValue = new UIStaticText();
-			averageDeltaValue->SetFont(reportFont);
-			averageDeltaValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
-			averageDeltaValue->SetPosition(Vector2(100.0f, 70.0f + offsetY * testNumber));
-			averageDeltaValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(averageDelta)));
-			averageDeltaValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			averageDeltaValue->SetSize(Vector2(100.0f, 10.0f));
-
-			UIStaticText* testTimeText = new UIStaticText();
-			testTimeText->SetFont(reportFont);
-			testTimeText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			testTimeText->SetPosition(Vector2(10.0f, 85.0f + offsetY * testNumber));
-			testTimeText->SetText(UTF8Utils::EncodeToWideString("Test time: "));
-			testTimeText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			testTimeText->SetSize(Vector2(150.0f, 10.0f));
-
-			UIStaticText* testTimeValue = new UIStaticText();
-			testTimeValue->SetFont(reportFont);
-			testTimeValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
-			testTimeValue->SetPosition(Vector2(100.0f, 85.0f + offsetY * testNumber));
-			testTimeValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(testTime)));
-			testTimeValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			testTimeValue->SetSize(Vector2(100.0f, 10.0f));
-
-			UIStaticText* elapsedTimeText = new UIStaticText();
-			elapsedTimeText->SetFont(reportFont);
-			elapsedTimeText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			elapsedTimeText->SetPosition(Vector2(10.0f, 100.0f + offsetY * testNumber));
-			elapsedTimeText->SetText(UTF8Utils::EncodeToWideString("Elapsed time: "));
-			elapsedTimeText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			elapsedTimeText->SetSize(Vector2(150.0f, 10.0f));
-
-			UIStaticText* elapsedTimeValue = new UIStaticText();
-			elapsedTimeValue->SetFont(reportFont);
-			elapsedTimeValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
-			elapsedTimeValue->SetPosition(Vector2(100.0f, 100.0f + offsetY * testNumber));
-			elapsedTimeValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(elapsedTime)));
-			elapsedTimeValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			elapsedTimeValue->SetSize(Vector2(100.0f, 10.0f));
-
-			UIStaticText* framesText = new UIStaticText();
-			framesText->SetFont(reportFont);
-			framesText->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			framesText->SetPosition(Vector2(10.0f, 115.0f + offsetY * testNumber));
-			framesText->SetText(UTF8Utils::EncodeToWideString("Frames rendered: "));
-			framesText->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			framesText->SetSize(Vector2(150.0f, 10.0f));
-
-			UIStaticText* framesValue = new UIStaticText();
-			framesValue->SetFont(reportFont);
-			framesValue->SetTextAlign(ALIGN_RIGHT | ALIGN_VCENTER);
-			framesValue->SetPosition(Vector2(100.0f, 115.0f + offsetY * testNumber));
-			framesValue->SetText(UTF8Utils::EncodeToWideString(std::to_string(framesCount)));
-			framesValue->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			framesValue->SetSize(Vector2(100.0f, 10.0f));
-
-			UIStaticText* downDelimiter = new UIStaticText();
-			downDelimiter->SetFont(reportFont);
-			downDelimiter->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-			downDelimiter->SetPosition(Vector2(5.0f, 130.0f + offsetY * testNumber));
-			downDelimiter->SetText(UTF8Utils::EncodeToWideString("======================="));
-			downDelimiter->SetTextColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-			downDelimiter->SetSize(Vector2(150.0f, 10.0f));
-
-			AddControl(testNameText);
-			AddControl(upDelimiter);
-			AddControl(minDeltaText);
-			AddControl(minDeltaValue);
-			AddControl(maxDeltaText);
-			AddControl(maxDeltaValue);
-			AddControl(averageDeltaText);
-			AddControl(averageDeltaValue);
-			AddControl(testTimeText);
-			AddControl(testTimeValue);
-			AddControl(elapsedTimeText);
-			AddControl(elapsedTimeValue);
-			AddControl(framesText);
-			AddControl(framesValue);
-			AddControl(downDelimiter);
-
-			testNumber++;
-		}
-	}
+    SafeRelease(reportItem);
 }

@@ -1,0 +1,237 @@
+children:
+    ReportItem:
+        type: "UIControl"
+        size: [300.000000, 300.000000]
+        noInput: true
+        leftAlign: 0.000000
+        topAlign: 0.000000
+        drawType: "DRAW_FILL"
+        color: [0.000000, 0.000000, 0.000000, 1.000000]
+        colorInherit: "COLOR_REPLACE_ALPHA_ONLY"
+        children:
+            TestName:
+                type: "UIStaticText"
+                position: [10.000000, 10.000000]
+                size: [80.000000, 10.000000]
+                noInput: true
+                colorInherit: "COLOR_REPLACE_ALPHA_ONLY"
+                align: ["LEFT", "TOP"]
+                font: "korinna"
+                textcolor: [0.000000, 1.000000, 0.000000, 1.000000]
+                textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                shadowcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                text: "TestName"
+                textalign: ["LEFT", "VCENTER"]
+                textUseRtlAlign: false
+            UpDelimetr:
+                type: "UIStaticText"
+                position: [5.000000, 25.000000]
+                size: [180.000000, 10.000000]
+                noInput: true
+                colorInherit: "COLOR_REPLACE_ALPHA_ONLY"
+                font: "korinna"
+                textcolor: [0.000000, 1.000000, 0.000000, 1.000000]
+                textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                shadowcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                text: "========================"
+                textalign: ["LEFT", "VCENTER"]
+                textUseRtlAlign: false
+            MinDelta:
+                type: "UIControl"
+                position: [10.000000, 40.000000]
+                size: [180.000000, 10.000000]
+                noInput: true
+                drawType: "DRAW_FILL"
+                colorInherit: "COLOR_MULTIPLY_ON_PARENT"
+                children:
+                    MinDeltaText:
+                        type: "UIStaticText"
+                        size: [80.000000, 10.000000]
+                        noInput: true
+                        font: "korinna"
+                        textcolor: [0.000000, 1.000000, 0.000000, 1.000000]
+                        textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        shadowcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        text: "Min delta: "
+                        textalign: ["LEFT", "VCENTER"]
+                        textUseRtlAlign: false
+                    MinDeltaValue:
+                        type: "UIStaticText"
+                        position: [110.000000, 0.000000]
+                        size: [60.000000, 10.000000]
+                        noInput: true
+                        font: "korinna"
+                        textcolor: [0.000000, 1.000000, 0.000000, 1.000000]
+                        textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        shadowcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        text: "0.0f"
+                        textalign: ["LEFT", "VCENTER"]
+                        textUseRtlAlign: false
+            MaxDelta:
+                type: "UIControl"
+                position: [10.000000, 55.000000]
+                size: [180.000000, 10.000000]
+                noInput: true
+                drawType: "DRAW_FILL"
+                colorInherit: "COLOR_MULTIPLY_ON_PARENT"
+                children:
+                    MaxDeltaText:
+                        type: "UIStaticText"
+                        size: [80.000000, 10.000000]
+                        noInput: true
+                        font: "korinna"
+                        textcolor: [0.000000, 1.000000, 0.000000, 1.000000]
+                        textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        shadowcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        text: "Max delta: "
+                        textalign: ["LEFT", "VCENTER"]
+                        textUseRtlAlign: false
+                    MaxDeltaValue:
+                        type: "UIStaticText"
+                        position: [110.000000, 0.000000]
+                        size: [60.000000, 10.000000]
+                        noInput: true
+                        font: "korinna"
+                        textcolor: [0.000000, 1.000000, 0.000000, 1.000000]
+                        textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        shadowcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        text: "0.0f"
+                        textalign: ["LEFT", "VCENTER"]
+                        textUseRtlAlign: false
+            AverageDelta:
+                type: "UIControl"
+                position: [10.000000, 70.000000]
+                size: [180.000000, 10.000000]
+                noInput: true
+                drawType: "DRAW_FILL"
+                colorInherit: "COLOR_MULTIPLY_ON_PARENT"
+                children:
+                    AverageDeltaText:
+                        type: "UIStaticText"
+                        size: [80.000000, 10.000000]
+                        noInput: true
+                        font: "korinna"
+                        textcolor: [0.000000, 1.000000, 0.000000, 1.000000]
+                        textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        shadowcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        text: "Average delta: "
+                        textalign: ["LEFT", "VCENTER"]
+                        textUseRtlAlign: false
+                    AverageDeltaValue:
+                        type: "UIStaticText"
+                        position: [110.000000, 0.000000]
+                        size: [60.000000, 10.000000]
+                        noInput: true
+                        font: "korinna"
+                        textcolor: [0.000000, 1.000000, 0.000000, 1.000000]
+                        textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        shadowcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        text: "0.0f"
+                        textalign: ["LEFT", "VCENTER"]
+                        textUseRtlAlign: false
+            TestTime:
+                type: "UIControl"
+                position: [10.000000, 85.000000]
+                size: [180.000000, 10.000000]
+                noInput: true
+                drawType: "DRAW_FILL"
+                colorInherit: "COLOR_MULTIPLY_ON_PARENT"
+                children:
+                    TestTimeText:
+                        type: "UIStaticText"
+                        size: [80.000000, 10.000000]
+                        noInput: true
+                        font: "korinna"
+                        textcolor: [0.000000, 1.000000, 0.000000, 1.000000]
+                        textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        shadowcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        text: "Test time: "
+                        textalign: ["LEFT", "VCENTER"]
+                        textUseRtlAlign: false
+                    TestTimeValue:
+                        type: "UIStaticText"
+                        position: [110.000000, 0.000000]
+                        size: [60.000000, 10.000000]
+                        noInput: true
+                        font: "korinna"
+                        textcolor: [0.000000, 1.000000, 0.000000, 1.000000]
+                        textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        shadowcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        text: "0.0f"
+                        textalign: ["LEFT", "VCENTER"]
+                        textUseRtlAlign: false
+            ElapsedTime:
+                type: "UIControl"
+                position: [10.000000, 100.000000]
+                size: [180.000000, 10.000000]
+                noInput: true
+                drawType: "DRAW_FILL"
+                colorInherit: "COLOR_MULTIPLY_ON_PARENT"
+                children:
+                    ElapsedTimeText:
+                        type: "UIStaticText"
+                        size: [80.000000, 10.000000]
+                        noInput: true
+                        font: "korinna"
+                        textcolor: [0.000000, 1.000000, 0.000000, 1.000000]
+                        textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        shadowcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        text: "Elapsed time: "
+                        textalign: ["LEFT", "VCENTER"]
+                        textUseRtlAlign: false
+                    ElapsedTimeValue:
+                        type: "UIStaticText"
+                        position: [110.000000, 0.000000]
+                        size: [60.000000, 10.000000]
+                        noInput: true
+                        font: "korinna"
+                        textcolor: [0.000000, 1.000000, 0.000000, 1.000000]
+                        textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        shadowcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        text: "0.0f"
+                        textalign: ["LEFT", "VCENTER"]
+                        textUseRtlAlign: false
+            FramesRendered:
+                type: "UIControl"
+                position: [10.000000, 115.000000]
+                size: [180.000000, 10.000000]
+                noInput: true
+                drawType: "DRAW_FILL"
+                colorInherit: "COLOR_MULTIPLY_ON_PARENT"
+                children:
+                    FramesRenderedText:
+                        type: "UIStaticText"
+                        size: [80.000000, 10.000000]
+                        noInput: true
+                        font: "korinna"
+                        textcolor: [0.000000, 1.000000, 0.000000, 1.000000]
+                        textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        shadowcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        text: "Frames rendered: "
+                        textalign: ["LEFT", "VCENTER"]
+                        textUseRtlAlign: false
+                    FramesRenderedValue:
+                        type: "UIStaticText"
+                        position: [110.000000, 0.000000]
+                        size: [60.000000, 10.000000]
+                        noInput: true
+                        font: "korinna"
+                        textcolor: [0.000000, 1.000000, 0.000000, 1.000000]
+                        textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        shadowcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                        text: "0.0f"
+                        textalign: ["LEFT", "VCENTER"]
+                        textUseRtlAlign: false
+            DownDelimetr:
+                type: "UIStaticText"
+                position: [5.000000, 130.000000]
+                size: [180.000000, 10.000000]
+                noInput: true
+                colorInherit: "COLOR_REPLACE_ALPHA_ONLY"
+                font: "korinna"
+                textcolor: [0.000000, 1.000000, 0.000000, 1.000000]
+                textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                shadowcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
+                text: "========================"
+                textalign: ["LEFT", "VCENTER"]
+                textUseRtlAlign: false

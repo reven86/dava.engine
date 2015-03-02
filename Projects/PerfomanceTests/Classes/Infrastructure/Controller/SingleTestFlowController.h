@@ -31,24 +31,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "TestFlowController.h"
 #include "Infrastructure/Screen/TestChooserScreen.h"
-#include "Tests/BaseTest.h"
 
 class SingleTestFlowController : public TestFlowController
 {
 public:
-	SingleTestFlowController();
-
-	void Init(Vector<BaseTest*>& testChain) override;
-
-	void BeginFrame() override;
-	void EndFrame() override;
-
+    SingleTestFlowController();
+    
+    void Init(Vector<BaseTest*>& testChain) override;
+    
+    void BeginFrame() override;
+    void EndFrame() override;
+    
 private:
-
-	BaseTest* testForRun;
-	TestChooserScreen* testChooserScreen;
-
-	BaseScreen* currentScreen;
+    
+    BaseTest* testForRun;
+    TestChooserScreen* testChooserScreen;
+    
+    BaseScreen* currentScreen;
 };
 
 #endif

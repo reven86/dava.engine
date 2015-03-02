@@ -30,6 +30,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 void TestFlowController::Init(Vector<BaseTest*>& _testChain)
 {
-	DVASSERT(!_testChain.empty());
-	testChain = _testChain;
+    DVASSERT(!_testChain.empty());
+    testChain = _testChain;
 }

@@ -28,63 +28,63 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "TestChooserScreen.h"
 
 
-TestChooserScreen::TestChooserScreen(const Vector<BaseTest*>& _testChain) :
-		testForRun(nullptr)
-	,	testChain(_testChain)
-	,	chooserFont(nullptr)
-
+TestChooserScreen::TestChooserScreen(const Vector<BaseTest*>& _testChain)
+    :   testForRun(nullptr)
+    ,   testChain(_testChain)
+    ,   chooserFont(nullptr)
+    
 {
 }
 
 void TestChooserScreen::LoadResources()
 {
-	CreateChooserUI();
+    CreateChooserUI();
 }
 
 void TestChooserScreen::UnloadResources()
 {
-	SafeRelease(chooserFont);
+    SafeRelease(chooserFont);
 }
 
 void TestChooserScreen::OnFinish()
 {
-	DVASSERT(testForRun != nullptr);
+    DVASSERT(testForRun != nullptr);
 }
 
 bool TestChooserScreen::IsFinished() const
 {
-	return nullptr != testForRun;
+    return nullptr != testForRun;
 }
 
 void TestChooserScreen::OnButtonPressed(BaseObject *obj, void *data, void *callerData)
 {
-	UIButton* button = static_cast<UIButton*>(obj);
-	String testName = button->GetName();
-
-	for(BaseTest* test : testChain)
-	{
-		if (testName == test->GetName())
-		{
-			testForRun = test;
-		}
-	}
-
-	DVASSERT(nullptr != testForRun);
+    UIButton* button = static_cast<UIButton*>(obj);
+    String testName = button->GetName();
+    
+    for(BaseTest* test : testChain)
+    {
+        if (testName == test->GetName())
+        {
+            testForRun = test;
+        }
+    }
+    
+    DVASSERT(nullptr != testForRun);
 }
 
 void TestChooserScreen::CreateChooserUI()
 {
-	chooserFont = FTFont::Create("./Data/Fonts/korinna.ttf");
-
-	uint32 offsetY = 150;
-	uint32 testNumber = 0;
-
-	for each (BaseTest* test in testChain)
-	{
-		if (test->GetDebugFrame() > 0)
-		{
-			UIButton* button = new UIButton();
-
+    chooserFont = FTFont::Create("./Data/Fonts/korinna.ttf");
+    
+    uint32 offsetY = 150;
+    uint32 testNumber = 0;
+    
+    for (BaseTest* test : testChain)
+    {
+        if (test->GetDebugFrame() > 0)
+        {
+            UIButton* button = new UIButton();
+            
 			button->SetName(test->GetName());
 
 			button->SetPosition(Vector2(10.0f, 10.0f + testNumber * 60));
