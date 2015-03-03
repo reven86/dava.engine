@@ -231,23 +231,22 @@ void NetworkTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
 {
     if (obj == btnDebug)
     {
-        MemoryManager::EnterTagScope(1);
+        MEMORY_PROFILER_ENTER_TAG(1);
         Logger::Debug("This is DEBUG message");
     }
     else if (obj == btnInfo)
     {
         Logger::Info("This is INFO message");
-        MemoryManager::LeaveTagScope();
+        MEMORY_PROFILER_LEAVE_TAG();
     }
     else if (obj == btnWarn)
     {
-        MemoryManager::EnterTagScope(2);
+        MEMORY_PROFILER_CHECKPOINT(100);
         Logger::Warning("This is WARN message");
     }
     else if (obj == btnError)
     {
         Logger::Error("This is ERROR message");
-        MemoryManager::LeaveTagScope();
     }
     else if (obj == btnPacket)
     {

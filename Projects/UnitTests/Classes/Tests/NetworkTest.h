@@ -87,10 +87,13 @@ private:
     bool loggerInUse;
     DAVA::Net::NetLogger logger;
 
-    //DAVA::Vector<char> v;
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
     std::vector<char, DAVA::MemoryManagerAllocator<char, 2>> v1;
     std::vector<char, DAVA::MemoryManagerAllocator<char, 3>> v2;
-    //std::vector<char, DAVA::MemoryManagerAllocator<char, 2>> v3;
+#else
+    std::vector<char> v1;
+    std::vector<char> v2;
+#endif
     std::vector<char> v3;
 
     DAVA::Net::PeerDescription peerDescr;

@@ -128,10 +128,10 @@ GameCore::GameCore()
     , loggerInUse(false)
     , mmInUse(false)
 {
-    MemoryManager::RegisterAllocPoolName(2, "STL");
-    MemoryManager::RegisterAllocPoolName(3, "Custom");
-    MemoryManager::RegisterTagName(1, "TAG_1");
-    MemoryManager::RegisterTagName(2, "TAG_2");
+    MEMORY_PROFILER_REGISTER_ALLOC_POOL(2, "STL");
+    MEMORY_PROFILER_REGISTER_ALLOC_POOL(3, "Custom");
+    MEMORY_PROFILER_REGISTER_TAG(1, "TAG_1");
+    MEMORY_PROFILER_REGISTER_TAG(2, "TAG_2");
 }
 
 GameCore::~GameCore()
@@ -176,16 +176,6 @@ void GameCore::OnAppFinished()
     screens.clear();
     
     netLogger.Uninstall();
-    
-    /*netMM.Dump();
-    while(true)
-    {
-        volatile bool f = netMM.Empty();
-        if (!f)
-            Net::NetCore::Instance()->Poll();
-        else
-            break;
-    }*/
 }
 
 void GameCore::OnSuspend()
