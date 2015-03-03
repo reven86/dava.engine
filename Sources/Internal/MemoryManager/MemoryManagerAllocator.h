@@ -33,13 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
-#if defined(__DAVAENGINE_WIN32__)
-// On Win32 should be used NOMINMAX define, add it to project
-#ifdef max
-#undef max
-#endif
-#endif
-
 #include <limits>
 
 #include "AllocPools.h"
