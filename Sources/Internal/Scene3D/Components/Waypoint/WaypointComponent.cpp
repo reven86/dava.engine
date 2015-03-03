@@ -51,7 +51,7 @@ Component * WaypointComponent::Clone(Entity * toEntity)
 	newComponent->SetEntity(toEntity);
     newComponent->SetProperties(properties);
     newComponent->SetPathName(pathName);
-
+    newComponent->SetStarting(false);
     return newComponent;
 }
 

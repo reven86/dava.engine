@@ -335,6 +335,11 @@ void SceneEditor2::EndBatch()
 	commandStack.EndBatch();
 }
 
+bool SceneEditor2::IsBatchStarted() const
+{
+    return commandStack.IsBatchStarted();
+}
+
 void SceneEditor2::Exec(Command2 *command)
 {
 	commandStack.Exec(command);
