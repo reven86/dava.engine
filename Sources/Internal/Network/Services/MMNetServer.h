@@ -39,6 +39,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
+
+class DynamicMemoryFile;
+
 namespace Net
 {
 
@@ -82,12 +85,12 @@ private:
 private:
     uint32 sessionId;
     bool commInited;
-    //bool sendingDump;
     uint64 timerBegin;
     size_t statPeriod;
     size_t periodCounter;
     volatile bool allDone;
 
+    DynamicMemoryFile* zipFile;
     Deque<Parcel> parcels;
 };
 

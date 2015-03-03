@@ -30,6 +30,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Debug/DVAssert.h"
 
+#include "FileSystem/DynamicMemoryFile.h"
+#include "DLC/Patcher/ZLibStream.h"
 #include "MemoryManager/MemoryManager.h"
 
 #include "MMNetClient.h"
@@ -143,10 +145,12 @@ void MMNetClient::ProcessDump(const MMProtoHeader* hdr, const void* packet, size
     const MMDump* dump = static_cast<const MMDump*>(packet);
 
     gettingDump = true;
-    dumpSize = sizeof(MMDump) 
-        + sizeof(MMBlock) * dump->blockCount 
-        + sizeof(MMBacktrace) * dump->backtraceCount
-        + sizeof(MMSymbol) * dump->symbolCount;
+    //dumpSize = sizeof(MMDump) 
+    //    + sizeof(MMBlock) * dump->blockCount 
+    //    + sizeof(MMBacktrace) * dump->backtraceCount
+    //    + sizeof(MMSymbol) * dump->symbolCount;
+    dumpSize = hdr->length;
+    unpackedDumpSize = hdr->status;
     dumpRecv = length;
 
     dumpV.resize(dumpSize);
@@ -156,9 +160,10 @@ void MMNetClient::ProcessDump(const MMProtoHeader* hdr, const void* packet, size
 
     if (dumpRecv >= dumpSize)
     {
-        MMDump* dump = reinterpret_cast<MMDump*>(dumpV.data());
-        dumpDoneCallback(dump);
-        gettingDump = false;
+        //MMDump* dump = reinterpret_cast<MMDump*>(dumpV.data());
+        //dumpDoneCallback(dump);
+        //gettingDump = false;
+        UnpackDump();
     }
 }
 
@@ -175,10 +180,24 @@ void MMNetClient::ProcessDumpNext(const void* packet, size_t length)
     }
     else
     {
-        MMDump* dump = reinterpret_cast<MMDump*>(dumpV.data());
-        dumpDoneCallback(dump);
-        gettingDump = false;
+        //MMDump* dump = reinterpret_cast<MMDump*>(dumpV.data());
+        //dumpDoneCallback(dump);
+        //gettingDump = false;
+        UnpackDump();
     }
+}
+
+void MMNetClient::UnpackDump()
+{
+    Vector<uint8> v(unpackedDumpSize, 0);
+    DynamicMemoryFile* zipFile = DynamicMemoryFile::Create(dumpV.data() + sizeof(MMDump), dumpV.size() - sizeof(MMDump), File::CREATE | File::READ);
+    ZLibIStream zipStream(zipFile);
+    zipStream.Read((char8*)(v.data() + sizeof(MMDump)), unpackedDumpSize - sizeof(MMDump));
+    Memcpy(v.data(), dumpV.data(), sizeof(MMDump));
+
+    MMDump* dump = reinterpret_cast<MMDump*>(v.data());
+    dumpDoneCallback(dump, dumpSize);
+    gettingDump = false;
 }
 
 void MMNetClient::SendInitSession()

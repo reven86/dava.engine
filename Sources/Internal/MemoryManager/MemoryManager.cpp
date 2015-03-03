@@ -166,8 +166,8 @@ DAVA_NOINLINE void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
                 LockType lock(mutex);
 
                 block->orderNo = nextBlockNo++;
-                block->backtraceHash = 0;
                 CollectBacktrace(&backtrace, 1);
+                block->backtraceHash = BacktraceHash(backtrace);
 
                 InsertBlock(block);
                 UpdateStatAfterAlloc(block, poolIndex);
@@ -612,10 +612,10 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
     
 #if defined(__DAVAENGINE_WIN32__)
     HANDLE hprocess = GetCurrentProcess();
-    if (nullptr == symbols)
+    if (!symInited)
     {
-        symbols = new (&symbolStorage) SymbolMap;
         SymInitialize(hprocess, nullptr, TRUE);
+        symInited = true;
     }
 
     const size_t NAME_LENGTH = 256;

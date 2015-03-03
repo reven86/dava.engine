@@ -23,7 +23,7 @@ public:
     void ChannelClosed(const DAVA::char8* message);
     void CurrentStat(const DAVA::MMStat* stat);
     void Dump(size_t total, size_t recv);
-    void DumpDone(const DAVA::MMDump* dump);
+    void DumpDone(const DAVA::MMDump* dump, size_t packedSize);
 
     DAVA::Net::IChannelListener* NetObject() { return &netClient; }
 

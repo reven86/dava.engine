@@ -99,7 +99,13 @@ inline const T* Offset(const void* ptr, size_t byteOffset)
     return reinterpret_cast<const T*>(static_cast<const uint8*>(ptr)+byteOffset);
 }
 
-void MemProfController::DumpDone(const DAVA::MMDump* dump)
+uint32 BacktraceHash(const MMBacktrace& backtrace)
+{
+    uint32 hash = HashValue_N(reinterpret_cast<const char*>(backtrace.frames), sizeof(backtrace.frames));
+    return hash;
+}
+
+void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize)
 {
     using namespace DAVA;
 
@@ -108,6 +114,7 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump)
     view->UpdateProgress(100, 100);
 
     std::unordered_map<uint64, String> symbolMap;
+    std::unordered_map<uint32, MMBacktrace> traceMap;
 
     const MMBlock* blocks = Offset<MMBlock>(dump, sizeof(MMDump));
     const MMBacktrace* bt = Offset<MMBacktrace>(blocks, sizeof(MMBlock) * dump->blockCount);
@@ -115,6 +122,12 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump)
 
     for (size_t i = 0, n = dump->symbolCount;i < n;++i)
         symbolMap.emplace(std::make_pair(symbols[i].addr, symbols[i].name));
+    for (size_t i = 0, n = dump->backtraceCount;i < n;++i)
+    {
+        uint32 hash = BacktraceHash(bt[i]);
+        auto g = traceMap.emplace(std::make_pair(hash, bt[i]));
+        DVASSERT(g.second == true);
+    }
 
     char fname[100];
     const char* prefix = 
@@ -142,6 +155,7 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump)
     if (f)
     {
         fprintf(f, "General info\n");
+        fprintf(f, "  packedSize=%u\n", packedSize);
         fprintf(f, "  blockCount=%u\n", dump->blockCount);
         fprintf(f, "  backtraceCount=%u\n", dump->backtraceCount);
         fprintf(f, "  nameCount=%u\n", dump->symbolCount);
@@ -155,7 +169,20 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump)
                     blocks[i].addr,
                     blocks[i].allocByApp, blocks[i].allocTotal, blocks[i].orderNo, blocks[i].pool,
                     blocks[i].backtraceHash);
-            /*for (size_t j = 0;j < 16;++j)
+            auto x = traceMap.find(blocks[i].backtraceHash);
+            if (x != traceMap.end())
+            {
+                const MMBacktrace& z = (*x).second;
+                for (size_t j = 0;j < MMConst::BACKTRACE_DEPTH;++j)
+                {
+                    auto u = symbolMap.find(z.frames[j]);
+                    if (u != symbolMap.end())
+                    {
+                        fprintf(f, "        %08llX    %s\n", blocks[i].addr, (*u).second.c_str());
+                    }
+                }
+            }
+            /*for (size_t j = 0;j < MMConst::BACKTRACE_DEPTH;++j)
             {
                 uint64 addr = dump->blocks[i].backtrace.frames[j];
                 const char* s = "";

@@ -27,9 +27,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "Debug/DVAssert.h"
-#include "FileSystem/Logger.h"
+#include "FileSystem/DynamicMemoryFile.h"
+#include "DLC/Patcher/ZLibStream.h"
+#include "Platform/SystemTimer.h"
 
-#include <Platform/SystemTimer.h>
 #include "MemoryManager/MemoryManager.h"
 
 #include "MMNetServer.h"
@@ -52,6 +53,7 @@ MMNetServer::MMNetServer()
     , statPeriod(250)
     , periodCounter(0)
     , allDone(true)
+    , zipFile(nullptr)
 {
     srand(static_cast<unsigned int>(time(nullptr)));
     sessionId = rand();
@@ -139,7 +141,10 @@ void MMNetServer::PacketDelivered()
         parcels.pop_front();
         MMProtoHeader* hdr = static_cast<MMProtoHeader*>(parcel.buffer);
         if (hdr->cmd == static_cast<uint32>(eMMProtoCmd::DUMP))
-            MemoryManager::FreeDump(parcel.buffer);
+        {
+            //MemoryManager::FreeDump(parcel.buffer);
+            SafeRelease(zipFile);
+        }
         else
             DestroyParcel(parcel);
 
@@ -172,15 +177,6 @@ void MMNetServer::ProcessInitCommunication(const MMProtoHeader* hdr, const void*
     {
         MMStatConfig* config = reinterpret_cast<MMStatConfig*>(static_cast<uint8*>(parcel.buffer) + sizeof(MMProtoHeader));
         MemoryManager::GetStatConfig(config);
-
-        /*Logger::Debug("MMNetServer::ProcessInitCommunication: new session %u", sessionId);
-        Logger::Debug("   dataSize=%u", (uint32)dataSize);
-        Logger::Debug("   maxTags=%u, ntags=%u", config->maxTagCount, config->tagCount);
-        for (uint32 i = 0;i < config->tagCount;++i)
-            Logger::Debug("      %d, %s", i, config->names[i].name);
-        Logger::Debug("   maxPools=%u, npools=%u", config->maxAllocPoolCount, config->allocPoolCount);
-        for (uint32 i = 0;i < config->allocPoolCount;++i)
-            Logger::Debug("      %d, %s", i, config->names[i + config->tagCount].name);*/
     }
     
     MMProtoHeader* outHdr = static_cast<MMProtoHeader*>(parcel.buffer);
@@ -196,19 +192,35 @@ void MMNetServer::ProcessDump(const MMProtoHeader* hdr, const void* packet, size
 {
     void* buf = nullptr;
     uint64 timerStart = SystemTimer::Instance()->AbsoluteMS();
-    size_t dataSize = MemoryManager::GetDump(sizeof(MMProtoHeader), &buf, 0, uint32(-1));
 
-    Parcel parcel = CreateParcel(dataSize, buf);
+    size_t dumpSize = MemoryManager::GetDump(0, &buf, 0, uint32(-1));
+    MMDump temp = {0};
+    Memcpy(&temp, buf, sizeof(MMDump));
+    zipFile = DynamicMemoryFile::Create(File::CREATE | File::READ | File::WRITE);
+    zipFile->Seek(sizeof(MMProtoHeader) + sizeof(MMDump), File::SEEK_FROM_START);
+    {
+        ZLibOStream zipStream(zipFile);
+        zipStream.Write(static_cast<char8*>(buf)+sizeof(MMDump), static_cast<uint32>(dumpSize));
+    }
+    MemoryManager::FreeDump(buf);
+
+    Parcel parcel = CreateParcel(zipFile->GetSize(), zipFile->GetData());
+
+    //size_t dataSize = MemoryManager::GetDump(sizeof(MMProtoHeader), &buf, 0, uint32(-1));
+    //Parcel parcel = CreateParcel(dataSize, buf);
 
     MMProtoHeader* outHdr = static_cast<MMProtoHeader*>(parcel.buffer);
     MMDump* dump = reinterpret_cast<MMDump*>(outHdr + 1);
+    *dump = temp;
     dump->timestampBegin = timerStart - timerBegin;
     dump->timestampEnd = SystemTimer::Instance()->AbsoluteMS() - timerBegin;
 
     outHdr->sessionId = sessionId;
     outHdr->cmd = static_cast<uint32>(eMMProtoCmd::DUMP);
-    outHdr->status = static_cast<uint32>(eMMProtoStatus::ACK);
-    outHdr->length = static_cast<uint32>(dataSize - sizeof(MMProtoHeader));
+    //outHdr->status = static_cast<uint32>(eMMProtoStatus::ACK);
+    //outHdr->length = static_cast<uint32>(dataSize - sizeof(MMProtoHeader));
+    outHdr->status = static_cast<uint32>(dumpSize);
+    outHdr->length = static_cast<uint32>(parcel.size - sizeof(MMProtoHeader));
 
     EnqueueAndSend(parcel);
 }

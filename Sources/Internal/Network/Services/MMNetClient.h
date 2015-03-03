@@ -48,7 +48,7 @@ public:
     typedef Function<void (const char8*)> ChClosedCallback;       // TODO: change to void(const char*) after fixing TypeTraits and Function
     typedef Function<void(const MMStat*)> StatCallback;
     typedef Function<void(size_t total, size_t recv)> DumpGetCallback;
-    typedef Function<void(const MMDump*)> DumpDoneCallback;
+    typedef Function<void(const MMDump*, size_t)> DumpDoneCallback;
 
 public:
     MMNetClient();
@@ -73,6 +73,8 @@ private:
     void SendInitSession();
     void SendDumpRequest();
 
+    void UnpackDump();
+
 private:
     uint32 sessionId;
     bool commInited;
@@ -83,6 +85,7 @@ private:
     bool gettingDump;
     size_t dumpSize;
     size_t dumpRecv;
+    size_t unpackedDumpSize;
     std::vector<uint8> dumpV;
 
     ChOpenCallback openCallback;
