@@ -123,14 +123,14 @@ MemoryManager* MemoryManager::Instance()
     return &mm;
 }
 
-void MemoryManager::InstallTagCallback(TagCallback callback, void* arg)
+void MemoryManager::InstallDumpCallback(DumpRequestCallback callback, void* arg)
 {
     MemoryManager* mm = Instance();
-    mm->tagCallback = callback;
+    mm->dumpCallback = callback;
     mm->callbackArg = arg;
 }
 
-DAVA_NOINLINE void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
+DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
 {
     assert(IsInternalAllocationPool(poolIndex) || poolIndex < MMConst::MAX_ALLOC_POOL_COUNT);
 
@@ -188,15 +188,16 @@ DAVA_NOINLINE void* MemoryManager::Alloc(size_t size, uint32 poolIndex)
             block->orderNo = 0;
 
             // For internal allocation pool lock is required only for updating statistics
-            // TODO: update stat for internal block
             LockType lock(mutex);
+            statGeneral.allocInternal += block->allocByApp;
+            statGeneral.internalBlockCount += 1;
         }
         return static_cast<void*>(block + 1);
     }
     return nullptr;
 }
 
-DAVA_NOINLINE void* MemoryManager::AlignedAlloc(size_t size, size_t align, uint32 poolIndex)
+DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, uint32 poolIndex)
 {
     // On zero-sized allocation request allocate 1 byte to return unique memory block
     if (0 == size)
@@ -267,15 +268,16 @@ DAVA_NOINLINE void* MemoryManager::AlignedAlloc(size_t size, size_t align, uint3
             block->orderNo = 0;
 
             // For internal allocation pool lock is required only for updating statistics
-            // TODO: update stat for internal block
             LockType lock(mutex);
+            statGeneral.allocInternal += block->allocByApp;
+            statGeneral.internalBlockCount += 1;
         }
         return reinterpret_cast<void*>(aligned);
     }
     return nullptr;
 }
 
-void* MemoryManager::Realloc(void* ptr, size_t newSize)
+void* MemoryManager::Reallocate(void* ptr, size_t newSize)
 {
     assert(ptr != nullptr);     // This realloc must not be called with ptr == nullptr
     
@@ -299,7 +301,7 @@ void* MemoryManager::Realloc(void* ptr, size_t newSize)
     }
 }
     
-void MemoryManager::Dealloc(void* ptr)
+void MemoryManager::Deallocate(void* ptr)
 {
     if (ptr != nullptr)
     {
@@ -319,20 +321,25 @@ void MemoryManager::Dealloc(void* ptr)
             else
             {
                 // For internal allocation pool lock is required only for updating statistics
-                // TODO: update stat for internal block
+                LockType lock(mutex);
+                statGeneral.allocInternal -= block->allocByApp;
+                statGeneral.internalBlockCount -= 1;
             }
             MallocHook::Free(block->realBlockStart);
         }
         else
         {
-            statGeneral.ghostBlockCount += 1;
-            statGeneral.ghostSize += MallocHook::MallocSize(ptr);
+            {
+                LockType lock(mutex);
+                statGeneral.ghostBlockCount += 1;
+                statGeneral.ghostSize += MallocHook::MallocSize(ptr);
+            }
             MallocHook::Free(ptr);
         }
     }
 }
 
-void MemoryManager::EnterScope(uint32 tag)
+void MemoryManager::EnterTagScope(uint32 tag)
 {
     assert(tag != MMConst::DEFAULT_TAG);
     assert(tags.depth < MMConst::MAX_TAG_DEPTH - 1);
@@ -343,13 +350,13 @@ void MemoryManager::EnterScope(uint32 tag)
     tags.begin[tags.depth] = nextBlockNo;
 }
 
-void MemoryManager::LeaveScope()
+void MemoryManager::LeaveTagScope()
 {
     assert(tags.depth > 0);
 
-    uint32 tag;
-    uint32 tagBegin;
-    uint32 tagEnd;
+    uint32 tag = 0;
+    uint32 tagBegin = 0;
+    uint32 tagEnd = 0;
     {
         LockType lock(mutex);
         tag = tags.stack[tags.depth];
@@ -361,8 +368,14 @@ void MemoryManager::LeaveScope()
         }
         tags.depth -= 1;
     }
-    if (tagCallback != nullptr)
-        tagCallback(callbackArg, tag, tagBegin, tagEnd);
+    if (dumpCallback != nullptr)
+        dumpCallback(callbackArg, MMConst::DUMP_REQUEST_TAG, tag, tagBegin, tagEnd);
+}
+
+void MemoryManager::Checkpoint(uint32 checkpoint)
+{
+    if (dumpCallback != nullptr)
+        dumpCallback(callbackArg, MMConst::DUMP_REQUEST_CHECKPOINT, checkpoint, 0, nextBlockNo);
 }
 
 void MemoryManager::InsertBlock(MemoryBlock* block)
@@ -442,12 +455,12 @@ void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, uint32 poolIndex)
     }
 }
 
-size_t MemoryManager::CalcStatConfigSize()
+size_t MemoryManager::CalcStatConfigSize() const
 {
     return sizeof(MMStatConfig) + sizeof(MMItemName) * (registeredTagCount + registeredAllocPoolCount - 1);
 }
 
-void MemoryManager::GetStatConfig(MMStatConfig* config)
+void MemoryManager::GetStatConfig(MMStatConfig* config) const
 {
     DVASSERT(config != nullptr);
     
@@ -463,12 +476,12 @@ void MemoryManager::GetStatConfig(MMStatConfig* config)
         config->names[k] = allocPoolNames[i];
 }
 
-size_t MemoryManager::CalcStatSizeInternal() const
+size_t MemoryManager::CalcStatSize() const
 {
     return sizeof(MMStat) + sizeof(AllocPoolStat) * ((tags.depth + 1) * registeredAllocPoolCount - 1);
 }
 
-void MemoryManager::GetStatInternal(MMStat* stat)
+void MemoryManager::GetStat(MMStat* stat) const
 {
     DVASSERT(stat != nullptr);
     
@@ -495,8 +508,9 @@ inline T* Offset(void* ptr, size_t byteOffset)
     return reinterpret_cast<T*>(static_cast<uint8*>(ptr) + byteOffset);
 }
 
-size_t MemoryManager::GetDumpInternal(size_t userSize, void** buf, uint32 blockRangeBegin, uint32 blockRangeEnd)
+size_t MemoryManager::GetDump(size_t userSize, void** buf, uint32 blockRangeBegin, uint32 blockRangeEnd)
 {
+    // TODO: carefully think of locking
     DVASSERT(userSize % 16 == 0);
 
     ObtainAllBacktraceSymbols();
@@ -549,7 +563,8 @@ size_t MemoryManager::GetDumpInternal(size_t userSize, void** buf, uint32 blockR
     for (auto i = backtraces->cbegin(), e = backtraces->cend();i != e;++i)
     {
         const Backtrace& o = *i;
-        for (size_t i = 0;i < 16;++i)
+        bt[iBt].hash = BacktraceHash(o);
+        for (size_t i = 0;i < MMConst::BACKTRACE_DEPTH;++i)
             bt[iBt].frames[i] = reinterpret_cast<uint64>(o.frames[i]);
         iBt += 1;
     }
@@ -568,7 +583,7 @@ size_t MemoryManager::GetDumpInternal(size_t userSize, void** buf, uint32 blockR
     return bufSize;
 }
 
-void MemoryManager::FreeDumpInternal(void* ptr)
+void MemoryManager::FreeDump(void* ptr)
 {
     MallocHook::Free(ptr);
 }

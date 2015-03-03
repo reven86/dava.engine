@@ -37,12 +37,12 @@ namespace DAVA
 
 void* AllocThunk(size_t size, unsigned int poolIndex)
 {
-    return MemoryManager::Allocate(size, poolIndex);
+    return MemoryManager::Instance()->Allocate(size, poolIndex);
 }
 
 void DeallocThunk(void* ptr)
 {
-    MemoryManager::Deallocate(ptr);
+    MemoryManager::Instance()->Deallocate(ptr);
 }
 
 }   // namespace DAVA

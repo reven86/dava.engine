@@ -684,19 +684,19 @@ FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_CLOSECALLBACK(void * handle, void * userda
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 void * F_CALLBACK DAVA_FMOD_MEMORY_ALLOCCALLBACK(unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr)
 {
-    return DAVA::MemoryManager::Allocate(size, DAVA::ALLOC_POOL_FMOD);
+    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_FMOD);
 }
 void * F_CALLBACK DAVA_FMOD_MEMORY_REALLOCCALLBACK(void *ptr, unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr)
 {
     if (ptr == nullptr)
     {
-        return DAVA::MemoryManager::Allocate(size, DAVA::ALLOC_POOL_FMOD);
+        return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_FMOD);
     }
-    return DAVA::MemoryManager::Reallocate(ptr, DAVA::ALLOC_POOL_FMOD);
+    return DAVA::MemoryManager::Instance()->Reallocate(ptr, DAVA::ALLOC_POOL_FMOD);
 }
 void  F_CALLBACK DAVA_FMOD_MEMORY_FREECALLBACK(void *ptr, FMOD_MEMORY_TYPE type, const char *sourcestr)
 {
-    DAVA::MemoryManager::Deallocate(ptr);
+    DAVA::MemoryManager::Instance()->Deallocate(ptr);
 }
 
 #endif

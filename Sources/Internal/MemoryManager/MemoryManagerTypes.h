@@ -41,8 +41,14 @@ struct MMConst
     static const size_t DEFAULT_TAG = 0;                // Default tag which corresponds to whole application time line
     
     static const size_t MAX_ALLOC_POOL_COUNT = 6;       // Max supported count of allocation pools
-    static const size_t MAX_TAG_COUNT = 4;              // Max supported count of tags
+    static const size_t MAX_TAG_COUNT = 8;              // Max supported count of tags
     static const size_t MAX_NAME_LENGTH = 16;           // Max length of name: tag, allocation type, counter
+
+    enum {
+        DUMP_REQUEST_USER,
+        DUMP_REQUEST_TAG,
+        DUMP_REQUEST_CHECKPOINT
+    };
 };
 
 /*
@@ -127,6 +133,8 @@ static_assert(sizeof(MMStat) % 16 == 0, "sizeof(MMStat) % 16 == 0");
 
 struct MMBacktrace
 {
+    uint32 hash;
+    uint32 padding[3];
     uint64 frames[MMConst::BACKTRACE_DEPTH];
 };
 

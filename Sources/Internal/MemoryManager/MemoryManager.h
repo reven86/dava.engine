@@ -33,7 +33,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
-// Introduce DAVA_NOINLINE to tell compiler not no inline 
+// Introduce defines:
+//  DAVA_NOINLINE to tell compiler not no inline function
+//  DAVA_ALIGNOF to get alignment of type
 #if defined(__DAVAENGINE_WIN32__)
 #define DAVA_NOINLINE   __declspec(noinline)
 #define DAVA_ALIGNOF(x) __alignof(x)
@@ -73,7 +75,7 @@ class MemoryManager final
     static bool BacktraceEqualTo(const MemoryManager::Backtrace& left, const MemoryManager::Backtrace& right);
 
 public:
-    typedef void (*TagCallback)(void* arg, uint32 tag, uint32 tagBegin, uint32 tagEnd);
+    typedef void(*DumpRequestCallback)(void* arg, int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd);
 
 private:
     // Make ctor and dtor private to disallow external creation of MemoryManager
@@ -91,35 +93,28 @@ public:
     static void RegisterAllocPoolName(size_t index, const char8* name);
     static void RegisterTagName(size_t index, const char8* name);
 
-    static void InstallTagCallback(TagCallback callback, void* arg);
+    static void InstallDumpCallback(DumpRequestCallback callback, void* arg);
 
-    static void* Allocate(size_t size, uint32 poolIndex);
-    static void* AlignedAllocate(size_t size, size_t align, uint32 poolIndex);
-    static void* Reallocate(void * ptr, size_t size);
-    static void Deallocate(void* ptr);
+    DAVA_NOINLINE void* Allocate(size_t size, uint32 poolIndex);
+    DAVA_NOINLINE void* AlignedAllocate(size_t size, size_t align, uint32 poolIndex);
+    void* Reallocate(void * ptr, size_t size);
+    void Deallocate(void* ptr);
 
-    static void EnterTagScope(uint32 tag);
-    static void LeaveTagScope();
+    void EnterTagScope(uint32 tag);
+    void LeaveTagScope();
+    void Checkpoint(uint32 checkpoint);
 
-    static size_t CalcStatConfigSize();
-    static void GetStatConfig(MMStatConfig* config);
+    size_t CalcStatConfigSize() const;
+    void GetStatConfig(MMStatConfig* config) const;
 
-    static size_t CalcStatSize();
-    static void GetStat(MMStat* stat);
+    size_t CalcStatSize() const;
+    void GetStat(MMStat* stat) const;
 
-    static size_t GetDump(size_t userSize, void** buf, uint32 blockRangeBegin, uint32 blockRangeEnd);
-    static void FreeDump(void* ptr);
-
-    static bool IsInternalAllocationPool(uint32 poolIndex);
+    size_t GetDump(size_t userSize, void** buf, uint32 blockRangeBegin, uint32 blockRangeEnd);
+    void FreeDump(void* ptr);
 
 private:
-    DAVA_NOINLINE void* Alloc(size_t size, uint32 poolIndex);
-    DAVA_NOINLINE void* AlignedAlloc(size_t size, size_t align, uint32 poolIndex);
-    void Dealloc(void* ptr);
-    void* Realloc(void *ptr, size_t size);
-
-    void EnterScope(uint32 tag);
-    void LeaveScope();
+    static bool IsInternalAllocationPool(uint32 poolIndex);
 
     void InsertBlock(MemoryBlock* block);
     void RemoveBlock(MemoryBlock* block);
@@ -129,11 +124,6 @@ private:
     void UpdateStatAfterAlloc(MemoryBlock* block, uint32 poolIndex);
     void UpdateStatAfterDealloc(MemoryBlock* block, uint32 poolIndex);
     
-    size_t CalcStatSizeInternal() const;
-    void GetStatInternal(MMStat* stat);
-
-    size_t GetDumpInternal(size_t userSize, void** buf, uint32 blockRangeBegin, uint32 blockRangeEnd);
-    void FreeDumpInternal(void* ptr);
     size_t GetBlockRange(uint32 rangeBegin, uint32 rangeEnd, MemoryBlock** begin, MemoryBlock** end);
 
     DAVA_NOINLINE size_t CollectBacktrace(Backtrace* backtrace, size_t nskip);
@@ -149,10 +139,10 @@ private:
     
     typedef DAVA::Spinlock MutexType;
     typedef DAVA::LockGuard<MutexType> LockType;
-    MutexType mutex;
-    MutexType backtraceMutex;
+    mutable MutexType mutex;
+    mutable MutexType backtraceMutex;
     
-    TagCallback tagCallback;
+    DumpRequestCallback dumpCallback;   // Callback that called on checkpoint or tag leave
     void* callbackArg;
 
     template<typename T>
@@ -160,17 +150,16 @@ private:
 
     typedef std::basic_string<char8, std::char_traits<char8>, InternalAllocator<char8>> InternalString;
     typedef std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>> SymbolMap;
-
     typedef std::unordered_set<Backtrace, size_t(*)(const Backtrace&), bool(*)(const Backtrace&, const Backtrace&), InternalAllocator<Backtrace>> BacktraceSet;
 
-    // Room for symbol table map and backtrace set
+    // Room for symbol table map and backtrace set for placement new
     // Use std::aligned_storage<...>::type as std::aligned_storage_t<...> doesn't work on Android
     std::aligned_storage<sizeof(BacktraceSet), DAVA_ALIGNOF(BacktraceSet)>::type backtraceStorage;
     std::aligned_storage<sizeof(SymbolMap), DAVA_ALIGNOF(SymbolMap)>::type symbolStorage;
     BacktraceSet* backtraces;
     SymbolMap* symbols;
 #if defined(__DAVAENGINE_WIN32__)
-    bool symInited;
+    bool symInited;     // Flag indicating that SymInitialize has been called on Win32
 #endif
 
 private:
@@ -182,56 +171,6 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
-{
-    return Instance()->Alloc(size, poolIndex);
-}
-
-inline void* MemoryManager::AlignedAllocate(size_t size, size_t align, uint32 poolIndex)
-{
-    return Instance()->AlignedAlloc(size, align, poolIndex);
-}
-
-inline void* MemoryManager::Reallocate(void * ptr, size_t size)
-{
-    return Instance()->Realloc(ptr, size);
-}
-    
-inline void MemoryManager::Deallocate(void* ptr)
-{
-    Instance()->Dealloc(ptr);
-}
-
-inline void MemoryManager::EnterTagScope(uint32 tag)
-{
-    Instance()->EnterScope(tag);
-}
-
-inline void MemoryManager::LeaveTagScope()
-{
-    Instance()->LeaveScope();
-}
-
-inline size_t MemoryManager::CalcStatSize()
-{
-    return Instance()->CalcStatSizeInternal();
-}
-
-inline void MemoryManager::GetStat(MMStat* stat)
-{
-    Instance()->GetStatInternal(stat);
-}
-
-inline size_t MemoryManager::GetDump(size_t userSize, void** buf, uint32 blockRangeBegin, uint32 blockRangeEnd)
-{
-    return Instance()->GetDumpInternal(userSize, buf, blockRangeBegin, blockRangeEnd);
-}
-
-inline void MemoryManager::FreeDump(void* ptr)
-{
-    Instance()->FreeDumpInternal(ptr);
-}
-
 inline bool MemoryManager::IsInternalAllocationPool(uint32 poolIndex)
 {
     return static_cast<int32>(poolIndex) < 0;

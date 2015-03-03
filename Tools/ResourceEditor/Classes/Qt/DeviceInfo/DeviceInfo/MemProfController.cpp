@@ -124,7 +124,7 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize)
         symbolMap.emplace(std::make_pair(symbols[i].addr, symbols[i].name));
     for (size_t i = 0, n = dump->backtraceCount;i < n;++i)
     {
-        uint32 hash = BacktraceHash(bt[i]);
+        uint32 hash = bt[i].hash;
         auto g = traceMap.emplace(std::make_pair(hash, bt[i]));
         DVASSERT(g.second == true);
     }
@@ -182,17 +182,6 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize)
                     }
                 }
             }
-            /*for (size_t j = 0;j < MMConst::BACKTRACE_DEPTH;++j)
-            {
-                uint64 addr = dump->blocks[i].backtrace.frames[j];
-                const char* s = "";
-                const MMSymbol* n = std::find_if(sym, sym + dump->symbolCount, [addr](const MMSymbol& mms) -> bool {
-                    return mms.addr == addr;
-                });
-                if (n != sym + dump->symbolCount)
-                    s = n->name;
-                fprintf(f, "        %08llX    %s\n", dump->blocks[i].backtrace.frames[j], s);
-            }*/
         }
 
         fprintf(f, "Symbols\n");
@@ -200,6 +189,7 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize)
         for (auto& x : symbolMap)
         {
             fprintf(f, "  %4d: %08llX; %s\n", isym + 1, x.first, x.second.c_str());
+            isym += 1;
         }
         fclose(f);
     }

@@ -35,8 +35,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "MemoryManager/MemoryManagerTypes.h"
 #include "MMNetProto.h"
 
-#if defined(DAVA_MEMORY_PROFILING_ENABLE)
-
 namespace DAVA
 {
 
@@ -69,9 +67,6 @@ public:
     void PacketReceived(const void* packet, size_t length) override;
     void PacketDelivered() override;
     
-    bool Empty();
-    void Dump();
-
 private:
     void ProcessInitCommunication(const MMProtoHeader* hdr, const void* packet, size_t length);
     void ProcessDump(const MMProtoHeader* hdr, const void* packet, size_t length);
@@ -81,6 +76,9 @@ private:
     Parcel CreateParcel(size_t parcelSize, void* buf);
     void DestroyParcel(Parcel parcel);
     void EnqueueAndSend(Parcel parcel);
+
+    static void DumpRequestCallback(void* arg, int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd);
+    void OnDumpRequest(int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd);
 
 private:
     uint32 sessionId;
@@ -96,7 +94,5 @@ private:
 
 }   // namespace Net
 }   // namespace DAVA
-
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
 #endif  // __DAVAENGINE_MMNETSERVER_H__

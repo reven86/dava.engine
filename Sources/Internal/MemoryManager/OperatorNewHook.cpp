@@ -46,22 +46,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 void* operator new(size_t size)
 {
-    return DAVA::MemoryManager::Allocate(size, DAVA::ALLOC_POOL_APP);
+    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
 }
 
 void operator delete(void* ptr) DAVA_NOEXCEPT
 {
-    DAVA::MemoryManager::Deallocate(ptr);
+    DAVA::MemoryManager::Instance()->Deallocate(ptr);
 }
 
 void* operator new [](size_t size)
 {
-    return DAVA::MemoryManager::Allocate(size, DAVA::ALLOC_POOL_APP);
+    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
 }
 
 void operator delete[](void* ptr) DAVA_NOEXCEPT
 {
-    DAVA::MemoryManager::Deallocate(ptr);
+    DAVA::MemoryManager::Instance()->Deallocate(ptr);
 }
 
 #endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)

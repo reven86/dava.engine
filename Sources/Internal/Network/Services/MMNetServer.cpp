@@ -35,8 +35,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "MMNetServer.h"
 
-#if defined(DAVA_MEMORY_PROFILING_ENABLE)
-
 #include <cstdlib>
 #include <ctime>
 
@@ -64,19 +62,6 @@ MMNetServer::~MMNetServer()
 
 }
 
-bool MMNetServer::Empty()
-{
-    if (!IsChannelOpen())
-        return true;
-    return allDone;
-}
-
-void MMNetServer::Dump()
-{
-    if (IsChannelOpen())
-        ProcessDump(nullptr, nullptr, 0);
-}
-
 void MMNetServer::Update(float32 timeElapsed)
 {
     if (!commInited) return;
@@ -92,10 +77,17 @@ void MMNetServer::Update(float32 timeElapsed)
 void MMNetServer::ChannelOpen()
 {
     timerBegin = SystemTimer::Instance()->AbsoluteMS();
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+    MemoryManager::Instance()->InstallDumpCallback(&DumpRequestCallback, this);
+#endif
 }
 
 void MMNetServer::ChannelClosed(const char8* message)
 {
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+    MemoryManager::Instance()->InstallDumpCallback(nullptr, nullptr);
+#endif
+
     allDone = true;
     commInited = false;
 
@@ -141,10 +133,7 @@ void MMNetServer::PacketDelivered()
         parcels.pop_front();
         MMProtoHeader* hdr = static_cast<MMProtoHeader*>(parcel.buffer);
         if (hdr->cmd == static_cast<uint32>(eMMProtoCmd::DUMP))
-        {
-            //MemoryManager::FreeDump(parcel.buffer);
             SafeRelease(zipFile);
-        }
         else
             DestroyParcel(parcel);
 
@@ -166,17 +155,18 @@ void MMNetServer::PacketDelivered()
 
 void MMNetServer::ProcessInitCommunication(const MMProtoHeader* hdr, const void* packet, size_t length)
 {
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
     size_t dataSize = 0;
     if (hdr->sessionId != sessionId)
     {
-        dataSize = MemoryManager::CalcStatConfigSize();
+        dataSize = MemoryManager::Instance()->CalcStatConfigSize();
     }
     
     Parcel parcel = CreateParcel(sizeof(MMProtoHeader) + dataSize);
     if (dataSize > 0)
     {
         MMStatConfig* config = reinterpret_cast<MMStatConfig*>(static_cast<uint8*>(parcel.buffer) + sizeof(MMProtoHeader));
-        MemoryManager::GetStatConfig(config);
+        MemoryManager::Instance()->GetStatConfig(config);
     }
     
     MMProtoHeader* outHdr = static_cast<MMProtoHeader*>(parcel.buffer);
@@ -186,54 +176,24 @@ void MMNetServer::ProcessInitCommunication(const MMProtoHeader* hdr, const void*
     outHdr->length = static_cast<uint32>(dataSize);
     
     EnqueueAndSend(parcel);
+#endif
 }
 
 void MMNetServer::ProcessDump(const MMProtoHeader* hdr, const void* packet, size_t length)
 {
-    void* buf = nullptr;
-    uint64 timerStart = SystemTimer::Instance()->AbsoluteMS();
-
-    size_t dumpSize = MemoryManager::GetDump(0, &buf, 0, uint32(-1));
-    MMDump temp = {0};
-    Memcpy(&temp, buf, sizeof(MMDump));
-    zipFile = DynamicMemoryFile::Create(File::CREATE | File::READ | File::WRITE);
-    zipFile->Seek(sizeof(MMProtoHeader) + sizeof(MMDump), File::SEEK_FROM_START);
-    {
-        ZLibOStream zipStream(zipFile);
-        zipStream.Write(static_cast<char8*>(buf)+sizeof(MMDump), static_cast<uint32>(dumpSize));
-    }
-    MemoryManager::FreeDump(buf);
-
-    Parcel parcel = CreateParcel(zipFile->GetSize(), zipFile->GetData());
-
-    //size_t dataSize = MemoryManager::GetDump(sizeof(MMProtoHeader), &buf, 0, uint32(-1));
-    //Parcel parcel = CreateParcel(dataSize, buf);
-
-    MMProtoHeader* outHdr = static_cast<MMProtoHeader*>(parcel.buffer);
-    MMDump* dump = reinterpret_cast<MMDump*>(outHdr + 1);
-    *dump = temp;
-    dump->timestampBegin = timerStart - timerBegin;
-    dump->timestampEnd = SystemTimer::Instance()->AbsoluteMS() - timerBegin;
-
-    outHdr->sessionId = sessionId;
-    outHdr->cmd = static_cast<uint32>(eMMProtoCmd::DUMP);
-    //outHdr->status = static_cast<uint32>(eMMProtoStatus::ACK);
-    //outHdr->length = static_cast<uint32>(dataSize - sizeof(MMProtoHeader));
-    outHdr->status = static_cast<uint32>(dumpSize);
-    outHdr->length = static_cast<uint32>(parcel.size - sizeof(MMProtoHeader));
-
-    EnqueueAndSend(parcel);
+    OnDumpRequest(MMConst::DUMP_REQUEST_USER, 0, 0, uint32(-1));
 }
 
 void MMNetServer::SendMemoryStat()
 {
-    size_t dataSize = MemoryManager::CalcStatSize();
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+    size_t dataSize = MemoryManager::Instance()->CalcStatSize();
     Parcel parcel = CreateParcel(sizeof(MMProtoHeader) + dataSize);
 
     MMProtoHeader* hdr = static_cast<MMProtoHeader*>(parcel.buffer);
     MMStat* stat = reinterpret_cast<MMStat*>(hdr + 1);
 
-    MemoryManager::GetStat(stat);
+    MemoryManager::Instance()->GetStat(stat);
     stat->timestamp = SystemTimer::Instance()->AbsoluteMS() - timerBegin;
 
     hdr->sessionId = sessionId;
@@ -242,6 +202,7 @@ void MMNetServer::SendMemoryStat()
     hdr->length = static_cast<uint32>(dataSize);
 
     EnqueueAndSend(parcel);
+#endif
 }
 
 MMNetServer::Parcel MMNetServer::CreateParcel(size_t parcelSize)
@@ -283,7 +244,49 @@ void MMNetServer::EnqueueAndSend(Parcel parcel)
     }
 }
 
+void MMNetServer::DumpRequestCallback(void* arg, int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd)
+{
+    MMNetServer* self = static_cast<MMNetServer*>(arg);
+    self->OnDumpRequest(type, tagOrCheckpoint, blockBegin, blockEnd);
+}
+
+void MMNetServer::OnDumpRequest(int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd)
+{
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+    if (!commInited) return;
+    if (zipFile) return;
+
+    // TODO: ZLibOStream needs update to use not only files but memory buffer
+    void* buf = nullptr;
+    uint64 timerStart = SystemTimer::Instance()->AbsoluteMS();
+
+    size_t dumpSize = MemoryManager::Instance()->GetDump(0, &buf, blockBegin, blockEnd);
+    MMDump temp = {0};
+    Memcpy(&temp, buf, sizeof(MMDump));
+    zipFile = DynamicMemoryFile::Create(File::CREATE | File::READ | File::WRITE);
+    zipFile->Seek(sizeof(MMProtoHeader) + sizeof(MMDump), File::SEEK_FROM_START);
+    {
+        ZLibOStream zipStream(zipFile);
+        zipStream.Write(static_cast<char8*>(buf)+sizeof(MMDump), static_cast<uint32>(dumpSize));
+    }
+    MemoryManager::Instance()->FreeDump(buf);
+
+    Parcel parcel = CreateParcel(zipFile->GetSize(), zipFile->GetData());
+
+    MMProtoHeader* outHdr = static_cast<MMProtoHeader*>(parcel.buffer);
+    MMDump* dump = reinterpret_cast<MMDump*>(outHdr + 1);
+    *dump = temp;
+    dump->timestampBegin = timerStart - timerBegin;
+    dump->timestampEnd = SystemTimer::Instance()->AbsoluteMS() - timerBegin;
+
+    outHdr->sessionId = sessionId;
+    outHdr->cmd = static_cast<uint32>(eMMProtoCmd::DUMP);
+    outHdr->status = static_cast<uint32>(dumpSize);
+    outHdr->length = static_cast<uint32>(parcel.size - sizeof(MMProtoHeader));
+
+    EnqueueAndSend(parcel);
+#endif
+}
+
 }   // namespace Net
 }   // namespace DAVA
-
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)

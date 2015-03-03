@@ -41,7 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MEMORY_PROFILER_ENTER_TAG(tag)                      DAVA::MemoryManager::Instance()->EnterTagScope(tag)
 #define MEMORY_PROFILER_LEAVE_TAG()                         DAVA::MemoryManager::Instance()->LeaveTagScope()
 
-#define MEMORY_PROFILER_CHECKPOINT(id)
+#define MEMORY_PROFILER_CHECKPOINT(checkpoint)              DAVA::MemoryManager::Instance()->Checkpoint(checkpoint)
 
 #else   // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
@@ -50,7 +50,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define MEMORY_PROFILER_ENTER_TAG(tag)
 #define MEMORY_PROFILER_LEAVE_TAG()
-#define MEMORY_PROFILER_CHECKPOINT(id)
+#define MEMORY_PROFILER_CHECKPOINT(checkpoint)
 
 #endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
 

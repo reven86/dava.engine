@@ -52,14 +52,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 static void* HookedMalloc(size_t size)
 {
-    return DAVA::MemoryManager::Allocate(size, DAVA::ALLOC_POOL_APP);
+    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
 }
 
 static void* HookedRealloc(void* ptr, size_t newSize)
 {
     if (ptr == nullptr)
         return malloc(newSize);
-    return DAVA::MemoryManager::Reallocate(ptr, newSize);
+    return DAVA::MemoryManager::Instance()->Reallocate(ptr, newSize);
 }
 
 static void* HookedCalloc(size_t count, size_t elemSize)
@@ -91,7 +91,7 @@ static char* HookedStrdup(const char* src)
 
 static void HookedFree(void* ptr)
 {
-    DAVA::MemoryManager::Deallocate(ptr);
+    DAVA::MemoryManager::Instance()->Deallocate(ptr);
 }
 
 namespace DAVA
