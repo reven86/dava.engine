@@ -871,7 +871,7 @@ Entity * SceneFileV2::LoadCamera(Scene * scene, KeyedArchive * archive)
     Entity * cameraEntity = LoadEntity(scene, archive);
     
     Camera * cameraObject = new Camera();
-    cameraObject->Load(archive);
+    cameraObject->LoadObject(archive);
     
     cameraEntity->AddComponent(new CameraComponent(cameraObject));
     SafeRelease(cameraObject);
@@ -1552,14 +1552,14 @@ void SceneFileV2::SetVersion(const VersionInfo::SceneVersion& version)
 }
 
 SceneArchive::~SceneArchive()
-{    
-    for (int32 i=0, sz = dataNodes.size(); i<sz; ++i)
+{
+    for(auto& node : dataNodes)
     {
-        SafeRelease(dataNodes[i]);
+        SafeRelease(node);
     }
-    for (int32 i=0, sz = children.size(); i<sz; ++i)
+    for(auto& child : children)
     {
-        SafeRelease(children[i]);
+        SafeRelease(child);
     }
 }
 
@@ -1584,9 +1584,9 @@ void SceneArchive::SceneArchiveHierarchyNode::LoadHierarchy(File *file)
 SceneArchive::SceneArchiveHierarchyNode::~SceneArchiveHierarchyNode()
 {
     SafeRelease(archive);
-    for (int32 i=0, sz = children.size(); i<sz; ++i)
+    for(auto& child : children)
     {
-        SafeRelease(children[i]);
+        SafeRelease(child);
     }
 }
 

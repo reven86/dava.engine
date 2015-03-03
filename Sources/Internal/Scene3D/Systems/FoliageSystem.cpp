@@ -101,7 +101,7 @@ void FoliageSystem::Process(float32 timeElapsed)
         
         Camera * camera = GetScene()->GetRenderSystem()->GetMainCamera();
         Vector<AbstractQuadTreeNode<VegetationSpatialData>*> & visibleCells = vegetationRO->BuildVisibleCellList(camera);
-        uint32 cellsCount = visibleCells.size();
+        uint32 cellsCount = static_cast<uint32>(visibleCells.size());
         
         Set<AbstractQuadTreeNode<VegetationSpatialData>* > updatableCells;
         for(uint32 i = 0; i < cellsCount; ++i)

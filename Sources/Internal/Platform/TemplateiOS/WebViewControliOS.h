@@ -93,7 +93,6 @@ private:
 	void* webViewPtr;
 	
 	// A pointer to the WebView delegate.
-	void* webViewDelegatePtr;
 
 	void* webViewURLDelegatePtr;
 
