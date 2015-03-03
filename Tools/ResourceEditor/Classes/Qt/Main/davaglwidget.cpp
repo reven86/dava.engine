@@ -190,40 +190,49 @@ void OpenGLWindow::keyReleaseEvent(QKeyEvent *e)
 
 DAVA::char16 OpenGLWindow::MapQtKeyToDAVA(const QKeyEvent *event)
 {
-    qDebug() << "key             : " << event->key();
-    qDebug() << "nativeScanCode  : " << event->nativeScanCode();
     qDebug() << "nativeVirtualKey: " << event->nativeVirtualKey();
-    qDebug() << "-----";
 
-    switch ( event->nativeVirtualKey() )
+#if defined ( Q_OS_WIN )
+    enum KEY_WIN
     {
-        case 87:
-            return DAVA::DVKEY_W;
-        case 65:
-            return DAVA::DVKEY_A;
-        case 83:
-            return DAVA::DVKEY_S;
-        case 68:
-            return DAVA::DVKEY_D;
-        case 84:
-            return DAVA::DVKEY_T;
-        case 90:
-            return DAVA::DVKEY_Z;
-        default:
-            break;
-    }
+        KEY_A = 65,
+        KEY_Z = 90,
+        KEY_0 = 48,
+        KEY_9 = 57,
+    };
+#elif defined ( Q_OS_MAC )
+    enum KEY_OSX
+    {
+        KEY_A = 65,
+        KEY_Z = 90,
+        KEY_0 = 48,
+        KEY_9 = 57,
+    };
+#endif
+
+    const quint32 nativeKey = event->nativeVirtualKey();
+    DAVA::char16 davaKey = DVKEY_UNKNOWN;
     
-    return 0;
+    if ( nativeKey >= KEY_A && nativeKey <= KEY_Z )
+    {
+        davaKey = nativeKey - KEY_A + DVKEY_A;
+    }
+    else if ( nativeKey >= KEY_0 && nativeKey <= KEY_9 )
+    {
+        davaKey = nativeKey - KEY_0 + DVKEY_0;
+    }
+
+    return davaKey;
 }
 
 void OpenGLWindow::mouseMoveEvent(QMouseEvent * event)
 {
     const Qt::MouseButtons buttons = event->buttons();
     DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
+    bool dragWasApplied = false;
+
     davaEvent.phase = DAVA::UIEvent::PHASE_DRAG;
     
-    
-    bool dragWasApplied = false;
     if(buttons & Qt::LeftButton)
     {
         dragWasApplied = true;
