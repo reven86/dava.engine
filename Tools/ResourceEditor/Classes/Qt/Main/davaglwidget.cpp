@@ -85,10 +85,10 @@ OpenGLWindow::OpenGLWindow()
     paintDevice = nullptr;
     setSurfaceType(QWindow::OpenGLSurface);
     
-    //setKeyboardGrabEnabled(true);
-    //setMouseGrabEnabled(true);
-    setKeyboardGrabEnabled( false );
-    setMouseGrabEnabled( false );
+    setKeyboardGrabEnabled(true);
+    setMouseGrabEnabled(true);
+    //setKeyboardGrabEnabled( false );
+    //setMouseGrabEnabled( false );
 
     setMinimumSize( cMinSize );
 }
@@ -344,8 +344,8 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     , currentWidth(0)
     , currentHeight(0)
 {
-    // setAcceptDrops(true);
-    // setMouseTracking(true);
+    setAcceptDrops(true);
+    setMouseTracking(true);
 
     setFocusPolicy(Qt::StrongFocus);
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -360,7 +360,10 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     
     container = createWindowContainer( openGlWindow );
     container->setAcceptDrops( true );
+    container->setMouseTracking(true);
     container->installEventFilter( this );
+    
+    openGlWindow->installEventFilter(this);
 
     layout()->addWidget( container );
 }
@@ -400,16 +403,33 @@ void DavaGLWidget::resizeEvent(QResizeEvent *e)
 
 bool DavaGLWidget::eventFilter( QObject* watched, QEvent* event )
 {
-    if ( watched == container )
+    if ( watched == openGlWindow )
     {
         switch ( event->type() )
         {
+        case QEvent::DragEnter:
+            {
+                auto e = static_cast<QDragEnterEvent *>( event );
+                e->setDropAction( Qt::LinkAction );
+                e->accept();
+            }
+            break;
+        case QEvent::DragMove:
+            {
+                auto e = static_cast<QDragMoveEvent *>( event );
+                e->setDropAction( Qt::LinkAction );
+                e->accept();
+            }
+            break;
+        case QEvent::DragLeave:
+            break;
         case QEvent::Drop:
             {
-                auto dropEvent = static_cast<QDropEvent *>( event );
-                emit OnDrop( dropEvent->mimeData() );
-                dropEvent->setDropAction( Qt::LinkAction );
-                dropEvent->accept();
+                qDebug() << "QEvent::Drop";
+                auto e = static_cast<QDropEvent *>( event );
+                emit OnDrop( e->mimeData() );
+                e->setDropAction( Qt::LinkAction );
+                e->accept();
             }
             break;
         default:
