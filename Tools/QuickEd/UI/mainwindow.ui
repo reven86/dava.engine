@@ -231,7 +231,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../Data/icons.qrc">
+    <iconset resource="../DataQt/icons.qrc">
      <normaloff>:/Icons/openproject.png</normaloff>:/Icons/openproject.png</iconset>
    </property>
    <property name="text">
