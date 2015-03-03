@@ -104,7 +104,7 @@ void PathSystem::AddEntity(DAVA::Entity * entity)
     if (pc && pc->GetColor() == Color())
     {
         KeyedArchive *props = GetCustomPropertiesArchieve(entity);
-        if (props)
+        if (props && props->IsKeyExists(PATH_COLOR_PROP_NAME))
         {
             pc->SetColor(DAVA::Color(props->GetVector4(PATH_COLOR_PROP_NAME)));
             props->DeleteKey(PATH_COLOR_PROP_NAME);
