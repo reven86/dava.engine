@@ -68,7 +68,6 @@ namespace DAVA
         , waitTimeLeft(0.0f)
         , waitCheckTimeLeft(0.0f)
         , luaSystem(NULL)
-		, skipScreenshot(false)
 	{
 
 	}

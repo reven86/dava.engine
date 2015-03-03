@@ -139,7 +139,7 @@ public:
 	void InitializeDevice(const String &device);
 
 	String GetDeviceName();
-	String GetPlatform() { return AUTOTESTING_PLATFORM_NAME; }
+	String GetPlatform();
 
 	bool IsPhoneScreen();
 

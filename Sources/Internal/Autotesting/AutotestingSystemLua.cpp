@@ -234,11 +234,15 @@ namespace DAVA
 		AutotestingSystem::Instance()->InitializeDevice(device);
 	}
 
+	String AutotestingSystemLua::GetPlatform()
+	{
+		return DeviceInfo::GetPlatformString();
+	}
 
 	String AutotestingSystemLua::GetDeviceName()
 	{
 		String deviceName;
-		if (AUTOTESTING_PLATFORM_NAME == "Android")
+		if (DeviceInfo::GetPlatformString() == "Android")
 		{
 			deviceName = DeviceInfo::GetModel();
 		}

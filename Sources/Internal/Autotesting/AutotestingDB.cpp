@@ -128,7 +128,7 @@ namespace DAVA
 		if (!isFound)
 		{
 			dbUpdateObject->SetObjectName(testsName);
-			dbUpdateObject->AddString("Platform", AUTOTESTING_PLATFORM_NAME);
+			dbUpdateObject->AddString("Platform", DeviceInfo::GetPlatformString());
 			dbUpdateObject->AddString("Date", autoSys->buildDate.c_str());
 			dbUpdateObject->AddString("RunId", autoSys->runId.c_str());
 			dbUpdateObject->AddString("Device", autoSys->deviceName.c_str());
@@ -162,7 +162,7 @@ namespace DAVA
 		{
 			FileSystem::Instance()->DeleteFile(logFilePath);
 		}
-		String message = Format("Platform:%s\nName:%s\nModel:%s\nOSVersion:%s\n", Format("%s", AUTOTESTING_PLATFORM_NAME).c_str(),
+		String message = Format("Platform:%s\nName:%s\nModel:%s\nOSVersion:%s\n", AutotestingSystemLua::Instance()->GetPlatform().c_str(),
 			autoSys->deviceName.c_str(), DeviceInfo::GetModel().c_str(), DeviceInfo::GetVersion().c_str());
 		WriteLog(message.c_str());
 		DateTime time = DateTime::Now();
