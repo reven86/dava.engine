@@ -13,7 +13,7 @@ struct Result
         CriticalError,
         Count
     };
-    Result(ResultType type = Count, const QString &error = "");
+    explicit Result(ResultType type = Count, const QString &error = QString());
     operator bool() const;
     QStringList errors;
     QList<ResultType> types;

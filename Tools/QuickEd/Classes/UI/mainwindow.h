@@ -72,8 +72,7 @@ public:
     int AddTab(const QString &tabText);
     void SetDocumentToWidgets(Document *document);
 protected:
-    void closeEvent(QCloseEvent *);
-
+    void closeEvent(QCloseEvent *event);
 signals:
     void TabClosed(int tab);
     void CloseProject();
@@ -84,6 +83,7 @@ signals:
     void SaveAllDocuments();
     void SaveDocument(int index);
     void CurrentTabChanged(int index);
+    void CloseRequested();
 
 public slots:
     void OnCleanChanged(bool val);

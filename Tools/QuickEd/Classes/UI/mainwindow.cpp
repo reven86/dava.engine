@@ -118,31 +118,6 @@ PackageWidget *MainWindow::GetPackageWidget()
     return ui->packageWidget;
 }
 
-bool MainWindow::ConfirmClose()
-{
-    for (int i = 0; i < ui->tabBar->count(); ++i)
-    {
-        if (ui->tabBar->tabData(i).value<TabState>().isModified)
-        {
-            QMessageBox::StandardButton ret = QMessageBox::question(qApp->activeWindow(),
-                    tr("Save changes"),
-                    tr("The project has been modified.\n"
-                    "Do you want to save your changes?"),
-                    QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
-                    QMessageBox::Save);
-            if (ret == QMessageBox::Cancel)
-            {
-                return false;
-            }
-            else if (ret == QMessageBox::Save)
-            {
-                emit SaveAllDocuments();
-            }
-        }
-    }
-    return true;
-}
-
 void MainWindow::OnProjectIsOpenChanged(bool arg)
 {
     ui->fileSystemDockWidget->setEnabled(arg);
@@ -393,14 +368,8 @@ void MainWindow::SetDocumentToWidgets(Document *document)
 
 void MainWindow::closeEvent(QCloseEvent *ev)
 {
-    if (ConfirmClose())
-    {
-        ev->accept();
-    }
-    else
-    {
-        ev->ignore();
-    }
+    emit CloseRequested();
+    ev->ignore();
 }
 
 void MainWindow::OnProjectOpened(Result result, QString projectPath)

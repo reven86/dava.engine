@@ -76,7 +76,7 @@ public slots:
     void OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
     void OnSelectionControlChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
 
-    void OnControlSelectedInEditor(ControlNode *activatedControls);
+    void OnControlSelectedInEditor(const ControlNode *activatedControls);
     void OnAllControlDeselectedInEditor();
 
 private:

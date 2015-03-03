@@ -125,7 +125,7 @@ void Document::OnSelectionControlChanged(const QList<ControlNode*> &activatedCon
     previewContext->OnSelectedControlsChanged(activatedControls, deactivatedControls);
 }
 
-void Document::OnControlSelectedInEditor(ControlNode *activatedControl)
+void Document::OnControlSelectedInEditor(const ControlNode *activatedControl)
 {
     emit controlSelectedInEditor(activatedControl);
 }

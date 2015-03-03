@@ -24,7 +24,7 @@ BaseController::BaseController(QObject *parent)
     connect(&mainWindow, &MainWindow::ActionExitTriggered, this, &BaseController::Exit);
     connect(&mainWindow, &MainWindow::RecentMenuTriggered, this, &BaseController::RecentMenu);
     connect(&mainWindow, &MainWindow::OpenPackageFile, this, &BaseController::OnOpenPackageFile);
-    connect(&mainWindow, &MainWindow::SaveAllDocuments, this, &BaseController::SaveAllDocuments, Qt::DirectConnection);
+    connect(&mainWindow, &MainWindow::SaveAllDocuments, this, &BaseController::SaveAllDocuments);
     connect(&mainWindow, &MainWindow::SaveDocument, this, &BaseController::SaveDocument);
     connect(&mainWindow, &MainWindow::CurrentTabChanged, this, &BaseController::SetCurrentIndex);
 }
@@ -74,7 +74,7 @@ void BaseController::RecentMenu(QAction *recentProjectAction)
     OpenProject(projectPath);
 }
 
-int BaseController::CreateDocument(PackageNode *package)
+int BaseController::CreateDocument(const PackageNode *package)
 {
     std::shared_ptr<Document> document(new Document(&project, package, this));
     //TODO : implement this to Add Document
@@ -126,7 +126,7 @@ void BaseController::OnSelectionControlChanged(const QList<ControlNode *> &activ
     documents[CurrentIndex()]->OnSelectionControlChanged(activatedControls, deactivatedControls);
 }
 
-void BaseController::OnControlSelectedInEditor(ControlNode *activatedControls)
+void BaseController::OnControlSelectedInEditor(const ControlNode *activatedControls)
 {
     if (0 == Count() || -1 == CurrentIndex())
     {
@@ -162,11 +162,10 @@ void BaseController::OnOpenPackageFile(const QString &path)
     }
 }
 
-void BaseController::CloseDocument(int index)
+void BaseController::CloseOneDocument(int index)
 {
-    DVASSERT(index >= 0);
-    DVASSERT(index < Count()); 
-    QUndoStack *undoStack = documents.at(index)->GetUndoStack();
+    const Document &document = *documents.at(index);
+    QUndoStack *undoStack = document.GetUndoStack();
     if (!undoStack->isClean())
     {
         QMessageBox::StandardButton ret = QMessageBox::question(qApp->activeWindow(),
@@ -184,6 +183,15 @@ void BaseController::CloseDocument(int index)
             SaveDocument(index);
         }
     }
+    CloseDocument(index);
+}
+
+void BaseController::CloseDocument(int index)
+{
+    DVASSERT(index >= 0);
+    DVASSERT(index < Count()); 
+    QUndoStack *undoStack = documents.at(index)->GetUndoStack();
+
     int newIndex = mainWindow.CloseTab(index);
     SetCurrentIndex(newIndex);
     undoGroup.removeStack(undoStack);

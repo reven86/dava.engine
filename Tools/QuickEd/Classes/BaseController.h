@@ -15,31 +15,32 @@ class BaseController : public QObject
     Q_PROPERTY(int count READ Count WRITE SetCount NOTIFY CountChanged)
     Q_PROPERTY(int currentIndex READ CurrentIndex WRITE SetCurrentIndex NOTIFY CurrentIndexChanged)
 public:
-    explicit BaseController(QObject *parent = 0);
+    explicit BaseController(QObject *parent = nullptr);
     ~BaseController();
     void start();
 protected:
     void CloseProject();
     void OpenProject(const QString &path);
 
-    int CreateDocument(PackageNode *package);
+    int CreateDocument(const PackageNode *package);
 signals:
 
 public slots:
 protected slots:
     void OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
     void OnSelectionControlChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
-    void OnControlSelectedInEditor(ControlNode *activatedControls);
+    void OnControlSelectedInEditor(const ControlNode *activatedControls);
     void OnAllControlDeselectedInEditor();
     void OnOpenPackageFile(const QString &path);
 
-    void CloseDocument(int index);
+    void CloseOneDocument(int index);
     void SaveDocument(int index);
     void SaveAllDocuments();
 
     void Exit();
     void RecentMenu(QAction *);
 private:
+    void CloseDocument(int index);
     int GetIndexByPackagePath(const QString &fileName) const;
     QList<std::shared_ptr<Document> > documents;
     MainWindow mainWindow;
