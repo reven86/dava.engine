@@ -47,6 +47,7 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QDebug>
+#include <QScreen>
 
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
@@ -334,6 +335,8 @@ void OpenGLWindow::mousePressEvent(QMouseEvent * event)
     davaEvent.phase = DAVA::UIEvent::PHASE_BEGAN;
     
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+    
+    emit mousePressed();
 }
 
 void OpenGLWindow::mouseReleaseEvent(QMouseEvent * event)
@@ -342,8 +345,6 @@ void OpenGLWindow::mouseReleaseEvent(QMouseEvent * event)
     davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
     
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-
-    QWindow::mouseReleaseEvent( event );
 }
 
 void OpenGLWindow::mouseDoubleClickEvent(QMouseEvent *event)
@@ -417,20 +418,22 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     setAcceptDrops(true);
     setMouseTracking(true);
 
-    setFocusPolicy(Qt::StrongFocus);
+    setFocusPolicy(Qt::NoFocus);
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     setMinimumSize(cMinSize);
     
     openGlWindow = new OpenGLWindow();
     connect( openGlWindow, &OpenGLWindow::Exposed, this, &DavaGLWidget::OnWindowExposed );
+    connect( openGlWindow, &QWindow::screenChanged, this, &DavaGLWidget::PerformSizeChange );
     
     auto l = new QBoxLayout(QBoxLayout::TopToBottom, this);
     l->setMargin( 0 );
     setLayout( l );
     
-    auto container = createWindowContainer( openGlWindow );
-    container->setAcceptDrops( true );
+    container = createWindowContainer( openGlWindow );
+    container->setAcceptDrops(true);
     container->setMouseTracking(true);
+    container->setFocusPolicy(Qt::WheelFocus);
     
     openGlWindow->installEventFilter(this);
 
@@ -510,8 +513,11 @@ bool DavaGLWidget::eventFilter( QObject* watched, QEvent* event )
 
 void DavaGLWidget::PerformSizeChange()
 {
-    if(isInitialized)
+    currentDPR = openGlWindow->devicePixelRatio();
+    if (isInitialized)
+    {
         DAVA::QtLayer::Instance()->Resize(currentWidth * currentDPR, currentHeight * currentDPR);
+    }
     
     emit Resized(currentWidth, currentHeight, currentDPR);
 }

@@ -50,6 +50,10 @@ class OpenGLWindow
     : public QWindow
 {
     Q_OBJECT
+    
+signals:
+    void mousePressed();
+    
 public:
     OpenGLWindow();
     ~OpenGLWindow();
@@ -118,6 +122,7 @@ private:
     int currentHeight;
 
     QPointer< OpenGLWindow > openGlWindow;
+    QPointer< QWidget > container;
 };
 
 
