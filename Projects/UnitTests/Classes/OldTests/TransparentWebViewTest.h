@@ -35,7 +35,7 @@
 
 using namespace DAVA;
 
-#include "TestTemplate.h"
+#include "Infrastructure/TestTemplate.h"
 
 class TransparentWebViewTest: public TestTemplate<TransparentWebViewTest>
 {

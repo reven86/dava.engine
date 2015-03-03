@@ -25,43 +25,21 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
 public class JNIWebView {
+    public static final int DELAY_TIMEOUT = 250;
     final static String TAG = "JNIWebView";
     final static Paint paint = new Paint();
 
     public static class WebViewWrapper extends android.webkit.WebView {
-        
-        boolean stopRecursion = false;
-        
-        public WebViewWrapper(Context context) {
-            super(context);
-        }
-
         private InternalViewClient client = null;
-
-        void setWebViewClient(InternalViewClient client) {
-            assert this.client == null;
-            assert client != null;
-
+        
+        public WebViewWrapper(Context context, InternalViewClient client) {
+            super(context);
             this.client = client;
             super.setWebViewClient(client);
         }
 
         InternalViewClient getInternalViewClient() {
-            assert client != null;
             return client;
-        }
-        
-        @Override
-        protected
-        void onDraw(Canvas canvas)
-        {
-            super.onDraw(canvas);
-            if (client.isRenderToTexture() && !stopRecursion)
-            {
-                stopRecursion = true;
-                Log.v(TAG, "inside render no recursion");
-                stopRecursion = false;
-            }
         }
     }
 
@@ -146,11 +124,11 @@ public class JNIWebView {
         }
 
         @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
-
-            Log.v(TAG, "onPageFinished");
-            
+        public void onPageFinished(final WebView view, final String url) {
+            if (url != null)
+            {
+                super.onPageFinished(view, url);
+            }
             JNIActivity activity = JNIActivity.GetActivity();
             if (null == activity || activity.GetIsPausing()) {
                 return;
@@ -162,9 +140,25 @@ public class JNIWebView {
 
                 activity.PostEventToGL(new OnPageLoadedNativeRunnable(pixels,
                         width, height));
+
+                
+                if (url != null)
+                {
+                // Workaround!!! try to send onPageFinished one more time
+                // with delay because on page may not ready to be rendered
+                view.postDelayed(new Runnable(){
+                    @Override
+                    public void run() {
+                        InternalViewClient client = (InternalViewClient)((WebViewWrapper) view).getInternalViewClient();
+                        client.onPageFinished(view, null);
+                    }}, JNIWebView.DELAY_TIMEOUT);
+                }
             } else {
-                activity.PostEventToGL(new OnPageLoadedNativeRunnable(null, 0,
+                if (url != null)
+                {
+                    activity.PostEventToGL(new OnPageLoadedNativeRunnable(null, 0,
                         0));
+                }
             }
         }
 
@@ -199,9 +193,10 @@ public class JNIWebView {
             Bitmap cacheImage = view.getDrawingCache();
             if (cacheImage == null)
             {
-                
-            }
-            if (cacheImage != null) {
+                Log.e(TAG, "can't render WebView into bitmap");
+            } 
+            else
+            {
                 bitmapCache = Bitmap.createBitmap(cacheImage);
             }
 
@@ -295,7 +290,9 @@ public class JNIWebView {
                             "WebView with id %d already initialized", id));
                     return;
                 }
-                WebViewWrapper webView = new WebViewWrapper(activity);
+                final WebViewWrapper webView = new WebViewWrapper(activity, 
+                        new InternalViewClient(id));
+                
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                         new FrameLayout.MarginLayoutParams((int) (dx + 0.5f),
                                 (int) (dy + 0.5f)));
@@ -304,14 +301,13 @@ public class JNIWebView {
                 params.topMargin = (int) y;
                 params.width = (int) (dx + 0.5f);
                 params.height = (int) (dy + 0.5f);
-                webView.setWebViewClient(new InternalViewClient(id));
+                
                 webView.getSettings().setJavaScriptEnabled(true);
                 webView.getSettings().setLoadWithOverviewMode(true);
                 webView.getSettings().setUseWideViewPort(false);
 
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
-                    webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
-                }
+                webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+                
                 webView.setWebChromeClient(new InternalWebClient(id));
                 webView.setOnTouchListener(new View.OnTouchListener() {
                     @Override
@@ -422,7 +418,7 @@ public class JNIWebView {
                     Log.e(TAG, String.format("Unknown view id %d", id));
                     return;
                 }
-                WebView webView = views.get(id);
+                final WebView webView = views.get(id);
 
                 String escapedJS = scriptString.replace("\"", "\\\"");
 
@@ -433,6 +429,18 @@ public class JNIWebView {
                         + "javascript:alert(call_back_func())";
 
                 webView.loadUrl(javaScript);
+
+                if (isRenderToTexture(id))
+                {
+                    webView.postDelayed(new Runnable(){
+                        @Override
+                        public void run() {
+                            InternalViewClient client = (InternalViewClient)((WebViewWrapper) webView).getInternalViewClient();
+                            // render again into texture
+                            client.onPageFinished(webView, null);
+                        }
+                    }, JNIWebView.DELAY_TIMEOUT);
+                }
             }
         });
     }
