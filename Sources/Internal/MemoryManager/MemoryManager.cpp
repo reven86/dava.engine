@@ -220,7 +220,6 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, ui
         totalSize += (BLOCK_ALIGN - (totalSize & (BLOCK_ALIGN - 1)));
     }
 
-    LockType lock(mutex);
     void* realPtr = MallocHook::Malloc(totalSize);
     if (realPtr != nullptr)
     {
