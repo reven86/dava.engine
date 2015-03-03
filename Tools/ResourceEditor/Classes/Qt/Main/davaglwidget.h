@@ -118,7 +118,6 @@ private:
     int currentHeight;
 
     QPointer< OpenGLWindow > openGlWindow;
-    QPointer< QWidget > container;
 };
 
 

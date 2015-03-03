@@ -87,8 +87,6 @@ OpenGLWindow::OpenGLWindow()
     
     setKeyboardGrabEnabled(true);
     setMouseGrabEnabled(true);
-    //setKeyboardGrabEnabled( false );
-    //setMouseGrabEnabled( false );
 
     setMinimumSize( cMinSize );
 }
@@ -192,28 +190,27 @@ void OpenGLWindow::keyReleaseEvent(QKeyEvent *e)
 
 DAVA::char16 OpenGLWindow::MapQtKeyToDAVA(const QKeyEvent *event)
 {
-    switch(event->key())
+    qDebug() << "key             : " << event->key();
+    qDebug() << "nativeScanCode  : " << event->nativeScanCode();
+    qDebug() << "nativeVirtualKey: " << event->nativeVirtualKey();
+    qDebug() << "-----";
+
+    switch ( event->nativeVirtualKey() )
     {
-        case Qt::Key_W:
+        case 87:
             return DAVA::DVKEY_W;
-
-        case Qt::Key_A:
+        case 65:
             return DAVA::DVKEY_A;
-
-        case Qt::Key_S:
+        case 83:
             return DAVA::DVKEY_S;
-
-        case Qt::Key_D:
+        case 68:
             return DAVA::DVKEY_D;
-
-        case Qt::Key_T:
+        case 84:
             return DAVA::DVKEY_T;
-
-        case Qt::Key_Z:
+        case 90:
             return DAVA::DVKEY_Z;
-
-            
-        default: break;
+        default:
+            break;
     }
     
     return 0;
@@ -256,8 +253,6 @@ void OpenGLWindow::mouseMoveEvent(QMouseEvent * event)
 
 void OpenGLWindow::mousePressEvent(QMouseEvent * event)
 {
-    qDebug() << __FUNCTION__;
-
     DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
     davaEvent.phase = DAVA::UIEvent::PHASE_BEGAN;
     
@@ -266,8 +261,6 @@ void OpenGLWindow::mousePressEvent(QMouseEvent * event)
 
 void OpenGLWindow::mouseReleaseEvent(QMouseEvent * event)
 {
-    qDebug() << __FUNCTION__;
-
     DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
     davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
     
@@ -358,10 +351,9 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     l->setMargin( 0 );
     setLayout( l );
     
-    container = createWindowContainer( openGlWindow );
+    auto container = createWindowContainer( openGlWindow );
     container->setAcceptDrops( true );
     container->setMouseTracking(true);
-    container->installEventFilter( this );
     
     openGlWindow->installEventFilter(this);
 
@@ -425,7 +417,6 @@ bool DavaGLWidget::eventFilter( QObject* watched, QEvent* event )
             break;
         case QEvent::Drop:
             {
-                qDebug() << "QEvent::Drop";
                 auto e = static_cast<QDropEvent *>( event );
                 emit OnDrop( e->mimeData() );
                 e->setDropAction( Qt::LinkAction );
