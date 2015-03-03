@@ -35,7 +35,6 @@ public:
 
     // QtLayerDelegate
     void Quit() override;
-    void ShowAssertMessage( const char* message ) override;
 
 private slots:
     void onWindowDestroyed();

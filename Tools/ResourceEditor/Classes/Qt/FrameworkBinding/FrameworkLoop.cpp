@@ -33,7 +33,7 @@ void FrameworkLoop::SetOpenGLWindow( DavaGLWidget* w )
 {
     DVASSERT( w != nullptr );
     glWidget = w;
-    //DAVA::QtLayer::Instance()->InitializeGlWindow( GetRenderContextId() );
+
     connect( w, &QObject::destroyed, this, &FrameworkLoop::onWindowDestroyed );
     connect( w, &DavaGLWidget::Initialized, this, &FrameworkLoop::onWindowInitialized );
 }
@@ -116,19 +116,9 @@ void FrameworkLoop::Quit()
     DAVA::RenderManager::Instance()->SetRenderContextId( 0 );
 }
 
-void FrameworkLoop::ShowAssertMessage( const char* message )
-{
-    Q_UNUSED( message );
-}
-
 void FrameworkLoop::onWindowDestroyed()
 {
     context->makeCurrent( nullptr );
-    //auto tt = GetRenderContextId();
-    //tt = tt;
-    //auto rm = DAVA::RenderManager::Instance();
-    //if ( rm != nullptr )
-    //    rm->SetRenderContextId( GetRenderContextId() );
 }
 
 void FrameworkLoop::onWindowInitialized()

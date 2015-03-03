@@ -71,7 +71,6 @@ public:
     void Quit();
     void SetDelegate(QtLayerDelegate *delegate);
 
-    void ShowAsserMessage(const char * message);
     bool IsDAVAEngineEnabled() const { return isDAVAEngineEnabled; };
     
     void KeyPressed(char16 key, int32 count, uint64 timestamp);
@@ -80,16 +79,11 @@ public:
     void MouseEvent(const UIEvent & event);
     
 protected:
-
     void CopyEvents(UIEvent & newEvent, const UIEvent & sourceEvent);
     void MoveTouchsToVector(const UIEvent &event, Vector<UIEvent> &outTouches);
     
-    
     QtLayerDelegate *delegate;
-    
     Vector<UIEvent> allTouches;
-
-    
     bool isDAVAEngineEnabled;
 };
 
