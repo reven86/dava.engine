@@ -142,7 +142,7 @@ void MMNetClient::ProcessCurrentStatistics(const MMProtoHeader* hdr, const void*
 
 void MMNetClient::ProcessDump(const MMProtoHeader* hdr, const void* packet, size_t length)
 {
-    const MMDump* dump = static_cast<const MMDump*>(packet);
+    //const MMDump* dump = static_cast<const MMDump*>(packet);
 
     gettingDump = true;
     //dumpSize = sizeof(MMDump) 
