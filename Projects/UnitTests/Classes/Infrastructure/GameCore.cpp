@@ -26,15 +26,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/BaseTypes.h"
-#include "Base/FunctionTraits.h"
+
 #include "GameCore.h"
 
 #include "Platform/DateTime.h"
 #include "TexturePacker/CommandLineParser.h"
 #include "Utils/Utils.h"
-
-#include "MemoryManager/MemoryManager.h"
 
 #include "Tests/MathTest.h"
 #include "Tests/FunctionBindSingalTest.h"
@@ -65,7 +62,6 @@
 void GameCore::RunOnlyThisTest()
 {
     //runOnlyThisTest = "TestClassName";
-    runOnlyThisTest = "NetworkTest";
 }
 
 void GameCore::OnError()
@@ -111,27 +107,17 @@ using namespace DAVA;
 
 void GameCore::OnAppStarted()
 {
-    Logger::Debug("GameCore::OnAppStarted");
-    
     InitLogging();
-    InitNetwork();
     RunOnlyThisTest();
     RegisterTests();
     RunTests();
 }
 
 GameCore::GameCore() 
-    : currentScreen(NULL)
-    , currentScreenIndex(0)
-    , currentTestIndex(0)
-    , netLogger(true)
-    , loggerInUse(false)
-    , mmInUse(false)
+: currentScreen(NULL),
+currentScreenIndex(0),
+currentTestIndex(0)
 {
-    MEMORY_PROFILER_REGISTER_ALLOC_POOL(2, "STL");
-    MEMORY_PROFILER_REGISTER_ALLOC_POOL(3, "Custom");
-    MEMORY_PROFILER_REGISTER_TAG(1, "TAG_1");
-    MEMORY_PROFILER_REGISTER_TAG(2, "TAG_2");
 }
 
 GameCore::~GameCore()
@@ -166,16 +152,13 @@ File * GameCore::CreateDocumentsFile(const String &filePathname)
 
 void GameCore::OnAppFinished()
 {
-    Logger::Debug("GameCore::OnAppFinished");
-    //DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
+    DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
 
     for(auto& screen : screens)
     {
         SafeRelease(screen);
     }
     screens.clear();
-    
-    netLogger.Uninstall();
 }
 
 void GameCore::OnSuspend()
@@ -225,7 +208,6 @@ void GameCore::Update(float32 timeElapsed)
 {
     ProcessTests();
     ApplicationCore::Update(timeElapsed);
-    netMM.Update(timeElapsed);
 }
 
 void GameCore::Draw()
@@ -379,7 +361,7 @@ void GameCore::InitLogging()
         runOnlyThisTest = CommandLineParser::Instance()->GetCommandParam("-only_test");
     }
 
-    //Logger::Instance()->AddCustomOutput(&teamCityOutput);
+    Logger::Instance()->AddCustomOutput(&teamCityOutput);
 }
 
 bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
@@ -394,68 +376,8 @@ bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
     return 0 != CompareCaseInsensitive(runOnlyThisTest, name);
 }
 
-const char8 GameCore::announceMulticastGroup[] = "239.192.100.1";
 
-void GameCore::InitNetwork()
-{
-    using namespace DAVA::Net;
-    
-    NetCore::Instance()->RegisterService(SERVICE_LOG, MakeFunction(this, &GameCore::CreateLogger), MakeFunction(this, &GameCore::DeleteLogger));
-    NetCore::Instance()->RegisterService(SERVICE_MEMPROF, MakeFunction(this, &GameCore::CreateMMServer), MakeFunction(this, &GameCore::DeleteMMServer));
-    
-    NetConfig config(SERVER_ROLE);
-    config.AddTransport(TRANSPORT_TCP, Endpoint(9999));
-    config.AddService(SERVICE_LOG);
-    config.AddService(SERVICE_MEMPROF);
-    
-    peerDescr = PeerDescription(config);
-    
-    Endpoint annoEndpoint(announceMulticastGroup, ANNOUNCE_PORT);
-    NetCore::Instance()->CreateAnnouncer(annoEndpoint, ANNOUNCE_TIME_PERIOD, MakeFunction(this, &GameCore::AnnounceDataSupplier));
-    NetCore::Instance()->CreateController(config, NULL);
-}
 
-size_t GameCore::AnnounceDataSupplier(size_t length, void* buffer)
-{
-    using namespace DAVA::Net;
-    if (true == peerDescr.NetworkInterfaces().empty())
-    {
-        // Get list of available network interfaces
-        // If list is empty then network is unavailable, this can happen on Android, maybe on iOS
-        // It's strange if no network but AnnounceDataSupplier has been invoked
-        peerDescr.SetNetworkInterfaces(NetCore::Instance()->InstalledInterfaces());
-        if (true == peerDescr.NetworkInterfaces().empty())
-            return 0;
-    }
-    return peerDescr.Serialize(buffer, length);
-}
 
-Net::IChannelListener* GameCore::CreateLogger(uint32 serviceId, void* context)
-{
-    if (!loggerInUse)
-    {
-        loggerInUse = true;
-        return &netLogger;
-    }
-    return nullptr;
-}
 
-void GameCore::DeleteLogger(Net::IChannelListener* obj, void* context)
-{
-    loggerInUse = false;
-}
 
-Net::IChannelListener* GameCore::CreateMMServer(uint32 serviceId, void* context)
-{
-    if (!mmInUse)
-    {
-        mmInUse = true;
-        return &netMM;
-    }
-    return nullptr;
-}
-
-void GameCore::DeleteMMServer(Net::IChannelListener* obj, void* context)
-{
-    mmInUse = false;
-}
