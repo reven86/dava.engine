@@ -146,7 +146,6 @@ public:
 	INTROSPECTION_EXTEND(PathComponent, Component,
         MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
         MEMBER(color, "Color", I_SAVE | I_VIEW | I_EDIT)
-        //COLLECTION(waypoints, "Waypoints", I_SAVE | I_VIEW | I_EDIT)
     );
 };
 
