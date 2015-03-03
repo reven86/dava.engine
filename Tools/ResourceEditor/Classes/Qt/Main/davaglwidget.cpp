@@ -85,8 +85,10 @@ OpenGLWindow::OpenGLWindow()
     paintDevice = nullptr;
     setSurfaceType(QWindow::OpenGLSurface);
     
-    setKeyboardGrabEnabled(true);
-    setMouseGrabEnabled(true);
+    //setKeyboardGrabEnabled(true);
+    //setMouseGrabEnabled(true);
+    setKeyboardGrabEnabled( false );
+    setMouseGrabEnabled( false );
 
     setMinimumSize( cMinSize );
 }
@@ -254,6 +256,8 @@ void OpenGLWindow::mouseMoveEvent(QMouseEvent * event)
 
 void OpenGLWindow::mousePressEvent(QMouseEvent * event)
 {
+    qDebug() << __FUNCTION__;
+
     DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
     davaEvent.phase = DAVA::UIEvent::PHASE_BEGAN;
     
@@ -262,10 +266,14 @@ void OpenGLWindow::mousePressEvent(QMouseEvent * event)
 
 void OpenGLWindow::mouseReleaseEvent(QMouseEvent * event)
 {
+    qDebug() << __FUNCTION__;
+
     DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
     davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
     
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+
+    QWindow::mouseReleaseEvent( event );
 }
 
 void OpenGLWindow::mouseDoubleClickEvent(QMouseEvent *event)
@@ -336,22 +344,25 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     , currentWidth(0)
     , currentHeight(0)
 {
-    setAcceptDrops(true);
-    setMouseTracking(true);
+    // setAcceptDrops(true);
+    // setMouseTracking(true);
 
-    setFocusPolicy( Qt::StrongFocus );
+    setFocusPolicy(Qt::StrongFocus);
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     setMinimumSize(cMinSize);
     
     openGlWindow = new OpenGLWindow();
     connect( openGlWindow, &OpenGLWindow::Exposed, this, &DavaGLWidget::OnWindowExposed );
     
-    QBoxLayout *l = new QBoxLayout(QBoxLayout::TopToBottom, this);
+    auto l = new QBoxLayout(QBoxLayout::TopToBottom, this);
     l->setMargin( 0 );
     setLayout( l );
     
-    QWidget *w = createWindowContainer(openGlWindow);
-    layout()->addWidget(w);
+    container = createWindowContainer( openGlWindow );
+    container->setAcceptDrops( true );
+    container->installEventFilter( this );
+
+    layout()->addWidget( container );
 }
 
 DavaGLWidget::~DavaGLWidget()
@@ -387,35 +398,26 @@ void DavaGLWidget::resizeEvent(QResizeEvent *e)
     PerformSizeChange();
 }
 
-void DavaGLWidget::dragEnterEvent(QDragEnterEvent *event)
+bool DavaGLWidget::eventFilter( QObject* watched, QEvent* event )
 {
-    event->setDropAction(Qt::LinkAction);
-	event->accept();
-}
+    if ( watched == container )
+    {
+        switch ( event->type() )
+        {
+        case QEvent::Drop:
+            {
+                auto dropEvent = static_cast<QDropEvent *>( event );
+                emit OnDrop( dropEvent->mimeData() );
+                dropEvent->setDropAction( Qt::LinkAction );
+                dropEvent->accept();
+            }
+            break;
+        default:
+            break;
+        }
+    }
 
-void DavaGLWidget::dragMoveEvent(QDragMoveEvent *event)
-{
-//	DAVA::UIEvent davaEvent;
-//    QPoint pos = event->pos();
-//    davaEvent.point = davaEvent.physPoint = Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
-//    davaEvent.tid = MapQtButtonToDAVA(Qt::LeftButton);
-//    davaEvent.timestamp = 0;
-//    davaEvent.tapCount = 1;
-//    davaEvent.phase = DAVA::UIEvent::PHASE_MOVE;
-//
-//    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-
-    event->setDropAction(Qt::LinkAction);
-	event->accept();
-}
-
-void DavaGLWidget::dropEvent(QDropEvent *event)
-{
-	const QMimeData *mimeData = event->mimeData();
-	emit OnDrop(mimeData);
-
-    event->setDropAction(Qt::LinkAction);
-	event->accept();
+    return QWidget::eventFilter( watched, event );
 }
 
 void DavaGLWidget::PerformSizeChange()

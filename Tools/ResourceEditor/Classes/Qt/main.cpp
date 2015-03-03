@@ -240,12 +240,12 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     BeastProxy::Instance()->Release();
     Core::Instance()->Release();
 
+    ControlsFactory::ReleaseFonts();
+
     FrameworkLoop::Instance()->Release();
     QtLayer::Instance()->Release();
     DavaLoop::Instance()->Release();
     delete glWidget;
-
-    ControlsFactory::ReleaseFonts();
 }
 
 void UnpackHelpDoc()

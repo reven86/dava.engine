@@ -34,20 +34,17 @@
 #include <QOpenGLWidget>
 #include <QTimer>
 #include <QMimeData>
+#include <QWindow>
+#include <QPointer>
 
 
 #include "UI/UIEvent.h"
 #include "Platform/Qt5/QtLayer.h"
 
 class QOpenGLContext;
-class QOffscreenSurface;
-
-#include <QWindow>
-
-
 class QOpenGLPaintDevice;
-class QOpenGLContext;
 class QExposeEvent;
+
 
 class OpenGLWindow
     : public QWindow
@@ -110,9 +107,7 @@ private slots:
     
 private:
     void resizeEvent(QResizeEvent *) override;
-	void dropEvent(QDropEvent *) override;
-	void dragMoveEvent(QDragMoveEvent *) override;
-	void dragEnterEvent(QDragEnterEvent *) override;
+    bool eventFilter( QObject * watched, QEvent * event ) override;
 
     void PerformSizeChange();
     
@@ -122,7 +117,8 @@ private:
     int currentWidth;
     int currentHeight;
 
-    OpenGLWindow *openGlWindow;
+    QPointer< OpenGLWindow > openGlWindow;
+    QPointer< QWidget > container;
 };
 
 
