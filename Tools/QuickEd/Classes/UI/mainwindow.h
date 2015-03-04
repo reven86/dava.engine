@@ -63,7 +63,7 @@ public:
     ~MainWindow();
     void CreateUndoRedoActions(const QUndoGroup &undoGroup);
     void OnCurrentIndexChanged(int arg);
-    PackageWidget *GetPackageWidget();
+    PackageWidget *GetPackageWidget() const;
     bool ConfirmClose();
     int CloseTab(int index);
     void SetCurrentTab(int index);

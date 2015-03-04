@@ -31,12 +31,12 @@ Project::~Project()
 
 bool Project::Open(const QString &path)
 {
-    bool result = _Open(path);
+    bool result = OpenInternal(path);
     SetIsOpen(result);
     return result;
 }
 
-bool Project::_Open(const QString &path)
+bool Project::OpenInternal(const QString &path)
 {
     // Attempt to create a project
     YamlParser* parser = YamlParser::Create(path.toStdString());

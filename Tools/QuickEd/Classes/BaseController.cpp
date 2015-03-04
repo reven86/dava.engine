@@ -2,6 +2,7 @@
 #include <QApplication>
 #include <QAction>
 #include <QFileInfo>
+#include <QCheckBox>
 #include <QMessageBox>
 #include "basecontroller.h"
 #include "UI/Package/PackageWidget.h"
@@ -17,16 +18,19 @@ BaseController::BaseController(QObject *parent)
     , currentIndex(-1)
 {
     mainWindow.CreateUndoRedoActions(undoGroup);
-    connect(&mainWindow, &MainWindow::TabClosed, this, &BaseController::CloseDocument);
+    connect(&mainWindow, &MainWindow::TabClosed, this, &BaseController::CloseOneDocument);
     connect(mainWindow.GetPackageWidget(), &PackageWidget::SelectionControlChanged, this, &BaseController::OnSelectionControlChanged);
     connect(mainWindow.GetPackageWidget(), &PackageWidget::SelectionRootControlChanged, this, &BaseController::OnSelectionRootControlChanged);
     connect(&mainWindow, &MainWindow::CloseProject, this, &BaseController::CloseProject);
     connect(&mainWindow, &MainWindow::ActionExitTriggered, this, &BaseController::Exit);
+    connect(&mainWindow, &MainWindow::CloseRequested, this, &BaseController::Exit);
     connect(&mainWindow, &MainWindow::RecentMenuTriggered, this, &BaseController::RecentMenu);
     connect(&mainWindow, &MainWindow::OpenPackageFile, this, &BaseController::OnOpenPackageFile);
     connect(&mainWindow, &MainWindow::SaveAllDocuments, this, &BaseController::SaveAllDocuments);
     connect(&mainWindow, &MainWindow::SaveDocument, this, &BaseController::SaveDocument);
     connect(&mainWindow, &MainWindow::CurrentTabChanged, this, &BaseController::SetCurrentIndex);
+
+    connect(this, &BaseController::CurrentIndexChanged, &mainWindow, &MainWindow::OnCurrentIndexChanged);
 }
 
 BaseController::~BaseController()
@@ -41,7 +45,7 @@ void BaseController::start()
 
 void BaseController::Exit()
 {
-    CloseProject();
+    if (CloseProject())
     {
         QCoreApplication::exit();
     }
@@ -49,7 +53,10 @@ void BaseController::Exit()
 
 void BaseController::OpenProject(const QString &path)
 {
-    CloseProject();
+    if (!CloseProject())
+    {
+        return;
+    }
 
     if (!project.CheckAndUnlockProject(path))
     {
@@ -74,9 +81,9 @@ void BaseController::RecentMenu(QAction *recentProjectAction)
     OpenProject(projectPath);
 }
 
-int BaseController::CreateDocument(const PackageNode *package)
+int BaseController::CreateDocument(PackageNode *package)
 {
-    std::shared_ptr<Document> document(new Document(&project, package, this));
+    Document *document = new Document(&project, package, this);
     //TODO : implement this to Add Document
 
     undoGroup.addStack(document->GetUndoStack());
@@ -86,12 +93,55 @@ int BaseController::CreateDocument(const PackageNode *package)
     return index;
 }
 
-void BaseController::CloseProject()
+bool BaseController::CloseProject()
 {
-    for (int i = 0; i < documents.size(); i++)
+    bool saveAll = false;
+    bool discardAll = false;
+    while(!documents.isEmpty())
     {
-        CloseDocument(i);
+        const Document &document = *documents.at(0);
+        QUndoStack *undoStack = document.GetUndoStack();
+        if (!undoStack->isClean())
+        {
+            int ret = QMessageBox::Save;
+            if (saveAll)
+            {
+                ret = QMessageBox::Save;
+            }
+            else if (discardAll)
+            {
+                ret = QMessageBox::Discard;
+            }
+            else
+            {
+                QMessageBox box(QMessageBox::Question,
+                    tr("Save changes"),
+                    tr("The file has been modified.\n"
+                    "Do you want to save your changes?"),
+                    QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+                    qApp->activeWindow());
+                box.setCheckBox(new QCheckBox(tr("apply to all")));
+                ret = box.exec();
+                if (box.checkBox()->isChecked())
+                {
+                    saveAll |= ret == QMessageBox::Save;
+                    discardAll |= ret == QMessageBox::Discard;
+                }
+            }
+
+            if (ret == QMessageBox::Cancel)
+            {
+                return false;
+            }
+            else if (ret == QMessageBox::Save)
+            {
+                SaveDocument(0);
+            }
+        }
+
+        CloseDocument(0);
     }
+    return true;
 }
 
 int BaseController::GetIndexByPackagePath(const QString &fileName) const
@@ -114,7 +164,8 @@ void BaseController::OnSelectionRootControlChanged(const QList<ControlNode *> &a
     {
         return;
     }
-    documents[CurrentIndex()]->OnSelectionRootControlChanged(activatedRootControls, deactivatedRootControls);
+    Document &document = *documents[CurrentIndex()];
+    document.OnSelectionRootControlChanged(activatedRootControls, deactivatedRootControls);
 }
 
 void BaseController::OnSelectionControlChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls)
@@ -123,16 +174,18 @@ void BaseController::OnSelectionControlChanged(const QList<ControlNode *> &activ
     {
         return;
     }
-    documents[CurrentIndex()]->OnSelectionControlChanged(activatedControls, deactivatedControls);
+    Document &document = *documents[CurrentIndex()];
+    document.OnSelectionControlChanged(activatedControls, deactivatedControls);
 }
 
-void BaseController::OnControlSelectedInEditor(const ControlNode *activatedControls)
+void BaseController::OnControlSelectedInEditor(ControlNode *activatedControls)
 {
     if (0 == Count() || -1 == CurrentIndex())
     {
         return;
     }
-    documents[CurrentIndex()]->OnControlSelectedInEditor(activatedControls);
+    Document &document = *documents[CurrentIndex()];
+    document.OnControlSelectedInEditor(activatedControls);
 }
 
 
@@ -142,7 +195,8 @@ void BaseController::OnAllControlDeselectedInEditor()
     {
         return;
     }
-    documents[CurrentIndex()]->OnAllControlDeselectedInEditor();
+    Document &document = *documents[CurrentIndex()];
+    document.OnAllControlDeselectedInEditor();
 }
 
 void BaseController::OnOpenPackageFile(const QString &path)
@@ -162,7 +216,7 @@ void BaseController::OnOpenPackageFile(const QString &path)
     }
 }
 
-void BaseController::CloseOneDocument(int index)
+bool BaseController::CloseOneDocument(int index)
 {
     const Document &document = *documents.at(index);
     QUndoStack *undoStack = document.GetUndoStack();
@@ -176,7 +230,7 @@ void BaseController::CloseOneDocument(int index)
             QMessageBox::Save);
         if (ret == QMessageBox::Cancel)
         {
-            return;
+            return false;
         }
         else if (ret == QMessageBox::Save)
         {
@@ -184,6 +238,7 @@ void BaseController::CloseOneDocument(int index)
         }
     }
     CloseDocument(index);
+    return true;
 }
 
 void BaseController::CloseDocument(int index)
@@ -195,7 +250,7 @@ void BaseController::CloseDocument(int index)
     int newIndex = mainWindow.CloseTab(index);
     SetCurrentIndex(newIndex);
     undoGroup.removeStack(undoStack);
-    documents.removeAt(index);
+    delete documents.takeAt(index);
     SetCount(Count() - 1);
 }
 
@@ -203,7 +258,7 @@ void BaseController::SaveDocument(int index)
 {
     DVASSERT(index >= 0);
     DVASSERT(index < Count());
-    Document &document = *documents[index].get();
+    Document &document = *documents[index];
     if (document.GetUndoStack()->isClean())
         return;
 
@@ -252,8 +307,8 @@ void BaseController::SetCurrentIndex(int arg)
     DVASSERT(arg < documents.size());
     if (currentIndex >= 0 && currentIndex < documents.size())
     {
-        Document *document = documents.at(currentIndex).get();
-
+        Document *document = documents.at(currentIndex);
+        document->SetActive(false);
         disconnect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
         disconnect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
         disconnect(document->GetUndoStack(), &QUndoStack::cleanChanged, &mainWindow, &MainWindow::OnCleanChanged);
@@ -263,7 +318,8 @@ void BaseController::SetCurrentIndex(int arg)
     currentIndex = arg;
     if (currentIndex != -1)
     {
-        Document *document = documents.at(currentIndex).get();
+        Document *document = documents.at(currentIndex);
+        document->SetActive(true);
         connect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
         connect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
         connect(document->GetUndoStack(), &QUndoStack::cleanChanged, &mainWindow, &MainWindow::OnCleanChanged);

@@ -74,7 +74,7 @@ Document::~Document()
 
 void Document::SetActive(bool arg)
 {
-    undoStack->setActive(false);
+    undoStack->setActive(arg);
 }
 
 bool Document::IsModified() const
@@ -125,7 +125,7 @@ void Document::OnSelectionControlChanged(const QList<ControlNode*> &activatedCon
     previewContext->OnSelectedControlsChanged(activatedControls, deactivatedControls);
 }
 
-void Document::OnControlSelectedInEditor(const ControlNode *activatedControl)
+void Document::OnControlSelectedInEditor(ControlNode *activatedControl)
 {
     emit controlSelectedInEditor(activatedControl);
 }

@@ -27,7 +27,7 @@ signals:
     void ProjectOpened();
 
 private:
-    bool _Open(const QString &path);
+    bool OpenInternal(const QString &path);
     QString projectDir;
     
     LegacyControlData *legacyData;

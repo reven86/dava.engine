@@ -39,7 +39,7 @@ private slots:
     void OnCut();
     void OnDelete();
 public slots:
-    void OnControlSelectedInEditor(const ControlNode *node);
+    void OnControlSelectedInEditor(ControlNode *node);
     void OnAllControlsDeselectedInEditor();
 
 signals:

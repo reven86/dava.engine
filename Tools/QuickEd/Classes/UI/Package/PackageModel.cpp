@@ -43,7 +43,7 @@ void PackageModel::emitNodeChanged(PackageBaseNode *node)
     emit dataChanged(index, index);
 }
 
-QModelIndex PackageModel::indexByNode(const PackageBaseNode *node) const
+QModelIndex PackageModel::indexByNode(PackageBaseNode *node) const
 {
     PackageBaseNode *parent = node->GetParent();
     if (parent == nullptr)

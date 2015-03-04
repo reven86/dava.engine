@@ -113,7 +113,7 @@ void MainWindow::CreateUndoRedoActions(const QUndoGroup &undoGroup)
     ui->mainToolbar->addAction(redoAction);
 }
 
-PackageWidget *MainWindow::GetPackageWidget()
+PackageWidget *MainWindow::GetPackageWidget() const
 {
     return ui->packageWidget;
 }
@@ -180,6 +180,7 @@ void MainWindow::OnCurrentIndexChanged(int arg)
 void MainWindow::OnCleanChanged(bool val)
 {
     int index = ui->tabBar->currentIndex();
+    DVASSERT(index >= 0);
     TabState &tabState = ui->tabBar->tabData(index).value<TabState>();
     tabState.isModified = val;
     QString tabText = tabState.tabText;
@@ -246,10 +247,8 @@ void MainWindow::InitMenu()
 void MainWindow::OnSaveDocument()
 {
     int index = ui->tabBar->currentIndex();
-    if (index >= 0)
-    {
-        emit SaveDocument(index);
-    }
+    DVASSERT(index >= 0);
+    emit SaveDocument(index);
 }
 
 void MainWindow::SetupViewMenu()

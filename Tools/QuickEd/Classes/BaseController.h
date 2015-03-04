@@ -19,21 +19,21 @@ public:
     ~BaseController();
     void start();
 protected:
-    void CloseProject();
+    bool CloseProject();
     void OpenProject(const QString &path);
 
-    int CreateDocument(const PackageNode *package);
+    int CreateDocument(PackageNode *package);
 signals:
 
 public slots:
 protected slots:
     void OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
     void OnSelectionControlChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
-    void OnControlSelectedInEditor(const ControlNode *activatedControls);
+    void OnControlSelectedInEditor(ControlNode *activatedControls);
     void OnAllControlDeselectedInEditor();
     void OnOpenPackageFile(const QString &path);
 
-    void CloseOneDocument(int index);
+    bool CloseOneDocument(int index);
     void SaveDocument(int index);
     void SaveAllDocuments();
 
@@ -42,7 +42,7 @@ protected slots:
 private:
     void CloseDocument(int index);
     int GetIndexByPackagePath(const QString &fileName) const;
-    QList<std::shared_ptr<Document> > documents;
+    QList<Document*> documents;
     MainWindow mainWindow;
     QUndoGroup undoGroup;
     Project project;

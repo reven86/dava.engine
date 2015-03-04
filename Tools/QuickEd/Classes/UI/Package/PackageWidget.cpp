@@ -341,7 +341,7 @@ void PackageWidget::filterTextChanged(const QString &filterText)
     }
 }
 
-void PackageWidget::OnControlSelectedInEditor(const ControlNode *node)
+void PackageWidget::OnControlSelectedInEditor(ControlNode *node)
 {
     QModelIndex srcIndex = document->GetPackageContext()->GetModel()->indexByNode(node);
     QModelIndex dstIndex = document->GetPackageContext()->GetFilterProxyModel()->mapFromSource(srcIndex);
