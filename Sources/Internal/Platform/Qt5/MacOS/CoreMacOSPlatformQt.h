@@ -45,8 +45,6 @@ public:
 	virtual void SwitchScreenToMode(eScreenMode screenMode); 
 	virtual void ToggleFullscreen();
 	virtual void Quit();
-
-	virtual Vector2 GetMousePosition();
 };
 };
 

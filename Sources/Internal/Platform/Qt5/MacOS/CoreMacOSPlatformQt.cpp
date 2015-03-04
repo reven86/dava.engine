@@ -93,18 +93,6 @@ void CoreMacOSPlatformQt::Quit()
 {
     QtLayer::Instance()->Quit();
 }
-
-Vector2 CoreMacOSPlatformQt::GetMousePosition()
-{
-    DVASSERT(false);
-    
-    //TODO: write correct code
-    Vector2 mouseLocation;
-    mouseLocation.x = 0.f;
-    mouseLocation.y = (float32)VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy;
-
-    return mouseLocation;
-}
 	
 }
 
