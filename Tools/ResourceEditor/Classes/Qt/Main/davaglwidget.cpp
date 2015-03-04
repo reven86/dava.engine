@@ -72,101 +72,7 @@
 
 namespace
 {
-    
     const QSize cMinSize = QSize( 200, 200 );
-
-    const std::map< quint32, DAVA::char16 > keyMap_WIN =
-    {
-
-        { 65, DVKEY_A },
-        { 66, DVKEY_B },
-        { 67, DVKEY_C },
-        { 68, DVKEY_D },
-        { 69, DVKEY_E },
-        { 70, DVKEY_F },
-        { 71, DVKEY_G },
-        { 72, DVKEY_H },
-        { 73, DVKEY_I },
-        { 74, DVKEY_J },
-        { 75, DVKEY_K },
-        { 76, DVKEY_L },
-        { 77, DVKEY_M },
-        { 78, DVKEY_N },
-        { 79, DVKEY_O },
-        { 80, DVKEY_P },
-        { 81, DVKEY_Q },
-        { 82, DVKEY_R },
-        { 83, DVKEY_S },
-        { 84, DVKEY_T },
-        { 85, DVKEY_U },
-        { 86, DVKEY_V },
-        { 87, DVKEY_W },
-        { 88, DVKEY_X },
-        { 89, DVKEY_Y },
-        { 90, DVKEY_Z },
-
-        { 48, DVKEY_0 },
-        { 49, DVKEY_1 },
-        { 50, DVKEY_2 },
-        { 51, DVKEY_3 },
-        { 52, DVKEY_4 },
-        { 53, DVKEY_5 },
-        { 54, DVKEY_6 },
-        { 55, DVKEY_7 },
-        { 56, DVKEY_8 },
-        { 57, DVKEY_9 },
-
-    };
-
-    const std::map< quint32, DAVA::char16 > keyMap_OSX = 
-    {
-
-        { 0,  DVKEY_A },
-        { 11, DVKEY_B },
-        { 8,  DVKEY_C },
-        { 2,  DVKEY_D },
-        { 14, DVKEY_E },
-        { 3,  DVKEY_F },
-        { 5,  DVKEY_G },
-        { 4,  DVKEY_H },
-        { 34, DVKEY_I },
-        { 38, DVKEY_J },
-        { 40, DVKEY_K },
-        { 37, DVKEY_L },
-        { 46, DVKEY_M },
-        { 45, DVKEY_N },
-        { 31, DVKEY_O },
-        { 35, DVKEY_P },
-        { 12, DVKEY_Q },
-        { 15, DVKEY_R },
-        { 1,  DVKEY_S },
-        { 17, DVKEY_T },
-        { 32, DVKEY_U },
-        { 9,  DVKEY_V },
-        { 13, DVKEY_W },
-        { 7,  DVKEY_X },
-        { 16, DVKEY_Y },
-        { 6,  DVKEY_Z },
-
-        { 29, DVKEY_0 },
-        { 18, DVKEY_1 },
-        { 19, DVKEY_2 },
-        { 20, DVKEY_3 },
-        { 21, DVKEY_4 },
-        { 23, DVKEY_5 },
-        { 22, DVKEY_6 },
-        { 26, DVKEY_7 },
-        { 28, DVKEY_8 },
-        { 25, DVKEY_9 },
-
-    };
-
-#if defined( Q_OS_WIN )
-    const std::map< quint32, DAVA::char16 > keyMap = keyMap_WIN;
-#elif defined( Q_OS_MAC )
-    const std::map< quint32, DAVA::char16 > keyMap = keyMap_OSX;
-#endif
-
 }
 
 
@@ -223,10 +129,16 @@ void OpenGLWindow::exposeEvent(QExposeEvent *event)
 
 bool OpenGLWindow::event(QEvent *event)
 {
-    if(event->type() == QEvent::UpdateRequest)
+    switch ( event->type() )
     {
+    case QEvent::UpdateRequest:
         renderNow();
         return true;
+    case QEvent::FocusOut:
+        DAVA::InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+        break;
+    default:
+        break;
     }
     
     return QWindow::event(event);
@@ -249,7 +161,7 @@ void OpenGLWindow::keyPressEvent(QKeyEvent *e)
         DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed(DAVA::DVKEY_ALT);
     }
     
-    char davaKey = MapQtKeyToDAVA(e);
+    const auto davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey( e->nativeVirtualKey() );
     if(davaKey)
     {
         DAVA::QtLayer::Instance()->KeyPressed(davaKey, e->count(), e->timestamp());
@@ -273,25 +185,11 @@ void OpenGLWindow::keyReleaseEvent(QKeyEvent *e)
         DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(DAVA::DVKEY_ALT);
     }
 
-    char davaKey = MapQtKeyToDAVA(e);
+    const auto davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey( e->nativeVirtualKey() );
     if(davaKey)
     {
         DAVA::QtLayer::Instance()->KeyReleased(davaKey);
     }
-}
-
-DAVA::char16 OpenGLWindow::MapQtKeyToDAVA(const QKeyEvent *event)
-{
-    const quint32 nativeKey = event->nativeVirtualKey();
-    DAVA::char16 davaKey = DVKEY_UNKNOWN;
-
-    const auto it = keyMap.find( nativeKey );
-    if ( it != keyMap.end() )
-    {
-        davaKey = it->second;
-    }
-
-    return davaKey;
 }
 
 void OpenGLWindow::mouseMoveEvent(QMouseEvent * event)
@@ -373,6 +271,8 @@ void OpenGLWindow::wheelEvent(QWheelEvent *event)
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
 }
 
+
+
 DAVA::UIEvent OpenGLWindow::MapMouseEventToDAVA(const QMouseEvent *event) const
 {
     DAVA::UIEvent davaEvent;
@@ -434,10 +334,13 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     container->setAcceptDrops(true);
     container->setMouseTracking(true);
     container->setFocusPolicy(Qt::WheelFocus);
-    
+    //container->setFocusPolicy(Qt::NoFocus);
+
     openGlWindow->installEventFilter(this);
 
-    layout()->addWidget( container );
+    layout()->addWidget(container);
+
+    focusTracker = new FocusTracker(this);
 }
 
 DavaGLWidget::~DavaGLWidget()
@@ -503,6 +406,22 @@ bool DavaGLWidget::eventFilter( QObject* watched, QEvent* event )
                 e->accept();
             }
             break;
+
+        case QEvent::MouseButtonPress:
+            focusTracker->OnClick();
+            break;
+        case QEvent::Enter:
+            focusTracker->OnEnter();
+            break;
+        case QEvent::Leave:
+            focusTracker->OnLeave();
+            break;
+        case QEvent::FocusIn:
+            focusTracker->OnFocusIn();
+            break;
+        case QEvent::FocusOut:
+            focusTracker->OnFocusOut();
+            break;
         default:
             break;
         }
@@ -520,4 +439,57 @@ void DavaGLWidget::PerformSizeChange()
     }
     
     emit Resized(currentWidth, currentHeight, currentDPR);
+}
+
+
+FocusTracker::FocusTracker( DavaGLWidget* _glWidget )
+    : QObject( _glWidget )
+    , glWidget( _glWidget )
+    , glWindow( _glWidget->GetGLWindow() )
+    , isFocused( false )
+    , needToRestoreFocus( false )
+{}
+
+FocusTracker::~FocusTracker()
+{}
+
+void FocusTracker::OnClick()
+{
+    needToRestoreFocus = false;
+}
+
+void FocusTracker::OnEnter()
+{
+    auto rootWidget = glWidget->window();
+    if ( rootWidget == nullptr )
+        return;
+
+    needToRestoreFocus = (!isFocused);
+    prevWidget = QApplication::focusWidget();
+
+    const bool needToSetFocus = !prevWidget.isNull() && prevWidget->window() == rootWidget;
+    if ( !isFocused && needToSetFocus )
+    {
+        glWindow->requestActivate();
+    }
+}
+
+void FocusTracker::OnLeave()
+{
+    if ( needToRestoreFocus && !prevWidget.isNull() )
+    {
+        prevWidget->setFocus();
+    }
+
+    needToRestoreFocus = false;
+}
+
+void FocusTracker::OnFocusIn()
+{
+    isFocused = true;
+}
+
+void FocusTracker::OnFocusOut()
+{
+    isFocused = false;
 }
