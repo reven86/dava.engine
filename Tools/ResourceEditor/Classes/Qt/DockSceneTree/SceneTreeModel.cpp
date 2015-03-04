@@ -840,6 +840,27 @@ Qt::ItemFlags SceneTreeModel::flags ( const QModelIndex & index ) const
     return f;
 }
 
+QVariant SceneTreeModel::data(const QModelIndex &index, int role) const
+{
+    QVariant val = QStandardItemModel::data(index, role);
+    SceneTreeItem *item = GetItem(index);
+    ParticleEmitter *itemsPE = SceneTreeItemParticleEmitter::GetEmitterStrict(item);
+    if (nullptr == itemsPE)
+    {
+        return val;
+    }
+
+    if (Qt::BackgroundRole == role)
+    {
+        if (itemsPE->shortEffect)
+        {
+            val = QBrush(QColor(255, 0, 0, 20));
+        }
+    }
+
+    return val;
+}
+
 
 SceneTreeFilteringModel::SceneTreeFilteringModel(SceneTreeModel *_treeModel, QObject *parent /* = NULL */)
 	: QSortFilterProxyModel(parent)

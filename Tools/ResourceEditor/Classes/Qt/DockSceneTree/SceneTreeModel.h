@@ -104,6 +104,7 @@ public:
     bool IsFilterSet() const;
 
     Qt::ItemFlags flags ( const QModelIndex & index ) const;
+    QVariant data(const QModelIndex &index, int role) const;
     
 private slots:
 	void ItemChanged(QStandardItem * item);
