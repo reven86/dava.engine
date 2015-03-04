@@ -348,12 +348,6 @@ public:
         \param[in] stencil specifies the index used when the stencil buffer is cleared
      */
 	void ClearStencilBuffer(int32 stencil = 0);
-
-	/** 
-	 \brief Checks is render target using for drawing now
-	 \param[out] true if render manager sets to a render targe. false if render manager draws to the screen now
-	 */
-	inline bool IsRenderTarget();
        
     Size2i GetFramebufferSize();
 
@@ -376,7 +370,7 @@ public:
     int32 GetFPS();
 
 	void SetDebug(bool isDebugEnabled);
-
+    
     void SetRenderContextId(uint64 contextId);
 	uint64 GetRenderContextId();
 	void VerifyRenderContext();
@@ -447,9 +441,6 @@ public:
     
     int32 HWglGetLastTextureID(int textureType);
     void HWglBindTexture(int32 tId, uint32 textureType = Texture::TEXTURE_2D);
-    int32 lastBindedTexture[Texture::TEXTURE_TYPE_COUNT];
-	uint32 lastBindedTextureType;
-
     
     int32 HWglGetLastFBO();
     void HWglBindFBO(const int32 fbo);
@@ -540,7 +531,10 @@ public:
     Mutex textureStateMutex;
 	
 	void SetClip(const Rect &rect);
-	void SetRenderTarget(Texture * renderTarget);
+
+    void SetRenderTarget(Texture * renderTarget);
+    inline Texture * GetRenderTarget();
+    Texture * currentRenderTarget;
     
     enum eClearBuffers
     {
@@ -895,9 +889,9 @@ inline void RenderManager::SetTextureState(UniqueHandle requestedState)
     currentState.textureState = requestedState;
 }
 
-inline bool RenderManager::IsRenderTarget()
+inline Texture * RenderManager::GetRenderTarget()
 {
-    return lastBindedFBO != (int32)fboViewFramebuffer;
+    return currentRenderTarget;
 }
 
     

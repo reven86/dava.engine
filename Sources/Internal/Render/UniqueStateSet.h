@@ -153,8 +153,7 @@ int32 UniqueStateSet<T>::ReleaseUnique(UniqueHandle handle)
 	{
 		values[handle].Clear();
 		freeSlotCount++;
-    }
-    
+	}
     return refCounters[handle];
 }
 
@@ -181,7 +180,6 @@ int32 UniqueStateSet<T>::RetainUnique(UniqueHandle handle)
 {
     DVASSERT(refCounters[handle] > 0);
 	refCounters[handle] += 1;
-    
     return refCounters[handle];
 }
 };

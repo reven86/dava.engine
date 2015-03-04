@@ -233,10 +233,10 @@ void RenderState::Flush(RenderState * hardwareState) const
     if(textureState != hardwareState->textureState &&
        textureState != InvalidUniqueHandle)
     {
-        if(hardwareState->textureState == InvalidUniqueHandle)
+        if(InvalidUniqueHandle == hardwareState->textureState)
         {
             const TextureStateData& currentTextureData = RenderManager::Instance()->GetTextureState(textureState);
-            for(size_t i = 0; i < MAX_TEXTURE_COUNT; ++i)
+            for (size_t i = 0; i < MAX_TEXTURE_COUNT; ++i)
             {
                 SetTextureLevelInHW(static_cast<uint32>(i), currentTextureData.textures[i]);
             }
