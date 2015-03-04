@@ -94,12 +94,12 @@ private:
     LibraryContext *libraryContext;
     
     QtModelPackageCommandExecutor *commandExecutor;
-    std::unique_ptr<QUndoStack> undoStack;
+    QScopedPointer<QUndoStack> undoStack;
 };
 
 inline QUndoStack *Document::GetUndoStack() const
 {
-    return undoStack.get();
+    return undoStack.data();
 }
 
 
