@@ -86,7 +86,7 @@ LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditi
 	selectionSystem->SetLocked(true);
 	modifSystem->SetLocked(true);
 
-	Texture* visibilityToolTexture = drawSystem->GetVisibilityToolProxy()->GetSprite()->GetTexture();
+	Texture* visibilityToolTexture = drawSystem->GetVisibilityToolProxy()->GetTexture();
 	drawSystem->GetLandscapeProxy()->SetVisibilityCheckToolTexture(visibilityToolTexture);
 	drawSystem->GetLandscapeProxy()->SetVisibilityCheckToolTextureEnabled(true);
 	landscapeSize = visibilityToolTexture->GetWidth();
@@ -230,7 +230,7 @@ void VisibilityToolSystem::SetBrushSize(int32 brushSize)
 void VisibilityToolSystem::StoreOriginalState()
 {
 	DVASSERT(originalImage == NULL);
-	originalImage = drawSystem->GetVisibilityToolProxy()->GetSprite()->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+	originalImage = drawSystem->GetVisibilityToolProxy()->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
 	ResetAccumulatorRect();
 }
 
@@ -311,16 +311,12 @@ void VisibilityToolSystem::SetVisibilityArea()
 
 void VisibilityToolSystem::SetVisibilityPointInternal()
 {
-	Sprite* cursorSprite = Sprite::CreateFromTexture(crossTexture, 0, 0,
-													 crossTexture->GetWidth(), crossTexture->GetHeight());
-
 	SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
 	DVASSERT(scene);
-	scene->Exec(new ActionSetVisibilityPoint(originalImage, cursorSprite,
+    scene->Exec(new ActionSetVisibilityPoint(originalImage, crossTexture,
 											 drawSystem->GetVisibilityToolProxy(), cursorPosition, Vector2(CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE)));
 
 	SafeRelease(originalImage);
-	SafeRelease(cursorSprite);
 
 	SetState(VT_STATE_NORMAL);
 }
@@ -552,24 +548,20 @@ bool VisibilityToolSystem::IsCircleContainsPoint(const Vector2& circleCenter, fl
 void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> &points)
 {
 	VisibilityToolProxy* visibilityToolProxy = drawSystem->GetVisibilityToolProxy();
-	Sprite* visibilityAreaSprite = visibilityToolProxy->GetSprite();
+	Texture * visibilityAreaTexture = visibilityToolProxy->GetTexture();
 
-    RenderSystem2D::Instance()->PushRenderTarget();
-    RenderSystem2D::Instance()->SetRenderTarget(visibilityAreaSprite);
-
+    RenderHelper::Instance()->Set2DRenderTarget(visibilityAreaTexture);
 	for(uint32 i = 0; i < points.size(); ++i)
 	{
 		uint32 colorIndex = (uint32)points[i].z;
 		Vector2 pos(points[i].x, points[i].y);
 
-        RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
         RenderManager::Instance()->SetColor(areaPointColors[colorIndex]);
-        RenderSystem2D::Instance()->Setup2DMatrices();
-        RenderHelper::Instance()->DrawPoint(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(pos), 5.f, DAVA::RenderState::RENDERSTATE_2D_BLEND);
+        RenderHelper::Instance()->DrawPoint(pos, 5.f, DAVA::RenderState::RENDERSTATE_2D_BLEND);
 	}
 
     RenderManager::Instance()->ResetColor();
-    RenderSystem2D::Instance()->PopRenderTarget();
+    RenderManager::Instance()->SetRenderTarget(0);
 }
 
 void VisibilityToolSystem::SaveTexture(const FilePath& filePath)
@@ -579,8 +571,7 @@ void VisibilityToolSystem::SaveTexture(const FilePath& filePath)
 		return;
 	}
 
-	Sprite* visibilityToolSprite = drawSystem->GetVisibilityToolProxy()->GetSprite();
-	Texture* visibilityToolTexture = visibilityToolSprite->GetTexture();
+    Texture* visibilityToolTexture = drawSystem->GetVisibilityToolProxy()->GetTexture();
 
 	Image* image = visibilityToolTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
     ImageSystem::Instance()->Save(filePath, image);

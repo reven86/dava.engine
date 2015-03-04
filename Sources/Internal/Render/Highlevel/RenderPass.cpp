@@ -186,7 +186,7 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
     }   
 
     Rect viewportSave = RenderManager::Instance()->GetViewport();
-    uint32 currFboId = RenderManager::Instance()->HWglGetLastFBO();
+    Texture * renderTargetSave = RenderManager::Instance()->GetRenderTarget();
         
     RenderManager::Instance()->SetRenderTarget(reflectionTexture);
     //discard everything here
@@ -209,8 +209,8 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
 
     //discrad depth(everything?) here
     RenderManager::Instance()->DiscardFramebufferHW(RenderManager::DEPTH_ATTACHMENT|RenderManager::STENCIL_ATTACHMENT);
-        
-    RenderManager::Instance()->HWglBindFBO(currFboId?currFboId:RenderManager::Instance()->GetFBOViewFramebuffer());
+
+    RenderManager::Instance()->SetRenderTarget(renderTargetSave);
     RenderManager::Instance()->SetViewport(viewportSave);
 
     renderSystem->GetDrawCamera()->SetupDynamicParameters();    		
