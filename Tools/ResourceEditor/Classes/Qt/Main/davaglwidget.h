@@ -89,6 +89,33 @@ private:
 };
 
 
+class DavaGLWidget;
+
+class FocusTracker
+    : public QObject
+{
+    Q_OBJECT
+
+public:
+    explicit FocusTracker( DavaGLWidget *glWidget );
+    ~FocusTracker();
+
+    void OnClick();
+    void OnEnter();
+    void OnLeave();
+    void OnFocusIn();
+    void OnFocusOut();
+
+private:
+    QPointer< DavaGLWidget > glWidget;
+    QPointer< QWindow > glWindow;
+    QPointer< QWidget > prevWidget;
+    QPointer< QWindow > prevWindow;
+
+    bool isFocused;
+    bool needToRestoreFocus;
+};
+
 
 class DavaGLWidget
     : public QWidget
@@ -116,14 +143,15 @@ private:
     void PerformSizeChange();
     
     bool isInitialized;
-    
     int currentDPR;
     int currentWidth;
     int currentHeight;
 
     QPointer< OpenGLWindow > openGlWindow;
     QPointer< QWidget > container;
+    QPointer< FocusTracker > focusTracker;
 };
+
 
 
 #endif // DAVAGLWIDGET_H
