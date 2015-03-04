@@ -82,8 +82,6 @@ protected:
     DAVA::UIEvent MapMouseEventToDAVA(const QMouseEvent *event) const;
     DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button) const;
     
-    DAVA::char16 MapQtKeyToDAVA(const QKeyEvent *event);
-    
 private:
     QOpenGLPaintDevice *paintDevice;
 };
