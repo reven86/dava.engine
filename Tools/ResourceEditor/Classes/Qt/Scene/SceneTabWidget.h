@@ -121,9 +121,9 @@ protected:
 
 	void SetTabScene(int index, SceneEditor2* scene);
 
-	virtual void dragEnterEvent(QDragEnterEvent *event);
-	virtual void dropEvent(QDropEvent *event);
-	virtual void keyReleaseEvent(QKeyEvent * event);
+	void dragEnterEvent(QDragEnterEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+    void keyReleaseEvent(QKeyEvent * event) override;
 
 	ScenePreviewDialog *previewDialog;
 
@@ -142,14 +142,14 @@ class MainTabBar : public QTabBar
 	Q_OBJECT
 
 public:
-	MainTabBar(QWidget* parent = 0);
+	explicit MainTabBar(QWidget* parent = nullptr);
 
 signals:
 	void OnDrop(const QMimeData *mimeData);
 
 protected:
-	virtual void dropEvent(QDropEvent *de);
-	virtual void dragEnterEvent(QDragEnterEvent *event);
+	void dropEvent(QDropEvent *de) override;
+	void dragEnterEvent(QDragEnterEvent *event) override;
 };
 
 #endif // __SCENE_TAB_WIDGET_H__

@@ -37,8 +37,8 @@ public:
     void Quit() override;
 
 private slots:
-    void onWindowDestroyed();
-    void onWindowInitialized();
+    void OnWindowDestroyed();
+    void OnWindowInitialized();
 
 private:
     QPointer< QOpenGLContext > context;

@@ -78,7 +78,7 @@
 #ifdef __DAVAENGINE_AUTOTESTING__
 #include "Autotesting/AutotestingSystem.h"
 #endif
-//#include "PerformanceSettings.h"
+
 
 namespace DAVA 
 {
@@ -87,7 +87,7 @@ namespace DAVA
 	static bool useAutodetectContentScaleFactor = false;
 #endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     
-static ApplicationCore * core = 0;
+static ApplicationCore * core = nullptr;
 
 Core::Core()
 {
@@ -107,14 +107,6 @@ Core::~Core()
 
 void Core::CreateSingletons()
 {
-#ifndef __DAVAENGINE_IPHONE__
-//	if (!Core::Instance())
-//	{
-//		//Logger::Warning("[Core::Create] failed / something wrong with template or your platform code / contact framework developers");
-//	}
-#endif
-    
-    
     // check types size
 	new Logger();
 	new AllocatorFactory();
@@ -134,7 +126,6 @@ void Core::CreateSingletons()
 		 */
 		Logger::Instance()->SetLogLevel(Logger::LEVEL_INFO);
 	}
-//	Logger::FrameworkDebug("[Core::Create] successfull");
     
 	new LocalizationSystem();
 
