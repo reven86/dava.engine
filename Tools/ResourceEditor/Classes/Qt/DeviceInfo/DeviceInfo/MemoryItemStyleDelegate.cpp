@@ -12,13 +12,13 @@ void MemoryItemStyleDelegate::paint(QPainter *painter, const QStyleOptionViewIte
     
     if (index.data().canConvert(QVariant::Int)) 
     {
-        int memoryData = index.data().toInt(nullptr);
+        float memoryData = static_cast<float>(index.data().toInt(nullptr));
         QString letter = "B";
         static std::array<QString, 8> letters = { "KB", "MB", "GB", "TP", "PB", "EB", "ZB", "YB" };
         size_t counter = 0;
-        while (memoryData > 1024 && counter < letters.size())
+        while (memoryData > 1024.0f && counter < letters.size())
         {
-            memoryData /= 1024;
+            memoryData /= 1024.0f;
             letter = letters[counter];
             counter++;
         }

@@ -99,7 +99,7 @@ public:
     static void Deallocate(void* ptr);
 
     static void EnterTagScope(uint32 tag);
-    static void LeaveTagScope();
+    static void LeaveTagScope(uint32 tag);
 
     static size_t CalcStatConfigSize();
     static void GetStatConfig(MMStatConfig* config);
@@ -119,7 +119,7 @@ private:
     void* Realloc(void *ptr, size_t size);
 
     void EnterScope(uint32 tag);
-    void LeaveScope();
+    void LeaveScope(uint32 tag);
 
     void InsertBlock(MemoryBlock* block);
     void RemoveBlock(MemoryBlock* block);
@@ -207,9 +207,9 @@ inline void MemoryManager::EnterTagScope(uint32 tag)
     Instance()->EnterScope(tag);
 }
 
-inline void MemoryManager::LeaveTagScope()
+inline void MemoryManager::LeaveTagScope(uint32 tag)
 {
-    Instance()->LeaveScope();
+    Instance()->LeaveScope(tag);
 }
 
 inline size_t MemoryManager::CalcStatSize()
