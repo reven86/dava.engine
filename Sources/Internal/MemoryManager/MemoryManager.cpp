@@ -352,6 +352,7 @@ void MemoryManager::EnterTagScope(uint32 tag)
 void MemoryManager::LeaveTagScope(uint32 tagToLeave)
 {
     assert(tags.depth > 0);
+    DVASSERT_MSG(tagToLeave == tags.stack[tags.depth], "Leaving Tags don't match up");
 
     uint32 tag = 0;
     uint32 tagBegin = 0;
@@ -359,7 +360,6 @@ void MemoryManager::LeaveTagScope(uint32 tagToLeave)
     {
         LockType lock(mutex);
         tag = tags.stack[tags.depth];
-        DVASSERT_MSG(tagToLeave == tag, "Leaving Tags don't match up");
         tagBegin = tags.begin[tags.depth];
         tagEnd = nextBlockNo;
         for (size_t i = 0;i < MMConst::MAX_ALLOC_POOL_COUNT;++i)
