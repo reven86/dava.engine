@@ -142,7 +142,7 @@ void MemProfWidget::UpdateProgress(size_t total, size_t recv)
 
 void MemProfWidget::UpdateLabels(const DAVA::MMStat* stat, DAVA::uint32 alloc, DAVA::uint32 total)
 {
-    uint32 nblocks = 0;
+  /*  uint32 nblocks = 0;
     for (uint32 i = 0;i < stat->allocPoolCount;++i)
     {
         labels[i].alloc->setNum(int(stat->poolStat[i].allocByApp));
@@ -156,7 +156,7 @@ void MemProfWidget::UpdateLabels(const DAVA::MMStat* stat, DAVA::uint32 alloc, D
     labels[R].alloc->setNum(int(alloc));
     labels[R].total->setNum(int(total));
     labels[R].nblocks->setNum(int(nblocks));
-   
+   */
 }
 
 /*

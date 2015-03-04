@@ -43,7 +43,6 @@
 #include "Render/Material/NMaterial.h"
 
 #include "Scene3D/SceneFile/SerializationContext.h"
-
 namespace DAVA
 {
 

@@ -101,7 +101,7 @@ public:
     void Deallocate(void* ptr);
 
     void EnterTagScope(uint32 tag);
-    void LeaveTagScope();
+    void LeaveTagScope(uint32 tag);
     void Checkpoint(uint32 checkpoint);
 
     size_t CalcStatConfigSize() const;
@@ -116,6 +116,7 @@ public:
 private:
     static bool IsInternalAllocationPool(uint32 poolIndex);
 
+    void LeaveScope(uint32 tagToLeave);
     void InsertBlock(MemoryBlock* block);
     void RemoveBlock(MemoryBlock* block);
     MemoryBlock* IsTrackedBlock(void* ptr);

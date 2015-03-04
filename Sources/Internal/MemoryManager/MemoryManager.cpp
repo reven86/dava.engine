@@ -86,7 +86,7 @@ MMItemName MemoryManager::tagNames[MMConst::MAX_TAG_COUNT] = {
 
 MMItemName MemoryManager::allocPoolNames[MMConst::MAX_ALLOC_POOL_COUNT] = {
     {"application"},
-    {"FMOD"}
+    { "FMOD" }, { "RENDERBATCH" }
 };
 
 size_t MemoryManager::registeredTagCount = 1;
@@ -349,7 +349,7 @@ void MemoryManager::EnterTagScope(uint32 tag)
     tags.begin[tags.depth] = nextBlockNo;
 }
 
-void MemoryManager::LeaveTagScope()
+void MemoryManager::LeaveTagScope(uint32 tagToLeave)
 {
     assert(tags.depth > 0);
 
@@ -359,6 +359,7 @@ void MemoryManager::LeaveTagScope()
     {
         LockType lock(mutex);
         tag = tags.stack[tags.depth];
+        DVASSERT_MSG(tagToLeave == tag, "Leaving Tags don't match up");
         tagBegin = tags.begin[tags.depth];
         tagEnd = nextBlockNo;
         for (size_t i = 0;i < MMConst::MAX_ALLOC_POOL_COUNT;++i)

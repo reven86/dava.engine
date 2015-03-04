@@ -33,6 +33,7 @@
 #include "Render/RenderManager.h"
 #include "Scene3D/SceneFileV2.h"
 
+#include "MemoryManager/MemoryProfiler.h"
 namespace DAVA 
 {
 
@@ -150,7 +151,7 @@ void PolygonGroup::UpdateDataPointersAndStreams()
         renderDataObject->SetStream(EVF_JOINTINDEX , TYPE_UNSIGNED_BYTE, 4, vertexStride, jointIdxArray);
 
         SafeDeleteArray(jointCountArray);
-        jointCountArray = new int32[vertexCount];
+        jointCountArray = MEMORY_PROFILER_NEW(DAVA::ePredefAllocPools::ALLOC_POOL_RENDERBATCH, int32[vertexCount]);
     }
 	if (vertexFormat & EVF_JOINTWEIGHT)
 	{
@@ -219,12 +220,12 @@ void PolygonGroup::AllocateData(int32 _meshFormat, int32 _vertexCount, int32 _in
 	textureCoordCount = GetTexCoordCount(vertexFormat);
 	cubeTextureCoordCount = GetCubeTexCoordCount(vertexFormat);
 
-	meshData = new uint8[vertexStride * vertexCount];
-	indexArray = new int16[indexCount];
-	textureCoordArray = new Vector2*[textureCoordCount];
-	cubeTextureCoordArray = new Vector3*[cubeTextureCoordCount];
+    meshData = MEMORY_PROFILER_NEW(DAVA::ePredefAllocPools::ALLOC_POOL_RENDERBATCH, uint8[vertexStride * vertexCount]);
+    indexArray = MEMORY_PROFILER_NEW(DAVA::ePredefAllocPools::ALLOC_POOL_RENDERBATCH, int16[indexCount]);
+    textureCoordArray = MEMORY_PROFILER_NEW(DAVA::ePredefAllocPools::ALLOC_POOL_RENDERBATCH, Vector2*[textureCoordCount]);
+    cubeTextureCoordArray = MEMORY_PROFILER_NEW(DAVA::ePredefAllocPools::ALLOC_POOL_RENDERBATCH, Vector3*[cubeTextureCoordCount]);
 	
-    renderDataObject = new RenderDataObject();
+    renderDataObject = MEMORY_PROFILER_NEW(DAVA::ePredefAllocPools::ALLOC_POOL_RENDERBATCH, RenderDataObject());
     
     UpdateDataPointersAndStreams();
 }
@@ -400,7 +401,7 @@ void PolygonGroup::BuildTangentsBinormals(uint32 flagsToAdd)
 void PolygonGroup::CreateBaseVertexArray()
 {
 	SafeDeleteArray(baseVertexArray);
-	baseVertexArray = new Vector3[vertexCount];
+    baseVertexArray = MEMORY_PROFILER_NEW(DAVA::ePredefAllocPools::ALLOC_POOL_RENDERBATCH, Vector3[vertexCount]);
 
 	for (int v = 0; v < vertexCount; ++v)
 	{
@@ -520,7 +521,7 @@ void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationCon
             DVASSERT(newFormat);
             int32 newVertexStride = GetVertexSize(newFormat);
             SafeDeleteArray(meshData);        
-            meshData = new uint8[vertexCount * newVertexStride];                        
+            meshData = MEMORY_PROFILER_NEW(DAVA::ePredefAllocPools::ALLOC_POOL_RENDERBATCH, uint8[vertexCount * newVertexStride]);
             uint8 *dst = meshData;
             const uint8 *src = &archiveData[0];
             for (int32 i = 0; i < vertexCount; ++i)
@@ -537,7 +538,7 @@ void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationCon
         else
         {
             SafeDeleteArray(meshData);        
-            meshData = new uint8[vertexCount * vertexStride];
+            meshData = MEMORY_PROFILER_NEW(DAVA::ePredefAllocPools::ALLOC_POOL_RENDERBATCH, uint8[vertexCount * vertexStride]);
             Memcpy(meshData, archiveData, size); //all streams in data required - just copy
         }
         
@@ -553,22 +554,22 @@ void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationCon
             return;
         }
 		SafeDeleteArray(indexArray);
-        indexArray = new int16[indexCount];
+        indexArray = MEMORY_PROFILER_NEW(DAVA::ePredefAllocPools::ALLOC_POOL_RENDERBATCH, int16[indexCount]);
         const uint8 * archiveData = keyedArchive->GetByteArray("indices");
         memcpy(indexArray, archiveData, indexCount * INDEX_FORMAT_SIZE[indexFormat]);         
     }
 
 	SafeDeleteArray(textureCoordArray);
-	textureCoordArray = new Vector2*[textureCoordCount];
+    textureCoordArray = MEMORY_PROFILER_NEW(DAVA::ePredefAllocPools::ALLOC_POOL_RENDERBATCH, Vector2*[textureCoordCount]);
 	
 	SafeDeleteArray(cubeTextureCoordArray);
 	if(cubeTextureCoordCount)
 	{
-		cubeTextureCoordArray = new Vector3*[cubeTextureCoordCount];
+        cubeTextureCoordArray = MEMORY_PROFILER_NEW(DAVA::ePredefAllocPools::ALLOC_POOL_RENDERBATCH, Vector3*[cubeTextureCoordCount]);
 	}
 
 	SafeRelease(renderDataObject);
-    renderDataObject = new RenderDataObject();
+    renderDataObject = MEMORY_PROFILER_NEW(DAVA::ePredefAllocPools::ALLOC_POOL_RENDERBATCH, RenderDataObject());
     UpdateDataPointersAndStreams();
     RecalcAABBox();
         
@@ -694,7 +695,7 @@ int32 PolygonGroup::OptimazeVertexes(const uint8 * meshData, Vector<uint8> & opt
 void PolygonGroup::OptimizeVertices(uint32 newVertexFormat, float32 eplison)
 {	
 	int32 newVertexStride = GetVertexSize(newVertexFormat);
-	uint8 * newMeshData = new uint8[newVertexStride * vertexCount];
+    uint8 * newMeshData = MEMORY_PROFILER_NEW(DAVA::ePredefAllocPools::ALLOC_POOL_RENDERBATCH, uint8[newVertexStride * vertexCount]);
 	memset(newMeshData, 0, sizeof(newVertexStride * vertexCount));
 	
 	const uint8 * tmpMesh = meshData;
@@ -729,7 +730,7 @@ void PolygonGroup::OptimizeVertices(uint32 newVertexFormat, float32 eplison)
 	vertexStride = newVertexStride;
 	vertexFormat = newVertexFormat;
 	
-	meshData = new uint8[vertexStride * vertexCount];
+    meshData = MEMORY_PROFILER_NEW(DAVA::ePredefAllocPools::ALLOC_POOL_RENDERBATCH, uint8[vertexStride * vertexCount]);
 	memcpy(meshData, &optMeshData[0], vertexStride * vertexCount);
 };
 

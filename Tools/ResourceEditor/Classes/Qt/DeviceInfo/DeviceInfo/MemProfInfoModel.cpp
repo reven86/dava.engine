@@ -97,6 +97,11 @@ void MemProfInfoModel::addMoreData(const DAVA::MMStat * data)
 void MemProfInfoModel::setConfig(const DAVA::MMStatConfig* statConfig)
 {
     if (statConfig == nullptr) return;
+    std::list<std::string> list;
+    for (int i = statConfig->tagCount + statConfig->allocPoolCount; i > 0; i--)
+    {
+        list.push_back(statConfig->names[i-1].name);
+    }
     tagNames.resize(statConfig->tagCount);
     for (size_t i = 0; i < tagNames.size(); i++)
     {

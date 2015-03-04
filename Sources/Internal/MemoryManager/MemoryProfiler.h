@@ -35,13 +35,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "MemoryManager.h"
 
-#define MEMORY_PROFILER_REGISTER_TAG(index, name)           DAVA::MemoryManager::RegisterTagName(index, name)
+void * operator new (size_t size, DAVA::ePredefAllocPools pool);
+void * operator new[](size_t size, DAVA::ePredefAllocPools pool);
+void operator delete(void * ptr, DAVA::ePredefAllocPools pool);
+void operator delete[](void * ptr, DAVA::ePredefAllocPools pool);
+#define MEMORY_PROFILER_REGISTER_TAG(index, name)           DAVA::MemoryManager::RegisterTagName(static_cast<int>(index), name)
 #define MEMORY_PROFILER_REGISTER_ALLOC_POOL(index, name)    DAVA::MemoryManager::RegisterAllocPoolName(index, name)
 
-#define MEMORY_PROFILER_ENTER_TAG(tag)                      DAVA::MemoryManager::Instance()->EnterTagScope(tag)
-#define MEMORY_PROFILER_LEAVE_TAG()                         DAVA::MemoryManager::Instance()->LeaveTagScope()
+#define MEMORY_PROFILER_ENTER_TAG(tag)                      DAVA::MemoryManager::Instance()->EnterTagScope(static_cast<int>(tag))
+#define MEMORY_PROFILER_LEAVE_TAG(tag)                         DAVA::MemoryManager::Instance()->LeaveTagScope(static_cast<int>(tag))
 
 #define MEMORY_PROFILER_CHECKPOINT(checkpoint)              DAVA::MemoryManager::Instance()->Checkpoint(checkpoint)
+
+#define MEMORY_PROFILER_NEW(pool,construct)                new (pool) construct
 
 #else   // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
@@ -51,6 +57,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MEMORY_PROFILER_ENTER_TAG(tag)
 #define MEMORY_PROFILER_LEAVE_TAG()
 #define MEMORY_PROFILER_CHECKPOINT(checkpoint)
+
+#define MEMORY_PROFILER_NEW(pool,construct)                new construct
 
 #endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
 

@@ -350,5 +350,4 @@ void RenderBatch::UpdateAABBoxFromSource()
 			aabbox.min.z != AABBOX_INFINITY);
 	}
 }
-
 };
