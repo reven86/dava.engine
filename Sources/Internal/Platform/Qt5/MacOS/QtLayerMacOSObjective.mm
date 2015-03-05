@@ -32,7 +32,6 @@
 
 #if defined(__DAVAENGINE_MACOS__)
 
-#import "Platform/Qt5/MacOS/ConsoleOpenGLView.h"
 #import "AppKit/NSView.h"
 
 
