@@ -402,7 +402,10 @@ bool EditorLODSystem::DeleteLastLOD()
     sceneEditor2->BeginBatch("Delete Last LOD");
     for (auto &lod : GetCurrentLODs())
     {
-        sceneEditor2->Exec(new DeleteLODCommand(lod, GetLodLayersCount(lod) - 1, -1));
+        if (GetLodLayersCount(lod) != 0)
+        {
+            sceneEditor2->Exec(new DeleteLODCommand(lod, GetLodLayersCount(lod) - 1, -1));
+        }
     }
     sceneEditor2->EndBatch();
     return true;
