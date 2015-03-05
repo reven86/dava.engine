@@ -349,7 +349,7 @@ public:
     template<template <typename> class Container>
     void GetChildEntitiesWithComponent(Container<Entity*> & container, Component::eType type);
 
-    bool HasChildEntitiesWithComponent(Component::eType type, bool recursive = false) const;
+    uint32 CountChildEntitiesWithComponent(Component::eType type, bool recursive = false) const;
 
     /**
         \brief This function is called after scene is loaded from file.

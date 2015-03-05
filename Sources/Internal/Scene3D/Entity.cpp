@@ -1140,14 +1140,17 @@ void Entity::FindComponentsByTypeRecursive(Component::eType type, List<DAVA::Ent
 	}
 }
 
-bool Entity::HasChildEntitiesWithComponent(Component::eType type, bool recursive /* = false */) const
+uint32 Entity::CountChildEntitiesWithComponent(Component::eType type, bool recursive /* = false */) const
 {
+    uint32 count = 0;
     for (auto childEntity : children)
     {
-        if (GetWaypointComponent(childEntity) || (recursive && childEntity->HasChildEntitiesWithComponent(type, recursive)))
-            return true;
+        if (GetWaypointComponent(childEntity))
+            ++count;
+        if (recursive)
+            count += childEntity->CountChildEntitiesWithComponent(type, recursive);
     }
-    return false;
+    return count;
 }
 	
 	

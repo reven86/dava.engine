@@ -307,7 +307,7 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
                     EntityGroup validPrevPoints = FilterPrevSelection(currentWayParent);
                     if (!validPrevPoints.Size())
                     {
-                        if (currentWayParent->HasChildEntitiesWithComponent(DAVA::Component::WAYPOINT_COMPONENT))
+                        if (currentWayParent->CountChildEntitiesWithComponent(DAVA::Component::WAYPOINT_COMPONENT) > 0)
                         {
                             // current path has waypoints but none of them was selected. Point adding is denied
                             return;
@@ -412,7 +412,7 @@ DAVA::Entity* WayEditSystem::CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 
 
     DAVA::Entity *waypoint = new DAVA::Entity();
 
-    const int32 childrenCount = parent->GetChildrenCount();
+    const int32 childrenCount = parent->CountChildEntitiesWithComponent(DAVA::Component::WAYPOINT_COMPONENT);
     waypoint->SetName(DAVA::FastName(DAVA::Format("Waypoint_%d", childrenCount)));
 
     DAVA::WaypointComponent *wc = new DAVA::WaypointComponent();
