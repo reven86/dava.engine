@@ -18,8 +18,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>0</width>
-    <height>0</height>
+    <width>640</width>
+    <height>480</height>
    </size>
   </property>
   <property name="contextMenuPolicy">
@@ -40,14 +40,7 @@
      <number>1</number>
     </property>
     <item>
-     <widget class="SceneTabWidget" name="sceneTabWidget" native="true">
-      <property name="minimumSize">
-       <size>
-        <width>1</width>
-        <height>1</height>
-       </size>
-      </property>
-     </widget>
+     <widget class="SceneTabWidget" name="sceneTabWidget" native="true"/>
     </item>
    </layout>
   </widget>
@@ -205,7 +198,7 @@
      <x>0</x>
      <y>0</y>
      <width>1126</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -477,7 +470,9 @@
    <attribute name="dockWidgetArea">
     <number>4</number>
    </attribute>
-   <widget class="ParticleTimeLineWidget" name="dockWidgetContents_2"/>
+   <widget class="ParticleTimeLineWidget" name="dockWidgetContents_2">
+    <zorder>sceneTabWidget</zorder>
+   </widget>
   </widget>
   <widget class="QToolBar" name="modificationToolBar">
    <property name="windowTitle">
