@@ -153,6 +153,8 @@ QtMainWindow::QtMainWindow(QWidget *parent)
 	new RecentFilesManager();
 	ui->setupUi(this);
     
+    centralWidget()->setMinimumSize(ui->sceneTabWidget->minimumSize());
+    
     SetupTitle();
 
 	qApp->installEventFilter(this);

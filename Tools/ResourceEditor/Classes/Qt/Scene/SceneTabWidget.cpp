@@ -63,10 +63,12 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 	tabBar->setMovable(true);
 	tabBar->setUsesScrollButtons(true);
 	tabBar->setExpanding(false);
-	tabBar->setMinimumSize(1, 1);
 
 	// davawidget to display DAVAEngine content
 	davaWidget = new DavaGLWidget(this);
+    tabBar->setMinimumWidth(davaWidget->minimumWidth());
+    setMinimumWidth(davaWidget->minimumWidth());
+    setMinimumHeight(davaWidget->minimumHeight() + tabBar->sizeHint().height());
     
 	// put tab bar and davawidget into vertical layout
 	QVBoxLayout *layout = new QVBoxLayout();
