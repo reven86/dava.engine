@@ -24,6 +24,7 @@ CustomColorsPanel::CustomColorsPanel(QWidget* parent)
 {
 	InitUI();
 	ConnectToSignals();
+    InitColors();
 }
 
 CustomColorsPanel::~CustomColorsPanel()
