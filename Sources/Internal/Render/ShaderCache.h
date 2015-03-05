@@ -96,8 +96,6 @@ protected:
     uint32 fragmentShaderDataSize;
 
 	Mutex compileShaderMutex;
-    
-    void BindDefaultValues();
 
     HashMap<FastName, DefaultValue> defaultValues;
     

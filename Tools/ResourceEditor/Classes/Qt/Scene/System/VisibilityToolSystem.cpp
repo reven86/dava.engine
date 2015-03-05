@@ -47,14 +47,14 @@ VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	curToolSize(0)
 ,	editingIsEnabled(false)
-,	originalImage(NULL)
+,	originalImage(nullptr)
 ,	state(VT_STATE_NORMAL)
 ,	textureLevel(Landscape::TEXTURE_TILE_FULL)
 {
     cursorSize = 120;
 
-	crossTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/setPointCursor.tex");
-	crossTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
+    crossTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/setPointCursor.tex");
+    crossTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
 }
 
 VisibilityToolSystem::~VisibilityToolSystem()

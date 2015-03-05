@@ -27,132 +27,29 @@
 =====================================================================================*/
 
 
-#include "QtLayerMacOS.h"
+#include "Platform/Qt5/QtLayer.h"
 
 
 #if defined(__DAVAENGINE_MACOS__)
 
 #import "AppKit/NSView.h"
-#include "OpenGLView.h"
-
-extern void FrameworkWillTerminate();
 
 
 namespace DAVA 
 {
 
-NSView *qtNSView = nil;
-OpenGLView *openGLView = nil;
-    
-void QtLayerMacOS::InitializeGlWindow(void *qtView, int32 width, int32 height)
-{
-    qtNSView = (NSView *)qtView;
-    
-    openGLView = [[OpenGLView alloc]initWithFrame: NSMakeRect(0, 0, width, height)];
-    [qtNSView addSubview: openGLView];
-
-	NSRect rect;
-	rect.origin.x = 0;
-	rect.origin.y = 0;
-	rect.size.width = width;
-	rect.size.height = height;
-    
-	[openGLView setFrame: rect];
-}
-    
-    
-void QtLayerMacOS::Resize(int32 width, int32 height)
-{
-  	NSRect rect;
-	rect.origin.x = 0;
-	rect.origin.y = 0;
-	rect.size.width = width;
-	rect.size.height = height;
- 
-    [openGLView setFrame: rect];
-    
-    [openGLView disableTrackingArea];
-    [openGLView enableTrackingArea];
-}
-    
-void  QtLayerMacOS::Move(int32 x, int32 y)
-{
-    // [openGLView setWindowOffset:Vector2((float32)x, (float32)y)];
-}
-
-    
-void QtLayerMacOS::ProcessFrame()
-{
-    [openGLView setNeedsDisplay:YES];
-    
-    DAVA::RenderManager::Instance()->Lock();
-    DAVA::Core::Instance()->SystemProcessFrame();
-    DAVA::RenderManager::Instance()->Unlock();
-}
-
-void QtLayerMacOS::AppFinished()
-{
-    Core::Instance()->SystemAppFinished();
-    FrameworkWillTerminate();
-
-    Core::Instance()->ReleaseSingletons();
-#ifdef ENABLE_MEMORY_MANAGER
-    if (DAVA::MemoryManager::Instance() != 0)
-    {
-        DAVA::MemoryManager::Instance()->FinalLog();
-    }
-#endif
-    
-    [openGLView release];
-    openGLView = nil;
-}
-    
-void QtLayerMacOS::MouseMoved(float32 x, float32 y)
-{
-    [openGLView MouseMoved:x y: y];
-}
-    
-void QtLayerMacOS::LockKeyboardInput(bool locked)
-{
-    [openGLView LockKeyboardInput: locked];
-}
-
-void * QtLayerMacOS::CreateAutoreleasePool()
+void * QtLayer::CreateAutoreleasePool()
 {
     NSAutoreleasePool * autoreleasePool = [[NSAutoreleasePool alloc] init];
     return autoreleasePool;
 }
 
-void QtLayerMacOS::ReleaseAutoreleasePool(void *pool)
+void QtLayer::ReleaseAutoreleasePool(void *pool)
 {
     NSAutoreleasePool * autoreleasePool = (NSAutoreleasePool *)pool;
     [autoreleasePool release];
 }
-
-void* QtLayerMacOS::GetOpenGLView()
-{
-	return openGLView;
-}
     
-void QtLayerMacOS::HandleEvent(void *message)
-{
-    NSEvent *event = static_cast<NSEvent *>(message);
-    switch ( event.type )
-    {
-        case NSKeyDown:
-            [openGLView keyDown:event];
-            break;
-        case NSKeyUp:
-            [openGLView keyUp:event];
-            break;
-        case NSFlagsChanged:
-            [openGLView flagsChanged:event];
-            break;
-        default:
-            break;
-    }
-}
-
 };
 
 

@@ -200,6 +200,7 @@ protected:
 public:
     Shader();
     
+    
     Shader * Clone();
     
     void SetDefines(const String & _defines);
