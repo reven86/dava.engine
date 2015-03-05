@@ -182,7 +182,7 @@ void MainWindow::OnCleanChanged(bool val)
     int index = ui->tabBar->currentIndex();
     DVASSERT(index >= 0);
     TabState &tabState = ui->tabBar->tabData(index).value<TabState>();
-    tabState.isModified = val;
+    tabState.isModified = !val;
     QString tabText = tabState.tabText;
     if (!val)
     {
@@ -192,7 +192,7 @@ void MainWindow::OnCleanChanged(bool val)
 
     if (index == ui->tabBar->currentIndex())
     {
-        ui->actionSaveDocument->setEnabled(val);
+        ui->actionSaveDocument->setEnabled(tabState.isModified);
     }
 }
 
