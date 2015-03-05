@@ -840,25 +840,25 @@ Qt::ItemFlags SceneTreeModel::flags ( const QModelIndex & index ) const
     return f;
 }
 
-QVariant SceneTreeModel::data(const QModelIndex &index, int role) const
+QVariant SceneTreeModel::data(const QModelIndex &_index, int role) const
 {
-    QVariant val = QStandardItemModel::data(index, role);
-    SceneTreeItem *item = GetItem(index);
-    ParticleEmitter *itemsPE = SceneTreeItemParticleEmitter::GetEmitterStrict(item);
-    if (nullptr == itemsPE)
+    switch (role)
     {
-        return val;
-    }
-
-    if (Qt::BackgroundRole == role)
-    {
-        if (itemsPE->shortEffect)
+    case Qt::BackgroundRole:
         {
-            val = QBrush(QColor(255, 0, 0, 20));
+            SceneTreeItem *item = GetItem(_index);
+            ParticleEmitter *emitter = SceneTreeItemParticleEmitter::GetEmitterStrict(item);
+            if (nullptr != emitter && emitter->shortEffect)
+            {
+                return QBrush(QColor(255, 0, 0, 20));
+            }
         }
+        break;
+    default:
+        break;
     }
 
-    return val;
+    return QStandardItemModel::data(_index, role);
 }
 
 
@@ -883,10 +883,8 @@ bool SceneTreeFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex 
 
 QVariant SceneTreeFilteringModel::data(const QModelIndex& _index, int role) const
 {
-    QVariant val = QSortFilterProxyModel::data(_index, role);
-
     if (!treeModel->IsFilterSet())
-        return val;
+        return QSortFilterProxyModel::data(_index, role);
 
     switch ( role )
     {
@@ -894,14 +892,16 @@ QVariant SceneTreeFilteringModel::data(const QModelIndex& _index, int role) cons
         {
             SceneTreeItem *item = treeModel->GetItem(mapToSource(_index));
             if (item->IsHighlighed())
-                val = QBrush(QColor(0, 255, 0, 20));
+            {
+                return QBrush(QColor(0, 255, 0, 20));
+            }
         }
         break;
     default:
         break;
     }
 
-    return val;
+    return QSortFilterProxyModel::data(_index, role);
 }
 
 
