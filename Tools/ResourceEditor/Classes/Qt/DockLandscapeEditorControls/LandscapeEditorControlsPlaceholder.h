@@ -24,6 +24,10 @@ public:
 	void SetPanel(LandscapeEditorBasePanel* panel);
 	void RemovePanel();
 
+public slots:
+    
+    void OnOpenGLInitialized();
+    
 private slots:
 	void SceneActivated(SceneEditor2* scene);
 	void SceneDeactivated(SceneEditor2* scene);

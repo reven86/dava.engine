@@ -41,7 +41,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Render/OGLHelpers.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/RenderHelper.h"
 
 #if defined(__DAVAENGINE_IPHONE__) 
 #include <CoreGraphics/CoreGraphics.h>
@@ -272,7 +272,7 @@ void Texture::ReleaseTextureDataInternal(uint32 textureType, uint32 textureID, u
 
 	//VI: reset texture for the current texture type in order to avoid
 	//issue when cubemap texture was deleted while being binded to the state
-    if(RenderManager::Instance()->lastBindedTexture[textureType] == textureID)
+    if(RenderManager::Instance()->HWglGetLastTextureID(textureType) == static_cast<int32>(textureID))
 	{
 		RenderManager::Instance()->HWglBindTexture(0, textureType);
 	}
@@ -1136,24 +1136,18 @@ Image * Texture::CreateImageFromMemory(UniqueHandle renderState)
     }
     else
     {
-        Sprite *renderTarget = Sprite::CreateAsRenderTarget((float32)width, (float32)height, texDescriptor->format, true);
-        RenderSystem2D::Instance()->PushRenderTarget();
-        RenderSystem2D::Instance()->SetRenderTarget(renderTarget);
+        Texture * oldRenderTarget = RenderManager::Instance()->GetRenderTarget();
+
+        Texture *renderTarget = Texture::CreateFBO(width, height, texDescriptor->format, DEPTH_NONE);
+        RenderHelper::Instance()->Set2DRenderTarget(renderTarget);
         RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+        RenderHelper::Instance()->DrawTexture(this, renderState);
 
-		Sprite *drawTexture = Sprite::CreateFromTexture(this, 0, 0, (float32)width, (float32)height, true);
-
-        Sprite::DrawState drawState;
-        drawState.SetPosition(0, 0);
-        drawState.SetRenderState(renderState);
-        RenderSystem2D::Instance()->Draw(drawTexture, &drawState);
-
-        RenderSystem2D::Instance()->PopRenderTarget();
+        RenderManager::Instance()->SetRenderTarget(oldRenderTarget);
         
-        image = renderTarget->GetTexture()->CreateImageFromMemory(renderState);
+        image = renderTarget->CreateImageFromMemory(renderState);
 
         SafeRelease(renderTarget);
-        SafeRelease(drawTexture);
     }
         
     return image;
@@ -1349,7 +1343,7 @@ int32 Texture::GetBaseMipMap() const
         const TextureQuality *curTxQuality = QualitySettingsSystem::Instance()->GetTxQuality(QualitySettingsSystem::Instance()->GetCurTextureQuality());
         if(NULL != curTxQuality)
         {
-            return curTxQuality->albedoBaseMipMapLevel;
+            return static_cast<int32>(curTxQuality->albedoBaseMipMapLevel);
         }
     }
 

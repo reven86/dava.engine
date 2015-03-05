@@ -63,7 +63,7 @@ public:
 protected:
 	
 	uint32 curToolSize;
-	Sprite* toolImageSprite;
+	Texture* toolImageTexture;
 
 	Color drawColor;
 	int32 colorIndex;

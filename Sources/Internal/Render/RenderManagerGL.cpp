@@ -40,6 +40,10 @@
 #include "Utils/StringFormat.h"
 #include "Render/PixelFormatDescriptor.h"
 
+#if defined( __DAVAENGINE_WIN32__ )
+#include <Windows.h>
+#endif
+
 #ifdef __DAVAENGINE_OPENGL__
 
 namespace DAVA
@@ -47,10 +51,10 @@ namespace DAVA
 	
 #if defined(__DAVAENGINE_WIN32__)
 
-static HDC hDC;
-static HGLRC hRC;
-static HWND hWnd;
-static HINSTANCE hInstance;
+static HDC hDC = nullptr;
+static HGLRC hRC = nullptr;
+static HWND hWnd = nullptr;
+static HINSTANCE hInstance = nullptr;
 
 bool RenderManager::Create(HINSTANCE _hInstance, HWND _hWnd)
 {
@@ -85,11 +89,14 @@ bool RenderManager::Create(HINSTANCE _hInstance, HWND _hWnd)
 
 void RenderManager::Release()
 {
-	Singleton<RenderManager>::Release();
+    Singleton<RenderManager>::Release();
 
-	wglMakeCurrent(0, 0);
-	wglDeleteContext(hRC);
-	ReleaseDC(hWnd, hDC);	
+    if ( IsWindow( hWnd ) )
+    {
+        wglMakeCurrent( 0, 0 );
+        wglDeleteContext( hRC );
+        ReleaseDC( hWnd, hDC );
+    }
 }
 
 bool RenderManager::ChangeDisplayMode(DisplayMode mode, bool isFullscreen)
@@ -305,7 +312,7 @@ void RenderManager::SetViewport(const Rect & rect)
 {
     Rect viewportRect = viewport = rect;
 
-    if (!IsRenderTarget())
+    if (currentRenderTarget == nullptr)
     {
         viewportRect.y = frameBufferHeight - viewportRect.y - viewportRect.dy;
     }
@@ -478,7 +485,7 @@ void RenderManager::SetClip(const Rect &rect)
 	int32 width = x2 - x;
 	int32 height = y2 - y;
     
-    if (!IsRenderTarget())
+    if (currentRenderTarget == nullptr)
     {
         y = frameBufferHeight - y - height;
     }
@@ -489,6 +496,7 @@ void RenderManager::SetClip(const Rect &rect)
 
 void RenderManager::SetRenderTarget(Texture * renderTarget)
 {
+    currentRenderTarget = renderTarget;
     if (renderTarget)
 	    HWglBindFBO(renderTarget->fboID);
     else
@@ -649,15 +657,14 @@ void RenderManager::AttachRenderData()
     
 int32 RenderManager::HWglGetLastTextureID(int textureType)
 {
-    return lastBindedTexture[textureType];
+    int32 ret = 0;
+    RENDER_VERIFY(glGetIntegerv((Texture::TEXTURE_2D == textureType) ? GL_TEXTURE_BINDING_2D : GL_TEXTURE_BINDING_CUBE_MAP, &ret));
+    return ret;
 }
 	
 void RenderManager::HWglBindTexture(int32 tId, uint32 textureType)
 {
     RENDER_VERIFY(glBindTexture((Texture::TEXTURE_2D == textureType) ? GL_TEXTURE_2D : GL_TEXTURE_CUBE_MAP, tId));
-
-    lastBindedTexture[textureType] = tId;
-    lastBindedTextureType = textureType;
 }
 
 int32 RenderManager::HWglGetLastFBO()
@@ -691,13 +698,6 @@ void RenderManager::Lost()
     
     bufferBindingId[0] = 0;
     bufferBindingId[1] = 0;
-
-	//enabledAttribCount = 0;
-	for(int32 i = 0; i < Texture::TEXTURE_TYPE_COUNT; ++i)
-	{
-		lastBindedTexture[i] = 0;
-	}
-    lastBindedTextureType = Texture::TEXTURE_2D;
 
 	lastBindedFBO = 0;
 }

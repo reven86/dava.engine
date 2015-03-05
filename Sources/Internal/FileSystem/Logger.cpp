@@ -58,15 +58,15 @@ String ConvertCFormatListToString(const char8* format, va_list pargs)
     {
         va_list copy;
         va_copy(copy, pargs);
-        int32 needed = vsnprintf(&dynamicbuf[0], dynamicbuf.size(), format, copy);
+        int32 charactersWritten = vsnprintf(&dynamicbuf[0], dynamicbuf.size(), format, copy);
         va_end(copy);
         // NB. C99 (which modern Linux and OS X follow) says vsnprintf
         // failure returns the length it would have needed.  But older
         // glibc and current Windows return -1 for failure, i.e., not
         // telling us how much was needed.
-        if (needed < static_cast<int32>(dynamicbuf.size()) && needed >= 0)
+        if (charactersWritten < static_cast<int32>(dynamicbuf.size()) && charactersWritten >= 0)
         {
-            // It fit fine so we're done.
+            dynamicbuf.resize(charactersWritten);
             return dynamicbuf;
         }
         // do you really want to print 1Mb with one call may be your format
@@ -90,17 +90,21 @@ void Logger::Logv(eLogLevel ll, const char8* text, va_list li)
 
     va_list copy;
     va_copy(copy, li);
-    int32 needMoreBuff = vsnprintf(&stackbuf[0], defaultBufferSize, text, copy);
+    int32 charactersWritten = vsnprintf(&stackbuf[0], defaultBufferSize - 1, text, copy);
     va_end(copy);
 
-    if (needMoreBuff < 0 || needMoreBuff > static_cast<int32>(defaultBufferSize))
+    if (charactersWritten < 0 || charactersWritten >= static_cast<int32>(defaultBufferSize - 1))
     {
         String formatedMessage = ConvertCFormatListToString(text, li);
-        // always send log to custom subscribers
+        formatedMessage += '\n';
+
         Output(ll, formatedMessage.c_str());
     }
     else
     {
+        stackbuf[charactersWritten] = '\n';
+        stackbuf[charactersWritten + 1] = '\0';
+
         Output(ll, &stackbuf[0]);
     }
 }
@@ -256,8 +260,8 @@ void Logger::FileLog(eLogLevel ll, const char8* text)
         {
             std::array<char8, 128> prefix;
             snprintf(&prefix[0], prefix.size(), "[%s] ", GetLogLevelString(ll));
-            file->Write(prefix.data(), strlen(prefix.data()));
-            file->Write(text, strlen(text));
+            file->Write(prefix.data(), static_cast<uint32>(strlen(prefix.data())));
+            file->Write(text, static_cast<uint32>(strlen(text)));
             file->Release();
         }
     }

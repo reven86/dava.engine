@@ -42,9 +42,9 @@ StaticWebViewTest::StaticWebViewTest()
     uncheckTransparancyButton(nullptr),
     executeJSButton(nullptr),
     loadHTMLString(nullptr),
-    overlapedImage(nullptr),
     setVisibleButton(nullptr),
     setHideButton(nullptr),
+    overlapedImage(nullptr),
     webView1(nullptr),
     webView2(nullptr),
     testFinished(false),
@@ -91,7 +91,7 @@ void StaticWebViewTest::LoadResources()
     DVASSERT(font);
 	font->SetSize(20);
 
-	const int32 w = 40;
+	const float32 w = 40;
 
     CreateUIButton(finishTestButton, font, Rect(0, 510, 300, w),
         L"Finish Test", &StaticWebViewTest::OnButtonPressed);

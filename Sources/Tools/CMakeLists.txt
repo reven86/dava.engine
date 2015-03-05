@@ -1,4 +1,9 @@
 cmake_minimum_required( VERSION 3.0 )
+
+if ( TEXTURE_TOOL_FOUND )
+    return ()
+endif ()
+set ( TEXTURE_TOOL_FOUND 1 )
                      
 project( DavaTools )
 
@@ -10,8 +15,10 @@ add_definitions       (
 -DDDARWIN_NO_CARBON
 )
 
-include_directories            ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib ) 
-include_directories            ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )  
+include_directories   ( ${DAVA_INCLUDE_DIR} ) 
+include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )  
+include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib ) 
+
 
 if( IOS OR ANDROID )
     set( ADDED_CPP_PATTERNS TeamcityOutput/*.cpp  TexturePacker/CommandLineParser.cpp )
@@ -29,7 +36,6 @@ if( IOS )
 endif()
 
 if( DAVA_USE_QT_WIDGETS )
-
     if( QT5_FOUND )
         include_directories( ${Qt5Core_INCLUDE_DIRS} )     
         include_directories( ${Qt5Gui_INCLUDE_DIRS} )
@@ -66,8 +72,9 @@ GLOB_H_PATTERNS    ${ADDED_H_PATTERNS}
 )  
 
 generate_source_groups_project ( GROUP_FOLDERS Generated )
+add_library                    ( ${PROJECT_NAME} STATIC ${CPP_FILES} ${H_FILES} ${ADDED_SRC} )
 
-add_library ( ${PROJECT_NAME} STATIC ${CPP_FILES} ${H_FILES} ${ADDED_SRC} )
+set_dava_target_properties ( ${PROJECT_NAME} )
 
 if( MACOS )
     target_link_libraries  ( ${PROJECT_NAME} libbz2.dylib libz.dylib stdc++.6.dylib )

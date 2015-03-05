@@ -52,6 +52,7 @@
 #include "Tests/Cpp14.h"
 #include "Tests/NetworkTest.h"
 #include "Tests/JNITest.h"
+#include "Tests/FormatsTest.h"
 #include "Tests/DataVaultTest.h"
 #include "Tests/UnlimitedLogOutputTest.h"
 #include "Tests/SpinLockTest.h"
@@ -91,7 +92,8 @@ void GameCore::RegisterTests()
     new TextSizeTest();
     new KeyedArchiveYamlTest();
     new JobManagerTest();
-    new Cpp14Test ();
+    new Cpp14Test();
+    new FormatsTest();
     new NetworkTest();
     new UnlimitedLogOutputTest();
     new SpinLockTest();
@@ -152,10 +154,9 @@ void GameCore::OnAppFinished()
 {
     DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
 
-    int32 screensSize = screens.size();
-    for(int32 i = 0; i < screensSize; ++i)
+    for(auto& screen : screens)
     {
-        SafeRelease(screens[i]);
+        SafeRelease(screen);
     }
     screens.clear();
 }
@@ -217,8 +218,8 @@ void GameCore::Draw()
 void GameCore::RunTests()
 {
     currentTestIndex = 0;
-    int32 screensSize = screens.size();
-    for(int32 iScr = 0; iScr < screensSize; ++iScr)
+    auto screensSize = screens.size();
+    for(size_t iScr = 0; iScr < screensSize; ++iScr)
     {
         BaseScreen& screen = *screens[iScr];
         if (IsNeedSkipTest(screen))
@@ -229,7 +230,7 @@ void GameCore::RunTests()
         if(0 < count)
         {
             currentScreen = screens[iScr];
-            currentScreenIndex = iScr;
+            currentScreenIndex = static_cast<int32>(iScr);
             break;
         }
     }
@@ -264,7 +265,7 @@ void GameCore::LogMessage(const String &message)
 int32 GameCore::TestCount()
 {
     int32 count = 0;
-    int32 screensSize = screens.size();
+    int32 screensSize = static_cast<int32>(screens.size());
     for(int32 i = 0; i < screensSize; ++i)
     {
         count += screens[i]->GetTestCount();

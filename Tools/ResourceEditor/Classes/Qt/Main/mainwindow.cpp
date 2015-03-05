@@ -189,6 +189,11 @@ QtMainWindow::QtMainWindow(QWidget *parent)
 
     QObject::connect(this, SIGNAL(TexturesReloaded()), TextureCache::Instance(), SLOT(ClearCache()));
     
+    
+    QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Initialized()), ui->landscapeEditorControlsPlaceholder, SLOT(OnOpenGLInitialized()));
+
+    
+    
 	LoadGPUFormat();
     LoadMaterialLightViewMode();
 
@@ -588,7 +593,7 @@ void QtMainWindow::SetupStatusBar()
     staticOcclusionStatusBtn->setMaximumSize(QSize(16, 16));
     ui->statusBar->insertPermanentWidget(0, staticOcclusionStatusBtn);
 
-	QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int)));
+	QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int, int)));
 }
 
 
@@ -1099,9 +1104,10 @@ void QtMainWindow::OnProjectClose()
     }
 }
 
+
 void QtMainWindow::OnSceneNew()
 {
-	ui->sceneTabWidget->OpenTab();
+    ui->sceneTabWidget->OpenTab();
 }
 
 void QtMainWindow::OnSceneOpen()
@@ -2398,7 +2404,7 @@ void QtMainWindow::OnHeightmapEditor()
 	{
 		return;
 	}
-
+    
 	if (sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
 	{
 		sceneEditor->Exec(new ActionDisableHeightmapEditor(sceneEditor));
@@ -2449,6 +2455,7 @@ void QtMainWindow::OnTilemaskEditor()
 		return;
 	}
 	
+    
 	if (sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled())
 	{
 		sceneEditor->Exec(new ActionDisableTilemaskEditor(sceneEditor));
@@ -2473,7 +2480,7 @@ void QtMainWindow::OnVisibilityTool()
 	{
 		return;
 	}
-	
+    
 	if (sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled())
 	{
 		sceneEditor->Exec(new ActionDisableVisibilityTool(sceneEditor));
@@ -2686,15 +2693,10 @@ bool QtMainWindow::OpenScene( const QString & path )
 
 			DAVA::FilePath scenePath = DAVA::FilePath(path.toStdString());
 
-			WaitStart("Opening scene...", scenePath.GetAbsolutePathname().c_str());
-
 			int index = ui->sceneTabWidget->OpenTab(scenePath);
-
-            WaitStop();
 
             if(index != -1)
 			{
-				ui->sceneTabWidget->SetCurrentTab(index);
 				AddRecent(path);
 
                 // close empty default scene
@@ -2746,7 +2748,7 @@ bool QtMainWindow::IsAnySceneChanged()
 	for(int i = 0; i < count; ++i)
 	{
 		SceneEditor2 *scene = ui->sceneTabWidget->GetTabScene(i);
-		if(scene->IsChanged())
+		if(scene && scene->IsChanged())
 		{
 			return true;
 		}

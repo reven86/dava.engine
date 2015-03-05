@@ -94,7 +94,7 @@ void Mesh::Load(KeyedArchive *archive, SerializationContext *serializationContex
 
 void Mesh::BakeGeometry(const Matrix4 & transform)
 {
-	uint32 size = renderBatchArray.size();
+	uint32 size = static_cast<uint32>(renderBatchArray.size());
 	for(uint32 i = 0; i < size; ++i)
 	{
 		PolygonGroup * pg = renderBatchArray[i].renderBatch->GetPolygonGroup();

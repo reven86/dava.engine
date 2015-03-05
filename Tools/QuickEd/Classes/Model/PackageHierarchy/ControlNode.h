@@ -52,6 +52,12 @@ public:
     int GetFlags() const override;
     void SetReadOnly();
     
+    virtual bool IsEditingSupported() const override;
+    virtual bool IsInsertingSupported() const override;
+    virtual bool CanInsertControl(ControlNode *node, DAVA::int32 pos) const override;
+    virtual bool CanRemove() const override;
+    virtual bool CanCopy() const override;
+
     eCreationType GetCreationType() const { return creationType; }
 
     PropertiesRoot *GetPropertiesRoot() const {return propertiesRoot; }
@@ -66,6 +72,7 @@ public:
 private:
     void CollectPrototypeChildrenWithChanges(DAVA::Vector<ControlNode*> &out) const;
     bool HasNonPrototypeChildren() const;
+    bool IsInstancedFrom(const ControlNode *prototypeControl) const;
     
 private:
     void AddControlToInstances(ControlNode *control);

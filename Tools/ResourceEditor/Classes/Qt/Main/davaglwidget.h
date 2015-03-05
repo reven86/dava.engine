@@ -31,73 +31,128 @@
 #ifndef DAVAGLWIDGET_H
 #define DAVAGLWIDGET_H
 
-#include <QWidget>
+#include <QOpenGLWidget>
 #include <QTimer>
 #include <QMimeData>
-#include <QAbstractNativeEventFilter>
+#include <QWindow>
+#include <QPointer>
 
-#include "QtLayer.h"
+
+#include "UI/UIEvent.h"
+#include "Platform/Qt5/QtLayer.h"
+
+class QOpenGLContext;
+class QOpenGLPaintDevice;
+class QExposeEvent;
+
+
+class OpenGLWindow
+    : public QWindow
+{
+    Q_OBJECT
+    
+signals:
+    void mousePressed();
+    
+public:
+    OpenGLWindow();
+    ~OpenGLWindow();
+    
+    void render();
+    void renderNow();
+
+signals:
+    void Exposed();
+    
+protected:
+    bool event(QEvent *event) override;
+    void exposeEvent(QExposeEvent *event) override;
+    
+    void keyPressEvent(QKeyEvent *) override;
+    void keyReleaseEvent(QKeyEvent *) override;
+    
+    void mouseMoveEvent(QMouseEvent * event) override;
+    void mousePressEvent(QMouseEvent * event) override;
+    void mouseReleaseEvent(QMouseEvent * event) override;
+    
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+    
+    void wheelEvent(QWheelEvent *) override;
+    
+    DAVA::UIEvent MapMouseEventToDAVA(const QMouseEvent *event) const;
+    DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button) const;
+    
+private:
+    QOpenGLPaintDevice *paintDevice;
+};
+
+
+class DavaGLWidget;
+
+class FocusTracker
+    : public QObject
+{
+    Q_OBJECT
+
+public:
+    explicit FocusTracker( DavaGLWidget *glWidget );
+    ~FocusTracker();
+
+    void OnClick();
+    void OnEnter();
+    void OnLeave();
+    void OnFocusIn();
+    void OnFocusOut();
+
+private:
+    QPointer< DavaGLWidget > glWidget;
+    QPointer< QWindow > glWindow;
+    QPointer< QWidget > prevWidget;
+    QPointer< QWindow > prevWindow;
+
+    bool isFocused;
+    bool needToRestoreFocus;
+
+private:
+    static bool isEditor( QWidget *w );
+};
 
 
 class DavaGLWidget
-	: public QWidget
-	, public DAVA::QtLayerDelegate
-    , public QAbstractNativeEventFilter
+    : public QWidget
 {
     Q_OBJECT
     
 public:
-    explicit DavaGLWidget(QWidget *parent = 0);
+    explicit DavaGLWidget(QWidget *parent = nullptr);
     ~DavaGLWidget();
 
-	void SetMaxFPS(int fps);
-	int GetMaxFPS();
-	int GetFPS() const;
+    OpenGLWindow *GetGLWindow();
     
-	virtual QPaintEngine *paintEngine() const;
-	bool nativeEventFilter(const QByteArray& eventType, void * message, long * result);
-   
 signals:
+    void Initialized();
+    void Resized(int width, int height, int dpr);
 	void OnDrop(const QMimeData *mimeData);
-	void Resized(int width, int height);
 
 private slots:
-	void Render();
-
-private:
-	virtual void paintEvent(QPaintEvent *);
-	virtual void resizeEvent(QResizeEvent *);
-
-	virtual void showEvent(QShowEvent *);
-	virtual void hideEvent(QHideEvent *);
-
-    virtual void focusInEvent(QFocusEvent *);
-    virtual void focusOutEvent(QFocusEvent *);
-
-	virtual void dropEvent(QDropEvent *);
-	virtual void dragMoveEvent(QDragMoveEvent *);
-	virtual void dragEnterEvent(QDragEnterEvent *);
-
-    virtual void changeEvent(QEvent *e);
-    virtual void enterEvent(QEvent *e);
-    virtual void leaveEvent(QEvent *e);
+    void OnWindowExposed();
     
-#if defined (Q_OS_MAC)
-    virtual void mouseMoveEvent(QMouseEvent *);
-#endif //#if defined (Q_OS_MAC)
+private:
+    void resizeEvent(QResizeEvent *) override;
+    bool eventFilter( QObject * watched, QEvent * event ) override;
 
-	virtual void Quit();
+    void PerformSizeChange();
+    
+    bool isInitialized;
+    int currentDPR;
+    int currentWidth;
+    int currentHeight;
 
-    void RegisterEventFilter();
-    void UnregisterEventFilter();
-
-	int maxFPS;
-    int minFrameTimeMs;
-	int fps;
-    int eventFilterCount;
-
-	qint64 fpsCountTime;
-	int fpsCount;
+    QPointer< OpenGLWindow > openGlWindow;
+    QPointer< QWidget > container;
+    QPointer< FocusTracker > focusTracker;
 };
+
+
 
 #endif // DAVAGLWIDGET_H
