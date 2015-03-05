@@ -8,6 +8,11 @@ macro( set_dava_target_properties TARGET_NAME )
 
     endif()
 
+    if( IOS )
+        set_target_properties( ${TARGET_NAME} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY iPhone/iPad )
+
+    endif()
+
 endmacro()
 
 #compiller flags
