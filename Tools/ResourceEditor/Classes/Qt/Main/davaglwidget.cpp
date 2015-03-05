@@ -72,7 +72,7 @@
 
 namespace
 {
-    const QSize cMinSize = QSize( 200, 200 );
+    const QSize cMinSize = QSize( 180, 180 );
 }
 
 
@@ -146,49 +146,19 @@ bool OpenGLWindow::event(QEvent *event)
 
 void OpenGLWindow::keyPressEvent(QKeyEvent *e)
 {
-    const Qt::KeyboardModifiers modifiers = e->modifiers();
-    
-    if(modifiers & Qt::ShiftModifier)
-    {
-        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed(DAVA::DVKEY_SHIFT);
-    }
-    if(modifiers & Qt::ControlModifier)
-    {
-        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed(DAVA::DVKEY_CTRL);
-    }
-    if(modifiers & Qt::AltModifier)
-    {
-        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed(DAVA::DVKEY_ALT);
-    }
-    
     const auto davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey( e->nativeVirtualKey() );
-    if(davaKey)
+    if (davaKey != DVKEY_UNKNOWN)
     {
-        DAVA::QtLayer::Instance()->KeyPressed(davaKey, e->count(), e->timestamp());
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed(davaKey);
     }
 }
 
 void OpenGLWindow::keyReleaseEvent(QKeyEvent *e)
 {
-    int key = e->key();
-    
-    if(Qt::Key_Shift == key)
-    {
-        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(DAVA::DVKEY_SHIFT);
-    }
-    else if(Qt::Key_Control == key)
-    {
-        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(DAVA::DVKEY_CTRL);
-    }
-    else if(Qt::Key_Alt == key)
-    {
-        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(DAVA::DVKEY_ALT);
-    }
-
     const auto davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey( e->nativeVirtualKey() );
-    if(davaKey)
+    if (davaKey != DVKEY_UNKNOWN)
     {
-        DAVA::QtLayer::Instance()->KeyReleased(davaKey);
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(davaKey);
     }
 }
 
