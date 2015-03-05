@@ -36,34 +36,8 @@ if( IOS )
 endif()
 
 if( DAVA_USE_QT_WIDGETS )
-    if( QT5_FOUND )
-        include_directories( ${Qt5Core_INCLUDE_DIRS} )     
-        include_directories( ${Qt5Gui_INCLUDE_DIRS} )
-        include_directories( ${Qt5Widgets_INCLUDE_DIRS} )     
-        include_directories( "Widgets" )                                      
-    
-        set( MOC_APP_SRCS )
-        set( UI_APP_HDRS  )
-        set( RCC_APP_SRCS )
-
-        file              ( GLOB_RECURSE QT_LIST "Widgets/*.h"  )
-        qt5_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
-
-        file              ( GLOB_RECURSE UI_LIST "Widgets/*.ui" )
-        qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
-
-        file              ( GLOB_RECURSE RCC_LIST "Widgets/*.qrc" )
-        qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
-
-        file( GLOB_RECURSE WIDGETS_SRC "Widgets/*.h"  "Widgets/*.cpp" )
-        set( ADDED_SRC ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} ${WIDGETS_SRC} )
-        set( Generated ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
-
-    else()
-        message( "Warning: Qt is not found. Can not use QT_WIDGETS" )
-     
-    endif()
-
+    add_subdirectory ( "${CMAKE_CURRENT_LIST_DIR}/Widgets" ${CMAKE_CURRENT_BINARY_DIR}/Widgets )
+    set( ADDED_LIBS Widgets )
 endif()
 
 define_source_files (
@@ -71,16 +45,16 @@ GLOB_CPP_PATTERNS  ${ADDED_CPP_PATTERNS}
 GLOB_H_PATTERNS    ${ADDED_H_PATTERNS}
 )  
 
-generate_source_groups_project ( GROUP_FOLDERS Generated )
-add_library                    ( ${PROJECT_NAME} STATIC ${CPP_FILES} ${H_FILES} ${ADDED_SRC} )
+generate_source_groups_project ( )
+add_library                    ( ${PROJECT_NAME} STATIC ${CPP_FILES} ${H_FILES} )
 
 set_dava_target_properties ( ${PROJECT_NAME} )
 
 if( MACOS )
-    target_link_libraries  ( ${PROJECT_NAME} libbz2.dylib libz.dylib stdc++.6.dylib )
+    target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} libbz2.dylib libz.dylib stdc++.6.dylib )
 
 elseif( WIN32 )
-    target_link_libraries  ( ${PROJECT_NAME}  ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/IMagickHelper.lib )
+    target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/IMagickHelper.lib )
 
 endif()
 
