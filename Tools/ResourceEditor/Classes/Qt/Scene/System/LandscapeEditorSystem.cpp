@@ -44,13 +44,10 @@ LandscapeEditorSystem::LandscapeEditorSystem(Scene* scene, const DAVA::FilePath 
     , prevCursorPos(-1.f, -1.f)
     , isIntersectsLandscape(false)
     , landscapeSize(0)
-
 {
-	cursorTexture = Texture::CreateFromFile(cursorPathname);
-    
-    DAVA::Function<void()> fn = DAVA::Bind(DAVA::MakeFunction(cursorTexture, &DAVA::Texture::SetWrapMode), Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
-    DAVA::JobManager::Instance()->CreateMainJob(fn);
-    
+    cursorTexture = Texture::CreateFromFile( cursorPathname );
+    cursorTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
+
     collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
 	selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
 	modifSystem = ((SceneEditor2 *) GetScene())->modifSystem;
@@ -61,10 +58,10 @@ LandscapeEditorSystem::~LandscapeEditorSystem()
 {
 	SafeRelease(cursorTexture);
     
-    collisionSystem = NULL;
-	selectionSystem = NULL;
-	modifSystem = NULL;
-	drawSystem = NULL;
+    collisionSystem = nullptr;
+    selectionSystem = nullptr;
+    modifSystem = nullptr;
+    drawSystem = nullptr;
 }
 
 LandscapeEditorDrawSystem::eErrorType LandscapeEditorSystem::IsCanBeEnabled() const

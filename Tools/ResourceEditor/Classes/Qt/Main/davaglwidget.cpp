@@ -467,7 +467,11 @@ void FocusTracker::OnEnter()
     needToRestoreFocus = (!isFocused);
     prevWidget = QApplication::focusWidget();
 
-    const bool needToSetFocus = !prevWidget.isNull() && prevWidget->window() == rootWidget;
+    const bool needToSetFocus =
+        !prevWidget.isNull() &&
+        !isEditor( prevWidget ) &&
+        prevWidget->window() == rootWidget;
+
     if ( !isFocused && needToSetFocus )
     {
         glWindow->requestActivate();
@@ -492,4 +496,17 @@ void FocusTracker::OnFocusIn()
 void FocusTracker::OnFocusOut()
 {
     isFocused = false;
+}
+
+bool FocusTracker::isEditor( QWidget* w )
+{
+    if ( w == nullptr )
+        return false;
+
+    if ( qobject_cast<QLineEdit *> ( w ) != nullptr )
+        return true;
+    if ( qobject_cast<QSpinBox *>( w ) != nullptr )
+        return true;
+
+    return false;
 }

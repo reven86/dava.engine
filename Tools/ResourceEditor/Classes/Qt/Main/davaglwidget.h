@@ -112,6 +112,9 @@ private:
 
     bool isFocused;
     bool needToRestoreFocus;
+
+private:
+    static bool isEditor( QWidget *w );
 };
 
 

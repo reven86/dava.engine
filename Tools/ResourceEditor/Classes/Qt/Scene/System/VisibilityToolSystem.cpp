@@ -47,15 +47,14 @@ VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	curToolSize(0)
 ,	editingIsEnabled(false)
-,	originalImage(NULL)
+,	originalImage(nullptr)
 ,	state(VT_STATE_NORMAL)
 ,	textureLevel(Landscape::TEXTURE_TILE_FULL)
 {
     cursorSize = 120;
 
-	crossTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/setPointCursor.tex");
-    DAVA::Function<void()> fn = DAVA::Bind(DAVA::MakeFunction(crossTexture, &DAVA::Texture::SetWrapMode), Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
-    DAVA::JobManager::Instance()->CreateMainJob(fn);
+    crossTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/setPointCursor.tex");
+    crossTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
 }
 
 VisibilityToolSystem::~VisibilityToolSystem()
