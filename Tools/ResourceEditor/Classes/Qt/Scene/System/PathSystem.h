@@ -49,10 +49,10 @@ public:
     void EnablePathEdit(bool enable);
     bool IsPathEditEnabled() const;
     
-    virtual void AddEntity(DAVA::Entity * entity) override;
-    virtual void RemoveEntity(DAVA::Entity * entity) override;
+    void AddEntity(DAVA::Entity * entity) override;
+    void RemoveEntity(DAVA::Entity * entity) override;
     
-    virtual void Process(DAVA::float32 timeElapsed) override;
+    void Process(DAVA::float32 timeElapsed) override;
 
     DAVA::Entity * GetCurrrentPath() const;
     const DAVA::Vector<DAVA::Entity *> & GetPathes() const;

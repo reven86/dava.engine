@@ -1145,10 +1145,14 @@ uint32 Entity::CountChildEntitiesWithComponent(Component::eType type, bool recur
     uint32 count = 0;
     for (auto childEntity : children)
     {
-        if (GetWaypointComponent(childEntity))
+        if (childEntity->GetComponent(type))
+        {
             ++count;
+        }
         if (recursive)
+        {
             count += childEntity->CountChildEntitiesWithComponent(type, recursive);
+        }
     }
     return count;
 }

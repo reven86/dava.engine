@@ -40,7 +40,6 @@ public:
     void Undo() override {}
     void Redo() override {}
     DAVA::Entity* GetEntity() const override { return nullptr; }
-    int cc;
 };
 
 class DisableWayEditCommand : public Command2
