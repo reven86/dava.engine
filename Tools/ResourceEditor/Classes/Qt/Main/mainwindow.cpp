@@ -1045,13 +1045,13 @@ void QtMainWindow::UpdateModificationActionsState()
 void QtMainWindow::UpdateWayEditor(const Command2* command, bool redo)
 {
     int commandId = command->GetId();
-    if(CMDID_COLLAPSE_PATH == commandId)
-    {
-		SetActionCheckedSilently(ui->actionWayEditor, !redo);
-    }
-    else if(CMDID_EXPAND_PATH == commandId)
+    if(CMDID_ENABLE_WAYEDIT == commandId)
     {
 		SetActionCheckedSilently(ui->actionWayEditor, redo);
+    }
+    else if(CMDID_DISABLE_WAYEDIT == commandId)
+    {
+		SetActionCheckedSilently(ui->actionWayEditor, !redo);
     }
 }
 
@@ -2550,8 +2550,7 @@ void QtMainWindow::OnWayEditor(bool show)
         return;
     }
 
-	sceneEditor->wayEditSystem->EnableWayEdit(show);
-	sceneEditor->pathSystem->EnablePathEdit(show);
+    sceneEditor->pathSystem->EnablePathEdit(show);
 }
 
 

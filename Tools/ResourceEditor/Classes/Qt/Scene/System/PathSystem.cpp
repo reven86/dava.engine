@@ -42,6 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Scene/SceneEditor2.h"
 #include "Commands2/InspMemberModifyCommand.h"
+#include "Commands2/WayEditCommands.h"
 
 
 static DAVA::Color PathColorPallete[] =
@@ -89,6 +90,16 @@ PathSystem::~PathSystem()
     currentSelection.Clear();
 }
 
+void PathSystem::AddPath(DAVA::Entity * entity)
+{
+    sceneEditor->BeginBatch("Add path at scene");
+    sceneEditor->Exec(new EntityAddCommand(entity, sceneEditor));
+
+    if (isEditingEnabled)
+        ExpandPathEntity(entity);
+
+    sceneEditor->EndBatch();
+}
 
 void PathSystem::AddEntity(DAVA::Entity * entity)
 {
@@ -98,7 +109,7 @@ void PathSystem::AddEntity(DAVA::Entity * entity)
     {
         currentPath = entity;
     }
-    
+
     // extract color data from custom properties for old scenes
     PathComponent* pc = GetPathComponent(entity);
     if (pc && pc->GetColor() == Color())
@@ -110,9 +121,6 @@ void PathSystem::AddEntity(DAVA::Entity * entity)
             props->DeleteKey(PATH_COLOR_PROP_NAME);
         }
     }
-
-    if (isEditingEnabled)
-        ExpandPathEntity(entity);
 }
 
 void PathSystem::RemoveEntity(DAVA::Entity * entity)
@@ -314,15 +322,13 @@ void PathSystem::ProcessCommand(const Command2 *command, bool redo)
             }
         }
     }
-    
-    //Enable system without running commands
-    if(CMDID_COLLAPSE_PATH == commandId)
-    {
-        isEditingEnabled = !redo;
-    }
-    else if(CMDID_EXPAND_PATH == commandId)
+    else if (commandId == CMDID_ENABLE_WAYEDIT)
     {
         isEditingEnabled = redo;
+    }
+    else if (commandId == CMDID_DISABLE_WAYEDIT)
+    {
+        isEditingEnabled = !redo;
     }
 }
 
@@ -364,10 +370,10 @@ const DAVA::Color & PathSystem::GetNextPathColor() const
 
 void PathSystem::EnablePathEdit(bool enable)
 {
-    isEditingEnabled = enable;
-    if(isEditingEnabled)
+    if (enable)
     {
-        sceneEditor->BeginBatch("Expand pathes to entities");
+        sceneEditor->BeginBatch("Enable waypoints edit");
+        sceneEditor->Exec(new EnableWayEditCommand);
 
         for (auto path : pathes)
         {
@@ -378,7 +384,8 @@ void PathSystem::EnablePathEdit(bool enable)
     }
     else
     {
-        sceneEditor->BeginBatch("Collapse entities to pathes");
+        sceneEditor->BeginBatch("Disable waypoints edit");
+        sceneEditor->Exec(new DisableWayEditCommand);
 
         for (auto path : pathes)
         {

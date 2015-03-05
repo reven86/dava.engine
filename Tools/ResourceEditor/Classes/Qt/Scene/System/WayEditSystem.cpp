@@ -307,7 +307,7 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
                     EntityGroup validPrevPoints = FilterPrevSelection(currentWayParent);
                     if (!validPrevPoints.Size())
                     {
-                        if (currentWayParent->GetComponentCount(DAVA::Component::WAYPOINT_COMPONENT) > 0)
+                        if (currentWayParent->HasChildEntitiesWithComponent(DAVA::Component::WAYPOINT_COMPONENT))
                         {
                             // current path has waypoints but none of them was selected. Point adding is denied
                             return;
@@ -438,18 +438,15 @@ DAVA::Entity* WayEditSystem::CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 
 
 void WayEditSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-    //Enable system without running commands
-    const int commandId = command->GetId();
-    if(CMDID_COLLAPSE_PATH == commandId)
-    {
-        isEnabled = !redo;
-		UpdateSelectionMask();
-    }
-    else if(CMDID_EXPAND_PATH == commandId)
-    {
-        isEnabled = redo;
-		UpdateSelectionMask();
-    }
+     const int commandId = command->GetId();
+     if (commandId == CMDID_ENABLE_WAYEDIT)
+     {
+         EnableWayEdit(redo);
+     }
+     else if (commandId == CMDID_DISABLE_WAYEDIT)
+     {
+         EnableWayEdit(!redo);
+     }
 }
 
 

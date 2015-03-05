@@ -78,6 +78,7 @@ protected:
 	size_t cleanCommandIndex;
 	bool lastCheckCleanState;
 
+    DAVA::uint32 nestedBatchesCounter;
 	CommandBatch* curBatchCommand;
 	CommandStackNotify *stackCommandsNotify;
 
