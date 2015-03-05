@@ -39,7 +39,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // =======================================================================================================================================
 
 static String functionBindSignalResultString;
-static bool functionBindSignalResult = true;
 
 int staticFn0() { return 100; }
 int staticFn1(int i1) { return i1; }
@@ -110,9 +109,9 @@ struct V
 struct C : public M, virtual public V, virtual public A
 {
 	virtual void f2() { }
-	virtual int f2defvirt(int i, long j) { return i + j + 1; }
-	int f2def(int i, long j) { return i + j + 3; }
-	virtual int f2virt(int i, long j) { return i + j + 2; }
+	virtual int f2defvirt(int i, long j) { return static_cast<int>(i + j + 1); }
+	int f2def(int i, long j) { return static_cast<int>(i + j + 3); }
+	virtual int f2virt(int i, long j) { return static_cast<int>(i + j + 2); }
 };
 
 // =======================================================================================================================================

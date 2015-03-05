@@ -250,7 +250,7 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
                                   int32 spaceAddon) const
 {
     int32 countSpace = 0;
-    uint32 strLength = str.length();
+    uint32 strLength = static_cast<uint32>(str.length());
 	for(uint32 i = 0; i < strLength; ++i)
 	{
 		if( L' ' == str[i])

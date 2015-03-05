@@ -108,7 +108,7 @@ uint32 DynamicMemoryFile::Read(void * pointerToData, uint32 dataSize)
 	}
 	
 	int32 realReadSize = dataSize;
-	uint32 size = data.size();
+	uint32 size = static_cast<uint32>(data.size());
 	if (currentPtr + realReadSize > size)
 	{
 	    isEof = true;

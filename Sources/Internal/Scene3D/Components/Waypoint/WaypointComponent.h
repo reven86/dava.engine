@@ -59,10 +59,14 @@ public:
     void SetPathName(const FastName & name);
     const FastName & GetPathName() const;
 
+    void SetStarting(bool);
+    bool IsStarting() const;
+
 private:
     
     FastName pathName;
     KeyedArchive *properties;
+    bool isStarting = false;
     
 public:
 	INTROSPECTION_EXTEND(WaypointComponent, Component,
@@ -85,6 +89,16 @@ inline void WaypointComponent::SetPathName(const FastName & name)
 inline const FastName & WaypointComponent::GetPathName() const
 {
     return pathName;
+}
+
+inline void WaypointComponent::SetStarting(bool newVal)
+{
+    isStarting = newVal;
+}
+
+inline bool WaypointComponent::IsStarting() const
+{
+    return isStarting;
 }
 
 

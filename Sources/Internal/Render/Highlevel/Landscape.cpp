@@ -1203,7 +1203,7 @@ void Landscape::Draw(Camera * camera)
 	}
         
     BindMaterial(nearLodIndex, camera);
-    int32 count0 = lod0quads.size();
+    int32 count0 = static_cast<int32>(lod0quads.size());
     for(int32 i = 0; i < count0; ++i)
     {
         DrawQuad(lod0quads[i], 0);
@@ -1215,7 +1215,7 @@ void Landscape::Draw(Camera * camera)
 		BindMaterial(farLodIndex, camera);
 	}
 
-    int32 countNot0 = lodNot0quads.size();
+    int32 countNot0 = static_cast<int32>(lodNot0quads.size());
     for(int32 i = 0; i < countNot0; ++i)
     {
         DrawQuad(lodNot0quads[i], lodNot0quads[i]->data.lod);
@@ -1258,7 +1258,7 @@ void Landscape::Draw(Camera * camera)
 		{
 			BindMaterial(nearLodIndex, camera);
 		}
-        int32 count0 = lod0quads.size();
+        int32 count0 = static_cast<int32>(lod0quads.size());
         for(int32 i = 0; i < count0; ++i)
         {
             DrawQuad(lod0quads[i], 0);
@@ -1270,7 +1270,7 @@ void Landscape::Draw(Camera * camera)
 			BindMaterial(farLodIndex, camera);
 		}
         
-        int32 countNot0 = lodNot0quads.size();
+        int32 countNot0 = static_cast<int32>(lodNot0quads.size());
         for(int32 i = 0; i < countNot0; ++i)
         {
             DrawQuad(lodNot0quads[i], lodNot0quads[i]->data.lod);
@@ -1705,9 +1705,7 @@ Texture * Landscape::CreateLandscapeTexture()
 	RenderManager::Instance()->AttachRenderData();
 	RenderManager::Instance()->HWDrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
 
-#ifdef __DAVAENGINE_OPENGL__
-	RenderManager::Instance()->HWglBindFBO(RenderManager::Instance()->GetFBOViewFramebuffer());
-#endif //#ifdef __DAVAENGINE_OPENGL__
+    RenderManager::Instance()->SetRenderTarget(0);
     
     RenderManager::SetDynamicParam(PARAM_PROJ, &oldProjection, UPDATE_SEMANTIC_ALWAYS);
 	RenderManager::Instance()->SetViewport(oldViewport);

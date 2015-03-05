@@ -302,31 +302,31 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 		heightmapProxy->ResetHeightmapChanged();
 	}
 	
-	if (customColorsProxy && customColorsProxy->IsSpriteChanged())
+	if (customColorsProxy && customColorsProxy->IsTargetChanged())
 	{
 		if (landscapeProxy)
 		{
-			landscapeProxy->SetCustomColorsTexture(customColorsProxy->GetSprite()->GetTexture());
+			landscapeProxy->SetCustomColorsTexture(customColorsProxy->GetTexture());
 		}
-		customColorsProxy->ResetSpriteChanged();
+		customColorsProxy->ResetTargetChanged();
 	}
 
-	if (visibilityToolProxy && visibilityToolProxy->IsSpriteChanged())
+	if (visibilityToolProxy && visibilityToolProxy->IsTextureChanged())
 	{
 		if (landscapeProxy)
 		{
-			landscapeProxy->SetVisibilityCheckToolTexture(visibilityToolProxy->GetSprite()->GetTexture());
+			landscapeProxy->SetVisibilityCheckToolTexture(visibilityToolProxy->GetTexture());
 		}
-		visibilityToolProxy->ResetSpriteChanged();
+		visibilityToolProxy->ResetTextureChanged();
 	}
 
-	if (rulerToolProxy && rulerToolProxy->IsSpriteChanged())
+	if (rulerToolProxy && rulerToolProxy->IsTextureChanged())
 	{
 		if (rulerToolProxy)
 		{
-			landscapeProxy->SetRulerToolTexture(rulerToolProxy->GetSprite()->GetTexture());
+			landscapeProxy->SetRulerToolTexture(rulerToolProxy->GetTexture());
 		}
-		rulerToolProxy->ResetSpriteChanged();
+		rulerToolProxy->ResetTextureChanged();
 	}
 }
 

@@ -44,14 +44,14 @@ public:
 
 	int32 GetSize();
 
-	Sprite* GetSprite();
+	Texture* GetTexture();
 
-	void UpdateSprite();
-	void ResetSpriteChanged();
-	bool IsSpriteChanged();
+	void UpdateTexture();
+	void ResetTextureChanged();
+	bool IsTextureChanged();
 
 protected:
-	Sprite* rulerToolSprite;
+	Texture* rulerToolTexture;
 	int32 size;
 	bool spriteChanged;
 };

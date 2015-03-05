@@ -1,5 +1,9 @@
 include ( GlobalVariables )
 
+if ( QT5_FOUND )
+    return ()
+endif ()
+
 if( WIN32 )
     set ( QT_CORE_LIB Qt5Core.lib )
 

@@ -56,7 +56,7 @@ void RenderPass::AddRenderLayer(RenderLayer * layer, const FastName & afterLayer
 {
 	if(LAST_LAYER != afterLayer)
 	{
-		uint32 size = renderLayers.size();
+		uint32 size = static_cast<uint32>(renderLayers.size());
 		for(uint32 i = 0; i < size; ++i)
 		{
 			const FastName & name = renderLayers[i]->GetName();
@@ -186,7 +186,7 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
     }   
 
     Rect viewportSave = RenderManager::Instance()->GetViewport();
-    uint32 currFboId = RenderManager::Instance()->HWglGetLastFBO();
+    Texture * renderTargetSave = RenderManager::Instance()->GetRenderTarget();
         
     RenderManager::Instance()->SetRenderTarget(reflectionTexture);
     //discard everything here
@@ -209,8 +209,8 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
 
     //discrad depth(everything?) here
     RenderManager::Instance()->DiscardFramebufferHW(RenderManager::DEPTH_ATTACHMENT|RenderManager::STENCIL_ATTACHMENT);
-        
-    RenderManager::Instance()->HWglBindFBO(currFboId?currFboId:RenderManager::Instance()->GetFBOViewFramebuffer());
+
+    RenderManager::Instance()->SetRenderTarget(renderTargetSave);
     RenderManager::Instance()->SetViewport(viewportSave);
 
     renderSystem->GetDrawCamera()->SetupDynamicParameters();    		
