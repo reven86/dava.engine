@@ -120,15 +120,15 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
         it->second->ReloadAs(GPU_PNG);
 
     Rect oldViewport = RenderManager::Instance()->GetViewport();
+    Texture * oldRenderTarget = RenderManager::Instance()->GetRenderTarget();
+    
     Rect newViewport = viewport;
-
     if(newViewport.dx == -1)
         newViewport.dx = (float32)toTexture->GetWidth();
     if(newViewport.dy == -1)
         newViewport.dy = (float32)toTexture->GetHeight();
 
     RenderManager::Instance()->SetRenderTarget(toTexture);
-
 	RenderManager::Instance()->SetViewport(newViewport);
 
     Scene * tempScene = new Scene();
@@ -167,11 +167,8 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
     SafeRelease(entity);
     SafeRelease(tempScene);
 
+    RenderManager::Instance()->SetRenderTarget(oldRenderTarget);
     RenderManager::Instance()->SetViewport(oldViewport);
-
-#ifdef __DAVAENGINE_OPENGL__
-    RenderManager::Instance()->HWglBindFBO(RenderManager::Instance()->GetFBOViewFramebuffer());
-#endif //#ifdef __DAVAENGINE_OPENGL__
 
     it = textures.begin();
     end = textures.end();

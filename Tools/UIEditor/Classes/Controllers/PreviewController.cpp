@@ -349,17 +349,20 @@ void PreviewController::MakeScreenshot(const String& fileName, DefaultScreen* sc
     Rect scaledScreenRect = rawScreenRect;
     scaledScreenRect.SetSize(rawScreenRect.GetSize() * screen->GetScale());
 
+    RenderSystem2D::Instance()->Flush();
+
     Rect textureRect = scaledScreenRect;
     textureRect.SetSize(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(textureRect.GetSize()));
-    ScopedPtr<Texture> texture(Texture::CreateFBO((int32)ceilf(textureRect.dx), (int32)ceilf(textureRect.dy),
+    ScopedPtr<Texture> screenshot(Texture::CreateFBO((int32)ceilf(textureRect.dx), (int32)ceilf(textureRect.dy),
                                                   FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER));
-
-    ScopedPtr<Sprite> screenshot(Sprite::Create(""));
-    screenshot->InitFromTexture(texture, 0, 0, textureRect.dx, textureRect.dy, -1, -1, true);
     
-    RenderSystem2D::Instance()->PushRenderTarget();
-    RenderSystem2D::Instance()->SetRenderTarget(screenshot);
+    Rect oldViewport = RenderManager::Instance()->GetViewport();
+
+    RenderManager::Instance()->SetRenderTarget(screenshot);
+    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)screenshot->GetWidth(), (float32)screenshot->GetHeight()));
     RenderManager::Instance()->ClearWithColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+    RenderSystem2D::Instance()->Setup2DMatrices();
 
     // The clipping rectangle defines on scale and preview mode.
     Rect clipRect = rawScreenRect;
@@ -389,9 +392,15 @@ void PreviewController::MakeScreenshot(const String& fileName, DefaultScreen* sc
     screen->GetScreenControl()->SetScreenshotMode(false);
 
     RenderSystem2D::Instance()->PopClip();
-    RenderSystem2D::Instance()->PopRenderTarget();
 
-    ScopedPtr<Image> image(texture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND));
+    RenderSystem2D::Instance()->Flush();
+
+    RenderManager::Instance()->SetRenderTarget(0);
+    RenderManager::Instance()->SetViewport(oldViewport);
+
+    RenderSystem2D::Instance()->Setup2DMatrices();
+
+    ScopedPtr<Image> image(screenshot->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND));
     
     // Resulting texture is square. Resize its canvas to the
     // texture size and then resize the image to the original
