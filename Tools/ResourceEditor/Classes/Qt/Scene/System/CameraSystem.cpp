@@ -231,7 +231,7 @@ void SceneCameraSystem::MoveTo(const DAVA::Vector3 &pos, const DAVA::Vector3 &ta
     {
         animateToNewPos = true;
         animateToNewPosTime = 0;
-
+        
         newPos = pos;
         newTar = target;
     }
@@ -245,12 +245,12 @@ void SceneCameraSystem::Process(float timeElapsed)
     WASDControllerSystem *wasdSystem = scene->wasdSystem;
     if(wasdSystem)
     {
-        wasdSystem->SetMoveSpeed(GetMoveSpeed());
+        wasdSystem->SetMoveSpeed((animateToNewPos) ? 0 : GetMoveSpeed());
     }
     RotationControllerSystem *rotationSystem = scene->rotationSystem;
     if(rotationSystem)
     {
-        rotationSystem->SetRotationSpeeed(0.15f);
+        rotationSystem->SetRotationSpeeed((animateToNewPos) ? 0 : 0.15f);
         
         HoodSystem *hoodSystem = scene->hoodSystem;
         if(NULL != hoodSystem)
@@ -320,9 +320,6 @@ void SceneCameraSystem::Input(DAVA::UIEvent *event)
 
 void SceneCameraSystem::Draw()
 {
-	//int oldState = DAVA::RenderManager::Instance()->GetState();
-	//DAVA::RenderManager::Instance()->SetState(DAVA::RenderState::STATE_COLORMASK_ALL | DAVA::RenderState::STATE_DEPTH_TEST);
-	
 	SceneEditor2 *sceneEditor = (SceneEditor2 *) GetScene();
 	if(NULL != sceneEditor)
 	{
@@ -438,13 +435,15 @@ void SceneCameraSystem::RecalcCameraAspect()
 void SceneCameraSystem::MoveAnimate(DAVA::float32 timeElapsed)
 {
 	static const DAVA::float32 animationTime = 3.0f;
+    static const DAVA::float32 animationDistance = 1.0f;
 
 	if(NULL != curSceneCamera && animateToNewPos)
 	{
 		DAVA::Vector3 pos = curSceneCamera->GetPosition();
 		DAVA::Vector3 tar = curSceneCamera->GetTarget();
-
-		if((pos != newPos || tar != newTar) && animateToNewPosTime < animationTime)
+        const DAVA::float32 distance = (pos-newPos).Length();
+        
+        if((pos != newPos || tar != newTar) && (animateToNewPosTime < animationTime) && (distance > animationDistance))
 		{
 			animateToNewPosTime += timeElapsed;
 
