@@ -73,7 +73,7 @@ UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
     }
     else
     {
-        builder->ProcessProperty(legacyControl->TypeInfo()->Member("name"), VariantType("LegacyControl"));
+        builder->ProcessProperty(legacyControl->TypeInfo()->Member("name"), VariantType(String("LegacyControl")));
     }
     builder->EndControlPropertiesSection();
 
@@ -312,6 +312,13 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
             }
             return VariantType(val);
         }
+        else if (propertyName == "pivot")
+        {
+            DVASSERT(node->Get("size") || node->Get("rect"));
+            Vector2 size = node->Get("size") ? node->Get("size")->AsVector2() : node->Get("rect")->AsRect().GetSize();
+            Vector2 pivotPoint = valueNode->AsVector2();
+            return VariantType(pivotPoint / size);
+        }
         else if (member->Type() == MetaInfo::Instance<bool>())
             return VariantType(valueNode->AsBool());
         else if (member->Type() == MetaInfo::Instance<int32>())
@@ -357,7 +364,7 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
 }
 
 
-String LegacyEditorUIPackageLoader::GetOldPropertyName(const String controlClassName, const String name)
+String LegacyEditorUIPackageLoader::GetOldPropertyName(const String &controlClassName, const String &name)
 {
     auto mapIt = propertyNamesMap.find(controlClassName);
     if (mapIt != propertyNamesMap.end())
@@ -375,7 +382,7 @@ String LegacyEditorUIPackageLoader::GetOldPropertyName(const String controlClass
     return name;
 }
 
-String LegacyEditorUIPackageLoader::GetOldBgPrefix(const String controlClassName, const String name)
+String LegacyEditorUIPackageLoader::GetOldBgPrefix(const String &controlClassName, const String &name)
 {
     if (controlClassName == "UISlider" && name != "Background")
         return name;
@@ -383,7 +390,7 @@ String LegacyEditorUIPackageLoader::GetOldBgPrefix(const String controlClassName
         return "";
 }
 
-String LegacyEditorUIPackageLoader::GetOldBgPostfix(const String controlClassName, const String name)
+String LegacyEditorUIPackageLoader::GetOldBgPostfix(const String &controlClassName, const String &name)
 {
     if (controlClassName == "UIButton")
         return name;
