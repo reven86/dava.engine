@@ -66,7 +66,7 @@ private:
 	};
 	
 	bool enabled;
-	Sprite* notPassableMapSprite;
+	Texture * notPassableTexture;
 	DAVA::float32 notPassableAngleTan;
 	DAVA::Vector<TerrainColor> angleColor;
 	

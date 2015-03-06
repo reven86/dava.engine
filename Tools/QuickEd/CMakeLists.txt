@@ -36,7 +36,7 @@ qt5_wrap_cpp                  ( MOC_APP_SRCS ${QT_LIST} )
 file                          ( GLOB UI_LIST "Ui/*.ui" )
 qt5_wrap_ui                   ( UI_APP_HDRS  ${UI_LIST} )
 
-file                          ( GLOB RCC_LIST "Data/*.qrc" )
+file                          ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources             ( RCC_APP_SRCS  ${RCC_LIST} )
 
 set                           ( Generated    ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )

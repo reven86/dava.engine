@@ -61,7 +61,7 @@ protected:
     Vector3 MirrorPoint(const Vector3 & point) const;
 
 	uint32 curToolSize;
-	Sprite* toolImageSprite;
+	Texture* toolImageTexture;
 
 	int32 lineWidth;
 	List<Vector3> linePoints;

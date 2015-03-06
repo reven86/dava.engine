@@ -325,29 +325,19 @@ Image* TileTexturePreviewWidget::MultiplyImageWithColor(DAVA::Image *image, cons
 
 	Texture* srcTexture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
 												  width, height, false);
-	Sprite* srcSprite = Sprite::CreateFromTexture(srcTexture, 0, 0, width, height, true);
+    Texture * dstTexture = Texture::CreateFBO(width, height, FORMAT_RGBA8888, Texture::DEPTH_NONE);
 
-	Sprite* dstSprite = Sprite::CreateAsRenderTarget(width, height, FORMAT_RGBA8888, true);
-
-    RenderSystem2D::Instance()->PushRenderTarget();
-    RenderSystem2D::Instance()->SetRenderTarget(dstSprite);
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 1.f);
-	RenderManager::Instance()->SetColor(color);
-
-    Sprite::DrawState drawState;
-	drawState.SetPosition(0.f, 0.f);
-    drawState.SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
-    
-    RenderSystem2D::Instance()->Setup2DMatrices();
-    RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
+    RenderManager::Instance()->SetColor(color);
+    RenderHelper::Instance()->Set2DRenderTarget(dstTexture);
+    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 1.f);
+    RenderHelper::Instance()->DrawTexture(srcTexture, RenderState::RENDERSTATE_2D_BLEND, Rect(0.f, 0.f, (float32)width, (float32)height));
 
 	RenderManager::Instance()->ResetColor();
-    RenderSystem2D::Instance()->PopRenderTarget();
+    RenderManager::Instance()->SetRenderTarget(0);
 
-	Image* res = dstSprite->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_3D_BLEND);
+    Image* res = dstTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
 
-	SafeRelease(dstSprite);
-	SafeRelease(srcSprite);
+    SafeRelease(dstTexture);
 	SafeRelease(srcTexture);
 
 	return res;
