@@ -175,7 +175,7 @@ void MainWindow::OnCurrentIndexChanged(int arg)
     if (enabled)
     {
         TabState *tabState = ui->tabBar->tabData(arg).value<TabState*>();
-        ui->actionSaveDocument->setEnabled(tabState->isModified);
+        ui->actionSaveDocument->setEnabled(nullptr != tabState && tabState->isModified);
     }
 }
 
@@ -362,7 +362,8 @@ void MainWindow::RebuildRecentMenu()
 int MainWindow::AddTab(const QString &tabText)
 {
     int index = ui->tabBar->addTab(tabText);
-    ui->tabBar->setTabData(index, QVariant::fromValue<TabState*>(new TabState(tabText)));
+    TabState* tabState = new TabState(tabText);
+    ui->tabBar->setTabData(index, QVariant::fromValue<TabState*>(tabState));
     return index;
 }
 

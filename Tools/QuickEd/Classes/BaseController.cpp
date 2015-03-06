@@ -250,10 +250,12 @@ void BaseController::CloseDocument(int index)
     DVASSERT(index < Count()); 
     QUndoStack *undoStack = documents.at(index)->GetUndoStack();
 
-    int newIndex = mainWindow.CloseTab(index);
-    SetCurrentIndex(newIndex);
+    SetCurrentIndex(-1);
     undoGroup.removeStack(undoStack);
     delete documents.takeAt(index);
+
+    int newIndex = mainWindow.CloseTab(index);
+    SetCurrentIndex(newIndex);
     SetCount(Count() - 1);
 }
 
