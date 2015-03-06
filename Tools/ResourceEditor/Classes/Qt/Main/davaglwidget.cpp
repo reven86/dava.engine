@@ -156,7 +156,20 @@ void OpenGLWindow::keyPressEvent(QKeyEvent *e)
     if ( e->modifiers() & Qt::MetaModifier )
         modifiers << "Meta";
 
-    qDebug() << "+ Key: " << e->text() << "; Native: " << e->nativeVirtualKey() << "; [=] " << modifiers.join( "+" );
+    qDebug() << "+ Key: " << e->text() << "; Code:" << e->key() << "; Native: " << e->nativeVirtualKey() << "; [=] " << modifiers.join( "+" );
+
+    if ( e->modifiers() & Qt::AltModifier )
+    {
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DVKEY_ALT );
+    }
+    if ( e->modifiers() & Qt::ControlModifier )
+    {
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DVKEY_CTRL );
+    }
+    if ( e->modifiers() & Qt::ShiftModifier )
+    {
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DVKEY_SHIFT );
+    }
 
     const auto davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey( e->nativeVirtualKey() );
     if (davaKey != DVKEY_UNKNOWN)
@@ -177,7 +190,20 @@ void OpenGLWindow::keyReleaseEvent(QKeyEvent *e)
     if ( e->modifiers() & Qt::MetaModifier )
         modifiers << "Meta";
 
-    qDebug() << "- Key: " << e->text() << "; Native: " << e->nativeVirtualKey() << "; [=] " << modifiers.join( "+" );
+    qDebug() << "- Key: " << e->text() << "; Code:" << e->key() << "; Native: " << e->nativeVirtualKey() << "; [=] " << modifiers.join( "+" );
+
+    if ( e->modifiers() & Qt::AltModifier )
+    {
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DVKEY_ALT );
+    }
+    if ( e->modifiers() & Qt::ControlModifier )
+    {
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DVKEY_CTRL );
+    }
+    if ( e->modifiers() & Qt::ShiftModifier )
+    {
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DVKEY_SHIFT );
+    }
 
     const auto davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey( e->nativeVirtualKey() );
     if (davaKey != DVKEY_UNKNOWN)
