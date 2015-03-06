@@ -46,17 +46,20 @@ FMODSoundEvent::FMODSoundEvent(const FastName & _eventName) :
     DVASSERT(_eventName.c_str()[0] != '/');
     eventName = _eventName;
 
-    FMOD::Event * fmodEventInfo = 0;
-    SoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo);
-    if(fmodEventInfo)
+    if (SoundSystem::Instance()->fmodEventSystem)
     {
-        FMOD_MODE mode = 0;
-        fmodEventInfo->getPropertyByIndex(FMOD_EVENTPROPERTY_MODE, &mode);
-        is3D = (mode == FMOD_3D);
+        FMOD::Event * fmodEventInfo = nullptr;
+        SoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo);
+        if (fmodEventInfo)
+        {
+            FMOD_MODE mode = 0;
+            fmodEventInfo->getPropertyByIndex(FMOD_EVENTPROPERTY_MODE, &mode);
+            is3D = (mode == FMOD_3D);
 
-        InitParamsMap();
+            InitParamsMap();
 
-        isDirectional = IsParameterExists(FMOD_SYSTEM_EVENTANGLE_PARAMETER);
+            isDirectional = IsParameterExists(FMOD_SYSTEM_EVENTANGLE_PARAMETER);
+        }
     }
 }
 
@@ -72,9 +75,12 @@ bool FMODSoundEvent::Trigger()
     SoundSystem * soundSystem = SoundSystem::Instance();
     FMOD::EventSystem * fmodEventSystem = soundSystem->fmodEventSystem;
     
+    if (fmodEventSystem == nullptr)
+        return false;
+
     if(is3D)
     {
-        FMOD::Event * fmodEventInfo = 0;
+        FMOD::Event * fmodEventInfo = nullptr;
         FMOD_VERIFY(fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo));
         if(fmodEventInfo)
         {
@@ -84,7 +90,7 @@ bool FMODSoundEvent::Trigger()
         }
     }
     
-    FMOD::Event * fmodEvent = 0;
+    FMOD::Event * fmodEvent = nullptr;
     FMOD_RESULT result = fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_DEFAULT, &fmodEvent);
     if(result == FMOD_OK)
     {
@@ -264,7 +270,7 @@ void FMODSoundEvent::GetEventParametersInfo(Vector<SoundEventParameterInfo> & pa
 {
     paramsInfo.clear();
 
-    FMOD::Event * event = 0;
+    FMOD::Event * event = nullptr;
     if(fmodEventInstances.size())
     {
         event = fmodEventInstances[0];
@@ -272,7 +278,10 @@ void FMODSoundEvent::GetEventParametersInfo(Vector<SoundEventParameterInfo> & pa
     else
     {
         FMOD::EventSystem * fmodEventSystem = SoundSystem::Instance()->fmodEventSystem;
-        fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &event);
+        if (fmodEventSystem)
+        {
+            fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &event);
+        }
     }
 
     if(!event)
@@ -307,8 +316,11 @@ String FMODSoundEvent::GetEventName() const
 float32 FMODSoundEvent::GetMaxDistance() const
 {
     float32 distance = 0;
-    FMOD::Event * fmodEventInfo = 0;
-    SoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo);
+    FMOD::Event * fmodEventInfo = nullptr;
+    if (SoundSystem::Instance()->fmodEventSystem)
+    {
+        SoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo);
+    }
     if(fmodEventInfo)
     {
         fmodEventInfo->getPropertyByIndex(FMOD_EVENTPROPERTY_3D_MAXDISTANCE, &distance);
