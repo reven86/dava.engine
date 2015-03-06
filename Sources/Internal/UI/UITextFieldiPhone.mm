@@ -38,7 +38,13 @@
 #include "Core/Core.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#import <Platform/TemplateiOS/HelperAppDelegate.h>
+#include "Platform/TemplateiOS/WebViewControliOS.h"
+
+#import "Platform/TemplateiOS/HelperAppDelegate.h"
+
+namespace {
+    const int MOVE_TO_OFFSCREEN_STEP = 20000;
+}
 
 void CreateTextField(DAVA::UITextField  * tf)
 {
@@ -59,13 +65,15 @@ void CloseKeyboard()
 
 namespace DAVA 
 {
-    UITextFieldiPhone::UITextFieldiPhone(void  * tf)
+    UITextFieldiPhone::UITextFieldiPhone(DAVA::UITextField& tf):
+    davaTextField(tf),
+    renderToTexture(false)
     {
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
         BackgroundView* backgroundView = [appDelegate glController].backgroundView;
         
         UITextFieldHolder * textFieldHolder= [backgroundView CreateTextField];
-        [textFieldHolder setTextField:(DAVA::UITextField *)tf];
+        [textFieldHolder setTextField:&davaTextField];
 
         objcClassPtr = textFieldHolder;
     }
@@ -247,6 +255,10 @@ namespace DAVA
                                        , physicalRect.dx / divider
                                        , physicalRect.dy / divider);
         
+        if(renderToTexture)
+        {
+            nativeRect.origin.x += MOVE_TO_OFFSCREEN_STEP;
+        }
         textFieldHolder->textField.frame = nativeRect;
     }
 	
@@ -398,6 +410,34 @@ namespace DAVA
             ::UITextField* textField = textFieldHolder->textField;
             [textField setText: (NSString*)TruncateText([textField text], maxLength)];
         }
+    }
+    
+    void UITextFieldiPhone::SetRenderToTexture(bool value)
+    {
+        renderToTexture = value;
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        if (textFieldHolder)
+        {
+            ::UITextField* textField = textFieldHolder->textField;
+            DVASSERT(textField);
+            DAVA::Rect rect = davaTextField.GetRect();
+            // move text vield off screen if renderToTexture == true
+            UpdateRect(rect);
+
+            if (renderToTexture)
+            {
+                void* imgPtr = DAVA::WebViewControl::RenderIOSUIViewToImage(textField);
+                ::UIImage* image = static_cast<::UIImage*>(imgPtr);
+                DVASSERT(image);
+            
+                WebViewControl::CopyImageToSprite(image, davaTextField);
+            }
+        }
+    }
+    
+    bool UITextFieldiPhone::IsRenderToTexture() const
+    {
+        return renderToTexture;
     }
 
     void* UITextFieldiPhone::TruncateText(void* text, int maxLength)

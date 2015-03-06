@@ -102,7 +102,7 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 	textFieldAndroid = new UITextFieldAndroid(this);
     textFieldAndroid->SetVisible(false);
 #elif defined(__DAVAENGINE_IPHONE__)
-	textFieldiPhone = new UITextFieldiPhone(this);
+	textFieldiPhone = new UITextFieldiPhone(*this);
     textFieldiPhone->SetVisible(false);
 #else
     staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
@@ -889,7 +889,7 @@ WideString UITextField::GetVisibleText() const
     if (!isPassword)
         return text;
     
-    return WideString(L'*', text.length());
+    return WideString(text.length(), L'*');
 }
 	
 int32 UITextField::GetAutoCapitalizationType() const
@@ -1015,6 +1015,8 @@ void UITextField::SetRenderToTexture(bool value)
     // do nothing
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetRenderToTexture(value);
+#elif defined(__DAVAENGINE_IPHONE__)
+    textFieldiPhone->SetRenderToTexture(value);
 #else
     static_assert(false, "implement new platform");
 #endif
@@ -1028,6 +1030,8 @@ bool UITextField::IsRenderToTexture() const
     return false;
 #elif defined(__DAVAENGINE_ANDROID__)
     return textFieldAndroid->IsRenderToTexture();
+#elif defined(__DAVAENGINE_IPHONE__)
+    return textFieldiPhone->IsRenderToTexture();
 #else
     static_assert(false, "implement new platform");
 #endif

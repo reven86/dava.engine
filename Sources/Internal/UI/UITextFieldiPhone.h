@@ -35,10 +35,12 @@
 
 namespace DAVA 
 {
+class UITextField;
+    
 class UITextFieldiPhone
 {
 public:
-	UITextFieldiPhone(void  * tf);
+    UITextFieldiPhone(UITextField& tf);
 	virtual ~UITextFieldiPhone();
 	
 	void OpenKeyboard();
@@ -78,13 +80,18 @@ public:
 
     // Max text length.
     void SetMaxLength(int maxLength);
+    
+    void SetRenderToTexture(bool value);
+    bool IsRenderToTexture() const;
 
 protected:
     // Truncate the text to maxLength characters.
     void* TruncateText(void* text, int maxLength);
 
 private:
+    UITextField& davaTextField;
 	void * objcClassPtr;
+    bool renderToTexture;
 };
 };
 
