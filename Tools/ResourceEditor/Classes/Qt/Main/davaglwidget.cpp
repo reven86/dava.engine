@@ -147,12 +147,14 @@ bool OpenGLWindow::event(QEvent *event)
 void OpenGLWindow::keyPressEvent(QKeyEvent *e)
 {
     QStringList modifiers;
-    if ( e->modifiers() & Qt::Key_Alt )
+    if ( e->modifiers() & Qt::AltModifier )
         modifiers << "Alt";
-    if ( e->modifiers() & Qt::Key_Control )
+    if ( e->modifiers() & Qt::ControlModifier )
         modifiers << "Ctrl";
-    if ( e->modifiers() & Qt::Key_Shift )
+    if ( e->modifiers() & Qt::ShiftModifier )
         modifiers << "Shift";
+    if ( e->modifiers() & Qt::MetaModifier )
+        modifiers << "Meta";
 
     qDebug() << "+ Key: " << e->text() << "; Native: " << e->nativeVirtualKey() << "; [=] " << modifiers.join( "+" );
 
@@ -166,12 +168,14 @@ void OpenGLWindow::keyPressEvent(QKeyEvent *e)
 void OpenGLWindow::keyReleaseEvent(QKeyEvent *e)
 {
     QStringList modifiers;
-    if ( e->modifiers() & Qt::Key_Alt )
+    if ( e->modifiers() & Qt::AltModifier )
         modifiers << "Alt";
-    if ( e->modifiers() & Qt::Key_Control )
+    if ( e->modifiers() & Qt::ControlModifier )
         modifiers << "Ctrl";
-    if ( e->modifiers() & Qt::Key_Shift )
+    if ( e->modifiers() & Qt::ShiftModifier )
         modifiers << "Shift";
+    if ( e->modifiers() & Qt::MetaModifier )
+        modifiers << "Meta";
 
     qDebug() << "- Key: " << e->text() << "; Native: " << e->nativeVirtualKey() << "; [=] " << modifiers.join( "+" );
 
