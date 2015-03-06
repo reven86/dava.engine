@@ -132,7 +132,7 @@ int32 FMODFileSoundEvent::Release()
 
 bool FMODFileSoundEvent::Trigger()
 {
-    if (SoundSystem::Instance()->fmodSystem = nullptr)
+    if (SoundSystem::Instance()->fmodSystem == nullptr)
         return false;
 
     FMOD::Channel * fmodInstance = nullptr;
