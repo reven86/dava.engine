@@ -36,12 +36,12 @@ NotPassableTerrainProxy::NotPassableTerrainProxy()
 	LoadColorsArray();
 	 
 	notPassableAngleTan = (float32)tan(DegToRad((float32)NOT_PASSABLE_ANGLE));
-	notPassableMapSprite = Sprite::CreateAsRenderTarget(2048, 2048, DAVA::FORMAT_RGBA8888, true);
+	notPassableTexture = Texture::CreateFBO(2048, 2048, DAVA::FORMAT_RGBA8888, Texture::DEPTH_NONE);
 }
 
 NotPassableTerrainProxy::~NotPassableTerrainProxy()
 {
-	SafeRelease(notPassableMapSprite);
+	SafeRelease(notPassableTexture);
 }
 
 void NotPassableTerrainProxy::LoadColorsArray()
@@ -133,7 +133,7 @@ bool NotPassableTerrainProxy::IsEnabled() const
 
 Texture* NotPassableTerrainProxy::GetTexture()
 {
-	return notPassableMapSprite->GetTexture();
+	return notPassableTexture;
 }
 
 void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
@@ -151,19 +151,13 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 	const float32 angleHeightDelta = landSize.z / (float32)(Heightmap::MAX_VALUE - 1);
 	const float32 tanCoef = angleHeightDelta / angleCellDistance;
 	
-    const float32 physicalTargetWidth = (float32)notPassableMapSprite->GetTexture()->GetWidth();
-    const float32 dx = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(physicalTargetWidth / (float32)(heightmap->Size() - 1));
-	
-    RenderSystem2D::Instance()->PushRenderTarget();
-    RenderSystem2D::Instance()->SetRenderTarget(notPassableMapSprite);
-	
+    const float32 targetWidth = (float32)notPassableTexture->GetWidth();
+    const float32 dx = targetWidth / (float32)(heightmap->Size() - 1);
+
 	const Rect drawRect(forRect.x * dx, (heightmap->Size() - (forRect.y + forRect.dy)) * dx, (forRect.dx - 1)* dx, (forRect.dy - 1) * dx);
     
-    RenderSystem2D::Instance()->PushClip();
-    RenderSystem2D::Instance()->SetClip(drawRect);
-    RenderSystem2D::Instance()->Setup2DMatrices();
-    RenderSystem2D::Instance()->UpdateClip();
-
+    RenderHelper::Instance()->Set2DRenderTarget(notPassableTexture);
+    RenderManager::Instance()->SetClip(drawRect);
     RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
 	const int32 lastY = (int32)(forRect.y + forRect.dy);
@@ -204,6 +198,6 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 	}
 	
     RenderManager::Instance()->ResetColor();
-    RenderSystem2D::Instance()->PopClip();
-    RenderSystem2D::Instance()->PopRenderTarget();
+    RenderManager::Instance()->SetClip(Rect(0.f, 0.f, -1.f, -1.f));
+    RenderManager::Instance()->SetRenderTarget(0);
 }
