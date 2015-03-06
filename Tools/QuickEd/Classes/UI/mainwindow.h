@@ -123,7 +123,7 @@ private:
     QAction* backgroundFrameSelectCustomColorAction;
 };
 
-Q_DECLARE_METATYPE(MainWindow::TabState);
+Q_DECLARE_METATYPE(MainWindow::TabState*);
 
 
 #endif // MAINWINDOW_H

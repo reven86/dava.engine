@@ -91,6 +91,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->fileSystemDockWidget->setEnabled(false);
 
     RebuildRecentMenu();
+
 }
 
 MainWindow::~MainWindow()
@@ -133,6 +134,7 @@ void MainWindow::OnCountChanged(int count)
 
 int MainWindow::CloseTab(int index)
 {
+    delete ui->tabBar->tabData(index).value<TabState*>();
     ui->tabBar->removeTab(index);
     return ui->tabBar->currentIndex();
 }
@@ -172,8 +174,8 @@ void MainWindow::OnCurrentIndexChanged(int arg)
     ui->libraryWidget->setEnabled(enabled);
     if (enabled)
     {
-        TabState &tabState = ui->tabBar->tabData(arg).value<TabState>();
-        ui->actionSaveDocument->setEnabled(tabState.isModified);
+        TabState *tabState = ui->tabBar->tabData(arg).value<TabState*>();
+        ui->actionSaveDocument->setEnabled(tabState->isModified);
     }
 }
 
@@ -181,9 +183,10 @@ void MainWindow::OnCleanChanged(bool val)
 {
     int index = ui->tabBar->currentIndex();
     DVASSERT(index >= 0);
-    TabState &tabState = ui->tabBar->tabData(index).value<TabState>();
-    tabState.isModified = !val;
-    QString tabText = tabState.tabText;
+    TabState *tabState = ui->tabBar->tabData(index).value<TabState*>();
+    tabState->isModified = !val;
+
+    QString tabText = tabState->tabText;
     if (!val)
     {
         tabText.prepend('*');
@@ -192,7 +195,7 @@ void MainWindow::OnCleanChanged(bool val)
 
     if (index == ui->tabBar->currentIndex())
     {
-        ui->actionSaveDocument->setEnabled(tabState.isModified);
+        ui->actionSaveDocument->setEnabled(tabState->isModified);
     }
 }
 
@@ -324,6 +327,9 @@ void MainWindow::SetupViewMenu()
 
 void MainWindow::UpdateMenu()
 {
+    ui->actionSaveAllDocuments->setEnabled(false);
+    ui->actionSaveDocument->setEnabled(false);
+
     ui->actionClose_project->setEnabled(false);
     ui->actionFontManager->setEnabled(false);
     ui->actionLocalizationManager->setEnabled(false);
@@ -337,15 +343,18 @@ void MainWindow::RebuildRecentMenu()
     ui->menuRecent->clear();
     // Get up to date count of recent project actions
     int32 projectCount = EditorSettings::Instance()->GetLastOpenedCount();
-    if (projectCount > 0)
+    QStringList projectList;
+
+    for (int32 i = 0; i < projectCount; ++i)
     {
-        for(int32 i = 0; i < projectCount; ++i)
-        {
-            QString projectPath = QString(EditorSettings::Instance()->GetLastOpenedFile(i).c_str());
-            QAction *recentProject = new QAction(projectPath, this);
-            recentProject->setData(projectPath);
-            ui->menuRecent->addAction(recentProject);
-        }
+        projectList << QDir::toNativeSeparators(QString(EditorSettings::Instance()->GetLastOpenedFile(i).c_str()));
+    }
+    projectList.removeDuplicates();
+    for (auto &projectPath : projectList)
+    {
+        QAction *recentProject = new QAction(projectPath, this);
+        recentProject->setData(projectPath);
+        ui->menuRecent->addAction(recentProject);
     }
     ui->menuRecent->setEnabled(projectCount > 0);
 }
@@ -353,7 +362,7 @@ void MainWindow::RebuildRecentMenu()
 int MainWindow::AddTab(const QString &tabText)
 {
     int index = ui->tabBar->addTab(tabText);
-    ui->tabBar->setTabData(index, QVariant::fromValue<TabState>(TabState(tabText)));
+    ui->tabBar->setTabData(index, QVariant::fromValue<TabState*>(new TabState(tabText)));
     return index;
 }
 

@@ -25,6 +25,7 @@ BaseController::BaseController(QObject *parent)
     connect(&mainWindow, &MainWindow::ActionExitTriggered, this, &BaseController::Exit);
     connect(&mainWindow, &MainWindow::CloseRequested, this, &BaseController::Exit);
     connect(&mainWindow, &MainWindow::RecentMenuTriggered, this, &BaseController::RecentMenu);
+    connect(&mainWindow, &MainWindow::ActionOpenProjectTriggered, this, &BaseController::OpenProject);
     connect(&mainWindow, &MainWindow::OpenPackageFile, this, &BaseController::OnOpenPackageFile);
     connect(&mainWindow, &MainWindow::SaveAllDocuments, this, &BaseController::SaveAllDocuments);
     connect(&mainWindow, &MainWindow::SaveDocument, this, &BaseController::SaveDocument);
@@ -152,7 +153,9 @@ int BaseController::GetIndexByPackagePath(const QString &fileName) const
     for (int index = 0; index < documents.size(); ++index)
     {
         if (documents.at(index)->PackageFilePath() == davaPath)
+        {
             return index;
+        }
     }
 
     return -1;
@@ -260,8 +263,9 @@ void BaseController::SaveDocument(int index)
     DVASSERT(index < Count());
     Document &document = *documents[index];
     if (document.GetUndoStack()->isClean())
+    {
         return;
-
+    }
     DVVERIFY(project.SavePackage(document.GetPackage())); //TODO:log here
     document.GetUndoStack()->setClean();
 }
@@ -283,8 +287,6 @@ int BaseController::Count() const
 
 int BaseController::CurrentIndex() const
 {
-    DVASSERT(currentIndex >= -1);
-    DVASSERT(currentIndex < Count());
     return currentIndex;
 }
 
