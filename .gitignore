@@ -42,3 +42,4 @@ fmod.log
 *.xccheckout
 Projects/UnitTests/android/assets
 
+Projects/UnitTests/android/.settings/*
