@@ -39,7 +39,7 @@
 namespace DAVA 
 {
 
-void UTF8Utils::EncodeToWideString(const uint8 * string, int32 size, WideString & resultString)
+void UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & resultString)
 {
 	resultString = L"";
 

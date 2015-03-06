@@ -206,6 +206,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 	uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? TexturePacker::TSIZE_4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
 
 	bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
+    bool useLayerNames = CommandLineParser::Instance()->IsFlagSet("--useLayerNames");
 	
     FilePath psdNameWithoutExtension(processDirectoryPath + psdName);
     psdNameWithoutExtension.TruncateExtension();
@@ -236,17 +237,28 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 	for(int k = 1; k < (int)cropped_data.layers_array_size; ++k)
 	{
 		//save layer names
-		String layerName = String(cropped_data.layers_array[k].name);
-		if (layerName.empty())
-		{
-			Logger::Warning("* WARNING * - %s layer %d has empty name!!!", psdName.c_str(), k - 1);
-		}
-		// Check if layer name is unique
-		Vector<String>::iterator it = find(defFile->frameNames.begin(), defFile->frameNames.end(), layerName);
-		if (it != defFile->frameNames.end())
-		{
-			Logger::Warning("* WARNING * - %s layer %d name %s is not unique!!!", psdName.c_str(), k - 1, layerName.c_str());
-		}
+        String layerName;
+        
+        if (useLayerNames)
+        {
+            layerName.assign(cropped_data.layers_array[k].name);
+            if (layerName.empty())
+            {
+                Logger::Warning("* WARNING * - %s layer %d has empty name!!!", psdName.c_str(), k - 1);
+            }
+            // Check if layer name is unique
+            Vector<String>::iterator it = find(defFile->frameNames.begin(), defFile->frameNames.end(), layerName);
+            if (it != defFile->frameNames.end())
+            {
+                Logger::Warning("* WARNING * - %s layer %d name %s is not unique!!!", psdName.c_str(), k - 1, layerName.c_str());
+            }
+        }
+        else
+        {
+            layerName.assign("frame");
+            layerName.append(std::to_string(k - 1));
+        }
+        
 		defFile->frameNames.push_back(layerName);
 
 

@@ -59,7 +59,7 @@ bool BiDiWrapper::Prepare(WideString const& logicalStr, WideString& preparedStr,
     static FriBidiFlags flags = FRIBIDI_FLAGS_DEFAULT | FRIBIDI_FLAGS_ARABIC;
 
     FriBidiParType base_dir = FRIBIDI_PAR_ON;
-    uint32 fribidi_len = logicalStr.length();
+    uint32 fribidi_len = static_cast<uint32>(logicalStr.length());
 
     logicalBuffer.assign(logicalStr.begin(), logicalStr.end());
     bidiTypes.resize(fribidi_len);
@@ -98,7 +98,7 @@ bool BiDiWrapper::Reorder(WideString& string, bool const forceRtl)
     static FriBidiFlags flags = FRIBIDI_FLAGS_DEFAULT | FRIBIDI_FLAGS_ARABIC;
 
     FriBidiParType base_dir = forceRtl ? (FRIBIDI_PAR_RTL) : (FRIBIDI_PAR_ON);
-    uint32 fribidi_len = string.length();
+    uint32 fribidi_len = static_cast<uint32>(string.length());
 
     logicalBuffer.assign(string.begin(), string.end());
     bidiTypes.resize(fribidi_len);

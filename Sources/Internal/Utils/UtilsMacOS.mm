@@ -51,7 +51,7 @@ namespace DAVA
 #if defined(__DAVAENGINE_IPHONE__)
 		NSString * string = [UIDevice currentDevice].name;
 		WideString ws;
-		int len = [string length];
+		int len = static_cast<int32>([string length]);
 		ws.resize(len);
 		for (int k = 0; k < len; ++k)
 		{

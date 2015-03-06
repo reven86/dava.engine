@@ -41,7 +41,7 @@ namespace DAVA
 bool YamlParser::Parse(const String& data)
 {
     YamlDataHolder dataHolder;
-    dataHolder.fileSize = data.size();
+    dataHolder.fileSize = static_cast<uint32>(data.size());
     dataHolder.data = (uint8 *)data.c_str();
     dataHolder.dataOffset = 0;    
 

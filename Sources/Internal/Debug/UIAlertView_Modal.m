@@ -28,7 +28,7 @@ NSInteger returnButtonIndex = -1;
 	[self autorelease];
 
 	// This view must be modal, so wait for result
-	NSRunLoop *theRL = [NSRunLoop currentRunLoop];
+	[NSRunLoop currentRunLoop];
 	while (-1 == returnButtonIndex)
 	{
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];

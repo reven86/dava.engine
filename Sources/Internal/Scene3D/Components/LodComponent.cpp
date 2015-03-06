@@ -242,7 +242,7 @@ void LodComponent::SetLodLayerDistance(int32 layerNum, float32 distance)
         float32 nearDistance = distance * NEAR_DISTANCE_COEFF;
         float32 farDistance = distance * FAR_DISTANCE_COEFF;
         
-        if(DAVA::GetLodLayersCount(this) - 1 == layerNum)
+        if(DAVA::GetLodLayersCount(this) - 1 == static_cast<uint32>(layerNum))
         {
             lodLayersArray[layerNum].SetFarDistance(MAX_LOD_DISTANCE * FAR_DISTANCE_COEFF);
         }

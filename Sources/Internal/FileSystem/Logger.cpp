@@ -260,8 +260,8 @@ void Logger::FileLog(eLogLevel ll, const char8* text)
         {
             std::array<char8, 128> prefix;
             snprintf(&prefix[0], prefix.size(), "[%s] ", GetLogLevelString(ll));
-            file->Write(prefix.data(), strlen(prefix.data()));
-            file->Write(text, strlen(text));
+            file->Write(prefix.data(), static_cast<uint32>(strlen(prefix.data())));
+            file->Write(text, static_cast<uint32>(strlen(text)));
             file->Release();
         }
     }

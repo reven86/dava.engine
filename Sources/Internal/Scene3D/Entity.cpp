@@ -102,7 +102,7 @@ void Entity::AddComponent(Component * component)
 		scene->RegisterComponent(this, component);
 }
 
-void Entity::DetachComponent(const Vector<Component *>::iterator & it)
+void Entity::DetachComponent(Vector<Component *>::iterator & it)
 {
     Component * c = *it;
 
@@ -710,7 +710,7 @@ String Entity::GetDebugDescription()
 void Entity::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
 	// Perform refactoring and add Matrix4, Vector4 types to VariantType and KeyedArchive
-	BaseObject::Save(archive);
+	BaseObject::SaveObject(archive);
 
 	archive->SetString("name", String(name.c_str()));
 	archive->SetInt32("tag", tag);
@@ -750,7 +750,7 @@ void Entity::Save(KeyedArchive * archive, SerializationContext * serializationCo
 	
 void Entity::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
-	BaseObject::Load(archive);
+	BaseObject::LoadObject(archive);
         
 	name = FastName(archive->GetString("name", "").c_str());
 	tag = archive->GetInt32("tag", 0);
@@ -1000,7 +1000,7 @@ Entity * Entity::GetNodeByPathID(Entity * root, String pathID)
 	Entity * result = root;
 	int32 offs = 0;
 	int32 index = 0;
-	int32 sz = pathID.size();
+	int32 sz = static_cast<int32>(pathID.size());
 	char val;
 	while (offs < sz)
 	{

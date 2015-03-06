@@ -330,7 +330,7 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 //			newTouch.point.y = p.y;
 //		}
 		newTouch.timestamp = curTouch.timestamp;
-		newTouch.tapCount = curTouch.tapCount;
+        newTouch.tapCount = static_cast<DAVA::int32>(curTouch.tapCount);
 		
 		switch(curTouch.phase)
 		{
@@ -357,8 +357,15 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 -(void)process:(int) touchType touch:(NSArray*)active withEvent: (NSArray*)total
 {
 	MoveTouchsToVector(active, &activeTouches);
-	MoveTouchsToVector(total, &totalTouches);
-	DAVA::UIControlSystem::Instance()->OnInput(touchType, activeTouches, totalTouches);
+    if(DAVA::InputSystem::Instance()->GetMultitouchEnabled())
+    {
+        MoveTouchsToVector(total, &totalTouches);
+        DAVA::UIControlSystem::Instance()->OnInput(touchType, activeTouches, totalTouches);
+    }
+    else
+    {
+        DAVA::UIControlSystem::Instance()->OnInput(touchType, activeTouches, activeTouches);
+    }
 	activeTouches.clear();
 	totalTouches.clear();
 }

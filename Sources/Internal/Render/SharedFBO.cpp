@@ -49,7 +49,7 @@ SharedFBO::SharedFBO(Setup * setup)
 	textureState.SetTexture(0, texture);
 	fboTextureState = RenderManager::Instance()->CreateTextureState(textureState);
 
-	int32 blocksCount = setup->blocks.size();
+	int32 blocksCount = static_cast<int32>(setup->blocks.size());
 	for(int32 i = 0; i < blocksCount; ++i)
 	{
 		sizes.push_back(setup->blocks[i].second);
@@ -66,13 +66,13 @@ SharedFBO::SharedFBO(Setup * setup)
 		}
 
 		queues.push_back(queue);
-		frees.push_back(queue.size());
+		frees.push_back(static_cast<int32>(queue.size()));
 	}
 
 	std::sort(blocks.begin(), blocks.end(), SortBlocks);
 	
 	RectPacker packer(Rect2i(0, 0, (int32)setup->size.x, (int32)setup->size.y));
-	int32 blocksSize = blocks.size();
+	int32 blocksSize = static_cast<int32>(blocks.size());
 	for(int32 i = 0; i < blocksSize; ++i)
 	{
 		bool res = packer.AddRect(Size2i((int32)blocks[i]->size.dx, (int32)blocks[i]->size.dy), blocks[i]);
@@ -95,11 +95,10 @@ SharedFBO::~SharedFBO()
 	RenderManager::Instance()->ReleaseTextureState(fboTextureState);
 	SafeRelease(texture);
 
-	int32 blocksSize = blocks.size();
-	for(int32 i = 0; i < blocksSize; ++i)
-	{
-		SafeDelete(blocks[i]);
-	}
+    for(auto& block : blocks)
+    {
+        SafeDelete(block);
+    }
 }
 
 SharedFBO::Block * SharedFBO::AcquireBlock(const Vector2 & size)
@@ -115,7 +114,7 @@ SharedFBO::Block * SharedFBO::AcquireBlock(const Vector2 & size)
 	}
 
 	Block * block = 0;
-	int32 maxIndex = frees.size()-1;
+	int32 maxIndex = static_cast<int32>(frees.size()-1);
 
 	//debug
 	//Logger::FrameworkDebug("Free blocks:"); 
@@ -178,7 +177,7 @@ void SharedFBO::ReleaseBlock(SharedFBO::Block * block)
 
 int32 SharedFBO::FindIndexForSize(const Vector2 & size)
 {
-	int32 sizesSize = sizes.size();
+	int32 sizesSize = static_cast<int32>(sizes.size());
 	int32 closestIndex = 1;
     
 	for(int32 i = sizesSize-1; i >= 0; --i)

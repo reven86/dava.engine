@@ -110,7 +110,7 @@ public:
 	AnimatedMesh(Scene * _scene);
 	~AnimatedMesh();
 	
-	void Load(const String & animationFilename, int32 additionalFlags = 0);
+	void LoadMesh(const String & animationFilename, int32 additionalFlags = 0);
 	void SetAnimation(const String & animationName);
 	
 	void Update(float32 timeElapsed);

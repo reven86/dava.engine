@@ -55,6 +55,7 @@ PathComponent::Waypoint::Waypoint(const Waypoint& cp)
     name = cp.name;
     position = cp.position;
     edges = cp.edges;
+    isStarting = cp.isStarting;
     SetProperties(cp.GetProperties());
 }
 
@@ -74,7 +75,7 @@ void PathComponent::Waypoint::AddEdge(PathComponent::Edge *edge)
 
 void PathComponent::Waypoint::RemoveEdge(PathComponent::Edge *edge)
 {
-    uint32 edgesCount = edges.size();
+    uint32 edgesCount = static_cast<uint32>(edges.size());
     for(uint32 e = 0; e < edgesCount; ++e)
     {
         if(edge == edges[e])
@@ -169,7 +170,7 @@ Component * PathComponent::Clone(Entity * toEntity)
     newComponent->SetName(name);
 	newComponent->SetEntity(toEntity);
 
-    const uint32 waypointCount = waypoints.size();
+    const uint32 waypointCount = static_cast<uint32>(waypoints.size());
     if(waypointCount)
     {
         newComponent->waypoints.resize(waypointCount);
@@ -185,9 +186,10 @@ Component * PathComponent::Clone(Entity * toEntity)
 
             newWaypoint->name = waypoint->name;
             newWaypoint->position = waypoint->position;
+            newWaypoint->isStarting = waypoint->isStarting;
             newWaypoint->SetProperties(waypoint->GetProperties());
 
-            const uint32 edgesCount = waypoint->edges.size();
+            const uint32 edgesCount = static_cast<uint32>(waypoint->edges.size());
             for(uint32 e = 0; e < edgesCount; ++e)
             {
                 Edge *edge = waypoint->edges[e];
@@ -217,7 +219,7 @@ void PathComponent::Serialize(KeyedArchive *archive, SerializationContext *seria
     {
         archive->SetFastName("name", name);
         
-        const uint32 waypointCount = waypoints.size();
+        const uint32 waypointCount = static_cast<uint32>(waypoints.size());
         archive->SetUInt32("waypointCount", waypointCount);
 
         if(waypointCount)
@@ -230,12 +232,13 @@ void PathComponent::Serialize(KeyedArchive *archive, SerializationContext *seria
 
                 wpArchieve->SetFastName("name", wp->name);
                 wpArchieve->SetVector3("position", wp->position);
+                wpArchieve->SetBool("isStarting", wp->isStarting);
                 if(wp->GetProperties())
                 {
                     wpArchieve->SetArchive("properties", wp->GetProperties());
                 }
                 
-                const uint32 edgesCount = wp->edges.size();
+                const uint32 edgesCount = static_cast<uint32>(wp->edges.size());
                 wpArchieve->SetUInt32("edgesCount", edgesCount);
                 for(uint32 e = 0; e < edgesCount; ++e)
                 {
@@ -295,6 +298,8 @@ void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
     waypoints.resize(waypointCount);
     std::generate(waypoints.begin(), waypoints.end(), NewWaypoint);
 
+    bool startingWaypointExists = false;
+
     for(uint32 w = 0; w < waypointCount; ++w)
     {
         Waypoint *wp = waypoints[w];
@@ -304,6 +309,9 @@ void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
 
         wp->name = wpArchieve->GetFastName("name");
         wp->position = wpArchieve->GetVector3("position");
+        wp->isStarting = wpArchieve->GetBool("isStarting");
+        if (wp->isStarting)
+            startingWaypointExists = true;
         
         KeyedArchive *wpProperties = wpArchieve->GetArchive("properties");
         wp->SetProperties(wpProperties);
@@ -326,6 +334,11 @@ void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
             wp->edges.push_back(edge);
         }
     }
+
+    if (!startingWaypointExists && waypointCount > 0)
+    {
+        waypoints[0]->isStarting = true;
+    }
 }
 
 void PathComponent::AddPoint(DAVA::PathComponent::Waypoint *point)
@@ -335,12 +348,12 @@ void PathComponent::AddPoint(DAVA::PathComponent::Waypoint *point)
 
 void PathComponent::RemovePoint(DAVA::PathComponent::Waypoint *point)
 {
-    uint32 waypointCount = waypoints.size();
+    uint32 waypointCount = static_cast<uint32>(waypoints.size());
     for(uint32 w = 0; w < waypointCount; ++w)
     {
         Waypoint *wp = waypoints[w];
         
-        uint32 edgesCount = wp->edges.size();
+        uint32 edgesCount = static_cast<uint32>(wp->edges.size());
         for(uint32 e = 0; e < edgesCount; ++e)
         {
             Edge *edge = wp->edges[e];
@@ -365,7 +378,7 @@ void PathComponent::RemovePoint(DAVA::PathComponent::Waypoint *point)
 
 PathComponent::Waypoint * PathComponent::GetWaypoint(const FastName & name)
 {
-    const uint32 waypointCount = waypoints.size();
+    const uint32 waypointCount = static_cast<uint32>(waypoints.size());
     for(uint32 w = 0; w < waypointCount; ++w)
     {
         Waypoint *wp = waypoints[w];
@@ -381,6 +394,12 @@ PathComponent::Waypoint * PathComponent::GetWaypoint(const FastName & name)
 void PathComponent::Reset()
 {
     for_each(waypoints.begin(), waypoints.end(), SafeDelete<PathComponent::Waypoint>);
+}
+
+PathComponent::Waypoint* PathComponent::GetStartWaypoint() const
+{
+    auto found = find_if(waypoints.begin(), waypoints.end(), [](PathComponent::Waypoint* wp){return wp->IsStarting();});
+    return (found == waypoints.end() ? nullptr : *found);
 }
     
 }
