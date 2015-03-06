@@ -57,17 +57,19 @@ private:
 
     QToolBar* toolbar;
     QFrame* frame;
-    struct label_pack
+    struct LabelPack
     {
-        label_pack() : title(nullptr), alloc(nullptr), total(nullptr), max_block_size(nullptr), nblocks(nullptr) {}
-        ~label_pack();
-        QLabel* title;
+        LabelPack() : allocInternal(nullptr), internalBlockCount(nullptr), ghostBlockCount(nullptr), ghostSize(nullptr), realSize(nullptr) {}
+        ~LabelPack();
         QLabel* alloc;
         QLabel* total;
-        QLabel* max_block_size;
-        QLabel* nblocks;
+        QLabel* allocInternal;
+        QLabel* internalBlockCount;
+        QLabel* ghostBlockCount;
+        QLabel* ghostSize;
+        QLabel* realSize;
     };
-    label_pack* labels;
+    LabelPack* labels;
     
     MemProfInfoModel * model;
     QTableView * tableView;

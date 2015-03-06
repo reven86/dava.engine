@@ -78,7 +78,7 @@ void MMNetServer::ChannelOpen()
 {
     timerBegin = SystemTimer::Instance()->AbsoluteMS();
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-    MemoryManager::Instance()->InstallDumpCallback(&DumpRequestCallback, this);
+  //  MemoryManager::Instance()->InstallDumpCallback(&DumpRequestCallback, this);
 #endif
 }
 

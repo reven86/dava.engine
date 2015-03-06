@@ -59,6 +59,8 @@
 #include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 
+#include "MemoryManager/MemoryProfiler.h"
+
 #include "Base/ObjectFactory.h"
 
 namespace DAVA
@@ -171,5 +173,12 @@ void Component::Deserialize(KeyedArchive *archive, SerializationContext *seriali
 		DVASSERT(type == GetType());
 	}
 }
-
+void * Component::operator new(size_t size)
+{
+    return MEMORY_PROFILER_ALLOCATE(size, ePredefAllocPools::ALLOC_POOL_COMPONENT);
+}
+void * Component::operator new[](size_t size)
+{
+    return MEMORY_PROFILER_ALLOCATE(size, ePredefAllocPools::ALLOC_POOL_COMPONENT);
+}
 }

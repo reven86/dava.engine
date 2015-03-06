@@ -113,6 +113,8 @@ public:
     template<template <typename> class Container, class T>
 	void GetDataNodes(Container<T> & container);
 
+    void * operator new(size_t size);
+    void * operator new[](size_t size);
 protected:
     Entity * entity; // entity is a Entity, that this component belongs to
 

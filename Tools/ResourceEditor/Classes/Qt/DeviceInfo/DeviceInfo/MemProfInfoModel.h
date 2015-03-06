@@ -37,7 +37,7 @@ public:
     void addMoreData(const DAVA::MMStat * data);
     void setConfig(const DAVA::MMStatConfig* statConfig);
 private:
-    QString formatMemoryData(int memoryData);
+   
     struct MemData
     {
         DAVA::uint32 allocByApp;

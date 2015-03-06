@@ -14,15 +14,14 @@
 
 using namespace DAVA;
 
-MemProfWidget::label_pack::~label_pack()
+MemProfWidget::LabelPack::~LabelPack()
 {
-    delete title;
-    delete alloc;
-    delete total;
-    delete max_block_size;
-    delete nblocks;
+    delete allocInternal;
+    delete internalBlockCount;
+    delete ghostBlockCount;
+    delete ghostSize;
+    delete realSize;
 }
-
 MemProfWidget::MemProfWidget(QWidget *parent)
     : QWidget(parent, Qt::Window)
     , ui(new Ui::MemProfWidget())
@@ -142,21 +141,14 @@ void MemProfWidget::UpdateProgress(size_t total, size_t recv)
 
 void MemProfWidget::UpdateLabels(const DAVA::MMStat* stat, DAVA::uint32 alloc, DAVA::uint32 total)
 {
-  /*  uint32 nblocks = 0;
-    for (uint32 i = 0;i < stat->allocPoolCount;++i)
-    {
-        labels[i].alloc->setNum(int(stat->poolStat[i].allocByApp));
-        labels[i].total->setNum(int(stat->poolStat[i].allocTotal));
-        labels[i].max_block_size->setNum(int(stat->poolStat[i].maxBlockSize));
-        labels[i].nblocks->setNum(int(stat->poolStat[i].blockCount));
-        nblocks += stat->poolStat[i].blockCount;
-    }
-
-    const uint32 R = stat->allocPoolCount;
-    labels[R].alloc->setNum(int(alloc));
-    labels[R].total->setNum(int(total));
-    labels[R].nblocks->setNum(int(nblocks));
-   */
+   
+    labels[1].alloc->setText(MemoryItemStyleDelegate::formatMemoryData(alloc));
+    labels[1].total->setText(MemoryItemStyleDelegate::formatMemoryData(total));
+    labels[1].allocInternal->setText(MemoryItemStyleDelegate::formatMemoryData(stat->generalStat.allocInternal));
+    labels[1].ghostBlockCount->setText(MemoryItemStyleDelegate::formatMemoryData(stat->generalStat.ghostBlockCount));
+    labels[1].ghostSize->setText(MemoryItemStyleDelegate::formatMemoryData(stat->generalStat.ghostSize));
+    labels[1].realSize->setText(MemoryItemStyleDelegate::formatMemoryData(stat->generalStat.realSize));
+    labels[1].internalBlockCount->setText(MemoryItemStyleDelegate::formatMemoryData(stat->generalStat.internalBlockCount));
 }
 
 /*
@@ -207,26 +199,41 @@ void MemProfWidget::CreateLabels(const DAVA::MMStatConfig* config)
     Deletelabels();
     QGridLayout* l = new QGridLayout();
 
-    labels = new label_pack[allocPoolCount + 1];
-    for (uint32 i = 0;i < allocPoolCount + 1;++i)
-    {
-        labels[i].title = new QLabel("");
-        labels[i].alloc = new QLabel("-");
-        labels[i].total = new QLabel("-");
-        labels[i].max_block_size = new QLabel("-");
-        labels[i].nblocks = new QLabel("-");
+    //one fro titles and one for 
+    labels = new LabelPack[2];
+   
+    labels[0].alloc = new QLabel("alloc");
+    labels[0].total = new QLabel("total");
+    labels[0].allocInternal = new QLabel("allocInternal");
+    labels[0].ghostBlockCount = new QLabel("ghostBlockCount");
+    labels[0].ghostSize = new QLabel("ghostSize");
+    labels[0].realSize = new QLabel("realSize");
+    labels[0].internalBlockCount = new QLabel("internalBlockCount");
 
-        l->addWidget(labels[i].title, i, 0);
-        l->addWidget(labels[i].alloc, i, 1);
-        l->addWidget(labels[i].total, i, 2);
-        l->addWidget(labels[i].max_block_size, i, 3);
-        l->addWidget(labels[i].nblocks, i, 4);
-    }
-    for (uint32 i = 0;i < allocPoolCount;++i)
-    {
-        labels[i].title->setText(config->names[i + config->tagCount].name);
-    }
-    labels[allocPoolCount].title->setText("Total");
+    l->addWidget(labels[0].alloc , 0, 0);
+    l->addWidget(labels[0].total, 0, 1);
+    l->addWidget(labels[0].allocInternal, 0, 2);
+    l->addWidget(labels[0].ghostBlockCount, 0, 3);
+    l->addWidget(labels[0].ghostSize, 0, 4);
+    l->addWidget(labels[0].realSize, 0, 5);
+    l->addWidget(labels[0].internalBlockCount, 0, 6);
+
+    labels[1].alloc = new QLabel("");
+    labels[1].total = new QLabel("");
+    labels[1].allocInternal = new QLabel("");
+    labels[1].ghostBlockCount = new QLabel("");
+    labels[1].ghostSize = new QLabel("");
+    labels[1].realSize = new QLabel("");
+    labels[1].internalBlockCount = new QLabel("");
+
+    l->addWidget(labels[1].alloc, 1, 0);
+    l->addWidget(labels[1].total, 1, 1);
+    l->addWidget(labels[1].allocInternal, 1, 2);
+    l->addWidget(labels[1].ghostBlockCount, 1, 3);
+    l->addWidget(labels[1].ghostSize, 1, 4);
+    l->addWidget(labels[1].realSize, 1, 5);
+    l->addWidget(labels[1].internalBlockCount, 1, 6);
+
 
     frame = new QFrame;
     frame->setLayout(l);

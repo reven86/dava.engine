@@ -365,7 +365,9 @@ public:
     Vector<Entity*> children;
     
     void UpdateFamily();
-    
+
+    void * operator new(size_t size);
+    void * operator new[](size_t size);
 protected:
     void RemoveAllComponents();
     void LoadComponentsV6(KeyedArchive *compsArch, SerializationContext * serializationContext);

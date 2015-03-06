@@ -86,7 +86,10 @@ MMItemName MemoryManager::tagNames[MMConst::MAX_TAG_COUNT] = {
 
 MMItemName MemoryManager::allocPoolNames[MMConst::MAX_ALLOC_POOL_COUNT] = {
     {"application"},
-    { "FMOD" }, { "RENDERBATCH" }
+    { "FMOD" }, 
+    { "RENDERBATCH" }, 
+    { "COMPONENT" },
+    { "ENTITY" }
 };
 
 size_t MemoryManager::registeredTagCount = 1;
@@ -191,6 +194,7 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
             LockType lock(mutex);
             statGeneral.allocInternal += block->allocByApp;
             statGeneral.internalBlockCount += 1;
+            statGeneral.realSize += MallocHook::MallocSize(block);
         }
         return static_cast<void*>(block + 1);
     }
@@ -270,6 +274,7 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, ui
             LockType lock(mutex);
             statGeneral.allocInternal += block->allocByApp;
             statGeneral.internalBlockCount += 1;
+            statGeneral.realSize += MallocHook::MallocSize(realPtr);
         }
         return reinterpret_cast<void*>(aligned);
     }
@@ -323,6 +328,7 @@ void MemoryManager::Deallocate(void* ptr)
                 LockType lock(mutex);
                 statGeneral.allocInternal -= block->allocByApp;
                 statGeneral.internalBlockCount -= 1;
+                statGeneral.realSize -= MallocHook::MallocSize(block->realBlockStart);
             }
             MallocHook::Free(block->realBlockStart);
         }

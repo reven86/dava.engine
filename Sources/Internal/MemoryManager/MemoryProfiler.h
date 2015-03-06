@@ -43,12 +43,13 @@ void operator delete[](void * ptr, DAVA::ePredefAllocPools pool);
 #define MEMORY_PROFILER_REGISTER_ALLOC_POOL(index, name)    DAVA::MemoryManager::RegisterAllocPoolName(index, name)
 
 #define MEMORY_PROFILER_ENTER_TAG(tag)                      DAVA::MemoryManager::Instance()->EnterTagScope(static_cast<int>(tag))
-#define MEMORY_PROFILER_LEAVE_TAG(tag)                         DAVA::MemoryManager::Instance()->LeaveTagScope(static_cast<int>(tag))
+#define MEMORY_PROFILER_LEAVE_TAG(tag)                      DAVA::MemoryManager::Instance()->LeaveTagScope(static_cast<int>(tag))
 
 #define MEMORY_PROFILER_CHECKPOINT(checkpoint)              DAVA::MemoryManager::Instance()->Checkpoint(checkpoint)
 
-#define MEMORY_PROFILER_NEW(pool,construct)                new (pool) construct
+#define MEMORY_PROFILER_NEW(pool,construct)                 new (pool) construct
 
+#define MEMORY_PROFILER_ALLOCATE(size,pool)                 DAVA::MemoryManager::Instance()->Allocate(size,pool)
 #else   // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
 #define MEMORY_PROFILER_REGISTER_TAG(index, name)
@@ -59,6 +60,8 @@ void operator delete[](void * ptr, DAVA::ePredefAllocPools pool);
 #define MEMORY_PROFILER_CHECKPOINT(checkpoint)
 
 #define MEMORY_PROFILER_NEW(pool,construct)                new construct
+
+#define MEMORY_PROFILER_ALLOCATE(size,pool)                malloc(size);
 
 #endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
 

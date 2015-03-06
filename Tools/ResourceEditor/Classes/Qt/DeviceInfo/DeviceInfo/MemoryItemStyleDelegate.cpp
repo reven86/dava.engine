@@ -12,32 +12,30 @@ void MemoryItemStyleDelegate::paint(QPainter *painter, const QStyleOptionViewIte
     
     if (index.data().canConvert(QVariant::Int)) 
     {
-        float memoryData = static_cast<float>(index.data().toInt(nullptr));
-        QString letter = "B";
-        static std::array<QString, 8> letters = { "KB", "MB", "GB", "TP", "PB", "EB", "ZB", "YB" };
-        size_t counter = 0;
-        while (memoryData > 1024.0f && counter < letters.size())
-        {
-            memoryData /= 1024.0f;
-            letter = letters[counter];
-            counter++;
-        }
-        
         painter->save();
 
         painter->setRenderHint(QPainter::Antialiasing, true);
-       // painter->setPen(Qt::NoPen);
-   
-        //int yOffset = (option.height() - 1.0f) / 2;
-        //painter->translate(option.rect.x(), option.rect.y());
-        //painter->scale(1.0f, 1.0f);
-
-        painter->drawText(option.rect, QString(std::to_string(memoryData).c_str()) + letter);
+      
+        painter->drawText(option.rect, formatMemoryData(index.data().toInt(nullptr)));
         painter->restore();
     }
     else {
         QStyledItemDelegate::paint(painter, option, index);
     }
+}
+QString MemoryItemStyleDelegate::formatMemoryData(DAVA::uint32 mem)
+{
+    float memoryData = static_cast<float>(mem);
+    QString letter = "B";
+    static std::array<QString, 8> letters = { "KB", "MB", "GB", "TP", "PB", "EB", "ZB", "YB" };
+    size_t counter = 0;
+    while (memoryData > 1024.0f && counter < letters.size())
+    {
+        memoryData /= 1024.0f;
+        letter = letters[counter];
+        counter++;
+    }
+    return QString(std::to_string(memoryData).c_str()) + letter;
 }
 QSize MemoryItemStyleDelegate::sizeHint(const QStyleOptionViewItem &option,
     const QModelIndex &index) const
