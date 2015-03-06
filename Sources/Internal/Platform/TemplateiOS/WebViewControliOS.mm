@@ -278,7 +278,7 @@ void DAVA::WebViewControl::CopyImageToSprite(void* imagePtr, UIControl& control)
             DAVA::Texture* tex = DAVA::Texture::CreateFromData(imageRGB, false);
             DVASSERT(tex);
             
-            DAVA::Rect rect = uiWebView.GetRect();
+            DAVA::Rect rect = control.GetRect();
             {
                 DAVA::Sprite* spr = DAVA::Sprite::CreateFromTexture(tex, 0, 0, width, height, rect.dx, rect.dy);
                 DVASSERT(spr);
