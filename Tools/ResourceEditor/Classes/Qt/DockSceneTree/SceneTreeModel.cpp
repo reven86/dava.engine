@@ -836,7 +836,7 @@ Qt::ItemFlags SceneTreeModel::flags ( const QModelIndex & index ) const
             return (f & ~Qt::ItemIsSelectable);
         }
     }
-    
+
     return f;
 }
 
