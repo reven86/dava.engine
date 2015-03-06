@@ -146,6 +146,16 @@ bool OpenGLWindow::event(QEvent *event)
 
 void OpenGLWindow::keyPressEvent(QKeyEvent *e)
 {
+    QStringList modifiers;
+    if ( e->modifiers() & Qt::Key_Alt )
+        modifiers << "Alt";
+    if ( e->modifiers() & Qt::Key_Control )
+        modifiers << "Ctrl";
+    if ( e->modifiers() & Qt::Key_Shift )
+        modifiers << "Shift";
+
+    qDebug() << "+ Key: " << e->text() << "; Native: " << e->nativeVirtualKey() << "; [=] " << modifiers.join( "+" );
+
     const auto davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey( e->nativeVirtualKey() );
     if (davaKey != DVKEY_UNKNOWN)
     {
@@ -155,6 +165,16 @@ void OpenGLWindow::keyPressEvent(QKeyEvent *e)
 
 void OpenGLWindow::keyReleaseEvent(QKeyEvent *e)
 {
+    QStringList modifiers;
+    if ( e->modifiers() & Qt::Key_Alt )
+        modifiers << "Alt";
+    if ( e->modifiers() & Qt::Key_Control )
+        modifiers << "Ctrl";
+    if ( e->modifiers() & Qt::Key_Shift )
+        modifiers << "Shift";
+
+    qDebug() << "- Key: " << e->text() << "; Native: " << e->nativeVirtualKey() << "; [=] " << modifiers.join( "+" );
+
     const auto davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey( e->nativeVirtualKey() );
     if (davaKey != DVKEY_UNKNOWN)
     {
