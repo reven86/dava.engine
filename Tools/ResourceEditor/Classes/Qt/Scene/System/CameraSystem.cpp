@@ -29,6 +29,7 @@
 
 
 #include <QApplication>
+#include <QDebug>
 
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/CameraSystem.h"
@@ -298,22 +299,39 @@ void SceneCameraSystem::Input(DAVA::UIEvent *event)
 {
     if(event->phase == UIEvent::PHASE_KEYCHAR)
     {
-        if(('+' == event->keyChar)|| ('-' == event->keyChar))
+        switch ( event->tid )
         {
-            Entity *entity = GetEntityWithEditorCamera();
-            SnapToLandscapeControllerComponent *snapComponent = GetSnapToLandscapeControllerComponent(entity);
-            if(snapComponent)
+        case DVKEY_EQUALS:
             {
-                float32 height = SettingsManager::Instance()->GetValue(Settings::Scene_CameraHeightOnLandscapeStep).AsFloat();
-                if('+' == event->keyChar)
+                qDebug() << "+";
+                auto entity = GetEntityWithEditorCamera();
+                auto snapComponent = GetSnapToLandscapeControllerComponent( entity );
+                if ( snapComponent != nullptr )
                 {
-                    snapComponent->SetHeightOnLandscape(snapComponent->GetHeightOnLandscape() + height);
-                }
-                else
-                {
-                    snapComponent->SetHeightOnLandscape(snapComponent->GetHeightOnLandscape() - height);
+                    float32 height = SettingsManager::Instance()->GetValue( Settings::Scene_CameraHeightOnLandscapeStep ).AsFloat();
+                    snapComponent->SetHeightOnLandscape( snapComponent->GetHeightOnLandscape() + height );
                 }
             }
+            break;
+        case DVKEY_MINUS:
+            {
+                qDebug() << "=";
+                auto entity = GetEntityWithEditorCamera();
+                auto snapComponent = GetSnapToLandscapeControllerComponent( entity );
+                if ( snapComponent != nullptr )
+                {
+                    float32 height = SettingsManager::Instance()->GetValue( Settings::Scene_CameraHeightOnLandscapeStep ).AsFloat();
+                    snapComponent->SetHeightOnLandscape( snapComponent->GetHeightOnLandscape() - height );
+                }
+            }
+            break;
+
+        case DVKEY_T:
+            MoveTo( Vector3( 0, 0, 200 ), Vector3( 1, 0, 0 ) );
+            break;
+
+        default:
+            break;
         }
     }
 }

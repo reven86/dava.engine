@@ -157,7 +157,7 @@ void QtLayer::KeyPressed(char16 key, int32 count, uint64 timestamp)
     Vector<UIEvent> touches;
     Vector<UIEvent> emptyTouches;
     
-    for(Vector<UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
+    for(auto it = allTouches.begin(); it != allTouches.end(); ++it)
     {
         touches.push_back(*it);
     }

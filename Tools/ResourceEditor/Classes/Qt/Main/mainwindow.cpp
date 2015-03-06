@@ -818,29 +818,29 @@ void QtMainWindow::SetupActions()
 void QtMainWindow::SetupShortCuts()
 {
 	// select mode
-	QObject::connect(ui->sceneTabWidget, SIGNAL(Escape()), this, SLOT(OnSelectMode()));
+	connect(ui->sceneTabWidget, SIGNAL(Escape()), this, SLOT(OnSelectMode()));
 	
 	// look at
-	QObject::connect(new QShortcut(QKeySequence(Qt::Key_Z), this), SIGNAL(activated()), ui->sceneTree, SLOT(LookAtSelection()));
+    connect( new QShortcut( QKeySequence( Qt::Key_Z ), ui->sceneTabWidget ), SIGNAL( activated() ), ui->sceneTree, SLOT( LookAtSelection() ) );
 	
 	// delete
-	QObject::connect(new QShortcut(QKeySequence(Qt::Key_Delete), this), SIGNAL(activated()), ui->sceneTree, SLOT(RemoveSelection()));
-	QObject::connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Backspace), this), SIGNAL(activated()), ui->sceneTree, SLOT(RemoveSelection()));
+    connect( new QShortcut( QKeySequence( Qt::Key_Delete ), ui->sceneTabWidget ), SIGNAL( activated() ), ui->sceneTree, SLOT( RemoveSelection() ) );
+    connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Backspace ), ui->sceneTabWidget ), SIGNAL( activated() ), ui->sceneTree, SLOT( RemoveSelection() ) );
 
 	// camera speed
-	QObject::connect(new QShortcut(QKeySequence(Qt::Key_1), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraSpeed0()));
-	QObject::connect(new QShortcut(QKeySequence(Qt::Key_2), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraSpeed1()));
-	QObject::connect(new QShortcut(QKeySequence(Qt::Key_3), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraSpeed2()));
-	QObject::connect(new QShortcut(QKeySequence(Qt::Key_4), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraSpeed3()));
-	QObject::connect(new QShortcut(QKeySequence(Qt::Key_T), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraLookFromTop()));
+	connect(new QShortcut(QKeySequence(Qt::Key_1), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraSpeed0()));
+	connect(new QShortcut(QKeySequence(Qt::Key_2), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraSpeed1()));
+	connect(new QShortcut(QKeySequence(Qt::Key_3), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraSpeed2()));
+	connect(new QShortcut(QKeySequence(Qt::Key_4), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraSpeed3()));
+	//connect(new QShortcut(QKeySequence(Qt::Key_T), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraLookFromTop()));
 
 	// scene tree collapse/expand
-	QObject::connect(new QShortcut(QKeySequence(Qt::Key_X), ui->sceneTree), SIGNAL(activated()), ui->sceneTree, SLOT(CollapseSwitch()));
+	connect(new QShortcut(QKeySequence(Qt::Key_X), ui->sceneTree), SIGNAL(activated()), ui->sceneTree, SLOT(CollapseSwitch()));
 	
 	//tab closing
-	QObject::connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTabWidget, SLOT(TabBarCloseCurrentRequest()));
+	connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTabWidget, SLOT(TabBarCloseCurrentRequest()));
 #if defined (__DAVAENGINE_WIN32__)
-	QObject::connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F4), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTabWidget, SLOT(TabBarCloseCurrentRequest()));
+	connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F4), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTabWidget, SLOT(TabBarCloseCurrentRequest()));
 #endif
 }
 

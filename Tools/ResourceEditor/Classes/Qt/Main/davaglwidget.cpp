@@ -164,7 +164,7 @@ void OpenGLWindow::keyPressEvent(QKeyEvent *e)
     const auto davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey( e->nativeVirtualKey() );
     if (davaKey != DVKEY_UNKNOWN)
     {
-        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed(davaKey);
+        DAVA::QtLayer::Instance()->KeyPressed( davaKey, e->count(), e->timestamp() );
     }
 }
 
