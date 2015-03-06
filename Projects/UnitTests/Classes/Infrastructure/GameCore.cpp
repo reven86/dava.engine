@@ -57,13 +57,11 @@
 #include "Tests/UnlimitedLogOutputTest.h"
 #include "Tests/SpinLockTest.h"
 #include "Tests/ThreadSyncTest.h"
-
-#include "Tests/StaticTextFieldTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
 {
-    runOnlyThisTest = "StaticTextFieldTest";
+    //runOnlyThisTest = "StaticTextFieldTest";
 }
 
 void GameCore::OnError()
@@ -99,8 +97,6 @@ void GameCore::RegisterTests()
     new NetworkTest();
     new UnlimitedLogOutputTest();
     new SpinLockTest();
-    
-    new StaticTextFieldTest();
     //$UNITTEST_CTOR
 }
 
