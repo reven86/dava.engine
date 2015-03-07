@@ -2,7 +2,7 @@
 #include <QtGui>
 #include <QItemDelegate.h>
 #include "MemoryManager/MemoryManagerTypes.h"
-
+#include <functional>
 class MyDelegate : public QItemDelegate
 {
 public:
@@ -23,10 +23,22 @@ public:
         drawCheck(painter, option, crect, enabled ? Qt::Checked : Qt::Unchecked);
     }
 };
-
+struct MemData
+{
+    DAVA::uint32 allocByApp;
+    DAVA::uint32 allocTotal;
+};
+using PoolsStat = DAVA::Vector < MemData >;
+using TagsStatVector = DAVA::Vector < PoolsStat >;
+struct TagsStat
+{
+    TagsStatVector statData;
+    DAVA::Vector<int> tagNames;
+};
 class MemProfInfoModel : public QAbstractTableModel
 {
 public:
+
     MemProfInfoModel();
     int rowCount(const QModelIndex& parent = QModelIndex()) const;
     int columnCount(const QModelIndex& parent = QModelIndex()) const; 
@@ -36,23 +48,18 @@ public:
     virtual ~MemProfInfoModel();
     void addMoreData(const DAVA::MMStat * data);
     void setConfig(const DAVA::MMStatConfig* statConfig);
+    int getCurrentTimeStamp(){ return timedData.lastKey();}
+    const TagsStat getCurrentTagStat(){ return timedData.last(); }
+    void forTagStats(std::function<void(int, const TagsStat&)> onStat);
+    void showDataToClosest(size_t closest);
+    void showLatestData();
 private:
-   
-    struct MemData
-    {
-        DAVA::uint32 allocByApp;
-        DAVA::uint32 allocTotal;
-    };
-    using PoolsStat = DAVA::Vector < MemData > ;
-    using TagsStatVector = DAVA::Vector < PoolsStat >;
-    struct TagsStat
-    {
-        TagsStatVector statData;
-        DAVA::Vector<int> tagNames;
-    };
-    
+    bool latestData = true;
+    size_t dataToShow = 0;
     QMap<int, TagsStat > timedData;
     DAVA::Vector<QString> tagNames;
     DAVA::Vector<QString> poolNames;
+    DAVA::Vector<DAVA::uint32> totals;
+    DAVA::Vector<DAVA::uint32> allocs;
 };
 

@@ -9,6 +9,7 @@
 #include "MemProfWidget.h"
 #include "qcustomplot.h"
 #include "MemProfInfoModel.h"
+#include "MemProfPlot.h"
 #include "MemoryItemStyleDelegate.h"
 #include "ui_MemProfWidget.h"
 
@@ -71,6 +72,7 @@ MemProfWidget::MemProfWidget(QWidget *parent)
     model = new MemProfInfoModel();
     tableView->setModel(model);
     tableView->setItemDelegate(new MemoryItemStyleDelegate(tableView));
+    plot->setModel(model);
 }
 
 MemProfWidget::~MemProfWidget() 
@@ -124,11 +126,7 @@ void MemProfWidget::UpdateStat(const MMStat* stat)
         total += stat->poolStat[i].allocTotal;
     }
 
-    plot->graph(0)->addData(double(stat->timestamp) / 1000., (double)alloc / (1024. * 1024.));
-    plot->graph(1)->addData(double(stat->timestamp) / 1000., (double)total / (1024. * 1024.));
-    plot->graph(0)->rescaleAxes();
-    plot->graph(1)->rescaleAxes(true);
-    plot->replot();
+  
     model->addMoreData(stat);
     UpdateLabels(stat, alloc, total);
 }
@@ -145,10 +143,10 @@ void MemProfWidget::UpdateLabels(const DAVA::MMStat* stat, DAVA::uint32 alloc, D
     labels[1].alloc->setText(MemoryItemStyleDelegate::formatMemoryData(alloc));
     labels[1].total->setText(MemoryItemStyleDelegate::formatMemoryData(total));
     labels[1].allocInternal->setText(MemoryItemStyleDelegate::formatMemoryData(stat->generalStat.allocInternal));
-    labels[1].ghostBlockCount->setText(MemoryItemStyleDelegate::formatMemoryData(stat->generalStat.ghostBlockCount));
+    labels[1].ghostBlockCount->setNum(static_cast<int>(stat->generalStat.ghostBlockCount));
     labels[1].ghostSize->setText(MemoryItemStyleDelegate::formatMemoryData(stat->generalStat.ghostSize));
     labels[1].realSize->setText(MemoryItemStyleDelegate::formatMemoryData(stat->generalStat.realSize));
-    labels[1].internalBlockCount->setText(MemoryItemStyleDelegate::formatMemoryData(stat->generalStat.internalBlockCount));
+    labels[1].internalBlockCount->setNum(static_cast<int>(stat->generalStat.internalBlockCount));
 }
 
 /*

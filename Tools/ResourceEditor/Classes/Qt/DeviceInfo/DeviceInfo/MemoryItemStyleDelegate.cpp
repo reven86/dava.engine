@@ -35,7 +35,7 @@ QString MemoryItemStyleDelegate::formatMemoryData(DAVA::uint32 mem)
         letter = letters[counter];
         counter++;
     }
-    return QString(std::to_string(memoryData).c_str()) + letter;
+    return QString(std::to_string(memoryData).c_str())+" " + letter;
 }
 QSize MemoryItemStyleDelegate::sizeHint(const QStyleOptionViewItem &option,
     const QModelIndex &index) const

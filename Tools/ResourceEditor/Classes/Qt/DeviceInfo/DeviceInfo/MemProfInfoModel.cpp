@@ -34,12 +34,24 @@ QVariant MemProfInfoModel::data(const QModelIndex& index, int role/* = Qt::Displ
         return QVariant();
     if (timedData.size() == 0)
         return QVariant();
-    auto & latestData = timedData.last();
+
     int pool = index.row();
     int tag = index.column();
-    if (tag >= latestData.statData.size() || pool >= latestData.statData[tag].size())
-        return QVariant();
-    return latestData.statData[tag][pool].allocByApp;
+    if (this->latestData)
+    {
+        const TagsStat & latestData = timedData.last();
+        if (tag >= latestData.statData.size() || pool >= latestData.statData[tag].size())
+            return QVariant();
+        return latestData.statData[tag][pool].allocByApp;
+    }
+    else
+    {
+        const TagsStat & latestData = timedData[dataToShow];
+        if (tag >= latestData.statData.size() || pool >= latestData.statData[tag].size())
+            return QVariant();
+        return latestData.statData[tag][pool].allocByApp;
+    }
+   
 }
 QVariant MemProfInfoModel::headerData(int section, Qt::Orientation orientation,
     int role /*= Qt::DisplayRole*/) const
@@ -92,7 +104,29 @@ void MemProfInfoModel::addMoreData(const DAVA::MMStat * data)
 
     timedData[data->timestamp] = tagsStat;
     endResetModel();
+   
 
+}
+void MemProfInfoModel::showDataToClosest(size_t closest)
+{
+    latestData = false;
+    auto it = timedData.begin();
+    dataToShow = 0;
+    while (it != timedData.end())
+    {
+        if (it.key() > closest)
+            break;
+        dataToShow = it.key();
+        it++;
+    }
+    beginResetModel();
+    endResetModel();
+}
+void MemProfInfoModel::showLatestData()
+{
+    latestData = true;
+    beginResetModel();
+    endResetModel();
 }
 void MemProfInfoModel::setConfig(const DAVA::MMStatConfig* statConfig)
 {
@@ -114,4 +148,13 @@ void MemProfInfoModel::setConfig(const DAVA::MMStatConfig* statConfig)
     }
     emit headerDataChanged(Qt::Horizontal, 0, columnCount());
     emit headerDataChanged(Qt::Vertical, 0, rowCount());
+}
+void MemProfInfoModel::forTagStats(std::function<void(int, const TagsStat&)> onStat)
+{
+    auto it = timedData.begin();
+    while (it != timedData.end())
+    {
+        onStat(it.key(), it.value());
+        it++;
+    }
 }

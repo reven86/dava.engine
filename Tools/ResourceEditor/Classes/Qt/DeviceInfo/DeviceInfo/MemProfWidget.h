@@ -16,6 +16,7 @@ class QFrame;
 class QToolBar;
 
 class MemProfInfoModel;
+class MemProfPlot;
 namespace DAVA
 {
 struct MMStatConfig;
@@ -50,7 +51,7 @@ private:
     
 private:
     QScopedPointer<Ui::MemProfWidget> ui;
-    QCustomPlot* plot;
+    MemProfPlot* plot;
 
     DAVA::uint32 tagCount;
     DAVA::uint32 allocPoolCount;
