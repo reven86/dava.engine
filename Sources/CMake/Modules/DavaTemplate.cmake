@@ -269,6 +269,7 @@ if( DEPLOY )
             get_filename_component( DIR_NAME ${WIN32_DATA} NAME )
             #execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${WIN32_DATA}  ${DEPLOY_DIR}/${DIR_NAME} )
             ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD 
+                COMMAND ${CMAKE_COMMAND} -E remove_directory ${DEPLOY_DIR}/${DIR_NAME}             
                 COMMAND ${CMAKE_COMMAND} -E copy_directory ${WIN32_DATA}  ${DEPLOY_DIR}/${DIR_NAME} 
             )
 
@@ -283,7 +284,9 @@ if( DEPLOY )
             string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
             set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
         endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
-              
+
+    elseif( MACOS )
+
     endif() 
 
     if( QT_PREFIX )
@@ -319,7 +322,7 @@ macro( DEPLOY_SCRIPT )
         list( APPEND COPY_LIST ${ARG_COPY_WIN32} )
     endif()
 
-    if( ARG_COPY_MACOS AND WIN32 )
+    if( ARG_COPY_MACOS AND MACOS )
         list( APPEND COPY_LIST ${ARG_COPY_MACOS} )
     endif()
 

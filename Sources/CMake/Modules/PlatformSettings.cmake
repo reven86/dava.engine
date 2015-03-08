@@ -8,7 +8,14 @@ macro( set_dava_target_properties TARGET_NAME )
 
     endif()
 
+
+    if( DEPLOY AND MACOS )
+        set_target_properties( ${TARGET_NAME} PROPERTIES XCODE_ATTRIBUTE_SYMROOT  ${DEPLOY_DIR} ) 
+
+    endif()
+
 endmacro()
+
 
 #compiller flags
 if( NOT DISABLE_DUBUG )

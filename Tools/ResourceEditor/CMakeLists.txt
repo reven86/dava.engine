@@ -88,9 +88,9 @@ set( LIBRARIES_RELEASE    ${QT_LIBRARIES} )
 set( LIBRARIES_DEBUG      ${QT_LIBRARIES} )
 set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 
-DEPLOY_SCRIPT            ( PYTHON   "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py;${CMAKE_CURRENT_LIST_DIR}/DataSource"
-                           COPY     ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin/beast32.dll  
-                           COPY_DIR ${DEPLOY_DIR}  
+DEPLOY_SCRIPT            ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py;${CMAKE_CURRENT_LIST_DIR}/DataSource"
+                           COPY_WIN32  ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin/beast32.dll  
+                           COPY_DIR    ${DEPLOY_DIR}  
                          )
 
 setup_main_executable()

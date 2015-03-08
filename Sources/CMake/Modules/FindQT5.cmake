@@ -28,7 +28,10 @@ macro ( qt_deploy )
 
 
     elseif( MACOS )
-        
+            ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD 
+                COMMAND ${QT5_PATH_MAC}/bin/macdeployqt ${DEPLOY_DIR}/${PROJECT_NAME}.app
+            )
+            
     endif()
 
 endmacro ()
