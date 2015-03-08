@@ -1,38 +1,37 @@
 #
 
 if( APPLE AND NOT IOS AND NOT ANDROID )
-	set ( MACOS 1 )
+	set( MACOS 1 )
 endif ()
 
 if( TEAMCITY_DEPLOY )
     set( OUTPUT_TO_BUILD_DIR true )
     set( IGNORE_FILE_TREE_CHECK true )
     set( DEBUG_INFO true )
+    set( DEPLOY true )
 
 endif()
 
-
 #global paths
-
-set ( DAVA_LIBRARY                     "DavaFramework" )
-set ( DAVA_ROOT_DIR                    "${CMAKE_CURRENT_LIST_DIR}/../../.." )
-set ( DAVA_PREDEFINED_TARGETS_FOLDER   "CMAKE" )
+set( DAVA_LIBRARY                       "DavaFramework" )
+set( DAVA_ROOT_DIR                      "${CMAKE_CURRENT_LIST_DIR}/../../.." )
+set( DAVA_PREDEFINED_TARGETS_FOLDER     "CMAKE" )
 
 get_filename_component( DAVA_ROOT_DIR ${DAVA_ROOT_DIR} ABSOLUTE )
 
-set ( DAVA_TOOLS_BIN_DIR               "${DAVA_ROOT_DIR}/Tools/Bin" )
-set ( DAVA_TOOLS_DIR                   "${DAVA_ROOT_DIR}/Sources/Tools" )
-set ( DAVA_ENGINE_DIR                  "${DAVA_ROOT_DIR}/Sources/Internal" )
-set ( DAVA_PLATFORM_SRC                "${DAVA_ENGINE_DIR}/Platform" )
-set ( DAVA_THIRD_PARTY_ROOT_PATH       "${DAVA_ROOT_DIR}/Libs" )
-set ( DAVA_CONFIGURE_FILES_PATH        "${DAVA_ROOT_DIR}/Sources/CMake/ConfigureFiles" )
-set ( DAVA_SCRIPTS_FILES_PATH          "${DAVA_ROOT_DIR}/Sources/CMake/Scripts" )
-set ( DAVA_THIRD_PARTY_INCLUDES_PATH   "${DAVA_THIRD_PARTY_ROOT_PATH}/include" 
-                                       "${DAVA_ENGINE_DIR}/../External" 
-                                       "${DAVA_ENGINE_DIR}/../Tools" 
-                                       "${DAVA_THIRD_PARTY_ROOT_PATH}/glew/include" 
-                                       "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod/include" 
-                                       "${DAVA_THIRD_PARTY_ROOT_PATH}/lua/include" 
+set( DAVA_TOOLS_BIN_DIR                 "${DAVA_ROOT_DIR}/Tools/Bin" )
+set( DAVA_TOOLS_DIR                     "${DAVA_ROOT_DIR}/Sources/Tools" )
+set( DAVA_ENGINE_DIR                    "${DAVA_ROOT_DIR}/Sources/Internal" )
+set( DAVA_PLATFORM_SRC                  "${DAVA_ENGINE_DIR}/Platform" )
+set( DAVA_THIRD_PARTY_ROOT_PATH         "${DAVA_ROOT_DIR}/Libs" )
+set( DAVA_CONFIGURE_FILES_PATH          "${DAVA_ROOT_DIR}/Sources/CMake/ConfigureFiles" )
+set( DAVA_SCRIPTS_FILES_PATH            "${DAVA_ROOT_DIR}/Sources/CMake/Scripts" )
+set( DAVA_THIRD_PARTY_INCLUDES_PATH     "${DAVA_THIRD_PARTY_ROOT_PATH}/include" 
+                                        "${DAVA_ENGINE_DIR}/../External" 
+                                        "${DAVA_ENGINE_DIR}/../Tools" 
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/glew/include" 
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod/include" 
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/lua/include" 
                                       ) 
 
 set( DAVA_SPEEDTREE_ROOT_DIR            "${DAVA_ROOT_DIR}/../dava.speedtree" )                                      
@@ -41,8 +40,13 @@ set( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR "${DAVA_ROOT_DIR}/../dava.resourceeditor
 get_filename_component( DAVA_SPEEDTREE_ROOT_DIR ${DAVA_SPEEDTREE_ROOT_DIR} ABSOLUTE )
 get_filename_component( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR} ABSOLUTE )
 
-set ( DAVA_BINARY_WIN32_DIR  "${DAVA_TOOLS_BIN_DIR}" "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin"  )
-set ( DAVA_INCLUDE_DIR       ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
+set( DAVA_BINARY_WIN32_DIR  "${DAVA_TOOLS_BIN_DIR}" "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin"  )
+set( DAVA_INCLUDE_DIR       ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
+
+if( NOT DEPLOY_DIR )
+    set ( DEPLOY_DIR ${CMAKE_BINARY_DIR}/app )
+
+endif()
 
 #DavaConfig
 if( CUSTOM_DAVA_CONFIG_PATH  )
@@ -62,14 +66,13 @@ else()
 
 endif()
 
-
 file( STRINGS ${DAVA_CONFIG_PATH} ConfigContents )
-foreach(NameAndValue ${ConfigContents})
-  string(REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue})
-  string(REGEX MATCH "^[^=]+" Name ${NameAndValue})
-  string(REPLACE "${Name}=" "" Value ${NameAndValue})
-  string(REGEX REPLACE " " "" Name   "${Name}")
-  string(REGEX REPLACE " " "" Value  "${Value}")
+foreach( NameAndValue ${ConfigContents} )
+  string( REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue} )
+  string( REGEX MATCH "^[^=]+" Name ${NameAndValue} ) 
+  string( REPLACE "${Name}=" "" Value ${NameAndValue} )
+  string( REGEX REPLACE " " "" Name   "${Name}" )
+  string( REGEX REPLACE " " "" Value  "${Value}" )
   if( NOT ${Name} )
       set( ${Name} "${Value}" )
   endif()

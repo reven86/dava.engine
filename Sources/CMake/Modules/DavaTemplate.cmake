@@ -139,9 +139,14 @@ if( ANDROID )
 
     if( ANDROID_JAVA_ASSET )
         if( ANDROID_JAVA_ASSET_FOLDER )
-            set( ASSETS_FOLDER "/${ANDROID_JAVA_ASSET_FOLDER}" )    
+            set( ASSETS_FOLDER "${ANDROID_JAVA_ASSET_FOLDER}" )    
+
+        else()
+            get_filename_component( ASSETS_FOLDER ${ANDROID_JAVA_ASSET} NAME )
+          
         endif()
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ANDROID_JAVA_ASSET} ${CMAKE_BINARY_DIR}/assets${ASSETS_FOLDER} )
+
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ANDROID_JAVA_ASSET} ${CMAKE_BINARY_DIR}/assets/${ASSETS_FOLDER} )
     endif()
 
     if( ANDROID_ICO )
@@ -237,7 +242,6 @@ elseif ( MSVC )
 
 endif()
 
-
 list ( APPEND DAVA_FOLDERS ${DAVA_ENGINE_DIR} )
 list ( APPEND DAVA_FOLDERS ${FILE_TREE_CHECK_FOLDERS} )
 list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
@@ -254,5 +258,74 @@ foreach ( FILE ${LIBRARIES_RELEASE} )
     target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
 endforeach ()
 
+###
+
+if( DEPLOY )
+   message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
+   execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
+ 
+    if( WIN32 )
+        if( WIN32_DATA )
+            get_filename_component( DIR_NAME ${WIN32_DATA} NAME )
+            #execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${WIN32_DATA}  ${DEPLOY_DIR}/${DIR_NAME} )
+            ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD 
+                COMMAND ${CMAKE_COMMAND} -E copy_directory ${WIN32_DATA}  ${DEPLOY_DIR}/${DIR_NAME} 
+            )
+
+            foreach ( ITEM fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll )
+                execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
+            endforeach ()
+
+        endif()
+
+        set( OUTPUT_DIR "${DEPLOY_DIR}" )
+        foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+            string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+            set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
+        endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+              
+    endif() 
+
+    if( QT_PREFIX )
+        qt_deploy( )
+
+    endif()
+
+endif()
 
 endmacro ()
+
+macro( DEPLOY_SCRIPT )
+
+    if( NOT DEPLOY )
+        return()
+    endif()
+  
+
+    cmake_parse_arguments (ARG "" "" "PYTHON;COPY;COPY_WIN32;COPY_MACOS;COPY_DIR" ${ARGN})
+
+    if( NOT COPY_DIR )
+        set( COPY_DIR ${DEPLOY_DIR} )
+    endif()
+
+    execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${COPY_DIR} )
+    execute_process( COMMAND python ${ARG_PYTHON} )
+
+    if( ARG_COPY )
+        list( APPEND COPY_LIST ${ARG_COPY} )
+    endif()
+
+    if( ARG_COPY_WIN32 AND WIN32 )
+        list( APPEND COPY_LIST ${ARG_COPY_WIN32} )
+    endif()
+
+    if( ARG_COPY_MACOS AND WIN32 )
+        list( APPEND COPY_LIST ${ARG_COPY_MACOS} )
+    endif()
+
+    foreach ( ITEM ${COPY_LIST} )
+        execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM} ${COPY_DIR} )
+    endforeach ()
+
+endmacro ()
+

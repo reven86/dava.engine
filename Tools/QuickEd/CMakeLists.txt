@@ -49,6 +49,7 @@ add_subdirectory              ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" 
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO                  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
 set( MACOS_DATA                 ${CMAKE_CURRENT_LIST_DIR}/Data )
+set( WIN32_DATA                 ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_DYLIB                ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
 set( ADDED_SRC                  ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set( LIBRARIES                  ${QT_LIBRARIES} TextureTool )
