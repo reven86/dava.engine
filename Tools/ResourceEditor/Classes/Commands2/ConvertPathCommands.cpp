@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "Base/BaseTypes.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 #include "Commands2/ConvertPathCommands.h"
 
 ExpandPathCommand::ExpandPathCommand(DAVA::PathComponent* pathComponent)
@@ -108,6 +109,13 @@ DAVA::Entity* ExpandPathCommand::CreateWaypointEntity(const DAVA::PathComponent:
     wpEntity->AddComponent(wpComponent);
     wpEntity->SetName(waypoint->name);
 
+    if (waypoint->IsStarting())
+    {
+        wpComponent->SetStarting(true);
+        wpEntity->SetNotRemovable(true);
+    }
+    
+
     DAVA::Matrix4 m;
     m.SetTranslationVector(waypoint->position);
     wpEntity->SetLocalTransform(m);
@@ -176,7 +184,7 @@ CollapsePathCommand::CollapsePathCommand(DAVA::PathComponent* pathComponent)
         DAVA::Entity* wpEntity = *it;
         DVASSERT(wpEntity);
 
-        DAVA::WaypointComponent* wpComponent = static_cast<DAVA::WaypointComponent*>(wpEntity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT,0));
+        DAVA::WaypointComponent* wpComponent = GetWaypointComponent(wpEntity);
         DVASSERT(wpComponent);
 
         if (wpComponent->GetPathName() == pathName)
@@ -203,7 +211,7 @@ CollapsePathCommand::CollapsePathCommand(DAVA::PathComponent* pathComponent)
     for (DAVA::uint32 i=0; i < entityCount && itEntity != itEnd; ++i, ++itEntity)
     {
         DAVA::Entity* wpEntity = *itEntity;
-        DAVA::WaypointComponent* wpComponent = static_cast<DAVA::WaypointComponent*>(wpEntity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT,0));
+        DAVA::WaypointComponent* wpComponent = GetWaypointComponent(wpEntity);
 
         DAVA::PathComponent::Waypoint* waypoint = waypointsVec[i];
         DVASSERT(waypoint);
@@ -256,6 +264,7 @@ void CollapsePathCommand::InitWaypoint(DAVA::PathComponent::Waypoint* waypoint, 
 {
     waypoint->name = wpEntity->GetName();
     waypoint->SetProperties(wpComponent->GetProperties());
+    waypoint->SetStarting(wpComponent->IsStarting());
     DAVA::Matrix4 m = wpEntity->GetLocalTransform();
     waypoint->position = m.GetTranslationVector();
 }

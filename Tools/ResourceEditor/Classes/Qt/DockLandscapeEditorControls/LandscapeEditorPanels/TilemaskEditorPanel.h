@@ -95,8 +95,6 @@ private:
 	int32 StrengthSystemToUI(float32 systemValue);
 
 	void SplitImageToChannels(Image* image, Image*& r, Image*& g, Image*& b, Image*& a);
-	
-	UniqueHandle noBlendDrawState;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORPANEL__) */

@@ -145,6 +145,7 @@ public:
 
 	void BeginBatch(const DAVA::String &text);
 	void EndBatch();
+    bool IsBatchStarted() const;
 
 	void Exec(Command2 *command);
 	void ClearCommands(int commandId);
@@ -213,7 +214,6 @@ protected:
 
 	bool wasChanged; //deprecated
     
-    void Setup2DDrawing();
     void Setup3DDrawing();
 
 private:

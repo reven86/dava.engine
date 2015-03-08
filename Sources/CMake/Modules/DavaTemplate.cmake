@@ -267,10 +267,10 @@ if( DEPLOY )
     if( WIN32 )
         if( WIN32_DATA )
             get_filename_component( DIR_NAME ${WIN32_DATA} NAME )
-            #execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${WIN32_DATA}  ${DEPLOY_DIR}/${DIR_NAME} )
+#            execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${WIN32_DATA}  ${DEPLOY_DIR}/${DIR_NAME} )
             ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD 
-                COMMAND ${CMAKE_COMMAND} -E remove_directory ${DEPLOY_DIR}/${DIR_NAME}             
-                COMMAND ${CMAKE_COMMAND} -E copy_directory ${WIN32_DATA}  ${DEPLOY_DIR}/${DIR_NAME} 
+               COMMAND ${CMAKE_COMMAND} -E copy_directory ${WIN32_DATA}  ${DEPLOY_DIR}/${DIR_NAME}/ 
+               COMMAND ${CMAKE_COMMAND} -E remove  ${DEPLOY_DIR}/${PROJECT_NAME}.ilk
             )
 
             foreach ( ITEM fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll )
@@ -300,35 +300,32 @@ endmacro ()
 
 macro( DEPLOY_SCRIPT )
 
-    if( NOT DEPLOY )
-        return()
+    if( DEPLOY )
+        cmake_parse_arguments (ARG "" "" "PYTHON;COPY;COPY_WIN32;COPY_MACOS;COPY_DIR" ${ARGN})
+
+		if( NOT COPY_DIR )
+			set( COPY_DIR ${DEPLOY_DIR} )
+		endif()
+
+		execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${COPY_DIR} )
+		execute_process( COMMAND python ${ARG_PYTHON} )
+
+		if( ARG_COPY )
+			list( APPEND COPY_LIST ${ARG_COPY} )
+		endif()
+
+		if( ARG_COPY_WIN32 AND WIN32 )
+			list( APPEND COPY_LIST ${ARG_COPY_WIN32} )
+		endif()
+
+		if( ARG_COPY_MACOS AND MACOS )
+			list( APPEND COPY_LIST ${ARG_COPY_MACOS} )
+		endif()
+
+		foreach ( ITEM ${COPY_LIST} )
+			execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM} ${COPY_DIR} )
+		endforeach ()
+
     endif()
-  
-
-    cmake_parse_arguments (ARG "" "" "PYTHON;COPY;COPY_WIN32;COPY_MACOS;COPY_DIR" ${ARGN})
-
-    if( NOT COPY_DIR )
-        set( COPY_DIR ${DEPLOY_DIR} )
-    endif()
-
-    execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${COPY_DIR} )
-    execute_process( COMMAND python ${ARG_PYTHON} )
-
-    if( ARG_COPY )
-        list( APPEND COPY_LIST ${ARG_COPY} )
-    endif()
-
-    if( ARG_COPY_WIN32 AND WIN32 )
-        list( APPEND COPY_LIST ${ARG_COPY_WIN32} )
-    endif()
-
-    if( ARG_COPY_MACOS AND MACOS )
-        list( APPEND COPY_LIST ${ARG_COPY_MACOS} )
-    endif()
-
-    foreach ( ITEM ${COPY_LIST} )
-        execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM} ${COPY_DIR} )
-    endforeach ()
-
 endmacro ()
 

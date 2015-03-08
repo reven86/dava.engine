@@ -448,11 +448,9 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
         {
             Texture* tex = Texture::CreateFromData(imageRGB, false);
             const DAVA::Rect& rect = uiWebViewControl.GetRect();
-            Vector2 spriteSize(rect.dx, rect.dy);
             {
-                Sprite* spr = Sprite::CreateFromTexture(spriteSize, tex,
-                                                        Vector2(0.f, 0.f),
-                                                        spriteSize);
+                Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, w, h, rect.dx, rect.dy);
+                
                 uiWebViewControl.SetSprite(spr, 0);
                 SafeRelease(spr);
             }
