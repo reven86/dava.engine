@@ -278,12 +278,8 @@ void DAVA::WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
             DVASSERT(tex);
             
             DAVA::Rect rect = uiWebView.GetRect();
-            DAVA::Vector2 spriteSize(rect.dx, rect.dy);
-            DAVA::Vector2 textureSize(width, height);
             {
-                DAVA::Sprite* spr = DAVA::Sprite::CreateFromTexture(textureSize,
-                                                        tex, DAVA::Vector2(0, 0),
-                                                        spriteSize);
+                DAVA::Sprite* spr = DAVA::Sprite::CreateFromTexture(tex, 0, 0, width, height, rect.dx, rect.dy);
                 DVASSERT(spr);
                 
                 uiWebView.GetBackground()->SetSprite(spr, 0);

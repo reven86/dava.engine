@@ -102,7 +102,7 @@ void Entity::AddComponent(Component * component)
 		scene->RegisterComponent(this, component);
 }
 
-void Entity::DetachComponent(const Vector<Component *>::iterator & it)
+void Entity::DetachComponent(Vector<Component *>::iterator & it)
 {
     Component * c = *it;
 

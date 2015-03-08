@@ -207,6 +207,11 @@ void CommandStack::EndBatch()
 	}
 }
 
+bool CommandStack::IsBatchStarted() const
+{
+    return (curBatchCommand != NULL);
+}
+
 bool CommandStack::IsClean() const
 {
 	return (cleanCommandIndex == nextCommandIndex);

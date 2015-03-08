@@ -2,12 +2,16 @@
 macro( set_dava_target_properties TARGET_NAME )
     if( WARNINGS_AS_ERRORS )
        if( APPLE )
-            set_target_properties ( ${TARGET_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_TREAT_WARNINGS_AS_ERRORS  NO ) 
+            set_target_properties ( ${TARGET_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_TREAT_WARNINGS_AS_ERRORS  YES ) 
 
         endif()
 
     endif()
 
+    if( IOS )
+        set_target_properties( ${TARGET_NAME} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY iPhone/iPad )
+        
+    endif()
 
     if( DEPLOY AND MACOS )
         set_target_properties( ${TARGET_NAME} PROPERTIES XCODE_ATTRIBUTE_SYMROOT  ${DEPLOY_DIR} ) 

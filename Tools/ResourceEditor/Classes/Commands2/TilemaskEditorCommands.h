@@ -82,10 +82,8 @@ protected:
 	LandscapeProxy* landscapeProxy;
 	Rect updatedRect;
 
-	Sprite* ApplyImageToTexture(Image* image, Texture* texture);
-	void ApplyImageToSprite(Image* image, Sprite* dstSprite);
-	
-	UniqueHandle noBlendDrawState;
+	Texture * MixImageWithTexture(Image* image, Texture* texture);
+	void ApplyImageToTexture(Image* image, Texture * dstTex);
 };
 
 class SetTileColorCommand: public Command2

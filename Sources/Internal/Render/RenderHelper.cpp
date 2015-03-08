@@ -124,6 +124,7 @@ RenderHelper::RenderHelper()
 {
     renderDataObject = new RenderDataObject();
     vertexStream = renderDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
+    texCoordStream = renderDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
 
 	gDodecObject = new RenderDataObject();
 	gDodecObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, 0, gDodecVertexes);
@@ -1257,6 +1258,77 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 			RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, sizeof(gDodecIndexes) / sizeof(gDodecIndexes[0]), EIF_16, gDodecIndexes);
 		}
 	}
+
+    void RenderHelper::Set2DRenderTarget(Texture * renderTarget)
+    {
+        if (!renderTarget)
+            return;
+
+        RenderManager::Instance()->SetRenderTarget(renderTarget);
+        RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)renderTarget->GetWidth(), (float32)renderTarget->GetHeight()));
+
+        tempProjectionMatrix.glOrtho(0.0f, (float32)renderTarget->GetWidth(),  0.0f, (float32)renderTarget->GetHeight(), -1.0f, 1.0f);
+        RenderManager::SetDynamicParam(PARAM_PROJ, &tempProjectionMatrix, UPDATE_SEMANTIC_ALWAYS);
+    }
+
+    void RenderHelper::DrawTexture(Texture * texture, UniqueHandle renderState, const Rect & _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect & _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
+    {
+        if (!texture)
+            return;
+
+        RenderSystem2D::Instance()->Flush();
+        RenderSystem2D::Instance()->UpdateClip();
+
+        Rect destRect(_dstRect);
+        if (destRect.dx < 0.f || destRect.dy < 0.f)
+        {
+            Size2i targetSize;
+            Texture * currentRenderTarget = RenderManager::Instance()->GetRenderTarget();
+            if (currentRenderTarget)
+            {
+                targetSize = Size2i(currentRenderTarget->GetWidth(), currentRenderTarget->GetHeight());
+            }
+            else
+            {
+                targetSize = RenderManager::Instance()->GetFramebufferSize();
+            }
+            destRect.dx = (float32)targetSize.dx;
+            destRect.dy = (float32)targetSize.dy;
+        }
+
+        vertices[0] = vertices[4] = destRect.x;//x1
+        vertices[5] = vertices[7] = destRect.y;//y2
+        vertices[1] = vertices[3] = destRect.y + destRect.dy;//y1
+        vertices[2] = vertices[6] = destRect.x + destRect.dx;//x2
+
+        Vector2 textureSize = Vector2((float32)texture->GetWidth(), (float32)texture->GetHeight());
+
+        Rect relativeSrcRect;
+        relativeSrcRect.x = _srcRect.x / textureSize.dx;
+        relativeSrcRect.y = _srcRect.y / textureSize.dy;
+        relativeSrcRect.dx = (_srcRect.dx < 0.f) ? 1.f : _srcRect.dx / textureSize.dx;
+        relativeSrcRect.dy = (_srcRect.dy < 0.f) ? 1.f : _srcRect.dy / textureSize.dy;
+
+        texCoords[0] = texCoords[4] = relativeSrcRect.x;//x1
+        texCoords[5] = texCoords[7] = relativeSrcRect.y;//y2
+        texCoords[1] = texCoords[3] = relativeSrcRect.y + relativeSrcRect.dy;//y1
+        texCoords[2] = texCoords[6] = relativeSrcRect.x + relativeSrcRect.dx;//x2
+
+        vertexStream->Set(TYPE_FLOAT, 2, 0, vertices);
+        texCoordStream->Set(TYPE_FLOAT, 2, 0, texCoords);
+
+        TextureStateData textureStateData;
+        textureStateData.SetTexture(0, texture);
+        UniqueHandle textureState = RenderManager::Instance()->CreateTextureState(textureStateData);
+
+        RenderManager::Instance()->SetRenderEffect(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
+        RenderManager::Instance()->SetRenderState(renderState);
+        RenderManager::Instance()->SetTextureState(textureState);
+        RenderManager::Instance()->SetRenderData(renderDataObject);
+        RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
+
+        RenderManager::Instance()->ReleaseTextureState(textureState);
+    }
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 	void RenderHelper::GetLineWidthRange(int32& rangeMin, int32& rangeMax)

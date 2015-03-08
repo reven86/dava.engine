@@ -239,14 +239,21 @@ public:
     //static void DrawLineWithEndPoints(const Vector3 & pt1, const Vector3 & pt2); 
 	//static void DrawStrippedLine(Polygon2 & polygon, float lineLen, float spaceLen, float halfWidth, Texture * texture, float initialPos);
 
+    void Set2DRenderTarget(Texture * renderTarget);
+    void DrawTexture(Texture * texture, UniqueHandle renderState, const Rect & dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect & srcRect = Rect(0.f, 0.f, -1.f, -1.f));
+
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 	void GetLineWidthRange(int32& rangeMin, int32& rangeMax);
 #endif
 
 private:
     RenderDataObject * renderDataObject;
-    RenderDataStream * vertexStream; 
+    RenderDataStream * vertexStream;
+    RenderDataStream * texCoordStream;
     float32 vertices[32];
+    float32 texCoords[8];
+
+    Matrix4 tempProjectionMatrix;
 };
 	
 }
