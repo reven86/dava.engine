@@ -146,15 +146,45 @@ bool OpenGLWindow::event(QEvent *event)
 
 void OpenGLWindow::keyPressEvent(QKeyEvent *e)
 {
+    switch (e->key())
+    {
+    case Qt::Key_Alt:
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DVKEY_ALT );
+        return;
+    case Qt::Key_Control:
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DVKEY_CTRL );
+        return;
+    case Qt::Key_Shift:
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DVKEY_SHIFT );
+        return;
+    default:
+        break;
+    }
+    
     const auto davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey( e->nativeVirtualKey() );
     if (davaKey != DVKEY_UNKNOWN)
     {
-        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed(davaKey);
+        DAVA::QtLayer::Instance()->KeyPressed( davaKey, e->count(), e->timestamp() );
     }
 }
 
 void OpenGLWindow::keyReleaseEvent(QKeyEvent *e)
 {
+    switch (e->key())
+    {
+    case Qt::Key_Alt:
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DVKEY_ALT );
+        return;
+    case Qt::Key_Control:
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DVKEY_CTRL );
+        return;
+    case Qt::Key_Shift:
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DVKEY_SHIFT );
+        return;
+    default:
+        break;
+    }
+    
     const auto davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey( e->nativeVirtualKey() );
     if (davaKey != DVKEY_UNKNOWN)
     {
