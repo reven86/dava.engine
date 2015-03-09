@@ -86,7 +86,7 @@ SoundSystem::SoundSystem()
 #ifdef DAVA_FMOD_PROFILE
     initFlags |= FMOD_INIT_ENABLE_PROFILE;
 #endif
-    FMOD_RESULT initResult = fmodEventSystem->init(MAX_SOUND_VIRTUAL_CHANNELS, FMOD_INIT_NORMAL, extraDriverData);
+    FMOD_RESULT initResult = fmodEventSystem->init(MAX_SOUND_VIRTUAL_CHANNELS, initFlags, extraDriverData);
     if (initResult != FMOD_OK)
     {
         Logger::Error("Failed to initialize FMOD: %s", FMOD_ErrorString(initResult));
