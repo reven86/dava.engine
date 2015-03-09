@@ -227,8 +227,8 @@ MaterialGraphNodeConnector * MaterialGraphNode::GetInputConnector(const String &
 
 String MaterialGraphNode::GetResultFormat(const String & s1, const String & s2)
 {
-    uint32 s1Len = s1.length();
-    uint32 s2Len = s2.length();
+    uint32 s1Len = static_cast<uint32>(s1.length());
+    uint32 s2Len = static_cast<uint32>(s2.length());
     if ((s1Len == 1) || (s2Len == 1))
     {
         uint32 formatBytes = Max(s1Len, s2Len);

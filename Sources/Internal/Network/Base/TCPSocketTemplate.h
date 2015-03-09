@@ -127,7 +127,7 @@ template <typename T>
 int32 TCPSocketTemplate<T>::RemoteEndpoint(Endpoint& endpoint)
 {
     DVASSERT(true == isOpen && false == isClosing);
-    int size = endpoint.Size();
+    int size = static_cast<int>(endpoint.Size());
     return uv_tcp_getpeername(&uvhandle, endpoint.CastToSockaddr(), &size);
 }
 
@@ -198,7 +198,7 @@ int32 TCPSocketTemplate<T>::DoWrite(const Buffer* buffers, size_t bufferCount)
         writeBuffers[i] = buffers[i];
     }
 
-    return uv_write(&uvwrite, reinterpret_cast<uv_stream_t*>(&uvhandle), writeBuffers, writeBufferCount, &HandleWriteThunk);
+    return uv_write(&uvwrite, reinterpret_cast<uv_stream_t*>(&uvhandle), writeBuffers, static_cast<unsigned int>(writeBufferCount), &HandleWriteThunk);
 }
 
 template <typename T>
@@ -260,7 +260,7 @@ void TCPSocketTemplate<T>::HandleReadThunk(uv_stream_t* handle, ssize_t nread, c
     int32 error = 0;
     if(nread < 0)
     {
-        error = nread;
+        error = static_cast<int32>(nread);
         nread = 0;
     }
     TCPSocketTemplate* self = static_cast<TCPSocketTemplate*>(handle->data);

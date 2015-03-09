@@ -120,15 +120,12 @@ void VboPool::SetIndexData(uint32 offset, uint32 count, uint8* data)
 }
 
 RenderSystem2D::RenderSystem2D() 
-    : pool(NULL)
-    , spriteRenderObject(0)
-    , spriteVertexStream(0)
-    , spriteTexCoordStream(0)
-    , currentRenderTarget(0)
-    , spriteClipping(true)
-    , clipChanged(false)
+    : spriteRenderObject(0)
     , vboTemp(NULL)
     , iboTemp(NULL)
+    , spriteClipping(true)
+    , clipChanged(false)
+    , pool(NULL)
 {
 }
 
@@ -256,20 +253,19 @@ void RenderSystem2D::Reset()
 
 void RenderSystem2D::Setup2DProjection()
 {
-    Matrix4 glOrtho;
+    Texture * currentRenderTarget = RenderManager::Instance()->GetRenderTarget();
     if (currentRenderTarget)
     {
-        glOrtho.glOrtho(0.0f, (float32)currentRenderTarget->GetTexture()->GetWidth(),
-                        0.0f, (float32)currentRenderTarget->GetTexture()->GetHeight(),
+        projMatrix.glOrtho(0.0f, (float32)currentRenderTarget->GetWidth(),
+                        0.0f, (float32)currentRenderTarget->GetHeight(),
                        -1.0f, 1.0f);
     }
     else
     {
-        Size2i targetSize = RenderManager::Instance()->GetFramebufferSize();
-        glOrtho.glOrtho(0.0f, (float32)targetSize.dx, (float32)targetSize.dy, 0.0f, -1.0f, 1.0f);
+        Size2i framebufferSize = RenderManager::Instance()->GetFramebufferSize();
+        projMatrix.glOrtho(0.0f, (float32)framebufferSize.dx, (float32)framebufferSize.dy, 0.0f, -1.0f, 1.0f);
     }
-
-    projMatrix = virtualToPhysicalMatrix * glOrtho;
+    projMatrix = virtualToPhysicalMatrix * projMatrix;
     RenderManager::SetDynamicParam(PARAM_PROJ, &projMatrix, UPDATE_SEMANTIC_ALWAYS);
 }
 
@@ -368,43 +364,6 @@ void RenderSystem2D::UpdateClip()
     }
 }
 
-void RenderSystem2D::PushRenderTarget()
-{
-    renderTargetStack.push(currentRenderTarget);
-}
-
-void RenderSystem2D::PopRenderTarget()
-{
-    DVASSERT(renderTargetStack.size());
-
-    SetRenderTarget(renderTargetStack.top());
-    renderTargetStack.pop();
-}
-
-void RenderSystem2D::SetRenderTarget(Sprite * target)
-{
-    currentRenderTarget = target;
-
-    Rect viewport;
-    if (currentRenderTarget)
-    {
-        viewport.dx = (float32)currentRenderTarget->GetTexture()->GetWidth();
-        viewport.dy = (float32)currentRenderTarget->GetTexture()->GetHeight();
-        RenderManager::Instance()->SetRenderTarget(currentRenderTarget->GetTexture());
-    }
-    else
-    {
-        Size2i framebufferSize = RenderManager::Instance()->GetFramebufferSize();
-        viewport.dx = (float32)framebufferSize.dx;
-        viewport.dy = (float32)framebufferSize.dy;
-        RenderManager::Instance()->SetRenderTarget(0);
-    }
-
-    RenderManager::Instance()->SetViewport(viewport);
-
-    Setup2DProjection();
-}
-
 void RenderSystem2D::SetSpriteClipping(bool clipping)
 {
     spriteClipping = clipping;
@@ -412,7 +371,7 @@ void RenderSystem2D::SetSpriteClipping(bool clipping)
 
 bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState * drawState)
 {
-    if (RenderManager::Instance()->IsRenderTarget())
+    if (RenderManager::Instance()->GetRenderTarget() != nullptr)
         return true;
 
     Rect clipRect = currentClip;

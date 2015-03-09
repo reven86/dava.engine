@@ -215,10 +215,11 @@ void PathSystem::DrawInViewOnlyMode()
         for(DAVA::uint32 w = 0; w < waypointsCount; ++w)
         {
             const DAVA::AABBox3 wpBoundingBox(waypoints[w]->position, boxScale);
+            bool isStarting = waypoints[w]->IsStarting();
             
-            DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.3f, 0.3f, 0.0f, 0.3f));
+            DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.3f, 0.3f, isStarting? 1.0f : 0.0f, 0.3f));
             DAVA::RenderHelper::Instance()->FillBox(wpBoundingBox, pathDrawState);
-            DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.7f, 0.7f, 0.0f, 1.0f));
+            DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.7f, 0.7f, isStarting ? 0.7f : 0.0f, 1.0f));
             DAVA::RenderHelper::Instance()->DrawBox(wpBoundingBox, 1.0f, pathDrawState);
         
             //draw edges
@@ -283,7 +284,7 @@ void PathSystem::Process(DAVA::float32 timeElapsed)
                 break;
             }
             
-            if(entity->GetComponent(Component::WAYPOINT_COMPONENT) && GetPathComponent(entity->GetParent()))
+            if(GetWaypointComponent(entity) && GetPathComponent(entity->GetParent()))
             {
                 currentPath = entity->GetParent();
                 break;
@@ -313,7 +314,7 @@ void PathSystem::ProcessCommand(const Command2 *command, bool redo)
                     const DAVA::uint32 childrenCount = pathes[p]->GetChildrenCount();
                     for(DAVA::uint32 c = 0; c < childrenCount; ++c)
                     {
-                        DAVA::WaypointComponent *wp = static_cast<DAVA::WaypointComponent *>(pathes[p]->GetChild(c)->GetComponent(DAVA::Component::WAYPOINT_COMPONENT));
+                        DAVA::WaypointComponent *wp = GetWaypointComponent(pathes[p]->GetChild(c));
                         
                         if(wp && wp->GetPathName() == oldPathName)
                         {

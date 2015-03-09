@@ -95,9 +95,9 @@ Component * SkeletonComponent::Clone(Entity * toEntity)
 void SkeletonComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
     Component::Serialize(archive, serializationContext);    
-    archive->SetUInt32("skeletoncomponent.jointsCount", configJoints.size());
+    archive->SetUInt32("skeletoncomponent.jointsCount", static_cast<uint32>(configJoints.size()));
     ScopedPtr<KeyedArchive> jointsArch (new KeyedArchive());	
-    for (int32 i=0, sz = configJoints.size(); i<sz; ++i)
+    for (size_t i=0, sz = configJoints.size(); i<sz; ++i)
     {		
         const JointConfig& joint = configJoints[i];
         ScopedPtr<KeyedArchive> jointArch (new KeyedArchive());	  
@@ -110,7 +110,7 @@ void SkeletonComponent::Serialize(KeyedArchive *archive, SerializationContext *s
         jointArch->SetVector3("joint.bbox.min", joint.bbox.min);
         jointArch->SetVector3("joint.bbox.max", joint.bbox.max);
 
-        jointsArch->SetArchive(KeyedArchive::GenKeyFromIndex(i), jointArch);
+        jointsArch->SetArchive(KeyedArchive::GenKeyFromIndex(static_cast<int32>(i)), jointArch);
     }     
 
     archive->SetArchive("skeletoncomponent.joints", jointsArch);
@@ -121,7 +121,7 @@ void SkeletonComponent::Deserialize(KeyedArchive *archive, SerializationContext 
     Component::Deserialize(archive, serializationContext);
 
    
-    uint32 configJointsCount = archive->GetUInt32("skeletoncomponent.jointsCount", configJoints.size());
+    uint32 configJointsCount = archive->GetUInt32("skeletoncomponent.jointsCount", static_cast<uint32>(configJoints.size()));
     configJoints.resize(configJointsCount);
     KeyedArchive *jointsArch = archive->GetArchive("skeletoncomponent.joints");    
     for (uint32 i=0; i<configJointsCount; ++i)

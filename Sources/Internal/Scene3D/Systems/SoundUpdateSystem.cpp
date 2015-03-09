@@ -98,7 +98,7 @@ void SoundUpdateSystem::Process(float32 timeElapsed)
         ss->SetListenerPosition(listenerPosition);
         ss->SetListenerOrientation(activeCamera->GetDirection(), activeCamera->GetLeft());
 
-        uint32 autoCount = autoTriggerSounds.size();
+        uint32 autoCount = static_cast<uint32>(autoTriggerSounds.size());
         for(uint32 i = 0; i < autoCount; ++i)
         {
             AutoTriggerSound & autoTriggerSound = autoTriggerSounds[i];
@@ -149,7 +149,7 @@ void SoundUpdateSystem::RemoveEntity(Entity * entity)
 
 void SoundUpdateSystem::AddAutoTriggerSound(Entity * soundOwner, SoundEvent * sound)
 {
-    int32 soundsCount = autoTriggerSounds.size();
+    int32 soundsCount = static_cast<int32>(autoTriggerSounds.size());
     for(int32 i = 0; i < soundsCount; ++i)
     {
         if(autoTriggerSounds[i].owner == soundOwner && autoTriggerSounds[i].soundEvent == sound)
@@ -163,7 +163,7 @@ void SoundUpdateSystem::AddAutoTriggerSound(Entity * soundOwner, SoundEvent * so
 
 void SoundUpdateSystem::RemoveAutoTriggerSound(Entity * soundOwner, SoundEvent * sound /* = 0 */)
 {
-    for(int32 i = autoTriggerSounds.size() - 1; i >= 0; --i)
+    for(int32 i = static_cast<int32>(autoTriggerSounds.size() - 1); i >= 0; --i)
     {
         if(autoTriggerSounds[i].owner == soundOwner && (sound == 0 || autoTriggerSounds[i].soundEvent == sound))
         {

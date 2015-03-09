@@ -98,7 +98,7 @@ bool MongodbUpdateObject::SaveToDB(MongodbClient* dbClient)
         //Logger::Debug("MongodbUpdateObject::SaveToDB new object:");
         //updateObject->Print();
 		Logger::Debug("MongodbUpdateObject::SaveToDB return dbClient->SaveObject");
-        return dbClient->SaveObject(updateObject);
+        return dbClient->SaveDBObject(updateObject);
     }
 	Logger::Error("MongodbUpdateObject::SaveToDB return false");
     return false;

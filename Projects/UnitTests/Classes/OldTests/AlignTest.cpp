@@ -62,9 +62,9 @@ const int AlignTest::alignTypesData[] =
 
 AlignTest::AlignTest():
 TestTemplate<AlignTest>("AlignTest"),
-	currentAlignIndex(0),
-	currenTestIndex(0),
-	data(NULL)
+	data(NULL),
+    currenTestIndex(0),
+    currentAlignIndex(0)
 {	
 	
 	RegisterFunction(this, &AlignTest::MultilineEnable, Format("MultilineTest"), NULL);

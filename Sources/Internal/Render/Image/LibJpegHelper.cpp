@@ -110,7 +110,7 @@ uint32 LibJpegWrapper::GetDataSize(File *infile) const
     jpeg_mem_src( &cinfo, fileBuffer,fileSize);
     jpeg_read_header( &cinfo, true );
     infile->Seek(0,  File::SEEK_FROM_START);
-    uint32 dataSize = cinfo.src->bytes_in_buffer;
+    uint32 dataSize = static_cast<uint32>(cinfo.src->bytes_in_buffer);
     jpeg_destroy_decompress( &cinfo );
     SafeDeleteArray(fileBuffer);
     return dataSize;

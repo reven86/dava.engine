@@ -350,7 +350,7 @@ void SoundSystem::Update(float32 timeElapsed)
 
 	fmodEventSystem->update();
     
-	uint32 size = soundsToReleaseOnUpdate.size();
+	uint32 size = static_cast<uint32>(soundsToReleaseOnUpdate.size());
 	if(size)
 	{
 		for(uint32 i = 0; i < size; i++)
@@ -522,7 +522,7 @@ void SoundSystem::ReleaseFMODEventGroupData(const String & groupName)
     
 void SoundSystem::ReleaseAllEventWaveData()
 {
-    int32 topCount = toplevelGroups.size();
+    int32 topCount = static_cast<int32>(toplevelGroups.size());
     for(int32 i = 0; i < topCount; ++i)
         ReleaseFMODEventGroupData(toplevelGroups[i]);
 }
@@ -598,7 +598,7 @@ void SoundSystem::RemoveSoundEventFromGroups(SoundEvent * event)
     for(uint32 i = 0; i < (uint32)soundGroups.size(); ++i)
     {
         Vector<SoundEvent *> & events = soundGroups[i].events;
-        uint32 eventsCount = events.size();
+        uint32 eventsCount = static_cast<uint32>(events.size());
         for(uint32 k = 0; k < eventsCount; k++)
         {
             if(events[k] == event)

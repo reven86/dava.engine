@@ -69,7 +69,7 @@ void LodSystem::Process(float32 timeElapsed)
 
 	if(forceUpdateAll)
 	{
-		int32 objectCount = entities.size();
+		int32 objectCount = static_cast<int32>(entities.size());
 		for(int32 i = 0; i < objectCount; ++i)
 		{
 			Entity * entity = entities[i];
@@ -148,7 +148,7 @@ void LodSystem::AddEntity(Entity * entity)
 
 void LodSystem::RemoveEntity(Entity * entity)
 {
-	uint32 size = entities.size();
+	uint32 size = static_cast<uint32>(entities.size());
 	for(uint32 i = 0; i < size; ++i)
 	{
 		if(entities[i] == entity)
@@ -195,7 +195,7 @@ void LodSystem::UpdateEntityAfterLoad(Entity * entity)
 	}
 	else if(lod->lodLayers.size() > 0)
 	{
-        lod->currentLod = lod->lodLayers.size()-1;
+        lod->currentLod = static_cast<int32>(lod->lodLayers.size()-1);
         SetEntityLod(entity, lod->currentLod);
 	}
     
@@ -370,7 +370,7 @@ void LodSystem::LodMerger::MergeChildLods()
 	Vector<Entity*> allLods;
 	GetLodComponentsRecursive(toEntity, allLods);
 
-	uint32 count = allLods.size();
+	uint32 count = static_cast<uint32>(allLods.size());
 	for(uint32 i = 0; i < count; ++i)
 	{
         if(i == 0)

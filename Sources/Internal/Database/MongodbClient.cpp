@@ -351,7 +351,7 @@ bool MongodbClient::FindObjectByKey(const String &key, MongodbObject * foundObje
     return true;
 }
     
-bool MongodbClient::SaveObject(MongodbObject *object)
+bool MongodbClient::SaveDBObject(MongodbObject *object)
 {
     int32 status = MONGO_ERROR;
     if(IsConnected())
@@ -381,7 +381,7 @@ bool MongodbClient::SaveObject(MongodbObject *object)
     return (MONGO_OK == status);
 }
 
-bool MongodbClient::SaveObject(MongodbObject *newObject, MongodbObject *oldObject)
+bool MongodbClient::SaveDBObject(MongodbObject *newObject, MongodbObject *oldObject)
 {
     int32 status = MONGO_ERROR;
     if(IsConnected())
