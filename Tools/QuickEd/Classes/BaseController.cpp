@@ -32,6 +32,7 @@ BaseController::BaseController(QObject *parent)
     connect(&mainWindow, &MainWindow::CurrentTabChanged, this, &BaseController::SetCurrentIndex);
 
     connect(this, &BaseController::CurrentIndexChanged, &mainWindow, &MainWindow::OnCurrentIndexChanged);
+    connect(this, &BaseController::CountChanged, &mainWindow, &MainWindow::OnCountChanged);
 }
 
 BaseController::~BaseController()

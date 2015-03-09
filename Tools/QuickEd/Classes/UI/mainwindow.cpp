@@ -122,8 +122,6 @@ PackageWidget *MainWindow::GetPackageWidget() const
 void MainWindow::OnProjectIsOpenChanged(bool arg)
 {
     ui->fileSystemDockWidget->setEnabled(arg);
-    //HierarchyTreeController::Instance()->CloseProject();
-    // Update project title
     this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 }
 
