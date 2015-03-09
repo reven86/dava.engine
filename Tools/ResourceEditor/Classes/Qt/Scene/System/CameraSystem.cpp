@@ -303,7 +303,6 @@ void SceneCameraSystem::Input(DAVA::UIEvent *event)
         {
         case DVKEY_EQUALS:
             {
-                qDebug() << "+";
                 auto entity = GetEntityWithEditorCamera();
                 auto snapComponent = GetSnapToLandscapeControllerComponent( entity );
                 if ( snapComponent != nullptr )
@@ -315,7 +314,6 @@ void SceneCameraSystem::Input(DAVA::UIEvent *event)
             break;
         case DVKEY_MINUS:
             {
-                qDebug() << "=";
                 auto entity = GetEntityWithEditorCamera();
                 auto snapComponent = GetSnapToLandscapeControllerComponent( entity );
                 if ( snapComponent != nullptr )
@@ -328,6 +326,33 @@ void SceneCameraSystem::Input(DAVA::UIEvent *event)
 
         case DVKEY_T:
             MoveTo( Vector3( 0, 0, 200 ), Vector3( 1, 0, 0 ) );
+            break;
+
+        case DVKEY_Z:
+            {
+                auto sceneEditor = dynamic_cast<SceneEditor2*>(GetScene());
+                if ( sceneEditor == nullptr )
+                    break;
+
+                auto selection = sceneEditor->selectionSystem->GetSelection();
+                if ( selection.Size() > 0 )
+                {
+                    sceneEditor->cameraSystem->LookAt( selection.GetCommonBbox() );
+                }
+            }
+            break;
+
+        case DVKEY_1:
+            SetMoveSpeedArrayIndex( 0 );
+            break;
+        case DVKEY_2:
+            SetMoveSpeedArrayIndex( 1 );
+            break;
+        case DVKEY_3:
+            SetMoveSpeedArrayIndex( 2 );
+            break;
+        case DVKEY_4:
+            SetMoveSpeedArrayIndex( 3 );
             break;
 
         default:

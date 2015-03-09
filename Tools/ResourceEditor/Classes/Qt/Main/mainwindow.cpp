@@ -820,19 +820,9 @@ void QtMainWindow::SetupShortCuts()
 	// select mode
 	connect(ui->sceneTabWidget, SIGNAL(Escape()), this, SLOT(OnSelectMode()));
 	
-	// look at
-    connect( new QShortcut( QKeySequence( Qt::Key_Z ), ui->sceneTabWidget ), SIGNAL( activated() ), ui->sceneTree, SLOT( LookAtSelection() ) );
-	
 	// delete
     connect( new QShortcut( QKeySequence( Qt::Key_Delete ), ui->sceneTabWidget ), SIGNAL( activated() ), ui->sceneTree, SLOT( RemoveSelection() ) );
     connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Backspace ), ui->sceneTabWidget ), SIGNAL( activated() ), ui->sceneTree, SLOT( RemoveSelection() ) );
-
-	// camera speed
-	connect(new QShortcut(QKeySequence(Qt::Key_1), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraSpeed0()));
-	connect(new QShortcut(QKeySequence(Qt::Key_2), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraSpeed1()));
-	connect(new QShortcut(QKeySequence(Qt::Key_3), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraSpeed2()));
-	connect(new QShortcut(QKeySequence(Qt::Key_4), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraSpeed3()));
-	//connect(new QShortcut(QKeySequence(Qt::Key_T), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraLookFromTop()));
 
 	// scene tree collapse/expand
 	connect(new QShortcut(QKeySequence(Qt::Key_X), ui->sceneTree), SIGNAL(activated()), ui->sceneTree, SLOT(CollapseSwitch()));
@@ -2205,51 +2195,6 @@ void QtMainWindow::OnBeastAndSave()
 
     scene->ClearAllCommands();
     LoadUndoRedoState(scene);
-}
-
-void QtMainWindow::OnCameraSpeed0()
-{
-	SceneEditor2* sceneEditor = GetCurrentScene();
-	if(NULL != sceneEditor)
-	{
-		sceneEditor->cameraSystem->SetMoveSpeedArrayIndex(0);
-	}
-}
-
-void QtMainWindow::OnCameraSpeed1()
-{
-	SceneEditor2* sceneEditor = GetCurrentScene();
-	if(NULL != sceneEditor)
-	{
-		sceneEditor->cameraSystem->SetMoveSpeedArrayIndex(1);
-	}
-}
-
-void QtMainWindow::OnCameraSpeed2()
-{
-	SceneEditor2* sceneEditor = GetCurrentScene();
-	if(NULL != sceneEditor)
-	{
-		sceneEditor->cameraSystem->SetMoveSpeedArrayIndex(2);
-	}
-}
-
-void QtMainWindow::OnCameraSpeed3()
-{
-	SceneEditor2* sceneEditor = GetCurrentScene();
-	if(NULL != sceneEditor)
-	{
-		sceneEditor->cameraSystem->SetMoveSpeedArrayIndex(3);
-	}
-}
-
-void QtMainWindow::OnCameraLookFromTop()
-{
-	SceneEditor2* sceneEditor = GetCurrentScene();
-	if(NULL != sceneEditor)
-	{
-		sceneEditor->cameraSystem->MoveTo(DAVA::Vector3(0, 0, 200), DAVA::Vector3(1, 0, 0));
-	}
 }
 
 void QtMainWindow::RunBeast(const QString& outputPath, BeastProxy::eBeastMode mode)
