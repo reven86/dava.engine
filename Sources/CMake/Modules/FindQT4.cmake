@@ -16,10 +16,12 @@ macro ( qt_deploy )
         endforeach ()
 
     elseif( MACOS )
+
+        get_filename_component ( QT_PATH ${QT_MOC_EXECUTABLE} PATH ) 
         ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD 
-            COMMAND ${QT4_PATH_MAC}/bin/macdeployqt ${DEPLOY_DIR}/${PROJECT_NAME}.app
+            COMMAND ${QT_PATH}/macdeployqt ${DEPLOY_DIR}/${PROJECT_NAME}.app
         )
-        
+
     endif()
 
 endmacro ()

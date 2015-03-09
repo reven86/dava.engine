@@ -109,8 +109,6 @@ else()
 
 endif()
 
-set_dava_target_properties( ${PROJECT_NAME} )
-
 if( ANDROID )
     set( LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME}" CACHE PATH "Output directory for Android libs" )
 
@@ -194,23 +192,32 @@ elseif( MACOS )
                             RESOURCE "${RESOURCES_LIST}"
                           )
 
+    if( DEPLOY )
+        set( OUTPUT_DIR ${DEPLOY_DIR}/${PROJECT_NAME}.app/Contents )
+
+    else()
+        set( OUTPUT_DIR ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents )
+    endif()
+
+    set( BINARY_DIR ${OUTPUT_DIR}/MacOS/${PROJECT_NAME} )
+
     ADD_CUSTOM_COMMAND(
     TARGET ${PROJECT_NAME}
     POST_BUILD
         COMMAND   
-        install_name_tool -change @executable_path/../Frameworks/libfmodex.dylib  @executable_path/../Resources/libfmodex.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/Resources/libfmodevent.dylib  
+        install_name_tool -change @executable_path/../Frameworks/libfmodex.dylib  @executable_path/../Resources/libfmodex.dylib ${OUTPUT_DIR}/Resources/libfmodevent.dylib  
 
         COMMAND   
-        install_name_tool -change ./libfmodevent.dylib @executable_path/../Resources/libfmodevent.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}    
+        install_name_tool -change ./libfmodevent.dylib @executable_path/../Resources/libfmodevent.dylib ${BINARY_DIR}    
 
         COMMAND   
-        install_name_tool -change ./libfmodex.dylib @executable_path/../Resources/libfmodex.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}   
+        install_name_tool -change ./libfmodex.dylib @executable_path/../Resources/libfmodex.dylib ${BINARY_DIR}   
 
         COMMAND 
-        install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Resources/libIMagickHelper.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}     
+        install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Resources/libIMagickHelper.dylib ${BINARY_DIR}     
 
         COMMAND   
-        install_name_tool -change ./libTextureConverter.dylib @executable_path/../Resources/libTextureConverter.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}   
+        install_name_tool -change ./libTextureConverter.dylib @executable_path/../Resources/libTextureConverter.dylib ${BINARY_DIR}   
     )
 
 elseif ( MSVC )       
@@ -286,6 +293,7 @@ if( DEPLOY )
         endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
     elseif( MACOS )
+        set_target_properties( ${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR  ${DEPLOY_DIR} )
 
     endif() 
 

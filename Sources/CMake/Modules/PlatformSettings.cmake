@@ -1,26 +1,4 @@
 
-macro( set_dava_target_properties TARGET_NAME )
-    if( WARNINGS_AS_ERRORS )
-       if( APPLE )
-            set_target_properties ( ${TARGET_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_TREAT_WARNINGS_AS_ERRORS  YES ) 
-
-        endif()
-
-    endif()
-
-    if( IOS )
-        set_target_properties( ${TARGET_NAME} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY iPhone/iPad )
-        
-    endif()
-
-    if( DEPLOY AND MACOS )
-        set_target_properties( ${TARGET_NAME} PROPERTIES XCODE_ATTRIBUTE_SYMROOT  ${DEPLOY_DIR} ) 
-
-    endif()
-
-endmacro()
-
-
 #compiller flags
 if( NOT DISABLE_DUBUG )
     set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -D__DAVAENGINE_DEBUG__" )
@@ -35,6 +13,7 @@ elseif ( IOS     )
     set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fvisibility=hidden" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
+    set( CMAKE_XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY iPhone/iPad )
 
     set( CMAKE_IOS_SDK_ROOT Latest IOS )
     set( CMAKE_OSX_ARCHITECTURES armv7 armv7s i386 arm64 )
@@ -61,15 +40,16 @@ elseif ( WIN32)
 
 endif  ()
 
+
 ##
 
 if( WARNINGS_AS_ERRORS )
-
     if( ANDROID )
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror" ) # warnings as errors
 
     elseif( APPLE )
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror" ) # warnings as errors
+        set( CMAKE_XCODE_ATTRIBUTE_GCC_TREAT_WARNINGS_AS_ERRORS  YES )
 
     elseif( WIN32 )
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX" )
@@ -77,7 +57,6 @@ if( WARNINGS_AS_ERRORS )
     endif()
 
 endif()
-
 
 
 ##
