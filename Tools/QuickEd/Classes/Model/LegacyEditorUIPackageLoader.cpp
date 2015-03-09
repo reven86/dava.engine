@@ -364,7 +364,7 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
 }
 
 
-String LegacyEditorUIPackageLoader::GetOldPropertyName(const String &controlClassName, const String &name)
+String LegacyEditorUIPackageLoader::GetOldPropertyName(const String &controlClassName, const String &name) const
 {
     auto mapIt = propertyNamesMap.find(controlClassName);
     if (mapIt != propertyNamesMap.end())
@@ -382,7 +382,7 @@ String LegacyEditorUIPackageLoader::GetOldPropertyName(const String &controlClas
     return name;
 }
 
-String LegacyEditorUIPackageLoader::GetOldBgPrefix(const String &controlClassName, const String &name)
+String LegacyEditorUIPackageLoader::GetOldBgPrefix(const String &controlClassName, const String &name) const
 {
     if (controlClassName == "UISlider" && name != "Background")
         return name;
@@ -390,7 +390,7 @@ String LegacyEditorUIPackageLoader::GetOldBgPrefix(const String &controlClassNam
         return "";
 }
 
-String LegacyEditorUIPackageLoader::GetOldBgPostfix(const String &controlClassName, const String &name)
+String LegacyEditorUIPackageLoader::GetOldBgPostfix(const String &controlClassName, const String &name) const
 {
     if (controlClassName == "UIButton")
         return name;
