@@ -155,17 +155,17 @@ void main()
 	vec3 t = normalize (worldViewInvTransposeMatrix * inTangent);
 	vec3 b = -cross(n, t); //normalize (worldViewInvTransposeMatrix * inBinormal);
     
-    vec3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
+    vec3 toLightDirPixel = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
 #if defined(DISTANCE_ATTENUATION)
-    varPerPixelAttenuation = length(toLightDir);
+    varPerPixelAttenuation = length(toLightDirPixel);
 #endif
     //lightDir = normalize(lightDir);
     
 	// transform light and half angle vectors by tangent basis
 	vec3 v;
-	v.x = dot (toLightDir, t);
-	v.y = dot (toLightDir, b);
-	v.z = dot (toLightDir, n);
+	v.x = dot (toLightDirPixel, t);
+	v.y = dot (toLightDirPixel, b);
+	v.z = dot (toLightDirPixel, n);
     
 #if !defined(FAST_NORMALIZATION)
 	varToLightVec = v;
@@ -188,7 +188,7 @@ void main()
 	// No need to divide by two, the result is normalized anyway.
 	// vec3 halfVector = normalize((E + lightDir) / 2.0);
 #if defined(FAST_NORMALIZATION)
-	vec3 halfVector = normalize(normalize(toCameraDir) + normalize(toLightDir));
+	vec3 halfVector = normalize(normalize(toCameraDir) + normalize(toLightDirPixel));
 	v.x = dot (halfVector, t);
 	v.y = dot (halfVector, b);
 	v.z = dot (halfVector, n);

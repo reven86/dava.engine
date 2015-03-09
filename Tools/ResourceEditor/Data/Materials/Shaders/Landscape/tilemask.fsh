@@ -2,20 +2,16 @@
 uniform sampler2D tileTexture0 = 2;
 uniform sampler2D tileMask = 1;
 uniform sampler2D colorTexture = 0;
-<<<<<<< HEAD
 uniform sampler2D normalmap01 = 3;
 uniform sampler2D normalmap23 = 4;
-
-
 uniform float inGlossiness = 0.5;
 uniform float inSpecularity = 1.0;
 uniform vec3 metalFresnelReflectance = vec3(0.5, 0.5, 0.5);
 uniform float dielectricFresnelReflectance = 0.5;
-=======
-uniform sampler2D fullTiledTexture = 3;
+uniform sampler2D fullTiledTexture = 5;
 uniform sampler2D specularMap = 6;
 uniform samplerCube atmospheremap = 7;
->>>>>>> development
+
 <FRAGMENT_SHADER>
 #ifdef GL_ES
 precision highp float;
@@ -119,7 +115,7 @@ void main()
 #endif
 	
 
-#ifdef SPECULAR
+#if defined(VERTEX_LIT) && defined(SPECULAR)
 	float glossiness = pow(5000.0, inGlossiness * lightMask.a);
     float specularNorm = (glossiness + 2.0) / 8.0;
     color += varSpecularColor * pow(varNdotH, glossiness) * specularNorm;
@@ -215,11 +211,10 @@ void main()
     
     color *= 0.8;
     color += vec3(NdotL) * lightColor0 * 0.3;
-    color += vec3(specular) * lightColor0;
+    color += vec3(specular) * lightColor0 * lightMask.a;
     //color = vec3(lightMask.a);
     //color = ;
     //color = vec3(normal * 0.5 + 0.5);
-    
 #endif // PIXEL_LIT
 
 #if defined(VERTEX_FOG)
@@ -227,5 +222,5 @@ void main()
 #else
     gl_FragColor = vec4(color, 1.0);
 #endif
-    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    //gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }
