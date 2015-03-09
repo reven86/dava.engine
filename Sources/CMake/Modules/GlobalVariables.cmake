@@ -8,7 +8,6 @@ if( TEAMCITY_DEPLOY )
     set( OUTPUT_TO_BUILD_DIR true )
     set( IGNORE_FILE_TREE_CHECK true )
     set( DEBUG_INFO true )
-    set( DEPLOY true )
 
 endif()
 
