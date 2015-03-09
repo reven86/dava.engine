@@ -158,7 +158,7 @@ int SceneTabWidget::OpenTab(const DAVA::FilePath &scenePath)
     tabBar->setTabToolTip(tabIndex, scenePath.GetAbsolutePathname().c_str());
     
     OpenTabInternal(scenePath, tabIndex);
-    
+
     return tabIndex;
 }
 
@@ -180,6 +180,7 @@ void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tab
     SetCurrentTab(tabIndex);
 
     QtMainWindow::Instance()->WaitStop();
+    updateTabBarVisibility();
 }
 
 bool SceneTabWidget::TestSceneCompatibility(const DAVA::FilePath &scenePath)
@@ -219,6 +220,11 @@ bool SceneTabWidget::TestSceneCompatibility(const DAVA::FilePath &scenePath)
     return true;
 }
 
+void SceneTabWidget::updateTabBarVisibility()
+{
+    const bool visible = (tabBar->count() > 0);
+    tabBar->setVisible(visible);
+}
 
 bool SceneTabWidget::CloseTab(int index)
 {
@@ -239,7 +245,7 @@ bool SceneTabWidget::CloseTab(int index)
     
     SafeRelease(scene);
     tabBar->removeTab(index);
-
+    updateTabBarVisibility();
 
     return true;
 }

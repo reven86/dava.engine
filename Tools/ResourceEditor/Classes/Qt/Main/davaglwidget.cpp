@@ -48,6 +48,7 @@
 #include <QMouseEvent>
 #include <QDebug>
 #include <QScreen>
+#include <QDragMoveEvent>
 
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
@@ -157,6 +158,12 @@ void OpenGLWindow::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Shift:
         DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DVKEY_SHIFT );
         return;
+    case Qt::Key_CapsLock:
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DVKEY_CAPSLOCK );
+        return;
+    case Qt::Key_Meta:
+        // Ignore Win key on windows, Ctrl key on OSX
+        return;
     default:
         break;
     }
@@ -180,6 +187,12 @@ void OpenGLWindow::keyReleaseEvent(QKeyEvent *e)
         return;
     case Qt::Key_Shift:
         DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DVKEY_SHIFT );
+        return;
+    case Qt::Key_CapsLock:
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DVKEY_CAPSLOCK );
+        return;
+    case Qt::Key_Meta:
+        // Ignore Win key on windows, Ctrl key on OSX
         return;
     default:
         break;
@@ -271,6 +284,23 @@ void OpenGLWindow::wheelEvent(QWheelEvent *event)
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
 }
 
+void OpenGLWindow::handleDragMoveEvent(QDragMoveEvent* event)
+{
+    DAVA::UIEvent davaEvent;
+    auto pos = event->pos();
+    const auto currentDPR = static_cast<int>( devicePixelRatio() );
+
+    davaEvent.point = davaEvent.physPoint = Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
+    davaEvent.tid = MapQtButtonToDAVA(Qt::LeftButton);
+    davaEvent.timestamp = 0;
+    davaEvent.tapCount = 1;
+    davaEvent.phase = DAVA::UIEvent::PHASE_MOVE;    
+
+    DAVA::Vector<DAVA::UIEvent> touches;
+    touches.push_back( davaEvent );
+
+    DAVA::UIControlSystem::Instance()->OnInput( DAVA::UIEvent::PHASE_MOVE, DAVA::Vector<DAVA::UIEvent>(), touches );
+}
 
 
 DAVA::UIEvent OpenGLWindow::MapMouseEventToDAVA(const QMouseEvent *event) const
@@ -392,6 +422,7 @@ bool DavaGLWidget::eventFilter( QObject* watched, QEvent* event )
         case QEvent::DragMove:
             {
                 auto e = static_cast<QDragMoveEvent *>( event );
+                openGlWindow->handleDragMoveEvent( e );
                 e->setDropAction( Qt::LinkAction );
                 e->accept();
             }
@@ -456,6 +487,10 @@ FocusTracker::~FocusTracker()
 void FocusTracker::OnClick()
 {
     needToRestoreFocus = false;
+    if ( !isFocused )
+    {
+        glWindow->requestActivate();
+    }
 }
 
 void FocusTracker::OnEnter()
@@ -466,6 +501,10 @@ void FocusTracker::OnEnter()
 
     needToRestoreFocus = (!isFocused);
     prevWidget = QApplication::focusWidget();
+    if ( prevWidget.isNull() )
+    {
+        prevWidget = QApplication::activeWindow();
+    }
 
     const bool needToSetFocus =
         !prevWidget.isNull() &&

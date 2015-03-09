@@ -44,11 +44,14 @@
 class QOpenGLContext;
 class QOpenGLPaintDevice;
 class QExposeEvent;
+class DavaGLWidget;
 
 
 class OpenGLWindow
     : public QWindow
 {
+    friend class DavaGLWidget;
+
     Q_OBJECT
     
 signals:
@@ -76,8 +79,8 @@ protected:
     void mouseReleaseEvent(QMouseEvent * event) override;
     
     void mouseDoubleClickEvent(QMouseEvent *event) override;
-    
     void wheelEvent(QWheelEvent *) override;
+    void handleDragMoveEvent(QDragMoveEvent * event);
     
     DAVA::UIEvent MapMouseEventToDAVA(const QMouseEvent *event) const;
     DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button) const;
@@ -86,8 +89,6 @@ private:
     QOpenGLPaintDevice *paintDevice;
 };
 
-
-class DavaGLWidget;
 
 class FocusTracker
     : public QObject
