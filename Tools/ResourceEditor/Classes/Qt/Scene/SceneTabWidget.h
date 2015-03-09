@@ -131,6 +131,7 @@ protected:
 
 private:
     bool TestSceneCompatibility(const DAVA::FilePath &scenePath);
+    void updateTabBarVisibility();
 
 	int newSceneCounter;
 	SceneEditor2 *curScene;
