@@ -43,7 +43,7 @@
 
 #include "Scene3D/SceneFile/SerializationContext.h"
 
-#define LANDSCAPE_SPECULAR_LIT 1
+//#define LANDSCAPE_SPECULAR_LIT 1
 
 namespace DAVA
 {
@@ -266,9 +266,12 @@ public:
 	
 	void SetLandscapeHeight(float32 newHeight);
     
+    void Create(NMaterial *fromMaterial = NULL);
     void Save(KeyedArchive * archive, SerializationContext * serializationContext);
     void Load(KeyedArchive * archive, SerializationContext * serializationContext);
+
     DAVA_DEPRECATED(void LoadFog(KeyedArchive * archive, SerializationContext * serializationContext));
+    DAVA_DEPRECATED(void LoadMaterialProps(KeyedArchive * archive, SerializationContext * serializationContext));
     
     // TODO: Need comment here
 	bool PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * normal = 0) const;

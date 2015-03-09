@@ -36,7 +36,8 @@
 namespace DAVA
 {
 
-const FastName QualitySettingsSystem::QUALITY_OPTION_VEGETATION_ANIMATION("VEGETATION_ANIMATION");
+const FastName QualitySettingsSystem::QUALITY_OPTION_VEGETATION_ANIMATION("Vegetation Animation");
+const FastName QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW("Stencil Shadows");
 
 QualitySettingsSystem::QualitySettingsSystem()
     : curTextureQuality(0)
@@ -46,11 +47,12 @@ QualitySettingsSystem::QualitySettingsSystem()
     Load("~res:/quality.yaml");
 
     EnableOption(QUALITY_OPTION_VEGETATION_ANIMATION, true);
+    EnableOption(QUALITY_OPTION_STENCIL_SHADOW, true);
 }
 
 void QualitySettingsSystem::Load(const FilePath &path)
 {
-    Logger::Info("Trying to loading QUALITY from: %s", path.GetAbsolutePathname().c_str());
+    Logger::Info("Trying to load QUALITY from: %s", path.GetAbsolutePathname().c_str());
 
     if(path.Exists())
     {
@@ -67,7 +69,7 @@ void QualitySettingsSystem::Load(const FilePath &path)
             const YamlNode *materialGroupsNode = rootNode->Get("materials");
             if(NULL != materialGroupsNode)
             {
-                for(int i = 0; i < materialGroupsNode->GetCount(); ++i)
+                for(uint32 i = 0; i < materialGroupsNode->GetCount(); ++i)
                 {
                     const YamlNode *groupNode = materialGroupsNode->Get(i);
                     const YamlNode *name = groupNode->Get("group");
@@ -128,7 +130,7 @@ void QualitySettingsSystem::Load(const FilePath &path)
                     }
 
                     textureQualities.reserve(qualitiesNode->GetCount());
-                    for(int i = 0; i < qualitiesNode->GetCount(); ++i)
+                    for(uint32 i = 0; i < qualitiesNode->GetCount(); ++i)
                     {
                         const YamlNode *qualityNode = qualitiesNode->Get(i);
                         const YamlNode *name = qualityNode->Get("quality");
@@ -177,7 +179,7 @@ void QualitySettingsSystem::Load(const FilePath &path)
                     }
 
                     soundQualities.reserve(qualitiesNode->GetCount());
-                    for(int i = 0; i < qualitiesNode->GetCount(); ++i)
+                    for(uint32 i = 0; i < qualitiesNode->GetCount(); ++i)
                     {
                         const YamlNode *qualityNode = qualitiesNode->Get(i);
                         const YamlNode *name = qualityNode->Get("quality");
@@ -442,6 +444,16 @@ bool QualitySettingsSystem::IsOptionEnabled( const FastName & option ) const
 	}
 
 	return false;
+}
+
+int32 QualitySettingsSystem::GetOptionsCount() const
+{
+    return qualityOptions.size();
+}
+
+FastName QualitySettingsSystem::GetOptionName(int32 index) const
+{
+    return qualityOptions.keyByIndex(index);
 }
 
 void QualitySettingsSystem::UpdateEntityAfterLoad(Entity *entity)

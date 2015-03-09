@@ -76,6 +76,7 @@ void SceneValidator::ValidateScene(Scene *scene, const DAVA::FilePath &scenePath
 		if(pos != String::npos)
 		{
 			SetPathForChecking(tmp.substr(0, pos + 1));
+            sceneName = scenePath.GetFilename();
 		}
 
         ValidateSceneNode(scene, errorsLog);
@@ -144,7 +145,7 @@ void SceneValidator::ValidateScalesInternal(Entity *sceneNode, Set<String> &erro
 		|| (!FLOAT_EQUAL(sy, 1.0f))
 		|| (!FLOAT_EQUAL(sz, 1.0f)))
 	{
- 		errorsLog.insert(Format("Node %s: has scale (%.3f, %.3f, %.3f) ! Re-design level.", sceneNode->GetName().c_str(), sx, sy, sz));
+ 		errorsLog.insert(Format("Node %s: has scale (%.3f, %.3f, %.3f) ! Re-design level. Scene: %s", sceneNode->GetName().c_str(), sx, sy, sz, sceneName.c_str()));
 	}
 
 	int32 count = sceneNode->GetChildrenCount();
@@ -206,24 +207,36 @@ void SceneValidator::ValidateRenderComponent(Entity *ownerNode, Set<String> &err
 	if(ro->GetType() == RenderObject::TYPE_LANDSCAPE)
     {
         ownerNode->SetLocked(true);
-        if(ownerNode->GetLocalTransform() != DAVA::Matrix4::IDENTITY)
-        {
-            ownerNode->SetLocalTransform(DAVA::Matrix4::IDENTITY);
-            SceneEditor2 *sc = dynamic_cast<SceneEditor2 *>(ownerNode->GetScene());
-            if(sc)
-            {
-                sc->MarkAsChanged();
-            }
-            errorsLog.insert("Landscape had wrong transform. Please re-save scene.");
-        }
+        FixIdentityTransform(ownerNode, errorsLog, Format("Landscape had wrong transform. Please re-save scene: %s", sceneName.c_str()));
         
 		Landscape *landscape = static_cast<Landscape *>(ro);
         ValidateLandscape(landscape, errorsLog);
 
 		ValidateCustomColorsTexture(ownerNode, errorsLog);
     }
+    
+    if(ro->GetType() == RenderObject::TYPE_VEGETATION)
+    {
+        ownerNode->SetLocked(true);
+        FixIdentityTransform(ownerNode, errorsLog, Format("Vegetation had wrong transform. Please re-save scene: %s", sceneName.c_str()));
+    }
 }
 
+void SceneValidator::FixIdentityTransform(Entity *ownerNode,
+                          Set<String> &errorsLog,
+                          const String& errorMessage)
+{
+    if(ownerNode->GetLocalTransform() != DAVA::Matrix4::IDENTITY)
+    {
+        ownerNode->SetLocalTransform(DAVA::Matrix4::IDENTITY);
+        SceneEditor2 *sc = dynamic_cast<SceneEditor2 *>(ownerNode->GetScene());
+        if(sc)
+        {
+            sc->MarkAsChanged();
+        }
+        errorsLog.insert(errorMessage);
+    }
+}
 
 
 void SceneValidator::ValidateParticleEffectComponent(DAVA::Entity *ownerNode, Set<String> &errorsLog) const
@@ -246,7 +259,7 @@ void SceneValidator::ValidateParticleEmitter(ParticleEmitter *emitter, Set<Strin
 
     if(emitter->configPath.IsEmpty())
     {
-        errorsLog.insert(Format("Empty config path for emitter %s", emitter->name.c_str()));
+        errorsLog.insert(Format("Empty config path for emitter %s. Scene: %s", emitter->name.c_str(), sceneName.c_str()));
     }
     
     const Vector<ParticleLayer*> &layers = emitter->layers;
@@ -300,6 +313,31 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
                     }
                 }
             }
+
+            if((*it)->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_MATERIAL)
+            {
+                bool qualityGroupIsOk = false;
+                DAVA::FastName materialGroup = (*it)->GetMaterialGroup();
+
+                // if some group is set in material we should check it exists in quality system
+                if(materialGroup.IsValid())
+                {
+                    size_t qcount = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount();
+                    for(size_t q = 0; q < qcount; ++q)
+                    {
+                        if(materialGroup == DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(q))
+                        {
+                            qualityGroupIsOk = true;
+                            break;
+                        }
+                    }
+
+                    if(!qualityGroupIsOk)
+                    {
+                        errorsLog.insert(Format("Material \"%s\" has unknown quality group \"%s\"", (*it)->GetMaterialName().c_str(), materialGroup.c_str()));
+                    }
+                }
+            }
         }
 	}
 
@@ -336,7 +374,7 @@ void SceneValidator::ValidateLandscape(Landscape *landscape, Set<String> &errors
     if(!pathIsCorrect)
     {
         String path = landscape->GetHeightmapPathname().GetRelativePathname(ProjectManager::Instance()->CurProjectDataSourcePath());
-        errorsLog.insert("Wrong path of Heightmap: " + path);
+        errorsLog.insert(Format("Wrong path of Heightmap: %s. Scene: %s", path.c_str(), sceneName.c_str()));
     }
 }
 
@@ -410,11 +448,11 @@ void SceneValidator::ValidateTexture(Texture *texture, const String &validatedOb
 	{
 		if(texturePathname.IsEmpty())
 		{
-			errorsLog.insert("Texture not set for object: " + validatedObjectName);
+			errorsLog.insert(Format("Texture not set for object: %s. Scene: %s", validatedObjectName.c_str(), sceneName.c_str()));
 		}
 		else
 		{
-			errorsLog.insert("Can't load texture: " + textureInfo);
+			errorsLog.insert(Format("Can't load texture: %s. Scene: %s", textureInfo.c_str(), sceneName.c_str()));
 		}
 		return;
 	}
@@ -422,18 +460,18 @@ void SceneValidator::ValidateTexture(Texture *texture, const String &validatedOb
 	bool pathIsCorrect = ValidatePathname(texturePathname, validatedObjectName);
 	if(!pathIsCorrect)
 	{
-		errorsLog.insert("Wrong path of: " + textureInfo);
+		errorsLog.insert(Format("Wrong path of: %s. Scene: %s", textureInfo.c_str(), sceneName.c_str()));
 		return;
 	}
 	
 	if(!IsPowerOf2(texture->GetWidth()) || !IsPowerOf2(texture->GetHeight()))
 	{
-		errorsLog.insert("Wrong size of " + textureInfo);
+		errorsLog.insert(Format("Wrong size of %s. Scene: %s", textureInfo.c_str(), sceneName.c_str()));
 	}
     
     if(texture->GetWidth() > 2048 || texture->GetHeight() > 2048)
 	{
-		errorsLog.insert("Texture is too big. " + textureInfo);
+		errorsLog.insert(Format("Texture is too big: %s. Scene: %s", textureInfo.c_str(), sceneName.c_str()));
 	}
 }
 
@@ -486,13 +524,13 @@ bool SceneValidator::ValidateTexturePathname(const FilePath &pathForValidation, 
 		String::size_type extPosition = TextureDescriptor::GetSupportedTextureExtensions().find(textureExtension);
 		if(String::npos == extPosition)
 		{
-			errorsLog.insert(Format("Path %s has incorrect extension", pathForValidation.GetAbsolutePathname().c_str()));
+			errorsLog.insert(Format("Path %s has incorrect extension. Scene: %s", pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str()));
 			return false;
 		}
 	}
 	else
 	{
-		errorsLog.insert(Format("Path %s is incorrect for project %s", pathForValidation.GetAbsolutePathname().c_str(), pathForChecking.GetAbsolutePathname().c_str()));
+		errorsLog.insert(Format("Path %s is incorrect for project %s. Scene: %s", pathForValidation.GetAbsolutePathname().c_str(), pathForChecking.GetAbsolutePathname().c_str(), sceneName.c_str()));
 	}
 
 	return pathIsCorrect;
@@ -511,7 +549,7 @@ bool SceneValidator::ValidateHeightmapPathname(const FilePath &pathForValidation
         pathIsCorrect = ((String::npos != posPng) || (String::npos != posHeightmap));
         if(!pathIsCorrect)
         {
-            errorsLog.insert(Format("Heightmap path %s is wrong", pathForValidation.GetAbsolutePathname().c_str()));
+            errorsLog.insert(Format("Heightmap path %s is wrong. Scene: %s", pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str()));
             return false;
         }
         
@@ -531,7 +569,7 @@ bool SceneValidator::ValidateHeightmapPathname(const FilePath &pathForValidation
         if(!pathIsCorrect)
         {
             SafeRelease(heightmap);
-            errorsLog.insert(Format("Can't load Heightmap from path %s", pathForValidation.GetAbsolutePathname().c_str()));
+            errorsLog.insert(Format("Can't load Heightmap from path %s. Scene: %s", pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str()));
             return false;
         }
         
@@ -539,7 +577,7 @@ bool SceneValidator::ValidateHeightmapPathname(const FilePath &pathForValidation
         pathIsCorrect = IsPowerOf2(heightmap->Size() - 1);
         if(!pathIsCorrect)
         {
-            errorsLog.insert(Format("Heightmap %s has wrong size", pathForValidation.GetAbsolutePathname().c_str()));
+            errorsLog.insert(Format("Heightmap %s has wrong size. Scene: %s", pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str()));
         }
         
         SafeRelease(heightmap);
@@ -547,7 +585,7 @@ bool SceneValidator::ValidateHeightmapPathname(const FilePath &pathForValidation
 	}
 	else
 	{
-		errorsLog.insert(Format("Path %s is incorrect for project %s", pathForValidation.GetAbsolutePathname().c_str(), pathForChecking.GetAbsolutePathname().c_str()));
+		errorsLog.insert(Format("Path %s is incorrect for project %s.", pathForValidation.GetAbsolutePathname().c_str(), pathForChecking.GetAbsolutePathname().c_str()));
 	}
 
 	return pathIsCorrect;
@@ -642,13 +680,13 @@ void SceneValidator::ValidateCustomColorsTexture(Entity *landscapeEntity, Set<St
 		FilePath path = "/" + currentSaveName;
 		if(!path.IsEqualToExtension(".png"))
 		{
-			errorsLog.insert("Custom colors texture has to have .png extension.");
+			errorsLog.insert(Format("Custom colors texture has to have .png extension. Scene: %s", sceneName.c_str()));
 		}
         
         String::size_type foundPos = currentSaveName.find("DataSource/3d/");
         if(String::npos == foundPos)
         {
-			errorsLog.insert("Custom colors texture has to begin from DataSource/3d/.");
+			errorsLog.insert(Format("Custom colors texture has to begin from DataSource/3d/. Scene: %s", sceneName.c_str()));
         }
 	}
 }

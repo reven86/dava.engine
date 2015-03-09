@@ -27,13 +27,14 @@
 =====================================================================================*/
 
 
-
+#include <QCoreApplication>
 #include "QtPropertyModel.h"
 #include "QtPropertyData.h"
 
 QtPropertyModel::QtPropertyModel(QWidget *viewport, QObject* parent /* = 0 */)
 	: QAbstractItemModel(parent)
 	, trackEdit(false)
+    , needRefresh(false)
 { 
 	root = new QtPropertyData();
 	root->SetModel(this);
@@ -105,7 +106,7 @@ QVariant QtPropertyModel::data(const QModelIndex & index, int role /* = Qt::Disp
 			switch(role)
 			{
 			case Qt::DisplayRole:
-            case Qt::ToolTipRole:
+                        case Qt::ToolTipRole:
 				ret = data->GetName();
 				break;
 			case Qt::FontRole:
@@ -184,11 +185,21 @@ Qt::ItemFlags QtPropertyModel::flags(const QModelIndex & index) const
 	return ret;
 }
 
+bool QtPropertyModel::event(QEvent * e)
+{
+    if(e->type() == DataRefreshRequared)
+    {
+		emit dataChanged(QModelIndex(), QModelIndex());
+        needRefresh = false;
+    }
+
+    return QAbstractItemModel::event(e);
+}
+
 QtPropertyData* QtPropertyModel::rootItem() const
 {
 	return root;
 }
-
 
 QtPropertyData* QtPropertyModel::itemFromIndex(const QModelIndex & index) const
 {
@@ -327,18 +338,19 @@ void QtPropertyModel::DataChanged(QtPropertyData *data, int reason)
 	{
 		if(reason != QtPropertyData::VALUE_EDITED)
 		{
-			emit dataChanged(index.sibling(index.row(), 0), index);
+            // Data was changed, so we should emit signal about this.
+            // To be simple we will emit signal that all data was changed and it will cause
+            // TreeView to refresh currently visible items. But we will not allow that refresh happen more than once per main loop.
+            if(!needRefresh)
+            {
+                needRefresh = true;
+                QCoreApplication::postEvent(this, new QEvent((QEvent::Type) DataRefreshRequared));
+            }
 		}
-
-		if(trackEdit)
-		{
-			emit PropertyChanged(index);
-
-			if(reason == QtPropertyData::VALUE_EDITED)
-			{
-				emit PropertyEdited(index);
-			}
-		}
+        else if(trackEdit)
+        {
+			emit PropertyEdited(index);
+        }
 	}
 }
 

@@ -33,6 +33,7 @@
 #include "ui_davaglwidget.h"
 
 #include <QApplication>
+#include <QMessageBox>
 #include <QResizeEvent>
 #include <QTimer>
 #include <QElapsedTimer>
@@ -240,7 +241,7 @@ void DavaGLWidget::dropEvent(QDropEvent *event)
 	if (!controlData)
 		return;
 
-	CreateControlCommand* cmd = new CreateControlCommand(controlData->GetControlName(), event->pos());
+	CreateControlCommand* cmd = new CreateControlCommand(controlData->GetControlId(), event->pos());
 	CommandsController::Instance()->ExecuteCommand(cmd);
 	SafeRelease(cmd);
 }
@@ -361,4 +362,9 @@ Vector2 DavaGLWidget::GuideToInternal(const QPoint& pos)
     internalPos.y = Round(internalPos.y);
     
     return internalPos;
+}
+
+void DavaGLWidget::ShowAssertMessage(const char * message)
+{
+	QMessageBox::critical(this, "", message);
 }

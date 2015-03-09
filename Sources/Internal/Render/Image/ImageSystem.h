@@ -65,10 +65,12 @@ public:
     eErrorCode Load(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0) const;
     
     eErrorCode Load(File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0) const;
+    Image* EnsurePowerOf2Image(Image* image) const;
+    void EnsurePowerOf2Images(Vector<Image*>& images) const;
     
     eErrorCode Save(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888) const;
     
-    eErrorCode SaveAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888) const;
+    eErrorCode SaveAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888) const;
     
     eErrorCode Save(const FilePath & fileName, Image *image, PixelFormat compressionFormat = FORMAT_RGBA8888) const;
     

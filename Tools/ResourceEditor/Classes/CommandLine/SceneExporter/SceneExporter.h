@@ -54,8 +54,11 @@ public:
     
 	void EnableOptimizations( bool enable );
 
-    void ExportFile(const String &fileName, Set<String> &errorLog);
-    void ExportFolder(const String &folderName, Set<String> &errorLog);
+    void ExportSceneFile(const String &fileName, Set<String> &errorLog);
+    void ExportTextureFile(const String &fileName, Set<String> &errorLog);
+    
+    void ExportSceneFolder(const String &folderName, Set<String> &errorLog);
+    void ExportTextureFolder(const String &folderName, Set<String> &errorLog);
     
     void ExportScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog);
     

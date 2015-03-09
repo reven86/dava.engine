@@ -123,7 +123,7 @@ void Image::MakePink(bool checkers)
     if(data == NULL) return;
     
     uint32 pink = 0xffff00ff;
-    uint32 gray = (checkers) ? 0xff7f7f7f : 0xffff00ff;
+    uint32 gray = (checkers) ? 0xffffff00 : 0xffff00ff;
     bool pinkOrGray = false;
     
     uint32 * writeData = (uint32*) data;
@@ -309,8 +309,6 @@ Image* Image::CopyImageRegion(const Image* imageToCopy,
 							  uint32 newWidth, uint32 newHeight,
 							  uint32 xOffset, uint32 yOffset)
 {
-	DVASSERT(newWidth >= 0 && newHeight >= 0 && xOffset >= 0 && yOffset >= 0);
-
 	uint32 oldWidth = imageToCopy->GetWidth();
 	uint32 oldHeight = imageToCopy->GetHeight();
 	DVASSERT((newWidth + xOffset) <= oldWidth && (newHeight + yOffset) <= oldHeight);
@@ -398,5 +396,58 @@ bool Image::Save(const FilePath &path) const
 {
     return ImageSystem::Instance()->Save(path, const_cast<Image*>(this), format) == SUCCESS;
 }
+    
+
+void Image::FlipHorizontal()
+{
+	switch(format)
+	{
+	case FORMAT_A8:
+		FlipHorizontal((uint8 *)data, width, height);
+		break;
+
+	case FORMAT_A16:
+	case FORMAT_RGBA5551:
+	case FORMAT_RGBA4444:
+	case FORMAT_RGB565:
+		FlipHorizontal((uint16 *)data, width, height);
+		break;
+
+	case FORMAT_RGBA8888:
+		FlipHorizontal((uint32 *)data, width, height);
+		break;
+
+	default:
+		DVASSERT(false && "Not implemented");
+		break;
+	}
+}
+
+void Image::FlipVertical()
+{
+	switch(format)
+	{
+	case FORMAT_A8:
+		FlipVertical((uint8 *)data, width, height);
+		break;
+
+	case FORMAT_A16:
+	case FORMAT_RGBA5551:
+	case FORMAT_RGBA4444:
+	case FORMAT_RGB565:
+		FlipVertical((uint16 *)data, width, height);
+		break;
+
+	case FORMAT_RGBA8888:
+		FlipVertical((uint32 *)data, width, height);
+		break;
+
+	default:
+		DVASSERT(false && "Not implemented");
+		break;
+	}
+}
+
+    
     
 };

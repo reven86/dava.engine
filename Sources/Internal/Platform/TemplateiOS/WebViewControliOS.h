@@ -69,8 +69,6 @@ public:
     virtual int32 GetDataDetectorTypes() const;
 
 protected:
-	// Get the scale divider for Retina devices.
-	float GetScaleDivider();
 
 	//A pointer to iOS WebView.
 	void* webViewPtr;

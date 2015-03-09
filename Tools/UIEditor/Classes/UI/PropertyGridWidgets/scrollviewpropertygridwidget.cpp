@@ -148,7 +148,7 @@ void ScrollViewPropertyGridWidget::ProcessDoubleSpinBoxValueChanged(QDoubleSpinB
             return;
         }
 
-        BaseCommand* command = new ChangePropertyCommand<double>(activeMetadata, iter->second, value);
+        BaseCommand* command = new ChangeDoublePropertyCommand(activeMetadata, iter->second, value);
         CommandsController::Instance()->ExecuteCommand(command);
         SafeRelease(command);
         return;
@@ -166,10 +166,9 @@ void ScrollViewPropertyGridWidget::UpdateDoubleSpinBoxWidgetWithPropertyValue(QD
         return;
     }
 
-    bool isPropertyValueDiffers = false;
     double propertyValue = PropertiesHelper::GetAllPropertyValues<double>(this->activeMetadata,
-                                                                         curProperty.name(),
-                                                                         isPropertyValueDiffers);
+                                                                         curProperty.name());
+
     WidgetSignalsBlocker blocker(doubleSpinBoxWidget);
     doubleSpinBoxWidget->setValue(propertyValue);
     UpdateWidgetPalette(doubleSpinBoxWidget, curProperty.name());

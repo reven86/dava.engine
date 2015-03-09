@@ -171,8 +171,8 @@ public:
 	virtual ~LoggerOutput()
 	{}
 
-	virtual void Output(Logger::eLogLevel ll, const char8* text) const = 0;
-	virtual void Output(Logger::eLogLevel ll, const char16* text) const = 0;
+	virtual void Output(Logger::eLogLevel ll, const char8* text) = 0;
+	virtual void Output(Logger::eLogLevel ll, const char16* text) = 0;
 };
 
 };

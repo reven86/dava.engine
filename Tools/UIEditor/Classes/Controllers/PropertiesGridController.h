@@ -53,10 +53,10 @@ public:
     
     // Get the active tree node or nodes list.
     const HierarchyTreeNode* GetActiveTreeNode() const;
-    const HierarchyTreeController::SELECTEDCONTROLNODES GetActiveTreeNodesList() const;
+    const HierarchyTreeController::SELECTEDCONTROLNODES &GetActiveTreeNodesList() const;
 
     // Access to the active UI Control State.
-    Vector<UIControl::eControlState> GetActiveUIControlStates() const;
+    const Vector<UIControl::eControlState> &GetActiveUIControlStates() const;
     void SetActiveUIControlStates(const Vector<UIControl::eControlState>& newStates);
 
 signals:
@@ -75,7 +75,7 @@ public slots:
     
     // Emitted by Hierarchy Tree Controller when Control Nodes selection is changed
     // (can contain one or more Control Nodes).
-    void OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &selectedNodes);
+    void OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &selectedNodes, HierarchyTreeController::eExpandControlType expandType);
     
     // Selected State is changed.
 	void OnSelectedStateChanged(UIControl::eControlState newState);

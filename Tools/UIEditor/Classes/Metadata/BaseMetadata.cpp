@@ -143,15 +143,15 @@ UIControl* BaseMetadata::GetActiveUIControl() const
     return treeNodeParams[activeParamID].GetUIControl();
 }
 
-Vector<UIControl::eControlState> BaseMetadata::GetUIControlStates() const
+const Vector<UIControl::eControlState> &BaseMetadata::GetUIControlStates() const
 {
-	return this->uiControlStates;
+    return uiControlStates;
 }
 
 void BaseMetadata::SetUIControlStates(const Vector<UIControl::eControlState> &controlStates)
 {
-	this->uiControlStates = controlStates;
-	ResetActiveStateIndex();
+    uiControlStates = controlStates;
+    ResetActiveStateIndex();
 }
 
 HierarchyTreeNode* BaseMetadata::GetTreeNode(BaseMetadataParams::METADATAPARAMID paramID) const

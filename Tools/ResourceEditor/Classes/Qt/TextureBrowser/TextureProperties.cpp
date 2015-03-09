@@ -300,6 +300,8 @@ void TextureProperties::SetPropertyItemValidValues(QtPropertyDataInspMember* ite
 {
 	if(NULL != item && NULL != validValues)
 	{
+        item->ClearAllowedValues();
+        
 		for(size_t i = 0; i < validValues->GetCount(); ++i)
 		{
 			int v;

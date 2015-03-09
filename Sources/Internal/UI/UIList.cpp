@@ -34,18 +34,20 @@
 #include "UI/UIControlSystem.h"
 #include "Base/ObjectFactory.h"
 #include "FileSystem/YamlNode.h"
+#include "UI/UIYamlLoader.h"
+#include "UI/UIControlHelpers.h"
 
-namespace DAVA 
+namespace DAVA
 {
-	
+
 float32 UIListDelegate::CellWidth(UIList* /*list*/, int32 /*index*/)
 {
-	return 20.0f;
+    return 20.0f;
 };
 
 float32 UIListDelegate::CellHeight(UIList* /*list*/, int32 /*index*/)
 {
-	return 20.0f;
+    return 20.0f;
 };
 
 void UIListDelegate::OnCellSelected(UIList* /*forList*/, UIListCell* /*selectedCell*/)
@@ -55,82 +57,77 @@ void UIListDelegate::OnCellSelected(UIList* /*forList*/, UIListCell* /*selectedC
 void UIListDelegate::SaveToYaml(UIList* /*forList*/, YamlNode* /*node*/)
 {
 };
-	
-UIList::UIList(const Rect &rect, eListOrientation requiredOrientation, bool rectInAbsoluteCoordinates/* = FALSE*/)
-	:	UIControl(rect, rectInAbsoluteCoordinates)
-	,	delegate(NULL)
-	,	orientation(requiredOrientation)
-	,	scrollContainer(NULL)
-	,	scroll(NULL)
-	, 	aggregatorPath(FilePath())
+
+UIList::UIList(const Rect &rect/* = Rect()*/, eListOrientation requiredOrientation/* = ORIENTATION_VERTICAL*/)
+    : UIControl(rect)
+    , delegate(NULL)
+    , orientation(requiredOrientation)
+    , scrollContainer(NULL)
+    , scroll(NULL)
+    , aggregatorPath(FilePath())
 {
     InitAfterYaml();
 }
-		
-UIList::UIList() : delegate(NULL), orientation(ORIENTATION_VERTICAL), scrollContainer(NULL), scroll(NULL)
-{
-	InitAfterYaml();
-}
-		
+
 void UIList::InitAfterYaml()
 {
     SetInputEnabled(true, false);
     SetFocusEnabled(false);
-	clipContents = TRUE;
-	Rect r = GetRect();
-	r.x = 0;
-	r.y = 0;
-	
-	// InitAfterYaml might be called multiple times - check this and remove previous scroll, if yes.
-	if (scrollContainer)
-	{
-		RemoveControl(scrollContainer);
-		SafeRelease(scrollContainer);
-	}
+    clipContents = TRUE;
+    Rect r = GetRect();
+    r.x = 0;
+    r.y = 0;
 
-	scrollContainer = new UIControl(r);
-	AddControl(scrollContainer);
+    // InitAfterYaml might be called multiple times - check this and remove previous scroll, if yes.
+    if (scrollContainer)
+    {
+        RemoveControl(scrollContainer);
+        SafeRelease(scrollContainer);
+    }
+
+    scrollContainer = new UIControl(r);
+    AddControl(scrollContainer);
     scrollContainer->SetFocusEnabled(false);
-	
-	oldPos = 0;
-	newPos = 0;
-	
-	mainTouch = -1;
-	
-	touchHoldSize = 15;
 
-	lockTouch = FALSE;
-	
-	needRefresh = FALSE;
-	
-	if (scroll == NULL)
-	{
-		scroll = new ScrollHelper();
-	}
+    oldPos = 0;
+    newPos = 0;
+
+    mainTouch = -1;
+
+    touchHoldSize = 15;
+
+    lockTouch = FALSE;
+
+    needRefresh = FALSE;
+
+    if (scroll == NULL)
+    {
+        scroll = new ScrollHelper();
+    }
 }
 
 UIList::~UIList()
 {
-	SafeRelease(scrollContainer);
-	SafeRelease(scroll);
-	
-	for (Map<String,Vector<UIListCell*>*>::iterator mit = cellStore.begin() ; mit != cellStore.end(); mit++) 
-	{
-		for (Vector<UIListCell*>::iterator it = mit->second->begin(); it != mit->second->end(); it++) 
-		{
-			SafeRelease(*it);
-		}
-		delete mit->second;
-		mit->second = NULL;
-	}
+    SafeRelease(scrollContainer);
+    SafeRelease(scroll);
+
+    for (Map<String,Vector<UIListCell*>*>::iterator mit = cellStore.begin() ; mit != cellStore.end(); mit++)
+    {
+        for (Vector<UIListCell*>::iterator it = mit->second->begin(); it != mit->second->end(); it++)
+        {
+            SafeRelease(*it);
+        }
+        delete mit->second;
+        mit->second = NULL;
+    }
 }
 
 void UIList::ScrollTo(float delta)
 {
-	scroll->Impulse(delta * -4.8f);
+    scroll->Impulse(delta * -4.8f);
 }
 
-void UIList::SetRect(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
+void UIList::SetRect(const Rect &rect)
 {
     if(orientation == ORIENTATION_HORIZONTAL)
     {
@@ -141,18 +138,18 @@ void UIList::SetRect(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*
         scroll->SetViewSize(rect.dy);
     }
 
-	UIControl::SetRect(rect, rectInAbsoluteCoordinates);
+    UIControl::SetRect(rect);
 }
 
 void UIList::SetDelegate(UIListDelegate *newDelegate)
 {
-	delegate = newDelegate;
+    delegate = newDelegate;
     Refresh();
 }
 
 UIListDelegate * UIList::GetDelegate()
 {
-	return delegate;
+    return delegate;
 }
 
 void UIList::ScrollToElement(int32 index)
@@ -161,49 +158,49 @@ void UIList::ScrollToElement(int32 index)
     DVASSERT(0<=index && index<delegate->ElementsCount(this))
     float32 newScrollPos = 0.0f;
     if(orientation == ORIENTATION_HORIZONTAL)
-	{
+    {
         for(int32 i=0; i<index; ++i)
         {
             newScrollPos += delegate->CellWidth(this,i);
         }
-	}
-	else 
-	{
+    }
+    else
+    {
         for(int32 i=0; i<index; ++i)
         {
             newScrollPos += delegate->CellHeight(this,i);
         }
-	}
+    }
     SetScrollPosition(newScrollPos);
 }
 
-void UIList::SetOrientation(eListOrientation _orientation)
+void UIList::SetOrientation(int32 _orientation)
 {
-	orientation = _orientation;
+    orientation = (UIList::eListOrientation)_orientation;
 }
-    
+
 float32 UIList::GetScrollPosition()
 {
     return scroll->GetPosition();
 }
-    
+
 void UIList::SetScrollPosition(float32 newScrollPos)
 {
     if(needRefresh)
-	{
-		FullRefresh();
-	}
-    
+    {
+        FullRefresh();
+    }
+
     if(orientation == ORIENTATION_HORIZONTAL)
-	{
+    {
         scroll->SetPosition(-newScrollPos);
-	}
-	else 
-	{
+    }
+    else
+    {
         scroll->SetPosition(-newScrollPos);
-	}
+    }
 }
-    
+
 void UIList::ResetScrollPosition()
 {
     if(orientation == ORIENTATION_HORIZONTAL)
@@ -211,7 +208,7 @@ void UIList::ResetScrollPosition()
         scrollContainer->relativePosition.x = 0;
         scroll->SetPosition(0);
     }
-    else 
+    else
     {
         scrollContainer->relativePosition.y = 0;
         scroll->SetPosition(0);
@@ -220,135 +217,135 @@ void UIList::ResetScrollPosition()
 
 void UIList::FullRefresh()
 {
-	scrollContainer->RemoveAllControls();
-	if(!delegate)
-	{
-		return;
-	}
-	
-	needRefresh = FALSE;
-	
-	addPos = 0.0f;
-	float32 scrollAdd;
-	float32 maxSize;
-	if(orientation == ORIENTATION_HORIZONTAL)
-	{
-		scrollAdd = scrollContainer->GetRect().x;
-		maxSize = GetRect().dx;
-	}
-	else 
-	{
-		scrollAdd = scrollContainer->GetRect().y;
-		maxSize = GetRect().dy;
-	}
-	
-	scroll->SetViewSize(maxSize);
-	
-	float32 sz = 0.0f;
+    scrollContainer->RemoveAllControls();
+    if(!delegate)
+    {
+        return;
+    }
+
+    needRefresh = FALSE;
+
+    addPos = 0.0f;
+    float32 scrollAdd;
+    float32 maxSize;
+    if(orientation == ORIENTATION_HORIZONTAL)
+    {
+        scrollAdd = scrollContainer->GetRect().x;
+        maxSize = GetRect().dx;
+    }
+    else
+    {
+        scrollAdd = scrollContainer->GetRect().y;
+        maxSize = GetRect().dy;
+    }
+
+    scroll->SetViewSize(maxSize);
+
+    float32 sz = 0.0f;
     int32 elCnt = delegate->ElementsCount(this);
     int32 index = 0;
-	for (; index < elCnt; index++) 
-	{
-		float32 curPos = addPos + scrollAdd;
-		float32 size = 0.0f;
-		if(orientation == ORIENTATION_HORIZONTAL)
-		{
-			size = delegate->CellWidth(this, index);
-		}
-		else 
-		{
-			size = delegate->CellHeight(this, index);
-		}
-		
-		sz += size;
-		if(curPos + size > -maxSize)
-		{
-			AddCellAtPos(delegate->CellAtIndex(this, index), addPos, size, index);
-		}
-		
-		addPos += size;
-		if(addPos + scrollAdd > maxSize * 2.0f)
-		{
-			break;
-		}
-	}
-    
+    for (; index < elCnt; index++)
+    {
+        float32 curPos = addPos + scrollAdd;
+        float32 size = 0.0f;
+        if(orientation == ORIENTATION_HORIZONTAL)
+        {
+            size = delegate->CellWidth(this, index);
+        }
+        else
+        {
+            size = delegate->CellHeight(this, index);
+        }
+
+        sz += size;
+        if(curPos + size > -maxSize)
+        {
+            AddCellAtPos(delegate->CellAtIndex(this, index), addPos, size, index);
+        }
+
+        addPos += size;
+        if(addPos + scrollAdd > maxSize * 2.0f)
+        {
+            break;
+        }
+    }
+
     index++;
-    for (; index < elCnt; index++) 
-	{
-		if(orientation == ORIENTATION_HORIZONTAL)
-		{
-			sz += delegate->CellWidth(this, index);
-		}
-		else 
-		{
-			sz += delegate->CellHeight(this, index);
-		}
-	}
-    
-	scroll->SetElementSize(sz);
+    for (; index < elCnt; index++)
+    {
+        if(orientation == ORIENTATION_HORIZONTAL)
+        {
+            sz += delegate->CellWidth(this, index);
+        }
+        else
+        {
+            sz += delegate->CellHeight(this, index);
+        }
+    }
+
+    scroll->SetElementSize(sz);
 }
 
 void UIList::Refresh()
 {
-	needRefresh = TRUE;
+    needRefresh = TRUE;
 }
 
 void UIList::Update(float32 timeElapsed)
 {
-	if(!delegate)
-	{
-		return;
-	}
-	
-	if(needRefresh)
-	{
-		FullRefresh();
-	}
+    if(!delegate)
+    {
+        return;
+    }
 
-	float d = newPos - oldPos;
-	oldPos = newPos;
-	Rect r = scrollContainer->GetRect();
-	if(orientation == ORIENTATION_HORIZONTAL)
-	{
-		r.x = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
-	}
-	else 
-	{
-		r.y = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
-	}
-	scrollContainer->SetRect(r);
-	
-	List<UIControl*>::const_iterator it;
-	Rect viewRect = GetGeometricData().GetUnrotatedRect();//GetRect(TRUE);
-	const List<UIControl*> &scrollList = scrollContainer->GetChildren();
-	List<UIControl*> removeList;
-	
-	//removing invisible elements
-	for(it = scrollList.begin(); it != scrollList.end(); it++)
-	{
-		Rect crect = (*it)->GetGeometricData().GetUnrotatedRect();//GetRect(TRUE);
-		if(orientation == ORIENTATION_HORIZONTAL)
-		{
-			if(crect.x + crect.dx < viewRect.x - viewRect.dx || crect.x > viewRect.x + viewRect.dx*2)
-			{
-				removeList.push_back(*it);
-			}
-		}
-		else 
-		{
-			if(crect.y + crect.dy < viewRect.y - viewRect.dy || crect.y > viewRect.y + viewRect.dy*2)
-			{
-				removeList.push_back(*it);
-			}
-		}
-	}
-	for(it = removeList.begin(); it != removeList.end(); it++)
-	{
-		scrollContainer->RemoveControl((*it));
-	}
-	
-    if (!scrollList.empty()) 
+    if(needRefresh)
+    {
+        FullRefresh();
+    }
+
+    float d = newPos - oldPos;
+    oldPos = newPos;
+    Rect r = scrollContainer->GetRect();
+    if(orientation == ORIENTATION_HORIZONTAL)
+    {
+        r.x = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+    }
+    else
+    {
+        r.y = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+    }
+    scrollContainer->SetRect(r);
+
+    List<UIControl*>::const_iterator it;
+    Rect viewRect = GetGeometricData().GetUnrotatedRect();//GetRect(TRUE);
+    const List<UIControl*> &scrollList = scrollContainer->GetChildren();
+    List<UIControl*> removeList;
+
+    //removing invisible elements
+    for(it = scrollList.begin(); it != scrollList.end(); it++)
+    {
+        Rect crect = (*it)->GetGeometricData().GetUnrotatedRect();//GetRect(TRUE);
+        if(orientation == ORIENTATION_HORIZONTAL)
+        {
+            if(crect.x + crect.dx < viewRect.x - viewRect.dx || crect.x > viewRect.x + viewRect.dx*2)
+            {
+                removeList.push_back(*it);
+            }
+        }
+        else
+        {
+            if(crect.y + crect.dy < viewRect.y - viewRect.dy || crect.y > viewRect.y + viewRect.dy*2)
+            {
+                removeList.push_back(*it);
+            }
+        }
+    }
+    for(it = removeList.begin(); it != removeList.end(); it++)
+    {
+        scrollContainer->RemoveControl((*it));
+    }
+
+    if (!scrollList.empty())
     {
             //adding elements at the list end
         int32 ind = -1;
@@ -375,14 +372,14 @@ void UIList::Update(float32 timeElapsed)
                 off = scrollContainer->GetRect().x;
                 rPos = fc->GetRect().x + fc->GetRect().dx + off;
             }
-            else 
+            else
             {
                 borderPos = viewRect.dy + viewRect.dy / 2.0f;
                 off = scrollContainer->GetRect().y;
                 rPos = fc->GetRect().y + fc->GetRect().dy + off;
             }
 
-			int32 elementsCount = delegate->ElementsCount(this);
+            int32 elementsCount = delegate->ElementsCount(this);
             while(rPos < borderPos && fc->GetIndex() < elementsCount - 1)
             {
                 int32 i = fc->GetIndex() + 1;
@@ -391,7 +388,7 @@ void UIList::Update(float32 timeElapsed)
                 {
                     size = delegate->CellWidth(this, i);
                 }
-                else 
+                else
                 {
                     size = delegate->CellHeight(this, i);
                 }
@@ -400,7 +397,7 @@ void UIList::Update(float32 timeElapsed)
                     //			scroll->SetElementSize((float32)(rPos - off));
             }
         }
-        
+
             //adding elements at the list begin
         ind = maximumElementsCount;
         fc = NULL;
@@ -426,7 +423,7 @@ void UIList::Update(float32 timeElapsed)
                 off = scrollContainer->GetRect().x;
                 rPos = fc->GetRect().x + off;
             }
-            else 
+            else
             {
                 borderPos = -viewRect.dy/2.0f;
                 off = scrollContainer->GetRect().y;
@@ -440,7 +437,7 @@ void UIList::Update(float32 timeElapsed)
                 {
                     size = delegate->CellWidth(this, i);
                 }
-                else 
+                else
                 {
                     size = delegate->CellHeight(this, i);
                 }
@@ -449,22 +446,13 @@ void UIList::Update(float32 timeElapsed)
             }
         }
     }
-    else 
+    else
     {
         FullRefresh();
     }
 
 
-	
-}
 
-void UIList::Draw(const UIGeometricData &geometricData)
-{
-	if(needRefresh)
-	{
-		FullRefresh();
-	}
-	UIControl::Draw(geometricData);
 }
 
 void UIList::Input(UIEvent *currentInput)
@@ -476,324 +464,329 @@ void UIList::Input(UIEvent *currentInput)
         return;
     }
 
-	if(orientation == ORIENTATION_HORIZONTAL)
-	{
-		newPos = currentInput->point.x;
-	}
-	else 
-	{
-		newPos = currentInput->point.y;
-	}
+    if(orientation == ORIENTATION_HORIZONTAL)
+    {
+        newPos = currentInput->point.x;
+    }
+    else
+    {
+        newPos = currentInput->point.y;
+    }
 
-	switch (currentInput->phase) 
-	{
-		case UIEvent::PHASE_BEGAN:
-		{
-			lockTouch = TRUE;
-			oldPos = newPos;
-			mainTouch = currentInput->tid;
-		}
-			break;
-		case UIEvent::PHASE_DRAG:
-		{
-		}
-			break;
-		case UIEvent::PHASE_ENDED:
-		{
-			lockTouch = FALSE;
-			mainTouch = -1;
-		}
-			break;
-	}
+    switch (currentInput->phase)
+    {
+        case UIEvent::PHASE_BEGAN:
+        {
+            lockTouch = TRUE;
+            oldPos = newPos;
+            mainTouch = currentInput->tid;
+        }
+            break;
+        case UIEvent::PHASE_DRAG:
+        {
+        }
+            break;
+        case UIEvent::PHASE_ENDED:
+        {
+            lockTouch = FALSE;
+            mainTouch = -1;
+        }
+            break;
+    }
 
-	currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
+    currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
 
 bool UIList::SystemInput(UIEvent *currentInput)
 {
-	if(!GetInputEnabled() || !visible || controlState & STATE_DISABLED)
-	{
-		return false;
-	}
+    if(!GetInputEnabled() || !visible || controlState & STATE_DISABLED)
+    {
+        return false;
+    }
 
-	if(currentInput->touchLocker != this)
-	{
-		if(currentInput->phase == UIEvent::PHASE_BEGAN)
-		{
-			if(IsPointInside(currentInput->point))
-			{
-				PerformEvent(EVENT_TOUCH_DOWN);
-				Input(currentInput);
-			}
-		}
-		else if(currentInput->tid == mainTouch && currentInput->phase == UIEvent::PHASE_DRAG)
-		{
-			if(orientation == ORIENTATION_HORIZONTAL)
-			{
-				if(abs(currentInput->point.x - newPos) > touchHoldSize)
-				{
-					UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
-					newPos = currentInput->point.x;
-					return TRUE;
-				}
-			}
-			else 
-			{
-				if(abs(currentInput->point.y - newPos) > touchHoldSize)
-				{
-					UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
-					newPos = currentInput->point.y;
-					return TRUE;
-				}
-			}
-		}
-		else if(currentInput->tid == mainTouch && currentInput->phase == UIEvent::PHASE_ENDED)
-		{
-			mainTouch = -1;
-			lockTouch = false;
+    if(currentInput->touchLocker != this)
+    {
+        if(currentInput->phase == UIEvent::PHASE_BEGAN)
+        {
+            if(IsPointInside(currentInput->point))
+            {
+                PerformEvent(EVENT_TOUCH_DOWN);
+                Input(currentInput);
+            }
+        }
+        else if(currentInput->tid == mainTouch && currentInput->phase == UIEvent::PHASE_DRAG)
+        {
+            if(orientation == ORIENTATION_HORIZONTAL)
+            {
+                if(abs(currentInput->point.x - newPos) > touchHoldSize)
+                {
+                    UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
+                    newPos = currentInput->point.x;
+                    return TRUE;
+                }
+            }
+            else
+            {
+                if(abs(currentInput->point.y - newPos) > touchHoldSize)
+                {
+                    UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
+                    newPos = currentInput->point.y;
+                    return TRUE;
+                }
+            }
+        }
+        else if(currentInput->tid == mainTouch && currentInput->phase == UIEvent::PHASE_ENDED)
+        {
+            mainTouch = -1;
+            lockTouch = false;
             SetFocusEnabled(true);
             scrollContainer->SetFocusEnabled(true);
             bool retVal = UIControl::SystemInput(currentInput);
             SetFocusEnabled(false);
             scrollContainer->SetFocusEnabled(false);
             return retVal;
-		}
+        }
 
-		
 
-	}
 
-	return UIControl::SystemInput(currentInput);
+    }
+
+    return UIControl::SystemInput(currentInput);
 }
-	
+
 void UIList::OnSelectEvent(BaseObject *pCaller, void *pUserData, void *callerData)
 {
-	if(delegate)
-	{
-		delegate->OnCellSelected(this, (UIListCell*)pCaller);
-	}
+    if(delegate)
+    {
+        delegate->OnCellSelected(this, (UIListCell*)pCaller);
+    }
 }
 
 void UIList::AddCellAtPos(UIListCell *cell, float32 pos, float32 size, int32 index)
 {
-	DVASSERT(cell);
-	DVASSERT(cell->cellStore == NULL || cell->cellStore == this);
+    DVASSERT(cell);
+    DVASSERT(cell->cellStore == NULL || cell->cellStore == this);
     DVASSERT(index >= 0);
-	if(!cell->cellStore)
-	{
-		cell->cellStore = this;
-		cell->AddEvent(EVENT_TOUCH_UP_INSIDE, Message(this, &UIList::OnSelectEvent));
-		Vector<UIListCell*> *store = GetStoreVector(cell->identifier);
-		if(!store)
-		{
-			store = new Vector<UIListCell*>;
-			cellStore[cell->identifier] = store;
-		}
-		store->push_back(cell);
-	}
-	cell->currentIndex = index;
-	Rect r = cell->GetRect();
-	if(orientation == ORIENTATION_HORIZONTAL)
-	{
-		r.dx = size;
-		r.x = pos;
-	}
-	else 
-	{
-		r.dy = size;
-		r.y = pos;
-	}
-	cell->SetRect(r);
-    
+    if(!cell->cellStore)
+    {
+        cell->cellStore = this;
+        cell->AddEvent(EVENT_TOUCH_UP_INSIDE, Message(this, &UIList::OnSelectEvent));
+        Vector<UIListCell*> *store = GetStoreVector(cell->identifier);
+        if(!store)
+        {
+            store = new Vector<UIListCell*>;
+            cellStore[cell->identifier] = store;
+        }
+        store->push_back(cell);
+    }
+    cell->currentIndex = index;
+    Rect r = cell->GetRect();
+    if(orientation == ORIENTATION_HORIZONTAL)
+    {
+        r.dx = size;
+        r.x = pos;
+    }
+    else
+    {
+        r.dy = size;
+        r.y = pos;
+    }
+    cell->SetRect(r);
+
     // Full refresh removes the cells and adds them again, losing the IsVisibleForUIEditor flag
     // (see please DF-2860). So need to recover it basing on what is set on parent's level.
     cell->SetVisibleForUIEditor(GetVisibleForUIEditor());
-	scrollContainer->AddControl(cell);
-	
+    scrollContainer->AddControl(cell);
+
 }
 
 Vector<UIListCell*> *UIList::GetStoreVector(const String &cellIdentifier)
 {
-	Map<String,Vector<UIListCell*>*>::const_iterator mit;
-	mit = cellStore.find(cellIdentifier);
-	if (mit == cellStore.end())
-	{
-		return NULL;
-	}
-	
-	return mit->second;
+    Map<String,Vector<UIListCell*>*>::const_iterator mit;
+    mit = cellStore.find(cellIdentifier);
+    if (mit == cellStore.end())
+    {
+        return NULL;
+    }
+
+    return mit->second;
 }
 
 UIListCell* UIList::GetReusableCell(const String &cellIdentifier)
 {
-	Vector<UIListCell*> *store = GetStoreVector(cellIdentifier);
-	if(!store)
-	{
-		return NULL;
-	}
-	
-	for(Vector<UIListCell*>::iterator it = store->begin(); it != store->end(); it++)
-	{
-		if((*it)->GetIndex() == -1)
-		{
-			return (*it);
-		}
-	}
-	
-	return NULL;
-	
-}
-	
-const List<UIControl*> &UIList::GetVisibleCells()
-{
-	return scrollContainer->GetChildren();	
+    Vector<UIListCell*> *store = GetStoreVector(cellIdentifier);
+    if(!store)
+    {
+        return NULL;
+    }
+
+    for(Vector<UIListCell*>::iterator it = store->begin(); it != store->end(); it++)
+    {
+        if((*it)->GetIndex() == -1)
+        {
+            return (*it);
+        }
+    }
+
+    return NULL;
+
 }
 
-	
+const List<UIControl*> &UIList::GetVisibleCells()
+{
+    return scrollContainer->GetChildren();
+}
+
+
 void UIList::SetTouchHoldDelta(int32 holdDelta)
 {
-	touchHoldSize = holdDelta;
+    touchHoldSize = holdDelta;
 }
 int32 UIList::GetTouchHoldDelta()
 {
-	return touchHoldSize;
+    return touchHoldSize;
 }
 
 void UIList::SetSlowDownTime(float newValue)
 {
-	scroll->SetSlowDownTime(newValue);
+    scroll->SetSlowDownTime(newValue);
 }
 void UIList::SetBorderMoveModifer(float newValue)
 {
-	scroll->SetBorderMoveModifer(newValue);
+    scroll->SetBorderMoveModifer(newValue);
 }
 
 void UIList::SystemWillAppear()
 {
-	UIControl::SystemWillAppear();	
-	Refresh();
+    UIControl::SystemWillAppear();
+    Refresh();
 }
 
 void UIList::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 {
-	UIControl::LoadFromYamlNode(node, loader);
-		
-	const YamlNode * orientNode = node->Get("orientation");
-	if (orientNode)
-	{
-		if (orientNode->AsString() == "ORIENTATION_VERTICAL")
-			orientation = ORIENTATION_VERTICAL;
-		else if (orientNode->AsString() == "ORIENTATION_HORIZONTAL")
-			orientation = ORIENTATION_HORIZONTAL;
-		else 
-		{
-			DVASSERT(0 && "Orientation constant is wrong");
-		}
-	}
-	// Load aggregator path
-	const YamlNode * aggregatorPathNode = node->Get("aggregatorPath");
-	if (aggregatorPathNode)
-	{
-		aggregatorPath = aggregatorPathNode->AsString();
-	}
-		
-	// TODO
-	InitAfterYaml();
+    UIControl::LoadFromYamlNode(node, loader);
+
+    const YamlNode * orientNode = node->Get("orientation");
+    if (orientNode)
+    {
+        if (orientNode->AsString() == "ORIENTATION_VERTICAL")
+            orientation = ORIENTATION_VERTICAL;
+        else if (orientNode->AsString() == "ORIENTATION_HORIZONTAL")
+            orientation = ORIENTATION_HORIZONTAL;
+        else
+        {
+            DVASSERT(0 && "Orientation constant is wrong");
+        }
+    }
+    // Load aggregator path
+    const YamlNode * aggregatorPathNode = node->Get("aggregatorPath");
+    if (aggregatorPathNode)
+    {
+        aggregatorPath = aggregatorPathNode->AsString();
+    }
+
+    // TODO
+    InitAfterYaml();
 }
 
 UIControl *UIList::Clone()
 {
-	UIList *c = new UIList(GetRect(), this->orientation);
-	c->CopyDataFrom(this);
-	return c;
+    UIList *c = new UIList(GetRect(), this->orientation);
+    c->CopyDataFrom(this);
+    return c;
 }
 
 void UIList::CopyDataFrom(UIControl *srcControl)
 {
-	UIControl::CopyDataFrom(srcControl);
-	UIList* t = (UIList*) srcControl;
-	InitAfterYaml();
-	aggregatorPath = t->aggregatorPath;
-	orientation = t->orientation;
+    UIControl::CopyDataFrom(srcControl);
+    UIList* t = (UIList*) srcControl;
+    InitAfterYaml();
+    aggregatorPath = t->aggregatorPath;
+    orientation = t->orientation;
 }
 
 const FilePath & UIList::GetAggregatorPath()
 {
-	return aggregatorPath;
+    return aggregatorPath;
 }
-	
+
 void UIList::SetAggregatorPath(const FilePath &aggregatorPath)
 {
-	this->aggregatorPath = aggregatorPath;
+    this->aggregatorPath = aggregatorPath;
 }
 
 YamlNode * UIList::SaveToYamlNode(UIYamlLoader * loader)
 {
-	YamlNode *node = UIControl::SaveToYamlNode(loader);
-	//Temp variables
-	String stringValue;
+    YamlNode *node = UIControl::SaveToYamlNode(loader);
+    //Temp variables
+    String stringValue;
 
-	//Orientation
-	eListOrientation orient = this->GetOrientation();
-	switch(orient)
-	{
-		case ORIENTATION_VERTICAL:
-			stringValue = "ORIENTATION_VERTICAL";
-			break;
-		case ORIENTATION_HORIZONTAL:
-			stringValue = "ORIENTATION_HORIZONTAL";
-			break;
-		default:
-			stringValue = "ORIENTATION_VERTICAL";
-			break;
-	}
-	node->Set("orientation", stringValue);
-	
-	if (delegate)
-	{
-		// Set aggregator path from current List delegate
-		delegate->SaveToYaml(this, node);
-	}
+    //Orientation
+    eListOrientation orient = (eListOrientation)GetOrientation();
+    switch(orient)
+    {
+        case ORIENTATION_VERTICAL:
+            stringValue = "ORIENTATION_VERTICAL";
+            break;
+        case ORIENTATION_HORIZONTAL:
+            stringValue = "ORIENTATION_HORIZONTAL";
+            break;
+        default:
+            stringValue = "ORIENTATION_VERTICAL";
+            break;
+    }
+    node->Set("orientation", stringValue);
 
-	// Save aggregator path only if it is not empty
-	if (!aggregatorPath.IsEmpty())
-	{
-		node->Set("aggregatorPath", aggregatorPath.GetFrameworkPath());
-	}
-    
-	return node;
+    if (delegate)
+    {
+        // Set aggregator path from current List delegate
+        delegate->SaveToYaml(this, node);
+    }
+
+    // Save aggregator path only if it is not empty
+    if (!aggregatorPath.IsEmpty())
+    {
+        node->Set("aggregatorPath", aggregatorPath.GetFrameworkPath());
+    }
+
+    return node;
 }
 
 float32 UIList::VisibleAreaSize(UIScrollBar *forScrollBar)
 {
     return scroll->GetViewSize();
 }
-    
+
 float32 UIList::TotalAreaSize(UIScrollBar *forScrollBar)
 {
     return scroll->GetElementSize();
 }
-    
+
 float32 UIList::ViewPosition(UIScrollBar *forScrollBar)
 {
     return scroll->GetPosition();
 }
-    
+
 void UIList::OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition)
 {
     scroll->SetPosition(-newPosition);
 }
-    
+
 List<UIControl* >& UIList::GetRealChildren()
 {
-	List<UIControl* >& realChildren = UIControl::GetRealChildren();
-	realChildren.remove(scrollContainer);
-	return realChildren;
+    List<UIControl* >& realChildren = UIControl::GetRealChildren();
+    realChildren.remove(scrollContainer);
+    return realChildren;
 }
 
 void UIList::ScrollToPosition( float32 position, float32 timeSec /*= 0.3f*/ )
 {
     scroll->ScrollToPosition(-position);
+}
+
+const String UIList::GetDelegateControlPath(const UIControl *rootControl) const
+{
+    return UIControlHelpers::GetControlPath(this, rootControl);
 }
 
 };

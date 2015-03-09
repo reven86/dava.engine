@@ -30,7 +30,6 @@
 
 
 #include "HierarchyTreeAggregatorNode.h"
-#include "LibraryController.h"
 #include "ResourcesManageHelper.h"
 #include "HierarchyTreePlatformNode.h"
 #include "HierarchyTreeAggregatorControlNode.h"
@@ -48,30 +47,20 @@ HierarchyTreeAggregatorNode::HierarchyTreeAggregatorNode(HierarchyTreePlatformNo
 {
 	this->rect = rect;
 	screen->SetRect(rect);
-	
-	if (parent)
-	{
-		LibraryController::Instance()->AddControl(this);
-	}
 }
 
 HierarchyTreeAggregatorNode::HierarchyTreeAggregatorNode(HierarchyTreePlatformNode* parent,
-														 const HierarchyTreeAggregatorNode* base)
-:	HierarchyTreeScreenNode(parent, base),
+														 const HierarchyTreeAggregatorNode* base,
+                                                         bool needLoad/* = true*/)
+:	HierarchyTreeScreenNode(parent, base, needLoad),
     listDelegate(NULL)
 {
 	this->rect = base->GetRect();
 	screen->SetRect(rect);
-
-	if (parent)
-	{
-		LibraryController::Instance()->AddControl(this);
-	}
 }
 
 HierarchyTreeAggregatorNode::~HierarchyTreeAggregatorNode()
 {
-	LibraryController::Instance()->RemoveControl(this);
 	DVASSERT(childs.size() == 0);
     
     SafeRelease(listDelegate);
@@ -88,6 +77,11 @@ void HierarchyTreeAggregatorNode::RemoveChild(HierarchyTreeControlNode* node)
 	CHILDS::iterator iter = childs.find(node);
 	if (iter != childs.end())
 		childs.erase(node);
+}
+
+void HierarchyTreeAggregatorNode::ReturnTreeNodeToScene()
+{
+	HierarchyTreeScreenNode::ReturnTreeNodeToScene();
 }
 
 void HierarchyTreeAggregatorNode::SetRect(const Rect& rect)
@@ -265,7 +259,7 @@ void HierarchyTreeAggregatorNode::ReplaceAggregator(HierarchyTreeControlNode *no
 	if (list && list->GetAggregatorPath() == path)
 	{
         SafeRelease(listDelegate);
-		listDelegate = new EditorListDelegate(list->GetRect(), list->GetOrientation());
+		listDelegate = new EditorListDelegate(list);
 		// If loaded delegate has aggregator path - pass its id to delegate
 		listDelegate->SetAggregatorID(GetId());
 		// Always set a delegate for loaded UIList
@@ -312,7 +306,6 @@ void HierarchyTreeAggregatorNode::ReplaceAggregator(HierarchyTreeControlNode *no
 void HierarchyTreeAggregatorNode::SetName(const QString& name)
 {
 	HierarchyTreeScreenNode::SetName(name);
-	LibraryController::Instance()->UpdateControl(this);
 }
 
 const HierarchyTreeAggregatorNode::CHILDS& HierarchyTreeAggregatorNode::GetChilds() const

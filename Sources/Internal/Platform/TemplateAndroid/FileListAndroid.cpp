@@ -81,6 +81,8 @@ Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& pat
 				fileList.push_back(entry);
 
 				GetEnvironment()->DeleteLocalRef(item);
+				GetEnvironment()->DeleteLocalRef(cls);
+                GetEnvironment()->DeleteLocalRef(jName);
 			}
 			GetEnvironment()->DeleteLocalRef(jArray);
 		}

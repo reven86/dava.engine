@@ -38,8 +38,14 @@
  name: "SpeedTreeLeaf"
  path: SpeedTreeLeaf.material
 -
+ name: "SpeedTreeLeaf Opaque"
+ path: SpeedTreeLeaf.Opaque.material
+-
  name: "SphericalLit AllQualities SpeedTreeLeaf"
  path: SphericalLitAllQualities.SpeedTreeLeaf.material
+-
+ name: "SphericalLit AllQualities SpeedTreeLeaf Opaque"
+ path: SphericalLitAllQualities.SpeedTreeLeaf.Opaque.material
 -
  name: "SphericalLit AllQualities Textured Alphatest"
  path: SphericalLitAllQualities.Textured.Alphatest.material
@@ -49,6 +55,9 @@
 -
  name: "Textured Alphablend"
  path: Textured.Alphablend.material
+-
+ name: "Textured Alphablend with Alphamask"
+ path: Textured.Alphablend.Alphamask.material
 -
  name: "Textured Alphatest"
  path: Textured.Alphatest.material
@@ -64,6 +73,9 @@
 -
  name: "TextureLightmap Opaque"
  path: TextureLightmap.Opaque.material
+-
+ name: "TextureLightmap AllQualities Opaque"
+ path: TextureLightmapAllQualities.Opaque.material
 -
  name: "VertexColor Alphablend"
  path: VertexColor.Alphablend.material
@@ -89,8 +101,8 @@
  name: "Skyobject"
  path: Skyobject.material
 -
- name: "Landscape"
- path: TileMask.material
+ name: "Landscape AllQualities"
+ path: TileMaskAllQualities.material
 -
  name: "VertexLit Reflection"
  path: VertexLit.Reflection.Opaque.material
@@ -133,6 +145,9 @@
 -
  name: "Normalized BlinnPhong Per Vertex Alphatest + Alphablend"
  path: NormalizedBlinnPhongPerVertex.Alphatest.Alphablend.material
+-
+ name: "Normalized BlinnPhong Per Pixel Fast Opaque"
+ path: NormalizedBlinnPhongPerPixelFast.Opaque.material
 -
  name: "Normalized BlinnPhong Per Pixel Opaque"
  path: NormalizedBlinnPhongPerPixel.Opaque.material

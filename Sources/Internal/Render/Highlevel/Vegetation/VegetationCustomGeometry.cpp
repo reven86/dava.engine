@@ -338,7 +338,7 @@ void VegetationCustomGeometry::GenerateClusterPositionData(uint32 layerMaxCluste
         cluster.densityId = densityId[clusterIndex];
         cluster.matrixIndex = matrixCellX + matrixCellY * resolutionTilesPerRow[0];
         
-        DVASSERT(cluster.matrixIndex >= 0 && cluster.matrixIndex < (resolutionTilesPerRow[0] * resolutionTilesPerRow[0]));
+        DVASSERT(cluster.matrixIndex < (resolutionTilesPerRow[0] * resolutionTilesPerRow[0]));
     }
 }
 
@@ -381,7 +381,7 @@ void VegetationCustomGeometry::GenerateClusterResolutionData(uint32 layerId,
             
             clusterResolutionIndex++;
             
-            DVASSERT(resolutionData.cellIndex >= 0 && resolutionData.cellIndex < (currentTilesPerRowCount * currentTilesPerRowCount));
+            DVASSERT(resolutionData.cellIndex < (currentTilesPerRowCount * currentTilesPerRowCount));
         }
     }
     
@@ -595,7 +595,7 @@ void VegetationCustomGeometry::BuildLayer(uint32 layerId,
                                           Vector<Vector<VertexRangeData> >& vertexOffsets, //resolution-cell
                                           Vector<Vector<Vector<SortBufferData> > >& indexOffsets) //resolution-cell-direction
 {
-    DVASSERT(layerId >= 0 && layerId < maxClusters.size());
+    DVASSERT(layerId < maxClusters.size());
     
     uint32 layerMaxClusters = maxClusters[layerId];
     Vector<ClusterPositionData> clusters;

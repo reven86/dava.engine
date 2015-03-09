@@ -51,7 +51,7 @@ public:
 
     // Execute command.
     virtual void Execute() = 0;
-    
+
     // Rollback command (only for the commands which does support Undo/Redo).
     virtual void Rollback() {};
 	

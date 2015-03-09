@@ -40,21 +40,16 @@ class ImageArea : public QLabel
     Q_OBJECT
     
 public:
-    
-    ImageArea(QWidget *parent = 0);
-    
+    explicit ImageArea(QWidget *parent = 0);
     ~ImageArea();
-        
     void SetImage(const DAVA::FilePath& filePath);
-
     void SetImage(DAVA::Image* image);
-
     inline DAVA::Image* GetImage() const;
-    
     DAVA::Vector2 GetAcceptableSize() const;
+    const DAVA::FilePath& GetImagePath() const;
     
 public slots:
-    void clear();
+    void ClearArea();
     void UpdatePreviewPicture();
     
     void SetAcceptableSize(const DAVA::Vector2& size);
@@ -63,16 +58,17 @@ signals:
     
     void changed();
     
-protected:
-
+private:
     void mousePressEvent(QMouseEvent * event);
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
         
     void ConnectSignals();
+    DAVA::String GetDefaultPath() const;
     
     DAVA::Image* image;
     DAVA::Vector2 acceptableSize;
+    DAVA::FilePath imagePath;
 };
 
 inline DAVA::Image* ImageArea::GetImage() const

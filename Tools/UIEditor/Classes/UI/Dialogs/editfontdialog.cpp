@@ -68,7 +68,7 @@ EditFontDialog::EditFontDialog(const String & editFontPresetName, QDialog *paren
     dialogResult.fontPresetName = editFontPresetName;
     Font* font = EditorFontManager::Instance()->GetLocalizedFont(editFontPresetName, "default");
     
-    dialogResult.font = font ? font->Clone() : EditorFontManager::Instance()->GetDefaultFont();
+    dialogResult.font = font ? font->Clone() : EditorFontManager::Instance()->GetDefaultFont()->Clone();
     
     const Vector<String> &locales = EditorFontManager::Instance()->GetLocales();
     int32 localesCount = locales.size();
@@ -383,6 +383,13 @@ void EditFontDialog::UpdatePushButtonWidgetWithPropertyValue(QPushButton *pushBu
                 QString fontSpriteName =QString::fromStdString(fontSprite->GetRelativePathname().GetFrameworkPath());
                 //Set push button widget text - for grapics font it contains font definition and sprite names
                 buttonText = QString("%1\n%2").arg(fontDefinitionName, fontSpriteName);
+                break;
+            }
+            case Font::TYPE_DISTANCE:
+            {
+                DFFont *dfFont = static_cast<DFFont*>(fontPropertyValue);
+                //Set pushbutton widget text
+				buttonText = QString::fromStdString(dfFont->GetFontPath().GetFrameworkPath());
                 break;
             }
             default:

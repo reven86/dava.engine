@@ -1,19 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-#include "BaseTypes.h"
+
+#include "Base/BaseTypes.h"
 #if defined(__DAVAENGINE_IPHONE__)
 
 
@@ -28,6 +41,7 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 {
 	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 	DAVA::Core * core = new DAVA::Core();
+    core->SetCommandLine(argc, argv);
 	core->CreateSingletons();
 	FrameworkDidLaunched();
 	
@@ -43,16 +57,8 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
             width = [mainScreen bounds].size.height;
             height = [mainScreen bounds].size.width;
         }
-		unsigned int scale = 1;
+		unsigned int scale = [HelperAppDelegate GetScale];
 		
-		if (DAVA::Core::IsAutodetectContentScaleFactor())
-		{
-			if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
-				&& [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ]) 
-			{
-				scale = (unsigned int)[[::UIScreen mainScreen] scale];
-			}
-		}
 		DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
 		DAVA::Core::Instance()->SetPhysicalScreenSize(width*scale, height*scale);
 	}
@@ -126,6 +132,13 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     {
         DAVA::Core::Instance()->SetIsActive(false);
     }
+    
+#if defined(__DAVAENGINE_OPENGL__)
+    //    https://developer.apple.com/library/ios/documentation/3ddrawing/conceptual/opengles_programmingguide/ImplementingaMultitasking-awareOpenGLESApplication/ImplementingaMultitasking-awareOpenGLESApplication.html#//apple_ref/doc/uid/TP40008793-CH5-SW5
+    //  see Background Apps May Not Execute Commands on the Graphics Hardware
+    
+    glFinish();
+#endif
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
@@ -142,6 +155,13 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 //        NSLog(@"Sent to background by home button/switching to other app");
 //    }
 	DAVA::Core::Instance()->GoBackground(isLock);
+    
+#if defined(__DAVAENGINE_OPENGL__)
+    //    https://developer.apple.com/library/ios/documentation/3ddrawing/conceptual/opengles_programmingguide/ImplementingaMultitasking-awareOpenGLESApplication/ImplementingaMultitasking-awareOpenGLESApplication.html#//apple_ref/doc/uid/TP40008793-CH5-SW5
+    //  see Background Apps May Not Execute Commands on the Graphics Hardware
+    
+    glFinish();
+#endif
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
@@ -183,5 +203,20 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 	NSLog(@"Application termination finished");
 }
 
++ (DAVA::float32) GetScale
+{
+    DAVA::float32 retScale = 1.f;
+    if (DAVA::Core::IsAutodetectContentScaleFactor())
+    {
+        if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
+            && [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
+        {
+            retScale = [[::UIScreen mainScreen] scale];
+        }
+    }
+    
+    return retScale;
+}
+
 @end
-#endif 
+#endif

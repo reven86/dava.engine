@@ -43,6 +43,7 @@
 #include "UI/UIList.h"
 
 #include "FileSystem/LocalizationSystem.h"
+#include "AutotestingSystem.h"
 
 struct lua_State;
 
@@ -53,7 +54,9 @@ namespace DAVA
 class AutotestingSystemLuaDelegate
 {
 public:
-    virtual bool LoadWrappedLuaObjects(lua_State *luaState) = 0;
+	virtual ~AutotestingSystemLuaDelegate() {}
+
+	virtual bool LoadWrappedLuaObjects(lua_State* luaState) = 0;
 };
 #endif //SWIG
 
@@ -64,7 +67,7 @@ public:
     ~AutotestingSystemLua();
     
 #if !defined(SWIG)
-    void SetDelegate(AutotestingSystemLuaDelegate *_delegate);
+    void SetDelegate(AutotestingSystemLuaDelegate* _delegate);
 
     void InitFromFile(const String &luaFilePath);
     
@@ -75,9 +78,9 @@ public:
 	static int Print(lua_State* L);
 	int static ReqModule(lua_State* L);
 
-	void static stackDump (lua_State *L);
-	const char *pushnexttemplate (lua_State *L, const char *path);
-	const char *findfile (lua_State *L, const char *name, const char *pname);
+	void static stackDump (lua_State* L);
+	const char *pushnexttemplate (lua_State* L, const char* path);
+	const char *findfile (lua_State* L, const char* name, const char* pname);
 #endif //SWIG
     
     // autotesting system api   
@@ -96,11 +99,20 @@ public:
     // autotesting api
     UIControl *GetScreen();
     UIControl *FindControl(const String &path);
+	UIControl* FindControl(const String &path, UIControl* screen);
+	UIControl* FindControlOnPopUp(const String &path);
 	UIControl* FindControl(UIControl* srcControl, const String &controlName);
 	UIControl* FindControl(UIControl* srcControl, int32 index);
 	UIControl* FindControl(UIList* srcList, int32 index);
 
 	bool IsCenterInside(UIControl* parent, UIControl* child);
+	
+	bool IsListHorisontal(UIControl* control);
+	float32 GetListScrollPosition(UIControl* control);
+	float32 GetMaxListOffsetSize(UIControl* control);
+
+	Vector2 GetContainerScrollPosition(UIControl* control);
+	Vector2 GetMaxContainerOffsetSize(UIControl* control);
 
     void TouchDown(const Vector2 &point, int32 touchId);
     void TouchMove(const Vector2 &point, int32 touchId);
@@ -113,32 +125,37 @@ public:
 
     // helpers
     bool SetText(const String &path, const String &text); // lua uses ansi strings
-    bool CheckText(UIControl *control, const String &expectedText);
-    bool CheckMsgText(UIControl *control, const String &key);
-	String GetText(UIControl *control);
+    bool CheckText(UIControl* control, const String &expectedText);
+    bool CheckMsgText(UIControl* control, const String &key);
+	String GetText(UIControl* control);
 
 	// multiplayer api
-	void WriteState(const String & device, const String & state);
-	void WriteCommand(const String & device, const String & state);
+	void WriteState(const String &device, const String &state);
+	void WriteCommand(const String &device, const String &state);
 
-	String ReadState(const String & device);
-	String ReadCommand(const String & device);
+	String ReadState(const String &device);
+	String ReadCommand(const String &device);
 
-	void InitializeDevice(const String & device);
+	void InitializeDevice(const String &device);
+
+	String GetDeviceName();
+	String GetPlatform() { return AUTOTESTING_PLATFORM_NAME; }
+
+	bool IsPhoneScreen();
 
 	// DB storing
-	bool SaveKeyedArchiveToDB(const String &archiveName, KeyedArchive *archive, const String &docName = "aux");
+	bool SaveKeyedArchiveToDB(const String &archiveName, KeyedArchive* archive, const String &docName = "aux");
 
-	String GetTestParameter(const String & device);
+	String GetTestParameter(const String &device);
 
-	void WriteString(const String & name, const String & text);
-	String ReadString(const String & name);
+	void WriteString(const String &name, const String &text);
+	String ReadString(const String &name);
 
 	String MakeScreenshot();
 
 protected:
 #if !defined(SWIG)
-    void ParsePath(const String &path, Vector<String> &parsedPath);
+    inline void ParsePath(const String &path, Vector<String> &parsedPath);
     
     bool LoadScript(const String &luaScript);
     bool LoadScriptFromFile(const FilePath &luaFilePath);
@@ -149,11 +166,11 @@ protected:
     bool LoadWrappedLuaObjects();
 	
 
-	AutotestingSystemLuaDelegate *delegate;
-    lua_State *luaState; //TODO: multiple lua states
+	AutotestingSystemLuaDelegate* delegate;
+    lua_State* luaState; //TODO: multiple lua states
     
     //TODO: write a copy of localization system for autotesting
-    LocalizationSystem *autotestingLocalizationSystem;
+    LocalizationSystem* autotestingLocalizationSystem;
     
 #endif //SWIG
 };

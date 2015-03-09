@@ -58,6 +58,7 @@ private slots:
     void OnStop();
     void OnAddEvent();
     void OnRemoveEvent();
+    void OnAutoTrigger(bool checked);
 
 private:
     struct ParamSliderData : public QObjectUserData
@@ -75,7 +76,7 @@ private:
 
     DAVA::Entity * entity;
     DAVA::SoundComponent * component;
-    DAVA::SoundEvent * selectedEvent;
+    int32 selectedEventIndex;
 
     SceneEditor2* scene;
 

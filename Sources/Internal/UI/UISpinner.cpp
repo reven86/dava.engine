@@ -29,6 +29,8 @@
 
 
 #include "UISpinner.h"
+#include "UI/UIEvent.h"
+#include "Animation/Animation.h"
 
 namespace DAVA 
 {
@@ -144,10 +146,12 @@ void UISpinner::ContentChanged()
 {
     content->SetInputEnabled(false);        
     contentViewport->SetRect(content->GetRect());
-    contentViewport->pivotPoint = content->pivotPoint;
+    contentViewport->SetPivotPoint(content->GetPivotPoint());
     nextContent->CopyDataFrom(content);
     nextContent->relativePosition = Vector2();
-    nextContent->pivotPoint.x = content->size.dx;
+    Vector2 newPivotPoint = nextContent->GetPivotPoint();
+    newPivotPoint.x = content->size.dx;
+    nextContent->SetPivotPoint(newPivotPoint);
 }
     
 void UISpinner::Input(UIEvent *currentInput)
@@ -170,7 +174,7 @@ void UISpinner::Input(UIEvent *currentInput)
             DVASSERT(NULL == contentViewport->GetParent());
             
             content->relativePosition = Vector2();
-            content->pivotPoint = Vector2();
+            content->SetPivot(Vector2());
             
             contentViewport->AddControl(content);
             AddControl(contentViewport);
@@ -189,7 +193,7 @@ void UISpinner::Input(UIEvent *currentInput)
         {
             currentTouchX = touchPos.x;
             float32 contentNewX = touchPos.x - dragAnchorX;
-            float32 contentNewLeftEdge = contentNewX - content->pivotPoint.x;
+            float32 contentNewLeftEdge = contentNewX - content->GetPivotPoint().x;
             if (!(contentNewLeftEdge < 0 && adapter->IsSelectedLast()) && !(contentNewLeftEdge > 0 && adapter->IsSelectedFirst()))
             {
                 if (contentNewX != 0)
@@ -197,7 +201,9 @@ void UISpinner::Input(UIEvent *currentInput)
                     if (content->relativePosition.x * contentNewX <= 0) //next content just appears or visible side changes
                     {
                         //adjust nextContent->pivotPoint to make more convenient setting of nextContent->relativePosition below
-                        nextContent->pivotPoint.x = contentNewX > 0 ? content->size.dx : - content->size.dx;
+                        Vector2 newPivotPoint = nextContent->GetPivotPoint();
+                        newPivotPoint.x = contentNewX > 0 ? content->size.dx : -content->size.dx;
+                        nextContent->SetPivotPoint(newPivotPoint);
                         adapter->FillScrollableContent(nextContent, contentNewX > 0 ? SpinnerAdapter::PREVIOUS : SpinnerAdapter::NEXT);
                     }
                 }
@@ -253,10 +259,16 @@ void UISpinner::OnSelectWithSlide(bool isPrevious)
     nextContent = temp;
     
     //save display position but change pivot points
-    nextContent->pivotPoint.x -= content->pivotPoint.x;
-    nextContent->relativePosition.x -= content->pivotPoint.x;
-    content->relativePosition.x -= content->pivotPoint.x;
-    content->pivotPoint.x = 0;
+    Vector2 newPivotPoint = nextContent->GetPivotPoint();
+    newPivotPoint.x -= content->GetPivotPoint().x;
+    nextContent->SetPivotPoint(newPivotPoint);
+
+    nextContent->relativePosition.x -= content->GetPivotPoint().x;
+    content->relativePosition.x -= content->GetPivotPoint().x;
+
+    newPivotPoint = content->GetPivotPoint();
+    newPivotPoint.x = 0;
+    content->SetPivotPoint(newPivotPoint);
     
     if (isPrevious)
         adapter->Previous();
@@ -267,7 +279,7 @@ void UISpinner::OnSelectWithSlide(bool isPrevious)
 void UISpinner::OnScrollAnimationEnd(BaseObject * caller, void * param, void *callerData)
 {
     DVASSERT(NULL != contentViewport->GetParent());
-    content->pivotPoint = contentViewport->pivotPoint;
+    content->SetPivotPoint(contentViewport->GetPivotPoint());
     content->relativePosition = contentViewport->relativePosition;
     RemoveControl(contentViewport);
     AddControl(content);

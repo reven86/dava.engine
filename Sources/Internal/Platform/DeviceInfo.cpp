@@ -71,11 +71,21 @@ int DeviceInfo::GetZBufferSize()
 	return 24;
 }
 
-List<DeviceInfo::StorageRecord> DeviceInfo::GetStorageList()
+List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
 {
-    List<DeviceInfo::StorageRecord> l;
+    List<DeviceInfo::StorageInfo> l;
     return l;
 }
     
 #endif
+
+#ifdef __DAVAENGINE_WIN32__
+
+int32 DeviceInfo::GetCpuCount()
+{
+    return -1;
+}
+
+#endif
+
 }

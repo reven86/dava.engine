@@ -234,6 +234,7 @@ private:
     Vector<Material*> materials;
     Vector<StaticMesh*> staticMeshes;
     Vector<AnimatedMesh*> animatedMeshes;
+    Vector<SceneNodeAnimationList*> animations;
 };
 
 

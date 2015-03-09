@@ -99,3 +99,37 @@ DAVA::Entity* RemoveSoundEventCommand::GetEntity() const
 {
     return entity;
 }
+
+SetSoundEventFlagsCommand::SetSoundEventFlagsCommand(DAVA::Entity *_entity, DAVA::uint32 eventIndex, DAVA::uint32 flags)
+    : Command2(CMDID_SOUND_REMOVE_EVENT, "Set Sound Event Flags"),
+    index(eventIndex),
+    newFlags(flags)
+{
+    entity = SafeRetain(_entity);
+    DVASSERT(entity);
+
+    affectComponent = GetSoundComponent(entity);
+    DVASSERT(affectComponent);
+
+    oldFlags = affectComponent->GetSoundEventFlags(index);
+}
+
+SetSoundEventFlagsCommand::~SetSoundEventFlagsCommand()
+{
+    SafeRelease(entity);
+}
+
+void SetSoundEventFlagsCommand::Redo()
+{
+    affectComponent->SetSoundEventFlags(index, newFlags);
+}
+
+void SetSoundEventFlagsCommand::Undo()
+{
+    affectComponent->SetSoundEventFlags(index, oldFlags);
+}
+
+DAVA::Entity* SetSoundEventFlagsCommand::GetEntity() const
+{
+    return entity;
+}

@@ -33,7 +33,6 @@
 namespace DAVA 
 {
     
-REGISTER_CLASS(QualitySettingsComponent)
 
 QualitySettingsComponent::QualitySettingsComponent()
     : Component()

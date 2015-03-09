@@ -37,8 +37,10 @@ namespace DAVA
 {
     
 CommandLineParser::CommandLineParser()
+    : isVerbose(false)
+    , isExtendedOutput(false)
+    , useTeamcityOutput(false)
 {
-	isVerbose = false;
 }
 
 void CommandLineParser::SetArguments(const Vector<String> &arguments)
@@ -46,7 +48,7 @@ void CommandLineParser::SetArguments(const Vector<String> &arguments)
     Clear();
     
     bool prevIsFlag = false;
-	for (int i = 0; i < (int)arguments.size(); ++i)
+	for (size_t i = 0; i < arguments.size(); ++i)
 	{
 		String arg = arguments[i];
         String::size_type argLen = arg.length();
@@ -117,7 +119,7 @@ void CommandLineParser::SetVerbose(bool _isVerbose)
 	isVerbose = _isVerbose;
 }
 
-bool CommandLineParser::GetVerbose()
+bool CommandLineParser::GetVerbose() const
 {
 	return isVerbose;
 }
@@ -126,16 +128,25 @@ void CommandLineParser::SetExtendedOutput(bool isExO)
 {
 	isExtendedOutput = isExO;
 }
-bool CommandLineParser::IsExtendedOutput()
+
+bool CommandLineParser::IsExtendedOutput() const
 {
 	return isExtendedOutput;
+}
+
+void CommandLineParser::SetUseTeamcityOutput(bool use)
+{
+    useTeamcityOutput = use;
+}
+
+bool CommandLineParser::UseTeamcityOutput() const
+{
+    return useTeamcityOutput;
 }
 
 
 CommandLineParser::~CommandLineParser()
 {
-
-
 }
 
 bool CommandLineParser::IsFlagSet(const String & s)

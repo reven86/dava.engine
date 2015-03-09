@@ -39,893 +39,1132 @@
 #include "Job/JobManager.h"
 #include "Job/JobWaiter.h"
 
+#include "Render/2D/TextBlockSoftwareRender.h"
+#include "Render/2D/TextBlockGraphicsRender.h"
+#include "Render/2D/TextBlockDistanceRender.h"
+
+#include "Utils/StringUtils.h"
+#include <Thread/LockGuard.h>
+#include "fribidi/fribidi-bidi-types.h"
+#include "fribidi/fribidi-unicode.h"
+
 namespace DAVA 
 {
-    
+
+bool TextBlock::isBiDiSupportEnabled = true;    //!< Enable BiDi support by default
+BiDiHelper TextBlock::bidiHelper;
+
 struct TextBlockData
 {
     TextBlockData(): font(NULL) { };
     ~TextBlockData() { SafeRelease(font); };
-    
+
     Font *font;
 };
-    
-    
-    
-    
+
 //TODO: использовать мапу	
 static	Vector<TextBlock *> registredBlocks;
-	
+
+#define NEW_RENDER 1
+
 void RegisterTextBlock(TextBlock *tbl)
 {
-	registredBlocks.push_back(tbl);
+    registredBlocks.push_back(tbl);
 }
-	
+
 void UnregisterTextBlock(TextBlock *tbl)
 {
-	for(Vector<TextBlock *>::iterator it = registredBlocks.begin(); it != registredBlocks.end(); it++)
-	{
-		if (tbl == *it) 
-		{
-			registredBlocks.erase(it);
-			return;
-		}
-	}
+    for(Vector<TextBlock *>::iterator it = registredBlocks.begin(); it != registredBlocks.end(); it++)
+    {
+        if (tbl == *it) 
+        {
+            registredBlocks.erase(it);
+            return;
+        }
+    }
 }
 
 void TextBlock::ScreenResolutionChanged()
 {
-	Logger::FrameworkDebug("Regenerate text blocks");
-	for(Vector<TextBlock *>::iterator it = registredBlocks.begin(); it != registredBlocks.end(); it++)
-	{
-		(*it)->Prepare();
-	}
+    Logger::FrameworkDebug("Regenerate text blocks");
+    for(Vector<TextBlock *>::iterator it = registredBlocks.begin(); it != registredBlocks.end(); it++)
+    {
+        (*it)->Prepare();
+    }
 }
 
 TextBlock * TextBlock::Create(const Vector2 & size)
 {
-	TextBlock * textSprite = new TextBlock();
-	textSprite->SetRectSize(size);
-	return textSprite;
+    TextBlock * textSprite = new TextBlock();
+    textSprite->SetRectSize(size);
+    return textSprite;
 }
 
-	
+
 TextBlock::TextBlock()
     : cacheFinalSize(0.f, 0.f)
     , cacheW(0)
     , cacheDx(0)
     , cacheDy(0)
+    , cacheOx(0)
+    , cacheOy(0)
+    , cacheTextSize(0.f,0.f)
+    , renderSize(1.f)
 {
-	font = NULL;
-	constFont = NULL;
-	isMultilineEnabled = false;
-	fittingType = FITTING_DISABLED;
-	sprite = NULL;
-	originalFontSize = 0.1f;
-	align = ALIGN_HCENTER|ALIGN_VCENTER;
-	RegisterTextBlock(this);
-	isPredrawed = true;
+    font = NULL;
+    isMultilineEnabled = false;
+    isRtl = false;
+    useRtlAlign = false;
+    fittingType = FITTING_DISABLED;
+
+    needRedraw = true;
+
+    originalFontSize = 0.1f;
+    align = ALIGN_HCENTER|ALIGN_VCENTER;
+    RegisterTextBlock(this);
     isMultilineBySymbolEnabled = false;
     treatMultilineAsSingleLine = false;
     
-    pointsStr = L"";
+    textBlockRender = NULL;
+    textureInvalidater = NULL;
 }
 
 TextBlock::~TextBlock()
 {
-	SafeRelease(sprite);
-	SafeRelease(font);
-	SafeRelease(constFont);
-	UnregisterTextBlock(this);
+    SafeRelease(textBlockRender);
+    SafeDelete(textureInvalidater);
+    SafeRelease(font);
+    UnregisterTextBlock(this);
 }
 
 // Setters // Getters
-	
+
 void TextBlock::SetFont(Font * _font)
 {
     mutex.Lock();
-    
-	if (!_font || _font == font)
-	{
+
+    if (!_font || _font == font)
+    {
         mutex.Unlock();
-		return;
-	}
+        return;
+    }
 
-	SafeRelease(font);
-	font = SafeRetain(_font);
+    SafeRelease(font);
+    font = SafeRetain(_font);
 
-	originalFontSize = font->GetSize();
+    originalFontSize = font->GetSize();
+    renderSize = originalFontSize;
+    
+    SafeRelease(textBlockRender);
+    SafeDelete(textureInvalidater);
+    switch (font->GetFontType()) {
+        case Font::TYPE_FT:
+            textBlockRender = new TextBlockSoftwareRender(this);
+            textureInvalidater = new TextBlockSoftwareTexInvalidater(this);
+            break;
+        case Font::TYPE_GRAPHICAL:
+            textBlockRender = new TextBlockGraphicsRender(this);
+            break;
+        case Font::TYPE_DISTANCE:
+            textBlockRender = new TextBlockDistanceRender(this);
+            break;
+            
+        default:
+            DVASSERT(!"Unknown font type");
+            break;
+    }
+    
+    needRedraw = true;
 
     mutex.Unlock();
-	Prepare();
+    Prepare();
 }
-   
+
 void TextBlock::SetRectSize(const Vector2 & size)
 {
     mutex.Lock();
-	if (rectSize != size)
-	{
-		rectSize = size;
+    if (rectSize != size)
+    {
+        rectSize = size;
+        needRedraw = true;
 
         mutex.Unlock();
-		Prepare();
+        Prepare();
         return;
-	}
+    }
     mutex.Unlock();
+}
+
+void TextBlock::SetPosition(const Vector2& position)
+{
+    this->position = position;
+}
+
+void TextBlock::SetPivotPoint(const Vector2& pivotPoint)
+{
+    this->pivotPoint = pivotPoint;
 }
 
 void TextBlock::SetText(const WideString & _string, const Vector2 &requestedTextRectSize)
 {
     mutex.Lock();
-	if(text == _string && requestedSize == requestedTextRectSize)
-	{
+
+    if (logicalText == _string && requestedSize == requestedTextRectSize)
+    {
         mutex.Unlock();
-		return;
-	}
-	requestedSize = requestedTextRectSize;
-	text = _string;
-    
+        return;
+    }
+    requestedSize = requestedTextRectSize;
+    logicalText = _string;
+    needRedraw = true;
+
     mutex.Unlock();
-	Prepare();
+    Prepare();
 }
 
 void TextBlock::SetMultiline(bool _isMultilineEnabled, bool bySymbol)
 {
     mutex.Lock();
-	if (isMultilineEnabled != _isMultilineEnabled || isMultilineBySymbolEnabled != bySymbol)
-	{
+    if (isMultilineEnabled != _isMultilineEnabled || isMultilineBySymbolEnabled != bySymbol)
+    {
         isMultilineBySymbolEnabled = bySymbol;
-		isMultilineEnabled = _isMultilineEnabled;
+        isMultilineEnabled = _isMultilineEnabled;
+        needRedraw = true;
 
         mutex.Unlock();
-		Prepare();
+        Prepare();
         return;
-	}
+    }
     mutex.Unlock();
 }
 
 void TextBlock::SetFittingOption(int32 _fittingType)
 {
     mutex.Lock();
-	if (fittingType != _fittingType)
-	{
-		fittingType = _fittingType;
+    if (fittingType != _fittingType)
+    {
+        fittingType = _fittingType;
+        needRedraw = true;
 
         mutex.Unlock();
-		Prepare();
+        Prepare();
         return;
-	}
+    }
     mutex.Unlock();
 }
-	
-	
+
+
 Font * TextBlock::GetFont()
 {
-    mutex.Lock();
-    mutex.Unlock();
-    
-	return font;
+    LockGuard<Mutex> guard(mutex);
+    return font;
 }
-    
+
 const Vector<WideString> & TextBlock::GetMultilineStrings()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return multilineStrings;
 }
-    
+
 const WideString & TextBlock::GetText()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
-	return text;
+    LockGuard<Mutex> guard(mutex);
+    return logicalText;
 }
 
 bool TextBlock::GetMultiline()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
-	return isMultilineEnabled;
+    LockGuard<Mutex> guard(mutex);
+    return isMultilineEnabled;
 }
-    
+
 bool TextBlock::GetMultilineBySymbol()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return isMultilineBySymbolEnabled;
 }
 
 int32 TextBlock::GetFittingOption()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
-	return fittingType;
+    LockGuard<Mutex> guard(mutex);
+    return fittingType;
 }
-	
+
+float32 TextBlock::GetRenderSize()
+{
+    LockGuard<Mutex> guard(mutex);
+    return renderSize;
+}
+
+void TextBlock::SetRenderSize(float32 _renderSize)
+{
+    mutex.Lock();
+    if (renderSize != _renderSize)
+    {
+        renderSize = Max(_renderSize, 0.1f);
+        needRedraw = true;
+
+        mutex.Unlock();
+        Prepare();
+        return;
+    }
+    mutex.Unlock();
+}
+
 void TextBlock::SetAlign(int32 _align)
 {
     mutex.Lock();
-	if (align != _align) 
-	{
-		align = _align;
+    if (align != _align) 
+    {
+        align = _align;
+        needRedraw = true;
 
         mutex.Unlock();
-		Prepare();
+        Prepare();
         return;
+    }
+    mutex.Unlock();
+}
+
+void TextBlock::SetUseRtlAlign(bool const& useRtlAlign)
+{
+    mutex.Lock();
+	if(this->useRtlAlign != useRtlAlign)
+	{
+		this->useRtlAlign = useRtlAlign;
+		needRedraw = true;
+		mutex.Unlock();
+		Prepare();
+		return;
 	}
     mutex.Unlock();
 }
 
+bool TextBlock::GetUseRtlAlign()
+{
+    LockGuard<Mutex> guard(mutex);
+    return useRtlAlign;
+}
+
+bool TextBlock::IsRtl()
+{
+    LockGuard<Mutex> guard(mutex);
+    return isRtl;
+}
+
 int32 TextBlock::GetAlign()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
+    return align;
+}
+	
+int32 TextBlock::GetVisualAlign()
+{
+    LockGuard<Mutex> guard(mutex);
+    return GetVisualAlignNoMutexLock();
+}
+	
+int32 TextBlock::GetVisualAlignNoMutexLock() const
+{
+	if(useRtlAlign && isRtl && (align & ALIGN_LEFT || align & ALIGN_RIGHT))
+    {
+        // Mirror left/right align
+        return align ^ (ALIGN_LEFT | ALIGN_RIGHT);
+    }
 	return align;
 }
 
 Sprite * TextBlock::GetSprite()
 {
-    mutex.Lock();
+    LockGuard<Mutex> guard(mutex);
 
-	DVASSERT(sprite);
-	if (!sprite) 
-	{
-		sprite = Sprite::CreateAsRenderTarget(8, 8, FORMAT_RGBA4444);
+    Sprite* sprite = NULL;
+    if (textBlockRender)
+        sprite = textBlockRender->GetSprite();
+
+    DVASSERT(sprite);
+    if (!sprite) 
+    {
+        sprite = Sprite::CreateAsRenderTarget(8, 8, FORMAT_RGBA4444);
         Logger::Error("[Textblock] getting NULL sprite");
-	}
+    }
 
-    mutex.Unlock();
-	
     return sprite;
 }
-	
+
 bool TextBlock::IsSpriteReady()
 {
-    mutex.Lock();
-    mutex.Unlock();
+    LockGuard<Mutex> guard(mutex);
 
-	return sprite != NULL;
+    Sprite* sprite = NULL;
+    if (textBlockRender)
+    {
+        sprite = textBlockRender->GetSprite();
+    }
+
+    return sprite != NULL;
 }
 
-
-
-void TextBlock::Prepare()
+void TextBlock::Prepare(Texture *texture /*=NULL*/)
 {
-    mutex.Lock();
-
-    if(!font || text == L"")
-    {
-        cacheFinalSize = Vector2(0.f, 0.f);
-        cacheW = 0;
-        cacheDx = 0;
-        cacheDy = 0;
-    }
-    else
-    {
-		bool useJustify = ((align & ALIGN_HJUSTIFY) != 0);
-		font->SetSize(originalFontSize);
-		Vector2 drawSize = rectSize;
-		
-		if(requestedSize.dx > 0)
-		{
-			drawSize.x = requestedSize.dx;
-		}
-		if(requestedSize.dy > 0)
-		{
-			drawSize.y = requestedSize.dy;
-		}
-		
-		int32 w = (int32)drawSize.x;
-		int32 h = (int32)drawSize.y;
-		
-		Size2i textSize;
-		stringSizes.clear();
-
-        // This is a temporary fix to correctly handle long multiline texts
-        // which can't be broken to the separate lines.
-        if (isMultilineEnabled)
-        {
-            if(isMultilineBySymbolEnabled)
-            {
-                font->SplitTextBySymbolsToStrings(text, drawSize, multilineStrings);
-            }
-            else
-            {
-                font->SplitTextToStrings(text, drawSize, multilineStrings);
-            }
-            
-            treatMultilineAsSingleLine = multilineStrings.size() == 1;
-        }
-
-		if(!isMultilineEnabled || treatMultilineAsSingleLine)
-		{
-			textSize = font->GetStringSize(text);
-            pointsStr.clear();
-            if(fittingType & FITTING_POINTS)
-            {
-                if(drawSize.x < textSize.dx)
-                {
-                    Size2i textSizePoints;
-                    
-                    int32 length = (int32)text.length();
-                    for(int32 i = length - 1; i > 0; --i)
-                    {
-                        pointsStr.clear();
-                        pointsStr.append(text, 0, i);
-                        pointsStr += L"...";
-                        
-                        textSize = font->GetStringSize(pointsStr);
-                        if(textSize.dx <= drawSize.x)
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
-            else if(!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x < textSize.dx) && (requestedSize.x >= 0))
-            {
-                Size2i textSizePoints;
-                int32 length = (int32)text.length();
-                if(ALIGN_RIGHT & align)
-                {
-                    for(int32 i = 1; i < length - 1; ++i)
-                    {
-                        pointsStr.clear();
-                        pointsStr.append(text, i, length - i);
-                        
-                        textSize = font->GetStringSize(pointsStr);
-                        if(textSize.dx <= drawSize.x)
-                        {
-                            break;
-                        }
-                    }
-                }
-                else if(ALIGN_HCENTER & align)
-                {
-                    int32 endPos = length / 2;
-                    int32 startPos = endPos - 1;
-                    
-                    int32 count = endPos;
-                    WideString savedStr = L"";
-                    
-                    for(int32 i = 1; i < count; ++i)
-                    {
-                        pointsStr.clear();
-                        pointsStr.append(text, startPos, endPos - startPos);
-                        
-                        textSize = font->GetStringSize(pointsStr);
-                        if(drawSize.x <= textSize.dx)
-                        {
-                            break;
-                        }
-                        
-                        --startPos;
-                        ++endPos;
-                        
-                        savedStr = pointsStr;
-                    }
-                }
-            }
-			else if(((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (requestedSize.dy >= 0 || requestedSize.dx >= 0))
-			{
-				bool isChanged = false;
-				float prevFontSize = font->GetRenderSize();
-				while (true)
-				{
-					float yMul = 1.0f;
-					float xMul = 1.0f;
-					
-					bool xBigger = false;
-					bool xLower = false;
-					bool yBigger = false;
-					bool yLower = false;
-					if(requestedSize.dy >= 0)
-					{
-						h = textSize.dy;
-						if((isChanged || fittingType & FITTING_REDUCE) && textSize.dy > drawSize.y)
-						{
-							if (prevFontSize < font->GetRenderSize())
-							{
-								font->SetRenderSize(prevFontSize);
-								textSize = font->GetStringSize(text);
-								h = textSize.dy;
-								if (requestedSize.dx >= 0)
-								{
-									w = textSize.dx;
-								}
-								break;
-							}
-							yBigger = true;
-							yMul = drawSize.y / textSize.dy;
-						}
-						else if((isChanged || fittingType & FITTING_ENLARGE) && textSize.dy < drawSize.y * 0.9)
-						{
-							yLower = true;
-							yMul = (drawSize.y * 0.9f) / textSize.dy;
-							if(yMul < 1.01f)
-							{
-								yLower = false;
-							}
-						}
-					}
-					
-					if(requestedSize.dx >= 0)
-					{
-						w = textSize.dx;
-						if((isChanged || fittingType & FITTING_REDUCE) && textSize.dx > drawSize.x)
-						{
-							if (prevFontSize < font->GetRenderSize())
-							{
-								font->SetRenderSize(prevFontSize);
-								textSize = font->GetStringSize(text);
-								w = textSize.dx;
-								if (requestedSize.dy >= 0)
-								{
-									h = textSize.dy;
-								}
-								break;
-							}
-							xBigger = true;
-							xMul = drawSize.x / textSize.dx;
-						}
-						else if((isChanged || fittingType & FITTING_ENLARGE) && textSize.dx < drawSize.x * 0.95)
-						{
-							xLower = true;
-							xMul = (drawSize.x * 0.95f) / textSize.dx;
-							if(xMul < 1.01f)
-							{
-								xLower = false;
-							}
-						}
-					}
-					
-					
-					if((!xBigger && !yBigger) && (!xLower || !yLower))
-					{
-						break;
-					}
-					
-					float finalSize = font->GetRenderSize();
-					prevFontSize = finalSize;
-					isChanged = true;
-					if(xMul < yMul)
-					{
-						finalSize *= xMul;
-					}
-					else
-					{
-						finalSize *= yMul;
-					}
-					font->SetRenderSize(finalSize);
-					textSize = font->GetStringSize(text);
-				};
-			}
-            
-            if (treatMultilineAsSingleLine)
-            {
-                // Another temporary solution to return correct multiline strings/
-                // string sizes.
-                multilineStrings.clear();
-                stringSizes.clear();
-                multilineStrings.push_back(text);
-				stringSizes.push_back(font->GetStringSize(text).dx);
-            }
-		}
-		else //if(!isMultilineEnabled)
-		{
-			if(fittingType && (requestedSize.dy >= 0/* || requestedSize.dx >= 0*/) && text.size() > 3)
-			{
-                //				Logger::FrameworkDebug("Fitting enabled");
-				Vector2 rectSz = rectSize;
-				if(requestedSize.dx > 0)
-				{
-					rectSz.dx = requestedSize.dx;
-				}
-                if(isMultilineBySymbolEnabled)
-                    font->SplitTextBySymbolsToStrings(text, rectSz, multilineStrings);
-                else
-                    font->SplitTextToStrings(text, rectSz, multilineStrings);
-				
-				textSize.dx = 0;
-				textSize.dy = 0;
-				
-				int32 yOffset = font->GetVerticalSpacing();
-                //				int32 fontHeight = font->GetFontHeight() + 1 + yOffset;
-                //				textSize.dy = yOffset*2 + fontHeight * (int32)multilineStrings.size();
-				int32 fontHeight = font->GetFontHeight() + yOffset;
-				textSize.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
-				float lastSize = font->GetRenderSize();
-				float lastHeight = (float32)textSize.dy;
-				
-				bool isChanged = false;
-				while (true)
-				{
-					float yMul = 1.0f;
-					
-					bool yBigger = false;
-					bool yLower = false;
-					if(requestedSize.dy >= 0)
-					{
-						h = textSize.dy;
-						if((isChanged || fittingType & FITTING_REDUCE) && textSize.dy > drawSize.y)
-						{
-							yBigger = true;
-							yMul = drawSize.y / textSize.dy;
-							if(lastSize < font->GetRenderSize())
-							{
-								font->SetRenderSize(lastSize);
-								h = (int32)lastHeight;
-								break;
-							}
-						}
-						else if((isChanged || fittingType & FITTING_ENLARGE) && textSize.dy < drawSize.y * 0.95)
-						{
-							yLower = true;
-							if(textSize.dy < drawSize.y * 0.75f)
-							{
-								yMul = (drawSize.y * 0.75f) / textSize.dy;
-							}
-							else if(textSize.dy < drawSize.y * 0.8f)
-							{
-								yMul = (drawSize.y * 0.8f) / textSize.dy;
-							}
-							else if(textSize.dy < drawSize.y * 0.85f)
-							{
-								yMul = (drawSize.y * 0.85f) / textSize.dy;
-							}
-							else if(textSize.dy < drawSize.y * 0.9f)
-							{
-								yMul = (drawSize.y * 0.9f) / textSize.dy;
-							}
-							else
-							{
-								yMul = (drawSize.y * 0.95f) / textSize.dy;
-							}
-                            if (yMul == 1.0f)
-                            {
-                                yMul = 1.05f;
-                            }
-						}
-					}
-					
-					if(!yBigger && !yLower)
-					{
-						break;
-					}
-					
-					lastHeight = (float32)textSize.dy;
-					
-					float finalSize = lastSize = font->GetRenderSize();
-					isChanged = true;
-					finalSize *= yMul;
-					
-					font->SetRenderSize(finalSize);
-                    //					textSize = font->GetStringSize(text);
-                    
-                    if(isMultilineBySymbolEnabled)
-                        font->SplitTextBySymbolsToStrings(text, rectSz, multilineStrings);
-                    else
-                        font->SplitTextToStrings(text, rectSz, multilineStrings);
-					
-					textSize.dy = 0;
-					
-					int32 yOffset = font->GetVerticalSpacing();
-                    //					int32 fontHeight = font->GetFontHeight() + 1 + yOffset;
-                    //					textSize.dy = yOffset*2 + fontHeight * (int32)multilineStrings.size();
-					int32 fontHeight = font->GetFontHeight() + yOffset;
-					textSize.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
-					
-				};
-				
-			}
-            //			Logger::FrameworkDebug("Font size: %.4f", font->GetSize());
-            
-            
-			Vector2 rectSz = rectSize;
-			if(requestedSize.dx > 0)
-			{
-				rectSz.dx = requestedSize.dx;
-			}
-            if(isMultilineBySymbolEnabled)
-                font->SplitTextBySymbolsToStrings(text, rectSz, multilineStrings);
-            else
-                font->SplitTextToStrings(text, rectSz, multilineStrings);
-			
-			textSize.dx = 0;
-			textSize.dy = 0;
-			
-			int32 yOffset = font->GetVerticalSpacing();
-            //			Logger::FrameworkDebug("yOffset = %.4d", yOffset);
-            //			int32 fontHeight = font->GetFontHeight() + 1 + yOffset;
-            //			textSize.dy = yOffset*2 + fontHeight * (int32)multilineStrings.size();
-			int32 fontHeight = font->GetFontHeight() + yOffset;
-            //			Logger::FrameworkDebug("fontHeight = %.4d", fontHeight);
-			textSize.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
-
-            stringSizes.reserve(multilineStrings.size());
-			for (int32 line = 0; line < (int32)multilineStrings.size(); ++line)
-			{
-				Size2i stringSize = font->GetStringSize(multilineStrings[line]);
-				stringSizes.push_back(stringSize.dx);
-				if(requestedSize.dx >= 0)
-				{
-					textSize.dx = Max(textSize.dx, Min(stringSize.dx, (int)drawSize.x));
-				}
-				else
-				{
-					textSize.dx = Max(textSize.dx, stringSize.dx);
-				}
-			}
-		}
-		
-		if(requestedSize.dx == 0)
-		{
-			w = Min(w, textSize.dx);
-            //			Logger::FrameworkDebug("On size not requested: w = %d", w);
-		}
-		else if(requestedSize.dx < 0)
-		{
-			w = textSize.dx;
-            //			Logger::FrameworkDebug("On size automated: w = %d", w);
-		}
-		if(requestedSize.dy == 0)
-		{
-			h = Min(h, textSize.dy);
-            //			Logger::FrameworkDebug("On size not requested: h = %d", h);
-		}
-		else if(requestedSize.dy < 0)
-		{
-			h = textSize.dy;
-            //			Logger::FrameworkDebug("On size automated: h = %d", w);
-		}
-		
-		if (requestedSize.dx >= 0 && useJustify)
-		{
-			w = (int32)drawSize.dx;
-		}
-		
-		
-		
-		//calc texture size
-		int32 dx = (int32)ceilf(Core::GetVirtualToPhysicalFactor() * w);
-		int32 dy = (int32)ceilf(Core::GetVirtualToPhysicalFactor() * h);
-		
-		cacheUseJustify = useJustify;
-		cacheDx = dx;
-        EnsurePowerOf2(cacheDx);
-        
-		cacheDy = dy;
-        EnsurePowerOf2(cacheDy);
-        
-		cacheW = w;
-		cacheFinalSize.x = (float32)dx / Core::GetVirtualToPhysicalFactor();
-        cacheFinalSize.y = (float32)dy / Core::GetVirtualToPhysicalFactor();
-    }
-
-    TextBlockData *jobData = new TextBlockData();
-    jobData->font = SafeRetain(font);
-    
-    mutex.Unlock();
-
-	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal, jobData));
+    Retain();
+    ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal,
+                                                                                            SafeRetain(texture)));
 }
 
 void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerData)
 {
-#if 1
-    
-    TextBlockData *jobData = (TextBlockData *)param;
-    
+    Texture * texture = (Texture *)param;
+    if(!font)
+    {
+        Release();
+        return;
+    }
+
     mutex.Lock();
+    if(needRedraw)
+    {
+        CalculateCacheParams();
 
-    SafeRelease(sprite);
-	if(!jobData->font || text == L"")
-	{
-        SafeDelete(jobData);
-        mutex.Unlock();
-		return;
-	}
-    else
-	{
-		if (jobData->font->IsTextSupportsSoftwareRendering())
-		{
-			int32 bsz = cacheDx * cacheDy;
-			uint8 * buf = new uint8[bsz];
-			memset(buf, 0, bsz * sizeof(uint8));
-			
-			DrawToBuffer(jobData->font, buf);
-            
-            String addInfo;
-			if(!isMultilineEnabled || treatMultilineAsSingleLine)
-			{
-				addInfo = WStringToString(text.c_str());
-			}
-			else
-			{
-				if (multilineStrings.size() >= 1)
-				{
-					addInfo = WStringToString(multilineStrings[0].c_str());
-				}else
-				{
-					addInfo = "empty";
-				}
-			}
-			
-			Texture *tex = Texture::CreateTextFromData(FORMAT_A8, buf, cacheDx, cacheDy, false, addInfo.c_str());
-			delete[] buf;
-			sprite = Sprite::CreateFromTexture(tex, 0, 0, cacheFinalSize.x, cacheFinalSize.y);
-			SafeRelease(tex);
-		}
-		else 
-		{
-			//omg 8888!
-			sprite = Sprite::CreateAsRenderTarget(cacheFinalSize.x, cacheFinalSize.y, FORMAT_RGBA8888);
-			if (sprite && sprite->GetTexture())
-			{
-				if (!isMultilineEnabled || treatMultilineAsSingleLine)
-					sprite->GetTexture()->SetDebugInfo(WStringToString(text));
-				else if (isMultilineEnabled)
-				{
-					if (multilineStrings.size() > 0)
-						sprite->GetTexture()->SetDebugInfo(WStringToString(multilineStrings[0]));
-				}
-			}				
-		}
-        
-        isPredrawed = false;
-	}
-#endif 
-    
-
-    SafeDelete(jobData);
-    mutex.Unlock();
-}
-
-void TextBlock::DrawToBuffer(Font *realFont, uint8 *buf)
-{
-	Size2i realSize;
-	if(!isMultilineEnabled || treatMultilineAsSingleLine)
-	{
-        WideString drawText = text;
-        if(pointsStr.length())
+        if(textBlockRender)
         {
-            drawText = pointsStr;
+            font->SetSize(renderSize);
+            textBlockRender->Prepare(texture);
+            font->SetSize(originalFontSize);
         }
-        
-		if (buf)
-		{
-			realSize = realFont->DrawStringToBuffer(buf, cacheDx, cacheDy, 0, 0, 0, 0, drawText, true);
-		}
-		else
-		{
-			if (cacheUseJustify) 
-			{
-                realSize = realFont->DrawString(0, 0, drawText, (int32)ceilf(Core::GetVirtualToPhysicalFactor() * cacheW));
-			}
-			else 
-			{
-                realSize = realFont->DrawString(0, 0, drawText);
-			}
-		}
-	}
-	else
-	{
-		uint32 yOffset = 0;
-		int32 fontHeight = realFont->GetFontHeight() + realFont->GetVerticalSpacing();
-		for (int32 line = 0; line < (int32)multilineStrings.size(); ++line)
-		{
-			if (line >= (int32)multilineStrings.size() - 1) 
-			{
-				cacheUseJustify = false;
-			}
-			int32 xo = 0;
-			if(align & ALIGN_RIGHT)
-			{
-				xo = (int32)(cacheFinalSize.x - stringSizes[line]);
-				if(xo < 0)
-				{
-					xo = 0;
-				}
-			}
-			else if(align & ALIGN_HCENTER)
-			{
-				xo = (int32)(cacheFinalSize.x - stringSizes[line]) / 2;
-				if(xo < 0)
-				{
-					xo = 0;
-				}
-			}
-			Size2i ds;
-			if (buf)
-			{
-				if (cacheUseJustify) 
-				{
-					ds = realFont->DrawStringToBuffer(buf, cacheDx, cacheDy, (int32)(Core::GetVirtualToPhysicalFactor() * xo), (int32)(Core::GetVirtualToPhysicalFactor() * yOffset),
-						(int32)ceilf(Core::GetVirtualToPhysicalFactor() * cacheW), (int32)ceilf(Core::GetVirtualToPhysicalFactor() * stringSizes[line]), multilineStrings[line], true);
-				}
-				else 
-				{
-					ds = realFont->DrawStringToBuffer(buf, cacheDx, cacheDy, (int32)(Core::GetVirtualToPhysicalFactor() * xo), (int32)(Core::GetVirtualToPhysicalFactor() * yOffset),
-						0, 0, multilineStrings[line], true);
-				}
-				
-			}
-			else 
-			{
-				if (cacheUseJustify) 
-				{
-					ds = realFont->DrawString((float32)xo, (float32)yOffset, multilineStrings[line], (int32)ceilf(Core::GetVirtualToPhysicalFactor() * cacheW));
-				}
-				else 
-				{
-					ds = realFont->DrawString((float32)xo, (float32)yOffset, multilineStrings[line], 0);
-				}
-				
-			}
-			
-			
-			realSize.dx = Max(realSize.dx, (int32)(Core::GetPhysicalToVirtualFactor() * ds.dx));
-			yOffset += fontHeight;
-			realSize.dy = yOffset;
-		}	
-	}
+
+        needRedraw = false;
+    }
+
+    mutex.Unlock();
+    SafeRelease(texture);
+    Release();
 }
 
-	
+void TextBlock::CalculateCacheParams()
+{
+    if (logicalText.empty())
+    {
+        visualText.clear();
+        isRtl = false;
+        cacheFinalSize = Vector2(0.f,0.f);
+        cacheW = 0;
+        cacheDx = 0;
+        cacheDy = 0;
+        cacheOx = 0;
+        cacheOy = 0;
+        cacheSpriteOffset = Vector2(0.f,0.f);
+        cacheTextSize = Vector2(0.f,0.f);
+        return;
+    }
+
+    visualText = logicalText;
+    WideString preparedText = logicalText;
+    isRtl = false;
+
+    if (isBiDiSupportEnabled) // Check BiDi support
+    {
+        if (bidiHelper.PrepareString(logicalText, preparedText, &isRtl))
+        {
+            visualText = preparedText;
+            bidiHelper.ReorderString(visualText, isRtl);
+        }
+    }
+    CleanLine(visualText);
+
+    bool useJustify = ((align & ALIGN_HJUSTIFY) != 0);
+    renderSize = originalFontSize;
+    font->SetSize(renderSize);
+    Vector2 drawSize = rectSize;
+
+    if(requestedSize.dx > 0)
+    {
+        drawSize.x = requestedSize.dx;
+    }
+    if(requestedSize.dy > 0)
+    {
+        drawSize.y = requestedSize.dy;
+    }
+
+    Font::StringMetrics textSize;
+    stringSizes.clear();
+
+    // This is a temporary fix to correctly handle long multiline texts
+    // which can't be broken to the separate lines.
+    if (isMultilineEnabled)
+    {
+        if(isMultilineBySymbolEnabled)
+        {
+            SplitTextBySymbolsToStrings(preparedText, drawSize, multilineStrings, isRtl);
+        }
+        else
+        {
+            SplitTextToStrings(preparedText, drawSize, multilineStrings, isRtl);
+        }
+
+        treatMultilineAsSingleLine = multilineStrings.size() == 1;
+    }
+
+    if(!isMultilineEnabled || treatMultilineAsSingleLine)
+    {
+        textSize = font->GetStringMetrics(visualText);
+        WideString pointsStr;
+        if(fittingType & FITTING_POINTS)
+        {
+            if(drawSize.x < textSize.width)
+            {
+                Size2i textSizePoints;
+
+                int32 length = (int32)visualText.length();
+                for(int32 i = length - 1; i > 0; --i)
+                {
+                    pointsStr.clear();
+                    pointsStr.append(visualText, 0, i);
+                    pointsStr += L"...";
+
+                    textSize = font->GetStringMetrics(pointsStr);
+                    if(textSize.width <= drawSize.x)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+        else if(!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x + 1 < textSize.width) && (requestedSize.x >= 0))
+        {
+            Size2i textSizePoints;
+            int32 length = (int32)visualText.length();
+            if(ALIGN_RIGHT & align)
+            {
+                for(int32 i = 1; i < length - 1; ++i)
+                {
+                    pointsStr.clear();
+                    pointsStr.append(visualText, i, length - i);
+
+                    textSize = font->GetStringMetrics(pointsStr);
+                    if(textSize.width <= drawSize.x)
+                    {
+                        break;
+                    }
+                }
+            }
+            else if(ALIGN_HCENTER & align)
+            {
+                int32 endPos = length / 2;
+                int32 startPos = endPos - 1;
+                int32 count = endPos;
+
+                for(int32 i = 1; i < count; ++i)
+                {
+                    pointsStr.clear();
+                    pointsStr.append(visualText, startPos, endPos - startPos);
+
+                    textSize = font->GetStringMetrics(pointsStr);
+                    if(drawSize.x <= textSize.width)
+                    {
+                        break;
+                    }
+
+                    --startPos;
+                    ++endPos;
+                }
+            }
+        }
+        else if(((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (requestedSize.dy >= 0 || requestedSize.dx >= 0))
+        {
+            bool isChanged = false;
+            float32 prevFontSize = renderSize;
+            while (true)
+            {
+                float32 yMul = 1.0f;
+                float32 xMul = 1.0f;
+
+                bool xBigger = false;
+                bool xLower = false;
+                bool yBigger = false;
+                bool yLower = false;
+                if(requestedSize.dy >= 0)
+                {
+                    if((isChanged || fittingType & FITTING_REDUCE) && textSize.height > drawSize.y)
+                    {
+                        if (prevFontSize < renderSize)
+                        {
+                            renderSize = prevFontSize;
+                            font->SetSize(renderSize);
+                            textSize = font->GetStringMetrics(visualText);
+                            break;
+                        }
+                        yBigger = true;
+                        yMul = drawSize.y / textSize.height;
+                    }
+                    else if((isChanged || fittingType & FITTING_ENLARGE) && textSize.height < drawSize.y * 0.9)
+                    {
+                        yLower = true;
+                        yMul = (drawSize.y * 0.9f) / textSize.height;
+                        if(yMul < 1.01f)
+                        {
+                            yLower = false;
+                        }
+                    }
+                }
+
+                if(requestedSize.dx >= 0)
+                {
+                    if((isChanged || fittingType & FITTING_REDUCE) && textSize.width > drawSize.x)
+                    {
+                        if (prevFontSize < renderSize)
+                        {
+                            renderSize = prevFontSize;
+                            font->SetSize(renderSize);
+                            textSize = font->GetStringMetrics(visualText);
+                            break;
+                        }
+                        xBigger = true;
+                        xMul = drawSize.x / textSize.width;
+                    }
+                    else if((isChanged || fittingType & FITTING_ENLARGE) && textSize.width < drawSize.x * 0.95)
+                    {
+                        xLower = true;
+                        xMul = (drawSize.x * 0.95f) / textSize.width;
+                        if(xMul < 1.01f)
+                        {
+                            xLower = false;
+                        }
+                    }
+                }
+
+
+                if((!xBigger && !yBigger) && (!xLower || !yLower))
+                {
+                    break;
+                }
+
+                float32 finalSize = renderSize;
+                prevFontSize = finalSize;
+                isChanged = true;
+                if(xMul < yMul)
+                {
+                    finalSize *= xMul;
+                }
+                else
+                {
+                    finalSize *= yMul;
+                }
+                renderSize = finalSize;
+                font->SetSize(renderSize);
+                textSize = font->GetStringMetrics(visualText);
+            }
+        }
+
+        if(!pointsStr.empty())
+        {
+            visualText = pointsStr;
+            textSize = font->GetStringMetrics(visualText);
+        }
+
+        if (treatMultilineAsSingleLine)
+        {
+            // Another temporary solution to return correct multiline strings/
+            // string sizes.
+            multilineStrings.clear();
+            stringSizes.clear();
+            multilineStrings.push_back(visualText);
+            stringSizes.push_back(textSize.width);
+        }
+    }
+    else //if(!isMultilineEnabled)
+    {
+        if (fittingType && (requestedSize.dy >= 0/* || requestedSize.dx >= 0*/) && visualText.size() > 3)
+        {
+            if (isMultilineBySymbolEnabled)
+            {
+                SplitTextBySymbolsToStrings(preparedText, drawSize, multilineStrings, isRtl);
+            }
+            else
+            {
+                SplitTextToStrings(preparedText, drawSize, multilineStrings, isRtl);
+            }
+
+            int32 yOffset = font->GetVerticalSpacing();
+            int32 fontHeight = font->GetFontHeight() + yOffset;
+            float32 lastSize = renderSize;
+
+            textSize.width = 0;
+            textSize.height = fontHeight * (int32)multilineStrings.size() - yOffset;
+
+            bool isChanged = false;
+            while (true)
+            {
+                float32 yMul = 1.0f;
+
+                bool yBigger = false;
+                bool yLower = false;
+                if(requestedSize.dy >= 0)
+                {
+                    if((isChanged || fittingType & FITTING_REDUCE) && textSize.height > drawSize.y)
+                    {
+                        yBigger = true;
+                        yMul = drawSize.y / textSize.height;
+                        if (lastSize < renderSize)
+                        {
+                            renderSize = lastSize;
+                            font->SetSize(renderSize);
+                            break;
+                        }
+                    }
+                    else if((isChanged || fittingType & FITTING_ENLARGE) && textSize.height < drawSize.y * 0.95)
+                    {
+                        yLower = true;
+                        if(textSize.height < drawSize.y * 0.75f)
+                        {
+                            yMul = (drawSize.y * 0.75f) / textSize.height;
+                        }
+                        else if(textSize.height < drawSize.y * 0.8f)
+                        {
+                            yMul = (drawSize.y * 0.8f) / textSize.height;
+                        }
+                        else if(textSize.height < drawSize.y * 0.85f)
+                        {
+                            yMul = (drawSize.y * 0.85f) / textSize.height;
+                        }
+                        else if(textSize.height < drawSize.y * 0.9f)
+                        {
+                            yMul = (drawSize.y * 0.9f) / textSize.height;
+                        }
+                        else
+                        {
+                            yMul = (drawSize.y * 0.95f) / textSize.height;
+                        }
+                        if (yMul == 1.0f)
+                        {
+                            yMul = 1.05f;
+                        }
+                    }
+                }
+
+                if(!yBigger && !yLower)
+                {
+                    break;
+                }
+
+                float32 finalSize = lastSize = renderSize;
+                isChanged = true;
+                finalSize *= yMul;
+
+                renderSize = finalSize;
+                font->SetSize(renderSize);
+
+                if (isMultilineBySymbolEnabled)
+                {
+                    SplitTextBySymbolsToStrings(preparedText, drawSize, multilineStrings, isRtl);
+                }
+                else
+                {
+                    SplitTextToStrings(preparedText, drawSize, multilineStrings, isRtl);
+                }
+
+                yOffset = font->GetVerticalSpacing();
+                fontHeight = font->GetFontHeight() + yOffset;
+                textSize.height = fontHeight * (int32)multilineStrings.size() - yOffset;
+
+            }
+
+        }
+
+        if (isMultilineBySymbolEnabled)
+        {
+            SplitTextBySymbolsToStrings(preparedText, drawSize, multilineStrings, isRtl);
+        }
+        else
+        {
+            SplitTextToStrings(preparedText, drawSize, multilineStrings, isRtl);
+        }
+
+        int32 yOffset = font->GetVerticalSpacing();
+        int32 fontHeight = font->GetFontHeight() + yOffset;
+
+        textSize.width = textSize.drawRect.dx = 0;
+        textSize.height = textSize.drawRect.dy = fontHeight * (int32)multilineStrings.size() - yOffset;	
+
+        if (textSize.height > drawSize.y && requestedSize.y >= 0.f)
+        {
+            int32 needLines = Min((int32)multilineStrings.size(), (int32)ceilf(drawSize.y / fontHeight) + 1);
+            Vector<WideString> oldLines;
+            multilineStrings.swap(oldLines);
+            if(align & ALIGN_TOP)
+            {
+                multilineStrings.assign(oldLines.begin(), oldLines.begin() + needLines);
+            }
+            else if(align & ALIGN_VCENTER)
+            {
+                int32 startIndex = ((int32)oldLines.size() - needLines + 1) / 2;
+                multilineStrings.assign(oldLines.begin() + startIndex, oldLines.begin() + startIndex + needLines);
+            }
+            else //if(ALIGN_BOTTOM)
+            {
+                int32 startIndex = (int32)oldLines.size() - needLines;
+                multilineStrings.assign(oldLines.begin() + startIndex, oldLines.end());
+            }
+            textSize.height = textSize.drawRect.dy = fontHeight * (int32)multilineStrings.size() - yOffset;	
+        }
+
+        stringSizes.reserve(multilineStrings.size());
+        for (int32 line = 0; line < (int32)multilineStrings.size(); ++line)
+        {
+            Font::StringMetrics stringSize = font->GetStringMetrics(multilineStrings[line]);
+            stringSizes.push_back(stringSize.width);
+            if(requestedSize.dx >= 0)
+            {
+                textSize.width = Max(textSize.width, Min(stringSize.width, (int)drawSize.x));
+                textSize.drawRect.dx = Max(textSize.drawRect.dx, Min(stringSize.drawRect.dx, (int)drawSize.x));
+            }
+            else
+            {
+                textSize.width = Max(textSize.width, stringSize.width);
+                textSize.drawRect.dx = Max(textSize.drawRect.dx, stringSize.drawRect.dx);
+            }
+            textSize.drawRect.x = Min(textSize.drawRect.x, stringSize.drawRect.x);
+            if(0 == line)
+            {
+                textSize.drawRect.y = stringSize.drawRect.y;
+            }
+        }
+    }
+
+    if (requestedSize.dx >= 0 && useJustify)
+    {
+        textSize.drawRect.dx = Max(textSize.drawRect.dx, (int)drawSize.dx);
+    }
+
+    //calc texture size
+    float32 virt2phys = Core::GetVirtualToPhysicalFactor();
+    int32 dx = (int32)ceilf(virt2phys * textSize.drawRect.dx);
+    int32 dy = (int32)ceilf(virt2phys * textSize.drawRect.dy);
+    int32 ox = (int32)ceilf(virt2phys * textSize.drawRect.x);
+    int32 oy = (int32)ceilf(virt2phys * textSize.drawRect.y);
+
+    cacheUseJustify = useJustify;
+    cacheDx = dx;
+    EnsurePowerOf2(cacheDx);
+
+    cacheDy = dy;
+    EnsurePowerOf2(cacheDy);
+
+    cacheOx = ox;
+    cacheOy = oy;
+
+    cacheW = textSize.drawRect.dx;
+    cacheFinalSize.x = (float32)textSize.drawRect.dx;
+    cacheFinalSize.y = (float32)textSize.drawRect.dy;
+    cacheTextSize = Vector2((float32)textSize.width, (float32)textSize.height);
+
+    // Align sprite offset
+    if(align & ALIGN_RIGHT)
+    {
+        cacheSpriteOffset.x = (float32)(textSize.drawRect.dx - textSize.width + textSize.drawRect.x);
+    }
+    else if(align & ALIGN_HCENTER)
+    {
+        cacheSpriteOffset.x = ((float32)(textSize.drawRect.dx - textSize.width) * 0.5f + textSize.drawRect.x);
+    }
+    else
+    {
+        cacheSpriteOffset.x = (float32)textSize.drawRect.x;
+    }
+    if(align & ALIGN_BOTTOM)
+    {
+        cacheSpriteOffset.y = (float32)(textSize.drawRect.dy - textSize.height + textSize.drawRect.y);
+    }
+    else if(align & ALIGN_VCENTER)
+    {
+        cacheSpriteOffset.y = ((float32)(textSize.drawRect.dy - textSize.height) * 0.5f + textSize.drawRect.y);
+    }
+    else
+    {
+        cacheSpriteOffset.y = (float32)textSize.drawRect.y;
+    }
+
+    // Restore font size
+    font->SetSize(originalFontSize);
+
+}
+
 void TextBlock::PreDraw()
 {
-	if (isPredrawed)
-	{
-		return;
-	}
-	
-	isPredrawed = true;
-	
-	if (!font->IsTextSupportsSoftwareRendering())
-	{
-		RenderManager::Instance()->SetRenderTarget(sprite);
-
-		DrawToBuffer(font, NULL);
-		
-		RenderManager::Instance()->RestoreRenderTarget();
-	}
+    if (textBlockRender)
+    {
+        font->SetSize(renderSize);
+        textBlockRender->PreDraw();
+        font->SetSize(originalFontSize);
+    }
 }
-    
+
+void TextBlock::Draw(const Color& textColor, const Vector2* offset/* = NULL*/)
+{
+    if (textBlockRender)
+    {
+        font->SetSize(renderSize);
+        textBlockRender->Draw(textColor, offset);
+        font->SetSize(originalFontSize);
+    }
+}
+
 TextBlock * TextBlock::Clone()
 {
     TextBlock *block = new TextBlock();
 
     block->SetRectSize(rectSize);
     block->SetMultiline(GetMultiline(), GetMultilineBySymbol());
-    block->SetAlign(GetAlign());
+    block->SetAlign(align);
     block->SetFittingOption(fittingType);
-    
+    block->SetUseRtlAlign(useRtlAlign);
+
     if (GetFont())
     {
         block->SetFont(GetFont());
     }
     block->SetText(GetText(), requestedSize);
-    
+
     return block;
+}
+
+void TextBlock::ForcePrepare(Texture *texture)
+{
+    needRedraw = true;
+    Prepare(texture);
+}
+
+void TextBlock::SetBiDiSupportEnabled(bool value)
+{
+    isBiDiSupportEnabled = value;
+}
+
+bool TextBlock::IsBiDiSupportEnabled()
+{
+    return isBiDiSupportEnabled;
 }
 
 const Vector2 & TextBlock::GetTextSize()
 {
-    mutex.Lock();
-    mutex.Unlock();
-    
-    return cacheFinalSize;
+    LockGuard<Mutex> guard(mutex);
+    return cacheTextSize;
 }
 
 const Vector<int32> & TextBlock::GetStringSizes() const
 {
-	return stringSizes;
+    return stringSizes;
+}
+
+const Vector2& TextBlock::GetSpriteOffset()
+{
+    LockGuard<Mutex> guard(mutex);
+    return cacheSpriteOffset;
+}
+
+void TextBlock::SplitTextToStrings(const WideString& string, Vector2 const& targetRectSize, Vector<WideString>& resultVector, const bool isRtl)
+{
+    resultVector.clear();
+
+    Vector<float32> sizes;
+    font->GetStringSize(string, &sizes);
+    for(uint32 i = 0; i < sizes.size(); ++i)
+        if (FRIBIDI_IS_EXPLICIT_OR_BN (fribidi_get_bidi_type (string[i]))
+	    || string[i] == FRIBIDI_CHAR_LRM || string[i] == FRIBIDI_CHAR_RLM)
+        {
+            sizes[i] = 0.0f;
+        }
+    if (sizes.size() != string.length())
+    {
+        return;
+    }
+
+    Vector<uint8> breaks;
+    StringUtils::GetLineBreaks(string, breaks);
+    if (breaks.size() != string.length())
+    {
+        return;
+    }
+
+    const float32 p2v = Core::GetPhysicalToVirtualFactor();
+    int32 targetWidth = (int32)targetRectSize.dx;
+    float32 currentWidth = 0;
+    uint32 lastPossibleBreak = 0;
+
+    uint32 fromPos = 0;
+    uint32 textLength = string.length();
+    for (uint32 pos = 0; pos < textLength; ++pos)
+    {
+        char16 ch = string[pos];
+        uint8 canBreak = breaks[pos];
+
+        currentWidth += sizes[pos] * p2v;
+
+        // Check that targetWidth defined and currentWidth less than targetWidth.
+        // If symbol is whitespace skip it and go to next (add all whitespaces to current line)
+        if (targetWidth == 0 || currentWidth <= targetWidth || StringUtils::IsWhitespace(ch))
+        {
+            if (canBreak == StringUtils::LB_MUSTBREAK) // If symbol is line breaker then split string
+            {
+                WideString line = string.substr(fromPos, pos - fromPos + 1);
+                if (isBiDiSupportEnabled)
+                {
+                    bidiHelper.ReorderString(line, isRtl);
+                }
+                CleanLine(line, pos < textLength - 1);
+                resultVector.push_back(line);
+                currentWidth = 0.f;
+                lastPossibleBreak = 0;
+                fromPos = pos + 1;
+            }
+            else if (canBreak == StringUtils::LB_ALLOWBREAK) // Store breakable symbol position
+            {
+                lastPossibleBreak = pos;
+            }
+            continue;
+        }
+
+        if (lastPossibleBreak > 0) // If we have any breakable symbol in current substring then split by it
+        {
+            pos = lastPossibleBreak;
+        }
+        else // If not then split by previous symbol
+        {
+            pos--;
+        }
+
+        WideString line = string.substr(fromPos, pos - fromPos + 1);
+        if (isBiDiSupportEnabled)
+        {
+            bidiHelper.ReorderString(line, isRtl);
+        }
+        CleanLine(line, true);
+        resultVector.push_back(line);
+        currentWidth = 0.f;
+        lastPossibleBreak = 0;
+        fromPos = pos + 1;
+    }
+
+    DVASSERT(fromPos == textLength && "Incorrect line split.")
+}
+
+void TextBlock::SplitTextBySymbolsToStrings(const WideString& string, Vector2 const& targetRectSize, Vector<WideString>& resultVector, const bool isRtl)
+{
+    int32 targetWidth = (int32)(targetRectSize.dx);
+    int32 totalSize = (int)string.length();
+
+    int32 currentLineStart = 0;
+    int32 currentLineEnd = 0;
+    float32 currentLineDx = 0;
+
+    resultVector.clear();
+
+    Vector<float32> sizes;
+    font->GetStringSize(string, &sizes);
+    if (sizes.size() == 0)
+    {
+        return;
+    }
+
+    for (int pos = 0; pos < totalSize; pos++)
+    {
+        char16 t = string[pos];
+        char16 tNext = 0;
+        if (pos + 1 < totalSize)
+            tNext = string[pos + 1];
+
+        currentLineEnd = pos;
+
+        if (t == L'\n')
+        {
+            WideString currentLine = string.substr(currentLineStart, currentLineEnd - currentLineStart);
+            if (isBiDiSupportEnabled)
+            {
+                bidiHelper.ReorderString(currentLine, isRtl);
+            }
+            CleanLine(currentLine);
+            resultVector.push_back(currentLine);
+
+            currentLineStart = pos + 1;
+            currentLineDx = 0;
+        }
+        if (t == L'\\' && tNext == L'n')
+        {
+            WideString currentLine = string.substr(currentLineStart, currentLineEnd - currentLineStart);
+            if (isBiDiSupportEnabled)
+            {
+                bidiHelper.ReorderString(currentLine, isRtl);
+            }
+            CleanLine(currentLine);
+            resultVector.push_back(currentLine);
+
+            currentLineStart = pos + 2;
+            currentLineDx = 0;
+        }
+
+        // Use additional condition to prevent endless loop, when target size is less than
+        // size of one symbol (sizes[pos] > targetWidth)
+        // To keep initial index logic we should always perform action currentLineDx += sizes[pos]
+        // before entering this condition, so currentLineDx > 0.
+        if ((currentLineDx > 0) && ((currentLineDx + sizes[pos] * Core::GetPhysicalToVirtualFactor()) > targetWidth))
+        {
+            WideString currentLine = string.substr(currentLineStart, currentLineEnd - currentLineStart);
+            if (isBiDiSupportEnabled)
+            {
+                bidiHelper.ReorderString(currentLine, isRtl);
+            }
+            CleanLine(currentLine);
+            resultVector.push_back(currentLine);
+
+            currentLineStart = pos;
+            currentLineDx = 0;
+            pos--;
+        }
+        else
+        {
+            currentLineDx += sizes[pos] * Core::GetPhysicalToVirtualFactor();
+        }
+    }
+
+    WideString currentLine = string.substr(currentLineStart, currentLineEnd - currentLineStart + 1);
+    if (isBiDiSupportEnabled)
+    {
+        bidiHelper.ReorderString(currentLine, isRtl);
+    }
+    CleanLine(currentLine);
+    resultVector.push_back(currentLine);
+}
+
+void TextBlock::CleanLine(WideString& string, bool trimRight)
+{
+    if (trimRight)
+    {
+    	WideString trimed = StringUtils::TrimRight(string);
+        string.swap(trimed);
+    }
+
+    WideString::iterator it = string.begin();
+    WideString::iterator end = string.end();
+    while(it != end)
+    {
+        switch (*it)
+        {
+        case L'\n':
+        case L'\r':
+        case 0x200B: // Zero-width space
+        case 0x200E: // Zero-width Left-to-right zero-width character
+        case 0x200F: // Zero-width Right-to-left zero-width non-Arabic character
+        case 0x061C: // Right-to-left zero-width Arabic character
+            it = string.erase(it);
+            end = string.end();
+            break;
+        case L'\t':
+        case 0xA0: // Non-break space
+            *it = L' ';
+        default:
+            ++it;
+            break;
+        }
+    }
 }
 
 };

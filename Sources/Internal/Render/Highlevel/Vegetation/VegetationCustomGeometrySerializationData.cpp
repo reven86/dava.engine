@@ -212,7 +212,7 @@ VegetationCustomGeometrySerializationData* VegetationCustomGeometrySerialization
     {
         //VI: wait for all scene objects to initialize
         //VI: in order to avoid crashes when scene released
-        ThreadIdJobWaiter waiter(Thread::GetCurrentThreadId());
+        ThreadIdJobWaiter waiter(Thread::GetCurrentId());
         waiter.Wait();
         
         Entity* currentVariation = SelectDataVariation(entity);

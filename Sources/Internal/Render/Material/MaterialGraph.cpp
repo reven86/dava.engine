@@ -104,7 +104,7 @@ bool MaterialGraph::LoadFromFile(const FilePath & pathname)
     const YamlNode * nodes = rootNode->Get("nodes");
     if (nodes && nodes->GetType() == YamlNode::TYPE_ARRAY)
     {
-        for (int32 k = 0; k < nodes->GetCount(); ++k)
+        for (uint32 k = 0; k < nodes->GetCount(); ++k)
         {
             const YamlNode * graphNode = nodes->Get(k);
             bool result = LoadNode(graphNode);

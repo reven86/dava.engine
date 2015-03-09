@@ -40,7 +40,7 @@ materials:
   default: "HIGH"
 
  -
-  group: "Landscap"
+  group: "Landscape"
   quality: ["HIGH", "LOW"]
   default: "HIGH"
 

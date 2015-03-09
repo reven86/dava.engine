@@ -16,6 +16,8 @@
 #import "OpenGLView.h"
 #include "DAVAEngine.h"
 
+#include "Platform/Qt/QtLayer.h"
+
 #if defined(__DAVAENGINE_MACOS__)
 
 
@@ -42,7 +44,7 @@
 		
         // Attributes Common to FullScreen and non-FullScreen
 #ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-        NSOpenGLPFAColorSize, [self displayBitsPerPixel:kCGDirectMainDisplay],//24,
+        NSOpenGLPFAColorSize, static_cast<NSOpenGLPixelFormatAttribute>([self displayBitsPerPixel:kCGDirectMainDisplay]),//24,
 #else //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
         NSOpenGLPFAColorSize, CGDisplayBitsPerPixel(kCGDirectMainDisplay),//24,
 #endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
@@ -151,14 +153,16 @@
     if(UIControlSystem::Instance())
         UIControlSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
     
+    Core *core = Core::Instance();
     if(Core::Instance())
     {
-        Core::Instance()->UnregisterAllAvailableResourceSizes();
-        Core::Instance()->RegisterAvailableResourceSize(boundRect.size.width, boundRect.size.height, "Gfx");
+        core->UnregisterAllAvailableResourceSizes();
+        core->RegisterAvailableResourceSize(rect.size.width, rect.size.height, "Gfx");
+        core->RegisterAvailableResourceSize(rect.size.width*2.0f, rect.size.height*2.0f, "Gfx2");
         
-        Core::Instance()->SetPhysicalScreenSize(boundRect.size.width, boundRect.size.height);
-        Core::Instance()->SetVirtualScreenSize(rect.size.width, rect.size.height);
-        Core::Instance()->CalculateScaleMultipliers();
+        core->SetPhysicalScreenSize(boundRect.size.width, boundRect.size.height);
+        core->SetVirtualScreenSize(rect.size.width, rect.size.height);
+        core->CalculateScaleMultipliers();
     }
 	
     isFirstDraw = true;
@@ -178,7 +182,7 @@
 
 - (void)drawRect:(NSRect)theRect
 {
-    if(willQuit)
+    if(willQuit || !QtLayer::Instance()->IsDAVAEngineEnabled())
         return;
     
 	DAVA::RenderManager::Instance()->Lock();
@@ -369,7 +373,7 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
     NSRect sz = [self frame];
     NSEvent *theEvent = [NSEvent mouseEventWithType:NSMouseMoved
                         location:NSMakePoint(x, sz.size.height - y)
-                        modifierFlags:0 timestamp:nil windowNumber:0 context:nil eventNumber:0 clickCount:1 pressure:0];
+                        modifierFlags:0 timestamp:0 windowNumber:0 context:nil eventNumber:0 clickCount:1 pressure:0];
 
 	[self process:DAVA::UIEvent::PHASE_MOVE touch:theEvent];
     

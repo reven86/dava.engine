@@ -33,12 +33,51 @@
 namespace DAVA
 {
 
+FastName optionsNames[RenderOptions::OPTIONS_COUNT] = 
+{
+    FastName("Test Option"),
+
+    FastName("Draw Landscape"),
+    FastName("Draw Water Refl/Refr"),
+    FastName("Draw Opaque Layer"),
+    FastName("Draw Transparent Layer"),
+    FastName("Draw Sprites"),
+    FastName("Draw Shadow Volumes"),
+    FastName("Draw Vegetation"),
+
+    FastName("Enable Fog"),
+
+    FastName("Update LODs"),
+    FastName("Update Landscape LODs"), 
+    FastName("Update Animations"), 
+    FastName("Process Clipping"),
+    FastName("Update UI System"),
+
+    FastName("SpeedTree Animations"),
+    FastName("Waves System Process"),
+
+    FastName("All Render Enabled"),
+    FastName("Texture Loading"),
+
+    FastName("Occlusion Stats"),
+
+    FastName("Static Occlusion"),
+    FastName("Debug Draw Occlusion"),
+
+    FastName("Update Particle Emitters"),
+    FastName("Draw Particles"),
+    FastName("Particle Prepare Buffers")
+};
+
 RenderOptions::RenderOptions()
 {
 	for(int32 i = 0; i < OPTIONS_COUNT; ++i)
 	{
 		options[i] = true;
 	}		
+
+    options[DEBUG_DRAW_STATIC_OCCLUSION] = false;
+    options[LAYER_OCCLUSION_STATS] = false;
 }
 
 bool RenderOptions::IsOptionEnabled(RenderOption option)
@@ -50,6 +89,11 @@ void RenderOptions::SetOption(RenderOption option, bool value)
 {
 	options[option] = value;
 	NotifyObservers();
+}
+
+FastName RenderOptions::GetOptionName(RenderOption option)
+{
+    return optionsNames[option];
 }
 
 };

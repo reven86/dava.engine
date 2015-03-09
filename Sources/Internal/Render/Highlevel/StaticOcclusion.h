@@ -43,7 +43,7 @@ class StaticOcclusionRenderPass;
 class RenderObject;
 class RenderHierarchy;
 class RenderPassBatchArray;
-class OcclusionQueryManager;
+class OcclusionQueryPool;
 class RenderBatch;
 class RenderSystem;
 class Scene;
@@ -56,7 +56,7 @@ public:
     StaticOcclusionData();
     ~StaticOcclusionData();
     
-    void Init(uint32 sizeX, uint32 sizeY, uint32 sizeZ, uint32 objectCount, const AABBox3 & bbox);
+    void Init(uint32 sizeX, uint32 sizeY, uint32 sizeZ, uint32 objectCount, const AABBox3 & bbox, const float32 *_cellHeightOffset);
     void EnableVisibilityForObject(uint32 blockIndex, uint32 objectIndex);
     void DisableVisibilityForObject(uint32 blockIndex, uint32 objectIndex);
     
@@ -70,6 +70,7 @@ public:
     uint32  blockCount;
     uint32  objectCount;
     uint32 * data;
+    float32* cellHeightOffset;
 };
 
 class StaticOcclusion
@@ -96,7 +97,7 @@ public:
                                   Vector<RenderObject*> > & equalVisibility);
 
     
-    inline OcclusionQueryManager & GetOcclusionQueryManager();
+    inline OcclusionQueryPool & GetOcclusionQueryPool();
     //uint32 * GetCellVisibilityData(Camera * camera);
     
     uint32 RenderFrame();
@@ -104,7 +105,7 @@ public:
 
     void FillOcclusionDataObject(StaticOcclusionData * data);
     
-    void RecordFrameQuery(RenderBatch * batch, OcclusionQueryManagerHandle handle);
+    void RecordFrameQuery(RenderBatch * batch, OcclusionQueryPoolHandle handle);
     
     //Vector<Vector3> renderPositions;
     //Vector<Vector3> renderDirections;
@@ -115,11 +116,12 @@ private:
     void ProcessRecordedBatches();
     AABBox3 GetCellBox(uint32 x, uint32 y, uint32 z);
         
-    OcclusionQueryManager manager;
-    Vector<std::pair<RenderBatch*, OcclusionQueryManagerHandle> > recordedBatches;
+    OcclusionQueryPool queryPool;
+    Vector<std::pair<RenderBatch*, OcclusionQueryPoolHandle> > recordedBatches;
     Set<RenderObject*> frameGlobalVisibleInfo;
     
     AABBox3  occlusionAreaRect;
+    float32 *cellHeightOffset;
     uint32 xBlockCount;
     uint32 yBlockCount;
     uint32 zBlockCount;
@@ -142,9 +144,9 @@ private:
     Map<RenderObject*, Vector<RenderObject*> > equalVisibilityArray;
 };
     
-inline OcclusionQueryManager & StaticOcclusion::GetOcclusionQueryManager()
+inline OcclusionQueryPool & StaticOcclusion::GetOcclusionQueryPool()
 {
-    return manager;
+    return queryPool;
 }
 
 inline void StaticOcclusion::SetScene(Scene * _scene) { scene = _scene; };

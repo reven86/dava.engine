@@ -183,6 +183,23 @@ struct PackRGBA4444
 	}
 };
 
+struct UnpackA8
+{
+    inline void operator()(const uint8 * input, uint32 & r, uint32 & g, uint32 & b, uint32 & a)
+    {
+        r = g = b = 0;
+        a = (*input);
+    }
+};
+
+struct PackA8
+{
+    inline void operator()(uint32 r, uint32 g, uint32 b, uint32 a, uint8 * output)
+    {
+        *output = a;
+    }
+};
+
 struct PackNormalizedRGBA8888
 {
     void operator()(uint32 r, uint32 g, uint32 b, uint32 a, uint32 * output)
@@ -387,7 +404,12 @@ public:
 		{
 			ConvertDownscaleTwiceBillinear<uint16, uint32, UnpackRGBA4444, PackRGBA8888> convert;
 			convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
-		}
+        }
+        else if ((inFormat == FORMAT_A8) && (outFormat == FORMAT_A8))
+        {
+            ConvertDownscaleTwiceBillinear<uint8, uint8, UnpackA8, PackA8> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
         else
 		{
             Logger::Debug("Convert function not implemented for %s or %s", PixelFormatDescriptor::GetPixelFormatString(inFormat), PixelFormatDescriptor::GetPixelFormatString(outFormat));

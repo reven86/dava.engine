@@ -30,21 +30,21 @@
 #ifndef __DAVAENGINE_TEMPLATEHELPERS_H__
 #define __DAVAENGINE_TEMPLATEHELPERS_H__
 
-//#include "Base/BaseTypes.h"
-//#include "Base/BaseObjectChecker.h"
-//#include "Debug/DVAssert.h"
-//#include "DAVAConfig.h"
-//#include "Base/RefPtr.h"
-//#include "Render/RenderBase.h"
 #include <typeinfo>
+#include "NullType.h"
 
 namespace DAVA
 {
 
-	// Alexandresky style compile time assertion. 
-template <bool> struct CompileTimeError;
-template <> struct CompileTimeError<true> {};
-#define COMPILER_ASSERT(expr)  (DAVA::CompileTimeError<(expr)!=0>());
+// Alexandresky style compile time assertion.
+template <bool>
+struct CompileTimeError;
+    
+template <>
+struct CompileTimeError<true>
+{};
+    
+#define COMPILER_ASSERT(expr) DAVA::CompileTimeError<(expr)>();
 
 template<bool C, typename T = void>
 struct EnableIf
@@ -57,13 +57,13 @@ struct EnableIf<false, T>
 { };
 
 template <int v>
-class Int2Type
+struct Int2Type
 {
     enum {value = v };
 };
     
 template <class T>
-class Type2Type
+struct Type2Type
 {
     typedef T OriginalType;
 };
@@ -78,6 +78,68 @@ struct Select<false, T, U>
 {
     typedef U Result;
 };
+
+template <bool, unsigned int index_A, unsigned int index_B>
+struct SelectIndex
+{
+	enum { result = index_A };
+};
+
+template <unsigned int index_A, unsigned int index_B>
+struct SelectIndex<false, index_A, index_B>
+{
+	enum { result = index_B };
+};
+    
+	template<typename U>
+	struct PointerTraits
+	{
+		enum{ result = false };
+		typedef NullType PointerType;
+	};
+	template <typename U>
+	struct PointerTraits<U*>
+	{
+		enum{ result = true };
+		typedef U PointerType;
+	};
+    
+	template<typename U>
+	struct ReferenceTraits
+	{
+		enum{ result = false };
+		typedef NullType ReferenceType;
+	};
+	template <typename U>
+	struct ReferenceTraits<U&>
+	{
+		enum{ result = true };
+		typedef U ReferenceType;
+	};
+    
+	template<class U>
+	struct P2MTraits
+	{
+		enum{ result = false };
+	};
+	template <class R, class V>
+	struct P2MTraits<R V::*>
+	{
+		enum{ result = true };
+	};
+    
+	template <typename T>
+	class TypeTraits
+	{
+	public:
+		enum { isPointer = PointerTraits<T>::result };
+		enum { isReference = ReferenceTraits<T>::result };
+		enum { isPointerToMemberFunction = P2MTraits<T>::result };
+        
+		typedef typename Select<isPointer || isReference, T, const T&>::Result ParamType;
+		typedef typename Select<isReference, typename ReferenceTraits<T>::ReferenceType, T>::Result NonRefType;
+    };
+    
     
 template <class TO, class FROM>
 class Conversion
@@ -101,7 +163,27 @@ public:
     {
         sameType = false
     };
-};   
+};
+
+template<bool>
+struct IsEnumImpl
+{ };
+
+template<>
+struct IsEnumImpl<true>
+{
+	enum { result = true };
+};
+
+template<>
+struct IsEnumImpl<false>
+{
+	enum { result = false };
+};
+
+template <class T>
+struct IsEnum : public IsEnumImpl<__is_enum(T)>
+{ };
     
 template <class T>
 class Conversion<T, T>
@@ -112,136 +194,58 @@ public:
 };
     
 #define SUPERSUBCLASS(SUPER, SUB) (Conversion<const SUB*, const SUPER*>::exists && !Conversion<const SUPER*, const void*>::sameType) 
+  
 
-class NullType{};
-struct EmptyType{};
-    
-template<typename U>
-struct PointerTraits
+/**
+    \brief Works like dynamic_cast for Debug and like a static_cast for release.
+    */
+template<class C, class O>
+C DynamicTypeCheck(O* pObject)
 {
-    enum{result = false };
-    typedef NullType PointeeType;
-};
-template <typename U>
-struct PointerTraits<U*>
-{
-    enum{result = true };
-    typedef U PointeeType;
-};
-
-template<typename U>
-struct ReferenceTraits
-{
-    enum{result = false };
-    typedef NullType ReferenceType;
-};
-template <typename U>
-struct ReferenceTraits<U&>
-{
-    enum{result = true };
-    typedef U ReferenceType;
-};
-
-template<class U>
-struct P2MTraits
-{
-    enum{result = false };
-};
-template <class R, class V>
-struct P2MTraits<R V::*>
-{
-    enum{result = true };
-};    
-
-template <typename T>
-class TypeTraits
-{
-public:    
-    enum {isPointer = PointerTraits<T>::result };    
-    enum {isReference = ReferenceTraits<T>::result };   
-    enum {isPointerToMemberFunction = P2MTraits<T>::result };
-    
-};
-
-    
-    /**
-     \brief Works like dynamic_cast for Debug and like a static_cast for release.
-     */
-    template<class C, class O>
-    C DynamicTypeCheck(O* pObject)
-    {
 #ifdef DAVA_DEBUG
-        if(!pObject) return static_cast<C>(pObject);
+    if(!pObject) return static_cast<C>(pObject);
         
-        C c = dynamic_cast<C>(pObject);
-        if (!c)
-        {//assert emulation )
-            int *i = 0;
-            *(i) = 0;
-        }
-        return c;
+    C c = dynamic_cast<C>(pObject);
+    if (!c)
+    {//assert emulation )
+        int *i = 0;
+        *(i) = 0;
+    }
+    return c;
 #else
-        return static_cast<C>(pObject);
+    return static_cast<C>(pObject);
 #endif
-    }
+}
     
-    /**
-     \brief Returns true if object pointer is a pointer to the exact class.
-     */
-    template<class C, class O>
-    bool IsPointerToExactClass(const O* pObject) 
+/**
+    \brief Returns true if object pointer is a pointer to the exact class.
+    */
+template<class C, class O>
+bool IsPointerToExactClass(const O* pObject) 
+{
+	if (pObject)
     {
-		if (pObject)
-        {
-			COMPILER_ASSERT(!TypeTraits<C>::isPointer);//You should not use pointers for this method
-			return &typeid(*pObject) == &typeid(C);
-		}
-	    return false;
-    }
+		COMPILER_ASSERT(!TypeTraits<C>::isPointer);//You should not use pointers for this method
+		return &typeid(*pObject) == &typeid(C);
+	}
+	return false;
+}
     
-    template<class C, class O>
-    C cast_if_equal(O* pObject)
+template<class C, class O>
+C cast_if_equal(O* pObject)
+{
+	if (pObject)
     {
-		if (pObject)
+		COMPILER_ASSERT(TypeTraits<C>::isPointer);
+		if (typeid(*pObject) == typeid(typename PointerTraits<C>::PointerType))
         {
-			COMPILER_ASSERT(TypeTraits<C>::isPointer);
-			if (typeid(*pObject) == typeid(typename PointerTraits<C>::PointeeType))
-            {
-                return static_cast<C>(pObject);
-            }
-		}
-	    return 0;
-    }
-    
-    /* TEST, need to transfer to unit tests.
-     Logger::FrameworkDebug("%d", Conversion<double, int>::exists);
-     Logger::FrameworkDebug("%d", Conversion<Component*, VisibilityAABBoxComponent*>::exists);
-     Logger::FrameworkDebug("%d", Conversion<VisibilityAABBoxComponent*, Component*>::exists);
-     Logger::FrameworkDebug("%d", SUPERSUBCLASS(VisibilityAABBoxComponent, Component));
-     Logger::FrameworkDebug("%d", SUPERSUBCLASS(Component, VisibilityAABBoxComponent));
-     Logger::FrameworkDebug("%d", SUPERSUBCLASS(void*, VisibilityAABBoxComponent));
-     Logger::FrameworkDebug("%d", SUPERSUBCLASS(BaseObject, VisibilityAABBoxComponent));
-     
-     
-     Logger::FrameworkDebug("(BaseObject*) isPointer: %d", TypeTraits<BaseObject*>::isPointer);
-     Logger::FrameworkDebug("(BaseObject*) isReference: %d", TypeTraits<BaseObject*>::isReference);
-     Logger::FrameworkDebug("(BaseObject*) isPointerToMemberFunction: %d", TypeTraits<BaseObject*>::isPointerToMemberFunction);
-     
-     Logger::FrameworkDebug("(BaseObject&) isPointer: %d", TypeTraits<BaseObject&>::isPointer);
-     Logger::FrameworkDebug("(BaseObject&) isReference: %d", TypeTraits<BaseObject&>::isReference);
-     Logger::FrameworkDebug("(BaseObject&) isPointerToMemberFunction: %d", TypeTraits<BaseObject&>::isPointerToMemberFunction);
-     
-     void(VisibilityAABBoxSystem::*func)() = &VisibilityAABBoxSystem::Run;
-     
-     //    Logger::FrameworkDebug("(&VisibilityAABBoxSystem::Run) isPointer: %d", TypeTraits<VisibilityAABBoxSystem::Run>::isPointer);
-     //    Logger::FrameworkDebug("(&VisibilityAABBoxSystem::Run) isReference: %d", TypeTraits<&VisibilityAABBoxSystem::Run>::isReference);
-     //    Logger::FrameworkDebug("(&VisibilityAABBoxSystem::Run) isPointerToMemberFunction: %d", TypeTraits<&VisibilityAABBoxSystem::Run>::isPointerToMemberFunction);
-     */    
-
-    
+            return static_cast<C>(pObject);
+        }
+	}
+	return 0;
+}
     
 };
-
 
 #endif // __DAVAENGINE_TEMPLATEHELPERS_H__
 

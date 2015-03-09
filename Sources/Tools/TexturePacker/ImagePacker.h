@@ -32,6 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Math/Math2D.h"
+#include "TexturePacker.h"
 
 namespace DAVA
 {
@@ -43,7 +44,7 @@ class ImagePacker
 public:
 	//! \brief constructor
 	//! \param[in] size of this imagePacker
-	ImagePacker(const Rect2i & _rect);
+	ImagePacker(const Rect2i & _rect, bool _useTwoSideMargin, int32 _texturesMargin);
 	
 	//! \brief destructor
 	virtual ~ImagePacker();
@@ -56,31 +57,47 @@ public:
 	//! \return rectangle with image position in current image topology
 	bool AddImage(const Size2i & imageSize, void * searchPtr);
 	Rect2i * SearchRectForPtr(void * searchPtr);
+	Rect2i * SearchRectForPtr(void * searchPtr, uint32& rmargin, uint32& bmargin);
 	
 	Rect2i & GetRect() { return rect; };
+
+public:
+	bool useTwoSideMargin;
+	int32 texturesMargin;
+
 private:
 	// Implementation details
 	Rect2i rect;
 	
 	struct PackNode
 	{
-		PackNode()
+		PackNode(ImagePacker * _packer) :
+			packer(_packer)
 		{
 			isLeaf = true;
 			child[0] = 0;
 			child[1] = 0;
 			isImageSet = false;
 			searchPtr = 0;
+			touchesRightBorder = true;
+			touchesBottomBorder = true;
+			rightMargin = TexturePacker::DEFAULT_MARGIN;
+			bottomMargin = TexturePacker::DEFAULT_MARGIN;
 		}
 	
 		bool			isImageSet;
 		Rect2i			rect;
 		bool			isLeaf;
 		PackNode *		child[2];
+		ImagePacker *	packer;
 		void *			searchPtr;
+		bool			touchesRightBorder;
+		bool			touchesBottomBorder;
+		uint32			rightMargin;
+		uint32			bottomMargin;
 
 		PackNode *	Insert(const Size2i & imageSize);
-		Rect2i * SearchRectForPtr(void * searchPtr);
+		PackNode *	SearchRectForPtr(void * searchPtr);
 		void		Release();
 	};
 	

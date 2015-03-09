@@ -42,7 +42,7 @@ using namespace DAVA;
 class ControlsMoveCommand: public BaseCommand
 {
 public:
-	ControlsMoveCommand(const HierarchyTreeController::SELECTEDCONTROLNODES& controls, const Vector2& delta);
+	ControlsMoveCommand(const HierarchyTreeController::SELECTEDCONTROLNODES& controls, const Vector2& delta, bool alignControlsToIntegerPos);
 	virtual void Execute();
 	virtual void Rollback();
 
@@ -50,11 +50,12 @@ public:
 
 protected:
 	// Apply the actual move.
-	void ApplyMove(const Vector2& moveDelta);
+	void ApplyMove(const Vector2& moveDelta, bool applyAlign);
 	
 private:
 	HierarchyTreeController::SELECTEDCONTROLNODES controls;
 	Vector2 delta;
+    bool alignControlsToIntegerPos;
 };
 
 class ControlResizeCommand: public BaseCommand

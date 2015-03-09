@@ -35,6 +35,7 @@
 #include "Core/Core.h"
 #include "Platform/SystemTimer.h"
 #include <algorithm>
+#include "Render/2D/FTFont.h"
 
 namespace DAVA
 {
@@ -46,7 +47,7 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath &_fontPath)
     
     background->SetDrawType(UIControlBackground::DRAW_FILL);
     background->SetColor(Color(0.5, 0.5, 0.5, 0.75));
-    pivotPoint = size / 2;
+    SetPivot(Vector2(0.5f, 0.5f));
     
     operationType = OPERATION_LOAD;
     delegate = NULL;
@@ -441,7 +442,7 @@ void UIFileSystemDialog::TextFieldShouldReturn(UITextField * textField)
     SaveFinishing();
 }
 
-bool UIFileSystemDialog::TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, const WideString & replacementString)
+bool UIFileSystemDialog::TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, WideString & replacementString)
 {
     if (textField->GetText().size() + replacementLength > 0) 
     {

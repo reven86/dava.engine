@@ -60,6 +60,7 @@ public:
 		NETWORK_TYPE_WIMAX,
 		NETWORK_TYPE_ETHERNET,
 		NETWORK_TYPE_BLUETOOTH,
+        NETWORK_TYPES_COUNT
 	};
 
     static const int32 SIGNAL_STRENGTH_UNKNOWN = -1;
@@ -75,16 +76,34 @@ public:
         }
     };
 
-    struct StorageRecord
+    enum eStorageType
     {
-        String name;
+    	STORAGE_TYPE_UNKNOWN = -1,
+    	STORAGE_TYPE_INTERNAL = 0,
+    	STORAGE_TYPE_PRIMARY_EXTERNAL,
+    	STORAGE_TYPE_SECONDARY_EXTERNAL,
+
+    	STORAGE_TYPES_COUNT
+    };
+
+    struct StorageInfo
+    {
+        eStorageType type;
+
         int64 totalSpace;
         int64 freeSpace;
 
-        StorageRecord()
-        :   name("")
-        ,   totalSpace(0)
-        ,   freeSpace(0)
+        bool readOnly;
+        bool emulated;
+
+        FilePath path;
+
+        StorageInfo()
+            : type(STORAGE_TYPE_UNKNOWN)
+            , totalSpace(0)
+            , freeSpace(0)
+            , readOnly(false)
+            , emulated(false)
         {}
     };
 
@@ -101,7 +120,8 @@ public:
     static int GetZBufferSize();
     static eGPUFamily GetGPUFamily();
     static NetworkInfo GetNetworkInfo();
-    static List<StorageRecord> GetStorageList();
+    static List<StorageInfo> GetStoragesList();
+    static int32 GetCpuCount();
 };
 
 };

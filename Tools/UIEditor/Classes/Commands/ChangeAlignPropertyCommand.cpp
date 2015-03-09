@@ -68,7 +68,7 @@ void ChangeAlignPropertyCommand::RestoreControlRect(const COMMANDDATAVECTITER& i
 		// This command is NOT state-aware and contains one and only param.
 		baseMetadata->SetActiveParamID(0);
 		// Restore control position and size
-		baseMetadata->ApplyMove(Vector2(rect.x, rect.y));
+		baseMetadata->ApplyMove(Vector2(rect.x, rect.y), false);
 		baseMetadata->ApplyResize(Rect(), rect);
 	}
 }

@@ -107,15 +107,20 @@ bool LibPVRHelper::IsImage(DAVA::File *file) const
 eErrorCode LibPVRHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 fromMipmap) const
 {
     PVRFile * pvrFile = ReadFile(infile, true, true);
-    if(pvrFile && LoadImages(pvrFile, imageSet, fromMipmap))
+    if(pvrFile)
     {
+        bool loaded = LoadImages(pvrFile, imageSet, fromMipmap);
         delete pvrFile;
-        return SUCCESS;
+        
+        if(loaded)
+        {
+            return SUCCESS;
+        }
     }
     return ERROR_READ_FAIL;
 }
     
-eErrorCode LibPVRHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibPVRHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
 {
     //not implemented due to external tool
     DVASSERT(0);
@@ -2130,7 +2135,7 @@ PVRFile * LibPVRHelper::ReadFile(const FilePath &filePathname, bool readMetaData
     
 PVRFile * LibPVRHelper::ReadFile( File *file, bool readMetaData /*= false*/, bool readData /*= false*/)
 {
-    if(!file) return false;
+    if(!file) return NULL;
         
     PVRFile *pvrFile = new PVRFile();
         
@@ -2175,18 +2180,18 @@ PVRFile * LibPVRHelper::ReadFile( File *file, bool readMetaData /*= false*/, boo
     return pvrFile;
 }
     
-bool LibPVRHelper::LoadImages(const PVRFile *pvrFile, Vector<Image *> &imageSet, uint32 fromMipMap)
+bool LibPVRHelper::LoadImages(const PVRFile *pvrFile, Vector<Image *> &imageSet, int32 fromMipMap)
 {
     if(pvrFile == NULL || pvrFile->compressedData == NULL) return false;
         
     const uint32 & mipmapLevelCount = pvrFile->header.u32MIPMapCount;
-        
-    DVASSERT(fromMipMap < mipmapLevelCount);
-        
+
+    fromMipMap = Min(fromMipMap, (int32)(mipmapLevelCount - 1));
+    
     bool loadAllPvrData = true;
     for (uint32 i = fromMipMap; i < mipmapLevelCount; ++i)
     {
-        loadAllPvrData &= LoadMipMapLevel(pvrFile, i, fromMipMap, imageSet);
+        loadAllPvrData &= LoadMipMapLevel(pvrFile, i, (i - fromMipMap), imageSet);
     }
         
     return loadAllPvrData;
@@ -2416,7 +2421,7 @@ void LibPVRHelper::SwapDataBytes(const PVRHeaderV3 &header, uint8 *data, const u
     }
 }
     
-bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 mipMapLevel, const uint32 baseMipMap, Vector<Image *> &imageSet)
+bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipMapLevel, const uint32 imageMipMapLevel, Vector<Image *> &imageSet)
 {
     //Texture setup
     const PVRHeaderV3 & compressedHeader = pvrFile->header;
@@ -2434,10 +2439,10 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 mipMapLe
     {
         Image* image = new Image();
             
-        image->width = PVRT_MAX(1, compressedHeader.u32Width >> mipMapLevel);
-        image->height = PVRT_MAX(1, compressedHeader.u32Height >> mipMapLevel);
+        image->width = PVRT_MAX(1, compressedHeader.u32Width >> fileMipMapLevel);
+        image->height = PVRT_MAX(1, compressedHeader.u32Height >> fileMipMapLevel);
         image->format = formatDescriptor.formatID;
-        image->mipmapLevel = mipMapLevel - baseMipMap;
+        image->mipmapLevel = imageMipMapLevel;
             
         if(cubemapLayout != 0)
         {
@@ -2446,7 +2451,7 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 mipMapLe
             
         if(formatDescriptor.isHardwareSupported)
         {
-            bool imageLoaded = CopyToImage(image, mipMapLevel, faceIndex, compressedHeader, pTextureData);
+            bool imageLoaded = CopyToImage(image, fileMipMapLevel, faceIndex, compressedHeader, pTextureData);
             if(!imageLoaded)
             {
                 image->Release();
@@ -2457,7 +2462,7 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 mipMapLe
         {
             //Create a near-identical texture header for the decompressed header.
             PVRHeaderV3 decompressedHeader = CreateDecompressedHeader(compressedHeader);
-            if(!AllocateImageData(image, mipMapLevel, decompressedHeader))
+            if(!AllocateImageData(image, fileMipMapLevel, decompressedHeader))
             {
                 image->Release();
                 return false;
@@ -2467,7 +2472,7 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 mipMapLe
                 
             //Setup temporary variables.
             uint8* pTempDecompData = image->data;
-            uint8* pTempCompData = (uint8*)pTextureData + GetMipMapLayerOffset(mipMapLevel, faceIndex, compressedHeader);
+            uint8* pTempCompData = (uint8*)pTextureData + GetMipMapLayerOffset(fileMipMapLevel, faceIndex, compressedHeader);
                 
             if((FORMAT_PVR4 == formatDescriptor.formatID) || (FORMAT_PVR2 == formatDescriptor.formatID))
             {

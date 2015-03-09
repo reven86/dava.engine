@@ -52,9 +52,6 @@
     <Filter Include="Internal\Math">
       <UniqueIdentifier>{db136e4a-2d63-4b5c-b6b2-c7e83a7850f0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Internal\Network">
-      <UniqueIdentifier>{ecc1ae9a-59b4-4d30-a5ae-f3963d830982}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Internal\Particles">
       <UniqueIdentifier>{8f9ce965-d39f-4679-9a1c-8d6228b1a1d4}</UniqueIdentifier>
     </Filter>
@@ -144,6 +141,15 @@
     </Filter>
     <Filter Include="Internal\Thread">
       <UniqueIdentifier>{e940db21-ebe2-45bb-bc09-5f3e66960d95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\DLC\Patcher">
+      <UniqueIdentifier>{99a0f84c-8f10-4225-b742-de1df099c7ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\DLC\Downloader">
+      <UniqueIdentifier>{56f56b47-79c3-4bbc-adef-7d96d2c55443}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Notification">
+      <UniqueIdentifier>{4b5695b8-6b14-4d0c-8f8d-86535f5de24e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -422,30 +428,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Math\Vector.h">
       <Filter>Internal\Math</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\BaseNetworkConnection.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\BTNetworkConnection.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkConnection.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkConnectionIPhone.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkDelegate.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkPacket.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\TCPServer.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\WFNetworkConnection.h">
-      <Filter>Internal\Network</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Particles\Particle.h">
       <Filter>Internal\Particles</Filter>
@@ -1113,15 +1095,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpriteObject.h">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\DLC\FileDownloader.h">
-      <Filter>Internal\DLC</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\DLC\DLCSystem.h">
-      <Filter>Internal\DLC</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\DLC\DLCUnpacker.h">
-      <Filter>Internal\DLC</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\Serializable.h">
       <Filter>Internal\Base</Filter>
     </ClInclude>
@@ -1148,9 +1121,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.h">
       <Filter>Internal\Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\MailSender.h">
-      <Filter>Internal\Network</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UISpinner.h">
       <Filter>Internal\UI</Filter>
@@ -1253,9 +1223,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\Process.h">
       <Filter>Internal\Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Utils\TeamcityOutput.h">
-      <Filter>Internal\Utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\SoundComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
@@ -1435,6 +1402,9 @@
     <ClInclude Include="..\..\Sources\Internal\Render\3D\MeshUtils.h">
       <Filter>Internal\Render\3D</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneFile\VersionInfo.h">
+      <Filter>Internal\Scene3D\SceneFile</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\CRCAdditionInterface.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
@@ -1518,6 +1488,120 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlNode.h">
       <Filter>Internal\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\bsdiff\bs_common.h">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\BSDiff.h">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\PatchFile.h">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\ZLibStream.h">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Base\Bind.h">
+      <Filter>Internal\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Base\Function.h">
+      <Filter>Internal\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\DLC.h">
+      <Filter>Internal\DLC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\Downloader\CurlDownloader.h">
+      <Filter>Internal\DLC\Downloader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\Downloader\Downloader.h">
+      <Filter>Internal\DLC\Downloader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\Downloader\DownloaderCommon.h">
+      <Filter>Internal\DLC\Downloader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\Downloader\DownloadManager.h">
+      <Filter>Internal\DLC\Downloader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\DFFont.h">
+      <Filter>Internal\Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockDistanceRender.h">
+      <Filter>Internal\Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicsRender.h">
+      <Filter>Internal\Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockRender.h">
+      <Filter>Internal\Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockSoftwareRender.h">
+      <Filter>Internal\Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlEmitter.h">
+      <Filter>Internal\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneCache.h">
+      <Filter>Internal\Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\SkeletonComponent.h">
+      <Filter>Internal\Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SkeletonSystem.h">
+      <Filter>Internal\Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SkinnedMesh.h">
+      <Filter>Internal\Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\AnimationComponent.h">
+      <Filter>Internal\Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\AnimationSystem.h">
+      <Filter>Internal\Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\AnimationData.h">
+      <Filter>Internal\Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Utils\StringUtils.h">
+      <Filter>Internal\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotification.h">
+      <Filter>Internal\Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationController.h">
+      <Filter>Internal\Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationDelayed.h">
+      <Filter>Internal\Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationImpl.h">
+      <Filter>Internal\Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationNotImplemented.h">
+      <Filter>Internal\Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationProgress.h">
+      <Filter>Internal\Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationText.h">
+      <Filter>Internal\Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIControlHelpers.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIPackage.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Utils\BiDiHelper.h">
+      <Filter>Internal\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIPackageLoader.h">
+      <Filter>Internal\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1709,15 +1793,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp">
       <Filter>Internal\Math</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkConnection.cpp">
-      <Filter>Internal\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkDelegate.cpp">
-      <Filter>Internal\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkPacket.cpp">
-      <Filter>Internal\Network</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Particles\Particle.cpp">
       <Filter>Internal\Particles</Filter>
@@ -2319,15 +2394,6 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpriteObject.cpp">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\DLC\DLCSystem.cpp">
-      <Filter>Internal\DLC</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\DLC\DLCUnpacker.cpp">
-      <Filter>Internal\DLC</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\DLC\FileDownloader.cpp">
-      <Filter>Internal\DLC</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\ComponentHelpers.cpp">
       <Filter>Internal\Scene3D\Components</Filter>
     </ClCompile>
@@ -2351,9 +2417,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.cpp">
       <Filter>Internal\Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\MailSender.cpp">
-      <Filter>Internal\Network</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UISpinner.cpp">
       <Filter>Internal\UI</Filter>
@@ -2477,9 +2540,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Platform\Process.cpp">
       <Filter>Internal\Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Utils\TeamcityOutput.cpp">
-      <Filter>Internal\Utils</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\SoundComponent.cpp">
       <Filter>Internal\Scene3D\Components</Filter>
@@ -2653,6 +2713,9 @@
     <ClCompile Include="..\..\Sources\Internal\Render\3D\MeshUtils.cpp">
       <Filter>Internal\Render\3D</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneFile\VersionInfo.cpp">
+      <Filter>Internal\Scene3D\SceneFile</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\Image.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
@@ -2721,6 +2784,121 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlNode.cpp">
       <Filter>Internal\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\bsdiff\bs_diff.c">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\bsdiff\bs_patch.c">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\BSDiff.cpp">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\PatchFile.cpp">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\ZLibStream.cpp">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\DLC.cpp">
+      <Filter>Internal\DLC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Downloader\CurlDownloader.cpp">
+      <Filter>Internal\DLC\Downloader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Downloader\Downloader.cpp">
+      <Filter>Internal\DLC\Downloader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Downloader\DownloaderCommon.cpp">
+      <Filter>Internal\DLC\Downloader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Downloader\DownloadManager.cpp">
+      <Filter>Internal\DLC\Downloader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlEmitter.cpp">
+      <Filter>Internal\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\OGLHelpers.cpp">
+      <Filter>Internal\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\DFFont.cpp">
+      <Filter>Internal\Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockDistanceRender.cpp">
+      <Filter>Internal\Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicsRender.cpp">
+      <Filter>Internal\Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockRender.cpp">
+      <Filter>Internal\Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockSoftwareRender.cpp">
+      <Filter>Internal\Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneCache.cpp">
+      <Filter>Internal\Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\SkeletonComponent.cpp">
+      <Filter>Internal\Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SkeletonSystem.cpp">
+      <Filter>Internal\Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SkinnedMesh.cpp">
+      <Filter>Internal\Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\AnimationComponent.cpp">
+      <Filter>Internal\Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\AnimationSystem.cpp">
+      <Filter>Internal\Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\AnimationData.cpp">
+      <Filter>Internal\Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Utils\StringUtils.cpp">
+      <Filter>Internal\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotification.cpp">
+      <Filter>Internal\Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationController.cpp">
+      <Filter>Internal\Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationDelayed.cpp">
+      <Filter>Internal\Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationNotImplemented.cpp">
+      <Filter>Internal\Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationProgress.cpp">
+      <Filter>Internal\Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationText.cpp">
+      <Filter>Internal\Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIControlHelpers.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIPackage.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp">
+      <Filter>Internal\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIPackageLoader.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp">
+      <Filter>Internal\Autotesting</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

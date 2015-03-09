@@ -33,7 +33,7 @@
 #import "NSFullScreenWindow.h"
 
 
-@interface MainWindowController : NSWindowController <NSWindowDelegate>
+@interface MainWindowController : NSWindowController <NSWindowDelegate, NSFileManagerDelegate>
 {
 @public
 	float32	currFPS;

@@ -161,6 +161,10 @@ const static int MAX_KEYS = 256;
         DVKEY_F10			,
         DVKEY_F11			,
         DVKEY_F12			,
+        
+        //Android keys
+        DVKEY_BACK          ,
+        DVKEY_MENU          ,
 
         DVKEY_COUNT
         

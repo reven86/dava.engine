@@ -394,21 +394,20 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 
 	const YamlNode * pivotPointNode = node->Get("pivotPoint");
 	
-
+    SetSprite(NULL);
 	const YamlNode * spriteNode = node->Get("sprite");
 	if (spriteNode && !spriteNode->AsString().empty())
 	{
 		// Store the absolute path to sprite.
 		spritePath = FilePath(configPath.GetDirectory(), spriteNode->AsString());
 
-		Sprite * _sprite = Sprite::Create(spritePath);
-		SetSprite(_sprite);
-        SafeRelease(_sprite);
-	}
-	else
-	{
-		SetSprite(NULL);
-	}
+        if (type != TYPE_SUPEREMITTER_PARTICLES)
+        {
+		    Sprite * _sprite = Sprite::Create(spritePath);
+		    SetSprite(_sprite);
+            SafeRelease(_sprite);
+        }
+	}	
 	if(pivotPointNode)
 	{
 		Vector2 _pivot = pivotPointNode->AsPoint();
@@ -775,7 +774,7 @@ void ParticleLayer::SaveToYamlNode(const FilePath & configPath, YamlNode* parent
 
 	YamlNode *lodsNode = new YamlNode(YamlNode::TYPE_ARRAY);
 	for (int32 i =0; i<4; i++)
-		lodsNode->AddValueToArray((int32)activeLODS[i]); //as for now AddValueToArray has no bool type - force it to int
+		lodsNode->Add((int32)activeLODS[i]); //as for now AddValueToArray has no bool type - force it to int
 	layerNode->SetNodeToMap("activeLODS", lodsNode);
 
 	if ((type == TYPE_SUPEREMITTER_PARTICLES) && innerEmitter)

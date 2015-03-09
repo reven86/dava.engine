@@ -30,6 +30,7 @@
 #define __QT_PROPERTY_MODEL_H__
 
 #include <QPair>
+#include <QEvent>
 #include <QStandardItemModel>
 #include <QSortFilterProxyModel>
 
@@ -54,6 +55,7 @@ public:
 	QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 	bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
 	Qt::ItemFlags flags(const QModelIndex & index) const;
+    bool event(QEvent * e);
 
 	QtPropertyData* rootItem() const;
 
@@ -74,11 +76,16 @@ public:
 
 signals:
 	void PropertyEdited(const QModelIndex &index);
-	void PropertyChanged(const QModelIndex &index);
 
 protected:
+    enum
+    {
+        DataRefreshRequared = QEvent::User + 1
+    };
+
 	QtPropertyData *root;
 	bool trackEdit;
+    bool needRefresh;
 
 	QtPropertyData *itemFromIndexInternal(const QModelIndex & index) const;
 

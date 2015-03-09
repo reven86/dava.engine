@@ -44,6 +44,7 @@ UIScrollViewContainer::UIScrollViewContainer(const Rect &rect, bool rectInAbsolu
 	touchTreshold(DEFAULT_TOUCH_TRESHOLD),
 	enableHorizontalScroll(true),
 	enableVerticalScroll(true),
+    scrollStartMovement(false),
 	newPos(0.f, 0.f),
 	oldPos(0.f, 0.f),
 	lockTouch(false),
@@ -71,11 +72,11 @@ void UIScrollViewContainer::CopyDataFrom(UIControl *srcControl)
 	UIControl::CopyDataFrom(srcControl);
 }
 
-void UIScrollViewContainer::SetRect(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
+void UIScrollViewContainer::SetRect(const Rect &rect)
 {
-	UIControl::SetRect(rect, rectInAbsoluteCoordinates);
+	UIControl::SetRect(rect);
 	
-	UIControl *parent = this->GetParent();
+	UIControl *parent = GetParent();
 	if (parent)
 	{
 		Rect parentRect = parent->GetRect();
@@ -131,18 +132,18 @@ void UIScrollViewContainer::Input(UIEvent *currentTouch)
 
 bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
 {
-	if(!GetInputEnabled() || !visible || controlState & STATE_DISABLED)
+	if(!GetInputEnabled() || !visible || !visibleForUIEditor || (controlState & STATE_DISABLED))
 	{
 		return false;
 	}
 
-    bool oldVisible = visible;
-    if (currentTouch->touchLocker != this)
-    {
-        visible = false;//this funny code is written to fix bugs with calling Input() twice.
-    }
+	if (currentTouch->touchLocker != this)
+	{
+		controlState |= STATE_DISABLED; //this funny code is written to fix bugs with calling Input() twice.
+	}
 	bool systemInput = UIControl::SystemInput(currentTouch);
-    visible = oldVisible;//All this control must be reengeneried
+    controlState &= ~STATE_DISABLED; //All this control must be reengeneried
+
 	if (currentTouch->GetInputHandledType() == UIEvent::INPUT_HANDLED_HARD)
 	{
 		// Can't scroll - some child control already processed this input.
@@ -257,9 +258,12 @@ void UIScrollViewContainer::WillDisappear()
 {
     mainTouch = -1;
     lockTouch = false;
-	UIScrollView *scrollView = cast_if_equal<UIScrollView*>(this->GetParent());
-    scrollView->GetHorizontalScroll()->GetPosition(0, 1.0f, true);
-    scrollView->GetVerticalScroll()->GetPosition(0, 1.0f, true);
+    UIScrollView *scrollView = dynamic_cast<UIScrollView*>(GetParent());
+    if (scrollView)
+    {
+        scrollView->GetHorizontalScroll()->GetPosition(0, 1.0f, true);
+        scrollView->GetVerticalScroll()->GetPosition(0, 1.0f, true);
+    }
     state = STATE_NONE;
 }
 

@@ -54,7 +54,7 @@ public:
 
 signals:
     void SelectedStateChanged(UIControl::eControlState newState);
-	void SelectMultiplyStates(Vector<UIControl::eControlState> selectedStates);
+	void SelectMultiplyStates(const Vector<UIControl::eControlState> &selectedStates);
 	void SizeChanged(bool expanded);
 
 protected slots:

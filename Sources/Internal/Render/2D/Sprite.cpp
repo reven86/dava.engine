@@ -42,6 +42,7 @@
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "Render/Texturedescriptor.h"
 
 #define NEW_PPA
 
@@ -165,18 +166,19 @@ Sprite* Sprite::GetSpriteFromMap(const FilePath &pathname)
 
 FilePath Sprite::GetScaledName(const FilePath &spriteName)
 {
-	String::size_type pos = spriteName.GetAbsolutePathname().find(Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()));
+    String pathname;
+    if(FilePath::PATH_IN_RESOURCES == spriteName.GetType())
+        pathname = spriteName.GetFrameworkPath();//as we can have several res folders we should work with 'FrameworkPath' instead of 'AbsolutePathname'
+    else
+        pathname = spriteName.GetAbsolutePathname();
+
+    const String &baseGfxFolderName = Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex());
+	String::size_type pos = pathname.find(baseGfxFolderName);
 	if(String::npos != pos)
 	{
-		String pathname = spriteName.GetAbsolutePathname();
-
-		String subStrPath = pathname.substr(0, pos);
-		String resFolder = Core::Instance()->GetResourceFolder(Core::Instance()->GetDesirableResourceIndex());
-		String footer = pathname.substr(pos + Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()).length());
-
-		return pathname.substr(0, pos)
-						+ Core::Instance()->GetResourceFolder(Core::Instance()->GetDesirableResourceIndex())
-						+ pathname.substr(pos + Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()).length());
+        const String &desirableGfxFolderName = Core::Instance()->GetResourceFolder(Core::Instance()->GetDesirableResourceIndex());
+        pathname.replace(pos, baseGfxFolderName.length(), desirableGfxFolderName);
+		return pathname;
 	}
 
 	return spriteName;
@@ -415,20 +417,7 @@ Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = fal
     uint32 width = image->GetWidth();
     uint32 height = image->GetHeight();
     
-    int32 size = (int32)Max(width, height);
-    
-    Image *img = NULL;
-    if(IsPowerOf2(width) && IsPowerOf2(height))
-    {
-        img = SafeRetain(image);
-    }
-    else
-    {
-        EnsurePowerOf2(size);
-
-        img = Image::Create((uint32)size, (uint32)size, image->GetPixelFormat());
-        img->InsertImage(image, 0, 0);
-    }
+    Image *img = ImageSystem::Instance()->EnsurePowerOf2Image(image);
 
     Texture* texture = Texture::CreateFromData(img, false);
 
@@ -485,8 +474,32 @@ Sprite* Sprite::CreateFromSourceData(const uint8* data, uint32 size, bool conten
     return sprite;
 }
 
+String Sprite::GetPathString( const Sprite *sprite )
+{
+    if (!sprite)
+    {
+        return "";
+    }
+
+    FilePath path(sprite->GetRelativePathname());
+    String pathName = "";
+    if (!path.IsEmpty())
+    {
+        path.TruncateExtension();
+        pathName = path.GetFrameworkPath();
+    }
+
+    return pathName;
+}
+
 Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
+    Sprite* sprite = GetSpriteFromMap(path);
+    if (sprite)
+    {
+        return sprite;
+    }
+    
     Vector<Image*> images;
     ImageSystem::Instance()->Load(path, images);
     if (images.size() == 0)
@@ -494,7 +507,11 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
         return NULL;
     }
 
-    Sprite* sprite = CreateFromImage(images[0], contentScaleIncluded, inVirtualSpace);
+    sprite = CreateFromImage(images[0], contentScaleIncluded, inVirtualSpace);
+    if (sprite)
+    {
+        sprite->SetRelativePathname(path);
+    }
 
     for_each(images.begin(), images.end(), SafeRelease<Image>);
 
@@ -503,6 +520,8 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
 
 void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, int32 targetWidth, int32 targetHeight, bool contentScaleIncluded, const FilePath &spriteName /* = FilePath() */)
 {
+    Clear();
+    
 	if (!contentScaleIncluded)
 	{
 		xOffset = (int32)(Core::GetVirtualToPhysicalFactor() * xOffset);
@@ -602,7 +621,8 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 	}
 
 	// DF-1984 - Set available sprite relative path name here. Use FBO sprite name only if sprite name is empty.
-	this->relativePathname = spriteName.IsEmpty() ? Format("FBO sprite %d", fboCounter) : spriteName;
+    if (this->relativePathname.IsEmpty())
+        this->relativePathname = spriteName.IsEmpty() ? Format("FBO sprite %d", fboCounter) : spriteName;
 
     spriteMapMutex.Lock();
 	spriteMap[FILEPATH_MAP_KEY(this->relativePathname)] = this;
@@ -612,25 +632,6 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 	this->Reset();
 	
 	RegisterTextureStates();
-}
-
-void Sprite::PrepareForTiling()
-{
-	if(!isPreparedForTiling)
-	{
-		for (int i = 0;	i < this->frameCount; i++)
-		{
-			this->texCoords[i][0] += (1.0f/this->textures[this->frameTextureIndex[i]]->width); // x
-			this->texCoords[i][1] += (1.0f/this->textures[this->frameTextureIndex[i]]->height); // y
-			this->texCoords[i][2] -= (2.0f/this->textures[this->frameTextureIndex[i]]->width); // x+dx
-			this->texCoords[i][3] += (1.0f/this->textures[this->frameTextureIndex[i]]->height); // y
-			this->texCoords[i][4] += (1.0f/this->textures[this->frameTextureIndex[i]]->width); // x
-			this->texCoords[i][5] -= (2.0f/this->textures[this->frameTextureIndex[i]]->height); // y+dy
-			this->texCoords[i][6] -= (2.0f/this->textures[this->frameTextureIndex[i]]->width); // x+dx
-			this->texCoords[i][7] -= (2.0f/this->textures[this->frameTextureIndex[i]]->height); // y+dy
-		}
-		isPreparedForTiling = true;
-	}
 }
 
 void Sprite::SetOffsetsForFrame(int frame, float32 xOff, float32 yOff)
@@ -651,19 +652,6 @@ void Sprite::SetOffsetsForFrame(int frame, float32 xOff, float32 yOff)
 	frameVertices[frame][5] = yOff + rectsAndOffsets[frame][3];
 	frameVertices[frame][6] = xOff + rectsAndOffsets[frame][2];
 	frameVertices[frame][7] = yOff + rectsAndOffsets[frame][3];
-}
-
-int32 Sprite::Release()
-{
-	if(GetRetainCount() == 1)
-	{
-        spriteMapMutex.Lock();
-		SafeRelease(spriteRenderObject);
-		spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
-        spriteMapMutex.Unlock();
-	}
-
-	return BaseObject::Release();
 }
 
 void Sprite::Clear()
@@ -704,33 +692,35 @@ void Sprite::Clear()
 
 Sprite::~Sprite()
 {
-//	Logger::FrameworkDebug("Removing sprite");
+    spriteMapMutex.Lock();
+    SafeRelease(spriteRenderObject);
+    spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
+    spriteMapMutex.Unlock();
 	Clear();
-
 }
 
-Texture* Sprite::GetTexture()
+Texture* Sprite::GetTexture() const
 {
 	return textures[0];
 }
 
-Texture* Sprite::GetTexture(int32 frameNumber)
+Texture* Sprite::GetTexture(int32 frameNumber) const
 {
 //	DVASSERT(frameNumber > -1 && frameNumber < frameCount);
-	frame = Clamp(frameNumber, 0, frameCount - 1);
-	return textures[frameTextureIndex[frame]];
+	frameNumber = Clamp(frameNumber, 0, frameCount - 1);
+	return textures[frameTextureIndex[frameNumber]];
 }
 	
-UniqueHandle Sprite::GetTextureHandle(int32 frameNumber)
+UniqueHandle Sprite::GetTextureHandle(int32 frameNumber) const
 {
-	frame = Clamp(frameNumber, 0, frameCount - 1);
-	return textureHandles[frameTextureIndex[frame]];
+	frameNumber = Clamp(frameNumber, 0, frameCount - 1);
+	return textureHandles[frameTextureIndex[frameNumber]];
 }
 
-float32 *Sprite::GetTextureVerts(int32 frame)
+float32 *Sprite::GetTextureVerts(int32 frameNumber)
 {
 //	DVASSERT(frame > -1 && frame < frameCount);
-	uint32 frameNumber = Clamp(frame, 0, frameCount - 1);
+	frameNumber = Clamp(frameNumber, 0, frameCount - 1);
 	return texCoords[frameNumber];
 }
 
@@ -772,92 +762,8 @@ void Sprite::SetDefaultPivotPoint(const Vector2 &newPivotPoint)
 
 void Sprite::SetFrame(int32 frm)
 {
-	frame = Max(0, Min(frm, frameCount - 1));
+	frame = Clamp(frm, 0, frameCount - 1);
 }
-
-/*void Sprite::SetPivotPoint(float32 x, float32 y)
-{
-	pivotPoint.x = x;
-	pivotPoint.y = y;
-}
-
-void Sprite::SetPivotPoint(const Vector2 &newPivotPoint)
-{
-	pivotPoint = newPivotPoint;
-}
-
-void Sprite::SetPosition(float32 x, float32 y)
-{
-	drawCoord.x = x;
-	drawCoord.y = y;
-}
-
-void Sprite::SetPosition(const Vector2 &drawPos)
-{
-	drawCoord = drawPos;
-}
-
-
-void Sprite::SetAngle(float32 angleInRadians)
-{
-	rotateAngle = angleInRadians;
-	if(angleInRadians != 0)
-	{
-		flags = flags | EST_ROTATE;
-	}
-	else
-	{
-		ResetAngle();
-	}
-}
-
-void Sprite::SetScale(float32 xScale, float32 yScale)
-{
-	if(xScale != 1.f || yScale != 1.f)
-	{
-		scale.x = xScale;
-		scale.y = yScale;
-
-		flags = flags | EST_SCALE;
-	}
-	else
-	{
-		ResetScale();
-	}
-}
-
-void Sprite::SetScale(const Vector2 &newScale)
-{
-	if(newScale.x != 1.f || newScale.y != 1.f)
-	{
-		scale = newScale;
-		flags = flags | EST_SCALE;
-	}
-	else
-	{
-		ResetScale();
-	}
-}
-
-void Sprite::SetScaleSize(float32 width, float32 height)
-{
-	if(width != size.dx || height != size.dy)
-	{
-		scale.x = width / size.dx;
-		scale.y = height / size.dy;
-		flags = flags | EST_SCALE;
-	}
-	else
-	{
-		ResetScale();
-	}
-}
-
-void Sprite::SetScaleSize(const Vector2 &drawSize)
-{
-	SetScaleSize(drawSize.x, drawSize.y);
-}
-*/
 
 void Sprite::SetModification(int32 modif)
 {
@@ -890,26 +796,6 @@ void Sprite::ResetModification()
     flags = flags & ~EST_MODIFICATION;
 }
 
-
-/*void Sprite::ResetPivotPoint()
-{
-	pivotPoint = defaultPivotPoint;
-}
-
-void Sprite::ResetAngle()
-{
-	flags = flags & ~EST_ROTATE;
-}
-
-
-void Sprite::ResetScale()
-{
-	scale.x = 1.f;
-	scale.y = 1.f;
-	flags = flags & ~EST_SCALE;
-}
-*/
-
 inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 {
     DVASSERT(state);
@@ -933,7 +819,7 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
     
     if(state->angle != 0.f) flags |= EST_ROTATE;
     
-    frame = Max(0, Min(state->frame, frameCount - 1));
+    frame = Clamp(state->frame, 0, frameCount - 1);
     
     x = state->position.x - state->pivotPoint.x * state->scale.x;
     y = state->position.y - state->pivotPoint.y * state->scale.y;
@@ -1259,57 +1145,6 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 	DVASSERT(texCoordStream->pointer != 0);
 }
 
-/*void Sprite::Draw()
-{
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
-	{
-		return;
-	}
-    
-    RENDERER_UPDATE_STATS(spriteDrawCount++);
-
-    PrepareSpriteRenderData(0);
-
-    if( clipPolygon )
-    {
-        RenderManager::Instance()->ClipPush();
-        Rect clipRect;
-        if( flags & EST_SCALE )
-        {
-            float32 x = drawCoord.x - pivotPoint.x * scale.x;
-            float32 y = drawCoord.y - pivotPoint.y * scale.y;
-            clipRect = Rect( GetRectOffsetValueForFrame( frame, X_OFFSET_TO_ACTIVE ) * scale.x + x
-                           , GetRectOffsetValueForFrame( frame, Y_OFFSET_TO_ACTIVE ) * scale.y + y
-                           , GetRectOffsetValueForFrame( frame, ACTIVE_WIDTH  ) * scale.x
-                           , GetRectOffsetValueForFrame( frame, ACTIVE_HEIGHT ) * scale.y );
-        }
-        else
-        {
-            float32 x = drawCoord.x - pivotPoint.x;
-            float32 y = drawCoord.y - pivotPoint.y;
-            clipRect = Rect( GetRectOffsetValueForFrame( frame, X_OFFSET_TO_ACTIVE ) + x
-                           , GetRectOffsetValueForFrame( frame, Y_OFFSET_TO_ACTIVE ) + y
-                           , GetRectOffsetValueForFrame( frame, ACTIVE_WIDTH )
-                           , GetRectOffsetValueForFrame( frame, ACTIVE_HEIGHT ) );
-        }
-
-        RenderManager::Instance()->ClipRect( clipRect );
-    }
-
-	RenderManager::Instance()->SetTextureState(textureHandles[frameTextureIndex[frame]]);
-    RenderManager::Instance()->SetRenderData(spriteRenderObject);
-    RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
-    RenderManager::Instance()->DrawArrays(primitiveToDraw, 0, vertexCount);
-
-    if( clipPolygon )
-    {
-        RenderManager::Instance()->ClipPop();
-    }
-
-	Reset();
-}
-*/
-
 void Sprite::Draw(DrawState * state)
 {
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
@@ -1369,19 +1204,6 @@ void Sprite::Draw(DrawState * state)
 #endif
 
 }
-
-void Sprite::BeginBatching()
-{
-
-
-}
-
-void Sprite::EndBatching()
-{
-
-
-}
-
 
 void Sprite::DrawPoints(Vector2 *verticies, Vector2 *textureCoordinates, DrawState* drawState)
 {
@@ -1866,6 +1688,16 @@ void Sprite::ReloadExistingTextures()
             Logger::Error("[Sprite::ReloadSpriteTextures] Something strange with texture_%d", i);
         }
     }
+}
+    
+void Sprite::SetRelativePathname(const FilePath& path)
+{
+    spriteMapMutex.Lock();
+    spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
+    relativePathname = path;
+    spriteMap[FILEPATH_MAP_KEY(this->relativePathname)] = this;
+    spriteMapMutex.Unlock();
+    GetTexture()->SetPathname(path);
 }
 
 };

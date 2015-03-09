@@ -186,7 +186,7 @@ FilePath PVRConverter::ConvertNormalMapPngToPvr(const TextureDescriptor &descrip
 
     Vector<FilePath> convertedPVRs;
 
-    int32 imgCount = images.size();
+    int32 imgCount = (int32)images.size();
     for(int32 i = 0; i < imgCount; ++i)
     {
         FilePath imgPath = dirPath + Format("mip%d.png", i);

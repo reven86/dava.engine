@@ -55,6 +55,7 @@ public:
 	//! File attributes enumeration
 	//! Remember engine support only 
 	//! EFA_OPEN | EFA_READ
+	//! EFA_OPEN | EFA_READ | EFA_WRITE
 	//! EFA_CREATE | EFA_WRITE
 	//! EFA_APPEND | EFA_WRITE
 	

@@ -1,0 +1,1403 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		020AB22C17463AA70082F336 /* libfmodevent.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02E9E447173A3AED00C501BC /* libfmodevent.dylib */; };
+		020AB22D17463AA70082F336 /* libfmodex.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02E9E448173A3AED00C501BC /* libfmodex.dylib */; };
+		02E9E449173A3AED00C501BC /* libfmodevent.dylib in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 02E9E447173A3AED00C501BC /* libfmodevent.dylib */; };
+		02E9E44A173A3AED00C501BC /* libfmodex.dylib in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 02E9E448173A3AED00C501BC /* libfmodex.dylib */; };
+		0C6D4628EE0B0D1479A20551 /* AGL.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = C6766F86E49E9C8701C8E637 /* AGL.framework */; };
+		1541251619C8E62E00FC2883 /* PackageDocument.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 1541251519C8E62E00FC2883 /* PackageDocument.cpp */; };
+		157BA42119CCE96D00E47682 /* UI in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 157BA42019CCE96D00E47682 /* UI */; };
+		15959DC219D3169400B52AEF /* PackageGraphicsWidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 15959DBF19D3169400B52AEF /* PackageGraphicsWidget.cpp */; };
+		15959DC319D3169400B52AEF /* GraphicsViewContext.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 15959DC119D3169400B52AEF /* GraphicsViewContext.cpp */; };
+		15959DDA19D574F800B52AEF /* LineEditExt.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 15959DD819D574F800B52AEF /* LineEditExt.cpp */; };
+		15959DE219D5750600B52AEF /* PackageDockWidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 15959DDC19D5750600B52AEF /* PackageDockWidget.cpp */; };
+		15959DE319D5750600B52AEF /* UIFilteredPackageModel.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 15959DDE19D5750600B52AEF /* UIFilteredPackageModel.cpp */; };
+		15959DE419D5750600B52AEF /* UIPackageModel.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 15959DE019D5750600B52AEF /* UIPackageModel.cpp */; };
+		1595D39019D980A3007338DF /* ConsoleDockWidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 1595D38E19D980A3007338DF /* ConsoleDockWidget.cpp */; };
+		1595D3B619DAF26F007338DF /* QtDavaConvertion.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 1595D3B419DAF26F007338DF /* QtDavaConvertion.cpp */; };
+		1595D3B919DAF2A2007338DF /* EditScreen.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 1595D3B819DAF2A2007338DF /* EditScreen.cpp */; };
+		159ED7A219E2B09900C8B37A /* PropertiesViewContext.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 159ED79E19E2B09900C8B37A /* PropertiesViewContext.cpp */; };
+		159ED7A319E2B09900C8B37A /* ChangePropertyValueCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 159ED7A019E2B09900C8B37A /* ChangePropertyValueCommand.cpp */; };
+		159ED7C319E2F61C00C8B37A /* Vector2PropertyDelegate.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 159ED7B219E2F61C00C8B37A /* Vector2PropertyDelegate.cpp */; };
+		159ED7C419E2F61C00C8B37A /* StringPropertyDelegate.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 159ED7B419E2F61C00C8B37A /* StringPropertyDelegate.cpp */; };
+		159ED7C519E2F61C00C8B37A /* IntegerPropertyDelegate.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 159ED7B619E2F61C00C8B37A /* IntegerPropertyDelegate.cpp */; };
+		159ED7C619E2F61C00C8B37A /* FloatPropertyDelegate.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 159ED7B819E2F61C00C8B37A /* FloatPropertyDelegate.cpp */; };
+		159ED7C719E2F61C00C8B37A /* FilePathPropertyDelegate.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 159ED7BA19E2F61C00C8B37A /* FilePathPropertyDelegate.cpp */; };
+		159ED7C819E2F61C00C8B37A /* EnumPropertyDelegate.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 159ED7BC19E2F61C00C8B37A /* EnumPropertyDelegate.cpp */; };
+		159ED7C919E2F61C00C8B37A /* ColorPropertyDelegate.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 159ED7BE19E2F61C00C8B37A /* ColorPropertyDelegate.cpp */; };
+		159ED7CA19E2F61C00C8B37A /* BasePropertyDelegate.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 159ED7C019E2F61C00C8B37A /* BasePropertyDelegate.cpp */; };
+		159ED7CB19E2F61C00C8B37A /* AbstractPropertyDelegate.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 159ED7C219E2F61C00C8B37A /* AbstractPropertyDelegate.cpp */; };
+		159ED7D619E51AD200C8B37A /* FileSystemDockWidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 159ED7D519E51AD200C8B37A /* FileSystemDockWidget.cpp */; };
+		15B892ED19CCC323007EABC6 /* GeneratedFiles in Build Sources */ = {isa = PBXBuildFile; fileRef = 1548A1C419CCAB2600620C60 /* GeneratedFiles */; };
+		15BE534C19D72CA500788209 /* LibraryDockWidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 15BE534A19D72CA500788209 /* LibraryDockWidget.cpp */; };
+		17112B5916392EA80017E713 /* WidgetSignalsBlocker.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17112B5716392EA80017E713 /* WidgetSignalsBlocker.cpp */; };
+		17183C3F18C8830000491E66 /* AVFoundation.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 17183C3E18C8830000491E66 /* AVFoundation.framework */; };
+		17183C4118C8833A00491E66 /* CoreMedia.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 17183C4018C8833A00491E66 /* CoreMedia.framework */; };
+		1723533E19A24EBB00E3212C /* Security.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 1723533D19A24EBB00E3212C /* Security.framework */; };
+		174E1FBF17F3483600C7EC10 /* regexpinputdialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 174E1FBD17F3483600C7EC10 /* regexpinputdialog.cpp */; };
+		17607FC2164121FB004E36DE /* LocalizationSystemHelper.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17607FC0164121FB004E36DE /* LocalizationSystemHelper.cpp */; };
+		17607FEF16415B7C004E36DE /* BackgroundGridWidgetHelper.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17607FED16415B7C004E36DE /* BackgroundGridWidgetHelper.cpp */; };
+		17660BAB186AE97B00CF7A14 /* GridVisualizer.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17660BA9186AE97B00CF7A14 /* GridVisualizer.cpp */; };
+		17660BBC186B1DD700CF7A14 /* RulerWidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17660BBA186B1DD700CF7A14 /* RulerWidget.cpp */; };
+		17660BC5186C1DA000CF7A14 /* RulerController.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17660BC3186C1DA000CF7A14 /* RulerController.cpp */; };
+		178F303E165677BF008678AD /* StringUtils.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 178F303C165677BF008678AD /* StringUtils.cpp */; };
+		17B0617518892C1500FD8007 /* WebKit.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 17B0617418892C1500FD8007 /* WebKit.framework */; };
+		17FF160016400A75001B130F /* localizationeditordialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17FF15FE16400A75001B130F /* localizationeditordialog.cpp */; };
+		320A302419F393C6003D5140 /* PackageModelCommands.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 320A302219F393C6003D5140 /* PackageModelCommands.cpp */; };
+		320A302C19F397BF003D5140 /* UIPackageMimeData.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 320A302A19F397BF003D5140 /* UIPackageMimeData.cpp */; };
+		320A4B3D19E6CC6A0049D713 /* LegacyEditorUIPackageLoader.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 320A4B3B19E6CC6A0049D713 /* LegacyEditorUIPackageLoader.cpp */; };
+		3228309B19F12D9A009F8881 /* LibraryModel.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 3228309919F12D9A009F8881 /* LibraryModel.cpp */; };
+		322CF61E19EC06D70023D61F /* BackgroundPropertiesSection.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 322CF60E19EC06D70023D61F /* BackgroundPropertiesSection.cpp */; };
+		322CF61F19EC06D70023D61F /* BaseProperty.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 322CF61019EC06D70023D61F /* BaseProperty.cpp */; };
+		322CF62019EC06D70023D61F /* ControlPropertiesSection.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 322CF61219EC06D70023D61F /* ControlPropertiesSection.cpp */; };
+		322CF62119EC06D70023D61F /* InternalControlPropertiesSection.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 322CF61419EC06D70023D61F /* InternalControlPropertiesSection.cpp */; };
+		322CF62219EC06D70023D61F /* LocalizedTextValueProperty.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 322CF61619EC06D70023D61F /* LocalizedTextValueProperty.cpp */; };
+		322CF62319EC06D70023D61F /* PropertiesSection.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 322CF61819EC06D70023D61F /* PropertiesSection.cpp */; };
+		322CF62419EC06D70023D61F /* SubValueProperty.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 322CF61A19EC06D70023D61F /* SubValueProperty.cpp */; };
+		322CF62519EC06D70023D61F /* ValueProperty.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 322CF61C19EC06D70023D61F /* ValueProperty.cpp */; };
+		3237E8E719EAB2BC00CB639B /* PropertiesRoot.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 3237E8E519EAB2BC00CB639B /* PropertiesRoot.cpp */; };
+		325FCCFA19DD8AC800197B03 /* PropertiesDockWidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 325FCCEA19DD8AC800197B03 /* PropertiesDockWidget.cpp */; };
+		325FCCFB19DD8AC800197B03 /* PropertiesTreeItemDelegate.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 325FCCEC19DD8AC800197B03 /* PropertiesTreeItemDelegate.cpp */; };
+		325FCCFC19DD8AC800197B03 /* PropertiesTreeModel.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 325FCCEE19DD8AC800197B03 /* PropertiesTreeModel.cpp */; };
+		325FCCFD19DD8AC800197B03 /* PropertiesTreeView.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 325FCCF019DD8AC800197B03 /* PropertiesTreeView.cpp */; };
+		3262FB8419E6959800E32F8E /* PackageBaseNode.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 3262FB8219E6959800E32F8E /* PackageBaseNode.cpp */; };
+		3262FB8719E6962600E32F8E /* ControlNode.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 3262FB8519E6962600E32F8E /* ControlNode.cpp */; };
+		3262FB8A19E699CB00E32F8E /* PackageNode.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 3262FB8819E699CB00E32F8E /* PackageNode.cpp */; };
+		3262FB8D19E69A5500E32F8E /* ImportedPackagesNode.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 3262FB8B19E69A5500E32F8E /* ImportedPackagesNode.cpp */; };
+		3262FB9019E69AB800E32F8E /* PackageControlsNode.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 3262FB8E19E69AB800E32F8E /* PackageControlsNode.cpp */; };
+		329E0D2F19D3F340008A9CE6 /* AddComponentCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 329E0D1019D3F340008A9CE6 /* AddComponentCommand.cpp */; };
+		329E0D3019D3F340008A9CE6 /* Command2.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 329E0D1219D3F340008A9CE6 /* Command2.cpp */; };
+		329E0D3119D3F340008A9CE6 /* CommandAction.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 329E0D1419D3F340008A9CE6 /* CommandAction.cpp */; };
+		329E0D3219D3F340008A9CE6 /* CommandBatch.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 329E0D1619D3F340008A9CE6 /* CommandBatch.cpp */; };
+		329E0D3319D3F340008A9CE6 /* CommandNotify.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 329E0D1919D3F340008A9CE6 /* CommandNotify.cpp */; };
+		329E0D3419D3F340008A9CE6 /* CommandStack.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 329E0D1B19D3F340008A9CE6 /* CommandStack.cpp */; };
+		329E0D3519D3F340008A9CE6 /* EntityAddCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 329E0D1D19D3F340008A9CE6 /* EntityAddCommand.cpp */; };
+		329E0D3619D3F340008A9CE6 /* EntityLockCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 329E0D1F19D3F340008A9CE6 /* EntityLockCommand.cpp */; };
+		329E0D3719D3F340008A9CE6 /* EntityParentChangeCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 329E0D2119D3F340008A9CE6 /* EntityParentChangeCommand.cpp */; };
+		329E0D3819D3F340008A9CE6 /* EntityRemoveCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 329E0D2319D3F340008A9CE6 /* EntityRemoveCommand.cpp */; };
+		329E0D3919D3F340008A9CE6 /* InspDynamicModifyCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 329E0D2519D3F340008A9CE6 /* InspDynamicModifyCommand.cpp */; };
+		329E0D3A19D3F340008A9CE6 /* InspMemebrModifyCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 329E0D2819D3F340008A9CE6 /* InspMemebrModifyCommand.cpp */; };
+		329E0D3B19D3F340008A9CE6 /* KeyedArchiveCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 329E0D2919D3F340008A9CE6 /* KeyedArchiveCommand.cpp */; };
+		329E0D3C19D3F340008A9CE6 /* MetaObjModifyCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 329E0D2B19D3F340008A9CE6 /* MetaObjModifyCommand.cpp */; };
+		329E0D3D19D3F340008A9CE6 /* RemoveComponentCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 329E0D2D19D3F340008A9CE6 /* RemoveComponentCommand.cpp */; };
+		32DFC7B719E92704005EE689 /* EditorUIPackageBuilder.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 32DFC7B519E92704005EE689 /* EditorUIPackageBuilder.cpp */; };
+		32F0D0ED19DC34E7003EC7B8 /* Vector2DEdit.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 32F0D0EB19DC34E7003EC7B8 /* Vector2DEdit.cpp */; };
+		32FB45FA19C19090003A401C /* Project.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 32FB45F819C19090003A401C /* Project.cpp */; };
+		49220EEF196552C4006E88C5 /* TextureDescriptorUtils.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 49220EED196552C4006E88C5 /* TextureDescriptorUtils.cpp */; };
+		498B61FD16F76E2C009D4417 /* IconHelper.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 498B61FB16F76E2C009D4417 /* IconHelper.cpp */; };
+		498FEAF019643D84007E1660 /* BaseValidator.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 498FEAEB19643D84007E1660 /* BaseValidator.cpp */; };
+		498FEAF419644C61007E1660 /* DistanceFontValidator.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 498FEAF219644C61007E1660 /* DistanceFontValidator.cpp */; };
+		5C190C9F15AEC6F9005731F8 /* Data in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 5C190C9E15AEC6F9005731F8 /* Data */; };
+		5CCC10E715B460BF00DA83EB /* libz.dylib in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 5CCC10E615B460BF00DA83EB /* libz.dylib */; };
+		5CCC10E915B460C900DA83EB /* libbz2.dylib in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 5CCC10E815B460C900DA83EB /* libbz2.dylib */; };
+		740F353416832022003B35E7 /* EditorSettings.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 740F353316832022003B35E7 /* EditorSettings.cpp */; };
+		74893AD4165A8E90006B2762 /* ResourcesManageHelper.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74893AD2165A8E8F006B2762 /* ResourcesManageHelper.cpp */; };
+		7492E0EA1639445D00DF883A /* fontmanagerdialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 7492E0E81639445D00DF883A /* fontmanagerdialog.cpp */; };
+		77BDEC8E56A833D3814BC614 /* QtNetwork.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 82153068A36B6EA46DD82A06 /* QtNetwork.framework */; };
+		77C663449ABEE93BEE5F2771 /* Cocoa.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 336CB11D929F5E35FA69020F /* Cocoa.framework */; };
+		A51FBC516D952C0C5AB72EA1 /* QtGui.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 9B8EE51E126C761F3F797428 /* QtGui.framework */; };
+		A641262F17D0C98B004D3C5E /* libFrameworkToolsQt.a in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = A641262C17D0C97C004D3C5E /* libFrameworkToolsQt.a */; };
+		A93E34BD17283146D6E95207 /* QtCore.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 419FFB6CDDEB353FF0A4F469 /* QtCore.framework */; };
+		B08AE0866171E2B79EF2D621 /* QtOpenGL.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 6AB05FD3B5F9D1E725443AAE /* QtOpenGL.framework */; };
+		B0B2BE581A1270850012536C /* libIMagickHelper.dylib in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = B0B2BE571A1270850012536C /* libIMagickHelper.dylib */; };
+		B0B2BE5E1A1270B40012536C /* libIMagickHelper.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = B0B2BE571A1270850012536C /* libIMagickHelper.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BCEF71E1EDFB18DA77DC750B /* OpenGL.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = DA18A6831232F53228631AD1 /* OpenGL.framework */; };
+		C107916716D78CCD0081E58C /* libFrameworkQt.a in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = C107916416D78C9E0081E58C /* libFrameworkQt.a */; };
+		C15C2FED162AD6E400818631 /* FrameworkMain.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = C15C2FE1162AD6E400818631 /* FrameworkMain.cpp */; };
+		C15C2FEE162AD6E400818631 /* GameCore.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = C15C2FE3162AD6E400818631 /* GameCore.cpp */; };
+		C15C2FEF162AD6E400818631 /* main.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = C15C2FE5162AD6E400818631 /* main.cpp */; };
+		C15C2FF1162AD6E400818631 /* davaglwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = C15C2FE9162AD6E400818631 /* davaglwidget.cpp */; };
+		C15C2FF2162AD6E400818631 /* mainwindow.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = C15C2FEB162AD6E400818631 /* mainwindow.cpp */; };
+		C17246121637E18900709AAF /* EditorFontManager.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = C17246101637E18900709AAF /* EditorFontManager.cpp */; };
+		C746392318DCE8640045C57B /* editfontdialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = C746392118DCE8640045C57B /* editfontdialog.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		17400D7D17901D570087BDEB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C107915B16D78C9E0081E58C /* Framework.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 176DEB77174B5561007A983B;
+			remoteInfo = FrameworkNPAPI;
+		};
+		A641262917D0C97C004D3C5E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A641262317D0C97B004D3C5E /* FrameworkTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A698542917CE38C0001E9FDE;
+			remoteInfo = FrameworkTools;
+		};
+		A641262B17D0C97C004D3C5E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A641262317D0C97B004D3C5E /* FrameworkTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A698543717CE38D8001E9FDE;
+			remoteInfo = FrameworkToolsQt;
+		};
+		A641262D17D0C97C004D3C5E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A641262317D0C97B004D3C5E /* FrameworkTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A698543F17CE38E5001E9FDE;
+			remoteInfo = FrameworkToolsNPAPI;
+		};
+		C107916116D78C9E0081E58C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C107915B16D78C9E0081E58C /* Framework.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D2AAC07E0554694100DB518D;
+			remoteInfo = Framework;
+		};
+		C107916316D78C9E0081E58C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C107915B16D78C9E0081E58C /* Framework.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E898A2C416BD265400732C04;
+			remoteInfo = FrameworkQt;
+		};
+		C107916516D78CC20081E58C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C107915B16D78C9E0081E58C /* Framework.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = E898A05116BD265400732C04;
+			remoteInfo = FrameworkQt;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		020AB22A17463A9F0082F336 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				B0B2BE5E1A1270B40012536C /* libIMagickHelper.dylib in CopyFiles */,
+				020AB22C17463AA70082F336 /* libfmodevent.dylib in CopyFiles */,
+				020AB22D17463AA70082F336 /* libfmodex.dylib in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		00BD80432B2C7B49A27A3DC5 /* QuickEd.pro */ = {isa = PBXFileReference; lastKnownFileType = text; path = QuickEd.pro; sourceTree = "<group>"; };
+		02E9E447173A3AED00C501BC /* libfmodevent.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodevent.dylib; path = ../../Libs/fmod/lib/macos/libfmodevent.dylib; sourceTree = "<group>"; };
+		02E9E448173A3AED00C501BC /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodex.dylib; path = ../../Libs/fmod/lib/macos/libfmodex.dylib; sourceTree = "<group>"; };
+		1541251419C8E62E00FC2883 /* PackageDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PackageDocument.h; sourceTree = "<group>"; };
+		1541251519C8E62E00FC2883 /* PackageDocument.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PackageDocument.cpp; sourceTree = "<group>"; };
+		1548A1C419CCAB2600620C60 /* GeneratedFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = GeneratedFiles; sourceTree = "<group>"; };
+		157BA42019CCE96D00E47682 /* UI */ = {isa = PBXFileReference; lastKnownFileType = folder; path = UI; sourceTree = "<group>"; };
+		15959DBE19D3169400B52AEF /* PackageGraphicsWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PackageGraphicsWidget.h; sourceTree = "<group>"; };
+		15959DBF19D3169400B52AEF /* PackageGraphicsWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PackageGraphicsWidget.cpp; sourceTree = "<group>"; };
+		15959DC019D3169400B52AEF /* GraphicsViewContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphicsViewContext.h; sourceTree = "<group>"; };
+		15959DC119D3169400B52AEF /* GraphicsViewContext.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphicsViewContext.cpp; sourceTree = "<group>"; };
+		15959DD819D574F800B52AEF /* LineEditExt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LineEditExt.cpp; sourceTree = "<group>"; };
+		15959DD919D574F800B52AEF /* LineEditExt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LineEditExt.h; sourceTree = "<group>"; };
+		15959DDC19D5750600B52AEF /* PackageDockWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PackageDockWidget.cpp; sourceTree = "<group>"; };
+		15959DDD19D5750600B52AEF /* PackageDockWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PackageDockWidget.h; sourceTree = "<group>"; };
+		15959DDE19D5750600B52AEF /* UIFilteredPackageModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIFilteredPackageModel.cpp; sourceTree = "<group>"; };
+		15959DDF19D5750600B52AEF /* UIFilteredPackageModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFilteredPackageModel.h; sourceTree = "<group>"; };
+		15959DE019D5750600B52AEF /* UIPackageModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackageModel.cpp; sourceTree = "<group>"; };
+		15959DE119D5750600B52AEF /* UIPackageModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackageModel.h; sourceTree = "<group>"; };
+		1595D38E19D980A3007338DF /* ConsoleDockWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConsoleDockWidget.cpp; sourceTree = "<group>"; };
+		1595D38F19D980A3007338DF /* ConsoleDockWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConsoleDockWidget.h; sourceTree = "<group>"; };
+		1595D3B419DAF26F007338DF /* QtDavaConvertion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QtDavaConvertion.cpp; sourceTree = "<group>"; };
+		1595D3B519DAF26F007338DF /* QtDavaConvertion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QtDavaConvertion.h; sourceTree = "<group>"; };
+		1595D3B719DAF2A2007338DF /* EditScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EditScreen.h; sourceTree = "<group>"; };
+		1595D3B819DAF2A2007338DF /* EditScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EditScreen.cpp; sourceTree = "<group>"; };
+		159ED79D19E2B09900C8B37A /* PropertiesViewContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PropertiesViewContext.h; sourceTree = "<group>"; };
+		159ED79E19E2B09900C8B37A /* PropertiesViewContext.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PropertiesViewContext.cpp; sourceTree = "<group>"; };
+		159ED79F19E2B09900C8B37A /* ChangePropertyValueCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChangePropertyValueCommand.h; sourceTree = "<group>"; };
+		159ED7A019E2B09900C8B37A /* ChangePropertyValueCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ChangePropertyValueCommand.cpp; sourceTree = "<group>"; };
+		159ED7B119E2F61C00C8B37A /* Vector2PropertyDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vector2PropertyDelegate.h; sourceTree = "<group>"; };
+		159ED7B219E2F61C00C8B37A /* Vector2PropertyDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Vector2PropertyDelegate.cpp; sourceTree = "<group>"; };
+		159ED7B319E2F61C00C8B37A /* StringPropertyDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringPropertyDelegate.h; sourceTree = "<group>"; };
+		159ED7B419E2F61C00C8B37A /* StringPropertyDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringPropertyDelegate.cpp; sourceTree = "<group>"; };
+		159ED7B519E2F61C00C8B37A /* IntegerPropertyDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntegerPropertyDelegate.h; sourceTree = "<group>"; };
+		159ED7B619E2F61C00C8B37A /* IntegerPropertyDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntegerPropertyDelegate.cpp; sourceTree = "<group>"; };
+		159ED7B719E2F61C00C8B37A /* FloatPropertyDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FloatPropertyDelegate.h; sourceTree = "<group>"; };
+		159ED7B819E2F61C00C8B37A /* FloatPropertyDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FloatPropertyDelegate.cpp; sourceTree = "<group>"; };
+		159ED7B919E2F61C00C8B37A /* FilePathPropertyDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FilePathPropertyDelegate.h; sourceTree = "<group>"; };
+		159ED7BA19E2F61C00C8B37A /* FilePathPropertyDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FilePathPropertyDelegate.cpp; sourceTree = "<group>"; };
+		159ED7BB19E2F61C00C8B37A /* EnumPropertyDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EnumPropertyDelegate.h; sourceTree = "<group>"; };
+		159ED7BC19E2F61C00C8B37A /* EnumPropertyDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EnumPropertyDelegate.cpp; sourceTree = "<group>"; };
+		159ED7BD19E2F61C00C8B37A /* ColorPropertyDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorPropertyDelegate.h; sourceTree = "<group>"; };
+		159ED7BE19E2F61C00C8B37A /* ColorPropertyDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ColorPropertyDelegate.cpp; sourceTree = "<group>"; };
+		159ED7BF19E2F61C00C8B37A /* BasePropertyDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BasePropertyDelegate.h; sourceTree = "<group>"; };
+		159ED7C019E2F61C00C8B37A /* BasePropertyDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BasePropertyDelegate.cpp; sourceTree = "<group>"; };
+		159ED7C119E2F61C00C8B37A /* AbstractPropertyDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractPropertyDelegate.h; sourceTree = "<group>"; };
+		159ED7C219E2F61C00C8B37A /* AbstractPropertyDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AbstractPropertyDelegate.cpp; sourceTree = "<group>"; };
+		159ED7D419E51AD200C8B37A /* FileSystemDockWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileSystemDockWidget.h; sourceTree = "<group>"; };
+		159ED7D519E51AD200C8B37A /* FileSystemDockWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileSystemDockWidget.cpp; sourceTree = "<group>"; };
+		15BE534A19D72CA500788209 /* LibraryDockWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LibraryDockWidget.cpp; sourceTree = "<group>"; };
+		15BE534B19D72CA500788209 /* LibraryDockWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LibraryDockWidget.h; sourceTree = "<group>"; };
+		17112B5716392EA80017E713 /* WidgetSignalsBlocker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WidgetSignalsBlocker.cpp; path = Helpers/WidgetSignalsBlocker.cpp; sourceTree = "<group>"; };
+		17112B5816392EA80017E713 /* WidgetSignalsBlocker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WidgetSignalsBlocker.h; path = Helpers/WidgetSignalsBlocker.h; sourceTree = "<group>"; };
+		17183C3E18C8830000491E66 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		17183C4018C8833A00491E66 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		1723533D19A24EBB00E3212C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		174E1FBD17F3483600C7EC10 /* regexpinputdialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = regexpinputdialog.cpp; path = Dialogs/regexpinputdialog.cpp; sourceTree = "<group>"; };
+		174E1FBE17F3483600C7EC10 /* regexpinputdialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = regexpinputdialog.h; path = Dialogs/regexpinputdialog.h; sourceTree = "<group>"; };
+		17607FC0164121FB004E36DE /* LocalizationSystemHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LocalizationSystemHelper.cpp; path = Helpers/LocalizationSystemHelper.cpp; sourceTree = "<group>"; };
+		17607FC1164121FB004E36DE /* LocalizationSystemHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LocalizationSystemHelper.h; path = Helpers/LocalizationSystemHelper.h; sourceTree = "<group>"; };
+		17607FED16415B7C004E36DE /* BackgroundGridWidgetHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BackgroundGridWidgetHelper.cpp; path = Helpers/BackgroundGridWidgetHelper.cpp; sourceTree = "<group>"; };
+		17607FEE16415B7C004E36DE /* BackgroundGridWidgetHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BackgroundGridWidgetHelper.h; path = Helpers/BackgroundGridWidgetHelper.h; sourceTree = "<group>"; };
+		17660BA9186AE97B00CF7A14 /* GridVisualizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GridVisualizer.cpp; path = Grid/GridVisualizer.cpp; sourceTree = "<group>"; };
+		17660BAA186AE97B00CF7A14 /* GridVisualizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GridVisualizer.h; path = Grid/GridVisualizer.h; sourceTree = "<group>"; };
+		17660BBA186B1DD700CF7A14 /* RulerWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RulerWidget.cpp; path = Ruler/RulerWidget.cpp; sourceTree = "<group>"; };
+		17660BBB186B1DD700CF7A14 /* RulerWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RulerWidget.h; path = Ruler/RulerWidget.h; sourceTree = "<group>"; };
+		17660BC1186C1D8900CF7A14 /* RulerSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RulerSettings.h; path = Ruler/RulerSettings.h; sourceTree = "<group>"; };
+		17660BC3186C1DA000CF7A14 /* RulerController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RulerController.cpp; path = Ruler/RulerController.cpp; sourceTree = "<group>"; };
+		17660BC4186C1DA000CF7A14 /* RulerController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RulerController.h; path = Ruler/RulerController.h; sourceTree = "<group>"; };
+		178F303C165677BF008678AD /* StringUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringUtils.cpp; sourceTree = "<group>"; };
+		178F303D165677BF008678AD /* StringUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringUtils.h; sourceTree = "<group>"; };
+		17B0617418892C1500FD8007 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/WebKit.framework; sourceTree = DEVELOPER_DIR; };
+		17FF15FE16400A75001B130F /* localizationeditordialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = localizationeditordialog.cpp; path = Dialogs/localizationeditordialog.cpp; sourceTree = "<group>"; };
+		17FF15FF16400A75001B130F /* localizationeditordialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = localizationeditordialog.h; path = Dialogs/localizationeditordialog.h; sourceTree = "<group>"; };
+		29FF4FD1BCB9408020402F99 /* theora_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = theora_macos; path = ../dava.framework/Libs/libs/libtheora_macos.a; sourceTree = "<group>"; };
+		2A689518AF9C22C7AA97C9EF /* ogg_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = ogg_macos; path = ../dava.framework/Libs/libs/libogg_macos.a; sourceTree = "<group>"; };
+		320A302219F393C6003D5140 /* PackageModelCommands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PackageModelCommands.cpp; sourceTree = "<group>"; };
+		320A302319F393C6003D5140 /* PackageModelCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PackageModelCommands.h; sourceTree = "<group>"; };
+		320A302A19F397BF003D5140 /* UIPackageMimeData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackageMimeData.cpp; sourceTree = "<group>"; };
+		320A302B19F397BF003D5140 /* UIPackageMimeData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackageMimeData.h; sourceTree = "<group>"; };
+		320A4B3B19E6CC6A0049D713 /* LegacyEditorUIPackageLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LegacyEditorUIPackageLoader.cpp; sourceTree = "<group>"; };
+		320A4B3C19E6CC6A0049D713 /* LegacyEditorUIPackageLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LegacyEditorUIPackageLoader.h; sourceTree = "<group>"; };
+		3228309919F12D9A009F8881 /* LibraryModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LibraryModel.cpp; sourceTree = "<group>"; };
+		3228309A19F12D9A009F8881 /* LibraryModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LibraryModel.h; sourceTree = "<group>"; };
+		322CF60E19EC06D70023D61F /* BackgroundPropertiesSection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BackgroundPropertiesSection.cpp; sourceTree = "<group>"; };
+		322CF60F19EC06D70023D61F /* BackgroundPropertiesSection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BackgroundPropertiesSection.h; sourceTree = "<group>"; };
+		322CF61019EC06D70023D61F /* BaseProperty.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BaseProperty.cpp; sourceTree = "<group>"; };
+		322CF61119EC06D70023D61F /* BaseProperty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseProperty.h; sourceTree = "<group>"; };
+		322CF61219EC06D70023D61F /* ControlPropertiesSection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ControlPropertiesSection.cpp; sourceTree = "<group>"; };
+		322CF61319EC06D70023D61F /* ControlPropertiesSection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ControlPropertiesSection.h; sourceTree = "<group>"; };
+		322CF61419EC06D70023D61F /* InternalControlPropertiesSection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InternalControlPropertiesSection.cpp; sourceTree = "<group>"; };
+		322CF61519EC06D70023D61F /* InternalControlPropertiesSection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InternalControlPropertiesSection.h; sourceTree = "<group>"; };
+		322CF61619EC06D70023D61F /* LocalizedTextValueProperty.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalizedTextValueProperty.cpp; sourceTree = "<group>"; };
+		322CF61719EC06D70023D61F /* LocalizedTextValueProperty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalizedTextValueProperty.h; sourceTree = "<group>"; };
+		322CF61819EC06D70023D61F /* PropertiesSection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PropertiesSection.cpp; sourceTree = "<group>"; };
+		322CF61919EC06D70023D61F /* PropertiesSection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PropertiesSection.h; sourceTree = "<group>"; };
+		322CF61A19EC06D70023D61F /* SubValueProperty.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SubValueProperty.cpp; sourceTree = "<group>"; };
+		322CF61B19EC06D70023D61F /* SubValueProperty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SubValueProperty.h; sourceTree = "<group>"; };
+		322CF61C19EC06D70023D61F /* ValueProperty.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ValueProperty.cpp; sourceTree = "<group>"; };
+		322CF61D19EC06D70023D61F /* ValueProperty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ValueProperty.h; sourceTree = "<group>"; };
+		3237E8E519EAB2BC00CB639B /* PropertiesRoot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PropertiesRoot.cpp; sourceTree = "<group>"; };
+		3237E8E619EAB2BC00CB639B /* PropertiesRoot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PropertiesRoot.h; sourceTree = "<group>"; };
+		325FCCEA19DD8AC800197B03 /* PropertiesDockWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PropertiesDockWidget.cpp; sourceTree = "<group>"; };
+		325FCCEB19DD8AC800197B03 /* PropertiesDockWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PropertiesDockWidget.h; sourceTree = "<group>"; };
+		325FCCEC19DD8AC800197B03 /* PropertiesTreeItemDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PropertiesTreeItemDelegate.cpp; sourceTree = "<group>"; };
+		325FCCED19DD8AC800197B03 /* PropertiesTreeItemDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PropertiesTreeItemDelegate.h; sourceTree = "<group>"; };
+		325FCCEE19DD8AC800197B03 /* PropertiesTreeModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PropertiesTreeModel.cpp; sourceTree = "<group>"; };
+		325FCCEF19DD8AC800197B03 /* PropertiesTreeModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PropertiesTreeModel.h; sourceTree = "<group>"; };
+		325FCCF019DD8AC800197B03 /* PropertiesTreeView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PropertiesTreeView.cpp; sourceTree = "<group>"; };
+		325FCCF119DD8AC800197B03 /* PropertiesTreeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PropertiesTreeView.h; sourceTree = "<group>"; };
+		3262FB8219E6959800E32F8E /* PackageBaseNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PackageBaseNode.cpp; sourceTree = "<group>"; };
+		3262FB8319E6959800E32F8E /* PackageBaseNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PackageBaseNode.h; sourceTree = "<group>"; };
+		3262FB8519E6962600E32F8E /* ControlNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ControlNode.cpp; sourceTree = "<group>"; };
+		3262FB8619E6962600E32F8E /* ControlNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ControlNode.h; sourceTree = "<group>"; };
+		3262FB8819E699CB00E32F8E /* PackageNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PackageNode.cpp; sourceTree = "<group>"; };
+		3262FB8919E699CB00E32F8E /* PackageNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PackageNode.h; sourceTree = "<group>"; };
+		3262FB8B19E69A5500E32F8E /* ImportedPackagesNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImportedPackagesNode.cpp; sourceTree = "<group>"; };
+		3262FB8C19E69A5500E32F8E /* ImportedPackagesNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImportedPackagesNode.h; sourceTree = "<group>"; };
+		3262FB8E19E69AB800E32F8E /* PackageControlsNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PackageControlsNode.cpp; sourceTree = "<group>"; };
+		3262FB8F19E69AB800E32F8E /* PackageControlsNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PackageControlsNode.h; sourceTree = "<group>"; };
+		329E0D1019D3F340008A9CE6 /* AddComponentCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AddComponentCommand.cpp; sourceTree = "<group>"; };
+		329E0D1119D3F340008A9CE6 /* AddComponentCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AddComponentCommand.h; sourceTree = "<group>"; };
+		329E0D1219D3F340008A9CE6 /* Command2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Command2.cpp; sourceTree = "<group>"; };
+		329E0D1319D3F340008A9CE6 /* Command2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Command2.h; sourceTree = "<group>"; };
+		329E0D1419D3F340008A9CE6 /* CommandAction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CommandAction.cpp; sourceTree = "<group>"; };
+		329E0D1519D3F340008A9CE6 /* CommandAction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommandAction.h; sourceTree = "<group>"; };
+		329E0D1619D3F340008A9CE6 /* CommandBatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CommandBatch.cpp; sourceTree = "<group>"; };
+		329E0D1719D3F340008A9CE6 /* CommandBatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommandBatch.h; sourceTree = "<group>"; };
+		329E0D1819D3F340008A9CE6 /* CommandID.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommandID.h; sourceTree = "<group>"; };
+		329E0D1919D3F340008A9CE6 /* CommandNotify.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CommandNotify.cpp; sourceTree = "<group>"; };
+		329E0D1A19D3F340008A9CE6 /* CommandNotify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommandNotify.h; sourceTree = "<group>"; };
+		329E0D1B19D3F340008A9CE6 /* CommandStack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CommandStack.cpp; sourceTree = "<group>"; };
+		329E0D1C19D3F340008A9CE6 /* CommandStack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommandStack.h; sourceTree = "<group>"; };
+		329E0D1D19D3F340008A9CE6 /* EntityAddCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityAddCommand.cpp; sourceTree = "<group>"; };
+		329E0D1E19D3F340008A9CE6 /* EntityAddCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityAddCommand.h; sourceTree = "<group>"; };
+		329E0D1F19D3F340008A9CE6 /* EntityLockCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityLockCommand.cpp; sourceTree = "<group>"; };
+		329E0D2019D3F340008A9CE6 /* EntityLockCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityLockCommand.h; sourceTree = "<group>"; };
+		329E0D2119D3F340008A9CE6 /* EntityParentChangeCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityParentChangeCommand.cpp; sourceTree = "<group>"; };
+		329E0D2219D3F340008A9CE6 /* EntityParentChangeCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityParentChangeCommand.h; sourceTree = "<group>"; };
+		329E0D2319D3F340008A9CE6 /* EntityRemoveCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityRemoveCommand.cpp; sourceTree = "<group>"; };
+		329E0D2419D3F340008A9CE6 /* EntityRemoveCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityRemoveCommand.h; sourceTree = "<group>"; };
+		329E0D2519D3F340008A9CE6 /* InspDynamicModifyCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InspDynamicModifyCommand.cpp; sourceTree = "<group>"; };
+		329E0D2619D3F340008A9CE6 /* InspDynamicModifyCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InspDynamicModifyCommand.h; sourceTree = "<group>"; };
+		329E0D2719D3F340008A9CE6 /* InspMemberModifyCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InspMemberModifyCommand.h; sourceTree = "<group>"; };
+		329E0D2819D3F340008A9CE6 /* InspMemebrModifyCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InspMemebrModifyCommand.cpp; sourceTree = "<group>"; };
+		329E0D2919D3F340008A9CE6 /* KeyedArchiveCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KeyedArchiveCommand.cpp; sourceTree = "<group>"; };
+		329E0D2A19D3F340008A9CE6 /* KeyedArchiveCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyedArchiveCommand.h; sourceTree = "<group>"; };
+		329E0D2B19D3F340008A9CE6 /* MetaObjModifyCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MetaObjModifyCommand.cpp; sourceTree = "<group>"; };
+		329E0D2C19D3F340008A9CE6 /* MetaObjModifyCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetaObjModifyCommand.h; sourceTree = "<group>"; };
+		329E0D2D19D3F340008A9CE6 /* RemoveComponentCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RemoveComponentCommand.cpp; sourceTree = "<group>"; };
+		329E0D2E19D3F340008A9CE6 /* RemoveComponentCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RemoveComponentCommand.h; sourceTree = "<group>"; };
+		32DFC7B519E92704005EE689 /* EditorUIPackageBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EditorUIPackageBuilder.cpp; sourceTree = "<group>"; };
+		32DFC7B619E92704005EE689 /* EditorUIPackageBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EditorUIPackageBuilder.h; sourceTree = "<group>"; };
+		32F0D0EB19DC34E7003EC7B8 /* Vector2DEdit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Vector2DEdit.cpp; sourceTree = "<group>"; };
+		32F0D0EC19DC34E7003EC7B8 /* Vector2DEdit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vector2DEdit.h; sourceTree = "<group>"; };
+		32FB45F819C19090003A401C /* Project.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Project.cpp; sourceTree = "<group>"; };
+		32FB45F919C19090003A401C /* Project.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Project.h; sourceTree = "<group>"; };
+		336CB11D929F5E35FA69020F /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		419FFB6CDDEB353FF0A4F469 /* QtCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCore.framework; path = ../../../../QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtCore.framework; sourceTree = "<group>"; };
+		49220EED196552C4006E88C5 /* TextureDescriptorUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextureDescriptorUtils.cpp; sourceTree = "<group>"; };
+		49220EEE196552C4006E88C5 /* TextureDescriptorUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextureDescriptorUtils.h; sourceTree = "<group>"; };
+		498B61FB16F76E2C009D4417 /* IconHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IconHelper.cpp; sourceTree = "<group>"; };
+		498B61FC16F76E2C009D4417 /* IconHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IconHelper.h; sourceTree = "<group>"; };
+		498FEAEB19643D84007E1660 /* BaseValidator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BaseValidator.cpp; path = Validators/BaseValidator.cpp; sourceTree = "<group>"; };
+		498FEAEC19643D84007E1660 /* BaseValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BaseValidator.h; path = Validators/BaseValidator.h; sourceTree = "<group>"; };
+		498FEAF219644C61007E1660 /* DistanceFontValidator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DistanceFontValidator.cpp; path = Validators/DistanceFontValidator.cpp; sourceTree = "<group>"; };
+		498FEAF319644C61007E1660 /* DistanceFontValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DistanceFontValidator.h; path = Validators/DistanceFontValidator.h; sourceTree = "<group>"; };
+		52F4216CE5F81A8073DE30C0 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = /System/Library/Frameworks/OpenAL.framework; sourceTree = "<absolute>"; };
+		548C5E52292D4DA256C12EBD /* png_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = png_macos; path = ../dava.framework/Libs/libs/libpng_macos.a; sourceTree = "<group>"; };
+		5B2DE73738F678B7C6177179 /* curl_ios_mac */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = curl_ios_mac; path = ../dava.framework/Libs/libs/libcurl_ios_mac.a; sourceTree = "<group>"; };
+		5C190C9515AEC58B005731F8 /* QuickEd.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuickEd.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5C190C9E15AEC6F9005731F8 /* Data */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Data; sourceTree = "<group>"; };
+		5C190CA015AEC704005731F8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		5CCC10E615B460BF00DA83EB /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		5CCC10E815B460C900DA83EB /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
+		6AB05FD3B5F9D1E725443AAE /* QtOpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtOpenGL.framework; path = ../../../../QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtOpenGL.framework; sourceTree = "<group>"; };
+		6C21256244E578A9DE07EE60 /* xml_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = xml_macos; path = ../dava.framework/Libs/libs/libxml_macos.a; sourceTree = "<group>"; };
+		740F35311683200F003B35E7 /* EditorSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EditorSettings.h; sourceTree = "<group>"; };
+		740F353316832022003B35E7 /* EditorSettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EditorSettings.cpp; sourceTree = "<group>"; };
+		7487A43D170ADBED005EA703 /* StringConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StringConstants.h; path = Helpers/StringConstants.h; sourceTree = "<group>"; };
+		74893AD2165A8E8F006B2762 /* ResourcesManageHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ResourcesManageHelper.cpp; path = Helpers/ResourcesManageHelper.cpp; sourceTree = "<group>"; };
+		74893AD3165A8E8F006B2762 /* ResourcesManageHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ResourcesManageHelper.h; path = Helpers/ResourcesManageHelper.h; sourceTree = "<group>"; };
+		7492E0E81639445D00DF883A /* fontmanagerdialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fontmanagerdialog.cpp; sourceTree = "<group>"; };
+		7492E0E91639445D00DF883A /* fontmanagerdialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fontmanagerdialog.h; sourceTree = "<group>"; };
+		8157E7438190A1EEF4A4D363 /* mongodb_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = mongodb_macos; path = ../dava.framework/Libs/libs/libmongodb_macos.a; sourceTree = "<group>"; };
+		8159B90213E2E13CB65C75B4 /* vorbis_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = vorbis_macos; path = ../dava.framework/Libs/oggvorbis/lib/libvorbis_macos.a; sourceTree = "<group>"; };
+		81BBDA0F1849B4A35FAB7D00 /* freetype_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = freetype_macos; path = ../dava.framework/Libs/freetype/lib/libfreetype_macos.a; sourceTree = "<group>"; };
+		82153068A36B6EA46DD82A06 /* QtNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtNetwork.framework; path = ../../../../QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtNetwork.framework; sourceTree = "<group>"; };
+		9B8EE51E126C761F3F797428 /* QtGui.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtGui.framework; path = ../../../../QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtGui.framework; sourceTree = "<group>"; };
+		A641262317D0C97B004D3C5E /* FrameworkTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FrameworkTools.xcodeproj; path = ../../Projects/MacOSFramework/FrameworkTools.xcodeproj; sourceTree = "<group>"; };
+		B0B2BE571A1270850012536C /* libIMagickHelper.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libIMagickHelper.dylib; path = ../../Libs/IMagickHelpLib/libIMagickHelper.dylib; sourceTree = "<group>"; };
+		C107915B16D78C9E0081E58C /* Framework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Framework.xcodeproj; path = ../../Projects/MacOSFramework/Framework.xcodeproj; sourceTree = "<group>"; };
+		C15C2FE1162AD6E400818631 /* FrameworkMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FrameworkMain.cpp; sourceTree = "<group>"; };
+		C15C2FE2162AD6E400818631 /* FrameworkMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FrameworkMain.h; sourceTree = "<group>"; };
+		C15C2FE3162AD6E400818631 /* GameCore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameCore.cpp; sourceTree = "<group>"; };
+		C15C2FE4162AD6E400818631 /* GameCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameCore.h; sourceTree = "<group>"; };
+		C15C2FE5162AD6E400818631 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		C15C2FE9162AD6E400818631 /* davaglwidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = davaglwidget.cpp; sourceTree = "<group>"; };
+		C15C2FEA162AD6E400818631 /* davaglwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = davaglwidget.h; sourceTree = "<group>"; };
+		C15C2FEB162AD6E400818631 /* mainwindow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mainwindow.cpp; sourceTree = "<group>"; };
+		C15C2FEC162AD6E400818631 /* mainwindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mainwindow.h; sourceTree = "<group>"; };
+		C17246101637E18900709AAF /* EditorFontManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EditorFontManager.cpp; sourceTree = "<group>"; };
+		C17246111637E18900709AAF /* EditorFontManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EditorFontManager.h; sourceTree = "<group>"; };
+		C6766F86E49E9C8701C8E637 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = /System/Library/Frameworks/AGL.framework; sourceTree = "<absolute>"; };
+		C746392118DCE8640045C57B /* editfontdialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = editfontdialog.cpp; path = Dialogs/editfontdialog.cpp; sourceTree = "<group>"; };
+		C746392218DCE8640045C57B /* editfontdialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = editfontdialog.h; path = Dialogs/editfontdialog.h; sourceTree = "<group>"; };
+		CBE0854C74E7E8A8F67923BE /* yaml_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = yaml_macos; path = ../dava.framework/Libs/libs/libyaml_macos.a; sourceTree = "<group>"; };
+		DA18A6831232F53228631AD1 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		F7C12D3D2FE75302773F34BB /* vorbisfile_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = vorbisfile_macos; path = ../dava.framework/Libs/oggvorbis/lib/libvorbisfile_macos.a; sourceTree = "<group>"; };
+		FAC1F4E071D49CE850E70770 /* Data/ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Data/; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2A1043669E6E5A7426EA502A /* Frameworks & Libraries */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A641262F17D0C98B004D3C5E /* libFrameworkToolsQt.a in Frameworks & Libraries */,
+				02E9E449173A3AED00C501BC /* libfmodevent.dylib in Frameworks & Libraries */,
+				02E9E44A173A3AED00C501BC /* libfmodex.dylib in Frameworks & Libraries */,
+				C107916716D78CCD0081E58C /* libFrameworkQt.a in Frameworks & Libraries */,
+				5CCC10E915B460C900DA83EB /* libbz2.dylib in Frameworks & Libraries */,
+				5CCC10E715B460BF00DA83EB /* libz.dylib in Frameworks & Libraries */,
+				B08AE0866171E2B79EF2D621 /* QtOpenGL.framework in Frameworks & Libraries */,
+				A51FBC516D952C0C5AB72EA1 /* QtGui.framework in Frameworks & Libraries */,
+				A93E34BD17283146D6E95207 /* QtCore.framework in Frameworks & Libraries */,
+				77BDEC8E56A833D3814BC614 /* QtNetwork.framework in Frameworks & Libraries */,
+				BCEF71E1EDFB18DA77DC750B /* OpenGL.framework in Frameworks & Libraries */,
+				0C6D4628EE0B0D1479A20551 /* AGL.framework in Frameworks & Libraries */,
+				17B0617518892C1500FD8007 /* WebKit.framework in Frameworks & Libraries */,
+				17183C3F18C8830000491E66 /* AVFoundation.framework in Frameworks & Libraries */,
+				77C663449ABEE93BEE5F2771 /* Cocoa.framework in Frameworks & Libraries */,
+				17183C4118C8833A00491E66 /* CoreMedia.framework in Frameworks & Libraries */,
+				1723533E19A24EBB00E3212C /* Security.framework in Frameworks & Libraries */,
+				B0B2BE581A1270850012536C /* libIMagickHelper.dylib in Frameworks & Libraries */,
+			);
+			name = "Frameworks & Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		05596AB53D8D521C69802C27 /* TemplateProjectQt */ = {
+			isa = PBXGroup;
+			children = (
+				1723533D19A24EBB00E3212C /* Security.framework */,
+				17183C4018C8833A00491E66 /* CoreMedia.framework */,
+				17183C3E18C8830000491E66 /* AVFoundation.framework */,
+				17B0617418892C1500FD8007 /* WebKit.framework */,
+				A641262317D0C97B004D3C5E /* FrameworkTools.xcodeproj */,
+				02E9E447173A3AED00C501BC /* libfmodevent.dylib */,
+				02E9E448173A3AED00C501BC /* libfmodex.dylib */,
+				B0B2BE571A1270850012536C /* libIMagickHelper.dylib */,
+				C107915B16D78C9E0081E58C /* Framework.xcodeproj */,
+				5C190C9E15AEC6F9005731F8 /* Data */,
+				157BA42019CCE96D00E47682 /* UI */,
+				1548A1C419CCAB2600620C60 /* GeneratedFiles */,
+				5C190CA015AEC704005731F8 /* Info.plist */,
+				C15C2FDF162AD6E400818631 /* Classes */,
+				ED1E82605DD74B483AF3C982 /* External Frameworks and Libraries */,
+				5C190C9615AEC58B005731F8 /* Products */,
+				C90923F6A2E654060C34742C /* Source [bundle data] */,
+				7CABE3C80E79AD2B307756D2 /* Sources [qmake] */,
+			);
+			name = TemplateProjectQt;
+			sourceTree = "<group>";
+		};
+		15959DBD19D3167C00B52AEF /* GraphicView */ = {
+			isa = PBXGroup;
+			children = (
+				1595D3B719DAF2A2007338DF /* EditScreen.h */,
+				1595D3B819DAF2A2007338DF /* EditScreen.cpp */,
+				15959DBE19D3169400B52AEF /* PackageGraphicsWidget.h */,
+				15959DBF19D3169400B52AEF /* PackageGraphicsWidget.cpp */,
+				15959DC019D3169400B52AEF /* GraphicsViewContext.h */,
+				15959DC119D3169400B52AEF /* GraphicsViewContext.cpp */,
+			);
+			path = GraphicView;
+			sourceTree = "<group>";
+		};
+		15959DD719D574F800B52AEF /* QtControls */ = {
+			isa = PBXGroup;
+			children = (
+				32F0D0EB19DC34E7003EC7B8 /* Vector2DEdit.cpp */,
+				32F0D0EC19DC34E7003EC7B8 /* Vector2DEdit.h */,
+				15959DD819D574F800B52AEF /* LineEditExt.cpp */,
+				15959DD919D574F800B52AEF /* LineEditExt.h */,
+			);
+			path = QtControls;
+			sourceTree = "<group>";
+		};
+		15959DDB19D5750600B52AEF /* PackageView */ = {
+			isa = PBXGroup;
+			children = (
+				15959DDC19D5750600B52AEF /* PackageDockWidget.cpp */,
+				15959DDD19D5750600B52AEF /* PackageDockWidget.h */,
+				15959DDE19D5750600B52AEF /* UIFilteredPackageModel.cpp */,
+				15959DDF19D5750600B52AEF /* UIFilteredPackageModel.h */,
+				15959DE019D5750600B52AEF /* UIPackageModel.cpp */,
+				15959DE119D5750600B52AEF /* UIPackageModel.h */,
+				320A302A19F397BF003D5140 /* UIPackageMimeData.cpp */,
+				320A302B19F397BF003D5140 /* UIPackageMimeData.h */,
+				320A302219F393C6003D5140 /* PackageModelCommands.cpp */,
+				320A302319F393C6003D5140 /* PackageModelCommands.h */,
+			);
+			path = PackageView;
+			sourceTree = "<group>";
+		};
+		15959DEE19D6129E00B52AEF /* LibraryView */ = {
+			isa = PBXGroup;
+			children = (
+				15BE534A19D72CA500788209 /* LibraryDockWidget.cpp */,
+				15BE534B19D72CA500788209 /* LibraryDockWidget.h */,
+				3228309919F12D9A009F8881 /* LibraryModel.cpp */,
+				3228309A19F12D9A009F8881 /* LibraryModel.h */,
+			);
+			path = LibraryView;
+			sourceTree = "<group>";
+		};
+		1595D38D19D980A3007338DF /* ConsoleView */ = {
+			isa = PBXGroup;
+			children = (
+				1595D38E19D980A3007338DF /* ConsoleDockWidget.cpp */,
+				1595D38F19D980A3007338DF /* ConsoleDockWidget.h */,
+			);
+			path = ConsoleView;
+			sourceTree = "<group>";
+		};
+		1595D3AF19DAF259007338DF /* FileSystemView */ = {
+			isa = PBXGroup;
+			children = (
+				159ED7D419E51AD200C8B37A /* FileSystemDockWidget.h */,
+				159ED7D519E51AD200C8B37A /* FileSystemDockWidget.cpp */,
+			);
+			path = FileSystemView;
+			sourceTree = "<group>";
+		};
+		1595D3B319DAF26F007338DF /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				1595D3B419DAF26F007338DF /* QtDavaConvertion.cpp */,
+				1595D3B519DAF26F007338DF /* QtDavaConvertion.h */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		17112B5616392E880017E713 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				74893AD2165A8E8F006B2762 /* ResourcesManageHelper.cpp */,
+				74893AD3165A8E8F006B2762 /* ResourcesManageHelper.h */,
+				17607FED16415B7C004E36DE /* BackgroundGridWidgetHelper.cpp */,
+				17607FEE16415B7C004E36DE /* BackgroundGridWidgetHelper.h */,
+				17112B5716392EA80017E713 /* WidgetSignalsBlocker.cpp */,
+				17112B5816392EA80017E713 /* WidgetSignalsBlocker.h */,
+				17607FC0164121FB004E36DE /* LocalizationSystemHelper.cpp */,
+				17607FC1164121FB004E36DE /* LocalizationSystemHelper.h */,
+				7487A43D170ADBED005EA703 /* StringConstants.h */,
+				178F303C165677BF008678AD /* StringUtils.cpp */,
+				178F303D165677BF008678AD /* StringUtils.h */,
+			);
+			name = Helpers;
+			sourceTree = "<group>";
+		};
+		17660BB4186B1D8D00CF7A14 /* Ruler */ = {
+			isa = PBXGroup;
+			children = (
+				17660BBA186B1DD700CF7A14 /* RulerWidget.cpp */,
+				17660BBB186B1DD700CF7A14 /* RulerWidget.h */,
+				17660BC1186C1D8900CF7A14 /* RulerSettings.h */,
+				17660BC3186C1DA000CF7A14 /* RulerController.cpp */,
+				17660BC4186C1DA000CF7A14 /* RulerController.h */,
+			);
+			name = Ruler;
+			sourceTree = "<group>";
+		};
+		176B4ED418682ADE0020798C /* Grid */ = {
+			isa = PBXGroup;
+			children = (
+				17660BA9186AE97B00CF7A14 /* GridVisualizer.cpp */,
+				17660BAA186AE97B00CF7A14 /* GridVisualizer.h */,
+			);
+			name = Grid;
+			sourceTree = "<group>";
+		};
+		17FF15FD16400A41001B130F /* Dialogs */ = {
+			isa = PBXGroup;
+			children = (
+				C746392118DCE8640045C57B /* editfontdialog.cpp */,
+				C746392218DCE8640045C57B /* editfontdialog.h */,
+				174E1FBD17F3483600C7EC10 /* regexpinputdialog.cpp */,
+				174E1FBE17F3483600C7EC10 /* regexpinputdialog.h */,
+				7492E0E91639445D00DF883A /* fontmanagerdialog.h */,
+				7492E0E81639445D00DF883A /* fontmanagerdialog.cpp */,
+				17FF15FE16400A75001B130F /* localizationeditordialog.cpp */,
+				17FF15FF16400A75001B130F /* localizationeditordialog.h */,
+			);
+			name = Dialogs;
+			sourceTree = "<group>";
+		};
+		32014C6D19C870F7006A4228 /* UIControls */ = {
+			isa = PBXGroup;
+			children = (
+				3237E8E419EAB29B00CB639B /* ControlProperties */,
+				3262FB7B19E67CF900E32F8E /* PackageHierarchy */,
+				320A4B3B19E6CC6A0049D713 /* LegacyEditorUIPackageLoader.cpp */,
+				320A4B3C19E6CC6A0049D713 /* LegacyEditorUIPackageLoader.h */,
+				32DFC7B519E92704005EE689 /* EditorUIPackageBuilder.cpp */,
+				32DFC7B619E92704005EE689 /* EditorUIPackageBuilder.h */,
+			);
+			path = UIControls;
+			sourceTree = "<group>";
+		};
+		3237E8E419EAB29B00CB639B /* ControlProperties */ = {
+			isa = PBXGroup;
+			children = (
+				322CF61019EC06D70023D61F /* BaseProperty.cpp */,
+				322CF61119EC06D70023D61F /* BaseProperty.h */,
+				3237E8E519EAB2BC00CB639B /* PropertiesRoot.cpp */,
+				3237E8E619EAB2BC00CB639B /* PropertiesRoot.h */,
+				322CF61819EC06D70023D61F /* PropertiesSection.cpp */,
+				322CF61919EC06D70023D61F /* PropertiesSection.h */,
+				322CF60E19EC06D70023D61F /* BackgroundPropertiesSection.cpp */,
+				322CF60F19EC06D70023D61F /* BackgroundPropertiesSection.h */,
+				322CF61219EC06D70023D61F /* ControlPropertiesSection.cpp */,
+				322CF61319EC06D70023D61F /* ControlPropertiesSection.h */,
+				322CF61419EC06D70023D61F /* InternalControlPropertiesSection.cpp */,
+				322CF61519EC06D70023D61F /* InternalControlPropertiesSection.h */,
+				322CF61C19EC06D70023D61F /* ValueProperty.cpp */,
+				322CF61D19EC06D70023D61F /* ValueProperty.h */,
+				322CF61619EC06D70023D61F /* LocalizedTextValueProperty.cpp */,
+				322CF61719EC06D70023D61F /* LocalizedTextValueProperty.h */,
+				322CF61A19EC06D70023D61F /* SubValueProperty.cpp */,
+				322CF61B19EC06D70023D61F /* SubValueProperty.h */,
+			);
+			path = ControlProperties;
+			sourceTree = "<group>";
+		};
+		3262FB7B19E67CF900E32F8E /* PackageHierarchy */ = {
+			isa = PBXGroup;
+			children = (
+				3262FB8219E6959800E32F8E /* PackageBaseNode.cpp */,
+				3262FB8319E6959800E32F8E /* PackageBaseNode.h */,
+				3262FB8819E699CB00E32F8E /* PackageNode.cpp */,
+				3262FB8919E699CB00E32F8E /* PackageNode.h */,
+				3262FB8B19E69A5500E32F8E /* ImportedPackagesNode.cpp */,
+				3262FB8C19E69A5500E32F8E /* ImportedPackagesNode.h */,
+				3262FB8E19E69AB800E32F8E /* PackageControlsNode.cpp */,
+				3262FB8F19E69AB800E32F8E /* PackageControlsNode.h */,
+				3262FB8519E6962600E32F8E /* ControlNode.cpp */,
+				3262FB8619E6962600E32F8E /* ControlNode.h */,
+			);
+			path = PackageHierarchy;
+			sourceTree = "<group>";
+		};
+		329E0D0F19D3F340008A9CE6 /* Commands2 */ = {
+			isa = PBXGroup;
+			children = (
+				329E0D1019D3F340008A9CE6 /* AddComponentCommand.cpp */,
+				329E0D1119D3F340008A9CE6 /* AddComponentCommand.h */,
+				329E0D1219D3F340008A9CE6 /* Command2.cpp */,
+				329E0D1319D3F340008A9CE6 /* Command2.h */,
+				329E0D1419D3F340008A9CE6 /* CommandAction.cpp */,
+				329E0D1519D3F340008A9CE6 /* CommandAction.h */,
+				329E0D1619D3F340008A9CE6 /* CommandBatch.cpp */,
+				329E0D1719D3F340008A9CE6 /* CommandBatch.h */,
+				329E0D1819D3F340008A9CE6 /* CommandID.h */,
+				329E0D1919D3F340008A9CE6 /* CommandNotify.cpp */,
+				329E0D1A19D3F340008A9CE6 /* CommandNotify.h */,
+				329E0D1B19D3F340008A9CE6 /* CommandStack.cpp */,
+				329E0D1C19D3F340008A9CE6 /* CommandStack.h */,
+				329E0D1D19D3F340008A9CE6 /* EntityAddCommand.cpp */,
+				329E0D1E19D3F340008A9CE6 /* EntityAddCommand.h */,
+				329E0D1F19D3F340008A9CE6 /* EntityLockCommand.cpp */,
+				329E0D2019D3F340008A9CE6 /* EntityLockCommand.h */,
+				329E0D2119D3F340008A9CE6 /* EntityParentChangeCommand.cpp */,
+				329E0D2219D3F340008A9CE6 /* EntityParentChangeCommand.h */,
+				329E0D2319D3F340008A9CE6 /* EntityRemoveCommand.cpp */,
+				329E0D2419D3F340008A9CE6 /* EntityRemoveCommand.h */,
+				329E0D2519D3F340008A9CE6 /* InspDynamicModifyCommand.cpp */,
+				329E0D2619D3F340008A9CE6 /* InspDynamicModifyCommand.h */,
+				329E0D2719D3F340008A9CE6 /* InspMemberModifyCommand.h */,
+				329E0D2819D3F340008A9CE6 /* InspMemebrModifyCommand.cpp */,
+				329E0D2919D3F340008A9CE6 /* KeyedArchiveCommand.cpp */,
+				329E0D2A19D3F340008A9CE6 /* KeyedArchiveCommand.h */,
+				329E0D2B19D3F340008A9CE6 /* MetaObjModifyCommand.cpp */,
+				329E0D2C19D3F340008A9CE6 /* MetaObjModifyCommand.h */,
+				329E0D2D19D3F340008A9CE6 /* RemoveComponentCommand.cpp */,
+				329E0D2E19D3F340008A9CE6 /* RemoveComponentCommand.h */,
+			);
+			path = Commands2;
+			sourceTree = "<group>";
+		};
+		32F623BB19D3F4DD0000A101 /* PropertiesView */ = {
+			isa = PBXGroup;
+			children = (
+				159ED7B119E2F61C00C8B37A /* Vector2PropertyDelegate.h */,
+				159ED7B219E2F61C00C8B37A /* Vector2PropertyDelegate.cpp */,
+				159ED7B319E2F61C00C8B37A /* StringPropertyDelegate.h */,
+				159ED7B419E2F61C00C8B37A /* StringPropertyDelegate.cpp */,
+				159ED7B519E2F61C00C8B37A /* IntegerPropertyDelegate.h */,
+				159ED7B619E2F61C00C8B37A /* IntegerPropertyDelegate.cpp */,
+				159ED7B719E2F61C00C8B37A /* FloatPropertyDelegate.h */,
+				159ED7B819E2F61C00C8B37A /* FloatPropertyDelegate.cpp */,
+				159ED7B919E2F61C00C8B37A /* FilePathPropertyDelegate.h */,
+				159ED7BA19E2F61C00C8B37A /* FilePathPropertyDelegate.cpp */,
+				159ED7BB19E2F61C00C8B37A /* EnumPropertyDelegate.h */,
+				159ED7BC19E2F61C00C8B37A /* EnumPropertyDelegate.cpp */,
+				159ED7BD19E2F61C00C8B37A /* ColorPropertyDelegate.h */,
+				159ED7BE19E2F61C00C8B37A /* ColorPropertyDelegate.cpp */,
+				159ED7BF19E2F61C00C8B37A /* BasePropertyDelegate.h */,
+				159ED7C019E2F61C00C8B37A /* BasePropertyDelegate.cpp */,
+				159ED7C119E2F61C00C8B37A /* AbstractPropertyDelegate.h */,
+				159ED7C219E2F61C00C8B37A /* AbstractPropertyDelegate.cpp */,
+				159ED79D19E2B09900C8B37A /* PropertiesViewContext.h */,
+				159ED79E19E2B09900C8B37A /* PropertiesViewContext.cpp */,
+				159ED79F19E2B09900C8B37A /* ChangePropertyValueCommand.h */,
+				159ED7A019E2B09900C8B37A /* ChangePropertyValueCommand.cpp */,
+				325FCCEA19DD8AC800197B03 /* PropertiesDockWidget.cpp */,
+				325FCCEB19DD8AC800197B03 /* PropertiesDockWidget.h */,
+				325FCCEC19DD8AC800197B03 /* PropertiesTreeItemDelegate.cpp */,
+				325FCCED19DD8AC800197B03 /* PropertiesTreeItemDelegate.h */,
+				325FCCEE19DD8AC800197B03 /* PropertiesTreeModel.cpp */,
+				325FCCEF19DD8AC800197B03 /* PropertiesTreeModel.h */,
+				325FCCF019DD8AC800197B03 /* PropertiesTreeView.cpp */,
+				325FCCF119DD8AC800197B03 /* PropertiesTreeView.h */,
+			);
+			path = PropertiesView;
+			sourceTree = "<group>";
+		};
+		498FEAE319643D51007E1660 /* Validators */ = {
+			isa = PBXGroup;
+			children = (
+				498FEAEB19643D84007E1660 /* BaseValidator.cpp */,
+				498FEAEC19643D84007E1660 /* BaseValidator.h */,
+				498FEAF219644C61007E1660 /* DistanceFontValidator.cpp */,
+				498FEAF319644C61007E1660 /* DistanceFontValidator.h */,
+			);
+			name = Validators;
+			sourceTree = "<group>";
+		};
+		5C190C9615AEC58B005731F8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5C190C9515AEC58B005731F8 /* QuickEd.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7CABE3C80E79AD2B307756D2 /* Sources [qmake] */ = {
+			isa = PBXGroup;
+			children = (
+				00BD80432B2C7B49A27A3DC5 /* QuickEd.pro */,
+			);
+			name = "Sources [qmake]";
+			sourceTree = "<group>";
+		};
+		A641262417D0C97B004D3C5E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A641262A17D0C97C004D3C5E /* libFrameworkTools.a */,
+				A641262C17D0C97C004D3C5E /* libFrameworkToolsQt.a */,
+				A641262E17D0C97C004D3C5E /* libFrameworkToolsNPAPI.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C107915C16D78C9E0081E58C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C107916216D78C9E0081E58C /* libFramework.a */,
+				C107916416D78C9E0081E58C /* libFrameworkQt.a */,
+				17400D7E17901D570087BDEB /* libFrameworkNPAPI.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C15C2FDF162AD6E400818631 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				1595D3B319DAF26F007338DF /* Utils */,
+				15959DD719D574F800B52AEF /* QtControls */,
+				329E0D0F19D3F340008A9CE6 /* Commands2 */,
+				32014C6D19C870F7006A4228 /* UIControls */,
+				498FEAE319643D51007E1660 /* Validators */,
+				176B4ED418682ADE0020798C /* Grid */,
+				17660BB4186B1D8D00CF7A14 /* Ruler */,
+				17112B5616392E880017E713 /* Helpers */,
+				C15C2FE8162AD6E400818631 /* UI */,
+				C17246101637E18900709AAF /* EditorFontManager.cpp */,
+				C17246111637E18900709AAF /* EditorFontManager.h */,
+				740F353316832022003B35E7 /* EditorSettings.cpp */,
+				740F35311683200F003B35E7 /* EditorSettings.h */,
+				C15C2FE1162AD6E400818631 /* FrameworkMain.cpp */,
+				C15C2FE2162AD6E400818631 /* FrameworkMain.h */,
+				C15C2FE3162AD6E400818631 /* GameCore.cpp */,
+				C15C2FE4162AD6E400818631 /* GameCore.h */,
+				C15C2FE5162AD6E400818631 /* main.cpp */,
+				49220EED196552C4006E88C5 /* TextureDescriptorUtils.cpp */,
+				49220EEE196552C4006E88C5 /* TextureDescriptorUtils.h */,
+				32FB45F819C19090003A401C /* Project.cpp */,
+				32FB45F919C19090003A401C /* Project.h */,
+			);
+			path = Classes;
+			sourceTree = "<group>";
+		};
+		C15C2FE8162AD6E400818631 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				1595D3AF19DAF259007338DF /* FileSystemView */,
+				1595D38D19D980A3007338DF /* ConsoleView */,
+				15959DEE19D6129E00B52AEF /* LibraryView */,
+				15959DDB19D5750600B52AEF /* PackageView */,
+				32F623BB19D3F4DD0000A101 /* PropertiesView */,
+				15959DBD19D3167C00B52AEF /* GraphicView */,
+				17FF15FD16400A41001B130F /* Dialogs */,
+				1541251419C8E62E00FC2883 /* PackageDocument.h */,
+				1541251519C8E62E00FC2883 /* PackageDocument.cpp */,
+				C15C2FE9162AD6E400818631 /* davaglwidget.cpp */,
+				C15C2FEA162AD6E400818631 /* davaglwidget.h */,
+				498B61FB16F76E2C009D4417 /* IconHelper.cpp */,
+				498B61FC16F76E2C009D4417 /* IconHelper.h */,
+				C15C2FEB162AD6E400818631 /* mainwindow.cpp */,
+				C15C2FEC162AD6E400818631 /* mainwindow.h */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		C90923F6A2E654060C34742C /* Source [bundle data] */ = {
+			isa = PBXGroup;
+			children = (
+				FAC1F4E071D49CE850E70770 /* Data/ */,
+			);
+			name = "Source [bundle data]";
+			sourceTree = "<group>";
+		};
+		ED1E82605DD74B483AF3C982 /* External Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				5CCC10E815B460C900DA83EB /* libbz2.dylib */,
+				5CCC10E615B460BF00DA83EB /* libz.dylib */,
+				336CB11D929F5E35FA69020F /* Cocoa.framework */,
+				52F4216CE5F81A8073DE30C0 /* OpenAL.framework */,
+				8157E7438190A1EEF4A4D363 /* mongodb_macos */,
+				548C5E52292D4DA256C12EBD /* png_macos */,
+				6C21256244E578A9DE07EE60 /* xml_macos */,
+				CBE0854C74E7E8A8F67923BE /* yaml_macos */,
+				5B2DE73738F678B7C6177179 /* curl_ios_mac */,
+				29FF4FD1BCB9408020402F99 /* theora_macos */,
+				81BBDA0F1849B4A35FAB7D00 /* freetype_macos */,
+				F7C12D3D2FE75302773F34BB /* vorbisfile_macos */,
+				8159B90213E2E13CB65C75B4 /* vorbis_macos */,
+				2A689518AF9C22C7AA97C9EF /* ogg_macos */,
+				6AB05FD3B5F9D1E725443AAE /* QtOpenGL.framework */,
+				9B8EE51E126C761F3F797428 /* QtGui.framework */,
+				419FFB6CDDEB353FF0A4F469 /* QtCore.framework */,
+				82153068A36B6EA46DD82A06 /* QtNetwork.framework */,
+				DA18A6831232F53228631AD1 /* OpenGL.framework */,
+				C6766F86E49E9C8701C8E637 /* AGL.framework */,
+			);
+			name = "External Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C44821495B0959249FEE50BE /* QuickEd */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 17B3380A4D6A7D415E7F2E1E /* Build configuration list for PBXNativeTarget "QuickEd" */;
+			buildPhases = (
+				5C42E09515B42E1C00F71425 /* Qt Qmake */,
+				5C42E09615B42E2E00F71425 /* Qt Preprocessors */,
+				C29B8785722055ED95EF7B57 /* Build Sources */,
+				2A1043669E6E5A7426EA502A /* Frameworks & Libraries */,
+				3787F99312C85FF0073FD7BA /* Bundle Resources */,
+				020AB22A17463A9F0082F336 /* CopyFiles */,
+				020AB22E17463AAA0082F336 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C107916616D78CC20081E58C /* PBXTargetDependency */,
+			);
+			name = QuickEd;
+			productName = TemplateProjectQt;
+			productReference = 5C190C9515AEC58B005731F8 /* QuickEd.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		91B15E841AA80083484172DE /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0460;
+			};
+			buildConfigurationList = CC82A9286117DFED018F418F /* Build configuration list for PBXProject "QuickEd" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 05596AB53D8D521C69802C27 /* TemplateProjectQt */;
+			productRefGroup = 5C190C9615AEC58B005731F8 /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = C107915C16D78C9E0081E58C /* Products */;
+					ProjectRef = C107915B16D78C9E0081E58C /* Framework.xcodeproj */;
+				},
+				{
+					ProductGroup = A641262417D0C97B004D3C5E /* Products */;
+					ProjectRef = A641262317D0C97B004D3C5E /* FrameworkTools.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				C44821495B0959249FEE50BE /* QuickEd */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		17400D7E17901D570087BDEB /* libFrameworkNPAPI.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkNPAPI.a;
+			remoteRef = 17400D7D17901D570087BDEB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		A641262A17D0C97C004D3C5E /* libFrameworkTools.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkTools.a;
+			remoteRef = A641262917D0C97C004D3C5E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		A641262C17D0C97C004D3C5E /* libFrameworkToolsQt.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkToolsQt.a;
+			remoteRef = A641262B17D0C97C004D3C5E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		A641262E17D0C97C004D3C5E /* libFrameworkToolsNPAPI.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkToolsNPAPI.a;
+			remoteRef = A641262D17D0C97C004D3C5E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		C107916216D78C9E0081E58C /* libFramework.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFramework.a;
+			remoteRef = C107916116D78C9E0081E58C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		C107916416D78C9E0081E58C /* libFrameworkQt.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkQt.a;
+			remoteRef = C107916316D78C9E0081E58C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3787F99312C85FF0073FD7BA /* Bundle Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				157BA42119CCE96D00E47682 /* UI in Bundle Resources */,
+				5C190C9F15AEC6F9005731F8 /* Data in Bundle Resources */,
+			);
+			name = "Bundle Resources";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		020AB22E17463AAA0082F336 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -change ./libfmodevent.dylib @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -change ./libIMagickHelper.dylib @executable_path/../Frameworks/libIMagickHelper.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -id @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodex.dylib\ninstall_name_tool -id @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib\ninstall_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib\n";
+			showEnvVarsInLog = 0;
+		};
+		5C42E09515B42E1C00F71425 /* Qt Qmake */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Qt Qmake";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -f MakefileQt all";
+		};
+		5C42E09615B42E2E00F71425 /* Qt Preprocessors */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Qt Preprocessors";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ ! -d GeneratedFiles ]; then\n    mkdir GeneratedFiles\nfi\n\nmake -f MakefileQt all";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C29B8785722055ED95EF7B57 /* Build Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				329E0D3C19D3F340008A9CE6 /* MetaObjModifyCommand.cpp in Build Sources */,
+				159ED7A219E2B09900C8B37A /* PropertiesViewContext.cpp in Build Sources */,
+				1595D39019D980A3007338DF /* ConsoleDockWidget.cpp in Build Sources */,
+				C15C2FED162AD6E400818631 /* FrameworkMain.cpp in Build Sources */,
+				C15C2FEE162AD6E400818631 /* GameCore.cpp in Build Sources */,
+				C15C2FEF162AD6E400818631 /* main.cpp in Build Sources */,
+				C15C2FF1162AD6E400818631 /* davaglwidget.cpp in Build Sources */,
+				C15C2FF2162AD6E400818631 /* mainwindow.cpp in Build Sources */,
+				3262FB8A19E699CB00E32F8E /* PackageNode.cpp in Build Sources */,
+				322CF61E19EC06D70023D61F /* BackgroundPropertiesSection.cpp in Build Sources */,
+				15959DE219D5750600B52AEF /* PackageDockWidget.cpp in Build Sources */,
+				15BE534C19D72CA500788209 /* LibraryDockWidget.cpp in Build Sources */,
+				329E0D3319D3F340008A9CE6 /* CommandNotify.cpp in Build Sources */,
+				329E0D3719D3F340008A9CE6 /* EntityParentChangeCommand.cpp in Build Sources */,
+				159ED7CA19E2F61C00C8B37A /* BasePropertyDelegate.cpp in Build Sources */,
+				329E0D3819D3F340008A9CE6 /* EntityRemoveCommand.cpp in Build Sources */,
+				15959DC219D3169400B52AEF /* PackageGraphicsWidget.cpp in Build Sources */,
+				C17246121637E18900709AAF /* EditorFontManager.cpp in Build Sources */,
+				7492E0EA1639445D00DF883A /* fontmanagerdialog.cpp in Build Sources */,
+				32DFC7B719E92704005EE689 /* EditorUIPackageBuilder.cpp in Build Sources */,
+				15959DE319D5750600B52AEF /* UIFilteredPackageModel.cpp in Build Sources */,
+				1595D3B619DAF26F007338DF /* QtDavaConvertion.cpp in Build Sources */,
+				329E0D3B19D3F340008A9CE6 /* KeyedArchiveCommand.cpp in Build Sources */,
+				322CF62419EC06D70023D61F /* SubValueProperty.cpp in Build Sources */,
+				325FCCFC19DD8AC800197B03 /* PropertiesTreeModel.cpp in Build Sources */,
+				329E0D3019D3F340008A9CE6 /* Command2.cpp in Build Sources */,
+				17112B5916392EA80017E713 /* WidgetSignalsBlocker.cpp in Build Sources */,
+				325FCCFD19DD8AC800197B03 /* PropertiesTreeView.cpp in Build Sources */,
+				322CF62519EC06D70023D61F /* ValueProperty.cpp in Build Sources */,
+				329E0D3A19D3F340008A9CE6 /* InspMemebrModifyCommand.cpp in Build Sources */,
+				322CF62319EC06D70023D61F /* PropertiesSection.cpp in Build Sources */,
+				159ED7C419E2F61C00C8B37A /* StringPropertyDelegate.cpp in Build Sources */,
+				159ED7A319E2B09900C8B37A /* ChangePropertyValueCommand.cpp in Build Sources */,
+				32FB45FA19C19090003A401C /* Project.cpp in Build Sources */,
+				329E0D3619D3F340008A9CE6 /* EntityLockCommand.cpp in Build Sources */,
+				329E0D3219D3F340008A9CE6 /* CommandBatch.cpp in Build Sources */,
+				17FF160016400A75001B130F /* localizationeditordialog.cpp in Build Sources */,
+				3262FB8D19E69A5500E32F8E /* ImportedPackagesNode.cpp in Build Sources */,
+				159ED7C619E2F61C00C8B37A /* FloatPropertyDelegate.cpp in Build Sources */,
+				15959DE419D5750600B52AEF /* UIPackageModel.cpp in Build Sources */,
+				322CF62119EC06D70023D61F /* InternalControlPropertiesSection.cpp in Build Sources */,
+				17607FC2164121FB004E36DE /* LocalizationSystemHelper.cpp in Build Sources */,
+				17660BBC186B1DD700CF7A14 /* RulerWidget.cpp in Build Sources */,
+				1595D3B919DAF2A2007338DF /* EditScreen.cpp in Build Sources */,
+				322CF62219EC06D70023D61F /* LocalizedTextValueProperty.cpp in Build Sources */,
+				159ED7CB19E2F61C00C8B37A /* AbstractPropertyDelegate.cpp in Build Sources */,
+				17607FEF16415B7C004E36DE /* BackgroundGridWidgetHelper.cpp in Build Sources */,
+				3237E8E719EAB2BC00CB639B /* PropertiesRoot.cpp in Build Sources */,
+				320A302419F393C6003D5140 /* PackageModelCommands.cpp in Build Sources */,
+				159ED7C519E2F61C00C8B37A /* IntegerPropertyDelegate.cpp in Build Sources */,
+				159ED7C719E2F61C00C8B37A /* FilePathPropertyDelegate.cpp in Build Sources */,
+				178F303E165677BF008678AD /* StringUtils.cpp in Build Sources */,
+				74893AD4165A8E90006B2762 /* ResourcesManageHelper.cpp in Build Sources */,
+				159ED7C819E2F61C00C8B37A /* EnumPropertyDelegate.cpp in Build Sources */,
+				329E0D3519D3F340008A9CE6 /* EntityAddCommand.cpp in Build Sources */,
+				329E0D3419D3F340008A9CE6 /* CommandStack.cpp in Build Sources */,
+				320A302C19F397BF003D5140 /* UIPackageMimeData.cpp in Build Sources */,
+				159ED7C319E2F61C00C8B37A /* Vector2PropertyDelegate.cpp in Build Sources */,
+				3228309B19F12D9A009F8881 /* LibraryModel.cpp in Build Sources */,
+				740F353416832022003B35E7 /* EditorSettings.cpp in Build Sources */,
+				329E0D3919D3F340008A9CE6 /* InspDynamicModifyCommand.cpp in Build Sources */,
+				498FEAF019643D84007E1660 /* BaseValidator.cpp in Build Sources */,
+				32F0D0ED19DC34E7003EC7B8 /* Vector2DEdit.cpp in Build Sources */,
+				C746392318DCE8640045C57B /* editfontdialog.cpp in Build Sources */,
+				3262FB8719E6962600E32F8E /* ControlNode.cpp in Build Sources */,
+				49220EEF196552C4006E88C5 /* TextureDescriptorUtils.cpp in Build Sources */,
+				159ED7C919E2F61C00C8B37A /* ColorPropertyDelegate.cpp in Build Sources */,
+				322CF61F19EC06D70023D61F /* BaseProperty.cpp in Build Sources */,
+				329E0D2F19D3F340008A9CE6 /* AddComponentCommand.cpp in Build Sources */,
+				17660BC5186C1DA000CF7A14 /* RulerController.cpp in Build Sources */,
+				17660BAB186AE97B00CF7A14 /* GridVisualizer.cpp in Build Sources */,
+				1541251619C8E62E00FC2883 /* PackageDocument.cpp in Build Sources */,
+				498B61FD16F76E2C009D4417 /* IconHelper.cpp in Build Sources */,
+				498FEAF419644C61007E1660 /* DistanceFontValidator.cpp in Build Sources */,
+				329E0D3D19D3F340008A9CE6 /* RemoveComponentCommand.cpp in Build Sources */,
+				320A4B3D19E6CC6A0049D713 /* LegacyEditorUIPackageLoader.cpp in Build Sources */,
+				15959DDA19D574F800B52AEF /* LineEditExt.cpp in Build Sources */,
+				329E0D3119D3F340008A9CE6 /* CommandAction.cpp in Build Sources */,
+				3262FB8419E6959800E32F8E /* PackageBaseNode.cpp in Build Sources */,
+				15959DC319D3169400B52AEF /* GraphicsViewContext.cpp in Build Sources */,
+				3262FB9019E69AB800E32F8E /* PackageControlsNode.cpp in Build Sources */,
+				322CF62019EC06D70023D61F /* ControlPropertiesSection.cpp in Build Sources */,
+				325FCCFB19DD8AC800197B03 /* PropertiesTreeItemDelegate.cpp in Build Sources */,
+				325FCCFA19DD8AC800197B03 /* PropertiesDockWidget.cpp in Build Sources */,
+				174E1FBF17F3483600C7EC10 /* regexpinputdialog.cpp in Build Sources */,
+				159ED7D619E51AD200C8B37A /* FileSystemDockWidget.cpp in Build Sources */,
+				15B892ED19CCC323007EABC6 /* GeneratedFiles in Build Sources */,
+			);
+			name = "Build Sources";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C107916616D78CC20081E58C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = FrameworkQt;
+			targetProxy = C107916516D78CC20081E58C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		4B72B24813252891014BCF61 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = "~/QtSDK/Desktop/Qt/4.8.1/gcc/lib";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = DAVA_DEBUG;
+				HEADER_SEARCH_PATHS = (
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtCore.framework/Versions/4/Headers",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtCore",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtNetwork.framework/Versions/4/Headers",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtNetwork",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtGui.framework/Versions/4/Headers",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtGui",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtOpenGL.framework/Versions/4/Headers",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtOpenGL",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/mkspecs/macx-xcode",
+					../../Sources/Internal,
+					../../Sources/Tools,
+					../../Sources/External,
+					../../Libs/oggvorbis/include,
+					../../Sources/Libs/include,
+					./Classes,
+					../../Libs/libs,
+					../../Libs/freetype/include,
+					./GeneratedFiles/Ui,
+					/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers,
+					/System/Library/Frameworks/AGL.framework/Headers,
+					.,
+					/usr/local/include,
+					/System/Library/Frameworks/CarbonCore.framework/Headers,
+				);
+				INFOPLIST_FILE = Info.plist;
+				LIBRARY_SEARCH_PATHS = /System/Library/Frameworks/;
+				OTHER_CFLAGS = (
+					"-pipe",
+					"-g",
+					"-Wall",
+					"-W",
+					"-DQT_OPENGL_LIB",
+					"-DQT_GUI_LIB",
+					"-DQT_NETWORK_LIB",
+					"-DQT_CORE_LIB",
+					"-DQT_SHARED",
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"-pipe",
+					"-g",
+					"-Wall",
+					"-W",
+					"-DQT_OPENGL_LIB",
+					"-DQT_GUI_LIB",
+					"-DQT_NETWORK_LIB",
+					"-DQT_CORE_LIB",
+					"-DQT_SHARED",
+				);
+				OTHER_LDFLAGS = (
+					"-headerpad_max_install_names",
+					"-L~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
+					"-F~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
+					"-lz",
+					"-L../../Libs/libs/",
+					"-L../../Libs/freetype/lib/",
+					"-L../../Libs/IMagickHelpLib",
+					"-L../../Libs/oggvorbis/lib/",
+				);
+				PRODUCT_NAME = TemplateProjectQt;
+				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		8C7174830A1E4DCBA0332EC1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LIBRARY = "libstdc++";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = YES;
+				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks/;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = DAVA_SAVE_TO_YAML;
+				HEADER_SEARCH_PATHS = (
+					/Library/Frameworks/QtCore.framework/Headers,
+					/Library/Frameworks/QtGui.framework/Headers,
+					../../Sources/Internal,
+					../../Sources/Tools,
+					../../Sources/External,
+					../../Sources/External/Freetype,
+					../../Libs/oggvorbis/include,
+					../../Sources/Libs/include,
+					Classes,
+					GeneratedFiles,
+					GeneratedFiles/Ui,
+					../../Libs/include,
+					../../Libs/libs,
+					../../Libs/freetype/include,
+					/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers,
+					/System/Library/Frameworks/AGL.framework/Headers,
+					.,
+					/usr/local/include,
+					/System/Library/Frameworks/CarbonCore.framework/Headers,
+					"${SYMROOT}",
+					../../Libs/IMagickHelpLib,
+				);
+				LIBRARY_SEARCH_PATHS = "$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)";
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../Libs/fmod/lib/macos\"";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				OTHER_LDFLAGS = (
+					"-headerpad_max_install_names",
+					"-L~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
+					"-F~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
+					"-lz",
+					"-L../../Libs/libs/",
+					"-L../../Libs/freetype/lib/",
+					"-L../../Libs/IMagickHelpLib",
+					"-L../../Libs/oggvorbis/lib/",
+				);
+				PRODUCT_NAME = QuickEd;
+				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		BEC09A62E69C3553534FF35E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LIBRARY = "libstdc++";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks/;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					DAVA_DEBUG,
+					DAVA_SAVE_TO_YAML,
+				);
+				HEADER_SEARCH_PATHS = (
+					/Library/Frameworks/QtCore.framework/Headers,
+					/Library/Frameworks/QtGui.framework/Headers,
+					../../Sources/Internal,
+					../../Sources/Tools,
+					../../Sources/External,
+					../../Sources/External/Freetype,
+					../../Libs/oggvorbis/include,
+					../../Sources/Libs/include,
+					Classes,
+					GeneratedFiles,
+					GeneratedFiles/Ui,
+					../../Libs/include,
+					../../Libs/libs,
+					../../Libs/freetype/include,
+					/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers,
+					/System/Library/Frameworks/AGL.framework/Headers,
+					.,
+					/usr/local/include,
+					/System/Library/Frameworks/CarbonCore.framework/Headers,
+					"${SYMROOT}",
+					../../Libs/IMagickHelpLib,
+				);
+				LIBRARY_SEARCH_PATHS = "$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)";
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../Libs/fmod/lib/macos\"";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				OTHER_LDFLAGS = (
+					"-headerpad_max_install_names",
+					"-L~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
+					"-F~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
+					"-lz",
+					"-L../../Libs/libs/",
+					"-L../../Libs/freetype/lib/",
+					"-L../../Libs/IMagickHelpLib",
+					"-L../../Libs/oggvorbis/lib/",
+				);
+				PRODUCT_NAME = QuickEd;
+				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		D70590BEB531B51029F711BB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COPY_PHASE_STRIP = YES;
+				FRAMEWORK_SEARCH_PATHS = "~/QtSDK/Desktop/Qt/4.8.1/gcc/lib";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				HEADER_SEARCH_PATHS = (
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtCore.framework/Versions/4/Headers",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtCore",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtNetwork.framework/Versions/4/Headers",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtNetwork",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtGui.framework/Versions/4/Headers",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtGui",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtOpenGL.framework/Versions/4/Headers",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtOpenGL",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include",
+					"~/QtSDK/Desktop/Qt/4.8.1/gcc/mkspecs/macx-xcode",
+					../../Sources/Internal,
+					../../Sources/Tools,
+					../../Sources/External,
+					../../Libs/oggvorbis/include,
+					../../Sources/Libs/include,
+					./Classes,
+					../../Libs/libs,
+					../../Libs/freetype/include,
+					./GeneratedFiles/Ui,
+					/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers,
+					/System/Library/Frameworks/AGL.framework/Headers,
+					.,
+					/usr/local/include,
+					/System/Library/Frameworks/CarbonCore.framework/Headers,
+				);
+				INFOPLIST_FILE = Info.plist;
+				LIBRARY_SEARCH_PATHS = /System/Library/Frameworks/;
+				OTHER_CFLAGS = (
+					"-pipe",
+					"-g",
+					"-Wall",
+					"-W",
+					"-DQT_OPENGL_LIB",
+					"-DQT_GUI_LIB",
+					"-DQT_NETWORK_LIB",
+					"-DQT_CORE_LIB",
+					"-DQT_SHARED",
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"-pipe",
+					"-g",
+					"-Wall",
+					"-W",
+					"-DQT_OPENGL_LIB",
+					"-DQT_GUI_LIB",
+					"-DQT_NETWORK_LIB",
+					"-DQT_CORE_LIB",
+					"-DQT_SHARED",
+				);
+				OTHER_LDFLAGS = (
+					"-headerpad_max_install_names",
+					"-L~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
+					"-F~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
+					"-lz",
+					"-L../../Libs/libs/",
+					"-L../../Libs/freetype/lib/",
+					"-L../../Libs/IMagickHelpLib",
+					"-L../../Libs/oggvorbis/lib/",
+				);
+				PRODUCT_NAME = TemplateProjectQt;
+				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		17B3380A4D6A7D415E7F2E1E /* Build configuration list for PBXNativeTarget "QuickEd" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BEC09A62E69C3553534FF35E /* Debug */,
+				8C7174830A1E4DCBA0332EC1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CC82A9286117DFED018F418F /* Build configuration list for PBXProject "QuickEd" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4B72B24813252891014BCF61 /* Debug */,
+				D70590BEB531B51029F711BB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 91B15E841AA80083484172DE /* Project object */;
+}

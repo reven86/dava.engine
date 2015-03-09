@@ -54,7 +54,7 @@ PolygonGroup::PolygonGroup()
 	tangentArray(0),
 	binormalArray(0),
 	jointIdxArray(0),
-	weightArray(0),
+	jointWeightArray(0),
 	jointCountArray(0),
 	
     flexArray(0),
@@ -140,15 +140,23 @@ void PolygonGroup::UpdateDataPointersAndStreams()
 		baseShift += GetVertexSize(EVF_BINORMAL);
         
         renderDataObject->SetStream(EVF_BINORMAL, TYPE_FLOAT, 3, vertexStride, binormalArray);
-	}
+    }
+    if (vertexFormat & EVF_JOINTINDEX)
+    {
+        jointIdxArray = reinterpret_cast<uint32*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_JOINTINDEX);
+
+        renderDataObject->SetStream(EVF_JOINTINDEX , TYPE_UNSIGNED_BYTE, 4, vertexStride, jointIdxArray);
+
+        SafeDeleteArray(jointCountArray);
+        jointCountArray = new int32[vertexCount];
+    }
 	if (vertexFormat & EVF_JOINTWEIGHT)
 	{
-		jointIdxArray = reinterpret_cast<int32*>(meshData + baseShift);
-		weightArray = reinterpret_cast<float32*>(meshData + baseShift + 4 * 4);
+		jointWeightArray = reinterpret_cast<uint32*>(meshData + baseShift);
 		baseShift += GetVertexSize(EVF_JOINTWEIGHT);
 		
-		SafeDeleteArray(jointCountArray);
-		jointCountArray = new int32[vertexCount];
+        renderDataObject->SetStream(EVF_JOINTWEIGHT , TYPE_UNSIGNED_BYTE, 4, vertexStride, jointWeightArray);
 	}
 	if (vertexFormat & EVF_CUBETEXCOORD0)
 	{

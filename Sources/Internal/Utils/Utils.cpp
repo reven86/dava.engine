@@ -78,22 +78,27 @@ bool IsEqual(const WideString& s1, const WideString& s2)
 
 	return (*p1 == *p2);
 }
-
-void Split(const String & inputString, const String & delims, Vector<String> & tokens, bool skipDuplicated/* = false*/)
+    
+void Split(const String & inputString, const String & delims, Vector<String> & tokens, bool skipDuplicated/* = false*/, bool trimNotEmpty/* = false*/)
 {
-	// Skip delims at beginning, find start of first token
-	String::size_type lastPos = inputString.find_first_not_of(delims, 0);
-	// Find next delimiter @ end of token
-	String::size_type pos     = inputString.find_first_of(delims, lastPos);
-	// output vector
-	// Vector<String> tokens;
-	
-	while (String::npos != pos || String::npos != lastPos)
-	{
-		// Found a token, add it to the vector.
-		String token = inputString.substr(lastPos, pos - lastPos);
-		bool needAddToken = true;
-		if (skipDuplicated)
+    std::string::size_type pos, lastPos = 0;
+    bool needAddToken = true;
+    bool exit = false;
+    String token = "";
+    while(true)
+    {
+        needAddToken = false;
+        pos = inputString.find_first_of(delims, lastPos);
+        if(pos == std::string::npos)
+        {
+            pos = inputString.length();
+            exit = true;
+        }
+        if(pos != lastPos || trimNotEmpty)
+             needAddToken = true;
+        
+        token = String(inputString.data()+lastPos,pos-lastPos );
+        if (skipDuplicated && needAddToken)
 		{
 			for (uint32 i = 0; i < tokens.size(); ++i)
 			{
@@ -106,11 +111,10 @@ void Split(const String & inputString, const String & delims, Vector<String> & t
 		}
 		if (needAddToken)
 			tokens.push_back(token);
-		// Skip delims.  Note the "not_of". this is beginning of token
-		lastPos = inputString.find_first_not_of(delims, pos);
-		// Find next delimiter at end of token.
-		pos     = inputString.find_first_of(delims, lastPos);
-	}	
+        if (exit)
+            break;
+        lastPos = pos + 1;
+    }
 }
 
 

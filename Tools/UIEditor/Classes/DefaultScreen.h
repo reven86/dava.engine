@@ -79,6 +79,9 @@ public:
     void SetScreenScaleChangedFlag();
     void SetScreenPositionChangedFlag();
 
+signals:
+    void DeleteNodes(const HierarchyTreeNode::HIERARCHYTREENODESLIST& nodesList);
+    
 private:
 	enum InputState
 	{
@@ -98,6 +101,20 @@ private:
         moveRight
     };
 
+    struct InputDelta
+    {
+        InputDelta(const Vector2& moveDelta, bool stickedToX, bool stickedToY)
+        {
+            delta = moveDelta;
+            isStickedToX = stickedToX;
+            isStickedToY = stickedToY;
+        }
+
+        Vector2 delta;
+        bool isStickedToX;
+        bool isStickedToY;
+    };
+    
 	void GetSelectedControl(HierarchyTreeNode::HIERARCHYTREENODESLIST& list, const Rect& rect, const HierarchyTreeNode* parent) const;
 	
 	class SmartSelection
@@ -135,7 +152,7 @@ private:
     // Entry point for performing move from keyboard.
     void DoKeyboardMove(eKeyboardMoveDirection moveDirection);
 
-	void MoveControl(const Vector2& delta);
+	void MoveControl(const Vector2& delta, bool alignControlToIntegerPos);
 
     void MoveGuide(HierarchyTreeScreenNode* screenNode);
     void MoveGuides(eKeyboardMoveDirection moveDirection, const Vector2& delta);
@@ -156,9 +173,9 @@ private:
 	void MouseInputDrag(const DAVA::UIEvent* event);
 	void KeyboardInput(const DAVA::UIEvent* event);
 	
-	Vector2 GetInputDelta(const Vector2& point, bool applyScale = true);
+	InputDelta GetInputDelta(const Vector2& point, bool applyScale = true);
 	
-	Rect GetControlRect(const HierarchyTreeControlNode* control) const;
+	Rect GetControlRect(const HierarchyTreeControlNode* control, bool checkAngle = false) const;
 	void CopySelectedControls();
 
     // In case Preview mode is enabled, translate mouse UI events directly to the preview screen.
@@ -223,8 +240,6 @@ private:
 	// Check control's visibility.
 	bool IsControlVisible(const UIControl* uiControl) const;
 
-    bool IsControlContentVisible( const UIControl *control ) const;
-
     // Calculate the stick to guides for different input modes.
     int32 CalculateStickToGuides(Vector2& offset) const;
     int32 CalculateStickToGuidesDrag(Vector2& offset) const;
@@ -242,9 +257,6 @@ private:
 
     // Draw the guides.
     void DrawGuides();
-    
-    // Align the vector to the nearest scale value.
-    Vector2 AlignToNearestScale(const Vector2& value) const;
 
     // Handle the "screen scale/screen position" change.
     void HandleScreenScalePositionChanged();

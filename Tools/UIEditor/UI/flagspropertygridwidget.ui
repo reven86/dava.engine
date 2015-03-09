@@ -31,19 +31,6 @@
    <property name="title">
     <string/>
    </property>
-   <widget class="QCheckBox" name="visibleCheckBox">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>20</y>
-      <width>140</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Visible</string>
-    </property>
-   </widget>
    <widget class="QCheckBox" name="inputCheckBox">
     <property name="geometry">
      <rect>
@@ -93,17 +80,17 @@
      </rect>
     </property>
    </widget>
-   <widget class="QCheckBox" name="recursiveVisibleCheckBox">
+   <widget class="QCheckBox" name="visibleCheckBox">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>10</x>
       <y>20</y>
       <width>140</width>
       <height>20</height>
      </rect>
     </property>
     <property name="text">
-     <string>Recursive Visible</string>
+     <string>Visible</string>
     </property>
    </widget>
   </widget>
@@ -112,6 +99,7 @@
   <tabstop>visibleCheckBox</tabstop>
   <tabstop>inputCheckBox</tabstop>
   <tabstop>clipContentsCheckbox</tabstop>
+  <tabstop>initialStateComboBox</tabstop>
  </tabstops>
  <resources/>
  <connections/>

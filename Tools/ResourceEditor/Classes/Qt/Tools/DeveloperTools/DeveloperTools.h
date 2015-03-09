@@ -43,6 +43,8 @@ public:
 public slots:
     
     void OnDebugFunctionsGridCopy();
+
+    void OnDebugCreateTestSkinnedObject(); //creates
 	
 };
 #endif /* defined(__DEBUG_TOOLS__) */

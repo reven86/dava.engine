@@ -2,173 +2,188 @@ TIMEOUT = 30.0 -- Big time out for waiting
 TIMECLICK = 0.5 -- time for simple action
 DELAY = 0.5 -- time for simulation of human reaction
 
-MULTIPLAYER_TIMEOUT = 300 -- Multiplayer timeout
+MULTIPLAYER_TIMEOUT_COUNT = 300 -- Multiplayer timeout
 
+EPSILON = 1
 
+MAX_LIST_COUNT = 100 -- Max item of list
 
 -- API setup
 function SetPackagePath(path)
-	package.path = package.path .. ";" .. path .. "Actions/?.lua;" .. path .. "Scripts/?.lua;"
-	require "coxpcall"
+    package.path = package.path .. ";" .. path .. "Actions/?.lua;" .. path .. "Scripts/?.lua;"
+    require "coxpcall"
 end
 
 function assert(isTrue, errorMsg)
-	if not isTrue then OnError(tostring(errorMsg)) end
+    if not isTrue then OnError(tostring(errorMsg)) end
 end
 
-EPSILON = 1
+local function toboolean(condition)
+    return not not condition
+end
+
+local function __GetNewPosition(list, vertical, invert, notInCenter)
+    local position, newPosition = Vector.Vector2(), Vector.Vector2()
+    local rect = GetElementRect(list)
+    position.x, position.y = (rect.x + rect.dx / 2), (rect.y + rect.dy / 2)
+    if invert then
+        newPosition.y = position.y + rect.dy / 2
+        newPosition.x = position.x + rect.dx / 2
+    else
+        newPosition.y = position.y - rect.dy / 2
+        newPosition.x = position.x - rect.dx / 2
+    end
+    if vertical == true then
+        newPosition.x = position.x
+    else
+        newPosition.y = position.y
+    end
+    if notInCenter then
+        newPosition.x = newPosition.x - rect.dx / 8
+        position.x = position.x - rect.dx / 8
+    end
+    return position, newPosition
+end
+
 ----------------------------------------------------------------------------------------------------
 -- High-level test function
 ----------------------------------------------------------------------------------------------------
 -- This function for simple test step without any assertion. Fail while error throwing
 -- Parameters:
---		description - step description
---		func - link to step function
---		... - input parameters for step function
+-- description - step description
+-- func - link to step function
+-- ... - input parameters for step function
 function Step(description, func, ...)
     autotestingSystem:OnStepStart(description)
-	Yield()
-	local status, err = copcall(func, ...)
-	
-	Yield()
-	if not status then OnError(err) end
+    Yield()
+    local status, err = copcall(func, ...)
+    Yield()
+    if not status then OnError(err) end
 end
 
 -- This function for test step with assertion. Fail when step is returned NIL or FALSE
 -- Parameters:
---		description - step description
---		func - link to step function
---		... - input parameters for step function
+--        description - step description
+--        func - link to step function
+--        ... - input parameters for step function
 function Assert(description, func, ...)
     autotestingSystem:OnStepStart(description)
-	Yield()
-	local status, err = copcall(func, ...)
-
-	Yield()
-	if not status then
-		-- Some error during test step
-		OnError(err)
-	elseif err ~= true then
-		OnError("Assertion failed, expect true, but function return "..tostring(err))
-	end
+    Yield()
+    local status, err = copcall(func, ...)
+    Yield()
+    if not status then
+        OnError(err)
+    elseif not err then
+        OnError("Assertion failed, expect true, but function return " .. tostring(err))
+    end
 end
 
 function AssertNot(description, func, ...)
     autotestingSystem:OnStepStart(description)
-	Yield()
-	local status, err = copcall(func, ...)
-
-	Yield()
-	if not status then
-		-- Some error during test step
-		OnError(err)
-	elseif not ((err == false) or (err == nil)) then
-		OnError("Assertion failed, expect false, but function return "..tostring(err))
-	end
+    Yield()
+    local status, err = copcall(func, ...)
+    Yield()
+    if not status then
+        -- Some error during test step
+        OnError(err)
+    elseif err then
+        OnError("Assertion failed, expect false, but function return " .. tostring(err))
+    end
 end
 
 function CheckEquals(arg1, arg2)
-	if arg1 == arg2 then
-		return true
-	else
-		Log(string.format("'%s' not equal to '%s'", tostring(arg1), tostring(arg2)), "DEBUG")
-		return false
-	end
+    if arg1 == arg2 then
+        return true
+    end
+    Log(string.format("'%s' not equal to '%s'", tostring(arg1), tostring(arg2)), "DEBUG")
+    return false
 end
 
 function Log(message, level)
-	level = level or "DEBUG"
-	--if level ~= "DEBUG" then
-	autotestingSystem:Log(level, tostring(message))
-	--end
-	coroutine.yield()
-end 
+    level = level or "DEBUG"
+    autotestingSystem:Log(level, tostring(message))
+    coroutine.yield()
+end
 
 function Yield()
-	for i=0, 3 do
-		coroutine.yield()
-	end
+    for i = 0, 3 do
+        coroutine.yield()
+    end
 end
 
 function ResumeTest()
-    --print("ResumeTest")
     if coroutine.status(co) == "suspended" then
         coroutine.resume(co)
-        --print("ResumeTest done")
     else
-        --print("ResumeTest failed. status:", coroutine.status(co))
         StopTest()
     end
 end
 
 function CreateTest()
-    --print("CreateTest")
-    co = coroutine.create(function (func)
-			local status, err = copcall(func)
-			--print(status, err)
-			if not status then
-				OnError(err)
-			end
-		end) -- create a coroutine with foo as the entry
+    co = coroutine.create(function(func)
+        local status, err = copcall(func)
+        if not status then
+            OnError(err)
+        end
+    end) -- create a coroutine with foo as the entry
     autotestingSystem = AutotestingSystem.Singleton_Autotesting_Instance()
-    
-    --print(autotestingSystem:GetTimeElapsed())	
 end
 
-function StartTest(name, test)      
+function StartTest(name, test)
     CreateTest()
-	--print('StartTest')
-	--Yield()
-	autotestingSystem:OnTestStart(name)
+    autotestingSystem = AutotestingSystem.Singleton_Autotesting_Instance()
+    DEVICE_NAME = autotestingSystem:GetDeviceName()
+    PLATFORM = autotestingSystem:GetPlatform()
+    IS_PHONE = autotestingSystem:IsPhoneScreen()
+    autotestingSystem:OnTestStart(name)
     coroutine.resume(co, test)
 end
 
 function OnError(text)
-	autotestingSystem:OnError(text)
-	Yield()
+    autotestingSystem:OnError(text)
+    Yield()
 end
 
 function StopTest()
---    print("StopTest")
     autotestingSystem:OnTestFinished()
 end
 
 -- DB communication
 function SaveArchiveToDB(name, archive, document)
-	Log(string.format("Save '%s' archive to '%s' document", name, tostring(document)), "Debug")
-	
-	autotestingSystem:SaveKeyedArchiveToDB(name, archive, document)
+    Log(string.format("Save '%s' archive to '%s' document", name, tostring(document)), "Debug")
+    autotestingSystem:SaveKeyedArchiveToDB(name, archive, document)
 end
 
 function GetParameter(name, default)
-	local var = autotestingSystem:GetTestParameter(name)
-	if var == "not_found" then
-		var = testData[name]
-		if not var then
-			if default then
-				return default
-			else
-				OnError("Couldn't find value for variable "..name)
-			end
-		end
-	end
-	
-	return var
+    local var = autotestingSystem:GetTestParameter(name)
+    if var ~= "not_found" then
+        return var
+    end
+    if testData and testData[name] then
+        return testData[name]
+    elseif default then
+        return default
+    end
+    OnError("Couldn't find value for variable " .. name)
 end
 
 function ReadString(name)
-	return autotestingSystem:ReadString(name)
+    return autotestingSystem:ReadString(name)
 end
 
 function WriteString(name, text)
-	autotestingSystem:WriteString(name, text)
-	coroutine.yield()
+    autotestingSystem:WriteString(name, text)
+    coroutine.yield()
 end
 
 function MakeScreenshot()
-	local name = autotestingSystem:MakeScreenshot()
-	Yield()
-	return name
+    local name = autotestingSystem:MakeScreenshot()
+    coroutine.yield()
+    return name
+end
+
+function GetTimeElapsed()
+    return autotestingSystem:GetTimeElapsed()
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -176,623 +191,494 @@ end
 ----------------------------------------------------------------------------------------------------
 -- mark current device as ready to work in DB
 function ReadState(name)
-	return autotestingSystem:ReadState(name)
+    return autotestingSystem:ReadState(name)
 end
 
 function ReadCommand(name)
-	return autotestingSystem:ReadCommand(name)
+    return autotestingSystem:ReadCommand(name)
 end
 
 function WriteState(name, state)
-	autotestingSystem:WriteState(name, state)
-
-	--[[local afterWrite = autotestingSystem:ReadState(name)
-	if state ~= afterWrite then
-		OnError("After writing: expected state '"..state.."' on device '"..name.."', actual:"..afterWrite)
-	end]]
-	coroutine.yield()
+    autotestingSystem:WriteState(name, state)
+    coroutine.yield()
 end
 
 function WriteCommand(name, command)
-	autotestingSystem:WriteCommand(name, command)
-
-	--[[local afterWrite = autotestingSystem:ReadCommand(name)
-	if command ~= afterWrite then
-		OnError("After writing: expected command '"..command.."' on device '"..name.."', actual:"..afterWrite)
-	end]]
-	coroutine.yield()
+    autotestingSystem:WriteCommand(name, command)
+    coroutine.yield()
 end
 
 function InitializeDevice(name)
-	DEVICE = name
-	Log("Mark "..name.." device as Ready")
-	Yield()
-	autotestingSystem:InitializeDevice(DEVICE)
-	Yield()
-	WriteState(DEVICE, "ready")
+    DEVICE = name
+    Log("Mark " .. name .. " device as Ready")
+    Yield()
+    autotestingSystem:InitializeDevice(DEVICE)
+    Yield()
+    WriteState(DEVICE, "ready")
 end
 
 function WaitForDevice(name)
-	Log("Wait while "..name.." device become Ready")
-	Yield()
-	for i=1,MULTIPLAYER_TIMEOUT do
-		if ReadState(name) == "ready" then
-			return
-		else
-			Wait(1)
-		end
-	end
-	OnError("Device "..name.." is not ready during timeout")
+    Log("Wait while " .. name .. " device become Ready")
+    Yield()
+    for i = 1, MULTIPLAYER_TIMEOUT_COUNT do
+        if ReadState(name) == "ready" then
+            return
+        end
+        Wait(1)
+    end
+    OnError("Device " .. name .. " is not ready during timeout")
 end
 
 function SendJob(name, command)
-	Log("Send to slave "..name.." command: "..command)
-	--Yield()
-	
-	for i=1,MULTIPLAYER_TIMEOUT do
-		local state = ReadState(name)
-		if state == "ready" then
-			WriteCommand(name, command)
-			--Yield()
-			WriteState(name, "wait_execution")
-			--Yield()
-			Log("Device "..name.." ready, command was sent")
-			return
-		elseif state == "error" then 
-			OnError("Failed to send job to "..name.." cause error on device: "..command)
-		end
-		Wait(1)
-	end
-	OnError("Failed to send job to "..name.." cause timeout: "..command)
+    Log("Send to slave " .. name .. " command: " .. command)
+    for i = 1, MULTIPLAYER_TIMEOUT_COUNT do
+        local state = ReadState(name)
+        if state == "ready" then
+            WriteCommand(name, command)
+            WriteState(name, "wait_execution")
+            Log("Device " .. name .. " ready, command was sent")
+            return
+        elseif state == "error" then
+            OnError("Failed to send job to " .. name .. " cause error on device: " .. command)
+        end
+        Wait(1)
+    end
+    OnError("Failed to send job to " .. name .. " cause timeout: " .. command)
 end
 
 function WaitJob(name)
-	Log("Wait for job on slave "..name)
-	--Yield()
-	local state
-	
-	for i=1,MULTIPLAYER_TIMEOUT do
-		state = ReadState(name)
-		--Yield()
-		if state == "execution_completed" then
-			WriteState(name, "ready")
-			Log("Device "..name.." finish his job")
-			return
-		elseif state == "error" then
-			OnError("Error on "..name.." device")
-		else
-			Wait(1)
-		end
-	end
-	
-	OnError("Wait for job on "..name.." device failed by timeout. Last state "..state)
+    Log("Wait for job on slave " .. name)
+    for i = 1, MULTIPLAYER_TIMEOUT_COUNT do
+        local state = ReadState(name)
+        if state == "execution_completed" then
+            WriteState(name, "ready")
+            Log("Device " .. name .. " finish his job")
+            return
+        elseif state == "error" then
+            OnError("Error on " .. name .. " device")
+        else
+            Wait(1)
+        end
+    end
+    OnError("Wait for job on " .. name .. " device failed by timeout. Last state " .. state)
 end
 
 function SendJobAndWait(name, command)
-	SendJob(name, command)
-	WaitJob(name)
+    SendJob(name, command)
+    WaitJob(name)
 end
 
 function noneStep()
-	Yield()
-	return true
+    Yield()
+    return true
 end
 
+function GetDeviceName()
+    return autotestingSystem:GetDeviceName()
+end
+
+function GetPlatform()
+    return autotestingSystem:GetPlatform()
+end
+
+function IsPhone()
+    return autotestingSystem:IsPhoneScreen()
+end
+
+------------------------------------------------------------------------------------------------------------------------
 -- Work with UI controls
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+-- Getters
+------------------------------------------------------------------------------------------------------------------------
 function GetControl(name)
-	local control
-	if (type(name) == "string") then
-		control = autotestingSystem:FindControl(name)
-		--Log(tostring(control))
-	else
-		control = name
-	end
-	
-	Yield()
-	
-	if control then
-		return control
-	else
-		OnError("Couldn't find control " .. tostring(name))
-	end
+    local control
+    if type(name) == "string" then
+        control = autotestingSystem:FindControl(name) or autotestingSystem:FindControlOnPopUp(name)
+    else
+        control = name
+    end
+    Yield()
+    if control then
+        return control
+    end
+    OnError("Couldn't find control " .. tostring(name))
 end
 
 function GetCenter(element)
-	local control = GetControl(element)
-	
-	--Log(tostring(control))
-	if control then
-		local position = Vector.Vector2()
-		--Log("control:GetGeometricData")
-		local geomData = control:GetGeometricData()
-		--Log("geomData:GetUnrotatedRect")
-		local rect = geomData:GetUnrotatedRect()
-	            
-		position.x = rect.x + rect.dx/2
-		position.y = rect.y +rect.dy/2
-		--Log("Return position")
-		--Log(string.format("Return position of element center [%d, %d]", position.x, position.y))
-		return position
-	else
-		OnError("Couldn't find element: "..element)
-	end
+    local control = GetControl(element)
+    if not control then
+        OnError("Couldn't find element: " .. element)
+    end
+    local position = Vector.Vector2()
+    local geomData = control:GetGeometricData()
+    local rect = geomData:GetUnrotatedRect()
+    position.x = rect.x + rect.dx / 2
+    position.y = rect.y + rect.dy / 2
+    return position
+end
+
+function GetFrame(element)
+    local control = GetControl(element)
+    return control:GetFrame()
 end
 
 function GetText(element)
-	local control = GetControl(element)
-
-	return autotestingSystem:GetText(control)
+    local control = GetControl(element)
+    return autotestingSystem:GetText(control)
 end
 
+function GetElementRect(element)
+    local control = GetControl(element)
+    local geomData = control:GetGeometricData()
+    return geomData:GetUnrotatedRect()
+end
+
+------------------------------------------------------------------------------------------------------------------------
+-- Check states
+------------------------------------------------------------------------------------------------------------------------
 function IsVisible(element, background)
-	Yield()
-	local result = false
-	local control = autotestingSystem:FindControl(element)
-	if control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(control, background) then
-		result = true
-	end
-	
-	--Log("Element " ..  element .. " is visible on " .. tostring(background) .. "= " .. tostring(result))
-	return result
+    Yield()
+    local control = autotestingSystem:FindControl(element)
+    return toboolean(control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(control, background))
 end
 
 function IsDisabled(element)
-	Yield()
-	local control = GetControl(element)
-	return control:GetDisabled()
+    Yield()
+    local control = GetControl(element)
+    return control:GetDisabled()
 end
 
 function IsOnScreen(control, background)
-	local screen 
-	if background then 
-		screen = autotestingSystem:FindControl(background)
-	else
-		screen = autotestingSystem:GetScreen()
-	end
-	
-	local geomData = control:GetGeometricData()
+    local screen = background and autotestingSystem:FindControl(background) or autotestingSystem:GetScreen()
+    local geomData = control:GetGeometricData()
     local rect = geomData:GetUnrotatedRect()
-	
-	local geomData = screen:GetGeometricData()
-	local backRect = geomData:GetUnrotatedRect()
-			
-	if (rect.x >= backRect.x) and (rect.x + rect.dx <= backRect.x + backRect.dx) and (rect.y >= backRect.y) and (rect.y + rect.dy <= backRect.y + backRect.dy) then
-		return true
-	else
-		return false
-	end
+    geomData = screen:GetGeometricData()
+    local backRect = geomData:GetUnrotatedRect()
+    return toboolean((rect.x >= backRect.x) and (rect.x + rect.dx <= backRect.x + backRect.dx) and (rect.y >= backRect.y)
+            and (rect.y + rect.dy <= backRect.y + backRect.dy))
 end
 
 function IsCenterOnScreen(control, background)
-	local screen 
-	if background then 
-		screen = autotestingSystem:FindControl(background)
-	else
-		screen = autotestingSystem:GetScreen()
-	end
-	
+    local screen = background and autotestingSystem:FindControl(background) or autotestingSystem:GetScreen()
     local center = GetCenter(control)
-	local geomData = screen:GetGeometricData()
-	local backRect = geomData:GetUnrotatedRect()
-			
-	if (center.x >= backRect.x) and (center.x <= backRect.x + backRect.dx) and (center.y >= backRect.y) and (center.y <= backRect.y + backRect.dy) then
-		return true
-	else
-		return false
-	end
+    local geomData = screen:GetGeometricData()
+    local backRect = geomData:GetUnrotatedRect()
+    return toboolean((center.x >= backRect.x) and (center.x <= backRect.x + backRect.dx) and (center.y >= backRect.y)
+            and (center.y <= backRect.y + backRect.dy))
 end
 
+function CheckText(name, txt)
+    Log("Check that text '" .. txt .. "' is present on control " .. name)
+    local control = GetControl(name)
+    return autotestingSystem:CheckText(control, txt)
+end
+
+function CheckMsgText(name, key)
+    Log("Check that text with key [" .. key .. "] is present on control " .. name)
+    local control = GetControl(name)
+    return autotestingSystem:CheckMsgText(control, key)
+end
+
+------------------------------------------------------------------------------------------------------------------------
+-- Waits
+------------------------------------------------------------------------------------------------------------------------
 function Wait(waitTime)
-    waitTime =  waitTime or DELAY
-    local count = 0
-    
-    local elapsedTime = 0.0
+    waitTime = waitTime or DELAY
+    local count, elapsedTime = 0, 0.0
     while elapsedTime < waitTime do
         elapsedTime = elapsedTime + autotestingSystem:GetTimeElapsed()
         coroutine.yield()
         count = count + 1
     end
-    
     return count
 end
 
-function GetTimeElapsed()
-	return autotestingSystem:GetTimeElapsed()
-
-end
-
-function WaitControl(name, time)
-    local waitTime = time or TIMEOUT
-    --Log("WaitControl name="..name.." waitTime="..waitTime,"DEBUG")
-    
-    local elapsedTime = 0.0
+function WaitUntil(time, func, ...)
+    local waitTime, err = time or TIMEOUT, nil
+    local elapsedTime, status = 0.0, nil
     while elapsedTime < waitTime do
         elapsedTime = elapsedTime + autotestingSystem:GetTimeElapsed()
-		coroutine.yield()
-        
-        if autotestingSystem:FindControl(name) then
-            --Log("WaitControl found "..name, "DEBUG")
+        coroutine.yield()
+        status, err = copcall(func, ...)
+        if status and err then
             return true
         end
     end
-    
-    Log("WaitControl not found "..name, "DEBUG")
+    return false
+end
+
+function WaitControl(name, time)
+    local waitTime, aSys = time or TIMEOUT, autotestingSystem
+    local find_control_lua = function(x) return aSys:FindControl(x) or aSys:FindControlOnPopUp(x) end
+    if WaitUntil(waitTime, find_control_lua, name) then
+        return true
+    end
+    Log("WaitControl not found " .. name, "DEBUG")
     return false
 end
 
 function WaitControlDisappeared(name, time)
-    local waitTime = time or TIMEOUT
-    --Log("WaitControl name="..name.." waitTime="..waitTime,"DEBUG")
-    
-    local elapsedTime = 0.0
-    while elapsedTime < waitTime do
-        elapsedTime = elapsedTime + autotestingSystem:GetTimeElapsed()
-		coroutine.yield()
-        
-        if not autotestingSystem:FindControl(name) then
-            --Log("WaitControl found "..name, "DEBUG")
-            return true
-        end
+    local waitTime, aSys = time or TIMEOUT, autotestingSystem
+    local not_find_control_lua = function(x) return not aSys:FindControl(x) and not aSys:FindControlOnPopUp(x) end
+    if WaitUntil(waitTime, not_find_control_lua, name) then
+        return true
     end
-    
-    Log("WaitControl still on the screen: "..name, "DEBUG")
+    Log("WaitControl still on the screen: " .. name, "DEBUG")
     return false
 end
 
 function WaitControlBecomeVisible(name, time)
     local waitTime = time or TIMEOUT
-    --Log("WaitControlBecomeVisible name="..name.." waitTime="..waitTime,"DEBUG")
-
-    local elapsedTime = 0.0
-    while elapsedTime < waitTime do
-        elapsedTime = elapsedTime + autotestingSystem:GetTimeElapsed()
-		coroutine.yield()
-		
-		local control = autotestingSystem:FindControl(name)
-        if IsVisible(name) then
-            --Log("WaitControl found "..name, "DEBUG")
-            return true
-        end
+    if WaitUntil(waitTime, IsVisible, name) then
+        return true
     end
-    
-    Log("WaitControl not found "..name, "DEBUG")
+    Log("WaitControl not found " .. name, "DEBUG")
     return false
 end
 
--- Work with Text field and labels 
+function WaitUntilControlBecomeEnabled(name, time)
+    local waitTime = time or TIMEOUT
+    local is_enabled = function(x) return not IsDisabled(x) end
+    if WaitUntil(waitTime, is_enabled, name) then
+        return true
+    end
+    Log("WaitControl is disabled " .. name, "DEBUG")
+    return false
+end
+
+------------------------------------------------------------------------------------------------------------------------
+-- Setters
+------------------------------------------------------------------------------------------------------------------------
 function SetText(path, text, time)
-	local waitTime = time or DELAY
-    Log("SetText path="..path.." text="..text)
+    local waitTime = time or DELAY
+    Log("SetText path=" .. path .. " text=" .. text)
     local res = autotestingSystem:SetText(path, text)
     Yield()
     Wait(waitTime)
     return res
 end
 
-function CheckText(name, txt)
-	Log("Check that text '" .. txt .. "' is present on control " .. name)
-	local control = GetControl(name)
-	
-	Wait(waitTime)
-	return autotestingSystem:CheckText(control, txt)
-end
-
-function CheckMsgText(name, key)
-	Log("Check that text with key [" .. key .. "] is present on control " .. name)
-	local control = GetControl(name)
-	
-	Wait(waitTime)
-	return autotestingSystem:CheckMsgText(control, key)
-end
-
-function KeyPress(key, control)
-	--Log("Emulate key press key="..key)
-	if control then
-		ClickControl(control)
-	end
-	autotestingSystem:KeyPress(key)
-end
-
 function ClearField(field)
-	--Log("Emulate key press key="..key)
-	SetText(field, "")
-	ClickControl(field)
-	KeyPress(2)
+    SetText(field, "")
+    ClickControl(field)
+    KeyPress(2)
 end
 
--- Work with List
-function SelectHorizontal(list, item)
-	Log("Select "..tostring(item).." item in horizontal list "..list)
+function SelectItemInList(listName, item)
+    Log(string.format("Select '%s' cell in '%s' list.", item, listName))
+    assert(WaitControl(listName), "Couldn't find " .. listName)
 
-	local cell = list.."/".. tostring(item)
-	assert(WaitControl(list), "Couldn't select "..cell)
+    local function __click() if IsVisible(item, listName) and IsVisible(item) then ClickControl(item) return true end return false end
 
-	if IsVisible(cell, list) then
-		ClickControl(cell)
-		return true
-	end
-
-	local last_visible = 0
-	local previous_last = 0
-	local index = 0
-
-	-- find first visible element
-	for i = 0, 100 do --to avoid hanging up in empty list
-		if IsVisible(list.."/"..tostring(i)) then
-			previous_last = i
-			last_visible = i
-			--Log( "previous_last = "..tostring(previous_last)..",last_visible = "..tostring(last_visible) )
-			break
-		end
-	end
-    
-	-- find last visible
-	index = previous_last + 1
-	while true do
-		if not IsVisible(list.."/"..tostring(index)) then
-			last_visible = index - 1
-			--Log( "last_visible = "..tostring(last_visible) )
-			break
-		end
-		index = index + 1
-	end
-
-	repeat
-		if IsVisible(cell, list) then
-			break
-		else
-			previous_last = last_visible
-			HorizontalScroll(list)
-
-			index = last_visible + 1
-			while true do
-				if not IsVisible(list.."/"..tostring(index), list) then
-					last_visible = index - 1
-					--Log( "previous_last = "..tostring(previous_last) )
-					break
-				end
-				index = index + 1
-			end
-		end
-	until previous_last == last_visible
-    
-	if IsVisible(cell, list) then
-		ClickControl(cell)
-		return true
-	else
-		Log("Item "..item.." in "..list.." not found")
-		return false
-	end
-end
-
-function SelectFirstHorizontal(list)
-	Log("Select first item in horizontal list "..list)
-
-	-- find first visible element
-	for i = 0, 100 do --to avoid hanging up in empty list
-		if IsVisible(list.."/0", list) then
-			return true
-		else
-			HorizontalScroll(list, true)
-		end
-	end
-    
-	Log("First item in "..list.." not found")
-	return false
-end
-
-function SelectVertical(list, item)
-	Log("Select "..tostring(item).." item in vertical list "..list)
-	local cell = list.."/".. tostring(item)
-	assert(WaitControl(list), "Couldn't select "..cell)
-	
-	if IsVisible(cell, list) then
-		ClickControl(cell)
-		return true
-	end
-	
-	local last_visible = 0
-	local previous_last = 0
-	local index = 0
-	
-	-- find first visible element
-	for i = 0, 100 do --to avoid hanging up in empty list
-		if IsVisible(list.."/"..tostring(i)) then
-			previous_last = i
-			last_visible = i
-			--Log( "previous_last = "..tostring(previous_last)..",last_visible = "..tostring(last_visible) )
-			break
-		end
-	end
-    
-	-- find last wisible
-	index = previous_last + 1
-	while true do
-		if not IsVisible(list.."/"..tostring(index)) then
-			last_visible = index - 1
-			--Log( "last_visible = "..tostring(last_visible) )
-			break
-		end
-		index = index + 1
-	end
-	
-	repeat
-		if IsVisible(cell, list) then
-			break
-		else
-			previous_last = last_visible
-			VerticalScroll(list)
-
-			index = last_visible + 1
-			while true do
-				if not IsVisible(list.."/"..tostring(index), list) then
-					last_visible = index - 1
-					--Log( "previous_last = "..tostring(previous_last) )
-					break
-				end
-				index = index + 1
-			end
-		end
-	until previous_last == last_visible
-	
-	if IsVisible(cell, list) then
-		ClickControl(cell)
-		return true
-	else
-		Log("Item "..item.." in "..list.." not found")
-		return false
-	end
-end
-
-function SelectFirstVertical(list)
-	Log("Select first item in vertical list "..list)
-	
-	-- find first visible element
-	for i = 0, 100 do --to avoid hanging up in empty list
-		if IsVisible(list.."/0", list) then
-			return true
-		else
-			VerticalScroll(list, true)
-		end
-	end
-    
-	Log("First item in "..list.." not found")
-	return false
-end
-
-function VerticalScroll(list, invert)
-	--Log("Make horizontal scroll for "..list)
-	local control = GetControl(list)
-
-	local position = Vector.Vector2()
-	local new_position = Vector.Vector2()
-	
-    local geomData = control:GetGeometricData()
-    local rect = geomData:GetUnrotatedRect()
-       
-    position.x = rect.x + rect.dx/2
-    position.y = rect.y + rect.dy/2
-		
-	if invert then
-		new_position.y = position.y + rect.dy/2
-		new_position.x = position.x
-	else
-       	new_position.y = position.y - rect.dy/2
-		new_position.x = position.x
+    if __click() then
+        return true
     end
-	
-	TouchMove(position, new_position)
+    local listControl = GetControl(listName)
+    local startPoint, __scroll = listControl:GetPivotPoint(), nil
+    print(string.format('Start points X: %f; Y: %f', startPoint.x, startPoint.y))
+    local finalPoint = autotestingSystem:GetMaxListOffsetSize(listControl)
+    print(string.format('Final point: ' .. finalPoint))
+    if autotestingSystem:IsListHorisontal(listControl) then
+        __scroll, startPoint = HorizontalScroll, startPoint.y
+    else
+        __scroll, startPoint = VerticalScroll, startPoint.x
+    end
+
+    local function __getPosition() return autotestingSystem:GetListScrollPosition(listControl) end
+
+    -- move to start of list and check cell
+    for _ = 0, MAX_LIST_COUNT do
+        local position = __getPosition()
+        if position <= startPoint then
+            break
+        end
+        __scroll(listName, true)
+        if __click() then
+            return true
+        end
+    end
+    -- move to end of list and check cell
+    for _ = 0, MAX_LIST_COUNT do
+        local position = __getPosition()
+        if position >= finalPoint then
+            break
+        end
+        __scroll(listName)
+        if __click() then
+            return true
+        end
+    end
+    Log(string.format("Cell '%s' in '%s' list is not found", item, listName))
+    return false
+end
+
+function SelectItemInContainer(containerName, item, notInCenter, __condition)
+    Log(string.format("Select '%s' cell in '%s' container.", item, containerName))
+    assert(WaitControl(containerName), "Couldn't find " .. containerName)
+
+    if not __condition then
+        __condition = function(x) return true end
+    end
+
+    local function __click()
+        if IsVisible(item, containerName) and IsVisible(item) and __condition(item) then
+            ClickControl(item)
+            return true
+        end
+        return false
+    end
+
+    if __click() then
+        return true
+    end
+    local containerCtrl, position, invert = GetControl(containerName)
+    local startPoint = containerCtrl:GetPivotPoint()
+    print(string.format('Start points X: %f; Y: %f', startPoint.x, startPoint.y))
+    local finalPoint = autotestingSystem:GetMaxContainerOffsetSize(containerCtrl)
+    print(string.format('Final point: X: %f; Y: %f', finalPoint.x, finalPoint.y))
+
+    local function __getPosition() return autotestingSystem:GetContainerScrollPosition(containerCtrl) end
+
+    -- move to start of list and check cell
+    for _ = 0, MAX_LIST_COUNT do -- move to up side
+        position = __getPosition()
+        if position.y <= startPoint.y then
+            break
+        end
+        VerticalScroll(containerName, true, notInCenter)
+        if __click() then
+            return true
+        end
+    end
+    -- move to left side
+    for _ = 0, MAX_LIST_COUNT do
+        position = __getPosition()
+        if position.x <= startPoint.x then
+            break
+        end
+        HorizontalScroll(containerName, true)
+        if __click() then
+            return true
+        end
+    end
+    -- move to rigth side and down side, then to left and down
+    for _ = 0, MAX_LIST_COUNT do
+        invert = _ % 2 ~= 0 -- if true - right side, else - left
+        -- move to right/left side
+        for __ = 0, MAX_LIST_COUNT do
+            position = __getPosition()
+            if invert then
+                if position.x <= startPoint.x then
+                    break
+                end
+            else
+                if position.x >= finalPoint.x then
+                    break
+                end
+            end
+            HorizontalScroll(containerName, invert)
+            if __click() then
+                return true
+            end
+        end
+        -- move to down side
+        position = __getPosition()
+        if position.y >= finalPoint.y then
+            break
+        end
+        VerticalScroll(containerName, false, notInCenter)
+        if __click() then
+            return true
+        end
+    end
+    Log(string.format("Item '%s' in '%s' container is not found", item, containerName))
+    return false
+end
+
+function VerticalScroll(list, invert, notInCenter)
+    local position, new_position = __GetNewPosition(list, true, invert, notInCenter)
+    TouchMove(position, new_position)
 end
 
 function HorizontalScroll(list, invert)
-	--Log("Make horizontal scroll for "..list)
-	local control = GetControl(list)	
-    
-    local position = Vector.Vector2()
-	local new_position = Vector.Vector2()
-            
-    local geomData = control:GetGeometricData()
-    local rect = geomData:GetUnrotatedRect()
-       
-    position.x = rect.x + rect.dx/2
-    position.y = rect.y + rect.dy/2
-	
-	if invert then
-		new_position.x = position.x + rect.dx/2
-		new_position.y = position.y
-	else
-      	new_position.x = position.x - rect.dx/2
-		new_position.y = position.y
-    end	
-	
-	TouchMove(position, new_position)
+    local position, new_position = __GetNewPosition(list, false, invert)
+    TouchMove(position, new_position)
 end
 
-
 ----------------------------------------------------------------------------------------------------
--- Touch actions
+-- Touch and click actions
 ----------------------------------------------------------------------------------------------------
 
 -- Touch down
 function TouchDownPosition(position, touchId)
-    local touchId = touchId or 1
-    autotestingSystem:TouchDown(position, touchId)
+    autotestingSystem:TouchDown(position, touchId or 1)
     Yield()
 end
 
 function TouchDown(x, y, touchId)
-    local touchId = touchId or 1
     local position = Vector.Vector2(x, y)
-    autotestingSystem:TouchDown(position, touchId)
-    Yield()
+    TouchDownPosition(position, touchId)
 end
 
 -- Touch up
 function TouchUp(touchId)
-	local touchId = touchId or 1
+    local touchId = touchId or 1
     autotestingSystem:TouchUp(touchId)
 end
 
 function ClickPosition(position, time, touchId)
-    local touchId = touchId or 1
     local waitTime = time or TIMECLICK
-	
     TouchDownPosition(position, touchId)
-	Wait(waitTime)
+    Wait(waitTime)
     TouchUp(touchId)
-	Wait(waitTime)
+    Wait(waitTime)
 end
 
 function Click(x, y, time, touchId)
     local waitTime = time or TIMECLICK
     local touchId = touchId or 1
-    
     local position = Vector.Vector2(x, y)
     ClickPosition(position, touchId, waitTime)
 end
 
+function KeyPress(key, control)
+    if control then
+        ClickControl(control)
+    end
+    autotestingSystem:KeyPress(key)
+end
+
 function ClickControl(name, time, touchId)
     local waitTime = time or TIMEOUT
-    local touchId = touchId or 1
-	
-    Log("ClickControl name="..name.." touchId="..touchId.." waitTime="..waitTime)  
-    if WaitControl(name, waitTime) then
-	
-		local control = autotestingSystem:FindControl(name)
-	
-		if IsVisible(name) then     
-			local position = GetCenter(name)
-			ClickPosition(position, TIMECLICK, touchId)
-			return true
-		elseif not IsCenterOnScreen(control) then
-			Log(name .. " is not on the Screen")
-		else
-			Log(name .. " is not visible")
-		end
-	else
-			Log("ClickControl not found "..name)
-	end
+    Log("ClickControl name=" .. name .. " touchId=" .. tostring(touchId or 1) .. " waitTime=" .. waitTime)
+    if not WaitControl(name, waitTime) then
+        Log("Control " .. name .. " not found.")
+        return false
+    end
+    if IsVisible(name) and IsCenterOnScreen(name) then
+        local position = GetCenter(name)
+        ClickPosition(position, TIMECLICK, touchId)
+        return true
+    end
+    Log("Control " .. name .. " is not visible.")
     return false
 end
 
 -- Move touch actions
-function TouchMovePosition(position, time, touchId)
-	waitTime =  waitTime or TIMECLICK
-    local touchId = touchId or 1
-    autotestingSystem:TouchMove(position, touchId)
+function TouchMovePosition(position, touchId)
+    autotestingSystem:TouchMove(position, touchId or 1)
     Yield()
 end
 
 function TouchMove(position, new_position, time, touchId)
-	waitTime =  time or TIMECLICK
-    local touchId = touchId or 1
-    --Log("TouchMove from x="..position.x.." y="..position.y.."  to x="..new_position.x.." y="..new_position.y.." touchId="..touchId)
+    local waitTime = time or TIMECLICK
     TouchDownPosition(position, touchId)
     Wait(waitTime)
-	TouchMovePosition(new_position, touchId)
-	Wait(waitTime)
-	Wait(waitTime)
-	TouchUp(touchId)
-	Wait(waitTime)
+    TouchMovePosition(new_position, touchId)
+    Wait(waitTime)
+    Wait(waitTime)
+    TouchUp(touchId)
+    Wait(waitTime)
 end
 

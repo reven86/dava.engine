@@ -54,6 +54,7 @@
 #endif //PLATFORMS    
 
 #include "Render/RenderManager.h"
+#include "Platform/DateTime.h"
 
 namespace DAVA
 {
@@ -75,7 +76,7 @@ public:
     void OnInit();
     inline bool IsInit() { return isInit; };
 
-	void OnScreenShot(Image *image);
+	void OnScreenShot(Image *image) override;
     
     void RunTests();
     
@@ -83,10 +84,6 @@ public:
 	void FetchParametersFromDB();
 	void FetchParametersFromIdTxt();
 	void SetUpConnectionToDB();
-
-	String GetDeviceName();
-
-
 
 	void InitializeDevice(const String & device);
 
@@ -96,7 +93,7 @@ public:
 	void OnStepFinished();
 	void OnTestsSatrted();
     void OnError(const String & errorMessage = "");
-	void OnMessage(const String & logMessage = "");
+	//void OnMessage(const String & logMessage = "");
 	void ForceQuit(const String & logMessage = "");
     void OnTestsFinished();
     
@@ -111,9 +108,9 @@ public:
 	void MakeScreenShot();
 
     // DB Master-Helper relations
-    void InitMultiplayer(bool _isMaster);
-    void RegisterMasterInDB(int32 helpersCount);
-    void RegisterHelperInDB();
+    //void InitMultiplayer(bool _isMaster);
+    //void RegisterMasterInDB(int32 helpersCount);
+    //void RegisterHelperInDB();
 
 	String GetTestId() { return Format("Test%03d", testIndex); };
 	String GetStepId() { return Format("Step%03d", stepIndex); };
@@ -125,26 +122,25 @@ public:
 protected:
 
 //DB
-    void SetUpTestArchive();
+    /*void SetUpTestArchive();
 
-	//KeyedArchive *FindTestArchive(MongodbUpdateObject* dbUpdateObject, const String &testId);
+	KeyedArchive *FindTestArchive(MongodbUpdateObject* dbUpdateObject, const String &testId);
     KeyedArchive *FindStepArchive(KeyedArchive *testArchive, const String &stepId);
     
     bool CheckSavedObjectInDB(MongodbUpdateObject *dbUpdateObject);
     bool CheckKeyedArchivesEqual(const String &name, KeyedArchive* firstKeyedArchive, KeyedArchive* secondKeyedArchive);
 
-//    void AddTestResult(const String &text, bool isPassed, const String & error = "");
-//    void SaveTestToDB();
+    void AddTestResult(const String &text, bool isPassed, const String & error = "");
+    void SaveTestToDB();
     void SaveTestStepToDB(const String &stepDescription, bool isPassed, const String &error = "");
-    void SaveTestStepLogEntryToDB(const String &type, const String &time, const String &message);
+    void SaveTestStepLogEntryToDB(const String &type, const String &time, const String &message);*/
 	void SaveScreenShotNameToDB();
 
-    String ReadMasterIDFromDB(); //TODO: get first available master
+    /*String ReadMasterIDFromDB(); //TODO: get first available master
     
     bool CheckMasterHelpersReadyDB();
-    //
-    
-    int32 GetIndexInFileList(FileList &fileList, int32 index);
+        
+    int32 GetIndexInFileList(FileList &fileList, int32 index);*/
     
     void ExitApp();
 	
@@ -161,6 +157,7 @@ public:
 	String deviceId;
 	String deviceName;
     String testsDate;
+	String runId;
     int32 testIndex;
     int32 stepIndex;
     int32 logIndex;
@@ -175,6 +172,7 @@ public:
 	String framework;
 	String branchRev;
 	String frameworkRev;
+
 //    struct TestResult
 //    {
 //        TestResult(const String &_name, bool _isPassed, const String &_error) : name(_name), isPassed(_isPassed), error(_error) {}

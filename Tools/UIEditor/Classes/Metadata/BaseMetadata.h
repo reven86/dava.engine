@@ -90,11 +90,11 @@ public:
 	uint32 GetStatesCount() const;
 
     // UI Control State.
-	Vector<UIControl::eControlState> GetUIControlStates() const;
-	void SetUIControlStates(const Vector<UIControl::eControlState>& controlStates);
+    const Vector<UIControl::eControlState> &GetUIControlStates() const;
+    void SetUIControlStates(const Vector<UIControl::eControlState>& controlStates);
 
     // Apply move for all controls.
-    virtual void ApplyMove(const Vector2&) {};
+    virtual void ApplyMove(const Vector2&, bool /*alignControlsToIntegerPos*/) {};
     
     // Apply resize for all controls.
     virtual void ApplyResize(const Rect& /*originalRect*/, const Rect& /*newRect*/) {};

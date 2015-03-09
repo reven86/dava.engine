@@ -211,9 +211,9 @@ inline void Random::initialize( const uint32 seed )
 	// See Knuth TAOCP Vol 2, 3rd Ed, p.106 for multiplier.
 	// In previous versions, most significant bits (MSBs) of the seed affect
 	// only MSBs of the state array.  Modified 9 Jan 2002 by Makoto Matsumoto.
-	register uint32 *s = state;
-	register uint32 *r = state;
-	register int32 i = 1;
+	uint32 *s = state;
+	uint32 *r = state;
+    int32 i = 1;
 	*s++ = seed & 0xffffffffUL;
 	for( ; i < N; ++i )
 	{
@@ -227,8 +227,8 @@ inline void Random::reload()
 	// Generate N new values in state
 	// Made clearer and faster by Matthew Bellew (matthew.bellew@home.com)
 	static const int32 MmN = int32(M) - int32(N);  // in case enums are unsigned
-	register uint32 *p = state;
-	register int32 i;
+    uint32 *p = state;
+    int32 i;
 	for( i = N - M; i--; ++p )
 		*p = twist( p[M], p[0], p[1] );
 	for( i = M; --i; ++p )
@@ -318,9 +318,9 @@ inline Random::Random()
 
 inline Random::Random( const Random& o )
 {
-	register const uint32 *t = o.state;
-	register uint32 *s = state;
-	register int32 i = N;
+    const uint32 *t = o.state;
+    uint32 *s = state;
+    int32 i = N;
 	for( ; i--; *s++ = *t++ ) {}
 	left = o.left;
 	pNext = &state[N-left];
@@ -334,7 +334,7 @@ inline	uint32 Random::Rand()
 	if( left == 0 ) reload();
 	--left;
 	
-	register uint32 s1;
+    uint32 s1;
 	s1 = *pNext++;
 	s1 ^= (s1 >> 11);
 	s1 ^= (s1 <<  7) & 0x9d2c5680UL;

@@ -28,7 +28,6 @@
 
 
 
-#include <QtGui>
 #include <QSortFilterProxyModel>
 
 #include "DockSceneTree/SceneTreeDelegate.h"

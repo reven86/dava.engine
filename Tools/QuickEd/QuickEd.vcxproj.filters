@@ -1,0 +1,641 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;moc;h;def;odl;idl;res;</Extensions>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;moc;h;def;odl;idl;res;</Extensions>
+    </Filter>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{4f2db588-397c-479c-9871-d530187be966}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="QtBuildTool">
+      <UniqueIdentifier>{830edf1a-2cbf-4b69-866a-427e1fdfbbd4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{a18c56f3-ac1d-43b8-beb8-0a5ea83a03e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Helpers">
+      <UniqueIdentifier>{9375aceb-0896-4c09-af7d-bf492f937c88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\UI">
+      <UniqueIdentifier>{2397afd2-be90-4302-95d0-72eb375e3d29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Grid">
+      <UniqueIdentifier>{97539f91-1d0b-4e18-adfb-90a38d2d3563}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Ruler">
+      <UniqueIdentifier>{30f28ebe-e4d0-4052-b5d1-5c47b9fde58f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Validators">
+      <UniqueIdentifier>{f165eff1-89e2-46d3-9158-d3296ccca9e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\UIControls">
+      <UniqueIdentifier>{3db4d622-107a-4d8f-a7e9-6ee1cdc8ae8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\UI\Dialogs">
+      <UniqueIdentifier>{6cd834e7-3d17-442e-8277-6f9500c8b784}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\UI\GraphicView">
+      <UniqueIdentifier>{ea7e1025-76ec-456d-a45d-2f61e88b2056}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Commands2">
+      <UniqueIdentifier>{f3e67f39-555c-44b4-96fe-299d55ea72cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\UI\PropertiesView">
+      <UniqueIdentifier>{8b79b56e-1203-4ad8-a38d-cfed2f57a5c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\QtControls">
+      <UniqueIdentifier>{3f72f723-1682-48a9-a752-c1ec04b03726}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\UI\PackageView">
+      <UniqueIdentifier>{bd64284b-f458-49b5-861e-a857ccda18db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\UI\LibraryView">
+      <UniqueIdentifier>{9066cfee-c688-4fcb-8d90-38e33bcf02c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\UI\ConsoleView">
+      <UniqueIdentifier>{e43833de-1a52-44bd-b566-cbdbf533066e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Utils">
+      <UniqueIdentifier>{f008a98c-7c4e-4e30-a4a1-a44fe58e5d33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\UI\FileSystemView">
+      <UniqueIdentifier>{faf9da69-20d5-4ed5-b62d-417acd6e8b8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\UI\PropertiesView\VariantDelegates">
+      <UniqueIdentifier>{e68c9760-8a28-4969-93aa-daf90721aee5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\UIControls\ControlProperties">
+      <UniqueIdentifier>{dcf2a11f-0843-4abc-848a-81b6fa5bf8eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\UIControls\PackageHierarchy">
+      <UniqueIdentifier>{2b2a148d-03f0-41d5-b1d9-5c63a4cb1ba9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Classes\FrameworkMain.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\GameCore.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\main.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\StringUtils.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Helpers\LocalizationSystemHelper.cpp">
+      <Filter>Sources\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Helpers\ResourcesManageHelper.cpp">
+      <Filter>Sources\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Helpers\WidgetSignalsBlocker.cpp">
+      <Filter>Sources\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\davaglwidget.cpp">
+      <Filter>Sources\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\fontmanagerdialog.cpp">
+      <Filter>Sources\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\mainwindow.cpp">
+      <Filter>Sources\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\EditorFontManager.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\EditorSettings.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\IconHelper.cpp">
+      <Filter>Sources\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Ruler\RulerController.cpp">
+      <Filter>Sources\Ruler</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Ruler\RulerWidget.cpp">
+      <Filter>Sources\Ruler</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Grid\GridVisualizer.cpp">
+      <Filter>Sources\Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Validators\BaseValidator.cpp">
+      <Filter>Sources\Validators</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Validators\DistanceFontValidator.cpp">
+      <Filter>Sources\Validators</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\TextureDescriptorUtils.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Project.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PackageDocument.cpp">
+      <Filter>Sources\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\Dialogs\editfontdialog.cpp">
+      <Filter>Sources\UI\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\Dialogs\localizationeditordialog.cpp">
+      <Filter>Sources\UI\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\Dialogs\regexpinputdialog.cpp">
+      <Filter>Sources\UI\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\GraphicView\GraphicsViewContext.cpp">
+      <Filter>Sources\UI\GraphicView</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\GraphicView\PackageGraphicsWidget.cpp">
+      <Filter>Sources\UI\GraphicView</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\AddComponentCommand.cpp">
+      <Filter>Sources\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\Command2.cpp">
+      <Filter>Sources\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\CommandAction.cpp">
+      <Filter>Sources\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\CommandBatch.cpp">
+      <Filter>Sources\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\CommandNotify.cpp">
+      <Filter>Sources\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\CommandStack.cpp">
+      <Filter>Sources\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\EntityAddCommand.cpp">
+      <Filter>Sources\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\EntityLockCommand.cpp">
+      <Filter>Sources\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\EntityParentChangeCommand.cpp">
+      <Filter>Sources\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\EntityRemoveCommand.cpp">
+      <Filter>Sources\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\InspDynamicModifyCommand.cpp">
+      <Filter>Sources\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\InspMemebrModifyCommand.cpp">
+      <Filter>Sources\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\KeyedArchiveCommand.cpp">
+      <Filter>Sources\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\MetaObjModifyCommand.cpp">
+      <Filter>Sources\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\RemoveComponentCommand.cpp">
+      <Filter>Sources\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\QtControls\LineEditExt.cpp">
+      <Filter>Sources\QtControls</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertiesView\PropertiesTreeModel.cpp">
+      <Filter>Sources\UI\PropertiesView</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\LibraryView\LibraryDockWidget.cpp">
+      <Filter>Sources\UI\LibraryView</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertiesView\PropertiesDockWidget.cpp">
+      <Filter>Sources\UI\PropertiesView</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertiesView\PropertiesTreeItemDelegate.cpp">
+      <Filter>Sources\UI\PropertiesView</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\ConsoleView\ConsoleDockWidget.cpp">
+      <Filter>Sources\UI\ConsoleView</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertiesView\PropertiesTreeView.cpp">
+      <Filter>Sources\UI\PropertiesView</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Utils\QtDavaConvertion.cpp">
+      <Filter>Sources\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\GraphicView\EditScreen.cpp">
+      <Filter>Sources\UI\GraphicView</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\QtControls\Vector2DEdit.cpp">
+      <Filter>Sources\QtControls</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertiesView\PropertiesViewContext.cpp">
+      <Filter>Sources\UI\PropertiesView</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertiesView\ChangePropertyValueCommand.cpp">
+      <Filter>Sources\UI\PropertiesView</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertiesView\AbstractPropertyDelegate.cpp">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertiesView\BasePropertyDelegate.cpp">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertiesView\Vector2PropertyDelegate.cpp">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertiesView\StringPropertyDelegate.cpp">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertiesView\IntegerPropertyDelegate.cpp">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertiesView\EnumPropertyDelegate.cpp">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertiesView\FloatPropertyDelegate.cpp">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertiesView\ColorPropertyDelegate.cpp">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertiesView\FilePathPropertyDelegate.cpp">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\FileSystemView\FileSystemDockWidget.cpp">
+      <Filter>Sources\UI\FileSystemView</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UIControls\EditorUIPackageBuilder.cpp">
+      <Filter>Sources\UIControls</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UIControls\LegacyEditorUIPackageLoader.cpp">
+      <Filter>Sources\UIControls</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UIControls\ControlProperties\BackgroundPropertiesSection.cpp">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UIControls\ControlProperties\BaseProperty.cpp">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UIControls\ControlProperties\ControlPropertiesSection.cpp">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UIControls\ControlProperties\InternalControlPropertiesSection.cpp">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UIControls\ControlProperties\LocalizedTextValueProperty.cpp">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UIControls\ControlProperties\PropertiesRoot.cpp">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UIControls\ControlProperties\PropertiesSection.cpp">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UIControls\ControlProperties\SubValueProperty.cpp">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UIControls\ControlProperties\ValueProperty.cpp">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UIControls\PackageHierarchy\ControlNode.cpp">
+      <Filter>Sources\UIControls\PackageHierarchy</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UIControls\PackageHierarchy\ImportedPackagesNode.cpp">
+      <Filter>Sources\UIControls\PackageHierarchy</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UIControls\PackageHierarchy\PackageBaseNode.cpp">
+      <Filter>Sources\UIControls\PackageHierarchy</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UIControls\PackageHierarchy\PackageControlsNode.cpp">
+      <Filter>Sources\UIControls\PackageHierarchy</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UIControls\PackageHierarchy\PackageNode.cpp">
+      <Filter>Sources\UIControls\PackageHierarchy</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PackageView\PackageDockWidget.cpp">
+      <Filter>Sources\UI\PackageView</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PackageView\UIFilteredPackageModel.cpp">
+      <Filter>Sources\UI\PackageView</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PackageView\UIPackageModel.cpp">
+      <Filter>Sources\UI\PackageView</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PackageView\PackageModelCommands.cpp">
+      <Filter>Sources\UI\PackageView</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PackageView\UIPackageMimeData.cpp">
+      <Filter>Sources\UI\PackageView</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\LibraryView\LibraryModel.cpp">
+      <Filter>Sources\UI\LibraryView</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Classes\FrameworkMain.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\GameCore.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\StringUtils.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Helpers\LocalizationSystemHelper.h">
+      <Filter>Sources\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Helpers\ResourcesManageHelper.h">
+      <Filter>Sources\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Helpers\WidgetSignalsBlocker.h">
+      <Filter>Sources\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\EditorSettings.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\EditorFontManager.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\mainwindow.h">
+      <Filter>Sources\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\davaglwidget.h">
+      <Filter>Sources\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\IconHelper.h">
+      <Filter>Sources\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\version.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Ruler\RulerController.h">
+      <Filter>Sources\Ruler</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Ruler\RulerSettings.h">
+      <Filter>Sources\Ruler</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Ruler\RulerWidget.h">
+      <Filter>Sources\Ruler</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Grid\GridVisualizer.h">
+      <Filter>Sources\Grid</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Validators\BaseValidator.h">
+      <Filter>Sources\Validators</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Validators\DistanceFontValidator.h">
+      <Filter>Sources\Validators</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\TextureDescriptorUtils.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Project.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PackageDocument.h">
+      <Filter>Sources\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\Dialogs\editfontdialog.h">
+      <Filter>Sources\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\Dialogs\localizationeditordialog.h">
+      <Filter>Sources\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\Dialogs\regexpinputdialog.h">
+      <Filter>Sources\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\GraphicView\GraphicsViewContext.h">
+      <Filter>Sources\UI\GraphicView</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\GraphicView\PackageGraphicsWidget.h">
+      <Filter>Sources\UI\GraphicView</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\AddComponentCommand.h">
+      <Filter>Sources\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\Command2.h">
+      <Filter>Sources\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\CommandAction.h">
+      <Filter>Sources\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\CommandBatch.h">
+      <Filter>Sources\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\CommandID.h">
+      <Filter>Sources\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\CommandNotify.h">
+      <Filter>Sources\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\CommandStack.h">
+      <Filter>Sources\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\EntityAddCommand.h">
+      <Filter>Sources\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\EntityLockCommand.h">
+      <Filter>Sources\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\EntityParentChangeCommand.h">
+      <Filter>Sources\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\EntityRemoveCommand.h">
+      <Filter>Sources\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\InspDynamicModifyCommand.h">
+      <Filter>Sources\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\InspMemberModifyCommand.h">
+      <Filter>Sources\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\KeyedArchiveCommand.h">
+      <Filter>Sources\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\MetaObjModifyCommand.h">
+      <Filter>Sources\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\RemoveComponentCommand.h">
+      <Filter>Sources\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\QtControls\LineEditExt.h">
+      <Filter>Sources\QtControls</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertiesView\PropertiesTreeModel.h">
+      <Filter>Sources\UI\PropertiesView</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\LibraryView\LibraryDockWidget.h">
+      <Filter>Sources\UI\LibraryView</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertiesView\PropertiesDockWidget.h">
+      <Filter>Sources\UI\PropertiesView</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertiesView\PropertiesTreeItemDelegate.h">
+      <Filter>Sources\UI\PropertiesView</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\ConsoleView\ConsoleDockWidget.h">
+      <Filter>Sources\UI\ConsoleView</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertiesView\PropertiesTreeView.h">
+      <Filter>Sources\UI\PropertiesView</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Utils\QtDavaConvertion.h">
+      <Filter>Sources\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\GraphicView\EditScreen.h">
+      <Filter>Sources\UI\GraphicView</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\QtControls\Vector2DEdit.h">
+      <Filter>Sources\QtControls</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertiesView\PropertiesViewContext.h">
+      <Filter>Sources\UI\PropertiesView</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertiesView\ChangePropertyValueCommand.h">
+      <Filter>Sources\UI\PropertiesView</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertiesView\AbstractPropertyDelegate.h">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertiesView\BasePropertyDelegate.h">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertiesView\Vector2PropertyDelegate.h">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertiesView\StringPropertyDelegate.h">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertiesView\IntegerPropertyDelegate.h">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertiesView\EnumPropertyDelegate.h">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertiesView\FloatPropertyDelegate.h">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertiesView\ColorPropertyDelegate.h">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertiesView\FilePathPropertyDelegate.h">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\FileSystemView\FileSystemDockWidget.h">
+      <Filter>Sources\UI\FileSystemView</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UIControls\EditorUIPackageBuilder.h">
+      <Filter>Sources\UIControls</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UIControls\LegacyEditorUIPackageLoader.h">
+      <Filter>Sources\UIControls</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UIControls\ControlProperties\BackgroundPropertiesSection.h">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UIControls\ControlProperties\BaseProperty.h">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UIControls\ControlProperties\ControlPropertiesSection.h">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UIControls\ControlProperties\InternalControlPropertiesSection.h">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UIControls\ControlProperties\LocalizedTextValueProperty.h">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UIControls\ControlProperties\PropertiesRoot.h">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UIControls\ControlProperties\PropertiesSection.h">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UIControls\ControlProperties\SubValueProperty.h">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UIControls\ControlProperties\ValueProperty.h">
+      <Filter>Sources\UIControls\ControlProperties</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UIControls\PackageHierarchy\ControlNode.h">
+      <Filter>Sources\UIControls\PackageHierarchy</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UIControls\PackageHierarchy\ImportedPackagesNode.h">
+      <Filter>Sources\UIControls\PackageHierarchy</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UIControls\PackageHierarchy\PackageBaseNode.h">
+      <Filter>Sources\UIControls\PackageHierarchy</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UIControls\PackageHierarchy\PackageControlsNode.h">
+      <Filter>Sources\UIControls\PackageHierarchy</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UIControls\PackageHierarchy\PackageNode.h">
+      <Filter>Sources\UIControls\PackageHierarchy</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PackageView\PackageDockWidget.h">
+      <Filter>Sources\UI\PackageView</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PackageView\UIFilteredPackageModel.h">
+      <Filter>Sources\UI\PackageView</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PackageView\UIPackageModel.h">
+      <Filter>Sources\UI\PackageView</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PackageView\PackageModelCommands.h">
+      <Filter>Sources\UI\PackageView</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PackageView\UIPackageMimeData.h">
+      <Filter>Sources\UI\PackageView</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\LibraryView\LibraryModel.h">
+      <Filter>Sources\UI\LibraryView</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\icons.qrc">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="UI\davaglwidget.ui">
+      <Filter>Form Files</Filter>
+    </None>
+    <None Include="UI\editfontdialog.ui">
+      <Filter>Form Files</Filter>
+    </None>
+    <None Include="UI\fontmanagerdialog.ui">
+      <Filter>Form Files</Filter>
+    </None>
+    <None Include="UI\localizationeditordialog.ui">
+      <Filter>Form Files</Filter>
+    </None>
+    <None Include="UI\mainwindow.ui">
+      <Filter>Form Files</Filter>
+    </None>
+    <None Include="UI\PackageGraphicsWidget.ui">
+      <Filter>Form Files</Filter>
+    </None>
+    <None Include="UI\PackageTreeWidget.ui">
+      <Filter>Form Files</Filter>
+    </None>
+    <None Include="UI\PropertiesDockWidget.ui">
+      <Filter>Form Files</Filter>
+    </None>
+    <None Include="UI\ConsoleDockWidget.ui">
+      <Filter>Form Files</Filter>
+    </None>
+    <None Include="UI\FileSystemDockWidget.ui">
+      <Filter>Form Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

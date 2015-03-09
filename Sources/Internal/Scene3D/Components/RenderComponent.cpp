@@ -35,7 +35,6 @@
 namespace DAVA 
 {
     
-REGISTER_CLASS(RenderComponent)
     
 RenderComponent::RenderComponent(RenderObject * _object)
 {

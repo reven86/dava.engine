@@ -43,6 +43,7 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name, Stat
     AddRenderLayer(new RenderLayer(LAYER_OPAQUE, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_OPAQUE_ID), LAST_LAYER);
     AddRenderLayer(new RenderLayer(LAYER_AFTER_OPAQUE, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_AFTER_OPAQUE_ID), LAST_LAYER);
     AddRenderLayer(new RenderLayer(LAYER_ALPHA_TEST_LAYER, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_ALPHA_TEST_LAYER_ID), LAST_LAYER);
+    AddRenderLayer(new RenderLayer(LAYER_WATER, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_WATER_ID), LAST_LAYER);    
     AddRenderLayer(new RenderLayer(LAYER_TRANSLUCENT, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_TRANSLUCENT_ID), LAST_LAYER);
     AddRenderLayer(new RenderLayer(LAYER_AFTER_TRANSLUCENT, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_AFTER_TRANSLUCENT_ID), LAST_LAYER);
     
@@ -140,11 +141,11 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
 //    glDepthFunc(GL_LEQUAL);
 //    glDepthMask(GL_FALSE);
 
-    OcclusionQueryManager & manager = occlusion->GetOcclusionQueryManager();
+    OcclusionQueryPool & manager = occlusion->GetOcclusionQueryPool();
     size = (uint32)terrainBatches.size();
     for (uint32 k = 0; k < size; ++k)
     {
-        OcclusionQueryManagerHandle handle = manager.CreateQueryObject();
+        OcclusionQueryPoolHandle handle = manager.CreateQueryObject();
         OcclusionQuery & query = manager.Get(handle);
         
         RenderBatch * batch = terrainBatches[k];
@@ -159,7 +160,7 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
     size = (uint32)batches.size();
     for (uint32 k = 0; k < size; ++k)
     {
-        OcclusionQueryManagerHandle handle = manager.CreateQueryObject();
+        OcclusionQueryPoolHandle handle = manager.CreateQueryObject();
         OcclusionQuery & query = manager.Get(handle);
         
         RenderBatch * batch = batches[k];

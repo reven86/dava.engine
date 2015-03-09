@@ -5,7 +5,6 @@ import android.view.Menu;
 
 import com.dava.framework.JNIActivity;
 import com.dava.framework.JNIGLSurfaceView;
-import com.dava.unittests.R;
 
 public class UnitTests extends JNIActivity {
 

@@ -37,6 +37,7 @@
 #include "Scene3D/Scene.h"
 #include "Utils/Random.h"
 #include "Math/Math2D.h"
+#include "Debug/Stats.h"
 
 namespace DAVA
 {
@@ -87,6 +88,8 @@ void WaveSystem::ImmediateEvent(Entity * entity, uint32 event)
 
 void WaveSystem::Process(float32 timeElapsed)
 {
+    TIME_PROFILE("WaveSystem::Process");
+
     int32 index = 0;
     int32 size = waves.size();
     while(index < size)

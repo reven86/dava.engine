@@ -31,8 +31,12 @@
 #include "Animation/AnimationManager.h"
 #include "UI/UIControlSystem.h"
 #include "Render/RenderManager.h"
+#include "Render/OcclusionQuery.h"
 #include "Sound/SoundSystem.h"
 #include "Debug/Stats.h"
+#include "Platform/SystemTimer.h"
+#include "DLC/Downloader/DownloadManager.h"
+#include "Notification/LocalNotificationController.h"
 
 
 #ifdef __DAVAENGINE_AUTOTESTING__
@@ -44,6 +48,11 @@ namespace DAVA
 
 ApplicationCore::ApplicationCore()
 	: BaseObject()
+#if defined(__DAVAENGINE_ANDROID__)
+	, backgroundTicker(NULL)
+	, backgroundTickerFinishing(false)
+	, backgroundTickTimeMs(250)
+#endif
 {
 
 }
@@ -55,6 +64,8 @@ ApplicationCore::~ApplicationCore()
 	
 void ApplicationCore::Update(float32 timeElapsed)
 {
+	TIME_PROFILE("ApplicationCore::Update");
+
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Update(timeElapsed);
 #endif
@@ -65,10 +76,14 @@ void ApplicationCore::Update(float32 timeElapsed)
 
 void ApplicationCore::Draw()
 {
+	TIME_PROFILE("ApplicationCore::Draw");
+
+    FrameOcclusionQueryManager::Instance()->ResetFrameStats();
 	UIControlSystem::Instance()->Draw();	
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Draw();
 #endif
+    FrameOcclusionQueryManager::Instance()->ProccesRenderedFrame();
 }
 
 void ApplicationCore::BeginFrame()
@@ -86,14 +101,68 @@ void ApplicationCore::OnSuspend()
 {
 	SoundSystem::Instance()->Suspend();
 	Core::Instance()->SetIsActive(false);
+
+#if defined(__DAVAENGINE_ANDROID__)
+	StartBackbroundTicker();
+#endif
 }
 
 void ApplicationCore::OnResume()
 {
+#if defined(__DAVAENGINE_ANDROID__)
+	StopBackgroundTicker();
+#endif
+
 	Core::Instance()->SetIsActive(true);
 	SoundSystem::Instance()->Resume();
 }
 
+#if defined(__DAVAENGINE_ANDROID__)
+
+void ApplicationCore::StartBackbroundTicker(uint32 tickPeriod)
+{
+	if (NULL == backgroundTicker)
+	{
+		Logger::Debug("[ApplicationCore: OnSuspend] Background tick Thread Create Start");
+		backgroundTicker = Thread::Create(Message(this, &ApplicationCore::BackgroundTickerHandler));
+		backgroundTickerFinishing = false;
+		if (backgroundTicker)
+		{
+			backgroundTickTimeMs = tickPeriod;
+			backgroundTicker->Start();
+		}
+		Logger::Debug("[ApplicationCore: OnSuspend] Background tick  Thread Create End");
+	}
+}
+
+void ApplicationCore::StopBackgroundTicker()
+{
+	if (NULL != backgroundTicker)
+	{
+		Logger::Debug("[ApplicationCore: OnResume] Background tick Thread Finish start");
+		backgroundTickerFinishing = true;
+		backgroundTicker->Join();
+		SafeRelease(backgroundTicker);
+		Logger::Debug("[ApplicationCore: OnResume] Background tick Thread Finish end");
+	}
+}
+
+void ApplicationCore::BackgroundTickerHandler(BaseObject * caller, void * callerData, void * userData)
+{
+	while(!backgroundTickerFinishing)
+	{
+		Thread::Sleep(backgroundTickTimeMs);
+		OnBackgroundTick();
+	}
+}
+#endif
+    
+void ApplicationCore::OnBackgroundTick()
+{
+	DownloadManager::Instance()->Update();
+	LocalNotificationController::Instance()->Update();
+}
+    
 bool ApplicationCore::OnQuit()
 {
 	return false;

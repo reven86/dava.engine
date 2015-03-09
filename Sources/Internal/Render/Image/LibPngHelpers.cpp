@@ -404,7 +404,7 @@ Size2i LibPngWrapper::GetImageSize(File *infile) const
 
 
 
-eErrorCode LibPngWrapper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibPngWrapper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
 {
     Logger::Error("[LibPngWrapper::WriteFileAsCubeMap] For png cubeMaps are not supported");
     return ERROR_WRITE_FAIL;

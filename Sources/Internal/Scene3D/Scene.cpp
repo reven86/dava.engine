@@ -41,7 +41,6 @@
 #include "FileSystem/FileSystem.h"
 #include "Debug/Stats.h"
 
-#include "Scene3D/SceneNodeAnimationList.h"
 #include "Scene3D/SceneFile.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/DataNode.h"
@@ -69,6 +68,8 @@
 #include "Scene3D/Systems/SkyboxSystem.h"
 #include "Scene3D/Systems/WindSystem.h"
 #include "Scene3D/Systems/WaveSystem.h"
+#include "Scene3D/Systems/SkeletonSystem.h"
+#include "Scene3D/Systems/AnimationSystem.h"
 
 #include "Sound/SoundSystem.h"
 
@@ -80,6 +81,7 @@
 #include "Scene3D/Systems/MaterialSystem.h"
 
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/SceneCache.h"
 
 //#include "Entity/Entity.h"
 //#include "Entity/EntityManager.h"
@@ -118,6 +120,8 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
 	, materialSystem(0)
     , foliageSystem(0)
     , windSystem(0)
+    , animationSystem(0)
+    , staticOcclusionDebugDrawSystem(0)
 	, sceneGlobalMaterial(0)
     , isDefaultGlobalMaterial(true)
     , clearBuffers(RenderManager::ALL_BUFFERS)
@@ -127,6 +131,8 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
 
     // this will force scene to create hidden global material
     SetGlobalMaterial(NULL);
+    
+    SceneCache::Instance()->InsertScene(this);
 }
 
 void Scene::CreateComponents()
@@ -190,19 +196,25 @@ void Scene::InitGlobalMaterial()
 
     Vector3 defaultVec3;
     Color defaultColor(1.0f, 0.0f, 0.0f, 1.0f);
+    //float32 defaultFloat0 = 0.0f;
     float32 defaultFloat05 = 0.5f;
     float32 defaultFloat10 = 1.0f;
     Vector2 defaultVec2;
+    Vector2 defaultVec2I(1.f, 1.f);
     float32 defaultLightmapSize = 16.0f;
     float32 defaultFogStart = 0.0f;
     float32 defaultFogEnd = 500.0f;
+    float32 defaultFogHeight = 50.0f;
+    float32 defaultFogDensity = 0.005f;
 
-    if(NULL == sceneGlobalMaterial->GetTexture(NMaterial::TEXTURE_ALBEDO)) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_ALBEDO, stubTexture2d);
-    if(NULL == sceneGlobalMaterial->GetTexture(NMaterial::TEXTURE_NORMAL)) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_NORMAL, stubTexture2d);
-    if(NULL == sceneGlobalMaterial->GetTexture(NMaterial::TEXTURE_DETAIL)) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_DETAIL, stubTexture2d);
-    if(NULL == sceneGlobalMaterial->GetTexture(NMaterial::TEXTURE_LIGHTMAP)) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_LIGHTMAP, stubTexture2dLightmap);
-    if(NULL == sceneGlobalMaterial->GetTexture(NMaterial::TEXTURE_DECAL)) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_DECAL, stubTexture2d);
-    if(NULL == sceneGlobalMaterial->GetTexture(NMaterial::TEXTURE_CUBEMAP)) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_CUBEMAP, stubTextureCube);
+    if(sceneGlobalMaterial->GetTexturePath(NMaterial::TEXTURE_ALBEDO).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_ALBEDO, stubTexture2d);
+    if(sceneGlobalMaterial->GetTexturePath(NMaterial::TEXTURE_NORMAL).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_NORMAL, stubTexture2d);
+    if(sceneGlobalMaterial->GetTexturePath(NMaterial::TEXTURE_DETAIL).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_DETAIL, stubTexture2d);
+    if(sceneGlobalMaterial->GetTexturePath(NMaterial::TEXTURE_LIGHTMAP).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_LIGHTMAP, stubTexture2dLightmap);
+    if(sceneGlobalMaterial->GetTexturePath(NMaterial::TEXTURE_DECAL).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_DECAL, stubTexture2d);
+    if(sceneGlobalMaterial->GetTexturePath(NMaterial::TEXTURE_CUBEMAP).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_CUBEMAP, stubTextureCube);
+    if(sceneGlobalMaterial->GetTexturePath(NMaterial::TEXTURE_DECALMASK).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_DECALMASK, stubTexture2d);
+    if(sceneGlobalMaterial->GetTexturePath(NMaterial::TEXTURE_DECALTEXTURE).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_DECALTEXTURE, stubTexture2d);
 
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_LIGHT_POSITION0)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHT_POSITION0, Shader::UT_FLOAT_VEC3, 1, defaultVec3.data);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_PROP_AMBIENT_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_PROP_AMBIENT_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
@@ -213,16 +225,30 @@ void Scene::InitGlobalMaterial()
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_LIGHT_SPECULAR_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHT_SPECULAR_COLOR, Shader::UT_FLOAT_VEC3, 1, &defaultColor);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_LIGHT_INTENSITY0)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHT_INTENSITY0, Shader::UT_FLOAT, 1, &defaultFloat05);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_MATERIAL_SPECULAR_SHININESS)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_MATERIAL_SPECULAR_SHININESS, Shader::UT_FLOAT, 1, &defaultFloat05);
+    
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_LIMIT)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_LIMIT, Shader::UT_FLOAT, 1, &defaultFloat10);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_DENSITY)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_DENSITY, Shader::UT_FLOAT, 1, &defaultFloat05);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_DENSITY)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_DENSITY, Shader::UT_FLOAT, 1, &defaultFogDensity);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_START)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_START, Shader::UT_FLOAT, 1, &defaultFogStart);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_END)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_END, Shader::UT_FLOAT, 1, &defaultFogEnd);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_HALFSPACE_DENSITY)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_HALFSPACE_DENSITY, Shader::UT_FLOAT, 1, &defaultFogDensity);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_HALFSPACE_FALLOFF)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_HALFSPACE_FALLOFF, Shader::UT_FLOAT, 1, &defaultFogDensity);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_HALFSPACE_HEIGHT)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_HALFSPACE_HEIGHT, Shader::UT_FLOAT, 1, &defaultFogHeight);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_HALFSPACE_LIMIT)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_HALFSPACE_LIMIT, Shader::UT_FLOAT, 1, &defaultFloat10);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_ATMOSPHERE_COLOR_SUN)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_ATMOSPHERE_COLOR_SUN, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_ATMOSPHERE_COLOR_SKY)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_ATMOSPHERE_COLOR_SKY, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_ATMOSPHERE_SCATTERING)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_ATMOSPHERE_SCATTERING, Shader::UT_FLOAT, 1, &defaultFloat10);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_ATMOSPHERE_DISTANCE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_ATMOSPHERE_DISTANCE, Shader::UT_FLOAT, 1, &defaultFogEnd);
+
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FLAT_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_TEXTURE0_SHIFT)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_TEXTURE0_SHIFT, Shader::UT_FLOAT_VEC2, 1, defaultVec2.data);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_UV_OFFSET)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_UV_OFFSET, Shader::UT_FLOAT_VEC2, 1, defaultVec2.data);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_UV_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_UV_SCALE, Shader::UT_FLOAT_VEC2, 1, defaultVec2.data);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_LIGHTMAP_SIZE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHTMAP_SIZE, Shader::UT_FLOAT, 1, &defaultLightmapSize);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_DECAL_TILE_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_DECAL_TILE_SCALE, Shader::UT_FLOAT_VEC2, 1, &defaultVec2I);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_DECAL_TILE_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_DECAL_TILE_COLOR, Shader::UT_FLOAT_VEC4, 1, &Color::White);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_SHADOW_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_SHADOW_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
+
 }
 
 void Scene::CreateSystems()
@@ -234,6 +260,12 @@ void Scene::CreateSystems()
     {
         staticOcclusionSystem = new StaticOcclusionSystem(this);
         AddSystem(staticOcclusionSystem, (1 << Component::STATIC_OCCLUSION_DATA_COMPONENT), true);
+    }
+
+    if(SCENE_SYSTEM_ANIMATION_FLAG & systemsMask)
+    {
+        animationSystem = new AnimationSystem(this);
+        AddSystem(animationSystem, (1 << Component::ANIMATION_COMPONENT), true);
     }
 
     if(SCENE_SYSTEM_TRANSFORM_FLAG & systemsMask)
@@ -331,10 +363,18 @@ void Scene::CreateSystems()
         waveSystem = new WaveSystem(this);
         AddSystem(waveSystem, (1 << Component::WAVE_COMPONENT), true);
     }
+
+    if(SCENE_SYSTEM_SKELETON_UPDATE_FLAG & systemsMask)
+    {
+        skeletonSystem = new SkeletonSystem(this);
+        AddSystem(skeletonSystem, (1 << Component::SKELETON_COMPONENT), true);
+    }
 }
 
 Scene::~Scene()
 {
+    SceneCache::Instance()->RemoveScene(this);
+    
 	for (Vector<AnimatedMesh*>::iterator t = animatedMeshes.begin(); t != animatedMeshes.end(); ++t)
 	{
 		AnimatedMesh * obj = *t;
@@ -382,6 +422,7 @@ Scene::~Scene()
     foliageSystem = 0;
     windSystem = 0;
     waveSystem = 0;
+    animationSystem = 0;
     
     uint32 size = (uint32)systems.size();
     for (uint32 k = 0; k < size; ++k)
@@ -412,6 +453,19 @@ void Scene::UnregisterEntity(Entity * entity)
     }
 }
 
+void Scene::RegisterEntitiesInSystemRecursively(SceneSystem *system, Entity * entity)
+{
+    system->RegisterEntity(entity);
+    for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
+        RegisterEntitiesInSystemRecursively(system, entity->GetChild(i));
+}
+void Scene::UnregisterEntitiesInSystemRecursively(SceneSystem *system, Entity * entity)
+{
+    system->UnregisterEntity(entity);
+    for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
+        UnregisterEntitiesInSystemRecursively(system, entity->GetChild(i));
+}
+
 void Scene::RegisterComponent(Entity * entity, Component * component)
 {
     DVASSERT(entity && component);
@@ -432,6 +486,7 @@ void Scene::UnregisterComponent(Entity * entity, Component * component)
     }
     
 }
+
 
 #if 0 // Removed temporarly if everything will work with events can be removed fully.
 void Scene::ImmediateEvent(Entity * entity, uint32 componentType, uint32 event)
@@ -495,10 +550,12 @@ void Scene::AddSystem(SceneSystem * sceneSystem, uint32 componentFlags, bool nee
         }
     }
     DVASSERT(needProcess == wasInsertedForUpdate);
+    RegisterEntitiesInSystemRecursively(sceneSystem, this);
 }
     
 void Scene::RemoveSystem(SceneSystem * sceneSystem)
 {
+    UnregisterEntitiesInSystemRecursively(sceneSystem, this);
     Vector<SceneSystem*>::iterator endIt = systemsToProcess.end();
     for(Vector<SceneSystem*>::iterator it = systemsToProcess.begin(); it != endIt; ++it)
     {
@@ -544,32 +601,6 @@ void Scene::RemoveAnimatedMesh(AnimatedMesh * mesh)
 AnimatedMesh * Scene::GetAnimatedMesh(int32 index)
 {
 	return animatedMeshes[index];
-}
-	
-void Scene::AddAnimation(SceneNodeAnimationList * animation)
-{
-	if (animation)
-	{
-		animation->Retain();
-		animations.push_back(animation);
-	}
-}
-
-SceneNodeAnimationList * Scene::GetAnimation(int32 index)
-{
-	return animations[index];
-}
-	
-SceneNodeAnimationList * Scene::GetAnimation(const FastName & name)
-{
-	int32 size = (int32)animations.size();
-	for (int32 k = 0; k < size; ++k)
-	{
-		SceneNodeAnimationList * node = animations[k];
-		if (node->GetName() == name)
-			return node;
-	}
-	return 0;
 }
 	
 	
@@ -623,11 +654,16 @@ Entity *Scene::GetRootNode(const FilePath &rootNodePath)
         uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
         SceneFileV2 *file = new SceneFileV2();
         file->EnableDebugLog(false);
-        file->LoadScene(rootNodePath, this);
+        SceneFileV2::eError loadResult = file->LoadScene(rootNodePath, this);
         SafeRelease(file);
 				
         uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
         Logger::FrameworkDebug("[GETROOTNODE TIME] %dms (%ld)", deltaTime, deltaTime);
+
+        if (loadResult != SceneFileV2::ERROR_NO_ERROR)
+        {
+            return 0;
+        }
     }
     
 	it = rootNodes.find(FILEPATH_MAP_KEY(rootNodePath));
@@ -721,6 +757,17 @@ void Scene::Update(float timeElapsed)
     
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
+    bool needShowStaticOcclusion = RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION);
+    if (needShowStaticOcclusion&&!staticOcclusionDebugDrawSystem)
+    {
+        staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
+        AddSystem(staticOcclusionDebugDrawSystem, (1 << Component::STATIC_OCCLUSION_COMPONENT), false, renderUpdateSystem);
+    }else if (!needShowStaticOcclusion&&staticOcclusionDebugDrawSystem)
+    {
+        RemoveSystem(staticOcclusionDebugDrawSystem);
+        SafeDelete(staticOcclusionDebugDrawSystem);
+    }
+
     uint32 size = (uint32)systemsToProcess.size();
     for (uint32 k = 0; k < size; ++k)
     {
@@ -798,7 +845,6 @@ void Scene::Draw()
 	{
 		//imposterManager->ProcessQueue();
 	}
-    
     
     renderSystem->Render(clearBuffers);
     
@@ -1009,6 +1055,10 @@ MaterialSystem * Scene::GetMaterialSystem() const
     return materialSystem;
 }
 
+AnimationSystem * Scene::GetAnimationSystem() const
+{
+    return animationSystem;
+}
 
 /*void Scene::Save(KeyedArchive * archive)
 {
@@ -1053,27 +1103,22 @@ void Scene::ImportShadowColor(Entity * rootNode)
 {
     if(NULL != sceneGlobalMaterial)
     {
-        NMaterialProperty* propShadowColor = sceneGlobalMaterial->GetMaterialProperty(NMaterial::PARAM_SHADOW_COLOR);
-        if(NULL == propShadowColor)
-        {
-            Entity * landscapeNode = FindLandscapeEntity(rootNode);
-            
-            if(NULL != landscapeNode)
-            {
-                // try to get shadow color for landscape
-                KeyedArchive * props = GetCustomPropertiesArchieve(landscapeNode);
-                if (props->IsKeyExists("ShadowColor"))
-                {
-                    Color shadowColor = props->GetVariant("ShadowColor")->AsColor();
-                    sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_SHADOW_COLOR,
-                                                          Shader::UT_FLOAT_VEC4,
-                                                          1,
-                                                          shadowColor.color);
-                    
-                    props->DeleteKey("ShadowColor");
-                }
-            }
-        }
+		Entity * landscapeNode = FindLandscapeEntity(rootNode);
+		if(NULL != landscapeNode)
+		{
+			// try to get shadow color for landscape
+			KeyedArchive * props = GetCustomPropertiesArchieve(landscapeNode);
+			if (props->IsKeyExists("ShadowColor"))
+			{
+				Color shadowColor = props->GetVariant("ShadowColor")->AsColor();
+				sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_SHADOW_COLOR,
+					Shader::UT_FLOAT_VEC4,
+					1,
+					shadowColor.color);
+
+				props->DeleteKey("ShadowColor");
+			}
+		}
     }
 }
 

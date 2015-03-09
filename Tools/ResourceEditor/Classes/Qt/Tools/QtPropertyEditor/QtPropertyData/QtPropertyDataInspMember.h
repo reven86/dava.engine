@@ -39,6 +39,7 @@ protected:
 	InspMemberModifyCommand* lastCommand;
 
 	virtual void SetValueInternal(const QVariant &value);
+    virtual void SetTempValueInternal(const QVariant &value);
 	virtual bool UpdateValueInternal();
 	virtual bool EditorDoneInternal(QWidget *editor);
 };

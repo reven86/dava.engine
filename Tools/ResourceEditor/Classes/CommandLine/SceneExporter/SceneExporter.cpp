@@ -76,7 +76,45 @@ void SceneExporter::SetGPUForExporting(const eGPUFamily newGPU)
 }
 
 
-void SceneExporter::ExportFile(const String &fileName, Set<String> &errorLog)
+void SceneExporter::ExportSceneFolder(const String &folderName, Set<String> &errorLog)
+{
+    FilePath folderPathname = sceneUtils.dataSourceFolder + folderName;
+    folderPathname.MakeDirectoryPathname();
+    
+	FileList * fileList = new FileList(folderPathname);
+    for (int32 i = 0; i < fileList->GetCount(); ++i)
+	{
+        FilePath pathname = fileList->GetPathname(i);
+		if(fileList->IsDirectory(i))
+		{
+            if(!fileList->IsNavigationDirectory(i))
+            {
+                String workingPathname = pathname.GetRelativePathname(sceneUtils.dataSourceFolder);
+                ExportSceneFolder(workingPathname, errorLog);
+            }
+        }
+        else
+        {
+            if(pathname.IsEqualToExtension(".sc2"))
+            {
+                String::size_type exportedPos = pathname.GetAbsolutePathname().find(".exported.sc2");
+                if(exportedPos != String::npos)
+                {
+                    //Skip temporary files, created during export
+                    continue;
+                }
+                
+                String workingPathname = pathname.GetRelativePathname(sceneUtils.dataSourceFolder);
+                ExportSceneFile(workingPathname, errorLog);
+            }
+        }
+    }
+    
+    SafeRelease(fileList);
+}
+
+
+void SceneExporter::ExportSceneFile(const String &fileName, Set<String> &errorLog)
 {
     Logger::FrameworkDebug("[SceneExporter::ExportFile] %s", fileName.c_str());
     
@@ -108,6 +146,47 @@ void SceneExporter::ExportFile(const String &fileName, Set<String> &errorLog)
 
     SafeRelease(scene);
 }
+
+
+void SceneExporter::ExportTextureFolder(const String &folderName, Set<String> &errorLog)
+{
+    FilePath folderPathname = sceneUtils.dataSourceFolder + folderName;
+    folderPathname.MakeDirectoryPathname();
+    
+	FileList * fileList = new FileList(folderPathname);
+    for (int32 i = 0; i < fileList->GetCount(); ++i)
+	{
+        FilePath pathname = fileList->GetPathname(i);
+		if(fileList->IsDirectory(i))
+		{
+            if(!fileList->IsNavigationDirectory(i))
+            {
+                String workingPathname = pathname.GetRelativePathname(sceneUtils.dataSourceFolder);
+                ExportTextureFolder(workingPathname, errorLog);
+            }
+        }
+        else
+        {
+            if(pathname.IsEqualToExtension(".tex"))
+            {
+                String workingPathname = pathname.GetRelativePathname(sceneUtils.dataSourceFolder);
+                ExportTextureFile(workingPathname, errorLog);
+            }
+        }
+    }
+    
+    SafeRelease(fileList);
+}
+
+
+void SceneExporter::ExportTextureFile(const String &fileName, Set<String> &errorLog)
+{
+    Logger::FrameworkDebug("[SceneExporter::ExportTextureFile] %s", fileName.c_str());
+    
+    FilePath filePath = sceneUtils.dataSourceFolder + fileName;
+    ExportTextureDescriptor(filePath, errorLog);
+}
+
 
 void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog)
 {
@@ -352,44 +431,6 @@ bool SceneExporter::ExportTexture(const TextureDescriptor * descriptor, Set<Stri
     return sceneUtils.CopyFile(compressedTexureName, errorLog);
 }
 
-
-
-void SceneExporter::ExportFolder(const String &folderName, Set<String> &errorLog)
-{
-    FilePath folderPathname = sceneUtils.dataSourceFolder + folderName;
-    folderPathname.MakeDirectoryPathname();
-    
-	FileList * fileList = new FileList(folderPathname);
-    for (int32 i = 0; i < fileList->GetCount(); ++i)
-	{
-        FilePath pathname = fileList->GetPathname(i);
-		if(fileList->IsDirectory(i))
-		{
-            if(!fileList->IsNavigationDirectory(i))
-            {
-                String workingPathname = pathname.GetRelativePathname(sceneUtils.dataSourceFolder);
-                ExportFolder(workingPathname, errorLog);
-            }
-        }
-        else 
-        {
-            if(pathname.IsEqualToExtension(".sc2"))
-            {
-                String::size_type exportedPos = pathname.GetAbsolutePathname().find(".exported.sc2");
-                if(exportedPos != String::npos)
-                {
-                    //Skip temporary files, created during export
-                    continue;
-                }
-                
-                String workingPathname = pathname.GetRelativePathname(sceneUtils.dataSourceFolder);
-                ExportFile(workingPathname, errorLog);
-            }
-        }
-    }
-    
-    SafeRelease(fileList);
-}
 
 bool SceneExporter::ExportLandscape(Scene *scene, Set<String> &errorLog)
 {

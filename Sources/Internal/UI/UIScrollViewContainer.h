@@ -53,7 +53,7 @@ public:
 	virtual void Input(UIEvent *currentTouch);
     virtual void InputCancelled(UIEvent *currentInput);
 	virtual bool SystemInput(UIEvent *currentInput);
-	virtual void SetRect(const Rect &rect, bool rectInAbsoluteCoordinates = false);
+	virtual void SetRect(const Rect &rect);
     virtual void WillDisappear();
 
 

@@ -192,12 +192,8 @@ public:
      */
 	Matrix4 & ModifyLocalTransform(); 
     const Matrix4 & GetWorldTransform() const;
-    const Matrix4 & GetDefaultLocalTransform(); 
     
     void SetLocalTransform(const Matrix4 & newMatrix);
-    //inline void SetWorldTransform(const Matrix4 & newMatrix);
-    inline void SetDefaultLocalTransform(const Matrix4 & newMatrix);
-    //inline void InvalidateLocalTransform();
 	Matrix4 AccamulateLocalTransform(Entity * fromParent);
     Matrix4 AccamulateTransformUptoFarParent(Entity * farParent);
     
@@ -254,8 +250,6 @@ public:
 // 	void ExecuteAnimation(SceneNodeAnimation * animation);	
 // 	void DetachAnimation(SceneNodeAnimation * animation);
 // 	virtual void StopAllAnimations(bool recursive = true);
-
-	void RestoreOriginalTransforms();
 
 	
     virtual Entity* Clone(Entity *dstNode = NULL);
@@ -408,7 +402,6 @@ private:
     
 #endif
 
-    Matrix4 defaultLocalTransform;
    	friend class Scene;
     
 public:
@@ -470,29 +463,7 @@ inline int32 Entity::GetTag()
     return tag; 
 }
     
-inline const Matrix4 & Entity::GetDefaultLocalTransform()
-{
-    return defaultLocalTransform;
-}
-    
-//
-//inline void Entity::SetWorldTransform(const Matrix4 & newMatrix)
-//{
-//    worldTransform = newMatrix;
-//}
-//
-    
-//inline void Entity::InvalidateLocalTransform()
-//{
-//    flags &= ~(NODE_WORLD_MATRIX_ACTUAL | NODE_LOCAL_MATRIX_IDENTITY);
-//}
-
-    
-inline void Entity::SetDefaultLocalTransform(const Matrix4 & newMatrix)
-{
-    defaultLocalTransform = newMatrix;
-}
-    
+   
 inline void Entity::SetTag(int32 _tag)
 {
     tag = _tag;

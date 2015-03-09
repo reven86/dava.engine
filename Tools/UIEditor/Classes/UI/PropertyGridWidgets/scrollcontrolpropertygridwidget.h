@@ -51,6 +51,7 @@ private:
 	
 	// Fill the combo with appropriate values.
     void FillComboboxes();
+    void FillScrollViewsComboBox(const HierarchyTreeNode::HIERARCHYTREENODESLIST);
 	
 protected:
 	Ui::ScrollControlPropertyGridWidget *ui;
@@ -61,7 +62,8 @@ protected:
 	virtual void OnPropertiesChangedFromExternalSource() {};
 
     // Handler for the custom combobox values.
-    void CustomProcessComboboxValueChanged(const PROPERTYGRIDWIDGETSITER& iter, int value);
+    void CustomProcessOrientationValueChanged(const PROPERTYGRIDWIDGETSITER& iter, int value);
+    void CustomProcessScrollViewValueChanged(const PROPERTYGRIDWIDGETSITER& iter, QString value);
 };
 
 #endif // SCROLLCONTROLPROPERTYGRIDWIDGET_H

@@ -35,9 +35,20 @@
 #include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Sound/SoundSystem.h"
+#include "Sound/SoundEvent.h"
+#include "Debug/Stats.h"
 
 namespace DAVA
 {
+
+SoundUpdateSystem::AutoTriggerSound::AutoTriggerSound(Entity * _owner, SoundEvent * _sound) :
+    owner(_owner),
+    soundEvent(_sound)
+{
+    float32 distance = soundEvent->GetMaxDistance();
+    maxSqDistance = distance * distance;
+}
+
 SoundUpdateSystem::SoundUpdateSystem(Scene * scene)
 :	SceneSystem(scene)
 {
@@ -57,40 +68,67 @@ void SoundUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
 		Vector3 translation = worldTransform.GetTranslationVector();
 
         SoundComponent * sc = GetSoundComponent(entity);
-        if(sc)
-        {
-            Vector3 worldDirection;
-            bool needCalcDirection = true;
+        DVASSERT(sc);
 
-            uint32 eventsCount = sc->GetEventsCount();
-            for(uint32 i = 0; i < eventsCount; ++i)
+        uint32 eventsCount = sc->GetEventsCount();
+        for(uint32 i = 0; i < eventsCount; ++i)
+        {
+            SoundEvent * sound = sc->GetSoundEvent(i);
+            sound->SetPosition(translation);
+            if(sound->IsDirectional())
             {
-                SoundEvent * sound = sc->GetSoundEvent(i);
-                sound->SetPosition(translation);
-                if(sound->IsDirectional())
-                {
-                    if(needCalcDirection)
-                    {
-                        worldDirection = MultiplyVectorMat3x3(sc->GetLocalDirection(), worldTransform);
-                        needCalcDirection = false;
-                    }
-                    sound->SetDirection(worldDirection);
-                }
-                sound->UpdateInstancesPosition();
+                Vector3 worldDirection = MultiplyVectorMat3x3(sc->GetLocalDirection(i), worldTransform);
+                sound->SetDirection(worldDirection);
             }
+            sound->UpdateInstancesPosition();
         }
 	}
 }
     
 void SoundUpdateSystem::Process(float32 timeElapsed)
 {
+    TIME_PROFILE("SoundUpdateSystem::Process")
+
     Camera * activeCamera = GetScene()->GetCurrentCamera();
 
     if(activeCamera)
     {
         SoundSystem * ss = SoundSystem::Instance();
-        ss->SetListenerPosition(activeCamera->GetPosition());
+        const Vector3 & listenerPosition = activeCamera->GetPosition();
+        ss->SetListenerPosition(listenerPosition);
         ss->SetListenerOrientation(activeCamera->GetDirection(), activeCamera->GetLeft());
+
+        uint32 autoCount = autoTriggerSounds.size();
+        for(uint32 i = 0; i < autoCount; ++i)
+        {
+            AutoTriggerSound & autoTriggerSound = autoTriggerSounds[i];
+            float32 distanceSq = (listenerPosition - autoTriggerSound.owner->GetWorldTransform().GetTranslationVector()).SquareLength();
+            if(distanceSq < autoTriggerSound.maxSqDistance)
+            {
+                if(!autoTriggerSound.soundEvent->IsActive())
+                    autoTriggerSound.soundEvent->Trigger();
+            }
+            else
+            {
+                if(autoTriggerSound.soundEvent->IsActive())
+                    autoTriggerSound.soundEvent->Stop();
+            }
+        }
+    }
+}
+
+void SoundUpdateSystem::AddEntity(Entity * entity)
+{
+    SoundComponent * sc = GetSoundComponent(entity);
+    DVASSERT(sc);
+    
+    uint32 eventsCount = sc->GetEventsCount();
+    for(uint32 i = 0; i < eventsCount; ++i)
+    {
+        if((sc->GetSoundEventFlags(i) & SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER) > 0 && sc->GetSoundEvent(i)->IsActive())
+        {
+            AddAutoTriggerSound(entity, sc->GetSoundEvent(i));
+        }
     }
 }
 
@@ -103,7 +141,34 @@ void SoundUpdateSystem::RemoveEntity(Entity * entity)
     for(uint32 i = 0; i < eventsCount; ++i)
     {
         SoundEvent * sound = sc->GetSoundEvent(i);
-        sound->Stop();
+        sound->Stop(true);
+    }
+
+    RemoveAutoTriggerSound(entity);
+}
+
+void SoundUpdateSystem::AddAutoTriggerSound(Entity * soundOwner, SoundEvent * sound)
+{
+    int32 soundsCount = autoTriggerSounds.size();
+    for(int32 i = 0; i < soundsCount; ++i)
+    {
+        if(autoTriggerSounds[i].owner == soundOwner && autoTriggerSounds[i].soundEvent == sound)
+        {
+            return;
+        }
+    }
+
+    autoTriggerSounds.push_back(AutoTriggerSound(soundOwner, sound));
+}
+
+void SoundUpdateSystem::RemoveAutoTriggerSound(Entity * soundOwner, SoundEvent * sound /* = 0 */)
+{
+    for(int32 i = autoTriggerSounds.size() - 1; i >= 0; --i)
+    {
+        if(autoTriggerSounds[i].owner == soundOwner && (sound == 0 || autoTriggerSounds[i].soundEvent == sound))
+        {
+            RemoveExchangingWithLast(autoTriggerSounds, i);
+        }
     }
 }
 

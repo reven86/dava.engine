@@ -37,86 +37,94 @@ namespace DAVA
 const FastNameMap<NMaterialStateDynamicTexturesInsp::PropData>* NMaterialStateDynamicTexturesInsp::FindMaterialTextures(NMaterial *state, bool global) const
 {
     static FastNameMap<PropData> staticData;
-    
     staticData.clear();
-    
-    NMaterial *parent = state;
-    int source = PropData::SOURCE_SELF;
-    
-    // properties chain data
-    while(NULL != parent)
+
+    // don't enumerate textures for global material
+    // this is temporary solution and is done because there is no 
+    // code in framework that can load textures, that are be set into global material
+    //
+    // TODO: before removing this check we should implement some kind of code to load global material textures
+    //
+    if(state->materialType != NMaterial::MATERIALTYPE_GLOBAL)
     {
-        HashMap<FastName, NMaterial::TextureBucket*>::iterator it = parent->textures.begin();
-        HashMap<FastName, NMaterial::TextureBucket*>::iterator end = parent->textures.end();
-        
-        for(; it != end; ++it)
-        {
-            if(0 == staticData.count(it->first))
-            {
-                PropData data;
-                NMaterial::TextureBucket *bucket = it->second;
-                
-                data.source |= source;
-                data.path = bucket->GetPath();
-                
-                staticData.Insert(it->first, data);
-            }
-        }
-        
-        parent = parent->GetParent();
-        source = PropData::SOURCE_PARENT;
-        
-        if(!global && NULL != parent)
-        {
-            if(parent->GetMaterialType() == NMaterial::MATERIALTYPE_GLOBAL)
-            {
-                // don't extract properties from globalMaterial
-                parent = NULL;
-            }
-        }
-    }
+        NMaterial *parent = state;
+        int source = PropData::SOURCE_SELF;
     
-    
-    // shader data
-    source = PropData::SOURCE_SHADER;
-    if(state->instancePasses.size() > 0)
-    {
-        HashMap<FastName, NMaterial::RenderPassInstance*>::iterator it = state->instancePasses.begin();
-        HashMap<FastName, NMaterial::RenderPassInstance*>::iterator end = state->instancePasses.end();
-        
-        for(; it != end; ++it)
+        // properties chain data
+        while(NULL != parent)
         {
-            Shader *shader = it->second->GetShader();
-            if(NULL != shader)
+            HashMap<FastName, NMaterial::TextureBucket*>::iterator it = parent->textures.begin();
+            HashMap<FastName, NMaterial::TextureBucket*>::iterator end = parent->textures.end();
+        
+            for(; it != end; ++it)
             {
-                int32 uniformCount = shader->GetUniformCount();
-                for(int32 i = 0; i < uniformCount; ++i)
+                if(0 == staticData.count(it->first))
                 {
-                    Shader::Uniform *uniform = shader->GetUniform(i);
-                    if( uniform->type == Shader::UT_SAMPLER_2D ||
-                       uniform->type == Shader::UT_SAMPLER_CUBE) // is texture
+                    PropData data;
+                    NMaterial::TextureBucket *bucket = it->second;
+                
+                    data.source |= source;
+                    data.path = bucket->GetPath();
+                
+                    staticData.Insert(it->first, data);
+                }
+            }
+        
+            parent = parent->GetParent();
+            source = PropData::SOURCE_PARENT;
+        
+            if(!global && NULL != parent)
+            {
+                if(parent->GetMaterialType() == NMaterial::MATERIALTYPE_GLOBAL)
+                {
+                    // don't extract properties from globalMaterial
+                    parent = NULL;
+                }
+            }
+        }
+    
+    
+        // shader data
+        source = PropData::SOURCE_SHADER;
+        if(state->instancePasses.size() > 0)
+        {
+            HashMap<FastName, NMaterial::RenderPassInstance*>::iterator it = state->instancePasses.begin();
+            HashMap<FastName, NMaterial::RenderPassInstance*>::iterator end = state->instancePasses.end();
+        
+            for(; it != end; ++it)
+            {
+                Shader *shader = it->second->GetShader();
+                if(NULL != shader)
+                {
+                    int32 uniformCount = shader->GetUniformCount();
+                    for(int32 i = 0; i < uniformCount; ++i)
                     {
-                        FastName propName = uniform->name;
+                        Shader::Uniform *uniform = shader->GetUniform(i);
+                        if( uniform->type == Shader::UT_SAMPLER_2D ||
+                           uniform->type == Shader::UT_SAMPLER_CUBE) // is texture
+                        {
+                            FastName propName = uniform->name;
                         
-                        if(!staticData.count(propName))
-                        {
-                            PropData data;
+                            if(!staticData.count(propName))
+                            {
+                                PropData data;
                             
-                            data.path = FilePath();
-                            data.source |= source;
+                                data.path = FilePath();
+                                data.source |= source;
                             
-                            staticData.Insert(propName, data);
-                        }
-                        else
-                        {
-                            staticData[propName].source |= source;
+                                staticData.Insert(propName, data);
+                            }
+                            else
+                            {
+                                staticData[propName].source |= source;
+                            }
                         }
                     }
                 }
             }
         }
     }
-    
+
     return &staticData;
 }
 

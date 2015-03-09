@@ -129,7 +129,7 @@ void UILoadingTransition::Update(float32 timeElapsed)
 {
 	if ((thread) && (thread->GetState() == Thread::STATE_ENDED))
 	{
-		ThreadIdJobWaiter waiter(thread->GetThreadId());
+		ThreadIdJobWaiter waiter(thread->GetId());
 		waiter.Wait();
 
 		UIControlSystem::Instance()->SetScreen(nextScreen, outTransition);

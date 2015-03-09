@@ -53,6 +53,8 @@ public:
     
     void SetTextAlign(DAVA::int32 align);
     DAVA::int32 GetTextAlign();
+	void SetTextUseRtlAlign(bool useRtlAlign);
+	bool GetTextUseRtlAlign() const;
 
     void SetVisible(bool value);
 	void ShowField();
@@ -74,6 +76,13 @@ public:
     // Cursor pos.
     uint32 GetCursorPos();
     void SetCursorPos(uint32 pos);
+
+    // Max text length.
+    void SetMaxLength(int maxLength);
+
+protected:
+    // Truncate the text to maxLength characters.
+    void* TruncateText(void* text, int maxLength);
 
 private:
 	void * objcClassPtr;

@@ -30,8 +30,8 @@
 
 #include "npapisdk/headers/npapi.h"
 #include "npapisdk/headers/npfunctions.h"
-#include "ApplicationCore.h"
-#include "UIEvent.h"
+#include "Core/ApplicationCore.h"
+#include "UI/UIEvent.h"
 
 #import <Foundation/Foundation.h>
 #import "NPAPIOpenGLLayerMacOS.h"

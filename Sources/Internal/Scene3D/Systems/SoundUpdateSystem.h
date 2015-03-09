@@ -31,20 +31,41 @@
 #define	__DAVAENGINE_SCENE3D_SOUNDUPDATESYSTEM_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/BaseObject.h"
 #include "Entity/SceneSystem.h"
 
 namespace DAVA
 {
+
+class SoundEvent;
+class SoundComponent;
 class SoundUpdateSystem : public SceneSystem
 {
+    struct AutoTriggerSound
+    {
+        AutoTriggerSound(Entity * owner, SoundEvent * sound);
+
+        Entity * owner;
+        SoundEvent * soundEvent;
+        float32 maxSqDistance;
+    };
+
 public:
     SoundUpdateSystem(Scene * scene);
     virtual ~SoundUpdateSystem();
 
     virtual void ImmediateEvent(Entity * entity, uint32 event);
     virtual void Process(float32 timeElapsed);
-
+    virtual void AddEntity(Entity * entity);
     virtual void RemoveEntity(Entity * entity);
+
+protected:
+    void AddAutoTriggerSound(Entity * soundOwner, SoundEvent * sound);
+    void RemoveAutoTriggerSound(Entity * soundOwner, SoundEvent * sound = 0);
+
+    Vector<AutoTriggerSound> autoTriggerSounds;
+
+    friend class SoundComponent;
 };
     
 } // ns

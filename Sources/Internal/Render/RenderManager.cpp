@@ -45,6 +45,9 @@ Shader * RenderManager::FLAT_COLOR = 0;
 Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR = 0;
 Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
 Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = 0;
+Shader * RenderManager::TEXTURE_ADD_FLAT_COLOR = 0;
+Shader * RenderManager::TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST = 0;
+Shader * RenderManager::TEXTURE_ADD_FLAT_COLOR_IMAGE_A8 = 0;
 
 AutobindVariableData RenderManager::dynamicParameters[DYNAMIC_PARAMETERS_COUNT];
 uint32  RenderManager::dynamicParamersRequireUpdate;
@@ -133,6 +136,9 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     TEXTURE_MUL_FLAT_COLOR = 0;
     TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
     TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = 0;
+    TEXTURE_ADD_FLAT_COLOR = 0;
+    TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST = 0;
+    TEXTURE_ADD_FLAT_COLOR_IMAGE_A8 = 0;
 	
 	renderContextId = 0;
     
@@ -148,8 +154,6 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     SetDynamicParam(PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     SetDynamicParam(PARAM_PROJ, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-    
-    GetOptions()->SetOption(RenderOptions::LAYER_OCCLUSION_STATS, false);
 }
 	
 RenderManager::~RenderManager()
@@ -160,6 +164,10 @@ RenderManager::~RenderManager()
     SafeRelease(FLAT_COLOR);
     SafeRelease(TEXTURE_MUL_FLAT_COLOR);
     SafeRelease(TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST);
+    SafeRelease(TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+    SafeRelease(TEXTURE_ADD_FLAT_COLOR);
+    SafeRelease(TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST);
+    SafeRelease(TEXTURE_ADD_FLAT_COLOR_IMAGE_A8);
 	SafeRelease(cursor);
 	Logger::FrameworkDebug("[RenderManager] released");
 }
@@ -232,6 +240,30 @@ void RenderManager::Init(int32 _frameBufferWidth, int32 _frameBufferHeight)
         set.Insert(FastName("IMAGE_A8"));
         TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
     }
+    
+    if (!TEXTURE_ADD_FLAT_COLOR)
+    {
+        FastNameSet set;
+        set.Insert(FastName("ADD_COLOR"));
+        TEXTURE_ADD_FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
+        
+    }
+    if (!TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST)
+    {
+        FastNameSet set;
+        set.Insert(FastName("ADD_COLOR"));
+        set.Insert(FastName("ALPHA_TEST_ENABLED"));
+        TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
+    }
+    
+    if(!TEXTURE_ADD_FLAT_COLOR_IMAGE_A8)
+    {
+        FastNameSet set;
+        set.Insert(FastName("ADD_COLOR"));
+        set.Insert(FastName("IMAGE_A8"));
+        TEXTURE_ADD_FLAT_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
+    }
+
 
 #if defined(__DAVAENGINE_DIRECTX9__)
 	currentState.direct3DDevice = GetD3DDevice();

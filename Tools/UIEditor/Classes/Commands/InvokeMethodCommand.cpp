@@ -45,7 +45,7 @@ void InvokeMethodCommand::Execute()
     {
         return;
     }
-    
+
     // Set the same property for all Params inside the metadata.
     int paramsCount = commandMetadata->GetParamsCount();
     for (BaseMetadataParams::METADATAPARAMID i = 0; i < paramsCount; i ++)

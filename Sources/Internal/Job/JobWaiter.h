@@ -40,16 +40,18 @@ class Job;
 class ThreadIdJobWaiter
 {
 public:
-	ThreadIdJobWaiter(Thread::ThreadId threadId = Thread::GetCurrentThreadId());
+	ThreadIdJobWaiter(Thread::Id threadId = Thread::GetCurrentId());
 	~ThreadIdJobWaiter();
 	void Wait();
 
-	Thread::ThreadId & GetThreadId();
-	ConditionalVariable * GetConditionalVariable();
+    inline const Thread::Id &GetThreadId() const;
+    inline ConditionalVariable *GetConditionalVariable();
+	inline Mutex * GetMutex();
 
 private:
-	Thread::ThreadId threadId;
+	Thread::Id threadId;
 	ConditionalVariable cv;
+	Mutex cvmutex;
 };
 
 class JobInstanceWaiter
@@ -59,13 +61,79 @@ public:
 	~JobInstanceWaiter();
 	void Wait();
 
-	ConditionalVariable * GetConditionalVariable();
-	Job * GetJob();
+    inline ConditionalVariable * GetConditionalVariable();
+    inline Job * GetJob() const;
+	inline Mutex * GetMutex();
 
 private:
 	Job * job;
 	ConditionalVariable cv;
+	Mutex cvmutex;
 };
+
+
+inline const Thread::Id &ThreadIdJobWaiter::GetThreadId() const
+{
+    return threadId;
+}
+
+inline ConditionalVariable *ThreadIdJobWaiter::GetConditionalVariable()
+{
+    return &cv;
+}
+
+inline Mutex* ThreadIdJobWaiter::GetMutex()
+{
+	return &cvmutex;
+}
+
+inline ConditionalVariable *JobInstanceWaiter::GetConditionalVariable()
+{
+    return &cv;
+}
+
+inline Job *JobInstanceWaiter::GetJob() const
+{
+    return job;
+}
+
+inline Mutex* JobInstanceWaiter::GetMutex()
+{
+	return &cvmutex;
+}
+
+/////
+class TaggedWorkerJobsWaiter
+{
+public:
+    TaggedWorkerJobsWaiter(int32 tag);
+    ~TaggedWorkerJobsWaiter();
+    void Wait();
+    ConditionalVariable * GetConditionalVariable();
+    int32 GetTag();
+    Mutex * GetMutex();
+
+private:
+    int32 tag;
+    ConditionalVariable cv;
+    Mutex mutex;
+};
+
+inline ConditionalVariable * TaggedWorkerJobsWaiter::GetConditionalVariable()
+{
+    return &cv;
+}
+
+inline int32 TaggedWorkerJobsWaiter::GetTag()
+{
+    return tag;
+}
+
+inline Mutex * TaggedWorkerJobsWaiter::GetMutex()
+{
+    return &mutex;
+}
+
 
 }
 

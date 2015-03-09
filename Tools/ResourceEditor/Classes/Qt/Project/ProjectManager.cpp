@@ -184,7 +184,7 @@ void ProjectManager::LoadMaterialsSettings()
         {
             DAVA::FilePath materialsListDir = materialsListPath.GetDirectory();
 
-            for(int i = 0; i < rootNode->GetCount(); ++i)
+            for(uint32 i = 0; i < rootNode->GetCount(); ++i)
             {
                 const DAVA::YamlNode *templateNode = rootNode->Get(i);
                 if(NULL != templateNode)

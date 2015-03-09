@@ -38,6 +38,7 @@
 #include "UI/UIScreenTransition.h"
 #include "UI/UILoadingTransition.h"
 #include "UI/UIPopup.h"
+#include "Base/FastName.h"
 
 #define FRAME_SKIP	5
 
@@ -62,6 +63,9 @@ public:
 		ControlSystem works with th UIScreenManager to process screen setting and switching.
 		Also ControlSystem processed all user input events to the controls.
 	 */
+
+extern const FastName FRAME_QUERY_UI_DRAW;
+
 class UIControlSystem : public Singleton<UIControlSystem>
 {
 	friend void Core::CreateSingletons();
@@ -231,7 +235,7 @@ public:
 	 
 	 \returns GeometricData uset for the base draw
 	 */
-	const UIGeometricData &GetBaseGeometricData();
+	const UIGeometricData &GetBaseGeometricData() const;
 	
 	/**
 	 \brief Sets input with the requested ID to the required control.
@@ -356,7 +360,7 @@ private:
     UIControl *focusedControl;
 
 	UIControl * popupContainer;
-	Vector<UIPopup*> popupsToRemove;
+	Set<UIPopup*> popupsToRemove;
 	
 	int32 lockInputCounter;
 	

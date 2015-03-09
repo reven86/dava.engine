@@ -43,6 +43,13 @@ class SceneExporterTool: public CommandLineTool
         ACTION_EXPORT_FOLDER
     };
     
+    enum eObject
+    {
+        OBJECT_SCENE = 0,
+        OBJECT_TEXTURE
+    };
+    
+    
 public:
 
     virtual DAVA::String GetCommandLineKey();
@@ -50,16 +57,21 @@ public:
     virtual void Process();
     virtual void PrintUsage();
     virtual void DumpParams();
+    
+    virtual DAVA::FilePath GetQualityConfigPath() const;
 
 protected:
 
     eAction commandAction;
+    eObject commandObject;
+    
     DAVA::String filename;
     DAVA::String foldername;
     
     DAVA::FilePath inFolder;
     DAVA::FilePath outFolder;
-    
+    DAVA::FilePath qualityConfigPath;
+
     DAVA::String gpu;
 	bool optimizeOnExport;
 

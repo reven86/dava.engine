@@ -36,10 +36,12 @@
 #include "Scene3D/Components/LodComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
+#include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/SoundComponent.h"
+#include "Scene3D/Components/SkeletonComponent.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -67,6 +69,14 @@ TransformComponent * GetTransformComponent(Entity * fromEntity)
 {
     if(fromEntity)
 	    return static_cast<TransformComponent*>(fromEntity->GetComponent(Component::TRANSFORM_COMPONENT));
+    else
+        return NULL;
+}
+
+SkeletonComponent * GetSkeletonComponent(Entity * fromEntity)
+{
+    if(fromEntity)
+        return static_cast<SkeletonComponent*>(fromEntity->GetComponent(Component::SKELETON_COMPONENT));
     else
         return NULL;
 }
@@ -118,6 +128,16 @@ ParticleEffectComponent * GetEffectComponent(Entity *fromEntity)
 
 	return NULL;
 }
+
+AnimationComponent * GetAnimationComponent(Entity *fromEntity)
+{
+    if(fromEntity)
+    {
+        return static_cast<AnimationComponent*>(fromEntity->GetComponent(Component::ANIMATION_COMPONENT));
+    }
+    return NULL;
+}
+
 
 LightComponent *GetLightComponent(Entity * fromEntity)
 {

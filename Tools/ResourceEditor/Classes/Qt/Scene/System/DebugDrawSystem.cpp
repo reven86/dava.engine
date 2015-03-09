@@ -113,8 +113,7 @@ void DebugDrawSystem::Draw(DAVA::Entity *entity)
 
         if(isSelected)
         {
-            DrawSelectedSoundNode(entity);
-            DrawStaticOcclusionComponent(entity);
+            DrawSelectedSoundNode(entity);         
         }
 
 		for(int32 i = 0; i < entity->GetChildrenCount(); ++i)
@@ -178,72 +177,7 @@ void DebugDrawSystem::DrawUserNode(DAVA::Entity *entity)
 }
 
 
-void DebugDrawSystem::DrawStaticOcclusionComponent(DAVA::Entity *entity)
-{
-    StaticOcclusionComponent * staticOcclusionComponent = 0;
-	if((staticOcclusionComponent = (StaticOcclusionComponent*)entity->GetComponent(DAVA::Component::STATIC_OCCLUSION_COMPONENT)) != 0)
-	{
-        Camera * camera = GetScene()->GetCurrentCamera();
-       
-		RenderManager::SetDynamicParam(PARAM_WORLD, &entity->GetWorldTransform(), (pointer_size)&entity->GetWorldTransform());
-        
-		AABBox3 localBox = staticOcclusionComponent->GetBoundingBox();
-		DAVA::float32 delta = localBox.GetSize().Length() / 4;
-        
-		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.1f, 0.5f, 0.1f, 0.3f));
-		DAVA::RenderHelper::Instance()->FillBox(localBox, debugDrawState);
-		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.9f, 0.2f, 0.8f, 1.0f));
-		DAVA::RenderHelper::Instance()->DrawBox(localBox, 1.0f, debugDrawState);
-        
-        Vector3 boxSize = localBox.GetSize();
-        boxSize.x /= staticOcclusionComponent->GetSubdivisionsX();
-        boxSize.y /= staticOcclusionComponent->GetSubdivisionsY();
-        boxSize.z /= staticOcclusionComponent->GetSubdivisionsZ();
-        
-        // Draw block grid
-        
-        for (uint32 xs = 0; xs < staticOcclusionComponent->GetSubdivisionsX(); ++xs)
-            for (uint32 ys = 0; ys < staticOcclusionComponent->GetSubdivisionsY(); ++ys)
-                for (uint32 zs = 0; zs < staticOcclusionComponent->GetSubdivisionsZ(); ++zs)
-                {
-                    AABBox3 box(localBox.min + boxSize * Vector3(xs, ys, zs),
-                                localBox.min + boxSize * Vector3(xs + 1, ys + 1, zs + 1) );
-                    DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.0f, 0.3f, 0.1f, 0.1f));
-                    DAVA::RenderHelper::Instance()->DrawBox(box, 1.0f, debugDrawState);
-                }
-        
-        
-        const Vector3 & position = camera->GetPosition();
-        
-        AABBox3 worldBox;
-        localBox.GetTransformedBox(entity->GetWorldTransform(), worldBox);
-        
-        if (worldBox.IsInside(position))
-        {
-            float32 xpf = (position.x - worldBox.min.x) / (worldBox.max.x - worldBox.min.x);
-            float32 ypf = (position.y - worldBox.min.y) / (worldBox.max.y - worldBox.min.y);
-            float32 zpf = (position.z - worldBox.min.z) / (worldBox.max.z - worldBox.min.z);
-            
-            uint32 xpi = (uint32)(xpf * (float32)staticOcclusionComponent->GetSubdivisionsX());
-            uint32 ypi = (uint32)(ypf * (float32)staticOcclusionComponent->GetSubdivisionsY());
-            uint32 zpi = (uint32)(zpf * (float32)staticOcclusionComponent->GetSubdivisionsZ());
 
-            AABBox3 box(localBox.min + boxSize * Vector3(xpi, ypi, zpi),
-                        localBox.min + boxSize * Vector3(xpi + 1, ypi + 1, zpi + 1));
-            
-            DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 0.3f, 0.1f, 0.1f));
-            DAVA::RenderHelper::Instance()->FillBox(box, debugDrawState);
-        }
-        
-		// axises
-		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.7f, 0, 0, 1.0f));
-		DAVA::RenderHelper::Instance()->DrawLine(DAVA::Vector3(0, 0, 0), DAVA::Vector3(delta, 0, 0), 1.0f, debugDrawState);
-		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0, 0.7f, 0, 1.0f));
-		DAVA::RenderHelper::Instance()->DrawLine(DAVA::Vector3(0, 0, 0), DAVA::Vector3(0, delta, 0), 1.0f, debugDrawState);
-		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0, 0, 0.7f, 1.0f));
-		DAVA::RenderHelper::Instance()->DrawLine(DAVA::Vector3(0, 0, 0), DAVA::Vector3(0, 0, delta), 1.0f, debugDrawState);
-	}
-}
 
 void DebugDrawSystem::DrawLightNode(DAVA::Entity *entity)
 {
@@ -322,24 +256,22 @@ void DebugDrawSystem::DrawSelectedSoundNode(DAVA::Entity *entity)
         if(debugTextFont)
             fontHeight = debugTextFont->GetFontHeight();
 
-        bool hasDirectionSound = false;
         uint32 eventsCount = sc->GetEventsCount();
         for(uint32 i = 0; i < eventsCount; ++i)
         {
             SoundEvent * sEvent = sc->GetSoundEvent(i);
             float32 distance = sEvent->GetMaxDistance();
-            hasDirectionSound |= sEvent->IsDirectional();
 
             DAVA::RenderManager::Instance()->SetColor(settings->GetValue(Settings::Scene_Sound_SoundObjectSphereColor).AsColor());
             DAVA::RenderHelper::Instance()->FillSphere(Vector3(), distance, debugDrawState);
 
             sceneEditor->textDrawSystem->DrawText(sceneEditor->textDrawSystem->ToPos2d(position) - Vector2(0.f, fontHeight - 2.f) * i, sEvent->GetEventName(), Color::White, TextDrawSystem::Center);
-        }
 
-        if(hasDirectionSound)
-        {
-            DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.0f, 1.0f, 0.3f, 1.0f));
-            DAVA::RenderHelper::Instance()->DrawArrow(Vector3(), sc->GetLocalDirection(), 10.f, 1.f, debugDrawState);
+            if(sEvent->IsDirectional())
+            {
+                DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.0f, 1.0f, 0.3f, 1.0f));
+                DAVA::RenderHelper::Instance()->DrawArrow(Vector3(), sc->GetLocalDirection(i), 10.f, 1.f, debugDrawState);
+            }
         }
     }
 }

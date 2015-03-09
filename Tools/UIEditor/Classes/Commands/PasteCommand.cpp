@@ -47,7 +47,6 @@ PasteCommand::~PasteCommand()
 	// Nothing is to be cleaned up - Pasted Items are under control of Hierarchy Tree.
 }
 
-
 void PasteCommand::Execute()
 {
 	HierarchyTreeController::Instance()->ResetSelectedControl();
@@ -238,8 +237,8 @@ void PasteCommand::UpdateControlName(const HierarchyTreeNode* parent, HierarchyT
         controlNode->GetUIObject()->SetName(node->GetName().toStdString());
     }
 
-	HierarchyTreeNode::HIERARCHYTREENODESLIST child = node->GetChildNodes();
-	for (HierarchyTreeNode::HIERARCHYTREENODESLIST::iterator iter = child.begin();
+	const HierarchyTreeNode::HIERARCHYTREENODESLIST &child = node->GetChildNodes();
+	for (HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator iter = child.begin();
 		 iter != child.end();
 		 ++iter)
 	{
@@ -261,15 +260,17 @@ int PasteCommand::PasteScreens(HierarchyTreeNode::HIERARCHYTREENODESLIST* newScr
 
 		if (!screen && !aggregator)
 			continue;
+        
+        CopyPasteHelper::UpdateAggregators(screen, parent);
 
 		HierarchyTreeNode* copy;
 		if (aggregator)
 		{
-			copy = new HierarchyTreeAggregatorNode(parent, aggregator);
+			copy = new HierarchyTreeAggregatorNode(parent, aggregator, false);
 		}
 		else
 		{
-			copy = new HierarchyTreeScreenNode(parent, screen);
+			copy = new HierarchyTreeScreenNode(parent, screen, false);
 		}
 		copy->SetMarked(true);
         UpdateControlName(parent, copy, parent->IsAggregatorOrScreenNamePresent(copy->GetName()));

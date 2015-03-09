@@ -1,3 +1,7 @@
+<CONFIG>
+uniform vec2 decalTileCoordScale = vec2(1.0, 1.0);
+<VERTEX_SHADER>
+
 #ifdef GL_ES
 // define default precision for float, vec, mat.
 precision highp float;
@@ -6,6 +10,9 @@ precision highp float;
 #define highp
 #define mediump
 #endif
+
+
+#define MAX_JOINTS 32
 
 // INPUT ATTRIBUTES
 attribute vec4 inPosition;
@@ -20,7 +27,7 @@ attribute vec3 inTexCoord0;
 attribute vec2 inTexCoord0;
 #endif
 
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND)
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
 attribute vec2 inTexCoord1;
 #endif
 
@@ -35,6 +42,12 @@ attribute vec4 inColor;
 attribute vec3 inTangent;
 attribute vec3 inBinormal;
 #endif
+
+#if defined (SKINNING)
+attribute vec4 inJointIndex;
+attribute vec4 inJointWeight;
+#endif
+
 
 #if defined(SPEED_TREE_LEAF)
 attribute vec3 inPivot;
@@ -58,7 +71,7 @@ uniform mat4 worldViewProjMatrix;
 uniform mat4 worldViewMatrix;
 #endif
 
-#if defined(VERTEX_LIT) || defined(PIXEL_LIT)
+#if defined(VERTEX_LIT) || defined(PIXEL_LIT) || (defined(VERTEX_FOG) && defined(FOG_ATMOSPHERE))
 uniform mat3 worldViewInvTransposeMatrix;
 uniform vec4 lightPosition0;
 uniform float lightIntensity0; 
@@ -72,14 +85,38 @@ uniform float physicalFresnelReflectance;
 uniform vec3 metalFresnelReflectance;
 #endif
 
+#if defined (SKINNING)
+    uniform vec4 jointPositions[MAX_JOINTS]; // (x, y, z, scale)
+    uniform vec4 jointQuaternions[MAX_JOINTS];    
+#endif
+
 #if defined(VERTEX_FOG)
-    uniform float fogLimit;
-    #if !defined(FOG_LINEAR)
-    uniform float fogDensity;
+    uniform lowp vec3 fogColor;
+    uniform lowp float fogLimit;
+    #if defined(FOG_LINEAR)
+        uniform float fogStart;
+        uniform float fogEnd;
     #else
-    uniform float fogStart;
-    uniform float fogEnd;
+        uniform float fogDensity;
     #endif
+    #if defined(FOG_ATMOSPHERE)
+        uniform float fogAtmosphereDistance;
+        #if defined(FOG_ATMOSPHERE_MAP)
+            uniform samplerCube atmospheremap;
+        #else
+            uniform lowp vec3 fogAtmosphereColorSun;
+            uniform lowp vec3 fogAtmosphereColorSky;
+            uniform float fogAtmosphereScattering;
+        #endif
+    #endif
+    #if defined(FOG_HALFSPACE)
+        uniform float fogHalfspaceHeight;
+        uniform float fogHalfspaceFalloff;
+        uniform float fogHalfspaceDensity;
+        uniform float fogHalfspaceLimit;
+    #endif
+    varying lowp float varFogAmoung;
+    varying lowp vec3 varFogColor;
 #endif
 
 #if defined(MATERIAL_LIGHTMAP)
@@ -127,6 +164,10 @@ uniform vec3 boundingBoxSize;
 	
 #endif
 
+#if defined(TILED_DECAL)
+uniform vec2 decalTileCoordScale;
+#endif
+
 // OUTPUT ATTRIBUTES
 #if defined(MATERIAL_SKYBOX)
 varying vec3 varTexCoord0;
@@ -134,10 +175,13 @@ varying vec3 varTexCoord0;
 varying vec2 varTexCoord0;
 #endif
 
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND)
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
 varying vec2 varTexCoord1;
 #endif
 
+#if defined(TILED_DECAL)
+varying vec2 varDecalTileTexCoord;
+#endif
 
 #if defined(VERTEX_LIT)
 varying lowp float varDiffuseColor;
@@ -158,10 +202,6 @@ varying vec3 varToCameraVec;
 varying float varPerPixelAttenuation;
 #endif
 
-#if defined(VERTEX_FOG)
-varying float varFogFactor;
-#endif
-
 #if defined(SETUP_LIGHTMAP)
 uniform float lightmapSize;
 varying lowp float varLightmapSize;
@@ -179,9 +219,10 @@ varying lowp float varTime;
 uniform mediump vec2 texture0Shift;
 #endif 
 
-#if defined(REFLECTION) // works now only with VERTEX_LIT
 uniform vec3 cameraPosition;
 uniform mat4 worldMatrix;
+
+#if defined(REFLECTION) // works now only with VERTEX_LIT
 uniform mat3 worldInvTransposeMatrix;
 #if defined(VERTEX_LIT)
 varying mediump vec3 reflectionDirectionInWorldSpace;
@@ -201,8 +242,6 @@ uniform vec2 tex0ShiftPerSecond;
 uniform vec3 tilePos;
 uniform vec3 worldSize;
 uniform vec2 lodSwitchScale;
-
-uniform vec3 cameraPosition;
 uniform vec3 billboardDirection;
 
 uniform sampler2D heightmap;
@@ -237,6 +276,13 @@ vec3 FresnelShlickVec3(float NdotL, vec3 Cspec)
 {
 	float fresnel_exponent = 5.0;
 	return Cspec + (1.0 - Cspec) * (pow(1.0 - NdotL, fresnel_exponent));
+}
+
+vec3 JointTransformTangent(vec3 inVec, vec4 jointQuaternion)
+{
+    vec3 t = 2.0 * cross(jointQuaternion.xyz, inVec);
+    return inVec + jointQuaternion.w * t + cross(jointQuaternion.xyz, t); 
+    //return inVec; 
 }
 
 #if defined(WAVE_ANIMATION)
@@ -277,7 +323,15 @@ vec4 Wave(float time, vec4 pos, vec2 uv)
 }
 
 void main()
-{	
+{
+
+#if defined (SKINNING)
+    //compute final state - for now just effected by 1 bone - later blend everything here
+    int index = int(inJointIndex);
+    vec4 weightedVertexPosition = jointPositions[index];
+    vec4 weightedVertexQuaternion = jointQuaternions[index];
+#endif
+
 #if defined(MATERIAL_SKYBOX)
 	vec4 vecPos = (worldViewProjMatrix * inPosition);
 	gl_Position = vec4(vecPos.xy, vecPos.w - 0.0001, vecPos.w);
@@ -372,13 +426,13 @@ void main()
         pos = clusterCenter + vec4(planeDirection.x, planeDirection.y, inPosition.z, 0.0);
     #endif
     
-        highp vec2 hUV = vec2(clamp(1.0 - (0.5 * worldSize.x - clusterCenter.x) / worldSize.x, 0.0, 1.0),
+        highp vec2 hUVheight = vec2(clamp(1.0 - (0.5 * worldSize.x - clusterCenter.x) / worldSize.x, 0.0, 1.0),
                         clamp(1.0 - (0.5 * worldSize.y - clusterCenter.y) / worldSize.y, 0.0, 1.0));
     
-        hUV = vec2(clamp(hUV.x * heightmapScale.x, 0.0, 1.0),
-                   clamp(hUV.y * heightmapScale.y, 0.0, 1.0));
+        hUVheight = vec2(clamp(hUVheight.x * heightmapScale.x, 0.0, 1.0),
+                   clamp(hUVheight.y * heightmapScale.y, 0.0, 1.0));
     
-        highp vec4 heightVec = texture2DLod(heightmap, hUV, 0.0);
+        highp vec4 heightVec = texture2DLod(heightmap, hUVheight, 0.0);
         float height = dot(heightVec, vec4(0.93751430533303, 0.05859464408331, 0.00366216525521, 0.00022888532845)) * worldSize.z;
     
     
@@ -395,7 +449,8 @@ void main()
         varTexCoord2.x = clusterLodScale;
 #endif
     
-        vec4 vegetationMask = texture2DLod(vegetationmap, hUV, 0.0);
+        highp vec2 hUVcolor = vec2(hUVheight.x, 1.0 - hUVheight.y);
+        vec4 vegetationMask = texture2DLod(vegetationmap, hUVcolor, 0.0);
     
 #if defined(MATERIAL_GRASS_OPAQUE) || defined(MATERIAL_GRASS_BLEND)
         varVegetationColor = vegetationMask.rgb;
@@ -433,7 +488,13 @@ void main()
         gl_Position = worldViewProjMatrix * pos;
     
     #else
-        gl_Position = worldViewProjMatrix * inPosition;
+        #if defined (SKINNING)
+            vec3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, inPosition.xyz);
+            vec4 skinnedPosition = vec4(weightedVertexPosition.xyz + (inPosition.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, inPosition.w);
+            gl_Position = worldViewProjMatrix * skinnedPosition;
+        #else
+            gl_Position = worldViewProjMatrix * inPosition;
+        #endif
     #endif
 
 #endif //defined(WIND_ANIMATION)
@@ -446,14 +507,21 @@ void main()
     #if defined(MATERIAL_GRASS_TRANSFORM)
         vec3 eyeCoordsPosition = vec3(worldViewMatrix * pos); // view direction in view space
     #else
-        vec3 eyeCoordsPosition = vec3(worldViewMatrix *  inPosition); // view direction in view space
+        #if defined (SKINNING)
+            vec3 eyeCoordsPosition = vec3(worldViewMatrix * skinnedPosition); // view direction in view space
+        #else
+            vec3 eyeCoordsPosition = vec3(worldViewMatrix *  inPosition); // view direction in view space
+        #endif
     #endif
+#endif
+
+#if defined(VERTEX_LIT) || defined(PIXEL_LIT) || (defined(VERTEX_FOG) && defined(FOG_ATMOSPHERE))
+    vec3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
 #endif
 
 #if defined(VERTEX_LIT)
     vec3 normal = normalize(worldViewInvTransposeMatrix * inNormal); // normal in eye coordinates
-    vec3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
-    
+   
 #if defined(DISTANCE_ATTENUATION)
     float attenuation = lightIntensity0;
     float distAttenuation = length(toLightDir);
@@ -492,7 +560,7 @@ void main()
     float Dbp = NdotL;
     float Geo = 1.0 / LdotH * LdotH;
     
-	varDiffuseColor = NdotL / _PI;
+    varDiffuseColor = NdotL / _PI;
     
     varSpecularColor = Dbp * Geo * fresnelOut * specularity;
     varNdotH = NdotH;
@@ -502,24 +570,30 @@ void main()
 #endif
 
 #if defined(PIXEL_LIT)
-	vec3 n = normalize (worldViewInvTransposeMatrix * inNormal);
-	vec3 t = normalize (worldViewInvTransposeMatrix * inTangent);		
-	vec3 b = normalize (worldViewInvTransposeMatrix * inBinormal);	
+
+    #if defined (SKINNING)
+        vec3 n = normalize (worldViewInvTransposeMatrix * JointTransformTangent(inNormal, weightedVertexQuaternion));
+        vec3 t = normalize (worldViewInvTransposeMatrix * JointTransformTangent(inTangent, weightedVertexQuaternion));
+        vec3 b = normalize (worldViewInvTransposeMatrix * JointTransformTangent(inBinormal, weightedVertexQuaternion));
+    #else
+        vec3 n = normalize (worldViewInvTransposeMatrix * inNormal);
+        vec3 t = normalize (worldViewInvTransposeMatrix * inTangent);
+        vec3 b = normalize (worldViewInvTransposeMatrix * inBinormal);
+    #endif
     
-    vec3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
 #if defined(DISTANCE_ATTENUATION)
     varPerPixelAttenuation = length(toLightDir);
 #endif
     //lightDir = normalize(lightDir);
     
-	// transform light and half angle vectors by tangent basis
-	vec3 v;
-	v.x = dot (toLightDir, t);
-	v.y = dot (toLightDir, b);
-	v.z = dot (toLightDir, n);
+    // transform light and half angle vectors by tangent basis
+    vec3 v;
+    v.x = dot (toLightDir, t);
+    v.y = dot (toLightDir, b);
+    v.z = dot (toLightDir, n);
     
 #if !defined(FAST_NORMALIZATION)
-	varToLightVec = v;
+    varToLightVec = v;
 #else
     varToLightVec = normalize(v);
 #endif
@@ -567,13 +641,67 @@ void main()
 #endif
 
 #if defined(VERTEX_FOG)
-    float fogFragCoord = length(eyeCoordsPosition);
+    float fogDistance = length(eyeCoordsPosition);
+    
+    // calculating fog amoung, depending on distance 
     #if !defined(FOG_LINEAR)
-        const float LOG2 = 1.442695;
-        varFogFactor = exp2( -fogDensity * fogDensity * fogFragCoord * fogFragCoord *  LOG2);
-        varFogFactor = clamp(varFogFactor, 1.0 - fogLimit, 1.0);
+        varFogAmoung = 1.0 - exp(-fogDensity * fogDistance);
     #else
-        varFogFactor = 1.0 - clamp((fogFragCoord - fogStart) / (fogEnd - fogStart), 0.0, fogLimit);
+        varFogAmoung = (fogDistance - fogStart) / (fogEnd - fogStart);
+    #endif
+    
+    // calculating view direction in world space, point of view in world space
+    #if defined(FOG_HALFSPACE) || defined(FOG_ATMOSPHERE_MAP)
+        #if defined(MATERIAL_GRASS_TRANSFORM)
+            vec3 viewPointInWorldSpace = vec3(worldMatrix * pos);
+        #else
+            vec3 viewPointInWorldSpace = vec3(worldMatrix * inPosition);
+        #endif
+        vec3 viewDirectionInWorldSpace = viewPointInWorldSpace - cameraPosition;
+    #endif
+    
+    // calculating halfSpaceFog amoung
+    #if defined(FOG_HALFSPACE)
+        #if defined(FOG_HALFSPACE_LINEAR)
+            // view http://www.terathon.com/lengyel/Lengyel-UnifiedFog.pdf
+            // to get more clear understanding about this calculations
+            float fogK = step(cameraPosition.z, fogHalfspaceHeight);
+            float fogFdotP = viewPointInWorldSpace.z - fogHalfspaceHeight;
+            float fogFdotC = cameraPosition.z - fogHalfspaceHeight;
+            
+            float fogC1 = fogK * (fogFdotP + fogFdotC);
+            float fogC2 = (1.0 - 2.0 * fogK) * fogFdotP;
+            float fogG = min(fogC2, 0.0);
+            fogG = -length(viewDirectionInWorldSpace) * fogHalfspaceDensity * (fogC1 - fogG * fogG / abs(viewDirectionInWorldSpace.z));
+            
+            float halfSpaceFogAmoung = 1.0 - exp2(-fogG);
+        #else
+            float fogK = viewDirectionInWorldSpace.z / fogDistance;
+            float fogB = cameraPosition.z - fogHalfspaceHeight;
+            
+            float halfSpaceFogAmoung = fogHalfspaceDensity * exp(-fogHalfspaceFalloff * fogB) * (1.0 - exp(-fogHalfspaceFalloff * fogK * fogDistance)) / fogK;
+        #endif
+        varFogAmoung = varFogAmoung + clamp(halfSpaceFogAmoung, 0.0, fogHalfspaceLimit);
+    #endif
+
+    // limit fog amoung
+    varFogAmoung = clamp(varFogAmoung, 0.0, fogLimit);
+    
+    // calculating fog color
+    #if defined(FOG_ATMOSPHERE)
+        lowp vec3 atmosphereColor;
+        #if defined(FOG_ATMOSPHERE_MAP)
+            vec3 viewDirection = normalize(vec3(worldMatrix * inPosition) - cameraPosition);
+            viewDirection.z = clamp(viewDirection.z, 0.01, 1.0);
+            atmosphereColor = textureCube(atmospheremap, viewDirection).xyz;
+        #else
+            float atmospheteAngleFactor = dot(normalize(eyeCoordsPosition), normalize(toLightDir)) * 0.5 + 0.5;
+            atmosphereColor = mix(fogAtmosphereColorSky, fogAtmosphereColorSun, pow(atmospheteAngleFactor, fogAtmosphereScattering));
+        #endif
+        lowp float fogAtmosphereAttenuation = clamp(fogDistance / fogAtmosphereDistance, 0.0, 1.0);
+        varFogColor = mix(fogColor, atmosphereColor, fogAtmosphereAttenuation);
+    #else
+        varFogColor = fogColor;
     #endif
 #endif
 
@@ -631,13 +759,9 @@ void main()
 #endif
 
 #endif
-	
-	#if defined(VERTEX_COLOR)
-		varVertexColor *= vec4(sphericalLightFactor * 2.0, 1.0);
-	#else
-		varVertexColor = vec4(sphericalLightFactor * 2.0, 1.0);
-	#endif
-	
+
+	varVertexColor = vec4(sphericalLightFactor * 2.0, 1.0);
+
 #elif defined(SPEED_TREE_LEAF) //legacy for old tree lighting
     varVertexColor.rgb = varVertexColor.rgb * treeLeafColorMul * treeLeafOcclusionMul + vec3(treeLeafOcclusionOffset);
 #endif
@@ -651,8 +775,12 @@ void main()
 #if defined(TEXTURE0_ANIMATION_SHIFT)
     varTexCoord0 += tex0ShiftPerSecond * globalTime;
 #endif
-		
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND)
+	
+#if defined(TILED_DECAL)
+    varDecalTileTexCoord = varTexCoord0 * decalTileCoordScale;
+#endif
+    
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
 	
 	#if defined(SETUP_LIGHTMAP)
 		varLightmapSize = lightmapSize;

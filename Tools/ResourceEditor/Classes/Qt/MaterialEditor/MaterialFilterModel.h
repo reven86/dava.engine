@@ -80,10 +80,10 @@ public:
     // QStandardItemModel
     bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
 
-protected:
-	MaterialModel *materialModel;
-
 private:
+    int compareNames( DAVA::NMaterial *left, DAVA::NMaterial *right ) const;
+
+	MaterialModel *materialModel;
     eFilterType filterType;
 };
 

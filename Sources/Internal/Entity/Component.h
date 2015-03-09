@@ -68,7 +68,11 @@ public:
         SPEEDTREE_COMPONENT,
         WIND_COMPONENT,
         WAVE_COMPONENT,
+        SKELETON_COMPONENT,
 
+        //debug components - note that everything below won't be serialized
+        DEBUG_COMPONENTS,
+        STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT,
         COMPONENT_COUNT
     };
 

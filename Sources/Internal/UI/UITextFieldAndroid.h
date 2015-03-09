@@ -53,6 +53,7 @@ public:
 	void SetFontSize(float size);
 	void SetIsPassword(bool isPassword);
 	void SetTextAlign(int32_t align);
+	void SetTextUseRtlAlign(bool useRtlAlign);
 	void SetInputEnabled(bool value);
 	void SetAutoCapitalizationType(int32_t value);
 	void SetAutoCorrectionType(int32_t value);
@@ -61,12 +62,12 @@ public:
 	void SetKeyboardType(int32_t value);
 	void SetReturnKeyType(int32_t value);
 	void SetEnableReturnKeyAutomatically(bool value);
-	void ShowField();
-	void HideField();
+	void SetVisible(bool isVisible);
 	void OpenKeyboard();
 	void CloseKeyboard();
 	uint32 GetCursorPos();
 	void SetCursorPos(uint32 pos);
+	void SetMaxLength(int32_t value);
 
 protected:
 	virtual jclass GetJavaClass() const;
@@ -98,8 +99,9 @@ public:
 	void SetTextAlign(DAVA::int32 align);
 	DAVA::int32 GetTextAlign();
 
-	void ShowField();
-	void HideField();
+	void SetTextUseRtlAlign(bool useRtlAlign);
+	bool GetTextUseRtlAlign() const;
+
 	void SetVisible(bool isVisible);
 
 	void SetIsPassword(bool isPassword);
@@ -114,17 +116,27 @@ public:
 	void SetKeyboardType(DAVA::int32 value);
 	void SetReturnKeyType(DAVA::int32 value);
 	void SetEnableReturnKeyAutomatically(bool value);
-
 	uint32 GetCursorPos();
 	void SetCursorPos(uint32 pos);
+	void SetMaxLength(DAVA::int32 value);
 
-	bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text);
+	bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString &text);
 	void TextFieldShouldReturn();
-	static bool TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text);
+	void TextFieldKeyboardShown(const Rect& rect);
+	void TextFieldKeyboardHidden();
+	void TextFieldFocusChanged(bool hasFocus);
+	static bool TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, WideString &text);
 	static void TextFieldShouldReturn(uint32_t id);
+	static void TextFieldKeyboardShown(uint32_t id, const Rect& rect);
+	static void TextFieldKeyboardHidden(uint32_t id);
+	static void TextFieldFocusChanged(uint32_t id, bool hasFocus);
 
 private:
 	static UITextFieldAndroid* GetUITextFieldAndroid(uint32_t id);
+
+protected:
+    // Truncate the text to maxLength characters.
+    WideString TruncateText(const WideString& text, int32 maxLength);
 
 private:
 	UITextField* textField;
@@ -134,6 +146,7 @@ private:
 	Rect rect;
 	WideString text;
 	int32_t align;
+	bool useRtlAlign;
 };
 
 };

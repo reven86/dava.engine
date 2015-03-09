@@ -52,9 +52,9 @@ void PropertiesGridController::ConnectToSignals()
             SLOT(OnSelectedTreeItemChanged(const HierarchyTreeNode*)));
 
     connect(HierarchyTreeController::Instance(),
-            SIGNAL(SelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES&)),
+            SIGNAL(SelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES&, HierarchyTreeController::eExpandControlType)),
             this,
-            SLOT(OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES)));
+            SLOT(OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES, HierarchyTreeController::eExpandControlType)));
 }
 
 PropertiesGridController::~PropertiesGridController()
@@ -66,14 +66,14 @@ const HierarchyTreeNode* PropertiesGridController::GetActiveTreeNode() const
     return this->activeNode;
 }
 
-const HierarchyTreeController::SELECTEDCONTROLNODES PropertiesGridController::GetActiveTreeNodesList() const
+const HierarchyTreeController::SELECTEDCONTROLNODES &PropertiesGridController::GetActiveTreeNodesList() const
 {
-    return this->activeNodes;
+    return activeNodes;
 }
 
-Vector<UIControl::eControlState> PropertiesGridController::GetActiveUIControlStates() const
+const Vector<UIControl::eControlState> &PropertiesGridController::GetActiveUIControlStates() const
 {
-	return this->activeUIControlStates;
+	return activeUIControlStates;
 }
 
 void PropertiesGridController::SetActiveUIControlStates(const Vector<UIControl::eControlState>& newStates)
@@ -106,7 +106,7 @@ void PropertiesGridController::SetActiveUIControlStates(const Vector<UIControl::
 }
 
 void PropertiesGridController::OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES
-                                                             &selectedNodes)
+                                                             &selectedNodes, HierarchyTreeController::eExpandControlType expandType)
 {
     if (selectedNodes.size() == 0)
     {

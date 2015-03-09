@@ -51,6 +51,8 @@ extern bool CreateStringFromJni(JNIEnv* env, jstring jniString, char *generalStr
 extern void CreateStringFromJni(JNIEnv* env, jstring jniString, DAVA::String& string);
 extern void CreateWStringFromJni(JNIEnv* env, jstring jniString, DAVA::WideString& string);
 
+extern jstring CreateJString(JNIEnv* env, const DAVA::WideString& string);
+
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
 #endif //__ANDROID_LAYER_H__

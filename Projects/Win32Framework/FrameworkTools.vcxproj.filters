@@ -25,6 +25,9 @@
     <Filter Include="Source Files\TexturePacker">
       <UniqueIdentifier>{a1b73597-21b3-4e9c-a209-4279a8968e88}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TeamcityOutput">
+      <UniqueIdentifier>{ad6c97e8-fa9d-4027-9216-7b3a96be2c3e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -60,6 +63,9 @@
     <ClInclude Include="..\..\Sources\Tools\TextureCompression\TextureConverter.h">
       <Filter>Header Files\TextureCompression</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.h">
+      <Filter>TeamcityOutput</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Tools\TexturePacker\CommandLineParser.cpp">
@@ -91,6 +97,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Tools\TextureCompression\TextureConverter.cpp">
       <Filter>Source Files\TextureCompression</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.cpp">
+      <Filter>TeamcityOutput</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

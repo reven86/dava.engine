@@ -86,7 +86,9 @@ public:
     static Shader * TEXTURE_MUL_FLAT_COLOR;
     static Shader * TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST;
     static Shader * TEXTURE_MUL_FLAT_COLOR_IMAGE_A8;
-    
+    static Shader * TEXTURE_ADD_FLAT_COLOR;
+    static Shader * TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST;
+    static Shader * TEXTURE_ADD_FLAT_COLOR_IMAGE_A8;
     
     struct Caps
 	{
@@ -548,10 +550,10 @@ public:
 #if defined(__DAVAENGINE_OPENGL__)
     void HWglBindBuffer(GLenum target, GLuint  	buffer);
     GLuint bufferBindingId[2];
+    void HWglDeleteBuffers(GLsizei count, const GLuint * buffers);
     
     int32 HWglGetLastTextureID(int textureType);
-	void HWglBindTexture(int32 tId, uint32 textureType = Texture::TEXTURE_2D);
-	void HWglForceBindTexture(int32 tId, uint32 textureType = Texture::TEXTURE_2D);
+    void HWglBindTexture(int32 tId, uint32 textureType = Texture::TEXTURE_2D);
     int32 lastBindedTexture[Texture::TEXTURE_TYPE_COUNT];
 	uint32 lastBindedTextureType;
 

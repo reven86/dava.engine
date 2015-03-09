@@ -65,8 +65,6 @@ bool LodToLod2Converter::MergeLod(Entity * entity)
 	LodComponent * lod = GetLodComponent(entity);
 	if(lod)
 	{
-		ConvertToShadowRecursive(entity);
-
 		RenderComponent * rc = GetRenderComponent(entity);
 		RenderObject * ro = 0;
 		if(!rc)
@@ -205,32 +203,4 @@ void LodToLod2Converter::FindAndEraseRenderObjectsRecursive(Entity * fromEntity,
         Entity * child = fromEntity->GetChild(i);
         FindAndEraseRenderObjectsRecursive(child, entitiesAndRenderObjects);
     }
-}
-
-void LodToLod2Converter::ConvertToShadowRecursive( Entity *entity )
-{
-	if(entity->GetName().find("_shadow") != String::npos)
-	{
-		RenderObject * ro = GetRenderObject(entity);
-		if(ro && (ro->GetRenderBatchCount() == 1) && (typeid(*(ro->GetRenderBatch(0))) == typeid(DAVA::RenderBatch)))
-		{
-			RenderBatch * oldBatch = ro->GetRenderBatch(0);
-			ShadowVolume * shadowVolume = oldBatch->CreateShadow();
-
-			ro->RemoveRenderBatch(oldBatch);
-			ro->AddRenderBatch(shadowVolume);
-			shadowVolume->Release();
-
-			entity->SetLocalTransform(entity->GetLocalTransform());//just forced update of worldTransform
-		}
-
-		return;
-	}
-
-	uint32 size = entity->GetChildrenCount();
-	for(uint32 i = 0; i < size; ++i)
-	{
-		Entity * child = entity->GetChild(i);
-		ConvertToShadowRecursive(child);
-	}
 }

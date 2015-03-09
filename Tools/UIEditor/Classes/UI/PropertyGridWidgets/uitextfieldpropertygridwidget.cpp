@@ -80,6 +80,8 @@ void UITextFieldPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     
 	RegisterCheckBoxWidgetForProperty(propertiesMap, PropertyNames::IS_RETURN_KEY_PROPERTY_NAME, ui->isReturnKeyAutomatically);
     
+    RegisterSpinBoxWidgetForProperty(propertiesMap, PropertyNames::MAX_TEXT_LENGTH_PROPERTY_NAME, ui->maxTextLengthSpinBox);
+
 	//bool isUITextField = (dynamic_cast<UITextFieldMetadata*>(activeMetadata) != NULL);
     bool isUITextField = true; // in any case uitexfieldpropertygridwidget is only used with UITextField metadata
     
@@ -94,6 +96,7 @@ void UITextFieldPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     ui->returnKeyTypeWidget->setVisible(isUITextField);
     ui->isReturnKeyAutoWidget->setVisible(isUITextField);
     ui->isPasswordWidget->setVisible(isUITextField);
+    ui->maxTextLengthWidget->setVisible(isUITextField);
     
 	//bool isUIStaticText = (dynamic_cast<UIStaticTextMetadata*>(activeMetadata)	!= NULL);
     // in any case uitexfieldpropertygridwidget is not used with UIStaticText metadata
@@ -120,7 +123,8 @@ void UITextFieldPropertyGridWidget::Cleanup()
 	UnregisterComboBoxWidget(ui->keyboardTypeComboBox);
 	UnregisterComboBoxWidget(ui->returnKeyTypeComboBox);
 	UnregisterCheckBoxWidget(ui->isReturnKeyAutomatically);
-    
+    UnregisterSpinBoxWidget(ui->maxTextLengthSpinBox);
+
     TextPropertyGridWidget::Cleanup();
 }
 

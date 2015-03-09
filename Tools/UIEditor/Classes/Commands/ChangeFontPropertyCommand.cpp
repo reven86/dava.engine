@@ -128,7 +128,7 @@ void ChangeFontPropertyCommand::Execute()
     }
     
     // apply current font change
-    ChangePropertyCommand<Font *>::Execute();
+    return ChangePropertyCommand<Font *>::Execute();
 }
 
 void ChangeFontPropertyCommand::Rollback()

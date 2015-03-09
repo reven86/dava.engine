@@ -59,6 +59,9 @@ void SelectEntityPathWidget::dragEnterEvent(QDragEnterEvent* event)
 	{
 		return;
 	}
+
+    event->setDropAction(Qt::LinkAction);
+
 	bool isFormatSupported = true;
 	
 	if(event->mimeData()->hasFormat(MIME_URI_LIST_NAME))
@@ -76,7 +79,7 @@ void SelectEntityPathWidget::dragEnterEvent(QDragEnterEvent* event)
 	}
 	if(isFormatSupported)
 	{
-		event->acceptProposedAction();
+        event->accept();
 	}
 }
 

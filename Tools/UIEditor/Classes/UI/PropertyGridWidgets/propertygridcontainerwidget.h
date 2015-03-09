@@ -75,7 +75,7 @@ protected:
 
     // Work with Active Metadata.
     BaseMetadata* GetActiveMetadata(const HierarchyTreeNode* activeTreeNode);
-    BaseMetadata* GetActiveMetadata(const HierarchyTreeController::SELECTEDCONTROLNODES activeNodes);
+    BaseMetadata* GetActiveMetadata(const HierarchyTreeController::SELECTEDCONTROLNODES &activeNodes);
 
     void CleanupActiveMetadata();
 

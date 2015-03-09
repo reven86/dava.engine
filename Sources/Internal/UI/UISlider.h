@@ -43,37 +43,22 @@ class UISlider : public UIControl
 protected:
 	virtual ~UISlider();
 public:
-	UISlider();
-	
-	UISlider(const Rect & rect);
-
-	virtual void AddControl(DAVA::UIControl *control);
-
-	virtual void SetThumbSprite(Sprite * sprite, int32 frame);
-	virtual void SetThumbSprite(const FilePath & spriteName, int32 frame);
-	
-	virtual void SetMinSprite(Sprite * sprite, int32 frame);
-	virtual void SetMinSprite(const FilePath & spriteName, int32 frame);
-    virtual void SetMinDrawType(UIControlBackground::eDrawType drawType);
-    virtual void SetMinLeftRightStretchCap(float32 stretchCap);
-
-	virtual void SetMaxSprite(Sprite * sprite, int32 frame);
-	virtual void SetMaxSprite(const FilePath & spriteName, int32 frame);
-    virtual void SetMaxDrawType(UIControlBackground::eDrawType drawType);
-    virtual void SetMaxLeftRightStretchCap(float32 stretchCap);
+	UISlider(const Rect & rect = Rect());
 
     virtual void SetSize(const DAVA::Vector2 &newSize);
 
-	inline float32 GetMinValue();
-	inline float32 GetMaxValue();
+	inline float32 GetMinValue() const;
+	inline float32 GetMaxValue() const;
 	void SetMinMaxValue(float32 _minValue, float32 _maxValue);
 	
+    virtual void AddControl(UIControl *control);
+    virtual void RemoveControl(UIControl *control);
+
 	virtual void Draw(const UIGeometricData &geometricData);
-	virtual void SystemDraw(const UIGeometricData &geometricData);
 	
-	inline bool IsEventsContinuos();
+	inline bool IsEventsContinuos() const;
 	inline void SetEventsContinuos(bool isEventsContinuos);
-	inline float32 GetValue();
+	inline float32 GetValue() const;
     
     void SetMaxValue(float32 value);
     void SetMinValue(float32 value);
@@ -81,10 +66,10 @@ public:
 
     
     void SetThumb(UIControl *newThumb);
-    inline UIControl *GetThumb();
+    inline UIControl *GetThumb() const;
 	
-	inline UIControlBackground *GetBgMin();
-	inline UIControlBackground *GetBgMax();
+	inline UIControlBackground *GetBgMin() const;
+	inline UIControlBackground *GetBgMax() const;
 
 	virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
 	virtual void LoadFromYamlNodeCompleted();
@@ -95,8 +80,6 @@ public:
 
 	virtual UIControl *Clone();
 	virtual void CopyDataFrom(UIControl *srcControl);
-
-	virtual void SetVisibleForUIEditor(bool value, bool hierarchic = true);
 
     // Synchronize thumb size/position according to the thumb sprite.
     void SyncThumbWithSprite();
@@ -116,48 +99,62 @@ protected:
 	
 	void RecalcButtonPos();
 
+    UIControlBackground* minBackground;
+    UIControlBackground* maxBackground;
 	UIControl * thumbButton;
-	UIControl * bgMin;
-	UIControl * bgMax;
 
 	Vector2 relTouchPoint;
 
-	UIControlBackground::eDrawType minDrawType;
-	UIControlBackground::eDrawType maxDrawType;
-
-    bool needSetMinDrawType;
-    bool needSetMaxDrawType;
-
 	void InitThumb();
-	void InitMinBackground();
-	void InitMaxBackground();
 	
-	void InitSubcontrols();
 	void AttachToSubcontrols();
-	void ReleaseAllSubcontrols();
 	void InitInactiveParts(Sprite* spr);
 
-	void PostInitBackground(UIControl* backgroundControl);
-    void RemoveAndReleaseControl(UIControl* &control);
+    // Load/save the background.
+    void LoadBackgound(const char* prefix, UIControlBackground* background, const YamlNode* rootNodem, const UIYamlLoader* loader);
+    void SaveBackground(const char* prefix, UIControlBackground* background, YamlNode* rootNode, const UIYamlLoader * loader);
+
+    void CopyBackgroundAndRemoveControl(UIControl* from, UIControlBackground*& to);
+
+private:
+    // Whether the sprites are embedded into control YAML (new storage format)?
+    bool spritesEmbedded;
+    
+public:
+    
+    virtual int32 GetBackgroundComponentsCount() const;
+    virtual UIControlBackground *GetBackgroundComponent(int32 index) const;
+    virtual UIControlBackground *CreateBackgroundComponent(int32 index) const;
+    virtual void SetBackgroundComponent(int32 index, UIControlBackground *bg);
+    virtual String GetBackgroundComponentName(int32 index) const;
+
+    INTROSPECTION_EXTEND(UISlider, UIControl,
+                         PROPERTY("minValue", "Min Value", GetMinValue, SetMinValue, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("maxValue", "Max Value", GetMaxValue, SetMaxValue, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("value", "Value", GetValue, SetValue, I_SAVE | I_VIEW | I_EDIT)
+                         );
+private:
+    static const int32 BACKGROUND_COMPONENTS_COUNT = 3;
+
 };
     
     
-inline UIControl *UISlider::GetThumb()
+inline UIControl *UISlider::GetThumb() const
 {
     return thumbButton;
 }
 
-inline UIControlBackground *UISlider::GetBgMin()
+inline UIControlBackground *UISlider::GetBgMin() const
 {
-	return bgMin->GetBackground();
+	return minBackground;
 }
 
-inline UIControlBackground *UISlider::GetBgMax()
+inline UIControlBackground *UISlider::GetBgMax() const
 {
-	return bgMax->GetBackground();
+	return maxBackground;
 }
 
-inline bool UISlider::IsEventsContinuos()
+inline bool UISlider::IsEventsContinuos() const
 {
 	return isEventsContinuos;
 }
@@ -167,17 +164,17 @@ inline void UISlider::SetEventsContinuos(bool _isEventsContinuos)
 	isEventsContinuos = _isEventsContinuos;	
 }
 	
-inline float32 UISlider::GetValue()
+inline float32 UISlider::GetValue() const
 {
 	return currentValue;
 }
 
-inline float32 UISlider::GetMinValue()
+inline float32 UISlider::GetMinValue() const
 {
 	return minValue;
 }
 	
-inline float32 UISlider::GetMaxValue()
+inline float32 UISlider::GetMaxValue() const
 {
 	return maxValue;
 }

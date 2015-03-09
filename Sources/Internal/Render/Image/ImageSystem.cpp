@@ -90,8 +90,39 @@ eErrorCode ImageSystem::Load(File *file, Vector<Image *> & imageSet, int32 baseM
 
     return properWrapper->ReadFile(file, imageSet, baseMipmap);
 }
+    
+Image* ImageSystem::EnsurePowerOf2Image(Image* image) const
+{
+    if (IsPowerOf2(image->GetWidth() && IsPowerOf2(image->GetHeight())))
+    {
+        return SafeRetain(image);
+    }
+    Image* newImage = Image::Create(NextPowerOf2(image->GetWidth()),
+                                    NextPowerOf2(image->GetHeight()),
+                                    image->GetPixelFormat());
+    newImage->InsertImage(image, 0, 0);
+    return newImage;
+}
 
-eErrorCode ImageSystem::SaveAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
+void ImageSystem::EnsurePowerOf2Images(Vector<Image*>& images) const
+{
+    Vector<Image*>::iterator end = images.end();
+    for (Vector<Image*>::iterator iter = images.begin(); iter != end; ++iter)
+    {
+        Image* image = (*iter);
+        if (!IsPowerOf2(image->GetWidth()) || !IsPowerOf2(image->GetHeight()))
+        {
+            Image* newImage = Image::Create(NextPowerOf2(image->GetWidth()),
+                                            NextPowerOf2(image->GetHeight()),
+                                            image->GetPixelFormat());
+            newImage->InsertImage(image, 0, 0);
+            (*iter) = newImage;
+            SafeRelease(image);
+        }
+    }
+}
+
+eErrorCode ImageSystem::SaveAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
     if(!properWrapper)

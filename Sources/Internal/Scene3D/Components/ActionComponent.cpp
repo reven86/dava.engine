@@ -33,6 +33,7 @@
 #include "Sound/SoundEvent.h"
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
+#include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Components/WaveComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
@@ -48,9 +49,6 @@ namespace DAVA
     {
         actualDelay = static_cast<float32>( delay + Random::Instance()->RandFloat(delayVariation) );
     }
-
-
-	REGISTER_CLASS(ActionComponent)
 
     const FastName ActionComponent::ACTION_COMPONENT_SELF_ENTITY_NAME("*** Self ***");
 
@@ -330,7 +328,7 @@ namespace DAVA
 	
 	ActionComponent::Action& ActionComponent::Get(uint32 index)
 	{
-		DVASSERT(index >= 0 && index < actions.size());
+		DVASSERT(index < actions.size());
 		return actions[index].action;
 	}
 	
@@ -461,8 +459,17 @@ namespace DAVA
         case Action::TYPE_PARTICLE_EFFECT_STOP:
             OnActionParticleEffectStop( action );
             break;
-        case Action::TYPE_SOUND:
-            OnActionSound( action );
+        case Action::TYPE_ANIMATION_START:
+            OnActionAnimationStart( action );
+            break;
+        case Action::TYPE_ANIMATION_STOP:
+            OnActionAnimationStop( action );
+            break;
+        case Action::TYPE_SOUND_START:
+            OnActionSoundStart( action );
+            break;
+        case Action::TYPE_SOUND_STOP:
+            OnActionSoundStop( action );
             break;
         case Action::TYPE_WAVE:
             OnActionWave( action );
@@ -503,8 +510,37 @@ namespace DAVA
             }
         }
     }
-	
-	void ActionComponent::OnActionSound(const Action& action)
+
+    void ActionComponent::OnActionAnimationStart(const Action& action)
+    {
+        Entity* target = GetTargetEntity( action.entityName, entity );
+        if ( target != NULL )
+        {
+            AnimationComponent* component = GetAnimationComponent(target);
+            if ( component )
+            {
+                component->StopAfterNRepeats(action.stopAfterNRepeats);
+                component->Stop();
+                component->Start();
+            }
+        }
+    }
+
+    void ActionComponent::OnActionAnimationStop(const Action& action)
+    {
+        Entity* target = GetTargetEntity( action.entityName, entity );
+        if ( target != NULL )
+        {
+            AnimationComponent* component = GetAnimationComponent(target);
+            if ( component )
+            {
+                component->StopAfterNRepeats(action.stopAfterNRepeats);
+                component->Stop();
+            }
+        }
+    }
+
+	void ActionComponent::OnActionSoundStart(const Action& action)
 	{
 		Entity* target = GetTargetEntity(action.entityName, entity);
 		
@@ -513,14 +549,27 @@ namespace DAVA
 			SoundComponent* component = static_cast<SoundComponent*>(target->GetComponent(Component::SOUND_COMPONENT));
 			if(component)
 			{
-                int32 eventsCount = component->GetEventsCount();
-                for(int32 i = 0; i < eventsCount; ++i)
-                    component->GetSoundEvent(i)->Trigger();
+                component->Trigger();
 			}
 
 		}
 	}
-	
+
+    void ActionComponent::OnActionSoundStop(const Action& action)
+    {
+        Entity* target = GetTargetEntity(action.entityName, entity);
+
+        if(target != NULL)
+        {
+            SoundComponent* component = static_cast<SoundComponent*>(target->GetComponent(Component::SOUND_COMPONENT));
+            if(component)
+            {
+                component->Stop();
+            }
+
+        }
+    }
+
     void ActionComponent::OnActionWave(const Action& action)
     {
         Entity* target = GetTargetEntity(action.entityName, entity);

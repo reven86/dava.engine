@@ -210,6 +210,12 @@ VariantType::~VariantType()
     ReleasePointer();
 }
 
+const String &VariantType::GetTypeName() const
+{
+    DVASSERT(type >= 0 && type < TYPES_COUNT);
+    return variantNamesMap[type].variantName;
+}
+
 void VariantType::SetBool(bool value)
 {
     ReleasePointer();

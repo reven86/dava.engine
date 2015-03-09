@@ -32,6 +32,7 @@
 #include "Utils/StringFormat.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlNode.h"
+#include "FileSystem/YamlEmitter.h"
 
 
 namespace DAVA 
@@ -53,7 +54,9 @@ void PartilceEmitterLoadProxy::Load(KeyedArchive *archive, SerializationContext 
 		emitterFilename = archive->GetString("pe.configpath");
 }
 
-ParticleEmitter::ParticleEmitter() : requireDeepClone(true)
+ParticleEmitter::ParticleEmitter() 
+    : requireDeepClone(true)
+    , shortEffect(false)
 {        
 	Cleanup(false);
 }
@@ -410,13 +413,6 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename, bool preserveInher
 
 void ParticleEmitter::SaveToYaml(const FilePath & filename)
 {
-    YamlParser* parser = YamlParser::Create();
-    if (!parser)
-    {
-        Logger::Error("ParticleEmitter::SaveToYaml() - unable to create parser!");
-        return;
-    }
-
 	configPath = filename;
 
     YamlNode* rootYamlNode = new YamlNode(YamlNode::TYPE_MAP);
@@ -450,8 +446,7 @@ void ParticleEmitter::SaveToYaml(const FilePath & filename)
         this->layers[i]->SaveToYamlNode(configPath, rootYamlNode, i);
     }
 
-    parser->SaveToYamlFile(filename, rootYamlNode, true);
-    parser->Release();
+    YamlEmitter::SaveToYamlFile(filename, rootYamlNode);
 }
 
 void ParticleEmitter::GetModifableLines(List<ModifiablePropertyLineBase *> &modifiables)

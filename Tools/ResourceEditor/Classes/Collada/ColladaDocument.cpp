@@ -66,7 +66,6 @@ eColladaErrorCodes ColladaDocument::Open( const char * filename )
 	colladaScene = new ColladaScene(loadedRootNode);
 
 	FCDGeometryLibrary * geometryLibrary = document->GetGeometryLibrary();
-
 	
 	DAVA::Logger::FrameworkDebug("* Export geometry: %d\n", (int)geometryLibrary->GetEntityCount());
 	for (int entityIndex = 0; entityIndex < (int)geometryLibrary->GetEntityCount(); ++entityIndex)
@@ -121,8 +120,8 @@ eColladaErrorCodes ColladaDocument::Open( const char * filename )
 	FCDAnimationLibrary * animationLibrary = document->GetAnimationLibrary();
 	FCDAnimationClipLibrary * animationClipLibrary = document->GetAnimationClipLibrary();
 	DAVA::Logger::FrameworkDebug("[A] Animations:%d Clips:%d\n", animationLibrary->GetEntityCount(), animationClipLibrary->GetEntityCount());
-	
-	
+
+
 	FCDControllerLibrary * controllerLibrary = document->GetControllerLibrary();
 	
 	DAVA::Logger::FrameworkDebug("* Export animation controllers: %d\n", controllerLibrary->GetEntityCount());
@@ -808,9 +807,12 @@ void ColladaDocument::WriteNodeAnimationList(ColladaAnimation * animation)
 		ColladaSceneNode * node = it->first;
 		SceneNodeAnimation * anim = it->second;
 		
-		char name[512];
-		strcpy(name, node->originalNode->GetDaeId().c_str());
-		fwrite(name, strlen(name) + 1, 1, sceneFP);
+		std::string name(node->originalNode->GetDaeId());
+		if (name.find("node-") == 0)
+		{//if node name begins from "node-"
+			name = name.substr(strlen("node-"));
+		}
+		fwrite(name.c_str(), name.length() + 1, 1, sceneFP);
 		
 		float32 duration = anim->GetDuration();
 		fwrite(&duration, sizeof(float32), 1, sceneFP);
@@ -818,8 +820,11 @@ void ColladaDocument::WriteNodeAnimationList(ColladaAnimation * animation)
 		int32 keyCount = anim->GetKeyCount();
 		fwrite(&keyCount, sizeof(int32), 1, sceneFP);
 		
-		DAVA::Logger::FrameworkDebug("-- scene node anim: %s keyCount: %d\n", name, keyCount); 
-		
+		DAVA::Logger::FrameworkDebug("-- scene node anim: %s keyCount: %d\n", name.c_str(), keyCount);
+
+		Matrix4 invPose;
+		node->localTransform.GetInverse(invPose);
+		fwrite(invPose.data, sizeof(invPose.data), 1, sceneFP);
 		SceneNodeAnimationKey * keys = anim->GetKeys();
 		for (int k = 0; k < anim->GetKeyCount(); ++k)
 		{
@@ -827,6 +832,7 @@ void ColladaDocument::WriteNodeAnimationList(ColladaAnimation * animation)
 			fwrite(&key.time, sizeof(float32), 1, sceneFP);
 			fwrite(&key.translation, sizeof(Vector3), 1, sceneFP);
 			fwrite(&key.rotation, sizeof(Quaternion), 1, sceneFP);
+			fwrite(&key.scale, sizeof(Vector3), 1, sceneFP);
 			
 			//DAVA::Logger::FrameworkDebug("---- key: %f tr: %f %f %f q: %f %f %f %f\n", key.time, key.translation.x, key.translation.y, key.translation.z
 			//, key.rotation.x, key.rotation.y, key.rotation.z, key.rotation.w); 

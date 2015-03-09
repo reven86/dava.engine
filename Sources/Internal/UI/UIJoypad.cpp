@@ -29,6 +29,7 @@
 
 
 #include "UI/UIJoypad.h"
+#include "UI/UIEvent.h"
 #include "FileSystem/Logger.h"
 #include "FileSystem/YamlNode.h"
 
@@ -112,7 +113,7 @@ void UIJoypad::CreateStickControl()
         stick = new UIControl(Rect(0, 0, 10, 10));
         stick->GetBackground()->SetAlign(ALIGN_HCENTER|ALIGN_VCENTER);
         stick->SetInputEnabled(false);
-        stick->pivotPoint = Vector2(5, 5);
+        stick->SetPivotPoint(Vector2(5, 5));
         stick->relativePosition = Vector2(size.x/2, size.y/2);
         AddControl(stick);
     }
@@ -324,14 +325,14 @@ void UIJoypad::LoadFromYamlNode(const DAVA::YamlNode *node, DAVA::UIYamlLoader *
 
 YamlNode*  UIJoypad::SaveToYamlNode(DAVA::UIYamlLoader *loader)
 {
-    UIJoypad* baseControl = new UIJoypad();
+    ScopedPtr<UIJoypad> baseControl(new UIJoypad());
 
     YamlNode *node = UIControl::SaveToYamlNode(loader);
     
     // Sprite
     if (stick && stick->GetSprite())
     {
-        node->Set("stickSprite", GetSpriteFrameworkPath(stick->GetSprite()));
+        node->Set("stickSprite", Sprite::GetPathString(stick->GetSprite()));
         node->Set("stickFrame", stick->GetFrame());
     }
 
@@ -345,7 +346,6 @@ YamlNode*  UIJoypad::SaveToYamlNode(DAVA::UIYamlLoader *loader)
         node->Set("digitalSense", GetDigitalSense());
     }
 
-    SafeRelease(baseControl);
     return node;
 }
     

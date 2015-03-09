@@ -31,6 +31,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QTextStream>
 #include <QAction>
 #include <QVariant>
+#include <QFileDialog>
+#include <QGroupBox>
+#include <QDialogButtonBox>
+#include <QDebug>
 
 #include "MaterialEditor.h"
 #include "ui_materialeditor.h"
@@ -325,7 +329,8 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
 
             // if material flag was changed we should rebuild list of all properties
             // because their set can be changed
-            if(inspCommand->dynamicInfo->GetMember()->Name() == "materialSetFlags")
+            const QString memberName = inspCommand->dynamicInfo->GetMember()->Name();   // magic
+            if (memberName == "materialSetFlags")
             {
                 FillDynamic(propertiesRoot, "materialProperties");
                 FillDynamic(texturesRoot, "textures");
@@ -390,6 +395,9 @@ void MaterialEditor::FillBase()
             {
                 QtPropertyDataInspMember *group = new QtPropertyDataInspMember(material, groupMember);
                 baseRoot->MergeChild(group, MATERIAL_GROUP_LABEL);
+
+                // Add unknown value:
+                group->AddAllowedValue(VariantType(String()), "Unknown");
 
                 // fill allowed values for material group
                 for(size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)

@@ -33,15 +33,20 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
-//#include "FTFont.h"
-//#include "Texture.h"
-//#include "Sprite.h"
 #include "Render/2D/TextBlock.h"
 
 namespace DAVA
 {
 class UIStaticText : public UIControl
 {
+public:
+    enum eMultiline
+    {
+        MULTILINE_DISABLED = 0,
+        MULTILINE_ENABLED,
+        MULTILINE_ENABLED_BY_SYMBOL
+    };
+    
 protected:
     virtual ~UIStaticText();
 public:
@@ -64,15 +69,22 @@ public:
     bool GetMultiline() const;
     bool GetMultilineBySymbol() const;
 
+    void SetMargins(const UIControlBackground::UIMargins* margins);
+    const UIControlBackground::UIMargins* GetMargins() const;
+
     void SetFittingOption(int32 fittingType);//may be FITTING_DISABLED, FITTING_ENLARGE, FITTING_REDUCE, FITTING_ENLARGE | FITTING_REDUCE
     int32 GetFittingOption() const;
 
     //for background sprite
-    virtual void SetAlign(int32 _align);
+    virtual void SetAlign(int32 _align); // TODO remove legacy methods
     virtual int32 GetAlign() const;
 
     virtual void SetTextAlign(int32 _align);
     virtual int32 GetTextAlign() const;
+	virtual int32 GetTextVisualAlign() const;
+	virtual bool GetTextIsRtl() const;
+	virtual void SetTextUseRtlAlign(bool useRtlAlign);
+    virtual bool GetTextUseRtlAlign() const;
 
     const Vector2 & GetTextSize();
 
@@ -102,7 +114,7 @@ public:
 
 protected:
     void PrepareSpriteInternal(BaseObject * caller, void * param, void *callerData);
-
+    Rect CalculateTextBlockRect(const UIGeometricData &geometricData) const;
 
 protected:
     TextBlock *textBlock;
@@ -113,6 +125,42 @@ protected:
 public:
     void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
     virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
+    
+public:
+    void SetTextWithoutRect(const WideString &text) {
+        SetText(text);
+    }
+    
+    String GetFontPresetName() const;
+    void SetFontByPresetName(const String &presetName);
+    
+    int32 GetTextColorInheritType() const;
+    void SetTextColorInheritType(int32 type);
+
+    int32 GetTextPerPixelAccuracyType() const;
+    void SetTextPerPixelAccuracyType(int32 type);
+
+    int32 GetMultilineType() const;
+    void SetMultilineType(int32 multilineType);
+    
+    
+    INTROSPECTION_EXTEND(UIStaticText, UIControl,
+                         PROPERTY("text", "Text", GetText, SetTextWithoutRect, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
+                         
+                         PROPERTY("textColor", "Text Color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("textcolorInheritType", InspDesc("Text Color Inherit Type", GlobalEnumMap<UIControlBackground::eColorInheritType>::Instance()), GetTextColorInheritType, SetTextColorInheritType, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("textperPixelAccuracyType", InspDesc("Text Per Pixel Accuracy Type", GlobalEnumMap<UIControlBackground::ePerPixelAccuracyType>::Instance()), GetTextPerPixelAccuracyType, SetTextPerPixelAccuracyType, I_SAVE | I_VIEW | I_EDIT)
+
+                         PROPERTY("shadowoffset", "Shadow Offset", GetShadowOffset, SetShadowOffset, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("shadowcolor", "Shadow Color", GetShadowColor, SetShadowColor, I_SAVE | I_VIEW | I_EDIT)
+
+                         PROPERTY("multiline", InspDesc("Multi Line", GlobalEnumMap<eMultiline>::Instance()), GetMultilineType, SetMultilineType, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("fitting", InspDesc("Fitting", GlobalEnumMap<TextBlock::eFitType>::Instance(), InspDesc::T_FLAGS), GetFittingOption, SetFittingOption, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("textalign", InspDesc("Text Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetTextAlign, SetTextAlign, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("textUseRtlAlign", "Use Rtl Align", GetTextUseRtlAlign, SetTextUseRtlAlign, I_SAVE | I_VIEW | I_EDIT)
+                         );
+
 };
 
 };

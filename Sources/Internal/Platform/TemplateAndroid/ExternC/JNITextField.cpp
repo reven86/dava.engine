@@ -40,7 +40,7 @@ extern "C"
 		DAVA::UITextFieldAndroid::TextFieldShouldReturn(id);
 	}
 
-	bool Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env, jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jbyteArray replacementString)
+	jstring Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env, jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jbyteArray replacementString)
 	{
 		DAVA::WideString string;
 
@@ -51,7 +51,34 @@ extern "C"
 
 		env->ReleaseByteArrayElements(replacementString, bufferPtr, 0);
 
-		return DAVA::UITextFieldAndroid::TextFieldKeyPressed(id, replacementLocation, replacementLength, string);
+		bool res = DAVA::UITextFieldAndroid::TextFieldKeyPressed(id, replacementLocation, replacementLength, string);
+		DAVA::String returnStr = res ? DAVA::UTF8Utils::EncodeToUTF8(string) : "";
+
+		return env->NewStringUTF(returnStr.c_str());
 	}
+
+	void Java_com_dava_framework_JNITextField_TextFieldKeyboardShown(JNIEnv* env, jobject classthis, uint32_t id, int x, int y, int dx, int dy)
+	{
+	    // Recalculate to virtual coordinates.
+	    DAVA::Vector2 keyboardOrigin(x, y);
+	    keyboardOrigin *= DAVA::UIControlSystem::Instance()->GetScaleFactor();
+	    keyboardOrigin += DAVA::UIControlSystem::Instance()->GetInputOffset();
+
+	    DAVA::Vector2 keyboardSize(dx, dy);
+	    keyboardSize *= DAVA::UIControlSystem::Instance()->GetScaleFactor();
+	    keyboardSize += DAVA::UIControlSystem::Instance()->GetInputOffset();
+
+	    DAVA::UITextFieldAndroid::TextFieldKeyboardShown(id, DAVA::Rect(keyboardOrigin, keyboardSize));
+	}
+
+	void Java_com_dava_framework_JNITextField_TextFieldKeyboardHidden(JNIEnv* env, jobject classthis, uint32_t id)
+	{
+	    DAVA::UITextFieldAndroid::TextFieldKeyboardHidden(id);
+	}
+
+    void Java_com_dava_framework_JNITextField_TextFieldFocusChanged(JNIEnv* env, jobject classthis, uint32_t id, bool hasFocus)
+    {
+        DAVA::UITextFieldAndroid::TextFieldFocusChanged(id, hasFocus);
+    }
 
 };

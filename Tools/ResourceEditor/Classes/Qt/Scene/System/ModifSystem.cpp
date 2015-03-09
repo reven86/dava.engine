@@ -456,6 +456,8 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
 	// we can start modif only if there is no locked entities
 	if(ModifCanStart(selectedEntities))
 	{
+        const bool modificationByGizmoOnly = SettingsManager::GetValue(Settings::Scene_ModificationByGizmoOnly).AsBool();
+        
 		// we can start modification only if mouse is over hood
 		// on mouse is over one of currently selected items
 		if(hoodSystem->GetPassingAxis() != ST_AXIS_NONE)
@@ -463,7 +465,7 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
 			// allow starting modification
 			modifCanStart = true;
 		}
-		else
+		else if(!modificationByGizmoOnly)
 		{
 			// send this ray to collision system and get collision objects
 			const EntityGroup *collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
@@ -799,6 +801,15 @@ void EntityModificationSystem::CloneBegin()
 			DAVA::Entity *newEntity = origEntity->Clone();
             newEntity->SetLocalTransform(modifEntities[i].originalTransform);
 
+            Scene *scene = origEntity->GetScene();
+            if(scene)
+            {
+                StaticOcclusionSystem *sosystem = scene->staticOcclusionSystem;
+                DVASSERT(sosystem);
+                
+                sosystem->InvalidateOcclusionIndicesRecursively(newEntity);
+            }
+
 			origEntity->GetParent()->AddNode(newEntity);
 
 			clonedEntities.push_back(newEntity);
@@ -965,7 +976,7 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup &entities, BakeMod
 
                     // also modify childs transform to make them be at
                     // right position after parent entity changed
-                    for(size_t i = 0; i < en->GetChildrenCount(); ++i)
+                    for(size_t i = 0; i < (size_t)en->GetChildrenCount(); ++i)
                     {
                         DAVA::Entity *childEntity = en->GetChild(i);
 
@@ -1006,7 +1017,7 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup &entities, BakeMod
 
                 // transform child entities with inversed parent transformation
                 transform.Inverse();
-                for(size_t i = 0; i < entity->GetChildrenCount(); ++i)
+                for(size_t i = 0; i < (size_t)entity->GetChildrenCount(); ++i)
                 {
                     DAVA::Entity *childEntity = entity->GetChild(i);
                     sceneEditor->Exec(new TransformCommand(childEntity, childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform));

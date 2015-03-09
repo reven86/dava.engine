@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.bda.controller.ControllerListener;
-import com.bda.controller.StateEvent;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
@@ -15,6 +13,11 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.ViewGroup.LayoutParams;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
+
+import com.bda.controller.ControllerListener;
+import com.bda.controller.StateEvent;
 
 public class JNIGLSurfaceView extends GLSurfaceView
 {
@@ -26,7 +29,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	
 	MOGAListener mogaListener = null;
 
-	boolean[] pressedKeys = new boolean[KeyEvent.getMaxKeyCode()];
+	boolean[] pressedKeys = new boolean[KeyEvent.getMaxKeyCode() + 1];
 
 	public int lastDoubleActionIdx = -1;
 	
@@ -79,9 +82,19 @@ public class JNIGLSurfaceView extends GLSurfaceView
 			setPreserveEGLContextOnPause(true);
 		}
 		
+		setDebugFlags(0);
+		
 		doubleTapDetector = new GestureDetector(JNIActivity.GetActivity(), new DoubleTapListener(this));
 	}
 	
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        // Fix lag when text field lost focus, but keyboard not closed yet. 
+        outAttrs.imeOptions = JNITextField.GetLastKeyboardIMEOptions();
+        outAttrs.inputType = JNITextField.GetLastKeyboardInputType();
+        return super.onCreateInputConnection(outAttrs);
+    }
+    
 	@Override
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 		//YZ rewrite size parameter from fill parent to fixed size
@@ -96,18 +109,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	{
 		super.onPause();
 		setRenderMode(RENDERMODE_WHEN_DIRTY);
-		queueEvent(new Runnable() 
-		{
-			public void run() 
-			{
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				mRenderer.OnPause();
-			}
-		});
+		mRenderer.OnPause();
 	}
 	
 	@Override
@@ -148,37 +150,57 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				this.tapCount = tapCount;
 			}
 		}
+		
+		final int [] axis = {
+				MotionEvent.AXIS_X,
+				MotionEvent.AXIS_Y,
+				MotionEvent.AXIS_Z,
+				MotionEvent.AXIS_RX,
+				MotionEvent.AXIS_RY,
+				MotionEvent.AXIS_RZ,
+				MotionEvent.AXIS_LTRIGGER,
+				MotionEvent.AXIS_RTRIGGER,
+				MotionEvent.AXIS_HAT_X,
+				MotionEvent.AXIS_HAT_Y,
+		};
 
 		ArrayList<InputEvent> events;
 		double time;
 		int action;
 
-		public InputRunnable(final android.view.MotionEvent event, int tapCount)
+		public InputRunnable(final android.view.MotionEvent event, final int tapCount)
 		{
 			events = new ArrayList<InputEvent>();
 			action = event.getActionMasked();
+			final int historySize = event.getHistorySize();
+			final int eventSource = event.getSource();
 			if(action == MotionEvent.ACTION_MOVE)
 			{
-				int pointerCount = event.getPointerCount();
+				final int pointerCount = event.getPointerCount();
 				for (int i = 0; i < pointerCount; ++i)
 				{
-					if((event.getSource() & InputDevice.SOURCE_CLASS_POINTER) > 0)
+					final int pointerId = event.getPointerId(i);
+
+					if((eventSource & InputDevice.SOURCE_CLASS_POINTER) > 0)
 					{
-						events.add(new InputEvent(event.getPointerId(i), event.getX(i), event.getY(i), event.getSource(), tapCount));
+						for (int h = 0; h < historySize; ++h) {
+							events.add(new InputEvent(pointerId, event.getHistoricalX(i, h), event.getHistoricalY(i, h), eventSource, tapCount));
+						}
+						
+						events.add(new InputEvent(pointerId, event.getX(i), event.getY(i), eventSource, tapCount));
 					}
-					if((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
+					if((eventSource & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
 					{
+						for (int h = 0; h < historySize; ++h) {
+							for (int a = 0; a < axis.length; ++a) {
+								events.add(new InputEvent(a, event.getHistoricalAxisValue(axis[a], i, h), 0, eventSource, tapCount));
+							}
+						}
+						
 						//InputEvent::id corresponds to axis id from UIEvent::eJoystickAxisID
-						events.add(new InputEvent(0, event.getAxisValue(MotionEvent.AXIS_X, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(1, event.getAxisValue(MotionEvent.AXIS_Y, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(2, event.getAxisValue(MotionEvent.AXIS_Z, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(3, event.getAxisValue(MotionEvent.AXIS_RX, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(4, event.getAxisValue(MotionEvent.AXIS_RY, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(5, event.getAxisValue(MotionEvent.AXIS_RZ, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(6, event.getAxisValue(MotionEvent.AXIS_LTRIGGER, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(7, event.getAxisValue(MotionEvent.AXIS_RTRIGGER, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(8, event.getAxisValue(MotionEvent.AXIS_HAT_X, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(9, event.getAxisValue(MotionEvent.AXIS_HAT_Y, i), 0, event.getSource(), tapCount));
+						for (int a = 0; a < axis.length; ++a) {
+							events.add(new InputEvent(a, event.getAxisValue(axis[a], i), 0, eventSource, tapCount));
+						}
 	    			}
 	    		}
     		}
@@ -186,7 +208,13 @@ public class JNIGLSurfaceView extends GLSurfaceView
     		{
     			int actionIdx = event.getActionIndex();
     			assert(actionIdx <= event.getPointerCount());
-    			events.add(new InputEvent(event.getPointerId(actionIdx), event.getX(actionIdx), event.getY(actionIdx), event.getSource(), tapCount));
+    			
+    			final int pointerId = event.getPointerId(actionIdx);
+    			for (int h = 0; h < historySize; ++h) {
+					events.add(new InputEvent(pointerId, event.getHistoricalX(actionIdx, h), event.getHistoricalY(actionIdx, h), eventSource, tapCount));
+				}
+    			
+    			events.add(new InputEvent(pointerId, event.getX(actionIdx), event.getY(actionIdx), eventSource, tapCount));
     		}
     	}
     	public InputRunnable(final com.bda.controller.MotionEvent event)
@@ -255,6 +283,12 @@ public class JNIGLSurfaceView extends GLSurfaceView
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+    	// Check keyCode value for pressedKeys array limit
+    	if(keyCode >= pressedKeys.length)
+    	{
+    		return super.onKeyDown(keyCode, event);
+    	}
+    	
     	if(pressedKeys[keyCode] == false)
     		queueEvent(new KeyInputRunnable(keyCode));
     	pressedKeys[keyCode] = true;
@@ -267,6 +301,12 @@ public class JNIGLSurfaceView extends GLSurfaceView
     
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+    	// Check keyCode value for pressedKeys array limit
+    	if(keyCode >= pressedKeys.length)
+    	{
+    		return super.onKeyUp(keyCode, event);
+    	}
+    	
     	pressedKeys[keyCode] = false;
         nativeOnKeyUp(keyCode);
     	return super.onKeyUp(keyCode, event);

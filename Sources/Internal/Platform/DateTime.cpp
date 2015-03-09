@@ -584,7 +584,7 @@ Timestamp DateTime::InternalTimeGm(std::tm *t) const
         year -= yearsDiff;
         month+=12 * yearsDiff;
     }
-    month++;
+
     int32 day = t->tm_mday;
     int32 dayOfYear = DaysFrom1jan(year,month,day);
     int32 daysSinceEpoch = DaysFrom1970(year) + dayOfYear;

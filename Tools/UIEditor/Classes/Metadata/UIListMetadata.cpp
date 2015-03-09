@@ -52,7 +52,7 @@ void UIListMetadata::InitializeControl(const String& controlName, const Vector2&
     {
 		// Initialize UIList
         UIList* list = static_cast<UIList*>(this->treeNodeParams[i].GetUIControl());
-        EditorListDelegate *editorList = new EditorListDelegate(list->GetRect(), list->GetOrientation());
+        EditorListDelegate *editorList = new EditorListDelegate(list);
         list->SetDelegate(editorList);
         list->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     }	
@@ -104,9 +104,9 @@ void UIListMetadata::SetOrientation(int value)
 	GetActiveUIList()->SetOrientation((UIList::eListOrientation)value);
 }
 
-void UIListMetadata::SetActiveControlRect(const Rect& rect, bool restoreAlign)
+void UIListMetadata::SetActiveControlRect(const Rect& rect, bool restoreAlign, bool alignToIntegerPos)
 {
-	UIControlMetadata::SetActiveControlRect(rect, restoreAlign);
+	UIControlMetadata::SetActiveControlRect(rect, restoreAlign, alignToIntegerPos);
 	UpdateListCellSize();
 }
 
@@ -193,12 +193,6 @@ void UIListMetadata::UpdateListCellSize()
 	editorList->ResetElementsCount();
 	// Refresh list - and recreate cells
 	GetActiveUIList()->Refresh();
-}
-
-void UIListMetadata::SetVisible(const bool value)
-{
-    // UIList must update its children hierarchically.
-    SetUIControlVisible(value, true);
 }
 
 };

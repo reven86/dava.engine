@@ -201,7 +201,7 @@
      <x>0</x>
      <y>0</y>
      <width>1103</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -276,6 +276,7 @@
     <addaction name="actionMaterialEditor"/>
     <addaction name="actionCubemapEditor"/>
     <addaction name="actionImageSplitter"/>
+    <addaction name="actionHeightmap_Delta_Tool"/>
     <addaction name="separator"/>
     <addaction name="actionShowSettings"/>
    </widget>
@@ -322,6 +323,7 @@
     <addaction name="separator"/>
     <addaction name="actionShowEditorGizmo"/>
     <addaction name="actionLightmapCanvas"/>
+    <addaction name="actionShowStaticOcclusion"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -393,7 +395,6 @@
     <addaction name="actionReloadShader"/>
     <addaction name="actionConvertModifiedTextures"/>
     <addaction name="separator"/>
-    <addaction name="actionSetShadowColor"/>
     <addaction name="menuDynamicShadowBlendMode"/>
     <addaction name="separator"/>
     <addaction name="actionHeightMapEditor"/>
@@ -426,6 +427,8 @@
      <string>Debug Functions</string>
     </property>
     <addaction name="actionGridCopy"/>
+    <addaction name="actionBatchProcess"/>
+    <addaction name="actionCreateTestSkinnedObject"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -493,29 +496,6 @@
    <addaction name="separator"/>
    <addaction name="actionManualModifMode"/>
    <addaction name="actionModifyReset"/>
-  </widget>
-  <widget class="QToolBar" name="viewModeToolBar">
-   <property name="windowTitle">
-    <string>View Mode Toolbar</string>
-   </property>
-   <property name="movable">
-    <bool>true</bool>
-   </property>
-   <property name="allowedAreas">
-    <set>Qt::TopToolBarArea</set>
-   </property>
-   <property name="iconSize">
-    <size>
-     <width>16</width>
-     <height>16</height>
-    </size>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
   </widget>
   <widget class="StatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dockSceneInfo">
@@ -657,15 +637,6 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockConsole">
-   <property name="windowTitle">
-    <string>Console</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-   <widget class="ConsoleWidget" name="dockConsoleContents"/>
-  </widget>
   <widget class="QDockWidget" name="dockLODEditor">
    <property name="windowTitle">
     <string>LOD Editor</string>
@@ -697,8 +668,6 @@
    <addaction name="actionRulerTool"/>
    <addaction name="actionCustomColorsEditor"/>
    <addaction name="actionVisibilityCheckTool"/>
-   <addaction name="separator"/>
-   <addaction name="actionGrasEditor"/>
   </widget>
   <widget class="QDockWidget" name="dockLandscapeEditorControls">
    <property name="windowTitle">
@@ -730,7 +699,6 @@
    </attribute>
    <addaction name="actionReloadSprites"/>
    <addaction name="actionReloadShader"/>
-   <addaction name="actionSetShadowColor"/>
    <addaction name="actionConvertModifiedTextures"/>
   </widget>
   <widget class="QDockWidget" name="dockLibrary">
@@ -1386,15 +1354,6 @@
     <string>Setup Skybox</string>
    </property>
   </action>
-  <action name="actionSetShadowColor">
-   <property name="icon">
-    <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/color.png</normaloff>:/QtIcons/color.png</iconset>
-   </property>
-   <property name="text">
-    <string>Dynamic Shadow Color</string>
-   </property>
-  </action>
   <action name="actionDynamicBlendModeAlpha">
    <property name="checkable">
     <bool>true</bool>
@@ -1945,6 +1904,47 @@
     <string>Invalidate Static Occlusion</string>
    </property>
   </action>
+  <action name="actionShowStaticOcclusion">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/so.png</normaloff>:/QtIcons/so.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show Static Occlusion</string>
+   </property>
+  </action>
+  <action name="actionHeightmap_Delta_Tool">
+   <property name="text">
+    <string>Height Delta Tool</string>
+   </property>
+  </action>
+  <action name="actionBatchProcess">
+   <property name="text">
+    <string>BatchProcess</string>
+   </property>
+   <property name="toolTip">
+    <string>BatchProcess</string>
+   </property>
+  </action>
+  <action name="actionAddSkeletonComponent">
+   <property name="text">
+    <string>Add Skeleton Component</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Skeleton Component</string>
+   </property>
+  </action>
+  <action name="actionCreateTestSkinnedObject">
+   <property name="text">
+    <string>Create Test Skinned Object</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -2008,12 +2008,6 @@
    <class>LibraryWidget</class>
    <extends>QWidget</extends>
    <header>DockLibrary/LibraryWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ConsoleWidget</class>
-   <extends>QWidget</extends>
-   <header>DockConsole/ConsoleWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

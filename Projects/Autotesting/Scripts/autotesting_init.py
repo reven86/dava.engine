@@ -53,10 +53,10 @@ scripts = ["/copy_tests.py"]
 
 if (platform.system() == "Darwin"):
     if (platformName == "iOS"):
-        scripts.append("/runOnDevice.sh")
-        scripts.append("/floatsign.sh")
+        #scripts.append("/runOnDevice.sh")
+        #scripts.append("/floatsign.sh")
         scripts.append("/packipa.sh")
-        scripts.append("/transporter_chief.rb")
+        #scripts.append("/transporter_chief.rb")
         scripts.append("/testRun.js")
 
     

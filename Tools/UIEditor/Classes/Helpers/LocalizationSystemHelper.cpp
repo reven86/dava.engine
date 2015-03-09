@@ -37,7 +37,7 @@ using namespace DAVA;
 const LocalizationSystemHelper::LocalizationSystemHelperData LocalizationSystemHelper::helperData[] =
 {
     {"en", "English"},
-	{"ru", "Russian"},
+    {"ru", "Russian"},
     {"de", "German"},
     {"es", "Spanish"},
     {"fr", "French"},
@@ -50,7 +50,10 @@ const LocalizationSystemHelper::LocalizationSystemHelperData LocalizationSystemH
     {"ja", "Japanese"},
     {"ko", "Korean"},
     {"zh-Hant", "Chinese(Traditional)"},
-    {"zh-Hans", "Chinese(Simplified)"}
+    {"zh-Hans", "Chinese(Simplified)"},
+    {"ar", "Arabic"},
+    {"th", "Thai"},
+    {"vi", "Vietnamese"},
     //{"nl", "Dutch"},
     //{"sv", "Swedish"}
 };

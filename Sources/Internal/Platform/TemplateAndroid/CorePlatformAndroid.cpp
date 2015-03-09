@@ -39,6 +39,8 @@ extern void FrameworkWillTerminate();
 #include "Platform/Thread.h"
 #include "Input/InputSystem.h"
 #include "FileSystem/FileSystem.h"
+#include "Scene3D/SceneCache.h"
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 
 namespace DAVA
 {
@@ -68,7 +70,7 @@ namespace DAVA
 		return DEVICE_HANDSET;
 	}
 
-	CorePlatformAndroid::CorePlatformAndroid()
+	CorePlatformAndroid::CorePlatformAndroid(const String& cmdLine)
 	: Core()
 	{
 		wasCreated = false;
@@ -78,6 +80,8 @@ namespace DAVA
 		screenOrientation = Core::SCREEN_ORIENTATION_PORTRAIT; //no need rotate GL for Android
 
 		foreground = false;
+
+		SetCommandLine(cmdLine);
 	}
 
 	int Core::Run(int argc, char * argv[], AppHandle handle)
@@ -128,9 +132,25 @@ namespace DAVA
 	{
 		if(renderIsActive)
 		{
+			uint64 startTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
+		
 			DAVA::RenderManager::Instance()->Lock();
 			Core::SystemProcessFrame();
 			DAVA::RenderManager::Instance()->Unlock();
+
+			uint32 elapsedTime = (uint32) (SystemTimer::Instance()->AbsoluteMS() - startTime);
+            int32 sleepMs = 1;
+
+            int32 fps = RenderManager::Instance()->GetFPS();
+            if(fps > 0)
+            {
+                sleepMs = (1000 / fps) - elapsedTime;
+                if(sleepMs < 1)
+                {
+                    sleepMs = 1;
+                }
+            }
+            Thread::Sleep(sleepMs);
 		}
 	}
 
@@ -158,12 +178,15 @@ namespace DAVA
 		Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] done");
 	}
 
-	void CorePlatformAndroid::CreateAndroidWindow(const char8 *docPath, const char8 *assets, const char8 *logTag, AndroidSystemDelegate * sysDelegate)
+	void CorePlatformAndroid::CreateAndroidWindow(const char8 *docPathEx, const char8 *docPathIn, const char8 *assets, const char8 *logTag, AndroidSystemDelegate * sysDelegate)
 	{
 		androidDelegate = sysDelegate;
-		externalStorage = docPath;
-
+		externalStorage = docPathEx;
+		internalStorage = docPathIn;
+	
 		Core::CreateSingletons();
+
+		AssetsManager::Instance()->Init(assets);
 
 		Logger::SetTag(logTag);
 	}
@@ -176,6 +199,8 @@ namespace DAVA
 
 		Thread::InitGLThread();
 
+		totalTouches.clear();
+
 		if(wasCreated)
 		{
 			RenderManager::Instance()->Lost();
@@ -186,13 +211,45 @@ namespace DAVA
 
 			RenderManager::Instance()->Invalidate();
 			RenderResource::InvalidateAllResources();
+			
+			SceneCache::Instance()->InvalidateSceneMaterials();
 		}
 		else
 		{
 			wasCreated = true;
 
 			Logger::Debug("[CorePlatformAndroid::] before create renderer");
-			RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
+			const GLubyte* glVersion = glGetString(GL_VERSION);
+			Logger::Debug("RENDERER glVersion %s",(const char*)glVersion);
+			if ((NULL != glVersion))
+			{
+				String ver((const char*)glVersion);
+				std::size_t found = ver.find_first_of(".");
+				if (found!=std::string::npos && found > 0)
+				{
+					char cv = ver.at(found-1);
+					int major = atoi(&cv);
+					if(major >= 3)
+					{
+						RenderManager::Create(Core::RENDERER_OPENGL_ES_3_0);
+						Logger::Debug("RENDERER_OPENGL_ES_3_0 ");
+					} else
+					{
+						RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
+						Logger::Debug("RENDERER_OPENGL_ES_2_0 ");
+					}
+				}else
+				{
+					RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
+					Logger::Debug("RENDERER_OPENGL_ES_2_0 GLVersion invalid format");
+				}
+
+			} else
+			{
+				RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
+				Logger::Debug("RENDERER_OPENGL_ES_2_0 NULL");
+			}
+
 			FileSystem::Instance()->Init();
 
 			RenderManager::Instance()->InitFBO(androidDelegate->RenderBuffer(), androidDelegate->FrameBuffer());
@@ -343,16 +400,6 @@ namespace DAVA
 		newEvent.timestamp = time;
 
 		return newEvent;
-	}
-
-	AAssetManager * CorePlatformAndroid::GetAssetManager()
-	{
-		return assetMngr;
-	}
-
-	void CorePlatformAndroid::SetAssetManager(AAssetManager * mngr)
-	{
-		assetMngr = mngr;
 	}
 
 	void CorePlatformAndroid::OnInput(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)

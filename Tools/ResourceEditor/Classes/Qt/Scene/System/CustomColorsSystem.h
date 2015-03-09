@@ -31,16 +31,13 @@
 #ifndef __RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__
 #define __RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__
 
-#include "DAVAEngine.h"
+#include "LandscapeEditorSystem.h"
 #include "LandscapeEditorDrawSystem.h"
 #include "Main/Request.h"
 
-class SceneCollisionSystem;
-class SceneSelectionSystem;
-class EntityModificationSystem;
 class Command2;
 
-class CustomColorsSystem: public DAVA::SceneSystem
+class CustomColorsSystem: public LandscapeEditorSystem
 {
 public:
 	CustomColorsSystem(Scene* scene);
@@ -48,7 +45,6 @@ public:
 	
 	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
 	bool DisableLandscapeEdititing(bool saveNeeded = true);
-	bool IsLandscapeEditingEnabled() const;
 	
 	virtual void Process(DAVA::float32 timeElapsed);
 	void ProcessUIEvent(DAVA::UIEvent *event);
@@ -65,33 +61,19 @@ public:
 	bool ChangesPresent();
 		
 protected:
-	bool enabled;
 	
-	SceneCollisionSystem* collisionSystem;
-	SceneSelectionSystem* selectionSystem;
-	EntityModificationSystem* modifSystem;
-	LandscapeEditorDrawSystem* drawSystem;
-	
-	int32 landscapeSize;
-	Texture* cursorTexture;
-	uint32 cursorSize;
 	uint32 curToolSize;
 	Sprite* toolImageSprite;
 
 	Color drawColor;
 	int32 colorIndex;
 
-	bool isIntersectsLandscape;
-	Vector2 cursorPosition;
-	Vector2 prevCursorPos;
-	
 	Rect updatedRectAccumulator;
 	
 	bool editingIsEnabled;
 	
 	Image* originalImage;
 	
-	void UpdateCursorPosition();
 	void UpdateToolImage(bool force = false);
 	void UpdateBrushTool(float32 timeElapsed);
 	Image* CreateToolImage(int32 sideSize, const FilePath& filePath);
@@ -111,7 +93,6 @@ protected:
 	String GetRelativePathToProjectPath(const FilePath& absolutePath);
 	FilePath GetAbsolutePathFromProjectPath(const String& relativePath);
 
-	LandscapeEditorDrawSystem::eErrorType IsCanBeEnabled();
 
 	void FinishEditing();
 

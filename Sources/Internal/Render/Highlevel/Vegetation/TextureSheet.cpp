@@ -43,7 +43,7 @@ void TextureSheet::Load(const FilePath &yamlPath)
         
         if(NULL != rootNode)
         {
-            for(int32 i = 0; i < rootNode->GetCount(); ++i)
+            for(uint32 i = 0; i < rootNode->GetCount(); ++i)
             {
                 if(rootNode->GetItemKeyName(i) == "cell")
                 {
@@ -64,7 +64,7 @@ void TextureSheet::Load(const FilePath &yamlPath)
                         c.geometryScale = cellScale->AsVector2();
                     }
                     
-                    for(int32 j = 0; j < cellCoords->GetCount(); ++j)
+                    for(uint32 j = 0; j < cellCoords->GetCount(); ++j)
                     {
                         if(j < MAX_CELL_TEXTURE_COORDS)
                         {

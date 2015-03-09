@@ -179,6 +179,8 @@ public:
 	static const FastName TEXTURE_DECAL;
 	static const FastName TEXTURE_CUBEMAP;
     static const FastName TEXTURE_HEIGHTMAP;
+    static const FastName TEXTURE_DECALMASK;
+    static const FastName TEXTURE_DECALTEXTURE;
     
     static const FastName TEXTURE_DYNAMIC_REFLECTION;
     static const FastName TEXTURE_DYNAMIC_REFRACTION;
@@ -197,24 +199,36 @@ public:
 	static const FastName PARAM_FOG_DENSITY;
     static const FastName PARAM_FOG_START;
     static const FastName PARAM_FOG_END;
+    static const FastName PARAM_FOG_ATMOSPHERE_COLOR_SUN;
+    static const FastName PARAM_FOG_ATMOSPHERE_COLOR_SKY;
+    static const FastName PARAM_FOG_ATMOSPHERE_SCATTERING;
+    static const FastName PARAM_FOG_ATMOSPHERE_DISTANCE;
+    static const FastName PARAM_FOG_HALFSPACE_HEIGHT;
+    static const FastName PARAM_FOG_HALFSPACE_DENSITY;
+    static const FastName PARAM_FOG_HALFSPACE_FALLOFF;
+    static const FastName PARAM_FOG_HALFSPACE_LIMIT;
 	static const FastName PARAM_FLAT_COLOR;
 	static const FastName PARAM_TEXTURE0_SHIFT;
 	static const FastName PARAM_UV_OFFSET;
 	static const FastName PARAM_UV_SCALE;
     static const FastName PARAM_LIGHTMAP_SIZE;
     static const FastName PARAM_SHADOW_COLOR;
-
+    static const FastName PARAM_DECAL_TILE_SCALE;
+    static const FastName PARAM_DECAL_TILE_COLOR;
     static const FastName PARAM_RCP_SCREEN_SIZE;
     static const FastName PARAM_SCREEN_OFFSET;
     
 	static const FastName FLAG_VERTEXFOG;
 	static const FastName FLAG_FOG_EXP;
 	static const FastName FLAG_FOG_LINEAR;
+    static const FastName FLAG_FOG_HALFSPACE;
+    static const FastName FLAG_FOG_HALFSPACE_LINEAR;
+	static const FastName FLAG_FOG_ATMOSPHERE;
 	static const FastName FLAG_TEXTURESHIFT;
 	static const FastName FLAG_TEXTURE0_ANIMATION_SHIFT;
 	static const FastName FLAG_WAVE_ANIMATION;
 	static const FastName FLAG_FAST_NORMALIZATION;    
-    
+    static const FastName FLAG_TILED_DECAL;
 	static const FastName FLAG_FLATCOLOR;
     static const FastName FLAG_DISTANCEATTENUATION;
     static const FastName FLAG_SPECULAR;
@@ -224,6 +238,8 @@ public:
     static const FastName FLAG_TANGENT_SPACE_WATER_REFLECTIONS;
     
     static const FastName FLAG_DEBUG_UNITY_Z_NORMAL;
+
+    static const FastName FLAG_SKINNING;
     
 	static const FastName FLAG_LIGHTMAPONLY;
 	static const FastName FLAG_TEXTUREONLY; //VI: this flag is for backward compatibility with old materials. See FLAG_ALBEDOONLY
@@ -295,7 +311,13 @@ public:
 	//setting properties via special setters
 	inline uint8 GetDynamicBindFlags() const;
 	//}END TODO
-	
+
+    /**
+    \brief Returns using material flags.
+    \param[in] reference vector
+    */
+    inline void GetFlags(Vector<FastName> &flagsCollection) const;
+
     /**
 	 \brief Renders given polygon group with the current material.
      \param[in] polygonGroup polygon group to render.
@@ -705,6 +727,11 @@ public:
     void BuildActiveUniformsCacheParamsCache();
     
     /**
+	 \brief Rebuilds cache of texture parameters
+	 */
+    void BuildTextureParamsCache();
+    
+    /**
 	 \brief Marks all material properties as dirty to re-bind them to shader
 	 */
     void InvalidateProperties();
@@ -1060,7 +1087,7 @@ inline uint32 NMaterial::GetChildrenCount() const
 
 inline NMaterial* NMaterial::GetChild(uint32 index) const
 {
-    DVASSERT(index >= 0 && index < children.size());
+    DVASSERT(index < children.size());
     return children[index];
 }
 
@@ -1102,6 +1129,17 @@ inline const NMaterialTemplate* NMaterial::GetMaterialTemplate() const
 inline uint8 NMaterial::GetDynamicBindFlags() const
 {
     return dynamicBindFlags;
+}
+
+inline void NMaterial::GetFlags(Vector<FastName> &flagsCollection) const
+{
+    flagsCollection.reserve(flagsCollection.size() + materialSetFlags.size());
+
+    const HashMap<FastName, int32>& hash = materialSetFlags;
+    for (HashMap<FastName, int32>::iterator it = hash.begin(); it != hash.end(); ++it)
+    {
+        flagsCollection.push_back((*it).first);
+    }
 }
 
 inline IlluminationParams::IlluminationParams(NMaterial* parentMaterial) :

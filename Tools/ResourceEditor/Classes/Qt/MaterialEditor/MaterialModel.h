@@ -45,9 +45,18 @@ class Command2;
 class EntityGroup;
 struct TextureInfo;
 
-class MaterialModel: public QStandardItemModel
+class MaterialModel
+    : public QStandardItemModel
 {
     Q_OBJECT
+
+public:
+    enum Columns
+    {
+        TITLE_COLUMN,
+        LOD_COLUMN,
+        SWITCH_COLUMN,
+    };
     
 public:
     MaterialModel(QObject *parent = 0);

@@ -92,6 +92,7 @@ SceneNodeAnimationKey & SceneNodeAnimation::Intepolate(float32 t)
 
 	currentValue.translation.Lerp(key1.translation, key2.translation, tInter);
 	currentValue.rotation.Slerp(key1.rotation, key2.rotation, tInter);
+	currentValue.scale.Lerp(key1.scale, key2.scale, tInter);
 	//currentValue.matrix = key1.matrix;
 	return currentValue;
 }
@@ -109,6 +110,15 @@ void SceneNodeAnimation::SetBindNode(Entity * _bindNode)
 void SceneNodeAnimation::SetBindName(const FastName & _bindName)
 {
 	bindName = _bindName;
+}
+
+void SceneNodeAnimation::SetInvPose(const Matrix4& mat)
+{
+	invPose = mat;
+}
+const Matrix4& SceneNodeAnimation::GetInvPose() const
+{
+	return invPose;
 }
 	
 void SceneNodeAnimation::Update(float32 timeElapsed)

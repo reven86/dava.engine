@@ -66,5 +66,26 @@ private:
 
     DAVA::Entity *entity;
     DAVA::SoundEvent *savedEvent;
+    bool wasActive;
+};
+
+class SetSoundEventFlagsCommand : public Command2
+{
+public:
+    SetSoundEventFlagsCommand(DAVA::Entity *entity, DAVA::uint32 eventIndex, DAVA::uint32 flags);
+    ~SetSoundEventFlagsCommand();
+
+    virtual void Undo();
+    virtual void Redo();
+
+    virtual DAVA::Entity* GetEntity() const;
+
+private:
+    DAVA::Entity *entity;
+    DAVA::SoundComponent *affectComponent;
+
+    DAVA::uint32 index;
+    DAVA::uint32 oldFlags;
+    DAVA::uint32 newFlags;
 };
 #endif // __SOUND_COMPONENT_COMMANDS_H__

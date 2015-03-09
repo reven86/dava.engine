@@ -32,6 +32,7 @@
 #include "Scene3D/Scene.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
+#include "Render/OcclusionQuery.h"
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
 
@@ -43,6 +44,7 @@ namespace DAVA
 UI3DView::UI3DView(const Rect &rect, bool rectInAbsoluteCoordinates)
     :   UIControl(rect, rectInAbsoluteCoordinates)
     ,   scene(0)
+    ,   registeredInUIControlSystem(false)
 {
 
 }
@@ -88,6 +90,11 @@ void UI3DView::Update(float32 timeElapsed)
 
 void UI3DView::Draw(const UIGeometricData & geometricData)
 {
+	bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
+
+	if (uiDrawQueryWasOpen)
+		FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
+
 #if 1
 	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
 	
@@ -123,6 +130,9 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
         //    Logger::Info("Proj matrix");
         //    projectionSave.Dump();
 #endif
+
+	if (uiDrawQueryWasOpen)
+		FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 }
     
 void UI3DView::SetSize(const DAVA::Vector2 &newSize)
@@ -146,13 +156,21 @@ UIControl* UI3DView::Clone()
     return ui3DView;
 }
 
-void UI3DView::DidAppear()
+void UI3DView::WillBecomeVisible()
 {
-    UIControlSystem::Instance()->UI3DViewAdded();
+    if (!registeredInUIControlSystem)
+    {
+        registeredInUIControlSystem = true;
+        UIControlSystem::Instance()->UI3DViewAdded();
+    }
 }
-void UI3DView::DidDisappear()
+void UI3DView::WillBecomeInvisible()
 {
-    UIControlSystem::Instance()->UI3DViewRemoved();
+    if (registeredInUIControlSystem)
+    {
+        registeredInUIControlSystem = false;
+        UIControlSystem::Instance()->UI3DViewRemoved();
+    }
 }
 
 }

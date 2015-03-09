@@ -255,7 +255,7 @@ namespace DAVA
 		RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
 		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
 		UIControlSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-		Core::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+        Core::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 
 		return true;
 	}
@@ -400,7 +400,7 @@ namespace DAVA
 		RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
 		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
 		UIControlSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-		Core::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+        Core::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 	}
 
 	Core::eScreenMode CoreWin32Platform::GetScreenMode()
@@ -820,6 +820,8 @@ namespace DAVA
 
                 OnMouseEvent(raw->data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y), raw->data.mouse.usButtonData); // only move, drag and wheel events
             }
+
+            SafeDeleteArray(lpb);
 
             break;
         }

@@ -53,6 +53,28 @@
 
 #include "Metadata/Custom/GuideMetadata.h"
 
+#include "alignspropertygridwidget.h"
+#include "backgroundpropertygridwidget.h"
+#include "basepropertygridwidget.h"
+#include "controlpropertygridwidget.h"
+#include "flagspropertygridwidget.h"
+#include "listpropertygridwidget.h"
+#include "rectpropertygridwidget.h"
+#include "scrollviewpropertygridwidget.h"
+#include "scrollcontrolpropertygridwidget.h"
+#include "sliderpropertygridwidget.h"
+#include "spinnerpropertygridwidget.h"
+#include "statepropertygridwidget.h"
+#include "textpropertygridwidget.h"
+#include "uitextfieldpropertygridwidget.h"
+#include "uistatictextpropertygridwidget.h"
+#include "particleeffectpropertygridwidget.h"
+#include "joypadpropertygridwidget.h"
+#include "webviewpropertygridwidget.h"
+#include "UIListCellPropertyGridWidget.h"
+
+#include "Custom/guidepropertygridwidget.h"
+
 using namespace DAVA;
 
 PropertyGridWidgetsFactory::PropertyGridWidgetsFactory()
@@ -87,7 +109,8 @@ PropertyGridWidgetsFactory::PropertyGridWidgetsFactory()
     uiTextFieldWidget = new UITextFieldPropertyGridWidget();
     registeredWidgets.push_back(uiTextFieldWidget);
 
-    backgroundWidget = new BackGroundPropertyGridWidget();
+    backgroundWidget = new BackgroundPropertyGridWidget("Background", "");
+    backgroundWidget->ForceExpand(true);
     registeredWidgets.push_back(backgroundWidget);
 	    
     flagsWidget = new FlagsPropertyGridWidget();

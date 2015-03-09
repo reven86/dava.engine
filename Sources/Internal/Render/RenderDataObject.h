@@ -57,8 +57,8 @@ public:
     int32 size;
     int32 stride;
     const void * pointer;
-#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)
-    void * savedPointerData;
+#if defined (__DAVAENGINE_ANDROID__)
+    const void * savedPointerData;
 #endif //#if defined (__DAVAENGINE_ANDROID__)
 };
 
@@ -84,13 +84,14 @@ public:
 	void BuildVertexBufferInternal(BaseObject * caller, void * param, void *callerData);
 	void DeleteBuffersInternal(BaseObject * caller, void * param, void *callerData);
     
-//#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)
-//	virtual void SaveToSystemMemory();
-//	virtual void Lost();
-//	virtual void Invalidate();
-//	int32 savedVertexCount;
-//    bool isLost;
-//#endif //#if defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_ANDROID__)
+	virtual void SaveToSystemMemory();
+	virtual void Lost();
+	virtual void Invalidate();
+	int32 savedVertexCount;
+    bool isLost;
+    bool buildIndexBuffer;
+#endif //#if defined(__DAVAENGINE_ANDROID__)
     
     void SetIndices(eIndexFormat format, uint8 * indices, int32 count);
     void BuildIndexBuffer(bool synchronously = false);
@@ -113,9 +114,9 @@ private:
     
     eIndexFormat indexFormat;
     uint8 * indices;
-//#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)
-//    uint8 * savedIndices;
-//#endif //#if defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_ANDROID__)
+    uint8 * savedIndices;
+#endif //#if defined(__DAVAENGINE_ANDROID__)
     uint32 indexBuffer;
     int32 indexCount;
     

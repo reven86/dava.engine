@@ -38,7 +38,6 @@
 
 namespace DAVA 
 {
-	REGISTER_CLASS(WindComponent)
 
 WindComponent::WindComponent() :
     windForce(1.f),

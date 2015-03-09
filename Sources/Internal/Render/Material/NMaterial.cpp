@@ -61,6 +61,8 @@ const FastName NMaterial::TEXTURE_LIGHTMAP("lightmap");
 const FastName NMaterial::TEXTURE_DECAL("decal");
 const FastName NMaterial::TEXTURE_CUBEMAP("cubemap");
 const FastName NMaterial::TEXTURE_HEIGHTMAP("heightmap");
+const FastName NMaterial::TEXTURE_DECALMASK("decalmask");
+const FastName NMaterial::TEXTURE_DECALTEXTURE("decaltexture");
 
 const FastName NMaterial::TEXTURE_DYNAMIC_REFLECTION("dynamicReflection");
 const FastName NMaterial::TEXTURE_DYNAMIC_REFRACTION("dynamicRefraction");
@@ -79,25 +81,36 @@ const FastName NMaterial::PARAM_FOG_COLOR("fogColor");
 const FastName NMaterial::PARAM_FOG_DENSITY("fogDensity");
 const FastName NMaterial::PARAM_FOG_START("fogStart");
 const FastName NMaterial::PARAM_FOG_END("fogEnd");
+const FastName NMaterial::PARAM_FOG_HALFSPACE_DENSITY("fogHalfspaceDensity");
+const FastName NMaterial::PARAM_FOG_HALFSPACE_HEIGHT("fogHalfspaceHeight");
+const FastName NMaterial::PARAM_FOG_HALFSPACE_FALLOFF("fogHalfspaceFalloff");
+const FastName NMaterial::PARAM_FOG_HALFSPACE_LIMIT("fogHalfspaceLimit");
+const FastName NMaterial::PARAM_FOG_ATMOSPHERE_COLOR_SUN("fogAtmosphereColorSun");
+const FastName NMaterial::PARAM_FOG_ATMOSPHERE_COLOR_SKY("fogAtmosphereColorSky");
+const FastName NMaterial::PARAM_FOG_ATMOSPHERE_SCATTERING("fogAtmosphereScattering");
+const FastName NMaterial::PARAM_FOG_ATMOSPHERE_DISTANCE("fogAtmosphereDistance");
 const FastName NMaterial::PARAM_FLAT_COLOR("flatColor");
 const FastName NMaterial::PARAM_TEXTURE0_SHIFT("texture0Shift");
 const FastName NMaterial::PARAM_UV_OFFSET("uvOffset");
 const FastName NMaterial::PARAM_UV_SCALE("uvScale");
 const FastName NMaterial::PARAM_LIGHTMAP_SIZE("lightmapSize");
 const FastName NMaterial::PARAM_SHADOW_COLOR("shadowColor");
-
+const FastName NMaterial::PARAM_DECAL_TILE_SCALE("decalTileCoordScale");
+const FastName NMaterial::PARAM_DECAL_TILE_COLOR("decalTileColor");
 const FastName NMaterial::PARAM_RCP_SCREEN_SIZE("rcpScreenSize");
 const FastName NMaterial::PARAM_SCREEN_OFFSET("screenOffset");
-
 
 const FastName NMaterial::FLAG_VERTEXFOG = FastName("VERTEX_FOG");
 const FastName NMaterial::FLAG_FOG_EXP = FastName("FOG_EXP");
 const FastName NMaterial::FLAG_FOG_LINEAR = FastName("FOG_LINEAR");
+const FastName NMaterial::FLAG_FOG_HALFSPACE = FastName("FOG_HALFSPACE");
+const FastName NMaterial::FLAG_FOG_HALFSPACE_LINEAR = FastName("FOG_HALFSPACE_LINEAR");
+const FastName NMaterial::FLAG_FOG_ATMOSPHERE = FastName("FOG_ATMOSPHERE");
 const FastName NMaterial::FLAG_TEXTURESHIFT = FastName("TEXTURE0_SHIFT_ENABLED");
 const FastName NMaterial::FLAG_TEXTURE0_ANIMATION_SHIFT = FastName("TEXTURE0_ANIMATION_SHIFT");
 const FastName NMaterial::FLAG_WAVE_ANIMATION = FastName("WAVE_ANIMATION");
 const FastName NMaterial::FLAG_FAST_NORMALIZATION = FastName("FAST_NORMALIZATION");
-
+const FastName NMaterial::FLAG_TILED_DECAL = FastName("TILED_DECAL");
 const FastName NMaterial::FLAG_FLATCOLOR = FastName("FLATCOLOR");
 const FastName NMaterial::FLAG_DISTANCEATTENUATION = FastName("DISTANCE_ATTENUATION");
 const FastName NMaterial::FLAG_SPECULAR = FastName("SPECULAR");
@@ -107,6 +120,8 @@ const FastName NMaterial::FLAG_SPHERICAL_LIT = FastName("SPHERICAL_LIT");
 const FastName NMaterial::FLAG_TANGENT_SPACE_WATER_REFLECTIONS = FastName("TANGENT_SPACE_WATER_REFLECTIONS");
 
 const FastName NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL = FastName("DEBUG_UNITY_Z_NORMAL");
+
+const FastName NMaterial::FLAG_SKINNING = FastName("SKINNING");
 
 const FastName NMaterial::FLAG_LIGHTMAPONLY = FastName("MATERIAL_VIEW_LIGHTMAP_ONLY");
 const FastName NMaterial::FLAG_TEXTUREONLY = FastName("MATERIAL_VIEW_TEXTURE_ONLY");
@@ -131,7 +146,7 @@ static FastName RUNTIME_ONLY_FLAGS[] =
 	NMaterial::FLAG_TEXTUREONLY,
 	NMaterial::FLAG_SETUPLIGHTMAP,
 
-    NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL,
+    NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL,    
 	
 	NMaterial::FLAG_VIEWALBEDO,
 	NMaterial::FLAG_VIEWAMBIENT,
@@ -354,23 +369,7 @@ void NMaterial::Save(KeyedArchive * archive,
 		archive->SetString("materialGroup", GetMaterialGroup().c_str());
 	}
 	
-	archive->SetString("materialTemplate", (materialTemplate) ? materialTemplate->name.c_str() : "");
-	
-	if(instancePassRenderStates.size() > 0)
-	{
-		KeyedArchive* materialCustomStates = new KeyedArchive();
-		for(HashMap<FastName, UniqueHandle>::iterator it = instancePassRenderStates.begin();
-			it != instancePassRenderStates.end();
-			++it)
-		{
-			UniqueHandle currentHandle = it->second;
-			
-			const RenderStateData& stateData = RenderManager::Instance()->GetRenderStateData(currentHandle);
-			materialCustomStates->SetByteArray(it->first.c_str(), (uint8*)&stateData, sizeof(RenderStateData));
-		}
-		archive->SetArchive("materialCustomStates", materialCustomStates);
-		SafeRelease(materialCustomStates);
-	}
+	archive->SetString("materialTemplate", (materialTemplate) ? materialTemplate->name.c_str() : "");		
 	
 	KeyedArchive* materialTextures = new KeyedArchive();
 	for(HashMap<FastName, TextureBucket*>::iterator it = textures.begin();
@@ -459,25 +458,7 @@ void NMaterial::Load(KeyedArchive * archive,
     {
         materialKey = (NMaterial::NMaterialKey)archive->GetUInt64("materialKey");
 	    pointer = materialKey;
-    }
-	
-	if(archive->IsKeyExists("materialCustomStates"))
-	{
-		RenderStateData stateData;
-		const Map<String, VariantType*>& customRenderState = archive->GetArchive("materialCustomStates")->GetArchieveData();
-		for(Map<String, VariantType*>::const_iterator it = customRenderState.begin();
-			it != customRenderState.end();
-			++it)
-		{
-            
-			DVASSERT(it->second->AsByteArraySize() == sizeof(RenderStateData));
-			const uint8* array = it->second->AsByteArray();
-			memcpy(&stateData, array, sizeof(RenderStateData));
-			
-			UniqueHandle currentHandle = RenderManager::Instance()->CreateRenderState(stateData);
-			instancePassRenderStates.insert(FastName(it->first.c_str()), currentHandle);
-		}
-	}
+    }	
 
 	if(archive->IsKeyExists("materialGroup"))
 	{
@@ -607,13 +588,15 @@ bool NMaterial::ReloadQuality(bool force)
 	{
 		ret = true;
 		currentQuality = effectiveQuality;
-		
+		        
 		if(NMaterial::MATERIALTYPE_INSTANCE == materialType)
 		{
 			OnInstanceQualityChanged();
 		}
 		else if(NMaterial::MATERIALTYPE_MATERIAL == materialType)
 		{
+            SetQuality(currentQuality);
+
 			UpdateMaterialTemplate();
 			
 			LoadActiveTextures();
@@ -857,7 +840,7 @@ const FilePath& NMaterial::GetEffectiveTexturePath(const FastName& textureFastNa
 
 Texture * NMaterial::GetTexture(uint32 index) const
 {
-	DVASSERT(index >= 0 && index < textures.size());
+	DVASSERT(index < textures.size());
 	
 	TextureBucket* bucket = textures.valueByIndex(index);
 	return bucket->GetTexture();
@@ -865,7 +848,7 @@ Texture * NMaterial::GetTexture(uint32 index) const
 
 const FilePath& NMaterial::GetTexturePath(uint32 index) const
 {
-	DVASSERT(index >= 0 && index < textures.size());
+	DVASSERT(index < textures.size());
 	
 	TextureBucket* bucket = textures.valueByIndex(index);
 	return bucket->GetPath();
@@ -873,7 +856,7 @@ const FilePath& NMaterial::GetTexturePath(uint32 index) const
 
 const FastName& NMaterial::GetTextureName(uint32 index) const
 {
-	DVASSERT(index >= 0 && index < textures.size());
+	DVASSERT(index < textures.size());
 	
 	return textures.keyByIndex(index);
 }
@@ -1002,6 +985,10 @@ void NMaterial::SetMaterialGroup(const FastName &group)
 		{
 			SetQuality(curQuality->qualityName);
 		}
+        else
+        {
+            Logger::Error("Material \"%s\" uses quality group \"%s\", that isn't exist in quality system.", materialName.c_str(), group.c_str());
+        }
 	}
 }
 
@@ -1225,6 +1212,17 @@ void NMaterial::BuildTextureParamsCache(RenderPassInstance* passInstance)
 	}
 
     SetTexturesDirty();
+}
+    
+void NMaterial::BuildTextureParamsCache()
+{
+    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator it = instancePasses.begin();
+    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator endIt = instancePasses.end();
+    while(it != endIt)
+    {
+        BuildTextureParamsCache(it->second);
+        ++it;
+    }
 }
     
 void NMaterial::BuildActiveUniformsCacheParamsCache()
@@ -1549,11 +1547,11 @@ void NMaterial::Draw(PolygonGroup * polygonGroup)
 	// TODO: rethink this code
 	if(polygonGroup->renderDataObject->GetIndexBufferID() != 0)
 	{
-		RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, polygonGroup->indexCount, polygonGroup->renderDataObject->GetIndexFormat(), 0);
+		RenderManager::Instance()->HWDrawElements(polygonGroup->primitiveType, polygonGroup->indexCount, polygonGroup->renderDataObject->GetIndexFormat(), 0);
 	}
 	else
 	{
-		RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, polygonGroup->indexCount, polygonGroup->renderDataObject->GetIndexFormat(), polygonGroup->indexArray);
+		RenderManager::Instance()->HWDrawElements(polygonGroup->primitiveType, polygonGroup->indexCount, polygonGroup->renderDataObject->GetIndexFormat(), polygonGroup->indexArray);
 	}
 }
 

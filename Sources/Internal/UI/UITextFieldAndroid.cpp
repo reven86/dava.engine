@@ -29,6 +29,7 @@
 
 
 #include "UITextFieldAndroid.h"
+#include "Utils/UTF8Utils.h"
 
 using namespace DAVA;
 
@@ -129,6 +130,7 @@ void JniTextField::SetTextColor(float r, float g, float b, float a)
 
 void JniTextField::SetFontSize(float size)
 {
+	float32 v2p = Core::Instance()->GetVirtualToPhysicalFactor();
 	jmethodID mid = GetMethodID("SetFontSize", "(IF)V");
 	if (mid)
 	{
@@ -136,7 +138,7 @@ void JniTextField::SetFontSize(float size)
 				GetJavaClass(),
 				mid,
 				id,
-				size);
+				size * v2p);
 	}
 }
 
@@ -163,6 +165,19 @@ void JniTextField::SetTextAlign(int32_t align)
 				mid,
 				id,
 				align);
+	}
+}
+
+void JniTextField::SetTextUseRtlAlign(bool useRtlAlign)
+{
+	jmethodID mid = GetMethodID("SetTextUseRtlAlign", "(IZ)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id,
+				useRtlAlign);
 	}
 }
 
@@ -270,27 +285,16 @@ void JniTextField::SetEnableReturnKeyAutomatically(bool value)
 	}
 }
 
-void JniTextField::HideField()
+void JniTextField::SetVisible(bool isVisible)
 {
-	jmethodID mid = GetMethodID("HideField", "(I)V");
+	jmethodID mid = GetMethodID("SetVisible", "(IZ)V");
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
 				GetJavaClass(),
 				mid,
-				id);
-	}
-}
-
-void JniTextField::ShowField()
-{
-	jmethodID mid = GetMethodID("ShowField", "(I)V");
-	if (mid)
-	{
-		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
-				mid,
-				id);
+				id,
+				isVisible);
 	}
 }
 
@@ -333,6 +337,14 @@ void JniTextField::SetCursorPos(uint32 pos)
 	if (!mid)
 		return;
 	GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, pos);
+}
+
+void JniTextField::SetMaxLength(int32_t value)
+{
+	jmethodID mid = GetMethodID("SetMaxLength", "(II)V");
+	if (!mid)
+		return;
+	GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, value);
 }
 
 uint32_t UITextFieldAndroid::sId = 0;
@@ -378,9 +390,10 @@ void UITextFieldAndroid::SetText(const WideString & string)
 {
 	if (text.compare(string) != 0)
 	{
-		text = string;
+		text = TruncateText(string, textField->GetMaxLength());
+
 		JniTextField jniTextField(id);
-		String utfText = WStringToString(text);
+		String utfText = UTF8Utils::EncodeToUTF8(text);
 		jniTextField.SetText(utfText.c_str());
 	}
 }
@@ -419,24 +432,22 @@ DAVA::int32 UITextFieldAndroid::GetTextAlign()
 	return align;
 }
 
-void UITextFieldAndroid::ShowField()
+void UITextFieldAndroid::SetTextUseRtlAlign(bool useRtlAlign)
 {
+	this->useRtlAlign = useRtlAlign;
 	JniTextField jniTextField(id);
-	jniTextField.ShowField();
+	jniTextField.SetTextUseRtlAlign(useRtlAlign);
 }
 
-void UITextFieldAndroid::HideField()
+bool UITextFieldAndroid::GetTextUseRtlAlign() const
 {
-	JniTextField jniTextField(id);
-	jniTextField.HideField();
+	return useRtlAlign;
 }
 
 void UITextFieldAndroid::SetVisible(bool isVisible)
 {
-	if (isVisible)
-		ShowField();
-	else
-		HideField();
+	JniTextField jniTextField(id);
+	jniTextField.SetVisible(isVisible);
 }
 
 void UITextFieldAndroid::SetIsPassword(bool isPassword)
@@ -506,7 +517,32 @@ void UITextFieldAndroid::SetCursorPos(uint32 pos)
 	return jniTextField.SetCursorPos(pos);
 }
 
-bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text)
+void UITextFieldAndroid::SetMaxLength(DAVA::int32 value)
+{
+	JniTextField jniTextField(id);
+
+	WideString truncated = TruncateText(text, value);
+	if (truncated != text)
+	{
+		SetText(truncated);
+	}
+
+	return jniTextField.SetMaxLength(value);
+}
+
+WideString UITextFieldAndroid::TruncateText(const WideString& text, int32 maxLength)
+{
+	WideString str = text;
+
+	if (maxLength >= 0 && maxLength < str.length())
+	{
+		str.resize(maxLength);
+	}
+
+	return str;
+}
+
+bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString &text)
 {
 	bool res = true;
 	UITextFieldDelegate* delegate = textField->GetDelegate();
@@ -525,7 +561,7 @@ bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 re
 	return res;
 }
 
-bool UITextFieldAndroid::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text)
+bool UITextFieldAndroid::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, WideString &text)
 {
 	UITextFieldAndroid* control = GetUITextFieldAndroid(id);
 	if (!control)
@@ -557,4 +593,63 @@ UITextFieldAndroid* UITextFieldAndroid::GetUITextFieldAndroid(uint32_t id)
 		return iter->second;
 
 	return NULL;
+}
+
+void UITextFieldAndroid::TextFieldKeyboardShown(const Rect& rect)
+{
+    UITextFieldDelegate* delegate = textField->GetDelegate();
+    if (delegate)
+        delegate->OnKeyboardShown(rect);
+}
+
+void UITextFieldAndroid::TextFieldKeyboardShown(uint32_t id, const Rect& rect)
+{
+    UITextFieldAndroid* control = GetUITextFieldAndroid(id);
+    if (!control)
+        return;
+    control->TextFieldKeyboardShown(rect);
+}
+
+void UITextFieldAndroid::TextFieldKeyboardHidden()
+{
+    UITextFieldDelegate* delegate = textField->GetDelegate();
+    if (delegate)
+        delegate->OnKeyboardHidden();
+}
+
+void UITextFieldAndroid::TextFieldKeyboardHidden(uint32_t id)
+{
+    UITextFieldAndroid* control = GetUITextFieldAndroid(id);
+    if (!control)
+        return;
+    control->TextFieldKeyboardHidden();
+}
+
+void UITextFieldAndroid::TextFieldFocusChanged(bool hasFocus)
+{
+    if(textField)
+    {
+        if(hasFocus)
+        {
+            if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
+            {
+                DAVA::UIControlSystem::Instance()->SetFocusedControl(textField, false);
+            }
+        }
+        else
+        {
+            if (DAVA::UIControlSystem::Instance()->GetFocusedControl() == textField)
+            {
+                DAVA::UIControlSystem::Instance()->SetFocusedControl(NULL, false);
+            }
+        }
+    }
+}
+
+void UITextFieldAndroid::TextFieldFocusChanged(uint32_t id, bool hasFocus)
+{
+    UITextFieldAndroid* control = GetUITextFieldAndroid(id);
+    if (!control)
+        return;
+    control->TextFieldFocusChanged(hasFocus);
 }

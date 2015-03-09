@@ -78,7 +78,11 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Image/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/DLC/*.cpp))
+                     $(wildcard $(LOCAL_PATH)/DLC/Downloader/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/DLC/Patcher/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/DLC/Patcher/bsdiff/*.c) \
+                     $(wildcard $(LOCAL_PATH)/DLC/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Notification/*.cpp))
 
 ifneq ($(filter $(TARGET_ARCH_ABI), armeabi-v7a armeabi-v7a-hard),)
 ifndef USE_NEON
@@ -93,9 +97,22 @@ endif
 endif
 
 # set build flags
-LOCAL_CFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1 -Wno-psabi
+LOCAL_CFLAGS += -Dnullptr=0
+LOCAL_CFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
 LOCAL_CFLAGS += -Wno-invalid-offsetof
 LOCAL_CFLAGS += -DDAVA_FMOD
+
+
+ifeq ($(DAVA_PROFILE), true)
+ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
+$(info ==============)
+$(info profiling enabled!)
+$(info ==============)
+
+LOCAL_CFLAGS += -pg
+LOCAL_CFLAGS += -D__DAVAENGINE_PROFILE__
+endif
+endif
 
 # set exported build flags
 LOCAL_EXPORT_CFLAGS := $(LOCAL_CFLAGS)
@@ -116,6 +133,9 @@ LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libjpeg_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libcurl_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libssl_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libcrypto_android.a
+LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libzip_android.a
+LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libfribidi_android.a
+LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libunibreak_android.a
 
 APP_PLATFORM_LEVEL := $(strip $(subst android-,,$(APP_PLATFORM)))
 IS_GL2_PLATFORM := $(shell (if [ $(APP_PLATFORM_LEVEL) -lt 18 ]; then echo "GLES2"; else echo "GLES3"; fi))
@@ -133,6 +153,14 @@ LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)
 
 # set included libraries
 LOCAL_STATIC_LIBRARIES := libbox2d
+
+ifeq ($(DAVA_PROFILE), true)
+ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
+LOCAL_STATIC_LIBRARIES += android-ndk-profiler
+endif
+endif
+
+
 LOCAL_SHARED_LIBRARIES += iconv_android-prebuilt
 LOCAL_SHARED_LIBRARIES += fmodex-prebuild
 LOCAL_SHARED_LIBRARIES += fmodevent-prebuild
@@ -144,5 +172,13 @@ $(call import-add-path,$(DAVA_ROOT)/..)
 $(call import-add-path,$(DAVA_ROOT)/../External)
 $(call import-add-path,$(DAVA_ROOT)/../External/Box2D)
 $(call import-add-path,$(DAVA_ROOT))
+
+ifeq ($(DAVA_PROFILE), true)
+ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
+$(call import-add-path,$(DAVA_ROOT)/../../Libs)
+$(call import-module,android-ndk-profiler)
+endif
+endif
+
 
 $(call import-module,box2d)

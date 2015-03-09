@@ -128,12 +128,11 @@ bool RenderTechniqueSingleton::LoadRenderTechniqueFromYamlNode(const YamlNode * 
         }
 	}
     
-    for (int32 k = 0; k < stateNode->GetCount(); ++k)
+    for (uint32 k = 0; k < stateNode->GetCount(); ++k)
     {
-        const YamlNode * renderStepNode = stateNode->Get(k);
-        
-        if (renderStepNode->AsString() == "RenderPass")
+        if (stateNode->GetItemKeyName(k) == "RenderPass")
         {
+            const YamlNode * renderStepNode = stateNode->Get(k);
             const YamlNode * renderPassNameNode = renderStepNode->Get("Name");
             FastName renderPassName;
             if (renderPassNameNode)

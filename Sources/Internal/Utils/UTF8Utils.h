@@ -49,7 +49,14 @@ public:
 		\param[in] size size of buffer allocated for this string
 		\param[out] resultString result unicode string
 	 */
-	static void  EncodeToWideString(uint8 * string, int32 size, WideString & resultString);
+	static void  EncodeToWideString(const uint8 * string, int32 size, WideString & resultString);
+
+    /**
+        \brief convert UTF8 string to WideString
+        \param[in] utf8String string in UTF8 format
+        \return string in unicode
+     */
+    inline static WideString EncodeToWideString(const String & utf8String);
 
 	/**
 	 \brief convert WideString string to UTF8
@@ -59,6 +66,12 @@ public:
 	static String EncodeToUTF8(const WideString& wstring);
 };
 
+inline WideString UTF8Utils::EncodeToWideString(const String & utf8String)
+{
+    WideString str;
+    EncodeToWideString((const uint8 *)utf8String.c_str(), utf8String.length(), str);
+    return str;
+}
 
 
 };

@@ -29,6 +29,7 @@
 
 #include "Base/FixedSizePoolAllocator.h"
 
+#include <cstdlib>
 
 namespace DAVA 
 {

@@ -37,7 +37,6 @@
 namespace DAVA
 {
     
-REGISTER_CLASS(CameraComponent)
     
 CameraComponent::CameraComponent(Camera * _camera)
 {

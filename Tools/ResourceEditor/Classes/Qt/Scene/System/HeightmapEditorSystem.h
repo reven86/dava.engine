@@ -31,19 +31,16 @@
 #ifndef __RESOURCEEDITORQT__HEIGHTMAPEDITORSYSTEM__
 #define __RESOURCEEDITORQT__HEIGHTMAPEDITORSYSTEM__
 
-#include "DAVAEngine.h"
+#include "LandscapeEditorSystem.h"
 #include "LandscapeEditorDrawSystem.h"
 
 #include "Render/UniqueStateSet.h"
 
-class SceneCollisionSystem;
-class SceneSelectionSystem;
-class EntityModificationSystem;
 class HoodSystem;
 
 using namespace DAVA;
 
-class HeightmapEditorSystem: public DAVA::SceneSystem
+class HeightmapEditorSystem: public LandscapeEditorSystem
 {
 public:
 	enum eHeightmapDrawType
@@ -63,7 +60,6 @@ public:
 	
 	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
 	bool DisableLandscapeEdititing();
-	bool IsLandscapeEditingEnabled() const;
 	
 	virtual void Process(DAVA::float32 timeElapsed);
 	void ProcessUIEvent(DAVA::UIEvent *event);
@@ -83,17 +79,11 @@ public:
 	float32 GetDropperHeight();
 
 protected:
-	bool enabled;
-	
-	SceneCollisionSystem* collisionSystem;
-	SceneSelectionSystem* selectionSystem;
-	EntityModificationSystem* modifSystem;
-	LandscapeEditorDrawSystem* drawSystem;
-	
-	int32 landscapeSize;
-	Texture* cursorTexture;
+    
+    Vector2 GetHeightmapPositionFromCursor() const;
+    
+protected:
 	Texture* squareTexture;
-	uint32 cursorSize;
 	uint32 curToolSize;
 	Image* toolImage;
 	
@@ -105,11 +95,8 @@ protected:
 	int32 toolImageIndex;
 
 	float32 curHeight;
-	bool isIntersectsLandscape;
-	Vector2 cursorPosition;
 	Vector2 copyPasteFrom;
 	Vector2 copyPasteTo;
-	Vector2 prevCursorPosition;
 	
 	Rect heightmapUpdatedRect;
 
@@ -121,7 +108,6 @@ protected:
 
 	Landscape::eTextureLevel textureLevel;
 
-	void UpdateCursorPosition();
 	void UpdateToolImage(bool force = false);
 	void UpdateBrushTool(float32 timeElapsed);
 	Image* CreateToolImage(int32 sideSize, const FilePath& filePath);
@@ -132,8 +118,6 @@ protected:
 	
 	void StoreOriginalHeightmap();
 	void CreateHeightmapUndo();
-
-	LandscapeEditorDrawSystem::eErrorType IsCanBeEnabled();
 
 	void FinishEditing();
 	

@@ -51,6 +51,7 @@
 #include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Components/StaticOcclusionComponent.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"
+#include "Scene3D/Components/SkeletonComponent.h"
 #include "Base/ObjectFactory.h"
 
 namespace DAVA
@@ -100,6 +101,8 @@ Component * Component::CreateByType(uint32 componentType)
         return new StaticOcclusionDataComponent();
     case QUALITY_SETTINGS_COMPONENT:
         return new QualitySettingsComponent();
+    case SKELETON_COMPONENT:
+        return new SkeletonComponent();
 	case ANIMATION_COMPONENT:
 	case COLLISION_COMPONENT:
 	case SCRIPT_COMPONENT:

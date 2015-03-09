@@ -38,6 +38,7 @@ namespace DAVA
 
 class ParticleEmitter;
 class ParticleEffectComponent;
+class SkeletonComponent;
 class Entity;
 class RenderObject;
 class Light;
@@ -59,10 +60,13 @@ class SpeedTreeComponent;
 class WindComponent;
 class WaveComponent;
 class SpeedTreeObject;
+class AnimationComponent;
 
 ParticleEffectComponent * GetEffectComponent(Entity * fromEntity);
+AnimationComponent * GetAnimationComponent(Entity *fromEntity);
 TransformComponent * GetTransformComponent(Entity * fromEntity);
 RenderComponent * GetRenderComponent(const Entity *fromEntity);
+SkeletonComponent * GetSkeletonComponent(Entity * fromEntity);
 RenderObject * GetRenderObject(const Entity * fromEntity);
 SkyboxRenderObject * GetSkybox(const Entity * fromEntity);
 VegetationRenderObject * GetVegetation(const Entity * fromEntity);

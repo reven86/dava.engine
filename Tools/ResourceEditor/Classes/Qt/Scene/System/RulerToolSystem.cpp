@@ -41,27 +41,15 @@
 #include "../SceneSignals.h"
 
 RulerToolSystem::RulerToolSystem(Scene* scene)
-:	SceneSystem(scene)
-,	enabled(false)
+:	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	curToolSize(0)
-,	cursorSize(0)
-,	prevCursorPos(Vector2(-1.f, -1.f))
 ,	previewEnabled(true)
 ,	lineWidth(1)
 {
-	collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
-	selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
-	modifSystem = ((SceneEditor2 *) GetScene())->modifSystem;
-	drawSystem = ((SceneEditor2 *) GetScene())->landscapeEditorDrawSystem;
 }
 
 RulerToolSystem::~RulerToolSystem()
 {
-}
-
-LandscapeEditorDrawSystem::eErrorType RulerToolSystem::IsCanBeEnabled()
-{
-	return drawSystem->VerifyLandscape();
 }
 
 LandscapeEditorDrawSystem::eErrorType RulerToolSystem::EnableLandscapeEditing()
@@ -130,10 +118,6 @@ bool RulerToolSystem::DisableLandscapeEdititing()
 	return !enabled;
 }
 
-bool RulerToolSystem::IsLandscapeEditingEnabled() const
-{
-	return enabled;
-}
 
 void RulerToolSystem::Process(DAVA::float32 timeElapsed)
 {
@@ -150,7 +134,7 @@ void RulerToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
 		return;
 	}
 
-	UpdateCursorPosition(landscapeSize);
+	UpdateCursorPosition();
 
 	Vector3 point;
 	collisionSystem->LandRayTestFromCamera(point);
@@ -198,34 +182,6 @@ void RulerToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
 		}
 
 		DrawPoints();
-	}
-}
-
-void RulerToolSystem::UpdateCursorPosition(int32 landscapeSize)
-{
-	Vector3 landPos;
-	isIntersectsLandscape = false;
-	if (collisionSystem->LandRayTestFromCamera(landPos))
-	{
-		isIntersectsLandscape = true;
-		Vector2 point(landPos.x, landPos.y);
-
-		point.x = (float32)((int32)point.x);
-		point.y = (float32)((int32)point.y);
-
-		AABBox3 box = drawSystem->GetLandscapeProxy()->GetLandscapeBoundingBox();
-
-		cursorPosition.x = (point.x - box.min.x) * (landscapeSize - 1) / (box.max.x - box.min.x);
-		cursorPosition.y = (point.y - box.min.y) * (landscapeSize - 1) / (box.max.y - box.min.y);
-		cursorPosition.x = (int32)cursorPosition.x;
-		cursorPosition.y = (int32)cursorPosition.y;
-
-		drawSystem->SetCursorPosition(cursorPosition);
-	}
-	else
-	{
-		// hide cursor
-		drawSystem->SetCursorPosition(DAVA::Vector2(-100, -100));
 	}
 }
 
@@ -335,21 +291,27 @@ void RulerToolSystem::DrawPoints()
 	{
 		points.push_back(previewPoint);
 	}
-
-	if(points.size() > 1)
+    
+    const uint32 pointsCount = points.size();
+	if(pointsCount > 1)
 	{
+        for(uint32 i = 0; i < pointsCount; ++i)
+        {
+            points[i] = MirrorPoint(points[i]);
+        }
+        
 		Color red(1.0f, 0.0f, 0.0f, 1.0f);
 		Color blue(0.f, 0.f, 1.f, 1.f);
 		RenderManager::Instance()->SetColor(red);
 
-		AABBox3 boundingBox = drawSystem->GetLandscapeProxy()->GetLandscapeBoundingBox();
-		Vector3 landSize = boundingBox.max - boundingBox.min;
+		const AABBox3 & boundingBox = drawSystem->GetLandscapeProxy()->GetLandscapeBoundingBox();
+		const Vector3 landSize = boundingBox.max - boundingBox.min;
 		Vector3 offsetPoint = boundingBox.min;
 
 		float32 koef = (float32)targetTexture->GetWidth() / landSize.x / Core::GetVirtualToPhysicalFactor();
 
 		Vector3 startPoint = points[0];
-		for (uint32 i = 1; i < points.size(); ++i)
+		for (uint32 i = 1; i < pointsCount; ++i)
 		{
 			if (previewEnabled && isIntersectsLandscape && i == (points.size() - 1))
 			{
@@ -360,7 +322,7 @@ void RulerToolSystem::DrawPoints()
 
 			Vector3 startPosition = (startPoint - offsetPoint) * koef;
 			Vector3 endPosition = (endPoint - offsetPoint) * koef;
-
+            
 			RenderHelper::Instance()->DrawLine(DAVA::Vector3(startPosition.x, startPosition.y, 0),
 											   DAVA::Vector3(endPosition.x, endPosition.y, 0),
 											   (float32)lineWidth,
@@ -372,7 +334,7 @@ void RulerToolSystem::DrawPoints()
 
 	RenderManager::Instance()->ResetColor();
 	RenderManager::Instance()->RestoreRenderTarget();
-
+    
 	drawSystem->GetRulerToolProxy()->UpdateSprite();
 }
 
@@ -434,4 +396,14 @@ float32 RulerToolSystem::GetPreviewLength()
 	}
 
 	return previewLength;
+}
+
+Vector3 RulerToolSystem::MirrorPoint(const Vector3 & point) const
+{
+    const AABBox3 & boundingBox = drawSystem->GetLandscapeProxy()->GetLandscapeBoundingBox();
+
+    Vector3 newPoint = point;
+    newPoint.y = (boundingBox.max.y - point.y) + boundingBox.min.y;
+    
+    return newPoint;
 }

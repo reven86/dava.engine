@@ -16,7 +16,7 @@
 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURP§E ARE
     DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -40,9 +40,9 @@
 #include "Base/BaseMath.h"
 #include "Utils/StringFormat.h"
 
-#include "DLC/DLCSystem.h"
-#include "DLC/DLCUnpacker.h"
-#include "DLC/FileDownloader.h"
+#include "DLC/DLC.h"
+#include "DLC/Patcher/PatchFile.h"
+#include "DLC/Downloader/DownloadManager.h"
 
 #include "FileSystem/Logger.h"
 #include "Platform/SystemTimer.h"
@@ -102,6 +102,7 @@
 #include "FileSystem/XMLParser.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlEmitter.h"
 #include "FileSystem/Parser.h"
 #include "FileSystem/FilePath.h"
 
@@ -141,10 +142,14 @@
 #include "Render/2D/FTFont.h"
 #include "Render/2D/FontManager.h"
 #include "Render/2D/TextBlock.h"
+#include "Render/2D/DFFont.h"
 
 // UI
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
+#include "UI/UIPackage.h"
+#include "UI/UIPackageLoader.h"
+#include "UI/DefaultUIPackageBuilder.h"
 #include "UI/UIEvent.h"
 #include "UI/UIButton.h"
 #include "UI/UIStaticText.h"
@@ -183,6 +188,7 @@
 #include "UI/UIAggregatorControl.h"
 
 #include "UI/UIScrollViewContainer.h"
+#include "UI/UIControlHelpers.h"
 
 // Game object manager / 2D Scene
 #include "Scene2D/GameObject.h"
@@ -210,12 +216,14 @@
 #include "Render/3D/StaticMesh.h"
 #include "Render/3D/PolygonGroup.h"
 #include "Render/3D/EdgeAdjacency.h"
+#include "Render/3D/MeshUtils.h"
 
 // Material compiler
 #include "Render/Material/MaterialCompiler.h"
 #include "Render/Material/MaterialGraph.h"
 #include "Render/Material/MaterialGraphNode.h"
 #include "Render/Material/RenderTechnique.h"
+#include "Render/Material/NMaterialNames.h"
 
 // 3D scene management
 #include "Scene3D/Scene.h"
@@ -226,7 +234,7 @@
 #include "Render/Highlevel/Heightmap.h"
 #include "Render/Highlevel/Light.h"
 #include "Render/Highlevel/Mesh.h"
-#include "Render/Highlevel/ShadowVolume.h"
+#include "Render/Highlevel/SkinnedMesh.h"
 #include "Render/Highlevel/SpriteObject.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/RenderFastNames.h"
@@ -236,6 +244,7 @@
 #include "Render/Highlevel/Vegetation/TextureSheet.h"
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 
+#include "Scene3D/AnimationData.h"
 #include "Scene3D/ShadowVolumeNode.h"
 #include "Scene3D/LodNode.h"
 #include "Scene3D/ImposterNode.h"
@@ -256,6 +265,7 @@
 
 //Components
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Components/BulletComponent.h"
 #include "Scene3D/Components/CameraComponent.h"
 #include "Scene3D/Components/DebugRenderComponent.h"
@@ -279,10 +289,14 @@
 #include "Core/Core.h"
 #include "Core/ApplicationCore.h"
 
-// Networking
-#include "Network/NetworkConnection.h"
-#include "Network/NetworkDelegate.h"
-#include "Network/NetworkPacket.h"
+
+
+// Notifications
+#include "Notification/LocalNotification.h"
+#include "Notification/LocalNotificationText.h"
+#include "Notification/LocalNotificationProgress.h"
+#include "Notification/LocalNotificationDelayed.h"
+#include "Notification/LocalNotificationController.h"
 
 #endif // __DAVAENGINE_H__
 

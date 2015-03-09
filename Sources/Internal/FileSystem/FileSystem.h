@@ -36,7 +36,7 @@
 #include "FileSystem/FilePath.h"
 
 #if defined (__DAVAENGINE_ANDROID__)
-#include "FileSystem/APKFile.h"
+#include "FileSystem/ZipFile.h"
 #endif //__DAVAENGINE_ANDROID__
 /**
 	\defgroup filesystem File System
@@ -247,8 +247,12 @@ public:
 	 \returns platform-dependent
 	 */
 	int32 Spawn(const String& command);
-    
-    
+
+	/**
+	 \brief Marks folder as contains no media files to exclude it from index
+	 */
+	void MarkFolderAsNoMedia(const FilePath &folder);
+
 private:
     
 	virtual eCreateDirectoryResult CreateExactDirectory(const FilePath & filePath);
@@ -267,7 +271,7 @@ private:
 
 	friend class File;
 #if defined(__DAVAENGINE_ANDROID__)
-	friend class APKFile;
+	friend class ZipFile;
 public:
 	void Init();
 

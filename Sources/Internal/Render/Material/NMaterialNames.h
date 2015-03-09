@@ -52,13 +52,15 @@ public:
 	static const FastName TILE_MASK;
 	static const FastName TILE_MASK_VERTEX_LIT;
 	static const FastName TILE_MASK_PIXEL_LIT;
-	static const FastName DETAIL_ALPHATEST;
+
+    static const FastName DETAIL_ALPHATEST;
 	static const FastName SHADOW_VOLUME;
 	static const FastName VERTEXCOLOR_ALPHABLEND;
 	static const FastName DETAIL_OPAQUE;
 	static const FastName SILHOUETTE;
 	static const FastName VERTEXCOLOR_FRAMEBLEND_ALPHABLEND;
 	static const FastName SKYBOX;
+    static const FastName SKYOBJECT;
 	static const FastName VERTEXCOLOR_FRAMEBLEND_OPAQUE;
 	static const FastName PIXELLIT_ALPHATEST;
 	static const FastName SPEEDTREE_LEAF;
@@ -76,6 +78,9 @@ public:
 	
 	static const FastName PARTICLES;
 	static const FastName PARTICLES_FRAMEBLEND;
+
+    static const FastName DEBUG_DRAW_OPAQUE;
+    static const FastName DEBUG_DRAW_ALPHABLEND;
 };
 };
 

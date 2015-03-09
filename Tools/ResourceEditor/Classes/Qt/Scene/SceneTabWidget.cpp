@@ -39,6 +39,7 @@
 #include <QVBoxLayout>
 #include <QResizeEvent>
 #include <QFileInfo>
+#include <QMessageBox>
 
 SceneTabWidget::SceneTabWidget(QWidget *parent)
 	: QWidget(parent)
@@ -166,32 +167,75 @@ int SceneTabWidget::OpenTab()
 	return tabIndex;
 }
 
-int SceneTabWidget::OpenTab(const DAVA::FilePath &scenePapth)
+bool SceneTabWidget::TestSceneCompatibility(const DAVA::FilePath &scenePath)
+{
+    VersionInfo::SceneVersion sceneVersion = SceneFileV2::LoadSceneVersion(scenePath);
+
+    if (sceneVersion.IsValid())
+    {
+        VersionInfo::eStatus status = VersionInfo::Instance()->TestVersion(sceneVersion);
+        const uint32 curVersion = VersionInfo::Instance()->GetCurrentVersion().version;
+
+        switch (status)
+        {
+        case VersionInfo::COMPATIBLE:
+        {
+            const String& branches = VersionInfo::Instance()->UnsupportedTagsMessage(sceneVersion);
+            const QString msg = QString("Scene was created with older version or another branch of ResourceEditor. Saving scene will broke compatibility.\nScene version: %1 (required %2)\n\nNext tags will be added:\n%3\n\nContinue opening?").arg(sceneVersion.version).arg(curVersion).arg(branches.c_str());
+            const QMessageBox::StandardButton result = QMessageBox::warning(this, "Compatibility warning", msg, QMessageBox::Open | QMessageBox::Cancel, QMessageBox::Open);
+            if ( result != QMessageBox::Open )
+            {
+                return false;
+            }
+            break;
+        }
+        case VersionInfo::INVALID:
+        {
+            const String& branches = VersionInfo::Instance()->NoncompatibleTagsMessage(sceneVersion);
+            const QString msg = QString("Scene was created with incompatible version or branch of ResourceEditor.\nScene version: %1 (required %2)\nNext tags aren't implemented in current branch:\n%3").arg(sceneVersion.version).arg(curVersion).arg(branches.c_str());
+            QMessageBox::critical(this, "Compatibility error", msg);
+            return false;
+        }
+        default:
+            break;
+        }
+    }
+
+    return true;
+}
+
+int SceneTabWidget::OpenTab(const DAVA::FilePath &scenePath)
 {
 	HideScenePreview();
 
-    DAVA::int64 openStartTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
-
-	int tabIndex = FindTab(scenePapth);
+	int tabIndex = FindTab(scenePath);
 	if(tabIndex != -1)
 	{
 		SetCurrentTab(tabIndex);
 		return tabIndex;
 	}
 
-	SceneEditor2 *scene = new SceneEditor2();    
-	if(scene->Load(scenePapth))
+    if (!TestSceneCompatibility(scenePath))
+    {
+        return -1;
+    }
+
+    DAVA::int64 openStartTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
+
+    SceneEditor2 *scene = new SceneEditor2();
+	if(scene->Load(scenePath))
 	{
-		tabIndex = tabBar->addTab(scenePapth.GetFilename().c_str());
+		tabIndex = tabBar->addTab(scenePath.GetFilename().c_str());
 		SetTabScene(tabIndex, scene);
 
-		tabBar->setTabToolTip(tabIndex, scenePapth.GetAbsolutePathname().c_str());
+		tabBar->setTabToolTip(tabIndex, scenePath.GetAbsolutePathname().c_str());
 
         SetCurrentTab(tabIndex);
     }
 	else
 	{
         SafeRelease(scene);
+        QMessageBox::critical( this, "Open scene error.", "Unexpected opening error. See logs for more info." );
 	}
 
     DAVA::Logger::Instance()->Info("SceneEditor tab opened in %llu\n", DAVA::SystemTimer::Instance()->AbsoluteMS() - openStartTime);
@@ -207,7 +251,6 @@ bool SceneTabWidget::CloseTab(int index)
     
     if(!request.IsAccepted())
         return false;
-    
     
 	SceneEditor2 *scene = GetTabScene(index);
     if(index == tabBar->currentIndex())
@@ -369,7 +412,10 @@ void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData *data)
                     }
 
                     QtMainWindow::Instance()->WaitStart("Adding object to scene", path);
-					curScene->structureSystem->Add(path.toStdString(), pos);
+                    if (TestSceneCompatibility(DAVA::FilePath(path.toStdString())))
+                    {
+                        curScene->structureSystem->Add(path.toStdString(), pos);
+                    }
                     QtMainWindow::Instance()->WaitStop();
                 }
             }

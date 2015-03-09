@@ -37,6 +37,7 @@
 #include "Base/EventDispatcher.h"
 #include "Base/FastName.h"
 #include "Sound/SoundEvent.h"
+#include "Platform/Mutex.h"
 
 #ifdef DAVA_FMOD
 namespace FMOD
@@ -60,6 +61,8 @@ class FMODSoundEvent;
 class Component;
 class SoundSystem : public Singleton<SoundSystem>
 {
+    static Mutex soundGroupsMutex;
+    
 public:
     SoundSystem();
     ~SoundSystem();

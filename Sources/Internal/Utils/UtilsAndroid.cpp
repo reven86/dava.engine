@@ -78,6 +78,18 @@ void JniUtils::OpenURL(const String& url)
 	}
 }
 
+String JniUtils::GenerateGUID()
+{
+	jmethodID method = GetMethodID("GenerateGUID", "()Ljava/lang/String;");
+	DVASSERT(method != NULL)
+    JNIEnv * env = GetEnvironment();
+    jstring jstr = (jstring)env->CallStaticObjectMethod(GetJavaClass(), method);
+    const char *str = env->GetStringUTFChars(jstr, 0);
+    DAVA::String result(str);
+    env->ReleaseStringUTFChars(jstr, str);
+    return result;
+}
+
 void DAVA::DisableSleepTimer()
 {
 	JniUtils jniUtils;
@@ -104,6 +116,12 @@ void DAVA::OpenURL(const String& url)
 {
 	JniUtils jniUtils;
 	jniUtils.OpenURL(url);
+}
+
+String DAVA::GenerateGUID()
+{
+    JniUtils jniUtils;
+    return jniUtils.GenerateGUID();
 }
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)

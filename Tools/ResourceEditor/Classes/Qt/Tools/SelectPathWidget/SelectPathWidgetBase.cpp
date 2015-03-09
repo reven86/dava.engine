@@ -165,12 +165,9 @@ void SelectPathWidgetBase::HandlePathSelected(DAVA::String name)
 
 void SelectPathWidgetBase::setText(const QString& filePath)
 {
-    if(filePath != text())
-    {
-        QLineEdit::setText(filePath);
-        setToolTip(filePath);
-        emit PathSelected(filePath.toStdString());
-    }
+    QLineEdit::setText(filePath);
+    setToolTip(filePath);
+    emit PathSelected(filePath.toStdString());
 }
 
 void SelectPathWidgetBase::setText(const DAVA::String &filePath)
@@ -230,17 +227,24 @@ void SelectPathWidgetBase::dropEvent(QDropEvent* event)
 		setText(itemName);
 	}
 	
-	event->acceptProposedAction();
+    event->setDropAction(Qt::LinkAction);
+    event->accept();
 }
 
 void SelectPathWidgetBase::dragEnterEvent(QDragEnterEvent* event)
 {
+    event->setDropAction(Qt::LinkAction);
 	if(DAVA::MimeDataHelper::IsMimeDataTypeSupported(event->mimeData()))
 	{
-		event->acceptProposedAction();
+        event->accept();
 	}
 }
 
+void SelectPathWidgetBase::dragMoveEvent(QDragMoveEvent* event)
+{
+    event->setDropAction(Qt::LinkAction);
+    event->accept();
+}
 
 bool SelectPathWidgetBase::IsOpenButtonVisible() const
 {

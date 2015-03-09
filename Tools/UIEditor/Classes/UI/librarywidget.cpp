@@ -35,6 +35,7 @@
 using namespace DAVA;
 
 #define TEXT_ID 0
+#define ITEM_ID 0, Qt::UserRole
 
 LibraryWidget::LibraryWidget(QWidget *parent) :
     QWidget(parent),
@@ -50,11 +51,12 @@ LibraryWidget::~LibraryWidget()
     delete ui;
 }
 
-QTreeWidgetItem* LibraryWidget::AddControl(const QString& name, const QString& iconPath)
+QTreeWidgetItem* LibraryWidget::AddControl(const QString& name, const QString& iconPath, HierarchyTreeNode::HIERARCHYTREENODEID itemId)
 {
 	QTreeWidgetItem* control = new QTreeWidgetItem();
 	control->setText(TEXT_ID, name);
 	control->setIcon(TEXT_ID, QIcon(iconPath));
+    control->setData(ITEM_ID, itemId);
 	ui->treeWidget->addTopLevelItem(control);
 	return control;
 }
@@ -66,16 +68,6 @@ void LibraryWidget::RemoveControl(QTreeWidgetItem* item)
 	{
 		delete item;
 	}
-}
-
-void LibraryWidget::UpdateControl(QTreeWidgetItem* item, const QString& name)
-{
-	item->setText(TEXT_ID, name);
-}
-
-void LibraryWidget::SetItemVisible(QTreeWidgetItem* item, bool visible)
-{
-	item->setHidden(!visible);
 }
 
 void LibraryWidget::ResetSelection()

@@ -59,9 +59,6 @@ public:
 	DAVA::uint32 GetActiveSpeedIndex();
 	void SetMoveSpeedArrayIndex(DAVA::uint32 index);
 
-	void SetMoveSpeed(DAVA::float32 speed, DAVA::uint32 index);
-	DAVA::float32 GetMoveSpeed(DAVA::uint32 index);
-
 	void SetViewportRect(const DAVA::Rect &rect);
 	const DAVA::Rect GetViewportRect();
 
@@ -75,10 +72,6 @@ public:
 
     DAVA::float32 GetDistanceToCamera() const;
     void UpdateDistanceToCamera();
-
-	INTROSPECTION(SceneCameraSystem,
-		COLLECTION(cameraSpeedArray, "Camera speed array", DAVA::I_VIEW | DAVA::I_EDIT)
-		)
 
     virtual void Process(DAVA::float32 timeElapsed);
 
@@ -128,8 +121,7 @@ protected:
     DAVA::float32 distanceToCamera;
 
     DAVA::UniqueHandle renderState;
-	DAVA::uint32				activeSpeedArrayIndex;
-	DAVA::Vector<DAVA::float32>	cameraSpeedArray;
+	DAVA::uint32 activeSpeedIndex;
     
     bool cameraShouldIgnoreKeyboard;
 };

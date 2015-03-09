@@ -86,6 +86,12 @@ protected slots:
 	void Render();
 
 private:
+    
+	virtual void Quit();
+    DAVA_DEPRECATED(virtual void ShowAssertMessage(const char * message));
+
+private:
+    
 	Ui::DavaGLWidget *ui;
 
 	int maxFPS;
@@ -95,7 +101,6 @@ private:
 	qint64 fpsCountTime;
 	int fpsCount;
 
-	void Quit();
 	void EnableCustomPaintFlags(bool enable);
 };
 

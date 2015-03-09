@@ -193,8 +193,9 @@ namespace DAVA
 	// Вспомогательный класс для определения содержит ли указанный шаблонный тип интроспекцию
 	// Наличие интроспекции определяется по наличию функции GetTypeInfo у данного типа
 	template<typename T> 
-	class HasInsp
+	struct HasInspImpl
 	{
+    protected:
 		class yes {	char m; };
 		class no { yes m[2]; };
 
@@ -228,32 +229,35 @@ namespace DAVA
 		// Статическая переменна, значение которой будет равно true в случае,
 		// когда тип Т содержит интроспекцию
 		static const bool result = (sizeof(yes) == sizeof(Check((Test*)(0))));
-
-		// Статическая функция для автоматического вывода типа Т по
-		// переданной ссылке. 
-		static bool resultByObject(const T &t)
-		{
-			return HasInsp<T>::result;
-		}
 	};
 
 	// Параметризированные имплементации HasIntrospection для базовых типов 
 	// (так как наследование класса Test от базового типа невозможно)
-	template<> class HasInsp<void> { public: static const bool result = false; };
-	template<> class HasInsp<bool> { public: static const bool result = false; };
-	template<> class HasInsp<char8> { public: static const bool result = false; };
-	template<> class HasInsp<char16> { public: static const bool result = false; };
-	template<> class HasInsp<int8> { public: static const bool result = false; };
-	template<> class HasInsp<uint8> { public: static const bool result = false; };
-	template<> class HasInsp<int16> { public: static const bool result = false; };
-	template<> class HasInsp<uint16> { public: static const bool result = false; };
-	template<> class HasInsp<int32> { public: static const bool result = false; };
-	template<> class HasInsp<uint32> { public: static const bool result = false; };
-	template<> class HasInsp<int64> { public: static const bool result = false; };
-	template<> class HasInsp<uint64> { public: static const bool result = false; };
-	template<> class HasInsp<float32> { public: static const bool result = false; };
-	template<> class HasInsp<float64> { public: static const bool result = false; };
-	template<> class HasInsp<KeyedArchive *> { public: static const bool result = false; };
+	template<> struct HasInspImpl<void>  { static const bool result = false; };
+	template<> struct HasInspImpl<bool>  { static const bool result = false; };
+	template<> struct HasInspImpl<char8> { static const bool result = false; };
+	template<> struct HasInspImpl<char16>{ static const bool result = false; };
+	template<> struct HasInspImpl<int8>  { static const bool result = false; };
+	template<> struct HasInspImpl<uint8> { static const bool result = false; };
+	template<> struct HasInspImpl<int16> { static const bool result = false; };
+	template<> struct HasInspImpl<uint16>{ static const bool result = false; };
+	template<> struct HasInspImpl<int32> { static const bool result = false; };
+	template<> struct HasInspImpl<uint32>{ static const bool result = false; };
+	template<> struct HasInspImpl<int64> { static const bool result = false; };
+	template<> struct HasInspImpl<uint64>{ static const bool result = false; };
+	template<> struct HasInspImpl<float32> { static const bool result = false; };
+	template<> struct HasInspImpl<float64> { static const bool result = false; };
+	template<> struct HasInspImpl<KeyedArchive *> { static const bool result = false; };
+
+    template<typename T>
+    struct HasNotInsp { static const bool result = false; };
+
+    template<typename T>
+    struct HasInsp
+    {
+        typedef typename Select< IsEnum<T>::result /* || IsUnion<T>::result */, HasNotInsp<T>, HasInspImpl<T> >::Result CheckInspImpl;
+        enum { result = CheckInspImpl::result };
+    };
 	
 	// Глобальная шаблонная функция(#1) для получения интроспекции заданного типа
 	// Функция скомпилируется только для тех типов, для которых HasIntrospection<T>::result будет true

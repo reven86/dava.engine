@@ -80,7 +80,6 @@ Entity::Entity()
 	for (uint32 k = 0; k < COMPONENTS_IN_VECTOR_COUNT; ++k)
 		components[k] = 0;
 		
-	defaultLocalTransform.Identity();
 	//animation = 0;
 	//debugFlags = DEBUG_DRAW_NONE;
 	flags = NODE_VISIBLE | NODE_UPDATABLE | NODE_LOCAL_MATRIX_IDENTITY;
@@ -692,25 +691,13 @@ Entity *	Entity::FindByName(const char * searchName)
 // 	}
 // }
 	
-void Entity::RestoreOriginalTransforms()
-{
-	SetLocalTransform(GetDefaultLocalTransform());
-		
-	uint32 size = (uint32)children.size();
-	for (uint32 c = 0; c < size; ++c)
-		children[c]->RestoreOriginalTransforms();
-}
     
 void Entity::BakeTransforms()
 {
 	uint32 size = (uint32)children.size();
-	if(size == 1 && (0 == GetComponent(Component::LOD_COMPONENT)) && (0 == GetComponent(Component::SWITCH_COMPONENT))) // propagate matrices
+    if(size == 1 && (0 == GetComponent(Component::RENDER_COMPONENT) && 0 == GetComponent(Component::PARTICLE_EFFECT_COMPONENT))) // propagate matrices
 	{
-		for (uint32 c = 0; c < size; ++c)
-		{
-			children[c]->SetLocalTransform(children[c]->GetLocalTransform() * GetLocalTransform());
-			children[c]->SetDefaultLocalTransform(children[c]->GetDefaultLocalTransform() * defaultLocalTransform);
-		}
+		children[0]->SetLocalTransform(children[0]->GetLocalTransform() * GetLocalTransform());
 		SetLocalTransform(Matrix4::IDENTITY);
 		AddFlag(NODE_LOCAL_MATRIX_IDENTITY);
 	}
@@ -892,7 +879,6 @@ Entity* Entity::Clone(Entity *dstNode)
 		DVASSERT_MSG(IsPointerToExactClass<Entity>(this), "Can clone only Entity");
 		dstNode = new Entity();
 	}
-	dstNode->defaultLocalTransform = defaultLocalTransform;
 		
 	dstNode->RemoveAllComponents();
 	for (uint32 k = 0; k < COMPONENTS_IN_VECTOR_COUNT;++k)
@@ -1089,7 +1075,6 @@ void Entity::Save(KeyedArchive * archive, SerializationContext * serializationCo
 	archive->SetString("name", String(name.c_str()));
 	archive->SetInt32("tag", tag);
 	archive->SetByteArrayAsType("localTransform", GetLocalTransform());
-	archive->SetByteArrayAsType("defaultLocalTransform", defaultLocalTransform);
 		
 	archive->SetUInt32("flags", flags);
 	//    archive->SetUInt32("debugFlags", debugFlags);
@@ -1099,7 +1084,8 @@ void Entity::Save(KeyedArchive * archive, SerializationContext * serializationCo
 	for(uint32 i = 0; i < components.size(); ++i)
 	{
 		if(NULL != components[i])
-		{
+		{                       
+            DVASSERT(i < Component::DEBUG_COMPONENTS); //Bad idea to allocate debug components in vector
 			//don't save empty custom properties
 			if(Component::CUSTOM_PROPERTIES_COMPONENT == i)
 			{
@@ -1140,6 +1126,9 @@ void Entity::Save(KeyedArchive * archive, SerializationContext * serializationCo
 		it != componentsMap.end();
 		++it)
 	{
+        //dont save debug components
+        if (it->first > Component::DEBUG_COMPONENTS) 
+            continue; 
 		Vector<Component*>* componentsVector = it->second;
 			
 		if(NULL != componentsVector)
@@ -1176,7 +1165,6 @@ void Entity::Load(KeyedArchive * archive, SerializationContext * serializationCo
 		
 	const Matrix4 & localTransform = archive->GetByteArrayAsType("localTransform", GetLocalTransform());
 	SetLocalTransform(localTransform);
-	defaultLocalTransform = archive->GetByteArrayAsType("defaultLocalTransform", defaultLocalTransform);
 		
 	/// InvalidateLocalTransform();
 	//    debugFlags = archive->GetUInt32("debugFlags", 0);
@@ -1458,7 +1446,7 @@ Matrix4 & Entity::ModifyLocalTransform()
 	
 void Entity::SetLocalTransform(const Matrix4 & newMatrix)
 {
-	TIME_PROFILE("Entity::SetLocalTransform");
+//	TIME_PROFILE("Entity::SetLocalTransform");
 	((TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT))->SetLocalTransform(&newMatrix);
 }
 	

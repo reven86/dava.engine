@@ -300,6 +300,10 @@ const FastName DYNAMIC_PARAM_NAMES[] =
 
         FastName("sphericalHarmonics[0]"),
 
+        FastName("jointPositions[0]"),
+        FastName("jointQuaternions[0]"),
+        FastName("jointsCount"),
+
         FastName("rtSize"),
         FastName("rtPixelSize"),
         FastName("rtHalfPixelSize"),

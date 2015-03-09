@@ -154,7 +154,7 @@ HashMap<K, V>::HashMap(size_t _hashSize, V _defaultV)
 	, defaultV(_defaultV)
 {
 	// not 0 and power of 2
-	DVASSERT(IsPowerOf2(szTable));
+	DVASSERT(IsPowerOf2((int32)szTable));
 
 	table = new HashMapItem*[szTable];
 	for(size_t i = 0; i < szTable; ++i)

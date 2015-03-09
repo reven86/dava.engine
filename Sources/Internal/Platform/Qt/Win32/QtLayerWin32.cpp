@@ -32,6 +32,7 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include "Platform/Qt/Win32/CorePlatformWin32Qt.h"
+#include "Platform/DPIHelper.h"
 
 
 extern void FrameworkDidLaunched();
@@ -43,7 +44,6 @@ namespace DAVA
 QtLayerWin32::QtLayerWin32()
 {
     WidgetCreated();
-    AppStarted();
 }
 
 QtLayerWin32::~QtLayerWin32()
@@ -116,6 +116,11 @@ void QtLayerWin32::Resize(int32 width, int32 height)
 
 	Core::Instance()->UnregisterAllAvailableResourceSizes();
 	Core::Instance()->RegisterAvailableResourceSize(width, height, "Gfx");
+    float64 screenScale = DPIHelper::GetDpiScaleFactor(0);
+    if (screenScale != 1.0f)
+    {
+        Core::Instance()->RegisterAvailableResourceSize((int32)(width*screenScale), (int32)(height*screenScale), "Gfx2");
+    }
 
 	Core::Instance()->SetPhysicalScreenSize(width, height);
 	Core::Instance()->SetVirtualScreenSize(width, height);

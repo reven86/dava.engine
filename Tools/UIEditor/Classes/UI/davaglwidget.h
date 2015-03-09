@@ -91,6 +91,9 @@ protected:
     DAVA::Vector2 GuideToInternal(const QPoint& pos);
     DAVA::float32 ToNearestInteger(DAVA::float32 value);
 
+	virtual void Quit();
+	virtual void ShowAssertMessage(const char * message);
+
 private:
 	Ui::DavaGLWidget *ui;
 
@@ -100,7 +103,6 @@ private:
 	// Previous widget size.
 	QSize prevSize;
 
-	void Quit();
 };
 
 #endif // DAVAGLWIDGET_H

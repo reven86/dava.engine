@@ -48,6 +48,18 @@ void UIWebViewMetadata::InitializeControl(const String& controlName, const Vecto
     }
 }
 
+void UIWebViewMetadata::UpdateExtraData(HierarchyTreeNodeExtraData& extraData, eExtraDataUpdateStyle updateStyle)
+{
+    BaseMetadata::UpdateExtraData(extraData, updateStyle);
+    
+    int paramsCount = this->GetParamsCount();
+    for (BaseMetadataParams::METADATAPARAMID i = 0; i < paramsCount; i ++)
+    {
+        UIWebView* webView = static_cast<UIWebView*>(this->treeNodeParams[i].GetUIControl());
+        webView->SetNativeControlVisible(false);
+    }
+}
+    
 UIWebView* UIWebViewMetadata::GetActiveWebView() const
 {
     return static_cast<UIWebView*>(GetActiveUIControl());

@@ -191,6 +191,7 @@ void Texture::AddToMap(Texture *tex)
     if(!tex->texDescriptor->pathname.IsEmpty())
     {
         textureMapMutex.Lock();
+        DVASSERT(textureMap.find(FILEPATH_MAP_KEY(tex->texDescriptor->pathname)) == textureMap.end());
 		textureMap[FILEPATH_MAP_KEY(tex->texDescriptor->pathname)] = tex;
         textureMapMutex.Unlock();
     }
@@ -230,6 +231,11 @@ Texture::Texture()
 
 Texture::~Texture()
 {
+    if(invalidater)
+    {
+        invalidater->RemoveTexture(this);
+        invalidater = NULL;
+    }
     ReleaseTextureData();
 	SafeDelete(texDescriptor);
 }
@@ -272,7 +278,7 @@ void Texture::ReleaseTextureDataInternal(BaseObject * caller, void * param, void
 	//issue when cubemap texture was deleted while being binded to the state
 	if(RenderManager::Instance()->lastBindedTexture[container->textureType] == container->id)
 	{
-		RenderManager::Instance()->HWglForceBindTexture(0, container->textureType);
+		RenderManager::Instance()->HWglBindTexture(0, container->textureType);
 	}
     
 	if(container->fboID != (uint32)-1)
@@ -628,7 +634,8 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 	{
 		FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(texDescriptor, gpu);
 
-        ImageSystem::Instance()->Load(imagePathname, *images,baseMipMap);
+        ImageSystem::Instance()->Load(imagePathname, *images, baseMipMap);
+        ImageSystem::Instance()->EnsurePowerOf2Images(*images);
         if(images->size() == 1 && gpu == GPU_PNG && texDescriptor->GetGenerateMipMaps())
         {
             Image * img = *images->begin();
@@ -747,8 +754,20 @@ Texture * Texture::CreateFromFile(const FilePath & pathName, const FastName &gro
 	Texture * texture = PureCreate(pathName, group);
  	if(!texture)
 	{
-		texture = CreatePink(typeHint);
-        texture->texDescriptor->pathname = (!pathName.IsEmpty()) ? TextureDescriptor::GetDescriptorPathname(pathName) : FilePath();
+        TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(pathName);
+        if(descriptor)
+        {
+            texture = CreatePink(descriptor->IsCubeMap() ? DAVA::Texture::TEXTURE_CUBE : typeHint);
+            texture->texDescriptor->Initialize(descriptor);
+            SafeDelete(descriptor);
+        }
+        else
+        {
+            texture = CreatePink(typeHint);
+            texture->texDescriptor->pathname = (!pathName.IsEmpty()) ? TextureDescriptor::GetDescriptorPathname(pathName) : FilePath();
+        }
+        
+        texture->texDescriptor->SetQualityGroup(group);
         
         AddToMap(texture);
 	}
@@ -785,7 +804,20 @@ Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
 	return texture;
 }
     
-
+void Texture::ReloadFromData(PixelFormat format, uint8 * data, uint32 _width, uint32 _height)
+{
+    ReleaseTextureData();
+    
+    Image *image = Image::CreateFromData(_width, _height, format, data);
+	if(!image) return;
+    
+    Vector<Image *> *images = new Vector<Image *>();
+    images->push_back(image);
+	
+    SetParamsFromImages(images);
+	FlushDataToRenderer(images);
+}
+    
 void Texture::Reload()
 {
     ReloadAs(loadedAsFile);
@@ -937,9 +969,9 @@ void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, vo
 
             if (!RenderManager::Instance()->GetCaps().isGlDepth24Stencil8Supported)
             {
-                glGenRenderbuffers(1, &stencilRboID);
-                glBindRenderbuffer(GL_RENDERBUFFER, stencilRboID);
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width, height);
+                RENDER_VERIFY(glGenRenderbuffers(1, &stencilRboID));
+                RENDER_VERIFY(glBindRenderbuffer(GL_RENDERBUFFER, stencilRboID));
+                RENDER_VERIFY(glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width, height));
             }
         }
 #endif
@@ -1047,7 +1079,15 @@ void Texture::Invalidate()
 	else if (relativePathname.GetType() == FilePath::PATH_IN_MEMORY)
 	{
 		if (invalidater)
+        {
 			invalidater->InvalidateTexture(this);
+        }
+        else
+        {
+            // Make it pink, to prevent craches
+            Logger::Debug("[Texture::Invalidate] - invalidater is null");
+            MakePink();
+        }
 	}
 	else if (isPink)
 	{
@@ -1219,7 +1259,15 @@ eGPUFamily Texture::GetGPUForLoading(const eGPUFamily requestedGPU, const Textur
 
 void Texture::SetInvalidater(TextureInvalidater* invalidater)
 {
+    if(this->invalidater)
+    {
+        this->invalidater->RemoveTexture(this);
+    }
 	this->invalidater = invalidater;
+    if(invalidater != NULL)
+    {
+        invalidater->AddTexture(this);
+    }
 }
 
 void Texture::GenerateCubeFaceNames(const FilePath & baseName, Vector<FilePath>& faceNames)
@@ -1257,6 +1305,19 @@ void Texture::GenerateCubeFaceNames(const FilePath & filePath, const Vector<Stri
 const FilePath & Texture::GetPathname() const
 {
     return texDescriptor->pathname;
+}
+    
+void Texture::SetPathname(const FilePath& path)
+{
+    textureMapMutex.Lock();
+    textureMap.erase(FILEPATH_MAP_KEY(texDescriptor->pathname));
+    texDescriptor->pathname = path;
+    if (!texDescriptor->pathname.IsEmpty())
+    {
+        DVASSERT(textureMap.find(FILEPATH_MAP_KEY(texDescriptor->pathname)) == textureMap.end());
+        textureMap[FILEPATH_MAP_KEY(texDescriptor->pathname)] = this;
+    }
+    textureMapMutex.Unlock();
 }
 
 PixelFormat Texture::GetFormat() const

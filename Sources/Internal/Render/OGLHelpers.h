@@ -65,7 +65,7 @@ namespace DAVA
 	{\
 		DVASSERT(0 && "Application tried to call GL or DX in separate thread");\
 	}\
-	if(Thread::IsMainThread())\
+	else\
 	{\
 		RenderManager::Instance()->VerifyRenderContext();\
 	}\
@@ -174,6 +174,8 @@ namespace DAVA
 	#define DAVA_GL_DEPTH_COMPONENT GL_DEPTH_COMPONENT
 #endif //#if defined (__DAVAENGINE_IPHONE__)
     
+    
+int32 GetHalfFloatID();
     
 };
 #endif // #if defined(__DAVAENGINE_OPENGL__)

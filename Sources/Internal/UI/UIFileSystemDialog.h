@@ -159,7 +159,7 @@ public:
     void ButtonPressed(BaseObject *obj, void *data, void *callerData);
 
     virtual void TextFieldShouldReturn(UITextField * textField);
-	virtual bool TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, const WideString & replacementString);
+	virtual bool TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, WideString & replacementString);
     
     
     

@@ -33,7 +33,6 @@
 #include "Math/Math2D.h"
 #include "Math/Vector.h"
 #include "Math/Matrix4.h"
-#include "Math/Quaternion.h"
 #include "Math/MathConstants.h"
 
 namespace DAVA
@@ -205,7 +204,7 @@ namespace DAVA
 
     inline float32 Round(float32 value)
 	{
-		return (float32)((value > 0.0) ? floor(value+ 0.5) : ceil(value - 0.5));
+		return (value > 0.0f) ? floor(value + 0.5f) : ceil(value - 0.5f);
 	}
 
 } // end of namespace DAVA

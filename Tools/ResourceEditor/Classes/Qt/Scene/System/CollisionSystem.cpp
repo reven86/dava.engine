@@ -223,10 +223,12 @@ bool SceneCollisionSystem::LandRayTest(const DAVA::Vector3 &from, const DAVA::Ve
 
 	DAVA::Vector3 rayDirection = to - from;
 	DAVA::float32 rayLength = rayDirection.Length();
-	DAVA::Vector3 rayStep = (rayDirection / rayLength * 5.0f);
+    DAVA::Vector3 rayStep = rayDirection;
+    rayStep.Normalize();
+    rayStep *= Min(5.0f, rayLength);
 
 	btVector3 btFrom(from.x, from.y, from.z);
-	while (rayLength > 0)
+	while ((rayLength - rayStep.Length()) >= EPSILON)
 	{
 		btVector3 btTo(btFrom.x() + rayStep.x, btFrom.y() + rayStep.y, btFrom.z() + rayStep.z);
 

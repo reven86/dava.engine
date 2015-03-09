@@ -31,16 +31,12 @@
 #ifndef __RESOURCEEDITORQT__RULERTOOLSYSTEM__
 #define __RESOURCEEDITORQT__RULERTOOLSYSTEM__
 
-#include "DAVAEngine.h"
+#include "LandscapeEditorSystem.h"
 #include "LandscapeEditorDrawSystem.h"
-
-class SceneCollisionSystem;
-class SceneSelectionSystem;
-class EntityModificationSystem;
 
 using namespace DAVA;
 
-class RulerToolSystem: public DAVA::SceneSystem
+class RulerToolSystem: public LandscapeEditorSystem
 {
 	static const DAVA::int32 APPROXIMATION_COUNT = 10;
 
@@ -50,7 +46,6 @@ public:
 
 	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
 	bool DisableLandscapeEdititing();
-	bool IsLandscapeEditingEnabled() const;
 
 	virtual void Process(DAVA::float32 timeElapsed);
 	void ProcessUIEvent(DAVA::UIEvent *event);
@@ -62,22 +57,11 @@ public:
 	float32 GetPreviewLength();
 
 protected:
-	bool enabled;
+    
+    Vector3 MirrorPoint(const Vector3 & point) const;
 
-	SceneCollisionSystem* collisionSystem;
-	SceneSelectionSystem* selectionSystem;
-	EntityModificationSystem* modifSystem;
-	LandscapeEditorDrawSystem* drawSystem;
-
-	Texture* cursorTexture;
-	uint32 cursorSize;
 	uint32 curToolSize;
 	Sprite* toolImageSprite;
-
-	int32 landscapeSize;
-	bool isIntersectsLandscape;
-	Vector2 cursorPosition;
-	Vector2 prevCursorPos;
 
 	int32 lineWidth;
 	List<Vector3> linePoints;
@@ -85,8 +69,6 @@ protected:
 	Vector3 previewPoint;
 	float32 previewLength;
 	bool previewEnabled;
-
-	void UpdateCursorPosition(int32 landscapeSize);
 
 	void SetStartPoint(const Vector3 &point);
 	void AddPoint(const Vector3 &point);
@@ -96,8 +78,6 @@ protected:
 	void DrawPoints();
 	void DisablePreview();
 	void SendUpdatedLength();
-
-	LandscapeEditorDrawSystem::eErrorType IsCanBeEnabled();
 
 	void Clear();
 };

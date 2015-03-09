@@ -143,6 +143,9 @@ namespace DAVA
 	}
 	\endcode
  */
+
+class Thread;
+
 class ApplicationCore : public BaseObject
 {
 protected:
@@ -161,6 +164,11 @@ public:
 		Resumes main loop.
 	 */
 	virtual void OnResume();
+
+	/**
+		\brief Called time to time from separate thread (not main) when application is Suspended.
+	 */
+	virtual void OnBackgroundTick();
 
 	/**
 		\brief Called when application is going to quit.
@@ -252,9 +260,30 @@ protected:
 	 */
 	virtual void EndFrame();
 	
-private:
+#if defined(__DAVAENGINE_ANDROID__)
+protected:
+	/**
+		\brief Should be started only when Main thread is stopped
+	 */
+	void StartBackbroundTicker(uint32 tickPeriod = 250);
+	/**
+		\brief Should be stopped before Main thread start
+	 */
+	void StopBackgroundTicker();
 
+private:
+	void BackgroundTickerHandler(BaseObject * caller, void * callerData, void * userData);
+#endif
+    
+private:
 	friend class Core;
+
+#if defined(__DAVAENGINE_ANDROID__)
+private:
+	Thread *backgroundTicker;
+	bool backgroundTickerFinishing;
+	uint32 backgroundTickTimeMs;
+#endif
 };
 	
 };

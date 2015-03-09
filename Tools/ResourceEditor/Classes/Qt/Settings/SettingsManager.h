@@ -49,6 +49,11 @@ namespace Settings
     static const DAVA::FastName General_MaterialEditor_LodColor2("General/MaterialEditor/LodColor2");
     static const DAVA::FastName General_MaterialEditor_LodColor3("General/MaterialEditor/LodColor3");
     
+    static const DAVA::FastName General_HeighMaskTool_Color0("General/HeighMaskTool/Color0");
+    static const DAVA::FastName General_HeighMaskTool_Color1("General/HeighMaskTool/Color1");
+
+    static const DAVA::FastName General_ColorMultiplyMax("General/ColorPicker/Maximum multiplier");
+    
 	static const DAVA::FastName Scene_GridStep("Scene/GridStep");
 	static const DAVA::FastName Scene_GridSize("Scene/GridSize");
 	static const DAVA::FastName Scene_CameraSpeed0("Scene/CameraSpeed0");
@@ -61,10 +66,12 @@ namespace Settings
     static const DAVA::FastName Scene_SelectionSequent("Scene/SelectionSequent");
     static const DAVA::FastName Scene_SelectionDrawMode("Scene/SelectionDrawMode");
     static const DAVA::FastName Scene_CollisionDrawMode("Scene/CollisionDrawMode");
+    static const DAVA::FastName Scene_ModificationByGizmoOnly("Scene/ModificationByGizmoOnly");
     static const DAVA::FastName Scene_GizmoScale("Scene/GizmoScale");
     static const DAVA::FastName Scene_DebugBoxScale("Scene/DebugBoxScale");
     static const DAVA::FastName Scene_DebugBoxUserScale("Scene/DebugBoxUserScale");
     static const DAVA::FastName Scene_DebugBoxParticleScale("Scene/DebugBoxParticleScale");
+	static const DAVA::FastName Scene_DragAndDropWithShift("Scene/Drag&DropInTreeWithShift");
 
     static const DAVA::FastName Scene_Sound_SoundObjectDraw("Scene/Sound/SoundObjectDraw");
     static const DAVA::FastName Scene_Sound_SoundObjectBoxColor("Scene/Sound/SoundObjectBoxColor");
@@ -84,6 +91,12 @@ namespace Settings
     static const DAVA::FastName Internal_MaterialsShowLightmapCanvas("Internal/MaterialsShowLightmapCanvas");
     static const DAVA::FastName Internal_LicenceAccepted("Internal/LicenceAccepted");
 	static const DAVA::FastName Internal_LODEditorMode("Internal/LODEditorMode");
+    static const DAVA::FastName Internal_ImageSplitterPath("Internal/ImageSplitterPath");
+    static const DAVA::FastName Internal_ImageSplitterPathSpecular("Internal/ImageSplitterPath_specular");
+
+    static const DAVA::FastName Internal_CustomPalette("Internal/CustomPalette");
+    static const DAVA::FastName Internal_LogLevelFilter("Internal/LogLevelFilter");
+    static const DAVA::FastName Internal_LogTextFilter("Internal/LogTextFilter");
 };
 
 struct SettingsNode

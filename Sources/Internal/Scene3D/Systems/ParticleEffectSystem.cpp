@@ -41,6 +41,7 @@
 #include "Scene3D/Systems/LodSystem.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Particles/ParticleRenderObject.h"
+#include "Debug/Stats.h"
 
 
 namespace DAVA
@@ -176,7 +177,7 @@ void ParticleEffectSystem::AddToActive(ParticleEffectComponent *effect)
         if (scene)
         {
             Matrix4 * worldTransformPointer = ((TransformComponent*)effect->GetEntity()->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
-            effect->effectRenderObject->SetEffectMatrix(worldTransformPointer);
+            effect->effectRenderObject->SetWorldTransformPtr(worldTransformPointer);
             Vector3 pos = worldTransformPointer->GetTranslationVector();
             effect->effectRenderObject->SetAABBox(AABBox3(pos, pos));
             scene->GetRenderSystem()->RenderPermanent(effect->effectRenderObject);
@@ -227,7 +228,9 @@ void ParticleEffectSystem::ImmediateEvent(Entity * entity, uint32 event)
 }
 
 void ParticleEffectSystem::Process(float32 timeElapsed)
-{        
+{
+    TIME_PROFILE("ParticleEffectSystem::Process");
+    
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_PARTICLE_EMMITERS)) 
 		return;		
 	/*shortEffectTime*/
@@ -352,7 +355,7 @@ void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent *effect, float32
     if (GetScene())
         worldTransformPtr = &effect->GetEntity()->GetWorldTransform();
     else
-        worldTransformPtr = effect->effectRenderObject->GetEffectMatrix();
+        worldTransformPtr = effect->effectRenderObject->GetWorldTransformPtr();
 
 	effect->effectData.infoSources[0].position = worldTransformPtr->GetTranslationVector();
 	
@@ -447,7 +450,7 @@ void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent *effect, float32
 				effect->effectData.infoSources[current->positionTarget].size = current->currSize;
 			}
 			
-			if (group.layer->frameOverLifeEnabled)
+			if (group.layer->frameOverLifeEnabled&&group.layer->sprite)
 			{
 				float32 animDelta = group.layer->frameOverLifeFPS;
 				if (group.layer->animSpeedOverLife)

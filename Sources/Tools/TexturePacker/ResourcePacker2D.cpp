@@ -38,12 +38,10 @@
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
 
-#include <Magick++.h>
-#include <magick/MagickCore.h>
-#include <magick/property.h>
-
 #include "Render/GPUFamilyDescriptor.h"
 #include "FramePathHelper.h"
+
+#include "IMagickHelper.h"
 
 namespace DAVA
 {
@@ -146,6 +144,7 @@ bool ResourcePacker2D::IsMD5ChangedDir(const FilePath & processDirectoryPath, co
 	MD5::ForDirectory(pathname, newMD5Digest, isRecursive);
 
 	file = File::Create(md5FileName, File::CREATE | File::WRITE);
+    DVASSERT(file);
     
 	int32 bytes = file->Write(newMD5Digest, 16);
 	DVASSERT(bytes == 16 && "16 bytes should be always written for md5 file");
@@ -200,119 +199,89 @@ bool ResourcePacker2D::IsMD5ChangedFile(const FilePath & processDirectoryPath, c
 	return isChanged;
 }
 
-DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName)
+DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName, bool twoSideMargin, uint32 texturesMargin)
 {
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
     
 	uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? TexturePacker::TSIZE_4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
-	
-	// TODO: Check CRC32
-	Vector<Magick::Image> layers;
+
+	bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
 	
     FilePath psdNameWithoutExtension(processDirectoryPath + psdName);
     psdNameWithoutExtension.TruncateExtension();
 	
-	try 
+    IMagickHelper::CroppedData cropped_data;
+    
+    IMagickHelper::ConvertToPNGCroppedGeometry( psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str() , &cropped_data, true );
+		
+	if ( cropped_data.rects_array_size == 0 )
 	{
-		Magick::readImages(&layers, psdPathname.GetAbsolutePathname());
+		AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
+		return 0;
+	}
 		
-		if (layers.size() == 0)
-		{
-			AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
-			
-			return 0;
-		}
+	//Logger::FrameworkDebug("psd file: %s wext: %s", psdPathname.c_str(), psdNameWithoutExtension.c_str());
 		
-		if (layers.size() == 1)
-		{
-			layers.push_back(layers[0]);
-		}
+	int width  = cropped_data.layer_width;
+	int height = cropped_data.layer_height;
 		
-		//Logger::FrameworkDebug("psd file: %s wext: %s", psdPathname.c_str(), psdNameWithoutExtension.c_str());
-		
-		int width = (int)layers[0].columns();
-		int height = (int)layers[0].rows();
-		
-		for(int k = 1; k < (int)layers.size(); ++k)
-		{
-			FilePath outputFile = FramePathHelper::GetFramePathRelative(psdNameWithoutExtension, k - 1);
+	DefinitionFile * defFile = new DefinitionFile;
+	defFile->filename = FilePath::CreateWithNewExtension(psdNameWithoutExtension, ".txt");
 
-			Magick::Image & currentLayer = layers[k];
-			currentLayer.crop(Magick::Geometry(width,height, 0, 0));
-			currentLayer.magick("PNG");
-			currentLayer.write(outputFile.GetAbsolutePathname());
-		}
-
-		DefinitionFile * defFile = new DefinitionFile;
-		defFile->filename = FilePath::CreateWithNewExtension(psdNameWithoutExtension, ".txt");
-		defFile->spriteWidth = width;
-		defFile->spriteHeight = height;
-		defFile->frameCount = (int)layers.size() -1;
-		defFile->frameRects = new Rect2i[defFile->frameCount];
+	defFile->spriteWidth = width;
+	defFile->spriteHeight = height;
+	defFile->frameCount = (int)cropped_data.rects_array_size -1;
+	defFile->frameRects = new Rect2i[defFile->frameCount];
 		
-		for(int k = 1; k < (int)layers.size(); ++k)
+	for(int k = 1; k < (int)cropped_data.rects_array_size; ++k)
+	{
+		if ( !withAlpha )
 		{
-			Magick::Image & currentLayer = layers[k];
-			Magick::Geometry bbox = currentLayer.page();
-			int xOff = (int)bbox.xOff();
-			if (bbox.xNegative())
-				xOff = -xOff;
-			int yOff = (int)bbox.yOff();
-			if (bbox.yNegative())
-				yOff = -yOff;
-			
-			defFile->frameRects[k - 1] = Rect2i(xOff, yOff, (int32)bbox.width(), (int32)bbox.height());
-			
+			defFile->frameRects[k - 1] = Rect2i(cropped_data.rects_array[k].x, cropped_data.rects_array[k].y, cropped_data.rects_array[k].dx, cropped_data.rects_array[k].dy) ;
+
 			//printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
-			
+
 			if ((defFile->frameRects[k - 1].dx > (int32)maxTextureSize) || (defFile->frameRects[k - 1].dy > (int32)maxTextureSize))
 			{
 				Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k - 1, maxTextureSize
-					   , defFile->frameRects[k - 1].dx, defFile->frameRects[k - 1].dy, width, height);
-                
+					, defFile->frameRects[k - 1].dx, defFile->frameRects[k - 1].dy, width, height);
+
 				defFile->frameRects[k - 1].dx = width;
 				defFile->frameRects[k - 1].dy = height;
 			}
-				
-			if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
-			{
-				
-			}else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
-			{
-				defFile->frameRects[k - 1].dx++;
-				defFile->frameRects[k - 1].dy++;
-			}
-			else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
-			{
-				defFile->frameRects[k - 1].dx+=2;
-				defFile->frameRects[k - 1].dy+=2;
-			}
-			else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
-			{
-				defFile->frameRects[k - 1].dx+=4;
-				defFile->frameRects[k - 1].dy+=4;
-			}
-			else if(CommandLineParser::Instance()->IsFlagSet("--add2sidepixel"))
-			{
-				defFile->frameRects[k - 1].dx+=2;
-				defFile->frameRects[k - 1].dy+=2;
-			}
 			else
 			{
-				defFile->frameRects[k - 1].dx++;
-				defFile->frameRects[k - 1].dy++;	
+				if ((defFile->frameRects[k - 1].dx > width))
+				{
+					Logger::Warning("For texture %s, layer %d width is bigger than sprite width: %d > %d. Layer width will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dx, width);
+					defFile->frameRects[k - 1].dx = width;
+				}
+
+				if ((defFile->frameRects[k - 1].dy > height))
+				{
+					Logger::Warning("For texture %s, layer %d height is bigger than sprite height: %d > %d. Layer height will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dy, height);
+					defFile->frameRects[k - 1].dy = height;
+				}
 			}
 		}
-		
-		return defFile;
-	}
-	catch( Magick::Exception &error_ )
-    {
-		AddError(Format("Caught exception: %s file: %s", error_.what(), psdPathname.GetAbsolutePathname().c_str()));
+		else
+			defFile->frameRects[k - 1] = Rect2i(cropped_data.rects_array[k].x, cropped_data.rects_array[k].y, width, height);
 
-		return 0;
-    }
-	return 0;
+		// add borders
+		if ( twoSideMargin )
+		{
+			defFile->frameRects[k - 1].dx+=2;
+			defFile->frameRects[k - 1].dy+=2;
+		}
+		else
+		{
+			defFile->frameRects[k - 1].dx += texturesMargin;
+			defFile->frameRects[k - 1].dy += texturesMargin;
+		}
+	}
+		
+	return defFile;
+
 }
 
 Vector<String> ResourcePacker2D::ProcessFlags(const FilePath & flagsPathname)
@@ -428,6 +397,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 	bool flagsProcessed = false;
 	// Find flags and setup them
 	FileList * fileList = new FileList(inputPath);
+    fileList->Sort();
 	for (int fi = 0; fi < fileList->GetCount(); ++fi)
 	{
 		if (!fileList->IsDirectory(fi))
@@ -468,6 +438,24 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 		//if (Core::Instance()->IsConsoleMode())
 		//	printf("[Directory changed - rebuild: %s]\n", inputGfxDirectory.c_str());
 	}
+	else if (CommandLineParser::CommandIsFound(String("-forceModify")))
+		modified = true;
+
+	// read textures margins settings
+	bool useTwoSideMargin = CommandLineParser::Instance()->IsFlagSet("--add2sidepixel");
+	uint32 marginInPixels = TexturePacker::DEFAULT_MARGIN;
+	if (!useTwoSideMargin)
+	{
+		useTwoSideMargin = false;
+		if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
+			marginInPixels = 0;
+		else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
+			marginInPixels = 1;
+		else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
+			marginInPixels = 2;
+		else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
+			marginInPixels = 4;
+	}
 
 	bool needPackResourcesInThisDir = true;
 	if (modified)
@@ -482,7 +470,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 				if (fullname.IsEqualToExtension(".psd"))
 				{
                     //TODO: check if we need filename or pathname
-					DefinitionFile * defFile = ProcessPSD(processDirectoryPath, fullname, fullname.GetFilename());
+					DefinitionFile * defFile = ProcessPSD(processDirectoryPath, fullname, fullname.GetFilename(),useTwoSideMargin,marginInPixels);
 					if (!defFile)
 					{
 						// An error occured while converting this PSD file - cancel converting in this directory.
@@ -501,7 +489,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 				else if (fullname.IsEqualToExtension(".pngdef"))
 				{
 					DefinitionFile * defFile = new DefinitionFile();
-					if (defFile->LoadPNGDef(fullname, processDirectoryPath))
+					if (defFile->LoadPNGDef(fullname, processDirectoryPath,useTwoSideMargin,marginInPixels))
 					{
 						definitionFileList.push_back(defFile);
 					}
@@ -532,13 +520,16 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                 DefinitionFile * def = definitionFileList.front();
                 if(def->frameCount == 1)
                 {
-                    if (CommandLineParser::Instance()->IsFlagSet("--add2sidepixel") == false)
+                    if (!useTwoSideMargin)
                     {
-                        def->frameRects[0] = packer.ReduceRectToOriginalSize(def->frameRects[0]);
-                        CommandLineParser::Instance()->AddArgument("--add0pixel");
+                        def->frameRects[0] = packer.ReduceRectToOriginalSize(def->frameRects[0],marginInPixels,marginInPixels);
+                        marginInPixels = 0;
                     }
                 }
             }
+
+			packer.SetTwoSideMargin(useTwoSideMargin);
+			packer.SetTexturesMargin(marginInPixels);
 
 			if (CommandLineParser::Instance()->IsFlagSet("--split"))
 			{

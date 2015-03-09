@@ -39,6 +39,7 @@ class QtLayerDelegate
 public:
     
     virtual void Quit() = 0;
+    virtual void ShowAssertMessage(const char * message) = 0;
     
 };
     
@@ -72,9 +73,14 @@ public:
     void SetDelegate(QtLayerDelegate *delegate);
 
 	virtual void* GetOpenGLView() { return NULL; };
+    
+    void ShowAsserMessage(const char * message);
+    bool IsDAVAEngineEnabled() const { return isDAVAEngineEnabled; };
 protected:
     
     QtLayerDelegate *delegate;
+    
+    bool isDAVAEngineEnabled;
 };	
 };
 

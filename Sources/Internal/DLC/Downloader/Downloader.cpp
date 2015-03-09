@@ -1,0 +1,145 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+#include "Downloader.h"
+#include "DLC/Downloader/DownloadManager.h"
+#include "Platform/SystemTimer.h"
+
+namespace DAVA
+{
+
+bool Downloader::SaveData(const void *ptr, const FilePath& storePath, uint64 size)
+{
+    size_t written = 0;
+    File *destFile = File::Create(storePath, File::OPEN | File::WRITE | File::APPEND);
+    if (destFile)
+    {
+        DownloadManager::Instance()->ResetRetriesCount();
+#if defined(__DAVAENGINE_ANDROID__) 
+        uint32 posBeforeWrite = destFile->GetPos();
+#endif
+        written = destFile->Write(ptr, static_cast<int32>(size)); // only 32 bit write is supported
+
+#if defined(__DAVAENGINE_ANDROID__) 
+        //for Android value returned by 'Write()' is incorrect in case of full disk, that's why we calculate 'written' using 'GetPos()'
+        DVASSERT(destFile->GetPos() >= posBeforeWrite);
+        written = destFile->GetPos() - posBeforeWrite;
+#endif
+        SafeRelease(destFile);
+        
+        notifyProgress(written);
+        
+        if (written != size)
+        {
+            Logger::Error("[Downloader::SaveData] Cannot save data to the file");
+            return false;
+        }
+    }
+    else
+    {
+        Logger::Error("[Downloader::SaveData] Cannot open file to save data");
+        return false;
+    }
+
+    return true;
+}
+    
+void Downloader::SetProgressNotificator(Function<void (uint64)> progressNotifier)
+{
+    notifyProgress = progressNotifier;
+}
+
+void Downloader::ResetStatistics(uint64 sizeToDownload)
+{
+    sizeTime.clear();
+    currentSpeeds.clear();
+    dataToDownloadLeft = sizeToDownload;
+    statistics.downloadSpeedBytesPerSec = 0;
+    statistics.timeLeftSecs = 0;
+}
+
+void Downloader::CalcStatistics(uint32 dataCame)
+{
+    dataToDownloadLeft -= dataCame;
+    
+    static const uint32 currentSpeedWindowRange = 500;
+    
+    static uint64 curTime = SystemTimer::Instance()->AbsoluteMS();
+    static uint64 prevTime = curTime;
+    static uint64 timeDelta = 0;
+    
+    curTime = SystemTimer::Instance()->AbsoluteMS();
+    timeDelta = curTime - prevTime;
+    prevTime = curTime;
+
+    MeasureSpeedUnit currentMeasure = {dataCame, timeDelta};
+    sizeTime.push_back(currentMeasure);
+    
+    if (currentSpeedWindowRange < sizeTime.size())
+    {
+        sizeTime.pop_front();
+    }
+    
+    float64 currentSpeed = 0;
+    uint64 totalTime = 0;
+    uint64 totalSize = 0;
+    
+    auto end = sizeTime.end();
+    for (auto i = sizeTime.begin(); i != end; ++i)
+    {
+        totalSize += (*i).dataSizeCame;
+        totalTime += (*i).deltaTime;
+    }
+    
+    static const uint32 averageSpeedWindowRange = 100;
+    
+    if (0 != totalSize && 0 != totalTime)
+    {
+        currentSpeed = totalSize / (static_cast<float64>(totalTime)/1000);
+        currentSpeeds.push_back(currentSpeed);
+        if (averageSpeedWindowRange < currentSpeeds.size())
+        {
+            currentSpeeds.pop_front();
+        }
+    }
+
+    float64 speedsSumm = 0;
+    auto speedsEnd = currentSpeeds.end();
+    for (auto i = currentSpeeds.begin(); i != speedsEnd; ++i)
+    {
+        speedsSumm += (*i);
+    }
+    
+    if (0 < currentSpeeds.size())
+    {
+        statistics.downloadSpeedBytesPerSec = speedsSumm / currentSpeeds.size();
+        statistics.timeLeftSecs = static_cast<uint64>(dataToDownloadLeft / statistics.downloadSpeedBytesPerSec);
+    }
+}
+    
+}

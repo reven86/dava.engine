@@ -33,6 +33,7 @@
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
+#include "Utils/Utils.h"
 
 
 namespace DAVA
@@ -61,16 +62,20 @@ void Heightmap::ReleaseData()
 bool Heightmap::BuildFromImage(const DAVA::Image *image)
 {
     DVASSERT(image);
-    if(size != image->width)
+    
+    Image *heightImage = Image::CreateFromData(image->GetWidth(), image->GetHeight(), image->GetPixelFormat(), image->GetData());
+    heightImage->FlipVertical();
+    
+    if(size != heightImage->width)
     {
         ReleaseData();
-        AllocateData(image->width);
+        AllocateData(heightImage->width);
     }
     
-    if(FORMAT_A16 == image->format)
+    if(FORMAT_A16 == heightImage->format)
     {
         uint16 *dstData = data;
-        uint16 *srcData = (uint16*)image->data;
+        uint16 *srcData = (uint16*)heightImage->data;
         for(int32 i = size*size - 1; i >= 0; --i)
         {
             uint16 packed = *srcData++;
@@ -79,10 +84,10 @@ bool Heightmap::BuildFromImage(const DAVA::Image *image)
             *dstData++ = unpacked;
         }
     }
-    else if(FORMAT_A8 == image->format)
+    else if(FORMAT_A8 == heightImage->format)
     {
         uint16 *dstData = data;
-        uint8 *srcData = image->data;
+        uint8 *srcData = heightImage->data;
 
         for(int32 i = size*size - 1; i >= 0; --i)
         {
@@ -91,9 +96,12 @@ bool Heightmap::BuildFromImage(const DAVA::Image *image)
     }
     else 
     {
-        Logger::Error("Heightmap build from wrong formatted image: format = %d", image->format);
+        Logger::Error("Heightmap build from wrong formatted image: format = %d", heightImage->format);
         return false;
     }
+    
+    
+    SafeRelease(heightImage);
     return true;
 }
 
@@ -108,6 +116,7 @@ void Heightmap::SaveToImage(const FilePath & filename)
         unpackedBytes[k] = ((data[k] & 0xFF) << 8) | ((data[k] & 0xFF00) >> 8);
     }
     Memcpy(image->data, unpackedBytes, size*size*sizeof(uint16));
+    image->FlipVertical();
 
     SafeDeleteArray(unpackedBytes);
     
@@ -282,6 +291,5 @@ Heightmap * Heightmap::CreateHeightmapForSize(int32 newSize)
     return createdHeightmap;
 }
 
-    
 };
 

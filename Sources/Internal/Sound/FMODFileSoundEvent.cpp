@@ -140,6 +140,8 @@ bool FMODFileSoundEvent::Trigger()
 
 	Retain();
 
+    PerformEvent(EVENT_TRIGGERED);
+
     return true;
 }
 
@@ -182,7 +184,7 @@ bool FMODFileSoundEvent::IsActive() const
 	return numChanels != 0 && !isPaused;
 }
 
-void FMODFileSoundEvent::Stop()
+void FMODFileSoundEvent::Stop(bool force /* = false */)
 {
     FMOD_VERIFY(fmodInstanceGroup->stop());
 }

@@ -3,12 +3,17 @@ uniform sampler2D albedo = 0;
 uniform sampler2D decal = 1;
 uniform sampler2D detail = 1;
 uniform sampler2D lightmap = 1;
+uniform sampler2D decalmask = 1;
+uniform sampler2D alphamask = 1;
 uniform sampler2D vegetationmap = 2
 uniform sampler2D normalmap = 2;
 uniform sampler2D cubemap = 3;
 uniform sampler2D heightmap = 4;
 uniform sampler2D densitymap = 5;
+uniform sampler2D decaltexture = 6;
+uniform samplerCube atmospheremap = 7;
 
+uniform float normalScale = 1.0;
 uniform float inGlossiness = 0.5;
 uniform float inSpecularity = 1.0;
 uniform vec3 metalFresnelReflectance = vec3(0.5, 0.5, 0.5);
@@ -70,6 +75,10 @@ varying mediump mat3 tbnToWorldMatrix;
 uniform sampler2D decal;
 #endif
 
+#if defined(ALPHA_MASK)
+uniform sampler2D alphamask;
+#endif
+
 #if defined(MATERIAL_DETAIL) || defined(MATERIAL_GRASS_BLEND)
 uniform sampler2D detail;
 #endif
@@ -80,7 +89,7 @@ uniform sampler2D lightmap;
 #endif
 
 //#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_VIEW_LIGHTMAP_ONLY) || defined(FRAME_BLEND)
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND)
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
 varying highp vec2 varTexCoord1;
 #endif
 
@@ -91,9 +100,17 @@ uniform float lightIntensity0;
 uniform float inSpecularity;
 uniform float physicalFresnelReflectance;
 uniform vec3 metalFresnelReflectance;
+uniform float normalScale;
 #endif
 
-#if defined(VERTEX_LIT) || defined(PIXEL_LIT)
+#if defined(TILED_DECAL)
+uniform sampler2D decalmask;
+uniform sampler2D decaltexture;
+uniform lowp vec4 decalTileColor;
+varying vec2 varDecalTileTexCoord;
+#endif
+
+#if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG)
 uniform vec3 lightAmbientColor0;
 uniform vec3 lightColor0;
 uniform float inGlossiness;
@@ -123,8 +140,8 @@ varying float varPerPixelAttenuation;
 #endif
 
 #if defined(VERTEX_FOG)
-uniform vec3 fogColor;
-varying float varFogFactor;
+varying lowp float varFogAmoung;
+varying lowp vec3 varFogColor;
 #endif
 
 #if defined(SETUP_LIGHTMAP)
@@ -179,6 +196,9 @@ void main()
     
 #if defined(PIXEL_LIT) || defined(ALPHATEST) || defined(ALPHABLEND) || defined(VERTEX_LIT)
     lowp vec4 textureColor0 = texture2D(albedo, varTexCoord0);
+    #if defined (ALPHA_MASK)        
+        textureColor0.a *= texture2D(alphamask, varTexCoord1).a;
+    #endif
 #else
     lowp vec3 textureColor0 = texture2D(albedo, varTexCoord0).rgb;
 #endif
@@ -272,7 +292,13 @@ void main()
     #endif
 
     #if defined(VIEW_ALBEDO)
-        color *= textureColor0.rgb;
+        #if defined(TILED_DECAL)
+            lowp float maskSample = texture2D(decalmask, varTexCoord0).a;
+            lowp vec4 tileColor = texture2D(decaltexture, varDecalTileTexCoord).rgba * decalTileColor;
+            color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
+        #else
+            color *= textureColor0.rgb;
+        #endif
     #endif
 
     #if defined(VIEW_SPECULAR)
@@ -295,7 +321,13 @@ void main()
     #endif
         
     #if defined(VIEW_ALBEDO)
-        color *= textureColor0.rgb;
+        #if defined(TILED_DECAL)
+            lowp float maskSample = texture2D(decalmask, varTexCoord0).a;
+            lowp vec4 tileColor = texture2D(decaltexture, varDecalTileTexCoord).rgba * decalTileColor;
+            color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
+        #else
+            color *= textureColor0.rgb;
+        #endif
     #endif
     
     #if defined(VIEW_SPECULAR)
@@ -316,8 +348,9 @@ void main()
 #elif defined(PIXEL_LIT)
     // lookup normal from normal map, move from [0, 1] to  [-1, 1] range, normalize
     vec3 normal = 2.0 * texture2D (normalmap, varTexCoord0).rgb - 1.0;
-    //normal = normalize (normal);
-   	normal.z = sqrt(1.0 - (normal.x * normal.x + normal.y * normal.y));
+    normal.xy *= normalScale;
+    normal = normalize (normal);
+   	//normal.z = sqrt(1.0 - (normal.x * normal.x + normal.y * normal.y));
     //normal = vec3(0.0, 0.0, 1.0);
     
     float attenuation = lightIntensity0;
@@ -415,7 +448,13 @@ void main()
     #endif
     
     #if defined(VIEW_ALBEDO)
-        color *= textureColor0.rgb;
+        #if defined(TILED_DECAL)
+            lowp float maskSample = texture2D(decalmask, varTexCoord0).a;
+            lowp vec4 tileColor = texture2D(decaltexture, varDecalTileTexCoord).rgba * decalTileColor;
+            color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
+        #else
+            color *= textureColor0.rgb;
+        #endif
     #endif
     
     #if defined(VIEW_SPECULAR)
@@ -477,42 +516,36 @@ void main()
     //    gl_FragColor.r += 0.5;
 
 #if defined(MATERIAL_GRASS_TRANSFORM)
-    
-#if defined(MATERIAL_GRASS_OPAQUE)
-    gl_FragColor.rgb = gl_FragColor.rgb * varVegetationColor * 2.0;
-#endif
-    
-#if defined(MATERIAL_GRASS_BLEND)
-    
-    gl_FragColor.a = gl_FragColor.a * varTexCoord2.x;
-    
-    #if defined(FRAMEBUFFER_FETCH)
-        //VI: fog is taken to account here
-        #if defined(VERTEX_FOG)
-            gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, mix(fogColor, gl_FragColor.rgb * varVegetationColor * 2.0, varFogFactor), gl_FragColor.a);
-        #else
-            gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, gl_FragColor.rgb * varVegetationColor * 2.0, gl_FragColor.a);
-        #endif
-    #else
+    #if defined(MATERIAL_GRASS_OPAQUE)
         gl_FragColor.rgb = gl_FragColor.rgb * varVegetationColor * 2.0;
     #endif
+        
+    #if defined(MATERIAL_GRASS_BLEND)
+        gl_FragColor.a = gl_FragColor.a * varTexCoord2.x;
+        #if defined(FRAMEBUFFER_FETCH)
+            //VI: fog is taken to account here
+            #if defined(VERTEX_FOG)
+                gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, mix(gl_FragColor.rgb * varVegetationColor * 2.0, varFogColor, varFogAmoung), gl_FragColor.a);
+            #else
+                gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, gl_FragColor.rgb * varVegetationColor * 2.0, gl_FragColor.a);
+            #endif
+        #else
+            gl_FragColor.rgb = gl_FragColor.rgb * varVegetationColor * 2.0;
+        #endif
+    #endif
     
-#endif
-
-#if defined(MATERIAL_GRASS_OPAQUE) || defined(MATERIAL_GRASS_BLEND)
-
-#if defined(VEGETATION_DRAW_LOD_COLOR)
-    gl_FragColor.rgb += lodColor;
-#endif
-
-#endif
+    #if defined(MATERIAL_GRASS_OPAQUE) || defined(MATERIAL_GRASS_BLEND)
+        #if defined(VEGETATION_DRAW_LOD_COLOR)
+            gl_FragColor.rgb += lodColor;
+        #endif
+    #endif
 
 #endif
     
 #if defined(VERTEX_FOG)
-#if !defined(FRAMEBUFFER_FETCH)
-    //VI: fog equation is inside of color equation for framebuffer fetch
-    gl_FragColor.rgb = mix(fogColor, gl_FragColor.rgb, varFogFactor);
-#endif
+    #if !defined(FRAMEBUFFER_FETCH)
+        //VI: fog equation is inside of color equation for framebuffer fetch
+        gl_FragColor.rgb = mix(gl_FragColor.rgb, varFogColor, varFogAmoung);
+    #endif
 #endif
 }

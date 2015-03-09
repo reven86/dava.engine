@@ -85,7 +85,7 @@ NMaterialTemplate* NMaterialTemplateCache::Load(const FilePath& loadPath)
 	{
 		result = new NMaterialTemplate();
 		
-		for(int32 i = 0; i < materialTemplateNode->GetCount(); ++i)
+		for(uint32 i = 0; i < materialTemplateNode->GetCount(); ++i)
 		{
 			const YamlNode* techniqueNode = materialTemplateNode->Get(i);
 			
