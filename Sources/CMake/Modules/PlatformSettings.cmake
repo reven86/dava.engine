@@ -8,6 +8,7 @@ endif  ()
 if     ( ANDROID )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -Wno-invalid-offsetof" )
     set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -Wno-invalid-offsetof -frtti" )    
+    set( CMAKE_ECLIPSE_MAKE_ARGUMENTS -j8 )
     
 elseif ( IOS     ) 
     set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fvisibility=hidden" )
