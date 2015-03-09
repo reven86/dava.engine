@@ -314,8 +314,11 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
         }
         else if (propertyName == "pivot")
         {
-            DVASSERT(node->Get("size") || node->Get("rect"));
-            Vector2 size = node->Get("size") ? node->Get("size")->AsVector2() : node->Get("rect")->AsRect().GetSize();
+            const YamlNode *sizeNode = node->Get("size");
+            const YamlNode *rectNode = node->Get("rect");
+            DVASSERT(sizeNode || rectNode);
+
+            Vector2 size = sizeNode ? sizeNode->AsVector2() : rectNode->AsRect().GetSize();
             Vector2 pivotPoint = valueNode->AsVector2();
             return VariantType(pivotPoint / size);
         }
