@@ -190,7 +190,7 @@ set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_
 include               ( GlobalVariables )
 
 if( NOT ANDROID_TOOLCHAIN_NAME )
-    set( ANDROID_TOOLCHAIN_NAME  arm-linux-androideabi-clang3.4 )
+    set( ANDROID_TOOLCHAIN_NAME  arm-linux-androideabi-clang3.3 )
 endif()
 
 if( DEFINED CMAKE_CROSSCOMPILING )
