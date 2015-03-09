@@ -161,17 +161,10 @@ void PathSystem::DrawInEditableMode()
 {
     RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
 
-    const DAVA::uint32 count = pathes.size();
-    for(DAVA::uint32 p = 0; p < count; ++p)
+    for (DAVA::Entity* path : pathes)
     {
-        DAVA::Entity * path = pathes[p];
-        if(path->GetVisible() == false)
-        {   // we don't need draw hidden pathes
-            continue;
-        }
-
         PathComponent* pc = GetPathComponent(path);
-        if (!pc)
+        if (!path->GetVisible() || !pc)
         {
             continue;
         }
@@ -207,16 +200,14 @@ void PathSystem::DrawInEditableMode()
 void PathSystem::DrawInViewOnlyMode()
 {
     RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-
-    EntityGroup gruop = sceneEditor->selectionSystem->GetSelection();
-
     const DAVA::float32 boxScale = SettingsManager::GetValue(Settings::Scene_DebugBoxWaypointScale).AsFloat();
 
-    
-    const size_t count = gruop.Size();
+    EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
+
+    const size_t count = selection.Size();
     for(size_t p = 0; p < count; ++p)
     {
-        DAVA::Entity * path = gruop.GetEntity(p);
+        DAVA::Entity * path = selection.GetEntity(p);
         DAVA::PathComponent *pathComponent = DAVA::GetPathComponent(path);
         if(path->GetVisible() == false || !pathComponent)
         {
@@ -226,28 +217,24 @@ void PathSystem::DrawInViewOnlyMode()
         RenderManager::SetDynamicParam(PARAM_WORLD, &path->GetWorldTransform(), (pointer_size)&path->GetWorldTransform());
 
         const Vector<PathComponent::Waypoint *> & waypoints = pathComponent->GetPoints();
-        const DAVA::uint32 waypointsCount = (const DAVA::uint32)waypoints.size();
-        for(DAVA::uint32 w = 0; w < waypointsCount; ++w)
+        for (auto waypoint : waypoints)
         {
-            Vector3 startPosition = waypoints[w]->position;
+            Vector3 startPosition = waypoint->position;
             const DAVA::AABBox3 wpBoundingBox(startPosition, boxScale);
-            bool isStarting = waypoints[w]->IsStarting();
+            bool isStarting = waypoint->IsStarting();
             
-            DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.3f, 0.3f, isStarting? 1.0f : 0.0f, 0.3f));
+            DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.3f, 0.3f, isStarting ? 1.0f : 0.0f, 0.3f));
             DAVA::RenderHelper::Instance()->FillBox(wpBoundingBox, pathDrawState);
             DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.7f, 0.7f, isStarting ? 0.7f : 0.0f, 1.0f));
             DAVA::RenderHelper::Instance()->DrawBox(wpBoundingBox, 1.0f, pathDrawState);
         
             //draw edges
-            const DAVA::uint32 edgesCount = (const DAVA::uint32)waypoints[w]->edges.size();
-            if(edgesCount)
+            if (!waypoint->edges.empty())
             {
                 RenderManager::Instance()->SetColor(pathComponent->GetColor());
-
-                for(DAVA::uint32 e = 0; e < edgesCount; ++e)
+                startPosition.z += WAYPOINTS_DRAW_LIFTING;
+                for (auto edge : waypoint->edges)
                 {
-                    const DAVA::PathComponent::Edge *edge = waypoints[w]->edges[e];
-                    startPosition.z += WAYPOINTS_DRAW_LIFTING;
                     Vector3 finishPosition = edge->destination->position;
                     finishPosition.z += WAYPOINTS_DRAW_LIFTING;
                     DrawArrow(startPosition, finishPosition);
