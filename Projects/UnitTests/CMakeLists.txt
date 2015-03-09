@@ -39,6 +39,7 @@ define_source_folders         ( SRC_ROOT "Classes" ${PLATFORM_SPECIFIC_FOLDER}  
 generate_source_groups_project( SRC_ROOT "Classes" )
 add_subdirectory( ${DAVA_TOOLS_DIR} ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
+set( WIN32_DATA                 ${CMAKE_CURRENT_LIST_DIR}/Data )
 
 set( IOS_PLISTT                 ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/UnitTests-Info.plist )
 set( IOS_XIB                    ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/MainWindow.xib ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/iPad/MainWindow-iPad.xib )
@@ -59,7 +60,6 @@ set( ANDROID_JAVA_SRC           ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/Java
 set( ANDROID_JAVA_LIBS          ${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/jar )
 set( ANDROID_JAVA_RES           ${CMAKE_CURRENT_LIST_DIR}/android/res )
 set( ANDROID_JAVA_ASSET         ${CMAKE_CURRENT_LIST_DIR}/Data ) 
-set( ANDROID_JAVA_ASSET_FOLDER  "Data" )
 set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-web.png )
 
 set( ADDED_SRC                  ${IOS_ADD_SRC} )
