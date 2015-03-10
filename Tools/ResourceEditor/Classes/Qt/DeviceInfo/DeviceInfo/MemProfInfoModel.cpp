@@ -89,6 +89,7 @@ void MemProfInfoModel::addMoreData(const DAVA::MMStat * data)
     TagsStat tagsStat;
     tagsStat.statData.resize(data->registredMarkerCount);
     tagsStat.tagNames.resize(data->registredMarkerCount);
+    size_t offset = data->allocPoolCount*(data->tags.depth+1);
     for (size_t i = 0; i < tagsStat.statData.size(); i++)
     {
         auto tagID = data->tags.stack[i];
@@ -98,8 +99,8 @@ void MemProfInfoModel::addMoreData(const DAVA::MMStat * data)
         for (size_t u = 0; u < tagsStat.statData[i].size(); u++)
         {
            
-            tagsStat.statData[i][u].allocByApp = data->poolStat[data->allocPoolCount*i + u].allocByApp;
-            tagsStat.statData[i][u].allocTotal = data->poolStat[data->allocPoolCount*i + u].allocTotal;
+            tagsStat.statData[i][u].allocByApp = data->poolStat[offset + data->allocPoolCount*i + u].allocByApp;
+            tagsStat.statData[i][u].allocTotal = data->poolStat[offset + data->allocPoolCount*i + u].allocTotal;
         }
     }
 

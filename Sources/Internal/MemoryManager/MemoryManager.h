@@ -140,7 +140,7 @@ private:
     MMTagStack tags;                    // Active tags
     GeneralAllocStat statGeneral;       // General statistics
     AllocPoolStat statAllocPool[MMConst::MAX_TAG_DEPTH][MMConst::MAX_ALLOC_POOL_COUNT];    // Statistics for each allocation pool divided by tags
-    AllocPoolStat statMarkers[MMConst::MAX_MARKER_COUNT];
+    AllocPoolStat statMarkers[MMConst::MAX_MARKER_COUNT][MMConst::MAX_ALLOC_POOL_COUNT];
     std::atomic<uint32> currentActiveMarker;
 
     typedef DAVA::Spinlock MutexType;

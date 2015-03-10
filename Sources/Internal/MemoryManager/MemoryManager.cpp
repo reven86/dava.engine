@@ -464,12 +464,12 @@ void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, uint32 poolIndex)
             statAllocPool[i][poolIndex].maxBlockSize = static_cast<uint32>(block->allocByApp);
 
     }
-    statMarkers[block->marker].allocByApp += block->allocByApp;
-    statMarkers[block->marker].allocTotal += block->allocTotal;
-    statMarkers[block->marker].blockCount += 1;
+    statMarkers[block->marker][poolIndex].allocByApp += block->allocByApp;
+    statMarkers[block->marker][poolIndex].allocTotal += block->allocTotal;
+    statMarkers[block->marker][poolIndex].blockCount += 1;
 
-    if (block->allocByApp > statMarkers[block->marker].maxBlockSize)
-        statMarkers[block->marker].maxBlockSize = static_cast<uint32>(block->allocByApp);
+    if (block->allocByApp > statMarkers[block->marker][poolIndex].maxBlockSize)
+        statMarkers[block->marker][poolIndex].maxBlockSize = static_cast<uint32>(block->allocByApp);
 
     statGeneral.realSize += MallocHook::MallocSize(block->realBlockStart);
 }
@@ -490,9 +490,9 @@ void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, uint32 poolIndex)
             statAllocPool[i][poolIndex].blockCount -= 1;
         }
     }
-    statMarkers[block->marker].allocByApp -= block->allocByApp;
-    statMarkers[block->marker].allocTotal -= block->allocTotal;
-    statMarkers[block->marker].blockCount -= 1;
+    statMarkers[block->marker][poolIndex].allocByApp -= block->allocByApp;
+    statMarkers[block->marker][poolIndex].allocTotal -= block->allocTotal;
+    statMarkers[block->marker][poolIndex].blockCount -= 1;
 
     statGeneral.realSize -= MallocHook::MallocSize(block->realBlockStart);
 }
@@ -523,7 +523,7 @@ void MemoryManager::GetStatConfig(MMStatConfig* config) const
 
 size_t MemoryManager::CalcStatSize() const
 {
-    return sizeof(MMStat) + sizeof(AllocPoolStat) * ((tags.depth + 1) * registeredAllocPoolCount - 1 + registeredMarkerCount);
+    return sizeof(MMStat) + sizeof(AllocPoolStat) * ((tags.depth + 1) * registeredAllocPoolCount - 1 + registeredMarkerCount* registeredAllocPoolCount);
 }
 
 void MemoryManager::GetStat(MMStat* stat) const
@@ -545,9 +545,12 @@ void MemoryManager::GetStat(MMStat* stat) const
             stat->poolStat[k] = statAllocPool[i][j];
         }
     }
-    for (uint32 i = 0; i < registeredMarkerCount; i++,++k)
+    for (uint32 i = 0; i < registeredMarkerCount; i++)
     {
-        stat->poolStat[k] = statMarkers[i];
+        for (uint32 j = 0; j < stat->allocPoolCount; ++j, ++k)
+        {
+            stat->poolStat[k] = statMarkers[i][j];
+        }
     }
 }
 
