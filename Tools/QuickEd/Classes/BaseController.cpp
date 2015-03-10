@@ -87,8 +87,6 @@ void BaseController::RecentMenu(QAction *recentProjectAction)
 int BaseController::CreateDocument(PackageNode *package)
 {
     Document *document = new Document(&project, package, this);
-    //TODO : implement this to Add Document
-
     undoGroup.addStack(document->GetUndoStack());
     documents.push_back(document);
     SetCount(Count() + 1);
@@ -163,45 +161,50 @@ int BaseController::GetIndexByPackagePath(const QString &fileName) const
     return -1;
 }
 
-void BaseController::OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls)
+Document *BaseController::GetCurrentDocument()
 {
     if (0 == Count() || -1 == CurrentIndex())
     {
-        return;
+        return nullptr;
     }
-    Document &document = *documents[CurrentIndex()];
-    document.OnSelectionRootControlChanged(activatedRootControls, deactivatedRootControls);
+    return documents.at(CurrentIndex());
+}
+
+void BaseController::OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls)
+{
+    Document *document = GetCurrentDocument();
+    if (nullptr != document)
+    {
+        document->OnSelectionRootControlChanged(activatedRootControls, deactivatedRootControls);
+    }
 }
 
 void BaseController::OnSelectionControlChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls)
 {
-    if (0 == Count() || -1 == CurrentIndex())
+    Document *document = GetCurrentDocument();
+    if (nullptr != document)
     {
-        return;
+        document->OnSelectionControlChanged(activatedControls, deactivatedControls);
     }
-    Document &document = *documents[CurrentIndex()];
-    document.OnSelectionControlChanged(activatedControls, deactivatedControls);
 }
 
 void BaseController::OnControlSelectedInEditor(ControlNode *activatedControls)
 {
-    if (0 == Count() || -1 == CurrentIndex())
+    Document *document = GetCurrentDocument();
+    if (nullptr != document)
     {
-        return;
+        document->OnControlSelectedInEditor(activatedControls);
     }
-    Document &document = *documents[CurrentIndex()];
-    document.OnControlSelectedInEditor(activatedControls);
 }
 
 
 void BaseController::OnAllControlDeselectedInEditor()
 {
-    if (0 == Count() || -1 == CurrentIndex())
+    Document *document = GetCurrentDocument();
+    if (nullptr != document)
     {
-        return;
+        document->OnAllControlDeselectedInEditor();
     }
-    Document &document = *documents[CurrentIndex()];
-    document.OnAllControlDeselectedInEditor();
 }
 
 void BaseController::OnOpenPackageFile(const QString &path)
@@ -268,21 +271,25 @@ void BaseController::CloseDocument(int index)
 
 void BaseController::DetachDocument(Document *document)
 {
-    DVASSERT(nullptr != document);
-    document->SetActive(false);
-    disconnect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
-    disconnect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
-    disconnect(document->GetUndoStack(), &QUndoStack::cleanChanged, &mainWindow, &MainWindow::OnCleanChanged);
+    if (nullptr != document)
+    {
+        document->SetActive(false);
+        disconnect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
+        disconnect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
+        disconnect(document->GetUndoStack(), &QUndoStack::cleanChanged, &mainWindow, &MainWindow::OnCleanChanged);
+    }
     mainWindow.SetDocumentToWidgets(nullptr);
 }
 
 void BaseController::AttachDocument(Document *document)
 {
-    DVASSERT(nullptr != document);
-    document->SetActive(true);
-    connect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
-    connect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
-    connect(document->GetUndoStack(), &QUndoStack::cleanChanged, &mainWindow, &MainWindow::OnCleanChanged);
+    if (nullptr != document)
+    {
+        document->SetActive(true);
+        connect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
+        connect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
+        connect(document->GetUndoStack(), &QUndoStack::cleanChanged, &mainWindow, &MainWindow::OnCleanChanged);
+    }
     mainWindow.SetDocumentToWidgets(document);
 }
 
@@ -334,18 +341,13 @@ void BaseController::SetCurrentIndex(int arg)
     {
         return;
     }
-
     DVASSERT(arg < documents.size());
-    if (currentIndex >= 0 && currentIndex < documents.size())
-    {
-        DetachDocument(documents.at(currentIndex));
-    }
+
+    DetachDocument(GetCurrentDocument());
 
     currentIndex = arg;
-    if (currentIndex != -1)
-    {
-        AttachDocument(documents.at(currentIndex));
-    }
+
+    AttachDocument(GetCurrentDocument());
 
     emit CurrentIndexChanged(arg);
 }

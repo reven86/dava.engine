@@ -44,6 +44,8 @@ private:
     void AttachDocument(Document *document);
     void CloseDocument(int index);
     int GetIndexByPackagePath(const QString &fileName) const;
+    ///Return: pointer to currentDocument if exists, nullptr if not
+    Document* GetCurrentDocument();
     QList<Document*> documents;
     MainWindow mainWindow;
     QUndoGroup undoGroup;
