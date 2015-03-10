@@ -55,12 +55,6 @@ private:
     void OnButtonSetNormal(BaseObject *obj, void *data, void *callerData);
     void OnButtonAdd10ToAlfa(BaseObject *obj, void *data, void *callerData);
     void OnButtonMinus10FromAlfa(BaseObject *obj, void *data, void *callerData);
-    void OnButtonCheckTransparancy(BaseObject *obj, void *data,
-        void *callerData);
-    void OnButtonUncheckTransparancy(BaseObject *obj, void *data,
-        void *callerData);
-    void OnButtonExecJS(BaseObject* obj, void*, void*);
-    void OnLoadHTMLString(BaseObject* obj, void*, void*);
     void OnButtonVisible(BaseObject*, void*, void*);
     void OnButtonHide(BaseObject*, void*, void*);
 
@@ -73,10 +67,6 @@ private:
     UIButton* setNormalButton;
     UIButton* add10ToAlfaButton;
     UIButton* minus10FromAlfaButton;
-    UIButton* checkTransparancyButton;
-    UIButton* uncheckTransparancyButton;
-    UIButton* executeJSButton;
-    UIButton* loadHTMLString;
     UIButton* setVisibleButton;
     UIButton* setHideButton;
 

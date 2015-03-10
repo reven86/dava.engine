@@ -42,11 +42,6 @@ StaticTextFieldTest::StaticTextFieldTest()
     setStaticButton(nullptr),
     setNormalButton(nullptr),
     add10ToAlfaButton(nullptr),
-    minus10FromAlfaButton(nullptr),
-    checkTransparancyButton(nullptr),
-    uncheckTransparancyButton(nullptr),
-    executeJSButton(nullptr),
-    loadHTMLString(nullptr),
     setVisibleButton(nullptr),
     setHideButton(nullptr),
     overlapedImage(nullptr),
@@ -61,14 +56,6 @@ StaticTextFieldTest::StaticTextFieldTest()
 
 void StaticTextFieldTest::LoadResources()
 {
-
-    volatile int i = 0;
-    while(i > 0)
-    {
-        Thread::Sleep(1000);
-        --i;
-    }
-
     uiTextField1 = new UITextField(Rect(300, 100, 400, 40));
     uiTextField1->SetVisible(true);
     uiTextField1->SetRenderToTexture(true);
@@ -91,14 +78,11 @@ void StaticTextFieldTest::LoadResources()
 	uiTextField1->SetDebugDraw(true);
 	uiTextField1->SetDelegate(new UITextFieldDelegate());
 	uiTextField1->SetIsPassword(false);
-	// uiTextField1->SetDelegate(this);
-
 
     AddControl(uiTextField1);
 
     overlapedImage = new UIControl(Rect(500, 0, 300, 300));
-    FilePath imgPath("~res:/Gfx/UI/Rotation");
-    overlapedImage->SetSprite(imgPath, 0);
+    overlapedImage->SetSprite("~res:/Gfx/UI/Rotation", 0);
     overlapedImage->SetDebugDraw(true);
     AddControl(overlapedImage);
 
@@ -120,24 +104,6 @@ void StaticTextFieldTest::LoadResources()
         Rect(0 + 300 * 2, 510 + w, 300, w),
         L"-10 to Alfa", &StaticTextFieldTest::OnButtonMinus10FromAlfa);
 
-    CreateUIButton(checkTransparancyButton, font,
-        Rect(0 + 300 * 1, 510 + w * 2, 300, w),
-        L"set Transparent Background",
-        &StaticTextFieldTest::OnButtonCheckTransparancy);
-
-    CreateUIButton(uncheckTransparancyButton, font,
-        Rect(0 + 300 * 2, 510 + w * 2, 300, w),
-        L"unset Transparent Background",
-        &StaticTextFieldTest::OnButtonUncheckTransparancy);
-
-//    CreateUIButton(executeJSButton, font,
-//        Rect(0 + 300 * 1, 510 + w * 3, 300, w), L"exec JS",
-//        &StaticTextFieldTest::OnButtonExecJS);
-
-//    CreateUIButton(loadHTMLString, font,
-//        Rect(0 + 300 * 2, 510 + w * 3, 300, w), L"load HTML String",
-//        &StaticTextFieldTest::OnLoadHTMLString);
-
     CreateUIButton(setVisibleButton, font,
         Rect(0 + 300 * 1, 510 + w * 4, 300, w), L"Show",
         &StaticTextFieldTest::OnButtonVisible);
@@ -156,6 +122,12 @@ void StaticTextFieldTest::UnloadResources()
     SafeRelease(uiTextField1);
     SafeRelease(uiTextField2);
     SafeRelease(finishTestButton);
+    SafeRelease(setStaticButton);
+    SafeRelease(setNormalButton);
+    SafeRelease(add10ToAlfaButton);
+    SafeRelease(minus10FromAlfaButton);
+    SafeRelease(setVisibleButton);
+    SafeRelease(setHideButton);
 }
 
 bool StaticTextFieldTest::RunTest(int32 testNum)
@@ -204,18 +176,16 @@ void StaticTextFieldTest::OnButtonAdd10ToAlfa(BaseObject *obj, void *data,
     void *callerData)
 {
     Sprite* spr = uiTextField1->GetSprite();
-    UIControlBackground* back = uiTextField1->GetBackground();
-    if (spr)
+    if (nullptr != spr)
     {
-        Color color = back->GetColor();
-        color.a += 0.1f;
-        color.a = Min(1.0f, color.a);
+        UIControlBackground* back = uiTextField1->GetBackground();
+        auto color = back->GetColor();
+        color.a = Min(1.0f, color.a + 0.1f);
         back->SetColor(color);
     }
 
     auto col = uiTextField1->GetTextColor();
-    col.a += 0.1f;
-    col.a = Min(1.0f, col.a);
+    col.a = Min(1.0f, col.a + 0.1f);
 
     uiTextField1->SetTextColor(col);
 }
@@ -224,32 +194,18 @@ void StaticTextFieldTest::OnButtonMinus10FromAlfa(BaseObject *obj, void *data,
     void *callerData)
 {
     Sprite* spr = uiTextField1->GetSprite();
-    UIControlBackground* back = uiTextField1->GetBackground();
     if (spr)
     {
+        UIControlBackground* back = uiTextField1->GetBackground();
         Color color = back->GetColor();
-        color.a -= 0.1f;
-        color.a = Max(0.f, color.a);
+        color.a = Max(0.f, color.a - 0.1f);
         back->SetColor(color);
     }
 
     auto col = uiTextField1->GetTextColor();
-    col.a -= 0.1f;
-    col.a = Max(0.f, col.a);
+    col.a = Max(0.f, col.a - 0.1f);
 
     uiTextField1->SetTextColor(col);
-}
-
-void StaticTextFieldTest::OnButtonCheckTransparancy(BaseObject *obj, void *data,
-    void *callerData)
-{
-    // TODO ? uiTextField1->SetBackgroundTransparency(true);
-}
-
-void StaticTextFieldTest::OnButtonUncheckTransparancy(BaseObject *obj, void *data,
-    void *callerData)
-{
-    // TODO ? uiTextField1->SetBackgroundTransparency(false);
 }
 
 void StaticTextFieldTest::CreateUIButton(UIButton*& button, Font * font,

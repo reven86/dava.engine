@@ -87,7 +87,7 @@ public:
 private:
     // Truncate the text to maxLength characters.
     void* TruncateText(void* text, int maxLength);
-    void updateStaticTexture();
+    void UpdateStaticTexture();
     
     UITextField& davaTextField;
 	void * objcClassPtr;

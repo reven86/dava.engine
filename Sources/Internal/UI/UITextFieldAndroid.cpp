@@ -543,18 +543,16 @@ void UITextFieldAndroid::TextFieldUpdateTexture(uint32_t id, int32* rawPixels,
 
     if (rawPixels)
     {
-        {
-            Texture* tex = Texture::CreateFromData(FORMAT_RGBA8888,
-                    reinterpret_cast<uint8*>(rawPixels), width, height, false);
-            Rect rect = textField.GetRect();
-            {
-                Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, rect.dx,
-                        rect.dy);
-                textField.GetBackground()->SetSprite(spr, 0);
-                SafeRelease(spr);
-            }
-            SafeRelease(tex);
-        }
+        Texture* tex = Texture::CreateFromData(FORMAT_RGBA8888,
+                reinterpret_cast<uint8*>(rawPixels), width, height, false);
+        SCOPE_EXIT{SafeRelease(tex);};
+
+        Rect rect = textField.GetRect();
+        Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, rect.dx,
+                rect.dy);
+        SCOPE_EXIT{SafeRelease(spr);};
+
+        textField.GetBackground()->SetSprite(spr, 0);
     }
     else
     {

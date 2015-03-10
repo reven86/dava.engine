@@ -275,7 +275,7 @@ namespace DAVA
         // Notify UITextFieldDelegate::TextFieldOnTextChanged event
         [textFieldHolder->textField sendActionsForControlEvents:UIControlEventEditingChanged];
         
-        updateStaticTexture();
+        UpdateStaticTexture();
     }
 	
     void UITextFieldiPhone::GetText(WideString & string) const
@@ -303,7 +303,7 @@ namespace DAVA
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
 		[textFieldHolder setIsPassword: isPassword];
         
-        updateStaticTexture();
+        UpdateStaticTexture();
 	}
 
 	void UITextFieldiPhone::SetInputEnabled(bool value)
@@ -416,9 +416,9 @@ namespace DAVA
         }
     }
     
-    void UITextFieldiPhone::updateStaticTexture()
+    void UITextFieldiPhone::UpdateStaticTexture()
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder * textFieldHolder = static_cast<UITextFieldHolder*>(objcClassPtr);
         if (textFieldHolder)
         {
             ::UITextField* textField = textFieldHolder->textField;
@@ -441,7 +441,7 @@ namespace DAVA
     void UITextFieldiPhone::SetRenderToTexture(bool value)
     {
         renderToTexture = value;
-        updateStaticTexture();
+        UpdateStaticTexture();
     }
     
     bool UITextFieldiPhone::IsRenderToTexture() const

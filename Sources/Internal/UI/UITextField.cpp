@@ -1018,7 +1018,7 @@ void UITextField::SetRenderToTexture(bool value)
 #elif defined(__DAVAENGINE_IPHONE__)
     textFieldiPhone->SetRenderToTexture(value);
 #else
-    static_assert(false, "implement new platform");
+#error "implement new platform"
 #endif
 }
     

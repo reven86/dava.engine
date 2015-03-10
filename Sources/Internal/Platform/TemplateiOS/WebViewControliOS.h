@@ -89,7 +89,7 @@ public:
     // common ios part to render any UIView* to UIImage*
     static void* RenderIOSUIViewToImage(void* uiviewPtr);
     // common ios part to copy from ios ::UIImage* to DAVA::Sprite*
-    static void CopyImageToSprite(void* imagePtr, UIControl& control);
+    static void SetImageAsSpriteToControl(void* imagePtr, UIControl& control);
     
     void RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView& control);
 
