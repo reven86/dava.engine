@@ -20,7 +20,7 @@ with open(gc_write, 'w') as outfile:
     	for line in infile:
     		if line.startswith("//$UNITTEST_INCLUDE"):
     			outfile.write('#include "Tests/'+test_class_name+'.h"\n')
-    		if line.startswith("//$UNITTEST_CTOR"):
+    		if line.startswith("//  $UNITTEST_CTOR"):
     			outfile.write('    new '+test_class_name+'();\n')
     		outfile.write(line)
 
