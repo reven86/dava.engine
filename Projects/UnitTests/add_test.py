@@ -18,9 +18,9 @@ gc_write = "Classes/Infrastructure/GameCore.cpp.new"
 with open(gc_write, 'w') as outfile:
     with open(gc_read, 'r') as infile:
     	for line in infile:
-    		if line.startswith("//$UNITTEST_INCLUDE"):
+    		if 0 <= line.find("$UNITTEST_INCLUDE"):
     			outfile.write('#include "Tests/'+test_class_name+'.h"\n')
-    		if line.startswith("//  $UNITTEST_CTOR"):
+    		if 0 <= line.find("$UNITTEST_CTOR"):
     			outfile.write('    new '+test_class_name+'();\n')
     		outfile.write(line)
 
