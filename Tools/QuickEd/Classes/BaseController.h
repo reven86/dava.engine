@@ -18,14 +18,7 @@ public:
     explicit BaseController(QObject *parent = nullptr);
     ~BaseController();
     void start();
-protected:
-    bool CloseProject();
-    void OpenProject(const QString &path);
 
-    int CreateDocument(PackageNode *package);
-signals:
-
-public slots:
 protected slots:
     void OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
     void OnSelectionControlChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
@@ -39,9 +32,13 @@ protected slots:
 
     void Exit();
     void RecentMenu(QAction *);
+protected:
+    void OpenProject(const QString &path);
+    bool CloseProject();
+    int CreateDocument(PackageNode *package);
 private:
-    void DetachDocument(Document *document);
     void AttachDocument(Document *document);
+    void DetachDocument(Document *document);
     void CloseDocument(int index);
     int GetIndexByPackagePath(const QString &fileName) const;
     ///Return: pointer to currentDocument if exists, nullptr if not

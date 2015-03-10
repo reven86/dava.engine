@@ -9,8 +9,6 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 
-
-
 BaseController::BaseController(QObject *parent)
     : QObject(parent)
     , mainWindow(nullptr) //nullptr is parent
@@ -46,130 +44,6 @@ void BaseController::start()
     mainWindow.show();
 }
 
-void BaseController::Exit()
-{
-    if (CloseProject())
-    {
-        QCoreApplication::exit();
-    }
-}
-
-void BaseController::OpenProject(const QString &path)
-{
-    if (!CloseProject())
-    {
-        return;
-    }
-
-    if (!project.CheckAndUnlockProject(path))
-    {
-        return;
-    }
-    Result result;
-    if (!project.Open(path))
-    {
-        result.addError(Result::CriticalError, tr("Error while loading project"));
-    }
-    mainWindow.OnProjectOpened(result, path);
-}
-
-void BaseController::RecentMenu(QAction *recentProjectAction)
-{
-    QString projectPath = recentProjectAction->data().toString();
-
-    if (projectPath.isEmpty())
-    {
-        return;
-    }
-    OpenProject(projectPath);
-}
-
-int BaseController::CreateDocument(PackageNode *package)
-{
-    Document *document = new Document(&project, package, this);
-    undoGroup.addStack(document->GetUndoStack());
-    documents.push_back(document);
-    SetCount(Count() + 1);
-    int index = mainWindow.AddTab(QString(document->PackageFilePath().GetBasename().c_str()));
-    return index;
-}
-
-bool BaseController::CloseProject()
-{
-    bool saveAll = false;
-    bool discardAll = false;
-    while(!documents.isEmpty())
-    {
-        const Document &document = *documents.at(0);
-        QUndoStack *undoStack = document.GetUndoStack();
-        if (!undoStack->isClean())
-        {
-            int ret = QMessageBox::Save;
-            if (saveAll)
-            {
-                ret = QMessageBox::Save;
-            }
-            else if (discardAll)
-            {
-                ret = QMessageBox::Discard;
-            }
-            else
-            {
-                QMessageBox box(QMessageBox::Question,
-                    tr("Save changes"),
-                    tr("The file has been modified.\n"
-                    "Do you want to save your changes?"),
-                    QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
-                    qApp->activeWindow());
-                box.setCheckBox(new QCheckBox(tr("apply to all")));
-                ret = box.exec();
-                if (box.checkBox()->isChecked())
-                {
-                    saveAll |= ret == QMessageBox::Save;
-                    discardAll |= ret == QMessageBox::Discard;
-                }
-            }
-
-            if (ret == QMessageBox::Cancel)
-            {
-                return false;
-            }
-            else if (ret == QMessageBox::Save)
-            {
-                SaveDocument(0);
-            }
-        }
-
-        CloseDocument(0);
-    }
-    return true;
-}
-
-int BaseController::GetIndexByPackagePath(const QString &fileName) const
-{
-    QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath();
-    DAVA::FilePath davaPath(canonicalFilePath.toStdString());
-
-    for (int index = 0; index < documents.size(); ++index)
-    {
-        if (documents.at(index)->PackageFilePath() == davaPath)
-        {
-            return index;
-        }
-    }
-
-    return -1;
-}
-
-Document *BaseController::GetCurrentDocument()
-{
-    if (0 == Count() || -1 == CurrentIndex())
-    {
-        return nullptr;
-    }
-    return documents.at(CurrentIndex());
-}
-
 void BaseController::OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls)
 {
     Document *document = GetCurrentDocument();
@@ -196,7 +70,6 @@ void BaseController::OnControlSelectedInEditor(ControlNode *activatedControls)
         document->OnControlSelectedInEditor(activatedControls);
     }
 }
-
 
 void BaseController::OnAllControlDeselectedInEditor()
 {
@@ -249,50 +122,6 @@ bool BaseController::CloseOneDocument(int index)
     return true;
 }
 
-void BaseController::CloseDocument(int index)
-{
-    DVASSERT(index >= 0);
-    DVASSERT(index < Count()); 
-    int newIndex = mainWindow.CloseTab(index);
-
-    //sync document list with tab list
-    Document *detached = documents.takeAt(index);
-    undoGroup.removeStack(detached->GetUndoStack());
-
-    //attach new doc
-    if (-1 != newIndex)
-    {
-        AttachDocument(documents.at(newIndex));
-    }
-    delete detached; //some widgets hold this document inside :(
-
-    SetCount(Count() - 1);
-}
-
-void BaseController::DetachDocument(Document *document)
-{
-    if (nullptr != document)
-    {
-        document->SetActive(false);
-        disconnect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
-        disconnect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
-        disconnect(document->GetUndoStack(), &QUndoStack::cleanChanged, &mainWindow, &MainWindow::OnCleanChanged);
-    }
-    mainWindow.SetDocumentToWidgets(nullptr);
-}
-
-void BaseController::AttachDocument(Document *document)
-{
-    if (nullptr != document)
-    {
-        document->SetActive(true);
-        connect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
-        connect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
-        connect(document->GetUndoStack(), &QUndoStack::cleanChanged, &mainWindow, &MainWindow::OnCleanChanged);
-    }
-    mainWindow.SetDocumentToWidgets(document);
-}
-
 void BaseController::SaveDocument(int index)
 {
     DVASSERT(index >= 0);
@@ -313,6 +142,171 @@ void BaseController::SaveAllDocuments()
         DVVERIFY(project.SavePackage(document->GetPackage()));
         document->GetUndoStack()->setClean();
     }
+}
+
+void BaseController::Exit()
+{
+    if (CloseProject())
+    {
+        QCoreApplication::exit();
+    }
+}
+
+void BaseController::RecentMenu(QAction *recentProjectAction)
+{
+    QString projectPath = recentProjectAction->data().toString();
+
+    if (projectPath.isEmpty())
+    {
+        return;
+    }
+    OpenProject(projectPath);
+}
+
+void BaseController::OpenProject(const QString &path)
+{
+    if (!CloseProject())
+    {
+        return;
+    }
+
+    if (!project.CheckAndUnlockProject(path))
+    {
+        return;
+    }
+    Result result;
+    if (!project.Open(path))
+    {
+        result.addError(Result::CriticalError, tr("Error while loading project"));
+    }
+    mainWindow.OnProjectOpened(result, path);
+}
+
+bool BaseController::CloseProject()
+{
+    bool saveAll = false;
+    bool discardAll = false;
+    while(!documents.isEmpty())
+    {
+        const Document &document = *documents.at(0);
+        QUndoStack *undoStack = document.GetUndoStack();
+        if (!undoStack->isClean())
+        {
+            int ret = QMessageBox::Save;
+            if (saveAll)
+            {
+                ret = QMessageBox::Save;
+            }
+            else if (discardAll)
+            {
+                ret = QMessageBox::Discard;
+            }
+            else
+            {
+                QMessageBox box(QMessageBox::Question,
+                    tr("Save changes"),
+                    tr("The file has been modified.\n"
+                    "Do you want to save your changes?"),
+                    QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+                    qApp->activeWindow());
+                box.setCheckBox(new QCheckBox(tr("apply to all")));
+                ret = box.exec();
+                if (box.checkBox()->isChecked())
+                {
+                    saveAll |= ret == QMessageBox::Save;
+                    discardAll |= ret == QMessageBox::Discard;
+                }
+            }
+
+            if (ret == QMessageBox::Cancel)
+            {
+                return false;
+            }
+            else if (ret == QMessageBox::Save)
+            {
+                SaveDocument(0);
+            }
+        }
+        CloseDocument(0);
+    }
+    return true;
+}
+
+Document *BaseController::GetCurrentDocument()
+{
+    if (0 == Count() || -1 == CurrentIndex())
+    {
+        return nullptr;
+    }
+    return documents.at(CurrentIndex());
+}
+
+void BaseController::AttachDocument(Document *document)
+{
+    if (nullptr != document)
+    {
+        document->SetActive(true);
+        connect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
+        connect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
+        connect(document->GetUndoStack(), &QUndoStack::cleanChanged, &mainWindow, &MainWindow::OnCleanChanged);
+    }
+    mainWindow.SetDocumentToWidgets(document);
+}
+void BaseController::DetachDocument(Document *document)
+{
+    if (nullptr != document)
+    {
+        document->SetActive(false);
+        disconnect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
+        disconnect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
+        disconnect(document->GetUndoStack(), &QUndoStack::cleanChanged, &mainWindow, &MainWindow::OnCleanChanged);
+    }
+    mainWindow.SetDocumentToWidgets(nullptr);
+}
+
+void BaseController::CloseDocument(int index)
+{
+    DVASSERT(index >= 0);
+    DVASSERT(index < Count());
+    int newIndex = mainWindow.CloseTab(index);
+
+    //sync document list with tab list
+    Document *detached = documents.takeAt(index);
+    undoGroup.removeStack(detached->GetUndoStack());
+
+    //attach new doc
+    if (-1 != newIndex)
+    {
+        AttachDocument(documents.at(newIndex));
+    }
+    delete detached; //some widgets hold this document inside :(
+
+    SetCount(Count() - 1);
+}
+
+int BaseController::CreateDocument(PackageNode *package)
+{
+    Document *document = new Document(&project, package, this);
+    undoGroup.addStack(document->GetUndoStack());
+    documents.push_back(document);
+    SetCount(Count() + 1);
+    int index = mainWindow.AddTab(QString(document->PackageFilePath().GetBasename().c_str()));
+    return index;
+}
+
+int BaseController::GetIndexByPackagePath(const QString &fileName) const
+{
+    QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath();
+    DAVA::FilePath davaPath(canonicalFilePath.toStdString());
+
+    for (int index = 0; index < documents.size(); ++index)
+    {
+        if (documents.at(index)->PackageFilePath() == davaPath)
+        {
+            return index;
+        }
+    }
+    return -1;
 }
 
 //properties
@@ -342,12 +336,8 @@ void BaseController::SetCurrentIndex(int arg)
         return;
     }
     DVASSERT(arg < documents.size());
-
     DetachDocument(GetCurrentDocument());
-
     currentIndex = arg;
-
     AttachDocument(GetCurrentDocument());
-
     emit CurrentIndexChanged(arg);
 }
