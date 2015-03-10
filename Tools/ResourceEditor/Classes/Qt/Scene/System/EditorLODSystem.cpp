@@ -355,7 +355,7 @@ bool EditorLODSystem::CanDeleteLod() const
     bool containLayers = false;
     for (auto &lod : GetCurrentLODs())
     {
-        if (lod->GetEntity()->GetComponent(Component::PARTICLE_EFFECT_COMPONENT))
+        if (nullptr != lod->GetEntity()->GetComponent(Component::PARTICLE_EFFECT_COMPONENT))
         {
             return false;
         }
