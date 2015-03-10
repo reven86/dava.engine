@@ -161,7 +161,8 @@ void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
     // detect really breached points
     for (auto breachPoint = breachPoints.begin(); breachPoint != breachPoints.end();)
     {
-        if (IsAccessible(startPoint, *breachPoint, removedPoint, nullptr/*no excluding edge*/))
+        DAVA::Set<DAVA::Entity*> passedPoints;
+        if (IsAccessible(startPoint, *breachPoint, removedPoint, nullptr/*no excluding edge*/, passedPoints))
         {
             auto delPoint = breachPoint++;
             breachPoints.erase(delPoint);
@@ -192,7 +193,8 @@ void WayEditSystem::RemoveEdge(DAVA::Entity* srcWaypoint, DAVA::EdgeComponent* e
     DAVA::Entity* startPoint = mapStartPoints[breachPoint->GetParent()];
     DVASSERT(startPoint);
 
-    if (IsAccessible(startPoint, breachPoint, nullptr/*no excluding point*/, edgeComponent))
+    DAVA::Set<DAVA::Entity*> passedPoints;
+    if (IsAccessible(startPoint, breachPoint, nullptr/*no excluding point*/, edgeComponent, passedPoints))
     {
         sceneEditor->Exec(new RemoveComponentCommand(srcWaypoint, edgeComponent));
     }
@@ -202,7 +204,7 @@ bool WayEditSystem::IsAccessible(DAVA::Entity* startPoint,
                                  DAVA::Entity* breachPoint,
                                  DAVA::Entity* excludingPoint,
                                  DAVA::EdgeComponent* excludingEdge,
-                                 DAVA::Set<DAVA::Entity*>& passedPoints /*= DAVA::Set<DAVA::Entity*>()*/) const
+                                 DAVA::Set<DAVA::Entity*>& passedPoints) const
 {
     if (startPoint == breachPoint)
         return true;
