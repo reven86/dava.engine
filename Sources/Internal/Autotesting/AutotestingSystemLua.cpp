@@ -251,6 +251,7 @@ namespace DAVA
 			deviceName = WStringToString(DeviceInfo::GetName());
 		}
 		replace(deviceName.begin(), deviceName.end(), ' ', '_');
+		replace(deviceName.begin(), deviceName.end(), '-', '_');
 		return deviceName;
 	}
 
