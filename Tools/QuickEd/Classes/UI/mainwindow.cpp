@@ -184,7 +184,7 @@ void MainWindow::OnCleanChanged(bool val)
     QString tabText = tabState->tabText;
     if (!val)
     {
-        tabText.prepend('*');
+        tabText.append('*');
     }
     ui->tabBar->setTabText(index, tabText);
 

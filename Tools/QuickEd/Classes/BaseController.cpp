@@ -264,6 +264,7 @@ void BaseController::CloseDocument(int index)
     //sync document list with tab list
     Document *detached = documents.takeAt(index);
     undoGroup.removeStack(detached->GetUndoStack());
+    DetachDocument(detached);
 
     //attach new doc
     if (-1 != newIndex)
