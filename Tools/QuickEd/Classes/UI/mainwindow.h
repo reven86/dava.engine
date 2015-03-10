@@ -72,7 +72,7 @@ public:
     int AddTab(const QString &tabText);
     void SetDocumentToWidgets(Document *document);
 protected:
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
 signals:
     void TabClosed(int tab);
     void CloseProject();

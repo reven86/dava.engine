@@ -10,6 +10,7 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 
 
+
 BaseController::BaseController(QObject *parent)
     : QObject(parent)
     , mainWindow(nullptr) //nullptr is parent
@@ -249,15 +250,40 @@ void BaseController::CloseDocument(int index)
 {
     DVASSERT(index >= 0);
     DVASSERT(index < Count()); 
-    QUndoStack *undoStack = documents.at(index)->GetUndoStack();
-
-    SetCurrentIndex(-1);
-    undoGroup.removeStack(undoStack);
-    delete documents.takeAt(index);
-
     int newIndex = mainWindow.CloseTab(index);
-    SetCurrentIndex(newIndex);
+
+    //sync document list with tab list
+    Document *detached = documents.takeAt(index);
+    undoGroup.removeStack(detached->GetUndoStack());
+
+    //attach new doc
+    if (-1 != newIndex)
+    {
+        AttachDocument(documents.at(newIndex));
+    }
+    delete detached; //some widgets hold this document inside :(
+
     SetCount(Count() - 1);
+}
+
+void BaseController::DetachDocument(Document *document)
+{
+    DVASSERT(nullptr != document);
+    document->SetActive(false);
+    disconnect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
+    disconnect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
+    disconnect(document->GetUndoStack(), &QUndoStack::cleanChanged, &mainWindow, &MainWindow::OnCleanChanged);
+    mainWindow.SetDocumentToWidgets(nullptr);
+}
+
+void BaseController::AttachDocument(Document *document)
+{
+    DVASSERT(nullptr != document);
+    document->SetActive(true);
+    connect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
+    connect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
+    connect(document->GetUndoStack(), &QUndoStack::cleanChanged, &mainWindow, &MainWindow::OnCleanChanged);
+    mainWindow.SetDocumentToWidgets(document);
 }
 
 void BaseController::SaveDocument(int index)
@@ -312,23 +338,13 @@ void BaseController::SetCurrentIndex(int arg)
     DVASSERT(arg < documents.size());
     if (currentIndex >= 0 && currentIndex < documents.size())
     {
-        Document *document = documents.at(currentIndex);
-        document->SetActive(false);
-        disconnect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
-        disconnect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
-        disconnect(document->GetUndoStack(), &QUndoStack::cleanChanged, &mainWindow, &MainWindow::OnCleanChanged);
+        DetachDocument(documents.at(currentIndex));
     }
-    mainWindow.SetDocumentToWidgets(nullptr);
 
     currentIndex = arg;
     if (currentIndex != -1)
     {
-        Document *document = documents.at(currentIndex);
-        document->SetActive(true);
-        connect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
-        connect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
-        connect(document->GetUndoStack(), &QUndoStack::cleanChanged, &mainWindow, &MainWindow::OnCleanChanged);
-        mainWindow.SetDocumentToWidgets(document);
+        AttachDocument(documents.at(currentIndex));
     }
 
     emit CurrentIndexChanged(arg);

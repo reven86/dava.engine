@@ -40,6 +40,8 @@ protected slots:
     void Exit();
     void RecentMenu(QAction *);
 private:
+    void DetachDocument(Document *document);
+    void AttachDocument(Document *document);
     void CloseDocument(int index);
     int GetIndexByPackagePath(const QString &fileName) const;
     QList<Document*> documents;
