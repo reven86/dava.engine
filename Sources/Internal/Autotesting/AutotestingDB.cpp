@@ -156,7 +156,7 @@ namespace DAVA
 #else
 		logsFolder = FileSystem::Instance()->GetCurrentDocumentsDirectory() + "/autoLogs";
 #endif //#if defined(__DAVAENGINE_ANDROID__)
-		Logger::Info("AutotestingSystem::AutotestingDB path to log file: %s", logsFolder);
+		Logger::Info("AutotestingSystem::AutotestingDB path to log file: %s", logsFolder.GetStringValue().c_str());
 		if (!FileSystem::Instance()->IsDirectory(logsFolder))
 		{
 			FileSystem::Instance()->CreateDirectory(logsFolder);
