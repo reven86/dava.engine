@@ -42,7 +42,7 @@ private:
     void CloseDocument(int index);
     int GetIndexByPackagePath(const QString &fileName) const;
     ///Return: pointer to currentDocument if exists, nullptr if not
-    Document* GetCurrentDocument();
+    Document* GetCurrentDocument() const;
     QList<Document*> documents;
     MainWindow mainWindow;
     QUndoGroup undoGroup;

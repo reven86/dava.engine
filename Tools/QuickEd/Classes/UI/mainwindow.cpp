@@ -170,11 +170,8 @@ void MainWindow::OnCurrentIndexChanged(int arg)
     ui->propertiesWidget->setEnabled(enabled);
     ui->previewWidget->setEnabled(enabled);
     ui->libraryWidget->setEnabled(enabled);
-    if (enabled)
-    {
-        TabState *tabState = ui->tabBar->tabData(arg).value<TabState*>();
-        ui->actionSaveDocument->setEnabled(nullptr != tabState && tabState->isModified);
-    }
+    TabState *tabState = ui->tabBar->tabData(arg).value<TabState*>();
+    ui->actionSaveDocument->setEnabled(nullptr != tabState && tabState->isModified); //set action enabled if new documend still modified
 }
 
 void MainWindow::OnCleanChanged(bool val)

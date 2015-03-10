@@ -232,15 +232,6 @@ bool BaseController::CloseProject()
     return true;
 }
 
-Document *BaseController::GetCurrentDocument()
-{
-    if (0 == Count() || -1 == CurrentIndex())
-    {
-        return nullptr;
-    }
-    return documents.at(CurrentIndex());
-}
-
 void BaseController::AttachDocument(Document *document)
 {
     if (nullptr != document)
@@ -307,6 +298,15 @@ int BaseController::GetIndexByPackagePath(const QString &fileName) const
         }
     }
     return -1;
+}
+
+Document *BaseController::GetCurrentDocument() const
+{
+    if (0 == Count() || -1 == CurrentIndex())
+    {
+        return nullptr;
+    }
+    return documents.at(CurrentIndex());
 }
 
 //properties
