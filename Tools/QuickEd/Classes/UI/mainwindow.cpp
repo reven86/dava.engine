@@ -151,6 +151,11 @@ void MainWindow::RestoreMainWindowState()
 	}
 }
 
+DavaGLWidget* MainWindow::GetGLWidget() const
+{
+    return ui->previewWidget->GetGLWidget();
+}
+
 void MainWindow::closeEvent(QCloseEvent * event)
 {
     // Ask user to save the project before closing.

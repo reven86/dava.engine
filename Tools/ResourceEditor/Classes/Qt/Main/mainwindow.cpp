@@ -130,7 +130,7 @@
 
 #include "SceneProcessing/SceneProcessor.h"
 #include "QtLayer.h"
-#include "davaglwidget.h"
+#include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include "Commands2/ConvertPathCommands.h"
 

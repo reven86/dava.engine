@@ -38,7 +38,7 @@
 
 #include "Platform/SystemTimer.h"
 
-#include "Qt/Main/davaglwidget.h"
+#include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include <QVBoxLayout>
 #include <QResizeEvent>

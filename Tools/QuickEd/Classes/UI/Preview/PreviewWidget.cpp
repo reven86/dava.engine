@@ -1,9 +1,13 @@
 #include "PreviewWidget.h"
-#include "ui_PreviewWidget.h"
-#include <QLineEdit>
-#include "EditScreen.h"
+
 #include "UI/Document.h"
 #include "UI/PreviewContext.h"
+
+#include "ui_PreviewWidget.h"
+#include "EditScreen.h"
+
+#include <QLineEdit>
+
 
 using namespace DAVA;
 
@@ -31,10 +35,7 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     UIScreenManager::Instance()->RegisterScreen(EDIT_SCREEN, davaUIScreen);
     UIScreenManager::Instance()->SetFirst(EDIT_SCREEN);
 
-    ui->davaGLWidget->setMaximumSize(1, 1);
-    ui->davaGLWidget->setFocusPolicy(Qt::StrongFocus);
-    ui->davaGLWidget->installEventFilter(this);
-    connect(ui->davaGLWidget, SIGNAL(Resized(int, int)), this, SLOT(OnGLWidgetResized(int, int)));
+    connect( ui->davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized );
 
     ui->horizontalRuler->hide();
     ui->verticalRuler->hide();
@@ -102,6 +103,11 @@ void PreviewWidget::SetDocument(Document *newDocument)
     }
 }
 
+DavaGLWidget* PreviewWidget::GetGLWidget() const
+{
+    return ui->davaGLWidget;
+}
+
 void PreviewWidget::OnScaleByZoom(int scaleDelta)
 {
     //int newScale = controlWorkspace->GetScreenScale() + scaleDelta;
@@ -161,8 +167,10 @@ void PreviewWidget::OnCanvasScaleChanged(int newScale)
     }
 }
 
-void PreviewWidget::OnGLWidgetResized(int width, int height)
+void PreviewWidget::OnGLWidgetResized(int width, int height, int dpr)
 {
+    Q_UNUSED( dpr );
+
     Vector2 screenSize((float32)width, (float32)height);
 
     UIScreenManager::Instance()->GetScreen()->SetSize(screenSize);

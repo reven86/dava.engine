@@ -1,10 +1,10 @@
-project( Widgets )
+project( QtTools )
 
 if( QT5_FOUND )
     include_directories( ${Qt5Core_INCLUDE_DIRS} )     
     include_directories( ${Qt5Gui_INCLUDE_DIRS} )
     include_directories( ${Qt5Widgets_INCLUDE_DIRS} )     
-    include_directories( "Widgets" )                                      
+    include_directories( "QtTools" )                                      
 
     set( MOC_APP_SRCS )
     set( UI_APP_HDRS  )

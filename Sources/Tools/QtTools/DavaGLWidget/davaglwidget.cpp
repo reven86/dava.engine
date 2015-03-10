@@ -49,14 +49,17 @@
 #include <QDebug>
 #include <QScreen>
 #include <QDragMoveEvent>
+#include <QApplication>
+#include <QLineEdit>
+#include <QSpinBox>
 
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
 #include "Network/NetCore.h"
 #endif
 
-#include "Main/mainwindow.h"
-#include "ui_mainwindow.h"
+//#include "Main/mainwindow.h"
+//#include "ui_mainwindow.h"
 
 #include <QOpenGLContext>
 #include <QOpenGLPaintDevice>
@@ -68,7 +71,7 @@
 #elif defined( Q_OS_MAC )
 #endif
 
-#include "Classes/Qt/FrameworkBinding/FrameworkLoop.h"
+#include "QtTools/FrameworkBinding/FrameworkLoop.h"
 
 
 namespace
@@ -150,16 +153,16 @@ void OpenGLWindow::keyPressEvent(QKeyEvent *e)
     switch (e->key())
     {
     case Qt::Key_Alt:
-        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DVKEY_ALT );
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DAVA::DVKEY_ALT );
         return;
     case Qt::Key_Control:
-        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DVKEY_CTRL );
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DAVA::DVKEY_CTRL );
         return;
     case Qt::Key_Shift:
-        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DVKEY_SHIFT );
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DAVA::DVKEY_SHIFT );
         return;
     case Qt::Key_CapsLock:
-        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DVKEY_CAPSLOCK );
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyPressed( DAVA::DVKEY_CAPSLOCK );
         return;
     case Qt::Key_Meta:
         // Ignore Win key on windows, Ctrl key on OSX
@@ -169,7 +172,7 @@ void OpenGLWindow::keyPressEvent(QKeyEvent *e)
     }
     
     const auto davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey( e->nativeVirtualKey() );
-    if (davaKey != DVKEY_UNKNOWN)
+    if (davaKey != DAVA::DVKEY_UNKNOWN)
     {
         DAVA::QtLayer::Instance()->KeyPressed( davaKey, e->count(), e->timestamp() );
     }
@@ -180,16 +183,16 @@ void OpenGLWindow::keyReleaseEvent(QKeyEvent *e)
     switch (e->key())
     {
     case Qt::Key_Alt:
-        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DVKEY_ALT );
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DAVA::DVKEY_ALT );
         return;
     case Qt::Key_Control:
-        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DVKEY_CTRL );
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DAVA::DVKEY_CTRL );
         return;
     case Qt::Key_Shift:
-        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DVKEY_SHIFT );
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DAVA::DVKEY_SHIFT );
         return;
     case Qt::Key_CapsLock:
-        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DVKEY_CAPSLOCK );
+        DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed( DAVA::DVKEY_CAPSLOCK );
         return;
     case Qt::Key_Meta:
         // Ignore Win key on windows, Ctrl key on OSX
@@ -199,7 +202,7 @@ void OpenGLWindow::keyReleaseEvent(QKeyEvent *e)
     }
     
     const auto davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey( e->nativeVirtualKey() );
-    if (davaKey != DVKEY_UNKNOWN)
+    if (davaKey != DAVA::DVKEY_UNKNOWN)
     {
         DAVA::InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(davaKey);
     }
@@ -274,7 +277,7 @@ void OpenGLWindow::wheelEvent(QWheelEvent *event)
     int numDegrees = event->delta() / 8;
     int numSteps = numDegrees / 15;
     
-    davaEvent.point = davaEvent.physPoint = Vector2(numSteps, numSteps);
+    davaEvent.point = davaEvent.physPoint = DAVA::Vector2(numSteps, numSteps);
     davaEvent.tid = DAVA::UIEvent::PHASE_WHEEL;
     davaEvent.phase = DAVA::UIEvent::PHASE_WHEEL;
     
@@ -290,7 +293,7 @@ void OpenGLWindow::handleDragMoveEvent(QDragMoveEvent* event)
     auto pos = event->pos();
     const auto currentDPR = static_cast<int>( devicePixelRatio() );
 
-    davaEvent.point = davaEvent.physPoint = Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
+    davaEvent.point = davaEvent.physPoint = DAVA::Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
     davaEvent.tid = MapQtButtonToDAVA(Qt::LeftButton);
     davaEvent.timestamp = 0;
     davaEvent.tapCount = 1;
@@ -309,7 +312,7 @@ DAVA::UIEvent OpenGLWindow::MapMouseEventToDAVA(const QMouseEvent *event) const
     QPoint pos = event->pos();
     
     int currentDPR = devicePixelRatio();
-    davaEvent.point = davaEvent.physPoint = Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
+    davaEvent.point = davaEvent.physPoint = DAVA::Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
     davaEvent.tid = MapQtButtonToDAVA(event->button());
     davaEvent.timestamp = event->timestamp();
     davaEvent.tapCount = 1;

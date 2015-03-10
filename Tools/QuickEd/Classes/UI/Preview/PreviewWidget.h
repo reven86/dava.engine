@@ -9,6 +9,7 @@ namespace Ui {
 
 class Document;
 class PreviewContext;
+class DavaGLWidget;
 
 enum ScreenId
 {
@@ -20,10 +21,11 @@ class PreviewWidget : public QWidget
 {
     Q_OBJECT
 public:
-    PreviewWidget(QWidget *parent = nullptr);
+    explicit PreviewWidget(QWidget *parent = nullptr);
     virtual ~PreviewWidget();
     
     void SetDocument(Document *newDocument);
+    DavaGLWidget *GetGLWidget() const;
 
 private slots:
     // Zoom.
@@ -33,7 +35,7 @@ private slots:
 	void OnZoomOutRequested();
     
     void OnCanvasScaleChanged(int newScale);
-    void OnGLWidgetResized(int width, int height);
+    void OnGLWidgetResized(int width, int height, int dpr);
 
     void OnVScrollbarMoved(int position);
     void OnHScrollbarMoved(int position);

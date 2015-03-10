@@ -46,6 +46,8 @@ class Document;
 class QUndoGroup;
 class PackageNode;
 class DocumentWidgets;
+class DavaGLWidget;
+
 
 class MainWindow : public QMainWindow
 {
@@ -56,6 +58,7 @@ public:
     ~MainWindow();
 
     Project *GetProject() const { return project; }
+    DavaGLWidget *GetGLWidget() const;
 
 protected:
 	virtual void closeEvent(QCloseEvent * event);

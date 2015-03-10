@@ -42,6 +42,8 @@ qt5_add_resources             ( RCC_APP_SRCS  ${RCC_LIST} )
 set                           ( Generated    ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set                           ( UiList       ${UI_LIST} )
 
+set ( DAVA_USE_QT_WIDGETS true )
+
 define_source_folders         ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build"    )
 generate_source_groups_project( SRC_ROOT "Classes" GROUP_FOLDERS Generated UiList )
 add_subdirectory              ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )

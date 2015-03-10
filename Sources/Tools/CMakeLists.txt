@@ -36,8 +36,8 @@ if( IOS )
 endif()
 
 if( DAVA_USE_QT_WIDGETS )
-    add_subdirectory ( "${CMAKE_CURRENT_LIST_DIR}/Widgets" ${CMAKE_CURRENT_BINARY_DIR}/Widgets )
-    set( ADDED_LIBS Widgets )
+    add_subdirectory ( "${CMAKE_CURRENT_LIST_DIR}/QtTools" ${CMAKE_CURRENT_BINARY_DIR}/QtTools )
+    set( ADDED_LIBS QtTools )
 endif()
 
 define_source_files (

@@ -37,7 +37,7 @@
 
 #include "version.h"
 #include "Main/mainwindow.h"
-#include "Main/davaglwidget.h"
+#include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "Project/ProjectManager.h"
 #include "TeamcityOutput/TeamcityOutput.h"
 #include "TexturePacker/CommandLineParser.h"
@@ -64,8 +64,8 @@
 #include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
 
-#include "FrameworkBinding/DavaLoop.h"
-#include "FrameworkBinding/FrameworkLoop.h"
+#include "QtTools/FrameworkBinding/DavaLoop.h"
+#include "QtTools/FrameworkBinding/FrameworkLoop.h"
 
 #include <QOpenGLContext>
 
