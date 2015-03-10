@@ -36,6 +36,7 @@ protected:
     void OpenProject(const QString &path);
     bool CloseProject();
     int CreateDocument(PackageNode *package);
+    void SaveDocument(Document *document);
 private:
     void AttachDocument(Document *document);
     void DetachDocument(Document *document);

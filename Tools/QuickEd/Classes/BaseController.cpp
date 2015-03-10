@@ -27,7 +27,7 @@ BaseController::BaseController(QObject *parent)
     connect(&mainWindow, &MainWindow::ActionOpenProjectTriggered, this, &BaseController::OpenProject);
     connect(&mainWindow, &MainWindow::OpenPackageFile, this, &BaseController::OnOpenPackageFile);
     connect(&mainWindow, &MainWindow::SaveAllDocuments, this, &BaseController::SaveAllDocuments);
-    connect(&mainWindow, &MainWindow::SaveDocument, this, &BaseController::SaveDocument);
+    connect(&mainWindow, &MainWindow::SaveDocument, this, static_cast<void(BaseController::*)(int)>(&BaseController::SaveDocument));
     connect(&mainWindow, &MainWindow::CurrentTabChanged, this, &BaseController::SetCurrentIndex);
 
     connect(this, &BaseController::CurrentIndexChanged, &mainWindow, &MainWindow::OnCurrentIndexChanged);
@@ -99,14 +99,16 @@ void BaseController::OnOpenPackageFile(const QString &path)
 
 bool BaseController::CloseOneDocument(int index)
 {
-    const Document &document = *documents.at(index);
-    QUndoStack *undoStack = document.GetUndoStack();
+    DVASSERT(index >= 0);
+    DVASSERT(index < Count());
+    const Document *document = documents.at(index);
+    QUndoStack *undoStack = document->GetUndoStack();
     if (!undoStack->isClean())
     {
         QMessageBox::StandardButton ret = QMessageBox::question(qApp->activeWindow(),
             tr("Save changes"),
-            tr("The file has been modified.\n"
-            "Do you want to save your changes?"),
+            tr("The file %1 has been modified.\n"
+            "Do you want to save your changes?").arg(document->PackageFilePath().GetBasename().c_str()),
             QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
             QMessageBox::Save);
         if (ret == QMessageBox::Cancel)
@@ -126,13 +128,7 @@ void BaseController::SaveDocument(int index)
 {
     DVASSERT(index >= 0);
     DVASSERT(index < Count());
-    Document &document = *documents[index];
-    if (document.GetUndoStack()->isClean())
-    {
-        return;
-    }
-    DVVERIFY(project.SavePackage(document.GetPackage())); //TODO:log here
-    document.GetUndoStack()->setClean();
+    SaveDocument(documents[index]);
 }
 
 void BaseController::SaveAllDocuments()
@@ -188,8 +184,13 @@ bool BaseController::CloseProject()
     bool discardAll = false;
     while(!documents.isEmpty())
     {
-        const Document &document = *documents.at(0);
-        QUndoStack *undoStack = document.GetUndoStack();
+        int index = CurrentIndex();
+        if (index < 0 || index >= Count())
+        {
+            index = Count() - 1;
+        }
+        const Document *document = documents[index];
+        QUndoStack *undoStack = document->GetUndoStack();
         if (!undoStack->isClean())
         {
             int ret = QMessageBox::Save;
@@ -205,13 +206,16 @@ bool BaseController::CloseProject()
             {
                 QMessageBox box(QMessageBox::Question,
                     tr("Save changes"),
-                    tr("The file has been modified.\n"
-                    "Do you want to save your changes?"),
+                    tr("The file %1 has been modified.\n"
+                    "Do you want to save your changes?").arg(document->PackageFilePath().GetBasename().c_str()),
                     QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
                     qApp->activeWindow());
-                box.setCheckBox(new QCheckBox(tr("apply to all")));
+                if (documents.size() > 1)
+                {
+                    box.setCheckBox(new QCheckBox(tr("apply to all")));
+                }
                 ret = box.exec();
-                if (box.checkBox()->isChecked())
+                if (nullptr != box.checkBox() && box.checkBox()->isChecked())
                 {
                     saveAll |= ret == QMessageBox::Save;
                     discardAll |= ret == QMessageBox::Discard;
@@ -224,10 +228,10 @@ bool BaseController::CloseProject()
             }
             else if (ret == QMessageBox::Save)
             {
-                SaveDocument(0);
+                SaveDocument(index);
             }
         }
-        CloseDocument(0);
+        CloseDocument(index);
     }
     return true;
 }
@@ -282,8 +286,19 @@ int BaseController::CreateDocument(PackageNode *package)
     undoGroup.addStack(document->GetUndoStack());
     documents.push_back(document);
     SetCount(Count() + 1);
-    int index = mainWindow.AddTab(QString(document->PackageFilePath().GetBasename().c_str()));
+    int index = mainWindow.AddTab(document->PackageFilePath().GetBasename().c_str());
     return index;
+}
+
+void BaseController::SaveDocument(Document *document)
+{
+    DVASSERT(document);
+    if (document->GetUndoStack()->isClean())
+    {
+        return;
+    }
+    DVVERIFY(project.SavePackage(document->GetPackage())); //TODO:log here
+    document->GetUndoStack()->setClean();
 }
 
 int BaseController::GetIndexByPackagePath(const QString &fileName) const
