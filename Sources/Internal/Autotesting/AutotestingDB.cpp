@@ -151,7 +151,12 @@ namespace DAVA
 
 	void AutotestingDB::WriteLogHeader()
 	{
+#if defined(__DAVAENGINE_ANDROID__)
+		logsFolder = FileSystem::Instance()->GetPublicDocumentsPath() + "/autoLogs";
+#else
 		logsFolder = FileSystem::Instance()->GetCurrentDocumentsDirectory() + "/autoLogs";
+#endif //#if defined(__DAVAENGINE_ANDROID__)
+		Logger::Info("AutotestingSystem::AutotestingDB path to log file: %s", logsFolder);
 		if (!FileSystem::Instance()->IsDirectory(logsFolder))
 		{
 			FileSystem::Instance()->CreateDirectory(logsFolder);
