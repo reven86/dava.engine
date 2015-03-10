@@ -2593,6 +2593,14 @@ void QtMainWindow::OnWayEditor()
     }
 
     bool toEnable = !sceneEditor->pathSystem->IsPathEditEnabled();
+    if (toEnable != ui->actionWayEditor->isChecked())
+    {
+        // mistiming, we shouldn't get this.
+        // but if it happened, force set button state equal to pathsystem state
+        ui->actionWayEditor->setChecked(toEnable);
+        return;
+    }
+
     int32 toolsEnabled = sceneEditor->GetEnabledTools();
     if (toEnable && toolsEnabled)
     {
