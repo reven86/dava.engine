@@ -241,7 +241,7 @@ void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr)
     return image;
 }
 
-void DAVA::WebViewControl::CopyImageToSprite(void* imagePtr, UIControl& control)
+void DAVA::WebViewControl::SetImageAsSpriteToControl(void* imagePtr, UIControl& control)
 {
     ::UIImage* image = static_cast<::UIImage*>(imagePtr);
     DVASSERT(image);
@@ -306,7 +306,7 @@ void DAVA::WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
     UIImage* image = [webURLDelegate renderUIViewToImage:iosWebView];
     DVASSERT(image);
     
-    WebViewControl::CopyImageToSprite(image, control);
+    WebViewControl::SetImageAsSpriteToControl(image, control);
 }
 
 namespace DAVA

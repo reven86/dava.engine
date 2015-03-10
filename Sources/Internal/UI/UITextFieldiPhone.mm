@@ -433,7 +433,7 @@ namespace DAVA
                 ::UIImage* image = static_cast<::UIImage*>(imgPtr);
                 DVASSERT(image);
                 
-                WebViewControl::CopyImageToSprite(image, davaTextField);
+                WebViewControl::SetImageAsSpriteToControl(image, davaTextField);
             }
         }
     }
