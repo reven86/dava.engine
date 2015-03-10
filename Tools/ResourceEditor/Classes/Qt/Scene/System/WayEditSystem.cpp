@@ -63,10 +63,16 @@ void WayEditSystem::AddEntity(DAVA::Entity * newWaypoint)
 {
     waypointEntities.push_back(newWaypoint);
 
+    if (newWaypoint->GetNotRemovable())
+    {
+        mapStartPoints[newWaypoint->GetParent()] = newWaypoint;
+    }
 
     if (sceneEditor->modifSystem->InCloneDoneState())
     {
         ProcessSelection();
+
+        newWaypoint->SetNotRemovable(false); // cloned waypoint can't be nonremovable
 
         EntityGroup entitiesToAddEdge;
         EntityGroup entitiesToRemoveEdge;
@@ -84,6 +90,18 @@ void WayEditSystem::AddEntity(DAVA::Entity * newWaypoint)
 void WayEditSystem::RemoveEntity(DAVA::Entity * removedPoint)
 {
     DAVA::FindAndRemoveExchangingWithLast(waypointEntities, removedPoint);
+ 
+    if (removedPoint->GetNotRemovable()) // is a start point, remove it from the map of start points
+    {
+        for (auto iter = mapStartPoints.begin(); iter != mapStartPoints.end(); ++iter)
+        {
+            if (iter->second == removedPoint)
+            {
+                mapStartPoints.erase(iter);
+                break;
+            }
+        }
+    }
 }
 
 void WayEditSystem::RemovePointsGroup(const EntityGroup &entityGroup)
@@ -105,6 +123,9 @@ void WayEditSystem::RemovePointsGroup(const EntityGroup &entityGroup)
 
 void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
 {
+    DAVA::Entity* startPoint = mapStartPoints[removedPoint->GetParent()];
+    DVASSERT(startPoint);
+
     sceneEditor->Exec(new EntityRemoveCommand(removedPoint));
 
     DAVA::EdgeComponent* edge;
@@ -140,12 +161,7 @@ void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
     // detect really breached points
     for (auto breachPoint = breachPoints.begin(); breachPoint != breachPoints.end();)
     {
-        auto HasEdgeToBreachPoint = [&](DAVA::Entity* src)
-        {
-            return (FindEdgeComponent(src, *breachPoint) != nullptr);
-        };
-
-        if (any_of(waypointEntities.begin(), waypointEntities.end(), HasEdgeToBreachPoint))
+        if (IsAccessible(startPoint, *breachPoint, removedPoint, nullptr/*no excluding edge*/))
         {
             auto delPoint = breachPoint++;
             breachPoints.erase(delPoint);
@@ -173,16 +189,57 @@ void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
 void WayEditSystem::RemoveEdge(DAVA::Entity* srcWaypoint, DAVA::EdgeComponent* edgeComponent)
 {
     DAVA::Entity* breachPoint = edgeComponent->GetNextEntity();
+    DAVA::Entity* startPoint = mapStartPoints[breachPoint->GetParent()];
+    DVASSERT(startPoint);
 
-    auto HasEdgeToBreachPoint = [&](DAVA::Entity* src)
-    {
-        return (FindEdgeComponent(src, breachPoint) != nullptr);
-    };
-
-    if (count_if(waypointEntities.begin(), waypointEntities.end(), HasEdgeToBreachPoint) > 1)
+    if (IsAccessible(startPoint, breachPoint, nullptr/*no excluding point*/, edgeComponent))
     {
         sceneEditor->Exec(new RemoveComponentCommand(srcWaypoint, edgeComponent));
     }
+}
+
+bool WayEditSystem::IsAccessible(DAVA::Entity* startPoint,
+                                 DAVA::Entity* breachPoint,
+                                 DAVA::Entity* excludingPoint,
+                                 DAVA::EdgeComponent* excludingEdge,
+                                 DAVA::Set<DAVA::Entity*>& passedPoints /*= DAVA::Set<DAVA::Entity*>()*/) const
+{
+    if (startPoint == breachPoint)
+        return true;
+
+    uint32 count = startPoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
+    for (uint32 i = 0; i < count; ++i)
+    {
+        DAVA::EdgeComponent* edge = static_cast<EdgeComponent*>(startPoint->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
+        DVASSERT(edge);
+
+        if (edge == excludingEdge)
+        {
+            continue;
+        }
+
+        DAVA::Entity* nextPoint = edge->GetNextEntity();
+        DVASSERT(nextPoint);
+
+        if (nextPoint == excludingPoint)
+        {
+            continue;
+        }
+
+        auto insertRes = passedPoints.insert(nextPoint);
+        if (!insertRes.second)
+        {
+            // dest is already inserted. skip it to prevent loop
+            continue;
+        }
+
+        if (IsAccessible(nextPoint, breachPoint, excludingPoint, excludingEdge, passedPoints))
+        {
+            return  true;
+        }
+    }
+
+    return false;
 }
 
 void WayEditSystem::Process(DAVA::float32 timeElapsed)

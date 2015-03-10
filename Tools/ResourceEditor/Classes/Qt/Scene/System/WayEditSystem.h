@@ -80,6 +80,7 @@ protected:
     void DefineAddOrRemoveEdges(const EntityGroup& srcPoints, DAVA::Entity* dstPoint, EntityGroup& toAddEdge, EntityGroup& toRemoveEdge);
     void AddEdges(const EntityGroup & group, DAVA::Entity *nextEntity);
     void RemoveEdges(const EntityGroup & group, DAVA::Entity *nextEntity);
+    bool IsAccessible(DAVA::Entity* startPoint, DAVA::Entity* breachPoint, DAVA::Entity* excludedPoint, DAVA::EdgeComponent* excludingEdge, DAVA::Set<DAVA::Entity*>& passedPoints = DAVA::Set<DAVA::Entity*>()) const;
 
     void ResetSelection();
     void ProcessSelection();
@@ -100,6 +101,7 @@ protected:
     DAVA::UniqueHandle wayDrawState;
     
     DAVA::Vector<DAVA::Entity *> waypointEntities;
+    DAVA::Map<DAVA::Entity*, DAVA::Entity*> mapStartPoints; // mapping [path parent -> path start point]
     
     DAVA::Entity * underCursorPathEntity;
     bool inCloneState = false;
