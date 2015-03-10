@@ -44,7 +44,6 @@ GLOB_H_PATTERNS    ${ADDED_H_PATTERNS}
 generate_source_groups_project ()
 
 add_library                ( TextureTool STATIC ${CPP_FILES} ${H_FILES} )
-set_dava_target_properties ( TextureTool )
 
 if( MACOS )
     target_link_libraries  ( TextureTool libbz2.dylib libz.dylib stdc++.6.dylib )
