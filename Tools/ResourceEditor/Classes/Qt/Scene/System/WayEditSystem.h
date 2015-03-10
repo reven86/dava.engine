@@ -80,7 +80,7 @@ protected:
     void DefineAddOrRemoveEdges(const EntityGroup& srcPoints, DAVA::Entity* dstPoint, EntityGroup& toAddEdge, EntityGroup& toRemoveEdge);
     void AddEdges(const EntityGroup & group, DAVA::Entity *nextEntity);
     void RemoveEdges(const EntityGroup & group, DAVA::Entity *nextEntity);
-    bool IsAccessible(DAVA::Entity* startPoint, DAVA::Entity* breachPoint, DAVA::Entity* excludedPoint, DAVA::EdgeComponent* excludingEdge, DAVA::Set<DAVA::Entity*>& passedPoints = DAVA::Set<DAVA::Entity*>()) const;
+    bool IsAccessible(DAVA::Entity* startPoint, DAVA::Entity* breachPoint, DAVA::Entity* excludedPoint, DAVA::EdgeComponent* excludingEdge, DAVA::Set<DAVA::Entity*>& passedPoints) const;
 
     void ResetSelection();
     void ProcessSelection();
