@@ -43,7 +43,12 @@ enum ePredefAllocPools
     PREDEF_POOL_COUNT,
     FIRST_CUSTOM_ALLOC_POOL = PREDEF_POOL_COUNT   // First custom allocation pool must be FIRST_CUSTOM_ALLOC_POOL
 };
-
+enum ePredefMarkers
+{
+    ALLOC_MARKER_APP = 0,
+    PREDEF_MARKER_COUNT,
+    FIRST_CUSTOM_MARKER = PREDEF_MARKER_COUNT
+};
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_ALLOCPOOLS_H__

@@ -41,6 +41,9 @@ void operator delete(void * ptr, DAVA::ePredefAllocPools pool);
 void operator delete[](void * ptr, DAVA::ePredefAllocPools pool);
 #define MEMORY_PROFILER_REGISTER_TAG(index, name)           DAVA::MemoryManager::RegisterTagName(static_cast<int>(index), name)
 #define MEMORY_PROFILER_REGISTER_ALLOC_POOL(index, name)    DAVA::MemoryManager::RegisterAllocPoolName(index, name)
+#define MEMORY_PROFILER_REGISTER_MARKER(index,name)         DAVA::MemoryManager::RegisterMarkerName(index,name)
+
+
 
 #define MEMORY_PROFILER_ENTER_TAG(tag)                      DAVA::MemoryManager::Instance()->EnterTagScope(static_cast<int>(tag))
 #define MEMORY_PROFILER_LEAVE_TAG(tag)                      DAVA::MemoryManager::Instance()->LeaveTagScope(static_cast<int>(tag))
@@ -50,6 +53,9 @@ void operator delete[](void * ptr, DAVA::ePredefAllocPools pool);
 #define MEMORY_PROFILER_NEW(pool,construct)                 new (pool) construct
 
 #define MEMORY_PROFILER_ALLOCATE(size,pool)                 DAVA::MemoryManager::Instance()->Allocate(size,pool)
+
+#define MEMORY_PROFILER_SETMARKER(marker)                   DAVA::MemoryManager::Instance()->SetCurrentActiveMarker(marker)
+
 #else   // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
 #define MEMORY_PROFILER_REGISTER_TAG(index, name)

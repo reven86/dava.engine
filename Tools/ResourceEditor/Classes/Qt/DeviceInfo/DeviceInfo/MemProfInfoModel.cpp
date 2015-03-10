@@ -87,12 +87,13 @@ void MemProfInfoModel::addMoreData(const DAVA::MMStat * data)
 
     beginResetModel();
     TagsStat tagsStat;
-    tagsStat.statData.resize(data->tags.depth + 1);
-    tagsStat.tagNames.resize(data->tags.depth + 1);
+    tagsStat.statData.resize(data->registredMarkerCount);
+    tagsStat.tagNames.resize(data->registredMarkerCount);
     for (size_t i = 0; i < tagsStat.statData.size(); i++)
     {
         auto tagID = data->tags.stack[i];
-        tagsStat.tagNames[i] = tagID;
+       
+        tagsStat.tagNames[i] = i;
         tagsStat.statData[i].resize(data->allocPoolCount);
         for (size_t u = 0; u < tagsStat.statData[i].size(); u++)
         {
@@ -136,10 +137,10 @@ void MemProfInfoModel::setConfig(const DAVA::MMStatConfig* statConfig)
     {
         list.push_back(statConfig->names[i-1].name);
     }
-    tagNames.resize(statConfig->tagCount);
+    tagNames.resize(statConfig->markCount);
     for (size_t i = 0; i < tagNames.size(); i++)
     {
-        tagNames[i] = QString(statConfig->names[i].name);
+        tagNames[i] = QString(statConfig->names[i + statConfig->tagCount + statConfig->allocPoolCount].name);
     }
     poolNames.resize(statConfig->allocPoolCount);
     for (size_t j = 0; j < poolNames.size(); j++)

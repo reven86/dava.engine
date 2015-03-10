@@ -58,6 +58,7 @@ class TransformComponent;
  */
 class Entity : public BaseObject
 {
+   
 protected:
 	virtual ~Entity();
 public:	

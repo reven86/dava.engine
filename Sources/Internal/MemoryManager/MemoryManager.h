@@ -56,7 +56,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "AllocPools.h"
 #include "MemoryManagerTypes.h"
-
+#include <atomic>
 namespace DAVA
 {
 
@@ -92,6 +92,7 @@ public:
 
     static void RegisterAllocPoolName(size_t index, const char8* name);
     static void RegisterTagName(size_t index, const char8* name);
+    static void RegisterMarkerName(size_t index, const char8* name);
 
     static void InstallDumpCallback(DumpRequestCallback callback, void* arg);
 
@@ -112,6 +113,8 @@ public:
 
     size_t GetDump(size_t userSize, void** buf, uint32 blockRangeBegin, uint32 blockRangeEnd);
     void FreeDump(void* ptr);
+
+    void SetCurrentActiveMarker(uint32 marker);
 
 private:
     static bool IsInternalAllocationPool(uint32 poolIndex);
@@ -137,7 +140,9 @@ private:
     MMTagStack tags;                    // Active tags
     GeneralAllocStat statGeneral;       // General statistics
     AllocPoolStat statAllocPool[MMConst::MAX_TAG_DEPTH][MMConst::MAX_ALLOC_POOL_COUNT];    // Statistics for each allocation pool divided by tags
-    
+    AllocPoolStat statMarkers[MMConst::MAX_MARKER_COUNT];
+    std::atomic<uint32> currentActiveMarker;
+
     typedef DAVA::Spinlock MutexType;
     typedef DAVA::LockGuard<MutexType> LockType;
     mutable MutexType mutex;
@@ -166,9 +171,12 @@ private:
 private:
     static MMItemName tagNames[MMConst::MAX_TAG_COUNT];                  // Names of tags
     static MMItemName allocPoolNames[MMConst::MAX_ALLOC_POOL_COUNT];     // Names of allocation pools
-    
+    static MMItemName allocMarkersNames[MMConst::MAX_MARKER_COUNT];
+
+
     static size_t registeredTagCount;                           // Number of registered tags including predefined
     static size_t registeredAllocPoolCount;                     // Number of registered allocation pools including predefined
+    static size_t registeredMarkerCount;
 };
 
 //////////////////////////////////////////////////////////////////////////
