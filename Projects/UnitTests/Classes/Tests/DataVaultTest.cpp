@@ -56,9 +56,9 @@ void DataVaultTest::TestFunction(TestTemplate<DataVaultTest>::PerfFuncData *data
 
     storage->Clear();
     storage->Push();
-    storage->SetEntryValue("Test", "Test");
+    storage->SetStringValue("Test", "Test");
     storage->Push();
-    String ret = storage->GetEntryValue("Test");
+    String ret = storage->GetStringValue("Test");
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
     TEST_VERIFY("" == ret);
 #else
@@ -67,8 +67,17 @@ void DataVaultTest::TestFunction(TestTemplate<DataVaultTest>::PerfFuncData *data
 
     storage->RemoveEntry("Test");
     storage->Push();
-    ret = storage->GetEntryValue("Test");
+    ret = storage->GetStringValue("Test");
     TEST_VERIFY("Test" != ret);
+
+    int64 iret = storage->GetLongValue("Test");
+    TEST_VERIFY(0 == iret);
+    
+    storage->SetLongValue("Test", 1);
+    storage->Push();
+    iret = storage->GetLongValue("Test");
+    
+    TEST_VERIFY(1 == iret);
 
     SafeRelease(storage);
 }
