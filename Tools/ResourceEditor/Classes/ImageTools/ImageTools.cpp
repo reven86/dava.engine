@@ -66,9 +66,10 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 	
 	for(size_t i = 0; i < files.size(); ++i)
 	{
+		//FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, forGPU);
 		const FilePath& imagePathname = files[i];
 		
-		DAVA::ScopedPtr<File> imageFile(File::Create(imagePathname, File::OPEN | File::READ));
+		File *imageFile = File::Create(imagePathname, File::OPEN | File::READ);
 		if(!imageFile)
 		{
 			Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't open file %s", imagePathname.GetAbsolutePathname().c_str());
@@ -76,22 +77,29 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 		}
 		
 		ImageSystem* system = ImageSystem::Instance();
-
-        ImageFormatInterface* imageInterface = system->GetImageFormatInterface(imagePathname);
-
-        if (!imageInterface)
-            imageInterface = system->GetImageFormatInterface(imageFile);
-
-        if (imageInterface)
-        {
-            size += imageInterface->GetDataSize(imageFile);
-        }
+		if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PNG)->IsImage(imageFile))
+		{
+			size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PNG)->GetDataSize(imageFile);
+		}
+		else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_DDS)->IsImage(imageFile))
+		{
+            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_DDS)->GetDataSize(imageFile);
+		}
+		else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PVR)->IsImage(imageFile))
+		{
+            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PVR)->GetDataSize(imageFile);
+		}
+        else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_JPEG)->IsImage(imageFile))
+		{
+            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_JPEG)->GetDataSize(imageFile);
+		}
 		else
 		{
 			Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetAbsolutePathname().c_str());
 			DVASSERT(false);
 		}
 		
+		SafeRelease(imageFile);
 	}
 	
     return size;
@@ -188,30 +196,15 @@ Channels ImageTools::CreateSplittedImages(DAVA::Image* originalImage)
     DAVA::Image* a = Image::Create(originalImage->width, originalImage->height, FORMAT_A8);
     
     int32 size = originalImage->width * originalImage->height;
-    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(originalImage->format);
-    if (pixelSize == 4)
+    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+    for(int32 i = 0; i < size; ++i)
     {
-        for (int32 i = 0; i < size; ++i)
-        {
-            int32 offset = i * pixelSize;
-            r->data[i] = originalImage->data[offset];
-            g->data[i] = originalImage->data[offset + 1];
-            b->data[i] = originalImage->data[offset + 2];
-            a->data[i] = originalImage->data[offset + 3];
-        }
+        int32 offset = i * pixelSize;
+        r->data[i] = originalImage->data[offset];
+        g->data[i] = originalImage->data[offset + 1];
+        b->data[i] = originalImage->data[offset + 2];
+        a->data[i] = originalImage->data[offset + 3];
     }
-    else if (originalImage->format == FORMAT_RGBA5551)
-    {
-        for (int32 i = 0; i < size; ++i)
-        {
-            int32 offset = i * pixelSize;
-            r->data[i] = (originalImage->data[offset] & 0xF8) >> 3;
-            g->data[i] = ((originalImage->data[offset] & 0x07) << 2) | ((originalImage->data[offset+1] & 0xC0) >> 3);
-            b->data[i] = (originalImage->data[offset+1] & 0x3E) >> 1;
-            a->data[i] = originalImage->data[offset + 1] & 0x01;
-        }
-    }
-    
     return Channels(r,g,b,a);
 }
 

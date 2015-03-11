@@ -32,26 +32,16 @@ namespace DAVA {
 
 void RGBA5551_Exchanger::SwapRedAndBlue(uint8* pixel)
 {
-    // rrrr rggg ggbb bbba
-//     uint8 red = pixel[0] & 0xF8;    // copy red bits
-//     red >>= 2;                      // shift at blue bits position
-//     uint8 blue = pixel[1] & 0x3E;   // copy blue bits
-//     blue <<= 2;                     // shift at red bits position
-//     //*((uint16*)pixel) &= 0x07C1;    // leave green and attr bits only
-//     pixel[0] &= 0x07;
-//     pixel[1] &= 0xC1;
-//     pixel[1] |= red;                // set red bits
-//     pixel[0] |= blue;               // set blue bits
-    pixel[0] |= 0x01;
-
-    // arrr rrgg gggb bbbb
-//     uint8 red = (pixel[0] & 0x7C) >> 2;
-//     uint8 blue = (pixel[1] & 0x1F) << 2;
-//     pixel[0] &= 0x83; 
-//     pixel[1] &= 0xE0;
-//     pixel[0] |= blue;
-//     pixel[1] |= red;
-//     uint8 tmp = pixel[0]; pixel[0] = pixel[1]; pixel[1] = tmp;
+    //bbbb bggg ggrr rrra
+    uint8 blue = pixel[0] & 0xF8;   // copy blue bits
+    blue >>= 2;                     // shift at red bits position
+    uint8 red = pixel[1] & 0x3E;    // copy red bits
+    red <<= 2;                      // shift at blue bits position
+    *((uint16*)pixel) &= 0x07C1;    // leave green and attr bits only
+    pixel[0] &= 0x07;
+    pixel[1] &= 0xC1;
+    pixel[0] |= red;               // set red bits
+    pixel[1] |= blue;              // set blue bits
 }
 
 void RGBA4444_Exchanger::SwapRedAndBlue(uint8* pixel)
