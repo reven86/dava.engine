@@ -36,8 +36,10 @@ namespace DAVA
 class DataStorageEmptyWin : public IDataStorage
 {
 public:
-    String GetEntryValue(const String &key) override {return String();}
-    void SetEntryValue(const String &key, const String &value) override {}
+    String GetStringValue(const String &key) override {return String();}
+    int64 GetLongValue(const String &key) override {return 0;}
+    void SetStringValue(const String &key, const String &value) override {}
+    void SetLongValue(const String &key, int64 value) override {}
     void RemoveEntry(const String &key) override {}
     void Clear() override {}
     void Push() override {}

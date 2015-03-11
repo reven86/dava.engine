@@ -242,7 +242,14 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 	if(scene == treeModel->GetScene())
 	{
 		treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
-		SyncSelectionToTree();
+        treeModel->ReloadFilter();
+        filteringProxyModel->invalidate();
+        SyncSelectionToTree();
+
+        if (treeModel->IsFilterSet())
+        {
+            ExpandFilteredItems();
+        }
 	}
 }
 

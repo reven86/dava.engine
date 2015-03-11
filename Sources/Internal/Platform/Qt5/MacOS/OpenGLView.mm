@@ -187,8 +187,6 @@
     if(willQuit || !QtLayer::Instance()->IsDAVAEngineEnabled())
         return;
     
-	DAVA::RenderManager::Instance()->Lock();
-	
 	if (isFirstDraw)
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -203,7 +201,6 @@
     {
         [[self openGLContext] flushBuffer];
     }
-	DAVA::RenderManager::Instance()->Unlock();
 }
 
 - (void) resetCursorRects
