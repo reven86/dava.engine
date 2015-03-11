@@ -20,6 +20,7 @@ public:
     void start();
 
 protected slots:
+    void OnCleanChanged(bool clean);
     void OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
     void OnSelectionControlChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
     void OnControlSelectedInEditor(ControlNode *activatedControls);

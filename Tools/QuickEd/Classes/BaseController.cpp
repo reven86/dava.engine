@@ -44,6 +44,18 @@ void BaseController::start()
     mainWindow.show();
 }
 
+void BaseController::OnCleanChanged(bool clean)
+{
+    QUndoStack *undoStack = qobject_cast<QUndoStack*>(sender());
+    for (int i = 0; i < documents.size(); ++i)
+    {
+        if (undoStack == documents.at(i)->GetUndoStack())
+        {
+            mainWindow.OnCleanChanged(i, clean);
+        }
+    }
+}
+
 void BaseController::OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls)
 {
     Document *document = GetCurrentDocument();
@@ -222,7 +234,6 @@ void BaseController::AttachDocument(Document *document)
         document->SetActive(true);
         connect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
         connect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
-        connect(document->GetUndoStack(), &QUndoStack::cleanChanged, &mainWindow, &MainWindow::OnCleanChanged);
     }
     mainWindow.SetDocumentToWidgets(document);
 }
@@ -233,7 +244,6 @@ void BaseController::DetachDocument(Document *document)
         document->SetActive(false);
         disconnect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
         disconnect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
-        disconnect(document->GetUndoStack(), &QUndoStack::cleanChanged, &mainWindow, &MainWindow::OnCleanChanged);
     }
     mainWindow.SetDocumentToWidgets(nullptr);
 }
@@ -262,6 +272,7 @@ void BaseController::CloseDocument(int index)
 int BaseController::CreateDocument(PackageNode *package)
 {
     Document *document = new Document(&project, package, this);
+    connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &BaseController::OnCleanChanged);
     undoGroup.addStack(document->GetUndoStack());
     documents.push_back(document);
     SetCount(Count() + 1);

@@ -71,6 +71,7 @@ public:
     void OnProjectOpened(Result result, QString projectPath);
     int AddTab(const QString &tabText);
     void SetDocumentToWidgets(Document *document);
+    void OnCleanChanged(int index, bool val);
 protected:
     void closeEvent(QCloseEvent *event) override;
 signals:
@@ -86,7 +87,7 @@ signals:
     void CloseRequested();
 
 public slots:
-    void OnCleanChanged(bool val);
+
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
 private slots:

@@ -175,9 +175,8 @@ void MainWindow::OnCurrentIndexChanged(int arg)
     ui->actionSaveDocument->setEnabled(nullptr != tabState && tabState->isModified); //set action enabled if new documend still modified
 }
 
-void MainWindow::OnCleanChanged(bool val)
+void MainWindow::OnCleanChanged(int index, bool val)
 {
-    int index = ui->tabBar->currentIndex();
     DVASSERT(index >= 0);
     TabState *tabState = ui->tabBar->tabData(index).value<TabState*>();
     tabState->isModified = !val;
