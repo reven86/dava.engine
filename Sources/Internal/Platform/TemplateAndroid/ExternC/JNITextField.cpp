@@ -104,26 +104,33 @@ extern "C"
     void Java_com_dava_framework_JNITextField_TextFieldUpdateTexture(JNIEnv* env,
             jobject classthis, uint32_t id, jintArray pixels, int width, int height)
     {
-        DVASSERT(width > 0);
-        DVASSERT(height > 0);
+        if (nullptr != pixels)
+        {
+            DVASSERT(width > 0);
+            DVASSERT(height > 0);
 
-        jboolean isCopy = JNI_FALSE;
-        jint* rawData = env->GetIntArrayElements(pixels, &isCopy);
+            jboolean isCopy = JNI_FALSE;
+            jint* rawData = env->GetIntArrayElements(pixels, &isCopy);
 
-        DVASSERT(rawData);
-        DVASSERT(env->GetArrayLength(pixels) == width * height); // ARGB
+            DVASSERT(rawData);
+            DVASSERT(env->GetArrayLength(pixels) == width * height); // ARGB
 
-        DAVA::uint32 pitch = width * 4; // 4 byte per pixel
+            DAVA::uint32 pitch = width * 4; // 4 byte per pixel
 
-        // convert on the same memory
-        DAVA::ImageConvert::ConvertImageDirect(DAVA::FORMAT_BGRA8888,
-                DAVA::FORMAT_RGBA8888, rawData, width, height, pitch, rawData,
-                width, height, pitch);
+            // convert on the same memory
+            DAVA::ImageConvert::ConvertImageDirect(DAVA::FORMAT_BGRA8888,
+                    DAVA::FORMAT_RGBA8888, rawData, width, height, pitch, rawData,
+                    width, height, pitch);
 
-        DAVA::UITextFieldAndroid::TextFieldUpdateTexture(id, rawData, width,
-                height);
+            DAVA::UITextFieldAndroid::TextFieldUpdateTexture(id, rawData, width,
+                    height);
 
-        env->ReleaseIntArrayElements(pixels, rawData, 0);
+            env->ReleaseIntArrayElements(pixels, rawData, 0);
+        }
+        else
+        {
+            DAVA::UITextFieldAndroid::TextFieldUpdateTexture(id, nullptr, width, height);
+        }
     }
 
 };

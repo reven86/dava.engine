@@ -38,6 +38,7 @@
 #include "FileSystem/YamlNode.h"
 #ifdef __DAVAENGINE_ANDROID__
 #include "UITextFieldAndroid.h"
+#include "Utils/UTF8Utils.h"
 #endif
 
 extern void CreateTextField(DAVA::UITextField *);
@@ -140,6 +141,7 @@ void UITextField::SetupDefaults()
     SetFontSize(26); //12 is default size for IOS
     
     SetText(L"");
+    SetRenderToTexture(true);
 }
 
 //void UITextField::InitAfterYaml()
@@ -175,6 +177,8 @@ UITextField::~UITextField()
 
 void UITextField::OpenKeyboard()
 {
+    // automatically disable render to texture on open virtual keyboard
+    SetRenderToTexture(false);
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->OpenKeyboard();
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -254,6 +258,7 @@ void UITextField::WillDisappear()
     
 void UITextField::OnFocused()
 {
+    SetRenderToTexture(false);
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->OpenKeyboard();
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -263,6 +268,7 @@ void UITextField::OnFocused()
     
 void UITextField::OnFocusLost(UIControl *newFocus)
 {
+    SetRenderToTexture(true);
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->CloseKeyboard();
 #elif defined(__DAVAENGINE_ANDROID__)

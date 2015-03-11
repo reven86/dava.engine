@@ -109,6 +109,13 @@ public class JNITextField {
             restoreVisibility();
             updateStaticTexture();
         }
+
+        private void clearStaticTexture() {
+            // clear static texture
+            JNIActivity activity = JNIActivity.GetActivity();
+            UpdateTexture task = new UpdateTexture(id, null, 0, 0);
+            activity.PostEventToGL(task);
+        }
         
         public boolean isRenderToTexture()
         {
@@ -213,6 +220,7 @@ public class JNITextField {
                     setVisibility(View.INVISIBLE);
                     break;
                 case View.VISIBLE:
+                    // Workaround android need change visibility in two step
                     setVisibility(View.GONE);
                     setVisibility(View.INVISIBLE);
                     break;
@@ -237,6 +245,7 @@ public class JNITextField {
                 case View.INVISIBLE:
                     if (logicVisible)
                     {
+                        // Workaround android need change visibility in two step
                         setVisibility(View.GONE);
                         setVisibility(View.VISIBLE);
                     }
@@ -259,11 +268,28 @@ public class JNITextField {
         
         public void updateStaticTexture()
         {
-            if (isRenderToTexture && !stopRecursion)
+            // Workaround if text empty but image cache
+            // return previous image and set it back to static
+            // texture in native control
+            if (0 == getText().length())
             {
-                stopRecursion = true;
-                renderToTexture();
-                stopRecursion = false;
+                clearStaticTexture();
+            }
+            else
+            {
+                if (!isRenderToTexture)
+                {
+                    clearStaticTexture();
+                }
+                if(!stopRecursion)
+                {
+                    if (isRenderToTexture)
+                    {
+                        stopRecursion = true;
+                        renderToTexture();
+                        stopRecursion = false;
+                    }
+                }
             }
         }
     }

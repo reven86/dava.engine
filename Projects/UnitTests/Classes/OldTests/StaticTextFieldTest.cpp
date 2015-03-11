@@ -58,7 +58,6 @@ void StaticTextFieldTest::LoadResources()
 {
     uiTextField1 = new UITextField(Rect(300, 100, 400, 40));
     uiTextField1->SetVisible(true);
-    uiTextField1->SetRenderToTexture(true);
     uiTextField1->SetDebugDraw(true);
     // only http://www.microsoft.com works with IE ole component nice
     uiTextField1->SetText(L"start text ...some test text goes here... end");
@@ -164,12 +163,12 @@ void StaticTextFieldTest::OnButtonPressed(BaseObject *, void *, void *)
 
 void StaticTextFieldTest::OnButtonSetStatic(BaseObject *, void *, void *)
 {
-    uiTextField1->SetRenderToTexture(true);
+    //uiTextField1->SetRenderToTexture(true);
 }
 
 void StaticTextFieldTest::OnButtonSetNormal(BaseObject *, void *, void *)
 {
-    uiTextField1->SetRenderToTexture(false);
+    //uiTextField1->SetRenderToTexture(false);
 }
 
 void StaticTextFieldTest::OnButtonAdd10ToAlfa(BaseObject *obj, void *data,

@@ -204,9 +204,6 @@ public:
 	 */
 	void SetInputEnabled(bool isEnabled, bool hierarchic = true) override;
 
-	void SetRenderToTexture(bool value);
-    bool IsRenderToTexture() const;
-
 protected:
     void WillBecomeVisible() override;
     void WillBecomeInvisible() override;
@@ -385,6 +382,9 @@ protected:
     void RenderText();
 private:
     WideString GetVisibleText() const;
+
+    void SetRenderToTexture(bool value);
+    bool IsRenderToTexture() const;
 
     
     /**

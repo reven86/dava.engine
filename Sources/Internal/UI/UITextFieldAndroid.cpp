@@ -528,8 +528,10 @@ void UITextFieldAndroid::TextFieldFocusChanged(bool hasFocus)
 void UITextFieldAndroid::TextFieldFocusChanged(uint32_t id, bool hasFocus)
 {
     UITextFieldAndroid* control = GetUITextFieldAndroid(id);
-    DVASSERT(control);
-    control->TextFieldFocusChanged(hasFocus);
+    if(nullptr != control)
+    {
+        control->TextFieldFocusChanged(hasFocus);
+    }
 }
 
 void UITextFieldAndroid::TextFieldUpdateTexture(uint32_t id, int32* rawPixels,
