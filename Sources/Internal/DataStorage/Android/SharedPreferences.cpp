@@ -120,7 +120,7 @@ void SharedPreferences::SetStringValue(const String &key, const String &value)
     env->DeleteLocalRef(jvalue);
 }
 
-void SharedPreferences::SetLongValue(const String &key, const int64 &value)
+void SharedPreferences::SetLongValue(const String &key, int64 value)
 {
     Logger::FrameworkDebug("Trying to set long %l value for %s key", value, key.c_str());
     JNIEnv *env = JNI::GetEnv();

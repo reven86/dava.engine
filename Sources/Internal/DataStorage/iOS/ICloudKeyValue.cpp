@@ -73,7 +73,7 @@ void ICloudKeyValue::SetStringValue(const String &key, const String &value)
     [iCloudStorage setString: NSStringFromString(value) forKey: NSStringFromString(key)];
 }
 
-void ICloudKeyValue::SetLongValue(const String &key, const int64 &value)
+void ICloudKeyValue::SetLongValue(const String &key, int64 value)
 {
     Logger::FrameworkDebug("Trying to set long %l value for %s key", value, key.c_str());
     
