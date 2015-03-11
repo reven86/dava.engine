@@ -63,21 +63,18 @@ void DataVaultTest::TestFunction(TestTemplate<DataVaultTest>::PerfFuncData *data
     TEST_VERIFY("" == ret);
 #else
     TEST_VERIFY("Test" == ret);
-#endif
-
     storage->RemoveEntry("Test");
     storage->Push();
     ret = storage->GetStringValue("Test");
     TEST_VERIFY("Test" != ret);
-
+    
     int64 iret = storage->GetLongValue("Test");
     TEST_VERIFY(0 == iret);
     
     storage->SetLongValue("Test", 1);
     storage->Push();
     iret = storage->GetLongValue("Test");
-    
     TEST_VERIFY(1 == iret);
-
+#endif
     SafeRelease(storage);
 }
