@@ -210,12 +210,7 @@ bool BaseController::CloseProject()
 
     while(!documents.isEmpty())
     {
-        int index = CurrentIndex();
-        if (index < 0 || index >= Count())
-        {
-            index = Count() - 1;
-        }
-        CloseDocument(index);
+        CloseDocument(0);
     }
     return true;
 }

@@ -128,6 +128,7 @@ void MainWindow::OnProjectIsOpenChanged(bool arg)
 void MainWindow::OnCountChanged(int count)
 {
     ui->actionSaveAllDocuments->setEnabled(count > 0);
+    OnCurrentIndexChanged(ui->tabBar->currentIndex());
 }
 
 int MainWindow::CloseTab(int index)
