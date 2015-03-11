@@ -196,7 +196,7 @@ void MMNetClient::UnpackDump()
     Memcpy(v.data(), dumpV.data(), sizeof(MMDump));
 
     MMDump* dump = reinterpret_cast<MMDump*>(v.data());
-    dumpDoneCallback(dump, dumpSize);
+    dumpDoneCallback(dump, dumpSize, v);
     gettingDump = false;
 }
 
