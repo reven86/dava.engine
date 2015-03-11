@@ -180,56 +180,40 @@ void BaseController::OpenProject(const QString &path)
 
 bool BaseController::CloseProject()
 {
-    bool saveAll = false;
-    bool discardAll = false;
+    bool hasUnsaved = false;
+    for (auto &doc : documents)
+    {
+        if (!doc->GetUndoStack()->isClean())
+        {
+            hasUnsaved = true;
+            break;
+        }
+    }
+    if (hasUnsaved)
+    {
+        int ret = QMessageBox::question(qApp->activeWindow(),
+            tr("Save changes"),
+            tr("Some files has been modified.\n"
+            "Do you want to save your changes?"),
+            QMessageBox::SaveAll | QMessageBox::NoToAll | QMessageBox::Cancel
+            );
+        if (ret == QMessageBox::Cancel)
+        {
+            return false;
+        }
+        else if (ret == QMessageBox::SaveAll)
+        {
+            SaveAllDocuments();
+        }
+    }
+
+
     while(!documents.isEmpty())
     {
         int index = CurrentIndex();
         if (index < 0 || index >= Count())
         {
             index = Count() - 1;
-        }
-        const Document *document = documents[index];
-        QUndoStack *undoStack = document->GetUndoStack();
-        if (!undoStack->isClean())
-        {
-            int ret = QMessageBox::Save;
-            if (saveAll)
-            {
-                ret = QMessageBox::Save;
-            }
-            else if (discardAll)
-            {
-                ret = QMessageBox::Discard;
-            }
-            else
-            {
-                QMessageBox box(QMessageBox::Question,
-                    tr("Save changes"),
-                    tr("The file %1 has been modified.\n"
-                    "Do you want to save your changes?").arg(document->PackageFilePath().GetBasename().c_str()),
-                    QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
-                    qApp->activeWindow());
-                if (documents.size() > 1)
-                {
-                    box.setCheckBox(new QCheckBox(tr("apply to all")));
-                }
-                ret = box.exec();
-                if (nullptr != box.checkBox() && box.checkBox()->isChecked())
-                {
-                    saveAll |= ret == QMessageBox::Save;
-                    discardAll |= ret == QMessageBox::Discard;
-                }
-            }
-
-            if (ret == QMessageBox::Cancel)
-            {
-                return false;
-            }
-            else if (ret == QMessageBox::Save)
-            {
-                SaveDocument(index);
-            }
         }
         CloseDocument(index);
     }
