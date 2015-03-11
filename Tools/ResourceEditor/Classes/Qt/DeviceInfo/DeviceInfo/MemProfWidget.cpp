@@ -13,6 +13,8 @@
 #include "MemoryItemStyleDelegate.h"
 #include "ui_MemProfWidget.h"
 
+#include "DumpViewWidget.h"
+
 using namespace DAVA;
 
 MemProfWidget::LabelPack::~LabelPack()
@@ -39,6 +41,8 @@ MemProfWidget::MemProfWidget(QWidget *parent)
     toolbar = new QToolBar;
     QAction* actionDump = toolbar->addAction("Memory dump");
     connect(actionDump, SIGNAL(triggered()), this, SIGNAL(OnDumpButton()));
+    QAction* actionViewDump = toolbar->addAction("View last memory dump");
+    connect(actionViewDump, SIGNAL(triggered()), this, SIGNAL(OnViewDumpButton()));
     ui->verticalLayout_2->insertWidget(0, toolbar);
     
     plot = ui->plot;
@@ -61,11 +65,6 @@ MemProfWidget::MemProfWidget(QWidget *parent)
     connect(plot->xAxis, SIGNAL(rangeChanged(QCPRange)), plot->xAxis2, SLOT(setRange(QCPRange)));
     connect(plot->yAxis, SIGNAL(rangeChanged(QCPRange)), plot->yAxis2, SLOT(setRange(QCPRange)));
     
-    //plot->graph(0)->setData(x, y0);
-    //plot->graph(1)->setData(x, y1);
-    
-    //plot->graph(0)->rescaleAxes();
-    //plot->graph(1)->rescaleAxes(true);
     plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     
     tableView = new QTableView(this);
@@ -83,6 +82,11 @@ MemProfWidget::~MemProfWidget()
 void MemProfWidget::AppendText(const QString& text)
 {
 
+}
+
+void MemProfWidget::ShowDump(const DAVA::Vector<DAVA::uint8>& v)
+{
+    //DumpViewWidget* w = new DumpViewWidget(v, this);
 }
 
 void MemProfWidget::ChangeStatus(const char* status, const char* reason)
@@ -126,7 +130,6 @@ void MemProfWidget::UpdateStat(const MMStat* stat)
         total += stat->poolStat[i].allocTotal;
     }
 
-  
     model->addMoreData(stat);
     UpdateLabels(stat, alloc, total);
 }
