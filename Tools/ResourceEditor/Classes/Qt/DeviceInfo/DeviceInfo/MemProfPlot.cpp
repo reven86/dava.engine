@@ -94,10 +94,10 @@ void MemProfPlot::addStat(int stamp, const TagsStat & stat)
         return;
 
     size_t alloc = 0, total = 0;
-    for (auto & pool : stat.statData)
+    for (auto & pool : stat.statData[0])
     {
-        alloc += pool[0].allocByApp;
-        total += pool[0].allocTotal;
+        alloc += pool.allocByApp;
+        total += pool.allocTotal;
     }
    
 

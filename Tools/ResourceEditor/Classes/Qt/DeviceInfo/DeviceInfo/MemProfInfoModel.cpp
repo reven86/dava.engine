@@ -87,8 +87,8 @@ void MemProfInfoModel::addMoreData(const DAVA::MMStat * data)
 
     beginResetModel();
     TagsStat tagsStat;
-    tagsStat.statData.resize(data->registredMarkerCount);
-    tagsStat.tagNames.resize(data->registredMarkerCount);
+    tagsStat.statData.resize(data->registredLabelCount);
+    tagsStat.tagNames.resize(data->registredLabelCount);
     size_t offset = data->allocPoolCount*(data->tags.depth+1);
     for (size_t i = 0; i < tagsStat.statData.size(); i++)
     {

@@ -43,8 +43,7 @@ struct MMConst
     static const size_t MAX_ALLOC_POOL_COUNT = 6;       // Max supported count of allocation pools
     static const size_t MAX_TAG_COUNT = 8;              // Max supported count of tags
     static const size_t MAX_NAME_LENGTH = 16;           // Max length of name: tag, allocation type, counter
-    static const size_t MAX_MARKER_COUNT = 16;          // Max supported count for markers
-
+    static const size_t MAX_LABEL_COUNT = 16;          // Max supported count for lables
     enum {
         DUMP_REQUEST_USER,
         DUMP_REQUEST_TAG,
@@ -132,7 +131,7 @@ struct MMStat
     uint32 allocPoolCount;  // Duplicate from MMStatConfig::allocPoolCount
     MMTagStack tags;
     GeneralAllocStat generalStat;
-    uint32 registredMarkerCount;   
+    uint32 registredLabelCount;   
     uint32 padding[3];
     AllocPoolStat poolStat[1];  // Array size should be calculated as: tags.depth * allocPoolCount
 };
@@ -163,7 +162,7 @@ struct MMBlock
     uint32 pool;
     uint32 orderNo;
     uint32 backtraceHash;
-    uint32 marker;
+    uint32 label;
 };
 
 static_assert(sizeof(MMBlock) % 16 == 0, "sizeof(MMBlock) % 16 == 0");

@@ -77,7 +77,7 @@ struct MemoryManager::MemoryBlock
     size_t orderNo;         // Block order number
     size_t pool;            // Allocation pool block belongs to
     size_t mark;            // Mark to distinguish tracked memory blocks
-    size_t marker;
+    size_t label;
     size_t padding[2];
 };
 
@@ -92,12 +92,12 @@ MMItemName MemoryManager::allocPoolNames[MMConst::MAX_ALLOC_POOL_COUNT] = {
     { "COMPONENT" },
     { "ENTITY" }
 };
-MMItemName MemoryManager::allocMarkersNames[MMConst::MAX_MARKER_COUNT] = {
+MMItemName MemoryManager::allocLabelsNames[MMConst::MAX_LABEL_COUNT] = {
     {"application"},
 };
 size_t MemoryManager::registeredTagCount = 1;
 size_t MemoryManager::registeredAllocPoolCount = ePredefAllocPools::PREDEF_POOL_COUNT;
-size_t MemoryManager::registeredMarkerCount = ePredefMarkers::PREDEF_MARKER_COUNT;
+size_t MemoryManager::registeredLabelCount = ePredefLabels::PREDEF_LABEL_COUNT;
 void MemoryManager::RegisterAllocPoolName(size_t index, const char8* name)
 {
     DVASSERT(name != nullptr && 0 < strlen(name) && strlen(name) < MMConst::MAX_NAME_LENGTH);
@@ -119,15 +119,15 @@ void MemoryManager::RegisterTagName(size_t index, const char8* name)
     tagNames[index].name[MMConst::MAX_NAME_LENGTH - 1] = '\0';
     registeredTagCount += 1;
 }
-void MemoryManager::RegisterMarkerName(size_t index, const char8* name)
+void MemoryManager::RegisterLabelName(size_t index, const char8* name)
 {
     DVASSERT(name != nullptr && 0 < strlen(name) && strlen(name) < MMConst::MAX_NAME_LENGTH);
-    DVASSERT(FIRST_CUSTOM_MARKER <= index && index < MMConst::MAX_TAG_COUNT);
-    DVASSERT(allocMarkersNames[index - 1].name[0] != '\0');       // Names should be registered sequentially with no gap
+    DVASSERT(FIRST_CUSTOM_LABEL <= index && index < MMConst::MAX_TAG_COUNT);
+    DVASSERT(allocLabelsNames[index - 1].name[0] != '\0');       // Names should be registered sequentially with no gap
 
-    strncpy(allocMarkersNames[index].name, name, MMConst::MAX_NAME_LENGTH);
-    allocMarkersNames[index].name[MMConst::MAX_NAME_LENGTH - 1] = '\0';
-    registeredMarkerCount += 1;
+    strncpy(allocLabelsNames[index].name, name, MMConst::MAX_NAME_LENGTH);
+    allocLabelsNames[index].name[MMConst::MAX_NAME_LENGTH - 1] = '\0';
+    registeredLabelCount += 1;
 
 }
 MemoryManager* MemoryManager::Instance()
@@ -171,7 +171,7 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
         block->allocByApp = size;
         block->allocTotal = totalSize;
         block->realBlockStart = static_cast<void*>(block);
-        block->marker = currentActiveMarker;
+        block->label = currentActiveLabel;
         if (!IsInternalAllocationPool(poolIndex))
         {
             Backtrace backtrace;
@@ -253,7 +253,7 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, ui
         block->allocByApp = size;
         block->allocTotal = totalSize;
         block->realBlockStart = realPtr;
-        block->marker = currentActiveMarker;
+        block->label = currentActiveLabel;
         if (!IsInternalAllocationPool(poolIndex))
         {
             Backtrace backtrace;
@@ -464,12 +464,12 @@ void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, uint32 poolIndex)
             statAllocPool[i][poolIndex].maxBlockSize = static_cast<uint32>(block->allocByApp);
 
     }
-    statMarkers[block->marker][poolIndex].allocByApp += block->allocByApp;
-    statMarkers[block->marker][poolIndex].allocTotal += block->allocTotal;
-    statMarkers[block->marker][poolIndex].blockCount += 1;
+    statLabel[block->label][poolIndex].allocByApp += block->allocByApp;
+    statLabel[block->label][poolIndex].allocTotal += block->allocTotal;
+    statLabel[block->label][poolIndex].blockCount += 1;
 
-    if (block->allocByApp > statMarkers[block->marker][poolIndex].maxBlockSize)
-        statMarkers[block->marker][poolIndex].maxBlockSize = static_cast<uint32>(block->allocByApp);
+    if (block->allocByApp > statLabel[block->label][poolIndex].maxBlockSize)
+        statLabel[block->label][poolIndex].maxBlockSize = static_cast<uint32>(block->allocByApp);
 
     statGeneral.realSize += MallocHook::MallocSize(block->realBlockStart);
 }
@@ -490,16 +490,16 @@ void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, uint32 poolIndex)
             statAllocPool[i][poolIndex].blockCount -= 1;
         }
     }
-    statMarkers[block->marker][poolIndex].allocByApp -= block->allocByApp;
-    statMarkers[block->marker][poolIndex].allocTotal -= block->allocTotal;
-    statMarkers[block->marker][poolIndex].blockCount -= 1;
+    statLabel[block->label][poolIndex].allocByApp -= block->allocByApp;
+    statLabel[block->label][poolIndex].allocTotal -= block->allocTotal;
+    statLabel[block->label][poolIndex].blockCount -= 1;
 
     statGeneral.realSize -= MallocHook::MallocSize(block->realBlockStart);
 }
 
 size_t MemoryManager::CalcStatConfigSize() const
 {
-    return sizeof(MMStatConfig) + sizeof(MMItemName) * (registeredTagCount + registeredAllocPoolCount - 1 + registeredMarkerCount);
+    return sizeof(MMStatConfig) + sizeof(MMItemName) * (registeredTagCount + registeredAllocPoolCount - 1 + registeredLabelCount);
 }
 
 void MemoryManager::GetStatConfig(MMStatConfig* config) const
@@ -510,20 +510,20 @@ void MemoryManager::GetStatConfig(MMStatConfig* config) const
     config->maxAllocPoolCount = MMConst::MAX_ALLOC_POOL_COUNT;
     config->tagCount = static_cast<uint32>(registeredTagCount);
     config->allocPoolCount = static_cast<uint32>(registeredAllocPoolCount);
-    config->markCount = static_cast<uint32>(registeredMarkerCount);
+    config->markCount = static_cast<uint32>(registeredLabelCount);
 
     size_t k = 0;
     for (size_t i = 0;i < registeredTagCount;++i, ++k)
         config->names[k] = tagNames[i];
     for (size_t i = 0;i < registeredAllocPoolCount;++i, ++k)
         config->names[k] = allocPoolNames[i];
-    for (size_t i = 0; i < registeredMarkerCount; ++i, ++k)
-        config->names[k] = allocMarkersNames[i];
+    for (size_t i = 0; i < registeredLabelCount; ++i, ++k)
+        config->names[k] = allocLabelsNames[i];
 }
 
 size_t MemoryManager::CalcStatSize() const
 {
-    return sizeof(MMStat) + sizeof(AllocPoolStat) * ((tags.depth + 1) * registeredAllocPoolCount - 1 + registeredMarkerCount* registeredAllocPoolCount);
+    return sizeof(MMStat) + sizeof(AllocPoolStat) * ((tags.depth + 1) * registeredAllocPoolCount - 1 + registeredLabelCount* registeredAllocPoolCount);
 }
 
 void MemoryManager::GetStat(MMStat* stat) const
@@ -536,7 +536,7 @@ void MemoryManager::GetStat(MMStat* stat) const
     stat->allocPoolCount = static_cast<uint32>(registeredAllocPoolCount);
     stat->tags = tags;
     stat->generalStat = statGeneral;
-    stat->registredMarkerCount = static_cast<uint32>(registeredMarkerCount);
+    stat->registredLabelCount = static_cast<uint32>(registeredLabelCount);
     size_t k = 0;
     for (uint32 i = 0;i <= tags.depth;++i)
     {
@@ -545,11 +545,11 @@ void MemoryManager::GetStat(MMStat* stat) const
             stat->poolStat[k] = statAllocPool[i][j];
         }
     }
-    for (uint32 i = 0; i < registeredMarkerCount; i++)
+    for (uint32 i = 0; i < registeredLabelCount; i++)
     {
         for (uint32 j = 0; j < stat->allocPoolCount; ++j, ++k)
         {
-            stat->poolStat[k] = statMarkers[i][j];
+            stat->poolStat[k] = statLabel[i][j];
         }
     }
 }
@@ -604,7 +604,7 @@ size_t MemoryManager::GetDump(size_t userSize, void** buf, uint32 blockRangeBegi
         blocks[iBlock].pool = static_cast<uint32>(firstBlock->pool);
         blocks[iBlock].orderNo = static_cast<uint32>(firstBlock->orderNo);
         blocks[iBlock].backtraceHash = static_cast<uint32>(firstBlock->backtraceHash);
-        blocks[iBlock].marker = static_cast<uint32>(firstBlock->marker);
+        blocks[iBlock].label = static_cast<uint32>(firstBlock->label);
         iBlock += 1;
         nblocksToCheck += 1;
         if (firstBlock == lastBlock)
@@ -635,9 +635,9 @@ size_t MemoryManager::GetDump(size_t userSize, void** buf, uint32 blockRangeBegi
     }
     return bufSize;
 }
-void MemoryManager::SetCurrentActiveMarker(uint32 marker)
+void MemoryManager::SetCurrentActiveLabel(uint32 lable)
 {
-    this->currentActiveMarker = marker;
+    this->currentActiveLabel = lable;
 }
 void MemoryManager::FreeDump(void* ptr)
 {
