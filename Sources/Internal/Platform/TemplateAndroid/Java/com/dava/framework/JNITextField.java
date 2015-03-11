@@ -817,7 +817,6 @@ public class JNITextField {
             @Override
             public void run() {
                 final TextField text = GetTextField(id);
-                Log.v(TAG, "set text:" + string);
                 text.setText(string);
                 text.updateStaticTexture();
             }
