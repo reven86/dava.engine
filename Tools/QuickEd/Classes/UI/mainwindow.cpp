@@ -70,7 +70,7 @@ MainWindow::MainWindow(QWidget *parent)
     , backgroundFrameSelectCustomColorAction(nullptr)
 {
     ui->setupUi(this);
-
+    ui->tabBar->setElideMode(Qt::ElideNone);
     setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 
     ui->tabBar->setTabsClosable(true);
