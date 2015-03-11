@@ -33,20 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
-// Introduce defines:
-//  DAVA_NOINLINE to tell compiler not no inline function
-//  DAVA_ALIGNOF to get alignment of type
-#if defined(__DAVAENGINE_WIN32__)
-#define DAVA_NOINLINE   __declspec(noinline)
-#define DAVA_ALIGNOF(x) __alignof(x)
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-#define DAVA_NOINLINE   __attribute__((noinline))
-#define DAVA_ALIGNOF(x) alignof(x)
-#elif defined(__DAVAENGINE_ANDROID__)
-#define DAVA_NOINLINE   __attribute__((noinline))
-#define DAVA_ALIGNOF(x) alignof(x)
-#endif
-
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>

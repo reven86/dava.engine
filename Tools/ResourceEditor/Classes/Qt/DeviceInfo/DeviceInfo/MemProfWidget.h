@@ -29,6 +29,7 @@ class MemProfWidget : public QWidget
 
 signals:
     void OnDumpButton();
+    void OnViewDumpButton();
     
 public:
     explicit MemProfWidget(QWidget *parent = NULL);
@@ -40,6 +41,8 @@ public:
     void ClearStat();
     void SetStatConfig(const DAVA::MMStatConfig* config);
     void UpdateStat(const DAVA::MMStat* stat);
+
+    void ShowDump(const DAVA::Vector<DAVA::uint8>& v);
 
     void UpdateProgress(size_t total, size_t recv);
     

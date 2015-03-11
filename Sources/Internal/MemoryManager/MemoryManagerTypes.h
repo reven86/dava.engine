@@ -40,7 +40,7 @@ struct MMConst
     static const size_t MAX_TAG_DEPTH = 8;              // Maximum depth of tag stack
     static const size_t DEFAULT_TAG = 0;                // Default tag which corresponds to whole application time line
     
-    static const size_t MAX_ALLOC_POOL_COUNT = 6;       // Max supported count of allocation pools
+    static const size_t MAX_ALLOC_POOL_COUNT = 8;       // Max supported count of allocation pools
     static const size_t MAX_TAG_COUNT = 8;              // Max supported count of tags
     static const size_t MAX_NAME_LENGTH = 16;           // Max length of name: tag, allocation type, counter
     static const size_t MAX_LABEL_COUNT = 16;          // Max supported count for lables

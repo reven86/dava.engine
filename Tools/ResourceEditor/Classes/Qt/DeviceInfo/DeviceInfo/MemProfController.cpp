@@ -7,6 +7,7 @@
 #include "Base/FunctionTraits.h"
 
 #include "MemProfWidget.h"
+#include "DumpViewWidget.h"
 #include "MemProfController.h"
 
 using namespace DAVA;
@@ -32,6 +33,20 @@ void MemProfController::OnDumpPressed()
     netClient.RequestDump();
 }
 
+void MemProfController::OnViewDump()
+{
+    if (!dumpData.empty())
+    {
+        //if (nullptr == viewDump)
+        {
+            //DumpViewWidget* w = new DumpViewWidget(dumpData, parentWidget);
+        }
+        DumpViewWidget* w = new DumpViewWidget(dumpData, parentWidget, Qt::Window);
+        w->resize(640, 480);
+        w->show();
+    }
+}
+
 void MemProfController::ShowView()
 {
     if (NULL == view)
@@ -46,6 +61,7 @@ void MemProfController::ShowView()
         view->setWindowTitle(title);
 
         connect(view, SIGNAL(OnDumpButton()), this, SLOT(OnDumpPressed()));
+        connect(view, SIGNAL(OnViewDumpButton()), this, SLOT(OnViewDump()));
         connect(this, &QObject::destroyed, view, &QObject::deleteLater);
     }
     view->showNormal();
@@ -105,7 +121,7 @@ uint32 BacktraceHash(const MMBacktrace& backtrace)
     return hash;
 }
 
-void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize)
+void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize, Vector<uint8>& dumpV)
 {
     using namespace DAVA;
 
@@ -113,8 +129,7 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize)
 
     view->UpdateProgress(100, 100);
 
-    std::unordered_map<uint64, String> symbolMap;
-    std::unordered_map<uint32, MMBacktrace> traceMap;
+    dumpData.swap(dumpV);
 
     const MMBlock* blocks = Offset<MMBlock>(dump, sizeof(MMDump));
     const MMBacktrace* bt = Offset<MMBacktrace>(blocks, sizeof(MMBlock) * dump->blockCount);
@@ -126,19 +141,22 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize)
     {
         uint32 hash = bt[i].hash;
         auto g = traceMap.emplace(std::make_pair(hash, bt[i]));
-        DVASSERT(g.second == true);
+        //DVASSERT(g.second == true);
+        if (g.second == true)
+        {
+            /*fprintf(stderr, "hash = %u (%08X)\n", hash, hash);
+            for (auto ff : bt[i].frames)
+            {
+                fprintf(stderr, "  %08llX\n", ff);
+            }*/
+        }
     }
 
-    char fname[100];
-    const char* prefix = 
-#if defined(__DAVAENGINE_WIN32__)
-        ""
-#elif defined(__DAVAENGINE_MACOS__)
-        "/Users/max/"
-#endif
-        ;
+    char fname[512];
+    FilePath fp("~doc:");
     {
-        Snprintf(fname, COUNT_OF(fname), "%sdump_%d.bin", prefix, dumpIndex);
+        
+        Snprintf(fname, COUNT_OF(fname), "%sdump_%d.bin", fp.GetAbsolutePathname().c_str(), dumpIndex);
         FILE* f = fopen(fname, "wb");
         if (f)
         {
@@ -150,7 +168,7 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize)
             fclose(f);
         }
     }
-    Snprintf(fname, COUNT_OF(fname), "%sdump_%d.log", prefix, dumpIndex++);
+    Snprintf(fname, COUNT_OF(fname), "%sdump_%d.log", fp.GetAbsolutePathname().c_str(), dumpIndex);
     FILE* f = fopen(fname, "wb");
     if (f)
     {
@@ -178,8 +196,10 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize)
                     auto u = symbolMap.find(z.frames[j]);
                     if (u != symbolMap.end())
                     {
-                        fprintf(f, "        %08llX    %s\n", blocks[i].addr, (*u).second.c_str());
+                        fprintf(f, "        %08llX    %s\n", z.frames[j], (*u).second.c_str());
                     }
+                    else
+                        fprintf(f, "        %08llX\n", z.frames[j]);
                 }
             }
         }
@@ -190,6 +210,17 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize)
         {
             fprintf(f, "  %4d: %08llX; %s\n", isym + 1, x.first, x.second.c_str());
             isym += 1;
+        }
+
+        fprintf(f, "Backtraces\n");
+        for (uint32 h = 0;h < dump->backtraceCount;++h)
+        {
+            uint32 hash = bt[h].hash;
+            fprintf(f, "hash = %u (%08X)\n", hash, hash);
+            for (auto ff : bt[h].frames)
+            {
+                fprintf(f, "  %08llX\n", ff);
+            }
         }
         fclose(f);
     }
