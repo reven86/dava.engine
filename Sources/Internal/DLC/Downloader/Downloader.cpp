@@ -78,7 +78,7 @@ void Downloader::ResetStatistics(uint64 sizeToDownload)
 {
     dataToDownloadLeft = sizeToDownload;
     statistics.downloadSpeedBytesPerSec = 0;
-    statistics.timeLeftSecs = 0;
+    statistics.timeLeftSecs = static_cast<uint64>(DownloadStatistics::VALUE_UNKNOWN);
 }
 
 void Downloader::CalcStatistics(uint32 dataCame)
@@ -100,7 +100,15 @@ void Downloader::CalcStatistics(uint32 dataCame)
     if (200 <= timeDelta)
     {
         statistics.downloadSpeedBytesPerSec = 1000*dataSizeCame/timeDelta;
-        statistics.timeLeftSecs = static_cast<uint64>(dataToDownloadLeft / statistics.downloadSpeedBytesPerSec);
+        if (0 < statistics.downloadSpeedBytesPerSec)
+        {
+            statistics.timeLeftSecs = static_cast<uint64>(dataToDownloadLeft / statistics.downloadSpeedBytesPerSec);
+        }
+        else
+        {
+            statistics.timeLeftSecs = static_cast<uint64>(DownloadStatistics::VALUE_UNKNOWN);
+        }
+        
         timeDelta = 0;
         dataSizeCame = 0;
     }
