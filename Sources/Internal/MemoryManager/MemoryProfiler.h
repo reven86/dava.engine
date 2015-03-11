@@ -39,14 +39,14 @@ void * operator new (size_t size, DAVA::ePredefAllocPools pool);
 void * operator new[](size_t size, DAVA::ePredefAllocPools pool);
 void operator delete(void * ptr, DAVA::ePredefAllocPools pool);
 void operator delete[](void * ptr, DAVA::ePredefAllocPools pool);
-#define MEMORY_PROFILER_REGISTER_TAG(index, name)           DAVA::MemoryManager::RegisterTagName(static_cast<int>(index), name)
+#define MEMORY_PROFILER_REGISTER_TAG(index, name)           DAVA::MemoryManager::RegisterTagName(index, name)
 #define MEMORY_PROFILER_REGISTER_ALLOC_POOL(index, name)    DAVA::MemoryManager::RegisterAllocPoolName(index, name)
 #define MEMORY_PROFILER_REGISTER_LABEL(index,name)         DAVA::MemoryManager::RegisterLabelName(index,name)
 
 
 
-#define MEMORY_PROFILER_ENTER_TAG(tag)                      DAVA::MemoryManager::Instance()->EnterTagScope(static_cast<int>(tag))
-#define MEMORY_PROFILER_LEAVE_TAG(tag)                      DAVA::MemoryManager::Instance()->LeaveTagScope(static_cast<int>(tag))
+#define MEMORY_PROFILER_ENTER_TAG(tag)                      DAVA::MemoryManager::Instance()->EnterTagScope(tag)
+#define MEMORY_PROFILER_LEAVE_TAG(tag)                      DAVA::MemoryManager::Instance()->LeaveTagScope(tag)
 
 #define MEMORY_PROFILER_CHECKPOINT(checkpoint)              DAVA::MemoryManager::Instance()->Checkpoint(checkpoint)
 
