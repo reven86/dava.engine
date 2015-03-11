@@ -61,6 +61,7 @@ public:
     DavaGLWidget *GetGLWidget() const;
 
 protected:
+    virtual bool eventFilter(QObject *object, QEvent *event);
 	virtual void closeEvent(QCloseEvent * event);
 
 private slots:
