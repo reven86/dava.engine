@@ -1,12 +1,18 @@
 #include "MemProfPlot.h"
 #include "MemProfInfoModel.h"
-#include "plotpoint.h"
 MemProfPlot::MemProfPlot(QWidget *parent )
 {
     model = nullptr;
-    point = new PlotPoint(this);
-    point->setVisible(true);
-    point->setActive(true);
+
+    horizontal = new QCPItemStraightLine(this);
+    horizontal->setAntialiased(false);
+    horizontal->setVisible(true);
+    addItem(horizontal);
+
+    vertical = new QCPItemStraightLine(this);
+    vertical->setAntialiased(false);
+    vertical->setVisible(true);
+    addItem(vertical);
 }
 
 void MemProfPlot::setModel(MemProfInfoModel * model)
@@ -33,37 +39,25 @@ MemProfPlot::~MemProfPlot()
 void MemProfPlot::mousePressEvent(QMouseEvent *event)
 {
     QCustomPlot::mousePressEvent(event);
-    if (event->button() == Qt::LeftButton && point) {
-        point->startMoving(event->localPos(),
-            event->modifiers().testFlag(Qt::ShiftModifier));
-        return;
-    }
 }
 void MemProfPlot::mouseMoveEvent(QMouseEvent *event)
 {
-    QCustomPlot::mouseMoveEvent(event);
-    if (event->buttons() == Qt::NoButton) {
-        PlotPoint *plotPoint = qobject_cast<PlotPoint*>(itemAt(event->localPos(), true));
-        if (plotPoint != point) {
-            if (point == NULL) {
-                // cursor moved from empty space to item
-                plotPoint->setActive(true);
-                setCursor(Qt::OpenHandCursor);
-            }
-            else if (plotPoint == NULL) {
-                // cursor move from item to empty space
-                point->setActive(false);
-                unsetCursor();
-            }
-            else {
-                // cursor moved from item to item
-                point->setActive(false);
-                plotPoint->setActive(true);
-            }
-            point = plotPoint;
-            replot();
-        }
+    if (!fixedRange)
+    {
+        QPointF mGripDelta;
+        mGripDelta.setX(xAxis->pixelToCoord(event->pos().x()));
+        mGripDelta.setY(yAxis->pixelToCoord(event->pos().y()));
+
+        horizontal->point1->setCoords(mGripDelta.x(), mGripDelta.y());
+        horizontal->point2->setCoords(mGripDelta.x()+1, mGripDelta.y());
+
+        vertical->point1->setCoords(mGripDelta.x(), mGripDelta.y());
+        vertical->point2->setCoords(mGripDelta.x(), mGripDelta.y() + 1);
+        replot();
     }
+
+    QCustomPlot::mouseMoveEvent(event);
+    
 }
 void MemProfPlot::mouseDoubleClickEvent(QMouseEvent *event)
 {
@@ -82,7 +76,7 @@ void MemProfPlot::mouseDoubleClickEvent(QMouseEvent *event)
 
         int x = this->xAxis->pixelToCoord(event->pos().x());
         int y = this->yAxis->pixelToCoord(event->pos().y());
-
+      
         model->showDataToClosest(x*1000.0);
     }
     fixedRange = !fixedRange;
@@ -106,6 +100,7 @@ void MemProfPlot::addStat(int stamp, const TagsStat & stat)
     graph(1)->addData(double(stamp) / 1000., (double)total / (1024. * 1024.));
     graph(0)->rescaleAxes();
     graph(1)->rescaleAxes(true);
+    
     replot();
     
     lastTimeStamp = stamp;

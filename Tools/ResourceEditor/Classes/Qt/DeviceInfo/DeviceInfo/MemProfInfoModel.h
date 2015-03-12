@@ -50,7 +50,7 @@ public:
     void setConfig(const DAVA::MMStatConfig* statConfig);
     int getCurrentTimeStamp(){ return timedData.lastKey();}
     const TagsStat getCurrentTagStat(){ return timedData.last(); }
-    void forTagStats(std::function<void(int, const TagsStat&)> onStat);
+    void forTagStats(std::function<void(size_t, const TagsStat&)> onStat);
     void showDataToClosest(size_t closest);
     void showLatestData();
 private:

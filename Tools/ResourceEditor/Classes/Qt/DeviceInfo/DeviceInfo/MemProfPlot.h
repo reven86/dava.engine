@@ -24,6 +24,8 @@ protected:
     MemProfInfoModel * model;
     size_t lastTimeStamp = 0;
     void addStat(int stamp, const TagsStat & stat);
-    PlotPoint * point;
+
+    QCPItemStraightLine *horizontal;
+    QCPItemStraightLine *vertical;
 };
 

@@ -151,7 +151,7 @@ void MemProfInfoModel::setConfig(const DAVA::MMStatConfig* statConfig)
     emit headerDataChanged(Qt::Horizontal, 0, columnCount());
     emit headerDataChanged(Qt::Vertical, 0, rowCount());
 }
-void MemProfInfoModel::forTagStats(std::function<void(int, const TagsStat&)> onStat)
+void MemProfInfoModel::forTagStats(std::function<void(size_t, const TagsStat&)> onStat)
 {
     auto it = timedData.begin();
     while (it != timedData.end())
