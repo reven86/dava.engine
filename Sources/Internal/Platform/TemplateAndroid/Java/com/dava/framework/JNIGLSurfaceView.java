@@ -28,7 +28,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	private JNIRenderer mRenderer = null;
 	// we have to add flag to distinguish second call to onResume()
 	// during Activity.onResume or Activity.onWindowsFocusChanged(focus)
-	private boolean alreadyResumed = false;
+	private volatile boolean alreadyResumed = false;
 
 	private native void nativeOnInput(int action, int source, int groupSize, ArrayList< InputRunnable.InputEvent > activeInputs, ArrayList< InputRunnable.InputEvent > allInputs);
 	private native void nativeOnKeyDown(int keyCode);

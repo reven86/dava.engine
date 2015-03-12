@@ -1,6 +1,7 @@
 package com.dava.framework;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -56,6 +57,7 @@ public class JNITextField {
     static private Handler handler = new Handler();
     static private int lastSelectedImeMode = 0;
     static private int lastSelectedInputType = 0;
+    static private final InputFilter[] emptyFilterArray = new InputFilter[0];
     
     static class UpdateTexture implements Runnable {
         int id;
@@ -79,7 +81,6 @@ public class JNITextField {
     static class TextField extends EditText
     {
         final public int id;
-        public InputFilter maxLengthFilter = null;
         boolean logicVisible = false; 
         
         volatile boolean isRenderToTexture = false;
@@ -159,6 +160,7 @@ public class JNITextField {
             // if we do not create bitmap do not recycle it
             boolean destroyBitmap = false;
             
+            buildDrawingCache();
             Bitmap bitmap = getDrawingCache(); //renderToBitmap();
             if (bitmap == null) // could be if onDraw not called yet
             {
@@ -543,7 +545,7 @@ public class JNITextField {
 
                         // Avoiding the line breaks in the single-line text
                         // fields. Line breaks should be replaced with spaces.
-                        EditText textField = GetTextField(_id);
+                        TextField textField = GetTextField(_id);
                         if (0 == (textField.getInputType() & (InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE))) {
                             SpannableStringBuilder s = new SpannableStringBuilder(
                                     source);
@@ -564,30 +566,9 @@ public class JNITextField {
 
                         String origSource = source.toString();
 
-                        TextField editText = GetTextField(_id);
-
-                        int sourceRepLen = end - start;
-                        int destRepLen = dend - dstart;
-                        int curStringLen = editText.getText().length();
-                        int newStringLen = curStringLen - destRepLen
-                                + sourceRepLen;
-
-                        if (newStringLen >= curStringLen) {
-                            if (editText != null
-                                    && editText.maxLengthFilter != null) {
-                                CharSequence res = editText.maxLengthFilter
-                                        .filter(source, start, end, dest,
-                                                dstart, dend);
-                                if (res != null && res.toString().isEmpty())
-                                    return res;
-                                if (res != null)
-                                    source = res;
-                            }
-                        }
-
                         final CharSequence sourceToProcess = source;
-                        final String text = editText.getText()
-                                .toString();
+                        final String text = textField.getText().toString();
+                        
                         FutureTask<String> t = new FutureTask<String>(
                                 new Callable<String>() {
                                     @Override
@@ -597,8 +578,7 @@ public class JNITextField {
                                         int curPos = 0;
                                         int finalStart = dstart;
                                         while (curPos < dstart) {
-                                            int codePoint = text
-                                                    .codePointAt(curPos);
+                                            int codePoint = text.codePointAt(curPos);
                                             if (codePoint > 0xFFFF) {
                                                 curPos++;
                                                 finalStart--;
@@ -608,9 +588,12 @@ public class JNITextField {
                                         byte[] retBytes = TextFieldKeyPressed(
                                                 _id, finalStart, dend - dstart,
                                                 bytes);
-                                        return new String(retBytes, "UTF-8");
+                                        String result = new String(retBytes, "UTF-8");
+                                        Log.v(TAG, "java filter: '" + result + "'");
+                                        return result;
                                     }
                                 });
+                        
                         JNIActivity.GetActivity().PostEventToGL(t);
                         try {
                             String s = t.get();
@@ -760,12 +743,23 @@ public class JNITextField {
                         try {
                             byte[] newBytes = s.toString().getBytes("UTF-8");
                             byte[] oldBytes = oldText.getBytes("UTF-8");
+                            Log.v(TAG, "java text change listener old: '"+oldText + "' new: '" + s.toString() + "'");
                             TextFieldOnTextChanged(id, newBytes, oldBytes);
+                            
+                            final Handler handler = new Handler();
+                            Runnable runnable = new Runnable(){
+                                @Override
+                                public void run() {
+                                    if(JNIActivity.GetActivity().GetIsPausing())
+                                    {
+                                        return;
+                                    }
+                                    text.updateStaticTexture();
+                                }
+                            };
+                            handler.postDelayed(runnable, 100);
                         } catch (UnsupportedEncodingException e) {
-                            Log.w(JNIConst.LOG_TAG, e.getMessage());
-                            // Send changed text event with two empty strings
-                            TextFieldOnTextChanged(id, new byte[] {},
-                                    new byte[] {});
+                            Log.e(JNIConst.LOG_TAG, e.getMessage());
                         }
                     }
                 });
@@ -816,9 +810,19 @@ public class JNITextField {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if(JNIActivity.GetActivity().GetIsPausing())
+                {
+                    return;
+                }
                 final TextField text = GetTextField(id);
+                // Workaround to resolve "double" text before TextFieldKeyPressed event
+                InputFilter[] filters = text.getFilters();
+                text.setFilters(emptyFilterArray); // disable filters
                 text.setText(string);
+                text.setFilters(filters); // enable filters
+                
                 text.updateStaticTexture();
+                Log.v(TAG, "java setText: '" + string + "'");
             }
         });
     }
@@ -828,6 +832,10 @@ public class JNITextField {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if(JNIActivity.GetActivity().GetIsPausing())
+                {
+                    return;
+                }
                 final TextField text = GetTextField(id);
                 text.setTextColor(Color.argb((int) (255 * a), (int) (255 * r),
                         (int) (255 * g), (int) (255 * b)));
@@ -840,6 +848,10 @@ public class JNITextField {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if(JNIActivity.GetActivity().GetIsPausing())
+                {
+                    return;
+                }
                 final TextField text = GetTextField(id);
                 text.setTextSize(TypedValue.COMPLEX_UNIT_PX, (int) size);
                 text.updateStaticTexture();
@@ -851,6 +863,10 @@ public class JNITextField {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if(JNIActivity.GetActivity().GetIsPausing())
+                {
+                    return;
+                }
                 final TextField text = GetTextField(id);
                 if (isPassword) {
                     text.setInputType(EditorInfo.TYPE_CLASS_TEXT
@@ -868,6 +884,10 @@ public class JNITextField {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if(JNIActivity.GetActivity().GetIsPausing())
+                {
+                    return;
+                }
                 TextField text = GetTextField(id);
                 int gravity = text.getGravity();
                 if (useRtlAlign) {
@@ -885,6 +905,10 @@ public class JNITextField {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if(JNIActivity.GetActivity().GetIsPausing())
+                {
+                    return;
+                }
                 TextField text = GetTextField(id);
                 boolean isRelative = (text.getGravity() & Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK) > 0;
 
@@ -1137,11 +1161,45 @@ public class JNITextField {
             @Override
             public void run() {
                 final TextField nativeEditText = GetTextField(id);
-                if (maxLength > 0) {
-                    nativeEditText.maxLengthFilter = new InputFilter.LengthFilter(
-                            maxLength);
-                } else {
-                    nativeEditText.maxLengthFilter = null; // not limited
+                
+                removeMaxLengthFilters(nativeEditText);
+                
+                if (maxLength > 0)
+                {
+                    InputFilter[] filters = nativeEditText.getFilters();
+                    InputFilter[] newFilters = new InputFilter[filters.length + 1];
+                    System.arraycopy(filters, 0, newFilters, 0, filters.length);
+                    newFilters[filters.length] = new InputFilter.LengthFilter(maxLength);
+                    nativeEditText.setFilters(newFilters);
+                }
+            }
+
+            private void removeMaxLengthFilters(final TextField nativeEditText) {
+                InputFilter[] filters = nativeEditText.getFilters();
+
+                boolean foundLengthFilter = false;
+                for(InputFilter f : filters)
+                {
+                    if (f instanceof InputFilter.LengthFilter)
+                    {
+                        foundLengthFilter = true;
+                        break;
+                    }
+                }
+
+                if (foundLengthFilter)
+                {
+                    ArrayList<InputFilter> newFilters = new ArrayList<InputFilter>();
+                    for(InputFilter f : filters)
+                    {
+                        if (!(f instanceof InputFilter.LengthFilter))
+                        {
+                            newFilters.add(f);
+                        }
+                    }
+                    InputFilter[] array = new InputFilter[newFilters.size()];
+                    newFilters.toArray(array);
+                    nativeEditText.setFilters(array);
                 }
             }
         });
@@ -1191,6 +1249,7 @@ public class JNITextField {
             public void run() {
                 for (TextField textField : textFields.values()) {
                     textField.restoreVisibility();
+                    textField.updateStaticTexture();
                 }
             }
         });
@@ -1200,6 +1259,10 @@ public class JNITextField {
         JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if(JNIActivity.GetActivity().GetIsPausing())
+                {
+                    return;
+                }
                 final TextField text = GetTextField(id);
                 text.setRenderToTexture(value);
             }

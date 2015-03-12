@@ -149,7 +149,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] isFirstRun is " + isFirstRun); 
         nativeOnCreate(isFirstRun);
-        
+
         JNITextField.RelinkNativeControls();
         JNIWebView.RelinkNativeControls();
         
@@ -277,6 +277,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] start");
         // recreate eglContext (also eglSurface, eglScreen) should be first
         super.onResume();
+        // This(next) comment obsolete but still needed for me
         // The activity has become visible (it is now "resumed").
         // glView on resume should be called in Activity.onResume!!!
         // if context exist call glView.onResume as soon as possible
@@ -284,7 +285,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // windowsFocusChanded(has_focus)
         // it is HACK to speedup show splash first and later create gl
         // resources such textures, shaders etc.
-        if (!isEglContextDestroyed())
+        // test it if (!isEglContextDestroyed())
         {
             glView.onResume();
         }
@@ -370,8 +371,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			
 			// glView on resume should be called in Activity.onResume!!!
 			// but then game crush in PushNotificationBridgeImplAndroid.cpp(15);
+			// test it glView.onResume();
+			// now I remove hand made MeasureLayout and glView.onResume()
+			// should work. need heavy testing on lock/unlock
 	        Log.i(JNIConst.LOG_TAG, "[Activity::onResume] call glView.onResume");
-	        glView.onResume();
     	} else {
     		JNITextField.DestroyKeyboardLayout(getWindowManager());
     	}
