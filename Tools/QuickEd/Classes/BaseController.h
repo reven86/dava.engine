@@ -50,7 +50,7 @@ private:
     QUndoGroup undoGroup;
     Project project;
 
-//properties
+    //properties. must be at the end of file. Properties interface declared at the begin of the class
 public:
     int Count() const;
     int CurrentIndex() const;
