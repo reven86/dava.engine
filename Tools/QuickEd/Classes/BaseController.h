@@ -17,7 +17,7 @@ class BaseController : public QObject
 public:
     explicit BaseController(QObject *parent = nullptr);
     ~BaseController();
-    void start();
+    void Start();
 
 protected slots:
     void OnCleanChanged(bool clean);

@@ -39,7 +39,7 @@ BaseController::~BaseController()
 
 }
 
-void BaseController::start()
+void BaseController::Start()
 {
     mainWindow.show();
 }
