@@ -273,9 +273,9 @@ protected:
 
     Map<String,Vector<UIListCell*>*> cellStore;
 public:
-//    INTROSPECTION_EXTEND(UIList, UIControl,
-//        PROPERTY("orientation",  InspDesc("List orientation", GlobalEnumMap<UIList::eListOrientation>::Instance()), GetOrientation, SetOrientation, I_SAVE | I_VIEW | I_EDIT)
-//        );
+    INTROSPECTION_EXTEND(UIList, UIControl,
+        PROPERTY("orientation",  InspDesc("List orientation", GlobalEnumMap<UIList::eListOrientation>::Instance()), GetOrientation, SetOrientation, I_SAVE | I_VIEW | I_EDIT)
+        );
 };
 };
 #endif
