@@ -85,6 +85,23 @@ vec3 FresnelShlickVec3(float NdotL, vec3 Cspec)
 }
 #endif
 
+//#define ENABLE_GAMMA_CORRECTION
+
+#if defined(ENABLE_GAMMA_CORRECTION)
+
+    #if defined(TRUE_GAMMA_CORRECTION)
+        #define SRGB_TO_LINEAR(x) pow(x.rgb, vec3(2.2))
+        #define LINEAR_TO_SRGB(x) pow(x.rgb, vec3(1.0 / 2.2))
+    #else
+        #define SRGB_TO_LINEAR(x) pow(x.rgb * x.rgb)
+        #define LINEAR_TO_SRGB(x) pow(sqrt(x.rgb))
+    #endif
+
+#else
+#define SRGB_TO_LINEAR(x) x
+#define LINEAR_TO_SRGB(x) x
+#endif
+
 
 #ifdef EDITOR_CURSOR
 varying vec2 varTexCoordCursor;
@@ -104,6 +121,7 @@ void main()
     lowp vec4 lightMask = texture2D(colorTexture, varTexCoordOrig);
 
     lowp vec3 color = (color0.r*mask.r*tileColor0 + color0.g*mask.g*tileColor1 + color0.b*mask.b*tileColor2 + color0.a*mask.a*tileColor3) * lightMask.rgb * 2.0;
+    color = SRGB_TO_LINEAR(color);
 #else
 	lowp vec3 color = texture2D(fullTiledTexture, varTexCoordOrig).rgb;
 #endif
@@ -218,8 +236,11 @@ void main()
 #endif // PIXEL_LIT
 
 #if defined(VERTEX_FOG)
-    gl_FragColor = vec4(mix(color, varFogColor, varFogAmoung), 1.0);
+    color = mix(color, varFogColor, varFogAmoung);
+    color = LINEAR_TO_SRGB(color);
+    gl_FragColor = vec4(color, 1.0);
 #else
+    color = LINEAR_TO_SRGB(color);
     gl_FragColor = vec4(color, 1.0);
 #endif
     //gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
