@@ -123,7 +123,7 @@ bool DumpViewWidget::LoadDump(const DAVA::Vector<uint8>& v)
     {
         uint32 hash = bt[i].hash;
         auto g = traceMap.emplace(std::make_pair(hash, bt[i]));
-        Q_ASSERT(g.second == true);
+        //Q_ASSERT(g.second == true);
     }
     return true;
 }

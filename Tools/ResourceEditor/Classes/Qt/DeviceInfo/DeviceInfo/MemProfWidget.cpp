@@ -39,10 +39,14 @@ MemProfWidget::MemProfWidget(QWidget *parent)
     ui->setupUi(this);
 
     toolbar = new QToolBar;
-    QAction* actionDump = toolbar->addAction("Memory dump");
-    connect(actionDump, SIGNAL(triggered()), this, SIGNAL(OnDumpButton()));
-    QAction* actionViewDump = toolbar->addAction("View last memory dump");
-    connect(actionViewDump, SIGNAL(triggered()), this, SIGNAL(OnViewDumpButton()));
+    {
+        QAction* actionDump = toolbar->addAction("Memory dump");
+        connect(actionDump, SIGNAL(triggered()), this, SIGNAL(OnDumpButton()));
+        QAction* actionViewDump = toolbar->addAction("View last memory dump");
+        connect(actionViewDump, SIGNAL(triggered()), this, SIGNAL(OnViewDumpButton()));
+        QAction* actionViewFileDump = toolbar->addAction("View dump from file");
+        connect(actionViewFileDump, SIGNAL(triggered()), this, SIGNAL(OnViewFileDumpButton()));
+    }
     ui->verticalLayout_2->insertWidget(0, toolbar);
     
     plot = ui->plot;

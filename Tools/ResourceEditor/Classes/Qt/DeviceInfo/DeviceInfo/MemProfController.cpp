@@ -1,4 +1,5 @@
 #include <QMessageBox>
+#include <QFileDialog>
 
 #include <unordered_map>
 
@@ -37,11 +38,19 @@ void MemProfController::OnViewDump()
 {
     if (!dumpData.empty())
     {
-        //if (nullptr == viewDump)
-        {
-            //DumpViewWidget* w = new DumpViewWidget(dumpData, parentWidget);
-        }
         DumpViewWidget* w = new DumpViewWidget(dumpData, parentWidget, Qt::Window);
+        w->resize(640, 480);
+        w->show();
+    }
+}
+
+void MemProfController::OnViewFileDump()
+{
+    QString filename = QFileDialog::getOpenFileName(parentWidget, "Select dump file", "d:\\temp\\dumps\\4");
+    if (!filename.isEmpty())
+    {
+        std::string s = filename.toStdString();
+        DumpViewWidget* w = new DumpViewWidget(s.c_str(), parentWidget, Qt::Window);
         w->resize(640, 480);
         w->show();
     }
@@ -62,6 +71,7 @@ void MemProfController::ShowView()
 
         connect(view, SIGNAL(OnDumpButton()), this, SLOT(OnDumpPressed()));
         connect(view, SIGNAL(OnViewDumpButton()), this, SLOT(OnViewDump()));
+        connect(view, SIGNAL(OnViewFileDumpButton()), this, SLOT(OnViewFileDump()));
         connect(this, &QObject::destroyed, view, &QObject::deleteLater);
     }
     view->showNormal();
@@ -169,6 +179,7 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize, Ve
         }
     }
     Snprintf(fname, COUNT_OF(fname), "%sdump_%d.log", fp.GetAbsolutePathname().c_str(), dumpIndex);
+    dumpIndex += 1;
     FILE* f = fopen(fname, "wb");
     if (f)
     {
