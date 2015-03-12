@@ -26,23 +26,28 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
-#include "WebViewControlWin32.h"
-#include "CorePlatformWin32.h"
-using namespace DAVA;
+// WARN first include win32 headers'ATL::CCRTAllocator::free' : 
+// recursive on all control paths, function will cause runtime stack overflow
+// and only then include DAVA includes because of free, malloc redefine error
 
 #pragma warning(push)
-#pragma warning(disable: 4717) //'ATL::CCRTAllocator::free' : recursive on all control paths, function will cause runtime stack overflow
+#pragma warning(disable: 4717)
 #include <atlbase.h>
 #pragma warning(pop)
 #include <atlcom.h>
+#include <atlstr.h>
 #include <ExDisp.h>
 #include <ExDispid.h>
 #include "Utils/Utils.h"
 
 #include <ObjIdl.h>
 #include <Shlwapi.h>
+
+#include "WebViewControlWin32.h"
+#include "CorePlatformWin32.h"
+#include "Render/Image/ImageConvert.h"
+
+using namespace DAVA;
 
 extern _ATL_FUNC_INFO BeforeNavigate2Info;
 _ATL_FUNC_INFO BeforeNavigate2Info = {CC_STDCALL, VT_EMPTY, 7, {VT_DISPATCH,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_BOOL}};
@@ -245,32 +250,41 @@ struct EventSink : public IDispEventImpl<1, EventSink, &DIID_DWebBrowserEvents2>
 private:
 	IUIWebViewDelegate* delegate;
 	UIWebView* webView;
-    WebBrowserContainer* container;
+    WebBrowserContainer& container;
 public:
-	EventSink()
+    EventSink(WebBrowserContainer& webContainer) :
+        delegate(nullptr),
+        webView(nullptr),
+        container(webContainer)
 	{
-		delegate = NULL;
-		webView = NULL;
-		container = NULL;
 	};
+    virtual ~EventSink(){};
 
-	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView, WebBrowserContainer* container)
+	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView)
 	{
-		if (delegate && webView && container)
+		if (delegate && webView)
 		{
 			this->delegate = delegate;
 			this->webView = webView;
-            this->container = container;
 		}
 	}
+    void SetWebView(UIWebView& webView)
+    {
+        this->webView = &webView;
+    }
 
 	void  __stdcall DocumentComplete(IDispatch* pDisp, VARIANT* URL)
 	{
 		if (delegate && webView)
 		{
-            if (!container->DoOpenBuffer())
+            if (!container.DoOpenBuffer())
                 delegate->PageLoaded(webView);
 		}
+
+        if (webView && webView->IsRenderToTexture())
+        {
+            container.RenderToTextureAndSetAsBackgroundSpriteToControl(*webView);
+        }
 	}
 
 	void __stdcall BeforeNavigate2(IDispatch* pDisp, VARIANT* URL, VARIANT* Flags,
@@ -323,33 +337,123 @@ public:
 
 WebBrowserContainer::WebBrowserContainer() :
 	hwnd(0),
-	webBrowser(NULL),
+	webBrowser(nullptr),
+    sink(nullptr),
     openFromBufferQueued(false)
 {
 }
 
 WebBrowserContainer::~WebBrowserContainer()
 {
-	EventSink* s = (EventSink*)sink;
-	s->DispEventUnadvise(webBrowser, &DIID_DWebBrowserEvents2);
-	delete s;
+    DVASSERT(sink);
+	sink->DispEventUnadvise(webBrowser, &DIID_DWebBrowserEvents2);
+	delete sink;
 
-	if (webBrowser)
-	{
-		webBrowser->Release();
-		webBrowser = NULL;
-	}
+    SafeRelease(webBrowser);
 }
 
-void WebBrowserContainer::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView)
+void WebBrowserContainer::SetDelegate(IUIWebViewDelegate *delegate, 
+    UIWebView* webView)
 {
-	EventSink* s = (EventSink*)sink;
-	s->SetDelegate(delegate, webView, this);
+    DVASSERT(sink);
+	sink->SetDelegate(delegate, webView);
 }
 
-bool WebBrowserContainer::Initialize(HWND parentWindow)
+void WebBrowserContainer::RenderToTextureAndSetAsBackgroundSpriteToControl(
+    UIWebView& control)
 {
-	this->hwnd = parentWindow;
+    // Update the browser window according to the holder window.
+    RECT rect = { 0 };
+    GetClientRect(this->hwnd, &rect);
+
+    int32 imageWidth = static_cast<int32>(rect.right);
+    int32 imageHeight = static_cast<int32>(rect.bottom);
+
+    CComPtr<IDispatch> pDispatch;
+
+    // If the document object type is not safe for scripting,
+    // this method returns successfully but sets ppDisp to NULL. For
+    // Internet Explorer 7 and later, the return code is S_FALSE..."
+    HRESULT hr = webBrowser->get_Document(&pDispatch);
+    if (FAILED(hr))
+    {
+        Logger::Error("can't get web browser ole document");
+        return;
+    }
+
+    if (S_FALSE == hr)
+    {
+        return; // document not ready still
+    }
+
+    CComPtr<IHTMLDocument3> spDocument3;
+    hr = pDispatch->QueryInterface(IID_IHTMLDocument3, 
+        reinterpret_cast<void**>(&spDocument3));
+    if (FAILED(hr))
+    {
+        Logger::Error("failed get ole IHTMLDocument3 interface");
+        return;
+    }
+
+    CComPtr<IViewObject2> spViewObject;
+
+    // This used to get the interface from the m_pWebBrowser but that seems
+    // to be an undocumented feature, so we get it from the Document instead.
+    hr = spDocument3->QueryInterface(IID_IViewObject2, 
+        reinterpret_cast<void**>(&spViewObject));
+    if (FAILED(hr))
+    {
+        Logger::Error("failed get ole IViewObject2 interface");
+        return;
+    }
+
+    RECTL rcBounds = { 0, 0, imageWidth, imageHeight };
+    CImage image;
+
+    {
+        image.Create(imageWidth, imageHeight, 24);
+
+        HDC imgDc = image.GetDC();
+        hr = spViewObject->Draw(DVASPECT_CONTENT, -1, nullptr, nullptr, imgDc,
+            imgDc, &rcBounds, nullptr, nullptr, 0);
+        image.ReleaseDC();
+
+        DVASSERT(image.GetPitch() < 0);
+        DVASSERT(image.GetPitch() * -1 == imageWidth * 3); // RGB
+
+        uint8* rawData = reinterpret_cast<uint8*>(
+            image.GetPixelAddress(0, imageHeight - 1));
+        {
+            Image* imageBGR = Image::CreateFromData(imageWidth, imageHeight,
+                FORMAT_BGR888, rawData);
+            DVASSERT(imageBGR);
+            {
+                Image* imageRGB = Image::Create(imageWidth, imageHeight,
+                    FORMAT_RGB888);
+                DVASSERT(imageRGB);
+
+                ImageConvert::ConvertImageDirect(imageBGR, imageRGB);
+                {
+                    Sprite* spr = Sprite::CreateFromImage(imageRGB);
+
+                    control.SetSprite(spr, 0);
+                    SafeRelease(spr);
+                }
+                // CImage in BMP format so we need to flip image
+                control.GetBackground()->SetModification(ESM_VFLIP);
+
+                SafeRelease(imageRGB);
+            }
+            SafeRelease(imageBGR);
+        }
+
+        image.Destroy();
+    }
+}
+
+bool WebBrowserContainer::Initialize(HWND parentWindow, UIWebView& control)
+{
+	hwnd = parentWindow;
 
 	IOleObject* oleObject = NULL;
 	HRESULT hRes = CoCreateInstance(CLSID_WebBrowser, NULL, CLSCTX_INPROC, IID_IOleObject, (void**)&oleObject);
@@ -370,7 +474,7 @@ bool WebBrowserContainer::Initialize(HWND parentWindow)
 	// Activating the container.
 	RECT rect = {0};
 	GetClientRect(hwnd, &rect);
-	hRes = oleObject->DoVerb(OLEIVERB_INPLACEACTIVATE, NULL, this, 0, this->hwnd, &rect);
+	hRes = oleObject->DoVerb(OLEIVERB_INPLACEACTIVATE, NULL, this, 0, hwnd, &rect);
 	if (FAILED(hRes))
 	{
 		Logger::Error("WebBrowserContainer::InititalizeBrowserContainer(), IOleObject::DoVerb() failed!, error code %i", hRes);
@@ -379,7 +483,7 @@ bool WebBrowserContainer::Initialize(HWND parentWindow)
 	}
 
 	// Prepare the browser itself.
-	hRes = oleObject->QueryInterface(IID_IWebBrowser2, (void**)&this->webBrowser);
+	hRes = oleObject->QueryInterface(IID_IWebBrowser2, (void**)&webBrowser);
 	if (FAILED(hRes))
 	{
 		Logger::Error("WebViewControl::InititalizeBrowserContainer(), IOleObject::QueryInterface(IID_IWebBrowser2) failed!, error code %i", hRes);
@@ -387,9 +491,10 @@ bool WebBrowserContainer::Initialize(HWND parentWindow)
 		return false;
 	}
 
-	sink = new EventSink();
-	EventSink* s = (EventSink*)sink;
-	hRes = s->DispEventAdvise(webBrowser, &DIID_DWebBrowserEvents2);
+    DVASSERT(nullptr == sink);
+	sink = new EventSink(*this);
+    sink->SetWebView(control);
+	hRes = sink->DispEventAdvise(webBrowser, &DIID_DWebBrowserEvents2);
 	if (FAILED(hRes))
 	{
 		Logger::Error("WebViewControl::InititalizeBrowserContainer(), EventSink::DispEventAdvise(&DIID_DWebBrowserEvents2) failed!, error code %i", hRes);
@@ -477,69 +582,66 @@ bool WebBrowserContainer::OpenUrl(const WCHAR* urlToOpen)
 
 bool WebBrowserContainer::LoadHtmlString(LPCTSTR pszHTMLContent)
 {
+    bool bResult = false;
+
 	if (!webBrowser || !pszHTMLContent)
 	{
 		return false;
 	}
 	// Initialize html document
-	webBrowser->Navigate( L"about:blank", NULL, NULL, NULL, NULL); 
+	webBrowser->Navigate(L"about:blank", nullptr, nullptr, nullptr, nullptr);
 
-	IDispatch * m_pDoc;
-	IStream * pStream = NULL;
-	IPersistStreamInit * pPSI = NULL;
-	HGLOBAL hHTMLContent;
-	HRESULT hr;
-	bool bResult = false;
-
+    size_t len = ::_tcslen(pszHTMLContent) + 1;
 	// allocate global memory to copy the HTML content to
-	hHTMLContent = ::GlobalAlloc( GPTR, ( ::_tcslen( pszHTMLContent ) + 1 ) * sizeof(TCHAR) );
-	if (!hHTMLContent)
-		return false;
+    HGLOBAL hHTMLContent = ::GlobalAlloc(GPTR, len * sizeof(TCHAR));
+    if (!hHTMLContent)
+    {
+        return false;
+    }
+	::_tcscpy( static_cast<TCHAR *>(hHTMLContent), pszHTMLContent );
 
-	::_tcscpy( (TCHAR *) hHTMLContent, pszHTMLContent );
-
+    CComPtr<IStream> pMemoryStream;
 	// create a stream object based on the HTML content
-	hr = ::CreateStreamOnHGlobal( hHTMLContent, TRUE, &pStream );
+    HRESULT hr = ::CreateStreamOnHGlobal(hHTMLContent, 
+        FALSE, // delete global memory on release 
+        &pMemoryStream);
+
 	if (SUCCEEDED(hr))
 	{
 
-		IDispatch * pDisp = NULL;
+        {
+            CComPtr<IDispatch> pWebDocument;
 
-		// get the document's IDispatch*
-		hr = this->webBrowser->get_Document( &pDisp );
-		if (SUCCEEDED(hr))
-		{
-			m_pDoc = pDisp;
-		}
-		else
-		{
-			return false;
-		}
+            // get the document's IDispatch*
+            hr = webBrowser->get_Document(&pWebDocument);
+            if (FAILED(hr))
+            {
+                return false;
+            }
 
-		// request the IPersistStreamInit interface
-		hr = m_pDoc->QueryInterface( IID_IPersistStreamInit, (void **) &pPSI );
+            CComPtr<IPersistStreamInit> pDocumentStream;
+            // request the IPersistStreamInit interface
+            hr = pWebDocument->QueryInterface(IID_IPersistStreamInit,
+                reinterpret_cast<void **>(&pDocumentStream));
 
-		if (SUCCEEDED(hr))
-		{
-			// initialize the persist stream object
-			hr = pPSI->InitNew();
+            if (SUCCEEDED(hr))
+            {
+                // initialize the persist stream object
+                hr = pDocumentStream->InitNew();
 
-			if (SUCCEEDED(hr))
-			{
-				// load the data into it
-				hr = pPSI->Load( pStream );
+                if (SUCCEEDED(hr))
+                {
+                    // load the data into it
+                    hr = pDocumentStream->Load(pMemoryStream);
 
-				if (SUCCEEDED(hr))
-				{
-					bResult = true;
-				}
-			}
-
-			pPSI->Release();
-		}
-
-		// implicitly calls ::GlobalFree to free the global memory
-		pStream->Release();
+                    if (SUCCEEDED(hr))
+                    {
+                        bResult = true;
+                    }
+                }
+            }
+        }
+        GlobalFree(hHTMLContent);
 	}
 
 	return bResult;
@@ -552,7 +654,7 @@ String WebBrowserContainer::GetCookie(const String& targetUrl, const String& nam
 		return String();
 	}
 
-	LPTSTR lpszData = NULL;   // buffer to hold the cookie data
+	LPTSTR lpszData = nullptr;   // buffer to hold the cookie data
 	DWORD dwSize = 4096; // Initial size of buffer		
 	String retCookie;
 
@@ -583,7 +685,7 @@ Map<String, String> WebBrowserContainer::GetCookies(const String& targetUrl)
 		return Map<String, String>();
 	}
 
-	LPTSTR lpszData = NULL;   // buffer to hold the cookie data
+	LPTSTR lpszData = nullptr;   // buffer to hold the cookie data
 	DWORD dwSize = 4096; // Initial size of buffer
 	Map<String, String> cookiesMap;
 
@@ -627,7 +729,7 @@ bool WebBrowserContainer::GetInternetCookies(const String& targetUrl, const Stri
 											&dwSize,
 											INTERNET_COOKIE_HTTPONLY,
 											NULL);
-	// Encrease buffer if its size is not enough
+	// increase buffer if its size is not enough
 	if (!bResult && (GetLastError() == ERROR_INSUFFICIENT_BUFFER))
 	{
 		delete [] lpszData;
@@ -691,7 +793,7 @@ bool WebBrowserContainer::DeleteCookies(const String& targetUrl)
 	// clean up		
 	delete [] cacheEntry; 
 	FindCloseUrlCache(cacheEnumHandle);  
-	// Syncronize cookies storage
+	// Synchronize cookies storage
 	InternetSetOption(0, INTERNET_OPTION_END_BROWSER_SESSION, 0, 0); 
     
 	return bResult;
@@ -813,7 +915,7 @@ bool WebBrowserContainer::OpenFromBuffer(const String& buffer, const FilePath& b
 
 void WebBrowserContainer::UpdateRect()
 {
-	IOleInPlaceObject* oleInPlaceObject = NULL;
+	IOleInPlaceObject* oleInPlaceObject = nullptr;
 	HRESULT hRes = webBrowser->QueryInterface(IID_IOleInPlaceObject, (void**)&oleInPlaceObject);
 	if (FAILED(hRes))
 	{
@@ -835,20 +937,29 @@ void WebBrowserContainer::UpdateRect()
 	oleInPlaceObject->Release();
 }
 
-WebViewControl::WebViewControl()
+WebViewControl::WebViewControl(UIWebView& webView) :
+    browserWindow(0),
+    browserContainer(0),
+    uiWebView(webView),
+    gdiplusToken(0),
+    browserRect(),
+    renderToTexture(false),
+    isVisible(false)
 {
-	browserWindow = 0;
-	browserContainer = NULL;
+    // Initialize GDI+.
+    Gdiplus::Status status = Gdiplus::GdiplusStartup(&gdiplusToken, 
+        &gdiplusStartupInput, nullptr);
+
+    if (status != Gdiplus::Ok)
+    {
+        Logger::Error("Error initialize GDI+ %s(%d)", __FILE__, __LINE__);
+    }
 }
 
 WebViewControl::~WebViewControl()
 {
-	if (browserWindow != 0)
-	{
-		::DestroyWindow(browserWindow);
-	}
+    CleanData();
 
-	SafeDelete(browserContainer);
 }
 
 void WebViewControl::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView)
@@ -856,14 +967,47 @@ void WebViewControl::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webVie
 	browserContainer->SetDelegate(delegate, webView);
 }
 
+void WebViewControl::SetRenderToTexture(bool value)
+{
+    renderToTexture = value;
+    if (renderToTexture)
+    {
+        if (browserWindow != 0)
+        {
+            browserContainer->RenderToTextureAndSetAsBackgroundSpriteToControl(
+                uiWebView);
+
+            // hide window but not change visibility state
+            ::ShowWindow(browserWindow, SW_HIDE);
+        }
+    } else
+    {
+        // restore visibility on native control
+        if (isVisible)
+        {
+            // remove sprite from UIControl and show native window
+            uiWebView.SetSprite(nullptr, 0);
+
+            ::ShowWindow(browserWindow, SW_SHOW);
+        }
+    }
+}
+
 void WebViewControl::Initialize(const Rect& rect)
 {
 	CoreWin32PlatformBase *core = static_cast<CoreWin32PlatformBase *>(Core::Instance());
 	DVASSERT(core);
 
+    int32 isVisibleStyle = (renderToTexture) ? WS_VISIBLE : 0;
+
 	// Create the browser holder window.
-	browserWindow = ::CreateWindowEx(0, L"Static", L"", WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN,
-		0, 0, 0, 0, core->GetWindow(), NULL, core->GetInstance(), NULL);
+	browserWindow = ::CreateWindowEx(0, L"Static", L"", 
+        WS_CHILD 
+        | isVisibleStyle
+        | WS_CLIPCHILDREN, // Excludes the area occupied by child windows when drawing occurs within the parent window. This style is used when creating the parent window.
+		0, 0, static_cast<int>(rect.dx), static_cast<int>(rect.dy), 
+        core->GetWindow(), nullptr, core->GetInstance(), nullptr);
+
 	SetRect(rect);
 
 	// Initialize the browser itself.
@@ -872,15 +1016,15 @@ void WebViewControl::Initialize(const Rect& rect)
 
 bool WebViewControl::InititalizeBrowserContainer()
 {
-	HRESULT hRes = ::CoInitialize(NULL);
+	HRESULT hRes = ::CoInitialize(nullptr);
 	if (FAILED(hRes))
 	{
 		Logger::Error("WebViewControl::InititalizeBrowserContainer(), CoInitialize() failed!");
 		return false;
 	}
 
-	browserContainer= new WebBrowserContainer();
-	return browserContainer->Initialize(this->browserWindow);
+	this->browserContainer= new WebBrowserContainer();
+	return browserContainer->Initialize(browserWindow, uiWebView);
 }
 
 void WebViewControl::OpenURL(const String& urlToOpen)
@@ -893,10 +1037,23 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 
 void WebViewControl::LoadHtmlString(const WideString& htmlString)
 {
-	if (browserContainer)
-	{
-		browserContainer->LoadHtmlString(htmlString.c_str());
-	}
+    // On Windows we have to recreate browser container to change
+    // document content with custom html from memory
+    // http://msdn.microsoft.com/en-us/library/ie/aa752047%28v=vs.85%29.aspx
+
+    Rect r = uiWebView.GetRect(true);
+
+    // destroy browser window
+    CleanData();
+
+    // create new browser window
+    Initialize(r);
+
+    DVASSERT(browserContainer);
+	browserContainer->LoadHtmlString(htmlString.c_str());
+	
+    // render new content into texture or show native window
+    SetRenderToTexture(IsRenderToTexture());
 }
 
 void WebViewControl::DeleteCookies(const String& targetUrl)
@@ -927,13 +1084,12 @@ Map<String, String> WebViewControl::GetCookies(const String& targetUrl) const
 	return Map<String, String>();
 }
 
-int32 WebViewControl::ExecuteJScript(const String& targetScript)
+void WebViewControl::ExecuteJScript(const String& targetScript)
 {
 	if (browserContainer)
 	{
-		return browserContainer->ExecuteJScript(targetScript);
+		browserContainer->ExecuteJScript(targetScript);
 	}
-	return 0;
 }
 
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
@@ -946,10 +1102,15 @@ void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePa
 
 void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
 {
-	if (browserWindow != 0)
-	{
-		::ShowWindow(browserWindow, isVisible);
-	}
+    this->isVisible = isVisible;
+
+    if (!renderToTexture)
+    {
+        if (browserWindow != 0)
+        {
+            ::ShowWindow(browserWindow, isVisible);
+        }
+    }
 }
 
 void WebViewControl::SetRect(const Rect& rect)
@@ -959,21 +1120,29 @@ void WebViewControl::SetRect(const Rect& rect)
 		return;
 	}
 
-	RECT browserRect = {0};
-	::GetWindowRect(browserWindow, &browserRect);
+	RECT browserRectTmp = {0};
+	::GetWindowRect(browserWindow, &browserRectTmp);
 
-    Rect convertedRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
+    VirtualCoordinatesSystem& coordSys = *VirtualCoordinatesSystem::Instance();
 
-    browserRect.left = (LONG)(convertedRect.x);
-    browserRect.top = (LONG)(convertedRect.y);
-    browserRect.right = (LONG)(browserRect.left + convertedRect.dx);
-    browserRect.bottom = (LONG)(browserRect.top + convertedRect.dy);
+    Rect convertedRect = coordSys.ConvertVirtualToPhysical(rect);
 
-	browserRect.left  += (LONG)VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
-    browserRect.top += (LONG)VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
+    browserRectTmp.left = static_cast<LONG>(convertedRect.x);
+    browserRectTmp.top = static_cast<LONG>(convertedRect.y);
+    browserRectTmp.right = static_cast<LONG>(browserRectTmp.left + convertedRect.dx);
+    browserRectTmp.bottom = static_cast<LONG>(browserRectTmp.top + convertedRect.dy);
 
-	::SetWindowPos(browserWindow, NULL, browserRect.left, browserRect.top,
-		browserRect.right - browserRect.left, browserRect.bottom - browserRect.top, SWP_NOZORDER );
+    browserRectTmp.left += static_cast<LONG>(coordSys.GetPhysicalDrawOffset().x);
+    browserRectTmp.top += static_cast<LONG>(coordSys.GetPhysicalDrawOffset().y);
+
+    browserRect = browserRectTmp;
+
+    if (!IsRenderToTexture())
+    {
+        ::SetWindowPos(browserWindow, nullptr, browserRect.left,
+            browserRect.top, browserRect.right - browserRect.left,
+            browserRect.bottom - browserRect.top, SWP_NOZORDER);
+    }
 
 	if (browserContainer)
 	{
@@ -981,4 +1150,18 @@ void WebViewControl::SetRect(const Rect& rect)
 	}
 }
 
+void WebViewControl::CleanData()
+{
+    Gdiplus::GdiplusShutdown(gdiplusToken);
+    gdiplusToken = 0;
+
+    if (browserWindow != 0)
+    {
+        ::DestroyWindow(browserWindow);
+        browserWindow = 0;
+    }
+
+    SafeDelete(browserContainer);
 }
+
+} // end namespace DAVA

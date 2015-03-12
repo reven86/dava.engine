@@ -452,7 +452,7 @@ void PolygonGroup::ReleaseData()
 void PolygonGroup::BuildBuffers()
 {
     UpdateDataPointersAndStreams();
-	JobManager::Instance()->CreateMainJob(MakeFunction(this, &PolygonGroup::BuildBuffersInternal));
+	JobManager::Instance()->CreateMainJob(MakeFunction(PointerWrapper<PolygonGroup>::WrapRetainRelease(this), &PolygonGroup::BuildBuffersInternal));
 };
     
 void PolygonGroup::BuildBuffersInternal()
@@ -662,7 +662,7 @@ bool PolygonGroup::IsFloatDataEqual(const float32 ** meshData, const float32 ** 
 	
 int32 PolygonGroup::OptimazeVertexes(const uint8 * meshData, Vector<uint8> & optMeshData, uint32 vertexFormat) const
 {
-	uint32 optimizedVertexCount = optMeshData.size() / GetVertexSize(vertexFormat);
+	uint32 optimizedVertexCount = static_cast<uint32>(optMeshData.size() / GetVertexSize(vertexFormat));
 
 	for (uint32 i = 0; i < optimizedVertexCount; ++i)
 	{
@@ -721,7 +721,7 @@ void PolygonGroup::OptimizeVertices(uint32 newVertexFormat, float32 eplison)
 		}
 	}
 
-	uint32 newVertexCount = optMeshData.size() / GetVertexSize(newVertexFormat);
+	uint32 newVertexCount = static_cast<uint32>(optMeshData.size() / GetVertexSize(newVertexFormat));
 	
 	SAFE_DELETE_ARRAY(meshData);
 	SAFE_DELETE_ARRAY(newMeshData);

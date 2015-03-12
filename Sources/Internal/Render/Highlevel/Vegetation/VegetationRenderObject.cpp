@@ -276,7 +276,7 @@ void VegetationRenderObject::Save(KeyedArchive *archive, SerializationContext *s
     archive->SetVector4("vro.layersAnimationSpring", GetLayersAnimationSpring());
     archive->SetVector4("vro.layersAnimationDrug", GetLayerAnimationDragCoefficient());
     
-    uint32 bitCount = densityMap.size();
+    uint32 bitCount = static_cast<uint32>(densityMap.size());
     archive->SetUInt32("vro.flippedDensityBitCount", bitCount);
     for(uint32 i = 0; i < bitCount; ++i)
     {
@@ -404,7 +404,7 @@ void VegetationRenderObject::Load(KeyedArchive *archive, SerializationContext *s
         if(densityBits.size() == 0)
         {
             densityBits.resize(DENSITY_MAP_SIZE * DENSITY_MAP_SIZE);
-            uint32 bitCount = densityBits.size();
+            uint32 bitCount = static_cast<uint32>(densityBits.size());
             for(size_t bitIndex = 0; bitIndex < bitCount; ++bitIndex)
             {
                 densityBits[bitIndex] = true;
@@ -571,7 +571,7 @@ void VegetationRenderObject::PrepareToRenderSingleMaterial(Camera *camera)
     else if(visibleCellCount < renderBatchCount)
     {
         size_t batchDelta = renderBatchCount - visibleCellCount;
-        renderBatchPool.Return(renderDataObj->GetMaterial(), batchDelta);
+        renderBatchPool.Return(renderDataObj->GetMaterial(), static_cast<uint32>(batchDelta));
         
         while(batchDelta > 0)
         {
@@ -595,7 +595,7 @@ void VegetationRenderObject::PrepareToRenderSingleMaterial(Camera *camera)
     {
         AbstractQuadTreeNode<VegetationSpatialData>* treeNode = visibleCells[cellIndex];
         
-        RenderBatch* rb = GetRenderBatch(cellIndex);
+        RenderBatch* rb = GetRenderBatch(static_cast<uint32>(cellIndex));
         NMaterial* mat = rb->GetMaterial();
         
         uint32 resolutionIndex = MapCellSquareToResolutionIndex(treeNode->data.width * treeNode->data.height);
@@ -1021,7 +1021,7 @@ void VegetationRenderObject::GetDataNodes(Set<DataNode*> & dataNodes)
         size_t layerCount = customGeometryData->GetLayerCount();
         for(size_t i = 0; i < layerCount; ++i)
         {
-            dataNodes.insert(customGeometryData->GetMaterial(i));
+            dataNodes.insert(customGeometryData->GetMaterial(static_cast<uint32>(i)));
         }
     }
 }
@@ -1174,7 +1174,7 @@ size_t VegetationRenderObject::SelectDirectionIndex(const Vector3& cameraDirecti
 
 void VegetationRenderObject::DebugDrawVisibleNodes()
 {
-    uint32 requestedBatchCount = Min(visibleCells.size(), (size_t)maxVisibleQuads);
+    uint32 requestedBatchCount = static_cast<uint32>(Min(visibleCells.size(), (size_t)maxVisibleQuads));
     for(uint32 i = 0; i < requestedBatchCount; ++i)
     {
         AbstractQuadTreeNode<VegetationSpatialData>* treeNode = visibleCells[i];
@@ -1331,28 +1331,28 @@ void VegetationRenderObject::SaveCustomGeometryData(SerializationContext* contex
             Vector<Vector3>& normals = data->GetNormals(layerIndex, lodIndex);
             Vector<VegetationIndex>& indices = data->GetIndices(layerIndex, lodIndex);
             
-            uint32 posCount = positions.size();
+            uint32 posCount = static_cast<uint32>(positions.size());
             lodArchive->SetUInt32("cgsd.lod.posCount", posCount);
             for(uint32 i = 0; i < posCount; ++i)
             {
                 lodArchive->SetVector3(Format("cgsd.lod.pos.%d", i), positions[i]);
             }
             
-            uint32 texCount = texCoords.size();
+            uint32 texCount = static_cast<uint32>(texCoords.size());
             lodArchive->SetUInt32("cgsd.lod.texCount", texCount);
             for(uint32 i = 0; i < texCount; ++i)
             {
                 lodArchive->SetVector2(Format("cgsd.lod.tex.%d", i), texCoords[i]);
             }
 
-            uint32 normalCount = normals.size();
+            uint32 normalCount = static_cast<uint32>(normals.size());
             lodArchive->SetUInt32("cgsd.lod.normalCount", normalCount);
             for(uint32 i = 0; i < normalCount; ++i)
             {
                 lodArchive->SetVector3(Format("cgsd.lod.normal.%d", i), normals[i]);
             }
 
-            uint32 indexCount = indices.size();
+            uint32 indexCount = static_cast<uint32>(indices.size());
             lodArchive->SetUInt32("cgsd.lod.indexCount", indexCount);
             for(uint32 i = 0; i < indexCount; ++i)
             {
@@ -1402,8 +1402,8 @@ void VegetationRenderObject::CollectMetrics(VegetationMetrics& metrics)
         
         size_t visibleCellCount = visibleCells.size();
         
-        metrics.renderBatchCount = visibleCells.size() * renderDataCount;
-        metrics.totalQuadTreeLeafCount = visibleCellCount;
+        metrics.renderBatchCount = static_cast<uint32>(visibleCells.size() * renderDataCount);
+        metrics.totalQuadTreeLeafCount = static_cast<uint32>(visibleCellCount);
         
         uint32 maxLodCount = COUNT_OF(RESOLUTION_INDEX);
         metrics.quadTreeLeafCountPerLOD.resize(maxLodCount, 0);

@@ -41,6 +41,7 @@
 #include "Math/Matrix3.h"
 #include "Math/Matrix4.h"
 #include "Math/Math2D.h"
+#include "Math/Color.h"
 
 namespace DAVA 
 {
@@ -216,6 +217,15 @@ public:
      \returns value of variable or defaultValue if key isn't available
 	 */
 	Matrix4 GetMatrix4(const String & key, const Matrix4 & defaultValue = Matrix4());
+
+    /**
+    \brief Function to get variable from archive.
+    \param[in] key string key
+    \param[in] defaultValue this is value that is used if variable with this key do not exists in archive
+    \returns value of variable or defaultValue if key isn't available
+    */
+    Color GetColor(const String & key, const Color& defaultValue = Color());
+
     /*
         \brief Function to get object from byte array.
         \param[in] key string key
@@ -361,6 +371,13 @@ public:
      \param[in] value we want to set for this key
 	 */
 	void SetMatrix4(const String & key, const Matrix4 &value);
+
+    /**
+    \brief Function to set variable in archive.
+    \param[in] key string key
+    \param[in] value we want to set for this key
+    */
+    void SetColor(const String & key, const Color &value);
     
     /**
         \brief Function to set value from template type to byte array.  

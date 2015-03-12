@@ -363,8 +363,3 @@ Vector2 DavaGLWidget::GuideToInternal(const QPoint& pos)
     
     return internalPos;
 }
-
-void DavaGLWidget::ShowAssertMessage(const char * message)
-{
-	QMessageBox::critical(this, "", message);
-}

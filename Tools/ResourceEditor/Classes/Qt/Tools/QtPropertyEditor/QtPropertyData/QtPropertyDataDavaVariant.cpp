@@ -297,7 +297,14 @@ QVariant QtPropertyDataDavaVariant::GetValueAlias() const
 			    DAVA::VariantType v = DAVA::VariantType::Convert(allowedValues[i].realValue, curVariantValue.type);
 			    if(v == curVariantValue)
 			    {
-				    ret = allowedValues[i].visibleValue;
+                    if(allowedValues[i].visibleValue.isValid())
+                    {
+                        ret = allowedValues[i].visibleValue;
+                    }
+                    else
+                    {
+                        ret = FromDavaVariant(allowedValues[i].realValue);
+                    }
 				    break;
 			    }
 		    }
@@ -365,7 +372,10 @@ void QtPropertyDataDavaVariant::SetValueInternal(const QVariant &value)
         ToColor(value);
         break;
     case DAVA::VariantType::TYPE_FASTNAME:
-        curVariantValue.SetFastName(DAVA::FastName(value.toString().toStdString().c_str()));
+        if(value.isValid())
+            curVariantValue.SetFastName(DAVA::FastName(value.toString().toStdString().c_str()));
+        else
+            curVariantValue.SetFastName(DAVA::FastName());
         break;
 	case DAVA::VariantType::TYPE_AABBOX3:
 		ToAABBox3(value);
@@ -708,7 +718,8 @@ QVariant QtPropertyDataDavaVariant::FromDavaVariant(const DAVA::VariantType &var
 		v = FromColor(variant.AsColor());
 		break;
 	case DAVA::VariantType::TYPE_FASTNAME:
-		v = QString(variant.AsFastName().c_str());
+        if(variant.AsFastName().IsValid())
+		    v = QString(variant.AsFastName().c_str());
 		break;
 	case DAVA::VariantType::TYPE_AABBOX3:
 		v = FromAABBox3(variant.AsAABBox3());
@@ -1183,7 +1194,7 @@ QWidget* QtPropertyDataDavaVariant::CreateAllowedValuesEditor(QWidget *parent) c
 			// if not - we will create it from dava::varianttype
 			else
 			{
-				text = FromDavaVariant(curVariantValue).toString();
+                text = FromDavaVariant(allowedValues[i].realValue).toString();
 			}
 
 			allowedWidget->addItem(text);

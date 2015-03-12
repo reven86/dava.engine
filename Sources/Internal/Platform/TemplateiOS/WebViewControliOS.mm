@@ -38,6 +38,7 @@
 {
 	DAVA::IUIWebViewDelegate* delegate;
 	DAVA::UIWebView* webView;
+    DAVA::WebViewControl* webViewControl;
 }
 
 - (id)init;
@@ -50,8 +51,10 @@
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error;
 - (void)leftGesture;
 - (void)rightGesture;
+- (UIImage *)renderUIViewToImage:(UIView *)view;
+- (void)setDAVAUIWebView:(DAVA::UIWebView*) uiWebControl;
 - (void)onExecuteJScript:(NSArray *)result;
-
+- (void)setDAVAWebViewControl:(DAVA::WebViewControl*) webViewControl;
 @end
 
 @implementation WebViewURLDelegate
@@ -61,8 +64,9 @@
 	self = [super init];
 	if (self)
 	{
-		delegate = NULL;
-		webView = NULL;
+		delegate = nullptr;
+		webView = nullptr;
+        webViewControl = nullptr;
 	}
 	return self;
 }
@@ -131,8 +135,17 @@
 }
 
 
-- (void)webViewDidFinishLoad:(UIWebView *)webView
+- (void)webViewDidFinishLoad:(UIWebView *)webViewParam
 {
+    DVASSERT(webViewControl);
+    DVASSERT(webView);
+    
+    if (webViewControl->IsRenderToTexture())
+    {
+        webViewControl->RenderToTextureAndSetAsBackgroundSpriteToControl(
+                                                                    *webView);
+    }
+    
     if (delegate && self->webView)
 	{
         delegate->PageLoaded(self->webView);
@@ -147,18 +160,136 @@
     }
 }
 
-- (void)onExecuteJScript:(NSArray *)result
+- (UIImage *)renderUIViewToImage:(UIView *)view
+{
+    CGFloat contentScaleFactor =  [HelperAppDelegate GetScale];
+    
+    size_t w = view.frame.size.width * contentScaleFactor;
+    size_t h = view.frame.size.height * contentScaleFactor;
+    
+    UIGraphicsBeginImageContext(CGSizeMake(w, h));
+    CGRect rect = CGRectMake(0, 0, w, h);
+    [view drawViewHierarchyInRect:rect afterScreenUpdates:YES];
+
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return image;
+}
+
+- (void)onExecuteJScript:(NSString *)result
 {
     if (delegate)
     {
-        NSNumber* requestId = (NSNumber*)[result objectAtIndex:0];
-        NSString* requestResult = (NSString*)[result objectAtIndex:1];
-        delegate->OnExecuteJScript(webView, [requestId intValue], DAVA::String([requestResult UTF8String]));
+        delegate->OnExecuteJScript(webView, DAVA::String([result UTF8String]));
     }
-    [result release];
+}
+
+- (void)setDAVAUIWebView:(DAVA::UIWebView*) uiWebControl
+{
+    DVASSERT(uiWebControl);
+    webView = uiWebControl;
+}
+
+- (void)setDAVAWebViewControl:(DAVA::WebViewControl*) control
+{
+    DVASSERT(control);
+    webViewControl = control;
 }
 
 @end
+
+DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb):
+    webViewPtr(0),
+    webViewURLDelegatePtr(0),
+    rightSwipeGesturePtr(0),
+    leftSwipeGesturePtr(0),
+    gesturesEnabled(false),
+    isRenderToTexture(false),
+    isVisible(true),
+    uiWebView(uiWeb)
+{
+    HelperAppDelegate* appDelegate = [[UIApplication sharedApplication]
+                                                                    delegate];
+    BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+    
+    ::UIWebView* localWebView = [backgroundView CreateWebView];
+    webViewPtr = localWebView;
+    
+    CGRect emptyRect = CGRectMake(0.0f, 0.0f, 0.0f, 0.0f);
+    [localWebView setFrame:emptyRect];
+    
+    SetBounces(false);
+    
+    webViewURLDelegatePtr = [[WebViewURLDelegate alloc] init];
+    WebViewURLDelegate* viewURLDelegate =
+                            (WebViewURLDelegate*)webViewURLDelegatePtr;
+    [localWebView setDelegate:viewURLDelegate];
+    [viewURLDelegate setDAVAUIWebView:&uiWebView];
+    [viewURLDelegate setDAVAWebViewControl:this];
+    
+    [localWebView becomeFirstResponder];
+}
+
+void DAVA::WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
+                                            DAVA::UIWebView& control)
+{
+    WebViewURLDelegate* webURLDelegate =
+                (WebViewURLDelegate*)webViewURLDelegatePtr;
+    DVASSERT(webURLDelegate);
+    
+    ::UIWebView* iosWebView = (::UIWebView*)webViewPtr;
+    DVASSERT(iosWebView);
+    
+    
+    UIImage* image = [webURLDelegate renderUIViewToImage:iosWebView];
+    DVASSERT(image);
+    
+    // copy image into our buffer with bitmap context
+    CGImageRef imageRef = [image CGImage];
+    DAVA::int32 width = static_cast<DAVA::int32>(CGImageGetWidth(imageRef));
+    DAVA::int32 height = static_cast<DAVA::int32>(CGImageGetHeight(imageRef));
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    
+    {
+        DAVA::Image* imageRGB = DAVA::Image::Create(width, height,
+                                                    DAVA::FORMAT_RGBA8888);
+        DVASSERT(imageRGB);
+        
+        DAVA::uint8 *rawData = imageRGB->GetData();
+        
+        NSUInteger bytesPerPixel = 4;
+        NSUInteger bytesPerRow = bytesPerPixel * width;
+        NSUInteger bitsPerComponent = 8;
+        
+        // this way we can copy image from system memory into our buffer
+        
+        CGContextRef context = CGBitmapContextCreate(rawData, width, height,
+                                bitsPerComponent, bytesPerRow, colorSpace,
+                                kCGImageAlphaPremultipliedLast
+                                                     | kCGBitmapByteOrder32Big);
+        CGColorSpaceRelease(colorSpace);
+        
+        CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
+        CGContextRelease(context);
+        
+        {
+            DAVA::Texture* tex = DAVA::Texture::CreateFromData(imageRGB, false);
+            DVASSERT(tex);
+            
+            DAVA::Rect rect = uiWebView.GetRect();
+            {
+                DAVA::Sprite* spr = DAVA::Sprite::CreateFromTexture(tex, 0, 0, width, height, rect.dx, rect.dy);
+                DVASSERT(spr);
+                
+                uiWebView.GetBackground()->SetSprite(spr, 0);
+                DAVA::SafeRelease(spr);
+            }
+            DAVA::SafeRelease(tex);
+        }
+        DAVA::SafeRelease(imageRGB);
+    }
+}
 
 namespace DAVA
 {
@@ -167,8 +298,6 @@ namespace DAVA
 	//Use unqualified UIWebView and UIScreen from global namespace, i.e. from UIKit
 	using ::UIWebView;
 	using ::UIScreen;
-
-int WebViewControl::runScriptID = 0;
 
     static const struct
     {
@@ -185,25 +314,7 @@ int WebViewControl::runScriptID = 0;
         {DAVAWebView::DATA_DETECTOR_CALENDAR_EVENTS, UIDataDetectorTypeCalendarEvent}
     };
 
-WebViewControl::WebViewControl()
-{
-    gesturesEnabled = false;
-    HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-    BackgroundView* backgroundView = [appDelegate glController].backgroundView;
-    
-    UIWebView* localWebView = [backgroundView CreateWebView];
-    webViewPtr = localWebView;
-    
-    CGRect emptyRect = CGRectMake(0.0f, 0.0f, 0.0f, 0.0f);
-    [localWebView setFrame:emptyRect];
 
-    SetBounces(false);
-
-    webViewURLDelegatePtr = [[WebViewURLDelegate alloc] init];
-    [localWebView setDelegate:(WebViewURLDelegate*)webViewURLDelegatePtr];
-
-    [localWebView becomeFirstResponder];
- }
 
 WebViewControl::~WebViewControl()
 {
@@ -319,29 +430,42 @@ Map<String, String> WebViewControl::GetCookies(const String& targetUrl) const
 	return resultMap;
 }
 
-int32 WebViewControl::ExecuteJScript(const String& scriptString)
+void WebViewControl::ExecuteJScript(const String& scriptString)
 {
-    int requestID = runScriptID++;
-	NSString *jScriptString = [NSString stringWithUTF8String:scriptString.c_str()];
-	NSString *resultString = [(UIWebView*)webViewPtr stringByEvaluatingJavaScriptFromString:jScriptString];
+	NSString *jScriptString = [NSString stringWithUTF8String:
+                                                scriptString.c_str()];
+    
+	NSString *resultString = [(UIWebView*)webViewPtr
+                        stringByEvaluatingJavaScriptFromString:jScriptString];
 
     WebViewURLDelegate* w = (WebViewURLDelegate*)webViewURLDelegatePtr;
     if (w)
     {
-        NSArray* array = [NSArray arrayWithObjects:[NSNumber numberWithInt:requestID], resultString, nil];
-        [array retain];
-        [w performSelector:@selector(onExecuteJScript:) withObject:array afterDelay:0.0];
+        [w performSelector:@selector(onExecuteJScript:)
+                withObject:resultString afterDelay:0.0];
     }
-    return requestID;
 }
 
 void WebViewControl::SetRect(const Rect& rect)
 {
 	CGRect webViewRect = [(UIWebView*)webViewPtr frame];
 
-    Rect physicalRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
-    webViewRect.origin.x = physicalRect.x + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
-    webViewRect.origin.y = physicalRect.y + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
+    VirtualCoordinatesSystem& VCS = *VirtualCoordinatesSystem::Instance();
+    
+    Rect physicalRect = VCS.ConvertVirtualToPhysical(rect);
+    
+    webViewRect.origin.x = physicalRect.x + VCS.GetPhysicalDrawOffset().x;
+    webViewRect.origin.y = physicalRect.y + VCS.GetPhysicalDrawOffset().y;
+    
+    if (isRenderToTexture)
+    {
+        const int32 offScreenPos = -10000;
+        // on iOS just move window away and we can render it into our texture
+        // if we will add/remove to view hierarchy - bug with memory
+        // if we hide windows render to texture - always blank texture
+        webViewRect.origin.x = offScreenPos;
+    }
+
     webViewRect.size.width = physicalRect.dx;
     webViewRect.size.height = physicalRect.dy;
 	
@@ -357,7 +481,16 @@ void WebViewControl::SetRect(const Rect& rect)
 
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
-	[(UIWebView*)webViewPtr setHidden:!isVisible];
+    this->isVisible = isVisible;
+    
+    if (!isRenderToTexture)
+    {
+        [(UIWebView*)webViewPtr setHidden:!isVisible];
+    } else
+    {
+        DAVA::Rect r = uiWebView.GetRect();
+        SetRect(r);
+    }
 }
 
 void WebViewControl::SetScalesPageToFit(bool isScalesToFit)
@@ -376,12 +509,14 @@ void WebViewControl::SetBackgroundTransparency(bool enabled)
 
 	if (enabled)
 	{
-		[webView setBackgroundColor:[UIColor colorWithRed:r green:g blue:b alpha:0.f]];
+		[webView setBackgroundColor:[UIColor colorWithRed:r green:g blue:b
+                                                    alpha:0.f]];
 		HideSubviewImages(webView);
 	}
 	else
 	{
-		[webView setBackgroundColor:[UIColor colorWithRed:r green:g blue:b alpha:1.0f]];
+		[webView setBackgroundColor:[UIColor colorWithRed:r green:g blue:b
+                                                    alpha:1.0f]];
 		RestoreSubviewImages();
 	}
 }
@@ -436,7 +571,7 @@ void WebViewControl::SetBounces(bool value)
 	localWebView.scrollView.bounces = (value == true);
 }
 
-//for android we need use techique like http://stackoverflow.com/questions/12578895/how-to-detect-a-swipe-gesture-on-webview
+//for iOS we need use techique like http://stackoverflow.com/questions/12578895/how-to-detect-a-swipe-gesture-on-webview
 void WebViewControl::SetGestures(bool value)
 {
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
@@ -511,4 +646,31 @@ int32 WebViewControl::GetDataDetectorTypes() const
     return davaDetectorTypes;
 }
     
-};
+void WebViewControl::SetRenderToTexture(bool value)
+{
+    isRenderToTexture = value;
+    
+    // hide windows - move to offScreenPos position
+    // so it still can render WebView into
+    DAVA::Rect r = uiWebView.GetRect();
+    SetRect(r);
+    
+    if (isRenderToTexture)
+    {
+        // we have to show window or we can't render web view into texture
+        if ([(UIWebView*)webViewPtr isHidden])
+        {
+            [(UIWebView*)webViewPtr setHidden:NO];
+        }
+        
+        RenderToTextureAndSetAsBackgroundSpriteToControl(uiWebView);
+    } else
+    {
+        if (isVisible)
+        {
+            [(UIWebView*)webViewPtr setHidden:NO];
+        }
+    }
+}
+    
+} // end namespace DAVA

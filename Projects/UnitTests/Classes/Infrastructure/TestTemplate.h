@@ -125,9 +125,9 @@ void TestTemplate<T>::Draw(const UIGeometricData &geometricData)
 template <class T>
 bool TestTemplate<T>::RunTest(int32 testNum)
 {
-    int32 testCount = perfFuncs.size();
+    auto testCount = perfFuncs.size();
     
-    if(0 <= testNum && testNum < testCount)
+    if(static_cast<size_t>(testNum) < testCount)
     {
         PerfFuncData * data = &(perfFuncs[testNum]);
         (data->screen->*data->func)(data);
@@ -141,7 +141,7 @@ bool TestTemplate<T>::RunTest(int32 testNum)
 template <class T>
 int32 TestTemplate<T>::GetTestCount()
 {
-    return perfFuncs.size();
+    return static_cast<int32>(perfFuncs.size());
 }
 
 template <class T>

@@ -89,7 +89,11 @@ enum HttpCodeClass
 
 struct DownloadStatistics
 {
-    float64 downloadSpeedBytesPerSec;
+    enum
+    {
+        VALUE_UNKNOWN = -1,
+    };
+    uint64 downloadSpeedBytesPerSec;
     uint64 timeLeftSecs;
 };
 /*

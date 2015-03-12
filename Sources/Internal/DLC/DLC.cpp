@@ -98,6 +98,7 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
 
 DLC::~DLC()
 {
+    DVASSERT((dlcState == DS_INIT || dlcState == DS_READY || dlcState == DS_DONE) && "DLC can be safely destroyed only in certain modes");
 }
 
 void DLC::Check()
@@ -152,7 +153,7 @@ FilePath DLC::GetMetaStorePath() const
     
 void DLC::PostEvent(DLCEvent event)
 {
-	Function<void()> fn = Bind(MakeFunction(this, &DLC::FSM), event);
+    Function<void()> fn = Bind(MakeFunction(this, &DLC::FSM), event);
 	JobManager::Instance()->CreateMainJob(fn);
 }
 
@@ -404,6 +405,9 @@ void DLC::FSM(DLCEvent event)
                     case DS_CHECKING_INFO:
                         StepCheckInfoCancel();
                         break;
+                    case DS_CHECKING_META:
+                        StepCheckMetaCancel();
+                        break;
                     case DS_CHECKING_PATCH:
                         StepCheckPatchCancel();
                         break;
@@ -416,7 +420,7 @@ void DLC::FSM(DLCEvent event)
                         StepPatchCancel();
                         break;
                     default:
-                        Logger::Error("Unhanded state canceling\n");
+                        Logger::Error("Unhanded state %d canceling\n", oldState);
                         DVASSERT(false);
                         break;
                 }

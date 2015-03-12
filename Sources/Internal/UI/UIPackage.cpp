@@ -73,6 +73,11 @@ void UIPackage::AddControl(UIControl *control)
     controls.push_back(SafeRetain(control));
 }
     
+void UIPackage::InsertControlAtIndex(DAVA::int32 index, UIControl *control)
+{
+    controls.insert(controls.begin() + index, SafeRetain(control));
+}
+
 void UIPackage::InsertControlBelow(UIControl *control, const UIControl *belowThis)
 {
     auto it = find(controls.begin(), controls.end(), belowThis);

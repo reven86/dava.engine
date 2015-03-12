@@ -146,7 +146,7 @@ void EventDispatcher::CopyDataFrom(EventDispatcher *srcDispatcher)
 
 int32 EventDispatcher::GetEventsCount() const
 {
-    return events.size();
+    return static_cast<int32>(events.size());
 }
 
 }

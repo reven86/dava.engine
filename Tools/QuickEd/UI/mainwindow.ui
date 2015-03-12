@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1024</width>
-    <height>700</height>
+    <height>840</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,8 +18,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>960</width>
-    <height>640</height>
+    <width>0</width>
+    <height>0</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -33,7 +33,16 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item>
@@ -47,7 +56,7 @@
      </widget>
     </item>
     <item>
-     <widget class="PackageGraphicsWidget" name="packageGraphicsWidget" native="true"/>
+     <widget class="PreviewWidget" name="previewWidget" native="true"/>
     </item>
    </layout>
   </widget>
@@ -57,7 +66,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -138,11 +147,10 @@
    <addaction name="actionSaveAllDocuments"/>
    <addaction name="actionClose_project"/>
    <addaction name="separator"/>
-   <addaction name="actionRepack_And_Reload"/>
    <addaction name="actionPixelized"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <widget class="PropertiesDockWidget" name="propertiesDockWidget">
+  <widget class="PropertiesWidget" name="propertiesWidget">
    <property name="minimumSize">
     <size>
      <width>200</width>
@@ -170,7 +178,7 @@
     <number>1</number>
    </attribute>
   </widget>
-  <widget class="PackageDockWidget" name="packageTreeDock">
+  <widget class="PackageWidget" name="packageWidget">
    <property name="minimumSize">
     <size>
      <width>200</width>
@@ -190,7 +198,7 @@
     <number>1</number>
    </attribute>
   </widget>
-  <widget class="LibraryDockWidget" name="libraryDockWidget">
+  <widget class="LibraryWidget" name="libraryWidget">
    <property name="minimumSize">
     <size>
      <width>100</width>
@@ -223,7 +231,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../Data/icons.qrc">
+    <iconset resource="../DataQt/icons.qrc">
      <normaloff>:/Icons/openproject.png</normaloff>:/Icons/openproject.png</iconset>
    </property>
    <property name="text">
@@ -457,15 +465,15 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>LibraryDockWidget</class>
+   <class>LibraryWidget</class>
    <extends>QDockWidget</extends>
-   <header>UI/LibraryView/LibraryDockWidget.h</header>
+   <header>UI/Library/LibraryWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>PackageDockWidget</class>
+   <class>PackageWidget</class>
    <extends>QDockWidget</extends>
-   <header>UI/PackageView/PackageDockWidget.h</header>
+   <header>UI/Package/PackageWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -474,14 +482,14 @@
    <header>qtabbar.h</header>
   </customwidget>
   <customwidget>
-   <class>PackageGraphicsWidget</class>
+   <class>PreviewWidget</class>
    <extends>QWidget</extends>
-   <header>UI/GraphicView/packagegraphicswidget.h</header>
+   <header>UI/Preview/PreviewWidget.h</header>
   </customwidget>
   <customwidget>
-   <class>PropertiesDockWidget</class>
+   <class>PropertiesWidget</class>
    <extends>QDockWidget</extends>
-   <header>UI/PropertiesView/PropertiesDockWidget.h</header>
+   <header>UI/Properties/PropertiesWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

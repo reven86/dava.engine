@@ -92,7 +92,7 @@ namespace DAVA
             }
         }
         
-        return outputList.size();
+        return static_cast<uint32>(outputList.size());
     }
     
     uint32 DeterminateExactDPI(List<const DeviceScreenInfo*> &devList)

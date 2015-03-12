@@ -48,6 +48,11 @@
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 
+#include "Scene/System/CameraSystem.h"
+#include "Scene/System/CollisionSystem.h"
+#include "Scene/System/HoodSystem.h"
+
+#include "Scene/System/EditorLODSystem.h"
 
 
 const FastName MATERIAL_FOR_REBIND = FastName("Global");
@@ -150,6 +155,9 @@ SceneEditor2::SceneEditor2()
     pathSystem = new PathSystem(this);
     AddSystem(pathSystem, MAKE_COMPONENT_MASK(Component::PATH_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     
+	editorLODSystem = new EditorLODSystem(this);
+	AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT));
+
 	SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
 
 	SceneSignals::Instance()->EmitOpened(this);
@@ -203,7 +211,7 @@ SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveFor
 {
 	ExtractEditorEntities();
 
-	DAVA::SceneFileV2::eError err = Scene::Save(path, saveForGame);
+	DAVA::SceneFileV2::eError err = Scene::SaveScene(path, saveForGame);
 	if(DAVA::SceneFileV2::ERROR_NO_ERROR == err)
 	{
 		curScenePath = path;
@@ -327,6 +335,11 @@ void SceneEditor2::EndBatch()
 	commandStack.EndBatch();
 }
 
+bool SceneEditor2::IsBatchStarted() const
+{
+    return commandStack.IsBatchStarted();
+}
+
 void SceneEditor2::Exec(Command2 *command)
 {
 	commandStack.Exec(command);
@@ -416,8 +429,6 @@ void SceneEditor2::Draw()
 		materialSystem->Draw();
 	}
  
-    //VI: need to call Setup2DDrawing in order to draw 2d to render targets correctly
-    Setup2DDrawing();
 	tilemaskEditorSystem->Draw();
     //VI: restore 3d camera state
     Setup3DDrawing();
@@ -711,11 +722,6 @@ void SceneEditor2::MarkAsChanged()
 		wasChanged = true;
 		SceneSignals::Instance()->EmitModifyStatusChanged(this, wasChanged);
 	}
-}
-
-void SceneEditor2::Setup2DDrawing()
-{
-    RenderSystem2D::Instance()->Setup2DMatrices();
 }
 
 void SceneEditor2::Setup3DDrawing()

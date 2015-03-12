@@ -42,7 +42,7 @@ namespace DAVA
 	
 	void LinearRenderHierarchy::RemoveRenderObject(RenderObject *renderObject)
 	{				
-		uint32 size = renderObjectArray.size();
+		uint32 size = static_cast<uint32>(renderObjectArray.size());
 		for (uint32 k = 0; k < size; ++k)
 		{
 			if (renderObjectArray[k] == renderObject)
@@ -63,7 +63,7 @@ namespace DAVA
 	{				
 		visibilityArray = _visibilityArray;
 		Frustum * frustum = camera->GetFrustum();
-		uint32 size = renderObjectArray.size();
+		uint32 size = static_cast<uint32>(renderObjectArray.size());
 		for (uint32 pos = 0; pos < size; ++pos)
 		{
 			RenderObject * node = renderObjectArray[pos];						
@@ -78,7 +78,7 @@ namespace DAVA
     
     void LinearRenderHierarchy::GetAllObjectsInBBox(const AABBox3 & bbox, VisibilityArray * visibilityArray)
     {
-        uint32 size = renderObjectArray.size();
+        uint32 size = static_cast<uint32>(renderObjectArray.size());
 		for (uint32 pos = 0; pos < size; ++pos)
 		{
 			RenderObject * ro = renderObjectArray[pos];

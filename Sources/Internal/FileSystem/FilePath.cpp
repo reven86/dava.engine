@@ -378,7 +378,7 @@ bool FilePath::IsDirectoryPathname() const
         return false;
     }
 
-    const int32 lastPosition = absolutePathname.length() - 1;
+    const auto lastPosition = absolutePathname.length() - 1;
     return (absolutePathname.at(lastPosition) == '/');
 }
 
@@ -681,7 +681,7 @@ String FilePath::MakeDirectory(const String &pathname)
         return String();
     }
     
-    const int32 lastPosition = pathname.length() - 1;
+    const auto lastPosition = pathname.length() - 1;
     if(pathname.at(lastPosition) != '/')
     {
         return pathname + String("/");

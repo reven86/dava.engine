@@ -16,11 +16,20 @@ import string;
 import sys;
 import platform;
 
+arguments = sys.argv[1:]
+
+if len(arguments) == 1:
+    currentDir = arguments[0];
+    os.chdir( currentDir )
+else:
+    currentDir = os.getcwd(); 
+
+
 # *************** HERE YOU SHOULD SETUP YOUR OWN PATHS ***************
 framework_path = { "Darwin": "./../../../", "Windows": "./../../../" }
 # *************** HERE YOU SHOULD SETUP YOUR OWN PATHS ***************
 
-currentDir = os.getcwd(); 
+
 dataDir =  os.path.realpath(currentDir + "/../Data/")
 print "*** DAVA SDK Launching command line packer - data directory:" + dataDir
 

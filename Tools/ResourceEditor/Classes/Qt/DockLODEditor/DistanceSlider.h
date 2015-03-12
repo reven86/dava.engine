@@ -42,70 +42,74 @@
 class DistanceSplitterHandle : public QSplitterHandle
 {
 public:
-	DistanceSplitterHandle(Qt::Orientation o, QSplitter *parent) 
-		: QSplitterHandle(o, parent)
-	{ }
+    DistanceSplitterHandle(Qt::Orientation o, QSplitter *parent) 
+        : QSplitterHandle(o, parent)
+    { }
 
 protected:
-	virtual void mouseReleaseEvent(QMouseEvent * e)
-	{
-		bool opq = splitter()->opaqueResize();
+    virtual void mouseReleaseEvent(QMouseEvent * e)
+    {
+        bool opq = splitter()->opaqueResize();
 
-		splitter()->setOpaqueResize(false);
-		QSplitterHandle::mouseReleaseEvent(e);
-		splitter()->setOpaqueResize(opq);
-	}
+        splitter()->setOpaqueResize(false);
+        QSplitterHandle::mouseReleaseEvent(e);
+        splitter()->setOpaqueResize(opq);
+    }
 };
 
 
 class DistanceSplitter : public QSplitter
 {
 public:
-	DistanceSplitter(QWidget *parent = 0)
-		: QSplitter(parent)
-	{ }
+    DistanceSplitter(QWidget *parent = 0)
+        : QSplitter(parent)
+    { }
 
 protected:
-	virtual QSplitterHandle* createHandle()
-	{
-		return new DistanceSplitterHandle(orientation(), this);
-	}
+    virtual QSplitterHandle* createHandle()
+    {
+        return new DistanceSplitterHandle(orientation(), this);
+    }
 };
 
 class DistanceSlider: public QFrame
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	DistanceSlider(QWidget *parent = 0);
-	~DistanceSlider();
+    DistanceSlider(QWidget *parent = 0);
+    ~DistanceSlider();
 
     void SetLayersCount(int count);
+    inline int GetLayersCount() const;
 
     void SetDistance(int layer, double value);
-	double GetDistance(int layer) const;
+    double GetDistance(int layer) const;
 
-	void LockDistances(bool lock);
+    void LockDistances(bool lock);
 
 signals:
     void DistanceChanged(const QVector<int> &changedLayers, bool continious);
     
 protected slots:
-
     void SplitterMoved(int pos, int index);
 
 protected:
-    
     int GetScaleSize();
     
 private:
     QSplitter *splitter;
     QFrame *frames[DAVA::LodComponent::MAX_LOD_LAYERS];
-	bool locked;
+    bool locked;
     
     int layersCount;
     
     int stretchSize[DAVA::LodComponent::MAX_LOD_LAYERS];
 };
+
+inline int DistanceSlider::GetLayersCount() const
+{
+    return layersCount;
+}
 
 #endif // __DISTANCE_SLIDER_H__

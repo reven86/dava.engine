@@ -69,7 +69,7 @@ set (CMAKE_CXX_OSX_CURRENT_VERSION_FLAG "${CMAKE_C_OSX_CURRENT_VERSION_FLAG}")
 
 # Hidden visibilty is required for cxx on iOS 
 set (CMAKE_C_FLAGS_INIT "")
-set (CMAKE_CXX_FLAGS_INIT "-headerpad_max_install_names -fvisibility=hidden -fvisibility-inlines-hidden")
+set (CMAKE_CXX_FLAGS_INIT " -fvisibility=hidden -fvisibility-inlines-hidden")
 
 set (CMAKE_C_LINK_FLAGS "-Wl,-search_paths_first ${CMAKE_C_LINK_FLAGS}")
 set (CMAKE_CXX_LINK_FLAGS "-Wl,-search_paths_first ${CMAKE_CXX_LINK_FLAGS}")
@@ -124,17 +124,15 @@ endif (NOT DEFINED CMAKE_IOS_DEVELOPER_ROOT)
 set (CMAKE_IOS_DEVELOPER_ROOT ${CMAKE_IOS_DEVELOPER_ROOT} CACHE PATH "Location of iOS Platform")
 
 # Find and use the most recent iOS sdk unless specified manually with CMAKE_IOS_SDK_ROOT
-if (NOT DEFINED CMAKE_IOS_SDK_ROOT)
-	file (GLOB _CMAKE_IOS_SDKS "${CMAKE_IOS_DEVELOPER_ROOT}/SDKs/*")
-	if (_CMAKE_IOS_SDKS) 
-		list (SORT _CMAKE_IOS_SDKS)
-		list (REVERSE _CMAKE_IOS_SDKS)
-		list (GET _CMAKE_IOS_SDKS 0 CMAKE_IOS_SDK_ROOT)
-	else (_CMAKE_IOS_SDKS)
-		message (FATAL_ERROR "No iOS SDK's found in default search path ${CMAKE_IOS_DEVELOPER_ROOT}. Manually set CMAKE_IOS_SDK_ROOT or install the iOS SDK.")
-	endif (_CMAKE_IOS_SDKS)
-	message (STATUS "Toolchain using default iOS SDK: ${CMAKE_IOS_SDK_ROOT}")
-endif (NOT DEFINED CMAKE_IOS_SDK_ROOT)
+file (GLOB _CMAKE_IOS_SDKS "${CMAKE_IOS_DEVELOPER_ROOT}/SDKs/*")
+if (_CMAKE_IOS_SDKS) 
+	list (SORT _CMAKE_IOS_SDKS)
+	list (REVERSE _CMAKE_IOS_SDKS)
+	list (GET _CMAKE_IOS_SDKS 0 CMAKE_IOS_SDK_ROOT)
+else (_CMAKE_IOS_SDKS)
+	message (FATAL_ERROR "No iOS SDK's found in default search path ${CMAKE_IOS_DEVELOPER_ROOT}. Manually set CMAKE_IOS_SDK_ROOT or install the iOS SDK.")
+endif (_CMAKE_IOS_SDKS)
+message (STATUS "Toolchain using default iOS SDK: ${CMAKE_IOS_SDK_ROOT}")
 set (CMAKE_IOS_SDK_ROOT ${CMAKE_IOS_SDK_ROOT} CACHE PATH "Location of the selected iOS SDK")
 
 # Set the sysroot default to the most recent SDK

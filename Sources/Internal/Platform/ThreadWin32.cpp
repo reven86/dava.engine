@@ -54,7 +54,7 @@ void Thread::Init()
 
 void Thread::Shutdown()
 {
-    DVASSERT(STATE_ENDED == state || STATE_CANCELLED == state || STATE_KILLED == state);
+    DVASSERT(STATE_ENDED == state || STATE_KILLED == state);
     if (handle)
     {
         CloseHandle(handle);

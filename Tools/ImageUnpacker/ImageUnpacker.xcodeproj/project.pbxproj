@@ -16,6 +16,9 @@
 		E8951AF61737775600755339 /* FrameworkMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8951AF21737775600755339 /* FrameworkMain.cpp */; };
 		E8951AF71737775600755339 /* GameCore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8951AF41737775600755339 /* GameCore.cpp */; };
 		E8C4C6AC1729BBAE004B0B3B /* libFramework.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FEC3E2EF133A9A5A00442ADD /* libFramework.a */; };
+		E8E18F1B1A80F5CB008CC1C7 /* libTextureConverter.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E8E18F1A1A80F5CB008CC1C7 /* libTextureConverter.dylib */; };
+		E8E18F221A80F5DE008CC1C7 /* libTextureConverter.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = E8E18F1A1A80F5CB008CC1C7 /* libTextureConverter.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		E8E18F261A80F816008CC1C7 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E8E18F251A80F816008CC1C7 /* Security.framework */; };
 		E8F8A259173A3A6A0090C110 /* libfmodevent.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E8F8A257173A3A6A0090C110 /* libfmodevent.dylib */; };
 		E8F8A25A173A3A6A0090C110 /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E8F8A258173A3A6A0090C110 /* libfmodex.dylib */; };
 		E8F8A25D173A43330090C110 /* libfmodevent.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = E8F8A257173A3A6A0090C110 /* libfmodevent.dylib */; };
@@ -83,6 +86,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		E8E18F211A80F5D0008CC1C7 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 6;
+			files = (
+				E8E18F221A80F5DE008CC1C7 /* libTextureConverter.dylib in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E8F8A25C173A43250090C110 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -109,6 +122,8 @@
 		E8951AF31737775600755339 /* FrameworkMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FrameworkMain.h; path = Classes/FrameworkMain.h; sourceTree = "<group>"; };
 		E8951AF41737775600755339 /* GameCore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GameCore.cpp; path = Classes/GameCore.cpp; sourceTree = "<group>"; };
 		E8951AF51737775600755339 /* GameCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GameCore.h; path = Classes/GameCore.h; sourceTree = "<group>"; };
+		E8E18F1A1A80F5CB008CC1C7 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTextureConverter.dylib; path = ../Bin/libTextureConverter.dylib; sourceTree = "<group>"; };
+		E8E18F251A80F816008CC1C7 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		E8F8A257173A3A6A0090C110 /* libfmodevent.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodevent.dylib; path = ../../Libs/fmod/lib/macos/libfmodevent.dylib; sourceTree = "<group>"; };
 		E8F8A258173A3A6A0090C110 /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodex.dylib; path = ../../Libs/fmod/lib/macos/libfmodex.dylib; sourceTree = "<group>"; };
 		FEC3E2EA133A9A5A00442ADD /* Framework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Framework.xcodeproj; path = ../../Projects/MacOSFramework/Framework.xcodeproj; sourceTree = SOURCE_ROOT; };
@@ -128,6 +143,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E8E18F261A80F816008CC1C7 /* Security.framework in Frameworks */,
+				E8E18F1B1A80F5CB008CC1C7 /* libTextureConverter.dylib in Frameworks */,
 				E854AB491933976100A4E79C /* AVFoundation.framework in Frameworks */,
 				E854AB421933975900A4E79C /* CoreMedia.framework in Frameworks */,
 				74B038C018AD1ECC00A42A19 /* WebKit.framework in Frameworks */,
@@ -216,6 +233,8 @@
 		FEC3E46E133A9AAB00442ADD /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E8E18F251A80F816008CC1C7 /* Security.framework */,
+				E8E18F1A1A80F5CB008CC1C7 /* libTextureConverter.dylib */,
 				E854AB481933976100A4E79C /* AVFoundation.framework */,
 				E854AB411933975900A4E79C /* CoreMedia.framework */,
 				74B038BF18AD1ECC00A42A19 /* WebKit.framework */,
@@ -242,6 +261,7 @@
 				8DD76F660486A84900D96B5E /* Frameworks */,
 				E8C4C84E165F6F54009DB9E1 /* ShellScript */,
 				E8F8A25C173A43250090C110 /* CopyFiles */,
+				E8E18F211A80F5D0008CC1C7 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -389,6 +409,7 @@
 					/Users/i_bratchik/Documents/work/dava.framework/Libs/IMagickHelpLib,
 					"$(SRCROOT)/../../Libs/libs",
 					/Users/i_bratchik/Documents/work/dava.framework/Libs/libs,
+					/Users/victorkleschenko/Work/WoT/dava.framework/Tools/Bin,
 				);
 				PRODUCT_NAME = ImageUnpacker;
 			};
@@ -407,6 +428,7 @@
 					/Users/i_bratchik/Documents/work/dava.framework/Libs/IMagickHelpLib,
 					"$(SRCROOT)/../../Libs/libs",
 					/Users/i_bratchik/Documents/work/dava.framework/Libs/libs,
+					/Users/victorkleschenko/Work/WoT/dava.framework/Tools/Bin,
 				);
 				PRODUCT_NAME = ImageUnpacker;
 			};
@@ -416,6 +438,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -433,7 +457,6 @@
 					./../../Libs/include,
 				);
 				LIBRARY_SEARCH_PATHS = "";
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -450,6 +473,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
@@ -465,7 +490,6 @@
 					./../../Libs/include,
 				);
 				LIBRARY_SEARCH_PATHS = "";
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",

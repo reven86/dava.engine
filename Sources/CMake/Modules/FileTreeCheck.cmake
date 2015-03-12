@@ -4,9 +4,9 @@ FIND_PROGRAM( PYTHON_BINARY python )
 
 MACRO( FILE_TREE_CHECK folders ) 
 
-    if( PYTHON_BINARY AND NOT IGNORE_FILE_TREE_CHECK )
+    if( PYTHON_BINARY AND NOT IGNORE_FILE_TREE_CHECK AND NOT ANDROID )
 
-        if( MACOS )
+        if( APPLE )
             set( SH_PREFIX "sh" )
 
         elseif( WIN32 )

@@ -33,7 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "Core/Core.h"
 
-#define InvalidUniqueHandle (static_cast<DAVA::uint32>(-1))
+const DAVA::uint32 InvalidUniqueHandle = -1;
 
 namespace DAVA
 {
@@ -51,8 +51,8 @@ public:
 	const T& GetUnique(UniqueHandle handle);
 	bool IsUnique(const T& objRef);
 	
-	void RetainUnique(UniqueHandle handle);
-	void ReleaseUnique(UniqueHandle handle);
+	int32 RetainUnique(UniqueHandle handle);
+	int32 ReleaseUnique(UniqueHandle handle);
 	
 private:
 
@@ -80,11 +80,11 @@ UniqueHandle UniqueStateSet<T>::MakeUnique(const T& objRef)
 {
 	DVASSERT(!IsUnique(objRef));
 	
-	size_t freeSlot = InvalidUniqueHandle;
+	uint32 freeSlot = InvalidUniqueHandle;
 	UniqueHandle handle = InvalidUniqueHandle;
 	
-	size_t count = values.size();
-	for(size_t i = 0; i < count; ++i)
+	uint32 count = static_cast<uint32>(values.size());
+	for(uint32 i = 0; i < count; ++i)
 	{
         DVASSERT(refCounters[i] >= 0);
         
@@ -115,7 +115,7 @@ UniqueHandle UniqueStateSet<T>::MakeUnique(const T& objRef)
 		{
 			values.push_back(T());
 			refCounters.push_back(0);
-			handle = values.size() - 1;
+			handle = static_cast<UniqueHandle>(values.size() - 1);
 		}
 		
 		values[handle] = objRef;
@@ -143,7 +143,7 @@ bool UniqueStateSet<T>::IsUnique(const T& objRef)
 }
 
 template<typename T>
-void UniqueStateSet<T>::ReleaseUnique(UniqueHandle handle)
+int32 UniqueStateSet<T>::ReleaseUnique(UniqueHandle handle)
 {
 	refCounters[handle] -= 1;
     
@@ -154,6 +154,7 @@ void UniqueStateSet<T>::ReleaseUnique(UniqueHandle handle)
 		values[handle].Clear();
 		freeSlotCount++;
 	}
+    return refCounters[handle];
 }
 
 template<typename T>
@@ -175,10 +176,11 @@ int32 UniqueStateSet<T>::CountFreeSlots()
 }
 
 template<typename T>
-void UniqueStateSet<T>::RetainUnique(UniqueHandle handle)
+int32 UniqueStateSet<T>::RetainUnique(UniqueHandle handle)
 {
     DVASSERT(refCounters[handle] > 0);
 	refCounters[handle] += 1;
+    return refCounters[handle];
 }
 };
 

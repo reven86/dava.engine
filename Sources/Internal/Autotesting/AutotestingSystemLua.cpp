@@ -242,9 +242,9 @@ String AutotestingSystemLua::GetPlatform()
 
 String AutotestingSystemLua::GetDeviceName()
 {
-	if (DeviceInfo::GetPlatformString() == "Android")
+    if (DeviceInfo::GetPlatformString() == "Android")
 	{
-		return DeviceInfo::GetModel();
+        return DeviceInfo::GetModel();
 	}
 	return WStringToString(DeviceInfo::GetName());
 }
@@ -320,11 +320,7 @@ bool AutotestingSystemLua::SaveKeyedArchiveToDB(const String &archiveName, Keyed
 	return AutotestingDB::Instance()->SaveKeyedArchiveToDB(archiveName, archive, docName);
 }
 
-String AutotestingSystemLua::MakeScreenshot()
-{
-	Logger::Info("AutotestingSystemLua::MakeScreenshot");
-	AutotestingSystem::Instance()->MakeScreenShot();
-	return AutotestingSystem::Instance()->GetScreenShotName();
+String AutotestingSystemLua::MakeScreenshot(bool toDb){	Logger::Info("AutotestingSystemLua::MakeScreenshot");	AutotestingSystem::Instance()->MakeScreenShot(toDb);	return AutotestingSystem::Instance()->GetScreenShotName();
 }
 
 UIControl* AutotestingSystemLua::GetScreen()

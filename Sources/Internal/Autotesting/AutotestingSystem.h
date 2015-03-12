@@ -95,7 +95,7 @@ public:
     bool IsTouchDown(int32 id);
 
 	const String & GetScreenShotName();
-	void MakeScreenShot();
+	void MakeScreenShot(bool skipScreenshot);
 
     // DB Master-Helper relations
     //void InitMultiplayer(bool _isMaster);
@@ -176,6 +176,7 @@ public:
 
     bool isDB;
     bool needClearGroupInDB;
+	bool skipScreenshot;
     
     bool isMaster;
     int32 requestedHelpers;

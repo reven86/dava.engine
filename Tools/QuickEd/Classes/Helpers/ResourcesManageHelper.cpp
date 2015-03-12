@@ -34,6 +34,7 @@
 #include "StringUtils.h"
 #include "FileSystem/FileSystem.h"
 #include "StringConstants.h"
+#include "DAVAEngine.h"
 
 #include <QApplication>
 #include <QString>
@@ -43,6 +44,7 @@
 #include <QMessageBox>
 #include "UI/mainwindow.h"
 #include "Project.h"
+
 
 /* 
 	Project folders structure:
@@ -62,14 +64,16 @@
 	$project/DAta/Gfx/Fonts/ - path to packed graphic fonts sprites.
 */
 
-// Resource folder header
-static const QString RES_HEADER = "~res:";
+using namespace DAVA;
+
 // True type fonts resource folder path
 static const String FONTS_RES_PATH("~res:/Fonts/");
 // Graphics fonts definition resource folder path
 static const String GRAPHICS_FONTS_RES_PATH("~res:/Fonts/");
+// Resource folder header
+static const QString RES_HEADER = "~res:";
 // Button background image path
-static const String BACKGROUND_IMAGE_PATH("~res:/Images/buttonBg.png");
+static const QString BACKGROUND_IMAGE_PATH("~res:/Images/buttonBg.png");
 // Documentation path.
 static const QString DOCUMENTATION_PATH = "~doc:/UIEditorHelp/";
 

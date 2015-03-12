@@ -31,7 +31,6 @@
 #define EDITFONTDIALOG_H
 
 #include <QDialog>
-#include <DAVAEngine.h>
 
 #include <QSpinBox>
 #include <QPushButton>
@@ -39,7 +38,7 @@
 #include <QLineEdit>
 #include <QComboBox>
 
-using namespace DAVA;
+#include "Base/BaseTypes.h"
 
 namespace Ui {
 class EditFontDialog;
@@ -50,14 +49,14 @@ class EditFontDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit EditFontDialog(const String & editFontPresetName, QDialog *parent = 0);
+    explicit EditFontDialog(const DAVA::String & editFontPresetName, QDialog *parent = 0);
     ~EditFontDialog();
     
 private:
     Ui::EditFontDialog *ui;
     
     //ChangeFontPropertyCommandData dialogResult;
-    String currentLocale;
+    DAVA::String currentLocale;
     
     void ConnectToSignals();
     void DisconnectFromSignals();

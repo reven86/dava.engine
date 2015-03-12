@@ -76,7 +76,7 @@ void GamepadDevice::InitInternal()
     
     axisTranslator[0x11] = (uint8)GAMEPAD_ELEMENT_LT;           //AXIS_LTRIGGER
     axisTranslator[0x12] = (uint8)GAMEPAD_ELEMENT_RT;           //AXIS_RTRIGGER
-    axisTranslator[0x17] = (uint8)GAMEPAD_ELEMENT_LT;           //AXIS_BREAK
+    axisTranslator[0x17] = (uint8)GAMEPAD_ELEMENT_LT;           //AXIS_BRAKE
     axisTranslator[0x16] = (uint8)GAMEPAD_ELEMENT_RT;           //AXIS_GAS
     
     axisTranslator[0x00] = (uint8)GAMEPAD_ELEMENT_AXIS_LX;      //AXIS_X

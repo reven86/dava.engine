@@ -73,7 +73,7 @@ size_t ProtoDecoder::EncodeDataFrame(ProtoHeader* header, uint32 channelId, uint
     header->frameType = TYPE_DATA;
     header->channelId = channelId;
     header->packetId = packetId;
-    header->totalSize = packetSize;
+    header->totalSize = static_cast<uint32>(packetSize);
     return sizeToEncode;
 }
 

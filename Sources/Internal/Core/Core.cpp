@@ -66,7 +66,7 @@
 #endif
 
 #if defined(__DAVAENGINE_IPHONE__)
-#include "Input/AccelerometeriPhone.h"
+// not used
 #elif defined(__DAVAENGINE_ANDROID__)
 #	include "Input/AccelerometerAndroid.h"
 #endif //PLATFORMS
@@ -159,7 +159,7 @@ void Core::CreateSingletons()
 #endif
 	
 #if defined __DAVAENGINE_IPHONE__
-	new AccelerometeriPhoneImpl();
+	// not used
 #elif defined(__DAVAENGINE_ANDROID__)
 	new AccelerometerAndroidImpl();
 #endif //#if defined __DAVAENGINE_IPHONE__
@@ -175,8 +175,6 @@ void Core::CreateSingletons()
 
     DeviceInfo::InitializeScreenInfo();
     
-    UIControlBackground::CreateRenderObject();
-
     RegisterDAVAClasses();
     CheckDataTypeSizes();
 
@@ -205,8 +203,6 @@ void Core::ReleaseSingletons()
 #ifdef __DAVAENGINE_AUTOTESTING__
 	AutotestingSystem::Instance()->Release();
 #endif
-
-	UIControlBackground::ReleaseRenderObject();
 
 	LocalNotificationController::Instance()->Release();
     DownloadManager::Instance()->Release();

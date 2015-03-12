@@ -155,12 +155,12 @@ void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true
     }
 
     /*smooth tangent space preventing mirrored uv's smooth*/
-    for (uint32 v = 0, sz = verticesFull.size(); v<sz; ++v)
+    for (uint32 v = 0, sz = static_cast<uint32>(verticesFull.size()); v<sz; ++v)
     {
         int32 faceId = v/3;
         VertexWork& originVert = verticesOrigin[verticesFull[v].refIndex];      
         verticesFull[v].tbRatio = 1;
-        for (int32 iRef=0, refSz = originVert.refIndices.size(); iRef<refSz; ++iRef)
+        for (int32 iRef=0, refSz = static_cast<int32>(originVert.refIndices.size()); iRef<refSz; ++iRef)
         {
             int32 refFaceId = originVert.refIndices[iRef]/3;
             if (refFaceId == faceId) continue;
@@ -194,7 +194,7 @@ void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true
     const float32 EPS = 0.00001f; //should be the same value as in exporter
     Vector<int32> groups;
     //unlock vertices that have different tangent/binormal but same ref
-    for (uint32 i=0, sz=verticesOrigin.size(); i<sz; ++i)
+    for (uint32 i=0, sz=static_cast<uint32>(verticesOrigin.size()); i<sz; ++i)
     {        
         DVASSERT(verticesOrigin[i].refIndices.size()); //vertex with no reference triangles found?
 
@@ -207,11 +207,11 @@ void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true
         groups.push_back(0);
         verticesFull[verticesOrigin[i].refIndices[0]].resultGroup = 0;
         //if has different refs, check different groups;
-        for (int32 refId=1, refSz = verticesOrigin[i].refIndices.size(); refId<refSz; ++refId)
+        for (int32 refId=1, refSz = static_cast<int32>(verticesOrigin[i].refIndices.size()); refId<refSz; ++refId)
         {
             VertexWork& vertexRef = verticesFull[verticesOrigin[i].refIndices[refId]];
             bool groupFound = false;
-            for (int32 groupId = 0, groupSz = groups.size(); groupId<groupSz; ++groupId)
+            for (int32 groupId = 0, groupSz = static_cast<int32>(groups.size()); groupId<groupSz; ++groupId)
             {
                 const VertexWork& groupRef = verticesFull[verticesOrigin[i].refIndices[groups[groupId]]];                
                 bool groupEqual = FLOAT_EQUAL_EPS(vertexRef.tangent.x, groupRef.tangent.x, EPS) && FLOAT_EQUAL_EPS(vertexRef.tangent.y, groupRef.tangent.y, EPS) && FLOAT_EQUAL_EPS(vertexRef.tangent.z, groupRef.tangent.z, EPS);
@@ -227,7 +227,7 @@ void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true
             }
             if (!groupFound) //start new group
             {
-                vertexRef.resultGroup = groups.size();
+                vertexRef.resultGroup = static_cast<int32>(groups.size());
                 groups.push_back(refId);
             }
         }
@@ -235,16 +235,16 @@ void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true
         if (groups.size()>1) //different groups found - unlock vertices and update refs
         {            
             groups[0] = i;
-            for (int32 groupId = 1, groupSz = groups.size(); groupId<groupSz; ++groupId)
+            for (int32 groupId = 1, groupSz = static_cast<int32>(groups.size()); groupId<groupSz; ++groupId)
             {
                 verticesOrigin.push_back(verticesOrigin[i]);
                 
                 verticesOrigin.back().tangent = verticesFull[verticesOrigin[i].refIndices[groups[groupId]]].tangent;
                 verticesOrigin.back().binormal = verticesFull[verticesOrigin[i].refIndices[groups[groupId]]].binormal;
-                groups[groupId] = verticesOrigin.size()-1;
+                groups[groupId] = static_cast<int32>(verticesOrigin.size()-1);
                 verticesOrigin[groups[groupId]].refIndex = i;
             }
-            for (int32 refId=1, refSz = verticesOrigin[i].refIndices.size(); refId<refSz; ++refId)
+            for (int32 refId=1, refSz = static_cast<int32>(verticesOrigin[i].refIndices.size()); refId<refSz; ++refId)
             {
                 VertexWork& vertexRef = verticesFull[verticesOrigin[i].refIndices[refId]];
                 vertexRef.refIndex = groups[vertexRef.resultGroup];
@@ -263,12 +263,12 @@ void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true
     if (precomputeBinormal)
         vertexFormat|=EVF_BINORMAL;
     group->ReleaseData();
-    group->AllocateData(vertexFormat, verticesOrigin.size(), verticesFull.size());
+    group->AllocateData(vertexFormat, static_cast<int32>(verticesOrigin.size()), static_cast<int32>(verticesFull.size()));
 
     //copy vertices
-    for (uint32 i=0, sz = verticesOrigin.size(); i<sz; ++i)
+    for (uint32 i=0, sz = static_cast<uint32>(verticesOrigin.size()); i<sz; ++i)
     {
-        CopyVertex(tmpGroup, verticesOrigin[i].refIndex, group, i);   
+        CopyVertex(tmpGroup, verticesOrigin[i].refIndex, group, i);
         Vector3 normal;
         group->GetNormal(i, normal);
         
@@ -286,8 +286,8 @@ void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true
     }
 
     //copy indices
-    for (int32 i = 0, sz = verticesFull.size(); i<sz; ++i)
-        group->SetIndex(i, verticesFull[i].refIndex);
+    for (size_t i = 0, sz = verticesFull.size(); i<sz; ++i)
+        group->SetIndex(static_cast<int32>(i), verticesFull[i].refIndex);
 
     group->BuildBuffers();
 }

@@ -153,7 +153,7 @@ public:
 	void WriteString(const String &name, const String &text);
 	String ReadString(const String &name);
 
-	String MakeScreenshot();
+	String MakeScreenshot(bool skip);
 
 	inline lua_State* GetLuaState() { return luaState; };
 

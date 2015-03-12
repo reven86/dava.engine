@@ -274,7 +274,7 @@ void UISlider::Draw(const UIGeometricData &geometricData)
 	{
 		minBackground->SetParentColor(GetBackground()->GetDrawColor());
 		RenderSystem2D::Instance()->PushClip();
-        RenderSystem2D::Instance()->ClipRect(Rect(screenXMin, screenYMin, clipPointAbsolute - screenXMin, screenYMax));
+        RenderSystem2D::Instance()->IntersectClipRect(Rect(screenXMin, screenYMin, clipPointAbsolute - screenXMin, screenYMax));
 		minBackground->Draw(geometricData);
 		RenderSystem2D::Instance()->PopClip();
 	}
@@ -282,7 +282,7 @@ void UISlider::Draw(const UIGeometricData &geometricData)
 	{
 		maxBackground->SetParentColor(GetBackground()->GetDrawColor());
 		RenderSystem2D::Instance()->PushClip();
-        RenderSystem2D::Instance()->ClipRect(Rect(clipPointAbsolute, screenYMin, screenXMax - clipPointAbsolute, screenYMax));
+        RenderSystem2D::Instance()->IntersectClipRect(Rect(clipPointAbsolute, screenYMin, screenXMax - clipPointAbsolute, screenYMax));
 		maxBackground->Draw(geometricData);
 		RenderSystem2D::Instance()->PopClip();
 	}

@@ -14,15 +14,24 @@ if( ANDROID )
 elseif( IOS )
     set( PLATFORM_SPECIFIC_FOLDER "iOSSpecific" )
 
+   # set_source_files_properties(  ${DAVA_TOOLS_DIR}/TeamcityOutput/TeamcityOutput.cpp PROPERTIES COMPILE_FLAGS "Objective-C++" )  
+
     set( CMAKE_IOS_SDK_ROOT Latest IOS )
-    set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
+    set( CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer" )
+    set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++0x" )
+    set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
+    set( CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++0x -stdlib=libc++ -g -Wall")
 
     file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/iOSSpecific/*.xib" )
 
     list( APPEND RESOURCES_LIST ${XIB_LIST} )
-    list( APPEND RESOURCES_LIST ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/TemplateProjectiPhone-Info.plist )
+    list( APPEND RESOURCES_LIST ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/TestBed.plist  )
 
 elseif( MACOS )
+
+    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++0x")
+    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++0x -stdlib=libc++ -g -Wall")
     set( PLATFORM_SPECIFIC_FOLDER "MacOSSpecific" )
 
     file ( GLOB_RECURSE RESOURCES_LIST "${CMAKE_CURRENT_LIST_DIR}/Data/*" )
@@ -70,8 +79,7 @@ define_source_folders ( SRC_ROOT "Classes" ${TeamcityOutput}  ${PLATFORM_SPECIFI
 generate_source_groups_project ( ROOT_DIR "Classes" ${PLATFORM_SPECIFIC_FOLDER}  ${PLATFORM_SPECIFIC_FOLDER}  
                                  GROUP_FOLDERS TeamcityOutput PackerTools )
 
-if( ANDROID )
-    
+if( ANDROID )  
     add_library( ${PROJECT_NAME} SHARED 
         ${PROJECT_SOURCE_FILES}  ${PackerToolsSCR} )
 
@@ -104,7 +112,7 @@ if( ANDROID )
 
 elseif( IOS )
 
-    set_target_properties ( ${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/TemplateProjectiPhone-Info.plist 
+    set_target_properties ( ${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/TestBed.plist 
                             RESOURCE "${XIB_LIST}"
                             XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
                           )
@@ -113,15 +121,11 @@ elseif( IOS )
     string ( REGEX REPLACE /Contents/MacOS/${PROJECT_NAME} "" TARGET_LOC ${TARGET_LOC} )
     add_custom_command( TARGET ${PROJECT_NAME} PRE_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/Data ${TARGET_LOC}/Data
-      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/TemplateProjectiPhone-Info.plist ${CMAKE_BINARY_DIR}/CMakeFiles/${PROJECT_NAME}.dir/Info.plist
+      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/TestBed.plist ${CMAKE_BINARY_DIR}/CMakeFiles/${PROJECT_NAME}.dir/Info.plist
     )
 
 elseif( MACOS )    
     set( BUILD_MODE $<CONFIG> ) #$<$<CONFIG:debug>:Debug>$<$<CONFIG:release>:Release> )
-
-    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++0x")
-    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-    set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++0x -stdlib=libc++ -g -Wall")
 
     ADD_CUSTOM_COMMAND(
     TARGET ${PROJECT_NAME}
@@ -150,6 +154,7 @@ elseif( WIN32 )
                     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
     
 endif()
+
 
 target_link_libraries( ${PROJECT_NAME}
     ${DAVA_LIBRARY}

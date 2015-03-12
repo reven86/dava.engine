@@ -28,6 +28,8 @@
 
 #include "RulerController.h"
 
+using namespace DAVA;
+
 RulerController::RulerController() :
     screenScale(0.0f)
 {

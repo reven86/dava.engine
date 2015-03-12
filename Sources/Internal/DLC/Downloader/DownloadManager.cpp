@@ -463,6 +463,11 @@ const DownloadStatistics * const DownloadManager::GetStatistics() const
 {
     return downloader->GetStatistics();
 }
+    
+void DownloadManager::SetDownloadSpeedLimit(const uint64 limit)
+{
+    downloader->SetDownloadSpeedLimit(limit);
+}
 
 void DownloadManager::ClearQueue(Deque<DownloadTaskDescription *> &queue)
 {

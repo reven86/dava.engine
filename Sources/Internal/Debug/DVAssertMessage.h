@@ -50,10 +50,11 @@ public:
 		ALWAYS_MODAL
 	};
 
-	static void ShowMessage(eModalType modalType, const char8 * text, ...);
+	static bool ShowMessage(eModalType modalType, const char8 * text, ...);
 
 protected:
-	static void InnerShow(eModalType modalType, const char* content);
+    // return true if user click Break
+	static bool InnerShow(eModalType modalType, const char* content);
 	
 	// Pointer to the platform-specific message.
 	static void* messageBoxPtr;

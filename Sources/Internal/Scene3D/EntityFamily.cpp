@@ -47,7 +47,7 @@ EntityFamily * EntityFamily::GetOrCreate (const Vector<Component*> & components)
 
     //setup new family
     EntityFamily localFamily;
-    size_t size = components.size ();
+    int32 size = static_cast<int32>(components.size ());
     for (int32 i = size - 1; i >= 0; --i)
     {
         uint32 type = components[i]->GetType ();

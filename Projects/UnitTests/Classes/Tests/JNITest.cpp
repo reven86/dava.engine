@@ -114,7 +114,7 @@ void JNITest::TestFunction(PerfFuncData * data)
     jint stringsToPass = 5;
 
     // Create ObjectsArray for strings
-    JNI::JavaClass stringClass("java.lang.String");
+    JNI::JavaClass stringClass("java/lang/String");
     jobjectArray stringArray = env->NewObjectArray(stringsToPass, stringClass, NULL);
 
     // fill array

@@ -35,9 +35,12 @@
 #ifndef __DAVAENGINE_CONFIG_H__
 #define __DAVAENGINE_CONFIG_H__
 
+#ifndef __DAVAENGINE_AUTOTESTING__
 #define __DAVAENGINE_AUTOTESTING__
+#endif
+#ifndef AUTOTESTING_LUA
 #define AUTOTESTING_LUA
-
+#endif
 
 //#define ENABLE_MEMORY_MANAGER
 

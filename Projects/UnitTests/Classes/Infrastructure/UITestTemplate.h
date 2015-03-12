@@ -69,9 +69,9 @@ const float32 UITestTemplate<T>::TEST_TIME = 10.f;
 template <class T>
 UITestTemplate<T>::UITestTemplate(const String & screenName)
 :    TestTemplate<T>(screenName)
+,   finishButton(NULL)
 ,   testFinished(false)
 ,   testTime(0.f)
-,   finishButton(NULL)
 {
 }
 

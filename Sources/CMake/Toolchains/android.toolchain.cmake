@@ -186,6 +186,9 @@
 
 cmake_minimum_required( VERSION 2.6.3 )
 
+set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Modules/" ) 
+include               ( GlobalVariables )
+
 if( DEFINED CMAKE_CROSSCOMPILING )
  # subsequent toolchain loading is not really needed
  return()
@@ -1606,6 +1609,7 @@ if( NOT _CMAKE_IN_TRY_COMPILE )
  unset( __toolchain_config )
 endif()
 
+include ( PlatformSettings     )
 
 # force cmake to produce / instead of \ in build commands for Ninja generator
 if( CMAKE_GENERATOR MATCHES "Ninja" AND CMAKE_HOST_WIN32 )

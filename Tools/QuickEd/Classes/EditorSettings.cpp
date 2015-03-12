@@ -32,6 +32,8 @@
 #include "Helpers/ResourcesManageHelper.h"
 #include <QString>
 
+using namespace DAVA;
+
 static const Color DEFAULT_BACKGROUND_FRAME_COLOR(0.2f, 0.2f, 0.2f, 1.0f);
 static const Color DEFAULT_GRID_COLOR(0.5f, 0.5f, 0.5f, 1.0f);
 static const String EDITOR_SETTINGS_FILE("~doc:/QuickEdSettings.archive");

@@ -44,7 +44,7 @@ public:
     CoreWin32PlatformBase();
 
     void InitArgs();
-    virtual void Quit();
+    void Quit() override;
 
     HINSTANCE GetInstance() const;
     HWND GetWindow() const;

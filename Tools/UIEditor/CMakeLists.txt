@@ -6,20 +6,9 @@ project               ( UIEditor )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include               ( CMake-common )
 
-if ( MSVC )
-    set( CMAKE_PREFIX_PATH    "${QT4_PATH_WIN}")
-    set( QT_MOC_EXECUTABLE    "${QT4_PATH_WIN}/bin/moc.exe" )
-    set( QT_RCC_EXECUTABLE    "${QT4_PATH_WIN}/bin/rcc.exe" )
-    set( QT_UIC_EXECUTABLE    "${QT4_PATH_WIN}/bin/uic.exe" )
-    set( QT_BINARY_DIR        "${QT4_PATH_WIN}/bin"         )
-    message ( "QT4_PATH_WIN      -"  ${QT4_PATH_WIN}      )
-    message ( "QT_MOC_EXECUTABLE -"  ${QT_MOC_EXECUTABLE} )
-    message ( "QT_RCC_EXECUTABLE -"  ${QT_RCC_EXECUTABLE} )
-    message ( "QT_UIC_EXECUTABLE -"  ${QT_UIC_EXECUTABLE} )
-endif()
-
 find_package          ( Qt4           REQUIRED )
 find_package          ( DavaFramework REQUIRED )
+
 include               ( ${QT_USE_FILE} )
 
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
@@ -65,9 +54,11 @@ define_source_folders          ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build" 
 generate_source_groups_project ( SRC_ROOT "Classes" GROUP_FOLDERS Generated UiList )
 add_subdirectory               ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
+set( WIN32_DATA                 ${CMAKE_CURRENT_LIST_DIR}/Data )
+
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
 set( MACOS_ICO                  ${CMAKE_CURRENT_LIST_DIR}/icon.icns )
-set( MACOS_DATA                 ${CMAKE_CURRENT_LIST_DIR}/Data/* )
+set( MACOS_DATA                 ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_DYLIB                ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
 set( ADDED_SRC                  ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set( LIBRARIES                  ${QT_LIBRARIES} TextureTool )
@@ -77,11 +68,3 @@ set( ADDED_BINARY_DIR           ${QT_BINARY_DIR} )
 
 setup_main_executable()
 
-if( APPLE )
-    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14")
-    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-        COMMAND install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Frameworks/libIMagickHelper.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}            
-    )
-
-endif()
