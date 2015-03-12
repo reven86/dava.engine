@@ -97,7 +97,9 @@
 #if defined(__DAVAENGINE_WIN32__)
 #define __DAVASOUND_AL__
 #define WIN32_LEAN_AND_MEAN
-//#include <windef.h>
+#ifndef NOMINMAX
+#define NOMINMAX        // undef macro min and max from windows headers
+#endif
 #include <windows.h>
 #include <windowsx.h>
 #undef DrawState
@@ -145,7 +147,7 @@
 #include <array>
 #include <unordered_map>
 #include <unordered_set>
-#include <functional>
+#include <sstream>
 
 #if defined(__DAVAENGINE_WIN32__)
 #pragma warning( pop )
@@ -189,7 +191,7 @@ typedef Select<sizeof(void*) == 4, uint32, uint64>::Result pointer_size;
 #endif
 
 #ifndef FALSE
-#define	FALSE   0
+#define FALSE   0
 #endif
 
 typedef char        char8;
@@ -199,9 +201,10 @@ typedef float       float32;
 typedef double      float64;
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-// TODO: replace DefaultSTLAllocator with MemoryManagerAllocator after fixing framework codebase
+// FIX: replace DefaultSTLAllocator with MemoryManagerAllocator after fixing framework and game codebases
 template<typename T>
 using DefaultSTLAllocator = std::allocator<T>;
+//using DefaultSTLAllocator = MemoryManagerAllocator<T, ALLOC_POOL_APP>;
 #else
 template<typename T>
 using DefaultSTLAllocator = std::allocator<T>;
@@ -212,6 +215,11 @@ using BasicString = std::basic_string<CharT, std::char_traits<CharT>, DefaultSTL
 
 using String = BasicString<char8>;
 using WideString = BasicString<wchar_t>;
+
+template<typename CharT>
+using BasicStringStream = std::basic_stringstream<CharT, std::char_traits<CharT>, DefaultSTLAllocator<CharT>>;
+
+using StringStream = BasicStringStream<char8>;
 
 template<typename T>
 using List = std::list<T, DefaultSTLAllocator<T>>;
@@ -293,10 +301,8 @@ inline T Clamp(T val, T a, T b)
 }
 
 #if defined(__DAVAENGINE_WIN32__)
-#define Snprinf     _snprintf       // TODO: remove this mistyped macro and fix framework codebase
 #define Snprintf    _snprintf
 #else //#if defined(__DAVAENGINE_WIN32__)
-#define Snprinf     snprintf
 #define Snprintf    snprintf
 #endif //#if defined(__DAVAENGINE_WIN32__)
 
