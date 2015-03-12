@@ -259,7 +259,7 @@ void TextureProperties::ReloadEnumFilters()
 			// if mipmap is disabled, min filter can only be nearest or linear
 			// if it isn't - change it do default nearest
 			int curVal = propMinFilter->GetValue().toInt();
-			if( curVal != DAVA::Texture::FILTER_NEAREST ||
+			if (curVal != DAVA::Texture::FILTER_NEAREST &&
 				curVal != DAVA::Texture::FILTER_LINEAR)
 			{
 				propMinFilter->SetValue(QVariant(DAVA::Texture::FILTER_NEAREST));

@@ -717,7 +717,7 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionVisibilityCheckTool, SIGNAL(triggered()), this, SLOT(OnVisibilityTool()));
 	QObject::connect(ui->actionRulerTool, SIGNAL(triggered()), this, SLOT(OnRulerTool()));
     QObject::connect(ui->actionGrasEditor, SIGNAL(triggered()), this, SLOT(OnGrasEditor()));
-    QObject::connect(ui->actionWayEditor, SIGNAL(toggled(bool)), this, SLOT(OnWayEditor(bool)));
+    QObject::connect(ui->actionWayEditor, SIGNAL(triggered()), this, SLOT(OnWayEditor()));
 
 	QObject::connect(ui->actionLight, SIGNAL(triggered()), this, SLOT(OnLightDialog()));
 	QObject::connect(ui->actionCamera, SIGNAL(triggered()), this, SLOT(OnCameraDialog()));
@@ -2332,7 +2332,14 @@ void QtMainWindow::OnCustomColorsEditor()
 	
 	if(!sceneEditor->customColorsSystem->IsLandscapeEditingEnabled())
 	{
-		if (LoadAppropriateTextureFormat())
+        if (sceneEditor->pathSystem->IsPathEditEnabled())
+        {
+            ShowErrorDialog("WayEditor should be disabled prior to enabling landscape tools");
+            OnLandscapeEditorToggled(sceneEditor);
+            return;
+        }
+
+        if (LoadAppropriateTextureFormat())
 		{
 			sceneEditor->Exec(new ActionEnableCustomColors(sceneEditor));
 		}
@@ -2405,8 +2412,15 @@ void QtMainWindow::OnHeightmapEditor()
 	}
 	else
 	{
-		if (LoadAppropriateTextureFormat())
-		{
+        if (sceneEditor->pathSystem->IsPathEditEnabled())
+        {
+            ShowErrorDialog("WayEditor should be disabled prior to enabling landscape tools");
+            OnLandscapeEditorToggled(sceneEditor);
+            return;
+        }
+
+        if (LoadAppropriateTextureFormat())
+        {
 			sceneEditor->Exec(new ActionEnableHeightmapEditor(sceneEditor));
 		}
 		else
@@ -2430,7 +2444,14 @@ void QtMainWindow::OnRulerTool()
 	}
 	else
 	{
-		if (LoadAppropriateTextureFormat())
+        if (sceneEditor->pathSystem->IsPathEditEnabled())
+        {
+            ShowErrorDialog("WayEditor should be disabled prior to enabling landscape tools");
+            OnLandscapeEditorToggled(sceneEditor);
+            return;
+        }
+
+        if (LoadAppropriateTextureFormat())
 		{
 			sceneEditor->Exec(new ActionEnableRulerTool(sceneEditor));
 		}
@@ -2455,7 +2476,14 @@ void QtMainWindow::OnTilemaskEditor()
 	}
 	else
 	{
-		if (LoadAppropriateTextureFormat())
+        if (sceneEditor->pathSystem->IsPathEditEnabled())
+        {
+            ShowErrorDialog("WayEditor should be disabled prior to enabling landscape tools");
+            OnLandscapeEditorToggled(sceneEditor);
+            return;
+        }
+
+        if (LoadAppropriateTextureFormat())
 		{
 			sceneEditor->Exec(new ActionEnableTilemaskEditor(sceneEditor));
 		}
@@ -2480,7 +2508,14 @@ void QtMainWindow::OnVisibilityTool()
 	}
 	else
 	{
-		if (LoadAppropriateTextureFormat())
+        if (sceneEditor->pathSystem->IsPathEditEnabled())
+        {
+            ShowErrorDialog("WayEditor should be disabled prior to enabling landscape tools");
+            OnLandscapeEditorToggled(sceneEditor);
+            return;
+        }
+
+        if (LoadAppropriateTextureFormat())
 		{
 			sceneEditor->Exec(new ActionEnableVisibilityTool(sceneEditor));
 		}
@@ -2505,7 +2540,14 @@ void QtMainWindow::OnNotPassableTerrain()
 	}
 	else
 	{
-		if (LoadAppropriateTextureFormat())
+        if (sceneEditor->pathSystem->IsPathEditEnabled())
+        {
+            ShowErrorDialog("WayEditor should be disabled prior to enabling landscape tools");
+            OnLandscapeEditorToggled(sceneEditor);
+            return;
+        }
+
+        if (LoadAppropriateTextureFormat())
 		{
 			sceneEditor->Exec(new ActionEnableNotPassable(sceneEditor));
 		}
@@ -2542,7 +2584,7 @@ void QtMainWindow::OnGrasEditor()
     }*/
 }
 
-void QtMainWindow::OnWayEditor(bool show)
+void QtMainWindow::OnWayEditor()
 {
     SceneEditor2* sceneEditor = GetCurrentScene();
     if (!sceneEditor)
@@ -2550,8 +2592,19 @@ void QtMainWindow::OnWayEditor(bool show)
         return;
     }
 
-	sceneEditor->wayEditSystem->EnableWayEdit(show);
-	sceneEditor->pathSystem->EnablePathEdit(show);
+    bool toEnable = !sceneEditor->pathSystem->IsPathEditEnabled();
+    DVASSERT(toEnable == ui->actionWayEditor->isChecked());
+
+    int32 toolsEnabled = sceneEditor->GetEnabledTools();
+    if (toEnable && toolsEnabled)
+    {
+        ShowErrorDialog("Landscape tools should be disabled prior to enabling WayEditor");
+        ui->actionWayEditor->setChecked(false);
+        return;
+    }
+
+	sceneEditor->wayEditSystem->EnableWayEdit(toEnable);
+	sceneEditor->pathSystem->EnablePathEdit(toEnable);
 }
 
 
