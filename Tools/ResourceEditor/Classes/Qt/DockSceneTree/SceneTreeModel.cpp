@@ -547,8 +547,8 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData * data, Qt::DropAction ac
                             }
                         }
 
-                        // 6. or we are dropping path inside of another path
-                        if (GetPathComponent(entity) && GetPathComponent(targetEntity))
+                        // 6. or we are dropping path inside of another path or waypoint
+                        if (GetPathComponent(entity) && (GetPathComponent(targetEntity) || GetWaypointComponent(targetEntity)))
                         {
                             ret = false;
                             break;
