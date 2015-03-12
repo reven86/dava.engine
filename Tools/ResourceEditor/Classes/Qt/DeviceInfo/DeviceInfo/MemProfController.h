@@ -31,6 +31,7 @@ public:
 public slots:
     void OnDumpPressed();
     void OnViewDump();
+    void OnViewFileDump();
     
 private:
     void Output(const DAVA::String& msg);
