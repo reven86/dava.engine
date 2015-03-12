@@ -91,11 +91,11 @@ public:
 	void RemoveCollisionObject(DAVA::Entity *entity);
 
 	virtual void Process(DAVA::float32 timeElapsed);
+    virtual void Input(DAVA::UIEvent *event);
 
 protected:
 	void Draw();
 
-	void ProcessUIEvent(DAVA::UIEvent *event);
 	void ProcessCommand(const Command2 *command, bool redo);
 
     virtual void ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event);

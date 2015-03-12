@@ -56,7 +56,7 @@ void RenderPass::AddRenderLayer(RenderLayer * layer, const FastName & afterLayer
 {
 	if(LAST_LAYER != afterLayer)
 	{
-		uint32 size = renderLayers.size();
+		uint32 size = static_cast<uint32>(renderLayers.size());
 		for(uint32 i = 0; i < size; ++i)
 		{
 			const FastName & name = renderLayers[i]->GetName();
@@ -147,10 +147,10 @@ void RenderPass::ClearBuffers(uint32 clearBuffers)
 
 
 MainForwardRenderPass::MainForwardRenderPass(const FastName & name, RenderPassID id):RenderPass(name, id),
-    reflectionTexture(NULL), 
-    refractionTexture(NULL), 
-    reflectionPass(NULL), 
-    refractionPass(NULL), 
+    reflectionPass(NULL),
+    refractionPass(NULL),
+    reflectionTexture(NULL),
+    refractionTexture(NULL),
     needWaterPrepass(false)
 {
     const RenderLayerManager * renderLayerManager = RenderLayerManager::Instance();
@@ -184,16 +184,13 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
         refractionPass = new WaterRefractionRenderPass(PASS_FORWARD, RENDER_PASS_WATER_REFRACTION);
         refractionTexture = Texture::CreateFBO(REFRACTION_TEX_SIZE, REFRACTION_TEX_SIZE, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);                  
     }   
-        
-    RenderManager::Instance()->ClipPush();
+
     Rect viewportSave = RenderManager::Instance()->GetViewport();
-    uint32 currFboId = RenderManager::Instance()->HWglGetLastFBO();
-    int32 currRenderOrientation = RenderManager::Instance()->GetRenderOrientation();
-    //RenderManager::Instance()->SetRenderOrientation(Core::SCREEN_ORIENTATION_TEXTURE);
+    Texture * renderTargetSave = RenderManager::Instance()->GetRenderTarget();
         
-    RenderManager::Instance()->SetHWRenderTargetTexture(reflectionTexture);
+    RenderManager::Instance()->SetRenderTarget(reflectionTexture);
     //discard everything here
-    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE), true);            
+    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE));
 
     reflectionPass->SetWaterLevel(waterBox.max.z);
     reflectionPass->Draw(renderSystem, RenderManager::ALL_BUFFERS);
@@ -203,21 +200,18 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
     RenderManager::Instance()->DiscardFramebufferHW(RenderManager::DEPTH_ATTACHMENT|RenderManager::STENCIL_ATTACHMENT);
         
         
-    RenderManager::Instance()->SetHWRenderTargetTexture(refractionTexture);
+    RenderManager::Instance()->SetRenderTarget(refractionTexture);
         
-    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE), true);            
+    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE));
 
     refractionPass->SetWaterLevel(waterBox.min.z);
     refractionPass->Draw(renderSystem, RenderManager::ALL_BUFFERS);
 
     //discrad depth(everything?) here
     RenderManager::Instance()->DiscardFramebufferHW(RenderManager::DEPTH_ATTACHMENT|RenderManager::STENCIL_ATTACHMENT);
-        
-    RenderManager::Instance()->HWglBindFBO(currFboId?currFboId:RenderManager::Instance()->GetFBOViewFramebuffer());
-    RenderManager::Instance()->SetRenderOrientation(currRenderOrientation);
-    RenderManager::Instance()->SetViewport(viewportSave, true);
-    RenderManager::Instance()->ClipPop();
 
+    RenderManager::Instance()->SetRenderTarget(renderTargetSave);
+    RenderManager::Instance()->SetViewport(viewportSave);
 
     renderSystem->GetDrawCamera()->SetupDynamicParameters();    		
         

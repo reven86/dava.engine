@@ -12,11 +12,11 @@
 
 class LogModel
     : public QStandardItemModel
-      , public DAVA::LoggerOutput
+    , public DAVA::LoggerOutput
 {
     Q_OBJECT
 
-    signals:
+signals:
     void logged(int ll, const QString& text);
 
 public:
@@ -34,8 +34,8 @@ public:
     void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text);
     void Output(DAVA::Logger::eLogLevel ll, const DAVA::char16* text);
 
-private slots:
-    void OnAddMessage(int ll, const QString& text);
+public slots:
+    void AddMessage(int ll, const QString& text);
 
 private:
     QList<QStandardItem *> CreateItem(int ll, const QString& text) const;

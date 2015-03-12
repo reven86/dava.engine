@@ -41,11 +41,11 @@ namespace DAVA
 	{
 		DVASSERT(NULL == dbClient);
 
-		dbClient = MongodbClient::Create(dbHost.c_str(), dbPort);
+		dbClient = MongodbClient::Create(dbHost, dbPort);
 		if(dbClient)
 		{
-			dbClient->SetDatabaseName(dbName.c_str());
-			dbClient->SetCollectionName(collection.c_str());
+			dbClient->SetDatabaseName(dbName);
+			dbClient->SetCollectionName(collection);
 		}
 
 		return (NULL != dbClient);
@@ -69,10 +69,10 @@ namespace DAVA
 		KeyedArchive* deviceArchive;
 		String result;
 		
-		deviceArchive = currentRunArchive->GetArchive(deviceName.c_str());
+		deviceArchive = currentRunArchive->GetArchive(deviceName);
 		if (deviceArchive)
 		{
-			result = deviceArchive->GetString(parameter.c_str(), "not_found");
+			result = deviceArchive->GetString(parameter, "not_found");
 		}
 		else
 		{
@@ -81,23 +81,23 @@ namespace DAVA
 		
 
 		SafeRelease(dbUpdateObject);
-		Logger::Debug("AutotestingDB::GetStringTestParameter %s", result.c_str());
+		Logger::Info("AutotestingDB::GetStringTestParameter %s", result.c_str());
 		return result;
 	}
 
 	int32 AutotestingDB::GetIntTestParameter(const String & deviceName, const String & parameter)
 	{
-		Logger::Debug("AutotestingDB::GetIntTestParameter deviceName=%s, parameter=%s", deviceName.c_str(), parameter.c_str());
+		Logger::Info("AutotestingDB::GetIntTestParameter deviceName=%s, parameter=%s", deviceName.c_str(), parameter.c_str());
 
 		MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive* currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");
 		KeyedArchive* deviceArchive;
 		int32 result;
 
-		deviceArchive = currentRunArchive->GetArchive(deviceName.c_str());
+		deviceArchive = currentRunArchive->GetArchive(deviceName);
 		if (deviceArchive)
 		{
-			result = deviceArchive->GetInt32(parameter.c_str(), -9999);
+			result = deviceArchive->GetInt32(parameter, -9999);
 		}
 		else
 		{
@@ -106,7 +106,7 @@ namespace DAVA
 
 
 		SafeRelease(dbUpdateObject);
-		Logger::Debug("AutotestingDB::GetIntTestParameter %d", result);
+		Logger::Info("AutotestingDB::GetIntTestParameter %d", result);
 		return result;
 	}
 	
@@ -131,7 +131,7 @@ namespace DAVA
 			testsName = Format("%s_%s_%s", AutotestingSystem::Instance()->buildDate.c_str(), AutotestingSystem::Instance()->buildId.c_str(), AutotestingSystem::Instance()->deviceName.c_str());
 		}
 
-		KeyedArchive* dbUpdateData;
+		KeyedArchive* dbUpdateData = NULL;
 		bool isFound = dbClient->FindObjectByKey(testsName, dbUpdateObject);
 		
 		if(!isFound)
@@ -160,38 +160,37 @@ namespace DAVA
 			testsName = Format("%s_%s_%s", AutotestingSystem::Instance()->buildDate.c_str(), AutotestingSystem::Instance()->buildId.c_str(), AutotestingSystem::Instance()->deviceName.c_str());
 		}
 
-		KeyedArchive* dbUpdateData;
 		bool isFound = dbClient->FindObjectByKey(testsName, dbUpdateObject);
 
 		if(!isFound)
 		{
 			dbUpdateObject->SetObjectName(testsName);
 
-			dbUpdateObject->AddString("Platform", AUTOTESTING_PLATFORM_NAME);
-			dbUpdateObject->AddString("Date", AutotestingSystem::Instance()->buildDate.c_str());
-			dbUpdateObject->AddString("RunId", AutotestingSystem::Instance()->runId.c_str());
-			dbUpdateObject->AddString("Device", AutotestingSystem::Instance()->deviceName.c_str());			
-			dbUpdateObject->AddString("BuildId", AutotestingSystem::Instance()->buildId.c_str());
-			dbUpdateObject->AddString("Branch", AutotestingSystem::Instance()->branch.c_str());
-			dbUpdateObject->AddString("BranchRevision", AutotestingSystem::Instance()->branchRev.c_str());
-			dbUpdateObject->AddString("Framework", AutotestingSystem::Instance()->framework.c_str());
-			dbUpdateObject->AddString("FrameworkRevision", AutotestingSystem::Instance()->frameworkRev.c_str());
+			dbUpdateObject->AddString("Platform", DeviceInfo::GetPlatformString());
+			dbUpdateObject->AddString("Date", AutotestingSystem::Instance()->buildDate);
+			dbUpdateObject->AddString("RunId", AutotestingSystem::Instance()->runId);
+			dbUpdateObject->AddString("Device", AutotestingSystem::Instance()->deviceName);			
+			dbUpdateObject->AddString("BuildId", AutotestingSystem::Instance()->buildId);
+			dbUpdateObject->AddString("Branch", AutotestingSystem::Instance()->branch);
+			dbUpdateObject->AddString("BranchRevision", AutotestingSystem::Instance()->branchRev);
+			dbUpdateObject->AddString("Framework", AutotestingSystem::Instance()->framework);
+			dbUpdateObject->AddString("FrameworkRevision", AutotestingSystem::Instance()->frameworkRev);
 			// TODO: After realization GetOsVersion() DF-3940
 			dbUpdateObject->AddString("OSVersion", DeviceInfo::GetVersion());
 			dbUpdateObject->AddString("Model", DeviceInfo::GetModel());
 
-			Logger::Debug("AutotestingSystem::InsertTestArchive new MongodbUpdateObject %s", testsName.c_str());
+			Logger::Info("AutotestingSystem::InsertTestArchive new MongodbUpdateObject %s", testsName.c_str());
 		}
 
 		dbUpdateObject->LoadData();
-		dbUpdateData = dbUpdateObject->GetData();
+		KeyedArchive* dbUpdateData = dbUpdateObject->GetData();
 
 		return dbUpdateData;
 	}
 
 	void AutotestingDB::Log(const String &level, const String &message)
 	{
-		Logger::Debug("AutotestingDB::Log [%s]%s", level.c_str(), message.c_str());
+		Logger::Info("AutotestingDB::Log [%s]%s", level.c_str(), message.c_str());
 		uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
 		String testId = AutotestingSystem::Instance()->GetTestId();
 		String stepId = AutotestingSystem::Instance()->GetStepId();
@@ -203,23 +202,23 @@ namespace DAVA
 		// Launch data
 		dbUpdateObject->SetUniqueObjectName();
 
-		dbUpdateObject->AddString("Platform", AUTOTESTING_PLATFORM_NAME);
-		dbUpdateObject->AddString("Date", AutotestingSystem::Instance()->buildDate.c_str());
-		dbUpdateObject->AddString("RunId", AutotestingSystem::Instance()->runId.c_str());
-		dbUpdateObject->AddString("Device", AutotestingSystem::Instance()->deviceName.c_str());			
-		dbUpdateObject->AddString("BuildId", AutotestingSystem::Instance()->buildId.c_str());
-		dbUpdateObject->AddString("Branch", AutotestingSystem::Instance()->branch.c_str());
-		dbUpdateObject->AddString("BranchRevision", AutotestingSystem::Instance()->branchRev.c_str());
-		dbUpdateObject->AddString("Framework", AutotestingSystem::Instance()->framework.c_str());
-		dbUpdateObject->AddString("FrameworkRevision", AutotestingSystem::Instance()->frameworkRev.c_str());
+		dbUpdateObject->AddString("Platform", DeviceInfo::GetPlatformString());
+		dbUpdateObject->AddString("Date", AutotestingSystem::Instance()->buildDate);
+		dbUpdateObject->AddString("RunId", AutotestingSystem::Instance()->runId);
+		dbUpdateObject->AddString("Device", AutotestingSystem::Instance()->deviceName);			
+		dbUpdateObject->AddString("BuildId", AutotestingSystem::Instance()->buildId);
+		dbUpdateObject->AddString("Branch", AutotestingSystem::Instance()->branch);
+		dbUpdateObject->AddString("BranchRevision", AutotestingSystem::Instance()->branchRev);
+		dbUpdateObject->AddString("Framework", AutotestingSystem::Instance()->framework);
+		dbUpdateObject->AddString("FrameworkRevision", AutotestingSystem::Instance()->frameworkRev);
 		dbUpdateObject->AddString("OSVersion", DeviceInfo::GetVersion());
 		dbUpdateObject->AddString("Model", DeviceInfo::GetModel());
 
 		// Test data
-		dbUpdateObject->AddString("Group", AutotestingSystem::Instance()->groupName.c_str());
-		dbUpdateObject->AddString("Test", testId.c_str());
-		dbUpdateObject->AddString("Step", stepId.c_str());
-		dbUpdateObject->AddString("Log", logId.c_str());
+		dbUpdateObject->AddString("Group", AutotestingSystem::Instance()->groupName);
+		dbUpdateObject->AddString("Test", testId);
+		dbUpdateObject->AddString("Step", stepId);
+		dbUpdateObject->AddString("Log", logId);
 
 
 		// Log data
@@ -240,13 +239,13 @@ namespace DAVA
 		SafeRelease(dbUpdateObject);
 		
 		uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
-		Logger::Debug("AutotestingSystem::Log FINISH  summary time %d", finishTime - startTime);
+		Logger::Info("AutotestingSystem::Log FINISH  summary time %d", finishTime - startTime);
 	}
 
 	// DEPRECATED: Rewrite for new DB conception
 	String AutotestingDB::ReadCommand(const String & device)
 	{
-		Logger::Debug("AutotestingDB::ReadCommand device=%s", device.c_str());
+		Logger::Info("AutotestingDB::ReadCommand device=%s", device.c_str());
 
 		MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive* currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_multiplayer");
@@ -256,45 +255,45 @@ namespace DAVA
 
 		SafeRelease(dbUpdateObject);
 
-		Logger::Debug("AutotestingDB::ReadCommand device=%s: '%s'", device.c_str(), result.c_str());
+		Logger::Info("AutotestingDB::ReadCommand device=%s: '%s'", device.c_str(), result.c_str());
 		return result;
 	}
 
 	// DEPRECATED: Rewrite for new DB conception
 	String AutotestingDB::ReadState(const String & device)
 	{
-		Logger::Debug("AutotestingDB::ReadState device=%s", device.c_str());
+		Logger::Info("AutotestingDB::ReadState device=%s", device.c_str());
 
 
 		MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive* currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_multiplayer");
 		String result;
 
-		result = currentRunArchive->GetString(device.c_str(), "not_found");
+		result = currentRunArchive->GetString(device, "not_found");
 		SafeRelease(dbUpdateObject);
-		Logger::Debug("AutotestingDB::ReadState device=%s: '%s'", device.c_str(), result.c_str());
+		Logger::Info("AutotestingDB::ReadState device=%s: '%s'", device.c_str(), result.c_str());
 		return result;
 	}
 
 	// DEPRECATED: Rewrite for new DB conception
 	String AutotestingDB::ReadString(const String & name)
 	{
-		Logger::Debug("AutotestingSystem::ReadString name=%s", name.c_str());
+		Logger::Info("AutotestingSystem::ReadString name=%s", name.c_str());
 
 		MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive* currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_aux");
 		String result;
 
-		result = currentRunArchive->GetString(name.c_str(), "not_found");
+		result = currentRunArchive->GetString(name, "not_found");
 
 		SafeRelease(dbUpdateObject);
-		Logger::Debug("AutotestingSystem::ReadString name=%name: '%s'", name.c_str(), result.c_str());
+		Logger::Info("AutotestingSystem::ReadString name=%name: '%s'", name.c_str(), result.c_str());
 		return result;
 	}
 
 	bool AutotestingDB::SaveKeyedArchiveToDB(const String &archiveName, KeyedArchive *archive, const String &docName)
 	{
-		Logger::Debug("AutotestingDB::SaveKeyedArchiveToDB %s to %s", archiveName.c_str(), docName.c_str());
+		Logger::Info("AutotestingDB::SaveKeyedArchiveToDB %s to %s", archiveName.c_str(), docName.c_str());
 		String testId = AutotestingSystem::Instance()->GetTestId();
 		String stepId = AutotestingSystem::Instance()->GetStepId();
 		
@@ -303,28 +302,28 @@ namespace DAVA
 		// Launch data
 		dbUpdateObject->SetUniqueObjectName();
 
-		dbUpdateObject->AddString("Platform", AUTOTESTING_PLATFORM_NAME);
-		dbUpdateObject->AddString("Date", AutotestingSystem::Instance()->buildDate.c_str());
-		dbUpdateObject->AddString("Device", AutotestingSystem::Instance()->deviceName.c_str());			
-		dbUpdateObject->AddString("BuildId", AutotestingSystem::Instance()->buildId.c_str());
-		dbUpdateObject->AddString("Branch", AutotestingSystem::Instance()->branch.c_str());
-		dbUpdateObject->AddString("BranchRevision", AutotestingSystem::Instance()->branchRev.c_str());
-		dbUpdateObject->AddString("Framework", AutotestingSystem::Instance()->framework.c_str());
-		dbUpdateObject->AddString("FrameworkRevision", AutotestingSystem::Instance()->frameworkRev.c_str());
+		dbUpdateObject->AddString("Platform", DeviceInfo::GetPlatformString());
+		dbUpdateObject->AddString("Date", AutotestingSystem::Instance()->buildDate);
+		dbUpdateObject->AddString("Device", AutotestingSystem::Instance()->deviceName);			
+		dbUpdateObject->AddString("BuildId", AutotestingSystem::Instance()->buildId);
+		dbUpdateObject->AddString("Branch", AutotestingSystem::Instance()->branch);
+		dbUpdateObject->AddString("BranchRevision", AutotestingSystem::Instance()->branchRev);
+		dbUpdateObject->AddString("Framework", AutotestingSystem::Instance()->framework);
+		dbUpdateObject->AddString("FrameworkRevision", AutotestingSystem::Instance()->frameworkRev);
 		dbUpdateObject->AddString("OSVersion", DeviceInfo::GetVersion());
 		dbUpdateObject->AddString("Model", DeviceInfo::GetModel());
 
 		// Test data
-		dbUpdateObject->AddString("Group", AutotestingSystem::Instance()->groupName.c_str());
-		dbUpdateObject->AddString("Test", testId.c_str());
-		dbUpdateObject->AddString("Step", stepId.c_str());
+		dbUpdateObject->AddString("Group", AutotestingSystem::Instance()->groupName);
+		dbUpdateObject->AddString("Test", testId);
+		dbUpdateObject->AddString("Step", stepId);
 
 
 		// Insert Archive
-		dbUpdateObject->AddString("Type", docName.c_str());
-		dbUpdateObject->AddString("Name", archiveName.c_str());
+		dbUpdateObject->AddString("Type", docName);
+		dbUpdateObject->AddString("Name", archiveName);
 		dbUpdateObject->LoadData();
-		dbUpdateObject->GetData()->SetArchive(archiveName.c_str(), archive);
+		dbUpdateObject->GetData()->SetArchive(archiveName, archive);
 		
 
 		return SaveToDB(dbUpdateObject);;
@@ -333,7 +332,7 @@ namespace DAVA
 	bool AutotestingDB::SaveToDB(MongodbUpdateObject *dbUpdateObject)
 	{
 		uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
-		Logger::Debug("AutotestingSystem::SaveToDB");
+		Logger::Info("AutotestingSystem::SaveToDB");
 
 		bool ret = dbUpdateObject->SaveToDB(dbClient);
 
@@ -343,7 +342,7 @@ namespace DAVA
 		}
 
 		uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
-		Logger::Debug("AutotestingSystem::SaveToDB FINISH result time %d", finishTime - startTime);
+		Logger::Info("AutotestingSystem::SaveToDB FINISH result time %d", finishTime - startTime);
 		return ret;
 	}
 
@@ -358,7 +357,7 @@ namespace DAVA
 		//#endif
 		if(dbClient)
 		{
-			//Logger::Debug("Image: datasize %d, %d x %d", image->dataSize, image->GetHeight(), image->GetWidth());
+			//Logger::Info("Image: datasize %d, %d x %d", image->dataSize, image->GetHeight(), image->GetWidth());
             dbClient->SaveBufferToGridFS(Format("%s_%dx%d", name.c_str(), image->GetWidth(), image->GetHeight()),
                 reinterpret_cast<char*>(image->GetData()), image->dataSize);
 		}
@@ -367,7 +366,7 @@ namespace DAVA
 	// DEPRECATED: Rewrite for new DB conception
 	void AutotestingDB::WriteCommand(const String & device, const String & command)
 	{
-		Logger::Debug("AutotestingDB::WriteCommand device=%s command=%s", device.c_str(), command.c_str());
+		Logger::Info("AutotestingDB::WriteCommand device=%s command=%s", device.c_str(), command.c_str());
 
 		MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive* currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_multiplayer");
@@ -376,13 +375,13 @@ namespace DAVA
 
 		SaveToDB(dbUpdateObject);
 		SafeRelease(dbUpdateObject);
-		//Logger::Debug("AutotestingSystem::WriteCommand finish");
+		//Logger::Info("AutotestingSystem::WriteCommand finish");
 	}
 
 	// DEPRECATED: Rewrite for new DB conception
 	void AutotestingDB::WriteState(const String & device, const String & state)
 	{
-		Logger::Debug("AutotestingDB::WriteState device=%s state=%s", device.c_str(), state.c_str());
+		Logger::Info("AutotestingDB::WriteState device=%s state=%s", device.c_str(), state.c_str());
 
 		MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive* currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_multiplayer");
@@ -393,13 +392,13 @@ namespace DAVA
 		SaveToDB(dbUpdateObject);
 		SafeRelease(dbUpdateObject);
 
-		//Logger::Debug("AutotestingSystem::WriteState finish");
+		//Logger::Info("AutotestingSystem::WriteState finish");
 	}
 
 	// DEPRECATED: Rewrite for new DB conception
 	void AutotestingDB::WriteString(const String & name, const String & text)
 	{
-		Logger::Debug("AutotestingSystem::WriteString name=%s text=%s", name.c_str(), text.c_str());
+		Logger::Info("AutotestingSystem::WriteString name=%s text=%s", name.c_str(), text.c_str());
 
 		MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive* currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_aux");
@@ -409,26 +408,26 @@ namespace DAVA
 		SaveToDB(dbUpdateObject);
 		SafeRelease(dbUpdateObject);
 
-		Logger::Debug("AutotestingSystem::WriteString finish");
+		Logger::Info("AutotestingSystem::WriteString finish");
 	}
 	
 	// auxiliary methods
 	void AutotestingDB::SetTestStarted()
 	{
-		Logger::Debug("AutotestingSystem::SetTestStarted Test%03d: %s", AutotestingSystem::Instance()->testIndex, AutotestingSystem::Instance()->testName.c_str());
+		Logger::Info("AutotestingSystem::SetTestStarted Test%03d: %s", AutotestingSystem::Instance()->testIndex, AutotestingSystem::Instance()->testName.c_str());
 
 		MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive* currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "autotesting_system");
 		
-		KeyedArchive* deviceArchive = currentRunArchive->GetArchive(AutotestingSystem::Instance()->deviceName.c_str(), NULL);
+		KeyedArchive* deviceArchive = currentRunArchive->GetArchive(AutotestingSystem::Instance()->deviceName, NULL);
 		
 		if (deviceArchive)
 		{
 			deviceArchive->SetString("Started", "1");
-			deviceArchive->SetString("BuildId", AutotestingSystem::Instance()->buildId.c_str());
-			deviceArchive->SetString("Date", AutotestingSystem::Instance()->testsDate.c_str());
-			deviceArchive->SetString("Framework", AutotestingSystem::Instance()->framework.c_str());
-			deviceArchive->SetString("Branch", AutotestingSystem::Instance()->branch.c_str());
+			deviceArchive->SetString("BuildId", AutotestingSystem::Instance()->buildId);
+			deviceArchive->SetString("Date", AutotestingSystem::Instance()->testsDate);
+			deviceArchive->SetString("Framework", AutotestingSystem::Instance()->framework);
+			deviceArchive->SetString("Branch", AutotestingSystem::Instance()->branch);
 		}
 		else
 		{

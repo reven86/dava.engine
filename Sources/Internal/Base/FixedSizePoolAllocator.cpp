@@ -28,6 +28,9 @@
 
 
 #include "Base/FixedSizePoolAllocator.h"
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#include <stdlib.h>
+#endif
 
 #include <cstdlib>
 
@@ -156,7 +159,7 @@ bool FixedSizePoolAllocator::CheckIsPointerValid(void * blockvoid)
         if ((block >= (uint8*)currentAllocatedBlockArray + sizeof(uint8*)) && (block < (uint8*)currentAllocatedBlockArray + sizeof(uint8*) + blockSize * blockArraySize))
         {
             // we are inside check is block correct.
-            uint32 shift = block - ((uint8*)currentAllocatedBlockArray + sizeof(uint8*));
+            uint32 shift = static_cast<uint32>(block - ((uint8*)currentAllocatedBlockArray + sizeof(uint8*)));
             uint32 mod = shift % blockSize;
             if (mod == 0)
             {

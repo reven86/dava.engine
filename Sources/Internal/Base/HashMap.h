@@ -494,8 +494,13 @@ const V& HashMap<K, V>::valueByIndex(size_t index) const
 			++stateIter;
 		}
 	}
-	
-	return (curIndex == index) ? stateIter->second : defaultV;
+	if (curIndex == index)
+	{
+	    // fix clang warning on return local variable pointer
+	    HashMap<K, V>::HashMapItem* item = stateIter.operator ->();
+	    return item->second;
+	}
+	return defaultV;
 }
 
 template <typename K, typename V>
@@ -555,24 +560,24 @@ const K& HashMap<K, V>::keyByIndex(size_t index) const
 template <typename K, typename V>
 HashMap<K, V>::HashMapIterator::HashMapIterator()
 : szTable(0)
-, table(NULL)
 , current_index(0)
+, table(NULL)
 , current_item(NULL)
 { }
 
 template <typename K, typename V>
 HashMap<K, V>::HashMapIterator::HashMapIterator(const typename HashMap<K, V>::HashMapIterator &i)
 	: szTable(i.szTable)
-	, table(i.table)
 	, current_index(i.current_index)
+	, table(i.table)
 	, current_item(i.current_item)
 { }
 
 template <typename K, typename V>
 HashMap<K, V>::HashMapIterator::HashMapIterator(const HashMap<K, V> *map)
 	: szTable(map->szTable)
-	, table(map->table)
 	, current_index(0)
+	, table(map->table)
 	, current_item(NULL)
 {
 	if(NULL != table && szTable > 0)

@@ -28,6 +28,7 @@
 
 
 #include "Render/2D/TextBlockSoftwareRender.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Core/Core.h"
 #include "Utils/Utils.h"
 
@@ -87,6 +88,12 @@ TextBlockSoftwareRender::TextBlockSoftwareRender(TextBlock* textBlock) :
 {
 	buf = NULL;
 	ftFont = (FTFont*)textBlock->font;
+#if defined(LOCALIZATION_DEBUG)
+    textOffsetTL.x = std::numeric_limits<float32>::max();
+    textOffsetTL.y = std::numeric_limits<float32>::max();
+    textOffsetBR.x = 0;
+    textOffsetBR.y = 0;
+#endif
 }
 	
 void TextBlockSoftwareRender::Prepare(Texture *texture /*=NULL*/)
@@ -99,7 +106,14 @@ void TextBlockSoftwareRender::Prepare(Texture *texture /*=NULL*/)
 
     int32 width = Max(textBlock->cacheDx, 1);
     int32 height = Max(textBlock->cacheDy, 1);
-    
+#if defined(LOCALIZATION_DEBUG)
+    bufHeight = height;
+    bufWidth = width ;
+    textOffsetTL.x = static_cast<float32>( width - 1);
+    textOffsetTL.y = static_cast<float32>(height - 1);
+    textOffsetBR.x = 0;
+    textOffsetBR.y = 0;
+#endif
 	int32 bsz = width * height;
     buf = new int8[bsz];
     memset(buf, 0, bsz * sizeof(int8));
@@ -142,35 +156,76 @@ void TextBlockSoftwareRender::Prepare(Texture *texture /*=NULL*/)
 	
 Font::StringMetrics TextBlockSoftwareRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
 {
-	return ftFont->DrawStringToBuffer(buf, x, y, 
+	 Font::StringMetrics metrics= ftFont->DrawStringToBuffer(buf, x, y, 
 										-textBlock->cacheOx, 
 										-textBlock->cacheOy, 
 										0, 
 										0, 
 										drawText, 
 										true);
+#if defined(LOCALIZATION_DEBUG)
+    CalculateTextBBox();
+#endif
+    return metrics;
 }
 	
 Font::StringMetrics TextBlockSoftwareRender::DrawTextML(const WideString& drawText, int32 x, int32 y, int32 w, int32 xOffset, uint32 yOffset, int32 lineSize)
 {
+    Font::StringMetrics metrics;
 	if (textBlock->cacheUseJustify)
 	{
-		return ftFont->DrawStringToBuffer(buf, x, y,
-										  -textBlock->cacheOx + (int32)(Core::GetVirtualToPhysicalFactor() * xOffset),
-										  -textBlock->cacheOy + (int32)(Core::GetVirtualToPhysicalFactor() * yOffset),
-										  (int32)ceilf(Core::GetVirtualToPhysicalFactor() * w),
-										  (int32)ceilf(Core::GetVirtualToPhysicalFactor() * lineSize),
+		metrics= ftFont->DrawStringToBuffer(buf, x, y,
+            -textBlock->cacheOx + (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)xOffset)),
+            -textBlock->cacheOy + (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)yOffset)),
+            (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)w)),
+            (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)lineSize)),
 										  drawText,
 										  true);
 	}
-
-	return ftFont->DrawStringToBuffer(buf, x, y,
-								     -textBlock->cacheOx + (int32)(Core::GetVirtualToPhysicalFactor() * xOffset),
-								     -textBlock->cacheOy + (int32)(Core::GetVirtualToPhysicalFactor() * yOffset),
+	else
+	{
+		metrics =  ftFont->DrawStringToBuffer(buf, x, y,
+        	-textBlock->cacheOx + (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)xOffset)),
+        	-textBlock->cacheOy + (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)yOffset)),
 									 0,
 									 0,
 									 drawText,
 									 true);
+	}
+#if defined(LOCALIZATION_DEBUG)
+    CalculateTextBBox();
+#endif
+    return metrics;
 }
-
+#if defined(LOCALIZATION_DEBUG)
+Vector2 TextBlockSoftwareRender::getTextOffsetTL()
+{
+    return textOffsetTL;
+}
+Vector2 TextBlockSoftwareRender::getTextOffsetBR()
+{
+    return textOffsetBR;
+}
+void TextBlockSoftwareRender::CalculateTextBBox()
+{
+    const int8 * bufWalker = buf;
+    float32 height = static_cast<float>(bufHeight);
+    float32 width = static_cast<float>(bufWidth);
+    for (float32 h = 0; h < height; h++)
+    {
+        for (float32 w = 0; w < width; w++)
+        {
+            if (*bufWalker != 0  )
+            {
+                textOffsetTL.x = Min(w, textOffsetTL.x);
+                textOffsetTL.y = Min(h, textOffsetTL.y);
+                textOffsetBR.x = Max(w, textOffsetBR.x);
+                textOffsetBR.y = Max(h, textOffsetBR.y);
+                
+            }
+            bufWalker++;
+        }
+    }
+}
+#endif
 };

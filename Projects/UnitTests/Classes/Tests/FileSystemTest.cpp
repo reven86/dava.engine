@@ -38,9 +38,11 @@ FileSystemTest::FileSystemTest()
     bool dataPrepared = RecursiveCopy("~res:/TestData/FileSystemTest/", "~doc:/TestData/FileSystemTest/");
     DVASSERT(dataPrepared);
 
-	RegisterFunction(this, &FileSystemTest::ResTestFunction, String("ResTestFunction"), NULL);
-	RegisterFunction(this, &FileSystemTest::DocTestFunctionCheckCopy, String("DocTestFunctionCheckCopy"), NULL);
-	RegisterFunction(this, &FileSystemTest::DocTestFunction, String("DocTestFunction"), NULL);
+	RegisterFunction(this, &FileSystemTest::ResTestFunction, String("ResTestFunction"), nullptr);
+	RegisterFunction(this, &FileSystemTest::DocTestFunctionCheckCopy, String("DocTestFunctionCheckCopy"), nullptr);
+	RegisterFunction(this, &FileSystemTest::DocTestFunction, String("DocTestFunction"), nullptr);
+	RegisterFunction(this, &FileSystemTest::FileOperationsTestFunction, String("FileTestFunction"), nullptr);
+    RegisterFunction(this, &FileSystemTest::CompareFilesTest, String("CompareFilesTest"), nullptr);
 }
 
 void FileSystemTest::LoadResources()
@@ -59,7 +61,7 @@ void FileSystemTest::ResTestFunction(PerfFuncData * data)
 
     ScopedPtr<FileList> fileList( new FileList("~res:/TestData/FileSystemTest/") );
 
-    TEST_VERIFY(fileList->GetDirectoryCount() == 3);
+    TEST_VERIFY(fileList->GetDirectoryCount() == 4);
     TEST_VERIFY(fileList->GetFileCount() == 0);
 
     for(int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
@@ -122,7 +124,7 @@ void FileSystemTest::DocTestFunctionCheckCopy(PerfFuncData * data)
     Logger::Debug("[FileSystemTest::DocTestFunctionCheckCopy]");
     ScopedPtr<FileList> fileList( new FileList("~doc:/TestData/FileSystemTest/") );
     
-    TEST_VERIFY(fileList->GetDirectoryCount() == 3);
+    TEST_VERIFY(fileList->GetDirectoryCount() == 4);
     TEST_VERIFY(fileList->GetFileCount() == 0);
     
     for(int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
@@ -147,7 +149,7 @@ void FileSystemTest::DocTestFunctionCheckCopy(PerfFuncData * data)
                 FilePath pathname = files->GetPathname(ifi);
                 
                 File *file = File::Create(pathname, File::OPEN | File::READ);
-                TEST_VERIFY(file != NULL);
+                TEST_VERIFY(file != nullptr);
                 
                 if(!file) continue;
                 
@@ -261,4 +263,153 @@ bool FileSystemTest::RecursiveCopy(const DAVA::FilePath &src, const DAVA::FilePa
     }
     
     return retCode;
+}
+
+void FileSystemTest::FileOperationsTestFunction(PerfFuncData * data)
+{
+    FilePath fileInAssets = "~res:/TestData/FileSystemTest/FileTest/test.yaml";
+    FilePath cpyDir = "~doc:/FileSystemTest/FileTest/";
+    FilePath copyTo = cpyDir + "test.yaml";
+
+    FileSystem::Instance()->CreateDirectory(cpyDir, true);
+
+    TEST_VERIFY(FileSystem::Instance()->CopyFile(fileInAssets, copyTo, true));
+
+    File* f1 = File::Create(fileInAssets, File::OPEN | File::READ);
+    File* f2 = File::Create(copyTo, File::OPEN | File::READ);
+
+    TEST_VERIFY(NULL != f1);
+    TEST_VERIFY(NULL != f2);
+
+    if (!f2 || !f2)
+        return;
+
+    uint32 size = f1->GetSize();
+    TEST_VERIFY(size == f2->GetSize());
+
+    char8 *buf1 = new char8[size];
+    char8 *buf2 = new char8[size];
+
+    do
+    {
+        uint32 res1 = f1->ReadLine(buf1, size);
+        uint32 res2 = f2->ReadLine(buf2, size);
+        TEST_VERIFY(res1 == res2);
+        TEST_VERIFY(!Memcmp(buf1, buf2, res1));
+
+    } while(!f1->IsEof());
+
+    TEST_VERIFY(f2->IsEof());
+
+    SafeRelease(f1);
+    SafeRelease(f2);
+
+    SafeDeleteArray(buf1);
+    SafeDeleteArray(buf2);
+
+    f1 = File::Create(fileInAssets, File::OPEN | File::READ);
+    f2 = File::Create(copyTo, File::OPEN | File::READ);
+
+    int32 seekPos = f1->GetSize()+10;
+    TEST_VERIFY(f1->Seek(seekPos, File::SEEK_FROM_START));
+    TEST_VERIFY(f2->Seek(seekPos, File::SEEK_FROM_START));
+
+    uint32 pos1 = f1->GetPos();
+    uint32 pos2 = f2->GetPos();
+
+    TEST_VERIFY(f1->IsEof() == false);
+    TEST_VERIFY(f2->IsEof() == false);
+
+    TEST_VERIFY(pos1 == seekPos);
+    TEST_VERIFY(pos2 == seekPos);
+
+    seekPos = (seekPos + 20); // seek to -20 pos
+    f1->Seek(-seekPos, File::SEEK_FROM_CURRENT);
+    f2->Seek(-seekPos, File::SEEK_FROM_CURRENT);
+
+    pos1 = f1->GetPos();
+    pos2 = f2->GetPos();
+
+    TEST_VERIFY(f1->IsEof() == f2->IsEof());
+    TEST_VERIFY(pos1 == pos2);
+
+    SafeRelease(f1);
+    SafeRelease(f2);
+
+    FileSystem::Instance()->DeleteFile(copyTo);
+}
+
+void FileSystemTest::CompareFilesTest(PerfFuncData * data)
+{
+    String folder = "~doc:/FileSystemTest/";
+    FilePath textFilePath = folder + "text";
+    FilePath textFilePath2 = folder + "text2";
+    FilePath binaryFilePath = folder + "binary";
+    File *text = File::Create(textFilePath, File::CREATE | File::WRITE);
+    File *binary = File::Create(binaryFilePath, File::CREATE | File::WRITE);
+
+    text->WriteLine("1");
+    binary->Write("1");
+    SafeRelease(text);
+    SafeRelease(binary);
+    FilePath cpyFilePath = folder + "cpy";
+    FileSystem::Instance()->CopyFile(textFilePath, cpyFilePath);
+    TEST_VERIFY(FileSystem::Instance()->CompareTextFiles(textFilePath, cpyFilePath));
+    TEST_VERIFY(FileSystem::Instance()->CompareBinaryFiles(textFilePath, cpyFilePath));
+    TEST_VERIFY(!FileSystem::Instance()->CompareTextFiles(textFilePath, binaryFilePath));
+    TEST_VERIFY(!FileSystem::Instance()->CompareBinaryFiles(textFilePath, binaryFilePath));
+    FileSystem::Instance()->DeleteFile(textFilePath);
+    FileSystem::Instance()->DeleteFile(cpyFilePath);
+    FileSystem::Instance()->DeleteFile(binaryFilePath);
+
+    text = File::Create(textFilePath, File::CREATE | File::WRITE);
+    text->WriteLine("");
+    text->WriteLine("");
+    text->WriteLine("1");
+    SafeRelease(text);
+    text = File::Create(textFilePath2, File::CREATE | File::WRITE);
+    text->WriteLine("1");
+    SafeRelease(text);
+    TEST_VERIFY(!FileSystem::Instance()->CompareTextFiles(textFilePath, textFilePath2));
+    TEST_VERIFY(!FileSystem::Instance()->CompareBinaryFiles(textFilePath, textFilePath2));
+    FileSystem::Instance()->DeleteFile(textFilePath);
+    FileSystem::Instance()->DeleteFile(textFilePath2);
+
+    text = File::Create(textFilePath, File::CREATE | File::WRITE);
+    text->WriteLine("");
+    text->WriteLine("1");
+    text->WriteLine("");
+    SafeRelease(text);
+    text = File::Create(textFilePath2, File::CREATE | File::WRITE);
+    text->WriteLine("1");
+    SafeRelease(text);
+    TEST_VERIFY(!FileSystem::Instance()->CompareTextFiles(textFilePath, textFilePath2));
+    TEST_VERIFY(!FileSystem::Instance()->CompareBinaryFiles(textFilePath, textFilePath2));
+    FileSystem::Instance()->DeleteFile(textFilePath);
+    FileSystem::Instance()->DeleteFile(textFilePath2);
+    
+    text = File::Create(textFilePath, File::CREATE | File::WRITE);
+    text->WriteLine("1");
+    SafeRelease(text);
+    text = File::Create(textFilePath2, File::CREATE | File::WRITE);
+    text->WriteLine("1");
+    SafeRelease(text);
+    TEST_VERIFY(FileSystem::Instance()->CompareTextFiles(textFilePath, textFilePath2));
+    TEST_VERIFY(FileSystem::Instance()->CompareBinaryFiles(textFilePath, textFilePath2));
+    FileSystem::Instance()->DeleteFile(textFilePath);
+    FileSystem::Instance()->DeleteFile(textFilePath2);
+
+    text = File::Create(textFilePath, File::CREATE | File::WRITE);
+    text->Write("1");
+    text->Write("\r");
+    text->Write("\n");
+    SafeRelease(text);
+    text = File::Create(textFilePath2, File::CREATE | File::WRITE);
+    text->Write("1");
+    text->Write("\n");
+    SafeRelease(text);
+    TEST_VERIFY(FileSystem::Instance()->CompareTextFiles(textFilePath, textFilePath2));
+    TEST_VERIFY(!FileSystem::Instance()->CompareBinaryFiles(textFilePath, textFilePath2));
+    FileSystem::Instance()->DeleteFile(textFilePath);
+    FileSystem::Instance()->DeleteFile(textFilePath2);
 }

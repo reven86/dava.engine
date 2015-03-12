@@ -97,12 +97,6 @@
     <Filter Include="Internal\Database">
       <UniqueIdentifier>{aacba949-a20d-4b44-821d-8170cd6d7aa2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Internal\Platform\Qt">
-      <UniqueIdentifier>{9ccf6d8e-2ffb-4645-862d-59b75598b00e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Internal\Platform\Qt\Win32">
-      <UniqueIdentifier>{802c9b10-286b-4081-add3-d26ed34ac6d0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Internal\Render\Material">
       <UniqueIdentifier>{08283861-a6e9-4e98-88c8-2cfd8d75e035}</UniqueIdentifier>
     </Filter>
@@ -150,6 +144,45 @@
     </Filter>
     <Filter Include="Internal\Notification">
       <UniqueIdentifier>{4b5695b8-6b14-4d0c-8f8d-86535f5de24e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Platform\Qt4">
+      <UniqueIdentifier>{9ccf6d8e-2ffb-4645-862d-59b75598b00e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Platform\Qt4\Win32">
+      <UniqueIdentifier>{802c9b10-286b-4081-add3-d26ed34ac6d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Render\2D\Systems">
+      <UniqueIdentifier>{012e0df1-1251-4d03-8523-68ada6fd9f72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Scene3D\Components\Controller">
+      <UniqueIdentifier>{6afa475c-0f57-439a-846d-ec49837bac87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Scene3D\Systems\Controller">
+      <UniqueIdentifier>{dc214c6e-aa38-43ad-93ff-6dc237488743}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\DataStorage">
+      <UniqueIdentifier>{6ed00645-b5a9-4746-a914-a3dcb592fd92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\DataStorage\Windows">
+      <UniqueIdentifier>{0497b98a-b930-4fb6-8a65-92f3f18b2754}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Scene3D\Components\Waypoint">
+      <UniqueIdentifier>{a6ae9957-6b3c-4e7f-a03d-1e52ed923446}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Network">
+      <UniqueIdentifier>{fbd90c04-d90b-434c-a9c5-9777bb3cbbb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Network\Base">
+      <UniqueIdentifier>{2bea0d8c-2886-4354-b3e4-345bf610ea57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Network\Private">
+      <UniqueIdentifier>{118eb54a-7eae-4770-878f-7960c40ed24c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Network\Services">
+      <UniqueIdentifier>{d2eefec1-4620-43a6-b8f5-b6703672b2b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\UI\Components">
+      <UniqueIdentifier>{67f835b5-b545-4435-b494-f65f572ca435}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -879,12 +912,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Mallocator.h">
       <Filter>Internal\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt\QtLayer.h">
-      <Filter>Internal\Platform\Qt</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt\Win32\QtLayerWin32.h">
-      <Filter>Internal\Platform\Qt\Win32</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\RenderOptions.h">
       <Filter>Internal\Render</Filter>
     </ClInclude>
@@ -1281,12 +1308,6 @@
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleRenderObject.h">
       <Filter>Internal\Particles</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Job\JobWaiter.h">
-      <Filter>Internal\Job</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Job\Job.h">
-      <Filter>Internal\Job</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Job\JobManager.h">
       <Filter>Internal\Job</Filter>
     </ClInclude>
@@ -1307,9 +1328,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\StaticOcclusionComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Input\GamepadManager.h">
-      <Filter>Internal\Input</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Input\GamepadDevice.h">
       <Filter>Internal\Input</Filter>
@@ -1364,9 +1382,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\CoreWin32PlatformBase.h">
       <Filter>Internal\Platform\TemplateWin32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt\Win32\CorePlatformWin32Qt.h">
-      <Filter>Internal\Platform\Qt\Win32</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\DateTime.h">
       <Filter>Internal\Platform</Filter>
@@ -1483,9 +1498,6 @@
     <ClInclude Include="..\..\Sources\Internal\Thread\LockGuard.h">
       <Filter>Internal\Thread</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Utils\VirtualToPhysicalHelper.h">
-      <Filter>Internal\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlNode.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
@@ -1552,9 +1564,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SkinnedMesh.h">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\AnimationComponent.h">
-      <Filter>Internal\Scene3D\Components</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\AnimationSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>
@@ -1602,6 +1611,183 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIPackageLoader.h">
       <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Thread\Semaphore.h">
+      <Filter>Internal\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Thread\Spinlock.h">
+      <Filter>Internal\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Job\JobThread.h">
+      <Filter>Internal\Job</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.h">
+      <Filter>Internal\Platform\Qt4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\Win32\CorePlatformWin32Qt.h">
+      <Filter>Internal\Platform\Qt4\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\Win32\QtLayerWin32.h">
+      <Filter>Internal\Platform\Qt4\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\AnimationComponent.h">
+      <Filter>Internal\Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\RenderSystem2D.h">
+      <Filter>Internal\Render\2D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.h">
+      <Filter>Internal\Render\2D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\EntityFamily.h">
+      <Filter>Internal\Scene3D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Controller\RotationControllerComponent.h">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Controller\SnapToLandscapeControllerComponent.h">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Controller\WASDControllerComponent.h">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\RotationControllerSystem.h">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\SnapToLandscapeControllerSystem.h">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.h">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.h">
+      <Filter>Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.h">
+      <Filter>Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\DataStorage.h">
+      <Filter>Internal\DataStorage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.h">
+      <Filter>Internal\DataStorage\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\EdgeComponent.h">
+      <Filter>Internal\Scene3D\Components\Waypoint</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\PathComponent.h">
+      <Filter>Internal\Scene3D\Components\Waypoint</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\WaypointComponent.h">
+      <Filter>Internal\Scene3D\Components\Waypoint</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIPackagesCache.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\Buffer.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimerTemplate.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\Endpoint.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\IfAddress.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\IOLoop.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\IPAddress.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\NetworkUtils.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\TCPAcceptor.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\TCPAcceptorTemplate.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\TCPSocket.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\TCPSocketTemplate.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\UDPSocket.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\UDPSocketTemplate.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\ITransport.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\NetController.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\ProtoDecoder.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\ProtoDriver.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\ProtoTypes.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPClientTransport.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\LogConsumer.h">
+      <Filter>Internal\Network\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\NetLogger.h">
+      <Filter>Internal\Network\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\IChannel.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\IController.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\NetConfig.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\NetCore.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\NetService.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\NetworkCommon.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\ServiceRegistrar.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\Announcer.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\Discoverer.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\SimpleEchoServer.h">
+      <Filter>Internal\Network\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\PeerDesription.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h">
+      <Filter>Internal\UI\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2226,14 +2412,8 @@
     <ClCompile Include="..\..\Sources\Internal\Base\FixedSizePoolAllocator.cpp">
       <Filter>Internal\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt\Win32\QtLayerWin32.cpp">
-      <Filter>Internal\Platform\Qt\Win32</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\RenderOptions.cpp">
       <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt\QtLayer.cpp">
-      <Filter>Internal\Platform\Qt</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SwitchNode.cpp">
       <Filter>Internal\Scene3D</Filter>
@@ -2583,16 +2763,10 @@
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleRenderObject.cpp">
       <Filter>Internal\Particles</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Job\Job.cpp">
-      <Filter>Internal\Job</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Job\JobManager.cpp">
       <Filter>Internal\Job</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Job\JobQueue.cpp">
-      <Filter>Internal\Job</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Job\JobWaiter.cpp">
       <Filter>Internal\Job</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Base\IntrospectionDynamic.cpp">
@@ -2612,9 +2786,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Utils\UtilsWin32.cpp">
       <Filter>Internal\Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Input\GamepadManager.cpp">
-      <Filter>Internal\Input</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Input\GamepadDevice.cpp">
       <Filter>Internal\Input</Filter>
@@ -2672,9 +2843,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\CoreWin32PlatformBase.cpp">
       <Filter>Internal\Platform\TemplateWin32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt\Win32\CorePlatformWin32Qt.cpp">
-      <Filter>Internal\Platform\Qt\Win32</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp">
       <Filter>Internal\Platform</Filter>
@@ -2779,9 +2947,6 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageFormatInterface.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Utils\VirtualToPhysicalHelper.cpp">
-      <Filter>Internal\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlNode.cpp">
       <Filter>Internal\FileSystem</Filter>
     </ClCompile>
@@ -2884,7 +3049,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIPackage.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
@@ -2894,11 +3058,146 @@
     <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp">
       <Filter>Internal\Utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Job\JobThread.cpp">
+      <Filter>Internal\Job</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIPackageLoader.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp">
       <Filter>Internal\Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.cpp">
+      <Filter>Internal\Platform\Qt4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\Win32\CorePlatformWin32Qt.cpp">
+      <Filter>Internal\Platform\Qt4\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\Win32\QtLayerWin32.cpp">
+      <Filter>Internal\Platform\Qt4\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\Systems\RenderSystem2D.cpp">
+      <Filter>Internal\Render\2D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.cpp">
+      <Filter>Internal\Render\2D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\EntityFamily.cpp">
+      <Filter>Internal\Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Controller\RotationControllerComponent.cpp">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Controller\SnapToLandscapeControllerComponent.cpp">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Controller\WASDControllerComponent.cpp">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\RotationControllerSystem.cpp">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\SnapToLandscapeControllerSystem.cpp">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.cpp">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.cpp">
+      <Filter>Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.cpp">
+      <Filter>Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.cpp">
+      <Filter>Internal\DataStorage\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\EdgeComponent.cpp">
+      <Filter>Internal\Scene3D\Components\Waypoint</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\PathComponent.cpp">
+      <Filter>Internal\Scene3D\Components\Waypoint</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\WaypointComponent.cpp">
+      <Filter>Internal\Scene3D\Components\Waypoint</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIPackagesCache.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\Endpoint.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\IfAddress.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\IOLoop.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\IPAddress.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\NetworkUtils.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\TCPAcceptor.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\TCPSocket.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\UDPSocket.cpp">
+      <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\NetController.cpp">
+      <Filter>Internal\Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\ProtoDecoder.cpp">
+      <Filter>Internal\Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\ProtoDriver.cpp">
+      <Filter>Internal\Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\TCPClientTransport.cpp">
+      <Filter>Internal\Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.cpp">
+      <Filter>Internal\Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\LogConsumer.cpp">
+      <Filter>Internal\Network\Services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\NetLogger.cpp">
+      <Filter>Internal\Network\Services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\NetConfig.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\NetCore.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\NetService.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\ServiceRegistrar.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\Announcer.cpp">
+      <Filter>Internal\Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\Discoverer.cpp">
+      <Filter>Internal\Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\PeerDesription.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\PeerDesriptionSerialize.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIComponent.cpp">
+      <Filter>Internal\UI\Components</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

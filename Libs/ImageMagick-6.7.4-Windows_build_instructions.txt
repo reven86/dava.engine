@@ -1,5 +1,0 @@
-1. Read and compile as in Install-windows.txt. 
-2. Use "Static Multi-threaded runtimes (VisualStaticMT)." in configure.exe wizard.
-3. Press Edit "magick-config.h".
-4. Comment #define MAGICKCORE_XML_DELEGATE string.
-5. Continue according to Install-windows.txt guide.

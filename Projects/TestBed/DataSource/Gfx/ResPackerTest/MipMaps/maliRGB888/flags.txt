@@ -1,0 +1,1 @@
+--generateMipMaps --mali RGB888

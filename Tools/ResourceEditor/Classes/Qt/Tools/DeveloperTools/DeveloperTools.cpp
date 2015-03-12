@@ -47,8 +47,6 @@ DeveloperTools::DeveloperTools(QObject *parent /* = 0 */)
 void DeveloperTools::OnDebugFunctionsGridCopy()
 {
     SceneEditor2 * currentScene = QtMainWindow::Instance()->GetCurrentScene();
-    float32 x = 0;
-    float32 y = 0;
     float32 z = 0;
     const float32 xshift = 10.0;
     const float32 yshift = 10.0;

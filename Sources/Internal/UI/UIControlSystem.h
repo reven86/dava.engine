@@ -245,22 +245,6 @@ public:
 	 \param[in] Control that should handle the input.
 	 */
 	void SwitchInputToControl(int32 eventID, UIControl *targetControl);
-	
-	/**
-	 \brief Sets input area size.
-		Used to convert input size to the virtual size. 
-		Usually used by the system internally.
-		Shell call CalculateScaleMultiplliers() for changes start to work.
-	 \param[in] Input ID. Can be found in the UIEvent:tid.
-	 \param[in] Control that should handle the input.
-	 */
-	void SetInputScreenAreaSize(int32 width, int32 height);
-	
-	/**
-	 \brief Recalculate multipliers for the control system to convert incoming inputs into virtual coordinates.
-		Usually called by the system internally.
-	 */
-	void CalculateScaleMultipliers();
 
 	/**
 	 \brief Used internally by Replay class
@@ -292,22 +276,6 @@ public:
 	 \brief Returns currently focused control
 	 */
     UIControl *GetFocusedControl();
-
-    /**
-	 \brief Calculates physical point for given virtual point
-	 */
-    void RecalculatePointToPhysical(const Vector2 &virtualPoint, Vector2 &physicalPoint);
-    
-    /**
-	 \brief Calculates virtual point for given physical point
-	 */
-    void RecalculatePointToVirtual(const Vector2 &physicalPoint, Vector2 &virtualPoint);
-
-	/**
-	 \brief Access to the scale factor and input offset.
-	 */
-	Vector2 GetInputOffset() const { return inputOffset; };
-	float32 GetScaleFactor() const { return scaleFactor; };
 	
 	void AddScreenSwitchListener(ScreenSwitchListener * listener);
 	void RemoveScreenSwitchListener(ScreenSwitchListener * listener);
@@ -344,6 +312,8 @@ private:
     void NotifyListenersWillSwitch( UIScreen* screen );
     void NotifyListenersDidSwitch( UIScreen* screen );
 
+    void CopyTouchData(UIEvent* dst, const UIEvent* src);
+
 	Vector<ScreenSwitchListener*> screenSwitchListeners;
 
 	UIScreen * currentScreen;
@@ -367,11 +337,6 @@ private:
 	UIScreenTransition * nextScreenTransition;
 	
 	UIGeometricData baseGeometricData;
-	
-	int32 inputWidth;
-	int32 inputHeight;
-	float32 scaleFactor;
-	Vector2 inputOffset;
 
     int32 ui3DViewCount;
 	

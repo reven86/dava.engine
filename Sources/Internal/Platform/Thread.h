@@ -36,7 +36,9 @@
 #include "Mutex.h"
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#if !defined __DAVAENGINE_PTHREAD__
     #define __DAVAENGINE_PTHREAD__
+#endif
 #endif
 
 
@@ -95,8 +97,6 @@ public:
 		STATE_CREATED = 0,
 		STATE_RUNNING,
         STATE_ENDED,
-        STATE_CANCELLING,
-		STATE_CANCELLED,
         STATE_KILLED
 	};
     
@@ -142,7 +142,10 @@ public:
 
     /** Ask to cancel thred. User should to check state variable
     */
-    void Cancel();
+    inline void Cancel();
+    /** Check if someone asked thiead to cancel
+     */
+    inline bool IsCancelling() const;
     static void CancelAll();
     /**
         Wrapp pthread wait, signal and broadcast
@@ -196,13 +199,10 @@ private:
     */
     static void ThreadFunction(void *param);
 
-#if defined(__DAVAENGINE_ANDROID__)
-	static void AttachToJVM();
-	static void DetachFromJVM();
-#endif
-
 	Message	msg;
 	eThreadState state;
+    
+    volatile bool isCancelling;
 
     /**
     \brief Native thread handle - variable which used to thread manipulations
@@ -243,6 +243,16 @@ inline String Thread::GetName()
 inline Thread::eThreadState Thread::GetState() const
 {
     return state;
+}
+
+inline void Thread::Cancel()
+{
+    isCancelling = true;
+}
+    
+inline bool Thread::IsCancelling() const
+{
+    return isCancelling;
 }
 
 inline Thread::Id Thread::GetId() const

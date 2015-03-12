@@ -45,7 +45,12 @@ Q_DECLARE_METATYPE(DAVA::ParticleLayer*);
 Q_DECLARE_METATYPE(DAVA::ParticleForce*);
 Q_DECLARE_METATYPE(DAVA::ParticleEmitter*);
 
-class SceneTreeItem : public QStandardItem
+
+class SceneTreeModel;
+class SceneTreeFilteringModel;
+
+class SceneTreeItem
+    : public QStandardItem
 {
 public:
 	enum eItemType
@@ -61,7 +66,6 @@ public:
 	{
 		EIDR_Type = Qt::UserRole,
 		EIDR_Data,
-		EIDR_AcceptedByFilter
 	};
 
 	SceneTreeItem(eItemType type);
@@ -69,20 +73,22 @@ public:
 
 	QVariant data(int role) const;
 
-	bool IsAcceptedByFilter() const;
-	void SetAcceptedByFilter(bool accepted);
-
 	int ItemType() const;
 	virtual QIcon ItemIcon() const;
 
 	virtual QString ItemName() const = 0;
 	virtual QVariant ItemData() const = 0;
-    
-    virtual QVariant ItemBackgroundColor() const;
+
+    bool IsAcceptedByFilter() const;
+    void SetAcceptByFilter(bool state);
+    bool IsHighlighed() const;
+    void SetHighlight(bool state);
 
 protected:
 	eItemType type;
 	QIcon iconCache;
+    bool isAcceptedByFilter;
+    bool isHighlighted;
 };
 
 class SceneTreeItemEntity : public SceneTreeItem
@@ -114,7 +120,7 @@ public:
 	virtual QString ItemName() const;
 	virtual QVariant ItemData() const;
 	virtual QIcon ItemIcon() const;
-	virtual QVariant ItemBackgroundColor() const;
+	//virtual QVariant ItemBackgroundColor() const;
 
 	DAVA::ParticleEffectComponent *effect;
 	DAVA::ParticleEmitter *emitter;

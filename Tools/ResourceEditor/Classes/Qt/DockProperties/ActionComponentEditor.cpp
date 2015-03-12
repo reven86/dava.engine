@@ -69,7 +69,6 @@ namespace
         "Particle stop",
         "Sound",
     };
-    const size_t ACTION_NAME_COUNT = sizeof( ACTION_TYPE_NAME ) / sizeof( *ACTION_TYPE_NAME );
 
     QString EVENT_TYPE_NAME[] =
     {
@@ -77,7 +76,6 @@ namespace
         "Added",
         "User",
     };
-    const size_t EVENT_NAME_COUNT = sizeof( EVENT_TYPE_NAME ) / sizeof( *EVENT_TYPE_NAME );
     
 }
 

@@ -36,11 +36,23 @@
 #include "FileSystem/LocalizationSystem.h"
 #include "FileSystem/YamlNode.h"
 #include "Render/2D/FontManager.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Animation/LinearAnimation.h"
-
+#include "Utils/StringUtils.h"
+#include "Render/2D/TextBlockSoftwareRender.h"
+#include "Render/RenderHelper.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 namespace DAVA
 {
-
+#if defined(LOCALIZATION_DEBUG)
+    const float32 UIStaticText::LOCALIZATION_RESERVED_PORTION = 0.6f;
+    const Color UIStaticText::HIGHLITE_COLORS[] = { DAVA::Color(1.0f, 0.0f, 0.0f, 0.4f), 
+                                                    DAVA::Color(0.0f, 0.0f, 1.0f, 0.4f), 
+                                                    DAVA::Color(1.0f, 1.0f, 0.0f, 0.4f),
+                                                    DAVA::Color(1.0f, 1.0f, 1.0f, 0.4f),
+                                                    DAVA::Color(1.0f, 0.0f, 1.0f, 0.4f),
+                                                    DAVA::Color(0.0f,1.0f,0.0f,0.4f)};
+#endif
 UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
 :	UIControl(rect, rectInAbsoluteCoordinates)
     , shadowOffset(0, 0)
@@ -52,10 +64,13 @@ UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = 
 
     textBg = new UIControlBackground();
     textBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+	textBg->SetColorInheritType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT);
+
 	textBg->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
     
     shadowBg = new UIControlBackground();
     shadowBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+	shadowBg->SetColorInheritType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT);
     shadowBg->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 
     SetTextColor(Color::White);
@@ -217,13 +232,25 @@ const Vector2 &UIStaticText::GetShadowOffset() const
 
 void UIStaticText::Draw(const UIGeometricData &geometricData)
 {
-	const Rect& textBlockRect = CalculateTextBlockRect(geometricData);
+    if (GetText().empty())
+    {
+        UIControl::Draw(geometricData);
+        return;
+    }
+	Rect textBlockRect = CalculateTextBlockRect(geometricData);
+    if (textBlock->GetFont() && textBlock->GetFont()->GetFontType() == Font::TYPE_DISTANCE)
+    {
+        // Correct rect and setup position and scale for distance fonts
+        textBlockRect.dx *= geometricData.scale.dx;
+        textBlockRect.dy *= geometricData.scale.dy;
+        textBlock->SetScale(geometricData.scale);
+		textBlock->SetAngle(geometricData.angle);
+		textBlock->SetPivot(pivotPoint*geometricData.scale);
+    }
     textBlock->SetRectSize(textBlockRect.GetSize());
     textBlock->SetPosition(textBlockRect.GetPosition());
-
-	textBlock->SetPivotPoint(geometricData.pivotPoint);
-	PrepareSprite();
 	textBlock->PreDraw();
+	PrepareSprite();
 
     UIControl::Draw(geometricData);
 
@@ -245,7 +272,36 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
     }
 
     textBlock->Draw(textBg->GetDrawColor());
-	textBg->Draw(textGeomData);
+  
+    
+#if defined(LOCALIZATION_DEBUG)
+    UIGeometricData elementGeomData;
+    textBg->Draw(textGeomData);
+    const Sprite::DrawState & lastDrawStae = textBg->GetLastDrawState();
+    elementGeomData.position = lastDrawStae.position;
+    elementGeomData.angle = lastDrawStae.angle;
+    elementGeomData.scale = lastDrawStae.scale;
+    elementGeomData.pivotPoint = lastDrawStae.pivotPoint;
+
+    if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LINEBREAK_ERRORS)
+        || RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS)
+        )
+    {
+
+        RecalculateDebugColoring();
+        DrawLocalizationDebug(geometricData);
+    }
+    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_ERRORS))
+    {
+        DrawLocalizationErrors(geometricData, elementGeomData);
+    }
+#else
+    textBg->Draw(textGeomData);
+#endif
+   
+    
+    
+	
 }
 
 void UIStaticText::SetParentColor(const Color &parentColor)
@@ -499,10 +555,10 @@ const Vector<int32> & UIStaticText::GetStringSizes() const
 
 void UIStaticText::PrepareSprite()
 {
-    ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &UIStaticText::PrepareSpriteInternal));
+	JobManager::Instance()->CreateMainJob(MakeFunction(PointerWrapper<UIStaticText>::WrapRetainRelease(this), &UIStaticText::PrepareSpriteInternal));
 }
 
-void UIStaticText::PrepareSpriteInternal(DAVA::BaseObject *caller, void *param, void *callerData)
+void UIStaticText::PrepareSpriteInternal()
 {
     if (textBlock->IsSpriteReady())
     {
@@ -513,13 +569,13 @@ void UIStaticText::PrepareSpriteInternal(DAVA::BaseObject *caller, void *param, 
         Texture *tex = sprite->GetTexture();
         if(tex && tex->GetFormat() == FORMAT_A8)
         {
-            textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
-            shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+            textBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+            shadowBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
         }
         else
         {
-            textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
-            shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+            textBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
+            shadowBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
         }
     }
     else
@@ -540,7 +596,6 @@ Rect UIStaticText::CalculateTextBlockRect(const UIGeometricData &geometricData) 
         resultRect.dx -= (margins->right + margins->left);
         resultRect.dy -= (margins->bottom + margins->top);
     }
-
     return resultRect;
 }
 
@@ -615,5 +670,143 @@ void UIStaticText::SetMultilineType(int32 multilineType)
             break;
     }
 }
+#if defined(LOCALIZATION_DEBUG)
+void  UIStaticText::DrawLocalizationErrors(const UIGeometricData & geometricData, const UIGeometricData & elementGeomData) const
+{
+
+    TextBlockSoftwareRender * rendereTextBlock = dynamic_cast<TextBlockSoftwareRender *> (textBlock->GetRenderer());
+    if (rendereTextBlock != NULL)
+    {
+
+        DAVA::Matrix3 transform;
+        elementGeomData.BuildTransformMatrix(transform);
+
+        UIGeometricData textGeomData(elementGeomData);
+
+        Vector3 x3 = Vector3(1.0f, 0.0f, 0.0f)*transform, y3 = Vector3(0.0f, 1.0f, 0.0f)*transform;
+        Vector2 x(x3.x, x3.y), y(y3.x, y3.y);
+
+        //reduce size by 1 pixel from each size for polygon to fit into control hence +1.0f and -1.0f
+        //getTextOffsetTL and getTextOffsetBR are in physical coordinates but draw is still in virtual
+        textGeomData.position += (x*VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(rendereTextBlock->getTextOffsetTL().x + 1.0f));
+        textGeomData.position += (y*VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(rendereTextBlock->getTextOffsetTL().y + 1.0f));
+
+        textGeomData.size = Vector2(0.0f, 0.0f);
+        textGeomData.size.x += VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX((rendereTextBlock->getTextOffsetBR().x - rendereTextBlock->getTextOffsetTL().x) -1.0f);
+        textGeomData.size.y += VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY((rendereTextBlock->getTextOffsetBR().y - rendereTextBlock->getTextOffsetTL().y) -1.0f);
+
+
+        DAVA::Polygon2 textPolygon;
+        textGeomData.GetPolygon(textPolygon);
+
+
+        DAVA::Polygon2 controllPolygon;
+        geometricData.GetPolygon(controllPolygon);
+
+
+        //polygons will have te same transformation so just compare them 
+        if (!controllPolygon.IsPointInside(textPolygon.GetPoints()[0]) ||
+            !controllPolygon.IsPointInside(textPolygon.GetPoints()[1]) ||
+            !controllPolygon.IsPointInside(textPolygon.GetPoints()[2]) ||
+            !controllPolygon.IsPointInside(textPolygon.GetPoints()[3]))
+        {
+            RenderManager::Instance()->SetColor(HIGHLITE_COLORS[MAGENTA]);
+            RenderHelper::Instance()->DrawPolygon(textPolygon, true, RenderState::RENDERSTATE_2D_OPAQUE);
+
+
+            RenderManager::Instance()->SetColor(HIGHLITE_COLORS[RED]);
+            RenderHelper::Instance()->FillPolygon(controllPolygon, RenderState::RENDERSTATE_2D_BLEND);
+
+        }
+        if (textBlock->IsVisualTextCroped())
+        {
+            RenderManager::Instance()->SetColor(HIGHLITE_COLORS[YELLOW]);
+            RenderHelper::Instance()->FillPolygon(textPolygon, RenderState::RENDERSTATE_2D_BLEND);
+        }
+    }
+}
+void  UIStaticText::DrawLocalizationDebug(const UIGeometricData & textGeomData) const
+{
+    if (warningColor != NONE
+        && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
+    {
+        RenderManager::Instance()->SetColor(HIGHLITE_COLORS[warningColor]);
+        DAVA::Polygon2 polygon;
+        textGeomData.GetPolygon(polygon);
+
+        RenderHelper::Instance()->DrawPolygon(polygon, true, RenderState::RENDERSTATE_2D_OPAQUE);
+        RenderManager::Instance()->ResetColor();
+    }
+    if (lineBreakError != NONE && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LINEBREAK_ERRORS))
+    {
+        RenderManager::Instance()->SetColor(HIGHLITE_COLORS[lineBreakError]);
+        DAVA::Polygon2 polygon;
+        textGeomData.GetPolygon(polygon);
+
+        RenderHelper::Instance()->FillPolygon(polygon, RenderState::RENDERSTATE_2D_BLEND);
+        RenderManager::Instance()->ResetColor();
+    }
+    if (textBlock->GetFittingOption() != TextBlock::FITTING_DISABLED 
+        && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
+    {
+        RenderManager::Instance()->SetColor(HIGHLITE_COLORS[WHITE]);
+        if (textBlock->GetFittingOptionUsed() != TextBlock::FITTING_DISABLED)
+        {
+            if (textBlock->GetFittingOptionUsed() & TextBlock::FITTING_REDUCE)
+                RenderManager::Instance()->SetColor(HIGHLITE_COLORS[RED]);
+            if (textBlock->GetFittingOptionUsed() & TextBlock::FITTING_ENLARGE)
+                RenderManager::Instance()->SetColor(HIGHLITE_COLORS[YELLOW]);
+            if (textBlock->GetFittingOptionUsed() & TextBlock::FITTING_POINTS)
+                RenderManager::Instance()->SetColor(HIGHLITE_COLORS[BLUE]);
+        }
+        DAVA::Polygon2 polygon;
+        textGeomData.GetPolygon(polygon);
+        DVASSERT(polygon.GetPointCount() == 4);
+        RenderHelper::Instance()->DrawLine(polygon.GetPoints()[0], polygon.GetPoints()[2], RenderState::RENDERSTATE_2D_BLEND);
+        RenderManager::Instance()->ResetColor();
+    }
+
+}
+void UIStaticText::RecalculateDebugColoring()
+{
+   
+    warningColor = NONE;
+    lineBreakError = NONE;
+    if (textBlock->GetFont() == NULL)
+        return;
     
+    if (textBlock->GetMultiline())
+    {
+
+        const Vector<WideString> &  strings = textBlock->GetMultilineStrings();
+        const WideString & text = textBlock->GetText();
+        float32 accumulatedHeight = 0.0f;
+        float32 maxWidth = 0.0f;
+        
+        if (!text.empty())
+        {
+            WideString textNoSpaces(text);
+            TextBlock::CleanLine(textNoSpaces);
+            auto res = remove_if(textNoSpaces.begin(), textNoSpaces.end(), StringUtils::IsWhitespace);
+            textNoSpaces.erase(res, textNoSpaces.end());
+
+            WideString concatinatedStringsNoSpaces = L"";
+            for (Vector<WideString>::const_iterator string = strings.begin();
+                string != strings.end(); string++)
+            {
+
+                WideString toFilter = *string;
+                toFilter.erase(remove_if(toFilter.begin(), toFilter.end(), StringUtils::IsWhitespace), toFilter.end());
+                concatinatedStringsNoSpaces += toFilter;
+            }
+
+            if (concatinatedStringsNoSpaces != textNoSpaces)
+            {
+                lineBreakError = RED;
+            }
+        }
+        
+    }
+}
+#endif
 };

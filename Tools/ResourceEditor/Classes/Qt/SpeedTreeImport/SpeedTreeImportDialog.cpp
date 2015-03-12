@@ -73,6 +73,7 @@ void SpeedTreeImportDialog::OnCancel()
 
 void SpeedTreeImportDialog::OnOk()
 {
+#ifdef __DAVAENGINE_SPEEDTREE__
     FilePath texturesDirPath = sc2FolderPath + "images/";
 
     //make out files
@@ -109,6 +110,7 @@ void SpeedTreeImportDialog::OnOk()
             QtMainWindow::Instance()->OpenScene(outFiles[i].GetAbsolutePathname().c_str());
         }
     }
+#endif
 }
 
 void SpeedTreeImportDialog::OnXMLSelect()

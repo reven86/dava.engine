@@ -59,7 +59,7 @@ public:
 	bool DisableLandscapeEdititing();
 	
 	virtual void Process(DAVA::float32 timeElapsed);
-	void ProcessUIEvent(DAVA::UIEvent *event);
+	virtual void Input(DAVA::UIEvent *event);
 	void Draw();
 	
 	void SetBrushSize(int32 brushSize);
@@ -82,7 +82,7 @@ public:
 protected:
 	uint32 curToolSize;
 	Image* toolImage;
-	Sprite* toolImageSprite;
+	Texture * toolImageTexture;
 	uint32 tileTextureNum;
 
 	eTilemaskDrawType drawingType;
@@ -98,14 +98,20 @@ protected:
 	
 	bool editingIsEnabled;
 	
-	Sprite* stencilSprite;
-	Sprite* toolSprite;
+	Texture * stencilTexture;
+	Texture * toolTexture;
 	bool toolSpriteUpdated;
 
 	eBlendMode srcBlendMode;
 	eBlendMode dstBlendMode;
 	Shader* tileMaskEditorShader;
 	Shader* tileMaskCopyPasteShader;
+
+    float32 spriteTempVertices[8];
+    float32 spriteTempCoords[8];
+    RenderDataObject * spriteRenderObject;
+    RenderDataStream * spriteVertexStream;
+    RenderDataStream * spriteTexCoordStream;
 
 	bool needCreateUndo;
 
@@ -130,8 +136,6 @@ protected:
 
 	MetaObjModifyCommand* CreateTileColorCommand(Landscape::eTextureLevel level,
 												 const Color& color);
-	
-	UniqueHandle noBlendDrawState;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__) */

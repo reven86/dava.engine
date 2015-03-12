@@ -36,6 +36,7 @@
 
 #if defined (__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 #endif
 
 #if defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
@@ -51,6 +52,7 @@ void Thread::thread_exit_handler(int sig)
 {
 	if (SIGRTMIN == sig)
 	{
+	    JNI::DetachCurrentThreadFromJVM();
 		pthread_exit(0);
 	}
 }
@@ -75,7 +77,7 @@ void Thread::Init()
 
 void Thread::Shutdown()
 {
-    DVASSERT(STATE_ENDED == state || STATE_CANCELLED == state || STATE_KILLED == state);
+    DVASSERT(STATE_ENDED == state || STATE_KILLED == state);
     Join();
 }
 
@@ -90,7 +92,7 @@ void Thread::KillNative()
 #endif
     if (0 != ret)
     {
-        Logger::FrameworkDebug("[Thread::Cancel] for android: id = %d, error = %d", Thread::GetCurrentId(), ret);
+        Logger::FrameworkDebug("[Thread::Cancel] cannot kill thread: id = %d, error = %d", Thread::GetCurrentId(), ret);
     }
 }
 
@@ -114,7 +116,7 @@ void *PthreadMain(void *param)
 #endif
 
 #if defined (__DAVAENGINE_ANDROID__)
-    Thread::AttachToJVM();
+    JNI::AttachCurrentThreadToJVM();
 #endif
 
 #if defined(__DAVAENGINE_DEBUG__) 
@@ -129,7 +131,7 @@ void *PthreadMain(void *param)
     Thread::ThreadFunction(param);
 
 #if defined (__DAVAENGINE_ANDROID__)
-    Thread::DetachFromJVM();
+    JNI::DetachCurrentThreadFromJVM();
 #endif
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
@@ -163,42 +165,6 @@ Thread::Id Thread::GetCurrentId()
 {
     return pthread_self();
 }
-
-#if defined(__DAVAENGINE_ANDROID__)
-void Thread::AttachToJVM()
-{
-	if (true == IsMainThread())
-		return;
-
-	DAVA::CorePlatformAndroid *core = (DAVA::CorePlatformAndroid *)DAVA::Core::Instance();
-	DAVA::AndroidSystemDelegate* delegate = core->GetAndroidSystemDelegate();
-	JavaVM *vm = delegate->GetVM();
-	JNIEnv *env;
-
-	if (JNI_EDETACHED == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
-	{
-		if (vm->AttachCurrentThread(&env, NULL)!=0)
-			Logger::Error("runtime_error(Could not attach current thread to JNI)");
-	}
-}
-
-void Thread::DetachFromJVM()
-{
-	if (true == IsMainThread())
-		return;
-
-	DAVA::CorePlatformAndroid *core = (DAVA::CorePlatformAndroid *)DAVA::Core::Instance();
-	DAVA::AndroidSystemDelegate* delegate = core->GetAndroidSystemDelegate();
-	JavaVM *vm = delegate->GetVM();
-	JNIEnv *env;
-
-	if (JNI_OK == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
-	{
-		if (0 != vm->DetachCurrentThread())
-			Logger::Error("runtime_error(Could not detach current thread from JNI)");
-	}
-}
-#endif
 
 }
 

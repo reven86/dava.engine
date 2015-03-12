@@ -36,18 +36,19 @@ QtWaitDialog::QtWaitDialog(QWidget *parent /*= 0*/)
 	, ui(new Ui::QtWaitDialog)
 	, wasCanceled(false)
 {
-	ui->setupUi(this);
+    resize(400, 150);
+	setMinimumSize(400, 150);
+	setMaximumWidth(400);
+	setWindowModality(Qt::WindowModal);
+    
+    ui->setupUi(this);
 
 	QPalette pal = palette();
 	pal.setColor(QPalette::Base, Qt::transparent);
 	ui->waitLabel->setPalette(pal);
 
-	QObject::connect(ui->waitButton, SIGNAL(pressed()), this, SLOT(CancelPressed()));
-	QObject::connect(this, SIGNAL(canceled()), this, SLOT(WaitCanceled()));
-
-	setMinimumSize(400, 150);
-	setMaximumWidth(400);
-	setWindowModality(Qt::WindowModal);
+	connect(ui->waitButton, SIGNAL(pressed()), this, SLOT(CancelPressed()));
+	connect(this, SIGNAL(canceled()), this, SLOT(WaitCanceled()));
 }
 
 QtWaitDialog::~QtWaitDialog()
@@ -67,7 +68,6 @@ void QtWaitDialog::Show(const QString &title, const QString &message, bool hasWa
 	
 	setCursor(Qt::BusyCursor);
 	show();
-
 
 	QApplication::processEvents();
 }

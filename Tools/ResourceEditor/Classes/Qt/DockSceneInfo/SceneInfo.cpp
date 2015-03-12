@@ -45,7 +45,7 @@
 #include "Scene/SceneSignals.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneHelper.h"
-#include "DockLODEditor/EditorLODData.h"
+#include "Scene/System/EditorLODSystem.h"
 #include "Main/mainwindow.h"
 
 #include <QHeaderView>
@@ -60,9 +60,9 @@ using namespace DAVA;
 
 SceneInfo::SceneInfo(QWidget *parent /* = 0 */)
 	: QtPropertyEditor(parent)
-    , activeScene(NULL)
+	, treeStateHelper(this, curModel)
+	, activeScene(NULL)
 	, landscape(NULL)
-    , treeStateHelper(this, curModel)
 	, isUpToDate(false)
 {
 	// global scene manager signals
@@ -449,7 +449,7 @@ void SceneInfo::CollectLODDataInEntityRecursive(DAVA::Entity *entity)
     
     if(lod)
     {
-        EditorLODData::AddTrianglesInfo(lodInfoInFrame.trianglesOnLod, lod, true);
+        EditorLODSystem::AddTrianglesInfo(lodInfoInFrame.trianglesOnLod, lod, true);
     }
     
     DAVA::int32 count = entity->GetChildrenCount();
@@ -466,7 +466,7 @@ void SceneInfo::CollectLODTriangles(const DAVA::Vector<DAVA::LodComponent *> &lo
     uint32 count = (uint32)lods.size();
     for(uint32 i = 0; i < count; ++i)
     {
-        EditorLODData::AddTrianglesInfo(info.trianglesOnLod, lods[i], false);
+        EditorLODSystem::AddTrianglesInfo(info.trianglesOnLod, lods[i], false);
     }
 }
 

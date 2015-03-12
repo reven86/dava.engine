@@ -42,15 +42,17 @@ protected:
 public:
 	FileSystemTest();
 
-	virtual void LoadResources();
-	virtual void UnloadResources();
+	virtual void LoadResources() override;
+	virtual void UnloadResources() override;
 
+private:
 	void ResTestFunction(PerfFuncData * data);
 	void DocTestFunctionCheckCopy(PerfFuncData * data);
 	void DocTestFunction(PerfFuncData * data);
+	void FileOperationsTestFunction(PerfFuncData * data);
+    void CompareFilesTest(PerfFuncData * data);
     
 protected:
-    
     bool RecursiveCopy(const FilePath & src, const FilePath &dst);
 };
 

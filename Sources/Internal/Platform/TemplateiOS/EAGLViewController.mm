@@ -29,6 +29,8 @@
 
 #include "Base/BaseTypes.h"
 #include "Core/Core.h"
+#include "Input/InputSystem.h"
+
 #if defined(__DAVAENGINE_IPHONE__)
 
 #import "Platform/TemplateiOS/EAGLViewController.h"
@@ -76,14 +78,15 @@
     backgroundView = [[BackgroundView alloc] initWithFrame:[glView frame]];
     [backgroundView setBackgroundColor:[UIColor clearColor]];
     [backgroundView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
-    [backgroundView setMultipleTouchEnabled:YES]; // to pass touches to framework, see please DF-2796.
+    
+    
+    BOOL isMultipleTouchEnabled = (DAVA::InputSystem::Instance()->GetMultitouchEnabled()) ? YES : NO;
+    [backgroundView setMultipleTouchEnabled:isMultipleTouchEnabled]; // to pass touches to framework
 
     [glView addSubview:backgroundView];
     [backgroundView release];
 
     self.view = glView;
-//	[glView release];
-//   glView = nil;
 }
 
 -(BackgroundView *) getBackgroundView

@@ -35,7 +35,11 @@
 #include "Render/OcclusionQuery.h"
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
+#include "Scene3D/Systems/Controller/RotationControllerSystem.h"
+#include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
+#include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 
 namespace DAVA 
 {
@@ -90,46 +94,28 @@ void UI3DView::Update(float32 timeElapsed)
 
 void UI3DView::Draw(const UIGeometricData & geometricData)
 {
+    RenderSystem2D::Instance()->Flush();
+
 	bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
 
 	if (uiDrawQueryWasOpen)
 		FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 
-#if 1
 	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
 	
     const Rect & viewportRect = geometricData.GetUnrotatedRect();
-    viewportRc = viewportRect;
-    
-    RenderManager::Instance()->PushDrawMatrix();
-	RenderManager::Instance()->PushMappingMatrix();
-    int32 renderOrientation = RenderManager::Instance()->GetRenderOrientation();
+    viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
     
     Rect viewportSave = RenderManager::Instance()->GetViewport();
-    RenderManager::Instance()->SetViewport(viewportRect, false);
-    
+    RenderManager::Instance()->SetViewport(viewportRc);
     
     if (scene)
         scene->Draw();
-
         
-    RenderManager::Instance()->SetViewport(viewportSave, true);
-    RenderManager::Instance()->SetRenderOrientation(renderOrientation);
-    
-
-	RenderManager::Instance()->PopDrawMatrix();
-	RenderManager::Instance()->PopMappingMatrix();
+    RenderManager::Instance()->SetViewport(viewportSave);
 	
 	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
-    RenderManager::Instance()->Setup2DMatrices();
-	
-        //    modelViewSave = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
-        //    Logger::Info("Model matrix");
-        //    modelViewSave.Dump();
-        //    projectionSave = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_PROJECTION);
-        //    Logger::Info("Proj matrix");
-        //    projectionSave.Dump();
-#endif
+    RenderSystem2D::Instance()->Setup2DMatrices();
 
 	if (uiDrawQueryWasOpen)
 		FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
@@ -172,5 +158,16 @@ void UI3DView::WillBecomeInvisible()
         UIControlSystem::Instance()->UI3DViewRemoved();
     }
 }
+    
+void UI3DView::Input(UIEvent *currentInput)
+{
+    if(scene)
+    {
+        scene->Input(currentInput);
+    }
+    
+    UIControl::Input(currentInput);
+}
+    
 
 }

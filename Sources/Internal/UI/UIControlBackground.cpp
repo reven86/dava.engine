@@ -34,55 +34,31 @@
 #include "Core/Core.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 #include <limits>
 
 namespace DAVA
 {
 
-const uint16 UIControlBackground::StretchDrawData::indeces[18 * 3] = {
-    0, 1, 4,
-    1, 5, 4,
-    1, 2, 5,
-    2, 6, 5,
-    2, 3, 6,
-    3, 7, 6,
-            
-    4, 5, 8,
-    5, 9, 8,
-    5, 6, 9,
-    6, 10, 9,
-    6, 7, 10,
-    7, 11, 10,
-            
-    8, 9, 12,
-    9, 12, 13,
-    9, 10, 13,
-    10, 14, 13,
-    10, 11, 14,
-    11, 15, 14
-};
-
 UIControlBackground::UIControlBackground()
-:	spr(NULL)
-,	frame(0)
-,	align(ALIGN_HCENTER|ALIGN_VCENTER)
-,	type(DRAW_ALIGNED)
-,	color(Color::White)
-,	drawColor(Color::White)
-,	leftStretchCap(0)
-,	topStretchCap(0)
-,	spriteModification(0)
-,	colorInheritType(COLOR_IGNORE_PARENT)
-,	perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
-,	lastDrawPos(0, 0)
-,	tiledData(NULL)
+:   color(Color::White)
+,   spr(NULL)
+,   align(ALIGN_HCENTER|ALIGN_VCENTER)
+,   type(DRAW_ALIGNED)
+,   spriteModification(0)
+,   leftStretchCap(0)
+,   topStretchCap(0)
+,   colorInheritType(COLOR_IGNORE_PARENT)
+,   frame(0)
+,   lastDrawPos(0, 0)
+,   perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
+,   tiledData(NULL)
 ,   stretchData(NULL)
-,   rdoObject(NULL)
-,   vertexStream(NULL)
-,   texCoordStream(NULL)
-,	shader(SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR))
 ,   margins(NULL)
+,   drawColor(Color::White)
+,   shader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR))
 ,   renderState(RenderState::RENDERSTATE_2D_BLEND)
 {
 }
@@ -101,7 +77,6 @@ void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
     frame = srcBackground->frame;
     align = srcBackground->align;
 
-    SafeRelease(rdoObject);
     SetDrawType(srcBackground->type);
     SetMargins(srcBackground->GetMargins());
 
@@ -118,7 +93,6 @@ void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
 
 UIControlBackground::~UIControlBackground()
 {
-    SafeRelease(rdoObject);
     SafeRelease(spr);
     SafeRelease(shader);
     SafeDelete(margins);
@@ -198,6 +172,16 @@ void UIControlBackground::SetFrame(int32 drawFrame)
     frame = drawFrame;
 }
 
+void UIControlBackground::SetFrame(const FastName& frameName)
+{
+    DVASSERT(spr);
+    int32 frameInd = spr->GetFrameByName(frameName);
+    if (frameInd != Sprite::INVALID_FRAME_INDEX)
+    {
+    	SetFrame(frameInd);
+    }
+}
+
 void UIControlBackground::SetAlign(int32 drawAlign)
 {
     align = drawAlign;
@@ -205,25 +189,6 @@ void UIControlBackground::SetAlign(int32 drawAlign)
 void UIControlBackground::SetDrawType(UIControlBackground::eDrawType drawType)
 {
     type = drawType;
-    switch(type)
-    {
-    case DRAW_STRETCH_BOTH:
-    case DRAW_STRETCH_HORIZONTAL:
-    case DRAW_STRETCH_VERTICAL:
-    case DRAW_TILED:
-        {
-            if (!rdoObject)
-            {
-                rdoObject = new RenderDataObject();
-                vertexStream = rdoObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
-                texCoordStream = rdoObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
-                //rdoObject->SetStream()
-            }
-        }
-        break;
-    default:
-        break;
-    }
     ReleaseDrawData();
 }
 
@@ -318,6 +283,8 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
 
     RenderManager::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
 
+    RenderSystem2D::Instance()->UpdateClip();
+
     Sprite::DrawState drawState;
     drawState.SetRenderState(renderState);
     if (spr)
@@ -392,8 +359,7 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
             }
 
             lastDrawPos = drawState.position;
-
-            spr->Draw(&drawState);
+            RenderSystem2D::Instance()->Draw(spr, &drawState);
         }
         break;
 
@@ -431,8 +397,8 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
 //			spr->SetScale(drawRect.dx / spr->GetSize().dx, drawRect.dy / spr->GetSize().dy);
 //			spr->SetPivotPoint(geometricData.pivotPoint.x / (geometricData.size.x / spr->GetSize().dx), geometricData.pivotPoint.y / (geometricData.size.y / spr->GetSize().dy));
 //			spr->SetAngle(geometricData.angle);
-
-            spr->Draw(&drawState);
+            
+            RenderSystem2D::Instance()->Draw(spr, &drawState);
         }
         break;
 
@@ -530,188 +496,53 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
             }
 
             lastDrawPos = drawState.position;
-
-            spr->Draw(&drawState);
+            
+            RenderSystem2D::Instance()->Draw(spr, &drawState);
         }
         break;
 
         case DRAW_FILL:
-        {
             RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
-            DrawFilled( geometricData, drawState.GetRenderState() );
-        }
+            if (geometricData.angle != 0.0f)
+            {
+                Polygon2 poly;
+                geometricData.GetPolygon(poly);
+                RenderHelper::Instance()->FillPolygon(poly, drawState.GetRenderState());
+            }
+            else
+            {
+                RenderHelper::Instance()->FillRect(geometricData.GetUnrotatedRect(), drawState.GetRenderState());
+            }
         break;
 
         case DRAW_STRETCH_BOTH:
         case DRAW_STRETCH_HORIZONTAL:
         case DRAW_STRETCH_VERTICAL:
-            DrawStretched(geometricData, drawState.GetRenderState());
+            RenderSystem2D::Instance()->DrawStretched(spr, &drawState, Vector2(leftStretchCap, topStretchCap), type, geometricData, &stretchData);
         break;
 
         case DRAW_TILED:
-            DrawTiled(geometricData, drawState.GetRenderState());
+            RenderSystem2D::Instance()->DrawTiled(spr, &drawState, Vector2(leftStretchCap, topStretchCap), geometricData, &tiledData);
         break;
         default:
             break;
     }
-
+#if defined(LOCALIZATION_DEBUG)
+    lastDrawState = drawState;
+#endif
     RenderManager::Instance()->ResetColor();
 
 }
-
-void UIControlBackground::DrawStretched(const UIGeometricData &geometricData, UniqueHandle renderState)
+#if defined(LOCALIZATION_DEBUG)
+const Sprite::DrawState & UIControlBackground::GetLastDrawState() const
 {
-    DVASSERT(rdoObject);
-    if (!spr)return;
-    if (!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
-    {
-        return;
-    }
-    UniqueHandle textureHandle = spr->GetTextureHandle(frame);
-    
-    bool needGenerateData = false;
-    if( !stretchData )
-    {
-        stretchData = new StretchDrawData();
-        needGenerateData = true;
-    }
-    else
-    {
-        needGenerateData |= spr != stretchData->sprite;
-        needGenerateData |= frame != stretchData->frame;
-        needGenerateData |= geometricData.size != stretchData->size;
-        needGenerateData |= type != stretchData->type;
-        needGenerateData |= leftStretchCap != stretchData->leftStretchCap;
-        needGenerateData |= topStretchCap != stretchData->topStretchCap;
-    }
-    
-    StretchDrawData &sd = *stretchData;
-    
-    if( needGenerateData )
-    {
-        sd.sprite = spr;
-        sd.frame = frame;
-        sd.size = geometricData.size;
-        sd.type = type;
-        sd.leftStretchCap = leftStretchCap;
-        sd.topStretchCap = topStretchCap;
-        sd.GenerateStretchData();
-    }
-    
-    Matrix3 transformMatr;
-    geometricData.BuildTransformMatrix( transformMatr );
-    
-    if( needGenerateData || sd.transformMatr != transformMatr )
-    {
-        sd.transformMatr = transformMatr;
-        sd.GenerateTransformData();
-    }
-
-    vertexStream->Set(TYPE_FLOAT, 2, 0, &sd.transformedVertices[0]);
-    texCoordStream->Set(TYPE_FLOAT, 2, 0, &sd.texCoords[0]);
-
-    RenderManager::Instance()->SetTextureState(textureHandle);
-    RenderManager::Instance()->SetRenderState(renderState);
-    RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
-    RenderManager::Instance()->SetRenderData(rdoObject);
-    RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, sd.GetVertexInTrianglesCount(), EIF_16, (void*)sd.indeces);
-
-    /*GLenum glErr = glGetError();
-    if (glErr != GL_NO_ERROR)
-    {
-        Logger::FrameworkDebug("GLError: 0x%x", glErr);
-    }*/
+    return lastDrawState;
 }
-
+#endif
 void UIControlBackground::ReleaseDrawData()
 {
     SafeDelete(tiledData);
     SafeDelete(stretchData);
-}
-
-void UIControlBackground::DrawTiled(const UIGeometricData &gd, UniqueHandle renderState)
-{
-    DVASSERT(rdoObject);
-    if (!spr)return;
-    if (!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
-    {
-        return;
-    }
-
-    const Vector2 &size = gd.size;
-
-    if( leftStretchCap < 0.0f || topStretchCap < 0.0f ||
-        size.x <= 0.0f || size.y <= 0.0f )
-        return;
-
-    Vector2 stretchCap( Min( size.x, spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH) ),
-                        Min( size.y, spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT) ) );
-
-    UniqueHandle textureHandle = spr->GetTextureHandle(frame);
-
-    stretchCap.x = Min( stretchCap.x * 0.5f, leftStretchCap );
-    stretchCap.y = Min( stretchCap.y * 0.5f, topStretchCap );
-
-    bool needGenerateData = false;
-    if( !tiledData )
-    {
-        tiledData = new TiledDrawData();
-        needGenerateData = true;
-    }
-    else
-    {
-        needGenerateData |= stretchCap != tiledData->stretchCap;
-        needGenerateData |= frame != tiledData->frame;
-        needGenerateData |= spr != tiledData->sprite;
-        needGenerateData |= size != tiledData->size;
-    }
-
-    TiledDrawData &td = *tiledData;
-
-    if( needGenerateData )
-    {
-        td.stretchCap = stretchCap;
-        td.size = size;
-        td.frame = frame;
-        td.sprite = spr;
-        td.GenerateTileData();
-    }
-
-    Matrix3 transformMatr;
-    gd.BuildTransformMatrix( transformMatr );
-
-    if( needGenerateData || td.transformMatr != transformMatr )
-    {
-        td.transformMatr = transformMatr;
-        td.GenerateTransformData();
-    }
-
-    if (td.vertices.empty())
-        return;
-
-    vertexStream->Set(TYPE_FLOAT, 2, 0, &td.transformedVertices[0]);
-    texCoordStream->Set(TYPE_FLOAT, 2, 0, &td.texCoords[0]);
-
-    RenderManager::Instance()->SetTextureState(textureHandle);
-    RenderManager::Instance()->SetRenderState(renderState);
-    RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
-    RenderManager::Instance()->SetRenderData(rdoObject);
-    RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, td.indeces.size(), EIF_16, &td.indeces[0]);
-}
-
-void UIControlBackground::DrawFilled( const UIGeometricData &gd, UniqueHandle renderState )
-{
-    if( gd.angle != 0.0f )
-    {
-        Polygon2 poly;
-        gd.GetPolygon( poly );
-
-        RenderHelper::Instance()->FillPolygon( poly, renderState );
-    }
-    else
-    {
-        RenderHelper::Instance()->FillRect( gd.GetUnrotatedRect(), renderState );
-    }
 }
 
 void UIControlBackground::SetLeftRightStretchCap(float32 _leftStretchCap)
@@ -732,320 +563,6 @@ float32 UIControlBackground::GetLeftRightStretchCap() const
 float32 UIControlBackground::GetTopBottomStretchCap() const
 {
     return topStretchCap;
-}
-
-uint32 UIControlBackground::StretchDrawData::GetVertexInTrianglesCount() const
-{
-    switch(type)
-    {
-        case DRAW_STRETCH_HORIZONTAL:
-        case DRAW_STRETCH_VERTICAL:
-                return 18;
-        case DRAW_STRETCH_BOTH:
-                return 18 * 3;
-        default:
-            DVASSERT(0);
-            return 0;
-    }
-}
-
-void UIControlBackground::StretchDrawData::GenerateTransformData()
-{
-    for( uint32 index = 0; index < vertices.size(); ++index )
-    {
-        transformedVertices[index] = vertices[index] * transformMatr;
-    }
-}
-    
-void UIControlBackground::StretchDrawData::GenerateStretchData()
-{
-    Texture* texture = sprite->GetTexture(frame);
-    
-    float32 texX = sprite->GetRectOffsetValueForFrame(frame, Sprite::X_POSITION_IN_TEXTURE);
-    float32 texY = sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_POSITION_IN_TEXTURE);
-    float32 texDx = sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH);
-    float32 texDy = sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT);
-    float32 texOffX = sprite->GetRectOffsetValueForFrame(frame, Sprite::X_OFFSET_TO_ACTIVE);
-    float32 texOffY = sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_OFFSET_TO_ACTIVE);
-    
-    const float32 spriteWidth = sprite->GetWidth();
-    const float32 spriteHeight = sprite->GetHeight();
-    
-    const float32 leftOffset  = leftStretchCap - texOffX;
-    const float32 rightOffset = leftStretchCap - ( spriteWidth - texDx - texOffX );
-    const float32 topOffset   = topStretchCap  - texOffY;
-    const float32 bottomOffset= topStretchCap  - ( spriteHeight - texDy - texOffY );
-    
-    const float32 realLeftStretchCap  = Max( 0.0f, leftOffset );
-    const float32 realRightStretchCap = Max( 0.0f, rightOffset );
-    const float32 realTopStretchCap   = Max( 0.0f, topOffset );
-    const float32 realBottomStretchCap= Max( 0.0f, bottomOffset );
-    
-    const float32 scaleFactorX = size.x / spriteWidth;
-    const float32 scaleFactorY = size.y / spriteHeight;
-    float32 dx = size.x - ( Max( 0.0f, -leftOffset ) + Max( 0.0f, -rightOffset  ) ) * scaleFactorX;
-    float32 dy = size.y - ( Max( 0.0f, -topOffset  ) + Max( 0.0f, -bottomOffset ) ) * scaleFactorY;
-    
-    const float32 resMulFactor = 1.0f / Core::Instance()->GetResourceToVirtualFactor(sprite->GetResourceSizeIndex());
-    
-    texDx *= resMulFactor;
-    texDy *= resMulFactor;
-    
-    const float32 leftCap  = realLeftStretchCap   * resMulFactor;
-    const float32 rightCap = realRightStretchCap  * resMulFactor;
-    const float32 topCap   = realTopStretchCap    * resMulFactor;
-    const float32 bottomCap= realBottomStretchCap * resMulFactor;
-    
-    float32 textureWidth = (float32)texture->GetWidth();
-    float32 textureHeight = (float32)texture->GetHeight();
-
-    float32 xOffset = texOffX;
-    float32 yOffset = texOffY;
-
-    switch (type)
-    {
-        case DRAW_STRETCH_HORIZONTAL:
-        {
-            float32 ddy = (spriteHeight - dy);
-            yOffset -= ddy * 0.5f;
-            dy += ddy - 2 * texOffX;
-            dx -= 2 * texOffX;
-            
-            vertices.resize(8);
-            transformedVertices.resize(8);
-            texCoords.resize(8);
-            
-            vertices[0] = Vector2(xOffset, yOffset);
-            vertices[1] = Vector2(xOffset + realLeftStretchCap, yOffset);
-            vertices[2] = Vector2(xOffset + dx - realRightStretchCap, yOffset);
-            vertices[3] = Vector2(xOffset + dx, yOffset);
-            
-            vertices[4] = Vector2(xOffset, yOffset + dy);
-            vertices[5] = Vector2(xOffset + realLeftStretchCap, yOffset + dy);
-            vertices[6] = Vector2(xOffset + dx - realRightStretchCap, yOffset + dy);
-            vertices[7] = Vector2(xOffset + dx, yOffset + dy);
-            
-            texCoords[0] = Vector2(texX / textureWidth, texY / textureHeight);
-            texCoords[1] = Vector2((texX + leftCap) / textureWidth, texY / textureHeight);
-            texCoords[2] = Vector2((texX + texDx - rightCap) / textureWidth, texY / textureHeight);
-            texCoords[3] = Vector2((texX + texDx) / textureWidth, texY / textureHeight);
-            
-            texCoords[4] = Vector2(texX / textureWidth, (texY + texDy) / textureHeight);
-            texCoords[5] = Vector2((texX + leftCap) / textureWidth, (texY + texDy) / textureHeight);
-            texCoords[6] = Vector2((texX + texDx - rightCap) / textureWidth, (texY + texDy) / textureHeight);
-            texCoords[7] = Vector2((texX + texDx) / textureWidth, (texY + texDy) / textureHeight);
-        }
-        break;
-        case DRAW_STRETCH_VERTICAL:
-        {
-            float32 ddx = (spriteWidth - dx);
-            xOffset -= ddx * 0.5f;
-            dx += ddx - 2 * texOffX;
-            dy -= 2 * texOffY;
-            
-            vertices.resize(8);
-            transformedVertices.resize(8);
-            texCoords.resize(8);
-            
-            vertices[0] = Vector2(xOffset, yOffset);
-            vertices[1] = Vector2(xOffset, yOffset + realTopStretchCap);
-            vertices[2] = Vector2(xOffset, yOffset + dy - realBottomStretchCap);
-            vertices[3] = Vector2(xOffset, yOffset + dy);
-            
-            vertices[4] = Vector2(xOffset + dx, yOffset);
-            vertices[5] = Vector2(xOffset + dx, yOffset + realTopStretchCap);
-            vertices[6] = Vector2(xOffset + dx, yOffset + dy - realBottomStretchCap);
-            vertices[7] = Vector2(xOffset + dx, yOffset + dy);
-            
-            texCoords[0] = Vector2(texX / textureWidth, texY / textureHeight);
-            texCoords[1] = Vector2(texX / textureWidth, (texY + topCap) / textureHeight);
-            texCoords[2] = Vector2(texX / textureWidth, (texY + texDy - bottomCap) / textureHeight);
-            texCoords[3] = Vector2(texX / textureWidth, (texY + texDy) / textureHeight);
-            
-            texCoords[4] = Vector2((texX + texDx) / textureWidth, texY / textureHeight);
-            texCoords[5] = Vector2((texX + texDx) / textureWidth, (texY + topCap) / textureHeight);
-            texCoords[6] = Vector2((texX + texDx) / textureWidth, (texY + texDy - bottomCap) / textureHeight);
-            texCoords[7] = Vector2((texX + texDx) / textureWidth, (texY + texDy) / textureHeight);
-        }
-        break;
-        case DRAW_STRETCH_BOTH:
-        {
-            dx -= 2 * texOffX;
-            dy -= 2 * texOffY;
-
-            vertices.resize(16);
-            transformedVertices.resize(16);
-            texCoords.resize(16);
-            
-            vertices[0] = Vector2(xOffset, yOffset);
-            vertices[1] = Vector2(xOffset + realLeftStretchCap, yOffset);
-            vertices[2] = Vector2(xOffset + dx - realRightStretchCap, yOffset);
-            vertices[3] = Vector2(xOffset + dx, yOffset);
-            
-            vertices[4] = Vector2(xOffset, yOffset + realTopStretchCap);
-            vertices[5] = Vector2(xOffset + realLeftStretchCap, yOffset + realTopStretchCap);
-            vertices[6] = Vector2(xOffset + dx - realRightStretchCap, yOffset + realTopStretchCap);
-            vertices[7] = Vector2(xOffset + dx, yOffset + realTopStretchCap);
-            
-            vertices[8] = Vector2(xOffset, yOffset + dy - realBottomStretchCap);
-            vertices[9] = Vector2(xOffset + realLeftStretchCap, yOffset + dy - realBottomStretchCap);
-            vertices[10] = Vector2(xOffset + dx - realRightStretchCap, yOffset + dy - realBottomStretchCap);
-            vertices[11] = Vector2(xOffset + dx, yOffset + dy - realBottomStretchCap);
-            
-            vertices[12] = Vector2(xOffset, yOffset + dy);
-            vertices[13] = Vector2(xOffset + realLeftStretchCap, yOffset + dy);
-            vertices[14] = Vector2(xOffset + dx - realRightStretchCap, yOffset + dy);
-            vertices[15] = Vector2(xOffset + dx, yOffset + dy);
-            
-            texCoords[0] = Vector2(texX / textureWidth, texY / textureHeight);
-            texCoords[1] = Vector2((texX + leftCap) / textureWidth, texY / textureHeight);
-            texCoords[2] = Vector2((texX + texDx - rightCap) / textureWidth, texY / textureHeight);
-            texCoords[3] = Vector2((texX + texDx) / textureWidth, texY / textureHeight);
-            
-            texCoords[4] = Vector2(texX / textureWidth, (texY + topCap) / textureHeight);
-            texCoords[5] = Vector2((texX + leftCap) / textureWidth, (texY + topCap) / textureHeight);
-            texCoords[6] = Vector2((texX + texDx - rightCap) / textureWidth, (texY + topCap) / textureHeight);
-            texCoords[7] = Vector2((texX + texDx) / textureWidth, (texY + topCap) / textureHeight);
-            
-            texCoords[8] = Vector2(texX / textureWidth, (texY + texDy - bottomCap)  / textureHeight);
-            texCoords[9] = Vector2((texX + leftCap) / textureWidth, (texY + texDy - bottomCap)  / textureHeight);
-            texCoords[10] = Vector2((texX + texDx - rightCap) / textureWidth, (texY + texDy - bottomCap)  / textureHeight);
-            texCoords[11] = Vector2((texX + texDx) / textureWidth, (texY + texDy - bottomCap)  / textureHeight);
-            
-            texCoords[12] = Vector2(texX / textureWidth, (texY + texDy) / textureHeight);
-            texCoords[13] = Vector2((texX + leftCap) / textureWidth, (texY + texDy) / textureHeight);
-            texCoords[14] = Vector2((texX + texDx - rightCap) / textureWidth, (texY + texDy) / textureHeight);
-            texCoords[15] = Vector2((texX + texDx) / textureWidth, (texY + texDy) / textureHeight);
-        }
-        break;
-    }
-}
-    
-void UIControlBackground::TiledDrawData::GenerateTileData()
-{
-    Texture *texture = sprite->GetTexture(frame);
-
-    Vector< Vector3 > cellsWidth;
-    GenerateAxisData( size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), (float32)texture->GetWidth() * sprite->GetResourceToVirtualFactor(), stretchCap.x, cellsWidth );
-
-    Vector< Vector3 > cellsHeight;
-    GenerateAxisData( size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT), (float32)texture->GetHeight() * sprite->GetResourceToVirtualFactor(), stretchCap.y, cellsHeight );
-
-    int32 vertexCount = 4 * cellsHeight.size() * cellsWidth.size();
-    if (vertexCount>= std::numeric_limits<uint16>::max())
-    {
-        vertices.clear();
-        transformedVertices.clear();
-        texCoords.clear();
-        Logger::Error("[TiledDrawData::GenerateTileData] tile background too big!");
-        return;
-    }
-    vertices.resize( vertexCount );
-    transformedVertices.resize( vertexCount );
-    texCoords.resize( vertexCount );
-
-    int32 indecesCount = 6 * cellsHeight.size() * cellsWidth.size();
-    indeces.resize( indecesCount );
-
-    int32 offsetIndex = 0;
-    const float32 * textCoords = sprite->GetTextureCoordsForFrame(frame);
-    Vector2 trasformOffset;
-    const Vector2 tempTexCoordsPt( textCoords[0], textCoords[1] );
-    for( uint32 row = 0; row < cellsHeight.size(); ++row )
-    {
-        Vector2 cellSize( 0.0f, cellsHeight[row].x );
-        Vector2 texCellSize( 0.0f, cellsHeight[row].y );
-        Vector2 texTrasformOffset( 0.0f, cellsHeight[row].z );
-        trasformOffset.x = 0.0f;
-
-        for( uint32 column = 0; column < cellsWidth.size(); ++column, ++offsetIndex )
-        {
-            cellSize.x = cellsWidth[column].x;
-            texCellSize.x = cellsWidth[column].y;
-            texTrasformOffset.x = cellsWidth[column].z;
-
-            int32 vertIndex = offsetIndex*4;
-            vertices[vertIndex + 0] = trasformOffset;
-            vertices[vertIndex + 1] = trasformOffset + Vector2( cellSize.x, 0.0f );
-            vertices[vertIndex + 2] = trasformOffset + Vector2( 0.0f, cellSize.y );
-            vertices[vertIndex + 3] = trasformOffset + cellSize;
-
-            const Vector2 texel = tempTexCoordsPt + texTrasformOffset;
-            texCoords[vertIndex + 0] = texel;
-            texCoords[vertIndex + 1] = texel + Vector2( texCellSize.x, 0.0f );
-            texCoords[vertIndex + 2] = texel + Vector2( 0.0f, texCellSize.y );
-            texCoords[vertIndex + 3] = texel + texCellSize;
-
-            int32 indecesIndex = offsetIndex*6;
-            indeces[indecesIndex + 0] = vertIndex;
-            indeces[indecesIndex + 1] = vertIndex + 1;
-            indeces[indecesIndex + 2] = vertIndex + 2;
-
-            indeces[indecesIndex + 3] = vertIndex + 1;
-            indeces[indecesIndex + 4] = vertIndex + 3;
-            indeces[indecesIndex + 5] = vertIndex + 2;
-
-            trasformOffset.x += cellSize.x;
-        }
-        trasformOffset.y += cellSize.y;
-    }
-}
-
-void UIControlBackground::TiledDrawData::GenerateAxisData( float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector< Vector3 > &axisData )
-{
-    int32 gridSize = 0;
-
-    float32 sideSize = stretchCap;
-    float32 sideTexSize = sideSize / textureSize;
-
-    float32 centerSize = spriteSize - sideSize * 2.0f;
-    float32 centerTexSize = centerSize / textureSize;
-
-    float32 partSize = 0.0f;
-
-    if( centerSize > 0.0f )
-    {
-        gridSize = (int32)ceilf( ( size - sideSize * 2.0f ) / centerSize );
-        const float32 tileAreaSize = size - sideSize * 2.0f;
-        partSize = tileAreaSize - floorf( tileAreaSize / centerSize ) * centerSize;
-    }
-
-    if( sideSize > 0.0f )
-        gridSize += 2;
-
-      axisData.resize( gridSize );
-
-    int32 beginOffset = 0;
-    int32 endOffset = 0;
-    if( sideSize > 0.0f )
-    {
-        axisData.front() = Vector3( sideSize, sideTexSize, 0.0f );
-        axisData.back() = Vector3( sideSize, sideTexSize, sideTexSize + centerTexSize );
-        beginOffset = 1;
-        endOffset = 1;
-    }
-
-    if( partSize > 0.0f )
-    {
-        ++endOffset;
-        const int32 index = gridSize - endOffset;
-        axisData[index].x = partSize;
-        axisData[index].y = partSize / textureSize;
-        axisData[index].z = sideTexSize;
-    }
-
-    if( centerSize > 0.0f )
-    {
-        std::fill( axisData.begin() + beginOffset, axisData.begin() + gridSize - endOffset, Vector3( centerSize, centerTexSize, sideTexSize ) );
-    }
-}
-
-void UIControlBackground::TiledDrawData::GenerateTransformData()
-{
-    for( uint32 index = 0; index < vertices.size(); ++index )
-    {
-        transformedVertices[index] = vertices[index] * transformMatr;
-    }
 }
 
 void UIControlBackground::SetShader(Shader *_shader)

@@ -95,7 +95,7 @@ int write_handler(void *ext, unsigned char *buffer, size_t size)//yaml_write_han
 {
     File *yamlFile = static_cast<File *>(ext);
 
-    uint32 bytesWritten = yamlFile->Write(buffer, size);
+    uint32 bytesWritten = yamlFile->Write(buffer, static_cast<uint32>(size));
 
     return (size == bytesWritten) ? 1 : 0;
 }
@@ -110,20 +110,20 @@ DAVA::YamlEmitter::YamlEmitter()
 
 bool YamlEmitter::SaveToYamlFile(const FilePath &outFileName, const YamlNode *node, uint32 attr)
 {
-    ScopedPtr<YamlEmitter> emitter(new YamlEmitter());
-    return emitter->Emit(node, outFileName, attr);
-}
-
-bool YamlEmitter::Emit(const YamlNode * node, const FilePath & outFileName, uint32 attr)
-{
-    ScopedPtr<File> yamlFile( File::Create(outFileName, attr) );
-    if ((File*)yamlFile == NULL)
+    ScopedPtr<File> outFile(File::Create(outFileName, attr));
+    if ((File*)outFile == NULL)
     {
         Logger::Error("[YamlEmitter::Emit] Can't create file: %s for output", outFileName.GetStringValue().c_str());
         return false;
     }
 
-    return Emit(node, yamlFile);
+    return SaveToYamlFile(node, outFile);
+}
+
+bool YamlEmitter::SaveToYamlFile(const YamlNode *node, File *outfile)
+{
+    ScopedPtr<YamlEmitter> emitter(new YamlEmitter());
+    return emitter->Emit(node, outfile);
 }
 
 bool YamlEmitter::Emit(const YamlNode * node, File *outFile)
@@ -132,7 +132,7 @@ bool YamlEmitter::Emit(const YamlNode * node, File *outFile)
 
     DVVERIFY(yaml_emitter_initialize(&emitter));
     yaml_emitter_set_encoding(&emitter, YAML_UTF8_ENCODING);
-    yaml_emitter_set_break   (&emitter, YAML_CRLN_BREAK);
+    yaml_emitter_set_break   (&emitter, YAML_ANY_BREAK);
     yaml_emitter_set_unicode (&emitter, UNESCAPED_UNICODE_CHARACTERS_ALLOWED);
     yaml_emitter_set_width   (&emitter, PREFERRED_LINE_WIDTH);
     yaml_emitter_set_indent  (&emitter, INDENTATION_INCREMENT);

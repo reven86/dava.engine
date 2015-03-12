@@ -112,73 +112,37 @@ void ActionDisableVisibilityTool::Redo()
 }
 
 
-ActionSetVisibilityPoint::ActionSetVisibilityPoint(Image* originalImage,
-												   Sprite* cursorSprite,
-												   VisibilityToolProxy* visibilityToolProxy,
-												   const Vector2& visibilityPoint)
+ActionSetVisibilityPoint::ActionSetVisibilityPoint(Image* _originalImage,
+												   Texture * _cursorTexture,
+												   VisibilityToolProxy* _visibilityToolProxy,
+												   const Vector2& _visibilityPoint,
+                                                   const Vector2& _cursorSize)
 :	CommandAction(CMDID_VISIBILITY_TOOL_SET_POINT, "Set Visibility Point")
 {
-//	this->undoImage = SafeRetain(originalImage);
-	this->cursorSprite = SafeRetain(cursorSprite);
-	this->visibilityToolProxy = SafeRetain(visibilityToolProxy);
-//	this->undoVisibilityPoint = visibilityToolProxy->GetVisibilityPoint();
-	this->redoVisibilityPoint = visibilityPoint;
-//	this->undoVisibilityPointSet = visibilityToolProxy->IsVisibilityPointSet();
+    cursorTexture = SafeRetain(_cursorTexture);
+    visibilityToolProxy = SafeRetain(_visibilityToolProxy);
+    redoVisibilityPoint = _visibilityPoint;
+    cursorSize = _cursorSize;
 }
 
 ActionSetVisibilityPoint::~ActionSetVisibilityPoint()
 {
-//	SafeRelease(undoImage);
-	SafeRelease(cursorSprite);
+	SafeRelease(cursorTexture);
 	SafeRelease(visibilityToolProxy);
 }
 
 void ActionSetVisibilityPoint::Redo()
 {
-	Sprite* visibilityToolSprite = visibilityToolProxy->GetSprite();
-	RenderManager::Instance()->SetRenderTarget(visibilityToolSprite);
+	Texture * visibilityToolTexture = visibilityToolProxy->GetTexture();
+    RenderHelper::Instance()->Set2DRenderTarget(visibilityToolTexture);
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-
-    Sprite::DrawState drawState;
-    drawState.SetPosition((redoVisibilityPoint - cursorSprite->GetSize() / 2.f) / Core::GetVirtualToPhysicalFactor());
-	cursorSprite->Draw(&drawState);
-
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderHelper::Instance()->DrawTexture(cursorTexture, RenderState::RENDERSTATE_2D_BLEND, Rect(redoVisibilityPoint - cursorSize / 2.f, cursorSize));
+    RenderManager::Instance()->SetRenderTarget(0);
 
 	visibilityToolProxy->UpdateVisibilityPointSet(true);
-	visibilityToolProxy->UpdateRect(Rect(0.f, 0.f, visibilityToolSprite->GetWidth(), visibilityToolSprite->GetHeight()));
+    visibilityToolProxy->UpdateRect(Rect(0.f, 0.f, visibilityToolTexture->GetWidth(), visibilityToolTexture->GetHeight()));
 	visibilityToolProxy->SetVisibilityPoint(redoVisibilityPoint);
 }
-
-//void ActionSetVisibilityPoint::Undo()
-//{
-//	Sprite* visibilityToolSprite = visibilityToolProxy->GetSprite();
-//	RenderManager::Instance()->SetRenderTarget(visibilityToolSprite);
-//	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-//	
-//	if (undoImage)
-//	{
-//		Texture* drawTexture = Texture::CreateFromData(undoImage->GetPixelFormat(),
-//													   undoImage->GetData(),
-//													   undoImage->GetWidth(),
-//													   undoImage->GetHeight(),
-//													   false);
-//		Sprite* drawSprite = Sprite::CreateFromTexture(drawTexture, 0, 0, undoImage->GetWidth(), undoImage->GetHeight());
-//		
-//		drawSprite->SetPosition(0.f, 0.f);
-//		drawSprite->Draw();
-//		
-//		SafeRelease(drawSprite);
-//		SafeRelease(drawTexture);
-//		
-//		visibilityToolProxy->UpdateRect(Rect(0.f, 0.f, undoImage->GetWidth(), undoImage->GetHeight()));
-//	}
-//	
-//	RenderManager::Instance()->RestoreRenderTarget();
-//	
-//	visibilityToolProxy->SetVisibilityPoint(undoVisibilityPoint);
-//	visibilityToolProxy->UpdateVisibilityPointSet(undoVisibilityPointSet);
-//}
 
 
 ActionSetVisibilityArea::ActionSetVisibilityArea(Image* originalImage,
@@ -186,7 +150,7 @@ ActionSetVisibilityArea::ActionSetVisibilityArea(Image* originalImage,
 												 const Rect& updatedRect)
 :	CommandAction(CMDID_VISIBILITY_TOOL_SET_AREA, "Set Visibility Area")
 {
-	Image* currentImage = visibilityToolProxy->GetSprite()->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+	Image* currentImage = visibilityToolProxy->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
 
 //	undoImage = Image::CopyImageRegion(originalImage, updatedRect);
 	redoImage = Image::CopyImageRegion(currentImage, updatedRect);
@@ -216,31 +180,21 @@ void ActionSetVisibilityArea::Redo()
 
 void ActionSetVisibilityArea::ApplyImage(DAVA::Image *image)
 {
-	Sprite* visibilityToolSprite = visibilityToolProxy->GetSprite();
+	Texture* visibilityToolTexture = visibilityToolProxy->GetTexture();
 
 	Texture* texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
 											   image->GetWidth(), image->GetHeight(), false);
 	texture->GeneratePixelesation();
-	Sprite* sprite = Sprite::CreateFromTexture(texture, 0, 0, (float32)image->GetWidth(), (float32)image->GetHeight());
 
-	RenderManager::Instance()->SetRenderTarget(visibilityToolSprite);
+    RenderHelper::Instance()->Set2DRenderTarget(visibilityToolTexture);
+    RenderManager::Instance()->SetClip(updatedRect);
+    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+    RenderHelper::Instance()->DrawTexture(texture, RenderState::RENDERSTATE_2D_BLEND, updatedRect);
 
-    Rect rect = ConvertPhysicalToVirtual(updatedRect);
-    
-	RenderManager::Instance()->ClipPush();
-	RenderManager::Instance()->SetClip(rect);
-
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-    
-    Sprite::DrawState drawState;
-    drawState.SetPosition(rect.x, rect.y);
-	sprite->Draw(&drawState);
-
-	RenderManager::Instance()->ClipPop();
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderManager::Instance()->SetClip(Rect(0.f, 0.f, -1.f, -1.f));
+    RenderManager::Instance()->SetRenderTarget(0);
 
 	visibilityToolProxy->UpdateRect(updatedRect);
 
 	SafeRelease(texture);
-	SafeRelease(sprite);
 }

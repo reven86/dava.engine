@@ -14,10 +14,10 @@
 
 ColorCell::ColorCell(QWidget* parent)
     : QWidget(parent)
-    , mouse(new MouseHelper(this))
-    , bgBrush(PaintingHelper::DrawGridBrush(QSize(5, 5)))
     , color(Qt::transparent)
     , isHovered(false)
+    , bgBrush(PaintingHelper::DrawGridBrush(QSize(5, 5)))
+    , mouse(new MouseHelper(this))
 {
     setMouseTracking(true);
     setAcceptDrops(true);

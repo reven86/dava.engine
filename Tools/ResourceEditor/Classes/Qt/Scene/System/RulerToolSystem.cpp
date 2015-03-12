@@ -43,8 +43,8 @@
 RulerToolSystem::RulerToolSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	curToolSize(0)
-,	previewEnabled(true)
 ,	lineWidth(1)
+,	previewEnabled(true)
 {
 }
 
@@ -74,7 +74,7 @@ LandscapeEditorDrawSystem::eErrorType RulerToolSystem::EnableLandscapeEditing()
 	selectionSystem->SetLocked(true);
 	modifSystem->SetLocked(true);
 
-	Texture* rulerToolTexture = drawSystem->GetRulerToolProxy()->GetSprite()->GetTexture();
+	Texture* rulerToolTexture = drawSystem->GetRulerToolProxy()->GetTexture();
 	drawSystem->GetLandscapeProxy()->SetRulerToolTexture(rulerToolTexture);
 	drawSystem->GetLandscapeProxy()->SetRulerToolTextureEnabled(true);
 	landscapeSize = drawSystem->GetHeightmapProxy()->Size();
@@ -127,7 +127,7 @@ void RulerToolSystem::Process(DAVA::float32 timeElapsed)
 	}
 }
 
-void RulerToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void RulerToolSystem::Input(DAVA::UIEvent *event)
 {
 	if (!IsLandscapeEditingEnabled())
 	{
@@ -277,10 +277,9 @@ void RulerToolSystem::DrawPoints()
 		return;
 	}
 
-	Sprite* sprite = drawSystem->GetRulerToolProxy()->GetSprite();
-	Texture* targetTexture = sprite->GetTexture();
+    Texture* targetTexture = drawSystem->GetRulerToolProxy()->GetTexture();
 
-	RenderManager::Instance()->SetRenderTarget(sprite);
+    RenderHelper::Instance()->Set2DRenderTarget(targetTexture);
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
 	Vector<Vector3> points;
@@ -308,7 +307,7 @@ void RulerToolSystem::DrawPoints()
 		const Vector3 landSize = boundingBox.max - boundingBox.min;
 		Vector3 offsetPoint = boundingBox.min;
 
-		float32 koef = (float32)targetTexture->GetWidth() / landSize.x / Core::GetVirtualToPhysicalFactor();
+        float32 koef = (float32)targetTexture->GetWidth() / landSize.x;
 
 		Vector3 startPoint = points[0];
 		for (uint32 i = 1; i < pointsCount; ++i)
@@ -332,10 +331,10 @@ void RulerToolSystem::DrawPoints()
 		}
 	}
 
-	RenderManager::Instance()->ResetColor();
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderManager::Instance()->ResetColor();
+    RenderManager::Instance()->SetRenderTarget(0);
     
-	drawSystem->GetRulerToolProxy()->UpdateSprite();
+	drawSystem->GetRulerToolProxy()->UpdateTexture();
 }
 
 void RulerToolSystem::Clear()

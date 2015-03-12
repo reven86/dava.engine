@@ -35,6 +35,10 @@
 
 #include "Helpers/LocalizationSystemHelper.h"
 
+#include "DavaEngine.h"
+
+using namespace DAVA;
+
 static const String DEFAULT_FONT_PRESET = "Font_default";
 
 static const String DEFAULT_FONT_PATH = "~res:/Fonts/MyriadPro-Regular.otf";

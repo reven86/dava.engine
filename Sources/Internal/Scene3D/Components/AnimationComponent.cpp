@@ -40,12 +40,12 @@ namespace DAVA
 {
 
 AnimationComponent::AnimationComponent()
-:time(0.0f),
-animation(NULL),
-repeatsCount(1),
-currRepeatsCont(0),
-state(STATE_STOPPED),
-frameIndex(0)
+: animation(NULL)
+, time(0.0f)
+, frameIndex(0)
+, repeatsCount(1)
+, currRepeatsCont(0)
+, state(STATE_STOPPED)
 {
 }
 

@@ -37,7 +37,6 @@ DynamicMemoryFile * DynamicMemoryFile::Create(const uint8 * data, int32 dataSize
 {
 	DynamicMemoryFile *fl = new DynamicMemoryFile();
 	fl->filename = Format("memoryfile_%p", fl);
-//	fl->filename.InitFromPathname(Format("memoryfile_%p", fl));
 	fl->Write(data, dataSize);
 	fl->fileAttributes = attributes;
 	fl->currentPtr = 0;
@@ -55,7 +54,8 @@ DynamicMemoryFile * DynamicMemoryFile::Create(uint32 attributes)
 }
 
 DynamicMemoryFile::DynamicMemoryFile()
-:File()
+    : File()
+    , isEof(false)
 {
 	currentPtr = 0;
 	fileAttributes = File::WRITE;
@@ -78,6 +78,8 @@ void * DynamicMemoryFile::GetData()
 
 uint32 DynamicMemoryFile::Write(const void * pointerToData, uint32 dataSize)
 {
+    DVASSERT(NULL != pointerToData);
+
 	if (!(fileAttributes & File::WRITE) && !(fileAttributes & File::APPEND))
 	{
 		return 0;
@@ -98,18 +100,21 @@ uint32 DynamicMemoryFile::Write(const void * pointerToData, uint32 dataSize)
 
 uint32 DynamicMemoryFile::Read(void * pointerToData, uint32 dataSize)
 {
+    DVASSERT(NULL != pointerToData);
+
 	if (!(fileAttributes & File::READ))
 	{
 		return 0;
 	}
 	
 	int32 realReadSize = dataSize;
-	int32 size = (int32)data.size();
+	uint32 size = static_cast<uint32>(data.size());
 	if (currentPtr + realReadSize > size)
 	{
+	    isEof = true;
 		realReadSize = size - currentPtr;
 	}
-	if(realReadSize)
+	if(0 < realReadSize)
 	{
 		Memcpy(pointerToData, &(data[currentPtr]), realReadSize);
 		currentPtr += realReadSize;
@@ -147,19 +152,26 @@ bool DynamicMemoryFile::Seek(int32 position, uint32 seekType)
 		default:
 			return false;
 	};
-	
-	
-	if (pos < 0)return false;
-	if (pos >= (int32)GetSize())return false;
-	
-	currentPtr = pos;
-	return true;
+
+    if (pos < 0)
+    {
+	    return false;
+    }
+
+    // behavior taken from std::FILE - don't move pointer to less than 0 value
+    currentPtr = pos;
+
+    // like in std::FILE
+    // The end-of-file internal indicator of the stream is cleared after a successful call to this function
+    isEof = false;
+
+    return true;
 	
 }
 
 bool DynamicMemoryFile::IsEof()
 {
-	return currentPtr >= (int32)data.size();
+    return isEof;
 }
-	
+
 };

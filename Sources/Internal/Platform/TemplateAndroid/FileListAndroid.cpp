@@ -31,64 +31,54 @@
 #include "FileListAndroid.h"
 #include "FileSystem/Logger.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
 
-jclass JniFileList::gJavaClass = NULL;
-const char* JniFileList::gJavaClassName = NULL;
-
-jclass JniFileList::GetJavaClass() const
+JniFileList::JniFileList()
+    : jniFileList("com/dava/framework/JNIFileList")
 {
-	return gJavaClass;
-}
-
-const char* JniFileList::GetJavaClassName() const
-{
-	return gJavaClassName;
+    getFileList = jniFileList.GetStaticMethod<jstringArray, jstring>("GetFileList");
 }
 
 Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& path)
 {
 	Vector<JniFileList::JniFileListEntry> fileList;
-	jmethodID mid = GetMethodID("GetFileList", "(Ljava/lang/String;)[Ljava/lang/Object;");
+	JNIEnv *env = JNI::GetEnv();
+    jstring jPath = env->NewStringUTF(path.c_str());
 
-	if (mid)
-	{
-		jstring jPath = GetEnvironment()->NewStringUTF(path.c_str());
+    jstringArray jArray = getFileList(jPath);
+    if (jArray)
+    {
+        jsize size = env->GetArrayLength(jArray);
+        for (jsize i = 0; i < size; ++i)
+        {
+            jobject item = env->GetObjectArrayElement(jArray, i);
 
-		jobjectArray jArray = (jobjectArray) GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid, jPath);
-		if (jArray)
-		{
-			jsize size = GetEnvironment()->GetArrayLength(jArray);
-			for (jsize i = 0; i < size; ++i)
-			{
-				jobject item = GetEnvironment()->GetObjectArrayElement(jArray, i);
+            jclass cls = env->GetObjectClass(item);
+            jfieldID jNameField = env->GetFieldID(cls, "name", JNI::TypeMetrics<jstring>());
+            jfieldID jSizeField = env->GetFieldID(cls, "size", JNI::TypeMetrics<jlong>());
+            jfieldID jIsDirectoryField = env->GetFieldID(cls, "isDirectory", JNI::TypeMetrics<jboolean>());
 
-				jclass cls = GetEnvironment()->GetObjectClass(item);
-				jfieldID jNameField = GetEnvironment()->GetFieldID(cls, "name", "Ljava/lang/String;");
-				jfieldID jSizeField = GetEnvironment()->GetFieldID(cls, "size", "J");
-				jfieldID jIsDirectoryField = GetEnvironment()->GetFieldID(cls, "isDirectory", "Z");
+            jlong jSize = env->GetLongField(item, jSizeField);
+            jboolean jIsDir = env->GetBooleanField(item, jIsDirectoryField);
+            jstring jName = (jstring) env->GetObjectField(item, jNameField);
 
-				jlong jSize = GetEnvironment()->GetLongField(item, jSizeField);
-				jboolean jIsDir = GetEnvironment()->GetBooleanField(item, jIsDirectoryField);
-				jstring jName = (jstring) GetEnvironment()->GetObjectField(item, jNameField);
+            JniFileListEntry entry;
+            JNI::CreateStringFromJni(jName, entry.name);
+            entry.size = jSize;
+            entry.isDirectory = jIsDir;
+            fileList.push_back(entry);
 
-				JniFileListEntry entry;
-				CreateStringFromJni(GetEnvironment(), jName, entry.name);
-				entry.size = jSize;
-				entry.isDirectory = jIsDir;
-				fileList.push_back(entry);
+            env->DeleteLocalRef(item);
+            env->DeleteLocalRef(cls);
+            env->DeleteLocalRef(jName);
+        }
+        env->DeleteLocalRef(jArray);
+    }
 
-				GetEnvironment()->DeleteLocalRef(item);
-				GetEnvironment()->DeleteLocalRef(cls);
-                GetEnvironment()->DeleteLocalRef(jName);
-			}
-			GetEnvironment()->DeleteLocalRef(jArray);
-		}
-
-		GetEnvironment()->DeleteLocalRef(jPath);
-	}
+    env->DeleteLocalRef(jPath);
 
 	return fileList;
 }

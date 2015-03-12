@@ -81,7 +81,7 @@ void ActionUpdateSystem::Process(float32 timeElapsed)
 
 	DelayedDeleteActions();
 	
-	uint32 size = activeActions.size();
+	uint32 size = static_cast<uint32>(activeActions.size());
 	for(uint32 index = 0; index < size; ++index)
 	{
 		ActionComponent* component = activeActions[index];

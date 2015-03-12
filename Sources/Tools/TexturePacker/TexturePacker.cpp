@@ -553,7 +553,8 @@ bool TexturePacker::WriteDefinition(const FilePath & /*excludeFolder*/, const Fi
 		{
 			Rect2i origRect = defFile->frameRects[frame];
 			Rect2i writeRect = ReduceRectToOriginalSize(*destRect,rmargin,bmargin);
-			WriteDefinitionString(fp, writeRect, origRect, 0);
+            String frameName = defFile->frameNames.size() > 0 ? defFile->frameNames[frame] : String();
+			WriteDefinitionString(fp, writeRect, origRect, 0, frameName);
 
 			if(!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), writeRect.GetSize()))
 			{
@@ -636,8 +637,9 @@ bool TexturePacker::WriteMultipleDefinition(const FilePath & /*excludeFolder*/, 
 		if (destRect)
 		{
 			Rect2i origRect = defFile->frameRects[frame];
-			Rect2i writeRect = ReduceRectToOriginalSize(*destRect,rmargin,bmargin);
-			WriteDefinitionString(fp, writeRect, origRect, packerIndex);
+            Rect2i writeRect = ReduceRectToOriginalSize(*destRect,rmargin,bmargin);
+            String frameName = defFile->frameNames.size() > 0 ? defFile->frameNames[frame] : String();
+			WriteDefinitionString(fp, writeRect, origRect, packerIndex, frameName);
 
             if(!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), writeRect.GetSize()))
             {
@@ -849,15 +851,15 @@ void TexturePacker::DrawToFinalImage( PngImageExt & finalImage, PngImageExt & dr
 	}
 }
 
-void TexturePacker::WriteDefinitionString(FILE *fp, const Rect2i & writeRect, const Rect2i &originRect, int textureIndex)
+void TexturePacker::WriteDefinitionString(FILE *fp, const Rect2i & writeRect, const Rect2i &originRect, int textureIndex, const String& frameName)
 {
 	if(CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha"))
 	{
-		fprintf(fp, "%d %d %d %d %d %d %d\n", writeRect.x, writeRect.y, writeRect.dx, writeRect.dy, 0, 0, textureIndex);
+		fprintf(fp, "%d %d %d %d %d %d %d %s\n", writeRect.x, writeRect.y, writeRect.dx, writeRect.dy, 0, 0, textureIndex, frameName.c_str());
 	}
 	else
 	{
-		fprintf(fp, "%d %d %d %d %d %d %d\n", writeRect.x, writeRect.y, writeRect.dx, writeRect.dy, originRect.x, originRect.y, textureIndex);
+		fprintf(fp, "%d %d %d %d %d %d %d %s\n", writeRect.x, writeRect.y, writeRect.dx, writeRect.dy, originRect.x, originRect.y, textureIndex, frameName.c_str());
 	}
 }
 

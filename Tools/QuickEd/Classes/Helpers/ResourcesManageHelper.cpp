@@ -34,6 +34,7 @@
 #include "StringUtils.h"
 #include "FileSystem/FileSystem.h"
 #include "StringConstants.h"
+#include "DAVAEngine.h"
 
 #include <QApplication>
 #include <QString>
@@ -41,6 +42,9 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QMessageBox>
+#include "UI/mainwindow.h"
+#include "Project.h"
+
 
 /* 
 	Project folders structure:
@@ -60,20 +64,23 @@
 	$project/DAta/Gfx/Fonts/ - path to packed graphic fonts sprites.
 */
 
-// Resource folder header
-static const QString RES_HEADER = "~res:";
+using namespace DAVA;
+
 // True type fonts resource folder path
 static const String FONTS_RES_PATH("~res:/Fonts/");
 // Graphics fonts definition resource folder path
 static const String GRAPHICS_FONTS_RES_PATH("~res:/Fonts/");
+// Resource folder header
+static const QString RES_HEADER = "~res:";
 // Button background image path
-static const String BACKGROUND_IMAGE_PATH("~res:/Images/buttonBg.png");
+static const QString BACKGROUND_IMAGE_PATH("~res:/Images/buttonBg.png");
 // Documentation path.
 static const QString DOCUMENTATION_PATH = "~doc:/UIEditorHelp/";
 
 // Additional text constants
 static const QString GFX = "/Gfx/";
 static const QString FONTS = "/Fonts/";
+static const QString UI = "/UI/";
 // Project DATASOURCE folder
 static const QString PROJECT_DATASOURCE = "%1/DataSource";
 // Project DATA folder
@@ -99,7 +106,6 @@ static const QString RES_WRONG_LOCATION_ERROR_MESSAGE = "Resource %1 is not loca
 //Available fonts extensions
 static const QStringList FONTS_EXTENSIONS_FILTER = (QStringList() << "*.ttf" << "*.otf" << "*.fon" << "*.fnt" << "*.def" << "*.df");
 
-QString ResourcesManageHelper::buttonBackgroundImagePath;
 QString ResourcesManageHelper::projectTitle;
 
 QString ResourcesManageHelper::GetFontAbsolutePath(const QString& resourceFileName, bool graphicsFont)
@@ -212,8 +218,6 @@ QStringList ResourcesManageHelper::GetFontsList()
 
 void ResourcesManageHelper::InitInternalResources()
 {
-	buttonBackgroundImagePath = QString::fromStdString(FilePath(BACKGROUND_IMAGE_PATH).GetAbsolutePathname());
-	
 	// Save project default title
     if(DAVA::Core::Instance())
     {
@@ -228,11 +232,6 @@ void ResourcesManageHelper::InitInternalResources()
 		projectTitle = PROJECT_TITLE;
 }
 
-QString ResourcesManageHelper::GetButtonBackgroundImagePath()
-{
-	return buttonBackgroundImagePath;
-}
-
 QString ResourcesManageHelper::GetDocumentationPath()
 {
 	return DOCUMENTATION_PATH;
@@ -240,11 +239,12 @@ QString ResourcesManageHelper::GetDocumentationPath()
 
 QString ResourcesManageHelper::GetProjectPath()
 {
-//	const HierarchyTreeRootNode *rootNode = HierarchyTreeController::Instance()->GetTree().GetRootNode();
-//	if (!rootNode)
-		return QString();
-//	
-//	return rootNode->GetProjectDir();
+    MainWindow * win = qobject_cast<MainWindow *>(qApp->activeWindow());//TODO remove ugly code
+    if (win && win->GetProject())
+    {
+        return win->GetProject()->GetProjectDir();
+    }
+    return QString();
 }
 
 QString ResourcesManageHelper::GetProjectTitle()
@@ -305,11 +305,6 @@ QString ResourcesManageHelper::GetSpritesDirectory()
 QString ResourcesManageHelper::GetFontSpritesDirectory()
 {
 	return GetResourceFolder(PROJECT_DATA_GRAPHICS_FONTS);
-}
-
-QString ResourcesManageHelper::GetSpritesDatasourceDirectory()
-{
-	return GetResourceFolder(PROJECT_DATASOURCE_GFX);
 }
 
 QString ResourcesManageHelper::GetFontSpritesDatasourceDirectory()

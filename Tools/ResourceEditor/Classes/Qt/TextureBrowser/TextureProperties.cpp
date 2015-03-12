@@ -37,8 +37,8 @@
 TextureProperties::TextureProperties( QWidget *parent /*= 0*/ )
 	: QtPropertyEditor(parent)
 	, curTextureDescriptor(NULL)
+	, curGPU(DAVA::GPU_PNG)
 	, skipPropSizeChanged(false)
-    , curGPU(DAVA::GPU_PNG)
 {
 	SetEditTracking(true);
 }
@@ -125,7 +125,7 @@ void TextureProperties::MipMapSizesInit(int baseWidth, int baseHeight)
 			shownKey.sprintf("%dx%d", baseWidth, baseHeight);
 		}
 
-		enumSizes.Register(level, shownKey.toAscii());
+		enumSizes.Register(level, shownKey.toLatin1());
 		availableSizes[level] = size;
 
 		level++;
@@ -259,7 +259,7 @@ void TextureProperties::ReloadEnumFilters()
 			// if mipmap is disabled, min filter can only be nearest or linear
 			// if it isn't - change it do default nearest
 			int curVal = propMinFilter->GetValue().toInt();
-			if( curVal != DAVA::Texture::FILTER_NEAREST ||
+			if (curVal != DAVA::Texture::FILTER_NEAREST &&
 				curVal != DAVA::Texture::FILTER_LINEAR)
 			{
 				propMinFilter->SetValue(QVariant(DAVA::Texture::FILTER_NEAREST));

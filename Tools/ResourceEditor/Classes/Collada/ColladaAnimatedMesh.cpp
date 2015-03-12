@@ -37,7 +37,6 @@ ColladaAnimatedMesh::ColladaAnimatedMesh(FCDController * animationController )
 {
 	mesh = 0;
 	controller = animationController;
-	bool isMorph = animationController->IsMorph();
 	bool isSkin = animationController->IsSkin();
 
 	if (isSkin)

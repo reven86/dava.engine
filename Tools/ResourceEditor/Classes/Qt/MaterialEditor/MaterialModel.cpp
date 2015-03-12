@@ -50,11 +50,6 @@
 #include <QPainter>
 
 
-namespace
-{
-    const int PREVIEW_HEIGHT = 24;
-}
-
 
 MaterialModel::MaterialModel(QObject * parent)
     : QStandardItemModel(parent)

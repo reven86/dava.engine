@@ -215,11 +215,11 @@ public:
     static const FastName PARAM_SHADOW_COLOR;
     static const FastName PARAM_DECAL_TILE_SCALE;
     static const FastName PARAM_DECAL_TILE_COLOR;
+    static const FastName PARAM_DETAIL_TILE_SCALE;
     static const FastName PARAM_RCP_SCREEN_SIZE;
     static const FastName PARAM_SCREEN_OFFSET;
     
 	static const FastName FLAG_VERTEXFOG;
-	static const FastName FLAG_FOG_EXP;
 	static const FastName FLAG_FOG_LINEAR;
     static const FastName FLAG_FOG_HALFSPACE;
     static const FastName FLAG_FOG_HALFSPACE_LINEAR;
@@ -228,16 +228,19 @@ public:
 	static const FastName FLAG_TEXTURE0_ANIMATION_SHIFT;
 	static const FastName FLAG_WAVE_ANIMATION;
 	static const FastName FLAG_FAST_NORMALIZATION;    
-    static const FastName FLAG_TILED_DECAL;
+    static const FastName FLAG_TILED_DECAL_MASK;
 	static const FastName FLAG_FLATCOLOR;
     static const FastName FLAG_DISTANCEATTENUATION;
     static const FastName FLAG_SPECULAR;
+    static const FastName FLAG_SEPARATE_NORMALMAPS;
 
     static const FastName FLAG_SPHERICAL_LIT;
 
     static const FastName FLAG_TANGENT_SPACE_WATER_REFLECTIONS;
     
     static const FastName FLAG_DEBUG_UNITY_Z_NORMAL;
+    static const FastName FLAG_DEBUG_Z_NORMAL_SCALE;
+    static const FastName FLAG_DEBUG_NORMAL_ROTATION;
 
     static const FastName FLAG_SKINNING;
     
@@ -973,12 +976,12 @@ void NMaterial::SetRenderLayers(uint32 bitmask)
 }
 
 inline NMaterial::RenderPassInstance::RenderPassInstance() :
-textureIndexMap(8),
 dirtyState(false),
 texturesDirty(true),
+propsDirty(true),
+textureIndexMap(8),
 activeUniformsCachePtr(NULL),
-activeUniformsCacheSize(0),
-propsDirty(true)
+activeUniformsCacheSize(0)
 {
     renderState.shader = NULL;
 }
@@ -1082,7 +1085,7 @@ inline NMaterial* NMaterial::GetParent() const
 
 inline uint32 NMaterial::GetChildrenCount() const
 {
-    return children.size();
+    return static_cast<uint32>(children.size());
 }
 
 inline NMaterial* NMaterial::GetChild(uint32 index) const
@@ -1234,8 +1237,8 @@ inline const FilePath& NMaterial::TextureBucket::GetPath() const
 
 inline NMaterial::UniformCacheEntry::UniformCacheEntry() :
 uniform(NULL),
-prop(NULL),
-index(-1)
+index(-1),
+prop(NULL)
 {
 }
 

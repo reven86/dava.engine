@@ -67,6 +67,9 @@ public:
     virtual void SetSize(const Vector2 &newSize);
     virtual UIControl* Clone();
 
+    virtual void Input(UIEvent *currentInput);
+
+    
 protected:
     Scene * scene;
 	Rect viewportRc;

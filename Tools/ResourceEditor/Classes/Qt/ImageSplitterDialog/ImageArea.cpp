@@ -39,6 +39,7 @@
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QUrl>
+#include <QMimeData>
 
 
 ImageArea::ImageArea(QWidget *parent /*= 0*/)

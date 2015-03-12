@@ -71,8 +71,12 @@ bool KeyedArchive::Load(const FilePath & pathName)
 bool KeyedArchive::Load(File *archive)
 {
     char header[2];
-    archive->Read(header, 2);
-    if ((header[0] != 'K') || (header[1] != 'A'))
+    uint32 wasRead = archive->Read(header, 2);
+    if (wasRead != 2)
+    {
+        Logger::Error("[KeyedArchive] error loading keyed archive from file: %s, filesize: %d", archive->GetFilename().GetAbsolutePathname().c_str(), archive->GetSize());
+    }
+    else if ((header[0] != 'K') || (header[1] != 'A'))
     {
         archive->Seek(0,File::SEEK_FROM_START);
         while(!archive->IsEof())
@@ -128,7 +132,7 @@ bool KeyedArchive::Save(File *archive)
     
     archive->Write(header, 2);
     archive->Write(&version, 2);
-    uint32 size = objectMap.size();
+    uint32 size = static_cast<uint32>(objectMap.size());
     archive->Write(&size, 4);
     
 	for (Map<String, VariantType*>::iterator it = objectMap.begin(); it != objectMap.end(); ++it)
@@ -538,11 +542,11 @@ uint32 KeyedArchive::Count(const String &key)
 {
 	if(key.empty())
 	{
-		return objectMap.size();
+		return static_cast<uint32>(objectMap.size());
 	}
 	else
 	{
-		return objectMap.count(key);
+		return static_cast<uint32>(objectMap.count(key));
 	}
 }
 

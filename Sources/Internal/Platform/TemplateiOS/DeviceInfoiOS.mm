@@ -35,6 +35,7 @@
 #include "Utils/StringFormat.h"
 
 #import <UIKit/UIDevice.h>
+#import <UIKit/UIKit.h>
 #import <Foundation/NSLocale.h>
 #import <sys/utsname.h>
 #import <AdSupport/ASIdentifierManager.h>
@@ -271,6 +272,24 @@ WideString DeviceInfo::GetName()
     return WideString ( (wchar_t*) [ pSData bytes ], [ pSData length] / sizeof ( wchar_t ) );
 }
     
+// Not impletemted yet
+String DeviceInfo::GetHTTPProxyHost()
+{
+	return String();
+}
+
+// Not impletemted yet
+String DeviceInfo::GetHTTPNonProxyHosts()
+{
+	return String();
+}
+
+// Not impletemted yet
+int DeviceInfo::GetHTTPProxyPort()
+{
+	return 0;
+}
+    
 eGPUFamily DeviceInfo::GetGPUFamily()
 {
     return GPU_POWERVR_IOS;
@@ -312,6 +331,27 @@ DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
     // No way to determine signal strength under iOS.
     return networkInfo;
 }
+
+
+void DeviceInfo::InitializeScreenInfo()
+{
+    //detecting physical screen size and initing core system with this size
+    ::UIScreen* mainScreen = [::UIScreen mainScreen];
+    screenInfo.width = [mainScreen bounds].size.width;
+    screenInfo.height = [mainScreen bounds].size.height;
+
+    if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
+        && [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
+    {
+        screenInfo.scale = (unsigned int)[[::UIScreen mainScreen] scale];
+    }
+    else
+    {
+        screenInfo.scale = 1;
+    }
+}
+
+
 
 int32 DeviceInfo::GetCpuCount()
 {

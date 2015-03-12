@@ -17,6 +17,7 @@ class QTimer;
 class LogModel;
 class LogFilterModel;
 
+
 class LogWidget
     : public QWidget
 {
@@ -26,6 +27,9 @@ public:
     explicit LogWidget(QWidget* parent = NULL);
     ~LogWidget();
 
+    void SetRegisterLoggerAsLocal(bool isLocal);
+    LogModel *Model();
+
 private slots:
     void OnFilterChanged();
     void OnTextFilterChanged(const QString& text);
@@ -33,12 +37,12 @@ private slots:
     void OnClear();
     void DetectAutoScroll();
     void DoAutoScroll();
+    void LoadSettings();
 
 private:
     void FillFiltersCombo();
-    void LoadSettings();
     void SaveSettings();
-    bool eventFilter(QObject* watched, QEvent* event);
+    bool eventFilter( QObject* watched, QEvent* event );
 
     QScopedPointer<Ui::LogWidget> ui;
     QPointer<LogModel> logModel;
@@ -46,6 +50,7 @@ private:
     QPointer<QTimer> eventSkipper;
     bool doAutoScroll;
     bool scrollStateDetected;
+    bool registerLoggerAsLocal;
 };
 
 

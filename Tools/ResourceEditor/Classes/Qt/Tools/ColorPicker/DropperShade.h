@@ -8,6 +8,7 @@
 
 class MouseHelper;
 
+
 class DropperShade
     : public QWidget
 {

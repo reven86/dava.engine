@@ -24,57 +24,73 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 #include "Platform/DateTime.h"
 #include "FileSystem/KeyedArchive.h"
 
-#include "AutotestingSystemLua.h"
 #include "Autotesting/AutotestingDB.h"
 
 namespace DAVA
 {
 
 	AutotestingSystem::AutotestingSystem()
-		: isInit(false)
+		: luaSystem(NULL)
+        , startTimeMS(0)
+		, isInit(false)
 		, isRunning(false)
 		, needExitApp(false)
 		, timeBeforeExit(0.0f)
-		, testsDate("not_found")
-		, runId("not_found")
-		, buildDate("not_found")
-		, testIndex(0)
-		, isDB(false)
-		, needClearGroupInDB(false)
+		, projectName("")
 		, groupName("default")
 		, deviceId("not-initialized")
 		, deviceName("not-initialized")
+		, testsDate("not_found")
+		, runId("not_found")
+		, testIndex(0)
+		, stepIndex(0)
+		, logIndex(0)
+		, testName("")
+		, testFileName("")
+		, testFilePath("")
+		, buildDate("not_found")
 		, buildId("zero-build")
 		, branch("branch")
 		, framework("framework")
 		, branchRev("0")
 		, frameworkRev("0")
+		, isDB(false)
+		, needClearGroupInDB(false)
+        , skipScreenshot(false)
 		, isMaster(true)
 		, requestedHelpers(0)
-		, isWaiting(false)
-		, isRegistered(false)
-		, waitTimeLeft(0.0f)
-		, waitCheckTimeLeft(0.0f)
+		, masterId("")
+		, masterTask("")
 		, masterRunId(0)
+		, isRegistered(false)
+		, isWaiting(false)
 		, isInitMultiplayer(false)
-		, stepIndex(0)
-		, logIndex(0)
-		, startTimeMS(0)
+		, multiplayerName("")
+        , waitTimeLeft(0.0f)
+		, waitCheckTimeLeft(0.0f)
 	{
-		new AutotestingSystemLua();
-		new AutotestingDB();
+
 	}
 
 	AutotestingSystem::~AutotestingSystem()
 	{
-		AutotestingSystemLua::Instance()->Release();
-		AutotestingDB::Instance()->Release();
+		SafeRelease(luaSystem);
+		if (AutotestingDB::Instance())
+			AutotestingDB::Instance()->Release();
+	}
+
+	void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
+	{
+		Logger::Info("AutotestingSystem::InitLua");
+		DVASSERT(nullptr == luaSystem);
+		luaSystem = new AutotestingSystemLua();
+		luaSystem->SetDelegate(_delegate);
 	}
 
 	// This method is called on application started and it handle autotest initialisation
 	void AutotestingSystem::OnAppStarted()
 	{
-		Logger::Debug("AutotestingSystem::OnAppStarted");
+		Logger::Info("AutotestingSystem::OnAppStarted");
 
 		if (isInit)
 		{
@@ -83,7 +99,7 @@ namespace DAVA
 		}
 
 		FetchParametersFromIdTxt();
-		deviceName = AutotestingSystemLua::Instance()->GetDeviceName();
+		deviceName = luaSystem->GetDeviceName();
 
 		SetUpConnectionToDB();
 
@@ -92,15 +108,16 @@ namespace DAVA
 		String testFilePath = Format("~res:/Autotesting/Tests/%s/%s", groupName.c_str(), testFileName.c_str());
 		if (FileSystem::Instance()->IsFile(FilePath(testFilePath)))
 		{
-            AutotestingSystemLua::Instance()->InitFromFile(testFilePath);
-            return;
-        }
-        Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't open %s", testFilePath.c_str());
+			luaSystem->InitFromFile(testFilePath);
+			return;
+		}
+		Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't open %s", testFilePath.c_str());
 	}
 
 	void AutotestingSystem::OnAppFinished()
 	{
-		AutotestingDB::Instance()->CloseConnection();
+		Logger::Info("AutotestingSystem::OnAppFinished ");
+		ExitApp();
 	}
 
 	void AutotestingSystem::RunTests()
@@ -115,10 +132,7 @@ namespace DAVA
 
 	void AutotestingSystem::OnInit()
 	{
-		if (isInit)
-		{
-			return;
-		}
+		DVASSERT(!isInit);
 		isInit = true;
 	}
 
@@ -126,7 +140,7 @@ namespace DAVA
 	void AutotestingSystem::FetchParametersFromIdTxt()
 	{
 		FilePath file = "~res:/Autotesting/id.yaml";
-		Logger::Debug("AutotestingSystem::FetchParametersFromIdTxt %s", file.GetAbsolutePathname().c_str());
+		Logger::Info("AutotestingSystem::FetchParametersFromIdTxt %s", file.GetAbsolutePathname().c_str());
 		KeyedArchive *option = new KeyedArchive();
 		bool res = option->LoadFromYamlFile(file);
 		if (!res)
@@ -147,7 +161,7 @@ namespace DAVA
 	// Get test parameters from autotesting db
 	void AutotestingSystem::FetchParametersFromDB()
 	{
-		Logger::Debug("AutotestingSystem::FetchParametersFromDB");
+		Logger::Info("AutotestingSystem::FetchParametersFromDB");
 		groupName = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Group");
 		if (groupName == "not_found")
 		{
@@ -173,7 +187,7 @@ namespace DAVA
 		}
 		runId = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "RunId");
 
-		Logger::Debug("AutotestingSystem::FetchParametersFromDB Date=%s Group=%s Filename=%s TestIndex=%d", testsDate.c_str(), groupName.c_str(), testFileName.c_str(), testIndex);
+		Logger::Info("AutotestingSystem::FetchParametersFromDB Date=%s Group=%s Filename=%s TestIndex=%d", testsDate.c_str(), groupName.c_str(), testFileName.c_str(), testIndex);
 	}
 
 	// Read DB parameters from config file and set connection to it
@@ -190,54 +204,36 @@ namespace DAVA
 		String dbAddress = option->GetString("hostname");
 		String collection = option->GetString("collection");
 		int32 dbPort = option->GetInt32("port");
-		Logger::Debug("AutotestingSystem::SetUpConnectionToDB %s -> %s[%s:%d]", collection.c_str(), dbName.c_str(), dbAddress.c_str(), dbPort);
+		Logger::Info("AutotestingSystem::SetUpConnectionToDB %s -> %s[%s:%d]", collection.c_str(), dbName.c_str(), dbAddress.c_str(), dbPort);
 
+		new AutotestingDB();
 		if (!AutotestingDB::Instance()->ConnectToDB(collection, dbName, dbAddress, dbPort))
 		{
 			ForceQuit("Couldn't connect to Test DB");
 		}
 		else
 		{
-		    isDB = true;
+			isDB = true;
 		}
 		SafeRelease(option);
 	}
 
-    uint64 AutotestingSystem::GetCurrentTimeMS()
-    {
-        uint64 timeAbsMs = SystemTimer::Instance()->FrameStampTimeMS();
-        timeAbsMs -= startTimeMS;
-        return timeAbsMs;
-    }
-
 	// Multiplayer API
 	void AutotestingSystem::InitializeDevice(const String &device)
 	{
-		Logger::Debug("AutotestingSystem::InitializeDevice device=%s", device.c_str());
-		deviceId = device.c_str();
+		Logger::Info("AutotestingSystem::InitializeDevice device=%s", device.c_str());
+		deviceId = device;
 	}
 
 	String AutotestingSystem::GetCurrentTimeString()
 	{
-		Timestamp time = DateTime::Now().GetTimestamp();
-		std::stringstream strm;
-		strm << time;
-	    return strm.str().c_str();
-	}
-
-	String AutotestingSystem::GetCurrentTimeMsString()
-	{
-		uint64 timeAbsMs = SystemTimer::Instance()->AbsoluteMS();
-		uint16 hours = (timeAbsMs/3600000)%12;
-		uint16 minutes = (timeAbsMs/60000)%60;
-		uint16 seconds = (timeAbsMs/1000)%60;
-		uint16 miliseconds = (timeAbsMs)%1000;
-		return Format("%02d:%02d:%02d.%03d", hours, minutes, seconds, miliseconds);
+		DateTime time = DateTime::Now();
+		return Format("%02d-%02d-%02d", time.GetHour(), time.GetMinute(), time.GetSecond());
 	}
 
 	void AutotestingSystem::OnTestStart(const String &_testName)
 	{
-		Logger::Debug("AutotestingSystem::OnTestStart %s", _testName.c_str());
+		Logger::Info("AutotestingSystem::OnTestStart %s", _testName.c_str());
 		testName = _testName;
 
 		AutotestingDB::Instance()->Log("DEBUG", Format("OnTestStart %s", testName.c_str()));
@@ -246,7 +242,7 @@ namespace DAVA
 
 	void AutotestingSystem::OnStepStart(const String &stepName)
 	{
-		Logger::Debug("AutotestingSystem::OnStepStart %s", stepName.c_str());
+		Logger::Info("AutotestingSystem::OnStepStart %s", stepName.c_str());
 
 		OnStepFinished();
 
@@ -257,22 +253,22 @@ namespace DAVA
 
 	void AutotestingSystem::OnStepFinished()
 	{
-		Logger::Debug("AutotestingSystem::OnStepFinished");
-	    AutotestingDB::Instance()->Log("INFO", "Success");
+		Logger::Info("AutotestingSystem::OnStepFinished");
+		AutotestingDB::Instance()->Log("INFO", "Success");
 	}
 
 	void AutotestingSystem::SaveScreenShotNameToDB()
 	{
-		Logger::Debug("AutotestingSystem::SaveScreenShotNameToDB %s", screenShotName.c_str());
+		Logger::Info("AutotestingSystem::SaveScreenShotNameToDB %s", screenShotName.c_str());
 
-	    AutotestingDB::Instance()->Log("INFO", Format("screenshot: %s", screenShotName.c_str()));
+		AutotestingDB::Instance()->Log("INFO", Format("screenshot: %s", screenShotName.c_str()));
 	}
 
 	void AutotestingSystem::Update(float32 timeElapsed)
 	{
-		if (!isInit) 
+		if (!isInit)
 		{
-				return;
+			return;
 		}
 		if (needExitApp)
 		{
@@ -285,9 +281,9 @@ namespace DAVA
 			return;
 		}
 
-		if(isRunning)
+		if (isRunning)
 		{
-			AutotestingSystemLua::Instance()->Update(timeElapsed);
+			luaSystem->Update(timeElapsed);
 		}
 	}
 
@@ -310,10 +306,10 @@ namespace DAVA
 
 	void AutotestingSystem::OnTestsSatrted()
 	{
-		Logger::Debug("AutotestingSystem::OnTestsStarted");
+		Logger::Info("AutotestingSystem::OnTestsStarted");
 		startTimeMS = SystemTimer::Instance()->FrameStampTimeMS();
-		AutotestingSystemLua::Instance()->StartTest();
-	}  
+		luaSystem->StartTest();
+	}
 
 	void AutotestingSystem::OnError(const String & errorMessage)
 	{
@@ -322,8 +318,8 @@ namespace DAVA
 		if (isDB)
 		{
 			AutotestingDB::Instance()->Log("ERROR", errorMessage);
-			
-			MakeScreenShot();
+
+			MakeScreenShot(false);
 			SaveScreenShotNameToDB();
 
 			if (deviceId != "not-initialized")
@@ -337,43 +333,46 @@ namespace DAVA
 
 	void AutotestingSystem::ForceQuit(const String & errorMessage)
 	{
-		Logger::Error("AutotestingSystem::ForceQuit %s",errorMessage.c_str());
-
-		AutotestingDB::Instance()->CloseConnection();
+		Logger::Error("AutotestingSystem::ForceQuit %s", errorMessage.c_str());
 
 		ExitApp();
-
-		exit(0);
 	}
 
-	void AutotestingSystem::MakeScreenShot()
+	void AutotestingSystem::MakeScreenShot(bool skip)
 	{
-		Logger::Debug("AutotestingSystem::MakeScreenShot");
+		Logger::Info("AutotestingSystem::MakeScreenShot");
 		String currentDateTime = GetCurrentTimeString();
-		screenShotName = Format("%s_%s_%s_%s", AUTOTESTING_PLATFORM_NAME, deviceName.c_str(), groupName.c_str(), currentDateTime.c_str());
-		Logger::Debug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
+		skipScreenshot = skip;
+		screenShotName = Format("%s_%s_%s_%s", runId.c_str(), deviceName.c_str(), groupName.c_str(), currentDateTime.c_str());
+		Logger::Info("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
 		RenderManager::Instance()->RequestGLScreenShot(this);
 	}
 
-	String AutotestingSystem::GetScreenShotName()
+	const String & AutotestingSystem::GetScreenShotName()
 	{
-		Logger::Debug("AutotestingSystem::GetScreenShotName %s", screenShotName.c_str());
-		return screenShotName.c_str();
+		Logger::Info("AutotestingSystem::GetScreenShotName %s", screenShotName.c_str());
+		return screenShotName;
 	}
 
 	void AutotestingSystem::OnScreenShot(Image *image)
 	{
-		Logger::Debug("AutotestingSystem::OnScreenShot %s", screenShotName.c_str());
+		Logger::Info("AutotestingSystem::OnScreenShot %s", screenShotName.c_str());
 		uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+		if (!skipScreenshot)
+		{
+			AutotestingDB::Instance()->UploadScreenshot(screenShotName, image);
+			//FilePath systemFilePath = Format("~doc:/%s", screenShotName.c_str());
+			//image->Save(systemFilePath);
+		}
 
-		AutotestingDB::Instance()->UploadScreenshot(screenShotName, image);
 		uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
-		Logger::Debug("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
+		Logger::Info("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
+		skipScreenshot = false; // return default value
 	}
 
 	void AutotestingSystem::OnTestsFinished()
 	{
-		Logger::Debug("AutotestingSystem::OnTestsFinished");
+		Logger::Info("AutotestingSystem::OnTestsFinished");
 
 		// Mark last step as SUCCESS
 		OnStepFinished();
@@ -391,63 +390,63 @@ namespace DAVA
 
 	void AutotestingSystem::OnInput(const UIEvent &input)
 	{
-		Logger::Debug("AutotestingSystem::OnInput %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c",input.tid, input.phase, input.tapCount, input.point.x, input.point.y, input.physPoint.x, input.physPoint.y, input.keyChar);
+		Logger::Info("AutotestingSystem::OnInput %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", input.tid, input.phase, input.tapCount, input.point.x, input.point.y, input.physPoint.x, input.physPoint.y, input.keyChar);
 
 		int32 id = input.tid;
-		switch(input.phase)
+		switch (input.phase)
 		{
 		case UIEvent::PHASE_BEGAN:
+		{
+			mouseMove = input;
+			if (!IsTouchDown(id))
 			{
-				mouseMove = input;
-				if(!IsTouchDown(id))
-				{
-					touches[id] = input;
-				}
-				else
-				{
-					Logger::Error("AutotestingSystemYaml::OnInput PHASE_BEGAN duplicate touch id=%d",id);
-				}
+				touches[id] = input;
 			}
-			break;
+			else
+			{
+				Logger::Error("AutotestingSystemYaml::OnInput PHASE_BEGAN duplicate touch id=%d", id);
+			}
+		}
+		break;
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
 		case UIEvent::PHASE_MOVE:
+		{
+			mouseMove = input;
+			if (IsTouchDown(id))
 			{
-				mouseMove = input;
-				if(IsTouchDown(id))
-				{
-					Logger::Error("AutotestingSystemYaml::OnInput PHASE_MOVE id=%d must be PHASE_DRAG",id);
-				}
+				Logger::Error("AutotestingSystemYaml::OnInput PHASE_MOVE id=%d must be PHASE_DRAG", id);
 			}
-			break;
+		}
+		break;
 #endif
 		case UIEvent::PHASE_DRAG:
+		{
+			mouseMove = input;
+			Map<int32, UIEvent>::iterator findIt = touches.find(id);
+			if (findIt != touches.end())
 			{
-				mouseMove = input;
-				Map<int32, UIEvent>::iterator findIt = touches.find(id);
-				if(findIt != touches.end())
-				{
-					findIt->second = input;
-				}
-				else
-				{
-					Logger::Error("AutotestingSystemYaml::OnInput PHASE_DRAG id=%d must be PHASE_MOVE",id);
-				}
+				findIt->second = input;
 			}
-			break;
+			else
+			{
+				Logger::Error("AutotestingSystemYaml::OnInput PHASE_DRAG id=%d must be PHASE_MOVE", id);
+			}
+		}
+		break;
 		case UIEvent::PHASE_ENDED:
+		{
+			mouseMove = input;
+			Map<int32, UIEvent>::iterator findIt = touches.find(id);
+			if (findIt != touches.end())
 			{
-				mouseMove = input;
-				Map<int32, UIEvent>::iterator findIt = touches.find(id);
-				if(findIt != touches.end())
-				{
-					touches.erase(findIt);
-				}
-				else
-				{
-					Logger::Error("AutotestingSystemYaml::OnInput PHASE_ENDED id=%d not found",id);
-				}
+				touches.erase(findIt);
 			}
-			break;
+			else
+			{
+				Logger::Error("AutotestingSystemYaml::OnInput PHASE_ENDED id=%d not found", id);
+			}
+		}
+		break;
 		default:
 			//TODO: keyboard input
 			break;
@@ -458,7 +457,7 @@ namespace DAVA
 	{
 		bool isFound = false;
 		Map<int32, UIEvent>::iterator findIt = touches.find(id);
-		if(findIt != touches.end())
+		if (findIt != touches.end())
 		{
 			isFound = true;
 			touch = findIt->second;

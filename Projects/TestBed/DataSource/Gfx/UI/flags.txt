@@ -1,0 +1,1 @@
+--generateMipMaps --adreno ETC1 --tegra DXT1 --PoverVR_iOS PVR4 --PoverVR_Android PVR2 --mali RGBA4444

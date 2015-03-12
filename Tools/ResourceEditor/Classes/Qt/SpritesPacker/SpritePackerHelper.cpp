@@ -35,7 +35,7 @@
 #include <QtConcurrentRun>
 
 #include "TexturePacker/ResourcePacker2D.h"
-#include "Platform/Qt/QtLayer.h"
+#include "QtLayer.h"
 
 #include "Classes/Qt/Main/mainwindow.h"
 #include "Classes/Qt/Scene/SceneTabWidget.h"

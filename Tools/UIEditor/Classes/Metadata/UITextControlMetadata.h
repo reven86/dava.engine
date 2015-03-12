@@ -69,6 +69,10 @@ class UITextControlMetadata : public UIControlMetadata
 	Q_PROPERTY(float TextRightMargin READ GetTextRightMargin WRITE SetTextRightMargin);
 	Q_PROPERTY(float TextBottomMargin READ GetTextBottomMargin WRITE SetTextBottomMargin);
 
+    // Text properties
+    Q_PROPERTY(bool Multiline READ GetTextMultiline WRITE SetTextMultiline);
+    Q_PROPERTY(bool MultilineBySymbol READ GetTextMultilineBySymbol WRITE SetTextMultilineBySymbol);
+
 public:
     UITextControlMetadata(QObject* parent = 0);
     QString GetLocalizedTextValue();
@@ -83,6 +87,12 @@ protected:
 
 	virtual int GetTextAlign() const = 0;
     virtual void SetTextAlign(int align) = 0;
+
+    virtual bool GetTextMultiline() const = 0;
+    virtual void SetTextMultiline(bool value) = 0;
+
+    virtual bool GetTextMultilineBySymbol() const = 0;
+    virtual void SetTextMultilineBySymbol(bool value) = 0;
 	
 	virtual bool GetTextUseRtlAlign() = 0;
     virtual void SetTextUseRtlAlign(bool value) = 0;

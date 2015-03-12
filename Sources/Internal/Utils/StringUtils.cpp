@@ -52,8 +52,8 @@ WideString StringUtils::Trim(const WideString& string)
     WideString::const_iterator it = string.begin();
     WideString::const_iterator end = string.end();
     WideString::const_reverse_iterator rit = string.rbegin();
-    while (it != end && iswspace(*it)) ++it;
-    while (rit.base() != it && iswspace(*rit)) ++rit;
+    while (it != end && IsWhitespace(*it)) ++it;
+    while (rit.base() != it && IsWhitespace(*rit)) ++rit;
     return WideString(it, rit.base());
 }
 
@@ -61,7 +61,7 @@ WideString StringUtils::TrimLeft(const WideString& string)
 {
     WideString::const_iterator it = string.begin();
     WideString::const_iterator end = string.end();
-    while (it != end && iswspace(*it)) ++it;
+    while (it != end && IsWhitespace(*it)) ++it;
     return WideString(it, end);
 }
 
@@ -69,8 +69,46 @@ WideString StringUtils::TrimRight(const WideString& string)
 {
     WideString::const_reverse_iterator rit = string.rbegin();
     WideString::const_reverse_iterator rend = string.rend();
-    while (rit != rend && iswspace(*rit)) ++rit;
+    while (rit != rend && IsWhitespace(*rit)) ++rit;
     return WideString(rend.base(), rit.base());
+}
+
+WideString StringUtils::RemoveNonPrintable(const WideString & string, const int8 tabRule /*= -1*/)
+{
+    WideString out;
+    WideString::const_iterator it = string.begin();
+    WideString::const_iterator end = string.end();
+    for (; it != end; ++it)
+    {
+        switch (*it)
+        {
+        case L'\n':
+        case L'\r':
+        case 0x200B: // Zero-width space
+        case 0x200E: // Zero-width Left-to-right zero-width character
+        case 0x200F: // Zero-width Right-to-left zero-width non-Arabic character
+        case 0x061C: // Right-to-left zero-width Arabic character
+            // Skip this characters (remove it)
+            break;
+        case L'\t':
+            if(tabRule < 0)
+            {
+                out.push_back(*it); // Leave tab symbol
+            }
+            else
+            {
+                out.append(tabRule, L' '); // Replace tab with (tabRule x spaces)
+            }
+            break;
+        case 0x00A0: // Non-break space
+            out.push_back(L' ');
+            break;
+        default:
+            out.push_back(*it);
+            break;
+        }
+    }
+    return out;
 }
 
 }

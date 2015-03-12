@@ -218,7 +218,7 @@ void MusicIOSSoundEvent::SetLoopCount(int32 looping)
     
 int32 MusicIOSSoundEvent::GetLoopCount() const
 {
-    return ((AvSound*)avSound).audioPlayer.numberOfLoops;
+    return static_cast<int32>(((AvSound*)avSound).audioPlayer.numberOfLoops);
 }
 
 bool MusicIOSSoundEvent::IsActive() const

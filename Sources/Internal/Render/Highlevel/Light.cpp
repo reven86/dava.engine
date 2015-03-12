@@ -41,13 +41,13 @@ namespace DAVA
 
 Light::Light()
 :	BaseObject(),
+    flags(IS_DYNAMIC | CAST_SHADOW),
     camera(NULL),
     lastUpdatedFrame(0),
-	type(TYPE_DIRECTIONAL),
+    type(TYPE_DIRECTIONAL),
     ambientColor(0.0f, 0.0f, 0.0f, 1.0f),
-	diffuseColor(1.0f, 1.0f, 1.0f, 1.0f),
-    intensity(300.0f),
-	flags(IS_DYNAMIC | CAST_SHADOW)
+    diffuseColor(1.0f, 1.0f, 1.0f, 1.0f),
+    intensity(300.0f)
 {
 }
     
@@ -145,7 +145,7 @@ float32 Light::GetIntensity() const
 
 void Light::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
-	BaseObject::Save(archive);
+	BaseObject::SaveObject(archive);
 	
 	archive->SetInt32("type", type);
 	archive->SetFloat("ambColor.r", ambientColor.r);
@@ -165,7 +165,7 @@ void Light::Save(KeyedArchive * archive, SerializationContext * serializationCon
 
 void Light::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
-    BaseObject::Load(archive);
+    BaseObject::LoadObject(archive);
 
     type = (eType)archive->GetInt32("type");
     

@@ -93,9 +93,6 @@
          <property name="sortingEnabled">
           <bool>true</bool>
          </property>
-         <property name="animated">
-          <bool>true</bool>
-         </property>
         </widget>
        </item>
       </layout>

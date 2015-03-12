@@ -55,8 +55,8 @@ void PartilceEmitterLoadProxy::Load(KeyedArchive *archive, SerializationContext 
 }
 
 ParticleEmitter::ParticleEmitter() 
-    : requireDeepClone(true)
-    , shortEffect(false)
+    : shortEffect(false)
+    , requireDeepClone(true)
 {        
 	Cleanup(false);
 }
@@ -90,8 +90,10 @@ void ParticleEmitter::Cleanup(bool needCleanupLayers)
 
 void ParticleEmitter::CleanupLayers()
 {
-    for (int32 i=0, sz=layers.size(); i<sz; ++i)
-		SafeRelease(layers[i]);
+    for (auto& layer : layers)
+    {
+        SafeRelease(layer);
+    }
 	layers.clear();
 }
 
@@ -146,7 +148,7 @@ ParticleEmitter * ParticleEmitter::Clone()
 	clonedEmitter->shortEffect = shortEffect;
 
 	clonedEmitter->layers.resize(layers.size());
-	for (int32 i=0, sz=layers.size(); i<sz; ++i)
+	for (size_t i=0, sz=layers.size(); i<sz; ++i)
 	{		
 		clonedEmitter->layers[i] = layers[i]->Clone();		
 	}			
@@ -181,7 +183,7 @@ ParticleLayer* ParticleEmitter::GetNextLayer(ParticleLayer* layer)
 		return NULL;
 	}
 
-	int32 layersToCheck = layers.size() - 1;
+	int32 layersToCheck = static_cast<int32>(layers.size() - 1);
 	for (int32 i = 0; i < layersToCheck; i ++)
 	{
 		ParticleLayer* curLayer = layers[i];
@@ -440,7 +442,7 @@ void ParticleEmitter::SaveToYaml(const FilePath & filename)
     PropertyLineYamlWriter::WritePropertyLineToYamlNode<Vector3>(emitterYamlNode, "size", this->size);    
 
     // Now write all the Layers. Note - layers are child of root node, not the emitter one.
-    int32 layersCount = this->layers.size();
+    int32 layersCount = static_cast<int32>(layers.size());
     for (int32 i = 0; i < layersCount; i ++)
     {
         this->layers[i]->SaveToYamlNode(configPath, rootYamlNode, i);
@@ -456,7 +458,7 @@ void ParticleEmitter::GetModifableLines(List<ModifiablePropertyLineBase *> &modi
 	PropertyLineHelper::AddIfModifiable(radius.Get(), modifiables);
 	PropertyLineHelper::AddIfModifiable(size.Get(), modifiables);
 	PropertyLineHelper::AddIfModifiable(colorOverLife.Get(), modifiables);
-	int32 layersCount = this->layers.size();
+	int32 layersCount = static_cast<int32>(layers.size());
 	for (int32 i = 0; i < layersCount; i ++)
 	{
 		layers[i]->GetModifableLines(modifiables);
@@ -503,8 +505,8 @@ String ParticleEmitter::GetEmitterTypeName()
 
 void ParticleEmitter::UpdateEmptyLayerNames()
 {
-	int32 layersCount = layers.size();
-	for (int i = 0; i < layersCount; i ++)
+	int32 layersCount = static_cast<int32>(layers.size());
+	for (int32 i = 0; i < layersCount; i ++)
 	{
 		UpdateLayerNameIfEmpty(layers[i], i);
 	}
@@ -535,10 +537,9 @@ void ParticleEmitter::InvertEmissionVectorCoordinates()
 	}
 
 	PropertyLine<Vector3> *pvk = emissionVector.Get();
-	uint32 keysSize = pvk->keys.size();
-	for (uint32 i = 0; i < keysSize; ++i)
-	{
-		pvk->keys[i].value *= -1;
-	}
+    for(auto& key : pvk->keys)
+    {
+        key.value *= -1;
+    }
 }
 }; 

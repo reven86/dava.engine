@@ -33,8 +33,8 @@
 ParticleLayerRemoveCommand::ParticleLayerRemoveCommand(DAVA::ParticleEmitter *_emitter, DAVA::ParticleLayer* _layer)
 	: Command2(CMDID_PARTICLE_LAYER_REMOVE, "Remove particle layer")
 	, layer(_layer)
-	, emitter(_emitter)
 	, before(NULL)
+	, emitter(_emitter)
 {
 	SafeRetain(layer);
 	

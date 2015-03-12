@@ -42,7 +42,8 @@
 // framework
 #include "Scene3D/Scene.h"
 
-class SceneTreeModel : public QStandardItemModel
+class SceneTreeModel
+	: public QStandardItemModel
 {
 	Q_OBJECT
 
@@ -98,27 +99,33 @@ public:
 	int GetDropType(const QMimeData *data) const;
 
 	void ResyncStructure(QStandardItem *item, DAVA::Entity *entity);
-	void ResetFilterAcceptFlag();
 
-protected:
-	SceneEditor2 * curScene;
+    void SetFilter(const QString& text);
+    void ReloadFilter();
+    bool IsFilterSet() const;
+
+    Qt::ItemFlags flags ( const QModelIndex & index ) const;
+    
+private slots:
+	void ItemChanged(QStandardItem * item);
+
+private:
+    void RebuildIndexesCache();
+	void AddIndexesCache(SceneTreeItem *item);
+	bool AreSameType(const QModelIndexList & indexes) const;
+    void SetFilterInternal(const QModelIndex& parent, const QString& text);
+    void ResetFilter(const QModelIndex& parent = QModelIndex());
+
+    Qt::DropActions supportedDragActions() const;
+
+    SceneEditor2 * curScene;
 	bool dropAccepted;
+    QString filterText;
 
 	QMap<DAVA::Entity*, QModelIndex> indexesCacheEntities;
     QMap<DAVA::ParticleEmitter*, QModelIndex> indexesCacheEmitters;
 	QMap<DAVA::ParticleLayer*, QModelIndex> indexesCacheLayers;
 	QMap<DAVA::ParticleForce*, QModelIndex> indexesCacheForces;
-
-	void RebuildIndexesCache();
-	void AddIndexesCache(SceneTreeItem *item);
-	void ResetFilterAcceptFlagInternal(SceneTreeItem *item);
-
-	bool AreSameType(const QModelIndexList & indexes) const;
-    
-    //void DropMaterial(SceneTreeItem *parentItem, const QMimeData *mimeData) const;
-
-protected slots:
-	void ItemChanged(QStandardItem * item);
 };
 
 class SceneTreeFilteringModel : public QSortFilterProxyModel
@@ -126,12 +133,10 @@ class SceneTreeFilteringModel : public QSortFilterProxyModel
 public:
 	SceneTreeFilteringModel(SceneTreeModel *treeModel, QObject *parent = NULL);
 	bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
+    QVariant data(const QModelIndex& index, int role) const;
 
 protected:
 	SceneTreeModel *treeModel;
-
-	bool selfAcceptRow(int sourceRow, const QModelIndex &sourceParent) const;
-	bool childrenAcceptRow(int sourceRow, const QModelIndex &sourceParent) const;
 };
 
 #endif // __QT_SCENE_TREE_MODEL_H__

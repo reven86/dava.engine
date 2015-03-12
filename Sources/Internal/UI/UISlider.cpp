@@ -38,6 +38,8 @@
 #include "Core/Core.h"
 #include "UI/UIEvent.h"
 #include "UI/UIYamlLoader.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA 
 {
@@ -262,29 +264,27 @@ void UISlider::Draw(const UIGeometricData &geometricData)
 	const Rect & aRect =  thumbButton->GetGeometricData().GetUnrotatedRect();
 	float32 clipPointAbsolute = aRect.x + aRect.dx * 0.5f;
 
-    const Vector2& drawTranslate = RenderManager::Instance()->GetDrawTranslate();
-    const Vector2& drawScale = RenderManager::Instance()->GetDrawScale();
-
-    float32 screenXMin = (Core::Instance()->GetVirtualScreenXMin() - drawTranslate.x) / drawScale.x;
-    float32 screenXMax = (Core::Instance()->GetVirtualScreenXMax() - drawTranslate.x) / drawScale.x;
-    float32 screenYMin = - drawTranslate.y / drawScale.y;
-    float32 screenYMax = (GetScreenHeight() - drawTranslate.y) / drawScale.y;
+    Rect fullVirtualScreen = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
+    float32 screenXMin = fullVirtualScreen.x;
+    float32 screenXMax = fullVirtualScreen.x + fullVirtualScreen.dx;
+    float32 screenYMin = 0.f;
+    float32 screenYMax = (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
 
     if (minBackground)
 	{
 		minBackground->SetParentColor(GetBackground()->GetDrawColor());
-		RenderManager::Instance()->ClipPush();
-        RenderManager::Instance()->ClipRect(Rect(screenXMin, screenYMin, clipPointAbsolute - screenXMin, screenYMax));
+		RenderSystem2D::Instance()->PushClip();
+        RenderSystem2D::Instance()->IntersectClipRect(Rect(screenXMin, screenYMin, clipPointAbsolute - screenXMin, screenYMax));
 		minBackground->Draw(geometricData);
-		RenderManager::Instance()->ClipPop();
+		RenderSystem2D::Instance()->PopClip();
 	}
 	if (maxBackground)
 	{
 		maxBackground->SetParentColor(GetBackground()->GetDrawColor());
-		RenderManager::Instance()->ClipPush();
-        RenderManager::Instance()->ClipRect(Rect(clipPointAbsolute, screenYMin, screenXMax - clipPointAbsolute, screenYMax));
+		RenderSystem2D::Instance()->PushClip();
+        RenderSystem2D::Instance()->IntersectClipRect(Rect(clipPointAbsolute, screenYMin, screenXMax - clipPointAbsolute, screenYMax));
 		maxBackground->Draw(geometricData);
-		RenderManager::Instance()->ClipPop();
+		RenderSystem2D::Instance()->PopClip();
 	}
 
 	if (!minBackground && !maxBackground)

@@ -37,16 +37,16 @@
 
 HoodSystem::HoodSystem(DAVA::Scene * scene, SceneCameraSystem *camSys)
 	: DAVA::SceneSystem(scene)
-	, cameraSystem(camSys)
-	, curMode(ST_MODIF_OFF)
-	, moseOverAxis(ST_AXIS_NONE)
-    , curScale(1.0f)
-	, curHood(NULL)
-	, moveHood()
 	, lockedScale(false)
 	, lockedModif(false)
 	, lockedAxis(false)
 	, isVisible(true)
+	, curMode(ST_MODIF_OFF)
+	, moseOverAxis(ST_AXIS_NONE)
+	, curScale(1.0f)
+	, cameraSystem(camSys)
+	, curHood(NULL)
+	, moveHood()
 {
 	btVector3 worldMin(-1000,-1000,-1000);
 	btVector3 worldMax(1000,1000,1000);
@@ -295,7 +295,7 @@ void HoodSystem::Process(float timeElapsed)
 	}
 }
 
-void HoodSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void HoodSystem::Input(DAVA::UIEvent *event)
 {
 	if(!event->point.IsZero())
 	{

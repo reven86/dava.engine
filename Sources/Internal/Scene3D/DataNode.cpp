@@ -38,12 +38,11 @@ const uint16 DataNode::NodeRuntimeFlag = 1;
     
     
 DataNode::DataNode()
-:   scene(0)
-,   index(-1)
-,   pointer(0)
-,	nodeFlags(0)
+:   pointer(0),
+    scene(0),
+    index(-1),
+    nodeFlags(0)
 {
-    
 }
 
 DataNode::~DataNode()
@@ -82,7 +81,7 @@ uint64 DataNode::GetPreviousPointer()
     
 void DataNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
-    BaseObject::Load(archive);
+    BaseObject::LoadObject(archive);
     
     index = archive->GetInt32("#index", -1);
     pointer = archive->GetByteArrayAsType("#id", (uint64)0);
@@ -90,7 +89,7 @@ void DataNode::Load(KeyedArchive * archive, SerializationContext * serialization
 
 void DataNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
-    BaseObject::Save(archive);
+    BaseObject::SaveObject(archive);
     archive->SetInt32("#index", index);
     
     pointer = (uint64)this;

@@ -28,9 +28,10 @@ namespace
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::LogWidget())
-    , doAutoScroll(true)
     , eventSkipper(new QTimer(this))
+    , doAutoScroll(true)
     , scrollStateDetected(false)
+    , registerLoggerAsLocal( true )
 {
     ui->setupUi(this);
 
@@ -61,15 +62,23 @@ LogWidget::LogWidget(QWidget* parent)
     connect(ui->log->model(), SIGNAL( modelReset() ), eventSkipper, SLOT( start() ));
     connect(eventSkipper, SIGNAL( timeout() ), SLOT( DoAutoScroll() ) );
 
-    DAVA::Logger::AddCustomOutput(logModel);
-    LoadSettings();
-    OnFilterChanged();
+    QMetaObject::invokeMethod( this, "LoadSettings", Qt::QueuedConnection );
+    QMetaObject::invokeMethod( this, "OnFilterChanged", Qt::QueuedConnection );
 }
 
 LogWidget::~LogWidget()
 {
     SaveSettings();
-    DAVA::Logger::RemoveCustomOutput(logModel);
+}
+
+void LogWidget::SetRegisterLoggerAsLocal( bool isLocal )
+{
+    registerLoggerAsLocal = isLocal;
+}
+
+LogModel* LogWidget::Model()
+{
+    return logModel;
 }
 
 void LogWidget::OnFilterChanged()
@@ -111,11 +120,15 @@ void LogWidget::FillFiltersCombo()
         const int ll = index.data(LogModel::LEVEL_ROLE).toInt();
         const QPixmap& pix = logModel->GetIcon(ll);
         m->setData(index, pix, Qt::DecorationRole);
+        m->setData(index, Qt::Checked, Qt::CheckStateRole);
     }
 }
 
 void LogWidget::LoadSettings()
 {
+    if (!registerLoggerAsLocal)
+        return;
+
     DAVA::VariantType v = SettingsManager::Instance()->GetValue(Settings::Internal_LogLevelFilter);
     const DAVA::uint32* a = (DAVA::uint32*)v.AsByteArray();
     const DAVA::int32 n = SettingsManager::Instance()->GetValue(Settings::Internal_LogLevelFilter).AsByteArraySize() / sizeof(DAVA::uint32);
@@ -133,6 +146,11 @@ void LogWidget::LoadSettings()
 
 void LogWidget::SaveSettings()
 {
+    if (!registerLoggerAsLocal)
+        return;
+
+    DAVA::Logger::RemoveCustomOutput(logModel);
+
     const QList<QVariant>& selection = ui->filter->GetSelectedUserData();
     const int n = selection.size();
     DAVA::Vector<DAVA::uint32> v;

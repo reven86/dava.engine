@@ -37,7 +37,6 @@
 
 const int FACE_IMAGE_BORDER = 5;
 const int LIST_ITEM_OFFSET = 1;
-const int LIST_ITEMS_PER_PAGE = 9;
 const int CHECKBOX_CONTROL_X_OFFSET = 5;
 const int CHECKBOX_WIDTH = 16;
 const int CHECKBOX_HEIGHT = 16;

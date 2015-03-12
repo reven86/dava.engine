@@ -34,7 +34,7 @@
 #include "Base/BaseTypes.h"
 #if defined(__DAVAENGINE_ANDROID__)
 
-#include "JniExtensions.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 #include <signal.h>
 
 namespace DAVA
@@ -55,7 +55,7 @@ private:
 	static stack_t s_sigstk;
 };
 
-class JniCrashReporter: public JniExtension
+class JniCrashReporter
 {
 public:
 	struct CrashStep
@@ -64,16 +64,14 @@ public:
 		String function;
 		int32 fileLine;
 	};
+	JniCrashReporter();
 	void ThrowJavaExpetion(const Vector<CrashStep>& chashSteps);
 
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
+private:
+	JNI::JavaClass jniCrashReporter;
+	Function<void (jstringArray, jstringArray, jintArray)> throwJavaExpetion;
 
-public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
-	static jclass gStringClass;
+	JNI::JavaClass jniString;
 };
 
 

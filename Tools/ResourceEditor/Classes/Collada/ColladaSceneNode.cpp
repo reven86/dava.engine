@@ -437,7 +437,7 @@ SceneNodeAnimation * ColladaSceneNode::ExportNodeAnimation(FCDSceneNode * origin
 			{
 				for (FCDAnimationCurveTrackList::const_iterator curveTrackIter = curveIter->begin(); curveTrackIter != curveIter->end(); ++curveTrackIter)
 				{
-					for (int keyIndex = 0; keyIndex < (*curveTrackIter)->GetKeyCount(); ++keyIndex)
+					for (size_t keyIndex = 0; keyIndex < (*curveTrackIter)->GetKeyCount(); ++keyIndex)
 					{
 						float32 key = (*curveTrackIter)->GetKey(keyIndex)->input;
 						

@@ -29,6 +29,8 @@
 
 #import "MainWindowController.h"
 #include "CorePlatformMacOS.h"
+#include "Platform/DeviceInfo.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
@@ -112,11 +114,11 @@ namespace DAVA
 	Vector2 CoreMacOSPlatform::GetMousePosition()
 	{
 		NSPoint p = [mainWindowController->mainWindow mouseLocationOutsideOfEventStream]; //[NSEvent locationInWindow]; 
-		p = [mainWindowController->openGLView convertPointFromBase: p];
+		p = [mainWindowController->openGLView convertPointFromBacking: p];
 
         Vector2 mouseLocation;
 		mouseLocation.x = p.x;
-		mouseLocation.y = Core::Instance()->GetPhysicalScreenHeight() - p.y;
+		mouseLocation.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - p.y;
 		// mouseLocation.y = 
 		return mouseLocation;
 	}
@@ -129,7 +131,6 @@ namespace DAVA
 
 - (id)init
 {
-	NSLog(@"Application init");
 	if (self = [super init])
 	{
 		mainWindowController = self;
@@ -149,27 +150,16 @@ namespace DAVA
 
 - (void)dealloc
 {
-	NSLog(@"Application dealloc");
-
 	[super dealloc];
 }
 
 -(void)createWindows
 {
-	NSLog(@"Awake from NIB");
-	//[NSCursor hide]; 
 	DisplayMode fullscreenMode = Core::Instance()->GetCurrentDisplayMode();
 	
-	// launch framework and setup all preferences
-    //TODO: maybe we need reorder calls 
 	FrameworkDidLaunched();
     RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
-    
-	
-	//Core::Instance()->Creat();
-    
-		// do all ground work & setup window itself according to value specified by user
-	KeyedArchive * options = DAVA::Core::Instance()->GetOptions();
+    	KeyedArchive * options = DAVA::Core::Instance()->GetOptions();
 	int32 width = options->GetInt32("width", 800);
 	int32 height = options->GetInt32("height", 600);
 	
@@ -194,6 +184,7 @@ namespace DAVA
 	
 	core = Core::GetApplicationCore();
     RenderManager::Instance()->DetectRenderingCapabilities();
+    RenderSystem2D::Instance()->Init();
 
 
 	// start animation
@@ -204,25 +195,13 @@ namespace DAVA
 
 	// make window main
 	[mainWindow makeKeyAndOrderFront:nil];
-	//[mainWindow setLevel: NSMainMenuWindowLevel + 1];
 	[mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
 	[mainWindow setAcceptsMouseMovedEvents:YES];
-
-//	if ([mainWindow isMainWindow])
-//	{
-//		NSLog(@"****** Our window is MAIN window");
-//	}
 }
 
 
 - (NSWindow *) beginFullScreen
-{ 
-//	fullscreenWindow = [ [NSWindow alloc]
-//			  initWithContentRect:[[NSScreen mainScreen] frame]
-//			  styleMask:NSBorderlessWindowMask
-//			  backing:NSBackingStoreBuffered
-//			  defer:NO];
-    
+{
     fullscreenWindow = [ [NSFullScreenWindow alloc]
                         initWithContentRect:[[NSScreen mainScreen] frame]
                         styleMask:NSBorderlessWindowMask
@@ -267,28 +246,15 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 
 - (void)windowWillMiniaturize:(NSNotification *)notification
 {
-//    NSLog(@"[MainWindowController] windowWillMiniaturize");
-//    if(core)
-//    {
-//        core->OnSuspend();
-//    }
-//    else 
-//    {
-//        Core::Instance()->SetIsActive(false);
-//    }
 }
 
 - (void)windowDidMiniaturize:(NSNotification *)notification
 {
-    NSLog(@"[MainWindowController] windowDidMiniaturize");
-    
     [self OnSuspend];
 }
 
 - (void)windowDidDeminiaturize:(NSNotification *)notification
 {
-    NSLog(@"[MainWindowController] windowDidDeminiaturize");
-    
     [self OnResume];
 }
 
@@ -305,39 +271,16 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 	{
         return;
     }
-//	
-//	KeyedArchive * options = DAVA::Core::GetOptions();
-//	int32 width = options->GetInt("fullscreen.width", 800);
-//	int32 height = options->GetInt("fullscreen.height", 600);
-//	int32 bpp = options->GetInt("bpp", 32);
 
 	DisplayMode fullscreenMode = Core::Instance()->GetCurrentDisplayMode();
-	
-	int32 width = fullscreenMode.width;
-	int32 height = fullscreenMode.height;
-	int32 bpp = fullscreenMode.bpp;
-	
-	CFDictionaryRef displayMode;
-	boolean_t exactMatch;
-	
-	displayMode = CGDisplayBestModeForParameters (kCGDirectMainDisplay, bpp, width, height, &exactMatch);
-
-	if (exactMatch)
-	{
-		CGDisplaySwitchToMode (kCGDirectMainDisplay,  displayMode);
-		Logger::FrameworkDebug("[CoreMacOSPlatform] switch to %d x %d x %d fullscreen mode", width, height, bpp);
-	}else 
-	{
-		CGDisplaySwitchToMode (kCGDirectMainDisplay,  displayMode);
-		Logger::FrameworkDebug("[CoreMacOSPlatform] switch to closes mode to %d x %d x %d fullscreen mode", width, height, bpp);
-	}
 
     // Pixel Format Attributes for the FullScreen NSOpenGLContext
     NSOpenGLPixelFormatAttribute attrs[] = 
 	{
 		
         // Specify that we want a full-screen OpenGL context.
-        NSOpenGLPFAFullScreen,
+        //deprecated since macos 10.6, require additional research
+        //NSOpenGLPFAFullScreen,
         // We may be on a multi-display system (and each screen may be driven by a different renderer), so we need to specify which screen we want to take over.  For this demo, we'll specify the main screen.
         NSOpenGLPFAScreenMask, CGDisplayIDToOpenGLDisplayMask(kCGDirectMainDisplay),
         // Attributes Common to FullScreen and non-FullScreen
@@ -385,24 +328,7 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 	// enable vsync
 	GLint swapInt = 1;
     [fullScreenContext setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
-	
-  	
-	//if ([[mainWindow screen] isEqual:[[NSScreen screens] objectAtIndex:0]])
-	//[NSMenu setMenuBarVisible: NO];
-	//CGDisplayHideCursor(kCGDirectMainDisplay);
-	//[self becomeFirstResponder];
-	
-    // Enter FullScreen mode and make our FullScreen context the active context for OpenGL commands.
-	//NSLog(@"[CoreMacOSPlatform] failed to create fullScreenContext");
-	NSLog(@"[CoreMacOSPlatform] setFullscreen (before)");
-	//[fullScreenContext setFullScreen];
-    CGLContextObj obj = (CGLContextObj)[fullScreenContext CGLContextObj];
-    CGLSetFullScreenOnDisplay(obj, CGDisplayIDToOpenGLDisplayMask(kCGDirectMainDisplay));
-	NSLog(@"[CoreMacOSPlatform] makeCurrentContext (before)");
     [fullScreenContext makeCurrentContext];
-	
-	
-	
 	
 	CGLContextObj cglContext;
     long oldSwapInterval;
@@ -420,14 +346,14 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 //	RenderManager::Instance()->Init(RenderManager::ORIENTATION_PORTRAIT, CGDisplayPixelsWide(kCGDirectMainDisplay), CGDisplayPixelsHigh(kCGDirectMainDisplay));
 	
 	DisplayMode currentMode;
-	currentMode.width = GetModeWidth(displayMode);
-	currentMode.height = GetModeHeight(displayMode);
+	currentMode.width = fullscreenMode.width;
+	currentMode.height = fullscreenMode.height;
 	
 	NSLog(@"[CoreMacOSPlatform] init internal renderer: %d x %d", currentMode.width, currentMode.height);
 	
 	RenderManager::Instance()->Init(currentMode.width, currentMode.height);
-	UIControlSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-	Core::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
+	VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 	
 	
 	RENDER_VERIFY(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
@@ -815,6 +741,8 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
+    mainWindowController->openGLView.willQuit = true;
+    
 	Core::Instance()->SystemAppFinished();
 	FrameworkWillTerminate();
     Core::Instance()->ReleaseSingletons();

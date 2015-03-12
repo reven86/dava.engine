@@ -51,7 +51,7 @@ UIPackageLoader::~UIPackageLoader()
 {
     builder = NULL;
 }
-    
+
 UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
 {
     if (!loadingQueue.empty())
@@ -60,15 +60,36 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
         loadingQueue.clear();
     }
 
+    UIPackage *packageInCache = builder->FindInCache(packagePath.GetStringValue());
+    if (packageInCache != nullptr)
+    {
+        RefPtr<UIPackage> package = packageInCache->Clone();
+        return SafeRetain(package.Get());
+    }
+
     if (!packagePath.Exists())
         return NULL;
     
-    ScopedPtr<YamlParser> parser(YamlParser::Create(packagePath));
+    RefPtr<YamlParser> parser(YamlParser::Create(packagePath));
     
-    YamlNode *rootNode = parser->GetRootNode();
-    if (!rootNode)
+    if (parser.Get() == NULL)
+    {
         return NULL;
+    }
+
+    YamlNode *rootNode = parser->GetRootNode();
+    if (!rootNode)//empty yaml equal to empty UIPackage
+    {
+        RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
+        builder->EndPackage();
+        return SafeRetain(package.Get());
+    }
     
+    return LoadPackage(rootNode, packagePath);
+}
+    
+UIPackage *UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath &packagePath)
+{
     const YamlNode *headerNode = rootNode->Get("Header");
     if (!headerNode)
         return NULL;
@@ -77,8 +98,8 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
     if (versionNode == NULL || versionNode->GetType() != YamlNode::TYPE_STRING)
         return NULL;
     
-    UIPackage *package = SafeRetain(builder->BeginPackage(packagePath));
-
+    RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
+    
     const YamlNode *importedPackagesNode = rootNode->Get("ImportedPackages");
     if (importedPackagesNode)
     {
@@ -86,7 +107,7 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
         for (int32 i = 0; i < count; i++)
             builder->ProcessImportedPackage(importedPackagesNode->Get(i)->AsString(), this);
     }
-
+    
     const YamlNode *controlsNode = rootNode->Get("Controls");
     if (controlsNode)
     {
@@ -110,13 +131,14 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
                 loadingQueue[i].status = STATUS_LOADED;
             }
         }
-
+        
         loadingQueue.clear();
     }
     builder->EndPackage();
     
-    return package;
+    return SafeRetain(package.Get());
 }
+
     
 bool UIPackageLoader::LoadControlByName(const String &name)
 {

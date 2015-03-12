@@ -13,8 +13,8 @@
 
 LandscapeEditorControlsPlaceholder::LandscapeEditorControlsPlaceholder(QWidget* parent)
 :	QWidget(parent)
-,	currentPanel(NULL)
 ,	activeScene(NULL)
+,	currentPanel(NULL)
 {
 	InitUI();
 	ConnectToSignals();

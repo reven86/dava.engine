@@ -80,10 +80,7 @@ void UIScreenManager::ActivateGLController()
 
 void UIScreenManager::ScreenSizeChanged()
 {
-    GetScreen()->SystemScreenSizeDidChanged(Rect(Core::Instance()->GetVirtualScreenXMin()
-                                                 , Core::Instance()->GetVirtualScreenYMin()
-                                                 , Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin()
-                                                 , Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin()));
+    GetScreen()->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
 }
 
 
@@ -231,6 +228,14 @@ void UIScreenManager::BlockDrawing()
 	UIViewController * controller = (UIViewController *)glController.value;
 	EAGLView * view = (EAGLView *)controller.view;
     [view performSelector: @selector(blockDrawing)];
+}
+    
+void UIScreenManager::UnblockDrawing()
+{
+    Screen & glController = screens[glControllerId];
+    UIViewController * controller = (UIViewController *)glController.value;
+    EAGLView * view = (EAGLView *)controller.view;
+    [view performSelector: @selector(unblockDrawing)];
 }
 	
 }

@@ -36,13 +36,17 @@
 
 namespace IMagickHelper
 {
-    struct Rect
+    struct Layer
     {
+		static const int NAME_SIZE = 255;
+
         int x, y;
         int dx, dy;
 
-        Rect();
-        Rect( int _x, int _y, int _dx, int _dy );
+		char name[NAME_SIZE];
+
+        Layer();
+        Layer( int _x, int _y, int _dx, int _dy );
     };
   
     struct IMAGICKHELPER_EXPORT CroppedData
@@ -50,9 +54,9 @@ namespace IMagickHelper
         int layer_width ;
         int layer_height;
 
-        Rect *rects_array;
+        Layer *layers_array;
 
-        unsigned rects_array_size;
+        unsigned layers_array_size;
         
         void Reset();
 

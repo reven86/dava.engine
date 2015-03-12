@@ -478,6 +478,12 @@ typename FuncTraits<F>::ObjFunctionType MakeFunction(typename FuncTraits<F>::Par
     return typename FuncTraits<F>::ObjFunctionType(obj, fn);
 }
 
+template<typename F, typename T>
+typename FuncTraits<F>::ObjFunctionType MakeFunction(const PointerWrapper<T> &owner, const F& fn)
+{
+    return typename FuncTraits<F>::ObjFunctionType(owner, fn);
+}
+
 } // namespace DAVA
 
 #endif // __DAVAENGINE_FUNCTION_TRAITS_H__

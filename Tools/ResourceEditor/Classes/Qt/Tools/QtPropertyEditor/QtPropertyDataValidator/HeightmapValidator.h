@@ -43,7 +43,7 @@ public:
     
 protected:
 	
-    virtual bool ValidateInternal(QVariant &v);
+    virtual bool ValidateInternal(const QVariant &v);
 
     virtual void ErrorNotifyInternal(const QVariant &v) const;
     

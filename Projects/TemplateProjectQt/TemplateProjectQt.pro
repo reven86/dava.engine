@@ -37,7 +37,7 @@ FORMS    += mainwindow.ui \
 
 #debug dependent
 CONFIG(debug, debug|release): {
-DEFINES += DAVA_DEBUG
+DEFINES += __DAVAENGINE_DEBUG__
 }
 
 

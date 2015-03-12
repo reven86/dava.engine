@@ -32,7 +32,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "FontManager.h"
-
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Utils/StringFormat.h"
 #include "Utils/CRC32.h"
 
@@ -87,7 +87,7 @@ bool Font::IsEqual(const Font *font) const
 uint32 Font::GetHashCode()
 {
 	String rawHashString = GetRawHashString();
-	return CRC32::ForBuffer(rawHashString.c_str(), rawHashString.length());
+	return CRC32::ForBuffer(rawHashString.c_str(), static_cast<uint32>(rawHashString.length()));
 }
 
 String Font::GetRawHashString()

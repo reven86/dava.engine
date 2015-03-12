@@ -31,6 +31,8 @@
 #include "UIWebView.h"
 #include "Render/RenderManager.h"
 #include "FileSystem/YamlNode.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include "../Platform/TemplateMacOS/WebViewControlMacOS.h"
@@ -39,20 +41,21 @@
 #elif defined(__DAVAENGINE_WIN32__)
 #include "../Platform/TemplateWin32/WebViewControlWin32.h"
 #elif defined(__DAVAENGINE_ANDROID__)
-#include "../Platform/TemplateAndroid/WebViewControl.h"
+#include "Platform/TemplateAndroid/WebViewControlAndroid.h"
 #else
-#pragma error UIWEbView control is not implemented for this platform yet!
+#error UIWEbView control is not implemented for this platform yet!
 #endif
 
 namespace DAVA {
 
 UIWebView::UIWebView(const Rect &rect, bool rectInAbsoluteCoordinates)
     : UIControl(rect, rectInAbsoluteCoordinates)
-    , webViewControl(new WebViewControl())
+    , webViewControl(0)
     , isNativeControlVisible(false)
 {
+    webViewControl = new WebViewControl(*this);
     Rect newRect = GetRect(true);
-    this->webViewControl->Initialize(newRect);
+    webViewControl->Initialize(newRect);
     UpdateControlRect();
 
     UpdateNativeControlVisible(false); // will be displayed in WillAppear.
@@ -77,6 +80,31 @@ void UIWebView::OpenFile(const FilePath &path)
 void UIWebView::OpenURL(const String& urlToOpen)
 {
 	webViewControl->OpenURL(urlToOpen);
+}
+
+void UIWebView::LoadHtmlString(const WideString& htmlString)
+{
+	webViewControl->LoadHtmlString(htmlString);
+}
+
+String UIWebView::GetCookie(const String& targetUrl, const String& name) const
+{
+	return webViewControl->GetCookie(targetUrl, name);
+}
+
+Map<String, String> UIWebView::GetCookies(const String& targetUrl) const
+{
+	return webViewControl->GetCookies(targetUrl);
+}
+
+void UIWebView::DeleteCookies(const String& targetUrl)
+{
+	webViewControl->DeleteCookies(targetUrl);
+}
+
+void UIWebView::ExecuteJScript(const String& scriptString)
+{
+	webViewControl->ExecuteJScript(scriptString);
 }
 
 void UIWebView::OpenFromBuffer(const String& string, const FilePath& basePath)
@@ -114,35 +142,48 @@ void UIWebView::SetSize(const Vector2 &newSize)
     UpdateControlRect();
 }
 
+
+void UIWebView::SetScalesPageToFit(bool isScalesToFit)
+{
+	webViewControl->SetScalesPageToFit(isScalesToFit);
+}
+
 void UIWebView::SetBackgroundTransparency(bool enabled)
 {
-	this->webViewControl->SetBackgroundTransparency(enabled);
+	webViewControl->SetBackgroundTransparency(enabled);
 }
 
 // Enable/disable bounces.
 void UIWebView::SetBounces(bool value)
 {
-	this->webViewControl->SetBounces(value);
+	webViewControl->SetBounces(value);
 }
 
 bool UIWebView::GetBounces() const
 {
-	return this->webViewControl->GetBounces();
+	return webViewControl->GetBounces();
 }
 
 void UIWebView::SetGestures(bool value)
 {
-	this->webViewControl->SetGestures(value);    
+	webViewControl->SetGestures(value);    
 }
 
 void UIWebView::UpdateControlRect()
 {
     Rect rect = GetRect(true);
 
-    rect.SetPosition(rect.GetPosition() * RenderManager::Instance()->GetDrawScale() + RenderManager::Instance()->GetDrawTranslate());
-    rect.SetSize(rect.GetSize() * RenderManager::Instance()->GetDrawScale());
-
     webViewControl->SetRect(rect);
+}
+
+void UIWebView::SetRenderToTexture(bool value)
+{
+    webViewControl->SetRenderToTexture(value);
+}
+
+bool UIWebView::IsRenderToTexture() const
+{
+    return webViewControl->IsRenderToTexture();
 }
 
 void UIWebView::SetNativeControlVisible(bool isVisible)
@@ -180,7 +221,9 @@ void UIWebView::LoadFromYamlNode(const DAVA::YamlNode *node, DAVA::UIYamlLoader 
     const YamlNode * dataDetectorTypesNode = node->Get("dataDetectorTypes");
     if (dataDetectorTypesNode)
     {
-        SetDataDetectorTypes(dataDetectorTypesNode->AsInt32());
+        eDataDetectorType dataDetectorTypes = static_cast<eDataDetectorType>(
+            dataDetectorTypesNode->AsInt32());
+        SetDataDetectorTypes(dataDetectorTypes);
     }
 }
 

@@ -43,6 +43,7 @@ void SceneTreeDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
 	QStyleOptionViewItemV4 opt = option;
 
 	initStyleOption(&opt, index);
+	opt.state = opt.state & ~QStyle::State_HasFocus;
 	customDraw(painter, &opt, index);
 
 	QStyledItemDelegate::paint(painter, opt, index);

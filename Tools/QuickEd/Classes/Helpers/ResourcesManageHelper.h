@@ -49,8 +49,6 @@ public:
     static QString GetFontAbsolutePath(const QString& resourceFileName, bool graphicsFont = false);
     static QString GetResourceRelativePath(const QString& resourceAbsolutePath, bool keepFileExtension = false);
     static QStringList GetFontsList();
-	// Functions to work with help contents and button background image
-	static QString GetButtonBackgroundImagePath();
 	// Get path to documentation folder
 	static QString GetDocumentationPath();
 	// Get graphics font sprite file path
@@ -64,8 +62,6 @@ public:
 	static QString GetSpritesDirectory();
 	// Get font sprites data directory
 	static QString GetFontSpritesDirectory();
-	// Get sprites datasource directory
-	static QString GetSpritesDatasourceDirectory();
 	// Get font sprites datasource directory
 	static QString GetFontSpritesDatasourceDirectory();
 	// Get resource folder path
@@ -99,7 +95,6 @@ public:
 	static QString ConvertPathToUnixStyle(const QString& inputString);
 
 private:
-	static QString buttonBackgroundImagePath;
 	static QString projectTitle;
 };
 };

@@ -138,7 +138,6 @@ ColourSet::ColourSet( u8 const* rgba, int flags, bool createMinimalSet/*=false*/
 #endif
 }
 
-#if defined (IOS) || defined (ANDROID)
 void ColourSet::RemapIndices( u8 const* source, u8* target ) const
 {
 	for( int i = 0; i < 16; ++i )
@@ -150,6 +149,6 @@ void ColourSet::RemapIndices( u8 const* source, u8* target ) const
 			target[i] = source[j];
 	}
 }
-#endif //#ifdef ANDROID
+
 
 } // namespace squish

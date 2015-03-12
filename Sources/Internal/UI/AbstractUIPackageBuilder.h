@@ -55,11 +55,13 @@ class AbstractUIPackageBuilder
 public:
     AbstractUIPackageBuilder();
     virtual ~AbstractUIPackageBuilder();
+
+    virtual UIPackage *FindInCache(const String &packagePath) const = 0;
     
-    virtual UIPackage *BeginPackage(const FilePath &packagePath) = 0;
+    virtual RefPtr<UIPackage> BeginPackage(const FilePath &packagePath) = 0;
     virtual void EndPackage() = 0;
     
-    virtual UIPackage *ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader) = 0;
+    virtual RefPtr<UIPackage> ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader) = 0;
     
     virtual UIControl *BeginControlWithClass(const String &className) = 0;
     virtual UIControl *BeginControlWithCustomClass(const String &customClassName, const String &className) = 0;

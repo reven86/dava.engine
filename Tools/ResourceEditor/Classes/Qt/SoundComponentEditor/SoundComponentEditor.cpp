@@ -39,12 +39,12 @@
 
 SoundComponentEditor::SoundComponentEditor(SceneEditor2* _scene, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::SoundComponentEditor),
     component(0),
-    scene(_scene)
+    scene(_scene),
+    ui(new Ui::SoundComponentEditor)
 {
     ui->setupUi(this);
-    setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowSystemMenuHint);
+    setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint);
 
     ui->playButton->setIcon(QIcon(":/QtIcons/play.png"));
     ui->stopButton->setIcon(QIcon(":/QtIcons/stop.png"));

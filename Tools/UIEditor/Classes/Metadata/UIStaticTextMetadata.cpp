@@ -304,7 +304,7 @@ void UIStaticTextMetadata::SetTextUseRtlAlign(bool value)
     GetActiveStaticText()->SetTextUseRtlAlign(value);
 }
 
-bool UIStaticTextMetadata::GetMultiline() const
+bool UIStaticTextMetadata::GetTextMultiline() const
 {
     if (!VerifyActiveParamID())
     {
@@ -314,7 +314,7 @@ bool UIStaticTextMetadata::GetMultiline() const
 	return GetActiveStaticText()->GetMultiline();
 }
 
-void UIStaticTextMetadata::SetMultiline(const bool value)
+void UIStaticTextMetadata::SetTextMultiline(bool value)
 {
 	if (!VerifyActiveParamID())
     {
@@ -326,7 +326,7 @@ void UIStaticTextMetadata::SetMultiline(const bool value)
     GetActiveStaticText()->SetMultiline(value, curMultilineBySymbolValue);
 }
 
-bool UIStaticTextMetadata::GetMultilineBySymbol() const
+bool UIStaticTextMetadata::GetTextMultilineBySymbol() const
 {
     if (!VerifyActiveParamID())
     {
@@ -336,7 +336,7 @@ bool UIStaticTextMetadata::GetMultilineBySymbol() const
     return GetActiveStaticText()->GetMultilineBySymbol();
 }
 
-void UIStaticTextMetadata::SetMultilineBySymbol(const bool value)
+void UIStaticTextMetadata::SetTextMultilineBySymbol(bool value)
 {
     if (!VerifyActiveParamID())
     {

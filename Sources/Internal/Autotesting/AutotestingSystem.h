@@ -37,21 +37,8 @@
 #include "DAVAEngine.h"
 #include "Base/Singleton.h"
 #include "FileSystem/FileSystem.h"
-#include "Database/MongodbClient.h"
 
-#include "Autotesting/MongodbUpdateObject.h"
-
-#if defined (__DAVAENGINE_MACOS__)
-#define AUTOTESTING_PLATFORM_NAME  "MacOS"
-#elif defined (__DAVAENGINE_IPHONE__)
-#define AUTOTESTING_PLATFORM_NAME  "iOS"
-#elif defined (__DAVAENGINE_WIN32__)
-#define AUTOTESTING_PLATFORM_NAME  "Windows"
-#elif defined (__DAVAENGINE_ANDROID__)
-#define AUTOTESTING_PLATFORM_NAME  "Android"
-#else
-#define AUTOTESTING_PLATFORM_NAME  "Unknown"
-#endif //PLATFORMS    
+#include "Autotesting/AutotestingSystemLua.h"
 
 #include "Render/RenderManager.h"
 #include "Platform/DateTime.h"
@@ -60,7 +47,8 @@ namespace DAVA
 {
 
 class Image;
-
+class AutotestingSystemLuaDelegate;
+class AutotestingSystemLua;
 class AutotestingSystem : public Singleton<AutotestingSystem>, public ScreenShotCallbackDelegate
 {
 public:
@@ -75,6 +63,8 @@ public:
     
     void OnInit();
     inline bool IsInit() { return isInit; };
+
+	void InitLua(AutotestingSystemLuaDelegate* _delegate);
 
 	void OnScreenShot(Image *image) override;
     
@@ -104,8 +94,8 @@ public:
     bool FindTouch(int32 id, UIEvent &touch);
     bool IsTouchDown(int32 id);
 
-	String GetScreenShotName();
-	void MakeScreenShot();
+	const String & GetScreenShotName();
+	void MakeScreenShot(bool skipScreenshot);
 
     // DB Master-Helper relations
     //void InitMultiplayer(bool _isMaster);
@@ -116,11 +106,12 @@ public:
 	String GetStepId() { return Format("Step%03d", stepIndex); };
 	String GetLogId() { return  Format("Message%03d", logIndex); };
     
-	uint64 GetCurrentTimeMS();
 	String GetCurrentTimeString();
 	String GetCurrentTimeMsString();
-protected:
 
+	inline AutotestingSystemLua* GetLuaSystem() { return luaSystem; };
+protected:
+	AutotestingSystemLua * luaSystem;
 //DB
     /*void SetUpTestArchive();
 
@@ -185,6 +176,7 @@ public:
 
     bool isDB;
     bool needClearGroupInDB;
+	bool skipScreenshot;
     
     bool isMaster;
     int32 requestedHelpers;

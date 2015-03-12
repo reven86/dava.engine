@@ -2,7 +2,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
-#include <QDoubleValidator>
+#include <QValidator>
 
 Vector2DEdit::Vector2DEdit(QWidget *parent)
     : QWidget(parent)
@@ -20,8 +20,7 @@ Vector2DEdit::Vector2DEdit(QWidget *parent)
 
     editX = new QLineEdit(this);
     editX->setObjectName(QString::fromUtf8("lineEditX"));
-    editX->setValidator( new QDoubleValidator(-9999.0f, 9999.0f, 4, this) );
-
+    editX->setValidator(new QRegExpValidator(QRegExp("\\s*-?\\d*[,\\.]?\\d*\\s*")));
     horizontalLayout->addWidget(editX);
 
     QLabel * label2 = new QLabel(this);
@@ -31,7 +30,7 @@ Vector2DEdit::Vector2DEdit(QWidget *parent)
 
     editY = new QLineEdit(this);
     editY->setObjectName(QString::fromUtf8("lineEditY"));
-    editY->setValidator( new QDoubleValidator(-9999.9999, 9999.9999, 4, this) );
+    editY->setValidator(new QRegExpValidator(QRegExp("\\s*-?\\d*[,\\.]?\\d*\\s*")));
     horizontalLayout->addWidget(editY);
 
     QLabel * label3 = new QLabel(this);

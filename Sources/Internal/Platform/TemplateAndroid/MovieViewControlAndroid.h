@@ -34,12 +34,12 @@
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "UI/IMovieViewControl.h"
-#include "JniExtensions.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
 
-class JniMovieViewControl: public JniExtension
+class JniMovieViewControl
 {
 public:
 	JniMovieViewControl(uint32 id);
@@ -57,16 +57,20 @@ public:
 	void Resume();
 	bool IsPlaying();
 
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
-public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
-
 private:
 	uint32 id;
+
+	JNI::JavaClass jniMovieViewControl;
+    Function<void (jint, jfloat, jfloat, jfloat, jfloat)> initialize;
+    Function<void (jint)> uninitialize;
+    Function<void (jint, jfloat, jfloat, jfloat, jfloat)> setRect;
+    Function<void (jint, jboolean)> setVisible;
+    Function<void (jint, jstring, jint)> openMovie;
+    Function<void (jint)> play;
+    Function<void (jint)> stop;
+    Function<void (jint)> pause;
+    Function<void (jint)> resume;
+    Function<jboolean (jint)> isPlaying;
 };
 
 class MovieViewControl : public IMovieViewControl

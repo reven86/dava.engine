@@ -48,7 +48,7 @@ DAVA::Entity *SwitchEntityCreator::CreateSwitchEntity(const DAVA::Vector<DAVA::E
 		clonedEntities.push_back(fromEntities[i]->Clone());
 
 		FindRenderObjectsRecursive(clonedEntities[i], renderPairs[i]);
-		if(renderPairs[i].size() > 1)
+        if(renderPairs[i].size() > 1)
 		{
 			singleMode = false;
 		}
@@ -112,24 +112,41 @@ void SwitchEntityCreator::FindRenderObjectsRecursive( DAVA::Entity * fromEntity,
 	}
 }
 
-DAVA::uint32 SwitchEntityCreator::CountSwitchComponentsRecursive( DAVA::Entity * fromEntity )
+bool SwitchEntityCreator::HasRenderObjectsRecursive( DAVA::Entity * fromEntity )
 {
-	DAVA::uint32 count = 0;
+    DAVA::RenderObject * ro = GetRenderObject(fromEntity);
+    if(ro && ro->GetType() == DAVA::RenderObject::TYPE_MESH)
+    {
+        return true;
+    }
+
+    DAVA::int32 size = fromEntity->GetChildrenCount();
+    for(DAVA::int32 i = 0; i < size; ++i)
+    {
+        DAVA::Entity * child = fromEntity->GetChild(i);
+        if (HasRenderObjectsRecursive(child))
+            return true;
+    }
+
+    return false;
+}
+
+bool SwitchEntityCreator::HasSwitchComponentsRecursive( DAVA::Entity * fromEntity )
+{
 	if(GetSwitchComponent(fromEntity))
 	{
-		++count;
+		return true;
 	}
 
 	DAVA::int32 size = fromEntity->GetChildrenCount();
 	for(DAVA::int32 i = 0; i < size; ++i)
 	{
-		count += CountSwitchComponentsRecursive(fromEntity->GetChild(i));
+		if (HasSwitchComponentsRecursive(fromEntity->GetChild(i)))
+            return true;
 	}
 
-	return count;
+	return false;
 }
-
-
 
 void SwitchEntityCreator::CreateSingleObjectData(DAVA::Entity *switchEntity)
 {

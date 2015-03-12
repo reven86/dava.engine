@@ -66,42 +66,33 @@ static int fatalSignalsCount = (sizeof(fatalSignals) / sizeof(fatalSignals[0]));
 
 stack_t AndroidCrashReport::s_sigstk;
 
-jclass JniCrashReporter::gJavaClass = NULL;
-jclass JniCrashReporter::gStringClass = NULL;
-const char* JniCrashReporter::gJavaClassName = NULL;
-
-jclass JniCrashReporter::GetJavaClass() const
+JniCrashReporter::JniCrashReporter()
+	: jniCrashReporter("com/dava/framework/JNICrashReporter")
+    , jniString("java/lang/String")
 {
-	return gJavaClass;
-}
-
-const char* JniCrashReporter::GetJavaClassName() const
-{
-	return gJavaClassName;
+    throwJavaExpetion = jniCrashReporter.GetStaticMethod<void, jstringArray, jstringArray, jintArray>("ThrowJavaExpetion");
 }
 
 void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
 {
-	jmethodID mid = GetMethodID("ThrowJavaExpetion", "([Ljava/lang/String;[Ljava/lang/String;[I)V");
-	if (mid)
-	{
-		jobjectArray jModuleArray = GetEnvironment()->NewObjectArray(chashSteps.size(), gStringClass, 0);
-		jobjectArray jFunctionArray = GetEnvironment()->NewObjectArray(chashSteps.size(), gStringClass, 0);
-		jintArray jFileLineArray = GetEnvironment()->NewIntArray(chashSteps.size());
+    JNIEnv *env = JNI::GetEnv();
 
-		int* fileLines = new int[chashSteps.size()];
-		for (uint i = 0; i < chashSteps.size(); ++i)
-		{
-			GetEnvironment()->SetObjectArrayElement(jModuleArray, i, GetEnvironment()->NewStringUTF(chashSteps[i].module.c_str()));
-			GetEnvironment()->SetObjectArrayElement(jFunctionArray, i, GetEnvironment()->NewStringUTF(chashSteps[i].function.c_str()));
-			fileLines[i] = chashSteps[i].fileLine;
-		}
-		GetEnvironment()->SetIntArrayRegion(jFileLineArray, 0, chashSteps.size(), fileLines);
+    jobjectArray jModuleArray = env->NewObjectArray(chashSteps.size(), jniString, 0);
+    jobjectArray jFunctionArray = env->NewObjectArray(chashSteps.size(), jniString, 0);
+    jintArray jFileLineArray = env->NewIntArray(chashSteps.size());
 
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, jModuleArray, jFunctionArray, jFileLineArray);
+    int* fileLines = new int[chashSteps.size()];
+    for (uint i = 0; i < chashSteps.size(); ++i)
+    {
+        env->SetObjectArrayElement(jModuleArray, i, env->NewStringUTF(chashSteps[i].module.c_str()));
+        env->SetObjectArrayElement(jFunctionArray, i, env->NewStringUTF(chashSteps[i].function.c_str()));
+        fileLines[i] = chashSteps[i].fileLine;
+    }
+    env->SetIntArrayRegion(jFileLineArray, 0, chashSteps.size(), fileLines);
 
-		delete [] fileLines;
-	}
+    throwJavaExpetion(jModuleArray, jFunctionArray, jFileLineArray);
+
+    delete [] fileLines;
 }
 
 //libcorkscrew definition
@@ -155,7 +146,7 @@ void AndroidCrashReport::Init()
 	 *
 	 * define DESYM_STACK for desybolicating callstack with libcorkscrew
 	 */
-#if defined(DAVA_DEBUG) && defined(USE_NDKSTACK_TOOL)
+#if defined(__DAVAENGINE_DEBUG__) && defined(USE_NDKSTACK_TOOL)
 	return;
 #endif
 	void* libcorkscrew = dlopen("/system/lib/libcorkscrew.so", RTLD_NOW);
@@ -236,7 +227,7 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 		get_backtrace_symbols(frames, size, symbols);
 #endif
 
-		for (int i = 0; i < size; ++i)
+		for (ssize_t i = 0; i < size; ++i)
 		{
 			JniCrashReporter::CrashStep step;
 #ifdef DESYM_STACK
@@ -250,26 +241,26 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 			const map_info_t* mi = find_map_info(map_info, frames[i].absolute_pc);
 			if (mi)
 			{
-				char s[256];
+				char s[256] = {0};
 				const backtrace_frame_t* frame = &frames[i];
 				snprintf(s,256, "0x%08x", (frame->absolute_pc - mi->start));
-				step.function = std::string(s);
-				if (mi->name[0])
+				step.function = s;
+				if (mi->name)
 				{
-					step.module = std::string(strdup(mi->name)) + " ";
+					step.module = String(mi->name) + " ";
 				}
-#ifdef TEAMCITY_BUILD_TYPE_ID				
+#ifdef TEAMCITY_BUILD_TYPE_ID
 				if (i == 0)
 				{
 					JniCrashReporter::CrashStep buildId;
 					buildId.module = TEAMCITY_BUILD_TYPE_ID;
-					char fakeFunction[64];
-					snprintf(fakeFunction, 64,"CrashApp::CrashedSignal%dAddr0x%08x()",signal,siginfo->si_addr);
-					buildId.function = std::string(fakeFunction);
+					char fakeFunction[64] = {0};
+					snprintf(fakeFunction, 64,"CrashApp::CrashedSignal%dAddr0x%p()",signal,siginfo->si_addr);
+					buildId.function = fakeFunction;
 					buildId.fileLine = (frame->absolute_pc - mi->start);
 					crashSteps.push_back(buildId);
 				}
-#endif				
+#endif
 
 			}
 

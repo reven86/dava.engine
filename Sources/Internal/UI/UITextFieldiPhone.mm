@@ -36,8 +36,9 @@
 #include "UI/UITextFieldiPhone.h"
 #include "Platform/TemplateiOS/UITextFieldHolder.h"
 #include "Core/Core.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#import <HelperAppDelegate.h>
+#import <Platform/TemplateiOS/HelperAppDelegate.h>
 
 void CreateTextField(DAVA::UITextField  * tf)
 {
@@ -64,14 +65,14 @@ namespace DAVA
         BackgroundView* backgroundView = [appDelegate glController].backgroundView;
         
         UITextFieldHolder * textFieldHolder= [backgroundView CreateTextField];
-        textFieldHolder.davaTextField = (DAVA::UITextField *)tf;
+        [textFieldHolder setTextField:(DAVA::UITextField *)tf];
 
         objcClassPtr = textFieldHolder;
     }
     UITextFieldiPhone::~UITextFieldiPhone()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        textFieldHolder.davaTextField = (DAVA::UITextField *)nil;
+        [textFieldHolder setTextField:(DAVA::UITextField *)nil];
         
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
         BackgroundView* backgroundView = [appDelegate glController].backgroundView;
@@ -89,7 +90,7 @@ namespace DAVA
     void UITextFieldiPhone::SetFontSize(float size)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        float scaledSize = size * Core::GetVirtualToPhysicalFactor();
+        float scaledSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size);
         
         if( [[::UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)])
         {
@@ -132,6 +133,8 @@ namespace DAVA
 			case UIControlContentHorizontalAlignmentRight:
 				textFieldHolder->textField.textAlignment = textFieldHolder->useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentRight;
 				break;
+            default:
+                break;
 		}
     }
 	
@@ -156,6 +159,8 @@ namespace DAVA
             case UIControlContentHorizontalAlignmentRight:
                 retValue |= ALIGN_RIGHT;
                 break;
+                
+            default: break;
         }
         
         switch (verAligment)
@@ -169,6 +174,7 @@ namespace DAVA
             case UIControlContentVerticalAlignmentBottom:
                 retValue |= ALIGN_BOTTOM;
                 break;
+            default: break;
         }
         
     return retValue;
@@ -233,14 +239,18 @@ namespace DAVA
     {
         float divider = [HelperAppDelegate GetScale];
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        CGRect cgRect = CGRectMake((rect.x - DAVA::Core::Instance()->GetVirtualScreenXMin()) * DAVA::Core::GetVirtualToPhysicalFactor()/divider
-                                   , (rect.y - DAVA::Core::Instance()->GetVirtualScreenYMin()) * DAVA::Core::GetVirtualToPhysicalFactor()/divider
-                                   , rect.dx * DAVA::Core::GetVirtualToPhysicalFactor()/divider
-                                   , rect.dy * DAVA::Core::GetVirtualToPhysicalFactor()/divider);
-        textFieldHolder->textField.frame = cgRect;
+        
+        DAVA::Rect physicalRect = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
+        DAVA::Vector2 physicalOffset = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
+        CGRect nativeRect = CGRectMake(  (physicalRect.x + physicalOffset.x) / divider
+                                       , (physicalRect.y + physicalOffset.y) / divider
+                                       , physicalRect.dx / divider
+                                       , physicalRect.dy / divider);
+        
+        textFieldHolder->textField.frame = nativeRect;
     }
 	
-    void UITextFieldiPhone::SetText(std::wstring & string)
+    void UITextFieldiPhone::SetText(const WideString & string)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         NSString* text = [[ [ NSString alloc ] initWithBytes : (char*)string.data()
@@ -249,9 +259,12 @@ namespace DAVA
 
         textFieldHolder->textField.text = (NSString*)TruncateText(text, textFieldHolder->cppTextField->GetMaxLength());
         [textFieldHolder->textField.undoManager removeAllActions];
+
+        // Notify UITextFieldDelegate::TextFieldOnTextChanged event
+        [textFieldHolder->textField sendActionsForControlEvents:UIControlEventEditingChanged];
     }
 	
-    void UITextFieldiPhone::GetText(std::wstring & string) const
+    void UITextFieldiPhone::GetText(WideString & string) const
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         
@@ -342,8 +355,8 @@ namespace DAVA
         }
 
         ::UITextField* textField = textFieldHolder->textField;
-        int pos = [textField offsetFromPosition: textField.beginningOfDocument
-                                     toPosition: textField.selectedTextRange.start];
+        int32 pos = static_cast<int32>([textField offsetFromPosition: textField.beginningOfDocument
+                                     toPosition: textField.selectedTextRange.start]);
         return pos;
     }
 
@@ -363,7 +376,7 @@ namespace DAVA
         }
         if (pos > textLength)
         {
-            pos = textLength - 1;
+            pos = static_cast<uint32>(textLength - 1);
         }
 
         UITextPosition *start = [textField positionFromPosition:[textField beginningOfDocument] offset:pos];

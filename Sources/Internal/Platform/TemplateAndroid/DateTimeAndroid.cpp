@@ -28,9 +28,10 @@
 
 
 
-#include "../../Platform/DateTime.h"
-#include "../../Utils/Utils.h"
-#include "../../FileSystem/LocalizationSystem.h"
+#include "Platform/DateTime.h"
+#include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
+#include "FileSystem/LocalizationSystem.h"
 
 
 #if defined(__DAVAENGINE_ANDROID__)
@@ -40,46 +41,34 @@
 namespace DAVA
 {
 
-jclass JniDateTime::gJavaClass = NULL;
-const char* JniDateTime::gJavaClassName = NULL;
-
-jclass JniDateTime::GetJavaClass() const
+JniDateTime::JniDateTime()
+    : jniDateTime("com/dava/framework/JNIDateTime")
 {
-	return gJavaClass;
-}
-
-const char* JniDateTime::GetJavaClassName() const
-{
-	return gJavaClassName;
+    getTimeAsString = jniDateTime.GetStaticMethod<jstring, jstring, jstring, jlong, jint>("GetTimeAsString");
+    getLocalTimeZoneOffset = jniDateTime.GetStaticMethod<jint>("GetLocalTimeZoneOffset");
 }
 
 WideString JniDateTime::AsWString(const WideString& format, const String& countryCode, long timeStamp, int tzOffset)
 {
-	jmethodID mid = GetMethodID("GetTimeAsString", "(Ljava/lang/String;Ljava/lang/String;JI)Ljava/lang/String;");
-	if (mid)
-	{
-		jstring jFormat = GetEnvironment()->NewStringUTF(UTF8Utils::EncodeToUTF8(format).c_str());
-		jstring jCountryCode = GetEnvironment()->NewStringUTF(countryCode.c_str());
-        jobject obj = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid, jFormat, jCountryCode, (long long)timeStamp, tzOffset);
-        GetEnvironment()->DeleteLocalRef(jFormat);
-        GetEnvironment()->DeleteLocalRef(jCountryCode);
-		char str[256] = {0};
-		CreateStringFromJni(GetEnvironment(), jstring(obj), str);
-		WideString retWString;
-		UTF8Utils::EncodeToWideString((uint8*)str, 256, retWString);
-		return retWString;
-	}
-	return L"";
+    JNIEnv *env = JNI::GetEnv();
+
+    jstring jFormat = env->NewStringUTF(UTF8Utils::EncodeToUTF8(format).c_str());
+    jstring jCountryCode = env->NewStringUTF(countryCode.c_str());
+
+    jstring obj = getTimeAsString(jFormat, jCountryCode, (long long)timeStamp, tzOffset);
+
+    env->DeleteLocalRef(jFormat);
+    env->DeleteLocalRef(jCountryCode);
+    char str[256] = {0};
+    JNI::CreateStringFromJni(obj, str);
+    WideString retWString;
+    UTF8Utils::EncodeToWideString((uint8*)str, 256, retWString);
+    return retWString;
 }
 
 int JniDateTime::GetLocalTimeZoneOffset()
 {
-	jmethodID mid = GetMethodID("GetLocalTimeZoneOffset", "()I");
-	if (mid)
-	{
-		return GetEnvironment()->CallStaticIntMethod(GetJavaClass(), mid);
-	}
-	return 0;
+    return getLocalTimeZoneOffset();
 }
 
 WideString DateTime::AsWString(const wchar_t* format) const

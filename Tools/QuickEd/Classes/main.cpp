@@ -27,19 +27,19 @@
 =====================================================================================*/
 
 
-#include <QtGui/QApplication>
+#include <QApplication>
 #include "UI/mainwindow.h"
 
 #include "DAVAEngine.h"
 
 #if defined (__DAVAENGINE_MACOS__)
-#include "Platform/Qt/MacOS/QtLayerMacOS.h"
+#include "Platform/Qt5/MacOS/QtLayerMacOS.h"
 #elif defined (__DAVAENGINE_WIN32__)
-#include "Platform/Qt/Win32/QtLayerWin32.h"
+#include "Platform/Qt5/Win32/QtLayerWin32.h"
 #endif
 
-#include "GeneratedFiles/MocSourcesHeader.h"
-#include "GeneratedFiles/QrcSourcesHeader.h"
+//#include "GeneratedFiles/MocSourcesHeader.h"
+//#include "GeneratedFiles/QrcSourcesHeader.h"
 
 int main(int argc, char *argv[])
 {
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 	DVASSERT(false && "Wrong platform")
 #endif
 
-    ParticleEmitter::FORCE_DEEP_CLONE = true;
+    DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
     int result = 0;
     // MainWindow have to be released prior to the framework, so use separate scope for it.
     {

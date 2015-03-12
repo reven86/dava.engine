@@ -27,6 +27,7 @@
 =====================================================================================*/
 #include "Platform/DateTime.h"
 #include "Utils/UTF8Utils.h"
+#include "Utils/Utils.h"
 #include "FileSystem/LocalizationSystem.h"
 
 namespace DAVA

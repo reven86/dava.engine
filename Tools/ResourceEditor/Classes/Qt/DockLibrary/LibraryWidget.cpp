@@ -53,8 +53,8 @@
 #include <QMenu>
 #include <QAction>
 #include <QStringList>
+#include <QFileInfo>
 
-Q_DECLARE_METATYPE( QFileInfo )
 
 struct FileType
 {

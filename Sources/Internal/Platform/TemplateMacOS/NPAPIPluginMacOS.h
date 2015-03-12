@@ -55,7 +55,7 @@
 	// Bundle Path to the Plugin (passed from the HTML page).
 	NSString* bundlePath;
 
-	DAVA::Vector<DAVA::UIEvent> activeTouches;
+	DAVA::Vector<DAVA::UIEvent> allTouches;
 	DAVA::int32 oldModifiersFlags;
 }
 

@@ -63,10 +63,10 @@ struct VegetationSpatialData
 
 inline VegetationSpatialData::VegetationSpatialData() : x(-1),
                                     y(-1),
-                                    cameraDistance(0.0f),
-                                    clippingPlane(0),
                                     rdoIndex(-1),
-                                    isVisible(true)
+                                    isVisible(true),
+                                    cameraDistance(0.0f),
+                                    clippingPlane(0)
 {
 }
 

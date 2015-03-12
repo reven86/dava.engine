@@ -29,6 +29,8 @@
 #ifndef __CUSTOMGEOMETRYSERIALIZATIONDATA_H__
 #define __CUSTOMGEOMETRYSERIALIZATIONDATA_H__
 
+#include <memory>
+
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Base/FastName.h"
@@ -87,12 +89,12 @@ private:
     Vector<Vector<Vector<VegetationIndex> > > indices;
 };
 
+using VegetationCustomGeometrySerializationDataPtr = std::unique_ptr<VegetationCustomGeometrySerializationData>;
+
 class VegetationCustomGeometrySerializationDataReader
 {
 public:
-
-    VegetationCustomGeometrySerializationData* ReadScene(const FilePath& scenePath);
-    Entity* SelectDataVariation(Entity* rootNode);
+    static VegetationCustomGeometrySerializationDataPtr ReadScene(const FilePath& scenePath);
 };
 
 };

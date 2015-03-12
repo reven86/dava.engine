@@ -37,6 +37,7 @@
 #include "Platform/SystemTimer.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Image/ImageSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA
 {
@@ -49,7 +50,6 @@ namespace DAVA
     : queryPool(10000)
     {
         staticOcclusionRenderPass = 0;
-        renderTargetSprite = 0;
         renderTargetTexture = 0;
         currentData = 0;
         landscape = 0;
@@ -62,7 +62,6 @@ namespace DAVA
             SafeRelease(cameras[k]);
         }
         SafeDelete(staticOcclusionRenderPass);
-        SafeRelease(renderTargetSprite);
         SafeRelease(renderTargetTexture);
     }
     
@@ -96,8 +95,6 @@ namespace DAVA
         
         if (!renderTargetTexture)
             renderTargetTexture = Texture::CreateFBO(RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT, FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER);
-        if (!renderTargetSprite)
-            renderTargetSprite = Sprite::CreateFromTexture(renderTargetTexture, 0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT);
         
         /* Set<uint16> busyIndices;
          for (uint32 k = 0; k < renderObjects.size(); ++k)
@@ -328,8 +325,8 @@ namespace DAVA
                         //camera->SetupDynamicParameters();
                         // Do Render
                         
-                        RenderManager::Instance()->SetRenderTarget(renderTargetSprite);
-                        RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT), true);
+                        RenderManager::Instance()->SetRenderTarget(renderTargetTexture);
+                        RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT));
                         
                         //camera->SetupDynamicParameters();
                         
@@ -346,8 +343,8 @@ namespace DAVA
                         
                         timeRendering = SystemTimer::Instance()->GetAbsoluteNano() - timeRendering;
                         timeTotalRendering += timeRendering;
-                        
-                        RenderManager::Instance()->RestoreRenderTarget();
+
+                        RenderManager::Instance()->SetRenderTarget(0);
                         
                         size_t size = recordedBatches.size();
                         /*
@@ -417,8 +414,8 @@ namespace DAVA
         
         
         // Invisible on every frame
-        uint32 invisibleObjectCount =  (uint32)renderObjectsArray.size() - frameGlobalVisibleInfo.size();
-        uint32 visibleCount = frameGlobalVisibleInfo.size();
+        uint32 invisibleObjectCount =  static_cast<uint32>((uint32)renderObjectsArray.size() - frameGlobalVisibleInfo.size());
+        uint32 visibleCount = static_cast<uint32>(frameGlobalVisibleInfo.size());
         //    for (Map<RenderObject*, uint32>::iterator it = frameGlobalOccludedInfo.begin(), end = frameGlobalOccludedInfo.end(); it != end; ++it)
         //    {
         //        if (renderFrameCount == it->second)
@@ -446,7 +443,7 @@ namespace DAVA
             if (findIt != equalVisibilityArray.end())
             {
                 Vector<RenderObject*> & equalObjects = findIt->second;
-                uint32 size = equalObjects.size();
+                uint32 size = static_cast<uint32>(equalObjects.size());
                 for (uint32 k = 0; k < size; ++k)
                 {
                     DVASSERT(equalObjects[k]->GetStaticOcclusionIndex() != INVALID_STATIC_OCCLUSION_INDEX);
@@ -495,14 +492,22 @@ namespace DAVA
         recordedBatches.push_back(std::pair<RenderBatch*, OcclusionQueryPoolHandle>(batch, handle));
     }
     
-    
+    AABBox3 bbox;
+    uint32 sizeX;
+    uint32 sizeY;
+    uint32 sizeZ;
+    uint32  blockCount;
+    uint32  objectCount;
+    uint32 * data;
+    float32* cellHeightOffset;
+
     StaticOcclusionData::StaticOcclusionData()
-    : data(0)
-    , objectCount(0)
-    , blockCount(0)
-    , sizeX(5)
+    : sizeX(5)
     , sizeY(5)
     , sizeZ(2)
+    , blockCount(0)
+    , objectCount(0)
+    , data(0)
     , cellHeightOffset(0)
     {
         

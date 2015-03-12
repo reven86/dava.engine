@@ -24,56 +24,98 @@
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
+    =====================================================================================*/
 
 #include "Job/JobQueue.h"
-#include "Job/Job.h"
+#include "Job/JobManager.h"
+#include "Thread/LockGuard.h"
 
 namespace DAVA
 {
 
-void MainThreadJobQueue::Update()
+JobQueueWorker::JobQueueWorker(uint32 maxCount /* = 1024 */)
+    : jobsMaxCount(maxCount)
+    , nextPushIndex(0)
+    , nextPopIndex(0)
+    , processingCount(0)
 {
-	mutex.Lock();
+    jobs = new Function<void()>[jobsMaxCount];
+}
 
-	while(!queue.empty())
-	{
-		Job * job = queue.front();
-		mutex.Unlock();
+JobQueueWorker::~JobQueueWorker()
+{
+    SafeDeleteArray(jobs);
+}
 
-		job->Perform();
-
-        if(job->GetFlags() & Job::RETAIN_WHILE_NOT_COMPLETED)
+void JobQueueWorker::Push(const Function<void()> &fn)
+{
+    if(fn != 0)
+    {
+        LockGuard<Spinlock> guard(lock);
+        if(nextPushIndex == nextPopIndex && 0 == processingCount)
         {
-            BaseObject * bo = job->GetMessage().GetBaseObject();
-            if(bo)
-            {
-                bo->Release();
-            }
+            nextPushIndex = 0;
+            nextPopIndex = 0;
         }
 
-		mutex.Lock();
-		queue.pop_front();
-		job->Release();
-	}
+        DVASSERT(nextPushIndex < jobsMaxCount);
 
-	mutex.Unlock();
+        jobs[nextPushIndex++] = fn;
+        processingCount++;
+    }
 }
 
-void MainThreadJobQueue::AddJob(Job * job)
+bool JobQueueWorker::PopAndExec()
 {
-    if(job->GetFlags() & Job::RETAIN_WHILE_NOT_COMPLETED)
+    bool ret = false;
+    Function<void()> fn;
+
     {
-        SafeRetain(job->GetMessage().GetBaseObject());
+        LockGuard<Spinlock> guard(lock);
+        if(nextPopIndex < nextPushIndex)
+        {
+            fn = jobs[nextPopIndex++];
+        }
     }
 
-	mutex.Lock();
+    if(fn != 0)
+    {
+        fn();
 
-	job->Retain();
-	queue.push_back(job);
+        {
+            LockGuard<Spinlock> guard(lock);
+            DVASSERT(processingCount > 0);
+            processingCount--;
+        }
 
-	mutex.Unlock();
+        ret = true;
+    }
+
+    return ret;
 }
 
+bool JobQueueWorker::IsEmpty()
+{
+    LockGuard<Spinlock> guard(lock);
+    return (nextPopIndex == nextPushIndex && 0 == processingCount);
+}
+
+void JobQueueWorker::Signal()
+{
+    LockGuard<Mutex> guard(jobsInQueueMutex);
+    Thread::Signal(&jobsInQueueCV);
+}
+
+void JobQueueWorker::Broadcast()
+{
+    LockGuard<Mutex> guard(jobsInQueueMutex);
+    Thread::Broadcast(&jobsInQueueCV);
+}
+
+void JobQueueWorker::Wait()
+{
+    LockGuard<Mutex> guard(jobsInQueueMutex);
+    Thread::Wait(&jobsInQueueCV, &jobsInQueueMutex);
+}
 
 }

@@ -105,10 +105,6 @@ DefaultScreen::~DefaultScreen()
 void DefaultScreen::Update(float32 /*timeElapsed*/)
 {
 	CheckScreenMoveState();
-
-	//update view port
-	RenderManager::Instance()->SetDrawScale(scale);
-	RenderManager::Instance()->SetDrawTranslate(pos);
     
     // Handle the "screen scale changed"/"screen position changed" after the scale/translate is set.
     HandleScreenScalePositionChanged();
@@ -124,6 +120,9 @@ void DefaultScreen::SystemDraw(const UIGeometricData &geometricData)
     bool previewEnabled = PreviewController::Instance()->IsPreviewEnabled();
     Color oldColor = RenderManager::Instance()->GetColor();
 
+    Matrix4 wt = Matrix4::MakeTranslation(Vector3(pos)) * Matrix4::MakeScale(Vector3(scale.x, scale.y, 1.f));
+    RenderManager::SetDynamicParam(PARAM_VIEW, &wt, UPDATE_SEMANTIC_ALWAYS);
+
     RenderManager::Instance()->SetColor(ScreenWrapper::Instance()->GetBackgroundFrameColor());
     RenderHelper::Instance()->FillRect(ScreenWrapper::Instance()->GetBackgroundFrameRect(), RenderState::RENDERSTATE_2D_BLEND);
     RenderManager::Instance()->SetColor(oldColor);
@@ -131,18 +130,18 @@ void DefaultScreen::SystemDraw(const UIGeometricData &geometricData)
    // For Preview mode display only what is inside the preview rectangle.
     if (previewEnabled)
     {
-        RenderManager::Instance()->ClipPush();
+        RenderSystem2D::Instance()->PushClip();
         
         Rect previewClipRect;
         previewClipRect.SetSize(PreviewController::Instance()->GetTransformData().screenSize);
-        RenderManager::Instance()->SetClip(previewClipRect);
+        RenderSystem2D::Instance()->SetClip(previewClipRect);
     }
 
 	UIScreen::SystemDraw(geometricData);
 
     if (previewEnabled)
     {
-        RenderManager::Instance()->ClipPop();
+        RenderSystem2D::Instance()->PopClip();
     }
     else if (inputState == InputStateSelectorControl)
     {
@@ -1014,7 +1013,7 @@ void DefaultScreen::MouseInputBegin(const DAVA::UIEvent* event)
 			{
 				//Don't check active controls size anymore - we have to be able to deselect any control
 				if (/*HierarchyTreeController::Instance()->GetActiveControlNodes().size() > 1 &&*/
-					InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_SHIFT))
+					InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
 				{
 					lastSelectedControl = selectedControlNode;
 					//If controls was selected with SHIFT key pressed - we don't need mouseUp selection
@@ -1023,7 +1022,7 @@ void DefaultScreen::MouseInputBegin(const DAVA::UIEvent* event)
 			}
 			else
 			{
-				if (!InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_SHIFT))
+				if (!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
 					HierarchyTreeController::Instance()->ResetSelectedControl();
 					
 				HierarchyTreeController::Instance()->SelectControl(selectedControlNode);
@@ -1128,7 +1127,7 @@ void DefaultScreen::MouseInputDrag(const DAVA::UIEvent* event)
 	if (inputState == InputStateDrag)
 	{
 		//If control key is pressed - we are going to copy control(s)
-		if (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_CTRL) && !copyControlsInProcess)
+		if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL) && !copyControlsInProcess)
 		{
 			CopySelectedControls();
 		}	
@@ -1231,7 +1230,7 @@ void DefaultScreen::HandleMouseLeftButtonClick(const Vector2& point)
 	{
 		if (!HierarchyTreeController::Instance()->IsControlSelected(selectedControlNode))
 		{
-			if (!InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_SHIFT))
+			if (!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
 				HierarchyTreeController::Instance()->ResetSelectedControl();
 
 				HierarchyTreeController::Instance()->SelectControl(selectedControlNode);
@@ -1329,14 +1328,14 @@ void DefaultScreen::KeyboardInput(const DAVA::UIEvent* event)
 		}break;
 		case DVKEY_C:
 		{
-			if (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_CTRL))
+			if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
 			{
 				CopyPasteController::Instance()->CopyControls(HierarchyTreeController::Instance()->GetActiveControlNodes());
 			}
 		}break;
 		case DVKEY_V:
 		{
-			if (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_CTRL))
+			if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
 			{
                 const HierarchyTreeController::SELECTEDCONTROLNODES &selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();                
                 if (selectedList.empty())
@@ -1678,7 +1677,7 @@ Rect DefaultScreen::GetControlRect(const HierarchyTreeControlNode* controlNode, 
     }
     else
     {
-        rect = control->GetGeometricData(false).GetAABBox();
+        rect = control->GetGeometricData().GetAABBox();
     }
 	rect += controlNode->GetParentDelta(true);
 
@@ -1854,8 +1853,8 @@ void DefaultScreen::DrawGuides()
         }
     }
 
-    RenderManager::Instance()->ClipPush();
-    RenderManager::Instance()->SetClip(rect);
+    RenderSystem2D::Instance()->PushClip();
+    RenderSystem2D::Instance()->SetClip(rect);
     Color oldColor = RenderManager::Instance()->GetColor();
 
     RenderManager::Instance()->SetColor(selectedColor);
@@ -1864,7 +1863,7 @@ void DefaultScreen::DrawGuides()
     RenderHelper::Instance()->DrawLines(unselectedGuides, RenderState::RENDERSTATE_2D_BLEND);
 
     RenderManager::Instance()->SetColor(oldColor);
-    RenderManager::Instance()->ClipPop();
+    RenderSystem2D::Instance()->PopClip();
 }
 
 // Screen scale/position is changed.

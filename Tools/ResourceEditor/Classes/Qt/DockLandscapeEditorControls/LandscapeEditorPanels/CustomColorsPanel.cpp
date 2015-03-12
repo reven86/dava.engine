@@ -201,10 +201,26 @@ bool CustomColorsPanel::SaveTexture()
 		selectedPathname = sceneEditor->GetScenePath().GetDirectory();
 	}
 	
-	QString filePath = QtFileDialog::getSaveFileName(NULL, QString(ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str()),
-													QString(selectedPathname.GetAbsolutePathname().c_str()),
-													QString(ResourceEditor::CUSTOM_COLORS_FILE_FILTER.c_str()));
-	selectedPathname = PathnameToDAVAStyle(filePath);
+    const QString text = "Custom colors texture is not saved. Do you want to save it?";
+    QString filePath;
+    for ( ;; )
+    {
+        filePath = QtFileDialog::getSaveFileName( NULL, QString( ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str() ),
+            QString( selectedPathname.GetAbsolutePathname().c_str() ),
+            QString( ResourceEditor::CUSTOM_COLORS_FILE_FILTER.c_str() ) );
+
+        if ( filePath.isEmpty() )
+        {
+            QMessageBox::StandardButton result = QMessageBox::question( NULL, "Save changes", text );
+            if ( result == QMessageBox::Yes )
+            {
+                continue;
+            }
+        }
+        break;
+    }
+
+    selectedPathname = PathnameToDAVAStyle( filePath );
 	
 	if (selectedPathname.IsEmpty())
 	{

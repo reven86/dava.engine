@@ -84,7 +84,7 @@ void CopyLastLODToLod0Command::Redo()
     int32 lodIndex, switchIndex;
     for(uint32 ri = 0; ri < batchCount; ++ri)
     {
-        RenderBatch * batch = ro->GetRenderBatch(ri, lodIndex, switchIndex);
+        ro->GetRenderBatch(ri, lodIndex, switchIndex);
         ro->SetRenderBatchLODIndex(ri, lodIndex + 1);
     }
 
@@ -115,7 +115,7 @@ void CopyLastLODToLod0Command::Undo()
     int32 lodIndex, switchIndex;
     for(uint32 ri = 0; ri < batchCount; ++ri)
     {
-        RenderBatch * batch = ro->GetRenderBatch(ri, lodIndex, switchIndex);
+        ro->GetRenderBatch(ri, lodIndex, switchIndex);
         ro->SetRenderBatchLODIndex(ri, lodIndex - 1);
     }
 }

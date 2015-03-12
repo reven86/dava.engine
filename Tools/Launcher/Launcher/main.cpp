@@ -29,10 +29,10 @@
 
 #include "mainwindow.h"
 #include "filemanager.h"
-#include <errormessanger.h>
+#include "errormessanger.h"
 #include <QApplication>
 
-void LogMsgHandler(QtMsgType type, const char * msg)
+void LogMessageHandler(QtMsgType type, const QMessageLogContext &, const QString & msg)
 {
     ErrorMessanger::Instance()->LogMessage(type, msg);
 }
@@ -41,7 +41,9 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     ErrorMessanger::Instance();
-    qInstallMsgHandler(LogMsgHandler);
+    qInstallMessageHandler(LogMessageHandler);
+
+    a.setAttribute(Qt::AA_UseHighDpiPixmaps);
 
     MainWindow w;
     w.show();

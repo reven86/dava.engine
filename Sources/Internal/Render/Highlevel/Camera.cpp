@@ -276,7 +276,7 @@ void Camera::RebuildProjectionMatrix()
     
     uint32 cullInvert = 0;
     
-    if (RenderManager::Instance()->GetRenderOrientation() == Core::SCREEN_ORIENTATION_TEXTURE)
+    if (RenderManager::Instance()->GetRenderTarget() != nullptr)
     {
         yMinOrientation = ymax;
         yMaxOrientation = ymin;
@@ -448,7 +448,7 @@ void Camera::PrepareDynamicParameters(Vector4 *externalClipPlane)
     if (externalClipPlane)
     {
         Vector4 clipPlane(*externalClipPlane);
-        if (RenderManager::Instance()->GetRenderOrientation() == Core::SCREEN_ORIENTATION_TEXTURE)
+        if (RenderManager::Instance()->GetRenderTarget() != nullptr)
         {
             clipPlane = -clipPlane;
         }
@@ -613,9 +613,9 @@ Vector3 Camera::UnProject(float32 winx, float32 winy, float32 winz, const Rect &
      uint32 flags;
 */
     
-void Camera::Save(KeyedArchive * archive)
+void Camera::SaveObject(KeyedArchive * archive)
 {
-    BaseObject::Save(archive);
+    BaseObject::SaveObject(archive);
     
     archive->SetFloat("cam.orthoWidth", orthoWidth);
     archive->SetFloat("cam.znear", znear);
@@ -637,9 +637,9 @@ void Camera::Save(KeyedArchive * archive)
     archive->SetByteArrayAsType("cam.projMatrix", projMatrix);
 }
 
-void Camera::Load(KeyedArchive * archive)
+void Camera::LoadObject(KeyedArchive * archive)
 {
-    BaseObject::Load(archive);
+    BaseObject::LoadObject(archive);
     
     // todo add default values
     orthoWidth = archive->GetFloat("cam.orthoWidth");

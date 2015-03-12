@@ -48,7 +48,6 @@
 
 using namespace DAVA;
 
-
 #define PNG_DEBUG 3
 
 namespace
@@ -231,7 +230,7 @@ int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFo
     
 	png_read_update_info(png_ptr, info_ptr);
 	
-	rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+	rowbytes = static_cast<uint32>(png_get_rowbytes(png_ptr, info_ptr));
 	
     uint8 *image_data = new uint8 [rowbytes * height];
 	if (image_data == 0)
@@ -634,9 +633,10 @@ bool PngImage::CreateFromFBOSprite(Sprite * fboSprite)
 	format = texture->GetFormat();    
 	if (format == FORMAT_RGBA8888)
 	{
-		RenderManager::Instance()->SetRenderTarget(fboSprite);
-		glReadPixels(0, 0, texture->width, texture->height, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		RenderManager::Instance()->RestoreRenderTarget();
+        int32 lastFBO = RenderManager::Instance()->HWglGetLastFBO();
+        RenderManager::Instance()->HWglBindFBO(texture->fboID);
+        glReadPixels(0, 0, texture->width, texture->height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        RenderManager::Instance()->HWglBindFBO(lastFBO);
 	}
 	return true;
 }

@@ -70,9 +70,9 @@ public:
     static TextBlock * Create(const Vector2 & size);
     
     virtual void SetFont(Font * font);
+    virtual void SetScale(const Vector2 & scale);
     virtual void SetRectSize(const Vector2 & size);
     virtual void SetPosition(const Vector2& position);
-    virtual void SetPivotPoint(const Vector2& pivotPoint);
     virtual void SetAlign(int32 align);
     virtual int32 GetAlign();
 	virtual int32 GetVisualAlign(); // Return align for displaying BiDi-text (w/ mutex lock)
@@ -90,6 +90,7 @@ public:
 
     virtual Font * GetFont();
     virtual const WideString & GetText();
+    virtual const WideString & GetVisualText();
     virtual const Vector<WideString> & GetMultilineStrings();
     virtual bool GetMultiline();
     virtual bool GetMultilineBySymbol();
@@ -121,6 +122,10 @@ public:
     const Vector<int32> & GetStringSizes() const;
     
     void ForcePrepare(Texture *texture);
+#if defined(LOCALIZATION_DEBUG)
+    int32 GetFittingOptionUsed();
+	bool IsVisualTextCroped();
+#endif
 
     /**
      * \brief Sets BiDi transformation support enabled.
@@ -133,14 +138,26 @@ public:
      * \return true if BiDi trasformations supported.
      */
     static bool IsBiDiSupportEnabled();
-    
+    TextBlockRender* GetRenderer(){ return textBlockRender; }
+
+    /**
+     * \brief Clean line.
+     * \param [in,out] string The string.
+     * \param trim (Optional) true to trim.
+     * \param rtl (Optional) true to trim for rtl text.
+     */
+    static void CleanLine(WideString& string, bool trim = false, bool rtl = false);
+
+	void SetAngle(const float _angle);
+	void SetPivot(const Vector2 & _pivot);
 protected:
-    TextBlock();
-    ~TextBlock();
-    
-    void Prepare(Texture *texture = NULL);
-    void PrepareInternal(BaseObject * caller, void * param, void *callerData);
-    void CalculateCacheParams();
+
+	TextBlock();
+	virtual ~TextBlock();
+	
+ 	void Prepare(Texture *texture = NULL);
+	void PrepareInternal();
+	void CalculateCacheParams();
 
 	int32 GetVisualAlignNoMutexLock() const; // Return align for displaying BiDi-text (w/o mutex lock)
 
@@ -162,15 +179,9 @@ protected:
      */
     void SplitTextBySymbolsToStrings(const WideString & string, const Vector2 & targetRectSize, Vector<WideString> & resultVector, const bool forceRtl);
 
-    /**
-     * \brief Clean line.
-     * \param [in,out] string The string.
-     * \param trimRight (Optional) true to trim right.
-     */
-    void CleanLine(WideString& string, bool trimRight = false);
-
+    Vector2 scale;
     Vector2 rectSize;
-    bool needRedraw;
+    Vector2 position;
     Vector2 requestedSize;
 
     Vector2 cacheFinalSize;
@@ -187,8 +198,10 @@ protected:
     int32 cacheOy;
 
     int32 fittingType;
-    Vector2 position;
-    Vector2 pivotPoint;
+#if defined(LOCALIZATION_DEBUG)
+    int32 fittingTypeUsed;
+    bool visualTextCroped;
+#endif //LOCALIZATION_DEBUG
     int32 align;
     bool useRtlAlign;
     bool isRtl;
@@ -206,6 +219,7 @@ protected:
     bool isPredrawed:1;
     bool cacheUseJustify:1;
     bool treatMultilineAsSingleLine:1;
+	bool needPrepareInternal:1;
 
     static bool isBiDiSupportEnabled;   //!< true if BiDi transformation support enabled
     static BiDiHelper bidiHelper;
@@ -214,8 +228,13 @@ protected:
     friend class TextBlockSoftwareRender;
     friend class TextBlockGraphicsRender;
     friend class TextBlockDistanceRender;
+    
     TextBlockRender* textBlockRender;
     TextureInvalidater *textureInvalidater;
+	Texture *textureForInvalidation;
+
+	float angle;
+	Vector2 pivot;
 };
 
 }; //end of namespace

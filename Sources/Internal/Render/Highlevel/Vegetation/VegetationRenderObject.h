@@ -29,6 +29,8 @@
 #ifndef __DAVAENGINE_VEGETATIONRENDEROBJECT_H__
 #define __DAVAENGINE_VEGETATIONRENDEROBJECT_H__
 
+#include <memory>
+
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Base/FastName.h"
@@ -154,7 +156,7 @@ public:
     inline bool GetVegetationVisible() const;
     
     inline const FilePath& GetCustomGeometryPath() const;
-    inline void SetCustomGeometryPath(const FilePath& path);
+    void SetCustomGeometryPath(const FilePath& path);
     
     inline void SetCameraBias(const float32& bias);
     inline float32 GetCameraBias() const;
@@ -213,7 +215,7 @@ private:
     void UpdateVegetationSetup();
     void InitLodRanges();
     
-    void SetupHeightmapParameters(BaseObject * caller, void * param, void *callerData);
+	void SetupHeightmapParameters(Texture* tx);
     
     void CreateRenderData();
     
@@ -232,9 +234,8 @@ private:
     void InitWithCustomGeometry(FastNameSet& materialFlags);
     
     void SetCustomGeometryPathInternal(const FilePath& path);
-    void ImportDataFromExternalScene(const FilePath& path);
-    VegetationCustomGeometrySerializationData* LoadCustomGeometryData(SerializationContext* context, KeyedArchive* srcArchive);
-    void SaveCustomGeometryData(SerializationContext* context, KeyedArchive* dstArchive, VegetationCustomGeometrySerializationData* data);
+    VegetationCustomGeometrySerializationDataPtr LoadCustomGeometryData(SerializationContext* context, KeyedArchive* srcArchive);
+    void SaveCustomGeometryData(SerializationContext* context, KeyedArchive* dstArchive, const VegetationCustomGeometrySerializationDataPtr& data);
     
     void GenerateDensityMapFromTransparencyMask(FilePath lightmapPath,
                                            Vector<bool>& densityMapBits);
@@ -297,7 +298,7 @@ private:
     
     float32 cameraBias;
     
-    VegetationCustomGeometrySerializationData* customGeometryData;
+    VegetationCustomGeometrySerializationDataPtr customGeometryData;
     
     Vector4 layersAnimationAmplitude;
     Vector4 layersAnimationSpring;
@@ -610,12 +611,6 @@ inline bool VegetationRenderObject::GetVegetationVisible() const
 inline const FilePath& VegetationRenderObject::GetCustomGeometryPath() const
 {
     return customGeometryPath;
-}
-
-inline void VegetationRenderObject::SetCustomGeometryPath(const FilePath& path)
-{
-    ImportDataFromExternalScene(path);
-    SetCustomGeometryPathInternal(path);
 }
 
 inline void VegetationRenderObject::SetCameraBias(const float32& bias)

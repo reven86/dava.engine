@@ -47,8 +47,8 @@ const int FACE_IMAGE_SIZE = 64;
 
 CubeMapTextureBrowser::CubeMapTextureBrowser(SceneEditor2* currentScene, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::CubeMapTextureBrowser),
-	cubeListItemDelegate(QSize(FACE_IMAGE_SIZE, FACE_IMAGE_SIZE))
+    cubeListItemDelegate(QSize(FACE_IMAGE_SIZE, FACE_IMAGE_SIZE)),
+    ui(new Ui::CubeMapTextureBrowser)
 {
 	scene = currentScene;
 	

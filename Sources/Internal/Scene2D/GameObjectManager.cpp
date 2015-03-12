@@ -31,6 +31,7 @@
 #include "FileSystem/Logger.h"
 #include "Collision/CollisionObject2.h"
 #include "Render/RenderManager.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 /*
 	/TODO optimize object manager
@@ -271,13 +272,11 @@ void GameObjectManager::ProcessChangesStack()
 
 void GameObjectManager::Draw()
 {
-	//eBlendMode srcMode = RenderManager::Instance()->GetSrcBlend();
-	//eBlendMode destMode = RenderManager::Instance()->GetDestBlend();
-	
-        RenderManager::Instance()->PushDrawMatrix();
-        RenderManager::Instance()->SetDrawTranslate(cameraPosition);
-        RenderManager::Instance()->SetDrawScale(cameraScale);
-
+    Matrix4 worldMx;
+    worldMx.glTranslate(cameraPosition.x, cameraPosition.y, 0.f);
+    worldMx = worldMx * Matrix4::MakeScale(Vector3(cameraScale.x, cameraScale.y, 1.f));
+    RenderManager::SetDynamicParam(PARAM_WORLD, &worldMx, UPDATE_SEMANTIC_ALWAYS);
+    
     const List<GameObject*>::iterator currentObjEnd = objects.end();
 	for(List<GameObject*>::iterator currentObj = objects.begin(); currentObj != currentObjEnd; ++currentObj)
 	{
@@ -287,10 +286,7 @@ void GameObjectManager::Draw()
         else
 		    object->Draw();
 	}
-	
-        RenderManager::Instance()->PopDrawMatrix();
 
-	//RenderManager::Instance()->SetBlendMode(srcMode, destMode);
     RenderManager::Instance()->ResetColor();
 }
 

@@ -31,6 +31,7 @@
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIEvent.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
@@ -72,19 +73,6 @@
 				[self setContentScaleFactor: scf];
 			}
 		}
-//		if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
-//		{
-////			[self setFrame:CGRectMake(0, 768, 1024, 768)];
-//			[self setFrame:CGRectMake(0, 0, 768, 1024)];
-//
-////			DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(768, 1024);
-//			
-//		}
-//		else
-//		{
-//			// The device is an iPhone or iPod touch.
-////			DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(320, 480);
-//		}
 
 		// Subscribe to "keyboard change frame" notifications to block GL while keyboard change is performed (see please DF-2012 for details).
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillChangeFrame:) name:UIKeyboardWillChangeFrameNotification object:nil];
@@ -168,10 +156,12 @@
 		}
         
 		DAVA::RenderManager::Instance()->SetRenderContextId(DAVA::EglGetCurrentContext());
-        DAVA::RenderManager::Instance()->Init(DAVA::Core::Instance()->GetPhysicalScreenWidth(), DAVA::Core::Instance()->GetPhysicalScreenHeight());
+        DAVA::Size2i physicalScreen = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+        DAVA::RenderManager::Instance()->Init(physicalScreen.dx, physicalScreen.dy);
         DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
+        DAVA::RenderSystem2D::Instance()->Init();
         
-		self.multipleTouchEnabled = YES;
+		self.multipleTouchEnabled = (DAVA::InputSystem::Instance()->GetMultitouchEnabled()) ? YES : NO;
 		animating = FALSE;
 		displayLinkSupported = FALSE;
 		animationFrameInterval = 1;
@@ -340,7 +330,7 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 //			newTouch.point.y = p.y;
 //		}
 		newTouch.timestamp = curTouch.timestamp;
-		newTouch.tapCount = curTouch.tapCount;
+        newTouch.tapCount = static_cast<DAVA::int32>(curTouch.tapCount);
 		
 		switch(curTouch.phase)
 		{
@@ -367,8 +357,15 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 -(void)process:(int) touchType touch:(NSArray*)active withEvent: (NSArray*)total
 {
 	MoveTouchsToVector(active, &activeTouches);
-	MoveTouchsToVector(total, &totalTouches);
-	DAVA::UIControlSystem::Instance()->OnInput(touchType, activeTouches, totalTouches);
+    if(DAVA::InputSystem::Instance()->GetMultitouchEnabled())
+    {
+        MoveTouchsToVector(total, &totalTouches);
+        DAVA::UIControlSystem::Instance()->OnInput(touchType, activeTouches, totalTouches);
+    }
+    else
+    {
+        DAVA::UIControlSystem::Instance()->OnInput(touchType, activeTouches, activeTouches);
+    }
 	activeTouches.clear();
 	totalTouches.clear();
 }
@@ -411,6 +408,11 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 - (void) blockDrawing
 {
 	blockDrawView = true;
+}
+
+- (void) unblockDrawing
+{
+    blockDrawView = false;
 }
 
 - (void)keyboardWillChangeFrame:(NSNotification *)notification

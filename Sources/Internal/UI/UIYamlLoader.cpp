@@ -641,45 +641,45 @@ void UIYamlLoader::LoadFontsFromNode(const YamlNode * rootNode)
 
 void UIYamlLoader::LoadFromNode(UIControl * parentControl, const YamlNode * rootNode, bool needParentCallback)
 {
-    //for (Map<String, YamlNode*>::iterator t = rootNode->AsMap().begin(); t != rootNode->AsMap().end(); ++t)
-    int cnt = rootNode->GetCount();
-    for (int k = 0; k < cnt; ++k)
-    {
-        const YamlNode * node = rootNode->Get(k);
-        const YamlNode * typeNode = node->Get("type");
+	//for (Map<String, YamlNode*>::iterator t = rootNode->AsMap().begin(); t != rootNode->AsMap().end(); ++t)
+	int cnt = rootNode->GetCount();
+	for (int k = 0; k < cnt; ++k)
+	{
+		const YamlNode * node = rootNode->Get(k);
+		const YamlNode * typeNode = node->Get("type");
         if (!typeNode)
             continue;
 
-        const String & type = typeNode->AsString();
+		const String & type = typeNode->AsString();
 
-        // Base Type might be absent.
-        const YamlNode* baseTypeNode = node->Get("baseType");
-        const String baseType = baseTypeNode ? baseTypeNode->AsString() : String();
+		// Base Type might be absent.
+		const YamlNode* baseTypeNode = node->Get("baseType");
+		const String baseType = baseTypeNode ? baseTypeNode->AsString() : String();
 
-        // The control can be loaded either from its Type or from Base Type (depending on
-        // whether the control is custom or not.
-        UIControl* control = CreateControl(type, baseType);
-        if (!control)
-        {
-            Logger::Warning("ObjectFactory haven't found object with type:%s, base type %s", type.c_str(), baseType.c_str());
-            continue;
-        }else
-        {
-            //Logger::FrameworkDebug("Create control with type:%s", type.c_str());
-        }
+		// The control can be loaded either from its Type or from Base Type (depending on
+		// whether the control is custom or not.
+		UIControl* control = CreateControl(type, baseType);
+		if (!control)
+		{
+			Logger::Warning("ObjectFactory haven't found object with type:%s, base type %s", type.c_str(), baseType.c_str());
+			continue;
+		}else
+		{
+			//Logger::FrameworkDebug("Create control with type:%s", type.c_str());
+		}
 
-        control->SetName(rootNode->GetItemKeyName(k));
-        control->LoadFromYamlNode(node, this);
-        parentControl->AddControl(control);
+		control->SetName(rootNode->GetItemKeyName(k));
+		control->LoadFromYamlNode(node, this);
+		parentControl->AddControl(control);
 
-        const YamlNode *childrenNode = node->Get("children");
-        if (!childrenNode)
-            childrenNode = node;
+		const YamlNode *childrenNode = node->Get("children");
+		if (!childrenNode)
+		    childrenNode = node;
 
-        LoadFromNode(control, childrenNode, true);
-        SafeRelease(control);
-    }
-
+		LoadFromNode(control, childrenNode, true);
+		SafeRelease(control);
+	}
+    
     if(needParentCallback)
     {
         parentControl->LoadFromYamlNodeCompleted();

@@ -79,8 +79,8 @@ private:
 			child[1] = 0;
 			isImageSet = false;
 			searchPtr = 0;
-			touchesRightBorder = true;
-			touchesBottomBorder = true;
+			touchesRightBorder = false;
+			touchesBottomBorder = false;
 			rightMargin = TexturePacker::DEFAULT_MARGIN;
 			bottomMargin = TexturePacker::DEFAULT_MARGIN;
 		}

@@ -272,18 +272,17 @@ protected:
 	bool LoadImages(eGPUFamily gpu, Vector<Image *> * images);
     
 	void SetParamsFromImages(const Vector<Image *> * images);
-	void FlushDataToRendererInternal(BaseObject * caller, void * param, void *callerData);
+	void FlushDataToRendererInternal(Vector<Image *> * images);
 	void FlushDataToRenderer(Vector<Image *> * images);
 	void ReleaseImages(Vector<Image *> * images);
     
     void MakePink(bool checkers = true);
-	void ReleaseTextureDataInternal(BaseObject * caller, void * param, void *callerData);
+	void ReleaseTextureDataInternal(uint32 textureType, uint32 id, uint32 fboID, uint32 rboID, uint32 stencilRboID);
     
-	void GeneratePixelesationInternal(BaseObject * caller, void * param, void *callerData);
-    
+	void GeneratePixelesationInternal();
+	void GenerateMipmapsInternal();
+
     static bool CheckImageSize(const Vector<Image *> &imageSet);
-    
-	void GenerateMipmapsInternal(BaseObject * caller, void * param, void *callerData);
     
 	Texture();
 	virtual ~Texture();
@@ -292,26 +291,13 @@ protected:
     
 #if defined(__DAVAENGINE_OPENGL__)
 	void HWglCreateFBOBuffers();
-	void HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, void *callerData);
+	void HWglCreateFBOBuffersInternal();
 #endif //#if defined(__DAVAENGINE_OPENGL__)
     
     bool IsLoadAvailable(const eGPUFamily gpuFamily) const;
-    
+	int32 GetBaseMipMap() const;
+
 	static eGPUFamily GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor *descriptor);
-    
-    struct ReleaseTextureDataContainer
-	{
-		uint32 textureType;
-		uint32 id;
-		uint32 fboID;
-		uint32 rboID;
-#if defined(__DAVAENGINE_ANDROID__)
-        uint32 stencilRboID;
-#endif
-	};
-
-
-    int32 GetBaseMipMap() const;
 
 public:							// properties for fast access
 

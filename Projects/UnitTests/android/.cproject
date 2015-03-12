@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?fileVersion 4.0.0?>
-
-<cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="com.android.toolchain.gcc.175927209">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="com.android.toolchain.gcc.175927209" moduleId="org.eclipse.cdt.core.settings" name="Default">
@@ -33,8 +31,15 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<folderInfo id="com.android.toolchain.gcc.175927209.1829329729" name="/" resourcePath="jni">
+						<toolChain id="com.android.toolchain.gcc.1961288421" name="com.android.toolchain.gcc" superClass="com.android.toolchain.gcc" unusedChildren="">
+							<tool id="com.android.gcc.compiler.1038218226" name="Android GCC Compiler" superClass="com.android.gcc.compiler.1615092382">
+								<inputType id="com.android.gcc.inputType.185545351" superClass="com.android.gcc.inputType"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="jni"/>
+						<entry excluding="Internal/Platform/TemplateWin32|Internal/Platform/TemplateMacOS|Internal/Platform/TemplateiOS|Platform/TemplateWin32" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="jni"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -50,8 +55,12 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.android.AndroidPerProjectProfile"/>
 		</scannerConfigBuildInfo>
 	</storageModule>
-	<storageModule moduleId="refreshScope" versionNumber="1">
-		<resource resourceType="PROJECT" workspacePath="/UnitTests"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Default">
+			<resource resourceType="PROJECT" workspacePath="/UnitTests"/>
+		</configuration>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 </cproject>

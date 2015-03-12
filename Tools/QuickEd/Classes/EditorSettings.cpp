@@ -32,13 +32,16 @@
 #include "Helpers/ResourcesManageHelper.h"
 #include <QString>
 
+using namespace DAVA;
+
 static const Color DEFAULT_BACKGROUND_FRAME_COLOR(0.2f, 0.2f, 0.2f, 1.0f);
 static const Color DEFAULT_GRID_COLOR(0.5f, 0.5f, 0.5f, 1.0f);
+static const String EDITOR_SETTINGS_FILE("~doc:/QuickEdSettings.archive");
 
 EditorSettings::EditorSettings()
 {
     settings = new KeyedArchive();    
-    settings->Load("~doc:/UIEditor_v2_Options.archive");
+    settings->Load(EDITOR_SETTINGS_FILE);
 }
 
 EditorSettings::~EditorSettings()
@@ -53,7 +56,7 @@ KeyedArchive *EditorSettings::GetSettings()
 
 void EditorSettings::Save()
 {
-    settings->Save("~doc:/UIEditor_v2_Options.archive");
+    settings->Save(EDITOR_SETTINGS_FILE);
 }
 
 void EditorSettings::SetProjectPath(const String &projectPath)

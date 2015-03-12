@@ -38,11 +38,14 @@
 #include "FileSystem/FilePath.h"
 #include "Base/GlobalEnum.h"
 
+
 namespace DAVA
 {
 
 class UIControl;
 class UIGeometricData;
+struct TiledDrawData;
+struct StretchDrawData;
 
     /**
      \ingroup controlsystem
@@ -191,6 +194,11 @@ public:
      */
     virtual void SetFrame(int32 drawFrame);
     /**
+     \brief Sets Sprite frame you want to use.
+     \param[in] frameName Sprite frame name.
+     */
+	virtual void SetFrame(const FastName& frameName);
+    /**
      \brief Sets size of the left and right unscalable sprite part.
         Middle sprite part would be scaled along a full control width.
         Used for DRAW_STRETCH_HORIZONTAL, DRAW_STRETCH_BOTH draw types.
@@ -252,6 +260,7 @@ public:
         Default color is Color(1,1,1,1).
      \param[in] geometricData Control geometric data.
      */
+
     virtual void Draw(const UIGeometricData &geometricData);
 
     /**
@@ -307,9 +316,6 @@ public:
     UniqueHandle GetRenderState() const;
 
 protected:
-    void DrawStretched(const UIGeometricData &geometricData, UniqueHandle renderState);
-    void DrawTiled(const UIGeometricData &geometricData, UniqueHandle renderState);
-    void DrawFilled(const UIGeometricData &geometricData, UniqueHandle renderState);
 
     Sprite *spr;
     int32 align;
@@ -321,60 +327,20 @@ protected:
     int32 frame;
 
     Vector2 lastDrawPos;
-    RenderDataObject * rdoObject;
-    RenderDataStream * vertexStream;
-    RenderDataStream * texCoordStream;
 
     ePerPixelAccuracyType perPixelAccuracyType;//!<Is sprite should be drawn with per pixel accuracy. Used for texts, for example.
 
 private:
-    struct TiledDrawData
-    {
-        Vector< Vector2 > vertices;
-        Vector< Vector2 > texCoords;
-        Vector< uint16  > indeces;
-        void GenerateTileData();
-        void GenerateAxisData( float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector< Vector3 > &axisData );
-
-        Vector< Vector2 > transformedVertices;
-        void GenerateTransformData();
-
-        Sprite *sprite;
-        int32 frame;
-        Vector2 size;
-        Vector2 stretchCap;
-        Matrix3 transformMatr;
-    };
-
-    TiledDrawData *tiledData;
-    
-    struct StretchDrawData
-    {
-        Vector<Vector2> vertices;
-        Vector<Vector2> transformedVertices;
-        Vector<Vector2> texCoords;
-        static const uint16 indeces[18 * 3];
-
-        void GenerateStretchData();
-        void GenerateTransformData();
-        uint32 GetVertexInTrianglesCount() const;
-
-        Sprite *sprite;
-        int32 frame;
-        Vector2 size;
-        int32 type;
-        float32 leftStretchCap;
-        float32 topStretchCap;
-        Matrix3 transformMatr;
-    };
-    
+	TiledDrawData *tiledData;
     StretchDrawData *stretchData;
     
     UIMargins* margins;
 
 public:
     void ReleaseDrawData(); // Delete all spec draw data
-
+#if defined(LOCALIZATION_DEBUG)
+    const Sprite::DrawState & GetLastDrawState()const;
+#endif
 protected:
     ~UIControlBackground();
     Color drawColor;
@@ -382,6 +348,9 @@ protected:
     Shader *shader;
     
     UniqueHandle renderState;
+#if defined(LOCALIZATION_DEBUG)
+    Sprite::DrawState lastDrawState;
+#endif
     
 public:
     

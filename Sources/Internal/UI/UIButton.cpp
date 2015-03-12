@@ -398,6 +398,32 @@ void UIButton::SetStateTextUseRtlAlign(int32 state, bool value)
     }
 }
 
+void UIButton::SetStateTextMultiline(int32 state, bool value)
+{
+    for (int i = 0; i < DRAW_STATE_COUNT && state; i++)
+    {
+        if (state & 0x01)
+        {
+            UIStaticText* text = GetOrCreateTextBlock((eButtonDrawState)i);
+            text->SetMultiline(value, text->GetMultilineBySymbol());
+        }
+        state >>= 1;
+    }
+}
+
+void UIButton::SetStateTextMultilineBySymbol(int32 state, bool value)
+{
+    for (int i = 0; i < DRAW_STATE_COUNT && state; i++)
+    {
+        if (state & 0x01)
+        {
+            UIStaticText* text = GetOrCreateTextBlock((eButtonDrawState)i);
+            text->SetMultiline(text->GetMultiline(), value);
+        }
+        state >>= 1;
+    }
+}
+
 void UIButton::SetStateMargins(int32 state, const UIControlBackground::UIMargins* margins)
 {
     for(int i = 0; i < DRAW_STATE_COUNT && state; i++)

@@ -44,10 +44,10 @@ class SoundComponent;
 struct SoundComponentElement
 {
     SoundComponentElement(SoundEvent * _soundEvent, uint32 _flags, const Vector3 & _localDirection) : 
-         soundEvent(_soundEvent), 
-         flags(_flags),
-         localDirection(_localDirection)
-         {}
+        soundEvent(_soundEvent),
+        localDirection(_localDirection),
+        flags(_flags)
+        {}
 
     SoundEvent * soundEvent;
     Vector3 localDirection;
@@ -111,7 +111,7 @@ inline SoundEvent * SoundComponent::GetSoundEvent(uint32 index) const
 
 inline uint32 SoundComponent::GetEventsCount() const
 {
-    return events.size();
+    return static_cast<uint32>(events.size());
 }
 
 inline uint32 SoundComponent::GetSoundEventFlags(uint32 index) const

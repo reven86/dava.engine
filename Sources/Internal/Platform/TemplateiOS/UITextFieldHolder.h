@@ -40,6 +40,7 @@
 
 @interface UITextFieldHolder : UIView < UITextFieldDelegate >
 {
+    NSString * cachedText;
 @public
     UITextField * textField;
     DAVA::UITextField * cppTextField;
@@ -49,10 +50,7 @@
     CGRect lastKeyboardFrame;
 }
 
-@property (nonatomic, setter=setTextField:) DAVA::UITextField * davaTextField;
-
-- (void) setTextField:(DAVA::UITextField *) textField;
-
+- (void) setTextField:(DAVA::UITextField *) tf;
 - (id) init;
 - (void) dealloc;
 - (BOOL)textFieldShouldReturn:(UITextField *)textField;
@@ -60,6 +58,8 @@
 - (void)setIsPassword:(bool)isPassword;
 - (void)setTextInputAllowed:(bool)value;
 - (void)setUseRtlAlign:(bool)value;
+
+- (void)eventEditingChanged:(UITextField *)sender;
 
 - (void)setupTraits;
 

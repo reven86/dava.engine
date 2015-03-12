@@ -52,7 +52,7 @@ FileManager::FileManager()
     tempSelfUpdateDir = appDir + "/selfupdate/";
     tempFile = tempDir + "archive.zip";
 
-    docDir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation) + "/DAVALauncher/";
+    docDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/DAVALauncher/";
 }
 
 FileManager * FileManager::Instance()

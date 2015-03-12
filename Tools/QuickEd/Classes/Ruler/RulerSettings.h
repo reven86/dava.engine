@@ -29,17 +29,16 @@
 #ifndef __RULERSETTINGS__H__
 #define __RULERSETTINGS__H__
 
-#include "DAVAEngine.h"
-using namespace DAVA;
+#include "Base/BaseTypes.h"
 
 // Settings for the ruler widget.
 struct RulerSettings
 {
-    int32 startPos;        // Start ruler position.
-    int32 smallTicksDelta; // Distance between "small" ticks.
-    int32 bigTicksDelta;   // Distance between "big" ticks.
+    DAVA::int32 startPos;        // Start ruler position.
+    DAVA::int32 smallTicksDelta; // Distance between "small" ticks.
+    DAVA::int32 bigTicksDelta;   // Distance between "big" ticks.
 
-    float32 zoomLevel;     // Zoom level for the current control.
+    DAVA::float32 zoomLevel;     // Zoom level for the current control.
 };
 
 #endif /* defined(__RULERSETTINGS__H__) */

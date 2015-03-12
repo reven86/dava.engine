@@ -38,7 +38,7 @@ CustomColorsProxy::CustomColorsProxy(int32 size)
     , size(size)
     , changes(0)
 {
-	customColorsSprite = Sprite::CreateAsRenderTarget((float32)size, (float32)size, FORMAT_RGBA8888, true);
+	customColorsRenderTarget = Texture::CreateFBO((float32)size, (float32)size, FORMAT_RGBA8888, Texture::DEPTH_NONE);
 	UpdateSpriteFromConfig();
 }
 
@@ -54,27 +54,27 @@ bool CustomColorsProxy::IsTextureLoaded() const
 
 CustomColorsProxy::~CustomColorsProxy()
 {
-	SafeRelease(customColorsSprite);
+    SafeRelease(customColorsRenderTarget);
 }
 
-Sprite* CustomColorsProxy::GetSprite()
+Texture* CustomColorsProxy::GetTexture()
 {
-	return customColorsSprite;
+    return customColorsRenderTarget;
 }
 
-void CustomColorsProxy::ResetSpriteChanged()
+void CustomColorsProxy::ResetTargetChanged()
 {
 	spriteChanged = false;
 }
 
-bool CustomColorsProxy::IsSpriteChanged()
+bool CustomColorsProxy::IsTargetChanged()
 {
 	return spriteChanged;
 }
 
 Rect CustomColorsProxy::GetChangedRect()
 {
-	if (IsSpriteChanged())
+	if (IsTargetChanged())
 	{
 		return changedRect;
 	}
@@ -113,17 +113,18 @@ void CustomColorsProxy::DecrementChanges()
 
 void CustomColorsProxy::UpdateSpriteFromConfig()
 {
-	if(NULL == customColorsSprite)
+    if (NULL == customColorsRenderTarget)
 	{
 		return;
 	}
-		
-	RenderManager::Instance()->SetRenderTarget(customColorsSprite);
+	
+    RenderManager::Instance()->SetRenderTarget(customColorsRenderTarget);
+    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)customColorsRenderTarget->GetWidth(), customColorsRenderTarget->GetHeight()));
 	Vector<Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
 	if (customColors.size())
 	{
 		Color color = customColors.front();
 		RenderManager::Instance()->ClearWithColor(color.r, color.g, color.b, color.a);
 	}
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderManager::Instance()->SetRenderTarget(0);
 }

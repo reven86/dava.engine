@@ -28,6 +28,11 @@
 
 #include <QtGui>
 #include "regexpinputdialog.h"
+#include <QBoxLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QDialogButtonBox>
+#include <QPushButton>
 
 RegExpInputDialog::RegExpInputDialog(QWidget *parent, int flags) :
     QDialog(parent)

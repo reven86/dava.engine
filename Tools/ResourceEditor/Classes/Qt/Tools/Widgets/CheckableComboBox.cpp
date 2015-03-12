@@ -84,7 +84,6 @@ void CheckableComboBox::OnRowsInserted(const QModelIndex& parent, int start, int
 
 void CheckableComboBox::UpdateTextHints()
 {
-    const QModelIndexList& indexes = GetCheckedIndexes();
     const QStringList& items = GetSelectedItems();
 
     textHint = items.join(", ");

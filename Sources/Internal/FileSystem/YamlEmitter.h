@@ -51,8 +51,8 @@ public:
      \returns true if success.
      */
     static bool SaveToYamlFile(const FilePath &outFileName, const YamlNode *node, uint32 attr = File::CREATE | File::WRITE);
+    static bool SaveToYamlFile(const YamlNode *node, File *outfile);
 protected:
-    bool Emit(const YamlNode * node, const FilePath & outFileName, uint32 attr);
     bool Emit(const YamlNode * node, File *outFile);
 
 private:

@@ -48,11 +48,11 @@ static const float32 TEST_TIME = AUTO_CLOSE_TIME/FORMATS_COUNT;
 
 OpenGLES30FormatTest::OpenGLES30FormatTest()
     :	TestTemplate<OpenGLES30FormatTest>("OpenGLES30FormatTest")
-    ,   testFinished(false)
     ,   source(NULL)
     ,   decodedSource(NULL)
     ,   encodedSource(NULL)
     ,   formatName(NULL)
+    ,   testFinished(false)
     ,   currentFormatIndex(0)
 {
 	RegisterFunction(this, &OpenGLES30FormatTest::TestFunction, Format("OpenGLES30FormatTest test"), NULL);

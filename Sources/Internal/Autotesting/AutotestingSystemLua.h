@@ -34,6 +34,7 @@
 
 #ifdef __DAVAENGINE_AUTOTESTING__
 
+#include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Math/Vector.h"
@@ -43,7 +44,7 @@
 #include "UI/UIList.h"
 
 #include "FileSystem/LocalizationSystem.h"
-#include "AutotestingSystem.h"
+#include "Autotesting/AutotestingSystem.h"
 
 struct lua_State;
 
@@ -60,6 +61,7 @@ public:
 };
 #endif //SWIG
 
+// TODO: Make one singleton -> AutotestingSystem. Lua and Mongo make as sub-sytem's
 class AutotestingSystemLua : public Singleton<AutotestingSystemLua>
 {
 public:
@@ -76,11 +78,11 @@ public:
     void Update(float32 timeElapsed);
 
 	static int Print(lua_State* L);
-	int static ReqModule(lua_State* L);
+	static int RequireModule(lua_State* L);
 
-	void static stackDump (lua_State* L);
-	const char *pushnexttemplate (lua_State* L, const char* path);
-	const char *findfile (lua_State* L, const char* name, const char* pname);
+	static void  StackDump(lua_State* L);
+	static const char *PushNextTemplate(lua_State* L, const char* path);
+	static const char *FindFile(lua_State* L, const char* name, const char* pname);
 #endif //SWIG
     
     // autotesting system api   
@@ -139,7 +141,7 @@ public:
 	void InitializeDevice(const String &device);
 
 	String GetDeviceName();
-	String GetPlatform() { return AUTOTESTING_PLATFORM_NAME; }
+	String GetPlatform();
 
 	bool IsPhoneScreen();
 
@@ -151,7 +153,9 @@ public:
 	void WriteString(const String &name, const String &text);
 	String ReadString(const String &name);
 
-	String MakeScreenshot();
+	String MakeScreenshot(bool skip);
+
+	inline lua_State* GetLuaState() { return luaState; };
 
 protected:
 #if !defined(SWIG)

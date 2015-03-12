@@ -34,14 +34,15 @@
 #include <QWidget>
 #include <QTimer>
 #include <QMimeData>
+#include <QAbstractNativeEventFilter>
 
-#include "Platform/Qt/QtLayer.h"
+#include "QtLayer.h"
 
-namespace Ui {
-class DavaGLWidget;
-}
 
-class DavaGLWidget : public QWidget, public DAVA::QtLayerDelegate
+class DavaGLWidget
+	: public QWidget
+	, public DAVA::QtLayerDelegate
+    , public QAbstractNativeEventFilter
 {
     Q_OBJECT
     
@@ -54,10 +55,18 @@ public:
 	int GetFPS() const;
     
 	virtual QPaintEngine *paintEngine() const;
-	
+	bool nativeEventFilter(const QByteArray& eventType, void * message, long * result);
+   
+signals:
+	void OnDrop(const QMimeData *mimeData);
+	void Resized(int width, int height);
+
+private slots:
+	void Render();
+
+private:
 	virtual void paintEvent(QPaintEvent *);
 	virtual void resizeEvent(QResizeEvent *);
-	virtual void changeEvent(QEvent * event);
 
 	virtual void showEvent(QShowEvent *);
 	virtual void hideEvent(QHideEvent *);
@@ -68,40 +77,27 @@ public:
 	virtual void dropEvent(QDropEvent *);
 	virtual void dragMoveEvent(QDragMoveEvent *);
 	virtual void dragEnterEvent(QDragEnterEvent *);
+
+    virtual void changeEvent(QEvent *e);
+    virtual void enterEvent(QEvent *e);
+    virtual void leaveEvent(QEvent *e);
     
-#if defined (Q_WS_MAC)
+#if defined (Q_OS_MAC)
     virtual void mouseMoveEvent(QMouseEvent *);
-#endif //#if defined (Q_WS_MAC)
-    
-#if defined(Q_WS_WIN)
-	virtual bool winEvent(MSG *message, long *result);
-#endif //#if defined(Q_WS_WIN)
+#endif //#if defined (Q_OS_MAC)
 
-signals:
-	void OnDrop(const QMimeData *mimeData);
-	void Resized(int width, int height);
-
-
-protected slots:
-	void Render();
-
-private:
-    
 	virtual void Quit();
-    DAVA_DEPRECATED(virtual void ShowAssertMessage(const char * message));
 
-private:
-    
-	Ui::DavaGLWidget *ui;
+    void RegisterEventFilter();
+    void UnregisterEventFilter();
 
 	int maxFPS;
     int minFrameTimeMs;
 	int fps;
+    int eventFilterCount;
 
 	qint64 fpsCountTime;
 	int fpsCount;
-
-	void EnableCustomPaintFlags(bool enable);
 };
 
 #endif // DAVAGLWIDGET_H

@@ -13,8 +13,8 @@ attribute vec4 inPosition;
 attribute vec3 inNormal;
 
 #if defined (SKINNING)
-	attribute vec4 inJointIndex;
-	attribute vec4 inJointWeight;
+    attribute vec4 inJointIndex;
+    attribute vec4 inJointWeight;
 #endif
 
 uniform mat4 worldViewProjMatrix;
@@ -30,38 +30,29 @@ uniform vec4 jointQuaternions[MAX_JOINTS];
 uniform mediump float silhouetteScale;
 uniform mediump float silhouetteExponent;
 
-vec3 JointTransform(vec3 inVec, vec4 jointPosition, vec4 jointQuaternion)
-{
-	vec3 t = 2.0 * cross(jointQuaternion.xyz, inVec);
-	return jointPosition.xyz + (inVec + jointQuaternion.w * t + cross(jointQuaternion.xyz, t))*jointPosition.w; 
-}
-
-vec3 JointTransformTangent(vec3 inVec, vec4 jointQuaternion)
-{
-	vec3 t = 2.0 * cross(jointQuaternion.xyz, inVec);
-	return inVec + jointQuaternion.w * t + cross(jointQuaternion.xyz, t); 
-}
-
 void main()
 {
 #if defined (SKINNING)
     int index = int(inJointIndex);
     vec4 weightedVertexPosition = jointPositions[index];
     vec4 weightedVertexQuaternion = jointQuaternions[index];
-#endif
 
-#if defined (SKINNING)
-    vec4 position = vec4(JointTransform(inPosition.xyz, weightedVertexPosition, weightedVertexQuaternion), inPosition.w);
-	vec3 normal = normalize (worldViewInvTransposeMatrix * JointTransformTangent(inNormal, weightedVertexQuaternion));
+    vec3 t = 2.0 * cross(weightedVertexQuaternion.xyz, inPosition.xyz);
+    vec3 jointTransformPosition = weightedVertexPosition.xyz + (inPosition.xyz + weightedVertexQuaternion.w * t + cross(weightedVertexQuaternion.xyz, t)) * weightedVertexPosition.w;
+    vec4 position = vec4(jointTransformPosition, inPosition.w);
+
+    t = 2.0 * cross(weightedVertexQuaternion.xyz, inNormal);
+    vec3 jointTransformTangent = inNormal + weightedVertexQuaternion.w * t + cross(weightedVertexQuaternion.xyz, t);
+    vec3 normal = normalize (worldViewInvTransposeMatrix * jointTransformTangent);
 #else
     vec4 position = inPosition;
-	vec3 normal = normalize(worldViewInvTransposeMatrix * inNormal.xyz);
+    vec3 normal = normalize(worldViewInvTransposeMatrix * inNormal.xyz);
 #endif
 
-	vec4 PosView = worldViewMatrix * position;
-	
-	mediump float distanceScale = length(PosView.xyz) / 100.0;
+    vec4 PosView = worldViewMatrix * position;
 
-	PosView.xyz += normal * pow(silhouetteScale * distanceScale, silhouetteExponent);
-	gl_Position = projMatrix * PosView;
+    mediump float distanceScale = length(PosView.xyz) / 100.0;
+
+    PosView.xyz += normal * pow(silhouetteScale * distanceScale, silhouetteExponent);
+    gl_Position = projMatrix * PosView;
 }

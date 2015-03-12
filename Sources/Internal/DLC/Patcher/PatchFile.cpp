@@ -96,7 +96,7 @@ bool PatchInfo::WriteString(File* file, const String &str)
 {
     bool ret = false;
 
-    uint32 len = str.length();
+    uint32 len = static_cast<uint32>(str.length());
     uint32 wlen = file->Write(&len);
 
     if(wlen == sizeof(uint32))
@@ -150,9 +150,9 @@ bool PatchInfo::ReadString(File* file, String &str)
 // PatchFileWriter
 // ======================================================================================
 PatchFileWriter::PatchFileWriter(const FilePath &path, PatchFileWriter::WriterMode mode, BSType _diffType, bool beVerbose)
-: diffType(_diffType)
-, patchPath(path)
-, verbose(beVerbose)
+    : patchPath(path)
+    , diffType(_diffType)
+    , verbose(beVerbose)
 {
     switch(mode)
     {

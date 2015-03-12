@@ -36,15 +36,16 @@
 
 namespace DAVA 
 {
+    
 UIJoypad::UIJoypad(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
 :	UIControl(rect, rectInAbsoluteCoordinates)
+,	stick(NULL)
+,	mainTouch(TOUCH_INVALID_ID)
 ,	deadAreaSize(10.0f)
 ,	digitalSense(0.5f)
 ,	needRecalcDigital(true)
 ,	needRecalcAnalog(true)
 ,	currentPos(Vector2(0,0))
-,	mainTouch(TOUCH_INVALID_ID)
-,   stick(NULL)
 {
     SetInputEnabled(true, false);
 }

@@ -43,9 +43,6 @@ private:
 
     QPointer<QWidget> parentWidget;
     Shades shades;
-
-private:
-    static void FindExtraOfs(const ScreenArray& screens, int id, int& l, int &t, int& r, int& b);  // QTBUG-30284 workaround
 };
 
 

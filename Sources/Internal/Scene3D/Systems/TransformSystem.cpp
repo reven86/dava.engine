@@ -69,7 +69,7 @@ void TransformSystem::Process(float32 timeElapsed)
     passedNodes = 0;
     multipliedNodes = 0;
     
-    uint32 size = updatableEntities.size();
+    uint32 size = static_cast<uint32>(updatableEntities.size());
     for(uint32 i = 0; i < size; ++i)
     {
         //HierahicFindUpdatableTransform(updatableEntities[i]);
@@ -252,7 +252,7 @@ void TransformSystem::AddEntity(Entity * entity)
 void TransformSystem::RemoveEntity(Entity * entity)
 {
 	//TODO: use hashmap
-	uint32 size = updatableEntities.size();
+	uint32 size = static_cast<uint32>(updatableEntities.size());
 	for(uint32 i = 0; i < size; ++i)
 	{
 		if(updatableEntities[i] == entity)

@@ -124,6 +124,7 @@
 #include <set>
 #include <stack>
 #include <queue>
+#include <array>
 
 #if defined(__DAVAENGINE_WIN32__)
 #pragma warning( pop )
@@ -257,9 +258,11 @@ inline T Clamp(T val, T a, T b)
 	
 
 #if defined(__DAVAENGINE_WIN32__)
-#define Snprinf	_snprintf	
+#define Snprinf	    _snprintf
+#define Snprintf    _snprintf
 #else //#if defined(__DAVAENGINE_WIN32__)
-#define Snprinf	snprintf	
+#define Snprinf	    snprintf
+#define Snprintf    snprintf
 #endif //#if defined(__DAVAENGINE_WIN32__)
 
 #define Memcmp memcmp
@@ -331,7 +334,7 @@ enum eAlign
     
 //#if defined(__DAVAENGINE_IPHONE__)
 #ifdef __thumb__
-#error "This file should be compiled in ARM mode only."
+//#error "This file should be compiled in ARM mode only."
     // Note in Xcode, right click file, Get Info->Build, Other compiler flags = "-marm"
 #endif
 //#endif//#if !defined(__DAVAENGINE_ANDROID__)

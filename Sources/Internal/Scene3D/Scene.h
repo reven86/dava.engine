@@ -86,6 +86,8 @@ class WaveSystem;
 class SkeletonSystem;
 class AnimationSystem;
     
+class UIEvent;
+    
 /**
     \ingroup scene3d
     \brief This class is a code of our 3D Engine scene graph. 
@@ -121,10 +123,18 @@ public:
         SCENE_SYSTEM_WAVE_UPDATE_FLAG       = 1 << 16,
         SCENE_SYSTEM_SKELETON_UPDATE_FLAG   = 1 << 17,
         SCENE_SYSTEM_ANIMATION_FLAG         = 1 << 18,
-
+        
         SCENE_SYSTEM_ALL_MASK               = 0xFFFFFFFF
     };
 
+    
+    enum eSceneProcessFlags
+    {
+        SCENE_SYSTEM_REQUIRE_PROCESS = 1 << 0,
+        SCENE_SYSTEM_REQUIRE_INPUT = 1 << 1
+    };
+    
+    
 	Scene(uint32 systemsMask = SCENE_SYSTEM_ALL_MASK);
 	
     /**
@@ -145,13 +155,14 @@ public:
      */
     void    UnregisterComponent(Entity * entity, Component * component);
     
-    virtual void    AddSystem(SceneSystem * sceneSystem, uint32 componentFlags, bool needProcess = false, SceneSystem * insertBeforeSceneForProcess = NULL);
+    virtual void    AddSystem(SceneSystem * sceneSystem, uint64 componentFlags, uint32 processFlags = 0, SceneSystem * insertBeforeSceneForProcess = NULL);
     virtual void    RemoveSystem(SceneSystem * sceneSystem);    
     
 	//virtual void ImmediateEvent(Entity * entity, uint32 componentType, uint32 event);
 
     Vector<SceneSystem*> systems;
     Vector<SceneSystem*> systemsToProcess;
+    Vector<SceneSystem*> systemsToInput;
     //HashMap<uint32, Set<SceneSystem*> > componentTypeMapping;
     TransformSystem * transformSystem;
     RenderUpdateSystem * renderUpdateSystem;
@@ -260,7 +271,7 @@ public:
     MaterialSystem * GetMaterialSystem() const;
     AnimationSystem * GetAnimationSystem() const;
 
-	virtual SceneFileV2::eError Save(const DAVA::FilePath & pathname, bool saveForGame = false);
+	SceneFileV2::eError SaveScene(const DAVA::FilePath & pathname, bool saveForGame = false);
 
     virtual void OptimizeBeforeExport();
 
@@ -272,13 +283,21 @@ public:
     void SetClearBuffers(uint32 buffers);
     uint32 GetClearBuffers() const;
 
+    
+    void Input(UIEvent *event);
+    
+    
 protected:
     void UpdateLights();
 
     void RegisterEntitiesInSystemRecursively(SceneSystem *system, Entity * entity);
     void UnregisterEntitiesInSystemRecursively(SceneSystem *system, Entity * entity);
 
-	uint64 updateTime;
+    
+    bool RemoveSystem(Vector<SceneSystem*> &storage, SceneSystem *system);
+    
+    
+    uint64 updateTime;
 
     uint64 drawTime;
     uint32 nodeCounter;

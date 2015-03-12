@@ -147,7 +147,7 @@ void ShowErrorDialog(const DAVA::String &errorMessage)
 
 bool IsKeyModificatorPressed(int32 key)
 {
-	return InputSystem::Instance()->GetKeyboard()->IsKeyPressed(key);
+	return InputSystem::Instance()->GetKeyboard().IsKeyPressed(key);
 }
 
 bool IsKeyModificatorsPressed()
@@ -214,7 +214,7 @@ void ShowFileInExplorer(const QString& path)
 {
     const QFileInfo fileInfo(path);
 
-#if defined (Q_WS_MAC)
+#if defined (Q_OS_MAC)
     QStringList args;
     args << "-e";
     args << "tell application \"Finder\"";
@@ -225,7 +225,7 @@ void ShowFileInExplorer(const QString& path)
     args << "-e";
     args << "end tell";
     QProcess::startDetached( "osascript", args );
-#elif defined (Q_WS_WIN)
+#elif defined (Q_OS_WIN)
     QStringList args;
     args << "/select," << QDir::toNativeSeparators( fileInfo.absoluteFilePath() );
     QProcess::startDetached( "explorer", args );
@@ -245,7 +245,7 @@ void SaveTextureToFile(DAVA::Texture * texture, const DAVA::FilePath & path)
 {
     if(texture)
     {
-        DAVA::Image * img = texture->CreateImageFromMemory(DAVA::RenderState::RENDERSTATE_2D_BLEND);
+        DAVA::Image * img = texture->CreateImageFromMemory(DAVA::RenderState::RENDERSTATE_2D_OPAQUE);
         SaveImageToFile(img, path);
         img->Release();
     }

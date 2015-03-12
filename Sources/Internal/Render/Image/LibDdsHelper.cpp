@@ -461,11 +461,11 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, Pix
 {
 #if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
 #if defined(__DAVAENGINE_MACOS__)
-	if (format == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
-	{
-		Logger::Error("Decompressing FORMAT_ATC_RGBA_INTERPOLATED_ALPHA disabled on OSX platform, because of bug in qualcomm library");
-		return false;
-	}
+    if (format == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
+    {
+        Logger::Error("Decompressing FORMAT_ATC_RGBA_INTERPOLATED_ALPHA disabled on OSX platform, because of bug in qualcomm library");
+        return false;
+    }
 #endif
 	uint8* compressedImges = new uint8[info.dataSize];
 	
@@ -510,7 +510,7 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, Pix
 			
 			dstImg.nWidth = faceWidth;
 			dstImg.nHeight = faceHeight;
-			dstImg.nFormat = Q_FORMAT_RGBA_8888;
+			dstImg.nFormat = Q_FORMAT_RGBA_8UI;
 			dstImg.nDataSize = 0;
 			dstImg.pData = NULL;
 			
@@ -746,7 +746,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
 
 		srcImg.nWidth = imageSet[i]->width;
 		srcImg.nHeight = imageSet[i]->height;
-		srcImg.nFormat = Q_FORMAT_RGBA_8888;
+		srcImg.nFormat = Q_FORMAT_RGBA_8UI;
 		srcImg.nDataSize = imageSet[i]->width * imageSet[i]->height * 4;
 		srcImg.pData = imageSet[i]->data;
 
@@ -777,7 +777,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
 
 		srcImg.nWidth = imageSet[i]->width;
 		srcImg.nHeight = imageSet[i]->height;
-		srcImg.nFormat = Q_FORMAT_RGBA_8888;
+		srcImg.nFormat = Q_FORMAT_RGBA_8UI;
 		srcImg.nDataSize = imageSet[i]->width * imageSet[i]->height * 4;
 		srcImg.pData = imageSet[i]->data;
 
@@ -880,7 +880,7 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath &fileNameOriginal,
             
             srcImg.nWidth = image->width;
             srcImg.nHeight = image->height;
-            srcImg.nFormat = Q_FORMAT_RGBA_8888;
+			srcImg.nFormat = Q_FORMAT_RGBA_8UI;
             srcImg.nDataSize = image->width * image->height * 4;
             srcImg.pData = image->data;
             
@@ -922,7 +922,7 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath &fileNameOriginal,
             
             srcImg.nWidth = image->width;
             srcImg.nHeight = image->height;
-            srcImg.nFormat = Q_FORMAT_RGBA_8888;
+			srcImg.nFormat = Q_FORMAT_RGBA_8UI;
             srcImg.nDataSize = image->width * image->height * 4;
             srcImg.pData = image->data;
             
@@ -1172,7 +1172,6 @@ bool LibDdsHelper::GetCRCFromDDSHeader(const FilePath &filePathname, uint32* out
 	File *fileRead = File::Create(filePathname, File::READ | File::OPEN);
 	if(!fileRead)
 	{
-		Logger::Error("[LibDdsHelper::GetCRCFromDDSHeader] cannot open file %s", fileNameStr.c_str());
 		return false;
 	}
 

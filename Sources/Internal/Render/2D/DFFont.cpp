@@ -34,6 +34,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "Thread/LockGuard.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #define NOT_DEF_CHAR 0xffff
 
@@ -249,7 +250,7 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
                                   int32 spaceAddon) const
 {
     int32 countSpace = 0;
-    uint32 strLength = str.length();
+    uint32 strLength = static_cast<uint32>(str.length());
 	for(uint32 i = 0; i < strLength; ++i)
 	{
 		if( L' ' == str[i])
@@ -279,6 +280,8 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
 	Font::StringMetrics metrics;
 	metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, 0);
     
+	float32 ascent = fontInternal->lineHeight * GetSizeScale();
+
     for (uint32 charPos = 0; charPos < strLength; ++charPos)
     {
         char16 charId = str.at(charPos);
@@ -314,6 +317,8 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
         float32 startHeight = charDescription.yOffset * sizeScale;
         float32 fullHeight = (charDescription.height + charDescription.yOffset) * sizeScale;
         
+		ascent = Min(startHeight, ascent);
+
         startHeight += yOffset;
         fullHeight += yOffset;
 
@@ -321,6 +326,10 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
 		metrics.drawRect.y = Min(metrics.drawRect.y, (int32)startHeight);
 		metrics.drawRect.dx = Max(metrics.drawRect.dx, (int32)(startX + width));
 		metrics.drawRect.dy = Max(metrics.drawRect.dy, (int32)(fullHeight));
+
+		
+		//const float32 borderAlign = (startHeight - yOffset)*2.0f;
+		//metrics.drawRect.dy = Max(metrics.drawRect.dy, (int32)(fullHeight + borderAlign));
 
         if (vertexBuffer)
         {	
@@ -361,15 +370,20 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
         }
         float32 charWidth = (charDescription.xAdvance + nextKerning) * sizeScale;
         if (charSizes)
-            charSizes->push_back(charWidth * Core::GetVirtualToPhysicalFactor());
+            charSizes->push_back(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(charWidth));
         lastX += charWidth;
         
         charDrawed++;
     }
     lastY += yOffset + GetFontHeight();
 
-	metrics.drawRect.dx -= metrics.drawRect.x;
-	metrics.drawRect.dy -= metrics.drawRect.y;
+	metrics.drawRect.dy += (int32)(ascent);
+
+	//@note : "-1" fix magic fix from FTFont
+	// Transform right/bottom edges into width/height
+	metrics.drawRect.dx += -metrics.drawRect.x + 1;
+	metrics.drawRect.dy += -metrics.drawRect.y + 1;
+
 	metrics.height = (int32)ceilf(lastY);
 	metrics.width = (int32)ceilf(lastX);
 	metrics.baseline = yOffset + (int32)fontInternal->baselineHeight;

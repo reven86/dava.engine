@@ -60,6 +60,7 @@ public:
 
 	size_t Size() const;
 	DAVA::Entity* GetEntity(size_t i) const;
+
 	EntityGroupItem* GetItem(size_t i) const;
 
 	DAVA::AABBox3 GetBbox(size_t i) const;
@@ -77,6 +78,7 @@ public:
 
 	EntityGroup& operator=(const EntityGroup &ss);
 	bool operator==(const EntityGroup &ss) const;
+    bool operator!=(const EntityGroup &ss) const;
 
 protected:
 	DAVA::Vector<EntityGroupItem> entities;

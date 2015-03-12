@@ -43,6 +43,8 @@
 #include <QStringList>
 #include <QTableWidgetItem>
 
+using namespace DAVA;
+
 static const QString FONT_TABLE_NAME_COLUMN = "Font Name";
 static const QString FONT_TABLE_TYPE_COLUMN = "Font Type";
 static const QString FONT_TYPE_BASIC = "Basic";
@@ -51,7 +53,7 @@ static const QString FONT_TYPE_DISTANCE = "Distance";
 static const QString LOAD_FONT_ERROR_MESSAGE = "Can't load font %1! Try again or select another one.";
 static const QString LOAD_FONT_ERROR_INFO_TEXT = "An error occured while loading font...";
 
-FontManagerDialog::FontManagerDialog(bool okButtonEnable,  const QString& graphicsFontPath, QDialog *parent) :
+FontManagerDialog::FontManagerDialog(bool okButtonEnable, const QString& graphicsFontPath, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::FontManagerDialog)
 {    
@@ -127,7 +129,7 @@ void FontManagerDialog::InitializeTableView()
     ui->fontsTableView->verticalHeader()->hide();
     ui->fontsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->fontsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->fontsTableView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    ui->fontsTableView->horizontalHeader()->setSectionResizeMode/*setResizeMode*/(QHeaderView::Stretch);
     //Disable editing of table
     ui->fontsTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);    
     //Create and set table view model

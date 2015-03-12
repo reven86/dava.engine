@@ -30,6 +30,9 @@
 
 #include <QPainter>
 #include <QApplication>
+#include "DAVAEngine.h"
+
+using namespace DAVA;
 
 RulerWidget::RulerWidget(QWidget *parent) :
     QWidget(parent),
@@ -147,7 +150,7 @@ void RulerWidget::DrawScale(QPainter& painter, int tickStep, int tickStartPos, i
                 for (int32 i = 0; i < digitsSize; i ++)
                 {
                     nextDigit[0] = digits.str().at(i); // next char is always 0x00
-                    painter.drawText(fontPos, digitPos, QString::fromAscii(nextDigit));
+                    painter.drawText(fontPos, digitPos, QString::fromLatin1(nextDigit));
                     digitPos += fontSize;
                 }
             }

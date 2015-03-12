@@ -349,21 +349,24 @@ void PreviewController::MakeScreenshot(const String& fileName, DefaultScreen* sc
     Rect scaledScreenRect = rawScreenRect;
     scaledScreenRect.SetSize(rawScreenRect.GetSize() * screen->GetScale());
 
-    float32 virToPhysFactor = Core::Instance()->GetVirtualToPhysicalFactor();
-    Rect textureRect = scaledScreenRect;
-    textureRect.SetSize(textureRect.GetSize() * virToPhysFactor);
-    ScopedPtr<Texture> texture(Texture::CreateFBO((int32)ceilf(textureRect.dx), (int32)ceilf(textureRect.dy),
-                                                  FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER));
+    RenderSystem2D::Instance()->Flush();
 
-    ScopedPtr<Sprite> screenshot(Sprite::Create(""));
-    screenshot->InitFromTexture(texture, 0, 0, textureRect.dx, textureRect.dy, -1, -1, true);
+    Rect textureRect = scaledScreenRect;
+    textureRect.SetSize(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(textureRect.GetSize()));
+    ScopedPtr<Texture> screenshot(Texture::CreateFBO((int32)ceilf(textureRect.dx), (int32)ceilf(textureRect.dy),
+                                                  FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER));
     
+    Rect oldViewport = RenderManager::Instance()->GetViewport();
+
     RenderManager::Instance()->SetRenderTarget(screenshot);
+    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)screenshot->GetWidth(), (float32)screenshot->GetHeight()));
     RenderManager::Instance()->ClearWithColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+    RenderSystem2D::Instance()->Setup2DMatrices();
 
     // The clipping rectangle defines on scale and preview mode.
     Rect clipRect = rawScreenRect;
-    clipRect.SetSize(clipRect.GetSize() * virToPhysFactor);
+    clipRect.SetSize(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(clipRect.GetSize()));
     if (IsPreviewEnabled())
     {
         clipRect.SetSize(GetTransformData().screenSize);
@@ -377,21 +380,27 @@ void PreviewController::MakeScreenshot(const String& fileName, DefaultScreen* sc
         clipRect = textureRect;
     }
 
-    RenderManager::Instance()->ClipPush();
-    RenderManager::Instance()->SetClip(clipRect);
+    RenderSystem2D::Instance()->PushClip();
+    RenderSystem2D::Instance()->SetClip(clipRect);
 
     // Draw the screen with the scale requested, but without any offset.
-    RenderManager::Instance()->SetDrawScale(screen->GetScale());
-	RenderManager::Instance()->SetDrawTranslate(Vector2(0.0f, 0.0f));
+    Matrix4 wt = Matrix4::MakeScale(Vector3(screen->GetScale().x, screen->GetScale().y, 1.f));
+    RenderManager::SetDynamicParam(PARAM_VIEW, &wt, UPDATE_SEMANTIC_ALWAYS);
     
     screen->GetScreenControl()->SetScreenshotMode(true);
     screen->GetScreenControl()->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
     screen->GetScreenControl()->SetScreenshotMode(false);
 
-    RenderManager::Instance()->ClipPop();
-    RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopClip();
 
-    ScopedPtr<Image> image(texture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND));
+    RenderSystem2D::Instance()->Flush();
+
+    RenderManager::Instance()->SetRenderTarget(0);
+    RenderManager::Instance()->SetViewport(oldViewport);
+
+    RenderSystem2D::Instance()->Setup2DMatrices();
+
+    ScopedPtr<Image> image(screenshot->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND));
     
     // Resulting texture is square. Resize its canvas to the
     // texture size and then resize the image to the original

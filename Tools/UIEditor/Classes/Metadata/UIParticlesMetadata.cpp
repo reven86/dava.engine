@@ -96,7 +96,7 @@ void UIParticlesMetadata::Reload()
         return;
     }
     
-    GetActiveUIParticles()->Reload();
+    GetActiveUIParticles()->ReloadEffect();
 }
 
 QString UIParticlesMetadata::GetEffectPath() const
@@ -116,7 +116,7 @@ void UIParticlesMetadata::SetEffectPath(const QString& value)
         return;
     }
     
-	GetActiveUIParticles()->Load(value.toStdString());
+	GetActiveUIParticles()->SetEffectPath(value.toStdString());
 }
 
 bool UIParticlesMetadata::GetAutostart() const

@@ -92,7 +92,7 @@ public:
 	virtual void PreSolve(b2Contact* contact, const b2Manifold* oldManifold);/// handle pre-solve event 
 	virtual void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse);/// handle post-solve event
     
-    virtual void RemoveObject(Box2DGameObject *_object);
+    virtual void RemoveObject(GameObject * _object);
 	
 protected:
 	Box2DDebugDraw * debugDraw;

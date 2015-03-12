@@ -48,7 +48,7 @@ public:
 	bool DisableLandscapeEdititing();
 
 	virtual void Process(DAVA::float32 timeElapsed);
-	void ProcessUIEvent(DAVA::UIEvent *event);
+	virtual void Input(DAVA::UIEvent *event);
 
 	void SetLineWidth(int32 width);
 	int32 GetLineWidth();
@@ -61,7 +61,7 @@ protected:
     Vector3 MirrorPoint(const Vector3 & point) const;
 
 	uint32 curToolSize;
-	Sprite* toolImageSprite;
+	Texture* toolImageTexture;
 
 	int32 lineWidth;
 	List<Vector3> linePoints;

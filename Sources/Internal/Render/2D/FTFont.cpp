@@ -38,6 +38,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/FilePath.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #include <ft2build.h>
 #include <freetype/ftglyph.h>
@@ -236,12 +237,30 @@ YamlNode * FTFont::SaveToYamlNode() const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	
+Mutex FTInternalFont::drawStringMutex;
+
+/**
+ /brief Wrap around FT_MulFix, because this function is written in assembler and 
+        during optimization beside her badly generated machine code.
+        ALWAYS USE THIS FUNCTION INSTEAD FT_MulFix!
+ */
+#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_MACOS__)
+static FT_Long FT_MulFix_Wrapper(FT_Long a, FT_Long b) __attribute__((noinline));
+#else
+static FT_Long FT_MulFix_Wrapper(FT_Long a, FT_Long b);
+#endif
+    
+FT_Long FT_MulFix_Wrapper(FT_Long a, FT_Long b)
+{
+    return FT_MulFix(a, b);
+}
+    
 FTInternalFont::FTInternalFont(const FilePath & path)
-:	face(NULL),
-	fontPath(path),
-    streamFont(),
-	fontFile(NULL)
+: fontPath(path)
+, streamFont()
+, fontFile(NULL)
+, face(NULL)
+	
 {
     FilePath pathName(path);
     pathName.ReplaceDirectory(path.GetDirectory() + (LocalizationSystem::Instance()->GetCurrentLocale() + "/"));
@@ -297,8 +316,6 @@ int32 FTInternalFont::Release()
 	return BaseObject::Release();
 }
 
-Mutex FTInternalFont::drawStringMutex;
-
 Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bufWidth, int32 bufHeight, 
 					uint8 r, uint8 g, uint8 b, uint8 a,  
 					float32 size, bool realDraw, 
@@ -313,45 +330,43 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
     
 	FT_Error error;
 
-	float32 virtualToPhysicalFactor = Core::GetVirtualToPhysicalFactor();
-
 	// virtualToPhysicalFactor scaling
 	{
 		FT_Fixed mul = 1<<16;
 		FT_Matrix matrix;
-		matrix.xx = (FT_Fixed)(virtualToPhysicalFactor*mul);
+        matrix.xx = (FT_Fixed)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)mul));
 		matrix.xy = 0;
 		matrix.yx = 0;
-		matrix.yy = (FT_Fixed)(virtualToPhysicalFactor*mul);
+        matrix.yy = (FT_Fixed)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)mul));
 		FT_Set_Transform(face, &matrix, 0);
 	}
 
-	int32 faceBboxYMin = FT_MulFix(face->bbox.yMin, face->size->metrics.y_scale);
-	int32 faceBboxYMax = FT_MulFix(face->bbox.yMax, face->size->metrics.y_scale);
+	int32 faceBboxYMin = (int32)FT_MulFix_Wrapper(face->bbox.yMin, face->size->metrics.y_scale);
+	int32 faceBboxYMax = (int32)FT_MulFix_Wrapper(face->bbox.yMax, face->size->metrics.y_scale);
 	
 	if(!contentScaleIncluded) 
 	{
-		bufWidth = (int32)(virtualToPhysicalFactor * bufWidth);
-		bufHeight = (int32)(virtualToPhysicalFactor * bufHeight);
-		offsetY = (int32)(virtualToPhysicalFactor * offsetY);
-		offsetX = (int32)(virtualToPhysicalFactor * offsetX);
+        bufWidth = (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)bufWidth));
+        bufHeight = (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)bufHeight));
+        offsetY = (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)offsetY));
+        offsetX = (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)offsetX));
 	}
 
 	FT_Vector pen;
 	pen.x = offsetX << ftToPixelShift;
 	pen.y = offsetY << ftToPixelShift;
-	pen.y -= (FT_Pos)(virtualToPhysicalFactor*faceBboxYMin);//bring baseline up
+    pen.y -= (FT_Pos)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)faceBboxYMin));//bring baseline up
 	
 
 	uint8 * resultBuf = (uint8*)buffer;
 
 	int32 countSpace = LoadString(str);
-	int32 strLen = str.length();
+	uint32 strLen = (uint32)str.length();
 	FT_Vector * advances = new FT_Vector[strLen];
 	Prepare(advances);
 
     float32 bboxSize = ceilf(((float32)(faceBboxYMax-faceBboxYMin)) / ftToPixelScale);
-	int32 baseSize = (int32)ceilf(bboxSize * virtualToPhysicalFactor); 
+    int32 baseSize = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(bboxSize));
 	int32 multilineOffsetY = baseSize + offsetY*2;
 
     int32 justifyOffset = 0;
@@ -365,13 +380,13 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
     }
 
 	Font::StringMetrics metrics;
-	metrics.baseline = (int32)ceilf((float32)faceBboxYMax / ftToPixelScale * virtualToPhysicalFactor);
+    metrics.baseline = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(faceBboxYMax / ftToPixelScale));
 	metrics.height = baseSize;
     metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, baseSize); // Setup rect with maximum int32 value for x/y, and zero width
     
 	int32 layoutWidth = 0; // width in FT points
 		
-	for(int32 i = 0; i < strLen; ++i)
+	for(uint32 i = 0; i < strLen; ++i)
 	{
 		if ( i > 0 && (justifyOffset > 0 || fixJustifyOffset > 0))
 		{
@@ -483,14 +498,13 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 
 	if(!contentScaleIncluded) 
 	{
-		float32 physicalToVirtualFactor = Core::GetPhysicalToVirtualFactor();
-		metrics.drawRect.x = (int32)floorf(metrics.drawRect.x * physicalToVirtualFactor);
-		metrics.drawRect.y = (int32)floorf(metrics.drawRect.y * physicalToVirtualFactor);
-		metrics.drawRect.dx = (int32)ceilf(metrics.drawRect.dx * physicalToVirtualFactor);
-		metrics.drawRect.dy = (int32)ceilf(metrics.drawRect.dy * physicalToVirtualFactor);
-		metrics.baseline = (int32)ceilf(metrics.baseline * physicalToVirtualFactor);
-		metrics.width = (int32)ceilf(metrics.width * physicalToVirtualFactor);
-		metrics.height = (int32)ceilf(metrics.height * physicalToVirtualFactor);
+        metrics.drawRect.x = (int32)floorf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX((float32)metrics.drawRect.x));
+        metrics.drawRect.y = (int32)floorf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY((float32)metrics.drawRect.y));
+        metrics.drawRect.dx = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX((float32)metrics.drawRect.dx));
+        metrics.drawRect.dy = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY((float32)metrics.drawRect.dy));
+        metrics.baseline = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX((float32)metrics.baseline));
+        metrics.width = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX((float32)metrics.width));
+        metrics.height = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY((float32)metrics.height));
 	}
 	return metrics;
 }
@@ -507,7 +521,7 @@ uint32 FTInternalFont::GetFontHeight(float32 size) const
     drawStringMutex.Lock();
 
 	SetFTCharSize(size);
-	uint32 height = (uint32)ceilf((float32)((FT_MulFix(face->bbox.yMax-face->bbox.yMin, face->size->metrics.y_scale))) / ftToPixelScale);
+	uint32 height = (uint32)ceilf((float32)((FT_MulFix_Wrapper(face->bbox.yMax-face->bbox.yMin, face->size->metrics.y_scale))) / ftToPixelScale);
 	
     drawStringMutex.Unlock();
 
@@ -529,9 +543,9 @@ void FTInternalFont::Prepare(FT_Vector * advances)
 	FT_Vector	* prevAdvance = 0;
 	FT_UInt		prevIndex   = 0;
 	const bool		useKerning = (FT_HAS_KERNING(face) > 0);
-	const int32		size = glyphs.size();
+	const uint32	size = (uint32)glyphs.size();
 
-	for(int32 i = 0; i < size; ++i)
+	for(uint32 i = 0; i < size; ++i)
 	{
 		Glyph & glyph = glyphs[i];
 
@@ -587,8 +601,8 @@ int32 FTInternalFont::LoadString(const WideString& str)
 
 	int32 spacesCount = 0;
 	const FT_Pos prevRsbDelta = 0;
-	int32 size = str.size();
-	for(int32 i = 0; i < size; ++i)
+	uint32 size = (uint32)str.size();
+	for(uint32 i = 0; i < size; ++i)
 	{
 		if( L' ' == str[i])
 		{

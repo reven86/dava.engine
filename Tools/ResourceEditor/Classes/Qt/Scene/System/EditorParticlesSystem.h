@@ -48,15 +48,12 @@ public:
 
     void SetEmitterSelected(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter);
     
-    virtual void Process(DAVA::float32 timeElapsed);
-
 protected:
 	void Draw();
 	
 	virtual void AddEntity(DAVA::Entity * entity);
 	virtual void RemoveEntity(DAVA::Entity * entity);
 
-	void ProcessUIEvent(DAVA::UIEvent *event);
 	void ProcessCommand(const Command2 *command, bool redo);
 	
 private:

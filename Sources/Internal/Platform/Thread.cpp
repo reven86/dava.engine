@@ -50,7 +50,7 @@ ConditionalVariable::ConditionalVariable()
     int32 ret = pthread_cond_init(&cv, 0);
     if (0 != ret)
     {
-        Logger::FrameworkDebug("[ConditionalVariable::ConditionalVariable()]: pthread_cond_init error code %d", ret);
+        Logger::Error("[ConditionalVariable::ConditionalVariable()]: pthread_cond_init error code %d", ret);
     }
 }
 
@@ -59,7 +59,7 @@ ConditionalVariable::~ConditionalVariable()
     int32 ret = pthread_cond_destroy(&cv);
     if (0 != ret)
     {
-        Logger::FrameworkDebug("[ConditionalVariable::~ConditionalVariable()]: pthread_cond_destroy error code %d", ret);
+        Logger::Error("[ConditionalVariable::~ConditionalVariable()]: pthread_cond_destroy error code %d", ret);
     }
 }
 
@@ -105,6 +105,7 @@ void Thread::Kill()
     {
         KillNative();
         state = STATE_KILLED;
+        Release();
     }
 }
 
@@ -115,20 +116,6 @@ void Thread::KillAll()
     for (Set<Thread *>::iterator i = threadList.begin(); i != end; ++i)
     {
         (*i)->Kill();
-    }
-}
-
-void Thread::Cancel()
-{
-    // it is possible to cancel thread just after creating or starting and the problem is - thred changes state
-    // to STATE_RUNNING insite threaded function - so that could not happens in that case. Need some time.
-    DVASSERT(STATE_CREATED != state);
-
-    // Important - DO NOT try to wait RUNNING state because that state wll not appear if thread is not started!!!
-    // You can wait RUNNING state, but not from thred which should call Start() for created Thread.
-    if (STATE_RUNNING == state)
-    {
-        state = STATE_CANCELLING;
     }
 }
 
@@ -147,6 +134,7 @@ Thread::Thread(const Message& _msg)
     : BaseObject()
     , msg(_msg)
     , state(STATE_CREATED)
+    , isCancelling(false)
     , id(0)
     , name("DAVA::Thread")
 {
@@ -171,7 +159,7 @@ void Thread::Wait(ConditionalVariable * cv, Mutex * mutex)
 
     if ((ret = pthread_cond_wait(&cv->cv, (pthread_mutex_t*)(&mutex->mutex))))
     {
-        Logger::FrameworkDebug("[Thread::Wait]: pthread_cond_wait error code %d", ret);
+        Logger::Error("[Thread::Wait]: pthread_cond_wait error code %d", ret);
     }
 }
 
@@ -180,7 +168,7 @@ void Thread::Signal(ConditionalVariable * cv)
     int32 ret = pthread_cond_signal(&cv->cv);
     if (ret)
     {
-        Logger::FrameworkDebug("[Thread::Signal]: pthread_cond_signal error code %d", ret);
+        Logger::Error("[Thread::Signal]: pthread_cond_signal error code %d", ret);
     }
 }
     
@@ -189,7 +177,7 @@ void Thread::Broadcast(ConditionalVariable * cv)
     int32 ret = pthread_cond_broadcast(&cv->cv);
     if (ret)
     {
-        Logger::FrameworkDebug("[Thread::Broadcast]: pthread_cond_broadcast error code %d", ret);
+        Logger::Error("[Thread::Broadcast]: pthread_cond_broadcast error code %d", ret);
     }
 }
     
@@ -198,24 +186,10 @@ void Thread::ThreadFunction(void *param)
     Thread * t = (Thread *)param;
     t->id = GetCurrentId();
 
-    if (STATE_CREATED == t->state)
-    {
-        t->state = STATE_RUNNING;
-        t->msg(t);
-    }
+    t->state = STATE_RUNNING;
+    t->msg(t);
 
-    switch(t->state)
-    {
-    case STATE_CANCELLING:
-        t->state = STATE_CANCELLED;
-        break;
-    case STATE_RUNNING:
-        t->state = STATE_ENDED;
-        break;
-    default:
-        break;
-    }
-
+    t->state = STATE_ENDED;
     t->Release();
 }
     

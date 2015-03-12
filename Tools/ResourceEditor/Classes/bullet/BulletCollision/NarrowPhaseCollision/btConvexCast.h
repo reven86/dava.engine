@@ -56,8 +56,6 @@ class btMinkowskiSumShape;
 class btConvexCast
 {
 public:
-
-
 	virtual ~btConvexCast();
 
 	///RayResult stores the closest result

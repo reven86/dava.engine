@@ -105,11 +105,6 @@ void ColladaScene::ExportScene(FCDSceneNode * fcdNode /* = 0 */, ColladaSceneNod
 		ColladaAnimatedMesh * aMesh = FindAnimatedMeshWithName(name);
 		if (aMesh)
 		{
-			FCDControllerInstance * controllerInstance = dynamic_cast<FCDControllerInstance*>(instance);
-			//for (int space = 0; space < exportSceneLevel; ++space)
-			//	printf(" ");
-			//printf("- controller instance: %s\n", name.c_str());
-			
 			if (aMesh->mesh)
 			{
 				ColladaMeshInstance * meshInstance = CreateMeshInstance(aMesh->mesh, dynamic_cast<FCDGeometryInstance*>(instance), true);
@@ -343,7 +338,6 @@ void ColladaScene::SetupDefaultLights()
 	GLfloat ambientalLight[]= {0.2f, 0.2f, 0.2f, 1.0f};
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientalLight);
 
-	GLfloat light_ambient[] = { 0.0f, 0.0f, 0.0f, 1.0f };  // delete
 	GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	GLfloat light_diffuse[4];

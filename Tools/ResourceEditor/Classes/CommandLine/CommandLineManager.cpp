@@ -86,8 +86,8 @@ void CommandLineManager::PrintUsageForActiveTool()
 
 CommandLineManager::CommandLineManager()
 	: isEnabled(false)
-	, isToolInitialized(false)
 	, activeTool(NULL)
+	, isToolInitialized(false)
 {
     AddCommandLineTool(new CleanFolderTool());
     AddCommandLineTool(new ImageSplitterTool());

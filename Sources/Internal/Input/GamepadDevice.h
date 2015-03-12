@@ -27,66 +27,135 @@
 =====================================================================================*/
 
 
-#ifndef __GamepadDevice_H_
-#define __GamepadDevice_H_
+#ifndef __GAMEPAD_DEVICE_H_
+#define __GAMEPAD_DEVICE_H_
 
 #include "Base/BaseObject.h"
 #include "UI/UIEvent.h"
 
 namespace DAVA
 {
-    class GamepadDevice;
-
+    
+class GamepadDevice : public BaseObject
+{
+public:
     enum eDavaGamepadProfile
     {
-        eDavaGamepadProfile_None,              // No device
-        eDavaGamepadProfile_SimpleProfile,     // Logitech for iPhone 5/5s/5c
-        eDavaGamepadProfile_ExtendedProfile    // Moga for iPhone 5/5s/5c, Moga for Android
+        GAMEPAD_PROFILE_SIMPLE = 0,
+        GAMEPAD_PROFILE_NO_TRIGGERS,
+        GAMEPAD_PROFILE_EXTENDED,
+            
+        GAMEPAD_PROFILE_COUNT
     };
-
-
+        
+        
     enum eDavaGamepadElement
     {
-        eDavaGamepadElement_LShoulderButton,
-        eDavaGamepadElement_RShoulderButton,
-        eDavaGamepadElement_LTrigger,
-        eDavaGamepadElement_RTrigger,
-        eDavaGamepadElement_ButtonA,
-        eDavaGamepadElement_ButtonB,
-        eDavaGamepadElement_ButtonX,
-        eDavaGamepadElement_ButtonY,
-        eDavaGamepadElement_LThumbstickX,
-        eDavaGamepadElement_LThumbstickY,
-        eDavaGamepadElement_RThumbstickX,
-        eDavaGamepadElement_RThumbstickY,
-        eDavaGamepadElement_DPadX,
-        eDavaGamepadElement_DPadY
+        GAMEPAD_ELEMENT_BUTTON_A = 0,
+        GAMEPAD_ELEMENT_BUTTON_B,
+        GAMEPAD_ELEMENT_BUTTON_X,
+        GAMEPAD_ELEMENT_BUTTON_Y,
+        GAMEPAD_ELEMENT_BUTTON_LS,  //Left shoulder
+        GAMEPAD_ELEMENT_BUTTON_RS,  //Right shoulder
+            
+        GAMEPAD_ELEMENT_LT,         //Left trigger
+        GAMEPAD_ELEMENT_RT,         //Right trigger
+            
+        GAMEPAD_ELEMENT_AXIS_LX,    //Left joystick, axis X
+        GAMEPAD_ELEMENT_AXIS_LY,    //Left joystick, axis Y
+        GAMEPAD_ELEMENT_AXIS_RX,    //Right joystick, axis X
+        GAMEPAD_ELEMENT_AXIS_RY,    //Right joystick, axis Y
+            
+        GAMEPAD_ELEMENT_DPAD_X,
+        GAMEPAD_ELEMENT_DPAD_Y,
+            
+        GAMEPAD_ELEMENT_COUNT
     };
+        
+    GamepadDevice();
+        
+    void Reset();
+        
+    inline bool IsAvailable() const;
+    inline eDavaGamepadProfile GetProfile() const;
+    inline float32 GetElementState(eDavaGamepadElement element) const;
+        
+    inline void SystemProcessElement(eDavaGamepadElement element, float32 newValue);
 
+    void SetAvailable(bool available) { isAvailable = available; }
 
-    class GamepadDevice : public BaseObject
-    {
-    public:
+private:
+    void InitInternal();
+
+    float32 elementValues[GAMEPAD_ELEMENT_COUNT];
+    eDavaGamepadProfile profile;
+        
+    bool isAvailable;
+
 #if defined(__DAVAENGINE_IPHONE__)
-        GamepadDevice(void *gameController);
-#elif defined(__DAVAENGINE_ANDROID__)
-        GamepadDevice();
-#else
-        GamepadDevice();
+public:
+    void OnControllerConnected(void * gameControllerObject);
 #endif
-        ~GamepadDevice();
-        eDavaGamepadProfile GetProfile();
-        float32 GetElementState(eDavaGamepadElement element);
 
-    private:
-        void ProcessElementStateChange(eDavaGamepadElement element, float32 value);
-#if defined(__DAVAENGINE_IPHONE__)
-        void *m_gameController;
-#elif defined(__DAVAENGINE_ANDROID__)
-        // not implemented
+#if defined(__DAVAENGINE_ANDROID__)
+public:
+    static const uint8 INVALID_DAVAKEY = 0xFF;
+    static const uint32 MAX_TRANSLATOR_KEYS = 256;
+
+    inline uint8 GetDavaEventIdForSystemKeycode(int32 systemKey) const;
+    inline uint8 GetDavaEventIdForSystemAxis(int32 systemKey) const;
+    inline void OnTriggersAvailable(bool isAvailable);
+        
+private:
+    uint8 keyTranslator[MAX_TRANSLATOR_KEYS];
+    uint8 axisTranslator[MAX_TRANSLATOR_KEYS];
 #endif
-    };
-
+};
+    
+inline bool GamepadDevice::IsAvailable() const
+{
+    return isAvailable;
 }
 
-#endif //__GamepadDevice_H_
+inline GamepadDevice::eDavaGamepadProfile GamepadDevice::GetProfile() const
+{
+    return profile;
+}
+
+inline void GamepadDevice::SystemProcessElement(GamepadDevice::eDavaGamepadElement element, float32 value)
+{
+    DVASSERT(element >= 0 && element < GAMEPAD_ELEMENT_COUNT);
+    elementValues[element] = value;
+}
+
+inline float32 GamepadDevice::GetElementState(GamepadDevice::eDavaGamepadElement element) const
+{
+    DVASSERT(element >= 0 && element < GAMEPAD_ELEMENT_COUNT);
+    return elementValues[element];
+}
+    
+#if defined(__DAVAENGINE_ANDROID__)
+inline uint8 GamepadDevice::GetDavaEventIdForSystemKeycode(int32 systemKey) const
+{
+    DVASSERT(systemKey < MAX_TRANSLATOR_KEYS);
+    return keyTranslator[systemKey];
+}
+
+inline uint8 GamepadDevice::GetDavaEventIdForSystemAxis(int32 systemKey) const
+{
+    DVASSERT(systemKey < MAX_TRANSLATOR_KEYS);
+    return axisTranslator[systemKey];
+}
+
+inline void GamepadDevice::GamepadDevice::OnTriggersAvailable(bool isAvailable)
+{
+    if(isAvailable)
+        profile = GAMEPAD_PROFILE_EXTENDED;
+    else
+        profile = GAMEPAD_PROFILE_NO_TRIGGERS;
+}
+#endif
+    
+}
+
+#endif //__GAMEPAD_DEVICE_H_

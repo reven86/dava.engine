@@ -30,12 +30,10 @@
 #include "Render/RenderBase.h"
 #include "Render/RenderManager.h"
 #include "Render/Texture.h"
-#include "Render/2D/Sprite.h"
 #include "Utils/Utils.h"
 #include "Core/Core.h"
 #include "Render/OGLHelpers.h"
 #include "Render/Shader.h"
-
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/FileSystem.h"
@@ -220,56 +218,11 @@ bool RenderManager::IsDeviceLost()
 void RenderManager::BeginFrame()
 {
     stats.Clear();
-    SetViewport(Rect(0, 0, -1, -1), true);
+    SetViewport(Rect(0, 0, (float32)frameBufferWidth, (float32)frameBufferHeight));
 	
-	SetRenderOrientation(Core::Instance()->GetScreenOrientation());
-	DVASSERT(!currentRenderTarget);
-	//DVASSERT(!currentRenderEffect);
-	DVASSERT(clipStack.empty());
-	DVASSERT(renderTargetStack.empty());
 	Reset();
 	isInsideDraw = true;
-    
-    //ClearUniformMatrices();
 }
-	
-//void RenderManager::SetDrawOffset(const Vector2 &offset)
-//{
-//	glMatrixMode(GL_PROJECTION);
-//	glTranslatef(offset.x, offset.y, 0.0f);
-//	glMatrixMode(GL_MODELVIEW);
-//}
-
-void RenderManager::PrepareRealMatrix()
-{
-    if (mappingMatrixChanged)
-    {
-        mappingMatrixChanged = false;
-        Vector2 realDrawScale(viewMappingDrawScale.x * userDrawScale.x, viewMappingDrawScale.y * userDrawScale.y);
-        Vector2 realDrawOffset(viewMappingDrawOffset.x + userDrawOffset.x * viewMappingDrawScale.x, viewMappingDrawOffset.y + userDrawOffset.y * viewMappingDrawScale.y);
-	
-        if (realDrawScale != currentDrawScale || realDrawOffset != currentDrawOffset)
-        {
-            currentDrawScale = realDrawScale;
-            currentDrawOffset = realDrawOffset;
-
-            Matrix4 glTranslate, glScale;
-            glTranslate.glTranslate(currentDrawOffset.x, currentDrawOffset.y, 0.0f);
-            glScale.glScale(currentDrawScale.x, currentDrawScale.y, 1.0f);
-            
-            renderer2d.viewMatrix = glScale * glTranslate;
-            SetDynamicParam(PARAM_VIEW, &renderer2d.viewMatrix, UPDATE_SEMANTIC_ALWAYS);
-        }
-    }
-    
-    Matrix4 glTranslate, glScale;
-    glTranslate.glTranslate(currentDrawOffset.x, currentDrawOffset.y, 0.0f);
-    glScale.glScale(currentDrawScale.x, currentDrawScale.y, 1.0f);
-    
-    Matrix4 check = glScale * glTranslate;
-    DVASSERT(check == renderer2d.viewMatrix);
-}
-	
 
 void RenderManager::EndFrame()
 {
@@ -312,11 +265,6 @@ void RenderManager::MakeGLScreenShot()
     tempData = new uint8[imageDataSize];
 
     RENDER_VERIFY(glBindFramebuffer(GL_FRAMEBUFFER, fboViewRenderbuffer));
-//#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-//    glBindFramebuffer(GL_FRAMEBUFFER_BINDING_OES, fboViewRenderbuffer);
-//#else
-//    glBindFramebuffer(GL_FRAMEBUFFER_BINDING_EXT, fboViewRenderbuffer);
-//#endif
     
     RENDER_VERIFY(glPixelStorei( GL_UNPACK_ALIGNMENT, 1 ));
     RENDER_VERIFY(glReadPixels(0, 0, width, height, formatDescriptor.format, formatDescriptor.type, (GLvoid *)tempData));
@@ -353,79 +301,19 @@ void RenderManager::MakeGLScreenShot()
 #endif //#if defined(__DAVAENGINE_OPENGL__)
 }
     
-void RenderManager::SetViewport(const Rect & rect, bool precaleulatedCoordinates)
-{    
-    if ((rect.dx < 0.0f) && (rect.dy < 0.0f))
-    {
-        viewport = rect;
-        if (currentRenderTarget)
-        {
-            RENDER_VERIFY(glViewport(0, 0, currentRenderTarget->GetTexture()->GetWidth(), currentRenderTarget->GetTexture()->GetHeight()));
-        }
-        else
-        {
-            RENDER_VERIFY(glViewport(0, 0, frameBufferWidth, frameBufferHeight));
-        }
-        return;
-    }
-    if (precaleulatedCoordinates) 
-    {
-        viewport = rect;
-        RENDER_VERIFY(glViewport((int32)rect.x, (int32)rect.y, (int32)rect.dx, (int32)rect.dy));
-        return;
-    }
+void RenderManager::SetViewport(const Rect & rect)
+{
+    Rect viewportRect = viewport = rect;
 
-    PrepareRealMatrix();
-    
-
-	int32 x = (int32)(rect.x * currentDrawScale.x + currentDrawOffset.x);
-	int32 y = (int32)(rect.y * currentDrawScale.y + currentDrawOffset.y);
-	int32 width, height;
-    width = (int32)(rect.dx * currentDrawScale.x);
-    height = (int32)(rect.dy * currentDrawScale.y);    
-    
-    if (renderOrientation!=Core::SCREEN_ORIENTATION_TEXTURE)
+    if (currentRenderTarget == nullptr)
     {
-        y = frameBufferHeight - y - height;
+        viewportRect.y = frameBufferHeight - viewportRect.y - viewportRect.dy;
     }
     
-    RENDER_VERIFY(glViewport(x, y, width, height));
-    viewport.x = (float32)x;
-    viewport.y = (float32)y;
-    viewport.dx = (float32)width;
-    viewport.dy = (float32)height;
+    RENDER_VERIFY(glViewport((int32)viewportRect.x, (int32)viewportRect.y, (int32)viewportRect.dx, (int32)viewportRect.dy));
 }
-
-    
 
 // Viewport management
-void RenderManager::SetRenderOrientation(int32 orientation)
-{
-	renderOrientation = orientation;
-	
-    if (orientation != Core::SCREEN_ORIENTATION_TEXTURE)
-    {
-        renderer2d.projMatrix.glOrtho(0.0f, (float32)frameBufferWidth, (float32)frameBufferHeight, 0.0f, -1.0f, 1.0f);
-    }else{
-        renderer2d.projMatrix.glOrtho(0.0f, (float32)currentRenderTarget->GetTexture()->GetWidth(),
-                                      0.0f, (float32)currentRenderTarget->GetTexture()->GetHeight(), -1.0f, 1.0f);
-    }
-    retScreenWidth = frameBufferWidth;
-    retScreenHeight = frameBufferHeight;
-	
-    
-    SetDynamicParam(PARAM_PROJ, &renderer2d.projMatrix, UPDATE_SEMANTIC_ALWAYS);
-
-    IdentityModelMatrix();
-    
-	RENDER_VERIFY(;);
-
-	IdentityMappingMatrix();
-	SetVirtualViewScale();
-	SetVirtualViewOffset();
-
-}
-
 void RenderManager::SetCullOrder(eCullOrder cullOrder)
 {
     glFrontFace(cullOrder);
@@ -433,15 +321,11 @@ void RenderManager::SetCullOrder(eCullOrder cullOrder)
     
 void RenderManager::FlushState()
 {
-	PrepareRealMatrix();
-    
     currentState.Flush(&hardwareState);
 }
 
 void RenderManager::FlushState(RenderState * stateBlock)
 {
-	PrepareRealMatrix();
-	
 	stateBlock->Flush(&hardwareState);
 }
 
@@ -580,105 +464,37 @@ void RenderManager::Clear(const Color & color, float32 depth, int32 stencil)
     RENDER_VERIFY(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 }
 
-void RenderManager::SetHWClip(const Rect &rect)
+void RenderManager::SetClip(const Rect &rect)
 {
-	PrepareRealMatrix();
-	currentClip = rect;
 	if(rect.dx < 0 || rect.dy < 0)
 	{
 		RENDER_VERIFY(glDisable(GL_SCISSOR_TEST));
 		return;
 	}
-	int32 x = (int32)(rect.x * currentDrawScale.x + currentDrawOffset.x);
-	int32 y = (int32)(rect.y * currentDrawScale.y + currentDrawOffset.y);
-	int32 x2= (int32)ceilf((rect.dx + rect.x) * currentDrawScale.x + currentDrawOffset.x);
-	int32 y2= (int32)ceilf((rect.dy + rect.y) * currentDrawScale.y + currentDrawOffset.y);
+	int32 x = (int32)(rect.x);
+	int32 y = (int32)(rect.y);
+	int32 x2= (int32)ceilf((rect.dx + rect.x));
+	int32 y2= (int32)ceilf((rect.dy + rect.y));
 	int32 width = x2 - x;
 	int32 height = y2 - y;
     
-    if (renderOrientation!=Core::SCREEN_ORIENTATION_TEXTURE)
+    if (currentRenderTarget == nullptr)
     {
-        y = frameBufferHeight/* * Core::GetVirtualToPhysicalFactor()*/ - y - height;
+        y = frameBufferHeight - y - height;
     }
 	
 	RENDER_VERIFY(glEnable(GL_SCISSOR_TEST));
 	RENDER_VERIFY(glScissor(x, y, width, height));
 }
 
-
-void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
+void RenderManager::SetRenderTarget(Texture * renderTarget)
 {
     currentRenderTarget = renderTarget;
-    
-	if (renderTarget == NULL)
-	{
-//#if defined(__DAVAENGINE_IPHONE__)
-//		RENDER_VERIFY(glBindFramebufferOES(GL_FRAMEBUFFER_OES, fboViewFramebuffer));
-//#elif defined(__DAVAENGINE_ANDROID__)
-////        renderTarget->GetTexture()->renderTargetModified = true;
-//#else //Non ES platforms
-//		RENDER_VERIFY(glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboViewFramebuffer));
-//#endif //PLATFORMS
+    if (renderTarget)
+	    HWglBindFBO(renderTarget->fboID);
+    else
         HWglBindFBO(fboViewFramebuffer);
-
-        
-        SetViewport(Rect(0, 0, -1, -1), true);
-
-		SetRenderOrientation(Core::Instance()->GetScreenOrientation());
-	}
-	else
-	{
-		renderOrientation = Core::SCREEN_ORIENTATION_TEXTURE;
-//#if defined(__DAVAENGINE_IPHONE__)
-//		RENDER_VERIFY(glBindFramebufferOES(GL_FRAMEBUFFER_OES, renderTarget->GetTexture()->fboID));
-//#elif defined(__DAVAENGINE_ANDROID__)
-//		BindFBO(renderTarget->GetTexture()->fboID);
-//        renderTarget->GetTexture()->renderTargetModified = true;
-//#else //Non ES platforms
-//		RENDER_VERIFY(glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, renderTarget->GetTexture()->fboID));
-//#endif //PLATFORMS
-		HWglBindFBO(renderTarget->GetTexture()->fboID);
-//#if defined(__DAVAENGINE_ANDROID__)
-//        renderTarget->GetTexture()->renderTargetModified = true;
-//#endif //#if defined(__DAVAENGINE_ANDROID__)
-
-        
-        SetViewport(Rect(0, 0, (float32)(renderTarget->GetTexture()->width), (float32)(renderTarget->GetTexture()->height)), true);
-
-//		RENDER_VERIFY(glMatrixMode(GL_PROJECTION));
-//		RENDER_VERIFY(glLoadIdentity());
-//#if defined(__DAVAENGINE_IPHONE__)
-//		RENDER_VERIFY(glOrthof(0.0f, renderTarget->GetTexture()->width, 0.0f, renderTarget->GetTexture()->height, -1.0f, 1.0f));
-//#else 
-//		RENDER_VERIFY(glOrtho(0.0f, renderTarget->GetTexture()->width, 0.0f, renderTarget->GetTexture()->height, -1.0f, 1.0f));
-//#endif
-
-        renderer2d.projMatrix.glOrtho(0.0f, (float32)renderTarget->GetTexture()->width, 0.0f, (float32)renderTarget->GetTexture()->height, -1.0f, 1.0f);
-        SetDynamicParam (PARAM_PROJ, &renderer2d.projMatrix, UPDATE_SEMANTIC_ALWAYS);
-        
-		//RENDER_VERIFY(glMatrixMode(GL_MODELVIEW));
-		//RENDER_VERIFY(glLoadIdentity());
-        IdentityModelMatrix();
-		IdentityMappingMatrix(); 
-
-		viewMappingDrawScale.x = renderTarget->GetResourceToPhysicalFactor();
-		viewMappingDrawScale.y = renderTarget->GetResourceToPhysicalFactor();
-        mappingMatrixChanged = true;
-//		Logger::FrameworkDebug("Sets with render target: Scale %.4f,    Offset: %.4f, %.4f", viewMappingDrawScale.x, viewMappingDrawOffset.x, viewMappingDrawOffset.y);
-		RemoveClip();
-	}
 }
-
-void RenderManager::SetHWRenderTargetTexture(Texture * renderTarget)
-{
-    //currentRenderTarget = renderTarget;
-	renderOrientation = Core::SCREEN_ORIENTATION_TEXTURE;
-	//IdentityModelMatrix();
-	//IdentityMappingMatrix();
-	HWglBindFBO(renderTarget->fboID);
-	//RemoveClip();
-}
-
 
 void RenderManager::DiscardFramebufferHW(uint32 attachments)
 {
@@ -831,94 +647,28 @@ void RenderManager::AttachRenderData()
         cachedAttributeMask = currentAttributeMask;
     }
 }
-
-
-//void RenderManager::InitGL20()
-//{
-//    colorOnly = 0;
-//    colorWithTexture = 0;
-//    
-//    
-//    colorOnly = new Shader();
-//    colorOnly->LoadFromYaml("~res:/Shaders/Default/fixed_func_color_only.shader");
-//    colorWithTexture = new Shader();
-//    colorWithTexture->LoadFromYaml("~res:/Shaders/Default/fixed_func_texture.shader");
-//        
-//    
-//}
-//
-//void RenderManager::ReleaseGL20()
-//{
-//    SafeRelease(colorOnly);
-//    SafeRelease(colorWithTexture);
-//}
-//
-
-    
     
 int32 RenderManager::HWglGetLastTextureID(int textureType)
 {
-    return lastBindedTexture[textureType];
-
-    
-//#if defined(__DAVAENGINE_ANDROID__)
-//    return lastBindedTexture;
-//#else //#if defined(__DAVAENGINE_ANDROID__)
-//    int32 saveId = 0;
-//    glGetIntegerv(GL_TEXTURE_BINDING_2D, &saveId);
-//    //    GLenum err = glGetError();
-//    //    if (err != GL_NO_ERROR)
-//    //        Logger::Error("%s file:%s line:%d gl failed with errorcode: 0x%08x", "glGetIntegerv(GL_TEXTURE_BINDING_2D, saveId)", __FILE__, __LINE__, err);
-//    return saveId;
-//#endif //#if defined(__DAVAENGINE_ANDROID__)
+    int32 ret = 0;
+    RENDER_VERIFY(glGetIntegerv((Texture::TEXTURE_2D == textureType) ? GL_TEXTURE_BINDING_2D : GL_TEXTURE_BINDING_CUBE_MAP, &ret));
+    return ret;
 }
 	
 void RenderManager::HWglBindTexture(int32 tId, uint32 textureType)
 {
     RENDER_VERIFY(glBindTexture((Texture::TEXTURE_2D == textureType) ? GL_TEXTURE_2D : GL_TEXTURE_CUBE_MAP, tId));
-
-    lastBindedTexture[textureType] = tId;
-    lastBindedTextureType = textureType;
 }
 
 int32 RenderManager::HWglGetLastFBO()
 {
     return lastBindedFBO;
-//    int32 saveFBO = 0;
-//#if defined(__DAVAENGINE_IPHONE__)
-//    RENDER_VERIFY(glGetIntegerv(GL_FRAMEBUFFER_BINDING_OES, &saveFBO));
-//#elif defined(__DAVAENGINE_ANDROID__)
-//    saveFBO = lastBindedFBO;
-//#else //Non ES platforms
-//    glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &saveFBO);
-//    
-//    //    GLenum err = glGetError();
-//    //    if (err != GL_NO_ERROR)
-//    //        Logger::Error("%s file:%s line:%d gl failed with errorcode: 0x%08x", "glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &saveFBO)", __FILE__, __LINE__, err);
-//    
-//#endif //PLATFORMS
-//    
-//    return saveFBO;
 }
 
 void RenderManager::HWglBindFBO(const int32 fbo)
 {
-    //	if(0 != fbo)
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo);	// Unbind the FBO for now
-//#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-//        glBindFramebufferOES(GL_FRAMEBUFFER_OES, fbo);	// Unbind the FBO for now
-//#else //Non ES platforms
-//        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);	// Unbind the FBO for now
-//#endif //PLATFORMS
-        
-        //		GLenum err = glGetError();
-        //		if (err != GL_NO_ERROR)
-        //			Logger::Error("%s file:%s line:%d gl failed with errorcode: 0x%08x", "glBindFramebuffer(GL_FRAMEBUFFER_, tId)", __FILE__, __LINE__, err);
-        
-        
-        lastBindedFBO = fbo;
-    }
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    lastBindedFBO = fbo;
 }
     
 void RenderManager::DiscardDepth()
@@ -941,13 +691,6 @@ void RenderManager::Lost()
     
     bufferBindingId[0] = 0;
     bufferBindingId[1] = 0;
-
-	//enabledAttribCount = 0;
-	for(int32 i = 0; i < Texture::TEXTURE_TYPE_COUNT; ++i)
-	{
-		lastBindedTexture[i] = 0;
-	}
-    lastBindedTextureType = Texture::TEXTURE_2D;
 
 	lastBindedFBO = 0;
 }

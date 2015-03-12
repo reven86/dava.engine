@@ -52,9 +52,9 @@ public:
     TogglePositionAnimation(bool _isCausedByTap, UISwitch * _uiSwitch, float32 * _var, float32 _endValue, float32 _animationTimeLength, Interpolation::FuncType _iType)
         : LinearAnimation(_uiSwitch->GetToggle(), _var, _endValue, _animationTimeLength, _iType)
         , uiSwitch(SafeRetain(_uiSwitch))
-        , centerPos(0.f)
-        , centerNotPassed(_isCausedByTap) //center is not yet passed by in this case
         , isFromLeftToRight(false)
+        , centerNotPassed(_isCausedByTap) //center is not yet passed by in this case
+        , centerPos(0.f)
     {
         if (_isCausedByTap) //toggle is on opposite side from _endValue, we can calculate center
         {
@@ -109,7 +109,6 @@ UISwitch::UISwitch(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
 
 UISwitch::~UISwitch()
 {
-    ReleaseControls();
 }
 
 void UISwitch::InitControls()
@@ -124,20 +123,13 @@ void UISwitch::InitControls()
     ChangeVisualState();//forcing visual state change cause it can be skipped in CheckToggleSideChange()
 }
 
-void UISwitch::ReleaseControls()
-{
-    SafeRelease(buttonLeft);
-    SafeRelease(buttonRight);
-    SafeRelease(toggle);
-}
-
 void UISwitch::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 {
     //release default buttons - they have to be loaded from yaml
     RemoveControl(buttonLeft);
     RemoveControl(buttonRight);
     RemoveControl(toggle);
-    ReleaseControls();
+
     UIControl::LoadFromYamlNode(node, loader);
 }
 
@@ -156,18 +148,39 @@ void UISwitch::AddControl(UIControl *control)
 	// Synchronize the pointers to the buttons each time new control is added.
 	UIControl::AddControl(control);
 
-	if (control->GetName() == UISWITCH_BUTTON_LEFT_NAME)
+	if (control->GetName() == UISWITCH_BUTTON_LEFT_NAME && buttonLeft != control)
 	{
-		buttonLeft = (UIButton*)control;
+        SafeRelease(buttonLeft);
+		buttonLeft = SafeRetain(DynamicTypeCheck<UIButton*>(control));
 	}
-	else if (control->GetName() == UISWITCH_BUTTON_TOGGLE_NAME)
+	else if (control->GetName() == UISWITCH_BUTTON_TOGGLE_NAME && toggle != control)
 	{
-		toggle = (UIButton*)control;
+        SafeRelease(toggle);
+        toggle = SafeRetain(DynamicTypeCheck<UIButton*>(control));
 	}
-	else if (control->GetName() == UISWITCH_BUTTON_RIGHT_NAME)
+	else if (control->GetName() == UISWITCH_BUTTON_RIGHT_NAME && buttonRight != control)
 	{
-		buttonRight = (UIButton*)control;		
+        SafeRelease(buttonRight);
+        buttonRight = SafeRetain(DynamicTypeCheck<UIButton*>(control));
 	}
+}
+
+void UISwitch::RemoveControl(UIControl *control)
+{
+    if (control == buttonRight)
+    {
+        SafeRelease(buttonRight);
+    }
+    else if (control == buttonLeft)
+    {
+        SafeRelease(buttonLeft);
+    }
+    else if (control == toggle)
+    {
+        SafeRelease(toggle);
+    }
+    
+    UIControl::RemoveControl(control);
 }
 
 void UISwitch::CopyDataFrom(UIControl *srcControl)
@@ -176,20 +189,8 @@ void UISwitch::CopyDataFrom(UIControl *srcControl)
     RemoveControl(buttonLeft);
     RemoveControl(buttonRight);
     RemoveControl(toggle);
-    ReleaseControls();
 
 	UIControl::CopyDataFrom(srcControl);
-
-	// Copy the specific items.
-	UISwitch* t = static_cast<UISwitch*>(srcControl);
-
-	this->buttonLeft = static_cast<UIButton*>(t->buttonLeft->Clone());
-	this->buttonRight = static_cast<UIButton*>(t->buttonRight->Clone());
-	this->toggle = static_cast<UIButton*>(t->toggle->Clone());
-
-	AddControl(buttonLeft);
-	AddControl(buttonRight);
-	AddControl(toggle);
 
     InitControls();
 }
@@ -215,24 +216,7 @@ UIControl* UISwitch::Clone()
 
 void UISwitch::LoadFromYamlNodeCompleted()
 {
-    FindRequiredControls();
     InitControls();
-}
-
-void UISwitch::FindRequiredControls()
-{
-    UIControl * leftControl = FindByName(UISWITCH_BUTTON_LEFT_NAME);
-    UIControl * rightControl = FindByName(UISWITCH_BUTTON_RIGHT_NAME);
-    UIControl * toggleControl = FindByName(UISWITCH_BUTTON_TOGGLE_NAME);
-    DVASSERT(leftControl);
-    DVASSERT(rightControl);
-    DVASSERT(toggleControl);
-    buttonLeft = SafeRetain(DynamicTypeCheck<UIButton*>(leftControl));
-    buttonRight = SafeRetain(DynamicTypeCheck<UIButton*>(rightControl));
-    toggle = SafeRetain(DynamicTypeCheck<UIButton*>(toggleControl));
-    DVASSERT(buttonLeft);
-    DVASSERT(buttonRight);
-    DVASSERT(toggle);
 }
 
 void UISwitch::Input(UIEvent *currentInput)

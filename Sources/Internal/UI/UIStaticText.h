@@ -46,7 +46,20 @@ public:
         MULTILINE_ENABLED,
         MULTILINE_ENABLED_BY_SYMBOL
     };
-    
+#if defined(LOCALIZATION_DEBUG)
+    static const Color  HIGHLITE_COLORS[];
+    enum DebugHighliteColor
+    {
+        RED = 0,
+        BLUE,
+        YELLOW,
+        WHITE,
+        MAGENTA,
+        GREEN,
+        NONE
+    };
+    static const float32 LOCALIZATION_RESERVED_PORTION;
+#endif
 protected:
     virtual ~UIStaticText();
 public:
@@ -58,7 +71,7 @@ public:
     //if requested size is 0 - text creates in the rect with size of the drawRect on draw phase
     //if requested size is >0 - text creates int the rect with the requested size
     //if requested size in <0 - rect creates for the all text size
-    void SetText(const WideString & string, const Vector2 &requestedTextRectSize = Vector2(0,0));
+    virtual void SetText(const WideString & string, const Vector2 &requestedTextRectSize = Vector2(0,0));
     void SetFont(Font * font);
     void SetTextColor(const Color& color);
 
@@ -113,14 +126,22 @@ public:
     const Vector<int32> & GetStringSizes() const;
 
 protected:
-    void PrepareSpriteInternal(BaseObject * caller, void * param, void *callerData);
+    void PrepareSpriteInternal();
     Rect CalculateTextBlockRect(const UIGeometricData &geometricData) const;
-
+#if defined(LOCALIZATION_DEBUG)
+    void DrawLocalizationDebug(const UIGeometricData & textGeomData) const;
+    void DrawLocalizationErrors(const UIGeometricData & textGeomData, const UIGeometricData & elementGeomData) const;
+    void RecalculateDebugColoring();
+#endif
 protected:
     TextBlock *textBlock;
     Vector2 shadowOffset;
     UIControlBackground *shadowBg;
     UIControlBackground *textBg;
+#if defined(LOCALIZATION_DEBUG)
+    DebugHighliteColor warningColor;
+    DebugHighliteColor lineBreakError;
+#endif
 
 public:
     void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);

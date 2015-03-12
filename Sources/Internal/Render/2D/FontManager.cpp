@@ -55,13 +55,13 @@ FontManager::~FontManager()
 {
 	FTFont::ClearCache();
 
+	UnregisterFonts();
+
 	FT_Error error = FT_Done_FreeType(library);
 	if(error)
 	{
 		Logger::Error("FontManager FT_Done_FreeType failed");
 	}
-
-	UnregisterFonts();
 }
 	
 void FontManager::RegisterFont(Font* font)

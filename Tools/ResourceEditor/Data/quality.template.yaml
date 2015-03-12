@@ -36,7 +36,7 @@ materials:
 
  -
   group: "Static object"
-  quality: ["HIGH", "LOW"]
+  quality: ["HIGH", "MEDIUM" "LOW"]
   default: "HIGH"
 
  -

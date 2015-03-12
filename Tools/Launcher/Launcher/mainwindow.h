@@ -33,6 +33,7 @@
 #include "applicationmanager.h"
 #include "buttonswidget.h"
 #include <QMainWindow>
+#include <QListWidgetItem>
 #include <QtGui>
 #include <QSet>
 #include <QDebug>

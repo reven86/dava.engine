@@ -42,10 +42,8 @@
 #include "Commands2/CommandStack.h"
 #include "Settings/SettingsManager.h"
 
-#include "Scene/System/CameraSystem.h"
-#include "Scene/System/CollisionSystem.h"
+//TODO: move all includes to .cpp file
 #include "Scene/System/GridSystem.h"
-#include "Scene/System/HoodSystem.h"
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/System/ModifSystem.h"
 #include "Scene/System/LandscapeEditorDrawSystem.h"
@@ -63,7 +61,19 @@
 #include "Scene/System/BeastSystem.h"
 #include "Scene/System/OwnersSignatureSystem.h"
 #include "Scene/System/EditorMaterialSystem.h"
+#include "Scene/System/WayEditSystem.h"
+#include "Scene/System/PathSystem.h"
 
+#include "Scene3D/Systems/Controller/RotationControllerSystem.h"
+#include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
+#include "Scene3D/Systems/Controller/WASDControllerSystem.h"
+
+class SceneCameraSystem;
+class SceneCollisionSystem;
+
+class HoodSystem;
+
+class EditorLODSystem;
 class FogSettingsChangedReceiver;
 
 class SceneEditor2 : public DAVA::Scene
@@ -108,6 +118,14 @@ public:
 	OwnersSignatureSystem *ownersSignatureSystem;
     StaticOcclusionBuildSystem * staticOcclusionBuildSystem;
 	EditorMaterialSystem *materialSystem;
+	EditorLODSystem *editorLODSystem;
+
+	DAVA::WASDControllerSystem *wasdSystem;
+	DAVA::RotationControllerSystem *rotationSystem;
+	DAVA::SnapToLandscapeControllerSystem *snapToLandscapeSystem;
+
+	WayEditSystem *wayEditSystem;
+	PathSystem *pathSystem;
 
 	// save/load
 	bool Load(const DAVA::FilePath &path);
@@ -127,6 +145,7 @@ public:
 
 	void BeginBatch(const DAVA::String &text);
 	void EndBatch();
+    bool IsBatchStarted() const;
 
 	void Exec(Command2 *command);
 	void ClearCommands(int commandId);
@@ -143,7 +162,6 @@ public:
 	bool IsHUDVisible() const;
 
 	// DAVA events
-	void PostUIEvent(DAVA::UIEvent *event);
 	virtual void Update(float timeElapsed);
 
 	// this function should be called each time UI3Dview changes its position
@@ -196,7 +214,6 @@ protected:
 
 	bool wasChanged; //deprecated
     
-    void Setup2DDrawing();
     void Setup3DDrawing();
 
 private:
@@ -211,5 +228,9 @@ private:
 		virtual void CleanChanged(bool clean);
 	};
 };
+
+
+Q_DECLARE_METATYPE(SceneEditor2 *)
+
 
 #endif // __SCENE_EDITOR_PROXY_H__

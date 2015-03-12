@@ -87,7 +87,11 @@ public:
 	void KeyUp(int32 keyCode);
 	void KeyDown(int32 keyCode);
 
-	void OnInput(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount);
+	void OnInput(int32 action, int32 source, Vector< UIEvent >& activeInputs, Vector< UIEvent >& allInputs);
+	void OnGamepadElement(int32 elementKey, float32 value, bool isKeycode);
+
+	void OnGamepadAvailable(bool isAvailable);
+	void OnGamepadTriggersAvailable(bool isAvailable);
 
 	bool DownloadHttpFile(const String & url, const String & documentsPathname);
 
@@ -98,6 +102,9 @@ public:
 	const String& GetInternalStoragePathname() const {return internalStorage;};
 	
 	AndroidSystemDelegate* GetAndroidSystemDelegate() const;
+
+    int32 GetViewWidth() const { return width; };
+    int32 GetViewHeight() const { return height; };
 
 private:
 
@@ -116,10 +123,6 @@ private:
 	bool renderIsActive;
 
 	bool foreground;
-
-	UIEvent CreateInputEvent(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount);
-
-	Vector<DAVA::UIEvent> totalTouches;
 
 	AndroidSystemDelegate *androidDelegate;
 

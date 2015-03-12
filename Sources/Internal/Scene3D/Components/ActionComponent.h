@@ -82,12 +82,12 @@ namespace DAVA
 			
 			Action()
                 : type(TYPE_NONE)
-                , userEventId("")
                 , eventType(EVENT_SWITCH_CHANGED)
+                , userEventId("")
+                , switchIndex(-1)
                 , delay(0.0f)
                 , delayVariation(0.0f)
                 , actualDelay(0.0f)
-                , switchIndex(-1)
                 , stopAfterNRepeats(-1)
                 , stopWhenEmpty(false)
 			{				

@@ -60,6 +60,7 @@ public:
 	Rect2i		* frameRects;
 
 	Vector<String> pathsInfo;
+    Vector<String> frameNames;
 };
 
 };

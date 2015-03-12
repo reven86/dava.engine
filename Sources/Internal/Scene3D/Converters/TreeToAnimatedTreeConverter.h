@@ -29,8 +29,13 @@
 #ifndef __DAVAENGINE_ANIMATEDTREE_CONVERTER_H__
 #define __DAVAENGINE_ANIMATEDTREE_CONVERTER_H__
 
-#include "DAVAEngine.h"
-using namespace DAVA;
+#include "Base/BaseTypes.h"
+
+namespace DAVA
+{
+class Entity;
+class SpeedTreeObject;
+class PolygonGroup;
 
 class TreeToAnimatedTreeConverter
 {
@@ -47,6 +52,7 @@ private:
     Set<PolygonGroup *> uniqLeafPGs;
     Set<PolygonGroup *> uniqTrunkPGs;
     Set<SpeedTreeObject *> uniqTreeObjects;
+};
 };
 
 #endif //__DAVAENGINE_ANIMATEDTREE_CONVERTER_H__

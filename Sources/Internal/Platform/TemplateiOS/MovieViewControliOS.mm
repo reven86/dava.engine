@@ -32,7 +32,7 @@
 #include "MovieViewControliOS.h"
 
 #import <MediaPlayer/MediaPlayer.h>
-#import <HelperAppDelegate.h>
+#import <Platform/TemplateiOS/HelperAppDelegate.h>
 
 namespace DAVA {
 
@@ -85,17 +85,12 @@ void MovieViewControl::SetRect(const Rect& rect)
 	MPMoviePlayerController* player = (MPMoviePlayerController*)moviePlayerController;
 
 	CGRect playerViewRect = player.view.frame;
-	
-    playerViewRect.origin.x = rect.x * DAVA::Core::GetVirtualToPhysicalFactor();
-    playerViewRect.origin.y = rect.y * DAVA::Core::GetVirtualToPhysicalFactor();
-			
-    playerViewRect.size.width = rect.dx * DAVA::Core::GetVirtualToPhysicalFactor();
-    playerViewRect.size.height = rect.dy * DAVA::Core::GetVirtualToPhysicalFactor();
-			
-    playerViewRect.origin.x += Core::Instance()->GetPhysicalDrawOffset().x;
-    playerViewRect.origin.y += Core::Instance()->GetPhysicalDrawOffset().y;
-			
-		
+    
+    Rect physicalRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
+    playerViewRect.origin.x = physicalRect.x + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
+    playerViewRect.origin.y = physicalRect.y + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
+    playerViewRect.size.width = physicalRect.dx;
+    playerViewRect.size.height = physicalRect.dy;
 	
 	// Apply the Retina scale divider, if any.
     DAVA::float32 scaleDivider = [HelperAppDelegate GetScale];

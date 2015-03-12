@@ -36,21 +36,21 @@
 namespace DAVA
 {
 
-
-static const int32 DEFAULT_FLAGS = RenderObject::VISIBLE | RenderObject::VISIBLE_STATIC_OCCLUSION;
+    
+static const int32 DEFAULT_FLAGS = RenderObject::VISIBLE | RenderObject::VISIBLE_STATIC_OCCLUSION | RenderObject::VISIBLE_QUALITY;
 
 RenderObject::RenderObject()
-    :   type(TYPE_RENDEROBJECT)
+    :   startClippingPlane(0)
+    ,   renderSystem(0)
+    ,   type(TYPE_RENDEROBJECT)
     ,   flags(DEFAULT_FLAGS)
-    ,   removeIndex(-1)
-	,   treeNodeIndex(INVALID_TREE_NODE_INDEX)
-    ,   staticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX)
-	,   startClippingPlane(0)
     ,   debugFlags(0)
+    ,   removeIndex(-1)
+    ,   treeNodeIndex(INVALID_TREE_NODE_INDEX)
+    ,   staticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX)
     ,   worldTransform(0)
-	,	renderSystem(0)
-	,	lodIndex(-1)
-	,	switchIndex(-1)
+    ,	lodIndex(-1)
+    ,	switchIndex(-1)
 {
     lights[0] = NULL;
     lights[1] = NULL;
@@ -58,7 +58,7 @@ RenderObject::RenderObject()
     
 RenderObject::~RenderObject()
 {
-	uint32 size = renderBatchArray.size();
+	uint32 size = static_cast<uint32>(renderBatchArray.size());
 	for(uint32 i = 0; i < size; ++i)
 	{
 		renderBatchArray[i].renderBatch->Release();
@@ -209,7 +209,7 @@ void RenderObject::RecalcBoundingBox()
 
 void RenderObject::CollectRenderBatches(int32 requestLodIndex, int32 requestSwitchIndex, Vector<RenderBatch*> & batches, bool includeShareLods /* = false */) const
 {
-    uint32 batchesCount = renderBatchArray.size();
+    uint32 batchesCount = static_cast<uint32>(renderBatchArray.size());
     for(uint32 i = 0; i < batchesCount; ++i)
     {
         const IndexedRenderBatch & irb = renderBatchArray[i];
@@ -255,7 +255,7 @@ RenderObject * RenderObject::Clone(RenderObject *newObject)
 
 void RenderObject::Save(KeyedArchive * archive, SerializationContext* serializationContext)
 {
-	AnimatedObject::Save(archive);
+	AnimatedObject::SaveObject(archive);
 
 	if(NULL != archive)
 	{
@@ -324,7 +324,7 @@ void RenderObject::Load(KeyedArchive * archive, SerializationContext *serializat
 			}
 		}
 
-	AnimatedObject::Load(archive);
+	AnimatedObject::LoadObject(archive);
 }
 
 void RenderObject::BindDynamicParameters(Camera * camera)
@@ -361,7 +361,7 @@ void RenderObject::BakeGeometry(const Matrix4 & transform)
 
 void RenderObject::RecalculateWorldBoundingBox()
 {
-	DVASSERT(!bbox.IsEmpty());
+    DVASSERT(!bbox.IsEmpty());
 	bbox.GetTransformedBox(*worldTransform, worldBBox);
 }
 
@@ -401,7 +401,7 @@ int32 RenderObject::GetSwitchIndex() const
 void RenderObject::UpdateActiveRenderBatches()
 {
 	activeRenderBatchArray.clear();
-	uint32 size = renderBatchArray.size();
+	uint32 size = static_cast<uint32>(renderBatchArray.size());
 	for(uint32 i = 0; i < size; ++i)
 	{
 		IndexedRenderBatch & irb = renderBatchArray[i];
@@ -415,7 +415,7 @@ void RenderObject::UpdateActiveRenderBatches()
 int32 RenderObject::GetMaxLodIndex() const
 {
     int32 ret = -1;
-    uint32 size = renderBatchArray.size();
+    uint32 size = static_cast<uint32>(renderBatchArray.size());
     for(uint32 i = 0; i < size; ++i)
     {
         const IndexedRenderBatch & irb = renderBatchArray[i];
@@ -428,7 +428,7 @@ int32 RenderObject::GetMaxLodIndex() const
 int32 RenderObject::GetMaxLodIndexForSwitchIndex(int32 forSwitchIndex) const
 {
     int32 ret = -1;
-    uint32 size = renderBatchArray.size();
+    uint32 size = static_cast<uint32>(renderBatchArray.size());
     for(uint32 i = 0; i < size; ++i)
     {
         const IndexedRenderBatch & irb = renderBatchArray[i];
@@ -444,7 +444,7 @@ int32 RenderObject::GetMaxLodIndexForSwitchIndex(int32 forSwitchIndex) const
 int32 RenderObject::GetMaxSwitchIndex() const
 {
     int32 ret = -1;
-    uint32 size = renderBatchArray.size();
+    uint32 size = static_cast<uint32>(renderBatchArray.size());
     for(uint32 i = 0; i < size; ++i)
     {
         const IndexedRenderBatch & irb = renderBatchArray[i];

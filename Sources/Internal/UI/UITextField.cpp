@@ -59,6 +59,10 @@ void UITextFieldDelegate::TextFieldShouldCancel(UITextField * /*textField*/)
 void UITextFieldDelegate::TextFieldLostFocus(UITextField * /*textField*/)
 {
 };
+    
+void UITextFieldDelegate::TextFieldOnTextChanged(UITextField * /*textField*/, const WideString& /*newText*/, const WideString& /*oldText*/)
+{
+};
 
 bool UITextFieldDelegate::TextFieldKeyPressed(UITextField * /*textField*/, int32 /*replacementLocation*/, int32 /*replacementLength*/, WideString & /*replacementString*/)
 {
@@ -89,8 +93,8 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,	delegate(0)
 ,	cursorBlinkingTime(0.0f)
 #if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
-,   textFont(NULL)
 ,   staticText(NULL)
+,   textFont(NULL)
 #endif
 {
 #if defined(__DAVAENGINE_ANDROID__)
@@ -382,12 +386,17 @@ void UITextField::SetSize(const DAVA::Vector2 &newSize)
     
 void UITextField::SetText(const WideString & _text)
 {
-	this->text = _text;
 #ifdef __DAVAENGINE_IPHONE__
-	textFieldiPhone->SetText(text);
+	textFieldiPhone->SetText(_text);
 #elif defined(__DAVAENGINE_ANDROID__)
-    textFieldAndroid->SetText(text);
+    textFieldAndroid->SetText(_text);
+#else
+    if (delegate && text != _text)
+    {
+        delegate->TextFieldOnTextChanged(this, _text, text);
+    }
 #endif
+    text = _text;
 
     needRedraw = true;
 }
@@ -1035,6 +1044,7 @@ int32 UITextField::GetMaxLength() const
 {
     return maxLength;
 }
+
 
 void UITextField::WillBecomeVisible()
 {

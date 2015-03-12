@@ -50,10 +50,10 @@ EntityModificationSystem::EntityModificationSystem(DAVA::Scene * scene, SceneCol
 	, collisionSystem(colSys)
 	, cameraSystem(camSys)
 	, hoodSystem(hoodSys)
+	, cloneState(CLONE_DONT)
 	, inModifState(false)
 	, modified(false)
 	, snapToLandscape(false)
-	, cloneState(CLONE_DONT)
 {
 	SetModifMode(ST_MODIF_OFF);
 	SetModifAxis(ST_AXIS_Z);
@@ -160,10 +160,15 @@ bool EntityModificationSystem::InCloneState() const
 	return (cloneState == CLONE_NEED);
 }
 
+bool EntityModificationSystem::InCloneDoneState() const
+{
+    return (cloneState == CLONE_DONE);
+}
+
 void EntityModificationSystem::Process(DAVA::float32 timeElapsed)
 { }
 
-void EntityModificationSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void EntityModificationSystem::Input(DAVA::UIEvent *event)
 {
 	if (IsLocked())
 	{
@@ -758,9 +763,9 @@ DAVA::Matrix4 EntityModificationSystem::SnapToLandscape(const DAVA::Vector3 &poi
 		DAVA::Vector3 resPoint;
 		DAVA::Vector3 realPoint = point * originalParentTransform;
 
-		if(landscape->PlacePoint(point, resPoint))
+        if (landscape->PlacePoint(realPoint, resPoint))
 		{
-			resPoint = resPoint - point;
+            resPoint = resPoint - realPoint;
 			ret.SetTranslationVector(resPoint);
 		}
 	}

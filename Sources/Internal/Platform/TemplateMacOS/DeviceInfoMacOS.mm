@@ -26,14 +26,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
 #include "Platform/DeviceInfo.h"
 
 #ifdef __DAVAENGINE_MACOS__
 
 #import <Foundation/NSLocale.h>
 #import <Foundation/NSTimeZone.h>
+#import <AppKit/NSScreen.h>
 #include "Utils/StringFormat.h"
 #include "OpenUDIDMacOS.h"
 
@@ -101,6 +100,24 @@ WideString DeviceInfo::GetName()
     return WideString ( (wchar_t*) [ pSData bytes ], [ pSData length] / sizeof ( wchar_t ) );
 }
 
+// Not impletemted yet
+String DeviceInfo::GetHTTPProxyHost()
+{
+	return String();
+}
+
+// Not impletemted yet
+String DeviceInfo::GetHTTPNonProxyHosts()
+{
+	return String();
+}
+
+// Not impletemted yet
+int DeviceInfo::GetHTTPProxyPort()
+{
+	return 0;
+}
+
 eGPUFamily DeviceInfo::GetGPUFamily()
 {
     return GPU_INVALID;
@@ -110,6 +127,13 @@ DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
 {
     // For now return default network info for MacOS.
     return NetworkInfo();
+}
+
+void DeviceInfo::InitializeScreenInfo()
+{
+	screenInfo.width = [[NSScreen mainScreen] frame].size.width;
+	screenInfo.height = [[NSScreen mainScreen] frame].size.height;
+	screenInfo.scale = 1;
 }
 
 int32 DeviceInfo::GetCpuCount()

@@ -34,17 +34,22 @@
 namespace DAVA 
 {
 
-Animation::Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::FuncType _interpolationFunc, int _defaultState)
+Animation::Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::Func _interpolationFunc, int32 _defaultState)
 {
     tagId = 0;
-	owner = _owner;
-	timeLength = _animationTimeLength;
-	interpolationFunc = Interpolation::GetFunction(_interpolationFunc);
-	state = _defaultState;
-	next = 0;
-	repeatCount = 0;
-	timeMultiplier = 1.f;
-	AnimationManager::Instance()->AddAnimation(this);
+    owner = _owner;
+    timeLength = _animationTimeLength;
+    interpolationFunc = _interpolationFunc;
+    state = _defaultState;
+    next = 0;
+    repeatCount = 0;
+    timeMultiplier = 1.f;
+    AnimationManager::Instance()->AddAnimation(this);
+}
+
+Animation::Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::FuncType _interpolationFuncType, int32 _defaultState)
+    : Animation(_owner, _animationTimeLength, Interpolation::GetFunction(_interpolationFuncType), _defaultState)
+{
 }
 
 Animation::~Animation()
@@ -59,7 +64,7 @@ void Animation::Reset()
 	next = 0;
 }
 
-void Animation::Start(int _groupId)
+void Animation::Start(int32 _groupId)
 {
 //#ifdef ANIMATIONS_DEBUG
 //	if(AnimationManager::Instance()->IsAnimationLoggerEnabled())
@@ -120,7 +125,8 @@ void Animation::Update(float32 timeElapsed)
 			if (time <= halfTimeLength)
 			{	// normal interpolation
 				normalizedTime = interpolationFunc(time / halfTimeLength);
-			}else
+			}
+			else
 			{	// reverse interpolation
 				normalizedTime = interpolationFunc(2.0f - (time / halfTimeLength));/*1.0f - ((time - halfTimeLength) / halfTimeLength)*/
 			}
@@ -132,13 +138,19 @@ void Animation::Update(float32 timeElapsed)
 					time = timeLength;
 					normalizedTime = 0.0f;
 					state |= STATE_FINISHED;
-				}else
+				}
+				else
 				{
 					time -= timeLength;
-					repeatCount--;
+					// Do not decrement repeat counter for loop
+					if (repeatCount != INFINITE_LOOP)
+					{
+						repeatCount--;
+					}
 				}
 			}
-		}else // 
+		}
+		else // 
 		{
 			time += timeElapsed*timeMultiplier;
 			normalizedTime = interpolationFunc(time / timeLength);
@@ -149,10 +161,15 @@ void Animation::Update(float32 timeElapsed)
 					time = timeLength;
 					normalizedTime = 1.0f;
 					state |= STATE_FINISHED;
-				}else 
+				}
+				else 
 				{
 					time -= timeLength;
-					repeatCount--;
+					// Do not decrement repeat counter for loop
+					if (repeatCount != INFINITE_LOOP)
+					{
+						repeatCount--;
+					}
 				}
 			}
 		}
@@ -207,6 +224,18 @@ void Animation::Pause(bool _isPaused)
 bool Animation::IsPaused()
 {
 	return (0 != (state & STATE_PAUSED));
+}
+
+void Animation::SetRepeatCount(int32 _repeatCount)
+{
+	if(INFINITE_LOOP == _repeatCount)
+	{
+		repeatCount = _repeatCount;
+	}
+	else
+	{
+		repeatCount = _repeatCount - 1;
+	}
 }
 
 }

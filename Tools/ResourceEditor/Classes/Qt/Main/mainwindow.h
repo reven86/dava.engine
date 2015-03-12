@@ -54,6 +54,7 @@ class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
 
+class DeviceListController;
 
 class QtMainWindow
     : public QMainWindow
@@ -150,6 +151,7 @@ public slots:
 	void OnCameraDialog();
 	void OnEmptyEntity();
 	void OnAddWindEntity();
+    void OnAddPathEntity();
 
 	void OnUserNodeDialog();
 	void OnSwitchEntityDialog();
@@ -192,6 +194,7 @@ public slots:
 	void OnVisibilityTool();
 	void OnNotPassableTerrain();
     void OnGrasEditor();
+    void OnWayEditor();
 	
 	void OnObjectsTypeChanged(QAction *action);
     void OnObjectsTypeChanged(int type);
@@ -209,6 +212,8 @@ public slots:
     void OnGenerateHeightDelta();
 
     void OnBatchProcessScene();
+    
+    void OnSnapCameraToLandscape(bool);
     
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);
@@ -235,6 +240,8 @@ protected:
 	
 	bool SelectCustomColorsTexturePath();
 	
+	static void SetActionCheckedSilently(QAction *action, bool checked);
+
 private slots:
 	void ProjectOpened(const QString &path);
 	void ProjectClosed();
@@ -251,6 +258,7 @@ private slots:
 
     void DebugVersionInfo();
     void DebugColorPicker();
+    void DebugDeviceList();
 
 private:
 	Ui::MainWindow *ui;
@@ -265,7 +273,6 @@ private:
 	QList<QAction *> recentScenes;
 	ModificationWidget *modificationWidget;
 
-	QtLabelWithActions *objectTypesLabel;
     QComboBox *objectTypesWidget;
 
 	AddSwitchEntityDialog*	addSwitchEntityDialog;
@@ -275,6 +282,7 @@ private:
 	void EnableProjectActions(bool enable);
 	void UpdateConflictingActionsState(bool enable);
     void UpdateModificationActionsState();
+    void UpdateWayEditor(const Command2* command, bool redo);
 
 	void LoadViewState(SceneEditor2 *scene);
 	void LoadUndoRedoState(SceneEditor2 *scene);
@@ -299,6 +307,8 @@ private:
     //Need for any debug functionality
     DeveloperTools *developerTools;
     QPointer<VersionInfoWidget> versionInfoWidget;
+
+    QPointer<DeviceListController> deviceListController;
 };
 
 

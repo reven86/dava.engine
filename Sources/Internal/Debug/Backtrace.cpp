@@ -33,6 +33,7 @@
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <execinfo.h>
 #include <cxxabi.h>
+#include <stdlib.h>
 #elif defined(__DAVAENGINE_WIN32__)
 #include <DbgHelp.h>
 #pragma comment(lib, "Dbghelp.lib")
@@ -170,7 +171,7 @@ public:
         {
             log->strings[i] = (char*)malloc(512);
             
-            int len = strlen(strings[i]);
+            size_t len = strlen(strings[i]);
             char * temp = (char*)malloc(sizeof(char) * len + 100);
             strcpy(temp, strings[i]);
 
@@ -245,7 +246,7 @@ public:
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #define BACKTRACE_SIZ 100
         void    *array[BACKTRACE_SIZ];
-        size_t  size, i;
+        int32  size, i;
         char    **strings;
         
         size = backtrace(array, BACKTRACE_SIZ);

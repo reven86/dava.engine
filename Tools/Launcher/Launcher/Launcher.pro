@@ -6,7 +6,7 @@
 
 DEFINES += _SCL_SECURE_NO_WARNINGS
 
-QT       += core gui network webkit
+QT       += core gui network webkitwidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -23,7 +23,8 @@ SOURCES += main.cpp\
     processhelper.cpp \
     zipunpacker.cpp \
     errormessanger.cpp \
-    selfupdater.cpp
+    selfupdater.cpp \
+    configdownloader.cpp
 
 HEADERS  += mainwindow.h \
     filemanager.h \
@@ -35,12 +36,14 @@ HEADERS  += mainwindow.h \
     processhelper.h \
     zipunpacker.h \
     errormessanger.h \
-    selfupdater.h
+    selfupdater.h \
+    configdownloader.h
 
 FORMS    += mainwindow.ui \
     updatedialog.ui \
     buttonswidget.ui \
-    selfupdater.ui
+    selfupdater.ui \
+    configdownloader.ui
 
 RESOURCES += \
     icons.qrc
@@ -73,32 +76,32 @@ macx: INCLUDEPATH += /System/Library/Frameworks/ApplicationServices.framework/Fr
 macx: DEPENDPATH += /System/Library/Frameworks/ApplicationServices.framework/Frameworks/HIServices.framework/Headers/
 macx: LIBS += -lz
 macx: HEADERS += \
-    quazip/JlCompress.h \
-    quazip/zip.h \
-    quazip/unzip.h \
-    quazip/quazipnewinfo.h \
-    quazip/quazipfileinfo.h \
-    quazip/quazipfile.h \
-    quazip/quazipdir.h \
-    quazip/quazip.h \
-    quazip/quazip_global.h \
-    quazip/quaziodevice.h \
-    quazip/quagzipfile.h \
-    quazip/quacrc32.h \
-    quazip/quachecksum32.h \
-    quazip/quaadler32.h \
-    quazip/ioapi.h
+    quazip/quazip/JlCompress.h \
+    quazip/quazip/zip.h \
+    quazip/quazip/unzip.h \
+    quazip/quazip/quazipnewinfo.h \
+    quazip/quazip/quazipfileinfo.h \
+    quazip/quazip/quazipfile.h \
+    quazip/quazip/quazipdir.h \
+    quazip/quazip/quazip.h \
+    quazip/quazip/quazip_global.h \
+    quazip/quazip/quaziodevice.h \
+    quazip/quazip/quagzipfile.h \
+    quazip/quazip/quacrc32.h \
+    quazip/quazip/quachecksum32.h \
+    quazip/quazip/quaadler32.h \
+    quazip/quazip/ioapi.h
 macx: SOURCES += \
-    quazip/quazipfile.cpp \
-    quazip/quazip.cpp \
-    quazip/qioapi.cpp \
-    quazip/JlCompress.cpp \
-    quazip/zip.c \
-    quazip/unzip.c \
-    quazip/quazipfileinfo.cpp \
-    quazip/quazipnewinfo.cpp \
-    quazip/quazipdir.cpp \
-    quazip/quaziodevice.cpp \
-    quazip/quagzipfile.cpp \
-    quazip/quacrc32.cpp \
-    quazip/quaadler32.cpp
+    quazip/quazip/quazipfile.cpp \
+    quazip/quazip/quazip.cpp \
+    quazip/quazip/qioapi.cpp \
+    quazip/quazip/JlCompress.cpp \
+    quazip/quazip/zip.c \
+    quazip/quazip/unzip.c \
+    quazip/quazip/quazipfileinfo.cpp \
+    quazip/quazip/quazipnewinfo.cpp \
+    quazip/quazip/quazipdir.cpp \
+    quazip/quazip/quaziodevice.cpp \
+    quazip/quazip/quagzipfile.cpp \
+    quazip/quazip/quacrc32.cpp \
+    quazip/quazip/quaadler32.cpp

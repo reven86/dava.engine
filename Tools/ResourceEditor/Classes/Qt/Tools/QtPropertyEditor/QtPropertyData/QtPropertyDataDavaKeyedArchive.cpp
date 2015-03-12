@@ -45,8 +45,8 @@
 
 QtPropertyDataDavaKeyedArcive::QtPropertyDataDavaKeyedArcive(DAVA::KeyedArchive *_archive)
 	: archive(_archive)
-	, lastAddedType(DAVA::VariantType::TYPE_STRING)
 	, lastCommand(NULL)
+	, lastAddedType(DAVA::VariantType::TYPE_STRING)
 {
 	if(NULL != archive)
 	{
@@ -172,9 +172,8 @@ void QtPropertyDataDavaKeyedArcive::ChildCreate(const QString &key, DAVA::Varian
 	remButton->setIcon(QIcon(":/QtIcons/keyminus.png"));
     remButton->setToolTip("Remove keyed archive member");
 	remButton->setIconSize(QSize(12, 12));
-	//remButton->setAutoRaise(true);
 
-	QObject::connect(remButton, SIGNAL(released()), this, SLOT(RemKeyedArchiveField()));
+	QObject::connect(remButton, SIGNAL(clicked()), this, SLOT(RemKeyedArchiveField()));
 }
 
 void QtPropertyDataDavaKeyedArcive::AddKeyedArchiveField()
@@ -327,6 +326,7 @@ KeyedArchiveItemWidget::KeyedArchiveItemWidget(DAVA::KeyedArchive *_arch, int de
 
 		QObject::connect(presetWidget, SIGNAL(activated(int)), this, SLOT(PreSetSelected(int)));
 	}
+    presetWidget->setMaxVisibleItems(presetWidget->count());
 
 	grLayout->addWidget(defaultBtn, ++row, 2, 1, 1);
 

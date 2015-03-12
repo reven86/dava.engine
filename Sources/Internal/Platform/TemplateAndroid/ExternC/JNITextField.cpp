@@ -40,7 +40,7 @@ extern "C"
 		DAVA::UITextFieldAndroid::TextFieldShouldReturn(id);
 	}
 
-	jstring Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env, jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jbyteArray replacementString)
+	jbyteArray Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env, jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jbyteArray replacementString)
 	{
 		DAVA::WideString string;
 
@@ -54,19 +54,38 @@ extern "C"
 		bool res = DAVA::UITextFieldAndroid::TextFieldKeyPressed(id, replacementLocation, replacementLength, string);
 		DAVA::String returnStr = res ? DAVA::UTF8Utils::EncodeToUTF8(string) : "";
 
-		return env->NewStringUTF(returnStr.c_str());
+		jbyteArray r = env->NewByteArray(returnStr.length());
+		if (r == NULL)
+			return NULL;
+		env->SetByteArrayRegion(r, 0, returnStr.length(), (const jbyte*)returnStr.c_str());
+		return r;
+	}
+
+	void Java_com_dava_framework_JNITextField_TextFieldOnTextChanged(JNIEnv* env, jobject classthis, uint32_t id, jbyteArray newText, jbyteArray oldText)
+	{
+		DAVA::WideString newString, oldString;
+
+		jbyte* bufferPtr = env->GetByteArrayElements(newText, NULL);
+		jsize lengthOfArray = env->GetArrayLength(newText);
+		DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, newString);
+		env->ReleaseByteArrayElements(newText, bufferPtr, 0);
+
+		bufferPtr = env->GetByteArrayElements(oldText, NULL);
+		lengthOfArray = env->GetArrayLength(oldText);
+		DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, oldString);
+		env->ReleaseByteArrayElements(oldText, bufferPtr, 0);
+
+		DAVA::UITextFieldAndroid::TextFieldOnTextChanged(id, newString, oldString);
 	}
 
 	void Java_com_dava_framework_JNITextField_TextFieldKeyboardShown(JNIEnv* env, jobject classthis, uint32_t id, int x, int y, int dx, int dy)
 	{
 	    // Recalculate to virtual coordinates.
 	    DAVA::Vector2 keyboardOrigin(x, y);
-	    keyboardOrigin *= DAVA::UIControlSystem::Instance()->GetScaleFactor();
-	    keyboardOrigin += DAVA::UIControlSystem::Instance()->GetInputOffset();
+	    keyboardOrigin = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardOrigin);
 
 	    DAVA::Vector2 keyboardSize(dx, dy);
-	    keyboardSize *= DAVA::UIControlSystem::Instance()->GetScaleFactor();
-	    keyboardSize += DAVA::UIControlSystem::Instance()->GetInputOffset();
+	    keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
 
 	    DAVA::UITextFieldAndroid::TextFieldKeyboardShown(id, DAVA::Rect(keyboardOrigin, keyboardSize));
 	}

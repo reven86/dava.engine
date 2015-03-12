@@ -161,7 +161,7 @@ function GetParameter(name, default)
     end
     if testData and testData[name] then
         return testData[name]
-    elseif default then
+    elseif default ~= nil then
         return default
     end
     OnError("Couldn't find value for variable " .. name)
@@ -176,8 +176,10 @@ function WriteString(name, text)
     coroutine.yield()
 end
 
-function MakeScreenshot()
-    local name = autotestingSystem:MakeScreenshot()
+function MakeScreenshot(skip)
+    local skip = skip or false
+    print("MakeScreenshot" .. tostring(skip))
+    local name = autotestingSystem:MakeScreenshot(skip)
     coroutine.yield()
     return name
 end
@@ -355,8 +357,8 @@ function IsOnScreen(control, background)
     local rect = geomData:GetUnrotatedRect()
     geomData = screen:GetGeometricData()
     local backRect = geomData:GetUnrotatedRect()
-    return toboolean((rect.x >= backRect.x) and (rect.x + rect.dx <= backRect.x + backRect.dx) and (rect.y >= backRect.y)
-            and (rect.y + rect.dy <= backRect.y + backRect.dy))
+    return toboolean((backRect.x - rect.x <= 1) and ((rect.x + rect.dx) - (backRect.x + backRect.dx) <= 1) and (backRect.y - rect.y <= 1)
+            and ((rect.y + rect.dy) - (backRect.y + backRect.dy) <= 1))
 end
 
 function IsCenterOnScreen(control, background)
@@ -484,10 +486,12 @@ function SelectItemInList(listName, item)
     else
         __scroll, startPoint = VerticalScroll, startPoint.x
     end
-
+    
     local function __getPosition() return autotestingSystem:GetListScrollPosition(listControl) end
 
     -- move to start of list and check cell
+    local isEnd = false
+    if __getPosition() == finalPoint then isEnd = true end
     for _ = 0, MAX_LIST_COUNT do
         local position = __getPosition()
         if position <= startPoint then
@@ -498,15 +502,18 @@ function SelectItemInList(listName, item)
             return true
         end
     end
+
     -- move to end of list and check cell
-    for _ = 0, MAX_LIST_COUNT do
-        local position = __getPosition()
-        if position >= finalPoint then
-            break
-        end
-        __scroll(listName)
-        if __click() then
-            return true
+    if not isEnd then
+        for _ = 0, MAX_LIST_COUNT do
+            local position = __getPosition()
+            if position >= finalPoint then
+                break
+            end
+            __scroll(listName)
+            if __click() then
+                return true
+            end
         end
     end
     Log(string.format("Cell '%s' in '%s' list is not found", item, listName))

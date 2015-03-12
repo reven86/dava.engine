@@ -47,7 +47,6 @@
 #include "Render/Material/NMaterial.h"
 #include "Scene3D/Systems/MaterialSystem.h"
 #include "Scene3D/Systems/FoliageSystem.h"
-
 #include "Render/Material/NMaterialNames.h"
 
 namespace DAVA
@@ -111,9 +110,8 @@ static FastName TILEMASK_COLOR_PROPS_NAMES[] =
 
 Landscape::Landscape()
     : indices(0)
-    , foliageSystem(NULL)
     , tileMaskMaterial(NULL)
-	  //currentMaterial(NULL)
+    , foliageSystem(NULL)
 {
 	drawIndices = 0;
     //textureNames.resize(TEXTURE_COUNT);
@@ -783,8 +781,8 @@ void Landscape::DrawFans()
     
     ClearQueue();
     
-    List<LandQuadTreeNode<LandscapeQuad>*>::const_iterator end = fans.end();
-    for (List<LandQuadTreeNode<LandscapeQuad>*>::iterator t = fans.begin(); t != end; ++t)
+    Vector<LandQuadTreeNode<LandscapeQuad>*>::const_iterator end = fans.end();
+    for (Vector<LandQuadTreeNode<LandscapeQuad>*>::iterator t = fans.begin(); t != end; ++t)
     {
         //uint16 * drawIndices = indices;
         LandQuadTreeNode<LandscapeQuad>* node = *t;
@@ -1223,7 +1221,7 @@ void Landscape::Draw(Camera * camera)
 	}
         
     BindMaterial(nearLodIndex, camera);
-    int32 count0 = lod0quads.size();
+    int32 count0 = static_cast<int32>(lod0quads.size());
     for(int32 i = 0; i < count0; ++i)
     {
         DrawQuad(lod0quads[i], 0);
@@ -1235,7 +1233,7 @@ void Landscape::Draw(Camera * camera)
 		BindMaterial(farLodIndex, camera);
 	}
 
-    int32 countNot0 = lodNot0quads.size();
+    int32 countNot0 = static_cast<int32>(lodNot0quads.size());
     for(int32 i = 0; i < countNot0; ++i)
     {
         DrawQuad(lodNot0quads[i], lodNot0quads[i]->data.lod);
@@ -1278,7 +1276,7 @@ void Landscape::Draw(Camera * camera)
 		{
 			BindMaterial(nearLodIndex, camera);
 		}
-        int32 count0 = lod0quads.size();
+        int32 count0 = static_cast<int32>(lod0quads.size());
         for(int32 i = 0; i < count0; ++i)
         {
             DrawQuad(lod0quads[i], 0);
@@ -1290,7 +1288,7 @@ void Landscape::Draw(Camera * camera)
 			BindMaterial(farLodIndex, camera);
 		}
         
-        int32 countNot0 = lodNot0quads.size();
+        int32 countNot0 = static_cast<int32>(lodNot0quads.size());
         for(int32 i = 0; i < countNot0; ++i)
         {
             DrawQuad(lodNot0quads[i], lodNot0quads[i]->data.lod);
@@ -1640,10 +1638,10 @@ Texture * Landscape::CreateLandscapeTexture()
     Vector<float32> ftVertexes;
     Vector<float32> ftTextureCoords;
     
-    float32 x0 = 0;
-    float32 y0 = 0;
-    float32 x1 = TEXTURE_TILE_FULL_SIZE;
-    float32 y1 = TEXTURE_TILE_FULL_SIZE;
+    float32 x0 = 0.f;
+    float32 y0 = 0.f;
+    float32 x1 = 1.f;
+    float32 y1 = 1.f;
     
     //triangle 1
     //0, 0
@@ -1685,18 +1683,18 @@ Texture * Landscape::CreateLandscapeTexture()
     
     Texture *fullTiled = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888, Texture::DEPTH_NONE);
     RenderManager::Instance()->SetRenderTarget(fullTiled);
-    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)fullTiled->GetWidth(), (float32)fullTiled->GetHeight()), true);
-
+    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)fullTiled->GetWidth(), (float32)fullTiled->GetHeight()));
+    RenderManager::Instance()->SetClip(Rect(0.f, 0.f, -1.f, -1.f));
 
 	RenderManager::Instance()->ClearWithColor(1.f, 0.f, 1.f, 1.f);
  
     RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    RenderManager::SetDynamicParam(PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     Matrix4 projection;
-    projection.glOrtho(0, TEXTURE_TILE_FULL_SIZE * Core::GetVirtualToPhysicalFactor(), 0, TEXTURE_TILE_FULL_SIZE * Core::GetVirtualToPhysicalFactor(), 0, 1);
+    projection.glOrtho(0.f, 1.f, 0.f, 1.f, -1.f, 1.f);
     
     Matrix4 *oldProjection = (Matrix4*)RenderManager::GetDynamicParam(PARAM_PROJ);
     RenderManager::SetDynamicParam(PARAM_PROJ, &projection, UPDATE_SEMANTIC_ALWAYS);
-    //RenderManager::Instance()->SetState(RenderState::DEFAULT_2D_STATE);
     
     prevLodLayer = -1;
 
@@ -1725,12 +1723,10 @@ Texture * Landscape::CreateLandscapeTexture()
 	RenderManager::Instance()->AttachRenderData();
 	RenderManager::Instance()->HWDrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
 
-#ifdef __DAVAENGINE_OPENGL__
-	RenderManager::Instance()->HWglBindFBO(RenderManager::Instance()->GetFBOViewFramebuffer());
-#endif //#ifdef __DAVAENGINE_OPENGL__
+    RenderManager::Instance()->SetRenderTarget(0);
     
     RenderManager::SetDynamicParam(PARAM_PROJ, &oldProjection, UPDATE_SEMANTIC_ALWAYS);
-	RenderManager::Instance()->SetViewport(oldViewport, true);
+	RenderManager::Instance()->SetViewport(oldViewport);
     SafeRelease(ftRenderData);
 
     SafeRelease(tmpTileMaskMaterial);
