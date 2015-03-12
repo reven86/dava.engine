@@ -119,7 +119,6 @@ public:
 	{
 			SPRITE_FROM_FILE = 0
 		,	SPRITE_FROM_TEXTURE
-		,	SPRITE_RENDER_TARGET
 	};
 
 	enum eRectsAndOffsets
@@ -144,19 +143,6 @@ public:
 	 */
 	static Sprite* Create(const FilePath &spriteName);// Creating sprite by name
 
-	/**
-	 \brief Function to create sprite as render target.
-
-	 \param sprWidth width of requested render target
-	 \param sprHeight height of requested render target
-	 \param textureFormat texture pixel format
-	 \param contentScaleIncluded set true if content scale already taken into account. Just send false if you don't know how it's works.
-
-	 \return sprite pointer or 0 if it will be impossible to create such render target
-	 */
-	static Sprite* CreateAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat textureFormat, bool contentScaleIncluded = false);
-	void InitAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat textureFormat, bool contentScaleIncluded = false);
-
 	/*
 		\brief Function to create sprite
 		\param spriteName path to sprite name
@@ -180,7 +166,7 @@ public:
 	 */
 	static Sprite* CreateFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, bool contentScaleIncluded = false);
 
-	static Sprite* CreateFromTexture(const Vector2 & spriteSize, Texture * fromTexture, const Vector2 & textureRegionOffset, const Vector2 & textureRegionSize, const FilePath &spriteName = FilePath());
+    static Sprite* CreateFromTexture(Texture *fromTexture, int32 textureRegionOffsetX, int32 textureRegionOffsetY, int32 textureRegionWidth, int32 textureRegionHeigth, float32 sprWidth, float32 sprHeight, const FilePath &spriteName = FilePath());
 
 	void InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, int32 targetWidth, int32 targetHeight, bool contentScaleIncluded = false, const FilePath &spriteName = FilePath());
 

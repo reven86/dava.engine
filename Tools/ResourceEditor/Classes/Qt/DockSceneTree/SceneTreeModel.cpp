@@ -646,7 +646,11 @@ void SceneTreeModel::ResyncStructure(QStandardItem *item, DAVA::Entity *entity)
 void SceneTreeModel::SetFilter(const QString& text)
 {
     filterText = text;
+    ReloadFilter();
+}
 
+void SceneTreeModel::ReloadFilter()
+{
     ResetFilter();
 
     if (!filterText.isEmpty())
@@ -655,7 +659,7 @@ void SceneTreeModel::SetFilter(const QString& text)
         for (int i = 0; i < n; i++)
         {
             const QModelIndex _index = index(i, 0);
-            SetFilterInternal(_index, text);
+            SetFilterInternal(_index, filterText);
         }
     }
 }

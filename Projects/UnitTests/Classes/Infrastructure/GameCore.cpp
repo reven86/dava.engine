@@ -97,7 +97,7 @@ void GameCore::RegisterTests()
     new NetworkTest();
     new UnlimitedLogOutputTest();
     new SpinLockTest();
-    //$UNITTEST_CTOR
+//  $UNITTEST_CTOR
 }
 
 #include <fstream>
