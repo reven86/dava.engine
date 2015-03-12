@@ -39,7 +39,7 @@ protected:
     void LoadResources() override;
     void UnloadResources() override;
     
-    void PerformTestLogic() override;
+    void PerformTestLogic(float32 timeElapsed) override;
     
 private:
     static const String TEST_NAME;

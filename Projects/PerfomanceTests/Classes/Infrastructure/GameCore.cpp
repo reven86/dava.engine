@@ -82,12 +82,15 @@ void GameCore::EndFrame()
 
 void GameCore::RegisterTests()
 {
-	testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
-	testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
+	//testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
+    //testChain.push_back(new GlobalPerformanceTest(1000, 0.016f, 200));
+    testChain.push_back(new GlobalPerformanceTest(90000));
 }
 
 void GameCore::InitScreenController()
 {
+    Random::Instance()->Seed(0);
+
 	bool allTests = CommandLineParser::Instance()->CommandIsFound("all");
 	bool allWithUI = CommandLineParser::Instance()->CommandIsFound("all_ui");
 

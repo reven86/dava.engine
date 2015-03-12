@@ -50,7 +50,7 @@ void PerfomanceTest::LoadResources()
     camera->SetPosition(Vector3(-40, 4, 60));
     camera->SetTarget(Vector3(-40, -6, 53));
     camera->SetUp(Vector3(0.0f, 0.0f, 1.0f));
-    camera->SetLeft(Vector3(-1.0f, 0.0f, 0.0f));
+    camera->SetLeft(Vector3(0.0f, -1.0f, 0.0f));
     camera->SetFOV(70.0f);
     camera->SetZFar(5000);
     camera->SetZNear(1);
@@ -68,10 +68,10 @@ void PerfomanceTest::UnloadResources()
     BaseTest::UnloadResources();
 }
 
-void PerfomanceTest::PerformTestLogic()
+void PerfomanceTest::PerformTestLogic(float32 timeElapsed)
 {
     const Matrix4& localTransform = stoneEntity->GetLocalTransform();
-    Matrix4 newTransform = Matrix4::MakeRotation(Vector3(0.0f, 0.0f, 1.0f), DAVA::DegToRad(1.0f));
+    Matrix4 newTransform = Matrix4::MakeRotation(Vector3(0.0f, 0.0f, 1.0f), DAVA::DegToRad(1.0f * timeElapsed));
     
     newTransform *= localTransform;
     stoneEntity->SetLocalTransform(newTransform);

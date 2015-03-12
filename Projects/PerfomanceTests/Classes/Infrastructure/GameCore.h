@@ -38,6 +38,7 @@
 #include "Infrastructure/Controller/SingleTestFlowController.h"
 
 #include "Tests/PerfomanceTest.h"
+#include "Tests/GlobalPerformanceTest.h"
 
 #include <fstream>
 

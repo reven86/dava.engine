@@ -55,7 +55,7 @@ public:
     
     void BeginFrame() override;
     void EndFrame() override;
-    void Update(float32 timeElapsed) override;
+    void SystemUpdate(float32 timeElapsed) override;
     
     const List<FrameInfo>& GetFramesInfo() const;
     const String& GetName() const;
@@ -77,7 +77,7 @@ protected:
     void LoadResources() override;
     void UnloadResources() override;
     
-    virtual void PerformTestLogic() = 0;
+    virtual void PerformTestLogic(float32 timeElapsed) = 0;
     
 private:
     

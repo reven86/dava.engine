@@ -77,38 +77,22 @@ void BaseTest::OnFinish()
     elapsedTime = SystemTimer::Instance()->FrameStampTimeMS() - startTime;
 }
 
-void BaseTest::Update(float32 timeElapsed)
+void BaseTest::SystemUpdate(float32 timeElapsed)
 {
     bool frameForDebug = GetFrameNumber() > (GetDebugFrame() + BaseTest::FRAME_OFFSET);
-    float32 delta = timeElapsed;
+    float32 delta = 0.0f;
     
-    if (IsDebuggable())
+    if (frameNumber > FRAME_OFFSET && !(IsDebuggable() && frameForDebug))
     {
-        if (frameForDebug)
-        {
-            delta = 0.0f;
-        }
-        else
-        {
-            PerformTestLogic();
-        }
-    }
-    else
-    {
-        delta = 0.0f;
-        
-        if (frameNumber > FRAME_OFFSET)
-        {
-            delta = fixedDelta > 0 ? fixedDelta : timeElapsed;
-            
-            frames.push_back(FrameInfo(timeElapsed, frameNumber));  
-            testTime += timeElapsed;
-            
-            PerformTestLogic();
-        }   
-    }
+        delta = fixedDelta > 0 ? fixedDelta : timeElapsed;
 
-    BaseScreen::Update(delta);
+        frames.push_back(FrameInfo(timeElapsed, frameNumber));
+        testTime += timeElapsed;
+
+        PerformTestLogic(delta);
+    }
+    
+    BaseScreen::SystemUpdate(delta);
 }
 
 void BaseTest::BeginFrame()
