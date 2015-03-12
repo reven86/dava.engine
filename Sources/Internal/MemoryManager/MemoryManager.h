@@ -63,16 +63,6 @@ class MemoryManager final
 public:
     typedef void(*DumpRequestCallback)(void* arg, int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd);
 
-private:
-    // Make ctor and dtor private to disallow external creation of MemoryManager
-    MemoryManager() = default;
-    ~MemoryManager() = default;
-
-    MemoryManager(const MemoryManager&) = delete;
-    MemoryManager& operator = (const MemoryManager&) = delete;
-    MemoryManager(MemoryManager&&) = delete;
-    MemoryManager& operator = (MemoryManager&&) = delete;
-
 public:
     static MemoryManager* Instance();
 
@@ -103,6 +93,16 @@ public:
     void SetCurrentActiveLabel(uint32 label);
 
 private:
+    // Make construtor and destructor private to disallow external creation of MemoryManager
+    MemoryManager() = default;
+    ~MemoryManager() = default;
+
+    MemoryManager(const MemoryManager&) = delete;
+    MemoryManager& operator = (const MemoryManager&) = delete;
+    MemoryManager(MemoryManager&&) = delete;
+    MemoryManager& operator = (MemoryManager&&) = delete;
+
+private:
     static bool IsInternalAllocationPool(uint32 poolIndex);
 
     void LeaveScope(uint32 tagToLeave);
@@ -129,8 +129,8 @@ private:
     AllocPoolStat statLabel[MMConst::MAX_LABEL_COUNT][MMConst::MAX_ALLOC_POOL_COUNT];
     std::atomic<uint32> currentActiveLabel;
 
-    typedef DAVA::Spinlock MutexType;
-    typedef DAVA::LockGuard<MutexType> LockType;
+    using MutexType = Spinlock;
+    using LockType = LockGuard<MutexType>;
     mutable MutexType mutex;
     mutable MutexType backtraceMutex;
     
@@ -140,9 +140,9 @@ private:
     template<typename T>
     using InternalAllocator = MemoryManagerAllocator<T, unsigned(-1)>;
 
-    typedef std::basic_string<char8, std::char_traits<char8>, InternalAllocator<char8>> InternalString;
-    typedef std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>> SymbolMap;
-    typedef std::unordered_set<Backtrace, size_t(*)(const Backtrace&), bool(*)(const Backtrace&, const Backtrace&), InternalAllocator<Backtrace>> BacktraceSet;
+    using InternalString = std::basic_string<char8, std::char_traits<char8>, InternalAllocator<char8>>;
+    using SymbolMap = std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>>;
+    using BacktraceSet = std::unordered_set<Backtrace, size_t(*)(const Backtrace&), bool(*)(const Backtrace&, const Backtrace&), InternalAllocator<Backtrace>>;
 
     // Room for symbol table map and backtrace set for placement new
     // Use std::aligned_storage<...>::type as std::aligned_storage_t<...> doesn't work on Android
@@ -158,7 +158,6 @@ private:
     static MMItemName tagNames[MMConst::MAX_TAG_COUNT];                  // Names of tags
     static MMItemName allocPoolNames[MMConst::MAX_ALLOC_POOL_COUNT];     // Names of allocation pools
     static MMItemName allocLabelsNames[MMConst::MAX_LABEL_COUNT];
-
 
     static size_t registeredTagCount;                           // Number of registered tags including predefined
     static size_t registeredAllocPoolCount;                     // Number of registered allocation pools including predefined

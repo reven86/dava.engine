@@ -218,15 +218,15 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
 
 DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, uint32 poolIndex)
 {
+    // TODO: check whether size is integral multiple of align
+    assert(align > 0 && 0 == (align & (align - 1)));    // Check whether align is power of 2
+    assert(IsInternalAllocationPool(poolIndex) || poolIndex < MMConst::MAX_ALLOC_POOL_COUNT);
+
     // On zero-sized allocation request allocate 1 byte to return unique memory block
     if (0 == size)
     {
         size = 1;
     }
-
-    // TODO: check whether size is integral multiple of align
-    assert(align > 0 && 0 == (align & (align - 1)));    // Check whether align is power of 2
-    assert(IsInternalAllocationPool(poolIndex) || poolIndex < MMConst::MAX_ALLOC_POOL_COUNT);
 
     if (align < BLOCK_ALIGN)
     {
@@ -301,7 +301,10 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, ui
 
 void* MemoryManager::Reallocate(void* ptr, size_t newSize)
 {
-    assert(ptr != nullptr);     // This realloc must not be called with ptr == nullptr
+    if (nullptr == ptr)
+    {
+        return malloc(newSize);
+    }
     
     MemoryBlock* block = IsTrackedBlock(ptr);
     if (block != nullptr)
