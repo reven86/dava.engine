@@ -358,7 +358,6 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlNode.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlParser.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\Accelerometer.h" />
-    <ClInclude Include="..\..\Sources\Internal\Input\AccelerometeriPhone.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\GamepadDevice.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\InputCallback.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\InputSystem.h" />
@@ -395,6 +394,7 @@
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManager.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerTypes.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerAllocator.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\Buffer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimerTemplate.h" />
@@ -902,6 +902,7 @@
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Vector.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocThunk.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AndroidMallocSize.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\MallocHook.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\MemoryManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\OperatorNewHook.cpp" />

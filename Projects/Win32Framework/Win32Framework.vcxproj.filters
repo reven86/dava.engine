@@ -393,9 +393,6 @@
     <ClInclude Include="..\..\Sources\Internal\Input\Accelerometer.h">
       <Filter>Internal\Input</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Input\AccelerometeriPhone.h">
-      <Filter>Internal\Input</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Math\AABBox2.h">
       <Filter>Internal\Math</Filter>
     </ClInclude>
@@ -1815,6 +1812,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetClient.h">
       <Filter>Internal\Network\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h">
+      <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3240,6 +3240,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetClient.cpp">
       <Filter>Internal\Network\Services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AndroidMallocSize.cpp">
+      <Filter>Internal\MemoryManager</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
