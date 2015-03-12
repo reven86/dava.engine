@@ -162,7 +162,7 @@ namespace DAVA
 			FileSystem::Instance()->CreateDirectory(logsFolder);
 		}
         autoSys->testIndex++;
-        logFilePath = logsFolder + Format("/%s:%s:%s:%d.log", autoSys->groupName.c_str(), autoSys->testFileName.c_str(), autoSys->runId.c_str(), autoSys->testIndex);
+        logFilePath = logsFolder + Format("/%s_%s_%s_%d.log", autoSys->groupName.c_str(), autoSys->testFileName.c_str(), autoSys->runId.c_str(), autoSys->testIndex);
 		if (FileSystem::Instance()->IsFile(logFilePath))
 		{
 			FileSystem::Instance()->DeleteFile(logFilePath);
@@ -257,7 +257,7 @@ namespace DAVA
 
 	bool AutotestingDB::SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive *archive)
 	{
-		String fileName = Format("/%s:%s:%s:%d:%s.yaml", autoSys->groupName.c_str(), autoSys->testFileName.c_str(), autoSys->runId.c_str(), autoSys->testIndex, archiveName.c_str());
+		String fileName = Format("/%s_%s_%s_%d_%s.yaml", autoSys->groupName.c_str(), autoSys->testFileName.c_str(), autoSys->runId.c_str(), autoSys->testIndex, archiveName.c_str());
         Logger::Info("AutotestingDB::Save keyed archive '%s' to device.", fileName.c_str());
 		return archive->SaveToYamlFile(logsFolder + fileName);
 	}
