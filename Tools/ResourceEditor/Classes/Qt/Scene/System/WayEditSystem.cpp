@@ -104,30 +104,6 @@ void WayEditSystem::RemoveEntity(DAVA::Entity * removedPoint)
     }
 }
 
-void WayEditSystem::RemoveEntitiesGroup(const EntityGroup &entityGroup)
-{
-    sceneEditor->BeginBatch("Remove entities");
-
-    size_t size = entityGroup.Size();
-    for (size_t i = 0; i < size; ++i)
-    {
-        DAVA::Entity* entity = entityGroup.GetEntity(i);
-        if (entity->GetNotRemovable() == false)
-        {
-            if (GetWaypointComponent(entity))
-            {
-                RemoveWayPoint(entity);
-            }
-            else
-            {
-                sceneEditor->Exec(new EntityRemoveCommand(entity));
-            }
-        }
-    }
-
-    sceneEditor->EndBatch();
-}
-
 void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
 {
     DAVA::Entity* startPoint = mapStartPoints[removedPoint->GetParent()];

@@ -119,33 +119,25 @@ void StructureSystem::Remove(const EntityGroup &entityGroup)
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
 	if(NULL != sceneEditor && entityGroup.Size() > 0)
 	{
-        if (sceneEditor->wayEditSystem->IsWayEditEnabled())
-        {
-            // waypoint editor need to be the first recipient of waypoint remove event
-            // as it generates other add-remove commands that need to be in single batch
-            sceneEditor->wayEditSystem->RemoveEntitiesGroup(entityGroup);
-        }
-        else
-        {
-            if (entityGroup.Size() > 1)
-            {
-                sceneEditor->BeginBatch("Remove entities");
-            }
+        sceneEditor->BeginBatch("Remove entities");
 
-            for (size_t i = 0; i < entityGroup.Size(); ++i)
+        for (size_t i = 0; i < entityGroup.Size(); ++i)
+        {
+            DAVA::Entity *entity = entityGroup.GetEntity(i);
+            if (entity->GetNotRemovable() == false)
             {
-                DAVA::Entity *entity = entityGroup.GetEntity(i);
-                if (entity->GetNotRemovable() == false)
+                if (sceneEditor->wayEditSystem->IsWayEditEnabled() && GetWaypointComponent(entity))
+                {
+                    sceneEditor->wayEditSystem->RemoveWayPoint(entity);
+                }
+                else
                 {
                     sceneEditor->Exec(new EntityRemoveCommand(entity));
                 }
             }
-
-            if (entityGroup.Size() > 1)
-            {
-                sceneEditor->EndBatch();
-            }
         }
+
+        sceneEditor->EndBatch();
 
 		EmitChanged();
 	}

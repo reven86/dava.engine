@@ -58,13 +58,13 @@ public:
     void EnableWayEdit(bool enable);
     bool IsWayEditEnabled() const;
 
-    void RemoveEntitiesGroup(const EntityGroup &entityGroup);
+    void RemoveWayPoint(DAVA::Entity* entity);
 
-    virtual void Process(DAVA::float32 timeElapsed);
-    virtual void Input(DAVA::UIEvent *event);
-    
-    virtual void AddEntity(DAVA::Entity * entity);
-    virtual void RemoveEntity(DAVA::Entity * entity);
+    void Process(DAVA::float32 timeElapsed) override;
+    void Input(DAVA::UIEvent *event) override;
+
+    void AddEntity(DAVA::Entity * entity) override;
+    void RemoveEntity(DAVA::Entity * entity) override;
 
 protected:
     void Draw();
@@ -74,7 +74,6 @@ protected:
     DAVA::Entity* CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 pos);
     DAVA::Entity* CopyWayPoint(DAVA::Entity* waypoint);
 
-    void RemoveWayPoint(DAVA::Entity* entity);
     void RemoveEdge(DAVA::Entity* entity, DAVA::EdgeComponent * edgeComponent);
 
     void DefineAddOrRemoveEdges(const EntityGroup& srcPoints, DAVA::Entity* dstPoint, EntityGroup& toAddEdge, EntityGroup& toRemoveEdge);
