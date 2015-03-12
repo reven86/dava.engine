@@ -57,6 +57,7 @@ public:
 
 	void BeginBatch(const DAVA::String &text);
 	void EndBatch();
+    bool IsBatchStarted() const;
 
 	bool IsClean() const;
 	void SetClean(bool clean);

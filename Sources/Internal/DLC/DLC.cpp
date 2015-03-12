@@ -405,6 +405,9 @@ void DLC::FSM(DLCEvent event)
                     case DS_CHECKING_INFO:
                         StepCheckInfoCancel();
                         break;
+                    case DS_CHECKING_META:
+                        StepCheckMetaCancel();
+                        break;
                     case DS_CHECKING_PATCH:
                         StepCheckPatchCancel();
                         break;
@@ -417,7 +420,7 @@ void DLC::FSM(DLCEvent event)
                         StepPatchCancel();
                         break;
                     default:
-                        Logger::Error("Unhanded state canceling\n");
+                        Logger::Error("Unhanded state %d canceling\n", oldState);
                         DVASSERT(false);
                         break;
                 }

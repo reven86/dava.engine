@@ -39,10 +39,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Entity/SceneSystem.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
+#include "Scene3D/Components/Waypoint/EdgeComponent.h"
 
 // editor systems
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/System/CollisionSystem.h"
+
+class SceneEditor2;
 
 class WayEditSystem : public DAVA::SceneSystem
 {
@@ -55,12 +58,13 @@ public:
     void EnableWayEdit(bool enable);
     bool IsWayEditEnabled() const;
 
+    void RemovePointsGroup(const EntityGroup &entityGroup);
+
     virtual void Process(DAVA::float32 timeElapsed);
     virtual void Input(DAVA::UIEvent *event);
     
     virtual void AddEntity(DAVA::Entity * entity);
     virtual void RemoveEntity(DAVA::Entity * entity);
-
 
 protected:
     void Draw();
@@ -70,16 +74,18 @@ protected:
     DAVA::Entity* CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 pos);
     DAVA::Entity* CopyWayPoint(DAVA::Entity* waypoint);
 
-    
-    EntityGroup GetEntitiesForAddEdges(DAVA::Entity *nextEntity);
+    void RemoveWayPoint(DAVA::Entity* entity);
+    void RemoveEdge(DAVA::Entity* entity, DAVA::EdgeComponent * edgeComponent);
+
+    void DefineAddOrRemoveEdges(const EntityGroup& srcPoints, DAVA::Entity* dstPoint, EntityGroup& toAddEdge, EntityGroup& toRemoveEdge);
     void AddEdges(const EntityGroup & group, DAVA::Entity *nextEntity);
-    
+    void RemoveEdges(const EntityGroup & group, DAVA::Entity *nextEntity);
+
     void ResetSelection();
     void ProcessSelection();
-    
+    void UpdateSelectionMask();
+    EntityGroup FilterPrevSelection(DAVA::Entity *parentEntity);
 
-	void UpdateSelectionMask();
-    
 protected:
     bool isEnabled;
 
@@ -87,7 +93,7 @@ protected:
     EntityGroup selectedWaypoints;
     EntityGroup prevSelectedWaypoints;
     
-    
+    SceneEditor2 *sceneEditor;
     SceneSelectionSystem *selectionSystem;
     SceneCollisionSystem *collisionSystem;
 
@@ -96,6 +102,7 @@ protected:
     DAVA::Vector<DAVA::Entity *> waypointEntities;
     
     DAVA::Entity * underCursorPathEntity;
+    bool inCloneState = false;
 };
 
 #endif // __SCENE_WAYEDIT_SYSTEM_H__

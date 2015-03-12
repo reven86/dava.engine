@@ -42,11 +42,11 @@ protected:
 public:
 	CustomColorsProxy(int32 size);
 	
-	Sprite* GetSprite();
+	Texture * GetTexture();
 	void UpdateRect(const Rect& rect);
 	
-	void ResetSpriteChanged();
-	bool IsSpriteChanged();
+	void ResetTargetChanged();
+	bool IsTargetChanged();
     
     void ResetLoadedState(bool isLoaded = true);
     bool IsTextureLoaded() const;
@@ -61,7 +61,7 @@ public:
 	void UpdateSpriteFromConfig();
 	
 protected:
-	Sprite* customColorsSprite;
+	Texture* customColorsRenderTarget;
 	Rect changedRect;
 	bool spriteChanged;
     bool textureLoaded;
