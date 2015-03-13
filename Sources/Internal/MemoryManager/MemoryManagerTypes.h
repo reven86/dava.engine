@@ -43,7 +43,8 @@ struct MMConst
     static const size_t MAX_ALLOC_POOL_COUNT = 8;       // Max supported count of allocation pools
     static const size_t MAX_TAG_COUNT = 8;              // Max supported count of tags
     static const size_t MAX_NAME_LENGTH = 16;           // Max length of name: tag, allocation type, counter
-    static const size_t MAX_LABEL_COUNT = 16;          // Max supported count for lables
+    static const size_t MAX_LABEL_COUNT = 16;           // Max supported count for lables
+    
     enum {
         DUMP_REQUEST_USER,
         DUMP_REQUEST_TAG,

@@ -55,7 +55,14 @@ class MemoryManager final
     static const size_t BLOCK_ALIGN = 16;
 
     struct MemoryBlock;
-    struct Backtrace;
+    struct Backtrace
+    {
+        size_t nref;
+        size_t hash;
+        size_t depth;
+        bool symbolsCollected;
+        void* frames[MMConst::BACKTRACE_DEPTH];
+    };
 
 public:
     typedef void(*DumpRequestCallback)(void* arg, int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd);
@@ -100,15 +107,15 @@ private:
     MemoryManager& operator = (MemoryManager&&) = delete;
 
 private:
-    static bool IsInternalAllocationPool(uint32 poolIndex);
+    static bool IsInternalAllocationPool(size_t poolIndex);
 
     void InsertBlock(MemoryBlock* block);
     void RemoveBlock(MemoryBlock* block);
     MemoryBlock* IsTrackedBlock(void* ptr);
     MemoryBlock* FindBlockByOrderNo(uint32 orderNo);
 
-    void UpdateStatAfterAlloc(MemoryBlock* block, uint32 poolIndex);
-    void UpdateStatAfterDealloc(MemoryBlock* block, uint32 poolIndex);
+    void UpdateStatAfterAlloc(MemoryBlock* block, size_t poolIndex);
+    void UpdateStatAfterDealloc(MemoryBlock* block, size_t poolIndex);
 
     void InsertBacktrace(Backtrace& backtrace);
     void RemoveBacktrace(size_t hash);
@@ -137,16 +144,15 @@ private:
     void* callbackArg;
 
     template<typename T>
-    using InternalAllocator = MemoryManagerAllocator<T, unsigned(-1)>;
+    using InternalAllocator = MemoryManagerAllocator<T, size_t(-1)>;
 
     using InternalString = std::basic_string<char8, std::char_traits<char8>, InternalAllocator<char8>>;
     using SymbolMap = std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>>;
-    struct KeyHash { size_t operator () (const size_t key) { return key; } };
+    struct KeyHash { size_t operator () (const size_t key) const { return key; } };
     using BacktraceMap = std::unordered_map<size_t, Backtrace, KeyHash, std::equal_to<size_t>, InternalAllocator<std::pair<const size_t, Backtrace>>>;
 
     // Room for symbol table map and backtrace set for placement new
     // Use std::aligned_storage<...>::type as std::aligned_storage_t<...> doesn't work on Android
-    //std::aligned_storage<sizeof(BacktraceSet), DAVA_ALIGNOF(BacktraceSet)>::type backtraceStorage;
     std::aligned_storage<sizeof(BacktraceMap), DAVA_ALIGNOF(BacktraceMap)>::type backtraceStorage;
     std::aligned_storage<sizeof(SymbolMap), DAVA_ALIGNOF(SymbolMap)>::type symbolStorage;
     BacktraceMap* backtraces;
@@ -166,9 +172,9 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline bool MemoryManager::IsInternalAllocationPool(uint32 poolIndex)
+inline bool MemoryManager::IsInternalAllocationPool(size_t poolIndex)
 {
-    return static_cast<int32>(poolIndex) < 0;
+    return static_cast<size_t>(-1) == poolIndex;
 }
 
 }   // namespace DAVA

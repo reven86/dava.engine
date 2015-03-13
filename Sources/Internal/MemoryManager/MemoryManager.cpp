@@ -50,15 +50,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace DAVA
 {
 
-struct MemoryManager::Backtrace
-{
-    size_t nref;
-    size_t hash;
-    size_t depth;
-    bool symbolsCollected;
-    void* frames[MMConst::BACKTRACE_DEPTH];
-};
-
 struct MemoryManager::MemoryBlock
 {
     MemoryBlock* prev;      // Pointer to previous block
@@ -75,7 +66,7 @@ struct MemoryManager::MemoryBlock
 };
 
 MMItemName MemoryManager::tagNames[MMConst::MAX_TAG_COUNT] = {
-    {"application"}
+    { "application" }
 };
 
 MMItemName MemoryManager::allocPoolNames[MMConst::MAX_ALLOC_POOL_COUNT] = {
@@ -444,7 +435,7 @@ MemoryManager::MemoryBlock* MemoryManager::FindBlockByOrderNo(uint32 orderNo)
     return nullptr;
 }
 
-void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, uint32 poolIndex)
+void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, size_t poolIndex)
 {
     for (size_t i = 0;i <= tags.depth;++i)
     {
@@ -467,7 +458,7 @@ void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, uint32 poolIndex)
     statGeneral.realSize += MallocHook::MallocSize(block->realBlockStart);
 }
 
-void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, uint32 poolIndex)
+void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, size_t poolIndex)
 {
     for (size_t i = 0;i <= tags.depth;++i)
     {
