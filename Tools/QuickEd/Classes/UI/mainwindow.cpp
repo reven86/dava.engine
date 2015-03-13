@@ -239,7 +239,7 @@ void MainWindow::InitMenu()
     // Pixelization.
     ui->actionPixelized->setChecked(EditorSettings::Instance()->IsPixelized());
     connect(ui->actionPixelized, &QAction::triggered, this, &MainWindow::OnPixelizationStateChanged);
-    UpdateMenu();
+    DisableActions();
 }
 
 void MainWindow::OnSaveDocument()
@@ -320,7 +320,7 @@ void MainWindow::SetupViewMenu()
     ui->menuView->addAction(ui->actionZoomOut);
 }
 
-void MainWindow::UpdateMenu()
+void MainWindow::DisableActions()
 {
     ui->actionSaveAllDocuments->setEnabled(false);
     ui->actionSaveDocument->setEnabled(false);

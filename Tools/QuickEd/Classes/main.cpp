@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     // MainWindow have to be released prior to the framework, so use separate scope for it.
     {
         BaseController c;
-        c.start();
+        c.Start();
         result = a.exec();
     }
 

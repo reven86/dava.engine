@@ -17,7 +17,7 @@ class BaseController : public QObject
 public:
     explicit BaseController(QObject *parent = nullptr);
     ~BaseController();
-    void start();
+    void Start();
 
 protected slots:
     void OnCleanChanged(bool clean);
@@ -50,7 +50,7 @@ private:
     QUndoGroup undoGroup;
     Project project;
 
-//properties
+    //properties. must be at the end of file. Properties interface declared at the begin of the class
 public:
     int Count() const;
     int CurrentIndex() const;

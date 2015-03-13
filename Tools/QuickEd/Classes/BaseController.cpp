@@ -39,7 +39,7 @@ BaseController::~BaseController()
 
 }
 
-void BaseController::start()
+void BaseController::Start()
 {
     mainWindow.show();
 }
@@ -315,7 +315,7 @@ Document *BaseController::GetCurrentDocument() const
     return documents.at(CurrentIndex());
 }
 
-//properties
+//properties. must be at the end of file
 int BaseController::Count() const
 {
     return count;

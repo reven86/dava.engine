@@ -108,7 +108,7 @@ private slots:
 private:
     void InitMenu();
     void SetupViewMenu();
-    void UpdateMenu();
+    void DisableActions();
     void UpdateProjectSettings(const QString& filename);
 
     // Save/restore positions of DockWidgets and main window geometry
