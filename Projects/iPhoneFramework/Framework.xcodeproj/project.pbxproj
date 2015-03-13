@@ -100,7 +100,6 @@
 		02FD7EC419237D43007762C0 /* SpeedTreeUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02FD7EC019237D43007762C0 /* SpeedTreeUpdateSystem.h */; };
 		02FD7EC519237D43007762C0 /* WindSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02FD7EC119237D43007762C0 /* WindSystem.cpp */; };
 		02FD7EC619237D43007762C0 /* WindSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02FD7EC219237D43007762C0 /* WindSystem.h */; };
-		02FD7F0A1924997C007762C0 /* Framework_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* Framework_Prefix.pch */; };
 		02FD7F0B1924997C007762C0 /* AnimatedObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C7A316B9326D002BD35F /* AnimatedObject.h */; };
 		02FD7F0C1924997C007762C0 /* Animation.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C7A516B9326D002BD35F /* Animation.h */; };
 		02FD7F0D1924997C007762C0 /* AnimationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C7A716B9326D002BD35F /* AnimationManager.h */; };
@@ -1108,7 +1107,6 @@
 		A6E4FDF61761D40200B48E41 /* CustomPropertiesComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E4FDF21761D40200B48E41 /* CustomPropertiesComponent.h */; };
 		A6E4FDFB1761D83100B48E41 /* ActionUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6E4FDF91761D83100B48E41 /* ActionUpdateSystem.cpp */; };
 		A6E4FDFC1761D83100B48E41 /* ActionUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E4FDFA1761D83100B48E41 /* ActionUpdateSystem.h */; };
-		AA747D9F0F9514B9006C5449 /* Framework_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* Framework_Prefix.pch */; };
 		B4C29D52199B933F001B83FE /* SceneCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B4C29D50199B933F001B83FE /* SceneCache.cpp */; };
 		B4C29D53199B933F001B83FE /* SceneCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B4C29D50199B933F001B83FE /* SceneCache.cpp */; };
 		B4C29D54199B933F001B83FE /* SceneCache.h in Headers */ = {isa = PBXBuildFile; fileRef = B4C29D51199B933F001B83FE /* SceneCache.h */; };
@@ -2170,7 +2168,6 @@
 		A6E4FDF21761D40200B48E41 /* CustomPropertiesComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomPropertiesComponent.h; sourceTree = "<group>"; };
 		A6E4FDF91761D83100B48E41 /* ActionUpdateSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ActionUpdateSystem.cpp; sourceTree = "<group>"; };
 		A6E4FDFA1761D83100B48E41 /* ActionUpdateSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActionUpdateSystem.h; sourceTree = "<group>"; };
-		AA747D9E0F9514B9006C5449 /* Framework_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Framework_Prefix.pch; sourceTree = SOURCE_ROOT; };
 		B4C29D50199B933F001B83FE /* SceneCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneCache.cpp; sourceTree = "<group>"; };
 		B4C29D51199B933F001B83FE /* SceneCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneCache.h; sourceTree = "<group>"; };
 		B72364A21A8D01D6009940BE /* UIComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIComponent.cpp; sourceTree = "<group>"; };
@@ -2998,7 +2995,6 @@
 			isa = PBXGroup;
 			children = (
 				EA7DEDD9144854E900D9E652 /* libfreetype_ios.a */,
-				AA747D9E0F9514B9006C5449 /* Framework_Prefix.pch */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -4362,7 +4358,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				02FD7F0A1924997C007762C0 /* Framework_Prefix.pch in Headers */,
 				02FD7F0B1924997C007762C0 /* AnimatedObject.h in Headers */,
 				02FD7F0C1924997C007762C0 /* Animation.h in Headers */,
 				02FD7F0D1924997C007762C0 /* AnimationManager.h in Headers */,
@@ -4823,7 +4818,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				84D18BFC19201BEF009E3E90 /* Image.h in Headers */,
-				AA747D9F0F9514B9006C5449 /* Framework_Prefix.pch in Headers */,
 				E8B3CA7F16B9326E002BD35F /* AnimatedObject.h in Headers */,
 				50194DBD1A52D92600557DAB /* NetworkCommon.h in Headers */,
 				C172EC2B18C9F9D4004309CF /* TextBlockDistanceRender.h in Headers */,
@@ -6291,7 +6285,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_PREFIX_HEADER = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,
@@ -6338,7 +6332,7 @@
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_PREFIX_HEADER = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,
@@ -6384,7 +6378,7 @@
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_PREFIX_HEADER = "";
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
@@ -6425,7 +6419,7 @@
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_PREFIX_HEADER = "";
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
@@ -6468,7 +6462,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_PREFIX_HEADER = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,
@@ -6517,7 +6511,7 @@
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_PREFIX_HEADER = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,
@@ -6717,7 +6711,7 @@
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_PREFIX_HEADER = "";
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
@@ -6810,7 +6804,7 @@
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_PREFIX_HEADER = "";
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;

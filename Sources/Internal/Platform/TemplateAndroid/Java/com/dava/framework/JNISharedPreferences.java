@@ -8,44 +8,54 @@ public class JNISharedPreferences {
 	SharedPreferences.Editor editor = null;
 	static String name = "DavaPreferences";
 
-	static String GetName()
+	public static String GetName()
 	{
 		return name;
 	}
 	
-	static Object GetSharedPreferences()
+	public static Object GetSharedPreferences()
 	{
 		JNISharedPreferences self = new JNISharedPreferences();
 		return self;
 	}
 
-	JNISharedPreferences()
+	public JNISharedPreferences()
 	{
 		preferences = JNIActivity.GetActivity().getSharedPreferences(name, 0);
 		editor = preferences.edit();
 	}
 
-	String GetString(String key, String defaultValue)
+	public String GetString(String key, String defaultValue)
 	{	
 		return preferences.getString(key, defaultValue); 
 	}
 	
-	void PutString(String key, String value)
+	public long GetLong(String key, long defaultValue)
+	{
+		return preferences.getLong(key,  defaultValue);
+	}
+	
+	public void PutString(String key, String value)
 	{	
 		editor.putString(key, value);
 	}
+
+	public void PutLong(String key, long value)
+	{	
+		editor.putLong(key, value);
+	}
 	
-	void Remove(String key)
+	public void Remove(String key)
 	{
 		editor.remove(key);
 	}
 	
-	void Clear()
+	public void Clear()
 	{
 		editor.clear();
 	}
 	
-	void Push()
+	public void Push()
 	{	
 		editor.apply();
 	}

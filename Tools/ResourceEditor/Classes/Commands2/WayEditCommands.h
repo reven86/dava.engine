@@ -27,54 +27,28 @@
 =====================================================================================*/
 
 
-#include "DataVaultTest.h"
-#include "DataStorage/DataStorage.h"
 
-DataVaultTest::DataVaultTest()
-    : TestTemplate<DataVaultTest>("DataVaultTest")
+#ifndef __WAYEDIT_COMMANDS_H__
+#define __WAYEDIT_COMMANDS_H__
+
+#include "Commands2/Command2.h"
+
+class EnableWayEditCommand : public Command2
 {
-    RegisterFunction(this, &DataVaultTest::TestFunction, "TestFunction", NULL);
-}
+public:
+    EnableWayEditCommand() : Command2(CMDID_ENABLE_WAYEDIT, "Enable waypoint edit mode") {}
+    void Undo() override {}
+    void Redo() override {}
+    DAVA::Entity* GetEntity() const override { return nullptr; }
+};
 
-void DataVaultTest::LoadResources()
+class DisableWayEditCommand : public Command2
 {
+public:
+    DisableWayEditCommand() : Command2(CMDID_DISABLE_WAYEDIT, "Disable waypoint edit mode") {}
+    void Undo() override {}
+    void Redo() override {}
+    DAVA::Entity* GetEntity() const override { return nullptr; }
+};
 
-}
-
-void DataVaultTest::UnloadResources()
-{
-
-}
-
-void DataVaultTest::Draw(const DAVA::UIGeometricData &geometricData)
-{
-}
-
-void DataVaultTest::TestFunction(TestTemplate<DataVaultTest>::PerfFuncData *data)
-{
-    IDataStorage *storage = DataStorage::Create();
-
-    storage->Clear();
-    storage->Push();
-    storage->SetStringValue("Test", "Test");
-    storage->Push();
-    String ret = storage->GetStringValue("Test");
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-    TEST_VERIFY("" == ret);
-#else
-    TEST_VERIFY("Test" == ret);
-    storage->RemoveEntry("Test");
-    storage->Push();
-    ret = storage->GetStringValue("Test");
-    TEST_VERIFY("Test" != ret);
-    
-    int64 iret = storage->GetLongValue("Test");
-    TEST_VERIFY(0 == iret);
-    
-    storage->SetLongValue("Test", 1);
-    storage->Push();
-    iret = storage->GetLongValue("Test");
-    TEST_VERIFY(1 == iret);
-#endif
-    SafeRelease(storage);
-}
+#endif // __WAYEDIT_COMMANDS_H__
