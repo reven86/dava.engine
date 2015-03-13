@@ -27,90 +27,21 @@
 =====================================================================================*/
 
 
-#include "GameCore.h"
+#import "Platform/TemplateiOS/HelperAppDelegate.h"
+#import "DAVAEngine.h"
+#import "GameCore.h"
 
-#include "Platform/DateTime.h"
-#include "TexturePacker/CommandLineParser.h"
-#include "Utils/Utils.h"
+#if defined(__DAVAENGINE_IPHONE__)
 
-//$PERFOMANCETEST_INCLUDE
+#import <UIKit/UIKit.h>
 
-#include <fstream>
-#include <algorithm>
-
-using namespace DAVA;
-
-GameCore::GameCore()
-    :   testFlowController(nullptr)
-    
+@interface iPhoneProjectDelegate : HelperAppDelegate
 {
+    UIWindow *window;
 }
 
-void GameCore::OnAppStarted()
-{
-	RegisterTests();
-	InitScreenController();
+@property (nonatomic, retain) IBOutlet UIWindow *window;
 
-	if (testChain.empty())
-	{
-		Core::Instance()->Quit();
-	}
-}
- 
-void GameCore::OnAppFinished()
-{
-	testFlowController->Finish();
-    SafeRelease(testFlowController);
-    
+@end
 
-    for(BaseTest* test : testChain)
-	{
-		SafeRelease(test);
-	}
-}
-
-void GameCore::BeginFrame()
-{
-	ApplicationCore::BeginFrame();
-	testFlowController->BeginFrame();
-}
-
-void GameCore::EndFrame()
-{
-	ApplicationCore::EndFrame();
-	testFlowController->EndFrame();
-}
-
-void GameCore::RegisterTests()
-{
-	//testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
-    //testChain.push_back(new GlobalPerformanceTest(1000, 0.016f, 200));
-    testChain.push_back(new GlobalPerformanceTest(90000));
-}
-
-void GameCore::InitScreenController()
-{
-    Random::Instance()->Seed(0);
-
-	bool allTests = CommandLineParser::Instance()->CommandIsFound("all");
-	bool allWithUI = CommandLineParser::Instance()->CommandIsFound("all_ui");
-
-	if (allTests)
-	{
-		testFlowController = new TestChainFlowController(false);
-	}
-	else if (allWithUI)
-	{
-		testFlowController = new TestChainFlowController(true);
-	} 
-	else
-	{
-		testFlowController = new SingleTestFlowController();
-	}
-
-    testFlowController->Init(testChain);
-}
-
-
-
-
+#endif // #if defined(__DAVAENGINE_IPHONE__)

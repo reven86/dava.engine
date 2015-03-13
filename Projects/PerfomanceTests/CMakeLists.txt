@@ -22,16 +22,36 @@ set( PackerToolsSCR          ${DAVA_TOOLS_DIR}/TexturePacker/CommandLineParser.h
 if( WIN32 )
     set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
 endif()
+if( ANDROID )
+    set( PLATFORM_SPECIFIC_FOLDER ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
+
+elseif( MACOS )
+    set( PLATFORM_SPECIFIC_FOLDER "MacOSSpecific" )
+    file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/*.xib" )
+
+elseif( IOS )
+    set( PLATFORM_SPECIFIC_FOLDER "iOSSpecific" )
+    set( IOS_ADD_SRC ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/UnitTests.entitlements )
+
+elseif( WIN32 )
+    set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
+    set( EXECUTABLE_FLAG WIN32 )
+
+endif()
 
 define_source_folders( SRC_ROOT "Classes"  ${PLATFORM_SPECIFIC_FOLDER} ${TeamcityOutput} )
 generate_source_groups_project( )
 
+set( ADDED_SRC            ${PackerToolsSCR} )
 
-set( ADDED_SRC                   ${PackerToolsSCR} )
-set( LIBRARIES                   )
-set( LIBRARIES_RELEASE           )
-set( LIBRARIES_DEBUG             )
-set( ADDED_BINARY_DIR            )
-set( EXECUTABLE_FLAG             WIN32)
+set( MACOS_XIB            ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/MainMenu.xib )
+set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist )
+set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/icon.icns  )
+set( MACOS_DATA           ${CMAKE_CURRENT_LIST_DIR}/Data )
+
+set( LIBRARIES            )
+set( LIBRARIES_RELEASE    )
+set( LIBRARIES_DEBUG      )
+set( ADDED_BINARY_DIR     )
 
 setup_main_executable()
