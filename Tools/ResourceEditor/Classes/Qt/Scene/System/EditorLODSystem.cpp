@@ -355,25 +355,16 @@ bool EditorLODSystem::CanDeleteLod() const
     bool containLayers = false;
     for (auto &lod : GetCurrentLODs())
     {
-        if (GetLodLayersCount(lod) > 0)
-        {
-            containLayers = true;
-            break;
-        }
-    }
-    if (!containLayers)
-    {
-        return false;
-    }
-
-    for (auto &lod : GetCurrentLODs())
-    {
-        if (lod->GetEntity()->GetComponent(Component::PARTICLE_EFFECT_COMPONENT))
+        if (nullptr != lod->GetEntity()->GetComponent(Component::PARTICLE_EFFECT_COMPONENT))
         {
             return false;
         }
+        else if (!containLayers && GetLodLayersCount(lod) > 1)
+        {
+            containLayers = true;
+        }
     }
-    return true;
+    return containLayers;
 }
 
 bool EditorLODSystem::DeleteFirstLOD()
@@ -386,7 +377,10 @@ bool EditorLODSystem::DeleteFirstLOD()
     sceneEditor2->BeginBatch("Delete First LOD");
     for (auto &lod : GetCurrentLODs())
     {
-        sceneEditor2->Exec(new DeleteLODCommand(lod, 0, -1));
+        if (GetLodLayersCount(lod) > 1)
+        {
+            sceneEditor2->Exec(new DeleteLODCommand(lod, 0, -1));
+        }
     }
     sceneEditor2->EndBatch();
     return true;
@@ -402,7 +396,10 @@ bool EditorLODSystem::DeleteLastLOD()
     sceneEditor2->BeginBatch("Delete Last LOD");
     for (auto &lod : GetCurrentLODs())
     {
-        sceneEditor2->Exec(new DeleteLODCommand(lod, GetLodLayersCount(lod) - 1, -1));
+        if (GetLodLayersCount(lod) > 1)
+        {
+            sceneEditor2->Exec(new DeleteLODCommand(lod, GetLodLayersCount(lod) - 1, -1));
+        }
     }
     sceneEditor2->EndBatch();
     return true;

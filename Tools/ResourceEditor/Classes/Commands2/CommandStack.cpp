@@ -36,6 +36,7 @@ CommandStack::CommandStack()
 	, nextCommandIndex(0)
 	, cleanCommandIndex(0)
 	, lastCheckCleanState(true)
+    , nestedBatchesCounter(0)
 	, curBatchCommand(NULL)
 {
 	stackCommandsNotify = new CommandStackNotify(this);
@@ -178,9 +179,7 @@ void CommandStack::Exec(Command2 *command)
 
 void CommandStack::BeginBatch(const DAVA::String &text)
 {
-	DVASSERT(NULL == curBatchCommand);
-
-	if(NULL == curBatchCommand)
+    if (nestedBatchesCounter++ == 0)
 	{
 		curBatchCommand = new CommandBatch();
 		curBatchCommand->SetText(text);
@@ -192,6 +191,12 @@ void CommandStack::EndBatch()
 {
 	if(NULL != curBatchCommand)
 	{
+        --nestedBatchesCounter;
+        DVASSERT(nestedBatchesCounter >= 0);
+
+        if (nestedBatchesCounter > 0)
+            return;
+
 		if(curBatchCommand->Size() > 0)
 		{
 			// all command were already executed in batch

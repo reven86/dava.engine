@@ -355,6 +355,14 @@ void KeyedArchive::SetMatrix4(const String & key, const Matrix4 &value)
 	variantValue->SetMatrix4(value);
 	objectMap[key] = variantValue;
 }
+
+void KeyedArchive::SetColor(const String& key, const Color& value)
+{
+    DeleteKey(key);
+    VariantType* variantValue = new VariantType();
+    variantValue->SetColor(value);
+    objectMap[key] = variantValue;
+}
 	
     
 bool KeyedArchive::IsKeyExists(const String & key)
@@ -516,6 +524,13 @@ Matrix4 KeyedArchive::GetMatrix4(const String & key, const Matrix4 & defaultValu
 {
     if (IsKeyExists(key))
         return objectMap[key]->AsMatrix4();
+    return defaultValue;
+}
+
+Color KeyedArchive::GetColor(const String & key, const Color& defaultValue)
+{
+    if (IsKeyExists(key))
+        return objectMap[key]->AsColor();
     return defaultValue;
 }
     
