@@ -27,10 +27,11 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 #include "AutotestingSystemLua.h"
 #include "Autotesting/AutotestingDB.h"
 
+
 namespace DAVA
 {
 
-    AutotestingSystem::AutotestingSystem()
+	AutotestingSystem::AutotestingSystem()
         : startTimeMS(0)
         , isInit(false)
         , isRunning(false)
@@ -67,7 +68,7 @@ namespace DAVA
         , multiplayerName("")
         , waitTimeLeft(0.0f)
         , waitCheckTimeLeft(0.0f)
-        , luaSystem(NULL)
+        , luaSystem(nullptr)
 	{
 
 	}
@@ -94,7 +95,7 @@ namespace DAVA
 
 		if (isInit)
 		{
-			Logger::Error("AtSystem::OnAppStarted App already initialized.");
+			Logger::Error("AutotestingSystem::OnAppStarted App already initialized.");
 			return;
 		}
 
@@ -181,7 +182,7 @@ namespace DAVA
             ForceQuit("Couldn't get 'RunId' parameter from DB.");
         }
         testIndex = AutotestingDB::Instance()->GetIntTestParameter(deviceName, "TestIndex");
-        if (testIndex == -999)
+		if (testIndex == -9999)
         {
             ForceQuit("Couldn't get TestIndex parameter from DB.");
         }
@@ -291,7 +292,7 @@ namespace DAVA
 
 	void AutotestingSystem::OnTestStarted()
 	{
-		Logger::Debug("AutotestingSystem::OnTestsStarted");
+		Logger::Info("AutotestingSystem::OnTestsStarted");
 		startTimeMS = SystemTimer::Instance()->FrameStampTimeMS();
 		luaSystem->StartTest();
 	}
@@ -326,7 +327,7 @@ namespace DAVA
 		Logger::Info("AutotestingSystem::MakeScreenShot");
 		String currentDateTime = GetCurrentTimeString();
 		screenShotName = Format("%s_%s_%s_%d_%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
-		Logger::Debug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
+		Logger::FrameworkDebug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
 		RenderManager::Instance()->RequestGLScreenShot(this);
 	}
 
@@ -342,7 +343,7 @@ namespace DAVA
 		uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
         image->Save(FilePath(AutotestingDB::Instance()->logsFolder + Format("/%s.png", screenShotName.c_str())));
         uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
-		Logger::Debug("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
+		Logger::FrameworkDebug("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
 	}
 
 	void AutotestingSystem::OnTestsFinished()

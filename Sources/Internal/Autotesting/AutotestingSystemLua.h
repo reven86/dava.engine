@@ -43,7 +43,7 @@
 #include "UI/UIList.h"
 
 #include "FileSystem/LocalizationSystem.h"
-#include "AutotestingSystem.h"
+#include "Autotesting/AutotestingSystem.h"
 
 struct lua_State;
 
@@ -76,11 +76,11 @@ public:
     void Update(float32 timeElapsed);
 
 	static int Print(lua_State* L);
-	int static ReqModule(lua_State* L);
+	static int RequireModule(lua_State* L);
 
-	void static stackDump (lua_State* L);
-	const char *pushnexttemplate (lua_State* L, const char* path);
-	const char *findfile (lua_State* L, const char* name, const char* pname);
+	static void StackDump(lua_State* L);
+	const char *Pushnexttemplate (lua_State* L, const char* path);
+	const char *Findfile (lua_State* L, const char* name, const char* pname);
 #endif //SWIG
     
     // autotesting system api   

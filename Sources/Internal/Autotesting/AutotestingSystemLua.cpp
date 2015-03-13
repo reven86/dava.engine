@@ -2,8 +2,8 @@
 
 #ifdef __DAVAENGINE_AUTOTESTING__
 
-#include "AutotestingSystem.h"
-#include "AutotestingDB.h"
+#include "Autotesting/AutotestingSystem.h"
+#include "Autotesting/AutotestingDB.h"
 
 #include "Utils/Utils.h"
 #include "Platform/DeviceInfo.h"
@@ -18,7 +18,7 @@ extern "C"{
 
 
 extern "C" int luaopen_AutotestingSystem(lua_State *l);
-extern "C" int luaopen_UIControl(lua_State *l); 
+extern "C" int luaopen_UIControl(lua_State *l);
 extern "C" int luaopen_Rect(lua_State *l);
 extern "C" int luaopen_Vector(lua_State *l);
 extern "C" int luaopen_KeyedArchive(lua_State *l);
@@ -55,11 +55,11 @@ namespace DAVA
 	{
 		if (luaState)
 		{
-			Logger::Debug("AutotestingSystemLua::Has initialised already.");
+			Logger::FrameworkDebug("AutotestingSystemLua::Has initialised already.");
 			return;
 		}
 
-		Logger::Debug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.c_str());
+		Logger::FrameworkDebug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.c_str());
 		autotestingLocalizationSystem->SetDirectory("~res:/Autotesting/Strings/");
 		autotestingLocalizationSystem->SetCurrentLocale(LocalizationSystem::Instance()->GetCurrentLocale());
 		autotestingLocalizationSystem->Init();
@@ -70,7 +70,7 @@ namespace DAVA
 		lua_pushcfunction(luaState, &AutotestingSystemLua::Print);
 		lua_setglobal(luaState, "print");
 
-		lua_pushcfunction(luaState, &AutotestingSystemLua::ReqModule);
+		lua_pushcfunction(luaState, &AutotestingSystemLua::RequireModule);
 		lua_setglobal(luaState, "require");
 
 		if (!LoadWrappedLuaObjects())
@@ -109,12 +109,12 @@ namespace DAVA
 	int AutotestingSystemLua::Print(lua_State* L)
 	{
 		const char* str = lua_tostring(L, -1);
-		Logger::Debug("AutotestingSystemLua::Print: %s", str);
+		Logger::FrameworkDebug("AutotestingSystemLua::Print: %s", str);
 		lua_pop(L, 1);
 		return 0;
 	}
 
-	const char* AutotestingSystemLua::pushnexttemplate(lua_State* L, const char* path)
+	const char* AutotestingSystemLua::Pushnexttemplate(lua_State* L, const char* path)
 	{
 		const char *l;
 		while (*path == *LUA_PATHSEP) path++;  /* skip separators */
@@ -125,7 +125,7 @@ namespace DAVA
 		return l;
 	}
 
-	const char* AutotestingSystemLua::findfile(lua_State* L, const char* name, const char* pname)
+	const char* AutotestingSystemLua::Findfile(lua_State* L, const char* name, const char* pname)
 	{
 		const char* path;
 		name = luaL_gsub(L, name, ".", LUA_DIRSEP);
@@ -135,7 +135,7 @@ namespace DAVA
 		if (path == NULL)
 			luaL_error(L, LUA_QL("package.%s") " must be a string", pname);
 		lua_pushliteral(L, "");  /* error accumulator */
-		while ((path = pushnexttemplate(L, path)) != NULL) {
+		while ((path = Pushnexttemplate(L, path)) != NULL) {
 			const char *filename;
 			filename = luaL_gsub(L, lua_tostring(L, -1), LUA_PATH_MARK, name);
 			lua_remove(L, -2);  /* remove path template */
@@ -148,89 +148,89 @@ namespace DAVA
 		return NULL;  /* not found */
 	}
 
-	int AutotestingSystemLua::ReqModule(lua_State* L)
+	int AutotestingSystemLua::RequireModule(lua_State* L)
 	{
 		String module = lua_tostring(L, -1);
 		lua_pop(L, 1);
-		FilePath path = Instance()->findfile(L, module.c_str(), "path");
-		if (!Instance()->LoadScriptFromFile(path)) 
+		FilePath path = Instance()->Findfile(L, module.c_str(), "path");
+		if (!Instance()->LoadScriptFromFile(path))
 		{
-			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::ReqModule: couldn't load module " + path.GetAbsolutePathname());
+			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't load module " + path.GetAbsolutePathname());
 		}
 		lua_pushstring(Instance()->luaState, path.GetBasename().c_str());
-		if (!Instance()->RunScript()) 
+		if (!Instance()->RunScript())
 		{
-			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::ReqModule: couldn't run module " + path.GetBasename());
+			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't run module " + path.GetBasename());
 		}
 		lua_pushcfunction(L, lua_tocfunction(Instance()->luaState, -1));
 		lua_pushstring(L, path.GetBasename().c_str());
 		return 2;
 	}
 
-	void AutotestingSystemLua::stackDump(lua_State* L) 
+	void AutotestingSystemLua::StackDump(lua_State* L)
 	{
-		Logger::Debug("*** Stack Dump ***");
+		Logger::FrameworkDebug("*** Stack Dump ***");
 		int i;
 		int top = lua_gettop(L);
 
 		for (i = 1; i <= top; i++) /* repeat for each level */
-		{ 
+		{
 			int t = lua_type(L, i);
-			switch (t) 
+			switch (t)
 			{
-			case LUA_TSTRING: 
-				{ /* strings */
-					Logger::Debug("'%s'", lua_tostring(L, i));
-					break;
-				}
-			case LUA_TBOOLEAN: 
-				{ /* booleans */
-					Logger::Debug(lua_toboolean(L, i) ? "true" : "false");
-					break;
-				}
-			case LUA_TNUMBER: 
-				{ /* numbers */
-					Logger::Debug("%g", lua_tonumber(L, i));
-					break;
-				}
-			default: 
-				{ /* other values */
-					Logger::Debug("%s", lua_typename(L, t));
-					break;
-				}
+			case LUA_TSTRING:
+			{ /* strings */
+				Logger::FrameworkDebug("'%s'", lua_tostring(L, i));
+				break;
+			}
+			case LUA_TBOOLEAN:
+			{ /* booleans */
+				Logger::FrameworkDebug(lua_toboolean(L, i) ? "true" : "false");
+				break;
+			}
+			case LUA_TNUMBER:
+			{ /* numbers */
+				Logger::FrameworkDebug("%g", lua_tonumber(L, i));
+				break;
+			}
+			default:
+			{ /* other values */
+				Logger::FrameworkDebug("%s", lua_typename(L, t));
+				break;
+			}
 			}
 		}
-		Logger::Debug("*** Stack Dump END***"); /* end the listing */
+		Logger::FrameworkDebug("*** Stack Dump END***"); /* end the listing */
 	}
 
 	// Multiplayer API
 	void AutotestingSystemLua::WriteState(const String &device, const String &state)
 	{
-		Logger::Debug("AutotestingSystemLua::WriteState device=%s state=%s", device.c_str(), state.c_str());
-		AutotestingDB::Instance()->WriteState(device,state);
+		Logger::FrameworkDebug("AutotestingSystemLua::WriteState device=%s state=%s", device.c_str(), state.c_str());
+		AutotestingDB::Instance()->WriteState(device, state);
 	}
 
 	void AutotestingSystemLua::WriteCommand(const String &device, const String &state)
 	{
-		Logger::Debug("AutotestingSystemLua::WriteCommand device=%s command=%s", device.c_str(), state.c_str());
-		AutotestingDB::Instance()->WriteCommand(device,state);
+		Logger::FrameworkDebug("AutotestingSystemLua::WriteCommand device=%s command=%s", device.c_str(), state.c_str());
+		AutotestingDB::Instance()->WriteCommand(device, state);
 	}
 
 	String AutotestingSystemLua::ReadState(const String &device)
 	{
-		Logger::Debug("AutotestingSystemLua::ReadState device=%s", device.c_str());
+		Logger::FrameworkDebug("AutotestingSystemLua::ReadState device=%s", device.c_str());
 		return AutotestingDB::Instance()->ReadState(device);
 	}
 
 	String AutotestingSystemLua::ReadCommand(const String &device)
 	{
-		Logger::Debug("AutotestingSystemLua::ReadCommand device=%s", device.c_str());
+		Logger::FrameworkDebug("AutotestingSystemLua::ReadCommand device=%s", device.c_str());
 		return AutotestingDB::Instance()->ReadCommand(device);
 	}
 
 	void AutotestingSystemLua::InitializeDevice(const String &device)
 	{
-		Logger::Debug("AutotestingSystemLua::InitializeDevice device=%s", device.c_str());
+		Logger::FrameworkDebug("AutotestingSystemLua::InitializeDevice device=%s", device.c_str());
 		AutotestingSystem::Instance()->InitializeDevice(device);
 	}
 
@@ -246,7 +246,7 @@ namespace DAVA
 		{
 			deviceName = DeviceInfo::GetModel();
 		}
-		else 
+		else
 		{
 			deviceName = WStringToString(DeviceInfo::GetName());
 		}
@@ -259,14 +259,14 @@ namespace DAVA
 	{
 		float32 xInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx / static_cast<float32>(Core::Instance()->GetScreenDPI());
 		float32 yInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy / static_cast<float32>(Core::Instance()->GetScreenDPI());
-		return sqrtf(xInch*xInch + yInch*yInch) <= 6.5f; 
+		return sqrtf(xInch*xInch + yInch*yInch) <= 6.5f;
 	}
 
 	String AutotestingSystemLua::GetTestParameter(const String &parameter)
 	{
-		Logger::Debug("AutotestingSystemLua::GetTestParameter parameter=%s", parameter.c_str());
+		Logger::FrameworkDebug("AutotestingSystemLua::GetTestParameter parameter=%s", parameter.c_str());
 		String result = AutotestingDB::Instance()->GetStringTestParameter(AutotestingSystem::Instance()->deviceName, parameter);
-		Logger::Debug("AutotestingSystemLua::GetTestParameter value=%s", result.c_str());
+		Logger::FrameworkDebug("AutotestingSystemLua::GetTestParameter value=%s", result.c_str());
 		return result;
 	}
 
@@ -287,19 +287,19 @@ namespace DAVA
 
 	void AutotestingSystemLua::OnTestStart(const String &testDescription)
 	{
-		Logger::Debug("AutotestingSystemLua::OnTestStart %s", testDescription.c_str());
+		Logger::FrameworkDebug("AutotestingSystemLua::OnTestStart %s", testDescription.c_str());
 		AutotestingSystem::Instance()->OnTestStart(testDescription);
 	}
 
 	void AutotestingSystemLua::OnTestFinished()
 	{
-		Logger::Debug("AutotestingSystemLua::OnTestFinished");
+		Logger::FrameworkDebug("AutotestingSystemLua::OnTestFinished");
 		AutotestingSystem::Instance()->OnTestsFinished();
 	}
 
 	void AutotestingSystemLua::OnStepStart(const String &stepName)
 	{
-		Logger::Debug("AutotestingSystemLua::OnStepStart %s", stepName.c_str());
+		Logger::FrameworkDebug("AutotestingSystemLua::OnStepStart %s", stepName.c_str());
 		AutotestingSystem::Instance()->OnStepStart(stepName);
 	}
 
@@ -310,25 +310,25 @@ namespace DAVA
 
 	void AutotestingSystemLua::WriteString(const String & name, const String & text)
 	{
-		Logger::Debug("AutotestingSystemLua::WriteString name=%s text=%s", name.c_str(), text.c_str());
+		Logger::FrameworkDebug("AutotestingSystemLua::WriteString name=%s text=%s", name.c_str(), text.c_str());
 		AutotestingDB::Instance()->WriteString(name, text);
 	}
 
 	String AutotestingSystemLua::ReadString(const String & name)
 	{
-		Logger::Debug("AutotestingSystemLua::ReadString name=%s", name.c_str());
+		Logger::FrameworkDebug("AutotestingSystemLua::ReadString name=%s", name.c_str());
 		return AutotestingDB::Instance()->ReadString(name);
 	}
 
 	bool AutotestingSystemLua::SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive *archive)
 	{
-		Logger::Debug("AutotestingSystemLua::SaveKeyedArchiveToDevice");
+		Logger::FrameworkDebug("AutotestingSystemLua::SaveKeyedArchiveToDevice");
 		return AutotestingDB::Instance()->SaveKeyedArchiveToDevice(archiveName, archive);
 	}
 
 	String AutotestingSystemLua::MakeScreenshot()
 	{
-		Logger::Debug("AutotestingSystemLua::MakeScreenshot");
+		Logger::FrameworkDebug("AutotestingSystemLua::MakeScreenshot");
 		AutotestingSystem::Instance()->MakeScreenShot();
 		return AutotestingSystem::Instance()->GetScreenShotName();
 	}
@@ -359,7 +359,7 @@ namespace DAVA
 		}
 
 		UIControl* control = FindControl(srcControl, controlPath[0]);
-		for(uint32 i = 1; i < controlPath.size(); ++i)
+		for (uint32 i = 1; i < controlPath.size(); ++i)
 		{
 			if (!control)
 			{
@@ -399,7 +399,7 @@ namespace DAVA
 		}
 		const List<UIControl*> &children = srcControl->GetChildren();
 		int32 childIndex = 0;
-		for(List<UIControl*>::const_iterator it = children.begin(); it != children.end(); ++it, ++childIndex)
+		for (List<UIControl*>::const_iterator it = children.begin(); it != children.end(); ++it, ++childIndex)
 		{
 			if (childIndex == index)
 			{
@@ -416,10 +416,10 @@ namespace DAVA
 			return NULL;
 		}
 		const List<UIControl*> &cells = srcList->GetVisibleCells();
-		for(List<UIControl*>::const_iterator it = cells.begin(); it != cells.end(); ++it)
+		for (List<UIControl*>::const_iterator it = cells.begin(); it != cells.end(); ++it)
 		{
 			UIListCell* cell = dynamic_cast<UIListCell*>(*it);
-			if(cell && cell->GetIndex() == index && IsCenterInside(srcList, cell))
+			if (cell && cell->GetIndex() == index && IsCenterInside(srcList, cell))
 			{
 				return cell;
 			}
@@ -436,9 +436,9 @@ namespace DAVA
 		const Rect &parentRect = parent->GetGeometricData().GetUnrotatedRect();
 		const Rect &childRect = child->GetGeometricData().GetUnrotatedRect();
 		// check if child center is inside parent rect
-		return ((parentRect.x <= childRect.x + childRect.dx/2) && (childRect.x + childRect.dx/2 <= parentRect.x + parentRect.dx) &&
-			(parentRect.y <= childRect.y + childRect.dy/2) && (childRect.y + childRect.dy/2 <= parentRect.y + parentRect.dy));
-	}    
+		return ((parentRect.x <= childRect.x + childRect.dx / 2) && (childRect.x + childRect.dx / 2 <= parentRect.x + parentRect.dx) &&
+			(parentRect.y <= childRect.y + childRect.dy / 2) && (childRect.y + childRect.dy / 2 <= parentRect.y + parentRect.dy));
+	}
 
 	bool AutotestingSystemLua::SetText(const String &path, const String &text)
 	{
@@ -453,7 +453,7 @@ namespace DAVA
 
 	void AutotestingSystemLua::KeyPress(int32 keyChar)
 	{
-		UITextField *uiTextField = dynamic_cast<UITextField*>(UIControlSystem::Instance()->GetFocusedControl()); 
+		UITextField *uiTextField = dynamic_cast<UITextField*>(UIControlSystem::Instance()->GetFocusedControl());
 		if (!uiTextField)
 		{
 			return;
@@ -465,44 +465,44 @@ namespace DAVA
 		keyPress.tapCount = 1;
 		keyPress.keyChar = keyChar;
 
-		Logger::Debug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase, 
+		Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase,
 			keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
 		switch (keyPress.tid)
 		{
 		case DVKEY_BACKSPACE:
+		{
+			//TODO: act the same way on iPhone
+			WideString str = L"";
+			if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), -1, str))
 			{
-				//TODO: act the same way on iPhone
-				WideString str = L"";
-				if(uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), -1, str))
-				{
-					uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()),  -1, str));
-				}
-				break;
+				uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), -1, str));
 			}
+			break;
+		}
 		case DVKEY_ENTER:
-			{
-				uiTextField->GetDelegate()->TextFieldShouldReturn(uiTextField);
-				break;
-			}
+		{
+			uiTextField->GetDelegate()->TextFieldShouldReturn(uiTextField);
+			break;
+		}
 		case DVKEY_ESCAPE:
-			{
-				uiTextField->GetDelegate()->TextFieldShouldCancel(uiTextField);
-				break;
-			}
+		{
+			uiTextField->GetDelegate()->TextFieldShouldCancel(uiTextField);
+			break;
+		}
 		default:
+		{
+			if (keyPress.keyChar == 0)
 			{
-				if (keyPress.keyChar == 0)
-				{
-					break;
-				}
-				WideString str;
-				str += keyPress.keyChar;
-				if(uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), 1, str))
-				{
-					uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()),  1, str));
-				}
 				break;
 			}
+			WideString str;
+			str += keyPress.keyChar;
+			if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), 1, str))
+			{
+				uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), 1, str));
+			}
+			break;
+		}
 		}
 	}
 
@@ -622,7 +622,7 @@ namespace DAVA
 			return (actualText == expectedText);
 		}
 		UITextField *uiTextField = dynamic_cast<UITextField*>(control);
-		if(uiTextField)
+		if (uiTextField)
 		{
 			WideString actualText = uiTextField->GetText();
 			return (actualText == expectedText);
@@ -636,8 +636,8 @@ namespace DAVA
 		touchDown.phase = UIEvent::PHASE_BEGAN;
 		touchDown.tid = touchId;
 		touchDown.tapCount = 1;
-        touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
-        touchDown.point = point;
+		touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+		touchDown.point = point;
 		ProcessInput(touchDown);
 	}
 
@@ -646,8 +646,8 @@ namespace DAVA
 		UIEvent touchMove;
 		touchMove.tid = touchId;
 		touchMove.tapCount = 1;
-        touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
-        touchMove.point = point;
+		touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+		touchMove.point = point;
 
 		if (AutotestingSystem::Instance()->IsTouchDown(touchId))
 		{
@@ -680,7 +680,7 @@ namespace DAVA
 
 	void AutotestingSystemLua::ProcessInput(const UIEvent &input)
 	{
-		Logger::Debug("AutotestingSystemLua::ProcessInput %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", input.tid, 
+		Logger::FrameworkDebug("AutotestingSystemLua::ProcessInput %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", input.tid,
 			input.phase, input.tapCount, input.point.x, input.point.y, input.physPoint.x, input.physPoint.y, input.keyChar);
 
 		Vector<UIEvent> touches;
@@ -719,7 +719,7 @@ namespace DAVA
 
 	bool AutotestingSystemLua::LoadScript(const String &luaScript)
 	{
-		if (!luaState) 
+		if (!luaState)
 		{
 			return false;
 		}
@@ -733,11 +733,11 @@ namespace DAVA
 
 	bool AutotestingSystemLua::LoadScriptFromFile(const FilePath &luaFilePath)
 	{
-		Logger::Debug("AutotestingSystemLua::LoadScriptFromFile: %s", luaFilePath.GetAbsolutePathname().c_str());
-		File* file = File::Create(luaFilePath, File::OPEN | File::READ );
+		Logger::FrameworkDebug("AutotestingSystemLua::LoadScriptFromFile: %s", luaFilePath.GetAbsolutePathname().c_str());
+		File* file = File::Create(luaFilePath, File::OPEN | File::READ);
 		if (!file)
 		{
-			Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't open %s",luaFilePath.GetAbsolutePathname().c_str());
+			Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't open %s", luaFilePath.GetAbsolutePathname().c_str());
 			return false;
 		}
 		char* data = new char[file->GetSize()];
@@ -745,7 +745,7 @@ namespace DAVA
 		uint32 fileSize = file->GetSize();
 		file->Release();
 		bool result = luaL_loadbuffer(luaState, data, fileSize, luaFilePath.GetAbsolutePathname().c_str()) == LUA_OK;
-		delete [] data;
+		delete[] data;
 		if (!result)
 		{
 			Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't load buffer %s", luaFilePath.GetAbsolutePathname().c_str());
@@ -756,7 +756,7 @@ namespace DAVA
 
 	bool AutotestingSystemLua::RunScriptFromFile(const FilePath &luaFilePath)
 	{
-		Logger::Debug("AutotestingSystemLua::RunScriptFromFile %s", luaFilePath.GetAbsolutePathname().c_str());
+		Logger::FrameworkDebug("AutotestingSystemLua::RunScriptFromFile %s", luaFilePath.GetAbsolutePathname().c_str());
 		if (LoadScriptFromFile(luaFilePath))
 		{
 			lua_pushstring(luaState, luaFilePath.GetBasename().c_str());
@@ -785,9 +785,8 @@ namespace DAVA
 	{
 		if (lua_pcall(luaState, 1, 1, 0))
 		{
-			//stackDump(luaState);
 			const char* err = lua_tostring(luaState, -1);
-			Logger::Debug("AutotestingSystemLua::RunScript error: %s", err);
+			Logger::FrameworkDebug("AutotestingSystemLua::RunScript error: %s", err);
 			return false;
 		}
 		return true;

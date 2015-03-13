@@ -140,7 +140,7 @@ namespace DAVA
 			// TODO: After realization GetOsVersion() DF-3940
 			dbUpdateObject->AddString("OSVersion", DeviceInfo::GetVersion());
 			dbUpdateObject->AddString("Model", DeviceInfo::GetModel());
-			Logger::Debug("AutotestingSystem::InsertTestArchive new MongodbUpdateObject %s", testsName.c_str());
+			Logger::FrameworkDebug("AutotestingSystem::InsertTestArchive new MongodbUpdateObject %s", testsName.c_str());
 		}
 
 		dbUpdateObject->LoadData();

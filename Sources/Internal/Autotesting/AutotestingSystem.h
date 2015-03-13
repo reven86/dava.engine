@@ -43,6 +43,7 @@
 #include "Render/RenderManager.h"
 #include "Platform/DateTime.h"
 
+
 namespace DAVA
 {
 
@@ -52,6 +53,7 @@ class AutotestingSystemLua;
 class AutotestingSystem : public Singleton<AutotestingSystem>, public ScreenShotCallbackDelegate
 {
 public:
+
     AutotestingSystem();
     ~AutotestingSystem();
 
@@ -83,7 +85,6 @@ public:
 	void OnStepFinished();
 	void OnTestStarted();
     void OnError(const String & errorMessage = "");
-	//void OnMessage(const String & logMessage = "");
 	void ForceQuit(const String & logMessage = "");
     void OnTestsFinished();
     
@@ -98,9 +99,6 @@ public:
 	void MakeScreenShot();
 
     // DB Master-Helper relations
-    //void InitMultiplayer(bool _isMaster);
-    //void RegisterMasterInDB(int32 helpersCount);
-    //void RegisterHelperInDB();
 
 	String GetTestId() { return Format("Test%03d", testIndex); };
 	String GetStepId() { return Format("Step%03d", stepIndex); };
@@ -113,25 +111,6 @@ public:
 protected:
 	AutotestingSystemLua * luaSystem;
 //DB
-    /*void SetUpTestArchive();
-
-	KeyedArchive *FindTestArchive(MongodbUpdateObject* dbUpdateObject, const String &testId);
-    KeyedArchive *FindStepArchive(KeyedArchive *testArchive, const String &stepId);
-    
-    bool CheckSavedObjectInDB(MongodbUpdateObject *dbUpdateObject);
-    bool CheckKeyedArchivesEqual(const String &name, KeyedArchive* firstKeyedArchive, KeyedArchive* secondKeyedArchive);
-
-    void AddTestResult(const String &text, bool isPassed, const String & error = "");
-    void SaveTestToDB();
-    void SaveTestStepToDB(const String &stepDescription, bool isPassed, const String &error = "");
-    void SaveTestStepLogEntryToDB(const String &type, const String &time, const String &message);*/
-
-    /*String ReadMasterIDFromDB(); //TODO: get first available master
-    
-    bool CheckMasterHelpersReadyDB();
-        
-    int32 GetIndexInFileList(FileList &fileList, int32 index);*/
-    
     void ExitApp();
 	
 public:
@@ -163,17 +142,7 @@ public:
 	String branchRev;
 	String frameworkRev;
 
-//    struct TestResult
-//    {
-//        TestResult(const String &_name, bool _isPassed, const String &_error) : name(_name), isPassed(_isPassed), error(_error) {}
-//        
-//        String name;
-//        bool isPassed;
-//        String error;
-//    };
-//    Vector< TestResult > testResults;
-
-    bool isDB;
+	bool isDB;
     bool needClearGroupInDB;
     
     bool isMaster;
