@@ -35,6 +35,8 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	private native void nativeOnKeyUp(int keyCode);
 	private native void nativeOnGamepadElement(int elementKey, float value, boolean isKeycode);
 	
+	private boolean isMultitouchEnabled = true;
+	
 	private Integer[] gamepadAxises = null;
 	private Integer[] overridedGamepadKeys = null;
 	private ArrayList< Pair<Integer, Integer> > gamepadButtonsAxisMap = new ArrayList< Pair<Integer, Integer> >();
@@ -116,6 +118,11 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		}
 		
 		overridedGamepadKeys = overridedKeys.toArray(new Integer[overridedKeys.size()]);
+	}
+	
+	public void SetMultitouchEnabled(boolean enabled)
+	{
+		isMultitouchEnabled = enabled;
 	}
 	
     @Override
@@ -215,9 +222,10 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				for (int i = 0; i < pointerCount; i++) {
 					if ((source & InputDevice.SOURCE_CLASS_POINTER) > 0) {
 						int pointerId = event.getPointerId(i);
-						InputEvent ev = new InputEvent(pointerId, event.getHistoricalX(i, historyStep), event.getHistoricalY(i, historyStep), tapCount, event.getHistoricalEventTime(historyStep));
-
-						allEvents.add(ev);
+						if(isMultitouchEnabled || pointerId == 0) {
+							InputEvent ev = new InputEvent(pointerId, event.getHistoricalX(i, historyStep), event.getHistoricalY(i, historyStep), tapCount, event.getHistoricalEventTime(historyStep));
+							allEvents.add(ev);
+						}
 					}
 					if((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
 						for (int a = 0; a < gamepadAxises.length; ++a) {
@@ -232,9 +240,10 @@ public class JNIGLSurfaceView extends GLSurfaceView
 			for (int i = 0; i < pointerCount; i++) {
 				if ((source & InputDevice.SOURCE_CLASS_POINTER) > 0) {
 					int pointerId = event.getPointerId(i);
-					InputEvent ev = new InputEvent(pointerId, event.getX(i), event.getY(i), tapCount, event.getEventTime());
-
-					allEvents.add(ev);
+					if(isMultitouchEnabled || pointerId == 0) {
+						InputEvent ev = new InputEvent(pointerId, event.getX(i), event.getY(i), tapCount, event.getEventTime());
+						allEvents.add(ev);
+					}
 				}
 				if((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
 					for (int a = 0; a < gamepadAxises.length; ++a) {
@@ -244,9 +253,15 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				}
 			}
 
+			if(isMultitouchEnabled) {
+				groupSize = event.getPointerCount();
+			}
+			else {
+				groupSize = 1;
+			}
+			
 			if (action == MotionEvent.ACTION_MOVE) {
 				activeEvents = allEvents;
-				groupSize = event.getPointerCount();
 			} else {
 				activeEvents = new ArrayList<InputEvent>();
 
@@ -255,10 +270,12 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				
 				final int pointerId = event.getPointerId(actionIdx);
 
-				InputEvent ev = new InputEvent(pointerId, event.getX(actionIdx), event.getY(actionIdx), tapCount, event.getEventTime());
-				allEvents.add(ev);
-				activeEvents.add(ev);
-				groupSize = event.getPointerCount() + 1; // only ACTION_MOVE events can have history, so in this case there will be only one group
+				if(isMultitouchEnabled || pointerId == 0) {
+					InputEvent ev = new InputEvent(pointerId, event.getX(actionIdx), event.getY(actionIdx), tapCount, event.getEventTime());
+					allEvents.add(ev);
+					activeEvents.add(ev);
+					groupSize += 1; // only ACTION_MOVE events can have history, so in this case there will be only one group
+				}
 			}
     	}
     	public InputRunnable(final com.bda.controller.MotionEvent event)
@@ -298,7 +315,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 					}
 				}
 			}
-			else 
+			else if(activeEvents.size() != 0) 
 			{
 				nativeOnInput(action, source, groupSize, activeEvents, allEvents);
 			}

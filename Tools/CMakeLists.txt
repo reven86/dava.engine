@@ -41,5 +41,8 @@ add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/UIEditor"       ${CMAKE_CURRENT_
 set_deploy_dir        ( UnitTests )
 add_subdirectory      ( "${DAVA_ROOT_DIR}/Projects/UnitTests"   ${CMAKE_CURRENT_BINARY_DIR}/UnitTests )
 
+set_deploy_dir        ( SceneViewer )
+add_subdirectory      ( "${DAVA_ROOT_DIR}/Projects/SceneViewer"   ${CMAKE_CURRENT_BINARY_DIR}/SceneViewer )
+
 
 
