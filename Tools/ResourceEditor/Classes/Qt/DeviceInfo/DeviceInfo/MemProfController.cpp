@@ -184,6 +184,7 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize, Ve
     if (f)
     {
         fprintf(f, "General info\n");
+        fprintf(f, "  collect time=%u ms\n", uint32(dump->timestampEnd - dump->timestampBegin));
         fprintf(f, "  packedSize=%u\n", packedSize);
         fprintf(f, "  blockCount=%u\n", dump->blockCount);
         fprintf(f, "  backtraceCount=%u\n", dump->backtraceCount);
@@ -215,15 +216,15 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize, Ve
             }
         }
 
-        fprintf(f, "Symbols\n");
+        /*fprintf(f, "Symbols\n");
         int isym = 0;
         for (auto& x : symbolMap)
         {
             fprintf(f, "  %4d: %08llX; %s\n", isym + 1, x.first, x.second.c_str());
             isym += 1;
-        }
+        }*/
 
-        fprintf(f, "Backtraces\n");
+        /*fprintf(f, "Backtraces\n");
         for (uint32 h = 0;h < dump->backtraceCount;++h)
         {
             uint32 hash = bt[h].hash;
@@ -232,7 +233,7 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize, Ve
             {
                 fprintf(f, "  %08llX\n", ff);
             }
-        }
+        }*/
         fclose(f);
     }
 }
