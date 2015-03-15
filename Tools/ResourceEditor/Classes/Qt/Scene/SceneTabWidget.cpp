@@ -44,6 +44,8 @@
 #include <QResizeEvent>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QDebug>
+
 
 SceneTabWidget::SceneTabWidget(QWidget *parent)
 	: QWidget(parent)
@@ -409,28 +411,30 @@ void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const Entity
 	static QCursor cursorRotate(QPixmap(":/QtIcons/curcor_rotate.png"));
 	static QCursor cursorScale(QPixmap(":/QtIcons/curcor_scale.png"));
 
-	if(GetCurrentScene() == scene && NULL != entities)
+    auto w = davaWidget->GetGLWindow();
+
+	if(GetCurrentScene() == scene && nullptr != entities)
 	{
 		switch(scene->modifSystem->GetModifMode())
 		{
 		case ST_MODIF_MOVE:
-			setCursor(cursorMove);
+			w->setCursor(cursorMove);
 			break;
 		case ST_MODIF_ROTATE:
-			setCursor(cursorRotate);
+            w->setCursor(cursorRotate);
 			break;
 		case ST_MODIF_SCALE:
-			setCursor(cursorScale);
+            w->setCursor(cursorScale);
 			break;
 		case ST_MODIF_OFF:
 		default:
-			setCursor(Qt::ArrowCursor);
+            w->setCursor(Qt::ArrowCursor);
 			break;
 		}
 	}
 	else
 	{
-		setCursor(Qt::ArrowCursor);
+		w->setCursor(Qt::ArrowCursor);
 	}
 }
 
