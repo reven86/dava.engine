@@ -29,8 +29,6 @@
 
 
 #include "DAVAEngine.h"
-#include "UI/UIEvent.h"
-#include "UI/UIControlSystem.h"
 
 #include "Platform/Qt5/QtLayer.h"
 
@@ -54,11 +52,6 @@
 #include <QApplication>
 #include <QLineEdit>
 #include <QSpinBox>
-
-
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-//#include "Network/NetCore.h"
-#endif
 
 #include <QOpenGLContext>
 #include <QOpenGLPaintDevice>

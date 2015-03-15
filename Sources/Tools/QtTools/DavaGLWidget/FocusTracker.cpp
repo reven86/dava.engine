@@ -78,7 +78,7 @@ bool FocusTracker::isEditor( QWidget* w )
     
     if ( qobject_cast<QLineEdit *> ( w ) != nullptr )
         return true;
-    if ( qobject_cast<QSpinBox *>( w ) != nullptr )
+    if ( qobject_cast<QAbstractSpinBox *>( w ) != nullptr )
         return true;
     
     return false;

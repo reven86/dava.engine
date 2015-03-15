@@ -412,6 +412,7 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
 		}
 	}
 
+    /*
 	if(obj == this && QEvent::WindowUnblocked == eventType)
 	{
 		if(isActiveWindow())
@@ -419,7 +420,9 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
 			ui->sceneTabWidget->setFocus(Qt::ActiveWindowFocusReason);
 		}
 	}
-    
+     */
+ 
+    /*
     if(obj == this && QEvent::KeyPress == eventType)
     {
         QKeyEvent *keyEvent = (QKeyEvent *)event;
@@ -438,6 +441,7 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
             QApplication::sendEvent(obj, &eventNew);
         }
     }
+     */
     
 	return QMainWindow::eventFilter(obj, event);
 }
