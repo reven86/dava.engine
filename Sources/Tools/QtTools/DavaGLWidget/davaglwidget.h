@@ -36,15 +36,15 @@
 #include <QMimeData>
 #include <QWindow>
 #include <QPointer>
+#include <QScopedPointer>
 
-
-#include "UI/UIEvent.h"
-#include "Platform/Qt5/QtLayer.h"
 
 class QOpenGLContext;
 class QOpenGLPaintDevice;
 class QExposeEvent;
 class DavaGLWidget;
+class FocusTracker;
+class ControlMapper;
 
 
 class OpenGLWindow
@@ -82,40 +82,9 @@ protected:
     void wheelEvent(QWheelEvent *) override;
     void handleDragMoveEvent(QDragMoveEvent * event);
     
-    DAVA::UIEvent MapMouseEventToDAVA(const QMouseEvent *event) const;
-    DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button) const;
-    
 private:
     QOpenGLPaintDevice *paintDevice;
-};
-
-
-class FocusTracker
-    : public QObject
-{
-    Q_OBJECT
-
-public:
-    explicit FocusTracker( DavaGLWidget *glWidget );
-    ~FocusTracker();
-
-    void OnClick();
-    void OnEnter();
-    void OnLeave();
-    void OnFocusIn();
-    void OnFocusOut();
-
-private:
-    QPointer< DavaGLWidget > glWidget;
-    QPointer< QWindow > glWindow;
-    QPointer< QWidget > prevWidget;
-    QPointer< QWindow > prevWindow;
-
-    bool isFocused;
-    bool needToRestoreFocus;
-
-private:
-    static bool isEditor( QWidget *w );
+    QScopedPointer< ControlMapper > controlMapper;
 };
 
 
