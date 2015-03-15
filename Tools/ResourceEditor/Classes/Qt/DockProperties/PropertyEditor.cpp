@@ -1481,13 +1481,24 @@ void PropertyEditor::OnAddSkeletonComponent()
 
 void PropertyEditor::OnAddPathComponent()
 {
-    PathComponent *pathComponent = static_cast<PathComponent *> (Component::CreateByType(Component::PATH_COMPONENT));
-
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-    pathComponent->SetName(curScene->pathSystem->GeneratePathName());
+    if (curNodes.size() > 0)
+    {
+        curScene->BeginBatch(Format("Add Component: %d", Component::PATH_COMPONENT));
 
-    OnAddComponent(pathComponent);
-    SafeDelete(pathComponent);
+        for (Entity* node : curNodes)
+        {
+            DVASSERT(node);
+            if (node->GetComponentCount(Component::PATH_COMPONENT) == 0 
+             && node->GetComponentCount(Component::WAYPOINT_COMPONENT) == 0)
+            {
+                PathComponent* pathComponent = curScene->pathSystem->CreatePathComponent();
+                curScene->Exec(new AddComponentCommand(node, pathComponent));
+            }
+        }
+
+        curScene->EndBatch();
+    }
 }
 
 void PropertyEditor::OnAddRotationControllerComponent()

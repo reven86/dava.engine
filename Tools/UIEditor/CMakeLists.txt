@@ -54,6 +54,8 @@ define_source_folders          ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build" 
 generate_source_groups_project ( SRC_ROOT "Classes" GROUP_FOLDERS Generated UiList )
 add_subdirectory               ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
+set( WIN32_DATA                 ${CMAKE_CURRENT_LIST_DIR}/Data )
+
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
 set( MACOS_ICO                  ${CMAKE_CURRENT_LIST_DIR}/icon.icns )
 set( MACOS_DATA                 ${CMAKE_CURRENT_LIST_DIR}/Data )

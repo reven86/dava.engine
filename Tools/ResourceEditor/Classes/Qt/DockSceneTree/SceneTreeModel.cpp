@@ -537,14 +537,21 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData * data, Qt::DropAction ac
 							break;
 						}
                         
-                        //5. disabled drop waypoints to different pathes
-                        if(GetWaypointComponent(entity) || GetPathComponent(entity))
+                        // 5. or we are dropping waypoint outside of its path
+                        if(GetWaypointComponent(entity))
                         {
                             if(entity->GetParent() != targetEntity)
                             {
                                 ret = false;
                                 break;
                             }
+                        }
+
+                        // 6. or we are dropping path inside of another path or waypoint
+                        if (GetPathComponent(entity) && (GetPathComponent(targetEntity) || GetWaypointComponent(targetEntity)))
+                        {
+                            ret = false;
+                            break;
                         }
 					}
 				}
@@ -639,7 +646,11 @@ void SceneTreeModel::ResyncStructure(QStandardItem *item, DAVA::Entity *entity)
 void SceneTreeModel::SetFilter(const QString& text)
 {
     filterText = text;
+    ReloadFilter();
+}
 
+void SceneTreeModel::ReloadFilter()
+{
     ResetFilter();
 
     if (!filterText.isEmpty())
@@ -648,7 +659,7 @@ void SceneTreeModel::SetFilter(const QString& text)
         for (int i = 0; i < n; i++)
         {
             const QModelIndex _index = index(i, 0);
-            SetFilterInternal(_index, text);
+            SetFilterInternal(_index, filterText);
         }
     }
 }

@@ -48,8 +48,6 @@ GLOB_H_PATTERNS    ${ADDED_H_PATTERNS}
 generate_source_groups_project ( )
 add_library                    ( ${PROJECT_NAME} STATIC ${CPP_FILES} ${H_FILES} )
 
-set_dava_target_properties ( ${PROJECT_NAME} )
-
 if( MACOS )
     target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} libbz2.dylib libz.dylib stdc++.6.dylib )
 

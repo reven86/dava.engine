@@ -101,6 +101,7 @@ public:
 	void ResyncStructure(QStandardItem *item, DAVA::Entity *entity);
 
     void SetFilter(const QString& text);
+    void ReloadFilter();
     bool IsFilterSet() const;
 
     Qt::ItemFlags flags ( const QModelIndex & index ) const;

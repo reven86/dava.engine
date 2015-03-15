@@ -169,6 +169,7 @@ CollapsePathCommand::CollapsePathCommand(DAVA::PathComponent* pathComponent)
 
     const DAVA::FastName& pathName = origPathComponent->GetName();
     destPathComponent->SetName(pathName);
+    destPathComponent->SetColor(origPathComponent->GetColor());
 
     addNextComponent = new AddComponentCommand(pathEntity,destPathComponent);
     removePrevComponent = new RemoveComponentCommand(pathEntity,origPathComponent);

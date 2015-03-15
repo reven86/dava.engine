@@ -55,9 +55,9 @@ protected:
     virtual DAVA::VariantType ReadVariantTypeFromYamlNode(const DAVA::InspMember *member, const DAVA::YamlNode *node, DAVA::int32 subNodeIndex, const DAVA::String &propertyName);
     
 private:
-    DAVA::String GetOldPropertyName(const DAVA::String controlClassName, const DAVA::String name);
-    DAVA::String GetOldBgPrefix(const DAVA::String controlClassName, const DAVA::String name);
-    DAVA::String GetOldBgPostfix(const DAVA::String controlClassName, const DAVA::String name);
+    DAVA::String GetOldPropertyName(const DAVA::String &controlClassName, const DAVA::String &name) const;
+    DAVA::String GetOldBgPrefix(const DAVA::String &controlClassName, const DAVA::String &name) const;
+    DAVA::String GetOldBgPostfix(const DAVA::String &controlClassName, const DAVA::String &name) const;
     
 private:
     DAVA::Map<DAVA::String, DAVA::Map<DAVA::String, DAVA::String> > propertyNamesMap;

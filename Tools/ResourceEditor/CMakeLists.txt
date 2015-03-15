@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.0)
+cmake_minimum_required( VERSION 3.0 )
 
 set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
@@ -81,12 +81,18 @@ add_subdirectory               ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools"
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
 set( MACOS_DATA           ${CMAKE_CURRENT_LIST_DIR}/Data )
+set( WIN32_DATA           ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_DYLIB          ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
 set( ADDED_SRC            ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS}  )
 set( LIBRARIES            ${BEAST_LIB} DavaTools )
 set( LIBRARIES_RELEASE    ${QT_LIBRARIES} )
 set( LIBRARIES_DEBUG      ${QT_LIBRARIES} )
 set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
+
+DEPLOY_SCRIPT            ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py;${CMAKE_CURRENT_LIST_DIR}/DataSource"
+                           COPY_WIN32  ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin/beast32.dll  
+                           COPY_DIR    ${DEPLOY_DIR}  
+                         )
 
 setup_main_executable()
 

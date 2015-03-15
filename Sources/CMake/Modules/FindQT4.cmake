@@ -1,5 +1,31 @@
 include ( GlobalVariables )
 
+macro ( qt_deploy )
+    if ( NOT QT4_FOUND )
+        return ()
+    endif ()
+
+    if( WIN32 )
+        set( BINARY_ITEMS QtCore4.dll
+                          QtGui4.dll
+                          )
+
+        foreach ( ITEM  ${BINARY_ITEMS} )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT4_PATH_WIN}/bin/${ITEM}  ${DEPLOY_DIR} )
+
+        endforeach ()
+
+    elseif( MACOS )
+
+        get_filename_component ( QT_PATH ${QT_MOC_EXECUTABLE} PATH ) 
+        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD 
+            COMMAND ${QT_PATH}/macdeployqt ${DEPLOY_DIR}/${PROJECT_NAME}.app
+        )
+
+    endif()
+
+endmacro ()
+
 if ( QT4_FOUND )
     return ()
 endif ()

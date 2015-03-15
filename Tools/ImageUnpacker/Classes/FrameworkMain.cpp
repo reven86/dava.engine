@@ -59,6 +59,40 @@ bool CheckPosition(int32 commandPosition)
     return true;
 }
 
+
+void SaveSingleImage(const FilePath & newImagePath, Image *image)
+{
+    if((FORMAT_RGBA8888 == image->format) || (FORMAT_A8 == image->format) || (FORMAT_A16 == image->format))
+    {
+        ImageSystem::Instance()->Save(newImagePath, image, image->format);
+    }
+    else
+    {
+        Image *savedImage = Image::Create(image->width, image->height, FORMAT_RGBA8888);
+        
+        ImageConvert::ConvertImageDirect(image->format, savedImage->format, image->data, image->width, image->height, image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(image->format),
+                                         savedImage->data, savedImage->width, savedImage->height, savedImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(savedImage->format));
+        
+        ImageSystem::Instance()->Save(newImagePath, savedImage);
+        savedImage->Release();
+    }
+
+}
+
+void SaveCubemap(const FilePath & newImagePath, const Vector<Image *> &images)
+{
+    Vector<FilePath> faceNames;
+    Texture::GenerateCubeFaceNames(newImagePath, faceNames);
+
+    for (auto image: images)
+    {
+        if(0 == image->mipmapLevel)
+        {
+            SaveSingleImage(faceNames[image->cubeFaceID], image);
+        }
+    }
+}
+
 void UnpackFile(const FilePath & sourceImagePath)
 {
     Vector<Image *> images;
@@ -66,27 +100,24 @@ void UnpackFile(const FilePath & sourceImagePath)
     
     if(images.size() != 0)
     {
+        FilePath imagePathname = FilePath::CreateWithNewExtension(sourceImagePath,".png");
+        
         Image *image = images[0];
-        if((FORMAT_RGBA8888 == image->format) || (FORMAT_A8 == image->format) || (FORMAT_A16 == image->format))
+        
+        if(image->cubeFaceID == Texture::CUBE_FACE_INVALID)
         {
-            ImageSystem::Instance()->Save(FilePath::CreateWithNewExtension(sourceImagePath,".png"), image, image->format);
+            SaveSingleImage(imagePathname, image);
         }
         else
         {
-			Image *savedImage = Image::Create(image->width, image->height, FORMAT_RGBA8888);
-
-			ImageConvert::ConvertImageDirect(image->format, savedImage->format, image->data, image->width, image->height, image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(image->format), 
-					savedImage->data, savedImage->width, savedImage->height, savedImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(savedImage->format));
-
-            ImageSystem::Instance()->Save(FilePath::CreateWithNewExtension(sourceImagePath,".png"), savedImage);
-			savedImage->Release();
+            SaveCubemap(imagePathname, images);
         }
-        
+
         for_each(images.begin(), images.end(), SafeRelease<Image>);
     }
     else
     {
-        Logger::Error("Cannot load file: ", sourceImagePath.GetAbsolutePathname().c_str());
+        Logger::Error("Cannot load file: ", sourceImagePath.GetStringValue().c_str());
     }
 }
 
