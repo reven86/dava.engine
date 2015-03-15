@@ -436,12 +436,18 @@ void Core::SystemAppStarted()
          */
 	}
 
-	if (core)core->OnAppStarted();
+	if (core != nullptr)
+	{
+        core->OnAppStarted();
+    }
 }
 	
 void Core::SystemAppFinished()
 {
-	if (core)core->OnAppFinished();
+    if (core != nullptr)
+    {
+        core->OnAppFinished();
+    }
 }
 
 

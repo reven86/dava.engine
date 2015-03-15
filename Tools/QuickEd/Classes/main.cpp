@@ -63,11 +63,12 @@ int main(int argc, char *argv[])
     glWidget->setParent(nullptr);
     delete mainWindow;
 
-    DAVA::Core::Instance()->Release();
-    //DAVA::ControlsFactory::ReleaseFonts(); // ???
     delete loop;
-    DAVA::QtLayer::Instance()->Release();
     delete loopManager;
+    DAVA::QtLayer::Instance()->Release();
+    // TODO: fix crash on release
+    // DAVA::Core::Instance()->Release();    
+
     delete glWidget;
 
     return 0;
