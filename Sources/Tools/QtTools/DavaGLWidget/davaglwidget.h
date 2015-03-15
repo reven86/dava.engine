@@ -27,71 +27,102 @@
 =====================================================================================*/
 
 
+
 #ifndef DAVAGLWIDGET_H
 #define DAVAGLWIDGET_H
 
-#include <QWidget>
+#include <QOpenGLWidget>
 #include <QTimer>
 #include <QMimeData>
-#include <QAbstractNativeEventFilter>
+#include <QWindow>
+#include <QPointer>
+#include <QScopedPointer>
 
-#include "QtLayer.h"
+
+class QOpenGLContext;
+class QOpenGLPaintDevice;
+class QExposeEvent;
+class DavaGLWidget;
+class FocusTracker;
+class ControlMapper;
+
+
+class OpenGLWindow
+    : public QWindow
+{
+    friend class DavaGLWidget;
+
+    Q_OBJECT
+    
+signals:
+    void mousePressed();
+    
+public:
+    OpenGLWindow();
+    ~OpenGLWindow();
+    
+    void render();
+    void renderNow();
+
+signals:
+    void Exposed();
+    
+protected:
+    bool event(QEvent *event) override;
+    void exposeEvent(QExposeEvent *event) override;
+    
+    void keyPressEvent(QKeyEvent *) override;
+    void keyReleaseEvent(QKeyEvent *) override;
+    
+    void mouseMoveEvent(QMouseEvent * event) override;
+    void mousePressEvent(QMouseEvent * event) override;
+    void mouseReleaseEvent(QMouseEvent * event) override;
+    
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+    void wheelEvent(QWheelEvent *) override;
+    void handleDragMoveEvent(QDragMoveEvent * event);
+    
+private:
+    QOpenGLPaintDevice *paintDevice;
+    QScopedPointer< ControlMapper > controlMapper;
+};
 
 
 class DavaGLWidget
-	: public QWidget
-	, public DAVA::QtLayerDelegate
-    , public QAbstractNativeEventFilter
+    : public QWidget
 {
     Q_OBJECT
     
 public:
-    explicit DavaGLWidget(QWidget *parent = 0);
+    explicit DavaGLWidget(QWidget *parent = nullptr);
     ~DavaGLWidget();
 
-	void SetMaxFPS(int fps);
-	int GetMaxFPS();
-	int GetFPS() const;
+    OpenGLWindow *GetGLWindow();
     
-	virtual QPaintEngine *paintEngine() const;
-	bool nativeEventFilter(const QByteArray& eventType, void * message, long * result);
-   
 signals:
+    void Initialized();
+    void Resized(int width, int height, int dpr);
 	void OnDrop(const QMimeData *mimeData);
-	void Resized(int width, int height);
 
 private slots:
-	void Render();
-
-private:
-	virtual void paintEvent(QPaintEvent *);
-	virtual void resizeEvent(QResizeEvent *);
-
-	virtual void showEvent(QShowEvent *);
-	virtual void hideEvent(QHideEvent *);
-
-    virtual void focusInEvent(QFocusEvent *);
-    virtual void focusOutEvent(QFocusEvent *);
-
-	virtual void dropEvent(QDropEvent *);
-	virtual void dragMoveEvent(QDragMoveEvent *);
-	virtual void dragEnterEvent(QDragEnterEvent *);
-
-    virtual void changeEvent(QEvent *e);
+    void OnWindowExposed();
     
-#if defined (Q_OS_MAC)
-    virtual void mouseMoveEvent(QMouseEvent *);
-#endif //#if defined (Q_OS_MAC)
+private:
+    void resizeEvent(QResizeEvent *) override;
+    bool eventFilter( QObject * watched, QEvent * event ) override;
 
-	virtual void Quit();
-    DAVA_DEPRECATED(virtual void ShowAssertMessage(const char * message));
+    void PerformSizeChange();
+    
+    bool isInitialized;
+    int currentDPR;
+    int currentWidth;
+    int currentHeight;
 
-	int maxFPS;
-    int minFrameTimeMs;
-	int fps;
-
-	qint64 fpsCountTime;
-	int fpsCount;
+    QPointer< OpenGLWindow > openGlWindow;
+    QPointer< QWidget > container;
+    QPointer< FocusTracker > focusTracker;
 };
+
+
 
 #endif // DAVAGLWIDGET_H

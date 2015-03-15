@@ -130,7 +130,7 @@
 
 #include "SceneProcessing/SceneProcessor.h"
 #include "QtLayer.h"
-#include "davaglwidget.h"
+#include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include "Commands2/ConvertPathCommands.h"
 
@@ -412,6 +412,7 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
 		}
 	}
 
+    /*
 	if(obj == this && QEvent::WindowUnblocked == eventType)
 	{
 		if(isActiveWindow())
@@ -419,7 +420,9 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
 			ui->sceneTabWidget->setFocus(Qt::ActiveWindowFocusReason);
 		}
 	}
-    
+     */
+ 
+    /*
     if(obj == this && QEvent::KeyPress == eventType)
     {
         QKeyEvent *keyEvent = (QKeyEvent *)event;
@@ -438,6 +441,7 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
             QApplication::sendEvent(obj, &eventNew);
         }
     }
+     */
     
 	return QMainWindow::eventFilter(obj, event);
 }
@@ -1042,13 +1046,13 @@ void QtMainWindow::UpdateModificationActionsState()
 void QtMainWindow::UpdateWayEditor(const Command2* command, bool redo)
 {
     int commandId = command->GetId();
-    if(CMDID_COLLAPSE_PATH == commandId)
-    {
-		SetActionCheckedSilently(ui->actionWayEditor, !redo);
-    }
-    else if(CMDID_EXPAND_PATH == commandId)
+    if(CMDID_ENABLE_WAYEDIT == commandId)
     {
 		SetActionCheckedSilently(ui->actionWayEditor, redo);
+    }
+    else if(CMDID_DISABLE_WAYEDIT == commandId)
+    {
+		SetActionCheckedSilently(ui->actionWayEditor, !redo);
     }
 }
 
@@ -2557,8 +2561,7 @@ void QtMainWindow::OnWayEditor()
         return;
     }
 
-	sceneEditor->wayEditSystem->EnableWayEdit(toEnable);
-	sceneEditor->pathSystem->EnablePathEdit(toEnable);
+    sceneEditor->pathSystem->EnablePathEdit(toEnable);
 }
 
 
@@ -2860,13 +2863,11 @@ void QtMainWindow::OnAddPathEntity()
 {
     SceneEditor2* scene = GetCurrentScene();
     if(!scene) return;
-    
+
     Entity * pathEntity = new Entity();
     pathEntity->SetName(ResourceEditor::PATH_NODE_NAME);
-    
-    DAVA::PathComponent *pc = new PathComponent();
-    pc->SetName(scene->pathSystem->GeneratePathName());
-    
+    DAVA::PathComponent *pc = scene->pathSystem->CreatePathComponent();
+
     pathEntity->AddComponent(pc);
     scene->Exec(new EntityAddCommand(pathEntity, scene));
     scene->selectionSystem->SetSelection(pathEntity);

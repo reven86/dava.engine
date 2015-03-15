@@ -13,7 +13,7 @@
 #elif defined( Q_OS_MAC )
 #endif
 
-#include "Classes/Qt/Main/davaglwidget.h"
+#include "QtTools/DavaGLWidget/davaglwidget.h"
 
 
 FrameworkLoop::FrameworkLoop()

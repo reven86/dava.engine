@@ -1492,8 +1492,7 @@ void PropertyEditor::OnAddPathComponent()
             if (node->GetComponentCount(Component::PATH_COMPONENT) == 0 
              && node->GetComponentCount(Component::WAYPOINT_COMPONENT) == 0)
             {
-                PathComponent *pathComponent = static_cast<PathComponent *> (Component::CreateByType(Component::PATH_COMPONENT));
-                pathComponent->SetName(curScene->pathSystem->GeneratePathName());
+                PathComponent* pathComponent = curScene->pathSystem->CreatePathComponent();
                 curScene->Exec(new AddComponentCommand(node, pathComponent));
             }
         }

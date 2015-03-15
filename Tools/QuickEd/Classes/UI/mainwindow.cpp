@@ -60,6 +60,8 @@
 #include "Utils/QtDavaConvertion.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 
+#include "QtLayer.h"
+
 const QString APP_NAME = "QuickEd";
 const QString APP_COMPANY = "DAVA";
 const QString APP_GEOMETRY = "geometry";
@@ -89,6 +91,7 @@ MainWindow::MainWindow(QWidget *parent)
     redoAction->setIcon(QIcon(":/Icons/edit_redo.png"));
 
     ui->setupUi(this);
+    qApp->installEventFilter(this);
 
     ui->mainToolbar->addAction(undoAction);
     ui->mainToolbar->addAction(redoAction);
@@ -149,6 +152,67 @@ void MainWindow::RestoreMainWindowState()
 	{
     	restoreState(settings.value(APP_STATE).toByteArray());
 	}
+}
+
+DavaGLWidget* MainWindow::GetGLWidget() const
+{
+    return ui->previewWidget->GetGLWidget();
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    QEvent::Type eventType = event->type();
+
+    if (qApp == obj)
+    {
+        if (QEvent::ApplicationStateChange == eventType)
+        {
+            QApplicationStateChangeEvent* stateChangeEvent = static_cast<QApplicationStateChangeEvent*>(event);
+            Qt::ApplicationState state = stateChangeEvent->applicationState();
+            switch (state)
+            {
+            case Qt::ApplicationInactive:
+            {
+                if (QtLayer::Instance())
+                {
+                    QtLayer::Instance()->OnSuspend();
+                }
+                break;
+            }
+            case Qt::ApplicationActive:
+            {
+                if (QtLayer::Instance())
+                {
+                    QtLayer::Instance()->OnResume();
+                }
+                break;
+            }
+            default:
+                break;
+            }
+        }
+    }
+
+    if (obj == this && QEvent::KeyPress == eventType)
+    {
+        QKeyEvent *keyEvent = (QKeyEvent *)event;
+        int32 keyValue = keyEvent->key();
+        // check chars of russian alphabet(unicode table)
+        if (keyValue >= 0x410 && keyValue <= 0x44F)
+        {
+            // according to reference of QKeyEvent, it's impossible to get scanCode on mac os
+            // so we use platform depending nativeVirtualKey()
+            int32 systemKeyCode = keyEvent->nativeVirtualKey();
+            int32 davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(systemKeyCode);
+            // translate davaKey to ascii to find out real key pressed
+            // offset between ascii and letters in davakey table - 29 positions
+            int32 qtKey = davaKey + 29;
+            QKeyEvent eventNew = QKeyEvent(QEvent::KeyPress, qtKey, keyEvent->modifiers());
+            QApplication::sendEvent(obj, &eventNew);
+        }
+    }
+
+    return QMainWindow::eventFilter(obj, event);
 }
 
 void MainWindow::closeEvent(QCloseEvent * event)

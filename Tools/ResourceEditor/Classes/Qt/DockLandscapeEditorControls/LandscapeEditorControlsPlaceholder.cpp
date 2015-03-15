@@ -11,7 +11,7 @@
 
 #include <QVBoxLayout>
 
-#include "Main/davaglwidget.h"
+#include "QtTools/DavaGLWidget/davaglwidget.h"
 
 LandscapeEditorControlsPlaceholder::LandscapeEditorControlsPlaceholder(QWidget* parent)
 :	QWidget(parent)
