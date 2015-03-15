@@ -169,15 +169,13 @@ void PreviewWidget::OnCanvasScaleChanged(int newScale)
 
 void PreviewWidget::OnGLWidgetResized(int width, int height, int dpr)
 {
-    Q_UNUSED( dpr );
-
-    Vector2 screenSize((float32)width, (float32)height);
+    Vector2 screenSize((float32)width * dpr, (float32)height * dpr);
 
     UIScreenManager::Instance()->GetScreen()->SetSize(screenSize);
 
     if (context)
     {
-        context->SetViewControlSize(QSize(width, height));
+        context->SetViewControlSize(QSize(width * dpr, height * dpr));
     }
 }
 
