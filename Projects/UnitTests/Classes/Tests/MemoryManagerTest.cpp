@@ -87,7 +87,7 @@ void MemoryManagerTest::TestCallback(PerfFuncData* data)
     MemoryManager::InstallDumpCallback(&DumpRequestCallback, this);
 
     MEMORY_PROFILER_ENTER_TAG(TAG);
-    MEMORY_PROFILER_LEAVE_TAG();
+    MEMORY_PROFILER_LEAVE_TAG(TAG);
 
     MEMORY_PROFILER_CHECKPOINT(CHECKPOINT);
 

@@ -37,14 +37,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <detours/detours.h>
 #elif defined(__DAVAENGINE_ANDROID__) 
 #include <dlfcn.h>
-#include "AndroidMallocHelper.h"
+
+// Function to retrive malloc'd size, its definition is in AndroidMallocSize.cpp
+size_t AndroidMallocSize(void* ptr);
+
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <dlfcn.h>
 #include <malloc/malloc.h>
 #else
 #error "Unknown platform"
 #endif
-
 
 #include "MallocHook.h"
 #include "AllocPools.h"
@@ -57,8 +59,6 @@ static void* HookedMalloc(size_t size)
 
 static void* HookedRealloc(void* ptr, size_t newSize)
 {
-    if (ptr == nullptr)
-        return malloc(newSize);
     return DAVA::MemoryManager::Instance()->Reallocate(ptr, newSize);
 }
 
@@ -88,7 +88,6 @@ static char* HookedStrdup(const char* src)
     return dst;
 }
 
-
 static void HookedFree(void* ptr)
 {
     DAVA::MemoryManager::Instance()->Deallocate(ptr);
@@ -99,7 +98,7 @@ namespace DAVA
 
 void* (*MallocHook::RealMalloc)(size_t) = &malloc;
 void* (*MallocHook::RealRealloc)(void*, size_t) = &realloc;
-void(*MallocHook::RealFree)(void*) = &free;
+void (*MallocHook::RealFree)(void*) = &free;
 
 MallocHook::MallocHook()
 {
@@ -120,50 +119,58 @@ void MallocHook::Free(void* ptr)
 {
     RealFree(ptr);
 }
-size_t MallocHook::MallocSize(void * ptr)
+
+size_t MallocHook::MallocSize(void* ptr)
 {
 #if defined(__DAVAENGINE_WIN32__)
     return _msize(ptr);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     return malloc_size(ptr);
 #elif defined(__DAVAENGINE_ANDROID__) 
-    return androidMallocSize(ptr);
+    return AndroidMallocSize(ptr);
 #else
-    return 0;
+#error "Unknown platform"
 #endif
-    
 }
+
 void MallocHook::Install()
 {
+    /*
+     Explanation of allocation flow:
+        app calls malloc --> HookedMalloc --> MemoryManager::Allocate --> MallocHook::Malloc --> original malloc
+     Same flow with little differences is applied to other functions
+     Such a long chain is neccessary for keeping as mush common code among different platforms as possible.
+     To be able to call HookedMalloc instead of malloc I use some technique to intercept/replace functions.
+
+     On Win32 I use Microsoft Detours library which modifies function prologue code with call to so called
+     trampoline function. This trampoline function makes call to address which was specified by me (HookedMalloc).
+
+     On *nix platforms (Android, iOS, Mac OS X, etc) I simply define my own implementation of malloc. In glibc
+     malloc is a weak symbol which means that it can be overriden by an application. Additionally I get original
+     address of malloc using dlsym function.
+    */
 #if defined(__DAVAENGINE_WIN32__)
     void* (*realCalloc)(size_t, size_t) = &calloc;
     char* (*realStrdup)(const char*) = &_strdup;
 
-    // TODO: check return values
-    DetourTransactionBegin();
-    DetourUpdateThread(GetCurrentThread());
-    DetourAttach(reinterpret_cast<PVOID*>(&RealMalloc), reinterpret_cast<PVOID>(&HookedMalloc));
-    DetourTransactionCommit();
+    auto detours = [](PVOID* what, PVOID hook) -> void {
+        LONG result = 0;
+        result = DetourTransactionBegin();
+        assert(0 == result);
+        result = DetourUpdateThread(GetCurrentThread());
+        assert(0 == result);
+        result = DetourAttach(what, hook);
+        assert(0 == result);
+        result = DetourTransactionCommit();
+        assert(0 == result);
+    };
 
-    DetourTransactionBegin();
-    DetourUpdateThread(GetCurrentThread());
-    DetourAttach(reinterpret_cast<PVOID*>(&RealRealloc), reinterpret_cast<PVOID>(&HookedRealloc));
-    DetourTransactionCommit();
-
-    DetourTransactionBegin();
-    DetourUpdateThread(GetCurrentThread());
-    DetourAttach(reinterpret_cast<PVOID*>(&realCalloc), reinterpret_cast<PVOID>(&HookedCalloc));
-    DetourTransactionCommit();
-
-    DetourTransactionBegin();
-    DetourUpdateThread(GetCurrentThread());
-    DetourAttach(reinterpret_cast<PVOID*>(&realStrdup), reinterpret_cast<PVOID>(&HookedStrdup));
-    DetourTransactionCommit();
-
-    DetourTransactionBegin();
-    DetourUpdateThread(GetCurrentThread());
-    DetourAttach(reinterpret_cast<PVOID*>(&RealFree), reinterpret_cast<PVOID>(&HookedFree));
-    DetourTransactionCommit();
+    // On detours error you will see assert message
+    detours(reinterpret_cast<PVOID*>(&RealMalloc), reinterpret_cast<PVOID>(&HookedMalloc));
+    detours(reinterpret_cast<PVOID*>(&RealRealloc), reinterpret_cast<PVOID>(&HookedRealloc));
+    detours(reinterpret_cast<PVOID*>(&realCalloc), reinterpret_cast<PVOID>(&HookedCalloc));
+    detours(reinterpret_cast<PVOID*>(&realStrdup), reinterpret_cast<PVOID>(&HookedStrdup));
+    detours(reinterpret_cast<PVOID*>(&RealFree), reinterpret_cast<PVOID>(&HookedFree));
 
 #elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 
@@ -177,7 +184,8 @@ void MallocHook::Install()
     fptr = dlsym(handle, "free");
     RealFree = reinterpret_cast<void (*)(void*)>(fptr);
     assert(fptr != nullptr);
-    
+#else
+#error "Unknown platform"
 #endif
 }
 

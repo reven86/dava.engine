@@ -40,10 +40,10 @@ struct MMConst
     static const size_t MAX_TAG_DEPTH = 8;              // Maximum depth of tag stack
     static const size_t DEFAULT_TAG = 0;                // Default tag which corresponds to whole application time line
     
-    static const size_t MAX_ALLOC_POOL_COUNT = 6;       // Max supported count of allocation pools
+    static const size_t MAX_ALLOC_POOL_COUNT = 8;       // Max supported count of allocation pools
     static const size_t MAX_TAG_COUNT = 8;              // Max supported count of tags
     static const size_t MAX_NAME_LENGTH = 16;           // Max length of name: tag, allocation type, counter
-
+    
     enum {
         DUMP_REQUEST_USER,
         DUMP_REQUEST_TAG,
@@ -60,12 +60,15 @@ struct GeneralAllocStat
     uint32 internalBlockCount;  // Number of internal memory blocks
     uint32 ghostBlockCount;     // Number of blocks allocated bypassing memory manager
     uint32 ghostSize;           // Size of bypassed memory
+    uint32 realSize;
+    //padding
+    uint32 padding[3];
 };
 
 static_assert(sizeof(GeneralAllocStat) % 16 == 0, "sizeof(GeneralAllocStat) % 16 == 0");
 
 /*
- AllocPoolStat - memory statistics calculated ever for every allocation pool
+ AllocPoolStat - memory statistics calculated for every allocation pool
 */
 struct AllocPoolStat
 {
@@ -109,7 +112,9 @@ struct MMStatConfig
     uint32 maxTagCount;         // Max possible tag count
     uint32 maxAllocPoolCount;   // Max possible count of allocation pools
     uint32 tagCount;            // Number of registered tags
+    uint32 markCount;
     uint32 allocPoolCount;      // Number of registered allocation pools
+    uint32 padding[3];
     MMItemName names[1];        // Item names: elements in range [0, tagCount) - tag names
                                 //             elements in range [tagCount, tagCount + allocPoolCount) - allocation pool names
 };
@@ -155,7 +160,6 @@ struct MMBlock
     uint32 pool;
     uint32 orderNo;
     uint32 backtraceHash;
-    uint32 padding;
 };
 
 static_assert(sizeof(MMBlock) % 16 == 0, "sizeof(MMBlock) % 16 == 0");
@@ -172,6 +176,7 @@ struct MMDump
     uint32 type;                // Dump type: user request, tag ended, checkpoint
     uint32 tag;                 // What tag has ended
     uint32 padding;
+    // Memory layout after this struct
     //MMBlock blocks[];
     //MMBacktrace backtraces[];
     //MMSymbol symbols[];

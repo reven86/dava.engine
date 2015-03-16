@@ -178,7 +178,11 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize)
                     auto u = symbolMap.find(z.frames[j]);
                     if (u != symbolMap.end())
                     {
-                        fprintf(f, "        %08llX    %s\n", blocks[i].addr, (*u).second.c_str());
+                        fprintf(f, "        %08llX    %s\n", z.frames[j], (*u).second.c_str());
+                    }
+                    else
+                    {
+                        fprintf(f, "        %08llX\n", z.frames[j]);
                     }
                 }
             }

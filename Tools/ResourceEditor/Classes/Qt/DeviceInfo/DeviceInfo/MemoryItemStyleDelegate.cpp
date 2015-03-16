@@ -24,14 +24,7 @@ void MemoryItemStyleDelegate::paint(QPainter *painter, const QStyleOptionViewIte
         }
         
         painter->save();
-
         painter->setRenderHint(QPainter::Antialiasing, true);
-       // painter->setPen(Qt::NoPen);
-   
-        //int yOffset = (option.height() - 1.0f) / 2;
-        //painter->translate(option.rect.x(), option.rect.y());
-        //painter->scale(1.0f, 1.0f);
-
         painter->drawText(option.rect, QString(std::to_string(memoryData).c_str()) + letter);
         painter->restore();
     }

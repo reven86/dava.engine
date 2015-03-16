@@ -39,9 +39,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MEMORY_PROFILER_REGISTER_ALLOC_POOL(index, name)    DAVA::MemoryManager::RegisterAllocPoolName(index, name)
 
 #define MEMORY_PROFILER_ENTER_TAG(tag)                      DAVA::MemoryManager::Instance()->EnterTagScope(tag)
-#define MEMORY_PROFILER_LEAVE_TAG()                         DAVA::MemoryManager::Instance()->LeaveTagScope()
+#define MEMORY_PROFILER_LEAVE_TAG(tag)                      DAVA::MemoryManager::Instance()->LeaveTagScope(tag)
 
 #define MEMORY_PROFILER_CHECKPOINT(checkpoint)              DAVA::MemoryManager::Instance()->Checkpoint(checkpoint)
+
+// For future expansion
+#define MEMORY_PROFILER_SETLABEL(x)
+#define MEMORY_PROFILER_REGISTER_LABEL(x, s)
 
 #else   // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
@@ -49,8 +53,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MEMORY_PROFILER_REGISTER_ALLOC_POOL(index, name)
 
 #define MEMORY_PROFILER_ENTER_TAG(tag)
-#define MEMORY_PROFILER_LEAVE_TAG()
+#define MEMORY_PROFILER_LEAVE_TAG(tag)
 #define MEMORY_PROFILER_CHECKPOINT(checkpoint)
+
+// For future expansion
+#define MEMORY_PROFILER_SETLABEL(x)
+#define MEMORY_PROFILER_REGISTER_LABEL(x, s)
 
 #endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
