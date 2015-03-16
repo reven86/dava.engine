@@ -7,7 +7,7 @@
 #include "EditScreen.h"
 
 #include <QLineEdit>
-
+#include <QScreen>
 
 
 using namespace DAVA;
@@ -23,10 +23,10 @@ static const int32 DEFAULT_SCALE_PERCENTAGE_INDEX = 4; // 100%
 static const char* PERCENTAGE_FORMAT = "%1 %";
 
 PreviewWidget::PreviewWidget(QWidget *parent)
-: QWidget(parent)
-, ui(new Ui::PreviewWidget())
-, document(NULL)
-, context(NULL)
+    : QWidget(parent)
+    , ui(new Ui::PreviewWidget())
+    , document(nullptr)
+    , context(nullptr)
 {
     ui->setupUi(this);
 
