@@ -894,9 +894,6 @@
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbObject.h">
       <Filter>Internal\Database</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Debug\Backtrace.h">
-      <Filter>Internal\Debug</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
@@ -907,9 +904,6 @@
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\FixedSizePoolAllocator.h">
-      <Filter>Internal\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\Mallocator.h">
       <Filter>Internal\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\RenderOptions.h">
@@ -1816,6 +1810,9 @@
     <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetClient.h">
       <Filter>Internal\Network\Services</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2423,9 +2420,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingSystem.cpp">
       <Filter>Internal\Autotesting</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Debug\Backtrace.cpp">
-      <Filter>Internal\Debug</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp">
       <Filter>Internal\UI</Filter>
@@ -3240,6 +3234,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetClient.cpp">
       <Filter>Internal\Network\Services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AndroidMallocSize.cpp">
+      <Filter>Internal\MemoryManager</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
