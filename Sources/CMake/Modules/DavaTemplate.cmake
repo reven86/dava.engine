@@ -181,7 +181,6 @@ elseif( IOS )
 
     foreach ( TARGET ${PROJECT_NAME} ${DAVA_LIBRARY}  )
         set_xcode_property( ${TARGET} GCC_GENERATE_DEBUGGING_SYMBOLS[variant=Debug] YES )
-        set_xcode_property( ${TARGET} IPHONEOS_DEPLOYMENT_TARGET "7.0" )
         set_xcode_property( ${TARGET} ONLY_ACTIVE_ARCH YES )
     endforeach ()
 

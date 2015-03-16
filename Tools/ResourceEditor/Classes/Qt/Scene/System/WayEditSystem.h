@@ -58,13 +58,13 @@ public:
     void EnableWayEdit(bool enable);
     bool IsWayEditEnabled() const;
 
-    void RemovePointsGroup(const EntityGroup &entityGroup);
+    void RemoveWayPoint(DAVA::Entity* entity);
 
-    virtual void Process(DAVA::float32 timeElapsed);
-    virtual void Input(DAVA::UIEvent *event);
-    
-    virtual void AddEntity(DAVA::Entity * entity);
-    virtual void RemoveEntity(DAVA::Entity * entity);
+    void Process(DAVA::float32 timeElapsed) override;
+    void Input(DAVA::UIEvent *event) override;
+
+    void AddEntity(DAVA::Entity * entity) override;
+    void RemoveEntity(DAVA::Entity * entity) override;
 
 protected:
     void Draw();
@@ -74,12 +74,12 @@ protected:
     DAVA::Entity* CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 pos);
     DAVA::Entity* CopyWayPoint(DAVA::Entity* waypoint);
 
-    void RemoveWayPoint(DAVA::Entity* entity);
     void RemoveEdge(DAVA::Entity* entity, DAVA::EdgeComponent * edgeComponent);
 
     void DefineAddOrRemoveEdges(const EntityGroup& srcPoints, DAVA::Entity* dstPoint, EntityGroup& toAddEdge, EntityGroup& toRemoveEdge);
     void AddEdges(const EntityGroup & group, DAVA::Entity *nextEntity);
     void RemoveEdges(const EntityGroup & group, DAVA::Entity *nextEntity);
+    bool IsAccessible(DAVA::Entity* startPoint, DAVA::Entity* breachPoint, DAVA::Entity* excludedPoint, DAVA::EdgeComponent* excludingEdge, DAVA::Set<DAVA::Entity*>& passedPoints) const;
 
     void ResetSelection();
     void ProcessSelection();
@@ -100,6 +100,7 @@ protected:
     DAVA::UniqueHandle wayDrawState;
     
     DAVA::Vector<DAVA::Entity *> waypointEntities;
+    DAVA::Map<DAVA::Entity*, DAVA::Entity*> mapStartPoints; // mapping [path parent -> path start point]
     
     DAVA::Entity * underCursorPathEntity;
     bool inCloneState = false;
