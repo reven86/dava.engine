@@ -65,6 +65,8 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
         // DF-5068
         // strange but after add to manifest.xml screenSize to config
         // on nexus 5 w == h == 1080
+        // if you have any trouble here you should first check
+        // res/layout/activity_main.xml and root layout is FrameLayout!
         if (w > h) 
         {
             nativeResize(w, h);

@@ -55,8 +55,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     
     private boolean isFirstRun = true;
     private static String commandLineParams = null;
-    // on Activity start context not created
-    //private static boolean isEglContextDestroyed = true;
     
 	public abstract JNIGLSurfaceView GetSurfaceView();
     

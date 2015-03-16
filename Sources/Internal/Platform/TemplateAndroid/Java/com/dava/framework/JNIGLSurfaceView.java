@@ -26,9 +26,6 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	private static final int MAX_KEYS = 256; // Maximum number of keycodes which used in native code
 
 	private JNIRenderer mRenderer = null;
-	// we have to add flag to distinguish second call to onResume()
-	// during Activity.onResume or Activity.onWindowsFocusChanged(focus)
-	private volatile boolean alreadyResumed = false;
 
 	private native void nativeOnInput(int action, int source, int groupSize, ArrayList< InputRunnable.InputEvent > activeInputs, ArrayList< InputRunnable.InputEvent > allInputs);
 	private native void nativeOnKeyDown(int keyCode);
@@ -153,7 +150,6 @@ public class JNIGLSurfaceView extends GLSurfaceView
         });
         // destroy eglCondext(or unbind), eglScreen, eglSurface
         super.onPause();
-        //alreadyResumed = false;
     }
 
     @Override
