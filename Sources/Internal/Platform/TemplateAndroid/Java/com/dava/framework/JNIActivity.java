@@ -51,6 +51,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	private native void nativeOnAccelerometer(float x, float y, float z);
 	private native void nativeOnGamepadAvailable(boolean isAvailable);
 	private native void nativeOnGamepadTriggersAvailable(boolean isAvailable);
+	private native boolean nativeIsMultitouchEnabled();
     
     private boolean isFirstRun = true;
     private static String commandLineParams = null;
@@ -497,6 +498,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 				}
 			}
 		});
+		
+		glView.SetMultitouchEnabled(nativeIsMultitouchEnabled());
 	}
 }
 
