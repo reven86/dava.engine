@@ -29,7 +29,7 @@
 
 #include <QApplication>
 #include "UI/mainwindow.h"
-
+#include "BaseController.h"
 #include "DAVAEngine.h"
 
 #include "Platform/Qt5/QtLayer.h"
@@ -41,6 +41,7 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    QApplication::setQuitOnLastWindowClosed(false);
 
     DAVA::Core::Run( argc, argv );
     new DAVA::QtLayer();
@@ -50,19 +51,19 @@ int main(int argc, char *argv[])
     auto loopManager = new DavaLoop();
     auto loop = new FrameworkLoop();
 
-    auto mainWindow = new MainWindow();
+    auto *baseController = new BaseController();
+    auto mainWindow = baseController->GetMainWindow();
     auto glWidget = mainWindow->GetGLWidget();
 
     loop->SetOpenGLWindow(glWidget);
-    mainWindow->show();
-
+    baseController->Start();
     loopManager->StartLoop( loop );
 
     QApplication::exec();
 
     glWidget->setParent(nullptr);
-    delete mainWindow;
 
+    delete baseController;
     delete loop;
     delete loopManager;
     DAVA::QtLayer::Instance()->Release();
