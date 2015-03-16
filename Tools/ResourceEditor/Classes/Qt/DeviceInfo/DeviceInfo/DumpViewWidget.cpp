@@ -6,20 +6,25 @@
 
 #include "DumpViewWidget.h"
 #include "Models/AllocationTreeModel.h"
+#include "Models/BacktraceTreeModel.h"
 
 using namespace DAVA;
 
 DumpViewWidget::DumpViewWidget(const char* filename, QWidget* parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
+    , allocTreeModel(nullptr)
+    , backtraceTreeModel(nullptr)
     , dumpHdr()
 {
     LoadDump(filename);
 
     allocTreeModel = new AllocationTreeModel(blocks, symbolMap, traceMap);
+    backtraceTreeModel = new BacktraceTreeModel(blocks, symbolMap, traceMap);
 
     treeView = new QTreeView;
     treeView->setFont(QFont("Consolas", 10, 500));
-    treeView->setModel(allocTreeModel);
+    //treeView->setModel(allocTreeModel);
+    treeView->setModel(backtraceTreeModel);
 
     QVBoxLayout* l = new QVBoxLayout;
     l->addWidget(treeView);
@@ -51,6 +56,7 @@ DumpViewWidget::DumpViewWidget(const DAVA::Vector<uint8>& v, QWidget* parent, Qt
 DumpViewWidget::~DumpViewWidget()
 {
     delete allocTreeModel;
+    delete backtraceTreeModel;
 }
 
 bool DumpViewWidget::LoadDump(const char* filename)

@@ -7,6 +7,7 @@
 class QTreeView;
 class QAbstractItemModel;
 class AllocationTreeModel;
+class BacktraceTreeModel;
 class DumpViewWidget : public QWidget
 {
     Q_OBJECT
@@ -23,6 +24,7 @@ private:
 private:
     QTreeView* treeView;
     AllocationTreeModel* allocTreeModel;
+    BacktraceTreeModel* backtraceTreeModel;
 
     DAVA::MMDump dumpHdr;
     DAVA::Vector<DAVA::MMBlock> blocks;
