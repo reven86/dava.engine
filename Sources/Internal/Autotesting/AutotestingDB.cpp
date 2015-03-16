@@ -26,11 +26,14 @@
 
 namespace DAVA
 {
+
+	const String AutotestingDB::DB_ERROR_STR_VALUE = "not_found";
+
 	AutotestingDB::AutotestingDB()
-		: dbClient(NULL)
+		: dbClient(nullptr)
 		, logFilePath(FilePath(""))
 		, logsFolder(FilePath(""))
-		, autoSys(NULL)
+		, autoSys(nullptr)
 	{
 		autoSys = AutotestingSystem::Instance();
 	}
@@ -42,7 +45,7 @@ namespace DAVA
 
 	bool AutotestingDB::ConnectToDB(const String &collection, const String &dbName, const String &dbHost, const int32 dbPort)
 	{
-		DVASSERT(NULL == dbClient);
+		DVASSERT(nullptr == dbClient);
 
 		dbClient = MongodbClient::Create(dbHost, dbPort);
 		if (dbClient)
@@ -50,7 +53,7 @@ namespace DAVA
 			dbClient->SetDatabaseName(dbName);
 			dbClient->SetCollectionName(collection);
 		}
-		return (NULL != dbClient);
+		return (nullptr != dbClient);
 	}
 
 	void AutotestingDB::CloseConnection()
@@ -72,7 +75,7 @@ namespace DAVA
 		{
 			autoSys->ForceQuit(Format("Couldn't find archive for %s device", deviceName.c_str()));
 		}
-		String result = deviceArchive->GetString(parameter.c_str(), "not_found");
+		String result = deviceArchive->GetString(parameter.c_str(), DB_ERROR_STR_VALUE);
 		SafeRelease(dbUpdateObject);
 		Logger::Info("AutotestingDB::GetStringTestParameter return deviceName=%s value: %s", deviceName.c_str(), result.c_str());
 		return result;
@@ -88,7 +91,7 @@ namespace DAVA
 		{
 			autoSys->ForceQuit(Format("Couldn't find archive for %s device", deviceName.c_str()));
 		}
-		int32 result = deviceArchive->GetInt32(parameter.c_str(), -9999);
+		int32 result = deviceArchive->GetInt32(parameter.c_str(), DB_ERROR_INT_VALUE);
 		SafeRelease(dbUpdateObject);
 		Logger::Info("AutotestingDB::GetIntTestParameter return deviceName=%s value: %d", deviceName.c_str(), result);
 		return result;
@@ -215,7 +218,7 @@ namespace DAVA
 		KeyedArchive *currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_multiplayer");
 
 		String result;
-		result = currentRunArchive->GetString(device + "_command", "not_found");
+		result = currentRunArchive->GetString(device + "_command", DB_ERROR_STR_VALUE);
 
 		SafeRelease(dbUpdateObject);
 
@@ -233,7 +236,7 @@ namespace DAVA
 		KeyedArchive *currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_multiplayer");
 		String result;
 
-		result = currentRunArchive->GetString(device, "not_found");
+		result = currentRunArchive->GetString(device, DB_ERROR_STR_VALUE);
 		SafeRelease(dbUpdateObject);
 		Logger::Info("AutotestingDB::ReadState device=%s: '%s'", device.c_str(), result.c_str());
 		return result;
@@ -248,7 +251,7 @@ namespace DAVA
 		KeyedArchive *currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "_aux");
 		String result;
 
-		result = currentRunArchive->GetString(name, "not_found");
+		result = currentRunArchive->GetString(name, DB_ERROR_STR_VALUE);
 
 		SafeRelease(dbUpdateObject);
 		Logger::Info("AutotestingSystem::ReadString name=%name: '%s'", name.c_str(), result.c_str());

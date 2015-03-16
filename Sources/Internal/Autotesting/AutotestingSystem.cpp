@@ -24,7 +24,7 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 #include "Platform/DateTime.h"
 #include "FileSystem/KeyedArchive.h"
 
-#include "AutotestingSystemLua.h"
+#include "Autotesting/AutotestingSystemLua.h"
 #include "Autotesting/AutotestingDB.h"
 
 
@@ -41,15 +41,15 @@ namespace DAVA
         , groupName("default")
         , deviceId("not-initialized")
         , deviceName("not-initialized")
-        , testsDate("not_found")
-        , runId("not_found")
+		, testsDate("not_found")
+		, runId("not_found")
         , testIndex(0)
         , stepIndex(0)
         , logIndex(0)
         , testDescription("")
         , testFileName("")
         , testFilePath("")
-        , buildDate("not_found")
+		, buildDate("not_found")
         , buildId("zero-build")
         , branch("branch")
         , framework("framework")
@@ -167,22 +167,22 @@ namespace DAVA
         deviceName = AutotestingSystemLua::Instance()->GetDeviceName();
         Logger::Info("AutotestingSystem::FetchParametersFromDB");
         groupName = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Group");
-        if (groupName == "not_found")
+		if (groupName == AutotestingDB::DB_ERROR_STR_VALUE)
         {
             ForceQuit("Couldn't get 'Group' parameter from DB.");
         }
         testFileName = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Filename");
-        if (groupName == "not_found")
+		if (groupName == AutotestingDB::DB_ERROR_STR_VALUE)
         {
             ForceQuit("Couldn't get 'Filename' parameter from DB.");
         }
         runId = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "RunId");
-        if (runId == "not_found")
+		if (runId == AutotestingDB::DB_ERROR_STR_VALUE)
         {
             ForceQuit("Couldn't get 'RunId' parameter from DB.");
         }
         testIndex = AutotestingDB::Instance()->GetIntTestParameter(deviceName, "TestIndex");
-		if (testIndex == -9999)
+		if (testIndex == AutotestingDB::DB_ERROR_INT_VALUE)
         {
             ForceQuit("Couldn't get TestIndex parameter from DB.");
         }

@@ -24,7 +24,7 @@
 #include "Database/MongodbClient.h"
 
 #include "Autotesting/MongodbUpdateObject.h"
-#include "AutotestingSystem.h"
+#include "Autotesting/AutotestingSystem.h"
 
 namespace DAVA
 {
@@ -35,6 +35,9 @@ namespace DAVA
 	public:
 		AutotestingDB();
 		~AutotestingDB();
+
+		static const String DB_ERROR_STR_VALUE;
+		static const int32 DB_ERROR_INT_VALUE = -9999;
 
 		bool ConnectToDB(const String &collection, const String &dbName, const String &dbHost, const int32 dbPort);
 		void CloseConnection();
