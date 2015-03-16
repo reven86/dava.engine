@@ -121,7 +121,8 @@ void PreviewWidget::OnScaleByComboIndex(int index)
         return;
     }
 
-    auto scaleValue = SCALE_PERCENTAGES[index];
+    auto dpr = static_cast<int>( ui->davaGLWidget->GetGLWindow()->devicePixelRatio() );
+    auto scaleValue = SCALE_PERCENTAGES[index] * dpr;
     context->SetCanvasControlScale(scaleValue);
 }
 
@@ -157,6 +158,9 @@ void PreviewWidget::OnZoomOutRequested()
 
 void PreviewWidget::OnCanvasScaleChanged(int newScale)
 {
+    auto dpr = static_cast<int>( ui->davaGLWidget->GetGLWindow()->devicePixelRatio() );
+    newScale /= dpr;
+
     QString newScaleText = QString(PERCENTAGE_FORMAT).arg(newScale);
     if (ui->scaleCombo->currentText() != newScaleText )
     {
