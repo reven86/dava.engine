@@ -84,11 +84,7 @@ void PreviewWidget::SetDocument(Document *newDocument)
 
     document = newDocument;
 
-    if (!document)
-    {
-        ui->davaGLWidget->setMaximumSize(1, 1);
-    }
-    else
+    if (document != nullptr)
     {
         context = document->GetPreviewContext();
         ui->davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
@@ -103,6 +99,7 @@ void PreviewWidget::SetDocument(Document *newDocument)
         OnScrollAreaChanged(context->GetViewSize(), context->GetScaledCanvasSize());
         OnScrollPositionChanged(context->GetCanvasPosition());
         OnCanvasScaleChanged(context->GetCanvasScale());
+        OnMonitorChanged();
     }
 }
 
@@ -113,9 +110,12 @@ DavaGLWidget* PreviewWidget::GetGLWidget() const
 
 void PreviewWidget::OnMonitorChanged()
 {
-    auto dpr = static_cast<int>(ui->davaGLWidget->GetGLWindow()->devicePixelRatio());
-    auto scaleValue = context->GetCanvasScale() * dpr;
-    context->SetCanvasControlScale(scaleValue);
+    if (context == nullptr)
+        return;
+    
+    const auto index = ui->scaleCombo->currentIndex();
+    ui->scaleCombo->setCurrentIndex(-1);
+    ui->scaleCombo->setCurrentIndex(index);
 }
 
 void PreviewWidget::OnScaleByZoom(int scaleDelta)
