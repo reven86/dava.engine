@@ -66,7 +66,7 @@ class ActionSetVisibilityPoint: public CommandAction
 {
 public:
 	ActionSetVisibilityPoint(Image* originalImage,
-							 Sprite* cursorSprite,
+                             Texture* cursorTexture,
 							 VisibilityToolProxy* visibilityToolProxy,
 							 const Vector2& visibilityPoint,
                              const Vector2& cursorSize);
@@ -74,7 +74,7 @@ public:
 
 protected:
     
-	Sprite* cursorSprite;
+	Texture* cursorTexture;
 	VisibilityToolProxy* visibilityToolProxy;
 	Vector2 redoVisibilityPoint;
     Vector2 cursorSize;

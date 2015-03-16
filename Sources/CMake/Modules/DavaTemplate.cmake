@@ -21,7 +21,6 @@
 #set( EXECUTABLE_FLAG            )
 #set( FILE_TREE_CHECK_FOLDERS    )
 #
-
 macro( setup_main_executable )
 
 add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
@@ -49,6 +48,51 @@ elseif( MACOS )
 
 endif()
 
+###
+
+if( QT4_FOUND )
+    set( QT_PREFIX "Qt4")	
+
+elseif( QT5_FOUND )
+    set( QT_PREFIX "Qt5")	
+
+endif()
+
+if( QT_PREFIX )
+    if( WIN32 )
+        set ( PLATFORM_INCLUDES_DIR ${DAVA_PLATFORM_SRC}/${QT_PREFIX} ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32 )
+        list( APPEND PATTERNS_CPP   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.cpp ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32/*.cpp )
+        list( APPEND PATTERNS_H     ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.h   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32/*.h   )        
+
+    elseif( MACOS )
+        set ( PLATFORM_INCLUDES_DIR  ${DAVA_PLATFORM_SRC}/${QT_PREFIX}  ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS )
+        list( APPEND PATTERNS_CPP    ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.cpp ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS/*.cpp ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS/*.mm )
+        list( APPEND PATTERNS_H      ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.h   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS/*.h   )        
+
+    endif()
+
+    file( GLOB CPP_FILES ${PATTERNS_CPP} )
+    file( GLOB H_FILES   ${PATTERNS_H} )
+    list( APPEND ADDED_SRC ${H_FILES} ${CPP_FILES} )
+ 
+    include_directories( ${PLATFORM_INCLUDES_DIR} )
+
+else()
+    if( WIN32 )
+        add_definitions        ( -D_UNICODE 
+                                 -DUNICODE )
+        list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.cpp 
+                                ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.h  )
+
+    elseif( MACOS )
+        #list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateMacOS/NPAPICorePlatformMacOS.cpp 
+        #                        ${DAVA_PLATFORM_SRC}/TemplateMacOS/NPAPICorePlatformMacOS.h )
+
+    endif()
+
+endif()
+
+###
 
 if( ANDROID )
     add_library( ${PROJECT_NAME} SHARED
@@ -65,13 +109,11 @@ else()
 
 endif()
 
-set_dava_target_properties( ${PROJECT_NAME} )
-
 if( ANDROID )
     set( LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME}" CACHE PATH "Output directory for Android libs" )
 
     set( ANDROID_MIN_SDK_VERSION     ${ANDROID_NATIVE_API_LEVEL} )
-    set( ANDROID_TARGET_SDK_VERSION  ${ANDROID_NATIVE_API_LEVEL} )
+    set( ANDROID_TARGET_SDK_VERSION  ${ANDROID_TARGET_API_LEVEL} )
 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/AndroidManifest.in
                     ${CMAKE_CURRENT_BINARY_DIR}/AndroidManifest.xml )
@@ -95,9 +137,14 @@ if( ANDROID )
 
     if( ANDROID_JAVA_ASSET )
         if( ANDROID_JAVA_ASSET_FOLDER )
-            set( ASSETS_FOLDER "/${ANDROID_JAVA_ASSET_FOLDER}" )    
+            set( ASSETS_FOLDER "${ANDROID_JAVA_ASSET_FOLDER}" )    
+
+        else()
+            get_filename_component( ASSETS_FOLDER ${ANDROID_JAVA_ASSET} NAME )
+          
         endif()
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ANDROID_JAVA_ASSET} ${CMAKE_BINARY_DIR}/assets${ASSETS_FOLDER} )
+
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ANDROID_JAVA_ASSET} ${CMAKE_BINARY_DIR}/assets/${ASSETS_FOLDER} )
     endif()
 
     if( ANDROID_ICO )
@@ -112,14 +159,17 @@ if( ANDROID )
 
     set_target_properties( ${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/ )
 
-    execute_process( COMMAND  android update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path . )
+    execute_process( COMMAND ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path . )
 
-    add_custom_target( ant-configure ALL
-        COMMAND  android update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path .
-        COMMAND  ant release
-    )
+    if( NOT CMAKE_EXTRA_GENERATOR )
+        add_custom_target( ant-configure ALL
+            COMMAND  ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path .
+            COMMAND  ${ANT_COMMAND} release
+        )
 
-    add_dependencies( ant-configure ${PROJECT_NAME} )
+        add_dependencies( ant-configure ${PROJECT_NAME} )
+
+    endif()
 
 
 elseif( IOS )
@@ -142,23 +192,32 @@ elseif( MACOS )
                             RESOURCE "${RESOURCES_LIST}"
                           )
 
+    if( DEPLOY )
+        set( OUTPUT_DIR ${DEPLOY_DIR}/${PROJECT_NAME}.app/Contents )
+
+    else()
+        set( OUTPUT_DIR ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents )
+    endif()
+
+    set( BINARY_DIR ${OUTPUT_DIR}/MacOS/${PROJECT_NAME} )
+
     ADD_CUSTOM_COMMAND(
     TARGET ${PROJECT_NAME}
     POST_BUILD
         COMMAND   
-        install_name_tool -change @executable_path/../Frameworks/libfmodex.dylib  @executable_path/../Resources/libfmodex.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/Resources/libfmodevent.dylib  
+        install_name_tool -change @executable_path/../Frameworks/libfmodex.dylib  @executable_path/../Resources/libfmodex.dylib ${OUTPUT_DIR}/Resources/libfmodevent.dylib  
 
         COMMAND   
-        install_name_tool -change ./libfmodevent.dylib @executable_path/../Resources/libfmodevent.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}    
+        install_name_tool -change ./libfmodevent.dylib @executable_path/../Resources/libfmodevent.dylib ${BINARY_DIR}    
 
         COMMAND   
-        install_name_tool -change ./libfmodex.dylib @executable_path/../Resources/libfmodex.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}   
+        install_name_tool -change ./libfmodex.dylib @executable_path/../Resources/libfmodex.dylib ${BINARY_DIR}   
 
         COMMAND 
-        install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Resources/libIMagickHelper.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}     
+        install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Resources/libIMagickHelper.dylib ${BINARY_DIR}     
 
         COMMAND   
-        install_name_tool -change ./libTextureConverter.dylib @executable_path/../Resources/libTextureConverter.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}   
+        install_name_tool -change ./libTextureConverter.dylib @executable_path/../Resources/libTextureConverter.dylib ${BINARY_DIR}   
     )
 
 elseif ( MSVC )       
@@ -190,7 +249,6 @@ elseif ( MSVC )
 
 endif()
 
-
 list ( APPEND DAVA_FOLDERS ${DAVA_ENGINE_DIR} )
 list ( APPEND DAVA_FOLDERS ${FILE_TREE_CHECK_FOLDERS} )
 list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
@@ -207,5 +265,75 @@ foreach ( FILE ${LIBRARIES_RELEASE} )
     target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
 endforeach ()
 
+###
+
+if( DEPLOY )
+   message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
+   execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
+ 
+    if( WIN32 )
+        if( WIN32_DATA )
+            get_filename_component( DIR_NAME ${WIN32_DATA} NAME )
+#            execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${WIN32_DATA}  ${DEPLOY_DIR}/${DIR_NAME} )
+            ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD 
+               COMMAND ${CMAKE_COMMAND} -E copy_directory ${WIN32_DATA}  ${DEPLOY_DIR}/${DIR_NAME}/ 
+               COMMAND ${CMAKE_COMMAND} -E remove  ${DEPLOY_DIR}/${PROJECT_NAME}.ilk
+            )
+
+            foreach ( ITEM fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll )
+                execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
+            endforeach ()
+
+        endif()
+
+        set( OUTPUT_DIR "${DEPLOY_DIR}" )
+        foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+            string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+            set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
+        endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+
+    elseif( MACOS )
+        set_target_properties( ${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR  ${DEPLOY_DIR} )
+
+    endif() 
+
+    if( QT_PREFIX )
+        qt_deploy( )
+
+    endif()
+
+endif()
 
 endmacro ()
+
+macro( DEPLOY_SCRIPT )
+
+    if( DEPLOY )
+        cmake_parse_arguments (ARG "" "" "PYTHON;COPY;COPY_WIN32;COPY_MACOS;COPY_DIR" ${ARGN})
+
+		if( NOT COPY_DIR )
+			set( COPY_DIR ${DEPLOY_DIR} )
+		endif()
+
+		execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${COPY_DIR} )
+		execute_process( COMMAND python ${ARG_PYTHON} )
+
+		if( ARG_COPY )
+			list( APPEND COPY_LIST ${ARG_COPY} )
+		endif()
+
+		if( ARG_COPY_WIN32 AND WIN32 )
+			list( APPEND COPY_LIST ${ARG_COPY_WIN32} )
+		endif()
+
+		if( ARG_COPY_MACOS AND MACOS )
+			list( APPEND COPY_LIST ${ARG_COPY_MACOS} )
+		endif()
+
+		foreach ( ITEM ${COPY_LIST} )
+			execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM} ${COPY_DIR} )
+		endforeach ()
+
+    endif()
+endmacro ()
+

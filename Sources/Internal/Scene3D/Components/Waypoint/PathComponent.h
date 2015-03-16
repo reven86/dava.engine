@@ -33,6 +33,7 @@
 
 #include "Entity/Component.h"
 #include "Base/Introspection.h"
+#include "Math/Color.h"
 
 namespace DAVA
 {
@@ -55,6 +56,7 @@ public:
         FastName name;
         Vector3 position;
         Vector<Edge *> edges;
+        bool isStarting = false;
     private:
         KeyedArchive* properties;
 
@@ -65,10 +67,14 @@ public:
         void SetProperties(KeyedArchive* p);
         KeyedArchive* GetProperties() const;
 
+        void SetStarting(bool);
+        bool IsStarting() const;
+
         INTROSPECTION(Waypoint,
             MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
             MEMBER(position, "Waypoint position", I_SAVE | I_EDIT | I_VIEW)
             MEMBER(properties, "Waypoint Properties", I_SAVE | I_EDIT | I_VIEW)
+            //MEMBER(isStarting, "Is waypoint starting", I_VIEW) // still editable on property editor. TODO: uncomment when fixed this
             COLLECTION(edges, "Edges", I_SAVE | I_VIEW | I_EDIT)
         );
     };
@@ -117,9 +123,13 @@ public:
     
     Waypoint * GetWaypoint(const FastName & name);
     const Vector<Waypoint *> & GetPoints() const;
+    Waypoint* GetStartWaypoint() const;
     
     void SetName(const FastName & name);
     const FastName & GetName() const;
+
+    void SetColor(const Color& color);
+    const Color& GetColor() const;
     
     void Reset();
     
@@ -129,14 +139,25 @@ private:
     
     
     FastName name;
+    Color color;
     Vector<Waypoint *> waypoints;
 
 public:
 	INTROSPECTION_EXTEND(PathComponent, Component,
         MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
-        COLLECTION(waypoints, "Waypoints", I_SAVE | I_VIEW | I_EDIT)
+        MEMBER(color, "Color", I_SAVE | I_VIEW | I_EDIT)
     );
 };
+
+inline void PathComponent::Waypoint::SetStarting(bool val)
+{
+    isStarting = val;
+}
+
+inline bool PathComponent::Waypoint::IsStarting() const
+{
+    return isStarting;
+}
 
 inline const Vector<PathComponent::Waypoint *> & PathComponent::GetPoints() const
 {
@@ -151,6 +172,16 @@ inline void PathComponent::SetName(const FastName & _name)
 inline const FastName & PathComponent::GetName() const
 {
     return name;
+}
+
+inline void PathComponent::SetColor(const Color& val)
+{
+    color = val;
+}
+
+inline const Color& PathComponent::GetColor() const
+{
+    return color;
 }
 
 inline KeyedArchive* PathComponent::Waypoint::GetProperties() const

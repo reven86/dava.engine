@@ -102,7 +102,7 @@ void Entity::AddComponent(Component * component)
 		scene->RegisterComponent(this, component);
 }
 
-void Entity::DetachComponent(const Vector<Component *>::iterator & it)
+void Entity::DetachComponent(Vector<Component *>::iterator & it)
 {
     Component * c = *it;
 
@@ -1138,6 +1138,23 @@ void Entity::FindComponentsByTypeRecursive(Component::eType type, List<DAVA::Ent
 	{
 		GetChild(i)->FindComponentsByTypeRecursive(type, components);
 	}
+}
+
+uint32 Entity::CountChildEntitiesWithComponent(Component::eType type, bool recursive /* = false */) const
+{
+    uint32 count = 0;
+    for (auto childEntity : children)
+    {
+        if (childEntity->GetComponent(type))
+        {
+            ++count;
+        }
+        if (recursive)
+        {
+            count += childEntity->CountChildEntitiesWithComponent(type, recursive);
+        }
+    }
+    return count;
 }
 	
 	

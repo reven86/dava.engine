@@ -57,6 +57,7 @@ public:
 
 	void BeginBatch(const DAVA::String &text);
 	void EndBatch();
+    bool IsBatchStarted() const;
 
 	bool IsClean() const;
 	void SetClean(bool clean);
@@ -77,6 +78,7 @@ protected:
 	size_t cleanCommandIndex;
 	bool lastCheckCleanState;
 
+    DAVA::uint32 nestedBatchesCounter;
 	CommandBatch* curBatchCommand;
 	CommandStackNotify *stackCommandsNotify;
 

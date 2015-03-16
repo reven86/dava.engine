@@ -232,6 +232,8 @@ void PropertyEditor::ResetProperties()
                         case Component::DEBUG_RENDER_COMPONENT:
                         case Component::TRANSFORM_COMPONENT:
                         case Component::CUSTOM_PROPERTIES_COMPONENT:    // Disable removing, because custom properties are created automatically
+                        case Component::WAYPOINT_COMPONENT:             // disable remove, b/c waypoint entity doesn't make sence without waypoint component
+                        case Component::EDGE_COMPONENT:                 // disable remove, b/c edge has to be removed directly from scene only
                             isRemovable = false;
                             break;
                         }
@@ -1479,13 +1481,24 @@ void PropertyEditor::OnAddSkeletonComponent()
 
 void PropertyEditor::OnAddPathComponent()
 {
-    PathComponent *pathComponent = static_cast<PathComponent *> (Component::CreateByType(Component::PATH_COMPONENT));
-
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-    pathComponent->SetName(curScene->pathSystem->GeneratePathName());
+    if (curNodes.size() > 0)
+    {
+        curScene->BeginBatch(Format("Add Component: %d", Component::PATH_COMPONENT));
 
-    OnAddComponent(pathComponent);
-    SafeDelete(pathComponent);
+        for (Entity* node : curNodes)
+        {
+            DVASSERT(node);
+            if (node->GetComponentCount(Component::PATH_COMPONENT) == 0 
+             && node->GetComponentCount(Component::WAYPOINT_COMPONENT) == 0)
+            {
+                PathComponent* pathComponent = curScene->pathSystem->CreatePathComponent();
+                curScene->Exec(new AddComponentCommand(node, pathComponent));
+            }
+        }
+
+        curScene->EndBatch();
+    }
 }
 
 void PropertyEditor::OnAddRotationControllerComponent()
