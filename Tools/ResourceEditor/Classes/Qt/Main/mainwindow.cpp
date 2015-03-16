@@ -412,37 +412,6 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
 		}
 	}
 
-    /*
-	if(obj == this && QEvent::WindowUnblocked == eventType)
-	{
-		if(isActiveWindow())
-		{
-			ui->sceneTabWidget->setFocus(Qt::ActiveWindowFocusReason);
-		}
-	}
-     */
- 
-    /*
-    if(obj == this && QEvent::KeyPress == eventType)
-    {
-        QKeyEvent *keyEvent = (QKeyEvent *)event;
-        int32 keyValue = keyEvent->key();
-        // check chars of russian alphabet(unicode table)
-        if(keyValue >= 0x410 && keyValue <=0x44F)
-        {
-            // according to reference of QKeyEvent, it's impossible to get scanCode on mac os
-            // so we use platform depending nativeVirtualKey()
-            int32 systemKeyCode = keyEvent->nativeVirtualKey();
-            int32 davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(systemKeyCode);
-            // translate davaKey to ascii to find out real key pressed
-            // offset between ascii and letters in davakey table - 29 positions
-            int32 qtKey = davaKey + 29;
-            QKeyEvent eventNew = QKeyEvent(QEvent::KeyPress, qtKey, keyEvent->modifiers());
-            QApplication::sendEvent(obj, &eventNew);
-        }
-    }
-     */
-    
 	return QMainWindow::eventFilter(obj, event);
 }
 

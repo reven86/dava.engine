@@ -176,11 +176,8 @@ void ControlMapper::dragMoveEvent(QDragMoveEvent * event)
     davaEvent.timestamp = 0;
     davaEvent.tapCount = 1;
     davaEvent.phase = DAVA::UIEvent::PHASE_MOVE;
-    
-    DAVA::Vector<DAVA::UIEvent> touches;
-    touches.push_back( davaEvent );
-    
-    DAVA::UIControlSystem::Instance()->OnInput( DAVA::UIEvent::PHASE_MOVE, DAVA::Vector<DAVA::UIEvent>(), touches );
+
+    DAVA::QtLayer::Instance()->MouseEvent( davaEvent );
 }
 
 void ControlMapper::ClearAllKeys()
