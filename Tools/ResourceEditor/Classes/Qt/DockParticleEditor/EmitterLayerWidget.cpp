@@ -916,6 +916,7 @@ void EmitterLayerWidget::Update(bool updateMinimized)
         Sprite::DrawState drawState;
         drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, sprite->GetWidth(), sprite->GetHeight());
         RenderSystem2D::Instance()->Draw(sprite, &drawState);
+        RenderSystem2D::Instance()->Flush();
 
         RenderManager::Instance()->SetRenderTarget(0);
         Image* image = renderTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
