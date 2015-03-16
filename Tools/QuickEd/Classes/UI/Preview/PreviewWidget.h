@@ -42,6 +42,8 @@ private slots:
     void OnHScrollbarMoved(int position);
     void OnScrollPositionChanged(const QPoint &newPosition);
     void OnScrollAreaChanged(const QSize &viewSize, const QSize &contentSize);
+    
+    void OnMonitorChanged();
 
 private:
     void OnScaleByZoom(int scaleDelta);

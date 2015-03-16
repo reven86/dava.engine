@@ -9,6 +9,7 @@
 #include <QLineEdit>
 
 
+
 using namespace DAVA;
 
 static const int SCALE_PERCENTAGES[] =
@@ -47,19 +48,21 @@ PreviewWidget::PreviewWidget(QWidget *parent)
         ui->scaleCombo->addItem(QString(PERCENTAGE_FORMAT).arg(SCALE_PERCENTAGES[i]));
     }
 
-    ui->scaleCombo->setCurrentIndex(DEFAULT_SCALE_PERCENTAGE_INDEX);
-    ui->scaleCombo->lineEdit()->setMaxLength(6);
-    ui->scaleCombo->setInsertPolicy(QComboBox::NoInsert);
-
     connect(ui->scaleCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(OnScaleByComboIndex(int)));
     connect(ui->scaleCombo->lineEdit(), SIGNAL(editingFinished()), this, SLOT(OnScaleByComboText()));
 
     connect(ui->verticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(OnVScrollbarMoved(int)));
     connect(ui->horizontalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(OnHScrollbarMoved(int)));
 
+    ui->scaleCombo->setCurrentIndex(DEFAULT_SCALE_PERCENTAGE_INDEX);
+    ui->scaleCombo->lineEdit()->setMaxLength(6);
+    ui->scaleCombo->setInsertPolicy(QComboBox::NoInsert);
+    
     // Setup rulers.
     ui->horizontalRuler->SetOrientation(RulerWidget::Horizontal);
     ui->verticalRuler->SetOrientation(RulerWidget::Vertical);
+    
+    connect(ui->davaGLWidget->GetGLWindow(), &QWindow::screenChanged, this, &PreviewWidget::OnMonitorChanged);
 }
 
 PreviewWidget::~PreviewWidget()
@@ -106,6 +109,13 @@ void PreviewWidget::SetDocument(Document *newDocument)
 DavaGLWidget* PreviewWidget::GetGLWidget() const
 {
     return ui->davaGLWidget;
+}
+
+void PreviewWidget::OnMonitorChanged()
+{
+    auto dpr = static_cast<int>(ui->davaGLWidget->GetGLWindow()->devicePixelRatio());
+    auto scaleValue = context->GetCanvasScale() * dpr;
+    context->SetCanvasControlScale(scaleValue);
 }
 
 void PreviewWidget::OnScaleByZoom(int scaleDelta)
