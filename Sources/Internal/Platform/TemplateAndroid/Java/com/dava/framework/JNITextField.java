@@ -43,21 +43,22 @@ import com.dava.framework.SoftKeyboardStateHelper.SoftKeyboardStateListener;
 
 public class JNITextField {
 
-    static private final int NO_ACTIVE_TEXTFIELD = -1;
+    private static final int TEXT_CHANGE_DELAY_REFRESH = 100;
+    private static final int NO_ACTIVE_TEXTFIELD = -1;
     // Sum of required IME options for set to view
-    static private final int STABLE_IME_OPTIONS = EditorInfo.IME_FLAG_NO_FULLSCREEN;
-    static private final int CLOSE_KEYBOARD_DELAY = 30;
-    static private final String TAG = "JNITextField";
+    private static final int STABLE_IME_OPTIONS = EditorInfo.IME_FLAG_NO_FULLSCREEN;
+    private static final int CLOSE_KEYBOARD_DELAY = 30;
+    private static final String TAG = "JNITextField";
 
-    static volatile int activeTextField = NO_ACTIVE_TEXTFIELD;
-    static private volatile int lastClosedTextField = NO_ACTIVE_TEXTFIELD;
-    static private volatile boolean readyToClose = false;
-    static private SoftKeyboardStateHelper keyboardHelper = null;
-    static private AttachedFrameLayout keyboardLayout = null;
-    static private Handler handler = new Handler();
-    static private int lastSelectedImeMode = 0;
-    static private int lastSelectedInputType = 0;
-    static private final InputFilter[] emptyFilterArray = new InputFilter[0];
+    private static volatile int activeTextField = NO_ACTIVE_TEXTFIELD;
+    private static volatile int lastClosedTextField = NO_ACTIVE_TEXTFIELD;
+    private static volatile boolean readyToClose = false;
+    private static SoftKeyboardStateHelper keyboardHelper = null;
+    private static AttachedFrameLayout keyboardLayout = null;
+    private static Handler handler = new Handler();
+    private static int lastSelectedImeMode = 0;
+    private static int lastSelectedInputType = 0;
+    private static final InputFilter[] emptyFilterArray = new InputFilter[0];
     
     static class UpdateTexture implements Runnable {
         int id;
@@ -105,7 +106,6 @@ public class JNITextField {
         
         public void setRenderToTexture(boolean value)
         {
-            Log.v(TAG, "setRenderToTexture value = " + value);
             isRenderToTexture = value;
             restoreVisibility();
             updateStaticTexture();
@@ -589,7 +589,6 @@ public class JNITextField {
                                                 _id, finalStart, dend - dstart,
                                                 bytes);
                                         String result = new String(retBytes, "UTF-8");
-                                        Log.v(TAG, "java filter: '" + result + "'");
                                         return result;
                                     }
                                 });
@@ -743,7 +742,6 @@ public class JNITextField {
                         try {
                             byte[] newBytes = s.toString().getBytes("UTF-8");
                             byte[] oldBytes = oldText.getBytes("UTF-8");
-                            Log.v(TAG, "java text change listener old: '"+oldText + "' new: '" + s.toString() + "'");
                             TextFieldOnTextChanged(id, newBytes, oldBytes);
                             
                             final Handler handler = new Handler();
@@ -757,7 +755,7 @@ public class JNITextField {
                                     text.updateStaticTexture();
                                 }
                             };
-                            handler.postDelayed(runnable, 100);
+                            handler.postDelayed(runnable, JNITextField.TEXT_CHANGE_DELAY_REFRESH);
                         } catch (UnsupportedEncodingException e) {
                             Log.e(JNIConst.LOG_TAG, e.getMessage());
                         }
@@ -822,7 +820,6 @@ public class JNITextField {
                 text.setFilters(filters); // enable filters
                 
                 text.updateStaticTexture();
-                Log.v(TAG, "java setText: '" + string + "'");
             }
         });
     }
@@ -1166,12 +1163,17 @@ public class JNITextField {
                 
                 if (maxLength > 0)
                 {
-                    InputFilter[] filters = nativeEditText.getFilters();
-                    InputFilter[] newFilters = new InputFilter[filters.length + 1];
-                    System.arraycopy(filters, 0, newFilters, 0, filters.length);
-                    newFilters[filters.length] = new InputFilter.LengthFilter(maxLength);
-                    nativeEditText.setFilters(newFilters);
+                    addOneMoreFilterToArray(maxLength, nativeEditText);
                 }
+            }
+
+            private void addOneMoreFilterToArray(final int maxLength,
+                    final TextField nativeEditText) {
+                InputFilter[] filters = nativeEditText.getFilters();
+                InputFilter[] newFilters = new InputFilter[filters.length + 1];
+                System.arraycopy(filters, 0, newFilters, 0, filters.length);
+                newFilters[filters.length] = new InputFilter.LengthFilter(maxLength);
+                nativeEditText.setFilters(newFilters);
             }
 
             private void removeMaxLengthFilters(final TextField nativeEditText) {

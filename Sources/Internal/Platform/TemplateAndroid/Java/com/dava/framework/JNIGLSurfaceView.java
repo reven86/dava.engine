@@ -146,23 +146,20 @@ public class JNIGLSurfaceView extends GLSurfaceView
         });
         // destroy eglCondext(or unbind), eglScreen, eglSurface
         super.onPause();
-        alreadyResumed = false;
+        //alreadyResumed = false;
     }
 
     @Override
     public void onResume() {
         Log.d(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onResume");
-        if (!alreadyResumed) {
-            // first call parent to restore eglContext
-            super.onResume();
-            queueEvent(new Runnable() {
-                public void run() {
-                    mRenderer.OnResume();
-                }
-            });
-            setRenderMode(RENDERMODE_CONTINUOUSLY);
-            alreadyResumed = true;
-        }
+        // first call parent to restore eglContext
+        super.onResume();
+        queueEvent(new Runnable() {
+            public void run() {
+                mRenderer.OnResume();
+            }
+        });
+        setRenderMode(RENDERMODE_CONTINUOUSLY);
     };
 	
 	public class InputRunnable implements Runnable

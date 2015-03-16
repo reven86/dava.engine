@@ -53,7 +53,6 @@ public class JNIContextFactory implements GLSurfaceView.EGLContextFactory
     {
 	    Log.i(JNIConst.LOG_TAG, "Activity Render destroyContext start");
         egl.eglDestroyContext(display, context);
-        JNIActivity.GetActivity().onEglContextDestroyed();
         Log.i(JNIConst.LOG_TAG, "Activity Render destroyContext finish");
     }
 	

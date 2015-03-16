@@ -35,7 +35,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
 	private JNIAccelerometer accelerometer = null;
 	protected JNIGLSurfaceView glView = null;
-	private View splashView = null;
+	View splashView = null;
 	
 	private FMODAudioDevice fmodDevice = new FMODAudioDevice();
 	
@@ -55,7 +55,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     private boolean isFirstRun = true;
     private static String commandLineParams = null;
     // on Activity start context not created
-    private static boolean isEglContextDestroyed = true;
+    //private static boolean isEglContextDestroyed = true;
     
 	public abstract JNIGLSurfaceView GetSurfaceView();
     
@@ -176,10 +176,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			}
 		}
 		
-		if (splashView != null && !isEglContextDestroyed())
+		if (splashView != null)
 		{
 		    splashView.setVisibility(View.GONE);
-		    Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] hide splash screen");
 		}
         // The activity is being created.
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] finish");
@@ -265,7 +264,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         // can destroy eglContext
         glView.onPause();
-        
         super.onPause();
 
         Log.i(JNIConst.LOG_TAG, "[Activity::onPause] finish");
@@ -277,18 +275,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] start");
         // recreate eglContext (also eglSurface, eglScreen) should be first
         super.onResume();
-        // This(next) comment obsolete but still needed for me
-        // The activity has become visible (it is now "resumed").
-        // glView on resume should be called in Activity.onResume!!!
-        // if context exist call glView.onResume as soon as possible
-        // else skip glView.onResume here, and call it in 
-        // windowsFocusChanded(has_focus)
-        // it is HACK to speedup show splash first and later create gl
-        // resources such textures, shaders etc.
-        // test it if (!isEglContextDestroyed())
-        {
-            glView.onResume();
-        }
+
+        glView.onResume();
 
         // activate accelerometer
         if(accelerometer != null)
@@ -368,13 +356,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     	if(hasFocus) {
     		JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
 			HideNavigationBar(getWindow().getDecorView());
-			
-			// glView on resume should be called in Activity.onResume!!!
-			// but then game crush in PushNotificationBridgeImplAndroid.cpp(15);
-			// test it glView.onResume();
-			// now I remove hand made MeasureLayout and glView.onResume()
-			// should work. need heavy testing on lock/unlock
-	        Log.i(JNIConst.LOG_TAG, "[Activity::onResume] call glView.onResume");
     	} else {
     		JNITextField.DestroyKeyboardLayout(getWindowManager());
     	}
@@ -493,36 +474,25 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		return null;
 	}
 	
-	public boolean isEglContextDestroyed() {
-	    return isEglContextDestroyed;
-	}
-	
-	protected void onEglContextCreated() {
-        isEglContextDestroyed = false;
-    }
-	
-	protected void onEglContextDestroyed() {
-		isEglContextDestroyed = true;
+	protected void ShowSplashScreenView() {
     	runOnUiThread(new Runnable() {
-			
 			@Override
 			public void run() {
 				if (splashView != null) {
-				    glView.setVisibility(View.GONE);
-				    Log.i(JNIConst.LOG_TAG, "[Activity::onEglContextDestroyed] splashView set visible");
-					splashView.setVisibility(View.VISIBLE);
+				    Log.i(JNIConst.LOG_TAG, "splashView set visible");
+				    splashView.setVisibility(View.VISIBLE);
 				}
 			}
 		});
 	}
 	
-	protected void OnFirstFrameAfterDraw() {
+	protected void HideSplashScreenView() {
 		runOnUiThread(new Runnable() {
 			
 			@Override
 			public void run() {
 				if (splashView != null) {
-				    Log.i(JNIConst.LOG_TAG, "[Activity::OnFirstFrameAfterDraw] splashView hide");
+				    Log.i(JNIConst.LOG_TAG, "splashView hide");
 					splashView.setVisibility(View.GONE);
 				}
 			}
