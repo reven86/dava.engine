@@ -108,6 +108,13 @@ DavaGLWidget* PreviewWidget::GetGLWidget() const
     return ui->davaGLWidget;
 }
 
+void PreviewWidget::setScale( int scale )
+{
+    auto currentDpi = static_cast<int>( ui->davaGLWidget->GetGLWindow()->devicePixelRatio() );
+    scale *= currentDpi;
+    context->SetCanvasControlScale(scale);
+}
+
 void PreviewWidget::OnScaleByZoom(int scaleDelta)
 {
     //int newScale = controlWorkspace->GetScreenScale() + scaleDelta;
@@ -116,13 +123,13 @@ void PreviewWidget::OnScaleByZoom(int scaleDelta)
 
 void PreviewWidget::OnScaleByComboIndex(int index)
 {
-    if (index < 0 || index >= (int)COUNT_OF(SCALE_PERCENTAGES) || !context)
+    if (index < 0 || index >= static_cast<int>( COUNT_OF(SCALE_PERCENTAGES)) || !context)
     {
         return;
     }
 
-    int scaleValue = SCALE_PERCENTAGES[index];
-
+    auto scaleValue = SCALE_PERCENTAGES[index];
+    setScale( scaleValue );
     context->SetCanvasControlScale(scaleValue);
 }
 

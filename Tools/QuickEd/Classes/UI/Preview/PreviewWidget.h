@@ -46,6 +46,7 @@ private:
     void OnScaleByZoom(int scaleDelta);
 
     QSize GetGLViewSize() const;
+    void setScale(int scale);
 
 private:
     Ui::PreviewWidget *ui;
