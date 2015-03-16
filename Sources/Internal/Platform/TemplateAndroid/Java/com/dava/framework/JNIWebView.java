@@ -66,6 +66,11 @@ public class JNIWebView {
             }
             setLayoutParams(params);
         }
+        public void restoreVisibility()
+        {
+            client.setVisible(this, client.isVisible());
+            updateViewRectPosition();
+        }
     }
 
     static Map<Integer, WebViewWrapper> views = new HashMap<Integer, WebViewWrapper>();
@@ -666,13 +671,31 @@ public class JNIWebView {
         }
     }
 
-    static protected void RelinkNativeControls() {
+    protected static void RelinkNativeControls() {
         for (WebView view : views.values()) {
             ViewGroup viewGroup = (ViewGroup) view.getParent();
             viewGroup.removeView(view);
             JNIActivity.GetActivity().addContentView(view,
                     view.getLayoutParams());
         }
+    }
+    
+    public static void HideAllWebViews() {
+        for (WebViewWrapper view: views.values()) {
+            view.setVisibility(View.GONE);
+        }
+    }
+
+    public static void ShowVisibleWebViews() {
+        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                for (WebViewWrapper view : views.values()) {
+                    view.restoreVisibility();
+                    refreshStaticTexture(view);
+                }
+            }
+        });
     }
 
     private static native int OnUrlChange(int id, String url);

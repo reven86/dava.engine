@@ -93,6 +93,7 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
                 isFirstFrameAfterDraw = false;
                 JNIActivity.GetActivity().HideSplashScreenView();
                 JNITextField.ShowVisibleTextFields();
+                JNIWebView.ShowVisibleWebViews();
             }
         }
     }

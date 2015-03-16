@@ -299,6 +299,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         JNIUtils.keepScreenOnOnResume();
         JNITextField.HideAllTextFields();
+        JNIWebView.HideAllWebViews();
 
         isPausing = false;
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
