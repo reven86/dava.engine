@@ -180,6 +180,7 @@ struct MMDump
     uint32 type;                // Dump type: user request, tag ended, checkpoint
     uint32 tag;                 // What tag has ended
     uint32 padding;
+    // Memory layout after this struct
     //MMBlock blocks[];
     //MMBacktrace backtraces[];
     //MMSymbol symbols[];

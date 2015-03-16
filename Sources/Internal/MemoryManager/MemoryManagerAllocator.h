@@ -132,8 +132,11 @@ inline void MemoryManagerAllocator<T, AllocPoolT>::destroy(T* const ptr) const
 template<typename T, std::size_t AllocPoolT>
 inline T* MemoryManagerAllocator<T, AllocPoolT>::allocate(const size_t n) const
 {
-    // TODO: check for n == 0, n > max_size(), out of memory
     void* ptr = AllocThunk(n * sizeof(T), AllocPoolT);
+    if (nullptr == ptr)
+    {
+        throw std::bad_alloc();
+    }
     return static_cast<T*>(ptr);
 }
 

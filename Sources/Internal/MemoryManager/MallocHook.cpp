@@ -129,12 +129,26 @@ size_t MallocHook::MallocSize(void* ptr)
 #elif defined(__DAVAENGINE_ANDROID__) 
     return AndroidMallocSize(ptr);
 #else
-    return 0;
+#error "Unknown platform"
 #endif
 }
 
 void MallocHook::Install()
 {
+    /*
+     Explanation of allocation flow:
+        app calls malloc --> HookedMalloc --> MemoryManager::Allocate --> MallocHook::Malloc --> original malloc
+     Same flow with little differences is applied to other functions
+     Such a long chain is neccessary for keeping as mush common code among different platforms as possible.
+     To be able to call HookedMalloc instead of malloc I use some technique to intercept/replace functions.
+
+     On Win32 I use Microsoft Detours library which modifies function prologue code with call to so called
+     trampoline function. This trampoline function makes call to address which was specified by me (HookedMalloc).
+
+     On *nix platforms (Android, iOS, Mac OS X, etc) I simply define my own implementation of malloc. In glibc
+     malloc is a weak symbol which means that it can be overriden by an application. Additionally I get original
+     address of malloc using dlsym function.
+    */
 #if defined(__DAVAENGINE_WIN32__)
     void* (*realCalloc)(size_t, size_t) = &calloc;
     char* (*realStrdup)(const char*) = &_strdup;
@@ -170,7 +184,8 @@ void MallocHook::Install()
     fptr = dlsym(handle, "free");
     RealFree = reinterpret_cast<void (*)(void*)>(fptr);
     assert(fptr != nullptr);
-    
+#else
+#error "Unknown platform"
 #endif
 }
 

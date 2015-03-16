@@ -62,7 +62,7 @@ struct MemoryManager::MemoryBlock
     size_t pool;            // Allocation pool block belongs to
     size_t mark;            // Mark to distinguish tracked memory blocks
     size_t label;
-    size_t padding[2];
+    size_t padding[2];      // Padding to make sure that struct size is integral multiple of 16 bytes
 };
 
 MMItemName MemoryManager::tagNames[MMConst::MAX_TAG_COUNT] = {

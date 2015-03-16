@@ -231,21 +231,18 @@ template<typename T>
 using Deque = std::deque<T, DefaultSTLAllocator<T>>;
 
 template <class _Key,
-          class _Compare = std::less<_Key>,
-          class _Alloc = DefaultSTLAllocator<_Key>>
-using Set = std::set< _Key, _Compare, _Alloc >;
+          class _Compare = std::less<_Key>>
+using Set = std::set< _Key, _Compare, DefaultSTLAllocator<_Key>>;
     
 template<class _Kty,
          class _Ty,
-         class _Pr = std::less<_Kty>,
-         class _Alloc = DefaultSTLAllocator<std::pair<const _Kty, _Ty>>>
-using Map = std::map<_Kty, _Ty, _Pr, _Alloc>;
+         class _Pr = std::less<_Kty>>
+using Map = std::map<_Kty, _Ty, _Pr, DefaultSTLAllocator<std::pair<const _Kty, _Ty>>>;
 
 template<class _Kty,
          class _Ty,
-         class _Pr = std::less<_Kty>,
-         class _Alloc = DefaultSTLAllocator<std::pair<const _Kty, _Ty>>>
-using MultiMap = std::multimap<_Kty, _Ty, _Pr, _Alloc>;
+         class _Pr = std::less<_Kty>>
+using MultiMap = std::multimap<_Kty, _Ty, _Pr, DefaultSTLAllocator<std::pair<const _Kty, _Ty>>>;
 
 template<class T,
          class Container = Deque<T>>
@@ -258,16 +255,14 @@ using PriorityQueue = std::priority_queue<T, Container, Compare>;
 
 template<typename Key,
          typename Hash = std::hash<Key>,
-         typename KeyEqual = std::equal_to<Key>,
-         typename Allocator = DefaultSTLAllocator<Key>>
-using UnorderedSet = std::unordered_set<Key, Hash, KeyEqual, Allocator>;
+         typename KeyEqual = std::equal_to<Key>>
+using UnorderedSet = std::unordered_set<Key, Hash, KeyEqual, DefaultSTLAllocator<Key>>;
 
 template<typename Key,
          typename T,
          typename Hash = std::hash<Key>,
-         typename KeyEqual = std::equal_to<Key>,
-         typename Allocator = DefaultSTLAllocator<std::pair<const Key, T>>>
-using UnorderedMap = std::unordered_map<Key, T, Hash, KeyEqual, Allocator>;
+         typename KeyEqual = std::equal_to<Key>>
+using UnorderedMap = std::unordered_map<Key, T, Hash, KeyEqual, DefaultSTLAllocator<std::pair<const Key, T>>>;
 
 #ifdef min
 #undef min
