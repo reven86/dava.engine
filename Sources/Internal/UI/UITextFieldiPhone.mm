@@ -424,16 +424,19 @@ namespace DAVA
             ::UITextField* textField = textFieldHolder->textField;
             DVASSERT(textField);
             DAVA::Rect rect = davaTextField.GetRect();
-            // move text vield off screen if renderToTexture == true
-            UpdateRect(rect);
-            
-            if (renderToTexture)
+            if (rect.dx > 0 && rect.dy > 0)
             {
-                void* imgPtr = DAVA::WebViewControl::RenderIOSUIViewToImage(textField);
-                ::UIImage* image = static_cast<::UIImage*>(imgPtr);
-                DVASSERT(image);
+                // move text vield off screen if renderToTexture == true
+                UpdateRect(rect);
                 
-                WebViewControl::SetImageAsSpriteToControl(image, davaTextField);
+                if (renderToTexture)
+                {
+                    void* imgPtr = DAVA::WebViewControl::RenderIOSUIViewToImage(textField);
+                    ::UIImage* image = static_cast<::UIImage*>(imgPtr);
+                    DVASSERT(image);
+                    
+                    WebViewControl::SetImageAsSpriteToControl(image, davaTextField);
+                }
             }
         }
     }
