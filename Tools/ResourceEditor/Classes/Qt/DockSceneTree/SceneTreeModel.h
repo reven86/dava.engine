@@ -90,10 +90,10 @@ public:
 	int GetCustomFlags(const QModelIndex &index) const;
 
 	// drag and drop support
-	Qt::DropActions supportedDropActions() const;
-	QMimeData *	mimeData(const QModelIndexList & indexes) const;
-	QStringList	mimeTypes() const;
-	bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent);
+	Qt::DropActions supportedDropActions() const override;
+	QMimeData *	mimeData(const QModelIndexList & indexes) const override;
+	QStringList	mimeTypes() const override;
+	bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
 	bool DropCanBeAccepted(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) const;
 	bool DropAccepted() const;
 	int GetDropType(const QMimeData *data) const;
@@ -104,7 +104,8 @@ public:
     void ReloadFilter();
     bool IsFilterSet() const;
 
-    Qt::ItemFlags flags ( const QModelIndex & index ) const;
+    Qt::ItemFlags flags ( const QModelIndex & index ) const override;
+    QVariant data(const QModelIndex &index, int role) const override;
     
 private slots:
 	void ItemChanged(QStandardItem * item);
@@ -132,8 +133,8 @@ class SceneTreeFilteringModel : public QSortFilterProxyModel
 {
 public:
 	SceneTreeFilteringModel(SceneTreeModel *treeModel, QObject *parent = NULL);
-	bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
-    QVariant data(const QModelIndex& index, int role) const;
+	bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+    QVariant data(const QModelIndex& index, int role) const override;
 
 protected:
 	SceneTreeModel *treeModel;
