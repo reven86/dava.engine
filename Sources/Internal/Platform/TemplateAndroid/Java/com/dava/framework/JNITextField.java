@@ -60,6 +60,33 @@ public class JNITextField {
     private static int lastSelectedInputType = 0;
     private static final InputFilter[] emptyFilterArray = new InputFilter[0];
     
+    static class ControlNotFoundException extends RuntimeException
+    {
+        public ControlNotFoundException(String string) {
+            super(string);
+        }
+
+        private static final long serialVersionUID = 5293533328872853457L;
+    }
+    
+    static abstract class SafeRunnable implements Runnable
+    {
+
+        @Override
+        public void run() {
+            try
+            {
+                unsafeRun();
+            }catch(ControlNotFoundException ex)
+            {
+                Log.e(TAG, "can't found TextField:\n" + ex.getMessage());
+            }
+        }
+        
+        public abstract void unsafeRun();
+        
+    }
+    
     static class UpdateTexture implements Runnable {
         int id;
         int[] pixels;
@@ -343,7 +370,7 @@ public class JNITextField {
         if (null == tf) {
             Log.e(TAG, String.format("Unknown control id:%d", id));
             // better crush inside android VM then in c++ with SIGSEGV
-            throw new RuntimeException("can't find JNITextField by id:"+id);
+            throw new ControlNotFoundException("can't find JNITextField by id:"+id);
         }
         return tf;
     }
@@ -503,9 +530,9 @@ public class JNITextField {
 
     public static void Create(final int id, final float x, final float y,
             final float dx, final float dy) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 JNIActivity activity = JNIActivity.GetActivity();
                 if (null == activity || activity.GetIsPausing())
                     return;
@@ -768,9 +795,9 @@ public class JNITextField {
     }
 
     static void Destroy(final int id) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 final EditText editText = GetTextField(id);
                 editText.clearFocus(); // Clear focus before destroying to try
                                        // to close keyboard
@@ -784,9 +811,9 @@ public class JNITextField {
 
     public static void UpdateRect(final int id, final float x, final float y,
             final float dx, final float dy) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 TextField editText = GetTextField(id);
                 
                 FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) editText
@@ -805,9 +832,9 @@ public class JNITextField {
     }
 
     public static void SetText(final int id, final String string) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 if(JNIActivity.GetActivity().GetIsPausing())
                 {
                     return;
@@ -826,9 +853,9 @@ public class JNITextField {
 
     public static void SetTextColor(final int id, final float r, final float g,
             final float b, final float a) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 if(JNIActivity.GetActivity().GetIsPausing())
                 {
                     return;
@@ -842,9 +869,9 @@ public class JNITextField {
     }
 
     public static void SetFontSize(final int id, final float size) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 if(JNIActivity.GetActivity().GetIsPausing())
                 {
                     return;
@@ -857,9 +884,9 @@ public class JNITextField {
     }
 
     public static void SetIsPassword(final int id, final boolean isPassword) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 if(JNIActivity.GetActivity().GetIsPausing())
                 {
                     return;
@@ -878,9 +905,9 @@ public class JNITextField {
     }
 
     public static void SetTextUseRtlAlign(final int id, final boolean useRtlAlign) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 if(JNIActivity.GetActivity().GetIsPausing())
                 {
                     return;
@@ -899,9 +926,9 @@ public class JNITextField {
     }
 
     public static void SetTextAlign(final int id, final int align) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 if(JNIActivity.GetActivity().GetIsPausing())
                 {
                     return;
@@ -934,10 +961,10 @@ public class JNITextField {
     }
 
     public static void SetInputEnabled(final int id, final boolean value) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
-                EditText text = GetTextField(id);
+            public void unsafeRun() {
+                TextField text = GetTextField(id);
                 text.setEnabled(value);
             }
         });
@@ -945,9 +972,9 @@ public class JNITextField {
 
     public static void SetAutoCapitalizationType(final int id,
             final int autoCapitalizationType) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 final EditText text = GetTextField(id);
                 int autoCapitalizationFlag = text.getInputType();
                 autoCapitalizationFlag &= ~(InputType.TYPE_TEXT_FLAG_CAP_WORDS
@@ -973,9 +1000,9 @@ public class JNITextField {
 
     public static void SetAutoCorrectionType(final int id,
             final int autoCorrectionType) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 TextField text = GetTextField(id);
                 int autoCorrectionFlag = text.getInputType();
                 switch (autoCorrectionType) {
@@ -994,9 +1021,9 @@ public class JNITextField {
     }
 
     public static void SetSpellCheckingType(final int id, final int spellCheckingType) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 final EditText text = GetTextField(id);
                 int spellCheckingFlag = text.getInputType();
                 switch (spellCheckingType) {
@@ -1015,9 +1042,9 @@ public class JNITextField {
     }
 
     public static void SetKeyboardType(final int id, final int keyboardType) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 final EditText text = GetTextField(id);
                 int inputFlags = text.getInputType();
                 inputFlags &= ~(InputType.TYPE_CLASS_NUMBER
@@ -1057,9 +1084,9 @@ public class JNITextField {
     }
 
     public static void SetReturnKeyType(final int id, final int returnKeyType) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 final EditText text = GetTextField(id);
                 int imeOptions = 0;// EditorInfo.IME_ACTION_DONE;
                 switch (returnKeyType) {
@@ -1092,9 +1119,9 @@ public class JNITextField {
     }
 
     public static void SetVisible(final int id, final boolean isVisible) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 final TextField textField = GetTextField(id);
                 
                 if (!isVisible && textField.hasFocus()) {
@@ -1107,9 +1134,9 @@ public class JNITextField {
     }
 
     public static void OpenKeyboard(final int id) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 final EditText text = GetTextField(id);
                 boolean result = text.requestFocus();
                 if (result == false) {
@@ -1120,9 +1147,9 @@ public class JNITextField {
     }
 
     public static void CloseKeyboard(final int id) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 final EditText text = GetTextField(id);
                 text.clearFocus();
             }
@@ -1144,9 +1171,9 @@ public class JNITextField {
     }
 
     public static void SetCursorPos(final int id, final int pos) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 final EditText text = GetTextField(id);
                 text.setSelection(pos);
             }
@@ -1154,9 +1181,9 @@ public class JNITextField {
     }
 
     public static void SetMaxLength(final int id, final int maxLength) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 final TextField nativeEditText = GetTextField(id);
                 
                 removeMaxLengthFilters(nativeEditText);
@@ -1258,9 +1285,9 @@ public class JNITextField {
     }
     
     public static void SetRenderToTexture(final int id, final boolean value) {
-        JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
-            public void run() {
+            public void unsafeRun() {
                 if(JNIActivity.GetActivity().GetIsPausing())
                 {
                     return;
