@@ -7,8 +7,6 @@ set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_
 include               ( CMake-common )
 
 find_package          ( QT5           REQUIRED )
-
-add_definitions( -DDAVA_MEMORY_PROFILING_DISABLE )
 find_package          ( DavaFramework REQUIRED )
 
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
