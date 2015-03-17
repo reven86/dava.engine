@@ -31,6 +31,7 @@
 #include "EditorSettings.h"
 #include "Helpers/ResourcesManageHelper.h"
 #include <QString>
+#include <QDir>
 
 using namespace DAVA;
 
@@ -88,7 +89,7 @@ void EditorSettings::AddLastOpenedFile(const String & pathToFile)
     Vector<String> filesList;
 
     // Put all slash symbols to Unix style
-    QString normalizedPath = ResourcesManageHelper::ConvertPathToUnixStyle(QString::fromStdString(pathToFile));
+    QString normalizedPath = QDir::toNativeSeparators(QString::fromStdString(pathToFile));
     String _pathToFile = normalizedPath.toStdString();
 
     const int32 count = GetLastOpenedCount();

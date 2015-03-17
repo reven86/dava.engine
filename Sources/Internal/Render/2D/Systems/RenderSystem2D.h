@@ -179,10 +179,6 @@ public:
 	void PopClip();
     void UpdateClip();
 
-    void PushRenderTarget();
-    void PopRenderTarget();
-    void SetRenderTarget(Sprite * target);
-
     void ScreenSizeChanged();
 
     void Setup2DMatrices();
@@ -199,9 +195,6 @@ private:
     Matrix4 projMatrix;
 	std::stack<Rect> clipStack;
 	Rect currentClip;
-    
-    std::stack<Sprite *> renderTargetStack;
-    Sprite * currentRenderTarget;
 
     RenderDataObject * spriteRenderObject;
 

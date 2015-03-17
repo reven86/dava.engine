@@ -2803,7 +2803,6 @@
 		322FFD3D19C042880000ED71 /* UIPackage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackage.h; sourceTree = "<group>"; };
 		326A1B531A791D9800970D22 /* UIPackagesCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackagesCache.cpp; sourceTree = "<group>"; };
 		326A1B541A791D9800970D22 /* UIPackagesCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackagesCache.h; sourceTree = "<group>"; };
-		32DBCF5E0370ADEE00C91783 /* Framework_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Framework_Prefix.pch; sourceTree = "<group>"; };
 		4910CBF5167B73EC00CF948A /* libdxt_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_macos.a; path = ../../Libs/libs/libdxt_macos.a; sourceTree = "<group>"; };
 		4F34E1B91A234DDA000681BB /* JobThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JobThread.cpp; path = Job/JobThread.cpp; sourceTree = "<group>"; };
 		4F34E1BA1A234DDA000681BB /* JobThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JobThread.h; path = Job/JobThread.h; sourceTree = "<group>"; };
@@ -3062,7 +3061,6 @@
 		C18577ED17A16DA800331A95 /* MaterialOptimazer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaterialOptimazer.h; sourceTree = "<group>"; };
 		C18593D816F30BED005D30E2 /* UIAggregatorControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIAggregatorControl.cpp; sourceTree = "<group>"; };
 		C18593D916F30BED005D30E2 /* UIAggregatorControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIAggregatorControl.h; sourceTree = "<group>"; };
-		C1DC1EFB1717E791001C5EC3 /* libTextureConverter_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libTextureConverter_macos.a; path = ../../Libs/libs/libTextureConverter_macos.a; sourceTree = "<group>"; };
 		C7FBCFAC16CD1FE5006F1B3F /* AutotestingSystemYaml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutotestingSystemYaml.h; sourceTree = "<group>"; };
 		C7FBCFC016CD2060006F1B3F /* liblua_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblua_macos.a; path = ../../Libs/libs/liblua_macos.a; sourceTree = "<group>"; };
 		CC0D7B2F1A76055A00309408 /* EdgeComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EdgeComponent.cpp; sourceTree = "<group>"; };
@@ -3825,7 +3823,6 @@
 				B7D6C98319CAC6980095250A /* libfribidi_macos.a */,
 				CCE2CA18197950A600D8086F /* AVFoundation.framework */,
 				627AFA6C18E964E300F2A52A /* libjpeg_macos.a */,
-				C1DC1EFB1717E791001C5EC3 /* libTextureConverter_macos.a */,
 				C7FBCFC016CD2060006F1B3F /* liblua_macos.a */,
 				C151B18B16D37DD400E09BAF /* WebKit.framework */,
 				E89CE91116C549D2006BEFF4 /* libcurl_macos.a */,
@@ -3875,7 +3872,6 @@
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				32DBCF5E0370ADEE00C91783 /* Framework_Prefix.pch */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -8065,7 +8061,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_PREFIX_HEADER = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,
@@ -8108,7 +8104,7 @@
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_PREFIX_HEADER = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,
@@ -8152,7 +8148,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_PREFIX_HEADER = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,
@@ -8196,7 +8192,7 @@
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_PREFIX_HEADER = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,

@@ -391,6 +391,11 @@ namespace DAVA
 		}
 	}
 
+    bool CorePlatformAndroid::IsMultitouchEnabled()
+    {
+        return InputSystem::Instance()->GetMultitouchEnabled();
+    }
+    
 	bool CorePlatformAndroid::DownloadHttpFile(const String & url, const String & documentsPathname)
 	{
 		if(androidDelegate)

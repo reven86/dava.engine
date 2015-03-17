@@ -80,6 +80,7 @@ public:
 	static QString GetProjectTitle(const QString& projectFilePath);
 	// Get the folder wehere project is located
 	static QString GetProjectPath();
+    static void SetProjectPath(const QString &path);
 	// Get folder with resource data for specified project path
 	static QString GetDataPath(const QString& projectPath);
 	// Path to palform specific files for specified project path
@@ -91,11 +92,10 @@ public:
 	static void InitInternalResources();
 	// Show error message
 	static void ShowErrorMessage(const QString& messageParam);
-	// Reverse slash order in string
-	static QString ConvertPathToUnixStyle(const QString& inputString);
 
 private:
 	static QString projectTitle;
+    static QString projectPath;
 };
 };
 

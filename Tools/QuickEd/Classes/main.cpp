@@ -29,7 +29,7 @@
 
 #include <QApplication>
 #include "UI/mainwindow.h"
-
+#include "BaseController.h"
 #include "DAVAEngine.h"
 
 #if defined (__DAVAENGINE_MACOS__)
@@ -44,7 +44,7 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-
+    a.setQuitOnLastWindowClosed(false);
 #if defined (__DAVAENGINE_MACOS__)
     DAVA::Core::Run(argc, argv);
 	new DAVA::QtLayerMacOS();
@@ -60,8 +60,8 @@ int main(int argc, char *argv[])
     int result = 0;
     // MainWindow have to be released prior to the framework, so use separate scope for it.
     {
-        MainWindow w;
-        w.show();
+        BaseController c;
+        c.Start();
         result = a.exec();
     }
 

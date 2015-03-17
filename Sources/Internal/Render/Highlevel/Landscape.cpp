@@ -1705,9 +1705,7 @@ Texture * Landscape::CreateLandscapeTexture()
 	RenderManager::Instance()->AttachRenderData();
 	RenderManager::Instance()->HWDrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
 
-#ifdef __DAVAENGINE_OPENGL__
-	RenderManager::Instance()->HWglBindFBO(RenderManager::Instance()->GetFBOViewFramebuffer());
-#endif //#ifdef __DAVAENGINE_OPENGL__
+    RenderManager::Instance()->SetRenderTarget(0);
     
     RenderManager::SetDynamicParam(PARAM_PROJ, &oldProjection, UPDATE_SEMANTIC_ALWAYS);
 	RenderManager::Instance()->SetViewport(oldViewport);

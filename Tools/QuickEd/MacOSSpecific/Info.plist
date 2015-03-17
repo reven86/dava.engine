@@ -9,7 +9,7 @@
 	<key>CFBundleIconFile</key>
 	<string>icon.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.davaconsulting.uieditor</string>
+	<string>com.davaconsulting.quicked</string>
 	<key>CFBundleName</key>
 	<string>QuickEd</string>
 	<key>CFBundlePackageType</key>

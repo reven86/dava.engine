@@ -35,90 +35,85 @@
 
 #include "EditorSettings.h"
 #include <QLineEdit>
+#include <QUndoGroup>
+
+#include "Result.h"
 
 namespace Ui {
 class MainWindow;
 }
 
-class QFileDialog;
-class Project;
+class PackageWidget;
 class Document;
-class QUndoGroup;
-class PackageNode;
-class DocumentWidgets;
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
     
 public:
+    struct TabState{
+        TabState(QString arg = QString()) 
+            : tabText(arg)
+            , isModified(false)
+        {
+        }
+        QString tabText;
+        bool isModified;
+    };
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-
-    Project *GetProject() const { return project; }
-
+    void CreateUndoRedoActions(const QUndoGroup &undoGroup);
+    void OnCurrentIndexChanged(int arg);
+    PackageWidget *GetPackageWidget() const;
+    bool ConfirmClose();
+    int CloseTab(int index);
+    void SetCurrentTab(int index);
+    int GetTabIndexByPath(const QString &fileName) const;
+    void OnProjectOpened(Result result, QString projectPath);
+    int AddTab(const QString &tabText);
+    void SetDocumentToWidgets(Document *document);
+    void OnCleanChanged(int index, bool val);
 protected:
-	virtual void closeEvent(QCloseEvent * event);
+    void closeEvent(QCloseEvent *event) override;
+signals:
+    void TabClosed(int tab);
+    void CloseProject();
+    void ActionExitTriggered();
+    void RecentMenuTriggered(QAction *);
+    void ActionOpenProjectTriggered(QString projectPath);
+    void OpenPackageFile(QString path);
+    void SaveAllDocuments();
+    void SaveDocument(int index);
+    void CurrentTabChanged(int index);
+    void CloseRequested();
 
+public slots:
+
+    void OnProjectIsOpenChanged(bool arg);
+    void OnCountChanged(int count);
 private slots:
+    void OnSaveDocument();
     void OnOpenFontManager();
     void OnOpenLocalizationManager();
     void OnShowHelp();
-	
-	void OnNewProject();
-	void OnSaveDocument();
-	void OnSaveAllDocuments();
+    
     void OnOpenProject();
-	void OnCloseProject();
-	void OnExitApplication();
-	
-	void RecentMenuTriggered(QAction *recentAction);
-	void RebuildRecentMenu();
+    
+    void RebuildRecentMenu();
 
     void SetBackgroundColorMenuTriggered(QAction* action);
-
-    // Repack and Reload.
-    void OnRepackAndReloadSprites();
-    
+  
     // Pixelization.
     void OnPixelizationStateChanged();
-
-    void OnCleanChanged(bool clean);
     
-    void CurrentTabChanged(int index);
-    void TabCloseRequested(int index);
-    int CreateTabContent(PackageNode *package);
-    bool CloseTab(int index);
-    bool CloseAllTabs();
-
-    void OnOpenPackageFile(const QString &path);
-
 private:
-    void OpenProject(const QString &path);
-	bool CloseProject();
-	
-	void InitMenu();
+    void InitMenu();
     void SetupViewMenu();
-	void UpdateMenu();
-	void UpdateProjectSettings(const QString& filename);
+    void DisableActions();
+    void UpdateProjectSettings(const QString& filename);
 
-	// Save/restore positions of DockWidgets and main window geometry
-	void SaveMainWindowState();
-	void RestoreMainWindowState();
-
-	// Save the full project or changes only.
-	void DoSaveProject(bool changesOnly);
-
-    // Repack and reload sprites.
-    void RepackAndReloadSprites();
-
-    void UpdateSaveButtons();
-
-    bool CheckAndUnlockProject(const QString& projectPath);
-
-    int GetTabIndexByPath(const QString &fileName) const;
-    Document *GetCurrentTabDocument() const;
-    Document *GetTabDocument(int index) const;
+    // Save/restore positions of DockWidgets and main window geometry
+    void SaveMainWindowState();
+    void RestoreMainWindowState();
 
 private:
     Ui::MainWindow *ui;
@@ -127,16 +122,9 @@ private:
     QList<QAction*> backgroundFramePredefinedColorActions;
     QAction* backgroundFrameUseCustomColorAction;
     QAction* backgroundFrameSelectCustomColorAction;
-
-	bool screenChangeUpdate;
-    QString screenShotFolder;
-     
-    Project *project;
-    Document *activeDocument;
-    DocumentWidgets *documentWidgets;
-    QUndoGroup *undoGroup;
-    QAction *undoAction;
-    QAction *redoAction;
 };
+
+Q_DECLARE_METATYPE(MainWindow::TabState*);
+
 
 #endif // MAINWINDOW_H
