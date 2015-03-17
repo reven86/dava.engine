@@ -76,8 +76,8 @@ public:
 
     static void InstallDumpCallback(DumpRequestCallback callback, void* arg);
 
-    DAVA_NOINLINE void* Allocate(size_t size, uint32 poolIndex);
-    DAVA_NOINLINE void* AlignedAllocate(size_t size, size_t align, uint32 poolIndex);
+    DAVA_NOINLINE void* Allocate(size_t size, size_t poolIndex);
+    DAVA_NOINLINE void* AlignedAllocate(size_t size, size_t align, size_t poolIndex);
     void* Reallocate(void * ptr, size_t size);
     void Deallocate(void* ptr);
 

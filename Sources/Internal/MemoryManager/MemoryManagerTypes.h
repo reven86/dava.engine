@@ -160,6 +160,7 @@ struct MMBlock
     uint32 pool;
     uint32 orderNo;
     uint32 backtraceHash;
+    uint32 padding;
 };
 
 static_assert(sizeof(MMBlock) % 16 == 0, "sizeof(MMBlock) % 16 == 0");

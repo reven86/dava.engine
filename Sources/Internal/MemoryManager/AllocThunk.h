@@ -36,7 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace DAVA
 {
 
-void* AllocThunk(size_t size, unsigned int poolIndex);
+void* AllocThunk(size_t size, size_t poolIndex);
 void DeallocThunk(void* ptr);
 
 }   // namespace DAVA
