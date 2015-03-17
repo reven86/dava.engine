@@ -62,7 +62,7 @@ void operator delete[](void * ptr, DAVA::ePredefAllocPools pool);
 #define MEMORY_PROFILER_REGISTER_ALLOC_POOL(index, name)
 
 #define MEMORY_PROFILER_ENTER_TAG(tag)
-#define MEMORY_PROFILER_LEAVE_TAG()
+#define MEMORY_PROFILER_LEAVE_TAG(tag)
 #define MEMORY_PROFILER_CHECKPOINT(checkpoint)
 
 #define MEMORY_PROFILER_NEW(pool,construct)                new construct

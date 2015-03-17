@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace DAVA
 {
 
-void* AllocThunk(size_t size, unsigned int poolIndex)
+void* AllocThunk(size_t size, size_t poolIndex)
 {
     return MemoryManager::Instance()->Allocate(size, poolIndex);
 }

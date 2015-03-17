@@ -190,9 +190,9 @@ void MMNetClient::ProcessDumpNext(const void* packet, size_t length)
 void MMNetClient::UnpackDump()
 {
     Vector<uint8> v(unpackedDumpSize, 0);
-    DynamicMemoryFile* zipFile = DynamicMemoryFile::Create(dumpV.data() + sizeof(MMDump), dumpV.size() - sizeof(MMDump), File::CREATE | File::READ);
+    DynamicMemoryFile* zipFile = DynamicMemoryFile::Create(dumpV.data() + sizeof(MMDump), uint32(dumpV.size() - sizeof(MMDump)), File::CREATE | File::READ);
     ZLibIStream zipStream(zipFile);
-    zipStream.Read((char8*)(v.data() + sizeof(MMDump)), unpackedDumpSize - sizeof(MMDump));
+    zipStream.Read((char8*)(v.data() + sizeof(MMDump)), uint32(unpackedDumpSize - sizeof(MMDump)));
     Memcpy(v.data(), dumpV.data(), sizeof(MMDump));
 
     MMDump* dump = reinterpret_cast<MMDump*>(v.data());

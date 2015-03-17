@@ -13,9 +13,7 @@ void MemoryItemStyleDelegate::paint(QPainter *painter, const QStyleOptionViewIte
     if (index.data().canConvert(QVariant::Int)) 
     {
         painter->save();
-
         painter->setRenderHint(QPainter::Antialiasing, true);
-      
         painter->drawText(option.rect, formatMemoryData(index.data().toInt(nullptr)));
         painter->restore();
     }

@@ -1,5 +1,42 @@
 include ( GlobalVariables )
 
+macro ( qt_deploy )
+    if ( NOT QT5_FOUND )
+        return ()
+    endif ()
+
+    if( WIN32 )
+        set( BINARY_ITEMS Qt5Core.dll
+                          Qt5Gui.dll
+                          Qt5Widgets.dll
+                          )
+
+        foreach ( ITEM  ${BINARY_ITEMS} )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT5_PATH_WIN}/bin/${ITEM}  ${DEPLOY_DIR} )
+
+        endforeach ()
+
+        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR}/platforms )
+        execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT5_PATH_WIN}/plugins/platforms/qwindows.dll 
+                                                          ${DEPLOY_DIR}/platforms )
+
+        file ( GLOB FILE_LIST ${QT5_PATH_WIN}/bin/icu*.dll )        
+        foreach ( ITEM  ${FILE_LIST} )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM}  ${DEPLOY_DIR} )
+
+        endforeach ()
+
+
+    elseif( MACOS )
+            ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD 
+                COMMAND ${QT5_PATH_MAC}/bin/macdeployqt ${DEPLOY_DIR}/${PROJECT_NAME}.app
+            )
+            
+    endif()
+
+endmacro ()
+
+
 if ( QT5_FOUND )
     return ()
 endif ()

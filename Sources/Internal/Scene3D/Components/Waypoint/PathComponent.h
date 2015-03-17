@@ -33,6 +33,7 @@
 
 #include "Entity/Component.h"
 #include "Base/Introspection.h"
+#include "Math/Color.h"
 
 namespace DAVA
 {
@@ -126,6 +127,9 @@ public:
     
     void SetName(const FastName & name);
     const FastName & GetName() const;
+
+    void SetColor(const Color& color);
+    const Color& GetColor() const;
     
     void Reset();
     
@@ -135,12 +139,13 @@ private:
     
     
     FastName name;
+    Color color;
     Vector<Waypoint *> waypoints;
 
 public:
 	INTROSPECTION_EXTEND(PathComponent, Component,
         MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
-        COLLECTION(waypoints, "Waypoints", I_SAVE | I_VIEW | I_EDIT)
+        MEMBER(color, "Color", I_SAVE | I_VIEW | I_EDIT)
     );
 };
 
@@ -167,6 +172,16 @@ inline void PathComponent::SetName(const FastName & _name)
 inline const FastName & PathComponent::GetName() const
 {
     return name;
+}
+
+inline void PathComponent::SetColor(const Color& val)
+{
+    color = val;
+}
+
+inline const Color& PathComponent::GetColor() const
+{
+    return color;
 }
 
 inline KeyedArchive* PathComponent::Waypoint::GetProperties() const

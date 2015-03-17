@@ -477,9 +477,9 @@ DAVA::ParticleEmitter* SceneTreeItemParticleEmitter::GetEmitter(SceneTreeItem *i
 
 DAVA::ParticleEmitter* SceneTreeItemParticleEmitter::GetEmitterStrict(SceneTreeItem *item)
 {
-    DAVA::ParticleEmitter *ret = NULL;
+    DAVA::ParticleEmitter *ret = nullptr;
 
-    if(NULL != item && (item->ItemType() == SceneTreeItem::EIT_Emitter))
+    if (nullptr != item && (item->ItemType() == SceneTreeItem::EIT_Emitter))
     {
         SceneTreeItemParticleEmitter *itemEmitter = (SceneTreeItemParticleEmitter *) item;
         ret = itemEmitter->emitter;

@@ -101,7 +101,7 @@ void GameCore::RegisterTests()
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
     new MemoryManagerTest();
 #endif  // DAVA_MEMORY_PROFILING_ENABLE
-    //$UNITTEST_CTOR
+//  $UNITTEST_CTOR
 }
 
 #include <fstream>

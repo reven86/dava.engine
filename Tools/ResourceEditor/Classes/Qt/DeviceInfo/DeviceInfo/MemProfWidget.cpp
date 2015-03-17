@@ -58,7 +58,6 @@ MemProfWidget::MemProfWidget(QWidget *parent)
     
     plot->addGraph();
     plot->graph(1)->setPen(QPen(Qt::red));
-    //plot->graph(1)->setBrush(QBrush(QColor(0, 255, 0, 20)));
     plot->graph(1)->setAntialiasedFill(false);
     
     plot->xAxis2->setVisible(true);
@@ -155,49 +154,6 @@ void MemProfWidget::UpdateLabels(const DAVA::MMStat* stat, DAVA::uint32 alloc, D
     labels[1].realSize->setText(MemoryItemStyleDelegate::formatMemoryData(stat->generalStat.realSize));
     labels[1].internalBlockCount->setNum(static_cast<int>(stat->generalStat.internalBlockCount));
 }
-
-/*
-void MemProfWidget::UpdateStat(const net_mem_stat_t* stat)
-{
-    uint32_t alloc = 0;
-    uint32_t total = 0;
-    for (int i = 0;i < MEMPROF_MEM_COUNT;++i)
-    {
-        alloc += stat->stat[i][0].alloc_size;
-        total += stat->stat[i][0].total_size;
-    }
-
-    //plot->graph(0)->addData(stat->timestamp, total);
-    plot->graph(0)->addData(offset, (double)alloc/1000.0);
-    plot->graph(1)->addData(offset, (double)total/1000.0);
-    plot->graph(0)->rescaleAxes();
-    plot->graph(1)->rescaleAxes(true);
-    plot->replot();
-    
-    UpdateLabels(stat, alloc, total);
-    offset += 1;
-}
-*/
-/*
-void MemProfWidget::UpdateLabels(const net_mem_stat_t* stat, uint32_t alloc, uint32_t total)
-{
-    uint32_t nblocks = 0;
-    for (int i = 0;i < MEMPROF_MEM_COUNT;++i)
-    {
-        labels[i].alloc->setNum(int(stat->stat[i][0].alloc_size));
-        labels[i].total->setNum(int(stat->stat[i][0].total_size));
-        labels[i].max_block_size->setNum(int(stat->stat[i][0].max_block_size));
-        labels[i].nblocks->setNum(int(stat->stat[i][0].nblocks));
-        nblocks += stat->stat[i][0].nblocks;
-    }
-    
-    const int R = MEMPROF_MEM_COUNT;
-    labels[R].alloc->setNum(int(alloc));
-    labels[R].total->setNum(int(total));
-    //labels[R].max_block_size->setNum(int(stat->stat[i][0].max_block_size));
-    labels[R].nblocks->setNum(int(nblocks));
-}
-*/
 
 void MemProfWidget::CreateLabels(const DAVA::MMStatConfig* config)
 {

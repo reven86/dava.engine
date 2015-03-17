@@ -2,6 +2,7 @@
 #define __QUICKED_PREVIEW_WIDGET_H__
 
 #include <QWidget>
+#include <QPointer>
 
 namespace Ui {
     class PreviewWidget;
@@ -48,7 +49,7 @@ private:
 private:
     Ui::PreviewWidget *ui;
     Document *document;
-    PreviewContext *context;
+    QPointer<PreviewContext> context;
 };
 
 #endif // __QUICKED_PREVIEW_WIDGET_H__

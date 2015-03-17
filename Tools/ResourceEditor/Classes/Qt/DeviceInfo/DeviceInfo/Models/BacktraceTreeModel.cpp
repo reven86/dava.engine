@@ -36,7 +36,7 @@ QVariant BacktraceTreeModel::headerData(int section, Qt::Orientation orientation
     if (Qt::Horizontal == orientation && Qt::DisplayRole == role && 0 <= section && section < 2)
     {
         static const char* names[] = {
-            "Call source"
+            "Call source",
             "Call source name"
         };
         return QVariant(names[section]);

@@ -38,7 +38,7 @@ private slots:
     void OnPaste();
     void OnCut();
     void OnDelete();
-    
+public slots:
     void OnControlSelectedInEditor(ControlNode *node);
     void OnAllControlsDeselectedInEditor();
 

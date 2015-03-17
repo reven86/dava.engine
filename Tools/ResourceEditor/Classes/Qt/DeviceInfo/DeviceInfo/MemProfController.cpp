@@ -211,7 +211,9 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize, Ve
                         fprintf(f, "        %08llX    %s\n", z.frames[j], (*u).second.c_str());
                     }
                     else
+                    {
                         fprintf(f, "        %08llX\n", z.frames[j]);
+                    }
                 }
             }
         }
