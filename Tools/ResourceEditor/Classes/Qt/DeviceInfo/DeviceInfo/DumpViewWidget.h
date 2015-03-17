@@ -4,10 +4,11 @@
 
 #include "MemoryManager/MemoryManagerTypes.h"
 
-class QTreeView;
+class QTabWidget;
 class QAbstractItemModel;
 class AllocationTreeModel;
 class BacktraceTreeModel;
+class SymbolsTreeModel;
 class DumpViewWidget : public QWidget
 {
     Q_OBJECT
@@ -18,13 +19,16 @@ public:
     ~DumpViewWidget();
 
 private:
+    void Init();
+
     bool LoadDump(const char* filename);
     bool LoadDump(const DAVA::Vector<DAVA::uint8>& v);
 
 private:
-    QTreeView* treeView;
+    QTabWidget* tab;
     AllocationTreeModel* allocTreeModel;
     BacktraceTreeModel* backtraceTreeModel;
+    SymbolsTreeModel* symbolTreeModel;
 
     DAVA::MMDump dumpHdr;
     DAVA::Vector<DAVA::MMBlock> blocks;

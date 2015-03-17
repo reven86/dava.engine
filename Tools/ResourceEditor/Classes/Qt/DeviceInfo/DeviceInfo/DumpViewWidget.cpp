@@ -1,3 +1,4 @@
+#include <QTabWidget>
 #include <QTreeView>
 #include <QVBoxLayout>
 #include <QAction>
@@ -7,56 +8,75 @@
 #include "DumpViewWidget.h"
 #include "Models/AllocationTreeModel.h"
 #include "Models/BacktraceTreeModel.h"
+#include "Models/SymbolsTreeModel.h"
 
 using namespace DAVA;
 
 DumpViewWidget::DumpViewWidget(const char* filename, QWidget* parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
+    , tab(nullptr)
     , allocTreeModel(nullptr)
     , backtraceTreeModel(nullptr)
+    , symbolTreeModel(nullptr)
     , dumpHdr()
 {
     LoadDump(filename);
-
-    allocTreeModel = new AllocationTreeModel(blocks, symbolMap, traceMap);
-    backtraceTreeModel = new BacktraceTreeModel(blocks, symbolMap, traceMap);
-
-    treeView = new QTreeView;
-    treeView->setFont(QFont("Consolas", 10, 500));
-    //treeView->setModel(allocTreeModel);
-    treeView->setModel(backtraceTreeModel);
-
-    QVBoxLayout* l = new QVBoxLayout;
-    l->addWidget(treeView);
-    setLayout(l);
-
-    setAttribute(Qt::WA_DeleteOnClose);
-    show();
+    Init();
 }
 
 DumpViewWidget::DumpViewWidget(const DAVA::Vector<uint8>& v, QWidget* parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
+    , tab(nullptr)
+    , allocTreeModel(nullptr)
+    , backtraceTreeModel(nullptr)
+    , symbolTreeModel(nullptr)
     , dumpHdr()
 {
     LoadDump(v);
-    allocTreeModel = new AllocationTreeModel(blocks, symbolMap, traceMap);
-
-    treeView = new QTreeView;
-    treeView->setFont(QFont("Consolas", 10, 500));
-    treeView->setModel(allocTreeModel);
-
-    QVBoxLayout* l = new QVBoxLayout;
-    l->addWidget(treeView);
-    setLayout(l);
-
-    setAttribute(Qt::WA_DeleteOnClose);
-    show();
+    Init();
 }
 
 DumpViewWidget::~DumpViewWidget()
 {
     delete allocTreeModel;
     delete backtraceTreeModel;
+    delete symbolTreeModel;
+}
+
+void DumpViewWidget::Init()
+{
+    QFont font("Consolas", 10, 500);
+
+    //allocTreeModel = new AllocationTreeModel(blocks, symbolMap, traceMap);
+    //backtraceTreeModel = new BacktraceTreeModel(blocks, symbolMap, traceMap);
+    symbolTreeModel = new SymbolsTreeModel(symbolMap);
+    tab = new QTabWidget;
+
+    {
+        QTreeView* tree = new QTreeView;
+        tree->setFont(font);
+        tree->setModel(allocTreeModel);
+        tab->addTab(tree, "Alloc");
+    }
+    {
+        QTreeView* tree = new QTreeView;
+        tree->setFont(font);
+        tree->setModel(backtraceTreeModel);
+        tab->addTab(tree, "Backtrace");
+    }
+    {
+        QTreeView* tree = new QTreeView;
+        tree->setFont(font);
+        tree->setModel(symbolTreeModel);
+        tab->addTab(tree, "Symbols");
+    }
+
+    QVBoxLayout* l = new QVBoxLayout;
+    l->addWidget(tab);
+    setLayout(l);
+
+    setAttribute(Qt::WA_DeleteOnClose);
+    show();
 }
 
 bool DumpViewWidget::LoadDump(const char* filename)
