@@ -538,27 +538,27 @@ void UITextFieldAndroid::TextFieldUpdateTexture(uint32_t id, int32* rawPixels,
         int width, int height)
 {
     UITextFieldAndroid* control = GetUITextFieldAndroid(id);
-    DVASSERT(control);
-    DVASSERT(control->textField);
-
-    UITextField& textField = *control->textField;
-
-    if (rawPixels)
+    if (nullptr != control)
     {
-        Texture* tex = Texture::CreateFromData(FORMAT_RGBA8888,
-                reinterpret_cast<uint8*>(rawPixels), width, height, false);
-        SCOPE_EXIT{SafeRelease(tex);};
+        UITextField& textField = *control->textField;
 
-        Rect rect = textField.GetRect();
-        Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, rect.dx,
-                rect.dy);
-        SCOPE_EXIT{SafeRelease(spr);};
+        if (rawPixels)
+        {
+            Texture* tex = Texture::CreateFromData(FORMAT_RGBA8888,
+                    reinterpret_cast<uint8*>(rawPixels), width, height, false);
+            SCOPE_EXIT{SafeRelease(tex);};
 
-        textField.GetBackground()->SetSprite(spr, 0);
-    }
-    else
-    {
-        // reset sprite to prevent render old sprite under android view
-        textField.SetSprite(nullptr, 0);
+            Rect rect = textField.GetRect();
+            Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, rect.dx,
+                    rect.dy);
+            SCOPE_EXIT{SafeRelease(spr);};
+
+            textField.GetBackground()->SetSprite(spr, 0);
+        }
+        else
+        {
+            // reset sprite to prevent render old sprite under android view
+            textField.SetSprite(nullptr, 0);
+        }
     }
 }
