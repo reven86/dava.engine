@@ -208,6 +208,10 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		int source;
 		int groupSize;
 
+		int touchIdForPointerId(int pointerId) {
+			return pointerId + 1;
+		}
+
 		public InputRunnable(final android.view.MotionEvent event, final int tapCount)
 		{
 			allEvents = new ArrayList<InputEvent>();
@@ -223,7 +227,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 					if ((source & InputDevice.SOURCE_CLASS_POINTER) > 0) {
 						int pointerId = event.getPointerId(i);
 						if(isMultitouchEnabled || pointerId == 0) {
-							InputEvent ev = new InputEvent(pointerId, event.getHistoricalX(i, historyStep), event.getHistoricalY(i, historyStep), tapCount, event.getHistoricalEventTime(historyStep));
+							InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getHistoricalX(i, historyStep), event.getHistoricalY(i, historyStep), tapCount, event.getHistoricalEventTime(historyStep));
 							allEvents.add(ev);
 						}
 					}
@@ -241,7 +245,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				if ((source & InputDevice.SOURCE_CLASS_POINTER) > 0) {
 					int pointerId = event.getPointerId(i);
 					if(isMultitouchEnabled || pointerId == 0) {
-						InputEvent ev = new InputEvent(pointerId, event.getX(i), event.getY(i), tapCount, event.getEventTime());
+						InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(i), event.getY(i), tapCount, event.getEventTime());
 						allEvents.add(ev);
 					}
 				}
@@ -271,7 +275,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				final int pointerId = event.getPointerId(actionIdx);
 
 				if(isMultitouchEnabled || pointerId == 0) {
-					InputEvent ev = new InputEvent(pointerId, event.getX(actionIdx), event.getY(actionIdx), tapCount, event.getEventTime());
+					InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(actionIdx), event.getY(actionIdx), tapCount, event.getEventTime());
 					allEvents.add(ev);
 					activeEvents.add(ev);
 					groupSize += 1; // only ACTION_MOVE events can have history, so in this case there will be only one group

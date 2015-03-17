@@ -450,7 +450,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 				{
 					if((*it).tid == (*wit).tid)
 					{
-						if((*it).phase == (*wit).phase && (*it).point == (*wit).point)
+						if((*it).phase == (*wit).phase && (*it).physPoint == (*wit).physPoint)
 						{
 							(*it).activeState = UIEvent::ACTIVITY_STATE_ACTIVE;
 						}
@@ -459,6 +459,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 							(*it).activeState = UIEvent::ACTIVITY_STATE_CHANGED;
 						}
 						
+						(*it).phase = (*wit).phase;
 						CopyTouchData(&(*it), &(*wit));
 						break;
 					}
@@ -584,7 +585,7 @@ void UIControlSystem::CancelInput(UIEvent *touch)
 }
 void UIControlSystem::CancelAllInputs()
 {
-	for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
+	for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++)
 	{
 		CancelInput(&(*it));
 	}
