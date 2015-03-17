@@ -393,9 +393,6 @@
     <ClInclude Include="..\..\Sources\Internal\Input\Accelerometer.h">
       <Filter>Internal\Input</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Input\AccelerometeriPhone.h">
-      <Filter>Internal\Input</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Math\AABBox2.h">
       <Filter>Internal\Math</Filter>
     </ClInclude>

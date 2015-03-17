@@ -96,13 +96,6 @@ void QtLayerMacOS::AppFinished()
     FrameworkWillTerminate();
 
     Core::Instance()->ReleaseSingletons();
-#ifdef ENABLE_MEMORY_MANAGER
-    if (DAVA::MemoryManager::Instance() != 0)
-    {
-        DAVA::MemoryManager::Instance()->DumpLog(DAVA::MemoryManager::DUMP_EVERYTHING);
-        //DAVA::MemoryManager::Instance()->FinalLog();
-    }
-#endif
     
     [openGLView release];
     openGLView = nil;
