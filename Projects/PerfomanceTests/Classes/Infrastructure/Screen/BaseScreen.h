@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace DAVA;
 
-class BaseScreen : public UIScreen
+class BaseScreen : public DAVA::UIScreen
 {
 public:
     BaseScreen();

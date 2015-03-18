@@ -1,23 +1,26 @@
 cmake_minimum_required (VERSION 2.8)
 
-project      ( PerfomanceTests )
-
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
-
 include      ( CMake-common )
 include      ( FindDavaFramework )
 
+project      ( PerformanceTests )
+
+
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
+include_directories   ( "iOSSpecific" )
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Infrastructure" )
 include_directories   ( "Classes/Controller" )
 include_directories   ( "Classes/Screen" )
 
-set( TeamcityOutput          ${DAVA_TOOLS_DIR}/TeamcityOutput  )
+#set( TeamcityOutput         ${DAVA_TOOLS_DIR}/TeamcityOutput  )
 set( PackerTools             ${DAVA_TOOLS_DIR}/TexturePacker )
 set( PackerToolsSCR          ${DAVA_TOOLS_DIR}/TexturePacker/CommandLineParser.h 
                              ${DAVA_TOOLS_DIR}/TexturePacker/CommandLineParser.cpp )
+
+#set_source_files_properties( ${DAVA_TOOLS_DIR}/TeamcityOutput/TeamcityOutput.cpp PROPERTIES COMPILE_FLAGS "-x objective-c++" )
 
 if( WIN32 )
     set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
@@ -31,7 +34,6 @@ elseif( MACOS )
 
 elseif( IOS )
     set( PLATFORM_SPECIFIC_FOLDER "iOSSpecific" )
-    set( IOS_ADD_SRC ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/UnitTests.entitlements )
 
 elseif( WIN32 )
     set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
@@ -39,7 +41,7 @@ elseif( WIN32 )
 
 endif()
 
-define_source_folders( SRC_ROOT "Classes"  ${PLATFORM_SPECIFIC_FOLDER} ${TeamcityOutput} )
+define_source_folders( SRC_ROOT "Classes" "iOSSpecific" ${PLATFORM_SPECIFIC_FOLDER} ${TeamcityOutput} )
 generate_source_groups_project( )
 
 set( ADDED_SRC            ${PackerToolsSCR} ${IOS_ADD_SRC})
@@ -49,7 +51,7 @@ set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/icon.icns  )
 set( MACOS_DATA           ${CMAKE_CURRENT_LIST_DIR}/Data )
 
-set( IOS_PLISTT           ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/UnitTests-Info.plist )
+set( IOS_PLISTT           ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist )
 set( IOS_XIB              ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/MainWindow.xib ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/iPad/MainWindow-iPad.xib )
 set( IOS_DATA             Data )
 

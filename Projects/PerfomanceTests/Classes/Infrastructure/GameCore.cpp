@@ -69,6 +69,36 @@ void GameCore::OnAppFinished()
 	}
 }
 
+void GameCore::OnSuspend()
+{
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+    ApplicationCore::OnSuspend();
+#endif
+    
+}
+
+void GameCore::OnResume()
+{
+    ApplicationCore::OnResume();
+}
+
+#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+void GameCore::OnDeviceLocked()
+{
+}
+
+void GameCore::OnBackground()
+{
+}
+
+void GameCore::OnForeground()
+{
+    ApplicationCore::OnForeground();
+}
+
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+
+
 void GameCore::BeginFrame()
 {
 	ApplicationCore::BeginFrame();
@@ -92,20 +122,21 @@ void GameCore::InitScreenController()
 {
     Random::Instance()->Seed(0);
 
-	bool allTests = CommandLineParser::Instance()->CommandIsFound("all");
-	bool allWithUI = CommandLineParser::Instance()->CommandIsFound("all_ui");
+	bool chooser = CommandLineParser::Instance()->CommandIsFound("chooser");
+	bool teamcityOut = CommandLineParser::Instance()->CommandIsFound("teamcity_out");
 
-	if (allTests)
+	if (chooser)
 	{
-		testFlowController = new TestChainFlowController(false);
+        testFlowController = new SingleTestFlowController();
+		
 	}
-	else if (allWithUI)
+	else if (teamcityOut)
 	{
-		testFlowController = new TestChainFlowController(true);
+        testFlowController = new TestChainFlowController(false);
 	} 
 	else
 	{
-		testFlowController = new SingleTestFlowController();
+		testFlowController = new TestChainFlowController(true);
 	}
 
     testFlowController->Init(testChain);

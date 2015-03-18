@@ -37,20 +37,24 @@ void FrameworkDidLaunched()
 {
 #if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     
-#define WIDTH   960
-#define HEIGHT  640
+#define IOS_WIDTH   1024
+#define IOS_HEIGHT  768
     
     KeyedArchive * appOptions = new KeyedArchive();
-    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
-
-    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_3_0);
-
+    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE);
+    
+    appOptions->SetInt32("width",  IOS_WIDTH);
+    appOptions->SetInt32("height", IOS_HEIGHT);
+    
+    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(IOS_WIDTH, IOS_HEIGHT);
+    DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
+    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(IOS_WIDTH, IOS_HEIGHT, "Gfx");
+    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(IOS_WIDTH*2, IOS_HEIGHT*2, "Gfx2");
+    
     appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
-    appOptions->SetInt32("width", WIDTH);
-    appOptions->SetInt32("height", HEIGHT);
-
-    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
-    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(WIDTH, HEIGHT, "Gfx");
+    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_2_0);
+    
+    appOptions->SetInt32("fullscreen", 0);
 
 #else
     KeyedArchive * appOptions = new KeyedArchive();
@@ -60,7 +64,7 @@ void FrameworkDidLaunched()
 
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
-    appOptions->SetString(String("title"), String("Unit Tests"));
+    appOptions->SetString(String("title"), String("Performance Tests"));
 
     DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(1024, 768);
     DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");

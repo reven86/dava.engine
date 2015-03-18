@@ -53,6 +53,15 @@ public:
     
     virtual void OnAppStarted() override;
     virtual void OnAppFinished() override;
+    
+    virtual void OnSuspend() override;
+    virtual void OnResume() override;
+    
+#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+    virtual void OnBackground();
+    virtual void OnForeground();
+    virtual void OnDeviceLocked();
+#endif
 
     virtual void BeginFrame() override;
 	virtual void EndFrame() override;
