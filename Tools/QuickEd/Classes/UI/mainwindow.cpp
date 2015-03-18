@@ -53,7 +53,8 @@
 #include "Utils/QtDavaConvertion.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 
-namespace {
+namespace
+{
     const QString APP_NAME = "QuickEd";
     const QString APP_COMPANY = "DAVA";
     const QString APP_GEOMETRY = "geometry";
@@ -61,6 +62,7 @@ namespace {
 
     const char* COLOR_PROPERTY_ID = "color";
 }
+
 using namespace DAVA;
 
 MainWindow::MainWindow(QWidget *parent)
@@ -85,8 +87,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
 
-    InitMenu();
-    RestoreMainWindowState();
+	InitMenu();
+	RestoreMainWindowState();
 
     ui->fileSystemDockWidget->setEnabled(false);
 
@@ -96,7 +98,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    SaveMainWindowState();
+	SaveMainWindowState();
     delete ui;
 }
 
@@ -145,23 +147,28 @@ void MainWindow::SetCurrentTab(int index)
 
 void MainWindow::SaveMainWindowState()
 {
-    QSettings settings(APP_COMPANY, APP_NAME);
+	QSettings settings(APP_COMPANY, APP_NAME);
     settings.setValue(APP_GEOMETRY, saveGeometry());
     settings.setValue(APP_STATE, saveState());
 }
 
 void MainWindow::RestoreMainWindowState()
 {
-    QSettings settings(APP_COMPANY, APP_NAME);
-    // Check settings befor applying it
-    if (!settings.value(APP_GEOMETRY).isNull() && settings.value(APP_GEOMETRY).isValid())
-    {
-        restoreGeometry(settings.value(APP_GEOMETRY).toByteArray());
-    }
-    if (!settings.value(APP_STATE).isNull() && settings.value(APP_STATE).isValid())
-    {
-        restoreState(settings.value(APP_STATE).toByteArray());
-    }
+	QSettings settings(APP_COMPANY, APP_NAME);
+	// Check settings befor applying it
+	if (!settings.value(APP_GEOMETRY).isNull() && settings.value(APP_GEOMETRY).isValid())
+	{
+    	restoreGeometry(settings.value(APP_GEOMETRY).toByteArray());
+	}
+	if (!settings.value(APP_STATE).isNull() && settings.value(APP_STATE).isValid())
+	{
+    	restoreState(settings.value(APP_STATE).toByteArray());
+	}
+}
+
+DavaGLWidget* MainWindow::GetGLWidget() const
+{
+    return ui->previewWidget->GetGLWidget();
 }
 
 void MainWindow::OnCurrentIndexChanged(int arg)
@@ -208,9 +215,9 @@ void MainWindow::OnOpenLocalizationManager()
 
 void MainWindow::OnShowHelp()
 {
-    FilePath docsPath = ResourcesManageHelper::GetDocumentationPath().toStdString() + "index.html";
-    QString docsFile = QString::fromStdString("file:///" + docsPath.GetAbsolutePathname());
-    QDesktopServices::openUrl(QUrl(docsFile));
+	FilePath docsPath = ResourcesManageHelper::GetDocumentationPath().toStdString() + "index.html";
+	QString docsFile = QString::fromStdString("file:///" + docsPath.GetAbsolutePathname());
+	QDesktopServices::openUrl(QUrl(docsFile));
 }
 
 void MainWindow::InitMenu()
@@ -225,15 +232,15 @@ void MainWindow::InitMenu()
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::ActionExitTriggered);
     connect(ui->menuRecent, &QMenu::triggered, this, &MainWindow::RecentMenuTriggered);
 
-    // Remap zoom in/out shorcuts for windows platform
+	// Remap zoom in/out shorcuts for windows platform
 #if defined(__DAVAENGINE_WIN32__)
-    QList<QKeySequence> shortcuts;
-    shortcuts.append(QKeySequence(Qt::CTRL + Qt::Key_Equal));
-    shortcuts.append(QKeySequence(Qt::CTRL + Qt::Key_Plus));
-    ui->actionZoomIn->setShortcuts(shortcuts);
+	QList<QKeySequence> shortcuts;
+	shortcuts.append(QKeySequence(Qt::CTRL + Qt::Key_Equal));
+	shortcuts.append(QKeySequence(Qt::CTRL + Qt::Key_Plus));
+	ui->actionZoomIn->setShortcuts(shortcuts);
 #endif
 
-    //Help contents dialog
+	//Help contents dialog
     connect(ui->actionHelp, &QAction::triggered, this, &MainWindow::OnShowHelp);
 
     // Pixelization.
@@ -286,7 +293,7 @@ void MainWindow::SetupViewMenu()
     for (int32 i = 0; i < itemsCount; i ++)
     {
         QAction* colorAction = new QAction(colorsMap[i].colorName, setBackgroundColorMenu);
-        colorAction->setProperty(COLOR_PROPERTY_ID, colorsMap[i].color);
+		colorAction->setProperty(COLOR_PROPERTY_ID, colorsMap[i].color);
         
         Color curColor = QColorToColor(colorsMap[i].color);
         if (curColor == curBackgroundColor)
@@ -298,11 +305,11 @@ void MainWindow::SetupViewMenu()
         colorAction->setChecked(curColor == curBackgroundColor);
         
         backgroundFramePredefinedColorActions.append(colorAction);
-        setBackgroundColorMenu->addAction(colorAction);
-    }
-    
+		setBackgroundColorMenu->addAction(colorAction);
+	}
+	
     backgroundFrameUseCustomColorAction = new QAction("Custom", setBackgroundColorMenu);
-    backgroundFrameUseCustomColorAction->setProperty(COLOR_PROPERTY_ID, ColorToQColor(curBackgroundColor));
+	backgroundFrameUseCustomColorAction->setProperty(COLOR_PROPERTY_ID, ColorToQColor(curBackgroundColor));
     backgroundFrameUseCustomColorAction->setCheckable(true);
     backgroundFrameUseCustomColorAction->setChecked(isCustomColor);
     setBackgroundColorMenu->addAction(backgroundFrameUseCustomColorAction);
@@ -346,11 +353,11 @@ void MainWindow::RebuildRecentMenu()
     }
     projectList.removeDuplicates();
     for (auto &projectPath : projectList)
-    {
-        QAction *recentProject = new QAction(projectPath, this);
-        recentProject->setData(projectPath);
-        ui->menuRecent->addAction(recentProject);
-    }
+        {
+            QAction *recentProject = new QAction(projectPath, this);
+            recentProject->setData(projectPath);
+            ui->menuRecent->addAction(recentProject);
+        }
     ui->menuRecent->setEnabled(projectCount > 0);
 }
 
@@ -400,24 +407,24 @@ void MainWindow::OnOpenProject()
     if (projectPath.isEmpty())
     {
         return;
-    }
+        }
     projectPath = QDir::toNativeSeparators(projectPath);
-    
+        
     emit ActionOpenProjectTriggered(projectPath);
 }
 
 void MainWindow::UpdateProjectSettings(const QString& projectPath)
 {
-    // Add file to recent project files list
-    EditorSettings::Instance()->AddLastOpenedFile(projectPath.toStdString());
-    
-    // Save to settings default project directory
-    QFileInfo fileInfo(projectPath);
-    QString projectDir = fileInfo.absoluteDir().absolutePath();
-    EditorSettings::Instance()->SetProjectPath(projectDir.toStdString());
+	// Add file to recent project files list
+	EditorSettings::Instance()->AddLastOpenedFile(projectPath.toStdString());
+	
+	// Save to settings default project directory
+	QFileInfo fileInfo(projectPath);
+	QString projectDir = fileInfo.absoluteDir().absolutePath();
+	EditorSettings::Instance()->SetProjectPath(projectDir.toStdString());
 
-    // Update window title
-    this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
+	// Update window title
+	this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
     
     // Apply the pixelization value.
     Texture::SetPixelization(EditorSettings::Instance()->IsPixelized());

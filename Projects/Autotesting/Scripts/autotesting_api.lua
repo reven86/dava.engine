@@ -149,9 +149,9 @@ function StopTest()
 end
 
 -- DB communication
-function SaveArchiveToDB(name, archive, document)
-    Log(string.format("Save '%s' archive to '%s' document", name, tostring(document)), "Debug")
-    autotestingSystem:SaveKeyedArchiveToDB(name, archive, document)
+function SaveKeyedArchiveToDevice(name, archive)
+    Log(string.format("Save '%s' archive", name), "Debug")
+    autotestingSystem:SaveKeyedArchiveToDevice(name, archive)
 end
 
 function GetParameter(name, default)
@@ -176,10 +176,8 @@ function WriteString(name, text)
     coroutine.yield()
 end
 
-function MakeScreenshot(skip)
-    local skip = skip or false
-    print("MakeScreenshot" .. tostring(skip))
-    local name = autotestingSystem:MakeScreenshot(skip)
+function MakeScreenshot()
+    local name = autotestingSystem:MakeScreenshot()
     coroutine.yield()
     return name
 end
