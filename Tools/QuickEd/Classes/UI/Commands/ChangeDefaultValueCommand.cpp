@@ -2,7 +2,7 @@
 
 #include "Model/ControlProperties/BaseProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
-#include "UI/Document.h"
+#include "Document.h"
 #include "UI/PropertiesContext.h"
 #include "UI/PackageContext.h"
 #include "UI/Properties/PropertiesModel.h"
@@ -29,7 +29,7 @@ void ChangeDefaultValueCommand::undo()
 {
     property->SetDefaultValue(oldValue);
 
-    PropertiesModel *model = document->GetPropertiesContext()->GetModel();
+    PropertiesModel *model = document->GetPropertiesModel();
     if (model && model->GetControlNode()->GetPropertiesRoot() == property->GetRootProperty())
         model->emitPropertyChanged(property);
 

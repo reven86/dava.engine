@@ -87,7 +87,7 @@ const DAVA::FilePath &Document::PackageFilePath() const
 
 PackageModel* Document::GetPackageModel() const
 {
-    return &packageContext->model;
+    return packageContext->GetModel();
 }
 
 PackageContext* Document::GetPackageContext() const

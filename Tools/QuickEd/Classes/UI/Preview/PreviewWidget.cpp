@@ -2,7 +2,7 @@
 #include "ui_PreviewWidget.h"
 #include <QLineEdit>
 #include "EditScreen.h"
-#include "UI/Document.h"
+#include "Document.h"
 #include "UI/PreviewContext.h"
 
 using namespace DAVA;

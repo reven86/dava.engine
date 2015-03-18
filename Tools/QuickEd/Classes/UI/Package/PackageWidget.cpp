@@ -9,7 +9,7 @@
 #include "UI/QtModelPackageCommandExecutor.h"
 
 #include "UI/Package/FilteredPackageModel.h"
-#include "UI/Document.h"
+#include "Document.h"
 #include "UI/PackageContext.h"
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"

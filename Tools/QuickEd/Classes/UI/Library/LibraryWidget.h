@@ -16,13 +16,10 @@ class LibraryWidget: public QDockWidget
 public:
     LibraryWidget(QWidget *parent = NULL);
     virtual ~LibraryWidget();
-
-public:
-    void SetDocument(Document *newDocument);
-    
+public slots:
+    void OnModelChanged(QAbstractItemModel*);    
 private:
     Ui::LibraryWidget *ui;
-    Document *document;
 };
 
 #endif // __QUICKED_LIBRARY_WIDGET_H__

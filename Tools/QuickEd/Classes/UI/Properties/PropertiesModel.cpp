@@ -11,7 +11,6 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Utils/QtDavaConvertion.h"
 #include "UI/Commands/ChangePropertyValueCommand.h"
-#include "UI/Document.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 #include "UI/PropertiesContext.h"
 
