@@ -24,61 +24,70 @@
 #include "Database/MongodbClient.h"
 
 #include "Autotesting/MongodbUpdateObject.h"
-#include "AutotestingSystem.h"
+#include "Autotesting/AutotestingSystem.h"
 
 namespace DAVA
 {
-class Image;
+	class Image;
 
-class AutotestingDB : public Singleton<AutotestingDB>
-{
-public:
-	AutotestingDB();
-	~AutotestingDB();
+	class AutotestingDB : public Singleton < AutotestingDB >
+	{
+	public:
+		AutotestingDB();
+		~AutotestingDB();
 
-	bool ConnectToDB(const String &collection, const String &dbName, const String &dbHost, const int32 dbPort);
-	void CloseConnection();
+		static const String DB_ERROR_STR_VALUE;
+		static const int32 DB_ERROR_INT_VALUE = -9999;
 
-	// Work with log object in DB
-	KeyedArchive *FindBuildArchive(MongodbUpdateObject* dbUpdateObject, const String &auxArg);
-	KeyedArchive *FindOrInsertBuildArchive(MongodbUpdateObject* dbUpdateObject, const String &auxArg);
+		bool ConnectToDB(const String &collection, const String &dbName, const String &dbHost, const int32 dbPort);
+		void CloseConnection();
 
-	KeyedArchive *FindOrInsertGroupArchive(KeyedArchive* buildArchive, const String &groupId);
-	KeyedArchive *InsertTestArchive(KeyedArchive* currentGroupArchive, const String &testId);
-	KeyedArchive *InsertStepArchive(KeyedArchive *testArchive, const String &stepId, const String &description);
+		// Work with log object in DB
+		KeyedArchive *FindBuildArchive(MongodbUpdateObject *dbUpdateObject, const String &auxArg);
+		KeyedArchive *FindOrInsertBuildArchive(MongodbUpdateObject *dbUpdateObject, const String &auxArg);
 
-	KeyedArchive *FindOrInsertTestArchive(MongodbUpdateObject *dbUpdateObject, const String &testId);
-	KeyedArchive *FindOrInsertStepArchive(KeyedArchive *testArchive, const String &stepId);
-	KeyedArchive *FindOrInsertTestStepLogEntryArchive(KeyedArchive *testStepArchive, const String &logId);
+		KeyedArchive *FindOrInsertGroupArchive(KeyedArchive *buildArchive, const String &groupId);
+		KeyedArchive *InsertTestArchive(KeyedArchive *currentGroupArchive, const String &testId);
+		KeyedArchive *InsertStepArchive(KeyedArchive *testArchive, const String &stepId, const String &description);
 
-	// Getting and Setting data from/in DB
-	bool SaveToDB(MongodbUpdateObject *dbUpdateObject);
+		KeyedArchive *FindOrInsertTestArchive(MongodbUpdateObject *dbUpdateObject, const String &testId);
+		KeyedArchive *FindOrInsertStepArchive(KeyedArchive *testArchive, const String &stepId);
+		KeyedArchive *FindOrInsertTestStepLogEntryArchive(KeyedArchive *testStepArchive, const String &logId);
 
-	void Log(const String &level, const String &message);
+		// Getting and Setting data from/in DB
+		bool SaveToDB(MongodbUpdateObject *dbUpdateObject);
 
-	String GetStringTestParameter(const String & deviceName, const String & parameter);
-	int32 GetIntTestParameter(const String & deviceName, const String & parameter);
+		void WriteLogHeader();
+		void WriteLog(const char8 *text, ...);
+		void Log(const String &level, const String &message);
 
-	String ReadString(const String & name);
-	void WriteString(const String & name, const String & text);
+		String GetStringTestParameter(const String &deviceName, const String &parameter);
+		int32 GetIntTestParameter(const String &deviceName, const String &parameter);
 
-	bool SaveKeyedArchiveToDB(const String &archiveName, KeyedArchive *archive, const String &docName);
+		String ReadString(const String &name);
+		void WriteString(const String &name, const String &text);
 
-	void UploadScreenshot(const String & name, Image *image);
+		bool SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive *archive);
 
-	// multiplayer api
-	void WriteState(const String & device, const String & state);
-	void WriteCommand(const String & device, const String & state);
+		void UploadScreenshot(const String &name, Image *image);
 
-	String ReadState(const String & device);
-	String ReadCommand(const String & device);
+		// multiplayer api
+		void WriteState(const String &device, const String &state);
+		void WriteCommand(const String &device, const String &state);
 
-	void SetTestStarted();
-protected:
-	MongodbClient *dbClient;
+		String ReadState(const String &device);
+		String ReadCommand(const String &device);
 
+		void SetTestStarted();
 
-};
+		FilePath logsFolder;
+
+	protected:
+		MongodbClient *dbClient;
+		FilePath logFilePath;
+		AutotestingSystem *autoSys;
+
+	};
 
 
 }
