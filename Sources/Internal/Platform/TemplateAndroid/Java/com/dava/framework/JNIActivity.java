@@ -275,8 +275,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // recreate eglContext (also eglSurface, eglScreen) should be first
         super.onResume();
 
-        glView.onResume();
-
         // activate accelerometer
         if(accelerometer != null)
         {
@@ -356,8 +354,12 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     	if(hasFocus) {
     		JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
 			HideNavigationBar(getWindow().getDecorView());
+			
+			glView.onResume();
+			
     	} else {
     		JNITextField.DestroyKeyboardLayout(getWindowManager());
+    		ShowSplashScreenView();
     	}
     	Log.i(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] finish");
     }
