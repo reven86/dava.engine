@@ -454,7 +454,7 @@ int32 do_div(int64 &n, int32 base)
                             s = "<NULL>";
                         }
                         
-                        len = strlen (s);
+                        len = static_cast<int32>(strlen (s));
                         if ((uint32)len > (uint32)precision)
                         {
                             len = precision;
@@ -487,7 +487,7 @@ int32 do_div(int64 &n, int32 base)
                             sw = L"<NULL>";
                         }
                         
-                        len = wcslen (sw);
+                        len = static_cast<int32>(wcslen (sw));
                         if ((uint32)len > (uint32)precision)
                         {
                             len = precision;
@@ -523,7 +523,7 @@ int32 do_div(int64 &n, int32 base)
                             sw = L"<NULL>";
                         }
                         
-                        len = wcslen (sw);
+                        len = static_cast<int32>(wcslen (sw));
                         if ((uint32)len > (uint32)precision)
                         {
                             len = precision;
@@ -556,7 +556,7 @@ int32 do_div(int64 &n, int32 base)
                             s = "<NULL>";
                         }
                         
-                        len = strlen (s);
+                        len = static_cast<int32>(strlen (s));
                         if ((uint32)len > (uint32)precision)
                         {
                             len = precision;
@@ -646,7 +646,7 @@ int32 do_div(int64 &n, int32 base)
                     else
                     {
                         int32 * ip = va_arg(args, int32 *);
-                        *ip = (str - buf);
+                        *ip = static_cast<int32>(str - buf);
                     }
                     continue;
                     
@@ -810,7 +810,7 @@ int32 do_div(int64 &n, int32 base)
         }
         
         *str = L'\0';
-        return str-buf;
+        return static_cast<int32>(str-buf);
     }
     
 //! formatting function (use printf syntax (%ls for WideString))

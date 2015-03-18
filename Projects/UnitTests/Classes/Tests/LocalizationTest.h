@@ -59,8 +59,6 @@ private:
 
 	FilePath srcDir;
 	FilePath cpyDir;
-
-	bool CompareFiles(const FilePath& file1, const FilePath& file2);
 };
 
 #endif /* defined(__TEMPLATEPROJECTMACOS__LOCALIZATIONTEST__) */

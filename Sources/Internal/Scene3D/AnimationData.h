@@ -75,7 +75,7 @@ inline float32 AnimationData::GetDuration() const
 	
 inline int32 AnimationData::GetKeyCount() const
 {
-	return keys.size();
+	return static_cast<int32>(keys.size());
 }
 	
 };

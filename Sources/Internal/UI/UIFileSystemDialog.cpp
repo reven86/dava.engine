@@ -264,7 +264,7 @@ void UIFileSystemDialog::SetCurrentDir(const FilePath &newDirPath, bool rebuildH
     
     //find current dir at folders history
     bool isInHistory = false;
-    for(int32 iFolder = foldersHistory.size() - 1; iFolder >= 0 ; --iFolder)
+    for(int32 iFolder = static_cast<int32>(foldersHistory.size() - 1); iFolder >= 0 ; --iFolder)
     {
         if(foldersHistory[iFolder] == currentDir)
         {
@@ -308,7 +308,7 @@ void UIFileSystemDialog::SetExtensionFilter(const Vector<String> &newExtensionFi
     extensionFilter.clear();
     extensionFilter = newExtensionFilter;
     
-    int32 size = extensionFilter.size();
+    int32 size = static_cast<int32>(extensionFilter.size());
     for (int32 k = 0; k < size; ++k)
         std::transform(extensionFilter[k].begin(), extensionFilter[k].end(), extensionFilter[k].begin(), ::tolower);
 }
@@ -371,8 +371,8 @@ void UIFileSystemDialog::RefreshList()
     String curDirPath = currentDir.GetDirectory().GetAbsolutePathname();
     while (true) 
     {
-        p = curDirPath.rfind("/", p);
-        if(p != curDirPath.npos)
+        p = static_cast<int32>(curDirPath.rfind("/", p));
+        if(p != static_cast<int32>(curDirPath.npos))
         {
             p--;
             outCnt++;
@@ -408,7 +408,7 @@ void UIFileSystemDialog::RefreshList()
                 }
                 if (fu.name == selectedFileName)
                 {
-                    lastSelectedIndex = fileUnits.size();
+                    lastSelectedIndex = static_cast<int32>(fileUnits.size());
                     positiveButton->SetDisabled(false);
                     textField->SetText(StringToWString(files->GetFilename(fu.indexInFileList)));
                 }
@@ -416,7 +416,7 @@ void UIFileSystemDialog::RefreshList()
                 std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
                 bool isPresent = false;
-                int32 size = extensionFilter.size();
+                int32 size = static_cast<uint32>(extensionFilter.size());
                 for (int32 n = 0; n < size; n++) 
                 {
                     if (extensionFilter[n] == ".*" || ext == extensionFilter[n])
@@ -471,7 +471,7 @@ bool UIFileSystemDialog::TextFieldKeyPressed(UITextField * textField, int32 repl
 
 int32 UIFileSystemDialog::ElementsCount(UIList *forList)
 {
-    return fileUnits.size();
+    return static_cast<int32>(fileUnits.size());
 }
 
 UIListCell *UIFileSystemDialog::CellAtIndex(UIList *forList, int32 index)
@@ -609,7 +609,7 @@ void UIFileSystemDialog::CreateHistoryForPath(const FilePath &pathToFile)
         f.MakeDirectoryPathname();
         foldersHistory.push_back(f);
     }
-    historyPosition = foldersHistory.size() - 1;
+    historyPosition = static_cast<int32>(foldersHistory.size() - 1);
 }
 
 void UIFileSystemDialog::OnFileSelected(const FilePath &pathToFile)

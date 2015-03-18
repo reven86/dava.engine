@@ -433,19 +433,17 @@ Scene::~Scene()
     
 void Scene::RegisterEntity(Entity * entity)
 {
-    uint32 systemsCount = systems.size();
-    for (uint32 k = 0; k < systemsCount; ++k)
+    for(auto& system : systems)
     {
-        systems[k]->RegisterEntity(entity);
+        system->RegisterEntity(entity);
     }
 }
 
 void Scene::UnregisterEntity(Entity * entity)
 {
-    uint32 systemsCount = systems.size();
-    for (uint32 k = 0; k < systemsCount; ++k)
+    for(auto& system : systems)
     {
-        systems[k]->UnregisterEntity(entity);
+        system->UnregisterEntity(entity);
     }
 }
 
@@ -465,7 +463,7 @@ void Scene::UnregisterEntitiesInSystemRecursively(SceneSystem *system, Entity * 
 void Scene::RegisterComponent(Entity * entity, Component * component)
 {
     DVASSERT(entity && component);
-    uint32 systemsCount = systems.size();
+    uint32 systemsCount = static_cast<uint32>(systems.size());
     for (uint32 k = 0; k < systemsCount; ++k)
     {
         systems[k]->RegisterComponent(entity, component);
@@ -475,7 +473,7 @@ void Scene::RegisterComponent(Entity * entity, Component * component)
 void Scene::UnregisterComponent(Entity * entity, Component * component)
 {
     DVASSERT(entity && component);
-    uint32 systemsCount = systems.size();
+    uint32 systemsCount = static_cast<uint32>(systems.size());
     for (uint32 k = 0; k < systemsCount; ++k)
     {
         systems[k]->UnregisterComponent(entity, component);
@@ -859,7 +857,7 @@ void Scene::Draw()
     
 void Scene::SceneDidLoaded()
 {
-    uint32 systemsCount = systems.size();
+    uint32 systemsCount = static_cast<uint32>(systems.size());
     for (uint32 k = 0; k < systemsCount; ++k)
     {
         systems[k]->SceneDidLoaded();
@@ -1081,7 +1079,7 @@ void Scene::Load(KeyedArchive * archive)
 }*/
     
 
-SceneFileV2::eError Scene::Save(const DAVA::FilePath & pathname, bool saveForGame /*= false*/)
+SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath & pathname, bool saveForGame /*= false*/)
 {
     ScopedPtr<SceneFileV2> file(new SceneFileV2());
 	file->EnableDebugLog(false);

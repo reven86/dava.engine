@@ -88,7 +88,7 @@ void RotationControllerSystem::Process(float32 timeElapsed)
 
 void RotationControllerSystem::Input(UIEvent *event)
 {
-    const uint32 size = entities.size();
+    const uint32 size = static_cast<uint32>(entities.size());
     if(0 == size) return;
 
     if(event->tid == UIEvent::BUTTON_2 || event->tid == UIEvent::BUTTON_3)

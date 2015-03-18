@@ -96,7 +96,7 @@ bool PatchInfo::WriteString(File* file, const String &str)
 {
     bool ret = false;
 
-    uint32 len = str.length();
+    uint32 len = static_cast<uint32>(str.length());
     uint32 wlen = file->Write(&len);
 
     if(wlen == sizeof(uint32))

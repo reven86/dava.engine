@@ -233,7 +233,7 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
     //save scene to new place
     uint64 saveStart = SystemTimer::Instance()->AbsoluteMS();
     FilePath tempSceneName = FilePath::CreateWithNewExtension(sceneUtils.dataSourceFolder + relativeFilename, ".exported.sc2");
-    scene->Save(tempSceneName, optimizeOnExport);
+    scene->SaveScene(tempSceneName, optimizeOnExport);
     uint64 saveTime = SystemTimer::Instance()->AbsoluteMS() - saveStart;
 
     

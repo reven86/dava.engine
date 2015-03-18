@@ -45,11 +45,9 @@ static const float INPUT_TEST_AUTO_CLOSE_TIME = 30.0f;
 
 class UIWebViewDelegate: public IUIWebViewDelegate
 {
-	virtual eAction URLChanged(UIWebView* webview, const String& newURL, bool isRedirectedByMouseClick);
-
-    void OnExecuteJScript(DAVA::UIWebView* webview, int32 requestId, const String& result);
-
-	virtual void PageLoaded(UIWebView* webview);
+	eAction URLChanged(UIWebView* webview, const String& newURL, bool isRedirectedByMouseClick) override;
+    void OnExecuteJScript(UIWebView* webview, const String& result) override;
+    void PageLoaded(UIWebView* webview) override;
 };
 
 class UIMoveableTextFieldDelegate : public UITextFieldDelegate
@@ -107,7 +105,7 @@ IUIWebViewDelegate::eAction UIWebViewDelegate::URLChanged(UIWebView* webview, co
 	return IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 }
 
-void UIWebViewDelegate::OnExecuteJScript(DAVA::UIWebView* webview, int32 requestId, const String& result)
+void UIWebViewDelegate::OnExecuteJScript(DAVA::UIWebView* webview, const String& result)
 {
     Logger::Debug("OnExecuteJScript result:%s", result.c_str());
 }

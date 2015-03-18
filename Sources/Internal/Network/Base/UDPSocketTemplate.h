@@ -195,7 +195,7 @@ int32 UDPSocketTemplate<T>::DoSend(const Buffer* buffers, size_t bufferCount, co
         sendBuffers[i] = buffers[i];
     }
 
-    return uv_udp_send(&uvsend, &uvhandle, sendBuffers, sendBufferCount, endpoint.CastToSockaddr(), &HandleSendThunk);
+    return uv_udp_send(&uvsend, &uvhandle, sendBuffers, static_cast<uint32>(sendBufferCount), endpoint.CastToSockaddr(), &HandleSendThunk);
 }
 
 template <typename T>
@@ -237,7 +237,7 @@ void UDPSocketTemplate<T>::HandleReceiveThunk(uv_udp_t* handle, ssize_t nread, c
     int32 error = 0;
     if(nread < 0)
     {
-        error = nread;
+        error = static_cast<int32>(nread);
         nread = 0;
     }
     UDPSocketTemplate* self = static_cast<UDPSocketTemplate*>(handle->data);

@@ -1,4 +1,9 @@
 cmake_minimum_required( VERSION 3.0 )
+
+if ( TEXTURE_TOOL_FOUND )
+    return ()
+endif ()
+set ( TEXTURE_TOOL_FOUND 1 )
                      
 project( TextureTool )
 
@@ -10,8 +15,10 @@ add_definitions       (
 -DDDARWIN_NO_CARBON
 )
 
-include_directories            ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib ) 
-include_directories            ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )  
+include_directories   ( ${DAVA_INCLUDE_DIR} ) 
+include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )  
+include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib ) 
+
 
 if( IOS OR ANDROID )
     set( ADDED_CPP_PATTERNS TeamcityOutput/*.cpp  TexturePacker/CommandLineParser.cpp )
@@ -36,7 +43,7 @@ GLOB_H_PATTERNS    ${ADDED_H_PATTERNS}
 
 generate_source_groups_project ()
 
-add_library ( TextureTool STATIC ${CPP_FILES} ${H_FILES} )
+add_library                ( TextureTool STATIC ${CPP_FILES} ${H_FILES} )
 
 if( MACOS )
     target_link_libraries  ( TextureTool libbz2.dylib libz.dylib stdc++.6.dylib )

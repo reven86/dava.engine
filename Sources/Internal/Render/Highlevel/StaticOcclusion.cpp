@@ -50,7 +50,6 @@ namespace DAVA
     : queryPool(10000)
     {
         staticOcclusionRenderPass = 0;
-        renderTargetSprite = 0;
         renderTargetTexture = 0;
         currentData = 0;
         landscape = 0;
@@ -63,7 +62,6 @@ namespace DAVA
             SafeRelease(cameras[k]);
         }
         SafeDelete(staticOcclusionRenderPass);
-        SafeRelease(renderTargetSprite);
         SafeRelease(renderTargetTexture);
     }
     
@@ -97,8 +95,6 @@ namespace DAVA
         
         if (!renderTargetTexture)
             renderTargetTexture = Texture::CreateFBO(RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT, FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER);
-        if (!renderTargetSprite)
-            renderTargetSprite = Sprite::CreateFromTexture(renderTargetTexture, 0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT);
         
         /* Set<uint16> busyIndices;
          for (uint32 k = 0; k < renderObjects.size(); ++k)
@@ -329,8 +325,7 @@ namespace DAVA
                         //camera->SetupDynamicParameters();
                         // Do Render
                         
-                        RenderSystem2D::Instance()->PushRenderTarget();
-                        RenderSystem2D::Instance()->SetRenderTarget(renderTargetSprite);
+                        RenderManager::Instance()->SetRenderTarget(renderTargetTexture);
                         RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT));
                         
                         //camera->SetupDynamicParameters();
@@ -348,8 +343,8 @@ namespace DAVA
                         
                         timeRendering = SystemTimer::Instance()->GetAbsoluteNano() - timeRendering;
                         timeTotalRendering += timeRendering;
-                        
-                        RenderSystem2D::Instance()->PopRenderTarget();
+
+                        RenderManager::Instance()->SetRenderTarget(0);
                         
                         size_t size = recordedBatches.size();
                         /*
@@ -419,8 +414,8 @@ namespace DAVA
         
         
         // Invisible on every frame
-        uint32 invisibleObjectCount =  (uint32)renderObjectsArray.size() - frameGlobalVisibleInfo.size();
-        uint32 visibleCount = frameGlobalVisibleInfo.size();
+        uint32 invisibleObjectCount =  static_cast<uint32>((uint32)renderObjectsArray.size() - frameGlobalVisibleInfo.size());
+        uint32 visibleCount = static_cast<uint32>(frameGlobalVisibleInfo.size());
         //    for (Map<RenderObject*, uint32>::iterator it = frameGlobalOccludedInfo.begin(), end = frameGlobalOccludedInfo.end(); it != end; ++it)
         //    {
         //        if (renderFrameCount == it->second)
@@ -448,7 +443,7 @@ namespace DAVA
             if (findIt != equalVisibilityArray.end())
             {
                 Vector<RenderObject*> & equalObjects = findIt->second;
-                uint32 size = equalObjects.size();
+                uint32 size = static_cast<uint32>(equalObjects.size());
                 for (uint32 k = 0; k < size; ++k)
                 {
                     DVASSERT(equalObjects[k]->GetStaticOcclusionIndex() != INVALID_STATIC_OCCLUSION_INDEX);

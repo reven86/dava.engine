@@ -27,30 +27,28 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_ACCELEROMETER_IPHONE_H__
-#define __DAVAENGINE_ACCELEROMETER_IPHONE_H__
 
-#include "Input/Accelerometer.h"
-#include "Base/EventDispatcher.h"
+#ifndef __WAYEDIT_COMMANDS_H__
+#define __WAYEDIT_COMMANDS_H__
 
-#ifdef __DAVAENGINE_IPHONE__
-namespace DAVA
+#include "Commands2/Command2.h"
+
+class EnableWayEditCommand : public Command2
 {
-class AccelerometeriPhoneImpl : public Accelerometer
-{
-	IMPLEMENT_EVENT_DISPATCHER(eventDispatcher);
 public:
-	
-	AccelerometeriPhoneImpl();
-	~AccelerometeriPhoneImpl();
-	
-	virtual void Enable(float32 updateRate);
-	virtual void Disable();
-    virtual bool IsEnabled() const;
-    
-	void SetAccelerationData(float x, float y, float z);
-	EventDispatcher * GetEventDispatcher();
-};		
+    EnableWayEditCommand() : Command2(CMDID_ENABLE_WAYEDIT, "Enable waypoint edit mode") {}
+    void Undo() override {}
+    void Redo() override {}
+    DAVA::Entity* GetEntity() const override { return nullptr; }
 };
-#endif // __DAVAENGINE_IPHONE__
-#endif // __DAVAENGINE_ACCELEROMETER_IPHONE_H__
+
+class DisableWayEditCommand : public Command2
+{
+public:
+    DisableWayEditCommand() : Command2(CMDID_DISABLE_WAYEDIT, "Disable waypoint edit mode") {}
+    void Undo() override {}
+    void Redo() override {}
+    DAVA::Entity* GetEntity() const override { return nullptr; }
+};
+
+#endif // __WAYEDIT_COMMANDS_H__

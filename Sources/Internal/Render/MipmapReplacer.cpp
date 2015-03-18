@@ -103,7 +103,7 @@ void MipMapReplacer::ReplaceMipMap(Texture * texture, int32 level)
         {
             uint32 mipMapSize = texture->width / (1 << level);
 
-            int32 imgCount = mipImg.size();
+            int32 imgCount = static_cast<int32>(mipImg.size());
             for(int i = 0; i < imgCount; i++)
             {
                 Image * dummyImg = mipImg[i];

@@ -42,11 +42,11 @@ Camera *UIParticles::defaultCamera = nullptr;
 
 UIParticles::UIParticles(const Rect &rect)
     : UIControl(rect)
+    , isAutostart(false)
+    , startDelay(0.0f)
     , effect(nullptr)
     , system(new ParticleEffectSystem(nullptr, true))
     , updateTime(0)
-    , isAutostart(false)
-    , startDelay(0.0f)
     , delayedActionType(UIParticles::actionNone)
     , delayedActionTime(0.0f)
     , delayedDeleteAllParticles(false)
@@ -230,6 +230,7 @@ void UIParticles::Draw(const UIGeometricData & geometricData)
 
     matrix.CreateRotation(Vector3::UnitZ, -geometricData.angle);
     matrix.SetTranslationVector(Vector3(geometricData.position.x, geometricData.position.y, 0));
+    effect->SetExtertnalValue("scale", geometricData.scale.x);
     system->Process(updateTime);
     updateTime = 0.0f;
     
@@ -238,6 +239,12 @@ void UIParticles::Draw(const UIGeometricData & geometricData)
     effect->effectRenderObject->PrepareToRender(defaultCamera);
     for (int32 i=0, sz = effect->effectRenderObject->GetActiveRenderBatchCount(); i<sz; ++i)
         effect->effectRenderObject->GetActiveRenderBatch(i)->Draw(PASS_FORWARD, defaultCamera);
+}
+
+void UIParticles::SetExtertnalValue(const String& name, float32 value)
+{
+    if (effect != nullptr)
+        effect->SetExtertnalValue(name, value);
 }
 
 void UIParticles::LoadEffect(const FilePath& path)

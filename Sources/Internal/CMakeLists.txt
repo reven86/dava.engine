@@ -159,7 +159,6 @@ include_directories    ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 set                    ( DAVA_INCLUDE_DIR ${DAVA_INCLUDE_DIR} ${ADD_ENGINE_INCLUDES_DIR} PARENT_SCOPE )
 
 add_definitions        ( ${FRAMEWORK_DEFINITIONS} )
-
 add_library            ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${RESOURCE} )
 
 if( LINK_THIRD_PARTY )                 

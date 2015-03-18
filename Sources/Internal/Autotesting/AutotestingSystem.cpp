@@ -30,7 +30,8 @@ namespace DAVA
 {
 
 	AutotestingSystem::AutotestingSystem()
-		: startTimeMS(0)
+		: luaSystem(NULL)
+        , startTimeMS(0)
 		, isInit(false)
 		, isRunning(false)
 		, needExitApp(false)
@@ -55,6 +56,7 @@ namespace DAVA
 		, frameworkRev("0")
 		, isDB(false)
 		, needClearGroupInDB(false)
+        , skipScreenshot(false)
 		, isMaster(true)
 		, requestedHelpers(0)
 		, masterId("")
@@ -64,10 +66,8 @@ namespace DAVA
 		, isWaiting(false)
 		, isInitMultiplayer(false)
 		, multiplayerName("")
-		, waitTimeLeft(0.0f)
+        , waitTimeLeft(0.0f)
 		, waitCheckTimeLeft(0.0f)
-		, luaSystem(NULL)
-		, skipScreenshot(false)
 	{
 
 	}

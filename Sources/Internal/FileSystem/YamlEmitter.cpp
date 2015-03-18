@@ -95,7 +95,7 @@ int write_handler(void *ext, unsigned char *buffer, size_t size)//yaml_write_han
 {
     File *yamlFile = static_cast<File *>(ext);
 
-    uint32 bytesWritten = yamlFile->Write(buffer, size);
+    uint32 bytesWritten = yamlFile->Write(buffer, static_cast<uint32>(size));
 
     return (size == bytesWritten) ? 1 : 0;
 }
