@@ -33,7 +33,7 @@ void ChangeDefaultValueCommand::undo()
     if (model && model->GetControlNode()->GetPropertiesRoot() == property->GetRootProperty())
         model->emitPropertyChanged(property);
 
-    PackageModel *packageModel = document->GetPackageContext()->GetModel();
+    PackageModel *packageModel = document->GetPackageModel();
     packageModel->emitNodeChanged(node);
 
 }
@@ -42,11 +42,11 @@ void ChangeDefaultValueCommand::redo()
 {
     property->SetDefaultValue(newValue);
 
-    PropertiesModel *model = document->GetPropertiesContext()->GetModel();
+    PropertiesModel *model = document->GetPropertiesModel();
     if (model && model->GetControlNode()->GetPropertiesRoot() == property->GetRootProperty())
         model->emitPropertyChanged(property);
     
-    PackageModel *packageModel = document->GetPackageContext()->GetModel();
+    PackageModel *packageModel = document->GetPackageModel();
     packageModel->emitNodeChanged(node);
 
 }

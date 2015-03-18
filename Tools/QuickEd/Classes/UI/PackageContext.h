@@ -1,42 +1,16 @@
 #ifndef __QUICKED_PACKAGE_CONTEXT_H__
 #define __QUICKED_PACKAGE_CONTEXT_H__
 
-#include <QObject>
-#include <QPoint>
-#include <QString>
-#include <QPersistentModelIndex>
-#include <QItemSelection>
-#include <QSortFilterProxyModel>
+#include <QtCore>
 #include "Package/PackageModel.h"
 #include "Package/FilteredPackageModel.h"
-
-class QSortFilterProxyModel;
-class QItemSelection;
-class PackageModel;
 class Document;
+class PackageModel;
+class FilteredPackageModel;
 
-class PackageContext : public QObject
+struct PackageContext 
 {
-    Q_OBJECT
-    
-public:
-    PackageContext(Document *document);
-    virtual ~PackageContext();
-    
-    Document *GetDocument() const;
-    PackageModel *GetModel();
-    QSortFilterProxyModel *GetFilterProxyModel();
-    const QString &GetFilterString() const;
-
-    const QItemSelection &GetCurrentItemSelection() const;
-    void SetCurrentItemSelection(const QItemSelection &currentItemSelection);
-    const QList<QPersistentModelIndex> &GetExpandedIndexes() const;
-    void SetExpandedIndexes(const QList<QPersistentModelIndex> &expandedIndexes);
-    
-private:
-    Document *document;
-
-    QPoint scrollPosition;
+    PackageContext(Document* document);
     PackageModel model;
     FilteredPackageModel proxyModel;
     QString filterString;

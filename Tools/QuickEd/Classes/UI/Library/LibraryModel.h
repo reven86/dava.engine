@@ -6,7 +6,7 @@
 
 class PackageNode;
 
-class LibraryModel : public QAbstractItemModel
+class LibraryModel : public QAbstractListModel
 {
     Q_OBJECT
     

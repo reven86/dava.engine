@@ -7,7 +7,7 @@ class DocumentGroupPrivate;
 class Document;
 class ControlNode;
 class QAbstractItemModel;
-class PackageContext;
+struct PackageContext;
 
 class DocumentGroup : public QObject
 {

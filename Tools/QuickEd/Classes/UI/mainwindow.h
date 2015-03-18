@@ -36,6 +36,7 @@
 #include "EditorSettings.h"
 #include <QLineEdit>
 #include <QUndoGroup>
+#include <QAbstractItemModel>
 
 #include "Result.h"
 
@@ -44,6 +45,7 @@ class MainWindow;
 }
 
 class PackageWidget;
+class LibraryWidget;
 class Document;
 class MainWindow : public QMainWindow
 {
@@ -62,8 +64,8 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     void CreateUndoRedoActions(const QUndoGroup &undoGroup);
-    void OnCurrentIndexChanged(int arg);
     PackageWidget *GetPackageWidget() const;
+    LibraryWidget *GetLibraryWidget() const;
     bool ConfirmClose();
     int CloseTab(int index);
     void SetCurrentTab(int index);
@@ -91,6 +93,7 @@ public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
 private slots:
+    void OnCurrentIndexChanged(int arg);
     void OnSaveDocument();
     void OnOpenFontManager();
     void OnOpenLocalizationManager();

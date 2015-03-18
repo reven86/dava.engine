@@ -11,13 +11,12 @@ struct Result
         DAVAError,
         StupidError,
         CriticalError,
-        Count
     };
-    explicit Result(ResultType type = Count, const QString &error = QString());
+    explicit Result(ResultType type = Success, const QString &error = QString());
     operator bool() const;
     QStringList errors;
     QList<ResultType> types;
     Result addError(ResultType type, const QString &errorText);
-    Result addError(const Result &err);
+    Result addError(const Result &err); 
 };
 #endif // QUICKED_RESULT_H_

@@ -29,7 +29,7 @@ class PackageNode;
 class DavaGLWidget;
 class QtModelPackageCommandExecutor;
 
-class PackageContext;
+struct PackageContext;
 class PropertiesContext;
 class PreviewContext;
 

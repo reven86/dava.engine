@@ -1,14 +1,12 @@
 #ifndef __QUICKED_LIBRARY_WIDGET_H__
 #define __QUICKED_LIBRARY_WIDGET_H__
 
-#include <QWidget>
 #include <QDockWidget>
 
+class QAbstractItemModel;
 namespace Ui {
     class LibraryWidget;
 }
-
-class Document;
 
 class LibraryWidget: public QDockWidget
 {

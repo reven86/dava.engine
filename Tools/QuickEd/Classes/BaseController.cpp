@@ -4,22 +4,23 @@
 #include <QFileInfo>
 #include <QCheckBox>
 #include <QMessageBox>
-#include "basecontroller.h"
+#include "Basecontroller.h"
+#include "Document.h"
 #include "UI/Package/PackageWidget.h"
+#include "Ui/Library/LibraryWidget.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 
 BaseController::BaseController(QObject *parent)
     : QObject(parent)
+    , documentGroup(this)
     , mainWindow(nullptr) //nullptr is parent
-    , undoGroup(this)
-    , count(0)
     , currentIndex(-1)
 {
-    mainWindow.CreateUndoRedoActions(undoGroup);
+    mainWindow.CreateUndoRedoActions(documentGroup.GetUndoGroup());
     connect(&mainWindow, &MainWindow::TabClosed, this, &BaseController::CloseOneDocument);
-    connect(mainWindow.GetPackageWidget(), &PackageWidget::SelectionControlChanged, this, &BaseController::OnSelectionControlChanged);
-    connect(mainWindow.GetPackageWidget(), &PackageWidget::SelectionRootControlChanged, this, &BaseController::OnSelectionRootControlChanged);
+    connect(mainWindow.GetPackageWidget(), &PackageWidget::SelectionControlChanged, &documentGroup, &DocumentGroup::OnSelectionControlChanged);
+    connect(mainWindow.GetPackageWidget(), &PackageWidget::SelectionRootControlChanged, &documentGroup, &DocumentGroup::OnSelectionRootControlChanged);
     connect(&mainWindow, &MainWindow::CloseProject, this, &BaseController::CloseProject);
     connect(&mainWindow, &MainWindow::ActionExitTriggered, this, &BaseController::Exit);
     connect(&mainWindow, &MainWindow::CloseRequested, this, &BaseController::Exit);
@@ -30,8 +31,9 @@ BaseController::BaseController(QObject *parent)
     connect(&mainWindow, &MainWindow::SaveDocument, this, static_cast<void(BaseController::*)(int)>(&BaseController::SaveDocument));
     connect(&mainWindow, &MainWindow::CurrentTabChanged, this, &BaseController::SetCurrentIndex);
 
-    connect(this, &BaseController::CurrentIndexChanged, &mainWindow, &MainWindow::OnCurrentIndexChanged);
-    connect(this, &BaseController::CountChanged, &mainWindow, &MainWindow::OnCountChanged);
+    connect(&documentGroup, &DocumentGroup::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
+    connect(&documentGroup, &DocumentGroup::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
+    connect(&documentGroup, &DocumentGroup::LibraryModelChanged, mainWindow.GetLibraryWidget(), &LibraryWidget::OnModelChanged);
 }
 
 BaseController::~BaseController()
@@ -46,6 +48,7 @@ void BaseController::Start()
 
 void BaseController::OnCleanChanged(bool clean)
 {
+    // we need to update tab 
     QUndoStack *undoStack = qobject_cast<QUndoStack*>(sender());
     for (int i = 0; i < documents.size(); ++i)
     {
@@ -56,41 +59,6 @@ void BaseController::OnCleanChanged(bool clean)
     }
 }
 
-void BaseController::OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls)
-{
-    Document *document = GetCurrentDocument();
-    if (nullptr != document)
-    {
-        document->OnSelectionRootControlChanged(activatedRootControls, deactivatedRootControls);
-    }
-}
-
-void BaseController::OnSelectionControlChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls)
-{
-    Document *document = GetCurrentDocument();
-    if (nullptr != document)
-    {
-        document->OnSelectionControlChanged(activatedControls, deactivatedControls);
-    }
-}
-
-void BaseController::OnControlSelectedInEditor(ControlNode *activatedControls)
-{
-    Document *document = GetCurrentDocument();
-    if (nullptr != document)
-    {
-        document->OnControlSelectedInEditor(activatedControls);
-    }
-}
-
-void BaseController::OnAllControlDeselectedInEditor()
-{
-    Document *document = GetCurrentDocument();
-    if (nullptr != document)
-    {
-        document->OnAllControlDeselectedInEditor();
-    }
-}
 
 void BaseController::OnOpenPackageFile(const QString &path)
 {
@@ -112,7 +80,7 @@ void BaseController::OnOpenPackageFile(const QString &path)
 bool BaseController::CloseOneDocument(int index)
 {
     DVASSERT(index >= 0);
-    DVASSERT(index < Count());
+    DVASSERT(index < documents.size());
     const Document *document = documents.at(index);
     QUndoStack *undoStack = document->GetUndoStack();
     if (!undoStack->isClean())
@@ -139,7 +107,7 @@ bool BaseController::CloseOneDocument(int index)
 void BaseController::SaveDocument(int index)
 {
     DVASSERT(index >= 0);
-    DVASSERT(index < Count());
+    DVASSERT(index < documents.size());
     SaveDocument(documents[index]);
 }
 
@@ -229,34 +197,23 @@ bool BaseController::CloseProject()
 
 void BaseController::AttachDocument(Document *document)
 {
-    if (nullptr != document)
-    {
-        document->SetActive(true);
-        connect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
-        connect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
-    }
     mainWindow.SetDocumentToWidgets(document);
+    documentGroup.SetActiveDocument(document);
 }
 void BaseController::DetachDocument(Document *document)
 {
-    if (nullptr != document)
-    {
-        document->SetActive(false);
-        disconnect(document, &Document::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
-        disconnect(document, &Document::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
-    }
     mainWindow.SetDocumentToWidgets(nullptr);
 }
 
 void BaseController::CloseDocument(int index)
 {
     DVASSERT(index >= 0);
-    DVASSERT(index < Count());
+    DVASSERT(index < documents.size());
     int newIndex = mainWindow.CloseTab(index);
 
     //sync document list with tab list
     Document *detached = documents.takeAt(index);
-    undoGroup.removeStack(detached->GetUndoStack());
+    documentGroup.RemoveDocument(detached);
     DetachDocument(detached);
 
     //attach new doc
@@ -265,17 +222,15 @@ void BaseController::CloseDocument(int index)
         AttachDocument(documents.at(newIndex));
     }
     delete detached; //some widgets hold this document inside :(
-
-    SetCount(Count() - 1);
 }
 
 int BaseController::CreateDocument(PackageNode *package)
 {
     Document *document = new Document(&project, package, this);
     connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &BaseController::OnCleanChanged);
-    undoGroup.addStack(document->GetUndoStack());
     documents.push_back(document);
-    SetCount(Count() + 1);
+    documentGroup.AddDocument(document);
+    documents.push_back(document);
     int index = mainWindow.AddTab(document->PackageFilePath().GetBasename().c_str());
     return index;
 }
@@ -306,44 +261,21 @@ int BaseController::GetIndexByPackagePath(const QString &fileName) const
     return -1;
 }
 
-Document *BaseController::GetCurrentDocument() const
-{
-    if (0 == Count() || -1 == CurrentIndex())
-    {
-        return nullptr;
-    }
-    return documents.at(CurrentIndex());
-}
-
-//properties. must be at the end of file
-int BaseController::Count() const
-{
-    return count;
-}
-
 int BaseController::CurrentIndex() const
 {
     return currentIndex;
 }
 
-void BaseController::SetCount(int arg)
-{
-    if (count == arg)
-        return;
-
-    count = arg;
-    emit CountChanged(arg);
-}
-
 void BaseController::SetCurrentIndex(int arg)
 {
+    Q_ASSERT(arg < documents.size());
     if (currentIndex == arg) //arg = -1 when close last tab 
     {
         return;
     }
     DVASSERT(arg < documents.size());
-    DetachDocument(GetCurrentDocument());
     currentIndex = arg;
-    AttachDocument(GetCurrentDocument());
+    Document *document = arg == -1 ? nullptr : documents.at(arg);
+    AttachDocument(document);
     emit CurrentIndexChanged(arg);
 }

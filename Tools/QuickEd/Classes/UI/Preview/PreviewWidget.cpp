@@ -64,7 +64,7 @@ PreviewWidget::PreviewWidget(QWidget *parent)
 PreviewWidget::~PreviewWidget()
 {
     delete ui;
-}
+} 
 
 void PreviewWidget::SetDocument(Document *newDocument)
 {

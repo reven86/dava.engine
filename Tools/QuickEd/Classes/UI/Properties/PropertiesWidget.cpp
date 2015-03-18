@@ -5,7 +5,7 @@
 
 #include "ui_PropertiesWidget.h"
 #include "PropertiesModel.h"
-#include "UI/Document.h"
+#include "Document.h"
 #include "UI/PropertiesContext.h"
 #include "UI/Properties/PropertiesTreeItemDelegate.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -24,7 +24,7 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
 PropertiesWidget::~PropertiesWidget()
 {
     delete ui;
-}
+} 
 
 void PropertiesWidget::SetDocument(Document *document)
 {
@@ -40,7 +40,7 @@ void PropertiesWidget::SetDocument(Document *document)
     }
     else
     {
-        context = document->GetPropertiesContext();
+        //context = document->GetPropertiesContext();
     }
 
     if (nullptr != context)

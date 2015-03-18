@@ -76,8 +76,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->tabBar->setTabsClosable(true);
     ui->tabBar->setUsesScrollButtons(true);
     connect(ui->tabBar, &QTabBar::tabCloseRequested, this, &MainWindow::TabClosed);
+    connect(ui->tabBar, &QTabBar::currentChanged, this, &MainWindow::OnCurrentIndexChanged);
     connect(ui->tabBar, &QTabBar::currentChanged, this, &MainWindow::CurrentTabChanged);
-
     setUnifiedTitleAndToolBarOnMac(true);
 
     connect(ui->actionFontManager, &QAction::triggered, this, &MainWindow::OnOpenFontManager);
@@ -119,6 +119,11 @@ PackageWidget *MainWindow::GetPackageWidget() const
     return ui->packageWidget;
 }
 
+LibraryWidget *MainWindow::GetLibraryWidget() const
+{
+    return ui->libraryWidget;
+}
+
 void MainWindow::OnProjectIsOpenChanged(bool arg)
 {
     ui->fileSystemDockWidget->setEnabled(arg);
@@ -135,6 +140,7 @@ int MainWindow::CloseTab(int index)
 {
     delete ui->tabBar->tabData(index).value<TabState*>();
     ui->tabBar->removeTab(index);
+    OnCountChanged(ui->tabBar->count());
     return ui->tabBar->currentIndex();
 }
 
@@ -359,6 +365,7 @@ int MainWindow::AddTab(const QString &tabText)
     int index = ui->tabBar->addTab(tabText);
     TabState* tabState = new TabState(tabText);
     ui->tabBar->setTabData(index, QVariant::fromValue<TabState*>(tabState));
+    OnCountChanged(ui->tabBar->count());
     return index;
 }
 
@@ -367,7 +374,6 @@ void MainWindow::SetDocumentToWidgets(Document *document)
     ui->propertiesWidget->SetDocument(document);
     ui->packageWidget->SetDocument(document);
     ui->previewWidget->SetDocument(document);
-    ui->libraryWidget->SetDocument(document);
 }
 
 void MainWindow::closeEvent(QCloseEvent *ev)

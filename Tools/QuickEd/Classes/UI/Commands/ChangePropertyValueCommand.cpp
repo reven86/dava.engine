@@ -50,11 +50,11 @@ void ChangePropertyValueCommand::undo()
     else
         property->SetValue(oldValue);
 
-    PropertiesModel *model = document->GetPropertiesContext()->GetModel();
+    PropertiesModel *model = document->GetPropertiesModel();
     if (model && model->GetControlNode()->GetPropertiesRoot() == property->GetRootProperty())
         model->emitPropertyChanged(property);
 
-    PackageModel *packageModel = document->GetPackageContext()->GetModel();
+    PackageModel *packageModel = document->GetPackageModel();
     packageModel->emitNodeChanged(node);
 }
 
@@ -65,10 +65,10 @@ void ChangePropertyValueCommand::redo()
     else
         property->SetValue(newValue);
     
-    PropertiesModel *propertiesModel = document->GetPropertiesContext()->GetModel();
+    PropertiesModel *propertiesModel = document->GetPropertiesModel();
     if (propertiesModel && propertiesModel->GetControlNode()->GetPropertiesRoot() == property->GetRootProperty())
         propertiesModel->emitPropertyChanged(property);
     
-    PackageModel *packageModel = document->GetPackageContext()->GetModel();
+    PackageModel *packageModel = document->GetPackageModel();
     packageModel->emitNodeChanged(node);
 }

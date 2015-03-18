@@ -11,7 +11,7 @@
 #include "Utils/QtDavaConvertion.h"
 #include "UI/IconHelper.h"
 
-LibraryModel::LibraryModel(PackageNode *node, QObject *parent) : QAbstractItemModel(parent)
+LibraryModel::LibraryModel(PackageNode *node, QObject *parent) : QAbstractListModel(parent)
 {
     defaultControls.push_back("UIControl");
     defaultControls.push_back("UIButton");
