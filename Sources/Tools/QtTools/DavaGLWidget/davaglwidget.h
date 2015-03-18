@@ -61,11 +61,11 @@ public:
     OpenGLWindow();
     ~OpenGLWindow();
     
-    void render();
     void renderNow();
 
 signals:
     void Exposed();
+    void OnDrop( const QMimeData *mimeData );
     
 protected:
     bool event(QEvent *event) override;
@@ -83,7 +83,6 @@ protected:
     void handleDragMoveEvent(QDragMoveEvent * event);
     
 private:
-    QOpenGLPaintDevice *paintDevice;
     QScopedPointer< ControlMapper > controlMapper;
 };
 

@@ -195,6 +195,8 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     a.setAttribute( Qt::AA_UseHighDpiPixmaps );
     a.setAttribute( Qt::AA_ShareOpenGLContexts );
 
+    Q_INIT_RESOURCE( QtToolsResources );
+
     new SceneValidator();
     new TextureCache();
 
