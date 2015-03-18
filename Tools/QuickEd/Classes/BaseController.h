@@ -19,6 +19,8 @@ public:
     ~BaseController();
     void Start();
 
+    MainWindow *GetMainWindow() const;
+
 protected slots:
     void OnCleanChanged(bool clean);
     void OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
@@ -33,12 +35,15 @@ protected slots:
 
     void Exit();
     void RecentMenu(QAction *);
+
 protected:
     void OpenProject(const QString &path);
     bool CloseProject();
     int CreateDocument(PackageNode *package);
     void SaveDocument(Document *document);
+
 private:
+    bool eventFilter( QObject *obj, QEvent *event ) override;
     void AttachDocument(Document *document);
     void DetachDocument(Document *document);
     void CloseDocument(int index);

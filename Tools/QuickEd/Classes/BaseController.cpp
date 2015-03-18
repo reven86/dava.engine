@@ -9,6 +9,9 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 
+#include "Platform/Qt5/QtLayer.h"
+
+
 BaseController::BaseController(QObject *parent)
     : QObject(parent)
     , mainWindow(nullptr) //nullptr is parent
@@ -32,6 +35,8 @@ BaseController::BaseController(QObject *parent)
 
     connect(this, &BaseController::CurrentIndexChanged, &mainWindow, &MainWindow::OnCurrentIndexChanged);
     connect(this, &BaseController::CountChanged, &mainWindow, &MainWindow::OnCountChanged);
+
+    qApp->installEventFilter(this);
 }
 
 BaseController::~BaseController()
@@ -42,6 +47,11 @@ BaseController::~BaseController()
 void BaseController::Start()
 {
     mainWindow.show();
+}
+
+MainWindow* BaseController::GetMainWindow() const
+{
+    return const_cast<MainWindow*>( &mainWindow );
 }
 
 void BaseController::OnCleanChanged(bool clean)
@@ -346,4 +356,41 @@ void BaseController::SetCurrentIndex(int arg)
     currentIndex = arg;
     AttachDocument(GetCurrentDocument());
     emit CurrentIndexChanged(arg);
+}
+
+bool BaseController::eventFilter( QObject *obj, QEvent *event )
+{
+    QEvent::Type eventType = event->type();
+
+    if ( qApp == obj )
+    {
+        if ( QEvent::ApplicationStateChange == eventType )
+        {
+            QApplicationStateChangeEvent* stateChangeEvent = static_cast<QApplicationStateChangeEvent*>( event );
+            Qt::ApplicationState state = stateChangeEvent->applicationState();
+            switch ( state )
+            {
+            case Qt::ApplicationInactive:
+            {
+                if ( DAVA::QtLayer::Instance() )
+                {
+                    DAVA::QtLayer::Instance()->OnSuspend();
+                }
+                break;
+            }
+            case Qt::ApplicationActive:
+            {
+                if ( DAVA::QtLayer::Instance() )
+                {
+                    DAVA::QtLayer::Instance()->OnResume();
+                }
+                break;
+            }
+            default:
+                break;
+            }
+        }
+    }
+
+    return QObject::eventFilter( obj, event );
 }
