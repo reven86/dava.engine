@@ -254,44 +254,16 @@ void RenderManager::MakeGLScreenShot()
     Logger::FrameworkDebug("RenderManager::MakeGLScreenShot w=%d h=%d", width, height);
     
     // picture is rotated (framebuffer coordinates start from bottom left)
-    Image *image = NULL;
-    image = Image::Create(width, height, formatDescriptor.formatID);
+    Image *image = Image::Create(width, height, formatDescriptor.formatID);
     uint8 *imageData = image->GetData();
-    
-    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(formatDescriptor.formatID);
-    uint8 *tempData;
-    
-    uint32 imageDataSize = width * height * formatSize;
-    tempData = new uint8[imageDataSize];
 
     RENDER_VERIFY(glBindFramebuffer(GL_FRAMEBUFFER, fboViewRenderbuffer));
     
     RENDER_VERIFY(glPixelStorei( GL_UNPACK_ALIGNMENT, 1 ));
-    RENDER_VERIFY(glReadPixels(0, 0, width, height, formatDescriptor.format, formatDescriptor.type, (GLvoid *)tempData));
-    
-    //TODO: optimize (ex. use pre-allocated buffer instead of dynamic allocation)
-    
-    // iOS frame buffer starts from bottom left corner, but we need from top left, so we rotate picture here
-    uint32 newIndex = 0;
-    uint32 oldIndex = 0;
+	RENDER_VERIFY(glReadPixels(0, 0, width, height, formatDescriptor.format, formatDescriptor.type, (GLvoid *)imageData));
 
-    //MacOS
-    //TODO: test on Windows and android
+    image->FlipVertical();
 
-    for(int32 h = height - 1; h >= 0; --h)
-    {
-        for(int32 w = 0; w < width; ++w)
-        {
-            for(int32 b = 0; b < formatSize; ++b)
-            {
-                oldIndex = formatSize*width*h + formatSize*w + b;
-                imageData[newIndex++] = tempData[oldIndex];
-            }
-        }
-    }
-    
-    SafeDeleteArray(tempData);
-    
     if(screenShotCallback)
     {
 		(*screenShotCallback)(image);
