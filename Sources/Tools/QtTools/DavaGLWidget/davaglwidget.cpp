@@ -75,8 +75,8 @@ namespace
 
 OpenGLWindow::OpenGLWindow()
     : QWindow()
-    , controlMapper(new ControlMapper(this))
     , paintDevice(nullptr)
+    , controlMapper(new ControlMapper(this))
 {
     setSurfaceType(QWindow::OpenGLSurface);
     
@@ -223,7 +223,7 @@ DavaGLWidget::~DavaGLWidget()
 {
 }
 
-OpenGLWindow* DavaGLWidget::GetGLWindow()
+OpenGLWindow* DavaGLWidget::GetGLWindow() const
 {
     return openGlWindow;
 }

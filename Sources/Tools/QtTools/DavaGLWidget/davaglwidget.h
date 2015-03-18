@@ -97,7 +97,7 @@ public:
     explicit DavaGLWidget(QWidget *parent = nullptr);
     ~DavaGLWidget();
 
-    OpenGLWindow *GetGLWindow();
+    OpenGLWindow *GetGLWindow() const;
     
 signals:
     void Initialized();
