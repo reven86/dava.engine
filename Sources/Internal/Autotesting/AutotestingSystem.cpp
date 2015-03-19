@@ -262,10 +262,7 @@ namespace DAVA
 			if (timeBeforeExit <= 0.0f)
 			{
 				needExitApp = false;
-				if (JobManager::Instance()->HasWorkerJobs())
-				{
-					JobManager::Instance()->WaitWorkerJobs();
-				}
+				JobManager::Instance()->WaitWorkerJobs();
 				Core::Instance()->Quit();
 			}
 			return;
