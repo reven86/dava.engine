@@ -47,10 +47,10 @@ namespace DAVA
 	
 #if defined(__DAVAENGINE_WIN32__)
 
-static HDC hDC;
-static HGLRC hRC;
-static HWND hWnd;
-static HINSTANCE hInstance;
+static HDC hDC = nullptr;
+static HGLRC hRC = nullptr;
+static HWND hWnd = nullptr;
+static HINSTANCE hInstance = nullptr;
 
 bool RenderManager::Create(HINSTANCE _hInstance, HWND _hWnd)
 {
@@ -244,7 +244,11 @@ void RenderManager::MakeGLScreenShot()
 {
     Logger::FrameworkDebug("RenderManager::MakeGLScreenShot");
 #if defined(__DAVAENGINE_OPENGL__)
-    
+    if (!screenShotCallback)
+    {
+        Logger::FrameworkDebug("RenderManager::ScreenShot callback is empty.");
+        return;
+    }
 
     int32 width = frameBufferWidth;
     int32 height = frameBufferHeight;
@@ -264,10 +268,7 @@ void RenderManager::MakeGLScreenShot()
 
     image->FlipVertical();
 
-    if(screenShotCallback)
-    {
-		(*screenShotCallback)(image);
-    }
+	(*screenShotCallback)(image);
 	SafeRelease(image);
     
 #endif //#if defined(__DAVAENGINE_OPENGL__)
