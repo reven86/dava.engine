@@ -43,7 +43,7 @@ class File;
 class TextureDescriptor 
 {
 	static const String DESCRIPTOR_EXTENSION;
-	static const String SOURCEFILE_EXTENSION;
+	static const String LIGHTMAP_EXTENSION;
 
     static const int32 DATE_BUFFER_SIZE = 20;
     static const int32 LINE_SIZE = 256;
@@ -163,11 +163,11 @@ public:
     bool GetGenerateMipMaps() const;
 	bool IsCubeMap() const;
 
-    FilePath GetSourceTexturePathname() const; 
+    FilePath GetSourceTexturePathname() const;
 
 	static const String & GetDescriptorExtension();
-    static const String & GetSourceTextureExtension();
-	static String GetSupportedTextureExtensions();
+    static const String & GetLightmapTextureExtension();
+	static bool IsSupportedTextureExtension(const String& extension);
 
     static FilePath GetDescriptorPathname(const FilePath &texturePathname);
     

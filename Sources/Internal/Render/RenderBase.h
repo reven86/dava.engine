@@ -186,10 +186,10 @@ enum eGPUFamily
     GPU_TEGRA,
     GPU_MALI,
     GPU_ADRENO,
-    GPU_PNG,
+    GPU_ORIGIN,
     GPU_FAMILY_COUNT,
     
-    GPU_DEVICE_COUNT = GPU_PNG,
+    GPU_DEVICE_COUNT = GPU_ORIGIN,
     GPU_INVALID = 0x07
 };
     

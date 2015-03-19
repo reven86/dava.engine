@@ -122,6 +122,7 @@
 #include <vector>
 #include <algorithm>
 #include <set>
+#include <unordered_set>
 #include <stack>
 #include <queue>
 #include <array>
@@ -206,6 +207,13 @@ public:
     Vector() : std::vector< E >() {}
 };
 template < class E > class Set : public std::set< E > {};
+
+template <  class _Key,
+            class _Hash = std::hash<_Key>,
+            class _Pred = std::equal_to<_Key>,
+            class _Alloc = std::allocator<_Key> > 
+class UnorderedSet : public std::unordered_set <_Key, _Hash, _Pred, _Alloc> {};
+
 template < class E > class Deque : public std::deque< E > {};
 
 template<	class _Kty,

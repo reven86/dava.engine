@@ -112,7 +112,7 @@ void TextureDescriptor::Compression::Clear()
     
 //================   TextureDescriptor  ===================
 const String TextureDescriptor::DESCRIPTOR_EXTENSION = ".tex";
-const String TextureDescriptor::SOURCEFILE_EXTENSION = ".png";
+const String TextureDescriptor::LIGHTMAP_EXTENSION = ".png";
 
 
 TextureDescriptor::TextureDescriptor()
@@ -163,7 +163,7 @@ void TextureDescriptor::SetDefaultValues()
 		compression[i].Clear();
 	}
 
-	exportedAsGpuFamily = GPU_PNG;
+	exportedAsGpuFamily = GPU_ORIGIN;
 }
 
 void TextureDescriptor::SetQualityGroup(const FastName &group)
@@ -498,12 +498,7 @@ bool TextureDescriptor::GetGenerateMipMaps() const
 
 FilePath TextureDescriptor::GetSourceTexturePathname() const
 {
-    if(pathname.IsEmpty())
-    {
-        return FilePath();
-    }
-
-    return FilePath::CreateWithNewExtension(pathname, GetSourceTextureExtension());
+    return sourcePathname;
 }
 
 FilePath TextureDescriptor::GetDescriptorPathname(const FilePath &texturePathname)
@@ -524,9 +519,9 @@ const String & TextureDescriptor::GetDescriptorExtension()
     return DESCRIPTOR_EXTENSION;
 }
     
-const String & TextureDescriptor::GetSourceTextureExtension()
+const String & TextureDescriptor::GetLightmapTextureExtension()
 {
-    return SOURCEFILE_EXTENSION;
+    return LIGHTMAP_EXTENSION;
 }
     
     
@@ -536,9 +531,14 @@ const TextureDescriptor::Compression * TextureDescriptor::GetCompressionParams(e
     return &compression[gpuFamily];
 }
 
-String TextureDescriptor::GetSupportedTextureExtensions()
+bool TextureDescriptor::IsSupportedTextureExtension(const String& extension)
 {
-    return String(".png;.pvr;.dxt;") + TextureDescriptor::GetDescriptorExtension();
+    if (GPUFamilyDescriptor::IsExtensionSupported(extension))
+        return true;
+    else if (CompareCaseInsensitive(TextureDescriptor::GetDescriptorExtension(), extension) == 0)
+        return true;
+    else
+        return false;
 }
 
 bool TextureDescriptor::IsCompressedFile() const

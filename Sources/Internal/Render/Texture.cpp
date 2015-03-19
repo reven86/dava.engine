@@ -107,6 +107,8 @@ static DAVA::String FACE_NAME_SUFFIX[] =
     DAVA::String("_pz"),
     DAVA::String("_nz")
 };
+
+const DAVA::String FACE_FILE_EXTENSION = ".png";
 	
 class TextureMemoryUsageInfo
 {
@@ -154,7 +156,7 @@ public:
 	int	fboMemoryUsed;
 };
 
-eGPUFamily Texture::defaultGPU = GPU_PNG;
+eGPUFamily Texture::defaultGPU = GPU_ORIGIN;
     
 static TextureMemoryUsageInfo texMemoryUsageInfo;
 	
@@ -200,7 +202,7 @@ Texture::Texture()
 :	id(0)
 ,	width(0)
 ,	height(0)
-,	loadedAsFile(GPU_PNG)
+,	loadedAsFile(GPU_ORIGIN)
 ,	state(STATE_INVALID)
 ,	textureType(Texture::TEXTURE_2D)
 ,	depthFormat(DEPTH_NONE)
@@ -631,7 +633,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 
         ImageSystem::Instance()->Load(imagePathname, *images, baseMipMap);
         ImageSystem::Instance()->EnsurePowerOf2Images(*images);
-        if(images->size() == 1 && gpu == GPU_PNG && texDescriptor->GetGenerateMipMaps())
+        if(images->size() == 1 && gpu == GPU_ORIGIN && texDescriptor->GetGenerateMipMaps())
         {
             Image * img = *images->begin();
             *images = img->CreateMipMapsImages(texDescriptor->dataSettings.GetIsNormalMap());
@@ -1276,14 +1278,13 @@ void Texture::GenerateCubeFaceNames(const FilePath & filePath, const Vector<Stri
 	faceNames.clear();
 	
 	String fileNameWithoutExtension = filePath.GetBasename();
-	String extension = filePath.GetExtension();
 		
 	for(size_t i = 0; i < faceNameSuffixes.size(); ++i)
 	{
 		DAVA::FilePath faceFilePath = filePath;
 		faceFilePath.ReplaceFilename(fileNameWithoutExtension +
 									 faceNameSuffixes[i] +
-									 GPUFamilyDescriptor::GetFilenamePostfix(GPU_INVALID, FORMAT_INVALID));
+                                     GetDefaultFaceExtension());
 			
 		faceNames.push_back(faceFilePath);
 	}
@@ -1346,6 +1347,11 @@ int32 Texture::GetBaseMipMap() const
     }
 
     return 0;
+}
+
+const String& Texture::GetDefaultFaceExtension()
+{
+    return FACE_FILE_EXTENSION;
 }
 
 };

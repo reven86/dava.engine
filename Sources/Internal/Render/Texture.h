@@ -267,6 +267,8 @@ public:
 	PixelFormat GetFormat() const;
 
     static void SetPixelization(bool value);
+    static const DAVA::String& GetDefaultFaceExtension();
+
 protected:
     
     void ReleaseTextureData();

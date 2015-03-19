@@ -58,31 +58,35 @@ public:
     static void SetupGPUParameters();
     static const Map<PixelFormat, String> & GetAvailableFormatsForGpu(eGPUFamily gpuFamily);
 
-    static eGPUFamily GetGPUForPathname(const FilePath &pathname);
     static FilePath CreatePathnameForGPU(const TextureDescriptor *descriptor, const eGPUFamily gpuFamily);
     static FilePath CreatePathnameForGPU(const FilePath & pathname, const eGPUFamily gpuFamily, const PixelFormat pixelFormat);
-    
-    
-    static String GetFilenamePostfix(const eGPUFamily gpuFamily, const PixelFormat pixelFormat);
 
     static const String & GetGPUName(const eGPUFamily gpuFamily);
     static const String & GetCompressedFileExtension(const eGPUFamily gpuFamily, const PixelFormat pixelFormat);
-    
+    static String GetFilenamePostfix(const eGPUFamily gpuFamily, const PixelFormat pixelFormat);
+
+    static eGPUFamily GetGPUForPathname(const FilePath &pathname);
     static eGPUFamily GetGPUByName(const String & name);
-	
-	static bool IsFormatSupported(const eGPUFamily gpu, const PixelFormat format);
-    
     static eGPUFamily ConvertValueToGPU(const int32 value);
+
     static bool IsGPUForDevice(const eGPUFamily gpu);
-    
+    static bool IsFormatSupported(const eGPUFamily gpu, const PixelFormat format);
+    static bool IsExtensionSupported(const String& extenstion);
+    static bool IsOriginFile(const FilePath& pathname);
+
 protected:
 
     static void SetupGPUFormats();
     static void SetupGPUPostfixes();
+    static void SetupGPUExtensions();
+    static void SetupOriginExtensions();
 
 protected:
     
     static GPUData gpuData[GPU_FAMILY_COUNT];
+    static UnorderedSet<String> originExtensions;
+    static UnorderedSet<String> gpuExtensions;
+    static String defaultOriginExt;
 };
     
 };

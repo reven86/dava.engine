@@ -287,7 +287,7 @@ void CubemapEditorDialog::LoadCubemap(const QString& path)
 			{
 				FilePath faceFilePath = filePath;
 				faceFilePath.ReplaceFilename(fileNameWithoutExtension +
-											 CubemapUtils::GetFaceNameSuffix(CubemapUtils::MapUIToFrameworkFace(i)) + "." +
+											 CubemapUtils::GetFaceNameSuffix(CubemapUtils::MapUIToFrameworkFace(i)) +
 											 CubemapUtils::GetDefaultFaceExtension());
 
 				bool faceLoadResult = LoadImageTo(faceFilePath.GetAbsolutePathname(), i, true);
@@ -330,7 +330,7 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
 		{
 			FilePath faceFilePath = filePath;
 			faceFilePath.ReplaceFilename(fileNameWithoutExtension +
-										 CubemapUtils::GetFaceNameSuffix(CubemapUtils::MapUIToFrameworkFace(i)) + "." +
+										 CubemapUtils::GetFaceNameSuffix(CubemapUtils::MapUIToFrameworkFace(i)) +
 										 CubemapUtils::GetDefaultFaceExtension());
 
 			DAVA::String targetFullPath = faceFilePath.GetAbsolutePathname().c_str();

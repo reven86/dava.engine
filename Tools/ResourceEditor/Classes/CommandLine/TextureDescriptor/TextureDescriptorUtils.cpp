@@ -132,7 +132,7 @@ void TextureDescriptorUtils::CreateDescriptorsForFolder(const FilePath &folderPa
 		{
 			CreateDescriptorsForFolder(pathname);
 		}
-        else if(pathname.IsEqualToExtension(".png"))
+        else if (GPUFamilyDescriptor::IsOriginFile(pathname))
         {
             CreateDescriptorIfNeed(pathname);
         }

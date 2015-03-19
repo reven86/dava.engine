@@ -32,6 +32,7 @@
 #include "Debug/DVAssert.h"
 #include "FileSystem/FilePath.h"
 #include "Utils/StringFormat.h"
+#include "Utils/Utils.h"
 #include "Render/TextureDescriptor.h"
 #include "Render/Texture.h"
 #include "Render/PixelFormatDescriptor.h"
@@ -58,6 +59,8 @@ void GPUFamilyDescriptor::SetupGPUParameters()
 {
     SetupGPUFormats();
     SetupGPUPostfixes();
+    SetupGPUExtensions();
+    SetupOriginExtensions();
 }
 
 void GPUFamilyDescriptor::SetupGPUFormats()
@@ -130,8 +133,8 @@ void GPUFamilyDescriptor::SetupGPUFormats()
 	gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGBA_EXPLICIT_ALPHA] = ".dds";
 	gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGBA_INTERPOLATED_ALPHA] = ".dds";
     
-    gpuData[GPU_PNG].availableFormats[FORMAT_RGBA8888] = ".png";
-    gpuData[GPU_PNG].availableFormats[FORMAT_A8] = ".png";
+    gpuData[GPU_ORIGIN].availableFormats[FORMAT_RGBA8888] = "";
+    gpuData[GPU_ORIGIN].availableFormats[FORMAT_A8] = "";
 
 }
 
@@ -142,7 +145,20 @@ void GPUFamilyDescriptor::SetupGPUPostfixes()
     gpuData[GPU_TEGRA].SetName("tegra");
     gpuData[GPU_MALI].SetName("mali");
     gpuData[GPU_ADRENO].SetName("adreno");
-    gpuData[GPU_PNG].SetName("");
+    gpuData[GPU_ORIGIN].SetName("");
+}
+
+void GPUFamilyDescriptor::SetupGPUExtensions()
+{
+    gpuExtensions.insert(".pvr");
+    gpuExtensions.insert(".dds");
+}
+
+void GPUFamilyDescriptor::SetupOriginExtensions()
+{
+    defaultOriginExt.assign(".png");
+    originExtensions.insert(".png");
+    originExtensions.insert(".tga");
 }
 
     
@@ -157,27 +173,26 @@ eGPUFamily GPUFamilyDescriptor::GetGPUForPathname(const FilePath &pathname)
 {
     const String filename = pathname.GetFilename();
     
-    for(int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
+    for(int32 i = 0; i < GPU_DEVICE_COUNT; ++i)
     {
-        eGPUFamily gpu = (eGPUFamily)i;
-        
-        if(gpu == GPU_PNG)
+        if (String::npos != filename.rfind(gpuData[i].prefix))
         {
-            const String ext = pathname.GetExtension();
-            if(ext == ".png")
-                return GPU_PNG;
-        }
-        else
-        {
-            if(String::npos != filename.rfind(gpuData[i].prefix))
-            {
-                return gpu;
-            }
+            return (eGPUFamily)i;
         }
     }
 
-    
-    return GPU_INVALID;
+    return IsOriginFile(pathname) ? GPU_ORIGIN : GPU_INVALID;
+}
+
+bool GPUFamilyDescriptor::IsOriginFile(const FilePath& pathname)
+{
+    const String ext = pathname.GetExtension();
+    for (auto origExt : originExtensions)
+    {
+        if (CompareCaseInsensitive(ext, origExt) == 0)
+            return true;
+    }
+    return false;
 }
  
 FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const TextureDescriptor *descriptor, const eGPUFamily gpuFamily)
@@ -199,8 +214,11 @@ FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const TextureDescriptor *desc
 	{
 		requestedFormat = (PixelFormat) descriptor->compression[gpuFamily].format;
 	}
-    
-    return CreatePathnameForGPU(descriptor->pathname, requestedGPU, requestedFormat);
+
+    if (requestedGPU == GPU_ORIGIN)
+        return descriptor->originName;
+    else
+        return CreatePathnameForGPU(descriptor->pathname, requestedGPU, requestedFormat);
 }
 
 FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const FilePath & pathname, const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
@@ -244,7 +262,7 @@ const String & GPUFamilyDescriptor::GetCompressedFileExtension(const eGPUFamily 
 {
     DVASSERT(0 <= gpuFamily && gpuFamily < GPU_FAMILY_COUNT);
 
-    Map<PixelFormat, String>::const_iterator format = gpuData[gpuFamily].availableFormats.find(pixelFormat);
+    auto format = gpuData[gpuFamily].availableFormats.find(pixelFormat);
     DVASSERT(format != gpuData[gpuFamily].availableFormats.end());
     
     return format->second;
@@ -254,33 +272,47 @@ const String & GPUFamilyDescriptor::GetCompressedFileExtension(const eGPUFamily 
 String GPUFamilyDescriptor::GetFilenamePostfix(const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
 {
     if(!IsGPUForDevice(gpuFamily) || pixelFormat == FORMAT_INVALID)
-        return ".png";
+        return defaultOriginExt;
 
-    DVASSERT(gpuFamily < GPU_FAMILY_COUNT);
-    
-    
-    Map<PixelFormat, String>::const_iterator format = gpuData[gpuFamily].availableFormats.find(pixelFormat);
-	if(format == gpuData[gpuFamily].availableFormats.end())
+    auto& gpuFormats = gpuData[gpuFamily].availableFormats;
+    auto formatFound = gpuFormats.find(pixelFormat);
+	if(formatFound == gpuFormats.end())
 	{
 		Logger::Error("[GPUFamilyDescriptor::GetFilenamePostfix: can't find format %s for gpu %s]", PixelFormatDescriptor::GetPixelFormatString(pixelFormat), gpuData[gpuFamily].name.c_str());
-		return ".png";
+        return defaultOriginExt;
 	}
 
-	String postfix = gpuData[gpuFamily].prefix + format->second;
-    return postfix;
+    return (gpuData[gpuFamily].prefix + formatFound->second);
 }
     
 eGPUFamily GPUFamilyDescriptor::ConvertValueToGPU(const int32 value)
 {
     if(value >= 0 && value < GPU_FAMILY_COUNT) return (eGPUFamily)value;
-    if(value == -1) return GPU_PNG;
+    if(value == -1) return GPU_ORIGIN;
 
     return GPU_INVALID;
 }
 
 bool GPUFamilyDescriptor::IsGPUForDevice(const eGPUFamily gpu)
 {
-    return (gpu >= 0 && gpu <= GPU_ADRENO);
+    return (gpu >= 0 && gpu < GPU_DEVICE_COUNT);
+}
+
+bool GPUFamilyDescriptor::IsExtensionSupported(const String& extenstion)
+{
+    for (auto origExt : originExtensions)
+    {
+        if (CompareCaseInsensitive(origExt, extenstion) == 0)
+            return true;
+    }
+
+    for (auto gpuExt : gpuExtensions)
+    {
+        if (CompareCaseInsensitive(gpuExt, extenstion) == 0)
+            return true;
+    }
+
+    return false;
 }
 
     
