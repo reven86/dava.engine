@@ -205,6 +205,8 @@ namespace DAVA
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         textFieldHolder->textField.userInteractionEnabled = YES;
         [textFieldHolder->textField becomeFirstResponder];
+       
+        UpdateStaticTexture();
     }
     
     void UITextFieldiPhone::CloseKeyboard()
@@ -212,6 +214,8 @@ namespace DAVA
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         textFieldHolder->textField.userInteractionEnabled = NO;
         [textFieldHolder->textField resignFirstResponder];
+        
+        UpdateStaticTexture();
     }
     
     void UITextFieldiPhone::ShowField()
@@ -435,7 +439,13 @@ namespace DAVA
                     ::UIImage* image = static_cast<::UIImage*>(imgPtr);
                     DVASSERT(image);
                     
+                    // set backgroud image into davaTextField control
                     WebViewControl::SetImageAsSpriteToControl(image, davaTextField);
+                }
+                else
+                {
+                    // set null background
+                    davaTextField.GetBackground()->SetSprite(nullptr, 0);
                 }
             }
         }
@@ -444,7 +454,7 @@ namespace DAVA
     void UITextFieldiPhone::SetRenderToTexture(bool value)
     {
         renderToTexture = value;
-        UpdateStaticTexture();
+        //UpdateStaticTexture();
     }
     
     bool UITextFieldiPhone::IsRenderToTexture() const
