@@ -36,9 +36,7 @@ QtWaitDialog::QtWaitDialog(QWidget *parent /*= 0*/)
     , ui(new Ui::QtWaitDialog)
     , wasCanceled(false)
 {
-    resize(400, 150);
-	setMinimumSize(400, 150);
-	setMaximumWidth(400);
+    setFixedSize(400, 150);
 	setWindowModality(Qt::WindowModal);
     
     ui->setupUi(this);
