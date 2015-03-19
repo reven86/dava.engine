@@ -38,11 +38,18 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	private Integer[] overridedGamepadKeys = null;
 	private ArrayList< Pair<Integer, Integer> > gamepadButtonsAxisMap = new ArrayList< Pair<Integer, Integer> >();
 	
+	private static volatile boolean isPaused = false;
+	
 	MOGAListener mogaListener = null;
 	
 	boolean[] pressedKeys = new boolean[MAX_KEYS]; // Use MAX_KEYS for mapping keycodes to native
 
 	public int lastDoubleActionIdx = -1;
+	
+	public static boolean isPaused()
+	{
+	    return isPaused;
+	}
 	
 	class DoubleTapListener extends GestureDetector.SimpleOnGestureListener{
 		JNIGLSurfaceView glview;
@@ -141,6 +148,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	
     @Override
     public void onPause() {
+        isPaused = true;
         Log.d(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onPause");
         setRenderMode(RENDERMODE_WHEN_DIRTY);
         queueEvent(new Runnable() {
@@ -163,6 +171,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
             }
         });
         setRenderMode(RENDERMODE_CONTINUOUSLY);
+        isPaused = false;
     };
 	
 	public class InputRunnable implements Runnable

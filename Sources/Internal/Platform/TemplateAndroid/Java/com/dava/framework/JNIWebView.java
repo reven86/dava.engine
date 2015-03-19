@@ -69,7 +69,6 @@ public class JNIWebView {
         public void restoreVisibility()
         {
             client.setVisible(this, client.isVisible());
-            updateViewRectPosition();
         }
     }
 
@@ -88,12 +87,13 @@ public class JNIWebView {
         int width = 0;
         int height = 0;
 
-        public boolean isVisible() {
+        public boolean isVisible()
+        {
             return isVisible;
         }
 
-        public void setVisible(WebViewWrapper view, boolean isVisible) {
-
+        public void setVisible(WebViewWrapper view, boolean isVisible)
+        {
             this.isVisible = isVisible;
             if (isVisible)
             {
@@ -103,7 +103,6 @@ public class JNIWebView {
             {
                 view.setVisibility(View.GONE);
             }
-            
         }
 
         public boolean isRenderToTexture() {

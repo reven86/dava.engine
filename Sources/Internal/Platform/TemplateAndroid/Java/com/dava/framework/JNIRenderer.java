@@ -22,7 +22,7 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 
     private native void nativeOnPauseView(boolean isLock);
 
-    private boolean isFirstFrameAfterDraw = false;
+    private int frameCounter = 0;
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -87,13 +87,14 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
         if (!JNIAssert.waitUserInputOnAssertDialog)
         {
             nativeRender();
-
-            if (isFirstFrameAfterDraw)
+            
+            ++frameCounter;
+            // Workaround wait 5 frames for render static text field to textures
+            // and transition from one screen to another during lock/unlock
+            // skip bad print screen texture
+            if (5 == frameCounter)
             {
-                isFirstFrameAfterDraw = false;
                 JNIActivity.GetActivity().HideSplashScreenView();
-                JNITextField.ShowVisibleTextFields();
-                JNIWebView.ShowVisibleWebViews();
             }
         }
     }
@@ -104,7 +105,7 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
                 .getSystemService(Context.POWER_SERVICE);
         nativeOnPauseView(isScreenLocked(pm));
 
-        isFirstFrameAfterDraw = true;
+        frameCounter = 0;
         Log.d(JNIConst.LOG_TAG, "Activity Render OnPause finish");
     }
 
@@ -121,18 +122,8 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 
     public void OnResume() {
         Log.d(JNIConst.LOG_TAG, "Activity Render OnResume start");
-
-        long startTime = System.nanoTime();
-
-        nativeOnResumeView();
-
-        long endTime = System.nanoTime();
-
-        long duration = (endTime - startTime) / 1000000L; // divide by 1000000
-                                                          // to get
-                                                          // milliseconds.
-        Log.d(JNIConst.LOG_TAG, "Activity Render OnResume finish time: " 
-                                                          + duration + "ms");
+        // do nothing
+        Log.d(JNIConst.LOG_TAG, "Activity Render OnResume finish");
     }
 
 }

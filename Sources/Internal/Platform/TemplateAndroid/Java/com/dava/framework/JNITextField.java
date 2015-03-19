@@ -43,6 +43,7 @@ import com.dava.framework.SoftKeyboardStateHelper.SoftKeyboardStateListener;
 
 public class JNITextField {
 
+    private static final int TEXT_FIELD_HIDE_FROM_SCREEN_STEP = 20000;
     private static final int TEXT_CHANGE_DELAY_REFRESH = 100;
     private static final int NO_ACTIVE_TEXTFIELD = -1;
     // Sum of required IME options for set to view
@@ -102,26 +103,34 @@ public class JNITextField {
 
         @Override
         public void run() {
-            TextFieldUpdateTexture(id, pixels, width, height);
+            if(!JNIGLSurfaceView.isPaused())
+            {
+                TextFieldUpdateTexture(id, pixels, width, height);
+            }
+            else
+            {
+                String name = Thread.currentThread().getName();
+                Log.e(TAG, "can't update static texture\n"
+                        + "for TextField(" + id +")\n"
+                        +"GLSurfaceView is paused\n"
+                        + "current thread name:"+name);
+            }
         }
     }
     
     static class TextField extends EditText
     {
-        final public int id;
-        boolean logicVisible = false; 
+        private final int id;
+        private boolean logicVisible = false; 
         
-        volatile boolean isRenderToTexture = false;
-        // fix for recursive call onDraw on render to texture
-        volatile boolean stopRecursion = false;
-        Bitmap bitmapCache = null;
+        private volatile boolean isRenderToTexture = false;
         
-        int pixels[] = null;
-        int width = 0;
-        int height = 0;
+        private int pixels[] = null;
+        private int width = 0;
+        private int height = 0;
         
-        int viewWidth;
-        int viewHeight;
+        private int viewWidth;
+        private int viewHeight;
         
         TextField(int id, Context ctx, int startWidth, int startHeight)
         {
@@ -134,7 +143,23 @@ public class JNITextField {
         public void setRenderToTexture(boolean value)
         {
             isRenderToTexture = value;
-            restoreVisibility();
+            
+            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)getLayoutParams();
+            if (isRenderToTexture)
+            {
+                if (params.leftMargin < JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP)
+                {
+                    params.leftMargin += JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP;
+                }
+            } else
+            {
+                if (params.leftMargin >= JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP)
+                {
+                    params.leftMargin -= JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP;
+                }
+            }
+            setLayoutParams(params);
+
             updateStaticTexture();
         }
 
@@ -169,21 +194,8 @@ public class JNITextField {
             }
             return super.onKeyPreIme(keyCode, event);
         }
-        
-        @Override
-        public void onDraw(Canvas canvas) {
-            super.onDraw(canvas);
-
-            if (isRenderToTexture && !stopRecursion) {
-                stopRecursion = true;
-                renderToTexture();
-                stopRecursion = false;
-            }
-        }
 
         private void renderToTexture() {
-            assert true == stopRecursion;
-            
             // if we do not create bitmap do not recycle it
             boolean destroyBitmap = false;
             
@@ -237,51 +249,16 @@ public class JNITextField {
         }
         
         public void setVisible(boolean value) {
-            // remember visibility to restore recreate view later
+            // remember visibility to restore after unlock screen
             logicVisible = value;
             
-            int currentVisibility = getVisibility();
-
-            if (isRenderToTexture)
+            if (logicVisible)
             {
-                switch (currentVisibility) {
-                case View.GONE:
-                    setVisibility(View.INVISIBLE);
-                    break;
-                case View.VISIBLE:
-                    // Workaround android need change visibility in two step
-                    setVisibility(View.GONE);
-                    setVisibility(View.INVISIBLE);
-                    break;
-                case View.INVISIBLE:
-                    break;
-                default:
-                    break;
-                }
-            } 
+                setVisibility(View.VISIBLE);
+            }
             else
             {
-                switch (currentVisibility) {
-                case View.GONE:
-                    setVisibility(View.VISIBLE);
-                    break;
-                case View.VISIBLE:
-                    if (!logicVisible)
-                    {
-                        setVisibility(View.GONE);
-                    }
-                    break;
-                case View.INVISIBLE:
-                    if (logicVisible)
-                    {
-                        // Workaround android need change visibility in two step
-                        setVisibility(View.GONE);
-                        setVisibility(View.VISIBLE);
-                    }
-                    break;
-                default:
-                    break;
-                }
+                setVisibility(View.GONE);
             }
         }
         
@@ -306,18 +283,13 @@ public class JNITextField {
             }
             else
             {
-                if (!isRenderToTexture)
+                if (isRenderToTexture)
+                {
+                    renderToTexture();
+                }
+                else
                 {
                     clearStaticTexture();
-                }
-                if(!stopRecursion)
-                {
-                    if (isRenderToTexture)
-                    {
-                        stopRecursion = true;
-                        renderToTexture();
-                        stopRecursion = false;
-                    }
                 }
             }
         }
@@ -782,6 +754,10 @@ public class JNITextField {
                                     text.updateStaticTexture();
                                 }
                             };
+                            // first call update static ASAP
+                            handler.post(runnable);
+                            // second call it with delay for 
+                            // fix some incorrect old text from cache
                             handler.postDelayed(runnable, JNITextField.TEXT_CHANGE_DELAY_REFRESH);
                         } catch (UnsupportedEncodingException e) {
                             Log.e(JNIConst.LOG_TAG, e.getMessage());
@@ -819,6 +795,17 @@ public class JNITextField {
                 FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) editText
                         .getLayoutParams();
                 params.leftMargin = Math.round(x);
+
+                int xRoundPos = (int)(x + 0.5f);
+
+                if (editText.isRenderToTexture())
+                {
+                    params.leftMargin = xRoundPos + JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP;
+                } else
+                {
+                    params.leftMargin = xRoundPos;
+                }
+                
                 params.topMargin = Math.round(y);
                 params.width = Math.round(dx);
                 params.height = Math.round(dy);

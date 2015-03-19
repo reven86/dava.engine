@@ -352,11 +352,16 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         super.onWindowFocusChanged(hasFocus);
         
     	if(hasFocus) {
+
+    	    
     		JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
 			HideNavigationBar(getWindow().getDecorView());
 			
 			glView.onResume();
-			
+			// next two calls can render views into textures
+			// we can call it only after GLSurfaceView.onResume
+			JNITextField.ShowVisibleTextFields();
+			JNIWebView.ShowVisibleWebViews();
     	} else {
     		JNITextField.DestroyKeyboardLayout(getWindowManager());
     		ShowSplashScreenView();
