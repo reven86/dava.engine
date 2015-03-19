@@ -1125,9 +1125,12 @@ public class JNITextField {
             @Override
             public void unsafeRun() {
                 final EditText text = GetTextField(id);
-                boolean result = text.requestFocus();
-                if (result == false) {
-                    Log.e(TAG, "OpenKeyboard can't took focus");
+                if(!text.hasFocus())
+                {
+                    boolean result = text.requestFocus();
+                    if (result == false) {
+                        Log.e(TAG, "OpenKeyboard can't took focus");
+                    }
                 }
             }
         });
@@ -1138,7 +1141,10 @@ public class JNITextField {
             @Override
             public void unsafeRun() {
                 final EditText text = GetTextField(id);
-                text.clearFocus();
+                if(text.hasFocus())
+                {
+                    text.clearFocus();
+                }
             }
         });
     }
