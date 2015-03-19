@@ -43,7 +43,6 @@ GameCore::~GameCore()
 
 void GameCore::OnAppStarted()
 {
-	RenderManager::Instance()->SetFPS(30);
     RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::LAYER_OCCLUSION_STATS, true);
 }
 

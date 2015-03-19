@@ -847,8 +847,29 @@ Qt::ItemFlags SceneTreeModel::flags ( const QModelIndex & index ) const
             return (f & ~Qt::ItemIsSelectable);
         }
     }
-    
+
     return f;
+}
+
+QVariant SceneTreeModel::data(const QModelIndex &_index, int role) const
+{
+    switch (role)
+    {
+    case Qt::BackgroundRole:
+        {
+            SceneTreeItem *item = GetItem(_index);
+            ParticleEmitter *emitter = SceneTreeItemParticleEmitter::GetEmitterStrict(item);
+            if (nullptr != emitter && emitter->shortEffect)
+            {
+                return QBrush(QColor(255, 0, 0, 20));
+            }
+        }
+        break;
+    default:
+        break;
+    }
+
+    return QStandardItemModel::data(_index, role);
 }
 
 
@@ -873,10 +894,8 @@ bool SceneTreeFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex 
 
 QVariant SceneTreeFilteringModel::data(const QModelIndex& _index, int role) const
 {
-    QVariant val = QSortFilterProxyModel::data(_index, role);
-
     if (!treeModel->IsFilterSet())
-        return val;
+        return QSortFilterProxyModel::data(_index, role);
 
     switch ( role )
     {
@@ -884,14 +903,16 @@ QVariant SceneTreeFilteringModel::data(const QModelIndex& _index, int role) cons
         {
             SceneTreeItem *item = treeModel->GetItem(mapToSource(_index));
             if (item->IsHighlighed())
-                val = QBrush(QColor(0, 255, 0, 20));
+            {
+                return QBrush(QColor(0, 255, 0, 20));
+            }
         }
         break;
     default:
         break;
     }
 
-    return val;
+    return QSortFilterProxyModel::data(_index, role);
 }
 
 
