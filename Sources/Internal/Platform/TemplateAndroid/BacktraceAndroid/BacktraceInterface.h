@@ -27,34 +27,49 @@
 =====================================================================================*/
 
 
-
-#include "DVAssertMessage.h"
-
-#if defined(__DAVAENGINE_ANDROID__)
-
-#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
-#include "ExternC/AndroidLayer.h"
-
-#include "AndroidCrashReport.h"
-#include "Debug/Backtrace.h"
-
-using namespace DAVA;
-
-bool DVAssertMessage::InnerShow(eModalType modalType, const char* message)
+#ifndef BACKTRACEINTERFACE_H_
+#define BACKTRACEINTERFACE_H_
+#include "Base/BaseTypes.h"
+#include "Base/Atomic.h"
+#include "Base/Function.h"
+namespace DAVA
 {
-    Logger::FrameworkDebug("DAVA BACKTRACE PRINTING");
-    PrintBackTraceToLog(Logger::LEVEL_ERROR);
-	JNI::JavaClass msg("com/dava/framework/JNIAssert");
-	auto showMessage = msg.GetStaticMethod<jboolean, jboolean, jstring>("Assert");
+// Can't use heap allocations inside crash handlers,
+// so interface is a bit weird because pointer polymorphism
+// not fully avaliable
+class MemoryMapIterator
+{
+public:
+    virtual ~MemoryMapIterator(){}
+    virtual bool Next() = 0;
+    virtual void ToBegin() = 0;
+    virtual const char * GetLib() const = 0;
+    virtual pointer_size GetAddrStart() const = 0;
+    virtual pointer_size GetAddrEnd() const = 0;
+};
+//not using Strings, in some places might be unsafe
+class MemoryMapInterface
+{
+public:
+    virtual ~MemoryMapInterface(){}
+    virtual bool Resolve(pointer_size addr,const char **,pointer_size *) const = 0;
 
-	JNIEnv *env = JNI::GetEnv();
-	jstring jStrMessage = env->NewStringUTF(message);
-    bool waitUserInput = (ALWAYS_MODAL == modalType);
-	jboolean breakExecution = showMessage(waitUserInput, jStrMessage);
-	env->DeleteLocalRef(jStrMessage);
+    //! Memory map has ONE preallocated iterator so this function will
+    //! always return the same iterator
+    virtual MemoryMapIterator & GetIterator() const = 0;
 
-	return breakExecution == JNI_FALSE? false : true;
-}
+};
 
-#endif
+class BacktraceInterface
+{
+public:
+    virtual ~BacktraceInterface(){}
+    virtual void BuildMemoryMap() = 0;
+    virtual const MemoryMapInterface * GetMemoryMap() const = 0 ;
+    //handler safe function
+    virtual void Backtrace(Function<void (pointer_size)> onFrame, void * context = NULL , void * siginfo = NULL) = 0;
+	virtual void PrintableBacktrace(Function<void (pointer_size,const char * str)> onFrame,  void * context = NULL , void * siginfo = NULL) = 0;
+};
+
+} /* namespace DAVA */
+#endif /* BACKTRACEINTERFACE_H_ */

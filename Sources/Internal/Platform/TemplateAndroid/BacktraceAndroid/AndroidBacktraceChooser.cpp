@@ -26,35 +26,48 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "AndroidBacktraceChooser.h"
 
-
-#include "DVAssertMessage.h"
-
-#if defined(__DAVAENGINE_ANDROID__)
-
-#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
-#include "ExternC/AndroidLayer.h"
-
-#include "AndroidCrashReport.h"
-#include "Debug/Backtrace.h"
-
-using namespace DAVA;
-
-bool DVAssertMessage::InnerShow(eModalType modalType, const char* message)
+namespace DAVA 
 {
-    Logger::FrameworkDebug("DAVA BACKTRACE PRINTING");
-    PrintBackTraceToLog(Logger::LEVEL_ERROR);
-	JNI::JavaClass msg("com/dava/framework/JNIAssert");
-	auto showMessage = msg.GetStaticMethod<jboolean, jboolean, jstring>("Assert");
+BacktraceInterface * AndroidBacktraceChooser::backtraceProvider = nullptr;
+BacktraceInterface* AndroidBacktraceChooser::ChooseBacktraceAndroid()
+{
+    
 
-	JNIEnv *env = JNI::GetEnv();
-	jstring jStrMessage = env->NewStringUTF(message);
-    bool waitUserInput = (ALWAYS_MODAL == modalType);
-	jboolean breakExecution = showMessage(waitUserInput, jStrMessage);
-	env->DeleteLocalRef(jStrMessage);
+    // try to create at least one bactrace provider
+    if(backtraceProvider == nullptr)
+    {
+        backtraceProvider = BacktraceCorkscrewImpl::Load(); 
+        #if defined(__arm__)
+        if(backtraceProvider == nullptr)
+        {
+            backtraceProvider = BacktraceUnwindImpl::Load();
+            if(backtraceProvider == nullptr)
+            {
+                return nullptr;
+            }
+        }
+        #endif
+        if(backtraceProvider == nullptr)
+        {
+            return nullptr;
+        }
+    
+        // building memory memp of process at this point
+        // all important libs are likely to be loaded at this point
+        backtraceProvider->BuildMemoryMap();
+        return backtraceProvider;
+    }
+    else
+    {
+        return backtraceProvider;
+    }
 
-	return breakExecution == JNI_FALSE? false : true;
+
 }
-
-#endif
+void AndroidBacktraceChooser::ReleaseBacktraceInterface()
+{
+	SafeDelete(backtraceProvider);
+}
+}

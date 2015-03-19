@@ -26,35 +26,46 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_ANDROID_CRASH_UTILITY_H__
+#define __DAVAENGINE_ANDROID_CRASH_UTILITY_H__
 
-
-#include "DVAssertMessage.h"
-
+#include "Base/BaseTypes.h"
 #if defined(__DAVAENGINE_ANDROID__)
 
-#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
-#include "ExternC/AndroidLayer.h"
+//__arm__ should only be defined when compiling on arm32
+#if defined(__arm__)
 
-#include "AndroidCrashReport.h"
-#include "Debug/Backtrace.h"
-
-using namespace DAVA;
-
-bool DVAssertMessage::InnerShow(eModalType modalType, const char* message)
+#include "libunwind_stab.h"
+namespace DAVA
 {
-    Logger::FrameworkDebug("DAVA BACKTRACE PRINTING");
-    PrintBackTraceToLog(Logger::LEVEL_ERROR);
-	JNI::JavaClass msg("com/dava/framework/JNIAssert");
-	auto showMessage = msg.GetStaticMethod<jboolean, jboolean, jstring>("Assert");
 
-	JNIEnv *env = JNI::GetEnv();
-	jstring jStrMessage = env->NewStringUTF(message);
-    bool waitUserInput = (ALWAYS_MODAL == modalType);
-	jboolean breakExecution = showMessage(waitUserInput, jStrMessage);
-	env->DeleteLocalRef(jStrMessage);
+///! On ARM context returened by kernel to signal handler is not the same data
+///! structure as context used by libunwind so we need to convert
+void ConvertContextARM(ucontext_t * from,unw_context_t * to);
 
-	return breakExecution == JNI_FALSE? false : true;
+
+DAVA::int32 GetAndroidBacktrace(unw_context_t * context, unw_word_t * outIpStack, DAVA::int32 maxSize);
+
+DAVA::int32 GetAndroidBacktrace(unw_word_t * outIpStack, DAVA::int32 maxSize);
+
+void PrintAndroidBacktrace();
+ 
+//uses added to libunwind functionality to create memory map of
+// process
+class UnwindProcMaps
+{
+public:
+    UnwindProcMaps();
+    bool  FindLocalAddresInfo(unw_word_t addres, char ** libName, unw_word_t * addresInLib);
+    ~UnwindProcMaps();
+    
+private:
+    unw_map_cursor mapCursor;
+    DAVA::List<unw_map_t> processMap;
+    
+};
+
 }
-
-#endif
+#endif //#if defined(__arm__)
+#endif //#if defined(__DAVAENGINE_ANDROID__)
+#endif /* #ifndef __DAVAENGINE_ANDROID_CRASH_UTILITY_H__ */

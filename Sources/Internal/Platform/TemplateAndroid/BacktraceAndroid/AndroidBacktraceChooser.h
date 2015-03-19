@@ -28,33 +28,22 @@
 
 
 
-#include "DVAssertMessage.h"
+#ifndef __DAVAENGINE_ANDROID_BACKTRACE_CHOOSER_H__
+#define __DAVAENGINE_ANDROID_BACKTRACE_CHOOSER_H__
+#include "BacktraceUnwindImpl.h"
+#include "BacktraceCorkscrewImpl.h"
 
-#if defined(__DAVAENGINE_ANDROID__)
-
-#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
-#include "ExternC/AndroidLayer.h"
-
-#include "AndroidCrashReport.h"
-#include "Debug/Backtrace.h"
-
-using namespace DAVA;
-
-bool DVAssertMessage::InnerShow(eModalType modalType, const char* message)
+namespace DAVA 
 {
-    Logger::FrameworkDebug("DAVA BACKTRACE PRINTING");
-    PrintBackTraceToLog(Logger::LEVEL_ERROR);
-	JNI::JavaClass msg("com/dava/framework/JNIAssert");
-	auto showMessage = msg.GetStaticMethod<jboolean, jboolean, jstring>("Assert");
+class AndroidBacktraceChooser
+{
+public:
+    static BacktraceInterface* ChooseBacktraceAndroid();
+    static void ReleaseBacktraceInterface();
+private:
+    static BacktraceInterface * backtraceProvider;
+};
 
-	JNIEnv *env = JNI::GetEnv();
-	jstring jStrMessage = env->NewStringUTF(message);
-    bool waitUserInput = (ALWAYS_MODAL == modalType);
-	jboolean breakExecution = showMessage(waitUserInput, jStrMessage);
-	env->DeleteLocalRef(jStrMessage);
-
-	return breakExecution == JNI_FALSE? false : true;
 }
 
-#endif
+#endif //__DAVAENGINE_ANDROID_BACKTRACE_CHOOSER_H__

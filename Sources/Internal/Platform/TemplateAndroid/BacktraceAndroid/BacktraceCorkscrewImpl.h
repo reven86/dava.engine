@@ -26,72 +26,61 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef BACKTRACECORKSCREWIMPL_H_
+#define BACKTRACECORKSCREWIMPL_H_
 
-
-#ifndef __DAVAENGINE_ANDROID_CRASH_REPORT_H__
-#define __DAVAENGINE_ANDROID_CRASH_REPORT_H__
-
-#include "Base/BaseTypes.h"
-#if defined(__DAVAENGINE_ANDROID__)
-
-#include "Platform/TemplateAndroid/JniHelpers.h"
-#include <signal.h>
-
+#include "BacktraceInterface.h"
+#include "libcorkscrew_stab.h"
 namespace DAVA
 {
-
-class File;
-class JniCrashReporter
+class MemoryMapCorkscrewIterator:public MemoryMapIterator
 {
 public:
-    struct CrashStep
-    {
-        const char * module;
-        const char * function;
-        int32 fileLine;
-    };
-    JniCrashReporter(JNIEnv* env = nullptr);
-    void ThrowJavaExpetion(const Vector<CrashStep>& chashSteps);
-       
-private:
-    static jclass classID;
-    static jclass stringID;
-    static jmethodID mid;
-  
+    MemoryMapCorkscrewIterator(map_info_t *map_info);
+    virtual ~MemoryMapCorkscrewIterator(){}
+    bool Next() override;
+    void ToBegin() override;
+    const char * GetLib() const override;
+    pointer_size GetAddrStart() const override;
+    pointer_size GetAddrEnd() const override;
+protected:
+    map_info_t *map_info;
+    map_info_t *now;
 };
-    
-class AndroidCrashReport
+
+class MemoryMapCorkscrewInterface: public MemoryMapInterface
 {
 public:
-    static void Init(JNIEnv* env);
-    static void ThrowExeption(const String& message);
-    static void Unload();
+    MemoryMapCorkscrewInterface();
+    virtual ~MemoryMapCorkscrewInterface();
+    bool Resolve(pointer_size addr,const char **,pointer_size *) const override;
+    MemoryMapIterator & GetIterator() const override;
+    map_info_t* GetMapInfo(){return map_info;}
+protected:
 
-private:
-    static void SignalHandler(int signal, siginfo_t *info, void *uapVoid);
-    static void OnStackFrame(pointer_size addr);
-    static JniCrashReporter::CrashStep FormatTeamcityIdStep(int32 addr);
-private:
-    static stack_t s_sigstk;
-    
-    //pre allocated here to be used inside signal handler
-    static Vector<JniCrashReporter::CrashStep> crashSteps;
-    static const size_t functionStringSize = 30;
-    static const size_t maxStackSize = 256;
-    
-    static const char * teamcityBuildNamePrototype;
-    static const char * teamcityBuildNamePrototypeEnd;
-    static const char * teamcityBuildNamePrototypePlaceHolder;
-    
-    static char * teamcityBuildName;
-    static char functionString[maxStackSize][functionStringSize];
-    static JniCrashReporter * crashReporter;
+    map_info_t *map_info;
+    mutable MemoryMapCorkscrewIterator iterator;
 };
 
+class BacktraceCorkscrewImpl: public DAVA::BacktraceInterface
+{
+public:
 
+    virtual ~BacktraceCorkscrewImpl();
+    static  BacktraceCorkscrewImpl* Load();
+    void BuildMemoryMap() override;
+    const MemoryMapInterface * GetMemoryMap() const override;
+    //handler safe function
+    void Backtrace(Function<void(pointer_size)> onFrame,
+            void * context = NULL, void * siginfo = NULL) override;
+            
+    void PrintableBacktrace(Function<void (pointer_size,const char * str)> onFrame, 
+            void * context = NULL , void * siginfo = NULL) override;
+protected:
+    BacktraceCorkscrewImpl();
+    bool loaded;
+    MemoryMapCorkscrewInterface * processMap;
+};
 
-}
-
-#endif //#if defined(__DAVAENGINE_ANDROID__)
-
-#endif /* #ifndef __DAVAENGINE_ANDROID_CRASH_HANDLER_H__ */
+} /* namespace DAVA */
+#endif /* BACKTRACECORKSCREWIMPL_H_ */
