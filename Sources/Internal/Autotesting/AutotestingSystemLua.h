@@ -182,6 +182,7 @@ protected:
 #endif //SWIG
 private:
     void* memoryPool;
+    void* memorySpace;
     int resumeTestFunctionRef;
 };
 

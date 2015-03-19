@@ -32,18 +32,18 @@ static const int32 LUA_MEMORY_POOL_SIZE = 1024 * 1024 * 10;
 
 void* lua_allocator(void *ud, void *ptr, size_t osize, size_t nsize)
 {
-    if (nsize == 0)
-    {
-        mspace_free(ud, ptr);
-        return NULL;
-    } else {
-        void* mem = mspace_realloc(ud, ptr, nsize);
-        DVASSERT(mem);
-        return mem;
-    }
+	if (nsize == 0)
+	{
+		mspace_free(ud, ptr);
+		return NULL;
+	} else {
+		void* mem = mspace_realloc(ud, ptr, nsize);
+		DVASSERT(mem);
+		return mem;
+	}
 }
 
-AutotestingSystemLua::AutotestingSystemLua() : delegate(NULL), luaState(NULL), memoryPool(NULL)
+AutotestingSystemLua::AutotestingSystemLua() : delegate(NULL), luaState(NULL), memoryPool(NULL), memorySpace(NULL)
 {
 	autotestingLocalizationSystem = new LocalizationSystem();
 }
@@ -59,7 +59,8 @@ AutotestingSystemLua::~AutotestingSystemLua()
 	lua_close(luaState);
 	luaState = NULL;
     
-    destroy_mspace(memoryPool);
+	destroy_mspace(memorySpace);
+	free(memoryPool);
 }
 
 void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
@@ -80,9 +81,11 @@ void AutotestingSystemLua::InitFromFile(const String &luaFilePath)
 	autotestingLocalizationSystem->SetCurrentLocale(LocalizationSystem::Instance()->GetCurrentLocale());
 	autotestingLocalizationSystem->Init();
 
-    memoryPool = create_mspace(LUA_MEMORY_POOL_SIZE, 0);
-    mspace_set_footprint_limit(memoryPool, LUA_MEMORY_POOL_SIZE);
-    luaState = lua_newstate(lua_allocator, memoryPool);
+	memoryPool = malloc(LUA_MEMORY_POOL_SIZE);
+	memset(memoryPool, 0, LUA_MEMORY_POOL_SIZE);
+	memorySpace = create_mspace_with_base(memoryPool, LUA_MEMORY_POOL_SIZE, 0);
+	mspace_set_footprint_limit(memorySpace, LUA_MEMORY_POOL_SIZE);
+	luaState = lua_newstate(lua_allocator, memorySpace);
 	luaL_openlibs(luaState);
 
 	lua_pushcfunction(luaState, &AutotestingSystemLua::Print);
@@ -101,21 +104,21 @@ void AutotestingSystemLua::InitFromFile(const String &luaFilePath)
 		AutotestingSystem::Instance()->OnError("Initialization of 'autotesting_api.lua' was failed.");
 	}
 
-    lua_getglobal(luaState, "SetPackagePath");
-    lua_pushstring(luaState, "~res:/Autotesting/");
-    if (lua_pcall(luaState, 1, 1, 0))
-    {
-        const char* err = lua_tostring(luaState, -1);
-        AutotestingSystem::Instance()->OnError(Format("AutotestingSystemLua::InitFromFile SetPackagePath error: %s", err));
-    }
+	lua_getglobal(luaState, "SetPackagePath");
+	lua_pushstring(luaState, "~res:/Autotesting/");
+	if (lua_pcall(luaState, 1, 1, 0))
+	{
+		const char* err = lua_tostring(luaState, -1);
+		AutotestingSystem::Instance()->OnError(Format("AutotestingSystemLua::InitFromFile SetPackagePath error: %s", err));
+	}
 
 	if (!LoadScriptFromFile(luaFilePath))
 	{
 		AutotestingSystem::Instance()->OnError("Load of '" + luaFilePath + "' was failed failed");
 	}
 
-    lua_getglobal(luaState, "ResumeTest");
-    resumeTestFunctionRef = luaL_ref(luaState, LUA_REGISTRYINDEX);
+	lua_getglobal(luaState, "ResumeTest");
+	resumeTestFunctionRef = luaL_ref(luaState, LUA_REGISTRYINDEX);
 
 	AutotestingSystem::Instance()->OnInit();
 	String baseName = FilePath(luaFilePath).GetBasename();
@@ -291,12 +294,12 @@ String AutotestingSystemLua::GetTestParameter(const String &device)
 
 void AutotestingSystemLua::Update(float32 timeElapsed)
 {
-    lua_rawgeti(luaState, LUA_REGISTRYINDEX, resumeTestFunctionRef);
-    if (lua_pcall(luaState, 0, 1, 0))
-    {
-        const char* err = lua_tostring(luaState, -1);
-        Logger::Error("AutotestingSystemLua::Update error: %s", err);
-    }
+	lua_rawgeti(luaState, LUA_REGISTRYINDEX, resumeTestFunctionRef);
+	if (lua_pcall(luaState, 0, 1, 0))
+	{
+		const char* err = lua_tostring(luaState, -1);
+		Logger::Error("AutotestingSystemLua::Update error: %s", err);
+	}
 
 }
 
@@ -324,13 +327,13 @@ void AutotestingSystemLua::OnTestFinished()
 
 size_t AutotestingSystemLua::GetAllocatedMemory() const
 {
-    const mallinfo& info = mspace_mallinfo(memoryPool);
-    return info.uordblks;
+	const mallinfo& info = mspace_mallinfo(memorySpace);
+	return info.uordblks;
 }
-    
+
 size_t AutotestingSystemLua::GetUsedMemory() const
 {
-    return lua_gc(luaState, LUA_GCCOUNT, 0) * 1024 + lua_gc(luaState, LUA_GCCOUNTB, 0);
+	return lua_gc(luaState, LUA_GCCOUNT, 0) * 1024 + lua_gc(luaState, LUA_GCCOUNTB, 0);
 }
 
 void AutotestingSystemLua::OnStepStart(const String &stepName)
@@ -362,7 +365,11 @@ bool AutotestingSystemLua::SaveKeyedArchiveToDB(const String &archiveName, Keyed
 	return AutotestingDB::Instance()->SaveKeyedArchiveToDB(archiveName, archive, docName);
 }
 
-String AutotestingSystemLua::MakeScreenshot(bool toDb){	Logger::Info("AutotestingSystemLua::MakeScreenshot");	AutotestingSystem::Instance()->MakeScreenShot(toDb);	return AutotestingSystem::Instance()->GetScreenShotName();
+String AutotestingSystemLua::MakeScreenshot(bool toDb)
+{
+	Logger::Info("AutotestingSystemLua::MakeScreenshot");
+	AutotestingSystem::Instance()->MakeScreenShot(toDb);
+	return AutotestingSystem::Instance()->GetScreenShotName();
 }
 
 UIControl* AutotestingSystemLua::GetScreen()
