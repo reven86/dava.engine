@@ -1790,7 +1790,6 @@
       <Filter>Internal\UI\Components</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Autotesting\dlmalloc.h" />
-    <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\Autotesting\dlmalloc.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -3202,6 +3201,5 @@
       <Filter>Internal\UI\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\dlmalloc.c" />
-    <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\Autotesting\dlmalloc.c" />
   </ItemGroup>
 </Project>
