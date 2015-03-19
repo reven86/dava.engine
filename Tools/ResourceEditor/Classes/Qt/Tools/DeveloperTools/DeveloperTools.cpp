@@ -35,6 +35,8 @@
 #include "Scene3D/Components/SkeletonComponent.h"
 #include "Render/Highlevel/SkinnedMesh.h"
 
+#include "QtTools/SpyWidget/SpySearch/SpySearch.h"
+
 #include "DAVAEngine.h"
 using namespace DAVA;
 
@@ -160,4 +162,10 @@ void DeveloperTools::OnDebugCreateTestSkinnedObject()
 
     currentScene->Exec(new EntityAddCommand(entity, currentScene));
     currentScene->selectionSystem->SetSelection(entity);    
+}
+
+void DeveloperTools::OnSpyWidget()
+{
+    auto spySearch = new SpySearch(this);
+    spySearch->Show();
 }

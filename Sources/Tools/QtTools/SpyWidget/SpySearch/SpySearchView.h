@@ -14,9 +14,16 @@ class SpySearchView
 {
     Q_OBJECT
 
+signals:
+    void triggered( const QPoint& globalPos );
+
 public:
     explicit SpySearchView( QWidget *parent = nullptr );
     ~SpySearchView();
+
+private slots:
+    void OnSelectionStarted();
+    void OnSelectionDone();
 };
 
 
