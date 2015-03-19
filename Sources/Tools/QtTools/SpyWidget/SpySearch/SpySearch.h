@@ -22,8 +22,6 @@ public:
     SpySearchView *GetView() const;
     void Show();
 
-    bool eventFilter( QObject *obj, QEvent *e ) override;
-
 private slots:
     void trigger( const QPoint& pos );
 
