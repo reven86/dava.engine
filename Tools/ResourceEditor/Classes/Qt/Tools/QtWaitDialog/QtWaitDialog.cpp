@@ -38,7 +38,7 @@ QtWaitDialog::QtWaitDialog(QWidget *parent /*= 0*/)
 {
     setFixedSize(400, 150);
 	setWindowModality(Qt::WindowModal);
-    
+
     ui->setupUi(this);
 
 	QPalette pal = palette();
