@@ -57,7 +57,7 @@ class ImageSplitterDialogNormal: public QDialog
     };
     
 public:
-    explicit ImageSplitterDialogNormal(QWidget *parent = 0);
+    explicit ImageSplitterDialogNormal(QWidget *parent = nullptr);
     ~ImageSplitterDialogNormal();
 
 private slots:

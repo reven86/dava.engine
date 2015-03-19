@@ -54,7 +54,7 @@ ImageSplitterDialogNormal::ImageSplitterDialogNormal(QWidget *parent) :
         imageArreas[i]->SetRequestedImageFormat(DAVA::FORMAT_RGBA8888);
     }
     
-    connect(ui->saveBtn, SIGNAL(clicked()), SLOT(OnSaveClicked()));
+    connect(ui->saveBtn, &QPushButton::clicked, this, &ImageSplitterDialogNormal::OnSaveClicked);
 }
 
 ImageSplitterDialogNormal::~ImageSplitterDialogNormal()
@@ -72,18 +72,15 @@ void ImageSplitterDialogNormal::OnSaveClicked()
         return;
     }
     
-    for(auto i = 0; i < imageArreas.size(); ++i)
+    for(auto i = 1; i < imageArreas.size(); ++i)
     {
         auto image = imageArreas[i]->GetImage();
-        if(i)
+        auto prevImage = imageArreas[i-1]->GetImage();
+        
+        if((image->GetWidth() != prevImage->GetWidth()) || (image->GetHeight() != prevImage->GetHeight()))
         {
-            auto prevImage = imageArreas[i-1]->GetImage();
-            
-            if((image->GetWidth() != prevImage->GetWidth()) || (image->GetHeight() != prevImage->GetHeight()))
-            {
-                QMessageBox::warning(this, "Save error", DAVA::Format("Images [%d] and [%d] have different size", i-1, i).c_str(), QMessageBox::Ok);
-                return;
-            }
+            QMessageBox::warning(this, "Save error", QString( "Images [%1] and [%2] have different size" ).arg(i-1).arg(i), QMessageBox::Ok);
+            return;
         }
     }
 

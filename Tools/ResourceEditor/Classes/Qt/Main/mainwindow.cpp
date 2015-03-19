@@ -764,7 +764,7 @@ void QtMainWindow::SetupActions()
 #endif
 	}
     
-    QObject::connect(ui->actionImageSplitterForNormals, SIGNAL(triggered()), developerTools, SLOT(OnImageSplitterNormals()));
+    connect(ui->actionImageSplitterForNormals, &QAction::triggered, developerTools, &DeveloperTools::OnImageSplitterNormals);
 
     
     connect( ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList );
