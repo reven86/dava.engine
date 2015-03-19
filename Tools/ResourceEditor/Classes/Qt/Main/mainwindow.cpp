@@ -763,6 +763,10 @@ void QtMainWindow::SetupActions()
         connect(act, SIGNAL(triggered()), SLOT(DebugVersionInfo()));
 #endif
 	}
+    
+    QObject::connect(ui->actionImageSplitterForNormals, SIGNAL(triggered()), developerTools, SLOT(OnImageSplitterNormals()));
+
+    
     connect( ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList );
 
     QObject::connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
