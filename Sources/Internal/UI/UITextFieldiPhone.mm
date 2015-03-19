@@ -427,7 +427,7 @@ namespace DAVA
         {
             ::UITextField* textField = textFieldHolder->textField;
             DVASSERT(textField);
-            DAVA::Rect rect = davaTextField.GetRect();
+            DAVA::Rect rect = davaTextField.GetGeometricData().GetUnrotatedRect();
             if (rect.dx > 0 && rect.dy > 0)
             {
                 // move text vield off screen if renderToTexture == true
