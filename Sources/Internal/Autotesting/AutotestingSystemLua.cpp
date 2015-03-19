@@ -325,12 +325,6 @@ void AutotestingSystemLua::OnTestFinished()
 	AutotestingSystem::Instance()->OnTestsFinished();
 }
 
-size_t AutotestingSystemLua::GetAllocatedMemory() const
-{
-	const mallinfo& info = mspace_mallinfo(memorySpace);
-	return info.uordblks;
-}
-
 size_t AutotestingSystemLua::GetUsedMemory() const
 {
 	return lua_gc(luaState, LUA_GCCOUNT, 0) * 1024 + lua_gc(luaState, LUA_GCCOUNTB, 0);
