@@ -76,6 +76,10 @@ void DeveloperTools::OnDebugFunctionsGridCopy()
                 material->SetPropertyValue(FastName("inGlossiness"), Shader::UT_FLOAT, 1, &inGlossiness);
                 material->SetPropertyValue(FastName("inSpecularity"), Shader::UT_FLOAT, 1, &inSpecularity);
 
+                StaticOcclusionSystem *sosystem = currentScene->staticOcclusionSystem;
+                DVASSERT(sosystem);
+                sosystem->InvalidateOcclusionIndicesRecursively(clonedEntity);
+
                 currentScene->AddNode(clonedEntity);
             }
         }

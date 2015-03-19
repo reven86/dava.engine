@@ -168,6 +168,7 @@ Component * PathComponent::Clone(Entity * toEntity)
 	PathComponent * newComponent = new PathComponent();
 
     newComponent->SetName(name);
+    newComponent->SetColor(color);
 	newComponent->SetEntity(toEntity);
 
     const uint32 waypointCount = static_cast<uint32>(waypoints.size());
@@ -218,6 +219,7 @@ void PathComponent::Serialize(KeyedArchive *archive, SerializationContext *seria
     if(NULL != archive)
     {
         archive->SetFastName("name", name);
+        archive->SetColor("color", color);
         
         const uint32 waypointCount = static_cast<uint32>(waypoints.size());
         archive->SetUInt32("waypointCount", waypointCount);
@@ -291,6 +293,7 @@ void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
     Reset();
 
     name = archive->GetFastName("name");
+    color = archive->GetColor("color");
     
     const uint32 waypointCount = archive->GetUInt32("waypointCount");
     if(!waypointCount) return;

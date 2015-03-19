@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QVariant>
 #include <QPointer>
+#include <QUndoStack>
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Project.h"
@@ -23,7 +24,6 @@ class DocumentWidgets;
 
 class QAbstractItemModel;
 class QSortFilterProxyModel;
-class QUndoStack;
 class QItemSelection;
 
 class UIPackageModel;
@@ -45,7 +45,7 @@ class Document : public QObject
 public:
     Document(Project * project, PackageNode *package, QObject *parent = NULL);
     virtual ~Document();
-    
+    void SetActive(bool arg);
     void ConnectToWidgets(DocumentWidgets *widgets);
     void DisconnectFromWidgets(DocumentWidgets *widgets);
     
@@ -62,10 +62,9 @@ public:
     PropertiesContext *GetPropertiesContext() const {return propertiesContext; };
     LibraryContext *GetLibraryContext() const {return libraryContext; };
     PreviewContext *GetPreviewContext() const {return previewContext; };
-
-    QUndoStack *UndoStack() const { return undoStack; }
-    
+  
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
+    QUndoStack *GetUndoStack() const;
 
 signals:
     void activeRootControlsChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
@@ -95,10 +94,13 @@ private:
     LibraryContext *libraryContext;
     
     QtModelPackageCommandExecutor *commandExecutor;
-
-    QUndoStack *undoStack;
+    QScopedPointer<QUndoStack> undoStack;
 };
 
-Q_DECLARE_METATYPE(Document *);
+inline QUndoStack *Document::GetUndoStack() const
+{
+    return undoStack.data();
+}
+
 
 #endif // __QUICKED_PACKAGE_DOCUMENT_H__

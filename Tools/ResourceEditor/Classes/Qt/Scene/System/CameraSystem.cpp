@@ -29,6 +29,7 @@
 
 
 #include <QApplication>
+#include <QDebug>
 
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/CameraSystem.h"
@@ -298,22 +299,64 @@ void SceneCameraSystem::Input(DAVA::UIEvent *event)
 {
     if(event->phase == UIEvent::PHASE_KEYCHAR)
     {
-        if(('+' == event->keyChar)|| ('-' == event->keyChar))
+        switch ( event->tid )
         {
-            Entity *entity = GetEntityWithEditorCamera();
-            SnapToLandscapeControllerComponent *snapComponent = GetSnapToLandscapeControllerComponent(entity);
-            if(snapComponent)
+        case DVKEY_EQUALS:
             {
-                float32 height = SettingsManager::Instance()->GetValue(Settings::Scene_CameraHeightOnLandscapeStep).AsFloat();
-                if('+' == event->keyChar)
+                auto entity = GetEntityWithEditorCamera();
+                auto snapComponent = GetSnapToLandscapeControllerComponent( entity );
+                if ( snapComponent != nullptr )
                 {
-                    snapComponent->SetHeightOnLandscape(snapComponent->GetHeightOnLandscape() + height);
-                }
-                else
-                {
-                    snapComponent->SetHeightOnLandscape(snapComponent->GetHeightOnLandscape() - height);
+                    float32 height = SettingsManager::Instance()->GetValue( Settings::Scene_CameraHeightOnLandscapeStep ).AsFloat();
+                    snapComponent->SetHeightOnLandscape( snapComponent->GetHeightOnLandscape() + height );
                 }
             }
+            break;
+        case DVKEY_MINUS:
+            {
+                auto entity = GetEntityWithEditorCamera();
+                auto snapComponent = GetSnapToLandscapeControllerComponent( entity );
+                if ( snapComponent != nullptr )
+                {
+                    float32 height = SettingsManager::Instance()->GetValue( Settings::Scene_CameraHeightOnLandscapeStep ).AsFloat();
+                    snapComponent->SetHeightOnLandscape( snapComponent->GetHeightOnLandscape() - height );
+                }
+            }
+            break;
+
+        case DVKEY_T:
+            MoveTo( Vector3( 0, 0, 200 ), Vector3( 1, 0, 0 ) );
+            break;
+
+        case DVKEY_Z:
+            {
+                auto sceneEditor = dynamic_cast<SceneEditor2*>(GetScene());
+                if ( sceneEditor == nullptr )
+                    break;
+
+                auto selection = sceneEditor->selectionSystem->GetSelection();
+                if ( selection.Size() > 0 )
+                {
+                    sceneEditor->cameraSystem->LookAt( selection.GetCommonBbox() );
+                }
+            }
+            break;
+
+        case DVKEY_1:
+            SetMoveSpeedArrayIndex( 0 );
+            break;
+        case DVKEY_2:
+            SetMoveSpeedArrayIndex( 1 );
+            break;
+        case DVKEY_3:
+            SetMoveSpeedArrayIndex( 2 );
+            break;
+        case DVKEY_4:
+            SetMoveSpeedArrayIndex( 3 );
+            break;
+
+        default:
+            break;
         }
     }
 }
