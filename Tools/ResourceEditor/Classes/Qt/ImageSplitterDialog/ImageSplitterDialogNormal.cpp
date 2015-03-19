@@ -75,16 +75,14 @@ void ImageSplitterDialogNormal::OnSaveClicked()
     for(auto i = 0; i < imageArreas.size(); ++i)
     {
         auto image = imageArreas[i]->GetImage();
-        if(i && (nullptr != image))
+        if(i)
         {
             auto prevImage = imageArreas[i-1]->GetImage();
-            if(nullptr != prevImage)
+            
+            if((image->GetWidth() != prevImage->GetWidth()) || (image->GetHeight() != prevImage->GetHeight()))
             {
-                if((image->GetWidth() != prevImage->GetWidth()) || (image->GetHeight() != prevImage->GetHeight()))
-                {
-                    QMessageBox::warning(this, "Save error", DAVA::Format("Images [%d] and [%d] have different size", i-1, i).c_str(), QMessageBox::Ok);
-                    return;
-                }
+                QMessageBox::warning(this, "Save error", DAVA::Format("Images [%d] and [%d] have different size", i-1, i).c_str(), QMessageBox::Ok);
+                return;
             }
         }
     }
@@ -102,12 +100,7 @@ void ImageSplitterDialogNormal::OnSaveClicked()
 
 void ImageSplitterDialogNormal::SaveAndReloadNormal(const DAVA::FilePath &pathname, int first, int second)
 {
-    auto mergedImage(CreateMergedImage(imageArreas[first]->GetImage(), imageArreas[second]->GetImage()));
-    if(nullptr == mergedImage)
-    {
-        return;
-    }
-        
+    DAVA::ScopedPtr<DAVA::Image> mergedImage(CreateMergedImage(imageArreas[first]->GetImage(), imageArreas[second]->GetImage()));
     SaveImageToFile(mergedImage, pathname);
     
     auto texture = DAVA::Texture::Get(DAVA::TextureDescriptor::GetDescriptorPathname(pathname));
@@ -116,17 +109,10 @@ void ImageSplitterDialogNormal::SaveAndReloadNormal(const DAVA::FilePath &pathna
         texture->Reload();
         texture->Release();
     }
-    
-    mergedImage->Release();
 }
 
 DAVA::Image * ImageSplitterDialogNormal::CreateMergedImage(DAVA::Image *firstImage, DAVA::Image *secondImage)
 {
-    if((nullptr == firstImage) || (nullptr == secondImage))
-    {
-        return nullptr;
-    }
-    
     auto mergedImage = Image::Create(firstImage->width, firstImage->height, FORMAT_RGBA8888);
 
     auto size = firstImage->width * firstImage->height;
