@@ -171,7 +171,7 @@ void JavaClass::FindJavaClass(String name)
     JNIEnv *env = GetEnv();
 
     jclass foundLocalRefClass = env->FindClass(name.c_str());
-    CheckOperationResult(foundLocalRefClass, name);
+    DAVA_JNI_EXCEPTION_CHECK
 
     if (NULL == foundLocalRefClass)
     {

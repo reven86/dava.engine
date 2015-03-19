@@ -82,23 +82,36 @@ SoundSystem::SoundSystem()
 #endif
     FMOD_VERIFY(fmodSystem->setSoftwareChannels(MAX_SOUND_CHANNELS));
     
+    FMOD_INITFLAGS initFlags = FMOD_INIT_NORMAL;
 #ifdef DAVA_FMOD_PROFILE
-    FMOD_VERIFY(fmodEventSystem->init(MAX_SOUND_VIRTUAL_CHANNELS, FMOD_INIT_NORMAL | FMOD_INIT_ENABLE_PROFILE, extraDriverData));
-#else
-    FMOD_VERIFY(fmodEventSystem->init(MAX_SOUND_VIRTUAL_CHANNELS, FMOD_INIT_NORMAL, extraDriverData));
+    initFlags |= FMOD_INIT_ENABLE_PROFILE;
 #endif
-    
-    FMOD::EventCategory * masterCategory = 0;
-    FMOD_VERIFY(fmodEventSystem->getCategory("master", &masterCategory));
-    FMOD_VERIFY(masterCategory->getChannelGroup(&masterEventChannelGroup));
-    
-    FMOD_VERIFY(fmodSystem->getMasterChannelGroup(&masterChannelGroup));
-    FMOD_VERIFY(fmodSystem->setFileSystem(DAVA_FMOD_FILE_OPENCALLBACK, DAVA_FMOD_FILE_CLOSECALLBACK, DAVA_FMOD_FILE_READCALLBACK, DAVA_FMOD_FILE_SEEKCALLBACK, 0, 0, -1));
+    FMOD_RESULT initResult = fmodEventSystem->init(MAX_SOUND_VIRTUAL_CHANNELS, initFlags, extraDriverData);
+    if (initResult != FMOD_OK)
+    {
+        Logger::Error("Failed to initialize FMOD: %s", FMOD_ErrorString(initResult));
+        FMOD_VERIFY(fmodEventSystem->release());
+        fmodEventSystem = nullptr;
+        fmodSystem = nullptr;
+    }
+
+    if (fmodEventSystem)
+    {
+        FMOD::EventCategory * masterCategory = nullptr;
+        FMOD_VERIFY(fmodEventSystem->getCategory("master", &masterCategory));
+        FMOD_VERIFY(masterCategory->getChannelGroup(&masterEventChannelGroup));
+
+        FMOD_VERIFY(fmodSystem->getMasterChannelGroup(&masterChannelGroup));
+        FMOD_VERIFY(fmodSystem->setFileSystem(DAVA_FMOD_FILE_OPENCALLBACK, DAVA_FMOD_FILE_CLOSECALLBACK, DAVA_FMOD_FILE_READCALLBACK, DAVA_FMOD_FILE_SEEKCALLBACK, 0, 0, -1));
+    }
 }
 
 SoundSystem::~SoundSystem()
 {
-	FMOD_VERIFY(fmodEventSystem->release());
+    if (fmodEventSystem)
+    {
+        FMOD_VERIFY(fmodEventSystem->release());
+    }
 }
 
 void SoundSystem::InitFromQualitySettings()
@@ -127,7 +140,7 @@ SoundEvent * SoundSystem::CreateSoundEventByID(const FastName & eventName, const
 
 SoundEvent * SoundSystem::CreateSoundEventFromFile(const FilePath & fileName, const FastName & groupName, uint32 flags /* = SOUND_EVENT_DEFAULT */, int32 priority /* = 128 */)
 {
-    SoundEvent * event = 0;
+    SoundEvent * event = nullptr;
     
 #ifdef __DAVAENGINE_IPHONE__
     if((flags & SoundEvent::SOUND_EVENT_CREATE_STREAM) && !(flags & SoundEvent::SOUND_EVENT_CREATE_3D))
@@ -299,7 +312,10 @@ void SoundSystem::LoadFEV(const FilePath & filePath)
     if(projectsMap.find(filePath) != projectsMap.end())
         return;
 
-    FMOD::EventProject * project = 0;
+    if (fmodEventSystem == nullptr)
+        return;
+
+    FMOD::EventProject * project = nullptr;
     FMOD_VERIFY(fmodEventSystem->load(filePath.GetStringValue().c_str(), 0, &project));
     
     if(project)
@@ -321,8 +337,6 @@ void SoundSystem::LoadFEV(const FilePath & filePath)
         }
 
         projectsMap[filePath] = project;
-
-        Logger::Debug("[FMODSoundSystem] Project loaded: %s", filePath.GetFilename().c_str()); //IG: temporary, for testing
     }
 }
 
@@ -338,7 +352,10 @@ void SoundSystem::UnloadFEV(const FilePath & filePath)
 
 void SoundSystem::UnloadFMODProjects()
 {
-    FMOD_VERIFY(fmodEventSystem->unload());
+    if (fmodEventSystem)
+    {
+        FMOD_VERIFY(fmodEventSystem->unload());
+    }
     
     projectsMap.clear();
     toplevelGroups.clear();
@@ -348,9 +365,12 @@ void SoundSystem::Update(float32 timeElapsed)
 {
 	TIME_PROFILE("SoundSystem::Update");
 
-	fmodEventSystem->update();
+    if (fmodEventSystem)
+    {
+        fmodEventSystem->update();
+    }
     
-	uint32 size = soundsToReleaseOnUpdate.size();
+	uint32 size = static_cast<uint32>(soundsToReleaseOnUpdate.size());
 	if(size)
 	{
 		for(uint32 i = 0; i < size; i++)
@@ -368,7 +388,10 @@ uint32 SoundSystem::GetMemoryUsageBytes() const
 {
     uint32 memory = 0;
     
-    FMOD_VERIFY(fmodEventSystem->getMemoryInfo(FMOD_MEMBITS_ALL, FMOD_EVENT_MEMBITS_ALL, &memory, 0));
+    if (fmodEventSystem)
+    {
+        FMOD_VERIFY(fmodEventSystem->getMemoryInfo(FMOD_MEMBITS_ALL, FMOD_EVENT_MEMBITS_ALL, &memory, 0));
+    }
     
     return memory;
 }
@@ -420,22 +443,31 @@ void SoundSystem::Resume()
 
 void SoundSystem::SetCurrentLocale(const String & langID)
 {
-    FMOD_VERIFY(fmodEventSystem->setLanguage(langID.c_str()));
+    if (fmodEventSystem)
+    {
+        FMOD_VERIFY(fmodEventSystem->setLanguage(langID.c_str()));
+    }
 }
 
 void SoundSystem::SetListenerPosition(const Vector3 & position)
 {
-    FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, (FMOD_VECTOR*)(&position), 0, 0, 0));
+    if (fmodEventSystem)
+    {
+        FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, (FMOD_VECTOR*)(&position), 0, 0, 0));
+    }
 }
 
 void SoundSystem::SetListenerOrientation(const Vector3 & forward, const Vector3 & left)
 {
-	Vector3 forwardNorm = forward;
-	forwardNorm.Normalize();
-	Vector3 upNorm = forwardNorm.CrossProduct(left);
-	upNorm.Normalize();
+    if (fmodEventSystem)
+    {
+        Vector3 forwardNorm = forward;
+        forwardNorm.Normalize();
+        Vector3 upNorm = forwardNorm.CrossProduct(left);
+        upNorm.Normalize();
 
-	FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, 0, 0, (FMOD_VECTOR*)&forwardNorm, (FMOD_VECTOR*)&upNorm));
+        FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, 0, 0, (FMOD_VECTOR*)&forwardNorm, (FMOD_VECTOR*)&upNorm));
+    }
 }
 
 void SoundSystem::GetGroupEventsNamesRecursive(FMOD::EventGroup * group, String & currNamePath, Vector<String> & names)
@@ -477,6 +509,9 @@ void SoundSystem::GetAllEventsNames(Vector<String> & names)
 {
     names.clear();
 
+    if (fmodEventSystem == nullptr)
+        return;
+
     int32 projectsCount = 0;
     FMOD_VERIFY(fmodEventSystem->getNumProjects(&projectsCount));
     for(int32 i = 0; i < projectsCount; i++)
@@ -506,7 +541,10 @@ void SoundSystem::GetAllEventsNames(Vector<String> & names)
 
 void SoundSystem::PreloadFMODEventGroupData(const String & groupName)
 {
-    FMOD::EventGroup * eventGroup = 0;
+    if (fmodEventSystem == nullptr)
+        return;
+
+    FMOD::EventGroup * eventGroup = nullptr;
     FMOD_VERIFY(fmodEventSystem->getGroup(groupName.c_str(), true, &eventGroup));
     if(eventGroup)
         FMOD_VERIFY(eventGroup->loadEventData());
@@ -514,7 +552,10 @@ void SoundSystem::PreloadFMODEventGroupData(const String & groupName)
     
 void SoundSystem::ReleaseFMODEventGroupData(const String & groupName)
 {
-    FMOD::EventGroup * eventGroup = 0;
+    if (fmodEventSystem == nullptr)
+        return;
+
+    FMOD::EventGroup * eventGroup = nullptr;
     FMOD_VERIFY(fmodEventSystem->getGroup(groupName.c_str(), false, &eventGroup));
     if(eventGroup)
         FMOD_VERIFY(eventGroup->freeEventData());
@@ -522,7 +563,7 @@ void SoundSystem::ReleaseFMODEventGroupData(const String & groupName)
     
 void SoundSystem::ReleaseAllEventWaveData()
 {
-    int32 topCount = toplevelGroups.size();
+    int32 topCount = static_cast<int32>(toplevelGroups.size());
     for(int32 i = 0; i < topCount; ++i)
         ReleaseFMODEventGroupData(toplevelGroups[i]);
 }
@@ -598,7 +639,7 @@ void SoundSystem::RemoveSoundEventFromGroups(SoundEvent * event)
     for(uint32 i = 0; i < (uint32)soundGroups.size(); ++i)
     {
         Vector<SoundEvent *> & events = soundGroups[i].events;
-        uint32 eventsCount = events.size();
+        uint32 eventsCount = static_cast<uint32>(events.size());
         for(uint32 k = 0; k < eventsCount; k++)
         {
             if(events[k] == event)

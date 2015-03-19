@@ -147,7 +147,7 @@ void ShowErrorDialog(const DAVA::String &errorMessage)
 
 bool IsKeyModificatorPressed(int32 key)
 {
-	return InputSystem::Instance()->GetKeyboard()->IsKeyPressed(key);
+	return InputSystem::Instance()->GetKeyboard().IsKeyPressed(key);
 }
 
 bool IsKeyModificatorsPressed()
@@ -245,7 +245,7 @@ void SaveTextureToFile(DAVA::Texture * texture, const DAVA::FilePath & path)
 {
     if(texture)
     {
-        DAVA::Image * img = texture->CreateImageFromMemory(DAVA::RenderState::RENDERSTATE_2D_BLEND);
+        DAVA::Image * img = texture->CreateImageFromMemory(DAVA::RenderState::RENDERSTATE_2D_OPAQUE);
         SaveImageToFile(img, path);
         img->Release();
     }

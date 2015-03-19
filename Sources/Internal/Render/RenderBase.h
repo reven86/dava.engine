@@ -149,6 +149,7 @@ enum PixelFormat
     FORMAT_RGBA32323232,
 
     FORMAT_DXT1,
+    FORMAT_REMOVED_DXT_1N,  //to use it in
     FORMAT_DXT1A = 14, //back compatibility
     FORMAT_DXT3,
     FORMAT_DXT5,
@@ -169,6 +170,9 @@ enum PixelFormat
 	FORMAT_ETC2_RGB,
 	FORMAT_ETC2_RGBA,
 	FORMAT_ETC2_RGB_A1,
+
+    FORMAT_BGR888, // windows BMP format
+    FORMAT_BGRA8888, // android web view format only for ImageConvert
 
     FORMAT_COUNT,
     FORMAT_CLOSEST = 255 // fit PixelFormat at 8bits (PixelFormat format:8;)
@@ -385,6 +389,20 @@ enum
 {
     VERTEX_FORMAT_STREAM_MAX_COUNT = 16
 };
+
+enum eBufferDrawType
+{
+    BDT_STATIC_DRAW = 0,
+    BDT_DYNAMIC_DRAW,
+
+    BDT_COUNT
+};
+
+#if defined(__DAVAENGINE_OPENGL__)
+extern const GLint BUFFERDRAWTYPE_MAP[BDT_COUNT];
+#elif defined(__DAVAENGINE_DIRECTX9__) 
+extern const int32 BUFFERDRAWTYPE_MAP[BDT_COUNT];
+#endif
 
 inline int32 GetTexCoordCount(int32 vertexFormat)
 {

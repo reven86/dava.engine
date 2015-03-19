@@ -87,7 +87,6 @@ private:
 #endif //#if defined (Q_OS_MAC)
 
 	virtual void Quit();
-    DAVA_DEPRECATED(virtual void ShowAssertMessage(const char * message));
 
     void RegisterEventFilter();
     void UnregisterEventFilter();

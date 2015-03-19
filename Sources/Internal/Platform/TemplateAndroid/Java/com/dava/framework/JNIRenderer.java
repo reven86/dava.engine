@@ -6,6 +6,7 @@ import javax.microedition.khronos.opengles.GL10;
 import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 import android.os.PowerManager;
 import android.util.Log;
 
@@ -104,26 +105,40 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
         // b) if you choose 2 way and remove skip first frame:
         // video intro on game start will be skipped (you will see several
         // video frames)
-        if (framesCounter > 0) {
-            nativeRender();
-
-            if (isFirstFrameAfterDraw) {
-                isFirstFrameAfterDraw = false;
-                JNIActivity.GetActivity().OnFirstFrameAfterDraw();
-                JNITextField.ShowVisibleTextFields();
+        if (!JNIAssert.waitUserInputOnAssertDialog)
+        {
+            if (framesCounter > 0) {
+                nativeRender();
+    
+                if (isFirstFrameAfterDraw) {
+                    isFirstFrameAfterDraw = false;
+                    JNIActivity.GetActivity().OnFirstFrameAfterDraw();
+                    JNITextField.ShowVisibleTextFields();
+                }
             }
+            ++framesCounter;
         }
-        ++framesCounter;
     }
 
     public void OnPause() {
         Log.d(JNIConst.LOG_TAG, "Activity Render OnPause start");
         PowerManager pm = (PowerManager) JNIApplication.GetApplication()
                 .getSystemService(Context.POWER_SERVICE);
-        nativeOnPauseView(!pm.isScreenOn());
+        nativeOnPauseView(isScreenLocked(pm));
 
         isFirstFrameAfterDraw = true;
         Log.d(JNIConst.LOG_TAG, "Activity Render OnPause finish");
+    }
+
+    @SuppressWarnings("deprecation")
+    private boolean isScreenLocked(final PowerManager pm) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH)
+        {
+            return !pm.isInteractive();
+        } else
+        {
+            return !pm.isScreenOn();
+        }
     }
 
     public void OnResume() {

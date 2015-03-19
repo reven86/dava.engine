@@ -30,6 +30,9 @@
 
 #include <QPainter>
 #include <QApplication>
+#include "DAVAEngine.h"
+
+using namespace DAVA;
 
 RulerWidget::RulerWidget(QWidget *parent) :
     QWidget(parent),

@@ -40,10 +40,10 @@
 #include <QFile>
 #include <QMessageBox>
 
-#define SPRITE_SIZE 60.f
+static const uint32 SPRITE_SIZE = 60;
 
-#define ANGLE_MIN_LIMIT_DEGREES -360.0f
-#define ANGLE_MAX_LIMIT_DEGREES 360.0f
+static const float32 ANGLE_MIN_LIMIT_DEGREES = -360.0f;
+static const float32 ANGLE_MAX_LIMIT_DEGREES = 360.0f;
 
 const EmitterLayerWidget::LayerTypeMap EmitterLayerWidget::layerTypeMap[] =
 {
@@ -906,25 +906,23 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     degradeStrategyComboBox->setCurrentIndex((int32)layer->degradeStrategy);
     //LAYER_SPRITE = 0,
     sprite = layer->sprite;
-    
-    Vector2 virtualTargetSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(Vector2(SPRITE_SIZE, SPRITE_SIZE));
-    Sprite* renderSprite = Sprite::CreateAsRenderTarget(virtualTargetSize.x, virtualTargetSize.y, FORMAT_RGBA8888);
 
-    RenderSystem2D::Instance()->PushRenderTarget();
-    RenderSystem2D::Instance()->SetRenderTarget(renderSprite);
     if (sprite)
     {
-        Sprite::DrawState drawState;
-        drawState.SetScaleSize(virtualTargetSize.x, virtualTargetSize.x, sprite->GetWidth(), sprite->GetHeight());
-        RenderSystem2D::Instance()->Draw(sprite, &drawState);        
-    }
+        Texture * renderTexture = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+        RenderHelper::Instance()->Set2DRenderTarget(renderTexture);
+        RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
-    RenderSystem2D::Instance()->PopRenderTarget();
-    Texture* texture = renderSprite->GetTexture();
-    Image* image = texture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
-    spriteLabel->setPixmap(QPixmap::fromImage(TextureConvertor::FromDavaImage(image)));
-    SafeRelease(image);
-    SafeRelease(renderSprite);
+        Sprite::DrawState drawState;
+        drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, sprite->GetWidth(), sprite->GetHeight());
+        RenderSystem2D::Instance()->Draw(sprite, &drawState);
+
+        RenderManager::Instance()->SetRenderTarget(0);
+        Image* image = renderTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+        spriteLabel->setPixmap(QPixmap::fromImage(TextureConvertor::FromDavaImage(image)));
+        SafeRelease(image);
+        SafeRelease(renderTexture);
+    }
 
     QString spriteName = "<none>";
     if (sprite)

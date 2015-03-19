@@ -92,7 +92,7 @@ WideString TrimRight(const WideString& string);
 WideString RemoveNonPrintable(const WideString& string, const int8 tabRule = -1);
 
 /**
- * \brief Query if 't' is all kind of spaces or linebreak. Using this function for trim whitespaces.
+ * \brief Query if 't' is all kind of spaces or linebreak. Using this function for trim whitespace.
  * \param t The char16 to process.
  * \return true if space, false if not.
  */
@@ -100,41 +100,41 @@ inline bool IsWhitespace(char16 t)
 {
     switch (t)
     {
-        case 0x0009: // Tabulation
-        case 0x000A: // Line feed
-        case 0x000B: // Line tab
-        case 0x000C: // Form feed
-        case 0x000D: // Carriage return
+    case 0x0009: // Tabulation
+    case 0x000A: // Line feed
+    case 0x000B: // Line tab
+    case 0x000C: // Form feed
+    case 0x000D: // Carriage return
         // Unicode characters in 'Separator, Space' category (Zs)
-        case 0x0020: // Space
-        case 0x00A0: // No-break space
-        case 0x1680: // Ogham space mark
-        case 0x2000: // En quad
-        case 0x2001: // Em quad
-        case 0x2002: // En space
-        case 0x2003: // Em space
-        case 0x2004: // Three-per-em space
-        case 0x2005: // Four-per-em space
-        case 0x2006: // Siz-per-em sapce
-        case 0x2007: // Figure space
-        case 0x2008: // Punctuation space
-        case 0x2009: // Thin space
-        case 0x200A: // Hair space
-        case 0x202F: // Narrow No-break space
-        case 0x205F: // Medium mathematical space
-        case 0x3000: // Ideographic space
+    case 0x0020: // Space
+    case 0x00A0: // No-break space
+    case 0x1680: // Ogham space mark
+    case 0x2000: // En quad
+    case 0x2001: // Em quad
+    case 0x2002: // En space
+    case 0x2003: // Em space
+    case 0x2004: // Three-per-em space
+    case 0x2005: // Four-per-em space
+    case 0x2006: // Six-per-em space
+    case 0x2007: // Figure space
+    case 0x2008: // Punctuation space
+    case 0x2009: // Thin space
+    case 0x200A: // Hair space
+    case 0x202F: // Narrow No-break space
+    case 0x205F: // Medium mathematical space
+    case 0x3000: // Ideographic space
         // Unicode characters in 'Separator, Line' category (Zl)
-        case 0x2028:
+    case 0x2028:
         // Unicode characters in 'Separator, Paragraph' category (Zp)
-        case 0x2029:
+    case 0x2029:
         // Additional characters are treated as spaces
-        case 0x200B: // Zero-width space
-        case 0x200E: // Left-to-right zero-width character
-        case 0x200F: // Right-to-left zero-width non-Arabic character
-        case 0x061C: // Right-to-left zero-width Arabic character
-            return true;
-        default:
-            return false;
+    case 0x200B: // Zero-width space
+    case 0x200E: // Left-to-right zero-width character
+    case 0x200F: // Right-to-left zero-width non-Arabic character
+    case 0x061C: // Right-to-left zero-width Arabic character
+        return true;
+    default:
+        return false;
     }
 }
 

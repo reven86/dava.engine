@@ -63,7 +63,7 @@ public:
 
 	virtual void Update(float32 timeElapsed);
 
-	virtual bool TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, const WideString & replacementString);
+	bool TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, WideString & replacementString) override;
 
 	void TestFunction(PerfFuncData * data);
 	void ManualTestStartFunction(PerfFuncData * data);
@@ -79,8 +79,6 @@ private:
     UIButton* modeButton;
 	UIButton* rtlButton;
 	UIButton* testButton;
-	
-	void* delegate;
 
 	bool testFinished;
 	bool manualStarted;

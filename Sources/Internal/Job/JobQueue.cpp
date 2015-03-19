@@ -49,7 +49,7 @@ JobQueueWorker::~JobQueueWorker()
 
 void JobQueueWorker::Push(const Function<void()> &fn)
 {
-    if(fn != NULL)
+    if(fn != 0)
     {
         LockGuard<Spinlock> guard(lock);
         if(nextPushIndex == nextPopIndex && 0 == processingCount)
@@ -78,7 +78,7 @@ bool JobQueueWorker::PopAndExec()
         }
     }
 
-    if(fn != NULL)
+    if(fn != 0)
     {
         fn();
 

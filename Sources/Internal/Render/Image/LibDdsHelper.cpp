@@ -1172,7 +1172,6 @@ bool LibDdsHelper::GetCRCFromDDSHeader(const FilePath &filePathname, uint32* out
 	File *fileRead = File::Create(filePathname, File::READ | File::OPEN);
 	if(!fileRead)
 	{
-		Logger::Error("[LibDdsHelper::GetCRCFromDDSHeader] cannot open file %s", fileNameStr.c_str());
 		return false;
 	}
 

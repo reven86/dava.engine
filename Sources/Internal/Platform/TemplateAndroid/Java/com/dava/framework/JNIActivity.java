@@ -1,11 +1,18 @@
 package com.dava.framework;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.fmod.FMODAudioDevice;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.SensorManager;
+import android.hardware.input.InputManager;
+import android.hardware.input.InputManager.InputDeviceListener;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -13,13 +20,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.InputDevice;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.InputDevice.MotionRange;
 
 import com.bda.controller.Controller;
 
-public abstract class JNIActivity extends Activity implements JNIAccelerometer.JNIAccelerometerListener
+public abstract class JNIActivity extends Activity implements JNIAccelerometer.JNIAccelerometerListener, InputDeviceListener
 {
 	private static int errorState = 0;
 
@@ -29,7 +39,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	
 	private FMODAudioDevice fmodDevice = new FMODAudioDevice();
 	
-	private Controller mController;
+	private Controller mController = null;
+	
+	private InputManager inputManager = null;
 	
 	private native void nativeOnCreate(boolean isFirstRun);
 	private native void nativeOnStart();
@@ -37,6 +49,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	private native void nativeOnDestroy();
 	private native void nativeFinishing();
 	private native void nativeOnAccelerometer(float x, float y, float z);
+	private native void nativeOnGamepadAvailable(boolean isAvailable);
+	private native void nativeOnGamepadTriggersAvailable(boolean isAvailable);
+	private native boolean nativeIsMultitouchEnabled();
     
     private boolean isFirstRun = true;
     private static String commandLineParams = null;
@@ -111,9 +126,15 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         glView.setFocusable(true);
         glView.requestFocus();
         
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+        {
+            inputManager = (InputManager)getSystemService(Context.INPUT_SERVICE);
+        }
+        UpdateGamepadAxises();
+        
         splashView = GetSplashView();
         
-        mController = Controller.getInstance(this);
+        //mController = Controller.getInstance(this);
         if(mController != null)
         {
             if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP )
@@ -221,7 +242,12 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         {
             mController.onPause();
         }
-
+        
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+        {
+        	inputManager.unregisterInputDeviceListener(this);
+        }
+        
         // deactivate accelerometer
         if(accelerometer != null)
         {
@@ -278,6 +304,12 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
             mController.onResume();
         }
 
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+        {
+        	inputManager.registerInputDeviceListener(this, null);
+        }
+        UpdateGamepadAxises();
+        
         JNIUtils.keepScreenOnOnResume();
         JNITextField.HideAllTextFields();
 
@@ -346,6 +378,64 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     	}
     	Log.i(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] finish");
     }
+    
+    protected final List<Integer> supportedAxises = Arrays.asList(
+			MotionEvent.AXIS_X,
+			MotionEvent.AXIS_Y,
+			MotionEvent.AXIS_Z,
+			MotionEvent.AXIS_RX,
+			MotionEvent.AXIS_RY,
+			MotionEvent.AXIS_RZ,
+			MotionEvent.AXIS_LTRIGGER,
+			MotionEvent.AXIS_RTRIGGER,
+			MotionEvent.AXIS_BRAKE,
+			MotionEvent.AXIS_GAS
+	);
+    
+    protected void UpdateGamepadAxises()
+    {
+    	boolean isGamepadAvailable = false;
+		int[] inputDevices = InputDevice.getDeviceIds();
+		Set<Integer> avalibleAxises = new HashSet<Integer>(); 
+		for(int id : inputDevices)
+		{
+			if((InputDevice.getDevice(id).getSources() & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
+			{
+				isGamepadAvailable = true;
+				
+				List<MotionRange> ranges = InputDevice.getDevice(id).getMotionRanges();
+				for(MotionRange r : ranges)
+				{
+					int axisId = r.getAxis();
+					if(supportedAxises.contains(axisId))
+						avalibleAxises.add(axisId);
+				}
+			}
+		}
+		
+		glView.SetAvailableGamepadAxises(avalibleAxises.toArray(new Integer[0]));
+		
+		nativeOnGamepadAvailable(isGamepadAvailable);
+		nativeOnGamepadTriggersAvailable(avalibleAxises.contains(MotionEvent.AXIS_LTRIGGER) || avalibleAxises.contains(MotionEvent.AXIS_BRAKE));
+    }
+    
+	@Override
+	public void onInputDeviceAdded(int deviceId) 
+	{
+		UpdateGamepadAxises();
+	}
+
+	@Override
+	public void onInputDeviceChanged(int deviceId) 
+	{
+		UpdateGamepadAxises();
+	}
+
+	@Override
+	public void onInputDeviceRemoved(int deviceId) 
+	{
+		UpdateGamepadAxises();
+	}
     
     public void onAccelerationChanged(float x, float y, float z)
 	{
@@ -435,6 +525,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 				}
 			}
 		});
+		
+		glView.SetMultitouchEnabled(nativeIsMultitouchEnabled());
 	}
 }
 

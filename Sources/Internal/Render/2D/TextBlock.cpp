@@ -93,7 +93,8 @@ TextBlock * TextBlock::Create(const Vector2 & size)
 
 
 TextBlock::TextBlock()
-    : cacheFinalSize(0.f, 0.f)
+    : scale(1.f, 1.f)
+    , cacheFinalSize(0.f, 0.f)
     , cacheTextSize(0.f,0.f)
     , renderSize(1.f)
     , cacheDx(0)
@@ -102,7 +103,6 @@ TextBlock::TextBlock()
     , cacheOx(0)
     , cacheOy(0)
     , textureForInvalidation(NULL)
-    , scale(1.f, 1.f)
 	, angle(0.f)
 {
     font = NULL;
@@ -1054,7 +1054,7 @@ void TextBlock::SplitTextToStrings(const WideString& string, Vector2 const& targ
     uint32 lastPossibleBreak = 0;
 
     uint32 fromPos = 0;
-    uint32 textLength = string.length();
+    uint32 textLength = static_cast<uint32>(string.length());
     for (uint32 pos = 0; pos < textLength; ++pos)
     {
         char16 ch = string[pos];
@@ -1201,7 +1201,7 @@ void TextBlock::CleanLine(WideString& string, bool trim /*= false*/, bool rtl /*
     WideString out = StringUtils::RemoveNonPrintable(string, 1);
     if (trim)
     {
-    	out = !rtl ? StringUtils::TrimRight(out) : StringUtils::TrimLeft(out);
+        out = !rtl ? StringUtils::TrimRight(out) : StringUtils::TrimLeft(out);
     }
     string.swap(out);
 }

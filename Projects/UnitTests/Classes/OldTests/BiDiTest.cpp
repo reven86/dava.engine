@@ -176,7 +176,7 @@ void BiDiTest::Update(float32 timeElapsed)
     TestTemplate<BiDiTest>::Update(timeElapsed);
 }
 
-bool BiDiTest::TextFieldKeyPressed(UITextField* textField, int32 replacementLocation, int32 replacementLength, WideString const& replacementString)
+bool BiDiTest::TextFieldKeyPressed(UITextField* textField, int32 replacementLocation, int32 replacementLength, WideString& replacementString)
 {
     if (replacementLocation < 0 || replacementLength < 0)
 	{

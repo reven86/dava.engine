@@ -242,7 +242,14 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 	if(scene == treeModel->GetScene())
 	{
 		treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
-		SyncSelectionToTree();
+        treeModel->ReloadFilter();
+        filteringProxyModel->invalidate();
+        SyncSelectionToTree();
+
+        if (treeModel->IsFilterSet())
+        {
+            ExpandFilteredItems();
+        }
 	}
 }
 
@@ -378,7 +385,7 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
                 contextMenu.addSeparator();
             }
             
-            if(camera != scene->GetCurrentCamera())
+            if((camera != scene->GetCurrentCamera()) && (entity->GetNotRemovable() == false))
             {
                 contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
             }
@@ -396,7 +403,7 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
 
 			// add/remove
 			contextMenu.addSeparator();
-            if(entity->GetLocked() == false && (camera != scene->GetCurrentCamera()))
+            if(entity->GetLocked() == false && (camera != scene->GetCurrentCamera()) && (entity->GetNotRemovable() == false))
             {
 			    contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
             }

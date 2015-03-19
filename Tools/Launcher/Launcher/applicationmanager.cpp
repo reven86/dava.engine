@@ -32,18 +32,14 @@
 #include "errormessanger.h"
 #include "processhelper.h"
 #include <QFile>
-#include <QNetworkReply>
 #include <QDebug>
 #include <QMessageBox>
 
 ApplicationManager::ApplicationManager(QObject *parent) :
     QObject(parent),
     localConfig(0),
-    remoteConfig(0),
-    currentDownload(0)
+    remoteConfig(0)
 {
-    networkManager = new QNetworkAccessManager();
-
     localConfigFilePath = FileManager::Instance()->GetDocumentsDirectory() + LOCAL_CONFIG_NAME;
     LoadLocalConfig(localConfigFilePath);
 }
@@ -52,8 +48,6 @@ ApplicationManager::~ApplicationManager()
 {
     SafeDelete(localConfig);
     SafeDelete(remoteConfig);
-
-    SafeDelete(networkManager);
 }
 
 void ApplicationManager::LoadLocalConfig(const QString & configPath)
@@ -68,6 +62,23 @@ void ApplicationManager::LoadLocalConfig(const QString & configPath)
     {
         ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_DOC_ACCESS);
         localConfig = new ConfigParser(QByteArray());
+    }
+}
+
+void ApplicationManager::ParseRemoteConfigData(const QByteArray & data)
+{
+    if(data.size())
+    {
+        SafeDelete(remoteConfig);
+        remoteConfig = new ConfigParser(data);
+
+        QString webPageUrl = remoteConfig->GetWebpageURL();
+        if(!webPageUrl.isEmpty())
+        {
+            localConfig->SetWebpageURL(webPageUrl);
+        }
+        localConfig->CopyStringsAndFavsFromConfig(*remoteConfig);
+        localConfig->SaveToYamlFile(localConfigFilePath);
     }
 }
 
@@ -132,52 +143,10 @@ void ApplicationManager::CheckUpdates(QQueue<UpdateTask> & tasks)
     }
 }
 
-void ApplicationManager::RefreshRemoteConfig()
-{
-    currentDownload = networkManager->get(QNetworkRequest(QUrl(localConfig->GetRemoteConfigURL())));
-    connect(currentDownload, SIGNAL(finished()), this, SLOT(DownloadFinished()));
-    connect(currentDownload, SIGNAL(error(QNetworkReply::NetworkError)),
-            this, SLOT(NetworkError(QNetworkReply::NetworkError)));
-}
-
 void ApplicationManager::OnAppInstalled(const QString & branchID, const QString & appID, const AppVersion & version)
 {
     localConfig->InsertApplication(branchID, appID, version);
     localConfig->SaveToYamlFile(localConfigFilePath);
-}
-
-void ApplicationManager::NetworkError(QNetworkReply::NetworkError code)
-{
-    ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_NETWORK, code, currentDownload->errorString());
-
-    currentDownload->deleteLater();
-    currentDownload = 0;
-}
-
-void ApplicationManager::DownloadFinished()
-{
-    if(currentDownload)
-    {
-        SafeDelete(remoteConfig);
-
-        bool breakFlag = false;
-        QByteArray data = currentDownload->readAll();
-        if(currentDownload->hasRawHeader(QByteArray("Content-Type"))
-                && currentDownload->rawHeader(QByteArray("Content-Type")).left(9) == QByteArray("text/html"))
-            breakFlag = true;
-
-        if(data.size() && !breakFlag)
-        {
-            remoteConfig = new ConfigParser(data);
-            QString webPageUrl = remoteConfig->GetWebpageURL();
-            if(!webPageUrl.isEmpty())
-                localConfig->SetWebpageURL(webPageUrl);
-            localConfig->CopyStringsAndFavsFromConfig(*remoteConfig);
-            localConfig->SaveToYamlFile(localConfigFilePath);
-        }
-    }
-
-    emit Refresh();
 }
 
 QString ApplicationManager::GetString(const QString & stringID)

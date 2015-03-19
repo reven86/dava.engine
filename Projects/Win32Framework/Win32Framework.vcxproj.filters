@@ -181,6 +181,9 @@
     <Filter Include="Internal\Network\Services">
       <UniqueIdentifier>{d2eefec1-4620-43a6-b8f5-b6703672b2b0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\UI\Components">
+      <UniqueIdentifier>{67f835b5-b545-4435-b494-f65f572ca435}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1326,9 +1329,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\StaticOcclusionComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Input\GamepadManager.h">
-      <Filter>Internal\Input</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Input\GamepadDevice.h">
       <Filter>Internal\Input</Filter>
     </ClInclude>
@@ -1786,7 +1786,11 @@
     <ClInclude Include="..\..\Sources\Internal\Network\PeerDesription.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h">
+      <Filter>Internal\UI\Components</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Autotesting\dlmalloc.h" />
+    <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\Autotesting\dlmalloc.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2785,9 +2789,6 @@
     <ClCompile Include="..\..\Sources\Internal\Utils\UtilsWin32.cpp">
       <Filter>Internal\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Input\GamepadManager.cpp">
-      <Filter>Internal\Input</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Input\GamepadDevice.cpp">
       <Filter>Internal\Input</Filter>
     </ClCompile>
@@ -3197,6 +3198,10 @@
     <ClCompile Include="..\..\Sources\Internal\Network\PeerDesriptionSerialize.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIComponent.cpp">
+      <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\dlmalloc.c" />
+    <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\Autotesting\dlmalloc.c" />
   </ItemGroup>
 </Project>

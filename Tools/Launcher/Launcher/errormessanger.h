@@ -54,7 +54,7 @@ public:
     int ShowRetryDlg(bool canCancel);
     void ShowNotificationDlg(const QString & info);
 
-    void LogMessage(QtMsgType, const char *);
+    void LogMessage(QtMsgType, const QString & msg);
 private:
     ErrorMessanger();
 

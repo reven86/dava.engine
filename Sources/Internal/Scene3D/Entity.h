@@ -83,8 +83,8 @@ public:
 
     Component * GetComponent(uint32 componentType, uint32 index = 0) const;
     Component * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
-    uint32 GetComponentCount();
-    uint32 GetComponentCount(uint32 componentType);
+    uint32 GetComponentCount() const;
+    uint32 GetComponentCount(uint32 componentType) const;
     
     inline uint64 GetAvailableComponentFlags();
 
@@ -286,11 +286,14 @@ public:
     uint32 GetDebugFlags() const;
     	
     void SetSolid(bool isSolid);
-    bool GetSolid();
+    bool GetSolid() const;
 
 	void SetLocked(bool isLocked);
-	bool GetLocked();
+	bool GetLocked() const;
 
+    void SetNotRemovable(bool notRemovabe);
+    bool GetNotRemovable() const;
+    
     /**
         \brief function returns maximum bounding box of scene in world coordinates.
         \returns bounding box
@@ -346,6 +349,8 @@ public:
     template<template <typename> class Container>
     void GetChildEntitiesWithComponent(Container<Entity*> & container, Component::eType type);
 
+    uint32 CountChildEntitiesWithComponent(Component::eType type, bool recursive = false) const;
+
     /**
         \brief This function is called after scene is loaded from file.
         You can perform additional initialization here.
@@ -355,6 +360,7 @@ public:
 	// Property names.
 	static const char* SCENE_NODE_IS_SOLID_PROPERTY_NAME;
 	static const char* SCENE_NODE_IS_LOCKED_PROPERTY_NAME;
+    static const char* SCENE_NODE_IS_NOT_REMOVABLE_PROPERTY_NAME;
 
 	void FindComponentsByTypeRecursive(Component::eType type, List<DAVA::Entity*> & components);
     
@@ -383,8 +389,8 @@ private:
         
 	Vector<Component *> components;
     EntityFamily * family;
-    void DetachComponent(const Vector<Component *>::iterator & it);
-    void RemoveComponent(const Vector<Component *>::iterator & it);
+    void DetachComponent(Vector<Component *>::iterator & it);
+    void RemoveComponent(Vector<Component *>::iterator & it);
 
    	friend class Scene;
     
@@ -517,9 +523,9 @@ inline int32 Entity::GetChildrenCount () const
     return (int32)children.size();
 }
 
-inline uint32 Entity::GetComponentCount ()
+inline uint32 Entity::GetComponentCount () const
 {
-    return components.size ();
+    return static_cast<uint32>(components.size ());
 }
 
 inline void Entity::UpdateFamily ()
@@ -535,7 +541,7 @@ inline void Entity::RemoveAllComponents ()
     }
 }
 
-inline void Entity::RemoveComponent (const Vector<Component *>::iterator & it)
+inline void Entity::RemoveComponent (Vector<Component *>::iterator & it)
 {
     if (it != components.end ())
     {
@@ -573,7 +579,7 @@ inline Scene * Entity::GetScene ()
     return scene;
 }
 
-inline uint32 Entity::GetComponentCount (uint32 componentType)
+inline uint32 Entity::GetComponentCount (uint32 componentType) const
 {
     return family->GetComponentsCount (componentType);
 }

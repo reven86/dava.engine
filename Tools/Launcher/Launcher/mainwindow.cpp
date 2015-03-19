@@ -35,9 +35,13 @@
 #include "selfupdater.h"
 #include "defines.h"
 #include "filemanager.h"
+#include "configdownloader.h"
 #include <QSet>
 #include <QQueue>
 #include <QInputDialog>
+#include <QMessageBox>
+#include <QMenu>
+#include <QComboBox>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -84,12 +88,14 @@ void MainWindow::OnURLClicked()
     dialog.setWindowTitle("Config URL");
     dialog.setLabelText("Input new config URL:");
     dialog.setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    dialog.resize(width() / 3, -1);
+    dialog.resize(width() / 2, -1);
 
     if(dialog.exec() == QDialog::Accepted)
     {
         appManager->GetLocalConfig()->SetRemoteConfigURL(dialog.textValue());
         UpdateURLValue();
+
+        OnRefreshClicked();
     }
 }
 void MainWindow::OnlinkClicked(QUrl url)
@@ -143,12 +149,16 @@ void MainWindow::OnInstall(int rowNumber)
 
 void MainWindow::OnRefreshClicked()
 {
-    ui->refreshButton->setEnabled(false);
-    ui->setUrlButton->setEnabled(false);
+    if(appManager->GetLocalConfig()->GetRemoteConfigURL().isEmpty())
+       return;
 
     FileManager::Instance()->ClearTempDirectory();
 
-    appManager->RefreshRemoteConfig();
+    ConfigDownloader downloader(appManager, this);
+    if(downloader.exec() == QDialog::Accepted)
+    {
+        RefreshApps();
+    }
 }
 
 void MainWindow::RefreshApps()
@@ -201,9 +211,6 @@ void MainWindow::ShowWebpage()
 
 void MainWindow::ShowTable(const QString & branchID)
 {
-    ui->refreshButton->setEnabled(true);
-    ui->setUrlButton->setEnabled(true);
-
     if(branchID == CONFIG_LAUNCHER_WEBPAGE_KEY || branchID.isEmpty())
     {
         ShowWebpage();
@@ -307,12 +314,12 @@ void MainWindow::ShowTable(const QString & branchID)
         ui->tableWidget->setCellWidget(i, COLUMN_BUTTONS, butts);
     }
 
-    ui->tableWidget->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    ui->tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     QHeaderView * hHeader = ui->tableWidget->horizontalHeader();
-    hHeader->setResizeMode(COLUMN_APP_NAME, QHeaderView::ResizeToContents);
-    hHeader->setResizeMode(COLUMN_APP_INS, QHeaderView::Stretch);
-    hHeader->setResizeMode(COLUMN_APP_AVAL, QHeaderView::Stretch);
-    hHeader->setResizeMode(COLUMN_BUTTONS, QHeaderView::ResizeToContents);
+    hHeader->setSectionResizeMode(COLUMN_APP_NAME, QHeaderView::ResizeToContents);
+    hHeader->setSectionResizeMode(COLUMN_APP_INS, QHeaderView::Stretch);
+    hHeader->setSectionResizeMode(COLUMN_APP_AVAL, QHeaderView::Stretch);
+    hHeader->setSectionResizeMode(COLUMN_BUTTONS, QHeaderView::ResizeToContents);
 }
 
 void MainWindow::ShowUpdateDialog(QQueue<UpdateTask> & tasks)
@@ -336,7 +343,6 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask> & tasks)
             UpdateDialog dialog(tasks, appManager, this);
             connect(&dialog, SIGNAL(AppInstalled(QString, QString, AppVersion)),
                         appManager, SLOT(OnAppInstalled(QString,QString,AppVersion)));
-            dialog.setWindowModality(Qt::ApplicationModal);
             dialog.exec();
         }
     }
@@ -463,6 +469,10 @@ QWidget * MainWindow::CreateAppAvalibleTableItem(Application * app)
         comboBox->setFocusPolicy(Qt::NoFocus);
         comboBox->model()->sort(0, Qt::DescendingOrder);
         comboBox->setCurrentIndex(0);
+
+#ifdef Q_OS_DARWIN
+        comboBox->setMaximumHeight(26);
+#endif
 
         return comboBox;
     }

@@ -64,7 +64,6 @@ ErrorMessanger * ErrorMessanger::Instance()
 
 void ErrorMessanger::ShowErrorMessage(ErrorID id, int errorCode, const QString & addInfo)
 {
-
     QString errorMessage = errorsMsg[(int)id];
 
     if(errorCode)
@@ -96,7 +95,7 @@ void ErrorMessanger::ShowNotificationDlg(const QString & info)
     msgBox.exec();
 }
 
-void ErrorMessanger::LogMessage(QtMsgType type, const char * msg)
+void ErrorMessanger::LogMessage(QtMsgType type, const QString & msg)
 {
     QString typeStr;
     switch (type) {

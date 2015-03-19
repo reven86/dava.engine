@@ -10,14 +10,89 @@ LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libiconv_android.s
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE            := fmodex-prebuild
-LOCAL_SRC_FILES         := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodex.so
+LOCAL_MODULE := fmodex-prebuild
+LOCAL_SRC_FILES := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodex.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE            := fmodevent-prebuild
-LOCAL_SRC_FILES         := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodevent.so
+LOCAL_MODULE := fmodevent-prebuild
+LOCAL_SRC_FILES := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodevent.so
 include $(PREBUILT_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := xml_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libxml_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := png_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libpng_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := freetype_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libfreetype_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := yaml_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libyaml_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := mongodb_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libmongodb_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := lua_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/liblua_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := dxt_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libdxt_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := jpeg_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libjpeg_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := curl_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libcurl_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := ssl_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libssl_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := crypto_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libcrypto_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := zip_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libzip_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := fribidi_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libfribidi_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := unibreak_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libunibreak_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := uv_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libuv_android.a
+include $(PREBUILT_STATIC_LIBRARY)
 
 
 DAVA_ROOT := $(LOCAL_PATH)
@@ -39,12 +114,12 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/lua/include
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 
 # set source files 
-
 LOCAL_SRC_FILES := \
                      $(subst $(LOCAL_PATH)/,, \
                      $(wildcard $(LOCAL_PATH)/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Animation/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Autotesting/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Autotesting/*.c) \
                      $(wildcard $(LOCAL_PATH)/Base/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Collision/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Core/*.cpp) \
@@ -82,6 +157,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Sound/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Thread/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Components/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Image/*.cpp) \
@@ -106,11 +182,13 @@ endif
 endif
 
 # set build flags
-LOCAL_CFLAGS += -Dnullptr=0
-LOCAL_CFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
-LOCAL_CFLAGS += -Wno-invalid-offsetof
+LOCAL_CPPFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
+LOCAL_CPPFLAGS += -Wno-invalid-offsetof
 LOCAL_CFLAGS += -DDAVA_FMOD
 LOCAL_CPPFLAGS += -std=c++1y
+LOCAL_CFLAGS += -Qunused-arguments
+LOCAL_CFLAGS += -Werror
+LOCAL_CFLAGS += -Wno-error=deprecated-register
 
 LOCAL_CPP_FEATURES += exceptions
 
@@ -128,38 +206,6 @@ endif
 # set exported build flags
 LOCAL_EXPORT_CFLAGS := $(LOCAL_CFLAGS)
 
-# set used libs
-
-LIBS_PATH := $(call host-path,$(LOCAL_PATH)/../../Libs/libs)
-
-LOCAL_LDLIBS := -lGLESv1_CM -llog -lEGL
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libxml_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libpng_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libfreetype_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libyaml_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libmongodb_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/liblua_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libdxt_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libjpeg_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libcurl_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libssl_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libcrypto_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libzip_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libfribidi_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libuv_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libunibreak_android.a
-
-APP_PLATFORM_LEVEL := $(strip $(subst android-,,$(APP_PLATFORM)))
-IS_GL2_PLATFORM := $(shell (if [ $(APP_PLATFORM_LEVEL) -lt 18 ]; then echo "GLES2"; else echo "GLES3"; fi))
-ifeq ($(IS_GL2_PLATFORM), GLES2)
-LOCAL_LDLIBS += -lGLESv2
-else ifeq ($(IS_GL2_PLATFORM), GLES3)
-LOCAL_LDLIBS += -lGLESv3
-else
-#$(warning UNKNOWN GL VERSION)
-LOCAL_LDLIBS += -lGLESv2
-endif
-
 # set exported used libs
 LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)
 
@@ -176,6 +222,42 @@ endif
 LOCAL_SHARED_LIBRARIES += iconv_android-prebuilt
 LOCAL_SHARED_LIBRARIES += fmodex-prebuild
 LOCAL_SHARED_LIBRARIES += fmodevent-prebuild
+
+LOCAL_STATIC_LIBRARIES += xml_android
+LOCAL_STATIC_LIBRARIES += png_android
+LOCAL_STATIC_LIBRARIES += freetype_android
+LOCAL_STATIC_LIBRARIES += yaml_android
+LOCAL_STATIC_LIBRARIES += mongodb_android
+LOCAL_STATIC_LIBRARIES += lua_android
+LOCAL_STATIC_LIBRARIES += dxt_android
+LOCAL_STATIC_LIBRARIES += jpeg_android
+LOCAL_STATIC_LIBRARIES += curl_android
+LOCAL_STATIC_LIBRARIES += ssl_android
+LOCAL_STATIC_LIBRARIES += crypto_android
+LOCAL_STATIC_LIBRARIES += zip_android
+LOCAL_STATIC_LIBRARIES += fribidi_android
+LOCAL_STATIC_LIBRARIES += unibreak_android
+LOCAL_STATIC_LIBRARIES += uv_android
+
+LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL
+
+ifeq ($(APP_PLATFORM), android-14)
+	LOCAL_EXPORT_LDLIBS += -lGLESv2
+else 
+ifeq ($(APP_PLATFORM), android-15)
+	LOCAL_EXPORT_LDLIBS += -lGLESv2
+else 
+ifeq ($(APP_PLATFORM), android-16)
+	LOCAL_EXPORT_LDLIBS += -lGLESv2
+else 
+ifeq ($(APP_PLATFORM), android-17)
+	LOCAL_EXPORT_LDLIBS += -lGLESv2
+else
+	LOCAL_EXPORT_LDLIBS += -lGLESv3
+endif
+endif
+endif
+endif
 
 include $(BUILD_STATIC_LIBRARY)
 

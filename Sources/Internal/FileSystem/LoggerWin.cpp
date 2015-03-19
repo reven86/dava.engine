@@ -44,12 +44,6 @@ void Logger::PlatformLog(eLogLevel ll, const char8* text)
 	//printf("%s", text);
 }
 
-void Logger::PlatformLog(eLogLevel ll, const char16* text)
-{
-	OutputDebugStringW(text);
-	//wprintf(L"%s", text);
-}
-
 }
 
 #endif 

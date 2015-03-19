@@ -36,7 +36,7 @@ qt5_wrap_cpp                  ( MOC_APP_SRCS ${QT_LIST} )
 file                          ( GLOB UI_LIST "Ui/*.ui" )
 qt5_wrap_ui                   ( UI_APP_HDRS  ${UI_LIST} )
 
-file                          ( GLOB RCC_LIST "Data/*.qrc" )
+file                          ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources             ( RCC_APP_SRCS  ${RCC_LIST} )
 
 set                           ( Generated    ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
@@ -48,24 +48,19 @@ add_subdirectory              ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" 
  
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO                  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
-set( MACOS_DATA                 ${CMAKE_CURRENT_LIST_DIR}/Data/* )
+set( MACOS_DATA                 ${CMAKE_CURRENT_LIST_DIR}/Data )
+set( WIN32_DATA                 ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_DYLIB                ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
 set( ADDED_SRC                  ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set( LIBRARIES                  ${QT_LIBRARIES} TextureTool )
 set( LIBRARIES_RELEASE        )
 set( LIBRARIES_DEBUG          )
 set( ADDED_BINARY_DIR           ${QT5_PATH_WIN}/bin )
+set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
 
 setup_main_executable()
 
-if( APPLE )
-    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14")
-    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-        COMMAND install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Frameworks/libIMagickHelper.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}            
-    )
-
-elseif( WIN32 )
+if( WIN32 AND NOT DAVA_MEGASOLUTION )
     set( OUTPUT_DIR "${CMAKE_CURRENT_LIST_DIR}/$(Configuration)" )
     foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
         string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )

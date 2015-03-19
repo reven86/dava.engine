@@ -36,7 +36,7 @@ public class SoftKeyboardStateHelper implements ViewTreeObserver.OnGlobalLayoutL
     
     public void unsubscribe() {
     	if(activityRootView != null) {
-        	activityRootView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+        	activityRootView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
     	}
     }
 

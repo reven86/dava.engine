@@ -239,8 +239,9 @@ void Scene::InitGlobalMaterial()
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_UV_OFFSET)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_UV_OFFSET, Shader::UT_FLOAT_VEC2, 1, defaultVec2.data);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_UV_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_UV_SCALE, Shader::UT_FLOAT_VEC2, 1, defaultVec2.data);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_LIGHTMAP_SIZE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHTMAP_SIZE, Shader::UT_FLOAT, 1, &defaultLightmapSize);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_DECAL_TILE_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_DECAL_TILE_SCALE, Shader::UT_FLOAT_VEC2, 1, &defaultVec2I);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_DECAL_TILE_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_DECAL_TILE_SCALE, Shader::UT_FLOAT_VEC2, 1, &defaultVec2);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_DECAL_TILE_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_DECAL_TILE_COLOR, Shader::UT_FLOAT_VEC4, 1, &Color::White);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_DETAIL_TILE_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_DETAIL_TILE_SCALE, Shader::UT_FLOAT_VEC2, 1, &defaultVec2);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_SHADOW_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_SHADOW_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
 
 }
@@ -432,19 +433,17 @@ Scene::~Scene()
     
 void Scene::RegisterEntity(Entity * entity)
 {
-    uint32 systemsCount = systems.size();
-    for (uint32 k = 0; k < systemsCount; ++k)
+    for(auto& system : systems)
     {
-        systems[k]->RegisterEntity(entity);
+        system->RegisterEntity(entity);
     }
 }
 
 void Scene::UnregisterEntity(Entity * entity)
 {
-    uint32 systemsCount = systems.size();
-    for (uint32 k = 0; k < systemsCount; ++k)
+    for(auto& system : systems)
     {
-        systems[k]->UnregisterEntity(entity);
+        system->UnregisterEntity(entity);
     }
 }
 
@@ -464,7 +463,7 @@ void Scene::UnregisterEntitiesInSystemRecursively(SceneSystem *system, Entity * 
 void Scene::RegisterComponent(Entity * entity, Component * component)
 {
     DVASSERT(entity && component);
-    uint32 systemsCount = systems.size();
+    uint32 systemsCount = static_cast<uint32>(systems.size());
     for (uint32 k = 0; k < systemsCount; ++k)
     {
         systems[k]->RegisterComponent(entity, component);
@@ -474,7 +473,7 @@ void Scene::RegisterComponent(Entity * entity, Component * component)
 void Scene::UnregisterComponent(Entity * entity, Component * component)
 {
     DVASSERT(entity && component);
-    uint32 systemsCount = systems.size();
+    uint32 systemsCount = static_cast<uint32>(systems.size());
     for (uint32 k = 0; k < systemsCount; ++k)
     {
         systems[k]->UnregisterComponent(entity, component);
@@ -858,7 +857,7 @@ void Scene::Draw()
     
 void Scene::SceneDidLoaded()
 {
-    uint32 systemsCount = systems.size();
+    uint32 systemsCount = static_cast<uint32>(systems.size());
     for (uint32 k = 0; k < systemsCount; ++k)
     {
         systems[k]->SceneDidLoaded();
@@ -1080,7 +1079,7 @@ void Scene::Load(KeyedArchive * archive)
 }*/
     
 
-SceneFileV2::eError Scene::Save(const DAVA::FilePath & pathname, bool saveForGame /*= false*/)
+SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath & pathname, bool saveForGame /*= false*/)
 {
     ScopedPtr<SceneFileV2> file(new SceneFileV2());
 	file->EnableDebugLog(false);

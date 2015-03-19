@@ -77,7 +77,7 @@ void Thread::Init()
 
 void Thread::Shutdown()
 {
-    DVASSERT(STATE_ENDED == state || STATE_CANCELLED == state || STATE_KILLED == state);
+    DVASSERT(STATE_ENDED == state || STATE_KILLED == state);
     Join();
 }
 
@@ -92,7 +92,7 @@ void Thread::KillNative()
 #endif
     if (0 != ret)
     {
-        Logger::FrameworkDebug("[Thread::Cancel] for android: id = %d, error = %d", Thread::GetCurrentId(), ret);
+        Logger::FrameworkDebug("[Thread::Cancel] cannot kill thread: id = %d, error = %d", Thread::GetCurrentId(), ret);
     }
 }
 

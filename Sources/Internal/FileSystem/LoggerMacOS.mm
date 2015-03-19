@@ -42,12 +42,7 @@ void Logger::PlatformLog(eLogLevel ll, const char8* text)
 	//NSString * string = [NSString stringWithFormat:@"[%s] %@", GetLogLevelString(ll), [NSString stringWithUTF8String:text]];
 	NSLog(@"[%s] %s", GetLogLevelString(ll), text);
 }
-	
-void Logger::PlatformLog(eLogLevel ll, const char16* text)
-{
-	wprintf(L"%s", text);
-}
 
-};
+}
 
 #endif

@@ -78,21 +78,21 @@ JniDeviceInfo::JniDeviceInfo()
 
 String JniDeviceInfo::GetVersion()
 {
-	intermediateStr = "";
+	intermediateStr.clear();
 	getVersion();
 	return intermediateStr;
 }
 
 String JniDeviceInfo::GetManufacturer()
 {
-	intermediateStr = "";
+	intermediateStr.clear();
 	getManufacturer();
 	return intermediateStr;
 }
 
 String JniDeviceInfo::GetModel()
 {
-	intermediateStr = "";
+	intermediateStr.clear();
 
 	getModel();
 	return intermediateStr;
@@ -100,35 +100,35 @@ String JniDeviceInfo::GetModel()
 
 String JniDeviceInfo::GetLocale()
 {
-	intermediateStr = "";
+	intermediateStr.clear();
 	getLocale();
 	return intermediateStr;
 }
 
 String JniDeviceInfo::GetRegion()
 {
-	intermediateStr = "";
+	intermediateStr.clear();
 	getRegion();
 	return intermediateStr;
 }
 
 String JniDeviceInfo::GetTimeZone()
 {
-	intermediateStr = "";
+	intermediateStr.clear();
 	getTimeZone();
 	return intermediateStr;
 }
 
 String JniDeviceInfo::GetUDID()
 {
-	intermediateStr = "";
+	intermediateStr.clear();
 	getUDID();
 	return intermediateStr;
 }
 
 String JniDeviceInfo::GetName()
 {
-	intermediateStr = "";
+	intermediateStr.clear();
 	getName();
 	return intermediateStr;
 }
@@ -136,12 +136,13 @@ String JniDeviceInfo::GetName()
 int32 JniDeviceInfo::GetZBufferSize()
 {
 	getZBufferSize();
+	// TODO need future refactoring
 	return 0;
 }
 
 String JniDeviceInfo::GetHTTPProxyHost()
 {
-	String returnStr = "";
+	String returnStr;
 	jobject obj = getHTTPProxyHost();
 	JNI::CreateStringFromJni(jstring(obj), returnStr);
 
@@ -150,7 +151,7 @@ String JniDeviceInfo::GetHTTPProxyHost()
 
 String JniDeviceInfo::GetHTTPNonProxyHosts()
 {
-	String returnStr = "";
+	String returnStr;
 	jobject obj = getHTTPNonProxyHosts();
 	JNI::CreateStringFromJni(jstring(obj), returnStr);
 	return returnStr;
@@ -219,7 +220,7 @@ DeviceInfo::StorageInfo JniDeviceInfo::GetInternalStorageInfo()
 	if (mid)
 	{
 		jobject object = (jobject)env->CallStaticObjectMethod(jniDeviceInfo, mid);
-
+		DAVA_JNI_EXCEPTION_CHECK
 		if (object)
 		{
 			info = StorageInfoFromJava(object);
@@ -250,7 +251,7 @@ DeviceInfo::StorageInfo JniDeviceInfo::GetPrimaryExternalStorageInfo()
 	if (mid)
 	{
 		jobject object = (jobject)env->CallStaticObjectMethod(jniDeviceInfo, mid);
-
+		DAVA_JNI_EXCEPTION_CHECK
 		if (object)
 		{
 			info = StorageInfoFromJava(object);
@@ -272,6 +273,7 @@ List<DeviceInfo::StorageInfo> JniDeviceInfo::GetSecondaryExternalStoragesList()
 	if (mid)
 	{
 		jarray array = (jarray)env->CallStaticObjectMethod(jniDeviceInfo, mid);
+		DAVA_JNI_EXCEPTION_CHECK
 		if (array)
 		{
 			jsize length = env->GetArrayLength(array);

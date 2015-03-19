@@ -76,7 +76,6 @@ static Counter**        activeCounter       = 0;
 static uint32           activeCounterCount  = 0;
 static uint64           totalTime0          = 0;
 static uint64           totalTime           = 0;
-static uint32           maxNameLen          = 32;
 static DAVA::Spinlock   counterSync;
 
 
@@ -217,7 +216,7 @@ Init( uint32 _maxCounterCount, uint32 _historyCount )
     {
         for( Counter* c=counter,*c_end=counter+maxCounterCount; c!=c_end; ++c )
         {        
-            c->id        = c - counter;
+            c->id        = static_cast<uint32>(c - counter);
             c->parentId  = InvalidIndex;
             c->used      = false;
         }
@@ -385,7 +384,7 @@ DumpInternal( const std::vector<CounterInfo>& result, bool showPercents=false )
 {
     unsigned    max_name_len = 0;
     
-    for( unsigned i=0,i_end=result.size(); i!=i_end; ++i )
+    for( size_t i=0,i_end=result.size(); i!=i_end; ++i )
     {
         uint32  pi      = result[i].parentIndex;
         uint32  indent  = 0;
@@ -407,12 +406,11 @@ DumpInternal( const std::vector<CounterInfo>& result, bool showPercents=false )
     }
 
     Logger::Info( "===================================================" );
-    for( unsigned i=0,i_end=result.size(); i!=i_end; ++i )
+    for( size_t i=0,i_end=result.size(); i!=i_end; ++i )
     {
         uint32  pi          = result[i].parentIndex;
         uint32  indent      = 0;
         char    text[256];  memset( text, ' ', sizeof(text) );
-        uint32  len         = 0;
 
         while( pi != InvalidIndex )
         {
@@ -425,10 +423,10 @@ DumpInternal( const std::vector<CounterInfo>& result, bool showPercents=false )
         if( result[i].name )
             text_len = Snprinf( text+indent*2, sizeof(text)-indent*2, "%s", result[i].name );
         else
-            text_len = Snprinf( text+indent*2, sizeof(text)-indent*2, "%u", i );
+            text_len = Snprinf( text+indent*2, sizeof(text)-indent*2, "%u", static_cast<uint32>(i) );
         
         text[indent*2+text_len] = ' ';
-        text_len = max_name_len+2+Snprinf( text+max_name_len+2, sizeof(text)-max_name_len-2, " %-5u  %u us", result[i].count, result[i].timeUs );
+        text_len = max_name_len+2+Snprinf( text+max_name_len+2, sizeof(text)-max_name_len-2, " %-5u  %llu us", result[i].count, result[i].timeUs );
 
         if( showPercents )
         {
@@ -522,7 +520,7 @@ CollectActiveCounters( Counter* cur_counter, std::vector<Counter*>* result )
 
         if( c->GetParentId() == InvalidIndex )
         {
-            for( uint32 i=0,i_end=top.size(); i!=i_end; ++i )
+            for( size_t i=0,i_end=top.size(); i!=i_end; ++i )
             {
                 if( c->GetTimeUs() > top[i]->GetTimeUs() )
                 {
@@ -559,18 +557,18 @@ GetCounters( std::vector<CounterInfo>* info )
     CollectActiveCounters( curCounter, &result );
 
     info->resize( result.size() );
-    for( uint32 i=0,i_end=result.size(); i!=i_end; ++i )
+    for( size_t i=0,i_end=result.size(); i!=i_end; ++i )
     {
         (*info)[i].name         = result[i]->GetName();
         (*info)[i].count        = result[i]->GetCount();
         (*info)[i].timeUs       = result[i]->GetTimeUs();
         (*info)[i].parentIndex  = InvalidIndex;
         
-        for( unsigned k=0,k_end=info->size(); k!=k_end; ++k )
+        for( size_t k=0,k_end=info->size(); k!=k_end; ++k )
         {
             if( result[i]->GetParentId() == result[k]->GetId() )
             {
-                (*info)[i].parentIndex = k;
+                (*info)[i].parentIndex = static_cast<uint32>(k);
                 break;
             }
         }
@@ -625,18 +623,18 @@ GetAverageCounters( std::vector<CounterInfo>* info )
         CollectActiveCounters( profAverage, &result );
 
         info->resize( result.size() );
-        for( uint32 i=0,i_end=result.size(); i!=i_end; ++i )
+        for( size_t i=0,i_end=result.size(); i!=i_end; ++i )
         {
             (*info)[i].name         = result[i]->GetName();
             (*info)[i].count        = result[i]->GetCount();
             (*info)[i].timeUs       = result[i]->GetTimeUs();
             (*info)[i].parentIndex  = InvalidIndex;
         
-            for( uint32 k=0,k_end=info->size(); k!=k_end; ++k )
+            for( size_t k=0,k_end=info->size(); k!=k_end; ++k )
             {
                 if( result[i]->GetParentId() == result[k]->GetId() )
                 {
-                    (*info)[i].parentIndex = k;
+                    (*info)[i].parentIndex = static_cast<uint32>(k);
                     break;
                 }
             }

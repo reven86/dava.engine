@@ -189,6 +189,14 @@ void QualitySwitcher::ApplyMa()
     }
 }
 
+void QualitySwitcher::UpdateEntitiesToQuality(DAVA::Entity *e)
+{
+    DAVA::QualitySettingsSystem::Instance()->UpdateEntityVisibility(e);
+    for (int32 i = 0, sz = e->GetChildrenCount(); i < sz; ++i)
+        UpdateEntitiesToQuality(e->GetChild(i));
+
+}
+
 void QualitySwitcher::Show()
 {
     QualitySwitcher *sw = new QualitySwitcher(QtMainWindow::Instance());
@@ -228,6 +236,13 @@ void QualitySwitcher::OnMaQualitySelect(int index)
         {
             DAVA::QualitySettingsSystem::Instance()->SetCurMaterialQuality(group, newMaQuality);
             ApplyMa();
+
+            SceneTabWidget *tabWidget = QtMainWindow::Instance()->GetSceneWidget();
+            for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
+            {
+                Scene* scene = tabWidget->GetTabScene(tab);
+                UpdateEntitiesToQuality(scene);
+            }
         }
     }
 }
@@ -239,5 +254,12 @@ void QualitySwitcher::OnOptionClick(bool checked)
     {
         FastName optionName(checkBox->property("qualityOptionName").toString().toStdString().c_str());
         QualitySettingsSystem::Instance()->EnableOption(optionName, checked);
+        
+        SceneTabWidget *tabWidget = QtMainWindow::Instance()->GetSceneWidget();
+        for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
+        {
+            Scene* scene = tabWidget->GetTabScene(tab);
+            UpdateEntitiesToQuality(scene);
+        }
     }
 }

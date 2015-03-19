@@ -51,10 +51,9 @@ MaterialGraph::~MaterialGraph()
 
 void MaterialGraph::RemoveAllNodes()
 {
-    uint32 size = allNodes.size();
-    for (uint32 k = 0; k < size; ++k)
+    for(auto& node : allNodes)
     {
-        SafeRelease(allNodes[k]);
+        SafeRelease(node);
     }
     allNodes.clear();
 }
@@ -172,7 +171,7 @@ MaterialGraphNode * MaterialGraph::GetNode(uint32 index) const
 }
 MaterialGraphNode * MaterialGraph::GetNodeByName(const String & name) const
 {
-    uint32 size = allNodes.size();
+    uint32 size = static_cast<uint32>(allNodes.size());
     for (uint32 k = 0; k < size; ++k)
     {
         if (allNodes[k]->GetName() == name)return allNodes[k];
@@ -190,7 +189,7 @@ void MaterialGraph::SortByDepthMarkerAndRemoveUnused()
     for (Vector<MaterialGraphNode*>::iterator it = allNodes.begin(); it != allNodes.end();)
     {
         MaterialGraphNode * node = *it;
-        if (node->GetDepthMarker() == -1)
+        if (node->GetDepthMarker() == static_cast<uint32>(-1))
         {
             Logger::Debug("- remove empty node: %s", node->GetName().c_str());
             RemoveNodeRecursive(node);

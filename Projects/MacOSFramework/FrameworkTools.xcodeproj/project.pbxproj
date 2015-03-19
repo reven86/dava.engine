@@ -101,6 +101,8 @@
 		A69854BB17CE41EC001E9FDE /* TexturePacker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TexturePacker.h; sourceTree = "<group>"; };
 		A6A617DE17CF502C00375E11 /* TextureConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextureConverter.cpp; sourceTree = "<group>"; };
 		A6A617DF17CF502C00375E11 /* TextureConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextureConverter.h; sourceTree = "<group>"; };
+		E8BE2FDD1A80CC7500AC96C2 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libTextureConverter.dylib; sourceTree = "<group>"; };
+		E8BE2FDF1A80CCA300AC96C2 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTextureConverter.dylib; path = ../../Tools/Bin/libTextureConverter.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -140,6 +142,8 @@
 		A698542017CE38BF001E9FDE = {
 			isa = PBXGroup;
 			children = (
+				E8BE2FDF1A80CCA300AC96C2 /* libTextureConverter.dylib */,
+				E8BE2FDD1A80CC7500AC96C2 /* libTextureConverter.dylib */,
 				A69854A717CE41EC001E9FDE /* Tools */,
 				A698542A17CE38C0001E9FDE /* Products */,
 			);
@@ -435,6 +439,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					/opt/local/lib,
 					./../../Libs/libs,
+					./../../Tools/Bin,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
@@ -479,6 +484,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					/opt/local/lib,
 					./../../Libs/libs,
+					./../../Tools/Bin,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				SDKROOT = macosx;
@@ -499,6 +505,10 @@
 					./../../Sources/Tools,
 					../../Libs/IMagickHelpLib,
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/victorkleschenko/Work/WoT/dava.framework/Tools/Bin,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -516,6 +526,10 @@
 					./../../Libs/lua/include,
 					./../../Sources/Tools,
 					../../Libs/IMagickHelpLib,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/victorkleschenko/Work/WoT/dava.framework/Tools/Bin,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

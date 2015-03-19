@@ -89,7 +89,6 @@ public:
     void OnError(const String &errorMessage);
     void OnTestFinished();
     
-    size_t GetAllocatedMemory() const;
     size_t GetUsedMemory() const;
     
     float32 GetTimeElapsed();
@@ -156,7 +155,7 @@ public:
 	void WriteString(const String &name, const String &text);
 	String ReadString(const String &name);
 
-	String MakeScreenshot();
+	String MakeScreenshot(bool skip);
 
 	inline lua_State* GetLuaState() { return luaState; };
 
@@ -182,6 +181,7 @@ protected:
 #endif //SWIG
 private:
     void* memoryPool;
+    void* memorySpace;
     int resumeTestFunctionRef;
 };
 

@@ -271,7 +271,7 @@
 -(void)moveTouchsToVector:(int)touchPhase curEvent:(NSEvent*)curEvent outTouches:(Vector<UIEvent>*)outTouches
 {
 	int button = 0;
-	if(curEvent.type == NSLeftMouseDown || curEvent.type == NSLeftMouseUp || curEvent.type == NSLeftMouseDragged || curEvent.type == NSMouseMoved)
+	if(curEvent.type == NSLeftMouseDown || curEvent.type == NSLeftMouseUp || curEvent.type == NSLeftMouseDragged)
 	{
 		button = 1;
 	}
@@ -279,7 +279,7 @@
 	{
 		button = 2;
 	}
-	else 
+	else if(curEvent.type != NSMouseMoved)
 	{
 		button = curEvent.buttonNumber + 1;
 	}
@@ -488,7 +488,7 @@ static int32 oldModifersFlags = 0;
             ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
             ev.timestamp = event.timestamp;
             ev.tapCount = 1;
-            ev.tid = InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey([event keyCode]);
+            ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey([event keyCode]);
             
             touches.push_back(ev);
             
@@ -497,10 +497,10 @@ static int32 oldModifersFlags = 0;
             UIControlSystem::Instance()->OnInput(0, touches, allTouches);
         }
         
-        InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed([event keyCode]);
+        InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed([event keyCode]);
         if ([event modifierFlags]&NSCommandKeyMask)
         {
-            InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed([event keyCode]);
+            InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed([event keyCode]);
         }
     }
 
@@ -511,7 +511,7 @@ static int32 oldModifersFlags = 0;
 {
     if(keyboardLocked)
     {
-        InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed([event keyCode]);
+        InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed([event keyCode]);
     }
 
 	[super keyUp:event];
@@ -529,11 +529,11 @@ static int32 oldModifersFlags = 0;
         {
             if (newModifers&masks[i]) 
             {
-                InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed(keyCodes[i]);
+                InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(keyCodes[i]);
             }
             else 
             {
-                InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed(keyCodes[i]);
+                InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCodes[i]);
             }
         }
     }

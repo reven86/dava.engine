@@ -65,14 +65,14 @@ namespace DAVA
         BackgroundView* backgroundView = [appDelegate glController].backgroundView;
         
         UITextFieldHolder * textFieldHolder= [backgroundView CreateTextField];
-        textFieldHolder.davaTextField = (DAVA::UITextField *)tf;
+        [textFieldHolder setTextField:(DAVA::UITextField *)tf];
 
         objcClassPtr = textFieldHolder;
     }
     UITextFieldiPhone::~UITextFieldiPhone()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        textFieldHolder.davaTextField = (DAVA::UITextField *)nil;
+        [textFieldHolder setTextField:(DAVA::UITextField *)nil];
         
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
         BackgroundView* backgroundView = [appDelegate glController].backgroundView;
@@ -133,6 +133,8 @@ namespace DAVA
 			case UIControlContentHorizontalAlignmentRight:
 				textFieldHolder->textField.textAlignment = textFieldHolder->useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentRight;
 				break;
+            default:
+                break;
 		}
     }
 	
@@ -257,7 +259,7 @@ namespace DAVA
 
         textFieldHolder->textField.text = (NSString*)TruncateText(text, textFieldHolder->cppTextField->GetMaxLength());
         [textFieldHolder->textField.undoManager removeAllActions];
-        
+
         // Notify UITextFieldDelegate::TextFieldOnTextChanged event
         [textFieldHolder->textField sendActionsForControlEvents:UIControlEventEditingChanged];
     }
@@ -353,8 +355,8 @@ namespace DAVA
         }
 
         ::UITextField* textField = textFieldHolder->textField;
-        int pos = [textField offsetFromPosition: textField.beginningOfDocument
-                                     toPosition: textField.selectedTextRange.start];
+        int32 pos = static_cast<int32>([textField offsetFromPosition: textField.beginningOfDocument
+                                     toPosition: textField.selectedTextRange.start]);
         return pos;
     }
 
@@ -374,7 +376,7 @@ namespace DAVA
         }
         if (pos > textLength)
         {
-            pos = textLength - 1;
+            pos = static_cast<uint32>(textLength - 1);
         }
 
         UITextPosition *start = [textField positionFromPosition:[textField beginningOfDocument] offset:pos];

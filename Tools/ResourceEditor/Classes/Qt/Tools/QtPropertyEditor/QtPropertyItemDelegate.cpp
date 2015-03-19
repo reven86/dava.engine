@@ -37,6 +37,7 @@
 #include "QtPropertyItemDelegate.h"
 #include "QtPropertyModel.h"
 #include "QtPropertyData.h"
+#include "QtPropertyData/QtPropertyDataDavaVariant.h"
 
 QtPropertyItemDelegate::QtPropertyItemDelegate(QAbstractItemView *_view, QtPropertyModel *_model, QWidget *parent /* = 0 */)
 	: QStyledItemDelegate(parent)
@@ -64,7 +65,16 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 		drawOptionalButtons(painter, opt, index, NORMAL);
 	}
 
-	QStyledItemDelegate::paint(painter, opt, index);
+    auto *data = qobject_cast<QtPropertyDataDavaVariant *>( model->itemFromIndex( index ) );
+    if (
+        (data != nullptr) &&
+        (data->GetVariantValue().GetType() == DAVA::VariantType::TYPE_STRING) &&
+        (data->GetVariantValue().AsString().find( '\n' ) != DAVA::String::npos) )
+    {
+        opt.text = opt.text.simplified();
+    }
+
+    view->style()->drawControl( QStyle::CE_ItemViewItem, &opt, painter, view );
 
 	if(index.column() == 1)
 	{
@@ -74,8 +84,26 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 
 QSize QtPropertyItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-	QSize s = QStyledItemDelegate::sizeHint(option, index);
-    return QSize(s.width(), s.height() + 5);
+	auto s = QStyledItemDelegate::sizeHint(option, index);
+    static const int baseText = 17;
+    static const int extra = 5;
+
+    auto *data = qobject_cast<QtPropertyDataDavaVariant *>( model->itemFromIndex( index ) );
+    if ( data != nullptr )
+    {
+        if ( data->GetVariantValue().GetType() == DAVA::VariantType::TYPE_STRING )
+        {
+            const auto& text = data->GetValue().toString();
+            if ( !text.isEmpty() && text.contains( '\n' ) )
+            {
+                s.setHeight( baseText );
+            }
+        }
+    }
+
+    s.setHeight( s.height() + extra );
+
+    return s;
 }
 
 QWidget* QtPropertyItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const

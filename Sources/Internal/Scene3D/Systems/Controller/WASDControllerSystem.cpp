@@ -70,13 +70,13 @@ void WASDControllerSystem::Process(float32 timeElapsed)
 {
     float32 actualMoveSpeed = moveSpeed * timeElapsed;
 
-    const uint32 size = entities.size();
+    const uint32 size = static_cast<uint32>(entities.size());
     if(0 == size) return;
     
-    KeyboardDevice *keyboard = InputSystem::Instance()->GetKeyboard();
-    if(     keyboard->IsKeyPressed(DVKEY_SHIFT)
-       ||   keyboard->IsKeyPressed(DVKEY_CTRL)
-       ||   keyboard->IsKeyPressed(DVKEY_ALT)
+    KeyboardDevice &keyboard = InputSystem::Instance()->GetKeyboard();
+    if(     keyboard.IsKeyPressed(DVKEY_SHIFT)
+       ||   keyboard.IsKeyPressed(DVKEY_CTRL)
+       ||   keyboard.IsKeyPressed(DVKEY_ALT)
        )
     {
         return;
@@ -87,19 +87,19 @@ void WASDControllerSystem::Process(float32 timeElapsed)
         Camera *camera = GetCamera(entities[i]);
         if(camera)
         {
-            if(keyboard->IsKeyPressed(DVKEY_W) || keyboard->IsKeyPressed(DVKEY_UP))
+            if(keyboard.IsKeyPressed(DVKEY_W) || keyboard.IsKeyPressed(DVKEY_UP))
             {
                 MoveForward(camera, actualMoveSpeed, DIRECTION_STRAIGHT);
             }
-            if(keyboard->IsKeyPressed(DVKEY_S) || keyboard->IsKeyPressed(DVKEY_DOWN))
+            if(keyboard.IsKeyPressed(DVKEY_S) || keyboard.IsKeyPressed(DVKEY_DOWN))
             {
                 MoveForward(camera, actualMoveSpeed, DIRECTION_INVERSE);
             }
-            if(keyboard->IsKeyPressed(DVKEY_D) || keyboard->IsKeyPressed(DVKEY_RIGHT))
+            if(keyboard.IsKeyPressed(DVKEY_D) || keyboard.IsKeyPressed(DVKEY_RIGHT))
             {
                 MoveRight(camera, actualMoveSpeed, DIRECTION_STRAIGHT);
             }
-            if(keyboard->IsKeyPressed(DVKEY_A) || keyboard->IsKeyPressed(DVKEY_LEFT))
+            if(keyboard.IsKeyPressed(DVKEY_A) || keyboard.IsKeyPressed(DVKEY_LEFT))
             {
                 MoveRight(camera, actualMoveSpeed, DIRECTION_INVERSE);
             }

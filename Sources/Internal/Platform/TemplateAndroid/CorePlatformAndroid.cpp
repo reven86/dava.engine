@@ -331,22 +331,55 @@ namespace DAVA
 
 	void CorePlatformAndroid::KeyUp(int32 keyCode)
 	{
-		InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed(keyCode);
+		InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCode);
 	}
 
 	void CorePlatformAndroid::KeyDown(int32 keyCode)
 	{
-		InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed(keyCode);
+		InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(keyCode);
 
 		UIEvent * keyEvent = new UIEvent;
 		keyEvent->keyChar = 0;
 		keyEvent->phase = DAVA::UIEvent::PHASE_KEYCHAR;
 		keyEvent->tapCount = 1;
-		keyEvent->tid = InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey(keyCode);
+		keyEvent->tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(keyCode);
 
 		InputSystem::Instance()->ProcessInputEvent(keyEvent);
 
 		SafeDelete(keyEvent);
+	}
+
+	void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool isKeycode)
+	{
+		GamepadDevice & gamepadDevice = InputSystem::Instance()->GetGamepadDevice();
+
+		int32 davaKey = GamepadDevice::INVALID_DAVAKEY;
+		if(isKeycode)
+			davaKey = gamepadDevice.GetDavaEventIdForSystemKeycode(elementKey);
+		else
+			davaKey = gamepadDevice.GetDavaEventIdForSystemAxis(elementKey);
+
+		if(davaKey == GamepadDevice::INVALID_DAVAKEY)
+			return;
+
+		UIEvent newEvent;
+		newEvent.tid = davaKey;
+		newEvent.physPoint.x = value;
+		newEvent.point.x = value;
+		newEvent.phase = DAVA::UIEvent::PHASE_JOYSTICK;
+
+		gamepadDevice.SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);
+		InputSystem::Instance()->ProcessInputEvent(&newEvent);
+	}
+
+	void CorePlatformAndroid::OnGamepadAvailable(bool isAvailable)
+	{
+		InputSystem::Instance()->GetGamepadDevice().SetAvailable(isAvailable);
+	}
+
+	void CorePlatformAndroid::OnGamepadTriggersAvailable(bool isAvailable)
+	{
+		InputSystem::Instance()->GetGamepadDevice().OnTriggersAvailable(isAvailable);
 	}
 
 	void CorePlatformAndroid::OnInput(int32 action, int32 source, Vector< UIEvent >& activeInputs, Vector< UIEvent >& allInputs)
@@ -354,17 +387,15 @@ namespace DAVA
 		DVASSERT(!allInputs.empty());
 		if (!allInputs.empty())
 		{
-			if((source & 0x10) > 0) // joystick
-			{
-				for (Vector< UIEvent >::iterator iter = activeInputs.begin(); iter != activeInputs.end(); ++iter)
-					InputSystem::Instance()->ProcessInputEvent(&(*iter));
-				return;
-			}
-			
 			UIControlSystem::Instance()->OnInput(action, activeInputs, allInputs, allInputs[0].timestamp);
 		}
 	}
 
+    bool CorePlatformAndroid::IsMultitouchEnabled()
+    {
+        return InputSystem::Instance()->GetMultitouchEnabled();
+    }
+    
 	bool CorePlatformAndroid::DownloadHttpFile(const String & url, const String & documentsPathname)
 	{
 		if(androidDelegate)

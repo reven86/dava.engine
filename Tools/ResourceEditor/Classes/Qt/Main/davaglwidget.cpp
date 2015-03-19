@@ -317,7 +317,7 @@ void DavaGLWidget::focusOutEvent(QFocusEvent *e)
     // UnregisterEventFilter();
     QWidget::focusOutEvent( e );
     
-    DAVA::InputSystem::Instance()->GetKeyboard()->ClearAllKeys();
+    DAVA::InputSystem::Instance()->GetKeyboard().ClearAllKeys();
 	DAVA::QtLayer::Instance()->LockKeyboardInput(false);
 
 #if defined(Q_OS_WIN)
@@ -450,11 +450,6 @@ void DavaGLWidget::Render()
 void DavaGLWidget::Quit()
 {
     exit(0);
-}
-
-void DavaGLWidget::ShowAssertMessage(const char * message)
-{
-    QMessageBox::critical(this, "", message);
 }
 
 void DavaGLWidget::RegisterEventFilter()

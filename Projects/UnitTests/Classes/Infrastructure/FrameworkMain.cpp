@@ -37,8 +37,9 @@ void FrameworkDidLaunched()
 {
 #if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     
-#define WIDTH   960
-#define HEIGHT  640
+#define WIDTH   1024
+#define HEIGHT  768
+    
     
     KeyedArchive * appOptions = new KeyedArchive();
     appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
@@ -46,12 +47,13 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_3_0);
 
     appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
+    
     appOptions->SetInt32("width", WIDTH);
     appOptions->SetInt32("height", HEIGHT);
-
+    
     DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
     DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(WIDTH, HEIGHT, "Gfx");
-
+    
 #else
     KeyedArchive * appOptions = new KeyedArchive();
 
