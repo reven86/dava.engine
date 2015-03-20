@@ -53,7 +53,7 @@ set( IOS_PLISTT           ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/
 set( IOS_XIB              ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/MainWindow.xib ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/iPad/MainWindow-iPad.xib )
 set( IOS_DATA             Data )
 
-set( ANDROID_PACKAGE            "com.dava.performance_test" )
+set( ANDROID_PACKAGE            "com.dava.performancetests" )
 set( ANDROID_APP_NAME           "PerformanceTestApp" )
 set( ANDROID_ACTIVITY_APP_NAME  "PerformanceTests"   )
 
@@ -63,7 +63,7 @@ set( ANDROID_JAVA_RES           ${CMAKE_CURRENT_LIST_DIR}/android/res )
 set( ANDROID_JAVA_ASSET         ${CMAKE_CURRENT_LIST_DIR}/Data ) 
 set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-web.png )
 
-set( ADDED_SRC            ${PackerToolsSCR} ${IOS_ADD_SRC})
+set( ADDED_SRC            ${IOS_ADD_SRC})
 set( LIBRARIES            DavaTools )
 set( LIBRARIES_RELEASE    )
 set( LIBRARIES_DEBUG      )

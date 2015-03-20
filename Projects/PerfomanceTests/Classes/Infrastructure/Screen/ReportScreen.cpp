@@ -102,22 +102,22 @@ void ReportScreen::CreateReportScreen()
             reportItemCopy->SetPosition(Vector2(0.0f, 0.0f + testNumber * offsetY));
 
             UIStaticText* minDeltaText = static_cast<UIStaticText*>(reportItemCopy->FindByName(MIN_DELTA));
-            minDeltaText->SetText(UTF8Utils::EncodeToWideString(std::to_string(minDelta)));
+            minDeltaText->SetText(UTF8Utils::EncodeToWideString(ConverterUtils::NumberToString(minDelta)));
 
             UIStaticText* maxDeltaText = static_cast<UIStaticText*>(reportItemCopy->FindByName(MAX_DELTA));
-            maxDeltaText->SetText(UTF8Utils::EncodeToWideString(std::to_string(maxDelta)));
+            maxDeltaText->SetText(UTF8Utils::EncodeToWideString(ConverterUtils::NumberToString(maxDelta)));
 
             UIStaticText* averageDeltaText = static_cast<UIStaticText*>(reportItemCopy->FindByName(AVERAGE_DELTA));
-            averageDeltaText->SetText(UTF8Utils::EncodeToWideString(std::to_string(averageDelta)));
+            averageDeltaText->SetText(UTF8Utils::EncodeToWideString(ConverterUtils::NumberToString(averageDelta)));
 
             UIStaticText* testTimeText = static_cast<UIStaticText*>(reportItemCopy->FindByName(TEST_TIME));
-            testTimeText->SetText(UTF8Utils::EncodeToWideString(std::to_string(testTime)));
+            testTimeText->SetText(UTF8Utils::EncodeToWideString(ConverterUtils::NumberToString(testTime)));
 
             UIStaticText* elapsedTimeText = static_cast<UIStaticText*>(reportItemCopy->FindByName(ELAPSED_TIME));
-            elapsedTimeText->SetText(UTF8Utils::EncodeToWideString(std::to_string(elapsedTime)));
+            elapsedTimeText->SetText(UTF8Utils::EncodeToWideString(ConverterUtils::NumberToString(elapsedTime)));
 
             UIStaticText* framesRenderedText = static_cast<UIStaticText*>(reportItemCopy->FindByName(FRAMES_RENDERED));
-            framesRenderedText->SetText(UTF8Utils::EncodeToWideString(std::to_string(framesCount)));
+            framesRenderedText->SetText(UTF8Utils::EncodeToWideString(ConverterUtils::NumberToString(framesCount)));
 
             AddControl(reportItemCopy);
             

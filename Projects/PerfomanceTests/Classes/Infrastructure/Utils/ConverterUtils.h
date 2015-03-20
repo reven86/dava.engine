@@ -26,10 +26,22 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Infrastructure/Utils/ControlHelpers.h"
+#ifndef __STRING_UTILS_H__
+#define __STRING_UTILS_H__
 
-FilePath ControlHelpers::GetPathToUIYaml(const String &yamlFileName)
+#include <sstream>
+
+namespace ConverterUtils
 {
-    const FilePath path = Format("~res:/UI/win/%s", yamlFileName.c_str());
-    return path;
+
+template<typename T>
+String NumberToString(T Number)
+{
+    std::ostringstream ss;
+    ss << Number;
+    return ss.str();
 }
+
+}
+
+#endif
