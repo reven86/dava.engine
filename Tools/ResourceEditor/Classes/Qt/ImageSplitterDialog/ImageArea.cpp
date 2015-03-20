@@ -47,6 +47,7 @@ ImageArea::ImageArea(QWidget *parent /*= 0*/)
     , image(NULL)
     , acceptableSize(0, 0)
     , imagePath(SettingsManager::Instance()->GetValue(Settings::Internal_ImageSplitterPathSpecular).AsString())
+    , requestedFormat(DAVA::FORMAT_A8)
 {
     setFrameStyle(QFrame::Sunken | QFrame::StyledPanel);
     setAcceptDrops(true);
@@ -142,7 +143,8 @@ void ImageArea::SetImage(const DAVA::FilePath& filePath)
         QMessageBox::warning(this, "File error", "Cann't load image.", QMessageBox::Ok);
         return;
     }
-    if(selectedImage->GetPixelFormat() == DAVA::FORMAT_A8)
+
+    if((DAVA::FORMAT_INVALID == requestedFormat) || (selectedImage->GetPixelFormat() == requestedFormat))
     {
         const DAVA::FilePath path = filePath;
         SettingsManager::Instance()->SetValue(Settings::Internal_ImageSplitterPathSpecular, DAVA::VariantType(path.GetAbsolutePathname()));
@@ -191,4 +193,14 @@ DAVA::Vector2 ImageArea::GetAcceptableSize() const
 DAVA::FilePath const& ImageArea::GetImagePath() const
 {
     return imagePath;
+}
+
+void ImageArea::SetRequestedImageFormat(const DAVA::PixelFormat format)
+{
+    requestedFormat = format;
+}
+
+DAVA::PixelFormat ImageArea::GetRequestedImageFormat() const
+{
+    return requestedFormat;
 }

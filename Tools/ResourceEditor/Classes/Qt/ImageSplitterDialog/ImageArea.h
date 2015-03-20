@@ -48,6 +48,10 @@ public:
     DAVA::Vector2 GetAcceptableSize() const;
     const DAVA::FilePath& GetImagePath() const;
     
+    void SetRequestedImageFormat(const DAVA::PixelFormat format);
+    DAVA::PixelFormat GetRequestedImageFormat() const;
+    
+    
 public slots:
     void ClearArea();
     void UpdatePreviewPicture();
@@ -69,6 +73,9 @@ private:
     DAVA::Image* image;
     DAVA::Vector2 acceptableSize;
     DAVA::FilePath imagePath;
+    
+    DAVA::PixelFormat requestedFormat;
+    
 };
 
 inline DAVA::Image* ImageArea::GetImage() const

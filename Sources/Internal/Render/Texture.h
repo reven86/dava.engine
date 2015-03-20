@@ -184,6 +184,14 @@ public:
 	
 	static Texture * CreatePink(TextureType requestedType = Texture::TEXTURE_2D, bool checkers = true);
 
+    
+    /**
+        \brief Get texture from cache.
+        If texture isn't in cache, returns 0
+        \param[in] name path of TextureDescriptor
+     */
+    static Texture * Get(const FilePath & name);
+
 
 	virtual int32 Release();
 
@@ -264,7 +272,6 @@ protected:
     void ReleaseTextureData();
     void GenerateID();
 
-	static Texture * Get(const FilePath & name);
 	static void AddToMap(Texture *tex);
     
 	static Texture * CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu);

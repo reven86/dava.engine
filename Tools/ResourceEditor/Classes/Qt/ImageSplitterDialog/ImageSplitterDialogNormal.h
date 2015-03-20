@@ -27,26 +27,53 @@
 =====================================================================================*/
 
 
+#ifndef __IMAGESPLITTER_DIALOG_NORMAL_H__
+#define __IMAGESPLITTER_DIALOG_NORMAL_H__
 
-#ifndef __DEBUG_TOOLS__
-#define __DEBUG_TOOLS__
+#include "Render/Image/Image.h"
 
-#include <QObject>
+#include <QDialog>
+#include <QScopedPointer>
 
-class DeveloperTools: public QObject
+#include <array>
+
+namespace Ui {
+class ImageSplitterNormal;
+}
+
+class ImageArea;
+class ImageSplitterDialogNormal: public QDialog
 {
     Q_OBJECT
+    
+    enum ChannelsID
+    {
+        RED = 0,
+        GREEN,
+        BLUE,
+        ALPHA,
 
+        CHANNELS_COUNT
+    };
+    
 public:
-	explicit DeveloperTools(QObject *parent = 0);
+    explicit ImageSplitterDialogNormal(QWidget *parent = nullptr);
+    ~ImageSplitterDialogNormal();
 
-public slots:
+private slots:
+    void OnSaveClicked();
     
-    void OnDebugFunctionsGridCopy();
+    
+private:
+    
+    void SaveAndReloadNormal(const DAVA::FilePath &pathname, int first, int second);
+    
+    DAVA::Image * CreateMergedImage(DAVA::Image *firstImage, DAVA::Image *secondImage);
+    
+private:
 
-    void OnDebugCreateTestSkinnedObject(); //creates
-    
-    void OnImageSplitterNormals();
-	
+    QScopedPointer<Ui::ImageSplitterNormal> ui;
+    std::array<ImageArea *, CHANNELS_COUNT> imageArreas;
 };
-#endif /* defined(__DEBUG_TOOLS__) */
+
+#endif // __IMAGESPLITTER_DIALOG_NORMAL_H__
