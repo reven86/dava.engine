@@ -86,6 +86,9 @@
      </item>
      <item>
       <widget class="QGroupBox" name="groupBox_2">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="title">
         <string>Custom search</string>
        </property>
@@ -215,6 +218,16 @@
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
        <widget class="QTreeView" name="resultTree"/>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="autoClose">
+        <property name="text">
+         <string>Automatically close this window </string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

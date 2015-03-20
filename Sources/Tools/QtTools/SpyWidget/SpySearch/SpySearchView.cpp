@@ -1,5 +1,7 @@
 #include "SpySearchView.h"
 
+#include <QAbstractItemModel>
+
 
 SpySearchView::SpySearchView( QWidget* parent )
     : QWidget( parent )

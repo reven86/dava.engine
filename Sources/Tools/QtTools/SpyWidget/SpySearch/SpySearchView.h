@@ -3,9 +3,13 @@
 
 
 #include <QWidget>
+#include <QPointer>
+
 
 #include "ui_SpySearchView.h"
 
+
+class QAbstractItemModel;
 
 
 class SpySearchView
@@ -13,6 +17,11 @@ class SpySearchView
     , public Ui::SpySearchView
 {
     Q_OBJECT
+
+public:
+    struct SearchInfo
+    {
+    };
 
 signals:
     void triggered( const QPoint& globalPos );

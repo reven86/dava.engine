@@ -2,25 +2,16 @@
 #define QTTOOLS_WIDGETMODEL_H
 
 
-#include <QAbstractItemModel>
 #include <QPointer>
 #include <QWidget>
 
+#include "AbstractWidgetModel.h"
+
 
 class WidgetModel
-    : public QAbstractItemModel
+    : public AbstractWidgetModel
 {
     Q_OBJECT
-
-public:
-    enum Columns
-    {
-        TITLE,
-        CLASSNAME,
-        OBJECTNAME,
-
-        COLUMN_COUNT    // Last
-    };
 
 public:
     explicit WidgetModel( QObject *parent );
@@ -32,9 +23,7 @@ public:
     bool eventFilter( QObject *obj, QEvent *e ) override;
 
     // QAbstractItemModel
-    int columnCount( const QModelIndex& parent = QModelIndex() ) const override;
     int rowCount( const QModelIndex& parent = QModelIndex() ) const override;
-    QVariant headerData( int section, Qt::Orientation orientation, int role = Qt::DisplayRole ) const override;
 
     bool canFetchMore( const QModelIndex& parent ) const override;
     void fetchMore( const QModelIndex& parent ) override;
@@ -42,19 +31,9 @@ public:
     QModelIndex	index( int row, int column, const QModelIndex& parent = QModelIndex() ) const override;
     QModelIndex	parent( const QModelIndex& index ) const override;
 
-    Qt::ItemFlags flags( const QModelIndex& index ) const override;
-
-    QVariant data( const QModelIndex& index, int role = Qt::DisplayRole ) const override;
-    bool setData( const QModelIndex& index, const QVariant& value, int role = Qt::EditRole ) override;
-
 private:
-    QVariant textDataForColumn( const QModelIndex& index ) const;
-
     QPointer< QWidget > root;
 };
-
-
-Q_DECLARE_METATYPE( WidgetModel::Columns );
 
 
 #endif // QTTOOLS_WIDGETMODEL_H

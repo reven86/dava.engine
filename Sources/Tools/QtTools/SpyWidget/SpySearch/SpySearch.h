@@ -8,6 +8,7 @@
 
 
 class SpySearchView;
+class WidgetListModel;
 
 
 class SpySearch
@@ -20,13 +21,20 @@ public:
     ~SpySearch();
 
     SpySearchView *GetView() const;
-    void Show();
+
+public slots:
+    void show();
 
 private slots:
     void trigger( const QPoint& pos );
+    void onWidgetSelect( const QModelIndex& index );
 
 private:
+    bool isSelf( QWidget *w ) const;
+    void showWidgetInfo( QWidget *w ) const;
+
     QPointer< SpySearchView > view;
+    QPointer< WidgetListModel > resultModel;
 };
 
 

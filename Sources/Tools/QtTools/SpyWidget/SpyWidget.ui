@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Spy Qt</string>
+   <string>Spy QWidget</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_5">
    <item>
@@ -34,7 +34,11 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="className"/>
+          <widget class="QLineEdit" name="className">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="objectNameLabel">
@@ -44,7 +48,11 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLineEdit" name="objectName"/>
+          <widget class="QLineEdit" name="objectName">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="2" column="0">
           <widget class="QLabel" name="positionLabel">
@@ -54,7 +62,11 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QLineEdit" name="objectPos"/>
+          <widget class="QLineEdit" name="objectPos">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="3" column="0">
           <widget class="QLabel" name="sizeLabel">
@@ -64,7 +76,11 @@
           </widget>
          </item>
          <item row="3" column="1">
-          <widget class="QLineEdit" name="objectSize"/>
+          <widget class="QLineEdit" name="objectSize">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="4" column="0">
           <widget class="QLabel" name="visibilityLabel">
@@ -77,6 +93,9 @@
           <widget class="QCheckBox" name="isVisible">
            <property name="text">
             <string>Visible</string>
+           </property>
+           <property name="checkable">
+            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -92,6 +111,9 @@
            <property name="text">
             <string>Modal</string>
            </property>
+           <property name="checkable">
+            <bool>false</bool>
+           </property>
           </widget>
          </item>
          <item row="6" column="0">
@@ -105,6 +127,9 @@
           <widget class="QCheckBox" name="mouseTrack">
            <property name="text">
             <string>Mouse tracked</string>
+           </property>
+           <property name="checkable">
+            <bool>false</bool>
            </property>
           </widget>
          </item>

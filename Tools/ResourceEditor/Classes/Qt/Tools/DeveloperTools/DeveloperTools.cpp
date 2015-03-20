@@ -167,5 +167,5 @@ void DeveloperTools::OnDebugCreateTestSkinnedObject()
 void DeveloperTools::OnSpyWidget()
 {
     auto spySearch = new SpySearch(this);
-    spySearch->Show();
+    spySearch->show();
 }
