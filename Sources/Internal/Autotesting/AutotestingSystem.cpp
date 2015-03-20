@@ -262,6 +262,7 @@ namespace DAVA
 			if (timeBeforeExit <= 0.0f)
 			{
 				needExitApp = false;
+				JobManager::Instance()->WaitWorkerJobs();
 				Core::Instance()->Quit();
 			}
 			return;
@@ -339,11 +340,21 @@ namespace DAVA
 
 	void AutotestingSystem::OnScreenShot(Image *image)
 	{
+		Function<void()> fn = Bind(MakeFunction(this, &AutotestingSystem::OnScreenShotInternal), SafeRetain(image));
+		JobManager::Instance()->CreateWorkerJob(fn);
+	}
+
+	void AutotestingSystem::OnScreenShotInternal(Image *image)
+	{
+		DVASSERT(image);
+		
 		Logger::Info("AutotestingSystem::OnScreenShot %s", screenShotName.c_str());
 		uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
-        image->Save(FilePath(AutotestingDB::Instance()->logsFolder + Format("/%s.png", screenShotName.c_str())));
-        uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
+		image->Save(FilePath(AutotestingDB::Instance()->logsFolder + Format("/%s.png", screenShotName.c_str())));
+		uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
 		Logger::FrameworkDebug("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
+
+		SafeRelease(image);
 	}
 
 	void AutotestingSystem::OnTestsFinished()
