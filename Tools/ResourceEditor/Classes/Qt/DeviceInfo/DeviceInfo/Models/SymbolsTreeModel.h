@@ -1,23 +1,24 @@
 #pragma once
 
-#include <QAbstractItemModel>
-
 #include "Base/BaseTypes.h"
-#include "MemoryManager/MemoryManagerTypes.h"
 
+#include "GenericTreeModel.h"
 #include "GenericTreeNode.h"
 
-class SymbolsTreeModel : public QAbstractItemModel
+class BacktraceSet;
+class SymbolsTreeModel : public GenericTreeModel
 {
 public:
-    using SymbolMapType = DAVA::UnorderedMap < DAVA::uint64, DAVA::String > ;
-    using BacktraceMapType = DAVA::UnorderedMap < DAVA::uint32, DAVA::MMBacktrace > ;
+    enum {
+        TYPE_NAME = 1,
+        TYPE_ADDR
+    };
 
     class NameNode : public GenericTreeNode
     {
     public:
-        NameNode(const DAVA::String& s) : name(s) {}
-        QVariant Data(int row, int clm) const override;
+        NameNode(const DAVA::String& s) : GenericTreeNode(TYPE_NAME), name(s) {}
+        const DAVA::String& Name() const { return name; }
     private:
         DAVA::String name;
     };
@@ -25,31 +26,27 @@ public:
     class AddrNode : public GenericTreeNode
     {
     public:
-        AddrNode(DAVA::uint64 a) : addr(a) {}
-        QVariant Data(int row, int clm) const override;
+        AddrNode(DAVA::uint64 a) : GenericTreeNode(TYPE_ADDR), addr(a) {}
+        DAVA::uint64 Address() const { return addr; }
     private:
         DAVA::uint64 addr;
     };
 
 public:
-    SymbolsTreeModel(const SymbolMapType& symbols,
-                     QObject* parent = nullptr);
+    SymbolsTreeModel(const BacktraceSet& backtrace, QObject* parent = nullptr);
     virtual ~SymbolsTreeModel();
 
     QVariant data(const QModelIndex& index, int role) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
-    bool hasChildren(const QModelIndex& parent) const override;
-    int columnCount(const QModelIndex& parent) const override;
-    int rowCount(const QModelIndex& parent) const override;
-
-    QModelIndex index(int row, int column, const QModelIndex& parent) const override;
-    QModelIndex parent(const QModelIndex& index) const override;
 
 private:
     void BuildTree();
 
+    QVariant NameNodeData(NameNode* node, int row, int clm) const;
+    QVariant AddrNodeData(AddrNode* node, int row, int clm) const;
+
 private:
-    const SymbolMapType& symbolMap;
+    const BacktraceSet& bktrace;
 
     std::unique_ptr<GenericTreeNode> rootNode;
 };

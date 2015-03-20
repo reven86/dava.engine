@@ -1,14 +1,17 @@
 #include <QDebug>
+
+#include "../BacktraceSet.h"
 #include "SymbolsTreeModel.h"
 
 using namespace DAVA;
 
-SymbolsTreeModel::SymbolsTreeModel(const std::unordered_map<DAVA::uint64, DAVA::String>& symbols,
+SymbolsTreeModel::SymbolsTreeModel(const BacktraceSet& backtrace,
                                    QObject* parent)
-    : QAbstractItemModel(parent)
-    , symbolMap(symbols)
+    : GenericTreeModel(1, parent)
+    , bktrace(backtrace)
     , rootNode(new GenericTreeNode)
 {
+    SetRootNode(rootNode.get());
     BuildTree();
 }
 
@@ -22,90 +25,46 @@ QVariant SymbolsTreeModel::data(const QModelIndex& index, int role) const
     if (index.isValid() && Qt::DisplayRole == role)
     {
         GenericTreeNode* node = static_cast<GenericTreeNode*>(index.internalPointer());
-        return node->Data(index.row(), index.column());
+        switch (node->Type())
+        {
+        case TYPE_NAME:
+            return NameNodeData(static_cast<NameNode*>(node), index.row(), index.column());
+        case TYPE_ADDR:
+            return AddrNodeData(static_cast<AddrNode*>(node), index.row(), index.column());
+        }
     }
     return QVariant();
 }
 
 QVariant SymbolsTreeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (Qt::Horizontal == orientation && Qt::DisplayRole == role && 0 <= section && section < 2)
+    /*if (Qt::Horizontal == orientation && Qt::DisplayRole == role && 0 <= section && section < 2)
     {
         static const char* names[] = {
             "Call source",
             "Call source name"
         };
         return QVariant(names[section]);
-    }
+    }*/
     return QAbstractItemModel::headerData(section, orientation, role);
-}
-
-bool SymbolsTreeModel::hasChildren(const QModelIndex& parent) const
-{
-    return rowCount(parent) > 0;
-}
-
-int SymbolsTreeModel::columnCount(const QModelIndex& parent) const
-{
-    return 2;
-}
-
-int SymbolsTreeModel::rowCount(const QModelIndex& parent) const
-{
-    GenericTreeNode* node = rootNode.get();
-    if (parent.isValid())
-    {
-        node = static_cast<GenericTreeNode*>(parent.internalPointer());
-    }
-    return node->ChildrenCount();
-}
-
-QModelIndex SymbolsTreeModel::index(int row, int column, const QModelIndex& parent) const
-{
-    if (hasIndex(row, column, parent))
-    {
-        GenericTreeNode* node = rootNode.get();
-        if (parent.isValid())
-        {
-            node = static_cast<GenericTreeNode*>(parent.internalPointer());
-        }
-        if (node->ChildrenCount() > 0)
-        {
-            return createIndex(row, column, node->Child(row));
-        }
-    }
-    return QModelIndex();
-}
-
-QModelIndex SymbolsTreeModel::parent(const QModelIndex& index) const
-{
-    if (index.isValid())
-    {
-        GenericTreeNode* node = static_cast<GenericTreeNode*>(index.internalPointer());
-        if (rootNode.get() != node->Parent())
-        {
-            return createIndex(node->Index(), 0, node->Parent());
-        }
-    }
-    return QModelIndex();
 }
 
 void SymbolsTreeModel::BuildTree()
 {
-    if (symbolMap.empty()) return;
+    if (bktrace.SymbolsEmpty()) return;
 
-    Vector<SymbolMapType::const_iterator> v;
-    v.reserve(symbolMap.size());
+    Vector<BacktraceSet::SymbolMapConstIterator> v;
+    v.reserve(bktrace.SymbolsCount());
 
-    for (auto i = symbolMap.cbegin(), e = symbolMap.cend();i != e;++i)
+    for (auto i = bktrace.SymbolsCBegin(), e = bktrace.SymbolsCEnd();i != e;++i)
     {
         v.push_back(i);
     }
-    std::sort(v.begin(), v.end(), [](const SymbolMapType::const_iterator& l, const SymbolMapType::const_iterator& r) -> bool {
+    std::sort(v.begin(), v.end(), [](const BacktraceSet::SymbolMapConstIterator l, const BacktraceSet::SymbolMapConstIterator r) -> bool {
         return l->second < r->second;
     });
 
-    String s = "!@%$@&$";
+    String s = "some dummy string";
     NameNode* name = nullptr;
     for (auto x : v)
     {
@@ -119,26 +78,14 @@ void SymbolsTreeModel::BuildTree()
     }
 }
 
-QVariant SymbolsTreeModel::NameNode::Data(int row, int clm) const
+QVariant SymbolsTreeModel::NameNodeData(NameNode* node, int row, int clm) const
 {
-    switch (clm)
-    {
-    case 0:
-        return QVariant(name.c_str());
-    default:
-        return QVariant();
-    }
+    return QVariant(node->Name().c_str());
 }
 
-QVariant SymbolsTreeModel::AddrNode::Data(int row, int clm) const
+QVariant SymbolsTreeModel::AddrNodeData(AddrNode* node, int row, int clm) const
 {
     char buf[32];
-    switch (clm)
-    {
-    case 0:
-        Snprintf(buf, COUNT_OF(buf), "%08llX", addr);
-        return QVariant(buf);
-    default:
-        return QVariant();
-    }
+    Snprintf(buf, COUNT_OF(buf), "%08llX", node->Address());
+    return QVariant(buf);
 }

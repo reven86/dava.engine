@@ -4,11 +4,16 @@
 
 #include "MemoryManager/MemoryManagerTypes.h"
 
+#include "BacktraceSet.h"
+
 class QTabWidget;
+class QTreeView;
 class QAbstractItemModel;
 class AllocationTreeModel;
 class BacktraceTreeModel;
 class SymbolsTreeModel;
+class SymbolsFilterModel;
+class CallStackTreeModel;
 class DumpViewWidget : public QWidget
 {
     Q_OBJECT
@@ -18,6 +23,11 @@ public:
     DumpViewWidget(const DAVA::Vector<DAVA::uint8>& v, QWidget* parent = nullptr, Qt::WindowFlags flags = 0);
     ~DumpViewWidget();
 
+public slots:
+    void OnSymbolDoubleClicked(const QModelIndex& index);
+    void OnCallstackReset();
+    void OnShowCallstack();
+
 private:
     void Init();
 
@@ -26,13 +36,17 @@ private:
 
 private:
     QTabWidget* tab;
+    QTreeView* symbolTree;
     AllocationTreeModel* allocTreeModel;
     BacktraceTreeModel* backtraceTreeModel;
     SymbolsTreeModel* symbolTreeModel;
+    SymbolsFilterModel* symbolsFilterModel;
+    CallStackTreeModel* callstackTreeModel;
+    uintptr_t loadTime;
+    uintptr_t modelCreateTime;
 
     DAVA::MMDump dumpHdr;
     DAVA::Vector<DAVA::MMBlock> blocks;
 
-    DAVA::UnorderedMap<DAVA::uint64, DAVA::String> symbolMap;
-    DAVA::UnorderedMap<DAVA::uint32, DAVA::MMBacktrace> traceMap;
+    BacktraceSet bktrace;
 };

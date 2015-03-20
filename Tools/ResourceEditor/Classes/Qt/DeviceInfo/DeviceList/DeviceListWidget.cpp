@@ -32,8 +32,8 @@ QTreeView* DeviceListWidget::ItemView()
 
 void DeviceListWidget::OnViewDump()
 {
-    //QString filename = QFileDialog::getOpenFileName(this, "Select dump file", "d:\\temp\\dumps\\test");
-    QString filename = "d:\\temp\\dumps\\test\\01. dump-login-debug.bin";
+    QString filename = QFileDialog::getOpenFileName(this, "Select dump file", "d:\\share\\dumps\\test");
+    //QString filename = "d:\\share\\dumps\\test\\01. dump-login-debug.bin";
     if (!filename.isEmpty())
     {
         std::string s = filename.toStdString();
