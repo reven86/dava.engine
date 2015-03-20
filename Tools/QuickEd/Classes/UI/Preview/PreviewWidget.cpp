@@ -66,7 +66,7 @@ PreviewWidget::~PreviewWidget()
     delete ui;
 } 
 
-void PreviewWidget::SetDocument(Document *newDocument)
+/*void PreviewWidget::SetDocument(Document *newDocument)
 {
     if (document)
     {
@@ -100,7 +100,7 @@ void PreviewWidget::SetDocument(Document *newDocument)
         OnScrollPositionChanged(context->GetCanvasPosition());
         OnCanvasScaleChanged(context->GetCanvasScale());
     }
-}
+}*/
 
 void PreviewWidget::OnScaleByZoom(int scaleDelta)
 {

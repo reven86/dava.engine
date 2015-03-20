@@ -24,8 +24,6 @@ public:
     PreviewWidget(QWidget *parent = nullptr);
     virtual ~PreviewWidget();
     
-    void SetDocument(Document *newDocument);
-
 private slots:
     // Zoom.
 	void OnScaleByComboIndex(int value);

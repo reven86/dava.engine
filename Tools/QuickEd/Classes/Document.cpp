@@ -7,6 +7,7 @@
 #include "UI/Package/PackageModel.h"
 #include "UI/Package/FilteredPackageModel.h"
 #include "UI/Library/LibraryModel.h"
+#include "UI/Properties/PropertiesModel.h"
 #include "UI/PreviewContext.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
@@ -19,35 +20,29 @@
 #include "Ui/Properties/PropertiesWidget.h"
 #include "Ui/Library/LibraryWidget.h"
 
-#include "Ui/PackageContext.h"
-#include "Ui/PropertiesContext.h"
-#include "Ui/PreviewContext.h"
+#include "Ui/WidgetContext.h"
 
 #include "Ui/QtModelPackageCommandExecutor.h"
 
 using namespace DAVA;
 
-Document::Document(Project *_project, PackageNode *_package, QObject *parent)
+Document::Document(PackageNode *_package, QObject *parent)
     : QObject(parent)
-    , project(_project)
     , package(SafeRetain(_package))
-    , packageContext(nullptr)
-    , propertiesContext(nullptr)
-    , previewContext(nullptr)
-    , libraryModel(nullptr)
-    , commandExecutor(nullptr)
+    , libraryContext(new WidgetContext(this))
+    , propertiesContext(new WidgetContext(this))
+    , packageContext(new WidgetContext(this))
+    , previewContext(new WidgetContext(this))
+    , commandExecutor(new QtModelPackageCommandExecutor(this))
     , undoStack(new QUndoStack(this))
 {
-    commandExecutor = new QtModelPackageCommandExecutor(this);
+    InitWidgetContexts();
 
-    packageContext = new PackageContext(this);
-    propertiesContext = new PropertiesContext(this);
-    previewContext = new PreviewContext(this);
-    
-    connect(this, SIGNAL(activeRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), previewContext, SLOT(OnActiveRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+    //!! TODO: implement this
+    /*connect(this, SIGNAL(activeRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), previewContext, SLOT(OnActiveRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
 
     connect(previewContext, SIGNAL(ControlNodeSelected(ControlNode*)), this, SLOT(OnControlSelectedInEditor(ControlNode*)));
-    connect(previewContext, SIGNAL(AllControlsDeselected()), this, SLOT(OnAllControlDeselectedInEditor()));
+    connect(previewContext, SIGNAL(AllControlsDeselected()), this, SLOT(OnAllControlDeselectedInEditor()));*/
 
     
     PackageControlsNode *controlsNode = package->GetPackageControlsNode();
@@ -58,10 +53,28 @@ Document::Document(Project *_project, PackageNode *_package, QObject *parent)
         emit activeRootControlsChanged(activeRootControls, QList<ControlNode*>());
 }
 
+void Document::InitWidgetContexts()
+{
+    libraryContext->SetData(new LibraryModel(package, this), "model");
+    PackageModel *packageModel = new PackageModel(package, commandExecutor, this);
+    packageContext->SetData(packageModel, "model");
+    FilteredPackageModel *packageFilterModel = new FilteredPackageModel(this);
+    packageFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    packageFilterModel->setSourceModel(packageModel);
+    packageContext->SetData(packageFilterModel, "filterModel");
+}
+
+void Document::ConnectWidgetContexts() const
+{
+    connect(libraryContext, &WidgetContext::DataChanged, this, &Document::LibraryDataChanged);
+    connect(packageContext, &WidgetContext::DataChanged, this, &Document::PackageDataChanged);
+    connect(propertiesContext, &WidgetContext::DataChanged, this, &Document::PropertiesDataChanged);
+    connect(previewContext, &WidgetContext::DataChanged, this, &Document::PreviewDataChanged);
+}
+
 Document::~Document()
 {
     SafeDelete(packageContext);
-    SafeDelete(propertiesContext);
     SafeDelete(previewContext);
     
     SafeRelease(package);
@@ -84,28 +97,32 @@ const DAVA::FilePath &Document::PackageFilePath() const
     return package->GetPackageRef()->GetPath();
 }
 
-
-PackageModel* Document::GetPackageModel() const
+WidgetContext *Document::GetLibraryContext() const
 {
-    return &packageContext->model;
+    return libraryContext;
 }
 
-PackageContext* Document::GetPackageContext() const
+WidgetContext *Document::GetPropertiesContext() const
 {
-    return packageContext;
+    return propertiesContext;
 }
 
 PropertiesModel *Document::GetPropertiesModel() const
 {
-    return propertiesContext->GetModel();
+    return propertiesContext->GetData<PropertiesModel*>("model");
 }
 
-QAbstractItemModel *Document::GetLibraryModel() const
+PackageModel* Document::GetPackageModel() const
 {
-    return libraryModel;
+    return packageContext->GetData<PackageModel*>("model");
 }
 
-PreviewContext *Document::GetPreviewContext() const
+WidgetContext* Document::GetPackageContext() const
+{
+    return packageContext;
+}
+
+WidgetContext *Document::GetPreviewContext() const
 {
     return previewContext;
 }
@@ -132,10 +149,13 @@ void Document::OnSelectionControlChanged(const QList<ControlNode*> &activatedCon
     
     for (ControlNode *control : activatedControls)
         selectedControls.push_back(control);
-    
-    
-    propertiesContext->SetActiveNode(activatedControls.empty() ? nullptr : activatedControls.first());
+
+
+    QAbstractItemModel* model = activatedControls.empty() ? nullptr : new PropertiesModel(activatedControls.first(), this);
+    propertiesContext->SetData(model, "model");
+
     previewContext->OnSelectedControlsChanged(activatedControls, deactivatedControls);
+
 }
 
 void Document::OnControlSelectedInEditor(ControlNode *activatedControl)

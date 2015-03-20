@@ -1,23 +1,39 @@
 #include "LibraryWidget.h"
 #include "ui_LibraryWidget.h"
+#include "UI/WidgetContext.h"
+#include <QAbstractItemModel>
 
 LibraryWidget::LibraryWidget(QWidget *parent)
     : QDockWidget(parent)
     , ui(new Ui::LibraryWidget())
+    , widgetContext(nullptr)
 {
     ui->setupUi(this);
-//TODO:
-    //check that we need to do this after model changed
-    //!!ui->treeView->expandToDepth(0);
-    //!!ui->treeView->setColumnWidth(0, ui->treeView->size().width());
 }
-
 LibraryWidget::~LibraryWidget()
 {
     delete ui;
 }
 
-void LibraryWidget::OnModelChanged(QAbstractItemModel* model)
+void LibraryWidget::OnContextChanged(WidgetContext *arg)
 {
-    ui->treeView->setModel(model);
+    widgetContext = arg;
+    UpdateModel();
+}
+
+void LibraryWidget::OnDataChanged(const QString &role)
+{
+    if (role == "model")
+    {
+        UpdateModel();
+    }
+}
+
+void LibraryWidget::UpdateModel()
+{
+    QAbstractItemModel *model = widgetContext->GetData<QAbstractItemModel*>("model");
+    if (nullptr != model)
+    {
+        ui->treeView->setModel(model);
+    }
 }

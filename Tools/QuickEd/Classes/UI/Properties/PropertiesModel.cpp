@@ -13,14 +13,12 @@
 #include "Utils/QtDavaConvertion.h"
 #include "UI/Commands/ChangePropertyValueCommand.h"
 #include "UI/QtModelPackageCommandExecutor.h"
-#include "UI/PropertiesContext.h"
 
 using namespace DAVA;
 
-PropertiesModel::PropertiesModel(ControlNode *_controlNode, PropertiesContext *context)
-    : QAbstractItemModel(context)
+PropertiesModel::PropertiesModel(ControlNode *_controlNode, QObject *parent)
+    : QAbstractItemModel(parent)
     , controlNode(nullptr)
-    , propertiesContext(context)
 {
     controlNode = SafeRetain(_controlNode);
 }
@@ -184,7 +182,8 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
             if (property->GetValue().GetType() == VariantType::TYPE_BOOLEAN)
             {
                 VariantType newVal(value != Qt::Unchecked);
-                propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
+                //TODO: repait it
+                //!!propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
                 return true;
             }
         }
@@ -203,14 +202,16 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
                 initVariantType(newVal, value);
             }
 
-            propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
+            //TODO: repait it
+            //!!propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
             return true;
         }
         break;
 
     case DAVA::ResetRole:
         {
-            propertiesContext->GetDocument()->GetCommandExecutor()->ResetProperty(controlNode, property);
+            //TODO: repait it
+            //!!propertiesContext->GetDocument()->GetCommandExecutor()->ResetProperty(controlNode, property);
             return true;
         }
         break;

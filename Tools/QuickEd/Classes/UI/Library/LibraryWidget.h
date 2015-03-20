@@ -4,6 +4,8 @@
 #include <QDockWidget>
 
 class QAbstractItemModel;
+class WidgetContext;
+
 namespace Ui {
     class LibraryWidget;
 }
@@ -15,9 +17,12 @@ public:
     LibraryWidget(QWidget *parent = NULL);
     virtual ~LibraryWidget();
 public slots:
-    void OnModelChanged(QAbstractItemModel*);    
+    void OnContextChanged(WidgetContext *context);
+    void OnDataChanged(const QString &role);
 private:
+    void UpdateModel();
     Ui::LibraryWidget *ui;
+    WidgetContext *widgetContext;
 };
 
 #endif // __QUICKED_LIBRARY_WIDGET_H__

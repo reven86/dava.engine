@@ -45,6 +45,7 @@ class MainWindow;
 }
 
 class PackageWidget;
+class PropertiesWidget;
 class LibraryWidget;
 class Document;
 class MainWindow : public QMainWindow
@@ -66,6 +67,7 @@ public:
     void CreateUndoRedoActions(const QUndoGroup &undoGroup);
     PackageWidget *GetPackageWidget() const;
     LibraryWidget *GetLibraryWidget() const;
+    PropertiesWidget *GetPropertiesWidget() const;
     bool ConfirmClose();
     int CloseTab(int index);
     void SetCurrentTab(int index);

@@ -78,50 +78,47 @@ void DocumentGroup::SetActiveDocument(Document* document)
     }
     if (nullptr != d->active) 
     {
+        disconnect(d->active, &Document::LibraryDataChanged, this, &DocumentGroup::LibraryDataChanged);
+        disconnect(d->active, &Document::PropertiesDataChanged, this, &DocumentGroup::PropertiesDataChanged);
+        disconnect(d->active, &Document::Packag)
+
         disconnect(d->active, &Document::controlSelectedInEditor, this, &DocumentGroup::controlSelectedInEditor);
         disconnect(d->active, &Document::allControlsDeselectedInEditor, this, &DocumentGroup::allControlsDeselectedInEditor);
+
+        disconnect(this, &DocumentGroup::OnSelectionControlChanged, d->active, &Document::OnSelectionControlChanged);
+        disconnect(this, &DocumentGroup::OnSelectionRootControlChanged, d->active, &Document::OnSelectionRootControlChanged);
+
     }
     
     d->active = document;
 
     if (nullptr == d->active)
     {
-        emit LibraryModelChanged(nullptr);
-        emit PropertiesModelChanged(nullptr);
+        emit LibraryContextChanged(nullptr);
+        emit PropertiesContextChanged(nullptr);
+        //
         //!!check that is actual
-        emit controlSelectedInEditor(nullptr);
         emit allControlsDeselectedInEditor();
         d->undoGroup.setActiveStack(nullptr);
     }
     else
     {
-        emit LibraryModelChanged(d->active->GetLibraryModel());
-        emit PropertiesModelChanged(reinterpret_cast<QAbstractItemModel*>(d->active->GetPropertiesModel()));
-        //!!emit PropertiesModelChanged(static_cast<QAbstractItemModel*>(d->active->GetPropertiesModel()));
+        emit LibraryContextChanged(d->active->GetLibraryContext());
+        emit PropertiesContextChanged(d->active->GetPropertiesContext());
+        //
+
+        connect(d->active, &Document::LibraryDataChanged, this, &DocumentGroup::LibraryDataChanged);
+        connect(d->active, &Document::PropertiesDataChanged, this, &DocumentGroup::PropertiesDataChanged);
 
         connect(d->active, &Document::controlSelectedInEditor, this, &DocumentGroup::controlSelectedInEditor);
         connect(d->active, &Document::allControlsDeselectedInEditor, this, &DocumentGroup::allControlsDeselectedInEditor);
+
+        connect(this, &DocumentGroup::OnSelectionControlChanged, d->active, &Document::OnSelectionControlChanged);
+        connect(this, &DocumentGroup::OnSelectionRootControlChanged, d->active, &Document::OnSelectionRootControlChanged);
+
         d->undoGroup.setActiveStack(d->active->GetUndoStack());
     }
     emit ActiveDocumentChanged(document);
-}
-
-void DocumentGroup::OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls)
-{
-    Q_D(DocumentGroup);
-    if (nullptr != d->active)
-    {
-        d->active->OnSelectionRootControlChanged(activatedRootControls, deactivatedRootControls);
-    }
-}
-
-void DocumentGroup::OnSelectionControlChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls)
-{
-    Q_D(DocumentGroup);
-    if (nullptr != d->active)
-    {
-        d->active->OnSelectionControlChanged(activatedControls, deactivatedControls);
-    }
 }
 
 Document *DocumentGroup::GetActiveDocument() const

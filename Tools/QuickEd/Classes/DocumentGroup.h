@@ -8,6 +8,7 @@ class Document;
 class ControlNode;
 class QAbstractItemModel;
 struct PackageContext;
+class WidgetContext;
 
 class DocumentGroup : public QObject
 {
@@ -24,17 +25,24 @@ public:
     const QUndoGroup& GetUndoGroup() const;
 public slots:
     void SetActiveDocument(Document* document);
-    void OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
-    void OnSelectionControlChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
+
 signals:
     void ActiveDocumentChanged(Document*);
-    void LibraryModelChanged(QAbstractItemModel *model);
-    void PropertiesModelChanged(QAbstractItemModel *model);
-    void PackageGontextChanged(PackageContext *context);
 
+    void LibraryDataChanged(const QString &role);
+    void LibraryContextChanged(const WidgetContext *widgetContext);
+    void PropertiesDataChanged(const QString &role);
+    void PropertiesContextChanged(const WidgetContext *widgetContext);
+    void PackageDataChanged(const QString &role);
+    void PackageGontextChanged(const WidgetContext *widgetContext);
+    void PreviewDataChanged(const QString &role);
+    void PreviewContextChanged(const WidgetContext *widgetContext);
 
     void controlSelectedInEditor(ControlNode *activatedControls);
     void allControlsDeselectedInEditor();
+
+    void OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
+    void OnSelectionControlChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
 protected:
     QScopedPointer<DocumentGroupPrivate> d_ptr;
 private:

@@ -4,10 +4,12 @@
 #include <QFileInfo>
 #include <QCheckBox>
 #include <QMessageBox>
+#include <QAbstractItemModel>
 #include "Basecontroller.h"
 #include "Document.h"
 #include "UI/Package/PackageWidget.h"
 #include "Ui/Library/LibraryWidget.h"
+#include "Ui/Properties/PropertiesWidget.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 
@@ -33,7 +35,6 @@ BaseController::BaseController(QObject *parent)
 
     connect(&documentGroup, &DocumentGroup::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
     connect(&documentGroup, &DocumentGroup::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
-    connect(&documentGroup, &DocumentGroup::LibraryModelChanged, mainWindow.GetLibraryWidget(), &LibraryWidget::OnModelChanged);
 }
 
 BaseController::~BaseController()
@@ -214,19 +215,14 @@ void BaseController::CloseDocument(int index)
     //sync document list with tab list
     Document *detached = documents.takeAt(index);
     documentGroup.RemoveDocument(detached);
-    DetachDocument(detached);
-
-    //attach new doc
-    if (-1 != newIndex)
-    {
-        AttachDocument(documents.at(newIndex));
-    }
+    documentGroup.SetActiveDocument(newIndex == -1 ? nullptr : documents.at(newIndex));
+    documentGroup.RemoveDocument(detached);
     delete detached; //some widgets hold this document inside :(
 }
 
 int BaseController::CreateDocument(PackageNode *package)
 {
-    Document *document = new Document(&project, package, this);
+    Document *document = new Document(package, this);
     connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &BaseController::OnCleanChanged);
     documents.push_back(document);
     documentGroup.AddDocument(document);

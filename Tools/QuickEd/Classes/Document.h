@@ -1,13 +1,7 @@
 #ifndef __QUICKED_PACKAGE_DOCUMENT_H__
 #define __QUICKED_PACKAGE_DOCUMENT_H__
 
-#include <QWidget>
-#include <QVariant>
-#include <QPointer>
 #include <QUndoStack>
-#include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
-#include "Project.h"
 
 namespace Ui {
     class PackageDocument;
@@ -30,11 +24,9 @@ class DavaGLWidget;
 class QtModelPackageCommandExecutor;
 
 struct PackageContext;
-class PropertiesContext;
-class PreviewContext;
-
-class PackageModel;
+class WidgetContext;
 class PropertiesModel;
+class PackageModel;
 
 class PackageNode;
 class ControlNode;
@@ -43,23 +35,23 @@ class Document : public QObject
 {
     Q_OBJECT
 public:
-    Document(Project * project, PackageNode *package, QObject *parent = NULL);
+    Document(PackageNode *package, QObject *parent = NULL);
+
     virtual ~Document();
     
     bool IsModified() const;
     void ClearModified();
     const DAVA::FilePath &PackageFilePath() const;
     PackageNode *GetPackage() const;
-    Project *GetProject() const;
     
     const QList<ControlNode*> &GetSelectedControls() const;
     const QList<ControlNode*> &GetActiveRootControls() const;
+    WidgetContext *GetLibraryContext() const;
+    WidgetContext *GetPropertiesContext() const;
+    WidgetContext *GetPreviewContext() const;
+    PropertiesModel *GetPropertiesModel() const;
     PackageModel* GetPackageModel() const;
-    PackageContext* GetPackageContext() const;
-
-    PropertiesModel* GetPropertiesModel() const;
-    QAbstractItemModel* GetLibraryModel() const;
-    PreviewContext* GetPreviewContext() const;
+    WidgetContext* GetPackageContext() const;
   
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
     QUndoStack *GetUndoStack() const;
@@ -70,6 +62,10 @@ signals:
     void controlSelectedInEditor(ControlNode *activatedControls);
     void allControlsDeselectedInEditor();
 
+    void LibraryDataChanged(const QString &role);
+    void PropertiesDataChanged(const QString &role);
+    void PackageDataChanged(const QString &role);
+    void PreviewDataChanged(const QString &role);
 public slots:
     void OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
     void OnSelectionControlChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
@@ -80,18 +76,19 @@ protected slots:
 
 private:
     void UpdateControlCanvas();
-    
+    void InitWidgetContexts();
+    void ConnectWidgetContexts() const;
+
 private:
-    QPointer<Project> project;
     PackageNode *package;
     QList<ControlNode *> selectedControls;
     QList<ControlNode *> activeRootControls;
 
-    PackageContext *packageContext;
-    PropertiesContext *propertiesContext;
-    PreviewContext *previewContext;
-    QAbstractItemModel *libraryModel;
-    
+    WidgetContext *libraryContext;
+    WidgetContext *propertiesContext;
+    WidgetContext *packageContext;
+    WidgetContext *previewContext;
+
     QtModelPackageCommandExecutor *commandExecutor;
     QScopedPointer<QUndoStack> undoStack;
 };
@@ -104,11 +101,6 @@ inline QUndoStack *Document::GetUndoStack() const
 inline PackageNode *Document::GetPackage() const 
 {
     return package; 
-}
-
-inline Project *Document::GetProject() const
-{ 
-    return project; 
 }
 
 inline const QList<ControlNode*> &Document::GetSelectedControls() const

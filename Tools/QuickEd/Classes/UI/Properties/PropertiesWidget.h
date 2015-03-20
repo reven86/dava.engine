@@ -1,19 +1,15 @@
 #ifndef __QUICKED_PROPERTIES_WIDGET_H__
 #define __QUICKED_PROPERTIES_WIDGET_H__
 
-#include <QWidget>
 #include <QDockWidget>
 
-class Document;
-class PropertiesContext;
+class WidgetContext;
 
 namespace Ui {
     class PropertiesWidget;
 }
 
-class PropertiesContext;
 class ControlNode;
-class PropertiesModel;
 
 class PropertiesWidget : public QDockWidget
 {
@@ -21,14 +17,15 @@ class PropertiesWidget : public QDockWidget
 public:
     PropertiesWidget(QWidget *parent = NULL);
     virtual ~PropertiesWidget();
-    void SetDocument(Document *document);
 
-private slots:
-    void OnModelChanged(PropertiesModel *model);
+public slots:
+void OnContextChanged(WidgetContext *context);
+void OnDataChanged(const QString &role);
 
 private:
+    void UpdateModel();
     Ui::PropertiesWidget *ui;
-    PropertiesContext *context;
+    WidgetContext *widgetContext;
 };
 
 #endif //__QUICKED_PROPERTIES_WIDGET_H__

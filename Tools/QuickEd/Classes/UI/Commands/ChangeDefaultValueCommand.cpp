@@ -3,8 +3,6 @@
 #include "Model/ControlProperties/BaseProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Document.h"
-#include "UI/PropertiesContext.h"
-#include "UI/PackageContext.h"
 #include "UI/Properties/PropertiesModel.h"
 #include "UI/Package/PackageModel.h"
 

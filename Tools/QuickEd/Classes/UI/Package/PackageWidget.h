@@ -4,14 +4,16 @@
 #include <QWidget>
 #include <QDockWidget>
 #include <QItemSelectionModel>
-#include "Base/BaseTypes.h"
+
+//!! TODO: remove include DAVAEngine.h
+#include "DAVAEngine.h"
 
 namespace Ui {
     class PackageWidget;
 }
 
-class Document;
 class ControlNode;
+class WidgetContext;
 
 class PackageWidget : public QDockWidget
 {
@@ -20,9 +22,17 @@ public:
     explicit PackageWidget(QWidget *parent = 0);
     virtual ~PackageWidget();
 
-    void SetDocument(Document *newDocument);
 
 private:
+    void UpdateModel();
+    void UpdateSelection();
+    void UpdateExpanded();
+    void UpdateFilterString();
+
+    void SaveSelection();
+    void SaveExpanded();
+    void SaveFilterString();
+
     void RefreshActions(const QModelIndexList &indexList);
     void RefreshAction(QAction *action, bool enabled, bool visible);
     void CollectSelectedNodes(DAVA::Vector<ControlNode*> &nodes);
@@ -33,12 +43,14 @@ private:
 private slots:
     void OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected);
     void filterTextChanged(const QString &);
-    void OnImport();
     void OnCopy();
     void OnPaste();
     void OnCut();
     void OnDelete();
 public slots:
+    void OnContextChanged(WidgetContext *context);
+    void OnDataChanged(const QString &role);
+
     void OnControlSelectedInEditor(ControlNode *node);
     void OnAllControlsDeselectedInEditor();
 
@@ -48,7 +60,7 @@ signals:
 
 private:
     Ui::PackageWidget *ui;
-    Document *document;
+    WidgetContext *widgetContext;
     QAction *importPackageAction;
     QAction *copyAction;
     QAction *pasteAction;

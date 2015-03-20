@@ -1,7 +1,6 @@
 #include "QtModelPackageCommandExecutor.h"
 
 #include "Document.h"
-#include "PackageContext.h"
 
 #include "UI/Commands/ChangePropertyValueCommand.h"
 #include "UI/Commands/ChangeDefaultValueCommand.h"

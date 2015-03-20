@@ -2,20 +2,19 @@
 
 #include <qitemeditorfactory>
 #include <qstyleditemdelegate>
+#include <QAbstractItemModel>
+#include "UI/WidgetContext.h"
 
 #include "ui_PropertiesWidget.h"
 #include "PropertiesModel.h"
-#include "Document.h"
-#include "UI/PropertiesContext.h"
 #include "UI/Properties/PropertiesTreeItemDelegate.h"
-#include "Model/PackageHierarchy/ControlNode.h"
 
 using namespace DAVA;
 
 PropertiesWidget::PropertiesWidget(QWidget *parent)
     : QDockWidget(parent)
     , ui(new Ui::PropertiesWidget())
-    , context(nullptr)
+    , widgetContext(nullptr)
 {
     ui->setupUi(this);
     ui->treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
@@ -26,36 +25,24 @@ PropertiesWidget::~PropertiesWidget()
     delete ui;
 } 
 
-void PropertiesWidget::SetDocument(Document *document)
+void PropertiesWidget::OnContextChanged(WidgetContext *arg)
 {
-    if (nullptr != context) //remove previous context
+    widgetContext = arg;
+    UpdateModel();
+}
+void PropertiesWidget::OnDataChanged(const QString &role)
+{
+    if (role == "model")
     {
-        disconnect(context, SIGNAL(ModelChanged(PropertiesModel*)), this, SLOT(OnModelChanged(PropertiesModel*)));
-        ui->treeView->setModel(nullptr);
-    }
-    /*set new context*/
-    if (nullptr == document)
-    {
-        context = nullptr;
-    }
-    else
-    {
-        //context = document->GetPropertiesContext();
-    }
-
-    if (nullptr != context)
-    {
-        connect(context, SIGNAL(ModelChanged(PropertiesModel*)), this, SLOT(OnModelChanged(PropertiesModel*)));
-        ui->treeView->setModel(context->GetModel());
+        UpdateModel();
     }
 }
 
-void PropertiesWidget::OnModelChanged(PropertiesModel *model)
+void PropertiesWidget::UpdateModel()
 {
-    ui->treeView->setModel(model);
+    QAbstractItemModel *model = widgetContext->GetData<QAbstractItemModel*>("model");
     if (nullptr != model)
     {
-        ui->treeView->expandToDepth(0);
-        ui->treeView->resizeColumnToContents(0);
+        ui->treeView->setModel(model);
     }
 }

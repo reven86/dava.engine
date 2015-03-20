@@ -124,6 +124,11 @@ LibraryWidget *MainWindow::GetLibraryWidget() const
     return ui->libraryWidget;
 }
 
+PropertiesWidget *MainWindow::GetPropertiesWidget() const
+{
+    return ui->propertiesWidget;
+}
+
 void MainWindow::OnProjectIsOpenChanged(bool arg)
 {
     ui->fileSystemDockWidget->setEnabled(arg);
@@ -371,8 +376,6 @@ int MainWindow::AddTab(const QString &tabText)
 
 void MainWindow::SetDocumentToWidgets(Document *document)
 {
-    ui->propertiesWidget->SetDocument(document);
-    ui->packageWidget->SetDocument(document);
     ui->previewWidget->SetDocument(document);
 }
 
