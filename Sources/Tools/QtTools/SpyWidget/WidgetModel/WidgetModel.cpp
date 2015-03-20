@@ -1,7 +1,7 @@
 #include "WidgetModel.h"
 
 #include <QApplication>
-
+#include <QMetaObject>
 
 
 WidgetModel::WidgetModel( QObject* parent )
@@ -131,4 +131,58 @@ QModelIndex WidgetModel::parent( const QModelIndex& index ) const
     Q_ASSERT( parentRow >= 0 );
 
     return createIndex( parentRow, 0, pw );
+}
+
+Qt::ItemFlags WidgetModel::flags( const QModelIndex& index ) const
+{
+    if ( !index.isValid() )
+        return Qt::NoItemFlags;
+
+    return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+}
+
+QVariant WidgetModel::data( const QModelIndex& index, int role ) const
+{
+    if ( !index.isValid() )
+        return QVariant();
+
+    auto widget = static_cast<QWidget *>( index.internalPointer() );
+    switch ( role )
+    {
+    case Qt::DisplayRole:
+        return textDataForColumn( index );
+    default:
+        break;
+    }
+
+    return QAbstractItemModel::data( index, role );
+}
+
+bool WidgetModel::setData( const QModelIndex& index, const QVariant& value, int role )
+{
+    Q_UNUSED( index );
+    Q_UNUSED( value );
+    Q_UNUSED( role );
+
+    return false;
+}
+
+QVariant WidgetModel::textDataForColumn( const QModelIndex& index ) const
+{
+    auto widget = static_cast<QWidget *>( index.internalPointer() );
+    auto meta = widget->metaObject();
+
+    switch ( index.column() )
+    {
+    case TITLE:
+        return QString( "%1" ).arg( meta->className() );
+    case CLASSNAME:
+        return QString( ".%1" ).arg( meta->className() );
+    case OBJECTNAME:
+        return QString( "#%1" ).arg( widget->objectName() );
+    default:
+        break;
+    }
+
+    return QVariant();
 }

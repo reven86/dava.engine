@@ -1,14 +1,13 @@
-#ifndef QTTOOLS_WIDGETMODEL_H
-#define QTTOOLS_WIDGETMODEL_H
+#ifndef QTTOOLS_WIDGETLISTMODEL_H
+#define QTTOOLS_WIDGETLISTMODEL_H
 
 
-#include <QAbstractItemModel>
-#include <QPointer>
-#include <QWidget>
+#include <QAbstractListModel>
+#include <QWidgetList>
 
 
-class WidgetModel
-    : public QAbstractItemModel
+class WidgetListModel
+    : public QAbstractListModel
 {
     Q_OBJECT
 
@@ -23,22 +22,13 @@ public:
     };
 
 public:
-    explicit WidgetModel( QObject *parent );
-    ~WidgetModel();
+    explicit WidgetListModel( QObject *parent = nullptr );
+    ~WidgetListModel();
 
-    void trackWidget( QWidget *w );
-
-    // QObject
-    bool eventFilter( QObject *obj, QEvent *e ) override;
-
-    // QAbstractItemModel
     int columnCount( const QModelIndex& parent = QModelIndex() ) const override;
     int rowCount( const QModelIndex& parent = QModelIndex() ) const override;
     QVariant headerData( int section, Qt::Orientation orientation, int role = Qt::DisplayRole ) const override;
 
-    bool canFetchMore( const QModelIndex& parent ) const override;
-    void fetchMore( const QModelIndex& parent ) override;
-    bool hasChildren( const QModelIndex& parent = QModelIndex() ) const override;
     QModelIndex	index( int row, int column, const QModelIndex& parent = QModelIndex() ) const override;
     QModelIndex	parent( const QModelIndex& index ) const override;
 
@@ -47,14 +37,19 @@ public:
     QVariant data( const QModelIndex& index, int role = Qt::DisplayRole ) const override;
     bool setData( const QModelIndex& index, const QVariant& value, int role = Qt::EditRole ) override;
 
+    void setWidgetList( const QWidgetList& widgetList = QWidgetList() );
+
+private slots:
+    void onWidgetDestroyed();
+
 private:
     QVariant textDataForColumn( const QModelIndex& index ) const;
 
-    QPointer< QWidget > root;
+    QWidgetList widgets;
 };
 
 
-Q_DECLARE_METATYPE( WidgetModel::Columns );
+Q_DECLARE_METATYPE( WidgetListModel::Columns );
 
 
-#endif // QTTOOLS_WIDGETMODEL_H
+#endif // QTTOOLS_WIDGETLISTMODEL_H
