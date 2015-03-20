@@ -405,9 +405,13 @@ void StructureSystem::Add(const DAVA::FilePath &newModelPath, const DAVA::Vector
 			loadedEntity->SetLocalTransform(transform);
             
             if (GetPathComponent(loadedEntity))
+            {
                 sceneEditor->pathSystem->AddPath(loadedEntity);
+            }
             else
-			    sceneEditor->Exec(new EntityAddCommand(loadedEntity, sceneEditor));
+            {
+                sceneEditor->Exec(new EntityAddCommand(loadedEntity, sceneEditor));
+            }
 
 			// TODO: move this code to some another place (into command itself or into ProcessCommand function)
 			// 

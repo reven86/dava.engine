@@ -161,7 +161,6 @@ void DeveloperTools::OnDebugCreateTestSkinnedObject()
     entity->AddComponent(renderComponent);
 
     currentScene->Exec(new EntityAddCommand(entity, currentScene));
-    currentScene->selectionSystem->SetSelection(entity);    
 }
 
 void DeveloperTools::OnImageSplitterNormals()

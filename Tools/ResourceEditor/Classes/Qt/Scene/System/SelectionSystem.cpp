@@ -269,15 +269,61 @@ void SceneSelectionSystem::ProcessCommand(const Command2 *command, bool redo)
 {
 	if(NULL != command)
 	{
-		if((command->GetId() == CMDID_ENTITY_REMOVE) || (command->GetId() == CMDID_ENTITY_ADD && !redo))
+        auto commandId = command->GetId();
+        
+		if((CMDID_ENTITY_REMOVE == commandId))
 		{
 			// remove from selection entity that was removed by command
 			RemSelection(command->GetEntity());
 		}
-		else if(command->GetId() == CMDID_ENTITY_CHANGE_PARENT ||
-				command->GetId() == CMDID_TRANSFORM)
+		else if((CMDID_ENTITY_CHANGE_PARENT == commandId) || (CMDID_TRANSFORM == commandId))
 		{
             invalidSelectionBoxes = true;
+        }
+
+        auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoSelectionOfNewElements).AsBool();
+        if(CMDID_BATCH == commandId)
+        {
+            auto batch = static_cast<const CommandBatch *>(command);
+            
+            auto contain = batch->ContainCommand(CMDID_ENTITY_ADD);
+            if(contain && autoSelectionEnabled)
+            {
+                auto count = batch->Size();
+                if(redo)
+                {
+                    Clear();
+                }
+                
+                for(auto i = 0; i < count; ++i)
+                {
+                    auto cmd = batch->GetCommand(i);
+                    if(CMDID_ENTITY_ADD == cmd->GetId())
+                    {
+                        auto entity = command->GetEntity();
+                        if(redo)
+                        {
+                            AddSelection(entity);
+                        }
+                        else
+                        {
+                            RemSelection(entity);
+                        }
+                    }
+                }
+            }
+        }
+        else if((CMDID_ENTITY_ADD == command->GetId()) && autoSelectionEnabled)
+        {
+            auto entity = command->GetEntity();
+            if(redo)
+            {
+                SetSelection(entity);
+            }
+            else
+            {
+                RemSelection(entity);
+            }
         }
     }
 }
