@@ -222,14 +222,15 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
         
 		if (packWasSuccessfull)
 		{
-            String fileName = defFile->filename.GetFilename();
-
-            FilePath textureName = outputPath + fileName;
+            String fileBasename = defFile->filename.GetBasename();
+            FilePath textureName = outputPath + fileBasename;
             Logger::FrameworkDebug("* Writing final texture (%d x %d): %s", bestXResolution, bestYResolution , textureName.GetAbsolutePathname().c_str());
 			
 			PngImageExt finalImage;
 			finalImage.Create(bestXResolution, bestYResolution);
 			
+            String fileName = defFile->filename.GetFilename();
+
 			// Writing 
 			for (int frame = 0; frame < defFile->frameCount; ++frame)
 			{
@@ -251,7 +252,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 				}
 			}
 			
-            if (!WriteDefinition(excludeFolder, outputPath, fileName, defFile))
+            if (!WriteDefinition(excludeFolder, outputPath, fileBasename, defFile))
 			{
 				AddError(Format("* ERROR: Failed to write definition - %s.", fileName.c_str()));
 			}
