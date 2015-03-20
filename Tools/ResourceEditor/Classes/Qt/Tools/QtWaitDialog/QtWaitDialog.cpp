@@ -32,7 +32,7 @@
 #include "ui_waitdialog.h"
 
 QtWaitDialog::QtWaitDialog(QWidget *parent /*= 0*/)
-    : QDialog(parent, Qt::MSWindowsFixedSizeDialogHint | Qt::WindowTitleHint | Qt::WindowSystemMenuHint)
+    : QDialog(parent, Qt::Window | Qt::CustomizeWindowHint)
     , ui(new Ui::QtWaitDialog)
     , wasCanceled(false)
 {
