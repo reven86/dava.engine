@@ -537,14 +537,21 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData * data, Qt::DropAction ac
 							break;
 						}
                         
-                        //5. disabled drop waypoints to different pathes
-                        if(entity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT) || entity->GetComponent(DAVA::Component::PATH_COMPONENT))
+                        // 5. or we are dropping waypoint outside of its path
+                        if(GetWaypointComponent(entity))
                         {
                             if(entity->GetParent() != targetEntity)
                             {
                                 ret = false;
                                 break;
                             }
+                        }
+
+                        // 6. or we are dropping path inside of another path or waypoint
+                        if (GetPathComponent(entity) && (GetPathComponent(targetEntity) || GetWaypointComponent(targetEntity)))
+                        {
+                            ret = false;
+                            break;
                         }
 					}
 				}
@@ -639,7 +646,11 @@ void SceneTreeModel::ResyncStructure(QStandardItem *item, DAVA::Entity *entity)
 void SceneTreeModel::SetFilter(const QString& text)
 {
     filterText = text;
+    ReloadFilter();
+}
 
+void SceneTreeModel::ReloadFilter()
+{
     ResetFilter();
 
     if (!filterText.isEmpty())
@@ -648,7 +659,7 @@ void SceneTreeModel::SetFilter(const QString& text)
         for (int i = 0; i < n; i++)
         {
             const QModelIndex _index = index(i, 0);
-            SetFilterInternal(_index, text);
+            SetFilterInternal(_index, filterText);
         }
     }
 }
@@ -836,8 +847,29 @@ Qt::ItemFlags SceneTreeModel::flags ( const QModelIndex & index ) const
             return (f & ~Qt::ItemIsSelectable);
         }
     }
-    
+
     return f;
+}
+
+QVariant SceneTreeModel::data(const QModelIndex &_index, int role) const
+{
+    switch (role)
+    {
+    case Qt::BackgroundRole:
+        {
+            SceneTreeItem *item = GetItem(_index);
+            ParticleEmitter *emitter = SceneTreeItemParticleEmitter::GetEmitterStrict(item);
+            if (nullptr != emitter && emitter->shortEffect)
+            {
+                return QBrush(QColor(255, 0, 0, 20));
+            }
+        }
+        break;
+    default:
+        break;
+    }
+
+    return QStandardItemModel::data(_index, role);
 }
 
 
@@ -862,10 +894,8 @@ bool SceneTreeFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex 
 
 QVariant SceneTreeFilteringModel::data(const QModelIndex& _index, int role) const
 {
-    QVariant val = QSortFilterProxyModel::data(_index, role);
-
     if (!treeModel->IsFilterSet())
-        return val;
+        return QSortFilterProxyModel::data(_index, role);
 
     switch ( role )
     {
@@ -873,14 +903,16 @@ QVariant SceneTreeFilteringModel::data(const QModelIndex& _index, int role) cons
         {
             SceneTreeItem *item = treeModel->GetItem(mapToSource(_index));
             if (item->IsHighlighed())
-                val = QBrush(QColor(0, 255, 0, 20));
+            {
+                return QBrush(QColor(0, 255, 0, 20));
+            }
         }
         break;
     default:
         break;
     }
 
-    return val;
+    return QSortFilterProxyModel::data(_index, role);
 }
 
 

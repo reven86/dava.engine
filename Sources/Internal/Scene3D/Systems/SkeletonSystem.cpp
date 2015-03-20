@@ -57,7 +57,7 @@ void SkeletonSystem::AddEntity(Entity * entity)
 
 void SkeletonSystem::RemoveEntity(Entity * entity)
 {
-    uint32 size = entities.size();
+    uint32 size = static_cast<uint32>(entities.size());
     for(uint32 i = 0; i < size; ++i)
     {
         if(entities[i] == entity)
@@ -79,7 +79,7 @@ void SkeletonSystem::ImmediateEvent(Entity * entity, uint32 event)
 
 void SkeletonSystem::Process(float32 timeElapsed)
 {
-    for (int32 i=0, sz=entities.size(); i<sz; ++i)
+    for (int32 i=0, sz=static_cast<int32>(entities.size()); i<sz; ++i)
     {
         SkeletonComponent *component = GetSkeletonComponent(entities[i]);
         /*test/
@@ -200,7 +200,7 @@ void SkeletonSystem::RebuildSkeleton(Entity *entity)
     component->targetJointsCount = 0;
     int32 maxTargetJoint = 0;
     DVASSERT(component->configJoints.size()<SkeletonComponent::INFO_PARENT_MASK);
-    for (int32 i=0, sz = component->configJoints.size(); i<sz; ++i)
+    for (int32 i=0, sz = static_cast<int32>(component->configJoints.size()); i<sz; ++i)
     {
         DVASSERT((component->configJoints[i].parentIndex==SkeletonComponent::INVALID_JOINT_INDEX)||(component->configJoints[i].parentIndex<i)); //order
         DVASSERT((component->configJoints[i].parentIndex==SkeletonComponent::INVALID_JOINT_INDEX)||((component->configJoints[i].parentIndex&SkeletonComponent::INFO_PARENT_MASK)==component->configJoints[i].parentIndex)); //parent fits mask

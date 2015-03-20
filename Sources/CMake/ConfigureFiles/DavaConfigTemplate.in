@@ -10,8 +10,10 @@ ANDROID_KEY_ALIAS        = test
 ANDROID_STORE_PASSWORD   = qazwsx
 ANDROID_ALIAS_PASSWORD   = qazwsx
 
-ANDROID_NDK              = $ENV{NDK_HOME}
-ANDROID_ABI              = armeabi-v7a with NEON 
-ANDROID_NATIVE_API_LEVEL = 14 
+ANDROID_ANT              = $ENV{ANDROID_ANT}
+ANDROID_NDK              = $ENV{ANDROID_NDK}
+ANDROID_SDK              = $ENV{ANDROID_SDK}
+ANDROID_ABI              = armeabi-v7a
+ANDROID_NATIVE_API_LEVEL = 17 
 ANDROID_TARGET_API_LEVEL = 21 
 

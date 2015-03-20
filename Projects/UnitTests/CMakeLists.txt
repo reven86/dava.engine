@@ -1,17 +1,15 @@
 cmake_minimum_required (VERSION 3.0)
-
-project      ( UnitTests )
-
-if( ANDROID )
-    project      ( UnitTestsLib )
-
-endif()
-
-set          ( WARNINGS_AS_ERRORS_WIN32 true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
-
 include      ( CMake-common )
 include      ( FindDavaFramework )
+
+if( ANDROID )
+    project ( UnitTestsLib )
+
+else()
+    project ( UnitTests )
+
+endif()
 
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Infrastructure" )
@@ -36,13 +34,12 @@ elseif( WIN32 )
 
 endif()
 
-add_subdirectory(               ${DAVA_TOOLS_DIR} ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
-define_source_folders(          SRC_ROOT "Classes" ${PLATFORM_SPECIFIC_FOLDER} 
-                                GLOB_ERASE_FOLDERS "_build"  )
+define_source_folders         ( SRC_ROOT "Classes" ${PLATFORM_SPECIFIC_FOLDER}  )
+generate_source_groups_project( SRC_ROOT "Classes" )
+add_subdirectory( ${DAVA_TOOLS_DIR} ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
-generate_source_groups_project( ROOT_DIR "Classes" ${PLATFORM_SPECIFIC_FOLDER}   
-                                GROUP_FOLDERS PLATFORM_SPECIFIC_FOLDER )
+set( WIN32_DATA                 ${CMAKE_CURRENT_LIST_DIR}/Data )
 
 set( IOS_PLISTT                 ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/UnitTests-Info.plist )
 set( IOS_XIB                    ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/MainWindow.xib ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/iPad/MainWindow-iPad.xib )
@@ -63,11 +60,10 @@ set( ANDROID_JAVA_SRC           ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/Java
 set( ANDROID_JAVA_LIBS          ${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/jar )
 set( ANDROID_JAVA_RES           ${CMAKE_CURRENT_LIST_DIR}/android/res )
 set( ANDROID_JAVA_ASSET         ${CMAKE_CURRENT_LIST_DIR}/Data ) 
-set( ANDROID_JAVA_ASSET_FOLDER  "Data" )
 set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-web.png )
 
-set( ADDED_SRC                  ${PackerToolsSCR}  ${IOS_ADD_SRC} )
-set( LIBRARIES                  TextureTool )
+set( ADDED_SRC                  ${IOS_ADD_SRC} )
+set( LIBRARIES                  DavaTools )
 set( LIBRARIES_RELEASE          )
 set( LIBRARIES_DEBUG            )
 set( ADDED_BINARY_DIR           )

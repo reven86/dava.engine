@@ -49,7 +49,8 @@ void TextBlockGraphicsRender::Prepare(Texture *texture /*= NULL*/)
 	TextBlockRender::Prepare(texture);
 	
 	isPredrawed = false;
-	sprite = Sprite::CreateAsRenderTarget((float32)textBlock->cacheDx, (float32)textBlock->cacheDy, FORMAT_RGBA8888);
+    Texture * fbo = Texture::CreateFBO(textBlock->cacheDx, textBlock->cacheDy, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+    sprite = Sprite::CreateFromTexture(fbo, 0, 0, (float32)fbo->GetWidth(), (float32)fbo->GetHeight());
 	if (sprite && sprite->GetTexture())
 	{
 		if (!textBlock->isMultilineEnabled)
@@ -68,10 +69,16 @@ void TextBlockGraphicsRender::PreDraw()
 		return;
 	
 	isPredrawed = true;
-    RenderSystem2D::Instance()->PushRenderTarget();
-	RenderSystem2D::Instance()->SetRenderTarget(sprite);
-	DrawText();
-    RenderSystem2D::Instance()->PopRenderTarget();
+
+    Texture * rt = sprite->GetTexture();
+    Rect oldviewport = RenderManager::Instance()->GetViewport();
+
+    RenderManager::Instance()->SetRenderTarget(rt);
+    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)rt->GetWidth(), (float32)rt->GetHeight()));
+    DrawText();
+
+    RenderManager::Instance()->SetRenderTarget(0);
+    RenderManager::Instance()->SetViewport(oldviewport);
 }
 	
 Font::StringMetrics TextBlockGraphicsRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)

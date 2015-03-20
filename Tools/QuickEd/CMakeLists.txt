@@ -36,11 +36,13 @@ qt5_wrap_cpp                  ( MOC_APP_SRCS ${QT_LIST} )
 file                          ( GLOB UI_LIST "Ui/*.ui" )
 qt5_wrap_ui                   ( UI_APP_HDRS  ${UI_LIST} )
 
-file                          ( GLOB RCC_LIST "Data/*.qrc" )
+file                          ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources             ( RCC_APP_SRCS  ${RCC_LIST} )
 
 set                           ( Generated    ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set                           ( UiList       ${UI_LIST} )
+
+set ( DAVA_USE_QT_WIDGETS true )
 
 define_source_folders         ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build"    )
 generate_source_groups_project( SRC_ROOT "Classes" GROUP_FOLDERS Generated UiList )
@@ -49,9 +51,10 @@ add_subdirectory              ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" 
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO                  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
 set( MACOS_DATA                 ${CMAKE_CURRENT_LIST_DIR}/Data )
+set( WIN32_DATA                 ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_DYLIB                ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
 set( ADDED_SRC                  ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
-set( LIBRARIES                  ${QT_LIBRARIES} TextureTool )
+set( LIBRARIES                  ${QT_LIBRARIES} DavaTools )
 set( LIBRARIES_RELEASE        )
 set( LIBRARIES_DEBUG          )
 set( ADDED_BINARY_DIR           ${QT5_PATH_WIN}/bin )
@@ -59,7 +62,7 @@ set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
 
 setup_main_executable()
 
-if( WIN32 )
+if( WIN32 AND NOT DAVA_MEGASOLUTION )
     set( OUTPUT_DIR "${CMAKE_CURRENT_LIST_DIR}/$(Configuration)" )
     foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
         string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )

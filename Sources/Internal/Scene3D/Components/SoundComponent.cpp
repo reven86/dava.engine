@@ -62,7 +62,7 @@ void SoundComponent::AddSoundEvent(SoundEvent * _event, uint32 flags /*= 0*/, co
 
 void SoundComponent::RemoveSoundEvent(SoundEvent * event)
 {
-    uint32 eventCount = events.size();
+    uint32 eventCount = static_cast<uint32>(events.size());
     for(uint32 i = 0; i < eventCount; ++i)
     {
         if(events[i].soundEvent == event)
@@ -80,7 +80,7 @@ void SoundComponent::RemoveSoundEvent(SoundEvent * event)
 
 void SoundComponent::RemoveAllEvents()
 {
-    uint32 eventsCount = events.size();
+    uint32 eventsCount = static_cast<uint32>(events.size());
     for(uint32 i = 0; i < eventsCount; ++i)
     {
         events[i].soundEvent->Stop(true);
@@ -94,14 +94,14 @@ void SoundComponent::RemoveAllEvents()
 
 void SoundComponent::Trigger()
 {
-    uint32 eventsCount = events.size();
+    uint32 eventsCount = static_cast<uint32>(events.size());
     for(uint32 i = 0; i < eventsCount; ++i)
         Trigger(i);
 }
 
 void SoundComponent::Stop()
 {
-    uint32 eventsCount = events.size();
+    uint32 eventsCount = static_cast<uint32>(events.size());
     for(uint32 i = 0; i < eventsCount; ++i)
         Stop(i);
 }
@@ -153,7 +153,7 @@ void SoundComponent::SetLocalDirection(uint32 eventIndex, const Vector3 & direct
 
 void SoundComponent::SetLocalDirection(const DAVA::Vector3 &direction)
 {
-    uint32 eventsCount = events.size();
+    uint32 eventsCount = static_cast<uint32>(events.size());
     for(uint32 i = 0; i < eventsCount; ++i)
         SetLocalDirection(i, direction);
 }
@@ -164,7 +164,7 @@ Component * SoundComponent::Clone(Entity * toEntity)
     soundComponent->SetEntity(toEntity);
     
     SoundSystem * soundSystem = SoundSystem::Instance();
-    int32 eventCount = events.size();
+    int32 eventCount = static_cast<int32>(events.size());
     for(int32 i = 0; i < eventCount; ++i)
     {
         SoundEvent * clonedEvent = soundSystem->CloneEvent(events[i].soundEvent);
@@ -181,7 +181,7 @@ void SoundComponent::Serialize(KeyedArchive *archive, SerializationContext *seri
 
     if(archive)
     {
-        uint32 eventsCount = events.size();
+        uint32 eventsCount = static_cast<uint32>(events.size());
         archive->SetUInt32("sc.eventCount", eventsCount);
         for(uint32 i = 0; i < eventsCount; ++i)
         {

@@ -413,7 +413,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../Libs/fmod/lib/macos",
-					/Users/victorkleschenko/Work/WoT/dava.framework/Tools/Bin,
+					"$(SRCROOT)/../../Tools/Bin",
 				);
 				OTHER_LDFLAGS = "-L../../Libs/IMagickHelpLib";
 				PRODUCT_NAME = ResourcePacker;
@@ -437,7 +437,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../Libs/fmod/lib/macos",
-					/Users/victorkleschenko/Work/WoT/dava.framework/Tools/Bin,
+					"$(SRCROOT)/../../Tools/Bin",
 				);
 				OTHER_LDFLAGS = "-L../../Libs/IMagickHelpLib";
 				PRODUCT_NAME = ResourcePacker;

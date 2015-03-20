@@ -53,8 +53,6 @@ public:
 
     static void AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> &triangles, DAVA::LodComponent *lod, bool onlyVisibleBatches);
     
-    bool CheckSelectedContainsEntity(const DAVA::Entity *arg) const;
-
     void SolidChanged(const DAVA::Entity *entity, bool value);
 
     bool CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath);
@@ -90,6 +88,8 @@ public:
     inline bool GetAllSceneModeEnabled() const;
     void SetAllSceneModeEnabled(bool enabled);
 protected:
+    bool CheckSelectedContainsEntity(const DAVA::Entity *arg) const;
+
     void AddSelectedLODsRecursive(DAVA::Entity *entity);
     void RemoveSelectedLODsRecursive(DAVA::Entity *entity);
 

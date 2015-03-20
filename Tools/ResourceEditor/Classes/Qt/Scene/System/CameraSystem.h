@@ -73,8 +73,8 @@ public:
     DAVA::float32 GetDistanceToCamera() const;
     void UpdateDistanceToCamera();
 
-    virtual void Process(DAVA::float32 timeElapsed);
-    virtual void Input(DAVA::UIEvent *event);
+    void Process(DAVA::float32 timeElapsed) override;
+    void Input(DAVA::UIEvent *event) override;
     
     bool SnapEditorCameraToLandscape(bool snap);
     bool IsEditorCameraSnappedToLandscape() const;
@@ -85,8 +85,8 @@ protected:
 
 	void ProcessCommand(const Command2 *command, bool redo);
 
-	virtual void AddEntity(DAVA::Entity * entity);
-	virtual void RemoveEntity(DAVA::Entity * entity);
+	void AddEntity(DAVA::Entity * entity) override;
+    void RemoveEntity(DAVA::Entity * entity) override;
 
 	void CreateDebugCameras();
 	void RecalcCameraAspect();

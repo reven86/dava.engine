@@ -448,7 +448,7 @@ void ShaderCache::ParseShader(ShaderAsset * asset)
     }
     
     asset->vertexShaderDataStart = vertexShaderStartPosition;
-    asset->vertexShaderDataSize = vertexShaderData->GetSize() - (vertexShaderStartPosition - vertexShaderData->GetPtr());
+    asset->vertexShaderDataSize = static_cast<uint32>(vertexShaderData->GetSize() - (vertexShaderStartPosition - vertexShaderData->GetPtr()));
     
     //    includesList.clear();
     //    includesList.push_back(fragmentShaderPath.GetFilename());
@@ -528,7 +528,7 @@ void ShaderCache::ParseShader(ShaderAsset * asset)
         lineBegin = lineEnd + lineEnding;
     }
     asset->fragmentShaderDataStart = fragmentShaderStartPosition;
-    asset->fragmentShaderDataSize = fragmentShaderData->GetSize() - (fragmentShaderStartPosition - fragmentShaderData->GetPtr());
+    asset->fragmentShaderDataSize = static_cast<uint32>(fragmentShaderData->GetSize() - (fragmentShaderStartPosition - fragmentShaderData->GetPtr()));
     
     
     //        curData = strtok((char*)fragmentShaderData, "\n");

@@ -160,6 +160,11 @@ bool EntityModificationSystem::InCloneState() const
 	return (cloneState == CLONE_NEED);
 }
 
+bool EntityModificationSystem::InCloneDoneState() const
+{
+    return (cloneState == CLONE_DONE);
+}
+
 void EntityModificationSystem::Process(DAVA::float32 timeElapsed)
 { }
 

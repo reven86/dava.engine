@@ -44,11 +44,11 @@ public:
 
 	int32 GetSize();
 
-	Sprite* GetSprite();
+	Texture* GetTexture();
 	void UpdateRect(const Rect& rect);
 
-	void ResetSpriteChanged();
-	bool IsSpriteChanged();
+	void ResetTextureChanged();
+	bool IsTextureChanged();
 
 	Rect GetChangedRect();
 
@@ -59,7 +59,7 @@ public:
 	bool IsVisibilityPointSet();
 
 protected:
-	Sprite* visibilityToolSprite;
+	Texture* visibilityToolTexture;
 	Rect changedRect;
 	bool spriteChanged;
 	int32 size;

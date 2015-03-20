@@ -90,7 +90,7 @@ ParticleRenderObject::ParticleRenderObject(ParticleEffectData *effect): effectDa
 
 ParticleRenderObject::~ParticleRenderObject()
 {
-    for (int32 i=0, sz = renderGroupCache.size(); i<sz; ++i)
+    for (size_t i=0, sz = renderGroupCache.size(); i<sz; ++i)
     {
         SafeRelease(renderGroupCache[i]->renderBatch);
         SafeDelete(renderGroupCache[i]);
@@ -116,7 +116,7 @@ void ParticleRenderObject::PrepareToRender(Camera *camera)
 void ParticleRenderObject::SetSortingOffset(uint32 offset)
 {
     sortingOffset = offset;
-    for (int32 i=0, sz = renderGroupCache.size(); i<sz; ++i)
+    for (size_t i=0, sz = renderGroupCache.size(); i<sz; ++i)
         renderGroupCache[i]->renderBatch->SetSortingOffset(offset);
 }
 
@@ -136,7 +136,7 @@ void ParticleRenderObject::Set2DMode(bool is2d)
 
 void ParticleRenderObject::PrepareRenderData(Camera * camera)
 {
-	for (int32 i=0, sz = renderGroupCache.size(); i<sz; ++i)
+	for (size_t i=0, sz = renderGroupCache.size(); i<sz; ++i)
 		renderGroupCache[i]->ClearArrays();
 	activeRenderBatchArray.clear();
 	    
@@ -205,7 +205,7 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
 	}
 	
 	
-	int32 currParticleIndices = indices.size()/INDICES_PER_PARTICLE;
+	int32 currParticleIndices = static_cast<int32>(indices.size()/INDICES_PER_PARTICLE);
 	if (maxParticlesPerBatch>currParticleIndices)
 	{
 		indices.resize(maxParticlesPerBatch*INDICES_PER_PARTICLE);

@@ -194,24 +194,22 @@ frameBegan(false)
 
 FrameOcclusionQueryManager::~FrameOcclusionQueryManager()
 {
-    int32 frameQueriesCount = frameQueries.size();
-    for(int32 i = 0; i < frameQueriesCount; ++i)
+    for(auto& frameQuery : frameQueries)
     {
-        SafeDelete(frameQueries[i]);
+        SafeDelete(frameQuery);
     }
 }
 
 FrameOcclusionQueryManager::FrameQuery * FrameOcclusionQueryManager::GetQuery(const FastName & queryName) const
 {
-    int32 frameQueriesCount = frameQueries.size();
-    for(int32 i = 0; i < frameQueriesCount; ++i)
+    for(auto frameQuery : frameQueries)
     {
-        if(frameQueries[i]->queryName == queryName)
+        if (frameQuery->queryName == queryName)
         {
-            return frameQueries[i];
+            return frameQuery;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 void FrameOcclusionQueryManager::ResetFrameStats() //OnBeginFrame
@@ -221,10 +219,9 @@ void FrameOcclusionQueryManager::ResetFrameStats() //OnBeginFrame
 
     frameBegan = true;
 
-    int32 frameQueriesCount = frameQueries.size();
-    for(int32 i = 0; i < frameQueriesCount; ++i)
+    for (auto frameQuery : frameQueries)
     {
-        frameQueries[i]->drawedFrameStats = 0;
+        frameQuery->drawedFrameStats = 0;
     }
 }
 
@@ -235,11 +232,11 @@ void FrameOcclusionQueryManager::ProccesRenderedFrame() //OnEndFrame
 
     frameBegan = false;
 
-    int32 frameQueriesCount = frameQueries.size();
+    int32 frameQueriesCount = static_cast<int32>(frameQueries.size());
     for(int32 i = 0; i < frameQueriesCount; ++i)
     {
         FrameQuery * frameQuery = frameQueries[i];
-        for(int32 q = frameQuery->activeQueries.size() - 1; q >= 0; --q)
+        for(int32 q = static_cast<int32>(frameQuery->activeQueries.size() - 1); q >= 0; --q)
         {
             OcclusionQueryPoolHandle queryHandle = frameQuery->activeQueries[q];
             OcclusionQuery & query = frameQuery->queryPool.Get(queryHandle);
@@ -339,10 +336,9 @@ uint32 FrameOcclusionQueryManager::GetFrameStats(const FastName & queryName) con
 
 void FrameOcclusionQueryManager::GetQueriesNames(Vector<FastName> & names) const
 {
-    int32 frameQueriesCount = frameQueries.size();
-    for(int32 i = 0; i < frameQueriesCount; ++i)
+    for (auto query : frameQueries)
     {
-        names.push_back(frameQueries[i]->queryName);
+        names.emplace_back(query->queryName);
     }
 }
 

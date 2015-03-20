@@ -253,7 +253,7 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
 
 void RenderBatch::Save(KeyedArchive * archive, SerializationContext* serializationContext)
 {
-	BaseObject::Save(archive);
+	BaseObject::SaveObject(archive);
 
 	if(NULL != archive)
 	{
@@ -337,7 +337,7 @@ void RenderBatch::Load(KeyedArchive * archive, SerializationContext *serializati
         
 	}
 
-	BaseObject::Load(archive);
+	BaseObject::LoadObject(archive);
 }
 
 void RenderBatch::UpdateAABBoxFromSource()

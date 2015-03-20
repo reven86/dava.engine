@@ -82,7 +82,7 @@ public:
 protected:
 	uint32 curToolSize;
 	Image* toolImage;
-	Sprite* toolImageSprite;
+	Texture * toolImageTexture;
 	uint32 tileTextureNum;
 
 	eTilemaskDrawType drawingType;
@@ -98,8 +98,8 @@ protected:
 	
 	bool editingIsEnabled;
 	
-	Sprite* stencilSprite;
-	Sprite* toolSprite;
+	Texture * stencilTexture;
+	Texture * toolTexture;
 	bool toolSpriteUpdated;
 
 	eBlendMode srcBlendMode;
@@ -108,6 +108,7 @@ protected:
 	Shader* tileMaskCopyPasteShader;
 
     float32 spriteTempVertices[8];
+    float32 spriteTempCoords[8];
     RenderDataObject * spriteRenderObject;
     RenderDataStream * spriteVertexStream;
     RenderDataStream * spriteTexCoordStream;
@@ -135,8 +136,6 @@ protected:
 
 	MetaObjModifyCommand* CreateTileColorCommand(Landscape::eTextureLevel level,
 												 const Color& color);
-	
-	UniqueHandle noBlendDrawState;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__) */

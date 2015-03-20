@@ -244,7 +244,7 @@ void QualitySettingsSystem::SetCurTextureQuality(const FastName &name)
     {
         if(textureQualities[i].name == name)
         {
-            curTextureQuality = i;
+            curTextureQuality = static_cast<int32>(i);
             return;
         }
     }
@@ -298,7 +298,7 @@ void QualitySettingsSystem::SetCurSFXQuality(const FastName &name)
     {
         if(soundQualities[i].name == name)
         {
-            curSoundQuality = i;
+            curSoundQuality = static_cast<int32>(i);
             return;
         }
     }
@@ -452,7 +452,7 @@ bool QualitySettingsSystem::IsOptionEnabled( const FastName & option ) const
 
 int32 QualitySettingsSystem::GetOptionsCount() const
 {
-    return qualityOptions.size();
+    return static_cast<int32>(qualityOptions.size());
 }
 
 FastName QualitySettingsSystem::GetOptionName(int32 index) const
@@ -467,7 +467,7 @@ void QualitySettingsSystem::UpdateEntityAfterLoad(Entity *entity)
 	Vector<Entity *> entitiesWithQualityComponent;
 	entity->GetChildEntitiesWithComponent(entitiesWithQualityComponent, Component::QUALITY_SETTINGS_COMPONENT);
 
-    for (uint32 i = 0, sz = entitiesWithQualityComponent.size(); i< sz; ++i)
+    for (size_t i = 0, sz = entitiesWithQualityComponent.size(); i< sz; ++i)
     {
         if (!IsQualityVisible(entitiesWithQualityComponent[i]))
         {

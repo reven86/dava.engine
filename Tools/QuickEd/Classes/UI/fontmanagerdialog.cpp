@@ -282,7 +282,7 @@ Font* FontManagerDialog::GetSelectedFont(QItemSelectionModel *selectionModel)
         if (!fontSpritePath.isNull() && !fontSpritePath.isEmpty())
         {
 			// Convert file path into Unix-style path
-			fontSpritePath = ResourcesManageHelper::ConvertPathToUnixStyle(fontSpritePath);
+			fontSpritePath = QDir::toNativeSeparators(fontSpritePath);
 
 			if (ResourcesManageHelper::ValidateResourcePath(fontSpritePath))
 			{

@@ -145,7 +145,7 @@ float32 Light::GetIntensity() const
 
 void Light::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
-	BaseObject::Save(archive);
+	BaseObject::SaveObject(archive);
 	
 	archive->SetInt32("type", type);
 	archive->SetFloat("ambColor.r", ambientColor.r);
@@ -165,7 +165,7 @@ void Light::Save(KeyedArchive * archive, SerializationContext * serializationCon
 
 void Light::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
-    BaseObject::Load(archive);
+    BaseObject::LoadObject(archive);
 
     type = (eType)archive->GetInt32("type");
     
