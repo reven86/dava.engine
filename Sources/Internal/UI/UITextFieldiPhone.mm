@@ -258,28 +258,36 @@ namespace DAVA
                                        , (physicalRect.y + physicalOffset.y) / divider
                                        , physicalRect.dx / divider
                                        , physicalRect.dy / divider);
-        
+    
         if(renderToTexture)
         {
             nativeRect.origin.x += MOVE_TO_OFFSCREEN_STEP;
         }
+    
         textFieldHolder->textField.frame = nativeRect;
     }
 	
     void UITextFieldiPhone::SetText(const WideString & string)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        
         NSString* text = [[ [ NSString alloc ] initWithBytes : (char*)string.data()
                                                          length : string.size() * sizeof(wchar_t)
                                                        encoding : CFStringConvertEncodingToNSStringEncoding ( kCFStringEncodingUTF32LE ) ] autorelease];
-
-        textFieldHolder->textField.text = (NSString*)TruncateText(text, textFieldHolder->cppTextField->GetMaxLength());
+        NSString* truncatedText = (NSString*)TruncateText(text, textFieldHolder->cppTextField->GetMaxLength());
+        
+        bool needStaticUpdate = ![textFieldHolder->textField.text isEqualToString:truncatedText];
+        
+        textFieldHolder->textField.text = truncatedText;
         [textFieldHolder->textField.undoManager removeAllActions];
 
         // Notify UITextFieldDelegate::TextFieldOnTextChanged event
         [textFieldHolder->textField sendActionsForControlEvents:UIControlEventEditingChanged];
         
-        UpdateStaticTexture();
+        if(needStaticUpdate)
+        {
+            UpdateStaticTexture(); 
+        }
     }
 	
     void UITextFieldiPhone::GetText(WideString & string) const
@@ -453,8 +461,11 @@ namespace DAVA
     
     void UITextFieldiPhone::SetRenderToTexture(bool value)
     {
-        renderToTexture = value;
-        //UpdateStaticTexture();
+        if(value != renderToTexture)
+        {
+            renderToTexture = value;
+            UpdateStaticTexture();
+        }
     }
     
     bool UITextFieldiPhone::IsRenderToTexture() const
