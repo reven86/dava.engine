@@ -388,6 +388,8 @@ void UITextField::SetSize(const DAVA::Vector2 &newSize)
     UIControl::SetSize(newSize);
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
     staticText->SetSize(newSize);
+#elif defined(__DAVAENGINE_IPHONE__)
+    textFieldiPhone->SetSize(newSize);
 #endif
 }
     

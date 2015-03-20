@@ -107,6 +107,11 @@ namespace DAVA
         textFieldHolder->textField.font = [UIFont systemFontOfSize:scaledSize];
     }
     
+    void UITextFieldiPhone::SetSize(const DAVA::Vector2 &size)
+    {
+        UpdateStaticTexture();
+    }
+    
     void UITextFieldiPhone::SetTextAlign(DAVA::int32 align)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
@@ -286,7 +291,7 @@ namespace DAVA
         
         if(needStaticUpdate)
         {
-            UpdateStaticTexture(); 
+            UpdateStaticTexture();
         }
     }
 	
