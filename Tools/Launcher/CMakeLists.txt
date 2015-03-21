@@ -23,13 +23,14 @@ include_directories   ( "Classes" )
 include_directories   ( "ThirdParty/quazip" )
 include_directories   ( "ThirdParty/yaml/include" )
 
+link_directories      ("ThirdParty" )
+
 add_definitions       ( -DQUAZIP_STATIC )
 
 
 if ( WIN32 )
-    set( LIB_RELEASE    "msvcrt.lib"  "${CMAKE_CURRENT_LIST_DIR}/ThirdParty/zlib.lib"   )
-    set( LIB_DEBUG      "msvcrtd.lib" "${CMAKE_CURRENT_LIST_DIR}/ThirdParty/zlibd.lib"  )
-    
+    set( LIB_RELEASE  "msvcrt.lib"  "zlib.lib"   )
+    set( LIB_DEBUG    "msvcrtd.lib" "zlibd.lib"  )
 endif()
 
 file                  ( GLOB_RECURSE QT_LIST "Classes/*.h"  )
