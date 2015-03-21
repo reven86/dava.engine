@@ -50,8 +50,8 @@ namespace YAML
 		CharacterSet m_charSet;
 		mutable std::deque<char> m_readahead;
 		unsigned char* const m_pPrefetched;
-		mutable size_t m_nPrefetchedAvailable;
-		mutable size_t m_nPrefetchedUsed;
+		mutable std::streamsize m_nPrefetchedAvailable;
+        mutable std::streamsize m_nPrefetchedUsed;
 		
 		void AdvanceCurrent();
 		char CharAt(size_t i) const;
