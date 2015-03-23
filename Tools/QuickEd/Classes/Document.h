@@ -62,10 +62,10 @@ signals:
     void controlSelectedInEditor(ControlNode *activatedControls);
     void allControlsDeselectedInEditor();
 
-    void LibraryDataChanged(const QString &role);
-    void PropertiesDataChanged(const QString &role);
-    void PackageDataChanged(const QString &role);
-    void PreviewDataChanged(const QString &role);
+    void LibraryDataChanged(const QByteArray &role);
+    void PropertiesDataChanged(const QByteArray &role);
+    void PackageDataChanged(const QByteArray &role);
+    void PreviewDataChanged(const QByteArray &role);
 public slots:
     void OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
     void OnSelectionControlChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);

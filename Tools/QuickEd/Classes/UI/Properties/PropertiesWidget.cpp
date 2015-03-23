@@ -30,7 +30,7 @@ void PropertiesWidget::OnContextChanged(WidgetContext *arg)
     widgetContext = arg;
     UpdateModel();
 }
-void PropertiesWidget::OnDataChanged(const QString &role)
+void PropertiesWidget::OnDataChanged(const QByteArray &role)
 {
     if (role == "model")
     {
@@ -40,9 +40,18 @@ void PropertiesWidget::OnDataChanged(const QString &role)
 
 void PropertiesWidget::UpdateModel()
 {
-    QAbstractItemModel *model = widgetContext->GetData<QAbstractItemModel*>("model");
-    if (nullptr != model)
+    if (nullptr == widgetContext)
     {
-        ui->treeView->setModel(model);
+        ui->treeView->setModel(nullptr);
+    }
+    else
+    {
+        QAbstractItemModel *model = widgetContext->GetData<QAbstractItemModel*>("model");
+        if (nullptr != model)
+        {
+            ui->treeView->setModel(model);
+            ui->treeView->expandToDepth(0);
+            ui->treeView->resizeColumnToContents(0);
+        }
     }
 }

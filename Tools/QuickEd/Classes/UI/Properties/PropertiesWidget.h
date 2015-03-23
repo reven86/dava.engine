@@ -20,7 +20,7 @@ public:
 
 public slots:
 void OnContextChanged(WidgetContext *context);
-void OnDataChanged(const QString &role);
+void OnDataChanged(const QByteArray &role);
 
 private:
     void UpdateModel();

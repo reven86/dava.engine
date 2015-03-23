@@ -374,11 +374,6 @@ int MainWindow::AddTab(const QString &tabText)
     return index;
 }
 
-void MainWindow::SetDocumentToWidgets(Document *document)
-{
-    ui->previewWidget->SetDocument(document);
-}
-
 void MainWindow::closeEvent(QCloseEvent *ev)
 {
     emit CloseRequested();

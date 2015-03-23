@@ -29,14 +29,14 @@ public slots:
 signals:
     void ActiveDocumentChanged(Document*);
 
-    void LibraryDataChanged(const QString &role);
-    void LibraryContextChanged(const WidgetContext *widgetContext);
-    void PropertiesDataChanged(const QString &role);
-    void PropertiesContextChanged(const WidgetContext *widgetContext);
-    void PackageDataChanged(const QString &role);
-    void PackageGontextChanged(const WidgetContext *widgetContext);
-    void PreviewDataChanged(const QString &role);
-    void PreviewContextChanged(const WidgetContext *widgetContext);
+    void LibraryDataChanged(const QByteArray &role);
+    void LibraryContextChanged(WidgetContext *widgetContext);
+    void PropertiesDataChanged(const QByteArray &role);
+    void PropertiesContextChanged(WidgetContext *widgetContext);
+    void PackageDataChanged(const QByteArray &role);
+    void PackageContextChanged(WidgetContext *widgetContext);
+    void PreviewDataChanged(const QByteArray &role);
+    void PreviewContextChanged(WidgetContext *widgetContext);
 
     void controlSelectedInEditor(ControlNode *activatedControls);
     void allControlsDeselectedInEditor();

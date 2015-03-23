@@ -8,8 +8,7 @@ namespace Ui {
     class PreviewWidget;
 }
 
-class Document;
-class PreviewContext;
+class WidgetContext;
 
 enum ScreenId
 {
@@ -23,7 +22,9 @@ class PreviewWidget : public QWidget
 public:
     PreviewWidget(QWidget *parent = nullptr);
     virtual ~PreviewWidget();
-    
+public slots:
+    void OnContextChanged(WidgetContext *context);
+    void OnDataChanged(const QByteArray &role);
 private slots:
     // Zoom.
 	void OnScaleByComboIndex(int value);
@@ -46,8 +47,7 @@ private:
 
 private:
     Ui::PreviewWidget *ui;
-    Document *document;
-    QPointer<PreviewContext> context;
+    WidgetContext *widgetContext;
 };
 
 #endif // __QUICKED_PREVIEW_WIDGET_H__

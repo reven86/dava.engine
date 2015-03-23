@@ -80,7 +80,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     {
         disconnect(d->active, &Document::LibraryDataChanged, this, &DocumentGroup::LibraryDataChanged);
         disconnect(d->active, &Document::PropertiesDataChanged, this, &DocumentGroup::PropertiesDataChanged);
-        disconnect(d->active, &Document::Packag)
+        disconnect(d->active, &Document::PackageDataChanged, this, &DocumentGroup::PackageDataChanged);
 
         disconnect(d->active, &Document::controlSelectedInEditor, this, &DocumentGroup::controlSelectedInEditor);
         disconnect(d->active, &Document::allControlsDeselectedInEditor, this, &DocumentGroup::allControlsDeselectedInEditor);
@@ -96,6 +96,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     {
         emit LibraryContextChanged(nullptr);
         emit PropertiesContextChanged(nullptr);
+        emit PackageContextChanged(nullptr);
         //
         //!!check that is actual
         emit allControlsDeselectedInEditor();
@@ -105,10 +106,12 @@ void DocumentGroup::SetActiveDocument(Document* document)
     {
         emit LibraryContextChanged(d->active->GetLibraryContext());
         emit PropertiesContextChanged(d->active->GetPropertiesContext());
+        emit PackageContextChanged(d->active->GetPackageContext());
         //
 
         connect(d->active, &Document::LibraryDataChanged, this, &DocumentGroup::LibraryDataChanged);
         connect(d->active, &Document::PropertiesDataChanged, this, &DocumentGroup::PropertiesDataChanged);
+        connect(d->active, &Document::PackageDataChanged, this, &DocumentGroup::PackageDataChanged);
 
         connect(d->active, &Document::controlSelectedInEditor, this, &DocumentGroup::controlSelectedInEditor);
         connect(d->active, &Document::allControlsDeselectedInEditor, this, &DocumentGroup::allControlsDeselectedInEditor);

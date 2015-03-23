@@ -12,6 +12,7 @@
 #include "Ui/Properties/PropertiesWidget.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "UI/WidgetContext.h"
 
 BaseController::BaseController(QObject *parent)
     : QObject(parent)
@@ -21,6 +22,7 @@ BaseController::BaseController(QObject *parent)
 {
     mainWindow.CreateUndoRedoActions(documentGroup.GetUndoGroup());
     connect(&mainWindow, &MainWindow::TabClosed, this, &BaseController::CloseOneDocument);
+
     connect(mainWindow.GetPackageWidget(), &PackageWidget::SelectionControlChanged, &documentGroup, &DocumentGroup::OnSelectionControlChanged);
     connect(mainWindow.GetPackageWidget(), &PackageWidget::SelectionRootControlChanged, &documentGroup, &DocumentGroup::OnSelectionRootControlChanged);
     connect(&mainWindow, &MainWindow::CloseProject, this, &BaseController::CloseProject);
@@ -32,6 +34,13 @@ BaseController::BaseController(QObject *parent)
     connect(&mainWindow, &MainWindow::SaveAllDocuments, this, &BaseController::SaveAllDocuments);
     connect(&mainWindow, &MainWindow::SaveDocument, this, static_cast<void(BaseController::*)(int)>(&BaseController::SaveDocument));
     connect(&mainWindow, &MainWindow::CurrentTabChanged, this, &BaseController::SetCurrentIndex);
+
+    connect(&documentGroup, &DocumentGroup::LibraryContextChanged, mainWindow.GetLibraryWidget(), &LibraryWidget::OnContextChanged);
+    connect(&documentGroup, &DocumentGroup::LibraryDataChanged, mainWindow.GetLibraryWidget(), &LibraryWidget::OnDataChanged);
+    connect(&documentGroup, &DocumentGroup::PropertiesContextChanged, mainWindow.GetPropertiesWidget(), &PropertiesWidget::OnContextChanged);
+    connect(&documentGroup, &DocumentGroup::PropertiesDataChanged, mainWindow.GetPropertiesWidget(), &PropertiesWidget::OnDataChanged);
+    connect(&documentGroup, &DocumentGroup::PackageContextChanged, mainWindow.GetPackageWidget(), &PackageWidget::OnContextChanged);
+    connect(&documentGroup, &DocumentGroup::PackageDataChanged, mainWindow.GetPackageWidget(), &PackageWidget::OnDataChanged);
 
     connect(&documentGroup, &DocumentGroup::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
     connect(&documentGroup, &DocumentGroup::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
@@ -188,22 +197,11 @@ bool BaseController::CloseProject()
         }
     }
 
-
     while(!documents.isEmpty())
     {
         CloseDocument(0);
     }
     return true;
-}
-
-void BaseController::AttachDocument(Document *document)
-{
-    mainWindow.SetDocumentToWidgets(document);
-    documentGroup.SetActiveDocument(document);
-}
-void BaseController::DetachDocument(Document *document)
-{
-    mainWindow.SetDocumentToWidgets(nullptr);
 }
 
 void BaseController::CloseDocument(int index)
@@ -214,7 +212,6 @@ void BaseController::CloseDocument(int index)
 
     //sync document list with tab list
     Document *detached = documents.takeAt(index);
-    documentGroup.RemoveDocument(detached);
     documentGroup.SetActiveDocument(newIndex == -1 ? nullptr : documents.at(newIndex));
     documentGroup.RemoveDocument(detached);
     delete detached; //some widgets hold this document inside :(
@@ -226,7 +223,6 @@ int BaseController::CreateDocument(PackageNode *package)
     connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &BaseController::OnCleanChanged);
     documents.push_back(document);
     documentGroup.AddDocument(document);
-    documents.push_back(document);
     int index = mainWindow.AddTab(document->PackageFilePath().GetBasename().c_str());
     return index;
 }
@@ -271,7 +267,6 @@ void BaseController::SetCurrentIndex(int arg)
     }
     DVASSERT(arg < documents.size());
     currentIndex = arg;
-    Document *document = arg == -1 ? nullptr : documents.at(arg);
-    AttachDocument(document);
+    documentGroup.SetActiveDocument(arg == -1 ? nullptr : documents.at(arg));
     emit CurrentIndexChanged(arg);
 }

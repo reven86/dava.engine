@@ -13,6 +13,7 @@ namespace Ui {
 }
 
 class ControlNode;
+class QSortFilterProxyModel;
 class WidgetContext;
 
 class PackageWidget : public QDockWidget
@@ -22,6 +23,12 @@ public:
     explicit PackageWidget(QWidget *parent = 0);
     virtual ~PackageWidget();
 
+public slots:
+    void OnContextChanged(WidgetContext *context);
+    void OnDataChanged(const QByteArray &role);
+
+    void OnControlSelectedInEditor(ControlNode *node);
+    void OnAllControlsDeselectedInEditor();
 
 private:
     void UpdateModel();
@@ -47,12 +54,6 @@ private slots:
     void OnPaste();
     void OnCut();
     void OnDelete();
-public slots:
-    void OnContextChanged(WidgetContext *context);
-    void OnDataChanged(const QString &role);
-
-    void OnControlSelectedInEditor(ControlNode *node);
-    void OnAllControlsDeselectedInEditor();
 
 signals:
     void SelectionRootControlChanged(const QList<ControlNode*> &activatedRootControls, const QList<ControlNode*> &deactivatedRootControls);
@@ -66,6 +67,8 @@ private:
     QAction *pasteAction;
     QAction *cutAction;
     QAction *delAction;
+
+    QSortFilterProxyModel *proxyModel;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

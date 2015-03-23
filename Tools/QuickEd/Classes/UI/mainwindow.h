@@ -74,7 +74,6 @@ public:
     int GetTabIndexByPath(const QString &fileName) const;
     void OnProjectOpened(Result result, QString projectPath);
     int AddTab(const QString &tabText);
-    void SetDocumentToWidgets(Document *document);
     void OnCleanChanged(int index, bool val);
 protected:
     void closeEvent(QCloseEvent *event) override;

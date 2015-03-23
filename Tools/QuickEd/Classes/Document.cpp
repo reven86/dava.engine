@@ -5,7 +5,6 @@
 #include <QItemSelection>
 
 #include "UI/Package/PackageModel.h"
-#include "UI/Package/FilteredPackageModel.h"
 #include "UI/Library/LibraryModel.h"
 #include "UI/Properties/PropertiesModel.h"
 #include "UI/PreviewContext.h"
@@ -37,7 +36,6 @@ Document::Document(PackageNode *_package, QObject *parent)
     , undoStack(new QUndoStack(this))
 {
     InitWidgetContexts();
-
     //!! TODO: implement this
     /*connect(this, SIGNAL(activeRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), previewContext, SLOT(OnActiveRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
 
@@ -51,17 +49,15 @@ Document::Document(PackageNode *_package, QObject *parent)
 
     if (!activeRootControls.empty())
         emit activeRootControlsChanged(activeRootControls, QList<ControlNode*>());
+    ConnectWidgetContexts();
 }
 
 void Document::InitWidgetContexts()
 {
     libraryContext->SetData(new LibraryModel(package, this), "model");
+
     PackageModel *packageModel = new PackageModel(package, commandExecutor, this);
     packageContext->SetData(packageModel, "model");
-    FilteredPackageModel *packageFilterModel = new FilteredPackageModel(this);
-    packageFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    packageFilterModel->setSourceModel(packageModel);
-    packageContext->SetData(packageFilterModel, "filterModel");
 }
 
 void Document::ConnectWidgetContexts() const
@@ -80,7 +76,7 @@ Document::~Document()
     SafeRelease(package);
     
     SafeRelease(commandExecutor);
-}
+    }
 
 bool Document::IsModified() const
 {
@@ -154,7 +150,7 @@ void Document::OnSelectionControlChanged(const QList<ControlNode*> &activatedCon
     QAbstractItemModel* model = activatedControls.empty() ? nullptr : new PropertiesModel(activatedControls.first(), this);
     propertiesContext->SetData(model, "model");
 
-    previewContext->OnSelectedControlsChanged(activatedControls, deactivatedControls);
+    //!!TODO: restore it previewContext->OnSelectedControlsChanged(activatedControls, deactivatedControls);
 
 }
 

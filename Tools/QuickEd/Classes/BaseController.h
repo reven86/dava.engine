@@ -34,8 +34,6 @@ protected:
     int CreateDocument(PackageNode *package);
     void SaveDocument(Document *document);
 private:
-    void AttachDocument(Document *document);
-    void DetachDocument(Document *document);
     void CloseDocument(int index);
     int GetIndexByPackagePath(const QString &fileName) const;
     ///Return: pointer to currentDocument if exists, nullptr if not

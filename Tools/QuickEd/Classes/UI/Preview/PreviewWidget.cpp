@@ -2,8 +2,7 @@
 #include "ui_PreviewWidget.h"
 #include <QLineEdit>
 #include "EditScreen.h"
-#include "Document.h"
-#include "UI/PreviewContext.h"
+#include "UI/WidgetContext.h"
 
 using namespace DAVA;
 
@@ -20,8 +19,7 @@ static const char* PERCENTAGE_FORMAT = "%1 %";
 PreviewWidget::PreviewWidget(QWidget *parent)
 : QWidget(parent)
 , ui(new Ui::PreviewWidget())
-, document(NULL)
-, context(NULL)
+, widgetContext(nullptr)
 {
     ui->setupUi(this);
 
@@ -65,6 +63,28 @@ PreviewWidget::~PreviewWidget()
 {
     delete ui;
 } 
+
+void PreviewWidget::OnContextChanged(WidgetContext *arg)
+{
+    if (nullptr != widgetContext)
+    {
+        UIScreenManager::Instance()->GetScreen()->RemoveAllControls();
+    }
+    widgetContext = arg;
+    if (nullptr == widgetContext)
+    {
+        ui->davaGLWidget->setMaximumSize(1, 1);
+    }
+    else
+    {
+        ui->davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+    }
+}
+
+void PreviewWidget::OnDataChanged(const QByteArray &role)
+{
+}
+
 
 /*void PreviewWidget::SetDocument(Document *newDocument)
 {

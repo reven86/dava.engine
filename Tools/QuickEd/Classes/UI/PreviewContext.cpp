@@ -93,7 +93,7 @@ void PreviewContext::SetViewControlSize(const QSize &qtSize)
     }
 
     Vector2 newPosition = CalcCanvasPosition(oldSize, newSize, oldCanvasScaledSize, newCanvasScaledSize, Vector2(0.5f, 0.5f), canvasPosition);
-    SetCanvasPosition( QPoint(newPosition.x, newPosition.y) );
+    SetCanvasPosition(QPoint(newPosition.x, newPosition.y) );
 }
 
 void PreviewContext::SetCanvasControlSize(const QSize &qtSize)

@@ -9,7 +9,6 @@
 #include "UI/QtModelPackageCommandExecutor.h"
 
 #include "UI/Package/FilteredPackageModel.h"
-#include "Document.h"
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
@@ -30,12 +29,12 @@ PackageWidget::PackageWidget(QWidget *parent)
     : QDockWidget(parent)
     , ui(new Ui::PackageWidget())
     , widgetContext(nullptr)
+    , proxyModel(nullptr)
 {
     ui->setupUi(this);
     ui->treeView->header()->setSectionResizeMode/*setResizeMode*/(QHeaderView::ResizeToContents);
 
     connect(ui->filterLine, SIGNAL(textChanged(const QString &)), this, SLOT(filterTextChanged(const QString &)));
-    connect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(OnSelectionChanged(const QItemSelection &, const QItemSelection &)));
 
     importPackageAction = new QAction(tr("Import package"), this);
     //!!TODO: realize it connect(importPackageAction, SIGNAL(triggered()), this, SLOT(OnImport()));
@@ -92,7 +91,7 @@ void PackageWidget::OnContextChanged(WidgetContext *context)
     ui->treeView->setUpdatesEnabled(true);
 }
 
-void PackageWidget::OnDataChanged(const QString &role)
+void PackageWidget::OnDataChanged(const QByteArray &role)
 {
     if (role == "model")
     {
@@ -102,42 +101,73 @@ void PackageWidget::OnDataChanged(const QString &role)
 
 void PackageWidget::UpdateModel()
 {
-    QAbstractItemModel *model = widgetContext->GetData<QAbstractItemModel*>("filterModel");
-    if (nullptr != model)
+    if (nullptr != widgetContext)
     {
-        ui->treeView->setModel(model);
+        QAbstractItemModel *model = widgetContext->GetData<QAbstractItemModel*>("model");
+        if (nullptr != model)
+        {
+            proxyModel = new FilteredPackageModel(this);
+            proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+            proxyModel->setSourceModel(model);
+            ui->treeView->setModel(proxyModel);
+            connect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(OnSelectionChanged(const QItemSelection &, const QItemSelection &)));
+            return;
+        }
     }
+    proxyModel = nullptr;
+    ui->treeView->setModel(proxyModel);
 }
 
 void PackageWidget::UpdateSelection()
 {
-    QItemSelection *selection = widgetContext->GetData<QItemSelection*>("selection");
-    if (nullptr != selection)
+    if (nullptr == widgetContext)
     {
-        ui->treeView->selectionModel()->select(*selection, QItemSelectionModel::ClearAndSelect);
+        //nothing to do here
+    }
+    else
+    {
+        QItemSelection *selection = widgetContext->GetData<QItemSelection*>("selection");
+        if (nullptr != selection)
+        {
+            ui->treeView->selectionModel()->select(*selection, QItemSelectionModel::ClearAndSelect);
+        }
     }
 }
 
 void PackageWidget::UpdateExpanded()
 {
-    const QList<QPersistentModelIndex> *indexList = widgetContext->GetData<QList<QPersistentModelIndex> *>("expanded");
-    if (nullptr == indexList)
+    if (nullptr == widgetContext)
     {
-        return;
+        //nothing to do here
     }
-
-    for (const auto &index : *indexList)
+    else
     {
-        if (index.isValid())
+        const QList<QPersistentModelIndex> *indexList = widgetContext->GetData<QList<QPersistentModelIndex> *>("expanded");
+        if (nullptr == indexList)
         {
-            ui->treeView->setExpanded(index, true);
+            return;
+        }
+
+        for (const auto &index : *indexList)
+        {
+            if (index.isValid())
+            {
+                ui->treeView->setExpanded(index, true);
+            }
         }
     }
 }
 
 void PackageWidget::UpdateFilterString()
 {
-    ui->filterLine->setText(widgetContext->GetData<QString>("filterString"));
+    if (nullptr == widgetContext)
+    {
+        ui->filterLine->clear();
+    }
+    else
+    {
+        ui->filterLine->setText(widgetContext->GetData<QString>("filterString"));
+    }
 }
 
 void PackageWidget::SaveSelection()
@@ -193,7 +223,7 @@ void PackageWidget::RefreshAction( QAction *action, bool enabled, bool visible )
 
 void PackageWidget::CollectSelectedNodes(Vector<ControlNode*> &nodes)
 {
-    QItemSelection selected = ui->treeView->selectionModel()->selection();
+    QItemSelection selected = proxyModel->mapSelectionFromSource(ui->treeView->selectionModel()->selection());
     QModelIndexList selectedIndexList = selected.indexes();
     
     if (!selectedIndexList.empty())
@@ -228,7 +258,7 @@ void PackageWidget::RemoveNodes(const DAVA::Vector<ControlNode*> &nodes)
     //!!TODO:restore functionality document->GetCommandExecutor()->RemoveControls(nodes);
 }
 
-void PackageWidget::OnSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
 {
     if (nullptr == widgetContext)
     {
@@ -240,7 +270,11 @@ void PackageWidget::OnSelectionChanged(const QItemSelection &selected, const QIt
     QList<ControlNode*> selectedControl;
     QList<ControlNode*> deselectedControl;
 
+    QItemSelection selected = proxyModel->mapSelectionToSource(proxySelected);
+    QItemSelection deselected = proxyModel->mapSelectionToSource(proxyDeselected);
+
     QModelIndexList selectedIndexList = selected.indexes();
+
     if (!selectedIndexList.empty())
     {
         for(QModelIndex &index : selectedIndexList)
@@ -296,7 +330,7 @@ void PackageWidget::OnCopy()
 
 void PackageWidget::OnPaste()
 {
-    QItemSelection selected = ui->treeView->selectionModel()->selection();
+    QItemSelection selected = proxyModel->mapSelectionToSource(ui->treeView->selectionModel()->selection());
     QModelIndexList selectedIndexList = selected.indexes();
     QClipboard *clipboard = QApplication::clipboard();
     
