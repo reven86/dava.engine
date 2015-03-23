@@ -56,6 +56,7 @@ void ApplicationManager::LoadLocalConfig(const QString & configPath)
     if(configFile.open(QFile::ReadWrite))
     {
         QByteArray data = configFile.readAll();
+        configFile.close();
         localConfig = new ConfigParser(data);
     }
     else
