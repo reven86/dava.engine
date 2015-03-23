@@ -450,14 +450,68 @@ void StructureSystem::ProcessCommand(const Command2 *command, bool redo)
 {
 	if(NULL != command)
 	{
-		int cmdId = command->GetId();
-		if( cmdId == CMDID_PARTICLE_LAYER_REMOVE ||
-			cmdId == CMDID_PARTICLE_LAYER_MOVE ||
-			cmdId == CMDID_PARTICLE_FORCE_REMOVE ||
-			cmdId == CMDID_PARTICLE_FORCE_MOVE)
+		auto commandId = command->GetId();
+		if( commandId == CMDID_PARTICLE_LAYER_REMOVE ||
+			commandId == CMDID_PARTICLE_LAYER_MOVE ||
+			commandId == CMDID_PARTICLE_FORCE_REMOVE ||
+			commandId == CMDID_PARTICLE_FORCE_MOVE)
 		{
 			EmitChanged();
 		}
+        
+        
+        auto sceneEditor = static_cast<SceneEditor2 *>(GetScene());
+        auto selectionSystem = sceneEditor->selectionSystem;
+        
+        auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoSelectionOfNewElements).AsBool();
+        if(CMDID_BATCH == commandId)
+        {
+            auto batch = static_cast<const CommandBatch *>(command);
+            
+            auto contain = batch->ContainCommand(CMDID_ENTITY_ADD) || batch->ContainCommand(CMDID_ENTITY_REMOVE);
+            if(contain && autoSelectionEnabled)
+            {
+                auto count = batch->Size();
+                if(redo)
+                {
+                    selectionSystem->Clear();
+                }
+                
+                for(auto i = 0; i < count; ++i)
+                {
+                    auto cmd = batch->GetCommand(i);
+                    auto cmdID = cmd->GetId();
+                    if(CMDID_ENTITY_ADD == cmdID || CMDID_ENTITY_REMOVE == cmdID)
+                    {
+                        auto needAddEntity = (CMDID_ENTITY_ADD == cmdID && redo) || (CMDID_ENTITY_REMOVE == cmdID && !redo);
+
+                        auto entity = command->GetEntity();
+                        if(needAddEntity)
+                        {
+                            selectionSystem->AddSelection(entity);
+                        }
+                        else
+                        {
+                            selectionSystem->RemSelection(entity);
+                        }
+                    }
+                }
+            }
+        }
+        else if((CMDID_ENTITY_ADD == commandId || CMDID_ENTITY_REMOVE == commandId) && autoSelectionEnabled)
+        {
+            auto entity = command->GetEntity();
+            auto needAddEntity = (CMDID_ENTITY_ADD == commandId && redo) || (CMDID_ENTITY_REMOVE == commandId && !redo);
+            if(needAddEntity)
+            {
+                selectionSystem->SetSelection(entity);
+            }
+            else
+            {
+                selectionSystem->RemSelection(entity);
+            }
+        }
+
 	}
 }
 
