@@ -59,12 +59,11 @@ const FastName MATERIAL_FOR_REBIND = FastName("Global");
 
 SceneEditor2::SceneEditor2()
 	: Scene()
+	, wasdSystem(0)
+	, rotationSystem(0)
+	, snapToLandscapeSystem(0)
 	, isLoaded(false)
 	, isHUDVisible(true)
-    , rotationSystem(0)
-    , snapToLandscapeSystem(0)
-    , wasdSystem(0)
-
 {
     SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
 
