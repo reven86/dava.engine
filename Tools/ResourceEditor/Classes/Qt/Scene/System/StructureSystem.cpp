@@ -450,70 +450,77 @@ void StructureSystem::ProcessCommand(const Command2 *command, bool redo)
 {
 	if(NULL != command)
 	{
-		auto commandId = command->GetId();
-		if( commandId == CMDID_PARTICLE_LAYER_REMOVE ||
-			commandId == CMDID_PARTICLE_LAYER_MOVE ||
-			commandId == CMDID_PARTICLE_FORCE_REMOVE ||
-			commandId == CMDID_PARTICLE_FORCE_MOVE)
-		{
-			EmitChanged();
-		}
-        
-        
-        auto sceneEditor = static_cast<SceneEditor2 *>(GetScene());
-        auto selectionSystem = sceneEditor->selectionSystem;
-        
-        auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoSelectionOfNewElements).AsBool();
-        if(CMDID_BATCH == commandId)
+        switch(command->GetId())
         {
-            auto batch = static_cast<const CommandBatch *>(command);
-            
-            auto contain = batch->ContainCommand(CMDID_ENTITY_ADD) || batch->ContainCommand(CMDID_ENTITY_REMOVE);
-            if(contain && autoSelectionEnabled)
-            {
-                auto count = batch->Size();
-                if(redo)
-                {
-                    selectionSystem->Clear();
-                }
-                
-                for(auto i = 0; i < count; ++i)
-                {
-                    auto cmd = batch->GetCommand(i);
-                    auto cmdID = cmd->GetId();
-                    if(CMDID_ENTITY_ADD == cmdID || CMDID_ENTITY_REMOVE == cmdID)
-                    {
-                        auto needAddEntity = (CMDID_ENTITY_ADD == cmdID && redo) || (CMDID_ENTITY_REMOVE == cmdID && !redo);
+            case CMDID_PARTICLE_LAYER_REMOVE:
+            case CMDID_PARTICLE_LAYER_MOVE:
+            case CMDID_PARTICLE_FORCE_REMOVE:
+            case CMDID_PARTICLE_FORCE_MOVE:
+                EmitChanged();
+                break;
 
-                        auto entity = command->GetEntity();
-                        if(needAddEntity)
-                        {
-                            selectionSystem->AddSelection(entity);
-                        }
-                        else
-                        {
-                            selectionSystem->RemSelection(entity);
-                        }
-                    }
-                }
-            }
+            default:
+                break;
         }
-        else if((CMDID_ENTITY_ADD == commandId || CMDID_ENTITY_REMOVE == commandId) && autoSelectionEnabled)
+        
+        auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoselectNewEnities).AsBool();
+        if(autoSelectionEnabled)
         {
-            auto entity = command->GetEntity();
-            auto needAddEntity = (CMDID_ENTITY_ADD == commandId && redo) || (CMDID_ENTITY_REMOVE == commandId && !redo);
-            if(needAddEntity)
-            {
-                selectionSystem->SetSelection(entity);
-            }
-            else
-            {
-                selectionSystem->RemSelection(entity);
-            }
+            ProcessAutoSelection(command, redo);
         }
-
-	}
+    }
 }
+
+void StructureSystem::ProcessAutoSelection(const Command2 *command, bool redo) const
+{
+    auto commandId = command->GetId();
+
+    auto sceneEditor = static_cast<SceneEditor2 *>(GetScene());
+    auto selectionSystem = sceneEditor->selectionSystem;
+    
+    if(CMDID_BATCH == commandId)
+    {
+        auto batch = static_cast<const CommandBatch *>(command);
+        
+        auto contain = batch->HasCommand(CMDID_ENTITY_ADD) || batch->HasCommand(CMDID_ENTITY_REMOVE);
+        if(contain)
+        {
+            selectionSystem->Clear();
+
+            auto count = batch->Size();
+            for(auto i = 0; i < count; ++i)
+            {
+                auto cmd = batch->GetCommand(i);
+                auto cmdID = cmd->GetId();
+                if(CMDID_ENTITY_ADD == cmdID || CMDID_ENTITY_REMOVE == cmdID)
+                {
+                    ApplySelection(cmd, redo);
+                }
+            }
+        }
+    }
+    else if(CMDID_ENTITY_ADD == commandId || CMDID_ENTITY_REMOVE == commandId)
+    {
+        selectionSystem->Clear();
+        ApplySelection(command, redo);
+    }
+}
+
+void StructureSystem::ApplySelection(const Command2 *command, bool redo) const
+{
+    auto sceneEditor = static_cast<SceneEditor2 *>(GetScene());
+    auto selectionSystem = sceneEditor->selectionSystem;
+
+    auto commandId = command->GetId();
+    auto entity = command->GetEntity();
+
+    auto needAddEntity = ((CMDID_ENTITY_ADD == commandId && redo) || (CMDID_ENTITY_REMOVE == commandId && !redo));
+    if(needAddEntity)
+    {
+        selectionSystem->AddSelection(entity);
+    }
+}
+
 
 void StructureSystem::AddEntity(DAVA::Entity * entity)
 {

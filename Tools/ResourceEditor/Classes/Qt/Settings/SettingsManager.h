@@ -80,7 +80,7 @@ namespace Settings
     static const DAVA::FastName Scene_Sound_SoundObjectBoxColor("Scene/Sound/SoundObjectBoxColor");
     static const DAVA::FastName Scene_Sound_SoundObjectSphereColor("Scene/Sound/SoundObjectSphereColor");
 
-    static const DAVA::FastName Scene_AutoSelectionOfNewElements("Scene/AutoSelectionOfNewEnities");
+    static const DAVA::FastName Scene_AutoselectNewEnities("Scene/AutoselectNewEnities");
 
     // this settings won't be shown in settings dialog
     // and are used only by application
