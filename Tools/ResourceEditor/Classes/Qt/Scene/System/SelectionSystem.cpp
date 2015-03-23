@@ -294,6 +294,10 @@ void SceneSelectionSystem::ProcessCommand(const Command2 *command, bool redo)
                 {
                     Clear();
                 }
+                else
+                {
+                    invalidSelectionBoxes = true;
+                }
                 
                 for(auto i = 0; i < count; ++i)
                 {
@@ -319,6 +323,7 @@ void SceneSelectionSystem::ProcessCommand(const Command2 *command, bool redo)
             if(redo)
             {
                 SetSelection(entity);
+                invalidSelectionBoxes = true;
             }
             else
             {
