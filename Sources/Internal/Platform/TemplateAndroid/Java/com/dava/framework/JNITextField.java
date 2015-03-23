@@ -85,7 +85,13 @@ public class JNITextField {
         }
         
         public abstract void safeRun();
+    }
+    
+    static abstract class CastomTextWatcher implements TextWatcher
+    {
+        public abstract void enable();
         
+        public abstract void disable();
     }
     
     static class UpdateTexture implements Runnable {
@@ -131,6 +137,9 @@ public class JNITextField {
         
         private int viewWidth;
         private int viewHeight;
+        
+        private CastomTextWatcher textWatcher = null;
+        private InputFilter[] textFilters = null;
         
         TextField(int id, Context ctx, int startWidth, int startHeight)
         {
@@ -292,6 +301,30 @@ public class JNITextField {
                     clearStaticTexture();
                 }
             }
+        }
+        
+        public void setCastomTextWatcher(CastomTextWatcher t)
+        {
+            textWatcher = t;
+        }
+        
+        public void disableTextChangeListener()
+        {
+            removeTextChangedListener(textWatcher);
+            super.setFilters(emptyFilterArray);
+        }
+        
+        public void enableTextChangeListener()
+        {
+            super.setFilters(textFilters);
+            addTextChangedListener(textWatcher);
+        }
+        
+        @Override
+        public void setFilters(InputFilter[] f)
+        {
+            textFilters = f;
+            super.setFilters(textFilters);
         }
     }
 
@@ -644,8 +677,26 @@ public class JNITextField {
                             public void safeRun() {
                                 JNITextField
                                         .TextFieldFocusChanged(id, hasFocus);
-                                TextField text = GetTextField(id);
+                                final TextField text = GetTextField(id);
                                 text.updateStaticTexture();
+                                
+                                // Workaround we have to call one more time
+                                // updateStaticTexture with delay
+                                // because if control is password 
+                                // android can visually convert ****1 to *****
+                                // with some delay
+                                Runnable runnable = new Runnable(){
+                                    @Override
+                                    public void run() {
+                                        if(JNIActivity.GetActivity().GetIsPausing())
+                                        {
+                                            return;
+                                        }
+                                        text.updateStaticTexture();
+                                    }
+                                };
+                                
+                                handler.postDelayed(runnable, JNITextField.TEXT_CHANGE_DELAY_REFRESH);
                             }
                         });
 
@@ -724,12 +775,23 @@ public class JNITextField {
                     }
                 });
 
-                text.addTextChangedListener(new TextWatcher() {
+                CastomTextWatcher textWatcher = new CastomTextWatcher() {
                     private String oldText = "";
+                    private boolean isEnabled = true;
 
                     @Override
                     public void onTextChanged(CharSequence s, int start,
                             int before, int count) {
+                        if (isEnabled)
+                        {
+                            try {
+                                byte[] newBytes = s.toString().getBytes("UTF-8");
+                                byte[] oldBytes = oldText.getBytes("UTF-8");
+                                TextFieldOnTextChanged(id, newBytes, oldBytes);
+                            } catch (UnsupportedEncodingException e) {
+                                Log.e(JNIConst.LOG_TAG, e.getMessage());
+                            }
+                        }
                     }
 
                     @Override
@@ -740,32 +802,54 @@ public class JNITextField {
 
                     @Override
                     public void afterTextChanged(Editable s) {
-                        try {
-                            byte[] newBytes = s.toString().getBytes("UTF-8");
-                            byte[] oldBytes = oldText.getBytes("UTF-8");
-                            TextFieldOnTextChanged(id, newBytes, oldBytes);
-                            
-                            final Handler handler = new Handler();
-                            Runnable runnable = new Runnable(){
-                                @Override
-                                public void run() {
-                                    if(JNIActivity.GetActivity().GetIsPausing())
-                                    {
-                                        return;
-                                    }
-                                    text.updateStaticTexture();
-                                }
-                            };
-                            // first call update static ASAP
-                            handler.post(runnable);
-                            // second call it with delay for 
-                            // fix some incorrect old text from cache
-                            handler.postDelayed(runnable, JNITextField.TEXT_CHANGE_DELAY_REFRESH);
-                        } catch (UnsupportedEncodingException e) {
-                            Log.e(JNIConst.LOG_TAG, e.getMessage());
-                        }
+                        
                     }
-                });
+
+                    @Override
+                    public void enable() {
+                        isEnabled = true;
+                    }
+
+                    @Override
+                    public void disable() {
+                        isEnabled = false;
+                    }
+                };
+                
+                TextWatcher updateTexture = new TextWatcher() {
+                    @Override
+                    public void onTextChanged(CharSequence s, int start,
+                            int before, int count) {
+                    }
+
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start,
+                            int count, int after) {
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        Runnable runnable = new Runnable(){
+                            @Override
+                            public void run() {
+                                if(JNIActivity.GetActivity().GetIsPausing())
+                                {
+                                    return;
+                                }
+                                text.updateStaticTexture();
+                            }
+                        };
+                        // first call update static ASAP
+                        handler.post(runnable);
+                        // second call it with delay for 
+                        // fix some incorrect old text from cache
+                        handler.postDelayed(runnable, JNITextField.TEXT_CHANGE_DELAY_REFRESH);
+                    }
+                };
+                text.addTextChangedListener(updateTexture);
+                text.addTextChangedListener(textWatcher);
+                text.setCastomTextWatcher(textWatcher);
+                
 
                 textFields.put(id, text);
             }
@@ -830,12 +914,17 @@ public class JNITextField {
                 }
                 final TextField text = GetTextField(id);
                 // Workaround to resolve "double" text before TextFieldKeyPressed event
-                InputFilter[] filters = text.getFilters();
-                text.setFilters(emptyFilterArray); // disable filters
-                text.setText(string);
-                text.setFilters(filters); // enable filters
+                text.disableTextChangeListener();
                 
-                text.updateStaticTexture();
+                text.setText(string);
+                
+                text.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        text.enableTextChangeListener();
+                        text.updateStaticTexture();
+                    }
+                });
             }
         });
     }
@@ -881,6 +970,11 @@ public class JNITextField {
                     return;
                 }
                 final TextField text = GetTextField(id);
+                // Workaround android on change edit type will internally
+                // call setText and listeners will trigger this is not what
+                // we need
+                text.disableTextChangeListener();
+                
                 if (isPassword) {
                     text.setInputType(EditorInfo.TYPE_CLASS_TEXT
                             | EditorInfo.TYPE_TEXT_VARIATION_PASSWORD);
@@ -888,7 +982,14 @@ public class JNITextField {
                     text.setInputType(text.getInputType()
                             & ~(EditorInfo.TYPE_TEXT_VARIATION_PASSWORD));
                 }
-                text.updateStaticTexture();
+                
+                text.post(new Runnable(){
+                    @Override
+                    public void run() {
+                        text.enableTextChangeListener();
+                        text.updateStaticTexture();
+                    }
+                });
             }
         });
     }
