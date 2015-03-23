@@ -121,6 +121,7 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 void ResourcePacker2D::RecalculateMD5ForOutputDir()
 {
     gfxDirName = inputGfxDirectory.GetLastDirectoryName();
+    std::transform(gfxDirName.begin(), gfxDirName.end(), gfxDirName.begin(), ::tolower);
 
     FilePath processDirectoryPath = excludeDirectory + GetProcessFolderName();
     FileSystem::Instance()->CreateDirectory(processDirectoryPath, true);
