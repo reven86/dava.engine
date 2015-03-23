@@ -210,7 +210,7 @@ namespace DAVA
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         textFieldHolder->textField.userInteractionEnabled = YES;
         [textFieldHolder->textField becomeFirstResponder];
-       
+        
         UpdateStaticTexture();
     }
     
@@ -219,8 +219,6 @@ namespace DAVA
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         textFieldHolder->textField.userInteractionEnabled = NO;
         [textFieldHolder->textField resignFirstResponder];
-        
-        UpdateStaticTexture();
     }
     
     void UITextFieldiPhone::ShowField()
@@ -238,6 +236,15 @@ namespace DAVA
 					   name:UIKeyboardWillHideNotification object:nil];
 		[center addObserver:textFieldHolder selector:@selector(keyboardFrameDidChange:)
 					   name:UIKeyboardDidChangeFrameNotification object:nil];
+        
+        CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this,
+            [](CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
+            {
+                (static_cast<UITextFieldiPhone *>(observer))->UpdateStaticTexture();
+            },
+            (__bridge CFStringRef) UIKeyboardDidHideNotification,
+            nil,
+            CFNotificationSuspensionBehaviorDeliverImmediately);
     }
     
     void UITextFieldiPhone::HideField()
@@ -250,6 +257,8 @@ namespace DAVA
 		[center removeObserver:textFieldHolder name:UIKeyboardDidShowNotification object:nil];
 		[center removeObserver:textFieldHolder name:UIKeyboardWillHideNotification object:nil];
         [center removeObserver:textFieldHolder name:UIKeyboardDidChangeFrameNotification object:nil];
+        
+        CFNotificationCenterRemoveObserver(CFNotificationCenterGetLocalCenter(), this, (__bridge CFStringRef) UIKeyboardDidHideNotification, nil);
     }
     
     void UITextFieldiPhone::UpdateRect(const Rect & rect)
@@ -466,11 +475,7 @@ namespace DAVA
     
     void UITextFieldiPhone::SetRenderToTexture(bool value)
     {
-        if(value != renderToTexture)
-        {
-            renderToTexture = value;
-            UpdateStaticTexture();
-        }
+        renderToTexture = value;
     }
     
     bool UITextFieldiPhone::IsRenderToTexture() const

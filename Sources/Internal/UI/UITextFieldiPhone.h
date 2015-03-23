@@ -84,11 +84,12 @@ public:
     
     void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
+    
+    void UpdateStaticTexture();    
 
 private:
     // Truncate the text to maxLength characters.
     void* TruncateText(void* text, int maxLength);
-    void UpdateStaticTexture();
     
     UITextField& davaTextField;
 	void * objcClassPtr;
