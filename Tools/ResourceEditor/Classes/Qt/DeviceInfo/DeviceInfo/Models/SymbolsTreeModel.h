@@ -14,13 +14,23 @@ public:
         TYPE_ADDR
     };
 
-    class NameNode : public GenericTreeNode
+    /*class NameNode : public GenericTreeNode
     {
     public:
         NameNode(const DAVA::String& s) : GenericTreeNode(TYPE_NAME), name(s) {}
         const DAVA::String& Name() const { return name; }
     private:
         DAVA::String name;
+    };*/
+
+    class NameNode : public GenericTreeNode
+    {
+    public:
+        NameNode(const DAVA::char8* s) : GenericTreeNode(TYPE_NAME), name(s) {}
+        const DAVA::char8* Name() const { return name; }
+        DAVA::uint64 Address() const { return reinterpret_cast<DAVA::uint64>(name); }
+    private:
+        const DAVA::char8* name;
     };
 
     class AddrNode : public GenericTreeNode

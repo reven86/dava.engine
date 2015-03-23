@@ -53,7 +53,25 @@ void SymbolsTreeModel::BuildTree()
 {
     if (bktrace.SymbolsEmpty()) return;
 
-    Vector<BacktraceSet::SymbolMapConstIterator> v;
+    for (auto i = bktrace.UniqueNamesCBegin(), e = bktrace.UniqueNamesCEnd();i != e;++i)
+    {
+        const char8* s = i->c_str();
+        rootNode->AppendChild(new NameNode(s));
+    }
+    /*Set<const char8*> set;
+    for (auto i = bktrace.BacktraceCBegin(), e = bktrace.BacktraceCEnd();i != e;++i)
+    {
+        const MMBacktrace& b = i->second;
+        for (size_t j = 0, n = b.depth;j < n;++j)
+            set.insert(reinterpret_cast<const char8*>(b.frames[j]));
+    }
+
+    for (auto i = set.begin(), e = set.end();i != e;++i)
+    {
+        const char8* s = *i;
+        rootNode->AppendChild(new NameNode(s));
+    }*/
+    /*Vector<BacktraceSet::SymbolMapConstIterator> v;
     v.reserve(bktrace.SymbolsCount());
 
     for (auto i = bktrace.SymbolsCBegin(), e = bktrace.SymbolsCEnd();i != e;++i)
@@ -75,12 +93,13 @@ void SymbolsTreeModel::BuildTree()
             rootNode->AppendChild(name);
         }
         name->AppendChild(new AddrNode(x->first));
-    }
+    }*/
 }
 
 QVariant SymbolsTreeModel::NameNodeData(NameNode* node, int row, int clm) const
 {
-    return QVariant(node->Name().c_str());
+    return QVariant(node->Name());
+    //return QVariant(node->Name().c_str());
 }
 
 QVariant SymbolsTreeModel::AddrNodeData(AddrNode* node, int row, int clm) const

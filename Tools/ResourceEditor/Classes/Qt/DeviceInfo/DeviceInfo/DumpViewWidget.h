@@ -8,6 +8,7 @@
 
 class QTabWidget;
 class QTreeView;
+class QLabel;
 class QAbstractItemModel;
 class AllocationTreeModel;
 class BacktraceTreeModel;
@@ -44,6 +45,10 @@ private:
     CallStackTreeModel* callstackTreeModel;
     uintptr_t loadTime;
     uintptr_t modelCreateTime;
+    uintptr_t modelRebuildTime;
+
+    QLabel* labelpopulate;
+    uintptr_t populateTime;
 
     DAVA::MMDump dumpHdr;
     DAVA::Vector<DAVA::MMBlock> blocks;

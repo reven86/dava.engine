@@ -34,6 +34,10 @@ DumpViewWidget::DumpViewWidget(const char* filename, QWidget* parent, Qt::Window
     uint64 begin = SystemTimer::Instance()->AbsoluteMS();
     LoadDump(filename);
     loadTime = static_cast<uintptr_t>(SystemTimer::Instance()->AbsoluteMS() - begin);
+
+    begin = SystemTimer::Instance()->AbsoluteMS();
+    bktrace.Rebuild();
+    modelRebuildTime = static_cast<uintptr_t>(SystemTimer::Instance()->AbsoluteMS() - begin);
     Init();
 }
 
@@ -51,6 +55,7 @@ DumpViewWidget::DumpViewWidget(const DAVA::Vector<uint8>& v, QWidget* parent, Qt
     setWindowTitle("In-memory dump");
     uint64 begin = SystemTimer::Instance()->AbsoluteMS();
     LoadDump(v);
+    //bktrace.Rebuild();
     loadTime = static_cast<uintptr_t>(SystemTimer::Instance()->AbsoluteMS() - begin);
     Init();
 }
@@ -98,6 +103,7 @@ void DumpViewWidget::Init()
 
         symbolsFilterModel->setSourceModel(symbolTreeModel);
         symbolTree->setModel(symbolsFilterModel);
+        symbolsFilterModel->sort(0);
         //connect(tree, &QTreeView::doubleClicked, this, &DumpViewWidget::OnSymbolDoubleClicked);
 
         QVBoxLayout* l = new QVBoxLayout;
@@ -135,9 +141,12 @@ void DumpViewWidget::Init()
     }
 
     QVBoxLayout* l = new QVBoxLayout;
+    labelpopulate = new QLabel("");
     l->addWidget(tab);
     l->addWidget(new QLabel(QString("load time %1 ms").arg(loadTime)));
     l->addWidget(new QLabel(QString("model create time %1 ms").arg(modelCreateTime)));
+    l->addWidget(new QLabel(QString("model rebuild time %1 ms").arg(modelRebuildTime)));
+    l->addWidget(labelpopulate);
     setLayout(l);
 
     setAttribute(Qt::WA_DeleteOnClose);
@@ -174,17 +183,16 @@ void DumpViewWidget::OnShowCallstack()
                 if (node->Type() == SymbolsTreeModel::TYPE_NAME)
                 {
                     SymbolsTreeModel::NameNode* nnode = static_cast<SymbolsTreeModel::NameNode*>(node);
-                    for (int i = 0, n = nnode->ChildrenCount();i < n;++i)
-                    {
-                        SymbolsTreeModel::AddrNode* anode = static_cast<SymbolsTreeModel::AddrNode*>(nnode->Child(i));
-                        uint64 addr = anode->Address();
-                        v.push_back(addr);
-                    }
+                    uint64 addr = nnode->Address();
+                    v.push_back(addr);
                 }
             }
         }
         std::sort(v.begin(), v.end());
+        uint64 begin = SystemTimer::Instance()->AbsoluteMS();
         callstackTreeModel->Rebuild(v, false);
+        populateTime = uintptr_t(SystemTimer::Instance()->AbsoluteMS() - begin);
+        labelpopulate->setNum(int(populateTime));
     }
 }
 

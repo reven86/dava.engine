@@ -7,15 +7,19 @@
 class BacktraceSet
 {
 public:
-    using SymbolMapType = DAVA::UnorderedMap<DAVA::uint64, DAVA::String>;
-    using BacktraceMapType = DAVA::UnorderedMap<DAVA::uint32, DAVA::MMBacktrace>;
+    struct KeyHash { size_t operator () (const DAVA::uint32 key) const { return key; } };
+    using SymbolMapType = DAVA::UnorderedMap<DAVA::uint64, DAVA::String, KeyHash>;
+    using BacktraceMapType = DAVA::UnorderedMap<DAVA::uint32, DAVA::MMBacktrace, KeyHash>;
 
     using SymbolMapConstIterator = SymbolMapType::const_iterator;
     using BacktraceMapConstIterator = BacktraceMapType::const_iterator;
+    using UniqueNamesConstIterator = DAVA::Set<DAVA::String>::const_iterator;
 
 public:
     void AddSymbol(DAVA::uint64 addr, const DAVA::String& symbol);
     void AddBacktrace(const DAVA::MMBacktrace& bktrace);
+
+    void Rebuild();
 
     bool SymbolsEmpty() const { return symbolMap.empty(); }
     bool BacktraceEmpty() const { return backtraceMap.empty(); }
@@ -33,6 +37,9 @@ public:
     SymbolMapConstIterator SymbolsCBegin() const { return symbolMap.cbegin(); }
     SymbolMapConstIterator SymbolsCEnd() const { return symbolMap.cend(); }
 
+    UniqueNamesConstIterator UniqueNamesCBegin() const { return uniqueNames.cbegin(); }
+    UniqueNamesConstIterator UniqueNamesCEnd() const { return uniqueNames.cend(); }
+
     //BacktraceMapType::iterator BacktraceBegin() { return backtraceMap.begin(); }
     //BacktraceMapType::iterator BacktraceEnd() { return backtraceMap.end(); }
     BacktraceMapConstIterator BacktraceBegin() const { return backtraceMap.cbegin(); }
@@ -41,8 +48,12 @@ public:
     BacktraceMapConstIterator BacktraceCEnd() const { return backtraceMap.cend(); }
 
 private:
+    size_t ComputeDepth(const DAVA::MMBacktrace& o) const;
+
+private:
     SymbolMapType symbolMap;
     BacktraceMapType backtraceMap;
+    DAVA::Set<DAVA::String> uniqueNames;
 };
 
 #endif  // __BACKTRACESET_H__

@@ -11,6 +11,7 @@ CallStackTreeModel::CallStackTreeModel(const DAVA::Vector<DAVA::MMBlock>& memBlo
     , blockList(memBlocks)
     , rootNode(new FrameAddrNode(0))
 {
+    BuildMap();
     SetRootNode(rootNode.get());
 }
 
@@ -112,7 +113,16 @@ void CallStackTreeModel::CollectBlockGroups(DAVA::Vector<BlockGroup>& grp, const
 
 void CallStackTreeModel::CollectBlocks(BlockGroup& g, DAVA::uint32 hash) const
 {
-    for (auto& x : blockList)
+    auto xx = map.find(hash);
+    Q_ASSERT(xx != map.end());
+    for (auto y : xx->second)
+    {
+        g.allocByApp += y->allocByApp;
+        g.totalAlloc += y->allocTotal;
+        g.nblocks += 1;
+        g.blocks.push_back(y);
+    }
+    /*for (auto& x : blockList)
     {
         if (x.backtraceHash == hash)
         {
@@ -121,7 +131,7 @@ void CallStackTreeModel::CollectBlocks(BlockGroup& g, DAVA::uint32 hash) const
             g.nblocks += 1;
             g.blocks.push_back(&x);
         }
-    }
+    }*/
 }
 
 void CallStackTreeModel::AddBlockGroup(FrameAddrNode* parent, const BlockGroup& g)
@@ -179,11 +189,17 @@ size_t CallStackTreeModel::BacktraceFindAnyAddr(const DAVA::MMBacktrace& o, cons
 QVariant CallStackTreeModel::FrameAddrNodeData(FrameAddrNode* node, int row, int clm) const
 {
     char buf[32];
+    uint64 a = 0;
     switch (clm)
     {
     case 0:
         Snprintf(buf, COUNT_OF(buf), "%08llX", node->Address());
-        return QString("%1 %2").arg(buf).arg(bktrace.GetSymbol(node->Address()));
+        a = node->Address();
+        if (a != uint64(-1))
+            return QString("%1 %2").arg(buf).arg(reinterpret_cast<const char8*>((node->Address())));
+        else
+            return QString("%1").arg(buf);
+        //return QString("%1 %2").arg(buf).arg(bktrace.GetSymbol(node->Address()));
     case 1:
         return QString("allocated %1 bytes in %2 blocks").arg(node->AllocByApp()).arg(node->BlockCount());
     default:
@@ -201,5 +217,18 @@ QVariant CallStackTreeModel::BlockNodeData(BlockNode* node, int row, int clm) co
             .arg(node->Block()->allocByApp);
     default:
         return QVariant();
+    }
+}
+
+void CallStackTreeModel::BuildMap()
+{
+    for (auto& x : blockList)
+    {
+        auto ff = map.find(x.backtraceHash);
+        if (ff == map.end())
+        {
+            ff = map.emplace(std::make_pair(x.backtraceHash, DAVA::Vector<const DAVA::MMBlock*>())).first;
+        }
+        ff->second.push_back(&x);
     }
 }

@@ -89,6 +89,8 @@ private:
     void AddBlocks(FrameAddrNode* parent, const BlockGroup& g);
     size_t BacktraceFindAnyAddr(const DAVA::MMBacktrace& o, const DAVA::Vector<DAVA::uint64>& addrList) const;
 
+    void BuildMap();
+
 private:
     QVariant FrameAddrNodeData(FrameAddrNode* node, int row, int clm) const;
     QVariant BlockNodeData(BlockNode* node, int row, int clm) const;
@@ -96,6 +98,8 @@ private:
 private:
     const BacktraceSet& bktrace;
     const DAVA::Vector<DAVA::MMBlock>& blockList;
+
+    DAVA::Map<DAVA::uint32, DAVA::Vector<const DAVA::MMBlock*>> map;
 
     std::unique_ptr<FrameAddrNode> rootNode;
 };

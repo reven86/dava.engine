@@ -142,7 +142,8 @@ static_assert(sizeof(MMStat) % 16 == 0, "sizeof(MMStat) % 16 == 0");
 struct MMBacktrace
 {
     uint32 hash;
-    uint32 padding[3];
+    uint32 depth;
+    uint32 padding[2];
     uint64 frames[MMConst::BACKTRACE_DEPTH];
 };
 

@@ -45,7 +45,8 @@ bool SymbolsFilterModel::lessThan(const QModelIndex& left, const QModelIndex& ri
         SymbolsTreeModel::NameNode* l = static_cast<SymbolsTreeModel::NameNode*>(pl);
         SymbolsTreeModel::NameNode* r = static_cast<SymbolsTreeModel::NameNode*>(pr);
 
-        return l->Name() < r->Name();
+        return strcmp(l->Name(), r->Name()) < 0;
+        //return l->Name() < r->Name();
     }
     return false;
 }
@@ -60,7 +61,8 @@ bool SymbolsFilterModel::filterAcceptsRow(int source_row, const QModelIndex& sou
         if (p->Type() == SymbolsTreeModel::TYPE_NAME)
         {
             SymbolsTreeModel::NameNode* n = static_cast<SymbolsTreeModel::NameNode*>(p);
-            const String& name = n->Name();
+            //const String& name = n->Name();
+            const String name = n->Name();
             if (name.find("std::") == 0)
                 return false;
         }
@@ -74,7 +76,8 @@ bool SymbolsFilterModel::filterAcceptsRow(int source_row, const QModelIndex& sou
         if (p->Type() == SymbolsTreeModel::TYPE_NAME)
         {
             SymbolsTreeModel::NameNode* n = static_cast<SymbolsTreeModel::NameNode*>(p);
-            const String& name = n->Name();
+            //const String& name = n->Name();
+            const String name = n->Name();
             if (hideStd)
             {
                 if (name.find("std::") == 0)
