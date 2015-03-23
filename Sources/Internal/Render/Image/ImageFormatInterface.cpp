@@ -32,7 +32,7 @@
 namespace DAVA 
 {
 
-DAVA::Size2i ImageFormatInterface::GetImageSize( const FilePath & fileName ) const
+Size2i ImageFormatInterface::GetImageSize( const FilePath & fileName ) const
 {
 	Size2i imageSize;
 
@@ -44,6 +44,22 @@ DAVA::Size2i ImageFormatInterface::GetImageSize( const FilePath & fileName ) con
 	}
 
 	return imageSize;
+}
+
+ImageInfo ImageFormatInterface::GetImageInfo(const FilePath &fileName) const
+{
+    File *infile = File::Create(fileName, File::READ);
+    return GetImageInfo(infile);
+}
+
+ImageInfo ImageFormatInterface::GetImageInfo(File *infile) const
+{
+    ImageInfo info;
+    info.width = 0;
+    info.height = 0;
+    info.format = FORMAT_INVALID;
+
+    return info;
 }
 
 };

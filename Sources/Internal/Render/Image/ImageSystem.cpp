@@ -182,5 +182,31 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
     
     return NULL;
 }
-    
+
+ImageInfo ImageSystem::GetImageInfo(const FilePath & pathName) const
+{
+    File *infile = File::Create(pathName, File::OPEN | File::READ);
+    return GetImageInfo(infile);
+}
+
+ImageInfo ImageSystem::GetImageInfo(File *infile) const
+{
+    if (!infile)
+        return ImageInfo();
+
+    ImageFormatInterface* properWrapper = GetImageFormatInterface(infile->GetFilename());
+    if (!properWrapper)
+    {
+        // Retry by content.
+        properWrapper = GetImageFormatInterface(infile);
+    }
+
+    if (NULL == properWrapper || !properWrapper->IsImage(infile))
+    {
+        return ImageInfo();
+    }
+
+    return properWrapper->GetImageInfo(infile);
+}
+
 };

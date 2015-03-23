@@ -38,9 +38,23 @@
 
 namespace DAVA 
 {
-
 class File;
 class Image;
+
+struct ImageInfo
+{
+    ImageInfo()
+    {
+        width = 0;
+        height = 0;
+        format = FORMAT_INVALID;
+    }
+
+    uint32 width;
+    uint32 height;
+    PixelFormat format;
+};
+
 
 class ImageFormatInterface
 {
@@ -59,7 +73,9 @@ public:
     virtual uint32 GetDataSize(File *infile) const = 0;
 
 	Size2i GetImageSize(const FilePath & fileName) const;
-	virtual Size2i GetImageSize(File *infile) const = 0;
+    virtual Size2i GetImageSize(File *infile) const = 0;
+    virtual ImageInfo GetImageInfo(const FilePath &fileName) const;
+    virtual ImageInfo GetImageInfo(File *infile) const;
 
     
     inline bool IsFileExtensionSupported(const String& extension) const;

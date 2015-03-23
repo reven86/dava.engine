@@ -40,7 +40,6 @@
 
 namespace DAVA 
 {
-
 class Texture;
 class Sprite;
 class Image;
@@ -48,46 +47,41 @@ class Image;
 class LibPngWrapper: public ImageFormatInterface
 {
 public:
-    
     LibPngWrapper();
     
-    virtual bool IsImage(File *file) const;
+    bool IsImage(File *file) const override;
     
-    virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const;
-    
-    virtual eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const;
-    
-    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const;
+    eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
+    eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const override;
+    eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const override;
 
-    virtual uint32 GetDataSize(File *infile) const;
-	virtual Size2i GetImageSize(File *infile) const;
+    uint32 GetDataSize(File *infile) const override;
+    Size2i GetImageSize(File *infile) const override;
+    ImageInfo GetImageInfo(File *infile) const override;
 
-
-	static int ReadPngFile(File *infile, Image * image, PixelFormat targetFormat = FORMAT_INVALID);
-
-
+    static int ReadPngFile(File *infile, Image * image, PixelFormat targetFormat = FORMAT_INVALID);
 };
 
 class PngImage : public BaseObject
 {
 protected:
-	~PngImage();
+    ~PngImage();
 public:
-	PngImage();
-	
-	bool Create(int32 _width, int32 _height);
-	bool CreateFromFBOSprite(Sprite * fboSprite);
-		
-	void DrawImage(int sx, int sy, PngImage * image);
-	void DrawRect(const Rect2i & rect, uint32 color);
+    PngImage();
 
-	uint8 * GetData() { return data; };
-	int32 GetWidth() { return width; };
-	int32 GetHeight() { return height; }; 
-private:	
-	int32		width;
-	int32		height;
-	uint8  *	data;
+    bool Create(int32 _width, int32 _height);
+    bool CreateFromFBOSprite(Sprite * fboSprite);
+
+    void DrawImage(int sx, int sy, PngImage * image);
+    void DrawRect(const Rect2i & rect, uint32 color);
+
+    uint8 *GetData() { return data; };
+    int32 GetWidth() { return width; };
+    int32 GetHeight() { return height; }; 
+private:
+    int32 width;
+    int32 height;
+    uint8 *data;
     PixelFormat format;
 };
 };

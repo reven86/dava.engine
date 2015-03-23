@@ -123,406 +123,120 @@ eErrorCode LibPngWrapper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     }
 }
 
-int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFormat/* = FORMAT_INVALID*/)
-{
-	DVASSERT(targetFormat == FORMAT_INVALID || targetFormat == FORMAT_RGBA8888);
-
-	png_structp png_ptr;
-	png_infop info_ptr;
-	
-	char sig[8];
-	
-	int bit_depth;
-	int color_type;
-	
-	png_uint_32 width;
-	png_uint_32 height;
-	unsigned int rowbytes;
-	
-	int i;
-	png_bytepp row_pointers = NULL;
-	
-    
-	infile->Read(sig, 8);
-	
-	if (!png_check_sig((unsigned char *) sig, 8))
-	{
-		return 0;
-	}
-    
-	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	if (!png_ptr)
-	{
-		return 4;    /* out of memory */
-	}
-	
-	info_ptr = png_create_info_struct(png_ptr);
-	if (!info_ptr)
-	{
-		png_destroy_read_struct(&png_ptr, (png_infopp) NULL, (png_infopp) NULL);
-		return 4;    /* out of memory */
-	}
-	
-	if (setjmp(png_jmpbuf(png_ptr)))
-	{
-		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-		return 0;
-	}
-	
-	PngImageRawData	raw;
-	raw.file = infile;
-	png_set_read_fn (png_ptr, &raw, PngImageRead);
-	
-	png_set_sig_bytes(png_ptr, 8);
-	
-	png_read_info(png_ptr, info_ptr);
-	
-	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth,
-				 &color_type, NULL, NULL, NULL);
-	
-	image->width = width;
-	image->height = height;
-    
-	//1 bit images -> 8 bit
-	if(color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-		png_set_expand_gray_1_2_4_to_8(png_ptr);
-    
-	image->format = FORMAT_RGBA8888;
-	if (color_type == PNG_COLOR_TYPE_GRAY ||
-		color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-    {
-		if(targetFormat == FORMAT_RGBA8888)
-		{
-			png_set_gray_to_rgb(png_ptr);
-			png_set_filler(png_ptr, 0xFFFF, PNG_FILLER_AFTER);
-		}
-		else
-		{
-			image->format = (bit_depth == 16) ? FORMAT_A16 : FORMAT_A8;
-			if(color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-			{
-				png_set_strip_alpha(png_ptr);
-			}
-		}
-	}
-	else if(color_type == PNG_COLOR_TYPE_PALETTE)
-	{
-		png_set_palette_to_rgb(png_ptr);
-		png_set_filler(png_ptr, 0xFFFF, PNG_FILLER_AFTER);
-	}
-	else if(color_type == PNG_COLOR_TYPE_RGB)
-	{
-		png_set_filler(png_ptr, 0xFFFF, PNG_FILLER_AFTER);
-	}
-    
-	if(bit_depth > 8 && image->format != FORMAT_A16)
-	{
-		Logger::Error("Wrong image: must be 8bits on channel: %s", infile->GetFilename().GetAbsolutePathname().c_str());
-		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-		return 0;
-	}
-
-
-	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
-	{
-		png_set_tRNS_to_alpha(png_ptr);
-	}
-    
-	png_read_update_info(png_ptr, info_ptr);
-	
-	rowbytes = static_cast<uint32>(png_get_rowbytes(png_ptr, info_ptr));
-	
-    uint8 *image_data = new uint8 [rowbytes * height];
-	if (image_data == 0)
-	{
-		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-		return 4;
-    }
-	
-	if ((row_pointers = (png_bytepp)malloc(height*sizeof(png_bytep))) == NULL)
-	{
-        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-        delete [] (image_data);
-        image_data = NULL;
-        return 4;
-    }
-	
-	
-    /* set the individual row_pointers to point at the correct offsets */
-	
-    for (i = 0;  i < (int)height;  ++i)
-        row_pointers[i] = image_data + i*rowbytes;
-	
-	
-    /* now we can go ahead and just read the whole image */
-    png_read_image(png_ptr, row_pointers);
-	
-    /* and we're done!  (png_read_end() can be omitted if no processing of
-     * post-IDAT text/time/etc. is desired) */
-	
-	/* Clean up. */
-	free(row_pointers);
-	
-	/* Clean up. */
-	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-	
-	image->data = image_data;
-	
-	return 1;
-}
-
-uint32 LibPngWrapper::GetDataSize(File * infile ) const
-{
-	if (!infile)
-	{
-		return 0;
-	}
-    
-	char sig[8];
-	infile->Read(sig, 8);
-	if (!png_check_sig((unsigned char *) sig, 8))
-	{
-		return 0;
-	}
-
-    
-    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	if (!png_ptr)
-	{
-		return 0;
-	}
-
-	png_infop info_ptr = png_create_info_struct(png_ptr);
-	if (!info_ptr)
-	{
-		png_destroy_read_struct(&png_ptr, (png_infopp) NULL, (png_infopp) NULL);
-		return 0;
-	}
-	
-    if (setjmp(png_jmpbuf(png_ptr)))
-	{
-		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-		return 0;
-	}
-
-    PngImageRawData	raw;
-	raw.file = infile;
-	png_set_read_fn (png_ptr, &raw, PngImageRead);
-
-
-    png_set_sig_bytes(png_ptr, 8);
-	png_read_info(png_ptr, info_ptr);
-
-
-    int bit_depth;
-	int color_type;
-	
-	png_uint_32 width;
-	png_uint_32 height;
-	
-	
-	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, NULL, NULL, NULL);
-
-	PixelFormat format = FORMAT_RGBA8888;
-	if (color_type == PNG_COLOR_TYPE_GRAY ||
-		color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-    {
-        format = (bit_depth == 16) ? FORMAT_A16 : FORMAT_A8;
-	}
-
-    uint32 imageSize = width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
-    
-    
-	/* Clean up. */
-	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-
-	return imageSize;
-}
-
-Size2i LibPngWrapper::GetImageSize(File *infile) const
-{
-	Size2i imageSize;
-
-	if (!infile)
-	{
-		return imageSize;
-	}
-
-	char sig[8];
-	infile->Read(sig, 8);
-	if (!png_check_sig((unsigned char *) sig, 8))
-	{
-		return imageSize;
-	}
-
-	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	if (!png_ptr)
-	{
-		return imageSize;
-	}
-
-	png_infop info_ptr = png_create_info_struct(png_ptr);
-	if (!info_ptr)
-	{
-		png_destroy_read_struct(&png_ptr, (png_infopp) NULL, (png_infopp) NULL);
-		return imageSize;
-	}
-
-	if (setjmp(png_jmpbuf(png_ptr)))
-	{
-		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-		return imageSize;
-	}
-
-	PngImageRawData	raw;
-	raw.file = infile;
-	png_set_read_fn (png_ptr, &raw, PngImageRead);
-
-
-	png_set_sig_bytes(png_ptr, 8);
-	png_read_info(png_ptr, info_ptr);
-
-
-	int bit_depth;
-	int color_type;
-
-	png_uint_32 width;
-	png_uint_32 height;
-
-
-	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, NULL, NULL, NULL);
-
-	imageSize.dx = width;
-	imageSize.dy = height;
-
-	/* Clean up. */
-	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-
-	return imageSize;
-}
-
-
-
-eErrorCode LibPngWrapper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
-{
-    Logger::Error("[LibPngWrapper::WriteFileAsCubeMap] For png cubeMaps are not supported");
-    return ERROR_WRITE_FAIL;
-}
-
 eErrorCode LibPngWrapper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat format) const
 {
-//	printf("* Writing PNG file (%d x %d): %s\n", width, height, file_name);
+    //	printf("* Writing PNG file (%d x %d): %s\n", width, height, file_name);
     DVASSERT(imageSet.size());
     int32 width = imageSet[0]->width;
     int32 height = imageSet[0]->height;
     uint8* imageData = imageSet[0]->data;
     Image* convertedImage = NULL;
-    if(FORMAT_RGB888 == imageSet[0]->format)
+    if (FORMAT_RGB888 == imageSet[0]->format)
     {
         convertedImage = Image::Create(width, height, FORMAT_RGBA8888);
         ConvertDirect<RGB888, uint32, ConvertRGB888toRGBA8888> convert;
         convert(imageData, width, height, sizeof(RGB888)*width, convertedImage->data, width, height, sizeof(uint32)*width);
         imageData = convertedImage->data;
     }
-    
-	png_color_8 sig_bit;
-	
-	png_structp png_ptr = 0;
-	png_infop info_ptr = 0;
-    
-	png_byte color_type = PNG_COLOR_TYPE_RGBA;
-	png_byte bit_depth = 8;
-    
+
+    png_color_8 sig_bit;
+
+    png_structp png_ptr = 0;
+    png_infop info_ptr = 0;
+
+    png_byte color_type = PNG_COLOR_TYPE_RGBA;
+    png_byte bit_depth = 8;
+
     int32 bytes_for_color = 4;
-    if(FORMAT_A8 == format)
+    if (FORMAT_A8 == format)
     {
         color_type = PNG_COLOR_TYPE_GRAY;
         bytes_for_color = 1;
     }
-    else if(FORMAT_A16 == format)
+    else if (FORMAT_A16 == format)
     {
         bit_depth = 16;
         color_type = PNG_COLOR_TYPE_GRAY;
         bytes_for_color = 2;
     }
-    
-	png_bytep * row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);    
-    
-	for (int y = 0; y < height; y++)
-	{
-//		row_pointers[y] = (png_byte*) &data[y * width * 4];
-		row_pointers[y] = (png_byte*) &imageData[y * width * bytes_for_color];
-	}
-	
-	//create file
-	FILE *fp = fopen(fileName.GetAbsolutePathname().c_str(), "wb");
-	if (!fp)
-	{
-		Logger::Error("[LibPngWrapper::WritePngFile] File %s could not be opened for writing", fileName.GetAbsolutePathname().c_str());
-        ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
-		return ERROR_FILE_NOTFOUND;
-	}
-	
-	// initialize stuff
-	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	
-	if (!png_ptr)
+
+    png_bytep * row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
+
+    for (int y = 0; y < height; y++)
     {
-		Logger::Error("[LibPngWrapper::WritePngFile] png_create_write_struct failed");
+        //		row_pointers[y] = (png_byte*) &data[y * width * 4];
+        row_pointers[y] = (png_byte*)&imageData[y * width * bytes_for_color];
+    }
+
+    //create file
+    FILE *fp = fopen(fileName.GetAbsolutePathname().c_str(), "wb");
+    if (!fp)
+    {
+        Logger::Error("[LibPngWrapper::WritePngFile] File %s could not be opened for writing", fileName.GetAbsolutePathname().c_str());
+        ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
+        return ERROR_FILE_NOTFOUND;
+    }
+
+    // initialize stuff
+    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+    if (!png_ptr)
+    {
+        Logger::Error("[LibPngWrapper::WritePngFile] png_create_write_struct failed");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
         return ERROR_WRITE_FAIL;
-	}
-	
-	info_ptr = png_create_info_struct(png_ptr);
-	if (!info_ptr)
-	{
-		Logger::Error("[LibPngWrapper::WritePngFile] png_create_info_struct failed");
+    }
+
+    info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr)
+    {
+        Logger::Error("[LibPngWrapper::WritePngFile] png_create_info_struct failed");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
         return ERROR_WRITE_FAIL;
-	}
-	
-	if (setjmp(png_jmpbuf(png_ptr)))
-	{
-		Logger::Error("[LibPngWrapper::WritePngFile] Error during init_io");
+    }
+
+    if (setjmp(png_jmpbuf(png_ptr)))
+    {
+        Logger::Error("[LibPngWrapper::WritePngFile] Error during init_io");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
         return ERROR_WRITE_FAIL;
-	}
-	
-	png_init_io(png_ptr, fp);
-	
-	// write header
-	if (setjmp(png_jmpbuf(png_ptr)))
-	{
-		Logger::Error("[LibPngWrapper::WritePngFile] Error during writing header");
+    }
+
+    png_init_io(png_ptr, fp);
+
+    // write header
+    if (setjmp(png_jmpbuf(png_ptr)))
+    {
+        Logger::Error("[LibPngWrapper::WritePngFile] Error during writing header");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
         return ERROR_WRITE_FAIL;
-	}
-    
-	
-	png_set_IHDR(png_ptr, info_ptr, width, height,
-				 bit_depth, color_type, PNG_INTERLACE_NONE,
-				 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-	
-	
-    if(FORMAT_A8 == format)
+    }
+
+
+    png_set_IHDR(png_ptr, info_ptr, width, height,
+                 bit_depth, color_type, PNG_INTERLACE_NONE,
+                 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+
+
+    if (FORMAT_A8 == format)
     {
         sig_bit.red = 0;
         sig_bit.green = 0;
         sig_bit.blue = 0;
-        
+
         sig_bit.gray = 8;
         sig_bit.alpha = 0;
     }
-    else if(FORMAT_A16 == format)
+    else if (FORMAT_A16 == format)
     {
         sig_bit.red = 0;
         sig_bit.green = 0;
         sig_bit.blue = 0;
-        
+
         sig_bit.gray = 16;
         sig_bit.alpha = 0;
     }
-    else 
+    else
     {
         sig_bit.red = 8;
         sig_bit.green = 8;
@@ -530,37 +244,304 @@ eErrorCode LibPngWrapper::WriteFile(const FilePath & fileName, const Vector<Imag
         sig_bit.alpha = 8;
     }
 
-	png_set_sBIT(png_ptr, info_ptr, &sig_bit);
+    png_set_sBIT(png_ptr, info_ptr, &sig_bit);
 
-    
-	png_write_info(png_ptr, info_ptr);
-	png_set_shift(png_ptr, &sig_bit);
-	png_set_packing(png_ptr);
-	
-	// write bytes
-	if (setjmp(png_jmpbuf(png_ptr)))
-	{
-		Logger::Error("[LibPngWrapper::WritePngFile] Error during writing bytes");
+
+    png_write_info(png_ptr, info_ptr);
+    png_set_shift(png_ptr, &sig_bit);
+    png_set_packing(png_ptr);
+
+    // write bytes
+    if (setjmp(png_jmpbuf(png_ptr)))
+    {
+        Logger::Error("[LibPngWrapper::WritePngFile] Error during writing bytes");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
         return ERROR_WRITE_FAIL;
-	}
-	
-	png_write_image(png_ptr, row_pointers);
-	
-	
-	// end write
-	if (setjmp(png_jmpbuf(png_ptr)))
-	{
-		Logger::Error("[LibPngWrapper::WritePngFile] Error during end of write");
+    }
+
+    png_write_image(png_ptr, row_pointers);
+
+
+    // end write
+    if (setjmp(png_jmpbuf(png_ptr)))
+    {
+        Logger::Error("[LibPngWrapper::WritePngFile] Error during end of write");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
         return ERROR_WRITE_FAIL;
-	}
-	
-	png_write_end(png_ptr, NULL);
-	
+    }
+
+    png_write_end(png_ptr, NULL);
+
     ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
     return SUCCESS;
 }
+
+eErrorCode LibPngWrapper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
+{
+    Logger::Error("[LibPngWrapper::WriteFileAsCubeMap] For png cubeMaps are not supported");
+    return ERROR_WRITE_FAIL;
+}
+
+uint32 LibPngWrapper::GetDataSize(File * infile) const
+{
+    ImageInfo info = GetImageInfo(infile);
+    uint32 imageSize = info.width * info.height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(info.format);
+    
+	return imageSize;
+}
+
+Size2i LibPngWrapper::GetImageSize(File *infile) const
+{
+    ImageInfo info = GetImageInfo(infile);
+    Size2i imageSize;
+    imageSize.dx = info.width;
+    imageSize.dy = info.height;
+
+    return imageSize;
+}
+
+ImageInfo LibPngWrapper::GetImageInfo(File *infile) const
+{
+    if (!infile)
+    {
+        return ImageFormatInterface::GetImageInfo(infile);
+    }
+
+    char sig[8];
+    infile->Read(sig, 8);
+    if (!png_check_sig((unsigned char *)sig, 8))
+    {
+        return ImageFormatInterface::GetImageInfo(infile);
+    }
+
+    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (!png_ptr)
+    {
+        return ImageFormatInterface::GetImageInfo(infile);
+    }
+
+    png_infop info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr)
+    {
+        png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
+        return ImageFormatInterface::GetImageInfo(infile);
+    }
+
+    if (setjmp(png_jmpbuf(png_ptr)))
+    {
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        return ImageFormatInterface::GetImageInfo(infile);
+    }
+
+    PngImageRawData	raw;
+    raw.file = infile;
+    png_set_read_fn(png_ptr, &raw, PngImageRead);
+
+
+    png_set_sig_bytes(png_ptr, 8);
+    png_read_info(png_ptr, info_ptr);
+
+
+    int bit_depth;
+    int color_type;
+
+    png_uint_32 width;
+    png_uint_32 height;
+
+
+    png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, NULL, NULL, NULL);
+
+    ImageInfo info;
+    info.width = width;
+    info.height = height;
+
+    if (color_type == PNG_COLOR_TYPE_RGB_ALPHA && bit_depth == 8)
+    {
+        info.format = FORMAT_RGBA8888;
+    }
+    else if (color_type == PNG_COLOR_TYPE_RGB_ALPHA && bit_depth == 16)
+    {
+        info.format = FORMAT_RGBA16161616;
+    }
+    else if (color_type == PNG_COLOR_TYPE_RGB_ALPHA && bit_depth == 32)
+    {
+        info.format = FORMAT_RGBA32323232;
+    }
+    else if (color_type == PNG_COLOR_TYPE_RGB && bit_depth == 8)
+    {
+        info.format = FORMAT_RGB888;
+    }
+    else if (color_type == PNG_COLOR_TYPE_RGB_ALPHA && bit_depth == 4)
+    {
+        info.format = FORMAT_RGBA4444;
+    }
+    else if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth == 8)
+    {
+        info.format = FORMAT_A8;
+    }
+    else if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth == 16)
+    {
+        info.format = FORMAT_A16;
+    }
+    else
+    {
+        info.format = FORMAT_INVALID;
+    }
+
+    /* Clean up. */
+    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+
+    return info;
+}
+
+int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFormat/* = FORMAT_INVALID*/)
+{
+    DVASSERT(targetFormat == FORMAT_INVALID || targetFormat == FORMAT_RGBA8888);
+
+    png_structp png_ptr;
+    png_infop info_ptr;
+
+    char sig[8];
+
+    int bit_depth;
+    int color_type;
+
+    png_uint_32 width;
+    png_uint_32 height;
+    unsigned int rowbytes;
+
+    int i;
+    png_bytepp row_pointers = NULL;
+
+
+    infile->Read(sig, 8);
+
+    if (!png_check_sig((unsigned char *)sig, 8))
+    {
+        return 0;
+    }
+
+    png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (!png_ptr)
+    {
+        return 4;    /* out of memory */
+    }
+
+    info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr)
+    {
+        png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
+        return 4;    /* out of memory */
+    }
+
+    if (setjmp(png_jmpbuf(png_ptr)))
+    {
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        return 0;
+    }
+
+    PngImageRawData	raw;
+    raw.file = infile;
+    png_set_read_fn(png_ptr, &raw, PngImageRead);
+
+    png_set_sig_bytes(png_ptr, 8);
+
+    png_read_info(png_ptr, info_ptr);
+
+    png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth,
+                 &color_type, NULL, NULL, NULL);
+
+    image->width = width;
+    image->height = height;
+
+    //1 bit images -> 8 bit
+    if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
+        png_set_expand_gray_1_2_4_to_8(png_ptr);
+
+    image->format = FORMAT_RGBA8888;
+    if (color_type == PNG_COLOR_TYPE_GRAY ||
+        color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+    {
+        if (targetFormat == FORMAT_RGBA8888)
+        {
+            png_set_gray_to_rgb(png_ptr);
+            png_set_filler(png_ptr, 0xFFFF, PNG_FILLER_AFTER);
+        }
+        else
+        {
+            image->format = (bit_depth == 16) ? FORMAT_A16 : FORMAT_A8;
+            if (color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+            {
+                png_set_strip_alpha(png_ptr);
+            }
+        }
+    }
+    else if (color_type == PNG_COLOR_TYPE_PALETTE)
+    {
+        png_set_palette_to_rgb(png_ptr);
+        png_set_filler(png_ptr, 0xFFFF, PNG_FILLER_AFTER);
+    }
+    else if (color_type == PNG_COLOR_TYPE_RGB)
+    {
+        png_set_filler(png_ptr, 0xFFFF, PNG_FILLER_AFTER);
+    }
+
+    if (bit_depth > 8 && image->format != FORMAT_A16)
+    {
+        Logger::Error("Wrong image: must be 8bits on channel: %s", infile->GetFilename().GetAbsolutePathname().c_str());
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        return 0;
+    }
+
+
+    if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
+    {
+        png_set_tRNS_to_alpha(png_ptr);
+    }
+
+    png_read_update_info(png_ptr, info_ptr);
+
+    rowbytes = static_cast<uint32>(png_get_rowbytes(png_ptr, info_ptr));
+
+    uint8 *image_data = new uint8[rowbytes * height];
+    if (image_data == 0)
+    {
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        return 4;
+    }
+
+    if ((row_pointers = (png_bytepp)malloc(height*sizeof(png_bytep))) == NULL)
+    {
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        delete[](image_data);
+        image_data = NULL;
+        return 4;
+    }
+
+
+    /* set the individual row_pointers to point at the correct offsets */
+
+    for (i = 0; i < (int)height; ++i)
+        row_pointers[i] = image_data + i*rowbytes;
+
+
+    /* now we can go ahead and just read the whole image */
+    png_read_image(png_ptr, row_pointers);
+
+    /* and we're done!  (png_read_end() can be omitted if no processing of
+    * post-IDAT text/time/etc. is desired) */
+
+    /* Clean up. */
+    free(row_pointers);
+
+    /* Clean up. */
+    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+
+    image->data = image_data;
+
+    return 1;
+}
+
 
 PngImage::PngImage()
 :	width(0)
