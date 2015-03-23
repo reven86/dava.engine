@@ -43,6 +43,50 @@
 #include <QMenu>
 #include <QComboBox>
 
+class BranchListComparator
+{
+public:
+    bool operator()(const QString & left, const QString & right) const
+    {
+        int leftValue, rightValue;
+        if (sscanf(left.toStdString().c_str(), "%d", &leftValue) > 0 &&
+            sscanf(right.toStdString().c_str(), "%d", &rightValue) > 0 &&
+            leftValue != rightValue)
+        {
+            return leftValue > rightValue;
+        }
+
+        return left < right;
+    }
+};
+
+class VersionListComparator
+{
+public:
+    bool operator()(const QString & left, const QString & right) const
+    {
+        QRegExp regExp("\\D+");
+        QStringList leftList = left.split(regExp, QString::SkipEmptyParts);
+        QStringList rightList = right.split(regExp, QString::SkipEmptyParts);
+
+        bool ok = false;
+        int minSize = qMin(leftList.size(), rightList.size());
+        for (int i = 0; i < minSize; ++i)
+        {
+            uint leftValue = leftList[i].toUInt(&ok);
+            if (!ok) break;
+            uint rightValue = rightList[i].toUInt(&ok);
+            if (!ok) break;
+
+            if (leftValue == rightValue) continue;
+
+            return leftValue > rightValue;
+        }
+
+        return left > right;
+    }
+};
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -384,27 +428,23 @@ void MainWindow::RefreshBranchesList()
     }
 
     QList<QString> branchesList = branchIDs.toList();
-    qSort(branchesList);
+    qSort(branchesList.begin(), branchesList.end(), BranchListComparator());
 
     int branchesCount = branchesList.size();
 
     //Add favorites branches
-    if(favs.size())
+    bool hasFavorite = false;
+    for (int i = 0; i < favs.size(); ++i)
     {
-        bool hasFavorite = false;
-        for(int i = 0; i < branchesCount; i++)
+        const QString & branchID = favs[i];
+        if (branchesList.contains(branchID))
         {
-            const QString & branchID = branchesList[i];
-            if(favs.contains(branchID))
-            {
-                ui->listWidget->addItem(CreateListItem(branchID, LIST_ITEM_FAVORITES));
-                hasFavorite = true;
-            }
+            ui->listWidget->addItem(CreateListItem(branchID, LIST_ITEM_FAVORITES));
+            hasFavorite = true;
         }
-
-        if(hasFavorite)
-            ui->listWidget->addItem(CreateSeparatorItem());
     }
+    if (hasFavorite)
+        ui->listWidget->addItem(CreateSeparatorItem());
 
     //Add Others
     for(int i = 0; i < branchesCount; i++)
@@ -468,15 +508,22 @@ QWidget * MainWindow::CreateAppAvalibleTableItem(Application * app)
     }
     else
     {
+        QList<QString> versions;
+        for (int j = 0; j < versCount; ++j)
+        {
+            versions.push_back(app->GetVersion(j)->id);
+        }
+
+        qSort(versions.begin(), versions.end(), VersionListComparator());
+
         QComboBox * comboBox = new QComboBox();
         for(int j = 0; j < versCount; ++j)
         {
-            comboBox->addItem(app->GetVersion(j)->id);
+            comboBox->addItem(versions[j]);
         }
         comboBox->view()->setTextElideMode(Qt::ElideLeft);
         comboBox->setFont(tableFont);
         comboBox->setFocusPolicy(Qt::NoFocus);
-        comboBox->model()->sort(0, Qt::DescendingOrder);
         comboBox->setCurrentIndex(0);
 
 #ifdef Q_OS_DARWIN
