@@ -169,7 +169,6 @@ public class JNIWebView {
                         activity.PostEventToGL(new OnPageLoadedNativeRunnable(
                                 pixels, width, height));
                     } else {
-                        Log.v(TAG, "empty bitmap!!!");
                         renderWebViewUntilDone(view, activity, 300);
                     }
                 }
