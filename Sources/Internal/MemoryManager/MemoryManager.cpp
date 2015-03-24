@@ -500,7 +500,8 @@ void MemoryManager::InsertBacktrace(Backtrace& backtrace)
     else
     {
         // New backtrace, add to list
-        backtraces->insert(std::make_pair(backtrace.hash, backtrace));
+        Backtrace& bktrace = backtraces->insert(std::make_pair(backtrace.hash, backtrace)).first->second;
+        ObtainBacktraceSymbols(&bktrace);
     }
 }
 
@@ -589,7 +590,7 @@ size_t MemoryManager::GetDump(size_t userSize, void** buf, uint32 blockRangeBegi
     // TODO: carefully think of locking
     DVASSERT(userSize % 16 == 0);
 
-    ObtainAllBacktraceSymbols();
+    //ObtainAllBacktraceSymbols();
     MemoryBlock* firstBlock = nullptr;
     MemoryBlock* lastBlock = nullptr;
     size_t nblocks = GetBlockRange(blockRangeBegin, blockRangeEnd, &firstBlock, &lastBlock);
