@@ -463,7 +463,7 @@ void StructureSystem::ProcessCommand(const Command2 *command, bool redo)
                 break;
         }
         
-        auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoselectNewEnities).AsBool();
+        auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoselectNewEntities).AsBool();
         if(autoSelectionEnabled)
         {
             ProcessAutoSelection(command, redo);
@@ -492,9 +492,11 @@ void StructureSystem::ProcessAutoSelection(const Command2 *command, bool redo) c
             {
                 auto cmd = batch->GetCommand(i);
                 auto cmdID = cmd->GetId();
-                if(CMDID_ENTITY_ADD == cmdID || CMDID_ENTITY_REMOVE == cmdID)
+                
+                auto needAddEntity = ((CMDID_ENTITY_ADD == cmdID && redo) || (CMDID_ENTITY_REMOVE == cmdID && !redo));
+                if(needAddEntity)
                 {
-                    ApplySelection(cmd, redo);
+                    selectionSystem->AddSelection(cmd->GetEntity());
                 }
             }
         }
@@ -502,22 +504,12 @@ void StructureSystem::ProcessAutoSelection(const Command2 *command, bool redo) c
     else if(CMDID_ENTITY_ADD == commandId || CMDID_ENTITY_REMOVE == commandId)
     {
         selectionSystem->Clear();
-        ApplySelection(command, redo);
-    }
-}
-
-void StructureSystem::ApplySelection(const Command2 *command, bool redo) const
-{
-    auto sceneEditor = static_cast<SceneEditor2 *>(GetScene());
-    auto selectionSystem = sceneEditor->selectionSystem;
-
-    auto commandId = command->GetId();
-    auto entity = command->GetEntity();
-
-    auto needAddEntity = ((CMDID_ENTITY_ADD == commandId && redo) || (CMDID_ENTITY_REMOVE == commandId && !redo));
-    if(needAddEntity)
-    {
-        selectionSystem->AddSelection(entity);
+        
+        auto needAddEntity = ((CMDID_ENTITY_ADD == commandId && redo) || (CMDID_ENTITY_REMOVE == commandId && !redo));
+        if(needAddEntity)
+        {
+            selectionSystem->AddSelection(command->GetEntity());
+        }
     }
 }
 

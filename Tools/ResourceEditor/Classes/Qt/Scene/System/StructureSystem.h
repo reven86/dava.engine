@@ -95,7 +95,6 @@ protected:
 	void SearchEntityByRef(DAVA::Entity *parent, const DAVA::FilePath &refToOwner, DAVA::Set<DAVA::Entity *> &result);
     
     void ProcessAutoSelection(const Command2 *command, bool redo) const;
-    void ApplySelection(const Command2 *command, bool redo) const;
 };
 
 #endif // __SCENE_STRUCTURE_SYSTEM_H__
