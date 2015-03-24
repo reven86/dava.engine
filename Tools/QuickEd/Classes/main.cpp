@@ -32,46 +32,45 @@
 #include "BaseController.h"
 #include "DAVAEngine.h"
 
-#if defined (__DAVAENGINE_MACOS__)
-#include "Platform/Qt5/MacOS/QtLayerMacOS.h"
-#elif defined (__DAVAENGINE_WIN32__)
-#include "Platform/Qt5/Win32/QtLayerWin32.h"
-#endif
+#include "Platform/Qt5/QtLayer.h"
+#include "QtTools/DavaGLWidget/davaglwidget.h"
+#include "QtTools/FrameworkBinding/DavaLoop.h"
+#include "QtTools/FrameworkBinding/FrameworkLoop.h"
 
-//#include "GeneratedFiles/MocSourcesHeader.h"
-//#include "GeneratedFiles/QrcSourcesHeader.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    a.setQuitOnLastWindowClosed(false);
-#if defined (__DAVAENGINE_MACOS__)
-    DAVA::Core::Run(argc, argv);
-	new DAVA::QtLayerMacOS();
-#elif defined (__DAVAENGINE_WIN32__)
-	HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle(NULL);
-	DAVA::Core::Run(argc, argv, hInstance);
-	new DAVA::QtLayerWin32();
-#else
-	DVASSERT(false && "Wrong platform")
-#endif
+    QApplication::setQuitOnLastWindowClosed(false);
+
+    DAVA::Core::Run( argc, argv );
+    new DAVA::QtLayer();
 
     DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
-    int result = 0;
-    // MainWindow have to be released prior to the framework, so use separate scope for it.
-    {
-        BaseController c;
-        c.Start();
-        result = a.exec();
-    }
 
-#if defined (__DAVAENGINE_MACOS__)
-    DAVA::QtLayerMacOS::Instance()->Release();
-#elif defined (__DAVAENGINE_WIN32__)
-    DAVA::QtLayerWin32::Instance()->Release();
-#else
-	DVASSERT(false && "Wrong platform")
-#endif
+    auto loopManager = new DavaLoop();
+    auto loop = new FrameworkLoop();
 
-    return result;
+    auto *baseController = new BaseController();
+    auto mainWindow = baseController->GetMainWindow();
+    auto glWidget = mainWindow->GetGLWidget();
+
+    loop->SetOpenGLWindow(glWidget);
+    baseController->Start();
+    loopManager->StartLoop( loop );
+
+    QApplication::exec();
+
+    glWidget->setParent(nullptr);
+
+    delete baseController;
+    delete loop;
+    delete loopManager;
+    DAVA::QtLayer::Instance()->Release();
+    // TODO: fix crash on release
+    // DAVA::Core::Instance()->Release();    
+
+    delete glWidget;
+
+    return 0;
 }

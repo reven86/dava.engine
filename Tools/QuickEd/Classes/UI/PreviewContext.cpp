@@ -126,14 +126,14 @@ void PreviewContext::SetCanvasControlScale(int intNewScale)
     Vector2 oldCanvasScaledSize = CalcScaledCanvasSize(canvas->GetSize(), oldScale, view->GetSize());
     Vector2 newCanvasScaledSize = CalcScaledCanvasSize(canvas->GetSize(), newScale, view->GetSize());
 
-    if (oldCanvasScaledSize != newCanvasScaledSize)
+    //if (oldCanvasScaledSize != newCanvasScaledSize)
     {
         QSize viewSize(view->GetSize().x, view->GetSize().y);
         QSize contentSize(newCanvasScaledSize.x, newCanvasScaledSize.y);
         emit CanvasOrViewChanged(viewSize, contentSize);
     }
 
-    if (intOldScale != intNewScale)
+    //if (intOldScale != intNewScale)
     {
         emit CanvasScaleChanged(intNewScale);
     }

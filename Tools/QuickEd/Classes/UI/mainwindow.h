@@ -48,6 +48,7 @@ class PackageWidget;
 class PropertiesWidget;
 class LibraryWidget;
 class Document;
+class DavaGLWidget;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -90,6 +91,7 @@ signals:
     void CloseRequested();
 
 public slots:
+    DavaGLWidget *GetGLWidget() const;
 
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
@@ -99,25 +101,25 @@ private slots:
     void OnOpenFontManager();
     void OnOpenLocalizationManager();
     void OnShowHelp();
-    
+	
     void OnOpenProject();
-    
-    void RebuildRecentMenu();
+	
+	void RebuildRecentMenu();
 
     void SetBackgroundColorMenuTriggered(QAction* action);
-  
+    
     // Pixelization.
     void OnPixelizationStateChanged();
     
 private:
-    void InitMenu();
+	void InitMenu();
     void SetupViewMenu();
     void DisableActions();
-    void UpdateProjectSettings(const QString& filename);
+	void UpdateProjectSettings(const QString& filename);
 
-    // Save/restore positions of DockWidgets and main window geometry
-    void SaveMainWindowState();
-    void RestoreMainWindowState();
+	// Save/restore positions of DockWidgets and main window geometry
+	void SaveMainWindowState();
+	void RestoreMainWindowState();
 
 private:
     Ui::MainWindow *ui;

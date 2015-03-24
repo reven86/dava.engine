@@ -233,7 +233,7 @@ void LibraryWidget::SetupView()
 
 void LibraryWidget::SetupLayout()
 {
-    // put tab bar and davawidget into vertical layout
+    // put tab bar into vertical layout
 	layout = new QVBoxLayout();
 	layout->addWidget(toolbar);
 // 	layout->addWidget(waitBar);

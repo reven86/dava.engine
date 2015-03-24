@@ -18,6 +18,8 @@ public:
     ~BaseController();
     void Start();
 
+    MainWindow *GetMainWindow() const;
+
 protected slots:
     void OnCleanChanged(bool clean);
     void OnOpenPackageFile(const QString &path);
@@ -28,12 +30,15 @@ protected slots:
 
     void Exit();
     void RecentMenu(QAction *);
+
 protected:
     void OpenProject(const QString &path);
     bool CloseProject();
     int CreateDocument(PackageNode *package);
     void SaveDocument(Document *document);
+
 private:
+    bool eventFilter( QObject *obj, QEvent *event ) override;
     void CloseDocument(int index);
     int GetIndexByPackagePath(const QString &fileName) const;
     ///Return: pointer to currentDocument if exists, nullptr if not
