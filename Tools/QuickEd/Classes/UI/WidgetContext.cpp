@@ -4,4 +4,3 @@ WidgetContext::WidgetContext(QObject *parent)
 {
 
 }
-

@@ -1,25 +1,24 @@
-#ifndef __GRAPHICSVIEWCONTEXT_H__
-#define __GRAPHICSVIEWCONTEXT_H__
+#ifndef __QUICKED_PREVIEW_MODEL_H__
+#define __QUICKED_PREVIEW_MODEL_H__
 
 #include <QObject>
 #include <QPoint>
 #include <QSize>
 #include "DAVAEngine.h"
 
-#include "Preview/ControlSelectionListener.h"
+#include "ControlSelectionListener.h"
 
 class PackageCanvas;
 class ControlNode;
 class CheckeredCanvas;
 
-class Document;
 
-class PreviewContext: public QObject, ControlSelectionListener
+class PreviewModel: public QObject, ControlSelectionListener
 {
     Q_OBJECT
 public:
-    PreviewContext(Document *document);
-    virtual ~PreviewContext();
+    PreviewModel(QObject *parent = nullptr);
+    virtual ~PreviewModel();
 
     void SetViewControlSize(const QSize &newSize);
     void SetCanvasControlSize(const QSize &newSize);
@@ -61,5 +60,4 @@ private:
     DAVA::Map<DAVA::UIControl*, ControlNode*> rootNodes;
 };
 
-
-#endif // __GRAPHICSVIEWCONTEXT_H__
+#endif // __QUICKED_PREVIEW_MODEL_H__

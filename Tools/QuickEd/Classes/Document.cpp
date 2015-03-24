@@ -7,7 +7,6 @@
 #include "UI/Package/PackageModel.h"
 #include "UI/Library/LibraryModel.h"
 #include "UI/Properties/PropertiesModel.h"
-#include "UI/PreviewContext.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
@@ -62,10 +61,10 @@ void Document::InitWidgetContexts()
 
 void Document::ConnectWidgetContexts() const
 {
-    connect(libraryContext, &WidgetContext::DataChanged, this, &Document::LibraryDataChanged);
-    connect(packageContext, &WidgetContext::DataChanged, this, &Document::PackageDataChanged);
-    connect(propertiesContext, &WidgetContext::DataChanged, this, &Document::PropertiesDataChanged);
-    connect(previewContext, &WidgetContext::DataChanged, this, &Document::PreviewDataChanged);
+    connect(libraryContext, &WidgetContext::DataChanged, this, &Document::LibraryDataChanged, Qt::DirectConnection);
+    connect(packageContext, &WidgetContext::DataChanged, this, &Document::PackageDataChanged, Qt::DirectConnection);
+    connect(propertiesContext, &WidgetContext::DataChanged, this, &Document::PropertiesDataChanged, Qt::DirectConnection);
+    connect(previewContext, &WidgetContext::DataChanged, this, &Document::PreviewDataChanged, Qt::DirectConnection);
 }
 
 Document::~Document()

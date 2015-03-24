@@ -56,19 +56,22 @@ inline void WidgetContext::SetData(const T value, const QByteArray &role)
         {
             return;
         }
+        values[role] = QVariant::fromValue<std::conditional_t<std::is_pointer<T>::value, void*, T> >(value);
+        emit DataChanged(role);
         Clear(prevValue);
     }
-    values[role] = QVariant::fromValue<std::conditional_t<std::is_pointer<T>::value, void*, T> >(value);
-    emit DataChanged(role);
+    else
+    {
+        values[role] = QVariant::fromValue<std::conditional_t<std::is_pointer<T>::value, void*, T> >(value);
+        emit DataChanged(role);
+    }
 }
 
 template<typename T>
 typename std::enable_if_t<std::is_pointer<T>::value>
 WidgetContext::Clear(T value)
 {
-    static T prevValue = nullptr;
-    delete prevValue;
-    prevValue = value;
+    delete value;
 }
 
 template<typename T>

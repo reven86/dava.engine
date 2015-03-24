@@ -1,8 +1,7 @@
-#include "PreviewContext.h"
+#include "PreviewModel.h"
 
 #include "UI/Preview/EditScreen.h"
 #include "Model/PackageHierarchy/ControlNode.h"
-#include "Document.h"
 
 using namespace DAVA;
 
@@ -59,8 +58,8 @@ Vector2 CalcScaledCanvasSize(const DAVA::Vector2 &canvasSize, const DAVA::Vector
     return newCanvasScaledSize;
 }
 
-PreviewContext::PreviewContext(Document *document)
-    : QObject(document)
+PreviewModel::PreviewModel(QObject *parent)
+    : QObject(parent)
     , canvas(nullptr)
     , view(nullptr)
 {
@@ -69,13 +68,13 @@ PreviewContext::PreviewContext(Document *document)
     view->AddControl(canvas);
 }
 
-PreviewContext::~PreviewContext()
+PreviewModel::~PreviewModel()
 {
     SafeRelease(view);
     SafeRelease(canvas);
 }
 
-void PreviewContext::SetViewControlSize(const QSize &qtSize)
+void PreviewModel::SetViewControlSize(const QSize &qtSize)
 {
     Vector2 oldSize = view->GetSize();
     Vector2 newSize(qtSize.width(), qtSize.height());
@@ -96,7 +95,7 @@ void PreviewContext::SetViewControlSize(const QSize &qtSize)
     SetCanvasPosition(QPoint(newPosition.x, newPosition.y) );
 }
 
-void PreviewContext::SetCanvasControlSize(const QSize &qtSize)
+void PreviewModel::SetCanvasControlSize(const QSize &qtSize)
 {
     Vector2 oldSize = canvas->GetSize();
     Vector2 newSize(qtSize.width(), qtSize.height());
@@ -116,7 +115,7 @@ void PreviewContext::SetCanvasControlSize(const QSize &qtSize)
     SetCanvasPosition( QPoint(newPosition.x, newPosition.y) );
 }
 
-void PreviewContext::SetCanvasControlScale(int intNewScale)
+void PreviewModel::SetCanvasControlScale(int intNewScale)
 {
     Vector2 oldScale = canvas->GetScale();
     Vector2 newScale(float32(intNewScale)/100.0f, float32(intNewScale)/100.0f);
@@ -142,18 +141,18 @@ void PreviewContext::SetCanvasControlScale(int intNewScale)
     SetCanvasPosition( QPoint(newPosition.x, newPosition.y) );
 }
 
-QSize PreviewContext::GetScaledCanvasSize() const
+QSize PreviewModel::GetScaledCanvasSize() const
 {
     Vector2 size = CalcScaledCanvasSize(canvas->GetSize(), canvas->GetScale(), view->GetSize());
     return QSize(size.x, size.y);
 }
 
-QSize PreviewContext::GetViewSize() const
+QSize PreviewModel::GetViewSize() const
 {
     return QSize(view->GetSize().x, view->GetSize().y);
 }
 
-void PreviewContext::SetCanvasPosition(const QPoint &newCanvasPosition)
+void PreviewModel::SetCanvasPosition(const QPoint &newCanvasPosition)
 {
     QPoint oldCanvasPosition = QPoint(canvasPosition.x, canvasPosition.y);
     canvasPosition = Vector2(newCanvasPosition.x(), newCanvasPosition.y());
@@ -166,7 +165,7 @@ void PreviewContext::SetCanvasPosition(const QPoint &newCanvasPosition)
 }
 
 
-void PreviewContext::OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIControl *selectedControl)
+void PreviewModel::OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIControl *selectedControl)
 {
     auto it = rootNodes.find(rootControl);
     if (it != rootNodes.end())
@@ -224,12 +223,12 @@ void PreviewContext::OnControlSelected(DAVA::UIControl *rootControl, DAVA::UICon
     }
 }
 
-void PreviewContext::OnAllControlsDeselected()
+void PreviewModel::OnAllControlsDeselected()
 {
     emit AllControlsDeselected();
 }
 
-void PreviewContext::OnActiveRootControlsChanged(const QList<ControlNode*> &activatedControls, const QList<ControlNode*> &/*deactivatedControls*/)
+void PreviewModel::OnActiveRootControlsChanged(const QList<ControlNode*> &activatedControls, const QList<ControlNode*> &/*deactivatedControls*/)
 {
     rootNodes.clear();
     canvas->RemoveAllControls();
@@ -265,7 +264,7 @@ void PreviewContext::OnActiveRootControlsChanged(const QList<ControlNode*> &acti
     SetCanvasPosition( QPoint(newPosition.x, newPosition.y) );
 }
 
-void PreviewContext::OnSelectedControlsChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode*> &deactivatedControls)
+void PreviewModel::OnSelectedControlsChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode*> &deactivatedControls)
 {
     for (ControlNode *node : deactivatedControls)
     {
@@ -284,17 +283,17 @@ void PreviewContext::OnSelectedControlsChanged(const QList<ControlNode *> &activ
     }
 }
 
-QPoint PreviewContext::GetCanvasPosition() const
+QPoint PreviewModel::GetCanvasPosition() const
 {
     return QPoint(canvasPosition.x, canvasPosition.y);
 }
 
-int PreviewContext::GetCanvasScale() const
+int PreviewModel::GetCanvasScale() const
 {
     return canvas->GetScale().x*100.0f;
 }
 
-CheckeredCanvas *PreviewContext::FindControlContainer(UIControl *control)
+CheckeredCanvas *PreviewModel::FindControlContainer(UIControl *control)
 {
     UIControl *c = control;
     
