@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.WindowManager;
+import android.util.Log;
 import java.util.UUID;
 
 public class JNIUtils {
@@ -39,11 +40,19 @@ public class JNIUtils {
 	public static void OpenURL(final String url) {
 		Activity activity = JNIActivity.GetActivity();
 		activity.runOnUiThread(new Runnable() {
-			
+
 			@Override
 			public void run() {
-				Intent exWeb = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-				JNIActivity.GetActivity().startActivity(exWeb);
+				try
+				{
+					Log.i(JNIConst.LOG_TAG, "[OpenURL] " + url);
+					Intent exWeb = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+					JNIActivity.GetActivity().startActivity(exWeb);
+				}
+				catch(ActivityNotFoundException  e)
+				{
+					Log.i(JNIConst.LOG_TAG, "[OpenURL] failed with exeption: " + e.toString());
+				}
 			}
 		});
 	}
