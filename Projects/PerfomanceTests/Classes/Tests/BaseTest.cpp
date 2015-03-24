@@ -60,8 +60,17 @@ BaseTest::BaseTest(const String& _testName, uint32 _time)
 
 void BaseTest::LoadResources()
 {
+    const Size2i& size = DAVA::VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+    Rect viewport;
+
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.dx = size.dx;
+    viewport.dy = size.dy;
+
     scene = new Scene();
-    sceneView = new UI3DView(RenderManager::Instance()->viewport, true);
+
+    sceneView = new UI3DView(viewport, true);
     sceneView->SetScene(scene);
 
     AddControl(sceneView);
