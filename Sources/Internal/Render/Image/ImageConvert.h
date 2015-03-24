@@ -56,7 +56,23 @@ struct BGRA8888
     uint8 a;
 };
 
-struct ConverBGRA8888toRGBA8888
+struct RGBA16161616
+{
+    uint16 r;
+    uint16 g;
+    uint16 b;
+    uint16 a;
+};
+
+struct RGBA32323232
+{
+    uint32 r;
+    uint32 g;
+    uint32 b;
+    uint32 a;
+};
+
+struct ConvertBGRA8888toRGBA8888
 {
     // input and output is the same memory
     inline void operator()(const BGRA8888* input, uint32* output)
@@ -66,6 +82,11 @@ struct ConverBGRA8888toRGBA8888
         tmp.b = in.r;
         tmp.r = in.b;
         *output = *reinterpret_cast<uint32*>(&tmp);
+    }
+
+    inline void operator()(BGRA8888* input)
+    {
+        input->b ^= input->r ^= input->b ^= input->r; // XOR exchange trick
     }
 };
 
@@ -95,6 +116,10 @@ struct ConvertBGR888toRGB888
         output->r = input->r;
         output->g = input->g;
         output->b = input->b;
+    }
+    inline void operator()(BGR888* input)
+    {
+        input->b ^= input->r ^= input->b ^= input->r;
     }
 };
     
@@ -179,6 +204,82 @@ struct ConvertA8toRGBA8888
 		uint32 pixel = *input;
 		*output = ((pixel) << 24) | (pixel << 16) | (pixel << 8) | pixel;
 	}
+};
+
+struct ConvertBGRA5551toRGBA5551
+{
+    inline void operator()(const uint16 * input, uint16 *output)
+    {
+        //bbbb bggg ggrr rrra --> rrrr rggg ggbb bbba
+        const uint16& in = *input;
+        uint16& out = *output;
+        out = in & 0x07C1;           // copy green and alpha
+        out |= (in >> 10) && 0x003E; // copy blue
+        out |= (in && 0x003E) << 10; // copy red
+    }
+
+    inline void operator()(uint16* input)
+    {
+        uint16& pixel = *input;
+        uint16 blue = (pixel >> 10) & 0x003E;
+        uint16  red = (pixel & 0x003E) << 10;
+        pixel &= 0x07C1;
+        pixel |= blue;
+        pixel |= red;
+    }
+};
+
+struct ConvertBGRA4444toRGBA4444
+{
+    inline void operator()(const uint16 * input, uint16 *output)
+    {
+        //bbbb gggg rrrr aaaa --> rrrr gggg bbbb aaaa
+        const uint16& in = *input;
+        uint16& out = *output;
+        out = in & 0x0F0F;          // copy green and alpha
+        out |= (in >> 8) && 0x00F0; // copy blue
+        out |= (in && 0x00F0) << 8; // copy red
+    }
+
+    inline void operator()(uint16* input)
+    {
+        uint8* pbyte = reinterpret_cast<uint8*>(input);
+        uint8 blue = pbyte[0] & 0xF0;
+        uint8  red = pbyte[1] & 0xF0;
+        (*input) &= 0x0F0F;
+        pbyte[0] |= red;
+        pbyte[1] |= blue;
+    }
+};
+
+struct ConvertBGR565toRGB565
+{
+    inline void operator()(uint16* input)
+    {
+        // bbbb bggg gggr rrrr --> rrrr rggg gggb bbbb
+        uint16& pixel = *input;
+        uint16 blue = (pixel >> 11) & 0x1F;
+        uint16  red = (pixel & 0x1F) << 11;
+        pixel &= 0x07E0;
+        pixel |= red;
+        pixel |= blue;
+    }
+};
+
+struct ConvertBGRA16161616toRGBA16161616
+{
+    inline void operator()(RGBA16161616* input)
+    {
+        input->b ^= input->r ^= input->b ^= input->r;
+    }
+};
+
+struct ConvertBGRA32323232toRGBA32323232
+{
+    inline void operator()(RGBA32323232* input)
+    {
+        input->b ^= input->r ^= input->b ^= input->r;
+    }
 };
 
 struct UnpackRGBA8888
@@ -271,46 +372,30 @@ template<class TYPE_IN, class TYPE_OUT, typename CONVERT_FUNC>
 class ConvertDirect
 {
 public:
-    void operator()(const void * inData, uint32 width, uint32 height, uint32 pitch, void * outData)
+    void operator()(const void * inData, void * outData, uint32 pixelsCount)
     {
-		CONVERT_FUNC func;
-        const uint8 * readPtr = reinterpret_cast<const uint8*>(inData);
-        uint8 * writePtr = reinterpret_cast<uint8*>(outData);
-        
-        for (uint32 y = 0; y < height; ++y)
+		CONVERT_FUNC convert;
+        const TYPE_IN* readPtr = static_cast<const TYPE_IN*>(inData);
+        TYPE_OUT* writePtr = static_cast<TYPE_OUT*>(outData);
+
+        for (; pixelsCount; --pixelsCount, ++readPtr, ++writePtr)
         {
-            const TYPE_IN * readPtrLine = reinterpret_cast<const TYPE_IN*>(readPtr);
-            TYPE_OUT * writePtrLine = reinterpret_cast<TYPE_OUT*>(writePtr);
-            for (uint32 x = 0; x < width; ++x)
-            {
-                func(readPtrLine, writePtrLine);
-                readPtrLine++;
-                writePtrLine++;
-            }
-            readPtr += pitch; 
-            writePtr += pitch;
+            convert(readPtr, writePtr);
         }
     };
-    
-    void operator()(const void * inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
-                    void * outData, uint32 outWidth, uint32 outHeight, uint32 outPitch)
+};
+
+template<class TYPE_IN, typename SWAP_FUNC>
+class SwapRedBlueChannels
+{
+public:
+    void operator()(void* imageData, uint32 pixelsCount)
     {
-		CONVERT_FUNC func;
-        const uint8 * readPtr = reinterpret_cast<const uint8*>(inData);
-        uint8 * writePtr = reinterpret_cast<uint8*>(outData);
-        
-        for (uint32 y = 0; y < inHeight; ++y)
+        SWAP_FUNC convert;
+        TYPE_IN* dataPtr = static_cast<TYPE_IN*>(imageData);
+        for (; pixelsCount; --pixelsCount, ++dataPtr)
         {
-            const TYPE_IN * readPtrLine = reinterpret_cast<const TYPE_IN*>(readPtr);
-            TYPE_OUT * writePtrLine = reinterpret_cast<TYPE_OUT*>(writePtr);
-            for (uint32 x = 0; x < inWidth; ++x)
-            {
-                func(readPtrLine, writePtrLine);
-                readPtrLine++;
-                writePtrLine++;
-            }
-            readPtr += inPitch;
-            writePtr += outPitch;
+            convert(dataPtr);
         }
     };
 };
@@ -371,7 +456,7 @@ public:
         if(format == FORMAT_RGBA8888)
         {
             ConvertDirect<uint32, uint32, NormalizeRGBA8888> convert;
-            convert(inData, width, height, pitch, outData, width, height, pitch);
+            convert(inData, outData, width * height);
         }
         else
         {
@@ -379,49 +464,47 @@ public:
         }
     }
 
-	static void ConvertImageDirect(const Image *scrImage, Image *dstImage)
+	static void ConvertImageDirect(const Image *srcImage, Image *dstImage)
 	{
-		ConvertImageDirect(scrImage->format, dstImage->format, scrImage->data, scrImage->width, scrImage->height, scrImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(scrImage->format), 
-			dstImage->data, dstImage->width, dstImage->height, dstImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(dstImage->format));
+        ConvertImageDirect(srcImage->format, dstImage->format, srcImage->data, dstImage->data, (srcImage->width * srcImage->height));
 	}
 
-
-	static void ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat, const void * inData, uint32 inWidth, uint32 inHeight, uint32 inPitch, void * outData, uint32 outWidth, uint32 outHeight, uint32 outPitch)
+    static void ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat, const void * inData, void * outData, uint32 pixelsCount)
 	{
 		if(inFormat == FORMAT_RGBA5551 && outFormat == FORMAT_RGBA8888)
 		{
 			ConvertDirect<uint16, uint32, ConvertRGBA5551toRGBA8888> convert;
-			convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+			convert(inData, outData, pixelsCount);
 		}
 		else if(inFormat == FORMAT_RGBA4444 && outFormat == FORMAT_RGBA8888)
 		{
 			ConvertDirect<uint16, uint32, ConvertRGBA4444toRGBA888> convert;
-			convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            convert(inData, outData, pixelsCount);
 		}
 		else if(inFormat == FORMAT_RGB888 && outFormat == FORMAT_RGBA8888)
 		{
  			ConvertDirect<RGB888, uint32, ConvertRGB888toRGBA8888> convert;
- 			convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            convert(inData, outData, pixelsCount);
 		}
 		else if(inFormat == FORMAT_RGB565 && outFormat == FORMAT_RGBA8888)
 		{
 			ConvertDirect<uint16, uint32, ConvertRGB565toRGBA8888> convert;
-			convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            convert(inData, outData, pixelsCount);
 		}
 		else if(inFormat == FORMAT_A8 && outFormat == FORMAT_RGBA8888)
 		{
-			ConvertDirect<uint8, uint32, ConvertA8toRGBA8888> convert;
-			convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            ConvertDirect<uint8, uint32, ConvertA8toRGBA8888> convert;
+            convert(inData, outData, pixelsCount);
 		}
         else if(inFormat == FORMAT_BGR888 && outFormat == FORMAT_RGB888)
         {
             ConvertDirect<BGR888, RGB888, ConvertBGR888toRGB888> convert;
-            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            convert(inData, outData, pixelsCount);
         }
         else if(inFormat == FORMAT_BGRA8888 && outFormat == FORMAT_RGBA8888)
         {
-            ConvertDirect<BGRA8888, uint32, ConverBGRA8888toRGBA8888> convert;
-            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            ConvertDirect<BGRA8888, uint32, ConvertBGRA8888toRGBA8888> convert;
+            convert(inData, outData, pixelsCount);
         }
         else
         {
@@ -429,6 +512,62 @@ public:
             DVASSERT(false);
         }
 	}
+
+    static void SwapImageChannels(const Image *srcImage)
+    {
+        DVASSERT(srcImage);
+
+        switch (srcImage->format)
+        {
+        case FORMAT_RGB888:
+        {
+            SwapRedBlueChannels<BGR888, ConvertBGR888toRGB888> swap;
+            swap(srcImage->data, srcImage->width * srcImage->height);
+            return;
+        }
+        case FORMAT_RGBA8888:
+        {
+            SwapRedBlueChannels<BGRA8888, ConvertBGRA8888toRGBA8888> swap;
+            swap(srcImage->data, srcImage->width * srcImage->height);
+            return;
+        }
+        case FORMAT_RGBA5551:
+        {
+            SwapRedBlueChannels<uint16, ConvertBGRA5551toRGBA5551> swap;
+            swap(srcImage->data, srcImage->width * srcImage->height);
+            return;
+        }
+        case FORMAT_RGBA4444:
+        {
+            SwapRedBlueChannels<uint16, ConvertBGRA4444toRGBA4444> swap;
+            swap(srcImage->data, srcImage->width * srcImage->height);
+            return;
+        }
+        case FORMAT_RGB565:
+        {
+            SwapRedBlueChannels<uint16, ConvertBGR565toRGB565> swap;
+            swap(srcImage->data, srcImage->width * srcImage->height);
+            return;
+        }
+        case FORMAT_RGBA16161616:
+        {
+            SwapRedBlueChannels<RGBA16161616, ConvertBGRA16161616toRGBA16161616> swap;
+            swap(srcImage->data, srcImage->width * srcImage->height);
+            return;
+        }
+        case FORMAT_RGBA32323232:
+        {
+            SwapRedBlueChannels<RGBA32323232, ConvertBGRA32323232toRGBA32323232> swap;
+            swap(srcImage->data, srcImage->width * srcImage->height);
+            return;
+        }
+        default:
+        {
+            Logger::FrameworkDebug("Image color exchanging is not supported for format %d", srcImage->format);
+            return;
+        }
+        }
+    }
 
 	static void DownscaleTwiceBillinear(	PixelFormat inFormat,
 												PixelFormat outFormat,

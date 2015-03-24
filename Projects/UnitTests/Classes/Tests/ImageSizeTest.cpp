@@ -53,7 +53,8 @@ void ImageSizeTest::TestFunction(PerfFuncData * data)
 		"~res:/TestData/ImageSizeTest/image.png",
 		"~res:/TestData/ImageSizeTest/image.jpg",
 		"~res:/TestData/ImageSizeTest/image.pvr",
-		"~res:/TestData/ImageSizeTest/image.dds"
+        "~res:/TestData/ImageSizeTest/image.tga",
+        "~res:/TestData/ImageSizeTest/image.dds"
 	};
 
 

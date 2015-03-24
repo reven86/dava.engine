@@ -34,8 +34,7 @@
 #include <array>
 #include <memory>
 
-#include "ImageFormatInterface.h"
-#include "ColorChannelsExchanger.h"
+#include "Render/Image/ImageFormatInterface.h"
 
 namespace DAVA 
 {
@@ -57,93 +56,58 @@ public:
 	Size2i GetImageSize(File *infile) const override;
 
 private:
-    union TgaHeader
+    struct TgaInfo
     {
-        enum IMAGE_TYPE{
+        enum IMAGE_TYPE : uint8 
+        {
             TRUECOLOR = 2,
             GRAYSCALE = 3,
             COMPRESSED_TRUECOLOR = 10,
             COMPRESSED_GRAYSCALE = 11
         };
-        enum ORIGIN_CORNER {
+        enum ORIGIN_CORNER : uint8 
+        {
             BOTTOM_LEFT = 0,
             BOTTOM_RIGHT = 1,
             TOP_LEFT = 2,
             TOP_RIGHT = 3
         };
-        ORIGIN_CORNER OriginCorner() const { return (ORIGIN_CORNER)((descriptor >> 4) & 0x03); }
-        uint8 AlphaBits() const { return descriptor & 0x0F; }
-        uint8 BytesPerPixel() const { return bpp >> 3; }
 
-        struct {
-            uint8 idlength;             // should be 0
-            uint8 colorMapType;         // should be 0
-            uint8 imageType;            // can be 2,3,10,11
-            uint8 colorMapData[5];      // should be 0,0,0,0,0
-            uint16 originX;             // should be 0
-            uint16 originY;             // should be 0
-            uint16 width;               // image width in pixels
-            uint16 height;              // image height in pixels
-            uint8 bpp;                  // can be 8,16,24,32,64,128
-            uint8 descriptor;           // image origin corner and number of alpha bits
-        };
-        std::array<uint8, 18> fields;
+        uint16 width;
+        uint16 height;
+        uint8 bytesPerPixel;
+        uint8 alphaBits;
+        IMAGE_TYPE imageType;
+        ORIGIN_CORNER origin_corner;
+        PixelFormat pixelFormat;
     };
 
-    struct ImageDataIterator
+    eErrorCode ReadTgaHeader(File *infile, TgaInfo& tgaHeader) const;
+    eErrorCode ReadCompressedTga(File *infile, const TgaInfo& tgaHeader, ScopedPtr<Image>& image) const;
+    eErrorCode ReadUncompressedTga(File *infile, const TgaInfo& tgaHeader, ScopedPtr<Image>& image) const;
+    PixelFormat DefinePixelFormat(const TgaInfo& tgaHeader) const;
+
+    struct ImageDataWriter
     {
-        virtual ~ImageDataIterator() {}
-        void Init(Image* image, uint8 _pixSize);
+        ImageDataWriter(Image* image, const LibTgaWrapper::TgaInfo& tgaInfo);
         inline bool AtEnd() const { return isAtEnd; }
         void Write(uint8* pixel);
 
-    protected:
-        virtual void ResetPtr() = 0;
-        virtual void IncrementPtr() = 0;
-    
-    protected:
-        uint8* data;
-        uint16 width;
-        uint16 height;
-        uint8 pixelSize;
-        uint8* ptr;
-        int16 x,y;
-        bool isAtEnd;
-        std::unique_ptr<ColorChannelsExchanger> xchg;
-    };
-
-    struct BottomLeftIterator : public ImageDataIterator
-    {
-        void ResetPtr() final;
-        void IncrementPtr() final;
-    };
-
-    struct BottomRightIterator : public ImageDataIterator
-    {
-        void ResetPtr() final;
-        void IncrementPtr() final;
-    };
-
-    struct TopLeftIterator : public ImageDataIterator
-    {
-        void ResetPtr() final;
-        void IncrementPtr() final;
     private:
-        uint8* ptrEnd;
+        void ResetPtr(const Image* image, const LibTgaWrapper::TgaInfo& tgaInfo);
+        void IncrementPtr();
+
+    public:
+        uint8* ptr;
+        ptrdiff_t ptrNextLineJump;
+        ptrdiff_t ptrInc;
+
+    private:
+        const TgaInfo& tgaInfo;
+        uint16 linesRemaining;
+        uint16 linePixelsRemaining;
+        bool isAtEnd;
     };
-
-    struct TopRightIterator : public ImageDataIterator
-    {
-        void ResetPtr() final;
-        void IncrementPtr() final;
-    };
-
-    std::unique_ptr<ImageDataIterator> CreateDataIterator(Image* image, uint8 pixSize, TgaHeader::ORIGIN_CORNER origin) const;
-
-    eErrorCode ReadTgaHeader(File *infile, TgaHeader& tgaHeader, PixelFormat& pixelFormat) const;
-    eErrorCode ReadCompressedTga(File *infile, const TgaHeader& tgaHeader, ScopedPtr<Image>& image) const;
-    eErrorCode ReadUncompressedTga(File *infile, const TgaHeader& tgaHeader, ScopedPtr<Image>& image) const;
-    PixelFormat DefinePixelFormat(const TgaHeader& tgaHeader) const;
 };
 
 };
