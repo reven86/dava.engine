@@ -31,7 +31,6 @@
 #include "UI/UIControlSystem.h"
 #include "UI/UIScreen.h"
 #include "FileSystem/Logger.h"
-#include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
@@ -310,7 +309,7 @@ void UIControlSystem::Update()
 	
 	float32 timeElapsed = SystemTimer::FrameDelta();
 
-	if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
+	if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
 	{
 		if(currentScreen)
 		{

@@ -29,7 +29,6 @@
 
 
 #include "UIWebView.h"
-#include "Render/RenderManager.h"
 #include "FileSystem/YamlNode.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"

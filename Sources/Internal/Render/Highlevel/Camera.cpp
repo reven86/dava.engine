@@ -30,7 +30,6 @@
 #include "Render/Highlevel/Camera.h"
 #include "Render/RenderBase.h"
 #include "Core/Core.h"
-#include "Render/RenderManager.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFileV2.h"
 
@@ -490,15 +489,15 @@ void Camera::SetupDynamicParameters(Vector4 *externalClipPlane)
 {
     PrepareDynamicParameters(externalClipPlane);
 
-	RenderManager::SetDynamicParam(PARAM_VIEW, &viewMatrix, UPDATE_SEMANTIC_ALWAYS);
-    RenderManager::SetDynamicParam(PARAM_PROJ, &projMatrix, UPDATE_SEMANTIC_ALWAYS);
-    RenderManager::SetDynamicParam(PARAM_VIEW_PROJ, &viewProjMatrix, UPDATE_SEMANTIC_ALWAYS);
-    RenderManager::SetDynamicParam(PARAM_INV_VIEW, &invViewMatrix, UPDATE_SEMANTIC_ALWAYS);
-	RenderManager::SetDynamicParam(PARAM_INV_VIEW_PROJ, &invViewProjMatrix, UPDATE_SEMANTIC_ALWAYS);
+	Renderer::SetDynamicParam(PARAM_VIEW, &viewMatrix, UPDATE_SEMANTIC_ALWAYS);
+    Renderer::SetDynamicParam(PARAM_PROJ, &projMatrix, UPDATE_SEMANTIC_ALWAYS);
+    Renderer::SetDynamicParam(PARAM_VIEW_PROJ, &viewProjMatrix, UPDATE_SEMANTIC_ALWAYS);
+    Renderer::SetDynamicParam(PARAM_INV_VIEW, &invViewMatrix, UPDATE_SEMANTIC_ALWAYS);
+	Renderer::SetDynamicParam(PARAM_INV_VIEW_PROJ, &invViewProjMatrix, UPDATE_SEMANTIC_ALWAYS);
 
-    RenderManager::SetDynamicParam(PARAM_CAMERA_POS, &position, UPDATE_SEMANTIC_ALWAYS);
-	RenderManager::SetDynamicParam(PARAM_CAMERA_DIR, &direction, UPDATE_SEMANTIC_ALWAYS);
-	RenderManager::SetDynamicParam(PARAM_CAMERA_UP, &up, UPDATE_SEMANTIC_ALWAYS);
+    Renderer::SetDynamicParam(PARAM_CAMERA_POS, &position, UPDATE_SEMANTIC_ALWAYS);
+	Renderer::SetDynamicParam(PARAM_CAMERA_DIR, &direction, UPDATE_SEMANTIC_ALWAYS);
+	Renderer::SetDynamicParam(PARAM_CAMERA_UP, &up, UPDATE_SEMANTIC_ALWAYS);
     
 }
 

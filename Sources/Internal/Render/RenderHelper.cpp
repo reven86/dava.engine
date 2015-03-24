@@ -28,10 +28,10 @@
 
 
 #include "Render/RenderHelper.h"
-#include "Render/RenderManager.h"
 #include "Render/Texture.h"
 #include "Render/RenderDataObject.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
@@ -138,7 +138,7 @@ RenderHelper::~RenderHelper()
     
 void RenderHelper::FillRect(const Rect & rect, UniqueHandle renderState)
 {
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
+	if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
 	{
 		return;
 	}
@@ -228,13 +228,13 @@ void RenderHelper::DrawGrid(const Rect & rect, const Vector2& gridSize, const Co
 
     RenderManager::Instance()->SetRenderState(renderState);
     Color oldColor = RenderManager::Instance()->GetColor();
-    RenderManager::Instance()->SetColor(color);
+    Renderer::SetColor(color);
     
     RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_LINELIST, 0, curVertexIndex / 2);
     
-    RenderManager::Instance()->SetColor(oldColor);
+    Renderer::SetColor(oldColor);
 }
 
 void RenderHelper::DrawLine(const Vector2 &start, const Vector2 &end, UniqueHandle renderState)
@@ -1268,7 +1268,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
         RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)renderTarget->GetWidth(), (float32)renderTarget->GetHeight()));
 
         tempProjectionMatrix.glOrtho(0.0f, (float32)renderTarget->GetWidth(),  0.0f, (float32)renderTarget->GetHeight(), -1.0f, 1.0f);
-        RenderManager::SetDynamicParam(PARAM_PROJ, &tempProjectionMatrix, UPDATE_SEMANTIC_ALWAYS);
+        Renderer::SetDynamicParam(PARAM_PROJ, &tempProjectionMatrix, UPDATE_SEMANTIC_ALWAYS);
     }
 
     void RenderHelper::DrawTexture(Texture * texture, UniqueHandle renderState, const Rect & _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect & _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)

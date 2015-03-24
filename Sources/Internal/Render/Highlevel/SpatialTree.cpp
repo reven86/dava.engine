@@ -596,7 +596,7 @@ void QuadTree::Update()
 
 void QuadTree::DebugDraw(const Matrix4& cameraMatrix)
 {
-	if (!worldInitialized) return;
+/*	if (!worldInitialized) return;
 	if (debugDrawStateHandle == InvalidUniqueHandle) //create debug draw state
 	{
 		RenderStateData debugStateData;
@@ -609,20 +609,20 @@ void QuadTree::DebugDraw(const Matrix4& cameraMatrix)
 		debugDrawStateHandle = RenderManager::Instance()->CreateRenderState(debugStateData);
 	}
     
-	RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-	RenderManager::Instance()->SetColor(0.2f, 1.0f, 0.2f, 1.0f);
+	Renderer::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+	Renderer::SetColor(0.2f, 1.0f, 0.2f, 1.0f);
 	DebugDrawNode(0);
-	RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);*/
 }
 
 void QuadTree::DebugDrawNode(uint16 nodeId)
 {	
-	RenderManager::Instance()->SetColor(0.2f, 0.2f, 1.0f, 1.0f);	
+/*	Renderer::SetColor(0.2f, 0.2f, 1.0f, 1.0f);	
 	for (int32 i = 0, size = static_cast<int32>(nodes[nodeId].objects.size()); i<size; ++i)
 	{
 		RenderHelper::Instance()->DrawBox(nodes[nodeId].objects[i]->GetWorldBoundingBox(), 1.0f, debugDrawStateHandle);
 	}
-	RenderManager::Instance()->SetColor(0.2f, 1.0f, 0.2f, 1.0f);
+	Renderer::SetColor(0.2f, 1.0f, 0.2f, 1.0f);
 	RenderHelper::Instance()->DrawBox(nodes[nodeId].bbox, 1.0f, debugDrawStateHandle);
 	for (int32 i=0; i<QuadTreeNode::NODE_NONE; ++i)
 	{
@@ -631,7 +631,7 @@ void QuadTree::DebugDrawNode(uint16 nodeId)
 			DebugDrawNode(nodes[nodeId].children[i]);
 		}
 	}	
-	
+	*/
 }
 
 //traverse without recursive calls ... later - it works but might require some rethink
@@ -663,12 +663,12 @@ void QuadTree::DebugDrawNode(uint16 nodeId)
 			currDepth++;
 			dirStack[currDepth] = 0;			
 			//visit
-			RenderManager::Instance()->SetColor(0.2f, 0.2f, 1.0f, 1.0f);	
+			Renderer::SetColor(0.2f, 0.2f, 1.0f, 1.0f);	
 			for (int32 i = 0, size = nodes[currNodeIndex].objects.size(); i<size; ++i)
 			{
 				RenderHelper::Instance()->DrawBox(nodes[currNodeIndex].objects[i]->GetWorldBoundingBox());
 			}
-			RenderManager::Instance()->SetColor(0.2f, 1.0f, 0.2f, 1.0f);
+			Renderer::SetColor(0.2f, 1.0f, 0.2f, 1.0f);
 			RenderHelper::Instance()->DrawBox(currBox);
 			//end visit
 		}

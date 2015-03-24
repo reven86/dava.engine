@@ -32,10 +32,10 @@
 #include "Debug/DVAssert.h"
 #include "UI/UIControl.h"
 #include "Core/Core.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/Renderer.h"
 
 #include <limits>
 
@@ -281,7 +281,7 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
     geometricData.AddGeometricData(parentGeometricData);
     Rect drawRect = geometricData.GetUnrotatedRect();
 
-    RenderManager::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
+    Renderer::SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
 
     RenderSystem2D::Instance()->UpdateClip();
 
@@ -530,7 +530,7 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
 #if defined(LOCALIZATION_DEBUG)
     lastDrawState = drawState;
 #endif
-    RenderManager::Instance()->ResetColor();
+    Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 }
 #if defined(LOCALIZATION_DEBUG)

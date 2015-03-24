@@ -30,7 +30,7 @@
 #include "Collision/CollisionObject2.h"
 #include "Collision/Collisions.h"
 #include "Render/RenderHelper.h"
-#include "Render/RenderManager.h"
+#include "Render/Renderer.h"
 #include "Core/Core.h"
 
 namespace DAVA 
@@ -198,9 +198,8 @@ void CollisionObject2::Update(const Sprite::DrawState & state/*const Vector2 & _
 
 void CollisionObject2::DebugDraw(UniqueHandle renderState)
 {
-	if (!basePolygon)return;
-	
-	RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+	if (!basePolygon)return;    
+    Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 	RenderHelper::Instance()->DrawPoint(circle.center, 3, renderState);
 	
 	RenderHelper::Instance()->DrawCircle(circle.center, circle.radius, renderState);
@@ -210,11 +209,11 @@ void CollisionObject2::DebugDraw(UniqueHandle renderState)
 		RenderHelper::Instance()->DrawPolygon(polygon, true, renderState);
 	}
 	
-	RenderManager::Instance()->SetColor(0.0f, 0.0f, 1.0f, 1.0f);
+    Renderer::SetColor(0.0f, 0.0f, 1.0f, 1.0f);
 	for (int32 k = 0; k < manifold.count; ++k)
 		RenderHelper::Instance()->DrawPoint(manifold.contactPoints[k], 3, renderState);
 	
-	RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 	
 	

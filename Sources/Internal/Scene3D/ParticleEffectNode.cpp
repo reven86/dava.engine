@@ -30,7 +30,6 @@
 
 #include "ParticleEffectNode.h"
 #include "FileSystem/KeyedArchive.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
 using namespace DAVA;

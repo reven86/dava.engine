@@ -78,7 +78,7 @@ void DebugRenderSystem::Process(float32 timeElapsed)
         //RenderComponent * renderComponent = cast_if_equal<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
         
         //Matrix4 worldTransform = /*(*transformComponent->GetWorldTransform()) * */camera->GetMatrix();
-        RenderManager::SetDynamicParam(PARAM_VIEW, &camera->GetMatrix(), UPDATE_SEMANTIC_ALWAYS);
+        Renderer::SetDynamicParam(PARAM_VIEW, &camera->GetMatrix(), UPDATE_SEMANTIC_ALWAYS);
 
         AABBox3 debugBoundigBox = entity->GetWTMaximumBoundingBoxSlow();
         uint32 debugFlags = debugRenderComponent->GetDebugFlags();
@@ -102,11 +102,11 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 					if (entityCamera == entity->GetScene()->GetDrawCamera()) camColor = Color(1.0f, 0.0f, 0.0f, 1.0f);
 
 
-					RenderManager::Instance()->SetColor(camColor);
+					Renderer::SetColor(camColor);
 					RenderHelper::Instance()->DrawBox(camBox, 2.5f, depthWriteState);
 
 					//RenderManager::Instance()->SetState(RenderState::DEFAULT_3D_STATE);
-					RenderManager::Instance()->ResetColor();
+					Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 					debugBoundigBox = camBox;
 				}
@@ -124,22 +124,22 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 				//Matrix4 prevMatrix = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
 				//Matrix4 finalMatrix = transformComponent->GetWorldTransform() * prevMatrix;
 				
-                RenderManager::SetDynamicParam(PARAM_WORLD, &transformComponent->GetWorldTransform(), UPDATE_SEMANTIC_ALWAYS);
-                RenderManager::SetDynamicParam(PARAM_VIEW, &camera->GetMatrix(), UPDATE_SEMANTIC_ALWAYS);
+                Renderer::SetDynamicParam(PARAM_WORLD, &transformComponent->GetWorldTransform(), UPDATE_SEMANTIC_ALWAYS);
+                Renderer::SetDynamicParam(PARAM_VIEW, &camera->GetMatrix(), UPDATE_SEMANTIC_ALWAYS);
 
 								
-				RenderManager::Instance()->SetColor(1.f, 1.f, 0, 1.0f);
+				Renderer::SetColor(1.f, 1.f, 0, 1.0f);
 				RenderHelper::Instance()->DrawLine(Vector3(0, 0, 0), Vector3(1.f, 0, 0), 1.0f, depthTestState);
-				RenderManager::Instance()->SetColor(1.f, 0, 1.f, 1.0f);
+				Renderer::SetColor(1.f, 0, 1.f, 1.0f);
 				RenderHelper::Instance()->DrawLine(Vector3(0, 0, 0), Vector3(0, 1.f, 0), 1.0f, depthTestState);
-				RenderManager::Instance()->SetColor(0, 1.f, 1.f, 1.0f);
+				Renderer::SetColor(0, 1.f, 1.f, 1.0f);
 				RenderHelper::Instance()->DrawLine(Vector3(0, 0, 0), Vector3(0, 0, 1.f), 1.0f, depthTestState);
 
-				RenderManager::Instance()->SetColor(dcColor);
+				Renderer::SetColor(dcColor);
 				RenderHelper::Instance()->DrawBox(dcBox, 1.0f, depthTestState);
 
 				//RenderManager::Instance()->SetState(RenderState::DEFAULT_3D_STATE);
-				RenderManager::Instance()->ResetColor();
+				Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 				//RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, prevMatrix);
 
 				dcBox.GetTransformedBox(transformComponent->GetWorldTransform(), debugBoundigBox);
@@ -159,7 +159,7 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 				{
 					Vector3 lPosition = light->GetPosition();
 
-					RenderManager::Instance()->SetColor(1.0f, 1.0f, 0.0f, 1.0f);
+					Renderer::SetColor(1.0f, 1.0f, 0.0f, 1.0f);
 
 					switch (light->GetType())
 					{
@@ -185,22 +185,22 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 					}
 
 					//RenderManager::Instance()->SetState(RenderState::DEFAULT_3D_STATE);
-					RenderManager::Instance()->ResetColor();
+					Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 				}
 			}
 		}
         
         if ((debugFlags & DebugRenderComponent::DEBUG_DRAW_AABOX_CORNERS))
         {
-            RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+            Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
             RenderHelper::Instance()->DrawCornerBox(debugBoundigBox, 1.0f, depthTestState);
         }
         
         if (debugFlags & DebugRenderComponent::DEBUG_DRAW_RED_AABBOX)
         {
-            RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+            Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
             RenderHelper::Instance()->DrawBox(debugBoundigBox, 1.0f, depthWriteState);
-            RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+            Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
         }
         
 
@@ -215,16 +215,16 @@ void DebugRenderSystem::Process(float32 timeElapsed)
             
             RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
             RenderManager::Instance()->SetState(RenderStateBlock::STATE_COLORMASK_ALL | RenderStateBlock::STATE_DEPTH_WRITE | RenderStateBlock::STATE_DEPTH_TEST);
-            RenderManager::Instance()->SetColor(0, 0, 1.0f, 1.0f);
+            Renderer::SetColor(0, 0, 1.0f, 1.0f);
             RenderHelper::Instance()->DrawBox(drawBox);
-            RenderManager::Instance()->SetColor(1.f, 1.f, 0, 1.0f);
+            Renderer::SetColor(1.f, 1.f, 0, 1.0f);
             RenderHelper::Instance()->DrawLine(Vector3(0, 0, 0), Vector3(1.f, 0, 0));
-            RenderManager::Instance()->SetColor(1.f, 0, 1.f, 1.0f);
+            Renderer::SetColor(1.f, 0, 1.f, 1.0f);
             RenderHelper::Instance()->DrawLine(Vector3(0, 0, 0), Vector3(0, 1.f, 0));
-            RenderManager::Instance()->SetColor(0, 1.f, 1.f, 1.0f);
+            Renderer::SetColor(0, 1.f, 1.f, 1.0f);
             RenderHelper::Instance()->DrawLine(Vector3(0, 0, 0), Vector3(0, 0, 1.f));
             RenderManager::Instance()->SetState(RenderStateBlock::DEFAULT_3D_STATE);
-            RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+            Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
             RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, prevMatrix);
         }
 #endif
@@ -243,12 +243,12 @@ void DebugRenderSystem::Process(float32 timeElapsed)
             Vector3 direction = Vector3(0.0f, 0.0f, 1.0f) * rotationPart;
             direction.Normalize();
             
-            RenderManager::Instance()->SetColor(0.0f, 0.0f, 1.0f, 1.0f);
+            Renderer::SetColor(0.0f, 0.0f, 1.0f, 1.0f);
             
             RenderHelper::Instance()->DrawLine(position, position + direction * 10, 2.f);
             
             RenderManager::Instance()->SetState(RenderStateBlock::DEFAULT_3D_STATE);
-            RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+            Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
         }
 #endif
         

@@ -29,7 +29,6 @@
 
 
 #include "UI/UIScreen.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Platform/SystemTimer.h"
 #include <Render/2D/Systems/RenderSystem2D.h>
@@ -111,7 +110,7 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
 {
     RenderSystem2D::Instance()->Flush();
 
-	RenderManager::Instance()->SetColor(0, 0, 0, 1.0f);
+	Renderer::SetColor(0, 0, 0, 1.0f);
 	UIGeometricData drawData;
 	drawData.position = relativePosition;
 	drawData.size = size;
@@ -155,7 +154,7 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
                                                  ,  RenderState::RENDERSTATE_2D_BLEND);
 	}
 
-	RenderManager::Instance()->ResetColor();
+	Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 

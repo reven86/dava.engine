@@ -40,7 +40,6 @@
 
 #include "Autotesting/AutotestingSystemLua.h"
 
-#include "Render/RenderManager.h"
 #include "Platform/DateTime.h"
 
 

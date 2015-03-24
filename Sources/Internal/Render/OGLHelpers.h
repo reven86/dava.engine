@@ -96,7 +96,7 @@ namespace DAVA
  //#define CAN_DISABLE_ALL_RENDERING_IN_BUILD
     
 #if defined(CAN_DISABLE_ALL_RENDERING_IN_BUILD)
-    #define RENDER_VERIFY(command) if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::ALL_RENDER_FUNCTIONS_ENABLED)) command;
+    #define RENDER_VERIFY(command) if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::ALL_RENDER_FUNCTIONS_ENABLED)) command;
 #else
     #define RENDER_VERIFY(command) command;
 #endif 

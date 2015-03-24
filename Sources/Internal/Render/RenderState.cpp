@@ -28,7 +28,6 @@
 
 
 #include "Render/RenderState.h"
-#include "Render/RenderManager.h"
 #include "Debug/Backtrace.h"
 #include "Render/Shader.h"
 #include "Platform/Thread.h"

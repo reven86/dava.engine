@@ -33,7 +33,6 @@
 #include "Render/Image/ImageConvert.h"
 
 #include "Render/Texture.h"
-#include "Render/RenderManager.h"
 
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"

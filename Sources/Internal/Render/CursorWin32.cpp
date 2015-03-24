@@ -30,7 +30,6 @@
 #include "Base/BaseTypes.h"
 #include "Render/Cursor.h"
 #include "FileSystem/FileSystem.h"
-#include "Render/RenderManager.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 void DAVA::Cursor::ShowSystemCursor(bool show)

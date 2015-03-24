@@ -31,7 +31,6 @@
 #include "UI/UIHoleTransition.h"
 #include "UI/UIControlSystem.h"
 #include "Platform/SystemTimer.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
@@ -99,13 +98,13 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
     Sprite::DrawState drawState;
     drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
     
-	RenderManager::Instance()->SetColor(0.0f, 0.0f, 0.0f, 1.0f);
+	Renderer::SetColor(0.0f, 0.0f, 0.0f, 1.0f);
 	RenderHelper::Instance()->FillRect(Rect(0.0f, 0.0f,
                                             (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
                                             (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy),
                                        drawState.GetRenderState());
     
-	RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	
     drawState.SetPosition(geometricData.position);
     
@@ -153,7 +152,7 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
 	
 	renderTargetNextScreen->SetPosition(xNextPosition, yNextPosition);
 	renderTargetNextScreen->Draw(); */
-	RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 	
 };

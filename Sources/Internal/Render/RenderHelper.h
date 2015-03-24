@@ -169,13 +169,13 @@ public:
     void DrawPolygon(const Polygon3 & polygon, bool closed, UniqueHandle renderState);
 
     /**
-        \brief Fill convex polygon with color. As all other draw functions this function use global color that can be set with RenderManager::Instance()->SetColor function. 
+        \brief Fill convex polygon with color. As all other draw functions this function use global color that can be set with Renderer::SetColor function. 
         \param polygon the polygon we want to draw
      */
     void FillPolygon(const Polygon2 & polygon, UniqueHandle renderState);
     
     /**
-        \brief Fill convex polygon with color. As all other draw functions this function use global color that can be set with RenderManager::Instance()->SetColor function. 
+        \brief Fill convex polygon with color. As all other draw functions this function use global color that can be set with Renderer::SetColor function. 
         \param polygon the polygon we want to draw
      */
     void FillPolygon(const Polygon3 & polygon, UniqueHandle renderState);

@@ -30,7 +30,6 @@
 #include "Render/3D/PolygonGroup.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Render/RenderHelper.h"
-#include "Render/RenderManager.h"
 #include "Scene3D/SceneFileV2.h"
 
 namespace DAVA 
@@ -590,7 +589,7 @@ void PolygonGroup::RecalcAABBox()
     
 void PolygonGroup::DebugDraw()
 {
-    RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+    Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
     for (int k = 0; k < indexCount / 3; ++k)
     {
         Vector3 v0, v1, v2;

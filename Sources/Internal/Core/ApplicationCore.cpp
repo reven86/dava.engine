@@ -30,7 +30,6 @@
 #include "Core/ApplicationCore.h"
 #include "Animation/AnimationManager.h"
 #include "UI/UIControlSystem.h"
-#include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"
 #include "Sound/SoundSystem.h"
 #include "Debug/Stats.h"

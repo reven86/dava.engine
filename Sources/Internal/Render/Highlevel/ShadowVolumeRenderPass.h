@@ -59,9 +59,7 @@ private:
     void CreateShadowRect();
     ShadowRect * shadowRect;
 	ShadowPassBlendMode::eBlend blendMode;
-	
-	UniqueHandle blendAlphaState;
-	UniqueHandle blendMultiplyState;
+		
 };
     
 } // ns

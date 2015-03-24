@@ -29,12 +29,13 @@
 
 #include "RenderSystem2D.h"
 #include "VirtualCoordinatesSystem.h"
-#include "Render/RenderManager.h"
 #include "Render/ShaderCache.h"
 #include <Render/RenderHelper.h>
 
 #include "UI/UIControl.h"
 #include "UI/UIControlBackground.h"
+
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
@@ -266,13 +267,13 @@ void RenderSystem2D::Setup2DProjection()
         projMatrix.glOrtho(0.0f, (float32)framebufferSize.dx, (float32)framebufferSize.dy, 0.0f, -1.0f, 1.0f);
     }
     projMatrix = virtualToPhysicalMatrix * projMatrix;
-    RenderManager::SetDynamicParam(PARAM_PROJ, &projMatrix, UPDATE_SEMANTIC_ALWAYS);
+    Renderer::SetDynamicParam(PARAM_PROJ, &projMatrix, UPDATE_SEMANTIC_ALWAYS);
 }
 
 void RenderSystem2D::Setup2DMatrices()
 {
-    RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-    RenderManager::SetDynamicParam(PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    Renderer::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    Renderer::SetDynamicParam(PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     Setup2DProjection();
 }
 
@@ -544,7 +545,7 @@ void RenderSystem2D::PushBatch(UniqueHandle state, UniqueHandle texture, Shader*
 
 void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 */)
 {
-    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
+    if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
 	{
 		return;
 	}
@@ -945,7 +946,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
 void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, Vector2 stretchCapVector, UIControlBackground::eDrawType type, const UIGeometricData &gd, StretchDrawData ** pStreachData)
 {
     if (!sprite)return;
-	if (!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
+	if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
     {
         return;
     }
@@ -1042,7 +1043,7 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
 void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const Vector2& stretchCapVector, const UIGeometricData &gd, TiledDrawData ** pTiledData)
 {
     if (!sprite)return;
-    if (!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
     {
         return;
     }

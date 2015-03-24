@@ -33,7 +33,6 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
-#include "Render/RenderManager.h"
 #include "Utils/Utils.h"
 #include "Core/Core.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"

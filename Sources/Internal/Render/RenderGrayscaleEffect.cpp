@@ -28,7 +28,6 @@
 
 
 #include "Render/RenderGrayscaleEffect.h"
-#include "Render/RenderManager.h"
 #include "Utils/Utils.h"
 
 

@@ -1128,7 +1128,7 @@ void VegetationRenderObject::InitWithCustomGeometry(FastNameSet& materialFlags)
 
 bool VegetationRenderObject::ReadyToRender()
 {
-    bool renderFlag = IsHardwareCapableToRenderVegetation() && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::VEGETATION_DRAW);
+    bool renderFlag = IsHardwareCapableToRenderVegetation() && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::VEGETATION_DRAW);
     
 #if defined(__DAVAENGINE_MACOS__)  || defined(__DAVAENGINE_WIN32__)
     //VI: case when vegetation was turned off and then qualit changed from low t high is not a real-world scenario
@@ -1180,7 +1180,7 @@ void VegetationRenderObject::DebugDrawVisibleNodes()
         AbstractQuadTreeNode<VegetationSpatialData>* treeNode = visibleCells[i];
         uint32 resolutionIndex = MapCellSquareToResolutionIndex(treeNode->data.width * treeNode->data.height);
         
-        RenderManager::Instance()->SetColor(RESOLUTION_COLOR[resolutionIndex]);
+        Renderer::SetColor(RESOLUTION_COLOR[resolutionIndex]);
         RenderHelper::Instance()->DrawBox(treeNode->data.bbox, 1.0f, RenderState::RENDERSTATE_3D_OPAQUE);
     }
 }

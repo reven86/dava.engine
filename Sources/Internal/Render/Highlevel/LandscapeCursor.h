@@ -35,7 +35,6 @@
 #include "Base/BaseMath.h"
 #include "Render/Shader.h"
 #include "Render/Texture.h"
-#include "Render/RenderManager.h"
 
 
 namespace DAVA

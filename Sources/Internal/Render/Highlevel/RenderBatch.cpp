@@ -110,7 +110,7 @@ void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
 #if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
     uint32 globalFrameIndex = Core::Instance()->GetGlobalFrameIndex();
     
-    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
+    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
     {
         if ((queryRequested >= 0) && occlusionQuery->IsResultAvailable())
         {
@@ -140,7 +140,7 @@ void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
     material->BindMaterialTechnique(ownerRenderPass, camera);
     
 #if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
-    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
+    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
     {
         if (queryRequested == -1)
         {
@@ -160,7 +160,7 @@ void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
 #if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
     lastFraemDrawn = globalFrameIndex;
     
-    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
+    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
     {
         if (queryRequested == 0)
         {

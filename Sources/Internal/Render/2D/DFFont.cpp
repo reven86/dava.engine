@@ -29,7 +29,6 @@
 #include "DFFont.h"
 
 #include "Render/Texture.h"
-#include "Render/RenderManager.h"
 #include "Render/Shader.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"

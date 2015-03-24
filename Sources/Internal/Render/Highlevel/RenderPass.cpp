@@ -34,6 +34,8 @@
 #include "Render/Highlevel/Camera.h"
 #include "Render/ShaderCache.h"
 
+#include "Render/Renderer.h"
+
 #include "Render/Image/ImageSystem.h"
 
 namespace DAVA
@@ -103,7 +105,7 @@ void RenderPass::Draw(RenderSystem * renderSystem, uint32 clearBuffers)
 void RenderPass::PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSystem)
 {
     uint32 currVisibilityCriteria = RenderObject::CLIPPING_VISIBILITY_CRITERIA;
-    if (!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::ENABLE_STATIC_OCCLUSION))
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::ENABLE_STATIC_OCCLUSION))
         currVisibilityCriteria&=~RenderObject::VISIBLE_STATIC_OCCLUSION;
     visibilityArray.Clear();
     renderSystem->GetRenderHierarchy()->Clip(camera, &visibilityArray, currVisibilityCriteria);    
@@ -168,7 +170,7 @@ MainForwardRenderPass::MainForwardRenderPass(const FastName & name, RenderPassID
 
 void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * renderSystem)
 {
-    if (!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::WATER_REFLECTION_REFRACTION_DRAW))
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::WATER_REFLECTION_REFRACTION_DRAW))
         return;
 
     RenderLayerBatchArray *waterLayer = renderPassBatchArray->Get(RenderLayerManager::Instance()->GetLayerIDByName(LAYER_WATER));

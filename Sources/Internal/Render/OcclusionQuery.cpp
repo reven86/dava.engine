@@ -25,7 +25,6 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-#include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"
 #include "Render/Highlevel/RenderFastNames.h"
 #include "Utils/Utils.h"
@@ -214,7 +213,7 @@ FrameOcclusionQueryManager::FrameQuery * FrameOcclusionQueryManager::GetQuery(co
 
 void FrameOcclusionQueryManager::ResetFrameStats() //OnBeginFrame
 {
-    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+    if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
         return;
 
     frameBegan = true;
@@ -227,7 +226,7 @@ void FrameOcclusionQueryManager::ResetFrameStats() //OnBeginFrame
 
 void FrameOcclusionQueryManager::ProccesRenderedFrame() //OnEndFrame
 {
-    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+    if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
         return;
 
     frameBegan = false;
@@ -279,7 +278,7 @@ void FrameOcclusionQueryManager::ProccesRenderedFrame() //OnEndFrame
 
 void FrameOcclusionQueryManager::BeginQuery(const FastName & queryName)
 {
-    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+    if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
         return;
 
     FrameQuery * frameQuery = GetQuery(queryName);
@@ -299,7 +298,7 @@ void FrameOcclusionQueryManager::BeginQuery(const FastName & queryName)
 
 void FrameOcclusionQueryManager::EndQuery(const FastName & queryName)
 {
-    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+    if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
         return;
 
     FrameOcclusionQueryManager::FrameQuery * frameQuery = GetQuery(queryName);
@@ -322,7 +321,7 @@ bool FrameOcclusionQueryManager::IsQueryOpen(const FastName & queryName)
 
 uint32 FrameOcclusionQueryManager::GetFrameStats(const FastName & queryName) const
 {
-    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+    if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
         return 0;
 
     DVASSERT(!frameBegan); //should be called on after EndFrame() and before BeginFrame()

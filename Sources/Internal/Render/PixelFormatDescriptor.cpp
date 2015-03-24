@@ -28,7 +28,6 @@
 
 
 #include "Render/PixelFormatDescriptor.h"
-#include "Render/RenderManager.h"
 #include "Utils/Utils.h"
 
 #if defined (__DAVAENGINE_OPENGL__)

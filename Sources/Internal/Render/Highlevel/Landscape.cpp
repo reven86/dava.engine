@@ -30,7 +30,6 @@
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Render/RenderDataObject.h"
 #include "Render/Texture.h"
@@ -48,6 +47,7 @@
 #include "Scene3D/Systems/MaterialSystem.h"
 #include "Scene3D/Systems/FoliageSystem.h"
 #include "Render/Material/NMaterialNames.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
@@ -836,7 +836,7 @@ void Landscape::DrawFans()
         ADD_VERTEX((xbuf) + (ybuf) * width);
         
 #undef ADD_VERTEX
-        //RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+        //Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 //        RenderManager::Instance()->SetRenderData(landscapeRDOArray[node->data.rdoQuad]);
 //        RenderManager::Instance()->FlushState();
 //        RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, count, EIF_16, indices); 
@@ -881,7 +881,7 @@ void Landscape::DrawFans()
 
         drawIndices[count++] = (xbuf) + (ybuf) * width;
         
-        //RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+        //Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
         RenderManager::Instance()->FlushState();
         RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLEFAN, count, EIF_16, indices); 
     }
@@ -1036,7 +1036,7 @@ void Landscape::Draw(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippi
 
 //    if (frustum->IsFullyInside(currentNode->data.bbox))
 //    {
-//        RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+//        Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 //        RenderHelper::Instance()->DrawBox(currentNode->data.bbox);
 //    }
     
@@ -1046,14 +1046,14 @@ void Landscape::Draw(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippi
         //Logger::FrameworkDebug("lod: %d depth: %d pos(%d, %d)", minLod, currentNode->data.lod, currentNode->data.x, currentNode->data.y);
         
 //        if (currentNode->data.size <= (1 << maxLod))
-//            RenderManager::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.0f);
+//            Renderer::SetColor(0.0f, 1.0f, 0.0f, 1.0f);
 //        if (frustum->IsFullyInside(currentNode->data.bbox))
-//            RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+//            Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
         //if (frustum->IsFullyInside(currentNode->data.bbox) && (currentNode->data.size <= (1 << maxLod)))
-        //    RenderManager::Instance()->SetColor(1.0f, 1.0f, 0.0f, 1.0f);
+        //    Renderer::SetColor(1.0f, 1.0f, 0.0f, 1.0f);
 
             
-        //RenderManager::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.0f);
+        //Renderer::SetColor(0.0f, 1.0f, 0.0f, 1.0f);
 #if defined (DRAW_OLD_STYLE)        
         DrawQuad(currentNode, maxLod);
 #else //#if defined (DRAW_OLD_STYLE)        
@@ -1068,7 +1068,7 @@ void Landscape::Draw(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippi
         }
 #endif //#if defined (DRAW_OLD_STYLE)
         
-        //RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+        //Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
         //RenderHelper::Instance()->DrawBox(currentNode->data.bbox);
 
         return;
@@ -1077,9 +1077,9 @@ void Landscape::Draw(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippi
     
     if ((minLod != maxLod) && (currentNode->data.size <= (1 << maxLod) + 1))
     {
-//        RenderManager::Instance()->SetColor(0.0f, 0.0f, 1.0f, 1.0f);
+//        Renderer::SetColor(0.0f, 0.0f, 1.0f, 1.0f);
         //DrawQuad(currentNode, minLod);
-        //RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+        //Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
         //RenderHelper::Instance()->DrawBox(currentNode->data.bbox);
         fans.push_back(currentNode);
         return;
@@ -1133,7 +1133,7 @@ void Landscape::Draw(Camera * camera)
 	
 	drawIndices = 0;
 
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LANDSCAPE_DRAW))
+	if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LANDSCAPE_DRAW))
 	{
 		return;
 	}
@@ -1141,7 +1141,7 @@ void Landscape::Draw(Camera * camera)
 #if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
 //    if (debugFlags & DEBUG_DRAW_GRID)
 //    {
-//        RenderManager::Instance()->SetColor(1.0f, 0.f, 0.f, 1.f);
+//        Renderer::SetColor(1.0f, 0.f, 0.f, 1.f);
 //        RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
 //        RenderManager::Instance()->SetShader(0);
 //        RenderManager::Instance()->FlushState();
@@ -1155,10 +1155,10 @@ void Landscape::Draw(Camera * camera)
 #if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
 //    if (!(debugFlags & DEBUG_DRAW_GRID))
 //    {
-//        RenderManager::Instance()->ResetColor();
+//        Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 //    }
 #else
-    RenderManager::Instance()->ResetColor();
+    Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 #endif //#if defined(__DAVAENGINE_OPENGL__)
 
 
@@ -1193,7 +1193,7 @@ void Landscape::Draw(Camera * camera)
     RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     //RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, camera->GetMatrix());
 
-	if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LANDSCAPE_LODS))
+	if(Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LANDSCAPE_LODS))
 	{
 		fans.clear();
 		lod0quads.clear();
@@ -1670,13 +1670,13 @@ Texture * Landscape::CreateLandscapeTexture()
 
 	RenderManager::Instance()->ClearWithColor(1.f, 0.f, 1.f, 1.f);
  
-    RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-    RenderManager::SetDynamicParam(PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    Renderer::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    Renderer::SetDynamicParam(PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     Matrix4 projection;
     projection.glOrtho(0.f, 1.f, 0.f, 1.f, -1.f, 1.f);
     
     Matrix4 *oldProjection = (Matrix4*)RenderManager::GetDynamicParam(PARAM_PROJ);
-    RenderManager::SetDynamicParam(PARAM_PROJ, &projection, UPDATE_SEMANTIC_ALWAYS);
+    Renderer::SetDynamicParam(PARAM_PROJ, &projection, UPDATE_SEMANTIC_ALWAYS);
     
     prevLodLayer = -1;
 
@@ -1707,7 +1707,7 @@ Texture * Landscape::CreateLandscapeTexture()
 
     RenderManager::Instance()->SetRenderTarget(0);
     
-    RenderManager::SetDynamicParam(PARAM_PROJ, &oldProjection, UPDATE_SEMANTIC_ALWAYS);
+    Renderer::SetDynamicParam(PARAM_PROJ, &oldProjection, UPDATE_SEMANTIC_ALWAYS);
 	RenderManager::Instance()->SetViewport(oldViewport);
     SafeRelease(ftRenderData);
 

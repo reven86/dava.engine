@@ -84,6 +84,8 @@
 #include "Scene3D/SceneCache.h"
 #include "UI/UIEvent.h"
 
+#include "Render/Renderer.h"
+
 
 namespace DAVA 
 {
@@ -759,7 +761,7 @@ void Scene::Update(float timeElapsed)
     
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
-    bool needShowStaticOcclusion = RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION);
+    bool needShowStaticOcclusion = Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION);
     if (needShowStaticOcclusion&&!staticOcclusionDebugDrawSystem)
     {
         staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
@@ -782,7 +784,7 @@ void Scene::Update(float timeElapsed)
         }
         else if(system == lodSystem)
         {
-            if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LODS))
+            if(Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LODS))
             {
                 lodSystem->Process(timeElapsed);
             }
@@ -802,7 +804,7 @@ void Scene::Update(float timeElapsed)
 // 		anim->Update(timeElapsed);
 // 	}
 // 
-// 	if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_ANIMATED_MESHES))
+// 	if(Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_ANIMATED_MESHES))
 // 	{
 // 		size = (int32)animatedMeshes.size();
 // 		for (int32 animatedMeshIndex = 0; animatedMeshIndex < size; ++animatedMeshIndex)

@@ -606,7 +606,7 @@ void Material::RebuildShader()
     //if (isDistanceAttenuation)
     //shaderCombileCombo = shaderCombileCombo + ";DISTANCE_ATTENUATION";
     
-    if (isFogEnabled && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::FOG_ENABLE))
+    if (isFogEnabled && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::FOG_ENABLE))
         shaderCombileCombo = shaderCombileCombo + ";VERTEX_FOG";
 
     // Get shader if combo unavailable compile it
@@ -1156,23 +1156,23 @@ void Material::PrepareRenderState(InstanceMaterialState * instanceMaterialState,
 
 void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMaterialState, Matrix4 * worldMxPtr)
 {
-	if(isTranslucent && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TRANSPARENT_DRAW))
+	/*if(isTranslucent && !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::TRANSPARENT_DRAW))
 	{
 		return;
 	}
 
-	if(!isTranslucent && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::OPAQUE_DRAW))
+	if(!isTranslucent && !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::OPAQUE_DRAW))
 	{
 		return;
 	}
 
 	//Dizz: uniformFogDensity != -1 is a check if fog is inabled in shader
-	if(isFogEnabled && (uniformFogDensity != -1) && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::FOG_ENABLE))
+	if(isFogEnabled && (uniformFogDensity != -1) && !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::FOG_ENABLE))
 	{
 		RebuildShader();
 	}
 
-	if(isFogEnabled && (uniformFogDensity == -1) && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::FOG_ENABLE))
+	if(isFogEnabled && (uniformFogDensity == -1) && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::FOG_ENABLE))
 	{
 		RebuildShader();
 	}
@@ -1206,7 +1206,7 @@ void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMateri
 	//{
 	//	RenderManager::Instance()->SetBlendMode(oldSrc, oldDst);
 	//}
-	 
+	 */
 }
 
 

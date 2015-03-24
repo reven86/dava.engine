@@ -28,7 +28,6 @@
 
 
 #include "Render/Texture.h"
-#include "Render/RenderManager.h"
 #include "Render/OGLHelpers.h"
 #include "FileSystem/Logger.h"
 #include "FileSystem/FileSystem.h"

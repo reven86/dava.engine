@@ -34,7 +34,6 @@
 
 #include "Animation/LinearAnimation.h"
 #include "Animation/BezierSplineAnimation.h"
-#include "Render/RenderManager.h"
 #include "Collision/CollisionObject2.h"
 #include "Animation/KeyframeAnimation.h"
 #include "Scene2D/GameObjectAnimations.h"
@@ -310,17 +309,17 @@ void GameObject::Draw()
 
 	if (sprite)
 	{
-		RenderManager::Instance()->SetColor(color.r, color.g, color.b, color.a);
+		Renderer::SetColor(color.r, color.g, color.b, color.a);
         RenderSystem2D::Instance()->Draw(sprite, &globalDrawState);
 
-//		RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+//		Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 //		RenderManager::Instance()->FillRect(Rect(globalDrawState.position.x - 1, globalDrawState.position.y - 1, 3, 3));
-//		RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+//		Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}else
 	{
-//		RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+//		Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 //		RenderManager::Instance()->FillRect(Rect(globalDrawState.position.x, globalDrawState.position.y, 10, 10));
-//		RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+//		Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 	
 	if (isDebugDraw && collision)

@@ -30,7 +30,6 @@
 
 #include "UI/UI3DView.h"
 #include "Scene3D/Scene.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Render/OcclusionQuery.h"
 #include "Core/Core.h"
@@ -99,9 +98,7 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
 	bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
 
 	if (uiDrawQueryWasOpen)
-		FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
-
-	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
+		FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);	
 	
     const Rect & viewportRect = geometricData.GetUnrotatedRect();
     viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
@@ -113,8 +110,7 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
         scene->Draw();
         
     RenderManager::Instance()->SetViewport(viewportSave);
-	
-	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+		
     RenderSystem2D::Instance()->Setup2DMatrices();
 
 	if (uiDrawQueryWasOpen)

@@ -31,7 +31,6 @@
 #include "Render/Texture.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/Image.h"
-#include "Render/RenderManager.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Render/Highlevel/RenderBatch.h"

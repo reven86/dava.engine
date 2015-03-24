@@ -41,7 +41,6 @@
 #define DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW
 #include "../Platform/MovieViewControlStub.h"
 #endif
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
 namespace DAVA {
@@ -112,7 +111,7 @@ void UIMovieView::SystemDraw(const UIGeometricData &geometricData)
 	Color curDebugDrawColor = GetDebugDrawColor();
 
 	Rect absRect = GetRect(true);
-	RenderManager::Instance()->SetColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
+	Renderer::SetColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
 	RenderHelper::Instance()->DrawRect(absRect, RenderState::RENDERSTATE_2D_BLEND);
 
 	float32 minRadius = Min(GetSize().x, GetSize().y);

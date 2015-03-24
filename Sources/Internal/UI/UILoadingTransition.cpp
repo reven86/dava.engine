@@ -29,7 +29,6 @@
 
 
 #include "UI/UILoadingTransition.h"
-#include "Render/RenderManager.h"
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Debug/Replay.h"

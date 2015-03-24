@@ -29,7 +29,6 @@
 
 
 #include "ShadowVolumeNode.h"
-#include "Render/RenderManager.h"
 #include "Render/3D/StaticMesh.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFileV2.h"

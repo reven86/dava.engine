@@ -33,11 +33,10 @@
 #include "FileSystem/Logger.h"
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
-#include "Render/RenderManager.h"
+#include "Render/Renderer.h"
 #include "Utils/StringFormat.h"
 #include "Platform/SystemTimer.h"
 #include "FileSystem/File.h"
-#include "Render/D3D9Helpers.h"
 #include "FileSystem/FileSystem.h"
 #include "Render/OGLHelpers.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
@@ -779,7 +778,7 @@ Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
 	if(pathName.IsEmpty() || pathName.GetType() == FilePath::PATH_IN_MEMORY)
 		return NULL;
 
-    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEXTURE_LOAD_ENABLED))
+    if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::TEXTURE_LOAD_ENABLED))
         return NULL;
 
     FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(pathName);
@@ -834,7 +833,7 @@ void Texture::ReloadAs(eGPUFamily gpuFamily)
     Vector<Image *> *images = new Vector<Image *> ();
     
     bool loaded = false;
-    if(descriptorReloaded && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEXTURE_LOAD_ENABLED))
+    if(descriptorReloaded && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::TEXTURE_LOAD_ENABLED))
     {
 	    loaded = LoadImages(gpuForLoading, images);
     }

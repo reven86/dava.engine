@@ -29,7 +29,6 @@
 
 #include "Render/RenderEffect.h"
 #include "Render/Texture.h"
-#include "Render/RenderManager.h"
 #include "Render/Effects/MultiTextureEffect.h"
 #include "Render/Shader.h"
 #include "FileSystem/FilePath.h"

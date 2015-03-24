@@ -389,7 +389,7 @@ void ImposterNode::DrawImposter()
 	RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, meshFinalMatrix);
     RenderManager::Instance()->SetRenderEffect(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST);
 
-	RenderManager::Instance()->SetColor(1.f, 1.f, 1.f, 1.f);
+	Renderer::SetColor(1.f, 1.f, 1.f, 1.f);
 
 	//RenderManager::Instance()->RemoveState(RenderState::STATE_CULL);
 	//eBlendMode src = RenderManager::Instance()->GetSrcBlend();

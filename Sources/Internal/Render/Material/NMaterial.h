@@ -34,7 +34,6 @@
 #include "Base/HashMap.h"
 #include "Base/FastNameMap.h"
 #include "Scene3D/DataNode.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderState.h"
 #include "Render/Material/NMaterialConsts.h"
 #include "Render/Material/NMaterialTemplate.h"

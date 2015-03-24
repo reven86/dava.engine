@@ -42,6 +42,7 @@
 #include "Render/Material/NMaterialNames.h"
 #include "Particles/ParticleRenderObject.h"
 #include "Debug/Stats.h"
+#include "Render/Renderer.h"
 
 
 namespace DAVA
@@ -231,7 +232,7 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 {
     TIME_PROFILE("ParticleEffectSystem::Process");
     
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_PARTICLE_EMMITERS)) 
+	if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_PARTICLE_EMMITERS)) 
 		return;		
 	/*shortEffectTime*/
 	float32 currFps = 1.0f/timeElapsed;

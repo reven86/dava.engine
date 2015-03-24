@@ -30,7 +30,6 @@
 
 #include "Scene3D/SpriteNode.h"
 #include "Scene3D/Scene.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Render/2D/Sprite.h"
 namespace DAVA 
@@ -158,7 +157,7 @@ void SpriteNode::Draw()
 #if 0
 	if (!(flags&Entity::NODE_VISIBLE))return;
 
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
+	if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
 	{
 		return;
 	}
@@ -275,7 +274,7 @@ void SpriteNode::Draw()
 	//eBlendMode sblend = RenderManager::Instance()->GetSrcBlend();
 	//eBlendMode dblend = RenderManager::Instance()->GetDestBlend();
     
-    RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	RenderManager::Instance()->SetDefault2DState();
 	//RenderManager::Instance()->SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
 	//RenderManager::Instance()->AppendState(RenderState::STATE_BLEND);

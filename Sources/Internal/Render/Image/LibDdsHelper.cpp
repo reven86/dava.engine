@@ -32,7 +32,6 @@
 #include "Render/Image/LibDdsHelper.h"
 
 #include "Render/Texture.h"
-#include "Render/RenderManager.h"
 #include "Render/PixelFormatDescriptor.h"
 #include <libdxt/nvtt.h>
 #include <libdxt/nvtt_extra.h>

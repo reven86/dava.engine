@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "ParticleRenderObject.h"
+#include "Render/Renderer.h"
 
 
 namespace DAVA
@@ -100,12 +101,12 @@ ParticleRenderObject::~ParticleRenderObject()
 
 void ParticleRenderObject::PrepareToRender(Camera *camera)
 {
-    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::PARTICLES_PREPARE_BUFFERS))
+    if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PARTICLES_PREPARE_BUFFERS))
 		return;
     
 	PrepareRenderData(camera);
     
-    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::PARTICLES_DRAW))
+    if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PARTICLES_DRAW))
     {
         activeRenderBatchArray.clear();
 		return;
@@ -338,15 +339,15 @@ void ParticleRenderObject::AppendParticleGroup(const ParticleGroup &group, Parti
 
 void ParticleRenderObject::BindDynamicParameters(Camera * camera)
 {        
-    RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    Renderer::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     if(camera)
     {
         if(lights[0])
         {
             const Vector4 & lightPositionDirection0InCameraSpace = lights[0]->CalculatePositionDirectionBindVector(camera);
-            RenderManager::SetDynamicParam(PARAM_LIGHT0_POSITION, &lightPositionDirection0InCameraSpace, (pointer_size)&lightPositionDirection0InCameraSpace);
-            RenderManager::SetDynamicParam(PARAM_LIGHT0_COLOR, &lights[0]->GetDiffuseColor(), (pointer_size)lights[0]);
-            RenderManager::SetDynamicParam(PARAM_LIGHT0_AMBIENT_COLOR, &lights[0]->GetAmbientColor(), (pointer_size)lights[0]);
+            Renderer::SetDynamicParam(PARAM_LIGHT0_POSITION, &lightPositionDirection0InCameraSpace, (pointer_size)&lightPositionDirection0InCameraSpace);
+            Renderer::SetDynamicParam(PARAM_LIGHT0_COLOR, &lights[0]->GetDiffuseColor(), (pointer_size)lights[0]);
+            Renderer::SetDynamicParam(PARAM_LIGHT0_AMBIENT_COLOR, &lights[0]->GetAmbientColor(), (pointer_size)lights[0]);
         }                
     }    
 }

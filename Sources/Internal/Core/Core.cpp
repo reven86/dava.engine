@@ -33,7 +33,6 @@
 #include "Core/ApplicationCore.h"
 #include "Core/Core.h"
 #include "Core/PerformanceSettings.h"
-#include "Render/RenderManager.h"
 #include "Platform/SystemTimer.h"
 #include "Platform/Thread.h"
 #include "UI/UIScreenManager.h"

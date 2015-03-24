@@ -190,9 +190,9 @@
 //
 ////    if (GetFullName() == String("MaxScene->node-Cylinder01->VisualSceneNode14->instance_0"))
 ////    {
-////        RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+////        Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 ////        RenderHelper::Instance()->DrawBox(transformedBox);
-////        RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+////        Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 ////    }    
 //
 //	//now clipping in entity system
@@ -274,19 +274,19 @@
 //		
 //		if (debugFlags & DEBUG_DRAW_LOCAL_AXIS)
 //		{
-//			RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f); 
+//			Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f); 
 //			RenderHelper::Instance()->DrawLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(50.0f, 0.0f, 0.0f));
 //			
-//			RenderManager::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.0f);
+//			Renderer::SetColor(0.0f, 1.0f, 0.0f, 1.0f);
 //			RenderHelper::Instance()->DrawLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 50.0f, 0.0f));
 //			
-//			RenderManager::Instance()->SetColor(0.0f, 0.0f, 1.0f, 1.0f);
+//			Renderer::SetColor(0.0f, 0.0f, 1.0f, 1.0f);
 //			RenderHelper::Instance()->DrawLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 50.0f));
 //		}
 //
 ////		if (debugFlags & DEBUG_DRAW_AABOX_CORNERS)
 ////		{
-////			RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+////			Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 ////			RenderHelper::Instance()->DrawCornerBox(bbox);
 ////      }
 //        //if (debugFlags & DEBUG_DRAW_NORMALS)
@@ -328,17 +328,17 @@
 //                    Vector3 vertex2;
 //                     vertex2 = vertex + normal * DEBUG_VECTOR_LENGTH;
 //                    Color color(normal.x * 0.5f + 0.5f, normal.y * 0.5f + 0.5f, normal.z * 0.5f + 0.5f, 1.0f);
-//                    RenderManager::Instance()->SetColor(color);
+//                    Renderer::SetColor(color);
 //                    RenderHelper::Instance()->DrawLine(vertex, vertex2);
 //                    
 //                    vertex2 = vertex + tangent * DEBUG_VECTOR_LENGTH;
 //                    Color tcolor(0.0f, 1.0f, 0.0f, 1.0f);
-//                    RenderManager::Instance()->SetColor(tcolor);
+//                    Renderer::SetColor(tcolor);
 //                    RenderHelper::Instance()->DrawLine(vertex, vertex2);
 //                    
 //                    vertex2 = vertex + binormal * DEBUG_VECTOR_LENGTH;
 //                    Color bcolor(0.0f, 0.0f, 1.0f, 1.0f);
-//                    RenderManager::Instance()->SetColor(bcolor);
+//                    Renderer::SetColor(bcolor);
 //                    RenderHelper::Instance()->DrawLine(vertex, vertex2);
 //                    
 //                    
@@ -351,7 +351,7 @@
 ////      RenderManager::Instance()->EnableDepthTest(true);
 ////		RenderManager::Instance()->EnableTexturing(true);
 //        RenderManager::Instance()->SetState(oldState);
-//        RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+//        Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 //	}
 //	//glPopMatrix();
 //	RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, prevMatrix);

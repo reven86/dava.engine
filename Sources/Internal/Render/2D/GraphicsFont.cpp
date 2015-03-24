@@ -31,7 +31,6 @@
 #include "Render/2D/GraphicsFont.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/RenderManager.h"
 #include "FileSystem/File.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/LocalizationSystem.h"

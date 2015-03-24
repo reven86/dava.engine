@@ -29,7 +29,6 @@
 
 
 #include "UI/UIMoveInTransition.h"
-#include "Render/RenderManager.h"
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"

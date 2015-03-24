@@ -69,7 +69,7 @@ void SpriteRenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
 	}
 
 
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
+	if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
 	{
 		return;
 	}
@@ -128,7 +128,7 @@ void SpriteRenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
 		};   
 	}
 
-	RenderManager::SetDynamicParam(PARAM_WORLD, &finalMatrix, (pointer_size)worldTransformPtr);
+	Renderer::SetDynamicParam(PARAM_WORLD, &finalMatrix, (pointer_size)worldTransformPtr);
 
 	
 	material->BindMaterialTechnique(ownerRenderPass, camera);

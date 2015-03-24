@@ -29,7 +29,6 @@
 #include "Render/OGLHelpers.h"
 
 #include "Core/Core.h"
-#include "Render/RenderManager.h"
 
 
 #if defined(__DAVAENGINE_OPENGL__)

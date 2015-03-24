@@ -69,6 +69,9 @@ namespace DAVA
 		
 		Color shadowColor;
 		int32 uniformShadowColor;
+
+        UniqueHandle blendAlphaState;
+        UniqueHandle blendMultiplyState;
 	};
 	
 };

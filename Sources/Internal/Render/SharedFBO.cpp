@@ -29,7 +29,6 @@
 
 
 #include "Render/SharedFBO.h"
-#include "Render/RenderManager.h"
 #include "Math/RectPacker.h"
 
 namespace DAVA

@@ -32,7 +32,6 @@
 #include "Render/RenderDataObject.h"
 #include "Base/BaseMath.h"
 #include "Render/RenderBase.h"
-#include "Render/RenderManager.h"
 #include "Scene3D/Scene.h"
 #include "FileSystem/FilePath.h"
 #include "Render/ShaderCache.h"
@@ -79,6 +78,30 @@ namespace DAVA
 		
 		uniformShadowColor = shader->FindUniformIndexByName(FastName("shadowColor"));
 		DVASSERT(uniformShadowColor != -1);
+
+        RenderStateData stateData;
+
+        stateData.state = RenderStateData::STATE_BLEND |
+            RenderStateData::STATE_STENCIL_TEST |
+            RenderStateData::STATE_COLORMASK_ALL;
+        stateData.sourceFactor = BLEND_DST_COLOR;
+        stateData.destFactor = BLEND_ZERO;
+        stateData.depthFunc = CMP_LEQUAL;
+        stateData.cullMode = FACE_BACK;
+        stateData.fillMode = FILLMODE_SOLID;
+        stateData.stencilFail[0] = stateData.stencilFail[1] = STENCILOP_KEEP;
+        stateData.stencilPass[0] = stateData.stencilPass[1] = STENCILOP_KEEP;
+        stateData.stencilZFail[0] = stateData.stencilZFail[1] = STENCILOP_KEEP;
+        stateData.stencilFunc[0] = stateData.stencilFunc[1] = CMP_NOTEQUAL;
+        stateData.stencilMask = 15;
+        stateData.stencilRef = 0;
+
+        blendMultiplyState = RenderManager::Instance()->CreateRenderState(stateData);
+
+        stateData.sourceFactor = BLEND_SRC_ALPHA;
+        stateData.destFactor = BLEND_ONE_MINUS_SRC_ALPHA;
+
+        blendAlphaState = RenderManager::Instance()->CreateRenderState(stateData);
 	}
 	
 	ShadowRect::~ShadowRect()
@@ -90,8 +113,9 @@ namespace DAVA
 		instance = 0;
 	}
 	
-	void ShadowRect::Draw()
+    void ShadowRect::Draw(ShadowPassBlendMode::eBlend blendMode)
 	{
+        RenderManager::Instance()->SetRenderState((ShadowPassBlendMode::MODE_BLEND_ALPHA == blendMode) ? blendAlphaState : blendMultiplyState);
 		RenderManager::Instance()->SetShader(shader);
 		RenderManager::Instance()->SetRenderData(rdo);
 		RenderManager::Instance()->FlushState();

@@ -29,7 +29,6 @@
 
 
 #include "UI/UIScreenTransition.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
@@ -98,7 +97,7 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     Texture * textureTargetPrev = renderTargetPrevScreen->GetTexture();
     RenderManager::Instance()->SetRenderTarget(textureTargetPrev);
     RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)textureTargetPrev->GetWidth(), (float32)textureTargetPrev->GetHeight()));
-    RenderManager::Instance()->ResetColor();
+    Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
     RenderManager::Instance()->FlushState();
     RenderManager::Instance()->Clear(Color(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
@@ -135,7 +134,7 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     Texture * textureTargetNext = renderTargetNextScreen->GetTexture();
     RenderManager::Instance()->SetRenderTarget(textureTargetNext);
     RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)textureTargetNext->GetWidth(), (float32)textureTargetNext->GetHeight()));
-    RenderManager::Instance()->ResetColor();
+    Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
     RenderManager::Instance()->FlushState();
     RenderManager::Instance()->Clear(Color(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);

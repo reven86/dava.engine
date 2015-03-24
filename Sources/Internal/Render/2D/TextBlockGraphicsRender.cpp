@@ -30,7 +30,6 @@
 #include "Render/2D/TextBlockGraphicsRender.h"
 #include "Core/Core.h"
 #include "Utils/Utils.h"
-#include "Render/RenderManager.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 

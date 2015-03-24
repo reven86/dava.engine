@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 #include "Render/2D/TextBlockDistanceRender.h"
-#include "Render/RenderManager.h"
 #include "Core/Core.h"
 #include "Render/ShaderCache.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -168,7 +167,7 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 	offsetMatrix = (scaleMatrix*offsetMatrix*rotateMatrix)*worldMatrix;
 	//offsetMatrix = (scaleMatrix * rotateMatrix * offsetMatrix)*worldMatrix;
 
-	RenderManager::SetDynamicParam(PARAM_WORLD, &offsetMatrix, UPDATE_SEMANTIC_ALWAYS);
+	Renderer::SetDynamicParam(PARAM_WORLD, &offsetMatrix, UPDATE_SEMANTIC_ALWAYS);
 
 	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
     RenderManager::Instance()->SetTextureState(dfFont->GetTextureHandler());
@@ -187,7 +186,7 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
     
 	RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, charDrawed * 6, EIF_16, this->indexBuffer);
     
-    RenderManager::SetDynamicParam(PARAM_WORLD, oldMatrix, (pointer_size)oldMatrix);
+    Renderer::SetDynamicParam(PARAM_WORLD, oldMatrix, (pointer_size)oldMatrix);
 }
 	
 Font::StringMetrics TextBlockDistanceRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
