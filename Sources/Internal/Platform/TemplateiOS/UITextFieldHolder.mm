@@ -168,7 +168,10 @@
         // Length check OK, continue with the delegate.
         DAVA::WideString repString;
         const char * cstr = [string cStringUsingEncoding:NSUTF8StringEncoding];
-        DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), repString);
+        if(cstr) //cause strlen(nullptr) will crash
+        {
+            DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), repString);
+        }
 
         BOOL delegateResult = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, (DAVA::int32)range.location, (DAVA::int32)range.length, repString);
         return needIgnoreDelegateResult ? FALSE : delegateResult;
