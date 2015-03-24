@@ -48,6 +48,9 @@ GameCore::GameCore()
 
 void GameCore::OnAppStarted()
 {
+    new GraphicsDetect();
+    GraphicsDetect::Instance()->ReloadSettings();
+
 	RegisterTests();
 	InitScreenController();
 

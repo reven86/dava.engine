@@ -36,6 +36,7 @@
 #include "Infrastructure/Controller/TestFlowController.h"
 #include "Infrastructure/Controller/TestChainFlowController.h"
 #include "Infrastructure/Controller/SingleTestFlowController.h"
+#include "Infrastructure/Settings/GraphicsDetect.h"
 
 #include "Tests/GlobalPerformanceTest.h"
 
