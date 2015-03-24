@@ -256,13 +256,17 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         boolean isActivityFinishing = isFinishing();
         Log.i(JNIConst.LOG_TAG, "[Activity::onPause] isActivityFinishing is " + isActivityFinishing);
+        
+        // can destroy eglContext
+        // we need to stop rendering before quit application because some objects could became invalid after
+        // "nativeFinishing" call.
+        glView.onPause();
+        
         if(isActivityFinishing)
         {
         	nativeFinishing();
         }
         
-        // can destroy eglContext
-        glView.onPause();
         super.onPause();
 
         Log.i(JNIConst.LOG_TAG, "[Activity::onPause] finish");

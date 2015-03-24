@@ -218,6 +218,7 @@ public:
     static const FastName PARAM_DETAIL_TILE_SCALE;
     static const FastName PARAM_RCP_SCREEN_SIZE;
     static const FastName PARAM_SCREEN_OFFSET;
+    static const FastName PARAM_NORMAL_SCALE;
     
 	static const FastName FLAG_VERTEXFOG;
 	static const FastName FLAG_FOG_LINEAR;
