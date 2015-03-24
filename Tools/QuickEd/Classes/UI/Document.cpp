@@ -23,7 +23,6 @@
 #include "PropertiesContext.h"
 #include "LibraryContext.h"
 #include "PreviewContext.h"
-#include "DocumentWidgets.h"
 
 #include "QtModelPackageCommandExecutor.h"
 
@@ -38,9 +37,8 @@ Document::Document(Project *_project, PackageNode *_package, QObject *parent)
     , previewContext(nullptr)
     , libraryContext(nullptr)
     , commandExecutor(nullptr)
+    , undoStack(new QUndoStack(this))
 {
-    undoStack = new QUndoStack(this);
-
     commandExecutor = new QtModelPackageCommandExecutor(this);
 
     packageContext = new PackageContext(this);
@@ -74,43 +72,9 @@ Document::~Document()
     SafeRelease(commandExecutor);
 }
 
-void Document::ConnectToWidgets(DocumentWidgets *widgets)
+void Document::SetActive(bool arg)
 {
-    widgets->SetWidgetsEnabled(true);
-    
-    connect(widgets->GetPackageWidget(), SIGNAL(SelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), this, SLOT(OnSelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-    connect(widgets->GetPackageWidget(), SIGNAL(SelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), this, SLOT(OnSelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-
-    connect(this, SIGNAL(controlSelectedInEditor(ControlNode*)), widgets->GetPackageWidget(), SLOT(OnControlSelectedInEditor(ControlNode*)));
-    connect(this, SIGNAL(allControlsDeselectedInEditor()), widgets->GetPackageWidget(), SLOT(OnAllControlsDeselectedInEditor()));
-    
-    widgets->GetPropertiesWidget()->SetDocument(this);
-    widgets->GetPackageWidget()->SetDocument(this);
-    widgets->GetPreviewWidget()->SetDocument(this);
-    widgets->GetLibraryWidget()->SetDocument(this);
-    
-
-    
-
-    undoStack->setActive(true);
-}
-
-void Document::DisconnectFromWidgets(DocumentWidgets *widgets)
-{
-    undoStack->setActive(false);
-
-    widgets->SetWidgetsEnabled(false);
-
-    disconnect(widgets->GetPackageWidget(), SIGNAL(SelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), this, SLOT(OnSelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-    disconnect(widgets->GetPackageWidget(), SIGNAL(SelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), this, SLOT(OnSelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
-
-    disconnect(this, SIGNAL(controlSelectedInEditor(ControlNode*)), widgets->GetPackageWidget(), SLOT(OnControlSelectedInEditor(ControlNode*)));
-    disconnect(this, SIGNAL(allControlsDeselectedInEditor()), widgets->GetPackageWidget(), SLOT(OnAllControlsDeselectedInEditor()));
-
-    widgets->GetPackageWidget()->SetDocument(nullptr);
-    widgets->GetPreviewWidget()->SetDocument(nullptr);
-    widgets->GetPropertiesWidget()->SetDocument(nullptr);
-    widgets->GetLibraryWidget()->SetDocument(nullptr);
+    undoStack->setActive(arg);
 }
 
 bool Document::IsModified() const

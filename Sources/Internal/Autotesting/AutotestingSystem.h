@@ -43,6 +43,7 @@
 #include "Render/RenderManager.h"
 #include "Platform/DateTime.h"
 
+
 namespace DAVA
 {
 
@@ -52,6 +53,7 @@ class AutotestingSystemLua;
 class AutotestingSystem : public Singleton<AutotestingSystem>, public ScreenShotCallbackDelegate
 {
 public:
+
     AutotestingSystem();
     ~AutotestingSystem();
 
@@ -72,7 +74,7 @@ public:
     
 	// Parameters from DB
 	void FetchParametersFromDB();
-	void FetchParametersFromIdTxt();
+	void FetchParametersFromIdYaml();
 	void SetUpConnectionToDB();
 
 	void InitializeDevice(const String & device);
@@ -81,9 +83,8 @@ public:
 	void OnTestStart(const String &testName);
 	void OnStepStart( const String & stepName );
 	void OnStepFinished();
-	void OnTestsSatrted();
+	void OnTestStarted();
     void OnError(const String & errorMessage = "");
-	//void OnMessage(const String & logMessage = "");
 	void ForceQuit(const String & logMessage = "");
     void OnTestsFinished();
     
@@ -95,12 +96,9 @@ public:
     bool IsTouchDown(int32 id);
 
 	const String & GetScreenShotName();
-	void MakeScreenShot(bool skipScreenshot);
+	void MakeScreenShot();
 
     // DB Master-Helper relations
-    //void InitMultiplayer(bool _isMaster);
-    //void RegisterMasterInDB(int32 helpersCount);
-    //void RegisterHelperInDB();
 
 	String GetTestId() { return Format("Test%03d", testIndex); };
 	String GetStepId() { return Format("Step%03d", stepIndex); };
@@ -111,28 +109,10 @@ public:
 
 	inline AutotestingSystemLua* GetLuaSystem() { return luaSystem; };
 protected:
+
+	void OnScreenShotInternal(Image *image);
 	AutotestingSystemLua * luaSystem;
 //DB
-    /*void SetUpTestArchive();
-
-	KeyedArchive *FindTestArchive(MongodbUpdateObject* dbUpdateObject, const String &testId);
-    KeyedArchive *FindStepArchive(KeyedArchive *testArchive, const String &stepId);
-    
-    bool CheckSavedObjectInDB(MongodbUpdateObject *dbUpdateObject);
-    bool CheckKeyedArchivesEqual(const String &name, KeyedArchive* firstKeyedArchive, KeyedArchive* secondKeyedArchive);
-
-    void AddTestResult(const String &text, bool isPassed, const String & error = "");
-    void SaveTestToDB();
-    void SaveTestStepToDB(const String &stepDescription, bool isPassed, const String &error = "");
-    void SaveTestStepLogEntryToDB(const String &type, const String &time, const String &message);*/
-	void SaveScreenShotNameToDB();
-
-    /*String ReadMasterIDFromDB(); //TODO: get first available master
-    
-    bool CheckMasterHelpersReadyDB();
-        
-    int32 GetIndexInFileList(FileList &fileList, int32 index);*/
-    
     void ExitApp();
 	
 public:
@@ -153,7 +133,7 @@ public:
     int32 stepIndex;
     int32 logIndex;
 
-    String testName;
+	String testDescription;
     String testFileName;
     String testFilePath;
 
@@ -164,19 +144,8 @@ public:
 	String branchRev;
 	String frameworkRev;
 
-//    struct TestResult
-//    {
-//        TestResult(const String &_name, bool _isPassed, const String &_error) : name(_name), isPassed(_isPassed), error(_error) {}
-//        
-//        String name;
-//        bool isPassed;
-//        String error;
-//    };
-//    Vector< TestResult > testResults;
-
-    bool isDB;
+	bool isDB;
     bool needClearGroupInDB;
-	bool skipScreenshot;
     
     bool isMaster;
     int32 requestedHelpers;

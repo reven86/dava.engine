@@ -33,6 +33,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Base/FastName.h"
 
 #include "Scene/System/SelectionSystem.h"
+#include "Scene3D/Components/Waypoint/PathComponent.h"
+
+static const DAVA::uint32 WAYPOINTS_DRAW_LIFTING = 1;
 
 class SceneEditor2;
 class PathSystem: public DAVA::SceneSystem
@@ -46,18 +49,18 @@ public:
     void EnablePathEdit(bool enable);
     bool IsPathEditEnabled() const;
     
-    virtual void AddEntity(DAVA::Entity * entity);
-    virtual void RemoveEntity(DAVA::Entity * entity);
+    void AddEntity(DAVA::Entity * entity) override;
+    void RemoveEntity(DAVA::Entity * entity) override;
     
-    virtual void Process(DAVA::float32 timeElapsed);
+    void Process(DAVA::float32 timeElapsed) override;
 
     DAVA::Entity * GetCurrrentPath() const;
-    
     const DAVA::Vector<DAVA::Entity *> & GetPathes() const;
+
+    void AddPath(DAVA::Entity* pathEntity);
     
-    DAVA::FastName GeneratePathName() const;
-    const DAVA::Color & GetNextPathColor() const;
-    
+    DAVA::PathComponent* CreatePathComponent();
+
 protected:
     
     void Draw();
@@ -68,11 +71,14 @@ protected:
     
     void ProcessCommand(const Command2 *command, bool redo);
 
-    
-    DAVA::Color GetPathColor(DAVA::Entity *path);
-    SceneEditor2* GetSceneEditor() const;
-    
-    
+    DAVA::FastName GeneratePathName() const;
+    const DAVA::Color & GetNextPathColor() const;
+
+    void ExpandPathEntity(const DAVA::Entity*);
+    void CollapsePathEntity(const DAVA::Entity*);
+
+    SceneEditor2* sceneEditor;
+
     DAVA::UniqueHandle pathDrawState;
     
     DAVA::Vector<DAVA::Entity *> pathes;
