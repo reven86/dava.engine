@@ -2,6 +2,7 @@
 #include <QLineEdit>
 #include <QAction>
 #include <QItemSelection>
+#include "UI/Preview/EditScreen.h"
 
 #include "UI/Package/PackageModel.h"
 
@@ -51,7 +52,7 @@ void Document::InitWidgetContexts()
     packageContext->SetData(QVariant::fromValue(new PackageModel(package, commandExecutor, this)), "model");
 
     DAVA::UIControl *view = new DAVA::UIControl();
-    DAVA::UIControl *canvas = new DAVA::UIControl();
+    DAVA::UIControl *canvas = new PackageCanvas();
     view->AddControl(canvas);
     previewContext->SetData(QVariant::fromValue(view), "view");
     previewContext->SetData(QVariant::fromValue(canvas), "canvas");

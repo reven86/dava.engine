@@ -5,9 +5,6 @@
 #include <QUndoGroup>
 class DocumentGroupPrivate;
 class Document;
-class ControlNode;
-class QAbstractItemModel;
-struct PackageContext;
 class WidgetContext;
 
 class DocumentGroup : public QObject

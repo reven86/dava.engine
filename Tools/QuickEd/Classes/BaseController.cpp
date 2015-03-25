@@ -63,7 +63,6 @@ MainWindow* BaseController::GetMainWindow() const
 
 void BaseController::OnCleanChanged(bool clean)
 {
-    // we need to update tab 
     QUndoStack *undoStack = qobject_cast<QUndoStack*>(sender());
     for (int i = 0; i < documents.size(); ++i)
     {

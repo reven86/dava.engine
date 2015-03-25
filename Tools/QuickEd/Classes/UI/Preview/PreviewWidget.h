@@ -52,7 +52,7 @@ private slots:
     void OnAllControlsDeselected();
 
 private:
-    void OnScaleByZoom(int scaleDelta); //!!TODO : ?what is this?
+    void OnScaleByZoom(int scaleDelta); 
     void UpdateModel();
     void UpdateRootControls();
 

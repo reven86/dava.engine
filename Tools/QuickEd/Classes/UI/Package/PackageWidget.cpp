@@ -34,7 +34,7 @@ PackageWidget::PackageWidget(QWidget *parent)
     ui->setupUi(this);
     ui->treeView->header()->setSectionResizeMode/*setResizeMode*/(QHeaderView::ResizeToContents);
 
-    connect(ui->filterLine, SIGNAL(textChanged(const QString &)), this, SLOT(filterTextChanged(const QString &)));
+    connect(ui->filterLine, &QLineEdit::textChanged, this, &PackageWidget::filterTextChanged);
 
     importPackageAction = new QAction(tr("Import package"), this);
     //!!TODO: realize it connect(importPackageAction, SIGNAL(triggered()), this, SLOT(OnImport()));
@@ -90,7 +90,6 @@ void PackageWidget::OnContextChanged(WidgetContext *context)
     UpdateExpanded();
     UpdateSelection();
     UpdateFilterString();
-    //!!TODO: we really need this?
     ui->treeView->setColumnWidth(0, ui->treeView->size().width());
     ui->treeView->setUpdatesEnabled(true);
 }
@@ -375,11 +374,11 @@ void PackageWidget::filterTextChanged(const QString &filterText)
 
 void PackageWidget::OnControlSelectedInEditor(ControlNode *node)
 {
-    //!!TODO:restore functionality 
-    /*QModelIndex srcIndex = document->GetPackageModel()->indexByNode(node);
+    PackageModel *packageModel = static_cast<PackageModel*>(ui->treeView->model());
+    QModelIndex srcIndex = packageModel->indexByNode(node);
     ui->treeView->selectionModel()->select(srcIndex, QItemSelectionModel::ClearAndSelect);
     ui->treeView->expand(srcIndex);
-    ui->treeView->scrollTo(srcIndex);*/
+    ui->treeView->scrollTo(srcIndex);
 }
 
 void PackageWidget::OnAllControlsDeselectedInEditor()

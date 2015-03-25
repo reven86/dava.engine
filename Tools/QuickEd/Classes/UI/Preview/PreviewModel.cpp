@@ -72,11 +72,6 @@ void PreviewModel::SetData(DAVA::UIControl *viewArg, PackageCanvas *canvasArg)
 {
     view = viewArg;
     canvas = canvasArg;
-    if (!IsValid())
-    {
-        return;
-    }
-
 }
 
 void PreviewModel::SetViewControlSize(const QSize &qtSize)

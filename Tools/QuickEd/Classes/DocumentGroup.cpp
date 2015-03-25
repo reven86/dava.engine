@@ -1,9 +1,7 @@
 #include "DocumentGroup.h"
 #include <QObject>
-#include "Model/PackageHierarchy/ControlNode.h"
 #include "Document.h"
 #include <QUndoGroup>
-#include <QAbstractItemModel>
 
 class DocumentGroupPrivate
 {

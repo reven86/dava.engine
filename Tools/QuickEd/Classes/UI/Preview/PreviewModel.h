@@ -45,8 +45,8 @@ signals:
     void AllControlsDeselected();
 
 public: // ControlSelectionListener
-    virtual void OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIControl *selectedControl);
-    virtual void OnAllControlsDeselected();
+    virtual void OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIControl *selectedControl) override;
+    virtual void OnAllControlsDeselected() override;
     void ControlsDeactivated(const QList<ControlNode*> &deactivatedControls);
     void ControlsActivated(const QList<ControlNode *> &activatedControls);
     

@@ -38,7 +38,6 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     davaUIScreen->GetBackground()->SetColor(DAVA::Color(0.3f, 0.3f, 0.3f, 1.0f));
     UIScreenManager::Instance()->RegisterScreen(EDIT_SCREEN, davaUIScreen);
     UIScreenManager::Instance()->SetFirst(EDIT_SCREEN);
-
     connect( ui->davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized );
 
     // Setup the Scale Combo.
@@ -48,11 +47,11 @@ PreviewWidget::PreviewWidget(QWidget *parent)
         ui->scaleCombo->addItem(QString(PERCENTAGE_FORMAT).arg(SCALE_PERCENTAGES[i]));
     }
 
-    connect(ui->scaleCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(OnScaleByComboIndex(int)));
-    connect(ui->scaleCombo->lineEdit(), SIGNAL(editingFinished()), this, SLOT(OnScaleByComboText()));
+    connect(ui->scaleCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
+    connect(ui->scaleCombo->lineEdit(), &QLineEdit::editingFinished, this, &PreviewWidget::OnScaleByComboText);
 
-    connect(ui->verticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(OnVScrollbarMoved(int)));
-    connect(ui->horizontalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(OnHScrollbarMoved(int)));
+    connect(ui->verticalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnVScrollbarMoved);
+    connect(ui->horizontalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnHScrollbarMoved);
 
     ui->scaleCombo->setCurrentIndex(DEFAULT_SCALE_PERCENTAGE_INDEX);
     ui->scaleCombo->lineEdit()->setMaxLength(6);
@@ -61,9 +60,9 @@ PreviewWidget::PreviewWidget(QWidget *parent)
    
     connect(ui->davaGLWidget->GetGLWindow(), &QWindow::screenChanged, this, &PreviewWidget::OnMonitorChanged);
 
-    connect(model, SIGNAL(CanvasOrViewChanged(const QSize &, const QSize &)), this, SLOT(OnScrollAreaChanged(const QSize &, const QSize &)));
-    connect(model, SIGNAL(CanvasPositionChanged(const QPoint &)), this, SLOT(OnScrollPositionChanged(const QPoint &)));
-    connect(model, SIGNAL(CanvasScaleChanged(int)), this, SLOT(OnCanvasScaleChanged(int)));
+    connect(model, &PreviewModel::CanvasOrViewChanged, this, &PreviewWidget::OnScrollAreaChanged);
+    connect(model, &PreviewModel::CanvasPositionChanged, this, &PreviewWidget::OnScrollPositionChanged);
+    connect(model, &PreviewModel::CanvasScaleChanged, this, &PreviewWidget::OnCanvasScaleChanged);
 }
 
 PreviewWidget::~PreviewWidget()
@@ -92,6 +91,7 @@ void PreviewWidget::OnContextChanged(WidgetContext *context)
         OnScrollPositionChanged(model->GetCanvasPosition());
         OnCanvasScaleChanged(model->GetCanvasScale());
         OnMonitorChanged();
+
     }
 }
 
