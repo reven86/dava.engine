@@ -147,7 +147,11 @@ public class JNIWebView {
 
             @Override
             public void run() {
-                OnPageLoaded(id, pixels, width, height);
+                // if user lock screen just return - prevent crush in gl thread
+                if(!JNIGLSurfaceView.isPaused())
+                {
+                    OnPageLoaded(id, pixels, width, height);
+                }
             }
         }
 
