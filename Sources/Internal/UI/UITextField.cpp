@@ -198,8 +198,8 @@ void UITextField::CloseKeyboard()
 void UITextField::Update(float32 timeElapsed)
 {
 #ifdef __DAVAENGINE_IPHONE__
-	Rect rect = GetGeometricData().GetUnrotatedRect();//GetRect(true);
-	textFieldiPhone->UpdateRect(rect);
+    // Calling UpdateRect with allowNativeControlMove set to true
+	textFieldiPhone->UpdateRect(GetGeometricData().GetUnrotatedRect());
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->UpdateRect(GetGeometricData().GetUnrotatedRect());
 #else
