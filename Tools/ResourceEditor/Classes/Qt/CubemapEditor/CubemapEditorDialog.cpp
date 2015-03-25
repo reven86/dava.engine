@@ -81,23 +81,23 @@ CubemapEditorDialog::~CubemapEditorDialog()
 
 void CubemapEditorDialog::ConnectSignals()
 {
-    QObject::connect(ui->labelPX, SIGNAL(OnLabelClicked()), this, SLOT(OnPXClicked()));
-    QObject::connect(ui->labelNX, SIGNAL(OnLabelClicked()), this, SLOT(OnNXClicked()));
-    QObject::connect(ui->labelPY, SIGNAL(OnLabelClicked()), this, SLOT(OnPYClicked()));
-    QObject::connect(ui->labelNY, SIGNAL(OnLabelClicked()), this, SLOT(OnNYClicked()));
-    QObject::connect(ui->labelPZ, SIGNAL(OnLabelClicked()), this, SLOT(OnPZClicked()));
-    QObject::connect(ui->labelNZ, SIGNAL(OnLabelClicked()), this, SLOT(OnNZClicked()));
+    QObject::connect(ui->labelPX, &ClickableQLabel::OnLabelClicked, this, &CubemapEditorDialog::OnPXClicked);
+    QObject::connect(ui->labelNX, &ClickableQLabel::OnLabelClicked, this, &CubemapEditorDialog::OnNXClicked);
+    QObject::connect(ui->labelPY, &ClickableQLabel::OnLabelClicked, this, &CubemapEditorDialog::OnPYClicked);
+    QObject::connect(ui->labelNY, &ClickableQLabel::OnLabelClicked, this, &CubemapEditorDialog::OnNYClicked);
+    QObject::connect(ui->labelPZ, &ClickableQLabel::OnLabelClicked, this, &CubemapEditorDialog::OnPZClicked);
+    QObject::connect(ui->labelNZ, &ClickableQLabel::OnLabelClicked, this, &CubemapEditorDialog::OnNZClicked);
 
-    QObject::connect(ui->labelPX, SIGNAL(OnRotationChanged()), this, SLOT(OnRotationChanged()));
-    QObject::connect(ui->labelNX, SIGNAL(OnRotationChanged()), this, SLOT(OnRotationChanged()));
-    QObject::connect(ui->labelPY, SIGNAL(OnRotationChanged()), this, SLOT(OnRotationChanged()));
-    QObject::connect(ui->labelNY, SIGNAL(OnRotationChanged()), this, SLOT(OnRotationChanged()));
-    QObject::connect(ui->labelPZ, SIGNAL(OnRotationChanged()), this, SLOT(OnRotationChanged()));
-    QObject::connect(ui->labelNZ, SIGNAL(OnRotationChanged()), this, SLOT(OnRotationChanged()));
+    QObject::connect(ui->labelPX, &ClickableQLabel::OnRotationChanged, this, &CubemapEditorDialog::OnRotationChanged);
+    QObject::connect(ui->labelNX, &ClickableQLabel::OnRotationChanged, this, &CubemapEditorDialog::OnRotationChanged);
+    QObject::connect(ui->labelPY, &ClickableQLabel::OnRotationChanged, this, &CubemapEditorDialog::OnRotationChanged);
+    QObject::connect(ui->labelNY, &ClickableQLabel::OnRotationChanged, this, &CubemapEditorDialog::OnRotationChanged);
+    QObject::connect(ui->labelPZ, &ClickableQLabel::OnRotationChanged, this, &CubemapEditorDialog::OnRotationChanged);
+    QObject::connect(ui->labelNZ, &ClickableQLabel::OnRotationChanged, this, &CubemapEditorDialog::OnRotationChanged);
 
-    //QObject::connect(ui->buttonLoadTexture, SIGNAL(pressed()), this, SLOT(OnLoadTexture()));
-    QObject::connect(ui->buttonSave, SIGNAL(pressed()), this, SLOT(OnSave()));
-    QObject::connect(ui->buttonClose, SIGNAL(pressed()), this, SLOT(close()));
+    //QObject::connect(ui->buttonLoadTexture, SIGNAL(pressed, this, &CubemapEditorDialog::OnLoadTexture);
+    QObject::connect(ui->buttonSave, &QPushButton::pressed, this, &CubemapEditorDialog::OnSave);
+    QObject::connect(ui->buttonClose, &QPushButton::pressed, this, &CubemapEditorDialog::close);
 }
 
 void CubemapEditorDialog::LoadImageFromUserFile(float rotation, int face)
@@ -130,8 +130,9 @@ bool CubemapEditorDialog::LoadImageTo(const DAVA::String& filePath, int face, bo
     bool result = true;
 
     QString fileName = filePath.c_str();
-
-    if (VerifyImage(filePath, face))
+    FilePath path(filePath);
+    QString errorString;
+    if (VerifyImage(path, face, errorString))
     {
         QImage faceImage(fileName);
 
@@ -158,7 +159,9 @@ bool CubemapEditorDialog::LoadImageTo(const DAVA::String& filePath, int face, bo
     {
         if(!silent)
         {
-            QString message = QString("%1\n is not suitable as current cubemap face!").arg(fileName);
+            QString message = QString("%1\n is not suitable as current cubemap face!\n%2").
+                                     arg(fileName).
+                                     arg(errorString);
             ShowErrorDialog(message.toStdString());
         }
 
@@ -183,38 +186,46 @@ ClickableQLabel* CubemapEditorDialog::GetLabelForFace(int face)
     return labels[face];
 }
 
-bool CubemapEditorDialog::VerifyImage(const DAVA::String& filePath, int faceIndex)
+bool CubemapEditorDialog::VerifyImage(const DAVA::FilePath& path, int faceIndex, QString &errorString)
 {
     bool result = true;
 
-    FilePath path(filePath);
     ImageInfo info = ImageSystem::Instance()->GetImageInfo(path);
     if (info.format != FORMAT_RGBA8888)
     {
+        errorString = QString("Incorrect format.");
         result = false;
     }
     else if (GetLoadedFaceCount() > 1 ||
              (GetLoadedFaceCount() == 1 && QString::null == facePath[faceIndex]))
     {
-    if (info.width != faceWidth ||
-        info.height != faceHeight)
+        if (info.width != faceWidth ||
+            info.height != faceHeight)
         {
-            result = false;
+            errorString = QString("Image size not equal face size.");
+            return false;
         }
     }
-    else if (info.width != info.height ||
+
+    if (info.width != info.height)
+    {
+        errorString = QString("Width and height are not equal");
+        return false;
+    }
+    else if (!IsPowerOf2(info.width) ||
              !IsPowerOf2(info.height))
     {
-        result = false;
+        errorString = QString("Width or height are not power of two");
+        return false;
     }
-
-    return result;
+    
+    return true;
 }
 
 void CubemapEditorDialog::UpdateFaceInfo()
 {
-    ui->labelFaceHeight->setText(QString().setNum((int)faceHeight));
-    ui->labelFaceWidth->setText(QString().setNum((int)faceWidth));
+    ui->labelFaceHeight->setText(QString().setNum(static_cast<int>(faceHeight)));
+    ui->labelFaceWidth->setText(QString().setNum(static_cast<int>(faceWidth)));
 }
 
 void CubemapEditorDialog::UpdateButtonState()

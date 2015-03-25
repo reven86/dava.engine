@@ -53,7 +53,7 @@ ImageSystem::ImageSystem()
     
 ImageSystem::~ImageSystem()
 {
-    for(size_t i = 0; i < FILE_FORMAT_COUNT; ++i)
+    for (size_t i = 0; i < FILE_FORMAT_COUNT; ++i)
     {
         delete wrappers[i];
     }
@@ -62,7 +62,7 @@ ImageSystem::~ImageSystem()
 eErrorCode ImageSystem::Load(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap) const
 {
     File *fileRead = File::Create(pathname, File::READ | File::OPEN);
-    if(!fileRead)
+    if (nullptr == fileRead)
     {
         return ERROR_FILE_NOTFOUND;
     }
@@ -77,13 +77,13 @@ eErrorCode ImageSystem::Load(const FilePath & pathname, Vector<Image *> & imageS
 eErrorCode ImageSystem::Load(File *file, Vector<Image *> & imageSet, int32 baseMipmap) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(file->GetFilename());
-    if (!properWrapper)
+    if (nullptr == properWrapper)
     {
         // Retry by content.
         properWrapper = GetImageFormatInterface(file);
     }
     
-    if (NULL == properWrapper || !properWrapper->IsImage(file))
+    if (nullptr == properWrapper || !properWrapper->IsImage(file))
     {
         return ERROR_FILE_FORMAT_INCORRECT;
     }
@@ -125,7 +125,7 @@ void ImageSystem::EnsurePowerOf2Images(Vector<Image*>& images) const
 eErrorCode ImageSystem::SaveAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
-    if(!properWrapper)
+    if(nullptr == properWrapper)
     {
         return ERROR_FILE_FORMAT_INCORRECT;
     }
@@ -136,7 +136,7 @@ eErrorCode ImageSystem::SaveAsCubeMap(const FilePath & fileName, const Vector<Ve
 eErrorCode ImageSystem::Save(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
-    if(!properWrapper)
+    if(nullptr == properWrapper)
     {
         return ERROR_FILE_FORMAT_INCORRECT;
     }
@@ -146,7 +146,7 @@ eErrorCode ImageSystem::Save(const FilePath & fileName, const Vector<Image *> &i
 
 eErrorCode ImageSystem::Save(const FilePath & fileName, Image *image, PixelFormat compressionFormat) const
 {
-    if (NULL == image)
+    if (nullptr == image)
     {
         return ERROR_WRITE_FAIL;
     }
@@ -158,29 +158,29 @@ eErrorCode ImageSystem::Save(const FilePath & fileName, Image *image, PixelForma
 ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & pathname) const
 {
     String extension = pathname.GetExtension();
-    for(int32 i = 0; i < FILE_FORMAT_COUNT ; ++i)
+    for (int32 i = 0; i < FILE_FORMAT_COUNT; ++i)
     {
-        if(wrappers[i]->IsFileExtensionSupported(extension))
+        if (wrappers[i]->IsFileExtensionSupported(extension))
         {
             return wrappers[i];
         }
     }
     
-    return NULL;
+    return nullptr;
 }
 
 ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
 {
-    for(int32 i = 0; i < FILE_FORMAT_COUNT; ++i)
+    for (int32 i = 0; i < FILE_FORMAT_COUNT; ++i)
     {
-        if( wrappers[i]->IsImage(file))
+        if (wrappers[i]->IsImage(file))
         {
             return  wrappers[i];
         }
     }
     DVASSERT(0);
     
-    return NULL;
+    return nullptr;
 }
 
 ImageInfo ImageSystem::GetImageInfo(const FilePath & pathName) const
@@ -191,17 +191,17 @@ ImageInfo ImageSystem::GetImageInfo(const FilePath & pathName) const
 
 ImageInfo ImageSystem::GetImageInfo(File *infile) const
 {
-    if (!infile)
+    if (nullptr == infile)
         return ImageInfo();
 
     ImageFormatInterface* properWrapper = GetImageFormatInterface(infile->GetFilename());
-    if (!properWrapper)
+    if (nullptr == properWrapper)
     {
         // Retry by content.
         properWrapper = GetImageFormatInterface(infile);
     }
 
-    if (NULL == properWrapper || !properWrapper->IsImage(infile))
+    if (nullptr == properWrapper || !properWrapper->IsImage(infile))
     {
         return ImageInfo();
     }

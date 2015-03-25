@@ -77,7 +77,7 @@ protected:
 protected:
     void ConnectSignals();
     void LoadImageFromUserFile(float rotation, int face);
-    bool VerifyImage(const DAVA::String& filePath, int faceIndex);
+    bool VerifyImage(const DAVA::FilePath& path, int faceIndex, QString &errorString);
     void UpdateFaceInfo();
     void UpdateButtonState();
     bool AnyFaceLoaded();

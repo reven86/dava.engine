@@ -44,7 +44,6 @@
 namespace DAVA 
 {
 class Image;
-
     
 class ImageSystem: public Singleton<ImageSystem>
 {
@@ -80,9 +79,6 @@ public:
     
 protected:
     ImageFormatInterface* wrappers[FILE_FORMAT_COUNT];
-
-private:
-    ImageInfo InstallImageInfo(Vector<Image *> imageSet) const;
 };
    
 };

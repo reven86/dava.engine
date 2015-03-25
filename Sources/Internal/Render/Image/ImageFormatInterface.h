@@ -35,6 +35,7 @@
 #include "Render/RenderBase.h"
 #include "FileSystem/FilePath.h"
 #include "Utils/Utils.h"
+#include "Render/PixelFormatDescriptor.h"
 
 namespace DAVA 
 {
@@ -50,6 +51,22 @@ struct ImageInfo
         format = FORMAT_INVALID;
     }
 
+    bool isEmpty()
+    {
+        return (0 == width || 0 == height);
+    }
+
+    Size2i GetImageSize() const
+    {
+        return Size2i(width, height);
+    }
+
+    uint32 GetDataSize() const
+    {
+        uint32 dataSize = width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
+        return dataSize;
+    }
+
     uint32 width;
     uint32 height;
     PixelFormat format;
@@ -59,32 +76,28 @@ struct ImageInfo
 class ImageFormatInterface
 {
 public:
-    
     virtual ~ImageFormatInterface()
     {};
-    
+
     virtual bool IsImage(File *file) const = 0;
-    
+
     virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 fromMipmap) const = 0;
-    
+
     virtual eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const = 0;
     virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const = 0;
-    
-    virtual uint32 GetDataSize(File *infile) const = 0;
 
-	Size2i GetImageSize(const FilePath & fileName) const;
-    virtual Size2i GetImageSize(File *infile) const = 0;
-    virtual ImageInfo GetImageInfo(const FilePath &fileName) const;
-    virtual ImageInfo GetImageInfo(File *infile) const;
+    inline virtual ImageInfo GetImageInfo(File *infile) const;
 
-    
     inline bool IsFileExtensionSupported(const String& extension) const;
     
 protected:
-
     Vector<String> supportedExtensions;
-    
 };
+
+inline ImageInfo ImageFormatInterface::GetImageInfo(File *infile) const
+{
+    return ImageInfo();
+}
     
 inline bool ImageFormatInterface::IsFileExtensionSupported(const String& extension) const
 {

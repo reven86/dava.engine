@@ -55,35 +55,11 @@ public:
     eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const override;
     eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const override;
 
-    uint32 GetDataSize(File *infile) const override;
-    Size2i GetImageSize(File *infile) const override;
     ImageInfo GetImageInfo(File *infile) const override;
 
     static int ReadPngFile(File *infile, Image * image, PixelFormat targetFormat = FORMAT_INVALID);
 };
 
-class PngImage : public BaseObject
-{
-protected:
-    ~PngImage();
-public:
-    PngImage();
-
-    bool Create(int32 _width, int32 _height);
-    bool CreateFromFBOSprite(Sprite * fboSprite);
-
-    void DrawImage(int sx, int sy, PngImage * image);
-    void DrawRect(const Rect2i & rect, uint32 color);
-
-    uint8 *GetData() { return data; };
-    int32 GetWidth() { return width; };
-    int32 GetHeight() { return height; }; 
-private:
-    int32 width;
-    int32 height;
-    uint8 *data;
-    PixelFormat format;
-};
-};
+}
 
 #endif // __PNG_IMAGE_H__
