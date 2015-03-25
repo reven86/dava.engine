@@ -300,8 +300,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         UpdateGamepadAxises();
         
         JNIUtils.keepScreenOnOnResume();
-        JNITextField.HideAllTextFields();
-        JNIWebView.HideAllWebViews();
 
         isPausing = false;
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
@@ -362,10 +360,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			HideNavigationBar(getWindow().getDecorView());
 			
 			glView.onResume();
-			// next two calls can render views into textures
-			// we can call it only after GLSurfaceView.onResume
-			JNITextField.ShowVisibleTextFields();
-			JNIWebView.ShowVisibleWebViews();
     	} else {
     		JNITextField.DestroyKeyboardLayout(getWindowManager());
     		ShowSplashScreenView();
@@ -492,6 +486,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 				if (splashView != null) {
 				    Log.i(JNIConst.LOG_TAG, "splashView set visible");
 				    splashView.setVisibility(View.VISIBLE);
+				    //splashView.bringToFront();
+				    JNITextField.HideAllTextFields();
+				    JNIWebView.HideAllWebViews();
 				}
 			}
 		});
@@ -505,6 +502,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 				if (splashView != null) {
 				    Log.i(JNIConst.LOG_TAG, "splashView hide");
 					splashView.setVisibility(View.GONE);
+					// next two calls can render views into textures
+					// we can call it only after GLSurfaceView.onResume
+					//glView.bringToFront();
+					JNITextField.ShowVisibleTextFields();
+					JNIWebView.ShowVisibleWebViews();
 				}
 			}
 		});
