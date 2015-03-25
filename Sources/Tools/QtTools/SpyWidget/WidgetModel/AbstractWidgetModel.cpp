@@ -12,18 +12,9 @@ AbstractWidgetModel::~AbstractWidgetModel()
 {
 }
 
-QWidget* AbstractWidgetModel::widgetFromIndex( const QModelIndex& index ) const
-{
-    if ( !index.isValid() )
-        return nullptr;
-
-    auto widget = static_cast<QWidget *>( index.internalPointer() );
-    return widget;
-}
-
 int AbstractWidgetModel::columnCount( const QModelIndex& parent ) const
 {
-    return 3;
+    return COLUMN_COUNT;
 }
 
 QVariant AbstractWidgetModel::headerData( int section, Qt::Orientation orientation, int role ) const
@@ -44,11 +35,14 @@ QVariant AbstractWidgetModel::data( const QModelIndex& index, int role ) const
     if ( !index.isValid() )
         return QVariant();
 
-    auto widget = static_cast<QWidget *>( index.internalPointer() );
+    auto w = widgetFromIndex( index );
+    if ( w == nullptr )
+        return QVariant();
+
     switch ( role )
     {
     case Qt::DisplayRole:
-        return textDataForColumn( index );
+        return textDataForColumn( w, index.column() );
     default:
         break;
     }
@@ -65,19 +59,18 @@ bool AbstractWidgetModel::setData( const QModelIndex& index, const QVariant& val
     return false;
 }
 
-QVariant AbstractWidgetModel::textDataForColumn( const QModelIndex& index ) const
+QVariant AbstractWidgetModel::textDataForColumn( QWidget *w, int column ) const
 {
-    auto widget = static_cast<QWidget *>( index.internalPointer() );
-    auto meta = widget->metaObject();
+    auto meta = w->metaObject();
 
-    switch ( index.column() )
+    switch ( column )
     {
     case TITLE:
         return QString( "%1" ).arg( meta->className() );
     case CLASSNAME:
         return QString( ".%1" ).arg( meta->className() );
     case OBJECTNAME:
-        return QString( "#%1" ).arg( widget->objectName() );
+        return QString( "#%1" ).arg( w->objectName() );
     default:
         break;
     }

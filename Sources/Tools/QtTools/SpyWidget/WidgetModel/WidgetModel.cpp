@@ -2,84 +2,39 @@
 
 #include <QMetaObject>
 
+#include "WidgetItem.h"
 
-WidgetModel::WidgetModel( QObject* parent )
-    : AbstractWidgetModel( parent )
-    , root( nullptr )
+
+WidgetModel::WidgetModel( QWidget *w )
+    : AbstractWidgetModel( w )
+    , root( WidgetItem::create( w ) )
 {
-    if ( parent != nullptr && parent->isWidgetType() )
-    {
-        trackWidget( qobject_cast<QWidget *>( parent ) );
-    }
+    root->rebuildChildren();
 }
 
 WidgetModel::~WidgetModel()
 {
 }
 
-void WidgetModel::trackWidget( QWidget* w )
+QWidget* WidgetModel::widgetFromIndex( const QModelIndex& index ) const
 {
-    beginResetModel();
+    if ( !index.isValid() )
+        return nullptr;
 
-    if ( !root.isNull() )
-        root->removeEventFilter( this );
+    auto item = static_cast<WidgetItem *>( index.internalPointer() );
 
-    root = w;
-
-    if ( !root.isNull() )
-        root->installEventFilter( this );
-
-    endResetModel();
-}
-
-bool WidgetModel::eventFilter( QObject* obj, QEvent* e )
-{
-    return QAbstractItemModel::eventFilter( obj, e );
+    return item->widget;
 }
 
 int WidgetModel::rowCount( const QModelIndex& parent ) const
 {
-    if ( root.isNull() )
-        return 0;
-
     if ( !parent.isValid() )
         return 1;
 
-    auto w = static_cast<QWidget *>( parent.internalPointer() );
-    auto children = w->findChildren< QWidget * >( QString(), Qt::FindDirectChildrenOnly );
+    auto item = static_cast<WidgetItem *>( parent.internalPointer() );
+    Q_ASSERT( item != nullptr );
 
-    return children.size();
-}
-
-bool WidgetModel::canFetchMore( const QModelIndex& parent ) const
-{
-    if ( !parent.isValid() )
-        return false;
-
-    auto w = static_cast<QWidget *>( parent.internalPointer() );
-    auto children = w->findChildren< QWidget * >( QString(), Qt::FindDirectChildrenOnly );
-
-    return !children.isEmpty();
-}
-
-void WidgetModel::fetchMore( const QModelIndex& parent )
-{
-    auto w = static_cast<QWidget *>( parent.internalPointer() );
-    auto children = w->findChildren< QWidget * >( QString(), Qt::FindDirectChildrenOnly );
-
-    for ( auto child : children )
-        child->installEventFilter( this );
-}
-
-bool WidgetModel::hasChildren( const QModelIndex& parent ) const
-{
-    if ( !parent.isValid() )
-        return !root.isNull();
-
-    auto w = static_cast<QWidget *>( parent.internalPointer() );
-    auto children = w->findChildren< QWidget * >( QString(), Qt::FindDirectChildrenOnly );
-
-    return !children.isEmpty();
+    return item->children.size();
 }
 
 QModelIndex WidgetModel::index( int row, int column, const QModelIndex& parent ) const
@@ -89,16 +44,17 @@ QModelIndex WidgetModel::index( int row, int column, const QModelIndex& parent )
 
     if ( !parent.isValid() )
     {
-        Q_ASSERT( row == 0 );
-        return createIndex( row, column, root.data() );
+        if ( row != 0 || column >= COLUMN_COUNT )
+            return QModelIndex();
+
+        return createIndex( 0, column, root.data() );
     }
 
-    auto pw = static_cast<QWidget *>( parent.internalPointer() );
-    auto children = pw->findChildren< QWidget * >( QString(), Qt::FindDirectChildrenOnly );
-    auto w = children.at( row );
-    Q_ASSERT( w );
+    auto p = static_cast<WidgetItem *>( parent.internalPointer() );
+    auto item = p->children.at( row );
+    Q_ASSERT( item );
 
-    return createIndex( row, column, w );
+    return createIndex( row, column, item.data() );
 }
 
 QModelIndex WidgetModel::parent( const QModelIndex& index ) const
@@ -106,18 +62,26 @@ QModelIndex WidgetModel::parent( const QModelIndex& index ) const
     if ( !index.isValid() )
         return QModelIndex();
 
-    auto w = static_cast<QWidget *>( index.internalPointer() );
-    auto pw = w->parentWidget();
-
-    if ( pw == nullptr )
+    auto item = static_cast<WidgetItem *>( index.internalPointer() );
+    auto parentItem = item->parentItem;
+    if ( parentItem.isNull() )
         return QModelIndex();
-
-    if ( pw->parentWidget() == nullptr )
+    
+    auto parentOfParentItem = parentItem->parentItem;
+    if ( parentOfParentItem.isNull() )
         return createIndex( 0, 0, root.data() );
 
-    auto parentList = pw->parentWidget()->findChildren< QWidget * >( QString(), Qt::FindDirectChildrenOnly );
-    auto parentRow = parentList.indexOf( pw );
-    Q_ASSERT( parentRow >= 0 );
+    // Getting row for parent
+    auto row = -1;
+    for ( auto i = 0; i < parentOfParentItem->children.size(); row++ )
+    {
+        if ( parentOfParentItem->children.at( i ) == parentItem )
+        {
+            row = i;
+            break;
+        }
+    }
+    Q_ASSERT( row >= 0 );
 
-    return createIndex( parentRow, 0, pw );
+    return createIndex( row, 0, parentItem.data() );
 }

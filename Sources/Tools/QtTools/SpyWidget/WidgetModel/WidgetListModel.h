@@ -16,12 +16,13 @@ public:
     explicit WidgetListModel( QObject *parent = nullptr );
     ~WidgetListModel();
 
+    QWidget *widgetFromIndex( const QModelIndex& index ) const override;
+    void setWidgetList( const QWidgetList& widgetList = QWidgetList() );
+
     int rowCount( const QModelIndex& parent = QModelIndex() ) const override;
 
     QModelIndex	index( int row, int column, const QModelIndex& parent = QModelIndex() ) const override;
     QModelIndex	parent( const QModelIndex& index ) const override;
-
-    void setWidgetList( const QWidgetList& widgetList = QWidgetList() );
 
 private slots:
     void onWidgetDestroyed();

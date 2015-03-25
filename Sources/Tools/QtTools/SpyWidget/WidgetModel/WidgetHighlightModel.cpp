@@ -57,5 +57,6 @@ void WidgetHighlightModel::onWidgetDestroyed()
 
 void WidgetHighlightModel::invalidate()
 {
-    emit dataChanged( QModelIndex(), QModelIndex(), QVector<int>() << Qt::DisplayRole << Qt::TextColorRole << Qt::BackgroundRole );
+    static const auto roles = QVector<int>() << Qt::DisplayRole << Qt::TextColorRole << Qt::BackgroundRole;
+    emit dataChanged( QModelIndex(), QModelIndex(), roles );
 }

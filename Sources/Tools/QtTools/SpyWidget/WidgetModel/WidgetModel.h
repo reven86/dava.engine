@@ -4,8 +4,12 @@
 
 #include <QPointer>
 #include <QWidget>
+#include <QSharedPointer>
 
 #include "AbstractWidgetModel.h"
+
+
+class WidgetItem;
 
 
 class WidgetModel
@@ -14,25 +18,19 @@ class WidgetModel
     Q_OBJECT
 
 public:
-    explicit WidgetModel( QObject *parent );
+    explicit WidgetModel( QWidget *w );
     ~WidgetModel();
 
-    void trackWidget( QWidget *w );
-
-    // QObject
-    bool eventFilter( QObject *obj, QEvent *e ) override;
+    QWidget* widgetFromIndex( const QModelIndex& index ) const override;
 
     // QAbstractItemModel
     int rowCount( const QModelIndex& parent = QModelIndex() ) const override;
 
-    bool canFetchMore( const QModelIndex& parent ) const override;
-    void fetchMore( const QModelIndex& parent ) override;
-    bool hasChildren( const QModelIndex& parent = QModelIndex() ) const override;
     QModelIndex	index( int row, int column, const QModelIndex& parent = QModelIndex() ) const override;
     QModelIndex	parent( const QModelIndex& index ) const override;
 
 private:
-    QPointer< QWidget > root;
+    QSharedPointer< WidgetItem > root;
 };
 
 

@@ -13,6 +13,15 @@ WidgetListModel::~WidgetListModel()
 {
 }
 
+QWidget* WidgetListModel::widgetFromIndex( const QModelIndex& index ) const
+{
+    if ( !index.isValid() )
+        return nullptr;
+
+    auto widget = static_cast<QWidget *>( index.internalPointer() );
+    return widget;
+}
+
 int WidgetListModel::rowCount( const QModelIndex& parent ) const
 {
     if ( !parent.isValid() )

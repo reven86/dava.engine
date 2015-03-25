@@ -15,6 +15,29 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_5">
    <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Spy options</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <layout class="QFormLayout" name="formLayout_4">
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="keepOnTop">
+          <property name="text">
+           <string>Always on top</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
       <number>0</number>
@@ -34,7 +57,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="className">
+          <widget class="QLineEdit" name="classNameText">
            <property name="readOnly">
             <bool>true</bool>
            </property>
@@ -48,7 +71,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLineEdit" name="objectName">
+          <widget class="QLineEdit" name="objectNameText">
            <property name="readOnly">
             <bool>true</bool>
            </property>
@@ -90,12 +113,12 @@
           </widget>
          </item>
          <item row="4" column="1">
-          <widget class="QCheckBox" name="isVisible">
+          <widget class="QCheckBox" name="visibleState">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Visible</string>
-           </property>
-           <property name="checkable">
-            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -107,12 +130,12 @@
           </widget>
          </item>
          <item row="5" column="1">
-          <widget class="QCheckBox" name="isModal">
+          <widget class="QCheckBox" name="modalState">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Modal</string>
-           </property>
-           <property name="checkable">
-            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -124,12 +147,12 @@
           </widget>
          </item>
          <item row="6" column="1">
-          <widget class="QCheckBox" name="mouseTrack">
+          <widget class="QCheckBox" name="mouseTrackState">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Mouse tracked</string>
-           </property>
-           <property name="checkable">
-            <bool>false</bool>
            </property>
           </widget>
          </item>

@@ -16,6 +16,9 @@ class SpyWidget
 public:
     explicit SpyWidget( QWidget *parent = nullptr );
     ~SpyWidget();
+
+private slots:
+    void onKeepOnTopChanged();
 };
 
 

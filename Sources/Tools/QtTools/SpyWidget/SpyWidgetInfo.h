@@ -6,7 +6,10 @@
 
 
 class QWidget;
+class QTimer;
+
 class SpyWidget;
+class WidgetModel;
 
 
 class SpyWidgetInfo
@@ -20,12 +23,17 @@ public:
 
     void trackWidget( QWidget *w );
 
+    bool eventFilter( QObject *obj, QEvent *e ) override;
+
 public slots:
     void show();
+    void updateInformation();
 
 private:
     QPointer< SpyWidget > view;
     QPointer< QWidget > widget;
+    QPointer< QTimer > updateTimer;
+    QPointer< WidgetModel > widgetModel;
 };
 
 
