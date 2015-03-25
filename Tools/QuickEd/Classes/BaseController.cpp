@@ -10,6 +10,7 @@
 #include "UI/Package/PackageWidget.h"
 #include "Ui/Library/LibraryWidget.h"
 #include "Ui/Properties/PropertiesWidget.h"
+#include "UI/Preview/PreviewWidget.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "UI/WidgetContext.h"
@@ -24,9 +25,6 @@ BaseController::BaseController(QObject *parent)
 {
     mainWindow.CreateUndoRedoActions(documentGroup.GetUndoGroup());
     connect(&mainWindow, &MainWindow::TabClosed, this, &BaseController::CloseOneDocument);
-
-    connect(mainWindow.GetPackageWidget(), &PackageWidget::SelectionControlChanged, &documentGroup, &DocumentGroup::OnSelectionControlChanged);
-    connect(mainWindow.GetPackageWidget(), &PackageWidget::SelectionRootControlChanged, &documentGroup, &DocumentGroup::OnSelectionRootControlChanged);
 
     connect(&mainWindow, &MainWindow::CloseProject, this, &BaseController::CloseProject);
     connect(&mainWindow, &MainWindow::ActionExitTriggered, this, &BaseController::Exit);
@@ -44,9 +42,8 @@ BaseController::BaseController(QObject *parent)
     connect(&documentGroup, &DocumentGroup::PropertiesDataChanged, mainWindow.GetPropertiesWidget(), &PropertiesWidget::OnDataChanged);
     connect(&documentGroup, &DocumentGroup::PackageContextChanged, mainWindow.GetPackageWidget(), &PackageWidget::OnContextChanged);
     connect(&documentGroup, &DocumentGroup::PackageDataChanged, mainWindow.GetPackageWidget(), &PackageWidget::OnDataChanged);
-
-    connect(&documentGroup, &DocumentGroup::controlSelectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnControlSelectedInEditor);
-    connect(&documentGroup, &DocumentGroup::allControlsDeselectedInEditor, mainWindow.GetPackageWidget(), &PackageWidget::OnAllControlsDeselectedInEditor);
+    connect(&documentGroup, &DocumentGroup::PreviewContextChanged, mainWindow.GetPreviewWidget(), &PreviewWidget::OnContextChanged);
+    connect(&documentGroup, &DocumentGroup::PreviewDataChanged, mainWindow.GetPreviewWidget(), &PreviewWidget::OnDataChanged);
 }
 
 BaseController::~BaseController()

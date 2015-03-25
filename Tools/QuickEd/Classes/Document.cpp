@@ -1,12 +1,11 @@
 #include "Document.h"
-#include <DAVAEngine.h>
 #include <QLineEdit>
 #include <QAction>
 #include <QItemSelection>
 
 #include "UI/Package/PackageModel.h"
+
 #include "UI/Library/LibraryModel.h"
-#include "UI/Properties/PropertiesModel.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
@@ -35,47 +34,49 @@ Document::Document(PackageNode *_package, QObject *parent)
     , undoStack(new QUndoStack(this))
 {
     InitWidgetContexts();
-    //!! TODO: implement this
-    /*connect(this, SIGNAL(activeRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), previewContext, SLOT(OnActiveRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
 
-    connect(previewContext, SIGNAL(ControlNodeSelected(ControlNode*)), this, SLOT(OnControlSelectedInEditor(ControlNode*)));
-    connect(previewContext, SIGNAL(AllControlsDeselected()), this, SLOT(OnAllControlDeselectedInEditor()));*/
-
-    
+    QList<ControlNode*> activeRootControls;
     PackageControlsNode *controlsNode = package->GetPackageControlsNode();
     for (int32 index = 0; index < controlsNode->GetCount(); ++index)
         activeRootControls.push_back(controlsNode->Get(index));
 
-    if (!activeRootControls.empty())
-        emit activeRootControlsChanged(activeRootControls, QList<ControlNode*>());
+    previewContext->SetData(QVariant::fromValue(activeRootControls), "activeRootControls");
     ConnectWidgetContexts();
 }
 
 void Document::InitWidgetContexts()
 {
-    libraryContext->SetData(new LibraryModel(package, this), "model");
+    libraryContext->SetData(QVariant::fromValue(new LibraryModel(package, this)), "model");
 
-    PackageModel *packageModel = new PackageModel(package, commandExecutor, this);
-    packageContext->SetData(packageModel, "model");
+    packageContext->SetData(QVariant::fromValue(new PackageModel(package, commandExecutor, this)), "model");
+
+    DAVA::UIControl *view = new DAVA::UIControl();
+    DAVA::UIControl *canvas = new DAVA::UIControl();
+    view->AddControl(canvas);
+    previewContext->SetData(QVariant::fromValue(view), "view");
+    previewContext->SetData(QVariant::fromValue(canvas), "canvas");
+    previewContext->SetData(false, "controlDeselected");
+    packageContext->SetData(false, "controlsDeselected");
+    
 }
 
 void Document::ConnectWidgetContexts() const
 {
-    connect(libraryContext, &WidgetContext::DataChanged, this, &Document::LibraryDataChanged, Qt::DirectConnection);
-    connect(packageContext, &WidgetContext::DataChanged, this, &Document::PackageDataChanged, Qt::DirectConnection);
-    connect(propertiesContext, &WidgetContext::DataChanged, this, &Document::PropertiesDataChanged, Qt::DirectConnection);
-    connect(previewContext, &WidgetContext::DataChanged, this, &Document::PreviewDataChanged, Qt::DirectConnection);
+    connect(packageContext, &WidgetContext::DataChanged, this, &Document::OnPackageContextDataChanged);
+    connect(previewContext, &WidgetContext::DataChanged, this, &Document::OnPreviewContextDataChanged);
+
+    connect(libraryContext, &WidgetContext::DataChanged, this, &Document::LibraryDataChanged);
+    connect(packageContext, &WidgetContext::DataChanged, this, &Document::PackageDataChanged);
+    connect(propertiesContext, &WidgetContext::DataChanged, this, &Document::PropertiesDataChanged);
+    connect(previewContext, &WidgetContext::DataChanged, this, &Document::PreviewDataChanged);
 }
 
 Document::~Document()
-{
-    SafeDelete(packageContext);
-    SafeDelete(previewContext);
-    
+{   
     SafeRelease(package);
     
     SafeRelease(commandExecutor);
-    }
+}
 
 bool Document::IsModified() const
 {
@@ -104,12 +105,12 @@ WidgetContext *Document::GetPropertiesContext() const
 
 PropertiesModel *Document::GetPropertiesModel() const
 {
-    return propertiesContext->GetData<PropertiesModel*>("model");
+    return propertiesContext->GetData("model").value<PropertiesModel*>();
 }
 
 PackageModel* Document::GetPackageModel() const
 {
-    return packageContext->GetData<PackageModel*>("model");
+    return packageContext->GetData("model").value<PackageModel*>();
 }
 
 WidgetContext* Document::GetPackageContext() const
@@ -122,43 +123,35 @@ WidgetContext *Document::GetPreviewContext() const
     return previewContext;
 }
 
-void Document::OnSelectionRootControlChanged(const QList<ControlNode*> &activatedRootControls, const QList<ControlNode*> &deactivatedRootControls)
+void Document::OnPreviewContextDataChanged(const QByteArray &role)
 {
-    activeRootControls.clear();
-    foreach(ControlNode *control, activatedRootControls)
+    if (role == "selectedNode")
     {
-        activeRootControls.push_back(control);
+        packageContext->SetData(previewContext->GetData(role), role);
     }
-
-    emit activeRootControlsChanged(activeRootControls, deactivatedRootControls);
-}
-
-void Document::OnSelectionControlChanged(const QList<ControlNode*> &activatedControls, const QList<ControlNode*> &deactivatedControls)
-{
-    for (ControlNode *control : deactivatedControls)
+    else if (role == "controlDeselected")
     {
-        auto it = std::find(selectedControls.begin(), selectedControls.end(), control);
-        if (it != selectedControls.end())
-            selectedControls.erase(it);
+        packageContext->SetData(!packageContext->GetData(role).toBool(), role);
     }
-    
-    for (ControlNode *control : activatedControls)
-        selectedControls.push_back(control);
-
-
-    QAbstractItemModel* model = activatedControls.empty() ? nullptr : new PropertiesModel(activatedControls.first(), this);
-    propertiesContext->SetData(model, "model");
-
-    //!!TODO: restore it previewContext->OnSelectedControlsChanged(activatedControls, deactivatedControls);
-
 }
 
-void Document::OnControlSelectedInEditor(ControlNode *activatedControl)
+void Document::OnPackageContextDataChanged(const QByteArray &role)
 {
-    emit controlSelectedInEditor(activatedControl);
-}
+    if (role == "activatedControls")
+    {
+        QVariant selected = packageContext->GetData("activatedControls");
+        QList<ControlNode*> &activatedControls = selected.value<QList<ControlNode*> >();
+        QAbstractItemModel* model = activatedControls.empty() ? nullptr : new PropertiesModel(activatedControls.first(), this);
+        propertiesContext->SetData(QVariant::fromValue(model), "model");
 
-void Document::OnAllControlDeselectedInEditor()
-{
-    emit allControlsDeselectedInEditor();
+        previewContext->SetData(selected, "activatedControls");
+    }
+    else if (role == "deactivatedControls")
+    {
+        previewContext->SetData(packageContext->GetData("deactivatedControls"), "deactivatedControls");
+    }
+    else if (role == "activeRootControls")
+    {
+        previewContext->SetData(packageContext->GetData("activeRootControls"), "activeRootControls");
+    }
 }

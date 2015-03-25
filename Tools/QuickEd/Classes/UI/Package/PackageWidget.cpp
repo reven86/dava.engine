@@ -75,13 +75,17 @@ void PackageWidget::OnContextChanged(WidgetContext *context)
 {
     ui->treeView->setUpdatesEnabled(false);
 
-    if (widgetContext)
+    if (nullptr != widgetContext)
     {
         SaveExpanded();
         SaveSelection();
         SaveFilterString();
     }
     widgetContext = context;
+    if (nullptr == widgetContext)
+    {
+        OnAllControlsDeselectedInEditor();
+    }
     UpdateModel();
     UpdateExpanded();
     UpdateSelection();
@@ -97,19 +101,28 @@ void PackageWidget::OnDataChanged(const QByteArray &role)
     {
         UpdateModel();
     }
+    if (role == "selectedNode")
+    {
+        OnControlSelectedInEditor(widgetContext->GetData("selectedNode").value<ControlNode*>());
+    }
+    if (role == "controlDeselected")
+    {
+        OnAllControlsDeselectedInEditor();
+    }
 }
 
 void PackageWidget::UpdateModel()
 {
     if (nullptr != widgetContext)
     {
-        QAbstractItemModel *model = widgetContext->GetData<QAbstractItemModel*>("model");
+        QAbstractItemModel *model = widgetContext->GetData("model").value<QAbstractItemModel*>();
         if (nullptr != model)
         {
             proxyModel = new FilteredPackageModel(this);
             proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
             proxyModel->setSourceModel(model);
             ui->treeView->setModel(proxyModel);
+            ui->treeView->expandToDepth(0);
             connect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(OnSelectionChanged(const QItemSelection &, const QItemSelection &)));
             return;
         }
@@ -126,11 +139,8 @@ void PackageWidget::UpdateSelection()
     }
     else
     {
-        QItemSelection *selection = widgetContext->GetData<QItemSelection*>("selection");
-        if (nullptr != selection)
-        {
-            ui->treeView->selectionModel()->select(*selection, QItemSelectionModel::ClearAndSelect);
-        }
+        QItemSelection selection = widgetContext->GetData("selection").value<QItemSelection>();
+        ui->treeView->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
     }
 }
 
@@ -142,13 +152,8 @@ void PackageWidget::UpdateExpanded()
     }
     else
     {
-        const QList<QPersistentModelIndex> *indexList = widgetContext->GetData<QList<QPersistentModelIndex> *>("expanded");
-        if (nullptr == indexList)
-        {
-            return;
-        }
-
-        for (const auto &index : *indexList)
+        const QList<QPersistentModelIndex> indexList = widgetContext->GetData("expanded").value<QList<QPersistentModelIndex> >();
+        for (const auto &index : indexList)
         {
             if (index.isValid())
             {
@@ -166,20 +171,18 @@ void PackageWidget::UpdateFilterString()
     }
     else
     {
-        ui->filterLine->setText(widgetContext->GetData<QString>("filterString"));
+        ui->filterLine->setText(widgetContext->GetData("filterString").toString());
     }
 }
 
 void PackageWidget::SaveSelection()
 {
-    QItemSelection *selection = new QItemSelection(ui->treeView->selectionModel()->selection());
-    widgetContext->SetData(selection, "selection");
+    widgetContext->SetData(QVariant::fromValue(ui->treeView->selectionModel()->selection()), "selection");
 }
 
 void PackageWidget::SaveExpanded()
 {
-    QList<QPersistentModelIndex> *indexList = new QList<QPersistentModelIndex>(GetExpandedIndexes());
-    widgetContext->SetData(indexList, "expanded");
+    widgetContext->SetData(QVariant::fromValue(GetExpandedIndexes()), "expanded");
 }
 
 void PackageWidget::SaveFilterString()
@@ -260,7 +263,7 @@ void PackageWidget::RemoveNodes(const DAVA::Vector<ControlNode*> &nodes)
 
 void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
 {
-    if (nullptr == widgetContext)
+    if (nullptr == proxyModel)
     {
         return;
     }
@@ -313,12 +316,10 @@ void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, cons
     }
 
     RefreshActions(selectedIndexList);
-
-    if (!selectedRootControl.empty() || !deselectedRootControl.empty())
-    {
-        emit SelectionRootControlChanged(selectedRootControl, deselectedRootControl);
-    }
-    emit SelectionControlChanged(selectedControl, deselectedControl);
+    widgetContext->SetData(QVariant::fromValue(selectedRootControl), "activeRootControls");
+    widgetContext->SetData(QVariant::fromValue(deselectedRootControl), "deactivatedControls");
+    widgetContext->SetData(QVariant::fromValue(selectedControl), "activatedControls");
+    widgetContext->SetData(QVariant::fromValue(deselectedControl), "deactivatedControls");
 }
 
 void PackageWidget::OnCopy()

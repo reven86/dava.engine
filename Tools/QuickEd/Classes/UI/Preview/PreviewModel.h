@@ -8,6 +8,7 @@
 
 #include "ControlSelectionListener.h"
 
+
 class PackageCanvas;
 class ControlNode;
 class CheckeredCanvas;
@@ -19,7 +20,8 @@ class PreviewModel: public QObject, ControlSelectionListener
 public:
     PreviewModel(QObject *parent = nullptr);
     virtual ~PreviewModel();
-
+    void SetData(DAVA::UIControl *view, PackageCanvas *canvas);
+    bool IsValid() const;
     void SetViewControlSize(const QSize &newSize);
     void SetCanvasControlSize(const QSize &newSize);
     void SetCanvasControlScale(int newScale);
@@ -31,7 +33,9 @@ public:
     QSize GetScaledCanvasSize() const;
     QSize GetViewSize() const;
 
-    inline DAVA::UIControl *GetViewControl() const { return view; }
+    DAVA::UIControl *GetViewControl() const;
+
+    void SetActiveRootControls(const QList<ControlNode*> &activatedControls);
 signals:
     void CanvasPositionChanged(const QPoint &canvasPosition);
     void CanvasOrViewChanged(const QSize &viewSize, const QSize &scaledContentSize);
@@ -43,11 +47,9 @@ signals:
 public: // ControlSelectionListener
     virtual void OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIControl *selectedControl);
     virtual void OnAllControlsDeselected();
+    void ControlsDeactivated(const QList<ControlNode*> &deactivatedControls);
+    void ControlsActivated(const QList<ControlNode *> &activatedControls);
     
-public slots:
-    void OnActiveRootControlsChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode*> &deactivatedControls);
-    void OnSelectedControlsChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode*> &deactivatedControls);
-
 private:
     CheckeredCanvas *FindControlContainer(DAVA::UIControl *control);
     
@@ -59,5 +61,16 @@ private:
 
     DAVA::Map<DAVA::UIControl*, ControlNode*> rootNodes;
 };
+
+inline bool PreviewModel::IsValid() const
+{
+    return nullptr != canvas && nullptr != view;
+}
+
+inline DAVA::UIControl *PreviewModel::GetViewControl() const
+{
+    return view;
+}
+
 
 #endif // __QUICKED_PREVIEW_MODEL_H__

@@ -27,14 +27,13 @@ public slots:
     void OnContextChanged(WidgetContext *context);
     void OnDataChanged(const QByteArray &role);
 
-    void OnControlSelectedInEditor(ControlNode *node);
-    void OnAllControlsDeselectedInEditor();
-
 private:
     void UpdateModel();
     void UpdateSelection();
     void UpdateExpanded();
     void UpdateFilterString();
+    void OnControlSelectedInEditor(ControlNode *node);
+    void OnAllControlsDeselectedInEditor();
 
     void SaveSelection();
     void SaveExpanded();
@@ -54,10 +53,6 @@ private slots:
     void OnPaste();
     void OnCut();
     void OnDelete();
-
-signals:
-    void SelectionRootControlChanged(const QList<ControlNode*> &activatedRootControls, const QList<ControlNode*> &deactivatedRootControls);
-    void SelectionControlChanged(const QList<ControlNode*> &activatedControls, const QList<ControlNode*> &deactivatedControls);
 
 private:
     Ui::PackageWidget *ui;

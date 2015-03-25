@@ -131,6 +131,11 @@ PropertiesWidget *MainWindow::GetPropertiesWidget() const
     return ui->propertiesWidget;
 }
 
+PreviewWidget *MainWindow::GetPreviewWidget() const
+{
+    return ui->previewWidget;
+}
+
 void MainWindow::OnProjectIsOpenChanged(bool arg)
 {
     ui->fileSystemDockWidget->setEnabled(arg);

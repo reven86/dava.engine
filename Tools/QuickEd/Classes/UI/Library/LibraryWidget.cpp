@@ -37,7 +37,7 @@ void LibraryWidget::UpdateModel()
     }
     else
     {
-        QAbstractItemModel *model = widgetContext->GetData<QAbstractItemModel*>("model");
+        QAbstractItemModel *model = widgetContext->GetData("model").value<QAbstractItemModel*>();
         ui->treeView->setModel(model);
     }
 }

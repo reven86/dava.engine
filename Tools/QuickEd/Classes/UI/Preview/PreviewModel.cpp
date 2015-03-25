@@ -1,5 +1,4 @@
 #include "PreviewModel.h"
-
 #include "UI/Preview/EditScreen.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 
@@ -63,15 +62,21 @@ PreviewModel::PreviewModel(QObject *parent)
     , canvas(nullptr)
     , view(nullptr)
 {
-    view = new DAVA::UIControl();
-    canvas = new PackageCanvas();
-    view->AddControl(canvas);
 }
 
 PreviewModel::~PreviewModel()
 {
-    SafeRelease(view);
-    SafeRelease(canvas);
+}
+
+void PreviewModel::SetData(DAVA::UIControl *viewArg, PackageCanvas *canvasArg)
+{
+    view = viewArg;
+    canvas = canvasArg;
+    if (!IsValid())
+    {
+        return;
+    }
+
 }
 
 void PreviewModel::SetViewControlSize(const QSize &qtSize)
@@ -228,12 +233,14 @@ void PreviewModel::OnAllControlsDeselected()
     emit AllControlsDeselected();
 }
 
-void PreviewModel::OnActiveRootControlsChanged(const QList<ControlNode*> &activatedControls, const QList<ControlNode*> &/*deactivatedControls*/)
+void PreviewModel::SetActiveRootControls(const QList<ControlNode*> &activatedControls)
 {
     rootNodes.clear();
+    if (!IsValid())
+    {
+        return;
+    }
     canvas->RemoveAllControls();
-
-    //const DAVA::Vector<DAVA::UIControl *> &activeControls = document->GetActiveRootControls();
 
     foreach(ControlNode *controlNode, activatedControls)
     {
@@ -264,7 +271,7 @@ void PreviewModel::OnActiveRootControlsChanged(const QList<ControlNode*> &activa
     SetCanvasPosition( QPoint(newPosition.x, newPosition.y) );
 }
 
-void PreviewModel::OnSelectedControlsChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode*> &deactivatedControls)
+void PreviewModel::ControlsDeactivated(const QList<ControlNode*> &deactivatedControls)
 {
     for (ControlNode *node : deactivatedControls)
     {
@@ -273,13 +280,18 @@ void PreviewModel::OnSelectedControlsChanged(const QList<ControlNode *> &activat
         if (rootContainer)
             rootContainer->RemoveSelection(control);
     }
-    
+}
+
+void PreviewModel::ControlsActivated(const QList<ControlNode *> &activatedControls)
+{    
     for (ControlNode *node : activatedControls)
     {
         UIControl *control = node->GetControl();
         CheckeredCanvas *rootContainer = FindControlContainer(control);
         if (rootContainer)
+        {
             rootContainer->SelectControl(control);
+        }
     }
 }
 

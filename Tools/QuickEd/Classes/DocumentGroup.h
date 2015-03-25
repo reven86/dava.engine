@@ -37,12 +37,6 @@ signals:
     void PackageContextChanged(WidgetContext *widgetContext);
     void PreviewDataChanged(const QByteArray &role);
     void PreviewContextChanged(WidgetContext *widgetContext);
-
-    void controlSelectedInEditor(ControlNode *activatedControls);
-    void allControlsDeselectedInEditor();
-
-    void OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
-    void OnSelectionControlChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
 protected:
     QScopedPointer<DocumentGroupPrivate> d_ptr;
 private:

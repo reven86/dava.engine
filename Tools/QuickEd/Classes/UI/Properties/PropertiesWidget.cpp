@@ -46,8 +46,10 @@ void PropertiesWidget::UpdateModel()
     }
     else
     {
-        QAbstractItemModel *model = widgetContext->GetData<QAbstractItemModel*>("model");
+        QAbstractItemModel *model = widgetContext->GetData("model").value<QAbstractItemModel*>();
+        QAbstractItemModel *prevModel = ui->treeView->model();
         ui->treeView->setModel(model);
+        delete prevModel;//TODO - this is ugly :(
         ui->treeView->expandToDepth(0);
         ui->treeView->resizeColumnToContents(0);
     }

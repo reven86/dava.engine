@@ -47,7 +47,8 @@ class MainWindow;
 class PackageWidget;
 class PropertiesWidget;
 class LibraryWidget;
-class Document;
+class PreviewWidget;
+
 class DavaGLWidget;
 class MainWindow : public QMainWindow
 {
@@ -69,6 +70,7 @@ public:
     PackageWidget *GetPackageWidget() const;
     LibraryWidget *GetLibraryWidget() const;
     PropertiesWidget *GetPropertiesWidget() const;
+    PreviewWidget *GetPreviewWidget() const;
     bool ConfirmClose();
     int CloseTab(int index);
     void SetCurrentTab(int index);

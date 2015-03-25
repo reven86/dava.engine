@@ -4,9 +4,13 @@
 
 #include "ui_PreviewWidget.h"
 #include "EditScreen.h"
+#include "UI/WidgetContext.h"
 
 #include <QLineEdit>
 #include <QScreen>
+
+#include "Model/PackageHierarchy/ControlNode.h"
+
 
 
 using namespace DAVA;
@@ -24,8 +28,8 @@ static const char* PERCENTAGE_FORMAT = "%1 %";
 PreviewWidget::PreviewWidget(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::PreviewWidget())
-    , document(nullptr)
-    , context(nullptr)
+    , widgetContext(nullptr)
+    , model(new PreviewModel(this))
 {
     ui->setupUi(this);
 
@@ -56,6 +60,10 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     
    
     connect(ui->davaGLWidget->GetGLWindow(), &QWindow::screenChanged, this, &PreviewWidget::OnMonitorChanged);
+
+    connect(model, SIGNAL(CanvasOrViewChanged(const QSize &, const QSize &)), this, SLOT(OnScrollAreaChanged(const QSize &, const QSize &)));
+    connect(model, SIGNAL(CanvasPositionChanged(const QPoint &)), this, SLOT(OnScrollPositionChanged(const QPoint &)));
+    connect(model, SIGNAL(CanvasScaleChanged(int)), this, SLOT(OnCanvasScaleChanged(int)));
 }
 
 PreviewWidget::~PreviewWidget()
@@ -63,38 +71,72 @@ PreviewWidget::~PreviewWidget()
     delete ui;
 }
 
-void PreviewWidget::SetDocument(Document *newDocument)
+void PreviewWidget::OnContextChanged(WidgetContext *context)
 {
-    /*if (document)
+    if (widgetContext == context)
     {
-        disconnect(context, SIGNAL(CanvasOrViewChanged(const QSize &, const QSize &)), this, SLOT(OnScrollAreaChanged(const QSize &, const QSize &)));
-        disconnect(context, SIGNAL(CanvasPositionChanged(const QPoint &)), this, SLOT(OnScrollPositionChanged(const QPoint &)));
-        disconnect(context, SIGNAL(CanvasScaleChanged(int)), this, SLOT(OnCanvasScaleChanged(int)));
-        
-        UIScreenManager::Instance()->GetScreen()->RemoveAllControls();
-        context = NULL;
+        return;
     }
+    UIScreenManager::Instance()->GetScreen()->RemoveAllControls();
+    widgetContext = context;
 
-    document = newDocument;
-
-    if (document != nullptr)
+    UpdateModel();
+    UpdateRootControls();
+    if (nullptr != widgetContext)
     {
-        context = document->GetPreviewContext();
         ui->davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
-        UIScreenManager::Instance()->GetScreen()->AddControl(context->GetViewControl());
-        context->SetViewControlSize(GetGLViewSize());
+        UIScreenManager::Instance()->GetScreen()->AddControl(model->GetViewControl());
+        model->SetViewControlSize(ui->davaGLWidget->size());
 
-        connect(context, SIGNAL(CanvasOrViewChanged(const QSize &, const QSize &)), this, SLOT(OnScrollAreaChanged(const QSize &, const QSize &)));
-        connect(context, SIGNAL(CanvasPositionChanged(const QPoint &)), this, SLOT(OnScrollPositionChanged(const QPoint &)));
-        connect(context, SIGNAL(CanvasScaleChanged(int)), this, SLOT(OnCanvasScaleChanged(int)));
-
-        //Init
-        OnScrollAreaChanged(context->GetViewSize(), context->GetScaledCanvasSize());
-        OnScrollPositionChanged(context->GetCanvasPosition());
-        OnCanvasScaleChanged(context->GetCanvasScale());
+        OnScrollAreaChanged(model->GetViewSize(), model->GetScaledCanvasSize());
+        OnScrollPositionChanged(model->GetCanvasPosition());
+        OnCanvasScaleChanged(model->GetCanvasScale());
         OnMonitorChanged();
-    }*/
+    }
 }
+
+void PreviewWidget::OnDataChanged(const QByteArray &role)
+{
+    if (role == "activeRootControls")
+    {
+        UpdateRootControls();
+    }
+    if (role == "deactivatedControls")
+    {
+        model->ControlsDeactivated(widgetContext->GetData("deactivatedControls").value<QList<ControlNode*> >());
+    }
+    if (role == "activatedControls")
+    {
+        model->ControlsActivated(widgetContext->GetData("activatedControls").value<QList<ControlNode*> >());
+    }
+}
+
+void PreviewWidget::UpdateModel()
+{
+    if (nullptr == widgetContext)
+    {
+        model->SetData(nullptr, nullptr);
+    }
+    else
+    {
+        model->SetData(widgetContext->GetData("view").value<DAVA::UIControl*>(),
+            static_cast<PackageCanvas*>(widgetContext->GetData("canvas").value<DAVA::UIControl*>()));
+    }
+}
+
+void PreviewWidget::UpdateRootControls()
+{
+    if (nullptr == widgetContext)
+    {
+        model->SetActiveRootControls(QList<ControlNode*>());
+    }
+    else
+    {
+        model->SetActiveRootControls(widgetContext->GetData("activeRootControls").value<QList<ControlNode*> >());
+    }
+    
+}
+
 
 DavaGLWidget* PreviewWidget::GetGLWidget() const
 {
@@ -103,12 +145,24 @@ DavaGLWidget* PreviewWidget::GetGLWidget() const
 
 void PreviewWidget::OnMonitorChanged()
 {
-    if (context == nullptr)
+    if (!model->IsValid())
+    {
         return;
-    
+    }
     const auto index = ui->scaleCombo->currentIndex();
     ui->scaleCombo->setCurrentIndex(-1);
     ui->scaleCombo->setCurrentIndex(index);
+}
+
+void PreviewWidget::OnControlNodeSelected(ControlNode *node)
+{
+    widgetContext->SetData(QVariant::fromValue(node), "selectedNode");
+}
+
+void PreviewWidget::OnAllControlsDeselected()
+{
+    widgetContext->SetData(!widgetContext->GetData("controlDeselected").toBool(), "controlDeselected");
+
 }
 
 void PreviewWidget::OnScaleByZoom(int scaleDelta)
@@ -118,15 +172,19 @@ void PreviewWidget::OnScaleByZoom(int scaleDelta)
 }
 
 void PreviewWidget::OnScaleByComboIndex(int index)
-{
-    if (index < 0 || index >= static_cast<int>( COUNT_OF(SCALE_PERCENTAGES)) || !context)
+{   
+    if (!model->IsValid())
+    {
+        return;
+    }
+    if (index < 0 || index >= static_cast<int>( COUNT_OF(SCALE_PERCENTAGES)))
     {
         return;
     }
 
     auto dpr = static_cast<int>( ui->davaGLWidget->GetGLWindow()->devicePixelRatio() );
     auto scaleValue = SCALE_PERCENTAGES[index] * dpr;
-    context->SetCanvasControlScale(scaleValue);
+    model->SetCanvasControlScale(scaleValue);
 }
 
 void PreviewWidget::OnScaleByComboText()
@@ -179,30 +237,32 @@ void PreviewWidget::OnGLWidgetResized(int width, int height, int dpr)
 
     UIScreenManager::Instance()->GetScreen()->SetSize(screenSize);
 
-    if (context)
+    if (model->IsValid())
     {
-        context->SetViewControlSize(QSize(width * dpr, height * dpr));
+        model->SetViewControlSize(QSize(width * dpr, height * dpr));
     }
 }
 
 void PreviewWidget::OnVScrollbarMoved(int vPosition)
 {
-    if (context)
+    if (!model->IsValid())
     {
-        QPoint canvasPosition = context->GetCanvasPosition();
-        canvasPosition.setY(-vPosition);
-        context->SetCanvasPosition(canvasPosition);
+        return;
     }
+    QPoint canvasPosition = model->GetCanvasPosition();
+    canvasPosition.setY(-vPosition);
+    model->SetCanvasPosition(canvasPosition);
 }
 
 void PreviewWidget::OnHScrollbarMoved(int hPosition)
 {
-    if (context)
+    if (!model->IsValid())
     {
-        QPoint canvasPosition = context->GetCanvasPosition();
-        canvasPosition.setX(-hPosition);
-        context->SetCanvasPosition(canvasPosition);
+        return;
     }
+    QPoint canvasPosition = model->GetCanvasPosition();
+    canvasPosition.setX(-hPosition);
+    model->SetCanvasPosition(canvasPosition);
 }
 
 void PreviewWidget::OnScrollPositionChanged(const QPoint &newPosition)

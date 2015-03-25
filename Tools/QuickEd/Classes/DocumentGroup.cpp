@@ -81,13 +81,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
         disconnect(d->active, &Document::LibraryDataChanged, this, &DocumentGroup::LibraryDataChanged);
         disconnect(d->active, &Document::PropertiesDataChanged, this, &DocumentGroup::PropertiesDataChanged);
         disconnect(d->active, &Document::PackageDataChanged, this, &DocumentGroup::PackageDataChanged);
-
-        disconnect(d->active, &Document::controlSelectedInEditor, this, &DocumentGroup::controlSelectedInEditor);
-        disconnect(d->active, &Document::allControlsDeselectedInEditor, this, &DocumentGroup::allControlsDeselectedInEditor);
-
-        disconnect(this, &DocumentGroup::OnSelectionControlChanged, d->active, &Document::OnSelectionControlChanged);
-        disconnect(this, &DocumentGroup::OnSelectionRootControlChanged, d->active, &Document::OnSelectionRootControlChanged);
-
+        disconnect(d->active, &Document::PreviewDataChanged, this, &DocumentGroup::PreviewDataChanged);
     }
     
     d->active = document;
@@ -97,9 +91,9 @@ void DocumentGroup::SetActiveDocument(Document* document)
         emit LibraryContextChanged(nullptr);
         emit PropertiesContextChanged(nullptr);
         emit PackageContextChanged(nullptr);
+        emit PreviewContextChanged(nullptr);
         //
         //!!check that is actual
-        emit allControlsDeselectedInEditor();
         d->undoGroup.setActiveStack(nullptr);
     }
     else
@@ -107,17 +101,12 @@ void DocumentGroup::SetActiveDocument(Document* document)
         emit LibraryContextChanged(d->active->GetLibraryContext());
         emit PropertiesContextChanged(d->active->GetPropertiesContext());
         emit PackageContextChanged(d->active->GetPackageContext());
-        //
+        emit PreviewContextChanged(d->active->GetPreviewContext());
 
         connect(d->active, &Document::LibraryDataChanged, this, &DocumentGroup::LibraryDataChanged);
         connect(d->active, &Document::PropertiesDataChanged, this, &DocumentGroup::PropertiesDataChanged);
         connect(d->active, &Document::PackageDataChanged, this, &DocumentGroup::PackageDataChanged);
-
-        connect(d->active, &Document::controlSelectedInEditor, this, &DocumentGroup::controlSelectedInEditor);
-        connect(d->active, &Document::allControlsDeselectedInEditor, this, &DocumentGroup::allControlsDeselectedInEditor);
-
-        connect(this, &DocumentGroup::OnSelectionControlChanged, d->active, &Document::OnSelectionControlChanged);
-        connect(this, &DocumentGroup::OnSelectionRootControlChanged, d->active, &Document::OnSelectionRootControlChanged);
+        connect(d->active, &Document::PreviewDataChanged, this, &DocumentGroup::PreviewDataChanged);
 
         d->undoGroup.setActiveStack(d->active->GetUndoStack());
     }

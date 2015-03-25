@@ -8,9 +8,10 @@ namespace Ui {
     class PreviewWidget;
 }
 
-class Document;
+class WidgetContext;
 class PreviewModel;
 class DavaGLWidget;
+class ControlNode;
 
 enum ScreenId
 {
@@ -24,9 +25,11 @@ class PreviewWidget : public QWidget
 public:
     explicit PreviewWidget(QWidget *parent = nullptr);
     virtual ~PreviewWidget();
-    
-    void SetDocument(Document *newDocument);
     DavaGLWidget *GetGLWidget() const;
+
+public slots:
+    void OnContextChanged(WidgetContext *context);
+    void OnDataChanged(const QByteArray &role);
 
 private slots:
     // Zoom.
@@ -45,13 +48,18 @@ private slots:
     
     void OnMonitorChanged();
 
+    void OnControlNodeSelected(ControlNode *node);
+    void OnAllControlsDeselected();
+
 private:
     void OnScaleByZoom(int scaleDelta); //!!TODO : ?what is this?
+    void UpdateModel();
+    void UpdateRootControls();
 
 private:
     Ui::PreviewWidget *ui;
-    Document *document;
-    QPointer<PreviewModel> context;
+    WidgetContext *widgetContext;
+    PreviewModel *model;
 };
 
 #endif // __QUICKED_PREVIEW_WIDGET_H__
