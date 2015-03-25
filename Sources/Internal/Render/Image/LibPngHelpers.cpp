@@ -108,21 +108,21 @@ bool LibPngWrapper::IsImage(File *file) const
     return retValue;
 }
 
-eErrorCode LibPngWrapper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap ) const
+eErrorCode LibPngWrapper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
 {
     Image* image = new Image();
-    int innerRetCode = ReadPngFile(infile, image);
+    eErrorCode innerRetCode = ReadPngFile(infile, image);
 
-    if(innerRetCode == 1)
+    if (innerRetCode == SUCCESS)
     {
         imageSet.push_back(image);
-        return SUCCESS;
     }
     else
     {
         SafeRelease(image);
-        return innerRetCode == 0 ? ERROR_FILE_FORMAT_INCORRECT : ERROR_READ_FAIL;
     }
+
+    return innerRetCode;
 }
 
 eErrorCode LibPngWrapper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat format) const
@@ -383,49 +383,37 @@ ImageInfo LibPngWrapper::GetImageInfo(File *infile) const
     return info;
 }
 
-int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFormat/* = FORMAT_INVALID*/)
+eErrorCode LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFormat/* = FORMAT_INVALID*/)
 {
     DVASSERT(targetFormat == FORMAT_INVALID || targetFormat == FORMAT_RGBA8888);
 
-    png_structp png_ptr;
-    png_infop info_ptr;
-
     char sig[8];
-
-    int bit_depth;
-    int color_type;
-
-    png_uint_32 width;
-    png_uint_32 height;
-    unsigned int rowbytes;
-
-    int i;
-    png_bytepp row_pointers = nullptr;
-
     infile->Read(sig, 8);
 
     if (!png_check_sig((unsigned char *)sig, 8))
     {
-        return 0;
+        return ERROR_FILE_FORMAT_INCORRECT;
     }
 
+    png_structp png_ptr = nullptr;
     png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
     if (nullptr == png_ptr)
     {
-        return 4;    /* out of memory */
+        return ERROR_READ_FAIL;    /* out of memory */
     }
 
+    png_infop info_ptr = nullptr;
     info_ptr = png_create_info_struct(png_ptr);
     if (nullptr == info_ptr)
     {
         png_destroy_read_struct(&png_ptr, (png_infopp)nullptr, (png_infopp)nullptr);
-        return 4;    /* out of memory */
+        return ERROR_READ_FAIL;    /* out of memory */
     }
 
     if (setjmp(png_jmpbuf(png_ptr)))
     {
         png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
-        return 0;
+        return ERROR_FILE_FORMAT_INCORRECT;
     }
 
     PngImageRawData	raw;
@@ -436,6 +424,10 @@ int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFo
 
     png_read_info(png_ptr, info_ptr);
 
+    png_uint_32 width;
+    png_uint_32 height;
+    int bit_depth;
+    int color_type;
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth,
                  &color_type, nullptr, nullptr, nullptr);
 
@@ -478,9 +470,8 @@ int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFo
     {
         Logger::Error("Wrong image: must be 8bits on channel: %s", infile->GetFilename().GetAbsolutePathname().c_str());
         png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
-        return 0;
+        return ERROR_FILE_FORMAT_INCORRECT;
     }
-
 
     if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
     {
@@ -489,30 +480,30 @@ int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFo
 
     png_read_update_info(png_ptr, info_ptr);
 
+    unsigned int rowbytes;
     rowbytes = static_cast<uint32>(png_get_rowbytes(png_ptr, info_ptr));
 
     uint8 *image_data = new uint8[rowbytes * height];
     if (nullptr == image_data)
     {
         png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
-        return 4;
+        return ERROR_READ_FAIL;
     }
 
+    png_bytepp row_pointers = nullptr;
     row_pointers = (png_bytepp)malloc(height*sizeof(png_bytep));
     if (nullptr == row_pointers)
     {
         png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
         delete[](image_data);
         image_data = nullptr;
-        return 4;
+        return ERROR_READ_FAIL;
     }
-
 
     /* set the individual row_pointers to point at the correct offsets */
 
-    for (i = 0; i < static_cast<int>(height); ++i)
+    for (int i = 0; i < static_cast<int>(height); ++i)
         row_pointers[i] = image_data + i * rowbytes;
-
 
     /* now we can go ahead and just read the whole image */
     png_read_image(png_ptr, row_pointers);
@@ -528,5 +519,5 @@ int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFo
 
     image->data = image_data;
 
-    return 1;
+    return SUCCESS;
 }

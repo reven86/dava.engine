@@ -57,7 +57,7 @@ public:
 
     ImageInfo GetImageInfo(File *infile) const override;
 
-    static int ReadPngFile(File *infile, Image * image, PixelFormat targetFormat = FORMAT_INVALID);
+    static eErrorCode ReadPngFile(File *infile, Image * image, PixelFormat targetFormat = FORMAT_INVALID);
 };
 
 }
