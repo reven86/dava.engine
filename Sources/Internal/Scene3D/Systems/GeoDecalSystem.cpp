@@ -98,7 +98,7 @@ void GeoDecalSystem::ExtractGeoDecal(GeoDecalComponent * component)
 {
     Entity * parentEntity = component->GetEntity();
     Scene * entityScene = parentEntity->GetScene();
-    RenderSystem * renderSystem = entityScene->GetRenderSystem();
+//    RenderSystem * renderSystem = entityScene->GetRenderSystem();
     
 //    TransformComponent * transformComponent = parentEntity->GetComponent(Component::TRANSFORM_COMPONENT);
 //    OOBBox3 ooDecalBox(Vector3);
