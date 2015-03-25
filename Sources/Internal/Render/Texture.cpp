@@ -1275,20 +1275,23 @@ void Texture::GenerateCubeFaceNames(const FilePath & baseName, Vector<FilePath>&
 
 void Texture::GenerateCubeFaceNames(const FilePath & filePath, const Vector<String>& faceNameSuffixes, Vector<FilePath>& faceNames)
 {
-	faceNames.clear();
-	
-	String fileNameWithoutExtension = filePath.GetBasename();
-	String extension = filePath.GetExtension();
-		
-	for(size_t i = 0; i < faceNameSuffixes.size(); ++i)
-	{
-		DAVA::FilePath faceFilePath = filePath;
-		faceFilePath.ReplaceFilename(fileNameWithoutExtension +
-									 faceNameSuffixes[i] +
-									 GPUFamilyDescriptor::GetFilenamePostfix(GPU_INVALID, FORMAT_INVALID));
-			
-		faceNames.push_back(faceFilePath);
-	}
+    faceNames.clear();
+
+    String fileNameWithoutExtension = filePath.GetBasename();
+    String extension = filePath.GetExtension();
+
+    for(size_t i = 0; i < faceNameSuffixes.size(); ++i)
+    {
+        DAVA::FilePath faceFilePath = filePath;
+        DAVA::String ext = GPUFamilyDescriptor::GetFilenamePostfix(GPU_INVALID, FORMAT_INVALID);
+
+        if(ext.empty())
+        {
+            ext = ".png";
+        }
+        faceFilePath.ReplaceFilename(fileNameWithoutExtension + faceNameSuffixes[i] + ext);
+        faceNames.push_back(faceFilePath);
+    }
 }
 
 const FilePath & Texture::GetPathname() const
