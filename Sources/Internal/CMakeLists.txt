@@ -63,6 +63,8 @@ if( ANDROID )
     set ( FRAMEWORK_DEFINITIONS  ${FRAMEWORK_DEFINITIONS} -D__ANDROID__ )
     set ( LIBRARY_OUTPUT_PATH    ${THIRD_PARTY_LIBRARIES_PATH} )
 
+    set( PLATFORM_SPECIFIC_FOLDER Platform/TemplateAndroid )
+
 elseif( MACOS )
     find_package( ZLIB )
     add_definitions( -D__DAVAENGINE_PTHREAD__ ) 
@@ -149,7 +151,7 @@ if( ZLIB_FOUND )
 endif()
 
 # Define source 
-define_source_folders  ()
+define_source_folders  ( SRC_ROOT "." ${PLATFORM_SPECIFIC_FOLDER} )
 generate_source_groups_project ()
 
 include_directories    (.)

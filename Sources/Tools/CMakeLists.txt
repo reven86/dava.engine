@@ -1,10 +1,5 @@
 cmake_minimum_required( VERSION 3.0 )
-
-if ( TEXTURE_TOOL_FOUND )
-    return ()
-endif ()
-set ( TEXTURE_TOOL_FOUND 1 )
-                     
+                   
 project( DavaTools )
 
 add_definitions       ( 
