@@ -94,8 +94,7 @@ public:
     inline RenderDataObject * GetRenderDataObject();
     
     void SetMaterial(NMaterial * _material);
-    inline NMaterial * GetMaterial();
-    inline uint32 GetRenderLayerIDsBitmask() const;
+    inline NMaterial * GetMaterial();    
     
 	void SetRenderObject(RenderObject * renderObject);
 	inline RenderObject * GetRenderObject() const;        
@@ -131,8 +130,7 @@ public:
 
 protected:
     void BindDynamicParameters(Camera * camera);
-    
-    uint32 renderLayerIDsBitmaskFromMaterial;
+        
     PolygonGroup * dataSource;
     RenderDataObject * renderDataObject;   // Probably should be replaced to VBO / IBO, but not sure
     NMaterial * material;                    // Should be replaced to NMaterial
@@ -181,10 +179,6 @@ public:
     );
 };
     
-inline uint32 RenderBatch::GetRenderLayerIDsBitmask() const
-{
-    return renderLayerIDsBitmaskFromMaterial;
-};
 
 inline PolygonGroup * RenderBatch::GetPolygonGroup()
 {

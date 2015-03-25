@@ -31,7 +31,6 @@
 #include "Base/BaseTypes.h"
 #include "Entity/SceneSystem.h"
 #include "Base/Message.h"
-#include "Render/RenderStateData.h"
 
 namespace DAVA
 {

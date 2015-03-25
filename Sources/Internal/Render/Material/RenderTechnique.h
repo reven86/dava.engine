@@ -34,13 +34,13 @@
 #include "Base/HashMap.h"
 #include "Base/FastNameMap.h"
 #include "Scene3D/DataNode.h"
-#include "Render/RenderState.h"
 #include "Render/Material/NMaterialConsts.h"
 #include "Render/Shader.h"
-#include "Render/RenderState.h"
 #include "Base/Introspection.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Base/AllocatorFactory.h"
+#include "Render/RHI/rhi_Base.h"
+
 
 namespace DAVA
 {
@@ -48,22 +48,20 @@ class YamlNode;
 class RenderTechniquePass
 {
 public:
-    IMPLEMENT_POOL_ALLOCATOR(RenderTechniquePass, 64);
+    IMPLEMENT_POOL_ALLOCATOR(RenderTechniquePass, 128);
     
-    RenderTechniquePass(const FastName & _shaderName,
-						const FastNameSet & _uniqueDefines,
-						RenderState * _renderState);
-    ~RenderTechniquePass();
-    
-    Shader * CompileShader(const FastNameSet& materialDefines);
+    RenderTechniquePass(const FastName & shaderName,
+						const FastNameSet & uniqueDefines,
+						const rhi::DepthStencilState::Descriptor& renderState);
+    ~RenderTechniquePass();        
     
     inline const FastName & GetShaderName() const { return shaderName; }
-    inline RenderState * GetRenderState() const { return renderState; }
+    inline rhi::DepthStencilState::Descriptor DepthStencilState() const { return renderState; }
     inline const FastNameSet & GetUniqueDefineSet() { return uniqueDefines; }
     
 protected:
     FastName shaderName;
-    RenderState * renderState;
+    rhi::DepthStencilState::Descriptor renderState;
     FastNameSet uniqueDefines;
 };
 
@@ -77,9 +75,9 @@ public:
     ~RenderTechnique();
 
     void AddRenderTechniquePass(const FastName& passName,
-								const FastName & _shaderName,
-								const FastNameSet & _uniqueDefines,
-								RenderState * _renderState);
+								const FastName & shaderName,
+								const FastNameSet & uniqueDefines,
+                                const rhi::DepthStencilState::Descriptor& renderState);
 
     inline const FastName & GetName() const { return name; };
     inline uint32 GetIndexByName(const FastName & fastName) const { return nameIndexMap.at(fastName); };

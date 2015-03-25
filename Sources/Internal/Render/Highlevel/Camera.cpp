@@ -32,6 +32,7 @@
 #include "Core/Core.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFileV2.h"
+#include "Render/Renderer.h"
 
 namespace DAVA 
 {

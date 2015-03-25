@@ -28,6 +28,7 @@
 #include "Render/OcclusionQuery.h"
 #include "Render/Highlevel/RenderFastNames.h"
 #include "Utils/Utils.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {

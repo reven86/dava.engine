@@ -25,6 +25,7 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
+#if _MATERIAL_OFF
 
 #include "Render/Material/NMaterial.h"
 #include "Render/Material/NMaterialStateDynamicPropertiesInsp.h"
@@ -502,3 +503,6 @@ void NMaterialStateDynamicPropertiesInsp::MemberValueSet(void *object, const Fas
 }
 
 };
+
+
+#endif _MATERIAL_OFF

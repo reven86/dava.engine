@@ -31,6 +31,7 @@
 #include "Input/KeyboardDevice.h"
 #include "Input/GamepadDevice.h"
 #include "UI/UIControlSystem.h"
+#include "Render/Cursor.h"
 
 namespace DAVA 
 {

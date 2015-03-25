@@ -25,6 +25,7 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
+#if _MATERIAL_OFF
 
 #include "Render/Material/NMaterial.h"
 #include "Render/Material/NMaterialStateDynamicTexturesInsp.h"
@@ -226,3 +227,6 @@ int NMaterialStateDynamicTexturesInsp::MemberFlags(void *object, const FastName 
 }
 
 };
+
+
+#endif //_MATERIAL_OFF

@@ -31,6 +31,7 @@
 #include "Render/ShaderCache.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/Renderer.h"
 
 namespace DAVA 
 {

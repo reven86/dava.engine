@@ -26,6 +26,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+#if _MATERIAL_OFF
+
 #include "Render/Material/NMaterial.h"
 #include "Render/Material/NMaterialStateDynamicFlagsInsp.h"
 
@@ -132,3 +134,5 @@ int NMaterialStateDynamicFlagsInsp::MemberFlags(void *object, const FastName &me
 }
 
 };
+
+#endif //_MATERIAL_OFF

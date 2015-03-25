@@ -101,15 +101,11 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
 		FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);	
 	
     const Rect & viewportRect = geometricData.GetUnrotatedRect();
-    viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
-    
-    Rect viewportSave = RenderManager::Instance()->GetViewport();
-    RenderManager::Instance()->SetViewport(viewportRc);
+    viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);    
+    //probably it should be translated to scene in some way
     
     if (scene)
-        scene->Draw();
-        
-    RenderManager::Instance()->SetViewport(viewportSave);
+        scene->Draw();        
 		
     RenderSystem2D::Instance()->Setup2DMatrices();
 

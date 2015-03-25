@@ -30,10 +30,11 @@
 #ifndef __DAVAENGINE_MATERIAL_H__
 #define __DAVAENGINE_MATERIAL_H__
 
+#if _MATERIAL_OFF
+
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Scene3D/DataNode.h"
-#include "Render/RenderState.h"
 
 #include "FileSystem/FilePath.h"
 #include "Base/FastName.h"
@@ -510,6 +511,8 @@ inline const FilePath & InstanceMaterialState::GetLightmapName() const
 
     
 };
+
+#endif _NMATERIAL_OFF
 
 #endif // __DAVAENGINE_MATERIAL_H__
 

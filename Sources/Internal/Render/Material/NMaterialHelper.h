@@ -25,7 +25,7 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
-
+#if _NMATERIAL_OFF
 
 #ifndef __DAVAENGINE_NMATERIALHELPER_H__
 #define __DAVAENGINE_NMATERIALHELPER_H__
@@ -33,7 +33,6 @@
 #include "Base/BaseTypes.h"
 #include "Base/HashMap.h"
 #include "Base/FastNameMap.h"
-#include "Render/RenderState.h"
 
 namespace DAVA
 {
@@ -61,5 +60,7 @@ public:
 };
 
 };
+
+#endif //_NMATERIAL_OFF
 
 #endif /* defined(__DAVAENGINE_NMATERIALHELPER_H__) */

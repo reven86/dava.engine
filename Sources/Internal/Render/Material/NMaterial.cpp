@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#if _NMATERIAL_OFF
 
 #include "Scene3D/Systems/MaterialSystem.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
@@ -1875,3 +1876,5 @@ void NMaterial::UpdateUniqueKey(uint64 newKeyValue)
 }
 
 };
+
+#endif //_NMATERIAL_OFF

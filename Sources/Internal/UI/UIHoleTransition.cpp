@@ -33,6 +33,7 @@
 #include "Platform/SystemTimer.h"
 #include "Render/RenderHelper.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/Renderer.h"
 
 namespace DAVA 
 {

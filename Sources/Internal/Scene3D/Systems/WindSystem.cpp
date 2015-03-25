@@ -55,7 +55,7 @@ component(c)
 WindSystem::WindSystem(Scene * scene) : 
     SceneSystem(scene)
 {
-    RenderOptions * options = RenderManager::Instance()->GetOptions();
+    RenderOptions * options = Renderer::GetOptions();
     options->AddObserver(this);
     HandleEvent(options);
 
@@ -72,7 +72,7 @@ WindSystem::~WindSystem()
 {
     DVASSERT(winds.size() == 0);
 
-    RenderManager::Instance()->GetOptions()->RemoveObserver(this);
+    Renderer::GetOptions()->RemoveObserver(this);
 }
 
 void WindSystem::AddEntity(Entity * entity)

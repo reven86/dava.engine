@@ -33,6 +33,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Entity/SceneSystem.h"
+#include "UniqueStateSet.h"
 
 namespace DAVA
 {

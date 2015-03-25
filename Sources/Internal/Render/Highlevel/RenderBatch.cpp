@@ -47,8 +47,7 @@ namespace DAVA
 
     
 RenderBatch::RenderBatch()
-    :   renderLayerIDsBitmaskFromMaterial(0)
-    ,   dataSource(0)
+    :   dataSource(0)
     ,   renderDataObject(0)
     ,   material(0)
     ,   renderObject(0)
@@ -97,8 +96,7 @@ void RenderBatch::SetMaterial(NMaterial * _material)
 	NMaterial* oldMat = material;
     material = SafeRetain(_material);
 	SafeRelease(oldMat);
-    
-    renderLayerIDsBitmaskFromMaterial = material->GetRenderLayerIDsBitmask();
+        
 }    
 
 void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)

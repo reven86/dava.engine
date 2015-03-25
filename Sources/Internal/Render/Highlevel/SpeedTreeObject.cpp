@@ -30,6 +30,7 @@
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Utils/Utils.h"
+#include "Render/Renderer.h"
 
 namespace DAVA 
 {

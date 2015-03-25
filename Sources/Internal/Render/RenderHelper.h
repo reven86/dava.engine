@@ -37,13 +37,13 @@
 
 #include "Render/Texture.h"
 #include "Animation/Interpolation.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
 	
 class RenderDataObject;
 class RenderDataStream;
-    
     
 /**
     \brief You can use this class to perform various important drawing operations in 2D & 3D.

@@ -33,6 +33,7 @@
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/SpriteObject.h"
 #include "Render/Highlevel/RenderFastNames.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {

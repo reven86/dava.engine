@@ -28,13 +28,13 @@
 
 #ifndef __DAVAENGINE_NMATERIAL_H__
 #define __DAVAENGINE_NMATERIAL_H__
+#if _MATERIAL_OFF
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Base/HashMap.h"
 #include "Base/FastNameMap.h"
 #include "Scene3D/DataNode.h"
-#include "Render/RenderState.h"
 #include "Render/Material/NMaterialConsts.h"
 #include "Render/Material/NMaterialTemplate.h"
 #include "Render/Shader.h"
@@ -1243,6 +1243,15 @@ prop(NULL)
 
 
 };
+#else
+namespace DAVA
+{
+    class NMaterial : public DataNode
+    {
+
+    };
+}
+#endif //_MATERIAL_OFF
 
 #endif // __DAVAENGINE_MATERIAL_H__
 

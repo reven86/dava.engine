@@ -451,17 +451,10 @@ void PolygonGroup::ReleaseData()
 void PolygonGroup::BuildBuffers()
 {
     UpdateDataPointersAndStreams();
-	JobManager::Instance()->CreateMainJob(MakeFunction(PointerWrapper<PolygonGroup>::WrapRetainRelease(this), &PolygonGroup::BuildBuffersInternal));
-};
-    
-void PolygonGroup::BuildBuffersInternal()
-{
-    DVASSERT(Thread::IsMainThread());    
-    
     renderDataObject->BuildVertexBuffer(vertexCount);
     renderDataObject->SetIndices((eIndexFormat)indexFormat, (uint8*)indexArray, indexCount);
     renderDataObject->BuildIndexBuffer();
-}
+};
 
 
     
@@ -586,45 +579,6 @@ void PolygonGroup::RecalcAABBox()
         aabbox.AddPoint(point);
     }
 }
-    
-void PolygonGroup::DebugDraw()
-{
-    Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-    for (int k = 0; k < indexCount / 3; ++k)
-    {
-        Vector3 v0, v1, v2;
-        GetCoord(indexArray[k * 3 + 0], v0);
-        GetCoord(indexArray[k * 3 + 1], v1);
-        GetCoord(indexArray[k * 3 + 2], v2);
-        RenderHelper::Instance()->DrawLine(v0, v1, 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-        RenderHelper::Instance()->DrawLine(v1, v2, 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-        RenderHelper::Instance()->DrawLine(v0, v2, 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-    }
-}
-
-/*class VertexQuadTree
-{
-public:
-    VertexOctTree()
-    {
-        
-    }
-    
-    ~VertexOctTree()
-    {
-        
-    }
-    
-    struct Vertex
-    {
-        Vector3 position;
-        uint32  color;
-        Vector3 normal;
-        Vector2 texCoords[4];
-    };
-    
-    DynamicObjectCacheData<Vertex>
-};*/
 
 void PolygonGroup::CopyData(const uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const
 {

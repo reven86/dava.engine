@@ -33,6 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Render/Highlevel/RenderObject.h"
+#include "Render/2D/Sprite.h"
 
 namespace DAVA 
 {
