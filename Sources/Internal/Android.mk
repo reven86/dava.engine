@@ -186,7 +186,10 @@ LOCAL_CPPFLAGS += -Wno-invalid-offsetof
 LOCAL_CFLAGS += -DDAVA_FMOD
 LOCAL_CPPFLAGS += -std=c++1y
 LOCAL_CFLAGS += -Qunused-arguments
+# temporal fix to turn off warning in release
+ifeq ($(APP_OPTIM), debug)
 LOCAL_CFLAGS += -Werror
+endif
 LOCAL_CFLAGS += -Wno-error=deprecated-register
 
 LOCAL_CPP_FEATURES += exceptions

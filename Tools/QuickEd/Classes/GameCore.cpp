@@ -45,6 +45,7 @@
 using namespace DAVA;
 
 GameCore::GameCore()
+    : cursor(nullptr)
 {
     // Editor Settings might be used by any singleton below during initialization, so
     // initialize it before any other one.
@@ -76,7 +77,7 @@ GameCore::~GameCore()
 
 void GameCore::OnAppStarted()
 {
-	cursor = 0;
+    cursor = nullptr;
 	RenderManager::Instance()->SetFPS(60);
 }
 

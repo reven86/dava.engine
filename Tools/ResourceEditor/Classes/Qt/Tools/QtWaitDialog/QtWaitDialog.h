@@ -36,7 +36,8 @@
 #include <QPushButton>
 #include <QProgressBar>
 
-namespace Ui {
+namespace Ui
+{
 	class QtWaitDialog;
 }
 

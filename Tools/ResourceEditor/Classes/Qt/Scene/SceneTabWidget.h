@@ -38,11 +38,6 @@
 #include <QMimeData>
 #include <QUrl>
 
-//#include "Qt/Scene/EntityGroup.h"
-//#include "Qt/Scene/SceneSignals.h"
-//#include "Qt/Scene/SceneTypes.h"
-//
-//#include "UI/UIScreen.h"
 #include "UI/UI3DView.h"
 
 #include "FileSystem/FilePath.h"
@@ -101,12 +96,17 @@ public slots:
 	void TabBarCloseCurrentRequest();
 	void TabBarDataDropped(const QMimeData *data);
 	void DAVAWidgetDataDropped(const QMimeData *data);
+    void OnDavaGLWidgetResized(int width, int height, int dpr);
 
 	// scene signals
 	void MouseOverSelectedEntities(SceneEditor2* scene, const EntityGroup *entities);
 	void SceneSaved(SceneEditor2 *scene);
 	void SceneModifyStatusChanged(SceneEditor2 *scene, bool modified);
-
+    
+protected:
+    
+    void OpenTabInternal(const DAVA::FilePath scenePathname, int tabIndex);
+    
 protected:
 	MainTabBar *tabBar;
 	DavaGLWidget *davaWidget;
@@ -116,15 +116,14 @@ protected:
 	const int dava3DViewMargin;
 
 	void InitDAVAUI();
-	void ReleaseDAVAUI();
-	void UpdateTabName(int index);
+    void ReleaseDAVAUI();
+    void UpdateTabName(int index);
 
 	void SetTabScene(int index, SceneEditor2* scene);
 
-	virtual bool eventFilter(QObject *object, QEvent *event);
-	virtual void dragEnterEvent(QDragEnterEvent *event);
-	virtual void dropEvent(QDropEvent *event);
-	virtual void keyReleaseEvent(QKeyEvent * event);
+	void dragEnterEvent(QDragEnterEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+    void keyReleaseEvent(QKeyEvent * event) override;
 
 	ScenePreviewDialog *previewDialog;
 
@@ -132,6 +131,7 @@ protected:
 
 private:
     bool TestSceneCompatibility(const DAVA::FilePath &scenePath);
+    void updateTabBarVisibility();
 
 	int newSceneCounter;
 	SceneEditor2 *curScene;
@@ -143,14 +143,14 @@ class MainTabBar : public QTabBar
 	Q_OBJECT
 
 public:
-	MainTabBar(QWidget* parent = 0);
+	explicit MainTabBar(QWidget* parent = nullptr);
 
 signals:
 	void OnDrop(const QMimeData *mimeData);
 
 protected:
-	virtual void dropEvent(QDropEvent *de);
-	virtual void dragEnterEvent(QDragEnterEvent *event);
+	void dropEvent(QDropEvent *de) override;
+	void dragEnterEvent(QDragEnterEvent *event) override;
 };
 
 #endif // __SCENE_TAB_WIDGET_H__
