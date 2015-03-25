@@ -73,7 +73,7 @@ QModelIndex WidgetModel::parent( const QModelIndex& index ) const
 
     // Getting row for parent
     auto row = -1;
-    for ( auto i = 0; i < parentOfParentItem->children.size(); row++ )
+    for ( auto i = 0; i < parentOfParentItem->children.size(); i++ )
     {
         if ( parentOfParentItem->children.at( i ) == parentItem )
         {
