@@ -205,6 +205,9 @@ FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const TextureDescriptor *desc
 
 FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const FilePath & pathname, const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
 {
+    // THIS CODE SHOULD BE COMPLEATLY REMOVED OR REWRITEN,
+    // WHEN SOURCE FORMAT WILL BE ADDED INTO TEXTURE DESCRIPTORS
+    // --->
     String ext = GetFilenamePostfix(gpuFamily, pixelFormat);
     if(!ext.empty())
     { 
@@ -212,8 +215,16 @@ FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const FilePath & pathname, co
     }
     else
     {
-        return pathname;
+        if(pathname.GetExtension() == String(".tex"))
+        {
+            return FilePath::CreateWithNewExtension(pathname, ".png");
+        }
+        else
+        {
+            return pathname;
+        }
     }
+    // <---
 }
     
 const String & GPUFamilyDescriptor::GetGPUName(const eGPUFamily gpuFamily)
