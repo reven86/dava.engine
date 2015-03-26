@@ -4,8 +4,6 @@
 #include <QWidget>
 #include <QDockWidget>
 #include <QItemSelectionModel>
-
-//!! TODO: remove include DAVAEngine.h
 #include "DAVAEngine.h"
 
 namespace Ui {

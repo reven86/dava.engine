@@ -16,7 +16,7 @@ public:
     virtual ~PackageCommandExecutor();
     
     virtual void AddImportedPackageIntoPackage(PackageControlsNode *importedPackageControls, PackageNode *package) = 0;
-    virtual void ChangeProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &value) = 0;
+    virtual void ChangeProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &value) {};
     virtual void ResetProperty(ControlNode *node, BaseProperty *property) = 0;
 
     virtual void InsertControl(ControlNode *control, ControlsContainerNode *package, DAVA::int32 destIndex) = 0;

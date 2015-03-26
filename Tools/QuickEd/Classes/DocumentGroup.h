@@ -12,7 +12,7 @@ class DocumentGroup : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(DocumentGroup)
 public:
-    explicit DocumentGroup(QObject *parent = 0);
+    explicit DocumentGroup(QObject *parent = nullptr);
     ~DocumentGroup();
 
     void AddDocument(Document*);
@@ -36,8 +36,6 @@ signals:
     void PreviewContextChanged(WidgetContext *widgetContext);
 protected:
     QScopedPointer<DocumentGroupPrivate> d_ptr;
-private:
-    Q_DISABLE_COPY(DocumentGroup)
 };
 
 #endif // QUICKED_DOCUMENTGROUP_H

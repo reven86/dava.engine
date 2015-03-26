@@ -51,7 +51,7 @@ public:
     WidgetContext* GetPackageContext() const;
   
     QUndoStack *GetUndoStack() const;
-
+    QtModelPackageCommandExecutor *GetCommandExecutor() const;
 signals:
     void LibraryDataChanged(const QByteArray &role);
     void PropertiesDataChanged(const QByteArray &role);
@@ -89,6 +89,10 @@ inline PackageNode *Document::GetPackage() const
     return package; 
 }
 
+inline QtModelPackageCommandExecutor *Document::GetCommandExecutor() const
+{
+    return commandExecutor;
+}
 
 
 

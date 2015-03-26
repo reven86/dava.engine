@@ -90,8 +90,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
         emit PropertiesContextChanged(nullptr);
         emit PackageContextChanged(nullptr);
         emit PreviewContextChanged(nullptr);
-        //
-        //!!check that is actual
+        
         d->undoGroup.setActiveStack(nullptr);
     }
     else

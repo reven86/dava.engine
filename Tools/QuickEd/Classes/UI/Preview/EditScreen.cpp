@@ -63,22 +63,27 @@ bool CheckeredCanvas::SystemInput(UIEvent *currentInput)
     if (currentInput->phase == UIEvent::PHASE_BEGAN || currentInput->phase == UIEvent::PHASE_DRAG)
     {
         UIControl *control = GetControlByPos(this, currentInput->point);
-        if (control)
+        if (nullptr != control)
         {
             for (auto listener : selectionListeners)
             {
                 UIControl *parentControl = control;
                 while (parentControl->GetParent() != nullptr && parentControl->GetParent() != this)
+                {
                     parentControl = parentControl->GetParent();
-
+                }
                 if (parentControl->GetParent() == this)
+                {
                     listener->OnControlSelected(parentControl, control);
+                }
             }
         }
         else
         {
             for (auto listener : selectionListeners)
+            {
                 listener->OnAllControlsDeselected();
+            }
         }
     }
     return true;
@@ -105,8 +110,9 @@ void CheckeredCanvas::RemoveSelection(UIControl *control)
 void CheckeredCanvas::ClearSelections()
 {
     for (auto &control : selectionControls)
+    {
         control->Release();
-    
+    }
     selectionControls.clear();
 }
 
@@ -116,13 +122,16 @@ UIControl *CheckeredCanvas::GetControlByPos(UIControl *control, const DAVA::Vect
     for (auto it = children.rbegin(); it != children.rend(); ++it)
     {
         UIControl *c = GetControlByPos(*it, pos);
-        if (c)
+        if (nullptr != c)
+        {
             return c;
+        }
     }
     
-    if (control->IsPointInside(pos) && control->GetVisible() && control->GetVisibleForUIEditor())
+    if (control->IsPointInside(pos) && control->GetVisible())
+    {
         return control;
-    
+    }
     return nullptr;
 }
 
@@ -135,7 +144,9 @@ void CheckeredCanvas::RemoveControlSelectionListener(ControlSelectionListener *l
 {
     auto it = std::find(selectionListeners.begin(), selectionListeners.end(), listener);
     if (it != selectionListeners.end())
+    {
         selectionListeners.erase(it);
+    }
 }
 
 

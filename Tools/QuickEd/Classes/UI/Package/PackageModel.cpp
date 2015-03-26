@@ -115,7 +115,7 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
             
         case Qt::CheckStateRole:
             if (node->GetControl())
-                return node->GetControl()->GetVisibleForUIEditor() ? Qt::Checked : Qt::Unchecked;
+                return node->GetControl()->GetVisible() ? Qt::Checked : Qt::Unchecked;
             else
                 return QVariant();
             
@@ -172,7 +172,7 @@ bool PackageModel::setData(const QModelIndex &index, const QVariant &value, int 
     if (role == Qt::CheckStateRole)
     {
         if (node->GetControl())
-            node->GetControl()->SetVisibleForUIEditor(value.toBool());
+            node->GetControl()->SetVisible(value.toBool());
         return true;
     }
     return false;

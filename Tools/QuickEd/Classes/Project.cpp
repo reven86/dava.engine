@@ -212,12 +212,12 @@ RefPtr<PackageNode> Project::OpenPackage(const QString &packagePath)
 
     EditorUIPackageBuilder builder;
     UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(path);
-    if (!newPackage)
+    if (nullptr == newPackage)
     {
         newPackage = LegacyEditorUIPackageLoader(&builder, legacyData).LoadPackage(path);
     }
 
-    if (newPackage)
+    if (nullptr != newPackage)
     {
         SafeRelease(newPackage);
         return builder.GetPackageNode();

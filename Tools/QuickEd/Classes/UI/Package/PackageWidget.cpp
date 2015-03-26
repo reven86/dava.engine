@@ -37,7 +37,6 @@ PackageWidget::PackageWidget(QWidget *parent)
     connect(ui->filterLine, &QLineEdit::textChanged, this, &PackageWidget::filterTextChanged);
 
     importPackageAction = new QAction(tr("Import package"), this);
-    //!!TODO: realize it connect(importPackageAction, SIGNAL(triggered()), this, SLOT(OnImport()));
 
     cutAction = new QAction(tr("Cut"), this);
     cutAction->setShortcut(QKeySequence(QKeySequence::Cut));
@@ -247,7 +246,7 @@ void PackageWidget::CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &nodes
     if (!nodes.empty())
     {
         YamlPackageSerializer serializer;
-        //!!TODO:restore functionality document->GetPackage()->Serialize(&serializer, nodes);
+        widgetContext->GetDocument()->GetPackage()->Serialize(&serializer, nodes);//TODO - this is deprecated
         String str = serializer.WriteToString();
         QMimeData data;
         data.setText(QString(str.c_str()));
@@ -257,7 +256,7 @@ void PackageWidget::CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &nodes
 
 void PackageWidget::RemoveNodes(const DAVA::Vector<ControlNode*> &nodes)
 {
-    //!!TODO:restore functionality document->GetCommandExecutor()->RemoveControls(nodes);
+    widgetContext->GetDocument()->GetCommandExecutor()->RemoveControls(nodes);
 }
 
 void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
@@ -343,7 +342,7 @@ void PackageWidget::OnPaste()
         if (nullptr != node && (node->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) == 0)
         {
             String string = clipboard->mimeData()->text().toStdString();
-            //!!TODO:restore functionality document->GetCommandExecutor()->Paste(document->GetPackage(), node, -1, string);
+            widgetContext->GetDocument()->GetCommandExecutor()->Paste(widgetContext->GetDocument()->GetPackage(), node, -1, string);
         }
     }
 }

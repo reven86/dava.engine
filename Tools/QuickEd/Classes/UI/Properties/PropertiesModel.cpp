@@ -8,6 +8,8 @@
 #include <QUndoStack>
 
 #include "Document.h"
+#include "Ui/QtModelPackageCommandExecutor.h"
+
 #include "Model/ControlProperties/BaseProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Utils/QtDavaConvertion.h"
@@ -182,8 +184,7 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
             if (property->GetValue().GetType() == VariantType::TYPE_BOOLEAN)
             {
                 VariantType newVal(value != Qt::Unchecked);
-                //TODO: repait it
-                //!!propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
+                qobject_cast<Document*>(QObject::parent())->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
                 return true;
             }
         }
@@ -202,16 +203,14 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
                 initVariantType(newVal, value);
             }
 
-            //TODO: repait it
-            //!!propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
+            qobject_cast<Document*>(QObject::parent())->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
             return true;
         }
         break;
 
     case DAVA::ResetRole:
         {
-            //TODO: repait it
-            //!!propertiesContext->GetDocument()->GetCommandExecutor()->ResetProperty(controlNode, property);
+            qobject_cast<Document*>(QObject::parent())->GetCommandExecutor()->ResetProperty(controlNode, property);
             return true;
         }
         break;

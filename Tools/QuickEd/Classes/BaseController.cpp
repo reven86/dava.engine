@@ -20,7 +20,7 @@
 BaseController::BaseController(QObject *parent)
     : QObject(parent)
     , documentGroup(this)
-    , mainWindow(nullptr) //nullptr is parent
+    , mainWindow(nullptr)
     , currentIndex(-1)
 {
     mainWindow.CreateUndoRedoActions(documentGroup.GetUndoGroup());
@@ -44,6 +44,8 @@ BaseController::BaseController(QObject *parent)
     connect(&documentGroup, &DocumentGroup::PackageDataChanged, mainWindow.GetPackageWidget(), &PackageWidget::OnDataChanged);
     connect(&documentGroup, &DocumentGroup::PreviewContextChanged, mainWindow.GetPreviewWidget(), &PreviewWidget::OnContextChanged);
     connect(&documentGroup, &DocumentGroup::PreviewDataChanged, mainWindow.GetPreviewWidget(), &PreviewWidget::OnDataChanged);
+
+    qApp->installEventFilter(this);
 }
 
 BaseController::~BaseController()
@@ -72,7 +74,6 @@ void BaseController::OnCleanChanged(bool clean)
         }
     }
 }
-
 
 void BaseController::OnOpenPackageFile(const QString &path)
 {
