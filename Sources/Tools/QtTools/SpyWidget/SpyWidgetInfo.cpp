@@ -4,14 +4,16 @@
 #include <QMetaObject>
 #include <QEvent>
 #include <QTimer>
+#include <QDebug>
 
 #include "SpyWidget.h"
 #include "QtTools/SpyWidget/WidgetModel/WidgetModel.h"
+#include "QtTools/SpyWidget/WidgetModel/WidgetHighlightModel.h"
 
 
 namespace
 {
-    const int updateDelay = 100; // set to 0, if you don't care about performace and need real-time, event-driven updates
+    const int updateDelay = 50; // set to 0, if you don't care about performace and need real-time, event-driven updates
 }
 
 
@@ -20,14 +22,17 @@ SpyWidgetInfo::SpyWidgetInfo( QObject* parent )
     , view( new SpyWidget() )
     , updateTimer( new QTimer(this) )
     , widgetModel( nullptr )
+    , widgetHighlightModel( new WidgetHighlightModel(this) )
 {
     view->setAttribute( Qt::WA_DeleteOnClose );
 
     updateTimer->setInterval( updateDelay );    
     updateTimer->setSingleShot( true );
 
-    connect( view.data(), &QObject::destroyed, this, &QObject::deleteLater );
     connect( updateTimer.data(), &QTimer::timeout, this, &SpyWidgetInfo::updateInformation );
+    connect( view.data(), &QObject::destroyed, this, &QObject::deleteLater );
+    connect( view->selectCurrent, &QPushButton::clicked, this, &SpyWidgetInfo::onSelectWidget );
+    connect( view->hierarhyTree, &QAbstractItemView::doubleClicked, this, &SpyWidgetInfo::onChangeWidget );
 }
 
 SpyWidgetInfo::~SpyWidgetInfo()
@@ -48,7 +53,10 @@ void SpyWidgetInfo::trackWidget( QWidget* w )
 
     auto rootWidget = w->window();
     widgetModel = new WidgetModel( rootWidget );
-    view->hierarhyTree->setModel( widgetModel );
+    widgetHighlightModel->setSourceModel( widgetModel );
+    view->hierarhyTree->setModel( widgetHighlightModel );
+    selectWidget( widget );
+    widgetHighlightModel->setWidgetList( QSet< QWidget *>() << widget );
 
     if ( !widget.isNull() )
     {
@@ -131,4 +139,30 @@ void SpyWidgetInfo::updateInformation()
     view->visibleState->setChecked( isVisible );
     view->modalState->setChecked( isModal );
     view->mouseTrackState->setChecked( isMouseTracked );
+}
+
+void SpyWidgetInfo::onChangeWidget( const QModelIndex& index )
+{
+    auto w = widgetModel->widgetFromIndex( index );
+    Q_ASSERT( w != nullptr );
+    if ( w == nullptr )
+        return;
+
+    trackWidget( w );
+}
+
+void SpyWidgetInfo::onSelectWidget()
+{
+    selectWidget( widget );
+}
+
+void SpyWidgetInfo::selectWidget( QWidget* w )
+{
+    auto realIndex = widgetModel->indexFromWidget( w );
+    auto index = widgetHighlightModel->mapFromSource( realIndex );
+
+    view->hierarhyTree->collapseAll();
+    view->hierarhyTree->scrollTo( index );
+    view->hierarhyTree->setCurrentIndex( index );
+    view->hierarhyTree->selectionModel()->select( index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows );
 }

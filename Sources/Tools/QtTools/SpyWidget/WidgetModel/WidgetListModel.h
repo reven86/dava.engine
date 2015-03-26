@@ -17,6 +17,7 @@ public:
     ~WidgetListModel();
 
     QWidget *widgetFromIndex( const QModelIndex& index ) const override;
+    QModelIndex indexFromWidget( QWidget *w ) const override;
     void setWidgetList( const QWidgetList& widgetList = QWidgetList() );
 
     int rowCount( const QModelIndex& parent = QModelIndex() ) const override;

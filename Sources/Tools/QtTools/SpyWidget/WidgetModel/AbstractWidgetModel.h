@@ -26,6 +26,7 @@ public:
     ~AbstractWidgetModel();
 
     virtual QWidget *widgetFromIndex( const QModelIndex& index ) const = 0;
+    virtual QModelIndex indexFromWidget( QWidget *w ) const = 0;
 
     int columnCount( const QModelIndex& parent ) const override;
     QVariant headerData( int section, Qt::Orientation orientation, int role ) const override;

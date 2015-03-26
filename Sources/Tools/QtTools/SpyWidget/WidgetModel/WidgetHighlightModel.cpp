@@ -1,5 +1,7 @@
 #include "WidgetHighlightModel.h"
 
+#include "AbstractWidgetModel.h"
+
 
 WidgetHighlightModel::WidgetHighlightModel( QObject* parent )
     : QIdentityProxyModel( parent )
@@ -15,22 +17,28 @@ QVariant WidgetHighlightModel::data( const QModelIndex& index, int role ) const
     if ( !index.isValid() )
         return QVariant();
 
+    auto ret = QIdentityProxyModel::data( index, role );
+
+    auto model = qobject_cast<AbstractWidgetModel *>( sourceModel() );
+    if ( model == nullptr )
+        return ret;
+
     auto realIndex = mapToSource( index );
-    auto w = static_cast<QWidget *>( realIndex.internalPointer() );
+    auto w = model->widgetFromIndex( realIndex );
 
     switch ( role )
     {
     case Qt::BackgroundRole:
         if ( widgets.contains( w ) )
         {
-            return QColor( 0, 255, 0, 150 );
+            ret = QColor( 0, 255, 0, 150 );
         }
         break;
     default:
         break;
     }
 
-    return realIndex.data( role );
+    return ret;
 }
 
 void WidgetHighlightModel::setWidgetList( const QSet< QWidget * >& widgetsToHighlight )

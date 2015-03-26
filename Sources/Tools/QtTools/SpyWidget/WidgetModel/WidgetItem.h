@@ -10,7 +10,6 @@
 
 
 class QWidget;
-class QAbstractItemModel;
 class WidgetModel;
 
 
@@ -41,7 +40,7 @@ private:
     QPointer< QWidget > widget;
     QSharedPointer< WidgetItem > parentItem;
     QWeakPointer < WidgetItem > self;
-    QPointer< QAbstractItemModel > model;
+    QPointer< WidgetModel > model;
     ItemList children;
 
 public:

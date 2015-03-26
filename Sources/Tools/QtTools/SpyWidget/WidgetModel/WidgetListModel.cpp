@@ -22,6 +22,15 @@ QWidget* WidgetListModel::widgetFromIndex( const QModelIndex& index ) const
     return widget;
 }
 
+QModelIndex WidgetListModel::indexFromWidget( QWidget* w ) const
+{
+    auto row = widgets.indexOf( w );
+    if ( row == -1 )
+        return QModelIndex();
+
+    return createIndex( row, 0, w );
+}
+
 int WidgetListModel::rowCount( const QModelIndex& parent ) const
 {
     if ( !parent.isValid() )

@@ -2,9 +2,10 @@
 
 #include <QWidget>
 #include <QEvent>
-#include <QAbstractItemModel>
 #include <QDebug>
 #include <QMetaObject>
+
+#include "WidgetModel.h"
 
 
 WidgetItem::WidgetItem( QWidget* w )
@@ -48,7 +49,16 @@ void WidgetItem::onChildAdd( QWidget* w )
     auto childItem = create( w );
     childItem->parentItem = self;
     childItem->rebuildChildren();
+
     children << childItem;
+
+    if ( !model.isNull() )
+    {
+        model->cache[w] = childItem;
+        auto parentIndex = model->indexFromWidget( w->parentWidget() );
+        model->beginInsertRows( parentIndex, children.size(), children.size() );
+        model->endInsertRows();
+    }
 }
 
 void WidgetItem::onChildRemove( QWidget* w )
@@ -63,6 +73,15 @@ void WidgetItem::onChildRemove( QWidget* w )
         {
             auto index = it - children.begin();
             children.erase( it );
+
+            if ( !model.isNull() )
+            {
+                model->cache.remove( w );
+                auto parentIndex = model->indexFromWidget( w->parentWidget() );
+                model->beginRemoveRows( parentIndex, index, index );
+                model->endRemoveRows();
+            }
+
             return;
         }
     }
@@ -80,14 +99,14 @@ bool WidgetItem::eventFilter( QObject* obj, QEvent* e )
             {
                 auto event = static_cast<QChildEvent *>( e );
                 auto w = qobject_cast< QWidget *>( event->child() );
-                // onChildAdd( w );
+                onChildAdd( w );
             }
             break;
         case QEvent::ChildRemoved:
             {
                 auto event = static_cast<QChildEvent *>( e );
                 auto w = qobject_cast< QWidget *>( event->child() );
-                // onChildRemove( w );
+                onChildRemove( w );
             }
             break;
 

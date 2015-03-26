@@ -10,6 +10,7 @@ WidgetModel::WidgetModel( QWidget *w )
     , root( WidgetItem::create( w ) )
 {
     root->rebuildChildren();
+    rebuildCache();
 }
 
 WidgetModel::~WidgetModel()
@@ -24,6 +25,24 @@ QWidget* WidgetModel::widgetFromIndex( const QModelIndex& index ) const
     auto item = static_cast<WidgetItem *>( index.internalPointer() );
 
     return item->widget;
+}
+
+QModelIndex WidgetModel::indexFromWidget( QWidget* w ) const
+{
+    if ( w == root->widget )
+        return createIndex( 0, 0, root.data() );
+
+    auto it = cache.find( w );
+    if ( it == cache.end() )
+        return QModelIndex();
+
+    auto item = it.value();
+    Q_ASSERT( item );
+    auto p = item->parentItem;
+    Q_ASSERT( !p.isNull() );    // p may be null only if it is root item. Tested at the start
+    auto row = p->children.indexOf( item );
+
+    return createIndex( row, 0, item.data() );
 }
 
 int WidgetModel::rowCount( const QModelIndex& parent ) const
@@ -84,4 +103,17 @@ QModelIndex WidgetModel::parent( const QModelIndex& index ) const
     Q_ASSERT( row >= 0 );
 
     return createIndex( row, 0, parentItem.data() );
+}
+
+void WidgetModel::rebuildCache()
+{
+    cache.clear();
+    rebuildCacheRecursive( cache, root );
+}
+
+void WidgetModel::rebuildCacheRecursive( ItemCache& cache, const QSharedPointer<WidgetItem>& item )
+{
+    cache[item->widget.data()] = item;
+    for ( auto child : item->children )
+        rebuildCacheRecursive( cache, child );
 }
