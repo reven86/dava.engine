@@ -49,6 +49,8 @@ public:
 	Command2 *GetCommand(int index) const;
 
 	void Clear(int commandId);
+    
+    bool HasCommand(int commandId) const;
 
 protected:
 	std::vector<Command2 *> commandList;

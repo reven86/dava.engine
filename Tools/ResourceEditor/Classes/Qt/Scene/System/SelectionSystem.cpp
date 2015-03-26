@@ -269,13 +269,14 @@ void SceneSelectionSystem::ProcessCommand(const Command2 *command, bool redo)
 {
 	if(NULL != command)
 	{
-		if((command->GetId() == CMDID_ENTITY_REMOVE) || (command->GetId() == CMDID_ENTITY_ADD && !redo))
+        auto commandId = command->GetId();
+        
+		if((CMDID_ENTITY_REMOVE == commandId))
 		{
 			// remove from selection entity that was removed by command
 			RemSelection(command->GetEntity());
 		}
-		else if(command->GetId() == CMDID_ENTITY_CHANGE_PARENT ||
-				command->GetId() == CMDID_TRANSFORM)
+		else if((CMDID_ENTITY_CHANGE_PARENT == commandId) || (CMDID_TRANSFORM == commandId))
 		{
             invalidSelectionBoxes = true;
         }
@@ -310,6 +311,8 @@ void SceneSelectionSystem::AddSelection(DAVA::Entity *entity)
         
         selectionHasChanges = true;
         UpdateHoodPos();
+        
+        invalidSelectionBoxes = true;
     }
 }
 
