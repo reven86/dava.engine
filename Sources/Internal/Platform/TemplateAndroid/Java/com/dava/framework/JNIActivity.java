@@ -35,7 +35,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
 	private JNIAccelerometer accelerometer = null;
 	protected JNIGLSurfaceView glView = null;
-	View splashView = null;
+	private View splashView = null;
 	
 	private FMODAudioDevice fmodDevice = new FMODAudioDevice();
 	
@@ -267,6 +267,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         	nativeFinishing();
         }
         
+        // Destroy keyboard helper window
+        JNITextField.DestroyKeyboardLayout(getWindowManager());
+        
         super.onPause();
 
         Log.i(JNIConst.LOG_TAG, "[Activity::onPause] finish");
@@ -315,9 +318,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         fmodDevice.stop();
         
-        // Destroy keyboard layout if its hasn't been destroyed by lost focus (samsung lock workaround)
-        JNITextField.DestroyKeyboardLayout(getWindowManager());
-        
         super.onStop();
     	// The activity is no longer visible (it is now "stopped")
         Log.i(JNIConst.LOG_TAG, "[Activity::onStop] finish");
@@ -354,14 +354,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         super.onWindowFocusChanged(hasFocus);
         
     	if(hasFocus) {
-
-    	    
-    		JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
-			HideNavigationBar(getWindow().getDecorView());
+    		HideNavigationBar(getWindow().getDecorView());
 			
 			glView.onResume();
+            JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
     	} else {
-    		JNITextField.DestroyKeyboardLayout(getWindowManager());
     		ShowSplashScreenView();
     	}
     	Log.i(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] finish");
