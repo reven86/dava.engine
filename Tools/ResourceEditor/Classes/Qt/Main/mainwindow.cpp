@@ -1597,7 +1597,6 @@ void QtMainWindow::OnAddLandscape()
     if(sceneEditor)
     {
         sceneEditor->Exec(new EntityAddCommand(entityToProcess, sceneEditor));
-        sceneEditor->selectionSystem->SetSelection(entityToProcess);
     }
     SafeRelease(entityToProcess);
 }
@@ -1633,7 +1632,6 @@ void QtMainWindow::OnAddVegetation()
         vegetationNode->SetLocked(true);
 
         sceneEditor->Exec(new EntityAddCommand(vegetationNode, sceneEditor));
-        sceneEditor->selectionSystem->SetSelection(vegetationNode);
 
         SafeRelease(vegetationNode);
     }
@@ -1648,7 +1646,6 @@ void QtMainWindow::OnLightDialog()
 	if(sceneEditor)
 	{
 		sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
-		sceneEditor->selectionSystem->SetSelection(sceneNode);
 	}
 	SafeRelease(sceneNode);
 }
@@ -1674,7 +1671,6 @@ void QtMainWindow::OnCameraDialog()
 	if(sceneEditor)
 	{
 		sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
-		sceneEditor->selectionSystem->SetSelection(sceneNode);
 	}
 	SafeRelease(sceneNode);
 	SafeRelease(camera);
@@ -1689,7 +1685,6 @@ void QtMainWindow::OnUserNodeDialog()
 	if(sceneEditor)
 	{
 		sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
-		sceneEditor->selectionSystem->SetSelection(sceneNode);
 	}
 	SafeRelease(sceneNode);
 }
@@ -1704,7 +1699,6 @@ void QtMainWindow::OnParticleEffectDialog()
 	if(sceneEditor)
 	{
 		sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
-		sceneEditor->selectionSystem->SetSelection(sceneNode);
 	}
 	SafeRelease(sceneNode);
 }
@@ -1730,7 +1724,6 @@ void QtMainWindow::On2DCameraDialog()
     if(sceneEditor)
     {
         sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
-        sceneEditor->selectionSystem->SetSelection(sceneNode);
     }
     SafeRelease(sceneNode);
     SafeRelease(camera);
@@ -1762,7 +1755,6 @@ void QtMainWindow::On2DSpriteDialog()
     if(sceneEditor)
     {
         sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
-        sceneEditor->selectionSystem->SetSelection(sceneNode);
     }
     SafeRelease(sceneNode);
     SafeRelease(spriteObject);
@@ -2806,7 +2798,6 @@ void QtMainWindow::OnEmptyEntity()
 	newEntity->SetName(ResourceEditor::ENTITY_NAME);
 
 	scene->Exec(new EntityAddCommand(newEntity, scene));
-	scene->selectionSystem->SetSelection(newEntity);
 
 	newEntity->Release();
 }
@@ -2826,7 +2817,6 @@ void QtMainWindow::OnAddWindEntity()
 	windEntity->AddComponent(wind);
 
 	scene->Exec(new EntityAddCommand(windEntity, scene));
-	scene->selectionSystem->SetSelection(windEntity);
 
 	windEntity->Release();
 }
@@ -2843,7 +2833,6 @@ void QtMainWindow::OnAddPathEntity()
 
     pathEntity->AddComponent(pc);
     scene->Exec(new EntityAddCommand(pathEntity, scene));
-    scene->selectionSystem->SetSelection(pathEntity);
     
     pathEntity->Release();
 }
