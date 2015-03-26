@@ -91,8 +91,6 @@ elseif( MACOS )
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.a" )
     list ( APPEND LIST_SHARED_LIBRARIES ${LIB_LIST}  )   
 
-    set_source_files_properties( ${CMAKE_CURRENT_LIST_DIR}/Platform/ThreadPosix.cpp PROPERTIES COMPILE_FLAGS "-x objective-c++" )  
-
 elseif( IOS )  
     find_package( ZLIB )
 
@@ -123,13 +121,7 @@ elseif( IOS )
     endforeach()
 
     file ( GLOB RESOURCE "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.a" )
-    list ( APPEND LIST_SHARED_LIBRARIES ${RESOURCE}  )   
-
-    set_source_files_properties( ${CMAKE_CURRENT_LIST_DIR}/Platform/ThreadPosix.cpp 
-                                 ${CMAKE_CURRENT_LIST_DIR}/Notification/LocalNotificationIOS.cpp
-                                 ${CMAKE_CURRENT_LIST_DIR}/DataStorage/iOS/ICloudKeyValue.cpp                                 
-                                 PROPERTIES COMPILE_FLAGS "-x objective-c++" )  
-
+    list ( APPEND LIST_SHARED_LIBRARIES ${RESOURCE}  )    
 
 elseif( WIN32 ) 
 

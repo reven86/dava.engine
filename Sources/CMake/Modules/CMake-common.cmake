@@ -31,6 +31,13 @@ include ( CMakeParseArguments  )
 
 set( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
+#
+macro ( set_project_files_properties FILES_LIST )
+    if( APPLE )
+        set_source_files_properties( ${FILES_LIST} PROPERTIES COMPILE_FLAGS "-x objective-c++" )
+    endif()
+endmacro ()
+
 # Macro for precompiled headers
 macro (enable_pch)
     if (MSVC)
@@ -203,6 +210,8 @@ macro (define_source_folders )
             ENDIF()
         ENDIF()
     ENDFOREACH()
+    
+    set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
 
 endmacro ()
 
