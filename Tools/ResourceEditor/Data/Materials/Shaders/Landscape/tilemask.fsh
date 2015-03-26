@@ -4,13 +4,14 @@ uniform sampler2D tileMask = 1;
 uniform sampler2D colorTexture = 0;
 uniform sampler2D normalmap01 = 3;
 uniform sampler2D normalmap23 = 4;
-uniform float inGlossiness = 0.5;
-uniform float inSpecularity = 1.0;
+uniform vec4 inGlossiness = vec4(0.5, 0.5, 0.5, 0.5);
+uniform vec4 inSpecularity = vec4(1.0, 1.0, 1.0, 1.0);
 uniform vec3 metalFresnelReflectance = vec3(0.5, 0.5, 0.5);
 uniform float dielectricFresnelReflectance = 0.5;
 uniform sampler2D fullTiledTexture = 5;
 uniform sampler2D specularMap = 6;
 uniform samplerCube atmospheremap = 7;
+uniform float normalDiffuseIntensity = 0.3;
 
 <FRAGMENT_SHADER>
 #ifdef GL_ES
@@ -44,7 +45,7 @@ varying mediump vec2 varTexCoordOrig;
 
 #if defined(VERTEX_LIT) || defined(PIXEL_LIT)
 uniform vec3 lightColor0;
-uniform float inGlossiness;
+uniform vec4 inGlossiness;
 
 varying vec3 varSpecularColor;
 varying float varNdotH;
@@ -54,9 +55,11 @@ varying float varNdotH;
 uniform sampler2D normalmap01;
 uniform sampler2D normalmap23;
 
+uniform float normalDiffuseIntensity;
+
 uniform float materialSpecularShininess;
 uniform float lightIntensity0;
-uniform float inSpecularity;
+uniform vec4 inSpecularity;
 uniform float physicalFresnelReflectance;
 uniform vec3 metalFresnelReflectance;
 #endif
@@ -122,6 +125,12 @@ void main()
 
     lowp vec3 color = (color0.r*mask.r*tileColor0 + color0.g*mask.g*tileColor1 + color0.b*mask.b*tileColor2 + color0.a*mask.a*tileColor3) * lightMask.rgb * 2.0;
     color = SRGB_TO_LINEAR(color);
+    
+#if defined(PIXEL_LIT)
+    float tileSpecularity = dot(mask, inSpecularity);
+    float tileGlossiness = dot(mask, inGlossiness);
+#endif
+    
 #else
 	lowp vec3 color = texture2D(fullTiledTexture, varTexCoordOrig).rgb;
 #endif
@@ -134,7 +143,7 @@ void main()
 	
 
 #if defined(VERTEX_LIT) && defined(SPECULAR)
-	float glossiness = pow(5000.0, inGlossiness * lightMask.a);
+	float glossiness = pow(5000.0, tileGlossiness * lightMask.a);
     float specularNorm = (glossiness + 2.0) / 8.0;
     color += varSpecularColor * pow(varNdotH, glossiness) * specularNorm;
 #endif
@@ -189,8 +198,8 @@ void main()
 #endif
 #endif
     
-    float specularity = inSpecularity * lightMask.a;
-    float glossiness = inGlossiness;
+    float specularity = tileSpecularity * lightMask.a;
+    float glossiness = tileGlossiness;
     float glossPower = pow(5000.0, glossiness); //textureColor0.a;
     
    	//float glossiness = inGlossiness * 0.999;
