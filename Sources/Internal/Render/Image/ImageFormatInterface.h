@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_IMAGE_FORMAT_INTERFACE_H__
 #define __DAVAENGINE_IMAGE_FORMAT_INTERFACE_H__
 
@@ -86,7 +85,7 @@ public:
     virtual eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const = 0;
     virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const = 0;
 
-    inline virtual ImageInfo GetImageInfo(File *infile) const;
+    virtual ImageInfo GetImageInfo(File *infile) const = 0;
 
     inline bool IsFileExtensionSupported(const String& extension) const;
     
@@ -94,11 +93,6 @@ protected:
     Vector<String> supportedExtensions;
 };
 
-inline ImageInfo ImageFormatInterface::GetImageInfo(File *infile) const
-{
-    return ImageInfo();
-}
-    
 inline bool ImageFormatInterface::IsFileExtensionSupported(const String& extension) const
 {
     for (Vector<String>::const_iterator it = supportedExtensions.begin(); it != supportedExtensions.end(); ++it)
