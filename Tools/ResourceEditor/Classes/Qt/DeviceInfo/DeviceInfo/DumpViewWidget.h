@@ -5,6 +5,7 @@
 #include "MemoryManager/MemoryManagerTypes.h"
 
 #include "BacktraceSet.h"
+#include "BacktraceSymbolTable.h"
 
 class QTabWidget;
 class QTreeView;
@@ -35,6 +36,8 @@ private:
     bool LoadDump(const char* filename);
     bool LoadDump(const DAVA::Vector<DAVA::uint8>& v);
 
+    void Dump();
+
 private:
     QTabWidget* tab;
     QTreeView* symbolTree;
@@ -54,4 +57,5 @@ private:
     DAVA::Vector<DAVA::MMBlock> blocks;
 
     BacktraceSet bktrace;
+    BacktraceSymbolTable bktraceTable;
 };

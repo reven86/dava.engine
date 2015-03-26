@@ -172,7 +172,8 @@ static_assert(sizeof(MMBlock) % 16 == 0, "sizeof(MMBlock) % 16 == 0");
 struct MMDump
 {
     uint64 timestampBegin;      //
-    uint64 timestampEnd;        //
+    uint32 collectTime;
+    uint32 zipTime;
     uint32 blockCount;          // Number of blocks in dump
     uint32 backtraceCount;      // Number of backtraces in dump
     uint32 symbolCount;         // Number of symbols in dump
@@ -180,7 +181,7 @@ struct MMDump
     uint32 blockEnd;            // Order number of last block in dump
     uint32 type;                // Dump type: user request, tag ended, checkpoint
     uint32 tag;                 // What tag has ended
-    uint32 padding;
+    uint32 backtraceDepth;
     // Memory layout after this struct
     //MMBlock blocks[];
     //MMBacktrace backtraces[];

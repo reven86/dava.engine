@@ -3,7 +3,6 @@
 #include <QSortFilterProxyModel>
 
 #include "Base/BaseTypes.h"
-#include "GenericTreeNode.h"
 
 class SymbolsFilterModel : public QSortFilterProxyModel
 {

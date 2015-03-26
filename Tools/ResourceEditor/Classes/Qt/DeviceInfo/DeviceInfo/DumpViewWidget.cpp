@@ -34,9 +34,9 @@ DumpViewWidget::DumpViewWidget(const char* filename, QWidget* parent, Qt::Window
     uint64 begin = SystemTimer::Instance()->AbsoluteMS();
     LoadDump(filename);
     loadTime = static_cast<uintptr_t>(SystemTimer::Instance()->AbsoluteMS() - begin);
-
+    //Dump();
     begin = SystemTimer::Instance()->AbsoluteMS();
-    bktrace.Rebuild();
+    //bktrace.Rebuild();
     modelRebuildTime = static_cast<uintptr_t>(SystemTimer::Instance()->AbsoluteMS() - begin);
     Init();
 }
@@ -77,9 +77,9 @@ void DumpViewWidget::Init()
         uint64 begin = SystemTimer::Instance()->AbsoluteMS();
         //allocTreeModel = new AllocationTreeModel(blocks, symbolMap, traceMap);
         //backtraceTreeModel = new BacktraceTreeModel(blocks, symbolMap, traceMap);
-        symbolTreeModel = new SymbolsTreeModel(bktrace);
+        symbolTreeModel = new SymbolsTreeModel(bktraceTable);
         symbolsFilterModel = new SymbolsFilterModel;
-        callstackTreeModel = new CallStackTreeModel(blocks, bktrace);
+        callstackTreeModel = new CallStackTreeModel(blocks, bktraceTable);
         modelCreateTime = static_cast<uintptr_t>(SystemTimer::Instance()->AbsoluteMS() - begin);
     }
     tab = new QTabWidget;
@@ -172,23 +172,23 @@ void DumpViewWidget::OnShowCallstack()
     QItemSelectionModel* selModel = symbolTree->selectionModel();
     if (selModel->hasSelection())
     {
-        Vector<uint64> v;
+        Vector<const char8*> v;
         QModelIndexList list = selModel->selectedRows(0);
         for (auto x : list)
         {
             QModelIndex index = symbolsFilterModel->mapToSource(x);
             if (index.isValid())
             {
-                GenericTreeNode* node = static_cast<GenericTreeNode*>(index.internalPointer());
-                if (node->Type() == SymbolsTreeModel::TYPE_NAME)
+                GenericTreeNode* p = static_cast<GenericTreeNode*>(index.internalPointer());
+                if (p->Type() == SymbolsTreeModel::TYPE_NAME)
                 {
-                    SymbolsTreeModel::NameNode* nnode = static_cast<SymbolsTreeModel::NameNode*>(node);
-                    uint64 addr = nnode->Address();
-                    v.push_back(addr);
+                    SymbolsTreeModel::NameNode* node = static_cast<SymbolsTreeModel::NameNode*>(p);
+                    const char8* name = node->Name();
+                    v.push_back(name);
                 }
             }
         }
-        std::sort(v.begin(), v.end());
+        //std::sort(v.begin(), v.end());
         uint64 begin = SystemTimer::Instance()->AbsoluteMS();
         callstackTreeModel->Rebuild(v, false);
         populateTime = uintptr_t(SystemTimer::Instance()->AbsoluteMS() - begin);
@@ -203,31 +203,32 @@ bool DumpViewWidget::LoadDump(const char* filename)
 
     fread(&dumpHdr, sizeof(MMDump), 1, file);
 
-    blocks.reserve(dumpHdr.blockCount);
-    for (size_t i = 0, n = dumpHdr.blockCount;i < n;++i)
-    {
-        MMBlock o;
-        size_t c = fread(&o, sizeof(MMBlock), 1, file);
-        Q_ASSERT(c == 1);
+    blocks.resize(dumpHdr.blockCount);
+    size_t n = fread(&*blocks.begin(), sizeof(MMBlock), dumpHdr.blockCount, file);
+    Q_ASSERT(n == dumpHdr.blockCount);
 
-        blocks.push_back(o);
+    const size_t bktraceSize = dumpHdr.backtraceDepth * sizeof(uint64) + sizeof(uint32) * 4;
+    const size_t bktraceTotalSize = dumpHdr.backtraceCount * bktraceSize;
+    
+    Vector<uint8> bk;
+    bk.resize(bktraceTotalSize);
+    n = fread(&*bk.begin(), 1, bktraceTotalSize, file);
+    Q_ASSERT(n == bktraceTotalSize);
+
+    Vector<MMSymbol> sym;
+    sym.resize(dumpHdr.symbolCount);
+    n = fread(&*sym.begin(), sizeof(MMSymbol), dumpHdr.symbolCount, file);
+    Q_ASSERT(n == dumpHdr.symbolCount);
+
+    for (auto& x : sym)
+    {
+        bktraceTable.AddSymbol(x.addr, x.name);
     }
-
-    for (size_t i = 0, n = dumpHdr.backtraceCount;i < n;++i)
+    const MMBacktrace* ptr = reinterpret_cast<MMBacktrace*>(bk.data());
+    for (size_t i = 0;i < dumpHdr.backtraceCount;++i)
     {
-        MMBacktrace o;
-        size_t c = fread(&o, sizeof(MMBacktrace), 1, file);
-        Q_ASSERT(c == 1);
-
-        bktrace.AddBacktrace(o);
-    }
-    for (size_t i = 0, n = dumpHdr.symbolCount;i < n;++i)
-    {
-        MMSymbol o;
-        size_t c = fread(&o, sizeof(MMSymbol), 1, file);
-        Q_ASSERT(c == 1);
-
-        bktrace.AddSymbol(o.addr, o.name);
+        bktraceTable.AddBacktrace(ptr->hash, ptr->frames, dumpHdr.backtraceDepth);
+        ptr = reinterpret_cast<const MMBacktrace*>(reinterpret_cast<const uint8*>(ptr) + bktraceSize);
     }
     fclose(file);
     return true;
@@ -247,12 +248,17 @@ inline const T* Offset(const void* ptr, size_t byteOffset)
 
 bool DumpViewWidget::LoadDump(const DAVA::Vector<uint8>& v)
 {
-    const MMDump* dump = reinterpret_cast<const MMDump*>(v.data());
+    /*const MMDump* dump = reinterpret_cast<const MMDump*>(v.data());
+    
+
+    dumpHdr = *dump;
+
+    const size_t bktraceSize = dumpHdr.backtraceDepth * sizeof(uint64) + sizeof(uint32) * 4;
+    const size_t bktraceTotalSize = dumpHdr.backtraceCount * bktraceSize;
+
     const MMBlock* rawBlocks = Offset<MMBlock>(dump, sizeof(MMDump));
     const MMBacktrace* bt = Offset<MMBacktrace>(rawBlocks, sizeof(MMBlock) * dump->blockCount);
     const MMSymbol* symbols = Offset<MMSymbol>(bt, sizeof(MMBacktrace) * dump->backtraceCount);
-
-    dumpHdr = *dump;
 
     blocks.reserve(dump->blockCount);
     for (size_t i = 0, n = dump->blockCount;i < n;++i)
@@ -264,6 +270,49 @@ bool DumpViewWidget::LoadDump(const DAVA::Vector<uint8>& v)
     for (size_t i = 0, n = dump->symbolCount;i < n;++i)
         bktrace.AddSymbol(symbols[i].addr, symbols[i].name);
     for (size_t i = 0, n = dump->backtraceCount;i < n;++i)
-        bktrace.AddBacktrace(bt[i]);
+        bktrace.AddBacktrace(bt[i]);*/
     return true;
+}
+
+#include "FileSystem/FilePath.h"
+void DumpViewWidget::Dump()
+{
+    FilePath fp("~doc:");
+    char fname[512];
+    Snprintf(fname, COUNT_OF(fname), "%sdump.txt", fp.GetAbsolutePathname().c_str());
+    FILE* f = fopen(fname, "wb");
+    if (f)
+    {
+        fprintf(f, "General info\n");
+        fprintf(f, "  collectTime=%u ms\n", dumpHdr.collectTime);
+        fprintf(f, "  zipTime=%u ms\n", dumpHdr.zipTime);
+        fprintf(f, "  packedSize=%u\n", 0);
+        fprintf(f, "  blockCount=%u\n", dumpHdr.blockCount);
+        fprintf(f, "  backtraceCount=%u\n", dumpHdr.backtraceCount);
+        fprintf(f, "  nameCount=%u\n", dumpHdr.symbolCount);
+        fprintf(f, "  blockBegin=%u\n", dumpHdr.blockBegin);
+        fprintf(f, "  blockEnd=%u\n", dumpHdr.blockEnd);
+        fprintf(f, "  backtraceDepth=%u\n", dumpHdr.backtraceDepth);
+
+        fprintf(f, "Blocks\n");
+
+        int i = 0;
+        for (auto& block : blocks)
+        {
+            fprintf(f, "%4d: addr=%08llX, allocByApp=%u, allocTotal=%u, orderNo=%u, pool=%u, hash=%u\n", i + 1,
+                    block.addr,
+                    block.allocByApp, block.allocTotal, block.orderNo, block.pool,
+                    block.backtraceHash);
+            const Vector<const char8*>& fr = bktraceTable.GetFrames(block.backtraceHash);
+            for (size_t k = 0;k < dumpHdr.backtraceDepth;++k)
+            {
+                if (k < fr.size())
+                    fprintf(f, "        %08llX    %s\n", uint64(0), fr[k]);
+                else
+                    fprintf(f, "        %08llX\n", uint64(0));
+            }
+            i += 1;
+        }
+        fclose(f);
+    }
 }

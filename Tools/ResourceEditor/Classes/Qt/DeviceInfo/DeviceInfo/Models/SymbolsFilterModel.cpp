@@ -1,5 +1,6 @@
 #include "SymbolsFilterModel.h"
 #include "SymbolsTreeModel.h"
+#include "GenericTreeNode.h"
 
 using namespace DAVA;
 
@@ -33,58 +34,29 @@ bool SymbolsFilterModel::lessThan(const QModelIndex& left, const QModelIndex& ri
     int rtype = pr->Type();
     Q_ASSERT(ltype == rtype);
 
-    if (ltype == SymbolsTreeModel::TYPE_ADDR)
-    {
-        SymbolsTreeModel::AddrNode* l = static_cast<SymbolsTreeModel::AddrNode*>(pl);
-        SymbolsTreeModel::AddrNode* r = static_cast<SymbolsTreeModel::AddrNode*>(pr);
-
-        return l->Address() < r->Address();
-    }
-    else if (ltype == SymbolsTreeModel::TYPE_NAME)
+    if (ltype == SymbolsTreeModel::TYPE_NAME)
     {
         SymbolsTreeModel::NameNode* l = static_cast<SymbolsTreeModel::NameNode*>(pl);
         SymbolsTreeModel::NameNode* r = static_cast<SymbolsTreeModel::NameNode*>(pr);
 
         return strcmp(l->Name(), r->Name()) < 0;
-        //return l->Name() < r->Name();
     }
     return false;
 }
 
 bool SymbolsFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
 {
-    if (hideStd)
+    QModelIndex index = sourceModel()->index(source_row, 0, source_parent);
+    GenericTreeNode* p = static_cast<GenericTreeNode*>(index.internalPointer());
+    if (p->Type() == SymbolsTreeModel::TYPE_NAME)
     {
-        QModelIndex index = sourceModel()->index(source_row, 0, source_parent);
-        GenericTreeNode* p = static_cast<GenericTreeNode*>(index.internalPointer());
-        int type = p->Type();
-        if (p->Type() == SymbolsTreeModel::TYPE_NAME)
+        SymbolsTreeModel::NameNode* node = static_cast<SymbolsTreeModel::NameNode*>(p);
+        String name = node->Name();
+        if (hideStd && name.find("std::") == 0)
         {
-            SymbolsTreeModel::NameNode* n = static_cast<SymbolsTreeModel::NameNode*>(p);
-            //const String& name = n->Name();
-            const String name = n->Name();
-            if (name.find("std::") == 0)
-                return false;
+            return false;
         }
-    }
-
-    if (!filter.empty())
-    {
-        QModelIndex index = sourceModel()->index(source_row, 0, source_parent);
-        GenericTreeNode* p = static_cast<GenericTreeNode*>(index.internalPointer());
-        int type = p->Type();
-        if (p->Type() == SymbolsTreeModel::TYPE_NAME)
-        {
-            SymbolsTreeModel::NameNode* n = static_cast<SymbolsTreeModel::NameNode*>(p);
-            //const String& name = n->Name();
-            const String name = n->Name();
-            if (hideStd)
-            {
-                if (name.find("std::") == 0)
-                    return false;
-            }
-            return name.find(filter) != String::npos;
-        }
+        return name.find(filter) != String::npos;
     }
     return true;
 }

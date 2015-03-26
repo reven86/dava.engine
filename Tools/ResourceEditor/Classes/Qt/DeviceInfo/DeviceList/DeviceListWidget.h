@@ -24,6 +24,7 @@ signals:
 
 public slots:
     void OnViewDump();
+    void OnViewDumpEnhanced();
 
 public:
     explicit DeviceListWidget( QWidget *parent = NULL );

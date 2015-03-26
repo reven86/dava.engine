@@ -9,7 +9,7 @@
 #include "GenericTreeModel.h"
 #include "GenericTreeNode.h"
 
-class BacktraceSet;
+class BacktraceSymbolTable;
 class CallStackTreeModel : public GenericTreeModel
 {
     Q_OBJECT
@@ -17,13 +17,14 @@ class CallStackTreeModel : public GenericTreeModel
 public:
     enum {
         TYPE_FRAME = 1,
-        TYPE_BLOCK
+        TYPE_BLOCK,
+        TYPE_BLOCK2
     };
 
     struct BlockGroup
     {
         size_t startFrame;
-        const DAVA::MMBacktrace* bktrace;
+        const DAVA::Vector<const DAVA::char8*>* frames;
         DAVA::Vector<const DAVA::MMBlock*> blocks;
         size_t allocByApp;
         size_t totalAlloc;
@@ -33,26 +34,26 @@ public:
     class FrameAddrNode : public GenericTreeNode
     {
     public:
-        FrameAddrNode(DAVA::uint64 adr) : addr(adr), allocByApp(0), totalAlloc(0), nblocks(0) {}
+        FrameAddrNode(const DAVA::char8* adr) : name(adr), allocByApp(0), totalAlloc(0), nblocks(0) {}
         int Type() const override { return TYPE_FRAME; }
-        DAVA::uint64 Address() const { return addr; }
+        const DAVA::char8* Name() const { return name; }
         size_t AllocByApp() const { return allocByApp; }
         size_t TotalAlloc() const { return totalAlloc; }
         size_t BlockCount() const { return nblocks; }
         void UpdateAllocByApp(size_t n) { allocByApp += n; }
         void UpdateTotalAlloc(size_t n) { totalAlloc += n; }
         void UpdateBlockCount(size_t n) { nblocks += n; }
-        FrameAddrNode* FindInChildren(DAVA::uint64 addr) const {
+        FrameAddrNode* FindInChildren(const DAVA::char8* addr) const {
             for (auto& x : children)
             {
                 FrameAddrNode* node = static_cast<FrameAddrNode*>(x.get());
-                if (node->addr == addr)
+                if (node->name == addr)
                     return node;
             }
             return nullptr;
         }
     private:
-        DAVA::uint64 addr;
+        const DAVA::char8* name;
         size_t allocByApp;
         size_t totalAlloc;
         size_t nblocks;
@@ -68,35 +69,47 @@ public:
         const DAVA::MMBlock* block;
     };
 
+    class BlockNode2 : public GenericTreeNode
+    {
+    public:
+        BlockNode2(DAVA::Vector<const DAVA::MMBlock*>& blocksX) : blocks(std::move(blocksX)) {}
+        int Type() const override { return TYPE_BLOCK2; }
+        const DAVA::Vector<const DAVA::MMBlock*>& Blocks() const { return blocks; }
+    private:
+        DAVA::Vector<const DAVA::MMBlock*> blocks;
+    };
+
 public:
     CallStackTreeModel(const DAVA::Vector<DAVA::MMBlock>& memoryBlocks,
-                       const BacktraceSet& backtrace,
+                       const BacktraceSymbolTable& backtraceTable,
                        QObject* parent = nullptr);
     virtual ~CallStackTreeModel();
 
 public slots:
-    void Rebuild(const DAVA::Vector<DAVA::uint64>& addrList, bool append);
+    void Rebuild(const DAVA::Vector<const DAVA::char8*>& nameList, bool append);
 
 public:
     QVariant data(const QModelIndex& index, int role) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
 private:
-    void BuildTree(const DAVA::Vector<DAVA::uint64>& addrList);
-    void CollectBlockGroups(DAVA::Vector<BlockGroup>& grp, const DAVA::Vector<DAVA::uint64>& addrList);
+    void BuildTree(const DAVA::Vector<const DAVA::char8*>& nameList);
+    void CollectBlockGroups(DAVA::Vector<BlockGroup>& grp, const DAVA::Vector<const DAVA::char8*>& nameList);
     void CollectBlocks(BlockGroup& g, DAVA::uint32 hash) const;
-    void AddBlockGroup(FrameAddrNode* parent, const BlockGroup& g);
-    void AddBlocks(FrameAddrNode* parent, const BlockGroup& g);
-    size_t BacktraceFindAnyAddr(const DAVA::MMBacktrace& o, const DAVA::Vector<DAVA::uint64>& addrList) const;
+    void AddBlockGroup(FrameAddrNode* parent, BlockGroup& g);
+    void AddBlocks(FrameAddrNode* parent, BlockGroup& g);
+
+    size_t BacktraceFindAnyAddr(const DAVA::Vector<const DAVA::char8*>& frames, const DAVA::Vector<const DAVA::char8*>& nameList) const;
 
     void BuildMap();
 
 private:
     QVariant FrameAddrNodeData(FrameAddrNode* node, int row, int clm) const;
     QVariant BlockNodeData(BlockNode* node, int row, int clm) const;
+    QVariant Block2NodeData(BlockNode2* node, int row, int clm) const;
 
 private:
-    const BacktraceSet& bktrace;
+    const BacktraceSymbolTable& bktraceTable;
     const DAVA::Vector<DAVA::MMBlock>& blockList;
 
     DAVA::Map<DAVA::uint32, DAVA::Vector<const DAVA::MMBlock*>> map;

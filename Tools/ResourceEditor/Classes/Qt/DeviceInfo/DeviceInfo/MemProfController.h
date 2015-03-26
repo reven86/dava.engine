@@ -44,8 +44,8 @@ private:
     DAVA::Net::MMNetClient netClient;
 
     DAVA::Vector<DAVA::uint8> dumpData;
-    std::unordered_map<DAVA::uint64, DAVA::String> symbolMap;
-    std::unordered_map<DAVA::uint32, DAVA::MMBacktrace> traceMap;
+    //std::unordered_map<DAVA::uint64, DAVA::String> symbolMap;
+    //std::unordered_map<DAVA::uint32, DAVA::MMBacktrace> traceMap;
 };
 
 #endif // __MEMPROFCONTROLLER_H__

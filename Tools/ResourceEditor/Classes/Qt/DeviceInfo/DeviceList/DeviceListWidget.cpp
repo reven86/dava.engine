@@ -7,6 +7,7 @@
 #include <QFileDialog>
 
 #include "../DeviceInfo/DumpViewWidget.h"
+#include "../DeviceInfo/DumpViewerWidget.h"
 
 DeviceListWidget::DeviceListWidget( QWidget *parent )
     : QWidget( parent, Qt::Window )
@@ -19,6 +20,7 @@ DeviceListWidget::DeviceListWidget( QWidget *parent )
     connect( ui->showLog, &QPushButton::clicked, this, &DeviceListWidget::showLogClicked );
 
     connect(ui->viewDump, &QPushButton::clicked, this, &DeviceListWidget::OnViewDump);
+    connect(ui->viewDumpEnh, &QPushButton::clicked, this, &DeviceListWidget::OnViewDumpEnhanced);
 }
 
 DeviceListWidget::~DeviceListWidget()
@@ -38,6 +40,19 @@ void DeviceListWidget::OnViewDump()
     {
         std::string s = filename.toStdString();
         DumpViewWidget* w = new DumpViewWidget(s.c_str(), this, Qt::Window);
+        w->setAttribute(Qt::WA_DeleteOnClose);
+        w->resize(800, 600);
+        w->show();
+    }
+}
+
+void DeviceListWidget::OnViewDumpEnhanced()
+{
+    QString filename = QFileDialog::getOpenFileName(this, "Select dump file", "d:\\share\\dumps\\test", "Dumps (*.bin)");
+    if (!filename.isEmpty())
+    {
+        DumpViewerWidget* w = new DumpViewerWidget(filename.toStdString().c_str(), this);
+        w->setAttribute(Qt::WA_DeleteOnClose);
         w->resize(800, 600);
         w->show();
     }

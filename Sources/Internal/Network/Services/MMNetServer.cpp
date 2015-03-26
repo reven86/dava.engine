@@ -261,6 +261,8 @@ void MMNetServer::OnDumpRequest(int32 type, uint32 tagOrCheckpoint, uint32 block
     uint64 timerStart = SystemTimer::Instance()->AbsoluteMS();
 
     size_t dumpSize = MemoryManager::Instance()->GetDump(0, &buf, blockBegin, blockEnd);
+    uint64 timePoint2 = SystemTimer::Instance()->AbsoluteMS();
+
     MMDump temp = {0};
     Memcpy(&temp, buf, sizeof(MMDump));
     zipFile = DynamicMemoryFile::Create(File::CREATE | File::READ | File::WRITE);
@@ -270,14 +272,16 @@ void MMNetServer::OnDumpRequest(int32 type, uint32 tagOrCheckpoint, uint32 block
         zipStream.Write(static_cast<char8*>(buf)+sizeof(MMDump), static_cast<uint32>(dumpSize));
     }
     MemoryManager::Instance()->FreeDump(buf);
+    uint64 timePoint3 = SystemTimer::Instance()->AbsoluteMS();
 
     Parcel parcel = CreateParcel(zipFile->GetSize(), zipFile->GetData());
 
     MMProtoHeader* outHdr = static_cast<MMProtoHeader*>(parcel.buffer);
     MMDump* dump = reinterpret_cast<MMDump*>(outHdr + 1);
     *dump = temp;
-    dump->timestampBegin = timerStart - timerBegin;
-    dump->timestampEnd = SystemTimer::Instance()->AbsoluteMS() - timerBegin;
+    dump->timestampBegin = timerStart;
+    dump->collectTime = timePoint3 - timerStart;
+    dump->zipTime = timePoint3 - timePoint2;
 
     outHdr->sessionId = sessionId;
     outHdr->cmd = static_cast<uint32>(eMMProtoCmd::DUMP);

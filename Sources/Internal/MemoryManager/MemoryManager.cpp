@@ -501,7 +501,8 @@ void MemoryManager::InsertBacktrace(Backtrace& backtrace)
     {
         // New backtrace, add to list
         Backtrace& bktrace = backtraces->insert(std::make_pair(backtrace.hash, backtrace)).first->second;
-        ObtainBacktraceSymbols(&bktrace);
+        (void)bktrace;
+        //ObtainBacktraceSymbols(&bktrace);
     }
 }
 
@@ -590,7 +591,7 @@ size_t MemoryManager::GetDump(size_t userSize, void** buf, uint32 blockRangeBegi
     // TODO: carefully think of locking
     DVASSERT(userSize % 16 == 0);
 
-    //ObtainAllBacktraceSymbols();
+    ObtainAllBacktraceSymbols();
     MemoryBlock* firstBlock = nullptr;
     MemoryBlock* lastBlock = nullptr;
     size_t nblocks = GetBlockRange(blockRangeBegin, blockRangeEnd, &firstBlock, &lastBlock);
@@ -610,7 +611,8 @@ size_t MemoryManager::GetDump(size_t userSize, void** buf, uint32 blockRangeBegi
     MMSymbol* sym = Offset<MMSymbol>(bt, sizeof(MMBacktrace) * nbacktraces);
 
     dump->timestampBegin = 0;
-    dump->timestampEnd = 0;
+    dump->collectTime = 0;
+    dump->zipTime = 0;
     dump->blockCount = static_cast<uint32>(nblocks);
     dump->backtraceCount = static_cast<uint32>(nbacktraces);
     dump->symbolCount = static_cast<uint32>(nsymbols);
@@ -618,6 +620,7 @@ size_t MemoryManager::GetDump(size_t userSize, void** buf, uint32 blockRangeBegi
     dump->blockEnd = static_cast<uint32>(lastBlock->orderNo);
     dump->type = 0;
     dump->tag = 0;
+    dump->backtraceDepth = MMConst::BACKTRACE_DEPTH;
 
     size_t iBlock = 0;
     size_t nblocksToCheck = 0;

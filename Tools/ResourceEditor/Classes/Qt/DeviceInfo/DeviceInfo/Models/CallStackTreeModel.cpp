@@ -1,13 +1,13 @@
-#include "../BacktraceSet.h"
+#include "../BacktraceSymbolTable.h"
 #include "CallStackTreeModel.h"
 
 using namespace DAVA;
 
 CallStackTreeModel::CallStackTreeModel(const DAVA::Vector<DAVA::MMBlock>& memBlocks,
-                                       const BacktraceSet& backtrace,
+                                       const BacktraceSymbolTable& backtraceTable,
                                        QObject* parent)
     : GenericTreeModel(2, parent)
-    , bktrace(backtrace)
+    , bktraceTable(backtraceTable)
     , blockList(memBlocks)
     , rootNode(new FrameAddrNode(0))
 {
@@ -20,7 +20,7 @@ CallStackTreeModel::~CallStackTreeModel()
 
 }
 
-void CallStackTreeModel::Rebuild(const DAVA::Vector<DAVA::uint64>& addrList, bool append)
+void CallStackTreeModel::Rebuild(const DAVA::Vector<const DAVA::char8*>& nameList, bool append)
 {
     beginResetModel();
     if (!append)
@@ -28,7 +28,7 @@ void CallStackTreeModel::Rebuild(const DAVA::Vector<DAVA::uint64>& addrList, boo
         rootNode.reset(new FrameAddrNode(0));
     }
     SetRootNode(rootNode.get());
-    BuildTree(addrList);
+    BuildTree(nameList);
     endResetModel();
 }
 
@@ -42,6 +42,8 @@ QVariant CallStackTreeModel::data(const QModelIndex& index, int role) const
             return FrameAddrNodeData(static_cast<FrameAddrNode*>(node), index.row(), index.column());
         else if (type == TYPE_BLOCK)
             return BlockNodeData(static_cast<BlockNode*>(node), index.row(), index.column());
+        else if (type == TYPE_BLOCK2)
+            return Block2NodeData(static_cast<BlockNode2*>(node), index.row(), index.column());
     }
     return QVariant();
 }
@@ -60,17 +62,17 @@ QVariant CallStackTreeModel::headerData(int section, Qt::Orientation orientation
     return QAbstractItemModel::headerData(section, orientation, role);
 }
 
-void CallStackTreeModel::BuildTree(const DAVA::Vector<DAVA::uint64>& addrList)
+void CallStackTreeModel::BuildTree(const DAVA::Vector<const DAVA::char8*>& nameList)
 {
     Vector<BlockGroup> grp;
-    CollectBlockGroups(grp, addrList);
+    CollectBlockGroups(grp, nameList);
 
     size_t a = 0;
     size_t t = 0;
     size_t n = 0;
 
     FrameAddrNode* root = rootNode.get();
-    FrameAddrNode* tmp = new FrameAddrNode(-1);
+    FrameAddrNode* tmp = new FrameAddrNode(0);
     root->AppendChild(tmp);
 
     size_t n1 = grp.size();
@@ -89,26 +91,22 @@ void CallStackTreeModel::BuildTree(const DAVA::Vector<DAVA::uint64>& addrList)
     tmp->UpdateBlockCount(n);
 }
 
-void CallStackTreeModel::CollectBlockGroups(DAVA::Vector<BlockGroup>& grp, const DAVA::Vector<DAVA::uint64>& addrList)
+void CallStackTreeModel::CollectBlockGroups(DAVA::Vector<BlockGroup>& grp, const DAVA::Vector<const DAVA::char8*>& nameList)
 {
-    size_t n = bktrace.BacktraceCount();
-    size_t c = 0;
-    for (auto i = bktrace.BacktraceCBegin(), e = bktrace.BacktraceCEnd();i != e;++i, ++c)
-    {
-        const MMBacktrace& bk = i->second;
-        size_t index = BacktraceFindAnyAddr(bk, addrList);
+    bktraceTable.IterateOverBacktraces([this, &grp, &nameList](uint32 hash, const Vector<const char8*>& v) -> void {
+        size_t index = BacktraceFindAnyAddr(v, nameList);
         if (index != size_t(-1))
         {
             BlockGroup g;
             g.allocByApp = 0;
             g.totalAlloc = 0;
             g.nblocks = 0;
-            g.bktrace = &bk;
+            g.frames = &v;
             g.startFrame = index;
-            CollectBlocks(g, bk.hash);
+            CollectBlocks(g, hash);
             grp.push_back(g);
         }
-    }
+    });
 }
 
 void CallStackTreeModel::CollectBlocks(BlockGroup& g, DAVA::uint32 hash) const
@@ -122,27 +120,17 @@ void CallStackTreeModel::CollectBlocks(BlockGroup& g, DAVA::uint32 hash) const
         g.nblocks += 1;
         g.blocks.push_back(y);
     }
-    /*for (auto& x : blockList)
-    {
-        if (x.backtraceHash == hash)
-        {
-            g.allocByApp += x.allocByApp;
-            g.totalAlloc += x.allocTotal;
-            g.nblocks += 1;
-            g.blocks.push_back(&x);
-        }
-    }*/
 }
 
-void CallStackTreeModel::AddBlockGroup(FrameAddrNode* parent, const BlockGroup& g)
+void CallStackTreeModel::AddBlockGroup(FrameAddrNode* parent, BlockGroup& g)
 {
     size_t i = g.startFrame;
     do {
-        uint64 addr = g.bktrace->frames[i];
-        FrameAddrNode* child = parent->FindInChildren(addr);
+        const char8* name = g.frames->at(i);
+        FrameAddrNode* child = parent->FindInChildren(name);
         if (child == nullptr)
         {
-            child = new FrameAddrNode(addr);
+            child = new FrameAddrNode(name);
             parent->AppendChild(child);
         }
         child->UpdateAllocByApp(g.allocByApp);
@@ -155,8 +143,9 @@ void CallStackTreeModel::AddBlockGroup(FrameAddrNode* parent, const BlockGroup& 
         AddBlocks(parent, g);
 }
 
-void CallStackTreeModel::AddBlocks(FrameAddrNode* parent, const BlockGroup& g)
+void CallStackTreeModel::AddBlocks(FrameAddrNode* parent, BlockGroup& g)
 {
+    //parent->AppendChild(new BlockNode2(g.blocks));
     for (auto x : g.blocks)
     {
         parent->AppendChild(new BlockNode(x));
@@ -168,38 +157,43 @@ void CallStackTreeModel::AddBlocks(FrameAddrNode* parent, const BlockGroup& g)
     });
 }
 
-size_t CallStackTreeModel::BacktraceFindAnyAddr(const DAVA::MMBacktrace& o, const DAVA::Vector<DAVA::uint64>& addrList) const
+size_t CallStackTreeModel::BacktraceFindAnyAddr(const DAVA::Vector<const DAVA::char8*>& frames, const DAVA::Vector<const DAVA::char8*>& nameList) const
 {
-    const uint64* addrBegin = &o.frames[MMConst::BACKTRACE_DEPTH - 1];
-    const uint64* addrEnd = &o.frames[0] - 1;
-    while (addrBegin > addrEnd && *addrBegin == 0)
-        addrBegin -= 1;
-    while (addrBegin > addrEnd)
-    {
-        auto i = std::find(addrList.begin(), addrList.end(), *addrBegin);
-        if (i != addrList.end())
+    size_t n = frames.size() - 1;
+    do {
+        auto iterFind = std::find(nameList.begin(), nameList.end(), frames[n]);
+        if (iterFind != nameList.end())
         {
-            return size_t(addrBegin - &o.frames[0]);
+            return n;
         }
-        addrBegin -= 1;
-    }
+    } while (n-- > 0);
+    /*for (auto i = frames.rbegin(), e = frames.rend();i != e;++i, ++n)
+    {
+        auto iterFind = std::find(nameList.begin(), nameList.end(), *i);
+        if (iterFind != nameList.end())
+        {
+            size_t k = std::distance(frames.rbegin(), i);
+            return k;
+        }
+    }*/
     return size_t(-1);
 }
 
 QVariant CallStackTreeModel::FrameAddrNodeData(FrameAddrNode* node, int row, int clm) const
 {
-    char buf[32];
-    uint64 a = 0;
+    const char8* name = nullptr;
     switch (clm)
     {
     case 0:
-        Snprintf(buf, COUNT_OF(buf), "%08llX", node->Address());
-        a = node->Address();
-        if (a != uint64(-1))
-            return QString("%1 %2").arg(buf).arg(reinterpret_cast<const char8*>((node->Address())));
+        name = node->Name();
+        if (name != nullptr)
+        {
+            return QVariant(name);
+        }
         else
-            return QString("%1").arg(buf);
-        //return QString("%1 %2").arg(buf).arg(bktrace.GetSymbol(node->Address()));
+        {
+            return QString("Root");
+        }
     case 1:
         return QString("allocated %1 bytes in %2 blocks").arg(node->AllocByApp()).arg(node->BlockCount());
     default:
@@ -215,6 +209,20 @@ QVariant CallStackTreeModel::BlockNodeData(BlockNode* node, int row, int clm) co
         return QString("block=%1 of size %2")
             .arg(node->Block()->orderNo)
             .arg(node->Block()->allocByApp);
+    default:
+        return QVariant();
+    }
+}
+
+QVariant CallStackTreeModel::Block2NodeData(BlockNode2* node, int row, int clm) const
+{
+    const DAVA::Vector<const DAVA::MMBlock*>& v = node->Blocks();
+    switch (clm)
+    {
+    case 0:
+        return QString("block=%1 of size %2")
+            .arg(v[row]->orderNo)
+            .arg(v[row]->allocByApp);
     default:
         return QVariant();
     }

@@ -10,6 +10,7 @@
 #include "MemProfWidget.h"
 #include "DumpViewWidget.h"
 #include "MemProfController.h"
+#include "BacktraceSymbolTable.h"
 
 using namespace DAVA;
 using namespace DAVA::Net;
@@ -133,7 +134,7 @@ uint32 BacktraceHash(const MMBacktrace& backtrace)
 
 void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize, Vector<uint8>& dumpV)
 {
-    using namespace DAVA;
+    BacktraceSymbolTable table;
 
     static int dumpIndex = 1;
 
@@ -141,25 +142,22 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize, Ve
 
     dumpData.swap(dumpV);
 
+    const size_t bktraceSize = dump->backtraceDepth * sizeof(uint64) + sizeof(uint32) * 4;
+
     const MMBlock* blocks = Offset<MMBlock>(dump, sizeof(MMDump));
     const MMBacktrace* bt = Offset<MMBacktrace>(blocks, sizeof(MMBlock) * dump->blockCount);
-    const MMSymbol* symbols = Offset<MMSymbol>(bt, sizeof(MMBacktrace) * dump->backtraceCount);
+    const MMSymbol* symbols = Offset<MMSymbol>(bt, dump->backtraceCount * bktraceSize);
 
     for (size_t i = 0, n = dump->symbolCount;i < n;++i)
-        symbolMap.emplace(std::make_pair(symbols[i].addr, symbols[i].name));
+    {
+        table.AddSymbol(symbols[i].addr, symbols[i].name);
+    }
+
+    const MMBacktrace* p = bt;
     for (size_t i = 0, n = dump->backtraceCount;i < n;++i)
     {
-        uint32 hash = bt[i].hash;
-        auto g = traceMap.emplace(std::make_pair(hash, bt[i]));
-        //DVASSERT(g.second == true);
-        if (g.second == true)
-        {
-            /*fprintf(stderr, "hash = %u (%08X)\n", hash, hash);
-            for (auto ff : bt[i].frames)
-            {
-                fprintf(stderr, "  %08llX\n", ff);
-            }*/
-        }
+        table.AddBacktrace(p->hash, p->frames, dump->backtraceDepth);
+        p = Offset<MMBacktrace>(p, bktraceSize);
     }
 
     char fname[512];
@@ -172,7 +170,7 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize, Ve
         {
             size_t dumpSize = sizeof(MMDump) 
                 + sizeof(MMBlock) * dump->blockCount 
-                + sizeof(MMBacktrace) * dump->backtraceCount
+                + bktraceSize * dump->backtraceCount
                 + sizeof(MMSymbol) * dump->symbolCount;
             fwrite(dump, 1, dumpSize, f);
             fclose(f);
@@ -184,26 +182,36 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize, Ve
     if (f)
     {
         fprintf(f, "General info\n");
-        fprintf(f, "  collect time=%u ms\n", uint32(dump->timestampEnd - dump->timestampBegin));
+        fprintf(f, "  collectTime=%u ms\n", dump->collectTime);
+        fprintf(f, "  zipTime=%u ms\n", dump->zipTime);
         fprintf(f, "  packedSize=%u\n", packedSize);
         fprintf(f, "  blockCount=%u\n", dump->blockCount);
         fprintf(f, "  backtraceCount=%u\n", dump->backtraceCount);
         fprintf(f, "  nameCount=%u\n", dump->symbolCount);
         fprintf(f, "  blockBegin=%u\n", dump->blockBegin);
         fprintf(f, "  blockEnd=%u\n", dump->blockEnd);
+        fprintf(f, "  backtraceDepth=%u\n", dump->backtraceDepth);
 
         fprintf(f, "Blocks\n");
         for (uint32 i = 0;i < dump->blockCount;++i)
         {
-            fprintf(f, "%4d: addr=%08llX, allocByApp=%u, allocTotal=%u, orderNo=%u, pool=%u, hash=%u\n", i + 1,
-                    blocks[i].addr,
+            fprintf(f, "%4d: allocByApp=%u, allocTotal=%u, orderNo=%u, pool=%u, hash=%u\n", i + 1,
                     blocks[i].allocByApp, blocks[i].allocTotal, blocks[i].orderNo, blocks[i].pool,
                     blocks[i].backtraceHash);
-            auto x = traceMap.find(blocks[i].backtraceHash);
+            //fprintf(f, "%4d: addr=%08llX, allocByApp=%u, allocTotal=%u, orderNo=%u, pool=%u, hash=%u\n", i + 1,
+            //        blocks[i].addr,
+            //        blocks[i].allocByApp, blocks[i].allocTotal, blocks[i].orderNo, blocks[i].pool,
+            //        blocks[i].backtraceHash);
+            const Vector<const char8*>& fr = table.GetFrames(blocks[i].backtraceHash);
+            for (auto s : fr)
+            {
+                fprintf(f, "        %s\n", s);
+            }
+            /*auto x = traceMap.find(blocks[i].backtraceHash);
             if (x != traceMap.end())
             {
                 const MMBacktrace& z = (*x).second;
-                for (size_t j = 0;j < MMConst::BACKTRACE_DEPTH;++j)
+                for (size_t j = 0;j < dump->backtraceDepth;++j)
                 {
                     auto u = symbolMap.find(z.frames[j]);
                     if (u != symbolMap.end())
@@ -215,7 +223,7 @@ void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize, Ve
                         fprintf(f, "        %08llX\n", z.frames[j]);
                     }
                 }
-            }
+            }*/
         }
 
         /*fprintf(f, "Symbols\n");
