@@ -63,6 +63,9 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     connect(model, &PreviewModel::CanvasOrViewChanged, this, &PreviewWidget::OnScrollAreaChanged);
     connect(model, &PreviewModel::CanvasPositionChanged, this, &PreviewWidget::OnScrollPositionChanged);
     connect(model, &PreviewModel::CanvasScaleChanged, this, &PreviewWidget::OnCanvasScaleChanged);
+
+    connect(model, &PreviewModel::ControlNodeSelected, this, &PreviewWidget::OnControlNodeSelected);
+    connect(model, &PreviewModel::AllControlsDeselected, this, &PreviewWidget::OnAllControlsDeselected);
 }
 
 PreviewWidget::~PreviewWidget()

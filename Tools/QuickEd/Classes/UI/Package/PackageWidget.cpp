@@ -224,7 +224,7 @@ void PackageWidget::RefreshAction( QAction *action, bool enabled, bool visible )
 
 void PackageWidget::CollectSelectedNodes(Vector<ControlNode*> &nodes)
 {
-    QItemSelection selected = proxyModel->mapSelectionFromSource(ui->treeView->selectionModel()->selection());
+    QItemSelection selected = proxyModel->mapSelectionToSource(ui->treeView->selectionModel()->selection());
     QModelIndexList selectedIndexList = selected.indexes();
     
     if (!selectedIndexList.empty())
@@ -246,7 +246,9 @@ void PackageWidget::CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &nodes
     if (!nodes.empty())
     {
         YamlPackageSerializer serializer;
-        widgetContext->GetDocument()->GetPackage()->Serialize(&serializer, nodes);//TODO - this is deprecated
+        Document* doc = widgetContext->GetDocument();
+        PackageNode *pac = doc->GetPackage();
+        pac->Serialize(&serializer, nodes);//TODO - this is deprecated
         String str = serializer.WriteToString();
         QMimeData data;
         data.setText(QString(str.c_str()));
@@ -342,7 +344,8 @@ void PackageWidget::OnPaste()
         if (nullptr != node && (node->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) == 0)
         {
             String string = clipboard->mimeData()->text().toStdString();
-            widgetContext->GetDocument()->GetCommandExecutor()->Paste(widgetContext->GetDocument()->GetPackage(), node, -1, string);
+            Document *doc = widgetContext->GetDocument();
+            doc->GetCommandExecutor()->Paste(doc->GetPackage(), node, -1, string);
         }
     }
 }
@@ -373,11 +376,12 @@ void PackageWidget::filterTextChanged(const QString &filterText)
 
 void PackageWidget::OnControlSelectedInEditor(ControlNode *node)
 {
-    PackageModel *packageModel = static_cast<PackageModel*>(ui->treeView->model());
+    PackageModel *packageModel = widgetContext->GetData("model").value<PackageModel*>();
     QModelIndex srcIndex = packageModel->indexByNode(node);
-    ui->treeView->selectionModel()->select(srcIndex, QItemSelectionModel::ClearAndSelect);
-    ui->treeView->expand(srcIndex);
-    ui->treeView->scrollTo(srcIndex);
+    QModelIndex dstIndex = proxyModel->mapFromSource(srcIndex);
+    ui->treeView->selectionModel()->select(dstIndex, QItemSelectionModel::ClearAndSelect);
+    ui->treeView->expand(dstIndex);
+    ui->treeView->scrollTo(dstIndex);
 }
 
 void PackageWidget::OnAllControlsDeselectedInEditor()
