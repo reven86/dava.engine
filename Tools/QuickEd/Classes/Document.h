@@ -62,12 +62,12 @@ private:
     WidgetContext *previewContext;
 
     QtModelPackageCommandExecutor *commandExecutor;
-    QScopedPointer<QUndoStack> undoStack;
+    QUndoStack *undoStack;
 };
 
 inline QUndoStack *Document::GetUndoStack() const
 {
-    return undoStack.data();
+    return undoStack;
 }
 
 inline PackageNode *Document::GetPackage() const 

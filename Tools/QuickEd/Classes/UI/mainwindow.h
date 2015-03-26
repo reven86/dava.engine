@@ -66,7 +66,7 @@ public:
     };
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    void CreateUndoRedoActions(const QUndoGroup &undoGroup);
+    void CreateUndoRedoActions(const QUndoGroup *undoGroup);
     PackageWidget *GetPackageWidget() const;
     LibraryWidget *GetLibraryWidget() const;
     PropertiesWidget *GetPropertiesWidget() const;

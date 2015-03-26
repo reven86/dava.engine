@@ -129,7 +129,6 @@ void Document::OnPackageContextDataChanged(const QByteArray &role)
     if (role == "activatedControls")
     {
         QVariant selected = packageContext->GetData("activatedControls");
-        propertiesContext->SetData(selected, "activatedControls");
         QList<ControlNode*> &activatedControls = selected.value<QList<ControlNode*> >();
         QAbstractItemModel* model = activatedControls.empty() ? nullptr : new PropertiesModel(activatedControls.first(), this);
         propertiesContext->SetData(QVariant::fromValue(model), "model");

@@ -12,6 +12,7 @@ class WidgetContext : public QObject
     Q_OBJECT
 public:
     WidgetContext(QObject *parent = nullptr);
+    ~WidgetContext();
     QVariant& GetData(const QByteArray &role);
     Document *GetDocument() const; //TODO - this is deprecated
     void SetData(const QVariant value, const QByteArray &role);

@@ -2,6 +2,7 @@
 #include <QObject>
 #include "Document.h"
 #include <QUndoGroup>
+#include <QDebug>
 
 class DocumentGroupPrivate
 {
@@ -12,15 +13,14 @@ public:
     DocumentGroupPrivate(DocumentGroup &object);
     Document *active;
     QList<Document*> documentList;
-    QUndoGroup undoGroup;
+    QUndoGroup *undoGroup;
 };
 
 DocumentGroupPrivate::DocumentGroupPrivate(DocumentGroup &object)
     : q_ptr(&object)
     , active(nullptr)
-    , undoGroup(&object)
+    , undoGroup(new QUndoGroup(&object))
 {
-
 }
 
 DocumentGroup::DocumentGroup(QObject *parent) 
@@ -37,7 +37,7 @@ void DocumentGroup::AddDocument(Document* document)
 {
     Q_D(DocumentGroup);
     Q_ASSERT(document);
-    d->undoGroup.addStack(document->GetUndoStack());
+    d->undoGroup->addStack(document->GetUndoStack());
     if (d->documentList.contains(document))
     {
         return;
@@ -49,7 +49,7 @@ void DocumentGroup::RemoveDocument(Document* document)
 {
     Q_D(DocumentGroup);
     Q_ASSERT(document);
-    d->undoGroup.removeStack(document->GetUndoStack());
+    d->undoGroup->removeStack(document->GetUndoStack());
 
     if (0 == d->documentList.removeAll(document))
     {
@@ -91,7 +91,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
         emit PackageContextChanged(nullptr);
         emit PreviewContextChanged(nullptr);
         
-        d->undoGroup.setActiveStack(nullptr);
+        d->undoGroup->setActiveStack(nullptr);
     }
     else
     {
@@ -105,7 +105,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
         connect(d->active, &Document::PackageDataChanged, this, &DocumentGroup::PackageDataChanged);
         connect(d->active, &Document::PreviewDataChanged, this, &DocumentGroup::PreviewDataChanged);
 
-        d->undoGroup.setActiveStack(d->active->GetUndoStack());
+        d->undoGroup->setActiveStack(d->active->GetUndoStack());
     }
     emit ActiveDocumentChanged(document);
 }
@@ -116,7 +116,7 @@ Document *DocumentGroup::GetActiveDocument() const
     return d->active;
 }
 
-const QUndoGroup& DocumentGroup::GetUndoGroup() const
+const QUndoGroup *DocumentGroup::GetUndoGroup() const
 {
     Q_D(const DocumentGroup);
     return d->undoGroup;

@@ -102,13 +102,14 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::CreateUndoRedoActions(const QUndoGroup &undoGroup)
+void MainWindow::CreateUndoRedoActions(const QUndoGroup *undoGroup)
 {
-    QAction *undoAction = undoGroup.createUndoAction(this);
+    Q_ASSERT(undoGroup);
+    QAction *undoAction = undoGroup->createUndoAction(this);
     undoAction->setShortcuts(QKeySequence::Undo);
     undoAction->setIcon(QIcon(":/Icons/edit_undo.png"));
 
-    QAction *redoAction = undoGroup.createRedoAction(this);
+    QAction *redoAction = undoGroup->createRedoAction(this);
     redoAction->setShortcuts(QKeySequence::Redo);
     redoAction->setIcon(QIcon(":/Icons/edit_redo.png"));
 
@@ -285,7 +286,7 @@ void MainWindow::SetupViewMenu()
     ui->menuView->addAction(ui->mainToolbar->toggleViewAction());
     
     // Setup the Background Color menu.
-    QMenu* setBackgroundColorMenu = new QMenu("Background Color");
+    QMenu* setBackgroundColorMenu = new QMenu("Background Color", this);
     ui->menuView->addSeparator();
     ui->menuView->addMenu(setBackgroundColorMenu);
 

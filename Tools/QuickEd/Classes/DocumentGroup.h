@@ -19,7 +19,7 @@ public:
     void RemoveDocument(Document*);
     QList<Document*> GetDocuments() const;
     Document* GetActiveDocument() const;
-    const QUndoGroup& GetUndoGroup() const;
+    const QUndoGroup* GetUndoGroup() const;
 public slots:
     void SetActiveDocument(Document* document);
 

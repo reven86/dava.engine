@@ -1,9 +1,23 @@
 #include "WidgetContext.h"
-
+#include <DAVAEngine.h>
 WidgetContext::WidgetContext(QObject *parent)
     : QObject(parent)
 {
 
+}
+
+WidgetContext::~WidgetContext()
+{ //TODO: remove it by passing view and canvas to delta-class
+    if (values.contains("view"))
+    {
+        DAVA::UIControl *control = GetData("view").value<DAVA::UIControl*>();
+        DAVA::SafeRelease(control);
+    }
+    if (values.contains("canvas"))
+    {
+        DAVA::UIControl *control = GetData("canvas").value<DAVA::UIControl*>();
+        DAVA::SafeRelease(control);
+    }
 }
 
 

@@ -43,9 +43,9 @@ private:
     int GetIndexByPackagePath(const QString &fileName) const;
     ///Return: pointer to currentDocument if exists, nullptr if not
     QList<Document*> documents;
-    DocumentGroup documentGroup;
-    Project project;
-    MainWindow mainWindow;
+    DocumentGroup *documentGroup;
+    Project *project;
+    MainWindow *mainWindow;
 
     //properties. must be at the end of file. Properties interface declared at the begin of the class
 public:

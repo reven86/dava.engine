@@ -19,48 +19,49 @@
 
 BaseController::BaseController(QObject *parent)
     : QObject(parent)
-    , documentGroup(this)
-    , mainWindow(nullptr)
+    , documentGroup(new DocumentGroup(this))
+    , mainWindow(new MainWindow())
+    , project(new Project(this))
     , currentIndex(-1)
 {
-    mainWindow.CreateUndoRedoActions(documentGroup.GetUndoGroup());
-    connect(&mainWindow, &MainWindow::TabClosed, this, &BaseController::CloseOneDocument);
+    mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
+    connect(mainWindow, &MainWindow::TabClosed, this, &BaseController::CloseOneDocument);
 
-    connect(&mainWindow, &MainWindow::CloseProject, this, &BaseController::CloseProject);
-    connect(&mainWindow, &MainWindow::ActionExitTriggered, this, &BaseController::Exit);
-    connect(&mainWindow, &MainWindow::CloseRequested, this, &BaseController::Exit);
-    connect(&mainWindow, &MainWindow::RecentMenuTriggered, this, &BaseController::RecentMenu);
-    connect(&mainWindow, &MainWindow::ActionOpenProjectTriggered, this, &BaseController::OpenProject);
-    connect(&mainWindow, &MainWindow::OpenPackageFile, this, &BaseController::OnOpenPackageFile);
-    connect(&mainWindow, &MainWindow::SaveAllDocuments, this, &BaseController::SaveAllDocuments);
-    connect(&mainWindow, &MainWindow::SaveDocument, this, static_cast<void(BaseController::*)(int)>(&BaseController::SaveDocument));
-    connect(&mainWindow, &MainWindow::CurrentTabChanged, this, &BaseController::SetCurrentIndex);
+    connect(mainWindow, &MainWindow::CloseProject, this, &BaseController::CloseProject);
+    connect(mainWindow, &MainWindow::ActionExitTriggered, this, &BaseController::Exit);
+    connect(mainWindow, &MainWindow::CloseRequested, this, &BaseController::Exit);
+    connect(mainWindow, &MainWindow::RecentMenuTriggered, this, &BaseController::RecentMenu);
+    connect(mainWindow, &MainWindow::ActionOpenProjectTriggered, this, &BaseController::OpenProject);
+    connect(mainWindow, &MainWindow::OpenPackageFile, this, &BaseController::OnOpenPackageFile);
+    connect(mainWindow, &MainWindow::SaveAllDocuments, this, &BaseController::SaveAllDocuments);
+    connect(mainWindow, &MainWindow::SaveDocument, this, static_cast<void(BaseController::*)(int)>(&BaseController::SaveDocument));
+    connect(mainWindow, &MainWindow::CurrentTabChanged, this, &BaseController::SetCurrentIndex);
 
-    connect(&documentGroup, &DocumentGroup::LibraryContextChanged, mainWindow.GetLibraryWidget(), &LibraryWidget::OnContextChanged);
-    connect(&documentGroup, &DocumentGroup::LibraryDataChanged, mainWindow.GetLibraryWidget(), &LibraryWidget::OnDataChanged);
-    connect(&documentGroup, &DocumentGroup::PropertiesContextChanged, mainWindow.GetPropertiesWidget(), &PropertiesWidget::OnContextChanged);
-    connect(&documentGroup, &DocumentGroup::PropertiesDataChanged, mainWindow.GetPropertiesWidget(), &PropertiesWidget::OnDataChanged);
-    connect(&documentGroup, &DocumentGroup::PackageContextChanged, mainWindow.GetPackageWidget(), &PackageWidget::OnContextChanged);
-    connect(&documentGroup, &DocumentGroup::PackageDataChanged, mainWindow.GetPackageWidget(), &PackageWidget::OnDataChanged);
-    connect(&documentGroup, &DocumentGroup::PreviewContextChanged, mainWindow.GetPreviewWidget(), &PreviewWidget::OnContextChanged);
-    connect(&documentGroup, &DocumentGroup::PreviewDataChanged, mainWindow.GetPreviewWidget(), &PreviewWidget::OnDataChanged);
+    connect(documentGroup, &DocumentGroup::LibraryContextChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnContextChanged);
+    connect(documentGroup, &DocumentGroup::LibraryDataChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnDataChanged);
+    connect(documentGroup, &DocumentGroup::PropertiesContextChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnContextChanged);
+    connect(documentGroup, &DocumentGroup::PropertiesDataChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnDataChanged);
+    connect(documentGroup, &DocumentGroup::PackageContextChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnContextChanged);
+    connect(documentGroup, &DocumentGroup::PackageDataChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnDataChanged);
+    connect(documentGroup, &DocumentGroup::PreviewContextChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnContextChanged);
+    connect(documentGroup, &DocumentGroup::PreviewDataChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnDataChanged);
 
     qApp->installEventFilter(this);
 }
 
 BaseController::~BaseController()
 {
-
+    delete mainWindow;
 }
 
 void BaseController::Start()
 {
-    mainWindow.show();
+    mainWindow->show();
 }
 
 MainWindow* BaseController::GetMainWindow() const
 {
-    return const_cast<MainWindow*>( &mainWindow );
+    return const_cast<MainWindow*>( mainWindow );
 }
 
 void BaseController::OnCleanChanged(bool clean)
@@ -70,7 +71,7 @@ void BaseController::OnCleanChanged(bool clean)
     {
         if (undoStack == documents.at(i)->GetUndoStack())
         {
-            mainWindow.OnCleanChanged(i, clean);
+            mainWindow->OnCleanChanged(i, clean);
         }
     }
 }
@@ -82,13 +83,13 @@ void BaseController::OnOpenPackageFile(const QString &path)
         int index = GetIndexByPackagePath(path);
         if (index == -1)
         {
-            DAVA::RefPtr<PackageNode> package = project.OpenPackage(path);
+            DAVA::RefPtr<PackageNode> package = project->OpenPackage(path);
             if (nullptr != package)
             {
                 index = CreateDocument(package.Get());
             }
         }
-        mainWindow.SetCurrentTab(index);
+        mainWindow->SetCurrentTab(index);
     }
 }
 
@@ -130,7 +131,7 @@ void BaseController::SaveAllDocuments()
 {
     for (auto &document : documents)
     {
-        DVVERIFY(project.SavePackage(document->GetPackage()));
+        DVVERIFY(project->SavePackage(document->GetPackage()));
         document->GetUndoStack()->setClean();
     }
 }
@@ -161,16 +162,16 @@ void BaseController::OpenProject(const QString &path)
         return;
     }
 
-    if (!project.CheckAndUnlockProject(path))
+    if (!project->CheckAndUnlockProject(path))
     {
         return;
     }
     Result result;
-    if (!project.Open(path))
+    if (!project->Open(path))
     {
         result.addError(Result::CriticalError, tr("Error while loading project"));
     }
-    mainWindow.OnProjectOpened(result, path);
+    mainWindow->OnProjectOpened(result, path);
 }
 
 bool BaseController::CloseProject()
@@ -213,12 +214,12 @@ void BaseController::CloseDocument(int index)
 {
     DVASSERT(index >= 0);
     DVASSERT(index < documents.size());
-    int newIndex = mainWindow.CloseTab(index);
+    int newIndex = mainWindow->CloseTab(index);
 
     //sync document list with tab list
     Document *detached = documents.takeAt(index);
-    documentGroup.SetActiveDocument(newIndex == -1 ? nullptr : documents.at(newIndex));
-    documentGroup.RemoveDocument(detached);
+    documentGroup->SetActiveDocument(newIndex == -1 ? nullptr : documents.at(newIndex));
+    documentGroup->RemoveDocument(detached);
     delete detached; //some widgets hold this document inside :(
 }
 
@@ -227,8 +228,8 @@ int BaseController::CreateDocument(PackageNode *package)
     Document *document = new Document(package, this);
     connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &BaseController::OnCleanChanged);
     documents.push_back(document);
-    documentGroup.AddDocument(document);
-    int index = mainWindow.AddTab(document->GetPackageFilePath().GetBasename().c_str());
+    documentGroup->AddDocument(document);
+    int index = mainWindow->AddTab(document->GetPackageFilePath().GetBasename().c_str());
     return index;
 }
 
@@ -239,7 +240,7 @@ void BaseController::SaveDocument(Document *document)
     {
         return;
     }
-    DVVERIFY(project.SavePackage(document->GetPackage())); //TODO:log here
+    DVVERIFY(project->SavePackage(document->GetPackage())); //TODO:log here
     document->GetUndoStack()->setClean();
 }
 
@@ -272,7 +273,7 @@ void BaseController::SetCurrentIndex(int arg)
     }
     DVASSERT(arg < documents.size());
     currentIndex = arg;
-    documentGroup.SetActiveDocument(arg == -1 ? nullptr : documents.at(arg));
+    documentGroup->SetActiveDocument(arg == -1 ? nullptr : documents.at(arg));
     emit CurrentIndexChanged(arg);
 }
 
