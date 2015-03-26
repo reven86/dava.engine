@@ -25,7 +25,6 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-#if _NMATERIAL_OFF
 
 #include "Render/Material.h"
 #include "Render/UberShader.h"
@@ -282,7 +281,7 @@ Material::Material()
     ,   isFlatColorEnabled(false)
     ,   isTexture0ShiftEnabled(false)
     ,   isWireframe(false)
-    ,   renderStateBlock()
+    //,   renderStateBlock()
     ,   isExportOwnerLayerEnabled(true)
     ,   ownerLayerName(LAYER_OPAQUE)
 {
@@ -345,7 +344,7 @@ Material * Material::Clone(Material *newMaterial /* = NULL */)
     newMaterial->uniformTreeLeafColorMul = uniformTreeLeafColorMul;
     newMaterial->uniformTreeLeafOcclusionOffset = uniformTreeLeafOcclusionOffset;
 
-	renderStateBlock.CopyTo(&newMaterial->renderStateBlock);
+	//renderStateBlock.CopyTo(&newMaterial->renderStateBlock);
     
 
     newMaterial->isExportOwnerLayerEnabled = isExportOwnerLayerEnabled;
@@ -1267,10 +1266,10 @@ bool Material::GetAlphablend()
 	return isAlphablend;
 }
 
-RenderState * Material::GetRenderState()
+/*RenderState * Material::GetRenderState()
 {
 	return &renderStateBlock;
-}
+}*/
 
 void Material::SetWireframe(bool _isWireframe)
 {
@@ -1346,5 +1345,3 @@ void Material::SetName(const String& materialName)
 
 };
 
-
-#endif //_NMATERIAL_OFF

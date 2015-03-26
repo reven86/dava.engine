@@ -58,7 +58,7 @@ namespace DAVA
 	
 	ShadowRect::ShadowRect()
 	{
-		rdo = new RenderDataObject();
+		/*rdo = new RenderDataObject();
 		
 		Vector3 vert3[4] = {Vector3(-100.f, 100.f, -50), Vector3(100.f, 100.f, -50), Vector3(-100.f, -100.f, -50), Vector3(100.f, -100.f, -50)};
 		
@@ -101,21 +101,21 @@ namespace DAVA
         stateData.sourceFactor = BLEND_SRC_ALPHA;
         stateData.destFactor = BLEND_ONE_MINUS_SRC_ALPHA;
 
-        blendAlphaState = RenderManager::Instance()->CreateRenderState(stateData);
+        blendAlphaState = RenderManager::Instance()->CreateRenderState(stateData);*/
 	}
 	
 	ShadowRect::~ShadowRect()
 	{
-		uniformShadowColor = -1;
+		/*uniformShadowColor = -1;
 		SafeRelease(shader);
 		SafeRelease(rdo);
 		
-		instance = 0;
+		instance = 0;*/
 	}
 	
     void ShadowRect::Draw(ShadowPassBlendMode::eBlend blendMode)
 	{
-        RenderManager::Instance()->SetRenderState((ShadowPassBlendMode::MODE_BLEND_ALPHA == blendMode) ? blendAlphaState : blendMultiplyState);
+        /*RenderManager::Instance()->SetRenderState((ShadowPassBlendMode::MODE_BLEND_ALPHA == blendMode) ? blendAlphaState : blendMultiplyState);
 		RenderManager::Instance()->SetShader(shader);
 		RenderManager::Instance()->SetRenderData(rdo);
 		RenderManager::Instance()->FlushState();
@@ -123,7 +123,7 @@ namespace DAVA
 		shader->SetUniformColor4ByIndex(uniformShadowColor, shadowColor);
 		
 		RenderManager::Instance()->AttachRenderData();
-		RenderManager::Instance()->HWDrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
+		RenderManager::Instance()->HWDrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);*/
 	}
     
 	void ShadowRect::SetColor(const Color &color)

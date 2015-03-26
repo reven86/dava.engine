@@ -76,9 +76,9 @@ void MipMapReplacer::EnumerateTexturesRecursive(Entity * entity, Set<Texture *> 
                 NMaterial * material = rb->GetMaterial();
                 if(material)
                 {
-                    Texture * texture = material->GetTexture(NMaterialTextureName::TEXTURE_ALBEDO);
+                    /*Texture * texture = material->GetTexture(NMaterialTextureName::TEXTURE_ALBEDO);
                     if(texture)
-                        textures.insert(texture);
+                        textures.insert(texture);*/
                 }
             }
         }

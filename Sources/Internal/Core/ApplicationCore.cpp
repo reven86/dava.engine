@@ -87,15 +87,15 @@ void ApplicationCore::Draw()
 void ApplicationCore::BeginFrame()
 {
     RenderSystem2D::Instance()->Reset();
-	RenderManager::Instance()->BeginFrame();
+	Renderer::BeginFrame();
     RenderSystem2D::Instance()->Reset();
 }
 
 void ApplicationCore::EndFrame()
 {
     RenderSystem2D::Instance()->Flush();
-	RenderManager::Instance()->EndFrame();
-    RenderManager::Instance()->ProcessStats();
+    Renderer::EndFrame();
+    //RenderManager::Instance()->ProcessStats();
 }
 
 void ApplicationCore::OnSuspend()

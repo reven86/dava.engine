@@ -30,7 +30,6 @@
 #ifndef __DAVAENGINE_MATERIAL_H__
 #define __DAVAENGINE_MATERIAL_H__
 
-#if _MATERIAL_OFF
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
@@ -324,7 +323,7 @@ public:
 	inline Texture * GetTexture(eTextureLevel level) const;
 	inline const FilePath & GetTextureName(eTextureLevel level) const;
 
-	RenderState * GetRenderState();
+	//RenderState * GetRenderState();
     
     inline void SetBlendSrc(eBlendMode _blendSrc);
 	inline void SetBlendDest(eBlendMode _blendDest);
@@ -405,7 +404,7 @@ private:
     int32 uniformTreeLeafColorMul;
     int32 uniformTreeLeafOcclusionOffset;
 
-	RenderState renderStateBlock;
+	//RenderState renderStateBlock;
     
     String name;
     
@@ -454,7 +453,7 @@ public:
                          
         COLLECTION(names, "Names", I_SAVE | I_VIEW | I_EDIT)
 
-		MEMBER(renderStateBlock, "Render State", I_VIEW | I_EDIT)
+		//MEMBER(renderStateBlock, "Render State", I_VIEW | I_EDIT)
     );
 };
 
@@ -512,7 +511,6 @@ inline const FilePath & InstanceMaterialState::GetLightmapName() const
     
 };
 
-#endif _NMATERIAL_OFF
 
 #endif // __DAVAENGINE_MATERIAL_H__
 

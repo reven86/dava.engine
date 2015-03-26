@@ -29,6 +29,7 @@
 
 #include "Render/PixelFormatDescriptor.h"
 #include "Utils/Utils.h"
+#include "Render/Renderer.h"
 
 #if defined (__DAVAENGINE_OPENGL__)
 
@@ -147,11 +148,7 @@ bool PixelFormatDescriptor::IsFormatCompressed(const PixelFormat formatID)
 
 void PixelFormatDescriptor::InitializePixelFormatDescriptors()
 {
-	RenderManager::Caps caps;
-    if(RenderManager::Instance())
-    {
-        caps = RenderManager::Instance()->GetCaps();
-    }
+	const RenderCaps& caps = Renderer::GetCaps();    
 
     DVASSERT(FORMAT_COUNT == 33); // add new format below
 

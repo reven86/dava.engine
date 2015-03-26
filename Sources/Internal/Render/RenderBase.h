@@ -554,25 +554,6 @@ enum eCullOrder
 #endif
 };
     
-    
-
-class RenderGuard
-{
-public:	
-	RenderGuard();
-	~RenderGuard();
-	
-	void LowLevelRenderCall();
-	
-	bool wrongCall;
 };
-	
-};
-
-#if defined(__DAVAENGINE_DEBUG__)
-#define RENDER_GUARD RenderGuard renderGuard;
-#else
-#define RENDER_GUARD
-#endif
 
 #endif // __DAVAENGINE_RENDER_BASE_H__

@@ -326,27 +326,7 @@ const FastName DYNAMIC_PARAM_NAMES[] =
 //        FastName("objectScale"),
     };
 
-RenderGuard::RenderGuard()
-{
-    wrongCall = false;
-}
 
-RenderGuard::~RenderGuard()
-{
-
-}
-
-void RenderGuard::LowLevelRenderCall()
-{
-    if(!Thread::IsMainThread())
-    {
-        DVASSERT(0 && "Application tried to call GL or DX in separate thread without lock");
-    }
-    if (!RenderManager::Instance()->IsInsideDraw())
-    {
-        DVASSERT(0 && "Application tried to call GL or DX not between BeginFrame / EndFrame.");
-    }
-}
 
 eBlendMode GetBlendModeByName(const String & blendStr)
 {

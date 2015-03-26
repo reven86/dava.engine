@@ -61,17 +61,18 @@ namespace DAVA
 		
 		RenderDataObject * rdo;
 		
-		Shader * shader;
+		
 		
 		float32 vertices[12];
 		
 		static ShadowRect * instance;
 		
-		Color shadowColor;
-		int32 uniformShadowColor;
-
+		
+		/*int32 uniformShadowColor;        
+        Color shadowColor;
+        Shader * shader;
         UniqueHandle blendAlphaState;
-        UniqueHandle blendMultiplyState;
+        UniqueHandle blendMultiplyState;*/
 	};
 	
 };
