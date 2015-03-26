@@ -8,8 +8,9 @@
 #include "WidgetModel.h"
 
 
+
 WidgetItem::WidgetItem( QWidget* w )
-    : QObject( w )
+    : QObject( nullptr )
     , widget( w )
 {
     if ( !widget.isNull() )
@@ -23,6 +24,11 @@ WidgetItem::~WidgetItem()
     if ( !widget.isNull() )
     {
         widget->removeEventFilter( this );
+
+        if ( !model.isNull() )
+        {
+            model->cache.remove( widget );
+        }
     }
 }
 
@@ -85,8 +91,6 @@ void WidgetItem::onChildRemove( QWidget* w )
             return;
         }
     }
-
-    Q_ASSERT( false );
 }
 
 bool WidgetItem::eventFilter( QObject* obj, QEvent* e )
@@ -116,11 +120,6 @@ bool WidgetItem::eventFilter( QObject* obj, QEvent* e )
     }
 
     return QObject::eventFilter( obj, e );
-}
-
-QSharedPointer<WidgetItem> WidgetItem::getParent() const
-{
-    return parentItem;
 }
 
 QSharedPointer<WidgetItem> WidgetItem::create( QWidget* w )

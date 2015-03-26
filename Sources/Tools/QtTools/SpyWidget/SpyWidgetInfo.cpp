@@ -62,6 +62,7 @@ void SpyWidgetInfo::trackWidget( QWidget* w )
     {
         widget->installEventFilter( this );
         connect( widget.data(), &QObject::objectNameChanged, updateTimer.data(), static_cast< void ( QTimer::* )( )>( &QTimer::start ) );
+        connect( widget.data(), &QObject::destroyed, this, &QObject::deleteLater );
     }
 
     updateInformation();

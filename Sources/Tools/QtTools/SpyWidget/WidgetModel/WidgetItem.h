@@ -7,6 +7,7 @@
 #include <QSharedPointer>
 #include <QWeakPointer>
 #include <QList>
+#include <QWidgetList>
 
 
 class QWidget;
@@ -28,8 +29,6 @@ public:
     ~WidgetItem();
 
     bool eventFilter( QObject *obj, QEvent *e ) override;
-
-    QSharedPointer< WidgetItem > getParent() const;
 
 private:
     explicit WidgetItem( QWidget *w );

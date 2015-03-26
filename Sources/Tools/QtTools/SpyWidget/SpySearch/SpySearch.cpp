@@ -91,6 +91,24 @@ void SpySearch::showWidgetInfo( QWidget* w ) const
     if ( w == nullptr )
         return;
 
+    //auto root = new QWidget();
+    //root->setObjectName( "root" );
+    //{
+    //    auto child1 = new QWidget( root );
+    //    child1->setObjectName( "child1" );
+    //    {
+    //        auto child11 = new QWidget( child1 );
+    //        child11->setObjectName( "child1-1" );
+    //    }
+    //    auto child2 = new QWidget( root );
+    //    child2->setObjectName( "child2" );
+    //}
+    //
+    //{
+    //    root->setAttribute( Qt::WA_DeleteOnClose );
+    //    root->show();
+    //}
+
     auto info = new SpyWidgetInfo();
     info->trackWidget( w );
     info->show();
