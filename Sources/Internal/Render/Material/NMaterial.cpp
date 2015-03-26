@@ -55,129 +55,50 @@ static const FastName DEFINE_VERTEX_LIT("VERTEX_LIT");
 static const FastName DEFINE_PIXEL_LIT("PIXEL_LIT");
 static const FastName DEFINE_LAND_SPECULAR("SPECULAR_LAND");
 
-const FastName NMaterial::TEXTURE_ALBEDO("albedo");
-const FastName NMaterial::TEXTURE_NORMAL("normalmap");
-const FastName NMaterial::TEXTURE_DETAIL("detail");
-const FastName NMaterial::TEXTURE_LIGHTMAP("lightmap");
-const FastName NMaterial::TEXTURE_DECAL("decal");
-const FastName NMaterial::TEXTURE_CUBEMAP("cubemap");
-const FastName NMaterial::TEXTURE_HEIGHTMAP("heightmap");
-const FastName NMaterial::TEXTURE_DECALMASK("decalmask");
-const FastName NMaterial::TEXTURE_DECALTEXTURE("decaltexture");
 
-const FastName NMaterial::TEXTURE_DYNAMIC_REFLECTION("dynamicReflection");
-const FastName NMaterial::TEXTURE_DYNAMIC_REFRACTION("dynamicRefraction");
-
-const FastName NMaterial::PARAM_LIGHT_POSITION0("lightPosition0");
-const FastName NMaterial::PARAM_PROP_AMBIENT_COLOR("ambientColor");
-const FastName NMaterial::PARAM_PROP_DIFFUSE_COLOR("diffuseColor");
-const FastName NMaterial::PARAM_PROP_SPECULAR_COLOR("specularColor");
-const FastName NMaterial::PARAM_LIGHT_AMBIENT_COLOR("materialLightAmbientColor");
-const FastName NMaterial::PARAM_LIGHT_DIFFUSE_COLOR("materialLightDiffuseColor");
-const FastName NMaterial::PARAM_LIGHT_SPECULAR_COLOR("materialLightSpecularColor");
-const FastName NMaterial::PARAM_LIGHT_INTENSITY0("lightIntensity0");
-const FastName NMaterial::PARAM_MATERIAL_SPECULAR_SHININESS("materialSpecularShininess");
-const FastName NMaterial::PARAM_FOG_LIMIT("fogLimit");
-const FastName NMaterial::PARAM_FOG_COLOR("fogColor");
-const FastName NMaterial::PARAM_FOG_DENSITY("fogDensity");
-const FastName NMaterial::PARAM_FOG_START("fogStart");
-const FastName NMaterial::PARAM_FOG_END("fogEnd");
-const FastName NMaterial::PARAM_FOG_HALFSPACE_DENSITY("fogHalfspaceDensity");
-const FastName NMaterial::PARAM_FOG_HALFSPACE_HEIGHT("fogHalfspaceHeight");
-const FastName NMaterial::PARAM_FOG_HALFSPACE_FALLOFF("fogHalfspaceFalloff");
-const FastName NMaterial::PARAM_FOG_HALFSPACE_LIMIT("fogHalfspaceLimit");
-const FastName NMaterial::PARAM_FOG_ATMOSPHERE_COLOR_SUN("fogAtmosphereColorSun");
-const FastName NMaterial::PARAM_FOG_ATMOSPHERE_COLOR_SKY("fogAtmosphereColorSky");
-const FastName NMaterial::PARAM_FOG_ATMOSPHERE_SCATTERING("fogAtmosphereScattering");
-const FastName NMaterial::PARAM_FOG_ATMOSPHERE_DISTANCE("fogAtmosphereDistance");
-const FastName NMaterial::PARAM_FLAT_COLOR("flatColor");
-const FastName NMaterial::PARAM_TEXTURE0_SHIFT("texture0Shift");
-const FastName NMaterial::PARAM_UV_OFFSET("uvOffset");
-const FastName NMaterial::PARAM_UV_SCALE("uvScale");
-const FastName NMaterial::PARAM_LIGHTMAP_SIZE("lightmapSize");
-const FastName NMaterial::PARAM_SHADOW_COLOR("shadowColor");
-const FastName NMaterial::PARAM_DECAL_TILE_SCALE("decalTileCoordScale");
-const FastName NMaterial::PARAM_DECAL_TILE_COLOR("decalTileColor");
-const FastName NMaterial::PARAM_DETAIL_TILE_SCALE("detailTileCoordScale");
-const FastName NMaterial::PARAM_RCP_SCREEN_SIZE("rcpScreenSize");
-const FastName NMaterial::PARAM_SCREEN_OFFSET("screenOffset");
-
-const FastName NMaterial::FLAG_VERTEXFOG = FastName("VERTEX_FOG");
-const FastName NMaterial::FLAG_FOG_LINEAR = FastName("FOG_LINEAR");
-const FastName NMaterial::FLAG_FOG_HALFSPACE = FastName("FOG_HALFSPACE");
-const FastName NMaterial::FLAG_FOG_HALFSPACE_LINEAR = FastName("FOG_HALFSPACE_LINEAR");
-const FastName NMaterial::FLAG_FOG_ATMOSPHERE = FastName("FOG_ATMOSPHERE");
-const FastName NMaterial::FLAG_TEXTURESHIFT = FastName("TEXTURE0_SHIFT_ENABLED");
-const FastName NMaterial::FLAG_TEXTURE0_ANIMATION_SHIFT = FastName("TEXTURE0_ANIMATION_SHIFT");
-const FastName NMaterial::FLAG_WAVE_ANIMATION = FastName("WAVE_ANIMATION");
-const FastName NMaterial::FLAG_FAST_NORMALIZATION = FastName("FAST_NORMALIZATION");
-const FastName NMaterial::FLAG_TILED_DECAL_MASK = FastName("TILED_DECAL_MASK");
-const FastName NMaterial::FLAG_FLATCOLOR = FastName("FLATCOLOR");
-const FastName NMaterial::FLAG_DISTANCEATTENUATION = FastName("DISTANCE_ATTENUATION");
-const FastName NMaterial::FLAG_SPECULAR = FastName("SPECULAR");
-const FastName NMaterial::FLAG_SEPARATE_NORMALMAPS = FastName("SEPARATE_NORMALMAPS");
-
-const FastName NMaterial::FLAG_SPHERICAL_LIT = FastName("SPHERICAL_LIT");
-
-const FastName NMaterial::FLAG_TANGENT_SPACE_WATER_REFLECTIONS = FastName("TANGENT_SPACE_WATER_REFLECTIONS");
-
-const FastName NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL = FastName("DEBUG_UNITY_Z_NORMAL");
-const FastName NMaterial::FLAG_DEBUG_Z_NORMAL_SCALE = FastName("DEBUG_Z_NORMAL_SCALE");
-const FastName NMaterial::FLAG_DEBUG_NORMAL_ROTATION = FastName("DEBUG_NORMAL_ROTATION");
-
-
-const FastName NMaterial::FLAG_SKINNING = FastName("SKINNING");
-
-const FastName NMaterial::FLAG_LIGHTMAPONLY = FastName("MATERIAL_VIEW_LIGHTMAP_ONLY");
-const FastName NMaterial::FLAG_TEXTUREONLY = FastName("MATERIAL_VIEW_TEXTURE_ONLY");
-const FastName NMaterial::FLAG_SETUPLIGHTMAP = FastName("SETUP_LIGHTMAP");
-const FastName NMaterial::FLAG_VIEWALBEDO = FastName("VIEW_ALBEDO");
-const FastName NMaterial::FLAG_VIEWAMBIENT = FastName("VIEW_AMBIENT");
-const FastName NMaterial::FLAG_VIEWDIFFUSE = FastName("VIEW_DIFFUSE");
-const FastName NMaterial::FLAG_VIEWSPECULAR = FastName("VIEW_SPECULAR");
 
 static FastName TEXTURE_NAME_PROPS[] =
 {
-	NMaterial::TEXTURE_ALBEDO,
-	NMaterial::TEXTURE_NORMAL,
-	NMaterial::TEXTURE_DETAIL,
-	NMaterial::TEXTURE_LIGHTMAP,
-	NMaterial::TEXTURE_DECAL
+	NMaterialTextureName::TEXTURE_ALBEDO,
+	NMaterialTextureName::TEXTURE_NORMAL,
+	NMaterialTextureName::TEXTURE_DETAIL,
+	NMaterialTextureName::TEXTURE_LIGHTMAP,
+	NMaterialTextureName::TEXTURE_DECAL
 };
 
 static FastName RUNTIME_ONLY_FLAGS[] =
 {
-	NMaterial::FLAG_LIGHTMAPONLY,
-	NMaterial::FLAG_TEXTUREONLY,
-	NMaterial::FLAG_SETUPLIGHTMAP,
+	NMaterialFlagName::FLAG_LIGHTMAPONLY,
+	NMaterialFlagName::FLAG_TEXTUREONLY,
+	NMaterialFlagName::FLAG_SETUPLIGHTMAP,
 
-    NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL,
-    NMaterial::FLAG_DEBUG_Z_NORMAL_SCALE,
-    NMaterial::FLAG_DEBUG_NORMAL_ROTATION,
+    NMaterialFlagName::FLAG_DEBUG_UNITY_Z_NORMAL,
+    NMaterialFlagName::FLAG_DEBUG_Z_NORMAL_SCALE,
+    NMaterialFlagName::FLAG_DEBUG_NORMAL_ROTATION,
 	
-	NMaterial::FLAG_VIEWALBEDO,
-	NMaterial::FLAG_VIEWAMBIENT,
-	NMaterial::FLAG_VIEWDIFFUSE,
-	NMaterial::FLAG_VIEWSPECULAR
+	NMaterialFlagName::FLAG_VIEWALBEDO,
+	NMaterialFlagName::FLAG_VIEWAMBIENT,
+	NMaterialFlagName::FLAG_VIEWDIFFUSE,
+	NMaterialFlagName::FLAG_VIEWSPECULAR
 };
 
 static FastName RUNTIME_ONLY_PROPERTIES[] =
 {
-    NMaterial::PARAM_LIGHTMAP_SIZE,
-    NMaterial::PARAM_LIGHT_POSITION0,
-    NMaterial::PARAM_LIGHT_INTENSITY0,
-    NMaterial::PARAM_LIGHT_AMBIENT_COLOR,
-    NMaterial::PARAM_LIGHT_DIFFUSE_COLOR,
-    NMaterial::PARAM_LIGHT_SPECULAR_COLOR,
-    NMaterial::PARAM_RCP_SCREEN_SIZE,
-    NMaterial::PARAM_SCREEN_OFFSET
+    NMaterialParamName::PARAM_LIGHTMAP_SIZE,
+    NMaterialParamName::PARAM_LIGHT_POSITION0,
+    NMaterialParamName::PARAM_LIGHT_INTENSITY0,
+    NMaterialParamName::PARAM_LIGHT_AMBIENT_COLOR,
+    NMaterialParamName::PARAM_LIGHT_DIFFUSE_COLOR,
+    NMaterialParamName::PARAM_LIGHT_SPECULAR_COLOR,
+    NMaterialParamName::PARAM_RCP_SCREEN_SIZE,
+    NMaterialParamName::PARAM_SCREEN_OFFSET
 };
 
 static FastName RUNTIME_ONLY_TEXTURES[] =
 {
-    NMaterial::TEXTURE_DYNAMIC_REFLECTION,
-    NMaterial::TEXTURE_DYNAMIC_REFRACTION,
-    NMaterial::TEXTURE_HEIGHTMAP
+    NMaterialTextureName::TEXTURE_DYNAMIC_REFLECTION,
+    NMaterialTextureName::TEXTURE_DYNAMIC_REFRACTION,
+    NMaterialTextureName::TEXTURE_HEIGHTMAP
 };
 
 const FastName NMaterial::DEFAULT_QUALITY_NAME = FastName("Normal");
@@ -189,7 +110,7 @@ void IlluminationParams::SetLightmapSize(const int32 &size)
 	if(parent)
 	{
 		float32 floatLightmapSize = (float32)lightmapSize;
-		parent->SetPropertyValue(NMaterial::PARAM_LIGHTMAP_SIZE,
+		parent->SetPropertyValue(NMaterialParamName::PARAM_LIGHTMAP_SIZE,
 								 Shader::UT_FLOAT,
 								 1,
 								 &floatLightmapSize);
@@ -203,7 +124,7 @@ void IlluminationParams::SetParent(NMaterial* parentMaterial)
 	if(parent)
 	{
 		float32 floatLightmapSize = (float32)lightmapSize;
-		parent->SetPropertyValue(NMaterial::PARAM_LIGHTMAP_SIZE,
+		parent->SetPropertyValue(NMaterialParamName::PARAM_LIGHTMAP_SIZE,
 								 Shader::UT_FLOAT,
 								 1,
 								 &floatLightmapSize);
@@ -1459,7 +1380,7 @@ void NMaterial::BindMaterialTechnique(const FastName & passName, Camera* camera)
 //		//Vector3 lightPosition0InCameraSpace = lights[0]->GetPosition() * matrix;
 //		const Vector4 & lightPositionDirection0InCameraSpace = lights[0]->CalculatePositionDirectionBindVector(camera);
 //        
-//		SetPropertyValue(NMaterial::PARAM_LIGHT_POSITION0, Shader::UT_FLOAT_VEC4, 1, lightPositionDirection0InCameraSpace.data);
+//		SetPropertyValue(NMaterialParamName::PARAM_LIGHT_POSITION0, Shader::UT_FLOAT_VEC4, 1, lightPositionDirection0InCameraSpace.data);
 //	}
 //}
 
@@ -1626,42 +1547,42 @@ void NMaterial::Draw(RenderDataObject* renderData, uint16* indices, uint16 index
 //
 //void NMaterial::UpdateLightingProperties(Light* light)
 //{
-//	NMaterialProperty* propAmbientColor = GetMaterialProperty(NMaterial::PARAM_PROP_AMBIENT_COLOR);
+//	NMaterialProperty* propAmbientColor = GetMaterialProperty(NMaterialParamName::PARAM_PROP_AMBIENT_COLOR);
 //	if(propAmbientColor)
 //	{
 //		Color lightAmbientColor = (light) ? light->GetAmbientColor() : Color(0, 0, 0, 0);
 //		Color materialAmbientColor = *(Color*) propAmbientColor->data;
 //		materialAmbientColor = materialAmbientColor * lightAmbientColor;
-//		SetPropertyValue(NMaterial::PARAM_LIGHT_AMBIENT_COLOR, Shader::UT_FLOAT_VEC3, 1, &materialAmbientColor);
+//		SetPropertyValue(NMaterialParamName::PARAM_LIGHT_AMBIENT_COLOR, Shader::UT_FLOAT_VEC3, 1, &materialAmbientColor);
 //	}
 //	
-//	NMaterialProperty* propDiffuseColor = GetMaterialProperty(NMaterial::PARAM_PROP_DIFFUSE_COLOR);
+//	NMaterialProperty* propDiffuseColor = GetMaterialProperty(NMaterialParamName::PARAM_PROP_DIFFUSE_COLOR);
 //	if(propDiffuseColor)
 //	{
 //		Color lightDiffuseColor = (light) ? light->GetDiffuseColor() : Color(0, 0, 0, 0);
 //		Color materialDiffuseColor = *(Color*) propDiffuseColor->data;
 //		materialDiffuseColor = materialDiffuseColor * lightDiffuseColor;
-//		SetPropertyValue(NMaterial::PARAM_LIGHT_DIFFUSE_COLOR, Shader::UT_FLOAT_VEC3, 1, &materialDiffuseColor);
+//		SetPropertyValue(NMaterialParamName::PARAM_LIGHT_DIFFUSE_COLOR, Shader::UT_FLOAT_VEC3, 1, &materialDiffuseColor);
 //	}
 //	
-//	NMaterialProperty* propSpecularColor = GetMaterialProperty(NMaterial::PARAM_PROP_SPECULAR_COLOR);
+//	NMaterialProperty* propSpecularColor = GetMaterialProperty(NMaterialParamName::PARAM_PROP_SPECULAR_COLOR);
 //	if(propSpecularColor)
 //	{
 //		Color lightSpecularColor = (light) ? light->GetSpecularColor() : Color(0, 0, 0, 0);
 //		Color materialSpecularColor = *(Color*) propSpecularColor->data;
 //		materialSpecularColor = materialSpecularColor * lightSpecularColor;
-//		SetPropertyValue(NMaterial::PARAM_LIGHT_SPECULAR_COLOR, Shader::UT_FLOAT_VEC3, 1, &materialSpecularColor);
+//		SetPropertyValue(NMaterialParamName::PARAM_LIGHT_SPECULAR_COLOR, Shader::UT_FLOAT_VEC3, 1, &materialSpecularColor);
 //	}
 //	
 //	float32 intensity = (light) ? light->GetIntensity() : 0;
-//	SetPropertyValue(NMaterial::PARAM_LIGHT_INTENSITY0, Shader::UT_FLOAT, 1, &intensity);
+//	SetPropertyValue(NMaterialParamName::PARAM_LIGHT_INTENSITY0, Shader::UT_FLOAT, 1, &intensity);
 //}
 
 //bool NMaterial::IsLightingProperty(const FastName& propName) const
 //{
-//	return (NMaterial::PARAM_PROP_AMBIENT_COLOR == propName ||
-//			NMaterial::PARAM_PROP_DIFFUSE_COLOR == propName ||
-//			NMaterial::PARAM_PROP_SPECULAR_COLOR == propName);
+//	return (NMaterialParamName::PARAM_PROP_AMBIENT_COLOR == propName ||
+//			NMaterialParamName::PARAM_PROP_DIFFUSE_COLOR == propName ||
+//			NMaterialParamName::PARAM_PROP_SPECULAR_COLOR == propName);
 //}
 
 const RenderStateData& NMaterial::GetRenderState(const FastName& passName) const

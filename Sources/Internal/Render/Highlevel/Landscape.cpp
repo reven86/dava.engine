@@ -1527,19 +1527,19 @@ void Landscape::LoadFog(KeyedArchive * archive, SerializationContext * serializa
         if(archive->IsKeyExists("fogcolor"))
         {
             Color fogColorValue = archive->GetByteArrayAsType("fogcolor", Color(1.0f, 0, 0, 1.0f));
-            globalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_COLOR, Shader::UT_FLOAT_VEC4, 1, &fogColorValue);
+            globalMaterial->SetPropertyValue(NMaterialParamName::PARAM_FOG_COLOR, Shader::UT_FLOAT_VEC4, 1, &fogColorValue);
         }
 
         if(archive->IsKeyExists("isFogEnabled"))
         {
             NMaterial::eFlagValue flag = (archive->GetBool("isFogEnabled") ? NMaterial::FlagOn : NMaterial::FlagOff);
-            globalMaterial->SetFlag(NMaterial::FLAG_VERTEXFOG, flag);
+            globalMaterial->SetFlag(NMaterialFlagName::FLAG_VERTEXFOG, flag);
         }
 
         if(archive->IsKeyExists("fogdencity"))
         {
             float32 fogDensityValue = archive->GetFloat("fogdencity", 0.05f);
-            globalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_DENSITY, Shader::UT_FLOAT, 1, &fogDensityValue);
+            globalMaterial->SetPropertyValue(NMaterialParamName::PARAM_FOG_DENSITY, Shader::UT_FLOAT, 1, &fogDensityValue);
         }
     }
 }
@@ -1697,7 +1697,7 @@ Texture * Landscape::CreateLandscapeTexture()
     }
     //END of MAGIC
     
-    tmpTileMaskMaterial->SetFlag(NMaterial::FLAG_VERTEXFOG, NMaterial::FlagOff);
+    tmpTileMaskMaterial->SetFlag(NMaterialFlagName::FLAG_VERTEXFOG, NMaterial::FlagOff);
     tmpTileMaskMaterial->SetParent(tmpLandscapeParent);
     tmpTileMaskMaterial->BindMaterialTechnique(TECHNIQUE_TILEMASK_NAME, NULL);
 

@@ -223,7 +223,7 @@ public:
     const FilePath & GetPathname() const;
     void SetPathname(const FilePath& path);
     
-    Image * CreateImageFromMemory(UniqueHandle renderState);
+    Image * CreateImageFromMemory();
 
 	bool IsPinkPlaceholder();
     

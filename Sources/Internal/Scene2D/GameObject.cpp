@@ -38,6 +38,7 @@
 #include "Animation/KeyframeAnimation.h"
 #include "Scene2D/GameObjectAnimations.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/RenderHelper.h"
 
 namespace DAVA
 {
@@ -324,7 +325,7 @@ void GameObject::Draw()
 	
 	if (isDebugDraw && collision)
 	{
-		collision->DebugDraw(RenderState::RENDERSTATE_2D_BLEND);
+		collision->DebugDraw(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
 	}
 //	if (align == ALIGN_LEFTTOP)
 //	{

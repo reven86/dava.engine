@@ -68,8 +68,7 @@ protected:
 
     /*convinience*/
     void PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSystem);
-    void DrawLayers(Camera *camera);
-    void ClearBuffers(uint32 clearBuffers);
+    void DrawLayers(Camera *camera);    
 
 	RenderPassBatchArray * renderPassBatchArray;
 	VisibilityArray visibilityArray;

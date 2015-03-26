@@ -405,7 +405,7 @@ SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::J
 
         NMaterial * material = NMaterial::CreateMaterialInstance();
         material->SetParent(key.materialParent);
-        material->SetFlag(NMaterial::FLAG_SKINNING, NMaterial::FlagOn);
+        material->SetFlag(NMaterialFlagName::FLAG_SKINNING, NMaterial::FlagOn);
 
         RenderBatch * newBatch = new RenderBatch();
         polygonGroup->RecalcAABBox();

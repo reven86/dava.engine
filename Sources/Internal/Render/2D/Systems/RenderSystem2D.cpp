@@ -241,8 +241,7 @@ void RenderSystem2D::Reset()
     Setup2DMatrices();
 
     defaultSpriteDrawState.Reset();
-    defaultSpriteDrawState.renderState = RenderState::RENDERSTATE_2D_BLEND;
-    defaultSpriteDrawState.shader = TEXTURE_MUL_FLAT_COLOR;
+    defaultSpriteDrawState.renderState = RenderHelper::DEFAULT_2D_BLEND_MATERIAL;    
 
     batches.clear();
     batches.reserve(RESERVED_BATCHES);

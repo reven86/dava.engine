@@ -28,6 +28,7 @@
 
 #ifndef __DAVAENGINE_NMATERIAL_H__
 #define __DAVAENGINE_NMATERIAL_H__
+
 #if _MATERIAL_OFF
 
 #include "Base/BaseTypes.h"
@@ -169,87 +170,9 @@ class NMaterial : public DataNode
 	
 public:
 	
-	typedef uint64 NMaterialKey;
-
-    static const FastName TEXTURE_ALBEDO;
-    static const FastName TEXTURE_NORMAL;
-    static const FastName TEXTURE_DETAIL;
-    static const FastName TEXTURE_LIGHTMAP;
-	static const FastName TEXTURE_DECAL;
-	static const FastName TEXTURE_CUBEMAP;
-    static const FastName TEXTURE_HEIGHTMAP;
-    static const FastName TEXTURE_DECALMASK;
-    static const FastName TEXTURE_DECALTEXTURE;
-    
-    static const FastName TEXTURE_DYNAMIC_REFLECTION;
-    static const FastName TEXTURE_DYNAMIC_REFRACTION;
+	typedef uint64 NMaterialKey;    
 	
-	static const FastName PARAM_LIGHT_POSITION0;
-	static const FastName PARAM_PROP_AMBIENT_COLOR;
-	static const FastName PARAM_PROP_DIFFUSE_COLOR;
-	static const FastName PARAM_PROP_SPECULAR_COLOR;
-	static const FastName PARAM_LIGHT_AMBIENT_COLOR;
-	static const FastName PARAM_LIGHT_DIFFUSE_COLOR;
-	static const FastName PARAM_LIGHT_SPECULAR_COLOR;
-	static const FastName PARAM_LIGHT_INTENSITY0;
-	static const FastName PARAM_MATERIAL_SPECULAR_SHININESS;
-    static const FastName PARAM_FOG_LIMIT;
-	static const FastName PARAM_FOG_COLOR;
-	static const FastName PARAM_FOG_DENSITY;
-    static const FastName PARAM_FOG_START;
-    static const FastName PARAM_FOG_END;
-    static const FastName PARAM_FOG_ATMOSPHERE_COLOR_SUN;
-    static const FastName PARAM_FOG_ATMOSPHERE_COLOR_SKY;
-    static const FastName PARAM_FOG_ATMOSPHERE_SCATTERING;
-    static const FastName PARAM_FOG_ATMOSPHERE_DISTANCE;
-    static const FastName PARAM_FOG_HALFSPACE_HEIGHT;
-    static const FastName PARAM_FOG_HALFSPACE_DENSITY;
-    static const FastName PARAM_FOG_HALFSPACE_FALLOFF;
-    static const FastName PARAM_FOG_HALFSPACE_LIMIT;
-	static const FastName PARAM_FLAT_COLOR;
-	static const FastName PARAM_TEXTURE0_SHIFT;
-	static const FastName PARAM_UV_OFFSET;
-	static const FastName PARAM_UV_SCALE;
-    static const FastName PARAM_LIGHTMAP_SIZE;
-    static const FastName PARAM_SHADOW_COLOR;
-    static const FastName PARAM_DECAL_TILE_SCALE;
-    static const FastName PARAM_DECAL_TILE_COLOR;
-    static const FastName PARAM_DETAIL_TILE_SCALE;
-    static const FastName PARAM_RCP_SCREEN_SIZE;
-    static const FastName PARAM_SCREEN_OFFSET;
-    
-	static const FastName FLAG_VERTEXFOG;
-	static const FastName FLAG_FOG_LINEAR;
-    static const FastName FLAG_FOG_HALFSPACE;
-    static const FastName FLAG_FOG_HALFSPACE_LINEAR;
-	static const FastName FLAG_FOG_ATMOSPHERE;
-	static const FastName FLAG_TEXTURESHIFT;
-	static const FastName FLAG_TEXTURE0_ANIMATION_SHIFT;
-	static const FastName FLAG_WAVE_ANIMATION;
-	static const FastName FLAG_FAST_NORMALIZATION;    
-    static const FastName FLAG_TILED_DECAL_MASK;
-	static const FastName FLAG_FLATCOLOR;
-    static const FastName FLAG_DISTANCEATTENUATION;
-    static const FastName FLAG_SPECULAR;
-    static const FastName FLAG_SEPARATE_NORMALMAPS;
-
-    static const FastName FLAG_SPHERICAL_LIT;
-
-    static const FastName FLAG_TANGENT_SPACE_WATER_REFLECTIONS;
-    
-    static const FastName FLAG_DEBUG_UNITY_Z_NORMAL;
-    static const FastName FLAG_DEBUG_Z_NORMAL_SCALE;
-    static const FastName FLAG_DEBUG_NORMAL_ROTATION;
-
-    static const FastName FLAG_SKINNING;
-    
-	static const FastName FLAG_LIGHTMAPONLY;
-	static const FastName FLAG_TEXTUREONLY; //VI: this flag is for backward compatibility with old materials. See FLAG_ALBEDOONLY
-	static const FastName FLAG_SETUPLIGHTMAP;
-    static const FastName FLAG_VIEWALBEDO;
-    static const FastName FLAG_VIEWAMBIENT;
-    static const FastName FLAG_VIEWDIFFUSE;
-    static const FastName FLAG_VIEWSPECULAR;
+	
 
 	
 	static const FastName DEFAULT_QUALITY_NAME;
@@ -1244,6 +1167,8 @@ prop(NULL)
 
 };
 #else
+#include "Render/Material/NMaterialNames.h"
+#include "Scene3D/DataNode.h"
 namespace DAVA
 {
     class NMaterial : public DataNode

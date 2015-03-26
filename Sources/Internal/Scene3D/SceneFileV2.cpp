@@ -1113,11 +1113,11 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
                 //MaterialTechnique * tech = material->GetTechnique(PASS_FORWARD);
 
                 //tech->GetRenderState()->SetTexture(oldMeshInstanceNode->GetLightmapDataForIndex(k)->lightmap, 1);
-                batch->GetMaterial()->SetTexture(NMaterial::TEXTURE_LIGHTMAP, oldMeshInstanceNode->GetLightmapDataForIndex(k)->lightmap);
+                batch->GetMaterial()->SetTexture(NMaterialTextureName::TEXTURE_LIGHTMAP, oldMeshInstanceNode->GetLightmapDataForIndex(k)->lightmap);
 
                 
-                batch->GetMaterial()->SetPropertyValue(NMaterial::PARAM_UV_OFFSET, Shader::UT_FLOAT_VEC2, 1, &oldMeshInstanceNode->GetLightmapDataForIndex(k)->uvOffset);
-                batch->GetMaterial()->SetPropertyValue(NMaterial::PARAM_UV_SCALE, Shader::UT_FLOAT_VEC2, 1, &oldMeshInstanceNode->GetLightmapDataForIndex(k)->uvScale);
+                batch->GetMaterial()->SetPropertyValue(NMaterialParamName::PARAM_UV_OFFSET, Shader::UT_FLOAT_VEC2, 1, &oldMeshInstanceNode->GetLightmapDataForIndex(k)->uvOffset);
+                batch->GetMaterial()->SetPropertyValue(NMaterialParamName::PARAM_UV_SCALE, Shader::UT_FLOAT_VEC2, 1, &oldMeshInstanceNode->GetLightmapDataForIndex(k)->uvScale);
             }
         }
         
@@ -1385,7 +1385,7 @@ void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
                 if ((flagValue & NMaterial::FlagInherited) == 0)
                 {
                     NMaterial::eFlagValue flag = ((flagValue & NMaterial::FlagOn) == NMaterial::FlagOn) ? NMaterial::FlagOn : NMaterial::FlagOff;
-                    material->SetFlag(NMaterial::FLAG_TILED_DECAL_MASK, flag);
+                    material->SetFlag(NMaterialFlagName::FLAG_TILED_DECAL_MASK, flag);
                     material->ResetFlag(FLAG_TILED_DECAL);
                 }
 

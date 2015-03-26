@@ -76,7 +76,7 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
 	 */
 	
     Sprite::DrawState drawState;
-    drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+    drawState.SetRenderState(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
     
 	if(type <= FROM_BOTTOM)
 	{

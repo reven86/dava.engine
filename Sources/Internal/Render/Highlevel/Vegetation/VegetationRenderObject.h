@@ -466,7 +466,7 @@ inline void VegetationRenderObject::SetVegetationTexture(const FilePath& texture
     if(vegetationGeometry != NULL)
     {
         KeyedArchive* props = new KeyedArchive();
-        props->SetString(NMaterial::TEXTURE_ALBEDO.c_str(), albedoTexturePath.GetAbsolutePathname());
+        props->SetString(NMaterialTextureName::TEXTURE_ALBEDO.c_str(), albedoTexturePath.GetAbsolutePathname());
         
         vegetationGeometry->OnVegetationPropertiesChanged(renderData, props);
         

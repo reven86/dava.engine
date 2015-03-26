@@ -285,10 +285,10 @@ namespace DAVA
 			for (Map<int32, UIEvent>::iterator it = touches.begin(); it != touches.end(); ++it)
 			{
 				Vector2 point = it->second.point;
-				RenderHelper::Instance()->DrawCircle(point, 25.0f, RenderState::RENDERSTATE_2D_BLEND);
+				RenderHelper::Instance()->DrawCircle(point, 25.0f, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
 			}
 		}
-		RenderHelper::Instance()->DrawCircle(GetMousePosition(), 15.0f, RenderState::RENDERSTATE_2D_BLEND);
+		RenderHelper::Instance()->DrawCircle(GetMousePosition(), 15.0f, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
 	}
 
 	void AutotestingSystem::OnTestStarted()
@@ -329,7 +329,7 @@ namespace DAVA
 		String currentDateTime = GetCurrentTimeString();
 		screenShotName = Format("%s_%s_%s_%d_%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
 		Logger::FrameworkDebug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
-		RenderManager::Instance()->RequestGLScreenShot(this);
+		Renderer::RequestGLScreenShot(this);
 	}
 
 	const String &AutotestingSystem::GetScreenShotName()

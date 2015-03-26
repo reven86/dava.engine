@@ -54,9 +54,9 @@ const FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* NMaterialState
             FastName propName = it->first;
             
             // don't add some properties with light settings, they should be hidden for user
-            if(propName != NMaterial::PARAM_LIGHT_AMBIENT_COLOR &&
-               propName != NMaterial::PARAM_LIGHT_DIFFUSE_COLOR &&
-               propName != NMaterial::PARAM_LIGHT_SPECULAR_COLOR)
+            if(propName != NMaterialParamName::PARAM_LIGHT_AMBIENT_COLOR &&
+               propName != NMaterialParamName::PARAM_LIGHT_DIFFUSE_COLOR &&
+               propName != NMaterialParamName::PARAM_LIGHT_SPECULAR_COLOR)
             {
                 if(0 == staticData.count(it->first))
                 {
@@ -124,9 +124,9 @@ const FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* NMaterialState
                         FastName propName = uniform->name;
                         
                         // redefine some shader properties names
-                        if(propName == NMaterial::PARAM_LIGHT_AMBIENT_COLOR) propName = NMaterial::PARAM_PROP_AMBIENT_COLOR;
-                        else if(propName == NMaterial::PARAM_LIGHT_DIFFUSE_COLOR) propName = NMaterial::PARAM_PROP_DIFFUSE_COLOR;
-                        else if(propName == NMaterial::PARAM_LIGHT_SPECULAR_COLOR) propName = NMaterial::PARAM_PROP_SPECULAR_COLOR;
+                        if(propName == NMaterialParamName::PARAM_LIGHT_AMBIENT_COLOR) propName = NMaterialParamName::PARAM_PROP_AMBIENT_COLOR;
+                        else if(propName == NMaterialParamName::PARAM_LIGHT_DIFFUSE_COLOR) propName = NMaterialParamName::PARAM_PROP_DIFFUSE_COLOR;
+                        else if(propName == NMaterialParamName::PARAM_LIGHT_SPECULAR_COLOR) propName = NMaterialParamName::PARAM_PROP_SPECULAR_COLOR;
                         
                         if(!staticData.count(propName))
                         {

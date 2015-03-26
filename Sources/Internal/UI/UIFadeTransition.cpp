@@ -33,6 +33,7 @@
 #include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Renderer.h"
+#include "Render/RenderHelper.h"
 
 namespace DAVA 
 {
@@ -69,7 +70,7 @@ void UIFadeTransition::Draw(const UIGeometricData &geometricData)
 	 renderTargetNextScreen->Draw(); 
 	 */
     Sprite::DrawState drawState;
-    drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+    drawState.SetRenderState(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
 	if (type == FADE_MIX)
 	{
 		renderTargetPrevScreen->Reset();

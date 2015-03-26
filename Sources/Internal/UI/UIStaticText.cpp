@@ -714,13 +714,13 @@ void  UIStaticText::DrawLocalizationErrors(const UIGeometricData & geometricData
 
 
             Renderer::SetColor(HIGHLITE_COLORS[RED]);
-            RenderHelper::Instance()->FillPolygon(controllPolygon, RenderState::RENDERSTATE_2D_BLEND);
+            RenderHelper::Instance()->FillPolygon(controllPolygon, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
 
         }
         if (textBlock->IsVisualTextCroped())
         {
             Renderer::SetColor(HIGHLITE_COLORS[YELLOW]);
-            RenderHelper::Instance()->FillPolygon(textPolygon, RenderState::RENDERSTATE_2D_BLEND);
+            RenderHelper::Instance()->FillPolygon(textPolygon, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
         }
     }
 }
@@ -742,7 +742,7 @@ void  UIStaticText::DrawLocalizationDebug(const UIGeometricData & textGeomData) 
         DAVA::Polygon2 polygon;
         textGeomData.GetPolygon(polygon);
 
-        RenderHelper::Instance()->FillPolygon(polygon, RenderState::RENDERSTATE_2D_BLEND);
+        RenderHelper::Instance()->FillPolygon(polygon, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
         Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
     if (textBlock->GetFittingOption() != TextBlock::FITTING_DISABLED 
@@ -761,7 +761,7 @@ void  UIStaticText::DrawLocalizationDebug(const UIGeometricData & textGeomData) 
         DAVA::Polygon2 polygon;
         textGeomData.GetPolygon(polygon);
         DVASSERT(polygon.GetPointCount() == 4);
-        RenderHelper::Instance()->DrawLine(polygon.GetPoints()[0], polygon.GetPoints()[2], RenderState::RENDERSTATE_2D_BLEND);
+        RenderHelper::Instance()->DrawLine(polygon.GetPoints()[0], polygon.GetPoints()[2], RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
         Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 

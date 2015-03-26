@@ -39,8 +39,6 @@ namespace DAVA
 {
     
 class RenderDataObject;
-class RenderManager;
-class RenderManagerGL20;
 class NMaterial;
     
 class RenderDataStream : public BaseObject

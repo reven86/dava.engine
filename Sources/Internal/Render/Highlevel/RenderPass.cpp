@@ -97,7 +97,7 @@ void RenderPass::Draw(RenderSystem * renderSystem, uint32 clearBuffers)
     
     PrepareVisibilityArrays(mainCamera, renderSystem);
     
-    ClearBuffers(clearBuffers);
+    //ClearBuffers(clearBuffers);
 
     DrawLayers(mainCamera);
 }
@@ -130,22 +130,7 @@ void RenderPass::DrawLayers(Camera *camera)
     }
 }
 
-void RenderPass::ClearBuffers(uint32 clearBuffers)
-{
-    RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
-    RenderManager::Instance()->FlushState();    
-    if (clearBuffers == RenderManager::ALL_BUFFERS)
-        RenderManager::Instance()->Clear(Color(0,0,0,0), 1.0f, 0);
-    else
-    {
-        if (clearBuffers&RenderManager::COLOR_BUFFER)
-            RenderManager::Instance()->ClearWithColor(0,0,0,0);
-        if (clearBuffers&RenderManager::DEPTH_BUFFER)
-            RenderManager::Instance()->ClearDepthBuffer();
-        if (clearBuffers&RenderManager::STENCIL_BUFFER)
-            RenderManager::Instance()->ClearStencilBuffer();
-    }
-}
+
 
 
 MainForwardRenderPass::MainForwardRenderPass(const FastName & name, RenderPassID id):RenderPass(name, id),
@@ -222,10 +207,10 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
 	for (uint32 i=0; i<waterBatchesCount; ++i)
 	{
         NMaterial *mat = waterLayer->Get(i)->GetMaterial();
-        mat->SetPropertyValue(NMaterial::PARAM_RCP_SCREEN_SIZE, Shader::UT_FLOAT_VEC2, 1, &rssVal);
-        mat->SetPropertyValue(NMaterial::PARAM_SCREEN_OFFSET, Shader::UT_FLOAT_VEC2, 1, &screenOffsetVal);
-        mat->SetTexture(NMaterial::TEXTURE_DYNAMIC_REFLECTION, reflectionTexture);
-        mat->SetTexture(NMaterial::TEXTURE_DYNAMIC_REFRACTION, refractionTexture);
+        mat->SetPropertyValue(NMaterialParamName::PARAM_RCP_SCREEN_SIZE, Shader::UT_FLOAT_VEC2, 1, &rssVal);
+        mat->SetPropertyValue(NMaterialParamName::PARAM_SCREEN_OFFSET, Shader::UT_FLOAT_VEC2, 1, &screenOffsetVal);
+        mat->SetTexture(NMaterialTextureName::TEXTURE_DYNAMIC_REFLECTION, reflectionTexture);
+        mat->SetTexture(NMaterialTextureName::TEXTURE_DYNAMIC_REFRACTION, refractionTexture);
 	}    
 }
 
@@ -276,7 +261,7 @@ void MainForwardRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBuffer
 	}	
     needWaterPrepass = (waterBatchesCount!=0); //for next frame;
 
-    ClearBuffers(clearBuffers);
+    //ClearBuffers(clearBuffers);
 
 	DrawLayers(mainCamera);   
 }

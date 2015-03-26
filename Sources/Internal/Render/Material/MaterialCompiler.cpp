@@ -30,6 +30,7 @@
 #include "Render/Material/MaterialCompiler.h"
 #include "Render/Material/MaterialGraph.h"
 #include "Render/Material/MaterialGraphNode.h"
+#include "Render/Material/NMaterialConsts.h"
 #include "Render/Material/NMaterial.h"
 #include "Render/3D/PolygonGroup.h"
 #include "FileSystem/FileSystem.h"

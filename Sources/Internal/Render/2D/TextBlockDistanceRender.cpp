@@ -170,7 +170,7 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 
 	Renderer::SetDynamicParam(PARAM_WORLD, &offsetMatrix, UPDATE_SEMANTIC_ALWAYS);
 
-	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+	RenderManager::Instance()->SetRenderState(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
     RenderManager::Instance()->SetTextureState(dfFont->GetTextureHandler());
 	RenderManager::Instance()->SetShader(shader);
     RenderManager::Instance()->SetRenderData(renderObject);

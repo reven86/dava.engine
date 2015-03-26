@@ -130,13 +130,13 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
 												 ,	0
 												 ,	-fullRect.x
 												 ,	virtualSize.y)
-                                                 ,  RenderState::RENDERSTATE_2D_BLEND);
+                                                 ,  RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
 		RenderHelper::Instance()->FillRect(Rect(
 												 virtualSize.x
 												 ,	0
 												 ,	fullRect.x + fullRect.dx - virtualSize.x
 												 ,	virtualSize.y)
-                                                 ,  RenderState::RENDERSTATE_2D_BLEND);
+                                                 ,  RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
 	}
 	else 
 	{
@@ -145,13 +145,13 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
 												 ,	fullRect.y
 												 ,	virtualSize.y + 1
 												 ,	-fullRect.y)
-                                                 ,  RenderState::RENDERSTATE_2D_BLEND);
+                                                 ,  RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
 		RenderHelper::Instance()->FillRect(Rect(
 												 0
 												 ,	virtualSize.y
 												 ,	virtualSize.x + 1
 												 ,	fullRect.y + fullRect.dy - virtualSize.y)
-                                                 ,  RenderState::RENDERSTATE_2D_BLEND);
+                                                 ,  RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
 	}
 
 	Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);

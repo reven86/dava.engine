@@ -73,7 +73,7 @@ NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, b
 			material->SetParent(particleFrameBlendMaterial);
 		else
 			material->SetParent(particleRegularMaterial);		
-		material->SetTexture(NMaterial::TEXTURE_ALBEDO, texture);
+		material->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, texture);
         if (forceDisableDepthTest)
             NMaterialHelper::DisableStateFlags(PASS_FORWARD, material, RenderStateData::STATE_DEPTH_TEST);
 		NMaterialHelper::SetBlendMode(PASS_FORWARD, material, srcFactor, dstFactor);
@@ -83,7 +83,7 @@ NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, b
         // so force set fog flag to OFF in this instance
         if(!enableFog)
         {
-            material->SetFlag(NMaterial::FLAG_VERTEXFOG, NMaterial::FlagOff);
+            material->SetFlag(NMaterialFlagName::FLAG_VERTEXFOG, NMaterial::FlagOff);
         }
 
 		return material;

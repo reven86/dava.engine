@@ -124,7 +124,7 @@ namespace DAVA
 				
 				if(material)
 				{
-					Texture* texture = material->GetTexture(NMaterial::TEXTURE_CUBEMAP);
+					Texture* texture = material->GetTexture(NMaterialTextureName::TEXTURE_CUBEMAP);
 					if(texture)
 					{
 						texture->Reload();

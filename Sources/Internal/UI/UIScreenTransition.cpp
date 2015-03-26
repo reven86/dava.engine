@@ -97,9 +97,7 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     Texture * textureTargetPrev = renderTargetPrevScreen->GetTexture();
     RenderManager::Instance()->SetRenderTarget(textureTargetPrev);
     RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)textureTargetPrev->GetWidth(), (float32)textureTargetPrev->GetHeight()));
-    Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-    RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
-    RenderManager::Instance()->FlushState();
+    Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);    
     RenderManager::Instance()->Clear(Color(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
 
     RenderSystem2D::Instance()->Setup2DMatrices();
@@ -198,7 +196,7 @@ void UIScreenTransition::Draw(const UIGeometricData &geometricData)
     RenderSystem2D::Instance()->Setup2DMatrices();
 
     Sprite::DrawState drawState;
-    drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+    drawState.SetRenderState(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
 
     drawState.SetScale(0.5f, 1.0f);
     drawState.SetPosition(0, 0);

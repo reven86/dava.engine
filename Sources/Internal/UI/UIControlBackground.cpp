@@ -59,7 +59,7 @@ UIControlBackground::UIControlBackground()
 ,   margins(NULL)
 ,   drawColor(Color::White)
 ,   shader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR))
-,   renderState(RenderState::RENDERSTATE_2D_BLEND)
+,   renderState(RenderHelper::DEFAULT_2D_BLEND_MATERIAL)
 {
 }
 

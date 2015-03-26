@@ -715,7 +715,7 @@ void StaticOcclusionDebugDrawSystem::AddEntity(Entity * entity)
     ScopedPtr<NMaterial> gridMaterialInstance(NMaterial::CreateMaterialInstance());
     gridMaterialInstance->SetParent(debugAlphablendMaterial);
     Color col(0.0f, 0.3f, 0.1f, 0.2f);
-    gridMaterialInstance->SetPropertyValue(NMaterial::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &col);
+    gridMaterialInstance->SetPropertyValue(NMaterialParamName::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &col);
     gridBatch->SetPolygonGroup(gridPolygonGroup);
     gridBatch->SetMaterial(gridMaterialInstance);
     
@@ -727,7 +727,7 @@ void StaticOcclusionDebugDrawSystem::AddEntity(Entity * entity)
     ScopedPtr<NMaterial> coverMaterialInstance(NMaterial::CreateMaterialInstance());
     coverMaterialInstance->SetParent(debugAlphablendMaterial);
     Color colCover(0.1f, 0.5f, 0.1f, 0.3f);
-    coverMaterialInstance->SetPropertyValue(NMaterial::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &colCover);
+    coverMaterialInstance->SetPropertyValue(NMaterialParamName::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &colCover);
     coverBatch->SetPolygonGroup(coverPolygonGroup);
     coverBatch->SetMaterial(coverMaterialInstance);
     

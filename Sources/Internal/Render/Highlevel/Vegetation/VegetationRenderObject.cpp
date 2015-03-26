@@ -893,7 +893,7 @@ void VegetationRenderObject::InitHeightTextureFromHeightmap(Heightmap* heightMap
         if(vegetationGeometry != NULL)
         {
             KeyedArchive* props = new KeyedArchive();
-            props->SetUInt64(NMaterial::TEXTURE_HEIGHTMAP.c_str(), (uint64)heightmapTexture);
+            props->SetUInt64(NMaterialTextureName::TEXTURE_HEIGHTMAP.c_str(), (uint64)heightmapTexture);
             props->SetVector2(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE.c_str(), heightmapScale);
             
             vegetationGeometry->OnVegetationPropertiesChanged(renderData, props);
@@ -1064,12 +1064,12 @@ void VegetationRenderObject::CreateRenderData()
     vegetationGeometry->Build(renderData, materialFlags);
     
     KeyedArchive* props = new KeyedArchive();
-    props->SetUInt64(NMaterial::TEXTURE_HEIGHTMAP.c_str(), (uint64)heightmapTexture);
+    props->SetUInt64(NMaterialTextureName::TEXTURE_HEIGHTMAP.c_str(), (uint64)heightmapTexture);
     props->SetVector2(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE.c_str(), heightmapScale);
     props->SetVector3(VegetationPropertyNames::UNIFORM_PERTURBATION_FORCE.c_str(), perturbationForce);
     props->SetFloat(VegetationPropertyNames::UNIFORM_PERTURBATION_FORCE_DISTANCE.c_str(), maxPerturbationDistance);
     props->SetVector3(VegetationPropertyNames::UNIFORM_PERTURBATION_POINT.c_str(), perturbationPoint);
-    props->SetString(NMaterial::TEXTURE_ALBEDO.c_str(), albedoTexturePath.GetAbsolutePathname());
+    props->SetString(NMaterialTextureName::TEXTURE_ALBEDO.c_str(), albedoTexturePath.GetAbsolutePathname());
     props->SetString(VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP.c_str(), lightmapTexturePath.GetAbsolutePathname());
     
     vegetationGeometry->OnVegetationPropertiesChanged(renderData, props);

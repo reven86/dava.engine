@@ -45,27 +45,27 @@ Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(void *object) const
     {
         ret.reserve(18);
         
-        ret.push_back(NMaterial::FLAG_VERTEXFOG);
-        ret.push_back(NMaterial::FLAG_FOG_LINEAR);
-        ret.push_back(NMaterial::FLAG_FOG_HALFSPACE);
-        ret.push_back(NMaterial::FLAG_FOG_HALFSPACE_LINEAR);
-        ret.push_back(NMaterial::FLAG_FOG_ATMOSPHERE);
+        ret.push_back(NMaterialFlagName::FLAG_VERTEXFOG);
+        ret.push_back(NMaterialFlagName::FLAG_FOG_LINEAR);
+        ret.push_back(NMaterialFlagName::FLAG_FOG_HALFSPACE);
+        ret.push_back(NMaterialFlagName::FLAG_FOG_HALFSPACE_LINEAR);
+        ret.push_back(NMaterialFlagName::FLAG_FOG_ATMOSPHERE);
 
-        ret.push_back(NMaterial::FLAG_FLATCOLOR);
-        ret.push_back(NMaterial::FLAG_TEXTURESHIFT);
-        ret.push_back(NMaterial::FLAG_TEXTURE0_ANIMATION_SHIFT);
+        ret.push_back(NMaterialFlagName::FLAG_FLATCOLOR);
+        ret.push_back(NMaterialFlagName::FLAG_TEXTURESHIFT);
+        ret.push_back(NMaterialFlagName::FLAG_TEXTURE0_ANIMATION_SHIFT);
         
-        ret.push_back(NMaterial::FLAG_WAVE_ANIMATION);
-        ret.push_back(NMaterial::FLAG_FAST_NORMALIZATION);
+        ret.push_back(NMaterialFlagName::FLAG_WAVE_ANIMATION);
+        ret.push_back(NMaterialFlagName::FLAG_FAST_NORMALIZATION);
         
-        ret.push_back(NMaterial::FLAG_SPECULAR);
-        ret.push_back(NMaterial::FLAG_SEPARATE_NORMALMAPS);
-        ret.push_back(NMaterial::FLAG_TANGENT_SPACE_WATER_REFLECTIONS);
-        ret.push_back(NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL);
-        ret.push_back(NMaterial::FLAG_DEBUG_Z_NORMAL_SCALE);
-        ret.push_back(NMaterial::FLAG_DEBUG_NORMAL_ROTATION);        
-        ret.push_back(NMaterial::FLAG_SKINNING);
-        ret.push_back(NMaterial::FLAG_TILED_DECAL_MASK);
+        ret.push_back(NMaterialFlagName::FLAG_SPECULAR);
+        ret.push_back(NMaterialFlagName::FLAG_SEPARATE_NORMALMAPS);
+        ret.push_back(NMaterialFlagName::FLAG_TANGENT_SPACE_WATER_REFLECTIONS);
+        ret.push_back(NMaterialFlagName::FLAG_DEBUG_UNITY_Z_NORMAL);
+        ret.push_back(NMaterialFlagName::FLAG_DEBUG_Z_NORMAL_SCALE);
+        ret.push_back(NMaterialFlagName::FLAG_DEBUG_NORMAL_ROTATION);        
+        ret.push_back(NMaterialFlagName::FLAG_SKINNING);
+        ret.push_back(NMaterialFlagName::FLAG_TILED_DECAL_MASK);
     }
     return ret;
 }

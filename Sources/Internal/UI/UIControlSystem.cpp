@@ -331,12 +331,8 @@ void UIControlSystem::Draw()
 
     drawCounter = 0;
     if (!ui3DViewCount)
-    {
-        UniqueHandle prevState = RenderManager::Instance()->currentState.stateHandle;
-        RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
-        RenderManager::Instance()->FlushState();            
-        RenderManager::Instance()->Clear(Color(0,0,0,0), 1.0f, 0);        
-        RenderManager::Instance()->SetRenderState(prevState);
+    {        
+        RenderManager::Instance()->Clear(Color(0,0,0,0), 1.0f, 0);                
     }
 
 	if (currentScreen)

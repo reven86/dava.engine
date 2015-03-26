@@ -328,11 +328,11 @@ void VegetationCustomSLGeometry::OnVegetationPropertiesChanged(Vector<Vegetation
             mat->SetTexture(VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP, lightmapPath);
         }
         
-        String heightmapKeyName = NMaterial::TEXTURE_HEIGHTMAP.c_str();
+        String heightmapKeyName = NMaterialTextureName::TEXTURE_HEIGHTMAP.c_str();
         if(props->IsKeyExists(heightmapKeyName))
         {
             Texture* heightmap = (Texture*)props->GetUInt64(heightmapKeyName);
-            mat->SetTexture(NMaterial::TEXTURE_HEIGHTMAP, heightmap);
+            mat->SetTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightmap);
         }
         
         String heightmapScaleKeyName = VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE.c_str();

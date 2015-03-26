@@ -32,6 +32,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "Base/HashMap.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
@@ -40,28 +41,16 @@ uint16 RenderTechnique::techinqueSequenceId = 0;
 	
 RenderTechniquePass::RenderTechniquePass(const FastName & _shaderName,
 										 const FastNameSet & _uniqueDefines,
-										 RenderState * _renderState)
+                                         const rhi::DepthStencilState::Descriptor& _depthStencilState)
 {
     shaderName = _shaderName;
     uniqueDefines = _uniqueDefines;
-    renderState = _renderState;
+    depthStencilState = _depthStencilState;
 }
 
 RenderTechniquePass::~RenderTechniquePass()
-{
-    SafeDelete(renderState);
+{    
 }
-
-Shader * RenderTechniquePass::CompileShader(const FastNameSet & materialDefines)
-{
-    FastNameSet combinedDefines = materialDefines;
-    if(uniqueDefines.size() > 0)
-    {
-        combinedDefines.Combine(uniqueDefines);
-    }
-    Shader * shader = SafeRetain(ShaderCache::Instance()->Get(shaderName, combinedDefines));
-    return shader;
-};
     
     
 RenderTechnique::RenderTechnique(const FastName & _name)
@@ -85,13 +74,11 @@ RenderTechnique::~RenderTechnique()
 }
     
 void RenderTechnique::AddRenderTechniquePass(const FastName& passName,
-											 const DAVA::FastName &_shaderName,
-                                             const DAVA::FastNameSet & _uniqueDefines,
-                                             DAVA::RenderState *_renderState)
+											 const FastName& shaderName,
+                                             const FastNameSet& uniqueDefines,
+                                             const rhi::DepthStencilState::Descriptor& depthStencilState)
 {
-    RenderTechniquePass * technique = new RenderTechniquePass(_shaderName,
-															  _uniqueDefines,
-															  _renderState);
+    RenderTechniquePass * technique = new RenderTechniquePass(shaderName, uniqueDefines, depthStencilState);
     nameIndexMap.insert(passName, (uint32)renderTechniquePassArray.size());
     renderTechniquePassArray.push_back(technique);
 }
@@ -167,20 +154,144 @@ bool RenderTechniqueSingleton::LoadRenderTechniqueFromYamlNode(const YamlNode * 
                 }
             }
             
-            RenderState * renderState = new RenderState();
+            rhi::DepthStencilState::Descriptor stateDescriptor;
             if (renderStepNode)
             {
-                renderState->LoadFromYamlNode(renderStepNode);
+                stateDescriptor = LoadDepthStencilState(renderStepNode);
             }
             
-            targetTechnique->AddRenderTechniquePass(renderPassName,
-													shaderName,
-													definesSet,
-													renderState);
+            targetTechnique->AddRenderTechniquePass(renderPassName, shaderName, definesSet, stateDescriptor);
             //techniqueCount++;
         }
     }
     return true;
+}
+
+rhi::DepthStencilState::Descriptor RenderTechniqueSingleton::LoadDepthStencilState(const YamlNode * rootNode)
+{
+    
+
+    rhi::DepthStencilState::Descriptor resState;
+    if (!rootNode)
+        return resState;
+
+    const YamlNode * renderStateNode = rootNode->Get("RenderState");
+    /*if (renderStateNode)
+    {
+        const YamlNode * stateNode = renderStateNode->Get("state");
+        if (stateNode)
+        {
+            Vector<String> states;
+            Split(stateNode->AsString(), "| ", states);
+            uint32 currentState = 0;
+            for (Vector<String>::const_iterator it = states.begin(); it != states.end(); it++)
+                currentState |= GetRenderStateByName((*it));
+
+            resState.state = currentState;
+        }
+
+        const YamlNode * blendSrcNode = renderStateNode->Get("blendSrc");
+        const YamlNode * blendDestNode = renderStateNode->Get("blendDest");
+        if (blendSrcNode && blendDestNode)
+        {
+            eBlendMode newBlendScr = GetBlendModeByName(blendSrcNode->AsString());
+            eBlendMode newBlendDest = GetBlendModeByName(blendDestNode->AsString());
+
+            resState.sourceFactor = newBlendScr;
+            resState.destFactor = newBlendDest;
+        }
+
+        const YamlNode * cullModeNode = renderStateNode->Get("cullMode");
+        if (cullModeNode)
+        {
+            int32 newCullMode = (int32)GetFaceByName(cullModeNode->AsString());
+            resState.cullMode = (eFace)newCullMode;
+        }
+
+        const YamlNode * depthFuncNode = renderStateNode->Get("depthFunc");
+        if (depthFuncNode)
+        {
+            eCmpFunc newDepthFunc = GetCmpFuncByName(depthFuncNode->AsString());
+            resState.depthFunc = newDepthFunc;
+        }
+
+        const YamlNode * fillModeNode = renderStateNode->Get("fillMode");
+        if (fillModeNode)
+        {
+            eFillMode newFillMode = GetFillModeByName(fillModeNode->AsString());
+            resState.fillMode = newFillMode;
+        }
+
+        //		const YamlNode * alphaFuncNode = renderStateNode->Get("alphaFunc");
+        //		const YamlNode * alphaFuncCmpValueNode = renderStateNode->Get("alphaFuncCmpValue");
+        //		if(alphaFuncNode && alphaFuncCmpValueNode)
+        //		{
+        //			eCmpFunc newAlphaFunc = GetCmpFuncByName(alphaFuncNode->AsString());
+        //			float32 newCmpValue = alphaFuncCmpValueNode->AsFloat();
+        //		
+        //			//DO NOTHING FOR NOW
+        //		}
+
+        const YamlNode * stencilNode = renderStateNode->Get("stencil");
+        if (stencilNode)
+        {
+            const YamlNode * stencilRefNode = stencilNode->Get("ref");
+            if (stencilRefNode)
+                resState.stencilRef = stencilRefNode->AsInt32();
+
+            const YamlNode * stencilMaskNode = stencilNode->Get("mask");
+            if (stencilMaskNode)
+                resState.stencilMask = stencilMaskNode->AsUInt32();
+
+            const YamlNode * stencilFuncNode = stencilNode->Get("funcFront");
+            if (stencilFuncNode)
+            {
+                resState.stencilFunc[FACE_FRONT] = GetCmpFuncByName(stencilFuncNode->AsString());
+            }
+
+            stencilFuncNode = stencilNode->Get("funcBack");
+            if (stencilFuncNode)
+            {
+                resState.stencilFunc[FACE_BACK] = GetCmpFuncByName(stencilFuncNode->AsString());
+            }
+
+            const YamlNode * stencilPassNode = stencilNode->Get("passFront");
+            if (stencilPassNode)
+            {
+                resState.stencilPass[FACE_FRONT] = GetStencilOpByName(stencilPassNode->AsString());
+            }
+
+            stencilPassNode = stencilNode->Get("passBack");
+            if (stencilPassNode)
+            {
+                resState.stencilPass[FACE_BACK] = GetStencilOpByName(stencilPassNode->AsString());
+            }
+
+            const YamlNode * stencilFailNode = stencilNode->Get("failFront");
+            if (stencilFailNode)
+            {
+                resState.stencilFail[FACE_FRONT] = GetStencilOpByName(stencilFailNode->AsString());
+            }
+
+            stencilFailNode = stencilNode->Get("failBack");
+            if (stencilFailNode)
+            {
+                resState.stencilFail[FACE_BACK] = GetStencilOpByName(stencilFailNode->AsString());
+            }
+
+            const YamlNode * stencilZFailNode = stencilNode->Get("zFailFront");
+            if (stencilZFailNode)
+            {
+                resState.stencilZFail[FACE_FRONT] = GetStencilOpByName(stencilZFailNode->AsString());
+            }
+
+            stencilZFailNode = stencilNode->Get("zFailBack");
+            if (stencilZFailNode)
+            {
+                resState.stencilZFail[FACE_BACK] = GetStencilOpByName(stencilZFailNode->AsString());
+            }
+        }        
+    }*/
 }
 
     

@@ -71,7 +71,7 @@ WaveSystem::WaveSystem(Scene * scene) :
 
 WaveSystem::~WaveSystem()
 {
-    Renderer::RemoveObserver(this);
+    Renderer::GetOptions()->RemoveObserver(this);
 
     ClearWaves();
 }

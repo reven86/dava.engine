@@ -35,9 +35,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
+class Image;
+struct ScreenShotCallbackDelegate
+{
+    void operator()(Image *image)
+    {
+        return OnScreenShot(image);
+    }
+
+protected:
+    virtual void OnScreenShot(Image *image) = 0;
+
+};
+
 namespace Renderer
 {
 
+    //misc
+    void RequestGLScreenShot(ScreenShotCallbackDelegate *screenShotCallback);
 
     //options
     RenderOptions *GetOptions();    

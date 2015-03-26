@@ -52,16 +52,16 @@ public:
     
     RenderTechniquePass(const FastName & shaderName,
 						const FastNameSet & uniqueDefines,
-						const rhi::DepthStencilState::Descriptor& renderState);
+                        const rhi::DepthStencilState::Descriptor& depthStencilState);
     ~RenderTechniquePass();        
     
     inline const FastName & GetShaderName() const { return shaderName; }
-    inline rhi::DepthStencilState::Descriptor DepthStencilState() const { return renderState; }
+    inline const rhi::DepthStencilState::Descriptor& DepthStencilState() const { return depthStencilState; }
     inline const FastNameSet & GetUniqueDefineSet() { return uniqueDefines; }
     
 protected:
     FastName shaderName;
-    rhi::DepthStencilState::Descriptor renderState;
+    rhi::DepthStencilState::Descriptor depthStencilState;
     FastNameSet uniqueDefines;
 };
 
@@ -77,7 +77,7 @@ public:
     void AddRenderTechniquePass(const FastName& passName,
 								const FastName & shaderName,
 								const FastNameSet & uniqueDefines,
-                                const rhi::DepthStencilState::Descriptor& renderState);
+                                const rhi::DepthStencilState::Descriptor& depthStencilState);
 
     inline const FastName & GetName() const { return name; };
     inline uint32 GetIndexByName(const FastName & fastName) const { return nameIndexMap.at(fastName); };
@@ -135,6 +135,7 @@ public:
 protected:
     bool LoadRenderTechnique(const FastName & fastName, RenderTechnique * targetTechnique);
     bool LoadRenderTechniqueFromYamlNode(const YamlNode * rootNode, RenderTechnique * targetTechnique);
+    rhi::DepthStencilState::Descriptor LoadDepthStencilState(const YamlNode * rootNode);
     HashMap<FastName, RenderTechnique *> renderTechniqueMap;
 };
     

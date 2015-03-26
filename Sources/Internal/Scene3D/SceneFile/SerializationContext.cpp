@@ -295,13 +295,13 @@ namespace DAVA
 						
 			if(oldMaterial->IsTextureShiftEnabled())
 			{
-				material->SetFlag(NMaterial::FLAG_TEXTURESHIFT, NMaterial::FlagOn);
+				material->SetFlag(NMaterialFlagName::FLAG_TEXTURESHIFT, NMaterial::FlagOn);
 			}
 			
 			if(oldMaterial->IsFlatColorEnabled() &&
                Material::MATERIAL_SKYBOX != oldMaterial->type)
 			{
-				material->SetFlag(NMaterial::FLAG_FLATCOLOR, NMaterial::FlagOn);
+				material->SetFlag(NMaterialFlagName::FLAG_FLATCOLOR, NMaterial::FlagOn);
 			}
 			
 			Material::eViewOptions viewOptions = oldMaterial->GetViewOption();
@@ -309,12 +309,12 @@ namespace DAVA
 			{
 				case Material::MATERIAL_VIEW_TEXTURE_ONLY:
 				{
-					material->SetFlag(NMaterial::FLAG_TEXTUREONLY, NMaterial::FlagOn);
+					material->SetFlag(NMaterialFlagName::FLAG_TEXTUREONLY, NMaterial::FlagOn);
 					break;
 				}
 				case Material::MATERIAL_VIEW_LIGHTMAP_ONLY:
 				{
-					material->SetFlag(NMaterial::FLAG_LIGHTMAPONLY, NMaterial::FlagOn);
+					material->SetFlag(NMaterialFlagName::FLAG_LIGHTMAPONLY, NMaterial::FlagOn);
 					break;
 				}
 
@@ -324,13 +324,13 @@ namespace DAVA
 			
 			if(oldMaterial->GetSetupLightmap())
 			{
-				material->SetFlag(NMaterial::FLAG_SETUPLIGHTMAP, NMaterial::FlagOn);
+				material->SetFlag(NMaterialFlagName::FLAG_SETUPLIGHTMAP, NMaterial::FlagOn);
 			}
 			
 			if (Material::MATERIAL_UNLIT_TEXTURE_DECAL == oldMaterial->type)
 			{
 				Texture* tex = PrepareTexture(Texture::TEXTURE_2D, oldMaterial->GetTexture(Material::TEXTURE_DECAL));
-				material->SetTexture(NMaterial::TEXTURE_DECAL, tex);
+				material->SetTexture(NMaterialTextureName::TEXTURE_DECAL, tex);
 				
 				if(tex->isPink)
 				{
@@ -340,7 +340,7 @@ namespace DAVA
 			else if(Material::MATERIAL_UNLIT_TEXTURE_DETAIL == oldMaterial->type)
 			{
 				Texture* tex = PrepareTexture(Texture::TEXTURE_2D, oldMaterial->GetTexture(Material::TEXTURE_DETAIL));
-				material->SetTexture(NMaterial::TEXTURE_DETAIL, tex);
+				material->SetTexture(NMaterialTextureName::TEXTURE_DETAIL, tex);
 				
 				if(tex->isPink)
 				{
@@ -352,7 +352,7 @@ namespace DAVA
 				Material::MATERIAL_SKYBOX != oldMaterial->type)
 			{
 				Texture* tex = PrepareTexture(Texture::TEXTURE_2D, oldMaterial->GetTexture(Material::TEXTURE_DIFFUSE));
-				material->SetTexture(NMaterial::TEXTURE_ALBEDO, tex);
+				material->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, tex);
 				
 				if(tex->isPink)
 				{
@@ -365,7 +365,7 @@ namespace DAVA
 			   Material::MATERIAL_PIXEL_LIT_NORMAL_DIFFUSE_SPECULAR_MAP == oldMaterial->type)
 			{
 				Texture* tex = PrepareTexture(Texture::TEXTURE_2D, oldMaterial->GetTexture(Material::TEXTURE_NORMALMAP));
-				material->SetTexture(NMaterial::TEXTURE_NORMAL, tex);
+				material->SetTexture(NMaterialTextureName::TEXTURE_NORMAL, tex);
 				
 				if(tex->isPink)
 				{
@@ -376,7 +376,7 @@ namespace DAVA
             if(Material::MATERIAL_SKYBOX == oldMaterial->type)
             {
                 Texture* tex = PrepareTexture(Texture::TEXTURE_CUBE, oldMaterial->GetTexture(Material::TEXTURE_DIFFUSE));
-                material->SetTexture(NMaterial::TEXTURE_CUBEMAP, tex);
+                material->SetTexture(NMaterialTextureName::TEXTURE_CUBEMAP, tex);
                 
                 if(tex->isPink)
                 {
@@ -387,12 +387,12 @@ namespace DAVA
 			if(oldMaterial->IsFlatColorEnabled() &&
                Material::MATERIAL_SKYBOX != oldMaterial->type)
 			{
-				material->SetPropertyValue(NMaterial::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &oldMaterialState->GetFlatColor());
+				material->SetPropertyValue(NMaterialParamName::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &oldMaterialState->GetFlatColor());
 			}
 			
 			if(oldMaterial->IsTextureShiftEnabled())
 			{
-				material->SetPropertyValue(NMaterial::PARAM_TEXTURE0_SHIFT, Shader::UT_FLOAT_VEC2, 1, &oldMaterialState->GetTextureShift());
+				material->SetPropertyValue(NMaterialParamName::PARAM_TEXTURE0_SHIFT, Shader::UT_FLOAT_VEC2, 1, &oldMaterialState->GetTextureShift());
 			}
 			
 			if(Material::MATERIAL_VERTEX_LIT_TEXTURE == oldMaterial->type ||
@@ -404,15 +404,15 @@ namespace DAVA
 			   Material::MATERIAL_PIXEL_LIT_NORMAL_DIFFUSE_SPECULAR_MAP == oldMaterial->type)
 			{
 				float32 shininess = oldMaterial->GetShininess();
-				material->SetPropertyValue(NMaterial::PARAM_MATERIAL_SPECULAR_SHININESS, Shader::UT_FLOAT, 1, &shininess);
+				material->SetPropertyValue(NMaterialParamName::PARAM_MATERIAL_SPECULAR_SHININESS, Shader::UT_FLOAT, 1, &shininess);
 
 				Color ambientColor = oldMaterial->GetAmbientColor();
 				Color diffuseColor = oldMaterial->GetDiffuseColor();
 				Color specularColor = oldMaterial->GetSpecularColor();
 				
-				material->SetPropertyValue(NMaterial::PARAM_PROP_AMBIENT_COLOR, Shader::UT_FLOAT_VEC4, 1, &ambientColor);
-				material->SetPropertyValue(NMaterial::PARAM_PROP_DIFFUSE_COLOR, Shader::UT_FLOAT_VEC4, 1, &diffuseColor);
-				material->SetPropertyValue(NMaterial::PARAM_PROP_SPECULAR_COLOR, Shader::UT_FLOAT_VEC4, 1, &specularColor);
+				material->SetPropertyValue(NMaterialParamName::PARAM_PROP_AMBIENT_COLOR, Shader::UT_FLOAT_VEC4, 1, &ambientColor);
+				material->SetPropertyValue(NMaterialParamName::PARAM_PROP_DIFFUSE_COLOR, Shader::UT_FLOAT_VEC4, 1, &diffuseColor);
+				material->SetPropertyValue(NMaterialParamName::PARAM_PROP_SPECULAR_COLOR, Shader::UT_FLOAT_VEC4, 1, &specularColor);
 			}
 			else //VI: copy fog settings for static lit materials only! For tanks fog propeties will be set from scene
 			{
@@ -421,8 +421,8 @@ namespace DAVA
 					Color fogColor = oldMaterial->GetFogColor();
 					float32 fogDensity = oldMaterial->GetFogDensity();
 					
-					material->SetPropertyValue(NMaterial::PARAM_FOG_COLOR, Shader::UT_FLOAT_VEC4, 1, &fogColor);
-					material->SetPropertyValue(NMaterial::PARAM_FOG_DENSITY, Shader::UT_FLOAT, 1, &fogDensity);
+					material->SetPropertyValue(NMaterialParamName::PARAM_FOG_COLOR, Shader::UT_FLOAT_VEC4, 1, &fogColor);
+					material->SetPropertyValue(NMaterialParamName::PARAM_FOG_DENSITY, Shader::UT_FLOAT, 1, &fogDensity);
 				}
 			}
 			
@@ -440,7 +440,7 @@ namespace DAVA
 			}
 			
 			Texture* tex = PrepareTexture(Texture::TEXTURE_2D, oldMaterialState ? oldMaterialState->GetLightmap() : NULL);
-			instanceMaterial->SetTexture(NMaterial::TEXTURE_LIGHTMAP, tex);
+			instanceMaterial->SetTexture(NMaterialTextureName::TEXTURE_LIGHTMAP, tex);
 			
 			if(tex->isPink)
 			{
@@ -458,8 +458,8 @@ namespace DAVA
 		{
 			if(Material::MATERIAL_UNLIT_TEXTURE_LIGHTMAP == oldMaterial->type)
 			{
-				instanceMaterial->SetPropertyValue(NMaterial::PARAM_UV_OFFSET, Shader::UT_FLOAT_VEC2, 1, &oldMaterialState->GetUVOffset());
-				instanceMaterial->SetPropertyValue(NMaterial::PARAM_UV_SCALE, Shader::UT_FLOAT_VEC2, 1, &oldMaterialState->GetUVScale());
+				instanceMaterial->SetPropertyValue(NMaterialParamName::PARAM_UV_OFFSET, Shader::UT_FLOAT_VEC2, 1, &oldMaterialState->GetUVOffset());
+				instanceMaterial->SetPropertyValue(NMaterialParamName::PARAM_UV_SCALE, Shader::UT_FLOAT_VEC2, 1, &oldMaterialState->GetUVScale());
 			}
 		}
 		

@@ -128,7 +128,7 @@ void SpriteObject::SetupRenderBatch()
 															NMaterial::DEFAULT_QUALITY_NAME);
 	material->GetParent()->AddNodeFlags(DataNode::NodeRuntimeFlag);
 	material->AddNodeFlags(DataNode::NodeRuntimeFlag);
-	material->SetTexture(NMaterial::TEXTURE_ALBEDO, sprite->GetTexture(frame));
+	material->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, sprite->GetTexture(frame));
         
 	SpriteRenderBatch *batch = new SpriteRenderBatch();
 	batch->SetMaterial(material);
@@ -168,7 +168,7 @@ void SpriteObject::SetFrame(int32 newFrame)
 	int32 count = GetRenderBatchCount();
 	if(count)
 	{
-		GetRenderBatch(0)->GetMaterial()->SetTexture(NMaterial::TEXTURE_ALBEDO, sprite->GetTexture(frame));
+		GetRenderBatch(0)->GetMaterial()->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, sprite->GetTexture(frame));
 	}
 }
 

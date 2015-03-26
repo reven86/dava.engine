@@ -499,7 +499,7 @@ void Texture::GenerateMipmapsInternal()
 	
 	RenderManager::Instance()->HWglBindTexture(id, textureType);
 		
-    Image * image0 = CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+    Image * image0 = CreateImageFromMemory(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
     Vector<Image *> images = image0->CreateMipMapsImages(texDescriptor->dataSettings.GetIsNormalMap());
     SafeRelease(image0);
 
@@ -1124,7 +1124,7 @@ Image * Texture::ReadDataToImage()
 }
 
 
-Image * Texture::CreateImageFromMemory(UniqueHandle renderState)
+Image * Texture::CreateImageFromMemory()
 {
     Image *image = NULL;
     if(isRenderTarget)

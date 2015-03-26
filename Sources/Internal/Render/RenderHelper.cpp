@@ -136,7 +136,7 @@ RenderHelper::~RenderHelper()
 	SafeRelease(gDodecObject);
 }
     
-void RenderHelper::FillRect(const Rect & rect, UniqueHandle renderState)
+void RenderHelper::FillRect(const Rect & rect, NMaterial *material)
 {
 	if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
 	{
@@ -164,7 +164,7 @@ void RenderHelper::FillRect(const Rect & rect, UniqueHandle renderState)
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
 }
 
-void RenderHelper::DrawRect(const Rect & rect, UniqueHandle renderState)
+void RenderHelper::DrawRect(const Rect & rect, NMaterial *material)
 {
     RenderSystem2D::Instance()->Flush();
 
@@ -189,7 +189,7 @@ void RenderHelper::DrawRect(const Rect & rect, UniqueHandle renderState)
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_LINESTRIP, 0, 5);
 }
 
-void RenderHelper::DrawGrid(const Rect & rect, const Vector2& gridSize, const Color& color, UniqueHandle renderState)
+void RenderHelper::DrawGrid(const Rect & rect, const Vector2& gridSize, const Color& color, NMaterial *material)
 {
     RenderSystem2D::Instance()->Flush();
 
@@ -225,19 +225,15 @@ void RenderHelper::DrawGrid(const Rect & rect, const Vector2& gridSize, const Co
     }
 
     vertexStream->Set(TYPE_FLOAT, 2, 0, gridVertices.data());
-
-    RenderManager::Instance()->SetRenderState(renderState);
-    Color oldColor = RenderManager::Instance()->GetColor();
-    Renderer::SetColor(color);
+        
+    Renderer::SetColor(color.r, color.g, color.b, color.a);
     
     RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
-    RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_LINELIST, 0, curVertexIndex / 2);
-    
-    Renderer::SetColor(oldColor);
+    RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_LINELIST, 0, curVertexIndex / 2);        
 }
 
-void RenderHelper::DrawLine(const Vector2 &start, const Vector2 &end, UniqueHandle renderState)
+void RenderHelper::DrawLine(const Vector2 &start, const Vector2 &end, NMaterial *material)
 {
     RenderSystem2D::Instance()->Flush();
 
@@ -256,7 +252,7 @@ void RenderHelper::DrawLine(const Vector2 &start, const Vector2 &end, UniqueHand
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_LINESTRIP, 0, 2);
 }
 
-	void RenderHelper::DrawLine(const Vector2 &start, const Vector2 &end, float32 lineWidth, UniqueHandle renderState)
+	void RenderHelper::DrawLine(const Vector2 &start, const Vector2 &end, float32 lineWidth, NMaterial *material)
     {
         RenderSystem2D::Instance()->Flush();
 
@@ -283,7 +279,7 @@ void RenderHelper::DrawLine(const Vector2 &start, const Vector2 &end, UniqueHand
 
 	
     
-void RenderHelper::DrawLine(const Vector3 & start, const Vector3 & end, float32 lineWidth, UniqueHandle renderState)
+void RenderHelper::DrawLine(const Vector3 & start, const Vector3 & end, float32 lineWidth, NMaterial *material)
 {
     RenderSystem2D::Instance()->Flush();
 
@@ -313,7 +309,7 @@ void RenderHelper::DrawLine(const Vector3 & start, const Vector3 & end, float32 
 #endif
 }
 
-void RenderHelper::DrawLines(const Vector<float32>& linePoints, UniqueHandle renderState)
+void RenderHelper::DrawLines(const Vector<float32>& linePoints, NMaterial *material)
 {
     RenderSystem2D::Instance()->Flush();
 
@@ -329,7 +325,7 @@ void RenderHelper::DrawLines(const Vector<float32>& linePoints, UniqueHandle ren
 }
 
 
-void RenderHelper::DrawPoint(const Vector2 & pt, float32 ptSize, UniqueHandle renderState)
+void RenderHelper::DrawPoint(const Vector2 & pt, float32 ptSize, NMaterial *material)
 {
     RenderSystem2D::Instance()->Flush();
 
@@ -349,7 +345,7 @@ void RenderHelper::DrawPoint(const Vector2 & pt, float32 ptSize, UniqueHandle re
 #endif
 }
 	
-void RenderHelper::DrawPoint(const Vector3 & pt, float32 ptSize, UniqueHandle renderState)
+void RenderHelper::DrawPoint(const Vector3 & pt, float32 ptSize, NMaterial *material)
 {
     RenderSystem2D::Instance()->Flush();
 
@@ -369,7 +365,7 @@ void RenderHelper::DrawPoint(const Vector3 & pt, float32 ptSize, UniqueHandle re
 #endif		
 }
 	
-void RenderHelper::DrawCircle(const Vector2 & center, float32 radius, UniqueHandle renderState)
+void RenderHelper::DrawCircle(const Vector2 & center, float32 radius, NMaterial *material)
 {
     RenderSystem2D::Instance()->Flush();
 
@@ -393,7 +389,7 @@ void RenderHelper::DrawCircle(const Vector2 & center, float32 radius, UniqueHand
     DrawPolygon(pts, false, renderState);
 }
 
-void RenderHelper::DrawCircle(const Vector3 & center, float32 radius, UniqueHandle renderState)
+void RenderHelper::DrawCircle(const Vector3 & center, float32 radius, NMaterial *material)
 {
     RenderSystem2D::Instance()->Flush();
 
@@ -416,7 +412,7 @@ void RenderHelper::DrawCircle(const Vector3 & center, float32 radius, UniqueHand
     DrawPolygon(pts, false, renderState);
 }
 
-void RenderHelper::DrawCircle3D(const Vector3 & center, const Vector3 &emissionVector, float32 radius, bool useFilling, UniqueHandle renderState)
+void RenderHelper::DrawCircle3D(const Vector3 & center, const Vector3 &emissionVector, float32 radius, bool useFilling, NMaterial *material)
 {
     RenderSystem2D::Instance()->Flush();
 
@@ -479,7 +475,7 @@ void RenderHelper::DrawCircle3D(const Vector3 & center, const Vector3 &emissionV
 	}
 }
 
-void RenderHelper::DrawCylinder(const Vector3 & center, float32 radius, bool useFilling, UniqueHandle renderState)
+void RenderHelper::DrawCylinder(const Vector3 & center, float32 radius, bool useFilling, NMaterial *material)
 {
     RenderSystem2D::Instance()->Flush();
 
@@ -521,7 +517,7 @@ void RenderHelper::DrawCylinder(const Vector3 & center, float32 radius, bool use
 	}
 }
 
-void RenderHelper::DrawPolygonPoints(const Polygon2 & polygon, UniqueHandle renderState)
+void RenderHelper::DrawPolygonPoints(const Polygon2 & polygon, NMaterial *material)
 {
     RenderSystem2D::Instance()->Flush();
 
@@ -545,7 +541,7 @@ void RenderHelper::DrawPolygonPoints(const Polygon2 & polygon, UniqueHandle rend
 	}
 }
 	
-void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon, UniqueHandle renderState)
+void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon, NMaterial *material)
 {
     RenderSystem2D::Instance()->Flush();
 
@@ -569,7 +565,7 @@ void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon, UniqueHandle rend
 	
 }
 	
-void RenderHelper::DrawPolygon(const Polygon3 & polygon, bool closed, UniqueHandle renderState)
+void RenderHelper::DrawPolygon(const Polygon3 & polygon, bool closed, NMaterial *material)
 {
     RenderSystem2D::Instance()->Flush();
 
@@ -596,7 +592,7 @@ void RenderHelper::DrawPolygon(const Polygon3 & polygon, bool closed, UniqueHand
 }
 
 
-void RenderHelper::DrawPolygon( const Polygon2 & polygon, bool closed, UniqueHandle renderState)
+void RenderHelper::DrawPolygon( const Polygon2 & polygon, bool closed, NMaterial *material)
 {
     RenderSystem2D::Instance()->Flush();
 
@@ -620,7 +616,7 @@ void RenderHelper::DrawPolygon( const Polygon2 & polygon, bool closed, UniqueHan
 	}
 }
     
-void RenderHelper::FillPolygon(const Polygon2 & polygon, UniqueHandle renderState)
+void RenderHelper::FillPolygon(const Polygon2 & polygon, NMaterial *material)
 {
     RenderSystem2D::Instance()->Flush();
 
@@ -637,7 +633,7 @@ void RenderHelper::FillPolygon(const Polygon2 & polygon, UniqueHandle renderStat
     }
 }
 
-void RenderHelper::FillPolygon(const Polygon3 & polygon, UniqueHandle renderState)
+void RenderHelper::FillPolygon(const Polygon3 & polygon, NMaterial *material)
 {
     RenderSystem2D::Instance()->Flush();
 
@@ -655,7 +651,7 @@ void RenderHelper::FillPolygon(const Polygon3 & polygon, UniqueHandle renderStat
 
 }
 
-void RenderHelper::DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, UniqueHandle renderState)
+void RenderHelper::DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, NMaterial *material)
 {
 	Polygon2 copyPoly = polygon;
 	copyPoly.Transform(transform);
@@ -763,7 +759,7 @@ void RenderHelper::DrawStrippedLine(Polygon2 & polygon, float lineLen, float spa
 }
 #endif 
     
-void RenderHelper::DrawBSpline(BezierSpline3 * bSpline, int segments, float ts, float te, UniqueHandle renderState)
+void RenderHelper::DrawBSpline(BezierSpline3 * bSpline, int segments, float ts, float te, NMaterial *material)
 {
 	Polygon3 pts;
     pts.points.reserve(segments);
@@ -774,7 +770,7 @@ void RenderHelper::DrawBSpline(BezierSpline3 * bSpline, int segments, float ts, 
     DrawPolygon(pts, false, renderState);
 }
 	
-void RenderHelper::DrawInterpolationFunc(Interpolation::Func func, const Rect & destRect, UniqueHandle renderState)
+void RenderHelper::DrawInterpolationFunc(Interpolation::Func func, const Rect & destRect, NMaterial *material)
 {
 	Polygon3 pts;
 	int segmentsCount = 20;
@@ -790,7 +786,7 @@ void RenderHelper::DrawInterpolationFunc(Interpolation::Func func, const Rect & 
 	DrawPolygon(pts, false, renderState);
 }
 	
-void RenderHelper::DrawBox(const AABBox2 & box, float32 lineWidth, UniqueHandle renderState)
+void RenderHelper::DrawBox(const AABBox2 & box, float32 lineWidth, NMaterial *material)
 {
     RenderHelper::Instance()->DrawLine(Vector3(box.min.x, box.min.y, 0), Vector3(box.max.x, box.min.y, 0), lineWidth, renderState);
 	RenderHelper::Instance()->DrawLine(Vector3(box.max.x, box.min.y, 0), Vector3(box.max.x, box.max.y, 0), lineWidth, renderState);
@@ -798,7 +794,7 @@ void RenderHelper::DrawBox(const AABBox2 & box, float32 lineWidth, UniqueHandle 
 	RenderHelper::Instance()->DrawLine(Vector3(box.min.x, box.max.y, 0), Vector3(box.min.x, box.min.y, 0), lineWidth, renderState);
 }
 	
-void RenderHelper::DrawBox(const AABBox3 & box, float32 lineWidth, UniqueHandle renderState)
+void RenderHelper::DrawBox(const AABBox3 & box, float32 lineWidth, NMaterial *material)
 {
 	RenderHelper::Instance()->DrawLine(Vector3(box.min.x, box.min.y, box.min.z), Vector3(box.min.x, box.min.y, box.max.z), lineWidth, renderState);
 	RenderHelper::Instance()->DrawLine(Vector3(box.min.x, box.min.y, box.min.z), Vector3(box.min.x, box.max.y, box.min.z), lineWidth, renderState);
@@ -817,7 +813,7 @@ void RenderHelper::DrawBox(const AABBox3 & box, float32 lineWidth, UniqueHandle 
 	RenderHelper::Instance()->DrawLine(Vector3(box.min.x, box.max.y, box.max.z), Vector3(box.max.x, box.max.y, box.max.z), lineWidth, renderState);
 }
 	
-void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, UniqueHandle renderState)
+void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, NMaterial *material)
 {
 	float32 offs = ((bbox.max - bbox.min).Length()) * 0.1f + 0.1f;
     
@@ -870,7 +866,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
     RenderHelper::Instance()->DrawLine(point, point - Vector3(offs, 0, 0), lineWidth, renderState);
 }
 	
-	void RenderHelper::DrawSphere(const Vector3 &center, float32 radius, float32 lineWidth, UniqueHandle renderState)
+	void RenderHelper::DrawSphere(const Vector3 &center, float32 radius, float32 lineWidth, NMaterial *material)
 	{
 		int32 n = 2;
         Vector<Vector3> points;
@@ -956,7 +952,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 		}			
 	}
 
-	void RenderHelper::FillSphere(const Vector3 &center, float32 radius, UniqueHandle renderState)
+	void RenderHelper::FillSphere(const Vector3 &center, float32 radius, NMaterial *material)
 	{
 		int32 n = 2;
 		Vector<Vector3> points;
@@ -1026,7 +1022,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 		}			
 	}
 
-	void RenderHelper::DrawArrow(const Vector3 &from, const Vector3 &to, float32 arrowLength, float32 lineWidth, UniqueHandle renderState)
+	void RenderHelper::DrawArrow(const Vector3 &from, const Vector3 &to, float32 arrowLength, float32 lineWidth, NMaterial *material)
 	{
 		if(0 != lineWidth && from != to)
 		{
@@ -1072,7 +1068,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 		}
 	}
 
-	void RenderHelper::FillArrow(const Vector3 &from, const Vector3 &to, float32 arrowLength, float32 lineWidth, UniqueHandle renderState)
+	void RenderHelper::FillArrow(const Vector3 &from, const Vector3 &to, float32 arrowLength, float32 lineWidth, NMaterial *material)
 	{
 		Vector3 d = to - from;
 		Vector3 c = to - (d * arrowLength / d.Length());
@@ -1145,7 +1141,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 		}
 	}
 
-	void RenderHelper::FillBox(const AABBox3 & box, UniqueHandle renderState)
+	void RenderHelper::FillBox(const AABBox3 & box, NMaterial *material)
 	{
 		DAVA::Vector3 min = box.min;
 		DAVA::Vector3 max = box.max;
@@ -1195,7 +1191,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 		RenderHelper::Instance()->FillPolygon(poly, renderState);
 	}
 
-	void RenderHelper::DrawDodecahedron(const Vector3 &center, float32 radius, float32 lineWidth /* = 1.f */, UniqueHandle renderState)
+	void RenderHelper::DrawDodecahedron(const Vector3 &center, float32 radius, float32 lineWidth /* = 1.f */, NMaterial *material)
     {
         RenderSystem2D::Instance()->Flush();
 
@@ -1228,7 +1224,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 		}
 	}
 
-	void RenderHelper::FillDodecahedron(const Vector3 &center, float32 radius, UniqueHandle renderState)
+	void RenderHelper::FillDodecahedron(const Vector3 &center, float32 radius, NMaterial *material)
     {
         RenderSystem2D::Instance()->UpdateClip();
 
@@ -1271,7 +1267,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
         Renderer::SetDynamicParam(PARAM_PROJ, &tempProjectionMatrix, UPDATE_SEMANTIC_ALWAYS);
     }
 
-    void RenderHelper::DrawTexture(Texture * texture, UniqueHandle renderState, const Rect & _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect & _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
+    void RenderHelper::DrawTexture(Texture * texture, NMaterial *material, const Rect & _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect & _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
     {
         if (!texture)
             return;
