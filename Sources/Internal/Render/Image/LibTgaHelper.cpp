@@ -36,6 +36,9 @@
 namespace DAVA
 {
 
+static const uint8 MAX_BYTES_IN_PIXEL = 16;
+
+
 LibTgaWrapper::LibTgaWrapper()
 {
     supportedExtensions.emplace_back(".tga");
@@ -174,7 +177,7 @@ eErrorCode LibTgaWrapper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
 
     if (readResult == SUCCESS)
     {
-        ImageConvert::SwapImageChannels(pImage);
+        ImageConvert::SwapChannels(pImage);
         SafeRetain(pImage);
         imageSet.push_back(pImage);
         return SUCCESS;
@@ -243,7 +246,7 @@ PixelFormat LibTgaWrapper::DefinePixelFormat(const TgaInfo& tgaInfo) const
 
 eErrorCode LibTgaWrapper::ReadUncompressedTga(File *infile, const TgaInfo& tgaInfo, ScopedPtr<Image>& image) const
 {
-    std::array<uint8, 16> pixelBuffer;
+    std::array<uint8, MAX_BYTES_IN_PIXEL> pixelBuffer;
 
     ImageDataWriter dataWriter(image, tgaInfo);
 
@@ -266,7 +269,7 @@ eErrorCode LibTgaWrapper::ReadUncompressedTga(File *infile, const TgaInfo& tgaIn
 eErrorCode LibTgaWrapper::ReadCompressedTga(File *infile, const TgaInfo& tgaInfo, ScopedPtr<Image>& image) const
 {
     uint8 chunkHeader;
-    std::array<uint8,16> pixelBuffer;
+    std::array<uint8, MAX_BYTES_IN_PIXEL> pixelBuffer;
 
     ImageDataWriter dataWriter(image, tgaInfo);
 

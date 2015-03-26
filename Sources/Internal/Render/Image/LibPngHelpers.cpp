@@ -421,7 +421,7 @@ eErrorCode LibPngWrapper::WriteFile(const FilePath & fileName, const Vector<Imag
     {
         convertedImage = Image::Create(width, height, FORMAT_RGBA8888);
         ConvertDirect<RGB888, uint32, ConvertRGB888toRGBA8888> convert;
-        convert(imageData, convertedImage->data, width * height);
+        convert(imageData, width, height, sizeof(RGB888)*width, convertedImage->data, width, height, sizeof(uint32)*width);
         imageData = convertedImage->data;
     }
     

@@ -237,13 +237,13 @@ eErrorCode LibJpegWrapper::WriteFile(const FilePath & fileName, const Vector<Ima
         {
             convertedImage = Image::Create(width, height, FORMAT_RGB888);
             ConvertDirect<uint32, RGB888, ConvertRGBA8888toRGB888> convert;
-            convert(imageData, convertedImage->data, width * height);
+            convert(imageData, width, height, sizeof(uint32)*width, convertedImage->data, width, height, sizeof(RGB888)*width);
         }
         else if(FORMAT_A16 == original->format)
         {
             convertedImage = Image::Create(width, height, FORMAT_A8);
             ConvertDirect<uint16, uint8, ConvertA16toA8> convert;
-            convert(imageData, convertedImage->data, width * height);
+            convert(imageData, width, height, sizeof(uint16)*width, convertedImage->data, width, height, sizeof(uint8)*width);
         }
         DVASSERT(convertedImage);
         imageData = convertedImage->data;
