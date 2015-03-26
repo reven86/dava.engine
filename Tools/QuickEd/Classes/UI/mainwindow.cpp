@@ -350,7 +350,7 @@ void MainWindow::DisableActions()
 
     ui->actionClose_project->setEnabled(false);
     ui->actionFontManager->setEnabled(false);
-    ui->actionLocalizationManager->setEnabled(false);
+   // ui->actionLocalizationManager->setEnabled(false);
 
     // Reload.
     ui->actionRepack_And_Reload->setEnabled(false);

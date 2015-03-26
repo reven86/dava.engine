@@ -103,7 +103,7 @@ bool BaseController::CloseOneDocument(int index)
         QMessageBox::StandardButton ret = QMessageBox::question(qApp->activeWindow(),
             tr("Save changes"),
             tr("The file %1 has been modified.\n"
-            "Do you want to save your changes?").arg(document->PackageFilePath().GetBasename().c_str()),
+            "Do you want to save your changes?").arg(document->GetPackageFilePath().GetBasename().c_str()),
             QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
             QMessageBox::Save);
         if (ret == QMessageBox::Cancel)
@@ -228,7 +228,7 @@ int BaseController::CreateDocument(PackageNode *package)
     connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &BaseController::OnCleanChanged);
     documents.push_back(document);
     documentGroup.AddDocument(document);
-    int index = mainWindow.AddTab(document->PackageFilePath().GetBasename().c_str());
+    int index = mainWindow.AddTab(document->GetPackageFilePath().GetBasename().c_str());
     return index;
 }
 
@@ -250,7 +250,7 @@ int BaseController::GetIndexByPackagePath(const QString &fileName) const
 
     for (int index = 0; index < documents.size(); ++index)
     {
-        if (documents.at(index)->PackageFilePath() == davaPath)
+        if (documents.at(index)->GetPackageFilePath() == davaPath)
         {
             return index;
         }

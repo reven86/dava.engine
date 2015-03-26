@@ -3,27 +3,13 @@
 
 #include <QUndoStack>
 
-
-namespace Ui {
-    class PackageDocument;
-}
-
 namespace DAVA {
-    class UIPackage;
     class FilePath;
-    class UIControl;
-    class UIScreen;
 }
 
-class QSortFilterProxyModel;
-class QItemSelection;
-
-class UIPackageModel;
 class PackageNode;
-class DavaGLWidget;
 class QtModelPackageCommandExecutor;
 
-struct PackageContext;
 class WidgetContext;
 class PropertiesModel;
 class PackageModel;
@@ -40,15 +26,15 @@ public:
     
     bool IsModified() const;
     void ClearModified();
-    const DAVA::FilePath &PackageFilePath() const;
+    const DAVA::FilePath &GetPackageFilePath() const;
     PackageNode *GetPackage() const;
     
     WidgetContext *GetLibraryContext() const;
     WidgetContext *GetPropertiesContext() const;
     WidgetContext *GetPreviewContext() const;
-    PropertiesModel *GetPropertiesModel() const;
-    PackageModel* GetPackageModel() const;
     WidgetContext* GetPackageContext() const;
+    PropertiesModel *GetPropertiesModel() const; //TODO: this is deprecated
+    PackageModel* GetPackageModel() const; //TODO: this is deprecated
   
     QUndoStack *GetUndoStack() const;
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
@@ -92,6 +78,26 @@ inline PackageNode *Document::GetPackage() const
 inline QtModelPackageCommandExecutor *Document::GetCommandExecutor() const
 {
     return commandExecutor;
+}
+
+inline WidgetContext *Document::GetLibraryContext() const
+{
+    return libraryContext;
+}
+
+inline WidgetContext* Document::GetPackageContext() const
+{
+    return packageContext;
+}
+
+inline WidgetContext *Document::GetPreviewContext() const
+{
+    return previewContext;
+}
+
+inline WidgetContext *Document::GetPropertiesContext() const
+{
+    return propertiesContext;
 }
 
 

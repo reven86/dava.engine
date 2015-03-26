@@ -66,8 +66,6 @@ PreviewModel::PreviewModel(QObject *parent)
 
 PreviewModel::~PreviewModel()
 {
-    SafeRelease(canvas);
-    SafeRelease(view);
 }
 
 void PreviewModel::SetData(DAVA::UIControl *viewArg, PackageCanvas *canvasArg)

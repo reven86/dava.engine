@@ -51,14 +51,21 @@ void Document::InitWidgetContexts()
 
     packageContext->SetData(QVariant::fromValue(new PackageModel(package, commandExecutor, this)), "model");
 
-    DAVA::UIControl *view = new DAVA::UIControl();
-    DAVA::UIControl *canvas = new PackageCanvas();
+    UIControl *view = new UIControl();
+    UIControl *canvas = new PackageCanvas();
+    struct ScopedPointerCustomDeleter
+    {
+        static inline void cleanup(UIControl *pointer)
+        {
+            SafeRelease(pointer);
+        }
+    };
+
     view->AddControl(canvas);
     previewContext->SetData(QVariant::fromValue(view), "view");
     previewContext->SetData(QVariant::fromValue(canvas), "canvas");
     previewContext->SetData(false, "controlDeselected");
     packageContext->SetData(false, "controlsDeselected");
-    
 }
 
 void Document::ConnectWidgetContexts() const
@@ -89,20 +96,11 @@ void Document::ClearModified()
     undoStack->setClean();
 }
 
-const DAVA::FilePath &Document::PackageFilePath() const
+const DAVA::FilePath &Document::GetPackageFilePath() const
 {
     return package->GetPackageRef()->GetPath();
 }
 
-WidgetContext *Document::GetLibraryContext() const
-{
-    return libraryContext;
-}
-
-WidgetContext *Document::GetPropertiesContext() const
-{
-    return propertiesContext;
-}
 
 PropertiesModel *Document::GetPropertiesModel() const
 {
@@ -112,16 +110,6 @@ PropertiesModel *Document::GetPropertiesModel() const
 PackageModel* Document::GetPackageModel() const
 {
     return packageContext->GetData("model").value<PackageModel*>();
-}
-
-WidgetContext* Document::GetPackageContext() const
-{
-    return packageContext;
-}
-
-WidgetContext *Document::GetPreviewContext() const
-{
-    return previewContext;
 }
 
 void Document::OnPreviewContextDataChanged(const QByteArray &role)
@@ -141,6 +129,7 @@ void Document::OnPackageContextDataChanged(const QByteArray &role)
     if (role == "activatedControls")
     {
         QVariant selected = packageContext->GetData("activatedControls");
+        propertiesContext->SetData(selected, "activatedControls");
         QList<ControlNode*> &activatedControls = selected.value<QList<ControlNode*> >();
         QAbstractItemModel* model = activatedControls.empty() ? nullptr : new PropertiesModel(activatedControls.first(), this);
         propertiesContext->SetData(QVariant::fromValue(model), "model");

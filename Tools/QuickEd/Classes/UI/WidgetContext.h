@@ -6,6 +6,7 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/Properties/PropertiesModel.h"
 #include "Document.h"
+
 class WidgetContext : public QObject
 {
     Q_OBJECT
@@ -25,8 +26,8 @@ inline Document* WidgetContext::GetDocument() const
     return qobject_cast<Document*>(parent());
 }
 
-Q_DECLARE_METATYPE(WidgetContext*);
 
+Q_DECLARE_METATYPE(WidgetContext*);
 Q_DECLARE_METATYPE(QAbstractItemModel*)
 Q_DECLARE_METATYPE(QItemSelection);
 Q_DECLARE_METATYPE(ControlNode*);
