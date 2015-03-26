@@ -27,26 +27,43 @@
 =====================================================================================*/
 
 
+#include "mainwindow.h"
+#include "filemanager.h"
+#include "errormessanger.h"
+#include <QApplication>
 
-#ifndef __DEBUG_TOOLS__
-#define __DEBUG_TOOLS__
-
-#include <QObject>
-
-class DeveloperTools: public QObject
+void LogMessageHandler(QtMsgType type, const QMessageLogContext &, const QString & msg)
 {
-    Q_OBJECT
+    ErrorMessanger::Instance()->LogMessage(type, msg);
+}
 
-public:
-	explicit DeveloperTools(QObject *parent = 0);
+int main(int argc, char *argv[])
+{
+#ifdef Q_OS_WIN
+    char **argv1 = new char *[argc + 2];
+    memcpy(argv1, argv, argc * sizeof(char *));
 
-public slots:
-    
-    void OnDebugFunctionsGridCopy();
+    argv1[argc] = "-platformpluginpath";
+    argv1[argc + 1] = ".";
 
-    void OnDebugCreateTestSkinnedObject(); //creates
-    
-    void OnImageSplitterNormals();
-	
-};
-#endif /* defined(__DEBUG_TOOLS__) */
+    argc += 2;
+    argv = argv1;
+#endif // Q_OS_WIN
+
+    QApplication a(argc, argv);
+
+#ifdef Q_OS_WIN
+    delete[] argv1;
+#endif // Q_OS_WIN
+
+    ErrorMessanger::Instance();
+    qInstallMessageHandler(LogMessageHandler);
+
+    a.setAttribute(Qt::AA_UseHighDpiPixmaps);
+
+    MainWindow w;
+    w.show();
+    w.setWindowState(Qt::WindowActive);
+
+    return a.exec();
+}

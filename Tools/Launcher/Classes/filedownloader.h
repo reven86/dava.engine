@@ -27,26 +27,37 @@
 =====================================================================================*/
 
 
+#ifndef FILEDOWNLOADER_H
+#define FILEDOWNLOADER_H
 
-#ifndef __DEBUG_TOOLS__
-#define __DEBUG_TOOLS__
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 
-#include <QObject>
-
-class DeveloperTools: public QObject
+class FileDownloader : public QObject
 {
     Q_OBJECT
-
+    
 public:
-	explicit DeveloperTools(QObject *parent = 0);
-
+    explicit FileDownloader(QNetworkAccessManager * accessManager);
+    ~FileDownloader();
+    
+signals:
+    void Finished(QByteArray downloadedData, QList< QPair<QByteArray, QByteArray> > rawHeaderList, int errorCode, QString errorDescr);
+    
 public slots:
-    
-    void OnDebugFunctionsGridCopy();
+    void Download(QUrl url);
+    void Cancel();
 
-    void OnDebugCreateTestSkinnedObject(); //creates
+private slots:
+    void NetworkError(QNetworkReply::NetworkError code);
+    void DownloadFinished();
     
-    void OnImageSplitterNormals();
-	
+private:
+    QNetworkAccessManager * networkManager;
+    QNetworkReply * currentDownload;
+
+    int lastErrorCode;
+    QString lastErrorDesc;
 };
-#endif /* defined(__DEBUG_TOOLS__) */
+
+#endif // FILEDOWNLOADER_H

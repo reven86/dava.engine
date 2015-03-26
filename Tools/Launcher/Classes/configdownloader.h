@@ -27,26 +27,39 @@
 =====================================================================================*/
 
 
+#ifndef CONFIGDOWNLOADER_H
+#define CONFIGDOWNLOADER_H
 
-#ifndef __DEBUG_TOOLS__
-#define __DEBUG_TOOLS__
+#include <QDialog>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QFile>
+#include "filedownloader.h"
 
-#include <QObject>
+namespace Ui {
+class ConfigDownloader;
+}
 
-class DeveloperTools: public QObject
+class ApplicationManager;
+class ConfigDownloader : public QDialog
 {
     Q_OBJECT
-
+    
 public:
-	explicit DeveloperTools(QObject *parent = 0);
+    explicit ConfigDownloader(ApplicationManager * manager, QNetworkAccessManager * accessManager, QWidget *parent = 0);
+    ~ConfigDownloader();
 
-public slots:
-    
-    void OnDebugFunctionsGridCopy();
+    virtual int exec();
 
-    void OnDebugCreateTestSkinnedObject(); //creates
-    
-    void OnImageSplitterNormals();
-	
+private slots:
+    void DownloadFinished(QByteArray downloadedData, QList< QPair<QByteArray, QByteArray> > rawHeaderList, int errorCode, QString errorDescr);
+
+private:
+    Ui::ConfigDownloader *ui;
+
+    FileDownloader * downloader;
+
+    ApplicationManager * appManager;
 };
-#endif /* defined(__DEBUG_TOOLS__) */
+
+#endif // CONFIGDOWNLOADER_H

@@ -27,26 +27,46 @@
 =====================================================================================*/
 
 
+#ifndef SELFUPDATER_H
+#define SELFUPDATER_H
 
-#ifndef __DEBUG_TOOLS__
-#define __DEBUG_TOOLS__
+#include "zipunpacker.h"
+#include <QDialog>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QFile>
 
-#include <QObject>
+namespace Ui {
+class SelfUpdater;
+}
 
-class DeveloperTools: public QObject
+class SelfUpdater : public QDialog
 {
     Q_OBJECT
-
+    
 public:
-	explicit DeveloperTools(QObject *parent = 0);
+    explicit SelfUpdater(const QString & arcUrl, QNetworkAccessManager * accessManager, QWidget *parent = 0);
+    ~SelfUpdater();
 
-public slots:
-    
-    void OnDebugFunctionsGridCopy();
+signals:
+    void StartUpdating();
 
-    void OnDebugCreateTestSkinnedObject(); //creates
-    
-    void OnImageSplitterNormals();
-	
+private slots:
+    void NetworkError(QNetworkReply::NetworkError code);
+    void DownloadFinished();
+    void OnStartUpdating();
+
+private:
+    Ui::SelfUpdater *ui;
+    QString archiveUrl;
+
+    QNetworkAccessManager * networkManager;
+    QNetworkReply * currentDownload;
+
+    ZipUnpacker * unpacker;
+
+    int lastErrorCode;
+    QString lastErrorDesrc;
 };
-#endif /* defined(__DEBUG_TOOLS__) */
+
+#endif // SELFUPDATER_H

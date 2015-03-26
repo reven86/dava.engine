@@ -26,27 +26,57 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
-#ifndef __DEBUG_TOOLS__
-#define __DEBUG_TOOLS__
-
+#include "defines.h"
+#include "filedownloader.h"
 #include <QObject>
 
-class DeveloperTools: public QObject
+FileDownloader::FileDownloader(QNetworkAccessManager * accessManager) :
+    networkManager(accessManager),
+    currentDownload(0),
+    lastErrorCode(0)
 {
-    Q_OBJECT
+}
 
-public:
-	explicit DeveloperTools(QObject *parent = 0);
+FileDownloader::~FileDownloader()
+{
+}
 
-public slots:
+
+void FileDownloader::Download(QUrl url)
+{
+    Cancel();
     
-    void OnDebugFunctionsGridCopy();
+    currentDownload = networkManager->get(QNetworkRequest(url));
 
-    void OnDebugCreateTestSkinnedObject(); //creates
-    
-    void OnImageSplitterNormals();
-	
-};
-#endif /* defined(__DEBUG_TOOLS__) */
+    connect(currentDownload, SIGNAL(finished()), this, SLOT(DownloadFinished()));
+    connect(currentDownload, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(NetworkError(QNetworkReply::NetworkError)));
+}
+
+void FileDownloader::Cancel()
+{
+    if(currentDownload)
+    {
+        currentDownload->abort();
+    }
+}
+
+void FileDownloader::NetworkError(QNetworkReply::NetworkError code)
+{
+    lastErrorCode = code;
+    lastErrorDesc = currentDownload->errorString();
+}
+
+void FileDownloader::DownloadFinished()
+{
+    if(lastErrorCode)
+    {
+        emit Finished(QByteArray(), QList< QPair<QByteArray, QByteArray> >(), lastErrorCode, lastErrorDesc);
+    }
+    else if(currentDownload)
+    {
+        emit Finished(currentDownload->readAll(), currentDownload->rawHeaderPairs(), lastErrorCode, lastErrorDesc);
+
+        currentDownload->deleteLater();
+        currentDownload = 0;
+    }
+}
