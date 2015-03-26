@@ -185,7 +185,7 @@ void PreviewModel::OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIContr
                 c = c->GetParent();
             }
         
-        
+        //!!TODO: WHAAT? We can do only last iterations
             for (auto it = path.rbegin(); it != path.rend(); ++it)
             {
                 bool found = false;
@@ -214,12 +214,12 @@ void PreviewModel::OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIContr
         }
         else
         {
-            DVASSERT(false);
+            ErrorOccurred(tr("Node not changed"));
         }
     }
     else
     {
-        DVASSERT(false);
+        ErrorOccurred(tr("rootControl not found!"));
     }
 }
 

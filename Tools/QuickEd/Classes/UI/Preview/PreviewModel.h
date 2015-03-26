@@ -44,6 +44,8 @@ signals:
     void ControlNodeSelected(ControlNode *node);
     void AllControlsDeselected();
 
+    void ErrorOccurred(QString errorText);
+
 public: // ControlSelectionListener
     virtual void OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIControl *selectedControl) override;
     virtual void OnAllControlsDeselected() override;

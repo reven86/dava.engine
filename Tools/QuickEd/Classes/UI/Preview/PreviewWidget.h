@@ -51,6 +51,8 @@ private slots:
     void OnControlNodeSelected(ControlNode *node);
     void OnAllControlsDeselected();
 
+    void OnError(QString errorText);
+
 private:
     void OnScaleByZoom(int scaleDelta); 
     void UpdateModel();

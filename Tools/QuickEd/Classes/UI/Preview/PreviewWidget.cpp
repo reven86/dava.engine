@@ -11,7 +11,7 @@
 
 #include "Model/PackageHierarchy/ControlNode.h"
 
-
+#include <QMessageBox>
 
 using namespace DAVA;
 
@@ -66,6 +66,7 @@ PreviewWidget::PreviewWidget(QWidget *parent)
 
     connect(model, &PreviewModel::ControlNodeSelected, this, &PreviewWidget::OnControlNodeSelected);
     connect(model, &PreviewModel::AllControlsDeselected, this, &PreviewWidget::OnAllControlsDeselected);
+    connect(model, &PreviewModel::ErrorOccurred, this, &PreviewWidget::OnError);
 }
 
 PreviewWidget::~PreviewWidget()
@@ -94,7 +95,6 @@ void PreviewWidget::OnContextChanged(WidgetContext *context)
         OnScrollPositionChanged(model->GetCanvasPosition());
         OnCanvasScaleChanged(model->GetCanvasScale());
         OnMonitorChanged();
-
     }
 }
 
@@ -165,7 +165,11 @@ void PreviewWidget::OnControlNodeSelected(ControlNode *node)
 void PreviewWidget::OnAllControlsDeselected()
 {
     widgetContext->SetData(!widgetContext->GetData("controlDeselected").toBool(), "controlDeselected");
+}
 
+void PreviewWidget::OnError(QString errorText)
+{
+    QMessageBox::warning(qApp->activeWindow(), tr("Error occured!"), errorText);
 }
 
 void PreviewWidget::OnScaleByZoom(int scaleDelta)
