@@ -66,7 +66,7 @@ set( ANDROID_JAVA_ASSET         ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-web.png )
 
 set( ADDED_SRC                  ${IOS_ADD_SRC} )
-set( LIBRARIES                  TextureTool )
+set( LIBRARIES                  DavaTools )
 set( LIBRARIES_RELEASE          )
 set( LIBRARIES_DEBUG            )
 set( ADDED_BINARY_DIR           )

@@ -58,6 +58,8 @@
 #include "Render/GPUFamilyDescriptor.h"
 #include "Job/JobManager.h"
 #include "Math/MathHelpers.h"
+#include "Thread/LockGuard.h"
+
 
 
 #ifdef __DAVAENGINE_ANDROID__
@@ -167,7 +169,7 @@ bool Texture::pixelizationFlag = false;
 // Main constructors
 Texture * Texture::Get(const FilePath & pathName)
 {
-    textureMapMutex.Lock();
+    LockGuard<Mutex> guard(textureMapMutex);
 
 	Texture * texture = NULL;
 	TexturesMap::iterator it = textureMap.find(FILEPATH_MAP_KEY(pathName));
@@ -176,14 +178,10 @@ Texture * Texture::Get(const FilePath & pathName)
 		texture = it->second;
 		texture->Retain();
 
-        textureMapMutex.Unlock();
-
 		return texture;
 	}
 
-    textureMapMutex.Unlock();
-
-	return 0;
+    return 0;
 }
 
 void Texture::AddToMap(Texture *tex)

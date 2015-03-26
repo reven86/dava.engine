@@ -32,15 +32,13 @@
 #include "ui_waitdialog.h"
 
 QtWaitDialog::QtWaitDialog(QWidget *parent /*= 0*/)
-	: QDialog(parent, Qt::Dialog | Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowSystemMenuHint)
-	, ui(new Ui::QtWaitDialog)
-	, wasCanceled(false)
+    : QDialog(parent, Qt::Window | Qt::CustomizeWindowHint)
+    , ui(new Ui::QtWaitDialog)
+    , wasCanceled(false)
 {
-    resize(400, 150);
-	setMinimumSize(400, 150);
-	setMaximumWidth(400);
+    setFixedSize(400, 150);
 	setWindowModality(Qt::WindowModal);
-    
+
     ui->setupUi(this);
 
 	QPalette pal = palette();
@@ -141,15 +139,6 @@ void QtWaitDialog::Setup(const QString &title, const QString &message, bool hasW
 
 	ui->waitButton->setEnabled(hasCancel);
 	ui->waitBar->setVisible(hasWaitbar);
-
-	if(hasCancel)
-	{
-		setWindowFlags(Qt::Dialog | Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowSystemMenuHint);
-	}
-	else
-	{
-		setWindowFlags(Qt::Dialog | Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
-	}
 
 	wasCanceled = false;
 }

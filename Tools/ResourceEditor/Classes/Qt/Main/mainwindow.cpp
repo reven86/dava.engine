@@ -130,7 +130,7 @@
 
 #include "SceneProcessing/SceneProcessor.h"
 #include "QtLayer.h"
-#include "davaglwidget.h"
+#include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include "Commands2/ConvertPathCommands.h"
 
@@ -152,6 +152,8 @@ QtMainWindow::QtMainWindow(QWidget *parent)
 	new ProjectManager();
 	new RecentFilesManager();
 	ui->setupUi(this);
+    
+    centralWidget()->setMinimumSize(ui->sceneTabWidget->minimumSize());
     
     SetupTitle();
 
@@ -188,6 +190,11 @@ QtMainWindow::QtMainWindow(QWidget *parent)
 	QObject::connect(SceneSignals::Instance(), SIGNAL(EditorLightEnabled(bool)), this, SLOT(EditorLightEnabled(bool)));
 
     QObject::connect(this, SIGNAL(TexturesReloaded()), TextureCache::Instance(), SLOT(ClearCache()));
+    
+    
+    QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Initialized()), ui->landscapeEditorControlsPlaceholder, SLOT(OnOpenGLInitialized()));
+
+    
     
 	LoadGPUFormat();
     LoadMaterialLightViewMode();
@@ -405,33 +412,6 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
 		}
 	}
 
-	if(obj == this && QEvent::WindowUnblocked == eventType)
-	{
-		if(isActiveWindow())
-		{
-			ui->sceneTabWidget->setFocus(Qt::ActiveWindowFocusReason);
-		}
-	}
-    
-    if(obj == this && QEvent::KeyPress == eventType)
-    {
-        QKeyEvent *keyEvent = (QKeyEvent *)event;
-        int32 keyValue = keyEvent->key();
-        // check chars of russian alphabet(unicode table)
-        if(keyValue >= 0x410 && keyValue <=0x44F)
-        {
-            // according to reference of QKeyEvent, it's impossible to get scanCode on mac os
-            // so we use platform depending nativeVirtualKey()
-            int32 systemKeyCode = keyEvent->nativeVirtualKey();
-            int32 davaKey = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(systemKeyCode);
-            // translate davaKey to ascii to find out real key pressed
-            // offset between ascii and letters in davakey table - 29 positions
-            int32 qtKey = davaKey + 29;
-            QKeyEvent eventNew = QKeyEvent(QEvent::KeyPress, qtKey, keyEvent->modifiers());
-            QApplication::sendEvent(obj, &eventNew);
-        }
-    }
-    
 	return QMainWindow::eventFilter(obj, event);
 }
 
@@ -588,7 +568,7 @@ void QtMainWindow::SetupStatusBar()
     staticOcclusionStatusBtn->setMaximumSize(QSize(16, 16));
     ui->statusBar->insertPermanentWidget(0, staticOcclusionStatusBtn);
 
-	QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int)));
+	QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int, int)));
 }
 
 
@@ -783,6 +763,10 @@ void QtMainWindow::SetupActions()
         connect(act, SIGNAL(triggered()), SLOT(DebugVersionInfo()));
 #endif
 	}
+    
+    connect(ui->actionImageSplitterForNormals, &QAction::triggered, developerTools, &DeveloperTools::OnImageSplitterNormals);
+
+    
     connect( ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList );
 
     QObject::connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
@@ -811,29 +795,19 @@ void QtMainWindow::SetupActions()
 void QtMainWindow::SetupShortCuts()
 {
 	// select mode
-	QObject::connect(ui->sceneTabWidget, SIGNAL(Escape()), this, SLOT(OnSelectMode()));
-	
-	// look at
-	QObject::connect(new QShortcut(QKeySequence(Qt::Key_Z), this), SIGNAL(activated()), ui->sceneTree, SLOT(LookAtSelection()));
+	connect(ui->sceneTabWidget, SIGNAL(Escape()), this, SLOT(OnSelectMode()));
 	
 	// delete
-	QObject::connect(new QShortcut(QKeySequence(Qt::Key_Delete), this), SIGNAL(activated()), ui->sceneTree, SLOT(RemoveSelection()));
-	QObject::connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Backspace), this), SIGNAL(activated()), ui->sceneTree, SLOT(RemoveSelection()));
-
-	// camera speed
-	QObject::connect(new QShortcut(QKeySequence(Qt::Key_1), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraSpeed0()));
-	QObject::connect(new QShortcut(QKeySequence(Qt::Key_2), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraSpeed1()));
-	QObject::connect(new QShortcut(QKeySequence(Qt::Key_3), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraSpeed2()));
-	QObject::connect(new QShortcut(QKeySequence(Qt::Key_4), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraSpeed3()));
-	QObject::connect(new QShortcut(QKeySequence(Qt::Key_T), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(OnCameraLookFromTop()));
+    connect( new QShortcut( QKeySequence( Qt::Key_Delete ), ui->sceneTabWidget ), SIGNAL( activated() ), ui->sceneTree, SLOT( RemoveSelection() ) );
+    connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Backspace ), ui->sceneTabWidget ), SIGNAL( activated() ), ui->sceneTree, SLOT( RemoveSelection() ) );
 
 	// scene tree collapse/expand
-	QObject::connect(new QShortcut(QKeySequence(Qt::Key_X), ui->sceneTree), SIGNAL(activated()), ui->sceneTree, SLOT(CollapseSwitch()));
+	connect(new QShortcut(QKeySequence(Qt::Key_X), ui->sceneTree), SIGNAL(activated()), ui->sceneTree, SLOT(CollapseSwitch()));
 	
 	//tab closing
-	QObject::connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTabWidget, SLOT(TabBarCloseCurrentRequest()));
+	connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTabWidget, SLOT(TabBarCloseCurrentRequest()));
 #if defined (__DAVAENGINE_WIN32__)
-	QObject::connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F4), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTabWidget, SLOT(TabBarCloseCurrentRequest()));
+	connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F4), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTabWidget, SLOT(TabBarCloseCurrentRequest()));
 #endif
 }
 
@@ -1099,9 +1073,10 @@ void QtMainWindow::OnProjectClose()
     }
 }
 
+
 void QtMainWindow::OnSceneNew()
 {
-	ui->sceneTabWidget->OpenTab();
+    ui->sceneTabWidget->OpenTab();
 }
 
 void QtMainWindow::OnSceneOpen()
@@ -1622,7 +1597,6 @@ void QtMainWindow::OnAddLandscape()
     if(sceneEditor)
     {
         sceneEditor->Exec(new EntityAddCommand(entityToProcess, sceneEditor));
-        sceneEditor->selectionSystem->SetSelection(entityToProcess);
     }
     SafeRelease(entityToProcess);
 }
@@ -1658,7 +1632,6 @@ void QtMainWindow::OnAddVegetation()
         vegetationNode->SetLocked(true);
 
         sceneEditor->Exec(new EntityAddCommand(vegetationNode, sceneEditor));
-        sceneEditor->selectionSystem->SetSelection(vegetationNode);
 
         SafeRelease(vegetationNode);
     }
@@ -1673,7 +1646,6 @@ void QtMainWindow::OnLightDialog()
 	if(sceneEditor)
 	{
 		sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
-		sceneEditor->selectionSystem->SetSelection(sceneNode);
 	}
 	SafeRelease(sceneNode);
 }
@@ -1699,7 +1671,6 @@ void QtMainWindow::OnCameraDialog()
 	if(sceneEditor)
 	{
 		sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
-		sceneEditor->selectionSystem->SetSelection(sceneNode);
 	}
 	SafeRelease(sceneNode);
 	SafeRelease(camera);
@@ -1714,7 +1685,6 @@ void QtMainWindow::OnUserNodeDialog()
 	if(sceneEditor)
 	{
 		sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
-		sceneEditor->selectionSystem->SetSelection(sceneNode);
 	}
 	SafeRelease(sceneNode);
 }
@@ -1729,7 +1699,6 @@ void QtMainWindow::OnParticleEffectDialog()
 	if(sceneEditor)
 	{
 		sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
-		sceneEditor->selectionSystem->SetSelection(sceneNode);
 	}
 	SafeRelease(sceneNode);
 }
@@ -1755,7 +1724,6 @@ void QtMainWindow::On2DCameraDialog()
     if(sceneEditor)
     {
         sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
-        sceneEditor->selectionSystem->SetSelection(sceneNode);
     }
     SafeRelease(sceneNode);
     SafeRelease(camera);
@@ -1787,7 +1755,6 @@ void QtMainWindow::On2DSpriteDialog()
     if(sceneEditor)
     {
         sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
-        sceneEditor->selectionSystem->SetSelection(sceneNode);
     }
     SafeRelease(sceneNode);
     SafeRelease(spriteObject);
@@ -2199,51 +2166,6 @@ void QtMainWindow::OnBeastAndSave()
     LoadUndoRedoState(scene);
 }
 
-void QtMainWindow::OnCameraSpeed0()
-{
-	SceneEditor2* sceneEditor = GetCurrentScene();
-	if(NULL != sceneEditor)
-	{
-		sceneEditor->cameraSystem->SetMoveSpeedArrayIndex(0);
-	}
-}
-
-void QtMainWindow::OnCameraSpeed1()
-{
-	SceneEditor2* sceneEditor = GetCurrentScene();
-	if(NULL != sceneEditor)
-	{
-		sceneEditor->cameraSystem->SetMoveSpeedArrayIndex(1);
-	}
-}
-
-void QtMainWindow::OnCameraSpeed2()
-{
-	SceneEditor2* sceneEditor = GetCurrentScene();
-	if(NULL != sceneEditor)
-	{
-		sceneEditor->cameraSystem->SetMoveSpeedArrayIndex(2);
-	}
-}
-
-void QtMainWindow::OnCameraSpeed3()
-{
-	SceneEditor2* sceneEditor = GetCurrentScene();
-	if(NULL != sceneEditor)
-	{
-		sceneEditor->cameraSystem->SetMoveSpeedArrayIndex(3);
-	}
-}
-
-void QtMainWindow::OnCameraLookFromTop()
-{
-	SceneEditor2* sceneEditor = GetCurrentScene();
-	if(NULL != sceneEditor)
-	{
-		sceneEditor->cameraSystem->MoveTo(DAVA::Vector3(0, 0, 200), DAVA::Vector3(1, 0, 0));
-	}
-}
-
 void QtMainWindow::RunBeast(const QString& outputPath, BeastProxy::eBeastMode mode)
 {
 #if defined (__DAVAENGINE_BEAST__)
@@ -2405,7 +2327,7 @@ void QtMainWindow::OnHeightmapEditor()
 	{
 		return;
 	}
-
+    
 	if (sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
 	{
 		sceneEditor->Exec(new ActionDisableHeightmapEditor(sceneEditor));
@@ -2470,6 +2392,7 @@ void QtMainWindow::OnTilemaskEditor()
 		return;
 	}
 	
+    
 	if (sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled())
 	{
 		sceneEditor->Exec(new ActionDisableTilemaskEditor(sceneEditor));
@@ -2501,7 +2424,7 @@ void QtMainWindow::OnVisibilityTool()
 	{
 		return;
 	}
-	
+    
 	if (sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled())
 	{
 		sceneEditor->Exec(new ActionDisableVisibilityTool(sceneEditor));
@@ -2738,15 +2661,10 @@ bool QtMainWindow::OpenScene( const QString & path )
 
 			DAVA::FilePath scenePath = DAVA::FilePath(path.toStdString());
 
-			WaitStart("Opening scene...", scenePath.GetAbsolutePathname().c_str());
-
 			int index = ui->sceneTabWidget->OpenTab(scenePath);
-
-            WaitStop();
 
             if(index != -1)
 			{
-				ui->sceneTabWidget->SetCurrentTab(index);
 				AddRecent(path);
 
                 // close empty default scene
@@ -2798,7 +2716,7 @@ bool QtMainWindow::IsAnySceneChanged()
 	for(int i = 0; i < count; ++i)
 	{
 		SceneEditor2 *scene = ui->sceneTabWidget->GetTabScene(i);
-		if(scene->IsChanged())
+		if(scene && scene->IsChanged())
 		{
 			return true;
 		}
@@ -2880,7 +2798,6 @@ void QtMainWindow::OnEmptyEntity()
 	newEntity->SetName(ResourceEditor::ENTITY_NAME);
 
 	scene->Exec(new EntityAddCommand(newEntity, scene));
-	scene->selectionSystem->SetSelection(newEntity);
 
 	newEntity->Release();
 }
@@ -2900,7 +2817,6 @@ void QtMainWindow::OnAddWindEntity()
 	windEntity->AddComponent(wind);
 
 	scene->Exec(new EntityAddCommand(windEntity, scene));
-	scene->selectionSystem->SetSelection(windEntity);
 
 	windEntity->Release();
 }
@@ -2917,7 +2833,6 @@ void QtMainWindow::OnAddPathEntity()
 
     pathEntity->AddComponent(pc);
     scene->Exec(new EntityAddCommand(pathEntity, scene));
-    scene->selectionSystem->SetSelection(pathEntity);
     
     pathEntity->Release();
 }
