@@ -109,7 +109,7 @@ namespace DAVA
     
     void UITextFieldiPhone::SetSize(const DAVA::Vector2 &size)
     {
-        UpdateStaticTexture();
+        //UpdateStaticTexture();
     }
     
     void UITextFieldiPhone::SetTextAlign(DAVA::int32 align)
