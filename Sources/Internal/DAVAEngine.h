@@ -84,7 +84,7 @@
 #include "FileSystem/LocalizationSystem.h"
 
 // Image formats stuff (PNG & JPG & other formats)
-#include "Render/Image/LibPngHelpers.h"
+#include "Render/Image/LibPngHelper.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/LibDdsHelper.h"

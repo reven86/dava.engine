@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "ImageSystem.h"
 
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
@@ -34,23 +35,22 @@
 #include "Platform/SystemTimer.h"
 #include "Utils/Utils.h"
 
-#include "Render/Image/ImageSystem.h"
-#include "Render/Image/LibJpegHelper.h"
-#include "Render/Image/LibDdsHelper.h"
-#include "Render/Image/LibPngHelpers.h"
-#include "Render/Image/LibPVRHelper.h"
+#include "LibJpegHelper.h"
+#include "LibDdsHelper.h"
+#include "LibPngHelper.h"
+#include "LibPVRHelper.h"
 
 namespace DAVA 
 {
 
 ImageSystem::ImageSystem()
 {
-    wrappers[FILE_FORMAT_PNG] = new LibPngWrapper();
+    wrappers[FILE_FORMAT_PNG] = new LibPngHelper();
     wrappers[FILE_FORMAT_DDS] = new LibDdsHelper();
     wrappers[FILE_FORMAT_PVR] = new LibPVRHelper();
-    wrappers[FILE_FORMAT_JPEG] = new LibJpegWrapper();
+    wrappers[FILE_FORMAT_JPEG] = new LibJpegHelper();
 }
-    
+
 ImageSystem::~ImageSystem()
 {
     for (size_t i = 0; i < FILE_FORMAT_COUNT; ++i)
@@ -66,11 +66,11 @@ eErrorCode ImageSystem::Load(const FilePath & pathname, Vector<Image *> & imageS
     {
         return ERROR_FILE_NOTFOUND;
     }
-    
+
     eErrorCode result = Load(fileRead, imageSet, baseMipmap);
-    
+
     SafeRelease(fileRead);
-    
+
     return result;
 }
 
@@ -82,7 +82,7 @@ eErrorCode ImageSystem::Load(File *file, Vector<Image *> & imageSet, int32 baseM
         // Retry by content.
         properWrapper = GetImageFormatInterface(file);
     }
-    
+
     if (nullptr == properWrapper || !properWrapper->IsImage(file))
     {
         return ERROR_FILE_FORMAT_INCORRECT;
@@ -90,7 +90,7 @@ eErrorCode ImageSystem::Load(File *file, Vector<Image *> & imageSet, int32 baseM
 
     return properWrapper->ReadFile(file, imageSet, baseMipmap);
 }
-    
+
 Image* ImageSystem::EnsurePowerOf2Image(Image* image) const
 {
     if (IsPowerOf2(image->GetWidth() && IsPowerOf2(image->GetHeight())))
@@ -125,22 +125,22 @@ void ImageSystem::EnsurePowerOf2Images(Vector<Image*>& images) const
 eErrorCode ImageSystem::SaveAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
-    if(nullptr == properWrapper)
+    if (nullptr == properWrapper)
     {
         return ERROR_FILE_FORMAT_INCORRECT;
     }
-    
+
     return properWrapper->WriteFileAsCubeMap(fileName, imageSet, compressionFormat);
 }
-    
+
 eErrorCode ImageSystem::Save(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
-    if(nullptr == properWrapper)
+    if (nullptr == properWrapper)
     {
         return ERROR_FILE_FORMAT_INCORRECT;
     }
-    
+
     return properWrapper->WriteFile(fileName, imageSet, compressionFormat);
 }
 
@@ -154,7 +154,7 @@ eErrorCode ImageSystem::Save(const FilePath & fileName, Image *image, PixelForma
     imageSet.push_back(image);
     return Save(fileName, imageSet, compressionFormat);
 }
-    
+
 ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & pathname) const
 {
     String extension = pathname.GetExtension();
@@ -165,7 +165,7 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & path
             return wrappers[i];
         }
     }
-    
+
     return nullptr;
 }
 
@@ -179,7 +179,7 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
         }
     }
     DVASSERT(0);
-    
+
     return nullptr;
 }
 

@@ -44,20 +44,20 @@ class Texture;
 class Sprite;
 class Image;
 
-class LibPngWrapper: public ImageFormatInterface
+class LibPngHelper: public ImageFormatInterface
 {
 public:
-    LibPngWrapper();
-    
+    LibPngHelper();
+
     bool IsImage(File *file) const override;
-    
+
     eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
-    eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const override;
-    eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const override;
+    eErrorCode WriteFile(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const override;
+    eErrorCode WriteFileAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *>> &imageSet, PixelFormat compressionFormat) const override;
 
     ImageInfo GetImageInfo(File *infile) const override;
 
-    static eErrorCode ReadPngFile(File *infile, Image * image, PixelFormat targetFormat = FORMAT_INVALID);
+    static eErrorCode ReadPngFile(File *infile, Image *image, PixelFormat targetFormat = FORMAT_INVALID);
 };
 
 }

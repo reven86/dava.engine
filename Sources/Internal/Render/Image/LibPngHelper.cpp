@@ -33,14 +33,16 @@
 #include <stdarg.h>
 #include <iostream>
 
-#include <libpng/png.h>
+#include "Render/Image/LibPngHelper.h"
+
 #include "Render/RenderManager.h"
 #include "Render/2D/Sprite.h"
 #include "Render/Texture.h"
 #include "FileSystem/FileSystem.h"
 #include "Render/Image/ImageConvert.h"
-#include "Render/Image/LibPngHelpers.h"
 #include "Render/PixelFormatDescriptor.h"
+
+#include <libpng/png.h>
 
 #if !defined(__DAVAENGINE_WIN32__)
 #include <unistd.h>
@@ -52,14 +54,14 @@ using namespace DAVA;
 
 namespace
 {
-    struct	PngImageRawData
+    struct PngImageRawData
     {
         File *file;
     };
 
     void PngImageRead(png_structp pngPtr, png_bytep data, png_size_t size)
     {
-        PngImageRawData * self = static_cast<PngImageRawData*>(png_get_io_ptr(pngPtr));
+        PngImageRawData *self = static_cast<PngImageRawData*>(png_get_io_ptr(pngPtr));
         self->file->Read(data, static_cast<uint32>(size));
     }
 
@@ -82,33 +84,35 @@ namespace
 
 void abort_(const char * s, ...)
 {
-	va_list args;
-	va_start(args, s);
-	vfprintf(stderr, s, args);
-	fprintf(stderr, "\n");
-	va_end(args);
-	abort();
+    va_list args;
+    va_start(args, s);
+    vfprintf(stderr, s, args);
+    fprintf(stderr, "\n");
+    va_end(args);
+    abort();
 }
 
 
-LibPngWrapper::LibPngWrapper()
+LibPngHelper::LibPngHelper()
 {
     supportedExtensions.push_back(".png");
 }
 
-bool LibPngWrapper::IsImage(File *file) const
+bool LibPngHelper::IsImage(File *file) const
 {
     if (nullptr == file)
+    {
         return false;
+    }
 
     unsigned char sig[8];
     file->Read(sig, 8);
-	bool retValue = (0 != png_check_sig(sig, 8));
-    file->Seek(0,  File::SEEK_FROM_START);
+    bool retValue = (0 != png_check_sig(sig, 8));
+    file->Seek(0, File::SEEK_FROM_START);
     return retValue;
 }
 
-eErrorCode LibPngWrapper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
+eErrorCode LibPngHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
 {
     Image* image = new Image();
     eErrorCode innerRetCode = ReadPngFile(infile, image);
@@ -125,9 +129,9 @@ eErrorCode LibPngWrapper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     return innerRetCode;
 }
 
-eErrorCode LibPngWrapper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat format) const
+eErrorCode LibPngHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat format) const
 {
-    //	printf("* Writing PNG file (%d x %d): %s\n", width, height, file_name);
+    // printf("* Writing PNG file (%d x %d): %s\n", width, height, file_name);
     DVASSERT(imageSet.size());
     int32 width = imageSet[0]->width;
     int32 height = imageSet[0]->height;
@@ -166,15 +170,15 @@ eErrorCode LibPngWrapper::WriteFile(const FilePath & fileName, const Vector<Imag
 
     for (int y = 0; y < height; y++)
     {
-        //		row_pointers[y] = (png_byte*) &data[y * width * 4];
+        // row_pointers[y] = (png_byte*) &data[y * width * 4];
         row_pointers[y] = (png_byte*)&imageData[y * width * bytes_for_color];
     }
 
-    //create file
+    // create file
     FILE *fp = fopen(fileName.GetAbsolutePathname().c_str(), "wb");
     if (nullptr == fp)
     {
-        Logger::Error("[LibPngWrapper::WritePngFile] File %s could not be opened for writing", fileName.GetAbsolutePathname().c_str());
+        Logger::Error("[LibPngHelper::WritePngFile] File %s could not be opened for writing", fileName.GetAbsolutePathname().c_str());
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
         return ERROR_FILE_NOTFOUND;
     }
@@ -184,7 +188,7 @@ eErrorCode LibPngWrapper::WriteFile(const FilePath & fileName, const Vector<Imag
 
     if (nullptr == png_ptr)
     {
-        Logger::Error("[LibPngWrapper::WritePngFile] png_create_write_struct failed");
+        Logger::Error("[LibPngHelper::WritePngFile] png_create_write_struct failed");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
         return ERROR_WRITE_FAIL;
     }
@@ -192,14 +196,14 @@ eErrorCode LibPngWrapper::WriteFile(const FilePath & fileName, const Vector<Imag
     info_ptr = png_create_info_struct(png_ptr);
     if (nullptr == info_ptr)
     {
-        Logger::Error("[LibPngWrapper::WritePngFile] png_create_info_struct failed");
+        Logger::Error("[LibPngHelper::WritePngFile] png_create_info_struct failed");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
         return ERROR_WRITE_FAIL;
     }
 
     if (setjmp(png_jmpbuf(png_ptr)))
     {
-        Logger::Error("[LibPngWrapper::WritePngFile] Error during init_io");
+        Logger::Error("[LibPngHelper::WritePngFile] Error during init_io");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
         return ERROR_WRITE_FAIL;
     }
@@ -209,7 +213,7 @@ eErrorCode LibPngWrapper::WriteFile(const FilePath & fileName, const Vector<Imag
     // write header
     if (setjmp(png_jmpbuf(png_ptr)))
     {
-        Logger::Error("[LibPngWrapper::WritePngFile] Error during writing header");
+        Logger::Error("[LibPngHelper::WritePngFile] Error during writing header");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
         return ERROR_WRITE_FAIL;
     }
@@ -253,7 +257,7 @@ eErrorCode LibPngWrapper::WriteFile(const FilePath & fileName, const Vector<Imag
     // write bytes
     if (setjmp(png_jmpbuf(png_ptr)))
     {
-        Logger::Error("[LibPngWrapper::WritePngFile] Error during writing bytes");
+        Logger::Error("[LibPngHelper::WritePngFile] Error during writing bytes");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
         return ERROR_WRITE_FAIL;
     }
@@ -263,7 +267,7 @@ eErrorCode LibPngWrapper::WriteFile(const FilePath & fileName, const Vector<Imag
     // end write
     if (setjmp(png_jmpbuf(png_ptr)))
     {
-        Logger::Error("[LibPngWrapper::WritePngFile] Error during end of write");
+        Logger::Error("[LibPngHelper::WritePngFile] Error during end of write");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
         return ERROR_WRITE_FAIL;
     }
@@ -274,13 +278,13 @@ eErrorCode LibPngWrapper::WriteFile(const FilePath & fileName, const Vector<Imag
     return SUCCESS;
 }
 
-eErrorCode LibPngWrapper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibPngHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
 {
-    Logger::Error("[LibPngWrapper::WriteFileAsCubeMap] For png cubeMaps are not supported");
+    Logger::Error("[LibPngHelper::WriteFileAsCubeMap] For png cubeMaps are not supported");
     return ERROR_WRITE_FAIL;
 }
 
-ImageInfo LibPngWrapper::GetImageInfo(File *infile) const
+ImageInfo LibPngHelper::GetImageInfo(File *infile) const
 {
     if (nullptr == infile)
     {
@@ -377,13 +381,13 @@ ImageInfo LibPngWrapper::GetImageInfo(File *infile) const
         default: info.format = FORMAT_INVALID; break;
     }
 
-    /* Clean up. */
+    // Clean up
     png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 
     return info;
 }
 
-eErrorCode LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFormat/* = FORMAT_INVALID*/)
+eErrorCode LibPngHelper::ReadPngFile(File *infile, Image * image, PixelFormat targetFormat/* = FORMAT_INVALID*/)
 {
     DVASSERT(targetFormat == FORMAT_INVALID || targetFormat == FORMAT_RGBA8888);
 
@@ -399,7 +403,7 @@ eErrorCode LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat t
     png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
     if (nullptr == png_ptr)
     {
-        return ERROR_READ_FAIL;    /* out of memory */
+        return ERROR_READ_FAIL; // out of memory
     }
 
     png_infop info_ptr = nullptr;
@@ -407,7 +411,7 @@ eErrorCode LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat t
     if (nullptr == info_ptr)
     {
         png_destroy_read_struct(&png_ptr, (png_infopp)nullptr, (png_infopp)nullptr);
-        return ERROR_READ_FAIL;    /* out of memory */
+        return ERROR_READ_FAIL; // out of memory
     }
 
     if (setjmp(png_jmpbuf(png_ptr)))
@@ -416,7 +420,7 @@ eErrorCode LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat t
         return ERROR_FILE_FORMAT_INCORRECT;
     }
 
-    PngImageRawData	raw;
+    PngImageRawData raw;
     raw.file = infile;
     png_set_read_fn(png_ptr, &raw, PngImageRead);
 
@@ -434,7 +438,7 @@ eErrorCode LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat t
     image->width = width;
     image->height = height;
 
-    //1 bit images -> 8 bit
+    // 1 bit images -> 8 bit
     if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
         png_set_expand_gray_1_2_4_to_8(png_ptr);
 
@@ -500,21 +504,21 @@ eErrorCode LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat t
         return ERROR_READ_FAIL;
     }
 
-    /* set the individual row_pointers to point at the correct offsets */
+    // set the individual row_pointers to point at the correct offsets
 
     for (int i = 0; i < static_cast<int>(height); ++i)
         row_pointers[i] = image_data + i * rowbytes;
 
-    /* now we can go ahead and just read the whole image */
+    // now we can go ahead and just read the whole image
     png_read_image(png_ptr, row_pointers);
 
-    /* and we're done!  (png_read_end() can be omitted if no processing of
-    * post-IDAT text/time/etc. is desired) */
+    // and we're done!  (png_read_end() can be omitted if no processing of
+    // post-IDAT text/time/etc. is desired)
 
-    /* Clean up. */
+    // Clean up
     free(row_pointers);
 
-    /* Clean up. */
+    // Clean up
     png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 
     image->data = image_data;
