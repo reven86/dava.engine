@@ -186,7 +186,8 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
 ImageInfo ImageSystem::GetImageInfo(const FilePath & pathName) const
 {
     File *infile = File::Create(pathName, File::OPEN | File::READ);
-    return GetImageInfo(infile);
+    ImageInfo info = GetImageInfo(infile);
+    return info;
 }
 
 ImageInfo ImageSystem::GetImageInfo(File *infile) const
