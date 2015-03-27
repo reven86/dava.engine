@@ -1758,7 +1758,7 @@ void DefaultScreen::HandleScreenMove(const DAVA::UIEvent* event)
 
 bool DefaultScreen::IsControlVisible(const UIControl* uiControl) const
 {
-    return (uiControl->GetVisibleForUIEditor() && uiControl->GetVisible());
+    return ( uiControl->GetVisible());
 }
 
 void DefaultScreen::SetScreenControl(ScreenControl* control)

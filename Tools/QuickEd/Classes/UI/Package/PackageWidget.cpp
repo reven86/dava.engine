@@ -316,8 +316,8 @@ void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, cons
     }
 
     RefreshActions(selectedIndexList);
-    widgetContext->SetData(QVariant::fromValue(selectedRootControl), "activeRootControls");
-    widgetContext->SetData(QVariant::fromValue(deselectedRootControl), "deactivatedControls");
+    //widgetContext->SetData(QVariant::fromValue(selectedRootControl), "activeRootControls");
+    //widgetContext->SetData(QVariant::fromValue(deselectedRootControl), "deactivatedControls"); //!!TODO WHAT??? Why we did it?
     widgetContext->SetData(QVariant::fromValue(selectedControl), "activatedControls");
     widgetContext->SetData(QVariant::fromValue(deselectedControl), "deactivatedControls");
 }

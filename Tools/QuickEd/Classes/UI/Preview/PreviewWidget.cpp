@@ -169,7 +169,7 @@ void PreviewWidget::OnAllControlsDeselected()
 
 void PreviewWidget::OnError(QString errorText)
 {
-    QMessageBox::warning(qApp->activeWindow(), tr("Error occured!"), errorText);
+    QMessageBox::warning(qApp->activeWindow(), tr("Error occurred!"), errorText);
 }
 
 void PreviewWidget::OnScaleByZoom(int scaleDelta)

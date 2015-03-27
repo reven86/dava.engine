@@ -36,12 +36,7 @@ Document::Document(PackageNode *_package, QObject *parent)
 {
     InitWidgetContexts();
 
-    QList<ControlNode*> activeRootControls;
-    PackageControlsNode *controlsNode = package->GetPackageControlsNode();
-    for (int32 index = 0; index < controlsNode->GetCount(); ++index)
-        activeRootControls.push_back(controlsNode->Get(index));
 
-    previewContext->SetData(QVariant::fromValue(activeRootControls), "activeRootControls");
     ConnectWidgetContexts();
 }
 
@@ -66,6 +61,13 @@ void Document::InitWidgetContexts()
     previewContext->SetData(QVariant::fromValue(canvas), "canvas");
     previewContext->SetData(false, "controlDeselected");
     packageContext->SetData(false, "controlsDeselected");
+
+    QList<ControlNode*> activeRootControls;
+    PackageControlsNode *controlsNode = package->GetPackageControlsNode();
+    for (int32 index = 0; index < controlsNode->GetCount(); ++index)
+        activeRootControls.push_back(controlsNode->Get(index));
+
+    previewContext->SetData(QVariant::fromValue(activeRootControls), "activeRootControls");
 }
 
 void Document::ConnectWidgetContexts() const

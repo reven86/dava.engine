@@ -304,10 +304,10 @@ CheckeredCanvas *PreviewModel::FindControlContainer(UIControl *control)
 {
     UIControl *c = control;
     
-    while (c->GetParent() && c->GetParent() != canvas)
+    while (nullptr != c->GetParent() && c->GetParent() != canvas)
         c = c->GetParent();
     
-    if (c)
+    if (nullptr != c)
         return dynamic_cast<CheckeredCanvas*>(c);
     
     return nullptr;
