@@ -44,10 +44,10 @@ class Image;
 struct ImageInfo
 {
     ImageInfo()
+        : width(0)
+        , height(0)
+        , format(FORMAT_INVALID)
     {
-        width = 0;
-        height = 0;
-        format = FORMAT_INVALID;
     }
 
     bool isEmpty()

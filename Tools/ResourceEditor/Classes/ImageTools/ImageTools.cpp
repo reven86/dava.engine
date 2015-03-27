@@ -74,22 +74,11 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 		}
 		
 		ImageSystem* system = ImageSystem::Instance();
-		if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PNG)->IsImage(imageFile))
-		{
-			size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PNG)->GetImageInfo(imageFile).GetDataSize();
-		}
-		else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_DDS)->IsImage(imageFile))
-		{
-            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_DDS)->GetImageInfo(imageFile).GetDataSize();
-		}
-		else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PVR)->IsImage(imageFile))
-		{
-            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PVR)->GetImageInfo(imageFile).GetDataSize();
-		}
-        else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_JPEG)->IsImage(imageFile))
-		{
-            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_JPEG)->GetImageInfo(imageFile).GetDataSize();
-		}
+        ImageInfo info = system->GetImageInfo(imageFile);
+        if (!info.isEmpty())
+        {
+            size += info.GetDataSize();
+        }
 		else
 		{
 			Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetAbsolutePathname().c_str());

@@ -86,7 +86,7 @@ protected:
     void LoadCubemap(const QString& path);
     void SaveCubemap(const QString& path);
     DAVA::uint8 GetFaceMask();
-    bool LoadImageTo(const DAVA::String& filePath, int face, bool silent);
+    bool LoadImageTo(const DAVA::FilePath& filePath, int face, bool silent);
     ClickableQLabel* GetLabelForFace(int face);
     bool IsCubemapEdited();
 

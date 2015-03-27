@@ -187,6 +187,7 @@ ImageInfo ImageSystem::GetImageInfo(const FilePath & pathName) const
 {
     File *infile = File::Create(pathName, File::OPEN | File::READ);
     ImageInfo info = GetImageInfo(infile);
+    SafeRelease(infile);
     return info;
 }
 

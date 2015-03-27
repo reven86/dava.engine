@@ -184,7 +184,7 @@ eErrorCode LibPngHelper::WriteFile(const FilePath & fileName, const Vector<Image
     }
 
     // initialize stuff
-    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 
     if (nullptr == png_ptr)
     {
@@ -298,7 +298,7 @@ ImageInfo LibPngHelper::GetImageInfo(File *infile) const
         return ImageInfo();
     }
 
-    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
     if (nullptr == png_ptr)
     {
         return ImageInfo();
@@ -307,13 +307,13 @@ ImageInfo LibPngHelper::GetImageInfo(File *infile) const
     png_infop info_ptr = png_create_info_struct(png_ptr);
     if (nullptr == info_ptr)
     {
-        png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
+        png_destroy_read_struct(&png_ptr, (png_infopp)nullptr, (png_infopp)nullptr);
         return ImageInfo();
     }
 
     if (setjmp(png_jmpbuf(png_ptr)))
     {
-        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
         return ImageInfo();
     }
 
@@ -330,7 +330,7 @@ ImageInfo LibPngHelper::GetImageInfo(File *infile) const
     png_uint_32 width;
     png_uint_32 height;
 
-    png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, NULL, NULL, NULL);
+    png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, nullptr, nullptr, nullptr);
 
     ImageInfo info;
     info.width = width;
@@ -378,7 +378,9 @@ ImageInfo LibPngHelper::GetImageInfo(File *infile) const
                 default: info.format = FORMAT_INVALID; break;
             }
         }
-        default: info.format = FORMAT_INVALID; break;
+        default:
+            info.format = FORMAT_INVALID;
+            break;
     }
 
     // Clean up
