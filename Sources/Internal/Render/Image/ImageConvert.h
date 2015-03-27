@@ -539,7 +539,7 @@ public:
         SwapChannels(srcImage->format, srcImage->data, srcImage->width, srcImage->height, srcImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(srcImage->format));
     }
     
-    static void SwapChannels(PixelFormat format, uint8* data, uint32 width, uint32 height, uint32 pitch)
+    static void SwapChannels(PixelFormat format, void* data, uint32 width, uint32 height, uint32 pitch)
     {
         switch (format)
         {
