@@ -88,7 +88,7 @@ void ControlMapper::keyReleaseEvent(QKeyEvent *e)
 void ControlMapper::mouseMoveEvent(QMouseEvent * event)
 {
     const Qt::MouseButtons buttons = event->buttons();
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
+    auto davaEvent = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
     bool dragWasApplied = false;
     
     davaEvent.phase = DAVA::UIEvent::PHASE_DRAG;
@@ -122,7 +122,7 @@ void ControlMapper::mouseMoveEvent(QMouseEvent * event)
 
 void ControlMapper::mousePressEvent(QMouseEvent * event)
 {
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
+    auto davaEvent = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
     davaEvent.phase = DAVA::UIEvent::PHASE_BEGAN;
     
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
@@ -130,7 +130,7 @@ void ControlMapper::mousePressEvent(QMouseEvent * event)
 
 void ControlMapper::mouseReleaseEvent(QMouseEvent * event)
 {
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
+    auto davaEvent = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
     davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
     
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
@@ -150,19 +150,9 @@ void ControlMapper::mouseDoubleClickEvent(QMouseEvent *event)
 
 void ControlMapper::wheelEvent(QWheelEvent *event)
 {
-    DAVA::UIEvent davaEvent;
-    
-    int numDegrees = event->delta() / 8;
-    int numSteps = numDegrees / 15;
-    
-    davaEvent.point = davaEvent.physPoint = DAVA::Vector2(numSteps, numSteps);
-    davaEvent.tid = DAVA::UIEvent::PHASE_WHEEL;
-    davaEvent.phase = DAVA::UIEvent::PHASE_WHEEL;
-    
-    davaEvent.timestamp = event->timestamp();
-    davaEvent.tapCount = 1;
-    
-    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+    Q_UNUSED( event );
+
+    // TODO: add feature - mouse move on wheel
 }
 
 void ControlMapper::dragMoveEvent(QDragMoveEvent * event)
@@ -185,15 +175,15 @@ void ControlMapper::ClearAllKeys()
     DAVA::InputSystem::Instance()->GetKeyboard().ClearAllKeys();
 }
 
-DAVA::UIEvent ControlMapper::MapMouseEventToDAVA(QMouseEvent *event) const
+DAVA::UIEvent ControlMapper::MapMouseEventToDAVA( const QPoint& pos, const Qt::MouseButton button, ulong timestamp ) const
 {
     DAVA::UIEvent davaEvent;
-    QPoint pos = event->pos();
+    auto davaButton = MapQtButtonToDAVA( button );
     
     int currentDPR = window->devicePixelRatio();
     davaEvent.point = davaEvent.physPoint = DAVA::Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
-    davaEvent.tid = MapQtButtonToDAVA(event->button());
-    davaEvent.timestamp = event->timestamp();
+    davaEvent.tid = button;
+    davaEvent.timestamp = timestamp;
     davaEvent.tapCount = 1;
     
     return davaEvent;
