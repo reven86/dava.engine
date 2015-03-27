@@ -42,8 +42,11 @@
 #include <QDir>
 #include <QUrl>
 #include <QCursor>
+#include <QToolTip>
 
 #include "Main/QtUtils.h"
+
+#include "Project/ProjectManager.h"
 
 #define TEXTURE_PREVIEW_SIZE 80
 #define TEXTURE_PREVIEW_SIZE_SMALL 24
@@ -97,7 +100,7 @@ QSize TextureListDelegate::sizeHint(const QStyleOptionViewItem &option, const QM
 
 void TextureListDelegate::textureReadyThumbnail(const DAVA::TextureDescriptor *descriptor, const TextureInfo & images)
 {
-	if(NULL != descriptor)
+	if(nullptr != descriptor)
 	{
 		if(descriptorIndexes.contains(descriptor->pathname))
 		{
@@ -120,7 +123,7 @@ void TextureListDelegate::drawPreviewBig(QPainter *painter, const QStyleOptionVi
 	const TextureListModel *curModel = (TextureListModel *) index.model();
 	DAVA::TextureDescriptor *curTextureDescriptor = curModel->getDescriptor(index);
 
-	if(NULL != curTextureDescriptor)
+	if(nullptr != curTextureDescriptor)
 	{
 		DAVA::Texture *curTexture = curModel->getTexture(index);
 
@@ -129,7 +132,7 @@ void TextureListDelegate::drawPreviewBig(QPainter *painter, const QStyleOptionVi
 		QSize textureDimension = QSize();
 		QString textureDataSize = 0;
 
-		if(NULL != curTexture)
+		if(nullptr != curTexture)
 		{
 			textureDimension = QSize(curTexture->width, curTexture->height);
             textureDataSize = QString::fromStdString(SizeInBytesToString(TextureCache::Instance()->getThumbnailSize(curTextureDescriptor)));
@@ -184,13 +187,17 @@ void TextureListDelegate::drawPreviewBig(QPainter *painter, const QStyleOptionVi
 			textRect.adjust(0, nameFontMetrics.height(), 0, 0);
 
 			QString infoText;
-			char dimen[32];
+			char dimen[64];
 
-			sprintf(dimen, "%dx%d", textureDimension.width(), textureDimension.height());
-			//infoText += "Dimension: ";
+			sprintf(dimen, "Size: %dx%d", textureDimension.width(), textureDimension.height());
 			infoText += dimen;
 			infoText += "\nData size: ";
 			infoText += textureDataSize;
+            
+            auto dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
+            
+            infoText += "\nPath: ";
+            infoText += curTextureDescriptor->pathname.GetRelativePathname(dataSourcePath).c_str();
 
 			painter->drawText(textRect, infoText);
 		}
@@ -211,17 +218,63 @@ void TextureListDelegate::drawPreviewBig(QPainter *painter, const QStyleOptionVi
 	}
 }
 
+bool TextureListDelegate::helpEvent(QHelpEvent *event,
+               QAbstractItemView *view,
+               const QStyleOptionViewItem &option,
+               const QModelIndex &index)
+{
+    if (nullptr == event || nullptr == view)
+    {
+        return false;
+    }
+    
+    if (event->type() == QEvent::ToolTip)
+    {
+        auto tooltip = index.data( Qt::DisplayRole );
+        if ( tooltip.canConvert<QString>() )
+        {
+            auto curModel = (TextureListModel *) index.model();
+            auto curTextureDescriptor = curModel->getDescriptor(index);
+            
+            if(nullptr != curTextureDescriptor)
+            {
+                auto curTexture = curModel->getTexture(index);
+                if(nullptr != curTexture)
+                {
+                    QString infoText;
+                    char dimen[64];
+                    
+                    sprintf(dimen, "Size: %dx%d", curTexture->width, curTexture->height);
+                    infoText += dimen;
+                    infoText += "\nData size: ";
+                    infoText += QString::fromStdString(SizeInBytesToString(TextureCache::Instance()->getThumbnailSize(curTextureDescriptor)));
+                    
+                    auto dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
+                    
+                    infoText += "\nPath: ";
+                    infoText += curTextureDescriptor->pathname.GetRelativePathname(dataSourcePath).c_str();
+                    
+                    QToolTip::showText( event->globalPos(), infoText, view);
+                    return true;
+                }
+            }
+        }
+    }
+    
+    return QAbstractItemDelegate::helpEvent( event, view, option, index );
+}
+
+
 void TextureListDelegate::drawPreviewSmall(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
 	const TextureListModel *curModel = (TextureListModel *) index.model();
 	DAVA::TextureDescriptor *curTextureDescriptor = curModel->getDescriptor(index);
 	DAVA::Texture *curTexture = curModel->getTexture(index);
 
-	if(NULL != curTextureDescriptor)
+	if(nullptr != curTextureDescriptor)
 	{
 		painter->save();
 		painter->setClipRect(option.rect);
-
 
 
 		// draw border
@@ -274,7 +327,7 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
 	int ret = 0;
 	QRect r = rect;
 
-	if(NULL != descriptor && NULL != texture)
+	if(nullptr != descriptor && nullptr != texture)
 	{
 		r.adjust(FORMAT_INFO_SPACING, FORMAT_INFO_SPACING, -FORMAT_INFO_SPACING, -FORMAT_INFO_SPACING);
 		r.setX(rect.x() + rect.width());

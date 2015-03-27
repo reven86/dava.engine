@@ -58,6 +58,12 @@ public:
 	QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
 	void setDrawRule(DrawRule rule);
+    
+    bool helpEvent(QHelpEvent *event,
+                           QAbstractItemView *view,
+                           const QStyleOptionViewItem &option,
+                           const QModelIndex &index) override;
+
 
 protected:
     bool editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index);
