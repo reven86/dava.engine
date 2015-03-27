@@ -533,13 +533,13 @@ public:
         }
     }
 
-    static void SwapChannels(const Image *srcImage)
+    static void SwapRedBlueChannels(const Image *srcImage)
     {
         DVASSERT(srcImage);
-        SwapChannels(srcImage->format, srcImage->data, srcImage->width, srcImage->height, srcImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(srcImage->format));
+        SwapRedBlueChannels(srcImage->format, srcImage->data, srcImage->width, srcImage->height, srcImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(srcImage->format));
     }
     
-    static void SwapChannels(PixelFormat format, void* data, uint32 width, uint32 height, uint32 pitch)
+    static void SwapRedBlueChannels(PixelFormat format, void* data, uint32 width, uint32 height, uint32 pitch)
     {
         switch (format)
         {

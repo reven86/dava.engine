@@ -177,7 +177,7 @@ eErrorCode LibTgaWrapper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
 
     if (readResult == SUCCESS)
     {
-        ImageConvert::SwapChannels(pImage);
+        ImageConvert::SwapRedBlueChannels(pImage);
         SafeRetain(pImage);
         imageSet.push_back(pImage);
         return SUCCESS;
