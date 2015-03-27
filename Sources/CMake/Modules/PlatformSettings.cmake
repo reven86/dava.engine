@@ -12,12 +12,9 @@ if     ( ANDROID )
     
 elseif ( IOS     ) 
     set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fvisibility=hidden" )
+    set( CMAKE_CXX_FLAGS_DEBUG    "${CMAKE_CXX_FLAGS} -O0" )
+    set( CMAKE_CXX_FLAGS_RELEASE  "${CMAKE_CXX_FLAGS} -O2" )
 
-    if (DAVA_UNIT_TESTS)
-        # set optimization level to O2, by default it is set to O3
-        set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -O2" )
-    endif()
-    
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY iPhone/iPad )
