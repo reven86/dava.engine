@@ -59,8 +59,6 @@ class Light;
 class ShadowRect;
 class QuadTree;
 class MeshInstanceNode;
-class ImposterManager;
-class ImposterNode;
 class Component;
 class SceneSystem;
 class RenderSystem;
@@ -258,10 +256,7 @@ public:
 	void AddDrawTimeShadowVolume(ShadowVolumeNode * shadowVolume);
     
     Set<Light*> & GetLights();
-	Light * GetNearestDynamicLight(Light::eType type, Vector3 position);
-
-	void RegisterImposter(ImposterNode * imposter);
-	void UnregisterImposter(ImposterNode * imposter);
+	Light * GetNearestDynamicLight(Light::eType type, Vector3 position);	
 
 	void CreateComponents();
 	void CreateSystems();
@@ -331,9 +326,7 @@ protected:
     Camera * drawCamera;
 
 	Vector<ShadowVolumeNode*> shadowVolumes;
-    Set<Light*> lights;
-
-	ImposterManager * imposterManager;
+    Set<Light*> lights;	
     
     friend class Entity;
 };

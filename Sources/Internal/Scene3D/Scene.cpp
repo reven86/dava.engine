@@ -48,8 +48,6 @@
 #include "Scene3D/ShadowVolumeNode.h"
 #include "Render/Highlevel/Light.h"
 #include "Scene3D/MeshInstanceNode.h"
-#include "Scene3D/ImposterManager.h"
-#include "Scene3D/ImposterNode.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderSystem.h"
 
@@ -120,7 +118,6 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , sceneGlobalMaterial(0)
     , mainCamera(0)
     , drawCamera(0)
-    , imposterManager(0)
 {
 	CreateComponents();
 	CreateSystems();
@@ -203,6 +200,7 @@ void Scene::InitGlobalMaterial()
     float32 defaultFogHeight = 50.0f;
     float32 defaultFogDensity = 0.005f;
 
+#if RHI_COMPLETE
     if(sceneGlobalMaterial->GetTexturePath(NMaterialTextureName::TEXTURE_ALBEDO).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, stubTexture2d);
     if(sceneGlobalMaterial->GetTexturePath(NMaterialTextureName::TEXTURE_NORMAL).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterialTextureName::TEXTURE_NORMAL, stubTexture2d);
     if(sceneGlobalMaterial->GetTexturePath(NMaterialTextureName::TEXTURE_DETAIL).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterialTextureName::TEXTURE_DETAIL, stubTexture2d);
@@ -245,7 +243,7 @@ void Scene::InitGlobalMaterial()
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_DECAL_TILE_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_DECAL_TILE_COLOR, Shader::UT_FLOAT_VEC4, 1, &Color::White);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_DETAIL_TILE_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_DETAIL_TILE_SCALE, Shader::UT_FLOAT_VEC2, 1, &defaultVec2);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_SHADOW_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_SHADOW_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
-
+#endif //RHI_COMPLETE
 }
 
 void Scene::CreateSystems()
@@ -396,9 +394,7 @@ Scene::~Scene()
     rootNodes.clear();
 
     // Children should be removed first because they should unregister themselves in managers
-	RemoveAllChildren();
-    
-	SafeRelease(imposterManager);
+	RemoveAllChildren();	
 
     SafeRelease(sceneGlobalMaterial);
 
@@ -812,12 +808,7 @@ void Scene::Update(float timeElapsed)
 // 			AnimatedMesh * mesh = animatedMeshes[animatedMeshIndex];
 // 			mesh->Update(timeElapsed);
 // 		}
-// 	}
-
-	//if(imposterManager)
-	//{
-	//	imposterManager->Update(timeElapsed);
-	//}
+// 	}	
 
     updateTime = SystemTimer::Instance()->AbsoluteMS() - time;
 }
@@ -843,12 +834,7 @@ void Scene::Draw()
         }
     }
     
-    uint64 time = SystemTimer::Instance()->AbsoluteMS();
-    
-    if(imposterManager)
-	{
-		//imposterManager->ProcessQueue();
-	}
+    uint64 time = SystemTimer::Instance()->AbsoluteMS();        
     
     renderSystem->Render(clearBuffers);
     
@@ -1022,26 +1008,6 @@ Light * Scene::GetNearestDynamicLight(Light::eType type, Vector3 position)
 Set<Light*> & Scene::GetLights()
 {
     return lights;
-}
-
-void Scene::RegisterImposter(ImposterNode * imposter)
-{
-	if(!imposterManager)
-	{
-		imposterManager = new ImposterManager(this);
-	}
-	
-	imposterManager->Add(imposter);
-}
-
-void Scene::UnregisterImposter(ImposterNode * imposter)
-{
-	imposterManager->Remove(imposter);
-
-	if(imposterManager->IsEmpty())
-	{
-		SafeRelease(imposterManager);
-	}
 }
 
 EventSystem * Scene::GetEventSystem() const
