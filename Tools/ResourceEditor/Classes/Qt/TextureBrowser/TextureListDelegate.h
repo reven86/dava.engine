@@ -84,6 +84,8 @@ private:
 	void drawPreviewSmall(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
 	int drawFormatInfo(QPainter *painter, QRect rect, const DAVA::Texture *texture, const DAVA::TextureDescriptor *descriptor) const;
+    
+    QString CreateInfoString(const QModelIndex & index) const;
 };
 
 #endif // __TEXTURE_LIST_DELEGATE_H__

@@ -186,19 +186,7 @@ void TextureListDelegate::drawPreviewBig(QPainter *painter, const QStyleOptionVi
 			painter->setPen(INFO_TEXT_COLOR);
 			textRect.adjust(0, nameFontMetrics.height(), 0, 0);
 
-			QString infoText;
-			char dimen[64];
-
-			sprintf(dimen, "Size: %dx%d", textureDimension.width(), textureDimension.height());
-			infoText += dimen;
-			infoText += "\nData size: ";
-			infoText += textureDataSize;
-            
-            auto dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
-            
-            infoText += "\nPath: ";
-            infoText += curTextureDescriptor->pathname.GetRelativePathname(dataSourcePath).c_str();
-
+            QString infoText = CreateInfoString(index);
 			painter->drawText(textRect, infoText);
 		}
 
@@ -233,35 +221,51 @@ bool TextureListDelegate::helpEvent(QHelpEvent *event,
         auto tooltip = index.data( Qt::DisplayRole );
         if ( tooltip.canConvert<QString>() )
         {
-            auto curModel = (TextureListModel *) index.model();
-            auto curTextureDescriptor = curModel->getDescriptor(index);
-            
-            if(nullptr != curTextureDescriptor)
+            QString infoText = CreateInfoString(index);
+            if(!infoText.isEmpty())
             {
-                auto curTexture = curModel->getTexture(index);
-                if(nullptr != curTexture)
-                {
-                    QString infoText;
-                    char dimen[64];
-                    
-                    sprintf(dimen, "Size: %dx%d", curTexture->width, curTexture->height);
-                    infoText += dimen;
-                    infoText += "\nData size: ";
-                    infoText += QString::fromStdString(SizeInBytesToString(TextureCache::Instance()->getThumbnailSize(curTextureDescriptor)));
-                    
-                    auto dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
-                    
-                    infoText += "\nPath: ";
-                    infoText += curTextureDescriptor->pathname.GetRelativePathname(dataSourcePath).c_str();
-                    
-                    QToolTip::showText( event->globalPos(), infoText, view);
-                    return true;
-                }
+                QToolTip::showText( event->globalPos(), infoText, view);
+                return true;
             }
         }
     }
     
     return QAbstractItemDelegate::helpEvent( event, view, option, index );
+}
+
+QString TextureListDelegate::CreateInfoString(const QModelIndex & index) const
+{
+    if(!index.isValid())
+    {
+        return QString();
+    }
+    
+    auto curModel = static_cast<const TextureListModel *>(index.model());
+    auto curTextureDescriptor = curModel->getDescriptor(index);
+    
+    if(nullptr != curTextureDescriptor)
+    {
+        auto curTexture = curModel->getTexture(index);
+        if(nullptr != curTexture)
+        {
+            QString infoText;
+            char dimen[64];
+            
+            sprintf(dimen, "Size: %dx%d", curTexture->width, curTexture->height);
+            infoText += dimen;
+            infoText += "\nData size: ";
+            infoText += QString::fromStdString(SizeInBytesToString(TextureCache::Instance()->getThumbnailSize(curTextureDescriptor)));
+            
+            auto dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
+            
+            infoText += "\nPath: ";
+            infoText += curTextureDescriptor->pathname.GetRelativePathname(dataSourcePath).c_str();
+            
+            return infoText;
+        }
+    }
+ 
+    return QString();
 }
 
 
