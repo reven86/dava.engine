@@ -79,6 +79,7 @@ void Downloader::ResetStatistics(uint64 sizeToDownload)
     dataToDownloadLeft = sizeToDownload;
     statistics.downloadSpeedBytesPerSec = 0;
     statistics.timeLeftSecs = static_cast<uint64>(DownloadStatistics::VALUE_UNKNOWN);
+    statistics.dataCameTotalBytes = 0;
 }
 
 void Downloader::CalcStatistics(uint32 dataCame)
@@ -95,7 +96,8 @@ void Downloader::CalcStatistics(uint32 dataCame)
     curTime = SystemTimer::Instance()->AbsoluteMS();
     timeDelta += curTime - prevTime;
     prevTime = curTime;
-    
+    statistics.dataCameTotalBytes += dataCame;
+
     // update download speed 5 times per second
     if (200 <= timeDelta)
     {
