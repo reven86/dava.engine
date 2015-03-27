@@ -103,6 +103,12 @@ quint64 FrameworkLoop::GetRenderContextId() const
 
 void FrameworkLoop::ProcessFrame()
 {
+    // We need to call makeCurrent, because there is a crash in native OS X open file dialog
+    if ( glWidget != nullptr && DAVA::RenderManager::Instance()->GetRenderContextId() != GetRenderContextId() )
+    {
+        context->makeCurrent(glWidget->GetGLWindow());
+    }
+    
     DAVA::QtLayer::Instance()->ProcessFrame();
     if ( glWidget != nullptr )
     {
