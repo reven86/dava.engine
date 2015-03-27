@@ -368,8 +368,6 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
                     
                     sceneEditor->EndBatch();
                     
-                    selectionSystem->SetSelection(newWaypoint);
-                    
                     newWaypoint->Release();
                 }
             }
