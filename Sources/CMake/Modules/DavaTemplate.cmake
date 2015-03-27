@@ -185,14 +185,7 @@ elseif( IOS )
     )
 
     foreach ( TARGET ${PROJECT_NAME} ${DAVA_LIBRARY}  )
-        if (DAVA_UNIT_TESTS)
-            # Fow unit tests with enabled memory profiling should be enabled debugging symbols and disabled their stripping
-            # Reason: on iOS on some circumstances memory deallocating operation bypasses memory manager
-            set_xcode_property( ${TARGET} GCC_GENERATE_DEBUGGING_SYMBOLS YES )
-            set_xcode_property( ${TARGET} STRIP_INSTALLED_PRODUCT NO )
-        else()
-            set_xcode_property( ${TARGET} GCC_GENERATE_DEBUGGING_SYMBOLS[variant=Debug] YES )
-        endif()
+        set_xcode_property( ${TARGET} GCC_GENERATE_DEBUGGING_SYMBOLS[variant=Debug] YES )
         set_xcode_property( ${TARGET} ONLY_ACTIVE_ARCH YES )
     endforeach ()
 

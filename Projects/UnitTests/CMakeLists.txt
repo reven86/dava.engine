@@ -3,8 +3,6 @@ cmake_minimum_required (VERSION 3.0)
 # add DAVA_MEMORY_PROFILING_ENABLE to enable MemoryManagerTest in UnitTests
 # this macro should be defined in all dependant projects (dava framework, etc)
 add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
-# set DAVA_UNIT_TESTS option to make some build customization for unit tests
-option(DAVA_UNIT_TESTS "DAVA_UNIT_TESTS" ON)
 
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include      ( CMake-common )
@@ -76,3 +74,10 @@ set( LIBRARIES_DEBUG            )
 set( ADDED_BINARY_DIR           )
 
 setup_main_executable()
+
+if (IOS)
+    # Termporal workaround for unit tests with memory profiling enabled
+    # Reason: on iOS on some circumstances memory deallocating operation bypasses memory manager
+    set_xcode_property( ${PROJECT_NAME} GCC_GENERATE_DEBUGGING_SYMBOLS YES )
+    set_xcode_property( ${PROJECT_NAME} STRIP_INSTALLED_PRODUCT NO )
+endif()
