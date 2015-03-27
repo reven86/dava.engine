@@ -109,6 +109,13 @@ public:
     Branch* FindPath(Branch* branch, const DAVA::Vector<const char*>& frames) const;
 
     DAVA::Vector<const DAVA::MMBlock*> GetBlocks(Branch* branch, size_t dumpIndex) const;
+    DAVA::Vector<const DAVA::MMBlock*> GetBlocks(size_t dumpIndex) const {
+        DAVA::Vector<const DAVA::MMBlock*> r;
+        r.reserve(dumpData[dumpIndex]->memoryBlocks.size());
+        for (auto& x : dumpData[dumpIndex]->memoryBlocks)
+            r.push_back(&x);
+        return r;
+    }
 
     bool LoadDump(const char* filename);
 

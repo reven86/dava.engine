@@ -40,6 +40,7 @@ private:
     void InitSymbolsView();
     void InitBranchView();
     void InitDiffView();
+    void InitTotalDiffView();
 
     DAVA::Vector<const char*> GetSelectedSymbols();
 
@@ -53,6 +54,8 @@ private:
     BlockListModel* blockListModel;
     BranchTreeModel* diffTreeModel;
     BlockListModel* blockDiffListModel;
+
+    BlockListModel* totalDiffListModel;
 
     QTabWidget* tab;
     QTreeView* symbolsTree;

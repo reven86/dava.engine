@@ -29,6 +29,7 @@ DumpViewerWidget::DumpViewerWidget(const char* filename, QWidget* parent)
     , blockListModel(nullptr)
     , diffTreeModel(nullptr)
     , blockDiffListModel(nullptr)
+    , totalDiffListModel(nullptr)
     , tab(nullptr)
     , symbolsTree(nullptr)
     , branchTree(nullptr)
@@ -49,6 +50,7 @@ DumpViewerWidget::~DumpViewerWidget()
     delete blockListModel;
     delete diffTreeModel;
     delete blockDiffListModel;
+    delete totalDiffListModel;
 }
 
 void DumpViewerWidget::Init()
@@ -58,6 +60,7 @@ void DumpViewerWidget::Init()
     InitSymbolsView();
     InitBranchView();
     InitDiffView();
+    InitTotalDiffView();
 
     QVBoxLayout* mainLayout = new QVBoxLayout;
     mainLayout->addWidget(tab);
@@ -157,6 +160,17 @@ void DumpViewerWidget::InitDiffView()
     tab->addTab(frame, "Diff");
 }
 
+void DumpViewerWidget::InitTotalDiffView()
+{
+    totalDiffListModel = new BlockListModel(true);
+
+    QTreeView* tree = new QTreeView;
+    tree->setFont(QFont("Consolas", 8, 500));
+    tree->setModel(totalDiffListModel);
+
+    tab->addTab(tree, "Total blocks");
+}
+
 void DumpViewerWidget::SymbolView_OnBuldTree()
 {
     Vector<const char*> selection = GetSelectedSymbols();
@@ -185,6 +199,10 @@ void DumpViewerWidget::SymbolView_OnLoadAnotherDump()
     if (!filename.isEmpty())
     {
         dumpSession.LoadDump(filename.toStdString().c_str());
+
+        Vector<const MMBlock*> v1 = dumpSession.GetBlocks(0);
+        Vector<const MMBlock*> v2 = dumpSession.GetBlocks(1);
+        totalDiffListModel->PrepareDiffModel(true, v1, v2);
     }
 }
 
@@ -215,7 +233,7 @@ void DumpViewerWidget::DiffView_SelectionChanged(const QModelIndex& current, con
     std::sort(blocks1.begin(), blocks1.end(), f);
     std::sort(blocks2.begin(), blocks2.end(), f);
 
-    blockDiffListModel->PrepareDiffModel(blocks1, blocks2);
+    blockDiffListModel->PrepareDiffModel(true, blocks1, blocks2);
 }
 
 void DumpViewerWidget::BranchBlockView_DoubleClicked(const QModelIndex& current)
