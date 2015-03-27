@@ -69,13 +69,14 @@ if( MSVC )
 
 endif()
 
+set ( DAVA_USE_QT_WIDGETS true )
 set ( SpeedTreeImporter  ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
 set ( BEAST              ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper )
 set ( Generated          ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 
 define_source_folders          ( SRC_ROOT "Classes" ${BEAST_WRAPPER} ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
 generate_source_groups_project ( SRC_ROOT "Classes" "DataQt" GROUP_FOLDERS SpeedTreeImporter BEAST Generated  )
-add_subdirectory               ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
+add_subdirectory               ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/DavaTools )
 
 
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
@@ -84,7 +85,7 @@ set( MACOS_DATA           ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( WIN32_DATA           ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_DYLIB          ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
 set( ADDED_SRC            ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS}  )
-set( LIBRARIES            ${BEAST_LIB} TextureTool )
+set( LIBRARIES            ${BEAST_LIB} DavaTools )
 set( LIBRARIES_RELEASE    ${QT_LIBRARIES} )
 set( LIBRARIES_DEBUG      ${QT_LIBRARIES} )
 set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )

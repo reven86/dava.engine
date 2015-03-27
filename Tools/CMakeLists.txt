@@ -19,7 +19,8 @@ include               ( CMake-common )
 
 find_package          ( DavaFramework REQUIRED )
 
-add_subdirectory      ( "${DAVA_ROOT_DIR}/Sources/Tools"        ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
+set                   ( DAVA_USE_QT_WIDGETS 1 )
+add_subdirectory      ( "${DAVA_ROOT_DIR}/Sources/Tools"        ${CMAKE_CURRENT_BINARY_DIR}/DavaTools )
 
 set                   ( IGNORE_FILE_TREE_CHECK 1 )#tmp
 set                   ( TEXTURE_TOOL_FOUND 1 )

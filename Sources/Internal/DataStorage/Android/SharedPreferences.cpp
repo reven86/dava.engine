@@ -122,7 +122,7 @@ void SharedPreferences::SetStringValue(const String &key, const String &value)
 
 void SharedPreferences::SetLongValue(const String &key, int64 value)
 {
-    Logger::FrameworkDebug("Trying to set long %l value for %s key", value, key.c_str());
+    Logger::FrameworkDebug("Trying to set long %lld value for %s key", value, key.c_str());
     JNIEnv *env = JNI::GetEnv();
     
     jstring jkey = env->NewStringUTF(key.c_str());

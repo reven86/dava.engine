@@ -32,8 +32,10 @@ if( IOS )
     list( APPEND RESOURCES_LIST ${IOS_ICO} )
 
 elseif( MACOS )
-    file ( GLOB DYLIB_FILES    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.dylib)
-    
+    if( DAVA_FOUND )
+        file ( GLOB DYLIB_FILES    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.dylib)
+    endif()
+
     set_source_files_properties( ${DYLIB_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources )
 
     list ( APPEND DYLIB_FILES     "${DYLIB_FILES}" "${MACOS_DYLIB}" )  
@@ -58,35 +60,38 @@ elseif( QT5_FOUND )
 
 endif()
 
-if( QT_PREFIX )
-    if( WIN32 )
-        set ( PLATFORM_INCLUDES_DIR ${DAVA_PLATFORM_SRC}/${QT_PREFIX} ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32 )
-        list( APPEND PATTERNS_CPP   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.cpp ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32/*.cpp )
-        list( APPEND PATTERNS_H     ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.h   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32/*.h   )        
+if( DAVA_FOUND )
+    if( QT_PREFIX )
+        if( WIN32 )
+            set ( PLATFORM_INCLUDES_DIR ${DAVA_PLATFORM_SRC}/${QT_PREFIX} ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32 )
+            list( APPEND PATTERNS_CPP   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.cpp ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32/*.cpp )
+            list( APPEND PATTERNS_H     ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.h   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32/*.h   )        
 
-    elseif( MACOS )
-        set ( PLATFORM_INCLUDES_DIR  ${DAVA_PLATFORM_SRC}/${QT_PREFIX}  ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS )
-        list( APPEND PATTERNS_CPP    ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.cpp ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS/*.cpp ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS/*.mm )
-        list( APPEND PATTERNS_H      ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.h   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS/*.h   )        
+        elseif( MACOS )
+            set ( PLATFORM_INCLUDES_DIR  ${DAVA_PLATFORM_SRC}/${QT_PREFIX}  ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS )
+            list( APPEND PATTERNS_CPP    ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.cpp ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS/*.cpp ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS/*.mm )
+            list( APPEND PATTERNS_H      ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.h   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS/*.h   )        
 
-    endif()
+        endif()
 
-    file( GLOB CPP_FILES ${PATTERNS_CPP} )
-    file( GLOB H_FILES   ${PATTERNS_H} )
-    list( APPEND ADDED_SRC ${H_FILES} ${CPP_FILES} )
- 
-    include_directories( ${PLATFORM_INCLUDES_DIR} )
+        file( GLOB CPP_FILES ${PATTERNS_CPP} )
+        file( GLOB H_FILES   ${PATTERNS_H} )
+        list( APPEND ADDED_SRC ${H_FILES} ${CPP_FILES} )
+     
+        include_directories( ${PLATFORM_INCLUDES_DIR} )
 
-else()
-    if( WIN32 )
-        add_definitions        ( -D_UNICODE 
-                                 -DUNICODE )
-        list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.cpp 
-                                ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.h  )
+    else()
+        if( WIN32 )
+            add_definitions        ( -D_UNICODE 
+                                     -DUNICODE )
+            list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.cpp 
+                                    ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.h  )
 
-    elseif( MACOS )
-        #list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateMacOS/NPAPICorePlatformMacOS.cpp 
-        #                        ${DAVA_PLATFORM_SRC}/TemplateMacOS/NPAPICorePlatformMacOS.h )
+        elseif( MACOS )
+            #list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateMacOS/NPAPICorePlatformMacOS.cpp 
+            #                        ${DAVA_PLATFORM_SRC}/TemplateMacOS/NPAPICorePlatformMacOS.h )
+
+        endif()
 
     endif()
 
@@ -180,7 +185,14 @@ elseif( IOS )
     )
 
     foreach ( TARGET ${PROJECT_NAME} ${DAVA_LIBRARY}  )
-        set_xcode_property( ${TARGET} GCC_GENERATE_DEBUGGING_SYMBOLS[variant=Debug] YES )
+        if (DAVA_UNIT_TESTS)
+            # Fow unit tests with enabled memory profiling should be enabled debugging symbols and disabled their stripping
+            # Reason: on iOS on some circumstances memory deallocating operation bypasses memory manager
+            set_xcode_property( ${TARGET} GCC_GENERATE_DEBUGGING_SYMBOLS YES )
+            set_xcode_property( ${TARGET} STRIP_INSTALLED_PRODUCT NO )
+        else()
+            set_xcode_property( ${TARGET} GCC_GENERATE_DEBUGGING_SYMBOLS[variant=Debug] YES )
+        endif()
         set_xcode_property( ${TARGET} ONLY_ACTIVE_ARCH YES )
     endforeach ()
 
@@ -199,25 +211,28 @@ elseif( MACOS )
     endif()
 
     set( BINARY_DIR ${OUTPUT_DIR}/MacOS/${PROJECT_NAME} )
+    
+    if( DAVA_FOUND )
+        ADD_CUSTOM_COMMAND(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+            COMMAND   
+            install_name_tool -change @executable_path/../Frameworks/libfmodex.dylib  @executable_path/../Resources/libfmodex.dylib ${OUTPUT_DIR}/Resources/libfmodevent.dylib  
 
-    ADD_CUSTOM_COMMAND(
-    TARGET ${PROJECT_NAME}
-    POST_BUILD
-        COMMAND   
-        install_name_tool -change @executable_path/../Frameworks/libfmodex.dylib  @executable_path/../Resources/libfmodex.dylib ${OUTPUT_DIR}/Resources/libfmodevent.dylib  
+            COMMAND   
+            install_name_tool -change ./libfmodevent.dylib @executable_path/../Resources/libfmodevent.dylib ${BINARY_DIR}    
 
-        COMMAND   
-        install_name_tool -change ./libfmodevent.dylib @executable_path/../Resources/libfmodevent.dylib ${BINARY_DIR}    
+            COMMAND   
+            install_name_tool -change ./libfmodex.dylib @executable_path/../Resources/libfmodex.dylib ${BINARY_DIR}   
 
-        COMMAND   
-        install_name_tool -change ./libfmodex.dylib @executable_path/../Resources/libfmodex.dylib ${BINARY_DIR}   
+            COMMAND 
+            install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Resources/libIMagickHelper.dylib ${BINARY_DIR}     
 
-        COMMAND 
-        install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Resources/libIMagickHelper.dylib ${BINARY_DIR}     
+            COMMAND   
+            install_name_tool -change ./libTextureConverter.dylib @executable_path/../Resources/libTextureConverter.dylib ${BINARY_DIR}   
+        )
 
-        COMMAND   
-        install_name_tool -change ./libTextureConverter.dylib @executable_path/../Resources/libTextureConverter.dylib ${BINARY_DIR}   
-    )
+    endif()
 
 elseif ( MSVC )       
     if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32")
@@ -254,7 +269,12 @@ list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
 
 file_tree_check( "${DAVA_FOLDERS}" )
 
-target_link_libraries( ${PROJECT_NAME} ${LIBRARIES} ${DAVA_LIBRARY} )
+if( DAVA_FOUND )
+    list ( APPEND LIBRARIES ${DAVA_LIBRARY} )
+
+endif()
+
+target_link_libraries( ${PROJECT_NAME} ${LIBRARIES} )
 
 foreach ( FILE ${LIBRARIES_DEBUG} )
     target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )
