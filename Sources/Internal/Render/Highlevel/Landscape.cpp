@@ -141,6 +141,7 @@ Landscape::~Landscape()
 	SafeRelease(tileMaskMaterial);
 }
     
+#if RHI_COMPLETE
 
 int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
 {
@@ -1816,5 +1817,7 @@ void Landscape::SetFoliageSystem(FoliageSystem* _foliageSystem)
 {
     foliageSystem = _foliageSystem;
 }
+
+#endif //RHI_COMPLETE
 
 };

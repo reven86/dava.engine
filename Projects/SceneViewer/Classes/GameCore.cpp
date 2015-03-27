@@ -96,7 +96,6 @@ void GameCore::OnForeground()
 void GameCore::BeginFrame()
 {
 	ApplicationCore::BeginFrame();
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 }
 
 

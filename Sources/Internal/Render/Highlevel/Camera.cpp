@@ -275,7 +275,8 @@ void Camera::RebuildProjectionMatrix()
     float32 yMaxOrientation = ymax;
     
     uint32 cullInvert = 0;
-    
+
+#if RHI_COMPLETE //is this really good place to make inverse projection? and is rendertarget really good criteria for it?
     if (RenderManager::Instance()->GetRenderTarget() != nullptr)
     {
         yMinOrientation = ymax;
@@ -290,7 +291,8 @@ void Camera::RebuildProjectionMatrix()
         RenderManager::Instance()->SetCullOrder(ORDER_CCW);
     else
         RenderManager::Instance()->SetCullOrder(ORDER_CW);
-    
+
+#endif //RHI_COMPLETE
     if (!ortho) 
     {
         projMatrix.glFrustum(xMinOrientation, xMaxOrientation, yMinOrientation, yMaxOrientation, znear, zfar);
@@ -448,10 +450,12 @@ void Camera::PrepareDynamicParameters(Vector4 *externalClipPlane)
     if (externalClipPlane)
     {
         Vector4 clipPlane(*externalClipPlane);
+#if RHI_COMPLETE
         if (RenderManager::Instance()->GetRenderTarget() != nullptr)
         {
             clipPlane = -clipPlane;
         }
+#endif RHI_COMPLETE
         Matrix4 m;
         
         viewMatrix.GetInverse(m);

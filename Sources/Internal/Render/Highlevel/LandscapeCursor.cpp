@@ -34,7 +34,7 @@
 
 namespace DAVA
 {
-
+#if RHI_COMPLETE
 LandscapeCursor::LandscapeCursor()
 {
 	textureHandle = InvalidUniqueHandle;
@@ -45,13 +45,14 @@ LandscapeCursor::LandscapeCursor()
 	uniformTexture = shader->FindUniformIndexByName(FastName("texture0"));
 	uniformPosition = shader->FindUniformIndexByName(FastName("position"));
 	uniformScale = shader->FindUniformIndexByName(FastName("scale"));
-	
+
 	RenderManager* rm = RenderManager::Instance();
 	RenderStateData renderStateData;
 	rm->GetRenderStateData(RenderState::RENDERSTATE_3D_BLEND, renderStateData);
     
 	renderStateData.depthFunc = CMP_LEQUAL;
 	renderState = rm->CreateRenderState(renderStateData);
+
 }
 
 void LandscapeCursor::Prepare()
@@ -143,6 +144,6 @@ float32 LandscapeCursor::GetCursorScale()
     return scale;
 }
 
-    
+#endif //RHI_COMPLETE
 
 };
