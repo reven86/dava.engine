@@ -103,7 +103,6 @@ public:
 class UITextField : public UIControl 
 {
 public:
-	// TODO: fix big BOOLs(TRUE, FALSE) in code
 	// Auto-capitalization type.
 	enum eAutoCapitalizationType
 	{
@@ -168,44 +167,46 @@ public:
 	};
 
 protected:
-	virtual ~UITextField();
+	~UITextField() override;
 public:
 	UITextField(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 	
-	virtual void WillAppear();
-	virtual void DidAppear();
-	virtual void WillDisappear();
+	void WillAppear() override;
+	void DidAppear() override;
+	void WillDisappear() override;
 	
-    virtual void OnFocused();
-    virtual void OnFocusLost(UIControl *newFocus);
+    void OnFocused() override;
+    void OnFocusLost(UIControl* newFocus) override;
 
-	void SetDelegate(UITextFieldDelegate * delegate);
-	UITextFieldDelegate * GetDelegate();
+	void SetDelegate(UITextFieldDelegate* delegate);
+	UITextFieldDelegate* GetDelegate();
 
-	virtual void Update(float32 timeElapsed);
+	void Update(float32 timeElapsed) override;
 	
 	void OpenKeyboard();
 	void CloseKeyboard();
 	
-	virtual void SetSpriteAlign(int32 align);
+	void SetSpriteAlign(int32 align) override;
     
-	virtual const WideString & GetText();
-	virtual void SetText(const WideString & text);
+	const WideString & GetText();
+	virtual void SetText(const WideString& text);
     
-    virtual WideString GetAppliedChanges(int32 replacementLocation, int32 replacementLength, const WideString & replacementString);
+    WideString GetAppliedChanges(int32 replacementLocation,
+            int32 replacementLength, const WideString& replacementString);
 
-    virtual void Input(UIEvent *currentInput);
+    void Input(UIEvent* currentInput) override;
 
-    virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
-    virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
+    void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader) override;
+    YamlNode * SaveToYamlNode(UIYamlLoader * loader) override;
 	
 	/**
 	 \brief Sets contol input processing ability.
 	 */
-	virtual void SetInputEnabled(bool isEnabled, bool hierarchic = true);
+	void SetInputEnabled(bool isEnabled, bool hierarchic = true) override;
+
 protected:
-    virtual void WillBecomeVisible();
-    virtual void WillBecomeInvisible();
+    void WillBecomeVisible() override;
+    void WillBecomeInvisible() override;
 
 public:
 	/**
@@ -217,7 +218,7 @@ public:
 	 \brief Returns the text color of control.
 	 \returns Color color of control's text
 	 */
-	virtual const Color &GetTextColor() const;
+	const Color &GetTextColor() const;
 	/**
 	 \brief Returns text shadow offset relative to base text.
 	 \returns Vector2 with shadow offset for X and Y axis
@@ -227,7 +228,7 @@ public:
 	 \brief Returns color of text shadow.
 	 \returns Color of text shadow.
 	 */
-	virtual const Color &GetShadowColor() const;
+	const Color &GetShadowColor() const;
 
 	int32 GetTextAlign() const;
 
@@ -244,7 +245,7 @@ public:
     
     void ReleaseFocus();
     
-    virtual bool IsLostFocusAllowed(UIControl *newFocus);
+    bool IsLostFocusAllowed(UIControl *newFocus) override;
 	
   	/**
 	 \brief Sets the font of the control text.
@@ -255,7 +256,7 @@ public:
 	 \brief Sets the color of the text.
 	 \param[in] fontColor font used for text draw of the states.
 	 */
-    virtual void SetTextColor(const Color& fontColor);
+    void SetTextColor(const Color& fontColor);
 	/**
 	 \brief Sets the size of the font.
 	 \param[in] size font size to be set.
@@ -270,7 +271,7 @@ public:
 	 \brief Sets shadow color of text control.
 	 \param[in] color color of text shadow.
 	 */
-	virtual void SetShadowColor(const Color& color);
+	void SetShadowColor(const Color& color);
 
 	void SetTextAlign(int32 align);
 
@@ -280,13 +281,13 @@ public:
 	 */
 	void SetTextUseRtlAlign(bool useRtlAlign);
 
-    virtual void SetSize(const DAVA::Vector2 &newSize);
+    void SetSize(const DAVA::Vector2 &newSize) override;
 
     /**
 	 \brief Set control text style hide.
 	 \param[in] isPassword draw text with hide char.
 	 */
-    virtual void SetIsPassword(bool isPassword);
+    void SetIsPassword(bool isPassword);
     /**
 	 \brief Return is text style is hide.
 	 */
@@ -338,10 +339,10 @@ public:
 	 \brief Returns list of control children without internal controls.
 	 \returns list of control children without internal controls.
 	 */
-	virtual List<UIControl* >& GetRealChildren();
+	List<UIControl* >& GetRealChildren() override;
 	
-	virtual UITextField *Clone();
-	virtual void CopyDataFrom(UIControl *srcControl);
+	UITextField *Clone() override;
+	void CopyDataFrom(UIControl *srcControl) override;
 
     // Cursor control.
     uint32 GetCursorPos();
@@ -372,14 +373,18 @@ protected:
 	eReturnKeyType returnKeyType;
 
 	// All Boolean variables are grouped together because of DF-2149.
-	bool needRedraw : 1;
-	bool isPassword : 1;
-	bool enableReturnKeyAutomatically : 1;
-	bool showCursor : 1;
+	bool needRedraw;
+	bool isPassword;
+	bool enableReturnKeyAutomatically;
+	bool showCursor;
+	bool isRenderToTexture;
 
     void RenderText();
 private:
     WideString GetVisibleText() const;
+
+    void SetRenderToTexture(bool value);
+    bool IsRenderToTexture() const;
 
     
     /**

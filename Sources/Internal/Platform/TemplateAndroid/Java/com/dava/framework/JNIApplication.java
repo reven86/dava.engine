@@ -22,6 +22,7 @@ public class JNIApplication extends Application
 	private String internalDocumentsDir;
 	private Locale launchLocale;
 	private boolean firstLaunch = true;
+	private final String TAG = "JNIApplication";
 
 	/**
 	 * Initialize native framework core in first time.
@@ -61,10 +62,9 @@ public class JNIApplication extends Application
 	@Override
 	public void onConfigurationChanged(Configuration newConfig)
 	{
-		Log.i(JNIConst.LOG_TAG, "[Application::onConfigurationChanged]"); 
-
+		Log.i(JNIConst.LOG_TAG, "[Application::onConfigurationChanged]");
 		super.onConfigurationChanged(newConfig);
-		
+		// useless call to native empty method...
 		OnConfigurationChanged();
 
 		if (IsApplicationShouldBeRestarted())

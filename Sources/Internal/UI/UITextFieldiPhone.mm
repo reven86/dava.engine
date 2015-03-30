@@ -38,7 +38,14 @@
 #include "Core/Core.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#import <Platform/TemplateiOS/HelperAppDelegate.h>
+#include "Platform/TemplateiOS/WebViewControliOS.h"
+
+#import "Platform/TemplateiOS/HelperAppDelegate.h"
+
+namespace
+{
+    const int MOVE_TO_OFFSCREEN_STEP = 20000;
+}
 
 void CreateTextField(DAVA::UITextField  * tf)
 {
@@ -59,13 +66,15 @@ void CloseKeyboard()
 
 namespace DAVA 
 {
-    UITextFieldiPhone::UITextFieldiPhone(void  * tf)
+    UITextFieldiPhone::UITextFieldiPhone(DAVA::UITextField& tf):
+    davaTextField(tf),
+    renderToTexture(false)
     {
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
         BackgroundView* backgroundView = [appDelegate glController].backgroundView;
         
         UITextFieldHolder * textFieldHolder= [backgroundView CreateTextField];
-        [textFieldHolder setTextField:(DAVA::UITextField *)tf];
+        [textFieldHolder setTextField:&davaTextField];
 
         objcClassPtr = textFieldHolder;
     }
@@ -97,6 +106,11 @@ namespace DAVA
             scaledSize /= [::UIScreen mainScreen].scale;
         }
         textFieldHolder->textField.font = [UIFont systemFontOfSize:scaledSize];
+    }
+    
+    void UITextFieldiPhone::SetSize(const DAVA::Vector2 &size)
+    {
+        //UpdateStaticTexture();
     }
     
     void UITextFieldiPhone::SetTextAlign(DAVA::int32 align)
@@ -197,6 +211,8 @@ namespace DAVA
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         textFieldHolder->textField.userInteractionEnabled = YES;
         [textFieldHolder->textField becomeFirstResponder];
+        
+        UpdateStaticTexture();
     }
     
     void UITextFieldiPhone::CloseKeyboard()
@@ -204,6 +220,8 @@ namespace DAVA
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         textFieldHolder->textField.userInteractionEnabled = NO;
         [textFieldHolder->textField resignFirstResponder];
+        
+        UpdateStaticTexture();
     }
     
     void UITextFieldiPhone::ShowField()
@@ -235,33 +253,57 @@ namespace DAVA
         [center removeObserver:textFieldHolder name:UIKeyboardDidChangeFrameNotification object:nil];
     }
     
-    void UITextFieldiPhone::UpdateRect(const Rect & rect)
+    void UITextFieldiPhone::UpdateNativeRect(const Rect & virtualRect, int xOffset)
     {
-        float divider = [HelperAppDelegate GetScale];
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         
-        DAVA::Rect physicalRect = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
+        float divider = [HelperAppDelegate GetScale];
+        DAVA::Rect physicalRect = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(virtualRect);
         DAVA::Vector2 physicalOffset = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
         CGRect nativeRect = CGRectMake(  (physicalRect.x + physicalOffset.x) / divider
                                        , (physicalRect.y + physicalOffset.y) / divider
                                        , physicalRect.dx / divider
                                        , physicalRect.dy / divider);
-        
+
+        nativeRect = CGRectIntegral(nativeRect);
+        nativeRect.origin.x += xOffset;
         textFieldHolder->textField.frame = nativeRect;
+    }
+    
+    void UITextFieldiPhone::UpdateRect(const Rect & rect)
+    {
+        if(renderToTexture)
+        {
+            UpdateNativeRect(rect, MOVE_TO_OFFSCREEN_STEP);
+        }
+        else
+        {
+            UpdateNativeRect(rect, 0);
+        }
     }
 	
     void UITextFieldiPhone::SetText(const WideString & string)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        
         NSString* text = [[ [ NSString alloc ] initWithBytes : (char*)string.data()
                                                          length : string.size() * sizeof(wchar_t)
                                                        encoding : CFStringConvertEncodingToNSStringEncoding ( kCFStringEncodingUTF32LE ) ] autorelease];
-
-        textFieldHolder->textField.text = (NSString*)TruncateText(text, textFieldHolder->cppTextField->GetMaxLength());
+        NSString* truncatedText = (NSString*)TruncateText(text, textFieldHolder->cppTextField->GetMaxLength());
+        
+        bool needStaticUpdate = ![textFieldHolder->textField.text isEqualToString:truncatedText];
+        
+        textFieldHolder->textField.text = truncatedText;
         [textFieldHolder->textField.undoManager removeAllActions];
 
         // Notify UITextFieldDelegate::TextFieldOnTextChanged event
         [textFieldHolder->textField sendActionsForControlEvents:UIControlEventEditingChanged];
+        
+        // update only when text was really changed
+        if(needStaticUpdate)
+        {
+            UpdateStaticTexture();
+        }
     }
 	
     void UITextFieldiPhone::GetText(WideString & string) const
@@ -270,24 +312,14 @@ namespace DAVA
         
         const char * cstr = [textFieldHolder->textField.text cStringUsingEncoding:NSUTF8StringEncoding];
         DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, strlen(cstr), string);
-        
-        /*
-        int length = [textFieldHolder->textField.text length];
-		
-
-        string.resize(length); 
-        for (int i = 0; i < length; i++) 
-        {
-            unichar uchar = [textFieldHolder->textField.text characterAtIndex:i];
-            string[i] = (wchar_t)uchar;
-        }
-         */
     }
 
 	void UITextFieldiPhone::SetIsPassword(bool isPassword)
 	{
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
 		[textFieldHolder setIsPassword: isPassword];
+        
+        UpdateStaticTexture();
 	}
 
 	void UITextFieldiPhone::SetInputEnabled(bool value)
@@ -398,6 +430,48 @@ namespace DAVA
             ::UITextField* textField = textFieldHolder->textField;
             [textField setText: (NSString*)TruncateText([textField text], maxLength)];
         }
+    }
+    
+    void UITextFieldiPhone::UpdateStaticTexture()
+    {
+        UITextFieldHolder * textFieldHolder = static_cast<UITextFieldHolder*>(objcClassPtr);
+        if (textFieldHolder)
+        {
+            ::UITextField* textField = textFieldHolder->textField;
+            DVASSERT(textField);
+            DAVA::Rect rect = davaTextField.GetGeometricData().GetUnrotatedRect();
+            if (rect.dx > 0 && rect.dy > 0)
+            {
+                // update native contol rect, but don't move if outside screen (xOffset = 0) even if renderToTexture == true
+                // because it will be automatically moved on next frame from UpdateRect, that is calling each frame
+                UpdateNativeRect(rect, 0);
+                
+                if (renderToTexture)
+                {
+                    void* imgPtr = DAVA::WebViewControl::RenderIOSUIViewToImage(textField);
+                    ::UIImage* image = static_cast<::UIImage*>(imgPtr);
+                    DVASSERT(image);
+                    
+                    // set backgroud image into davaTextField control
+                    WebViewControl::SetImageAsSpriteToControl(image, davaTextField);
+                }
+                else
+                {
+                    // set null background
+                    davaTextField.GetBackground()->SetSprite(nullptr, 0);
+                }
+            }
+        }
+    }
+    
+    void UITextFieldiPhone::SetRenderToTexture(bool value)
+    {
+        renderToTexture = value;
+    }
+    
+    bool UITextFieldiPhone::IsRenderToTexture() const
+    {
+        return renderToTexture;
     }
 
     void* UITextFieldiPhone::TruncateText(void* text, int maxLength)

@@ -56,6 +56,8 @@ JniTextField::JniTextField(uint32_t id)
     setReturnKeyType = jniTextField.GetStaticMethod<void, jint, jint>("SetReturnKeyType");
     setEnableReturnKeyAutomatically = jniTextField.GetStaticMethod<void, jint, jboolean>("SetEnableReturnKeyAutomatically");
     setVisible = jniTextField.GetStaticMethod<void, jint, jboolean>("SetVisible");
+    setRenderToTexture = jniTextField.GetStaticMethod<void, jint, jboolean>("SetRenderToTexture");
+    isRenderToTexture = jniTextField.GetStaticMethod<jboolean, jint>("IsRenderToTexture");
     openKeyboard = jniTextField.GetStaticMethod<void, jint>("OpenKeyboard");
     closeKeyboard = jniTextField.GetStaticMethod<void, jint>("CloseKeyboard");
     getCursorPos = jniTextField.GetStaticMethod<jint, jint>("GetCursorPos");
@@ -156,6 +158,16 @@ void JniTextField::SetEnableReturnKeyAutomatically(bool value)
 void JniTextField::SetVisible(bool isVisible)
 {
     setVisible(id, isVisible);
+}
+
+void JniTextField::SetRenderToTexture(bool value)
+{
+    setRenderToTexture(id, value);
+}
+
+bool JniTextField::IsRenderToTexture() const
+{
+    return JNI_TRUE == isRenderToTexture(id);
 }
 
 void JniTextField::OpenKeyboard()
@@ -296,6 +308,18 @@ void UITextFieldAndroid::SetInputEnabled(bool value)
 {
     JniTextField jniTextField(id);
     jniTextField.SetInputEnabled(value);
+}
+
+void UITextFieldAndroid::SetRenderToTexture(bool value)
+{
+    JniTextField  jniTextField(id);
+    jniTextField.SetRenderToTexture(value);
+}
+
+bool UITextFieldAndroid::IsRenderToTexture() const
+{
+    JniTextField jniTextField(id);
+    return jniTextField.IsRenderToTexture();
 }
 
 // Keyboard traits.
@@ -504,7 +528,37 @@ void UITextFieldAndroid::TextFieldFocusChanged(bool hasFocus)
 void UITextFieldAndroid::TextFieldFocusChanged(uint32_t id, bool hasFocus)
 {
     UITextFieldAndroid* control = GetUITextFieldAndroid(id);
-    if (!control)
-        return;
-    control->TextFieldFocusChanged(hasFocus);
+    if(nullptr != control)
+    {
+        control->TextFieldFocusChanged(hasFocus);
+    }
+}
+
+void UITextFieldAndroid::TextFieldUpdateTexture(uint32_t id, int32* rawPixels,
+        int width, int height)
+{
+    UITextFieldAndroid* control = GetUITextFieldAndroid(id);
+    if (nullptr != control)
+    {
+        UITextField& textField = *control->textField;
+
+        if (rawPixels)
+        {
+            Texture* tex = Texture::CreateFromData(FORMAT_RGBA8888,
+                    reinterpret_cast<uint8*>(rawPixels), width, height, false);
+            SCOPE_EXIT{SafeRelease(tex);};
+
+            Rect rect = textField.GetRect();
+            Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, rect.dx,
+                    rect.dy);
+            SCOPE_EXIT{SafeRelease(spr);};
+
+            textField.GetBackground()->SetSprite(spr, 0);
+        }
+        else
+        {
+            // reset sprite to prevent render old sprite under android view
+            textField.SetSprite(nullptr, 0);
+        }
+    }
 }
