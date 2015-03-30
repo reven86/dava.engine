@@ -59,17 +59,17 @@ bool ProjectManager::IsOpened() const
 	return (!curProjectPath.IsEmpty());
 }
 
-FilePath ProjectManager::CurProjectPath() const
+const FilePath & ProjectManager::CurProjectPath() const
 {
 	return curProjectPath;
 }
 
-FilePath ProjectManager::CurProjectDataSourcePath() const
+const FilePath & ProjectManager::CurProjectDataSourcePath() const
 {
 	return curProjectPathDataSource;
 }
 
-FilePath ProjectManager::CurProjectDataParticles() const
+const FilePath & ProjectManager::CurProjectDataParticles() const
 {
     return curProjectPathParticles;
 }
