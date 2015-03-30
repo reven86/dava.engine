@@ -161,7 +161,7 @@ void SceneCameraSystem::SetViewportRect(const DAVA::Rect &rect)
 	RecalcCameraAspect();
 }
 
-const DAVA::Rect& SceneCameraSystem::GetViewportRect()
+const DAVA::Rect& SceneCameraSystem::GetViewportRect() const
 {
 	return viewportRect;
 }

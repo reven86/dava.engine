@@ -87,37 +87,12 @@ void ControlMapper::keyReleaseEvent(QKeyEvent *e)
 
 void ControlMapper::mouseMoveEvent(QMouseEvent * event)
 {
-    const Qt::MouseButtons buttons = event->buttons();
     auto davaEvent = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
-    bool dragWasApplied = false;
-    
-    davaEvent.phase = DAVA::UIEvent::PHASE_DRAG;
-    
-    if(buttons & Qt::LeftButton)
-    {
-        dragWasApplied = true;
-        davaEvent.tid = MapQtButtonToDAVA(Qt::LeftButton);
-        DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-    }
-    if(buttons & Qt::RightButton)
-    {
-        dragWasApplied = true;
-        davaEvent.tid = MapQtButtonToDAVA(Qt::RightButton);
-        DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-    }
-    if(buttons & Qt::MiddleButton)
-    {
-        dragWasApplied = true;
-        davaEvent.tid = MapQtButtonToDAVA(Qt::MiddleButton);
-        DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-    }
-    
-    if(!dragWasApplied)
-    {
-        davaEvent.phase = DAVA::UIEvent::PHASE_MOVE;
-        davaEvent.tid = MapQtButtonToDAVA(Qt::LeftButton);
-        DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-    }
+    const auto dragWasApplied = event->buttons() != Qt::NoButton;
+
+    davaEvent.phase = dragWasApplied ? DAVA::UIEvent::PHASE_DRAG : DAVA::UIEvent::PHASE_MOVE;
+
+    DAVA::QtLayer::Instance()->MouseEvent( davaEvent );
 }
 
 void ControlMapper::mousePressEvent(QMouseEvent * event)
@@ -182,7 +157,7 @@ DAVA::UIEvent ControlMapper::MapMouseEventToDAVA( const QPoint& pos, const Qt::M
     
     int currentDPR = window->devicePixelRatio();
     davaEvent.point = davaEvent.physPoint = DAVA::Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
-    davaEvent.tid = button;
+    davaEvent.tid = davaButton;
     davaEvent.timestamp = timestamp;
     davaEvent.tapCount = 1;
     
