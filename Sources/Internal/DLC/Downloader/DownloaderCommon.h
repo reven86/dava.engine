@@ -95,6 +95,7 @@ struct DownloadStatistics
     };
     uint64 downloadSpeedBytesPerSec;
     uint64 timeLeftSecs;
+    uint64 dataCameTotalBytes;
 };
 /*
     Download task information which contains all necessery data to perform download and handle any download states

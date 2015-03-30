@@ -219,12 +219,12 @@ void UISwitch::LoadFromYamlNodeCompleted()
     InitControls();
 }
 
+static const int32 MOVE_ANIMATION_TRACK = 10;
+static const float32 ANCHOR_UNDEFINED = 10000;
+static float32 dragAnchorX = ANCHOR_UNDEFINED;
+
 void UISwitch::Input(UIEvent *currentInput)
 {
-    static const int32 MOVE_ANIMATION_TRACK = 10;
-    static const float32 ANCHOR_UNDEFINED = 10000;
-    static float32 dragAnchorX = ANCHOR_UNDEFINED;
-    
     if (toggle->IsAnimating(MOVE_ANIMATION_TRACK))
     {
         return;
@@ -289,6 +289,7 @@ void UISwitch::SetIsLeftSelected(bool aIsLeftSelected)
 {
     InternalSetIsLeftSelected(aIsLeftSelected, true);
     float32 toggleXPosition = GetToggleUttermostPosition();
+    toggle->StopAnimations(MOVE_ANIMATION_TRACK);
     toggle->SetPosition(Vector2(toggleXPosition, toggle->relativePosition.y));
 }
 
