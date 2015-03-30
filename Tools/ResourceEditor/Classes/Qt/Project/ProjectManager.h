@@ -58,9 +58,9 @@ public:
 
 	bool IsOpened() const;
 
-	DAVA::FilePath CurProjectPath() const;
-	DAVA::FilePath CurProjectDataSourcePath() const;
-    DAVA::FilePath CurProjectDataParticles() const;
+	const DAVA::FilePath & CurProjectPath() const;
+	const DAVA::FilePath & CurProjectDataSourcePath() const;
+    const DAVA::FilePath & CurProjectDataParticles() const;
     
     const QVector<ProjectManager::AvailableMaterialTemplate>* GetAvailableMaterialTemplates() const;
     const QVector<ProjectManager::AvailableMaterialQuality>* GetAvailableMaterialQualities() const;

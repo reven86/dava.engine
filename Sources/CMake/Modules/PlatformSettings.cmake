@@ -1,6 +1,6 @@
 
 #compiller flags
-if( NOT DISABLE_DUBUG )
+if( NOT DISABLE_DEBUG )
     set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -D__DAVAENGINE_DEBUG__" )
 
 endif  ()

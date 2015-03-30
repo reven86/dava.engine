@@ -118,6 +118,17 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 	IsMD5ChangedDir(processDirectoryPath, outputGfxDirectory, gfxDirName + ".md5", true);
 }
 
+void ResourcePacker2D::RecalculateMD5ForOutputDir()
+{
+    gfxDirName = inputGfxDirectory.GetLastDirectoryName();
+    std::transform(gfxDirName.begin(), gfxDirName.end(), gfxDirName.begin(), ::tolower);
+
+    FilePath processDirectoryPath = excludeDirectory + GetProcessFolderName();
+    FileSystem::Instance()->CreateDirectory(processDirectoryPath, true);
+
+    IsMD5ChangedDir(processDirectoryPath, outputGfxDirectory, gfxDirName + ".md5", true);
+}
+
 
 bool ResourcePacker2D::IsMD5ChangedDir(const FilePath & processDirectoryPath, const FilePath & pathname, const String & name, bool isRecursive)
 {
