@@ -49,7 +49,6 @@
 class AddSwitchEntityDialog;
 class Request;
 class QtLabelWithActions;
-class LandscapeDialog;
 class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;

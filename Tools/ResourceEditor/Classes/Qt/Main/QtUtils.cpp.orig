@@ -137,12 +137,21 @@ void ShowErrorDialog(const DAVA::Set<DAVA::String> &errors)
 
 void ShowErrorDialog(const DAVA::String &errorMessage)
 {
+<<<<<<< HEAD
+	bool forceClose =    CommandLineParser::CommandIsFound(String("-force"))
+					||  CommandLineParser::CommandIsFound(String("-forceclose"));
+	if(!forceClose && !Core::Instance()->IsConsoleMode())
+	{
+        QMessageBox::critical(QApplication::activeWindow(), "Error", errorMessage.c_str());
+	}
+=======
     bool forceClose = CommandLineParser::CommandIsFound(String("-force"))
                       || CommandLineParser::CommandIsFound(String("-forceclose"));
     if (!forceClose && !Core::Instance()->IsConsoleMode())
     {
-        QMessageBox::critical(QApplication::activeWindow(), "Error", errorMessage.c_str());
+        QMessageBox::critical(QtMainWindow::Instance(), "Error", errorMessage.c_str());
     }
+>>>>>>> development
 }
 
 bool IsKeyModificatorPressed(int32 key)
