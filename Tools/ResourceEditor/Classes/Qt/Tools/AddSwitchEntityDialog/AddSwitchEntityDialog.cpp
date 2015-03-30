@@ -166,11 +166,7 @@ void AddSwitchEntityDialog::accept()
 			vector[i]->Release();
 		}
 
-		scene->selectionSystem->SetSelection(switchEntity);
-
 		scene->EndBatch();
-
-		scene->selectionSystem->SetSelection(switchEntity);
 		SafeRelease(switchEntity);
 	}
 	

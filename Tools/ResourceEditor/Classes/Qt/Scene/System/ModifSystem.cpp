@@ -829,8 +829,6 @@ void EntityModificationSystem::CloneEnd()
 		SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
 		SceneSelectionSystem *selectionSystem = sceneEditor->selectionSystem;
 
-		selectionSystem->Clear();
-
 		sceneEditor->BeginBatch("Clone");
 
 		// we just moved original objects. Now we should return them back
@@ -855,7 +853,6 @@ void EntityModificationSystem::CloneEnd()
 			sceneEditor->Exec(new EntityAddCommand(clonedEntities[i], cloneParent));
 
 			// make cloned entiti selected
-			selectionSystem->AddSelection(clonedEntities[i]);
 			SafeRelease(clonedEntities[i]);
 		}
 

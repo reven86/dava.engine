@@ -40,10 +40,6 @@
 #include "Utils/StringFormat.h"
 #include "Render/PixelFormatDescriptor.h"
 
-#if defined( __DAVAENGINE_WIN32__ )
-#include <Windows.h>
-#endif
-
 #ifdef __DAVAENGINE_OPENGL__
 
 namespace DAVA
@@ -89,14 +85,11 @@ bool RenderManager::Create(HINSTANCE _hInstance, HWND _hWnd)
 
 void RenderManager::Release()
 {
-    Singleton<RenderManager>::Release();
+	Singleton<RenderManager>::Release();
 
-    if ( IsWindow( hWnd ) )
-    {
-        wglMakeCurrent( 0, 0 );
-        wglDeleteContext( hRC );
-        ReleaseDC( hWnd, hDC );
-    }
+	wglMakeCurrent(0, 0);
+	wglDeleteContext(hRC);
+	ReleaseDC(hWnd, hDC);	
 }
 
 bool RenderManager::ChangeDisplayMode(DisplayMode mode, bool isFullscreen)
