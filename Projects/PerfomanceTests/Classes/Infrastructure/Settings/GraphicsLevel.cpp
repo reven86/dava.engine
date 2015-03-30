@@ -63,7 +63,6 @@ void ReadBool(bool & var, const String & key, KeyedArchive * arch, DAVA::YamlNod
     }
 }
 
-
 void GraphicsLevel::ReadSettings(const DAVA::String & fileName, DAVA::YamlNode * node)
 {
     SafeRelease(archive);

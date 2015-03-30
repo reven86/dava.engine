@@ -26,7 +26,6 @@ textures:
    albedo: 4
    normalmap: 4
    minsize: 64
-  
 
 materials:
  -

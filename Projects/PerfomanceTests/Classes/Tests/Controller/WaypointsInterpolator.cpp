@@ -62,7 +62,7 @@ void WaypointsInterpolator::Init()
 
     spline->Construct(poly);
 
-    for (uint32 i = 0; i < spline->pointCount - 1; i++)
+    for (int32 i = 0; i < spline->pointCount - 1; i++)
     {
         float32 t = 0.0f;
         float32 length = 0.0f;
