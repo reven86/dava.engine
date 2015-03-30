@@ -29,6 +29,7 @@
 
 
 #include "Debug/Backtrace.h"
+#include "Base/Bind.h"
 #include "FileSystem/Logger.h"
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <execinfo.h>
@@ -37,6 +38,9 @@
 #elif defined(__DAVAENGINE_WIN32__)
 #include <DbgHelp.h>
 #pragma comment(lib, "Dbghelp.lib")
+#elif defined(__DAVAENGINE_ANDROID__)
+#include "../Platform/TemplateAndroid/BacktraceAndroid/AndroidBacktraceChooser.h"
+#include <cxxabi.h>
 #endif
 
 #include <cstdlib>
@@ -140,7 +144,7 @@ public:
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
         bt->size = backtrace(bt->array, MAX_BACKTRACE_DEPTH);
 #elif defined(__DAVAENGINE_WIN32__)
-        bt->size = CaptureStackBackTrace( 0, MAX_BACKTRACE_DEPTH, bt->array, NULL);
+        bt->size = CaptureStackBackTrace( 0, MAX_BACKTRACE_DEPTH, bt->array, nullptr);
 #endif
         pointer_size hash = 0;
         for (uint32 k = 0; k < bt->size; ++k)
@@ -178,10 +182,10 @@ public:
             char * tokens[100];
             int32 tokenCount = 0;
             tokens[tokenCount++] = strtok(temp," \t");
-            while (tokens[tokenCount - 1] != NULL)
+            while (tokens[tokenCount - 1] != nullptr)
             {
                 //Logger::FrameworkDebug("%s\n",tokens[tokenCount]);
-                tokens[tokenCount++] = strtok (NULL, " \t");
+                tokens[tokenCount++] = strtok (nullptr, " \t");
                 if (tokenCount > 5)break;
             }
             
@@ -189,7 +193,7 @@ public:
             {
                 int status = -2;
                 char* ret = abi::__cxa_demangle(tokens[3],
-                                                NULL, &funcnamesize, &status);
+                                                nullptr, &funcnamesize, &status);
                 if (status == 0) 
                 {
                     //funcname = ret; // use possibly realloc()-ed string
@@ -216,7 +220,7 @@ public:
         
         process = GetCurrentProcess();
         
-        SymInitialize( process, NULL, TRUE );
+        SymInitialize( process, nullptr, TRUE );
         
         symbol               = ( SYMBOL_INFO * )calloc( sizeof( SYMBOL_INFO ) + 256 * sizeof( char ), 1 );
         symbol->MaxNameLen   = 255;
@@ -240,8 +244,26 @@ public:
             free(log->strings[k]);
         free(log->strings);
     }
-    
-    void PrintBackTraceToLog()
+#if defined(__DAVAENGINE_ANDROID__)
+	void OnStackFrame(Logger::eLogLevel logLevel,pointer_size addr,const char * functName)
+	{
+        DAVA::BacktraceInterface * backtraceProvider = DAVA::AndroidBacktraceChooser::ChooseBacktraceAndroid();
+        const char * libName = nullptr;
+        pointer_size relAddres = 0;
+        backtraceProvider->GetMemoryMap()->Resolve(addr,&libName,&relAddres);
+        
+        int     status;
+        char   * realname = nullptr;
+
+        //returns allocated string with malloc
+        realname = abi::__cxa_demangle(functName, 0, 0, &status);
+         
+        Logger::Instance()->Log(logLevel,"DAVA BACKTRACE:%p : %s (%s)\n", relAddres, libName,realname);
+        free(realname);
+         
+	}
+#endif
+    void PrintBackTraceToLog(Logger::eLogLevel logLevel )
     {
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #define BACKTRACE_SIZ 100
@@ -253,7 +275,7 @@ public:
         strings = backtrace_symbols(array, size);
         
         for (i = 0; i < size; ++i) {
-            Logger::FrameworkDebug("%p : %s\n", array[i], strings[i]);
+            Logger::Instance()->Log(logLevel,"%p : %s\n", array[i], strings[i]);
         }
         free(strings);
 #elif defined(__DAVAENGINE_WIN32__)
@@ -266,6 +288,22 @@ public:
          __out_opt  PULONG BackTraceHash
          );        
      */
+#endif
+       
+
+#if defined(__DAVAENGINE_ANDROID__)
+        BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
+       
+        if(backtraceProvider != nullptr)
+        {
+            Function<void (Logger::eLogLevel,pointer_size,const char * )> onStackFrame = &OnStackFrame;
+            Logger::FrameworkDebug("DAVA BACKTRACE PRINTING");
+            backtraceProvider->PrintableBacktrace(  Bind(onStackFrame, logLevel,_1,_2),nullptr,0);
+        }
+        else
+        {
+            Logger::FrameworkDebug("DAVA BACKTRACE NO BACKTRACE INTERFACE PROVIDER!");
+        }
 #endif
     }
 //}

@@ -130,24 +130,51 @@ public class JNIWebView {
         }
 
         @Override
-        public void onPageFinished(WebView view, String url) {
+        public void onPageFinished(final WebView view, String url) {
             super.onPageFinished(view, url);
 
-            JNIActivity activity = JNIActivity.GetActivity();
+            final JNIActivity activity = JNIActivity.GetActivity();
             if (null == activity || activity.GetIsPausing()) {
                 return;
             }
 
             if (isRenderToTexture) {
-                // render web view into bitmap and pass it to native code
-                renderToBitmapAndCopyPixels(view);
-
-                activity.PostEventToGL(new OnPageLoadedNativeRunnable(pixels,
-                        width, height));
+                int delay = 0; // first do not wait
+                renderWebViewUntilDone(view, activity, delay);
             } else {
                 activity.PostEventToGL(new OnPageLoadedNativeRunnable(null, 0,
                         0));
             }
+        }
+
+        private void renderWebViewUntilDone(final WebView view,
+                final JNIActivity activity, int delay) {
+            final Runnable action = new Runnable() {
+
+                @Override
+                public void run() {
+                    WebViewWrapper wrap = (WebViewWrapper) view;
+                    wrap.getInternalViewClient().renderToBitmapAndCopyPixels(
+                            view);
+                    boolean foundNotTransparentPixel = false;
+                    if (null != pixels) {
+                        for (int pixel : pixels) {
+                            if (pixel != 0) {
+                                foundNotTransparentPixel = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (foundNotTransparentPixel) {
+                        activity.PostEventToGL(new OnPageLoadedNativeRunnable(
+                                pixels, width, height));
+                    } else {
+                        renderWebViewUntilDone(view, activity, 300);
+                    }
+                }
+
+            };
+            view.postDelayed(action, delay);
         }
 
         private void renderToBitmapAndCopyPixels(WebView view) {
