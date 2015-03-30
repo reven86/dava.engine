@@ -53,6 +53,7 @@ namespace DAVA
         parent = NULL;
         controlState = STATE_NORMAL;
         visible = true;
+        visibleForUIEditor = true;
         /*
             VB:
             please do not change anymore to false, it no make any sense to make all controls untouchable by default.
@@ -706,6 +707,23 @@ namespace DAVA
         SystemNotifyVisibilityChanged();
     }
 
+    void UIControl::SetVisibleForUIEditor(bool value)
+    {
+        if (visibleForUIEditor == value)
+        {
+            return;
+        }
+
+        bool oldSystemVisible = GetSystemVisible();
+        visibleForUIEditor = value;
+        if (GetSystemVisible() == oldSystemVisible)
+        {
+            return;
+        }
+
+        SystemNotifyVisibilityChanged();
+    }
+
     void UIControl::SystemNotifyVisibilityChanged()
     {
         if (parent && parent->IsOnScreen())
@@ -1077,6 +1095,7 @@ namespace DAVA
 
         controlState = srcControl->controlState;
         visible = srcControl->visible;
+        visibleForUIEditor = srcControl->visibleForUIEditor;
         inputEnabled = srcControl->inputEnabled;
         clipContents = srcControl->clipContents;
 

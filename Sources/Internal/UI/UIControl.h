@@ -1336,6 +1336,10 @@ public:
     int32 GetInitialState() const;
     void SetInitialState(int32 newState);
 
+    // Get/set visible flag for UI editor. Should not be serialized.
+    bool GetVisibleForUIEditor() const { return visibleForUIEditor; };
+    virtual void SetVisibleForUIEditor(bool value);
+
     void DumpInputs(int32 depthLevel);
 
 public:
@@ -1361,6 +1365,8 @@ protected:
     bool clipContents : 1;
     bool debugDrawEnabled : 1;
     bool multiInput : 1;
+
+    bool visibleForUIEditor : 1;
 
     // Enable align options
     bool leftAlignEnabled : 1;
@@ -1654,7 +1660,7 @@ int32 UIControl::GetState() const
     
 bool UIControl::GetSystemVisible() const
 {
-    return visible;
+    return visible & visibleForUIEditor;
 }
 
 bool UIControl::GetEnabled() const

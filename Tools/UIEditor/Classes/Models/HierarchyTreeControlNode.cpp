@@ -366,7 +366,7 @@ void HierarchyTreeControlNode::SetVisibleFlag(bool value)
 {
 	if (uiObject)
 	{
-		uiObject->SetVisible(value);
+        uiObject->SetVisibleForUIEditor(value);
 	}
 }
 
@@ -374,7 +374,7 @@ bool HierarchyTreeControlNode::GetVisibleFlag() const
 {
 	if (uiObject)
 	{
-		return uiObject->GetVisible();
+        return uiObject->GetVisibleForUIEditor();
 	}
 
 	return false;
