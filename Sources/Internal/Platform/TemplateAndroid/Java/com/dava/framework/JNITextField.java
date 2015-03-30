@@ -540,8 +540,13 @@ public class JNITextField {
             @Override
             public void safeRun() {
                 JNIActivity activity = JNIActivity.GetActivity();
-                if (null == activity || activity.GetIsPausing())
-                    return;
+                // we need to process even if activity is pausing
+                // because c++ part do not know if we can't
+                if (null == activity)
+                {
+                    Log.e(TAG, "can't create text field id:" + id + " activity is pausing");
+                    throw new RuntimeException("can't create text field id:" + id + " activity is pausing");
+                }
 
                 if (textFields.containsKey(id)) {
                     Log.e(TAG, String.format("Control with id:%d already created", id));
