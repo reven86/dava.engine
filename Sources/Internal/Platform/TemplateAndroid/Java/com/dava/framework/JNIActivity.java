@@ -259,13 +259,19 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         boolean isActivityFinishing = isFinishing();
         Log.i(JNIConst.LOG_TAG, "[Activity::onPause] isActivityFinishing is " + isActivityFinishing);
+        
+        // can destroy eglContext
+        // we need to stop rendering before quit application because some objects could became invalid after
+        // "nativeFinishing" call.
+        glView.onPause();
+        
         if(isActivityFinishing)
         {
         	nativeFinishing();
         }
         
-        // can destroy eglContext
-        glView.onPause();
+        // Destroy keyboard helper window
+        JNITextField.DestroyKeyboardLayout(getWindowManager());
         
         super.onPause();
 
@@ -288,6 +294,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         if (!isEglContextDestroyed())
         {
             glView.onResume();
+            JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
         }
 
         // activate accelerometer
@@ -327,9 +334,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         fmodDevice.stop();
         
-        // Destroy keyboard layout if its hasn't been destroyed by lost focus (samsung lock workaround)
-        JNITextField.DestroyKeyboardLayout(getWindowManager());
-        
         super.onStop();
     	// The activity is no longer visible (it is now "stopped")
         Log.i(JNIConst.LOG_TAG, "[Activity::onStop] finish");
@@ -366,16 +370,15 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         super.onWindowFocusChanged(hasFocus);
         
     	if(hasFocus) {
-    		JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
-			HideNavigationBar(getWindow().getDecorView());
+            HideNavigationBar(getWindow().getDecorView());
 			
 			// glView on resume should be called in Activity.onResume!!!
 			// but then game crush in PushNotificationBridgeImplAndroid.cpp(15);
 	        Log.i(JNIConst.LOG_TAG, "[Activity::onResume] call glView.onResume");
 	        glView.onResume();
-    	} else {
-    		JNITextField.DestroyKeyboardLayout(getWindowManager());
-    	}
+
+            JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
+        } 
     	Log.i(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] finish");
     }
     
