@@ -98,8 +98,8 @@ ParticleEffectSystem::ParticleEffectSystem(Scene * scene, bool _forceDisableDept
 	    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::START_PARTICLE_EFFECT);
         scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STOP_PARTICLE_EFFECT);
     }
-	particleRegularMaterial = NMaterial::CreateMaterial(FastName("Particle_Material"),  NMaterialName::PARTICLES, NMaterial::DEFAULT_QUALITY_NAME);		
-	particleFrameBlendMaterial = NMaterial::CreateMaterial(FastName("Particle_Frameblend_Material"),  NMaterialName::PARTICLES_FRAMEBLEND, NMaterial::DEFAULT_QUALITY_NAME);	
+	particleRegularMaterial = NMaterial::CreateMaterial(FastName("Particle_Material"),  NMaterialName::PARTICLES, NMaterialQualityName::DEFAULT_QUALITY_NAME);		
+	particleFrameBlendMaterial = NMaterial::CreateMaterial(FastName("Particle_Frameblend_Material"),  NMaterialName::PARTICLES_FRAMEBLEND, NMaterialQualityName::DEFAULT_QUALITY_NAME);	
 }
 ParticleEffectSystem::~ParticleEffectSystem()
 {

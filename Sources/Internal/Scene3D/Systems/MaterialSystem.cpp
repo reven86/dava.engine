@@ -46,7 +46,7 @@ namespace DAVA
 MaterialSystem::MaterialSystem(Scene * scene)
     : SceneSystem(scene)
 {
-    SetDefaultMaterialQuality(NMaterial::DEFAULT_QUALITY_NAME); //TODO: add code setting material quality based on device specs
+    SetDefaultMaterialQuality(NMaterialQualityName::DEFAULT_QUALITY_NAME); //TODO: add code setting material quality based on device specs
 }
 
 MaterialSystem::~MaterialSystem()
@@ -57,9 +57,10 @@ MaterialSystem::~MaterialSystem()
 void MaterialSystem::AddEntity(Entity * entity)
 {
 }
-
+#if RHI_COMPLETE
 void MaterialSystem::BuildMaterialList(Entity *forEntity, Set<NMaterial*>& materialList, NMaterial::eMaterialType materialType, bool includeRuntime) const
 {
+
     if(!forEntity) return;
     
     List<NMaterial*> materials;
@@ -74,7 +75,10 @@ void MaterialSystem::BuildMaterialList(Entity *forEntity, Set<NMaterial*>& mater
             materialList.insert(*it);
         }
     }
+
 }
+
+#endif //RHI_COMPLETE
 
 void MaterialSystem::SetDefaultMaterialQuality(const FastName& qualityLevelName)
 {
@@ -93,6 +97,7 @@ const FastName& MaterialSystem::GetCurrentMaterialQuality() const
 
 void MaterialSystem::SwitchMaterialQuality(const FastName& qualityLevelName, bool force)
 {
+#if RHI_COMPLETE
     Set<NMaterial*> materials;
     BuildMaterialList(GetScene(), materials, NMaterial::MATERIALTYPE_MATERIAL);
     
@@ -104,6 +109,7 @@ void MaterialSystem::SwitchMaterialQuality(const FastName& qualityLevelName, boo
 		material->SetQuality(qualityLevelName);
         material->ReloadQuality(force);
     }
+#endif //RHI_COMPLETE
 }
     
 };

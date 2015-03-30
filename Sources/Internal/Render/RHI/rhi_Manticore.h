@@ -84,6 +84,7 @@ TextureSetDescriptor
 };
 
 Handle  AcquireTextureSet( const TextureSetDescriptor& desc );
+void    RetainTextureSet(Handle ts);
 void    ReleaseTextureSet( Handle ts );
 
 

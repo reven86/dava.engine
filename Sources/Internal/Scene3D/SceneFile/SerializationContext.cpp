@@ -270,6 +270,7 @@ namespace DAVA
 																	 InstanceMaterialState* oldMaterialState,
 																	 uint64 oldMaterialId)
 	{
+#if RHI_COMPLETE
         if(!oldMaterial) return NULL;
         
 		//VI: need to build the following material structure:
@@ -466,11 +467,14 @@ namespace DAVA
 		instanceMaterial->SetParent(material);
 						
 		return instanceMaterial;
+#endif //RHI_COMPLETE
+        return NULL;
 	}
 			
 	Texture* SerializationContext::PrepareTexture(uint32 textureTypeHint,
 												  Texture* tx)
 	{
+#if RHI_COMPLETE
 		if(tx)
 		{
 			if(tx->isPink)
@@ -483,6 +487,10 @@ namespace DAVA
 
 		return Texture::CreatePink((Texture::TextureType)textureTypeHint);
 //		return (tx) ? tx : Texture::CreatePink((Texture::TextureType)textureTypeHint);
+#else
+        return tx;
+#endif //RHI_COMPLETE
+
 	}
 
 

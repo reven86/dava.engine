@@ -33,7 +33,7 @@
 #include "Render/2D/Font.h"
 #include "Render/Shader.h"
 #include "Render/RenderDataObject.h"
-#include "Render/UniqueStateSet.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
@@ -136,7 +136,7 @@ public:
     /**
      \brief Get font texture handler
      */
-    inline UniqueHandle GetTextureHandler() const
+    inline rhi::Handle GetTextureHandler() const
     {
         return fontTextureHandler;
     }
@@ -174,7 +174,7 @@ private:
     DFFontInternalData * fontInternal;
 
     Texture* fontTexture;
-    UniqueHandle fontTextureHandler;
+    rhi::Handle fontTextureHandler;
 };
 
 }

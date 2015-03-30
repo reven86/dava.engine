@@ -61,6 +61,7 @@ void SceneCache::RemoveScene(DAVA::Scene *scene)
     
 void SceneCache::InvalidateSceneMaterials()
 {
+#if RHI_COMPLETE
     Set<Scene*>::iterator it = sceneSet.begin();
     for(; it != sceneSet.end(); ++it)
     {
@@ -96,6 +97,7 @@ void SceneCache::InvalidateSceneMaterials()
             ++it;
         }
     }
+#endif //RHI_COMPLETE
 }
     
 }

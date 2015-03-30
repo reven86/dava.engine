@@ -623,6 +623,7 @@ bool PngImage::CreateFromFBOSprite(Sprite * fboSprite)
 {
 	if (!fboSprite)return false;
 	
+#if RHI_COMPLETE    
 	width = fboSprite->GetTexture()->GetWidth();
 	height = fboSprite->GetTexture()->GetHeight();
 	data = new uint8[width * 4 * height];
@@ -638,5 +639,7 @@ bool PngImage::CreateFromFBOSprite(Sprite * fboSprite)
         RenderManager::Instance()->HWglBindFBO(lastFBO);
 	}
 	return true;
+#endif //RHI_COMPLETE
+    return false;
 }
 

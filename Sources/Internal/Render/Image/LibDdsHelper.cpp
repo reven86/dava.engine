@@ -33,6 +33,7 @@
 
 #include "Render/Texture.h"
 #include "Render/PixelFormatDescriptor.h"
+#include "Render/Renderer.h"
 #include <libdxt/nvtt.h>
 #include <libdxt/nvtt_extra.h>
 
@@ -327,9 +328,9 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
 	//check hardware support, in case of rgb use nvtt to reorder bytes
 	bool isHardwareSupport = false;
 	if (IsAtcFormat(format))
-		isHardwareSupport = RenderManager::Instance()->GetCaps().isATCSupported;
+		isHardwareSupport = Renderer::GetCaps().isATCSupported;
 	else
-		isHardwareSupport = RenderManager::Instance()->GetCaps().isDXTSupported;
+        isHardwareSupport = Renderer::GetCaps().isDXTSupported;
 	
 	if (!forceSoftwareConvertation && isHardwareSupport)
 	{

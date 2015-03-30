@@ -171,6 +171,12 @@ public:
     static const FastName FLAG_VIEWDIFFUSE;
     static const FastName FLAG_VIEWSPECULAR;
 };
+
+class NMaterialQualityName
+{
+public:
+    static const FastName DEFAULT_QUALITY_NAME;
+};
 };
 
 #endif /* defined(__DAVAENGINE_NMATERIAL_NAMES_H__) */

@@ -101,7 +101,7 @@ static FastName RUNTIME_ONLY_TEXTURES[] =
     NMaterialTextureName::TEXTURE_HEIGHTMAP
 };
 
-const FastName NMaterial::DEFAULT_QUALITY_NAME = FastName("Normal");
+const FastName NMaterialQualityName::DEFAULT_QUALITY_NAME = FastName("Normal");
 
 void IlluminationParams::SetLightmapSize(const int32 &size)
 {

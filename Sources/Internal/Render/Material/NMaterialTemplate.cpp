@@ -46,7 +46,7 @@ const NMaterialTemplate* NMaterialTemplateCache::Get(const FastName& templateNam
 		if(NULL == matTemplate)
 		{
 			matTemplate = new NMaterialTemplate();
-			matTemplate->techniqueStateMap.insert(NMaterial::DEFAULT_QUALITY_NAME,
+			matTemplate->techniqueStateMap.insert(NMaterialQualityName::DEFAULT_QUALITY_NAME,
 												  templateName);
 		}
 		

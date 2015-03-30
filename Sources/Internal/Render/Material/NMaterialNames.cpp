@@ -159,5 +159,9 @@ namespace DAVA
     const FastName NMaterialFlagName::FLAG_VIEWAMBIENT = FastName("VIEW_AMBIENT");
     const FastName NMaterialFlagName::FLAG_VIEWDIFFUSE = FastName("VIEW_DIFFUSE");
     const FastName NMaterialFlagName::FLAG_VIEWSPECULAR = FastName("VIEW_SPECULAR");
+
+
+    //quality
+    const FastName NMaterialQualityName::DEFAULT_QUALITY_NAME = FastName("Normal");
       
 };

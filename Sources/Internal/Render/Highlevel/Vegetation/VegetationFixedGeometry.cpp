@@ -166,7 +166,7 @@ void VegetationFixedGeometry::Build(Vector<VegetationRenderData*>& renderDataArr
     
     NMaterial* vegetationMaterial = NMaterial::CreateMaterial(FastName("Vegetation_Material"),
                                                    NMaterialName::GRASS,
-                                                   NMaterial::DEFAULT_QUALITY_NAME);
+                                                   NMaterialQualityName::DEFAULT_QUALITY_NAME);
     vegetationMaterial->AddNodeFlags(DataNode::NodeRuntimeFlag);
     
     FastNameSet::iterator end = materialFlags.end();

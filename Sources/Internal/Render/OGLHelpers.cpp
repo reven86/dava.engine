@@ -37,6 +37,7 @@ namespace DAVA
     
 int32 GetHalfFloatID()
 {
+#if RHI_COMPLETE
 #if defined(__DAVAENGINE_ANDROID__)
     return GL_HALF_FLOAT_OES;
 #elif defined(__DAVAENGINE_IPHONE__)
@@ -52,6 +53,10 @@ int32 GetHalfFloatID()
 #else
     return GL_HALF_FLOAT;
 #endif
+
+#else
+    return 0;
+#endif //RHI_COMPLETE
 }
     
 };

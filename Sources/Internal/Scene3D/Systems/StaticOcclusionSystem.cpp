@@ -692,8 +692,8 @@ StaticOcclusionDebugDrawSystem::StaticOcclusionDebugDrawSystem(Scene *scene):Sce
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
 
-    debugOpaqueMaterial = NMaterial::CreateMaterial(FastName("Debug_Opaque_Material"),  NMaterialName::DEBUG_DRAW_OPAQUE, NMaterial::DEFAULT_QUALITY_NAME);		
-    debugAlphablendMaterial = NMaterial::CreateMaterial(FastName("Debug_Alphablend_Material"),  NMaterialName::DEBUG_DRAW_ALPHABLEND, NMaterial::DEFAULT_QUALITY_NAME);	
+    debugOpaqueMaterial = NMaterial::CreateMaterial(FastName("Debug_Opaque_Material"),  NMaterialName::DEBUG_DRAW_OPAQUE, NMaterialQualityName::DEFAULT_QUALITY_NAME);		
+    debugAlphablendMaterial = NMaterial::CreateMaterial(FastName("Debug_Alphablend_Material"),  NMaterialName::DEBUG_DRAW_ALPHABLEND, NMaterialQualityName::DEFAULT_QUALITY_NAME);	
 }
 
 StaticOcclusionDebugDrawSystem::~StaticOcclusionDebugDrawSystem()

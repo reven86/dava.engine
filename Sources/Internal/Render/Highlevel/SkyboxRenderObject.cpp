@@ -90,7 +90,7 @@ namespace DAVA
 							
 			NMaterial* skyboxMaterial = NMaterial::CreateMaterialInstance(FastName("Skybox_material"),
 																		  NMaterialName::SKYBOX,
-																		  NMaterial::DEFAULT_QUALITY_NAME);
+																		  NMaterialQualityName::DEFAULT_QUALITY_NAME);
 			
 			RenderBatch* skyboxRenderBatch = new RenderBatch();
 			skyboxRenderBatch->SetRenderDataObject(renderDataObj);

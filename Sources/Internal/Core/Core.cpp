@@ -57,6 +57,8 @@
 #include "Render/OcclusionQuery.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
+#include "Render/Renderer.h"
+#include "UI/UIControlSystem.h"
 
 #include "Network/NetCore.h"
 
@@ -181,7 +183,7 @@ void Core::CreateRenderManager()
 {
     eRenderer renderer = (eRenderer)options->GetInt32("renderer");
     
-    RenderManager::Create(renderer);	
+    Renderer::Initialize(renderer);
 }
         
 void Core::ReleaseSingletons()
@@ -217,7 +219,7 @@ void Core::ReleaseSingletons()
     FrameOcclusionQueryManager::Instance()->Release();
     VirtualCoordinatesSystem::Instance()->Release();
     RenderSystem2D::Instance()->Release();
-	RenderManager::Instance()->Release();
+    Renderer::Uninitialize();
 
 	InputSystem::Instance()->Release();
 	JobManager::Instance()->Release();
@@ -481,7 +483,7 @@ void Core::SystemProcessFrame()
 	/**
 		Check if device not in lost state first / after that be
 	*/
-	if (!RenderManager::Instance()->IsDeviceLost())
+	if (!Renderer::IsDeviceLost())
 	{
 // #ifdef __DAVAENGINE_DIRECTX9__
 // 		if(firstRun)

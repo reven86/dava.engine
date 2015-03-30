@@ -164,6 +164,7 @@ void RenderSystem::UnregisterBatch(RenderBatch * batch)
     
 void RenderSystem::RegisterMaterial(NMaterial * material)
 {
+#if RHI_COMPLETE
     NMaterial * topParent = NULL;
 
     // search for top material that isn't global
@@ -178,6 +179,7 @@ void RenderSystem::RegisterMaterial(NMaterial * material)
     {
         topParent->SetParent(globalMaterial, false);
     }
+#endif //RHI_COMPLETE
 }
     
 void RenderSystem::UnregisterMaterial(NMaterial * material)

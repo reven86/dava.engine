@@ -241,7 +241,7 @@ void RenderSystem2D::Reset()
     Setup2DMatrices();
 
     defaultSpriteDrawState.Reset();
-    defaultSpriteDrawState.renderState = RenderHelper::DEFAULT_2D_BLEND_MATERIAL;    
+    defaultSpriteDrawState.material = RenderHelper::DEFAULT_2D_BLEND_MATERIAL;    
 
     batches.clear();
     batches.reserve(RESERVED_BATCHES);
@@ -253,6 +253,7 @@ void RenderSystem2D::Reset()
 
 void RenderSystem2D::Setup2DProjection()
 {
+#if RHI_COMPLETE //ppc - framebuffer size and RT magic
     Texture * currentRenderTarget = RenderManager::Instance()->GetRenderTarget();
     if (currentRenderTarget)
     {
@@ -261,12 +262,15 @@ void RenderSystem2D::Setup2DProjection()
                        -1.0f, 1.0f);
     }
     else
+
     {
         Size2i framebufferSize = RenderManager::Instance()->GetFramebufferSize();
         projMatrix.glOrtho(0.0f, (float32)framebufferSize.dx, (float32)framebufferSize.dy, 0.0f, -1.0f, 1.0f);
     }
+
     projMatrix = virtualToPhysicalMatrix * projMatrix;
     Renderer::SetDynamicParam(PARAM_PROJ, &projMatrix, UPDATE_SEMANTIC_ALWAYS);
+#endif //RHI_COMPLETE
 }
 
 void RenderSystem2D::Setup2DMatrices()

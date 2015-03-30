@@ -29,9 +29,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __DAVAENGINE_RENDERER_H__
 #define __DAVAENGINE_RENDERER_H__
 
+#include "Core/Core.h"
 #include "RenderBase.h"
 #include "RenderOptions.h"
 #include "RHI/rhi_Base.h"
+#include "RHI/rhi_Manticore.h"
 
 namespace DAVA
 {
@@ -81,10 +83,18 @@ struct RenderCaps
     bool isGlDepth24Stencil8Supported;
     bool isGlDepthNvNonLinearSupported;
 #endif
+
 };
 
 namespace Renderer
 {
+
+    //init
+    void Initialize(Core::eRenderer renderer);
+    void Uninitialize();
+
+    bool IsDeviceLost();
+
     //frame management
     void BeginFrame();
     void EndFrame();

@@ -251,9 +251,7 @@ public:
         You can use SetCustomDrawCamera function if you want to test frustum clipping, and view the scene from different angles.
      */
     void SetCustomDrawCamera(Camera * camera);
-    Camera * GetDrawCamera() const;
-
-	void AddDrawTimeShadowVolume(ShadowVolumeNode * shadowVolume);
+    Camera * GetDrawCamera() const;	
     
     Set<Light*> & GetLights();
 	Light * GetNearestDynamicLight(Light::eType type, Vector3 position);	
@@ -324,8 +322,7 @@ protected:
 
     Camera * mainCamera;
     Camera * drawCamera;
-
-	Vector<ShadowVolumeNode*> shadowVolumes;
+	
     Set<Light*> lights;	
     
     friend class Entity;

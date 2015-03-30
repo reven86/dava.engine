@@ -33,6 +33,7 @@
 
 namespace DAVA
 {
+#ifdef RHI_COMPLETE
 
 bool SortBlocks(SharedFBO::Block * a, SharedFBO::Block * b)
 {
@@ -199,4 +200,5 @@ UniqueHandle SharedFBO::GetTextureHandle()
 {
 	return fboTextureState;
 }
+#endif // RHI_COMPLETE
 };

@@ -30,6 +30,7 @@
 #include "Utils/Utils.h"
 #include "Render/Renderer.h"
 
+#if RHI_COMPLETE
 namespace DAVA
 {
 #if defined(__DAVAENGINE_OPENGL__)
@@ -347,3 +348,5 @@ void FrameOcclusionQueryManager::GetQueriesNames(Vector<FastName> & names) const
 #endif
 
 };
+
+#endif //RHI_COMPLETE

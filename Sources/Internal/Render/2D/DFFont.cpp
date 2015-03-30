@@ -180,7 +180,7 @@ DFFont::~DFFont()
     if(fontTexture)
     {
         fontTexture->Release();
-        RenderManager::Instance()->ReleaseTextureState(fontTextureHandler);
+        rhi::ReleaseTextureSet(fontTextureHandler);
     }
 }
 
@@ -222,7 +222,7 @@ Font * DFFont::Clone() const
     dfFont->fontTexture = SafeRetain(fontTexture);
     dfFont->size = size;
     dfFont->fontTextureHandler = fontTextureHandler;
-    RenderManager::Instance()->RetainTextureState(fontTextureHandler);
+    rhi::RetainTextureSet(fontTextureHandler);
 
     return dfFont;
 }
@@ -409,9 +409,14 @@ bool DFFont::LoadTexture(const FilePath & path)
         return false;
     }
     
+    rhi::TextureSetDescriptor textureData;
+    
+#if RHI_COMPLETE
     TextureStateData textureData;
     textureData.SetTexture(0, fontTexture);
-    fontTextureHandler = RenderManager::Instance()->CreateTextureState(textureData);
+#endif //RHI_COMPLETE
+
+    fontTextureHandler = rhi::AcquireTextureSet(textureData);
 
     return true;
 }

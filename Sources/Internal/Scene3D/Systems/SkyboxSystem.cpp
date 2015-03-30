@@ -111,6 +111,7 @@ namespace DAVA
 	
 	void SkyboxSystem::Reload()
 	{
+#ifdef RHI_COMPLETE
 		if(skyboxEntity)
 		{
 			RenderComponent* renderComponent = static_cast<RenderComponent*>(skyboxEntity->GetComponent(Component::RENDER_COMPONENT));
@@ -132,5 +133,6 @@ namespace DAVA
 				}
 			}
 		}
+#endif // RHI_COMPLETE
 	}
 };

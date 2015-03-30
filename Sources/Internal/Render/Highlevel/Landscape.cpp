@@ -1429,7 +1429,7 @@ void Landscape::Create(NMaterial *fromMaterial/* = NULL */)
 
     if(NULL == fromMaterial)
     {
-        NMaterial* landscapeParent = NMaterial::CreateMaterial(FastName("Landscape_Tilemask_Material"), NMaterialName::TILE_MASK, NMaterial::DEFAULT_QUALITY_NAME);
+        NMaterial* landscapeParent = NMaterial::CreateMaterial(FastName("Landscape_Tilemask_Material"), NMaterialName::TILE_MASK, NMaterialQualityName::DEFAULT_QUALITY_NAME);
 	    tileMaskMaterial = NMaterial::CreateMaterialInstance();
 	    tileMaskMaterial->SetParent(landscapeParent);
     	SafeRelease(landscapeParent);
@@ -1681,7 +1681,7 @@ Texture * Landscape::CreateLandscapeTexture()
     
     prevLodLayer = -1;
 
-    NMaterial* tmpLandscapeParent = NMaterial::CreateMaterial(FastName("Landscape_Tilemask_Material_TMP"), FastName("~res:/Materials/TileMask.material"), NMaterial::DEFAULT_QUALITY_NAME);
+    NMaterial* tmpLandscapeParent = NMaterial::CreateMaterial(FastName("Landscape_Tilemask_Material_TMP"), FastName("~res:/Materials/TileMask.material"), NMaterialQualityName::DEFAULT_QUALITY_NAME);
     NMaterial* tmpTileMaskMaterial = tileMaskMaterial->Clone();
     
 

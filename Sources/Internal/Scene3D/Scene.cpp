@@ -147,6 +147,7 @@ NMaterial* Scene::GetGlobalMaterial() const
 
 void Scene::SetGlobalMaterial(NMaterial *globalMaterial)
 {
+#if RHI_COMPLETE
     SafeRelease(sceneGlobalMaterial);
 
     if(NULL != globalMaterial)
@@ -168,10 +169,12 @@ void Scene::SetGlobalMaterial(NMaterial *globalMaterial)
     particleEffectSystem->SetGlobalMaterial(sceneGlobalMaterial);
     
     ImportShadowColor(this);
+#endif //RHI_COMPLETE
 }
 
 void Scene::InitGlobalMaterial()
 {
+#if RHI_COMPLETE
     if(NULL == stubTexture2d)
     {
         stubTexture2d = Texture::CreatePink(Texture::TEXTURE_2D);
@@ -200,7 +203,7 @@ void Scene::InitGlobalMaterial()
     float32 defaultFogHeight = 50.0f;
     float32 defaultFogDensity = 0.005f;
 
-#if RHI_COMPLETE
+
     if(sceneGlobalMaterial->GetTexturePath(NMaterialTextureName::TEXTURE_ALBEDO).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, stubTexture2d);
     if(sceneGlobalMaterial->GetTexturePath(NMaterialTextureName::TEXTURE_NORMAL).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterialTextureName::TEXTURE_NORMAL, stubTexture2d);
     if(sceneGlobalMaterial->GetTexturePath(NMaterialTextureName::TEXTURE_DETAIL).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterialTextureName::TEXTURE_DETAIL, stubTexture2d);
@@ -817,10 +820,8 @@ void Scene::Draw()
 {
     TIME_PROFILE("Scene::Draw");
 
-	//float timeElapsed = SystemTimer::Instance()->FrameDelta();
-
-	shadowVolumes.clear();
-    
+		
+#if RHI_COMPLETE    
     if(NULL != sceneGlobalMaterial)
     {
         NMaterialProperty* propShadowColor = sceneGlobalMaterial->GetMaterialProperty(NMaterialParamName::PARAM_SHADOW_COLOR);
@@ -833,6 +834,7 @@ void Scene::Draw()
             renderSystem->SetShadowRectColor(shadowColor);
         }
     }
+#endif // RHI_COMPLETE
     
     uint64 time = SystemTimer::Instance()->AbsoluteMS();        
     
@@ -955,17 +957,9 @@ Camera * Scene::GetDrawCamera() const
 //    
     
 
-void Scene::AddDrawTimeShadowVolume(ShadowVolumeNode * shadowVolume)
-{
-	shadowVolumes.push_back(shadowVolume);
-}
-
     
 void Scene::UpdateLights()
-{
-    
-    
-    
+{            
     
 }
     
@@ -1057,6 +1051,7 @@ SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath & pathname, bool saveF
     
 void Scene::OptimizeBeforeExport()
 {
+#if RHI_COMPLETE
     Set<NMaterial*> materials;
     materialSystem->BuildMaterialList(this, materials);
     
@@ -1066,11 +1061,14 @@ void Scene::OptimizeBeforeExport()
     for(Set<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
         (*it)->ReleaseIlluminationParams();
 
+
     Entity::OptimizeBeforeExport();
+#endif  // RHI_COMPLETE
 }
 
 void Scene::ImportShadowColor(Entity * rootNode)
 {
+#if RHI_COMPLETE
     if(NULL != sceneGlobalMaterial)
     {
 		Entity * landscapeNode = FindLandscapeEntity(rootNode);
@@ -1090,6 +1088,7 @@ void Scene::ImportShadowColor(Entity * rootNode)
 			}
 		}
     }
+#endif  // RHI_COMPLETE
 }
 
 void Scene::OnSceneReady(Entity * rootNode)

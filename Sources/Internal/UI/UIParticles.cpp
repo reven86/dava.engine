@@ -262,7 +262,7 @@ void UIParticles::LoadEffect(const FilePath& path)
         serializationContext.SetScenePath(FilePath(path.GetDirectory()));
         serializationContext.SetVersion(10);
         serializationContext.SetScene(nullptr);
-        serializationContext.SetDefaultMaterialQuality(NMaterial::DEFAULT_QUALITY_NAME);
+        serializationContext.SetDefaultMaterialQuality(NMaterialQualityName::DEFAULT_QUALITY_NAME);
         entity->Load(archive->children[0]->archive, &serializationContext);
         ParticleEffectComponent *effSrc = GetEffectComponent(entity);
         if (effSrc)

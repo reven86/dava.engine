@@ -268,6 +268,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     if(isDebugLogEnabled)
         Logger::FrameworkDebug("+ save hierarchy");
 
+#if RHI_COMPLETE
     // save global material settings
     if(NULL != _scene->GetGlobalMaterial())
     {
@@ -280,6 +281,8 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     
         SafeRelease(archive);
     }
+#endif // RHI_COMPLETE
+
 
     for (int ci = 0; ci < _scene->GetChildrenCount(); ++ci)
     {
@@ -458,7 +461,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
 	serializationContext.SetScenePath(FilePath(rootNodePathName.GetDirectory()));
 	serializationContext.SetVersion(header.version);
 	serializationContext.SetScene(scene);
-	serializationContext.SetDefaultMaterialQuality(NMaterial::DEFAULT_QUALITY_NAME);
+	serializationContext.SetDefaultMaterialQuality(NMaterialQualityName::DEFAULT_QUALITY_NAME);
     
     if(isDebugLogEnabled)
         Logger::FrameworkDebug("+ load data objects");
@@ -1055,6 +1058,7 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
     
 bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
 {
+#if RHI_COMPLETE
     MeshInstanceNode * oldMeshInstanceNode = dynamic_cast<MeshInstanceNode*>(node);
     if (oldMeshInstanceNode)
     {
@@ -1333,7 +1337,7 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
 		newNode->Release();
 		return true;
 	}
-
+#endif //RHI_COMPLETE
 
 	return false;
 } 
@@ -1360,6 +1364,7 @@ void SceneFileV2::ReplaceOldNodes(Entity * currentNode)
 
 void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
 {
+#if RHI_COMPLETE
     RenderObject * ro = GetRenderObject(node);
     if (ro)
     {
@@ -1400,6 +1405,7 @@ void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
         Entity * child = node->GetChild(i);
         RemoveDeprecatedMaterialFlags(child);
     }
+#endif //RHI_COMPLETE
 }
 
 void SceneFileV2::RebuildTangentSpace(Entity *entity)
@@ -1428,6 +1434,7 @@ void SceneFileV2::RebuildTangentSpace(Entity *entity)
 
 void SceneFileV2::ConvertShadowVolumes(Entity * entity, NMaterial * shadowMaterialParent)
 {
+#ifdef RHI_COMPLETE
     RenderObject * ro = GetRenderObject(entity);
     if(ro)
     {
@@ -1466,10 +1473,12 @@ void SceneFileV2::ConvertShadowVolumes(Entity * entity, NMaterial * shadowMateri
         Entity * child = entity->GetChild(i);
         ConvertShadowVolumes(child, shadowMaterialParent);
     }
+#endif // RHI_COMPLETE
 }
 
 void SceneFileV2::OptimizeScene(Entity * rootNode)
 {
+#if RHI_COMPLETE
     int32 beforeCount = rootNode->GetChildrenCountRecursive();
     removedNodeCount = 0;
     rootNode->BakeTransforms();
@@ -1481,7 +1490,7 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
 
     if (header.version < SHADOW_VOLUME_SCENE_VERSION)
     {
-        NMaterial * shadowMaterial = NMaterial::CreateMaterial(FastName("Shadow_Material"), NMaterialName::SHADOW_VOLUME, NMaterial::DEFAULT_QUALITY_NAME);
+        NMaterial * shadowMaterial = NMaterial::CreateMaterial(FastName("Shadow_Material"), NMaterialName::SHADOW_VOLUME, NMaterialQualityName::DEFAULT_QUALITY_NAME);
         ConvertShadowVolumes(rootNode, shadowMaterial);
         shadowMaterial->Release();
     }
@@ -1520,10 +1529,13 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
 //    }
     int32 nowCount = rootNode->GetChildrenCountRecursive();
     Logger::FrameworkDebug("nodes removed: %d before: %d, now: %d, diff: %d", removedNodeCount, beforeCount, nowCount, beforeCount - nowCount);
+
+#endif // RHI_COMPLETE
 }
 
 void SceneFileV2::UpdatePolygonGroupRequestedFormatRecursively(Entity *entity)
 {
+#ifdef RHI_COMPLETE
     RenderObject *ro = GetRenderObject(entity);
 
     if (ro && ro->GetType()!=RenderObject::TYPE_SKYBOX)
@@ -1540,6 +1552,7 @@ void SceneFileV2::UpdatePolygonGroupRequestedFormatRecursively(Entity *entity)
 
     for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
         UpdatePolygonGroupRequestedFormatRecursively(entity->GetChild(i));
+#endif // RHI_COMPLETE
 }
 
 void SceneFileV2::SetVersion(const VersionInfo::SceneVersion& version)

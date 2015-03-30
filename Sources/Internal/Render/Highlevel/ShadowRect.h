@@ -34,6 +34,7 @@
 #include "Base/StaticSingleton.h"
 #include "Render/Shader.h"
 #include "Base/FastName.h"
+#include "Render/Highlevel/ShadowBlendMode.h"
 
 namespace DAVA
 {
@@ -50,7 +51,7 @@ namespace DAVA
 	public:
 		static ShadowRect * Create();
 		
-		void Draw();
+        void Draw(ShadowPassBlendMode::eBlend blendMode);
 		
 		void SetColor(const Color &color);
 		const Color & GetColor() const;
@@ -68,8 +69,8 @@ namespace DAVA
 		static ShadowRect * instance;
 		
 		
-		/*int32 uniformShadowColor;        
         Color shadowColor;
+		/*int32 uniformShadowColor;                
         Shader * shader;
         UniqueHandle blendAlphaState;
         UniqueHandle blendMultiplyState;*/
