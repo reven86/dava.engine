@@ -105,7 +105,7 @@ MY_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/fmod/include
 MY_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/lua/include
 
 # set exported includes
-MY_LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
+MY_LOCAL_EXPORT_C_INCLUDES := $(MY_LOCAL_C_INCLUDES)
 
 ifneq ($(filter $(TARGET_ARCH_ABI), armeabi-v7a armeabi-v7a-hard),)
 ifndef USE_NEON

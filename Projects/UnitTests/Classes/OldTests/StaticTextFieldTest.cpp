@@ -90,12 +90,6 @@ void StaticTextFieldTest::LoadResources()
     CreateUIButton(finishTestButton, font, Rect(0, 510, 300, w),
         L"Finish Test", &StaticTextFieldTest::OnButtonPressed);
 
-    CreateUIButton(setStaticButton, font, Rect(0 + 300, 510, 300, w),
-        L"Render To Texture", &StaticTextFieldTest::OnButtonSetStatic);
-
-    CreateUIButton(setNormalButton, font, Rect(0 + 300 * 2, 510, 300, w),
-        L"Normal View", &StaticTextFieldTest::OnButtonSetNormal);
-
     CreateUIButton(add10ToAlfaButton, font, Rect(0 + 300 * 1, 510 + w, 300, w),
         L"+10 to Alfa", &StaticTextFieldTest::OnButtonAdd10ToAlfa);
 
@@ -159,16 +153,6 @@ void StaticTextFieldTest::TestFunc(PerfFuncData *)
 void StaticTextFieldTest::OnButtonPressed(BaseObject *, void *, void *)
 {
     testFinished = true;
-}
-
-void StaticTextFieldTest::OnButtonSetStatic(BaseObject *, void *, void *)
-{
-    //uiTextField1->SetRenderToTexture(true);
-}
-
-void StaticTextFieldTest::OnButtonSetNormal(BaseObject *, void *, void *)
-{
-    //uiTextField1->SetRenderToTexture(false);
 }
 
 void StaticTextFieldTest::OnButtonAdd10ToAlfa(BaseObject *obj, void *data,

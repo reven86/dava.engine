@@ -796,8 +796,6 @@ public class JNITextField {
                 };
                 text.addTextChangedListener(updateTexture);
                 text.addTextChangedListener(textWatcher);
-                //text.setCastomTextWatcher(textWatcher);
-                
 
                 textFields.put(id, text);
             }

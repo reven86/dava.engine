@@ -51,8 +51,6 @@ public:
 
 private:
     void OnButtonPressed(BaseObject *obj, void *data, void *callerData);
-    void OnButtonSetStatic(BaseObject *obj, void *data, void *callerData);
-    void OnButtonSetNormal(BaseObject *obj, void *data, void *callerData);
     void OnButtonAdd10ToAlfa(BaseObject *obj, void *data, void *callerData);
     void OnButtonMinus10FromAlfa(BaseObject *obj, void *data, void *callerData);
     void OnButtonVisible(BaseObject*, void*, void*);

@@ -42,7 +42,8 @@
 
 #import "Platform/TemplateiOS/HelperAppDelegate.h"
 
-namespace {
+namespace
+{
     const int MOVE_TO_OFFSCREEN_STEP = 20000;
 }
 
