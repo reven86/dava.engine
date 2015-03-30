@@ -80,10 +80,49 @@ void BaseTest::UnloadResources()
 {
     SafeRelease(scene);
 }
+void BaseTest::OnStart()
+{
+    Logger::Info(TeamcityTestsOutput::FormatTestStarted(testName).c_str());
+}
 
 void BaseTest::OnFinish()
 {
     elapsedTime = SystemTimer::Instance()->FrameStampTimeMS() - startTime;
+
+    float32 minDelta = FLT_MAX;
+    float32 maxDelta = FLT_MIN;
+    float32 averageDelta = 0.0f;
+
+    float32 testTime = 0.0f;
+    float32 elapsedTime = 0.0f;
+
+    uint32 framesCount = GetFramesInfo().size();
+
+    for (BaseTest::FrameInfo frameInfo : GetFramesInfo())
+    {
+        if (frameInfo.delta > maxDelta)
+        {
+            maxDelta = frameInfo.delta;
+        }
+        if (frameInfo.delta < minDelta)
+        {
+            minDelta = frameInfo.delta;
+        }
+
+        averageDelta += frameInfo.delta;
+    }
+
+    averageDelta /= framesCount;
+
+    testTime = GetTestTime();
+    elapsedTime = GetElapsedTime() / 1000.0f;
+
+    Logger::Info(TeamcityTestsOutput::FormatTestFinished(testName, 
+        ConverterUtils::NumberToString(minDelta),
+        ConverterUtils::NumberToString(maxDelta), 
+        ConverterUtils::NumberToString(averageDelta),
+        ConverterUtils::NumberToString(testTime),
+        ConverterUtils::NumberToString(elapsedTime)).c_str());
 }
 
 void BaseTest::SystemUpdate(float32 timeElapsed)

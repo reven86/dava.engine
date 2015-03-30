@@ -30,6 +30,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __BASE_TEST_H__
 
 #include "Infrastructure/Screen/BaseScreen.h"
+#include "Utils/ConverterUtils.h"
+#include "TeamCityTestsOutput.h"
+
 
 class BaseTest : public BaseScreen
 {
@@ -47,6 +50,7 @@ public:
     BaseTest(const String& testName, uint32 frames, float32 delta, uint32 debugFrame);
     BaseTest(const String& testName, uint32 time);
     
+    void OnStart() override;
     void OnFinish() override;
     
     void SetDebuggable(bool value);

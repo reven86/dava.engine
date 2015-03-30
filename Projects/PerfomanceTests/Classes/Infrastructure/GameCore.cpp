@@ -70,6 +70,8 @@ void GameCore::OnAppFinished()
 	{
 		SafeRelease(test);
 	}
+
+    Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
 }
 
 void GameCore::OnSuspend()
@@ -116,8 +118,7 @@ void GameCore::EndFrame()
 
 void GameCore::RegisterTests()
 {
-	//testChain.push_back(new PerfomanceTest(300, 0.016f, 200));
-    //testChain.push_back(new GlobalPerformanceTest(1000, 0.016f, 200));
+  //  testChain.push_back(new GlobalPerformanceTest(1000, 0.016f, 200));
     testChain.push_back(new GlobalPerformanceTest(90000));
 }
 
@@ -126,21 +127,23 @@ void GameCore::InitScreenController()
     Random::Instance()->Seed(0);
 
 	bool chooser = CommandLineParser::Instance()->CommandIsFound("chooser");
-	bool teamcityOut = CommandLineParser::Instance()->CommandIsFound("teamcity_out");
+	bool screenOut = CommandLineParser::Instance()->CommandIsFound("screen_out");
 
 	if (chooser)
 	{
         testFlowController = new SingleTestFlowController();
 		
 	}
-	else if (teamcityOut)
+	else if (screenOut)
 	{
-        testFlowController = new TestChainFlowController(false);
+        testFlowController = new TestChainFlowController(true);
 	} 
 	else
 	{
-		testFlowController = new TestChainFlowController(true);
+		testFlowController = new TestChainFlowController(false);
 	}
+
+    Logger::Instance()->AddCustomOutput(&teamCityOutput);
 
     testFlowController->Init(testChain);
 }

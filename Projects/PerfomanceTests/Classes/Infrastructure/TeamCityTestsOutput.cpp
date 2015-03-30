@@ -34,10 +34,16 @@
 namespace DAVA
 {
 
-static const String START_TEST = "start test ";
-static const String FINISH_TEST = "finish test ";
-static const String ERROR_TEST = "test error ";
-static const String AT_FILE_TEST = " at file: ";
+const String TeamcityTestsOutput::START_TEST = "start test ";
+const String TeamcityTestsOutput::FINISH_TEST = "finish test ";
+const String TeamcityTestsOutput::ERROR_TEST = "test error ";
+const String TeamcityTestsOutput::AT_FILE_TEST = " at file: ";
+
+const String TeamcityTestsOutput::MIN_DELTA = "Min delta";
+const String TeamcityTestsOutput::MAX_DELTA = "Max delta";
+const String TeamcityTestsOutput::AVERAGE_DELTA = "Average delta";
+const String TeamcityTestsOutput::TEST_TIME = "Test time";
+const String TeamcityTestsOutput::TIME_ELAPSED = "Time elapsed";
 
 void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
 {
@@ -54,7 +60,19 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
     } else if (FINISH_TEST == lines[0])
     {
         String testName = lines.at(1);
-        output = "##teamcity[testFinished name=\'" + testName + "\']\n";
+        String minDelta = lines.at(2);
+        String maxDelta = lines.at(2);
+        String averageDelta = lines.at(2);
+        String testTime = lines.at(2);
+        String timeElapsed = lines.at(2);
+
+        output = "##teamcity[testFinished name=\'" + testName
+            + "\' buildStatisticValue key=\'" + MIN_DELTA + "\' value=\'" + minDelta +
+            + "\' buildStatisticValue key=\'" + MAX_DELTA + "\' value=\'" + maxDelta +
+            + "\' buildStatisticValue key=\'" + AVERAGE_DELTA + "\' value=\'" + averageDelta +
+            + "\' buildStatisticValue key=\'" + TEST_TIME + "\' value=\'" + testTime +
+            + "\' buildStatisticValue key=\'" + TIME_ELAPSED + "\' value=\'" + timeElapsed + "\']\n";
+
     } else if (ERROR_TEST == lines[0])
     {
         String testName = lines.at(1);
@@ -77,9 +95,10 @@ String TeamcityTestsOutput::FormatTestStarted(const String& testName)
     return START_TEST + "\n" + testName;
 }
 
-String TeamcityTestsOutput::FormatTestFinished(const String& testName)
+String TeamcityTestsOutput::FormatTestFinished(const String& testName, const String& minDelta, const String& maxDelta, 
+                                                const String& averagedelta, const String& testTime, const String& timeElapsed )
 {
-    return FINISH_TEST + "\n" + testName;
+    return FINISH_TEST + "\n" + testName + "\n" + minDelta + "\n" + maxDelta + "\n" + averagedelta + "\n" + testTime + "\n" + timeElapsed;
 }
 
 String TeamcityTestsOutput::FormatTestFailed(const String& testName, const String& condition, const String& errMsg)

@@ -73,6 +73,8 @@ private:
 
 	Vector<BaseTest*> testChain;
 	TestFlowController* testFlowController;
+
+    TeamcityTestsOutput teamCityOutput;
 };
 
 
