@@ -49,6 +49,7 @@ public:
 	// Packing of resources section
 	void InitFolders(const FilePath & inputPath,const FilePath & outputPath);
 	void PackResources(eGPUFamily forGPU);
+    void RecalculateMD5ForOutputDir();
     
 	void RecursiveTreeWalk(const FilePath & inputPath,const FilePath & outputPath, const Vector<String> & flags = Vector<String>());
 	bool IsModifyDateChagedDir(const FilePath & processDirectoryPath, const FilePath & pathname);
