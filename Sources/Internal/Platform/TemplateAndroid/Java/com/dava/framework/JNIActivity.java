@@ -132,7 +132,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         splashView = GetSplashView();
         
-        //mController = Controller.getInstance(this);
         if(mController != null)
         {
             if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP )
@@ -303,7 +302,12 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         UpdateGamepadAxises();
         
         JNIUtils.keepScreenOnOnResume();
-
+        
+        {
+            glView.onResume();
+            JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
+        }
+        
         isPausing = false;
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
     }
@@ -319,6 +323,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         fmodDevice.stop();
         
         super.onStop();
+        
+        ShowSplashScreenView();
     	// The activity is no longer visible (it is now "stopped")
         Log.i(JNIConst.LOG_TAG, "[Activity::onStop] finish");
     }
@@ -355,11 +361,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
     	if(hasFocus) {
     		HideNavigationBar(getWindow().getDecorView());
-			
-			glView.onResume();
-            JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
-    	} else {
-    		ShowSplashScreenView();
     	}
     	Log.i(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] finish");
     }

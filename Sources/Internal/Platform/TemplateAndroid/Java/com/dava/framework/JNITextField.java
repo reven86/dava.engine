@@ -128,7 +128,6 @@ public class JNITextField {
         private int viewWidth;
         private int viewHeight;
         
-//        private CastomTextWatcher textWatcher = null;
         private InputFilter[] textFilters = null;
         private String lastStringFromCPP = null;
         
@@ -303,23 +302,6 @@ public class JNITextField {
                 }
             }
         }
-        
-//        public void setCastomTextWatcher(CastomTextWatcher t)
-//        {
-//            textWatcher = t;
-//        }
-        
-//        public void disableTextChangeListener()
-//        {
-//            removeTextChangedListener(textWatcher);
-//            super.setFilters(emptyFilterArray);
-//        }
-//        
-//        public void enableTextChangeListener()
-//        {
-//            super.setFilters(textFilters);
-//            addTextChangedListener(textWatcher);
-//        }
         
         @Override
         public void setFilters(InputFilter[] f)
