@@ -110,7 +110,10 @@ namespace DAVA
     
     void UITextFieldiPhone::SetSize(const DAVA::Vector2 &size)
     {
-        //UpdateStaticTexture();
+        if(size.dx > 0 && size.dy > 0)
+        {
+            UpdateStaticTexture();
+        }
     }
     
     void UITextFieldiPhone::SetTextAlign(DAVA::int32 align)
@@ -220,8 +223,6 @@ namespace DAVA
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         textFieldHolder->textField.userInteractionEnabled = NO;
         [textFieldHolder->textField resignFirstResponder];
-        
-        UpdateStaticTexture();
     }
     
     void UITextFieldiPhone::ShowField()
@@ -239,6 +240,14 @@ namespace DAVA
 					   name:UIKeyboardWillHideNotification object:nil];
 		[center addObserver:textFieldHolder selector:@selector(keyboardFrameDidChange:)
 					   name:UIKeyboardDidChangeFrameNotification object:nil];
+        
+        CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this,
+            [](CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
+            {
+                (static_cast<UITextFieldiPhone *>(observer))->UpdateStaticTexture();
+            },
+            (__bridge CFStringRef) UIKeyboardDidHideNotification, nil,
+            CFNotificationSuspensionBehaviorDeliverImmediately);
     }
     
     void UITextFieldiPhone::HideField()
@@ -251,6 +260,9 @@ namespace DAVA
 		[center removeObserver:textFieldHolder name:UIKeyboardDidShowNotification object:nil];
 		[center removeObserver:textFieldHolder name:UIKeyboardWillHideNotification object:nil];
         [center removeObserver:textFieldHolder name:UIKeyboardDidChangeFrameNotification object:nil];
+        
+        CFNotificationCenterRemoveObserver(CFNotificationCenterGetLocalCenter(), this,
+            (__bridge CFStringRef) UIKeyboardDidHideNotification, nil);
     }
     
     void UITextFieldiPhone::UpdateNativeRect(const Rect & virtualRect, int xOffset)
