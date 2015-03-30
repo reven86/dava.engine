@@ -135,7 +135,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 
 	androidDelegate = new AndroidDelegate(vm);
 
-	DAVA::AndroidCrashReport::Init();
+	 DAVA::AndroidCrashReport::Init(env);
 
 	return JNI_VERSION_1_6;
 }
@@ -158,6 +158,7 @@ void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
 	{
 		DAVA::Logger::Warning("[InitApplication] CoreAndroidPlatform has been created");
 	}
+   
 }
 
 void DeinitApplication()
@@ -368,7 +369,6 @@ namespace
 		event.tid = env->GetIntField(input, gInputEventTidField);
 		event.point.x = event.physPoint.x = env->GetFloatField(input, gInputEventXField);
 		event.point.y = event.physPoint.y = env->GetFloatField(input, gInputEventYField);
-		event.phase = GetPhase(action, source);
 		event.tapCount = env->GetIntField(input, gInputEventTapCountField);
 		event.timestamp = env->GetDoubleField(input, gInputEventTimeField);
 
@@ -405,13 +405,17 @@ void Java_com_dava_framework_JNIGLSurfaceView_nativeOnInput(JNIEnv * env, jobjec
 				{
 					jobject jInput = gArrayListGetMethod(javaAllInputs, touchIndex);
 
-					allInputs.push_back(CreateUIEventFromJavaEvent(env, jInput, action, source));
+					DAVA::UIEvent event = CreateUIEventFromJavaEvent(env, jInput, action, source);
+					event.phase = DAVA::UIEvent::PHASE_DRAG;
+					allInputs.push_back(event);
 				}
 				if (touchIndex < activeInputsCount)
 				{
 					jobject jInput = gArrayListGetMethod(javaActiveInputs, touchIndex);
 
-					activeInputs.push_back(CreateUIEventFromJavaEvent(env, jInput, action, source));
+					DAVA::UIEvent event = CreateUIEventFromJavaEvent(env, jInput, action, source);
+					event.phase = GetPhase(action, source);
+					activeInputs.push_back(event);
 				}
 			}
 			core->OnInput(action, source, activeInputs, allInputs);
