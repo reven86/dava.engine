@@ -62,8 +62,8 @@ static const uint32 VBO_USING_FRAME_LIFE = 3; // "triple buffer"
 // Support render with disabled batching
 // Global variables for pointers to render data streams
 // Use ONLY for testing and debugging because they has been removed from the class declaration
-RenderDataStream* spriteVertexStream;
-RenderDataStream* spriteTexCoordStream;
+RenderDataStream* spriteVertexStream = nullptr;
+RenderDataStream* spriteTexCoordStream = nullptr;
 #endif
 
 FastName RenderSystem2D::FLAT_COLOR_SHADER("~res:/Shaders/renderer2dColor");
