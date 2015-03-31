@@ -271,6 +271,21 @@ using UnorderedMap = std::unordered_map<Key, T, Hash, KeyEqual, DefaultSTLAlloca
 #undef max
 #endif
 
+/*
+ Useful functions to offset pointer by specified number of bytes without long cast sequences.
+*/
+template<typename T>
+inline T* OffsetPointer(void* ptr, ptrdiff_t offset)
+{
+    return reinterpret_cast<T*>(static_cast<uint8*>(ptr) + offset);
+}
+
+template<typename T>
+inline const T* OffsetPointer(const void* ptr, ptrdiff_t offset)
+{
+    return reinterpret_cast<const T*>(static_cast<const uint8*>(ptr) + offset);
+}
+
 template <class T>
 inline T Min(T a, T b)
 {
