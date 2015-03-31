@@ -103,7 +103,7 @@ def main_convert_3d(): # it's function for external usage
     # *************** HERE YOU SHOULD SETUP YOUR OWN PATHS ***************
     executables = { "Darwin": "./ResourceEditor.app/Contents/MacOS/ResourceEditor", "Windows": "./ResourceEditor", "Microsoft": "./ResourceEditor" }
 
-    os.chdir("../ResourceEditor/dava.framework/Tools/ResourceEditor/");
+    os.chdir("./../ResourceEditor/dava.framework/Tools/ResourceEditor/");
 
     executable = executables[platform.system()]
     print "ex: " + executable
