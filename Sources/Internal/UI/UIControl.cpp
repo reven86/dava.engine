@@ -42,6 +42,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #include "Components/UIComponent.h"
+#include "Components/UIControlFamily.h"
 
 namespace DAVA
 {
@@ -2772,45 +2773,38 @@ namespace DAVA
     }
 
     /* Components */
-    bool CotrolComponentLessPredicate(Component * left, Component * right)
-    {
-        return left->GetType() < right->GetType();
-    }
 
-    void UIControl::AddComponent(Component * component)
+    void UIControl::AddComponent(UIComponent * component)
     {
         DynamicTypeCheck<UIComponent*>(component)->SetControl(this);
-        components.push_back(component);
-        std::stable_sort(components.begin(), components.end(), CotrolComponentLessPredicate);
+        components.push_back(SafeRetain(component));
+        std::stable_sort(components.begin(), components.end(), [](UIComponent * left, UIComponent * right) {
+            return left->GetType() < right->GetType();
+        });
         UpdateFamily();
     }
 
-    void UIControl::DetachComponent(const Vector<Component *>::iterator & it)
+    UIComponent * UIControl::GetComponent(uint32 componentType, uint32 index) const
     {
-        UIComponent * c = DynamicTypeCheck<UIComponent*>(*it);
-        components.erase(it);
-        UpdateFamily();
-        c->SetControl(0);
-    }
-
-    Component * UIControl::GetComponent(uint32 componentType, uint32 index) const
-    {
-        Component * ret = 0;
         uint32 maxCount = family->GetComponentsCount(componentType);
         if (index < maxCount)
         {
-            ret = components[family->GetComponentIndex(componentType, index)];
+            return components[family->GetComponentIndex(componentType, index)];
         }
-        return ret;
+        return nullptr;
     }
 
-    Component * UIControl::GetOrCreateComponent(uint32 componentType, uint32 index)
+    UIComponent * UIControl::GetOrCreateComponent(uint32 componentType, uint32 index)
     {
-        Component * ret = GetComponent(componentType, index);
+        UIComponent * ret = GetComponent(componentType, index);
         if (!ret)
         {
-            ret = Component::CreateByType(componentType);
-            AddComponent(ret);
+            ret = UIComponent::CreateByType(componentType);
+            if (ret)
+            {
+                AddComponent(ret);
+                ret->Release(); // refCount was increased in AddComponent
+            }
         }
 
         return ret;
@@ -2818,7 +2812,7 @@ namespace DAVA
 
     inline void UIControl::UpdateFamily()
     {
-        family = EntityFamily::GetOrCreate(components);
+        family = UIControlFamily::GetOrCreate(components);
     }
 
     inline void UIControl::RemoveAllComponents()
@@ -2829,37 +2823,49 @@ namespace DAVA
         }
     }
 
-    void UIControl::RemoveComponent(const Vector<Component *>::iterator & it)
+    void UIControl::RemoveComponent(const Vector<UIComponent *>::iterator & it)
     {
         if (it != components.end())
         {
-            UIComponent * c = DynamicTypeCheck<UIComponent*>(*it);
-            DetachComponent(it);
-            SafeDelete(c);
+            UIComponent * c = *it;
+            components.erase(it);
+            UpdateFamily();
+            c->SetControl(0);
+            SafeRelease(c);
         }
     }
 
     void UIControl::RemoveComponent(uint32 componentType, uint32 index)
     {
-        Component * c = GetComponent(componentType, index);
+        UIComponent * c = GetComponent(componentType, index);
         if (c)
         {
             RemoveComponent(c);
         }
     }
 
-    void UIControl::RemoveComponent(Component * component)
-    {
-        DetachComponent(component);
-        SafeDelete(component);
-    }
-
-    void UIControl::DetachComponent(Component * component)
+    void UIControl::RemoveComponent(UIComponent * component)
     {
         DVASSERT(component);
         auto it = std::find(components.begin(), components.end(), component);
-        DetachComponent(it);
+        RemoveComponent(it);
     }
+
+    inline uint32 UIControl::GetComponentCount() const
+    {
+        return static_cast<uint32>(components.size());
+    }
+    
+    inline uint32 UIControl::GetComponentCount(uint32 componentType) const
+    {
+        return family->GetComponentsCount(componentType);
+    }
+    
+    inline uint64 UIControl::GetAvailableComponentFlags() const
+    {
+        return family->GetComponentsFlags();
+    }
+
     /* Components */
 
 }
