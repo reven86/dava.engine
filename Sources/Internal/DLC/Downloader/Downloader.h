@@ -36,6 +36,7 @@
 #include "FileSystem/FileSystem.h"
 #include "DownloaderCommon.h"
 #include "Base/Function.h"
+#include "Thread/Spinlock.h"
 
 namespace DAVA
 {
@@ -111,7 +112,7 @@ protected:
 private:
     uint64 dataToDownloadLeft;
     
-    Mutex statisticsMutex;
+    Spinlock statisticsMutex;
     DownloadStatistics statistics;
 
 };

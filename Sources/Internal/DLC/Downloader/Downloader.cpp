@@ -99,7 +99,7 @@ void Downloader::CalcStatistics(uint32 dataCame)
     prevTime = curTime;
     
     {
-        LockGuard<Mutex> lock(statisticsMutex);
+        LockGuard<Spinlock> lock(statisticsMutex);
         statistics.dataCameTotalBytes += dataCame;
 
         // update download speed 5 times per second
@@ -125,7 +125,7 @@ DownloadStatistics Downloader::GetStatistics()
 {
     DownloadStatistics currentStats;
     
-    LockGuard<Mutex> lock(statisticsMutex);
+    LockGuard<Spinlock> lock(statisticsMutex);
     currentStats = statistics;
 
     return currentStats;
