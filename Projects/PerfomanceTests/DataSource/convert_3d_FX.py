@@ -73,7 +73,7 @@ def main_convert_3d(): # it's function for external usage
 
     #executable = './ResourceEditor.app/Contents/MacOS/TemplateProjectMacOS'
     #executable = "./ResourceEditor"
-    os.chdir("../Tools/ResEditor/dava.framework/Tools/ResourceEditor/");
+    os.chdir("../ResourceEditor/dava.framework/Tools/ResourceEditor/");
 
     executable = executables[platform.system()];
     print "ex: " + executable;

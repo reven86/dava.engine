@@ -26,7 +26,7 @@ g_default_gpu = 'PowerVR_iOS'
 g_default_dirs = ['Gfx']
 g_default_resdir = None
 
-g_default_framework_path = { "Darwin": "./../../dava.framework", "Windows": "./../../dava.framework", "Microsoft": "./../../dava.framework" }
+g_default_framework_path = { "Darwin": "./../../../", "Windows": "./../../../", "Microsoft": "./../../../" }
 g_default_context = {'validate' : tdv.g_default_mode,
                      'gpu' : g_default_gpu,
                      'dirs' : g_default_dirs,

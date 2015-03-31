@@ -48,7 +48,6 @@ def do(context=g_default_context):
     convert3d = [sys.executable, 'convert_3d.py', context['gpu']]
     convert3dTanks = [sys.executable, 'convert_3d_tanks.py', context['gpu']]
     convert3dFX = [sys.executable, 'convert_3d_FX.py', context['gpu']]
-    copySfx = [sys.executable, 'copy_sfx.py', context['platform']]
 
     if context['HD']:
         convertGraphics.extend(['--dirs', 'Gfx', 'Gfx2'])
@@ -68,7 +67,6 @@ def do(context=g_default_context):
     VerboseCall(convert3d)
     VerboseCall(convert3dTanks)
     VerboseCall(convert3dFX)
-    VerboseCall(copySfx)
 
     if context['platform'] == 'Android':
         print "create apk file system"

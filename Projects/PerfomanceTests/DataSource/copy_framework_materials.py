@@ -34,5 +34,5 @@ dataSubfoldersToCopy = ["Materials/", "Shaders/"]
 for dataSubfolder in dataSubfoldersToCopy:
     #copy to project
     dataSubDir =  os.path.realpath(currentDir + "/../Data/" + dataSubfolder)
-    frameworkSubDir =  os.path.realpath(currentDir + "./../../dava.framework/Tools/ResourceEditor/Data/" + dataSubfolder)
+    frameworkSubDir =  os.path.realpath(currentDir + "./../ResourceEditor/dava.framework/Tools/ResourceEditor/Data/" + dataSubfolder)
     copy_replace_folder(frameworkSubDir, dataSubDir)
