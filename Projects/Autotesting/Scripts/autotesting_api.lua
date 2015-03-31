@@ -1,6 +1,6 @@
 SMALL_TIMEOUT = 3.0
 BIG_TIMEOUT = 30.0 -- Big time out for waiting
-TIMEOUT = 10.0 - DEFAULT TIMEOUT
+TIMEOUT = 10.0 -- DEFAULT TIMEOUT
 TIMECLICK = 0.5 -- time for simple action
 DELAY = 0.5 -- time for simulation of human reaction
 
