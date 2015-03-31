@@ -98,37 +98,40 @@ void Downloader::CalcStatistics(uint32 dataCame)
     timeDelta += curTime - prevTime;
     prevTime = curTime;
     
-    {
-        LockGuard<Spinlock> lock(statisticsMutex);
-        statistics.dataCameTotalBytes += dataCame;
+    DownloadStatistics tmpStats;
 
-        // update download speed 5 times per second
-        if (200 <= timeDelta)
+    statisticsMutex.Lock();
+    tmpStats = statistics;
+    statisticsMutex.Unlock();
+    
+    tmpStats.dataCameTotalBytes += dataCame;
+
+    // update download speed 5 times per second
+    if (200 <= timeDelta)
+    {
+        tmpStats.downloadSpeedBytesPerSec = 1000*dataSizeCame/timeDelta;
+        if (0 < tmpStats.downloadSpeedBytesPerSec)
         {
-            statistics.downloadSpeedBytesPerSec = 1000*dataSizeCame/timeDelta;
-            if (0 < statistics.downloadSpeedBytesPerSec)
-            {
-                statistics.timeLeftSecs = static_cast<uint64>(dataToDownloadLeft / statistics.downloadSpeedBytesPerSec);
-            }
-            else
-            {
-                statistics.timeLeftSecs = static_cast<uint64>(DownloadStatistics::VALUE_UNKNOWN);
-            }
-            
-            timeDelta = 0;
-            dataSizeCame = 0;
+            tmpStats.timeLeftSecs = static_cast<uint64>(dataToDownloadLeft / tmpStats.downloadSpeedBytesPerSec);
         }
+        else
+        {
+            tmpStats.timeLeftSecs = static_cast<uint64>(DownloadStatistics::VALUE_UNKNOWN);
+        }
+        
+        timeDelta = 0;
+        dataSizeCame = 0;
     }
+
+    statisticsMutex.Lock();
+    statistics = tmpStats;
+    statisticsMutex.Unlock();
 }
     
 DownloadStatistics Downloader::GetStatistics()
 {
-    DownloadStatistics currentStats;
-    
     LockGuard<Spinlock> lock(statisticsMutex);
-    currentStats = statistics;
-
-    return currentStats;
+    return statistics;
 }
     
 }
