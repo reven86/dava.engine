@@ -156,8 +156,9 @@ public class JNIGLSurfaceView extends GLSurfaceView
                 mRenderer.OnPause();
             }
         });
-        // destroy eglCondext(or unbind), eglScreen, eglSurface
-        super.onPause();
+        // super.onPause(); destroy eglCondext(or unbind), eglScreen, eglSurface
+        // we write AAA mobile game and for user better resume as fast as posible
+        // so DO NOT destroy opengl context
     }
 
     @Override

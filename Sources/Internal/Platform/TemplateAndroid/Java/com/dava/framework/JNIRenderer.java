@@ -23,6 +23,9 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
     private native void nativeOnPauseView(boolean isLock);
 
     private int frameCounter = 0;
+    
+    private int cachedWidth = 0;
+    private int cachedHeight = 0;
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -33,6 +36,9 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
         nativeRenderRecreated();
 
         LogExtensions();
+        
+        cachedWidth = 0;
+        cachedHeight = 0;
 
         Log.d(JNIConst.LOG_TAG, "Activity Render onSurfaceCreated finished");
     }
@@ -67,10 +73,18 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
         // on nexus 5 w == h == 1080
         // if you have any trouble here you should first check
         // res/layout/activity_main.xml and root layout is FrameLayout!
-        if (w > h) 
+        if (w > h)
         {
-            nativeResize(w, h);
-            nativeOnResumeView();
+            if (w != cachedWidth
+                || h != cachedHeight)
+            {
+                // nativeResize - recreate all shaders textures etc
+                // long wait call
+                nativeResize(w, h);
+                cachedWidth = w;
+                cachedHeight = h;
+            }
+            
         }
 
         long endTime = System.nanoTime();
@@ -122,7 +136,7 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 
     public void OnResume() {
         Log.d(JNIConst.LOG_TAG, "Activity Render OnResume start");
-        // do nothing
+        nativeOnResumeView();
         Log.d(JNIConst.LOG_TAG, "Activity Render OnResume finish");
     }
 

@@ -35,6 +35,7 @@ public class JNIWebView {
         private final static int MAX_DELAY = 1600;
         private final static int START_DELAY = 50;
         private int delay = 50; //50, 100, 200, 400, 800, 1600
+        private volatile boolean isLoadingData = false;
         
         public WebViewWrapper(Context context, InternalViewClient client) {
             super(context);
@@ -69,6 +70,31 @@ public class JNIWebView {
         public void restoreVisibility()
         {
             client.setVisible(this, client.isVisible());
+            // on lock/unlock if webview still was loading we have to call
+            // reload() even if in client.isVisible() == false for now
+            if (isLoadingData)
+            {
+                reload();
+            }
+        }
+        @Override
+        public void loadUrl(String url)
+        {
+            isLoadingData = true;
+            super.loadUrl(url);
+        }
+        @Override
+        public void loadData(String htmlString, String mimeType, String encoding)
+        {
+            isLoadingData = true;
+            super.loadData(htmlString, mimeType, encoding);
+        }
+        @Override
+        public void loadDataWithBaseURL(String baseUrl, String data, String mimeType,
+                String encoding, String failUrl)
+        {
+            isLoadingData = true;
+            super.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, failUrl);
         }
     }
 
@@ -126,8 +152,11 @@ public class JNIWebView {
         private void renderToTexture(WebViewWrapper view) {
             renderToBitmapAndCopyPixels(view);
             JNIActivity activity = JNIActivity.GetActivity();
-            activity.PostEventToGL(new OnPageLoadedNativeRunnable(pixels,
+            if (!activity.GetIsPausing())
+            {
+                activity.PostEventToGL(new OnPageLoadedNativeRunnable(pixels,
                     width, height));
+            }
         }
 
         public InternalViewClient(int _id) {
@@ -159,13 +188,17 @@ public class JNIWebView {
         public void onPageFinished(final WebView view, final String url) {
             super.onPageFinished(view, url);
             
+            WebViewWrapper wrap = (WebViewWrapper)view;
+            // mark web view loaded content so on lock/unlock do not call
+            // reload
+            wrap.isLoadingData = false;
+            
             JNIActivity activity = JNIActivity.GetActivity();
             if (null == activity || activity.GetIsPausing()) {
                 return;
             }
 
             if (isRenderToTexture) {
-                WebViewWrapper wrap = (WebViewWrapper)view;
                 // first try render into texture as soon as possible
                 wrap.getInternalViewClient().renderToTexture(wrap);
                 // second render with delay
@@ -350,7 +383,7 @@ public class JNIWebView {
 
     public static void Deinitialize(final int id) {
         final JNIActivity activity = JNIActivity.GetActivity();
-        if (null == activity || activity.GetIsPausing())
+        if (null == activity)
             return;
 
         activity.runOnUiThread(new Runnable() {
@@ -380,7 +413,7 @@ public class JNIWebView {
                     Log.d(TAG, String.format("Unknown view id %d", id));
                     return;
                 }
-                WebView webView = views.get(id);
+                WebViewWrapper webView = views.get(id);
                 webView.loadUrl(url);
             }
         });
@@ -674,15 +707,6 @@ public class JNIWebView {
         }
     }
 
-    protected static void RelinkNativeControls() {
-        for (WebView view : views.values()) {
-            ViewGroup viewGroup = (ViewGroup) view.getParent();
-            viewGroup.removeView(view);
-            JNIActivity.GetActivity().addContentView(view,
-                    view.getLayoutParams());
-        }
-    }
-    
     public static void HideAllWebViews() {
         for (WebViewWrapper view: views.values()) {
             view.setVisibility(View.GONE);

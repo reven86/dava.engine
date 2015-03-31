@@ -1245,16 +1245,6 @@ public class JNITextField {
         });
     }
 
-    static protected void RelinkNativeControls() {
-        final JNIActivity activity = JNIActivity.GetActivity();
-        
-        for (TextField control : textFields.values()) {
-            ViewGroup viewGroup = (ViewGroup) control.getParent();
-            viewGroup.removeView(control);
-            activity.addContentView(control, control.getLayoutParams());
-        }
-    }
-
     public static void KeyboardOpened(int id, Rect keyboardRect) {
         if (id != NO_ACTIVE_TEXTFIELD) {
             TextFieldKeyboardShown(id, keyboardRect.left, keyboardRect.top,
