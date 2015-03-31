@@ -1,4 +1,6 @@
-TIMEOUT = 30.0 -- Big time out for waiting
+SMALL_TIMEOUT = 3.0
+BIG_TIMEOUT = 30.0 -- Big time out for waiting
+TIMEOUT = 10.0 - DEFAULT TIMEOUT
 TIMECLICK = 0.5 -- time for simple action
 DELAY = 0.5 -- time for simulation of human reaction
 
@@ -323,6 +325,12 @@ function GetFrame(element)
     return control:GetFrame()
 end
 
+function GetScreen()
+    local screen =  autotestingSystem:GetScreen()
+    local geomData = screen:GetGeometricData()
+    return geomData:GetUnrotatedRect()
+end
+
 function GetText(element)
     local control = GetControl(element)
     return autotestingSystem:GetText(control)
@@ -339,7 +347,7 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 function IsVisible(element, background)
     Yield()
-    local control = autotestingSystem:FindControl(element)
+    local control = autotestingSystem:FindControl(element) or autotestingSystem:FindControlOnPopUp(element)
     return toboolean(control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(control, background))
 end
 
@@ -637,7 +645,7 @@ function ClickPosition(position, time, touchId)
     TouchDownPosition(position, touchId)
     Wait(waitTime)
     TouchUp(touchId)
-    Wait(waitTime)
+    Wait(TIMECLICK)
 end
 
 function Click(x, y, time, touchId)
