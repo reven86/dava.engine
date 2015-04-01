@@ -95,7 +95,7 @@ void PackageWidget::OnContextChanged(WidgetContext *context)
 
 void PackageWidget::OnDataChanged(const QByteArray &role)
 {
-    if (role == "model")
+    if (role == "packageModel")
     {
         UpdateModel();
     }
@@ -114,7 +114,7 @@ void PackageWidget::UpdateModel()
     FilteredPackageModel *oldModel = proxyModel.data();
     if (nullptr != widgetContext)
     {
-        QAbstractItemModel *model = widgetContext->GetData("model").value<QAbstractItemModel*>();
+        QAbstractItemModel *model = widgetContext->GetData("packageModel").value<QAbstractItemModel*>();
         DVASSERT(model);
         proxyModel = new FilteredPackageModel(this);
         proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -378,7 +378,7 @@ void PackageWidget::filterTextChanged(const QString &filterText)
 
 void PackageWidget::OnControlSelectedInEditor(ControlNode *node)
 {
-    PackageModel *packageModel = widgetContext->GetData("model").value<PackageModel*>();
+    PackageModel *packageModel = widgetContext->GetData("packageModel").value<PackageModel*>();
     QModelIndex srcIndex = packageModel->indexByNode(node);
     QModelIndex dstIndex = proxyModel->mapFromSource(srcIndex);
     ui->treeView->selectionModel()->select(dstIndex, QItemSelectionModel::ClearAndSelect);

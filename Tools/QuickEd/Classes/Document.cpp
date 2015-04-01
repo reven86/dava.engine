@@ -41,9 +41,9 @@ Document::Document(PackageNode *_package, QObject *parent)
 
 void Document::InitWidgetContexts()
 {
-    libraryContext->SetData(QVariant::fromValue(new LibraryModel(package, this)), "model");
+    libraryContext->SetData(QVariant::fromValue(new LibraryModel(package, this)), "libraryModel");
 
-    packageContext->SetData(QVariant::fromValue(new PackageModel(package, commandExecutor, this)), "model");
+    packageContext->SetData(QVariant::fromValue(new PackageModel(package, commandExecutor, this)), "packageModel");
 
     previewContext->SetData(false, "controlDeselected");
     packageContext->SetData(false, "controlsDeselected");
@@ -86,12 +86,12 @@ const DAVA::FilePath &Document::GetPackageFilePath() const
 
 PropertiesModel *Document::GetPropertiesModel() const
 {
-    return reinterpret_cast<PropertiesModel*>(propertiesContext->GetData("model").value<QAbstractItemModel*>()); //TODO this is ugly
+    return reinterpret_cast<PropertiesModel*>(propertiesContext->GetData("propertiesModel").value<QAbstractItemModel*>()); //TODO this is ugly
 }
 
 PackageModel* Document::GetPackageModel() const
 {
-    return packageContext->GetData("model").value<PackageModel*>();
+    return packageContext->GetData("packageModel").value<PackageModel*>();
 }
 
 void Document::UpdateLanguage()

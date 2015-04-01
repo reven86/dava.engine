@@ -23,7 +23,7 @@ void LibraryWidget::OnContextChanged(WidgetContext *arg)
 
 void LibraryWidget::OnDataChanged(const QByteArray &role)
 {
-    if (role == "model")
+    if (role == "libraryModel")
     {
         UpdateModel();
     }
@@ -37,7 +37,7 @@ void LibraryWidget::UpdateModel()
     }
     else
     {
-        QAbstractItemModel *model = widgetContext->GetData("model").value<QAbstractItemModel*>();
+        QAbstractItemModel *model = widgetContext->GetData("libraryModel").value<QAbstractItemModel*>();
         ui->treeView->setModel(model);
     }
 }
