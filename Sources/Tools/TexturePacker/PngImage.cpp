@@ -99,22 +99,17 @@ void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2
         rx = sx;
         for (int32 x = srcRect.x; x < srcRect.x + srcRect.dx; ++x)
         {
-            if ((rx) < 0)
+            if (rx < 0 ||
+                rx >= static_cast<int32>(GetWidth()) ||
+                ry < 0 ||
+                ry >= static_cast<int32>(GetHeight()) ||
+                x < 0 ||
+                x >= static_cast<int32>(image->GetWidth()) ||
+                y < 0 ||
+                y >= static_cast<int32>(image->GetHeight()))
+            {
                 continue;
-            if ((rx) >= (int32)GetWidth())
-                continue;
-            if ((ry) < 0)
-                continue;
-            if ((ry) >= (int32)GetHeight())
-                continue;
-            if (x < 0)
-                continue;
-            if (x >= (int32)image->GetWidth())
-                continue;
-            if (y < 0)
-                continue;
-            if (y >= (int32)image->GetHeight())
-                continue;
+            }
 
             destData32[(rx)+(ry)* GetWidth()] = srcData32[x + y * image->GetWidth()];
             //printf("%04x ", srcData32[x + y * image->width]);

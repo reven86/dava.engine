@@ -49,19 +49,18 @@ public:
 
     bool IsImage(File *infile) const override;
 
-    virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const;
+    eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
 
     //input data only in RGBA8888
-    virtual eErrorCode WriteFile(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const;
+    eErrorCode WriteFile(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const override;
 
     //input data only in RGBA8888
-    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const;
+    eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const override;
 
-    virtual uint32 GetDataSize(File * file) const;
     ImageInfo GetImageInfo(File *infile) const override;
 
-    virtual bool AddCRCIntoMetaData(const FilePath &filePathname) const;
-    virtual uint32 GetCRCFromFile(const FilePath &filePathname) const;
+    bool AddCRCIntoMetaData(const FilePath &filePathname) const override;
+    uint32 GetCRCFromFile(const FilePath &filePathname) const override;
 
     static eErrorCode ReadFile(File *file, Vector<Image*> &imageSet, int32 baseMipMap = 0, bool forceSoftwareConvertation = false);
 

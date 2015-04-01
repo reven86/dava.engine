@@ -65,27 +65,17 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 	{
 		//FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, forGPU);
 		const FilePath& imagePathname = files[i];
-		
-		File *imageFile = File::Create(imagePathname, File::OPEN | File::READ);
-		if(!imageFile)
-		{
-			Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't open file %s", imagePathname.GetAbsolutePathname().c_str());
-			return 0;
-		}
-		
-		ImageSystem* system = ImageSystem::Instance();
-        ImageInfo info = system->GetImageInfo(imageFile);
+        ImageSystem* system = ImageSystem::Instance();
+        ImageInfo info = system->GetImageInfo(imagePathname);
         if (!info.isEmpty())
         {
-            size += info.GetDataSize();
+            size += info.dataSize;
         }
 		else
 		{
 			Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetAbsolutePathname().c_str());
 			DVASSERT(false);
 		}
-		
-		SafeRelease(imageFile);
 	}
 	
     return size;

@@ -83,7 +83,7 @@ LibJpegHelper::LibJpegHelper()
 
 bool LibJpegHelper::IsImage(File *infile) const
 {
-    return GetDataSize(infile) != 0;
+    return GetImageInfo(infile).dataSize != 0;
 }
 
 eErrorCode LibJpegHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
@@ -107,7 +107,7 @@ eErrorCode LibJpegHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     {
         jpeg_destroy_decompress(&cinfo);
         SafeDeleteArray(fileBuffer);
-        SafeRelease(image);
+        image->Release();
         Logger::Error("[LibJpegHelper::ReadFile] File %s has wrong jpeg header", infile->GetFilename().GetAbsolutePathname().c_str());
         return ERROR_FILE_FORMAT_INCORRECT;
     }
@@ -242,37 +242,6 @@ eErrorCode LibJpegHelper::WriteFile(const FilePath & fileName, const Vector<Imag
     return SUCCESS;
 }
 
-uint32 LibJpegHelper::GetDataSize(File *infile) const
-{
-    jpeg_decompress_struct cinfo;
-    jpegErrorManager jerr;
-
-    infile->Seek(0, File::SEEK_FROM_START);
-    uint32 fileSize = infile->GetSize();
-    uint8* fileBuffer = new uint8[fileSize];
-    infile->Read(fileBuffer, fileSize);
-    cinfo.err = jpeg_std_error(&jerr.pub);
-
-    jerr.pub.error_exit = jpegErrorExit;
-    if (setjmp(jerr.setjmp_buffer))
-    {
-        jpeg_destroy_decompress(&cinfo);
-        SafeDeleteArray(fileBuffer);
-        infile->Seek(0, File::SEEK_FROM_START);
-        Logger::Error("[LibJpegHelper::GetDataSize] File %s has wrong jpeg header", infile->GetFilename().GetAbsolutePathname().c_str());
-        return 0;
-    }
-    jpeg_create_decompress(&cinfo);
-    jpeg_mem_src(&cinfo, fileBuffer, fileSize);
-    jpeg_read_header(&cinfo, true);
-    infile->Seek(0, File::SEEK_FROM_START);
-    uint32 dataSize = static_cast<uint32>(cinfo.src->bytes_in_buffer);
-    jpeg_destroy_decompress(&cinfo);
-    SafeDeleteArray(fileBuffer);
-
-    return dataSize;
-}
-
 DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
 {
     ImageInfo info;
@@ -292,7 +261,7 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
         jpeg_destroy_decompress(&cinfo);
         SafeDeleteArray(fileBuffer);
         infile->Seek(0, File::SEEK_FROM_START);
-        Logger::Error("[LibJpegHelper::GetDataSize] File %s has wrong jpeg header", infile->GetFilename().GetAbsolutePathname().c_str());
+        Logger::Error("[LibJpegHelper::GetImageInfo] File %s has wrong jpeg header", infile->GetFilename().GetAbsolutePathname().c_str());
         return info;
     }
 
@@ -310,12 +279,16 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
             break;
         case JCS_GRAYSCALE:
             info.format = FORMAT_A8;
+            break;
         default:
             info.format = FORMAT_INVALID;
     }
+    info.dataSize = static_cast<uint32>(cinfo.src->bytes_in_buffer);
 
     jpeg_destroy_decompress(&cinfo);
     SafeDeleteArray(fileBuffer);
+
+    return info;
 }
 
 };

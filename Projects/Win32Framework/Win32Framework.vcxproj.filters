@@ -1441,9 +1441,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelpers.h">
-      <Filter>Internal\Render\Image</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
@@ -1788,6 +1785,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h">
       <Filter>Internal\UI\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h">
+      <Filter>Internal\Render\Image</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2896,9 +2896,6 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelpers.cpp">
-      <Filter>Internal\Render\Image</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
@@ -3198,6 +3195,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIComponent.cpp">
       <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp">
+      <Filter>Internal\Render\Image</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

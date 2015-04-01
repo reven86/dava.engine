@@ -61,11 +61,9 @@ void ImageSizeTest::TestFunction(PerfFuncData * data)
 	for(uint32 i = 0; i < DAVA::ImageSystem::FILE_FORMAT_COUNT-1; ++i)
 	{
 		DAVA::ImageFormatInterface *im = DAVA::ImageSystem::Instance()->GetImageFormatInterface(imagePathnames[i]);	
-		Size2i imageSize = im->GetImageSize(imagePathnames[i]);
+		DAVA::ImageInfo info = im->GetImageInfo(imagePathnames[i]);
 
-		TEST_VERIFY(imageSize.dx == 128);
-		TEST_VERIFY(imageSize.dy == 128);
+		TEST_VERIFY(info.width == 128);
+		TEST_VERIFY(info.height == 128);
 	}
 }
-
-

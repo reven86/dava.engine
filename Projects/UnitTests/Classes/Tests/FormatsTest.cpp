@@ -38,7 +38,7 @@ const DAVA::float32 FormatsTest::MAX_DIFFERENCE = 2.f; //in persents
 FormatsTest::FormatsTest()
 : TestTemplate<FormatsTest>("FormatsTest")
 {
-    RegisterFunction(this, &FormatsTest::TestFunction, "FormatsTest", NULL);
+    RegisterFunction(this, &FormatsTest::TestFunction, "FormatsTest", nullptr);
 }
 
 void FormatsTest::LoadResources()
@@ -57,14 +57,14 @@ void FormatsTest::TestFunction(PerfFuncData * data)
 {
 #if defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
     
-    for(uint32 f = FORMAT_RGBA8888; f < FORMAT_COUNT; ++f)
+    for (uint32 f = FORMAT_RGBA8888; f < FORMAT_COUNT; ++f)
     {
         const DAVA::PixelFormat requestedFormat = (const DAVA::PixelFormat)f;
-        if(IsFormatSupportedByTest(requestedFormat) == false)
+        if (IsFormatSupportedByTest(requestedFormat) == false)
         {
             continue;
         }
-        
+
         const String formatName = GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(requestedFormat);
         
         data->testData.message = Format("\nFormatsTest: \n\tformat = %s\n", formatName.c_str());
@@ -73,14 +73,15 @@ void FormatsTest::TestFunction(PerfFuncData * data)
         const DAVA::FilePath pngPathname(DAVA::Format("~res:/TestData/FormatsTest/%s.png", formatName.c_str()));
         const DAVA::FilePath compressedPathname = DAVA::FilePath::CreateWithNewExtension(pngPathname, ".dat");
      
-        DAVA::Vector<DAVA::Image *> pngImages, compressedImages;
+        DAVA::Vector<DAVA::Image *> pngImages;
+        DAVA::Vector<DAVA::Image *> compressedImages;
         const DAVA::eErrorCode loadPng = DAVA::ImageSystem::Instance()->Load(pngPathname, pngImages);
         TEST_VERIFY(DAVA::SUCCESS == loadPng);
 
         const DAVA::eErrorCode loadCompressed = DAVA::ImageSystem::Instance()->Load(compressedPathname, compressedImages);
         TEST_VERIFY(DAVA::SUCCESS == loadCompressed);
 
-        if(pngImages.empty() || compressedImages.empty())
+        if (pngImages.empty() || compressedImages.empty())
         {
             TEST_VERIFY(false);
         }
@@ -98,6 +99,11 @@ void FormatsTest::TestFunction(PerfFuncData * data)
             data->testData.message += Format("\tDifference: %f%%\n\tCoincidence: %f%%", differencePersentage, 100.f - differencePersentage);
 
             TEST_VERIFY(differencePersentage <= FormatsTest::MAX_DIFFERENCE);
+
+            ImageInfo info = ImageSystem::Instance()->GetImageInfo(compressedPathname);
+            TEST_VERIFY(info.format == requestedFormat);
+            TEST_VERIFY(info.width == 256);
+            TEST_VERIFY(info.height == 256);
         }
     }
     

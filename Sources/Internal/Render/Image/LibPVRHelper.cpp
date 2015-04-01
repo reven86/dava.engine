@@ -140,20 +140,6 @@ eErrorCode LibPVRHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vec
     return ERROR_WRITE_FAIL;
 }
 
-uint32 LibPVRHelper::GetDataSize(File *file) const
-{
-    uint32 dataSize = 0;
-
-    PVRFile *pvrFile = ReadFile(file, false, false);
-    if(pvrFile != nullptr)
-    {
-        dataSize = file->GetSize() - (PVRTEX3_HEADERSIZE + pvrFile->header.u32MetaDataSize);
-        delete pvrFile;
-    }
-
-    return dataSize;
-}
-
 DAVA::ImageInfo LibPVRHelper::GetImageInfo(File *infile) const
 {
     ImageInfo info;
@@ -164,6 +150,7 @@ DAVA::ImageInfo LibPVRHelper::GetImageInfo(File *infile) const
         info.width = pvrFile->header.u32Width;
         info.height = pvrFile->header.u32Height;
         info.format = GetTextureFormat(pvrFile->header);
+        info.dataSize = infile->GetSize() - (PVRTEX3_HEADERSIZE + pvrFile->header.u32MetaDataSize);
 
         delete pvrFile;
     }

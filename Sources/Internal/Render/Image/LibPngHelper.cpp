@@ -98,17 +98,17 @@ LibPngHelper::LibPngHelper()
     supportedExtensions.push_back(".png");
 }
 
-bool LibPngHelper::IsImage(File *file) const
+bool LibPngHelper::IsImage(File *infile) const
 {
-    if (nullptr == file)
+    if (nullptr == infile)
     {
         return false;
     }
 
     unsigned char sig[8];
-    file->Read(sig, 8);
+    infile->Read(sig, 8);
     bool retValue = (0 != png_check_sig(sig, 8));
-    file->Seek(0, File::SEEK_FROM_START);
+    infile->Seek(0, File::SEEK_FROM_START);
     return retValue;
 }
 

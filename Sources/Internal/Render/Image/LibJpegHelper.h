@@ -53,7 +53,6 @@ public:
     //only RGB888 or A8
     eErrorCode WriteFileAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *>> &imageSet, PixelFormat compressionFormat) const override;
 
-    uint32 GetDataSize(File *infile) const;
     ImageInfo GetImageInfo(File *infile) const override;
 };
 

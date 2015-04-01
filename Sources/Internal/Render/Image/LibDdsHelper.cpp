@@ -83,10 +83,10 @@ namespace DAVA
 
     int32 QualcommHeler::GetQualcommFormat(PixelFormat format)
     {
-        for (int32 i = 0; i < Q_FORMAT_COUNT; ++i)
+        for (PairQualcommPixelGLFormat val : formatPair)
         {
-            if (formatPair[i].davaFormat == format)
-                return formatPair[i].qFormat;
+            if (val.davaFormat == format)
+                return val.qFormat;
         }
         Logger::Error("Wrong pixel format (%d).", format);
         return -1;
@@ -94,10 +94,10 @@ namespace DAVA
 
     PixelFormat QualcommHeler::GetDavaFormat(int32 format)
     {
-        for (int32 i = 0; i < Q_FORMAT_COUNT; ++i)
+        for(PairQualcommPixelGLFormat val : formatPair)
         {
-            if (formatPair[i].qFormat == format)
-                return formatPair[i].davaFormat;
+            if (val.qFormat == format)
+                return val.davaFormat;
         }
         Logger::Error("Wrong qualcomm format (%d).", format);
         return FORMAT_INVALID;
@@ -738,18 +738,6 @@ eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath &fileName, const Vect
     return WriteDxtFileAsCubemap(fileName, imageSet, compressionFormat) ? SUCCESS : ERROR_WRITE_FAIL;
 }
 
-uint32 LibDdsHelper::GetDataSize(File *file) const
-{
-    nvtt::Decompressor dec;
-
-    if (!NvttHelper::InitDecompressor(dec, file))
-    {
-        return 0;
-    }
-
-    return NvttHelper::GetDataSize(dec);
-}
-
 ImageInfo LibDdsHelper::GetImageInfo(File *infile) const
 {
     nvtt::Decompressor dec;
@@ -764,6 +752,7 @@ ImageInfo LibDdsHelper::GetImageInfo(File *infile) const
     info.width = size.dx;
     info.height = size.dy;
     info.format = NvttHelper::GetPixelFormat(dec);
+    info.dataSize = NvttHelper::GetDataSize(dec);
 
     return info;
 }

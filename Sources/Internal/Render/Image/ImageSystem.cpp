@@ -35,10 +35,10 @@
 #include "Platform/SystemTimer.h"
 #include "Utils/Utils.h"
 
-#include "LibJpegHelper.h"
-#include "LibDdsHelper.h"
-#include "LibPngHelper.h"
-#include "LibPVRHelper.h"
+#include "Render/Image/LibJpegHelper.h"
+#include "Render/Image/LibDdsHelper.h"
+#include "Render/Image/LibPngHelper.h"
+#include "Render/Image/LibPVRHelper.h"
 
 namespace DAVA 
 {
@@ -185,16 +185,21 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
 
 ImageInfo ImageSystem::GetImageInfo(const FilePath & pathName) const
 {
-    File *infile = File::Create(pathName, File::OPEN | File::READ);
-    ImageInfo info = GetImageInfo(infile);
-    SafeRelease(infile);
-    return info;
+    ImageFormatInterface* properWrapper = GetImageFormatInterface(pathName);
+    if (nullptr == properWrapper)
+    {
+        return ImageInfo();
+    }
+
+    return properWrapper->GetImageInfo(pathName);
 }
 
 ImageInfo ImageSystem::GetImageInfo(File *infile) const
 {
     if (nullptr == infile)
+    {
         return ImageInfo();
+    }
 
     ImageFormatInterface* properWrapper = GetImageFormatInterface(infile->GetFilename());
     if (nullptr == properWrapper)

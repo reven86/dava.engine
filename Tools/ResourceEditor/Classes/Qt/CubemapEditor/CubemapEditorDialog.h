@@ -34,6 +34,7 @@
 #include <QImage>
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
+#include "Render/Image/ImageSystem.h"
 
 class ClickableQLabel;
 
@@ -66,7 +67,7 @@ protected:
 protected:
     float faceWidth;
     float faceHeight;
-    QString* facePath;
+    QStringList facePath;
     QString rootPath;
 
     bool faceChanged;
@@ -78,6 +79,7 @@ protected:
     void ConnectSignals();
     void LoadImageFromUserFile(float rotation, int face);
     bool VerifyImage(const DAVA::FilePath& path, int faceIndex, QString &errorString);
+    bool IsFormatValid(const DAVA::ImageInfo &info);
     void UpdateFaceInfo();
     void UpdateButtonState();
     bool AnyFaceLoaded();

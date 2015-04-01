@@ -49,7 +49,7 @@ class LibPngHelper: public ImageFormatInterface
 public:
     LibPngHelper();
 
-    bool IsImage(File *file) const override;
+    bool IsImage(File *infile) const override;
 
     eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
     eErrorCode WriteFile(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const override;
