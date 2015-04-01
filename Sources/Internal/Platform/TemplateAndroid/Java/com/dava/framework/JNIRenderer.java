@@ -75,12 +75,15 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
         // res/layout/activity_main.xml and root layout is FrameLayout!
         if (w > h)
         {
-            if (w != cachedWidth
-                || h != cachedHeight)
+            if (   w != cachedWidth
+                || h != cachedHeight
+                || JNIApplication.isEglContextWasDestroyed())
             {
                 // nativeResize - recreate all shaders textures etc
                 // long wait call
+                Log.d(JNIConst.LOG_TAG, "Renderer call nativeResize(w, h)");
                 nativeResize(w, h);
+                JNIApplication.setEglContextWasDestroyed(false);
                 cachedWidth = w;
                 cachedHeight = h;
             }
