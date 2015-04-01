@@ -403,6 +403,10 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
                 if (QtLayer::Instance())
                 {
                     QtLayer::Instance()->OnResume();
+                    // Fix for menuBar rendering
+                    const auto isMenuBarEnabled = ui->menuBar->isEnabled();
+                    ui->menuBar->setEnabled( false );
+                    ui->menuBar->setEnabled( isMenuBarEnabled );
                 }
                 break;
             }
@@ -996,6 +1000,11 @@ void QtMainWindow::EnableSceneActions(bool enable)
     ui->actionSwitchesWithDifferentLODs->setEnabled(enable);
     
     ui->actionSnapCameraToLandscape->setEnabled(enable);
+
+    // Fix for menuBar rendering
+    const auto isMenuBarEnabled = ui->menuBar->isEnabled();
+    ui->menuBar->setEnabled(false);
+    ui->menuBar->setEnabled(isMenuBarEnabled);
 }
 
 void QtMainWindow::UpdateModificationActionsState()
