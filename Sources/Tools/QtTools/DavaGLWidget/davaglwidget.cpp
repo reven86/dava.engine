@@ -194,6 +194,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     openGlWindow = new OpenGLWindow();
     connect( openGlWindow.data(), &OpenGLWindow::Exposed, this, &DavaGLWidget::OnWindowExposed );
     connect( openGlWindow.data(), &QWindow::screenChanged, this, &DavaGLWidget::PerformSizeChange );
+    connect( openGlWindow.data(), &OpenGLWindow::OnDrop, this, &DavaGLWidget::OnDrop );
     
     auto l = new QBoxLayout(QBoxLayout::TopToBottom, this);
     l->setMargin( 0 );
