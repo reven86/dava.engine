@@ -34,8 +34,8 @@
 #include <QCloseEvent>
 
 #include "EditorSettings.h"
-#include <QLineEdit>
-#include <QUndoGroup>
+#include <QtGui>
+#include <QtWidgets>
 #include <QAbstractItemModel>
 
 #include "Result.h"
@@ -48,6 +48,8 @@ class PackageWidget;
 class PropertiesWidget;
 class LibraryWidget;
 class PreviewWidget;
+
+class LocalizationEditorDialog;
 
 class DavaGLWidget;
 class MainWindow : public QMainWindow
@@ -91,7 +93,7 @@ signals:
     void SaveDocument(int index);
     void CurrentTabChanged(int index);
     void CloseRequested();
-
+    void LanguageChanged();
 public slots:
     DavaGLWidget *GetGLWidget() const;
 
@@ -130,6 +132,7 @@ private:
     QList<QAction*> backgroundFramePredefinedColorActions;
     QAction* backgroundFrameUseCustomColorAction;
     QAction* backgroundFrameSelectCustomColorAction;
+    LocalizationEditorDialog *localizationEditorDialog;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);

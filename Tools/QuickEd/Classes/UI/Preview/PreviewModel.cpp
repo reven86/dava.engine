@@ -164,15 +164,8 @@ void PreviewModel::SetCanvasPosition(const QPoint &newCanvasPosition)
     }
 }
 
-
 void PreviewModel::OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIControl *selectedControl)
 {
-    //String fontPresetName = EditorFontManager::Instance()->GetLocalizedFontName(staticText->GetFont());
-    //Font* font = EditorFontManager::Instance()->GetLocalizedFont(fontPresetName, LocalizationSystem::Instance()->GetCurrentLocale());
-    //staticText->SetFont(font);
-    //
-    //staticText->SetText(LocalizationSystem::Instance()->GetLocalizedString(extraData.GetLocalizationKey(state)));
-    //
     auto it = rootNodes.find(rootControl);
     if (it != rootNodes.end())
     {

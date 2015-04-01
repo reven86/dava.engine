@@ -3,7 +3,9 @@
 
 #include <QWidget>
 #include <QDockWidget>
+#include <QPointer>
 #include <QItemSelectionModel>
+#include "UI/Package/FilteredPackageModel.h"
 #include "DAVAEngine.h"
 
 namespace Ui {
@@ -11,7 +13,7 @@ namespace Ui {
 }
 
 class ControlNode;
-class QSortFilterProxyModel;
+class FilteredPackageModel;
 class WidgetContext;
 
 class PackageWidget : public QDockWidget
@@ -61,7 +63,7 @@ private:
     QAction *cutAction;
     QAction *delAction;
 
-    QSortFilterProxyModel *proxyModel;
+    QPointer<FilteredPackageModel> proxyModel;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

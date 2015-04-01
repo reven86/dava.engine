@@ -12,7 +12,6 @@ class Document;
 class BaseController : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int currentIndex READ CurrentIndex WRITE SetCurrentIndex NOTIFY CurrentIndexChanged)
 public:
     explicit BaseController(QObject *parent = nullptr);
     ~BaseController();
@@ -30,6 +29,7 @@ protected slots:
 
     void Exit();
     void RecentMenu(QAction *);
+    void OnCurrentTabChanged(int index);
 
 protected:
     void OpenProject(const QString &path);
@@ -46,19 +46,6 @@ private:
     DocumentGroup *documentGroup;
     Project *project;
     MainWindow *mainWindow;
-
-    //properties. must be at the end of file. Properties interface declared at the begin of the class
-public:
-    int CurrentIndex() const;
-
-public slots:
-    void SetCurrentIndex(int arg);
-
-signals:
-    void CurrentIndexChanged(int arg);
-
-private:
-    int currentIndex;
 };
 
 #endif // QUICKED_BASECONTROLLER_H

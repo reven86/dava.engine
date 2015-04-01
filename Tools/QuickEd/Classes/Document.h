@@ -13,7 +13,6 @@ class QtModelPackageCommandExecutor;
 class WidgetContext;
 class PropertiesModel;
 class PackageModel;
-
 class ControlNode;
 
 class Document : public QObject
@@ -24,8 +23,6 @@ public:
 
     virtual ~Document();
     
-    bool IsModified() const;
-    void ClearModified();
     const DAVA::FilePath &GetPackageFilePath() const;
     PackageNode *GetPackage() const;
     
@@ -35,20 +32,21 @@ public:
     WidgetContext* GetPackageContext() const;
     PropertiesModel *GetPropertiesModel() const; //TODO: this is deprecated
     PackageModel* GetPackageModel() const; //TODO: this is deprecated
-  
     QUndoStack *GetUndoStack() const;
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
+
 signals:
     void LibraryDataChanged(const QByteArray &role);
     void PropertiesDataChanged(const QByteArray &role);
     void PackageDataChanged(const QByteArray &role);
     void PreviewDataChanged(const QByteArray &role);
 public slots:
+    void UpdateLanguage();
 
 private slots:
-    void OnPreviewContextDataChanged(const QByteArray &role);
-    void OnPackageContextDataChanged(const QByteArray &role);
+    void OnContextDataChanged(const QByteArray &role);
 private:
+    void UpdateLanguageRecursively(ControlNode *node);
     void UpdateControlCanvas();
     void InitWidgetContexts();
     void ConnectWidgetContexts() const;

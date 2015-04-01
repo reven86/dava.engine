@@ -13,44 +13,39 @@ using namespace DAVA;
 
 PropertiesWidget::PropertiesWidget(QWidget *parent)
     : QDockWidget(parent)
-    , ui(new Ui::PropertiesWidget())
     , widgetContext(nullptr)
 {
-    ui->setupUi(this);
-    ui->treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
+    setupUi(this);
+    treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
 }
-
-PropertiesWidget::~PropertiesWidget()
-{
-    delete ui;
-} 
 
 void PropertiesWidget::OnContextChanged(WidgetContext *arg)
 {
     widgetContext = arg;
-    UpdateModel();
+    UpdateActivatedControls();
 }
 void PropertiesWidget::OnDataChanged(const QByteArray &role)
 {
-    if (role == "model")
+    if (role == "activatedControls")
     {
-        UpdateModel();
+        UpdateActivatedControls();
     }
 }
 
-void PropertiesWidget::UpdateModel()
+void PropertiesWidget::UpdateActivatedControls()
 {
+    QAbstractItemModel *prevModel = treeView->model();
     if (nullptr == widgetContext)
     {
-        ui->treeView->setModel(nullptr);
+        treeView->setModel(nullptr);
     }
     else
     {
-        QAbstractItemModel *model = widgetContext->GetData("model").value<QAbstractItemModel*>();
-        QAbstractItemModel *prevModel = ui->treeView->model();
-        ui->treeView->setModel(model);
-        delete prevModel;//TODO - this is ugly :(
-        ui->treeView->expandToDepth(0);
-        ui->treeView->resizeColumnToContents(0);
+        QList<ControlNode*> &activatedControls = widgetContext->GetData("activatedControls").value<QList<ControlNode*> >();
+        QAbstractItemModel* model = activatedControls.empty() ? nullptr : new PropertiesModel(activatedControls.first(), this);
+        treeView->setModel(model);
+        treeView->expandToDepth(0);
+        treeView->resizeColumnToContents(0);
     }
+    prevModel->deleteLater();
 }

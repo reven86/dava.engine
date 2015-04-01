@@ -30,6 +30,7 @@ inline Document* WidgetContext::GetDocument() const
 
 Q_DECLARE_METATYPE(WidgetContext*);
 Q_DECLARE_METATYPE(QAbstractItemModel*)
+Q_DECLARE_METATYPE(QPointer<QAbstractItemModel>)
 Q_DECLARE_METATYPE(QItemSelection);
 Q_DECLARE_METATYPE(ControlNode*);
 Q_DECLARE_METATYPE(QList<ControlNode*>);

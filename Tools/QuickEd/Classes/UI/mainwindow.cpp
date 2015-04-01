@@ -70,7 +70,10 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , backgroundFrameUseCustomColorAction(nullptr)
     , backgroundFrameSelectCustomColorAction(nullptr)
+    , localizationEditorDialog(new LocalizationEditorDialog(this))
 {
+    connect(localizationEditorDialog, &LocalizationEditorDialog::LanguageChanged, this, &MainWindow::LanguageChanged);
+
     ui->setupUi(this);
     ui->tabBar->setElideMode(Qt::ElideNone);
     setWindowTitle(ResourcesManageHelper::GetProjectTitle());
@@ -86,7 +89,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionLocalizationManager, &QAction::triggered, this, &MainWindow::OnOpenLocalizationManager);
 
     connect(ui->fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
-
 	InitMenu();
 	RestoreMainWindowState();
 
@@ -226,8 +228,7 @@ void MainWindow::OnOpenFontManager()
 
 void MainWindow::OnOpenLocalizationManager()
 {
-    LocalizationEditorDialog localizationManagerDialog(this);
-    localizationManagerDialog.exec();
+    localizationEditorDialog->exec();
 }
 
 void MainWindow::OnShowHelp()

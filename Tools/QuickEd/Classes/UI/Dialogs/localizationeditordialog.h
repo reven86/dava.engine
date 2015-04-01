@@ -171,7 +171,8 @@ class LocalizationEditorDialog : public QDialog
 public:
     explicit LocalizationEditorDialog(QWidget *parent = 0);
     ~LocalizationEditorDialog();
-    
+signals:
+    void LanguageChanged();
 protected:
 	// Setup the Localization Table Model.
 //	void SetupLocalizationTable();

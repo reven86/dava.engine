@@ -2,29 +2,25 @@
 #define __QUICKED_PROPERTIES_WIDGET_H__
 
 #include <QDockWidget>
+#include "ui_PropertiesWidget.h"
 
 class WidgetContext;
 
-namespace Ui {
-    class PropertiesWidget;
-}
 
 class ControlNode;
 
-class PropertiesWidget : public QDockWidget
+class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
 {
     Q_OBJECT
 public:
     PropertiesWidget(QWidget *parent = NULL);
-    virtual ~PropertiesWidget();
 
 public slots:
 void OnContextChanged(WidgetContext *context);
 void OnDataChanged(const QByteArray &role);
 
 private:
-    void UpdateModel();
-    Ui::PropertiesWidget *ui;
+    void UpdateActivatedControls();
     WidgetContext *widgetContext;
 };
 

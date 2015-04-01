@@ -13,10 +13,9 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageRef.h"
 
-#include "Ui/Package/PackageWidget.h"
-#include "Ui/Preview/PreviewWidget.h"
-#include "Ui/Properties/PropertiesWidget.h"
-#include "Ui/Library/LibraryWidget.h"
+#include "Model/ControlProperties/PropertiesRoot.h"
+#include "Model/ControlProperties/PropertiesSection.h"
+#include "Model/ControlProperties/ValueProperty.h"
 
 #include "Ui/WidgetContext.h"
 
@@ -72,9 +71,13 @@ void Document::InitWidgetContexts()
 
 void Document::ConnectWidgetContexts() const
 {
-    connect(packageContext, &WidgetContext::DataChanged, this, &Document::OnPackageContextDataChanged);
-    connect(previewContext, &WidgetContext::DataChanged, this, &Document::OnPreviewContextDataChanged);
+    //to communicate between contexts
+    connect(packageContext, &WidgetContext::DataChanged, this, &Document::OnContextDataChanged);
+    connect(previewContext, &WidgetContext::DataChanged, this, &Document::OnContextDataChanged);
+    connect(libraryContext, &WidgetContext::DataChanged, this, &Document::OnContextDataChanged);
+    connect(propertiesContext, &WidgetContext::DataChanged, this, &Document::OnContextDataChanged);
 
+    //for widgets owners
     connect(libraryContext, &WidgetContext::DataChanged, this, &Document::LibraryDataChanged);
     connect(packageContext, &WidgetContext::DataChanged, this, &Document::PackageDataChanged);
     connect(propertiesContext, &WidgetContext::DataChanged, this, &Document::PropertiesDataChanged);
@@ -86,16 +89,6 @@ Document::~Document()
     SafeRelease(package);
     
     SafeRelease(commandExecutor);
-}
-
-bool Document::IsModified() const
-{
-    return !undoStack->isClean();
-}
-
-void Document::ClearModified()
-{
-    undoStack->setClean();
 }
 
 const DAVA::FilePath &Document::GetPackageFilePath() const
@@ -114,35 +107,48 @@ PackageModel* Document::GetPackageModel() const
     return packageContext->GetData("model").value<PackageModel*>();
 }
 
-void Document::OnPreviewContextDataChanged(const QByteArray &role)
+void Document::UpdateLanguage()
 {
-    if (role == "selectedNode")
+    QList<ControlNode*> activeRootControls;
+    PackageControlsNode *controlsNode = package->GetPackageControlsNode();
+    for (int32 index = 0; index < controlsNode->GetCount(); ++index)
+        UpdateLanguageRecursively(controlsNode->Get(index));
+}
+
+void Document::UpdateLanguageRecursively(ControlNode *node)
+{
+    PropertiesRoot *propertiesRoot = node->GetPropertiesRoot();
+    int propertiesCount = propertiesRoot->GetCount();
+    for (int index = 0; index < propertiesCount; ++index)
     {
-        packageContext->SetData(previewContext->GetData(role), role);
+        PropertiesSection *section = dynamic_cast<PropertiesSection*>(propertiesRoot->GetProperty(index));
+        int sectionCount = section->GetCount();
+        for (int prop = 0; prop < sectionCount; ++prop)
+        {
+            ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
+            if (!strcmp(valueProperty->GetMember()->Name(), "text"))
+            {
+                valueProperty->SetValue(valueProperty->GetValue());
+            }
+        }
     }
-    else if (role == "controlDeselected")
+    for (int index = 0; index < node->GetCount(); ++index)
     {
-        packageContext->SetData(!packageContext->GetData(role).toBool(), role);
+        UpdateLanguageRecursively(node->Get(index));
     }
 }
 
-void Document::OnPackageContextDataChanged(const QByteArray &role)
+void Document::OnContextDataChanged(const QByteArray &role)
 {
-    if (role == "activatedControls")
+    WidgetContext *context = qobject_cast<WidgetContext*>(sender());
+    if (nullptr == context)
     {
-        QVariant selected = packageContext->GetData("activatedControls");
-        QList<ControlNode*> &activatedControls = selected.value<QList<ControlNode*> >();
-        QAbstractItemModel* model = activatedControls.empty() ? nullptr : new PropertiesModel(activatedControls.first(), this);
-        propertiesContext->SetData(QVariant::fromValue(model), "model");
+        return;
+    }
+    QVariant data = context->GetData(role);
 
-        previewContext->SetData(selected, "activatedControls");
-    }
-    else if (role == "deactivatedControls")
-    {
-        previewContext->SetData(packageContext->GetData("deactivatedControls"), "deactivatedControls");
-    }
-    else if (role == "activeRootControls")
-    {
-        previewContext->SetData(packageContext->GetData("activeRootControls"), "activeRootControls");
-    }
+    packageContext->SetData(data, role);
+    previewContext->SetData(data, role);
+    libraryContext->SetData(data, role);
+    propertiesContext->SetData(data, role);
 }

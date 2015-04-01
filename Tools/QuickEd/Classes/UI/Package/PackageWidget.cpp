@@ -116,17 +116,19 @@ void PackageWidget::UpdateModel()
         QAbstractItemModel *model = widgetContext->GetData("model").value<QAbstractItemModel*>();
         if (nullptr != model)
         {
+            FilteredPackageModel *oldModel = proxyModel.data();
             proxyModel = new FilteredPackageModel(this);
             proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
             proxyModel->setSourceModel(model);
-            ui->treeView->setModel(proxyModel);
+            ui->treeView->setModel(proxyModel.data());
+            delete oldModel;
             ui->treeView->expandToDepth(0);
             connect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(OnSelectionChanged(const QItemSelection &, const QItemSelection &)));
             return;
         }
     }
     proxyModel = nullptr;
-    ui->treeView->setModel(proxyModel);
+    ui->treeView->setModel(proxyModel.data());
 }
 
 void PackageWidget::UpdateSelection()
@@ -263,7 +265,7 @@ void PackageWidget::RemoveNodes(const DAVA::Vector<ControlNode*> &nodes)
 
 void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
 {
-    if (nullptr == proxyModel)
+    if (proxyModel.isNull())
     {
         return;
     }

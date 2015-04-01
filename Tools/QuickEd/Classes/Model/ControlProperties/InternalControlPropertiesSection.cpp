@@ -3,6 +3,7 @@
 #include "ValueProperty.h"
 #include "UI/UIControl.h"
 #include "../PackageSerializer.h"
+#include "LocalizedTextValueProperty.h"
 
 using namespace DAVA;
 
@@ -24,8 +25,10 @@ InternalControlPropertiesSection::InternalControlPropertiesSection(DAVA::UIContr
         {
             const InspMember *member = insp->Member(j);
             
-            ValueProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
-            ValueProperty *prop = new ValueProperty(internalControl, member, sourceProp, copyType);
+            ValueProperty *sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(member);
+
+            ValueProperty *prop = strcmp(member->Name(), "text") == 0 ? new LocalizedTextValueProperty(internalControl, member, sourceProperty, copyType)
+                                                                      : new ValueProperty(internalControl, member, sourceProperty, copyType);
             AddProperty(prop);
             SafeRelease(prop);
         }
@@ -54,7 +57,8 @@ void InternalControlPropertiesSection::CreateInternalControl()
         for (int j = 0; j < insp->MembersCount(); j++)
         {
             const InspMember *member = insp->Member(j);
-            ValueProperty *prop = new ValueProperty(internalControl, member, NULL, COPY_VALUES);
+            ValueProperty *prop = strcmp(member->Name(), "text") == 0 ? new LocalizedTextValueProperty(internalControl, member, NULL, COPY_VALUES)
+                                                                      : new ValueProperty(internalControl, member, NULL, COPY_VALUES);
             AddProperty(prop);
             SafeRelease(prop);
         }

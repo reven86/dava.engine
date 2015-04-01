@@ -22,7 +22,6 @@ BaseController::BaseController(QObject *parent)
     , documentGroup(new DocumentGroup(this))
     , mainWindow(new MainWindow())
     , project(new Project(this))
-    , currentIndex(-1)
 {
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
     connect(mainWindow, &MainWindow::TabClosed, this, &BaseController::CloseOneDocument);
@@ -35,7 +34,6 @@ BaseController::BaseController(QObject *parent)
     connect(mainWindow, &MainWindow::OpenPackageFile, this, &BaseController::OnOpenPackageFile);
     connect(mainWindow, &MainWindow::SaveAllDocuments, this, &BaseController::SaveAllDocuments);
     connect(mainWindow, &MainWindow::SaveDocument, this, static_cast<void(BaseController::*)(int)>(&BaseController::SaveDocument));
-    connect(mainWindow, &MainWindow::CurrentTabChanged, this, &BaseController::SetCurrentIndex);
 
     connect(documentGroup, &DocumentGroup::LibraryContextChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnContextChanged);
     connect(documentGroup, &DocumentGroup::LibraryDataChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnDataChanged);
@@ -48,7 +46,7 @@ BaseController::BaseController(QObject *parent)
 
     qApp->installEventFilter(this);
 }
-
+    
 BaseController::~BaseController()
 {
     delete mainWindow;
@@ -155,6 +153,11 @@ void BaseController::RecentMenu(QAction *recentProjectAction)
     OpenProject(projectPath);
 }
 
+void BaseController::OnCurrentTabChanged(int index)
+{
+    documentGroup->SetActiveDocument(index == -1 ? nullptr : documents.at(index));
+}
+
 void BaseController::OpenProject(const QString &path)
 {
     if (!CloseProject())
@@ -226,10 +229,12 @@ void BaseController::CloseDocument(int index)
 int BaseController::CreateDocument(PackageNode *package)
 {
     Document *document = new Document(package, this);
+    connect(mainWindow, &MainWindow::LanguageChanged, document, &Document::UpdateLanguage);
     connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &BaseController::OnCleanChanged);
     documents.push_back(document);
     documentGroup->AddDocument(document);
     int index = mainWindow->AddTab(document->GetPackageFilePath().GetBasename().c_str());
+    OnCurrentTabChanged(index);
     return index;
 }
 
@@ -257,24 +262,6 @@ int BaseController::GetIndexByPackagePath(const QString &fileName) const
         }
     }
     return -1;
-}
-
-int BaseController::CurrentIndex() const
-{
-    return currentIndex;
-}
-
-void BaseController::SetCurrentIndex(int arg)
-{
-    Q_ASSERT(arg < documents.size());
-    if (currentIndex == arg) //arg = -1 when close last tab 
-    {
-        return;
-    }
-    DVASSERT(arg < documents.size());
-    currentIndex = arg;
-    documentGroup->SetActiveDocument(arg == -1 ? nullptr : documents.at(arg));
-    emit CurrentIndexChanged(arg);
 }
 
 bool BaseController::eventFilter( QObject *obj, QEvent *event )
