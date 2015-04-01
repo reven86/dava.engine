@@ -315,7 +315,7 @@ void TextureConvertor::jobRunNextConvert()
 
 			convertJobQueueSize = 0;
 
-			emit ConvertStatusImg("", DAVA::GPU_PNG);
+			emit ConvertStatusImg("", DAVA::GPU_ORIGIN);
 			emit ConvertStatusQueue(0, 0);
 
 			if(NULL != waitDialog)
@@ -426,7 +426,7 @@ TextureInfo TextureConvertor::GetThumbnailThread(JobItem *item)
 			fileSize = QFileInfo(descriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str()).size();
 		}
 
-		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_PNG);
+		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_ORIGIN);
 		result.fileSize = fileSize;
 	}
 
@@ -471,7 +471,7 @@ TextureInfo TextureConvertor::GetOriginalThread(JobItem *item)
 			fileSize = QFileInfo(descriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str()).size();
 		}
 
-		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_PNG);
+		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_ORIGIN);
 		result.fileSize = fileSize;
 
 		if(result.images.size())

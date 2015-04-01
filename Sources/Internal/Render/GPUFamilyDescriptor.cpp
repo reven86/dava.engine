@@ -41,6 +41,9 @@ namespace DAVA
 {
     
 GPUFamilyDescriptor::GPUData GPUFamilyDescriptor::gpuData[GPU_FAMILY_COUNT];
+UnorderedSet<String> GPUFamilyDescriptor::originExtensions;
+UnorderedSet<String> GPUFamilyDescriptor::gpuExtensions;
+String GPUFamilyDescriptor::defaultOriginExt;
 
 void GPUFamilyDescriptor::GPUData::SetName(const String &newName)
 {
@@ -200,7 +203,7 @@ FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const TextureDescriptor *desc
     DVASSERT(descriptor);
 
 	if(GPU_INVALID == gpuFamily)
-		return CreatePathnameForGPU(descriptor->pathname, GPU_INVALID, FORMAT_INVALID);
+        return descriptor->GetSourceTexturePathname();
 
 	eGPUFamily requestedGPU = gpuFamily;
 	
@@ -216,14 +219,14 @@ FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const TextureDescriptor *desc
 	}
 
     if (requestedGPU == GPU_ORIGIN)
-        return descriptor->originName;
+        return descriptor->GetSourceTexturePathname();
     else
         return CreatePathnameForGPU(descriptor->pathname, requestedGPU, requestedFormat);
 }
 
 FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const FilePath & pathname, const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
 {
-    return FilePath::CreateWithNewExtension(pathname, GetFilenamePostfix(gpuFamily, pixelFormat));
+    return FilePath::CreateWithNewExtension(pathname, GetFileExtension(gpuFamily, pixelFormat));
 }
 
     
@@ -251,16 +254,16 @@ eGPUFamily GPUFamilyDescriptor::GetGPUByName(const String & name)
 
 bool GPUFamilyDescriptor::IsFormatSupported(const eGPUFamily gpu, const PixelFormat format)
 {
-	if(gpu < 0 || gpu >= GPU_FAMILY_COUNT)
-	{
-		return false;
-	}
-	return gpuData[gpu].availableFormats.find(format) != gpuData[gpu].availableFormats.end();
+    if (gpu < 0 || gpu >= GPU_FAMILY_COUNT || format == FORMAT_INVALID)
+    {
+        return false;
+    }
+    return gpuData[gpu].availableFormats.find(format) != gpuData[gpu].availableFormats.end();
 }
     
 const String & GPUFamilyDescriptor::GetCompressedFileExtension(const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
 {
-    DVASSERT(0 <= gpuFamily && gpuFamily < GPU_FAMILY_COUNT);
+    DVASSERT(0 <= gpuFamily && gpuFamily < GPU_DEVICE_COUNT);
 
     auto format = gpuData[gpuFamily].availableFormats.find(pixelFormat);
     DVASSERT(format != gpuData[gpuFamily].availableFormats.end());
@@ -268,29 +271,36 @@ const String & GPUFamilyDescriptor::GetCompressedFileExtension(const eGPUFamily 
     return format->second;
 }
 
-    
-String GPUFamilyDescriptor::GetFilenamePostfix(const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
+String GPUFamilyDescriptor::GetFileExtension(const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
 {
-    if(!IsGPUForDevice(gpuFamily) || pixelFormat == FORMAT_INVALID)
+    if (!IsGPUForDevice(gpuFamily) || pixelFormat == FORMAT_INVALID)
         return defaultOriginExt;
 
     auto& gpuFormats = gpuData[gpuFamily].availableFormats;
     auto formatFound = gpuFormats.find(pixelFormat);
-	if(formatFound == gpuFormats.end())
-	{
-		Logger::Error("[GPUFamilyDescriptor::GetFilenamePostfix: can't find format %s for gpu %s]", PixelFormatDescriptor::GetPixelFormatString(pixelFormat), gpuData[gpuFamily].name.c_str());
+    if (formatFound == gpuFormats.end())
+    {
+        Logger::Error("[GPUFamilyDescriptor::GetFileExtension: can't find format %s for gpu %s]", PixelFormatDescriptor::GetPixelFormatString(pixelFormat), gpuData[gpuFamily].name.c_str());
         return defaultOriginExt;
-	}
+    }
 
     return (gpuData[gpuFamily].prefix + formatFound->second);
 }
-    
+
 eGPUFamily GPUFamilyDescriptor::ConvertValueToGPU(const int32 value)
 {
-    if(value >= 0 && value < GPU_FAMILY_COUNT) return (eGPUFamily)value;
-    if(value == -1) return GPU_ORIGIN;
-
-    return GPU_INVALID;
+    if (value >= 0 && value < GPU_FAMILY_COUNT)
+    {
+        return static_cast<eGPUFamily>(value);
+    }
+    else if (value == -1)
+    {
+        return GPU_ORIGIN;
+    }
+    else
+    {
+        return GPU_INVALID;
+    }
 }
 
 bool GPUFamilyDescriptor::IsGPUForDevice(const eGPUFamily gpu)

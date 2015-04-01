@@ -63,6 +63,7 @@ public:
 
     
     inline bool IsFileExtensionSupported(const String& extension) const;
+    inline const Vector<String>& Extensions() const;
     
 protected:
 
@@ -82,6 +83,11 @@ inline bool ImageFormatInterface::IsFileExtensionSupported(const String& extensi
     }
 
     return false;
+}
+
+inline const Vector<String>& ImageFormatInterface::Extensions() const
+{
+    return supportedExtensions;
 }
 
 };

@@ -49,16 +49,6 @@ class Image;
 class ImageSystem: public Singleton<ImageSystem>
 {
 public:
-    enum eSupportedImageFileFormats
-    {
-        FILE_FORMAT_PNG = 0,
-        FILE_FORMAT_DDS,
-        FILE_FORMAT_PVR,
-        FILE_FORMAT_JPEG,
-        FILE_FORMAT_TGA,
-        FILE_FORMAT_COUNT
-    };
-
     ImageSystem();
     
     virtual ~ImageSystem();
@@ -75,21 +65,30 @@ public:
     
     eErrorCode Save(const FilePath & fileName, Image *image, PixelFormat compressionFormat = FORMAT_RGBA8888) const;
     
-    inline ImageFormatInterface* GetImageFormatInterface(eSupportedImageFileFormats fileFormat) const;
+    inline ImageFormatInterface* GetImageFormatInterface(ImageFormat fileFormat) const;
 	ImageFormatInterface* GetImageFormatInterface(const FilePath & pathname) const;
 	ImageFormatInterface* GetImageFormatInterface(File *file) const;
+
+    inline const Vector<String>& GetExtensionsFor(ImageFormat format) const;
     
 protected:
     
        
-    ImageFormatInterface* wrappers[FILE_FORMAT_COUNT];
-};
-   
+    ImageFormatInterface* wrappers[IMAGE_FORMAT_COUNT];
 };
 
-inline DAVA::ImageFormatInterface* DAVA::ImageSystem::GetImageFormatInterface(ImageSystem::eSupportedImageFileFormats fileFormat) const
+inline ImageFormatInterface* ImageSystem::GetImageFormatInterface(ImageFormat fileFormat) const
 {
     return wrappers[fileFormat];
 }
+
+inline const Vector<String>& ImageSystem::GetExtensionsFor(ImageFormat format) const
+{
+    return GetImageFormatInterface(format)->Extensions();
+}
+
+};
+
+
 
 #endif // __DAVAENGINE_IMAGE_SYSTEM_H__

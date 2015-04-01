@@ -27,22 +27,24 @@
 =====================================================================================*/
 
 
-#include "Render/TextureDescriptor.h"
 #include "FileSystem/Logger.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/DynamicMemoryFile.h"
-#include "Render/Texture.h"
 #include "Utils/Utils.h"
+#include "Utils/CRC32.h"
+#include "Render/Texture.h"
+#include "Render/TextureDescriptor.h"
+#include "Render/GPUFamilyDescriptor.h"
+#include "Render/Image/ImageSystem.h"
 #include "Render/Image/LibPVRHelper.h"
 #include "Render/Image/LibDdsHelper.h"
 
-#include "Render/GPUFamilyDescriptor.h"
-
-#include "Utils/CRC32.h"
 
 namespace DAVA
 {
+
+
     
 //================   TextureDrawSettings  ===================
 void TextureDescriptor::TextureDrawSettings::SetDefaultValues()
@@ -59,6 +61,8 @@ void TextureDescriptor::TextureDataSettings::SetDefaultValues()
 {
 	textureFlags = FLAG_GENERATE_MIPMAPS;
     faceDescription = 0;
+    sourceFileFormat = IMAGE_FORMAT_PNG;
+    sourceFileExtension = ImageSystem::Instance()->GetExtensionsFor(IMAGE_FORMAT_PNG)[0];
 }
 
 void TextureDescriptor::TextureDataSettings::SetGenerateMipmaps(const bool & generateMipmaps)
@@ -209,7 +213,7 @@ bool TextureDescriptor::UpdateCrcForFormat(eGPUFamily forGPU) const
     
 bool TextureDescriptor::Load(const FilePath &filePathname)
 {
-    File *file = File::Create(filePathname, File::READ | File::OPEN);
+    ScopedPtr<File> file(File::Create(filePathname, File::READ | File::OPEN));
     if(!file)
     {
         Logger::Error("[TextureDescriptor::Load] Can't open file: %s", filePathname.GetAbsolutePathname().c_str());
@@ -221,35 +225,39 @@ bool TextureDescriptor::Load(const FilePath &filePathname)
     int32 signature;
 	file->Read(&signature);
 
-	isCompressedFile = (COMPRESSED_FILE == signature);
-
     int8 version = 0;
 	file->Read(&version);
-    if(version != CURRENT_VERSION)
-    {
-        ConvertToCurrentVersion(version, signature, file);
-        SafeRelease(file);
-        return true;
-    }
-    
-    if(isCompressedFile)
-    {
-        LoadCompressed(file);
-    }
-    else if(NOTCOMPRESSED_FILE == signature)
-    {
-        LoadNotCompressed(file);
-    }
+
+    if (signature == COMPRESSED_FILE)
+        isCompressedFile = true;
+    else if (signature == NOTCOMPRESSED_FILE)
+        isCompressedFile = false;
     else
     {
-        Logger::Error("[TextureDescriptor::Load] Wrong descriptor file: %s", filePathname.GetAbsolutePathname().c_str());
-        SafeRelease(file);
+        Logger::Error("[TextureDescriptor::Load] Signature '%X' is incorrect", signature);
         return false;
     }
-    
-	file->Read(&dataSettings.faceDescription);
-	
-    SafeRelease(file);
+
+    switch (version)
+    {
+    case 6:
+        LoadVersion6(file);
+        break;
+    case 7:
+        LoadVersion7(file);
+        break;
+    case 8:
+        LoadVersion8(file);
+        break;
+    case 9:
+        LoadVersion9(file);
+        break;
+    default:
+    {
+        Logger::Error("[TextureDescriptor::Load] Version %d is not supported", version);
+    }
+    }
+
     return true;
 }
 
@@ -285,6 +293,8 @@ void TextureDescriptor::Save(const FilePath &filePathname) const
 	}
 	
 	file->Write(&dataSettings.faceDescription);
+    file->Write(&dataSettings.sourceFileFormat);
+    file->Write(&dataSettings.sourceFileExtension);
     
     SafeRelease(file);
 }
@@ -310,24 +320,13 @@ void TextureDescriptor::Export(const FilePath &filePathname) const
 	file->Write(&exportedAsPixelFormat);
 	
 	file->Write(&dataSettings.faceDescription);
+    file->Write(&dataSettings.sourceFileFormat);
+    file->Write(&dataSettings.sourceFileExtension);
 
     SafeRelease(file);
 }
-    
-void TextureDescriptor::ConvertToCurrentVersion(int8 version, int32 signature, DAVA::File *file)
-{
-    if(version == 6)
-	{
-		LoadVersion6(signature, file);
-	}
-	else if(version == 7)
-	{
-		LoadVersion7(signature, file);
-	}
-}
-    
 
-void TextureDescriptor::LoadVersion6(int32 signature, DAVA::File *file)
+void TextureDescriptor::LoadVersion6(DAVA::File *file)
 {
 	file->Read(&drawSettings.wrapModeS);
 	file->Read(&drawSettings.wrapModeT);
@@ -335,22 +334,23 @@ void TextureDescriptor::LoadVersion6(int32 signature, DAVA::File *file)
 	file->Read(&drawSettings.minFilter);
 	file->Read(&drawSettings.magFilter);
 
-    if(signature == COMPRESSED_FILE)
+    if(isCompressedFile)
     {
 		file->Read(&exportedAsGpuFamily);
         exportedAsGpuFamily = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
         
 		int8 exportedAsPixelFormat = FORMAT_INVALID;
 		file->Read(&exportedAsPixelFormat);
-		format = (PixelFormat)exportedAsPixelFormat;
+        format = static_cast<PixelFormat>(exportedAsPixelFormat);
     }
-    else if(signature == NOTCOMPRESSED_FILE)
+    else
     {
-        for(int32 i = 0; i < GPU_DEVICE_COUNT; ++i)
+        static_assert(GPU_DEVICE_COUNT == 5, "GPU_DEVICE_COUNT is changed, texture descriptor load routine should be altered");
+        for(auto i = 0; i < GPU_DEVICE_COUNT; ++i)
         {
             int8 format;
 			file->Read(&format);
-            compression[i].format = (PixelFormat)format;
+            compression[i].format = static_cast<PixelFormat>(format);
             
 			file->Read(&compression[i].compressToWidth);
 			file->Read(&compression[i].compressToHeight);
@@ -359,7 +359,7 @@ void TextureDescriptor::LoadVersion6(int32 signature, DAVA::File *file)
     }
 }
 
-void TextureDescriptor::LoadVersion7(int32 signature, DAVA::File *file)
+void TextureDescriptor::LoadVersion7(DAVA::File *file)
 {
     file->Read(&drawSettings.wrapModeS);
     file->Read(&drawSettings.wrapModeT);
@@ -367,22 +367,23 @@ void TextureDescriptor::LoadVersion7(int32 signature, DAVA::File *file)
     file->Read(&drawSettings.minFilter);
     file->Read(&drawSettings.magFilter);
     
-    if(signature == COMPRESSED_FILE)
+    if(isCompressedFile)
     {
         file->Read(&exportedAsGpuFamily);
         exportedAsGpuFamily = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
 
         int8 exportedAsPixelFormat = FORMAT_INVALID;
         file->Read(&exportedAsPixelFormat);
-        format = (PixelFormat)exportedAsPixelFormat;
+        format = static_cast<PixelFormat>(exportedAsPixelFormat);
     }
-    else if(signature == NOTCOMPRESSED_FILE)
+    else
     {
+        static_assert(GPU_DEVICE_COUNT == 5, "GPU_DEVICE_COUNT is changed, texture descriptor load routine should be altered");
         for(int32 i = 0; i < GPU_DEVICE_COUNT; ++i)
         {
             int8 format;
             file->Read(&format);
-            compression[i].format = (PixelFormat)format;
+            compression[i].format = static_cast<PixelFormat>(format);
             
             file->Read(&compression[i].compressToWidth);
             file->Read(&compression[i].compressToHeight);
@@ -394,39 +395,85 @@ void TextureDescriptor::LoadVersion7(int32 signature, DAVA::File *file)
     file->Read(&dataSettings.faceDescription);
 }
 
-    
-void TextureDescriptor::LoadNotCompressed(File *file)
+void TextureDescriptor::LoadVersion8(File *file)
 {
-    ReadGeneralSettings(file);
-    
-    uint8 compressionsCount = 0;
-    file->Read(&compressionsCount);
-	for(int32 i = 0; i < compressionsCount; ++i)
-	{
-		ReadCompression(file, &compression[i]);
-	}
-}
-    
-void TextureDescriptor::LoadCompressed(File *file)
-{
-    ReadGeneralSettings(file);
-	file->Read(&exportedAsGpuFamily);
-    exportedAsGpuFamily = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
+    file->Read(&drawSettings.wrapModeS);
+    file->Read(&drawSettings.wrapModeT);
+    file->Read(&dataSettings.textureFlags);
+    file->Read(&drawSettings.minFilter);
+    file->Read(&drawSettings.magFilter);
 
-	int8 exportedAsPixelFormat = FORMAT_INVALID;
-	file->Read(&exportedAsPixelFormat);
-	format = (PixelFormat)exportedAsPixelFormat;
+    if (isCompressedFile)
+    {
+        file->Read(&exportedAsGpuFamily);
+        exportedAsGpuFamily = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
+
+        int8 exportedAsPixelFormat = FORMAT_INVALID;
+        file->Read(&exportedAsPixelFormat);
+        format = static_cast<PixelFormat>(exportedAsPixelFormat);
+    }
+    else
+    {
+        uint8 compressionsCount = 0;
+        file->Read(&compressionsCount);
+        static_assert(GPU_FAMILY_COUNT == 6, "GPU_FAMILY_COUNT is changed, texture descriptor load routine should be altered");
+        for (auto i = 0; i < GPU_FAMILY_COUNT; ++i)
+        {
+            int8 format;
+            file->Read(&format);
+            compression[i].format = (PixelFormat)format;
+
+            file->Read(&compression[i].compressToWidth);
+            file->Read(&compression[i].compressToHeight);
+            file->Read(&compression[i].sourceFileCrc);
+            file->Read(&compression[i].convertedFileCrc);
+        }
+    }
+
+    file->Read(&dataSettings.faceDescription);
 }
 
-void TextureDescriptor::ReadGeneralSettings(File *file)
+void TextureDescriptor::LoadVersion9(File *file)
 {
-	file->Read(&drawSettings.wrapModeS);
-	file->Read(&drawSettings.wrapModeT);
-	file->Read(&dataSettings.textureFlags);
-	file->Read(&drawSettings.minFilter);
-	file->Read(&drawSettings.magFilter);
+    file->Read(&drawSettings.wrapModeS);
+    file->Read(&drawSettings.wrapModeT);
+    file->Read(&dataSettings.textureFlags);
+    file->Read(&drawSettings.minFilter);
+    file->Read(&drawSettings.magFilter);
+
+    if (isCompressedFile)
+    {
+        file->Read(&exportedAsGpuFamily);
+        exportedAsGpuFamily = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
+
+        int8 exportedAsPixelFormat = FORMAT_INVALID;
+        file->Read(&exportedAsPixelFormat);
+        format = static_cast<PixelFormat>(exportedAsPixelFormat);
+    }
+    else
+    {
+        uint8 compressionsCount = 0;
+        file->Read(&compressionsCount);
+        static_assert(GPU_FAMILY_COUNT == 6, "GPU_FAMILY_COUNT is changed, texture descriptor load routine should be altered");
+        for (auto nextCompression : compression)
+        {
+            int8 format;
+            file->Read(&format);
+            nextCompression.format = (PixelFormat)format;
+
+            file->Read(&nextCompression.compressToWidth);
+            file->Read(&nextCompression.compressToHeight);
+            file->Read(&nextCompression.sourceFileCrc);
+            file->Read(&nextCompression.convertedFileCrc);
+        }
+    }
+
+    file->Read(&dataSettings.faceDescription);
+    file->Read(&dataSettings.sourceFileFormat);
+    dataSettings.sourceFileFormat = static_cast<ImageFormat>(dataSettings.sourceFileFormat);
+    file->Read(&dataSettings.sourceFileExtension);
 }
-    
+
 void TextureDescriptor::WriteGeneralSettings(File *file) const
 {
 	file->Write(&drawSettings.wrapModeS);
@@ -434,50 +481,6 @@ void TextureDescriptor::WriteGeneralSettings(File *file) const
 	file->Write(&dataSettings.textureFlags);
 	file->Write(&drawSettings.minFilter);
 	file->Write(&drawSettings.magFilter);
-}
-
-    
-void TextureDescriptor::ReadCompression(File *file, Compression *compression)
-{
-    int8 format;
-	file->Read(&format);
-    compression->format = (PixelFormat)format;
-
-	file->Read(&compression->compressToWidth);
-	file->Read(&compression->compressToHeight);
-	file->Read(&compression->sourceFileCrc);
-	file->Read(&compression->convertedFileCrc);
-}
-
-void TextureDescriptor::ReadCompressionWithDateOld( File *file, Compression *compression )
-{
-	int8 format;
-	file->Read(&format);
-	compression->format = (PixelFormat)format;
-
-	file->Read(&compression->compressToWidth);
-	file->Read(&compression->compressToHeight);
-
-	// skip modification date
-	file->Seek(DATE_BUFFER_SIZE * sizeof(char8), File::SEEK_FROM_CURRENT);
-
-	// skip old crc
-	file->Seek((MD5::DIGEST_SIZE*2 + 1) * sizeof(char8), File::SEEK_FROM_CURRENT);
-	compression->sourceFileCrc = 0;
-}
-
-void TextureDescriptor::ReadCompressionWith16CRCOld( File *file, Compression *compression )
-{
-	int8 format;
-	file->Read(&format);
-	compression->format = (PixelFormat)format;
-
-	file->Read(&compression->compressToWidth);
-	file->Read(&compression->compressToHeight);
-
-	// skip old crc
-	file->Seek((MD5::DIGEST_SIZE*2 + 1) * sizeof(char8), File::SEEK_FROM_CURRENT);
-	compression->sourceFileCrc = 0;
 }
 
 void TextureDescriptor::WriteCompression(File *file, const Compression *compression) const
@@ -496,9 +499,19 @@ bool TextureDescriptor::GetGenerateMipMaps() const
     return dataSettings.GetGenerateMipMaps();
 }
 
+const String& TextureDescriptor::GetSourceTextureExtension() const
+{
+    return dataSettings.sourceFileExtension;
+}
+
 FilePath TextureDescriptor::GetSourceTexturePathname() const
 {
-    return sourcePathname;
+    if (pathname.IsEmpty())
+    {
+        return FilePath();
+    }
+
+    return FilePath::CreateWithNewExtension(pathname, GetSourceTextureExtension());
 }
 
 FilePath TextureDescriptor::GetDescriptorPathname(const FilePath &texturePathname)
@@ -615,7 +628,7 @@ PixelFormat TextureDescriptor::GetPixelFormatForCompression(eGPUFamily forGPU) c
 		return FORMAT_INVALID;
 
     DVASSERT(0 <= forGPU && forGPU < GPU_FAMILY_COUNT);
-    return (PixelFormat) compression[forGPU].format;
+    return static_cast<PixelFormat>(compression[forGPU].format);
 }
 
 void TextureDescriptor::Initialize( Texture::TextureWrap wrap, bool generateMipmaps )

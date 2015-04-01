@@ -32,8 +32,7 @@
 #include "Qt/Settings/SettingsManager.h"
 #include "Qt/Main/QtUtils.h"
 #include "Project/ProjectManager.h"
-
-#define CUBEMAPEDITOR_MAXFACES 6
+#include "Render/Texture.h"
 
 static DAVA::String FACE_NAME_SUFFIX[] = {
 	DAVA::String("_px"),
@@ -58,7 +57,7 @@ void CubemapUtils::GenerateFaceNames(const DAVA::String& baseName, DAVA::Vector<
 	{
 		DAVA::FilePath faceFilePath = baseName;
 		faceFilePath.ReplaceFilename(fileNameWithoutExtension +
-									 CubemapUtils::GetFaceNameSuffix(CubemapUtils::MapUIToFrameworkFace(i)) +
+									 CubemapUtils::GetFaceNameSuffix((i)) +
 									 CubemapUtils::GetDefaultFaceExtension());
 
 		faceNames.push_back(faceFilePath.GetAbsolutePathname());
@@ -67,7 +66,7 @@ void CubemapUtils::GenerateFaceNames(const DAVA::String& baseName, DAVA::Vector<
 
 int CubemapUtils::GetMaxFaces()
 {
-	return CUBEMAPEDITOR_MAXFACES;
+    return DAVA::Texture::CUBE_FACE_MAX_COUNT;
 }
 
 const DAVA::String& CubemapUtils::GetFaceNameSuffix(int faceId)

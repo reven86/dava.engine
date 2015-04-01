@@ -46,18 +46,18 @@ namespace DAVA
 
 ImageSystem::ImageSystem()
 {
-    wrappers[FILE_FORMAT_PNG] = new LibPngWrapper();
-    wrappers[FILE_FORMAT_DDS] = new LibDdsHelper();
-    wrappers[FILE_FORMAT_PVR] = new LibPVRHelper();
-    wrappers[FILE_FORMAT_JPEG] = new LibJpegWrapper();
-    wrappers[FILE_FORMAT_TGA] = new LibTgaWrapper();
+    wrappers[IMAGE_FORMAT_PNG] = new LibPngWrapper();
+    wrappers[IMAGE_FORMAT_DDS] = new LibDdsHelper();
+    wrappers[IMAGE_FORMAT_PVR] = new LibPVRHelper();
+    wrappers[IMAGE_FORMAT_JPEG] = new LibJpegWrapper();
+    wrappers[IMAGE_FORMAT_TGA] = new LibTgaWrapper();
 }
     
 ImageSystem::~ImageSystem()
 {
-    for(size_t i = 0; i < FILE_FORMAT_COUNT; ++i)
+    for(auto wrapper : wrappers)
     {
-        delete wrappers[i];
+        delete wrapper;
     }
 }
 
@@ -160,7 +160,7 @@ eErrorCode ImageSystem::Save(const FilePath & fileName, Image *image, PixelForma
 ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & pathname) const
 {
     String extension = pathname.GetExtension();
-    for(int32 i = 0; i < FILE_FORMAT_COUNT ; ++i)
+    for(int32 i = 0; i < IMAGE_FORMAT_COUNT ; ++i)
     {
         if(wrappers[i]->IsFileExtensionSupported(extension))
         {
@@ -173,7 +173,7 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & path
 
 ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
 {
-    for(int32 i = 0; i < FILE_FORMAT_COUNT; ++i)
+    for(int32 i = 0; i < IMAGE_FORMAT_COUNT; ++i)
     {
         if( wrappers[i]->IsImage(file))
         {

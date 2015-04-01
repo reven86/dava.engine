@@ -45,7 +45,7 @@ using namespace DAVA;
 
 SceneExporter::SceneExporter()
 {
-    exportForGPU = GPU_PNG;
+    exportForGPU = GPU_ORIGIN;
 	quality = TextureConverter::ECQ_DEFAULT;
 	optimizeOnExport = true;
 }

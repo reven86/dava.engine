@@ -47,7 +47,7 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 	
 	Vector<FilePath> files;
 	
-	if(descriptor->IsCubeMap() && forGPU == GPU_PNG)
+	if(descriptor->IsCubeMap() && forGPU == GPU_ORIGIN)
 	{
 		Vector<FilePath> faceNames;
 		Texture::GenerateCubeFaceNames(descriptor->pathname.GetAbsolutePathname().c_str(), faceNames);
@@ -77,21 +77,21 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 		}
 		
 		ImageSystem* system = ImageSystem::Instance();
-		if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PNG)->IsImage(imageFile))
+		if(system->GetImageFormatInterface(IMAGE_FORMAT_PNG)->IsImage(imageFile))
 		{
-			size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PNG)->GetDataSize(imageFile);
+			size += system->GetImageFormatInterface(IMAGE_FORMAT_PNG)->GetDataSize(imageFile);
 		}
-		else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_DDS)->IsImage(imageFile))
+		else if(system->GetImageFormatInterface(IMAGE_FORMAT_DDS)->IsImage(imageFile))
 		{
-            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_DDS)->GetDataSize(imageFile);
+            size += system->GetImageFormatInterface(IMAGE_FORMAT_DDS)->GetDataSize(imageFile);
 		}
-		else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PVR)->IsImage(imageFile))
+		else if(system->GetImageFormatInterface(IMAGE_FORMAT_PVR)->IsImage(imageFile))
 		{
-            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PVR)->GetDataSize(imageFile);
+            size += system->GetImageFormatInterface(IMAGE_FORMAT_PVR)->GetDataSize(imageFile);
 		}
-        else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_JPEG)->IsImage(imageFile))
+        else if(system->GetImageFormatInterface(IMAGE_FORMAT_JPEG)->IsImage(imageFile))
 		{
-            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_JPEG)->GetDataSize(imageFile);
+            size += system->GetImageFormatInterface(IMAGE_FORMAT_JPEG)->GetDataSize(imageFile);
 		}
 		else
 		{

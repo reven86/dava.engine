@@ -39,6 +39,15 @@
 namespace DAVA
 {
 
+    enum TextureFileType
+    {
+        TEXTURE_UNCOMPRESSED = 0,
+        TEXTURE_COMPRESSED,
+        TEXTURE_DESCRIPTOR,
+        TEXTURE_TYPE_COUNT,
+        NOT_SPECIFIED
+    };
+
 class File;
 class TextureDescriptor 
 {
@@ -47,7 +56,7 @@ class TextureDescriptor
 
     static const int32 DATE_BUFFER_SIZE = 20;
     static const int32 LINE_SIZE = 256;
-    static const int8 CURRENT_VERSION = 8;
+    static const int8 CURRENT_VERSION = 9;
     
 	enum eSignatures
 	{
@@ -98,11 +107,15 @@ public:
 
 		int8 textureFlags;
 		uint8 faceDescription;
+        uint8 sourceFileFormat;
+        String sourceFileExtension;
 
 		INTROSPECTION(TextureDataSettings,
             PROPERTY("generateMipMaps", "generateMipMaps", GetGenerateMipMaps, SetGenerateMipmaps, I_VIEW | I_EDIT | I_SAVE)
             PROPERTY("isNormalMap", "isNormalMap", GetIsNormalMap, SetIsNormalMap, I_VIEW | I_EDIT | I_SAVE)
 			MEMBER(faceDescription, "faceDescription", I_SAVE)
+            MEMBER(sourceFileFormat, "sourceFileFormat", I_SAVE)
+            MEMBER(sourceFileExtension, "sourceFileExtension", I_SAVE)
 		)
 
     private:
@@ -166,6 +179,7 @@ public:
     FilePath GetSourceTexturePathname() const;
 
 	static const String & GetDescriptorExtension();
+    const String& GetSourceTextureExtension() const;
     static const String & GetLightmapTextureExtension();
 	static bool IsSupportedTextureExtension(const String& extension);
 
@@ -179,22 +193,16 @@ protected:
 
     const Compression * GetCompressionParams(eGPUFamily forGPU) const;
     
-    void LoadNotCompressed(File *file);
-    void LoadCompressed(File *file);
-    
-    void ReadGeneralSettings(File *file);
     void WriteGeneralSettings(File *file) const;
-    
-    void ReadCompression(File *file, Compression *compression);
-	void ReadCompressionWithDateOld(File *file, Compression *compression);
-	void ReadCompressionWith16CRCOld(File *file, Compression *compression);
-
 	void WriteCompression(File *file, const Compression *compression) const;
     
-    
-    void ConvertToCurrentVersion(int8 version, int32 signature, File *file);
 	void LoadVersion6(int32 signature, File *file);
 	void LoadVersion7(int32 signature, File *file);
+
+    void LoadVersion6(File *file);
+    void LoadVersion7(File *file);
+    void LoadVersion8(File *file);
+    void LoadVersion9(File *file);
     
 	uint32 ReadSourceCRC() const;
 	uint32 GetConvertedCRC(eGPUFamily forGPU) const;

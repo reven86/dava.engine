@@ -283,11 +283,12 @@ void CubemapEditorDialog::LoadCubemap(const QString& path)
 		bool cubemapLoadResult = true;
 		for(int i = 0; i < CubemapUtils::GetMaxFaces(); ++i)
 		{
-			if(texDescriptor->dataSettings.faceDescription & (1 << CubemapUtils::MapUIToFrameworkFace(i)))
+            Texture::CubemapFace face = static_cast<Texture::CubemapFace>(i);
+			if(texDescriptor->dataSettings.faceDescription & (1 << face))
 			{
 				FilePath faceFilePath = filePath;
 				faceFilePath.ReplaceFilename(fileNameWithoutExtension +
-											 CubemapUtils::GetFaceNameSuffix(CubemapUtils::MapUIToFrameworkFace(i)) +
+                    CubemapUtils::GetFaceNameSuffix(face) +
 											 CubemapUtils::GetDefaultFaceExtension());
 
 				bool faceLoadResult = LoadImageTo(faceFilePath.GetAbsolutePathname(), i, true);
@@ -326,11 +327,12 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
 	fileNameWithoutExtension.replace(fileNameWithoutExtension.find(extension), extension.size(), "");
 	for(int i = 0 ; i < CubemapUtils::GetMaxFaces(); ++i)
 	{
+        Texture::CubemapFace face = static_cast<Texture::CubemapFace>(i);
 		if(!facePath[i].isNull())
 		{
 			FilePath faceFilePath = filePath;
 			faceFilePath.ReplaceFilename(fileNameWithoutExtension +
-										 CubemapUtils::GetFaceNameSuffix(CubemapUtils::MapUIToFrameworkFace(i)) +
+										 CubemapUtils::GetFaceNameSuffix(face) +
 										 CubemapUtils::GetDefaultFaceExtension());
 
 			DAVA::String targetFullPath = faceFilePath.GetAbsolutePathname().c_str();
@@ -409,7 +411,7 @@ DAVA::uint8 CubemapEditorDialog::GetFaceMask()
 	{
 		if(!facePath[i].isNull())
 		{
-			mask |= 1 << CubemapUtils::MapUIToFrameworkFace(i);
+            mask |= 1 << i;
 		}
 	}
 	
@@ -444,32 +446,32 @@ void CubemapEditorDialog::InitForCreating(DAVA::FilePath& textureDescriptorPath,
 
 void CubemapEditorDialog::OnPXClicked()
 {
-	LoadImageFromUserFile(0, CUBEMAPEDITOR_FACE_PX);
+    LoadImageFromUserFile(0, Texture::CUBE_FACE_POSITIVE_X);
 }
 
 void CubemapEditorDialog::OnNXClicked()
 {
-	LoadImageFromUserFile(0, CUBEMAPEDITOR_FACE_NX);
+    LoadImageFromUserFile(0, Texture::CUBE_FACE_NEGATIVE_X);
 }
 
 void CubemapEditorDialog::OnPYClicked()
 {
-	LoadImageFromUserFile(0, CUBEMAPEDITOR_FACE_PY);
+    LoadImageFromUserFile(0, Texture::CUBE_FACE_POSITIVE_Y);
 }
 
 void CubemapEditorDialog::OnNYClicked()
 {
-	LoadImageFromUserFile(0, CUBEMAPEDITOR_FACE_NY);
+    LoadImageFromUserFile(0, Texture::CUBE_FACE_NEGATIVE_Y);
 }
 
 void CubemapEditorDialog::OnPZClicked()
 {
-	LoadImageFromUserFile(0, CUBEMAPEDITOR_FACE_PZ);
+    LoadImageFromUserFile(0, Texture::CUBE_FACE_POSITIVE_Z);
 }
 
 void CubemapEditorDialog::OnNZClicked()
 {
-	LoadImageFromUserFile(0, CUBEMAPEDITOR_FACE_NZ);
+    LoadImageFromUserFile(0, Texture::CUBE_FACE_NEGATIVE_Z);
 }
 
 void CubemapEditorDialog::OnLoadTexture()

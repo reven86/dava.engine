@@ -63,7 +63,7 @@ public:
 
     static const String & GetGPUName(const eGPUFamily gpuFamily);
     static const String & GetCompressedFileExtension(const eGPUFamily gpuFamily, const PixelFormat pixelFormat);
-    static String GetFilenamePostfix(const eGPUFamily gpuFamily, const PixelFormat pixelFormat);
+    static String GetFileExtension(const eGPUFamily gpuFamily, const PixelFormat pixelFormat);
 
     static eGPUFamily GetGPUForPathname(const FilePath &pathname);
     static eGPUFamily GetGPUByName(const String & name);

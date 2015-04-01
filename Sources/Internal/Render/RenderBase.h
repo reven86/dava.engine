@@ -132,6 +132,16 @@ enum eBlendMode
 
 extern const String BLEND_MODE_NAMES[BLEND_MODE_COUNT];
 
+enum ImageFormat
+{
+    IMAGE_FORMAT_PNG = 0,
+    IMAGE_FORMAT_DDS,
+    IMAGE_FORMAT_PVR,
+    IMAGE_FORMAT_JPEG,
+    IMAGE_FORMAT_TGA,
+    IMAGE_FORMAT_COUNT
+};
+
 enum PixelFormat
 {
     FORMAT_INVALID = 0,

@@ -694,7 +694,7 @@ void TextureBrowser::texturePropertyChanged(int type)
 	else
 	{
 		// new texture can be applied to scene immediately
-		reloadTextureToScene(curTexture, ui->textureProperties->getTextureDescriptor(), DAVA::GPU_PNG);
+		reloadTextureToScene(curTexture, ui->textureProperties->getTextureDescriptor(), DAVA::GPU_ORIGIN);
 	}
 
 	// update warning message

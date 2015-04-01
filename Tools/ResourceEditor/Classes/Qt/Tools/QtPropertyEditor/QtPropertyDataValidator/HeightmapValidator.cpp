@@ -56,7 +56,7 @@ bool HeightMapValidator::ValidateInternal(const QVariant &v)
     }
     else if(path.IsEqualToExtension(".png"))
     {
-        DAVA::ImageFormatInterface *pngImageSystem = DAVA::ImageSystem::Instance()->GetImageFormatInterface(DAVA::ImageSystem::FILE_FORMAT_PNG);
+        DAVA::ImageFormatInterface *pngImageSystem = DAVA::ImageSystem::Instance()->GetImageFormatInterface(DAVA::IMAGE_FORMAT_PNG);
         DAVA::Size2i size = pngImageSystem->GetImageSize(path);
         if(size.dx != size.dy)
         {

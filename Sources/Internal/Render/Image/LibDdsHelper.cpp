@@ -1175,7 +1175,7 @@ bool LibDdsHelper::GetCRCFromDDSHeader(const FilePath &filePathname, uint32* out
 		return false;
 	}
 
-	if(!ImageSystem::Instance()->GetImageFormatInterface(ImageSystem::FILE_FORMAT_DDS)->IsImage(fileRead))
+	if(!ImageSystem::Instance()->GetImageFormatInterface(IMAGE_FORMAT_DDS)->IsImage(fileRead))
 	{
 		Logger::Error("[LibDdsHelper::GetCRCFromDDSHeader] file %s isn't a dds one", fileNameStr.c_str());
 		SafeRelease(fileRead);
