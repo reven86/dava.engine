@@ -142,13 +142,14 @@
         int maxLength = cppTextField->GetMaxLength();
         if (maxLength >= 0)
         {
-            NSUInteger curLength = [textField.text length];
-            NSUInteger newLength = curLength - range.length + [string length];
+            NSString* newString = [textField.text stringByReplacingCharactersInRange:range withString:string]; // Get string after changing
+            NSUInteger newLength = [newString lengthOfBytesUsingEncoding:NSUTF32StringEncoding] / 4; // Length in UTF32 charactres
             if (newLength > (NSUInteger)maxLength)
             {
                 NSUInteger charsToInsert = 0;
                 if (range.length == 0)
                 {
+                    NSUInteger curLength = [textField.text lengthOfBytesUsingEncoding:NSUTF32StringEncoding] / 4; // Length in UTF32 charactres
                     // Inserting without replace.
                     charsToInsert = (NSUInteger)maxLength - curLength;
                 }
@@ -157,10 +158,15 @@
                     // Inserting with replace.
                     charsToInsert = range.length;
                 }
-
-                string = [string substringToIndex:charsToInsert];
-                [textField setText: [textField.text stringByReplacingCharactersInRange:range withString:string]];
-
+                
+                // Convert NSString to UTF32 bytes array with length of charsToInsert*4 and
+                // back for decrease string length in UTF32 code points
+                NSUInteger byteCount = charsToInsert * 4; // 4 bytes per utf32 character
+                char buffer[byteCount];
+                NSUInteger usedBufferCount;
+                [string getBytes:buffer maxLength:byteCount usedLength:&usedBufferCount encoding:NSUTF32StringEncoding options:0 range:NSMakeRange(0, string.length) remainingRange:NULL];
+                DVASSERT(string && "Error on convert utf32 to NSString");
+                
                 needIgnoreDelegateResult = TRUE;
             }
         }
