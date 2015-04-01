@@ -211,8 +211,6 @@ macro (define_source_folders )
         ENDIF()
     ENDFOREACH()
     
-    set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
-
 endmacro ()
 
 #
