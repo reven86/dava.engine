@@ -118,7 +118,7 @@ void CommandBatch::Clear(int commandId)
 	}
 }
 
-bool CommandBatch::HasCommand(int commandId) const
+bool CommandBatch::ContainCommand(int commandId) const
 {
     for(auto command: commandList)
     {

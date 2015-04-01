@@ -50,7 +50,7 @@ public:
 
 	void Clear(int commandId);
     
-    bool HasCommand(int commandId) const;
+    bool ContainCommand(int commandId) const;
 
 protected:
 	std::vector<Command2 *> commandList;
