@@ -41,6 +41,7 @@ private:
 
 public:
     static EntityFamily * GetOrCreate(const Vector<Component*> & components);
+    static void Release(EntityFamily *&family);
     
 private:
     static BaseFamilyRepository<EntityFamily> repository;

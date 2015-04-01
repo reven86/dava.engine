@@ -70,6 +70,7 @@ Entity::Entity()
     : scene(nullptr)
     , parent(nullptr)
     , tag(0)
+    , family(nullptr)
 {
 	flags = NODE_VISIBLE | NODE_UPDATABLE | NODE_LOCAL_MATRIX_IDENTITY;
     UpdateFamily();
@@ -83,6 +84,7 @@ Entity::~Entity()
 	RemoveAllChildren();	
 	RemoveAllComponents();	
 	SetScene(nullptr);
+    EntityFamily::Release(family);
 }
 
 bool ComponentLessPredicate(Component * left, Component * right)

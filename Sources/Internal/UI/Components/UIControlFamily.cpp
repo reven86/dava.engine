@@ -41,5 +41,11 @@ namespace DAVA
     {
         return repository.GetOrCreate(UIControlFamily(components));
     }
-    
+
+    void UIControlFamily::Release(UIControlFamily *&family)
+    {
+        repository.ReleaseFamily(family);
+        family = nullptr;
+    }
+
 }

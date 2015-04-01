@@ -29,6 +29,7 @@
 #define __DAVAENGINE_BASE_FAMILY_H__
 
 #include "Base/BaseTypes.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
@@ -53,6 +54,9 @@ private:
     uint32 componentIndices[Component::COMPONENT_COUNT];
     uint32 componentCount[Component::COMPONENT_COUNT];
     uint64 componentsFlags;
+    int32 refCount;
+    
+    template <typename EntityFamilyType> friend class BaseFamilyRepository;
 };
     
 ////////////////////////////////////////////////////////////////////////////////
@@ -63,10 +67,15 @@ template <typename EntityFamilyType>
 class BaseFamilyRepository
 {
 public:
+    BaseFamilyRepository();
+    ~BaseFamilyRepository();
+    
     EntityFamilyType * GetOrCreate(const EntityFamilyType &localFamily);
+    void ReleaseFamily(EntityFamilyType *family);
     
 private:
     Vector<EntityFamilyType*> families;
+    int32 refCount;
 };
     
     
@@ -77,6 +86,7 @@ private:
 template <typename Component>
 BaseFamily<Component>::BaseFamily(const Vector<Component*> & components)
     : componentsFlags(0)
+    , refCount(0)
 {
     Memset(componentIndices, 0, sizeof(componentIndices));
     Memset(componentCount, 0, sizeof(componentCount));
@@ -120,6 +130,18 @@ inline bool BaseFamily<Component>::operator==(const BaseFamily<Component> & rhs)
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename EntityFamilyType>
+BaseFamilyRepository<EntityFamilyType>::BaseFamilyRepository() : refCount(0)
+{
+    
+}
+
+template <typename EntityFamilyType>
+BaseFamilyRepository<EntityFamilyType>::~BaseFamilyRepository()
+{
+    // DVASSERT(refCount == 0);
+}
+
+template <typename EntityFamilyType>
 EntityFamilyType * BaseFamilyRepository<EntityFamilyType>::GetOrCreate(const EntityFamilyType &localFamily)
 {
     EntityFamilyType * ret = nullptr;
@@ -132,6 +154,7 @@ EntityFamilyType * BaseFamilyRepository<EntityFamilyType>::GetOrCreate(const Ent
         if (localFamily == *current)
         {
             ret = current;
+            ret->refCount++;
             break;
         }
     }
@@ -140,11 +163,36 @@ EntityFamilyType * BaseFamilyRepository<EntityFamilyType>::GetOrCreate(const Ent
     if (!ret)
     {
         ret = new EntityFamilyType(localFamily);
+        ret->refCount++;
         families.push_back(ret);
     }
     
+    refCount++;
     return ret;
 }
+    
+template <typename EntityFamilyType>
+void BaseFamilyRepository<EntityFamilyType>::ReleaseFamily(EntityFamilyType *family)
+{
+    if (family)
+    {
+        DVASSERT(refCount > 0);
+        DVASSERT(family->refCount > 0);
+        
+        family->refCount--;
+        refCount--;
+        if (refCount == 0)
+        {
+            for (size_t i = 0; i < families.size(); i++)
+            {
+                DVASSERT(family->refCount == 0);
+                delete families[i];
+            }
+            families.clear();
+        }
+    }
+}
+
     
 }
 

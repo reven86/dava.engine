@@ -43,4 +43,10 @@ EntityFamily * EntityFamily::GetOrCreate(const Vector<Component*> & components)
     return repository.GetOrCreate(EntityFamily(components));
 }
 
+void EntityFamily::Release(EntityFamily *&family)
+{
+    repository.ReleaseFamily(family);
+    family = nullptr;
+}
+
 }

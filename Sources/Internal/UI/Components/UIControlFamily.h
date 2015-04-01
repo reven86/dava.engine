@@ -34,17 +34,18 @@
 namespace DAVA
 {
     
-    class UIControlFamily : public BaseFamily<UIComponent>
-    {
-    private:
-        UIControlFamily(const Vector<UIComponent*> & components);
-        
-    public:
-        static UIControlFamily * GetOrCreate(const Vector<UIComponent*> & components);
-        
-    private:
-        static BaseFamilyRepository<UIControlFamily> repository;
-    };
+class UIControlFamily : public BaseFamily<UIComponent>
+{
+private:
+    UIControlFamily(const Vector<UIComponent*> & components);
+    
+public:
+    static UIControlFamily * GetOrCreate(const Vector<UIComponent*> & components);
+    static void Release(UIControlFamily *&family);
+    
+private:
+    static BaseFamilyRepository<UIControlFamily> repository;
+};
     
 }
 

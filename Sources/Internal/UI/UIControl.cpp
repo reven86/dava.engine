@@ -46,8 +46,7 @@
 
 namespace DAVA
 {
-
-    UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)
+    UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) : family(nullptr)
     {
         UpdateFamily();
 
@@ -111,6 +110,8 @@ namespace DAVA
         SafeRelease(background);
         SafeRelease(eventDispatcher);
         RemoveAllControls();
+        RemoveAllComponents();
+        UIControlFamily::Release(family);
     }
 
     void UIControl::SetParent(UIControl *newParent)
@@ -2812,6 +2813,7 @@ namespace DAVA
 
     inline void UIControl::UpdateFamily()
     {
+        UIControlFamily::Release(family);
         family = UIControlFamily::GetOrCreate(components);
     }
 
