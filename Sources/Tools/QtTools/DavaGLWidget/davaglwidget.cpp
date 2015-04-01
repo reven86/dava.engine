@@ -69,7 +69,9 @@ OpenGLWindow::~OpenGLWindow()
 void OpenGLWindow::renderNow()
 {
     if (!isExposed())
+    {
         return;
+    }
 
     auto context = FrameworkLoop::Instance()->Context();
     context->swapBuffers( this );
@@ -81,7 +83,9 @@ void OpenGLWindow::exposeEvent(QExposeEvent *event)
     
     if (isExposed())
     {
-        renderNow();
+        //just initialize DAVAGL context
+        FrameworkLoop::Instance()->Context();
+
         emit Exposed();
     }
 }
