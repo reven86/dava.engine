@@ -1,14 +1,16 @@
 #include "PreviewModel.h"
+
 #include "UI/Preview/EditScreen.h"
 #include "Model/PackageHierarchy/ControlNode.h"
+#include "Document.h"
 
 using namespace DAVA;
 
 static const Vector2 CANVAS_BORDER_SIZE(100.0f, 100.0f);
 
 float32 CalcCanvasAxisPosition(float32 oldViewSize, float32 newViewSize,
-                               float32 oldCanvasScaledSize, float32 newCanvasScaledSize,
-                               float32 scalePoint, float32 oldCanvasPosition)
+    float32 oldCanvasScaledSize, float32 newCanvasScaledSize,
+    float32 scalePoint, float32 oldCanvasPosition)
 {
     float32 newCanvasPosition;
 
@@ -17,11 +19,11 @@ float32 CalcCanvasAxisPosition(float32 oldViewSize, float32 newViewSize,
     {
         if (newCanvasScaledSize < newViewSize)
         {
-            newCanvasPosition = (newViewSize - newCanvasScaledSize)/2.0f;
+            newCanvasPosition = (newViewSize - newCanvasScaledSize) / 2.0f;
         }
-        else if( oldViewSize == 0.0f || oldCanvasScaledSize == 0.0f)
+        else if (oldViewSize == 0.0f || oldCanvasScaledSize == 0.0f)
         {
-            newCanvasPosition = (newViewSize - newCanvasScaledSize)/2.0f;
+            newCanvasPosition = (newViewSize - newCanvasScaledSize) / 2.0f;
         }
         else// if(newCanvasScaledSize >= newViewSize)
         {
@@ -38,8 +40,8 @@ float32 CalcCanvasAxisPosition(float32 oldViewSize, float32 newViewSize,
 }
 
 Vector2 CalcCanvasPosition(const Vector2 &oldViewSize, const Vector2 &newViewSize,
-                           const Vector2 &oldCanvasScaledSize, const Vector2 &newCanvasScaledSize,
-                           const Vector2 &scalePoint, const Vector2 &oldCanvasPosition)
+    const Vector2 &oldCanvasScaledSize, const Vector2 &newCanvasScaledSize,
+    const Vector2 &scalePoint, const Vector2 &oldCanvasPosition)
 {
     Vector2 newCanvasPosition;
 
@@ -52,8 +54,8 @@ Vector2 CalcCanvasPosition(const Vector2 &oldViewSize, const Vector2 &newViewSiz
 Vector2 CalcScaledCanvasSize(const DAVA::Vector2 &canvasSize, const DAVA::Vector2 &canvasScale, const DAVA::Vector2 &viewSize)
 {
     Vector2 newCanvasScaledSize = canvasSize * canvasScale + CANVAS_BORDER_SIZE;
-//     newCanvasScaledSize.x = Max(newCanvasScaledSize.x, viewSize.x);
-//     newCanvasScaledSize.y = Max(newCanvasScaledSize.y, viewSize.y);
+    //     newCanvasScaledSize.x = Max(newCanvasScaledSize.x, viewSize.x);
+    //     newCanvasScaledSize.y = Max(newCanvasScaledSize.y, viewSize.y);
     return newCanvasScaledSize;
 }
 
@@ -62,16 +64,15 @@ PreviewModel::PreviewModel(QObject *parent)
     , canvas(nullptr)
     , view(nullptr)
 {
+    view = new DAVA::UIControl();
+    canvas = new PackageCanvas();
+    view->AddControl(canvas);
 }
 
 PreviewModel::~PreviewModel()
 {
-}
-
-void PreviewModel::SetData(DAVA::UIControl *viewArg, PackageCanvas *canvasArg)
-{
-    view = viewArg;
-    canvas = canvasArg;
+    SafeRelease(view);
+    SafeRelease(canvas);
 }
 
 void PreviewModel::SetViewControlSize(const QSize &qtSize)
@@ -92,7 +93,7 @@ void PreviewModel::SetViewControlSize(const QSize &qtSize)
     }
 
     Vector2 newPosition = CalcCanvasPosition(oldSize, newSize, oldCanvasScaledSize, newCanvasScaledSize, Vector2(0.5f, 0.5f), canvasPosition);
-    SetCanvasPosition(QPoint(newPosition.x, newPosition.y) );
+    SetCanvasPosition(QPoint(newPosition.x, newPosition.y));
 }
 
 void PreviewModel::SetCanvasControlSize(const QSize &qtSize)
@@ -100,7 +101,7 @@ void PreviewModel::SetCanvasControlSize(const QSize &qtSize)
     Vector2 oldSize = canvas->GetSize();
     Vector2 newSize(qtSize.width(), qtSize.height());
     canvas->SetSize(newSize);
-    
+
     Vector2 oldCanvasScaledSize = CalcScaledCanvasSize(oldSize, canvas->GetScale(), view->GetSize());
     Vector2 newCanvasScaledSize = CalcScaledCanvasSize(newSize, canvas->GetScale(), view->GetSize());
 
@@ -111,14 +112,14 @@ void PreviewModel::SetCanvasControlSize(const QSize &qtSize)
         emit CanvasOrViewChanged(viewSize, contentSize);
     }
 
-    Vector2 newPosition = CalcCanvasPosition( view->GetSize(), view->GetSize(), oldCanvasScaledSize, newCanvasScaledSize, Vector2(0.5f, 0.5f), canvasPosition);
-    SetCanvasPosition( QPoint(newPosition.x, newPosition.y) );
+    Vector2 newPosition = CalcCanvasPosition(view->GetSize(), view->GetSize(), oldCanvasScaledSize, newCanvasScaledSize, Vector2(0.5f, 0.5f), canvasPosition);
+    SetCanvasPosition(QPoint(newPosition.x, newPosition.y));
 }
 
 void PreviewModel::SetCanvasControlScale(int intNewScale)
 {
     Vector2 oldScale = canvas->GetScale();
-    Vector2 newScale(float32(intNewScale)/100.0f, float32(intNewScale)/100.0f);
+    Vector2 newScale(float32(intNewScale) / 100.0f, float32(intNewScale) / 100.0f);
     canvas->SetScale(newScale);
     int intOldScale = oldScale.x*100.0f;
 
@@ -137,8 +138,8 @@ void PreviewModel::SetCanvasControlScale(int intNewScale)
         emit CanvasScaleChanged(intNewScale);
     }
 
-    Vector2 newPosition = CalcCanvasPosition( view->GetSize(), view->GetSize(), oldCanvasScaledSize, newCanvasScaledSize, Vector2(0.5f, 0.5f), canvasPosition);
-    SetCanvasPosition( QPoint(newPosition.x, newPosition.y) );
+    Vector2 newPosition = CalcCanvasPosition(view->GetSize(), view->GetSize(), oldCanvasScaledSize, newCanvasScaledSize, Vector2(0.5f, 0.5f), canvasPosition);
+    SetCanvasPosition(QPoint(newPosition.x, newPosition.y));
 }
 
 QSize PreviewModel::GetScaledCanvasSize() const
@@ -159,10 +160,11 @@ void PreviewModel::SetCanvasPosition(const QPoint &newCanvasPosition)
 
     if (oldCanvasPosition != newCanvasPosition)
     {
-        canvas->SetPosition(canvasPosition + CANVAS_BORDER_SIZE/2.0f);
+        canvas->SetPosition(canvasPosition + CANVAS_BORDER_SIZE / 2.0f);
         emit CanvasPositionChanged(newCanvasPosition);
     }
 }
+
 
 void PreviewModel::OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIControl *selectedControl)
 {
@@ -183,8 +185,8 @@ void PreviewModel::OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIContr
                 path.push_back(c);
                 c = c->GetParent();
             }
-        
-        //!!TODO: WHAAT? We can do only last iterations
+
+
             for (auto it = path.rbegin(); it != path.rend(); ++it)
             {
                 bool found = false;
@@ -198,7 +200,7 @@ void PreviewModel::OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIContr
                         break;
                     }
                 }
-                
+
                 if (!found)
                 {
                     node = nullptr;
@@ -230,16 +232,12 @@ void PreviewModel::OnAllControlsDeselected()
 void PreviewModel::SetActiveRootControls(const QList<ControlNode*> &activatedControls)
 {
     rootNodes.clear();
-    if (!IsValid())
-    {
-        return;
-    }
     canvas->RemoveAllControls();
 
     foreach(ControlNode *controlNode, activatedControls)
     {
         rootNodes[controlNode->GetControl()] = controlNode;
-        
+
         ScopedPtr<CheckeredCanvas> checkeredCanvas(new CheckeredCanvas());
         checkeredCanvas->AddControlSelectionListener(this);
         checkeredCanvas->AddControl(controlNode->GetControl());
@@ -261,8 +259,8 @@ void PreviewModel::SetActiveRootControls(const QList<ControlNode*> &activatedCon
         emit CanvasOrViewChanged(viewSize, contentSize);
     }
 
-    Vector2 newPosition = CalcCanvasPosition( view->GetSize(), view->GetSize(), oldCanvasScaledSize, newCanvasScaledSize, Vector2(0.5f, 0.5f), canvasPosition);
-    SetCanvasPosition( QPoint(newPosition.x, newPosition.y) );
+    Vector2 newPosition = CalcCanvasPosition(view->GetSize(), view->GetSize(), oldCanvasScaledSize, newCanvasScaledSize, Vector2(0.5f, 0.5f), canvasPosition);
+    SetCanvasPosition(QPoint(newPosition.x, newPosition.y));
 }
 
 void PreviewModel::ControlsDeactivated(const QList<ControlNode*> &deactivatedControls)
@@ -277,15 +275,13 @@ void PreviewModel::ControlsDeactivated(const QList<ControlNode*> &deactivatedCon
 }
 
 void PreviewModel::ControlsActivated(const QList<ControlNode *> &activatedControls)
-{    
+{
     for (ControlNode *node : activatedControls)
     {
         UIControl *control = node->GetControl();
         CheckeredCanvas *rootContainer = FindControlContainer(control);
         if (rootContainer)
-        {
             rootContainer->SelectControl(control);
-        }
     }
 }
 
@@ -302,12 +298,12 @@ int PreviewModel::GetCanvasScale() const
 CheckeredCanvas *PreviewModel::FindControlContainer(UIControl *control)
 {
     UIControl *c = control;
-    
+
     while (nullptr != c->GetParent() && c->GetParent() != canvas)
         c = c->GetParent();
-    
+
     if (nullptr != c)
         return dynamic_cast<CheckeredCanvas*>(c);
-    
+
     return nullptr;
 }

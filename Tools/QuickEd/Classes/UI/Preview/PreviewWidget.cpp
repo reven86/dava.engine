@@ -83,7 +83,6 @@ void PreviewWidget::OnContextChanged(WidgetContext *context)
     UIScreenManager::Instance()->GetScreen()->RemoveAllControls();
     widgetContext = context;
 
-    UpdateModel();
     UpdateRootControls();
     if (nullptr != widgetContext)
     {
@@ -114,19 +113,6 @@ void PreviewWidget::OnDataChanged(const QByteArray &role)
     }
 }
 
-void PreviewWidget::UpdateModel()
-{
-    if (nullptr == widgetContext)
-    {
-        model->SetData(nullptr, nullptr);
-    }
-    else
-    {
-        model->SetData(widgetContext->GetData("view").value<DAVA::UIControl*>(),
-            static_cast<PackageCanvas*>(widgetContext->GetData("canvas").value<DAVA::UIControl*>()));
-    }
-}
-
 void PreviewWidget::UpdateRootControls()
 {
     if (nullptr == widgetContext)
@@ -148,10 +134,6 @@ DavaGLWidget* PreviewWidget::GetGLWidget() const
 
 void PreviewWidget::OnMonitorChanged()
 {
-    if (!model->IsValid())
-    {
-        return;
-    }
     const auto index = ui->scaleCombo->currentIndex();
     ui->scaleCombo->setCurrentIndex(-1);
     ui->scaleCombo->setCurrentIndex(index);
@@ -180,10 +162,6 @@ void PreviewWidget::OnScaleByZoom(int scaleDelta)
 
 void PreviewWidget::OnScaleByComboIndex(int index)
 {   
-    if (!model->IsValid())
-    {
-        return;
-    }
     if (index < 0 || index >= static_cast<int>( COUNT_OF(SCALE_PERCENTAGES)))
     {
         return;
@@ -244,18 +222,11 @@ void PreviewWidget::OnGLWidgetResized(int width, int height, int dpr)
 
     UIScreenManager::Instance()->GetScreen()->SetSize(screenSize);
 
-    if (model->IsValid())
-    {
-        model->SetViewControlSize(QSize(width * dpr, height * dpr));
-    }
+    model->SetViewControlSize(QSize(width * dpr, height * dpr));
 }
 
 void PreviewWidget::OnVScrollbarMoved(int vPosition)
 {
-    if (!model->IsValid())
-    {
-        return;
-    }
     QPoint canvasPosition = model->GetCanvasPosition();
     canvasPosition.setY(-vPosition);
     model->SetCanvasPosition(canvasPosition);
@@ -263,10 +234,6 @@ void PreviewWidget::OnVScrollbarMoved(int vPosition)
 
 void PreviewWidget::OnHScrollbarMoved(int hPosition)
 {
-    if (!model->IsValid())
-    {
-        return;
-    }
     QPoint canvasPosition = model->GetCanvasPosition();
     canvasPosition.setX(-hPosition);
     model->SetCanvasPosition(canvasPosition);

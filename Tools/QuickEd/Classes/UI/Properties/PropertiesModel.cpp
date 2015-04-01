@@ -184,7 +184,7 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
             if (property->GetValue().GetType() == VariantType::TYPE_BOOLEAN)
             {
                 VariantType newVal(value != Qt::Unchecked);
-                qobject_cast<Document*>(QObject::parent())->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
+                qobject_cast<Document*>(QObject::parent())->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal); //TODO: this is ugly
                 return true;
             }
         }
@@ -203,14 +203,14 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
                 initVariantType(newVal, value);
             }
 
-            qobject_cast<Document*>(QObject::parent())->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
+            qobject_cast<Document*>(QObject::parent())->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal); //TODO: this is ugly
             return true;
         }
         break;
 
     case DAVA::ResetRole:
         {
-            qobject_cast<Document*>(QObject::parent())->GetCommandExecutor()->ResetProperty(controlNode, property);
+            qobject_cast<Document*>(QObject::parent())->GetCommandExecutor()->ResetProperty(controlNode, property); //TODO: this is ugly
             return true;
         }
         break;

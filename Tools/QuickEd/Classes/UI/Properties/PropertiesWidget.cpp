@@ -47,5 +47,5 @@ void PropertiesWidget::UpdateActivatedControls()
         treeView->expandToDepth(0);
         treeView->resizeColumnToContents(0);
     }
-    prevModel->deleteLater();
+    delete prevModel;
 }

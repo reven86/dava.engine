@@ -16,8 +16,8 @@ public:
     PropertiesWidget(QWidget *parent = NULL);
 
 public slots:
-void OnContextChanged(WidgetContext *context);
-void OnDataChanged(const QByteArray &role);
+    void OnContextChanged(WidgetContext *context);
+    void OnDataChanged(const QByteArray &role);
 
 private:
     void UpdateActivatedControls();

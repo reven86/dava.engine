@@ -45,19 +45,6 @@ void Document::InitWidgetContexts()
 
     packageContext->SetData(QVariant::fromValue(new PackageModel(package, commandExecutor, this)), "model");
 
-    UIControl *view = new UIControl();
-    UIControl *canvas = new PackageCanvas();
-    struct ScopedPointerCustomDeleter
-    {
-        static inline void cleanup(UIControl *pointer)
-        {
-            SafeRelease(pointer);
-        }
-    };
-
-    view->AddControl(canvas);
-    previewContext->SetData(QVariant::fromValue(view), "view");
-    previewContext->SetData(QVariant::fromValue(canvas), "canvas");
     previewContext->SetData(false, "controlDeselected");
     packageContext->SetData(false, "controlsDeselected");
 
@@ -99,7 +86,7 @@ const DAVA::FilePath &Document::GetPackageFilePath() const
 
 PropertiesModel *Document::GetPropertiesModel() const
 {
-    return propertiesContext->GetData("model").value<PropertiesModel*>();
+    return reinterpret_cast<PropertiesModel*>(propertiesContext->GetData("model").value<QAbstractItemModel*>()); //TODO this is ugly
 }
 
 PackageModel* Document::GetPackageModel() const

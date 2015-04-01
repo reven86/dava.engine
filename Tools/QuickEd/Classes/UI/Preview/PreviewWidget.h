@@ -55,7 +55,6 @@ private slots:
 
 private:
     void OnScaleByZoom(int scaleDelta); 
-    void UpdateModel();
     void UpdateRootControls();
 
 private:
