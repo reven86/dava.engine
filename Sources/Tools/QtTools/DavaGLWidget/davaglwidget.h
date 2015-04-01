@@ -61,7 +61,6 @@ public:
     OpenGLWindow();
     ~OpenGLWindow();
     
-    void render();
     void renderNow();
 
 signals:
@@ -83,7 +82,6 @@ protected:
     void handleDragMoveEvent(QDragMoveEvent * event);
     
 private:
-    QOpenGLPaintDevice *paintDevice;
     QScopedPointer< ControlMapper > controlMapper;
 };
 
