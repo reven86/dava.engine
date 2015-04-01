@@ -281,7 +281,7 @@ private:
 #if defined(__DAVAENGINE_ANDROID__)
 private:
 	Thread *backgroundTicker;
-	bool backgroundTickerFinishing;
+	volatile bool backgroundTickerFinishing;
 	uint32 backgroundTickTimeMs;
 #endif
 };

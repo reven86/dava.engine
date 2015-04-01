@@ -464,6 +464,7 @@ JNIEXPORT bool JNICALL Java_com_dava_framework_JNIActivity_nativeIsMultitouchEna
 
 void Java_com_dava_framework_JNIRenderer_nativeOnResumeView(JNIEnv * env, jobject classthis)
 {
+    DAVA::Thread::InitGLThread();
 	if(core)
 	{
 		core->StartForeground();

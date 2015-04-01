@@ -23,6 +23,7 @@ import android.util.Log;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnAttachStateChangeListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.InputDevice.MotionRange;
@@ -148,9 +149,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] isFirstRun is " + isFirstRun); 
         nativeOnCreate(isFirstRun);
 
-        JNITextField.RelinkNativeControls();
-        JNIWebView.RelinkNativeControls();
-        
         try {
         	ConnectivityManager cm = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
         	NetworkInfo networkInfo = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
@@ -305,7 +303,26 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         {
             glView.onResume();
-            JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
+            
+            // Create keyboard layout over glView window.
+            if(glView.getWindowToken() != null)
+            {
+                JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
+            }
+            else
+            {
+                glView.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
+                    @Override
+                    public void onViewDetachedFromWindow(View v) {}
+                    
+                    @Override
+                    public void onViewAttachedToWindow(View v) {
+                        JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
+                        glView.removeOnAttachStateChangeListener(this);
+                    }
+                });
+                
+            }
         }
         
         isPausing = false;
