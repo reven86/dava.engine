@@ -40,7 +40,9 @@ class UIComponent : public BaseObject
 public:
     enum eType
     {
-        COMPONENT_COUNT,
+        FAKE_COMPONENT,
+        
+        COMPONENT_COUNT
     };
     
 public:
