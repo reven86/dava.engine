@@ -2941,9 +2941,6 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.cpp">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageFormatInterface.cpp">
-      <Filter>Internal\Render\Image</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlNode.cpp">
       <Filter>Internal\FileSystem</Filter>
     </ClCompile>
