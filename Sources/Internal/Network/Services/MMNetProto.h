@@ -36,6 +36,72 @@ namespace DAVA
 namespace Net
 {
 
+namespace MMNetProto
+{
+
+enum ePacketType
+{
+    TYPE_INIT = 0,
+    TYPE_STAT,
+    TYPE_DUMP
+};
+
+enum eStatus
+{
+    STATUS_OK = 0,
+    STATUS_DENY,
+    STATUS_ERROR,
+    //STATUS_DISABLED
+};
+
+struct Header
+{
+    uint32 type;
+    uint32 status;
+    uint32 length;          // Size of data sending with header
+    uint32 totalLength;     // Total size of data
+    uint32 itemCount;       // Number of items
+    uint32 specific[3];
+};
+static_assert(sizeof(Header) == 32, "sizeof(Header) != 32");
+
+struct HeaderInit
+{
+    uint32 type;
+    uint32 status;
+    uint32 length;
+    uint32 totalLength;
+    uint32 itemCount;
+    uint32 sessionId;
+    uint32 unused[2];
+};
+static_assert(sizeof(HeaderInit) == sizeof(Header), "sizeof(HeaderInit) != sizeof(Header)");
+
+struct HeaderStat
+{
+    uint32 type;
+    uint32 status;
+    uint32 length;
+    uint32 totalLength;
+    uint32 itemCount;
+    uint32 unused[3];
+};
+static_assert(sizeof(HeaderStat) == sizeof(Header), "sizeof(HeaderStat) != sizeof(Header)");
+
+struct HeaderDump
+{
+    uint32 type;
+    uint32 status;
+    uint32 length;
+    uint32 totalLength;
+    uint32 itemCount;
+    uint32 isPacked;            // 0 - dump not packed, 1 - dump - packed
+    uint32 unused[2];
+};
+static_assert(sizeof(HeaderDump) == sizeof(Header), "sizeof(HeaderDump) != sizeof(Header)");
+
+}   // namespace MMNetProto
+
 enum class eMMProtoCmd
 {
     INIT_COMM,
@@ -58,11 +124,6 @@ struct MMProtoHeader
     uint32 cmd;             // Command
     uint32 status;          // 
     uint32 length;          // Length of data attached to command, or zero if no data
-};
-
-struct MM
-{
-
 };
 
 static_assert(sizeof(MMProtoHeader) == 16, "sizeof(MMProtoHeader) == 16");

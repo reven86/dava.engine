@@ -1,29 +1,29 @@
 /*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #ifndef __DAVAENGINE_MMNetClient_H__
@@ -45,16 +45,15 @@ class MMNetClient : public NetService
 {
 public:
     typedef Function<void(const MMStatConfig*)> ChOpenCallback;
-    typedef Function<void (const char8*)> ChClosedCallback;       // TODO: change to void(const char*) after fixing TypeTraits and Function
-    typedef Function<void(const MMStat*)> StatCallback;
-    typedef Function<void(size_t total, size_t recv)> DumpGetCallback;
-    typedef Function<void(const MMDump*, size_t, Vector<uint8>&)> DumpDoneCallback;
+    typedef Function<void (const char8*)> ChClosedCallback;
+    typedef Function<void(const MMCurStat*)> StatCallback;
+    typedef Function<void(size_t, size_t, Vector<uint8>*)> DumpCallback;
 
 public:
     MMNetClient();
     virtual ~MMNetClient();
 
-    void SetCallbacks(ChOpenCallback onOpen, ChClosedCallback onClosed, StatCallback onStat, DumpGetCallback onDumpGet, DumpDoneCallback onDumpDone);
+    void SetCallbacks(ChOpenCallback onOpen, ChClosedCallback onClosed, StatCallback onStat, DumpCallback onDump);
 
     void RequestDump();
 
@@ -65,15 +64,14 @@ public:
     void PacketDelivered() override;
 
 private:
-    void ProcessInitCommunication(const MMProtoHeader* hdr, const void* packet, size_t length);
+    void ProcessTypeInit(const MMNetProto::HeaderInit* header, const void* packetData, size_t dataLength);
+    void ProcessTypeStat(const MMNetProto::HeaderStat* header, const void* packetData, size_t dataLength);
+    void ProcessTypeDump(const MMNetProto::HeaderDump* header, const void* packetData, size_t dataLength);
+
     void ProcessCurrentStatistics(const MMProtoHeader* hdr, const void* packet, size_t length);
-    void ProcessDump(const MMProtoHeader* hdr, const void* packet, size_t length);
-    void ProcessDumpNext(const void* packet, size_t length);
 
-    void SendInitSession();
-    void SendDumpRequest();
-
-    void UnpackDump();
+    void SendTypeInit();
+    void SendTypeDump();
 
 private:
     uint32 sessionId;
@@ -83,16 +81,14 @@ private:
     bool outbufBusy;
 
     bool gettingDump;
-    size_t dumpSize;
-    size_t dumpRecv;
-    size_t unpackedDumpSize;
-    std::vector<uint8> dumpV;
+    size_t dumpTotalSize;
+    size_t dumpRecvSize;
+    std::vector<uint8> dumpData;
 
     ChOpenCallback openCallback;
     ChClosedCallback closeCallback;
     StatCallback statCallback;
-    DumpGetCallback dumpGetCallback;
-    DumpDoneCallback dumpDoneCallback;
+    DumpCallback dumpCallback;
 };
 
 }   // namespace Net

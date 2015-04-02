@@ -1,35 +1,37 @@
 /*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #ifndef __DAVAENGINE_MMNETSERVER_H__
 #define __DAVAENGINE_MMNETSERVER_H__
 
 #include "Base/BaseTypes.h"
+
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
 #include "Network/NetService.h"
 #include "MemoryManager/MemoryManagerTypes.h"
@@ -47,13 +49,15 @@ class MMNetServer : public NetService
 {
     struct Parcel
     {
-        size_t size;
-        size_t nsent;
-        size_t chunk;
-        void* buffer;
-    };
+        Parcel() : header(), data(nullptr), dataSize(0), dataSent(0), chunkSize(0) {}
+        Parcel(void* dataBuf, size_t size) : header(), data(dataBuf), dataSize(size), dataSent(0), chunkSize(0) {}
 
-    static const size_t CHUNK_SIZE = 60 * 1024;
+        MMNetProto::Header header;
+        void* data;
+        size_t dataSize;
+        size_t dataSent;
+        size_t chunkSize;
+    };
 
 public:
     MMNetServer();
@@ -68,17 +72,16 @@ public:
     void PacketDelivered() override;
     
 private:
-    void ProcessInitCommunication(const MMProtoHeader* hdr, const void* packet, size_t length);
-    void ProcessDump(const MMProtoHeader* hdr, const void* packet, size_t length);
+    void ProcessTypeInit(const MMNetProto::HeaderInit* header, const void* packetData, size_t dataLength);
+    void ProcessTypeDump(const MMNetProto::HeaderDump* header, const void* packetData, size_t dataLength);
+
     void SendMemoryStat();
 
-    Parcel CreateParcel(size_t parcelSize);
-    Parcel CreateParcel(size_t parcelSize, void* buf);
-    void DestroyParcel(Parcel parcel);
-    void EnqueueAndSend(Parcel parcel);
+    void DeleteParcelData(Parcel& parcel);
+    void EnqueueParcel(const Parcel& parcel);
+    void SendParcel(Parcel& parcel);
 
-    static void DumpRequestCallback(void* arg, int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd);
-    void OnDumpRequest(int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd);
+    void GatherDump();
 
 private:
     uint32 sessionId;
@@ -86,13 +89,20 @@ private:
     uint64 timerBegin;
     size_t statPeriod;
     size_t periodCounter;
-    volatile bool allDone;
+
+    static const size_t OUTBUF_SIZE = 60 * 1024;
+    static const size_t OUTBUF_USEFUL_SIZE = OUTBUF_SIZE - sizeof(MMNetProto::Header);
+    uint8 outbuf[OUTBUF_SIZE];
+    MMNetProto::Header* outHeader;
+    void* outData;
 
     DynamicMemoryFile* zipFile;
-    Deque<Parcel> parcels;
+    List<Parcel> queue;
 };
 
 }   // namespace Net
 }   // namespace DAVA
+
+#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
 #endif  // __DAVAENGINE_MMNETSERVER_H__

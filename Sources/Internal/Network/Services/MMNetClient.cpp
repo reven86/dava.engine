@@ -1,29 +1,29 @@
 /*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "Base/Function.h"
@@ -47,8 +47,8 @@ MMNetClient::MMNetClient()
     , commInited(false)
     , outbufBusy(false)
     , gettingDump(false)
-    , dumpSize(0)
-    , dumpRecv(0)
+    , dumpTotalSize(0)
+    , dumpRecvSize(0)
 {
 
 }
@@ -58,58 +58,55 @@ MMNetClient::~MMNetClient()
 
 }
 
-void MMNetClient::SetCallbacks(ChOpenCallback onOpen, ChClosedCallback onClosed, StatCallback onStat, DumpGetCallback onDumpGet, DumpDoneCallback onDumpDone)
+void MMNetClient::SetCallbacks(ChOpenCallback onOpen, ChClosedCallback onClosed, StatCallback onStat, DumpCallback onDump)
 {
     openCallback = onOpen;
     closeCallback = onClosed;
     statCallback = onStat;
-    dumpGetCallback = onDumpGet;
-    dumpDoneCallback = onDumpDone;
+    dumpCallback = onDump;
 }
 
 void MMNetClient::RequestDump()
 {
-    if (commInited && !outbufBusy)
+    if (commInited && !outbufBusy && !gettingDump)
     {
-        SendDumpRequest();
+        SendTypeDump();
     }
 }
 
 void MMNetClient::ChannelOpen()
 {
-    SendInitSession();
+    SendTypeInit();
 }
 
 void MMNetClient::ChannelClosed(const char8* message)
 {
     commInited = false;
     outbufBusy = false;
+    gettingDump = false;
 
     closeCallback(message);
 }
 
 void MMNetClient::PacketReceived(const void* packet, size_t length)
 {
-    DVASSERT(length >= sizeof(MMProtoHeader));
+    DVASSERT(length >= sizeof(MMNetProto::Header));
 
-    if (gettingDump)
-    {
-        ProcessDumpNext(packet, length);
-        return;
-    }
+    const MMNetProto::Header* header = static_cast<const MMNetProto::Header*>(packet);
+    const void* packetData = OffsetPointer<void>(packet, sizeof(MMNetProto::Header));
+    size_t packetDataSize = length - sizeof(MMNetProto::Header);
 
-    const MMProtoHeader* hdr = static_cast<const MMProtoHeader*>(packet);
-    const eMMProtoCmd cmd = static_cast<eMMProtoCmd>(hdr->cmd);
-    switch (cmd)
+    DVASSERT(packetDataSize == header->length);
+    switch (header->type)
     {
-    case eMMProtoCmd::INIT_COMM:
-        ProcessInitCommunication(hdr, static_cast<const uint8*>(packet) + sizeof(MMProtoHeader), length - sizeof(MMProtoHeader));
+    case MMNetProto::TYPE_INIT:
+        ProcessTypeInit(reinterpret_cast<const MMNetProto::HeaderInit*>(header), packetData, packetDataSize);
         break;
-    case eMMProtoCmd::CUR_STAT:
-        ProcessCurrentStatistics(hdr, static_cast<const uint8*>(packet)+sizeof(MMProtoHeader), length - sizeof(MMProtoHeader));
+    case MMNetProto::TYPE_STAT:
+        ProcessTypeStat(reinterpret_cast<const MMNetProto::HeaderStat*>(header), packetData, packetDataSize);
         break;
-    case eMMProtoCmd::DUMP:
-        ProcessDump(hdr, static_cast<const uint8*>(packet)+sizeof(MMProtoHeader), length - sizeof(MMProtoHeader));
+    case MMNetProto::TYPE_DUMP:
+        ProcessTypeDump(reinterpret_cast<const MMNetProto::HeaderDump*>(header), packetData, packetDataSize);
         break;
     default:
         break;
@@ -121,73 +118,52 @@ void MMNetClient::PacketDelivered()
     outbufBusy = false;
 }
 
-void MMNetClient::ProcessInitCommunication(const MMProtoHeader* hdr, const void* packet, size_t length)
+void MMNetClient::ProcessTypeInit(const MMNetProto::HeaderInit* header, const void* packetData, size_t dataLength)
 {
+    DVASSERT(header->status == MMNetProto::STATUS_OK);
     const MMStatConfig* config = nullptr;
-    if (hdr->length > 0)
+    if (header->totalLength > 0)
     {
-        sessionId = hdr->sessionId;
-        config = reinterpret_cast<const MMStatConfig*>(hdr + 1);
+        sessionId = header->sessionId;
+        config = static_cast<const MMStatConfig*>(packetData);
     }
     commInited = true;
-
     openCallback(config);
 }
 
-void MMNetClient::ProcessCurrentStatistics(const MMProtoHeader* hdr, const void* packet, size_t length)
+void MMNetClient::ProcessTypeStat(const MMNetProto::HeaderStat* header, const void* packetData, size_t dataLength)
 {
-    const MMStat* stat = static_cast<const MMStat*>(packet);
+    DVASSERT(header->status == MMNetProto::STATUS_OK);
+    const MMCurStat* stat = static_cast<const MMCurStat*>(packetData);
     statCallback(stat);
 }
 
-void MMNetClient::ProcessDump(const MMProtoHeader* hdr, const void* packet, size_t length)
+void MMNetClient::ProcessTypeDump(const MMNetProto::HeaderDump* header, const void* packetData, size_t dataLength)
 {
-    //const MMDump* dump = static_cast<const MMDump*>(packet);
-
-    gettingDump = true;
-    //dumpSize = sizeof(MMDump) 
-    //    + sizeof(MMBlock) * dump->blockCount 
-    //    + sizeof(MMBacktrace) * dump->backtraceCount
-    //    + sizeof(MMSymbol) * dump->symbolCount;
-    dumpSize = hdr->length;
-    unpackedDumpSize = hdr->status;
-    dumpRecv = length;
-
-    dumpV.resize(dumpSize);
-    Memcpy(dumpV.data(), packet, dumpRecv);
-
-    dumpGetCallback(dumpSize, dumpRecv);
-
-    if (dumpRecv >= dumpSize)
+    DVASSERT(header->status == MMNetProto::STATUS_OK);
+    if (!gettingDump)
     {
-        //MMDump* dump = reinterpret_cast<MMDump*>(dumpV.data());
-        //dumpDoneCallback(dump);
-        //gettingDump = false;
-        UnpackDump();
+        dumpTotalSize = header->totalLength;
+        dumpRecvSize = 0;
+        dumpData.resize(dumpTotalSize);
+        gettingDump = true;
     }
-}
+    Memcpy(&*dumpData.begin() + dumpRecvSize, packetData, dataLength);
+    dumpRecvSize += dataLength;
 
-void MMNetClient::ProcessDumpNext(const void* packet, size_t length)
-{
-    DVASSERT(dumpRecv + length <= dumpSize);
-
-    Memcpy(dumpV.data() + dumpRecv, packet, length);
-    dumpRecv += length;
-
-    if (dumpRecv < dumpSize)
+    DVASSERT(dumpRecvSize <= dumpTotalSize);
+    if (dumpRecvSize < dumpTotalSize)
     {
-        dumpGetCallback(dumpSize, dumpRecv);
+        dumpCallback(dumpTotalSize, dumpRecvSize, nullptr);
     }
     else
     {
-        //MMDump* dump = reinterpret_cast<MMDump*>(dumpV.data());
-        //dumpDoneCallback(dump);
-        //gettingDump = false;
-        UnpackDump();
+        dumpCallback(dumpTotalSize, dumpRecvSize, &dumpData);
+        gettingDump = false;
     }
 }
 
-void MMNetClient::UnpackDump()
+/*void MMNetClient::UnpackDump()
 {
     Vector<uint8> v(unpackedDumpSize, 0);
     DynamicMemoryFile* zipFile = DynamicMemoryFile::Create(dumpV.data() + sizeof(MMDump), uint32(dumpV.size() - sizeof(MMDump)), File::CREATE | File::READ);
@@ -198,30 +174,32 @@ void MMNetClient::UnpackDump()
     MMDump* dump = reinterpret_cast<MMDump*>(v.data());
     dumpDoneCallback(dump, dumpSize, v);
     gettingDump = false;
-}
+}*/
 
-void MMNetClient::SendInitSession()
+void MMNetClient::SendTypeInit()
 {
-    MMProtoHeader* hdr = reinterpret_cast<MMProtoHeader*>(outbuf);
-    hdr->sessionId = sessionId;
-    hdr->cmd = static_cast<uint32>(eMMProtoCmd::INIT_COMM);
-    hdr->status = 0;
-    hdr->length = 0;
+    MMNetProto::HeaderInit* header = reinterpret_cast<MMNetProto::HeaderInit*>(outbuf);
+    header->type = MMNetProto::TYPE_INIT;
+    header->status = MMNetProto::STATUS_OK;
+    header->length = 0;
+    header->totalLength = 0;
+    header->sessionId = sessionId;
 
     outbufBusy = true;
-    Send(hdr);
+    Send(header);
 }
 
-void MMNetClient::SendDumpRequest()
+void MMNetClient::SendTypeDump()
 {
-    MMProtoHeader* hdr = reinterpret_cast<MMProtoHeader*>(outbuf);
-    hdr->sessionId = sessionId;
-    hdr->cmd = static_cast<uint32>(eMMProtoCmd::DUMP);
-    hdr->status = 0;
-    hdr->length = 0;
+    MMNetProto::HeaderDump* header = reinterpret_cast<MMNetProto::HeaderDump*>(outbuf);
+    header->type = MMNetProto::TYPE_DUMP;
+    header->status = MMNetProto::STATUS_OK;
+    header->length = 0;
+    header->totalLength = 0;
+    header->isPacked = 0;
 
     outbufBusy = true;
-    Send(hdr);
+    Send(header);
 }
 
 }   // namespace Net
