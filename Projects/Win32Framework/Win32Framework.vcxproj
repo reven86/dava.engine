@@ -337,6 +337,7 @@
     <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\bsdiff\bs_common.h" />
     <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\PatchFile.h" />
     <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\ZLibStream.h" />
+    <ClInclude Include="..\..\Sources\Internal\Entity\BaseFamily.h" />
     <ClInclude Include="..\..\Sources\Internal\Entity\Component.h" />
     <ClInclude Include="..\..\Sources\Internal\Entity\SceneSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\Bitstream.h" />
@@ -685,6 +686,7 @@
     <ClInclude Include="..\..\Sources\Internal\Thread\Spinlock.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIControlFamily.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
@@ -855,6 +857,7 @@
     <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\bsdiff\bs_patch.c" />
     <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\PatchFile.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\ZLibStream.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Entity\BaseFamily.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Entity\Component.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Entity\SceneSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\Bitstream.cpp" />
@@ -1165,6 +1168,7 @@
     <ClCompile Include="..\..\Sources\Internal\Sound\FMODSoundSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIControlFamily.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp" />
