@@ -91,19 +91,19 @@ class DavaGLWidget
     : public QWidget
 {
     Q_OBJECT
-    
+
+signals :
+    void Initialized();
+    void Resized( int width, int height, int dpr );
+    void OnDrop( const QMimeData *mimeData );
+
 public:
     explicit DavaGLWidget(QWidget *parent = nullptr);
     ~DavaGLWidget();
 
     OpenGLWindow *GetGLWindow() const;
-    
-signals:
-    void Initialized();
-    void Resized(int width, int height, int dpr);
-	void OnDrop(const QMimeData *mimeData);
 
-private slots:
+public slots:
     void OnWindowExposed();
     
 private:
