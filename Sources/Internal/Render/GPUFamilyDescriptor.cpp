@@ -41,9 +41,6 @@ namespace DAVA
 {
     
 GPUFamilyDescriptor::GPUData GPUFamilyDescriptor::gpuData[GPU_FAMILY_COUNT];
-UnorderedSet<String> GPUFamilyDescriptor::originExtensions;
-UnorderedSet<String> GPUFamilyDescriptor::gpuExtensions;
-String GPUFamilyDescriptor::defaultOriginExt;
 
 void GPUFamilyDescriptor::GPUData::SetName(const String &newName)
 {
@@ -62,8 +59,6 @@ void GPUFamilyDescriptor::SetupGPUParameters()
 {
     SetupGPUFormats();
     SetupGPUPostfixes();
-    SetupGPUExtensions();
-    SetupOriginExtensions();
 }
 
 void GPUFamilyDescriptor::SetupGPUFormats()
@@ -151,20 +146,6 @@ void GPUFamilyDescriptor::SetupGPUPostfixes()
     gpuData[GPU_ORIGIN].SetName("");
 }
 
-void GPUFamilyDescriptor::SetupGPUExtensions()
-{
-    gpuExtensions.insert(".pvr");
-    gpuExtensions.insert(".dds");
-}
-
-void GPUFamilyDescriptor::SetupOriginExtensions()
-{
-    defaultOriginExt.assign(".png");
-    originExtensions.insert(".png");
-    originExtensions.insert(".tga");
-}
-
-    
 const Map<PixelFormat, String> & GPUFamilyDescriptor::GetAvailableFormatsForGpu(eGPUFamily gpuFamily)
 {
     DVASSERT(0 <= gpuFamily && gpuFamily < GPU_FAMILY_COUNT);
@@ -184,20 +165,11 @@ eGPUFamily GPUFamilyDescriptor::GetGPUForPathname(const FilePath &pathname)
         }
     }
 
-    return IsOriginFile(pathname) ? GPU_ORIGIN : GPU_INVALID;
+    const String ext = pathname.GetExtension();
+    bool isUncompressed = TextureDescriptor::IsSourceTextureExtension(ext);
+    return isUncompressed ? GPU_ORIGIN : GPU_INVALID;
 }
 
-bool GPUFamilyDescriptor::IsOriginFile(const FilePath& pathname)
-{
-    const String ext = pathname.GetExtension();
-    for (auto origExt : originExtensions)
-    {
-        if (CompareCaseInsensitive(ext, origExt) == 0)
-            return true;
-    }
-    return false;
-}
- 
 FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const TextureDescriptor *descriptor, const eGPUFamily gpuFamily)
 {
     DVASSERT(descriptor);
@@ -221,16 +193,15 @@ FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const TextureDescriptor *desc
     if (requestedGPU == GPU_ORIGIN)
         return descriptor->GetSourceTexturePathname();
     else
-        return CreatePathnameForGPU(descriptor->pathname, requestedGPU, requestedFormat);
+    {
+        String ext = GetFileExtension(gpuFamily, requestedFormat);
+        if (ext.empty())
+            return descriptor->GetSourceTexturePathname();
+        else
+            return FilePath::CreateWithNewExtension(descriptor->pathname, ext);
+    }
 }
 
-FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const FilePath & pathname, const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
-{
-    return FilePath::CreateWithNewExtension(pathname, GetFileExtension(gpuFamily, pixelFormat));
-}
-
-    
-    
 const String & GPUFamilyDescriptor::GetGPUName(const eGPUFamily gpuFamily)
 {
     DVASSERT(0 <= gpuFamily && gpuFamily < GPU_FAMILY_COUNT);
@@ -274,14 +245,14 @@ const String & GPUFamilyDescriptor::GetCompressedFileExtension(const eGPUFamily 
 String GPUFamilyDescriptor::GetFileExtension(const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
 {
     if (!IsGPUForDevice(gpuFamily) || pixelFormat == FORMAT_INVALID)
-        return defaultOriginExt;
+        return String();
 
     auto& gpuFormats = gpuData[gpuFamily].availableFormats;
     auto formatFound = gpuFormats.find(pixelFormat);
     if (formatFound == gpuFormats.end())
     {
         Logger::Error("[GPUFamilyDescriptor::GetFileExtension: can't find format %s for gpu %s]", PixelFormatDescriptor::GetPixelFormatString(pixelFormat), gpuData[gpuFamily].name.c_str());
-        return defaultOriginExt;
+        return String();
     }
 
     return (gpuData[gpuFamily].prefix + formatFound->second);
@@ -308,22 +279,4 @@ bool GPUFamilyDescriptor::IsGPUForDevice(const eGPUFamily gpu)
     return (gpu >= 0 && gpu < GPU_DEVICE_COUNT);
 }
 
-bool GPUFamilyDescriptor::IsExtensionSupported(const String& extenstion)
-{
-    for (auto origExt : originExtensions)
-    {
-        if (CompareCaseInsensitive(origExt, extenstion) == 0)
-            return true;
-    }
-
-    for (auto gpuExt : gpuExtensions)
-    {
-        if (CompareCaseInsensitive(gpuExt, extenstion) == 0)
-            return true;
-    }
-
-    return false;
-}
-
-    
 };

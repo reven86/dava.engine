@@ -536,6 +536,8 @@ const String & TextureDescriptor::GetLightmapTextureExtension()
 {
     return LIGHTMAP_EXTENSION;
 }
+
+
     
     
 const TextureDescriptor::Compression * TextureDescriptor::GetCompressionParams(eGPUFamily gpuFamily) const
@@ -544,14 +546,49 @@ const TextureDescriptor::Compression * TextureDescriptor::GetCompressionParams(e
     return &compression[gpuFamily];
 }
 
+std::array<ImageFormat, 3> TextureDescriptor::sourceTextureTypes = { { IMAGE_FORMAT_PNG, IMAGE_FORMAT_TGA, IMAGE_FORMAT_JPEG } };
+std::array<ImageFormat, 2> TextureDescriptor::compressedTextureTypes = { { IMAGE_FORMAT_PVR, IMAGE_FORMAT_DDS } };
+
+auto IsSupportedFor = [](ImageFormat format, const String& extension)
+{
+    auto extensions = ImageSystem::Instance()->GetExtensionsFor(format);
+    for (auto ext : extensions)
+    {
+        if (CompareCaseInsensitive(ext, extension) == 0)
+            return true;
+    }
+    return false;
+};
+
+bool TextureDescriptor::IsSourceTextureExtension(const String& extension)
+{
+    for (auto format : sourceTextureTypes)
+    {
+        if (IsSupportedFor(format, extension))
+            return true;
+    }
+}
+
+bool TextureDescriptor::IsCompressedTextureExtension(const String& extension)
+{
+    for (auto format : compressedTextureTypes)
+    {
+        if (IsSupportedFor(format, extension))
+            return true;
+    }
+}
+
+bool TextureDescriptor::IsDescriptorExtension(const String& extension)
+{
+    if (CompareCaseInsensitive(GetDescriptorExtension(), extension) == 0)
+        return true;
+}
+
 bool TextureDescriptor::IsSupportedTextureExtension(const String& extension)
 {
-    if (GPUFamilyDescriptor::IsExtensionSupported(extension))
-        return true;
-    else if (CompareCaseInsensitive(TextureDescriptor::GetDescriptorExtension(), extension) == 0)
-        return true;
-    else
-        return false;
+    return (IsSourceTextureExtension(extension) ||
+            IsCompressedTextureExtension(extension) ||
+            IsDescriptorExtension(extension));
 }
 
 bool TextureDescriptor::IsCompressedFile() const

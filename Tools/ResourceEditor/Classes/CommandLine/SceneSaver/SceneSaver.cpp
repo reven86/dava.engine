@@ -248,8 +248,7 @@ void SceneSaver::CopyTexture(const FilePath &texturePathname)
 	}
 	else
 	{
-		FilePath pngPathname = GPUFamilyDescriptor::CreatePathnameForGPU(texturePathname, GPU_ORIGIN, FORMAT_RGBA8888);
-		sceneUtils.AddFile(pngPathname);
+        sceneUtils.AddFile(desc->GetSourceTexturePathname());
 	}
 	
 

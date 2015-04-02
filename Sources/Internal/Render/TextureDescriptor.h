@@ -179,9 +179,14 @@ public:
     FilePath GetSourceTexturePathname() const;
 
 	static const String & GetDescriptorExtension();
-    const String& GetSourceTextureExtension() const;
     static const String & GetLightmapTextureExtension();
-	static bool IsSupportedTextureExtension(const String& extension);
+
+    static bool IsSupportedTextureExtension(const String& extension);
+    static bool IsSourceTextureExtension(const String& extension);
+    static bool IsCompressedTextureExtension(const String& extension);
+    static bool IsDescriptorExtension(const String& extension);
+    
+    const String& GetSourceTextureExtension() const;
 
     static FilePath GetDescriptorPathname(const FilePath &texturePathname);
     
@@ -224,6 +229,9 @@ public:
     int8 exportedAsGpuFamily;
 	
     bool isCompressedFile:1;
+
+    static std::array<ImageFormat, 3> sourceTextureTypes;
+    static std::array<ImageFormat, 2> compressedTextureTypes;
 };
     
 };
