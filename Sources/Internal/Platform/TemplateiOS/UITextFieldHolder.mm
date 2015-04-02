@@ -165,8 +165,10 @@
                 char buffer[byteCount];
                 NSUInteger usedBufferCount;
                 [string getBytes:buffer maxLength:byteCount usedLength:&usedBufferCount encoding:NSUTF32StringEncoding options:0 range:NSMakeRange(0, string.length) remainingRange:NULL];
+                string = [[NSString alloc] initWithBytes:buffer length:usedBufferCount encoding:NSUTF32LittleEndianStringEncoding];
                 DVASSERT(string && "Error on convert utf32 to NSString");
                 
+                [textField setText: [textField.text stringByReplacingCharactersInRange:range withString:string]];
                 needIgnoreDelegateResult = TRUE;
             }
         }
