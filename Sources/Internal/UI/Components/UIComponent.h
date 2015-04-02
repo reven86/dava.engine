@@ -62,8 +62,8 @@ private:
     UIControl* control;
 
 public:
-    INTROSPECTION_EXTEND(UIComponent, BaseObject,
-        );
+//    INTROSPECTION_EXTEND(UIComponent, BaseObject,
+//        );
 
 };
 
