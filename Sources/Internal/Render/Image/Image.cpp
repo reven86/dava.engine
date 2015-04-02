@@ -35,7 +35,6 @@
 namespace DAVA 
 {
 
-
 Image::Image()
 :   dataSize(0)
 ,   width(0)
@@ -417,6 +416,10 @@ void Image::FlipHorizontal()
 		FlipHorizontal((uint32 *)data, width, height);
 		break;
 
+    case FORMAT_RGB888:
+        FlipHorizontal((RGB888 *)data, width, height);
+        break;
+
 	default:
 		DVASSERT(false && "Not implemented");
 		break;
@@ -441,6 +444,11 @@ void Image::FlipVertical()
 	case FORMAT_RGBA8888:
 		FlipVertical((uint32 *)data, width, height);
 		break;
+            
+    case FORMAT_RGB888:
+        FlipVertical((RGB888 *)data, width, height);
+        break;
+            
 
 	default:
 		DVASSERT(false && "Not implemented");

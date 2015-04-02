@@ -590,7 +590,7 @@ bool LibDdsHelper::WriteDxtFile(const FilePath & fileNameOriginal, const Vector<
 	inputOptions.setTextureLayout(textureType, imageSet[0]->width, imageSet[0]->height);
     inputOptions.setMipmapGeneration(dataCount > 1, dataCount - 1);
 
-    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(imageSet[0]->format);
 	for(int32 i = 0; i < dataCount; ++i)
 	{
         uint32 imgDataSize = imageSet[i]->width * imageSet[i]->height * pixelSize;
@@ -740,6 +740,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
 		return false;
 	}
 
+    auto pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(imageSet[0]->format);
 	for(int32 i = 0; i < dataCount; ++i)
 	{
 		TQonvertImage srcImg = {0};
@@ -747,7 +748,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
 		srcImg.nWidth = imageSet[i]->width;
 		srcImg.nHeight = imageSet[i]->height;
 		srcImg.nFormat = Q_FORMAT_RGBA_8UI;
-		srcImg.nDataSize = imageSet[i]->width * imageSet[i]->height * 4;
+		srcImg.nDataSize = imageSet[i]->width * imageSet[i]->height * pixelSize;
 		srcImg.pData = imageSet[i]->data;
 
 
@@ -778,7 +779,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
 		srcImg.nWidth = imageSet[i]->width;
 		srcImg.nHeight = imageSet[i]->height;
 		srcImg.nFormat = Q_FORMAT_RGBA_8UI;
-		srcImg.nDataSize = imageSet[i]->width * imageSet[i]->height * 4;
+		srcImg.nDataSize = imageSet[i]->width * imageSet[i]->height * pixelSize;
 		srcImg.pData = imageSet[i]->data;
 
 		TQonvertImage dstImg = {0};
@@ -1404,7 +1405,7 @@ eErrorCode LibDdsHelper::ReadFile(File * file, Vector<Image*> &imageSet, int32 b
  
 eErrorCode LibDdsHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
 {
-    if(imageSet[0]->format != FORMAT_RGBA8888)
+    if(imageSet[0]->format != FORMAT_RGBA8888 && imageSet[0]->format != FORMAT_RGB888)
     {
         Logger::Error("[LibDdsHelper::WriteFile] Wrong input format.");
         return ERROR_WRITE_FAIL;

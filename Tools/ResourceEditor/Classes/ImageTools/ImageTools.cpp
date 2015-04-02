@@ -93,6 +93,10 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 		{
             size += system->GetImageFormatInterface(IMAGE_FORMAT_JPEG)->GetDataSize(imageFile);
 		}
+        else if(system->GetImageFormatInterface(IMAGE_FORMAT_TGA)->IsImage(imageFile))
+        {
+            size += system->GetImageFormatInterface(IMAGE_FORMAT_TGA)->GetDataSize(imageFile);
+        }
 		else
 		{
 			Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetAbsolutePathname().c_str());

@@ -318,6 +318,28 @@ struct PackA8
     }
 };
 
+    
+struct UnpackRGB888
+{
+    inline void operator()(const RGB888 * input, uint32 & r, uint32 & g, uint32 & b, uint32 & a)
+    {
+        r = input->r;
+        g = input->g;
+        b = input->b;
+        a = 0xFF;
+    }
+};
+
+struct PackRGB888
+{
+    inline void operator()(uint32 r, uint32 g, uint32 b, uint32 a, RGB888 * output)
+    {
+        output->r = r;
+        output->g = g;
+        output->b = b;
+    }
+};
+    
 struct PackNormalizedRGBA8888
 {
     void operator()(uint32 r, uint32 g, uint32 b, uint32 a, uint32 * output)
@@ -629,6 +651,11 @@ public:
         else if ((inFormat == FORMAT_A8) && (outFormat == FORMAT_A8))
         {
             ConvertDownscaleTwiceBillinear<uint8, uint8, UnpackA8, PackA8> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if ((inFormat == FORMAT_RGB888) && (outFormat == FORMAT_RGB888))
+        {
+            ConvertDownscaleTwiceBillinear<RGB888, RGB888, UnpackRGB888, PackRGB888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         }
         else

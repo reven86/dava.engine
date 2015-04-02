@@ -86,7 +86,7 @@ DAVA::eErrorCode LibTgaWrapper::ReadTgaHeader(File *infile, TgaInfo& tgaInfo) co
     if (bytesRead != fields.size())
         return ERROR_READ_FAIL;
 
-    static const std::array<uint8, 5> zeroes = { 0, 0, 0, 0, 0 };
+    static const std::array<uint8, 5> zeroes = {{ 0, 0, 0, 0, 0 }};
     if (Memcmp(&fields[idlengthOffset], &zeroes[0], 2) != 0 ||
         Memcmp(&fields[colorMapDataOffset], &zeroes[0], 5) != 0)
     {
@@ -104,8 +104,10 @@ DAVA::eErrorCode LibTgaWrapper::ReadTgaHeader(File *infile, TgaInfo& tgaInfo) co
     }
 
     // obtaining width and height
-    tgaInfo.width = static_cast<uint16>(fields[widthOffset]);
-    tgaInfo.height = static_cast<uint16>(fields[heightOffset]);
+//    tgaInfo.width = static_cast<uint16>(fields[widthOffset]);
+//    tgaInfo.height = static_cast<uint16>(fields[heightOffset]);
+    tgaInfo.width = (uint16)(fields[widthOffset]) | ((uint16)(fields[widthOffset + 1]) << 8);
+    tgaInfo.height = (uint16)(fields[heightOffset]) | ((uint16)(fields[heightOffset + 1]) << 8);
     if (!tgaInfo.width || !tgaInfo.height)
     {
         return ERROR_FILE_FORMAT_INCORRECT;
@@ -246,23 +248,54 @@ PixelFormat LibTgaWrapper::DefinePixelFormat(const TgaInfo& tgaInfo) const
 
 eErrorCode LibTgaWrapper::ReadUncompressedTga(File *infile, const TgaInfo& tgaInfo, ScopedPtr<Image>& image) const
 {
-    std::array<uint8, MAX_BYTES_IN_PIXEL> pixelBuffer;
-
-    ImageDataWriter dataWriter(image, tgaInfo);
-
-    for (auto y = 0; y < tgaInfo.height; ++y)
+//    std::array<uint8, MAX_BYTES_IN_PIXEL> pixelBuffer;
+//
+//    ImageDataWriter dataWriter(image, tgaInfo);
+//
+//    for (auto y = 0; y < tgaInfo.height; ++y)
+//    {
+//        for (auto x = 0; x < tgaInfo.width; ++x)
+//        {
+//            if (infile->Read(pixelBuffer.data(), tgaInfo.bytesPerPixel) != tgaInfo.bytesPerPixel)
+//                return ERROR_READ_FAIL;
+//
+//            Memcpy(dataWriter.ptr, pixelBuffer.data(), tgaInfo.bytesPerPixel);
+//            dataWriter.ptr += dataWriter.ptrInc;
+//        }
+//        dataWriter.ptr += dataWriter.ptrNextLineJump;
+//    }
+//
+    
+    auto dataSize = tgaInfo.width * tgaInfo.height * tgaInfo.bytesPerPixel;
+    auto readSize = infile->Read(image->data, dataSize);
+    if(readSize != dataSize)
     {
-        for (auto x = 0; x < tgaInfo.width; ++x)
-        {
-            if (infile->Read(pixelBuffer.data(), tgaInfo.bytesPerPixel) != tgaInfo.bytesPerPixel)
-                return ERROR_READ_FAIL;
-
-            Memcpy(dataWriter.ptr, pixelBuffer.data(), tgaInfo.bytesPerPixel);
-            dataWriter.ptr += dataWriter.ptrInc;
-        }
-        dataWriter.ptr += dataWriter.ptrNextLineJump;
+        return ERROR_READ_FAIL;
     }
+    
+    
+    switch (tgaInfo.origin_corner)
+    {
+        case TgaInfo::BOTTOM_LEFT:
+            image->FlipVertical();
+            break;
 
+        case TgaInfo::BOTTOM_RIGHT:
+            image->FlipVertical();
+            image->FlipHorizontal();
+            break;
+
+        case TgaInfo::TOP_RIGHT:
+            image->FlipHorizontal();
+            break;
+
+        case TgaInfo::TOP_LEFT:
+            break;
+
+        default:
+            break;
+    }
+    
     return SUCCESS;
 }
 

@@ -60,11 +60,11 @@ namespace DAVA
 			
             if(descriptor.dataSettings.GetIsNormalMap())
             {
-                outputPath = PVRConverter::Instance()->ConvertNormalMapPngToPvr(descriptor, gpuFamily, quality);
+                outputPath = PVRConverter::Instance()->ConvertNormalMapToPvr(descriptor, gpuFamily, quality);
             }
             else
             {
-                outputPath = PVRConverter::Instance()->ConvertPngToPvr(descriptor, gpuFamily, quality);
+                outputPath = PVRConverter::Instance()->ConvertToPvr(descriptor, gpuFamily, quality);
             }
 		}
 		else if(outExtension == ".dds")
@@ -75,11 +75,11 @@ namespace DAVA
 			
 			if(descriptor.IsCubeMap())
 			{
-				outputPath = DXTConverter::ConvertCubemapPngToDxt(descriptor, gpuFamily);
+				outputPath = DXTConverter::ConvertCubemapToDxt(descriptor, gpuFamily);
 			}
 			else
 			{
-				outputPath = DXTConverter::ConvertPngToDxt(descriptor, gpuFamily);
+				outputPath = DXTConverter::ConvertToDxt(descriptor, gpuFamily);
 			}
 		}
 		else
