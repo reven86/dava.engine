@@ -1,5 +1,6 @@
 #include "MemProfPlot.h"
 #include "MemProfInfoModel.h"
+
 MemProfPlot::MemProfPlot(QWidget *parent )
 {
     model = nullptr;
@@ -13,6 +14,10 @@ MemProfPlot::MemProfPlot(QWidget *parent )
     vertical->setAntialiased(false);
     vertical->setVisible(true);
     addItem(vertical);
+}
+
+MemProfPlot::~MemProfPlot()
+{
 }
 
 void MemProfPlot::setModel(MemProfInfoModel * model)
@@ -33,13 +38,12 @@ void MemProfPlot::setModel(MemProfInfoModel * model)
 
 
 }
-MemProfPlot::~MemProfPlot()
-{
-}
+
 void MemProfPlot::mousePressEvent(QMouseEvent *event)
 {
     QCustomPlot::mousePressEvent(event);
 }
+
 void MemProfPlot::mouseMoveEvent(QMouseEvent *event)
 {
     if (!fixedRange)
@@ -59,9 +63,10 @@ void MemProfPlot::mouseMoveEvent(QMouseEvent *event)
     QCustomPlot::mouseMoveEvent(event);
     
 }
+
 void MemProfPlot::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    if (fixedRange)
+    /*if (fixedRange)
     {
         model->forTagStats([this](int stamp,const TagsStat & stat){
             if (stamp > lastTimeStamp)
@@ -80,8 +85,9 @@ void MemProfPlot::mouseDoubleClickEvent(QMouseEvent *event)
         model->showDataToClosest(x*1000.0);
     }
     fixedRange = !fixedRange;
-    
+    */
 }
+
 void MemProfPlot::addStat(int stamp, const TagsStat & stat)
 {
     if (stamp < lastTimeStamp) 
@@ -105,15 +111,16 @@ void MemProfPlot::addStat(int stamp, const TagsStat & stat)
     
     lastTimeStamp = stamp;
 }
+
 void MemProfPlot::modelReset()
 {
-    if (!fixedRange)
+    /*if (!fixedRange)
     {
         const TagsStat & stat = model->getCurrentTagStat();
         addStat(model->getCurrentTimeStamp(), stat);
-    }
+    }*/
 }
+
 void MemProfPlot::dataChanged(const QModelIndex & topLeft, const QModelIndex & bottomRight)
 {
-
 }

@@ -45,6 +45,16 @@
     </widget>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="horzLayout">
+     <item>
+      <widget class="QTableView" name="allocPoolTable"/>
+     </item>
+     <item>
+      <widget class="QTableView" name="tagTable"/>
+     </item>
+    </layout>
+   </item>
+   <item>
     <layout class="QVBoxLayout" name="verticalLayout_2"/>
    </item>
   </layout>

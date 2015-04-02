@@ -81,10 +81,10 @@ void BlockListModel::PrepareDiffModel(bool cmpCallstack, DAVA::Vector<const DAVA
         Logger::Debug("%s", s);
         Logger::Debug("v1");
         for (auto x : v1)
-            Logger::Debug("%08X %5u %10u", x->backtraceHash, x->allocByApp, x->orderNo);
+            Logger::Debug("%08X %5u %10u", x->bktraceHash, x->allocByApp, x->orderNo);
         Logger::Debug("v2");
         for (auto x : v2)
-            Logger::Debug("%08X %5u %10u", x->backtraceHash, x->allocByApp, x->orderNo);
+            Logger::Debug("%08X %5u %10u", x->bktraceHash, x->allocByApp, x->orderNo);
     };
 
     //debug("initial");
@@ -104,7 +104,7 @@ void BlockListModel::PrepareDiffModel(bool cmpCallstack, DAVA::Vector<const DAVA
     }
     {
         auto less_bk = [](const MMBlock* l, const MMBlock* r) -> bool {
-            return l->backtraceHash < r->backtraceHash;
+            return l->bktraceHash < r->bktraceHash;
         };
         auto act = [this](const MMBlock* l, const MMBlock* r) -> void {
             diff.v[DiffStruct::D_HASH].push_back(std::make_pair(l, r));
@@ -206,7 +206,7 @@ QVariant BlockListModel::data(const QModelIndex& index, int role) const
                     p = diff.v[r][row - off].second;
                 if (p != nullptr)
                 {
-                    Snprintf(buf, COUNT_OF(buf), "%08X", p->backtraceHash);
+                    Snprintf(buf, COUNT_OF(buf), "%08X", p->bktraceHash);
                     return QString("hash=%1, size=%2, order=%3")
                         .arg(buf)
                         .arg(p->allocByApp)

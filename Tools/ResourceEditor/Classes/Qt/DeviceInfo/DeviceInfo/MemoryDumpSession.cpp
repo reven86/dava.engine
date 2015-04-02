@@ -273,21 +273,27 @@ bool MemoryDumpSession::LoadDump(const char* filename)
     size_t nread = fread(&dumpHdr, sizeof(dumpHdr), 1, file);
     Q_ASSERT(1 == nread);
 
+    MMCurStat curStat;
+    nread = fread(&curStat, sizeof(MMCurStat), 1, file);
+    Q_ASSERT(1 == nread);
+
+    fseek(file, curStat.size - sizeof(MMCurStat), SEEK_CUR);
+
     Vector<MMBlock> memoryBlocks;
     memoryBlocks.resize(dumpHdr.blockCount);
     nread = fread(&*memoryBlocks.begin(), sizeof(MMBlock), dumpHdr.blockCount, file);
     Q_ASSERT(nread == dumpHdr.blockCount);
 
-    const size_t bktraceSize = dumpHdr.backtraceDepth * sizeof(uint64) + sizeof(uint32) * 4;
-    Vector<uint8> bktrace;
-    bktrace.resize(bktraceSize * dumpHdr.backtraceCount);
-    nread = fread(&*bktrace.begin(), 1, bktraceSize * dumpHdr.backtraceCount, file);
-    Q_ASSERT(nread == bktraceSize * dumpHdr.backtraceCount);
-
     Vector<MMSymbol> symbols;
     symbols.resize(dumpHdr.symbolCount);
     nread = fread(&*symbols.begin(), sizeof(MMSymbol), dumpHdr.symbolCount, file);
     Q_ASSERT(nread == dumpHdr.symbolCount);
+
+    const size_t bktraceSize = sizeof(MMBacktrace) +  dumpHdr.bktraceDepth * sizeof(uint64);
+    Vector<uint8> bktrace;
+    bktrace.resize(bktraceSize * dumpHdr.bktraceCount);
+    nread = fread(&*bktrace.begin(), 1, bktraceSize * dumpHdr.bktraceCount, file);
+    Q_ASSERT(nread == bktraceSize * dumpHdr.bktraceCount);
 
     for (auto& sym : symbols)
     {
@@ -295,10 +301,11 @@ bool MemoryDumpSession::LoadDump(const char* filename)
     }
 
     const uint8* curOffset = bktrace.data();
-    for (size_t i = 0, n = dumpHdr.backtraceCount;i < n;++i)
+    for (size_t i = 0, n = dumpHdr.bktraceCount;i < n;++i)
     {
         const MMBacktrace* curBktrace = reinterpret_cast<const MMBacktrace*>(curOffset);
-        bktraceTable.AddBacktrace(curBktrace->hash, curBktrace->frames, dumpHdr.backtraceDepth);
+        const uint64* frames = OffsetPointer<uint64>(curBktrace, sizeof(MMBacktrace));
+        bktraceTable.AddBacktrace(curBktrace->hash, frames, dumpHdr.bktraceDepth);
         curOffset += bktraceSize;
     }
 
@@ -321,11 +328,11 @@ void MemoryDumpSession::DumpData::BuildBlockMap()
 {
     for (MMBlock& curBlock : memoryBlocks)
     {
-        auto iterAt = blockMap.find(curBlock.backtraceHash);
+        auto iterAt = blockMap.find(curBlock.bktraceHash);
         if (iterAt == blockMap.end())
         {
             //Q_ASSERT(!bktraceTable.GetFrames(curBlock.backtraceHash).empty());
-            iterAt = blockMap.emplace(curBlock.backtraceHash, DAVA::Vector<const DAVA::MMBlock*>()).first;
+            iterAt = blockMap.emplace(curBlock.bktraceHash, DAVA::Vector<const DAVA::MMBlock*>()).first;
         }
         iterAt->second.push_back(&curBlock);
     }

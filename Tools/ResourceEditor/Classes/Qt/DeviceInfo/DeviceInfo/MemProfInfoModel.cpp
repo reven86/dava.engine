@@ -1,10 +1,13 @@
 #include "Classes/Qt/DeviceInfo/DeviceInfo/MemProfInfoModel.h"
 
-MemProfInfoModel::~MemProfInfoModel()
+using namespace DAVA;
+
+MemProfInfoModel::MemProfInfoModel()
 {
 
 }
-MemProfInfoModel::MemProfInfoModel()
+
+MemProfInfoModel::~MemProfInfoModel()
 {
 
 }
@@ -53,15 +56,13 @@ QVariant MemProfInfoModel::data(const QModelIndex& index, int role/* = Qt::Displ
     }
    
 }
-QVariant MemProfInfoModel::headerData(int section, Qt::Orientation orientation,
-    int role /*= Qt::DisplayRole*/) const
+QVariant MemProfInfoModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role != Qt::DisplayRole)
         return QVariant();
     if (timedData.size() == 0)
         return QVariant();
 
-   
 
     if (orientation == Qt::Horizontal && tagNames.size() > section)
     {
@@ -80,10 +81,10 @@ QVariant MemProfInfoModel::headerData(int section, Qt::Orientation orientation,
         return QString("pool_") + std::to_string(section).c_str();
     return QVariant();
 }
-void MemProfInfoModel::addMoreData(const DAVA::MMStat * data)
-{
 
-    DAVA::int32 rows = rowCount(), columns = columnCount();
+void MemProfInfoModel::addMoreData(const DAVA::MMCurStat* data)
+{
+    /*DAVA::int32 rows = rowCount(), columns = columnCount();
 
     beginResetModel();
     TagsStat tagsStat;
@@ -105,10 +106,9 @@ void MemProfInfoModel::addMoreData(const DAVA::MMStat * data)
     }
 
     timedData[data->timestamp] = tagsStat;
-    endResetModel();
-   
-
+    endResetModel();*/
 }
+
 void MemProfInfoModel::showDataToClosest(size_t closest)
 {
     latestData = false;
@@ -124,33 +124,43 @@ void MemProfInfoModel::showDataToClosest(size_t closest)
     beginResetModel();
     endResetModel();
 }
+
 void MemProfInfoModel::showLatestData()
 {
     latestData = true;
     beginResetModel();
     endResetModel();
 }
+
 void MemProfInfoModel::setConfig(const DAVA::MMStatConfig* statConfig)
 {
-    if (statConfig == nullptr) return;
-    std::list<std::string> list;
-    for (int i = statConfig->tagCount + statConfig->allocPoolCount; i > 0; i--)
+    if (statConfig != nullptr)
     {
-        list.push_back(statConfig->names[i-1].name);
+        allocPoolCount = statConfig->allocPoolCount;
+        tagCount = statConfig->tagCount;
+
+        poolNames.clear();
+        tagNames.clear();
+
+        poolNames.reserve(allocPoolCount);
+        tagNames.reserve(tagCount);
+        const MMItemName* names = OffsetPointer<MMItemName>(statConfig, sizeof(MMStatConfig));
+        for (size_t i = 0; i < allocPoolCount;++i)
+        {
+            poolNames.push_back(QString(names->name));
+            names += 1;
+        }
+        for (size_t i = 0; i < tagCount;++i)
+        {
+            tagNames.push_back(QString(names->name));
+            names += 1;
+        }
+
+        emit headerDataChanged(Qt::Horizontal, 0, columnCount());
+        emit headerDataChanged(Qt::Vertical, 0, rowCount());
     }
-    tagNames.resize(statConfig->markCount);
-    for (size_t i = 0; i < tagNames.size(); i++)
-    {
-        tagNames[i] = QString(statConfig->names[i + statConfig->tagCount + statConfig->allocPoolCount].name);
-    }
-    poolNames.resize(statConfig->allocPoolCount);
-    for (size_t j = 0; j < poolNames.size(); j++)
-    {
-        poolNames[j] = QString(statConfig->names[j + statConfig->tagCount].name);
-    }
-    emit headerDataChanged(Qt::Horizontal, 0, columnCount());
-    emit headerDataChanged(Qt::Vertical, 0, rowCount());
 }
+
 void MemProfInfoModel::forTagStats(std::function<void(size_t, const TagsStat&)> onStat)
 {
     auto it = timedData.begin();

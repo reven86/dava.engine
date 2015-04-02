@@ -96,7 +96,7 @@ DAVA::Vector<QModelIndex> BranchTreeModel::Select2(const DAVA::MMBlock* block) c
 {
     Vector<QModelIndex> v;
 
-    auto& frames = dumpSession.SymbolTable().GetFrames(block->backtraceHash);
+    auto& frames = dumpSession.SymbolTable().GetFrames(block->bktraceHash);
     Q_ASSERT(!frames.empty());
 
     QModelIndex idx = QModelIndex();
@@ -141,7 +141,7 @@ QModelIndex BranchTreeModel::Select(const DAVA::MMBlock* block) const
     //i = index(0, 0, i);
     //i = index(0, 0, i);
     //return i;
-    auto& frames = dumpSession.SymbolTable().GetFrames(block->backtraceHash);
+    auto& frames = dumpSession.SymbolTable().GetFrames(block->bktraceHash);
     Q_ASSERT(!frames.empty());
 
     Branch* p = dumpSession.FindPath(rootBranch, frames);

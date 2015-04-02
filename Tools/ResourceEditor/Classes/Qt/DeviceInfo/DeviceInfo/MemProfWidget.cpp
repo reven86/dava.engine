@@ -13,28 +13,19 @@
 #include "MemoryItemStyleDelegate.h"
 #include "ui_MemProfWidget.h"
 
-#include "DumpViewWidget.h"
+#include "ProfilingSession.h"
+#include "Models/AllocPoolModel.h"
+#include "Models/TagModel.h"
 
 using namespace DAVA;
 
-MemProfWidget::LabelPack::~LabelPack()
-{
-    delete allocInternal;
-    delete internalBlockCount;
-    delete ghostBlockCount;
-    delete ghostSize;
-    delete realSize;
-}
 MemProfWidget::MemProfWidget(QWidget *parent)
     : QWidget(parent, Qt::Window)
     , ui(new Ui::MemProfWidget())
-    , tagCount(0)
-    , allocPoolCount(0)
     , toolbar(nullptr)
     , frame(nullptr)
-    , labels(nullptr)
     , model(nullptr)
-    , tableView(nullptr)
+    , profileSession(nullptr)
 {
     ui->setupUi(this);
 
@@ -48,33 +39,29 @@ MemProfWidget::MemProfWidget(QWidget *parent)
         connect(actionViewFileDump, SIGNAL(triggered()), this, SIGNAL(OnViewFileDumpButton()));
     }
     ui->verticalLayout_2->insertWidget(0, toolbar);
+
+    poolColors = {
+        QColor(Qt::darkRed),
+        QColor(Qt::darkBlue),
+        QColor(Qt::darkGreen),
+        QColor(Qt::darkYellow),
+        QColor(Qt::darkMagenta),
+        QColor(Qt::darkCyan),
+        QColor(Qt::darkGray),
+        QColor(Qt::black)
+    };
+
+    {
+        tagModel = new TagModel;
+        tagModel->SetTagColors(QColor(200, 255, 200), QColor(Qt::lightGray));
+        allocPoolModel = new AllocPoolModel;
+        allocPoolModel->SetPoolColors(poolColors);
+
+        ui->allocPoolTable->setModel(allocPoolModel);
+        ui->tagTable->setModel(tagModel);
+    }
     
-    plot = ui->plot;
-    
-    plot->addGraph();
-    plot->graph(0)->setPen(QPen(Qt::blue));
-    plot->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 20)));
-    plot->graph(0)->setAntialiasedFill(false);
-    
-    plot->addGraph();
-    plot->graph(1)->setPen(QPen(Qt::red));
-    plot->graph(1)->setAntialiasedFill(false);
-    
-    plot->xAxis2->setVisible(true);
-    plot->xAxis2->setTickLabels(false);
-    plot->yAxis2->setVisible(true);
-    plot->yAxis2->setTickLabels(false);
-    
-    connect(plot->xAxis, SIGNAL(rangeChanged(QCPRange)), plot->xAxis2, SLOT(setRange(QCPRange)));
-    connect(plot->yAxis, SIGNAL(rangeChanged(QCPRange)), plot->yAxis2, SLOT(setRange(QCPRange)));
-    
-    plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    
-    tableView = new QTableView(this);
     model = new MemProfInfoModel();
-    tableView->setModel(model);
-    tableView->setItemDelegate(new MemoryItemStyleDelegate(tableView));
-    plot->setModel(model);
 }
 
 MemProfWidget::~MemProfWidget() 
@@ -82,9 +69,83 @@ MemProfWidget::~MemProfWidget()
     delete model;
 }
 
-void MemProfWidget::AppendText(const QString& text)
+void MemProfWidget::ConnectionEstablished(bool newConnection, ProfilingSession* profSession)
 {
+    profileSession = profSession;
+    allocPoolModel->BeginNewProfileSession(profSession);
+    tagModel->BeginNewProfileSession(profSession);
 
+    ui->labelStatus->setText("Connection established");
+    if (newConnection)
+    {
+        ReinitPlot();
+    }
+}
+
+void MemProfWidget::ConnectionLost(const char8* message)
+{
+    ui->labelStatus->setText(message != nullptr ? QString("Connection lost: %1").arg(message)
+                                                : QString("Connection lost"));
+}
+
+void MemProfWidget::StatArrived()
+{
+    const StatItem& stat = profileSession->LastStat();
+    uint32 alloc = stat.TotalStat().allocByApp;
+    uint32 total = stat.TotalStat().allocTotal;
+
+    allocPoolModel->SetCurrentValues(stat);
+    tagModel->SetCurrentValues(stat);
+    UpdatePlot(stat);
+}
+
+void MemProfWidget::UpdatePlot(const StatItem& stat)
+{
+    MemProfPlot* plot = ui->plot;
+    size_t ngraph = profileSession->AllocPoolCount();
+
+    for (size_t i = 0;i < ngraph;++i)
+    {
+        QCPGraph* graph = plot->graph(i);
+
+        double key = static_cast<double>(stat.Timestamp()) / 1000.0;
+        double val = static_cast<double>(stat.PoolStat()[i].allocByApp) / 1024.0 / 1024.0;
+        graph->addData(key, val);
+
+        graph->rescaleAxes(i > 0);
+    }
+
+    plot->replot();
+}
+
+void MemProfWidget::ReinitPlot()
+{
+    MemProfPlot* plot = ui->plot;
+    size_t ngraph = profileSession->AllocPoolCount();
+
+    const size_t ncolors = poolColors.size();
+
+    plot->clearGraphs();
+    for (size_t i = 0;i < ngraph;++i)
+    {
+        QCPGraph* graph = plot->addGraph();
+        QPen pen(poolColors[i % ncolors]);
+        pen.setWidth(2);
+        graph->setPen(pen);
+        //graph->setPen(poolColors[i % ncolors]);
+        //graph->setBrush(poolColors[i % ncolors]);
+        graph->setAntialiasedFill(false);
+    }
+
+    plot->xAxis2->setVisible(true);
+    plot->xAxis2->setTickLabels(false);
+    plot->yAxis2->setVisible(true);
+    plot->yAxis2->setTickLabels(false);
+
+    plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+
+    connect(plot->xAxis, SIGNAL(rangeChanged(QCPRange)), plot->xAxis2, SLOT(setRange(QCPRange)));
+    connect(plot->yAxis, SIGNAL(rangeChanged(QCPRange)), plot->yAxis2, SLOT(setRange(QCPRange)));
 }
 
 void MemProfWidget::ShowDump(const DAVA::Vector<DAVA::uint8>& v)
@@ -92,122 +153,8 @@ void MemProfWidget::ShowDump(const DAVA::Vector<DAVA::uint8>& v)
     //DumpViewWidget* w = new DumpViewWidget(v, this);
 }
 
-void MemProfWidget::ChangeStatus(const char* status, const char* reason)
-{
-    QString s(status);
-    if (reason)
-    {
-        s += ": ";
-        s += reason;
-    }
-    ui->labelStatus->setText(s);
-}
-
-void MemProfWidget::ClearStat()
-{
-    plot->graph(0)->clearData();
-    plot->graph(1)->clearData();
-    plot->graph(0)->rescaleValueAxis();
-    plot->graph(1)->rescaleValueAxis(true);
-    plot->replot();
-}
-
-void MemProfWidget::SetStatConfig(const DAVA::MMStatConfig* config)
-{
-    if (config != nullptr)
-    {
-        tagCount = config->tagCount;
-        allocPoolCount = config->allocPoolCount;
-        CreateLabels(config);
-    }
-    model->setConfig(config);
-}
-
-void MemProfWidget::UpdateStat(const MMStat* stat)
-{
-    uint32 alloc = 0;
-    uint32 total = 0;
-    for (uint32 i = 0;i < stat->allocPoolCount;++i)
-    {
-        alloc += stat->poolStat[i].allocByApp;
-        total += stat->poolStat[i].allocTotal;
-    }
-
-    model->addMoreData(stat);
-    UpdateLabels(stat, alloc, total);
-}
-
 void MemProfWidget::UpdateProgress(size_t total, size_t recv)
 {
     int v = static_cast<int>(double(recv) / double(total) * 100.0);
     ui->dumpProgress->setValue(v);
-}
-
-void MemProfWidget::UpdateLabels(const DAVA::MMStat* stat, DAVA::uint32 alloc, DAVA::uint32 total)
-{
-   
-    labels[1].alloc->setText(MemoryItemStyleDelegate::formatMemoryData(alloc));
-    labels[1].total->setText(MemoryItemStyleDelegate::formatMemoryData(total));
-    labels[1].allocInternal->setText(MemoryItemStyleDelegate::formatMemoryData(stat->generalStat.allocInternal));
-    labels[1].ghostBlockCount->setNum(static_cast<int>(stat->generalStat.ghostBlockCount));
-    labels[1].ghostSize->setText(MemoryItemStyleDelegate::formatMemoryData(stat->generalStat.ghostSize));
-    labels[1].realSize->setText(MemoryItemStyleDelegate::formatMemoryData(stat->generalStat.realSize));
-    labels[1].internalBlockCount->setNum(static_cast<int>(stat->generalStat.internalBlockCount));
-}
-
-void MemProfWidget::CreateLabels(const DAVA::MMStatConfig* config)
-{
-    Deletelabels();
-    QGridLayout* l = new QGridLayout();
-
-    //one fro titles and one for 
-    labels = new LabelPack[2];
-   
-    labels[0].alloc = new QLabel("alloc");
-    labels[0].total = new QLabel("total");
-    labels[0].allocInternal = new QLabel("allocInternal");
-    labels[0].ghostBlockCount = new QLabel("ghostBlockCount");
-    labels[0].ghostSize = new QLabel("ghostSize");
-    labels[0].realSize = new QLabel("realSize");
-    labels[0].internalBlockCount = new QLabel("internalBlockCount");
-
-    l->addWidget(labels[0].alloc , 0, 0);
-    l->addWidget(labels[0].total, 0, 1);
-    l->addWidget(labels[0].allocInternal, 0, 2);
-    l->addWidget(labels[0].ghostBlockCount, 0, 3);
-    l->addWidget(labels[0].ghostSize, 0, 4);
-    l->addWidget(labels[0].realSize, 0, 5);
-    l->addWidget(labels[0].internalBlockCount, 0, 6);
-
-    labels[1].alloc = new QLabel("");
-    labels[1].total = new QLabel("");
-    labels[1].allocInternal = new QLabel("");
-    labels[1].ghostBlockCount = new QLabel("");
-    labels[1].ghostSize = new QLabel("");
-    labels[1].realSize = new QLabel("");
-    labels[1].internalBlockCount = new QLabel("");
-
-    l->addWidget(labels[1].alloc, 1, 0);
-    l->addWidget(labels[1].total, 1, 1);
-    l->addWidget(labels[1].allocInternal, 1, 2);
-    l->addWidget(labels[1].ghostBlockCount, 1, 3);
-    l->addWidget(labels[1].ghostSize, 1, 4);
-    l->addWidget(labels[1].realSize, 1, 5);
-    l->addWidget(labels[1].internalBlockCount, 1, 6);
-
-
-    frame = new QFrame;
-    frame->setLayout(l);
-    ui->verticalLayout_2->addWidget(frame);
-    ui->verticalLayout_2->addWidget(tableView);
-}
-
-void MemProfWidget::Deletelabels()
-{
-    if (frame)
-    {
-        delete[] labels;
-        delete frame;
-        frame = nullptr;
-    }
 }

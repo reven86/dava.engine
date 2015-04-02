@@ -6,7 +6,6 @@
 #include <QCloseEvent> 
 #include <QFileDialog>
 
-#include "../DeviceInfo/DumpViewWidget.h"
 #include "../DeviceInfo/DumpViewerWidget.h"
 
 DeviceListWidget::DeviceListWidget( QWidget *parent )
@@ -34,7 +33,7 @@ QTreeView* DeviceListWidget::ItemView()
 
 void DeviceListWidget::OnViewDump()
 {
-    QString filename = QFileDialog::getOpenFileName(this, "Select dump file", "d:\\share\\dumps\\test", "Dumps (*.bin)");
+    /*QString filename = QFileDialog::getOpenFileName(this, "Select dump file", "d:\\share\\dumps\\test", "Dumps (*.bin)");
     //QString filename = "d:\\share\\dumps\\test\\01. dump-login-debug.bin";
     if (!filename.isEmpty())
     {
@@ -43,7 +42,7 @@ void DeviceListWidget::OnViewDump()
         w->setAttribute(Qt::WA_DeleteOnClose);
         w->resize(800, 600);
         w->show();
-    }
+    }*/
 }
 
 void DeviceListWidget::OnViewDumpEnhanced()
