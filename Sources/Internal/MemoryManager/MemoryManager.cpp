@@ -61,7 +61,7 @@ struct MemoryManager::MemoryBlock
     uint32 allocByApp;      // Size requested by application
     uint32 allocTotal;      // Total allocated size
     uint32 bktraceHash;     // Unique hash number to identify block backtrace
-    uint32 pool;            // Allocation pool block belongs to
+    int32 pool;             // Allocation pool block belongs to
     uint32 tags;            // Tags block belongs to
     uint32 mark;            // Mark to distinguish tracked memory blocks
 };
@@ -91,7 +91,7 @@ MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT] = {
 size_t MemoryManager::registeredTagCount = 0;
 size_t MemoryManager::registeredAllocPoolCount = PREDEF_POOL_COUNT;
 
-void MemoryManager::RegisterAllocPoolName(size_t index, const char8* name)
+void MemoryManager::RegisterAllocPoolName(int32 index, const char8* name)
 {
     DVASSERT(name != nullptr && 0 < strlen(name) && strlen(name) < MMItemName::MAX_NAME_LENGTH);
     DVASSERT(FIRST_CUSTOM_ALLOC_POOL <= index && index < MAX_ALLOC_POOL_COUNT);
@@ -125,7 +125,7 @@ MemoryManager* MemoryManager::Instance()
     return &mm;
 }
 
-DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, size_t poolIndex)
+DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, int32 poolIndex)
 {
     assert(IsInternalAllocationPool(poolIndex) || (ALLOC_POOL_TOTAL < poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT));
 
@@ -145,7 +145,7 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, size_t poolIndex)
     if (block != nullptr)
     {
         block->mark = BLOCK_MARK;
-        block->pool = static_cast<uint32>(poolIndex);
+        block->pool = poolIndex;
         block->realBlockStart = static_cast<void*>(block);
         block->allocByApp = static_cast<uint32>(size);
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
@@ -189,7 +189,7 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, size_t poolIndex)
     return nullptr;
 }
 
-DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, size_t poolIndex)
+DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, int32 poolIndex)
 {
     // TODO: check whether size is integral multiple of align
     assert(align > 0 && 0 == (align & (align - 1)));    // Check whether align is power of 2
@@ -221,7 +221,7 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, si
 
         MemoryBlock* block = reinterpret_cast<MemoryBlock*>(aligned - sizeof(MemoryBlock));
         block->mark = BLOCK_MARK;
-        block->pool = static_cast<uint32>(poolIndex);
+        block->pool = poolIndex;
         block->realBlockStart = realPtr;
         block->allocByApp = static_cast<uint32>(size);
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
@@ -392,7 +392,7 @@ MemoryManager::MemoryBlock* MemoryManager::IsTrackedBlock(void* ptr)
     return BLOCK_MARK == block->mark ? block : nullptr;
 }
 
-void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, size_t poolIndex)
+void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, int32 poolIndex)
 {
     {   // Update total statistics
         statAllocPool[ALLOC_POOL_TOTAL].allocByApp += block->allocByApp;
@@ -424,7 +424,7 @@ void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, size_t poolIndex)
     }
 }
 
-void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, size_t poolIndex)
+void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, int32 poolIndex)
 {
     {   // Update total statistics
         statAllocPool[ALLOC_POOL_TOTAL].allocByApp -= block->allocByApp;

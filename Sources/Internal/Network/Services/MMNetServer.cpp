@@ -237,7 +237,9 @@ void MMNetServer::SendParcel(Parcel& parcel)
 {
     if (0 == parcel.dataSent)
         *outHeader = parcel.header;
-    parcel.chunkSize = std::min(parcel.dataSize - parcel.dataSent, OUTBUF_USEFUL_SIZE);
+    // Use of size_t(OUTBUF_USEFUL_SIZE) instead of simply OUTBUF_USEFUL_SIZE is intentional
+    // On gcc and clang the latter case leads to linker error
+    parcel.chunkSize = std::min(parcel.dataSize - parcel.dataSent, size_t(OUTBUF_USEFUL_SIZE));
     outHeader->length = parcel.chunkSize;
     if (parcel.chunkSize > 0)
         Memcpy(outData, OffsetPointer<void>(parcel.data, parcel.dataSent), parcel.chunkSize);

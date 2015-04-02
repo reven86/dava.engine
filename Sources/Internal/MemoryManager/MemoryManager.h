@@ -65,11 +65,11 @@ public:
 public:
     static MemoryManager* Instance();
 
-    static void RegisterAllocPoolName(size_t index, const char8* name);
+    static void RegisterAllocPoolName(int32 index, const char8* name);
     static void RegisterTagName(uint32 tagMask, const char8* name);
 
-    DAVA_NOINLINE void* Allocate(size_t size, size_t poolIndex);
-    DAVA_NOINLINE void* AlignedAllocate(size_t size, size_t align, size_t poolIndex);
+    DAVA_NOINLINE void* Allocate(size_t size, int32 poolIndex);
+    DAVA_NOINLINE void* AlignedAllocate(size_t size, size_t align, int32 poolIndex);
     void* Reallocate(void * ptr, size_t size);
     void Deallocate(void* ptr);
 
@@ -93,14 +93,14 @@ private:
     MemoryManager& operator = (MemoryManager&&) = delete;
 
 private:
-    static bool IsInternalAllocationPool(size_t poolIndex);
+    static bool IsInternalAllocationPool(int32 poolIndex);
 
     void InsertBlock(MemoryBlock* block);
     void RemoveBlock(MemoryBlock* block);
     MemoryBlock* IsTrackedBlock(void* ptr);
 
-    void UpdateStatAfterAlloc(MemoryBlock* block, size_t poolIndex);
-    void UpdateStatAfterDealloc(MemoryBlock* block, size_t poolIndex);
+    void UpdateStatAfterAlloc(MemoryBlock* block, int32 poolIndex);
+    void UpdateStatAfterDealloc(MemoryBlock* block, int32 poolIndex);
 
     void InsertBacktrace(Backtrace& backtrace);
     void RemoveBacktrace(uint32 hash);
@@ -130,7 +130,7 @@ private:
     mutable MutexType bktraceMutex;
 
     template<typename T>
-    using InternalAllocator = MemoryManagerAllocator<T, size_t(-1)>;
+    using InternalAllocator = MemoryManagerAllocator<T, -1>;
 
     using InternalString = std::basic_string<char8, std::char_traits<char8>, InternalAllocator<char8>>;
     using SymbolMap = std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>>;
@@ -156,9 +156,9 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline bool MemoryManager::IsInternalAllocationPool(size_t poolIndex)
+inline bool MemoryManager::IsInternalAllocationPool(int32 poolIndex)
 {
-    return static_cast<size_t>(-1) == poolIndex;
+    return poolIndex < 0;
 }
 
 inline size_t MemoryManager::CalcCurStatSize() const

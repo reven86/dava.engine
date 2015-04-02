@@ -42,7 +42,8 @@
 namespace DAVA
 {
 
-template<typename T, std::size_t AllocPoolT>
+// Cannot use here DAVA types
+template<typename T, int AllocPoolT>
 class MemoryManagerAllocator
 {
 public:
@@ -75,6 +76,8 @@ public:
     bool operator != (const MemoryManagerAllocator& other) const;
 
     void construct(T* const ptr, const T& obj) const;
+    template<typename U, typename... Args>
+    void construct(U* ptr, Args&&... args);
     void destroy(T* const ptr) const;
 
     T* allocate(const size_t n) const;
@@ -86,50 +89,58 @@ public:
 
 //////////////////////////////////////////////////////////////////////////
 
-template<typename T, std::size_t AllocPoolT>
+template<typename T, int AllocPoolT>
 inline T* MemoryManagerAllocator<T, AllocPoolT>::address(T& ref) const
 {
     return &ref;
 }
 
-template<typename T, std::size_t AllocPoolT>
+template<typename T, int AllocPoolT>
 inline const T* MemoryManagerAllocator<T, AllocPoolT>::address(const T& cref) const
 {
     return &cref;
 }
 
-template<typename T, std::size_t AllocPoolT>
+template<typename T, int AllocPoolT>
 inline size_t MemoryManagerAllocator<T, AllocPoolT>::max_size() const
 {
     return std::numeric_limits<size_t>::max() / sizeof(T);
 }
 
-template<typename T, std::size_t AllocPoolT>
+template<typename T, int AllocPoolT>
 inline bool MemoryManagerAllocator<T, AllocPoolT>::operator == (const MemoryManagerAllocator& other) const
 {
     return true;
 }
 
-template<typename T, std::size_t AllocPoolT>
+template<typename T, int AllocPoolT>
 inline bool MemoryManagerAllocator<T, AllocPoolT>::operator != (const MemoryManagerAllocator& other) const
 {
     return !(*this == other);
 }
 
-template<typename T, std::size_t AllocPoolT>
+template<typename T, int AllocPoolT>
 inline void MemoryManagerAllocator<T, AllocPoolT>::construct(T* const ptr, const T& obj) const
 {
     void* const buf = static_cast<void*>(ptr);
     new (buf) T(obj);
 }
 
-template<typename T, std::size_t AllocPoolT>
+template<typename T, int AllocPoolT>
+template<typename U, typename... Args>
+inline void MemoryManagerAllocator<T, AllocPoolT>::construct(U* ptr, Args&&... args)
+{
+    void* buf = static_cast<void*>(ptr);
+    new (buf) U(std::forward<Args>(args)...);
+}
+
+template<typename T, int AllocPoolT>
 inline void MemoryManagerAllocator<T, AllocPoolT>::destroy(T* const ptr) const
 {
     ptr->~T();
 }
 
-template<typename T, std::size_t AllocPoolT>
+template<typename T, int AllocPoolT>
 inline T* MemoryManagerAllocator<T, AllocPoolT>::allocate(const size_t n) const
 {
     void* ptr = AllocThunk(n * sizeof(T), AllocPoolT);
@@ -140,13 +151,13 @@ inline T* MemoryManagerAllocator<T, AllocPoolT>::allocate(const size_t n) const
     return static_cast<T*>(ptr);
 }
 
-template<typename T, std::size_t AllocPoolT>
+template<typename T, int AllocPoolT>
 inline void MemoryManagerAllocator<T, AllocPoolT>::deallocate(T* const ptr, const size_t n) const
 {
     DeallocThunk(ptr);
 }
 
-template<typename T, std::size_t AllocPoolT>
+template<typename T, int AllocPoolT>
 template <typename U>
 inline T* MemoryManagerAllocator<T, AllocPoolT>::allocate(const size_t n, const U*) const
 {
