@@ -98,11 +98,7 @@ void Downloader::CalcStatistics(uint32 dataCame)
     timeDelta += curTime - prevTime;
     prevTime = curTime;
     
-    DownloadStatistics tmpStats;
-
-    statisticsMutex.Lock();
-    tmpStats = statistics;
-    statisticsMutex.Unlock();
+    DownloadStatistics tmpStats(statistics);
     
     tmpStats.dataCameTotalBytes += dataCame;
 
