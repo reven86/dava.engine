@@ -43,14 +43,6 @@ class Image;
 
 struct ImageInfo
 {
-    ImageInfo()
-        : width(0)
-        , height(0)
-        , format(FORMAT_INVALID)
-        , dataSize(0)
-    {
-    }
-
     bool isEmpty()
     {
         return (0 == width || 0 == height);
@@ -61,10 +53,10 @@ struct ImageInfo
         return Size2i(width, height);
     }
 
-    uint32 width;
-    uint32 height;
-    PixelFormat format;
-    uint32 dataSize;
+    uint32 width = 0;
+    uint32 height = 0;
+    PixelFormat format = FORMAT_INVALID;
+    uint32 dataSize = 0;
 };
 
 
