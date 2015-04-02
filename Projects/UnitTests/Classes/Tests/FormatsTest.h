@@ -24,8 +24,7 @@
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
+    =====================================================================================*/
 
 
 #ifndef __FORMATS_TEST_H__
@@ -36,24 +35,27 @@ using namespace DAVA;
 
 #include "TestTemplate.h"
 
-class FormatsTest: public TestTemplate<FormatsTest>
+class FormatsTest : public TestTemplate<FormatsTest>
 {
-	static const DAVA::float32 MAX_DIFFERENCE; //in persents
-protected:
-    ~FormatsTest(){}
 public:
-	FormatsTest();
+    FormatsTest();
 
-	void LoadResources() override;
-	void UnloadResources() override;
+protected:
+    ~FormatsTest()
+    {
+    }
+
+public:
+    void LoadResources() override;
+    void UnloadResources() override;
 
     void TestFunction(PerfFuncData * data);
-    
-    
-private:
-    
-    bool IsFormatSupportedByTest(const DAVA::PixelFormat format) const;
-};
+    void TestFunctionForInfo(PerfFuncData *data);
 
+private:
+    bool IsFormatSupportedByTest(const DAVA::PixelFormat format) const;
+
+    static const DAVA::float32 MAX_DIFFERENCE; // in persents
+};
 
 #endif // __FORMATS_TEST_H__

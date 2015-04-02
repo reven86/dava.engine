@@ -155,9 +155,9 @@ eErrorCode ImageSystem::Save(const FilePath & fileName, Image *image, PixelForma
     return Save(fileName, imageSet, compressionFormat);
 }
 
-ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & pathname) const
+ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & pathName) const
 {
-    String extension = pathname.GetExtension();
+    String extension = pathName.GetExtension();
     for (int32 i = 0; i < FILE_FORMAT_COUNT; ++i)
     {
         if (wrappers[i]->IsFileExtensionSupported(extension))
@@ -166,7 +166,15 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & path
         }
     }
 
-    return nullptr;
+    File *infile = File::Create(pathName, File::OPEN | File::READ);
+    if (nullptr == infile)
+    {
+        return nullptr;
+    }
+    ImageFormatInterface *imageInterface = GetImageFormatInterface(infile);
+    infile->Release();
+
+    return imageInterface;
 }
 
 ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
@@ -202,11 +210,6 @@ ImageInfo ImageSystem::GetImageInfo(File *infile) const
     }
 
     ImageFormatInterface* properWrapper = GetImageFormatInterface(infile->GetFilename());
-    if (nullptr == properWrapper)
-    {
-        // Retry by content.
-        properWrapper = GetImageFormatInterface(infile);
-    }
 
     if (nullptr == properWrapper || !properWrapper->IsImage(infile))
     {

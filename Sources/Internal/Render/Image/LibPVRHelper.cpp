@@ -547,6 +547,8 @@ void LibPVRHelper::ReadMetaData(File *file, PVRFile *pvrFile, const bool swapByt
         metaDataPtr += dataSize;
 
         pvrFile->metaDatablocks.push_back(block);
+
+        delta = static_cast<uint32>(metaDataPtr - pvrFile->metaData);
     }
 }
 

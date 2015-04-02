@@ -66,7 +66,7 @@ public:
     eErrorCode Save(const FilePath &fileName, Image *image, PixelFormat compressionFormat = FORMAT_RGBA8888) const;
 
     inline ImageFormatInterface* GetImageFormatInterface(eSupportedImageFileFormats fileFormat) const;
-    ImageFormatInterface* GetImageFormatInterface(const FilePath &pathname) const;
+    ImageFormatInterface* GetImageFormatInterface(const FilePath &pathName) const;
     ImageFormatInterface* GetImageFormatInterface(File *file) const;
 
     ImageInfo GetImageInfo(const FilePath &pathName) const;
