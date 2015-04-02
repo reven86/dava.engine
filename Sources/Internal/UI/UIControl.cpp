@@ -2832,7 +2832,7 @@ namespace DAVA
             UIComponent * c = *it;
             components.erase(it);
             UpdateFamily();
-            c->SetControl(0);
+            c->SetControl(nullptr);
             SafeRelease(c);
         }
     }
