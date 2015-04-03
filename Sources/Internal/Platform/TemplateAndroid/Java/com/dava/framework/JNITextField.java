@@ -1,7 +1,6 @@
 package com.dava.framework;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -105,14 +104,6 @@ public class JNITextField {
             if(!JNIGLSurfaceView.isPaused())
             {
                 TextFieldUpdateTexture(id, pixels, width, height);
-            }
-            else
-            {
-                String name = Thread.currentThread().getName();
-                Log.e(TAG, "can't update static texture\n"
-                        + "for TextField(" + id +")\n"
-                        +"GLSurfaceView is paused\n"
-                        + "current thread name:"+name);
             }
         }
     }
@@ -611,94 +602,87 @@ public class JNITextField {
                             final int start, final int end, Spanned dest,
                             final int dstart, final int dend) {
 
-                        Log.e(TAG, "filter id:" + _id + " source:" + source + " start:" + start + " end:" + end + " dest:" + dest + " dstart:" + dstart + " dend:" + dend);
-                        String result = source.toString();
-                        //String textFromCpp = text.getTextFromCPP();
-                        //if (textFromCpp == null || !textFromCpp.equals(source.toString()))
+                        // Avoiding the line breaks in the single-line text
+                        // fields. Line breaks should be replaced with spaces.
+                        TextField textField = text;
+                        if (0 == (textField.getInputType() & (InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE))) {
+                            SpannableStringBuilder s = new SpannableStringBuilder(
+                                    source);
+                            if (source instanceof Spanned
+                                    || source instanceof Spannable) {
+                                Spanned spanned = (Spanned) source;
+                                TextUtils.copySpansFrom(spanned, start, end,
+                                        null, s, 0);
+                            }
+
+                            for (int i = 0; i < s.length(); ++i) {
+                                if ('\n' == s.charAt(i)) {
+                                    s.replace(i, i + 1, " ");
+                                }
+                            }
+                            source = s;
+                        }
+
+                        String origSource = source.toString();
+                        String result = "";
+
+                        TextField editText = text;
+
+                        int sourceRepLen = end - start;
+                        int destRepLen = dend - dstart;
+                        int curStringLen = editText.getText().length();
+                        int newStringLen = curStringLen - destRepLen + sourceRepLen;
+
+                        if (newStringLen >= curStringLen)
                         {
-                            // Avoiding the line breaks in the single-line text
-                            // fields. Line breaks should be replaced with spaces.
-                            TextField textField = GetTextField(_id);
-                            if (0 == (textField.getInputType() & (InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE))) {
-                                SpannableStringBuilder s = new SpannableStringBuilder(
-                                        source);
-                                if (source instanceof Spanned
-                                        || source instanceof Spannable) {
-                                    Spanned spanned = (Spanned) source;
-                                    TextUtils.copySpansFrom(spanned, start, end,
-                                            null, s, 0);
-                                }
-
-                                for (int i = 0; i < s.length(); ++i) {
-                                    if ('\n' == s.charAt(i)) {
-                                        s.replace(i, i + 1, " ");
-                                    }
-                                }
-                                source = s;
-                            }
-
-                            String origSource = source.toString();
-                            result = "";
-                            
-                            TextField editText = text;
-
-                            int sourceRepLen = end - start;
-                            int destRepLen = dend - dstart;
-                            int curStringLen = editText.getText().length();
-                            int newStringLen = curStringLen - destRepLen + sourceRepLen;
-
-                            if (newStringLen >= curStringLen)
-                            {
-                                if (editText != null && editText.maxTextFilter != null) {
-                                    CharSequence res = editText.maxTextFilter.filter(source, start, end, dest, dstart, dend);
-                                    if (res != null && res.toString().isEmpty())
-                                        return res;
-                                    if (res != null)
-                                        source = res;
-                                }
-                            }
-
-                            final CharSequence sourceToProcess = source;
-                            final String text = editText.getText().toString();
-                            FutureTask<String> t = new FutureTask<String>(new Callable<String>() {
-                                @Override
-                                public String call() throws Exception {
-                                    byte []bytes = sourceToProcess.toString().getBytes("UTF-8");
-                                    int curPos = 0;
-                                    int finalStart = dstart;
-                                    while(curPos < dstart)
-                                    {
-                                        int codePoint = text.codePointAt(curPos);
-                                        if(codePoint > 0xFFFF)
-                                        {
-                                            curPos++;
-                                            finalStart--;
-                                        }
-                                        curPos++;
-                                    }
-                                    byte []retBytes = TextFieldKeyPressed(_id, finalStart, dend - dstart, bytes);
-                                    return new String(retBytes, "UTF-8");
-                                }
-                            });
-                            JNIActivity.GetActivity().PostEventToGL(t);
-
-                            try {
-                                String s = t.get();
-                                if (s.equals(origSource))
-                                {
-                                    result = null;
-                                }
-                                else if (s.length() > 0)
-                                {
-                                    result = s;
-                                }
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            } catch (ExecutionException e) {
-                                e.printStackTrace();
+                            if (editText.maxTextFilter != null) {
+                                CharSequence res = editText.maxTextFilter.filter(source, start, end, dest, dstart, dend);
+                                if (res != null && res.toString().isEmpty())
+                                    return res;
+                                if (res != null)
+                                    source = res;
                             }
                         }
-                        //text.setTextFromCPP(result);
+
+                        final CharSequence sourceToProcess = source;
+                        final String text = editText.getText().toString();
+                        FutureTask<String> t = new FutureTask<String>(new Callable<String>() {
+                            @Override
+                            public String call() throws Exception {
+                                byte []bytes = sourceToProcess.toString().getBytes("UTF-8");
+                                int curPos = 0;
+                                int finalStart = dstart;
+                                while(curPos < dstart)
+                                {
+                                    int codePoint = text.codePointAt(curPos);
+                                    if(codePoint > 0xFFFF)
+                                    {
+                                        curPos++;
+                                        finalStart--;
+                                    }
+                                    curPos++;
+                                }
+                                byte []retBytes = TextFieldKeyPressed(_id, finalStart, dend - dstart, bytes);
+                                return new String(retBytes, "UTF-8");
+                            }
+                        });
+                        JNIActivity.GetActivity().PostEventToGL(t);
+
+                        try {
+                            String s = t.get();
+                            if (s.equals(origSource))
+                            {
+                                result = null;
+                            }
+                            else if (s.length() > 0)
+                            {
+                                result = s;
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        }
                         return result;
                     }
                 };
@@ -856,7 +840,6 @@ public class JNITextField {
                                 try {
                                     newBytes = s.toString().getBytes("UTF-8");
                                     oldBytes = oldText.getBytes("UTF-8");
-                                    Log.e(TAG, "afterTextChanged id:" + id + " newText:" + s.toString() + " oldText:" + oldText);
                                     TextFieldOnTextChanged(id, newBytes, oldBytes);
                                 } catch (UnsupportedEncodingException e) {
                                     Log.e(JNIConst.LOG_TAG, e.getMessage());
@@ -894,8 +877,8 @@ public class JNITextField {
                         handler.postDelayed(runnable, JNITextField.TEXT_CHANGE_DELAY_REFRESH);
                     }
                 };
-                text.addTextChangedListener(updateTexture);
                 text.addTextChangedListener(textWatcher);
+                text.addTextChangedListener(updateTexture);
 
                 textFields.put(id, text);
                 return null;
