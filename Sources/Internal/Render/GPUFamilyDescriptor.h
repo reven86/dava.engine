@@ -50,19 +50,17 @@ public:
         String name;
         String prefix;
         
-        Map<PixelFormat, String> availableFormats;
+        Map<PixelFormat, ImageFormat> availableFormats;
     };
     
 public:
 
     static void SetupGPUParameters();
-    static const Map<PixelFormat, String> & GetAvailableFormatsForGpu(eGPUFamily gpuFamily);
-
-    static FilePath CreatePathnameForGPU(const TextureDescriptor *descriptor, const eGPUFamily gpuFamily);
+    static const Map<PixelFormat, ImageFormat> & GetAvailableFormatsForGpu(eGPUFamily gpuFamily);
 
     static const String & GetGPUName(const eGPUFamily gpuFamily);
-    static const String & GetCompressedFileExtension(const eGPUFamily gpuFamily, const PixelFormat pixelFormat);
-    static String GetFileExtension(const eGPUFamily gpuFamily, const PixelFormat pixelFormat);
+    static const String& GetGPUPrefix(const eGPUFamily gpuFamily);
+    static ImageFormat GetCompressedFileFormat(const eGPUFamily gpuFamily, const PixelFormat pixelFormat);
 
     static eGPUFamily GetGPUForPathname(const FilePath &pathname);
     static eGPUFamily GetGPUByName(const String & name);

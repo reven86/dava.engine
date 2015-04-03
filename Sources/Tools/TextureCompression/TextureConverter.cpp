@@ -52,8 +52,8 @@ namespace DAVA
 		const TextureDescriptor::Compression * compression = &descriptor.compression[gpuFamily];
 
 		FilePath outputPath;
-		const String& outExtension = GPUFamilyDescriptor::GetCompressedFileExtension(gpuFamily, (DAVA::PixelFormat)compression->format);
-		if(outExtension == ".pvr")
+		auto compressedFormat = GPUFamilyDescriptor::GetCompressedFileFormat(gpuFamily, (DAVA::PixelFormat)compression->format);
+		if(compressedFormat == IMAGE_FORMAT_PVR)
 		{
 			Logger::FrameworkDebug("Starting PVR (%s) conversion (%s)...",
 							   GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(compression->format), descriptor.pathname.GetAbsolutePathname().c_str());
@@ -67,7 +67,7 @@ namespace DAVA
                 outputPath = PVRConverter::Instance()->ConvertPngToPvr(descriptor, gpuFamily, quality);
             }
 		}
-		else if(outExtension == ".dds")
+		else if(compressedFormat == IMAGE_FORMAT_DDS)
 		{
 			DAVA::Logger::FrameworkDebug("Starting DXT(%s) conversion (%s)...",
 							   GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(compression->format), descriptor.pathname.GetAbsolutePathname().c_str());
@@ -108,12 +108,12 @@ namespace DAVA
 											  const DAVA::PixelFormat format)
 	{
 		bool result = true;
-		const String & extension = GPUFamilyDescriptor::GetCompressedFileExtension(forGPU, format);
-		if(extension == ".pvr")
+		auto compressedFormat = GPUFamilyDescriptor::GetCompressedFileFormat(forGPU, format);
+		if(compressedFormat == IMAGE_FORMAT_PVR)
 		{
 			DeleteOldPVRTextureIfPowerVr_IOS(descriptor, forGPU);
 		}
-		else if(extension == ".dds")
+		else if(compressedFormat == IMAGE_FORMAT_DDS)
 		{
 			DeleteOldDXTTextureIfTegra(descriptor, forGPU);
 		}
@@ -144,6 +144,6 @@ namespace DAVA
 	
 	FilePath TextureConverter::GetOutputPath(const TextureDescriptor &descriptor, eGPUFamily gpuFamily)
 	{
-		return GPUFamilyDescriptor::CreatePathnameForGPU(&descriptor, gpuFamily);
+		return descriptor.CreatePathnameForGPU(gpuFamily);
 	}
 };

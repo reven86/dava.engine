@@ -259,13 +259,13 @@ void SceneSaver::CopyTexture(const FilePath &texturePathname)
         {
             eGPUFamily gpu = (eGPUFamily)i;
             
-            PixelFormat format = desc->GetPixelFormatForCompression(gpu);
+            PixelFormat format = desc->GetPixelFormatForGPU(gpu);
             if(format == FORMAT_INVALID)
             {
                 continue;
             }
             
-            FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(desc, gpu);
+            FilePath imagePathname = desc->CreatePathnameForGPU(gpu);
             sceneUtils.AddFile(imagePathname);
         }
     }

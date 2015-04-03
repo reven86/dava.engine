@@ -52,7 +52,6 @@ class File;
 class TextureDescriptor 
 {
 	static const String DESCRIPTOR_EXTENSION;
-	static const String LIGHTMAP_EXTENSION;
 
     static const int32 DATE_BUFFER_SIZE = 20;
     static const int32 LINE_SIZE = 256;
@@ -107,7 +106,7 @@ public:
 
 		int8 textureFlags;
 		uint8 faceDescription;
-        uint8 sourceFileFormat;
+        ImageFormat sourceFileFormat;
         String sourceFileExtension;
 
 		INTROSPECTION(TextureDataSettings,
@@ -185,13 +184,19 @@ public:
     static bool IsSourceTextureExtension(const String& extension);
     static bool IsCompressedTextureExtension(const String& extension);
     static bool IsDescriptorExtension(const String& extension);
+
+    static bool IsSupportedSourceFormat(ImageFormat imageFormat);
+    static bool IsSupportedCompressedFormat(ImageFormat imageFormat);
     
     const String& GetSourceTextureExtension() const;
 
     static FilePath GetDescriptorPathname(const FilePath &texturePathname);
-    
-    PixelFormat GetPixelFormatForCompression(eGPUFamily forGPU) const;
-    
+
+    FilePath CreateCompressedTexturePathname(eGPUFamily forGPU, ImageFormat imageFormat) const;
+    FilePath CreatePathnameForGPU(const eGPUFamily forGPU) const;
+    PixelFormat GetPixelFormatForGPU(eGPUFamily forGPU) const;
+    ImageFormat GetImageFormatForGPU(const eGPUFamily forGPU) const;
+
 	bool Reload();
 
 protected:
@@ -201,9 +206,6 @@ protected:
     void WriteGeneralSettings(File *file) const;
 	void WriteCompression(File *file, const Compression *compression) const;
     
-	void LoadVersion6(int32 signature, File *file);
-	void LoadVersion7(int32 signature, File *file);
-
     void LoadVersion6(File *file);
     void LoadVersion7(File *file);
     void LoadVersion8(File *file);

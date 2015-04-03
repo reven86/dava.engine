@@ -60,13 +60,12 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 	}
 	else
 	{
-		FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, forGPU);
+		FilePath imagePathname = descriptor->CreatePathnameForGPU(forGPU);
 		files.push_back(imagePathname);
 	}
 	
 	for(size_t i = 0; i < files.size(); ++i)
 	{
-		//FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, forGPU);
 		const FilePath& imagePathname = files[i];
 		
 		File *imageFile = File::Create(imagePathname, File::OPEN | File::READ);

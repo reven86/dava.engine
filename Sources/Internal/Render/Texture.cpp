@@ -629,7 +629,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 	}
 	else
 	{
-		FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(texDescriptor, gpu);
+		FilePath imagePathname = texDescriptor->CreatePathnameForGPU(gpu);
 
         ImageSystem::Instance()->Load(imagePathname, *images, baseMipMap);
         ImageSystem::Instance()->EnsurePowerOf2Images(*images);

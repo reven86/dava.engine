@@ -116,7 +116,6 @@ void TextureDescriptor::Compression::Clear()
     
 //================   TextureDescriptor  ===================
 const String TextureDescriptor::DESCRIPTOR_EXTENSION = ".tex";
-const String TextureDescriptor::LIGHTMAP_EXTENSION = ".png";
 
 
 TextureDescriptor::TextureDescriptor()
@@ -255,6 +254,7 @@ bool TextureDescriptor::Load(const FilePath &filePathname)
     default:
     {
         Logger::Error("[TextureDescriptor::Load] Version %d is not supported", version);
+        return false;
     }
     }
 
@@ -459,7 +459,7 @@ void TextureDescriptor::LoadVersion9(File *file)
         {
             int8 format;
             file->Read(&format);
-            nextCompression.format = (PixelFormat)format;
+            nextCompression.format = static_cast<PixelFormat>(format);
 
             file->Read(&nextCompression.compressToWidth);
             file->Read(&nextCompression.compressToHeight);
@@ -470,7 +470,6 @@ void TextureDescriptor::LoadVersion9(File *file)
 
     file->Read(&dataSettings.faceDescription);
     file->Read(&dataSettings.sourceFileFormat);
-    dataSettings.sourceFileFormat = static_cast<ImageFormat>(dataSettings.sourceFileFormat);
     file->Read(&dataSettings.sourceFileExtension);
 }
 
@@ -522,8 +521,10 @@ FilePath TextureDescriptor::GetDescriptorPathname(const FilePath &texturePathnam
     {
         return texturePathname;
     }
-    
-    return FilePath::CreateWithNewExtension(texturePathname, GetDescriptorExtension());
+    else
+    {
+        return FilePath::CreateWithNewExtension(texturePathname, GetDescriptorExtension());
+    }
 }
 
 
@@ -534,12 +535,9 @@ const String & TextureDescriptor::GetDescriptorExtension()
     
 const String & TextureDescriptor::GetLightmapTextureExtension()
 {
-    return LIGHTMAP_EXTENSION;
+    return ImageSystem::Instance()->GetExtensionsFor(IMAGE_FORMAT_PNG)[0];
 }
 
-
-    
-    
 const TextureDescriptor::Compression * TextureDescriptor::GetCompressionParams(eGPUFamily gpuFamily) const
 {
     DVASSERT(gpuFamily >= 0 && gpuFamily < GPU_FAMILY_COUNT);
@@ -560,6 +558,18 @@ auto IsSupportedFor = [](ImageFormat format, const String& extension)
     return false;
 };
 
+bool TextureDescriptor::IsSupportedSourceFormat(ImageFormat imageFormat)
+{
+    auto found = std::find(sourceTextureTypes.begin(), sourceTextureTypes.end(), imageFormat);
+    return (found != sourceTextureTypes.end());
+}
+
+bool TextureDescriptor::IsSupportedCompressedFormat(ImageFormat imageFormat)
+{
+    auto found = std::find(compressedTextureTypes.begin(), compressedTextureTypes.end(), imageFormat);
+    return (found != compressedTextureTypes.end());
+}
+
 bool TextureDescriptor::IsSourceTextureExtension(const String& extension)
 {
     for (auto format : sourceTextureTypes)
@@ -567,6 +577,7 @@ bool TextureDescriptor::IsSourceTextureExtension(const String& extension)
         if (IsSupportedFor(format, extension))
             return true;
     }
+    return false;
 }
 
 bool TextureDescriptor::IsCompressedTextureExtension(const String& extension)
@@ -576,12 +587,12 @@ bool TextureDescriptor::IsCompressedTextureExtension(const String& extension)
         if (IsSupportedFor(format, extension))
             return true;
     }
+    return false;
 }
 
 bool TextureDescriptor::IsDescriptorExtension(const String& extension)
 {
-    if (CompareCaseInsensitive(GetDescriptorExtension(), extension) == 0)
-        return true;
+    return (CompareCaseInsensitive(GetDescriptorExtension(), extension) == 0);
 }
 
 bool TextureDescriptor::IsSupportedTextureExtension(const String& extension)
@@ -610,7 +621,7 @@ uint32 TextureDescriptor::ReadSourceCRC() const
 	{
 		uint8 buffer[8];
 
-		// Read PNG header
+		// Read source header
 		f->Read(buffer, 8);
 
 		// read chunk header
@@ -641,25 +652,78 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
 {
 	if(compression[forGPU].format == FORMAT_INVALID) return 0;
 
-	FilePath filePath = GPUFamilyDescriptor::CreatePathnameForGPU(this, forGPU);
-	if(filePath.IsEqualToExtension(".pvr"))
+    ImageFormat imageFormat = GetImageFormatForGPU(forGPU);
+    FilePath filePath = CreateCompressedTexturePathname(forGPU, imageFormat);
+    if (imageFormat == IMAGE_FORMAT_PVR)
 	{
         LibPVRHelper helper;
-		return helper.GetCRCFromFile(filePath) + GenerateDescriptorCRC();
+        return helper.GetCRCFromFile(filePath) + GenerateDescriptorCRC();
 	}
-	else if(filePath.IsEqualToExtension(".dds"))
+	else if(imageFormat == IMAGE_FORMAT_DDS)
 	{
         LibDdsHelper helper;
 		return helper.GetCRCFromFile(filePath) + GenerateDescriptorCRC();
 	}
-    
-    Logger::Error("[TextureDescriptor::GetConvertedCRC] can't get converted crc for file %s", filePath.GetStringValue().c_str());
-    DVASSERT(0);//converted means only pvr or dds
-    return 0;
+    else
+    {
+        Logger::Error("[TextureDescriptor::GetConvertedCRC] can't get compressed texture filename for %s", filePath.GetStringValue().c_str());
+        DVASSERT(false);
+        return 0;
+    }
+}
+
+FilePath TextureDescriptor::CreatePathnameForGPU(const eGPUFamily gpuFamily) const
+{
+    ImageFormat imageFormat = GetImageFormatForGPU(gpuFamily);
+
+    if (TextureDescriptor::IsSupportedCompressedFormat(imageFormat))
+    {
+        return CreateCompressedTexturePathname(gpuFamily, imageFormat);
+    }
+    else
+    {
+        return GetSourceTexturePathname();
+    }
+}
+
+FilePath TextureDescriptor::CreateCompressedTexturePathname(const eGPUFamily gpuFamily, ImageFormat imageFormat) const
+{
+    String ext = GPUFamilyDescriptor::GetGPUPrefix(gpuFamily) + ImageSystem::Instance()->GetExtensionsFor(imageFormat)[0];
+    return FilePath::CreateWithNewExtension(pathname, ext);
+}
+
+ImageFormat TextureDescriptor::GetImageFormatForGPU(const eGPUFamily gpuFamily) const
+{
+    if (GPU_INVALID == gpuFamily)
+        return dataSettings.sourceFileFormat;
+
+    eGPUFamily requestedGPU = gpuFamily;
+
+    PixelFormat requestedFormat = FORMAT_INVALID;
+    if (IsCompressedFile())
+    {
+        requestedGPU = static_cast<eGPUFamily>(exportedAsGpuFamily);
+        requestedFormat = format;
+    }
+    else
+    {
+        requestedFormat = static_cast<PixelFormat>(compression[gpuFamily].format);
+    }
+
+    if (requestedGPU == GPU_ORIGIN)
+        return dataSettings.sourceFileFormat;
+    else
+    {
+        ImageFormat imageFormat = GPUFamilyDescriptor::GetCompressedFileFormat(gpuFamily, requestedFormat);
+        if (imageFormat == IMAGE_FORMAT_UNKNOWN)
+            return dataSettings.sourceFileFormat;
+        else
+            return imageFormat;
+    }
 }
 
     
-PixelFormat TextureDescriptor::GetPixelFormatForCompression(eGPUFamily forGPU) const
+PixelFormat TextureDescriptor::GetPixelFormatForGPU(eGPUFamily forGPU) const
 {
 	if(forGPU == GPU_INVALID)
 		return FORMAT_INVALID;
