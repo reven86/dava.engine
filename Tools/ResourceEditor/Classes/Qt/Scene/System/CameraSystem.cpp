@@ -301,25 +301,29 @@ void SceneCameraSystem::Input(DAVA::UIEvent *event)
     {
         switch ( event->tid )
         {
+        case DVKEY_ADD:
         case DVKEY_EQUALS:
             {
                 auto entity = GetEntityWithEditorCamera();
                 auto snapComponent = GetSnapToLandscapeControllerComponent( entity );
                 if ( snapComponent != nullptr )
                 {
-                    float32 height = SettingsManager::Instance()->GetValue( Settings::Scene_CameraHeightOnLandscapeStep ).AsFloat();
-                    snapComponent->SetHeightOnLandscape( snapComponent->GetHeightOnLandscape() + height );
+                    const auto height = snapComponent->GetHeightOnLandscape() + SettingsManager::Instance()->GetValue( Settings::Scene_CameraHeightOnLandscapeStep ).AsFloat();
+                    snapComponent->SetHeightOnLandscape( height );
+                    SettingsManager::Instance()->SetValue(Settings::Scene_CameraHeightOnLandscape, DAVA::VariantType(height));
                 }
             }
             break;
+        case DVKEY_SUBTRACT:
         case DVKEY_MINUS:
             {
                 auto entity = GetEntityWithEditorCamera();
                 auto snapComponent = GetSnapToLandscapeControllerComponent( entity );
                 if ( snapComponent != nullptr )
                 {
-                    float32 height = SettingsManager::Instance()->GetValue( Settings::Scene_CameraHeightOnLandscapeStep ).AsFloat();
-                    snapComponent->SetHeightOnLandscape( snapComponent->GetHeightOnLandscape() - height );
+                    const auto height = snapComponent->GetHeightOnLandscape() - SettingsManager::Instance()->GetValue( Settings::Scene_CameraHeightOnLandscapeStep ).AsFloat();
+                    snapComponent->SetHeightOnLandscape( height );
+                    SettingsManager::Instance()->SetValue( Settings::Scene_CameraHeightOnLandscape, DAVA::VariantType( height ) );
                 }
             }
             break;

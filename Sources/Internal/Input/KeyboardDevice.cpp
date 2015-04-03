@@ -124,6 +124,8 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[VK_SPACE] = DVKEY_SPACE;
     keyTranslator[VK_OEM_PLUS] = DVKEY_EQUALS;
     keyTranslator[VK_OEM_MINUS] = DVKEY_MINUS;
+    keyTranslator[VK_ADD] = DVKEY_ADD;
+    keyTranslator[VK_SUBTRACT] = DVKEY_SUBTRACT;
 
     for (auto i = 0; i <= DVKEY_F12 - DVKEY_F1; i++)
     {
