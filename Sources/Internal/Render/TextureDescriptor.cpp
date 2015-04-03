@@ -61,8 +61,12 @@ void TextureDescriptor::TextureDataSettings::SetDefaultValues()
 {
 	textureFlags = FLAG_GENERATE_MIPMAPS;
     faceDescription = 0;
-    sourceFileFormat = IMAGE_FORMAT_PNG;
-    sourceFileExtension = ImageSystem::Instance()->GetExtensionsFor(IMAGE_FORMAT_PNG)[0];
+    
+//    static ImageFormat defaultImageFormat = IMAGE_FORMAT_PNG;
+    static ImageFormat defaultImageFormat = IMAGE_FORMAT_TGA;
+
+    sourceFileFormat = defaultImageFormat;
+    sourceFileExtension = ImageSystem::Instance()->GetExtensionsFor(defaultImageFormat)[0];
 }
 
 void TextureDescriptor::TextureDataSettings::SetGenerateMipmaps(const bool & generateMipmaps)
@@ -294,7 +298,10 @@ void TextureDescriptor::Save(const FilePath &filePathname) const
 	
 	file->Write(&dataSettings.faceDescription);
     file->Write(&dataSettings.sourceFileFormat);
-    file->Write(&dataSettings.sourceFileExtension);
+    
+    const uint32 length = dataSettings.sourceFileExtension.length();
+    file->Write(&length);
+    file->Write(dataSettings.sourceFileExtension.c_str(), length);
     
     SafeRelease(file);
 }
@@ -455,7 +462,7 @@ void TextureDescriptor::LoadVersion9(File *file)
         uint8 compressionsCount = 0;
         file->Read(&compressionsCount);
         static_assert(GPU_FAMILY_COUNT == 6, "GPU_FAMILY_COUNT is changed, texture descriptor load routine should be altered");
-        for (auto nextCompression : compression)
+        for (auto &nextCompression : compression)
         {
             int8 format;
             file->Read(&format);
@@ -471,7 +478,13 @@ void TextureDescriptor::LoadVersion9(File *file)
     file->Read(&dataSettings.faceDescription);
     file->Read(&dataSettings.sourceFileFormat);
     dataSettings.sourceFileFormat = static_cast<ImageFormat>(dataSettings.sourceFileFormat);
-    file->Read(&dataSettings.sourceFileExtension);
+    
+    uint32 length = 0;
+    file->Read(&length);
+    
+    std::array<char8, 20> extStr;
+    file->Read(extStr.data(), length);
+    dataSettings.sourceFileExtension = String(extStr.data(), length);
 }
 
 void TextureDescriptor::WriteGeneralSettings(File *file) const
@@ -567,6 +580,8 @@ bool TextureDescriptor::IsSourceTextureExtension(const String& extension)
         if (IsSupportedFor(format, extension))
             return true;
     }
+    
+    return false;
 }
 
 bool TextureDescriptor::IsCompressedTextureExtension(const String& extension)
@@ -576,12 +591,16 @@ bool TextureDescriptor::IsCompressedTextureExtension(const String& extension)
         if (IsSupportedFor(format, extension))
             return true;
     }
+
+    return false;
 }
 
 bool TextureDescriptor::IsDescriptorExtension(const String& extension)
 {
     if (CompareCaseInsensitive(GetDescriptorExtension(), extension) == 0)
         return true;
+
+    return false;
 }
 
 bool TextureDescriptor::IsSupportedTextureExtension(const String& extension)

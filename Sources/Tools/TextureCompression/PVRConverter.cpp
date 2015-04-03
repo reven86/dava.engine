@@ -162,12 +162,21 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor &descriptor
     ImageSystem::Instance()->Load(filePath, images);
 
     if(!images.size())
+    {
         return FilePath();
+    }
 
     DVASSERT(images.size() == 1);
 
     Image * originalImage = images[0];
-    originalImage->Normalize();
+    bool normalized = originalImage->Normalize();
+    if(!normalized)
+    {
+        Logger::Error("[PVRConverter::ConvertNormalMapToPvr] Cannot normalize image %s", filePath.GetStringValue().c_str());
+        SafeRelease(originalImage);
+        return FilePath();
+    }
+    
     if(descriptor.GetGenerateMipMaps())
     {
         images = originalImage->CreateMipMapsImages(true);
@@ -183,15 +192,16 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor &descriptor
     int32 imgCount = (int32)images.size();
     for(int32 i = 0; i < imgCount; ++i)
     {
-        DVASSERT(false); //TODO: fix it after texture descriptor will work with input files correctly
+        ImageFormat targetFormat = IMAGE_FORMAT_PNG;
         
-        FilePath imgPath = dirPath + Format("mip%d.png", i);
-        ImageSystem::Instance()->Save(imgPath, images[i]);
-
         TextureDescriptor desc;
         desc.Initialize(&descriptor);
         desc.SetGenerateMipmaps(false);
-        desc.pathname = imgPath;
+        desc.dataSettings.sourceFileFormat = targetFormat;
+        desc.dataSettings.sourceFileExtension = ImageSystem::Instance()->GetExtensionsFor(targetFormat)[0];
+        desc.pathname = dirPath + Format("mip%d%s", i,  desc.dataSettings.sourceFileExtension.c_str());;
+
+        ImageSystem::Instance()->Save(desc.pathname, images[i]);
         FilePath convertedImgPath = ConvertToPvr(desc, gpuFamily, quality, false);
 
         convertedPVRs.push_back(convertedImgPath);

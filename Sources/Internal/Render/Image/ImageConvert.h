@@ -369,6 +369,7 @@ struct NormalizeRGBA8888
     }
 };
 
+    
 template<class TYPE_IN, class TYPE_OUT, typename CONVERT_FUNC>
 class ConvertDirect
 {
@@ -485,17 +486,18 @@ class ImageConvert
 {
 public:
 
-    static void Normalize(PixelFormat format, const void * inData, uint32 width, uint32 height, uint32 pitch, void * outData)
+    static bool Normalize(PixelFormat format, const void * inData, uint32 width, uint32 height, uint32 pitch, void * outData)
     {
         if (format == FORMAT_RGBA8888)
         {
             ConvertDirect<uint32, uint32, NormalizeRGBA8888> convert;
             convert(inData, width, height, pitch, outData, width, height, pitch);
+            
+            return true;
         }
-        else
-        {
-            Logger::Debug("Normalize function not implemented for %s", PixelFormatDescriptor::GetPixelFormatString(format));
-        }
+        
+        Logger::Error("Normalize function not implemented for %s", PixelFormatDescriptor::GetPixelFormatString(format));
+        return false;
     }
 
     static void ConvertImageDirect(const Image *srcImage, Image *dstImage)

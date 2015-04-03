@@ -137,14 +137,20 @@ void Image::MakePink(bool checkers)
     }
 }
 
-void Image::Normalize()
+bool Image::Normalize()
 {
-    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
-    uint8 * newImage0Data = new uint8[width * height * formatSize];
-    memset(newImage0Data, 0, width * height * formatSize);
-    ImageConvert::Normalize(format, data, width, height, width * formatSize, newImage0Data);
+    const int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
+    const uint32 pitch = width * formatSize;
+    const uint32 dataSize = height * pitch;
+    
+    uint8 * newImage0Data = new uint8[dataSize];
+    Memset(newImage0Data, 0, dataSize);
+    bool normalized = ImageConvert::Normalize(format, data, width, height, pitch, newImage0Data);
+    
     SafeDeleteArray(data);
     data = newImage0Data;
+    
+    return normalized;
 }
     
 Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
