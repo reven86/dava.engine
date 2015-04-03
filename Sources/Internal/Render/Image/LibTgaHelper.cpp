@@ -179,13 +179,15 @@ eErrorCode LibTgaWrapper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
 
     if (readResult == SUCCESS)
     {
-        ImageConvert::SwapRedBlueChannels(pImage);
+        if(tgaInfo.pixelFormat != FORMAT_A8)
+            ImageConvert::SwapRedBlueChannels(pImage);
+        
         SafeRetain(pImage);
         imageSet.push_back(pImage);
         return SUCCESS;
     }
-    else
-        return readResult;
+
+    return readResult;
 }
 
 PixelFormat LibTgaWrapper::DefinePixelFormat(const TgaInfo& tgaInfo) const

@@ -185,4 +185,20 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
     return NULL;
 }
     
+    
+ImageFormat ImageSystem::GetImageFormatForExtension(const String &extension) const
+{
+    for(auto i = 0; i < IMAGE_FORMAT_COUNT; ++i)
+    {
+        auto supported = wrappers[i]->IsFileExtensionSupported(extension);
+        if(supported)
+        {
+            return static_cast<ImageFormat>(i);
+        }
+    }
+
+    return IMAGE_FORMAT_UNKNOWN;
+}
+    
+    
 };

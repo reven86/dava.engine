@@ -35,6 +35,7 @@
 #include <QPushButton>
 #include <QFile>
 #include <QTextStream>
+#include <QDebug>
 
 #include "DockProperties/PropertyEditor.h"
 #include "MaterialEditor/MaterialEditor.h"
@@ -476,24 +477,78 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 					eType pathType;
 				};
 
-				static const PathDescriptor descriptors[] = 
-				{
-					PathDescriptor("", "All (*.*)", PathDescriptor::PATH_NOT_SPECIFIED),
-					PathDescriptor("heightmapPath", "All (*.heightmap *.png);;PNG (*.png);;Height map (*.heightmap)", PathDescriptor::PATH_HEIGHTMAP),
-					PathDescriptor("texture", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
-					PathDescriptor("lightmap", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
-					PathDescriptor("vegetationTexture", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
-                    PathDescriptor("customGeometry", "All (*.sc2);;SC2 (*.sc2);", PathDescriptor::PATH_SCENE),
-					PathDescriptor("textureSheet", "All (*.txt);;TXT (*.tex)", PathDescriptor::PATH_TEXT),
-					PathDescriptor("densityMap", "All (*.png);;PNG (*.png)", PathDescriptor::PATH_IMAGE),
-				};
+                static Vector<PathDescriptor> descriptors;
+                if(descriptors.empty())
+                {
+                    descriptors.push_back(PathDescriptor("", "All (*.*)", PathDescriptor::PATH_NOT_SPECIFIED));
+                    descriptors.push_back(PathDescriptor("customGeometry", "All (*.sc2);;SC2 (*.sc2);", PathDescriptor::PATH_SCENE));
+                    descriptors.push_back(PathDescriptor("textureSheet", "All (*.txt);;TXT (*.tex)", PathDescriptor::PATH_TEXT));
+                    
+                    static std::array<QString, IMAGE_FORMAT_COUNT> imageFileNames = {{ "PNG", "DDS", "PVR", "JPEG", "TGA"}};
+                    
+                    QString sourceFileString;
+                    QString separateSourceFileString;
+                    
+                    for(auto formatType : DAVA::TextureDescriptor::sourceTextureTypes)
+                    {
+                        QString fileTypeString;
+                        
+                        auto extensions = DAVA::ImageSystem::Instance()->GetExtensionsFor(formatType);
+                        
+                        for(auto ex : extensions)
+                        {
+                            if(fileTypeString.isEmpty())
+                            {
+                                fileTypeString = QString(imageFileNames[formatType]) + " (*";
+                            }
+                            else
+                            {
+                                fileTypeString += QString(" *");
+                            }
+                            fileTypeString += QString(ex.c_str());
+                            
+                            if(sourceFileString.isEmpty())
+                            {
+                                sourceFileString = "*";
+                            }
+                            else
+                            {
+                                sourceFileString += " *";
+                            }
+                            sourceFileString += ex.c_str();
+                        }
+                        
+                        fileTypeString += ")";
+                        
+                        
+                        if(!separateSourceFileString.isEmpty())
+                        {
+                            separateSourceFileString += QString(";;");
+                        }
+                        separateSourceFileString += fileTypeString;
+                    }
+                    
+                    
+                    QString imageFilter = QString("All (%1);;%2").arg(sourceFileString).arg(separateSourceFileString);
 
-
+                    auto texExtension = DAVA::TextureDescriptor::GetDescriptorExtension();
+                    QString textureFilter = QString("All (*%1 %2);;TEX (*%3);;%4").arg(texExtension.c_str()).arg(sourceFileString).arg(texExtension.c_str()).arg(separateSourceFileString);
+                    auto heightExtension = DAVA::Heightmap::FileExtension();
+                    QString heightmapFilter = QString("All (*%1 %2);;Heightmap (*%3);;%4").arg(heightExtension.c_str()).arg(sourceFileString).arg(heightExtension.c_str()).arg(separateSourceFileString);
+                    
+                    descriptors.push_back(PathDescriptor("heightmapPath", heightmapFilter, PathDescriptor::PATH_HEIGHTMAP));
+                    descriptors.push_back(PathDescriptor("densityMap", imageFilter, PathDescriptor::PATH_IMAGE));
+                    descriptors.push_back(PathDescriptor("texture", textureFilter, PathDescriptor::PATH_TEXTURE));
+                    descriptors.push_back(PathDescriptor("lightmap", textureFilter, PathDescriptor::PATH_TEXTURE));
+                    descriptors.push_back(PathDescriptor("densityMap", textureFilter, PathDescriptor::PATH_TEXTURE));
+                }
+                
+                
 				QString dataName = data->GetName();
 				PathDescriptor *pathDescriptor = (PathDescriptor *)&descriptors[0];
 
-				DAVA::uint32 count = sizeof(descriptors)/sizeof(PathDescriptor);
-				for(DAVA::uint32 i = 0; i < count; ++i)
+				auto count = descriptors.size();
+				for(auto i = 0; i < count; ++i)
 				{
 					if(descriptors[i].pathName == dataName)
 					{

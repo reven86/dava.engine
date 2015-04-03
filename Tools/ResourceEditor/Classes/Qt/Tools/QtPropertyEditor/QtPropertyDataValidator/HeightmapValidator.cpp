@@ -54,45 +54,49 @@ bool HeightMapValidator::ValidateInternal(const QVariant &v)
     {
         return true;
     }
-    else if(path.IsEqualToExtension(".png"))
-    {
-        DAVA::ImageFormatInterface *pngImageSystem = DAVA::ImageSystem::Instance()->GetImageFormatInterface(DAVA::IMAGE_FORMAT_PNG);
-        DAVA::Size2i size = pngImageSystem->GetImageSize(path);
-        if(size.dx != size.dy)
-        {
-            notifyMessage = DAVA::Format("\"%s\" has wrong size: landscape requires square heightmap.",
-                                         path.GetAbsolutePathname().c_str());
-            return false;
-        }
-        
-        if(((size.dx & 1) == 0) || !DAVA::IsPowerOf2(size.dx - 1))
-        {
-            notifyMessage = DAVA::Format("\"%s\" has wrong size: landscape requires square heightmap with size (2^n + 1).",
-                                         path.GetAbsolutePathname().c_str());
-            return false;
-        }
-        
-        
-        DAVA::Vector<DAVA::Image *> imageVector;
-        DAVA::ImageSystem::Instance()->Load(path, imageVector);
-        DVASSERT(imageVector.size());
-        
-        DAVA::PixelFormat format = imageVector[0]->GetPixelFormat();
-        
-        for_each(imageVector.begin(), imageVector.end(), DAVA::SafeRelease<DAVA::Image>);
-        if(format == DAVA::FORMAT_A8 ||format == DAVA::FORMAT_A16)
-        {
-            return true;
-        }
-        notifyMessage = DAVA::Format("\"%s\" is wrong: png file should be in format A8 or A16.",
-                                     path.GetAbsolutePathname().c_str());
-        return false;
-    }
     else
     {
-        notifyMessage = DAVA::Format("\"%s\" is wrong: should be *.png or *.heightmap.",
-                                     path.GetAbsolutePathname().c_str());
-        return false;
+        auto extension = path.GetExtension();
+        auto imageFormat = DAVA::ImageSystem::Instance()->GetImageFormatForExtension(extension);
+        if(DAVA::IMAGE_FORMAT_UNKNOWN != imageFormat)
+        {
+            auto imgSystem = DAVA::ImageSystem::Instance()->GetImageFormatInterface(imageFormat);
+            DAVA::Size2i size = imgSystem->GetImageSize(path);
+            if(size.dx != size.dy)
+            {
+                notifyMessage = DAVA::Format("\"%s\" has wrong size: landscape requires square heightmap.",
+                                             path.GetAbsolutePathname().c_str());
+                return false;
+            }
+            
+            if(((size.dx & 1) == 0) || !DAVA::IsPowerOf2(size.dx - 1))
+            {
+                notifyMessage = DAVA::Format("\"%s\" has wrong size: landscape requires square heightmap with size (2^n + 1).",
+                                             path.GetAbsolutePathname().c_str());
+                return false;
+            }
+            
+            
+            DAVA::Vector<DAVA::Image *> imageVector;
+            DAVA::ImageSystem::Instance()->Load(path, imageVector);
+            DVASSERT(imageVector.size());
+            
+            DAVA::PixelFormat format = imageVector[0]->GetPixelFormat();
+            
+            for_each(imageVector.begin(), imageVector.end(), DAVA::SafeRelease<DAVA::Image>);
+            if(format == DAVA::FORMAT_A8 ||format == DAVA::FORMAT_A16)
+            {
+                return true;
+            }
+            notifyMessage = DAVA::Format("\"%s\" is wrong: png file should be in format A8 or A16.", path.GetAbsolutePathname().c_str());
+            return false;
+        }
+        else
+        {
+            notifyMessage = DAVA::Format("\"%s\" is wrong: should be *.png, *.tga, *.jpeg or *.heightmap.", path.GetAbsolutePathname().c_str());
+            return false;
+        }
     }
-    
+
+    return false;
 }

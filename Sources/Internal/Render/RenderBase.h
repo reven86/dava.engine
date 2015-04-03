@@ -140,7 +140,7 @@ enum ImageFormat : uint8
     IMAGE_FORMAT_JPEG,
     IMAGE_FORMAT_TGA,
     IMAGE_FORMAT_COUNT,
-    IMAGE_FORMAT_UNKNOWN
+    IMAGE_FORMAT_UNKNOWN = 127
 };
 
 enum PixelFormat

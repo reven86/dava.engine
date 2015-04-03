@@ -52,11 +52,13 @@ void TexturePathValidator::FixupInternal(QVariant& v) const
 {
     if (v.type() == QVariant::String)
     {
-        DAVA::String file = v.toString().toStdString();
-        DAVA::FilePath filePath = DAVA::FilePath(file);
+        auto filePath = DAVA::FilePath(v.toString().toStdString());
         if (!filePath.IsEmpty() && filePath.Exists())
         {
-            if (filePath.GetExtension() == ".png")
+            auto extension = filePath.GetExtension();
+            auto imageFormat = DAVA::ImageSystem::Instance()->GetImageFormatForExtension(extension);
+
+            if (DAVA::IMAGE_FORMAT_UNKNOWN != imageFormat)
             {
 				DAVA::FilePath texFile = DAVA::TextureDescriptor::GetDescriptorPathname(filePath);
 				bool wasCreated = TextureDescriptorUtils::CreateDescriptorIfNeed(texFile);
@@ -67,8 +69,14 @@ void TexturePathValidator::FixupInternal(QVariant& v) const
 					DAVA::TexturesMap::iterator found = texturesMap.find(FILEPATH_MAP_KEY(texFile));
 					if(found != texturesMap.end())
 					{
-						DAVA::Texture *tex = found->second;
-						tex->Reload();
+						auto tex = found->second;
+                        auto texDescripor = tex->GetDescriptor();
+                        
+                        texDescripor->dataSettings.sourceFileFormat = imageFormat;
+                        texDescripor->dataSettings.sourceFileExtension = extension;
+                        texDescripor->Save();
+                        
+                        tex->Reload();
 					}
 				}
 

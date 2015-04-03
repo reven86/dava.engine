@@ -71,6 +71,8 @@ public:
 
     inline const Vector<String>& GetExtensionsFor(ImageFormat format) const;
     
+    ImageFormat GetImageFormatForExtension(const String &extension) const;
+    
 protected:
     
        
