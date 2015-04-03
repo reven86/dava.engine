@@ -49,13 +49,17 @@ public:
     void LoadResources() override;
     void UnloadResources() override;
 
-    void TestFunction(PerfFuncData * data);
-    void TestFunctionForInfo(PerfFuncData *data);
+    void TestFunction(PerfFuncData *data);
 
 private:
-    bool IsFormatSupportedByTest(const DAVA::PixelFormat format) const;
+    void TestJpeg(PerfFuncData *data);
+    void TestPng(PerfFuncData *data);
+    void TestPvr(PerfFuncData *data);
+    void TestDds(PerfFuncData *data);
 
-    static const DAVA::float32 MAX_DIFFERENCE; // in persents
+    void TestImageInfo(const DAVA::FilePath &fileName, DAVA::PixelFormat &requestedFormat, PerfFuncData *data);
+
+    static const DAVA::float32 MAX_DIFFERENCE; // in percents
 };
 
 #endif // __FORMATS_TEST_H__

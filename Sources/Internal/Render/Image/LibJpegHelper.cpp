@@ -272,7 +272,7 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
 
     info.width = cinfo.image_width;
     info.height = cinfo.image_height;
-    switch (cinfo.jpeg_color_space)
+    switch (cinfo.out_color_space)
     {
         case JCS_RGB:
             info.format = FORMAT_RGB888;

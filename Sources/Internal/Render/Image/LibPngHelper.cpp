@@ -363,20 +363,13 @@ ImageInfo LibPngHelper::GetImageInfo(File *infile) const
         }
         case PNG_COLOR_TYPE_GRAY:
         {
-            switch (bit_depth)
-            {
-                case 8: info.format = FORMAT_A8; break;
-                default: info.format = FORMAT_INVALID; break;
-            }
+            info.format = FORMAT_A8;
             break;
         }
         case PNG_COLOR_TYPE_GRAY_ALPHA:
         {
-            switch (bit_depth)
-            {
-                case 16: info.format = FORMAT_A16; break;
-                default: info.format = FORMAT_INVALID; break;
-            }
+            info.format = FORMAT_A16;
+            break;
         }
         default:
             info.format = FORMAT_INVALID;
