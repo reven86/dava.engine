@@ -278,11 +278,13 @@ namespace DAVA
 		[center removeObserver:textFieldHolder name:UIKeyboardWillHideNotification object:nil];
         [center removeObserver:textFieldHolder name:UIKeyboardDidChangeFrameNotification object:nil];
  
+#ifdef USE_STATIC_TEXTFIELD
         CFNotificationCenterRemoveObserver(CFNotificationCenterGetLocalCenter(), this,
            (__bridge CFStringRef) UIKeyboardWillShowNotification, nil);
         
         CFNotificationCenterRemoveObserver(CFNotificationCenterGetLocalCenter(), this,
             (__bridge CFStringRef) UIKeyboardDidHideNotification, nil);
+#endif
     }
     
     void UITextFieldiPhone::UpdateNativeRect(const Rect & virtualRect, int xOffset)
