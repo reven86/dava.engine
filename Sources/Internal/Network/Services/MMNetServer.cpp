@@ -238,7 +238,10 @@ void MMNetServer::SendParcel(Parcel& parcel)
     if (0 == parcel.dataSent)
         *outHeader = parcel.header;
     // Use of size_t(OUTBUF_USEFUL_SIZE) instead of simply OUTBUF_USEFUL_SIZE is intentional
-    // On gcc and clang the latter case leads to linker error
+    // Explanation:
+    //  std::min takes arguments by const reference, this implies taking an address
+    //  and by C++ rules address of static member can be taken only when it has definition,
+    //  i.e. defined outside class definition
     parcel.chunkSize = std::min(parcel.dataSize - parcel.dataSent, size_t(OUTBUF_USEFUL_SIZE));
     outHeader->length = parcel.chunkSize;
     if (parcel.chunkSize > 0)
@@ -282,49 +285,7 @@ void MMNetServer::GatherDump()
         EnqueueParcel(parcel);
     }
 }
-/*
-void MMNetServer::OnDumpRequest(int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd)
-{
-#if defined(DAVA_MEMORY_PROFILING_ENABLE)
-    if (!commInited) return;
-    if (zipFile) return;
 
-    // TODO: ZLibOStream needs update to use not only files but memory buffer
-    void* buf = nullptr;
-    uint64 timerStart = SystemTimer::Instance()->AbsoluteMS();
-
-    size_t dumpSize = MemoryManager::Instance()->GetDump(0, &buf, blockBegin, blockEnd);
-    uint64 timePoint2 = SystemTimer::Instance()->AbsoluteMS();
-
-    MMDump temp = {0};
-    Memcpy(&temp, buf, sizeof(MMDump));
-    zipFile = DynamicMemoryFile::Create(File::CREATE | File::READ | File::WRITE);
-    zipFile->Seek(sizeof(MMProtoHeader) + sizeof(MMDump), File::SEEK_FROM_START);
-    {
-        ZLibOStream zipStream(zipFile);
-        zipStream.Write(static_cast<char8*>(buf)+sizeof(MMDump), static_cast<uint32>(dumpSize));
-    }
-    MemoryManager::Instance()->FreeDump(buf);
-    uint64 timePoint3 = SystemTimer::Instance()->AbsoluteMS();
-
-    Parcel parcel = CreateParcel(zipFile->GetSize(), zipFile->GetData());
-
-    MMProtoHeader* outHdr = static_cast<MMProtoHeader*>(parcel.buffer);
-    MMDump* dump = reinterpret_cast<MMDump*>(outHdr + 1);
-    *dump = temp;
-    dump->timestampBegin = timerStart;
-    dump->collectTime = timePoint3 - timerStart;
-    dump->zipTime = timePoint3 - timePoint2;
-
-    outHdr->sessionId = sessionId;
-    outHdr->cmd = static_cast<uint32>(eMMProtoCmd::DUMP);
-    outHdr->status = static_cast<uint32>(dumpSize);
-    outHdr->length = static_cast<uint32>(parcel.size - sizeof(MMProtoHeader));
-
-    EnqueueAndSend(parcel);
-#endif
-}
-*/
 }   // namespace Net
 }   // namespace DAVA
 
