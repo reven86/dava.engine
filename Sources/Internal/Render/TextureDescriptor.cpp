@@ -614,37 +614,7 @@ bool TextureDescriptor::IsCubeMap() const
 
 uint32 TextureDescriptor::ReadSourceCRC() const
 {
-	uint32 crc = 0;
-
-	DAVA::File *f = DAVA::File::Create(GetSourceTexturePathname(), DAVA::File::OPEN | DAVA::File::READ);
-	if(NULL != f)
-	{
-		uint8 buffer[8];
-
-		// Read source header
-		f->Read(buffer, 8);
-
-		// read chunk header
-		while (0 != f->Read(buffer, 8))
-		{
-			int32 chunk_size = 0;
-			chunk_size |= (buffer[0] << 24);
-			chunk_size |= (buffer[1] << 16);
-			chunk_size |= (buffer[2] << 8);
-			chunk_size |= buffer[3];
-
-			// jump thought data
-			DVASSERT(chunk_size >= 0);
-			f->Seek(chunk_size, File::SEEK_FROM_CURRENT);
-
-			// read crc
-			f->Read(buffer, 4);
-			crc += ((uint32 *) buffer)[0];
-		}
-
-		f->Release();
-	}
-
+    uint32 crc = CRC32::ForFile(GetSourceTexturePathname());
 	return crc;
 }
     

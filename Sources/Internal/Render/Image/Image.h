@@ -50,6 +50,7 @@ public:
     
 #endif
 
+    
 
 class Image : public BaseObject
 {

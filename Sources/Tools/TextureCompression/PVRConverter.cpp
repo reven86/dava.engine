@@ -56,12 +56,6 @@ static String PVRTOOL_INPUT_NAMES[] =
 	
 static DAVA::String PVRTOOL_MAP_NAMES[] =
 {
-// 	String("_pz"), //1
-// 	String("_nz"), //2
-// 	String("_px"), //3
-// 	String("_nx"), //4
-// 	String("_ny"), //5
-// 	String("_py"), //6
 	String("_px"), //1
 	String("_nx"), //2
 	String("_py"), //3
@@ -122,9 +116,9 @@ PVRConverter::~PVRConverter()
 
 }
 
-FilePath PVRConverter::ConvertPngToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, bool addCRC /* = true */)
+FilePath PVRConverter::ConvertToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, bool addCRC /* = true */)
 {
-	FilePath outputName = (descriptor.IsCubeMap()) ? PrepareCubeMapForPvrConvert(descriptor) : FilePath::CreateWithNewExtension(descriptor.pathname, ".png");
+	FilePath outputName = (descriptor.IsCubeMap()) ? PrepareCubeMapForPvrConvert(descriptor) : descriptor.GetSourceTexturePathname();
 
 	Vector<String> args;
 	GetToolCommandLine(descriptor, outputName, gpuFamily, quality, args);
@@ -160,9 +154,9 @@ FilePath PVRConverter::ConvertPngToPvr(const TextureDescriptor &descriptor, eGPU
 	return outputName;
 }
 
-FilePath PVRConverter::ConvertNormalMapPngToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality)
+FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality)
 {
-    FilePath filePath = FilePath::CreateWithNewExtension(descriptor.pathname, ".png");
+    FilePath filePath = descriptor.GetSourceTexturePathname();
 
     Vector<Image *> images;
     ImageSystem::Instance()->Load(filePath, images);
@@ -189,6 +183,8 @@ FilePath PVRConverter::ConvertNormalMapPngToPvr(const TextureDescriptor &descrip
     int32 imgCount = (int32)images.size();
     for(int32 i = 0; i < imgCount; ++i)
     {
+        DVASSERT(false); //TODO: fix it after texture descriptor will work with input files correctly
+        
         FilePath imgPath = dirPath + Format("mip%d.png", i);
         ImageSystem::Instance()->Save(imgPath, images[i]);
 
@@ -196,7 +192,7 @@ FilePath PVRConverter::ConvertNormalMapPngToPvr(const TextureDescriptor &descrip
         desc.Initialize(&descriptor);
         desc.SetGenerateMipmaps(false);
         desc.pathname = imgPath;
-        FilePath convertedImgPath = ConvertPngToPvr(desc, gpuFamily, quality, false);
+        FilePath convertedImgPath = ConvertToPvr(desc, gpuFamily, quality, false);
 
         convertedPVRs.push_back(convertedImgPath);
     }
