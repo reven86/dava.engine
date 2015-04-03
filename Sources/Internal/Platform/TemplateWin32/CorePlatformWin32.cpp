@@ -54,12 +54,6 @@ namespace DAVA
 			core->Run();
 			core->ReleaseSingletons();
 			
-#ifdef ENABLE_MEMORY_MANAGER
-			if (DAVA::MemoryManager::Instance() != 0)
-			{
-				DAVA::MemoryManager::Instance()->FinalLog();
-			}
-#endif
 		}
 
 		//CloseHandle(core->hMutex);
@@ -90,14 +84,7 @@ namespace DAVA
 		FrameworkDidLaunched();
 		FrameworkWillTerminate();
 		core->ReleaseSingletons();
-#ifdef ENABLE_MEMORY_MANAGER
-		if (DAVA::MemoryManager::Instance() != 0)
-		{
-			DAVA::MemoryManager::Instance()->FinalLog();
-		}
-#endif
 		return 0;
-
 	}
 
 	bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
