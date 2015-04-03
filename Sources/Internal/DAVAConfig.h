@@ -42,8 +42,6 @@
 #define AUTOTESTING_LUA
 #endif
 
-//#define ENABLE_MEMORY_MANAGER
-
 //#define ENABLE_BASE_OBJECT_CHECKS // separate thing to check if you release BaseObjects properly. Need to be disabled for release configurations 
 
 //#define ENABLE_CONTROL_EDIT //allows to drug'n'drop controls for position editing
