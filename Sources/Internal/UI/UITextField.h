@@ -282,6 +282,7 @@ public:
 	void SetTextUseRtlAlign(bool useRtlAlign);
 
     void SetSize(const DAVA::Vector2 &newSize) override;
+    void SetPosition(const Vector2 &position) override;
 
     /**
 	 \brief Set control text style hide.
