@@ -73,12 +73,7 @@ namespace DAVA
 		FrameworkWillTerminate();
 		
 		core->ReleaseSingletons();
-#ifdef ENABLE_MEMORY_MANAGER
-		if (DAVA::MemoryManager::Instance() != 0)
-		{
-			DAVA::MemoryManager::Instance()->FinalLog();
-		}
-#endif
+
 		[globalPool release];
 		globalPool = 0;
 		return 0;
@@ -746,12 +741,6 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 	Core::Instance()->SystemAppFinished();
 	FrameworkWillTerminate();
     Core::Instance()->ReleaseSingletons();
-#ifdef ENABLE_MEMORY_MANAGER
-    if (DAVA::MemoryManager::Instance() != 0)
-    {
-        DAVA::MemoryManager::Instance()->FinalLog();
-    }
-#endif
 
 	NSLog(@"[CoreMacOSPlatform] Application terminate");
 	return NSTerminateNow;

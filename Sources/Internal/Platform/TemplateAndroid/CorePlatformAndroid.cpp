@@ -92,14 +92,7 @@ namespace DAVA
 // 		core->CreateWin32Window(handle);
 		// 		core->Run();
 // 		core->ReleaseSingletons();
-// #ifdef ENABLE_MEMORY_MANAGER
-// 		if (DAVA::MemoryManager::Instance() != 0)
-// 		{
-// 			DAVA::MemoryManager::Instance()->FinalLog();
-// 		}
-// #endif
 		return 0;
-
 	}
 
 	void CorePlatformAndroid::Quit()
@@ -119,13 +112,6 @@ namespace DAVA
 		}
 
 		FrameworkWillTerminate();
-
-#ifdef ENABLE_MEMORY_MANAGER
-		if (DAVA::MemoryManager::Instance() != 0)
-		{
-			DAVA::MemoryManager::Instance()->FinalLog();
-		}
-#endif
 
 		Logger::Debug("[CorePlatformAndroid::QuitAction] done");
 	}
