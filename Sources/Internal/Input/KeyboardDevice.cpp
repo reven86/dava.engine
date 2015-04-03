@@ -103,10 +103,11 @@ void KeyboardDevice::OnSystemKeyUnpressed(int32 systemKeyCode)
     
 void KeyboardDevice::PrepareKeyTranslator()
 {
-    for (int i = 0; i < MAX_KEYS; i++) 
+    for (auto& key : keyTranslator)
     {
-        keyTranslator[i] = DVKEY_UNKNOWN;
+        key = DVKEY_UNKNOWN;
     }
+
 #if defined(__DAVAENGINE_WIN32__)
 	keyTranslator[VK_LEFT] = DVKEY_LEFT;
 	keyTranslator[VK_RIGHT] = DVKEY_RIGHT;
@@ -121,17 +122,22 @@ void KeyboardDevice::PrepareKeyTranslator()
 	keyTranslator[VK_SHIFT] = DVKEY_SHIFT;
 	keyTranslator[VK_CAPITAL] = DVKEY_CAPSLOCK;
     keyTranslator[VK_SPACE] = DVKEY_SPACE;
+    keyTranslator[VK_OEM_PLUS] = DVKEY_EQUALS;
+    keyTranslator[VK_OEM_MINUS] = DVKEY_MINUS;
 
-	keyTranslator[VK_F1] = DVKEY_F1;
+    for (auto i = 0; i <= DVKEY_F12 - DVKEY_F1; i++)
+    {
+        keyTranslator[VK_F1 + i] = DVKEY_F1 + i;
+    }
     
     // alpha keys
-    for(int32 i = 0; i < 26; ++i)
+    for(auto i = 0; i < 26; ++i)
     {
         keyTranslator[0x41 + i] = DVKEY_A + i;
     }
     
     // numeric keys & keys at num pad
-    for(int32 i = 0; i < 10; ++i)
+    for(auto i = 0; i < 10; ++i)
     {
         keyTranslator[0x30 + i] = DVKEY_0 + i;
         keyTranslator[0x60 + i] = DVKEY_NUMPAD0 + i;
@@ -153,7 +159,6 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[DVMACOS_SHIFT] = DVKEY_SHIFT;
     keyTranslator[DVMACOS_CAPS_LOCK] = DVKEY_CAPSLOCK;
     keyTranslator[0x31] = DVKEY_SPACE;
-    
 
     keyTranslator[0x00] = DVKEY_A;
     keyTranslator[0x0B] = DVKEY_B;
@@ -182,7 +187,6 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x10] = DVKEY_Y;
     keyTranslator[0x06] = DVKEY_Z;
 
-
     keyTranslator[0x1D] = DVKEY_0;
     keyTranslator[0x12] = DVKEY_1;
     keyTranslator[0x13] = DVKEY_2;
@@ -196,14 +200,12 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x7A] = DVKEY_F1;
     keyTranslator[0x1B] = DVKEY_MINUS;
     keyTranslator[0x18] = DVKEY_EQUALS;
-
     
     // numeric keys at numpad
-    for(int32 i = 0; i < 10; ++i)
+    for(auto i = 0; i < 10; ++i)
     {
         keyTranslator[0x52 + i] = DVKEY_0 + i;
     }
-    
 #endif
     
 #if defined(__DAVAENGINE_ANDROID__)
@@ -215,7 +217,7 @@ void KeyboardDevice::PrepareKeyTranslator()
 
 void KeyboardDevice::ClearAllKeys()
 {
-	for (int32 i = 0; i < DVKEY_COUNT; i++) 
+	for (auto i = 0; i < DVKEY_COUNT; i++) 
 	{
 		keyStatus[i] = realKeyStatus[i] = false;
 	}
