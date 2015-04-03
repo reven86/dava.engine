@@ -277,6 +277,14 @@ foreach ( FILE ${LIBRARIES_RELEASE} )
     target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
 endforeach ()
 
+if ( QT5_FOUND AND NOT DEPLOY )
+    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD 
+        COMMAND ${QT5_PATH_MAC}/bin/macdeployqt ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${PROJECT_NAME}.app
+    )
+
+endif()
+
+
 ###
 
 if( DEPLOY )
