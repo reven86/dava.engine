@@ -206,6 +206,7 @@ namespace DAVA
     void AutotestingDB::Log(const String &level, const String &message)
 	{
 		String textLog = Format("[%s:%s] %s\n", autoSys->GetCurrentTimeString().c_str(), level.c_str(), message.c_str());
+		Logger::Debug("AutotestingDB::Log: [%s:%s] %s", autoSys->GetCurrentTimeString().c_str(), level.c_str(), message.c_str());
 		WriteLog(textLog.c_str());
 	}
 
