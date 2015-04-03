@@ -1,18 +1,25 @@
 #
-#set( MACOS_PLIST          )
-#set( MACOS_ICO            )
-#set( MACOS_DATA           )
-#set( MACOS_DYLIB          )
+#set( APP_DATA       )
 
-#set( ANDROID_PACKAGE            )
-#set( ANDROID_APP_NAME           )
-#set( ANDROID_MIN_SDK_VERSION    )
-#set( ANDROID_TARGET_SDK_VERSION )
-#set( ANDROID_KEY_STORE_PATH     )#dava.config
-#set( ANDROID_KEY_ALIAS_NAME     )#dava.config
-#set( ANDROID_STORE_PASSWORD     )#dava.config
-#set( ANDROID_ALIAS_PASSWORD     )#dava.config
-
+#set( IOS_PLISTT     )
+#set( IOS_XIB        )
+#
+#set( MACOS_PLIST    )
+#set( MACOS_ICO      )
+#set( MACOS_DYLIB    )
+#set( MACOS_XIB      )
+#
+#set( ANDROID_USE_STANDART_TEMLATE )
+#set( ANDROID_DATA_FOLDER          )
+#set( ANDROID_PACKAGE              )
+#set( ANDROID_APP_NAME             )
+#set( ANDROID_ACTIVITY_APP_NAME    )
+#set( ANDROID_JAVA_SRC             )
+#set( ANDROID_JAVA_LIBS            )
+#set( ANDROID_JAVA_RES             )
+#set( ANDROID_JAVA_ASSET           ) 
+#set( ANDROID_ICO                  )
+#
 #set( ADDED_SRC                  )
 #set( LIBRARIES                  )
 #set( LIBRARIES_RELEASE          )
@@ -24,9 +31,45 @@
 macro( setup_main_executable )
 
 add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
+
+if( MACOS_DATA )
+    set( APP_DATA ${MACOS_DATA} )
+
+elseif( WIN32_DATA )
+    set( APP_DATA ${WIN32_DATA} )
+
+elseif( IOS_DATA )
+    set( APP_DATA ${IOS_DATA} )
+
+elseif( ANDROID_DATA )
+    set( APP_DATA ${ANDROID_DATA} )
+
+endif()
+
+if( ANDROID_USE_STANDART_TEMLATE )
+
+    if( NOT ANDROID_JAVA_SRC )
+        list( APPEND ANDROID_JAVA_SRC  ${CMAKE_CURRENT_LIST_DIR}/android/src )    
+    endif()
+
+    if( NOT ANDROID_JAVA_RES )
+        set( ANDROID_JAVA_RES  ${CMAKE_CURRENT_LIST_DIR}/android/res )    
+
+    endif()
+
+endif()
+
+if( DAVA_FOUND )
+    include_directories   ( ${DAVA_INCLUDE_DIR} ) 
+    include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
+
+    list( APPEND ANDROID_JAVA_LIBS  ${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/jar )
+    list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/Java )
+
+endif()
  
 if( IOS )
-    list( APPEND RESOURCES_LIST ${MACOS_DATA} )    
+    list( APPEND RESOURCES_LIST ${APP_DATA} )    
     list( APPEND RESOURCES_LIST ${IOS_XIB} )
     list( APPEND RESOURCES_LIST ${IOS_PLIST} )
     list( APPEND RESOURCES_LIST ${IOS_ICO} )
@@ -40,7 +83,7 @@ elseif( MACOS )
 
     list ( APPEND DYLIB_FILES     "${DYLIB_FILES}" "${MACOS_DYLIB}" )  
 
-    list( APPEND RESOURCES_LIST  ${MACOS_DATA}  )
+    list( APPEND RESOURCES_LIST  ${APP_DATA}  )
     list( APPEND RESOURCES_LIST  ${DYLIB_FILES} ) 
     list( APPEND RESOURCES_LIST  ${MACOS_XIB}   )    
     list( APPEND RESOURCES_LIST  ${MACOS_PLIST} )
@@ -61,6 +104,7 @@ elseif( QT5_FOUND )
 endif()
 
 if( DAVA_FOUND )
+
     if( QT_PREFIX )
         if( WIN32 )
             set ( PLATFORM_INCLUDES_DIR ${DAVA_PLATFORM_SRC}/${QT_PREFIX} ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32 )
@@ -140,17 +184,16 @@ if( ANDROID )
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ANDROID_JAVA_RES} ${CMAKE_BINARY_DIR}/res )
     endif()
 
-    if( ANDROID_JAVA_ASSET )
-        if( ANDROID_JAVA_ASSET_FOLDER )
-            set( ASSETS_FOLDER "${ANDROID_JAVA_ASSET_FOLDER}" )    
 
-        else()
-            get_filename_component( ASSETS_FOLDER ${ANDROID_JAVA_ASSET} NAME )
+    if( ANDROID_DATA_FOLDER )
+        set( ASSETS_FOLDER "${ANDROID_JAVA_ASSET_FOLDER}" )    
+
+    else()
+        get_filename_component( ASSETS_FOLDER ${APP_DATA} NAME )
           
-        endif()
-
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ANDROID_JAVA_ASSET} ${CMAKE_BINARY_DIR}/assets/${ASSETS_FOLDER} )
     endif()
+
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ANDROID_DATA} ${CMAKE_BINARY_DIR}/assets/${ASSETS_FOLDER} )
 
     if( ANDROID_ICO )
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${ANDROID_ICO}  ${CMAKE_BINARY_DIR} )     
@@ -228,13 +271,14 @@ elseif( MACOS )
     endif()
 
 elseif ( MSVC )       
-    if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32")
-        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY:\"\" /NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"" ) 
+    if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" ) 
 
     else()
-        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"" )    
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )    
     
     endif()
+
 
     if( DEBUG_INFO )   
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG /SUBSYSTEM:WINDOWS" )
@@ -267,6 +311,11 @@ if( DAVA_FOUND )
 
 endif()
 
+if( DAVA_TOOLS_FOUND )
+    list ( APPEND LIBRARIES ${DAVA_TOOLS_LIBRARY} )
+
+endif()
+
 target_link_libraries( ${PROJECT_NAME} ${LIBRARIES} )
 
 foreach ( FILE ${LIBRARIES_DEBUG} )
@@ -284,11 +333,11 @@ if( DEPLOY )
    execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
  
     if( WIN32 )
-        if( WIN32_DATA )
-            get_filename_component( DIR_NAME ${WIN32_DATA} NAME )
-#            execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${WIN32_DATA}  ${DEPLOY_DIR}/${DIR_NAME} )
+        if( APP_DATA )
+            get_filename_component( DIR_NAME ${APP_DATA} NAME )
+
             ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD 
-               COMMAND ${CMAKE_COMMAND} -E copy_directory ${WIN32_DATA}  ${DEPLOY_DIR}/${DIR_NAME}/ 
+               COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA}  ${DEPLOY_DIR}/${DIR_NAME}/ 
                COMMAND ${CMAKE_COMMAND} -E remove  ${DEPLOY_DIR}/${PROJECT_NAME}.ilk
             )
 
@@ -323,28 +372,28 @@ macro( DEPLOY_SCRIPT )
     if( DEPLOY )
         cmake_parse_arguments (ARG "" "" "PYTHON;COPY;COPY_WIN32;COPY_MACOS;COPY_DIR" ${ARGN})
 
-		if( NOT COPY_DIR )
-			set( COPY_DIR ${DEPLOY_DIR} )
-		endif()
+        if( NOT COPY_DIR )
+            set( COPY_DIR ${DEPLOY_DIR} )
+        endif()
 
-		execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${COPY_DIR} )
-		execute_process( COMMAND python ${ARG_PYTHON} )
+        execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${COPY_DIR} )
+        execute_process( COMMAND python ${ARG_PYTHON} )
 
-		if( ARG_COPY )
-			list( APPEND COPY_LIST ${ARG_COPY} )
-		endif()
+        if( ARG_COPY )
+            list( APPEND COPY_LIST ${ARG_COPY} )
+        endif()
 
-		if( ARG_COPY_WIN32 AND WIN32 )
-			list( APPEND COPY_LIST ${ARG_COPY_WIN32} )
-		endif()
+        if( ARG_COPY_WIN32 AND WIN32 )
+            list( APPEND COPY_LIST ${ARG_COPY_WIN32} )
+        endif()
 
-		if( ARG_COPY_MACOS AND MACOS )
-			list( APPEND COPY_LIST ${ARG_COPY_MACOS} )
-		endif()
+        if( ARG_COPY_MACOS AND MACOS )
+            list( APPEND COPY_LIST ${ARG_COPY_MACOS} )
+        endif()
 
-		foreach ( ITEM ${COPY_LIST} )
-			execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM} ${COPY_DIR} )
-		endforeach ()
+        foreach ( ITEM ${COPY_LIST} )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM} ${COPY_DIR} )
+        endforeach ()
 
     endif()
 endmacro ()
