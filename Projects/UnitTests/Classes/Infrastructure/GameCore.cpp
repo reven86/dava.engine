@@ -57,6 +57,7 @@
 #include "Tests/UnlimitedLogOutputTest.h"
 #include "Tests/SpinLockTest.h"
 #include "Tests/ThreadSyncTest.h"
+#include "Tests/MemoryManagerTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -97,6 +98,9 @@ void GameCore::RegisterTests()
     new NetworkTest();
     new UnlimitedLogOutputTest();
     new SpinLockTest();
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+    new MemoryManagerTest();
+#endif  // DAVA_MEMORY_PROFILING_ENABLE
 //  $UNITTEST_CTOR
 }
 
