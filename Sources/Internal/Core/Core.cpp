@@ -474,6 +474,9 @@ void Core::SystemProcessFrame()
     Stats::Instance()->BeginFrame();
     TIME_PROFILE("Core::SystemProcessFrame");
     
+    // Poll for network I/O events here, not depending on Core active flag
+    Net::NetCore::Instance()->Poll();
+    
 	if (!core) return;
 	if (!isActive)return;
 	
@@ -527,9 +530,6 @@ void Core::SystemProcessFrame()
 		LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
 		JobManager::Instance()->Update();
-
-        // Poll for network I/O events here
-        Net::NetCore::Instance()->Poll();
 
 		core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();
