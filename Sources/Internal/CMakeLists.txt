@@ -146,6 +146,8 @@ endif()
 define_source_folders  ( SRC_ROOT "." ${PLATFORM_SPECIFIC_FOLDER} )
 generate_source_groups_project ()
 
+set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
+
 include_directories    (.)
 include_directories    ( ${DAVA_INCLUDE_DIR} )
 include_directories    ( ${ADD_ENGINE_INCLUDES_DIR} ) 
