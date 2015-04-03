@@ -503,20 +503,16 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 			gpu >= 0 && gpu < DAVA::GPU_FAMILY_COUNT && 
 			descriptor->compression[gpu].format > DAVA::FORMAT_INVALID && descriptor->compression[gpu].format < DAVA::FORMAT_COUNT)
 		{
-			DAVA::FilePath compressedTexturePath = DAVA::GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, gpu);
+			DAVA::FilePath compressedTexturePath = descriptor->CreatePathnameForGPU(gpu);
 
-			const String& outExtension = GPUFamilyDescriptor::GetCompressedFileExtension(gpu, (DAVA::PixelFormat) descriptor->compression[gpu].format);
-			if(outExtension == ".pvr")
+			ImageFormat compressedFormat = GPUFamilyDescriptor::GetCompressedFileFormat(gpu, (DAVA::PixelFormat) descriptor->compression[gpu].format);
+            if (compressedFormat == IMAGE_FORMAT_PVR || compressedFormat == IMAGE_FORMAT_DDS)
 			{
-				DAVA::Logger::FrameworkDebug("Starting PVR conversion (%s), id %d..., (%s)",
-					GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor->compression[gpu].format), item->id, descriptor->pathname.GetAbsolutePathname().c_str());
-				convertedImages = ConvertFormat(descriptor, gpu, item->convertMode);
-				DAVA::Logger::FrameworkDebug("Done, id %d", item->id);
-			}
-			else if(outExtension == ".dds")
-			{
-				DAVA::Logger::FrameworkDebug("Starting DXT conversion (%s), id %d..., (%s)",
-					GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor->compression[gpu].format), item->id, descriptor->pathname.GetAbsolutePathname().c_str());
+				DAVA::Logger::FrameworkDebug("Starting %s conversion (%s), id %d..., (%s)",
+                    (compressedFormat == IMAGE_FORMAT_PVR ? "PVR" : "DDS"),
+					GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor->compression[gpu].format), 
+                    item->id, 
+                    descriptor->pathname.GetAbsolutePathname().c_str());
 				convertedImages = ConvertFormat(descriptor, gpu, item->convertMode);
 				DAVA::Logger::FrameworkDebug("Done, id %d", item->id);
 			}

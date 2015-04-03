@@ -170,7 +170,7 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor &descriptor, 
 
 FilePath DXTConverter::GetDXTOutput(const TextureDescriptor &descriptor, eGPUFamily gpuFamily)
 {
-    return GPUFamilyDescriptor::CreatePathnameForGPU(&descriptor, gpuFamily);
+    return descriptor.CreatePathnameForGPU(gpuFamily);
 }
 
 };
