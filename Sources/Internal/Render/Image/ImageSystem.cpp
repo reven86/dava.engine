@@ -191,7 +191,7 @@ ImageInfo ImageSystem::GetImageInfo(const FilePath & pathName) const
     if (nullptr == properWrapper)
     {
         ScopedPtr<File> infile(File::Create(pathName, File::OPEN | File::READ));
-        if (nullptr == &(infile))
+        if (static_cast<File*>(infile) == nullptr)
         {
             return ImageInfo();
         }
