@@ -64,9 +64,6 @@ public:
     void SetTagColors(QColor colorActive, QColor colorInactive);
 
 private:
-    QVariant FormatSizeData(DAVA::uint32 value) const;
-
-private:
     ProfilingSession* profileSession;
 
     DAVA::uint64 timestamp;

@@ -29,6 +29,7 @@
 #include "TagModel.h"
 
 #include "../ProfilingSession.h"
+#include "DataFormat.h"
 
 using namespace DAVA;
 
@@ -88,9 +89,9 @@ QVariant TagModel::data(const QModelIndex& index, int role) const
             case CLM_NAME:
                 return QVariant(profileSession->TagName(row).c_str());
             case CLM_ALLOC_APP:
-                return FormatSizeData(stat.allocByApp);
+                return FormatNumberWithDigitGroups(stat.allocByApp).c_str();
             case CLM_NBLOCKS:
-                return QVariant(stat.blockCount);
+                return FormatNumberWithDigitGroups(stat.blockCount).c_str();
             default:
                 break;
             }
@@ -103,19 +104,6 @@ QVariant TagModel::data(const QModelIndex& index, int role) const
         }
     }
     return QVariant();
-}
-
-QVariant TagModel::FormatSizeData(DAVA::uint32 value) const
-{
-    /*char buf[32];
-    int n = Snprintf(buf, COUNT_OF(buf), "%u", value);
-    int g = n / 3;
-
-    int k = n - 1;
-    for (int i = k;i >= 0;--i)
-    buf[i] = buf[i - g];
-    */
-    return QVariant(value);
 }
 
 void TagModel::BeginNewProfileSession(ProfilingSession* profSession)

@@ -26,51 +26,30 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __ALLOCPOOLMODEL_H__
-#define __ALLOCPOOLMODEL_H__
-
-#include <QColor>
-#include <QAbstractTableModel>
-
 #include "Base/BaseTypes.h"
-#include "MemoryManager/MemoryManagerTypes.h"
 
-class ProfilingSession;
-class StatItem;
+using namespace DAVA;
 
-class AllocPoolModel : public QAbstractTableModel
+String FormatNumberWithDigitGroups(uint32 value)
 {
-    Q_OBJECT
+    char buf[32];
+    int n = Snprintf(buf, COUNT_OF(buf), "%u", value);
+    int g = n / 3 - ((n % 3) == 0);
 
-public:
-    enum {
-        CLM_NAME = 0,
-        CLM_ALLOC_APP,
-        CLM_ALLOC_TOTAL,
-        CLM_NBLOCKS,
-        CLM_MAX_SIZE,
-        NCOLUMNS = 5
-    };
-
-public:
-    AllocPoolModel(QObject* parent = nullptr);
-    virtual ~AllocPoolModel();
-
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-
-    void BeginNewProfileSession(ProfilingSession* profSession);
-    void SetCurrentValues(const StatItem& item);
-    void SetPoolColors(const DAVA::Vector<QColor>& poolColors);
-
-private:
-    ProfilingSession* profileSession;
-
-    DAVA::uint64 timestamp;
-    DAVA::Vector<DAVA::AllocPoolStat> curValues;
-    DAVA::Vector<QColor> poolColors;
-};
-
-#endif  // __ALLOCPOOLMODEL_H__
+    int from = n - 1;
+    int to = from + g;
+    buf[to + 1] = '\0';
+    while (g > 0)
+    {
+        for (int j = 0;j < 3;++j)
+        {
+            buf[to] = buf[from];
+            to -= 1;
+            from -= 1;
+        }
+        buf[to] = ' ';
+        to -= 1;
+        g -= 1;
+    }
+    return String(buf);
+}

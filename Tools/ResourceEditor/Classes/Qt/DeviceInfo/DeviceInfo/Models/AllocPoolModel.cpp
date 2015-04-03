@@ -29,6 +29,7 @@
 #include "AllocPoolModel.h"
 
 #include "../ProfilingSession.h"
+#include "DataFormat.h"
 
 using namespace DAVA;
 
@@ -89,13 +90,13 @@ QVariant AllocPoolModel::data(const QModelIndex& index, int role) const
             case CLM_NAME:
                 return QVariant(profileSession->AllocPoolName(row).c_str());
             case CLM_ALLOC_APP:
-                return FormatSizeData(stat.allocByApp);
+                return FormatNumberWithDigitGroups(stat.allocByApp).c_str();
             case CLM_ALLOC_TOTAL:
-                return FormatSizeData(stat.allocTotal - stat.allocByApp);
+                return FormatNumberWithDigitGroups(stat.allocTotal - stat.allocByApp).c_str();
             case CLM_NBLOCKS:
-                return QVariant(stat.blockCount);
+                return FormatNumberWithDigitGroups(stat.blockCount).c_str();
             case CLM_MAX_SIZE:
-                return FormatSizeData(stat.maxBlockSize);
+                return FormatNumberWithDigitGroups(stat.maxBlockSize).c_str();
             default:
                 break;
             }
@@ -115,19 +116,6 @@ QVariant AllocPoolModel::data(const QModelIndex& index, int role) const
         }
     }
     return QVariant();
-}
-
-QVariant AllocPoolModel::FormatSizeData(DAVA::uint32 value) const
-{
-    /*char buf[32];
-    int n = Snprintf(buf, COUNT_OF(buf), "%u", value);
-    int g = n / 3;
-
-    int k = n - 1;
-    for (int i = k;i >= 0;--i)
-        buf[i] = buf[i - g];
-    */
-    return QVariant(value);
 }
 
 void AllocPoolModel::BeginNewProfileSession(ProfilingSession* profSession)
