@@ -36,6 +36,7 @@
 #include "Render/Image/ImageSystem.h"
 
 #include "Qt/Settings/SettingsManager.h"
+#include "Tools/PathDescriptor/PathDescriptor.h"
 
 #include <QMessageBox>
 #include <QFileDialog>
@@ -49,7 +50,8 @@ ImageSplitterDialog::ImageSplitterDialog(QWidget *parent) :
     ui->setupUi(this);
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-    ui->path->SetFilter("PNG (*.png)");
+    
+    ui->path->SetFilter(PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
         
     DAVA::FilePath defaultPath = SettingsManager::Instance()->GetValue(Settings::Internal_ImageSplitterPath).AsString();
     if (defaultPath.IsEmpty())

@@ -35,6 +35,8 @@
 #include "Main/QtUtils.h"
 #include "Settings/SettingsManager.h"
 
+#include "Tools/PathDescriptor/PathDescriptor.h"
+
 #include <QFileDialog>
 #include <QDragEnterEvent>
 #include <QDropEvent>
@@ -107,7 +109,10 @@ void ImageArea::mousePressEvent (QMouseEvent * ev)
             }
         }
 
-		DAVA::String retString = QFileDialog::getOpenFileName(this, "Select png", defaultPath.GetAbsolutePathname().c_str(),"PNG(*.png)").toStdString();
+		DAVA::String retString = QFileDialog::getOpenFileName(this, "Select image",
+                                                              defaultPath.GetAbsolutePathname().c_str(),
+                                                              PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter
+                                                              ).toStdString();
         if(!retString.empty())
         {
             SetImage(retString);

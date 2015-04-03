@@ -137,6 +137,8 @@
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 
+#include "Tools/PathDescriptor/PathDescriptor.h"
+
 
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -149,6 +151,8 @@ QtMainWindow::QtMainWindow(QWidget *parent)
     , hangingObjectsWidget(NULL)
     , developerTools(new DeveloperTools(this))
 {
+    PathDescriptor::InitializePathDescriptors();
+    
 	new ProjectManager();
 	new RecentFilesManager();
 	ui->setupUi(this);

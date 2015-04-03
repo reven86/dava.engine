@@ -73,6 +73,8 @@
 
 #include "Deprecated/SceneValidator.h"
 
+#include "Tools/PathDescriptor/PathDescriptor.h"
+
 PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSignals /*= true*/)
 	: QtPropertyEditor(parent)
 	, viewMode(VIEW_NORMAL)
@@ -458,101 +460,15 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			}
             else if(DAVA::MetaInfo::Instance<DAVA::FilePath>() == meta)
 			{
-				struct PathDescriptor
-				{
-					enum eType
-					{
-						PATH_TEXTURE = 0,
-						PATH_IMAGE,
-						PATH_HEIGHTMAP,
-						PATH_TEXT,
-                        PATH_SCENE,
-						PATH_NOT_SPECIFIED
-					};
-
-					PathDescriptor(const QString & name, const QString &filter, eType type) : pathName(name), fileFilter(filter), pathType(type) {;};
-
-					QString pathName;
-					QString fileFilter;
-					eType pathType;
-				};
-
-                static Vector<PathDescriptor> descriptors;
-                if(descriptors.empty())
-                {
-                    descriptors.push_back(PathDescriptor("", "All (*.*)", PathDescriptor::PATH_NOT_SPECIFIED));
-                    descriptors.push_back(PathDescriptor("customGeometry", "All (*.sc2);;SC2 (*.sc2);", PathDescriptor::PATH_SCENE));
-                    descriptors.push_back(PathDescriptor("textureSheet", "All (*.txt);;TXT (*.tex)", PathDescriptor::PATH_TEXT));
-                    
-                    static std::array<QString, IMAGE_FORMAT_COUNT> imageFileNames = {{ "PNG", "DDS", "PVR", "JPEG", "TGA"}};
-                    
-                    QString sourceFileString;
-                    QString separateSourceFileString;
-                    
-                    for(auto formatType : DAVA::TextureDescriptor::sourceTextureTypes)
-                    {
-                        QString fileTypeString;
-                        
-                        auto extensions = DAVA::ImageSystem::Instance()->GetExtensionsFor(formatType);
-                        
-                        for(auto ex : extensions)
-                        {
-                            if(fileTypeString.isEmpty())
-                            {
-                                fileTypeString = QString(imageFileNames[formatType]) + " (*";
-                            }
-                            else
-                            {
-                                fileTypeString += QString(" *");
-                            }
-                            fileTypeString += QString(ex.c_str());
-                            
-                            if(sourceFileString.isEmpty())
-                            {
-                                sourceFileString = "*";
-                            }
-                            else
-                            {
-                                sourceFileString += " *";
-                            }
-                            sourceFileString += ex.c_str();
-                        }
-                        
-                        fileTypeString += ")";
-                        
-                        
-                        if(!separateSourceFileString.isEmpty())
-                        {
-                            separateSourceFileString += QString(";;");
-                        }
-                        separateSourceFileString += fileTypeString;
-                    }
-                    
-                    
-                    QString imageFilter = QString("All (%1);;%2").arg(sourceFileString).arg(separateSourceFileString);
-
-                    auto texExtension = DAVA::TextureDescriptor::GetDescriptorExtension();
-                    QString textureFilter = QString("All (*%1 %2);;TEX (*%3);;%4").arg(texExtension.c_str()).arg(sourceFileString).arg(texExtension.c_str()).arg(separateSourceFileString);
-                    auto heightExtension = DAVA::Heightmap::FileExtension();
-                    QString heightmapFilter = QString("All (*%1 %2);;Heightmap (*%3);;%4").arg(heightExtension.c_str()).arg(sourceFileString).arg(heightExtension.c_str()).arg(separateSourceFileString);
-                    
-                    descriptors.push_back(PathDescriptor("heightmapPath", heightmapFilter, PathDescriptor::PATH_HEIGHTMAP));
-                    descriptors.push_back(PathDescriptor("densityMap", imageFilter, PathDescriptor::PATH_IMAGE));
-                    descriptors.push_back(PathDescriptor("texture", textureFilter, PathDescriptor::PATH_TEXTURE));
-                    descriptors.push_back(PathDescriptor("lightmap", textureFilter, PathDescriptor::PATH_TEXTURE));
-                    descriptors.push_back(PathDescriptor("densityMap", textureFilter, PathDescriptor::PATH_TEXTURE));
-                }
-                
-                
 				QString dataName = data->GetName();
-				PathDescriptor *pathDescriptor = (PathDescriptor *)&descriptors[0];
+                PathDescriptor *pathDescriptor = (PathDescriptor *)&PathDescriptor::descriptors[0];
 
-				auto count = descriptors.size();
+                auto count = PathDescriptor::descriptors.size();
 				for(auto i = 0; i < count; ++i)
 				{
-					if(descriptors[i].pathName == dataName)
+                    if(PathDescriptor::descriptors[i].pathName == dataName)
 					{
-						pathDescriptor = (PathDescriptor *)&descriptors[i];
+                        pathDescriptor = (PathDescriptor *)&PathDescriptor::descriptors[i];
 						break;
 					}
 				}
