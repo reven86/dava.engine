@@ -51,7 +51,9 @@ public:
 
 	void SetTextColor(const DAVA::Color &color);
 	void SetFontSize(float size);
-    void SetSize(const DAVA::Vector2 &size);
+
+    void OnSetPosition(const DAVA::Vector2 &size);
+    void OnSetSize(const DAVA::Vector2 &size);
     
     void SetTextAlign(DAVA::int32 align);
     DAVA::int32 GetTextAlign();
