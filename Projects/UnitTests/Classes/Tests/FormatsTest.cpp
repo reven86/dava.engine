@@ -119,16 +119,12 @@ void FormatsTest::TestPvr(PerfFuncData *data)
         TestImageInfo(compressedPathname, requestedFormat, data);
 
 #if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
-        return;
+        continue;
 #endif //#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
-
-#if defined (__DAVAENGINE_MACOS__) && (requestedFormat == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
-        return;
-#endif //#if defined (__DAVAENGINE_MACOS__)
 
         const DAVA::PixelFormatDescriptor & descriptor = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(requestedFormat);
         if (descriptor.isHardwareSupported)
-            return;
+            continue;
 
         DAVA::Vector<DAVA::Image *> pngImages;
         DAVA::Vector<DAVA::Image *> compressedImages;
@@ -183,16 +179,16 @@ void FormatsTest::TestDds(PerfFuncData *data)
         TestImageInfo(compressedPathname, requestedFormat, data);
 
 #if !(defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
-        return;
+        continue;
 #endif //#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
 
 #if defined(__DAVAENGINE_MACOS__) && (requestedFormat == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
-        return;
+        continue;
 #endif //#if defined (__DAVAENGINE_MACOS__)
 
         const DAVA::PixelFormatDescriptor & descriptor = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(requestedFormat);
         if (descriptor.isHardwareSupported)
-            return;
+            continue;
 
         DAVA::Vector<DAVA::Image *> pngImages;
         DAVA::Vector<DAVA::Image *> compressedImages;
@@ -225,6 +221,19 @@ void FormatsTest::TestDds(PerfFuncData *data)
 
 void FormatsTest::TestImageInfo(const DAVA::FilePath &fileName, DAVA::PixelFormat &requestedFormat, PerfFuncData *data)
 {
+    // NOTE: if file is generated in DXT1A format then lib returned new file in DXT1
+    switch (requestedFormat)
+    {
+        case FORMAT_DXT1A:
+            requestedFormat = FORMAT_DXT1;
+            break;
+        case FORMAT_DXT5NM:
+            requestedFormat = FORMAT_DXT5;
+            break;
+        default:
+            break;
+    }
+
     ImageInfo info = ImageSystem::Instance()->GetImageInfo(fileName);
     TEST_VERIFY(info.format == requestedFormat);
     TEST_VERIFY(info.width == 256);

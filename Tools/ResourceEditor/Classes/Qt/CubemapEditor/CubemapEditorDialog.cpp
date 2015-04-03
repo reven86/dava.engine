@@ -235,8 +235,8 @@ bool CubemapEditorDialog::IsFormatValid(const DAVA::ImageInfo &info)
 
 void CubemapEditorDialog::UpdateFaceInfo()
 {
-    ui->labelFaceHeight->setText(QString().number(faceHeight));
-    ui->labelFaceWidth->setText(QString().number(faceWidth));
+    ui->labelFaceHeight->setText(QString::number(faceHeight));
+    ui->labelFaceWidth->setText(QString::number(faceWidth));
 }
 
 void CubemapEditorDialog::UpdateButtonState()

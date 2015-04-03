@@ -40,7 +40,9 @@
 #include "Render/Image/LibPngHelper.h"
 #include "Render/Image/LibPVRHelper.h"
 
-namespace DAVA 
+#include "Base/ScopedPtr.h"
+
+namespace DAVA
 {
 
 ImageSystem::ImageSystem()
@@ -188,19 +190,16 @@ ImageInfo ImageSystem::GetImageInfo(const FilePath & pathName) const
     ImageFormatInterface* properWrapper = GetImageFormatInterface(pathName);
     if (nullptr == properWrapper)
     {
-        File *infile = File::Create(pathName, File::OPEN | File::READ);
-        if (nullptr == infile)
+        ScopedPtr<File> infile(File::Create(pathName, File::OPEN | File::READ));
+        if (nullptr == &(infile))
         {
-            infile->Release();
             return ImageInfo();
         }
         properWrapper = GetImageFormatInterface(infile);
         if (nullptr == properWrapper)
         {
-            infile->Release();
             return ImageInfo();
         }
-        infile->Release();
     }
 
     return properWrapper->GetImageInfo(pathName);

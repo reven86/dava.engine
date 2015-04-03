@@ -54,7 +54,7 @@ namespace DAVA
 {
     class QualcommHeler
     {
-#define Q_FORMAT_COUNT 3
+        static const uint8 Q_FORMAT_COUNT = 3;
 
     public:
         struct PairQualcommPixelGLFormat
@@ -66,6 +66,8 @@ namespace DAVA
                 this->qFormat = qFormat;
                 this->davaFormat = davaFormat;
             }
+
+            PairQualcommPixelGLFormat() = delete;
         };
 
         const static PairQualcommPixelGLFormat formatPair[Q_FORMAT_COUNT];
