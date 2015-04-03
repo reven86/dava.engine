@@ -93,8 +93,8 @@ void CubemapEditorDialog::ConnectSignals()
     connect(ui->labelPZ, &ClickableQLabel::OnRotationChanged, this, &CubemapEditorDialog::OnRotationChanged);
     connect(ui->labelNZ, &ClickableQLabel::OnRotationChanged, this, &CubemapEditorDialog::OnRotationChanged);
 
-    connect(ui->buttonSave, &QPushButton::click, this, &CubemapEditorDialog::OnSave);
-    connect(ui->buttonClose, &QPushButton::click, this, &CubemapEditorDialog::close);
+    connect(ui->buttonSave, &QPushButton::clicked, this, &CubemapEditorDialog::OnSave);
+    connect(ui->buttonClose, &QPushButton::clicked, this, &CubemapEditorDialog::close);
 }
 
 void CubemapEditorDialog::LoadImageFromUserFile(float rotation, int face)
@@ -127,7 +127,7 @@ bool CubemapEditorDialog::LoadImageTo(const DAVA::FilePath& filePath, int face, 
 {
     bool result = true;
 
-    QString fileName = filePath.GetFilename().c_str();
+    QString fileName = filePath.GetAbsolutePathname().c_str();
     QString errorString;
     if (VerifyImage(filePath, face, errorString))
     {

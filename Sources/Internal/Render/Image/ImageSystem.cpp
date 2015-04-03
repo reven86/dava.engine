@@ -166,15 +166,7 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & path
         }
     }
 
-    File *infile = File::Create(pathName, File::OPEN | File::READ);
-    if (nullptr == infile)
-    {
-        return nullptr;
-    }
-    ImageFormatInterface *imageInterface = GetImageFormatInterface(infile);
-    infile->Release();
-
-    return imageInterface;
+    return nullptr;
 }
 
 ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
@@ -196,7 +188,19 @@ ImageInfo ImageSystem::GetImageInfo(const FilePath & pathName) const
     ImageFormatInterface* properWrapper = GetImageFormatInterface(pathName);
     if (nullptr == properWrapper)
     {
-        return ImageInfo();
+        File *infile = File::Create(pathName, File::OPEN | File::READ);
+        if (nullptr == infile)
+        {
+            infile->Release();
+            return ImageInfo();
+        }
+        properWrapper = GetImageFormatInterface(infile);
+        if (nullptr == properWrapper)
+        {
+            infile->Release();
+            return ImageInfo();
+        }
+        infile->Release();
     }
 
     return properWrapper->GetImageInfo(pathName);
