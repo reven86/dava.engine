@@ -4,6 +4,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -128,9 +131,7 @@ public class JNITextField {
         private int viewWidth;
         private int viewHeight;
         
-        private InputFilter[] textFilters = null;
-        // do not change default empty string "" look in OnTextChanged
-        private String lastStringFromCPP = "";
+        private InputFilter maxTextFilter = null;
         
         TextField(int id, Context ctx, int startWidth, int startHeight)
         {
@@ -138,17 +139,6 @@ public class JNITextField {
             this.id = id;
             viewWidth = startWidth;
             viewHeight = startHeight;
-            lastStringFromCPP = getText().toString();
-        }
-        
-        public void setTextFromCPP(String str)
-        {
-            lastStringFromCPP = str;
-        }
-        
-        public String getTextFromCPP()
-        {
-            return lastStringFromCPP;
         }
         
         public void setRenderToTexture(boolean value)
@@ -306,13 +296,6 @@ public class JNITextField {
                     }
                 }
             }
-        }
-        
-        @Override
-        public void setFilters(InputFilter[] f)
-        {
-            textFilters = f;
-            super.setFilters(textFilters);
         }
     }
 
@@ -520,12 +503,72 @@ public class JNITextField {
     public static int GetLastKeyboardInputType() {
         return lastSelectedInputType;
     }
+    
+    private static class InternalTask<V>{
+        EditText text = null;
+        Callable<V> task = null;
+        public InternalTask(EditText text, Callable<V> task) {
+            this.text = text;
+            this.task = task;
+        }
+
+        public V Run() {
+            FutureTask<V> inTask = new FutureTask<V>(new Callable<V>() {
+                @Override
+                public V call() throws Exception {
+                    InputFilter[] filters = null;
+                    if (text != null) {
+                        filters = text.getFilters();
+                        text.setFilters(new InputFilter[]{});
+                    }
+                    V res = task.call();
+                    if (text != null)
+                        text.setFilters(filters);
+                    return res;
+                }
+            });
+            JNIActivity.GetActivity().runOnUiThread(inTask);
+            try {
+                if (JNIActivity.GetActivity().GetIsPausing())
+                {
+                    return null;
+                }
+                return inTask.get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        public void AsyncRun() {
+            Runnable inTask = new Runnable() {
+                @Override
+                public void run() {
+                    InputFilter[] filters = null;
+                    if (text != null) {
+                        filters = text.getFilters();
+                        text.setFilters(new InputFilter[]{});
+                    }
+                    try {
+                        task.call();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    if (text != null)
+                        text.setFilters(filters);
+                }
+            };
+            JNIActivity.GetActivity().runOnUiThread(inTask);
+        }
+    }
 
     public static void Create(final int id, final float x, final float y,
             final float dx, final float dy) {
-        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
-            @Override
-            public void safeRun() {
+            InternalTask<Void> task = new InternalTask<Void>(null, new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
                 JNIActivity activity = JNIActivity.GetActivity();
                 // we need to process even if activity is pausing
                 // because c++ part do not know if we can't
@@ -537,7 +580,7 @@ public class JNITextField {
 
                 if (textFields.containsKey(id)) {
                     Log.e(TAG, String.format("Control with id:%d already created", id));
-                    return;
+                    return null;
                 }
                 int viewWidth = Math.round(dx);
                 int viewHeight = Math.round(dy);
@@ -568,27 +611,95 @@ public class JNITextField {
                             final int start, final int end, Spanned dest,
                             final int dstart, final int dend) {
 
-                        // Avoiding the line breaks in the single-line text
-                        // fields. Line breaks should be replaced with spaces.
-                        TextField textField = GetTextField(_id);
-                        if (0 == (textField.getInputType() & (InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE))) {
-                            SpannableStringBuilder s = new SpannableStringBuilder(
-                                    source);
-                            if (source instanceof Spanned
-                                    || source instanceof Spannable) {
-                                Spanned spanned = (Spanned) source;
-                                TextUtils.copySpansFrom(spanned, start, end,
-                                        null, s, 0);
+                        Log.e(TAG, "filter id:" + _id + " source:" + source + " start:" + start + " end:" + end + " dest:" + dest + " dstart:" + dstart + " dend:" + dend);
+                        String result = source.toString();
+                        //String textFromCpp = text.getTextFromCPP();
+                        //if (textFromCpp == null || !textFromCpp.equals(source.toString()))
+                        {
+                            // Avoiding the line breaks in the single-line text
+                            // fields. Line breaks should be replaced with spaces.
+                            TextField textField = GetTextField(_id);
+                            if (0 == (textField.getInputType() & (InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE))) {
+                                SpannableStringBuilder s = new SpannableStringBuilder(
+                                        source);
+                                if (source instanceof Spanned
+                                        || source instanceof Spannable) {
+                                    Spanned spanned = (Spanned) source;
+                                    TextUtils.copySpansFrom(spanned, start, end,
+                                            null, s, 0);
+                                }
+
+                                for (int i = 0; i < s.length(); ++i) {
+                                    if ('\n' == s.charAt(i)) {
+                                        s.replace(i, i + 1, " ");
+                                    }
+                                }
+                                source = s;
                             }
 
-                            for (int i = 0; i < s.length(); ++i) {
-                                if ('\n' == s.charAt(i)) {
-                                    s.replace(i, i + 1, " ");
+                            String origSource = source.toString();
+                            result = "";
+                            
+                            TextField editText = text;
+
+                            int sourceRepLen = end - start;
+                            int destRepLen = dend - dstart;
+                            int curStringLen = editText.getText().length();
+                            int newStringLen = curStringLen - destRepLen + sourceRepLen;
+
+                            if (newStringLen >= curStringLen)
+                            {
+                                if (editText != null && editText.maxTextFilter != null) {
+                                    CharSequence res = editText.maxTextFilter.filter(source, start, end, dest, dstart, dend);
+                                    if (res != null && res.toString().isEmpty())
+                                        return res;
+                                    if (res != null)
+                                        source = res;
                                 }
                             }
-                            source = s;
+
+                            final CharSequence sourceToProcess = source;
+                            final String text = editText.getText().toString();
+                            FutureTask<String> t = new FutureTask<String>(new Callable<String>() {
+                                @Override
+                                public String call() throws Exception {
+                                    byte []bytes = sourceToProcess.toString().getBytes("UTF-8");
+                                    int curPos = 0;
+                                    int finalStart = dstart;
+                                    while(curPos < dstart)
+                                    {
+                                        int codePoint = text.codePointAt(curPos);
+                                        if(codePoint > 0xFFFF)
+                                        {
+                                            curPos++;
+                                            finalStart--;
+                                        }
+                                        curPos++;
+                                    }
+                                    byte []retBytes = TextFieldKeyPressed(_id, finalStart, dend - dstart, bytes);
+                                    return new String(retBytes, "UTF-8");
+                                }
+                            });
+                            JNIActivity.GetActivity().PostEventToGL(t);
+
+                            try {
+                                String s = t.get();
+                                if (s.equals(origSource))
+                                {
+                                    result = null;
+                                }
+                                else if (s.length() > 0)
+                                {
+                                    result = s;
+                                }
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
+                            }
                         }
-                        return source;
+                        //text.setTextFromCPP(result);
+                        return result;
                     }
                 };
                 text.setFilters(new InputFilter[] { inputFilter });
@@ -727,34 +838,6 @@ public class JNITextField {
                     @Override
                     public void onTextChanged(final CharSequence s, int start,
                             int before, int count) {
-                        final String newValue = s.toString();
-                        if (!oldText.equals(newValue))
-                        {
-                            // if text had been set from c++ skip 
-                            // call back
-                            Runnable action = new Runnable(){
-                                @Override
-                                public void run() {
-                                    String textFromCPP = text.getTextFromCPP();
-                                    if(!newValue.equals(textFromCPP))
-                                    {
-                                        text.setTextFromCPP(newValue);
-                                        byte[] newBytes = emptyArray;
-                                        byte[] oldBytes = emptyArray;
-                                        try {
-                                            newBytes = s.toString().getBytes("UTF-8");
-                                            oldBytes = oldText.getBytes("UTF-8");
-                                        } catch (UnsupportedEncodingException e) {
-                                            Log.e(JNIConst.LOG_TAG, e.getMessage());
-                                        }
-                                        TextFieldKeyPressed(
-                                                id, 0, oldBytes.length, newBytes);
-                                        TextFieldOnTextChanged(id, newBytes, oldBytes);
-                                    }
-                                }
-                            };
-                            JNIActivity.GetActivity().PostEventToGL(action);
-                        }
                     }
 
                     @Override
@@ -764,7 +847,24 @@ public class JNITextField {
                     }
 
                     @Override
-                    public void afterTextChanged(Editable s) {
+                    public void afterTextChanged(final Editable s) {
+                        Runnable action = new Runnable(){
+                            @Override
+                            public void run() {
+                                byte[] newBytes = emptyArray;
+                                byte[] oldBytes = emptyArray;
+                                try {
+                                    newBytes = s.toString().getBytes("UTF-8");
+                                    oldBytes = oldText.getBytes("UTF-8");
+                                    Log.e(TAG, "afterTextChanged id:" + id + " newText:" + s.toString() + " oldText:" + oldText);
+                                    TextFieldOnTextChanged(id, newBytes, oldBytes);
+                                } catch (UnsupportedEncodingException e) {
+                                    Log.e(JNIConst.LOG_TAG, e.getMessage());
+                                    TextFieldOnTextChanged(id, emptyArray, emptyArray);
+                                }
+                            }
+                        };
+                        JNIActivity.GetActivity().PostEventToGL(action);
                     }
                 };
                 
@@ -798,8 +898,10 @@ public class JNITextField {
                 text.addTextChangedListener(textWatcher);
 
                 textFields.put(id, text);
+                return null;
             }
         });
+        task.Run();
     }
 
     static void Destroy(final int id) {
@@ -849,24 +951,29 @@ public class JNITextField {
             }
         });
     }
+    
+
+    
 
     public static void SetText(final int id, final String string) {
-        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
-            @Override
-            public void safeRun() {
-                final TextField text = GetTextField(id);
-                text.setTextFromCPP(string);
+        try
+        {
+            final TextField text = GetTextField(id);
 
-                text.setText(string);
-                
-                text.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        text.updateStaticTexture();
-                    }
-                });
-            }
-        });
+            InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    text.setText("");
+                    text.append(string);
+                    return null;
+                }
+            });
+            
+            task.AsyncRun();
+        } catch (ControlNotFoundException ex)
+        {
+            Log.e(TAG, "can't find control by id:" + id);
+        }
     }
 
     public static void SetTextColor(final int id, final float r, final float g,
@@ -1197,49 +1304,13 @@ public class JNITextField {
             public void safeRun() {
                 final TextField nativeEditText = GetTextField(id);
                 
-                removeMaxLengthFilters(nativeEditText);
-                
                 if (maxLength > 0)
                 {
-                    addOneMoreFilterToArray(maxLength, nativeEditText);
+                    nativeEditText.maxTextFilter = new InputFilter.LengthFilter(maxLength);
                 }
-            }
-
-            private void addOneMoreFilterToArray(final int maxLength,
-                    final TextField nativeEditText) {
-                InputFilter[] filters = nativeEditText.getFilters();
-                InputFilter[] newFilters = new InputFilter[filters.length + 1];
-                System.arraycopy(filters, 0, newFilters, 0, filters.length);
-                newFilters[filters.length] = new InputFilter.LengthFilter(maxLength);
-                nativeEditText.setFilters(newFilters);
-            }
-
-            private void removeMaxLengthFilters(final TextField nativeEditText) {
-                InputFilter[] filters = nativeEditText.getFilters();
-
-                boolean foundLengthFilter = false;
-                for(InputFilter f : filters)
+                else
                 {
-                    if (f instanceof InputFilter.LengthFilter)
-                    {
-                        foundLengthFilter = true;
-                        break;
-                    }
-                }
-
-                if (foundLengthFilter)
-                {
-                    ArrayList<InputFilter> newFilters = new ArrayList<InputFilter>();
-                    for(InputFilter f : filters)
-                    {
-                        if (!(f instanceof InputFilter.LengthFilter))
-                        {
-                            newFilters.add(f);
-                        }
-                    }
-                    InputFilter[] array = new InputFilter[newFilters.size()];
-                    newFilters.toArray(array);
-                    nativeEditText.setFilters(array);
+                    nativeEditText.maxTextFilter = null;
                 }
             }
         });
