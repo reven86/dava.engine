@@ -14,6 +14,7 @@ import sys
 import os.path
 import string
 import sys
+import platform
 import shutil
 import subprocess
 
@@ -30,9 +31,11 @@ def copy_replace_folder(srcFolder, destFolder):
     shutil.copytree(srcFolder, destFolder, ignore=ignored_svn_files)
     
 dataSubfoldersToCopy = ["Materials/", "Shaders/"]
-    
+resourceEditorPlatformPath = { "Darwin": "./ResourceEditor.app/Contents/MacOS/ResourceEditor", "Windows": "./ResourceEditor", "Microsoft": "./ResourceEditor" }
+resourceEditorPath = resourceEditorPlatformPath[platform.system()]
+
 for dataSubfolder in dataSubfoldersToCopy:
     #copy to project
     dataSubDir =  os.path.realpath(currentDir + "/../Data/" + dataSubfolder)
-    frameworkSubDir =  os.path.realpath(currentDir + "./../ResourceEditor/dava.framework/Tools/ResourceEditor/Data/" + dataSubfolder)
+    frameworkSubDir =  os.path.realpath(currentDir + "./../ResourceEditor/dava.framework/Tools/" + resourceEditorPath + "/Data/" + dataSubfolder)
     copy_replace_folder(frameworkSubDir, dataSubDir)
