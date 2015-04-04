@@ -31,7 +31,7 @@ def copy_replace_folder(srcFolder, destFolder):
     shutil.copytree(srcFolder, destFolder, ignore=ignored_svn_files)
     
 dataSubfoldersToCopy = ["Materials/", "Shaders/"]
-resourceEditorPlatformPath = { "Darwin": "./ResourceEditor.app/Contents/MacOS/ResourceEditor", "Windows": "./ResourceEditor", "Microsoft": "./ResourceEditor" }
+resourceEditorPlatformPath = { "Darwin": "./ResourceEditor.app/Contents/Resources", "Windows": "./ResourceEditor", "Microsoft": "./ResourceEditor" }
 resourceEditorPath = resourceEditorPlatformPath[platform.system()]
 
 for dataSubfolder in dataSubfoldersToCopy:
