@@ -62,7 +62,6 @@ def do(context=g_default_context):
         convert3dFX.append('-teamcity')
 
     VerboseCall(cleanUp3d)
-    VerboseCall(copyFrameworkMaterials)
     VerboseCall(convertGraphics)
     VerboseCall(convert3d)
     VerboseCall(convert3dTanks)
