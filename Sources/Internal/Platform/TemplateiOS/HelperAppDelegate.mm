@@ -95,7 +95,6 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 
 #include "Core/Core.h"
 #include "Core/ApplicationCore.h"
-#include "Debug/MemoryManager.h"
 #include "UI/UIScreenManager.h"
 
 
@@ -200,12 +199,7 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 
 //	DAVA::Sprite::DumpSprites();
 //	DAVA::Texture::DumpTextures();
-#ifdef ENABLE_MEMORY_MANAGER
-	if (DAVA::MemoryManager::Instance() != 0)
-	{
-		DAVA::MemoryManager::Instance()->FinalLog();
-	}
-#endif
+
 	FrameworkWillTerminate();
 	NSLog(@"Application termination finished");
 }

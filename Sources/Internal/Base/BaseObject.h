@@ -38,6 +38,7 @@
 #include "Base/RefPtr.h"
 #include "Base/ScopedPtr.h"
 #include "Base/Atomic.h"
+
 #include <typeinfo>
 
 namespace DAVA
@@ -74,7 +75,6 @@ protected:
 	}
 
 public:
-	
 	//! Constructor
 	BaseObject()
 		: referenceCount(1)
