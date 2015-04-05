@@ -53,6 +53,7 @@ set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/
 set( IOS_PLISTT           ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist )
 set( IOS_XIB              ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/MainWindow.xib ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/iPad/MainWindow-iPad.xib )
 
+set( ANDROID_USE_STANDART_TEMLATE true )
 set( ANDROID_PACKAGE            "com.dava.performancetests" )
 set( ANDROID_APP_NAME           "PerformanceTestApp" )
 set( ANDROID_ACTIVITY_APP_NAME  "PerformanceTests"   )
