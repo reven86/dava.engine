@@ -2,12 +2,14 @@
 
 #include "Document.h"
 #include "PackageContext.h"
+#include "PropertiesContext.h"
 
 #include "UI/Commands/ChangePropertyValueCommand.h"
 #include "UI/Commands/ChangeDefaultValueCommand.h"
 #include "UI/Commands/InsertControlCommand.h"
 #include "UI/Commands/RemoveControlCommand.h"
 #include "UI/Commands/InsertImportedPackageCommand.h"
+#include "UI/Commands/AddComponentCommand.h"
 
 #include "UI/Package/PackageModel.h"
 
@@ -244,7 +246,11 @@ void QtModelPackageCommandExecutor::RemoveControlImpl(ControlNode* node)
 
 void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode *node, DAVA::int32 componentType)
 {
-    PushCommand(new )
+    PropertiesModel *model = document->GetPropertiesContext()->GetModel();
+    PushCommand(new AddComponentCommand(model, node, componentType));
+    Vector<ControlNode*> instances = node->GetInstances();
+    for (ControlNode *instance : instances)
+        AddComponentImpl(instance, componentType);
 }
 
 bool QtModelPackageCommandExecutor::IsNodeInHierarchy(const PackageBaseNode *node) const

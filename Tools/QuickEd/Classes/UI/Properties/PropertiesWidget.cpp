@@ -7,6 +7,7 @@
 #include "ui_PropertiesWidget.h"
 #include "PropertiesModel.h"
 #include "UI/Document.h"
+#include "UI/QtModelPackageCommandExecutor.h"
 #include "UI/PropertiesContext.h"
 #include "UI/Properties/PropertiesTreeItemDelegate.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -86,7 +87,7 @@ void PropertiesWidget::OnAddComponent(QAction *action)
     
     if (context)
     {
-        context->GetDocument()->GetCommandExecutor();
+        context->GetDocument()->GetCommandExecutor()->AddComponent(context->GetModel()->GetControlNode(), componentType);
         
     }
 }

@@ -245,7 +245,10 @@ QVariant PropertiesModel::headerData(int section, Qt::Orientation /*orientation*
 
 void PropertiesModel::AddComponent(ControlNode *node, int componentType)
 {
-    
+//    beginInsertRows(<#const QModelIndex &parent#>, <#int first#>, <#int last#>)
+    node->GetPropertiesRoot()->AddComponentPropertiesSection(componentType);
+//    endInsertRows();
+    emitPropertyChanged(node->GetPropertiesRoot());
 }
 
 QVariant PropertiesModel::makeQVariant(const BaseProperty *property) const

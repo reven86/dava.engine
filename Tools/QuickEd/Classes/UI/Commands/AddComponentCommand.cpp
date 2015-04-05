@@ -21,7 +21,7 @@ AddComponentCommand::~AddComponentCommand()
 
 void AddComponentCommand::redo()
 {
-//    model->
+    model->AddComponent(node, componentType);
 }
 
 void AddComponentCommand::undo()
