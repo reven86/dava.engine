@@ -25,10 +25,14 @@ public:
 
 private slots:
     void OnModelChanged(PropertiesModel *model);
+    void OnAddComponent(QAction *action);
 
 private:
     Ui::PropertiesWidget *ui;
     PropertiesContext *context;
+    
+    QAction *addComponentAction;
+    QAction *removeComponentAction;
 };
 
 #endif //__QUICKED_PROPERTIES_WIDGET_H__

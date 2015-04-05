@@ -34,7 +34,7 @@ PropertiesModel *PropertiesContext::GetModel() const
 void PropertiesContext::SetActiveNode(ControlNode *node)
 {
     PropertiesModel *prevModel = model;
-    model = node ? new PropertiesModel(node, this) : nullptr;
+    model = node ? new PropertiesModel(node, document->GetCommandExecutor(), this) : nullptr;
     
     emit ModelChanged(model);
     

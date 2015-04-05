@@ -45,6 +45,11 @@ void DefaultPackageCommandExecutor::ResetProperty(ControlNode *node, BasePropert
     property->ResetValue();
 }
 
+void DefaultPackageCommandExecutor::AddComponent(ControlNode *node, DAVA::uint32 componentType)
+{
+    node->GetPropertiesRoot()->AddComponentPropertiesSection(componentType);
+}
+
 void DefaultPackageCommandExecutor::InsertControl(ControlNode *control, ControlsContainerNode *dest, int32 destIndex)
 {
     dest->InsertAtIndex(destIndex, control);

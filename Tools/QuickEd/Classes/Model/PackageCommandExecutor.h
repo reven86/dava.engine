@@ -18,6 +18,7 @@ public:
     virtual void AddImportedPackageIntoPackage(PackageControlsNode *importedPackageControls, PackageNode *package) = 0;
     virtual void ChangeProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &value) = 0;
     virtual void ResetProperty(ControlNode *node, BaseProperty *property) = 0;
+    virtual void AddComponent(ControlNode *node, DAVA::uint32 componentType) = 0;
 
     virtual void InsertControl(ControlNode *control, ControlsContainerNode *package, DAVA::int32 destIndex) = 0;
     virtual void CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex) = 0;
@@ -34,6 +35,7 @@ public:
     void AddImportedPackageIntoPackage(PackageControlsNode *importedPackageControls, PackageNode *package) override;
     void ChangeProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &value) override;
     void ResetProperty(ControlNode *node, BaseProperty *property) override;
+    void AddComponent(ControlNode *node, DAVA::uint32 componentType) override;
     
     void InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
     void CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex) override;

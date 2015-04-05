@@ -77,6 +77,16 @@ void QtModelPackageCommandExecutor::ChangeDefaultProperties(const DAVA::Vector<C
     }
 }
 
+void QtModelPackageCommandExecutor::AddComponent(ControlNode *node, DAVA::uint32 componentType)
+{
+    if (!node->GetPropertiesRoot()->IsReadOnly())
+    {
+        BeginMacro("Add Component");
+        AddComponentImpl(node, componentType);
+        EndMacro();
+    }
+}
+
 void QtModelPackageCommandExecutor::InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex)
 {
     if (dest->CanInsertControl(control, destIndex))
@@ -230,6 +240,11 @@ void QtModelPackageCommandExecutor::RemoveControlImpl(ControlNode* node)
         DVASSERT(false);
     }
     
+}
+
+void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode *node, DAVA::int32 componentType)
+{
+    PushCommand(new )
 }
 
 bool QtModelPackageCommandExecutor::IsNodeInHierarchy(const PackageBaseNode *node) const

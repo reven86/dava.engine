@@ -14,14 +14,14 @@ namespace DAVA {
 
 class BaseProperty;
 class ControlNode;
-class PropertiesContext;
+class QtModelPackageCommandExecutor;
 
 class PropertiesModel : public QAbstractItemModel
 {
     Q_OBJECT
     
 public:
-    PropertiesModel(ControlNode *controlNode, PropertiesContext *context);
+    PropertiesModel(ControlNode *controlNode, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent = nullptr);
     virtual ~PropertiesModel();
     
     ControlNode *GetControlNode() const {return controlNode; }
@@ -39,6 +39,7 @@ public:
     virtual QVariant headerData(int section, Qt::Orientation orientation,
                                 int role = Qt::DisplayRole) const override;
 
+    void AddComponent(ControlNode *node, int componentType);
     
 private:
     QVariant makeQVariant(const BaseProperty *property) const;
@@ -46,7 +47,7 @@ private:
     
 private:
     ControlNode *controlNode;
-    PropertiesContext *propertiesContext;
+    QtModelPackageCommandExecutor *commandExecutor;
 };
 
 #endif // __QUICKED_PROPERTIES_MODEL_H__

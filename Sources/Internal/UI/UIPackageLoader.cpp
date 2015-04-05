@@ -263,7 +263,6 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl *control, co
 
             const EnumMap *componentTypes = GlobalEnumMap<UIComponent::eType>::Instance();
             int32 componentType = 0;
-            Logger::Debug("!!! %s", componentsNode->GetItemKeyName(i).c_str());
             if (componentTypes->ToValue(componentsNode->GetItemKeyName(i).c_str(), componentType))
             {
                 DVASSERT(componentType < UIComponent::COMPONENT_COUNT);

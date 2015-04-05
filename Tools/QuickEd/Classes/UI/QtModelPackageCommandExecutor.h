@@ -25,6 +25,8 @@ private:
     void ChangeDefaultProperties(const DAVA::Vector<ControlNode *> &node, BaseProperty *property, const DAVA::VariantType &value);
 
 public:
+    void AddComponent(ControlNode *node, DAVA::uint32 componentType) override;
+
     void InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
     void CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
     void MoveControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
@@ -35,6 +37,7 @@ public:
 private:
     void InsertControlImpl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex);
     void RemoveControlImpl(ControlNode *node);
+    void AddComponentImpl(ControlNode *node, DAVA::int32 componentType);
     bool IsNodeInHierarchy(const PackageBaseNode *node) const;
     
 private:

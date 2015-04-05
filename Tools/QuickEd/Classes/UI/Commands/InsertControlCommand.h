@@ -1,7 +1,7 @@
 #ifndef __QUICKED_INSERT_CONTROL_COMMAND_H__
 #define __QUICKED_INSERT_CONTROL_COMMAND_H__
 
-#include <QUndoStack>
+#include <QUndoCommand>
 
 class PackageModel;
 class ControlNode;

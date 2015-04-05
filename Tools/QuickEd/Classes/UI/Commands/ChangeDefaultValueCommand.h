@@ -1,7 +1,7 @@
 #ifndef __QUICKED_CHANGE_DEFAULT_VALUE_COMMAND_H__
 #define __QUICKED_CHANGE_DEFAULT_VALUE_COMMAND_H__
 
-#include <QUndoStack>
+#include <QUndoCommand>
 #include "FileSystem/VariantType.h"
 
 class Document;
