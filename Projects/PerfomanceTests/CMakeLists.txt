@@ -14,12 +14,9 @@ include_directories   ( ${DAVA_INCLUDE_DIR} )
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 include_directories   ( ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
 
-#set( TeamcityOutput         ${DAVA_TOOLS_DIR}/TeamcityOutput  )
 set( PackerTools             ${DAVA_TOOLS_DIR}/TexturePacker )
 set( PackerToolsSCR          ${DAVA_TOOLS_DIR}/TexturePacker/CommandLineParser.h 
                              ${DAVA_TOOLS_DIR}/TexturePacker/CommandLineParser.cpp )
-
-#set_source_files_properties( ${DAVA_TOOLS_DIR}/TeamcityOutput/TeamcityOutput.cpp PROPERTIES COMPILE_FLAGS "-x objective-c++" )
 
 if( WIN32 )
     set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
@@ -57,11 +54,6 @@ set( ANDROID_USE_STANDART_TEMLATE true )
 set( ANDROID_PACKAGE            "com.dava.performancetests" )
 set( ANDROID_APP_NAME           "PerformanceTestApp" )
 set( ANDROID_ACTIVITY_APP_NAME  "PerformanceTests"   )
-
-set( ANDROID_JAVA_SRC           ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/Java ${CMAKE_CURRENT_LIST_DIR}/android/src )
-set( ANDROID_JAVA_LIBS          ${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/jar )
-set( ANDROID_JAVA_RES           ${CMAKE_CURRENT_LIST_DIR}/android/res )
-set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-web.png )
 
 set( ADDED_SRC            ${IOS_ADD_SRC})
 set( LIBRARIES            DavaTools )
