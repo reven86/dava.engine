@@ -4,6 +4,7 @@
 #include "PackageHierarchy/ImportedPackagesNode.h"
 #include "PackageHierarchy/PackageControlsNode.h"
 #include "Model/ControlProperties/ControlPropertiesSection.h"
+#include "Model/ControlProperties/ComponentPropertiesSection.h"
 #include "Model/ControlProperties/BackgroundPropertiesSection.h"
 #include "Model/ControlProperties/InternalControlPropertiesSection.h"
 #include "Model/ControlProperties/ValueProperty.h"
@@ -247,6 +248,21 @@ void EditorUIPackageBuilder::BeginControlPropertiesSection(const String &name)
 }
 
 void EditorUIPackageBuilder::EndControlPropertiesSection()
+{
+    currentSection = NULL;
+    currentObject = NULL;
+}
+
+UIComponent *EditorUIPackageBuilder::BeginComponentPropertiesSecion(uint32 componentType)
+{
+    ControlNode *node = controlsStack.back().node;
+    ComponentPropertiesSection * section = node->GetPropertiesRoot()->AddComponentPropertiesSection(componentType);
+    currentObject = section->GetComponent();
+    currentSection = section;
+    return section->GetComponent();
+}
+
+void EditorUIPackageBuilder::EndComponentPropertiesSecion()
 {
     currentSection = NULL;
     currentObject = NULL;

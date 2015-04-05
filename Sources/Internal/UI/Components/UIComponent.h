@@ -68,6 +68,10 @@ public:
 
 };
 
+#define IMPLEMENT_COMPONENT_TYPE(TYPE) \
+    virtual uint32 GetType() const { return TYPE; }; \
+    static const uint32 C_TYPE = TYPE;
+
 inline void UIComponent::SetControl(UIControl* _control)
 {
     control = _control;
@@ -77,6 +81,7 @@ inline UIControl* UIComponent::GetControl() const
 {
     return control;
 }
+    
 
 }
 

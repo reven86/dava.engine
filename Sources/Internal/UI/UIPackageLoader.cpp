@@ -38,7 +38,7 @@
 #include "UI/UIStaticText.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/UIPackage.h"
-
+#include "UI/Components/UIComponent.h"
 
 namespace DAVA
 {
@@ -49,7 +49,7 @@ UIPackageLoader::UIPackageLoader(AbstractUIPackageBuilder *builder) : builder(bu
 
 UIPackageLoader::~UIPackageLoader()
 {
-    builder = NULL;
+    builder = nullptr;
 }
 
 UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
@@ -68,13 +68,13 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
     }
 
     if (!packagePath.Exists())
-        return NULL;
+        return nullptr;
     
     RefPtr<YamlParser> parser(YamlParser::Create(packagePath));
     
-    if (parser.Get() == NULL)
+    if (parser.Get() == nullptr)
     {
-        return NULL;
+        return nullptr;
     }
 
     YamlNode *rootNode = parser->GetRootNode();
@@ -92,11 +92,11 @@ UIPackage *UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath
 {
     const YamlNode *headerNode = rootNode->Get("Header");
     if (!headerNode)
-        return NULL;
+        return nullptr;
     
     const YamlNode *versionNode = headerNode->Get("version");
-    if (versionNode == NULL || versionNode->GetType() != YamlNode::TYPE_STRING)
-        return NULL;
+    if (versionNode == nullptr || versionNode->GetType() != YamlNode::TYPE_STRING)
+        return nullptr;
     
     RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
     
@@ -172,7 +172,7 @@ bool UIPackageLoader::LoadControlByName(const String &name)
 
 void UIPackageLoader::LoadControl(const YamlNode *node, bool root)
 {
-    UIControl *control = NULL;
+    UIControl *control = nullptr;
     const YamlNode *pathNode = node->Get("path");
     const YamlNode *prototypeNode = node->Get("prototype");
     const YamlNode *classNode = node->Get("class");
@@ -183,7 +183,7 @@ void UIPackageLoader::LoadControl(const YamlNode *node, bool root)
     else if (prototypeNode)
     {
         const YamlNode *customClassNode = node->Get("customClass");
-        String customClass = customClassNode == NULL ? "" : customClassNode->AsString();
+        String customClass = customClassNode == nullptr ? "" : customClassNode->AsString();
         String controlName = prototypeNode->AsString();
         String packageName = "";
         size_t pos = controlName.find('/');
@@ -210,6 +210,7 @@ void UIPackageLoader::LoadControl(const YamlNode *node, bool root)
     if (control)
     {
         LoadControlPropertiesFromYamlNode(control, control->GetTypeInfo(), node);
+        LoadComponentPropertiesFromYamlNode(control, node);
         LoadBgPropertiesFromYamlNode(control, node);
         LoadInternalControlPropertiesFromYamlNode(control, node);
 
@@ -250,18 +251,54 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, cons
     builder->EndControlPropertiesSection();
 }
     
+void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
+{
+    const YamlNode *componentsNode = node ? node->Get("components") : nullptr;
+    
+    if (componentsNode)
+    {
+        for (uint32 i = 0; i < componentsNode->GetCount(); i++)
+        {
+            const YamlNode *componentNode = componentsNode->Get(i);
+
+            const EnumMap *componentTypes = GlobalEnumMap<UIComponent::eType>::Instance();
+            int32 componentType = 0;
+            Logger::Debug("!!! %s", componentsNode->GetItemKeyName(i).c_str());
+            if (componentTypes->ToValue(componentsNode->GetItemKeyName(i).c_str(), componentType))
+            {
+                DVASSERT(componentType < UIComponent::COMPONENT_COUNT);
+                UIComponent *component = builder->BeginComponentPropertiesSecion(componentType);
+                if (component)
+                {
+                    const InspInfo *insp = component->GetTypeInfo();
+                    for (int32 j = 0; j < insp->MembersCount(); j++)
+                    {
+                        const InspMember *member = insp->Member(j);
+                        VariantType res;
+                        if (componentNode)
+                            res = ReadVariantTypeFromYamlNode(member, componentNode);
+                        builder->ProcessProperty(member, res);
+                    }
+                }
+                
+                builder->EndComponentPropertiesSecion();
+            }
+        }
+    }
+}
+
 void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
 {
-    const YamlNode *componentsNode = node ? node->Get("components") : NULL;
+    const YamlNode *componentsNode = node ? node->Get("components") : nullptr;
     
     for (int32 i = 0; i < control->GetBackgroundComponentsCount(); i++)
     {
-        const YamlNode *componentNode = NULL;
+        const YamlNode *componentNode = nullptr;
         
         if (componentsNode)
             componentNode = componentsNode->Get(control->GetBackgroundComponentName(i));
         
-        UIControlBackground *bg = builder->BeginBgPropertiesSection(i, componentNode != NULL);
+        UIControlBackground *bg = builder->BeginBgPropertiesSection(i, componentNode != nullptr);
         if (bg)
         {
             const InspInfo *insp = bg->GetTypeInfo();
@@ -280,14 +317,14 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const Yam
 
 void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
 {
-    const YamlNode *componentsNode = node ? node->Get("components") : NULL;
+    const YamlNode *componentsNode = node ? node->Get("components") : nullptr;
     for (int32 i = 0; i < control->GetInternalControlsCount(); i++)
     {
-        const YamlNode *componentNode = NULL;
+        const YamlNode *componentNode = nullptr;
         if (componentsNode)
             componentNode = componentsNode->Get(control->GetInternalControlName(i) + control->GetInternalControlDescriptions());
         
-        UIControl *internalControl = builder->BeginInternalControlSection(i, componentNode != NULL);
+        UIControl *internalControl = builder->BeginInternalControlSection(i, componentNode != nullptr);
         if (internalControl)
         {
             const InspInfo *insp = internalControl->GetTypeInfo();

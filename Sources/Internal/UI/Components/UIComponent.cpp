@@ -29,6 +29,8 @@
 #include "UIComponent.h"
 #include "UI/UIControl.h"
 
+#include "UIFakeComponent.h"
+
 namespace DAVA
 {
 
@@ -43,7 +45,16 @@ UIComponent::~UIComponent()
 
 UIComponent * UIComponent::CreateByType(uint32 componentType)
 {
-    return nullptr;
+    switch (componentType)
+    {
+        case FAKE_COMPONENT:
+            return new UIFakeComponent();
+            
+        default:
+            DVASSERT(false);
+            return nullptr;
+    }
+    
 }
 
 }

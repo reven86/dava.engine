@@ -4,6 +4,7 @@
 #include "Model/ControlProperties/BaseProperty.h"
 
 class ControlPropertiesSection;
+class ComponentPropertiesSection;
 class BackgroundPropertiesSection;
 class InternalControlPropertiesSection;
 class PackageSerializer;
@@ -27,6 +28,8 @@ public:
     virtual BaseProperty *GetProperty(int index) const override;
     
     ControlPropertiesSection *GetControlPropertiesSection(const DAVA::String &name) const;
+    ComponentPropertiesSection *AddComponentPropertiesSection(DAVA::uint32 componentType);
+    
     BackgroundPropertiesSection *GetBackgroundPropertiesSection(int num) const;
     InternalControlPropertiesSection *GetInternalControlPropertiesSection(int num) const;
     
@@ -41,7 +44,10 @@ private:
     void MakeInternalControlPropertiesSection(DAVA::UIControl *control, const PropertiesRoot *sourceProperties, eCopyType copyType);
 
 private:
+    
+    DAVA::UIControl *control;
     DAVA::Vector<ControlPropertiesSection*> controlProperties;
+    DAVA::Vector<ComponentPropertiesSection*> componentProperties;
     DAVA::Vector<BackgroundPropertiesSection*> backgroundProperties;
     DAVA::Vector<InternalControlPropertiesSection*> internalControlProperties;
 };

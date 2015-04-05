@@ -34,6 +34,7 @@
 #include "Base/ObjectFactory.h"
 #include "UI/UIControl.h"
 #include "UI/UIControlHelpers.h"
+#include "UI/Components/UIComponent.h"
 #include "FileSystem/LocalizationSystem.h"
 #include "UIPackagesCache.h"
 
@@ -333,7 +334,22 @@ void DefaultUIPackageBuilder::EndControlPropertiesSection()
 {
     currentObject = nullptr;
 }
-
+    
+UIComponent *DefaultUIPackageBuilder::BeginComponentPropertiesSecion(uint32 componentType)
+{
+    UIComponent *component = UIComponent::CreateByType(componentType);
+    UIControl *control = controlsStack.back()->control.Get();
+    control->AddComponent(component);
+    component->Release();
+    currentObject = component;
+    return component;
+}
+    
+void DefaultUIPackageBuilder::EndComponentPropertiesSecion()
+{
+    currentObject = nullptr;
+}
+    
 UIControlBackground *DefaultUIPackageBuilder::BeginBgPropertiesSection(int32 index, bool sectionHasProperties)
 {
     if (sectionHasProperties)

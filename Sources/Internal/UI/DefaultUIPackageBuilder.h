@@ -61,6 +61,9 @@ public:
     virtual void BeginControlPropertiesSection(const String &name) override;
     virtual void EndControlPropertiesSection() override;
     
+    virtual UIComponent *BeginComponentPropertiesSecion(uint32 componentType) override;
+    virtual void EndComponentPropertiesSecion() override;
+    
     virtual UIControlBackground *BeginBgPropertiesSection(int32 index, bool sectionHasProperties) override;
     virtual void EndBgPropertiesSection() override;
     
