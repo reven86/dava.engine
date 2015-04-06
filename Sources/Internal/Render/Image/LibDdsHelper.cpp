@@ -386,31 +386,30 @@ PixelFormat NvttHelper::GetPixelFormat(nvtt::Decompressor & dec)
 
 PixelFormat NvttHelper::GetPixelFormatByNVTTFormat(nvtt::Format nvttFormat)
 {
-	PixelFormat retValue = FORMAT_INVALID;
-	for(uint32 i = 0; i < Format_COUNT; ++i)
-	{
-		if(formatNamesMap[i].nvttFormat == nvttFormat)
-		{
-			 retValue = formatNamesMap[i].davaFormat;
-			 break;
-		}
-	}
-	return retValue;
+    PixelFormat retValue = FORMAT_INVALID;
+    for (uint32 i = 0; i < Format_COUNT; ++i)
+    {
+        if (formatNamesMap[i].nvttFormat == nvttFormat)
+        {
+            retValue = formatNamesMap[i].davaFormat;
+            break;
+        }
+    }
+    return retValue;
 }
 
 nvtt::Format NvttHelper::GetNVTTFormatByPixelFormat(PixelFormat pixelFormat)
 {
-	//bc5 is unsupported, used to determinate fail in search
-	nvtt::Format retValue = Format_BC5;
-	for(uint32 i = 0; i < Format_COUNT; ++i)
-	{
-		if(formatNamesMap[i].davaFormat == pixelFormat)
-		{
-			retValue = formatNamesMap[i].nvttFormat;
-			break;
-		}
-	}
-	return retValue;
+    // bc5 is unsupported, used to determinate fail in search
+    for (uint32 i = 0; i < Format_COUNT; ++i)
+    {
+        if (formatNamesMap[i].davaFormat == pixelFormat)
+        {
+            return formatNamesMap[i].nvttFormat;
+        }
+    }
+
+    return Format_BC5;
 }
 
 bool NvttHelper::IsAtcFormat(nvtt::Format format)

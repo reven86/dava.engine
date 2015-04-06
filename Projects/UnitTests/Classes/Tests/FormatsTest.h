@@ -39,13 +39,8 @@ class FormatsTest : public TestTemplate<FormatsTest>
 {
 public:
     FormatsTest();
+    ~FormatsTest() = default;
 
-protected:
-    ~FormatsTest()
-    {
-    }
-
-public:
     void LoadResources() override;
     void UnloadResources() override;
 
