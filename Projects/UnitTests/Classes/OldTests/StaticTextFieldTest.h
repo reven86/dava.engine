@@ -27,21 +27,54 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
-#ifndef __CPP14_TEST_H__
-#define __CPP14_TEST_H__
+#ifndef __STATICTEXTFIELDTEST_TEST_H__
+#define __STATICTEXTFIELDTEST_TEST_H__
 
 #include "DAVAEngine.h"
 #include "Infrastructure/TestTemplate.h"
 
 using namespace DAVA;
 
-class Cpp14Test : public TestTemplate < Cpp14Test >
+class StaticTextFieldTest : public TestTemplate < StaticTextFieldTest >
 {
 public:
-    Cpp14Test ();
+    StaticTextFieldTest ();
 
-    void CompileTest (PerfFuncData * data);
-    void ScopeExit (PerfFuncData * data);
+    void TestFunc (PerfFuncData * data);
+
+    void LoadResources() override;
+    void UnloadResources() override;
+    bool RunTest(int32 testNum) override;
+
+    void DidAppear() override;
+    void Update(float32 timeElapsed) override;
+
+private:
+    void OnButtonPressed(BaseObject *obj, void *data, void *callerData);
+    void OnButtonAdd10ToAlfa(BaseObject *obj, void *data, void *callerData);
+    void OnButtonMinus10FromAlfa(BaseObject *obj, void *data, void *callerData);
+    void OnButtonVisible(BaseObject*, void*, void*);
+    void OnButtonHide(BaseObject*, void*, void*);
+
+    void CreateUIButton(UIButton*& button, Font * font, const Rect& rect,
+        const WideString& str,
+        void (StaticTextFieldTest::*targetFunction)(BaseObject*, void*, void*));
+
+    UIButton* finishTestButton;
+    UIButton* setStaticButton;
+    UIButton* setNormalButton;
+    UIButton* add10ToAlfaButton;
+    UIButton* minus10FromAlfaButton;
+    UIButton* setVisibleButton;
+    UIButton* setHideButton;
+
+    UIControl* overlapedImage;
+
+    UITextField* uiTextField1;
+    UITextField* uiTextField2;
+
+    bool testFinished;
+    float onScreenTime;
 };
 
-#endif //__CPP14_TEST_H__
+#endif //__STATICTEXTFIELDTEST_TEST_H__
