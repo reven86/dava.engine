@@ -39,7 +39,7 @@
 #include "Base/Introspection.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Base/AllocatorFactory.h"
-#include "Render/RHI/rhi_Base.h"
+#include "Render/RHI/rhi_Type.h"
 
 
 namespace DAVA

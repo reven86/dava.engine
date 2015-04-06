@@ -103,69 +103,16 @@ void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
 {
 //  TIME_PROFILE("RenderBatch::Draw");
 //	if(!renderObject)return;
-    DVASSERT(renderObject != 0);    
-    
-#if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
-    uint32 globalFrameIndex = Core::Instance()->GetGlobalFrameIndex();
-    
-    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
-    {
-        if ((queryRequested >= 0) && occlusionQuery->IsResultAvailable())
-        {
-            uint32 result = 0;
-            occlusionQuery->GetQuery(&result);
-            if (result == 0 && ((globalFrameIndex - queryRequestFrame) < 3) && (lastFraemDrawn == globalFrameIndex - 1))
-            {
-                //RenderManager::Instance()->GetStats().occludedRenderBatchCount++;
-                occlusionQuery->ResetResult();
-                queryRequested = -2;
-            }
-            else queryRequested = -1;
-        }
-    }
-    
-    if (queryRequested < -1)
-    {
-        queryRequested++;
-        RenderManager::Instance()->GetStats().occludedRenderBatchCount++;
-        return;
-    }
-#endif
-	
-    
+    DVASSERT(renderObject != 0);    	    
     
     renderObject->BindDynamicParameters(camera);
     material->BindMaterialTechnique(ownerRenderPass, camera);
-    
-#if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
-    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
-    {
-        if (queryRequested == -1)
-        {
-            queryRequestFrame = globalFrameIndex;
-            occlusionQuery->BeginQuery();
-            queryRequested = 0;
-        }
-        else queryRequested++;
-    }
-#endif
 
 	if (dataSource)
 		material->Draw(dataSource);
 	else
 		material->Draw(renderDataObject);
-    
-#if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
-    lastFraemDrawn = globalFrameIndex;
-    
-    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
-    {
-        if (queryRequested == 0)
-        {
-            occlusionQuery->EndQuery();
-        }
-    }
-#endif
+
 }
     
 void RenderBatch::SetRenderObject(RenderObject * _renderObject)
@@ -194,6 +141,7 @@ void RenderBatch::SetSortingOffset(uint32 offset)
 
 void RenderBatch::GetDataNodes(Set<DataNode*> & dataNodes)
 {
+#if RHI_COMPLETE
 	NMaterial* curNode = material;
 	while(curNode != NULL && curNode->GetMaterialType() != NMaterial::MATERIALTYPE_GLOBAL)
 	{
@@ -205,6 +153,7 @@ void RenderBatch::GetDataNodes(Set<DataNode*> & dataNodes)
 	{
 		InsertDataNode(dataSource, dataNodes);
 	}
+#endif //RHI_COMPLETE
 }
 
 void RenderBatch::InsertDataNode(DataNode *node, Set<DataNode*> & dataNodes)

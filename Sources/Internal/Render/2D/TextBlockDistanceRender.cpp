@@ -147,7 +147,7 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
     RenderSystem2D::Instance()->Flush();
     
     //TODO: temporary crutch until 2D render became fully stateless
-    const Matrix4 * oldMatrix = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD);
+    const Matrix4 * oldMatrix = (Matrix4 *)Renderer::GetDynamicParam(PARAM_WORLD);
     
 	//NOTE: correct affine transformations
 

@@ -432,7 +432,7 @@ bool VegetationRenderObject::IsDataLoadNeeded()
     
     shouldLoadData = shouldLoadData && qualityAllowsVegetation;
     
-    RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::VEGETATION_DRAW, shouldLoadData);
+    Renderer::GetOptions()->SetOption(RenderOptions::VEGETATION_DRAW, shouldLoadData);
     
 #if defined(__DAVAENGINE_MACOS__)  || defined(__DAVAENGINE_WIN32__)
     shouldLoadData = true;

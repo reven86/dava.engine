@@ -32,8 +32,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Core/Core.h"
 #include "RenderBase.h"
 #include "RenderOptions.h"
-#include "RHI/rhi_Base.h"
-#include "RHI/rhi_Manticore.h"
+#include "RHI/rhi_Public.h"
+#include "RHI/rhi_Type.h"
 
 namespace DAVA
 {
@@ -94,6 +94,8 @@ namespace Renderer
     void Uninitialize();
 
     bool IsDeviceLost();
+    void SetDesiredFPS(int32 fps);
+    int32 GetDesiredFPS();
 
     //frame management
     void BeginFrame();
@@ -109,7 +111,11 @@ namespace Renderer
     RenderOptions *GetOptions();    
 
     //dynamic params
-    void SetColor(float32 r, float32 g, float32 b, float32 a); //color will just use internal storage for dynamic PARAM_COLOR and bind it to dynamic params
+    //color will just use internal storage for dynamic PARAM_COLOR and bind it to dynamic params - it's here only to simplify legacy code moving to new renderer
+    const Color& GetColor();
+    void SetColor(const Color& color);
+    void SetColor(float32 r, float32 g, float32 b, float32 a); 
+
     void SetDynamicParam(eShaderSemantic shaderSemantic, const void * value, pointer_size updateSemantic);
     const void * GetDynamicParam(eShaderSemantic shaderSemantic);
     pointer_size GetDynamicParamUpdateSemantic(eShaderSemantic shaderSemantic);        

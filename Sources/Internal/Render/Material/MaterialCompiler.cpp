@@ -25,7 +25,7 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-
+#if RHI_COMPLETE
 
 #include "Render/Material/MaterialCompiler.h"
 #include "Render/Material/MaterialGraph.h"
@@ -378,4 +378,6 @@ MaterialCompiler::eCompileError MaterialCompiler::GenerateCodeForNode(MaterialGr
 
 
 };
+
+#endif // RHI_COMPLETE
 

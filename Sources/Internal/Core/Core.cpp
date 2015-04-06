@@ -62,6 +62,8 @@
 
 #include "Network/NetCore.h"
 
+#include "Job/JobManager.h"
+
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #endif

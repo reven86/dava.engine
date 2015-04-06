@@ -294,6 +294,8 @@ void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true
 
 SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::JointConfig> & outJoints)
 {
+    SkinnedMesh * newRenderObject = new SkinnedMesh();
+#if RHI_COMPLETE
     Map<SkinnedMeshWorkKey, Vector<SkinnedMeshJointWork> > collapseDataMap;
 
     Vector<Entity *> childrenNodes;
@@ -351,9 +353,7 @@ SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::J
                 }
             }
         }
-    }
-
-    SkinnedMesh * newRenderObject = new SkinnedMesh();
+    }    
 
     Map<SkinnedMeshWorkKey, Vector<SkinnedMeshJointWork> >::iterator it = collapseDataMap.begin();
     Map<SkinnedMeshWorkKey, Vector<SkinnedMeshJointWork> >::iterator itEnd = collapseDataMap.end();
@@ -420,6 +420,8 @@ SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::J
         newBatch->Release();
     }
 
+#endif // RHI_COMPLETE
+    
     return newRenderObject;
 }
 

@@ -27,15 +27,24 @@
 =====================================================================================*/
 
 
-#ifndef __RHI_MANTICORE_H__
-#define __RHI_MANTICORE_H__
+#ifndef __RHI_PUBLIC_H__
+#define __RHI_PUBLIC_H__
 
     #include "rhi_Type.h"
-    #include "rhi_Base.h"
 
 
 namespace rhi
 {
+////////////////////////////////////////////////////////////////////////////////
+// base operation
+
+void    Initialize( Api api );
+void    Uninitialize();
+
+void    Present(); // execute all submitted command-buffers & do flip/present
+
+Api     HostApi();
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // vertex buffer
@@ -76,6 +85,11 @@ bool    UpdateConstBuffer( Handle constBuf, uint32 constIndex, const float* data
 ////////////////////////////////////////////////////////////////////////////////
 // texture-set
 
+Handle  CreateTexture( const Texture::Descriptor& desc );
+void    DeleteTexture( Handle tex );
+void*   MapTexture( Handle tex, uint32 level=0 );
+void    UnmapTexture( Handle tex );
+
 struct
 TextureSetDescriptor
 {
@@ -114,6 +128,7 @@ BatchDescriptor
 {
     uint32          vertexStreamCount;
     Handle          vertexStream[MAX_VERTEX_STREAM_COUNT];
+    uint32          vertexLayout;
     Handle          indexBuffer;
     Handle          renderPipelineState;
     Handle          depthStencilState;
@@ -128,6 +143,7 @@ BatchDescriptor
 
                     BatchDescriptor()
                       : vertexStreamCount(0),
+                        vertexLayout(VertexLayout::InvalidUID),
                         indexBuffer(InvalidHandle),
                         renderPipelineState(InvalidHandle),
                         depthStencilState(InvalidHandle),
@@ -146,5 +162,5 @@ void    DrawBatch( Handle batchDrawer, const BatchDescriptor& batchDesc );
 
 
 } // namespace rhi
-#endif // __RHI_MANTICORE_H__
+#endif // __RHI_PUBLIC_H__
 

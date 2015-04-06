@@ -35,6 +35,7 @@
 #include "Render/ShaderCache.h"
 
 #include "Render/Renderer.h"
+#include "Render/Texture.h"
 
 #include "Render/Image/ImageSystem.h"
 
@@ -115,7 +116,7 @@ void RenderPass::PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSy
 
 void RenderPass::DrawLayers(Camera *camera)
 {    
-    ShaderCache::Instance()->ClearAllLastBindedCaches();
+    //ShaderCache::Instance()->ClearAllLastBindedCaches();
 
     // Draw all layers with their materials
     uint32 size = (uint32)renderLayers.size();
@@ -155,6 +156,7 @@ MainForwardRenderPass::MainForwardRenderPass(const FastName & name, RenderPassID
 
 void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * renderSystem)
 {
+#if RHI_COMPLETE
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::WATER_REFLECTION_REFRACTION_DRAW))
         return;
 
@@ -212,6 +214,7 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
         mat->SetTexture(NMaterialTextureName::TEXTURE_DYNAMIC_REFLECTION, reflectionTexture);
         mat->SetTexture(NMaterialTextureName::TEXTURE_DYNAMIC_REFRACTION, refractionTexture);
 	}    
+#endif RHI_COMPLETE
 }
 
 void MainForwardRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBuffers)
@@ -237,7 +240,7 @@ void MainForwardRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBuffer
 	
 	RenderLayerBatchArray *waterLayer = renderPassBatchArray->Get(RenderLayerManager::Instance()->GetLayerIDByName(LAYER_WATER));
 	
-	uint32 waterBatchesCount = waterLayer->GetRenderBatchCount();	
+    uint32 waterBatchesCount = 0;//waterLayer->GetRenderBatchCount();	#if RHI_COMPLETE
 	if (waterBatchesCount)
 	{        
         waterBox.Empty();
@@ -347,7 +350,7 @@ void WaterReflectionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
 	renderPassBatchArray->Clear();
 	renderPassBatchArray->PrepareVisibilityArray(&visibilityArray, currMainCamera); 
 
-    ClearBuffers(clearBuffers);
+    //ClearBuffers(clearBuffers);
 
     DrawLayers(currMainCamera);
 }
@@ -399,7 +402,7 @@ void WaterRefractionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
     renderPassBatchArray->Clear();
     renderPassBatchArray->PrepareVisibilityArray(&visibilityArray, currMainCamera); 
 
-    ClearBuffers(clearBuffers);
+    //ClearBuffers(clearBuffers);
 
     DrawLayers(currMainCamera);       
     

@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#if RHI_COMPLETE
 #include "Render/Material/MaterialGraph.h"
 #include "Render/Material/MaterialGraphNode.h"
 #include "FileSystem/FileSystem.h"
@@ -205,3 +205,4 @@ void MaterialGraph::SortByDepthMarkerAndRemoveUnused()
 
 };
 
+#endif // RHI_COMPLETE

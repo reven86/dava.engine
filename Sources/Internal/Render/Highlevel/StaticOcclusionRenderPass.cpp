@@ -76,7 +76,7 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
 
     PrepareVisibilityArrays(mainCamera, renderSystem);
 
-    ClearBuffers(clearBuffers);
+    //ClearBuffers(clearBuffers); #if RHI_COMPLETE
 	
     Vector<RenderBatch*> terrainBatches;
     Vector<RenderBatch*> batches;

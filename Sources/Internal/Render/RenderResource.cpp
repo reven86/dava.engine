@@ -120,6 +120,7 @@ void RenderResource::SaveAllResourcesToSystemMem()
     
 void RenderResource::LostAllShaders()
 {
+#if RHI_COMPLETE
     resourceListMutex.Lock();
     List<RenderResource*>::iterator it = resourceList.begin();
     List<RenderResource*>::const_iterator itEnd = resourceList.end();
@@ -132,10 +133,12 @@ void RenderResource::LostAllShaders()
         }
     }
     resourceListMutex.Unlock();
+#endif //RHI_COMPLETE
 }
 
 void RenderResource::InvalidateAllShaders()
 {
+#if RHI_COMPLETE
     resourceListMutex.Lock();
     List<RenderResource*>::iterator it = resourceList.begin();
     List<RenderResource*>::const_iterator itEnd = resourceList.end();
@@ -148,6 +151,7 @@ void RenderResource::InvalidateAllShaders()
         }
     }
     resourceListMutex.Unlock();
+#endif RHI_COMPLETE
 }
     
 void RenderResource::LostAllTextures()

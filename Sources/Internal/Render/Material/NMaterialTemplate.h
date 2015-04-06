@@ -34,6 +34,7 @@
 #include "Core/Core.h"
 
 #include "Render/Material/NMaterial.h"
+#include "Base/HashMap.h"
 
 namespace DAVA
 {

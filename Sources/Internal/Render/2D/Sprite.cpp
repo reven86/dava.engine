@@ -944,6 +944,7 @@ File* Sprite::GetSpriteFile(const FilePath & spriteName, int32& resourceSizeInde
 
 void Sprite::RegisterTextureStates()
 {
+#if RHI_COMPLETE
 	textureHandles.resize(textureCount, InvalidUniqueHandle);
 	for(int32 i = 0; i < textureCount; ++i)
     {
@@ -956,10 +957,12 @@ void Sprite::RegisterTextureStates()
 			textureHandles[i] = RenderManager::Instance()->CreateTextureState(data);
 		}
 	}
+#endif  // RHI_COMPLETE
 }
 
 void Sprite::UnregisterTextureStates()
 {
+#if RHI_COMPLETE
 	for(int32 i = 0; i < textureCount; ++i)
     {
 		if(textureHandles[i] != InvalidUniqueHandle)
@@ -967,6 +970,7 @@ void Sprite::UnregisterTextureStates()
 			RenderManager::Instance()->ReleaseTextureState(textureHandles[i]);
 		}
 	}
+#endif // RHI_COMPLETE
 }
 
 void Sprite::ReloadExistingTextures()

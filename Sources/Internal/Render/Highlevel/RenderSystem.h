@@ -53,7 +53,6 @@ class ParticleEmitterSystem;
 class RenderHierarchy;
 class RenderPassBatchArray;
 class NMaterial;
-class NMaterialProperty;
 
 class RenderSystem
 {

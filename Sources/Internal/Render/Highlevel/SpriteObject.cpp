@@ -28,7 +28,6 @@
 
 
 #include "Render/Highlevel/SpriteObject.h"
-#include "Render/Highlevel/SpriteRenderBatch.h"
 #include "Render/Highlevel/RenderFastNames.h"
 #include "Scene3D/Systems/MaterialSystem.h"
 
@@ -130,7 +129,7 @@ void SpriteObject::SetupRenderBatch()
 	material->AddNodeFlags(DataNode::NodeRuntimeFlag);
 	material->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, sprite->GetTexture(frame));
         
-	SpriteRenderBatch *batch = new SpriteRenderBatch();
+	RenderBatch *batch = new RenderBatch();
 	batch->SetMaterial(material);
     batch->SetRenderDataObject(renderDataObject);
 	AddRenderBatch(batch);

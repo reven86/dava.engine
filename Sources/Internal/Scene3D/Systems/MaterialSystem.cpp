@@ -30,6 +30,7 @@
 
 
 #include "Scene3D/Systems/MaterialSystem.h"
+#include "Render/Material/NMaterialNames.h"
 #include "Render/Material/NMaterialTemplate.h"
 
 #include "Scene3D/Components/RenderComponent.h"

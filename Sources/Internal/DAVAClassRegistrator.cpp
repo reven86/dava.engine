@@ -28,7 +28,6 @@
 
 #include "DAVAEngine.h"
 #include "DAVAClassRegistrator.h"
-#include "Render/Highlevel/SpriteRenderBatch.h"
 #include "Render/Highlevel/ShadowVolume.h"
 
 using namespace DAVA;
@@ -97,7 +96,6 @@ REGISTER_CLASS(UIParticles);
 REGISTER_CLASS(UIJoypad);
 REGISTER_CLASS(VegetationRenderObject);
 REGISTER_CLASS(SpriteObject);
-REGISTER_CLASS(SpriteRenderBatch);
 REGISTER_CLASS(UI3DView);
 REGISTER_CLASS(AnimationComponent);
 REGISTER_CLASS(TransformComponent);

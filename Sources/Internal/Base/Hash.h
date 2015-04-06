@@ -58,8 +58,7 @@ namespace DAVA
 	// - hash function: operator()(T value)
 	// - compare function: compare(T value1, T value2)
 	template <typename T>
-	struct Hash
-	{ };
+    struct Hash;
 
 	// specialization for char *
 	template<> struct Hash <char *>

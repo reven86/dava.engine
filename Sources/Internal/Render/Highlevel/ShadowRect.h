@@ -35,6 +35,7 @@
 #include "Render/Shader.h"
 #include "Base/FastName.h"
 #include "Render/Highlevel/ShadowBlendMode.h"
+#include "Math/Color.h"
 
 namespace DAVA
 {

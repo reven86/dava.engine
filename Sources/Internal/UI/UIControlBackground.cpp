@@ -270,6 +270,7 @@ void UIControlBackground::SetParentColor(const Color &parentColor)
 
 void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
 {
+#if RHI_COMPLETE
     UIGeometricData geometricData;
     geometricData.size = parentGeometricData.size;
     if (margins)
@@ -531,7 +532,7 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
     lastDrawState = drawState;
 #endif
     Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-
+#endif // RHI_COMPLETE
 }
 #if defined(LOCALIZATION_DEBUG)
 const Sprite::DrawState & UIControlBackground::GetLastDrawState() const

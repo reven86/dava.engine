@@ -70,7 +70,7 @@ void UIFadeTransition::Draw(const UIGeometricData &geometricData)
 	 renderTargetNextScreen->Draw(); 
 	 */
     Sprite::DrawState drawState;
-    drawState.SetRenderState(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+    drawState.SetMaterial(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
 	if (type == FADE_MIX)
 	{
 		renderTargetPrevScreen->Reset();

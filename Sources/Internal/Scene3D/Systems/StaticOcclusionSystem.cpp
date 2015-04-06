@@ -370,6 +370,7 @@ void StaticOcclusionBuildSystem::SceneForceLod(int32 forceLodIndex)
 
 void StaticOcclusionBuildSystem::UpdateMaterialsForOcclusionRecursively(Entity *entity)
 {
+#if RHI_COMPLETE
     for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
         UpdateMaterialsForOcclusionRecursively(entity->GetChild(i));
 
@@ -405,15 +406,17 @@ void StaticOcclusionBuildSystem::UpdateMaterialsForOcclusionRecursively(Entity *
             }
         }        
     }
-    
+#endif //RHI_COMPLETE    
 }
 
 void StaticOcclusionBuildSystem::RestoreOcclusionMaterials()
 {
+#if RHI_COMPLETE
     for (Map<NMaterial*, RenderStateData>::iterator it = originalRenderStateData.begin(), e = originalRenderStateData.end(); it!=e; ++it)
         it->first->SubclassRenderState(PASS_FORWARD, it->second);
     
     originalRenderStateData.clear();
+#endif //RHI_COMPLETE
 }
 
 void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
@@ -692,20 +695,25 @@ StaticOcclusionDebugDrawSystem::StaticOcclusionDebugDrawSystem(Scene *scene):Sce
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
 
+#if RHI_COMPLETE
     debugOpaqueMaterial = NMaterial::CreateMaterial(FastName("Debug_Opaque_Material"),  NMaterialName::DEBUG_DRAW_OPAQUE, NMaterialQualityName::DEFAULT_QUALITY_NAME);		
     debugAlphablendMaterial = NMaterial::CreateMaterial(FastName("Debug_Alphablend_Material"),  NMaterialName::DEBUG_DRAW_ALPHABLEND, NMaterialQualityName::DEFAULT_QUALITY_NAME);	
+#endif // RHI_COMPLETE
 }
 
 StaticOcclusionDebugDrawSystem::~StaticOcclusionDebugDrawSystem()
 {
     GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
     GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
+#if RHI_COMPLETE
     SafeRelease(debugOpaqueMaterial);
     SafeRelease(debugAlphablendMaterial);
+#endif // RHI_COMPLETE
 }
 
 void StaticOcclusionDebugDrawSystem::AddEntity(Entity * entity)
 {
+#if RHI_COMPLETE
     StaticOcclusionComponent *staticOcclusionComponent = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
     Matrix4 * worldTransformPointer = GetTransformComponent(entity)->GetWorldTransformPtr();
     //create render object
@@ -740,6 +748,7 @@ void StaticOcclusionDebugDrawSystem::AddEntity(Entity * entity)
 
     entity->AddComponent(new StaticOcclusionDebugDrawComponent(debugRenderObject));    
     GetScene()->GetRenderSystem()->RenderPermanent(debugRenderObject);        
+#endif RHI_COMPLETE
 }
 
 void StaticOcclusionDebugDrawSystem::RemoveEntity(Entity * entity)

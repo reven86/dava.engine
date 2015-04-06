@@ -31,6 +31,8 @@
 #include "Render/RenderDataObject.h"
 #include "Job/JobManager.h"
 
+#if RHI_COMPLETE
+
 namespace DAVA 
 {
     
@@ -458,3 +460,5 @@ void RenderDataObject::Invalidate()
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 }
+
+#endif // RHI_COMPLETE

@@ -25,7 +25,7 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-
+#if RHI_COMPLETE
 
 #ifndef __DAVAENGINE_MATERIAL_GRAPH_H__
 #define __DAVAENGINE_MATERIAL_GRAPH_H__
@@ -88,3 +88,4 @@ protected:
 
 #endif // __DAVAENGINE_MATERIAL_GRAPH_H__
 
+#endif // RHI_COMPLETE

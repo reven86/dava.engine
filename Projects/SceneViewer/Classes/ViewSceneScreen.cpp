@@ -129,12 +129,14 @@ void ViewSceneScreen::OnBack(BaseObject *caller, void *param, void *callerData)
 void ViewSceneScreen::Draw(const DAVA::UIGeometricData &geometricData)
 {
     uint64 startTime = SystemTimer::Instance()->GetAbsoluteNano();
-    
+
+#if RHI_COMPLETE    
     RenderManager::Instance()->ClearDepthBuffer();
 
     BaseScreen::Draw(geometricData);
 
     drawTime += (SystemTimer::Instance()->GetAbsoluteNano() - startTime);
+#endif // RHI_COMPLETE
 }
 
 

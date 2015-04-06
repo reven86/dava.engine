@@ -27,39 +27,33 @@
 =====================================================================================*/
 
 
+#ifndef __RHI_SHADERCACHE_H__
+#define __RHI_SHADERCACHE_H__
 
-#ifndef __DAVAENGINE_SPRITE_RENDER_BATCH_H__
-#define __DAVAENGINE_SPRITE_RENDER_BATCH_H__
+    #include "rhi_Type.h"
 
-#include "Base/BaseObject.h"
-#include "Base/BaseTypes.h"
-#include "Render/Highlevel/RenderBatch.h"
 
-namespace DAVA
+
+namespace rhi
 {
 
-class SpriteRenderBatch : public RenderBatch
+typedef bool (*ShaderBuilder)( Api targetApi, ProgType progType, const char* uid, const char* srcText, std::vector<uint8>* bin );
+
+namespace ShaderCache
 {
-protected:
-	virtual ~SpriteRenderBatch();
-public:
-	SpriteRenderBatch();
 
-	virtual void Draw(const FastName & ownerRenderPass, Camera * camera);
+bool    Initialize( ShaderBuilder builder=nullptr );
+void    Unitialize();
 
-    void Save(KeyedArchive * archive, SerializationContext * serializationContext);
-    void Load(KeyedArchive * archive, SerializationContext * serializationContext);
-protected:
-    
+void    Clear();
+void    Load( const char* binFileName );
 
-public:
+bool    GetProg( const DAVA::FastName& uid, std::vector<uint8>* bin );
+void    UpdateProg( Api targetApi, ProgType progType, const DAVA::FastName& uid, const char* srcText );
 
-	INTROSPECTION_EXTEND(SpriteRenderBatch, RenderBatch, 
-		NULL
-	);
+} // namespace ShaderCache
+} // namespace rhi
 
-};
 
-}
+#endif // __RHI_SHADERCACHE_H__
 
-#endif //__DAVAENGINE_SPRITE_RENDER_BATCH_H__

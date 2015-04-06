@@ -33,6 +33,7 @@
 #include "UI/UIControlSystem.h"
 #include "Debug/Replay.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/RenderHelper.h"
 
 namespace DAVA 
 {
@@ -153,7 +154,7 @@ void UILoadingTransition::Draw(const UIGeometricData &geometricData)
 	if (backgroundSprite)
     {
         Sprite::DrawState drawState;
-        drawState.SetRenderState(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+        drawState.SetMaterial(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
         drawState.SetPosition(geometricData.position);
         RenderSystem2D::Instance()->Draw(backgroundSprite, &drawState);
     }
@@ -165,7 +166,7 @@ void UILoadingTransition::Draw(const UIGeometricData &geometricData)
 			frame = animationSprite->GetFrameCount() - 1;
 		
         Sprite::DrawState drawState;
-        drawState.SetRenderState(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+        drawState.SetMaterial(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
         drawState.SetFrame(frame);
         drawState.SetPosition(geometricData.position);
         

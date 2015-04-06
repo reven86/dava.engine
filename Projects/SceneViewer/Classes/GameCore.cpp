@@ -45,7 +45,7 @@ GameCore::~GameCore()
 
 void GameCore::OnAppStarted()
 {
-	RenderManager::Instance()->SetFPS(60);
+	Renderer::SetDesiredFPS(60);
     
     selectSceneScreen = new SelectSceneScreen();
     viewSceneScreen = new ViewSceneScreen();

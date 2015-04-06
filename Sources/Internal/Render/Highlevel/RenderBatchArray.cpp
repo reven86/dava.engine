@@ -115,24 +115,19 @@ void RenderPassBatchArray::PrepareVisibilityArray(VisibilityArray * visibilityAr
 			NMaterial * material = batch->GetMaterial();
 			if (material)
 			{
-//                const Vector<RenderLayerID> & layers = material->GetRenderLayerIDs();
-//                uint32 size = (uint32)layers.size();
-//                for (uint32 k = 0; k < size; ++k)
-//                {
-//                    AddRenderBatch(layers[k], batch);
-
-//                uint32 checkCount = 0;
-                uint32 renderLayerBitmask = material->GetRenderLayerIDsBitmask();
+                /*uint32 renderLayerBitmask = material->GetRenderLayerIDsBitmask();
                 for (uint32 layer = (renderLayerBitmask >> RENDER_LAYER_ID_BITMASK_MIN_POS) & RENDER_LAYER_ID_BITMASK_MIN_MASK,
                      max = (renderLayerBitmask >> RENDER_LAYER_ID_BITMASK_MAX_POS) & RENDER_LAYER_ID_BITMASK_MAX_MASK; layer <= max; ++layer)
                 {
                     if (renderLayerBitmask & (1 << layer))
                     {
                         AddRenderBatch(layer, batch);
-//                        checkCount++;
+
                     }
-                }
-//                DVASSERT(checkCount == size);
+                }*/
+
+                AddRenderBatch(material->GetRenderLayerID(), batch);
+
 			}
 		}
     }

@@ -27,6 +27,8 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 #include "Autotesting/AutotestingSystemLua.h"
 #include "Autotesting/AutotestingDB.h"
 
+#include "Job/JobManager.h"
+
 
 namespace DAVA
 {

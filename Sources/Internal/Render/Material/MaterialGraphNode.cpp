@@ -25,7 +25,7 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-
+#if RHI_COMPLETE
 
 #include "Render/Material/MaterialGraphNode.h"
 #include "Render/Material/MaterialGraph.h"
@@ -366,3 +366,4 @@ MaterialGraphNode::eNodeUsage MaterialGraphNode::RecursiveSetRealUsageBack(Mater
 
 };
 
+#endif // RHI_COMPLETE

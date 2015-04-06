@@ -371,4 +371,5 @@ inline TextureDescriptor * Texture::GetDescriptor() const
 
 
 };
+
 #endif // __DAVAENGINE_TEXTUREGLES_H__

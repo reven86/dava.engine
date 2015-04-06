@@ -41,6 +41,8 @@
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/RenderHelper.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Job/JobManager.h"
+
 namespace DAVA
 {
 #if defined(LOCALIZATION_DEBUG)

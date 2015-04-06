@@ -98,6 +98,10 @@ enum
     MAX_VERTEX_STREAM_COUNT     = 8
 };
 
+
+////////////////////////////////////////////////////////////////////////////////
+// vertex-pipeline
+
 enum
 VertexSemantics
 {
@@ -109,6 +113,8 @@ VertexSemantics
     VS_BINORMAL     = 6,
     VS_BLENDWEIGHT  = 7,
     VS_BLENDINDEX   = 8,
+
+    VS_PAD          = 100,
 
     VS_MAXCOUNT     = 16
 };
@@ -129,6 +135,9 @@ VertexSemanticsName( VertexSemantics vs )
         case VS_BINORMAL    : return "binormal";
         case VS_BLENDWEIGHT : return "blend_weight";
         case VS_BLENDINDEX  : return "blend_index";
+        
+        case VS_PAD         : return "<pad>";
+        case VS_MAXCOUNT    : return "<max-count>";
     }
 
     return "<unknown>";
@@ -165,6 +174,73 @@ VertexDataTypeName( VertexDataType t )
         default         : return "<unknown>";
     }
 }
+
+class
+VertexLayout
+{
+public:
+
+
+                    VertexLayout();
+                    ~VertexLayout();
+
+    unsigned        Stride() const;
+    unsigned        ElementCount() const;
+    VertexSemantics ElementSemantics( unsigned elem_i ) const;
+    VertexDataType  ElementDataType( unsigned elem_i ) const;
+    unsigned        ElementDataCount( unsigned elem_i ) const;
+    unsigned        ElementOffset( unsigned elem_i ) const;
+    unsigned        ElementSize( unsigned elem_i ) const;
+
+    bool            operator==( const VertexLayout& vl ) const;
+    VertexLayout&   operator=( const VertexLayout& src );
+    
+    void            Clear();
+    void            AddElement( VertexSemantics usage, unsigned usage_i, VertexDataType type, unsigned dimension );
+    void            InsertElement( unsigned pos, VertexSemantics usage, unsigned usage_i, VertexDataType type, unsigned dimension );
+
+    void            Dump() const;
+
+
+    static const VertexLayout*  Get( uint32 uid );
+    static uint32               UniqueId( const VertexLayout& layout );
+    static const uint32         InvalidUID = 0;
+
+    static bool     IsUsable( const VertexLayout& vbLayout, const VertexLayout& shaderLayout );
+
+
+private:
+
+    enum
+    {
+        MaxElemCount    = 8
+    };
+
+    struct
+    Element
+    {
+        uint32  usage:8;
+        uint32  usage_index:8;
+        uint32  data_type:8;
+        uint32  data_count:8;
+    };
+
+
+    Element     _elem[MaxElemCount];
+    uint32      _elem_count;
+};
+
+    
+enum
+{
+    VATTR_POSITION      = 0,
+    VATTR_NORMAL        = 1,
+    VATTR_TEXCOORD_0    = 2,
+    VATTR_COLOR_0       = 3,
+    
+    VATTR_COUNT         = 4
+};
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -238,6 +314,25 @@ StoreAction
 //    STOREACTION_RESOLVE    = 2
 };
 
+namespace Texture
+{
+
+struct
+Descriptor
+{
+    uint32          width;
+    uint32          height;
+    TextureFormat   format;
+    
+                    Descriptor( uint32 w, uint32 h, TextureFormat fmt )
+                      : width(w),
+                        height(h),
+                        format(fmt)
+                    {}
+};
+
+
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -285,6 +380,62 @@ BlendOp
 };
 
 
+namespace PipelineState
+{
+
+struct
+Descriptor
+{
+    VertexLayout    vertexLayout;
+    DAVA::FastName  vprogUid;
+    DAVA::FastName  fprogUid;
+    BlendState      blending;
+};
+
+}
+
+namespace
+SamplerState
+{
+
+struct
+Descriptor
+{
+    struct 
+    Sampler
+    {
+        uint32  addrU:2;
+        uint32  addrV:2;
+        uint32  addrW:2;
+        uint32  minFilter:2;
+        uint32  magFilter:2;
+        uint32  mipFilter:2;
+        uint32  pad:20;
+
+                Sampler()
+                  : addrU(TEXADDR_WRAP),
+                    addrV(TEXADDR_WRAP),
+                    addrW(TEXADDR_WRAP),
+                    minFilter(TEXFILTER_LINEAR),
+                    magFilter(TEXFILTER_LINEAR),
+                    mipFilter(TEXMIPFILTER_LINEAR)
+                {}    
+    };
+    
+    Sampler sampler[MAX_TEXTURE_SAMPLER_COUNT];
+    uint32  count;
+
+            Descriptor()
+              : count(0)
+            {}
+};
+
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// depth-stencil state
+
 enum 
 CmpFunc
 {
@@ -298,6 +449,46 @@ CmpFunc
     CMP_ALWAYS
 };
 
+
+namespace
+DepthStencilState
+{
+
+struct
+Descriptor
+{
+    uint32  depthTestEnabled:1;
+    uint32  depthWriteEnabled:1;
+    uint32  depthFunc:3;
+
+    uint8   stencilReadMask;
+    uint8   stencilWriteMask;
+    uint8   stencilRefValue;
+    uint32  stencilFunc:3;
+    uint32  stencilFailOperation:3;
+    uint32  depthFailOperation:3;
+    uint32  depthStencilPassOperation:3;
+
+            Descriptor()
+              : depthTestEnabled(true),
+                depthWriteEnabled(true),
+                depthFunc(CMP_LESSEQUAL),
+                stencilReadMask(0xFF),
+                stencilWriteMask(0xFF),
+                stencilRefValue(0),
+                stencilFunc(CMP_ALWAYS),
+                stencilFailOperation(STENCILOP_KEEP),
+                depthFailOperation(STENCILOP_KEEP),
+                depthStencilPassOperation(STENCILOP_KEEP)
+            {}
+};
+
+}
+
+
+
+
+
 struct
 ProgConstInfo
 {
@@ -308,53 +499,53 @@ ProgConstInfo
 };
 
 
-class
-VertexLayout
+////////////////////////////////////////////////////////////////////////////////
+// render-target state
+
+struct
+RenderPassConfig
 {
-public:
-
-
-                    VertexLayout();
-                    ~VertexLayout();
-
-    unsigned        Stride() const;
-    unsigned        ElementCount() const;
-    VertexSemantics ElementSemantics( unsigned elem_i ) const;
-    VertexDataType  ElementDataType( unsigned elem_i ) const;
-    unsigned        ElementDataCount( unsigned elem_i ) const;
-    unsigned        ElementOffset( unsigned elem_i ) const;
-    unsigned        ElementSize( unsigned elem_i ) const;
-
-    bool            operator==( const VertexLayout& vl ) const;
-    VertexLayout&   operator=( const VertexLayout& src );
-    
-    void            Clear();
-    void            AddElement( VertexSemantics usage, unsigned usage_i, VertexDataType type, unsigned dimension );
-    void            InsertElement( unsigned pos, VertexSemantics usage, unsigned usage_i, VertexDataType type, unsigned dimension );
-
-    void            Dump() const;
-
-
-private:
-
-    enum
+    struct
+    ColorBuffer
     {
-        MaxElemCount    = 8
+        Handle      texture;
+        LoadAction  loadAction;
+        StoreAction storeAction;
+        float       clearColor[4];
+
+                    ColorBuffer()
+                      : texture(InvalidHandle),
+                        loadAction(LOADACTION_CLEAR),
+                        storeAction(STOREACTION_STORE)                        
+                    {
+                        clearColor[0]=0; clearColor[1]=0; clearColor[2]=0; clearColor[3]=1.0f;
+                    }
     };
 
     struct
-    Element
+    DepthStencilBuffer
     {
-        uint32  usage:8;
-        uint32  usage_index:8;
-        uint32  data_type:8;
-        uint32  data_count:8;
+        Handle      texture;
+        LoadAction  loadAction;
+        StoreAction storeAction;
+        float       clearDepth;
+        uint32      clearStencil;
+
+                    DepthStencilBuffer()
+                      : texture(InvalidHandle),
+                        loadAction(LOADACTION_CLEAR),
+                        storeAction(STOREACTION_STORE),
+                        clearDepth(1.0f),
+                        clearStencil(0)
+                    {}
+
     };
 
-
-    Element     _elem[MaxElemCount];
-    uint32      _elem_count;
+    ColorBuffer         colorBuffer[MAX_RENDER_TARGET_COUNT];
+    DepthStencilBuffer  depthStencilBuffer;
 };
+
+
 
 
 } // namespace rhi

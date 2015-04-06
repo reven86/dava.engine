@@ -84,6 +84,7 @@ namespace DAVA
 	
 	void SkyboxRenderObject::CreateRenderData()
 	{
+#if RHI_COMPLETE
 		if(renderBatchArray.size() == 0)
 		{
 			RenderDataObject* renderDataObj = new RenderDataObject();
@@ -102,6 +103,7 @@ namespace DAVA
 			SafeRelease(skyboxMaterial);
 			SafeRelease(skyboxRenderBatch);
 		}
+#endif // RHI_COMPLETE
 	}
 	
 	void SkyboxRenderObject::BuildSkybox()
@@ -245,6 +247,7 @@ namespace DAVA
 
 	void SkyboxRenderObject::SetTexture(const FilePath& texPath)
 	{
+#if RHI_COMPLETE
         DVASSERT(renderBatchArray.size() > 0);
         
         NMaterial* skyboxMaterial = renderBatchArray[0].renderBatch->GetMaterial();
@@ -283,6 +286,7 @@ namespace DAVA
             topParent->SetTexture(NMaterialTextureName::TEXTURE_CUBEMAP, tx);
             SafeRelease(tx);
         }
+#endif // RHI_COMPLETE
 	}
 	
 	FilePath SkyboxRenderObject::GetTexture()
@@ -290,6 +294,7 @@ namespace DAVA
         DVASSERT(renderBatchArray.size() > 0);
         
         FilePath path;
+#if RHI_COMPLETE
         
         NMaterial* skyboxMaterial = renderBatchArray[0].renderBatch->GetMaterial();
         
@@ -304,7 +309,7 @@ namespace DAVA
             
             skyboxMaterial = skyboxMaterial->GetParent();
         }
-        
+#endif RHI_COMPLETE
         return path;
 	}
 	

@@ -37,6 +37,8 @@
 
 #include "Render/Renderer.h"
 
+
+#if RHI_COMPLETE
 namespace DAVA
 {
 
@@ -1483,3 +1485,5 @@ void StretchDrawData::GenerateStretchData()
 }
 
 };
+
+#endif // RHI_COMPLETE

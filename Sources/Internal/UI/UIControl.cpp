@@ -1384,7 +1384,7 @@ namespace DAVA
 
     void UIControl::DrawDebugRect(const UIGeometricData &gd, bool useAlpha)
     {
-        Color oldColor = RenderManager::Instance()->GetColor();
+        Color oldColor = Renderer::GetColor();
         RenderSystem2D::Instance()->PushClip();
 
         if (useAlpha)
@@ -1429,7 +1429,7 @@ namespace DAVA
         static const float32 PIVOT_POINT_MARK_RADIUS = 10.0f;
         static const float32 PIVOT_POINT_MARK_HALF_LINE_LENGTH = 13.0f;
 
-        Color oldColor = RenderManager::Instance()->GetColor();
+        Color oldColor = Renderer::GetColor();
         RenderSystem2D::Instance()->PushClip();
         Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 

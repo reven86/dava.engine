@@ -57,6 +57,7 @@ UIScreenTransition::~UIScreenTransition()
 
 void UIScreenTransition::CreateRenderTargets()
 {
+#if RHI_COMPLETE
     if (renderTargetPrevScreen || renderTargetNextScreen)
     {
         Logger::FrameworkDebug("Render targets already created");
@@ -76,6 +77,7 @@ void UIScreenTransition::CreateRenderTargets()
 
     SafeRelease(tex1);
     SafeRelease(tex2);
+#endif //RHI_COMPLETE
 }
 
 void UIScreenTransition::ReleaseRenderTargets()
@@ -86,6 +88,7 @@ void UIScreenTransition::ReleaseRenderTargets()
 
 void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nextScreen)
 {
+#if RHI_COMPLETE
     CreateRenderTargets();
     nextScreen = _nextScreen;
     prevScreen = _prevScreen;
@@ -164,6 +167,7 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     //    SafeRelease(image2);
 
     currentTime = 0;
+#endif // RHI_COMPLETE
 }
 
 void UIScreenTransition::Update(float32 timeElapsed)
@@ -196,7 +200,7 @@ void UIScreenTransition::Draw(const UIGeometricData &geometricData)
     RenderSystem2D::Instance()->Setup2DMatrices();
 
     Sprite::DrawState drawState;
-    drawState.SetRenderState(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+    drawState.SetMaterial(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
 
     drawState.SetScale(0.5f, 1.0f);
     drawState.SetPosition(0, 0);

@@ -83,6 +83,8 @@
 #include "Scene3D/Converters/SwitchToRenerObjectConverter.h"
 #include "Scene3D/Converters/TreeToAnimatedTreeConverter.h"
 
+#include "Job/JobManager.h"
+
 
 namespace DAVA
 {

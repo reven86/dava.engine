@@ -25,7 +25,7 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-
+#if RHI_COMPLETE
 
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
@@ -1348,3 +1348,5 @@ int32 Texture::GetBaseMipMap() const
 }
 
 };
+
+#endif // RHI_COMPLETE

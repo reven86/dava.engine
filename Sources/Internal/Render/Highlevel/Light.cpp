@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Render/Highlevel/Light.h"
 #include "Render/RenderHelper.h"
 #include "Scene3D/Scene.h"

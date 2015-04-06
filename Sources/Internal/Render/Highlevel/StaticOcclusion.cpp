@@ -194,6 +194,7 @@ namespace DAVA
     
     void StaticOcclusion::RenderFrame(uint32 cellX, uint32 cellY, uint32 cellZ)
     {
+#if RHI_COMPLETE
         //    for (uint32 k = 0; k < 1000; ++k)
         //    {
         //        for (uint32 m = 0; m < 3000; ++m)
@@ -483,6 +484,8 @@ namespace DAVA
                                       (double)timeTotalRendering / 1e+9).c_str());
         
         //RenderManager::Instance()->SetRenderTarget((Texture*)0);
+
+#endif // RHI_COMPLETE
     }
     
     

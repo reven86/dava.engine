@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#if RHI_COMPLETE
 #include "Render/Shader.h"
 #include "Render/RenderBase.h"
 #include "Platform/Thread.h"
@@ -1655,3 +1655,4 @@ bool Shader::Uniform::ValidateCache(const void* value, uint16 valueSize)
 
 
 
+#endif  // RHI_COMPLETE

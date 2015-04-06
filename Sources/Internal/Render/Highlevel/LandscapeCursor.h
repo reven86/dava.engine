@@ -62,7 +62,9 @@ public:
     
 private:
 
+#if RHI_COMPLETE
 	Shader * shader;
+#endif RHI_COMPLETE
 	Texture * cursorTexture;
 	UniqueHandle textureHandle;
 	Vector2 position;

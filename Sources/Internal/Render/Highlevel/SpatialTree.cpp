@@ -449,15 +449,7 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags)
             uint32 flags = obj->GetFlags();
 			if ((flags & currVisibilityCriteria) == currVisibilityCriteria)
             {
-				visibilityArray->Add(obj);
-                RENDERER_UPDATE_STATS(visibleRenderObjectCount++);
-
-            }else
-            {
-#if defined(__DAVAENGINE_DEBUG__)
-                if (!(flags & RenderObject::VISIBLE_STATIC_OCCLUSION))
-                    RENDERER_UPDATE_STATS(occludedRenderObjectCount++);
-#endif
+				visibilityArray->Add(obj);                
             }
 		}
 	}
@@ -472,16 +464,9 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags)
 				if (    (flags & RenderObject::ALWAYS_CLIPPING_VISIBLE)
                     ||   currFrustum->IsInside(obj->GetWorldBoundingBox(), clippingFlags, obj->startClippingPlane))
                 {
-					visibilityArray->Add(obj);
-                    RENDERER_UPDATE_STATS(visibleRenderObjectCount++);
+					visibilityArray->Add(obj);                    
                 }
-			}else
-            {
-#if defined(__DAVAENGINE_DEBUG__)
-                if (!(flags & RenderObject::VISIBLE_STATIC_OCCLUSION))
-                    RENDERER_UPDATE_STATS(occludedRenderObjectCount++);
-#endif
-            }
+			}
 		}
 	}
 	

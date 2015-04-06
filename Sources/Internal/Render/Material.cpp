@@ -444,6 +444,7 @@ Material::~Material()
     
 Material::eValidationResult Material::Validate(PolygonGroup * polygonGroup)
 {
+#if RHI_COMPLETE
     RebuildShader();
 	
 	if(Material::MATERIAL_SKYBOX == type)
@@ -478,7 +479,7 @@ Material::eValidationResult Material::Validate(PolygonGroup * polygonGroup)
 	{
 		lightingParams = new StaticLightingParams();
 	}
-    
+#endif //RHI_COMPLETE
     return VALIDATE_COMPATIBLE;
 }
 
@@ -690,6 +691,7 @@ void Material::RebuildShader()
 
 void Material::RetrieveTextureSlotNames()
 {
+#if RHI_COMPLETE
     // 
     //shader->F
     textureSlotCount = 0;
@@ -701,7 +703,9 @@ void Material::RetrieveTextureSlotNames()
             textureSlotCount++;
         }
     }
+#endif RHI_COMPLETE
 }
+
     
 uint32 Material::GetTextureSlotCount() const
 {
