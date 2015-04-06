@@ -251,6 +251,11 @@ void PropertiesModel::AddComponent(ControlNode *node, int componentType)
     emitPropertyChanged(node->GetPropertiesRoot());
 }
 
+void PropertiesModel::RemoveComponent(ControlNode *node, int componentType)
+{
+    node->GetPropertiesRoot()->RemoveProp
+}
+
 QVariant PropertiesModel::makeQVariant(const BaseProperty *property) const
 {
     const VariantType &val = property->GetValue();

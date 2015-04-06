@@ -25,7 +25,6 @@ public:
 private:
     DAVA::UIControl *control;
     DAVA::UIComponent *component;
-    DAVA::UIComponent::eType type;
 };
 
 #endif // __QUICKED_COMPONENT_PROPERTIES_SECTION_H__

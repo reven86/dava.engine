@@ -29,6 +29,7 @@ public:
     
     ControlPropertiesSection *GetControlPropertiesSection(const DAVA::String &name) const;
     ComponentPropertiesSection *AddComponentPropertiesSection(DAVA::uint32 componentType);
+    void RemoveComponentPropertiesSection(ComponentPropertiesSection *section);
     
     BackgroundPropertiesSection *GetBackgroundPropertiesSection(int num) const;
     InternalControlPropertiesSection *GetInternalControlPropertiesSection(int num) const;

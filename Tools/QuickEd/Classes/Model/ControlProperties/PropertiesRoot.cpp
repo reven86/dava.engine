@@ -96,6 +96,16 @@ ComponentPropertiesSection *PropertiesRoot::AddComponentPropertiesSection(DAVA::
     return section;
 }
 
+void PropertiesRoot::RemoveComponentPropertiesSection(ComponentPropertiesSection *section)
+{
+    auto it = std::find(componentProperties.begin(), componentProperties.end(), section);
+    if (it != componentProperties.end())
+    {
+        componentProperties.erase(it);
+        section->Release();
+    }
+}
+
 BackgroundPropertiesSection *PropertiesRoot::GetBackgroundPropertiesSection(int num) const
 {
     if (0 <= num && num < (int) backgroundProperties.size())

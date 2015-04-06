@@ -40,6 +40,7 @@ public:
                                 int role = Qt::DisplayRole) const override;
 
     void AddComponent(ControlNode *node, int componentType);
+    void RemoveComponent(ControlNode *node, int componentType);
     
 private:
     QVariant makeQVariant(const BaseProperty *property) const;
