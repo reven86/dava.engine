@@ -4,14 +4,14 @@
 #include <QDockWidget>
 #include "ui_LibraryWidget.h"
 
-class QAbstractItemModel;
 class WidgetContext;
 
 class LibraryWidget : public QDockWidget, public Ui::LibraryWidget
 {
     Q_OBJECT
 public:
-    LibraryWidget(QWidget *parent = NULL);
+    LibraryWidget(QWidget *parent = nullptr);
+    ~LibraryWidget() = default;
 public slots:
     void OnContextChanged(WidgetContext *context);
 private:

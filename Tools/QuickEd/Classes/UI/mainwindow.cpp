@@ -187,7 +187,7 @@ void MainWindow::RestoreMainWindowState()
 
 DavaGLWidget* MainWindow::GetGLWidget() const
 {
-    return ui->previewWidget->GetGLWidget();
+    return ui->previewWidget->davaGLWidget;
 }
 
 void MainWindow::OnCurrentIndexChanged(int arg)

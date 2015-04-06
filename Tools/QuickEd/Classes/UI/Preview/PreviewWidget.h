@@ -3,6 +3,8 @@
 
 #include <QWidget>
 #include <QPointer>
+#include "DAVAEngine.h"
+#include "ui_PreviewWidget.h"
 
 namespace Ui {
     class PreviewWidget;
@@ -19,13 +21,12 @@ enum ScreenId
     EDIT_SCREEN = 0,
 };
 
-class PreviewWidget : public QWidget
+class PreviewWidget : public QWidget, public Ui::PreviewWidget
 {
     Q_OBJECT
 public:
     explicit PreviewWidget(QWidget *parent = nullptr);
-    virtual ~PreviewWidget();
-    DavaGLWidget *GetGLWidget() const;
+    ~PreviewWidget() = default;
 
 public slots:
     void OnContextChanged(WidgetContext *context);
@@ -57,7 +58,6 @@ private:
     void UpdateRootControls();
 
 private:
-    Ui::PreviewWidget *ui;
     WidgetContext *widgetContext;
     PreviewModel *model;
 };
