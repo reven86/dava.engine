@@ -441,7 +441,7 @@ void RenderDataObject::Invalidate()
             BuildVertexBuffer(forceVerticesCount > 0 ? forceVerticesCount : savedVertexCount, savedVertexBufferType);
         }
 
-        if(buildIndexBuffer && savedIndices)
+        if(buildIndexBuffer && (savedIndices || forceIndicesCount))
         {
         	if(forceIndicesCount)
         	{
