@@ -107,7 +107,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>./../../Libs/lua/include;$(ProjectDir)../../Sources/Internal;$(ProjectDir)/../../Sources/External;$(ProjectDir)/../../Sources/External/Freetype;$(ProjectDir)/../../Sources/External/Yaml;$(ProjectDir)/../../Libs/include;$(ProjectDir)/../../Libs/glew/include;$(ProjectDir)/../../Libs/freetype/include;$(DXSDK_DIR)/include;$(ProjectDir)/../../Libs/fmod/include;$(ProjectDir)/../../Libs/lua/include;$(ProjectDir)../../Sources/Tools;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;__DAVAENGINE_DEBUG__;CURL_STATICLIB;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;__DAVAENGINE_DEBUG__;CURL_STATICLIB;DAVA_FMOD;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -120,7 +120,7 @@
     </ClCompile>
     <Lib>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>lua_wind.lib;unibreak_wind.lib;fribidid.lib;freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;WinInet.lib;libeay32.lib;ssleay32.lib;TextureConverterD.lib;libuvd.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua_wind.lib;unibreak_wind.lib;fribidid.lib;freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;WinInet.lib;libeay32.lib;ssleay32.lib;TextureConverterD.lib;libuvd.lib;psapi.lib;detours.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;./../../Tools/Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
@@ -150,7 +150,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>./../../Libs/lua/include;$(ProjectDir)/../../Libs/fmod/include;./../../Sources/Internal;./../../Sources/External;./../../Sources/External/Freetype;./../../Sources/External/Yaml;./../../Libs/include;./../../Libs/glew/include;$(DXSDK_DIR)/include;./../../Libs/freetype/include;$(ProjectDir)/../../Libs/lua/include;%(AdditionalIncludeDirectories);$(ProjectDir)../../Sources/Tools</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;CURL_STATICLIB;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;CURL_STATICLIB;DAVA_FMOD;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -161,7 +161,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>lua_win.lib;unibreak_win.lib;fribidi.lib;freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;WinInet.lib;libeay32.lib;ssleay32.lib;libuv.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua_win.lib;unibreak_win.lib;fribidi.lib;freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;WinInet.lib;libeay32.lib;ssleay32.lib;libuv.lib;psapi.lib;detours.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
@@ -273,7 +273,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionDynamic.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionFlags.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionProperty.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\Mallocator.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Meta.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observable.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observer.h" />
@@ -292,7 +291,6 @@
     <ClInclude Include="..\..\Sources\Internal\DAVAConfig.h" />
     <ClInclude Include="..\..\Sources\Internal\DAVAEngine.h" />
     <ClInclude Include="..\..\Sources\Internal\DAVAVersion.h" />
-    <ClInclude Include="..\..\Sources\Internal\Debug\Backtrace.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\DVAssertMessage.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\Stats.h" />
     <ClInclude Include="..\..\Sources\Internal\Animation\AnimatedObject.h" />
@@ -327,7 +325,6 @@
     <ClInclude Include="..\..\Sources\Internal\Debug\DVAssert.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\List.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\ListAllocator.h" />
-    <ClInclude Include="..\..\Sources\Internal\Debug\MemoryManager.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\Replay.h" />
     <ClInclude Include="..\..\Sources\Internal\DLC\DLC.h" />
     <ClInclude Include="..\..\Sources\Internal\DLC\Downloader\CurlDownloader.h" />
@@ -360,7 +357,6 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlNode.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlParser.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\Accelerometer.h" />
-    <ClInclude Include="..\..\Sources\Internal\Input\AccelerometeriPhone.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\GamepadDevice.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\InputCallback.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\InputSystem.h" />
@@ -391,6 +387,13 @@
     <ClInclude Include="..\..\Sources\Internal\Math\Sphere.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Spline.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Vector.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocPools.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocThunk.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MallocHook.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManager.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerTypes.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerAllocator.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\Buffer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimerTemplate.h" />
@@ -422,6 +425,9 @@
     <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPClientTransport.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\ServiceRegistrar.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetClient.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetProto.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetServer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\SimpleEchoServer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\LogConsumer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\NetLogger.h" />
@@ -838,13 +844,11 @@
     <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_CarbonWindow.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Debug\Backtrace.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\DVAssertMessage.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\DVAssertMessageWin.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Debug\MemoryManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\Replay.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\Stats.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DLC\DLC.cpp" />
@@ -896,6 +900,11 @@
     <ClCompile Include="..\..\Sources\Internal\Math\RectPacker.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Vector.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocThunk.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AndroidMallocSize.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\MallocHook.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\MemoryManager.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\OperatorNewHook.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Base\Endpoint.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Base\IfAddress.cpp" />
@@ -919,6 +928,8 @@
     <ClCompile Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\ServiceRegistrar.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Services\LogConsumer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetClient.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetServer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Services\NetLogger.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotification.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationController.cpp" />

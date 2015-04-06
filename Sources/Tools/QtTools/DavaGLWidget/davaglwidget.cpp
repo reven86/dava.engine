@@ -72,10 +72,8 @@ namespace
 }
 
 
-
 OpenGLWindow::OpenGLWindow()
     : QWindow()
-    , paintDevice(nullptr)
     , controlMapper(new ControlMapper(this))
 {
     setSurfaceType(QWindow::OpenGLSurface);
@@ -90,25 +88,14 @@ OpenGLWindow::~OpenGLWindow()
 {
 }
 
-void OpenGLWindow::render()
-{
-    if (!paintDevice)
-    {
-        paintDevice = new QOpenGLPaintDevice();
-    }
-
-    if (paintDevice->size() != size())
-    {
-        paintDevice->setSize(size());
-    }
-}
 
 void OpenGLWindow::renderNow()
 {
     if (!isExposed())
+    {
         return;
+    }
 
-    render();
     auto context = FrameworkLoop::Instance()->Context();
     context->swapBuffers( this );
 }
@@ -119,7 +106,9 @@ void OpenGLWindow::exposeEvent(QExposeEvent *event)
     
     if (isExposed())
     {
-        renderNow();
+        //just initialize DAVAGL context
+        FrameworkLoop::Instance()->Context();
+
         emit Exposed();
     }
 }

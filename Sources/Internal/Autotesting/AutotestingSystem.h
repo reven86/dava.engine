@@ -109,6 +109,8 @@ public:
 
 	inline AutotestingSystemLua* GetLuaSystem() { return luaSystem; };
 protected:
+
+	void OnScreenShotInternal(Image *image);
 	AutotestingSystemLua * luaSystem;
 //DB
     void ExitApp();

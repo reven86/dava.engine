@@ -50,26 +50,19 @@ int Core::Run(int argc, char * argv[], AppHandle handle)
 
 int Core::RunCmdTool(int argc, char * argv[], AppHandle handle)
 {
-	CoreWin32PlatformQt * core = new CoreWin32PlatformQt();
+    CoreWin32PlatformQt * core = new CoreWin32PlatformQt();
 
-	core->EnableConsoleMode();
-	core->CreateSingletons();
+    core->EnableConsoleMode();
+    core->CreateSingletons();
 
-	core->InitArgs();
+    core->InitArgs();
 
-	Logger::Instance()->EnableConsoleMode();
+    Logger::Instance()->EnableConsoleMode();
 
-	FrameworkDidLaunched();
-	FrameworkWillTerminate();
-	core->ReleaseSingletons();
-#ifdef ENABLE_MEMORY_MANAGER
-	if (DAVA::MemoryManager::Instance() != 0)
-	{
-		DAVA::MemoryManager::Instance()->FinalLog();
-	}
-#endif
-	return 0;
-
+    FrameworkDidLaunched();
+    FrameworkWillTerminate();
+    core->ReleaseSingletons();
+    return 0;
 }
 
 bool CoreWin32PlatformQt::SetupWindow(HINSTANCE _hInstance, HWND _hWindow)

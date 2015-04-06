@@ -35,6 +35,8 @@
 #include "Scene3D/Components/SkeletonComponent.h"
 #include "Render/Highlevel/SkinnedMesh.h"
 
+#include "Qt/ImageSplitterDialog/ImageSplitterDialogNormal.h"
+
 #include "DAVAEngine.h"
 using namespace DAVA;
 
@@ -159,5 +161,10 @@ void DeveloperTools::OnDebugCreateTestSkinnedObject()
     entity->AddComponent(renderComponent);
 
     currentScene->Exec(new EntityAddCommand(entity, currentScene));
-    currentScene->selectionSystem->SetSelection(entity);    
+}
+
+void DeveloperTools::OnImageSplitterNormals()
+{
+    ImageSplitterDialogNormal dlg(QtMainWindow::Instance());
+    dlg.exec();
 }
