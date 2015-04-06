@@ -86,6 +86,42 @@ public class JNITextField {
         public abstract void safeRun();
     }
     
+    static abstract class SafeRunnableNoFilters implements Runnable
+    {
+        private int id;
+        protected TextField text = null;
+        SafeRunnableNoFilters(int id)
+        {
+            this.id = id;
+        }
+        @Override
+        public void run() {
+            try
+            {
+                text = GetTextField(id);
+
+                InputFilter[] filters = text.getFilters();
+                text.setFilters(new InputFilter[0]);
+
+                safeRun();
+
+                text.setFilters(filters);
+                
+                text.post(new Runnable(){
+                    @Override
+                    public void run() {
+                        text.updateStaticTexture();
+                    }
+                });
+            }catch(ControlNotFoundException ex)
+            {
+                Log.e(TAG, ex.getMessage());
+            }
+        }
+        
+        public abstract void safeRun();
+    }
+    
     static class UpdateTexture implements Runnable {
         int id;
         int[] pixels;
@@ -495,71 +531,36 @@ public class JNITextField {
         return lastSelectedInputType;
     }
     
-    private static class InternalTask<V>{
-        EditText text = null;
-        Callable<V> task = null;
-        public InternalTask(EditText text, Callable<V> task) {
-            this.text = text;
+    private static class RunOnUIThreadAndWaitUntilDone{
+        Runnable task = null;
+        public RunOnUIThreadAndWaitUntilDone(Runnable task) {
             this.task = task;
         }
 
-        public V Run() {
-            FutureTask<V> inTask = new FutureTask<V>(new Callable<V>() {
-                @Override
-                public V call() throws Exception {
-                    InputFilter[] filters = null;
-                    if (text != null) {
-                        filters = text.getFilters();
-                        text.setFilters(new InputFilter[]{});
-                    }
-                    V res = task.call();
-                    if (text != null)
-                        text.setFilters(filters);
-                    return res;
-                }
-            });
+        public void RunAndWait() {
+            FutureTask<Void> inTask = new FutureTask<Void>(task, null);
             JNIActivity.GetActivity().runOnUiThread(inTask);
             try {
                 if (JNIActivity.GetActivity().GetIsPausing())
                 {
-                    return null;
+                    Log.e(TAG, "can't do task - activity is pausing");
+                    return;
                 }
-                return inTask.get();
+                // wait till done
+                inTask.get();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (ExecutionException e) {
                 e.printStackTrace();
             }
-            return null;
-        }
-
-        public void AsyncRun() {
-            Runnable inTask = new Runnable() {
-                @Override
-                public void run() {
-                    InputFilter[] filters = null;
-                    if (text != null) {
-                        filters = text.getFilters();
-                        text.setFilters(new InputFilter[]{});
-                    }
-                    try {
-                        task.call();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    if (text != null)
-                        text.setFilters(filters);
-                }
-            };
-            JNIActivity.GetActivity().runOnUiThread(inTask);
         }
     }
 
     public static void Create(final int id, final float x, final float y,
             final float dx, final float dy) {
-            InternalTask<Void> task = new InternalTask<Void>(null, new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
+        RunOnUIThreadAndWaitUntilDone task = new RunOnUIThreadAndWaitUntilDone(new Runnable() {
+            @Override
+            public void run() {
                 JNIActivity activity = JNIActivity.GetActivity();
                 // we need to process even if activity is pausing
                 // because c++ part do not know if we can't
@@ -571,11 +572,11 @@ public class JNITextField {
 
                 if (textFields.containsKey(id)) {
                     Log.e(TAG, String.format("Control with id:%d already created", id));
-                    return null;
+                    return;
                 }
                 int viewWidth = Math.round(dx);
                 int viewHeight = Math.round(dy);
-                
+
                 final TextField text = new TextField(id, activity, viewWidth, viewHeight);
 
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
@@ -595,13 +596,10 @@ public class JNITextField {
                 activity.addContentView(text, params);
 
                 InputFilter inputFilter = new InputFilter() {
-                    private final int _id = id;
-
                     @Override
                     public CharSequence filter(CharSequence source,
                             final int start, final int end, Spanned dest,
                             final int dstart, final int dend) {
-
                         // Avoiding the line breaks in the single-line text
                         // fields. Line breaks should be replaced with spaces.
                         TextField textField = text;
@@ -662,7 +660,7 @@ public class JNITextField {
                                     }
                                     curPos++;
                                 }
-                                byte []retBytes = TextFieldKeyPressed(_id, finalStart, dend - dstart, bytes);
+                                byte []retBytes = TextFieldKeyPressed(id, finalStart, dend - dstart, bytes);
                                 return new String(retBytes, "UTF-8");
                             }
                         });
@@ -689,15 +687,13 @@ public class JNITextField {
                 text.setFilters(new InputFilter[] { inputFilter });
 
                 text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                    private final int _id = id;
-
                     @Override
                     public boolean onEditorAction(TextView v, int actionId,
                             KeyEvent event) {
                         JNIActivity.GetActivity().PostEventToGL(new Runnable() {
                             @Override
                             public void run() {
-                                JNITextField.TextFieldShouldReturn(_id);
+                                JNITextField.TextFieldShouldReturn(id);
                             }
                         });
                         return true;
@@ -720,10 +716,8 @@ public class JNITextField {
                             @Override
                             public void safeRun() {
                                 JNITextField
-                                        .TextFieldFocusChanged(id, hasFocus);
+                                .TextFieldFocusChanged(id, hasFocus);
                                 final TextField text = GetTextField(id);
-                                text.updateStaticTexture();
-                                
                                 // Workaround we have to call one more time
                                 // updateStaticTexture with delay
                                 // because if control is password 
@@ -736,6 +730,8 @@ public class JNITextField {
                                     }
                                 };
                                 
+                                text.post(runnable);
+
                                 handler.postDelayed(runnable, JNITextField.TEXT_CHANGE_DELAY_REFRESH);
                             }
                         });
@@ -751,7 +747,7 @@ public class JNITextField {
                                 // Check that keyboard already shown
                                 if (keyboardHelper != null
                                         && keyboardHelper
-                                                .isSoftKeyboardOpened()) {
+                                        .isSoftKeyboardOpened()) {
                                     JNIActivity.GetActivity().PostEventToGL(
                                             new Runnable() {
                                                 final int localActiveId = activeTextField;
@@ -774,7 +770,7 @@ public class JNITextField {
                                 // Cancel physical closing keyboard
                                 readyToClose = false;
                             } else // No any focused text fields -> show
-                                   // keyboard physically
+                                // keyboard physically
                             {
                                 InputMethodManager imm = (InputMethodManager) JNIActivity
                                         .GetActivity().getSystemService(
@@ -798,7 +794,7 @@ public class JNITextField {
                                 @Override
                                 public void run() {
                                     if (readyToClose) // Closing keyboard didn't
-                                                      // aborted
+                                        // aborted
                                     {
                                         InputMethodManager imm = (InputMethodManager) JNIActivity
                                                 .GetActivity()
@@ -842,7 +838,7 @@ public class JNITextField {
                                     oldBytes = oldText.getBytes("UTF-8");
                                     TextFieldOnTextChanged(id, newBytes, oldBytes);
                                 } catch (UnsupportedEncodingException e) {
-                                    Log.e(JNIConst.LOG_TAG, e.getMessage());
+                                    Log.e(TAG, e.getMessage());
                                     TextFieldOnTextChanged(id, emptyArray, emptyArray);
                                 }
                             }
@@ -850,7 +846,7 @@ public class JNITextField {
                         JNIActivity.GetActivity().PostEventToGL(action);
                     }
                 };
-                
+
                 TextWatcher updateTexture = new TextWatcher() {
                     @Override
                     public void onTextChanged(CharSequence s, int start,
@@ -881,10 +877,9 @@ public class JNITextField {
                 text.addTextChangedListener(updateTexture);
 
                 textFields.put(id, text);
-                return null;
             }
         });
-        task.Run();
+        task.RunAndWait();
     }
 
     static void Destroy(final int id) {
@@ -939,56 +934,40 @@ public class JNITextField {
     
 
     public static void SetText(final int id, final String string) {
-        try
-        {
-            final TextField text = GetTextField(id);
-
-            InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                    text.setText("");
-                    text.append(string);
-                    return null;
-                }
-            });
-            
-            task.AsyncRun();
-        } catch (ControlNotFoundException ex)
-        {
-            Log.e(TAG, "can't find control by id:" + id);
-        }
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnableNoFilters(id) {
+            @Override
+            public void safeRun() {
+                text.setText(string);
+                // set cursor to the end of text
+                text.setSelection(text.getText().length());
+            }
+        });
     }
 
     public static void SetTextColor(final int id, final float r, final float g,
             final float b, final float a) {
-        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnableNoFilters(id) {
             @Override
             public void safeRun() {
-                final TextField text = GetTextField(id);
                 text.setTextColor(Color.argb((int) (255 * a), (int) (255 * r),
                         (int) (255 * g), (int) (255 * b)));
-                text.updateStaticTexture();
             }
         });
     }
 
     public static void SetFontSize(final int id, final float size) {
-        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnableNoFilters(id) {
             @Override
             public void safeRun() {
-                final TextField text = GetTextField(id);
                 text.setTextSize(TypedValue.COMPLEX_UNIT_PX, (int) size);
-                text.updateStaticTexture();
             }
         });
     }
 
     public static void SetIsPassword(final int id, final boolean isPassword) {
-        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnableNoFilters(id) {
             @Override
             public void safeRun() {
-                final TextField text = GetTextField(id);
-                
                 if (isPassword) {
                     text.setInputType(EditorInfo.TYPE_CLASS_TEXT
                             | EditorInfo.TYPE_TEXT_VARIATION_PASSWORD);
@@ -996,22 +975,14 @@ public class JNITextField {
                     text.setInputType(text.getInputType()
                             & ~(EditorInfo.TYPE_TEXT_VARIATION_PASSWORD));
                 }
-                
-                text.post(new Runnable(){
-                    @Override
-                    public void run() {
-                        text.updateStaticTexture();
-                    }
-                });
             }
         });
     }
 
     public static void SetTextUseRtlAlign(final int id, final boolean useRtlAlign) {
-        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnableNoFilters(id) {
             @Override
             public void safeRun() {
-                TextField text = GetTextField(id);
                 int gravity = text.getGravity();
                 if (useRtlAlign) {
                     text.setGravity(gravity | Gravity.RELATIVE_LAYOUT_DIRECTION);
@@ -1019,16 +990,14 @@ public class JNITextField {
                     text.setGravity(gravity
                             & ~Gravity.RELATIVE_LAYOUT_DIRECTION);
                 }
-                text.updateStaticTexture();
             }
         });
     }
 
     public static void SetTextAlign(final int id, final int align) {
-        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnableNoFilters(id) {
             @Override
             public void safeRun() {
-                TextField text = GetTextField(id);
                 boolean isRelative = (text.getGravity() & Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK) > 0;
 
                 int gravityH = Gravity.LEFT;
@@ -1050,16 +1019,14 @@ public class JNITextField {
                     gravityH |= Gravity.RELATIVE_LAYOUT_DIRECTION;
                 }
                 text.setGravity(gravityH | gravityV);
-                text.updateStaticTexture();
             }
         });
     }
 
     public static void SetInputEnabled(final int id, final boolean value) {
-        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnableNoFilters(id) {
             @Override
             public void safeRun() {
-                TextField text = GetTextField(id);
                 text.setEnabled(value);
             }
         });
@@ -1067,10 +1034,9 @@ public class JNITextField {
 
     public static void SetAutoCapitalizationType(final int id,
             final int autoCapitalizationType) {
-        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnableNoFilters(id) {
             @Override
             public void safeRun() {
-                final EditText text = GetTextField(id);
                 int autoCapitalizationFlag = text.getInputType();
                 autoCapitalizationFlag &= ~(InputType.TYPE_TEXT_FLAG_CAP_WORDS
                         | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
@@ -1095,10 +1061,9 @@ public class JNITextField {
 
     public static void SetAutoCorrectionType(final int id,
             final int autoCorrectionType) {
-        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnableNoFilters(id) {
             @Override
             public void safeRun() {
-                TextField text = GetTextField(id);
                 int autoCorrectionFlag = text.getInputType();
                 switch (autoCorrectionType) {
                 case 0: // AUTO_CORRECTION_TYPE_DEFAULT
@@ -1116,10 +1081,9 @@ public class JNITextField {
     }
 
     public static void SetSpellCheckingType(final int id, final int spellCheckingType) {
-        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnableNoFilters(id) {
             @Override
             public void safeRun() {
-                final EditText text = GetTextField(id);
                 int spellCheckingFlag = text.getInputType();
                 switch (spellCheckingType) {
                 case 0: // SPELL_CHECKING_TYPE_DEFAULT
@@ -1137,10 +1101,9 @@ public class JNITextField {
     }
 
     public static void SetKeyboardType(final int id, final int keyboardType) {
-        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnableNoFilters(id) {
             @Override
             public void safeRun() {
-                final EditText text = GetTextField(id);
                 int inputFlags = text.getInputType();
                 inputFlags &= ~(InputType.TYPE_CLASS_NUMBER
                         | InputType.TYPE_CLASS_TEXT
@@ -1179,10 +1142,9 @@ public class JNITextField {
     }
 
     public static void SetReturnKeyType(final int id, final int returnKeyType) {
-        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnableNoFilters(id) {
             @Override
             public void safeRun() {
-                final EditText text = GetTextField(id);
                 int imeOptions = 0;// EditorInfo.IME_ACTION_DONE;
                 switch (returnKeyType) {
                 case 1: // RETURN_KEY_GO,
