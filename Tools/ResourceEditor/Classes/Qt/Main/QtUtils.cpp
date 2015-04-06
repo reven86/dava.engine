@@ -57,9 +57,6 @@ DAVA::FilePath GetOpenFileName(const DAVA::String &title, const DAVA::FilePath &
     QString filePath = QtFileDialog::getOpenFileName(NULL, QString(title.c_str()), QString(pathname.GetAbsolutePathname().c_str()),
                                                     QString(filter.c_str()));
     
-	// TODO: mainwindow
-    //QtMainWindowHandler::Instance()->RestoreDefaultFocus();
-
     FilePath openedPathname = PathnameToDAVAStyle(filePath);
     if(!openedPathname.IsEmpty() && !SceneValidator::Instance()->IsPathCorrectForProject(openedPathname))
     {
@@ -68,9 +65,10 @@ DAVA::FilePath GetOpenFileName(const DAVA::String &title, const DAVA::FilePath &
         openedPathname = FilePath();
     }
     
-    if(openedPathname.IsEqualToExtension(".png"))
+    auto imageFormat = DAVA::ImageSystem::Instance()->GetImageFormatForExtension(openedPathname);
+    if (DAVA::IMAGE_FORMAT_UNKNOWN != imageFormat)
     {
-        //VK: create descriptor only for *.png without paired *.tex
+        //VK: create descriptor only for source images without paired *.tex
         TextureDescriptorUtils::CreateDescriptorIfNeed(openedPathname);
     }
     

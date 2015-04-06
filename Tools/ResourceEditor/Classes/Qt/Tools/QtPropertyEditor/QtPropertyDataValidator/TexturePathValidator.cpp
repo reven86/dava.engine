@@ -63,12 +63,14 @@ void TexturePathValidator::FixupInternal(QVariant& v) const
 				DAVA::FilePath texFile = DAVA::TextureDescriptor::GetDescriptorPathname(filePath);
 				bool wasCreated = TextureDescriptorUtils::CreateDescriptorIfNeed(texFile);
                 
-                auto texDescripor = DAVA::TextureDescriptor::CreateFromFile(texFile);
-                if(texDescripor)
+                auto texDescriptor = DAVA::TextureDescriptor::CreateFromFile(texFile);
+                if(texDescriptor)
                 {
-                    texDescripor->dataSettings.sourceFileFormat = imageFormat;
-                    texDescripor->dataSettings.sourceFileExtension = extension;
-                    texDescripor->Save();
+                    texDescriptor->dataSettings.sourceFileFormat = imageFormat;
+                    texDescriptor->dataSettings.sourceFileExtension = extension;
+                    texDescriptor->Save();
+                    
+                    DAVA::SafeDelete(texDescriptor);
                 }
 
 				if(wasCreated)

@@ -186,6 +186,12 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
 }
     
     
+ImageFormat ImageSystem::GetImageFormatForExtension(const FilePath &pathname) const
+{
+    return GetImageFormatForExtension(pathname.GetExtension());
+}
+
+    
 ImageFormat ImageSystem::GetImageFormatForExtension(const String &extension) const
 {
     for(auto i = 0; i < IMAGE_FORMAT_COUNT; ++i)
