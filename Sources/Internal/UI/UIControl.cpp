@@ -2501,7 +2501,6 @@ namespace DAVA
             return;
 
         SetSize(newRect.GetSize());
-
         SetPosition(newRect.GetPosition() + GetPivotPoint());
     }
 

@@ -42,6 +42,8 @@
 
 #import "Platform/TemplateiOS/HelperAppDelegate.h"
 
+//#define USE_STATIC_TEXTFIELD
+
 namespace
 {
     const int MOVE_TO_OFFSCREEN_STEP = 20000;
@@ -108,9 +110,19 @@ namespace DAVA
         textFieldHolder->textField.font = [UIFont systemFontOfSize:scaledSize];
     }
     
-    void UITextFieldiPhone::SetSize(const DAVA::Vector2 &size)
+    void UITextFieldiPhone::OnSetSize(const DAVA::Vector2 &size)
     {
-        //UpdateStaticTexture();
+#ifdef USE_STATIC_TEXTFIELD
+        if(size.dx > 0 && size.dy > 0)
+        {
+            UpdateStaticTexture();
+        }
+#endif
+    }
+    
+    void UITextFieldiPhone::OnSetPosition(const DAVA::Vector2 &size)
+    {
+        
     }
     
     void UITextFieldiPhone::SetTextAlign(DAVA::int32 align)
@@ -211,8 +223,6 @@ namespace DAVA
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         textFieldHolder->textField.userInteractionEnabled = YES;
         [textFieldHolder->textField becomeFirstResponder];
-        
-        UpdateStaticTexture();
     }
     
     void UITextFieldiPhone::CloseKeyboard()
@@ -220,8 +230,6 @@ namespace DAVA
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         textFieldHolder->textField.userInteractionEnabled = NO;
         [textFieldHolder->textField resignFirstResponder];
-        
-        UpdateStaticTexture();
     }
     
     void UITextFieldiPhone::ShowField()
@@ -239,6 +247,24 @@ namespace DAVA
 					   name:UIKeyboardWillHideNotification object:nil];
 		[center addObserver:textFieldHolder selector:@selector(keyboardFrameDidChange:)
 					   name:UIKeyboardDidChangeFrameNotification object:nil];
+#ifdef USE_STATIC_TEXTFIELD
+        CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this,
+            [](CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
+            {
+                (static_cast<UITextFieldiPhone *>(observer))->UpdateStaticTexture();
+            },
+            (__bridge CFStringRef) UIKeyboardWillShowNotification, nil,
+            CFNotificationSuspensionBehaviorDeliverImmediately);
+        
+        
+        CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this,
+            [](CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
+            {
+                (static_cast<UITextFieldiPhone *>(observer))->UpdateStaticTexture();
+            },
+            (__bridge CFStringRef) UIKeyboardDidHideNotification, nil,
+            CFNotificationSuspensionBehaviorDeliverImmediately);
+#endif
     }
     
     void UITextFieldiPhone::HideField()
@@ -251,6 +277,14 @@ namespace DAVA
 		[center removeObserver:textFieldHolder name:UIKeyboardDidShowNotification object:nil];
 		[center removeObserver:textFieldHolder name:UIKeyboardWillHideNotification object:nil];
         [center removeObserver:textFieldHolder name:UIKeyboardDidChangeFrameNotification object:nil];
+ 
+#ifdef USE_STATIC_TEXTFIELD
+        CFNotificationCenterRemoveObserver(CFNotificationCenterGetLocalCenter(), this,
+           (__bridge CFStringRef) UIKeyboardWillShowNotification, nil);
+        
+        CFNotificationCenterRemoveObserver(CFNotificationCenterGetLocalCenter(), this,
+            (__bridge CFStringRef) UIKeyboardDidHideNotification, nil);
+#endif
     }
     
     void UITextFieldiPhone::UpdateNativeRect(const Rect & virtualRect, int xOffset)
@@ -299,11 +333,13 @@ namespace DAVA
         // Notify UITextFieldDelegate::TextFieldOnTextChanged event
         [textFieldHolder->textField sendActionsForControlEvents:UIControlEventEditingChanged];
         
+#ifdef USE_STATIC_TEXTFIELD
         // update only when text was really changed
         if(needStaticUpdate)
         {
             UpdateStaticTexture();
         }
+#endif
     }
 	
     void UITextFieldiPhone::GetText(WideString & string) const
@@ -318,8 +354,9 @@ namespace DAVA
 	{
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
 		[textFieldHolder setIsPassword: isPassword];
-        
+#ifdef USE_STATIC_TEXTFIELD
         UpdateStaticTexture();
+#endif
 	}
 
 	void UITextFieldiPhone::SetInputEnabled(bool value)

@@ -1069,31 +1069,31 @@ void Texture::Invalidate()
 	{
 		return;
 	}
-	
-    const FilePath& relativePathname = texDescriptor->GetSourceTexturePathname();
-	if (relativePathname.GetType() == FilePath::PATH_IN_FILESYSTEM ||
-		relativePathname.GetType() == FilePath::PATH_IN_RESOURCES ||
-		relativePathname.GetType() == FilePath::PATH_IN_DOCUMENTS)
-	{
-		Reload();
-	}
-	else if (relativePathname.GetType() == FilePath::PATH_IN_MEMORY)
-	{
-		if (invalidater)
+
+	if (invalidater)
+    {
+        invalidater->InvalidateTexture(this);
+    }
+    else
+    {
+        const FilePath& relativePathname = texDescriptor->GetSourceTexturePathname();
+        if (relativePathname.GetType() == FilePath::PATH_IN_FILESYSTEM ||
+            relativePathname.GetType() == FilePath::PATH_IN_RESOURCES ||
+            relativePathname.GetType() == FilePath::PATH_IN_DOCUMENTS)
         {
-			invalidater->InvalidateTexture(this);
+            Reload();
         }
-        else
+        else if (relativePathname.GetType() == FilePath::PATH_IN_MEMORY)
         {
             // Make it pink, to prevent craches
             Logger::Debug("[Texture::Invalidate] - invalidater is null");
             MakePink();
         }
-	}
-	else if (isPink)
-	{
-		MakePink();
-	}
+        else if (isPink)
+        {
+            MakePink();
+        }
+    }
 }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 

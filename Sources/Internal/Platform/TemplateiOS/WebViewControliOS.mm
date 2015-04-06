@@ -231,7 +231,8 @@ void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr)
     size_t w = view.frame.size.width * contentScaleFactor;
     size_t h = view.frame.size.height * contentScaleFactor;
     
-    UIGraphicsBeginImageContext(CGSizeMake(w, h));
+    CGFloat scale = [[::UIScreen mainScreen] scale];
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(w, h), NO, scale);
     CGRect rect = CGRectMake(0, 0, w, h);
     [view drawViewHierarchyInRect:rect afterScreenUpdates:YES];
     
