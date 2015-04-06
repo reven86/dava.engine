@@ -46,6 +46,7 @@ class TextBlock;
 class RenderDataObject;
 class RenderDataStream;
 class UIGeometricData;
+class VboPool;
 
 struct RenderBatch2D
 {
@@ -105,32 +106,6 @@ struct StretchDrawData
     int32 type;
     Vector2 stretchCap;
     Matrix3 transformMatr;
-};
-
-class VboPool
-{
-public:
-    VboPool(uint32 verticesCount, uint32 format, uint32 indicesCount, uint8 buffersCount);
-    ~VboPool();
-
-    void Next();
-    void SetVertexData(uint32 offset, uint32 count, float32 * data);
-    void SetIndexData(uint32 offset, uint32 count, uint8 * data);
-
-    RenderDataObject* GetRenderDataObject() const;
-    uint32 GetVerticesLimit() const;
-    uint32 GetIndicesLimit() const;
-    uint32 GetVertexFormat() const;
-    uint32 GetVertexStride() const;
-
-private:
-    RenderDataObject * currentDataObject;
-    Vector<RenderDataObject*> dataObjects;
-    uint8 currentDataObjectIndex;
-    uint32 vertexStride;
-    uint32 vertexFormat;
-    uint32 verticesLimit;
-    uint32 indicesLimit;
 };
 
 class RenderSystem2D : public Singleton<RenderSystem2D>
@@ -222,33 +197,6 @@ private:
 
 };
 
-//Inline implementations
-    
-inline RenderDataObject* VboPool::GetRenderDataObject() const
-{
-    return currentDataObject;
-}
-
-inline uint32 VboPool::GetVerticesLimit() const
-{
-    return verticesLimit;
-}
-
-inline uint32 VboPool::GetIndicesLimit() const
-{
-    return indicesLimit;
-}
-
-inline uint32 VboPool::GetVertexFormat() const
-{
-    return vertexFormat;
-}
-
-inline uint32 VboPool::GetVertexStride() const
-{
-    return vertexStride;
-}
-    
 } // ns
 
 #endif	/* __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__ */

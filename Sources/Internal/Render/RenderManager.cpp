@@ -54,9 +54,9 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
 :   renderer(_renderer),
     currentState(),
     hardwareState(),
+    currentRenderTarget(0),
     needGLScreenShot(false),
-    screenShotCallback(NULL),
-    currentRenderTarget(0)
+    screenShotCallback(nullptr)
 {
     // Create shader cache singleton
     ShaderCache * cache = new ShaderCache();
