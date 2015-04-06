@@ -1300,6 +1300,18 @@ public class JNITextField {
             }
         });
     }
+     
+    /**
+     * Workaround for samsung tab 4 10.1 adreno 305 (Game Client)
+     * on lock/unlock disappeared text fields
+     */
+    static protected void RelinkNativeControls() {
+        for (TextField control: textFields.values()) {
+            ViewGroup viewGroup = (ViewGroup) control.getParent();
+            viewGroup.removeView(control);
+            JNIActivity.GetActivity().addContentView(control, control.getLayoutParams());
+        }
+    }
     
     public static void SetRenderToTexture(final int id, final boolean value) {
         JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
