@@ -193,7 +193,7 @@ if( ANDROID )
           
     endif()
 
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ANDROID_DATA} ${CMAKE_BINARY_DIR}/assets/${ASSETS_FOLDER} )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA} ${CMAKE_BINARY_DIR}/assets/${ASSETS_FOLDER} )
 
     if( ANDROID_ICO )
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${ANDROID_ICO}  ${CMAKE_BINARY_DIR} )     
