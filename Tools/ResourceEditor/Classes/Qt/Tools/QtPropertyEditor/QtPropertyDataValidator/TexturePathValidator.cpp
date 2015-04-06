@@ -62,21 +62,23 @@ void TexturePathValidator::FixupInternal(QVariant& v) const
             {
 				DAVA::FilePath texFile = DAVA::TextureDescriptor::GetDescriptorPathname(filePath);
 				bool wasCreated = TextureDescriptorUtils::CreateDescriptorIfNeed(texFile);
-				if(wasCreated)
-				{	// we need to reload textures in case we change path on existing on disk
-					DAVA::TexturesMap texturesMap = DAVA::Texture::GetTextureMap();
+                
+                auto texDescripor = DAVA::TextureDescriptor::CreateFromFile(texFile);
+                if(texDescripor)
+                {
+                    texDescripor->dataSettings.sourceFileFormat = imageFormat;
+                    texDescripor->dataSettings.sourceFileExtension = extension;
+                    texDescripor->Save();
+                }
 
-					DAVA::TexturesMap::iterator found = texturesMap.find(FILEPATH_MAP_KEY(texFile));
+				if(wasCreated)
+				{
+                    // we need to reload textures in case we change path on existing on disk
+					auto texturesMap = DAVA::Texture::GetTextureMap();
+					auto found = texturesMap.find(FILEPATH_MAP_KEY(texFile));
 					if(found != texturesMap.end())
 					{
-						auto tex = found->second;
-                        auto texDescripor = tex->GetDescriptor();
-                        
-                        texDescripor->dataSettings.sourceFileFormat = imageFormat;
-                        texDescripor->dataSettings.sourceFileExtension = extension;
-                        texDescripor->Save();
-                        
-                        tex->Reload();
+                        found->second->Reload();
 					}
 				}
 
