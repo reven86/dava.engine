@@ -26,38 +26,26 @@ public:
     const DAVA::FilePath &GetPackageFilePath() const;
     PackageNode *GetPackage() const;
     
-    WidgetContext *GetLibraryContext() const;
-    WidgetContext *GetPropertiesContext() const;
-    WidgetContext *GetPreviewContext() const;
-    WidgetContext* GetPackageContext() const;
+    WidgetContext *GetContext() const;
     PropertiesModel *GetPropertiesModel() const; //TODO: this is deprecated
     PackageModel* GetPackageModel() const; //TODO: this is deprecated
     QUndoStack *GetUndoStack() const;
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
 
 signals:
-    void LibraryDataChanged(const QByteArray &role);
-    void PropertiesDataChanged(const QByteArray &role);
-    void PackageDataChanged(const QByteArray &role);
-    void PreviewDataChanged(const QByteArray &role);
+    void ContextDataChanged(const QByteArray &role);
 public slots:
     void UpdateLanguage();
 
-private slots:
-    void OnContextDataChanged(const QByteArray &role);
 private:
     void UpdateLanguageRecursively(ControlNode *node);
     void UpdateControlCanvas();
     void InitWidgetContexts();
-    void ConnectWidgetContexts() const;
 
 private:
     PackageNode *package;
 
-    WidgetContext *libraryContext;
-    WidgetContext *propertiesContext;
-    WidgetContext *packageContext;
-    WidgetContext *previewContext;
+    WidgetContext *dataContext;
 
     QtModelPackageCommandExecutor *commandExecutor;
     QUndoStack *undoStack;
@@ -78,26 +66,9 @@ inline QtModelPackageCommandExecutor *Document::GetCommandExecutor() const
     return commandExecutor;
 }
 
-inline WidgetContext *Document::GetLibraryContext() const
+inline WidgetContext *Document::GetContext() const
 {
-    return libraryContext;
+    return dataContext;
 }
-
-inline WidgetContext* Document::GetPackageContext() const
-{
-    return packageContext;
-}
-
-inline WidgetContext *Document::GetPreviewContext() const
-{
-    return previewContext;
-}
-
-inline WidgetContext *Document::GetPropertiesContext() const
-{
-    return propertiesContext;
-}
-
-
 
 #endif // __QUICKED_PACKAGE_DOCUMENT_H__

@@ -35,14 +35,17 @@ BaseController::BaseController(QObject *parent)
     connect(mainWindow, &MainWindow::SaveAllDocuments, this, &BaseController::SaveAllDocuments);
     connect(mainWindow, &MainWindow::SaveDocument, this, static_cast<void(BaseController::*)(int)>(&BaseController::SaveDocument));
 
-    connect(documentGroup, &DocumentGroup::LibraryContextChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnContextChanged);
-    connect(documentGroup, &DocumentGroup::LibraryDataChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnDataChanged);
-    connect(documentGroup, &DocumentGroup::PropertiesContextChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnContextChanged);
-    connect(documentGroup, &DocumentGroup::PropertiesDataChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnDataChanged);
-    connect(documentGroup, &DocumentGroup::PackageContextChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnContextChanged);
-    connect(documentGroup, &DocumentGroup::PackageDataChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnDataChanged);
-    connect(documentGroup, &DocumentGroup::PreviewContextChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnContextChanged);
-    connect(documentGroup, &DocumentGroup::PreviewDataChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnDataChanged);
+    connect(documentGroup, &DocumentGroup::ContextChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnContextChanged);
+    connect(documentGroup, &DocumentGroup::ContextDataChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnDataChanged);
+
+    connect(documentGroup, &DocumentGroup::ContextChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnContextChanged);
+    connect(documentGroup, &DocumentGroup::ContextDataChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnDataChanged);
+
+    connect(documentGroup, &DocumentGroup::ContextChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnContextChanged);
+    connect(documentGroup, &DocumentGroup::ContextDataChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnDataChanged);
+
+    connect(documentGroup, &DocumentGroup::ContextChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnContextChanged);
+    connect(documentGroup, &DocumentGroup::ContextDataChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnDataChanged);
 
     qApp->installEventFilter(this);
 }

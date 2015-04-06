@@ -26,14 +26,8 @@ public slots:
 signals:
     void ActiveDocumentChanged(Document*);
 
-    void LibraryDataChanged(const QByteArray &role);
-    void LibraryContextChanged(WidgetContext *widgetContext);
-    void PropertiesDataChanged(const QByteArray &role);
-    void PropertiesContextChanged(WidgetContext *widgetContext);
-    void PackageDataChanged(const QByteArray &role);
-    void PackageContextChanged(WidgetContext *widgetContext);
-    void PreviewDataChanged(const QByteArray &role);
-    void PreviewContextChanged(WidgetContext *widgetContext);
+    void ContextDataChanged(const QByteArray &role);
+    void ContextChanged(WidgetContext *widgetContext);
 protected:
     QScopedPointer<DocumentGroupPrivate> d_ptr;
 };

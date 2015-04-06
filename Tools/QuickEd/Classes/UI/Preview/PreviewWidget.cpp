@@ -149,7 +149,7 @@ void PreviewWidget::OnAllControlsDeselected()
     widgetContext->SetData(!widgetContext->GetData("controlDeselected").toBool(), "controlDeselected");
 }
 
-void PreviewWidget::OnError(QString errorText)
+void PreviewWidget::OnError(const QString &errorText)
 {
     QMessageBox::warning(qApp->activeWindow(), tr("Error occurred!"), errorText);
 }

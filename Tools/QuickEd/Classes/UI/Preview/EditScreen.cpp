@@ -128,7 +128,7 @@ UIControl *CheckeredCanvas::GetControlByPos(UIControl *control, const DAVA::Vect
         }
     }
     
-    if (control->IsPointInside(pos) && control->GetVisible())
+    if (control->IsPointInside(pos) && control->GetVisible() && control->GetVisibleForUIEditor())
     {
         return control;
     }

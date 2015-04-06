@@ -2,7 +2,6 @@
 #define __QUICKED_LIBRARY_WIDGET_H__
 
 #include <QDockWidget>
-
 class QAbstractItemModel;
 class WidgetContext;
 

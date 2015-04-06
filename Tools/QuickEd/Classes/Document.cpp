@@ -26,49 +26,29 @@ using namespace DAVA;
 Document::Document(PackageNode *_package, QObject *parent)
     : QObject(parent)
     , package(SafeRetain(_package))
-    , libraryContext(new WidgetContext(this))
-    , propertiesContext(new WidgetContext(this))
-    , packageContext(new WidgetContext(this))
-    , previewContext(new WidgetContext(this))
+    , dataContext(new WidgetContext(this))
     , commandExecutor(new QtModelPackageCommandExecutor(this))
     , undoStack(new QUndoStack(this))
 {
     InitWidgetContexts();
-
-
-    ConnectWidgetContexts();
+    connect(dataContext, &WidgetContext::DataChanged, this, &Document::ContextDataChanged);
 }
 
 void Document::InitWidgetContexts()
 {
-    libraryContext->SetData(QVariant::fromValue(new LibraryModel(package, this)), "libraryModel");
+    dataContext->SetData(QVariant::fromValue(new LibraryModel(package, this)), "libraryModel");
 
-    packageContext->SetData(QVariant::fromValue(new PackageModel(package, commandExecutor, this)), "packageModel");
+    dataContext->SetData(QVariant::fromValue(new PackageModel(package, commandExecutor, this)), "packageModel");
 
-    previewContext->SetData(false, "controlDeselected");
-    packageContext->SetData(false, "controlsDeselected");
+    dataContext->SetData(false, "controlDeselected");
+    dataContext->SetData(false, "controlsDeselected");
 
     QList<ControlNode*> activeRootControls;
     PackageControlsNode *controlsNode = package->GetPackageControlsNode();
     for (int32 index = 0; index < controlsNode->GetCount(); ++index)
         activeRootControls.push_back(controlsNode->Get(index));
 
-    previewContext->SetData(QVariant::fromValue(activeRootControls), "activeRootControls");
-}
-
-void Document::ConnectWidgetContexts() const
-{
-    //to communicate between contexts
-    connect(packageContext, &WidgetContext::DataChanged, this, &Document::OnContextDataChanged);
-    connect(previewContext, &WidgetContext::DataChanged, this, &Document::OnContextDataChanged);
-    connect(libraryContext, &WidgetContext::DataChanged, this, &Document::OnContextDataChanged);
-    connect(propertiesContext, &WidgetContext::DataChanged, this, &Document::OnContextDataChanged);
-
-    //for widgets owners
-    connect(libraryContext, &WidgetContext::DataChanged, this, &Document::LibraryDataChanged);
-    connect(packageContext, &WidgetContext::DataChanged, this, &Document::PackageDataChanged);
-    connect(propertiesContext, &WidgetContext::DataChanged, this, &Document::PropertiesDataChanged);
-    connect(previewContext, &WidgetContext::DataChanged, this, &Document::PreviewDataChanged);
+    dataContext->SetData(QVariant::fromValue(activeRootControls), "activeRootControls");
 }
 
 Document::~Document()
@@ -86,12 +66,12 @@ const DAVA::FilePath &Document::GetPackageFilePath() const
 
 PropertiesModel *Document::GetPropertiesModel() const
 {
-    return reinterpret_cast<PropertiesModel*>(propertiesContext->GetData("propertiesModel").value<QAbstractItemModel*>()); //TODO this is ugly
+    return reinterpret_cast<PropertiesModel*>(dataContext->GetData("propertiesModel").value<QAbstractItemModel*>()); //TODO this is ugly
 }
 
 PackageModel* Document::GetPackageModel() const
 {
-    return packageContext->GetData("packageModel").value<PackageModel*>();
+    return dataContext->GetData("packageModel").value<PackageModel*>();
 }
 
 void Document::UpdateLanguage()
@@ -123,19 +103,4 @@ void Document::UpdateLanguageRecursively(ControlNode *node)
     {
         UpdateLanguageRecursively(node->Get(index));
     }
-}
-
-void Document::OnContextDataChanged(const QByteArray &role)
-{
-    WidgetContext *context = qobject_cast<WidgetContext*>(sender());
-    if (nullptr == context)
-    {
-        return;
-    }
-    QVariant data = context->GetData(role);
-
-    packageContext->SetData(data, role);
-    previewContext->SetData(data, role);
-    libraryContext->SetData(data, role);
-    propertiesContext->SetData(data, role);
 }

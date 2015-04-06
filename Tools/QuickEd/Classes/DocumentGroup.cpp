@@ -76,34 +76,21 @@ void DocumentGroup::SetActiveDocument(Document* document)
     }
     if (nullptr != d->active) 
     {
-        disconnect(d->active, &Document::LibraryDataChanged, this, &DocumentGroup::LibraryDataChanged);
-        disconnect(d->active, &Document::PropertiesDataChanged, this, &DocumentGroup::PropertiesDataChanged);
-        disconnect(d->active, &Document::PackageDataChanged, this, &DocumentGroup::PackageDataChanged);
-        disconnect(d->active, &Document::PreviewDataChanged, this, &DocumentGroup::PreviewDataChanged);
+        disconnect(d->active, &Document::ContextDataChanged, this, &DocumentGroup::ContextDataChanged);
     }
     
     d->active = document;
 
     if (nullptr == d->active)
     {
-        emit LibraryContextChanged(nullptr);
-        emit PropertiesContextChanged(nullptr);
-        emit PackageContextChanged(nullptr);
-        emit PreviewContextChanged(nullptr);
-        
+        emit ContextChanged(nullptr);        
         d->undoGroup->setActiveStack(nullptr);
     }
     else
     {
-        emit LibraryContextChanged(d->active->GetLibraryContext());
-        emit PropertiesContextChanged(d->active->GetPropertiesContext());
-        emit PackageContextChanged(d->active->GetPackageContext());
-        emit PreviewContextChanged(d->active->GetPreviewContext());
-
-        connect(d->active, &Document::LibraryDataChanged, this, &DocumentGroup::LibraryDataChanged);
-        connect(d->active, &Document::PropertiesDataChanged, this, &DocumentGroup::PropertiesDataChanged);
-        connect(d->active, &Document::PackageDataChanged, this, &DocumentGroup::PackageDataChanged);
-        connect(d->active, &Document::PreviewDataChanged, this, &DocumentGroup::PreviewDataChanged);
+        emit ContextChanged(d->active->GetContext());
+        
+        connect(d->active, &Document::ContextDataChanged, this, &DocumentGroup::ContextDataChanged);
 
         d->undoGroup->setActiveStack(d->active->GetUndoStack());
     }

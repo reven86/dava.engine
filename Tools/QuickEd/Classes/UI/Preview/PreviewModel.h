@@ -46,7 +46,7 @@ signals:
     void ControlNodeSelected(ControlNode *node);
     void AllControlsDeselected();
 
-    void ErrorOccurred(QString errorText);
+    void ErrorOccurred(const QString &errorText);
 
 private:
     CheckeredCanvas *FindControlContainer(DAVA::UIControl *control);
