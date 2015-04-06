@@ -50,9 +50,9 @@ namespace DAVA
 #endif
 
 #if USE_BATCHING
-static const uint32 MAX_VERTICES = 1024;
+static const uint32 MAX_VERTICES = 2048;
 static const uint32 MAX_INDECES = MAX_VERTICES * 2;
-static const uint32 VBO_POOL_SIZE = 40;
+static const uint32 VBO_POOL_SIZE = 20;
 static const uint32 RESERVED_BATCHES = 1024;
 static const uint32 VBO_FORMAT = EVF_VERTEX | EVF_TEXCOORD0 | EVF_COLOR;
 #if BATCHING_DEBUG
