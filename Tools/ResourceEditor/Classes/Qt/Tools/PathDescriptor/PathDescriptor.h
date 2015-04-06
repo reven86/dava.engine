@@ -43,7 +43,7 @@ public:
         PATH_TEXTURE = 0,
         PATH_IMAGE,
         PATH_HEIGHTMAP,
-        PATH_TEXT,
+        PATH_TEXTURE_SHEET,
         PATH_SCENE,
         PATH_NOT_SPECIFIED
     };

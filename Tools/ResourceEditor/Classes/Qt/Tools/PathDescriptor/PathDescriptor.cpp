@@ -39,7 +39,7 @@ void PathDescriptor::InitializePathDescriptors()
 {
     descriptors.push_back(PathDescriptor("", "All (*.*)", PathDescriptor::PATH_NOT_SPECIFIED));
     descriptors.push_back(PathDescriptor("customGeometry", "All (*.sc2);;SC2 (*.sc2);", PathDescriptor::PATH_SCENE));
-    descriptors.push_back(PathDescriptor("textureSheet", "All (*.txt);;TXT (*.tex)", PathDescriptor::PATH_TEXT));
+    descriptors.push_back(PathDescriptor("textureSheet", "All (*.tex);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE_SHEET));
     
     static std::array<QString, DAVA::IMAGE_FORMAT_COUNT> imageFileNames = {{ "PNG", "DDS", "PVR", "JPEG", "TGA"}};
     

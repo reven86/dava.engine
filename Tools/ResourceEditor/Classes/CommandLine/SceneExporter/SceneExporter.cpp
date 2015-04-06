@@ -420,8 +420,7 @@ bool SceneExporter::ExportTexture(const TextureDescriptor * descriptor, Set<Stri
 		}
 		else
 		{
-			FilePath sourceTexturePathname =  FilePath::CreateWithNewExtension(descriptor->pathname, ".png");
-			copyResult = sceneUtils.CopyFile(sourceTexturePathname, errorLog);
+			copyResult = sceneUtils.CopyFile(descriptor->GetSourceTexturePathname(), errorLog);
 		}
 		
 		return copyResult;
@@ -472,7 +471,6 @@ void SceneExporter::CompressTextureIfNeed(const TextureDescriptor * descriptor, 
     
     
     FilePath compressedTexureName = descriptor->CreatePathnameForGPU((eGPUFamily)descriptor->exportedAsGpuFamily);
-    FilePath sourceTexturePathname =  FilePath::CreateWithNewExtension(descriptor->pathname, ".png");
 
     bool fileExcists = FileSystem::Instance()->IsFile(compressedTexureName);
     bool needToConvert = SceneValidator::IsTextureChanged(descriptor, (eGPUFamily)descriptor->exportedAsGpuFamily);

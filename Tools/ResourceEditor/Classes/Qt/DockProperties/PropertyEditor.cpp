@@ -491,7 +491,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 						variantData->SetValidator(new TexturePathValidator(pathList));
 						break;
 					case PathDescriptor::PATH_IMAGE:
-					case PathDescriptor::PATH_TEXT:
+					case PathDescriptor::PATH_TEXTURE_SHEET:
 						variantData->SetValidator(new PathValidator(pathList));
 						break;
                     case PathDescriptor::PATH_SCENE:

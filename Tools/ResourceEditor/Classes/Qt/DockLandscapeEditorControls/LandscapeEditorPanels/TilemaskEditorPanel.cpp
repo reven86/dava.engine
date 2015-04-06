@@ -231,7 +231,7 @@ void TilemaskEditorPanel::InitBrushImages()
 	for(int32 iFile = 0; iFile < fileList->GetCount(); ++iFile)
 	{
 		String filename = fileList->GetFilename(iFile);
-		if(fileList->GetPathname(iFile).IsEqualToExtension(".png"))
+		if(TextureDescriptor::IsSupportedTextureExtension(fileList->GetPathname(iFile).GetExtension()))
 		{
 			String fullname = fileList->GetPathname(iFile).GetAbsolutePathname();
 

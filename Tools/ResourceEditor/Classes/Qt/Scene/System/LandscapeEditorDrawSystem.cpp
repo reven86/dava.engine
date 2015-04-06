@@ -590,38 +590,22 @@ void LandscapeEditorDrawSystem::SaveTileMaskTexture()
 		return;
 	}
 
-	if (!GetLandscapeProxy()->IsTilemaskChanged())
-	{
-		return;
-	}
+ 	if (!GetLandscapeProxy()->IsTilemaskChanged())
+ 	{
+ 		return;
+ 	}
 
 	Texture* texture = baseLandscape->GetTexture(Landscape::TEXTURE_TILE_MASK);
 
 	if (texture)
 	{
-		FilePath texturePathname = baseLandscape->GetTextureName(Landscape::TEXTURE_TILE_MASK);
-
-		if (texturePathname.IsEmpty())
-		{
-			return;
-		}
-
-		texturePathname.ReplaceExtension(".png");
-
-		//eBlendMode srcBlend = RenderManager::Instance()->GetSrcBlend();
-		//eBlendMode dstBlend = RenderManager::Instance()->GetDestBlend();
-		//RenderManager::Instance()->SetBlendMode(BLEND_ONE, BLEND_ZERO);
-		
 		Image *image = texture->CreateImageFromMemory(noBlendDrawState);
-		//RenderManager::Instance()->SetBlendMode(srcBlend, dstBlend);
 
 		if(image)
 		{
-            ImageSystem::Instance()->Save(texturePathname, image);
+            ImageSystem::Instance()->Save(texture->texDescriptor->GetSourceTexturePathname(), image);
 			SafeRelease(image);
 		}
-
-		TextureDescriptorUtils::CreateDescriptorIfNeed(texturePathname);
 
 		GetLandscapeProxy()->ResetTilemaskChanged();
 	}
