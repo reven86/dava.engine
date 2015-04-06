@@ -65,7 +65,6 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     connect(model, &PreviewModel::CanvasScaleChanged, this, &PreviewWidget::OnCanvasScaleChanged);
 
     connect(model, &PreviewModel::ControlNodeSelected, this, &PreviewWidget::OnControlNodeSelected);
-    connect(model, &PreviewModel::AllControlsDeselected, this, &PreviewWidget::OnAllControlsDeselected);
     connect(model, &PreviewModel::ErrorOccurred, this, &PreviewWidget::OnError);
 }
 
@@ -126,7 +125,6 @@ void PreviewWidget::UpdateRootControls()
     
 }
 
-
 DavaGLWidget* PreviewWidget::GetGLWidget() const
 {
     return ui->davaGLWidget;
@@ -141,12 +139,7 @@ void PreviewWidget::OnMonitorChanged()
 
 void PreviewWidget::OnControlNodeSelected(ControlNode *node)
 {
-    widgetContext->SetData(QVariant::fromValue(node), "selectedNode");
-}
-
-void PreviewWidget::OnAllControlsDeselected()
-{
-    widgetContext->SetData(!widgetContext->GetData("controlDeselected").toBool(), "controlDeselected");
+    widgetContext->SetData("selectedNode", QVariant::fromValue(node));
 }
 
 void PreviewWidget::OnError(const QString &errorText)

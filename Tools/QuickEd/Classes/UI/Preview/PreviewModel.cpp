@@ -165,7 +165,6 @@ void PreviewModel::SetCanvasPosition(const QPoint &newCanvasPosition)
     }
 }
 
-
 void PreviewModel::OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIControl *selectedControl)
 {
     auto it = rootNodes.find(rootControl);
@@ -222,11 +221,6 @@ void PreviewModel::OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIContr
     {
         ErrorOccurred(tr("rootControl not found!"));
     }
-}
-
-void PreviewModel::OnAllControlsDeselected()
-{
-    emit AllControlsDeselected();
 }
 
 void PreviewModel::SetActiveRootControls(const QList<ControlNode*> &activatedControls)

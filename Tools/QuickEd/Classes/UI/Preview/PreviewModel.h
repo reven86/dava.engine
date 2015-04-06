@@ -37,14 +37,12 @@ public:
 
     // ControlSelectionListener
     virtual void OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIControl *selectedControl) override;
-    virtual void OnAllControlsDeselected() override;
 signals:
     void CanvasPositionChanged(const QPoint &canvasPosition);
     void CanvasOrViewChanged(const QSize &viewSize, const QSize &scaledContentSize);
     void CanvasScaleChanged(int canvasScale);
 
     void ControlNodeSelected(ControlNode *node);
-    void AllControlsDeselected();
 
     void ErrorOccurred(const QString &errorText);
 

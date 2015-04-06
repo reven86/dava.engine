@@ -1,43 +1,44 @@
 #include "LibraryWidget.h"
-#include "ui_LibraryWidget.h"
 #include "UI/WidgetContext.h"
-#include <QAbstractItemModel>
+#include "Document.h"
+#include "LibraryModel.h"
+
+struct LibraryDelta : public WidgetDelta
+{
+    LibraryDelta(Document *document)
+    {
+        libraryModel = new LibraryModel(document->GetPackage(), document);
+    }
+    LibraryModel *libraryModel;
+};
 
 LibraryWidget::LibraryWidget(QWidget *parent)
     : QDockWidget(parent)
-    , ui(new Ui::LibraryWidget())
     , widgetContext(nullptr)
 {
-    ui->setupUi(this);
-}
-LibraryWidget::~LibraryWidget()
-{
-    delete ui;
+    setupUi(this);
 }
 
 void LibraryWidget::OnContextChanged(WidgetContext *arg)
 {
     widgetContext = arg;
-    UpdateModel();
+    LoadDelta();
 }
 
-void LibraryWidget::OnDataChanged(const QByteArray &role)
-{
-    if (role == "libraryModel")
-    {
-        UpdateModel();
-    }
-}
-
-void LibraryWidget::UpdateModel()
+void LibraryWidget::LoadDelta()
 {
     if (nullptr == widgetContext)
     {
-        ui->treeView->setModel(nullptr);
+        treeView->setModel(nullptr);
     }
     else
     {
-        QAbstractItemModel *model = widgetContext->GetData("libraryModel").value<QAbstractItemModel*>();
-        ui->treeView->setModel(model);
+        LibraryDelta *delta = reinterpret_cast<LibraryDelta*>(widgetContext->GetDelta(this));
+        if (nullptr == delta)
+        {
+            delta = new LibraryDelta(qobject_cast<Document*>(widgetContext->parent())); //TODO this is arch. fail
+            widgetContext->SetDelta(this, delta);
+        }
+        treeView->setModel(delta->libraryModel);
     }
 }

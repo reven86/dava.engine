@@ -25,7 +25,7 @@ BaseController::BaseController(QObject *parent)
 {
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
     connect(mainWindow, &MainWindow::TabClosed, this, &BaseController::CloseOneDocument);
-
+    connect(mainWindow, &MainWindow::CurrentTabChanged, this, &BaseController::OnCurrentTabChanged);
     connect(mainWindow, &MainWindow::CloseProject, this, &BaseController::CloseProject);
     connect(mainWindow, &MainWindow::ActionExitTriggered, this, &BaseController::Exit);
     connect(mainWindow, &MainWindow::CloseRequested, this, &BaseController::Exit);
@@ -36,7 +36,6 @@ BaseController::BaseController(QObject *parent)
     connect(mainWindow, &MainWindow::SaveDocument, this, static_cast<void(BaseController::*)(int)>(&BaseController::SaveDocument));
 
     connect(documentGroup, &DocumentGroup::ContextChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnContextChanged);
-    connect(documentGroup, &DocumentGroup::ContextDataChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnDataChanged);
 
     connect(documentGroup, &DocumentGroup::ContextChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnContextChanged);
     connect(documentGroup, &DocumentGroup::ContextDataChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnDataChanged);

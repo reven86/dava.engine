@@ -65,24 +65,28 @@ bool CheckeredCanvas::SystemInput(UIEvent *currentInput)
         UIControl *control = GetControlByPos(this, currentInput->point);
         if (nullptr != control)
         {
-            for (auto listener : selectionListeners)
+            UIControl *rootControl = control;
+            while (rootControl->GetParent() != nullptr && rootControl->GetParent() != this)
             {
-                UIControl *parentControl = control;
-                while (parentControl->GetParent() != nullptr && parentControl->GetParent() != this)
+                rootControl = rootControl->GetParent();
+            }
+            if (rootControl->GetParent() == this)
+            {
+                for (auto listener : selectionListeners)
                 {
-                    parentControl = parentControl->GetParent();
+                    listener->OnControlSelected(rootControl, control);
                 }
-                if (parentControl->GetParent() == this)
-                {
-                    listener->OnControlSelected(parentControl, control);
-                }
+            }
+            else
+            {
+                DVASSERT(false);
             }
         }
         else
         {
             for (auto listener : selectionListeners)
             {
-                listener->OnAllControlsDeselected();
+                listener->OnControlSelected(nullptr, nullptr);
             }
         }
     }

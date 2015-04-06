@@ -43,7 +43,7 @@ void PropertiesWidget::UpdateActivatedControls()
     {
         QList<ControlNode*> &activatedControls = widgetContext->GetData("activatedControls").value<QList<ControlNode*> >();
         QAbstractItemModel* model = activatedControls.empty() ? nullptr : new PropertiesModel(activatedControls.first(), widgetContext->GetDocument());//TODO this is ugly
-        widgetContext->SetData(QVariant::fromValue(model), "propertiesModel");
+        widgetContext->SetData("propertiesModel", QVariant::fromValue(model)); //TODO: bad architecture
         treeView->setModel(model);
         treeView->expandToDepth(0);
         treeView->resizeColumnToContents(0);

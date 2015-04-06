@@ -2,9 +2,15 @@
 #define __QUICKED_WIDGET_CONTEXT_H__
 
 #include <QtCore>
+#include <QWidget>
+#include <QSharedPointer>
 #include <DAVAEngine.h>
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Document.h"
+
+struct WidgetDelta
+{
+};
 
 class WidgetContext : public QObject
 {
@@ -13,11 +19,14 @@ public:
     WidgetContext(QObject *parent = nullptr);
     QVariant& GetData(const QByteArray &role);
     Document *GetDocument() const; //TODO - this is deprecated
-    void SetData(const QVariant value, const QByteArray &role);
+    void SetData(const QByteArray &role, const QVariant &value);
+    WidgetDelta* GetDelta(QWidget* requester) const;
+    void SetDelta(QWidget* requester, WidgetDelta* widgetDelta);
 signals:
     void DataChanged(const QByteArray &role);
 private:
     QMap < QByteArray, QVariant > values;
+    std::map < QWidget*, std::unique_ptr<WidgetDelta> > deltas;
 };
 
 inline Document* WidgetContext::GetDocument() const

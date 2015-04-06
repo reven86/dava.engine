@@ -36,19 +36,15 @@ Document::Document(PackageNode *_package, QObject *parent)
 
 void Document::InitWidgetContexts()
 {
-    dataContext->SetData(QVariant::fromValue(new LibraryModel(package, this)), "libraryModel");
-
-    dataContext->SetData(QVariant::fromValue(new PackageModel(package, commandExecutor, this)), "packageModel");
-
-    dataContext->SetData(false, "controlDeselected");
-    dataContext->SetData(false, "controlsDeselected");
+    dataContext->SetData("controlDeselected", false);
+    dataContext->SetData("controlsDeselected", false);
 
     QList<ControlNode*> activeRootControls;
     PackageControlsNode *controlsNode = package->GetPackageControlsNode();
     for (int32 index = 0; index < controlsNode->GetCount(); ++index)
         activeRootControls.push_back(controlsNode->Get(index));
 
-    dataContext->SetData(QVariant::fromValue(activeRootControls), "activeRootControls");
+    dataContext->SetData("activeRootControls", QVariant::fromValue(activeRootControls));
 }
 
 Document::~Document()

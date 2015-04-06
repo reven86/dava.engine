@@ -49,7 +49,6 @@ private slots:
     void OnMonitorChanged();
 
     void OnControlNodeSelected(ControlNode *node);
-    void OnAllControlsDeselected();
 
     void OnError(const QString &errorText);
 

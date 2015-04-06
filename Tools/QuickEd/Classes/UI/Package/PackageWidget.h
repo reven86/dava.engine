@@ -6,38 +6,33 @@
 #include <QPointer>
 #include <QItemSelectionModel>
 #include "UI/Package/FilteredPackageModel.h"
+#include "UI/Package/PackageModel.h"
 #include "DAVAEngine.h"
+#include "ui_PackageWidget.h"
 
 namespace Ui {
     class PackageWidget;
 }
 
 class ControlNode;
-class FilteredPackageModel;
 class WidgetContext;
 
-class PackageWidget : public QDockWidget
+class PackageWidget : public QDockWidget, public Ui::PackageWidget
 {
     Q_OBJECT
 public:
     explicit PackageWidget(QWidget *parent = 0);
-    virtual ~PackageWidget();
+    ~PackageWidget() = default;
 
 public slots:
     void OnContextChanged(WidgetContext *context);
     void OnDataChanged(const QByteArray &role);
-
 private:
-    void UpdateModel();
-    void UpdateSelection();
-    void UpdateExpanded();
-    void UpdateFilterString();
-    void OnControlSelectedInEditor(ControlNode *node);
+    void LoadDelta();
+    void SaveDelta();
+private:
+      void OnControlSelectedInEditor(ControlNode *node);
     void OnAllControlsDeselectedInEditor();
-
-    void SaveSelection();
-    void SaveExpanded();
-    void SaveFilterString();
 
     void RefreshActions(const QModelIndexList &indexList);
     void RefreshAction(QAction *action, bool enabled, bool visible);
@@ -55,7 +50,6 @@ private slots:
     void OnDelete();
 
 private:
-    Ui::PackageWidget *ui;
     WidgetContext *widgetContext;
     QAction *importPackageAction;
     QAction *copyAction;
@@ -63,7 +57,8 @@ private:
     QAction *cutAction;
     QAction *delAction;
 
-    QPointer<FilteredPackageModel> proxyModel;
+    QPointer<FilteredPackageModel> filteredPackageModel;
+    QPointer<PackageModel> packageModel;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

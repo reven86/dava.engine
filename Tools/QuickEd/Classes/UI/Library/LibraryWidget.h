@@ -2,25 +2,20 @@
 #define __QUICKED_LIBRARY_WIDGET_H__
 
 #include <QDockWidget>
+#include "ui_LibraryWidget.h"
+
 class QAbstractItemModel;
 class WidgetContext;
 
-namespace Ui {
-    class LibraryWidget;
-}
-
-class LibraryWidget: public QDockWidget
+class LibraryWidget : public QDockWidget, public Ui::LibraryWidget
 {
     Q_OBJECT
 public:
     LibraryWidget(QWidget *parent = NULL);
-    virtual ~LibraryWidget();
 public slots:
     void OnContextChanged(WidgetContext *context);
-    void OnDataChanged(const QByteArray &role);
 private:
-    void UpdateModel();
-    Ui::LibraryWidget *ui;
+    void LoadDelta();
     WidgetContext *widgetContext;
 };
 
