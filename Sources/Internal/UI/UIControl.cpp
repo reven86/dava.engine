@@ -2500,8 +2500,8 @@ namespace DAVA
         if (rect == newRect)
             return;
 
-        SetPosition(newRect.GetPosition() + GetPivotPoint());
         SetSize(newRect.GetSize());
+        SetPosition(newRect.GetPosition() + GetPivotPoint());
     }
 
     void UIControl::GetAxisDataByAlignData(float32 size, float32 parentSize,
