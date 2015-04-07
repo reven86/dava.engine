@@ -23,7 +23,7 @@ QWidget * FloatPropertyDelegate::createEditor( QWidget * parent, const QStyleOpt
 {
     QLineEdit *lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
-    connect(lineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(OnValueChanged()));
+    connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(OnEditingFinished()));
     lineEdit->setValidator(new QRegExpValidator(QRegExp("\\s*-?\\d*[,\\.]?\\d*\\s*")));
 
     return lineEdit;
@@ -34,9 +34,7 @@ void FloatPropertyDelegate::setEditorData( QWidget * rawEditor, const QModelInde
     QLineEdit *editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
     DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
-    editor->blockSignals(true);
     editor->setText(QString("%1").arg(variant.AsFloat()));
-    editor->blockSignals(false);
 
     BasePropertyDelegate::SetValueModified(editor, false);
 }
@@ -54,7 +52,7 @@ bool FloatPropertyDelegate::setModelData( QWidget * rawEditor, QAbstractItemMode
     return model->setData(index, variant, Qt::EditRole);
 }
 
-void FloatPropertyDelegate::OnValueChanged()
+void FloatPropertyDelegate::OnEditingFinished()
 {
     QWidget *lineEdit = qobject_cast<QWidget *>(sender());
     if (!lineEdit)

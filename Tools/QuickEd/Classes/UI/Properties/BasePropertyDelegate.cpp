@@ -23,12 +23,13 @@ bool BasePropertyDelegate::setModelData( QWidget *editor, QAbstractItemModel *mo
     if (!BasePropertyDelegate::IsValueModified(editor))
         return true;
 
+    BasePropertyDelegate::SetValueModified(editor, false);
+
     if (BasePropertyDelegate::IsValueReseted(editor))
     {
+        BasePropertyDelegate::SetValueReseted(editor, false);
         if (model->setData(index, QVariant(), DAVA::ResetRole))
         {
-            BasePropertyDelegate::SetValueModified(editor, false);
-            BasePropertyDelegate::SetValueReseted(editor, false);
             return true;
         }
     }
