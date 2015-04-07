@@ -122,4 +122,13 @@ void AnimationSystem::RemoveFromActive( AnimationComponent *comp )
     comp->state = AnimationComponent::STATE_STOPPED;
 }
 
+void AnimationSystem::RemoveEntity(Entity * entity)
+{
+    AnimationComponent *comp = GetAnimationComponent(entity);
+    if (comp->state != AnimationComponent::STATE_STOPPED)
+    {
+        RemoveFromActive(comp);
+    }
+}
+
 };
