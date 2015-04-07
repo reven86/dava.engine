@@ -482,7 +482,6 @@ void MemoryManager::RemoveBacktrace(size_t hash)
     assert(backtraces != nullptr);
 
     auto i = backtraces->find(hash);
-    assert(i != backtraces->end());
     if (i != backtraces->end())
     {
         Backtrace& backtrace = i->second;
