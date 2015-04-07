@@ -41,7 +41,7 @@ void PropertiesWidget::UpdateActivatedControls()
     }
     else
     {
-        QList<ControlNode*> &activatedControls = sharedData->GetData("activatedControls").value<QList<ControlNode*> >();
+        const QList<ControlNode*> &activatedControls = sharedData->GetData("activatedControls").value<QList<ControlNode*> >();
         QAbstractItemModel* model = activatedControls.empty() ? nullptr : new PropertiesModel(activatedControls.first(), sharedData->GetDocument());//TODO this is ugly
         sharedData->SetData("propertiesModel", QVariant::fromValue(model)); //TODO: bad architecture
         treeView->setModel(model);
