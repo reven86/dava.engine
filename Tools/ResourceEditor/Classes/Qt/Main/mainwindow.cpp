@@ -403,6 +403,10 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
                 if (QtLayer::Instance())
                 {
                     QtLayer::Instance()->OnResume();
+                    // Fix for menuBar rendering
+                    const auto isMenuBarEnabled = ui->menuBar->isEnabled();
+                    ui->menuBar->setEnabled( false );
+                    ui->menuBar->setEnabled( isMenuBarEnabled );
                 }
                 break;
             }
@@ -769,7 +773,12 @@ void QtMainWindow::SetupActions()
     
     connect( ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList );
 
-    QObject::connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
+    auto actSpy = ui->menuDebug_Functions->addAction( "Spy Qt Widgets" );
+    actSpy->setShortcut( QKeySequence( Qt::ALT + Qt::Key_C, Qt::ALT + Qt::Key_C ) );
+    actSpy->setShortcutContext( Qt::ApplicationShortcut );
+    connect( actSpy, &QAction::triggered, developerTools, &DeveloperTools::OnSpyWidget );
+
+    connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
 
 	ui->actionObjectTypesOff->setData(ResourceEditor::ESOT_NONE);
 	ui->actionNoObject->setData(ResourceEditor::ESOT_NO_COLISION);
@@ -991,6 +1000,11 @@ void QtMainWindow::EnableSceneActions(bool enable)
     ui->actionSwitchesWithDifferentLODs->setEnabled(enable);
     
     ui->actionSnapCameraToLandscape->setEnabled(enable);
+
+    // Fix for menuBar rendering
+    const auto isMenuBarEnabled = ui->menuBar->isEnabled();
+    ui->menuBar->setEnabled(false);
+    ui->menuBar->setEnabled(isMenuBarEnabled);
 }
 
 void QtMainWindow::UpdateModificationActionsState()

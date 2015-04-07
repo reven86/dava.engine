@@ -32,6 +32,7 @@
 #include "UI/UITextFieldAndroid.h"
 #include "Base/BaseTypes.h"
 #include "Utils/UTF8Utils.h"
+#include "Render/Image/ImageConvert.h"
 
 extern "C"
 {
@@ -98,6 +99,38 @@ extern "C"
     void Java_com_dava_framework_JNITextField_TextFieldFocusChanged(JNIEnv* env, jobject classthis, uint32_t id, bool hasFocus)
     {
         DAVA::UITextFieldAndroid::TextFieldFocusChanged(id, hasFocus);
+    }
+
+    void Java_com_dava_framework_JNITextField_TextFieldUpdateTexture(JNIEnv* env,
+            jobject classthis, uint32_t id, jintArray pixels, int width, int height)
+    {
+        if (nullptr != pixels)
+        {
+            DVASSERT(width > 0);
+            DVASSERT(height > 0);
+
+            jboolean isCopy = JNI_FALSE;
+            jint* rawData = env->GetIntArrayElements(pixels, &isCopy);
+
+            DVASSERT(rawData);
+            DVASSERT(env->GetArrayLength(pixels) == width * height); // ARGB
+
+            DAVA::uint32 pitch = width * 4; // 4 byte per pixel
+
+            // convert on the same memory
+            DAVA::ImageConvert::ConvertImageDirect(DAVA::FORMAT_BGRA8888,
+                    DAVA::FORMAT_RGBA8888, rawData, width, height, pitch, rawData,
+                    width, height, pitch);
+
+            DAVA::UITextFieldAndroid::TextFieldUpdateTexture(id, rawData, width,
+                    height);
+
+            env->ReleaseIntArrayElements(pixels, rawData, 0);
+        }
+        else
+        {
+            DAVA::UITextFieldAndroid::TextFieldUpdateTexture(id, nullptr, width, height);
+        }
     }
 
 };
