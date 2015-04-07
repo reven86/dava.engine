@@ -178,6 +178,8 @@ void UIWebView::UpdateControlRect()
 
 void UIWebView::SetRenderToTexture(bool value)
 {
+    // for now disable this functionality
+    value = false;
     webViewControl->SetRenderToTexture(value);
 }
 
