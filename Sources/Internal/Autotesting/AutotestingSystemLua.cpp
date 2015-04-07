@@ -141,7 +141,7 @@ namespace DAVA
 			lua_remove(L, -2);  /* remove path template */
 			if (filename.Exists())  /* does file exist and is readable? */
 				return filename;  /* return that file name */
-			lua_pushfstring(L, "\n\tno file " LUA_QS, filename);
+			lua_pushfstring(L, "\n\tno file " LUA_QS, filename.GetAbsolutePathname().c_str());
 			lua_remove(L, -2);  /* remove file name */
 			lua_concat(L, 2);  /* add entry to possible error message */
 		}
