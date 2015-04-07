@@ -60,7 +60,7 @@ public:
 	void SetMoveSpeedArrayIndex(DAVA::uint32 index);
 
 	void SetViewportRect(const DAVA::Rect &rect);
-	const DAVA::Rect GetViewportRect();
+	const DAVA::Rect& GetViewportRect() const;
 
 	void LookAt(const DAVA::AABBox3 &box);
 	void MoveTo(const DAVA::Vector3 &pos);

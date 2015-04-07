@@ -4,8 +4,10 @@ find_package( QT5 REQUIRED )
 
 include_directories( ${Qt5Core_INCLUDE_DIRS} )     
 include_directories( ${Qt5Gui_INCLUDE_DIRS} )
-include_directories( ${Qt5Widgets_INCLUDE_DIRS} )     
+include_directories( ${Qt5Widgets_INCLUDE_DIRS} )  
+include_directories( ${CMAKE_CURRENT_BINARY_DIR} )   
 include_directories( "QtTools" )                                      
+
 
 set( MOC_APP_SRCS )
 set( UI_APP_HDRS  )
