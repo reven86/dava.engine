@@ -860,6 +860,13 @@
 		17FFF905193F03AA003D51DA /* MongodbClient.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C7FE16B9326D002BD35F /* MongodbClient.h */; };
 		17FFF906193F03AF003D51DA /* MongodbObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80016B9326D002BD35F /* MongodbObject.h */; };
 		1AD7C35E17D8951C00B9977C /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AD7C35D17D8951C00B9977C /* Vector.cpp */; };
+		327343CE1ACD3CC70003F2A8 /* BaseFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327343CC1ACD3CC70003F2A8 /* BaseFamily.cpp */; };
+		327343CF1ACD3CC70003F2A8 /* BaseFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = 327343CD1ACD3CC70003F2A8 /* BaseFamily.h */; };
+		327343D21ACD3CDC0003F2A8 /* UIControlFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327343D01ACD3CDB0003F2A8 /* UIControlFamily.cpp */; };
+		327343D31ACD3CDC0003F2A8 /* UIControlFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327343D01ACD3CDB0003F2A8 /* UIControlFamily.cpp */; };
+		327343D41ACD3CDC0003F2A8 /* UIControlFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = 327343D11ACD3CDC0003F2A8 /* UIControlFamily.h */; };
+		327343D51ACD3CDC0003F2A8 /* UIControlFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = 327343D11ACD3CDC0003F2A8 /* UIControlFamily.h */; };
+		327343D61ACD3CE70003F2A8 /* BaseFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327343CC1ACD3CC70003F2A8 /* BaseFamily.cpp */; };
 		32B074BD19E53C0C0069981A /* UIControlHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B074B719E53C0C0069981A /* UIControlHelpers.cpp */; };
 		32B074BE19E53C0C0069981A /* UIControlHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B074B719E53C0C0069981A /* UIControlHelpers.cpp */; };
 		32B074BF19E53C0C0069981A /* UIControlHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B074B819E53C0C0069981A /* UIControlHelpers.h */; };
@@ -1971,6 +1978,10 @@
 		17F53E3216D3705E004D5099 /* WebViewControliOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebViewControliOS.h; sourceTree = "<group>"; };
 		17F53E3316D3705E004D5099 /* WebViewControliOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WebViewControliOS.mm; sourceTree = "<group>"; };
 		1AD7C35D17D8951C00B9977C /* Vector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Vector.cpp; sourceTree = "<group>"; };
+		327343CC1ACD3CC70003F2A8 /* BaseFamily.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BaseFamily.cpp; sourceTree = "<group>"; };
+		327343CD1ACD3CC70003F2A8 /* BaseFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseFamily.h; sourceTree = "<group>"; };
+		327343D01ACD3CDB0003F2A8 /* UIControlFamily.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIControlFamily.cpp; sourceTree = "<group>"; };
+		327343D11ACD3CDC0003F2A8 /* UIControlFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIControlFamily.h; sourceTree = "<group>"; };
 		32B074B719E53C0C0069981A /* UIControlHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIControlHelpers.cpp; sourceTree = "<group>"; };
 		32B074B819E53C0C0069981A /* UIControlHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIControlHelpers.h; sourceTree = "<group>"; };
 		32B074B919E53C0C0069981A /* UIPackage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackage.cpp; sourceTree = "<group>"; };
@@ -3194,6 +3205,8 @@
 		B72364A11A8D01D6009940BE /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				327343D01ACD3CDB0003F2A8 /* UIControlFamily.cpp */,
+				327343D11ACD3CDC0003F2A8 /* UIControlFamily.h */,
 				B72364A21A8D01D6009940BE /* UIComponent.cpp */,
 				B72364A31A8D01D6009940BE /* UIComponent.h */,
 			);
@@ -3534,6 +3547,8 @@
 		E8B3C81A16B9326D002BD35F /* Entity */ = {
 			isa = PBXGroup;
 			children = (
+				327343CC1ACD3CC70003F2A8 /* BaseFamily.cpp */,
+				327343CD1ACD3CC70003F2A8 /* BaseFamily.h */,
 				E8B3C81B16B9326D002BD35F /* Component.cpp */,
 				E8B3C81C16B9326D002BD35F /* Component.h */,
 				E8B3C81D16B9326D002BD35F /* SceneSystem.cpp */,
@@ -4660,6 +4675,7 @@
 				02FD7FFB1924997C007762C0 /* RenderComponent.h in Headers */,
 				02FD7FFC1924997C007762C0 /* SwitchComponent.h in Headers */,
 				02FD7FFD1924997C007762C0 /* TransformComponent.h in Headers */,
+				327343D51ACD3CDC0003F2A8 /* UIControlFamily.h in Headers */,
 				02FD7FFE1924997C007762C0 /* UpdatableComponent.h in Headers */,
 				02FD7FFF1924997C007762C0 /* DataNode.h in Headers */,
 				02FD80001924997C007762C0 /* Drawable.h in Headers */,
@@ -4883,6 +4899,7 @@
 				E8B3CAA716B9326E002BD35F /* FastName.h in Headers */,
 				026A1DEE19DAF26600813AEF /* SkinnedMesh.h in Headers */,
 				E8B3CAA816B9326E002BD35F /* FastNameMap.h in Headers */,
+				327343CF1ACD3CC70003F2A8 /* BaseFamily.h in Headers */,
 				50194DA51A52D92600557DAB /* IfAddress.h in Headers */,
 				E8B3CAAA16B9326E002BD35F /* FixedSizePoolAllocator.h in Headers */,
 				02FD7EBC19237D33007762C0 /* SpeedTreeComponent.h in Headers */,
@@ -5247,6 +5264,7 @@
 				E8B3CD0E16B9326E002BD35F /* UIPopup.h in Headers */,
 				E8B3CD1016B9326E002BD35F /* UIScreen.h in Headers */,
 				E8B3CD1116B9326E002BD35F /* UIScreenManager.h in Headers */,
+				327343D41ACD3CDC0003F2A8 /* UIControlFamily.h in Headers */,
 				029BAE551859B81700478671 /* musicios.h in Headers */,
 				E8B3CD1416B9326E002BD35F /* UIScreenManageriPhone.h in Headers */,
 				E8B3CD1616B9326E002BD35F /* UIScreenManageriPhoneImpl.h in Headers */,
@@ -5713,6 +5731,7 @@
 				02FD81781924997C007762C0 /* ParticleEffectSystem.cpp in Sources */,
 				E8525D1D1A30910400FDF76E /* WASDControllerComponent.cpp in Sources */,
 				02FD81791924997C007762C0 /* RenderUpdateSystem.cpp in Sources */,
+				327343D31ACD3CDC0003F2A8 /* UIControlFamily.cpp in Sources */,
 				02FD817A1924997C007762C0 /* SwitchSystem.cpp in Sources */,
 				E8525D191A30910400FDF76E /* SnapToLandscapeControllerComponent.cpp in Sources */,
 				02FD817B1924997C007762C0 /* TransformSystem.cpp in Sources */,
@@ -5729,6 +5748,7 @@
 				647EFC70195F0AC40073B3CB /* NMaterialHelper.cpp in Sources */,
 				02FD81831924997C007762C0 /* UIControlSystem.cpp in Sources */,
 				02FD81841924997C007762C0 /* UIEvent.cpp in Sources */,
+				327343D61ACD3CE70003F2A8 /* BaseFamily.cpp in Sources */,
 				02FD81851924997C007762C0 /* UIFadeTransition.cpp in Sources */,
 				02FD81861924997C007762C0 /* UIFileSystemDialog.cpp in Sources */,
 				02FD81871924997C007762C0 /* UIHierarchy.cpp in Sources */,
@@ -5961,6 +5981,7 @@
 				024BD5BD1A2C9299000BECC1 /* VirtualCoordinatesSystem.cpp in Sources */,
 				D7FEF14B19864E5C00B2C7AF /* DownloadManager.cpp in Sources */,
 				E8B3CB7516B9326E002BD35F /* Particle.cpp in Sources */,
+				327343CE1ACD3CC70003F2A8 /* BaseFamily.cpp in Sources */,
 				E8B3CB7716B9326E002BD35F /* ParticleEmitter.cpp in Sources */,
 				E8B3CB7D16B9326E002BD35F /* ParticleLayer.cpp in Sources */,
 				D7FEF15919864E5C00B2C7AF /* PatchFile.cpp in Sources */,
@@ -6105,6 +6126,7 @@
 				E8B3CC8916B9326E002BD35F /* MeshInstance.cpp in Sources */,
 				E8B3CC8B16B9326E002BD35F /* MeshInstanceNode.cpp in Sources */,
 				E8B3CC8D16B9326E002BD35F /* ParticleEffectNode.cpp in Sources */,
+				327343D21ACD3CDC0003F2A8 /* UIControlFamily.cpp in Sources */,
 				E8B3CC8F16B9326E002BD35F /* ParticleEmitterNode.cpp in Sources */,
 				6280BAA518D6F7DC007809B7 /* DateTimeApple.mm in Sources */,
 				E8B3CC9116B9326E002BD35F /* PathManip.cpp in Sources */,
