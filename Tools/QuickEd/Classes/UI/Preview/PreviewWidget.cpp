@@ -1,3 +1,4 @@
+
 #include "PreviewWidget.h"
 
 #include "PreviewModel.h"
@@ -7,10 +8,11 @@
 
 #include <QLineEdit>
 #include <QScreen>
+#include <QMessageBox>
 
 #include "Model/PackageHierarchy/ControlNode.h"
 
-#include <QMessageBox>
+#include "QtTools/DavaGLWidget/davaglwidget.h"
 
 using namespace DAVA;
 
@@ -30,6 +32,8 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     , model(new PreviewModel(this))
 {
     setupUi(this);
+    davaGLWidget = new DavaGLWidget();
+    frame->layout()->addWidget(davaGLWidget);
 
     ScopedPtr<UIScreen> davaUIScreen(new DAVA::UIScreen());
     davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
@@ -64,6 +68,11 @@ PreviewWidget::PreviewWidget(QWidget *parent)
 
     connect(model, &PreviewModel::ControlNodeSelected, this, &PreviewWidget::OnControlNodeSelected);
     connect(model, &PreviewModel::ErrorOccurred, this, &PreviewWidget::OnError);
+}
+
+DavaGLWidget *PreviewWidget::GetDavaGLWidget()
+{
+    return davaGLWidget;
 }
 
 void PreviewWidget::OnDocumentChanged(SharedData *data)

@@ -2,13 +2,14 @@
 #define QUICKED_BASECONTROLLER_H
 
 #include <QObject>
-#include <QUndoGroup>
-#include "Project.h"
-#include "UI/mainwindow.h"
-#include "DocumentGroup.h"
 
 class QAction;
 class Document;
+class DocumentGroup;
+class Project;
+class MainWindow;
+class PackageNode;
+
 class EditorCore : public QObject
 {
     Q_OBJECT

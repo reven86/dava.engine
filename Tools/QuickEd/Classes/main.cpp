@@ -29,8 +29,8 @@
 
 #include <QApplication>
 #include "UI/mainwindow.h"
+
 #include "EditorCore.h"
-#include "DAVAEngine.h"
 
 #include "Platform/Qt5/QtLayer.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
@@ -51,19 +51,19 @@ int main(int argc, char *argv[])
     auto loopManager = new DavaLoop();
     auto loop = new FrameworkLoop();
 
-    auto *baseController = new EditorCore();
-    auto mainWindow = baseController->GetMainWindow();
+    auto *editorCore = new EditorCore();
+    auto mainWindow = editorCore->GetMainWindow();
     auto glWidget = mainWindow->GetGLWidget();
 
     loop->SetOpenGLWindow(glWidget);
-    baseController->Start();
+    editorCore->Start();
     loopManager->StartLoop( loop );
 
     QApplication::exec();
 
     glWidget->setParent(nullptr);
 
-    delete baseController;
+    delete editorCore;
     delete loop;
     delete loopManager;
     DAVA::QtLayer::Instance()->Release();

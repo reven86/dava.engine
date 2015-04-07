@@ -31,7 +31,7 @@ Document::Document(PackageNode *_package, QObject *parent)
     , undoStack(new QUndoStack(this))
 {
     InitSharedData();
-    connect(sharedData, &SharedData::DataChanged, this, &Document::ContextDataChanged);
+    connect(sharedData, &SharedData::DataChanged, this, &Document::SharedDataChanged);
 }
 
 void Document::InitSharedData()

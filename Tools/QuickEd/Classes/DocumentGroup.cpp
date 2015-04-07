@@ -76,7 +76,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     }
     if (nullptr != d->active) 
     {
-        disconnect(d->active, &Document::ContextDataChanged, this, &DocumentGroup::ContextDataChanged);
+        disconnect(d->active, &Document::SharedDataChanged, this, &DocumentGroup::SharedDataChanged);
     }
     
     d->active = document;
@@ -90,7 +90,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     {
         emit DocumentChanged(d->active->GetContext());
         
-        connect(d->active, &Document::ContextDataChanged, this, &DocumentGroup::ContextDataChanged);
+        connect(d->active, &Document::SharedDataChanged, this, &DocumentGroup::SharedDataChanged);
 
         d->undoGroup->setActiveStack(d->active->GetUndoStack());
     }

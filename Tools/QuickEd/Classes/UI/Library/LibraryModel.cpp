@@ -112,4 +112,5 @@ QMimeData *LibraryModel::mimeData(const QModelIndexList &indexes) const
             return data;
         }
     }
+    return nullptr;
 }

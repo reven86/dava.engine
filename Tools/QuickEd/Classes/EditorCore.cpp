@@ -1,21 +1,12 @@
-#include <QUndoStack>
-#include <QApplication>
-#include <QAction>
-#include <QFileInfo>
-#include <QCheckBox>
-#include <QMessageBox>
-#include <QAbstractItemModel>
-#include "EditorCore.h"
-#include "Document.h"
-#include "UI/Package/PackageWidget.h"
-#include "Ui/Library/LibraryWidget.h"
-#include "Ui/Properties/PropertiesWidget.h"
-#include "UI/Preview/PreviewWidget.h"
-#include "Model/PackageHierarchy/ControlNode.h"
-#include "Model/PackageHierarchy/PackageNode.h"
-#include "UI/SharedData.h"
-
 #include "Platform/Qt5/QtLayer.h"
+
+#include "Project.h"
+#include "UI/mainwindow.h"
+#include "DocumentGroup.h"
+#include "Document.h"
+#include "EditorCore.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Ui/SharedData.h"
 
 EditorCore::EditorCore(QObject *parent)
     : QObject(parent)
@@ -24,6 +15,7 @@ EditorCore::EditorCore(QObject *parent)
     , project(new Project(this))
 {
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
+
     connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
     connect(mainWindow, &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
     connect(mainWindow, &MainWindow::CloseProject, this, &EditorCore::CloseProject);
@@ -35,16 +27,16 @@ EditorCore::EditorCore(QObject *parent)
     connect(mainWindow, &MainWindow::SaveAllDocuments, this, &EditorCore::SaveAllDocuments);
     connect(mainWindow, &MainWindow::SaveDocument, this, static_cast<void(EditorCore::*)(int)>(&EditorCore::SaveDocument));
 
-    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
 
-    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::ContextDataChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnDataChanged);
+    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::SharedDataChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDataChanged);
 
-    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::ContextDataChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnDataChanged);
+    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->packageWidget, &PackageWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::SharedDataChanged, mainWindow->packageWidget, &PackageWidget::OnDataChanged);
 
-    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::ContextDataChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnDataChanged);
+    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->previewWidget, &PreviewWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::SharedDataChanged, mainWindow->previewWidget, &PreviewWidget::OnDataChanged);
 
     qApp->installEventFilter(this);
 }

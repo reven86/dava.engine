@@ -3,7 +3,6 @@
 
 #include <QWidget>
 #include <QPointer>
-#include "DAVAEngine.h"
 #include "ui_PreviewWidget.h"
 
 namespace Ui {
@@ -27,7 +26,7 @@ class PreviewWidget : public QWidget, public Ui::PreviewWidget
 public:
     explicit PreviewWidget(QWidget *parent = nullptr);
     ~PreviewWidget() = default;
-
+    DavaGLWidget *GetDavaGLWidget();
 public slots:
     void OnDocumentChanged(SharedData *context);
     void OnDataChanged(const QByteArray &role);
@@ -58,6 +57,7 @@ private:
     void UpdateRootControls();
 
 private:
+    DavaGLWidget *davaGLWidget;
     SharedData *sharedData;
     PreviewModel *model;
 };

@@ -31,6 +31,7 @@
 #define LOCALIZATIONEDITORDIALOG_H
 
 #include "Base/BaseTypes.h"
+#include "ui_localizationeditordialog.h"
 
 #include <QDialog>
 #include <QStandardItemModel>
@@ -164,13 +165,14 @@ protected:
     Ui::LocalizationEditorDialog *ui;
 };
 
-class LocalizationEditorDialog : public QDialog
+class LocalizationEditorDialog : public QDialog, public Ui::LocalizationEditorDialog
 {
     Q_OBJECT
     
 public:
     explicit LocalizationEditorDialog(QWidget *parent = 0);
     ~LocalizationEditorDialog();
+    void SetDefaultLanguage();
 signals:
     void LanguageChanged();
 protected:
@@ -205,14 +207,12 @@ protected:
 //	void SelectStringItemByKey(const QString& keyToBeSelected);
 
 private:
-    Ui::LocalizationEditorDialog *ui;
     void FillLocaleComboBox();
     
     void ConnectToSignals();
     void DisconnectFromSignals();
     
     void SetLocalizationDirectoryPath();
-    void SetDefaultLanguage();
 
     void ReinitializeLocalizationSystem(const QString& localizationDirectory);
 
