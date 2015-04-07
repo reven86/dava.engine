@@ -10,6 +10,7 @@
 #include "DeviceListWidget.h"
 
 #include "Classes/Qt/DeviceInfo/DeviceInfo/DeviceLogController.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/MemProfController.h"
 #include <Base/FunctionTraits.h>
 
 #include <Network/PeerDesription.h>
@@ -27,6 +28,7 @@ DeviceListController::DeviceListController(QObject* parent)
 
     // Register network service for recieving logs from device
     NetCore::Instance()->RegisterService(SERVICE_LOG, MakeFunction(this, &DeviceListController::CreateLogger), MakeFunction(this, &DeviceListController::DeleteLogger), "Logger");
+    NetCore::Instance()->RegisterService(SERVICE_MEMPROF, MakeFunction(this, &DeviceListController::CreateMemProfiler), MakeFunction(this, &DeviceListController::DeleteMemProfiler), "Memory profiler");
 
     // Create controller for discovering remote devices
     DAVA::Net::Endpoint endpoint(announceMulticastGroup, ANNOUNCE_PORT);
@@ -102,6 +104,38 @@ void DeviceListController::DeleteLogger(IChannelListener*, void* context)
     }
 }
 
+IChannelListener* DeviceListController::CreateMemProfiler(uint32 serviceId, void* context)
+{
+    int row = static_cast<int>(reinterpret_cast<intptr_t>(context));
+    if (model != NULL && 0 <= row && row < model->rowCount())
+    {
+        QModelIndex index = model->index(row, 0);
+        DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
+        return services.memprof->NetObject();
+    }
+    return NULL;
+}
+
+void DeviceListController::DeleteMemProfiler(IChannelListener* obj, void* context)
+{
+    int row = static_cast<int>(reinterpret_cast<intptr_t>(context));
+    if (model != NULL && 0 <= row && row < model->rowCount())
+    {
+        QModelIndex index = model->index(row, 0);
+        
+        QStandardItem* item = model->itemFromIndex(index);
+        if (item != NULL)
+        {
+            DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
+            SafeDelete(services.memprof);
+            
+            QVariant v;
+            v.setValue(services);
+            item->setData(v, ROLE_PEER_SERVICES);
+        }
+    }
+}
+
 void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIndex)
 {
     // Check whether we have connection with device
@@ -134,6 +168,7 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
             {
                 DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
                 services.log = new DeviceLogController(peer, view, this);
+                services.memprof = new MemProfController(peer, view, this);
 
                 QVariant v;
                 v.setValue(services);
@@ -209,6 +244,7 @@ void DeviceListController::OnShowLogButtonPressed()
         {
             DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
             services.log->ShowView();
+            services.memprof->ShowView();
         }
     }
 }

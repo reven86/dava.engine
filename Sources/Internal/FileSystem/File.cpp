@@ -95,49 +95,54 @@ File * File::CreateFromSystemPath(const FilePath &filename, uint32 attributes)
         return NULL;
     }
     
+    return PureCreate(filename, attributes);
+}
 
-	FILE * file = 0;
-	uint32 size = 0;
+File * File::PureCreate(const FilePath & filePath, uint32 attributes)
+{
+    FILE * file = 0;
+    uint32 size = 0;
     if((attributes & File::OPEN) && (attributes & File::READ))
     {
         if(attributes & File::WRITE)
         {
-    		file = fopen(filename.GetAbsolutePathname().c_str(),"r+b");
+            file = fopen(filePath.GetAbsolutePathname().c_str(), "r+b");
         }
         else
         {
-            file = fopen(filename.GetAbsolutePathname().c_str(),"rb");
+            file = fopen(filePath.GetAbsolutePathname().c_str(), "rb");
         }
-
-		if (!file) return NULL;
-		fseek(file, 0, SEEK_END);
-		size = static_cast<uint32>(ftell(file));
+        
+        if (!file) return NULL;
+        fseek(file, 0, SEEK_END);
+        size = static_cast<uint32>(ftell(file));
         fseek(file, 0, SEEK_SET);
     }
-	else if ((attributes & File::CREATE) && (attributes & File::WRITE))
-	{
-		file = fopen(filename.GetAbsolutePathname().c_str(),"wb");
-		if (!file)return NULL;
-	}
-	else if ((attributes & File::APPEND) && (attributes & File::WRITE))
-	{
-		file = fopen(filename.GetAbsolutePathname().c_str(),"ab");
-		if (!file)return NULL;
-		fseek(file, 0, SEEK_END);
-		size = static_cast<uint32>(ftell(file));
-	}
-	else 
-	{
-		return NULL;
-	}
-
-
-	File * fileInstance = new File();
-	fileInstance->filename = filename;
-	fileInstance->size = size;
-	fileInstance->file = file;
-	return fileInstance;
+    else if ((attributes & File::CREATE) && (attributes & File::WRITE))
+    {
+        file = fopen(filePath.GetAbsolutePathname().c_str(), "wb");
+        if (!file)return NULL;
+    }
+    else if ((attributes & File::APPEND) && (attributes & File::WRITE))
+    {
+        file = fopen(filePath.GetAbsolutePathname().c_str(), "ab");
+        if (!file)return NULL;
+        fseek(file, 0, SEEK_END);
+        size = static_cast<uint32>(ftell(file));
+    }
+    else 
+    {
+        return NULL;
+    }
+    
+    
+    File * fileInstance = new File();
+    fileInstance->filename = filePath;
+    fileInstance->size = size;
+    fileInstance->file = file;
+    return fileInstance;
 }
+    
 
 const FilePath & File::GetFilename()
 {
@@ -226,9 +231,9 @@ uint32 File::ReadString(String & destinationString)
 
 uint32 File::ReadLine(void * pointerToData, uint32 bufferSize)
 {
-	uint8 *inPtr = (uint8*)pointerToData;
+    uint8 *inPtr = (uint8*)pointerToData;
     while (0 < bufferSize && !IsEof())
-	{
+    {
         uint8 nextChar;
         if (GetNextChar(&nextChar))
         {
@@ -241,10 +246,10 @@ uint32 File::ReadLine(void * pointerToData, uint32 bufferSize)
         {
             break;
         }
-	}
-	*inPtr = 0;
+    }
+    *inPtr = 0;
 
-	return (uint32)(inPtr - (uint8*)pointerToData);
+    return (uint32)(inPtr - (uint8*)pointerToData);
 }
 
 String File::ReadLine()

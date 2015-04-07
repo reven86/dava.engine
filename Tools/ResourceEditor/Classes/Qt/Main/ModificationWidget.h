@@ -40,7 +40,9 @@
 
 class DAVAFloat32SpinBox;
 
-class ModificationWidget: public QWidget
+
+class ModificationWidget
+    : public QWidget
 {
 	Q_OBJECT
 
@@ -48,10 +50,10 @@ public:
 	enum PivotMode
 	{
 		PivotAbsolute,
-		PivotRelative
+		PivotRelative,
 	};
 
-	explicit ModificationWidget(QWidget* parent = 0);
+	explicit ModificationWidget(QWidget* parent = nullptr);
 	~ModificationWidget();
 
 	void SetPivotMode(PivotMode pivotMode);
@@ -88,26 +90,27 @@ private:
 	void ApplyScaleValues(ST_Axis axis);
 };
 
-class DAVAFloat32SpinBox : public QAbstractSpinBox
+class DAVAFloat32SpinBox
+    : public QAbstractSpinBox
 {
 	Q_OBJECT
 
 public:
-	DAVAFloat32SpinBox(QWidget *parent = 0);
+	explicit DAVAFloat32SpinBox(QWidget *parent = nullptr);
 	virtual ~DAVAFloat32SpinBox();
 
 	void showButtons(bool show);
 
 	DAVA::float32 value() const;
 	void setValue(DAVA::float32 val);
-	virtual void stepBy(int steps);
+	void stepBy(int steps) override;
 
 signals:
 	void valueEdited();
 	void valueChanged();
 
 public slots:
-	virtual void clear();
+	void clear() override;
 
 protected slots:
 	void textEditingFinished();
@@ -120,9 +123,9 @@ protected:
 	bool hasButtons;
 	bool cleared;
 
-	virtual void keyPressEvent(QKeyEvent *event);
-	virtual void paintEvent(QPaintEvent *event);
-	virtual QAbstractSpinBox::StepEnabled stepEnabled() const;
+	void keyPressEvent(QKeyEvent *event) override;
+	void paintEvent(QPaintEvent *event) override;
+	StepEnabled stepEnabled() const override;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__MODIFICATIONWIDGET__) */

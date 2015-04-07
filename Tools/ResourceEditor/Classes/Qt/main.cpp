@@ -143,7 +143,9 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
     // Delayed initialization throught event loop
     glWidget->show();
 #ifdef Q_OS_WIN
+    FrameworkLoop::Instance()->Context();   // Force context initialization
     QObject::connect( glWidget, &DavaGLWidget::Initialized, &a, &QApplication::quit );
+    QTimer::singleShot( 0, glWidget, &DavaGLWidget::OnWindowExposed );
     a.exec();
 #endif
     glWidget->hide();
@@ -194,6 +196,8 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
 
     a.setAttribute( Qt::AA_UseHighDpiPixmaps );
     a.setAttribute( Qt::AA_ShareOpenGLContexts );
+
+    Q_INIT_RESOURCE( QtToolsResources );
 
     new SceneValidator();
     new TextureCache();
