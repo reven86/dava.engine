@@ -100,12 +100,9 @@ def main_convert_3d(): # it's function for external usage
     dataSourceDir = unix_path(dataSourceDir)
     qualityConfigPath = unix_path(qualityConfigPath)
 
-    # *************** HERE YOU SHOULD SETUP YOUR OWN PATHS ***************
-    executables = { "Darwin": "./ResourceEditor.app/Contents/MacOS/ResourceEditor", "Windows": "./ResourceEditor", "Microsoft": "./ResourceEditor" }
-
-    os.chdir("./../ResourceEditor/dava.framework/Tools/ResourceEditor/");
-
-    executable = executables[platform.system()]
+    os.chdir("@RES_EDITOR_PATH@")
+    executable = "@RES_EDITOR_BINARY@"
+    
     print "ex: " + executable
 
     # export files

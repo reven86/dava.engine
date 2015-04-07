@@ -38,7 +38,7 @@ def do(context=g_default_context):
 
     print context
     cleanUp3d = [sys.executable, 'cleanup_3d.py']
-    copyFrameworkMaterials = [sys.executable, 'copy_framework_materials.py']
+    
     #force param - remove after script refactoring
     if context['teamcity'] and context['validate'] == g_default_context['validate']:
         context['validate'] = tdv.g_mode_strict

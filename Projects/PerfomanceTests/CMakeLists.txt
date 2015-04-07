@@ -3,6 +3,8 @@ set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}
 include      ( CMake-common )
 include      ( FindDavaFramework )
 
+message("!!!!!!!!!!!!!!!!!!!!!!!!!  - ${RES_EDITOR_PATH}" )
+
 project      ( PerformanceTests )
 
 include_directories   ( "iOSSpecific" )
@@ -62,3 +64,31 @@ set( LIBRARIES_DEBUG      )
 set( ADDED_BINARY_DIR     )
 
 setup_main_executable()
+
+if( WIN32 )
+    set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.exe")
+else()
+    set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.app")
+endif()
+
+set (RES_EDITOR_DATA ${DAVA_ROOT_DIR}/Tools/ResourceEditor/Data)
+
+if( NOT RES_EDITOR_PATH )
+    message( "Error !!!: Please set the correct path to Resource editor in file DavaConfig.in"  )
+    message( " " )
+    exit()
+endif()
+
+configure_file( ${CMAKE_CURRENT_LIST_DIR}/scripts/TemplateConvert3D.in
+                    ${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_3d.py @ONLY )
+
+configure_file( ${CMAKE_CURRENT_LIST_DIR}/scripts/TemplateConvert3D_FX.in
+                    ${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_3d_FX.py @ONLY )
+
+configure_file( ${CMAKE_CURRENT_LIST_DIR}/scripts/TemplateConvert3DTanks.in
+                    ${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_3d_tanks.py @ONLY )
+
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${RES_EDITOR_DATA}/Materials ${APP_DATA}/Materials )
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${RES_EDITOR_DATA}/Shaders ${APP_DATA}/Shaders )
+
+execute_process( COMMAND python WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource INPUT_FILE convert_everything.py )
