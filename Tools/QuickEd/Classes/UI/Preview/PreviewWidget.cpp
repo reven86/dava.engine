@@ -40,6 +40,8 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     davaUIScreen->GetBackground()->SetColor(DAVA::Color(0.3f, 0.3f, 0.3f, 1.0f));
     UIScreenManager::Instance()->RegisterScreen(EDIT_SCREEN, davaUIScreen);
     UIScreenManager::Instance()->SetFirst(EDIT_SCREEN);
+    UIScreenManager::Instance()->GetScreen()->AddControl(model->GetViewControl());
+
     connect( davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized );
 
     // Setup the Scale Combo.
@@ -80,14 +82,12 @@ void PreviewWidget::OnDocumentChanged(SharedData *data)
     {
         return;
     }
-    UIScreenManager::Instance()->GetScreen()->RemoveAllControls();
     sharedData = data;
 
     UpdateRootControls();
     if (nullptr != sharedData)
     {
         davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
-        UIScreenManager::Instance()->GetScreen()->AddControl(model->GetViewControl());
         model->SetViewControlSize(davaGLWidget->size());
 
         OnScrollAreaChanged(model->GetViewSize(), model->GetScaledCanvasSize());
