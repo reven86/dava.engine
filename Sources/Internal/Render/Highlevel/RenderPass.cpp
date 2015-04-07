@@ -215,16 +215,6 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
 
     renderSystem->GetDrawCamera()->SetupDynamicParameters();    		
         
-    Vector2 rssVal(1.0f/viewportSave.dx, 1.0f/viewportSave.dy);
-    Vector2 screenOffsetVal(viewportSave.x, viewportSave.y);
-	for (uint32 i=0; i<waterBatchesCount; ++i)
-	{
-        NMaterial *mat = waterLayer->Get(i)->GetMaterial();
-        mat->SetPropertyValue(NMaterial::PARAM_RCP_SCREEN_SIZE, Shader::UT_FLOAT_VEC2, 1, &rssVal);
-        mat->SetPropertyValue(NMaterial::PARAM_SCREEN_OFFSET, Shader::UT_FLOAT_VEC2, 1, &screenOffsetVal);
-        mat->SetTexture(NMaterial::TEXTURE_DYNAMIC_REFLECTION, reflectionTexture);
-        mat->SetTexture(NMaterial::TEXTURE_DYNAMIC_REFRACTION, refractionTexture);
-	}    
 }
 
 void MainForwardRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBuffers)
@@ -273,6 +263,18 @@ void MainForwardRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBuffer
                 
 	}	
     needWaterPrepass = (waterBatchesCount!=0); //for next frame;
+
+    Rect viewportSave = RenderManager::Instance()->GetViewport();
+    Vector2 rssVal(1.0f / viewportSave.dx, 1.0f / viewportSave.dy);
+    Vector2 screenOffsetVal(viewportSave.x, viewportSave.y);
+    for (uint32 i = 0; i < waterBatchesCount; ++i)
+    {
+        NMaterial *mat = waterLayer->Get(i)->GetMaterial();
+        mat->SetPropertyValue(NMaterial::PARAM_RCP_SCREEN_SIZE, Shader::UT_FLOAT_VEC2, 1, &rssVal);
+        mat->SetPropertyValue(NMaterial::PARAM_SCREEN_OFFSET, Shader::UT_FLOAT_VEC2, 1, &screenOffsetVal);
+        mat->SetTexture(NMaterial::TEXTURE_DYNAMIC_REFLECTION, reflectionTexture);
+        mat->SetTexture(NMaterial::TEXTURE_DYNAMIC_REFRACTION, refractionTexture);
+    }
 
     ClearBuffers(clearBuffers);
 
