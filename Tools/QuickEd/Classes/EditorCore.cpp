@@ -5,7 +5,7 @@
 #include <QCheckBox>
 #include <QMessageBox>
 #include <QAbstractItemModel>
-#include "Basecontroller.h"
+#include "EditorCore.h"
 #include "Document.h"
 #include "UI/Package/PackageWidget.h"
 #include "Ui/Library/LibraryWidget.h"
@@ -13,58 +13,58 @@
 #include "UI/Preview/PreviewWidget.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
-#include "UI/WidgetContext.h"
+#include "UI/SharedData.h"
 
 #include "Platform/Qt5/QtLayer.h"
 
-BaseController::BaseController(QObject *parent)
+EditorCore::EditorCore(QObject *parent)
     : QObject(parent)
     , documentGroup(new DocumentGroup(this))
     , mainWindow(new MainWindow())
     , project(new Project(this))
 {
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
-    connect(mainWindow, &MainWindow::TabClosed, this, &BaseController::CloseOneDocument);
-    connect(mainWindow, &MainWindow::CurrentTabChanged, this, &BaseController::OnCurrentTabChanged);
-    connect(mainWindow, &MainWindow::CloseProject, this, &BaseController::CloseProject);
-    connect(mainWindow, &MainWindow::ActionExitTriggered, this, &BaseController::Exit);
-    connect(mainWindow, &MainWindow::CloseRequested, this, &BaseController::Exit);
-    connect(mainWindow, &MainWindow::RecentMenuTriggered, this, &BaseController::RecentMenu);
-    connect(mainWindow, &MainWindow::ActionOpenProjectTriggered, this, &BaseController::OpenProject);
-    connect(mainWindow, &MainWindow::OpenPackageFile, this, &BaseController::OnOpenPackageFile);
-    connect(mainWindow, &MainWindow::SaveAllDocuments, this, &BaseController::SaveAllDocuments);
-    connect(mainWindow, &MainWindow::SaveDocument, this, static_cast<void(BaseController::*)(int)>(&BaseController::SaveDocument));
+    connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
+    connect(mainWindow, &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
+    connect(mainWindow, &MainWindow::CloseProject, this, &EditorCore::CloseProject);
+    connect(mainWindow, &MainWindow::ActionExitTriggered, this, &EditorCore::Exit);
+    connect(mainWindow, &MainWindow::CloseRequested, this, &EditorCore::Exit);
+    connect(mainWindow, &MainWindow::RecentMenuTriggered, this, &EditorCore::RecentMenu);
+    connect(mainWindow, &MainWindow::ActionOpenProjectTriggered, this, &EditorCore::OpenProject);
+    connect(mainWindow, &MainWindow::OpenPackageFile, this, &EditorCore::OnOpenPackageFile);
+    connect(mainWindow, &MainWindow::SaveAllDocuments, this, &EditorCore::SaveAllDocuments);
+    connect(mainWindow, &MainWindow::SaveDocument, this, static_cast<void(EditorCore::*)(int)>(&EditorCore::SaveDocument));
 
-    connect(documentGroup, &DocumentGroup::ContextChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnContextChanged);
+    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnDocumentChanged);
 
-    connect(documentGroup, &DocumentGroup::ContextChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnContextChanged);
+    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnDocumentChanged);
     connect(documentGroup, &DocumentGroup::ContextDataChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnDataChanged);
 
-    connect(documentGroup, &DocumentGroup::ContextChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnContextChanged);
+    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnDocumentChanged);
     connect(documentGroup, &DocumentGroup::ContextDataChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnDataChanged);
 
-    connect(documentGroup, &DocumentGroup::ContextChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnContextChanged);
+    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnDocumentChanged);
     connect(documentGroup, &DocumentGroup::ContextDataChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnDataChanged);
 
     qApp->installEventFilter(this);
 }
     
-BaseController::~BaseController()
+EditorCore::~EditorCore()
 {
     delete mainWindow;
 }
 
-void BaseController::Start()
+void EditorCore::Start()
 {
     mainWindow->show();
 }
 
-MainWindow* BaseController::GetMainWindow() const
+MainWindow* EditorCore::GetMainWindow() const
 {
     return const_cast<MainWindow*>( mainWindow );
 }
 
-void BaseController::OnCleanChanged(bool clean)
+void EditorCore::OnCleanChanged(bool clean)
 {
     QUndoStack *undoStack = qobject_cast<QUndoStack*>(sender());
     for (int i = 0; i < documents.size(); ++i)
@@ -76,7 +76,7 @@ void BaseController::OnCleanChanged(bool clean)
     }
 }
 
-void BaseController::OnOpenPackageFile(const QString &path)
+void EditorCore::OnOpenPackageFile(const QString &path)
 {
     if (!path.isEmpty())
     {
@@ -93,7 +93,7 @@ void BaseController::OnOpenPackageFile(const QString &path)
     }
 }
 
-bool BaseController::CloseOneDocument(int index)
+bool EditorCore::CloseOneDocument(int index)
 {
     DVASSERT(index >= 0);
     DVASSERT(index < documents.size());
@@ -120,14 +120,14 @@ bool BaseController::CloseOneDocument(int index)
     return true;
 }
 
-void BaseController::SaveDocument(int index)
+void EditorCore::SaveDocument(int index)
 {
     DVASSERT(index >= 0);
     DVASSERT(index < documents.size());
     SaveDocument(documents[index]);
 }
 
-void BaseController::SaveAllDocuments()
+void EditorCore::SaveAllDocuments()
 {
     for (auto &document : documents)
     {
@@ -136,7 +136,7 @@ void BaseController::SaveAllDocuments()
     }
 }
 
-void BaseController::Exit()
+void EditorCore::Exit()
 {
     if (CloseProject())
     {
@@ -144,7 +144,7 @@ void BaseController::Exit()
     }
 }
 
-void BaseController::RecentMenu(QAction *recentProjectAction)
+void EditorCore::RecentMenu(QAction *recentProjectAction)
 {
     QString projectPath = recentProjectAction->data().toString();
 
@@ -155,12 +155,12 @@ void BaseController::RecentMenu(QAction *recentProjectAction)
     OpenProject(projectPath);
 }
 
-void BaseController::OnCurrentTabChanged(int index)
+void EditorCore::OnCurrentTabChanged(int index)
 {
     documentGroup->SetActiveDocument(index == -1 ? nullptr : documents.at(index));
 }
 
-void BaseController::OpenProject(const QString &path)
+void EditorCore::OpenProject(const QString &path)
 {
     if (!CloseProject())
     {
@@ -179,7 +179,7 @@ void BaseController::OpenProject(const QString &path)
     mainWindow->OnProjectOpened(result, path);
 }
 
-bool BaseController::CloseProject()
+bool EditorCore::CloseProject()
 {
     bool hasUnsaved = false;
     for (auto &doc : documents)
@@ -215,7 +215,7 @@ bool BaseController::CloseProject()
     return true;
 }
 
-void BaseController::CloseDocument(int index)
+void EditorCore::CloseDocument(int index)
 {
     DVASSERT(index >= 0);
     DVASSERT(index < documents.size());
@@ -228,11 +228,11 @@ void BaseController::CloseDocument(int index)
     delete detached; //some widgets hold this document inside :(
 }
 
-int BaseController::CreateDocument(PackageNode *package)
+int EditorCore::CreateDocument(PackageNode *package)
 {
     Document *document = new Document(package, this);
     connect(mainWindow, &MainWindow::LanguageChanged, document, &Document::UpdateLanguage);
-    connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &BaseController::OnCleanChanged);
+    connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &EditorCore::OnCleanChanged);
     documents.push_back(document);
     documentGroup->AddDocument(document);
     int index = mainWindow->AddTab(document->GetPackageFilePath().GetBasename().c_str());
@@ -240,7 +240,7 @@ int BaseController::CreateDocument(PackageNode *package)
     return index;
 }
 
-void BaseController::SaveDocument(Document *document)
+void EditorCore::SaveDocument(Document *document)
 {
     DVASSERT(document);
     if (document->GetUndoStack()->isClean())
@@ -251,7 +251,7 @@ void BaseController::SaveDocument(Document *document)
     document->GetUndoStack()->setClean();
 }
 
-int BaseController::GetIndexByPackagePath(const QString &fileName) const
+int EditorCore::GetIndexByPackagePath(const QString &fileName) const
 {
     QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath();
     DAVA::FilePath davaPath(canonicalFilePath.toStdString());
@@ -266,7 +266,7 @@ int BaseController::GetIndexByPackagePath(const QString &fileName) const
     return -1;
 }
 
-bool BaseController::eventFilter( QObject *obj, QEvent *event )
+bool EditorCore::eventFilter( QObject *obj, QEvent *event )
 {
     QEvent::Type eventType = event->type();
 

@@ -3,7 +3,7 @@
 #include "PreviewModel.h"
 
 #include "EditScreen.h"
-#include "UI/WidgetContext.h"
+#include "UI/SharedData.h"
 
 #include <QLineEdit>
 #include <QScreen>
@@ -26,7 +26,7 @@ static const char* PERCENTAGE_FORMAT = "%1 %";
 
 PreviewWidget::PreviewWidget(QWidget *parent)
     : QWidget(parent)
-    , widgetContext(nullptr)
+    , sharedData(nullptr)
     , model(new PreviewModel(this))
 {
     setupUi(this);
@@ -66,17 +66,17 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     connect(model, &PreviewModel::ErrorOccurred, this, &PreviewWidget::OnError);
 }
 
-void PreviewWidget::OnContextChanged(WidgetContext *context)
+void PreviewWidget::OnDocumentChanged(SharedData *data)
 {
-    if (widgetContext == context)
+    if (sharedData == data)
     {
         return;
     }
     UIScreenManager::Instance()->GetScreen()->RemoveAllControls();
-    widgetContext = context;
+    sharedData = data;
 
     UpdateRootControls();
-    if (nullptr != widgetContext)
+    if (nullptr != sharedData)
     {
         davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
         UIScreenManager::Instance()->GetScreen()->AddControl(model->GetViewControl());
@@ -95,25 +95,25 @@ void PreviewWidget::OnDataChanged(const QByteArray &role)
     {
         UpdateRootControls();
     }
-    if (role == "deactivatedControls")
+    else if (role == "deactivatedControls")
     {
-        model->ControlsDeactivated(widgetContext->GetData("deactivatedControls").value<QList<ControlNode*> >());
+        model->ControlsDeactivated(sharedData->GetData("deactivatedControls").value<QList<ControlNode*> >());
     }
-    if (role == "activatedControls")
+    else if (role == "activatedControls")
     {
-        model->ControlsActivated(widgetContext->GetData("activatedControls").value<QList<ControlNode*> >());
+        model->ControlsActivated(sharedData->GetData("activatedControls").value<QList<ControlNode*> >());
     }
 }
 
 void PreviewWidget::UpdateRootControls()
 {
-    if (nullptr == widgetContext)
+    if (nullptr == sharedData)
     {
         model->SetActiveRootControls(QList<ControlNode*>());
     }
     else
     {
-        model->SetActiveRootControls(widgetContext->GetData("activeRootControls").value<QList<ControlNode*> >());
+        model->SetActiveRootControls(sharedData->GetData("activeRootControls").value<QList<ControlNode*> >());
     }
 }
 
@@ -126,7 +126,7 @@ void PreviewWidget::OnMonitorChanged()
 
 void PreviewWidget::OnControlNodeSelected(ControlNode *node)
 {
-    widgetContext->SetData("selectedNode", QVariant::fromValue(node));
+    sharedData->SetData("selectedNode", QVariant::fromValue(node));
 }
 
 void PreviewWidget::OnError(const QString &errorText)

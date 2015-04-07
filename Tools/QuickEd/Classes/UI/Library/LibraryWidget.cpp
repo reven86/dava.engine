@@ -1,44 +1,47 @@
 #include "LibraryWidget.h"
-#include "UI/WidgetContext.h"
+#include "UI/SharedData.h"
 #include "Document.h"
 #include "LibraryModel.h"
 
-struct LibraryDelta : public WidgetDelta
+namespace
 {
-    LibraryDelta(Document *document)
+    struct LibraryContext : public WidgetContext
     {
-        libraryModel = new LibraryModel(document->GetPackage(), document);
-    }
-    LibraryModel *libraryModel;
-};
+        LibraryContext(Document *document)
+        {
+            libraryModel = new LibraryModel(document->GetPackage(), document);
+        }
+        LibraryModel *libraryModel;
+    };
+}
 
 LibraryWidget::LibraryWidget(QWidget *parent)
     : QDockWidget(parent)
-    , widgetContext(nullptr)
+    , sharedData(nullptr)
 {
     setupUi(this);
 }
 
-void LibraryWidget::OnContextChanged(WidgetContext *arg)
+void LibraryWidget::OnDocumentChanged(SharedData *arg)
 {
-    widgetContext = arg;
-    LoadDelta();
+    sharedData = arg;
+    LoadContext();
 }
 
-void LibraryWidget::LoadDelta()
+void LibraryWidget::LoadContext()
 {
-    if (nullptr == widgetContext)
+    if (nullptr == sharedData)
     {
         treeView->setModel(nullptr);
     }
     else
     {
-        LibraryDelta *delta = reinterpret_cast<LibraryDelta*>(widgetContext->GetDelta(this));
-        if (nullptr == delta)
+        LibraryContext *context = reinterpret_cast<LibraryContext*>(sharedData->GetContext(this));
+        if (nullptr == context)
         {
-            delta = new LibraryDelta(qobject_cast<Document*>(widgetContext->parent())); //TODO this is arch. fail
-            widgetContext->SetDelta(this, delta);
+            context = new LibraryContext(qobject_cast<Document*>(sharedData->parent())); //TODO this is arch. fail
+            sharedData->SetContext(this, context);
         }
-        treeView->setModel(delta->libraryModel);
+        treeView->setModel(context->libraryModel);
     }
 }

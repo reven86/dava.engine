@@ -4,7 +4,7 @@
 #include <QDockWidget>
 #include "ui_PropertiesWidget.h"
 
-class WidgetContext;
+class SharedData;
 
 
 class ControlNode;
@@ -16,12 +16,12 @@ public:
     PropertiesWidget(QWidget *parent = NULL);
 
 public slots:
-    void OnContextChanged(WidgetContext *context);
+    void OnDocumentChanged(SharedData *sharedData);
     void OnDataChanged(const QByteArray &role);
 
 private:
     void UpdateActivatedControls();
-    WidgetContext *widgetContext;
+    SharedData *sharedData;
 };
 
 #endif //__QUICKED_PROPERTIES_WIDGET_H__

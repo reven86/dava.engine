@@ -3,7 +3,7 @@
 #include <qitemeditorfactory>
 #include <qstyleditemdelegate>
 #include <QAbstractItemModel>
-#include "UI/WidgetContext.h"
+#include "UI/SharedData.h"
 
 #include "ui_PropertiesWidget.h"
 #include "PropertiesModel.h"
@@ -13,15 +13,15 @@ using namespace DAVA;
 
 PropertiesWidget::PropertiesWidget(QWidget *parent)
     : QDockWidget(parent)
-    , widgetContext(nullptr)
+    , sharedData(nullptr)
 {
     setupUi(this);
     treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
 }
 
-void PropertiesWidget::OnContextChanged(WidgetContext *arg)
+void PropertiesWidget::OnDocumentChanged(SharedData *arg)
 {
-    widgetContext = arg;
+    sharedData = arg;
     UpdateActivatedControls();
 }
 void PropertiesWidget::OnDataChanged(const QByteArray &role)
@@ -35,15 +35,15 @@ void PropertiesWidget::OnDataChanged(const QByteArray &role)
 void PropertiesWidget::UpdateActivatedControls()
 {
     QAbstractItemModel *prevModel = treeView->model();
-    if (nullptr == widgetContext)
+    if (nullptr == sharedData)
     {
         treeView->setModel(nullptr);
     }
     else
     {
-        QList<ControlNode*> &activatedControls = widgetContext->GetData("activatedControls").value<QList<ControlNode*> >();
-        QAbstractItemModel* model = activatedControls.empty() ? nullptr : new PropertiesModel(activatedControls.first(), widgetContext->GetDocument());//TODO this is ugly
-        widgetContext->SetData("propertiesModel", QVariant::fromValue(model)); //TODO: bad architecture
+        QList<ControlNode*> &activatedControls = sharedData->GetData("activatedControls").value<QList<ControlNode*> >();
+        QAbstractItemModel* model = activatedControls.empty() ? nullptr : new PropertiesModel(activatedControls.first(), sharedData->GetDocument());//TODO this is ugly
+        sharedData->SetData("propertiesModel", QVariant::fromValue(model)); //TODO: bad architecture
         treeView->setModel(model);
         treeView->expandToDepth(0);
         treeView->resizeColumnToContents(0);

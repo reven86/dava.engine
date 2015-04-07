@@ -8,34 +8,34 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Document.h"
 
-struct WidgetDelta
+struct WidgetContext
 {
 };
 
-class WidgetContext : public QObject
+class SharedData : public QObject
 {
     Q_OBJECT
 public:
-    WidgetContext(QObject *parent = nullptr);
+    SharedData(QObject *parent = nullptr);
     QVariant& GetData(const QByteArray &role);
     Document *GetDocument() const; //TODO - this is deprecated
     void SetData(const QByteArray &role, const QVariant &value);
-    WidgetDelta* GetDelta(QWidget* requester) const;
-    void SetDelta(QWidget* requester, WidgetDelta* widgetDelta);
+    WidgetContext* GetContext(QWidget* requester) const;
+    void SetContext(QWidget* requester, WidgetContext* widgetContext);
 signals:
     void DataChanged(const QByteArray &role);
 private:
     QMap < QByteArray, QVariant > values;
-    std::map < QWidget*, std::unique_ptr<WidgetDelta> > deltas;
+    std::map < QWidget*, std::unique_ptr<WidgetContext> > contexts;
 };
 
-inline Document* WidgetContext::GetDocument() const
+inline Document* SharedData::GetDocument() const
 {
     return qobject_cast<Document*>(parent());
 }
 
 
-Q_DECLARE_METATYPE(WidgetContext*);
+Q_DECLARE_METATYPE(SharedData*);
 Q_DECLARE_METATYPE(QAbstractItemModel*)
 Q_DECLARE_METATYPE(QPointer<QAbstractItemModel>)
 Q_DECLARE_METATYPE(QItemSelection);

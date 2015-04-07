@@ -29,7 +29,7 @@
 
 #include <QApplication>
 #include "UI/mainwindow.h"
-#include "BaseController.h"
+#include "EditorCore.h"
 #include "DAVAEngine.h"
 
 #include "Platform/Qt5/QtLayer.h"
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     auto loopManager = new DavaLoop();
     auto loop = new FrameworkLoop();
 
-    auto *baseController = new BaseController();
+    auto *baseController = new EditorCore();
     auto mainWindow = baseController->GetMainWindow();
     auto glWidget = mainWindow->GetGLWidget();
 

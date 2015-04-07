@@ -5,7 +5,7 @@
 #include <QUndoGroup>
 class DocumentGroupPrivate;
 class Document;
-class WidgetContext;
+class SharedData;
 
 class DocumentGroup : public QObject
 {
@@ -26,8 +26,8 @@ public slots:
 signals:
     void ActiveDocumentChanged(Document*);
 
-    void ContextDataChanged(const QByteArray &role);
-    void ContextChanged(WidgetContext *widgetContext);
+    void SharedDataChanged(const QByteArray &role);
+    void DocumentChanged(SharedData *data);
 protected:
     QScopedPointer<DocumentGroupPrivate> d_ptr;
 };

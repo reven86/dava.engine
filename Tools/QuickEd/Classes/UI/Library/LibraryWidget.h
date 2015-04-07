@@ -4,7 +4,7 @@
 #include <QDockWidget>
 #include "ui_LibraryWidget.h"
 
-class WidgetContext;
+class SharedData;
 
 class LibraryWidget : public QDockWidget, public Ui::LibraryWidget
 {
@@ -13,10 +13,10 @@ public:
     LibraryWidget(QWidget *parent = nullptr);
     ~LibraryWidget() = default;
 public slots:
-    void OnContextChanged(WidgetContext *context);
+    void OnDocumentChanged(SharedData *data);
 private:
-    void LoadDelta();
-    WidgetContext *widgetContext;
+    void LoadContext();
+    SharedData *sharedData;
 };
 
 #endif // __QUICKED_LIBRARY_WIDGET_H__

@@ -18,30 +18,33 @@
 #include "Project.h"
 #include "Utils/QtDavaConvertion.h"
 
-#include "UI/WidgetContext.h"
+#include "UI/SharedData.h"
 #include "Document.h"
 
 using namespace DAVA;
 
-struct PackageDelta : public WidgetDelta
+namespace
 {
-    PackageDelta(Document *document)
+    struct PackageContext : public WidgetContext
     {
-        packageModel = new PackageModel(document->GetPackage(), document->GetCommandExecutor(), document);
-        filteredPackageModel = new FilteredPackageModel(document);
-        filteredPackageModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-        filteredPackageModel->setSourceModel(packageModel);
-    }
-    PackageModel *packageModel;
-    FilteredPackageModel *filteredPackageModel;
-    QList<QPersistentModelIndex> expandedIndexes;
-    QItemSelection selection;
-    QString filterString;
-};
+        PackageContext(Document *document)
+        {
+            packageModel = new PackageModel(document->GetPackage(), document->GetCommandExecutor(), document);
+            filteredPackageModel = new FilteredPackageModel(document);
+            filteredPackageModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+            filteredPackageModel->setSourceModel(packageModel);
+        }
+        PackageModel *packageModel;
+        FilteredPackageModel *filteredPackageModel;
+        QList<QPersistentModelIndex> expandedIndexes;
+        QItemSelection selection;
+        QString filterString;
+    };
+}
 
 PackageWidget::PackageWidget(QWidget *parent)
     : QDockWidget(parent)
-    , widgetContext(nullptr)
+    , sharedData(nullptr)
     , filteredPackageModel(nullptr)
     , packageModel(nullptr)
 {
@@ -79,17 +82,17 @@ PackageWidget::PackageWidget(QWidget *parent)
     treeView->addAction(delAction);
 }
 
-void PackageWidget::OnContextChanged(WidgetContext *context)
+void PackageWidget::OnDocumentChanged(SharedData *context)
 {
     treeView->setUpdatesEnabled(false);
 
-    SaveDelta();
-    widgetContext = context;
-    if (nullptr == widgetContext)
+    SaveContext();
+    sharedData = context;
+    if (nullptr == sharedData)
     {
         OnAllControlsDeselectedInEditor();//TODO must not be here
     }
-    LoadDelta();
+    LoadContext();
 
     treeView->setColumnWidth(0, treeView->size().width()); // TODO Check this
     treeView->setUpdatesEnabled(true);
@@ -99,40 +102,40 @@ void PackageWidget::OnDataChanged(const QByteArray &role)
 {
     if (role == "selectedNode")
     {
-        OnControlSelectedInEditor(widgetContext->GetData("selectedNode").value<ControlNode*>());
+        OnControlSelectedInEditor(sharedData->GetData("selectedNode").value<ControlNode*>());
     }
-    if (role == "controlDeselected")
+    else if (role == "controlDeselected")
     {
         OnAllControlsDeselectedInEditor();
     }
 }
 
-void PackageWidget::LoadDelta()
+void PackageWidget::LoadContext()
 {
-    if (nullptr == widgetContext)
+    if (nullptr == sharedData)
     {
         treeView->setModel(nullptr);
     }
     else
     {
-        //restore delta
-        PackageDelta *delta = reinterpret_cast<PackageDelta*>(widgetContext->GetDelta(this));
-        if (nullptr == delta)
+        //restore context
+        PackageContext *context = reinterpret_cast<PackageContext*>(sharedData->GetContext(this));
+        if (nullptr == context)
         {
-            delta = new PackageDelta(qobject_cast<Document*>(widgetContext->parent()));
-            widgetContext->SetDelta(this, delta);
+            context = new PackageContext(qobject_cast<Document*>(sharedData->parent()));
+            sharedData->SetContext(this, context);
             //store model to work with indexes
-            packageModel = delta->packageModel;
-            filteredPackageModel = delta->filteredPackageModel;
+            packageModel = context->packageModel;
+            filteredPackageModel = context->filteredPackageModel;
             //remove it in future
-            widgetContext->SetData("packageModel", QVariant::fromValue<QAbstractItemModel*>(delta->packageModel)); //TODO: bad architecture
+            sharedData->SetData("packageModel", QVariant::fromValue<QAbstractItemModel*>(context->packageModel)); //TODO: bad architecture
         }
         //restore model
-        treeView->setModel(delta->filteredPackageModel);
+        treeView->setModel(context->filteredPackageModel);
         treeView->expandToDepth(0);
         connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChanged);
         //restore expanded indexes
-        for (const auto &index : delta->expandedIndexes)
+        for (const auto &index : context->expandedIndexes)
         {
             if (index.isValid())
             {
@@ -140,22 +143,22 @@ void PackageWidget::LoadDelta()
             }
         }
         //restore selection
-        treeView->selectionModel()->select(delta->selection, QItemSelectionModel::ClearAndSelect);
+        treeView->selectionModel()->select(context->selection, QItemSelectionModel::ClearAndSelect);
         //restore filter line
-        filterLine->setText(delta->filterString);
+        filterLine->setText(context->filterString);
     }
 }
 
-void PackageWidget::SaveDelta()
+void PackageWidget::SaveContext()
 {
-    if (nullptr == widgetContext)
+    if (nullptr == sharedData)
     {
         return;
     }
-    PackageDelta *delta = reinterpret_cast<PackageDelta*>(widgetContext->GetDelta(this));
-    delta->expandedIndexes = GetExpandedIndexes();
-    delta->selection = treeView->selectionModel()->selection();
-    delta->filterString = filterLine->text();
+    PackageContext *context = reinterpret_cast<PackageContext*>(sharedData->GetContext(this));
+    context->expandedIndexes = GetExpandedIndexes();
+    context->selection = treeView->selectionModel()->selection();
+    context->filterString = filterLine->text();
 }
 
 void PackageWidget::RefreshActions(const QModelIndexList &indexList)
@@ -216,7 +219,7 @@ void PackageWidget::CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &nodes
     if (!nodes.empty())
     {
         YamlPackageSerializer serializer;
-        Document* doc = widgetContext->GetDocument();
+        Document* doc = sharedData->GetDocument();
         PackageNode *pac = doc->GetPackage();
         pac->Serialize(&serializer, nodes);//TODO - this is deprecated
         String str = serializer.WriteToString();
@@ -228,7 +231,7 @@ void PackageWidget::CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &nodes
 
 void PackageWidget::RemoveNodes(const DAVA::Vector<ControlNode*> &nodes)
 {
-    widgetContext->GetDocument()->GetCommandExecutor()->RemoveControls(nodes);
+    sharedData->GetDocument()->GetCommandExecutor()->RemoveControls(nodes);
 }
 
 void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
@@ -286,8 +289,8 @@ void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, cons
     }
 
     RefreshActions(selectedIndexList);
-    widgetContext->SetData("activatedControls", QVariant::fromValue(selectedControl));
-    widgetContext->SetData("deactivatedControls", QVariant::fromValue(deselectedControl));
+    sharedData->SetData("activatedControls", QVariant::fromValue(selectedControl));
+    sharedData->SetData("deactivatedControls", QVariant::fromValue(deselectedControl));
 }
 
 void PackageWidget::OnCopy()
@@ -312,7 +315,7 @@ void PackageWidget::OnPaste()
         if (nullptr != node && (node->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) == 0)
         {
             String string = clipboard->mimeData()->text().toStdString();
-            Document *doc = widgetContext->GetDocument();
+            Document *doc = sharedData->GetDocument();
             doc->GetCommandExecutor()->Paste(doc->GetPackage(), node, -1, string);
         }
     }
@@ -335,7 +338,7 @@ void PackageWidget::OnDelete()
 
 void PackageWidget::filterTextChanged(const QString &filterText)
 {
-    if (nullptr != widgetContext)
+    if (nullptr != sharedData)
     {
         static_cast<QSortFilterProxyModel*>(treeView->model())->setFilterFixedString(filterText);
         treeView->expandAll();

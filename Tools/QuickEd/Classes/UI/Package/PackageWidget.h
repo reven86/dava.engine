@@ -15,7 +15,7 @@ namespace Ui {
 }
 
 class ControlNode;
-class WidgetContext;
+class SharedData;
 
 class PackageWidget : public QDockWidget, public Ui::PackageWidget
 {
@@ -25,11 +25,11 @@ public:
     ~PackageWidget() = default;
 
 public slots:
-    void OnContextChanged(WidgetContext *context);
+    void OnDocumentChanged(SharedData *context);
     void OnDataChanged(const QByteArray &role);
 private:
-    void LoadDelta();
-    void SaveDelta();
+    void LoadContext();
+    void SaveContext();
 private:
       void OnControlSelectedInEditor(ControlNode *node);
     void OnAllControlsDeselectedInEditor();
@@ -50,7 +50,7 @@ private slots:
     void OnDelete();
 
 private:
-    WidgetContext *widgetContext;
+    SharedData *sharedData;
     QAction *importPackageAction;
     QAction *copyAction;
     QAction *pasteAction;

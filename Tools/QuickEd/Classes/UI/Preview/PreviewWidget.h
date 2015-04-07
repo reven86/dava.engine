@@ -10,7 +10,7 @@ namespace Ui {
     class PreviewWidget;
 }
 
-class WidgetContext;
+class SharedData;
 class PreviewModel;
 class DavaGLWidget;
 class ControlNode;
@@ -29,7 +29,7 @@ public:
     ~PreviewWidget() = default;
 
 public slots:
-    void OnContextChanged(WidgetContext *context);
+    void OnDocumentChanged(SharedData *context);
     void OnDataChanged(const QByteArray &role);
 
 private slots:
@@ -58,7 +58,7 @@ private:
     void UpdateRootControls();
 
 private:
-    WidgetContext *widgetContext;
+    SharedData *sharedData;
     PreviewModel *model;
 };
 

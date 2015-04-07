@@ -10,7 +10,7 @@ namespace DAVA {
 class PackageNode;
 class QtModelPackageCommandExecutor;
 
-class WidgetContext;
+class SharedData;
 class PropertiesModel;
 class PackageModel;
 class ControlNode;
@@ -26,26 +26,26 @@ public:
     const DAVA::FilePath &GetPackageFilePath() const;
     PackageNode *GetPackage() const;
     
-    WidgetContext *GetContext() const;
+    SharedData *GetContext() const;
     PropertiesModel *GetPropertiesModel() const; //TODO: this is deprecated
     PackageModel* GetPackageModel() const; //TODO: this is deprecated
     QUndoStack *GetUndoStack() const;
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
 
 signals:
-    void ContextDataChanged(const QByteArray &role);
+    void SharedDataChanged(const QByteArray &role);
 public slots:
     void UpdateLanguage();
 
 private:
     void UpdateLanguageRecursively(ControlNode *node);
     void UpdateControlCanvas();
-    void InitWidgetContexts();
+    void InitSharedData();
 
 private:
     PackageNode *package;
 
-    WidgetContext *dataContext;
+    SharedData *sharedData;
 
     QtModelPackageCommandExecutor *commandExecutor;
     QUndoStack *undoStack;
@@ -66,9 +66,9 @@ inline QtModelPackageCommandExecutor *Document::GetCommandExecutor() const
     return commandExecutor;
 }
 
-inline WidgetContext *Document::GetContext() const
+inline SharedData *Document::GetContext() const
 {
-    return dataContext;
+    return sharedData;
 }
 
 #endif // __QUICKED_PACKAGE_DOCUMENT_H__

@@ -83,12 +83,12 @@ void DocumentGroup::SetActiveDocument(Document* document)
 
     if (nullptr == d->active)
     {
-        emit ContextChanged(nullptr);        
+        emit DocumentChanged(nullptr);
         d->undoGroup->setActiveStack(nullptr);
     }
     else
     {
-        emit ContextChanged(d->active->GetContext());
+        emit DocumentChanged(d->active->GetContext());
         
         connect(d->active, &Document::ContextDataChanged, this, &DocumentGroup::ContextDataChanged);
 

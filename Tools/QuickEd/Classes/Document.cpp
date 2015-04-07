@@ -17,7 +17,7 @@
 #include "Model/ControlProperties/PropertiesSection.h"
 #include "Model/ControlProperties/ValueProperty.h"
 
-#include "Ui/WidgetContext.h"
+#include "Ui/SharedData.h"
 
 #include "Ui/QtModelPackageCommandExecutor.h"
 
@@ -26,25 +26,25 @@ using namespace DAVA;
 Document::Document(PackageNode *_package, QObject *parent)
     : QObject(parent)
     , package(SafeRetain(_package))
-    , dataContext(new WidgetContext(this))
+    , sharedData(new SharedData(this))
     , commandExecutor(new QtModelPackageCommandExecutor(this))
     , undoStack(new QUndoStack(this))
 {
-    InitWidgetContexts();
-    connect(dataContext, &WidgetContext::DataChanged, this, &Document::ContextDataChanged);
+    InitSharedData();
+    connect(sharedData, &SharedData::DataChanged, this, &Document::ContextDataChanged);
 }
 
-void Document::InitWidgetContexts()
+void Document::InitSharedData()
 {
-    dataContext->SetData("controlDeselected", false);
-    dataContext->SetData("controlsDeselected", false);
+    sharedData->SetData("controlDeselected", false);
+    sharedData->SetData("controlsDeselected", false);
 
     QList<ControlNode*> activeRootControls;
     PackageControlsNode *controlsNode = package->GetPackageControlsNode();
     for (int32 index = 0; index < controlsNode->GetCount(); ++index)
         activeRootControls.push_back(controlsNode->Get(index));
 
-    dataContext->SetData("activeRootControls", QVariant::fromValue(activeRootControls));
+    sharedData->SetData("activeRootControls", QVariant::fromValue(activeRootControls));
 }
 
 Document::~Document()
@@ -62,12 +62,12 @@ const DAVA::FilePath &Document::GetPackageFilePath() const
 
 PropertiesModel *Document::GetPropertiesModel() const
 {
-    return reinterpret_cast<PropertiesModel*>(dataContext->GetData("propertiesModel").value<QAbstractItemModel*>()); //TODO this is ugly
+    return reinterpret_cast<PropertiesModel*>(sharedData->GetData("propertiesModel").value<QAbstractItemModel*>()); //TODO this is ugly
 }
 
 PackageModel* Document::GetPackageModel() const
 {
-    return dataContext->GetData("packageModel").value<PackageModel*>();
+    return sharedData->GetData("packageModel").value<PackageModel*>();
 }
 
 void Document::UpdateLanguage()

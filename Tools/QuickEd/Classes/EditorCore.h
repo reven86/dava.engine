@@ -9,12 +9,12 @@
 
 class QAction;
 class Document;
-class BaseController : public QObject
+class EditorCore : public QObject
 {
     Q_OBJECT
 public:
-    explicit BaseController(QObject *parent = nullptr);
-    ~BaseController();
+    explicit EditorCore(QObject *parent = nullptr);
+    ~EditorCore();
     void Start();
 
     MainWindow *GetMainWindow() const;
