@@ -158,7 +158,7 @@ void ImageArea::SetImage(const DAVA::FilePath& filePath)
     }
     else
     {
-        QMessageBox::warning(this, "Format error", "Selected image must be in A8 format.", QMessageBox::Ok);
+        QMessageBox::warning(this, "Format error", QString("Selected image must be in %1 format.").arg(DAVA::PixelFormatDescriptor::GetPixelFormatString(requestedFormat)), QMessageBox::Ok);
     }
     DAVA::SafeRelease(selectedImage);
 }

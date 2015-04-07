@@ -275,7 +275,9 @@ void Landscape::BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathn
 bool Landscape::BuildHeightmap()
 {
     bool retValue = false;
-    if(heightmapPath.IsEqualToExtension(".png"))
+
+    auto imageFormat = ImageSystem::Instance()->GetImageFormatForExtension(heightmapPath);
+    if(imageFormat != IMAGE_FORMAT_UNKNOWN)
     {
         Vector<Image *> imageSet;
         ImageSystem::Instance()->Load(heightmapPath, imageSet);
