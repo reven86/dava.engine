@@ -122,6 +122,7 @@ void KeyboardDevice::PrepareKeyTranslator()
 	keyTranslator[VK_SHIFT] = DVKEY_SHIFT;
 	keyTranslator[VK_CAPITAL] = DVKEY_CAPSLOCK;
     keyTranslator[VK_SPACE] = DVKEY_SPACE;
+    keyTranslator[VK_TAB] = DVKEY_TAB;
     keyTranslator[VK_OEM_PLUS] = DVKEY_EQUALS;
     keyTranslator[VK_OEM_MINUS] = DVKEY_MINUS;
     keyTranslator[VK_ADD] = DVKEY_ADD;
@@ -156,6 +157,7 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x35] = DVKEY_ESCAPE;
     keyTranslator[0x33] = DVKEY_BACKSPACE;
     keyTranslator[0x24] = DVKEY_ENTER;
+    keyTranslator[0x30] = DVKEY_TAB;
     keyTranslator[DVMACOS_COMMAND] = DVKEY_CTRL;
     keyTranslator[DVMACOS_OPTION] = DVKEY_ALT;
     keyTranslator[DVMACOS_SHIFT] = DVKEY_SHIFT;
@@ -199,9 +201,21 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x1A] = DVKEY_7;
     keyTranslator[0x1C] = DVKEY_8;
     keyTranslator[0x19] = DVKEY_9;
-    keyTranslator[0x7A] = DVKEY_F1;
     keyTranslator[0x1B] = DVKEY_MINUS;
     keyTranslator[0x18] = DVKEY_EQUALS;
+    
+    keyTranslator[0x7A] = DVKEY_F1;
+    keyTranslator[0x78] = DVKEY_F2;
+    keyTranslator[0x73] = DVKEY_F3;
+    keyTranslator[0x76] = DVKEY_F4;
+    keyTranslator[0x60] = DVKEY_F5;
+    keyTranslator[0x61] = DVKEY_F6;
+    keyTranslator[0x62] = DVKEY_F7;
+    keyTranslator[0x64] = DVKEY_F8;
+    keyTranslator[0x65] = DVKEY_F9;
+    keyTranslator[0x6D] = DVKEY_F10;
+    keyTranslator[0x67] = DVKEY_F11;
+    keyTranslator[0x6F] = DVKEY_F12;
     
     // numeric keys at numpad
     for(auto i = 0; i < 10; ++i)
