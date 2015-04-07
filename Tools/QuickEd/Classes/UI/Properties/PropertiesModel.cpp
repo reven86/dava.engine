@@ -243,17 +243,22 @@ QVariant PropertiesModel::headerData(int section, Qt::Orientation /*orientation*
     return QVariant();
 }
 
-void PropertiesModel::AddComponent(ControlNode *node, int componentType)
+void PropertiesModel::AddComponentSection(ControlNode *node, ComponentPropertiesSection *section)
 {
-//    beginInsertRows(<#const QModelIndex &parent#>, <#int first#>, <#int last#>)
-    node->GetPropertiesRoot()->AddComponentPropertiesSection(componentType);
-//    endInsertRows();
-    emitPropertyChanged(node->GetPropertiesRoot());
+    int32 sectionRow = node->GetPropertiesRoot()->GetIndexOfCompoentPropertiesSection(section);
+    QModelIndex parentIndex = indexByProperty(node->GetPropertiesRoot(), 0);
+    beginInsertRows(parentIndex, sectionRow, sectionRow);
+    node->GetPropertiesRoot()->AddComponentPropertiesSection(section);
+    endInsertRows();
 }
 
-void PropertiesModel::RemoveComponent(ControlNode *node, int componentType)
+void PropertiesModel::RemoveComponentSection(ControlNode *node, ComponentPropertiesSection *section)
 {
-    node->GetPropertiesRoot()->RemoveProp
+    int32 sectionRow = node->GetPropertiesRoot()->GetIndexOfCompoentPropertiesSection(section);
+    QModelIndex parentIndex = indexByProperty(node->GetPropertiesRoot(), 0);
+    beginRemoveRows(parentIndex, sectionRow, sectionRow);
+    node->GetPropertiesRoot()->RemoveComponentPropertiesSection(section);
+    endRemoveRows();
 }
 
 QVariant PropertiesModel::makeQVariant(const BaseProperty *property) const

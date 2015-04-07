@@ -15,6 +15,7 @@ namespace DAVA {
 class BaseProperty;
 class ControlNode;
 class QtModelPackageCommandExecutor;
+class ComponentPropertiesSection;
 
 class PropertiesModel : public QAbstractItemModel
 {
@@ -39,8 +40,8 @@ public:
     virtual QVariant headerData(int section, Qt::Orientation orientation,
                                 int role = Qt::DisplayRole) const override;
 
-    void AddComponent(ControlNode *node, int componentType);
-    void RemoveComponent(ControlNode *node, int componentType);
+    void AddComponentSection(ControlNode *node, ComponentPropertiesSection *section);
+    void RemoveComponentSection(ControlNode *node, ComponentPropertiesSection *section);
     
 private:
     QVariant makeQVariant(const BaseProperty *property) const;

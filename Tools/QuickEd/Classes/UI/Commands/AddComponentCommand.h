@@ -5,6 +5,7 @@
 
 class PropertiesModel;
 class ControlNode;
+class ComponentPropertiesSection;
 
 class AddComponentCommand : public QUndoCommand
 {
@@ -18,7 +19,7 @@ public:
 private:
     PropertiesModel *model;
     ControlNode *node;
-    int componentType;
+    ComponentPropertiesSection *componentSection;
 };
 
 #endif // __QUICKED_ADD_COMPONENT_COMMAND_H__

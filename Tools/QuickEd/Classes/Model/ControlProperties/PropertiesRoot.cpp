@@ -89,11 +89,41 @@ ControlPropertiesSection *PropertiesRoot::GetControlPropertiesSection(const DAVA
     return nullptr;
 }
 
+int32 PropertiesRoot::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSection *section)
+{
+    int32 offset = (int32) controlProperties.size();
+    auto it = std::find(componentProperties.begin(), componentProperties.end(), section);
+    if (it != componentProperties.end())
+    {
+        return (it - componentProperties.begin()) + offset;
+    }
+    else
+    {
+        int32 componentsCount = (int32) componentProperties.size();
+        for (int32 i = 0; i < componentsCount; i++)
+        {
+            if (componentProperties[i]->GetType() > section->GetType())
+                return i + offset;
+        }
+        return componentsCount + offset;
+    }
+}
+
 ComponentPropertiesSection *PropertiesRoot::AddComponentPropertiesSection(DAVA::uint32 componentType)
 {
     ComponentPropertiesSection *section = new ComponentPropertiesSection(control, (UIComponent::eType) componentType, nullptr, COPY_VALUES);
-    componentProperties.push_back(section);
+    AddComponentPropertiesSection(section);
+    section->Release();
     return section;
+}
+
+void PropertiesRoot::AddComponentPropertiesSection(ComponentPropertiesSection *section)
+{
+    componentProperties.push_back(SafeRetain(section));
+    std::stable_sort(componentProperties.begin(), componentProperties.end(),  [](ComponentPropertiesSection * left, ComponentPropertiesSection * right) {
+        return left->GetComponent()->GetType() < right->GetComponent()->GetType();
+    });
+
 }
 
 void PropertiesRoot::RemoveComponentPropertiesSection(ComponentPropertiesSection *section)

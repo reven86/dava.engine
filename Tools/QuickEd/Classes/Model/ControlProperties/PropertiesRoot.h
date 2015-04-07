@@ -28,7 +28,10 @@ public:
     virtual BaseProperty *GetProperty(int index) const override;
     
     ControlPropertiesSection *GetControlPropertiesSection(const DAVA::String &name) const;
+
+    DAVA::int32 GetIndexOfCompoentPropertiesSection(ComponentPropertiesSection *section);
     ComponentPropertiesSection *AddComponentPropertiesSection(DAVA::uint32 componentType);
+    void AddComponentPropertiesSection(ComponentPropertiesSection *section);
     void RemoveComponentPropertiesSection(ComponentPropertiesSection *section);
     
     BackgroundPropertiesSection *GetBackgroundPropertiesSection(int num) const;
