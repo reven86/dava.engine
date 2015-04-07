@@ -314,7 +314,9 @@ void MemoryManager::Deallocate(void* ptr)
                 statGeneral.internalBlockCount -= 1;
               
             }
-            MallocHook::Free(block->realBlockStart);
+            void* freeMe = block->realBlockStart;
+            Memset(block, 0xEC, sizeof(MemoryBlock));
+            MallocHook::Free(freeMe);
         }
         else
         {
