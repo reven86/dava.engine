@@ -136,7 +136,7 @@ namespace DAVA
 	int AutotestingSystemLua::Print(lua_State* L)
 	{
 		const char* str = lua_tostring(L, -1);
-		Logger::FrameworkDebug("AutotestingSystemLua::Print: %s", str);
+		Logger::Debug("AutotestingSystemLua::Print: %s", str);
 		lua_pop(L, 1);
 		return 0;
 	}
@@ -718,9 +718,6 @@ namespace DAVA
 
 	void AutotestingSystemLua::ProcessInput(const UIEvent &input)
 	{
-		Logger::FrameworkDebug("AutotestingSystemLua::ProcessInput %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", input.tid,
-			input.phase, input.tapCount, input.point.x, input.point.y, input.physPoint.x, input.physPoint.y, input.keyChar);
-
 		Vector<UIEvent> touches;
 		touches.push_back(input);
 		UIControlSystem::Instance()->OnInput(0, touches, touches);
