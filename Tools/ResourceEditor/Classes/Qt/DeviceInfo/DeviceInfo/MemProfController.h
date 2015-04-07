@@ -31,15 +31,13 @@ signals:
     void ConnectionEstablished(bool newConnection, ProfilingSession* profSession);
     void ConnectionLost(const DAVA::char8* message);
     void StatArrived();
+    void DumpArrived(size_t sizeTotal, size_t sizeRecv);
 
 public slots:
     void OnDumpPressed();
     void OnViewDump();
     void OnViewFileDump();
     
-private:
-    void Output(const DAVA::String& msg);
-
 private:
     QPointer<MemProfWidget> view;
     QPointer<QWidget> parentWidget;

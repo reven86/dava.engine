@@ -6,6 +6,7 @@
 #include <Utils/UTF8Utils.h>
 
 #include "Base/FunctionTraits.h"
+#include "FileSystem/FileSystem.h"
 
 #include "MemProfWidget.h"
 #include "MemProfController.h"
@@ -78,6 +79,7 @@ void MemProfController::ShowView()
         connect(this, &MemProfController::ConnectionEstablished, view, &MemProfWidget::ConnectionEstablished);
         connect(this, &MemProfController::ConnectionLost, view, &MemProfWidget::ConnectionLost);
         connect(this, &MemProfController::StatArrived, view, &MemProfWidget::StatArrived);
+        connect(this, &MemProfController::DumpArrived, view, &MemProfWidget::DumpArrived);
 
         connect(view, SIGNAL(OnDumpButton()), this, SLOT(OnDumpPressed()));
         connect(view, SIGNAL(OnViewDumpButton()), this, SLOT(OnViewDump()));
@@ -113,84 +115,15 @@ void MemProfController::OnCurrentStat(const DAVA::MMCurStat* stat)
 
 void MemProfController::OnDump(size_t total, size_t recv, Vector<uint8>* v)
 {
-    view->UpdateProgress(total, recv);
     if (total == recv)
     {
         DVASSERT(v != nullptr);
 
-        dumpData.swap(*v);
-        BacktraceSymbolTable table;
-
-        const MMDump* dump = reinterpret_cast<MMDump*>(dumpData.data());
+        const MMDump* dump = reinterpret_cast<const MMDump*>(v->data());
         const MMCurStat* stat = OffsetPointer<MMCurStat>(dump, sizeof(MMDump));
         OnCurrentStat(stat);
 
-        const size_t bktraceSize = sizeof(MMBacktrace) + dump->bktraceDepth * sizeof(uint64);
-
-        const MMBlock* blocks = OffsetPointer<MMBlock>(stat, stat->size);
-        const MMSymbol* symbols = OffsetPointer<MMSymbol>(blocks, sizeof(MMBlock) * dump->blockCount);
-        const MMBacktrace* bt = OffsetPointer<MMBacktrace>(symbols, sizeof(MMSymbol) * dump->symbolCount);
-
-        for (size_t i = 0, n = dump->symbolCount;i < n;++i)
-        {
-            table.AddSymbol(symbols[i].addr, symbols[i].name);
-        }
-        const MMBacktrace* p = bt;
-        for (size_t i = 0, n = dump->bktraceCount;i < n;++i)
-        {
-            const uint64* frames = OffsetPointer<uint64>(p, sizeof(MMBacktrace));
-            table.AddBacktrace(p->hash, frames, dump->bktraceDepth);
-            p = OffsetPointer<MMBacktrace>(p, bktraceSize);
-        }
-
-        static int dumpIndex = 1;
-        {
-            char fname[512];
-            FilePath fp("~doc:");
-            Snprintf(fname, COUNT_OF(fname), "%sdump_%d.bin", fp.GetAbsolutePathname().c_str(), dumpIndex);
-            FILE* f = fopen(fname, "wb");
-            if (f)
-            {
-                fwrite(dump, 1, dump->size, f);
-                fclose(f);
-            }
-        }
-        {
-            char fname[512];
-            FilePath fp("~doc:");
-            Snprintf(fname, COUNT_OF(fname), "%sdump_%d.log", fp.GetAbsolutePathname().c_str(), dumpIndex);
-            dumpIndex += 1;
-            FILE* f = fopen(fname, "wb");
-            if (f)
-            {
-                fprintf(f, "General info\n");
-                fprintf(f, "  collectTime=%u ms\n", uint32(dump->collectTime * 10));
-                fprintf(f, "  packTime=%u ms\n", uint32(dump->packTime * 10));
-                //fprintf(f, "  packedSize=%u\n", packedSize);
-                fprintf(f, "  blockCount=%u\n", dump->blockCount);
-                fprintf(f, "  backtraceCount=%u\n", dump->bktraceCount);
-                fprintf(f, "  nameCount=%u\n", dump->symbolCount);
-                fprintf(f, "  backtraceDepth=%u\n", dump->bktraceDepth);
-
-                fprintf(f, "Blocks\n");
-                for (uint32 i = 0;i < dump->blockCount;++i)
-                {
-                    fprintf(f, "%4d: allocByApp=%u, allocTotal=%u, orderNo=%u, pool=%u, hash=%u, tags=%08X\n", i + 1,
-                            blocks[i].allocByApp, blocks[i].allocTotal, blocks[i].orderNo, blocks[i].pool,
-                            blocks[i].bktraceHash, blocks[i].tags);
-                    const Vector<const char8*>& fr = table.GetFrames(blocks[i].bktraceHash);
-                    for (auto s : fr)
-                    {
-                        fprintf(f, "        %s\n", s);
-                    }
-                }
-                fclose(f);
-            }
-        }
+        profilingSession->AddDump(dump);
     }
-}
-
-void MemProfController::Output(const String& msg)
-{
-
+    emit DumpArrived(total, recv);
 }

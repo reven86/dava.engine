@@ -28,6 +28,7 @@ namespace DAVA
 
 class AllocPoolModel;
 class TagModel;
+class GeneralStatModel;
 class StatItem;
 class ProfilingSession;
 
@@ -46,12 +47,11 @@ public:
 
     void ShowDump(const DAVA::Vector<DAVA::uint8>& v);
 
-    void UpdateProgress(size_t total, size_t recv);
-
 public slots:
     void ConnectionEstablished(bool newConnection, ProfilingSession* profSession);
     void ConnectionLost(const DAVA::char8* message);
     void StatArrived();
+    void DumpArrived(size_t sizeTotal, size_t sizeRecv);
     
 private:
     void ReinitPlot();
@@ -65,11 +65,10 @@ private:
     QToolBar* toolbar;
     QFrame* frame;
 
-    MemProfInfoModel * model;
-
     ProfilingSession* profileSession;
     QPointer<AllocPoolModel> allocPoolModel;
     QPointer<TagModel> tagModel;
+    QPointer<GeneralStatModel> generalStatModel;
 
     DAVA::Vector<QColor> poolColors;
 };

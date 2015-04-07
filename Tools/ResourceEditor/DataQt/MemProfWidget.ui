@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>904</width>
+    <width>1221</width>
     <height>609</height>
    </rect>
   </property>
@@ -47,10 +47,31 @@
    <item>
     <layout class="QHBoxLayout" name="horzLayout">
      <item>
-      <widget class="QTableView" name="allocPoolTable"/>
+      <widget class="QTableView" name="generalStatTable">
+       <property name="sizeAdjustPolicy">
+        <enum>QAbstractScrollArea::AdjustToContents</enum>
+       </property>
+      </widget>
      </item>
      <item>
-      <widget class="QTableView" name="tagTable"/>
+      <widget class="QTableView" name="allocPoolTable">
+       <property name="sizeAdjustPolicy">
+        <enum>QAbstractScrollArea::AdjustToContents</enum>
+       </property>
+       <property name="showGrid">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTableView" name="tagTable">
+       <property name="sizeAdjustPolicy">
+        <enum>QAbstractScrollArea::AdjustToContents</enum>
+       </property>
+       <property name="showGrid">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

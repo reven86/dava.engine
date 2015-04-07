@@ -16,6 +16,7 @@
 #include "ProfilingSession.h"
 #include "Models/AllocPoolModel.h"
 #include "Models/TagModel.h"
+#include "Models/GeneralStatModel.h"
 
 using namespace DAVA;
 
@@ -24,7 +25,6 @@ MemProfWidget::MemProfWidget(QWidget *parent)
     , ui(new Ui::MemProfWidget())
     , toolbar(nullptr)
     , frame(nullptr)
-    , model(nullptr)
     , profileSession(nullptr)
 {
     ui->setupUi(this);
@@ -54,19 +54,20 @@ MemProfWidget::MemProfWidget(QWidget *parent)
     {
         tagModel = new TagModel;
         tagModel->SetTagColors(QColor(200, 255, 200), QColor(Qt::lightGray));
+
         allocPoolModel = new AllocPoolModel;
         allocPoolModel->SetPoolColors(poolColors);
 
+        generalStatModel = new GeneralStatModel;
+
         ui->allocPoolTable->setModel(allocPoolModel);
         ui->tagTable->setModel(tagModel);
+        ui->generalStatTable->setModel(generalStatModel);
     }
-    
-    model = new MemProfInfoModel();
 }
 
 MemProfWidget::~MemProfWidget() 
 {
-    delete model;
 }
 
 void MemProfWidget::ConnectionEstablished(bool newConnection, ProfilingSession* profSession)
@@ -74,10 +75,14 @@ void MemProfWidget::ConnectionEstablished(bool newConnection, ProfilingSession* 
     profileSession = profSession;
     allocPoolModel->BeginNewProfileSession(profSession);
     tagModel->BeginNewProfileSession(profSession);
+    generalStatModel->BeginNewProfileSession(profSession);
 
     ui->labelStatus->setText("Connection established");
     if (newConnection)
     {
+        ui->allocPoolTable->resizeRowsToContents();
+        ui->tagTable->resizeRowsToContents();
+        ui->generalStatTable->resizeRowsToContents();
         ReinitPlot();
     }
 }
@@ -96,7 +101,14 @@ void MemProfWidget::StatArrived()
 
     allocPoolModel->SetCurrentValues(stat);
     tagModel->SetCurrentValues(stat);
+    generalStatModel->SetCurrentValues(stat);
     UpdatePlot(stat);
+}
+
+void MemProfWidget::DumpArrived(size_t sizeTotal, size_t sizeRecv)
+{
+    int v = static_cast<int>(double(sizeRecv) / double(sizeTotal) * 100.0);
+    ui->dumpProgress->setValue(v);
 }
 
 void MemProfWidget::UpdatePlot(const StatItem& stat)
@@ -151,10 +163,4 @@ void MemProfWidget::ReinitPlot()
 void MemProfWidget::ShowDump(const DAVA::Vector<DAVA::uint8>& v)
 {
     //DumpViewWidget* w = new DumpViewWidget(v, this);
-}
-
-void MemProfWidget::UpdateProgress(size_t total, size_t recv)
-{
-    int v = static_cast<int>(double(recv) / double(total) * 100.0);
-    ui->dumpProgress->setValue(v);
 }
