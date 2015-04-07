@@ -41,10 +41,9 @@ UIComponent::~UIComponent()
 {
 }
 
-Component* UIComponent::Clone(Entity* toEntity)
+UIComponent * UIComponent::CreateByType(uint32 componentType)
 {
-    // Empty stub
-    return NULL;
+    return nullptr;
 }
 
 }
