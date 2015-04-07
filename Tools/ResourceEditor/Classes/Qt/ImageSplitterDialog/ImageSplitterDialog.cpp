@@ -189,7 +189,8 @@ void ImageSplitterDialog::OnRestoreClicked()
 
 void ImageSplitterDialog::OnSaveAsClicked(bool saveSplittedImages)
 {
-    DAVA::FilePath retPath = QFileDialog::getSaveFileName(this, "Select png", ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str(),"PNG(*.png)").toStdString();
+    DAVA::FilePath retPath = QFileDialog::getSaveFileName(this, "Select image", ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str(),
+                                                          PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter).toStdString();
     if(!retPath.IsEmpty())
     {
         Save(retPath, saveSplittedImages);
@@ -316,7 +317,8 @@ void ImageSplitterDialog::SetAcceptableImageSize(const DAVA::Vector2& newSize)
 
 void ImageSplitterDialog::Save(const DAVA::FilePath& filePath, bool saveSplittedImagesSeparately)
 {
-    if(!filePath.IsEqualToExtension(".png") && !saveSplittedImagesSeparately)
+    auto imageFormat = DAVA::ImageSystem::Instance()->GetImageFormatForExtension(filePath);
+    if((DAVA::IMAGE_FORMAT_UNKNOWN == imageFormat) && !saveSplittedImagesSeparately)
     {
         QMessageBox::warning(this, "Save error", "Wrong file name.", QMessageBox::Ok);
         return;
