@@ -46,7 +46,7 @@ void FrameworkDidLaunched()
 	DAVA::Core::Instance()->SetOptions(appOptions);
     DAVA::VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
 
-    DAVA::FilePath::SetBundleName("~/Sources/dava.framework/Tools/ResourceEditor/");
+//    DAVA::FilePath::SetBundleName("~/Sources/dava.framework/Tools/ResourceEditor/");
     
 	SafeRelease(appOptions);
 }
