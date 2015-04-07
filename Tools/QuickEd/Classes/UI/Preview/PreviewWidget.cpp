@@ -58,8 +58,7 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     scaleCombo->setCurrentIndex(DEFAULT_SCALE_PERCENTAGE_INDEX);
     scaleCombo->lineEdit()->setMaxLength(6);
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
-    
-   
+      
     connect(davaGLWidget->GetGLWindow(), &QWindow::screenChanged, this, &PreviewWidget::OnMonitorChanged);
 
     connect(model, &PreviewModel::CanvasOrViewChanged, this, &PreviewWidget::OnScrollAreaChanged);
@@ -133,14 +132,21 @@ void PreviewWidget::OnMonitorChanged()
     scaleCombo->setCurrentIndex(index);
 }
 
-void PreviewWidget::OnControlNodeSelected(ControlNode *node)
+void PreviewWidget::OnControlNodeSelected(QList<ControlNode *> selectedNodes)
 {
-    sharedData->SetData("selectedNode", QVariant::fromValue(node));
+    sharedData->SetData("selectedNodes", QVariant::fromValue(selectedNodes));
 }
 
-void PreviewWidget::OnError(const QString &errorText)
+void PreviewWidget::OnError(const Result &result)
 {
-    QMessageBox::warning(qApp->activeWindow(), tr("Error occurred!"), errorText);
+    if (result)
+    {
+        return;
+    }
+    else
+    {
+        QMessageBox::warning(qApp->activeWindow(), tr("Error occurred!"), result.errors.join('\n'));
+    }
 }
 
 void PreviewWidget::OnScaleByZoom(int scaleDelta)

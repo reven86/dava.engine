@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QPointer>
 #include "ui_PreviewWidget.h"
+#include "Result.h"
 
 namespace Ui {
     class PreviewWidget;
@@ -48,9 +49,9 @@ private slots:
     
     void OnMonitorChanged();
 
-    void OnControlNodeSelected(ControlNode *node);
+    void OnControlNodeSelected(QList<ControlNode*> selectedNodes);
 
-    void OnError(const QString &errorText);
+    void OnError(const Result &result);
 
 private:
     void OnScaleByZoom(int scaleDelta); 

@@ -3,6 +3,7 @@
 #include "UI/Preview/EditScreen.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Document.h"
+#include "Result.h"
 
 using namespace DAVA;
 
@@ -165,61 +166,73 @@ void PreviewModel::SetCanvasPosition(const QPoint &newCanvasPosition)
     }
 }
 
-void PreviewModel::OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIControl *selectedControl)
+void PreviewModel::OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl *, DAVA::UIControl*> > &selectedPairs)
 {
-    auto it = rootNodes.find(rootControl);
-    if (it != rootNodes.end())
+    Result result;
+    QList<ControlNode*> selectedNodes;
+    for (auto pair : selectedPairs)
     {
-        Vector<UIControl*> path;
-        ControlNode *node = it->second;
-        if (selectedControl == rootControl)
+        DAVA::UIControl* rootControl = pair.first;
+        DAVA::UIControl* selectedControl = pair.second;
+        auto it = rootNodes.find(rootControl);
+        if (it != rootNodes.end())
         {
-            // ok
-        }
-        else
-        {
-            UIControl *c = selectedControl;
-            while (c && c != rootControl)
+            Vector<UIControl*> path;
+            ControlNode *node = it->second;
+            if (selectedControl == rootControl)
             {
-                path.push_back(c);
-                c = c->GetParent();
+                // ok
             }
-
-
-            for (auto it = path.rbegin(); it != path.rend(); ++it)
+            else
             {
-                bool found = false;
-                for (int32 index = 0; index < node->GetCount(); index++)
+                UIControl *c = selectedControl;
+                while (c && c != rootControl)
                 {
-                    ControlNode *child = node->Get(index);
-                    if (child->GetControl() == *it)
+                    path.push_back(c);
+                    c = c->GetParent();
+                }
+
+
+                for (auto it = path.rbegin(); it != path.rend(); ++it)
+                {
+                    bool found = false;
+                    for (int32 index = 0; index < node->GetCount(); index++)
                     {
-                        node = child;
-                        found = true;
+                        ControlNode *child = node->Get(index);
+                        if (child->GetControl() == *it)
+                        {
+                            node = child;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        node = nullptr;
                         break;
                     }
                 }
-
-                if (!found)
-                {
-                    node = nullptr;
-                    break;
-                }
             }
-        }
 
-        if (node)
-        {
-            emit ControlNodeSelected(node);
+            if (node)
+            {
+                selectedNodes.push_back(node);
+            }
+            else
+            {
+                result.addError(Result::Warning, tr("Node not changed"));
+            }
         }
         else
         {
-            ErrorOccurred(tr("Node not changed"));
+            result.addError(Result::Warning, tr("rootControl not found!"));
         }
     }
-    else
+    ControlNodeSelected(selectedNodes);
+    if (result)
     {
-        ErrorOccurred(tr("rootControl not found!"));
+        emit ErrorOccurred(result);
     }
 }
 

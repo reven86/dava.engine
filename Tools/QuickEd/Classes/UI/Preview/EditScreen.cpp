@@ -60,6 +60,7 @@ void CheckeredCanvas::DrawAfterChilds( const UIGeometricData &geometricData )
 
 bool CheckeredCanvas::SystemInput(UIEvent *currentInput)
 {
+    DAVA::List<std::pair<UIControl*, UIControl*> > selectedControls;
     if (currentInput->phase == UIEvent::PHASE_BEGAN || currentInput->phase == UIEvent::PHASE_DRAG)
     {
         UIControl *control = GetControlByPos(this, currentInput->point);
@@ -72,22 +73,12 @@ bool CheckeredCanvas::SystemInput(UIEvent *currentInput)
             }
             if (rootControl->GetParent() == this)
             {
-                for (auto listener : selectionListeners)
-                {
-                    listener->OnControlSelected(rootControl, control);
-                }
-            }
-            else
-            {
-                DVASSERT(false);
+                selectedControls.push_back(std::make_pair(rootControl, control));
             }
         }
-        else
+        for (auto listener : selectionListeners)
         {
-            for (auto listener : selectionListeners)
-            {
-                listener->OnControlSelected(nullptr, nullptr);
-            }
+            listener->OnControlSelected(selectedControls);
         }
     }
     return true;

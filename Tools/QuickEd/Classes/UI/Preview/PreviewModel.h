@@ -6,6 +6,7 @@
 #include <QSize>
 #include "DAVAEngine.h"
 
+#include "Result.h"
 #include "ControlSelectionListener.h"
 
 class PackageCanvas;
@@ -36,15 +37,15 @@ public:
     void ControlsActivated(const QList<ControlNode *> &activatedControls);
 
     // ControlSelectionListener
-    virtual void OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIControl *selectedControl) override;
+    virtual void OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl *, DAVA::UIControl*> > &selectedPairs) override;
 signals:
     void CanvasPositionChanged(const QPoint &canvasPosition);
     void CanvasOrViewChanged(const QSize &viewSize, const QSize &scaledContentSize);
     void CanvasScaleChanged(int canvasScale);
 
-    void ControlNodeSelected(ControlNode *node);
+    void ControlNodeSelected(const QList<ControlNode *> &selectedNodes);
 
-    void ErrorOccurred(const QString &errorText);
+    void ErrorOccurred(const Result &error);
 
 private:
     CheckeredCanvas *FindControlContainer(DAVA::UIControl *control);

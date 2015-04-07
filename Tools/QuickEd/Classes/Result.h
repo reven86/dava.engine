@@ -9,7 +9,7 @@ struct Result
     enum ResultType {
         Success,
         DAVAError,
-        StupidError,
+        Warning,
         CriticalError,
     };
     explicit Result(ResultType type = Success, const QString &error = QString());

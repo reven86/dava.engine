@@ -88,10 +88,7 @@ void PackageWidget::OnDocumentChanged(SharedData *context)
 
     SaveContext();
     sharedData = context;
-    if (nullptr == sharedData)
-    {
-        OnAllControlsDeselectedInEditor();//TODO must not be here
-    }
+
     LoadContext();
 
     treeView->setColumnWidth(0, treeView->size().width()); // TODO Check this
@@ -100,13 +97,9 @@ void PackageWidget::OnDocumentChanged(SharedData *context)
 
 void PackageWidget::OnDataChanged(const QByteArray &role)
 {
-    if (role == "selectedNode")
+    if (role == "selectedNodes")
     {
-        OnControlSelectedInEditor(sharedData->GetData("selectedNode").value<ControlNode*>());
-    }
-    else if (role == "controlDeselected")
-    {
-        OnAllControlsDeselectedInEditor();
+        OnControlSelectedInEditor(sharedData->GetData("selectedNodes").value<QList<ControlNode*> >());
     }
 }
 
@@ -345,18 +338,23 @@ void PackageWidget::filterTextChanged(const QString &filterText)
     }
 }
 
-void PackageWidget::OnControlSelectedInEditor(ControlNode *node)
+void PackageWidget::OnControlSelectedInEditor(const QList<ControlNode *> &selectedNodes)
 {
-    QModelIndex srcIndex = packageModel->indexByNode(node);
-    QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
-    treeView->selectionModel()->select(dstIndex, QItemSelectionModel::ClearAndSelect);
-    treeView->expand(dstIndex);
-    treeView->scrollTo(dstIndex);
-}
-
-void PackageWidget::OnAllControlsDeselectedInEditor()
-{
-    
+    if (selectedNodes.isEmpty())
+    {
+        treeView->selectionModel()->clear();
+    }
+    else
+    {
+        for (auto &node : selectedNodes)
+        {
+            QModelIndex srcIndex = packageModel->indexByNode(node);
+            QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
+            treeView->selectionModel()->select(dstIndex, QItemSelectionModel::ClearAndSelect);
+            treeView->expand(dstIndex);
+            treeView->scrollTo(dstIndex);
+        }
+    }
 }
 
 QList<QPersistentModelIndex> PackageWidget::GetExpandedIndexes() const
