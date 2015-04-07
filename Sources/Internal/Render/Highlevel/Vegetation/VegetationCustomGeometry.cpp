@@ -45,8 +45,10 @@ static const float32 MAX_ROTATION_ANGLE = 180.0f;
 
 void VegetationCustomGeometry::CustomMaterialTransformer::TransformMaterialOnCreate(NMaterial* mat)
 {
+#if RHI_COMPLETE
     mat->AddNodeFlags(DataNode::NodeRuntimeFlag);
     mat->SetRenderLayers(1 << RENDER_LAYER_VEGETATION_ID);
+#endif // RHI_COMPLETE O_o
 }
 
 VegetationCustomGeometry::CustomGeometryEntityData::CustomGeometryEntityData() : material(NULL)
@@ -170,7 +172,7 @@ void VegetationCustomGeometry::Build(Vector<VegetationRenderData*>& renderDataAr
         
         VegetationRenderData* renderData = new VegetationRenderData();
         renderData->SetMaterial(layerGeometryData.material);
-        
+#if RHI_COMPLETE        
         layerGeometryData.material->SetFlag(VegetationPropertyNames::FLAG_GRASS_OPAQUE, NMaterial::FlagOn);
         layerGeometryData.material->SetRenderLayers(1 << RENDER_LAYER_VEGETATION_ID);
         
@@ -184,7 +186,7 @@ void VegetationCustomGeometry::Build(Vector<VegetationRenderData*>& renderDataAr
                                              Shader::UT_FLOAT_VEC3,
                                              1,
                                              &worldSize);
-        
+#endif // RHI_COMPLETE
         renderDataArray[layerIndex] = renderData;
         markedRenderData[layerIndex].renderData = renderData;
         
@@ -263,7 +265,7 @@ void VegetationCustomGeometry::OnVegetationPropertiesChanged(Vector<VegetationRe
     for(size_t renderDataIndex = 0; renderDataIndex < markedArraySize; ++renderDataIndex)
     {
         NMaterial* mat = markedRenderData[renderDataIndex].renderData->GetMaterial();
-        
+#if RHI_COMPLETE        
         if(mat)
         {
             String lightmapKeyName = VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP.c_str();
@@ -298,6 +300,7 @@ void VegetationCustomGeometry::OnVegetationPropertiesChanged(Vector<VegetationRe
                 mat->SetTexture(VegetationPropertyNames::UNIFORM_SAMPLER_DENSITYMAP, densityMapPath);
             }
         }
+#endif // RHI_COMPLETE
     }
 }
 

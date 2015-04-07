@@ -113,6 +113,8 @@ public:
 
     inline uint32 GetRenderLayerID();
     inline uint32 GetSortingKey() const;
+    
+    uint64 GetMaterialKey() const;
 
 private:
 

@@ -568,6 +568,7 @@ void UIStaticText::PrepareSpriteInternal()
         textBg->SetSprite(sprite, 0);
 
         Texture *tex = sprite->GetTexture();
+#if RHI_COMPLETE
         if(tex && tex->GetFormat() == FORMAT_A8)
         {
             textBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
@@ -578,6 +579,7 @@ void UIStaticText::PrepareSpriteInternal()
             textBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
             shadowBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
         }
+#endif RHI_COMPLETE
     }
     else
     {

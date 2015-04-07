@@ -163,7 +163,7 @@ void VegetationFixedGeometry::Build(Vector<VegetationRenderData*>& renderDataArr
     ReleaseRenderData(renderDataArray);
     renderDataArray.push_back(new VegetationRenderData());
     VegetationRenderData& renderData = *renderDataArray[0];
-    
+#if RHI_COMPLETE
     NMaterial* vegetationMaterial = NMaterial::CreateMaterial(FastName("Vegetation_Material"),
                                                    NMaterialName::GRASS,
                                                    NMaterialQualityName::DEFAULT_QUALITY_NAME);
@@ -184,10 +184,11 @@ void VegetationFixedGeometry::Build(Vector<VegetationRenderData*>& renderDataArr
                                          Shader::UT_FLOAT_VEC3,
                                          1,
                                          &worldSize);
+
     
     renderData.SetMaterial(vegetationMaterial);
     SafeRelease(vegetationMaterial);
-    
+#endif // RHI_COMPLETE    
     size_t resolutionCount = resolutionScale.size();
     uint32 sortDirectionCount = GetSortDirectionCount();
     Vector<VegetationIndex>& indexData = renderData.GetIndices();
@@ -578,6 +579,7 @@ bool VegetationFixedGeometry::PolygonByDistanceCompareFunction(const PolygonSort
 
 void VegetationFixedGeometry::OnVegetationPropertiesChanged(Vector<VegetationRenderData*>& renderDataArray, KeyedArchive* props)
 {
+#if RHI_COMPLETE
     DVASSERT(renderDataArray.size() <= 1);
     
     if(renderDataArray.size() > 0)
@@ -646,18 +648,21 @@ void VegetationFixedGeometry::OnVegetationPropertiesChanged(Vector<VegetationRen
         }
 
     }
+#endif // RHI_COMPLETE
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void VegetationFixedGeometry::FixedMaterialTransformer::TransformMaterialOnCreate(NMaterial* mat)
 {
+#if RHI_COMPLETE
     if(false == RenderManager::Instance()->GetCaps().isFramebufferFetchSupported)
     {
         NMaterialHelper::EnableStateFlags(DAVA::PASS_FORWARD,
                                           mat,
                                           RenderStateData::STATE_BLEND);
     }
+#endif // RHI_COMPLETE
 };
 
 };

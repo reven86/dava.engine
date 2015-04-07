@@ -259,7 +259,7 @@ namespace DAVA
 			DVASSERT(parentMat);
 			if(parentMat)
 			{
-				binding.instanceMaterial->SetParent(parentMat, false);
+				binding.instanceMaterial->SetParent(parentMat);
 			}
 		}
 		

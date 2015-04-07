@@ -68,7 +68,7 @@ void TextBlockGraphicsRender::PreDraw()
 		return;
 	
 	isPredrawed = true;
-
+#if RHI_COMPLETE
     Texture * rt = sprite->GetTexture();
     Rect oldviewport = RenderManager::Instance()->GetViewport();
 
@@ -78,6 +78,7 @@ void TextBlockGraphicsRender::PreDraw()
 
     RenderManager::Instance()->SetRenderTarget(0);
     RenderManager::Instance()->SetViewport(oldviewport);
+#endif // RHI_COMPLETE
 }
 	
 Font::StringMetrics TextBlockGraphicsRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)

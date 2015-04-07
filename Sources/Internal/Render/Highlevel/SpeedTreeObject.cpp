@@ -105,12 +105,14 @@ void SpeedTreeObject::BindDynamicParameters(Camera * camera)
 
 void SpeedTreeObject::UpdateAnimationFlag(int32 maxAnimatedLod)
 {
+#if RHI_COMPLETE
     uint32 size = (uint32)renderBatchArray.size();
     for (uint32 k = 0; k < size; ++k)
     {
         NMaterial::eFlagValue flagValue = (renderBatchArray[k].lodIndex > maxAnimatedLod) ? NMaterial::FlagOff : NMaterial::FlagOn;
         renderBatchArray[k].renderBatch->GetMaterial()->SetFlag(FLAG_WIND_ANIMATION, flagValue);
     }
+#endif // RHI_COMPLETE
 }
 
 RenderObject * SpeedTreeObject::Clone(RenderObject *newObject)
@@ -155,9 +157,11 @@ void SpeedTreeObject::Load(KeyedArchive *archive, SerializationContext *serializ
 
     lightSmoothing = archive->GetFloat("sto.lightSmoothing", lightSmoothing);
     
+#if RHI_COMPLETE
     uint32 size = (uint32)renderBatchArray.size();
     for (uint32 k = 0; k < size; ++k)
         renderBatchArray[k].renderBatch->GetMaterial()->SetFlag(FLAG_WIND_ANIMATION, NMaterial::FlagOn);
+#endif // RHI_COMPLETE
 }
 
 AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeGeometry(RenderBatch * rb)
@@ -201,11 +205,13 @@ AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeGeometry(RenderBatch * rb)
 
 bool SpeedTreeObject::IsTreeLeafBatch(RenderBatch * batch)
 {
+#if RHI_COMPLETE
     if(batch && batch->GetMaterial())
     {
         const NMaterialTemplate * material = batch->GetMaterial()->GetMaterialTemplate();
         return (material->name == NMaterialName::SPEEDTREE_LEAF) || (material->name == NMaterialName::SPHERICLIT_SPEEDTREE_LEAF);
     }
+#endif //RHI_COMPLETE
     return false;
 }
 

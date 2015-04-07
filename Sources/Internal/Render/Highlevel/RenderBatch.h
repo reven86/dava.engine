@@ -100,9 +100,7 @@ public:
 	inline RenderObject * GetRenderObject() const;        
     
     inline void SetStartIndex(uint32 _startIndex);
-    inline void SetIndexCount(uint32 _indexCount);
-
-    virtual void Draw(const FastName & ownerRenderPass, Camera * camera);
+    inline void SetIndexCount(uint32 _indexCount);    
     
     const AABBox3 & GetBoundingBox() const;
 

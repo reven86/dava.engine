@@ -37,6 +37,7 @@
 #include "Debug/Replay.h"
 #include "Debug/Stats.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/Renderer.h"
 
 namespace DAVA 
 {
@@ -330,10 +331,12 @@ void UIControlSystem::Draw()
     FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 
     drawCounter = 0;
+#if RHI_COMPLETE
     if (!ui3DViewCount)
     {        
         RenderManager::Instance()->Clear(Color(0,0,0,0), 1.0f, 0);                
     }
+#endif RHI_COMPLETE
 
 	if (currentScreen)
 	{

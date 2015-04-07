@@ -37,6 +37,7 @@
 #include "Scene3D/Systems/FoliageSystem.h"
 #include "Render/RenderHelper.h"
 #include "Platform/SystemTimer.h"
+#include "Job/JobManager.h"
 
 #include "Render/Highlevel/Vegetation/VegetationFixedGeometry.h"
 #include "Render/Highlevel/Vegetation/VegetationCustomSLGeometry.h"
@@ -524,7 +525,7 @@ void VegetationRenderObject::PrepareToRenderMultipleMaterials(Camera *camera)
             {
                 vegetationAnimationOffset[i] = treeNode->data.animationOffset[i] * layersAnimationAmplitude.data[i];
             }
-            
+#if RHI_COMPLETE
             mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_SWITCH_LOD_SCALE,
                                   Shader::UT_FLOAT_VEC2,
                                   1,
@@ -539,6 +540,7 @@ void VegetationRenderObject::PrepareToRenderMultipleMaterials(Camera *camera)
                                   Shader::UT_FLOAT,
                                   8,
                                   vegetationAnimationOffset);
+#endif RHI_COMPLETE
             
 #ifdef VEGETATION_DRAW_LOD_COLOR
             mat->SetPropertyValue(UNIFORM_LOD_COLOR, Shader::UT_FLOAT_VEC3, 1, &RESOLUTION_COLOR[resolutionIndex]);
@@ -628,7 +630,7 @@ void VegetationRenderObject::PrepareToRenderSingleMaterial(Camera *camera)
         {
             vegetationAnimationOffset[i] = treeNode->data.animationOffset[i] * layersAnimationAmplitude.data[i];
         }
-        
+#if RHI_COMPLETE        
         mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_SWITCH_LOD_SCALE,
                               Shader::UT_FLOAT_VEC2,
                               1,
@@ -643,6 +645,7 @@ void VegetationRenderObject::PrepareToRenderSingleMaterial(Camera *camera)
                               Shader::UT_FLOAT,
                               8,
                               vegetationAnimationOffset);
+#endif // RHI_COMPLETE
         
 #ifdef VEGETATION_DRAW_LOD_COLOR
         mat->SetPropertyValue(UNIFORM_LOD_COLOR, Shader::UT_FLOAT_VEC3, 1, &RESOLUTION_COLOR[resolutionIndex]);
@@ -925,6 +928,7 @@ float32 VegetationRenderObject::SampleHeight(int16 x, int16 y)
 
 bool VegetationRenderObject::IsHardwareCapableToRenderVegetation()
 {
+#if RHI_COMPLETE
     RenderManager::Caps deviceCaps = RenderManager::Instance()->GetCaps();
 
     bool result = deviceCaps.isVertexTextureUnitsSupported;
@@ -937,6 +941,9 @@ bool VegetationRenderObject::IsHardwareCapableToRenderVegetation()
 #endif
 
     return result;
+#else
+    return false;
+#endif // RHI_COMPLETE
 }
 
 bool VegetationRenderObject::IsValidGeometryData() const
@@ -1174,6 +1181,7 @@ size_t VegetationRenderObject::SelectDirectionIndex(const Vector3& cameraDirecti
 
 void VegetationRenderObject::DebugDrawVisibleNodes()
 {
+#if RHI_COMPLETE
     uint32 requestedBatchCount = static_cast<uint32>(Min(visibleCells.size(), (size_t)maxVisibleQuads));
     for(uint32 i = 0; i < requestedBatchCount; ++i)
     {
@@ -1183,6 +1191,7 @@ void VegetationRenderObject::DebugDrawVisibleNodes()
         Renderer::SetColor(RESOLUTION_COLOR[resolutionIndex]);
         RenderHelper::Instance()->DrawBox(treeNode->data.bbox, 1.0f, RenderState::RENDERSTATE_3D_OPAQUE);
     }
+#endif // RHI_COMPLETE
 }
 
 void VegetationRenderObject::ClearRenderBatches()

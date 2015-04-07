@@ -237,8 +237,10 @@ void UIParticles::Draw(const UIGeometricData & geometricData)
     RenderSystem2D::Instance()->UpdateClip();
 
     effect->effectRenderObject->PrepareToRender(defaultCamera);
+#if RHI_COMPLETE
     for (int32 i=0, sz = effect->effectRenderObject->GetActiveRenderBatchCount(); i<sz; ++i)
         effect->effectRenderObject->GetActiveRenderBatch(i)->Draw(PASS_FORWARD, defaultCamera);
+#endif // RHI_COMPLETE
 }
 
 void UIParticles::SetExtertnalValue(const String& name, float32 value)

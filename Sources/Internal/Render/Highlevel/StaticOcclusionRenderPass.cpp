@@ -139,7 +139,7 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
     //
 //    glDepthFunc(GL_LEQUAL);
 //    glDepthMask(GL_FALSE);
-
+#if RHI_COMPLETE
     OcclusionQueryPool & manager = occlusion->GetOcclusionQueryPool();
     size = (uint32)terrainBatches.size();
     for (uint32 k = 0; k < size; ++k)
@@ -218,6 +218,7 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
         
         occlusion->RecordFrameQuery(batch, handle);
     }
+#endif //RHI_COMPLETE
     
     //
 //    glDepthMask(GL_TRUE);

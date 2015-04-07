@@ -51,6 +51,7 @@ namespace DAVA
 
 NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, bool enableFrameBlend, eBlendMode srcFactor, eBlendMode dstFactor)
 {
+#if RHI_COMPLETE
 	if (!texture) //for superemmiter particles eg
 		return NULL;
 
@@ -88,6 +89,9 @@ NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, b
 
 		return material;
 	}
+#else
+    return NULL;
+#endif // RHI_COMPLETE
 }
 
 
@@ -98,23 +102,29 @@ ParticleEffectSystem::ParticleEffectSystem(Scene * scene, bool _forceDisableDept
 	    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::START_PARTICLE_EFFECT);
         scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STOP_PARTICLE_EFFECT);
     }
+#if RHI_COMPLETE
 	particleRegularMaterial = NMaterial::CreateMaterial(FastName("Particle_Material"),  NMaterialName::PARTICLES, NMaterialQualityName::DEFAULT_QUALITY_NAME);		
 	particleFrameBlendMaterial = NMaterial::CreateMaterial(FastName("Particle_Frameblend_Material"),  NMaterialName::PARTICLES_FRAMEBLEND, NMaterialQualityName::DEFAULT_QUALITY_NAME);	
+#endif // RHI_COMPLETE
 }
 ParticleEffectSystem::~ParticleEffectSystem()
 {
+#if RHI_COMPLETE
 	for (Map<uint32, NMaterial *>::iterator it = materialMap.begin(), e = materialMap.end(); it!=e; ++it)
 	{
 		SafeRelease(it->second);
 	}
 	SafeRelease(particleRegularMaterial);
 	SafeRelease(particleFrameBlendMaterial);
+#endif // RHI_COMPLETE
 }
 
 void ParticleEffectSystem::SetGlobalMaterial(NMaterial *material)
 {
+#if RHI_COMPLETE
     particleRegularMaterial->SetParent(material, false);
     particleFrameBlendMaterial->SetParent(material, false);
+#endif // RHI_COMPLETE
 }
 
 void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleEmitter *emitter, const Vector3& spawnPosition, int32 positionSource)

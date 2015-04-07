@@ -150,7 +150,7 @@ RenderBatch* RenderBatchPool::CreateRenderBatch(NMaterial* mat,
                                         VegetationMaterialTransformer* transform)
 {
     RenderBatch* rb = new RenderBatch();
-    
+#if RHI_COMPLETE    
     NMaterial* batchMaterial = NMaterial::CreateMaterialInstance();
     batchMaterial->AddNodeFlags(DataNode::NodeRuntimeFlag);
     batchMaterial->SetParent(mat);
@@ -165,6 +165,7 @@ RenderBatch* RenderBatchPool::CreateRenderBatch(NMaterial* mat,
     SafeRelease(batchMaterial);
     
     entry->renderBatches.push_back(rb);
+#endif //RHI_COMPLETE
     
     return rb;
 }

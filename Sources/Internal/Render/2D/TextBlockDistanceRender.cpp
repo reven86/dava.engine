@@ -63,6 +63,7 @@ FastName TextBlockDistanceRender::colorUniform("color");
 TextBlockDistanceRender::TextBlockDistanceRender(TextBlock* textBlock) :
 	TextBlockRender(textBlock)
 {
+#if RHI_COMPLETE
 	charDrawed = 0;
 	renderObject = new RenderDataObject();
 	
@@ -70,14 +71,17 @@ TextBlockDistanceRender::TextBlockDistanceRender(TextBlock* textBlock) :
 	
     shader = ShaderCache::Instance()->Get(FastName("~res:/Shaders/Default/df_font"), FastNameSet());
     shader->Retain();
+#endif  // RHI_COMPLETE
 }
 	
 TextBlockDistanceRender::~TextBlockDistanceRender()
 {
+#if RHI_COMPLETE
     shader->Release();
     shader = NULL;
 
 	SafeRelease(renderObject);
+#endif RHI_COMPLETE
 }
 	
 void TextBlockDistanceRender::Prepare(Texture *texture /*= NULL*/)
@@ -168,6 +172,8 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 	offsetMatrix = (scaleMatrix*offsetMatrix*rotateMatrix)*worldMatrix;
 	//offsetMatrix = (scaleMatrix * rotateMatrix * offsetMatrix)*worldMatrix;
 
+
+#if RHI_COMPLETE
 	Renderer::SetDynamicParam(PARAM_WORLD, &offsetMatrix, UPDATE_SEMANTIC_ALWAYS);
 
 	RenderManager::Instance()->SetRenderState(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
@@ -188,6 +194,8 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 	RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, charDrawed * 6, EIF_16, this->indexBuffer);
     
     Renderer::SetDynamicParam(PARAM_WORLD, oldMatrix, (pointer_size)oldMatrix);
+
+#endif RHI_COMPLETE
 }
 	
 Font::StringMetrics TextBlockDistanceRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)

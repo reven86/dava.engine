@@ -99,21 +99,6 @@ void RenderBatch::SetMaterial(NMaterial * _material)
         
 }    
 
-void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
-{
-//  TIME_PROFILE("RenderBatch::Draw");
-//	if(!renderObject)return;
-    DVASSERT(renderObject != 0);    	    
-    
-    renderObject->BindDynamicParameters(camera);
-    material->BindMaterialTechnique(ownerRenderPass, camera);
-
-	if (dataSource)
-		material->Draw(dataSource);
-	else
-		material->Draw(renderDataObject);
-
-}
     
 void RenderBatch::SetRenderObject(RenderObject * _renderObject)
 {
@@ -179,6 +164,7 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
 	rb->renderDataObject = SafeRetain(renderDataObject);
 	
     SafeRelease(rb->material);
+#if RHI_COMPLETE
 	if(material)
 	{
 		NMaterial *mat = material->Clone();
@@ -187,6 +173,7 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
 
  		//rb->material->SetMaterialSystem(NULL);
 	}
+#endif RHI_COMPLETE
 
 	rb->startIndex = startIndex;
 	rb->indexCount = indexCount;

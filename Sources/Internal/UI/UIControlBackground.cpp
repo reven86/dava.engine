@@ -35,6 +35,7 @@
 #include "Render/RenderHelper.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/RenderHelper.h"
 #include "Render/Renderer.h"
 
 #include <limits>
@@ -58,8 +59,7 @@ UIControlBackground::UIControlBackground()
 ,   stretchData(NULL)
 ,   margins(NULL)
 ,   drawColor(Color::White)
-,   shader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR))
-,   renderState(RenderHelper::DEFAULT_2D_BLEND_MATERIAL)
+,   material(RenderHelper::DEFAULT_2D_BLEND_MATERIAL)
 {
 }
 
@@ -87,14 +87,14 @@ void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
     leftStretchCap = srcBackground->leftStretchCap;
     topStretchCap = srcBackground->topStretchCap;
 
-    SetShader(srcBackground->shader);
+    SetMaterial(srcBackground->material);
 }
 
 
 UIControlBackground::~UIControlBackground()
 {
     SafeRelease(spr);
-    SafeRelease(shader);
+    SafeRelease(material);
     SafeDelete(margins);
     ReleaseDrawData();
 }
@@ -566,13 +566,15 @@ float32 UIControlBackground::GetTopBottomStretchCap() const
     return topStretchCap;
 }
 
-void UIControlBackground::SetShader(Shader *_shader)
+void UIControlBackground::SetMaterial(NMaterial* _material)
 {
-    if(shader != _shader)
-    {
-        SafeRelease(shader);
-        shader = SafeRetain(_shader);
-    }
+    SafeRelease(material);
+    material = SafeRetain(_material);
+}
+
+inline NMaterial* UIControlBackground::GetMaterial() const
+{
+    return material;
 }
 
 void UIControlBackground::SetMargins(const UIMargins* uiMargins)

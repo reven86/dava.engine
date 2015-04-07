@@ -46,8 +46,10 @@ namespace DAVA
 
 void VegetationCustomSLGeometry::CustomMaterialTransformer::TransformMaterialOnCreate(NMaterial* mat)
 {
+#if RHI_COMPLETE
     mat->AddNodeFlags(DataNode::NodeRuntimeFlag);
     mat->SetRenderLayers(1 << RENDER_LAYER_VEGETATION_ID);
+#endif  // RHI_COMPLETE
 }
 
 void VegetationCustomSLGeometry::CustomGeometryLayerData::BuildBBox()
@@ -276,7 +278,7 @@ void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderData
     
     NMaterial* material = customGeometryData[0].material;
     renderData->SetMaterial(material);
-    
+#if RHI_COMPLETE    
     material->SetFlag(VegetationPropertyNames::FLAG_GRASS_OPAQUE, NMaterial::FlagOn);
     material->SetFlag(VegetationPropertyNames::FLAG_GRASS_TRANSFORM_WAVE, NMaterial::FlagOn);
     material->SetRenderLayers(1 << RENDER_LAYER_VEGETATION_ID);
@@ -291,7 +293,7 @@ void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderData
                                                  Shader::UT_FLOAT_VEC3,
                                                  1,
                                                  &worldSize);
-    
+#endif  // RHI_COMPLETE - note: copy-paste form VegetationCustomGeometry
     //fill in metrics data
     size_t layerCount = customGeometryData.size();
     for(size_t layerIndex = 0; layerIndex < layerCount; ++layerIndex)
@@ -317,6 +319,7 @@ void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderData
 
 void VegetationCustomSLGeometry::OnVegetationPropertiesChanged(Vector<VegetationRenderData*>& renderDataArray, KeyedArchive* props)
 {
+#if RHI_COMPLETE
     NMaterial* mat = renderDataArray[0]->GetMaterial();
     
     if(mat)
@@ -353,6 +356,7 @@ void VegetationCustomSLGeometry::OnVegetationPropertiesChanged(Vector<Vegetation
             mat->SetTexture(VegetationPropertyNames::UNIFORM_SAMPLER_DENSITYMAP, densityMapPath);
         }
     }
+#endif // RHI_COMPLETE
 }
 
 void VegetationCustomSLGeometry::GenerateClusterPositionData(const Vector<VegetationLayerParams>& layerClusterCount,

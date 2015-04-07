@@ -122,6 +122,7 @@ void SpriteObject::SetupRenderBatch()
 //	material->SetName("SpriteObject_material");
 //	material->GetRenderState()->SetTexture(sprite->GetTexture(frame));
 
+#if RHI_COMPLETE
 	NMaterial* material = NMaterial::CreateMaterialInstance(FastName("SpriteObject_material"),
 															NMaterialName::TEXTURED_ALPHABLEND,
 															NMaterialQualityName::DEFAULT_QUALITY_NAME);
@@ -137,6 +138,7 @@ void SpriteObject::SetupRenderBatch()
 	SafeRelease(material);
 	SafeRelease(renderDataObject);
 	SafeRelease(batch);
+#endif RHI_COMPLETE
 }
 
 
@@ -162,6 +164,7 @@ RenderObject * SpriteObject::Clone(RenderObject *newObject)
 
 void SpriteObject::SetFrame(int32 newFrame)
 {
+#if RHI_COMPLETE
 	frame = Clamp(newFrame, 0, sprite->GetFrameCount() - 1);
 
 	int32 count = GetRenderBatchCount();
@@ -169,6 +172,7 @@ void SpriteObject::SetFrame(int32 newFrame)
 	{
 		GetRenderBatch(0)->GetMaterial()->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, sprite->GetTexture(frame));
 	}
+#endif // RHI_COMPLETE
 }
 
 int32 SpriteObject::GetFrame() const

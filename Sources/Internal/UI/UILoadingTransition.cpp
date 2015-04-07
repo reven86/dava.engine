@@ -34,6 +34,7 @@
 #include "Debug/Replay.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/RenderHelper.h"
+#include "Job/JobManager.h"
 
 namespace DAVA 
 {

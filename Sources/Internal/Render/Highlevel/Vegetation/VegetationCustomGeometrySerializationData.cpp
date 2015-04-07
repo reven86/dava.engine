@@ -30,6 +30,7 @@
 
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Job/JobManager.h"
 
 namespace DAVA
 {
