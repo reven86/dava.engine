@@ -327,9 +327,13 @@ void TextureDescriptor::Export(const FilePath &filePathname) const
 	file->Write(&exportedAsPixelFormat);
 	
 	file->Write(&dataSettings.faceDescription);
+    
     file->Write(&dataSettings.sourceFileFormat);
-    file->Write(&dataSettings.sourceFileExtension);
-
+    
+    const uint32 length = dataSettings.sourceFileExtension.length();
+    file->Write(&length);
+    file->Write(dataSettings.sourceFileExtension.c_str(), length);
+    
     SafeRelease(file);
 }
 
@@ -456,6 +460,9 @@ void TextureDescriptor::LoadVersion9(File *file)
         int8 exportedAsPixelFormat = FORMAT_INVALID;
         file->Read(&exportedAsPixelFormat);
         format = static_cast<PixelFormat>(exportedAsPixelFormat);
+        
+        dataSettings.sourceFileFormat = IMAGE_FORMAT_UNKNOWN;
+        dataSettings.sourceFileExtension = "";
     }
     else
     {
