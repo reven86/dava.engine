@@ -325,6 +325,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
             }
         }
         
+        JNITextField.RelinkNativeControls();
+        JNIWebView.RelinkNativeControls();
+        
         isPausing = false;
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
     }
