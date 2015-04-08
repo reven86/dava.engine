@@ -39,35 +39,35 @@ namespace DAVA
 class PngImageExt
 {
 public:
-	PngImageExt();
-	~PngImageExt();
-	
-	bool Create(uint32 width, uint32 height);
-	
-	bool Read(const FilePath & filename);
-	void Write(const FilePath & filename);
-	
-	void DrawImage(const Rect2i & drawRect, const Rect2i & imageOffsetRect, PngImageExt * image, bool useTwoSideMargin);
-	void DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2i & srcRect);
+    PngImageExt();
+    ~PngImageExt();
 
-	void DrawRect(const Rect2i & rect, uint32 color);
-	
-	void FindNonOpaqueRect(Rect2i & rect);
-	
+    bool Create(uint32 width, uint32 height);
+
+    bool Read(const FilePath &filename);
+    void Write(const FilePath &filename);
+
+    void DrawImage(const Rect2i &drawRect, const Rect2i &imageOffsetRect, PngImageExt *image, bool useTwoSideMargin);
+    void DrawImage(int32 sx, int32 sy, PngImageExt *image, const Rect2i &srcRect);
+
+    void DrawRect(const Rect2i &rect, uint32 color);
+
+    void FindNonOpaqueRect(Rect2i &rect);
+
     void DitherAlpha();
-    
+
     inline uint32 GetWidth() const;
-	inline uint32 GetHeight() const;
-    
+    inline uint32 GetHeight() const;
+
 private:
 
     inline uint8 * GetData() const;
 
     bool IsHorzLineOpaque(int32 y);
-	bool IsVertLineOpaque(int32 x);
+    bool IsVertLineOpaque(int32 x);
 
     Color GetDitheredColorForPoint(int32 x, int32 y);
-    
+
     Image *internalData;
 };
 
@@ -81,13 +81,13 @@ inline uint8 * PngImageExt::GetData() const
 inline uint32 PngImageExt::GetWidth() const
 {
     DVASSERT(internalData);
-	return internalData->GetWidth();
+    return internalData->GetWidth();
 }
 
 inline uint32 PngImageExt::GetHeight() const
 {
     DVASSERT(internalData);
-	return internalData->GetHeight();
+    return internalData->GetHeight();
 }
 
 };

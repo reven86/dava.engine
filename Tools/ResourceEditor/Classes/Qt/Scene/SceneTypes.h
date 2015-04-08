@@ -42,7 +42,7 @@ enum ST_ModifMode
 	ST_MODIF_OFF,
 	ST_MODIF_MOVE,
 	ST_MODIF_ROTATE,
-	ST_MODIF_SCALE
+	ST_MODIF_SCALE,
 };
 
 enum ST_Axis
@@ -54,7 +54,7 @@ enum ST_Axis
 	ST_AXIS_Z = 0x4,
 	ST_AXIS_XY = ST_AXIS_X | ST_AXIS_Y,
 	ST_AXIS_XZ = ST_AXIS_X | ST_AXIS_Z,
-	ST_AXIS_YZ = ST_AXIS_Y | ST_AXIS_Z
+	ST_AXIS_YZ = ST_AXIS_Y | ST_AXIS_Z,
 };
 
 #endif // __SCENE_STATE_H__

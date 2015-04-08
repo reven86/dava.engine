@@ -323,7 +323,13 @@ void MemoryManager::Deallocate(void* ptr)
                 statGeneral.internalBlockCount -= 1;
               
             }
-            MallocHook::Free(block->realBlockStart);
+            // Tracked memory block consists of header (of type struct MemoryBlock) and data block that returned to app.
+            // Tracked memory blocks are distinguished by special mark in header.
+            // In some cases, especially on iOS, memory allocations bypass memory manager, but memory freeing goes through
+            // memory manager. So I need to erase header to properly free bypassed allocations as system can allocate memory at the same address
+            void* freeMe = block->realBlockStart;
+            Memset(block, 0xEC, sizeof(MemoryBlock));
+            MallocHook::Free(freeMe);
         }
         else
         {

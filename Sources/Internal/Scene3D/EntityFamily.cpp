@@ -26,56 +26,27 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "EntityFamily.h"
 #include "Entity.h"
-#include "Scene3D/EntityFamily.h"
 
 namespace DAVA
 {
 
-Vector<EntityFamily*> EntityFamily::families;
-
-EntityFamily::EntityFamily()
-: componentsFlags(0)
+BaseFamilyRepository<EntityFamily> EntityFamily::repository;
+ 
+EntityFamily::EntityFamily(const Vector<Component*> & components) : BaseFamily<Component>(components)
 {
-    Memset(componentIndices, 0, sizeof(componentIndices));
-    Memset(componentCount, 0, sizeof(componentCount));
 }
 
-EntityFamily * EntityFamily::GetOrCreate (const Vector<Component*> & components)
+EntityFamily * EntityFamily::GetOrCreate(const Vector<Component*> & components)
 {
-    EntityFamily * ret = 0;
+    return repository.GetOrCreate(EntityFamily(components));
+}
 
-    //setup new family
-    EntityFamily localFamily;
-    int32 size = static_cast<int32>(components.size ());
-    for (int32 i = size - 1; i >= 0; --i)
-    {
-        uint32 type = components[i]->GetType ();
-        localFamily.componentIndices[type] = i;
-        localFamily.componentCount[type]++;
-        localFamily.componentsFlags |= (uint64)1 << type;
-    }
-
-    //check if such family already exists in cache
-    size_t familiesSize = families.size ();
-    for (size_t i = 0; i < familiesSize; ++i)
-    {
-        EntityFamily * current = families[i];
-        if (localFamily == *current)
-        {
-            ret = current;
-            break;
-        }
-    }
-
-    //not exists - add to cache
-    if (0 == ret)
-    {
-        ret = new EntityFamily (localFamily);
-        families.push_back (ret);
-    }
-
-    return ret;
+void EntityFamily::Release(EntityFamily *&family)
+{
+    repository.ReleaseFamily(family);
+    family = nullptr;
 }
 
 }

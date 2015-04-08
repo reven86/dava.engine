@@ -35,6 +35,7 @@
 
 namespace DAVA {
 
+class UIControl;
 class FilePath;
 class UIWebView;
     
@@ -84,6 +85,11 @@ public:
     
     void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override {return isRenderToTexture;}
+    
+    // common ios part to render any UIView* to UIImage*
+    static void* RenderIOSUIViewToImage(void* uiviewPtr);
+    // common ios part to copy from ios ::UIImage* to DAVA::Sprite*
+    static void SetImageAsSpriteToControl(void* imagePtr, UIControl& control);
     
     void RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView& control);
 

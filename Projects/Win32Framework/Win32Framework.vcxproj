@@ -334,6 +334,7 @@
     <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\bsdiff\bs_common.h" />
     <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\PatchFile.h" />
     <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\ZLibStream.h" />
+    <ClInclude Include="..\..\Sources\Internal\Entity\BaseFamily.h" />
     <ClInclude Include="..\..\Sources\Internal\Entity\Component.h" />
     <ClInclude Include="..\..\Sources\Internal\Entity\SceneSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\Bitstream.h" />
@@ -532,7 +533,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\ImageSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h" />
-    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelpers.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\IndexBuffer.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material.h" />
@@ -691,6 +692,7 @@
     <ClInclude Include="..\..\Sources\Internal\Thread\Spinlock.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIControlFamily.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
@@ -859,6 +861,7 @@
     <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\bsdiff\bs_patch.c" />
     <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\PatchFile.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\ZLibStream.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Entity\BaseFamily.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Entity\Component.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Entity\SceneSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\Bitstream.cpp" />
@@ -1020,11 +1023,10 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderData.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\Image.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageFormatInterface.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelpers.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialCompiler.cpp" />
@@ -1176,6 +1178,7 @@
     <ClCompile Include="..\..\Sources\Internal\Sound\FMODSoundSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIControlFamily.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp" />
