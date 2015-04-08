@@ -143,10 +143,10 @@ QtMainWindow::QtMainWindow(QWidget *parent)
 	, ui(new Ui::MainWindow)
 	, waitDialog(NULL)
 	, beastWaitDialog(NULL)
-	, globalInvalidate(false)
-    , modificationWidget(NULL)
-    , addSwitchEntityDialog(NULL)
-    , hangingObjectsWidget(NULL)
+	, globalInvalidate(nullptr)
+    , modificationWidget(nullptr)
+    , addSwitchEntityDialog(nullptr)
+    , hangingObjectsWidget(nullptr)
     , developerTools(new DeveloperTools(this))
 {
 	new ProjectManager();
@@ -210,7 +210,6 @@ QtMainWindow::QtMainWindow(QWidget *parent)
 QtMainWindow::~QtMainWindow()
 {
 	SafeDelete(addSwitchEntityDialog);
-    SafeDelete(developerTools);
     
     TextureBrowser::Instance()->Release();
 	MaterialEditor::Instance()->Release();
@@ -218,7 +217,7 @@ QtMainWindow::~QtMainWindow()
 	posSaver.SaveState(this);
 
 	delete ui;
-	ui = NULL;
+	ui = nullptr;
 
 	ProjectManager::Instance()->Release();
 	RecentFilesManager::Instance()->Release();
