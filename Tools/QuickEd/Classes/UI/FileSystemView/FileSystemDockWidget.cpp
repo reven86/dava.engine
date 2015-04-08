@@ -164,6 +164,13 @@ void FileSystemDockWidget::onNewFile(bool checked)
     QString folderPath = model->filePath(currIndex);
 
     QString strFile = QFileDialog::getSaveFileName(this, tr("Create new file"), folderPath, "*.yaml");
+
+    QFileInfo fileInfo(strFile);
+    if (fileInfo.suffix() != "yaml")
+    {
+        strFile += ".yaml";
+    }
+
     QFile file(strFile);
     file.open(QIODevice::WriteOnly);
     file.close();
