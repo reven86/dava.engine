@@ -276,8 +276,7 @@ bool Landscape::BuildHeightmap()
 {
     bool retValue = false;
 
-    auto imageFormat = ImageSystem::Instance()->GetImageFormatForExtension(heightmapPath);
-    if(imageFormat != IMAGE_FORMAT_UNKNOWN)
+    if(DAVA::TextureDescriptor::IsSourceTextureExtension(heightmapPath.GetExtension()))
     {
         Vector<Image *> imageSet;
         ImageSystem::Instance()->Load(heightmapPath, imageSet);

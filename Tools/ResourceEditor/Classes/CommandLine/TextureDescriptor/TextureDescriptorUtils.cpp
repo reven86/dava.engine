@@ -132,13 +132,9 @@ void TextureDescriptorUtils::CreateDescriptorsForFolder(const FilePath &folderPa
 		{
 			CreateDescriptorsForFolder(pathname);
 		}
-        else
+        else if(DAVA::TextureDescriptor::IsSourceTextureExtension(pathname.GetExtension()))
         {
-            auto imageFormat = DAVA::ImageSystem::Instance()->GetImageFormatForExtension(pathname);
-            if (DAVA::IMAGE_FORMAT_UNKNOWN != imageFormat)
-            {
-                CreateDescriptorIfNeed(pathname);
-            }
+            CreateDescriptorIfNeed(pathname);
         }
 	}
     

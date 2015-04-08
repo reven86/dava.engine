@@ -65,8 +65,7 @@ DAVA::FilePath GetOpenFileName(const DAVA::String &title, const DAVA::FilePath &
         openedPathname = FilePath();
     }
     
-    auto imageFormat = DAVA::ImageSystem::Instance()->GetImageFormatForExtension(openedPathname);
-    if (DAVA::IMAGE_FORMAT_UNKNOWN != imageFormat)
+    if (DAVA::TextureDescriptor::IsSourceTextureExtension(openedPathname.GetExtension()))
     {
         //VK: create descriptor only for source images without paired *.tex
         TextureDescriptorUtils::CreateDescriptorIfNeed(openedPathname);

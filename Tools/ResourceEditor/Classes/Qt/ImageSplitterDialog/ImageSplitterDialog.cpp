@@ -317,8 +317,8 @@ void ImageSplitterDialog::SetAcceptableImageSize(const DAVA::Vector2& newSize)
 
 void ImageSplitterDialog::Save(const DAVA::FilePath& filePath, bool saveSplittedImagesSeparately)
 {
-    auto imageFormat = DAVA::ImageSystem::Instance()->GetImageFormatForExtension(filePath);
-    if((DAVA::IMAGE_FORMAT_UNKNOWN == imageFormat) && !saveSplittedImagesSeparately)
+    if(     !DAVA::TextureDescriptor::IsSourceTextureExtension(filePath.GetExtension())
+       &&   !saveSplittedImagesSeparately)
     {
         QMessageBox::warning(this, "Save error", "Wrong file name.", QMessageBox::Ok);
         return;

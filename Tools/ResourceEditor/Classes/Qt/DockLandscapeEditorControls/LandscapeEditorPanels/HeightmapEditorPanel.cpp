@@ -273,18 +273,17 @@ void HeightmapEditorPanel::InitBrushImages()
 	FileList *fileList = new FileList(toolsPath);
 	for(int32 iFile = 0; iFile < fileList->GetCount(); ++iFile)
 	{
-		String filename = fileList->GetFilename(iFile);
-		if(fileList->GetPathname(iFile).IsEqualToExtension(".png"))
-		{
-			String fullname = fileList->GetPathname(iFile).GetAbsolutePathname();
-
-			FilePath f = fileList->GetPathname(iFile);
-			f.ReplaceExtension("");
-
-			QString qFullname = QString::fromStdString(fullname);
-			QIcon toolIcon(qFullname);
-			comboBrushImage->addItem(toolIcon, f.GetFilename().c_str(), QVariant(qFullname));
-		}
+        if(TextureDescriptor::IsSourceTextureExtension(fileList->GetPathname(iFile).GetExtension()))
+        {
+            String fullname = fileList->GetPathname(iFile).GetAbsolutePathname();
+            
+            FilePath f = fileList->GetPathname(iFile);
+            f.ReplaceExtension("");
+            
+            QString qFullname = QString::fromStdString(fullname);
+            QIcon toolIcon(qFullname);
+            comboBrushImage->addItem(toolIcon, f.GetFilename().c_str(), QVariant(qFullname));
+        }
 	}
 
 	SafeRelease(fileList);
