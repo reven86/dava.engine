@@ -259,7 +259,7 @@ void UnpackHelpDoc()
     DAVA::FilePath docsPath = FilePath( ResourceEditor::DOCUMENTATION_PATH );
     if ( editorVer != RESOURCE_EDITOR_VERSION || !docsPath.Exists() )
     {
-        DAVA::Logger::Info( "Unpacking Help..." );
+        DAVA::Logger::FrameworkDebug( "Unpacking Help..." );
         DAVA::ResourceArchive * helpRA = new DAVA::ResourceArchive();
         if ( helpRA->Open( "~res:/Help.docs" ) )
         {
