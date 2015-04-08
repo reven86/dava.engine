@@ -63,6 +63,8 @@ public class JNIApplication extends Application
         
 	    if(null != this.getExternalFilesDir(null)) {
             externalDocumentsDir = this.getExternalFilesDir(null).getAbsolutePath() + "/"; 
+        } else {
+            externalDocumentsDir = "";
         }
         
         internalDocumentsDir = this.getFilesDir().getAbsolutePath() + "/";
