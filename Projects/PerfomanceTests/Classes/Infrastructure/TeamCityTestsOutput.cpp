@@ -66,12 +66,13 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
         String testTime = lines.at(2);
         String timeElapsed = lines.at(2);
 
-        output = "##teamcity[testFinished name=\'" + testName
-            + "\' buildStatisticValue key=\'" + MIN_DELTA + "\' value=\'" + minDelta +
-            + "\' buildStatisticValue key=\'" + MAX_DELTA + "\' value=\'" + maxDelta +
-            + "\' buildStatisticValue key=\'" + AVERAGE_DELTA + "\' value=\'" + averageDelta +
-            + "\' buildStatisticValue key=\'" + TEST_TIME + "\' value=\'" + testTime +
-            + "\' buildStatisticValue key=\'" + TIME_ELAPSED + "\' value=\'" + timeElapsed + "\']\n";
+        output = "##teamcity[buildStatisticValue key=\'" + MIN_DELTA + "\' value=\'" + minDelta + "\']\n";
+        output += "##teamcity[buildStatisticValue key=\'" + MAX_DELTA + "\' value=\'" + maxDelta + "\']\n";
+        output += "##teamcity[buildStatisticValue key=\'" + AVERAGE_DELTA + "\' value=\'" + averageDelta + "\']\n";
+        output += "##teamcity[buildStatisticValue key=\'" + TEST_TIME + "\' value=\'" + testTime + "\']\n";
+        output += "##teamcity[buildStatisticValue key=\'" + TIME_ELAPSED + "\' value=\'" + timeElapsed + "\']\n";
+
+        output = "##teamcity[testFinished name=\'" + testName + "\']\n";
 
     } else if (ERROR_TEST == lines[0])
     {
