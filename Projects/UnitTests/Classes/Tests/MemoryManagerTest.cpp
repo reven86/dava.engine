@@ -81,7 +81,7 @@ void MemoryManagerTest::TestAlignedAlloc(PerfFuncData* data)
 
 void MemoryManagerTest::TestCallback(PerfFuncData* data)
 {
-    const size_t TAG = 1;
+    /*const size_t TAG = 1;
     const size_t CHECKPOINT = 100;
 
     MemoryManager::InstallDumpCallback(&DumpRequestCallback, this);
@@ -95,6 +95,7 @@ void MemoryManagerTest::TestCallback(PerfFuncData* data)
     TEST_VERIFY(capturedCheckpoint == CHECKPOINT);
 
     MemoryManager::InstallDumpCallback(nullptr, nullptr);
+    */
 }
 
 void MemoryManagerTest::DumpRequestCallback(void* arg, int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd)
@@ -105,14 +106,14 @@ void MemoryManagerTest::DumpRequestCallback(void* arg, int32 type, uint32 tagOrC
 
 void MemoryManagerTest::OnDumpRequest(int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd)
 {
-    if (MMConst::DUMP_REQUEST_TAG == type)
+    /*if (MMConst::DUMP_REQUEST_TAG == type)
     {
         capturedTag = tagOrCheckpoint;
     }
     else if (MMConst::DUMP_REQUEST_CHECKPOINT == type)
     {
         capturedCheckpoint = tagOrCheckpoint;
-    }
+    }*/
 }
 
 #endif  // DAVA_MEMORY_PROFILING_ENABLE
