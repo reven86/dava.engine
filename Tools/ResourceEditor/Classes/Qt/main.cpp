@@ -67,7 +67,7 @@
 #include "QtTools/FrameworkBinding/DavaLoop.h"
 #include "QtTools/FrameworkBinding/FrameworkLoop.h"
 
-#include <QOpenGLContext>
+#include <QDebug>
 
 void UnpackHelpDoc();
 void FixOSXFonts();
@@ -205,7 +205,7 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     LocalizationSystem::Instance()->SetCurrentLocale( "en" );
     LocalizationSystem::Instance()->InitWithDirectory( "~res:/Strings/" );
 
-    DAVA::Texture::SetDefaultGPU( (eGPUFamily)SettingsManager::GetValue( Settings::Internal_TextureViewGPU ).AsInt32() );
+    DAVA::Texture::SetDefaultGPU( static_cast<eGPUFamily>(SettingsManager::GetValue( Settings::Internal_TextureViewGPU ).AsInt32()) );
 
     // check and unpack help documents
     UnpackHelpDoc();
@@ -222,12 +222,13 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     mainWindow->show();
 
     ProjectManager::Instance()->ProjectOpenLast();
-    if ( ProjectManager::Instance()->IsOpened() )
-    {
-        mainWindow->OnSceneNew();
-    }
-
-    DavaLoop::Instance()->StartLoop( FrameworkLoop::Instance() );
+    QObject::connect( glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites );
+    QObject::connect( glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized );
+    QObject::connect( glWidget, &DavaGLWidget::Initialized, []
+        {
+            DavaLoop::Instance()->StartLoop( FrameworkLoop::Instance() );
+        } );
+    QObject::connect( glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection );
 
     DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
 

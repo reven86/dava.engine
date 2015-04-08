@@ -35,7 +35,9 @@
 #include <QVector>
 #include "DAVAEngine.h"
 
-class ProjectManager : public QObject, public DAVA::Singleton<ProjectManager>
+class ProjectManager
+    : public QObject
+    , public DAVA::Singleton<ProjectManager>
 {
 	Q_OBJECT
 
@@ -71,21 +73,24 @@ public slots:
     void ProjectOpen(const DAVA::FilePath &path);
 	void ProjectOpenLast();
 	void ProjectClose();
+    void OnSceneViewInitialized();
+    void UpdateParticleSprites();
 
 signals:
 	void ProjectOpened(const QString &path);
 	void ProjectClosed();
     
 private:
+    void LoadProjectSettings();
+    void LoadMaterialsSettings();
+
     DAVA::FilePath curProjectPath;
 	DAVA::FilePath curProjectPathDataSource;
     DAVA::FilePath curProjectPathParticles;
-
-	void LoadProjectSettings();
-    void LoadMaterialsSettings();
-
     QVector<AvailableMaterialTemplate> templates;
     QVector<AvailableMaterialQuality> qualities;
+    bool useDelayInitialization;
+    bool isParticleSpritedUpdated;
 };
 
 #endif // __PROJECT_MANAGER_H__ 

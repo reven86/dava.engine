@@ -1087,10 +1087,12 @@ void QtMainWindow::OnProjectClose()
     }
 }
 
-
 void QtMainWindow::OnSceneNew()
 {
-    ui->sceneTabWidget->OpenTab();
+    if (ProjectManager::Instance()->IsOpened())
+    {
+        ui->sceneTabWidget->OpenTab();
+    }
 }
 
 void QtMainWindow::OnSceneOpen()

@@ -84,9 +84,13 @@ bool PngImageExt::Create(uint32 width, uint32 height)
     SafeRelease(internalData);
     
     internalData = Image::Create(width, height, FORMAT_RGBA8888);
-    memset(GetData(), 0, width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888));
+    if ( internalData != nullptr )
+    {
+        memset( GetData(), 0, width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes( FORMAT_RGBA8888 ) );
+        return true;
+    }
 
-	return (internalData != 0);
+	return false;
 }
 
 void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2i & srcRect)
