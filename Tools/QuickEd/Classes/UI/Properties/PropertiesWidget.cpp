@@ -3,7 +3,7 @@
 #include <qitemeditorfactory>
 #include <qstyleditemdelegate>
 #include <QAbstractItemModel>
-#include "UI/SharedData.h"
+#include "SharedData.h"
 
 #include "ui_PropertiesWidget.h"
 #include "PropertiesModel.h"

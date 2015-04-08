@@ -18,7 +18,7 @@
 #include "Project.h"
 #include "Utils/QtDavaConvertion.h"
 
-#include "UI/SharedData.h"
+#include "SharedData.h"
 #include "Document.h"
 
 using namespace DAVA;

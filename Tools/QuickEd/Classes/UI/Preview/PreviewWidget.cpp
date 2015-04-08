@@ -4,7 +4,7 @@
 #include "PreviewModel.h"
 
 #include "EditScreen.h"
-#include "UI/SharedData.h"
+#include "SharedData.h"
 
 #include <QLineEdit>
 #include <QScreen>

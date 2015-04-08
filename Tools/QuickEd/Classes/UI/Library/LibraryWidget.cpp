@@ -1,5 +1,5 @@
 #include "LibraryWidget.h"
-#include "UI/SharedData.h"
+#include "SharedData.h"
 #include "Document.h"
 #include "LibraryModel.h"
 

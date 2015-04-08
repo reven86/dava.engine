@@ -17,7 +17,7 @@
 #include "Model/ControlProperties/PropertiesSection.h"
 #include "Model/ControlProperties/ValueProperty.h"
 
-#include "Ui/SharedData.h"
+#include "SharedData.h"
 
 #include "Ui/QtModelPackageCommandExecutor.h"
 

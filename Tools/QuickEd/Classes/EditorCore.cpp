@@ -6,7 +6,7 @@
 #include "Document.h"
 #include "EditorCore.h"
 #include "Model/PackageHierarchy/PackageNode.h"
-#include "Ui/SharedData.h"
+#include "SharedData.h"
 
 EditorCore::EditorCore(QObject *parent)
     : QObject(parent)
