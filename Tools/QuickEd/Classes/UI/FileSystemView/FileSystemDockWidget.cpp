@@ -166,7 +166,7 @@ void FileSystemDockWidget::onNewFile(bool checked)
     QString strFile = QFileDialog::getSaveFileName(this, tr("Create new file"), folderPath, "*.yaml");
 
     QFileInfo fileInfo(strFile);
-    if (fileInfo.suffix() != "yaml")
+    if (fileInfo.suffix().toLower() != "yaml")
     {
         strFile += ".yaml";
     }
