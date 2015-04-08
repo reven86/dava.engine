@@ -81,6 +81,7 @@ void TestChainFlowController::EndFrame()
     }   
     if (testsFinished && !showUIReport)
     {
+        Logger::Info("Finish all tests.");
         Core::Instance()->Quit();
     }
     

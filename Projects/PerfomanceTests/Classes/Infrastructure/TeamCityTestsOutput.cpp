@@ -72,7 +72,7 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
         output += "##teamcity[buildStatisticValue key=\'" + TEST_TIME + "\' value=\'" + testTime + "\']\n";
         output += "##teamcity[buildStatisticValue key=\'" + TIME_ELAPSED + "\' value=\'" + timeElapsed + "\']\n";
 
-        output = "##teamcity[testFinished name=\'" + testName + "\']\n";
+        output += "##teamcity[testFinished name=\'" + testName + "\']\n";
 
     } else if (ERROR_TEST == lines[0])
     {
