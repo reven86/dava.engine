@@ -1,5 +1,5 @@
-#ifndef __QUICKED_PACKAGE_DOCUMENT_H__
-#define __QUICKED_PACKAGE_DOCUMENT_H__
+#ifndef __QUICKED_DOCUMENT_H__
+#define __QUICKED_DOCUMENT_H__
 
 #include <QUndoStack>
 
@@ -71,4 +71,4 @@ inline SharedData *Document::GetContext() const
     return sharedData;
 }
 
-#endif // __QUICKED_PACKAGE_DOCUMENT_H__
+#endif // __QUICKED_DOCUMENT_H__
