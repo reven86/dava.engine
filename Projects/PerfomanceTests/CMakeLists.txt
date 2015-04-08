@@ -3,8 +3,6 @@ set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}
 include      ( CMake-common )
 include      ( FindDavaFramework )
 
-message("!!!!!!!!!!!!!!!!!!!!!!!!!  - ${RES_EDITOR_PATH}" )
-
 project      ( PerformanceTests )
 
 include_directories   ( "iOSSpecific" )
@@ -68,7 +66,7 @@ setup_main_executable()
 if( WIN32 )
     set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.exe")
 else()
-    set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.app")
+    set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.app/Contents/MacOS/ResourceEditor")
 endif()
 
 set (RES_EDITOR_DATA ${DAVA_ROOT_DIR}/Tools/ResourceEditor/Data)
