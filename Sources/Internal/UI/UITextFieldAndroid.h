@@ -63,6 +63,8 @@ public:
 	void SetReturnKeyType(int32_t value);
 	void SetEnableReturnKeyAutomatically(bool value);
 	void SetVisible(bool isVisible);
+	void SetRenderToTexture(bool value);
+	bool IsRenderToTexture() const;
 	void OpenKeyboard();
 	void CloseKeyboard();
 	uint32 GetCursorPos();
@@ -90,6 +92,8 @@ private:
 	Function<void (jint, jint)> setReturnKeyType;
 	Function<void (jint, jboolean)> setEnableReturnKeyAutomatically;
 	Function<void (jint, jboolean)> setVisible;
+	Function<void (jint, jboolean)> setRenderToTexture;
+	Function<jboolean (jint)> isRenderToTexture;
 	Function<void (jint)> openKeyboard;
 	Function<void (jint)> closeKeyboard;
 	Function<jint (jint)> getCursorPos;
@@ -124,6 +128,9 @@ public:
 
 	void SetInputEnabled(bool value);
 
+	void SetRenderToTexture(bool value);
+	bool IsRenderToTexture() const;
+
 	// Keyboard traits.
 	void SetAutoCapitalizationType(DAVA::int32 value);
 	void SetAutoCorrectionType(DAVA::int32 value);
@@ -148,6 +155,7 @@ public:
 	static void TextFieldKeyboardShown(uint32_t id, const Rect& rect);
 	static void TextFieldKeyboardHidden(uint32_t id);
 	static void TextFieldFocusChanged(uint32_t id, bool hasFocus);
+	static void TextFieldUpdateTexture(uint32_t id, int32* pixels, int width, int height);
 
 private:
 	static UITextFieldAndroid* GetUITextFieldAndroid(uint32_t id);

@@ -32,9 +32,8 @@
 
 #include "DAVAVersion.h"
 #include "DAVAConfig.h"
-#include "Debug/MemoryManager.h"
 #include "Debug/Stats.h"
-#include "Debug/Backtrace.h"
+#include "MemoryManager/MemoryProfiler.h"
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"

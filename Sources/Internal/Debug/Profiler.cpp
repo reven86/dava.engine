@@ -421,12 +421,12 @@ DumpInternal( const std::vector<CounterInfo>& result, bool showPercents=false )
         int  text_len = 0;       
 
         if( result[i].name )
-            text_len = Snprinf( text+indent*2, sizeof(text)-indent*2, "%s", result[i].name );
+            text_len = Snprintf( text+indent*2, sizeof(text)-indent*2, "%s", result[i].name );
         else
-            text_len = Snprinf( text+indent*2, sizeof(text)-indent*2, "%u", static_cast<uint32>(i) );
+            text_len = Snprintf( text+indent*2, sizeof(text)-indent*2, "%u", static_cast<uint32>(i) );
         
         text[indent*2+text_len] = ' ';
-        text_len = max_name_len+2+Snprinf( text+max_name_len+2, sizeof(text)-max_name_len-2, " %-5u  %llu us", result[i].count, result[i].timeUs );
+        text_len = max_name_len+2+Snprintf( text+max_name_len+2, sizeof(text)-max_name_len-2, " %-5u  %llu us", result[i].count, result[i].timeUs );
 
         if( showPercents )
         {
@@ -441,8 +441,8 @@ DumpInternal( const std::vector<CounterInfo>& result, bool showPercents=false )
             text[text_len] = ' ';
             text_len = max_name_len + 2 + 1 + 5 + 2 + 5+1+2;
 
-            if( pc )    text_len += Snprinf( text+text_len, sizeof(text)-text_len, "   %02i.%i    %02i.%i", int(pl),fltDec(pl), int(pg),fltDec(pg) );
-            else        text_len += Snprinf( text+text_len, sizeof(text)-text_len, "   %02i.%i    %02i.%i", int(pg),fltDec(pg), int(pg),fltDec(pg) );
+            if( pc )    text_len += Snprintf( text+text_len, sizeof(text)-text_len, "   %02i.%i    %02i.%i", int(pl),fltDec(pl), int(pg),fltDec(pg) );
+            else        text_len += Snprintf( text+text_len, sizeof(text)-text_len, "   %02i.%i    %02i.%i", int(pg),fltDec(pg), int(pg),fltDec(pg) );
         }
 
         Logger::Info( text );

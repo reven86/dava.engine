@@ -63,12 +63,6 @@ int Core::RunCmdTool(int argc, char * argv[], AppHandle handle)
 	FrameworkDidLaunched();
 	FrameworkWillTerminate();
 	core->ReleaseSingletons();
-#ifdef ENABLE_MEMORY_MANAGER
-	if (DAVA::MemoryManager::Instance() != 0)
-	{
-		DAVA::MemoryManager::Instance()->FinalLog();
-	}
-#endif
 	return 0;
 }
 

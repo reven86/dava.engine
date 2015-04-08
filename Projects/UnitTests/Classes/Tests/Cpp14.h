@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __CPP14_TEST_H__
 
 #include "DAVAEngine.h"
-#include "TestTemplate.h"
+#include "Infrastructure/TestTemplate.h"
 
 using namespace DAVA;
 

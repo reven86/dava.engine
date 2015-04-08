@@ -145,7 +145,7 @@ public:
          \brief Function to retrieve user's documents path
          \returns user's documents path
      */
-	virtual const FilePath GetUserDocumentsPath();
+	static const FilePath GetUserDocumentsPath();
     
     /**
          \brief Function to retrieve public documents path

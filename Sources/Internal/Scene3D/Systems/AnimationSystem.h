@@ -49,6 +49,8 @@ public:
 	AnimationSystem(Scene * scene);
 	~AnimationSystem();
 
+    void RemoveEntity(Entity * entity) override;
+
     virtual void Process(float32 timeElapsed);
 
     virtual void ImmediateEvent(Entity * entity, uint32 event);

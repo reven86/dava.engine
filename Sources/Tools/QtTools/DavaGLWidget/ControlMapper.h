@@ -65,7 +65,7 @@ public:
 private:
     Q_DISABLE_COPY(ControlMapper);
 
-    DAVA::UIEvent MapMouseEventToDAVA(QMouseEvent *event) const;
+    DAVA::UIEvent MapMouseEventToDAVA( const QPoint& pos, const Qt::MouseButton button = Qt::NoButton, ulong timestamp = 0 ) const;
     DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button) const;
     
     QPointer< QWindow > window;

@@ -15,6 +15,7 @@
 #define OC_NEW_STYLE_INCLUDES
 #define OC_FACTOR_INTO_H_AND_CC
 #define _GLIBCXX_PERMIT_BACKWARD_HASH
+#define size_t unsigned int
 
 // auto generated from clang for android-arm
 #define _GNU_SOURCE 1
