@@ -314,6 +314,9 @@ void MemoryManager::Deallocate(void* ptr)
                 statGeneral.internalBlockCount -= 1;
               
             }
+#if defined(__DAVAENGINE_IPHONE__)
+#pragma message(" !!!! Don't forget to resolve problem. Now apply temporal workaround")
+#endif
             void* freeMe = block->realBlockStart;
             Memset(block, 0xEC, sizeof(MemoryBlock));
             MallocHook::Free(freeMe);
