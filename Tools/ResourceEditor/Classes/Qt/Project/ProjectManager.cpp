@@ -49,7 +49,7 @@ ProjectManager::ProjectManager()
 	, curProjectPathDataSource()
     , curProjectPathParticles()
     , useDelayInitialization(true)
-    , isParticleSpritedUpdated(false)
+    , isParticleSpritesUpdated(false)
 {
 }
 
@@ -148,10 +148,10 @@ void ProjectManager::ProjectOpen(const FilePath & incomePath)
 void ProjectManager::UpdateParticleSprites()
 {
     useDelayInitialization = false;
-    if (!isParticleSpritedUpdated)
+    if (!isParticleSpritesUpdated)
     {
         SpritePackerHelper::Instance()->UpdateParticleSprites( static_cast<eGPUFamily>(SettingsManager::GetValue( Settings::Internal_TextureViewGPU ).AsInt32()) );
-        isParticleSpritedUpdated = true;
+        isParticleSpritesUpdated = true;
     }
 }
 
@@ -168,7 +168,7 @@ void ProjectManager::ProjectClose()
 {
 	if(!curProjectPath.IsEmpty())
 	{
-        isParticleSpritedUpdated = false;
+        isParticleSpritesUpdated = false;
 		DAVA::FilePath::RemoveResourcesFolder(curProjectPath);
         curProjectPath = "";
         curProjectPathDataSource = "";

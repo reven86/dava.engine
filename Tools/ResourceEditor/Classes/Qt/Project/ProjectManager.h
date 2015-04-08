@@ -90,7 +90,7 @@ private:
     QVector<AvailableMaterialTemplate> templates;
     QVector<AvailableMaterialQuality> qualities;
     bool useDelayInitialization;
-    bool isParticleSpritedUpdated;
+    bool isParticleSpritesUpdated;
 };
 
 #endif // __PROJECT_MANAGER_H__ 
