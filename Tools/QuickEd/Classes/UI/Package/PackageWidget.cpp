@@ -29,6 +29,7 @@ namespace
     {
         PackageContext(Document *document)
         {
+            DVASSERT(document);
             packageModel = new PackageModel(document->GetPackage(), document->GetCommandExecutor(), document);
             filteredPackageModel = new FilteredPackageModel(document);
             filteredPackageModel->setFilterCaseSensitivity(Qt::CaseInsensitive);

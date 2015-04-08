@@ -55,8 +55,6 @@ Vector2 CalcCanvasPosition(const Vector2 &oldViewSize, const Vector2 &newViewSiz
 Vector2 CalcScaledCanvasSize(const DAVA::Vector2 &canvasSize, const DAVA::Vector2 &canvasScale, const DAVA::Vector2 &viewSize)
 {
     Vector2 newCanvasScaledSize = canvasSize * canvasScale + CANVAS_BORDER_SIZE;
-    //     newCanvasScaledSize.x = Max(newCanvasScaledSize.x, viewSize.x);
-    //     newCanvasScaledSize.y = Max(newCanvasScaledSize.y, viewSize.y);
     return newCanvasScaledSize;
 }
 
@@ -127,17 +125,10 @@ void PreviewModel::SetCanvasControlScale(int intNewScale)
     Vector2 oldCanvasScaledSize = CalcScaledCanvasSize(canvas->GetSize(), oldScale, view->GetSize());
     Vector2 newCanvasScaledSize = CalcScaledCanvasSize(canvas->GetSize(), newScale, view->GetSize());
 
-    //if (oldCanvasScaledSize != newCanvasScaledSize)
-    {
-        QSize viewSize(view->GetSize().x, view->GetSize().y);
-        QSize contentSize(newCanvasScaledSize.x, newCanvasScaledSize.y);
-        emit CanvasOrViewChanged(viewSize, contentSize);
-    }
-
-    //if (intOldScale != intNewScale)
-    {
-        emit CanvasScaleChanged(intNewScale);
-    }
+    QSize viewSize(view->GetSize().x, view->GetSize().y);
+    QSize contentSize(newCanvasScaledSize.x, newCanvasScaledSize.y);
+    emit CanvasOrViewChanged(viewSize, contentSize);
+    emit CanvasScaleChanged(intNewScale);
 
     Vector2 newPosition = CalcCanvasPosition(view->GetSize(), view->GetSize(), oldCanvasScaledSize, newCanvasScaledSize, Vector2(0.5f, 0.5f), canvasPosition);
     SetCanvasPosition(QPoint(newPosition.x, newPosition.y));

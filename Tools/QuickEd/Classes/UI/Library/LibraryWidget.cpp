@@ -9,6 +9,7 @@ namespace
     {
         LibraryContext(Document *document)
         {
+            DVASSERT(document);
             libraryModel = new LibraryModel(document->GetPackage(), document);
         }
         LibraryModel *libraryModel;

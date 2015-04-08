@@ -343,7 +343,6 @@ void MainWindow::DisableActions()
 
     actionClose_project->setEnabled(false);
     actionFontManager->setEnabled(false);
-   // actionLocalizationManager->setEnabled(false);
 
     // Reload.
     actionRepack_And_Reload->setEnabled(false);
@@ -470,7 +469,6 @@ void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
     }
 
     EditorSettings::Instance()->SetCurrentBackgroundFrameColor(newColor);
-    //ScreenWrapper::Instance()->SetBackgroundFrameColor(newColor);
     
     // Update the check marks.
     bool colorFound = false;

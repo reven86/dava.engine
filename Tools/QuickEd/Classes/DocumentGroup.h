@@ -3,14 +3,13 @@
 
 #include <QObject>
 #include <QUndoGroup>
-class DocumentGroupPrivate;
+
 class Document;
 class SharedData;
 
 class DocumentGroup : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(DocumentGroup)
 public:
     explicit DocumentGroup(QObject *parent = nullptr);
     ~DocumentGroup();
@@ -29,7 +28,9 @@ signals:
     void SharedDataChanged(const QByteArray &role);
     void DocumentChanged(SharedData *data);
 protected:
-    QScopedPointer<DocumentGroupPrivate> d_ptr;
+    Document *active;
+    QList<Document*> documentList;
+    QUndoGroup *undoGroup;
 };
 
 #endif // QUICKED_DOCUMENTGROUP_H
