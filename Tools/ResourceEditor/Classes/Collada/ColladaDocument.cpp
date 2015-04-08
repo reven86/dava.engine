@@ -235,30 +235,17 @@ void ColladaDocument::Render()
 String ColladaDocument::GetTextureName(const FilePath & scenePath, ColladaTexture * texture)
 {
     FilePath texPathname(texture->texturePathName.c_str());
-    printf("+ get texture name: %s", texPathname.GetAbsolutePathname().c_str());
-    String textureRelativePathName = texPathname.GetRelativePathname(scenePath);
+    DAVA::Logger::FrameworkDebug("+ get texture name: %s", texPathname.GetAbsolutePathname().c_str());
     
-    if (textureRelativePathName.c_str()[0] == '/')
+    auto extension = texPathname.GetExtension();
+    if(!extension.empty())
     {
-        DVASSERT(false);    //this situation is wrong
-        textureRelativePathName.erase(0, 1);
-    }
-    
-    if (textureRelativePathName.substr(0, 2) == "./")
-    {
-        DVASSERT(false);    //this situation is wrong
-        textureRelativePathName.erase(0,2);
-    }
-    
-    int32 pos = textureRelativePathName.find(".");
-    if(-1 != pos)
-    {
-        if(!texPathname.IsEqualToExtension(".png") && !texPathname.IsEqualToExtension(".pvr"))
+        if(!TextureDescriptor::IsSourceTextureExtension(extension) && !TextureDescriptor::IsCompressedTextureExtension(extension))
         {
-            textureRelativePathName.replace(pos, 4, ".png");
+            texPathname.ReplaceExtension(".png");
         }
     }
-    return textureRelativePathName;
+    return texPathname.GetRelativePathname(scenePath);
 }
 
 void ColladaDocument::SaveScene( const FilePath & scenePath, const String & sceneName )
