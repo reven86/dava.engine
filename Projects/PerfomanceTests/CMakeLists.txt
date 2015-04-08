@@ -61,8 +61,6 @@ set( LIBRARIES_RELEASE    )
 set( LIBRARIES_DEBUG      )
 set( ADDED_BINARY_DIR     )
 
-setup_main_executable()
-
 if( WIN32 )
     set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.exe")
 else()
@@ -94,3 +92,5 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${RES_EDITOR_DATA}/Ma
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${RES_EDITOR_DATA}/Shaders ${APP_DATA}/Shaders )
 
 execute_process( COMMAND python convert_everything.py --gpu ${GPU_PARAM} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
+
+setup_main_executable()
