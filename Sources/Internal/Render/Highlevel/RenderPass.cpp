@@ -171,9 +171,6 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
     if (!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::WATER_REFLECTION_REFRACTION_DRAW))
         return;
 
-    RenderLayerBatchArray *waterLayer = renderPassBatchArray->Get(RenderLayerManager::Instance()->GetLayerIDByName(LAYER_WATER));
-    uint32 waterBatchesCount = waterLayer->GetRenderBatchCount();
-
     const static int32 REFLECTION_TEX_SIZE = 512;
     const static int32 REFRACTION_TEX_SIZE = 512;
     if (!reflectionPass)
