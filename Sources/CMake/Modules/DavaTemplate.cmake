@@ -193,7 +193,7 @@ if( ANDROID )
           
     endif()
 
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ANDROID_DATA} ${CMAKE_BINARY_DIR}/assets/${ASSETS_FOLDER} )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA} ${CMAKE_BINARY_DIR}/assets/${ASSETS_FOLDER} )
 
     if( ANDROID_ICO )
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${ANDROID_ICO}  ${CMAKE_BINARY_DIR} )     
@@ -325,6 +325,14 @@ endforeach ()
 foreach ( FILE ${LIBRARIES_RELEASE} )
     target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
 endforeach ()
+
+if ( QT5_FOUND AND APPLE AND NOT DEPLOY )
+    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD 
+        COMMAND ${QT5_PATH_MAC}/bin/macdeployqt ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${PROJECT_NAME}.app
+    )
+
+endif()
+
 
 ###
 

@@ -418,40 +418,44 @@ end
 
 function WaitControl(name, time)
     local waitTime, aSys = time or TIMEOUT, autotestingSystem
+    Log("WaitControl name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
     local find_control_lua = function(x) return aSys:FindControl(x) or aSys:FindControlOnPopUp(x) end
     if WaitUntil(waitTime, find_control_lua, name) then
         return true
     end
-    Log("WaitControl not found " .. name, "DEBUG")
+    Log("Control not found " .. name, "DEBUG")
     return false
 end
 
 function WaitControlDisappeared(name, time)
     local waitTime, aSys = time or TIMEOUT, autotestingSystem
+    Log("WaitControlDisappeared name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
     local not_find_control_lua = function(x) return not aSys:FindControl(x) and not aSys:FindControlOnPopUp(x) end
     if WaitUntil(waitTime, not_find_control_lua, name) then
         return true
     end
-    Log("WaitControl still on the screen: " .. name, "DEBUG")
+    Log("Control still on the screen: " .. name, "DEBUG")
     return false
 end
 
 function WaitControlBecomeVisible(name, time)
     local waitTime = time or TIMEOUT
+    Log("WaitControlBecomeVisible name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
     if WaitUntil(waitTime, IsVisible, name) then
         return true
     end
-    Log("WaitControl not found " .. name, "DEBUG")
+    Log("Control not found " .. name, "DEBUG")
     return false
 end
 
 function WaitUntilControlBecomeEnabled(name, time)
     local waitTime = time or TIMEOUT
+    Log("WaitUntilControlBecomeEnabled name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
     local is_enabled = function(x) return not IsDisabled(x) end
     if WaitUntil(waitTime, is_enabled, name) then
         return true
     end
-    Log("WaitControl is disabled " .. name, "DEBUG")
+    Log("Control is disabled " .. name, "DEBUG")
     return false
 end
 
@@ -678,6 +682,25 @@ function ClickControl(name, time, touchId)
     return false
 end
 
+function ShiftClickControl(name, x, y, touchId)
+    Log(string.format("ShiftClickControl name=%s with shift on [%d, %d] touchId=%d", name, x, y, (touchId or 1)))
+    if not WaitControl(name, TIMEOUT) then
+        Log("Control " .. name .. " not found.")
+        return false
+    end
+    if IsVisible(name) and IsCenterOnScreen(name) then
+        local position = GetCenter(name)
+        Log("Position= " .. position.x .. ", " .. position.y)
+        position.x = position.x + x
+        position.y = position.y + y
+        Log("Position= " .. position.x .. ", " .. position.y)
+        ClickPosition(position, TIMECLICK, touchId)
+        return true
+    end
+    Log("Control " .. name .. " is not visible.")
+    return false
+end
+
 -- Move touch actions
 function TouchMovePosition(position, touchId)
     autotestingSystem:TouchMove(position, touchId or 1)
@@ -694,4 +717,3 @@ function TouchMove(position, new_position, time, touchId)
     TouchUp(touchId)
     Wait(waitTime)
 end
-
