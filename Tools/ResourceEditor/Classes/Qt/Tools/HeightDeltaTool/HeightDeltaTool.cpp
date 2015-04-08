@@ -74,6 +74,7 @@ double HeightDeltaTool::GetThresholdInMeters(double unitSize)
     return delta;
 }
 
+
 void HeightDeltaTool::OnRun()
 {
     const bool sourceExists = QFileInfo(inPath).exists();
@@ -89,8 +90,6 @@ void HeightDeltaTool::OnRun()
         Landscape* landscapeRO = FindLandscape(scene);
         if (landscapeRO != NULL)
         {
-            QtMainWindow::Instance()->WaitStart("Generating color height mask...", outPath);
-
             const DAVA::AABBox3& bbox = landscapeRO->GetBoundingBox();
             DAVA::Heightmap* heightmap = landscapeRO->GetHeightmap();
             
@@ -122,8 +121,6 @@ void HeightDeltaTool::OnRun()
                 action->Redo();
                 DAVA::SafeDelete(action);
             }
-
-            QtMainWindow::Instance()->WaitStop();
 
             if (heightmap != NULL)
             {
