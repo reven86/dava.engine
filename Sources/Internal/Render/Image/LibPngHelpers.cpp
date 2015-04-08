@@ -231,19 +231,13 @@ int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFo
 	png_read_update_info(png_ptr, info_ptr);
 	
 	rowbytes = static_cast<uint32>(png_get_rowbytes(png_ptr, info_ptr));
-	
-    uint8 *image_data = new uint8 [rowbytes * height];
-	if (image_data == 0)
-	{
-		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-		return 4;
-    }
+
+    image->dataSize = rowbytes * height;
+    image->data = new uint8 [image->dataSize];
 	
 	if ((row_pointers = (png_bytepp)malloc(height*sizeof(png_bytep))) == NULL)
 	{
         png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-        delete [] (image_data);
-        image_data = NULL;
         return 4;
     }
 	
@@ -251,7 +245,7 @@ int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFo
     /* set the individual row_pointers to point at the correct offsets */
 	
     for (i = 0;  i < (int)height;  ++i)
-        row_pointers[i] = image_data + i*rowbytes;
+        row_pointers[i] = image->data + i*rowbytes;
 	
 	
     /* now we can go ahead and just read the whole image */
@@ -265,8 +259,6 @@ int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFo
 	
 	/* Clean up. */
 	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-	
-	image->data = image_data;
 	
 	return 1;
 }

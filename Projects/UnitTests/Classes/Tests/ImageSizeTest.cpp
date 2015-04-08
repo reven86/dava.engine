@@ -48,7 +48,7 @@ void ImageSizeTest::UnloadResources()
 
 void ImageSizeTest::TestFunction(PerfFuncData * data)
 {
-	static const DAVA::FilePath imagePathnames[DAVA::ImageSystem::FILE_FORMAT_COUNT] = 
+	static const DAVA::FilePath imagePathnames[DAVA::IMAGE_FORMAT_COUNT] = 
 	{
 		"~res:/TestData/ImageSizeTest/image.png",
 		"~res:/TestData/ImageSizeTest/image.jpg",
@@ -59,7 +59,7 @@ void ImageSizeTest::TestFunction(PerfFuncData * data)
 
 
     //TODO: -1 due to DF-5704
-	for(uint32 i = 0; i < DAVA::ImageSystem::FILE_FORMAT_COUNT-1; ++i)
+	for(uint32 i = 0; i < DAVA::IMAGE_FORMAT_COUNT-1; ++i)
 	{
 		DAVA::ImageFormatInterface *im = DAVA::ImageSystem::Instance()->GetImageFormatInterface(imagePathnames[i]);	
 		Size2i imageSize = im->GetImageSize(imagePathnames[i]);

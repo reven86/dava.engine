@@ -87,6 +87,9 @@ private:
     eErrorCode ReadUncompressedTga(File *infile, const TgaInfo& tgaHeader, ScopedPtr<Image>& image) const;
     PixelFormat DefinePixelFormat(const TgaInfo& tgaHeader) const;
 
+    eErrorCode WriteTgaHeader(File *outfile, const TgaInfo& tgaHeader) const;
+    eErrorCode WriteUncompressedTga(File *infile, const TgaInfo& tgaHeader, const uint8* data) const;
+
     struct ImageDataWriter
     {
         ImageDataWriter(Image* image, const LibTgaWrapper::TgaInfo& tgaInfo);

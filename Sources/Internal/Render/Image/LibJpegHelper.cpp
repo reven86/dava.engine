@@ -169,15 +169,12 @@ eErrorCode LibJpegWrapper::ReadFile(File *infile, Vector<Image *> &imageSet, int
     
     cinfo.err = jpeg_std_error( &jerr.pub );
     jerr.pub.error_exit = jpegErrorExit;
-    
-    Image* image = new Image();
-    
+
     //set error handling block, which will be called in case of fail of jpeg_start_decompress,jpeg_read_scanlines...
     if (setjmp(jerr.setjmp_buffer))
     {
         jpeg_destroy_decompress(&cinfo);
         SafeDeleteArray(fileBuffer);
-        SafeRelease(image);
         Logger::Error("[LibJpegWrapper::ReadFile] File %s has wrong jpeg header", infile->GetFilename() .GetAbsolutePathname().c_str());
         return ERROR_FILE_FORMAT_INCORRECT;
     }
@@ -186,29 +183,39 @@ eErrorCode LibJpegWrapper::ReadFile(File *infile, Vector<Image *> &imageSet, int
     jpeg_mem_src(&cinfo, fileBuffer, fileSize);
     jpeg_read_header( &cinfo, TRUE );
     jpeg_start_decompress(&cinfo);
+
+    PixelFormat format = FORMAT_INVALID;
+    if (cinfo.jpeg_color_space == JCS_GRAYSCALE)
+    {
+        switch (cinfo.output_components)
+        {
+        case 1: format = FORMAT_A8; break;
+        case 2: format = FORMAT_A16; break;
+        default: break;
+        }
+    }
+    else 
+    {
+        if (cinfo.output_components == 3)
+            format = FORMAT_RGB888;
+    }
+
+    if (format == FORMAT_INVALID)
+    {
+        Logger::Error("[%s] Unable to detect format for %s", infile->GetFilename().GetAbsolutePathname().c_str());
+        return ERROR_FILE_FORMAT_INCORRECT;
+    }
+
+    Image* image = Image::Create(cinfo.image_width, cinfo.image_height, format);
     
-    image->width = cinfo.image_width;
-    image->height = cinfo.image_height;
-    //as image->data will be rewrited, need to erase present buffer
-    SafeDeleteArray(image->data);
-    image->data = new uint8 [cinfo.output_width * cinfo.output_height * cinfo.num_components];
-    
-    JSAMPROW output_data;
     unsigned int scanline_len = cinfo.output_width * cinfo.output_components;
-    
-    unsigned int scanline_count = 0;
-    while (cinfo.output_scanline < cinfo.output_height)
+    uint8* linePtr = image->data;
+
+    for (auto i = 0; i < cinfo.output_height; ++i, linePtr += scanline_len)
     {
-        output_data = (image->data + (scanline_count * scanline_len));
-        jpeg_read_scanlines(&cinfo, &output_data, 1);
-        scanline_count++;
+        jpeg_read_scanlines(&cinfo, &(JSAMPROW)linePtr, 1);
     }
-    
-    image->format = FORMAT_RGB888;
-    if(cinfo.jpeg_color_space == JCS_GRAYSCALE)
-    {
-        image->format = FORMAT_A8;
-    }
+
     jpeg_finish_decompress(&cinfo);
     jpeg_destroy_decompress(&cinfo);
 	SafeDeleteArray(fileBuffer);

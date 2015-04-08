@@ -563,50 +563,53 @@ public:
         SwapRedBlueChannels(srcImage->format, srcImage->data, srcImage->width, srcImage->height, srcImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(srcImage->format));
     }
     
-    static void SwapRedBlueChannels(PixelFormat format, void* data, uint32 width, uint32 height, uint32 pitch)
+    static void SwapRedBlueChannels(PixelFormat format, void* srcData, uint32 width, uint32 height, uint32 pitch, void* dstData = nullptr)
     {
+        if (!dstData) 
+            dstData = srcData;
+
         switch (format)
         {
         case FORMAT_RGB888:
         {
             ConvertDirect<BGR888, RGB888, ConvertBGR888toRGB888> swap;
-            swap(data, width, height, pitch, data);
+            swap(srcData, width, height, pitch, dstData);
             return;
         }
         case FORMAT_RGBA8888:
         {
             ConvertDirect<BGRA8888, uint32, ConvertBGRA8888toRGBA8888> swap;
-            swap(data, width, height, pitch, data);
+            swap(srcData, width, height, pitch, dstData);
             return;
         }
         case FORMAT_RGBA5551:
         {
             ConvertDirect<uint16, uint16, ConvertBGRA5551toRGBA5551> swap;
-            swap(data, width, height, pitch, data);
+            swap(srcData, width, height, pitch, dstData);
             return;
         }
         case FORMAT_RGBA4444:
         {
             ConvertDirect<uint16, uint16, ConvertBGRA4444toRGBA4444> swap;
-            swap(data, width, height, pitch, data);
+            swap(srcData, width, height, pitch, dstData);
             return;
         }
         case FORMAT_RGB565:
         {
             ConvertDirect<uint16, uint16, ConvertBGR565toRGB565> swap;
-            swap(data, width, height, pitch, data);
+            swap(srcData, width, height, pitch, dstData);
             return;
         }
         case FORMAT_RGBA16161616:
         {
             ConvertDirect<RGBA16161616, RGBA16161616, ConvertBGRA16161616toRGBA16161616> swap;
-            swap(data, width, height, pitch, data);
+            swap(srcData, width, height, pitch, dstData);
             return;
         }
         case FORMAT_RGBA32323232:
         {
             ConvertDirect<RGBA32323232, RGBA32323232, ConvertBGRA32323232toRGBA32323232> swap;
-            swap(data, width, height, pitch, data);
+            swap(srcData, width, height, pitch, dstData);
             return;
         }
         case FORMAT_A8: case FORMAT_A16:
