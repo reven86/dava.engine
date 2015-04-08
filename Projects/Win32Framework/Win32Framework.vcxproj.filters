@@ -1785,6 +1785,7 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIControlFamily.h">
       <Filter>Internal\UI\Components</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MallocHook.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
@@ -3224,6 +3225,7 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIControlFamily.cpp">
       <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\MallocHook.cpp">
       <Filter>Internal\MemoryManager</Filter>
     </ClCompile>
