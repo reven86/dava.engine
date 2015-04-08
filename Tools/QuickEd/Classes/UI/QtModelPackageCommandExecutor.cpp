@@ -246,8 +246,7 @@ void QtModelPackageCommandExecutor::RemoveControlImpl(ControlNode* node)
 
 void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode *node, DAVA::int32 componentType)
 {
-    PropertiesModel *model = document->GetPropertiesContext()->GetModel();
-    PushCommand(new AddComponentCommand(model, node, componentType));
+    PushCommand(new AddComponentCommand(document->GetPropertiesContext(), node, componentType));
     Vector<ControlNode*> instances = node->GetInstances();
     for (ControlNode *instance : instances)
         AddComponentImpl(instance, componentType);

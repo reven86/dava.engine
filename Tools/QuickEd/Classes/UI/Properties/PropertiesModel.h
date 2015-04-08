@@ -40,8 +40,8 @@ public:
     virtual QVariant headerData(int section, Qt::Orientation orientation,
                                 int role = Qt::DisplayRole) const override;
 
-    void AddComponentSection(ControlNode *node, ComponentPropertiesSection *section);
-    void RemoveComponentSection(ControlNode *node, ComponentPropertiesSection *section);
+    void AddComponentSection(ComponentPropertiesSection *section);
+    void RemoveComponentSection(ComponentPropertiesSection *section);
     
 private:
     QVariant makeQVariant(const BaseProperty *property) const;

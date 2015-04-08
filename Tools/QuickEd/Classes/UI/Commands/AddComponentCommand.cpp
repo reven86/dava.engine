@@ -3,13 +3,14 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
 #include "UI/Properties/PropertiesModel.h"
+#include "UI/PropertiesContext.h"
 #include "UI/Components/UIComponent.h"
 
 using namespace DAVA;
 
-AddComponentCommand::AddComponentCommand(PropertiesModel *_model, ControlNode *_node, int _componentType, QUndoCommand *parent)
+AddComponentCommand::AddComponentCommand(PropertiesContext *_context, ControlNode *_node, int _componentType, QUndoCommand *parent)
     : QUndoCommand(parent)
-    , model(_model)
+    , context(_context)
     , node(SafeRetain(_node))
     , componentSection(nullptr)
 {
@@ -24,16 +25,18 @@ AddComponentCommand::~AddComponentCommand()
 
 void AddComponentCommand::redo()
 {
-    if (true) // if model selected
-        model->AddComponentSection(node, componentSection);
+    PropertiesModel *model = context->GetModel();
+    if (model && model->GetControlNode() == node) // if model selected
+        model->AddComponentSection(componentSection);
     else
         node->GetPropertiesRoot()->AddComponentPropertiesSection(componentSection);
 }
 
 void AddComponentCommand::undo()
 {
-    if (true)
-        model->RemoveComponentSection(node, componentSection);
+    PropertiesModel *model = context->GetModel();
+    if (model && model->GetControlNode() == node)
+        model->RemoveComponentSection(componentSection);
     else
         node->GetPropertiesRoot()->RemoveComponentPropertiesSection(componentSection);
 

@@ -243,21 +243,21 @@ QVariant PropertiesModel::headerData(int section, Qt::Orientation /*orientation*
     return QVariant();
 }
 
-void PropertiesModel::AddComponentSection(ControlNode *node, ComponentPropertiesSection *section)
+void PropertiesModel::AddComponentSection(ComponentPropertiesSection *section)
 {
-    int32 sectionRow = node->GetPropertiesRoot()->GetIndexOfCompoentPropertiesSection(section);
-    QModelIndex parentIndex = indexByProperty(node->GetPropertiesRoot(), 0);
+    int32 sectionRow = controlNode->GetPropertiesRoot()->GetIndexOfCompoentPropertiesSection(section);
+    QModelIndex parentIndex = indexByProperty(controlNode->GetPropertiesRoot(), 0);
     beginInsertRows(parentIndex, sectionRow, sectionRow);
-    node->GetPropertiesRoot()->AddComponentPropertiesSection(section);
+    controlNode->GetPropertiesRoot()->AddComponentPropertiesSection(section);
     endInsertRows();
 }
 
-void PropertiesModel::RemoveComponentSection(ControlNode *node, ComponentPropertiesSection *section)
+void PropertiesModel::RemoveComponentSection(ComponentPropertiesSection *section)
 {
-    int32 sectionRow = node->GetPropertiesRoot()->GetIndexOfCompoentPropertiesSection(section);
-    QModelIndex parentIndex = indexByProperty(node->GetPropertiesRoot(), 0);
+    int32 sectionRow = controlNode->GetPropertiesRoot()->GetIndexOfCompoentPropertiesSection(section);
+    QModelIndex parentIndex = indexByProperty(controlNode->GetPropertiesRoot(), 0);
     beginRemoveRows(parentIndex, sectionRow, sectionRow);
-    node->GetPropertiesRoot()->RemoveComponentPropertiesSection(section);
+    controlNode->GetPropertiesRoot()->RemoveComponentPropertiesSection(section);
     endRemoveRows();
 }
 
