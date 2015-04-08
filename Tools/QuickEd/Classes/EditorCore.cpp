@@ -93,12 +93,14 @@ bool EditorCore::CloseOneDocument(int index)
     QUndoStack *undoStack = document->GetUndoStack();
     if (!undoStack->isClean())
     {
-        QMessageBox::StandardButton ret = QMessageBox::question(qApp->activeWindow(),
+        QMessageBox::StandardButton ret = QMessageBox::question(
+            qApp->activeWindow(),
             tr("Save changes"),
             tr("The file %1 has been modified.\n"
-            "Do you want to save your changes?").arg(document->GetPackageFilePath().GetBasename().c_str()),
+               "Do you want to save your changes?").arg(document->GetPackageFilePath().GetBasename().c_str()),
             QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
-            QMessageBox::Save);
+            QMessageBox::Save
+            );
         if (ret == QMessageBox::Cancel)
         {
             return false;
@@ -184,10 +186,11 @@ bool EditorCore::CloseProject()
     }
     if (hasUnsaved)
     {
-        int ret = QMessageBox::question(qApp->activeWindow(),
+        int ret = QMessageBox::question(
+            qApp->activeWindow(),
             tr("Save changes"),
             tr("Some files has been modified.\n"
-            "Do you want to save your changes?"),
+                "Do you want to save your changes?"),
             QMessageBox::SaveAll | QMessageBox::NoToAll | QMessageBox::Cancel
             );
         if (ret == QMessageBox::Cancel)

@@ -151,8 +151,7 @@ void PreviewWidget::OnError(const Result &result)
 
 void PreviewWidget::OnScaleByZoom(int scaleDelta)
 {
-    //int newScale = controlWorkspace->GetScreenScale() + scaleDelta;
-    //controlWorkspace->SetScreenScale(newScale);
+    //TODO: implement this method
 }
 
 void PreviewWidget::OnScaleByComboIndex(int index)
@@ -183,8 +182,6 @@ void PreviewWidget::OnScaleByComboText()
 		// Try to parse the value.
 		scaleValue = curTextValue.toFloat();
 	}
-    
-	//controlWorkspace->SetScreenScale(scaleValue);
 }
 
 void PreviewWidget::OnZoomInRequested()
@@ -213,7 +210,7 @@ void PreviewWidget::OnCanvasScaleChanged(int newScale)
 
 void PreviewWidget::OnGLWidgetResized(int width, int height, int dpr)
 {
-    Vector2 screenSize((float32)width * dpr, (float32)height * dpr);
+    Vector2 screenSize(static_cast<float32>(width) * dpr, static_cast<float32>(height) * dpr);
 
     UIScreenManager::Instance()->GetScreen()->SetSize(screenSize);
 
@@ -256,9 +253,6 @@ void PreviewWidget::OnScrollPositionChanged(const QPoint &newPosition)
 void PreviewWidget::OnScrollAreaChanged(const QSize &viewSize, const QSize &contentSize)
 {
     QSize maximumPosition(contentSize - viewSize);
-
-    //verticalScrollBar->setEnabled(maximumPosition.height() > 0);
-    //horizontalScrollBar->setEnabled(maximumPosition.width() > 0);
 
     if (maximumPosition.height() < 0)
     {

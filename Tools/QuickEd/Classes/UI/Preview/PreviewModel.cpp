@@ -170,11 +170,7 @@ void PreviewModel::OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl 
         {
             Vector<UIControl*> path;
             ControlNode *node = it->second;
-            if (selectedControl == rootControl)
-            {
-                // ok
-            }
-            else
+            if (selectedControl != rootControl)
             {
                 UIControl *c = selectedControl;
                 while (c && c != rootControl)
