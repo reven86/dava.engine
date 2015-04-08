@@ -1785,6 +1785,7 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIControlFamily.h">
       <Filter>Internal\UI\Components</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MallocHook.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
