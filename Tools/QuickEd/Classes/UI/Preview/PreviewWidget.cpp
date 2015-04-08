@@ -41,6 +41,9 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     UIScreenManager::Instance()->RegisterScreen(EDIT_SCREEN, davaUIScreen);
     UIScreenManager::Instance()->SetFirst(EDIT_SCREEN);
     UIScreenManager::Instance()->GetScreen()->AddControl(model->GetViewControl());
+    
+    davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+    model->SetViewControlSize(davaGLWidget->size());
 
     connect( davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized );
 
@@ -87,9 +90,6 @@ void PreviewWidget::OnDocumentChanged(SharedData *data)
     UpdateRootControls();
     if (nullptr != sharedData)
     {
-        davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
-        model->SetViewControlSize(davaGLWidget->size());
-
         OnScrollAreaChanged(model->GetViewSize(), model->GetScaledCanvasSize());
         OnScrollPositionChanged(model->GetCanvasPosition());
         OnCanvasScaleChanged(model->GetCanvasScale());
