@@ -4,6 +4,7 @@
 #include <QUndoGroup>
 #include <QDebug>
 
+#include "Debug/DVAssert.h"
 
 DocumentGroup::DocumentGroup(QObject *parent) 
     : QObject(parent)
@@ -18,7 +19,7 @@ DocumentGroup::~DocumentGroup()
 
 void DocumentGroup::AddDocument(Document* document)
 {
-    Q_ASSERT(document);
+    DVASSERT(document);
     undoGroup->addStack(document->GetUndoStack());
     if (documentList.contains(document))
     {
@@ -29,7 +30,7 @@ void DocumentGroup::AddDocument(Document* document)
 
 void DocumentGroup::RemoveDocument(Document* document)
 {
-    Q_ASSERT(document);
+    DVASSERT(document);
     undoGroup->removeStack(document->GetUndoStack());
 
     if (0 == documentList.removeAll(document))

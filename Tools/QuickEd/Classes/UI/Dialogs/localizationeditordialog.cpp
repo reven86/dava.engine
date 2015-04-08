@@ -70,7 +70,7 @@ LocalizationTableController::LocalizationTableController(QTableView* view)
 LocalizationTableController::~LocalizationTableController()
 {
     SAFE_DELETE(tableModel);
-}
+} 
 
 void LocalizationTableController::ConnectToSignals()
 {

@@ -269,6 +269,6 @@ private:
     
     // Current filter value.
     //QString filterValue;
-};
+}; 
 
 #endif // LOCALIZATIONEDITORDIALOG_H
