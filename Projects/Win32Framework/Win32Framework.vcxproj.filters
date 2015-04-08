@@ -3225,6 +3225,7 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIControlFamily.cpp">
       <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\MallocHook.cpp">
       <Filter>Internal\MemoryManager</Filter>
     </ClCompile>
