@@ -116,7 +116,6 @@ namespace ResourceEditor
 	static const String VISIBILITY_TOOL_ENABLE_ERROR		= "Error enabling Visibility Check Tool. Make sure there is valid landscape at the scene.";
 	static const String VISIBILITY_TOOL_DISABLE_ERROR		= "Error disabling Visibility Check Tool";
 	static const String VISIBILITY_TOOL_SAVE_CAPTION		= "Save visibility tool texture";
-	static const String VISIBILITY_TOOL_FILE_FILTER			= "PNG image (*.png)";
 	static const String VISIBILITY_TOOL_SET_AREA_CAPTION	= "Set Visibility Area";
 	static const String VISIBILITY_TOOL_SET_POINT_CAPTION	= "Set Visibility Point";
 	static const String VISIBILITY_TOOL_SAVE_TEXTURE_CAPTION= "Save Texture";
