@@ -77,6 +77,10 @@ if( NOT RES_EDITOR_PATH )
     exit()
 endif()
 
+if( NOT GPU_PARAM)
+    set(GPU_PARAM   "PowerVR_iOS")
+endif()
+
 configure_file( ${CMAKE_CURRENT_LIST_DIR}/scripts/TemplateConvert3D.in
                     ${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_3d.py @ONLY )
 
@@ -89,4 +93,4 @@ configure_file( ${CMAKE_CURRENT_LIST_DIR}/scripts/TemplateConvert3DTanks.in
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${RES_EDITOR_DATA}/Materials ${APP_DATA}/Materials )
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${RES_EDITOR_DATA}/Shaders ${APP_DATA}/Shaders )
 
-execute_process( COMMAND python WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource INPUT_FILE convert_everything.py )
+execute_process( COMMAND python convert_everything.py --gpu ${GPU_PARAM} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
