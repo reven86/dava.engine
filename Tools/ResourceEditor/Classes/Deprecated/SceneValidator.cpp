@@ -700,9 +700,10 @@ void SceneValidator::ValidateCustomColorsTexture(Entity *landscapeEntity, Set<St
 	{
 		String currentSaveName = customProps->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
 		FilePath path = "/" + currentSaveName;
-		if(!path.IsEqualToExtension(".png"))
+        
+        if(!TextureDescriptor::IsSourceTextureExtension(path.GetExtension()))
 		{
-			errorsLog.insert(Format("Custom colors texture has to have .png extension. Scene: %s", sceneName.c_str()));
+			errorsLog.insert(Format("Custom colors texture has to have .png, .jpeg or .tga extension. Scene: %s", sceneName.c_str()));
 		}
         
         String::size_type foundPos = currentSaveName.find("DataSource/3d/");

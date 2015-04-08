@@ -106,7 +106,6 @@ namespace ResourceEditor
 	static const String CUSTOM_COLORS_PROPERTY_DESCRIPTION	= "LandscapeCustomColorsDescription";
 	static const String CUSTOM_COLORS_SAVE_CAPTION			= "Save texture";
 	static const String CUSTOM_COLORS_LOAD_CAPTION			= "Load texture";
-	static const String CUSTOM_COLORS_FILE_FILTER			= "PNG image (*.png)";
 	static const String CUSTOM_COLORS_ENABLE_ERROR			= "Error enabling Custom Colors editor. Make sure there is valid landscape at the scene.";
 	static const String CUSTOM_COLORS_DISABLE_ERROR			= "Error disabling Custom Colors editor.";
 

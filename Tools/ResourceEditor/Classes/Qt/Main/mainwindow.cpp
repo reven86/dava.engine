@@ -2020,7 +2020,7 @@ void QtMainWindow::OnSaveTiledTexture()
 			FilePath scenePath = scene->GetScenePath().GetDirectory();
 			QString selectedPath = QtFileDialog::getSaveFileName(this, "Save landscape texture as",
 														 scenePath.GetAbsolutePathname().c_str(),
-														 "PGN Image (*.png)");
+														 PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 			if (selectedPath.isEmpty())
 			{
 				SafeRelease(landscapeTexture);
@@ -2312,7 +2312,7 @@ bool QtMainWindow::SelectCustomColorsTexturePath()
 	QString filePath = QtFileDialog::getSaveFileName(NULL,
 													 QString(ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str()),
 													 QString(scenePath.GetAbsolutePathname().c_str()),
-													 QString(ResourceEditor::CUSTOM_COLORS_FILE_FILTER.c_str()));
+													 PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 	FilePath selectedPathname = PathnameToDAVAStyle(filePath);
 	Entity* landscape = FindLandscapeEntity(sceneEditor);
 	if (selectedPathname.IsEmpty() || NULL == landscape)
