@@ -119,9 +119,10 @@ public:
         TOP = 2,
         BOTTOM = 3,
     };
-    
+#if RHI_COMPLETE
 	Landscape();
 	virtual ~Landscape();
+
     
     /**
         \brief Set lod coefficients for dynamic roam landscape
@@ -431,6 +432,7 @@ public:
         PROPERTY("size", "Size", GetLandscapeSize, SetLandscapeSize, I_VIEW | I_EDIT)
         PROPERTY("height", "Height", GetLandscapeHeight, SetLandscapeHeight, I_VIEW | I_EDIT)
 		);
+#endif //RHI_COMPLETE
 };
 
 };

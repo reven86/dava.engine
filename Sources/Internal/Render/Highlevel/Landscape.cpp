@@ -51,7 +51,7 @@
 
 namespace DAVA
 {
-
+#if RHI_COMPLETE
 const FastName Landscape::PARAM_CAMERA_POSITION("cameraPosition");
 const FastName Landscape::PARAM_TEXTURE0_TILING("texture0Tiling");
 const FastName Landscape::PARAM_TEXTURE1_TILING("texture1Tiling");
@@ -141,7 +141,6 @@ Landscape::~Landscape()
 	SafeRelease(tileMaskMaterial);
 }
     
-#if RHI_COMPLETE
 
 int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
 {

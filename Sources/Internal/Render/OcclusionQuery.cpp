@@ -30,7 +30,7 @@
 #include "Utils/Utils.h"
 #include "Render/Renderer.h"
 
-#if RHI_COMPLETE
+
 namespace DAVA
 {
 #if defined(__DAVAENGINE_OPENGL__)
@@ -45,22 +45,26 @@ OcclusionQuery::OcclusionQuery()
     
 void OcclusionQuery::Init()
 {
+#if RHI_COMPLETE
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
         RENDER_VERIFY(glGenQueries(1, &id));
 #else
         RENDER_VERIFY(glGenQueriesEXT(1, &id));
 #endif
         //Logger::Debug("Init query: %d", id);
+#endif // RHI_COMPLETE
 }
     
 void OcclusionQuery::Release()
 {
+#if RHI_COMPLETE
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
         RENDER_VERIFY(glDeleteQueries(1, &id));
 #else
         RENDER_VERIFY(glDeleteQueriesEXT(1, &id));
 #endif
         //Logger::Debug("Release query: %d", id);
+#endif // RHI_COMPLETE
 }
 
 OcclusionQuery::~OcclusionQuery()
@@ -74,26 +78,31 @@ OcclusionQuery::~OcclusionQuery()
 
 void OcclusionQuery::BeginQuery()
 {
+#if RHI_COMPLETE
 // Temporarly written, should be refactored and moved to RenderBase.h defines
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glBeginQuery(GL_SAMPLES_PASSED, id));
 #else
     RENDER_VERIFY(glBeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, id));
 #endif
+#endif // RHI_COMPLETE
 }
     
 void OcclusionQuery::EndQuery()
 {
+#if RHI_COMPLETE
 // Temporarly written, should be refactored and moved to RenderBase.h defines
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glEndQuery(GL_SAMPLES_PASSED));
 #else
     RENDER_VERIFY(glEndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT));
 #endif
+#endif // RHI_COMPLETE
 }
     
 bool OcclusionQuery::IsResultAvailable()
 {
+#if RHI_COMPLETE
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
     GLint available;
     RENDER_VERIFY(glGetQueryObjectiv(id,
@@ -113,16 +122,19 @@ bool OcclusionQuery::IsResultAvailable()
                                      &available));
     return (available != 0);
 #endif
+#endif // RHI_COMPLETE
 	return false;
 }
     
 void OcclusionQuery::GetQuery(uint32 * resultValue)
 {
+#if RHI_COMPLETE
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glGetQueryObjectuiv(id, GL_QUERY_RESULT_ARB, resultValue));
 #else
     RENDER_VERIFY(glGetQueryObjectuivEXT(id, GL_QUERY_RESULT_EXT, resultValue));
 #endif
+#endif // RHI_COMPLETE
 }
    
 /////////////////////////////////////////////////////////////////////
@@ -349,4 +361,3 @@ void FrameOcclusionQueryManager::GetQueriesNames(Vector<FastName> & names) const
 
 };
 
-#endif //RHI_COMPLETE

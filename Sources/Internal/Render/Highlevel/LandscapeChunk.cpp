@@ -48,11 +48,13 @@ LandscapeChunk::~LandscapeChunk()
     
 void LandscapeChunk::Draw(const FastName & ownerPassName, Camera * camera)
 {
+#if RHI_COMPLETE
 	if(NULL != landscape)
 	{
         landscape->BindDynamicParameters(camera);
 		landscape->Draw(camera);
 	}
+#endif RHI_COMPLETE
 }
 
 void LandscapeChunk::Save(KeyedArchive *archive, SerializationContext *serializationContext)

@@ -137,11 +137,13 @@ void SnapToLandscapeControllerSystem::SnapToLandscape(Landscape *landscape, Enti
                 }
             }
 
+#if RHI_COMPLETE
             bool placed = landscape->PlacePoint(placedPos, pointOnLandscape);
             if(placed)
             {
                 pointOnLandscape.z += snapController->GetHeightOnLandscape();
             }
+#endif // RHI_COMPLETE
             
             camera->SetPosition(pointOnLandscape);
             camera->SetDirection(direction);

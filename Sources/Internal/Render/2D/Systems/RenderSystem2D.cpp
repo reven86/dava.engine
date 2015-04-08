@@ -38,7 +38,6 @@
 #include "Render/Renderer.h"
 
 
-#if RHI_COMPLETE
 namespace DAVA
 {
 
@@ -149,7 +148,7 @@ void RenderSystem2D::Init()
         spriteTexCoordStream = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
     }
 #endif //USE_BATCHING
-    
+#if RHI_COMPLETE
     if(FLAT_COLOR == NULL)
     {
         FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(FLAT_COLOR_SHADER, FastNameSet()));
@@ -209,6 +208,7 @@ void RenderSystem2D::Init()
         set.Insert(FastName("IMAGE_A8"));
         TEXTURE_ADD_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
     }
+#endif RHI_COMPLETE
 }
 
 RenderSystem2D::~RenderSystem2D()
@@ -218,6 +218,7 @@ RenderSystem2D::~RenderSystem2D()
     SafeDeleteArray(iboTemp);
     SafeRelease(spriteRenderObject);
 
+#if RHI_COMPLETE
     SafeRelease(FLAT_COLOR);
     SafeRelease(TEXTURE_MUL_FLAT_COLOR);
     SafeRelease(TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST);
@@ -231,6 +232,7 @@ RenderSystem2D::~RenderSystem2D()
     SafeRelease(TEXTURE_ADD_COLOR);
     SafeRelease(TEXTURE_ADD_COLOR_ALPHA_TEST);
     SafeRelease(TEXTURE_ADD_COLOR_IMAGE_A8);
+#endif RHI_COMPLETE
 }
 
 void RenderSystem2D::Reset()
@@ -346,6 +348,7 @@ void RenderSystem2D::PopClip()
 
 void RenderSystem2D::UpdateClip()
 {
+#if RHI_COMPLETE
     if (clipChanged)
     {
         if (currentClip.dx < 0.f || currentClip.dx < 0.f) //disable clip
@@ -368,6 +371,7 @@ void RenderSystem2D::UpdateClip()
         }
         clipChanged = false;
     }
+#endif RHI_COMPLETE
 }
 
 void RenderSystem2D::SetSpriteClipping(bool clipping)
@@ -377,8 +381,10 @@ void RenderSystem2D::SetSpriteClipping(bool clipping)
 
 bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState * drawState)
 {
+#if RHI_COMPLETE
     if (RenderManager::Instance()->GetRenderTarget() != nullptr)
         return true;
+#endif RHI_COMPLETE
 
     Rect clipRect = currentClip;
     if (clipRect.dx == -1)
@@ -397,6 +403,7 @@ bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState * drawState)
 
     const Rect spriteRect(left, top, right - left, bottom - top);
     return clipRect.RectIntersects(spriteRect);
+
 }
     
 Shader* RenderSystem2D::GetShaderForBatching(Shader* inputShader)
@@ -430,6 +437,7 @@ Shader* RenderSystem2D::GetShaderForBatching(Shader* inputShader)
 
 void RenderSystem2D::Flush()
 {
+#if RHI_COMPLETE
     /*
     Called on each EndFrame, particle draw, screen transitions preparing, screen borders draw
     */
@@ -488,6 +496,8 @@ void RenderSystem2D::Flush()
     pool->Next();
     
 #endif
+
+#endif // RHI_COMPLETE
 }
 
 void RenderSystem2D::PushBatch(UniqueHandle state, UniqueHandle texture, Shader* shader, Rect const& clip,
@@ -909,7 +919,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
         }
         IntersectClipRect(clipRect);
     }
-
+#if RHI_COMPLETE
 #if USE_BATCHING
 
     if (!sprite->clipPolygon)
@@ -940,6 +950,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
     RenderManager::Instance()->DrawArrays(spritePrimitiveToDraw, 0, spriteVertexCount);
 
 #endif //USE_BATCHING
+#endif //RHI_COMPLETE
 
     if (sprite->clipPolygon)
     {
@@ -1020,10 +1031,12 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
     spriteVertexCount = (int32)sd.transformedVertices.size();
     spriteIndexCount = sd.GetVertexInTrianglesCount();
 
+#if RHI_COMPLETE
     PushBatch(state->renderState, textureHandle, TEXTURE_MUL_FLAT_COLOR, currentClip,
         spriteVertexCount, (float32*)&sd.transformedVertices.front(), (float32*)&sd.texCoords.front(),
         spriteIndexCount, sd.indeces,
         RenderManager::Instance()->GetColor());
+#endif RHI_COMPLETE
 	
 #else //USE_BATCHING
 	
@@ -1119,11 +1132,12 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
 	
     spriteVertexCount = (int32)td.transformedVertices.size();
     spriteIndexCount = (int32)td.indeces.size();
-
+#if RHI_COMPLETE
     PushBatch(state->renderState, textureHandle, TEXTURE_MUL_FLAT_COLOR, currentClip,
         spriteVertexCount, (float32*)&td.transformedVertices.front(), (float32*)&td.texCoords.front(),
         spriteIndexCount, &td.indeces.front(),
         RenderManager::Instance()->GetColor());
+#endif RHI_COMPLETE
 
 #else //USE_BATCHING
 
@@ -1486,4 +1500,3 @@ void StretchDrawData::GenerateStretchData()
 
 };
 
-#endif // RHI_COMPLETE
