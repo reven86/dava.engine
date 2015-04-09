@@ -41,8 +41,8 @@ private:
     QList<QPersistentModelIndex> GetExpandedIndexes() const;
     
 private slots:
-void OnRowsInserted(const QModelIndex &parent, int first, int last);
-void OnRowsAboutToBeRemoved(const QModelIndex &parent, int first, int last);
+    void OnRowsInserted(const QModelIndex &parent, int first, int last);
+    void OnRowsAboutToBeRemoved(const QModelIndex &parent, int first, int last);
     void OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected);
     void filterTextChanged(const QString &);
     void OnCopy();

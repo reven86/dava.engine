@@ -120,14 +120,15 @@ void PackageWidget::LoadContext()
         if (nullptr == context)
         {
             context = new PackageContext(qobject_cast<Document*>(sharedData->parent()));
+            connect(packageModel, &PackageModel::rowsInserted, this, &PackageWidget::OnRowsInserted);
+            connect(packageModel, &PackageModel::rowsAboutToBeRemoved, this, &PackageWidget::OnRowsAboutToBeRemoved);
             sharedData->SetContext(this, context);
         }
         //store model to work with indexes
         packageModel = context->packageModel;
         filteredPackageModel = context->filteredPackageModel;
+
         //remove it in future
-        connect(packageModel, &PackageModel::rowsInserted, this, &PackageWidget::OnRowsInserted);
-        connect(packageModel, &PackageModel::rowsAboutToBeRemoved, this, &PackageWidget::OnRowsAboutToBeRemoved);
         sharedData->SetData("packageModel", QVariant::fromValue<QAbstractItemModel*>(context->packageModel)); //TODO: bad architecture
         //restore model
         treeView->setModel(context->filteredPackageModel);
@@ -145,8 +146,6 @@ void PackageWidget::LoadContext()
         treeView->selectionModel()->select(context->selection, QItemSelectionModel::ClearAndSelect);
         //restore filter line
         filterLine->setText(context->filterString);
-        //set selected controls as displayed controls
-        OnControlSelectedInEditor(sharedData->GetData("activeRootControls").value<QList<ControlNode*> >());
     }
 
 }
@@ -273,8 +272,22 @@ void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, cons
     {
         return;
     }
-    QList<ControlNode*> selectedRootControls = sharedData->GetData("activeRootControls").value<QList<ControlNode*> >();
-    
+    //check selected root controls
+    QList<ControlNode*> selectedRootControls;
+    const QItemSelection &allSelectedElements = treeView->selectionModel()->selection();
+    const QItemSelection &filteredSelectedElements = filteredPackageModel->mapSelectionToSource(allSelectedElements);
+    for (const QModelIndex &index : filteredSelectedElements.indexes())
+    {
+        PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+        if (node->GetControl())
+        {
+            while (node->GetParent() && node->GetParent()->GetControl())
+                node = node->GetParent();
+            if (selectedRootControls.indexOf(static_cast<ControlNode*>(node)) < 0)
+                selectedRootControls.push_back(static_cast<ControlNode*>(node));
+        }
+    }
+
     QList<ControlNode*> selectedControls;
     QList<ControlNode*> deselectedControls;
 
@@ -282,38 +295,22 @@ void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, cons
     QItemSelection deselected = filteredPackageModel->mapSelectionToSource(proxyDeselected);
 
     QModelIndexList deselectedIndexList = deselected.indexes();
-    if (!deselectedIndexList.empty())
+    for (QModelIndex &index : deselectedIndexList)
     {
-        for (QModelIndex &index : deselectedIndexList)
+        PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+        if (node->GetControl())
         {
-            PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-            if (node->GetControl())
-            {
-                deselectedControls.push_back(static_cast<ControlNode*>(node));
-
-                while (node->GetParent() && node->GetParent()->GetControl())
-                    node = node->GetParent();
-                selectedRootControls.removeAll(static_cast<ControlNode*>(node));
-            }
+            deselectedControls.push_back(static_cast<ControlNode*>(node));
         }
     }
 
     QModelIndexList selectedIndexList = selected.indexes();
-    if (!selectedIndexList.empty())
+    for (QModelIndex &index : selectedIndexList)
     {
-        for (QModelIndex &index : selectedIndexList)
+        PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+        if (node->GetControl())
         {
-            PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-            if (node->GetControl())
-            {
-                selectedControls.push_back(static_cast<ControlNode*>(node));
-
-                while (node->GetParent() && node->GetParent()->GetControl())
-                    node = node->GetParent();
-
-                if (selectedRootControls.indexOf(static_cast<ControlNode*>(node)) < 0)
-                    selectedRootControls.push_back(static_cast<ControlNode*>(node));
-            }
+            selectedControls.push_back(static_cast<ControlNode*>(node));
         }
     }
 
