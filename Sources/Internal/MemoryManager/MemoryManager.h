@@ -53,7 +53,7 @@ class MemoryManager final
 {
     static const uint32 BLOCK_MARK = 0xBA0BAB;
     static const size_t BLOCK_ALIGN = 16;
-    static const size_t BACKTRACE_DEPTH = 16;
+    static const size_t BACKTRACE_DEPTH = 64;
 
 public:
     static const size_t MAX_ALLOC_POOL_COUNT = 16;
