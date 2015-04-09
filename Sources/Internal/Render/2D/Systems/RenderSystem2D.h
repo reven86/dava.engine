@@ -151,6 +151,13 @@ public:
         uint32 indexCount, const uint16* indexPointer,
         const Color& color);
     
+    /*!
+     * Highlight controls which has vertices count bigger than verticesCount.
+     * Work only with RenderOptions::HIGHLIGHT_BIG_CONTROLS option enabled.
+     * @param verticesCount vertices limit
+     */
+    void SetHightlightControlsVerticesLimit(uint32 verticesCount);
+
     void BeginFrame();
     void EndFrame();
     void Flush();
@@ -211,8 +218,14 @@ private:
         NO_ERRORS = 0,
         BUFFER_OVERFLOW_ERROR = 1,
     };
+    uint32 highlightControlsVerticesLimit;
 
 };
+
+inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCount)
+{
+    highlightControlsVerticesLimit = verticesCount;
+}
 
 } // ns
 

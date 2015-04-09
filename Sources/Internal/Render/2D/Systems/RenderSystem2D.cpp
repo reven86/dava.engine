@@ -90,6 +90,7 @@ public:
     VboPool(uint32 verticesCount, uint32 format, uint32 indicesCount, uint8 buffersCount);
     ~VboPool();
 
+    void ReleaseBuffers();
     void HardReset(uint32 verticesCount, uint32 indicesCount, uint8 buffersCount);
 
     void Next();
@@ -117,9 +118,11 @@ private:
     uint32 verticesLimit;
     uint32 indicesLimit;
 
+#if BATCHING_DEBUG
     int8 defaultVboFrameLife;
     int8 currentFrame;
     Vector<int8> vboFrameLifes;
+#endif
 };
 
 inline RenderDataObject* VboPool::GetRenderDataObject() const
@@ -148,9 +151,13 @@ inline uint32 VboPool::GetVertexStride() const
 }
 
 VboPool::VboPool(uint32 verticesCount, uint32 format, uint32 indicesCount, uint8 buffersCount)
-    : defaultVboFrameLife(0)
+    : verticesLimit(0)
+    , indicesLimit(0)
+#if BATCHING_DEBUG
+    , defaultVboFrameLife(0)
     , currentFrame(0)
     , vboFrameLifes()
+#endif
 {
     vertexFormat = format;
     vertexStride = GetVertexSize(vertexFormat);
@@ -159,26 +166,26 @@ VboPool::VboPool(uint32 verticesCount, uint32 format, uint32 indicesCount, uint8
 
 VboPool::~VboPool()
 {
-    const uint8 count = dataObjects.size();
-    for(uint8 i = 0; i < count; ++i)
+    ReleaseBuffers();
+}
+
+void VboPool::ReleaseBuffers()
+{
+    for(auto dataObj : dataObjects)
     {
-        SafeRelease(dataObjects[i]);
+        SafeRelease(dataObj);
     }
     dataObjects.clear();
 }
 
 void VboPool::HardReset(uint32 verticesCount, uint32 indicesCount, uint8 buffersCount)
 {
-    // Destroy exist buffers
-    if(!dataObjects.empty())
+    if(verticesLimit == verticesCount && indicesLimit == indicesCount && dataObjects.size() == buffersCount)
     {
-        const uint8 count = dataObjects.size();
-        for(uint8 i = 0; i < count; ++i)
-        {
-            SafeRelease(dataObjects[i]);
-        }
-        dataObjects.clear();
+        return;
     }
+    // Destroy exist buffers
+    ReleaseBuffers();
     // Create new buffers
     verticesLimit = verticesCount;
     indicesLimit = indicesCount;
@@ -282,6 +289,7 @@ RenderSystem2D::RenderSystem2D()
     , spritePrimitiveToDraw(PRIMITIVETYPE_TRIANGLELIST)
     , prevFrameErrorsFlags(NO_ERRORS)
     , currFrameErrorsFlags(NO_ERRORS)
+    , highlightControlsVerticesLimit(0)
 {
 }
 
@@ -689,17 +697,17 @@ void RenderSystem2D::PushBatch(UniqueHandle state, UniqueHandle texture, Shader*
 
             UpdateClip();
 
-            if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::HIGHLIGHT_HARD_CONTROLS))
+            if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::HIGHLIGHT_HARD_CONTROLS))
             {
-                RenderManager::Instance()->SetColor(color);
+                // Highlight too big controls with red color
+                static Color red = Color(1.f, 0.f, 0.f, 1.f);
+                RenderManager::Instance()->SetColor(red);
             }
             else
             {
-                // Highlight too big controls with red color
-                RenderManager::Instance()->SetColor(1.f, 0.f, 0.f, 1.f);
+                RenderManager::Instance()->SetColor(color);
             }
 
-            RenderManager::Instance()->SetColor(color);
             RenderManager::Instance()->SetRenderState(state);
             RenderManager::Instance()->SetTextureState(texture);
             RenderManager::Instance()->SetRenderData(spriteRenderObject);
@@ -709,6 +717,16 @@ void RenderSystem2D::PushBatch(UniqueHandle state, UniqueHandle texture, Shader*
             RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, indexCount, EIF_16, indeces);
             return;
         }
+    }
+
+    Color useColor = color;
+    if(highlightControlsVerticesLimit > 0
+            && vertexCount > highlightControlsVerticesLimit
+            && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::HIGHLIGHT_HARD_CONTROLS))
+    {
+        // Highlight too big controls with magenta color
+        static Color magenta = Color(1.f, 0.f, 1.f, 1.f);
+        useColor = magenta;
     }
 
     Shader * convShader = GetShaderForBatching(shader);
@@ -722,7 +740,7 @@ void RenderSystem2D::PushBatch(UniqueHandle state, UniqueHandle texture, Shader*
         vboTemp[vi++] = 0.f; // axe Z, empty but need for EVF_VERTEX format
         vboTemp[vi++] = texCoordPointer[i * 2];
         vboTemp[vi++] = texCoordPointer[i * 2 + 1];
-        *(uint32*)(&vboTemp[vi++]) = color.GetRGBA();
+        *(uint32*)(&vboTemp[vi++]) = useColor.GetRGBA();
     }
     for (uint32 i = 0; i < indexCount; ++i)
     {
