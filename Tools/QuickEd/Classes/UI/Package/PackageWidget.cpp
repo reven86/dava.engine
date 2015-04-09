@@ -106,9 +106,12 @@ void PackageWidget::OnDataChanged(const QByteArray &role)
 
 void PackageWidget::LoadContext()
 {
+    delete treeView->selectionModel();
     if (nullptr == sharedData)
     {
         treeView->setModel(nullptr);
+        packageModel = nullptr;
+        filteredPackageModel = nullptr;
     }
     else
     {
@@ -118,12 +121,12 @@ void PackageWidget::LoadContext()
         {
             context = new PackageContext(qobject_cast<Document*>(sharedData->parent()));
             sharedData->SetContext(this, context);
-            //store model to work with indexes
-            packageModel = context->packageModel;
-            filteredPackageModel = context->filteredPackageModel;
-            //remove it in future
-            sharedData->SetData("packageModel", QVariant::fromValue<QAbstractItemModel*>(context->packageModel)); //TODO: bad architecture
         }
+        //store model to work with indexes
+        packageModel = context->packageModel;
+        filteredPackageModel = context->filteredPackageModel;
+        //remove it in future
+        sharedData->SetData("packageModel", QVariant::fromValue<QAbstractItemModel*>(context->packageModel)); //TODO: bad architecture
         //restore model
         treeView->setModel(context->filteredPackageModel);
         treeView->expandToDepth(0);
@@ -141,6 +144,7 @@ void PackageWidget::LoadContext()
         //restore filter line
         filterLine->setText(context->filterString);
     }
+
 }
 
 void PackageWidget::SaveContext()

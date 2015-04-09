@@ -94,6 +94,8 @@ void PreviewWidget::OnDocumentChanged(SharedData *data)
         OnScrollPositionChanged(model->GetCanvasPosition());
         OnCanvasScaleChanged(model->GetCanvasScale());
         OnMonitorChanged();
+        //restore activated controls
+        OnDataChanged("activatedControls");
     }
 }
 
