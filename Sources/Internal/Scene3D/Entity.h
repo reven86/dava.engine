@@ -530,6 +530,7 @@ inline uint32 Entity::GetComponentCount () const
 
 inline void Entity::UpdateFamily ()
 {
+    EntityFamily::Release (family);
     family = EntityFamily::GetOrCreate (components);
 }
 
