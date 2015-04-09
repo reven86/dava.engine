@@ -39,12 +39,12 @@ namespace DAVA
 FastName::FastName()
 	: index(-1)
 {
-#ifdef __DAVAENGINE_DEBUG__
-	debug_str_ptr = NULL;
-#endif
+    // make sure FastNameDB exists
+    FastNameDB::Instance();
 }
     
 FastName::FastName(const String & name)
+    : index(-1)
 {
     Init(name.c_str());
 }
@@ -79,51 +79,54 @@ FastName::~FastName()
 
 void FastName::Init(const char * name)
 {
-	DVASSERT(NULL != name);
-	
-    FastNameDB *db = FastNameDB::Instance();
+    DVASSERT(NULL != name);
 
-	LockGuard<Mutex> guard(FastNameDB::Instance()->dbMutex);
-    
-    // search if that name is already in hash
-    if(db->namesHash.count(name))
+    FastNameDB *db = FastNameDB::Instance();
+    LockGuard<Mutex> guard(FastNameDB::Instance()->dbMutex);
+
+    if(nullptr != name)
     {
-        // already exist, so we just need to set the same index to this object
-        index = db->namesHash[name];
-        db->namesRefCounts[index]++;
-    }
-    else
-    {
-        // string isn't in hash and it isn't in names table, so we need to copy it
-        // and find place for copied string in names table and set it
-        size_t nameLen = strlen(name);
-        char *nameCopy = (char *) malloc(nameLen + 1);
-        memcpy(nameCopy, name, nameLen + 1);
-        
-        // search for empty indexes in names table
-        if(db->namesEmptyIndexes.size() > 0)
+        // search if that name is already in hash
+        if(db->namesHash.count(name))
         {
-            // take last empty index from emptyIndexes table
-            index = db->namesEmptyIndexes.back();
-            db->namesEmptyIndexes.pop_back();
+            // already exist, so we just need to set the same index to this object
+            index = db->namesHash[name];
+            db->namesRefCounts[index]++;
         }
         else
         {
-            // index will be a new row in names table
-            index = static_cast<int32>(db->namesTable.size());
-            db->namesTable.resize(index + 1);
-            db->namesRefCounts.resize(index + 1);
+            // string isn't in hash and it isn't in names table, so we need to copy it
+            // and find place for copied string in names table and set it
+            size_t nameLen = strlen(name);
+            char *nameCopy = (char *) malloc(nameLen + 1);
+            memcpy(nameCopy, name, nameLen + 1);
+        
+            // search for empty indexes in names table
+            if(db->namesEmptyIndexes.size() > 0)
+            {
+                // take last empty index from emptyIndexes table
+                index = db->namesEmptyIndexes.back();
+                db->namesEmptyIndexes.pop_back();
+            }
+            else
+            {
+                // index will be a new row in names table
+                index = static_cast<int32>(db->namesTable.size());
+                db->namesTable.resize(index + 1);
+                db->namesRefCounts.resize(index + 1);
+            }
+        
+            // set name to names table
+            db->namesTable[index] = nameCopy;
+            db->namesRefCounts[index] = 1;
+        
+            // add name and its index into hash
+            db->namesHash.insert(nameCopy, index);
         }
-        
-        // set name to names table
-        db->namesTable[index] = nameCopy;
-        db->namesRefCounts[index] = 1;
-        
-        // add name and its index into hash
-        db->namesHash.insert(nameCopy, index);
+
+        DVASSERT(index != -1);
     }
-    
-    DVASSERT(index != -1);
+
 #ifdef __DAVAENGINE_DEBUG__
     debug_str_ptr = c_str();
 #endif
