@@ -11,8 +11,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.SensorManager;
-import android.hardware.input.InputManager;
-import android.hardware.input.InputManager.InputDeviceListener;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -23,11 +21,13 @@ import android.util.Log;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnAttachStateChangeListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.InputDevice.MotionRange;
 
 import com.bda.controller.Controller;
+import com.dava.framework.InputManagerCompat.InputDeviceListener;
 
 public abstract class JNIActivity extends Activity implements JNIAccelerometer.JNIAccelerometerListener, InputDeviceListener
 {
@@ -41,7 +41,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	
 	private Controller mController = null;
 	
-	private InputManager inputManager = null;
+	private InputManagerCompat inputManager = null;
 	
 	private native void nativeOnCreate(boolean isFirstRun);
 	private native void nativeOnStart();
@@ -55,8 +55,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     
     private boolean isFirstRun = true;
     private static String commandLineParams = null;
-    // on Activity start context not created
-    private static boolean isEglContextDestroyed = true;
     
 	public abstract JNIGLSurfaceView GetSurfaceView();
     
@@ -126,15 +124,12 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         glView.setFocusable(true);
         glView.requestFocus();
         
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-        {
-            inputManager = (InputManager)getSystemService(Context.INPUT_SERVICE);
-        }
+        inputManager = InputManagerCompat.Factory.getInputManager(this);
+
         UpdateGamepadAxises();
         
         splashView = GetSplashView();
         
-        //mController = Controller.getInstance(this);
         if(mController != null)
         {
             if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP )
@@ -150,10 +145,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] isFirstRun is " + isFirstRun); 
         nativeOnCreate(isFirstRun);
-        
-        JNITextField.RelinkNativeControls();
-        JNIWebView.RelinkNativeControls();
-        
+
         try {
         	ConnectivityManager cm = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
         	NetworkInfo networkInfo = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
@@ -177,10 +169,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			}
 		}
 		
-		if (splashView != null && !isEglContextDestroyed())
+		if (splashView != null)
 		{
 		    splashView.setVisibility(View.GONE);
-		    Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] hide splash screen");
 		}
         // The activity is being created.
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] finish");
@@ -243,10 +234,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
             mController.onPause();
         }
         
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-        {
-        	inputManager.unregisterInputDeviceListener(this);
-        }
+        inputManager.unregisterInputDeviceListener(this);
         
         // deactivate accelerometer
         if(accelerometer != null)
@@ -284,18 +272,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] start");
         // recreate eglContext (also eglSurface, eglScreen) should be first
         super.onResume();
-        // The activity has become visible (it is now "resumed").
-        // glView on resume should be called in Activity.onResume!!!
-        // if context exist call glView.onResume as soon as possible
-        // else skip glView.onResume here, and call it in 
-        // windowsFocusChanded(has_focus)
-        // it is HACK to speedup show splash first and later create gl
-        // resources such textures, shaders etc.
-        if (!isEglContextDestroyed())
-        {
-            glView.onResume();
-            JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
-        }
 
         // activate accelerometer
         if(accelerometer != null)
@@ -311,15 +287,39 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
             mController.onResume();
         }
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-        {
-        	inputManager.registerInputDeviceListener(this, null);
-        }
+        inputManager.registerInputDeviceListener(this, null);
+
         UpdateGamepadAxises();
         
         JNIUtils.keepScreenOnOnResume();
-        JNITextField.HideAllTextFields();
-
+        
+        {
+            glView.onResume();
+            
+            // Create keyboard layout over glView window.
+            if(glView.getWindowToken() != null)
+            {
+                JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
+            }
+            else
+            {
+                glView.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
+                    @Override
+                    public void onViewDetachedFromWindow(View v) {}
+                    
+                    @Override
+                    public void onViewAttachedToWindow(View v) {
+                        JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
+                        glView.removeOnAttachStateChangeListener(this);
+                    }
+                });
+                
+            }
+        }
+        
+        JNITextField.RelinkNativeControls();
+        JNIWebView.RelinkNativeControls();
+        
         isPausing = false;
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
     }
@@ -335,6 +335,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         fmodDevice.stop();
         
         super.onStop();
+        
+        ShowSplashScreenView();
     	// The activity is no longer visible (it is now "stopped")
         Log.i(JNIConst.LOG_TAG, "[Activity::onStop] finish");
     }
@@ -370,15 +372,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         super.onWindowFocusChanged(hasFocus);
         
     	if(hasFocus) {
-            HideNavigationBar(getWindow().getDecorView());
-			
-			// glView on resume should be called in Activity.onResume!!!
-			// but then game crush in PushNotificationBridgeImplAndroid.cpp(15);
-	        Log.i(JNIConst.LOG_TAG, "[Activity::onResume] call glView.onResume");
-	        glView.onResume();
-
-            JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
-        } 
+    		HideNavigationBar(getWindow().getDecorView());
+    	}
     	Log.i(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] finish");
     }
     
@@ -494,37 +489,34 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		return null;
 	}
 	
-	public boolean isEglContextDestroyed() {
-	    return isEglContextDestroyed;
-	}
-	
-	protected void onEglContextCreated() {
-        isEglContextDestroyed = false;
-    }
-	
-	protected void onEglContextDestroyed() {
-		isEglContextDestroyed = true;
+	protected void ShowSplashScreenView() {
     	runOnUiThread(new Runnable() {
-			
 			@Override
 			public void run() {
 				if (splashView != null) {
-				    glView.setVisibility(View.GONE);
-				    Log.i(JNIConst.LOG_TAG, "[Activity::onEglContextDestroyed] splashView set visible");
-					splashView.setVisibility(View.VISIBLE);
+				    Log.i(JNIConst.LOG_TAG, "splashView set visible");
+				    splashView.setVisibility(View.VISIBLE);
+				    //splashView.bringToFront();
+				    JNITextField.HideAllTextFields();
+				    JNIWebView.HideAllWebViews();
 				}
 			}
 		});
 	}
 	
-	protected void OnFirstFrameAfterDraw() {
+	protected void HideSplashScreenView() {
 		runOnUiThread(new Runnable() {
 			
 			@Override
 			public void run() {
 				if (splashView != null) {
-				    Log.i(JNIConst.LOG_TAG, "[Activity::OnFirstFrameAfterDraw] splashView hide");
+				    Log.i(JNIConst.LOG_TAG, "splashView hide");
 					splashView.setVisibility(View.GONE);
+					// next two calls can render views into textures
+					// we can call it only after GLSurfaceView.onResume
+					//glView.bringToFront();
+					JNITextField.ShowVisibleTextFields();
+					JNIWebView.ShowVisibleWebViews();
 				}
 			}
 		});

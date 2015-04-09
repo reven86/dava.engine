@@ -69,6 +69,7 @@ QOpenGLContext* FrameworkLoop::Context()
         
         openGlFunctions.reset( new QOpenGLFunctions( context ) );
         openGlFunctions->initializeOpenGLFunctions();
+        
     #ifdef Q_OS_WIN
         glewInit();
     #endif
