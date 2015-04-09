@@ -61,10 +61,10 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
     {
         String testName = lines.at(1);
         String minDelta = lines.at(2);
-        String maxDelta = lines.at(2);
-        String averageDelta = lines.at(2);
-        String testTime = lines.at(2);
-        String timeElapsed = lines.at(2);
+        String maxDelta = lines.at(3);
+        String averageDelta = lines.at(4);
+        String testTime = lines.at(5);
+        String timeElapsed = lines.at(6);
 
         output = "##teamcity[buildStatisticValue key=\'" + MIN_DELTA + "\' value=\'" + minDelta + "\']\n";
         output += "##teamcity[buildStatisticValue key=\'" + MAX_DELTA + "\' value=\'" + maxDelta + "\']\n";
