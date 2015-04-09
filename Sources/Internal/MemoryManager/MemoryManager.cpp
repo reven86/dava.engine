@@ -459,8 +459,10 @@ void MemoryManager::InsertBacktrace(Backtrace& backtrace)
 {
     if (nullptr == backtraces)
     {
-        static BacktraceMap object;
-        backtraces = &object;
+        // We need placement new here instead of 'static BacktraceMap x' as dtor of x can be called before last use of it
+        // And memory consumed by backtraces will be reclaimed on app exit
+        static unsigned char buf[sizeof(BacktraceMap)];
+        backtraces = new (buf) BacktraceMap;
     }
 
     auto i = backtraces->find(backtrace.hash);
