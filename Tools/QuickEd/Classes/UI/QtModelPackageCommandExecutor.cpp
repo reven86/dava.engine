@@ -10,6 +10,7 @@
 #include "UI/Commands/RemoveControlCommand.h"
 #include "UI/Commands/InsertImportedPackageCommand.h"
 #include "UI/Commands/AddComponentCommand.h"
+#include "UI/Commands/RemoveComponentCommand.h"
 
 #include "UI/Package/PackageModel.h"
 
@@ -79,12 +80,22 @@ void QtModelPackageCommandExecutor::ChangeDefaultProperties(const DAVA::Vector<C
     }
 }
 
-void QtModelPackageCommandExecutor::AddComponent(ControlNode *node, DAVA::uint32 componentType)
+void QtModelPackageCommandExecutor::AddComponent(ControlNode *node, uint32 componentType, uint32 componentIndex)
 {
     if (!node->GetPropertiesRoot()->IsReadOnly())
     {
         BeginMacro("Add Component");
-        AddComponentImpl(node, componentType);
+        AddComponentImpl(node, componentType, componentIndex);
+        EndMacro();
+    }
+}
+
+void QtModelPackageCommandExecutor::RemoveComponent(ControlNode *node, uint32 componentType, uint32 componentIndex)
+{
+    if (!node->GetPropertiesRoot()->IsReadOnly())
+    {
+        BeginMacro("Remove Component");
+        RemoveComponentImpl(node, componentType, componentIndex);
         EndMacro();
     }
 }
@@ -244,12 +255,22 @@ void QtModelPackageCommandExecutor::RemoveControlImpl(ControlNode* node)
     
 }
 
-void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode *node, DAVA::int32 componentType)
+void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode *node, uint32 componentType, uint32 componentIndex)
 {
     PushCommand(new AddComponentCommand(document->GetPropertiesContext(), node, componentType));
     Vector<ControlNode*> instances = node->GetInstances();
     for (ControlNode *instance : instances)
-        AddComponentImpl(instance, componentType);
+        AddComponentImpl(instance, componentType, componentIndex);
+}
+
+void QtModelPackageCommandExecutor::RemoveComponentImpl(ControlNode *node, uint32 componentType, uint32 componentIndex)
+{
+    PushCommand(new RemoveComponentCommand(document->GetPropertiesContext(), node, componentType, componentIndex));
+    Vector<ControlNode*> instances = node->GetInstances();
+    for (ControlNode *instance : instances)
+    {
+        RemoveComponentImpl(instance, componentType, componentIndex);
+    }
 }
 
 bool QtModelPackageCommandExecutor::IsNodeInHierarchy(const PackageBaseNode *node) const

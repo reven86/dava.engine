@@ -6,6 +6,7 @@
 
 class Document;
 class PropertiesContext;
+class QItemSelection;
 
 namespace Ui {
     class PropertiesWidget;
@@ -26,6 +27,9 @@ public:
 private slots:
     void OnModelChanged(PropertiesModel *model);
     void OnAddComponent(QAction *action);
+    void OnRemoveComponent();
+    void OnSelectionChanged(const QItemSelection &selected,
+                            const QItemSelection &deselected);
 
 private:
     Ui::PropertiesWidget *ui;

@@ -48,6 +48,11 @@ DAVA::String ComponentPropertiesSection::GetName() const
     return String(GlobalEnumMap<UIComponent::eType>::Instance()->ToString(component->GetType()));
 }
 
+bool ComponentPropertiesSection::CanRemove() const
+{
+    return !IsReadOnly();
+}
+
 bool ComponentPropertiesSection::HasChanges() const
 {
     return PropertiesSection::HasChanges();

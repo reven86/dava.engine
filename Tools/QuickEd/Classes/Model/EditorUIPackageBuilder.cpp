@@ -256,7 +256,9 @@ void EditorUIPackageBuilder::EndControlPropertiesSection()
 UIComponent *EditorUIPackageBuilder::BeginComponentPropertiesSecion(uint32 componentType)
 {
     ControlNode *node = controlsStack.back().node;
-    ComponentPropertiesSection * section = node->GetPropertiesRoot()->AddComponentPropertiesSection(componentType);
+    // TODO: Fix me
+    int32 componentIndex = 0;
+    ComponentPropertiesSection * section = node->GetPropertiesRoot()->AddComponentPropertiesSection(componentType, componentIndex);
     currentObject = section->GetComponent();
     currentSection = section;
     return section->GetComponent();

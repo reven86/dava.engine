@@ -29,6 +29,13 @@ PropertiesRoot::PropertiesRoot(UIControl *_control, const PropertiesRoot *source
     MakeControlPropertiesSection(control, control->GetTypeInfo(), sourceProperties, copyType);
     MakeBackgroundPropertiesSection(control, sourceProperties, copyType);
     MakeInternalControlPropertiesSection(control, sourceProperties, copyType);
+    
+    for (ComponentPropertiesSection *section : sourceProperties->componentProperties)
+    {
+        UIComponent::eType type = (UIComponent::eType) section->GetComponent()->GetType();
+        ScopedPtr<ComponentPropertiesSection> newSection(new ComponentPropertiesSection(control, type, section, copyType));
+        AddComponentPropertiesSection(newSection);
+    }
 }
 
 PropertiesRoot::~PropertiesRoot()
@@ -109,7 +116,7 @@ int32 PropertiesRoot::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSec
     }
 }
 
-ComponentPropertiesSection *PropertiesRoot::AddComponentPropertiesSection(DAVA::uint32 componentType)
+ComponentPropertiesSection *PropertiesRoot::AddComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex)
 {
     ComponentPropertiesSection *section = new ComponentPropertiesSection(control, (UIComponent::eType) componentType, nullptr, COPY_VALUES);
     AddComponentPropertiesSection(section);
@@ -124,6 +131,11 @@ void PropertiesRoot::AddComponentPropertiesSection(ComponentPropertiesSection *s
         return left->GetComponent()->GetType() < right->GetComponent()->GetType();
     });
 
+}
+
+void PropertiesRoot::RemoveComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex)
+{
+    
 }
 
 void PropertiesRoot::RemoveComponentPropertiesSection(ComponentPropertiesSection *section)

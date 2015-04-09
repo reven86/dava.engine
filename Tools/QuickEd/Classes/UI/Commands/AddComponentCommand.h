@@ -1,7 +1,7 @@
 #ifndef __QUICKED_ADD_COMPONENT_COMMAND_H__
 #define __QUICKED_ADD_COMPONENT_COMMAND_H__
 
-#include <QUndoStack>
+#include <QUndoCommand>
 
 class PropertiesContext;
 class ControlNode;
