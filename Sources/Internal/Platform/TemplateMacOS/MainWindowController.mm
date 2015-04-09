@@ -81,11 +81,6 @@ namespace DAVA
 }
 
 @interface MainWindowController ()
-- (BOOL) isAnimating;
-- (void) startAnimation;
-- (void) stopAnimation;
-- (void) toggleAnimation;
-
 - (void) startAnimationTimer;
 - (void) stopAnimationTimer;
 - (void) animationTimerFired:(NSTimer *)timer;
@@ -96,7 +91,6 @@ namespace DAVA
 @end
 
 @implementation MainWindowController
-
 
 static MainWindowController * mainWindowController = nil;
 
@@ -129,9 +123,7 @@ namespace DAVA
 		mainWindowController = self;
 		openGLView = nil;
 		mainWindow = nil;
-		isAnimating = false;
 		animationTimer = nil;
-		timeBefore = 0;
 		core = 0;
 
 	}
@@ -179,10 +171,8 @@ namespace DAVA
     RenderSystem2D::Instance()->Init();
 
 	// start animation
-	isAnimating = NO;
-	
 	currFPS = RenderManager::Instance()->GetFPS();
-    [self startAnimation];
+    [self startAnimationTimer];
 
 	// make window main
 	[mainWindow makeKeyAndOrderFront:nil];
@@ -328,45 +318,6 @@ namespace DAVA
 	[openGLView otherMouseUp:theEvent];
 }
 
-- (BOOL) isAnimating
-{
-    return isAnimating;
-}
-
-- (void) startAnimation
-{
-    if (!isAnimating) 
-	{
-        isAnimating = YES;
-        if (![self getFullScreen])
-		{
-            [self startAnimationTimer];
-        }
-    }
-}
-
-- (void) stopAnimation
-{
-    if (isAnimating) 
-	{
-        if (animationTimer != nil) 
-		{
-            [self stopAnimationTimer];
-        }
-        isAnimating = NO;
-    }
-}
-
-- (void) toggleAnimation
-{
-    if ([self isAnimating]) 
-	{
-        [self stopAnimation];
-    } else {
-        [self startAnimation];
-    }
-}
-
 - (void) startAnimationTimer
 {
     if (animationTimer == nil) 
@@ -395,13 +346,6 @@ namespace DAVA
 		[self stopAnimationTimer];
 		[self startAnimationTimer];
 	}
-}
-
-- (void) switchFullscreenTimerFired:(NSTimer *)timer
-{
-	//[openGLView disableTrackingArea];
-	//[self switchToFullScreen];
-	//[timer invalidate];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification

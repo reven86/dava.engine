@@ -39,10 +39,7 @@
 	float32	currFPS;
 	OpenGLView * openGLView;
 	NSWindow * mainWindow;
-    
-	bool isAnimating;
 	NSTimer * animationTimer;
-	CFAbsoluteTime timeBefore;
 	
 	ApplicationCore * core;
     bool fullScreen;
