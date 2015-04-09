@@ -157,8 +157,15 @@ else()
 
 endif()
 
+if ( QT5_FOUND AND WIN32 )
+    set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )
+endif()
 
-if ( QT5_FOUND AND APPLE AND NOT DEPLOY )
+if ( QT5_FOUND AND APPLE )
+    set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${PROJECT_NAME}.app/Contents/Resources/qt.conf" )
+endif()
+
+if ( QT5_FOUND AND NOT DEPLOY )
     set( PLUGINS_PATH  ${QT5_LIB_PATH}/../plugins )
     get_filename_component( PLUGINS_PATH ${PLUGINS_PATH} ABSOLUTE )
 
@@ -171,11 +178,10 @@ if ( QT5_FOUND AND APPLE AND NOT DEPLOY )
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
                     ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigRelease.in  )
 
-
     ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD 
        COMMAND ${CMAKE_COMMAND} -E copy 
        ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig$(CONFIGURATION).in
-       ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${PROJECT_NAME}.app/Contents/Resources/qt.conf
+       ${QTCONF_DEPLOY_PATH}
     )
 
 endif()
