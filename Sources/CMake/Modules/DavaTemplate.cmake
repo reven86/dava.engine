@@ -171,9 +171,8 @@ if ( QT5_FOUND )
         set ( PLUGINS_PATH PlugIns )
     else()
         set( PLUGINS_PATH  ${QT5_LIB_PATH}/../plugins )
+        get_filename_component( PLUGINS_PATH ${PLUGINS_PATH} ABSOLUTE )
     endif()
-
-    get_filename_component( PLUGINS_PATH ${PLUGINS_PATH} ABSOLUTE )
 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
                     ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigDebug.in  )
