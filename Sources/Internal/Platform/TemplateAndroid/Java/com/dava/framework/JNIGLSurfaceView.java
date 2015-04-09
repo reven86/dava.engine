@@ -164,14 +164,17 @@ public class JNIGLSurfaceView extends GLSurfaceView
     @Override
     public void onResume() {
         Log.d(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onResume");
-        // first call parent to restore eglContext
+        // first call parent to restore eglContext and start gl thread
         super.onResume();
-        queueEvent(new Runnable() {
-            public void run() {
-                mRenderer.OnResume();
-            }
-        });
-        setRenderMode(RENDERMODE_CONTINUOUSLY);
+
+        JNIActivity.GetActivity().setResumeGLActionOnWindowReady(
+                new Runnable() {
+                    public void run() {
+                        mRenderer.OnResume();
+                        setRenderMode(RENDERMODE_CONTINUOUSLY);
+                    }
+                });
+        
         isPaused = false;
     };
 	
