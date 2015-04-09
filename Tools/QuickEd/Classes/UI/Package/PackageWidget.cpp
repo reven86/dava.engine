@@ -29,7 +29,7 @@ namespace
     {
         PackageContext(Document *document)
         {
-            DVASSERT(document);
+            DVASSERT(nullptr != document);
             packageModel = new PackageModel(document->GetPackage(), document->GetCommandExecutor(), document);
             filteredPackageModel = new FilteredPackageModel(document);
             filteredPackageModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -172,7 +172,7 @@ void PackageWidget::RefreshActions(const QModelIndexList &indexList)
     {
         PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
         if (!node->CanCopy())
-            canCopy = false;
+            canCopy = false;    
 
         if (!node->IsInsertingSupported())
             canInsert = false;

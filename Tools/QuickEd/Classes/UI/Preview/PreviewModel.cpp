@@ -173,12 +173,11 @@ void PreviewModel::OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl 
             if (selectedControl != rootControl)
             {
                 UIControl *c = selectedControl;
-                while (c && c != rootControl)
+                while (nullptr != c && c != rootControl)
                 {
                     path.push_back(c);
                     c = c->GetParent();
                 }
-
 
                 for (auto it = path.rbegin(); it != path.rend(); ++it)
                 {
@@ -208,7 +207,7 @@ void PreviewModel::OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl 
             }
             else
             {
-                result.addError(Result::Warning, tr("Node not changed"));
+                result.addError(Result::Warning, tr("selected control is equal to the current root control"));
             }
         }
         else
@@ -220,7 +219,7 @@ void PreviewModel::OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl 
     {
         ControlNodeSelected(selectedNodes);
     }
-    if (result)
+    if (!result)
     {
         emit ErrorOccurred(result);
     }
