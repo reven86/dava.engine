@@ -781,6 +781,18 @@
 		322FFD5519C042880000ED71 /* UIPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 322FFD3D19C042880000ED71 /* UIPackage.h */; };
 		326A1B551A791D9800970D22 /* UIPackagesCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 326A1B531A791D9800970D22 /* UIPackagesCache.cpp */; };
 		326A1B561A791D9800970D22 /* UIPackagesCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 326A1B541A791D9800970D22 /* UIPackagesCache.h */; };
+		327343BC1ACD36B10003F2A8 /* BaseFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327343BA1ACD36B10003F2A8 /* BaseFamily.cpp */; };
+		327343BD1ACD36B10003F2A8 /* BaseFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327343BA1ACD36B10003F2A8 /* BaseFamily.cpp */; };
+		327343BE1ACD36B10003F2A8 /* BaseFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327343BA1ACD36B10003F2A8 /* BaseFamily.cpp */; };
+		327343BF1ACD36B10003F2A8 /* BaseFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = 327343BB1ACD36B10003F2A8 /* BaseFamily.h */; };
+		327343C01ACD36B10003F2A8 /* BaseFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = 327343BB1ACD36B10003F2A8 /* BaseFamily.h */; };
+		327343C11ACD36B10003F2A8 /* BaseFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = 327343BB1ACD36B10003F2A8 /* BaseFamily.h */; };
+		327343C41ACD36D70003F2A8 /* UIControlFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327343C21ACD36D70003F2A8 /* UIControlFamily.cpp */; };
+		327343C51ACD36D70003F2A8 /* UIControlFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327343C21ACD36D70003F2A8 /* UIControlFamily.cpp */; };
+		327343C61ACD36D70003F2A8 /* UIControlFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327343C21ACD36D70003F2A8 /* UIControlFamily.cpp */; };
+		327343C71ACD36D70003F2A8 /* UIControlFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = 327343C31ACD36D70003F2A8 /* UIControlFamily.h */; };
+		327343C81ACD36D70003F2A8 /* UIControlFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = 327343C31ACD36D70003F2A8 /* UIControlFamily.h */; };
+		327343C91ACD36D70003F2A8 /* UIControlFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = 327343C31ACD36D70003F2A8 /* UIControlFamily.h */; };
 		4910CBF6167B73EC00CF948A /* libdxt_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4910CBF5167B73EC00CF948A /* libdxt_macos.a */; };
 		4F34E1BB1A234DDA000681BB /* JobThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F34E1B91A234DDA000681BB /* JobThread.cpp */; };
 		4F34E1BC1A234DDA000681BB /* JobThread.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F34E1BA1A234DDA000681BB /* JobThread.h */; };
@@ -1151,8 +1163,8 @@
 		84CB6721191FC8850086483D /* LibDdsHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6712191FC8850086483D /* LibDdsHelper.h */; };
 		84CB6722191FC8850086483D /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibJpegHelper.cpp */; };
 		84CB6723191FC8850086483D /* LibJpegHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6714191FC8850086483D /* LibJpegHelper.h */; };
-		84CB6724191FC8850086483D /* LibPngHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6715191FC8850086483D /* LibPngHelpers.cpp */; };
-		84CB6725191FC8850086483D /* LibPngHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6716191FC8850086483D /* LibPngHelpers.h */; };
+		84CB6724191FC8850086483D /* LibPngHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6715191FC8850086483D /* LibPngHelper.cpp */; };
+		84CB6725191FC8850086483D /* LibPngHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6716191FC8850086483D /* LibPngHelper.h */; };
 		84CB6726191FC8850086483D /* LibPVRHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6717191FC8850086483D /* LibPVRHelper.cpp */; };
 		84CB6727191FC8850086483D /* LibPVRHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6718191FC8850086483D /* LibPVRHelper.h */; };
 		84E975C0191FCDF10054CCF9 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB670A191FC8850086483D /* Image.cpp */; };
@@ -1166,7 +1178,7 @@
 		84E975C8191FCE0D0054CCF9 /* LibDdsHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6712191FC8850086483D /* LibDdsHelper.h */; };
 		84E975C9191FCE100054CCF9 /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibJpegHelper.cpp */; };
 		84E975CA191FCE130054CCF9 /* LibJpegHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6714191FC8850086483D /* LibJpegHelper.h */; };
-		84E975CB191FCE160054CCF9 /* LibPngHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6715191FC8850086483D /* LibPngHelpers.cpp */; };
+		84E975CB191FCE160054CCF9 /* LibPngHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6715191FC8850086483D /* LibPngHelper.cpp */; };
 		84E975CD191FCE1D0054CCF9 /* LibPVRHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6717191FC8850086483D /* LibPVRHelper.cpp */; };
 		84E975CE191FCE200054CCF9 /* LibPVRHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6718191FC8850086483D /* LibPVRHelper.h */; };
 		9A011122148A6490474C7F7D /* LocalNotificationDelayed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A011B2DD58E89DAEA9C7F24 /* LocalNotificationDelayed.cpp */; };
@@ -2570,9 +2582,6 @@
 		E8ADAEBC18CA1226000B251C /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */; };
 		E8ADAEBD18CA1226000B251C /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */; };
 		E8ADAEBE18CA1226000B251C /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */; };
-		E8B47D29196D4F2900D8ADF6 /* ImageFormatInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B47D28196D4F2900D8ADF6 /* ImageFormatInterface.cpp */; };
-		E8B47D2A196D4F2900D8ADF6 /* ImageFormatInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B47D28196D4F2900D8ADF6 /* ImageFormatInterface.cpp */; };
-		E8B47D2B196D4F2900D8ADF6 /* ImageFormatInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B47D28196D4F2900D8ADF6 /* ImageFormatInterface.cpp */; };
 		E8B4F8CF16EF377D0072442A /* UTF8UtilsMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */; };
 		E8B4F8D016EF377D0072442A /* UTF8UtilsMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */; };
 		E8B6B3B01705DB26004F665E /* DeviceInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 840D24201703311400267C58 /* DeviceInfo.cpp */; };
@@ -2802,6 +2811,10 @@
 		322FFD3D19C042880000ED71 /* UIPackage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackage.h; sourceTree = "<group>"; };
 		326A1B531A791D9800970D22 /* UIPackagesCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackagesCache.cpp; sourceTree = "<group>"; };
 		326A1B541A791D9800970D22 /* UIPackagesCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackagesCache.h; sourceTree = "<group>"; };
+		327343BA1ACD36B10003F2A8 /* BaseFamily.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BaseFamily.cpp; sourceTree = "<group>"; };
+		327343BB1ACD36B10003F2A8 /* BaseFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseFamily.h; sourceTree = "<group>"; };
+		327343C21ACD36D70003F2A8 /* UIControlFamily.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIControlFamily.cpp; sourceTree = "<group>"; };
+		327343C31ACD36D70003F2A8 /* UIControlFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIControlFamily.h; sourceTree = "<group>"; };
 		4910CBF5167B73EC00CF948A /* libdxt_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_macos.a; path = ../../Libs/libs/libdxt_macos.a; sourceTree = "<group>"; };
 		4F34E1B91A234DDA000681BB /* JobThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JobThread.cpp; path = Job/JobThread.cpp; sourceTree = "<group>"; };
 		4F34E1BA1A234DDA000681BB /* JobThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JobThread.h; path = Job/JobThread.h; sourceTree = "<group>"; };
@@ -2995,8 +3008,8 @@
 		84CB6712191FC8850086483D /* LibDdsHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibDdsHelper.h; path = Image/LibDdsHelper.h; sourceTree = "<group>"; };
 		84CB6713191FC8850086483D /* LibJpegHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibJpegHelper.cpp; path = Image/LibJpegHelper.cpp; sourceTree = "<group>"; };
 		84CB6714191FC8850086483D /* LibJpegHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibJpegHelper.h; path = Image/LibJpegHelper.h; sourceTree = "<group>"; };
-		84CB6715191FC8850086483D /* LibPngHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibPngHelpers.cpp; path = Image/LibPngHelpers.cpp; sourceTree = "<group>"; };
-		84CB6716191FC8850086483D /* LibPngHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibPngHelpers.h; path = Image/LibPngHelpers.h; sourceTree = "<group>"; };
+		84CB6715191FC8850086483D /* LibPngHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibPngHelper.cpp; path = Image/LibPngHelper.cpp; sourceTree = "<group>"; };
+		84CB6716191FC8850086483D /* LibPngHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibPngHelper.h; path = Image/LibPngHelper.h; sourceTree = "<group>"; };
 		84CB6717191FC8850086483D /* LibPVRHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibPVRHelper.cpp; path = Image/LibPVRHelper.cpp; sourceTree = "<group>"; };
 		84CB6718191FC8850086483D /* LibPVRHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibPVRHelper.h; path = Image/LibPVRHelper.h; sourceTree = "<group>"; };
 		9A0110F5E349822B888989E3 /* LocalNotificationDelayed.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationDelayed.h; sourceTree = "<group>"; };
@@ -3659,7 +3672,6 @@
 		E89EDE411A2E16FA0036E993 /* VectorSwig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VectorSwig.cpp; sourceTree = "<group>"; };
 		E8ADAEB718CA1226000B251C /* PixelFormatDescriptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PixelFormatDescriptor.cpp; sourceTree = "<group>"; };
 		E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PixelFormatDescriptor.h; sourceTree = "<group>"; };
-		E8B47D28196D4F2900D8ADF6 /* ImageFormatInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ImageFormatInterface.cpp; path = Image/ImageFormatInterface.cpp; sourceTree = "<group>"; };
 		E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UTF8UtilsMac.mm; sourceTree = "<group>"; };
 		E8B6B3BA1705DD59004F665E /* DeviceInfoMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DeviceInfoMacOS.mm; sourceTree = "<group>"; };
 		E8BAD5AE185213F100C98C8D /* IntrospectionDynamic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntrospectionDynamic.cpp; sourceTree = "<group>"; };
@@ -4051,7 +4063,6 @@
 		84CB66EB191FC8420086483D /* Image */ = {
 			isa = PBXGroup;
 			children = (
-				E8B47D28196D4F2900D8ADF6 /* ImageFormatInterface.cpp */,
 				62D1C35D1922624A00B8143B /* CRCAdditionInterface.h */,
 				84CB670A191FC8850086483D /* Image.cpp */,
 				84CB670B191FC8850086483D /* Image.h */,
@@ -4064,8 +4075,8 @@
 				84CB6712191FC8850086483D /* LibDdsHelper.h */,
 				84CB6713191FC8850086483D /* LibJpegHelper.cpp */,
 				84CB6714191FC8850086483D /* LibJpegHelper.h */,
-				84CB6715191FC8850086483D /* LibPngHelpers.cpp */,
-				84CB6716191FC8850086483D /* LibPngHelpers.h */,
+				84CB6715191FC8850086483D /* LibPngHelper.cpp */,
+				84CB6716191FC8850086483D /* LibPngHelper.h */,
 				84CB6717191FC8850086483D /* LibPVRHelper.cpp */,
 				84CB6718191FC8850086483D /* LibPVRHelper.h */,
 			);
@@ -4086,6 +4097,8 @@
 		B72364881A8CEEF0009940BE /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				327343C21ACD36D70003F2A8 /* UIControlFamily.cpp */,
+				327343C31ACD36D70003F2A8 /* UIControlFamily.h */,
 				B72364891A8CEEF0009940BE /* UIComponent.cpp */,
 				B723648A1A8CEEF0009940BE /* UIComponent.h */,
 			);
@@ -4408,6 +4421,8 @@
 		E8989B3616BD24E400732C04 /* Entity */ = {
 			isa = PBXGroup;
 			children = (
+				327343BA1ACD36B10003F2A8 /* BaseFamily.cpp */,
+				327343BB1ACD36B10003F2A8 /* BaseFamily.h */,
 				E8989B3716BD24E400732C04 /* Component.cpp */,
 				E8989B3816BD24E400732C04 /* Component.h */,
 				E8989B3916BD24E400732C04 /* SceneSystem.cpp */,
@@ -5294,6 +5309,7 @@
 				4F34E1C81A234DF8000681BB /* Spinlock.h in Headers */,
 				D7C1C1D819CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */,
 				176DE907174B5561007A983B /* BaseMath.h in Headers */,
+				327343C11ACD36B10003F2A8 /* BaseFamily.h in Headers */,
 				647EFC46195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */,
 				176DE908174B5561007A983B /* BaseObject.h in Headers */,
 				176DE909174B5561007A983B /* BaseObjectChecker.h in Headers */,
@@ -5379,6 +5395,7 @@
 				176DE94C174B5561007A983B /* XMLParser.h in Headers */,
 				4F53ED3519A23BE700D3869D /* DownloaderCommon.h in Headers */,
 				176DE94D174B5561007A983B /* YamlArchive.h in Headers */,
+				327343C91ACD36D70003F2A8 /* UIControlFamily.h in Headers */,
 				02FD7EEE19237DA2007762C0 /* WindComponent.h in Headers */,
 				176DE94E174B5561007A983B /* YamlParser.h in Headers */,
 				176DE94F174B5561007A983B /* Accelerometer.h in Headers */,
@@ -5803,6 +5820,7 @@
 				1146E11819D00874009E5FAB /* AnimationComponent.h in Headers */,
 				E8989E0016BD24E500732C04 /* Stats.h in Headers */,
 				E8989E0916BD24E500732C04 /* DoxygenDocumenation.h in Headers */,
+				327343C71ACD36D70003F2A8 /* UIControlFamily.h in Headers */,
 				84CB671C191FC8850086483D /* ImageConvert.h in Headers */,
 				E8989E0B16BD24E500732C04 /* Component.h in Headers */,
 				E8989E0D16BD24E500732C04 /* SceneSystem.h in Headers */,
@@ -5814,7 +5832,7 @@
 				02FD7EEC19237DA2007762C0 /* WindComponent.h in Headers */,
 				E8989E3716BD24E500732C04 /* FileSystem.h in Headers */,
 				E8989E3A16BD24E500732C04 /* KeyedArchive.h in Headers */,
-				84CB6725191FC8850086483D /* LibPngHelpers.h in Headers */,
+				84CB6725191FC8850086483D /* LibPngHelper.h in Headers */,
 				E8989E3C16BD24E500732C04 /* KeyedArchiver.h in Headers */,
 				50C16DB01A52D7B9003C307A /* NetworkUtils.h in Headers */,
 				A650F4BB1864A10100D3278D /* NMaterialTemplate.h in Headers */,
@@ -5851,6 +5869,7 @@
 				02A03DAA1871C37B00FA72CE /* SpeedTreeObject.h in Headers */,
 				E8989E7116BD24E500732C04 /* NeonMath.h in Headers */,
 				E8989E7216BD24E500732C04 /* OOBBox.h in Headers */,
+				327343BF1ACD36B10003F2A8 /* BaseFamily.h in Headers */,
 				E8989E7316BD24E500732C04 /* Plane.h in Headers */,
 				E8989E7516BD24E500732C04 /* Polygon2.h in Headers */,
 				E8989E7716BD24E500732C04 /* Polygon3.h in Headers */,
@@ -6276,6 +6295,7 @@
 				644C86FB19476A7100964F91 /* VegetationRenderObject.h in Headers */,
 				CCF00D3E1A42F21B00A577C2 /* EntityFamily.h in Headers */,
 				E898A08916BD265400732C04 /* DisplayMode.h in Headers */,
+				327343C01ACD36B10003F2A8 /* BaseFamily.h in Headers */,
 				E898A08A16BD265400732C04 /* MongodbClient.h in Headers */,
 				E898A08B16BD265400732C04 /* MongodbObject.h in Headers */,
 				E898A08C16BD265400732C04 /* DAVAConfig.h in Headers */,
@@ -6547,6 +6567,7 @@
 				E8990B4C1A288C8F00FF71A1 /* RotationControllerSystem.h in Headers */,
 				4F53ED2F19A23BE700D3869D /* DownloadManager.h in Headers */,
 				155D77DC197DD22E006AEBCD /* YamlNode.h in Headers */,
+				327343C81ACD36D70003F2A8 /* UIControlFamily.h in Headers */,
 				E898A18F16BD265400732C04 /* UIScrollBar.h in Headers */,
 				0282B87A18BC72C6006F1EE4 /* SoundEvent.h in Headers */,
 				E898A19016BD265400732C04 /* UISlider.h in Headers */,
@@ -6795,7 +6816,6 @@
 				176DEA59174B5561007A983B /* Radix.cpp in Sources */,
 				176DEA5A174B5561007A983B /* CollisionObject2.cpp in Sources */,
 				176DEA5B174B5561007A983B /* CollisionPolygons.cpp in Sources */,
-				E8B47D2B196D4F2900D8ADF6 /* ImageFormatInterface.cpp in Sources */,
 				176DEA5C174B5561007A983B /* Collisions.cpp in Sources */,
 				02FD7EDB19237D96007762C0 /* WindSystem.cpp in Sources */,
 				176DEA5D174B5561007A983B /* ApplicationCore.cpp in Sources */,
@@ -6839,6 +6859,7 @@
 				D7CC264819C43C7C00A3B754 /* LocalNotificationText.cpp in Sources */,
 				176DEA7E174B5561007A983B /* XMLParser.mm in Sources */,
 				176DEA7F174B5561007A983B /* YamlArchive.cpp in Sources */,
+				327343C61ACD36D70003F2A8 /* UIControlFamily.cpp in Sources */,
 				176DEA80174B5561007A983B /* YamlParser.cpp in Sources */,
 				176DEA81174B5561007A983B /* Accelerometer.cpp in Sources */,
 				176DEA82174B5561007A983B /* InputSystem.cpp in Sources */,
@@ -7062,6 +7083,7 @@
 				176DEB2C174B5561007A983B /* IntrospectionBase.cpp in Sources */,
 				B723648D1A8CEEF0009940BE /* UIComponent.cpp in Sources */,
 				176DEB2D174B5561007A983B /* GlobalEventSystem.cpp in Sources */,
+				327343BE1ACD36B10003F2A8 /* BaseFamily.cpp in Sources */,
 				176DEB2E174B5561007A983B /* ComponentHelpers.cpp in Sources */,
 				176DEB2F174B5561007A983B /* ParticleForce.cpp in Sources */,
 				176DEB30174B5561007A983B /* DPIHelperMacOS.mm in Sources */,
@@ -7210,6 +7232,8 @@
 				17B3EA8618E9A3120069AE7A /* CoreMacOSPlatformBase.cpp in Sources */,
 				647EFC51195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */,
 				E89EDE541A2E16FA0036E993 /* AutotestingSystemLua.cpp in Sources */,
+				327343BC1ACD36B10003F2A8 /* BaseFamily.cpp in Sources */,
+				E8989DFB16BD24E500732C04 /* MemoryManager.cpp in Sources */,
 				C172EC0C18C9F1E9004309CF /* TextBlockDistanceRender.cpp in Sources */,
 				E8989DFD16BD24E500732C04 /* Replay.cpp in Sources */,
 				EA106063188921FC00CB99A3 /* ParticleRenderObject.cpp in Sources */,
@@ -7484,7 +7508,6 @@
 				E898A03816BD24E500732C04 /* UIScrollBar.cpp in Sources */,
 				505EB40E1824CEC5009BEA3C /* OcclusionQuery.cpp in Sources */,
 				B79723FD1A1260E9009421F3 /* BiDiHelper.cpp in Sources */,
-				E8B47D29196D4F2900D8ADF6 /* ImageFormatInterface.cpp in Sources */,
 				E898A03A16BD24E500732C04 /* UISlider.cpp in Sources */,
 				C172EC1018C9F1E9004309CF /* TextBlockRender.cpp in Sources */,
 				84CB671E191FC8850086483D /* ImageSystem.cpp in Sources */,
@@ -7547,7 +7570,7 @@
 				647EFC49195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */,
 				50C16DB11A52D7B9003C307A /* TCPAcceptor.cpp in Sources */,
 				CCC7A48316F1D6700061EA5D /* UpdateSystem.cpp in Sources */,
-				84CB6724191FC8850086483D /* LibPngHelpers.cpp in Sources */,
+				84CB6724191FC8850086483D /* LibPngHelper.cpp in Sources */,
 				CCC7A48916F1D6B80061EA5D /* Entity.cpp in Sources */,
 				74A909AB1701FA51003FDB31 /* CRC32.cpp in Sources */,
 				50ED334A1858B5A200A917D5 /* StaticOcclusionComponent.cpp in Sources */,
@@ -7599,6 +7622,7 @@
 				9A0113B8BF882FE443A0B1A5 /* NSStringUtils.mm in Sources */,
 				E89EDE631A2E16FA0036E993 /* KeyedArchive_wrap.cxx in Sources */,
 				9A01170EFA9FE9E1E40EF728 /* LocalNotificationDelayed.cpp in Sources */,
+				327343C41ACD36D70003F2A8 /* UIControlFamily.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7627,6 +7651,7 @@
 				E89EDE6A1A2E16FA0036E993 /* MongodbUpdateObject.cpp in Sources */,
 				024BD59F1A2C8371000BECC1 /* VirtualCoordinatesSystem.cpp in Sources */,
 				E8BAD5B1185213F100C98C8D /* IntrospectionDynamic.cpp in Sources */,
+				327343C51ACD36D70003F2A8 /* UIControlFamily.cpp in Sources */,
 				CC931B27188EC95F000375F9 /* SwitchToRenerObjectConverter.cpp in Sources */,
 				E898A1AB16BD265400732C04 /* DynamicObjectCache.cpp in Sources */,
 				E898A1AC16BD265400732C04 /* EventDispatcher.cpp in Sources */,
@@ -7734,7 +7759,7 @@
 				E898A20C16BD265400732C04 /* TextBlock.cpp in Sources */,
 				E89EDE5E1A2E16FA0036E993 /* GameAPI.cpp in Sources */,
 				E898A20D16BD265400732C04 /* AnimatedMesh.cpp in Sources */,
-				84E975CB191FCE160054CCF9 /* LibPngHelpers.cpp in Sources */,
+				84E975CB191FCE160054CCF9 /* LibPngHelper.cpp in Sources */,
 				E898A20E16BD265400732C04 /* EdgeAdjacency.cpp in Sources */,
 				E898A20F16BD265400732C04 /* PolygonGroup.cpp in Sources */,
 				E89EDE491A2E16FA0036E993 /* AutotestingSystem_wrap.cxx in Sources */,
@@ -7876,7 +7901,6 @@
 				E8990B4F1A288C8F00FF71A1 /* SnapToLandscapeControllerSystem.cpp in Sources */,
 				E898A28F16BD265400732C04 /* TheoraPlayer.cpp in Sources */,
 				4F53ED2819A23BE700D3869D /* CurlDownloader.cpp in Sources */,
-				E8B47D2A196D4F2900D8ADF6 /* ImageFormatInterface.cpp in Sources */,
 				A650F4B91864A10100D3278D /* NMaterialTemplate.cpp in Sources */,
 				E89EDE551A2E16FA0036E993 /* AutotestingSystemLua.cpp in Sources */,
 				E898A29016BD265400732C04 /* UI3DView.cpp in Sources */,
@@ -7965,6 +7989,7 @@
 				17B061711889276B00FD8007 /* WebViewControlMacOS.mm in Sources */,
 				D7CC262919C43C7C00A3B754 /* LocalNotification.cpp in Sources */,
 				02FD7EE419237DA2007762C0 /* SpeedTreeComponent.cpp in Sources */,
+				327343BD1ACD36B10003F2A8 /* BaseFamily.cpp in Sources */,
 				CCC7A47016F1D6170061EA5D /* ShadowVolumeRenderPass.cpp in Sources */,
 				CCC7A47416F1D6170061EA5D /* SpriteObject.cpp in Sources */,
 				647EFC42195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */,

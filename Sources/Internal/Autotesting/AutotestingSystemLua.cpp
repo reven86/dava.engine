@@ -73,11 +73,11 @@ namespace DAVA
 	{
 		if (luaState)
 		{
-			Logger::FrameworkDebug("AutotestingSystemLua::Has initialised already.");
+			Logger::Debug("AutotestingSystemLua::Has initialised already.");
 			return;
 		}
 
-		Logger::FrameworkDebug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.c_str());
+		Logger::Debug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.c_str());
 		autotestingLocalizationSystem->SetDirectory("~res:/Autotesting/Strings/");
 		autotestingLocalizationSystem->SetCurrentLocale(LocalizationSystem::Instance()->GetCurrentLocale());
 		autotestingLocalizationSystem->Init();
@@ -97,12 +97,12 @@ namespace DAVA
 
 		if (!LoadWrappedLuaObjects())
 		{
-			AutotestingSystem::Instance()->OnError("Load wrapped lua objects was failed.");
+			AutotestingSystem::Instance()->ForceQuit("Load wrapped lua objects was failed.");
 		}
 
 		if (!RunScriptFromFile("~res:/Autotesting/Scripts/autotesting_api.lua"))
 		{
-			AutotestingSystem::Instance()->OnError("Initialization of 'autotesting_api.lua' was failed.");
+			AutotestingSystem::Instance()->ForceQuit("Initialization of 'autotesting_api.lua' was failed.");
 		}
 
 		lua_getglobal(luaState, "SetPackagePath");
@@ -110,12 +110,12 @@ namespace DAVA
 		if (lua_pcall(luaState, 1, 1, 0))
 		{
 			const char* err = lua_tostring(luaState, -1);
-			AutotestingSystem::Instance()->OnError(Format("AutotestingSystemLua::InitFromFile SetPackagePath error: %s", err));
+			AutotestingSystem::Instance()->ForceQuit(Format("AutotestingSystemLua::InitFromFile SetPackagePath failed: %s", err));
 		}
 
 		if (!LoadScriptFromFile(luaFilePath))
 		{
-			AutotestingSystem::Instance()->OnError("Load of '" + luaFilePath + "' was failed failed");
+			AutotestingSystem::Instance()->ForceQuit("Load of '" + luaFilePath + "' was failed failed");
 		}
 
 		lua_getglobal(luaState, "ResumeTest");
@@ -152,7 +152,7 @@ namespace DAVA
 		return l;
 	}
 
-	const char* AutotestingSystemLua::Findfile(lua_State* L, const char* name, const char* pname)
+	const FilePath AutotestingSystemLua::Findfile(lua_State* L, const char* name, const char* pname)
 	{
 		const char* path;
 		name = luaL_gsub(L, name, ".", LUA_DIRSEP);
@@ -162,17 +162,17 @@ namespace DAVA
 		if (path == NULL)
 			luaL_error(L, LUA_QL("package.%s") " must be a string", pname);
 		lua_pushliteral(L, "");  /* error accumulator */
+		FilePath filename;
 		while ((path = Pushnexttemplate(L, path)) != NULL) {
-			const char *filename;
 			filename = luaL_gsub(L, lua_tostring(L, -1), LUA_PATH_MARK, name);
 			lua_remove(L, -2);  /* remove path template */
-			if (FileSystem::Instance()->IsFile(filename))  /* does file exist and is readable? */
+			if (filename.Exists())  /* does file exist and is readable? */
 				return filename;  /* return that file name */
-			lua_pushfstring(L, "\n\tno file " LUA_QS, filename);
+			lua_pushfstring(L, "\n\tno file " LUA_QS, filename.GetAbsolutePathname().c_str());
 			lua_remove(L, -2);  /* remove file name */
 			lua_concat(L, 2);  /* add entry to possible error message */
 		}
-		return NULL;  /* not found */
+		return name;  /* not found */
 	}
 
 	int AutotestingSystemLua::RequireModule(lua_State* L)
@@ -180,7 +180,7 @@ namespace DAVA
 		String module = lua_tostring(L, -1);
 		lua_pop(L, 1);
 		FilePath path = Instance()->Findfile(L, module.c_str(), "path");
-		if (!Instance()->LoadScriptFromFile(path))
+		if (!Instance()->LoadScriptFromFile(path)) 
 		{
 			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't load module " + path.GetAbsolutePathname());
 		}
