@@ -297,6 +297,8 @@ bool MemoryDumpSession::LoadDump(const char* filename)
 
     for (auto& sym : symbols)
     {
+        if (sym.name[0] == '\0' || strcmp(sym.name, "<redacted>") == 0)
+            Snprintf(sym.name, COUNT_OF(sym.name), "%08llX", sym.addr);
         bktraceTable.AddSymbol(sym.addr, sym.name);
     }
 

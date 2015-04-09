@@ -1,6 +1,7 @@
 #include <QColor>
 
 #include "BranchTreeModel.h"
+#include "DataFormat.h"
 
 using namespace DAVA;
 
@@ -185,7 +186,7 @@ QVariant BranchTreeModel::data(const QModelIndex& index, int role) const
 QVariant BranchTreeModel::dataBranch(Branch* branch, int row, int clm) const
 {
     return QString("[%1, %2] %3")
-        .arg(branch->allocByApp[0])
+        .arg(FormatNumberWithDigitGroups(branch->allocByApp[0]).c_str())
         .arg(branch->blockCount[0])
         .arg(branch->name);
     //return QVariant(branch->name);
@@ -196,7 +197,7 @@ QVariant BranchTreeModel::dataDiff(Branch* branch, int row, int clm) const
     if (branch->diff[clm])
     {
         return QString("[%1, %2] %3")
-            .arg(branch->allocByApp[clm])
+            .arg(FormatNumberWithDigitGroups(branch->allocByApp[clm]).c_str())
             .arg(branch->blockCount[clm])
             .arg(branch->name);
         return QVariant(branch->name);

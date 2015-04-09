@@ -5,8 +5,14 @@
 #include <QDebug>
 #include <QCloseEvent> 
 #include <QFileDialog>
+#include <QTreeView>
+#include <QVBoxLayout>
+#include <QTabWidget>
 
 #include "../DeviceInfo/DumpViewerWidget.h"
+#include "../DeviceInfo/DumpSession.h"
+
+#include "../DeviceInfo/Models/CallTreeModel.h"
 
 DeviceListWidget::DeviceListWidget( QWidget *parent )
     : QWidget( parent, Qt::Window )
@@ -33,16 +39,45 @@ QTreeView* DeviceListWidget::ItemView()
 
 void DeviceListWidget::OnViewDump()
 {
-    /*QString filename = QFileDialog::getOpenFileName(this, "Select dump file", "d:\\share\\dumps\\test", "Dumps (*.bin)");
-    //QString filename = "d:\\share\\dumps\\test\\01. dump-login-debug.bin";
+    QString filename = QFileDialog::getOpenFileName(this, "Select dump file", "d:\\share\\dumps\\test", "Dumps (*.bin)");
     if (!filename.isEmpty())
     {
         std::string s = filename.toStdString();
-        DumpViewWidget* w = new DumpViewWidget(s.c_str(), this, Qt::Window);
-        w->setAttribute(Qt::WA_DeleteOnClose);
+
+        QTabWidget* tab = new QTabWidget;
+        {
+            CallTreeModel* model = new CallTreeModel(s.c_str(), true);
+            QTreeView* tree = new QTreeView;
+            tree->setFont(QFont("Consolas", 10, 500));
+            tree->setModel(model);
+
+            tab->addTab(tree, "Back");
+        }
+        {
+            CallTreeModel* model = new CallTreeModel(s.c_str(), false);
+            QTreeView* tree = new QTreeView;
+            tree->setFont(QFont("Consolas", 10, 500));
+            tree->setModel(model);
+
+            tab->addTab(tree, "Fwd");
+        }
+        {
+            CallTreeModel* model = new CallTreeModel(s.c_str());
+            QTreeView* tree = new QTreeView;
+            tree->setFont(QFont("Consolas", 10, 500));
+            tree->setModel(model);
+
+            tab->addTab(tree, "Fwd Ex");
+        }
+
+        QVBoxLayout* l = new QVBoxLayout;
+        l->addWidget(tab);
+
+        QWidget* w = new QWidget(this, Qt::Window);
+        w->setLayout(l);
         w->resize(800, 600);
         w->show();
-    }*/
+    }
 }
 
 void DeviceListWidget::OnViewDumpEnhanced()
