@@ -37,7 +37,6 @@
 #include "Base/BaseMath.h"
 
 #include "Render/3D/PolygonGroup.h"
-#include "Render/RenderDataObject.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Material.h"
 #include "Render/Material/NMaterial.h"
@@ -88,10 +87,7 @@ public:
     RenderBatch();
     
     void SetPolygonGroup(PolygonGroup * _polygonGroup);
-    inline PolygonGroup * GetPolygonGroup();
-    
-    void SetRenderDataObject(RenderDataObject * _renderDataObject);
-    inline RenderDataObject * GetRenderDataObject();
+    inline PolygonGroup * GetPolygonGroup();        
     
     void SetMaterial(NMaterial * _material);
     inline NMaterial * GetMaterial();    
@@ -130,7 +126,7 @@ protected:
     void BindDynamicParameters(Camera * camera);
         
     PolygonGroup * dataSource;
-    RenderDataObject * renderDataObject;   // Probably should be replaced to VBO / IBO, but not sure
+    
     NMaterial * material;                    // Should be replaced to NMaterial
 	RenderObject * renderObject;
     Matrix4 *sortingTransformPtr;
@@ -183,10 +179,6 @@ inline PolygonGroup * RenderBatch::GetPolygonGroup()
     return dataSource;
 }
     
-inline RenderDataObject * RenderBatch::GetRenderDataObject()
-{
-    return renderDataObject;
-}
 
 inline NMaterial * RenderBatch::GetMaterial()
 {

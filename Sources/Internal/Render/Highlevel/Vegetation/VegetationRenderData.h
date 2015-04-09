@@ -35,7 +35,6 @@
 #include "Render/RenderBase.h"
 #include "Base/BaseMath.h"
 
-#include "Render/RenderDataObject.h"
 
 namespace DAVA
 {
@@ -60,15 +59,17 @@ struct VegetationVertex
  */
 struct VegetationSortedBufferItem
 {
-    RenderDataObject* rdo;
-    RenderDataObject* rdoAttachment;
     Vector3 sortDirection;
+#if RHI_COMPLETE
+    RenderDataObject* rdo;
+    RenderDataObject* rdoAttachment;    
         
     inline VegetationSortedBufferItem();
     inline VegetationSortedBufferItem(const VegetationSortedBufferItem& src);
     inline ~VegetationSortedBufferItem();
     inline void SetRenderDataObject(RenderDataObject* dataObject);
     inline void SetRenderDataObjectAttachment(RenderDataObject* dataObject);
+#endif // RHI_COMPLETE
 };
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -99,7 +100,9 @@ public:
 
     inline Vector<VegetationVertex>& GetVertices();
     inline Vector<VegetationIndex>& GetIndices();
+#if RHI_COMPLETE
     inline RenderDataObject* GetRenderDataObject();
+#endif  // RHI_COMPLETE
     inline Vector<Vector<Vector<VegetationSortedBufferItem> > >& GetIndexBuffers();
     inline NMaterial* GetMaterial();
     inline void SetMaterial(NMaterial* mat);
@@ -116,7 +119,9 @@ private:
     NMaterial* material;
     Vector<VegetationVertex> vertexData;
     Vector<VegetationIndex> indexData;
+#if RHI_COMPLETE
     RenderDataObject* vertexRenderDataObject;
+#endif RHI_COMPLETE
     Vector<Vector<Vector<VegetationSortedBufferItem> > > indexRenderDataObject; //resolution - cell - direction
 };
 
@@ -131,11 +136,12 @@ inline Vector<VegetationIndex>& VegetationRenderData::GetIndices()
 {
     return indexData;
 }
-
+#if RHI_COMPLETE
 inline RenderDataObject* VegetationRenderData::GetRenderDataObject()
 {
     return vertexRenderDataObject;
 }
+#endif RHI_COMPLETE
 
 inline Vector<Vector<Vector<VegetationSortedBufferItem> > >& VegetationRenderData::GetIndexBuffers()
 {
@@ -158,6 +164,7 @@ inline void VegetationRenderData::SetMaterial(NMaterial* mat)
 
 /////////////////////////////////////////////////////////////////////////////////
 
+#if RHI_COMPLETE
 inline VegetationSortedBufferItem::VegetationSortedBufferItem()
 {
     rdo = NULL;
@@ -194,7 +201,7 @@ inline void VegetationSortedBufferItem::SetRenderDataObjectAttachment(RenderData
         rdoAttachment = SafeRetain(dataObject);
     }
 }
-
+#endif // RHI_COMPLETE
 };
 
 #endif /* defined(__Framework__VegetationRenderData__) */

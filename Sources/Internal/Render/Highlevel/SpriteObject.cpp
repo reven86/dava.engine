@@ -109,7 +109,7 @@ void SpriteObject::SetupRenderBatch()
 			CreateMeshFromSprite(i);
 		}
 	}
-
+#if RHI_COMPLETE
 	RenderDataObject *renderDataObject = new RenderDataObject();
 	renderDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, 0, &verts.front());
 	renderDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, &textures.front());
@@ -122,7 +122,7 @@ void SpriteObject::SetupRenderBatch()
 //	material->SetName("SpriteObject_material");
 //	material->GetRenderState()->SetTexture(sprite->GetTexture(frame));
 
-#if RHI_COMPLETE
+
 	NMaterial* material = NMaterial::CreateMaterialInstance(FastName("SpriteObject_material"),
 															NMaterialName::TEXTURED_ALPHABLEND,
 															NMaterialQualityName::DEFAULT_QUALITY_NAME);
@@ -138,7 +138,7 @@ void SpriteObject::SetupRenderBatch()
 	SafeRelease(material);
 	SafeRelease(renderDataObject);
 	SafeRelease(batch);
-#endif RHI_COMPLETE
+#endif //RHI_COMPLETE
 }
 
 

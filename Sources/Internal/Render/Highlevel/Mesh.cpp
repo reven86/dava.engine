@@ -52,7 +52,9 @@ void Mesh::AddPolygonGroup(PolygonGroup * polygonGroup, NMaterial * material)
     RenderBatch * batch = new RenderBatch();
     batch->SetPolygonGroup(polygonGroup);
     batch->SetMaterial(material);
+#if RHI_COMPLETE
     batch->SetRenderDataObject(polygonGroup->renderDataObject);
+#endif // RHI_COMPLETE
     batch->SetStartIndex(0);
     batch->SetIndexCount(polygonGroup->GetIndexCount());
     AddRenderBatch(batch);

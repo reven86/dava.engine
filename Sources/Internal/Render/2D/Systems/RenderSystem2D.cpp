@@ -70,6 +70,7 @@ Shader * RenderSystem2D::TEXTURE_ADD_COLOR_IMAGE_A8 = 0;
 
 VboPool::VboPool(uint32 verticesCount, uint32 format, uint32 indicesCount, uint8 buffersCount)
 {
+#if RHI_COMPLETE
     verticesLimit = verticesCount;
     indicesLimit = indicesCount;
 	vertexFormat = format;
@@ -89,41 +90,52 @@ VboPool::VboPool(uint32 verticesCount, uint32 format, uint32 indicesCount, uint8
     }
     currentDataObjectIndex = 0;
     currentDataObject = dataObjects[currentDataObjectIndex];
+#endif RHI_COMPLETE
 }
 
 VboPool::~VboPool()
 {
+#if RHI_COMPLETE
     const uint8 count = dataObjects.size();
     for(uint8 i = 0; i < count; ++i)
     {
         SafeRelease(dataObjects[i]);
     }
     dataObjects.clear();
+#endif // RHI_COMPLETE
 }
     
 void VboPool::Next()
 {
+#if RHI_COMPLETE
     currentDataObjectIndex = (currentDataObjectIndex + 1) % dataObjects.size();
     currentDataObject = dataObjects[currentDataObjectIndex];
+#endif // RHI_COMPLETE
 }
 
 void VboPool::SetVertexData(uint32 offset, uint32 count, float32* data)
 {
+#if RHI_COMPLETE
     currentDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, data);
     currentDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, data + 3);
     currentDataObject->SetStream(EVF_COLOR, TYPE_UNSIGNED_BYTE, 4, vertexStride, data + 5);
     currentDataObject->UpdateVertexBuffer(offset, count);
+#endif // RHI_COMPLETE
 }
 
 void VboPool::SetIndexData(uint32 offset, uint32 count, uint8* data)
 {
+#if RHI_COMPLETE
     currentDataObject->SetIndices(EIF_16, data, count);
     currentDataObject->UpdateIndexBuffer(offset);
+#endif // RHI_COMPLETE
 }
 
 RenderSystem2D::RenderSystem2D() 
+#if RHI_COMPLETE
     : spriteRenderObject(0)
-    , vboTemp(NULL)
+#endif //RHI_COMPLETE
+    : vboTemp(NULL)
     , iboTemp(NULL)
     , spriteClipping(true)
     , clipChanged(false)
@@ -216,9 +228,9 @@ RenderSystem2D::~RenderSystem2D()
     SafeDelete(pool);
     SafeDeleteArray(vboTemp);
     SafeDeleteArray(iboTemp);
-    SafeRelease(spriteRenderObject);
-
+    
 #if RHI_COMPLETE
+    SafeRelease(spriteRenderObject);
     SafeRelease(FLAT_COLOR);
     SafeRelease(TEXTURE_MUL_FLAT_COLOR);
     SafeRelease(TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST);
@@ -232,7 +244,7 @@ RenderSystem2D::~RenderSystem2D()
     SafeRelease(TEXTURE_ADD_COLOR);
     SafeRelease(TEXTURE_ADD_COLOR_ALPHA_TEST);
     SafeRelease(TEXTURE_ADD_COLOR_IMAGE_A8);
-#endif RHI_COMPLETE
+#endif // RHI_COMPLETE
 }
 
 void RenderSystem2D::Reset()

@@ -176,7 +176,8 @@ rhi::DepthStencilState::Descriptor RenderTechniqueSingleton::LoadDepthStencilSta
         return resState;
 
     const YamlNode * renderStateNode = rootNode->Get("RenderState");
-    /*if (renderStateNode)
+#if RHI_COMPLETE
+    if (renderStateNode)
     {
         const YamlNode * stateNode = renderStateNode->Get("state");
         if (stateNode)
@@ -291,7 +292,9 @@ rhi::DepthStencilState::Descriptor RenderTechniqueSingleton::LoadDepthStencilSta
                 resState.stencilZFail[FACE_BACK] = GetStencilOpByName(stencilZFailNode->AsString());
             }
         }        
-    }*/
+    }
+#endif RHI_COMPLETE
+    return resState;
 }
 
     

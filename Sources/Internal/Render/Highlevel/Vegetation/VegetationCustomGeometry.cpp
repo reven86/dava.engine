@@ -206,7 +206,7 @@ void VegetationCustomGeometry::Build(Vector<VegetationRenderData*>& renderDataAr
         VegetationRenderData* renderData = renderDataArray[layerIndex];
         Vector<VegetationVertex>& vertexData = renderData->GetVertices();
         Vector<VegetationIndex>& indexData = renderData->GetIndices();
-        
+#if RHI_COMPLETE        
         RenderDataObject* vertexRDO = new RenderDataObject();
         vertexRDO->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].coord));
         vertexRDO->SetStream(EVF_NORMAL, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].normal));
@@ -214,6 +214,7 @@ void VegetationCustomGeometry::Build(Vector<VegetationRenderData*>& renderDataAr
         vertexRDO->SetStream(EVF_TANGENT, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].tangent));
         vertexRDO->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, sizeof(VegetationVertex), &(vertexData[0].texCoord0));
         vertexRDO->BuildVertexBuffer(static_cast<uint32>(vertexData.size()), BDT_STATIC_DRAW, true);
+#endif // RHI_COMPLETE
         
         Vector<Vector<Vector<VegetationSortedBufferItem> > >& indexBuffers = renderData->GetIndexBuffers();
         
@@ -239,7 +240,7 @@ void VegetationCustomGeometry::Build(Vector<VegetationRenderData*>& renderDataAr
                 
                     sortedIndexBufferItems.push_back(VegetationSortedBufferItem());
                     VegetationSortedBufferItem& sortBufferItem = sortedIndexBufferItems[directionIndex];
-                    
+#if RHI_COMPLETE
                     RenderDataObject* indexBuffer = new RenderDataObject();
                     indexBuffer->SetIndices(VEGETATION_INDEX_TYPE, (uint8*)(&indexData[sortData.indexOffset]), sortData.size);
                     
@@ -251,11 +252,13 @@ void VegetationCustomGeometry::Build(Vector<VegetationRenderData*>& renderDataAr
                     sortBufferItem.rdo->AttachVertices(vertexRDO);
                     
                     SafeRelease(indexBuffer);
+#endif // RHI_COMPLETE
                 }
             }
         }
-        
+#if RHI_COMPLETE
         SafeRelease(vertexRDO);
+#endif // RHI_COMPLETE
     }
 }
     

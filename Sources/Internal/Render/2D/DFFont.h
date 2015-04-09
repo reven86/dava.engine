@@ -32,7 +32,6 @@
 
 #include "Render/2D/Font.h"
 #include "Render/Shader.h"
-#include "Render/RenderDataObject.h"
 #include "Render/Renderer.h"
 
 namespace DAVA

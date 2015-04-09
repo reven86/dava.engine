@@ -51,7 +51,6 @@ namespace DAVA
 class Scene;
 class Image;
 class Texture;
-class RenderDataObject;
 class Shader;
 class SceneFileV2;
 class Heightmap;

@@ -36,7 +36,6 @@
 #include "Base/BaseMath.h"
 
 #include "Render/3D/PolygonGroup.h"
-#include "Render/RenderDataObject.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Material.h"
 #include "Render/Material/NMaterial.h"

@@ -225,7 +225,6 @@
 // 3D scene management
 #include "Scene3D/Scene.h"
 #include "Scene3D/Entity.h"
-#include "Scene3D/SpriteNode.h"
 #include "Scene3D/MeshInstanceNode.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/Heightmap.h"

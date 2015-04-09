@@ -41,10 +41,7 @@
 #include "Render/Material/NMaterial.h"
 
 namespace DAVA
-{
-	
-class RenderDataObject;
-class RenderDataStream;
+{	
     
 /**
     \brief You can use this class to perform various important drawing operations in 2D & 3D.
@@ -250,9 +247,7 @@ public:
 #endif
 
 private:
-    RenderDataObject * renderDataObject;
-    RenderDataStream * vertexStream;
-    RenderDataStream * texCoordStream;
+    
     float32 vertices[32];
     float32 texCoords[8];
 

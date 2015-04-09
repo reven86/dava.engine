@@ -46,6 +46,7 @@ static Vector3 basisVectors[7*2] = {Vector3(), Vector3(),
 
 void ParticleRenderGroup::UpdateRenderBatch(uint32 vertexSize, uint32 vertexStride)
 {
+#if RHI_COMPLETE
 	RenderDataObject *renderDataObject = renderBatch->GetRenderDataObject();
 	renderDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, vertexSize, vertexStride, &vertices.front());
 	renderDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, &texcoords.front());
@@ -60,6 +61,7 @@ void ParticleRenderGroup::UpdateRenderBatch(uint32 vertexSize, uint32 vertexStri
 		renderDataObject->RemoveStream(EVF_TEXCOORD1);
 		renderDataObject->RemoveStream(EVF_TIME);
 	}	
+#endif RHI_COMPLETE
 }
 void ParticleRenderGroup::ResizeArrays(uint32 particlesCount)
 {
@@ -184,7 +186,9 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
 				currRenderGroup->renderBatch = new RenderBatch();
                 currRenderGroup->renderBatch->SetSortingOffset(sortingOffset);
 				currRenderGroup->renderBatch->SetRenderObject(this);
+#if RHI_COMPLETE
 				currRenderGroup->renderBatch->SetRenderDataObject(ScopedPtr<RenderDataObject>(new RenderDataObject()));
+#endif // RHI_COMPLETE
 				renderGroupCache.push_back(currRenderGroup);
 			}	
 			else
@@ -226,7 +230,9 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
 		{
 			renderGroupCache[i]->UpdateRenderBatch(vertexSize, vertexStride);
 			renderGroupCache[i]->renderBatch->SetIndexCount(renderGroupCache[i]->currParticlesCount*INDICES_PER_PARTICLE);		
+#if RHI_COMPLETE
 			renderGroupCache[i]->renderBatch->GetRenderDataObject()->SetIndices(EIF_16, (uint8*)(&indices.front()), renderGroupCache[i]->currParticlesCount*INDICES_PER_PARTICLE);            
+#endif //RHI_COMPLETE
 			activeRenderBatchArray.push_back(renderGroupCache[i]->renderBatch);
 		}
 		

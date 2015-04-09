@@ -32,9 +32,11 @@
 
     #include "Base/BaseTypes.h"
     #include "Base/FastName.h"
+    using DAVA::uint8;
+    using DAVA::uint16;
     using DAVA::uint32;
     using DAVA::uint64;
-    using DAVA::uint8;
+    using DAVA::Size2i;
 
 
 
@@ -199,6 +201,10 @@ public:
     void            AddElement( VertexSemantics usage, unsigned usage_i, VertexDataType type, unsigned dimension );
     void            InsertElement( unsigned pos, VertexSemantics usage, unsigned usage_i, VertexDataType type, unsigned dimension );
 
+
+    static bool     IsCompatible( const VertexLayout& vbLayout, const VertexLayout& shaderLayout );
+
+
     void            Dump() const;
 
 
@@ -206,7 +212,6 @@ public:
     static uint32               UniqueId( const VertexLayout& layout );
     static const uint32         InvalidUID = 0;
 
-    static bool     IsUsable( const VertexLayout& vbLayout, const VertexLayout& shaderLayout );
 
 
 private:
@@ -247,6 +252,14 @@ enum
 // texture
 
 enum
+TextureType
+{
+    TEXTURE_TYPE_1D,
+    TEXTURE_TYPE_2D,
+    TEXTURE_TYPE_CUBE
+};
+
+enum
 TextureFormat
 {
     TEXTURE_FORMAT_A8R8G8B8,
@@ -255,12 +268,15 @@ TextureFormat
 };
 
 enum
-TextureOptions
+TextureFace
 {
-    TEXTURE_OPT_RENDERTARGET    = 0x00000001,
-    TEXTURE_OPT_DYNAMIC         = 0x00000002
+    TEXTURE_FACE_LEFT,
+    TEXTURE_FACE_RIGHT,
+    TEXTURE_FACE_FRONT,
+    TEXTURE_FACE_BACK,
+    TEXTURE_FACE_TOP,
+    TEXTURE_FACE_BOTTOM
 };
-
 enum
 TextureAddrMode
 {
@@ -320,15 +336,30 @@ namespace Texture
 struct
 Descriptor
 {
+    TextureType     type;
     uint32          width;
     uint32          height;
     TextureFormat   format;
+    uint32          isRenderTarget:1;
+    uint32          autoGenMipmaps:1;
     
                     Descriptor( uint32 w, uint32 h, TextureFormat fmt )
-                      : width(w),
+                      : type(TEXTURE_TYPE_2D),
+                        width(w),
                         height(h),
-                        format(fmt)
+                        format(fmt),
+                        isRenderTarget(false),
+                        autoGenMipmaps(false)
                     {}
+                    Descriptor()
+                      : type(TEXTURE_TYPE_2D),
+                        width(0),
+                        height(0),
+                        format(TEXTURE_FORMAT_A8R8G8B8),
+                        isRenderTarget(false),
+                        autoGenMipmaps(false)
+                    {}
+
 };
 
 
@@ -543,6 +574,11 @@ RenderPassConfig
 
     ColorBuffer         colorBuffer[MAX_RENDER_TARGET_COUNT];
     DepthStencilBuffer  depthStencilBuffer;
+    int                 priority;
+                        
+                        RenderPassConfig()
+                          : priority(0)
+                        {}
 };
 
 

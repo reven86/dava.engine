@@ -522,7 +522,8 @@ void VegetationFixedGeometry::PrepareSortedIndexBufferVariations(size_t& current
             indexData[currentIndexIndex] = sortData.indices[2];
             currentIndexIndex++;
         }
-        
+
+#if RHI_COMPLETE
         RenderDataObject* indexBuffer = new RenderDataObject();
         indexBuffer->SetIndices(VEGETATION_INDEX_TYPE, (uint8*)(&indexData[prevIndexIndex]), static_cast<int32>(currentIndexIndex - prevIndexIndex));
         
@@ -531,16 +532,16 @@ void VegetationFixedGeometry::PrepareSortedIndexBufferVariations(size_t& current
         sortedBufferItem.sortDirection = indexBufferBBox.GetCenter() - cameraPosition;
         sortedBufferItem.sortDirection.Normalize();
         
-        SafeRelease(indexBuffer);
-        
+        SafeRelease(indexBuffer);        
         currentDirectionBuffers.push_back(sortedBufferItem);
+#endif // RHI_COMPLETE
     }
 }
     
 void VegetationFixedGeometry::GenerateRenderDataObjects(VegetationRenderData& renderData)
 {
     renderData.CreateRenderData();
-    
+#if RHI_COMPLETE
     RenderDataObject* vertexRenderDataObject = renderData.GetRenderDataObject();
     Vector<Vector<Vector<VegetationSortedBufferItem> > >& indexRenderDataObject = renderData.GetIndexBuffers();
     Vector<VegetationVertex>& vertexData = renderData.GetVertices();
@@ -569,7 +570,7 @@ void VegetationFixedGeometry::GenerateRenderDataObjects(VegetationRenderData& re
             }
         }
     }
-    
+#endif // RHI_COMPLETE
 }
 
 bool VegetationFixedGeometry::PolygonByDistanceCompareFunction(const PolygonSortData& a, const PolygonSortData&  b)

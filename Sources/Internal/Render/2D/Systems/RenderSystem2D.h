@@ -43,8 +43,6 @@ namespace DAVA
 class Font;
 class Sprite;
 class TextBlock;
-class RenderDataObject;
-class RenderDataStream;
 class UIGeometricData;
 
 struct RenderBatch2D
@@ -116,16 +114,19 @@ public:
     void Next();
     void SetVertexData(uint32 offset, uint32 count, float32 * data);
     void SetIndexData(uint32 offset, uint32 count, uint8 * data);
-
+#if RHI_COMPLETE
     RenderDataObject* GetRenderDataObject() const;
+#endif // RHI_COMPLETE
     uint32 GetVerticesLimit() const;
     uint32 GetIndicesLimit() const;
     uint32 GetVertexFormat() const;
     uint32 GetVertexStride() const;
 
 private:
+#if RHI_COMPLETE
     RenderDataObject * currentDataObject;
     Vector<RenderDataObject*> dataObjects;
+#endif RHI_COMPLETE
     uint8 currentDataObjectIndex;
     uint32 vertexStride;
     uint32 vertexFormat;
@@ -196,7 +197,9 @@ private:
 	std::stack<Rect> clipStack;
 	Rect currentClip;
 
+#if RHI_COMPLETE
     RenderDataObject * spriteRenderObject;
+#endif RHI_COMPLETE
 
     float32 spriteTempVertices[8];
     Vector<Vector2> spriteClippedTexCoords;
@@ -224,10 +227,12 @@ private:
 
 //Inline implementations
     
+#if RHI_COMPLETE
 inline RenderDataObject* VboPool::GetRenderDataObject() const
 {
     return currentDataObject;
 }
+#endif // RHI_COMPLETE
 
 inline uint32 VboPool::GetVerticesLimit() const
 {

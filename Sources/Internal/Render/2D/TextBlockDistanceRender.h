@@ -58,7 +58,9 @@ private:
 	Font::StringMetrics InternalDrawText(const WideString& drawText, int32 x, int32 y, int32 w, int32 lineSize);
 	
 private:
+#if RHI_COMPLETE
 	RenderDataObject* renderObject;
+#endif RHI_COMPLETE
 	DFFont* dfFont;
 
     Shader* shader;

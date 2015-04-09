@@ -981,7 +981,9 @@ PolygonGroup* StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawCove
         }
 
     res->BuildBuffers();
+#if RHI_COMPLETE
     res->renderDataObject->AttachVertices(gridPolygonGroup->renderDataObject);
+#endif // RHI_COMPLETE
     res->aabbox=gridPolygonGroup->aabbox;
     return res;
 }

@@ -29,7 +29,6 @@
 
 #include "Render/RenderHelper.h"
 #include "Render/Texture.h"
-#include "Render/RenderDataObject.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Renderer.h"
 
@@ -116,7 +115,9 @@ namespace DAVA
 		7, 2, 11
 	};
 
-	static RenderDataObject *gDodecObject;
+#if RHI_COMPLETE
+    static RenderDataObject *gDodecObject;
+#endif RHI_COMPLETE
 	
 	const float32 SEGMENT_LENGTH = 15.0f;
 	

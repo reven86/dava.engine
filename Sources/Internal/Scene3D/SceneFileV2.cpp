@@ -65,7 +65,6 @@
 #include "Base/TemplateHelpers.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/ShadowVolume.h"
-#include "Scene3D/SpriteNode.h"
 #include "Render/Highlevel/SpriteObject.h"
 #include "Render/Highlevel/RenderObject.h"
 
@@ -1312,30 +1311,6 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
 			parent->RemoveNode(un);
 		}
 
-		newNode->Release();
-		return true;
-	}
-
-	SpriteNode * spr = dynamic_cast<SpriteNode*>(node);
-	if(spr)
-	{
-		Entity * newNode = new Entity();
-		spr->Clone(newNode);
-
-		SpriteObject *spriteObject = new SpriteObject(spr->GetSprite(), spr->GetFrame(), spr->GetScale(), spr->GetPivot());
-		spriteObject->SetSpriteType((SpriteObject::eSpriteType)spr->GetType());
-
-		newNode->AddComponent(new RenderComponent(spriteObject));
-
-		Entity * parent = spr->GetParent();
-		DVASSERT(parent);
-		if(parent)
-		{
-			parent->InsertBeforeNode(newNode, spr);
-			parent->RemoveNode(spr);
-		}
-
-		spriteObject->Release();
 		newNode->Release();
 		return true;
 	}

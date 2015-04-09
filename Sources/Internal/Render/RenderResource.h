@@ -94,8 +94,10 @@ public:
 	static void InvalidateAllShaders();
 	static void LostAllTextures();
 	static void InvalidateAllTextures();
+
 	static void LostAllRDO();
 	static void InvalidateAllRDO();
+
 };
 
 };

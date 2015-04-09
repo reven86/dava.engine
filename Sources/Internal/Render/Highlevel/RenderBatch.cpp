@@ -29,7 +29,6 @@
 
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Material.h"
-#include "Render/RenderDataObject.h"
 #include "Render/3D/PolygonGroup.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -47,8 +46,7 @@ namespace DAVA
 
     
 RenderBatch::RenderBatch()
-    :   dataSource(0)
-    ,   renderDataObject(0)
+    :   dataSource(0)    
     ,   material(0)
     ,   renderObject(0)
     ,   sortingTransformPtr(NULL)
@@ -72,8 +70,7 @@ RenderBatch::~RenderBatch()
 #if defined(__DAVA_USE_OCCLUSION_QUERY__)
     SafeDelete(occlusionQuery);
 #endif
-	SafeRelease(dataSource);
-	SafeRelease(renderDataObject);
+	SafeRelease(dataSource);	
 		
 	SafeRelease(material);
 }
@@ -83,12 +80,6 @@ void RenderBatch::SetPolygonGroup(PolygonGroup * _polygonGroup)
 	SafeRelease(dataSource);
     dataSource = SafeRetain(_polygonGroup);
 	UpdateAABBoxFromSource();
-}
-
-void RenderBatch::SetRenderDataObject(RenderDataObject * _renderDataObject)
-{
-	SafeRelease(renderDataObject);
-    renderDataObject = SafeRetain(_renderDataObject);
 }
 
 void RenderBatch::SetMaterial(NMaterial * _material)
@@ -126,9 +117,8 @@ void RenderBatch::SetSortingOffset(uint32 offset)
 
 void RenderBatch::GetDataNodes(Set<DataNode*> & dataNodes)
 {
-#if RHI_COMPLETE
 	NMaterial* curNode = material;
-	while(curNode != NULL && curNode->GetMaterialType() != NMaterial::MATERIALTYPE_GLOBAL)
+	while(curNode != NULL) // && curNode->GetMaterialType() != NMaterial::MATERIALTYPE_GLOBAL)
 	{
 		dataNodes.insert(curNode);
 		curNode = curNode->GetParent();
@@ -138,7 +128,6 @@ void RenderBatch::GetDataNodes(Set<DataNode*> & dataNodes)
 	{
 		InsertDataNode(dataSource, dataNodes);
 	}
-#endif //RHI_COMPLETE
 }
 
 void RenderBatch::InsertDataNode(DataNode *node, Set<DataNode*> & dataNodes)
@@ -158,10 +147,7 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
         rb = new RenderBatch();
 
     SafeRelease(rb->dataSource);
-	rb->dataSource = SafeRetain(dataSource);
-    
-    SafeRelease(rb->renderDataObject);
-	rb->renderDataObject = SafeRetain(renderDataObject);
+	rb->dataSource = SafeRetain(dataSource);    
 	
     SafeRelease(rb->material);
 #if RHI_COMPLETE

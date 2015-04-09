@@ -109,10 +109,11 @@ void TextBlockDistanceRender::Prepare(Texture *texture /*= NULL*/)
     
 	if (charDrawed == 0)
 		return;
-	
+#if RHI_COMPLETE	
 	renderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, sizeof(DFFont::DFFontVertex), &vertexBuffer[0].position);
 	renderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, sizeof(DFFont::DFFontVertex), &vertexBuffer[0].texCoord);
 	renderObject->BuildVertexBuffer(charDrawed * 4);
+#endif RHI_COMPLETE
 }
 
 void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset)

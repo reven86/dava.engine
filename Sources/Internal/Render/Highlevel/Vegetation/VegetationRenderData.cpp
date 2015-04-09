@@ -32,8 +32,7 @@
 namespace DAVA
 {
 VegetationRenderData::VegetationRenderData() :
-    material(NULL),
-    vertexRenderDataObject(NULL)
+    material(NULL)
 {
 }
     
@@ -45,12 +44,15 @@ VegetationRenderData::~VegetationRenderData()
     
 void VegetationRenderData::CreateRenderData()
 {
+#if RHI_COMPLETE
     DVASSERT(NULL == vertexRenderDataObject);
     vertexRenderDataObject = new RenderDataObject();
+#endif RHI_COMPLETE
 }
     
 void VegetationRenderData::ReleaseRenderData()
 {
+#if RHI_COMPLETE
     size_t indexBufferResolutionCount = indexRenderDataObject.size();
     for(size_t indexBufferIndex = 0; indexBufferIndex < indexBufferResolutionCount; ++indexBufferIndex)
     {
@@ -76,7 +78,9 @@ void VegetationRenderData::ReleaseRenderData()
     }
     indexRenderDataObject.clear();
         
+
     SafeRelease(vertexRenderDataObject);
+#endif RHI_COMPLETE
         
     vertexData.clear();
     indexData.clear();

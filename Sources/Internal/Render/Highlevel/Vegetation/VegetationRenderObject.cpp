@@ -505,7 +505,9 @@ void VegetationRenderObject::PrepareToRenderMultipleMaterials(Camera *camera)
             DVASSERT(indexBufferIndex < rdoVector.size());
             
             size_t directionIndex = SelectDirectionIndex(cameraDirection, indexBufferVector);
+#if RHI_COMPLETE
             rb->SetRenderDataObject(indexBufferVector[directionIndex].rdo);
+#endif // RHI_COMPLETE
             
             float32 distanceScale = 1.0f;
             
@@ -610,7 +612,9 @@ void VegetationRenderObject::PrepareToRenderSingleMaterial(Camera *camera)
         DVASSERT(indexBufferIndex < rdoVector.size());
         
         size_t directionIndex = SelectDirectionIndex(cameraDirection, indexBufferVector);
+#if RHI_COMPLETE
         rb->SetRenderDataObject(indexBufferVector[directionIndex].rdo);
+#endif RHI_COMPLETE
         
         float32 distanceScale = 1.0f;
         

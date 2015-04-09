@@ -37,7 +37,7 @@
 #include "Base/BaseMath.h"
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
-#include "Render/RenderDataObject.h"
+#include "Render/Material/NMaterial.h"
 
 #include "FileSystem/FilePath.h"
 

@@ -225,7 +225,7 @@ void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderData
                               directionOffsets);
         }
     }
-    
+#if RHI_COMPLETE    
     RenderDataObject* vertexRDO = new RenderDataObject();
     vertexRDO->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].coord));
     vertexRDO->SetStream(EVF_NORMAL, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].normal));
@@ -233,6 +233,7 @@ void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderData
     vertexRDO->SetStream(EVF_TANGENT, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].tangent));
     vertexRDO->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, sizeof(VegetationVertex), &(vertexData[0].texCoord0));
     vertexRDO->BuildVertexBuffer(static_cast<int32>(vertexData.size()), BDT_STATIC_DRAW, true);
+#endif RHI_COMPLETE
     
     Vector<Vector<Vector<VegetationSortedBufferItem> > >& indexBuffers = renderData->GetIndexBuffers();
     
@@ -258,7 +259,7 @@ void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderData
                 
                 sortedIndexBufferItems.push_back(VegetationSortedBufferItem());
                 VegetationSortedBufferItem& sortBufferItem = sortedIndexBufferItems[directionIndex];
-                
+#if RHI_COMPLETE
                 RenderDataObject* indexBuffer = new RenderDataObject();
                 indexBuffer->SetIndices(VEGETATION_INDEX_TYPE, (uint8*)(&indexData[sortData.indexOffset]), sortData.size);
                 
@@ -270,15 +271,16 @@ void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderData
                 sortBufferItem.rdo->AttachVertices(vertexRDO);
                 
                 SafeRelease(indexBuffer);
+#endif //RHI_COMPLETE
             }
         }
     }
-    
+#if RHI_COMPLETE    
     SafeRelease(vertexRDO);
     
     NMaterial* material = customGeometryData[0].material;
     renderData->SetMaterial(material);
-#if RHI_COMPLETE    
+
     material->SetFlag(VegetationPropertyNames::FLAG_GRASS_OPAQUE, NMaterial::FlagOn);
     material->SetFlag(VegetationPropertyNames::FLAG_GRASS_TRANSFORM_WAVE, NMaterial::FlagOn);
     material->SetRenderLayers(1 << RENDER_LAYER_VEGETATION_ID);

@@ -30,7 +30,6 @@
 #include "Render/RenderResource.h"
 #include "Render/Texture.h"
 #include "Render/Shader.h"
-#include "Render/RenderDataObject.h"
 
 namespace DAVA
 {
@@ -189,6 +188,8 @@ void RenderResource::InvalidateAllTextures()
 
 void RenderResource::LostAllRDO()
 {
+    // move resource invalidation to higher level
+#if RHI_COMPLETE
     resourceListMutex.Lock();
     List<RenderResource*>::iterator it = resourceList.begin();
     List<RenderResource*>::const_iterator itEnd = resourceList.end();
@@ -201,10 +202,12 @@ void RenderResource::LostAllRDO()
         }
     }
     resourceListMutex.Unlock();
+#endif // RHI_COMPLETE
 }
 
 void RenderResource::InvalidateAllRDO()
 {
+#if RHI_COMPLETE
     resourceListMutex.Lock();
     List<RenderResource*>::iterator it = resourceList.begin();
     List<RenderResource*>::const_iterator itEnd = resourceList.end();
@@ -217,6 +220,7 @@ void RenderResource::InvalidateAllRDO()
         }
     }
     resourceListMutex.Unlock();
+#endif // RHI_COMPLETE
 }
     
 };

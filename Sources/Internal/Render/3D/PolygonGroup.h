@@ -33,9 +33,9 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Render/VertexBuffer.h"
-#include "Render/RenderDataObject.h"
 #include "Scene3D/DataNode.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
+#include "Render/RHI/rhi_Type.h"
 
 namespace DAVA
 {	
@@ -162,22 +162,6 @@ public:
         TODO: refresh buffers function??? 
      */
     void    ApplyMatrix(const Matrix4 & matrix);
-
-    /*
-        If you want you can build tangents for your submesh
-        This function rebuild the polygroup from ground with binormal  
-     */
-    void    BuildTangentsBinormals(uint32 flagsToAdd);
-    
-    /**
-        \brief Function to generate normal, tangent, binormal vectors using triangle vertices, and texture coords.
-        This is helper function that is used inside BuildTangents function
-     */
-    static void TangentVectors( const Vector3 &v0, const Vector3 &v1, const Vector3 &v2, 
-                           const Vector2 &t0, const Vector2 &t1, const Vector2 &t2, 
-                        Vector3 &sdir, Vector3 &tdir, Vector3 &normal);
-
-    
     /*
         Go through all vertices and optimize it, remove redundant vertices. 
      */ 
@@ -191,12 +175,14 @@ public:
     
     
     void    BuildBuffers();        
-    
-    
-    RenderDataObject * renderDataObject;
+           
     
     void Save(KeyedArchive * keyedArchive, SerializationContext * serializationContext);    
     void LoadPolygonData(KeyedArchive * keyedArchive, SerializationContext * serializationContext, int32 requiredFlags);
+
+
+    rhi::Handle vertexBuffer, indexBuffer;
+    uint32 vertexLayoutId;
 
 private:
     void    UpdateDataPointersAndStreams();
@@ -204,7 +190,8 @@ private:
 	bool	IsFloatDataEqual(const float32 ** meshData, const float32 ** optData, uint32 vertexFormat, uint32 format) const;
  	int32	OptimazeVertexes(const uint8 * meshData, Vector<uint8> & optMeshData, uint32 vertexFormat)	const;
     
-
+    
+    
     
     
 public:

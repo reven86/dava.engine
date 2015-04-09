@@ -29,7 +29,6 @@
 
 
 #include "ShadowRect.h"
-#include "Render/RenderDataObject.h"
 #include "Base/BaseMath.h"
 #include "Render/RenderBase.h"
 #include "Scene3D/Scene.h"
