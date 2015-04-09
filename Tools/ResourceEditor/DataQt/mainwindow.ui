@@ -1300,7 +1300,7 @@
   </action>
   <action name="actionExportPNG">
    <property name="text">
-    <string>PNG</string>
+    <string>Original</string>
    </property>
   </action>
   <action name="actionReloadPNG">
@@ -1308,7 +1308,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>PNG</string>
+    <string>Original</string>
    </property>
   </action>
   <action name="actionEnableCameraLight">

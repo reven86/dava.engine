@@ -51,7 +51,6 @@
 #include <QFileSystemModel>
 #include <QMenu>
 #include <QAction>
-#include <QStringList>
 #include <QFileInfo>
 
 
@@ -153,14 +152,24 @@ void LibraryWidget::SetupFileTypes()
 
     fileTypeValues.push_back(FileType("DAE", "*.dae"));
     fileTypeValues.push_back(FileType("SC2", "*.sc2"));
-    fileTypeValues.push_back(FileType("TEX", "*.tex"));
-    fileTypeValues.push_back(FileType("PNG", "*.png"));
-    fileTypeValues.push_back(FileType("TGA", "*.tga"));
-    
-    QStringList jpegList;
-    jpegList << "*.jpg" << "*.jpeg";
-    fileTypeValues.push_back(FileType("JPG", jpegList));
+    fileTypeValues.push_back(FileType("TEX", QString("*") + DAVA::TextureDescriptor::GetDescriptorExtension().c_str()));
+    fileTypeValues.push_back(FileType("PNG", GetExtensions(DAVA::IMAGE_FORMAT_PNG)));
+    fileTypeValues.push_back(FileType("TGA", GetExtensions(DAVA::IMAGE_FORMAT_TGA)));
+    fileTypeValues.push_back(FileType("JPG", GetExtensions(DAVA::IMAGE_FORMAT_JPEG)));
 }
+
+QStringList LibraryWidget::GetExtensions(DAVA::ImageFormat imageFormat) const
+{
+    QStringList extList;
+    auto extensions = DAVA::ImageSystem::Instance()->GetExtensionsFor(imageFormat);
+    for(auto &ex: extensions)
+    {
+        extList << QString("*") + ex.c_str();
+    }
+    
+    return extList;
+}
+
 
 void LibraryWidget::SetupSignals()
 {

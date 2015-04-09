@@ -31,9 +31,12 @@
 #ifndef __LIBRARY_WIDGET_H__
 #define __LIBRARY_WIDGET_H__
 
+#include "Render/RenderBase.h"
+
 #include <QWidget>
 #include <QTreeView>
 #include <QItemSelection>
+#include <QStringList>
 
 class QVBoxLayout;
 class QToolBar;
@@ -114,6 +117,8 @@ private:
     
     void HidePreview() const;
     void ShowPreview(const QString & pathname) const;
+    
+    QStringList GetExtensions(DAVA::ImageFormat imageFormat) const;
     
 private:
 

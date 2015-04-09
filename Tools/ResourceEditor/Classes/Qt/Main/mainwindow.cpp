@@ -728,7 +728,7 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->menuDynamicShadowBlendMode, SIGNAL(aboutToShow()), this, SLOT(OnShadowBlendModeWillShow()));
 
     
-	QObject::connect(ui->actionSaveHeightmapToPNG, SIGNAL(triggered()), this, SLOT(OnSaveHeightmapToPNG()));
+	QObject::connect(ui->actionSaveHeightmapToPNG, SIGNAL(triggered()), this, SLOT(OnSaveHeightmapToImage()));
 	QObject::connect(ui->actionSaveTiledTexture, SIGNAL(triggered()), this, SLOT(OnSaveTiledTexture()));
 	
 	QObject::connect(ui->actionConvertModifiedTextures, SIGNAL(triggered()), this, SLOT(OnConvertModifiedTextures()));
@@ -1956,7 +1956,7 @@ void QtMainWindow::OnShadowBlendModeMultiply()
 	scene->Exec(new ChangeDynamicShadowModeCommand(scene, ShadowPassBlendMode::MODE_BLEND_MULTIPLY));
 }
 
-void QtMainWindow::OnSaveHeightmapToPNG()
+void QtMainWindow::OnSaveHeightmapToImage()
 {
 	if (!IsSavingAllowed())
 	{
@@ -1981,12 +1981,12 @@ void QtMainWindow::OnSaveHeightmapToPNG()
 	
     Heightmap * heightmap = landscape->GetHeightmap();
     FilePath heightmapPath = landscape->GetHeightmapPathname();
-    FilePath requestedPngPath = FilePath::CreateWithNewExtension(heightmapPath, ".png");
 
-    QString selectedPath = QtFileDialog::getSaveFileName(this, "Save heightmap as", requestedPngPath.GetAbsolutePathname().c_str(), "PGN Image (*.png)");
+    QString selectedPath = QtFileDialog::getSaveFileName(this, "Save heightmap as", heightmapPath.GetAbsolutePathname().c_str(),
+                                                         PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
     if(selectedPath.isEmpty()) return;
 
-    requestedPngPath = DAVA::FilePath(selectedPath.toStdString());
+    FilePath requestedPngPath = DAVA::FilePath(selectedPath.toStdString());
     heightmap->SaveToImage(requestedPngPath);
 }
 
@@ -2020,7 +2020,7 @@ void QtMainWindow::OnSaveTiledTexture()
 			FilePath scenePath = scene->GetScenePath().GetDirectory();
 			QString selectedPath = QtFileDialog::getSaveFileName(this, "Save landscape texture as",
 														 scenePath.GetAbsolutePathname().c_str(),
-														 "PGN Image (*.png)");
+														 PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 			if (selectedPath.isEmpty())
 			{
 				SafeRelease(landscapeTexture);
@@ -2312,7 +2312,7 @@ bool QtMainWindow::SelectCustomColorsTexturePath()
 	QString filePath = QtFileDialog::getSaveFileName(NULL,
 													 QString(ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str()),
 													 QString(scenePath.GetAbsolutePathname().c_str()),
-													 QString(ResourceEditor::CUSTOM_COLORS_FILE_FILTER.c_str()));
+													 PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 	FilePath selectedPathname = PathnameToDAVAStyle(filePath);
 	Entity* landscape = FindLandscapeEntity(sceneEditor);
 	if (selectedPathname.IsEmpty() || NULL == landscape)

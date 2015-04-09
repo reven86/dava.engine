@@ -63,7 +63,6 @@ void TextureDescriptor::TextureDataSettings::SetDefaultValues()
     faceDescription = 0;
     
     static ImageFormat defaultImageFormat = IMAGE_FORMAT_PNG;
-//    static ImageFormat defaultImageFormat = IMAGE_FORMAT_TGA;
 
     sourceFileFormat = defaultImageFormat;
     sourceFileExtension = ImageSystem::Instance()->GetExtensionsFor(defaultImageFormat)[0];
@@ -232,9 +231,13 @@ bool TextureDescriptor::Load(const FilePath &filePathname)
 	file->Read(&version);
 
     if (signature == COMPRESSED_FILE)
+    {
         isCompressedFile = true;
+    }
     else if (signature == NOTCOMPRESSED_FILE)
+    {
         isCompressedFile = false;
+    }
     else
     {
         Logger::Error("[TextureDescriptor::Load] Signature '%X' is incorrect", signature);
@@ -280,28 +283,7 @@ void TextureDescriptor::Save(const FilePath &filePathname) const
         return;
     }
     
-    int32 signature = NOTCOMPRESSED_FILE;
-	file->Write( &signature);
-    
-    int8 version = CURRENT_VERSION;
-	file->Write(&version);
-    
-    WriteGeneralSettings(file);
-    
-    //Compression
-    const uint8 compressionsCount = GPU_FAMILY_COUNT;
-	file->Write(&compressionsCount);
-	for(int32 i = 0; i < compressionsCount; ++i)
-	{
-		WriteCompression(file, &compression[i]);
-	}
-	
-	file->Write(&dataSettings.faceDescription);
-    file->Write(&dataSettings.sourceFileFormat);
-    
-    const uint32 length = dataSettings.sourceFileExtension.length();
-    file->Write(&length);
-    file->Write(dataSettings.sourceFileExtension.c_str(), length);
+    SaveInternal(file, NOTCOMPRESSED_FILE, GPU_FAMILY_COUNT);
     
     SafeRelease(file);
 }
@@ -315,24 +297,46 @@ void TextureDescriptor::Export(const FilePath &filePathname) const
         return;
     }
 
-    int32 signature = COMPRESSED_FILE;
-	file->Write(&signature);
+    SaveInternal(file, COMPRESSED_FILE, 0);
     
-    int8 version = CURRENT_VERSION;
-	file->Write(&version);
-
-    WriteGeneralSettings(file);
-	file->Write(&exportedAsGpuFamily);
-	int8 exportedAsPixelFormat = format;
-	file->Write(&exportedAsPixelFormat);
-	
-	file->Write(&dataSettings.faceDescription);
-    file->Write(&dataSettings.sourceFileFormat);
-    file->Write(&dataSettings.sourceFileExtension);
-
     SafeRelease(file);
 }
 
+void TextureDescriptor::SaveInternal(File *file, const int32 signature, const uint8 compressionCount) const
+{
+    file->Write(&signature);
+
+    int8 version = CURRENT_VERSION;
+    file->Write(&version);
+    
+    //draw settings
+    file->Write(&drawSettings.wrapModeS);
+    file->Write(&drawSettings.wrapModeT);
+    file->Write(&drawSettings.minFilter);
+    file->Write(&drawSettings.magFilter);
+
+    //data settings
+    file->Write(&dataSettings.textureFlags);
+    file->Write(&dataSettings.faceDescription);
+    file->Write(&dataSettings.sourceFileFormat);
+    
+    const uint32 length = dataSettings.sourceFileExtension.length();
+    file->Write(&length);
+    file->Write(dataSettings.sourceFileExtension.c_str(), length);
+
+    //compressions
+    file->Write(&compressionCount);
+    for(int32 i = 0; i < compressionCount; ++i)
+    {
+        WriteCompression(file, &compression[i]);
+    }
+    
+    //export data
+    file->Write(&exportedAsGpuFamily);
+    int8 exportedAsPixelFormat = format;
+    file->Write(&exportedAsPixelFormat);
+}
+    
 void TextureDescriptor::LoadVersion6(DAVA::File *file)
 {
 	file->Read(&drawSettings.wrapModeS);
@@ -442,41 +446,17 @@ void TextureDescriptor::LoadVersion8(File *file)
 
 void TextureDescriptor::LoadVersion9(File *file)
 {
+    //draw settings
     file->Read(&drawSettings.wrapModeS);
     file->Read(&drawSettings.wrapModeT);
-    file->Read(&dataSettings.textureFlags);
     file->Read(&drawSettings.minFilter);
     file->Read(&drawSettings.magFilter);
 
-    if (isCompressedFile)
-    {
-        file->Read(&exportedAsGpuFamily);
-        exportedAsGpuFamily = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
 
-        int8 exportedAsPixelFormat = FORMAT_INVALID;
-        file->Read(&exportedAsPixelFormat);
-        format = static_cast<PixelFormat>(exportedAsPixelFormat);
-    }
-    else
-    {
-        uint8 compressionsCount = 0;
-        file->Read(&compressionsCount);
-        static_assert(GPU_FAMILY_COUNT == 6, "GPU_FAMILY_COUNT is changed, texture descriptor load routine should be altered");
-        for (auto &nextCompression : compression)
-        {
-            int8 format;
-            file->Read(&format);
-            nextCompression.format = static_cast<PixelFormat>(format);
-
-            file->Read(&nextCompression.compressToWidth);
-            file->Read(&nextCompression.compressToHeight);
-            file->Read(&nextCompression.sourceFileCrc);
-            file->Read(&nextCompression.convertedFileCrc);
-        }
-    }
-
+    //data settings
+    file->Read(&dataSettings.textureFlags);
     file->Read(&dataSettings.faceDescription);
-    
+
     int8 sourceFileFormat = 0;
     file->Read(&sourceFileFormat);
     dataSettings.sourceFileFormat = static_cast<ImageFormat>(sourceFileFormat);
@@ -487,15 +467,32 @@ void TextureDescriptor::LoadVersion9(File *file)
     std::array<char8, 20> extStr;
     file->Read(extStr.data(), length);
     dataSettings.sourceFileExtension = String(extStr.data(), length);
-}
 
-void TextureDescriptor::WriteGeneralSettings(File *file) const
-{
-	file->Write(&drawSettings.wrapModeS);
-	file->Write(&drawSettings.wrapModeT);
-	file->Write(&dataSettings.textureFlags);
-	file->Write(&drawSettings.minFilter);
-	file->Write(&drawSettings.magFilter);
+    //compression
+    uint8 compressionsCount = 0;
+    file->Read(&compressionsCount);
+    static_assert(GPU_FAMILY_COUNT == 6, "GPU_FAMILY_COUNT is changed, texture descriptor load routine should be altered");
+    for (auto i = 0; i < compressionsCount; ++i)
+    {
+        auto &nextCompression = compression[i];
+        
+        int8 format;
+        file->Read(&format);
+        nextCompression.format = static_cast<PixelFormat>(format);
+        
+        file->Read(&nextCompression.compressToWidth);
+        file->Read(&nextCompression.compressToHeight);
+        file->Read(&nextCompression.sourceFileCrc);
+        file->Read(&nextCompression.convertedFileCrc);
+    }
+
+    //export data
+    file->Read(&exportedAsGpuFamily);
+    exportedAsGpuFamily = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
+    
+    int8 exportedAsPixelFormat = FORMAT_INVALID;
+    file->Read(&exportedAsPixelFormat);
+    format = static_cast<PixelFormat>(exportedAsPixelFormat);
 }
 
 void TextureDescriptor::WriteCompression(File *file, const Compression *compression) const

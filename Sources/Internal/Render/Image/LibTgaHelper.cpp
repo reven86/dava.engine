@@ -188,8 +188,7 @@ eErrorCode LibTgaWrapper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
 
     if (readResult == SUCCESS)
     {
-        if(tgaInfo.pixelFormat != FORMAT_A8 && tgaInfo.pixelFormat != FORMAT_A8)
-            ImageConvert::SwapRedBlueChannels(image);
+        ImageConvert::SwapRedBlueChannels(image);
         
         SafeRetain(pImage);
         imageSet.push_back(pImage);

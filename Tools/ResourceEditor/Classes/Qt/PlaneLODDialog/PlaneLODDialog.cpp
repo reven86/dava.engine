@@ -32,6 +32,8 @@
 #include "Qt/Tools/QtFileDialog/QtFileDialog.h"
 #include "Qt/Main/mainwindow.h"
 #include "Qt/Main/QtUtils.h"
+#include "Tools/PathDescriptor/PathDescriptor.h"
+
 
 using namespace DAVA;
 
@@ -80,7 +82,7 @@ void PlaneLODDialog::OnOk()
 
 void PlaneLODDialog::OnTextureSelect()
 {
-    QString selectedPath = QFileDialog::getSaveFileName(this, QString("Save texture"), texturePath, QString("PNG image (*.png)"));
+    QString selectedPath = QFileDialog::getSaveFileName(this, QString("Save texture"), texturePath, PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
     if(selectedPath.isEmpty())
         return;
 

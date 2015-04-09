@@ -203,7 +203,6 @@ protected:
 
     const Compression * GetCompressionParams(eGPUFamily forGPU) const;
     
-    void WriteGeneralSettings(File *file) const;
 	void WriteCompression(File *file, const Compression *compression) const;
     
     void LoadVersion6(File *file);
@@ -215,6 +214,8 @@ protected:
 	uint32 GetConvertedCRC(eGPUFamily forGPU) const;
 
 	uint32 GenerateDescriptorCRC() const;
+    
+    void SaveInternal(File *file, const int32 signature, const uint8 compressionCount) const;
 
 public:
     

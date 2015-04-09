@@ -58,6 +58,7 @@ bool HeightMapValidator::ValidateInternal(const QVariant &v)
     {
         auto extension = path.GetExtension();
         auto imageFormat = DAVA::ImageSystem::Instance()->GetImageFormatForExtension(extension);
+        
         if(DAVA::IMAGE_FORMAT_UNKNOWN != imageFormat)
         {
             auto imgSystem = DAVA::ImageSystem::Instance()->GetImageFormatInterface(imageFormat);
