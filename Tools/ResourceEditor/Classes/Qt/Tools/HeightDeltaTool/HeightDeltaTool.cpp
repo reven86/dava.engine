@@ -100,7 +100,7 @@ void HeightDeltaTool::OnRun()
                 auto inputPathname = FilePath(inPath.toStdString());
                 auto imInterface = DAVA::ImageSystem::Instance()->GetImageFormatInterface(inputPathname);
                 DVASSERT(imInterface);
-                auto imageSize = imInterface->GetImageSize(inputPathname);
+                auto imageInfo = imInterface->GetImageInfo(inputPathname);
                 
                 const double threshold = GetThresholdInMeters(unitSize);
 
@@ -113,8 +113,8 @@ void HeightDeltaTool::OnRun()
                         outPath.toStdString(),
                         (DAVA::float32)threshold,
                         heightmap,
-                        imageSize.dx,
-                        imageSize.dy,
+                        imageInfo.width,
+                        imageInfo.height,
                         bbox.max.z - bbox.min.z,
                         colors);
         

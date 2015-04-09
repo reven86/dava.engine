@@ -174,7 +174,6 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 	Logger::FrameworkDebug("Packing to separate textures");
 
 	lastPackedPacker = 0;
-	int textureIndex = 0;
 	for (List<DefinitionFile*>::iterator dfi = defsList.begin(); dfi != defsList.end(); ++dfi)
 	{
 		sortVector.clear();
@@ -223,16 +222,15 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
         
 		if (packWasSuccessfull)
 		{
-			char textureNameWithIndex[50];
-			sprintf(textureNameWithIndex, "texture%d", textureIndex++);
-			FilePath textureName = outputPath + textureNameWithIndex;
+            String fileBasename = defFile->filename.GetBasename();
+            FilePath textureName = outputPath + fileBasename;
             Logger::FrameworkDebug("* Writing final texture (%d x %d): %s", bestXResolution, bestYResolution , textureName.GetAbsolutePathname().c_str());
 			
 			PngImageExt finalImage;
 			finalImage.Create(bestXResolution, bestYResolution);
 			
-			String fileName = defFile->filename.GetFilename();
-			
+            String fileName = defFile->filename.GetFilename();
+
 			// Writing 
 			for (int frame = 0; frame < defFile->frameCount; ++frame)
 			{
@@ -254,7 +252,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 				}
 			}
 			
-			if (!WriteDefinition(excludeFolder, outputPath, textureNameWithIndex, defFile))
+            if (!WriteDefinition(excludeFolder, outputPath, fileBasename, defFile))
 			{
 				AddError(Format("* ERROR: Failed to write definition - %s.", fileName.c_str()));
 			}

@@ -50,6 +50,7 @@ void PrintUsage()
     printf("\t-v or --verbose - detailed output\n");
     printf("\t-s or --silent - silent mode. Log only warnings and errors.\n");
     printf("\t-teamcity - extra output in teamcity format\n");
+    printf("\t-md5mode - only process md5 for output resources\n");
 
     printf("\n");
     printf("resourcepacker [src_dir] - will pack resources from src_dir\n");
@@ -151,7 +152,14 @@ void ProcessRecourcePacker()
         exportForGPU = GPUFamilyDescriptor::GetGPUByName(gpuName);
     }
     
-    resourcePacker->PackResources(exportForGPU);
+    if (CommandLineParser::CommandIsFound(String("-md5mode")))
+    {
+        resourcePacker->RecalculateMD5ForOutputDir();
+    }
+    else
+    {
+        resourcePacker->PackResources(exportForGPU);
+    }
     elapsedTime = SystemTimer::Instance()->AbsoluteMS() - elapsedTime;
     Logger::FrameworkDebug("[Resource Packer Compile Time: %0.3lf seconds]", (float64)elapsedTime / 1000.0);
     

@@ -35,7 +35,6 @@
 
 #include "Tests/MathTest.h"
 #include "Tests/FunctionBindSingalTest.h"
-#include "Tests/ImageSizeTest.h"
 #include "Tests/SaveImageTest.h"
 #include "Tests/LoadImageTest.h"
 #include "Tests/StringFormatTest.h"
@@ -58,11 +57,12 @@
 #include "Tests/UnlimitedLogOutputTest.h"
 #include "Tests/SpinLockTest.h"
 #include "Tests/ThreadSyncTest.h"
+#include "Tests/MemoryManagerTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
 {
-    //runOnlyThisTest = "TestClassName";
+    //runOnlyThisTest = "StaticTextFieldTest";
 }
 
 void GameCore::OnError()
@@ -79,7 +79,6 @@ void GameCore::RegisterTests()
 #endif
     new MathTest();
     new FunctionBindSignalTest();
-    new ImageSizeTest();
     new LoadImageTest();
     new SaveImageTest();
     new StringFormatTest();
@@ -99,6 +98,9 @@ void GameCore::RegisterTests()
     new NetworkTest();
     new UnlimitedLogOutputTest();
     new SpinLockTest();
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+    new MemoryManagerTest();
+#endif  // DAVA_MEMORY_PROFILING_ENABLE
 //  $UNITTEST_CTOR
 }
 

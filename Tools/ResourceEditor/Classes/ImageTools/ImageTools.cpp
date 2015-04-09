@@ -28,9 +28,6 @@
 
 
 #include "ImageTools/ImageTools.h"
-#include "Render/Image/LibPngHelpers.h"
-#include "Render/Image/LibPVRHelper.h"
-#include "Render/Image/LibDdsHelper.h"
 
 #include "TextureCompression/TextureConverter.h"
 
@@ -67,42 +64,17 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 	for(size_t i = 0; i < files.size(); ++i)
 	{
 		const FilePath& imagePathname = files[i];
-		
-		File *imageFile = File::Create(imagePathname, File::OPEN | File::READ);
-		if(!imageFile)
-		{
-			Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't open file %s", imagePathname.GetAbsolutePathname().c_str());
-			return 0;
-		}
-		
-		ImageSystem* system = ImageSystem::Instance();
-		if(system->GetImageFormatInterface(IMAGE_FORMAT_PNG)->IsImage(imageFile))
-		{
-			size += system->GetImageFormatInterface(IMAGE_FORMAT_PNG)->GetDataSize(imageFile);
-		}
-		else if(system->GetImageFormatInterface(IMAGE_FORMAT_DDS)->IsImage(imageFile))
-		{
-            size += system->GetImageFormatInterface(IMAGE_FORMAT_DDS)->GetDataSize(imageFile);
-		}
-		else if(system->GetImageFormatInterface(IMAGE_FORMAT_PVR)->IsImage(imageFile))
-		{
-            size += system->GetImageFormatInterface(IMAGE_FORMAT_PVR)->GetDataSize(imageFile);
-		}
-        else if(system->GetImageFormatInterface(IMAGE_FORMAT_JPEG)->IsImage(imageFile))
-		{
-            size += system->GetImageFormatInterface(IMAGE_FORMAT_JPEG)->GetDataSize(imageFile);
-		}
-        else if(system->GetImageFormatInterface(IMAGE_FORMAT_TGA)->IsImage(imageFile))
+        ImageSystem* system = ImageSystem::Instance();
+        ImageInfo info = system->GetImageInfo(imagePathname);
+        if (!info.isEmpty())
         {
-            size += system->GetImageFormatInterface(IMAGE_FORMAT_TGA)->GetDataSize(imageFile);
+            size += info.dataSize;
         }
 		else
 		{
 			Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetAbsolutePathname().c_str());
 			DVASSERT(false);
 		}
-		
-		SafeRelease(imageFile);
 	}
 	
     return size;

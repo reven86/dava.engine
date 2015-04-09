@@ -76,11 +76,30 @@
 /////////
 // Default headers per platform:
 
+// Introduce useful defines:
+//  DAVA_NOINLINE to tell compiler not no inline function
+//  DAVA_ALIGNOF to get alignment of type
+//  DAVA_NOEXCEPT to point that function doesn't throw
+#if defined(__DAVAENGINE_WIN32__)
+#define DAVA_NOINLINE       __declspec(noinline)
+#define DAVA_ALIGNOF(x)     __alignof(x)
+#define DAVA_NOEXCEPT       throw()
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#define DAVA_NOINLINE       __attribute__((noinline))
+#define DAVA_ALIGNOF(x)     alignof(x)
+#define DAVA_NOEXCEPT       noexcept
+#elif defined(__DAVAENGINE_ANDROID__)
+#define DAVA_NOINLINE       __attribute__((noinline))
+#define DAVA_ALIGNOF(x)     alignof(x)
+#define DAVA_NOEXCEPT       noexcept
+#endif
 
 #if defined(__DAVAENGINE_WIN32__)
 #define __DAVASOUND_AL__
 #define WIN32_LEAN_AND_MEAN
-//#include <windef.h>
+#ifndef NOMINMAX
+#define NOMINMAX        // undef macro min and max from windows headers
+#endif
 #include <windows.h>
 #include <windowsx.h>
 #undef DrawState
@@ -116,6 +135,7 @@
 #pragma warning( disable : 4244)
 #endif 
 
+#include <memory>
 #include <string>
 #include <list>
 #include <map>
@@ -126,6 +146,9 @@
 #include <stack>
 #include <queue>
 #include <array>
+#include <unordered_map>
+#include <unordered_set>
+#include <sstream>
 
 #if defined(__DAVAENGINE_WIN32__)
 #pragma warning( pop )
@@ -137,101 +160,110 @@
 //#endif 
 //#define __DAVAENGINE_IPHONE__
 
-
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+#include "MemoryManager/AllocPools.h"
+#include "MemoryManager/MemoryManagerAllocator.h"
+#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
 namespace DAVA
 {
 
-typedef unsigned char	uint8;
-typedef unsigned short	uint16;
-typedef unsigned int	uint32;
+typedef unsigned char   uint8;
+typedef unsigned short  uint16;
+typedef unsigned int    uint32;
 
-typedef signed char		int8;
-typedef signed short	int16;
-typedef signed int		int32;
+typedef signed char     int8;
+typedef signed short    int16;
+typedef signed int      int32;
 
-#if defined(_WIN32)
-	typedef unsigned __int64 uint64;
-	typedef signed __int64	int64;
+#if defined(__DAVAENGINE_WIN32__)
+    typedef unsigned __int64    uint64;
+    typedef signed __int64      int64;
 #else
-	typedef unsigned long long uint64;
-	typedef signed long long int64;
+    typedef unsigned long long  uint64;
+    typedef signed long long    int64;
 #endif 
-    
+
+// TODO: maybe replace pointer_size with using pointer_size = uintptr_t?
 typedef Select<sizeof(void*) == 4, uint32, uint64>::Result pointer_size;
-    
-//#if (sizeof(void*) == 4)
-//typedef uint32 pointer_size
-//#elif (sizeof(void*) == 8)
-//typedef uint64 pointer_size;
-//#else
-//#error(Pointer type size is invalid);
-//#endif
-	
+
 #ifndef TRUE
-#define TRUE	1
+#define TRUE    1
 #endif
-	
+
 #ifndef FALSE
-#define	FALSE	0
+#define FALSE   0
 #endif
 
-typedef char		char8;
-typedef wchar_t		char16;
+typedef char        char8;
+typedef wchar_t     char16;
 
-typedef float			float32;
-typedef double			float64;
+typedef float       float32;
+typedef double      float64;
 
-typedef std::string		String;
-#if defined(__DAVAENGINE_ANDROID__)
-	typedef std::basic_string<wchar_t>	WideString;
-#else //#if defined(__DAVAENGINE_ANDROID__)
-	typedef std::wstring	WideString;
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+// FIX: replace DefaultSTLAllocator with MemoryManagerAllocator after fixing framework and game codebases
+template<typename T>
+using DefaultSTLAllocator = std::allocator<T>;
+//using DefaultSTLAllocator = MemoryManagerAllocator<T, ALLOC_POOL_APP>;
+#else
+template<typename T>
+using DefaultSTLAllocator = std::allocator<T>;
+#endif
 
-	
+template<typename CharT>
+using BasicString = std::basic_string<CharT, std::char_traits<CharT>, DefaultSTLAllocator<CharT>>;
 
-//template <typename _Ty, typename _Ax = std::allocator(_Ty)> 
-//class List : public std::list<_Ty, _Ax>  {};
+using String = BasicString<char8>;
+using WideString = BasicString<wchar_t>;
 
+template<typename CharT>
+using BasicStringStream = std::basic_stringstream<CharT, std::char_traits<CharT>, DefaultSTLAllocator<CharT>>;
 
-//#define List std::list
-//#define Vector std::vector
-template < typename E > class List : public std::list< E > {};
-template < typename E > class Vector : public std::vector< E >
-{
-public:
-    typedef E	   value_type;
-    typedef size_t size_type;
-    explicit Vector(size_type n, const value_type & value = value_type()) : std::vector< E >(n, value) {}
-    Vector() : std::vector< E >() {}
-};
-template < class E > class Set : public std::set< E > {};
+using StringStream = BasicStringStream<char8>;
 
-template <  class _Key,
-            class _Hash = std::hash<_Key>,
-            class _Pred = std::equal_to<_Key>,
-            class _Alloc = std::allocator<_Key> > 
-class UnorderedSet : public std::unordered_set <_Key, _Hash, _Pred, _Alloc> {};
+template<typename T>
+using List = std::list<T, DefaultSTLAllocator<T>>;
 
-template < class E > class Deque : public std::deque< E > {};
+template<typename T>
+using Vector = std::vector<T, DefaultSTLAllocator<T>>;
 
-template<	class _Kty,
-			class _Ty,
-			class _Pr = std::less<_Kty>,
-			class _Alloc = std::allocator<std::pair<const _Kty, _Ty> > >
-class Map : public std::map<_Kty, _Ty, _Pr, _Alloc> {};
+template<typename T>
+using Deque = std::deque<T, DefaultSTLAllocator<T>>;
 
-template<	class _Kty,
-			class _Ty,
-			class _Pr = std::less<_Kty>,
-			class _Alloc = std::allocator<std::pair<const _Kty, _Ty> > >
-class MultiMap : public std::multimap<_Kty, _Ty, _Pr, _Alloc> {};
+template <class _Key,
+          class _Compare = std::less<_Key>>
+using Set = std::set< _Key, _Compare, DefaultSTLAllocator<_Key>>;
+    
+template<class _Kty,
+         class _Ty,
+         class _Pr = std::less<_Kty>>
+using Map = std::map<_Kty, _Ty, _Pr, DefaultSTLAllocator<std::pair<const _Kty, _Ty>>>;
 
-template < class T, class Container = std::deque<T> > class Stack : public std::stack< T, Container > {};
+template<class _Kty,
+         class _Ty,
+         class _Pr = std::less<_Kty>>
+using MultiMap = std::multimap<_Kty, _Ty, _Pr, DefaultSTLAllocator<std::pair<const _Kty, _Ty>>>;
 
-template < class T, class Container = std::vector<T>, class Compare = std::less<typename Container::value_type> > 
-class PriorityQueue : public std::priority_queue< T, Container, Compare > {};
+template<class T,
+         class Container = Deque<T>>
+using Stack = std::stack<T, Container>;
+
+template<class T,
+         class Container = Vector<T>,
+         class Compare = std::less<typename Container::value_type>>
+using PriorityQueue = std::priority_queue<T, Container, Compare>;
+
+template<typename Key,
+         typename Hash = std::hash<Key>,
+         typename KeyEqual = std::equal_to<Key>>
+using UnorderedSet = std::unordered_set<Key, Hash, KeyEqual, DefaultSTLAllocator<Key>>;
+
+template<typename Key,
+         typename T,
+         typename Hash = std::hash<Key>,
+         typename KeyEqual = std::equal_to<Key>>
+using UnorderedMap = std::unordered_map<Key, T, Hash, KeyEqual, DefaultSTLAllocator<std::pair<const Key, T>>>;
 
 #ifdef min
 #undef min
@@ -243,33 +275,30 @@ class PriorityQueue : public std::priority_queue< T, Container, Compare > {};
 template <class T>
 inline T Min(T a, T b)
 {
-	return (a < b) ? (a) : (b);
+    return (a < b) ? (a) : (b);
 }
 
 template <class T>
 inline T Max(T a, T b)
 {
-	return (a > b) ? (a) : (b);
+    return (a > b) ? (a) : (b);
 }
-	
+
 template <class T>
 inline T Abs(T a)
 {
-	return (a >= 0) ? (a) : (-a);
+    return (a >= 0) ? (a) : (-a);
 }
 
 template <class T>
 inline T Clamp(T val, T a, T b)
 {
-	return Min(b, Max(val, a));
+    return Min(b, Max(val, a));
 }
-	
 
 #if defined(__DAVAENGINE_WIN32__)
-#define Snprinf	    _snprintf
 #define Snprintf    _snprintf
 #else //#if defined(__DAVAENGINE_WIN32__)
-#define Snprinf	    snprintf
 #define Snprintf    snprintf
 #endif //#if defined(__DAVAENGINE_WIN32__)
 
@@ -277,54 +306,51 @@ inline T Clamp(T val, T a, T b)
 #define Memcpy memcpy
 #define Memset memset
 #define Memmove memmove
-#define Alloc malloc
-#define Free free
-#define Realloc realloc
 
 template <class TYPE>
 void SafeDelete(TYPE * &d)
 {
-	if (d)
-	{
-		delete d;
-		d = 0;
-	}
+    if (d != nullptr)
+    {
+        delete d;
+        d = nullptr;
+    }
 }
 
 template <class TYPE>
 void SafeDeleteArray(TYPE * & d)
 {
-	if (d)
-	{
-		delete [] d;
-		d = 0;
-	}
+    if (d != nullptr)
+    {
+        delete [] d;
+        d = nullptr;
+    }
 }
 
 #ifndef SAFE_DELETE // for compatibility with FCollada
-#define SAFE_DELETE(x) if (x) { delete x; x = 0; };
+#define SAFE_DELETE(x) if (x) { delete x; x = nullptr; };
 #endif 
-	
+
 #ifndef SAFE_DELETE_ARRAY // for compatibility with FCollada
-#define SAFE_DELETE_ARRAY(x) if (x) { delete [] x; x = 0; };
+#define SAFE_DELETE_ARRAY(x) if (x) { delete [] x; x = nullptr; };
 #endif
-	
+
 #ifndef OBJC_SAFE_RELEASE
 #define OBJC_SAFE_RELEASE(x) [x release];x = nil;
 #endif 
-	
-	/**
-	 \enum Graphical object aligment.
-	 */
+
+/**
+ \enum Graphical object aligment.
+*/
 enum eAlign 
 {
-	ALIGN_LEFT		= 0x01,	//!<Align graphical object by the left side.
-	ALIGN_HCENTER	= 0x02,	//!<Align graphical object by the horizontal center.
-	ALIGN_RIGHT		= 0x04,	//!<Align graphical object by the right side.
-	ALIGN_TOP		= 0x08,	//!<Align graphical object by the top side.
-	ALIGN_VCENTER	= 0x10,	//!<Align graphical object by the vertical center.
-	ALIGN_BOTTOM	= 0x20,	//!<Align graphical object by the bottom side.
-	ALIGN_HJUSTIFY	= 0x40	//!<Used only for the fonts. Stretch font string over all horizontal size of the area.
+    ALIGN_LEFT      = 0x01, //!<Align graphical object by the left side.
+    ALIGN_HCENTER   = 0x02, //!<Align graphical object by the horizontal center.
+    ALIGN_RIGHT     = 0x04, //!<Align graphical object by the right side.
+    ALIGN_TOP       = 0x08, //!<Align graphical object by the top side.
+    ALIGN_VCENTER   = 0x10, //!<Align graphical object by the vertical center.
+    ALIGN_BOTTOM    = 0x20, //!<Align graphical object by the bottom side.
+    ALIGN_HJUSTIFY  = 0x40  //!<Used only for the fonts. Stretch font string over all horizontal size of the area.
 };
 
 #ifndef COUNT_OF

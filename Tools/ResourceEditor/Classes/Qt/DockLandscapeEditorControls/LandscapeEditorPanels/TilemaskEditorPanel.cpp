@@ -127,7 +127,7 @@ void TilemaskEditorPanel::InitUI()
 	radioDraw->setText(ResourceEditor::TILEMASK_EDITOR_DRAW_CAPTION.c_str());
 	radioCopyPaste->setText(ResourceEditor::TILEMASK_EDITOR_COPY_PASTE_CAPTION.c_str());
 
-	tileTexturePreviewWidget->setMaximumHeight(160);
+    tileTexturePreviewWidget->setFixedHeight(130);
 
 	layoutBrushImage->setContentsMargins(0, 0, 0, 0);
 	layoutTileTexture->setContentsMargins(0, 0, 0, 0);

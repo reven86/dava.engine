@@ -39,11 +39,11 @@
 namespace DAVA 
 {
 
-class LibTgaWrapper: public ImageFormatInterface
+class LibTgaHelper: public ImageFormatInterface
 {
 public:
     
-    LibTgaWrapper();
+    LibTgaHelper();
     
     bool IsImage(File *file) const override;
 
@@ -52,8 +52,7 @@ public:
     eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const override;
     eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const override;
     
-    uint32 GetDataSize(File *infile) const override;
-	Size2i GetImageSize(File *infile) const override;
+    ImageInfo GetImageInfo(File *infile) const override;
 
 private:
     struct TgaInfo
@@ -92,12 +91,12 @@ private:
 
     struct ImageDataWriter
     {
-        ImageDataWriter(Image* image, const LibTgaWrapper::TgaInfo& tgaInfo);
+        ImageDataWriter(Image* image, const LibTgaHelper::TgaInfo& tgaInfo);
         inline bool AtEnd() const { return isAtEnd; }
         void Write(uint8* pixel);
 
     private:
-        void ResetPtr(const Image* image, const LibTgaWrapper::TgaInfo& tgaInfo);
+        void ResetPtr(const Image* image, const LibTgaHelper::TgaInfo& tgaInfo);
         void IncrementPtr();
 
     public:

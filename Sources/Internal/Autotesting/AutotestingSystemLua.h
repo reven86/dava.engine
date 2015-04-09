@@ -80,7 +80,7 @@ public:
 
 	static void StackDump(lua_State* L);
 	const char *Pushnexttemplate (lua_State* L, const char* path);
-	const char *Findfile (lua_State* L, const char* name, const char* pname);
+	const FilePath Findfile (lua_State* L, const char* name, const char* pname);
 #endif //SWIG
     
     // autotesting system api   

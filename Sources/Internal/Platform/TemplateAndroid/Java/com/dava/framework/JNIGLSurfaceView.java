@@ -26,9 +26,6 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	private static final int MAX_KEYS = 256; // Maximum number of keycodes which used in native code
 
 	private JNIRenderer mRenderer = null;
-	// we have to add flag to distinguish second call to onResume()
-	// during Activity.onResume or Activity.onWindowsFocusChanged(focus)
-	private boolean alreadyResumed = false;
 
 	private native void nativeOnInput(int action, int source, int groupSize, ArrayList< InputRunnable.InputEvent > activeInputs, ArrayList< InputRunnable.InputEvent > allInputs);
 	private native void nativeOnKeyDown(int keyCode);
@@ -41,11 +38,18 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	private Integer[] overridedGamepadKeys = null;
 	private ArrayList< Pair<Integer, Integer> > gamepadButtonsAxisMap = new ArrayList< Pair<Integer, Integer> >();
 	
+	private static volatile boolean isPaused = false;
+	
 	MOGAListener mogaListener = null;
 	
 	boolean[] pressedKeys = new boolean[MAX_KEYS]; // Use MAX_KEYS for mapping keycodes to native
 
 	public int lastDoubleActionIdx = -1;
+	
+	public static boolean isPaused()
+	{
+	    return isPaused;
+	}
 	
 	class DoubleTapListener extends GestureDetector.SimpleOnGestureListener{
 		JNIGLSurfaceView glview;
@@ -144,6 +148,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	
     @Override
     public void onPause() {
+        isPaused = true;
         Log.d(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onPause");
         setRenderMode(RENDERMODE_WHEN_DIRTY);
         queueEvent(new Runnable() {
@@ -151,25 +156,23 @@ public class JNIGLSurfaceView extends GLSurfaceView
                 mRenderer.OnPause();
             }
         });
-        // destroy eglCondext(or unbind), eglScreen, eglSurface
-        super.onPause();
-        alreadyResumed = false;
+        super.onPause();// destroy eglCondext(or unbind), eglScreen, eglSurface
+        // we write AAA mobile game and for user better resume as fast as posible
+        // so DO NOT destroy opengl context
     }
 
     @Override
     public void onResume() {
         Log.d(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onResume");
-        if (!alreadyResumed) {
-            // first call parent to restore eglContext
-            super.onResume();
-            queueEvent(new Runnable() {
-                public void run() {
-                    mRenderer.OnResume();
-                }
-            });
-            setRenderMode(RENDERMODE_CONTINUOUSLY);
-            alreadyResumed = true;
-        }
+        // first call parent to restore eglContext
+        super.onResume();
+        queueEvent(new Runnable() {
+            public void run() {
+                mRenderer.OnResume();
+            }
+        });
+        setRenderMode(RENDERMODE_CONTINUOUSLY);
+        isPaused = false;
     };
 	
 	public class InputRunnable implements Runnable
@@ -208,6 +211,10 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		int source;
 		int groupSize;
 
+		int touchIdForPointerId(int pointerId) {
+			return pointerId + 1;
+		}
+
 		public InputRunnable(final android.view.MotionEvent event, final int tapCount)
 		{
 			allEvents = new ArrayList<InputEvent>();
@@ -223,7 +230,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 					if ((source & InputDevice.SOURCE_CLASS_POINTER) > 0) {
 						int pointerId = event.getPointerId(i);
 						if(isMultitouchEnabled || pointerId == 0) {
-							InputEvent ev = new InputEvent(pointerId, event.getHistoricalX(i, historyStep), event.getHistoricalY(i, historyStep), tapCount, event.getHistoricalEventTime(historyStep));
+							InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getHistoricalX(i, historyStep), event.getHistoricalY(i, historyStep), tapCount, event.getHistoricalEventTime(historyStep));
 							allEvents.add(ev);
 						}
 					}
@@ -241,7 +248,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				if ((source & InputDevice.SOURCE_CLASS_POINTER) > 0) {
 					int pointerId = event.getPointerId(i);
 					if(isMultitouchEnabled || pointerId == 0) {
-						InputEvent ev = new InputEvent(pointerId, event.getX(i), event.getY(i), tapCount, event.getEventTime());
+						InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(i), event.getY(i), tapCount, event.getEventTime());
 						allEvents.add(ev);
 					}
 				}
@@ -271,7 +278,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				final int pointerId = event.getPointerId(actionIdx);
 
 				if(isMultitouchEnabled || pointerId == 0) {
-					InputEvent ev = new InputEvent(pointerId, event.getX(actionIdx), event.getY(actionIdx), tapCount, event.getEventTime());
+					InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(actionIdx), event.getY(actionIdx), tapCount, event.getEventTime());
 					allEvents.add(ev);
 					activeEvents.add(ev);
 					groupSize += 1; // only ACTION_MOVE events can have history, so in this case there will be only one group
