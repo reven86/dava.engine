@@ -39,24 +39,23 @@
 	float32	currFPS;
 	OpenGLView * openGLView;
 	NSWindow * mainWindow;
-	//NSWindow * fullscreenWindow;
-	NSFullScreenWindow * fullscreenWindow;
     
-	NSOpenGLContext * fullScreenContext;
-
 	bool isAnimating;
 	NSTimer * animationTimer;
 	CFAbsoluteTime timeBefore;
-	BOOL stayInFullScreenMode;          // this flag indicating that we want to leave full screen mode
 	
 	ApplicationCore * core;
+    bool fullScreen;
 }
 
-- (void)switchToFullScreen;
+- (bool)getFullScreen;
+- (void)setFullScreen:(bool)_fullScreen;
 
 - (void)windowWillMiniaturize:(NSNotification *)notification;
 - (void)windowDidDeminiaturize:(NSNotification *)notification;
 
+- (void)windowDidEnterFullScreen:(NSNotification *)notification;
+- (void)windowDidExitFullScreen:(NSNotification *)notification;
 
 - (void)OnSuspend;
 - (void)OnResume;
