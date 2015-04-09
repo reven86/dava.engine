@@ -27,45 +27,39 @@
 =====================================================================================*/
 
 
-#include "ImageSizeTest.h"
+#ifndef __DAVAENGINE_LIBPNG_HELPERS_H__
+#define __DAVAENGINE_LIBPNG_HELPERS_H__
 
-ImageSizeTest::ImageSizeTest()
-: TestTemplate<ImageSizeTest>("ImageSizeTest")
+#include "Base/BaseTypes.h"
+#include "Base/BaseMath.h"
+#include "Base/BaseObject.h"
+#include "FileSystem/FilePath.h"
+
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageFormatInterface.h"
+
+namespace DAVA 
 {
-	RegisterFunction(this, &ImageSizeTest::TestFunction, "ImageSizeTest", NULL);
+class Texture;
+class Sprite;
+class Image;
+
+class LibPngHelper: public ImageFormatInterface
+{
+public:
+    LibPngHelper();
+
+    bool IsImage(File *infile) const override;
+
+    eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
+    eErrorCode WriteFile(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const override;
+    eErrorCode WriteFileAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *>> &imageSet, PixelFormat compressionFormat) const override;
+
+    ImageInfo GetImageInfo(File *infile) const override;
+
+    static eErrorCode ReadPngFile(File *infile, Image *image, PixelFormat targetFormat = FORMAT_INVALID);
+};
+
 }
 
-void ImageSizeTest::LoadResources()
-{
-    GetBackground()->SetColor(DAVA::Color(0.0f, 1.0f, 0.0f, 1.0f));
-}
-
-
-void ImageSizeTest::UnloadResources()
-{
-    RemoveAllControls();
-}
-
-void ImageSizeTest::TestFunction(PerfFuncData * data)
-{
-	static const DAVA::FilePath imagePathnames[DAVA::ImageSystem::FILE_FORMAT_COUNT] = 
-	{
-		"~res:/TestData/ImageSizeTest/image.png",
-		"~res:/TestData/ImageSizeTest/image.jpg",
-		"~res:/TestData/ImageSizeTest/image.pvr",
-		"~res:/TestData/ImageSizeTest/image.dds"
-	};
-
-
-    //TODO: -1 due to DF-5704
-	for(uint32 i = 0; i < DAVA::ImageSystem::FILE_FORMAT_COUNT-1; ++i)
-	{
-		DAVA::ImageFormatInterface *im = DAVA::ImageSystem::Instance()->GetImageFormatInterface(imagePathnames[i]);	
-		Size2i imageSize = im->GetImageSize(imagePathnames[i]);
-
-		TEST_VERIFY(imageSize.dx == 128);
-		TEST_VERIFY(imageSize.dy == 128);
-	}
-}
-
-
+#endif // __PNG_IMAGE_H__

@@ -1429,10 +1429,10 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h">
+	<ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h">
       <Filter>Internal\Render\Image</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelpers.h">
+	</ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.h">
@@ -2914,10 +2914,10 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp">
+	<ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelpers.cpp">
+	</ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.cpp">
@@ -2964,9 +2964,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.cpp">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageFormatInterface.cpp">
-      <Filter>Internal\Render\Image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlNode.cpp">
       <Filter>Internal\FileSystem</Filter>

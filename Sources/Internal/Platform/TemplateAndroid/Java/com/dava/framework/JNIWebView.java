@@ -736,6 +736,19 @@ public class JNIWebView {
             }
         });
     }
+    
+    /**
+     * Workaround for samsung tab 4 10.1 adreno 305 (Game Client)
+     * on lock/unlock disappeared text fields
+     */
+    static protected void RelinkNativeControls() {
+        for (WebViewWrapper view : views.values()) {
+            ViewGroup viewGroup = (ViewGroup) view.getParent();
+            viewGroup.removeView(view);
+            JNIActivity.GetActivity().addContentView(view,
+                    view.getLayoutParams());
+        }
+    }
 
     private static native int OnUrlChange(int id, String url);
 

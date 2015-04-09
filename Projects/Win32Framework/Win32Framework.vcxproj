@@ -533,7 +533,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\ImageSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h" />
-    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelpers.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\IndexBuffer.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material.h" />
@@ -1023,11 +1023,10 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderData.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\Image.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageFormatInterface.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelpers.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialCompiler.cpp" />
