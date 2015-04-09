@@ -32,7 +32,7 @@ public:
     QSize GetViewSize() const;
     DAVA::UIControl *GetViewControl() const;
 
-    void SetActiveRootControls(const QList<ControlNode*> &activatedControls);
+    void SetRootControls(const QList<ControlNode*> &activatedControls);
     void ControlsDeactivated(const QList<ControlNode*> &deactivatedControls);
     void ControlsActivated(const QList<ControlNode *> &activatedControls);
 

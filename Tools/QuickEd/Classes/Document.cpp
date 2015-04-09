@@ -39,12 +39,12 @@ void Document::InitSharedData()
     sharedData->SetData("controlDeselected", false);
     sharedData->SetData("controlsDeselected", false);
 
-    QList<ControlNode*> activeRootControls;
+    QList<ControlNode*> rootControls;
     PackageControlsNode *controlsNode = package->GetPackageControlsNode();
     for (int32 index = 0; index < controlsNode->GetCount(); ++index)
-        activeRootControls.push_back(controlsNode->Get(index));
+        rootControls.push_back(controlsNode->Get(index));
 
-    sharedData->SetData("activeRootControls", QVariant::fromValue(activeRootControls));
+    sharedData->SetData("activeRootControls", QVariant::fromValue(rootControls));
 }
 
 Document::~Document()

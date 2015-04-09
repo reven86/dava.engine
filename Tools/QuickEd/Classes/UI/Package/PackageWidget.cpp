@@ -126,6 +126,8 @@ void PackageWidget::LoadContext()
         packageModel = context->packageModel;
         filteredPackageModel = context->filteredPackageModel;
         //remove it in future
+        connect(packageModel, &PackageModel::rowsInserted, this, &PackageWidget::OnRowsInserted);
+        connect(packageModel, &PackageModel::rowsAboutToBeRemoved, this, &PackageWidget::OnRowsAboutToBeRemoved);
         sharedData->SetData("packageModel", QVariant::fromValue<QAbstractItemModel*>(context->packageModel)); //TODO: bad architecture
         //restore model
         treeView->setModel(context->filteredPackageModel);
@@ -143,6 +145,8 @@ void PackageWidget::LoadContext()
         treeView->selectionModel()->select(context->selection, QItemSelectionModel::ClearAndSelect);
         //restore filter line
         filterLine->setText(context->filterString);
+        //set selected controls as displayed controls
+        OnControlSelectedInEditor(sharedData->GetData("activeRootControls").value<QList<ControlNode*> >());
     }
 
 }
@@ -232,40 +236,50 @@ void PackageWidget::RemoveNodes(const DAVA::Vector<ControlNode*> &nodes)
     sharedData->GetDocument()->GetCommandExecutor()->RemoveControls(nodes);
 }
 
+void PackageWidget::OnRowsInserted(const QModelIndex &parent, int first, int last)
+{
+    ControlsContainerNode *parentNode = dynamic_cast<ControlsContainerNode*>(static_cast<PackageBaseNode*>(parent.internalPointer()));
+    PackageControlsNode* packageControlsNode = dynamic_cast<PackageControlsNode*>(parentNode);
+    if (nullptr != packageControlsNode)
+    {
+        QList<ControlNode*> insertedNodes;
+        for (int i = first; i < last; ++i)
+        {
+            insertedNodes.append(packageControlsNode->Get(i));
+        }
+        sharedData->SetData("activeRootControls", QVariant::fromValue(insertedNodes));
+        OnControlSelectedInEditor(insertedNodes);
+    }
+}
+
+void PackageWidget::OnRowsAboutToBeRemoved(const QModelIndex &parent, int first, int last)
+{
+    ControlsContainerNode *parentNode = dynamic_cast<ControlsContainerNode*>(static_cast<PackageBaseNode*>(parent.internalPointer()));
+    PackageControlsNode* packageControlsNode = dynamic_cast<PackageControlsNode*>(parentNode);
+    if (nullptr != packageControlsNode)
+    {
+        QList<ControlNode*> &rootControls = sharedData->GetData("activeRootControls").value<QList<ControlNode*> >();
+        for (int i = first; i < last; ++i)
+        {
+            rootControls.removeAt(first);
+        }
+        sharedData->SetData("activeRootControls", QVariant::fromValue(rootControls));
+    }
+}
+
 void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
 {
     if (filteredPackageModel.isNull())
     {
         return;
     }
-    QList<ControlNode*> selectedRootControl;
-    QList<ControlNode*> deselectedRootControl;
+    QList<ControlNode*> selectedRootControls = sharedData->GetData("activeRootControls").value<QList<ControlNode*> >();
     
-    QList<ControlNode*> selectedControl;
-    QList<ControlNode*> deselectedControl;
+    QList<ControlNode*> selectedControls;
+    QList<ControlNode*> deselectedControls;
 
     QItemSelection selected = filteredPackageModel->mapSelectionToSource(proxySelected);
     QItemSelection deselected = filteredPackageModel->mapSelectionToSource(proxyDeselected);
-
-    QModelIndexList selectedIndexList = selected.indexes();
-
-    if (!selectedIndexList.empty())
-    {
-        for(QModelIndex &index : selectedIndexList)
-        {
-            PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-            if (node->GetControl())
-            {
-                selectedControl.push_back(static_cast<ControlNode*>(node));
-                
-                while (node->GetParent() && node->GetParent()->GetControl())
-                    node = node->GetParent();
-                
-                if (selectedRootControl.indexOf(static_cast<ControlNode*>(node)) < 0)
-                    selectedRootControl.push_back(static_cast<ControlNode*>(node));
-            }
-        }
-    }
 
     QModelIndexList deselectedIndexList = deselected.indexes();
     if (!deselectedIndexList.empty())
@@ -275,20 +289,38 @@ void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, cons
             PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
             if (node->GetControl())
             {
-                deselectedControl.push_back(static_cast<ControlNode*>(node));
+                deselectedControls.push_back(static_cast<ControlNode*>(node));
+
+                while (node->GetParent() && node->GetParent()->GetControl())
+                    node = node->GetParent();
+                selectedRootControls.removeAll(static_cast<ControlNode*>(node));
+            }
+        }
+    }
+
+    QModelIndexList selectedIndexList = selected.indexes();
+    if (!selectedIndexList.empty())
+    {
+        for (QModelIndex &index : selectedIndexList)
+        {
+            PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+            if (node->GetControl())
+            {
+                selectedControls.push_back(static_cast<ControlNode*>(node));
 
                 while (node->GetParent() && node->GetParent()->GetControl())
                     node = node->GetParent();
 
-                if (deselectedRootControl.indexOf(static_cast<ControlNode*>(node)) < 0)
-                    deselectedRootControl.push_back(static_cast<ControlNode*>(node));
+                if (selectedRootControls.indexOf(static_cast<ControlNode*>(node)) < 0)
+                    selectedRootControls.push_back(static_cast<ControlNode*>(node));
             }
         }
     }
 
     RefreshActions(selectedIndexList);
-    sharedData->SetData("activatedControls", QVariant::fromValue(selectedControl));
-    sharedData->SetData("deactivatedControls", QVariant::fromValue(deselectedControl));
+    sharedData->SetData("activeRootControls", QVariant::fromValue(selectedRootControls));
+    sharedData->SetData("activatedControls", QVariant::fromValue(selectedControls));
+    sharedData->SetData("deactivatedControls", QVariant::fromValue(deselectedControls));
 }
 
 void PackageWidget::OnCopy()
@@ -345,20 +377,14 @@ void PackageWidget::filterTextChanged(const QString &filterText)
 
 void PackageWidget::OnControlSelectedInEditor(const QList<ControlNode *> &selectedNodes)
 {
-    if (selectedNodes.isEmpty())
+    treeView->selectionModel()->clear();
+    for (auto &node : selectedNodes)
     {
-        treeView->selectionModel()->clear();
-    }
-    else
-    {
-        for (auto &node : selectedNodes)
-        {
-            QModelIndex srcIndex = packageModel->indexByNode(node);
-            QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
-            treeView->selectionModel()->select(dstIndex, QItemSelectionModel::ClearAndSelect);
-            treeView->expand(dstIndex);
-            treeView->scrollTo(dstIndex);
-        }
+        QModelIndex srcIndex = packageModel->indexByNode(node);
+        QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
+        treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Select);
+        treeView->expand(dstIndex);
+        treeView->scrollTo(dstIndex);
     }
 }
 

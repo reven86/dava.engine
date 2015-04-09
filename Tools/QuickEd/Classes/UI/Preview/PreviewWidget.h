@@ -55,7 +55,7 @@ private slots:
 
 private:
     void OnScaleByZoom(int scaleDelta); 
-    void UpdateRootControls();
+    void UpdateActiveRootControls();
 
 private:
     DavaGLWidget *davaGLWidget;

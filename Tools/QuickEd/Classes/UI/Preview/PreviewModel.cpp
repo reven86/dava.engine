@@ -216,14 +216,17 @@ void PreviewModel::OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl 
             result.addError(Result::Warning, tr("rootControl not found!"));
         }
     }
-    ControlNodeSelected(selectedNodes);
+    if (!selectedNodes.isEmpty())
+    {
+        ControlNodeSelected(selectedNodes);
+    }
     if (result)
     {
         emit ErrorOccurred(result);
     }
 }
 
-void PreviewModel::SetActiveRootControls(const QList<ControlNode*> &activatedControls)
+void PreviewModel::SetRootControls(const QList<ControlNode*> &activatedControls)
 {
     rootNodes.clear();
     canvas->RemoveAllControls();

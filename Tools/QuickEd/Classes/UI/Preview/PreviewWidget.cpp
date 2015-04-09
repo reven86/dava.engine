@@ -87,7 +87,7 @@ void PreviewWidget::OnDocumentChanged(SharedData *data)
     }
     sharedData = data;
 
-    UpdateRootControls();
+    UpdateActiveRootControls();
     if (nullptr != sharedData)
     {
         OnScrollAreaChanged(model->GetViewSize(), model->GetScaledCanvasSize());
@@ -103,7 +103,7 @@ void PreviewWidget::OnDataChanged(const QByteArray &role)
 {
     if (role == "activeRootControls")
     {
-        UpdateRootControls();
+        UpdateActiveRootControls();
     }
     else if (role == "deactivatedControls")
     {
@@ -115,15 +115,15 @@ void PreviewWidget::OnDataChanged(const QByteArray &role)
     }
 }
 
-void PreviewWidget::UpdateRootControls()
+void PreviewWidget::UpdateActiveRootControls()
 {
     if (nullptr == sharedData)
     {
-        model->SetActiveRootControls(QList<ControlNode*>());
+        model->SetRootControls(QList<ControlNode*>());
     }
     else
     {
-        model->SetActiveRootControls(sharedData->GetData("activeRootControls").value<QList<ControlNode*> >());
+        model->SetRootControls(sharedData->GetData("activeRootControls").value<QList<ControlNode*> >());
     }
 }
 

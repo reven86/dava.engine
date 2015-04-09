@@ -193,7 +193,7 @@ void QtModelPackageCommandExecutor::InsertControlImpl(ControlNode *control, Cont
     PackageModel *model = document->GetPackageModel();
     
     PushCommand(new InsertControlCommand(model, control, dest, destIndex));
-    
+
     ControlNode *destControl = dynamic_cast<ControlNode*>(dest);
     if (destControl)
     {

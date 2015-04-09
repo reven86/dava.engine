@@ -19,7 +19,7 @@ DocumentGroup::~DocumentGroup()
 
 void DocumentGroup::AddDocument(Document* document)
 {
-    DVASSERT(document);
+    DVASSERT(nullptr != document);
     undoGroup->addStack(document->GetUndoStack());
     if (documentList.contains(document))
     {
@@ -30,7 +30,7 @@ void DocumentGroup::AddDocument(Document* document)
 
 void DocumentGroup::RemoveDocument(Document* document)
 {
-    DVASSERT(document);
+    DVASSERT(nullptr != document);
     undoGroup->removeStack(document->GetUndoStack());
 
     if (0 == documentList.removeAll(document))
