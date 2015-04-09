@@ -60,8 +60,13 @@ public class JNIApplication extends Application
 		 * Core initialization moved to JNIActivity
 		 */
 	    JNINotificationProvider.Init();
-	    
-        externalDocumentsDir = this.getExternalFilesDir(null).getAbsolutePath() + "/"; 
+        
+	    if(null != this.getExternalFilesDir(null)) {
+            externalDocumentsDir = this.getExternalFilesDir(null).getAbsolutePath() + "/"; 
+        } else {
+            externalDocumentsDir = "";
+        }
+        
         internalDocumentsDir = this.getFilesDir().getAbsolutePath() + "/";
         launchLocale = Locale.getDefault();
 		
