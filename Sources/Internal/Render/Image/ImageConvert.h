@@ -203,7 +203,6 @@ struct ConvertARGB1555toRGBA5551
     inline void operator()(const uint16 * input, uint16 *output)
     {
         //arrr rrgg gggb bbbb --> rrrr rggg ggbb bbba
-        
         const uint16 & in = *input;
 
         uint16 a = (in >> 15) & 0x0001;

@@ -1060,6 +1060,10 @@ bool LibDdsHelper::WriteDxtFile(const FilePath & fileNameOriginal, const Vector<
         {
             Image *newImage = Image::Create(image->width, image->height, FORMAT_RGBA8888);
             ImageConvert::ConvertImageDirect(image, newImage);
+            
+            newImage->cubeFaceID = image->cubeFaceID;
+            newImage->mipmapLevel = image->mipmapLevel;
+            
             workingImages.push_back(newImage);
         }
         else
