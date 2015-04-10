@@ -228,6 +228,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Animation/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Autotesting/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Autotesting/*.c) \
                      $(wildcard $(LOCAL_PATH)/Base/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Collision/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Core/*.cpp) \
