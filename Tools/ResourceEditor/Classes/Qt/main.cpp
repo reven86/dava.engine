@@ -185,7 +185,7 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
 #ifdef Q_OS_MAC
     FixOSXFonts();  // Must be called before creating QApplication instance
 #endif
-
+ 
     QApplication a( argc, argv );
 
     const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
