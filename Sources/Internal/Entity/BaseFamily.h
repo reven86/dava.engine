@@ -185,7 +185,7 @@ void BaseFamilyRepository<EntityFamilyType>::ReleaseFamily(EntityFamilyType *fam
         {
             for (size_t i = 0; i < families.size(); i++)
             {
-                DVASSERT(family->refCount == 0);
+                DVASSERT(families[i]->refCount == 0);
                 delete families[i];
             }
             families.clear();

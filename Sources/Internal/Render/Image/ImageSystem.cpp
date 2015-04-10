@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "ImageSystem.h"
 
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
@@ -34,26 +35,27 @@
 #include "Platform/SystemTimer.h"
 #include "Utils/Utils.h"
 
-#include "Render/Image/ImageSystem.h"
 #include "Render/Image/LibJpegHelper.h"
 #include "Render/Image/LibDdsHelper.h"
-#include "Render/Image/LibPngHelpers.h"
+#include "Render/Image/LibPngHelper.h"
 #include "Render/Image/LibPVRHelper.h"
 
-namespace DAVA 
+#include "Base/ScopedPtr.h"
+
+namespace DAVA
 {
 
 ImageSystem::ImageSystem()
 {
-    wrappers[FILE_FORMAT_PNG] = new LibPngWrapper();
+    wrappers[FILE_FORMAT_PNG] = new LibPngHelper();
     wrappers[FILE_FORMAT_DDS] = new LibDdsHelper();
     wrappers[FILE_FORMAT_PVR] = new LibPVRHelper();
-    wrappers[FILE_FORMAT_JPEG] = new LibJpegWrapper();
+    wrappers[FILE_FORMAT_JPEG] = new LibJpegHelper();
 }
-    
+
 ImageSystem::~ImageSystem()
 {
-    for(size_t i = 0; i < FILE_FORMAT_COUNT; ++i)
+    for (size_t i = 0; i < FILE_FORMAT_COUNT; ++i)
     {
         delete wrappers[i];
     }
@@ -62,35 +64,35 @@ ImageSystem::~ImageSystem()
 eErrorCode ImageSystem::Load(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap) const
 {
     File *fileRead = File::Create(pathname, File::READ | File::OPEN);
-    if(!fileRead)
+    if (nullptr == fileRead)
     {
         return ERROR_FILE_NOTFOUND;
     }
-    
+
     eErrorCode result = Load(fileRead, imageSet, baseMipmap);
-    
+
     SafeRelease(fileRead);
-    
+
     return result;
 }
 
 eErrorCode ImageSystem::Load(File *file, Vector<Image *> & imageSet, int32 baseMipmap) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(file->GetFilename());
-    if (!properWrapper)
+    if (nullptr == properWrapper)
     {
         // Retry by content.
         properWrapper = GetImageFormatInterface(file);
     }
-    
-    if (NULL == properWrapper || !properWrapper->IsImage(file))
+
+    if (nullptr == properWrapper || !properWrapper->IsImage(file))
     {
         return ERROR_FILE_FORMAT_INCORRECT;
     }
 
     return properWrapper->ReadFile(file, imageSet, baseMipmap);
 }
-    
+
 Image* ImageSystem::EnsurePowerOf2Image(Image* image) const
 {
     if (IsPowerOf2(image->GetWidth() && IsPowerOf2(image->GetHeight())))
@@ -125,28 +127,28 @@ void ImageSystem::EnsurePowerOf2Images(Vector<Image*>& images) const
 eErrorCode ImageSystem::SaveAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
-    if(!properWrapper)
+    if (nullptr == properWrapper)
     {
         return ERROR_FILE_FORMAT_INCORRECT;
     }
-    
+
     return properWrapper->WriteFileAsCubeMap(fileName, imageSet, compressionFormat);
 }
-    
+
 eErrorCode ImageSystem::Save(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
-    if(!properWrapper)
+    if (nullptr == properWrapper)
     {
         return ERROR_FILE_FORMAT_INCORRECT;
     }
-    
+
     return properWrapper->WriteFile(fileName, imageSet, compressionFormat);
 }
 
 eErrorCode ImageSystem::Save(const FilePath & fileName, Image *image, PixelFormat compressionFormat) const
 {
-    if (NULL == image)
+    if (nullptr == image)
     {
         return ERROR_WRITE_FAIL;
     }
@@ -154,33 +156,70 @@ eErrorCode ImageSystem::Save(const FilePath & fileName, Image *image, PixelForma
     imageSet.push_back(image);
     return Save(fileName, imageSet, compressionFormat);
 }
-    
-ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & pathname) const
+
+ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & pathName) const
 {
-    String extension = pathname.GetExtension();
-    for(int32 i = 0; i < FILE_FORMAT_COUNT ; ++i)
+    String extension = pathName.GetExtension();
+    for (int32 i = 0; i < FILE_FORMAT_COUNT; ++i)
     {
-        if(wrappers[i]->IsFileExtensionSupported(extension))
+        if (wrappers[i]->IsFileExtensionSupported(extension))
         {
             return wrappers[i];
         }
     }
-    
-    return NULL;
+
+    return nullptr;
 }
 
 ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
 {
-    for(int32 i = 0; i < FILE_FORMAT_COUNT; ++i)
+    for (int32 i = 0; i < FILE_FORMAT_COUNT; ++i)
     {
-        if( wrappers[i]->IsImage(file))
+        if (wrappers[i]->IsImage(file))
         {
             return  wrappers[i];
         }
     }
     DVASSERT(0);
-    
-    return NULL;
+
+    return nullptr;
 }
-    
+
+ImageInfo ImageSystem::GetImageInfo(const FilePath & pathName) const
+{
+    ImageFormatInterface* properWrapper = GetImageFormatInterface(pathName);
+    if (nullptr == properWrapper)
+    {
+        ScopedPtr<File> infile(File::Create(pathName, File::OPEN | File::READ));
+        if (static_cast<File*>(infile) == nullptr)
+        {
+            return ImageInfo();
+        }
+        properWrapper = GetImageFormatInterface(infile);
+        if (nullptr == properWrapper)
+        {
+            return ImageInfo();
+        }
+    }
+
+    return properWrapper->GetImageInfo(pathName);
+}
+
+ImageInfo ImageSystem::GetImageInfo(File *infile) const
+{
+    if (nullptr == infile)
+    {
+        return ImageInfo();
+    }
+
+    ImageFormatInterface* properWrapper = GetImageFormatInterface(infile->GetFilename());
+
+    if (nullptr == properWrapper || !properWrapper->IsImage(infile))
+    {
+        return ImageInfo();
+    }
+
+    return properWrapper->GetImageInfo(infile);
+}
+
 };
