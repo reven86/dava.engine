@@ -157,24 +157,27 @@ else()
 
 endif()
 
-if ( QT5_FOUND AND WIN32 )
-    set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )
-endif()
 
-if ( QT5_FOUND AND APPLE )
-    set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${PROJECT_NAME}.app/Contents/Resources/qt.conf" )
-endif()
+if ( QT5_FOUND )
+    if ( WIN32 )
+        set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )
+    elseif ( APPLE )
+        set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${PROJECT_NAME}.app/Contents/Resources/qt.conf" )
+    endif()
 
-if ( QT5_FOUND AND NOT DEPLOY )
-    set( PLUGINS_PATH  ${QT5_LIB_PATH}/../plugins )
-    get_filename_component( PLUGINS_PATH ${PLUGINS_PATH} ABSOLUTE )
+    if     ( TEAMCITY_DEPLOY AND WIN32 )
+        set ( PLUGINS_PATH .)
+    elseif ( TEAMCITY_DEPLOY AND APPLE )
+        set ( PLUGINS_PATH PlugIns )
+    else()
+        set( PLUGINS_PATH  ${QT5_LIB_PATH}/../plugins )
+        get_filename_component( PLUGINS_PATH ${PLUGINS_PATH} ABSOLUTE )
+    endif()
 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
                     ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigDebug.in  )
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
                     ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigRelWithDebinfo.in  ) 
-
-    set( PLUGINS_PATH .)
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
                     ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigRelease.in  )
 
