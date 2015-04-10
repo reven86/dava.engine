@@ -44,8 +44,10 @@ class LibTgaHelper: public ImageFormatInterface
 public:
     
     LibTgaHelper();
+
+    ImageFormat GetImageFormat() const override;
     
-    bool IsImage(File *file) const override;
+    bool IsMyImage(File *file) const override;
 
     eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
 
@@ -111,6 +113,11 @@ private:
         bool isAtEnd;
     };
 };
+
+inline ImageFormat LibTgaHelper::GetImageFormat() const
+{
+    return IMAGE_FORMAT_TGA;
+}
 
 };
 

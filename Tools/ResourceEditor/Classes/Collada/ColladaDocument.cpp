@@ -231,7 +231,9 @@ void ColladaDocument::Render()
 {
 	colladaScene->Render();
 }
-    
+
+static const char* DEFAULT_COLLADA_EXTENSION = ".png";
+
 String ColladaDocument::GetTextureName(const FilePath & scenePath, ColladaTexture * texture)
 {
     FilePath texPathname(texture->texturePathName.c_str());
@@ -242,7 +244,7 @@ String ColladaDocument::GetTextureName(const FilePath & scenePath, ColladaTextur
     {
         if(!TextureDescriptor::IsSourceTextureExtension(extension) && !TextureDescriptor::IsCompressedTextureExtension(extension))
         {
-            texPathname.ReplaceExtension(".png");
+            texPathname.ReplaceExtension(DEFAULT_COLLADA_EXTENSION);
         }
     }
     return texPathname.GetRelativePathname(scenePath);
