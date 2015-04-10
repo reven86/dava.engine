@@ -204,7 +204,7 @@ namespace DAVA
     fullScreen = false;
 }
 
--(bool) getFullScreen
+-(bool) isFullScreen
 {
     return fullScreen;
 }
@@ -213,29 +213,31 @@ namespace DAVA
 {
     if(fullScreen != _fullScreen)
     {
-        if(_fullScreen)
+        double macOSVer = floor(NSAppKitVersionNumber);
+        // fullscreen for new 10.7+ MacOS
+        if(macOSVer >= NSAppKitVersionNumber10_7)
         {
-            if(floor(NSAppKitVersionNumber) >= NSAppKitVersionNumber10_7)
-            {
-                [mainWindowController->mainWindow toggleFullScreen: nil];
-            }
-            else
+            // just toggle current state
+            // fullScreen variable will be set in windowDidEnterFullScreen/windowDidExitFullScreen callbacks
+            [mainWindowController->mainWindow toggleFullScreen: nil];
+        }
+        // fullsreen for 10.5+ MacOS
+        else if(macOSVer >= NSAppKitVersionNumber10_5)
+        {
+            fullScreen = _fullScreen;
+            if(fullScreen)
             {
                 [openGLView enterFullScreenMode:[NSScreen mainScreen] withOptions:nil];
-                fullScreen = true;
-            }
-        }
-        else
-        {
-            if(floor(NSAppKitVersionNumber) >= NSAppKitVersionNumber10_7)
-            {
-                [mainWindowController->mainWindow toggleFullScreen: nil];
             }
             else
             {
                 [openGLView exitFullScreenModeWithOptions:nil];
-                fullScreen = false;
             }
+        }
+        else
+        {
+            // fullscreen for older macOS isn't supperted
+            DVASSERT_MSG(false, "Fullscreen isn't supperted for this MacOS version");
         }
     }
 }
@@ -457,7 +459,7 @@ namespace DAVA
 
 Core::eScreenMode CoreMacOSPlatform::GetScreenMode()
 {
-    return ([mainWindowController getFullScreen]) ? Core::MODE_FULLSCREEN : Core::MODE_WINDOWED;
+    return ([mainWindowController isFullScreen]) ? Core::MODE_FULLSCREEN : Core::MODE_WINDOWED;
 }
 
 void CoreMacOSPlatform::ToggleFullscreen()
