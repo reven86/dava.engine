@@ -7,8 +7,7 @@ using namespace DAVA;
 LocalizedTextValueProperty::LocalizedTextValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, ValueProperty *sourceProperty, eCopyType copyType)
     : ValueProperty(object, member, sourceProperty, copyType)
 {
-    text = member->Value(object).AsWideString();
-    GetMember()->SetValue(GetBaseObject(), VariantType(LocalizedString(text)));
+    ApplyValue(member->Value(object));
 }
 
 LocalizedTextValueProperty::~LocalizedTextValueProperty()

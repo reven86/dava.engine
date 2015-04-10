@@ -2,7 +2,6 @@
 #define QUICKED__PROJECT_H__
 
 #include <QObject>
-#include "DAVAEngine.h"
 #include "Model/LegacyEditorUIPackageLoader.h"
 
 class PackageNode;
