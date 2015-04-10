@@ -72,6 +72,12 @@ void ApplicationCore::Update(float32 timeElapsed)
 	AnimationManager::Instance()->Update(timeElapsed);    
 	UIControlSystem::Instance()->Update();
 }
+    
+void ApplicationCore::OnEnterFullscreen()
+{ }
+
+void ApplicationCore::OnExitFullscreen()
+{ }
 
 void ApplicationCore::Draw()
 {
