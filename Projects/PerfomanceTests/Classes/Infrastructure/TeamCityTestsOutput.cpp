@@ -101,7 +101,7 @@ String TeamcityTestsOutput::FormatTestFinished(const String& testName)
 
 String TeamcityTestsOutput::FormatBuildStatistic(const String& key, const String& value)
 {
-    return STATISTIC + "\n" + "##teamcity[buildStatisticValue key = \'" + key + "\' value=\'" + value + "\']\n";
+    return STATISTIC + "\n" + "##teamcity[buildStatisticValue key=\'" + key + "\' value=\'" + value + "\']\n";
 }
 
 String TeamcityTestsOutput::FormatTestFailed(const String& testName, const String& condition, const String& errMsg)
