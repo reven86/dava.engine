@@ -45,6 +45,7 @@ class LibraryWidget;
 class PreviewWidget;
 
 class LocalizationEditorDialog;
+class EditFontDialog;
 
 class DavaGLWidget;
 class MainWindow : public QMainWindow, public Ui::MainWindow
@@ -124,6 +125,7 @@ private:
     QAction* backgroundFrameUseCustomColorAction;
     QAction* backgroundFrameSelectCustomColorAction;
     LocalizationEditorDialog *localizationEditorDialog;
+    EditFontDialog *editFontDialog;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);

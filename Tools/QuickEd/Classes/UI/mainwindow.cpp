@@ -42,7 +42,8 @@
 #include "fontmanagerdialog.h"
 #include "FileSystem/FileSystem.h"
 #include "Helpers/ResourcesManageHelper.h"
-#include "Dialogs/localizationeditordialog.h"
+#include "Dialogs/LocalizationEditorDialog.h"
+#include "Dialogs/EditFontDialog.h"
 #include "Grid/GridVisualizer.h"
 #include "EditorFontManager.h"
 //////////////////////////////////////////////////////////////////////////
