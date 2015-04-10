@@ -141,14 +141,23 @@ namespace DAVA
 	
 	FrameworkDidLaunched();
     RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
-    	KeyedArchive * options = DAVA::Core::Instance()->GetOptions();
     
-	int32 width = options->GetInt32("width", 800);
-    int32 height = width * fullscreenRect.size.height / fullscreenRect.size.width;
-	
+    String title;
+    int32 width = 800;
+    int32 height = 600;
+
+    KeyedArchive * options = DAVA::Core::Instance()->GetOptions();
+    if(nullptr != options)
+    {
+        title = options->GetString("title", "[set application title using core options property 'title']");
+        if(options->IsKeyExists("width") && options->IsKeyExists("height"))
+        {
+            width = options->GetInt32("width", 800);
+            height = options->GetInt32("height", 600);
+        }
+    }
+    
     openGLView = [[OpenGLView alloc]initWithFrame: NSMakeRect(0, 0, width, height)];
-    
-    String title = options->GetString("title", "[set application title using core options property 'title']");
     
     NSUInteger wStyle = NSTitledWindowMask + NSMiniaturizableWindowMask + NSClosableWindowMask + NSResizableWindowMask;
     NSRect wRect = NSMakeRect((fullscreenRect.size.width - width) / 2, (fullscreenRect.size.height - height) / 2, width, height);
@@ -197,6 +206,7 @@ namespace DAVA
 - (void)windowDidEnterFullScreen:(NSNotification *)notification
 {
     fullScreen = true;
+    Core::Instance()->GetApplicationCore()->OnEnterFullscreen();
 }
 
 - (void)windowDidExitFullScreen:(NSNotification *)notification
