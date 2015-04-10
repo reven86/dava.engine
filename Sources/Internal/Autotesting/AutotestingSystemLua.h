@@ -80,12 +80,14 @@ public:
 
 	static void StackDump(lua_State* L);
 	const char *Pushnexttemplate (lua_State* L, const char* path);
-	const char *Findfile (lua_State* L, const char* name, const char* pname);
+	const FilePath Findfile (lua_State* L, const char* name, const char* pname);
 #endif //SWIG
     
     // autotesting system api   
     void OnError(const String &errorMessage);
     void OnTestFinished();
+    
+    size_t GetUsedMemory() const;
     
     float32 GetTimeElapsed();
     
@@ -173,6 +175,10 @@ protected:
     LocalizationSystem* autotestingLocalizationSystem;
     
 #endif //SWIG
+private:
+    void* memoryPool;
+    void* memorySpace;
+    int resumeTestFunctionRef;
 };
 
 };

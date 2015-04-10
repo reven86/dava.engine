@@ -94,6 +94,7 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,	delegate(0)
 ,	cursorBlinkingTime{0.0f}
 ,   isRenderToTexture{false}
+,   maxLength(-1)
 #if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
 ,   staticText(NULL)
 ,   textFont(NULL)
@@ -1076,9 +1077,9 @@ void UITextField::SetCursorPos(uint32 pos)
     // TODO! implement for other OS!
 }
 
-void UITextField::SetMaxLength(int32 maxLength)
+void UITextField::SetMaxLength(int32 newMaxLength)
 {
-    this->maxLength = maxLength;
+    maxLength = Max(-1, newMaxLength); //-1 valid value
 #ifdef __DAVAENGINE_IPHONE__
     textFieldiPhone->SetMaxLength(maxLength);
 #elif defined(__DAVAENGINE_ANDROID__)

@@ -224,9 +224,9 @@ void PackageWidget::CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &nodes
         PackageNode *pac = doc->GetPackage();
         pac->Serialize(&serializer, nodes);//TODO - this is deprecated
         String str = serializer.WriteToString();
-        QMimeData data;
-        data.setText(QString(str.c_str()));
-        clipboard->setMimeData(&data);
+        QMimeData *data = new QMimeData();
+        data->setText(QString(str.c_str()));
+        clipboard->setMimeData(data);
     }
 }
 
@@ -335,9 +335,10 @@ void PackageWidget::OnPaste()
     
     if (!selectedIndexList.empty() && clipboard && clipboard->mimeData())
     {
-        QModelIndex &index = selectedIndexList.first();
+        const QModelIndex &index = selectedIndexList.first();
         
-        ControlsContainerNode *node = dynamic_cast<ControlsContainerNode*>(static_cast<PackageBaseNode*>(index.internalPointer()));
+        PackageBaseNode *baseNode = static_cast<PackageBaseNode*>(index.internalPointer());
+        ControlsContainerNode *node = dynamic_cast<ControlsContainerNode*>(baseNode);
         
         if (nullptr != node && (node->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) == 0)
         {
