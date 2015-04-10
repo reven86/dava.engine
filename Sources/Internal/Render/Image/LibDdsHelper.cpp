@@ -29,6 +29,7 @@
 
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
+#include "Render/Image/ImageConvert.h"
 #include "Render/Image/LibDdsHelper.h"
 
 #include "Render/Texture.h"
@@ -701,12 +702,6 @@ eErrorCode LibDdsHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
 
 eErrorCode LibDdsHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
 {
-    if(imageSet[0]->format != FORMAT_RGBA8888 && imageSet[0]->format != FORMAT_RGB888)
-    {
-        Logger::Error("[LibDdsHelper::WriteFile] Wrong input format.");
-        return ERROR_WRITE_FAIL;
-    }
-    
     //creating tmp dds file, nvtt accept only filename.dds as input, because of this the last letter befor "." should be changed to "_".
     if(!fileName.IsEqualToExtension(".dds"))
     {
@@ -1058,26 +1053,35 @@ bool LibDdsHelper::WriteDxtFile(const FilePath & fileNameOriginal, const Vector<
 	}
     
     auto inputFormat = imageSet[0]->format;
-    if(inputFormat != FORMAT_RGBA8888)
+    Vector<Image *> workingImages;
+    for(auto image : imageSet)
     {
-        Logger::Error("[LibDdsHelper::WriteDxtFile] Cannot compress not RGBA8888 images (formatId = %d)", inputFormat);
-        return false;
+        if(FORMAT_RGBA8888 != inputFormat)
+        {
+            Image *newImage = Image::Create(image->width, image->height, FORMAT_RGBA8888);
+            ImageConvert::ConvertImageDirect(image, newImage);
+            workingImages.push_back(newImage);
+        }
+        else
+        {
+            workingImages.push_back(SafeRetain(image));
+        }
     }
-
+    inputFormat = workingImages[0]->format;
+    
     
     nvtt::TextureType textureType = nvtt::TextureType_2D;
-    int32 dataCount = imageSet.size();
+    int32 dataCount = workingImages.size();
 	InputOptions inputOptions;
-	inputOptions.setTextureLayout(textureType, imageSet[0]->width, imageSet[0]->height);
+	inputOptions.setTextureLayout(textureType, workingImages[0]->width, workingImages[0]->height);
     inputOptions.setMipmapGeneration(dataCount > 1, dataCount - 1);
 
-    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(inputFormat);
 	for(int32 i = 0; i < dataCount; ++i)
 	{
-        uint32 imgDataSize = imageSet[i]->width * imageSet[i]->height * pixelSize;
-        NvttHelper::SwapBRChannels(imageSet[i]->data, imgDataSize);
-        inputOptions.setMipmapData(imageSet[i]->data, imageSet[i]->width, imageSet[i]->height, 1, 0, i);
-        NvttHelper::SwapBRChannels(imageSet[i]->data, imgDataSize);
+        uint32 imgDataSize = workingImages[i]->dataSize;
+        NvttHelper::SwapBRChannels(workingImages[i]->data, imgDataSize);
+        inputOptions.setMipmapData(workingImages[i]->data, workingImages[i]->width, workingImages[i]->height, 1, 0, i);
+        NvttHelper::SwapBRChannels(workingImages[i]->data, imgDataSize);
 	}
 
 	CompressionOptions compressionOptions;
@@ -1107,6 +1111,7 @@ bool LibDdsHelper::WriteDxtFile(const FilePath & fileNameOriginal, const Vector<
 		Logger::Error("[LibDdsHelper::WriteDxtFile] Error during writing DDS file (%s).", fileName.GetAbsolutePathname().c_str());
     }
     
+    for_each(workingImages.begin(), workingImages.end(), SafeRelease<Image>);
 	return ret;
 #endif //__DAVAENGINE_IPHONE__
 }
