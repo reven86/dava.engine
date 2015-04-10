@@ -47,7 +47,7 @@ bool Vector2PropertyDelegate::setModelData( QWidget * editor, QAbstractItemModel
 
 void Vector2PropertyDelegate::OnEditingFinished()
 {
-    QWidget *lineEdit = qobject_cast<QWidget *>(sender());
+    QLineEdit *lineEdit = qobject_cast<QLineEdit *>(sender());
     if (!lineEdit)
         return;
 
@@ -55,6 +55,6 @@ void Vector2PropertyDelegate::OnEditingFinished()
     if (!editor)
         return;
 
-    BasePropertyDelegate::SetValueModified(editor, true);
+    BasePropertyDelegate::SetValueModified(editor, lineEdit->isModified());
     itemDelegate->emitCommitData(editor);
 }

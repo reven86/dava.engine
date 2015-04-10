@@ -15,7 +15,7 @@ public:
     virtual bool setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
 
 private slots:
-    void OnValueChanged();
+    void OnEditingFinished();
 };
 
 

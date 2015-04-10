@@ -125,7 +125,7 @@ void SpritePropertyDelegate::clearSpriteClicked()
 
 void SpritePropertyDelegate::valueChanged()
 {
-    QWidget *lineEdit = qobject_cast<QWidget *>(sender());
+    QLineEdit *lineEdit = qobject_cast<QLineEdit *>(sender());
     if (!lineEdit)
         return;
 
@@ -133,6 +133,6 @@ void SpritePropertyDelegate::valueChanged()
     if (!editor)
         return;
 
-    BasePropertyDelegate::SetValueModified(editor, true);
+    BasePropertyDelegate::SetValueModified(editor, lineEdit->isModified());
     itemDelegate->emitCommitData(editor);
 }
