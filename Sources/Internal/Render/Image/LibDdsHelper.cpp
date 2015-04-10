@@ -685,7 +685,7 @@ LibDdsHelper::LibDdsHelper()
     supportedExtensions.push_back(".dds");
 }
 
-bool LibDdsHelper::IsImage(File *infile) const
+bool LibDdsHelper::IsMyImage(File *infile) const
 {
     nvtt::Decompressor dec;
     
@@ -999,7 +999,7 @@ bool LibDdsHelper::GetCRCFromDDSHeader(const FilePath &filePathname, uint32* out
         return false;
     }
     
-    if(!ImageSystem::Instance()->GetImageFormatInterface(IMAGE_FORMAT_DDS)->IsImage(fileRead))
+    if(!ImageSystem::Instance()->GetImageFormatInterface(IMAGE_FORMAT_DDS)->IsMyImage(fileRead))
     {
         Logger::Error("[LibDdsHelper::GetCRCFromDDSHeader] file %s isn't a dds one", fileNameStr.c_str());
         SafeRelease(fileRead);

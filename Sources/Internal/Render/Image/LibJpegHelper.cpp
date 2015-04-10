@@ -81,7 +81,7 @@ LibJpegHelper::LibJpegHelper()
     supportedExtensions.push_back(".jpg");
 }
     
-bool LibJpegHelper::IsImage(File *infile) const
+bool LibJpegHelper::IsMyImage(File *infile) const
 {
     return GetImageInfo(infile).dataSize != 0;
 }

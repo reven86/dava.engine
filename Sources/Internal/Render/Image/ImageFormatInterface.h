@@ -63,10 +63,10 @@ struct ImageInfo
 class ImageFormatInterface
 {
 public:
-    virtual ~ImageFormatInterface()
-    {};
+    virtual ~ImageFormatInterface() = default;
 
-    virtual bool IsImage(File *file) const = 0;
+    virtual ImageFormat GetImageFormat() const = 0;
+    virtual bool IsMyImage(File *file) const = 0;
 
     virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 fromMipmap) const = 0;
 

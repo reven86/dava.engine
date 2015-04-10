@@ -74,7 +74,7 @@ protected:
 
 inline ImageFormatInterface* ImageSystem::GetImageFormatInterface(ImageFormat fileFormat) const
 {
-    DVASSERT(fileFormat >= 0 && fileFormat <= IMAGE_FORMAT_COUNT);
+    DVASSERT(fileFormat >= 0 && fileFormat < IMAGE_FORMAT_COUNT);
     return wrappers[fileFormat];
 }
 

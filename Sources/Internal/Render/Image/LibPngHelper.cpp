@@ -98,7 +98,7 @@ LibPngHelper::LibPngHelper()
     supportedExtensions.push_back(".png");
 }
 
-bool LibPngHelper::IsImage(File *infile) const
+bool LibPngHelper::IsMyImage(File *infile) const
 {
     if (nullptr == infile)
     {

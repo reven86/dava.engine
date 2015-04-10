@@ -87,7 +87,7 @@ eErrorCode ImageSystem::Load(File *file, Vector<Image *> & imageSet, int32 baseM
         properWrapper = GetImageFormatInterface(file);
     }
 
-    if (nullptr == properWrapper || !properWrapper->IsImage(file))
+    if (nullptr == properWrapper || !properWrapper->IsMyImage(file))
     {
         return ERROR_FILE_FORMAT_INCORRECT;
     }
@@ -177,7 +177,7 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
 {
     for(auto wrapper : wrappers)
     {
-        if (wrapper->IsImage(file))
+        if (wrapper->IsMyImage(file))
         {
             return wrapper;
         }
@@ -196,13 +196,10 @@ ImageFormat ImageSystem::GetImageFormatForExtension(const FilePath &pathname) co
     
 ImageFormat ImageSystem::GetImageFormatForExtension(const String &extension) const
 {
-    for(auto i = 0; i < IMAGE_FORMAT_COUNT; ++i)
+    for(auto wrapper : wrappers)
     {
-        auto supported = wrappers[i]->IsFileExtensionSupported(extension);
-        if(supported)
-        {
-            return static_cast<ImageFormat>(i);
-        }
+        if (wrapper->IsFileExtensionSupported(extension))
+            return wrapper->GetImageFormat();
     }
 
     return IMAGE_FORMAT_UNKNOWN;
@@ -237,7 +234,7 @@ ImageInfo ImageSystem::GetImageInfo(File *infile) const
 
     ImageFormatInterface* properWrapper = GetImageFormatInterface(infile->GetFilename());
 
-    if (nullptr == properWrapper || !properWrapper->IsImage(infile))
+    if (nullptr == properWrapper || !properWrapper->IsMyImage(infile))
     {
         return ImageInfo();
     }

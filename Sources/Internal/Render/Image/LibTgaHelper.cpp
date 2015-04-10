@@ -45,7 +45,7 @@ LibTgaHelper::LibTgaHelper()
     supportedExtensions.emplace_back(".tpic");
 }
 
-bool LibTgaHelper::IsImage(File *infile) const
+bool LibTgaHelper::IsMyImage(File *infile) const
 {
     return !(GetImageInfo(infile).isEmpty());
 }
