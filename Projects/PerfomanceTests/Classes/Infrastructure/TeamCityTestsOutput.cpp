@@ -75,9 +75,9 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
             + "\' details=\'" + errorFileLine + "\']\n";
     } else if (STATISTIC == lines[0])
     {
-        for (const String& line : lines)
+        for (int i = 1; i < lines.size(); i++)
         {
-            output += line;
+            output += lines[i];
         }
 
     } else
