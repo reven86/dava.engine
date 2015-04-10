@@ -75,6 +75,7 @@ private:
 	Ui::QtWaitDialog *ui;
 
 	bool wasCanceled;
+    bool isRunnedFromExec;
 };
 
 #endif // __RESOURCEEDITORQT__MAINWAITDIALOG__

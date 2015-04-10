@@ -35,6 +35,7 @@ QtWaitDialog::QtWaitDialog(QWidget *parent /*= 0*/)
     : QDialog(parent, Qt::Window | Qt::CustomizeWindowHint)
     , ui(new Ui::QtWaitDialog)
     , wasCanceled(false)
+    , isRunnedFromExec(false)
 {
     setFixedSize(400, 150);
 	setWindowModality(Qt::WindowModal);
@@ -57,6 +58,7 @@ void QtWaitDialog::Exec(const QString &title, const QString &message, bool hasWa
 	Setup(title, message, hasWaitbar, hasCancel);
 
 	setCursor(Qt::BusyCursor);
+    isRunnedFromExec = true;
 	exec();
 }
 
@@ -65,6 +67,7 @@ void QtWaitDialog::Show(const QString &title, const QString &message, bool hasWa
 	Setup(title, message, hasWaitbar, hasCancel);
 	
 	setCursor(Qt::BusyCursor);
+    isRunnedFromExec = false;
 	show();
 
 	QApplication::processEvents();
@@ -75,8 +78,23 @@ void QtWaitDialog::Reset()
 	wasCanceled = false;
 	emit canceled();
 
-	close();
+    if ( isRunnedFromExec )
+    {
+        done( QDialog::Rejected );
+    }
+    else
+    {
+        close();
+    }
+
 	setCursor(Qt::ArrowCursor);
+    
+    //auto widget = parentWidget();
+    //if ( widget != nullptr )
+    //{
+    //    widget->setFocus();
+    //    widget->raise();
+    //}
 
 	QApplication::processEvents();
 }
