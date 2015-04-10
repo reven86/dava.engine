@@ -226,7 +226,7 @@ void TextureConvertor::WaitConvertedAll(QWidget *parent)
 		waitDialog->Exec("Waiting for conversion completion", waitStatusText, true, hasCancel);
 
 		waitDialog->deleteLater();
-		waitDialog = NULL;
+		waitDialog = nullptr;
 	}
 }
 

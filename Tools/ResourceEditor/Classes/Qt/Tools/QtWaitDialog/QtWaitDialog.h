@@ -35,13 +35,15 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QProgressBar>
+#include <QEventLoop>
 
 namespace Ui
 {
 	class QtWaitDialog;
 }
 
-class QtWaitDialog: public QDialog
+class QtWaitDialog
+    : public QWidget
 {
 	Q_OBJECT
 
@@ -71,11 +73,15 @@ protected slots:
 	void WaitCanceled();
 
 private:
+    void showEvent(QShowEvent *e) override;
+    void hideEvent(QHideEvent *e) override;
+    
 	void Setup(const QString &title, const QString &message, bool hasWaitbar, bool hasCancel);
 	Ui::QtWaitDialog *ui;
 
 	bool wasCanceled;
     bool isRunnedFromExec;
+    QEventLoop loop;
 };
 
 #endif // __RESOURCEEDITORQT__MAINWAITDIALOG__
