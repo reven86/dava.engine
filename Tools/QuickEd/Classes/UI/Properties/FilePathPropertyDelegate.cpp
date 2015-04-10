@@ -19,7 +19,7 @@ QWidget * FilePathPropertyDelegate::createEditor( QWidget * parent, const QStyle
 {
     QLineEdit *lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
-    connect(lineEdit, SIGNAL(textEdited(const QString &)), this, SLOT(OnValueChanged()));
+    connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(OnEditingFinished()));
 
     return lineEdit;
 }
@@ -51,9 +51,9 @@ bool FilePathPropertyDelegate::setModelData( QWidget * rawEditor, QAbstractItemM
     return model->setData(index, variant, Qt::EditRole);
 }
 
-void FilePathPropertyDelegate::OnValueChanged()
+void FilePathPropertyDelegate::OnEditingFinished()
 {
-    QWidget *lineEdit = qobject_cast<QWidget *>(sender());
+    QLineEdit *lineEdit = qobject_cast<QLineEdit *>(sender());
     if (!lineEdit)
         return;
 
@@ -61,6 +61,6 @@ void FilePathPropertyDelegate::OnValueChanged()
     if (!editor)
         return;
 
-    BasePropertyDelegate::SetValueModified(editor, true);
+    BasePropertyDelegate::SetValueModified(editor, lineEdit->isModified());
     itemDelegate->emitCommitData(editor);
 }
