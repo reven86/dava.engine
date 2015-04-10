@@ -64,7 +64,10 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
     customLandscape->Create();
 	customLandscape->SetTexture(Landscape::TEXTURE_TILE_FULL, baseLandscape->GetTexture(Landscape::TEXTURE_TILE_FULL));
 	customLandscape->SetAABBox(baseLandscape->GetBoundingBox());
-    
+
+    customLandscape->SetReflectionVisible(baseLandscape->GetReflectionVisible());
+    customLandscape->SetRefractionVisible(baseLandscape->GetRefractionVisible());
+
     displayingTexture = Texture::CreateFBO(2048, 2048, FORMAT_RGBA8888, Texture::DEPTH_NONE);
 }
 

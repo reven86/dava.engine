@@ -47,7 +47,6 @@ elseif( ANDROID_DATA )
 endif()
 
 if( ANDROID_USE_STANDART_TEMLATE )
-
     if( NOT ANDROID_JAVA_SRC )
         list( APPEND ANDROID_JAVA_SRC  ${CMAKE_CURRENT_LIST_DIR}/android/src )    
     endif()
@@ -157,6 +156,39 @@ else()
     )
 
 endif()
+
+
+if ( QT5_FOUND )
+    if ( WIN32 )
+        set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )
+    elseif ( APPLE )
+        set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${PROJECT_NAME}.app/Contents/Resources/qt.conf" )
+    endif()
+
+    if     ( TEAMCITY_DEPLOY AND WIN32 )
+        set ( PLUGINS_PATH .)
+    elseif ( TEAMCITY_DEPLOY AND APPLE )
+        set ( PLUGINS_PATH PlugIns )
+    else()
+        set( PLUGINS_PATH  ${QT5_LIB_PATH}/../plugins )
+        get_filename_component( PLUGINS_PATH ${PLUGINS_PATH} ABSOLUTE )
+    endif()
+
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
+                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigDebug.in  )
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
+                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigRelWithDebinfo.in  ) 
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
+                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigRelease.in  )
+
+    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD 
+       COMMAND ${CMAKE_COMMAND} -E copy 
+       ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig$(CONFIGURATION).in
+       ${QTCONF_DEPLOY_PATH}
+    )
+
+endif()
+
 
 if( ANDROID )
     set( LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME}" CACHE PATH "Output directory for Android libs" )
@@ -325,13 +357,6 @@ endforeach ()
 foreach ( FILE ${LIBRARIES_RELEASE} )
     target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
 endforeach ()
-
-if ( QT5_FOUND AND APPLE AND NOT DEPLOY )
-    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD 
-        COMMAND ${QT5_PATH_MAC}/bin/macdeployqt ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${PROJECT_NAME}.app
-    )
-
-endif()
 
 
 ###
