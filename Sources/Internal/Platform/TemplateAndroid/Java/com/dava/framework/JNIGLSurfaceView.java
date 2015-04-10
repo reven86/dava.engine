@@ -166,16 +166,30 @@ public class JNIGLSurfaceView extends GLSurfaceView
         Log.d(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onResume");
         // first call parent to restore eglContext and start gl thread
         super.onResume();
-
-        JNIActivity.GetActivity().setResumeGLActionOnWindowReady(
-                new Runnable() {
-                    public void run() {
-                        mRenderer.OnResume();
-                        setRenderMode(RENDERMODE_CONTINUOUSLY);
-                    }
-                });
         
+        JNIActivity activity = JNIActivity.GetActivity();
+
+        Runnable action = new Runnable() {
+            public void run() {
+                resumeGameLoop();
+            }
+        };
+        
+        if (activity.hasWindowFocus())
+        {
+            queueEvent(action);
+        } else 
+        {
+            // we have to resume game later on some devices
+            // to resolve deadlock
+            activity.setResumeGLActionOnWindowReady(action);
+        }
         isPaused = false;
+    }
+    
+    private void resumeGameLoop() {
+        mRenderer.OnResume();
+        setRenderMode(RENDERMODE_CONTINUOUSLY);
     };
 	
 	public class InputRunnable implements Runnable
