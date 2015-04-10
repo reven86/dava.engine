@@ -340,6 +340,12 @@ bool File::Seek(int32 position, uint32 seekType)
 	return false;
 }
 
+bool File::Flush()
+{
+    return file != nullptr ? 0 == fflush(file)
+                           : false;
+}
+
 bool File::IsEof()
 {
 	return (feof(file) != 0);

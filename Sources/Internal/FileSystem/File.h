@@ -214,7 +214,13 @@ public:
 	
 	//! return true if end of file reached and false in another case
 	virtual bool IsEof();
-	
+
+    /**
+        \brief Flushes file buffers to output device
+        \return true on success
+    */
+    virtual bool Flush();
+
     static String GetModificationDate(const FilePath & filePathname);
 
 private:
