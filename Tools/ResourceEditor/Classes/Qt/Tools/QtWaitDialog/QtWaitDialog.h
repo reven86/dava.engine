@@ -73,8 +73,7 @@ protected slots:
 	void WaitCanceled();
 
 private:
-    void showEvent(QShowEvent *e) override;
-    void hideEvent(QHideEvent *e) override;
+    void processEvents();
     
 	void Setup(const QString &title, const QString &message, bool hasWaitbar, bool hasCancel);
 	Ui::QtWaitDialog *ui;

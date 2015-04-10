@@ -31,8 +31,8 @@
 #include "Tools/QtWaitDialog/QtWaitDialog.h"
 #include "ui_waitdialog.h"
 
-QtWaitDialog::QtWaitDialog(QWidget *parent /*= 0*/)
-    : QWidget(parent, Qt::Window/* | Qt::CustomizeWindowHint*/)
+QtWaitDialog::QtWaitDialog(QWidget *parent)
+    : QWidget(parent, Qt::Window | Qt::CustomizeWindowHint)
     , ui(new Ui::QtWaitDialog)
     , wasCanceled(false)
     , isRunnedFromExec(false)
@@ -51,18 +51,7 @@ QtWaitDialog::QtWaitDialog(QWidget *parent /*= 0*/)
 }
 
 QtWaitDialog::~QtWaitDialog()
-{ }
-
-void QtWaitDialog::showEvent(QShowEvent *e)
-{
-    QWidget::showEvent(e);
-}
-
-void QtWaitDialog::hideEvent(QHideEvent *e)
-{
-    QWidget::hideEvent(e);
-}
-
+{}
 
 void QtWaitDialog::Exec(const QString &title, const QString &message, bool hasWaitbar, bool hasCancel)
 {
@@ -82,7 +71,7 @@ void QtWaitDialog::Show(const QString &title, const QString &message, bool hasWa
     isRunnedFromExec = false;
 	show();
 
-	QApplication::processEvents();
+    processEvents();
 }
 
 void QtWaitDialog::Reset()
@@ -93,57 +82,41 @@ void QtWaitDialog::Reset()
     if ( isRunnedFromExec )
     {
         loop.quit();
-        close();
-    }
-    else
-    {
-        close();
     }
 
+    close();
 	setCursor(Qt::ArrowCursor);
-    
-    //auto widget = parentWidget();
-    //if ( widget != nullptr )
-    //{
-    //    widget->setFocus();
-    //    widget->raise();
-    //}
 }
 
 void QtWaitDialog::SetMessage(const QString &message)
 {
 	ui->waitLabel->setPlainText(message);
-    if (!isRunnedFromExec)
-        QApplication::processEvents();
+    processEvents();
 }
 
 void QtWaitDialog::SetRange(int min, int max)
 {
 	ui->waitBar->setRange(min, max);
-    if (!isRunnedFromExec)
-        QApplication::processEvents();
+    processEvents();
 }
 
 void QtWaitDialog::SetRangeMin(int min)
 {
 	ui->waitBar->setMinimum(min);
-    if (!isRunnedFromExec)
-        QApplication::processEvents();
+    processEvents();
 }
 
 void QtWaitDialog::SetRangeMax(int max)
 {
 	ui->waitBar->setMaximum(max);
-    if (!isRunnedFromExec)
-        QApplication::processEvents();
+    processEvents();
 }
 
 void QtWaitDialog::SetValue(int value)
 {
 	ui->waitBar->setVisible(true);
 	ui->waitBar->setValue(value);
-    if (!isRunnedFromExec)
-        QApplication::processEvents();
+    processEvents();
 }
 
 void QtWaitDialog::CancelPressed()
@@ -155,8 +128,15 @@ void QtWaitDialog::CancelPressed()
 void QtWaitDialog::WaitCanceled()
 {
 	ui->waitButton->setEnabled(false);
-    if (!isRunnedFromExec)
+    processEvents();
+}
+
+void QtWaitDialog::processEvents()
+{
+    if ( !isRunnedFromExec )
+    {
         QApplication::processEvents();
+    }
 }
 
 void QtWaitDialog::EnableCancel(bool enable)
