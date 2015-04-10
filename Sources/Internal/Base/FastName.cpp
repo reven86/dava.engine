@@ -41,6 +41,10 @@ FastName::FastName()
 {
     // make sure FastNameDB exists
     FastNameDB::Instance();
+
+#ifdef __DAVAENGINE_DEBUG__
+    debug_str_ptr = NULL;
+#endif
 }
     
 FastName::FastName(const String & name)
