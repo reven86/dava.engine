@@ -37,6 +37,7 @@ namespace DAVA
 const String TeamcityTestsOutput::START_TEST = "start test ";
 const String TeamcityTestsOutput::FINISH_TEST = "finish test ";
 const String TeamcityTestsOutput::ERROR_TEST = "test error ";
+const String TeamcityTestsOutput::STATISTIC = "statistic";
 const String TeamcityTestsOutput::AT_FILE_TEST = " at file: ";
 
 const String TeamcityTestsOutput::MIN_DELTA = "Min_delta";
@@ -72,6 +73,13 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
         output = "##teamcity[testFailed name=\'" + testName 
             + "\' message=\'" + condition 
             + "\' details=\'" + errorFileLine + "\']\n";
+    } else if (STATISTIC == lines[0])
+    {
+        for (const String& line : lines)
+        {
+            output += line;
+        }
+
     } else
     {
         TeamcityOutput::Output(ll, text);
@@ -93,7 +101,7 @@ String TeamcityTestsOutput::FormatTestFinished(const String& testName)
 
 String TeamcityTestsOutput::FormatBuildStatistic(const String& key, const String& value)
 {
-    return "##teamcity[buildStatisticValue key = \'" + key + "\' value=\'" + value + "\']\n";
+    return STATISTIC + "\n" + "##teamcity[buildStatisticValue key = \'" + key + "\' value=\'" + value + "\']\n";
 }
 
 String TeamcityTestsOutput::FormatTestFailed(const String& testName, const String& condition, const String& errMsg)

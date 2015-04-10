@@ -46,11 +46,6 @@ public:
     static String FormatTestFailed(const String& testName, const String& condition, const String& errMsg);
     static String FormatBuildStatistic(const String& key, const String& value);
 
-    static const String START_TEST;
-    static const String FINISH_TEST;
-    static const String ERROR_TEST;
-    static const String AT_FILE_TEST;
-
     static const String MIN_DELTA;
     static const String MAX_DELTA;
     static const String AVERAGE_DELTA;
@@ -60,6 +55,13 @@ public:
     static const String FRAME_DELTA;
 
 private:
+
+    static const String START_TEST;
+    static const String FINISH_TEST;
+    static const String ERROR_TEST;
+    static const String STATISTIC;
+    static const String AT_FILE_TEST;
+
     void TestOutput(const String& data);
 };
 
