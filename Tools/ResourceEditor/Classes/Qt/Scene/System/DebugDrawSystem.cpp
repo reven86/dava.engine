@@ -100,7 +100,7 @@ void DebugDrawSystem::Draw(DAVA::Entity *entity)
 {
 	if(NULL != entity)
 	{
-        bool isSelected = selSystem->GetSelection().ContainEntity(entity);
+        bool isSelected = selSystem->GetSelection().ContainsEntity(entity);
 
 		DrawObjectBoxesByType(entity);
 		DrawUserNode(entity);

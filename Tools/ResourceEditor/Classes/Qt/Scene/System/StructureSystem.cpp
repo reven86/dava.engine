@@ -482,7 +482,7 @@ void StructureSystem::ProcessAutoSelection(const Command2 *command, bool redo) c
     {
         auto batch = static_cast<const CommandBatch *>(command);
         
-        auto contain = batch->ContainCommand(CMDID_ENTITY_ADD) || batch->ContainCommand(CMDID_ENTITY_REMOVE);
+        auto contain = batch->ContainsCommand(CMDID_ENTITY_ADD) || batch->ContainsCommand(CMDID_ENTITY_REMOVE);
         if(contain)
         {
             selectionSystem->Clear();
