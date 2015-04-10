@@ -29,7 +29,10 @@
 #ifndef __GRID_VISUALIZER__H__
 #define __GRID_VISUALIZER__H__
 
-#include "DAVAEngine.h"
+#include "Base/Singleton.h"
+#include "Math/Rect.h"
+#include "Render/UniqueStateSet.h"
+
 namespace DAVA {
 
 // This class helps us to visualize UI Editor Grid if needed.

@@ -8,7 +8,6 @@
 #include "Model/ControlProperties/BackgroundPropertiesSection.h"
 #include "Model/ControlProperties/InternalControlPropertiesSection.h"
 #include "Model/ControlProperties/ValueProperty.h"
-#include "Model/ControlProperties/LocalizedTextValueProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/ControlPrototype.h"
 #include "Model/PackageHierarchy/PackageRef.h"

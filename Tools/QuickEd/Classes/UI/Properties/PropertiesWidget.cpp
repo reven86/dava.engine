@@ -5,13 +5,14 @@
 #include <QMenu>
 #include <QItemSelection>
 
+#include "UI/QtModelPackageCommandExecutor.h"
+
+#include <QAbstractItemModel>
+#include "SharedData.h"
+
 #include "ui_PropertiesWidget.h"
 #include "PropertiesModel.h"
-#include "UI/Document.h"
-#include "UI/QtModelPackageCommandExecutor.h"
-#include "UI/PropertiesContext.h"
 #include "UI/Properties/PropertiesTreeItemDelegate.h"
-#include "Model/PackageHierarchy/ControlNode.h"
 
 #include "UI/Components/UIComponent.h"
 
@@ -19,14 +20,12 @@ using namespace DAVA;
 
 PropertiesWidget::PropertiesWidget(QWidget *parent)
     : QDockWidget(parent)
-    , ui(new Ui::PropertiesWidget())
-    , context(nullptr)
     , addComponentAction(nullptr)
     , removeComponentAction(nullptr)
+    , sharedData(nullptr)
 {
-    ui->setupUi(this);
-    ui->treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
-    
+    setupUi(this);
+    treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
     QMenu *addComponentMenu = new QMenu("Menu", this);
     for (int32 i = 0; i < UIComponent::COMPONENT_COUNT; i++)
     {
@@ -43,82 +42,71 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
     removeComponentAction = new QAction(tr("Remove Component"), this);
     connect(removeComponentAction, &QAction::triggered, this, &PropertiesWidget::OnRemoveComponent);
     
-    ui->treeView->addAction(addComponentAction);
-    ui->treeView->addAction(removeComponentAction);
+    treeView->addAction(addComponentAction);
+    treeView->addAction(removeComponentAction);
 }
 
-PropertiesWidget::~PropertiesWidget()
+void PropertiesWidget::OnDocumentChanged(SharedData *arg)
 {
-    delete ui;
+    sharedData = arg;
+    UpdateActivatedControls();
 }
-
-void PropertiesWidget::SetDocument(Document *document)
+void PropertiesWidget::OnDataChanged(const QByteArray &role)
 {
-    if (nullptr != context) //remove previous context
+    if (role == "activatedControls")
     {
-        disconnect(context, SIGNAL(ModelChanged(PropertiesModel*)), this, SLOT(OnModelChanged(PropertiesModel*)));
-        ui->treeView->setModel(nullptr);
+        UpdateActivatedControls();
     }
-    /*set new context*/
-    if (nullptr == document)
+}
+
+void PropertiesWidget::UpdateActivatedControls()
+{
+    QAbstractItemModel *prevModel = treeView->model();
+    if (nullptr == sharedData)
     {
-        context = nullptr;
+        treeView->setModel(nullptr);
     }
     else
     {
-        context = document->GetPropertiesContext();
+        const QList<ControlNode*> &activatedControls = sharedData->GetData("activatedControls").value<QList<ControlNode*> >();
+        QAbstractItemModel* model = activatedControls.empty() ? nullptr : new PropertiesModel(activatedControls.first(), sharedData->GetDocument()->GetCommandExecutor());//TODO this is ugly
+        sharedData->SetData("propertiesModel", QVariant::fromValue(model)); //TODO: bad architecture
+        treeView->setModel(model);
+        treeView->expandToDepth(0);
+        treeView->resizeColumnToContents(0);
     }
-
-    if (nullptr != context)
-    {
-        connect(context, SIGNAL(ModelChanged(PropertiesModel*)), this, SLOT(OnModelChanged(PropertiesModel*)));
-        ui->treeView->setModel(context->GetModel());
-        connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PropertiesWidget::OnSelectionChanged);
-    }
-}
-
-void PropertiesWidget::OnModelChanged(PropertiesModel *model)
-{
-    ui->treeView->setModel(model);
-    if (nullptr != model)
-    {
-        ui->treeView->expandToDepth(0);
-        ui->treeView->resizeColumnToContents(0);
-        connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PropertiesWidget::OnSelectionChanged);
-        addComponentAction->setEnabled(!model->GetControlNode()->GetPropertiesRoot()->IsReadOnly());
-        removeComponentAction->setEnabled(false);
-    }
+    delete prevModel;
 }
 
 void PropertiesWidget::OnAddComponent(QAction *action)
 {
-    if (context)
-    {
-        uint32 componentType = action->data().toUInt();
-        DVASSERT(componentType < UIComponent::COMPONENT_COUNT);
-        
-        context->GetDocument()->GetCommandExecutor()->AddComponent(context->GetModel()->GetControlNode(), componentType);
-    }
+//    if (context)
+//    {
+//        uint32 componentType = action->data().toUInt();
+//        DVASSERT(componentType < UIComponent::COMPONENT_COUNT);
+//        
+//        context->GetDocument()->GetCommandExecutor()->AddComponent(context->GetModel()->GetControlNode(), componentType);
+//    }
 }
 
 void PropertiesWidget::OnRemoveComponent()
 {
-    if (context)
-    {
-        //context->GetDocument()->GetCommandExecutor()->RemoveComponent(context->GetModel()->GetControlNode(), componentType);
-        
-    }
+//    if (context)
+//    {
+//        //context->GetDocument()->GetCommandExecutor()->RemoveComponent(context->GetModel()->GetControlNode(), componentType);
+//        
+//    }
 }
 
 void PropertiesWidget::OnSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
-    if (!selected.empty())
-    {
-        const QItemSelectionRange &range = selected.first();
-        const QPersistentModelIndex &index = range.topLeft();
-        BaseProperty *property = static_cast<BaseProperty*>(index.internalPointer());
-        bool enabled = false;
-        enabled = property->CanRemove() && context && context->GetModel()->GetControlNode()->IsEditingSupported();
-        removeComponentAction->setEnabled(enabled);
-    }
+//    if (!selected.empty())
+//    {
+//        const QItemSelectionRange &range = selected.first();
+//        const QPersistentModelIndex &index = range.topLeft();
+//        BaseProperty *property = static_cast<BaseProperty*>(index.internalPointer());
+//        bool enabled = false;
+//        enabled = property->CanRemove() && context && context->GetModel()->GetControlNode()->IsEditingSupported();
+//        removeComponentAction->setEnabled(enabled);
+//    }
 }

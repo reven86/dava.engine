@@ -88,21 +88,11 @@ if( QT5_LIB_PATH )
         endif()
 
     endif()
+    
+    set ( DAVA_EXTRA_ENVIRONMENT QT_QPA_PLATFORM_PLUGIN_PATH=$ENV{QT_QPA_PLATFORM_PLUGIN_PATH} )                
 
 endif()
 
-
-if( WIN32 )
-    set( ENV{QT_QPA_PLATFORM_PLUGIN_PATH} ${QT5_PATH_WIN}/plugins )
-
-elseif( MACOS )
-    set( ENV{QT_QPA_PLATFORM_PLUGIN_PATH} ${QT5_PATH_MAC}/plugins )
-
-endif()
-
-message ( "QT5_PLATFORM_PATH - " $ENV{QT_QPA_PLATFORM_PLUGIN_PATH} )
-
-set ( DAVA_EXTRA_ENVIRONMENT QT_QPA_PLATFORM_PLUGIN_PATH=$ENV{QT_QPA_PLATFORM_PLUGIN_PATH} )
 
 if( NOT QT5_FOUND )
     message( "Error !!!: Please set the correct path to QT5 in file DavaConfig.in"  )

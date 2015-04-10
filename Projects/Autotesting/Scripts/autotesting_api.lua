@@ -682,6 +682,25 @@ function ClickControl(name, time, touchId)
     return false
 end
 
+function ShiftClickControl(name, x, y, touchId)
+    Log(string.format("ShiftClickControl name=%s with shift on [%d, %d] touchId=%d", name, x, y, (touchId or 1)))
+    if not WaitControl(name, TIMEOUT) then
+        Log("Control " .. name .. " not found.")
+        return false
+    end
+    if IsVisible(name) and IsCenterOnScreen(name) then
+        local position = GetCenter(name)
+        Log("Position= " .. position.x .. ", " .. position.y)
+        position.x = position.x + x
+        position.y = position.y + y
+        Log("Position= " .. position.x .. ", " .. position.y)
+        ClickPosition(position, TIMECLICK, touchId)
+        return true
+    end
+    Log("Control " .. name .. " is not visible.")
+    return false
+end
+
 -- Move touch actions
 function TouchMovePosition(position, touchId)
     autotestingSystem:TouchMove(position, touchId or 1)
@@ -698,4 +717,3 @@ function TouchMove(position, new_position, time, touchId)
     TouchUp(touchId)
     Wait(waitTime)
 end
-

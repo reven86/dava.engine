@@ -3,7 +3,6 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
 #include "UI/Properties/PropertiesModel.h"
-#include "UI/PropertiesContext.h"
 #include "UI/Components/UIComponent.h"
 
 using namespace DAVA;
@@ -25,18 +24,18 @@ AddComponentCommand::~AddComponentCommand()
 
 void AddComponentCommand::redo()
 {
-    PropertiesModel *model = context->GetModel();
-    if (model && model->GetControlNode() == node) // if model selected
-        model->AddComponentSection(componentSection);
-    else
-        node->GetPropertiesRoot()->AddComponentPropertiesSection(componentSection);
+//    PropertiesModel *model = context->GetModel();
+//    if (model && model->GetControlNode() == node) // if model selected
+//        model->AddComponentSection(componentSection);
+//    else
+//        node->GetPropertiesRoot()->AddComponentPropertiesSection(componentSection);
 }
 
 void AddComponentCommand::undo()
 {
-    PropertiesModel *model = context->GetModel();
-    if (model && model->GetControlNode() == node)
-        model->RemoveComponentSection(componentSection);
-    else
-        node->GetPropertiesRoot()->RemoveComponentPropertiesSection(componentSection);
+//    PropertiesModel *model = context->GetModel();
+//    if (model && model->GetControlNode() == node)
+//        model->RemoveComponentSection(componentSection);
+//    else
+//        node->GetPropertiesRoot()->RemoveComponentPropertiesSection(componentSection);
 }

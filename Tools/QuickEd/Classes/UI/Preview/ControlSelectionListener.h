@@ -1,6 +1,8 @@
 #ifndef __QUICKED_CONTROL_SELECTION_LISTENER_H__
 #define __QUICKED_CONTROL_SELECTION_LISTENER_H__
 
+#include "Base/BaseTypes.h"
+
 namespace DAVA
 {
     class UIControl;
@@ -12,8 +14,7 @@ public:
     ControlSelectionListener() {}
     virtual ~ControlSelectionListener() {}
     
-    virtual void OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIControl *selectedControl) = 0;
-    virtual void OnAllControlsDeselected() = 0;
+    virtual void OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl *, DAVA::UIControl*> > &selectedPairs) = 0;
 };
 
 #endif // __QUICKED_CONTROL_SELECTION_LISTENER_H__

@@ -7,13 +7,14 @@
 #include <QVector2D>
 #include <QUndoStack>
 
+#include "Document.h"
+#include "Ui/QtModelPackageCommandExecutor.h"
+
 #include "Model/ControlProperties/BaseProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Utils/QtDavaConvertion.h"
 #include "UI/Commands/ChangePropertyValueCommand.h"
-#include "UI/Document.h"
 #include "UI/QtModelPackageCommandExecutor.h"
-#include "UI/PropertiesContext.h"
 
 using namespace DAVA;
 

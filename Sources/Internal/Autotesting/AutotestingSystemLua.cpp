@@ -12,6 +12,7 @@ extern "C"{
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
+#include "dlmalloc.h"
 };
 
 // directly include wrapped module here to compile only if __DAVAENGINE_AUTOTESTING__ is defined
@@ -28,8 +29,24 @@ extern "C" int luaopen_Polygon2(lua_State *l);
 
 namespace DAVA
 {
+	static const int32 LUA_MEMORY_POOL_SIZE = 1024 * 1024 * 10;
 
-	AutotestingSystemLua::AutotestingSystemLua() : delegate(NULL), luaState(NULL)
+	void* lua_allocator(void *ud, void *ptr, size_t osize, size_t nsize)
+	{
+		if (nsize == 0)
+		{
+			mspace_free(ud, ptr);
+			return nullptr;
+		}
+		else
+		{
+			void* mem = mspace_realloc(ud, ptr, nsize);
+			DVASSERT(mem);
+			return mem;
+		}
+	}
+
+	AutotestingSystemLua::AutotestingSystemLua() : delegate(nullptr), luaState(nullptr), memoryPool(nullptr), memorySpace(nullptr)
 	{
 		autotestingLocalizationSystem = new LocalizationSystem();
 	}
@@ -43,7 +60,10 @@ namespace DAVA
 			return;
 		}
 		lua_close(luaState);
-		luaState = NULL;
+		luaState = nullptr;
+    
+		destroy_mspace(memorySpace);
+		free(memoryPool);
 	}
 
 	void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
@@ -55,16 +75,20 @@ namespace DAVA
 	{
 		if (luaState)
 		{
-			Logger::FrameworkDebug("AutotestingSystemLua::Has initialised already.");
+			Logger::Debug("AutotestingSystemLua::Has initialised already.");
 			return;
 		}
 
-		Logger::FrameworkDebug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.c_str());
+		Logger::Debug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.c_str());
 		autotestingLocalizationSystem->SetDirectory("~res:/Autotesting/Strings/");
 		autotestingLocalizationSystem->SetCurrentLocale(LocalizationSystem::Instance()->GetCurrentLocale());
 		autotestingLocalizationSystem->Init();
 
-		luaState = lua_open();
+		memoryPool = malloc(LUA_MEMORY_POOL_SIZE);
+		memset(memoryPool, 0, LUA_MEMORY_POOL_SIZE);
+		memorySpace = create_mspace_with_base(memoryPool, LUA_MEMORY_POOL_SIZE, 0);
+		mspace_set_footprint_limit(memorySpace, LUA_MEMORY_POOL_SIZE);
+		luaState = lua_newstate(lua_allocator, memorySpace);
 		luaL_openlibs(luaState);
 
 		lua_pushcfunction(luaState, &AutotestingSystemLua::Print);
@@ -75,24 +99,29 @@ namespace DAVA
 
 		if (!LoadWrappedLuaObjects())
 		{
-			AutotestingSystem::Instance()->OnError("Load wrapped lua objects was failed.");
+			AutotestingSystem::Instance()->ForceQuit("Load wrapped lua objects was failed.");
 		}
 
 		if (!RunScriptFromFile("~res:/Autotesting/Scripts/autotesting_api.lua"))
 		{
-			AutotestingSystem::Instance()->OnError("Initialization of 'autotesting_api.lua' was failed.");
+			AutotestingSystem::Instance()->ForceQuit("Initialization of 'autotesting_api.lua' was failed.");
 		}
 
-		String setPackagePathScript = Format("SetPackagePath('~res:/Autotesting/')");
-		if (!RunScript(setPackagePathScript))
+		lua_getglobal(luaState, "SetPackagePath");
+		lua_pushstring(luaState, "~res:/Autotesting/");
+		if (lua_pcall(luaState, 1, 1, 0))
 		{
-			AutotestingSystem::Instance()->OnError("Run of '" + setPackagePathScript + "' was failed.");
+			const char* err = lua_tostring(luaState, -1);
+			AutotestingSystem::Instance()->ForceQuit(Format("AutotestingSystemLua::InitFromFile SetPackagePath failed: %s", err));
 		}
 
 		if (!LoadScriptFromFile(luaFilePath))
 		{
-			AutotestingSystem::Instance()->OnError("Load of '" + luaFilePath + "' was failed failed");
+			AutotestingSystem::Instance()->ForceQuit("Load of '" + luaFilePath + "' was failed failed");
 		}
+
+		lua_getglobal(luaState, "ResumeTest");
+		resumeTestFunctionRef = luaL_ref(luaState, LUA_REGISTRYINDEX);
 
 		AutotestingSystem::Instance()->OnInit();
 		String baseName = FilePath(luaFilePath).GetBasename();
@@ -118,34 +147,34 @@ namespace DAVA
 	{
 		const char *l;
 		while (*path == *LUA_PATHSEP) path++;  /* skip separators */
-		if (*path == '\0') return NULL;  /* no more templates */
+		if (*path == '\0') return nullptr;  /* no more templates */
 		l = strchr(path, *LUA_PATHSEP);  /* find next separator */
-		if (l == NULL) l = path + strlen(path);
+		if (l == nullptr) l = path + strlen(path);
 		lua_pushlstring(L, path, l - path);  /* template */
 		return l;
 	}
 
-	const char* AutotestingSystemLua::Findfile(lua_State* L, const char* name, const char* pname)
+	const FilePath AutotestingSystemLua::Findfile(lua_State* L, const char* name, const char* pname)
 	{
 		const char* path;
 		name = luaL_gsub(L, name, ".", LUA_DIRSEP);
 		lua_getglobal(L, "package");
 		lua_getfield(L, -1, pname);
 		path = lua_tostring(L, -1);
-		if (path == NULL)
+		if (path == nullptr)
 			luaL_error(L, LUA_QL("package.%s") " must be a string", pname);
 		lua_pushliteral(L, "");  /* error accumulator */
-		while ((path = Pushnexttemplate(L, path)) != NULL) {
-			const char *filename;
+		FilePath filename;
+		while ((path = Pushnexttemplate(L, path)) != nullptr) {
 			filename = luaL_gsub(L, lua_tostring(L, -1), LUA_PATH_MARK, name);
 			lua_remove(L, -2);  /* remove path template */
-			if (FileSystem::Instance()->IsFile(filename))  /* does file exist and is readable? */
+			if (filename.Exists())  /* does file exist and is readable? */
 				return filename;  /* return that file name */
-			lua_pushfstring(L, "\n\tno file " LUA_QS, filename);
+			lua_pushfstring(L, "\n\tno file " LUA_QS, filename.GetAbsolutePathname().c_str());
 			lua_remove(L, -2);  /* remove file name */
 			lua_concat(L, 2);  /* add entry to possible error message */
 		}
-		return NULL;  /* not found */
+		return name;  /* not found */
 	}
 
 	int AutotestingSystemLua::RequireModule(lua_State* L)
@@ -153,7 +182,7 @@ namespace DAVA
 		String module = lua_tostring(L, -1);
 		lua_pop(L, 1);
 		FilePath path = Instance()->Findfile(L, module.c_str(), "path");
-		if (!Instance()->LoadScriptFromFile(path))
+		if (!Instance()->LoadScriptFromFile(path)) 
 		{
 			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::RequireModule: couldn't load module " + path.GetAbsolutePathname());
 		}
@@ -272,7 +301,13 @@ namespace DAVA
 
 	void AutotestingSystemLua::Update(float32 timeElapsed)
 	{
-		RunScript("ResumeTest()"); //TODO: time 
+		lua_rawgeti(luaState, LUA_REGISTRYINDEX, resumeTestFunctionRef);
+		if (lua_pcall(luaState, 0, 1, 0))
+		{
+			const char* err = lua_tostring(luaState, -1);
+			Logger::Error("AutotestingSystemLua::Update error: %s", err);
+		}
+
 	}
 
 	float32 AutotestingSystemLua::GetTimeElapsed()
@@ -295,6 +330,11 @@ namespace DAVA
 	{
 		Logger::FrameworkDebug("AutotestingSystemLua::OnTestFinished");
 		AutotestingSystem::Instance()->OnTestsFinished();
+	}
+
+	size_t AutotestingSystemLua::GetUsedMemory() const
+	{
+		return lua_gc(luaState, LUA_GCCOUNT, 0) * 1024 + lua_gc(luaState, LUA_GCCOUNTB, 0);
 	}
 
 	void AutotestingSystemLua::OnStepStart(const String &stepName)
@@ -355,7 +395,7 @@ namespace DAVA
 
 		if (UIControlSystem::Instance()->GetLockInputCounter() > 0 || !srcControl || controlPath.empty())
 		{
-			return NULL;
+			return nullptr;
 		}
 
 		UIControl* control = FindControl(srcControl, controlPath[0]);
@@ -374,7 +414,7 @@ namespace DAVA
 	{
 		if (UIControlSystem::Instance()->GetLockInputCounter() > 0 || !srcControl)
 		{
-			return NULL;
+			return nullptr;
 		}
 		int32 index = atoi(controlName.c_str());
 		if (Format("%d", index) != controlName)
@@ -395,7 +435,7 @@ namespace DAVA
 	{
 		if (UIControlSystem::Instance()->GetLockInputCounter() > 0 || !srcControl)
 		{
-			return NULL;
+			return nullptr;
 		}
 		const List<UIControl*> &children = srcControl->GetChildren();
 		int32 childIndex = 0;
@@ -406,14 +446,14 @@ namespace DAVA
 				return (*it);
 			}
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	UIControl* AutotestingSystemLua::FindControl(UIList* srcList, int32 index)
 	{
 		if (UIControlSystem::Instance()->GetLockInputCounter() > 0 || !srcList)
 		{
-			return NULL;
+			return nullptr;
 		}
 		const List<UIControl*> &cells = srcList->GetVisibleCells();
 		for (List<UIControl*>::const_iterator it = cells.begin(); it != cells.end(); ++it)
@@ -424,7 +464,7 @@ namespace DAVA
 				return cell;
 			}
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	bool AutotestingSystemLua::IsCenterInside(UIControl* parent, UIControl* child)
@@ -554,7 +594,7 @@ namespace DAVA
 			AutotestingSystem::Instance()->OnError("AutotestingSystemLua::Can't get UIList obj.");
 		}
 		float32 size;
-		float32 areaSize = list->TotalAreaSize(NULL);
+		float32 areaSize = list->TotalAreaSize(nullptr);
 		Vector2 visibleSize = control->GetSize();
 		if (list->GetOrientation() == UIList::ORIENTATION_HORIZONTAL)
 		{

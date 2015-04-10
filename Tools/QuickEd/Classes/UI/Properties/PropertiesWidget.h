@@ -1,40 +1,31 @@
 #ifndef __QUICKED_PROPERTIES_WIDGET_H__
 #define __QUICKED_PROPERTIES_WIDGET_H__
 
-#include <QWidget>
 #include <QDockWidget>
+#include "ui_PropertiesWidget.h"
 
-class Document;
-class PropertiesContext;
-class QItemSelection;
+class SharedData;
 
-namespace Ui {
-    class PropertiesWidget;
-}
-
-class PropertiesContext;
 class ControlNode;
-class PropertiesModel;
 
-class PropertiesWidget : public QDockWidget
+class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
 {
     Q_OBJECT
 public:
     PropertiesWidget(QWidget *parent = NULL);
-    virtual ~PropertiesWidget();
-    void SetDocument(Document *document);
 
-private slots:
-    void OnModelChanged(PropertiesModel *model);
+public slots:
+    void OnDocumentChanged(SharedData *sharedData);
+    void OnDataChanged(const QByteArray &role);
+
     void OnAddComponent(QAction *action);
     void OnRemoveComponent();
     void OnSelectionChanged(const QItemSelection &selected,
                             const QItemSelection &deselected);
 
 private:
-    Ui::PropertiesWidget *ui;
-    PropertiesContext *context;
-    
+    void UpdateActivatedControls();
+    SharedData *sharedData;
     QAction *addComponentAction;
     QAction *removeComponentAction;
 };

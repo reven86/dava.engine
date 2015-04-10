@@ -8,9 +8,6 @@
 #include "BackgroundPropertiesSection.h"
 #include "InternalControlPropertiesSection.h"
 
-#include "ValueProperty.h"
-#include "LocalizedTextValueProperty.h"
-
 #include "../PackageSerializer.h"
 
 using namespace DAVA;

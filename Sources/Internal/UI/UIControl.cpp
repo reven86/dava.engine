@@ -1101,7 +1101,7 @@ namespace DAVA
         inputEnabled = srcControl->inputEnabled;
         clipContents = srcControl->clipContents;
 
-        customControlType = srcControl->GetCustomControlClassName();
+        customClassName = srcControl->GetCustomControlClassName();
         initialState = srcControl->GetInitialState();
         drawPivotPointMode = srcControl->drawPivotPointMode;
         debugDrawColor = srcControl->debugDrawColor;
@@ -2502,8 +2502,8 @@ namespace DAVA
         if (rect == newRect)
             return;
 
-        SetPosition(newRect.GetPosition() + GetPivotPoint());
         SetSize(newRect.GetSize());
+        SetPosition(newRect.GetPosition() + GetPivotPoint());
     }
 
     void UIControl::GetAxisDataByAlignData(float32 size, float32 parentSize,
@@ -2587,17 +2587,12 @@ namespace DAVA
 
     const String &UIControl::GetCustomControlClassName() const
     {
-        return customControlType;
+        return customClassName;
     }
 
     void UIControl::SetCustomControlClassName(const String& value)
     {
-        customControlType = value;
-    }
-
-    void UIControl::ResetCustomControlClassName()
-    {
-        customControlType = String();
+        customClassName = value;
     }
 
     void UIControl::SetPreferredNodeType(YamlNode* node, const String& nodeTypeName)
