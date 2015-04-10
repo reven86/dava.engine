@@ -87,6 +87,8 @@ public:
     void OnError(const String &errorMessage);
     void OnTestFinished();
     
+    size_t GetUsedMemory() const;
+    
     float32 GetTimeElapsed();
     
 	// Test organization API
@@ -173,6 +175,10 @@ protected:
     LocalizationSystem* autotestingLocalizationSystem;
     
 #endif //SWIG
+private:
+    void* memoryPool;
+    void* memorySpace;
+    int resumeTestFunctionRef;
 };
 
 };
