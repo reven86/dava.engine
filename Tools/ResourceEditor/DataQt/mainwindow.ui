@@ -1730,7 +1730,7 @@
      <normaloff>:/QtIconsTextureDialog/convert.png</normaloff>:/QtIconsTextureDialog/convert.png</iconset>
    </property>
    <property name="text">
-    <string>Convert Modified texture's PNGs</string>
+    <string>Convert modified textures sources</string>
    </property>
   </action>
   <action name="actionAlbedo">
