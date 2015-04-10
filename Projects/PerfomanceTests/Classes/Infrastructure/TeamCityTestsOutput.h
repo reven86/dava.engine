@@ -42,11 +42,9 @@ public:
     virtual void Output(Logger::eLogLevel ll, const char8* text);
 
     static String FormatTestStarted(const String& testName);
-    static String FormatTestFinished(const String& testName, const String& minDelta, const String& maxDelta,
-                                         const String& averagedelta, const String& testTime, const String& timeElapsed);
+    static String FormatTestFinished(const String& testName);
     static String FormatTestFailed(const String& testName, const String& condition, const String& errMsg);
-private:
-    void TestOutput(const String& data);
+    static String FormatBuildStatistic(const String& key, const String& value);
 
     static const String START_TEST;
     static const String FINISH_TEST;
@@ -58,8 +56,12 @@ private:
     static const String AVERAGE_DELTA;
     static const String TEST_TIME;
     static const String TIME_ELAPSED;
-};
 
+    static const String FRAME_DELTA;
+
+private:
+    void TestOutput(const String& data);
+};
 
 };
 

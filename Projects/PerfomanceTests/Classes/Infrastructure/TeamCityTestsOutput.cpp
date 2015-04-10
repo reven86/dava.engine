@@ -39,11 +39,13 @@ const String TeamcityTestsOutput::FINISH_TEST = "finish test ";
 const String TeamcityTestsOutput::ERROR_TEST = "test error ";
 const String TeamcityTestsOutput::AT_FILE_TEST = " at file: ";
 
-const String TeamcityTestsOutput::MIN_DELTA = "Min delta";
-const String TeamcityTestsOutput::MAX_DELTA = "Max delta";
-const String TeamcityTestsOutput::AVERAGE_DELTA = "Average delta";
-const String TeamcityTestsOutput::TEST_TIME = "Test time";
-const String TeamcityTestsOutput::TIME_ELAPSED = "Time elapsed";
+const String TeamcityTestsOutput::MIN_DELTA = "Min_delta";
+const String TeamcityTestsOutput::MAX_DELTA = "Max_delta";
+const String TeamcityTestsOutput::AVERAGE_DELTA = "Average_delta";
+const String TeamcityTestsOutput::TEST_TIME = "Test_time";
+const String TeamcityTestsOutput::TIME_ELAPSED = "Time_elapsed";
+
+const String TeamcityTestsOutput::FRAME_DELTA = "Frame_delta";
 
 void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
 {
@@ -60,19 +62,7 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
     } else if (FINISH_TEST == lines[0])
     {
         String testName = lines.at(1);
-        String minDelta = lines.at(2);
-        String maxDelta = lines.at(3);
-        String averageDelta = lines.at(4);
-        String testTime = lines.at(5);
-        String timeElapsed = lines.at(6);
-
-        output = "##teamcity[buildStatisticValue key=\'" + MIN_DELTA + "\' value=\'" + minDelta + "\']\n";
-        output += "##teamcity[buildStatisticValue key=\'" + MAX_DELTA + "\' value=\'" + maxDelta + "\']\n";
-        output += "##teamcity[buildStatisticValue key=\'" + AVERAGE_DELTA + "\' value=\'" + averageDelta + "\']\n";
-        output += "##teamcity[buildStatisticValue key=\'" + TEST_TIME + "\' value=\'" + testTime + "\']\n";
-        output += "##teamcity[buildStatisticValue key=\'" + TIME_ELAPSED + "\' value=\'" + timeElapsed + "\']\n";
-
-        output += "##teamcity[testFinished name=\'" + testName + "\']\n";
+        output = "##teamcity[testFinished name=\'" + testName + "\']\n";
 
     } else if (ERROR_TEST == lines[0])
     {
@@ -96,10 +86,14 @@ String TeamcityTestsOutput::FormatTestStarted(const String& testName)
     return START_TEST + "\n" + testName;
 }
 
-String TeamcityTestsOutput::FormatTestFinished(const String& testName, const String& minDelta, const String& maxDelta, 
-                                                const String& averagedelta, const String& testTime, const String& timeElapsed )
+String TeamcityTestsOutput::FormatTestFinished(const String& testName)
 {
-    return FINISH_TEST + "\n" + testName + "\n" + minDelta + "\n" + maxDelta + "\n" + averagedelta + "\n" + testTime + "\n" + timeElapsed;
+    return FINISH_TEST + "\n" + testName;
+}
+
+String TeamcityTestsOutput::FormatBuildStatistic(const String& key, const String& value)
+{
+    return "##teamcity[buildStatisticValue key = \'" + key + "\' value=\'" + value + "\']\n";
 }
 
 String TeamcityTestsOutput::FormatTestFailed(const String& testName, const String& condition, const String& errMsg)

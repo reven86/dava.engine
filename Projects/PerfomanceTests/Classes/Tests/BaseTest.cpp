@@ -98,7 +98,7 @@ void BaseTest::OnFinish()
 
     uint32 framesCount = GetFramesInfo().size();
 
-    for (BaseTest::FrameInfo frameInfo : GetFramesInfo())
+    for (const BaseTest::FrameInfo& frameInfo : GetFramesInfo())
     {
         if (frameInfo.delta > maxDelta)
         {
@@ -110,6 +110,10 @@ void BaseTest::OnFinish()
         }
 
         averageDelta += frameInfo.delta;
+
+        Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
+            TeamcityTestsOutput::FRAME_DELTA,
+            ConverterUtils::NumberToString(frameInfo.delta)).c_str());
     }
 
     averageDelta /= framesCount;
@@ -117,12 +121,27 @@ void BaseTest::OnFinish()
     testTime = GetTestTime();
     elapsedTime = GetElapsedTime() / 1000.0f;
 
-    Logger::Info(TeamcityTestsOutput::FormatTestFinished(testName, 
-        ConverterUtils::NumberToString(minDelta),
-        ConverterUtils::NumberToString(maxDelta), 
-        ConverterUtils::NumberToString(averageDelta),
-        ConverterUtils::NumberToString(testTime),
-        ConverterUtils::NumberToString(elapsedTime)).c_str());
+    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
+        TeamcityTestsOutput::MIN_DELTA,
+        ConverterUtils::NumberToString(minDelta)).c_str());
+
+    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
+        TeamcityTestsOutput::MAX_DELTA,
+        ConverterUtils::NumberToString(minDelta)).c_str());
+
+    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
+        TeamcityTestsOutput::AVERAGE_DELTA,
+        ConverterUtils::NumberToString(minDelta)).c_str());
+
+    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
+        TeamcityTestsOutput::TEST_TIME,
+        ConverterUtils::NumberToString(minDelta)).c_str());
+
+    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
+        TeamcityTestsOutput::TIME_ELAPSED,
+        ConverterUtils::NumberToString(minDelta)).c_str());
+
+    Logger::Info(TeamcityTestsOutput::FormatTestFinished(testName).c_str());
 }
 
 void BaseTest::SystemUpdate(float32 timeElapsed)
