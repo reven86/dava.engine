@@ -152,8 +152,8 @@ namespace DAVA
         title = options->GetString("title", "[set application title using core options property 'title']");
         if(options->IsKeyExists("width") && options->IsKeyExists("height"))
         {
-            width = options->GetInt32("width", 800);
-            height = options->GetInt32("height", 600);
+            width = options->GetInt32("width");
+            height = options->GetInt32("height");
         }
     }
     
