@@ -257,7 +257,7 @@ void PackageWidget::OnRowsAboutToBeRemoved(const QModelIndex &parent, int first,
     PackageControlsNode* packageControlsNode = dynamic_cast<PackageControlsNode*>(parentNode);
     if (nullptr != packageControlsNode)
     {
-        QList<ControlNode*> &rootControls = sharedData->GetData("activeRootControls").value<QList<ControlNode*> >();
+        QList<ControlNode*> rootControls = sharedData->GetData("activeRootControls").value<QList<ControlNode*> >();
         for (int i = first; i < last; ++i)
         {
             rootControls.removeAt(first);
