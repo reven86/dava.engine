@@ -127,19 +127,19 @@ void BaseTest::OnFinish()
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
         TeamcityTestsOutput::MAX_DELTA,
-        ConverterUtils::NumberToString(minDelta)).c_str());
+        ConverterUtils::NumberToString(maxDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
         TeamcityTestsOutput::AVERAGE_DELTA,
-        ConverterUtils::NumberToString(minDelta)).c_str());
+        ConverterUtils::NumberToString(averageDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
         TeamcityTestsOutput::TEST_TIME,
-        ConverterUtils::NumberToString(minDelta)).c_str());
+        ConverterUtils::NumberToString(testTime)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
         TeamcityTestsOutput::TIME_ELAPSED,
-        ConverterUtils::NumberToString(minDelta)).c_str());
+        ConverterUtils::NumberToString(elapsedTime)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatTestFinished(testName).c_str());
 }
