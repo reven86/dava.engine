@@ -108,7 +108,8 @@ float32 Interpolation::EaseInEaseOut(float32 currentVal)
 
 float32 Interpolation::Linear(float32 moveFrom, float32 moveTo, float32 startVal, float32 currentVal, float32 endVal)
 {
-	return moveFrom + (moveTo - moveFrom) * (currentVal - startVal) / (endVal - startVal);
+    float32 delta = FLOAT_EQUAL(endVal, startVal) ? (0.0f) : ((moveTo - moveFrom) * (currentVal - startVal) / (endVal - startVal));
+    return moveFrom + delta;
 }
 
 float32 Interpolation::EaseIn(float32 moveFrom, float32 moveTo, float32 startVal, float32 currentVal, float32 endVal)

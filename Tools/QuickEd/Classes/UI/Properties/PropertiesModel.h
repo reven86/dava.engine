@@ -14,14 +14,13 @@ namespace DAVA {
 
 class BaseProperty;
 class ControlNode;
-class PropertiesContext;
 
 class PropertiesModel : public QAbstractItemModel
 {
     Q_OBJECT
     
 public:
-    PropertiesModel(ControlNode *controlNode, PropertiesContext *context);
+    PropertiesModel(ControlNode *controlNode, QObject *parent = nullptr);
     virtual ~PropertiesModel();
     
     ControlNode *GetControlNode() const {return controlNode; }
@@ -46,7 +45,6 @@ private:
     
 private:
     ControlNode *controlNode;
-    PropertiesContext *propertiesContext;
 };
 
 #endif // __QUICKED_PROPERTIES_MODEL_H__

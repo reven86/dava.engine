@@ -17,13 +17,10 @@ ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *control, con
         {
             String memberName = member->Name();
             
-            ValueProperty *sourceProperty = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
+            ValueProperty *sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(member);
 
-            ValueProperty *prop;
-            if (String(member->Name()) == "text")
-                prop = new LocalizedTextValueProperty(control, member, sourceProperty, copyType);
-            else
-                prop = new ValueProperty(control, member, sourceProperty, copyType);
+            ValueProperty *prop = strcmp(member->Name(), "text") == 0 ? new LocalizedTextValueProperty(control, member, sourceProperty, copyType)
+                                                                      : new ValueProperty(control, member, sourceProperty, copyType);
 
             AddProperty(prop);
             SafeRelease(prop);

@@ -1429,10 +1429,10 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h">
+  <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelpers.h">
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.h">
@@ -1785,6 +1785,7 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIControlFamily.h">
       <Filter>Internal\UI\Components</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MallocHook.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
@@ -1814,6 +1815,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h">
       <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Autotesting\dlmalloc.h">
+      <Filter>Internal\Autotesting</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2913,10 +2917,10 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp">
+  <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelpers.cpp">
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.cpp">
@@ -2963,9 +2967,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.cpp">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageFormatInterface.cpp">
-      <Filter>Internal\Render\Image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlNode.cpp">
       <Filter>Internal\FileSystem</Filter>
@@ -3224,6 +3225,7 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIControlFamily.cpp">
       <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\MallocHook.cpp">
       <Filter>Internal\MemoryManager</Filter>
     </ClCompile>
@@ -3244,6 +3246,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\AndroidMallocSize.cpp">
       <Filter>Internal\MemoryManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\dlmalloc.c">
+      <Filter>Internal\Autotesting</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

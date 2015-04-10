@@ -43,7 +43,6 @@ public:
     static String GetSupportedLanguageID(int index);
     static String GetSupportedLanguageDesc(int index);
     static String GetLanguageDescByLanguageID(String languageID);
-    static String GetLanguageIDByLanguageDesc(String languageDesc);
     
 protected:
     // Validate the language index.
