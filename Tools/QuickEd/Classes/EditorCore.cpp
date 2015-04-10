@@ -15,7 +15,7 @@ EditorCore::EditorCore(QObject *parent)
     , project(new Project(this))
 {
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
-
+     
     connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
     connect(mainWindow, &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
     connect(mainWindow, &MainWindow::CloseProject, this, &EditorCore::CloseProject);
