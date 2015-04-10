@@ -36,6 +36,9 @@
 #include "ui_cubemapeditordialog.h"
 #include "Project/ProjectManager.h"
 
+#include "Tools/PathDescriptor/PathDescriptor.h"
+
+
 #include <QMouseEvent>
 #include <QMessageBox>
 
@@ -105,7 +108,7 @@ void CubemapEditorDialog::LoadImageFromUserFile(float rotation, int face)
     QString fileName = QtFileDialog::getOpenFileName(this,
                                                      tr("Open Cubemap Face Image"),
                                                      QString::fromStdString(projectPath.GetAbsolutePathname()),
-                                                     tr("Image Files (*.png)"));
+                                                     PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
     if(!fileName.isNull())
     {

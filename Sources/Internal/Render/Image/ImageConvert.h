@@ -198,19 +198,24 @@ struct ConvertA8toRGBA8888
 	}
 };
 
-struct ConvertBGRA5551toRGBA5551
+struct ConvertARGB1555toRGBA5551
 {
     inline void operator()(const uint16 * input, uint16 *output)
     {
-        //bbbb bggg ggrr rrra --> rrrr rggg ggbb bbba
-        const uint16 in = *input;
-        uint16 greenAlpha = in & 0x07C1;
-        uint16 blue = (in >> 10) & 0x003E;
-        uint16  red = (in & 0x003E) << 10;
-        *output = red | greenAlpha | blue;
+        //arrr rrgg gggb bbbb --> rrrr rggg ggbb bbba
+        
+        const uint16 & in = *input;
+
+        uint16 a = (in >> 15) & 0x0001;
+        uint16 r = (in >> 10) & 0x001F;
+        uint16 g = (in >> 5) & 0x001F;
+        uint16 b = (in) & 0x001F;
+
+        *output = (r << 11) | (g << 6) | (b << 1) | a;
     }
 };
-
+    
+    
 struct ConvertBGRA4444toRGBA4444
 {
     inline void operator()(const uint16 * input, uint16 *output)
@@ -339,6 +344,29 @@ struct PackRGB888
         output->b = b;
     }
 };
+
+struct UnpackRGBA5551
+{
+    inline void operator()(const uint16 * input, uint32 & r, uint32 & g, uint32 & b, uint32 & a)
+    {
+        auto & in = *input;
+        
+        r = (in >> 11) & 0x001F;
+        g = (in >> 6) & 0x001F;
+        b = (in >> 1) & 0x001F;
+        a = (in) & 0x0001;
+    }
+};
+
+struct PackRGBA5551
+{
+    inline void operator()(uint32 r, uint32 g, uint32 b, uint32 a, uint16 * output)
+    {
+        *output = (r << 11) | (g << 6) | (b << 1) | a;
+    }
+};
+    
+    
     
 struct PackNormalizedRGBA8888
 {
@@ -549,7 +577,6 @@ public:
             ConvertDirect<uint32, RGB888, ConvertRGBA8888toRGB888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         }
-
         else
         {
             Logger::FrameworkDebug("Unsupported image conversion from format %d to %d", inFormat, outFormat);
@@ -584,7 +611,7 @@ public:
         }
         case FORMAT_RGBA5551:
         {
-            ConvertDirect<uint16, uint16, ConvertBGRA5551toRGBA5551> swap;
+            ConvertDirect<uint16, uint16, ConvertARGB1555toRGBA5551> swap;
             swap(srcData, width, height, pitch, dstData);
             return;
         }
@@ -661,6 +688,11 @@ public:
         else if ((inFormat == FORMAT_RGB888) && (outFormat == FORMAT_RGB888))
         {
             ConvertDownscaleTwiceBillinear<RGB888, RGB888, UnpackRGB888, PackRGB888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if ((inFormat == FORMAT_RGBA5551) && (outFormat == FORMAT_RGBA5551))
+        {
+            ConvertDownscaleTwiceBillinear<uint16, uint16, UnpackRGBA5551, PackRGBA5551> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         }
         else
