@@ -28,9 +28,6 @@
 
 
 #include "ImageTools/ImageTools.h"
-#include "Render/Image/LibPngHelpers.h"
-#include "Render/Image/LibPVRHelper.h"
-#include "Render/Image/LibDdsHelper.h"
 
 #include "TextureCompression/TextureConverter.h"
 
@@ -68,39 +65,16 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 	{
 		//FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, forGPU);
 		const FilePath& imagePathname = files[i];
-		
-		File *imageFile = File::Create(imagePathname, File::OPEN | File::READ);
-		if(!imageFile)
-		{
-			Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't open file %s", imagePathname.GetAbsolutePathname().c_str());
-			return 0;
-		}
-		
-		ImageSystem* system = ImageSystem::Instance();
-		if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PNG)->IsImage(imageFile))
-		{
-			size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PNG)->GetDataSize(imageFile);
-		}
-		else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_DDS)->IsImage(imageFile))
-		{
-            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_DDS)->GetDataSize(imageFile);
-		}
-		else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PVR)->IsImage(imageFile))
-		{
-            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PVR)->GetDataSize(imageFile);
-		}
-        else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_JPEG)->IsImage(imageFile))
-		{
-            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_JPEG)->GetDataSize(imageFile);
-		}
-		else
-		{
-			Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetAbsolutePathname().c_str());
-			DVASSERT(false);
-		}
-		
-		SafeRelease(imageFile);
-	}
+        ImageInfo info = ImageSystem::Instance()->GetImageInfo(imagePathname);
+        if (!info.isEmpty())
+        {
+            size += info.dataSize;
+        }
+        else
+        {
+            Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetStringValue().c_str());
+        }
+    }
 	
     return size;
 }

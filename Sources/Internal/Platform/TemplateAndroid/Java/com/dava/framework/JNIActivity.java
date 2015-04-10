@@ -11,8 +11,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.SensorManager;
-import android.hardware.input.InputManager;
-import android.hardware.input.InputManager.InputDeviceListener;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -29,6 +27,7 @@ import android.view.WindowManager;
 import android.view.InputDevice.MotionRange;
 
 import com.bda.controller.Controller;
+import com.dava.framework.InputManagerCompat.InputDeviceListener;
 
 public abstract class JNIActivity extends Activity implements JNIAccelerometer.JNIAccelerometerListener, InputDeviceListener
 {
@@ -42,7 +41,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	
 	private Controller mController = null;
 	
-	private InputManager inputManager = null;
+	private InputManagerCompat inputManager = null;
 	
 	private native void nativeOnCreate(boolean isFirstRun);
 	private native void nativeOnStart();
@@ -125,10 +124,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         glView.setFocusable(true);
         glView.requestFocus();
         
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-        {
-            inputManager = (InputManager)getSystemService(Context.INPUT_SERVICE);
-        }
+        inputManager = InputManagerCompat.Factory.getInputManager(this);
+
         UpdateGamepadAxises();
         
         splashView = GetSplashView();
@@ -237,10 +234,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
             mController.onPause();
         }
         
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-        {
-        	inputManager.unregisterInputDeviceListener(this);
-        }
+        inputManager.unregisterInputDeviceListener(this);
         
         // deactivate accelerometer
         if(accelerometer != null)
@@ -293,10 +287,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
             mController.onResume();
         }
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-        {
-        	inputManager.registerInputDeviceListener(this, null);
-        }
+        inputManager.registerInputDeviceListener(this, null);
+
         UpdateGamepadAxises();
         
         JNIUtils.keepScreenOnOnResume();
@@ -324,6 +316,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
                 
             }
         }
+        
+        JNITextField.RelinkNativeControls();
+        JNIWebView.RelinkNativeControls();
         
         isPausing = false;
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
