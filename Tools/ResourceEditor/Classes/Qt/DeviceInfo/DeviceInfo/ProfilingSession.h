@@ -33,6 +33,7 @@
 #include "Base/RefPtr.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/FilePath.h"
+#include "Network/PeerDesription.h"
 #include "MemoryManager/MemoryManagerTypes.h"
 
 namespace DAVA
@@ -51,7 +52,7 @@ public:
     {
         Init(rawStat, poolCount, tagCount);
     }
-    // TODO: implemet move semantic
+    // TODO: implement move semantic
 
     DAVA::uint64 Timestamp() const { return timestamp; }
     const DAVA::GeneralAllocStat& GeneralStat() const { return statGeneral; }
@@ -70,10 +71,10 @@ private:
     DAVA::Vector<DAVA::TagAllocStat> statTags;
 };
 
-class DumpItem final
+class DumpBrief final
 {
 public:
-    DumpItem(const DAVA::FilePath& filename, const DAVA::MMDump* rawDump)
+    DumpBrief(const DAVA::FilePath& filename, const DAVA::MMDump* rawDump)
         : dumpFileName(filename)
     {
         Init(rawDump);
@@ -106,8 +107,9 @@ class ProfilingSession
 {
 public:
     ProfilingSession(const DAVA::MMStatConfig* config, const DAVA::Net::PeerDescription& devInfo);
+    ProfilingSession(const DAVA::FilePath& filename);
     ~ProfilingSession();
-    // TODO: implemet move semantic
+    // TODO: implement move semantic
 
     void AddStatItem(const DAVA::MMCurStat* rawStat);
     void AddDump(const DAVA::MMDump* rawDump);
@@ -116,29 +118,39 @@ public:
     size_t TagCount() const { return tagCount; }
     size_t StatCount() const { return stat.size(); }
     size_t DumpCount() const { return dump.size(); }
+    const DAVA::Net::PeerDescription& DeviceInfo() const { return deviceInfo; }
 
     const DAVA::String& AllocPoolName(size_t index) const;
     const DAVA::String& TagName(size_t index) const;
     const StatItem& Stat(size_t index) const;
     const StatItem& LastStat() const;
-    const DumpItem& Dump(size_t index) const;
-    const DumpItem& LastDump() const;
+    const DumpBrief& Dump(size_t index) const;
+    const DumpBrief& LastDump() const;
 
 private:
     void Init(const DAVA::MMStatConfig* config);
     void InitFileSystem();
+    void InitFileSystemWhenLoaded(const DAVA::FilePath& filename);
 
     void SaveDumpAsText(const DAVA::MMDump* rawDump, const char* filename);
 
 private:
+    void SaveLogHeader(const DAVA::MMStatConfig* config);
+    void UpdateFileHeader(bool finalize);
+
+    void LoadLogFile();
+    void LoadStatItems(size_t count, DAVA::uint32 itemSize);
+
+private:
+    bool loadedFromFile;
     size_t allocPoolCount = 0;
     size_t tagCount = 0;
     int dumpNo = 1;
-    const DAVA::Net::PeerDescription& deviceInfo;
+    DAVA::Net::PeerDescription deviceInfo;
     DAVA::Vector<DAVA::String> allocPoolNames;
     DAVA::Vector<DAVA::String> tagNames;
     DAVA::Vector<StatItem> stat;
-    DAVA::Vector<DumpItem> dump;
+    DAVA::Vector<DumpBrief> dump;
 
     DAVA::FilePath storageDir;
     DAVA::FilePath statFileName;
@@ -170,13 +182,13 @@ inline const StatItem& ProfilingSession::LastStat() const
     return stat.back();
 }
 
-inline const DumpItem& ProfilingSession::Dump(size_t index) const
+inline const DumpBrief& ProfilingSession::Dump(size_t index) const
 {
     DVASSERT(0 <= index && index < dump.size());
     return dump[index];
 }
 
-inline const DumpItem& ProfilingSession::LastDump() const
+inline const DumpBrief& ProfilingSession::LastDump() const
 {
     DVASSERT(!dump.empty());
     return dump.back();

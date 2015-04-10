@@ -31,13 +31,31 @@
 #include "FileSystem/File.h"
 #include "Platform/DateTime.h"
 #include "Debug/DVAssert.h"
-#include "Network/PeerDesription.h"
 
 #include "BacktraceSymbolTable.h"
 
 #include "ProfilingSession.h"
 
 using namespace DAVA;
+
+namespace
+{
+
+const uint32 FILE_SIGNATURE = 0x41764144;
+
+struct FileHeader
+{
+    uint32 signature;
+    uint32 statCount;
+    uint32 finished;
+    uint32 devInfoSize;
+    uint32 statConfigSize;
+    uint32 statItemSize;
+    uint32 padding[2];
+};
+static_assert(sizeof(FileHeader) == 32, "sizeof(FileHeader) != 32");
+
+}   // unnamed namespace
 
 void StatItem::Init(const DAVA::MMCurStat* rawStat, size_t poolCount, size_t tagCount)
 {
@@ -62,7 +80,7 @@ void StatItem::Init(const DAVA::MMCurStat* rawStat, size_t poolCount, size_t tag
     }
 }
 
-void DumpItem::Init(const DAVA::MMDump* rawDump)
+void DumpBrief::Init(const DAVA::MMDump* rawDump)
 {
     DVASSERT(rawDump != nullptr);
 
@@ -76,11 +94,20 @@ void DumpItem::Init(const DAVA::MMDump* rawDump)
 }
 
 ProfilingSession::ProfilingSession(const DAVA::MMStatConfig* config, const DAVA::Net::PeerDescription& devInfo)
-    : deviceInfo(devInfo)
+    : loadedFromFile(false)
+    , deviceInfo(devInfo)
 {
     DVASSERT(config != nullptr);
     InitFileSystem();
     Init(config);
+    SaveLogHeader(config);
+}
+
+ProfilingSession::ProfilingSession(const FilePath& filename)
+    : loadedFromFile(true)
+{
+    InitFileSystemWhenLoaded(filename);
+    LoadLogFile();
 }
 
 ProfilingSession::~ProfilingSession()
@@ -141,10 +168,16 @@ void ProfilingSession::InitFileSystem()
     }
 }
 
+void ProfilingSession::InitFileSystemWhenLoaded(const FilePath& filename)
+{
+    storageDir = filename.GetDirectory();
+    statFileName = filename;
+}
+
 void ProfilingSession::AddStatItem(const DAVA::MMCurStat* rawStat)
 {
     stat.emplace_back(rawStat, allocPoolCount, tagCount);
-    if (statFile.Valid())
+    if (!loadedFromFile && statFile.Valid())
     {
         statFile->Write(rawStat, rawStat->size);
     }
@@ -165,6 +198,114 @@ void ProfilingSession::AddDump(const DAVA::MMDump* rawDump)
         SaveDumpAsText(rawDump, (storageDir + Format("dump_%d.log", dumpNo)).GetAbsolutePathname().c_str());
     }
     dumpNo += 1;
+}
+
+void ProfilingSession::SaveLogHeader(const DAVA::MMStatConfig* config)
+{
+    FileHeader header;
+    Memset(&header, 0, sizeof(FileHeader));
+    header.signature = FILE_SIGNATURE;
+    header.statCount = 0;
+    header.finished = 0;
+    header.devInfoSize = static_cast<uint32>(deviceInfo.SerializedSize());
+    header.statConfigSize = config->size;
+    header.statItemSize = 0;
+
+    Vector<uint8> rawDeviceInfo(header.devInfoSize, 0);
+    deviceInfo.Serialize(&*rawDeviceInfo.begin(), header.devInfoSize);
+
+    // Save file header
+    uint32 nwritten = statFile->Write(&header);
+    DVASSERT(sizeof(FileHeader) == nwritten);
+
+    // Save device information
+    nwritten = statFile->Write(rawDeviceInfo.data(), header.devInfoSize);
+    DVASSERT(header.devInfoSize == nwritten);
+
+    // Save stat config
+    nwritten = statFile->Write(config, config->size);
+    DVASSERT(config->size == nwritten);
+
+    statFile->Flush();
+}
+
+void ProfilingSession::UpdateFileHeader(bool finalize)
+{
+    uint32 curPos = statFile->GetPos();
+    statFile->Seek(0, File::SEEK_FROM_START);
+    DVASSERT(0 == statFile->GetPos());
+
+    FileHeader header;
+    statFile->Read(&header);
+    header.statCount = static_cast<uint32>(stat.size());
+    header.finished = finalize ? 1 : 0;
+
+    statFile->Seek(0, File::SEEK_FROM_START);
+    DVASSERT(0 == statFile->GetPos());
+
+    uint32 nwritten = statFile->Write(&header);
+    DVASSERT(sizeof(FileHeader) == nwritten);
+
+    statFile->Seek(0, File::SEEK_FROM_END);
+    DVASSERT(statFile->GetPos() == curPos);
+
+    statFile->Flush();
+}
+
+void ProfilingSession::LoadLogFile()
+{
+    statFile.Set(File::Create(statFileName, File::CREATE | File::READ));
+    DVASSERT(statFile.Valid());
+    if (statFile.Valid())
+    {
+        // Load file header
+        FileHeader header;
+        uint32 nread = statFile->Read(&header);
+        DVASSERT(sizeof(FileHeader) == nread);
+        DVASSERT(FILE_SIGNATURE == header.signature);
+        DVASSERT(header.finished != 0 && header.statCount > 0 && header.devInfoSize > 0);
+        DVASSERT(header.statConfigSize > 0 && header.statItemSize > 0);
+
+        // Load device info
+        Vector<uint8> devInfoBuf(header.devInfoSize, 0);
+        nread = statFile->Read(&*devInfoBuf.begin(), header.devInfoSize);
+        DVASSERT(nread == header.devInfoSize);
+        deviceInfo.Deserialize(devInfoBuf.data(), devInfoBuf.size());
+
+        // Load stat config
+        Vector<uint8> configBuf(header.statConfigSize, 0);
+        nread = statFile->Read(&*configBuf.begin(), header.statConfigSize);
+        DVASSERT(nread == header.statConfigSize);
+
+        const MMStatConfig* statConfig = reinterpret_cast<const MMStatConfig*>(configBuf.data());
+        DVASSERT(statConfig->size == header.statConfigSize);
+        Init(statConfig);
+
+        LoadStatItems(header.statCount, header.statItemSize);
+    }
+}
+
+void ProfilingSession::LoadStatItems(size_t count, uint32 itemSize)
+{
+    const uint32 BUF_CAPACITY = 1000;
+    Vector<uint8> buf(BUF_CAPACITY * itemSize, 0);
+
+    uint32 nitems = 1;
+    size_t nloaded = 0;
+    while (nloaded < count && nitems > 0)
+    {
+        uint32 nread = statFile->Read(&*buf.begin(), itemSize * BUF_CAPACITY);
+        DVASSERT(nread % itemSize == 0);
+        nitems = nread / itemSize;
+
+        const MMCurStat* curStat = reinterpret_cast<const MMCurStat*>(buf.data());
+        for (uint32 i = 0;i < nitems;++i)
+        {
+            AddStatItem(curStat);
+            curStat = OffsetPointer<MMCurStat>(curStat, itemSize);
+        }
+        nloaded += nitems;
+    }
 }
 
 void ProfilingSession::SaveDumpAsText(const DAVA::MMDump* rawDump, const char* filename)
