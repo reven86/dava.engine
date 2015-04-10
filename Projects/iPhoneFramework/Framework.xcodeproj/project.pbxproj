@@ -799,6 +799,10 @@
 		1146E10F19D0066F009E5FAB /* AnimationComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 1146E10D19D0066F009E5FAB /* AnimationComponent.h */; };
 		1146E11019D00672009E5FAB /* AnimationComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 1146E10D19D0066F009E5FAB /* AnimationComponent.h */; };
 		1146E11119D00675009E5FAB /* AnimationComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1146E10C19D0066F009E5FAB /* AnimationComponent.cpp */; };
+		114B553A1AB9D2EE003EC488 /* dlmalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 114B55381AB9D2EE003EC488 /* dlmalloc.c */; };
+		114B553B1AB9D2EE003EC488 /* dlmalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 114B55381AB9D2EE003EC488 /* dlmalloc.c */; };
+		114B553C1AB9D2EE003EC488 /* dlmalloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 114B55391AB9D2EE003EC488 /* dlmalloc.h */; };
+		114B553D1AB9D2EE003EC488 /* dlmalloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 114B55391AB9D2EE003EC488 /* dlmalloc.h */; };
 		11CB614919C338DF00B48A92 /* AnimationData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11CB614719C338DF00B48A92 /* AnimationData.cpp */; };
 		11CB614A19C338DF00B48A92 /* AnimationData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11CB614719C338DF00B48A92 /* AnimationData.cpp */; };
 		11CB614B19C338DF00B48A92 /* AnimationData.h in Headers */ = {isa = PBXBuildFile; fileRef = 11CB614819C338DF00B48A92 /* AnimationData.h */; };
@@ -1947,6 +1951,8 @@
 		1146E10719D00649009E5FAB /* AnimationSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationSystem.h; sourceTree = "<group>"; };
 		1146E10C19D0066F009E5FAB /* AnimationComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimationComponent.cpp; sourceTree = "<group>"; };
 		1146E10D19D0066F009E5FAB /* AnimationComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationComponent.h; sourceTree = "<group>"; };
+		114B55381AB9D2EE003EC488 /* dlmalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dlmalloc.c; sourceTree = "<group>"; };
+		114B55391AB9D2EE003EC488 /* dlmalloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dlmalloc.h; sourceTree = "<group>"; };
 		11CB614719C338DF00B48A92 /* AnimationData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimationData.cpp; sourceTree = "<group>"; };
 		11CB614819C338DF00B48A92 /* AnimationData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationData.h; sourceTree = "<group>"; };
 		1503538F1A02D5AA00C90B4F /* DefaultUIPackageBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DefaultUIPackageBuilder.h; sourceTree = "<group>"; };
@@ -3395,6 +3401,8 @@
 				E8B3C7B716B9326D002BD35F /* AutotestingSystem.h */,
 				E8B3C7B916B9326D002BD35F /* MongodbUpdateObject.cpp */,
 				E8B3C7BA16B9326D002BD35F /* MongodbUpdateObject.h */,
+				114B55381AB9D2EE003EC488 /* dlmalloc.c */,
+				114B55391AB9D2EE003EC488 /* dlmalloc.h */,
 			);
 			path = Autotesting;
 			sourceTree = "<group>";
@@ -4555,6 +4563,7 @@
 				17675C1C19472C1400054F8F /* Image.h in Headers */,
 				02FD7F8F1924997C007762C0 /* StaticOcclusion.h in Headers */,
 				02FD7F911924997C007762C0 /* Particle.h in Headers */,
+				114B553D1AB9D2EE003EC488 /* dlmalloc.h in Headers */,
 				B4C29D55199B933F001B83FE /* SceneCache.h in Headers */,
 				02FD7F921924997C007762C0 /* ParticleEmitter.h in Headers */,
 				02FD7F931924997C007762C0 /* ParticleLayer.h in Headers */,
@@ -5014,6 +5023,7 @@
 				E8B3CB5516B9326E002BD35F /* NeonMath.h in Headers */,
 				E8B3CB5616B9326E002BD35F /* OOBBox.h in Headers */,
 				4F25831419BDC94000C28926 /* TypeList.h in Headers */,
+				114B553C1AB9D2EE003EC488 /* dlmalloc.h in Headers */,
 				E8B3CB5716B9326E002BD35F /* Plane.h in Headers */,
 				647EFC71195F0AC40073B3CB /* NMaterialHelper.h in Headers */,
 				84D18C0519201BEF009E3E90 /* LibJpegHelper.h in Headers */,
@@ -5854,6 +5864,7 @@
 				02FD81E21924997C007762C0 /* MovieViewControliOS.mm in Sources */,
 				02FD81E31924997C007762C0 /* SpatialTree.cpp in Sources */,
 				02FD81E41924997C007762C0 /* FMODSoundEvent.cpp in Sources */,
+				114B553B1AB9D2EE003EC488 /* dlmalloc.c in Sources */,
 				02FD81E51924997C007762C0 /* FMODSoundSystem.cpp in Sources */,
 				02FD81E61924997C007762C0 /* AutotestingDB.cpp in Sources */,
 				02FD81E71924997C007762C0 /* GameAPI.cpp in Sources */,
@@ -6228,6 +6239,7 @@
 				840ED3C916D506F900D2BA6C /* DPIHelperiOS.mm in Sources */,
 				CC247FF116D69F1700183D40 /* DVAssertMessage.cpp in Sources */,
 				E8525D1C1A30910400FDF76E /* WASDControllerComponent.cpp in Sources */,
+				114B553A1AB9D2EE003EC488 /* dlmalloc.c in Sources */,
 				D7CC266919C517E500A3B754 /* LocalNotificationIOS.cpp in Sources */,
 				CC247FF316D69F1700183D40 /* DVAssertMessageApple.mm in Sources */,
 				CC247FF516D69F1700183D40 /* UIAlertView_Modal.m in Sources */,
