@@ -222,6 +222,8 @@ namespace DAVA
             [mainWindowController->mainWindow toggleFullScreen: nil];
         }
         // fullsreen for 10.5+ MacOS
+        // this code can be uncommented to have 10.5+ fullscreen support
+        /*
         else if(macOSVer >= NSAppKitVersionNumber10_5)
         {
             fullScreen = _fullScreen;
@@ -234,6 +236,7 @@ namespace DAVA
                 [openGLView exitFullScreenModeWithOptions:nil];
             }
         }
+        */
         else
         {
             // fullscreen for older macOS isn't supperted
