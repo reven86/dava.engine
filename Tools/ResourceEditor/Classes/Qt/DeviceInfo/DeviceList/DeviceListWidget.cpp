@@ -9,10 +9,15 @@
 #include <QVBoxLayout>
 #include <QTabWidget>
 
+#include "FileSystem/FilePath.h"
+
 #include "../DeviceInfo/DumpViewerWidget.h"
 #include "../DeviceInfo/DumpSession.h"
 
 #include "../DeviceInfo/Models/CallTreeModel.h"
+
+#include "../DeviceInfo/ProfilingSession.h"
+#include "../DeviceInfo/MemProfWidget.h"
 
 DeviceListWidget::DeviceListWidget( QWidget *parent )
     : QWidget( parent, Qt::Window )
@@ -43,7 +48,12 @@ void DeviceListWidget::OnViewDump()
     if (!filename.isEmpty())
     {
         std::string s = filename.toStdString();
-
+        ProfilingSession* profilingSession = new ProfilingSession(DAVA::FilePath(s));
+        MemProfWidget* w = new MemProfWidget(profilingSession, this);
+        w->setAttribute(Qt::WA_DeleteOnClose);
+        w->resize(800, 600);
+        w->show();
+        /*
         QTabWidget* tab = new QTabWidget;
         {
             CallTreeModel* model = new CallTreeModel(s.c_str(), true);
@@ -77,6 +87,7 @@ void DeviceListWidget::OnViewDump()
         w->setLayout(l);
         w->resize(800, 600);
         w->show();
+        */
     }
 }
 

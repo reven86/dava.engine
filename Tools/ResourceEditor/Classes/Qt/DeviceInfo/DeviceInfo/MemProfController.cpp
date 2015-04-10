@@ -104,6 +104,7 @@ void MemProfController::OnChannelOpen(const DAVA::MMStatConfig* config)
 
 void MemProfController::OnChannelClosed(const char8* message)
 {
+    profilingSession->Flush();
     emit ConnectionLost(message);
 }
 

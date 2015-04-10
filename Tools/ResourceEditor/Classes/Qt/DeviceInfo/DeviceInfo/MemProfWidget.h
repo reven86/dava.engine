@@ -1,12 +1,12 @@
 #ifndef __DEVICELOGWIDGET_H__
 #define __DEVICELOGWIDGET_H__
 
-#include <QPointer>
+#include "Base/BaseTypes.h"
+
 #include <QWidget>
 #include <QColor>
+#include <QPointer>
 #include <QScopedPointer>
-#include <qtableview.h>
-#include "Base/BaseTypes.h"
 
 namespace Ui {
     class MemProfWidget;
@@ -17,8 +17,7 @@ class QCustomPlot;
 class QFrame;
 class QToolBar;
 
-class MemProfInfoModel;
-class MemProfPlot;
+class QCustomPlot;
 
 namespace DAVA
 {
@@ -42,7 +41,8 @@ signals:
     void OnViewFileDumpButton();
     
 public:
-    explicit MemProfWidget(QWidget *parent = NULL);
+    explicit MemProfWidget(QWidget *parent = nullptr);
+    explicit MemProfWidget(ProfilingSession* profSession, QWidget *parent = nullptr);
     ~MemProfWidget();
 
     void ShowDump(const DAVA::Vector<DAVA::uint8>& v);
@@ -52,20 +52,21 @@ public slots:
     void ConnectionLost(const DAVA::char8* message);
     void StatArrived();
     void DumpArrived(size_t sizeTotal, size_t sizeRecv);
+
+    void RealtimeToggled(bool checked);
+    void PlotClicked(QMouseEvent* ev);
     
 private:
+    void Init();
     void ReinitPlot();
     void UpdatePlot(const StatItem& stat);
+    void SetPlotData();
 
-    void CreateUI();
-    
 private:
     QScopedPointer<Ui::MemProfWidget> ui;
 
-    QToolBar* toolbar;
-    QFrame* frame;
-
-    ProfilingSession* profileSession;
+    bool realtime;
+    ProfilingSession* profileSession = nullptr;
     QPointer<AllocPoolModel> allocPoolModel;
     QPointer<TagModel> tagModel;
     QPointer<GeneralStatModel> generalStatModel;
