@@ -64,18 +64,16 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 	for(size_t i = 0; i < files.size(); ++i)
 	{
 		const FilePath& imagePathname = files[i];
-        ImageSystem* system = ImageSystem::Instance();
-        ImageInfo info = system->GetImageInfo(imagePathname);
+        ImageInfo info = ImageSystem::Instance()->GetImageInfo(imagePathname);
         if (!info.isEmpty())
         {
             size += info.dataSize;
         }
-		else
-		{
-			Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetAbsolutePathname().c_str());
-			DVASSERT(false);
-		}
-	}
+        else
+        {
+            Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetStringValue().c_str());
+        }
+    }
 	
     return size;
 }
