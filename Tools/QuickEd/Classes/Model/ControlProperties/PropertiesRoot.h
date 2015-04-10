@@ -30,9 +30,10 @@ public:
     ControlPropertiesSection *GetControlPropertiesSection(const DAVA::String &name) const;
 
     DAVA::int32 GetIndexOfCompoentPropertiesSection(ComponentPropertiesSection *section);
-    ComponentPropertiesSection *AddComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex);
+    ComponentPropertiesSection *FindComponentPropertiesSection(DAVA::uint32 componentType);
+    ComponentPropertiesSection *AddComponentPropertiesSection(DAVA::uint32 componentType);
     void AddComponentPropertiesSection(ComponentPropertiesSection *section);
-    void RemoveComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex);
+    void RemoveComponentPropertiesSection(DAVA::uint32 componentType);
     void RemoveComponentPropertiesSection(ComponentPropertiesSection *section);
     
     BackgroundPropertiesSection *GetBackgroundPropertiesSection(int num) const;

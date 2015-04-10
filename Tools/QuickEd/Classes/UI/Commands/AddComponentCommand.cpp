@@ -39,5 +39,4 @@ void AddComponentCommand::undo()
         model->RemoveComponentSection(componentSection);
     else
         node->GetPropertiesRoot()->RemoveComponentPropertiesSection(componentSection);
-
 }

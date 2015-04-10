@@ -80,22 +80,22 @@ void QtModelPackageCommandExecutor::ChangeDefaultProperties(const DAVA::Vector<C
     }
 }
 
-void QtModelPackageCommandExecutor::AddComponent(ControlNode *node, uint32 componentType, uint32 componentIndex)
+void QtModelPackageCommandExecutor::AddComponent(ControlNode *node, uint32 componentType)
 {
     if (!node->GetPropertiesRoot()->IsReadOnly())
     {
         BeginMacro("Add Component");
-        AddComponentImpl(node, componentType, componentIndex);
+        AddComponentImpl(node, componentType);
         EndMacro();
     }
 }
 
-void QtModelPackageCommandExecutor::RemoveComponent(ControlNode *node, uint32 componentType, uint32 componentIndex)
+void QtModelPackageCommandExecutor::RemoveComponent(ControlNode *node, uint32 componentType)
 {
     if (!node->GetPropertiesRoot()->IsReadOnly())
     {
         BeginMacro("Remove Component");
-        RemoveComponentImpl(node, componentType, componentIndex);
+        RemoveComponentImpl(node, componentType);
         EndMacro();
     }
 }
@@ -255,21 +255,21 @@ void QtModelPackageCommandExecutor::RemoveControlImpl(ControlNode* node)
     
 }
 
-void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode *node, uint32 componentType, uint32 componentIndex)
+void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode *node, uint32 componentType)
 {
     PushCommand(new AddComponentCommand(document->GetPropertiesContext(), node, componentType));
     Vector<ControlNode*> instances = node->GetInstances();
     for (ControlNode *instance : instances)
-        AddComponentImpl(instance, componentType, componentIndex);
+        AddComponentImpl(instance, componentType);
 }
 
-void QtModelPackageCommandExecutor::RemoveComponentImpl(ControlNode *node, uint32 componentType, uint32 componentIndex)
+void QtModelPackageCommandExecutor::RemoveComponentImpl(ControlNode *node, uint32 componentType)
 {
-    PushCommand(new RemoveComponentCommand(document->GetPropertiesContext(), node, componentType, componentIndex));
+    PushCommand(new RemoveComponentCommand(document->GetPropertiesContext(), node, componentType));
     Vector<ControlNode*> instances = node->GetInstances();
     for (ControlNode *instance : instances)
     {
-        RemoveComponentImpl(instance, componentType, componentIndex);
+        RemoveComponentImpl(instance, componentType);
     }
 }
 

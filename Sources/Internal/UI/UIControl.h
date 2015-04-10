@@ -1444,13 +1444,13 @@ private:
     
 /* Components */
 public:
-    void AddComponent(UIComponent * component);
+    void PutComponent(UIComponent * component);
     void RemoveComponent(UIComponent * component);
-    void RemoveComponent(uint32 componentType, uint32 index = 0);
+    void RemoveComponent(uint32 componentType);
     void RemoveAllComponents();
 
-    UIComponent * GetComponent(uint32 componentType, uint32 index = 0) const;
-    UIComponent * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
+    UIComponent * GetComponent(uint32 componentType) const;
+    UIComponent * GetOrCreateComponent(uint32 componentType);
 
     template<class T> inline T* GetComponent(uint32 index = 0) const
     {
@@ -1460,14 +1460,14 @@ public:
     {
         return DynamicTypeCheck<T*>(GetOrCreateComponent(T::C_TYPE, index));
     }
-    template<class T> inline uint32 GetComponentCount() const
+    template<class T> inline uint32 HasComponent() const
     {
-        return GetComponentCount(T::C_TYPE);
+        return HasComponent(T::C_TYPE);
     }
 
-    inline uint32 GetComponentCount() const;
-    inline uint32 GetComponentCount(uint32 componentType) const;
-    inline uint64 GetAvailableComponentFlags() const;
+    uint32 GetComponentCount() const;
+    bool HasComponent(uint32 componentType) const;
+    uint64 GetAvailableComponentFlags() const;
 
 private:
     Vector<UIComponent *> components;

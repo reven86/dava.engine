@@ -116,7 +116,19 @@ int32 PropertiesRoot::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSec
     }
 }
 
-ComponentPropertiesSection *PropertiesRoot::AddComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex)
+ComponentPropertiesSection *PropertiesRoot::FindComponentPropertiesSection(DAVA::uint32 componentType)
+{
+    for (ComponentPropertiesSection *section : componentProperties)
+    {
+        if (section->GetComponent()->GetType() == componentType)
+        {
+            return section;
+        }
+    }
+    return nullptr;
+}
+
+ComponentPropertiesSection *PropertiesRoot::AddComponentPropertiesSection(DAVA::uint32 componentType)
 {
     ComponentPropertiesSection *section = new ComponentPropertiesSection(control, (UIComponent::eType) componentType, nullptr, COPY_VALUES);
     AddComponentPropertiesSection(section);
@@ -127,15 +139,22 @@ ComponentPropertiesSection *PropertiesRoot::AddComponentPropertiesSection(DAVA::
 void PropertiesRoot::AddComponentPropertiesSection(ComponentPropertiesSection *section)
 {
     componentProperties.push_back(SafeRetain(section));
-    std::stable_sort(componentProperties.begin(), componentProperties.end(),  [](ComponentPropertiesSection * left, ComponentPropertiesSection * right) {
+    
+    DVASSERT(control->HasComponent(section->GetComponent()->GetType()) == false);
+    control->PutComponent(section->GetComponent());
+    std::stable_sort(componentProperties.begin(), componentProperties.end(), [](ComponentPropertiesSection * left, ComponentPropertiesSection * right) {
         return left->GetComponent()->GetType() < right->GetComponent()->GetType();
     });
 
 }
 
-void PropertiesRoot::RemoveComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex)
+void PropertiesRoot::RemoveComponentPropertiesSection(DAVA::uint32 componentType)
 {
-    
+    ComponentPropertiesSection *section = FindComponentPropertiesSection(componentType);
+    if (section)
+    {
+        RemoveComponentPropertiesSection(section);
+    }
 }
 
 void PropertiesRoot::RemoveComponentPropertiesSection(ComponentPropertiesSection *section)
@@ -143,6 +162,8 @@ void PropertiesRoot::RemoveComponentPropertiesSection(ComponentPropertiesSection
     auto it = std::find(componentProperties.begin(), componentProperties.end(), section);
     if (it != componentProperties.end())
     {
+        DVASSERT(control->GetComponent(section->GetComponent()->GetType()) == section->GetComponent());
+        control->RemoveComponent(section->GetComponent());
         componentProperties.erase(it);
         section->Release();
     }

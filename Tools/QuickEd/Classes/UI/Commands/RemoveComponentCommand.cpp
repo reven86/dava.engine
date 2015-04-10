@@ -8,14 +8,13 @@
 
 using namespace DAVA;
 
-RemoveComponentCommand::RemoveComponentCommand(PropertiesContext *_context, ControlNode *_node, int _componentType, int _componentIndex, QUndoCommand *parent)
+RemoveComponentCommand::RemoveComponentCommand(PropertiesContext *_context, ControlNode *_node, int _componentType, QUndoCommand *parent)
     : QUndoCommand(parent)
     , context(_context)
     , node(SafeRetain(_node))
-    , componentType(_componentType)
-    , componentIndex(_componentIndex)
     , componentSection(nullptr)
 {
+    componentSection = SafeRetain(node->GetPropertiesRoot()->FindComponentPropertiesSection(_componentType));
 }
 
 RemoveComponentCommand::~RemoveComponentCommand()

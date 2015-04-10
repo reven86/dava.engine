@@ -45,14 +45,14 @@ void DefaultPackageCommandExecutor::ResetProperty(ControlNode *node, BasePropert
     property->ResetValue();
 }
 
-void DefaultPackageCommandExecutor::AddComponent(ControlNode *node, DAVA::uint32 componentType, DAVA::uint32 componentIndex)
+void DefaultPackageCommandExecutor::AddComponent(ControlNode *node, DAVA::uint32 componentType)
 {
-    node->GetPropertiesRoot()->AddComponentPropertiesSection(componentType, componentIndex);
+    node->GetPropertiesRoot()->AddComponentPropertiesSection(componentType);
 }
 
-void DefaultPackageCommandExecutor::RemoveComponent(ControlNode *node, DAVA::uint32 componentType, DAVA::uint32 componentIndex)
+void DefaultPackageCommandExecutor::RemoveComponent(ControlNode *node, DAVA::uint32 componentType)
 {
-    node->GetPropertiesRoot()->RemoveComponentPropertiesSection(componentType, componentIndex);
+    node->GetPropertiesRoot()->RemoveComponentPropertiesSection(componentType);
 }
 
 void DefaultPackageCommandExecutor::InsertControl(ControlNode *control, ControlsContainerNode *dest, int32 destIndex)

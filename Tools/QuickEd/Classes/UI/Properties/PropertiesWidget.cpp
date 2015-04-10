@@ -92,15 +92,12 @@ void PropertiesWidget::OnModelChanged(PropertiesModel *model)
 
 void PropertiesWidget::OnAddComponent(QAction *action)
 {
-    uint32 componentType = action->data().toUInt();
-    DVASSERT(componentType < UIComponent::COMPONENT_COUNT);
-    
-    uint32 componentIndex = 0; // TODO fix
-    
     if (context)
     {
-        context->GetDocument()->GetCommandExecutor()->AddComponent(context->GetModel()->GetControlNode(), componentType, componentIndex);
+        uint32 componentType = action->data().toUInt();
+        DVASSERT(componentType < UIComponent::COMPONENT_COUNT);
         
+        context->GetDocument()->GetCommandExecutor()->AddComponent(context->GetModel()->GetControlNode(), componentType);
     }
 }
 

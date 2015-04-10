@@ -15,7 +15,7 @@ ComponentPropertiesSection::ComponentPropertiesSection(UIControl *control, UICom
     component = UIComponent::CreateByType(type);
     DVASSERT(component);
 
-    control->AddComponent(component);
+    control->PutComponent(component);
     
     if (component)
     {
