@@ -35,7 +35,6 @@
 namespace DAVA 
 {
 
-
 Image::Image()
 :   dataSize(0)
 ,   width(0)

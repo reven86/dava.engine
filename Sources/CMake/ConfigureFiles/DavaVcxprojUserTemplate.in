@@ -3,19 +3,19 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>@CMAKE_CURRENT_LIST_DIR@</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerEnvironment>PATH=@DAVA_BINARY_WIN32_DIR@</LocalDebuggerEnvironment>
-    <LocalDebuggerEnvironment>@DAVA_EXTRA_ENVIRONMENT@</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>PATH=@DAVA_BINARY_WIN32_DIR@
+@DAVA_EXTRA_ENVIRONMENT@</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerWorkingDirectory>@CMAKE_CURRENT_LIST_DIR@</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerEnvironment>PATH=@DAVA_BINARY_WIN32_DIR@</LocalDebuggerEnvironment>
-    <LocalDebuggerEnvironment>@DAVA_EXTRA_ENVIRONMENT@</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>PATH=@DAVA_BINARY_WIN32_DIR@
+@DAVA_EXTRA_ENVIRONMENT@</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebinfo|Win32'">
     <LocalDebuggerWorkingDirectory>@CMAKE_CURRENT_LIST_DIR@</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerEnvironment>PATH=@DAVA_BINARY_WIN32_DIR@</LocalDebuggerEnvironment>
-    <LocalDebuggerEnvironment>@DAVA_EXTRA_ENVIRONMENT@</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>PATH=@DAVA_BINARY_WIN32_DIR@
+@DAVA_EXTRA_ENVIRONMENT@</LocalDebuggerEnvironment>
   </PropertyGroup>
 </Project>
