@@ -52,22 +52,22 @@ bool PngImageExt::Read(const FilePath &filename)
 {
     SafeRelease(internalData);
 
-	File *fileRead = File::Create(filename, File::READ | File::OPEN);
+    File *fileRead = File::Create(filename, File::READ | File::OPEN);
     if (nullptr == fileRead)
-	{
-		Logger::Error("[PngImageExt::Read] failed to open png file: %s", filename.GetAbsolutePathname().c_str());
-		return false;
-	}
+    {
+        Logger::Error("[PngImageExt::Read] failed to open png file: %s", filename.GetAbsolutePathname().c_str());
+        return false;
+    }
 
-	internalData = new Image();
+    internalData = new Image();
     eErrorCode innerRetCode = LibPngHelper::ReadPngFile(fileRead, internalData, FORMAT_RGBA8888);
     if (innerRetCode != eErrorCode::SUCCESS)
-	{
-		SafeRelease(internalData);
-		Logger::Error("[PngImageExt::Read] failed to read png file: %s", filename.GetAbsolutePathname().c_str());
-	}
+    {
+        SafeRelease(internalData);
+        Logger::Error("[PngImageExt::Read] failed to read png file: %s", filename.GetAbsolutePathname().c_str());
+    }
 
-	SafeRelease(fileRead);
+    SafeRelease(fileRead);
     return (internalData != nullptr);
 }
 
