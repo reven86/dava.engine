@@ -52,6 +52,7 @@
 #include "UI/UIPackageLoader.h"
 #include "Utils/QtDavaConvertion.h"
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "SharedData.h"
 
 namespace
 {
@@ -70,6 +71,7 @@ MainWindow::MainWindow(QWidget *parent)
     , backgroundFrameUseCustomColorAction(nullptr)
     , backgroundFrameSelectCustomColorAction(nullptr)
     , localizationEditorDialog(new LocalizationEditorDialog(this))
+    , editFontDialog(new EditFontDialog(this))
 {
     connect(localizationEditorDialog, &LocalizationEditorDialog::LanguageChanged, this, &MainWindow::LanguageChanged);
 
@@ -131,6 +133,29 @@ void MainWindow::OnCountChanged(int count)
 {
     actionSaveAllDocuments->setEnabled(count > 0);
     OnCurrentIndexChanged(tabBar->currentIndex());
+}
+
+void MainWindow::OnDocumentChanged(SharedData *arg)
+{
+    sharedData = arg;
+    OnDataChanged("activatedControls");
+}
+
+void MainWindow::OnDataChanged(const QByteArray &role)
+{
+    if (role == "activatedControls")
+    {
+        bool disabled = true;
+        if (nullptr != sharedData)
+        {
+            const QList<ControlNode*> &nodes = sharedData->GetData("activatedControls").value<QList<ControlNode*> >();
+            if (nodes.size() == 1)
+            {
+                disabled = editFontDialog->findFont(nodes.at(0)).empty();
+            }
+        }
+        editFontButton->setDisabled(disabled);
+    }
 }
 
 int MainWindow::CloseTab(int index)
@@ -228,6 +253,11 @@ void MainWindow::InitLanguageBox()
     connect(comboboxLanguage, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), localizationEditorDialog->currentLocaleComboBox, &QComboBox::setCurrentIndex);
     connect(localizationEditorDialog->currentLocaleComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), comboboxLanguage, &QComboBox::setCurrentIndex);
     comboboxLanguage->setCurrentIndex(localizationEditorDialog->currentLocaleComboBox->currentIndex());
+
+    editFontButton = new QPushButton(tr("font preset"));
+    editFontButton->setDisabled(true);
+    connect(editFontButton, &QPushButton::clicked, this, &MainWindow::OnEditFontButtonPressed);
+    toolBarLanguage->addWidget(editFontButton);
 }
 
 void MainWindow::InitMenu()
@@ -439,6 +469,14 @@ void MainWindow::OnPixelizationStateChanged()
     EditorSettings::Instance()->SetPixelized(isPixelized);
 
     Texture::SetPixelization(isPixelized);
+}
+
+void MainWindow::OnEditFontButtonPressed()
+{
+    const QList<ControlNode*> &activatedControls = sharedData->GetData("activatedControls").value<QList<ControlNode*> >();
+    DVASSERT(!activatedControls.isEmpty());
+    editFontDialog->UpdateFontPreset(activatedControls.first());
+    editFontDialog->exec();
 }
 
 void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)

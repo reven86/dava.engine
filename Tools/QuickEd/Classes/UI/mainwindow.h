@@ -46,8 +46,9 @@ class PreviewWidget;
 
 class LocalizationEditorDialog;
 class EditFontDialog;
-
+class SharedData;
 class DavaGLWidget;
+
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
     Q_OBJECT
@@ -92,6 +93,8 @@ signals:
 public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
+    void OnDocumentChanged(SharedData *data);
+    void OnDataChanged(const QByteArray &role);
 private slots:
     void OnCurrentIndexChanged(int arg);
     void OnSaveDocument();
@@ -107,7 +110,7 @@ private slots:
     
     // Pixelization.
     void OnPixelizationStateChanged();
-    
+    void OnEditFontButtonPressed();
 private:
     void InitLanguageBox();
 	void InitMenu();
@@ -126,6 +129,8 @@ private:
     QAction* backgroundFrameSelectCustomColorAction;
     LocalizationEditorDialog *localizationEditorDialog;
     EditFontDialog *editFontDialog;
+    QPushButton *editFontButton;
+    SharedData *sharedData;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);

@@ -47,6 +47,11 @@
 #include "UI/fontmanagerdialog.h"
 #include "Helpers/WidgetSignalsBlocker.h"
 #include "EditorFontManager.h"
+#include "Model/PackageHierarchy/ControlNode.h"
+
+#include "Model/ControlProperties/PropertiesRoot.h"
+#include "Model/ControlProperties/PropertiesSection.h"
+#include "Model/ControlProperties/ValueProperty.h"
 
 using namespace DAVA;
 
@@ -58,35 +63,11 @@ using namespace DAVA;
 //static const QString LOAD_FONT_ERROR_INFO_TEXT = "An error occured while loading font...";
 
 
-EditFontDialog::EditFontDialog(const String & editFontPresetName, QDialog *parent) :
+EditFontDialog::EditFontDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::EditFontDialog)
 {    
     ui->setupUi(this);
-    
-    ui->buttonBox->button( QDialogButtonBox::Ok )->setEnabled(false);
-    
-    //dialogResult.fontPresetOriginalName = editFontPresetName;
-    //dialogResult.fontPresetName = editFontPresetName;
-    Font* font = EditorFontManager::Instance()->GetLocalizedFont(editFontPresetName, "default");
-    
-    //dialogResult.font = font ? font->Clone() : EditorFontManager::Instance()->GetDefaultFont()->Clone();
-    
-    const Vector<String> &locales = EditorFontManager::Instance()->GetLocales();
-    int32 localesCount = locales.size();
-    for(int32 i = 0; i < localesCount; ++i)
-    {
-        Font* localizedFont = EditorFontManager::Instance()->GetLocalizedFont(editFontPresetName, locales[i]);
-        //dialogResult.localizedFonts[locales[i]] = localizedFont ? localizedFont->Clone() : dialogResult.font->Clone();
-        
-        //Logger::FrameworkDebug("EditFontDialog::EditFontDialog dialogResult.localizedFonts[%s] = %p", locales[i].c_str(), dialogResult.localizedFonts[locales[i]]);
-        
-        ui->selectLocaleComboBox->addItem(QString::fromStdString(locales[i]));
-    }
-    if(0 < localesCount)
-    {
-        currentLocale = locales[0];
-    }
     
     // Initialize dialog
     ConnectToSignals();
@@ -96,6 +77,68 @@ EditFontDialog::~EditFontDialog()
 {
     DisconnectFromSignals();
     SafeDelete(ui);
+}
+
+void EditFontDialog::UpdateFontPreset(ControlNode *selectedControlNode)
+{
+    String editFontPresetName = findFont(selectedControlNode);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+    ui->selectLocaleComboBox->clear();
+    //dialogResult.fontPresetOriginalName = editFontPresetName;
+    //dialogResult.fontPresetName = editFontPresetName;
+    Font* font = EditorFontManager::Instance()->GetLocalizedFont(editFontPresetName, "default");
+
+    //dialogResult.font = font ? font->Clone() : EditorFontManager::Instance()->GetDefaultFont()->Clone();
+
+    const Vector<String> &locales = EditorFontManager::Instance()->GetLocales();
+    int32 localesCount = locales.size();
+    for (int32 i = 0; i < localesCount; ++i)
+    {
+        Font* localizedFont = EditorFontManager::Instance()->GetLocalizedFont(editFontPresetName, locales[i]);
+        //dialogResult.localizedFonts[locales[i]] = localizedFont ? localizedFont->Clone() : dialogResult.font->Clone();
+
+        //Logger::FrameworkDebug("EditFontDialog::EditFontDialog dialogResult.localizedFonts[%s] = %p", locales[i].c_str(), dialogResult.localizedFonts[locales[i]]);
+
+        ui->selectLocaleComboBox->addItem(QString::fromStdString(locales[i]));
+    }
+    if (0 < localesCount)
+    {
+        currentLocale = locales[0];
+    }
+
+    UpdateLineEditWidgetWithPropertyValue(ui->fontPresetNameLlineEdit);
+
+    UpdateSpinBoxWidgetWithPropertyValue(ui->fontSizeSpinBox);
+    UpdatePushButtonWidgetWithPropertyValue(ui->fontSelectButton);
+
+    UpdateSpinBoxWidgetWithPropertyValue(ui->localizedFontSizeSpinBox);
+    UpdatePushButtonWidgetWithPropertyValue(ui->localizedFontSelectButton);
+
+    UpdateComboBoxWidgetWithPropertyValue(ui->selectLocaleComboBox);
+}
+
+String EditFontDialog::findFont(ControlNode *node)
+{
+    PropertiesRoot *propertiesRoot = node->GetPropertiesRoot();
+    int propertiesCount = propertiesRoot->GetCount();
+    for (int index = 0; index < propertiesCount; ++index)
+    {
+        PropertiesSection *section = dynamic_cast<PropertiesSection*>(propertiesRoot->GetProperty(index));
+        int sectionCount = section->GetCount();
+        for (int prop = 0; prop < sectionCount; ++prop)
+        {
+            ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
+            if (!strcmp(valueProperty->GetMember()->Name(), "font"))
+            {
+                return valueProperty->GetValue().AsString();
+            }
+        }
+    }
+    for (int index = 0; index < node->GetCount(); ++index)
+    {
+        return findFont(node->Get(index));
+    }
+    return String();
 }
 
 void EditFontDialog::ConnectToSignals()

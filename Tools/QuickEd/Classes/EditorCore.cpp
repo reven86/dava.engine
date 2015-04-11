@@ -27,6 +27,9 @@ EditorCore::EditorCore(QObject *parent)
     connect(mainWindow, &MainWindow::SaveAllDocuments, this, &EditorCore::SaveAllDocuments);
     connect(mainWindow, &MainWindow::SaveDocument, this, static_cast<void(EditorCore::*)(int)>(&EditorCore::SaveDocument));
 
+    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow, &MainWindow::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::SharedDataChanged, mainWindow, &MainWindow::OnDataChanged);
+
     connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
 
     connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);

@@ -43,15 +43,17 @@
 namespace Ui {
 class EditFontDialog;
 }
+class ControlNode;
 
 class EditFontDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit EditFontDialog(const DAVA::String & editFontPresetName, QDialog *parent = 0);
+    explicit EditFontDialog(QWidget *parent = 0);
     ~EditFontDialog();
-    
+    void UpdateFontPreset(ControlNode *selectedControlNode);
+    DAVA::String EditFontDialog::findFont(ControlNode *node);
 private:
     Ui::EditFontDialog *ui;
     

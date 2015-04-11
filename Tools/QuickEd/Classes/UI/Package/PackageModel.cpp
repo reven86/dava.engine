@@ -338,9 +338,10 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
 
 void PackageModel::InsertControlNode(ControlNode *node, ControlsContainerNode *dest, int row)
 {
+    dest->InsertAtIndex(row, node);
+
     QModelIndex destIndex = indexByNode(dest);
     beginInsertRows(destIndex, row, row);
-    dest->InsertAtIndex(row, node);
     endInsertRows();
 }
 
@@ -348,8 +349,9 @@ void PackageModel::RemoveControlNode(ControlNode *node, ControlsContainerNode *p
 {
     QModelIndex parentIndex = indexByNode(parent);
     int index = parent->GetIndex(node);
-    beginRemoveRows(parentIndex, index, index);
     parent->Remove(node);
+
+    beginRemoveRows(parentIndex, index, index);
     endRemoveRows();
 }
 
