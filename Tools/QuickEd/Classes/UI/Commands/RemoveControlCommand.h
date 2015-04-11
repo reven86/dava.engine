@@ -3,23 +3,23 @@
 
 #include <QUndoCommand>
 
-class PackageModel;
+class PackageNode;
 class ControlNode;
 class ControlsContainerNode;
 
 class RemoveControlCommand : public QUndoCommand
 {
 public:
-    RemoveControlCommand(PackageModel *_model, ControlNode *node, ControlsContainerNode *dest, int index, QUndoCommand *parent = nullptr);
+    RemoveControlCommand(PackageNode *_root, ControlNode *_node, ControlsContainerNode *_from, int _index, QUndoCommand *parent = nullptr);
     virtual ~RemoveControlCommand();
     
-    void undo() override;
     void redo() override;
+    void undo() override;
     
 private:
-    PackageModel *model;
+    PackageNode *root;
     ControlNode *node;
-    ControlsContainerNode *dest;
+    ControlsContainerNode *from;
     int index;
 };
 

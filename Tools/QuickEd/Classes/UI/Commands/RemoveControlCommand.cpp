@@ -1,16 +1,16 @@
 #include "RemoveControlCommand.h"
 
+#include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
-#include "UI/Package/PackageModel.h"
 
 using namespace DAVA;
 
-RemoveControlCommand::RemoveControlCommand(PackageModel *_model, ControlNode *_node, ControlsContainerNode *_dest, int _index, QUndoCommand *parent)
+RemoveControlCommand::RemoveControlCommand(PackageNode *_root, ControlNode *_node, ControlsContainerNode *_from, int _index, QUndoCommand *parent)
     : QUndoCommand(parent)
-    , model(_model)
+    , root(SafeRetain(_root))
     , node(SafeRetain(_node))
-    , dest(SafeRetain(_dest))
+    , from(SafeRetain(_from))
     , index(_index)
 {
     
@@ -18,19 +18,18 @@ RemoveControlCommand::RemoveControlCommand(PackageModel *_model, ControlNode *_n
 
 RemoveControlCommand::~RemoveControlCommand()
 {
-    model = nullptr;
+    SafeRelease(root);
     SafeRelease(node);
-    SafeRelease(dest);
-}
-
-void RemoveControlCommand::undo()
-{
-    node->MarkAsAlive();
-    model->InsertControlNode(node, dest, index);
+    SafeRelease(from);
 }
 
 void RemoveControlCommand::redo()
 {
-    node->MarkAsRemoved();
-    model->RemoveControlNode(node, dest);
+    root->RemoveControl(node, from);
 }
+
+void RemoveControlCommand::undo()
+{
+    root->InsertControl(node, from, index);
+}
+

@@ -28,10 +28,12 @@ PackageModel::PackageModel(PackageNode *_root, QtModelPackageCommandExecutor *_c
     , root(SafeRetain(_root))
     , commandExecutor(SafeRetain(_commandExecutor))
 {
+    root->AddListener(this);
 }
 
 PackageModel::~PackageModel()
 {
+    root->RemoveListener(this);
     SafeRelease(root);
     SafeRelease(commandExecutor);
 }
@@ -336,23 +338,6 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     return false;
 }
 
-void PackageModel::InsertControlNode(ControlNode *node, ControlsContainerNode *dest, int row)
-{
-    QModelIndex destIndex = indexByNode(dest);
-    beginInsertRows(destIndex, row, row);
-    dest->InsertAtIndex(row, node);
-    endInsertRows();
-}
-
-void PackageModel::RemoveControlNode(ControlNode *node, ControlsContainerNode *parent)
-{
-    QModelIndex parentIndex = indexByNode(parent);
-    int index = parent->GetIndex(node);
-    beginRemoveRows(parentIndex, index, index);
-    parent->Remove(node);
-    endRemoveRows();
-}
-
 void PackageModel::InsertImportedPackage(PackageControlsNode *node, PackageNode *dest, int destRow)
 {
     QModelIndex destIndex = indexByNode(dest);
@@ -370,3 +355,25 @@ void PackageModel::RemoveImportedPackage(PackageControlsNode *node, PackageNode 
     endRemoveRows();
 }
 
+void PackageModel::ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int row)
+{
+    QModelIndex destIndex = indexByNode(destination);
+    beginInsertRows(destIndex, row, row);
+}
+
+void PackageModel::ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int row)
+{
+    endInsertRows();
+}
+
+void PackageModel::ControlWillBeRemoved(ControlNode *node, ControlsContainerNode *from)
+{
+    QModelIndex parentIndex = indexByNode(from);
+    int index = from->GetIndex(node);
+    beginRemoveRows(parentIndex, index, index);
+}
+
+void PackageModel::ControlWasRemoved(ControlNode *node, ControlsContainerNode *from)
+{
+    endRemoveRows();
+}

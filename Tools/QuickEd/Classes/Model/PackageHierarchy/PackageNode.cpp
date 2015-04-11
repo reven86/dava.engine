@@ -2,9 +2,10 @@
 
 #include "PackageControlsNode.h"
 #include "ImportedPackagesNode.h"
-#include "../PackageSerializer.h"
 #include "ControlPrototype.h"
+#include "PackageListener.h"
 #include "PackageRef.h"
+#include "../PackageSerializer.h"
 
 using namespace DAVA;
 
@@ -75,6 +76,44 @@ PackageControlsNode *PackageNode::FindImportedPackage(const DAVA::FilePath &path
             return importedPackagesNode->Get(index);
     }
     return nullptr;
+}
+
+void PackageNode::AddListener(PackageListener *listener)
+{
+    listeners.push_back(listener);
+}
+
+void PackageNode::RemoveListener(PackageListener *listener)
+{
+    auto it = std::find(listeners.begin(), listeners.end(), listener);
+    if (it != listeners.end())
+    {
+        listeners.erase(it);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
+void PackageNode::InsertControl(ControlNode *node, ControlsContainerNode *dest, DAVA::int32 index)
+{
+    for (PackageListener *listener : listeners)
+        listener->ControlWillBeAdded(node, dest, index);
+    node->MarkAsAlive();
+    dest->InsertAtIndex(index, node);
+    for (PackageListener *listener : listeners)
+        listener->ControlWasAdded(node, dest, index);
+}
+
+void PackageNode::RemoveControl(ControlNode *node, ControlsContainerNode *from)
+{
+    for (PackageListener *listener : listeners)
+        listener->ControlWillBeRemoved(node, from);
+    node->MarkAsRemoved();
+    from->Remove(node);
+    for (PackageListener *listener : listeners)
+        listener->ControlWasRemoved(node, from);
 }
 
 void PackageNode::Serialize(PackageSerializer *serializer) const

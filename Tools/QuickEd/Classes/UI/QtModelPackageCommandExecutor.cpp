@@ -212,9 +212,7 @@ bool QtModelPackageCommandExecutor::Paste(PackageNode *root, ControlsContainerNo
 
 void QtModelPackageCommandExecutor::InsertControlImpl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex)
 {
-    PackageModel *model = document->GetPackageModel();
-    
-    PushCommand(new InsertControlCommand(model, control, dest, destIndex));
+    PushCommand(new InsertControlCommand(document->GetPackage(), control, dest, destIndex));
     
     ControlNode *destControl = dynamic_cast<ControlNode*>(dest);
     if (destControl)
@@ -231,14 +229,12 @@ void QtModelPackageCommandExecutor::InsertControlImpl(ControlNode *control, Cont
 
 void QtModelPackageCommandExecutor::RemoveControlImpl(ControlNode* node)
 {
-    PackageModel *model = document->GetPackageModel();
-    
     ControlsContainerNode *src = dynamic_cast<ControlsContainerNode*>(node->GetParent());
     if (src)
     {
         int32 srcIndex = src->GetIndex(node);
         node->Retain();
-        PushCommand(new RemoveControlCommand(model, node, src, srcIndex));
+        PushCommand(new RemoveControlCommand(document->GetPackage(), node, src, srcIndex));
         
         Vector<ControlNode*> instances = node->GetInstances();
         for (ControlNode *instance : instances)

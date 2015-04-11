@@ -5,9 +5,11 @@
 
 class ImportedPackagesNode;
 class PackageControlsNode;
+class ControlsContainerNode;
 class PackageSerializer;
 class ControlNode;
 class PackageRef;
+class PackageListener;
 
 class PackageNode : public PackageBaseNode
 {
@@ -30,6 +32,12 @@ public:
 
     PackageControlsNode *FindImportedPackage(const DAVA::FilePath &path);
 
+    void AddListener(PackageListener *listener);
+    void RemoveListener(PackageListener *listener);
+    
+    void InsertControl(ControlNode *node, ControlsContainerNode *dest, DAVA::int32 index);
+    void RemoveControl(ControlNode *node, ControlsContainerNode *from);
+
     void Serialize(PackageSerializer *serializer) const;
     void Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const;
     
@@ -42,6 +50,7 @@ private:
     
     ImportedPackagesNode *importedPackagesNode;
     PackageControlsNode *packageControlsNode;
+    DAVA::Vector<PackageListener*> listeners;
 };
 
 #endif // __UI_EDITOR_PACKAGE_NODE_H__

@@ -6,7 +6,8 @@
 #include <QStringList>
 #include <QUndoStack>
 #include <QItemSelection>
-#include "DAVAEngine.h"
+
+#include "Model/PackageHierarchy/PackageListener.h"
 
 class PackageNode;
 class ControlNode;
@@ -15,7 +16,7 @@ class PackageControlsNode;
 class ControlsContainerNode;
 class QtModelPackageCommandExecutor;
 
-class PackageModel : public QAbstractItemModel
+class PackageModel : public QAbstractItemModel, PackageListener
 {
     Q_OBJECT
 
@@ -40,10 +41,16 @@ public:
     virtual QMimeData *mimeData(const QModelIndexList &indexes) const override;
     virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
     
-    void InsertControlNode(ControlNode *node, ControlsContainerNode *dest, int row);
-    void RemoveControlNode(ControlNode *node, ControlsContainerNode *parent);
     void InsertImportedPackage(PackageControlsNode *node, PackageNode *dest, int destRow);
     void RemoveImportedPackage(PackageControlsNode *node, PackageNode *parent);
+
+private: // PackageListener
+    virtual void ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int row) override;
+    virtual void ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int row) override;
+    
+    virtual void ControlWillBeRemoved(ControlNode *node, ControlsContainerNode *from) override;
+    virtual void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) override;
+
     
 private:
     PackageNode *root;
