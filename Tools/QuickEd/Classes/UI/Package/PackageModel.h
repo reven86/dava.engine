@@ -41,9 +41,6 @@ public:
     virtual QMimeData *mimeData(const QModelIndexList &indexes) const override;
     virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
     
-    void InsertImportedPackage(PackageControlsNode *node, PackageNode *dest, int destRow);
-    void RemoveImportedPackage(PackageControlsNode *node, PackageNode *parent);
-
 private: // PackageListener
     virtual void ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int row) override;
     virtual void ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int row) override;
@@ -51,6 +48,11 @@ private: // PackageListener
     virtual void ControlWillBeRemoved(ControlNode *node, ControlsContainerNode *from) override;
     virtual void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) override;
 
+    virtual void ImportedPackageWillBeAdded(PackageControlsNode *node, PackageNode *to, int index) override;
+    virtual void ImportedPackageWasAdded(PackageControlsNode *node, PackageNode *to, int index) override;
+    
+    virtual void ImportedPackageWillBeRemoved(PackageControlsNode *node, PackageNode *from) override;
+    virtual void ImportedPackageWasRemoved(PackageControlsNode *node, PackageNode *from) override;
     
 private:
     PackageNode *root;

@@ -100,8 +100,10 @@ void PackageNode::InsertControl(ControlNode *node, ControlsContainerNode *dest, 
 {
     for (PackageListener *listener : listeners)
         listener->ControlWillBeAdded(node, dest, index);
+    
     node->MarkAsAlive();
     dest->InsertAtIndex(index, node);
+    
     for (PackageListener *listener : listeners)
         listener->ControlWasAdded(node, dest, index);
 }
@@ -110,10 +112,34 @@ void PackageNode::RemoveControl(ControlNode *node, ControlsContainerNode *from)
 {
     for (PackageListener *listener : listeners)
         listener->ControlWillBeRemoved(node, from);
+    
     node->MarkAsRemoved();
     from->Remove(node);
+    
     for (PackageListener *listener : listeners)
         listener->ControlWasRemoved(node, from);
+}
+
+void PackageNode::InsertImportedPackage(PackageControlsNode *node, DAVA::int32 index)
+{
+    for (PackageListener *listener : listeners)
+        listener->ImportedPackageWillBeAdded(node, this, index);
+    
+    importedPackagesNode->InsertAtIndex(index, node);
+    
+    for (PackageListener *listener : listeners)
+        listener->ImportedPackageWasAdded(node, this, index);
+}
+
+void PackageNode::RemoveImportedPackage(PackageControlsNode *node)
+{
+    for (PackageListener *listener : listeners)
+        listener->ImportedPackageWillBeRemoved(node, this);
+    
+    importedPackagesNode->Remove(node);
+    
+    for (PackageListener *listener : listeners)
+        listener->ImportedPackageWasRemoved(node, this);
 }
 
 void PackageNode::Serialize(PackageSerializer *serializer) const

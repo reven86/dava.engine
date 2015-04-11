@@ -38,6 +38,9 @@ public:
     void InsertControl(ControlNode *node, ControlsContainerNode *dest, DAVA::int32 index);
     void RemoveControl(ControlNode *node, ControlsContainerNode *from);
 
+    void InsertImportedPackage(PackageControlsNode *node, DAVA::int32 index);
+    void RemoveImportedPackage(PackageControlsNode *node);
+
     void Serialize(PackageSerializer *serializer) const;
     void Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const;
     
