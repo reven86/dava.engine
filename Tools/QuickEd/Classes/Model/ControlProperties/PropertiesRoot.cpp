@@ -8,6 +8,8 @@
 #include "BackgroundPropertiesSection.h"
 #include "InternalControlPropertiesSection.h"
 
+#include "PropertyListener.h"
+
 #include "../PackageSerializer.h"
 
 using namespace DAVA;
@@ -178,6 +180,48 @@ InternalControlPropertiesSection *PropertiesRoot::GetInternalControlPropertiesSe
     if (0 <= num && num < (int) internalControlProperties.size())
         return internalControlProperties[num];
     return nullptr;
+}
+
+void PropertiesRoot::AddListener(PropertyListener *listener)
+{
+    listeners.push_back(listener);
+}
+
+void PropertiesRoot::RemoveListener(PropertyListener *listener)
+{
+    auto it = std::find(listeners.begin(), listeners.end(), listener);
+    if (it != listeners.end())
+    {
+        listeners.erase(it);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
+void PropertiesRoot::SetProperty(BaseProperty *property, const DAVA::VariantType &newValue)
+{
+    property->SetValue(newValue);
+    
+    for (PropertyListener *listener : listeners)
+        listener->PropertyChanged(property);
+}
+
+void PropertiesRoot::SetDefaultProperty(BaseProperty *property, const DAVA::VariantType &newValue)
+{
+    property->SetDefaultValue(newValue);
+
+    for (PropertyListener *listener : listeners)
+        listener->PropertyChanged(property);
+}
+
+void PropertiesRoot::ResetProperty(BaseProperty *property)
+{
+    property->ResetValue();
+
+    for (PropertyListener *listener : listeners)
+        listener->PropertyChanged(property);
 }
 
 void PropertiesRoot::Serialize(PackageSerializer *serializer) const

@@ -16,7 +16,7 @@ class PackageControlsNode;
 class ControlsContainerNode;
 class QtModelPackageCommandExecutor;
 
-class PackageModel : public QAbstractItemModel, PackageListener
+class PackageModel : public QAbstractItemModel, private PackageListener
 {
     Q_OBJECT
 
@@ -24,8 +24,6 @@ public:
     PackageModel(PackageNode *root, QtModelPackageCommandExecutor *commandExecutor, QObject *parent = 0);
     virtual ~PackageModel();
     
-    void emitNodeChanged(PackageBaseNode *node);
-
     QModelIndex indexByNode(PackageBaseNode *node) const;
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     virtual QModelIndex parent(const QModelIndex &child) const override;
@@ -42,6 +40,8 @@ public:
     virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
     
 private: // PackageListener
+    virtual void ControlPropertyWasChanged(ControlNode *node, BaseProperty *property) override;
+
     virtual void ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int row) override;
     virtual void ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int row) override;
     

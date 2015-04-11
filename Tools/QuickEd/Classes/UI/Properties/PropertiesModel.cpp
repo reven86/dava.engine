@@ -24,31 +24,14 @@ PropertiesModel::PropertiesModel(ControlNode *_controlNode, QtModelPackageComman
     , commandExecutor(SafeRetain(_commandExecutor))
 {
     controlNode = SafeRetain(_controlNode);
+    controlNode->GetPropertiesRoot()->AddListener(this);
 }
 
 PropertiesModel::~PropertiesModel()
 {
+    controlNode->GetPropertiesRoot()->RemoveListener(this);
     SafeRelease(commandExecutor);
     SafeRelease(controlNode);
-}
-
-void PropertiesModel::emitPropertyChanged(BaseProperty *property)
-{
-    QModelIndex nameIndex = indexByProperty(property, 0);
-    QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
-    emit dataChanged(nameIndex, valueIndex);
-}
-
-QModelIndex PropertiesModel::indexByProperty(BaseProperty *property, int column)
-{
-    BaseProperty *parent = property->GetParent();
-    if (parent == NULL)
-        return QModelIndex();
-    
-    if (parent)
-        return createIndex(parent->GetIndex(property), column, property);
-    else
-        return createIndex(0, column, parent);
 }
 
 QModelIndex PropertiesModel::index(int row, int column, const QModelIndex &parent) const
@@ -260,6 +243,25 @@ void PropertiesModel::RemoveComponentSection(ComponentPropertiesSection *section
     beginRemoveRows(parentIndex, sectionRow, sectionRow);
     controlNode->GetPropertiesRoot()->RemoveComponentPropertiesSection(section);
     endRemoveRows();
+}
+
+void PropertiesModel::PropertyChanged(BaseProperty *property)
+{
+    QModelIndex nameIndex = indexByProperty(property, 0);
+    QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
+    emit dataChanged(nameIndex, valueIndex);
+}
+
+QModelIndex PropertiesModel::indexByProperty(BaseProperty *property, int column)
+{
+    BaseProperty *parent = property->GetParent();
+    if (parent == NULL)
+        return QModelIndex();
+    
+    if (parent)
+        return createIndex(parent->GetIndex(property), column, property);
+    else
+        return createIndex(0, column, parent);
 }
 
 QVariant PropertiesModel::makeQVariant(const BaseProperty *property) const

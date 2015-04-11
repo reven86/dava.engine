@@ -8,6 +8,7 @@ class ComponentPropertiesSection;
 class BackgroundPropertiesSection;
 class InternalControlPropertiesSection;
 class PackageSerializer;
+class PropertyListener;
 
 namespace DAVA
 {
@@ -39,6 +40,13 @@ public:
     BackgroundPropertiesSection *GetBackgroundPropertiesSection(int num) const;
     InternalControlPropertiesSection *GetInternalControlPropertiesSection(int num) const;
     
+    void AddListener(PropertyListener *listener);
+    void RemoveListener(PropertyListener *listener);
+    
+    void SetProperty(BaseProperty *property, const DAVA::VariantType &newValue);
+    void SetDefaultProperty(BaseProperty *property, const DAVA::VariantType &newValue);
+    void ResetProperty(BaseProperty *property);
+    
     virtual void Serialize(PackageSerializer *serializer) const override;
 
     virtual DAVA::String GetName() const;
@@ -50,12 +58,13 @@ private:
     void MakeInternalControlPropertiesSection(DAVA::UIControl *control, const PropertiesRoot *sourceProperties, eCopyType copyType);
 
 private:
-    
     DAVA::UIControl *control;
     DAVA::Vector<ControlPropertiesSection*> controlProperties;
     DAVA::Vector<ComponentPropertiesSection*> componentProperties;
     DAVA::Vector<BackgroundPropertiesSection*> backgroundProperties;
     DAVA::Vector<InternalControlPropertiesSection*> internalControlProperties;
+    
+    DAVA::Vector<PropertyListener*> listeners;
 };
 
 #endif // __UI_EDITOR_PROPERTIES_ROOT_H__

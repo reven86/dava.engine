@@ -96,6 +96,30 @@ void PackageNode::RemoveListener(PackageListener *listener)
     }
 }
 
+void PackageNode::SetControlProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &newValue)
+{
+    node->GetPropertiesRoot()->SetProperty(property, newValue);
+
+    for (PackageListener *listener : listeners)
+        listener->ControlPropertyWasChanged(node, property);
+}
+
+void PackageNode::SetControlDefaultProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &newValue)
+{
+    node->GetPropertiesRoot()->SetDefaultProperty(property, newValue);
+
+    for (PackageListener *listener : listeners)
+        listener->ControlPropertyWasChanged(node, property);
+}
+
+void PackageNode::ResetControlProperty(ControlNode *node, BaseProperty *property)
+{
+    node->GetPropertiesRoot()->ResetProperty(property);
+
+    for (PackageListener *listener : listeners)
+        listener->ControlPropertyWasChanged(node, property);
+}
+
 void PackageNode::InsertControl(ControlNode *node, ControlsContainerNode *dest, DAVA::int32 index)
 {
     for (PackageListener *listener : listeners)

@@ -3,6 +3,8 @@
 
 #include "PackageBaseNode.h"
 
+#include "FileSystem/VariantType.h"
+
 class ImportedPackagesNode;
 class PackageControlsNode;
 class ControlsContainerNode;
@@ -10,6 +12,7 @@ class PackageSerializer;
 class ControlNode;
 class PackageRef;
 class PackageListener;
+class BaseProperty;
 
 class PackageNode : public PackageBaseNode
 {
@@ -34,6 +37,10 @@ public:
 
     void AddListener(PackageListener *listener);
     void RemoveListener(PackageListener *listener);
+    
+    void SetControlProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &newValue);
+    void SetControlDefaultProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &newValue);
+    void ResetControlProperty(ControlNode *node, BaseProperty *property);
     
     void InsertControl(ControlNode *node, ControlsContainerNode *dest, DAVA::int32 index);
     void RemoveControl(ControlNode *node, ControlsContainerNode *from);

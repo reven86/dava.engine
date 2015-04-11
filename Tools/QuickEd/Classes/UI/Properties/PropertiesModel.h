@@ -2,7 +2,9 @@
 #define __QUICKED_PROPERTIES_MODEL_H__
 
 #include <QAbstractItemModel>
-#include "DAVAEngine.h"
+
+#include "FileSystem/VariantType.h"
+#include "Model/ControlProperties/PropertyListener.h"
 
 namespace DAVA {
     class InspInfo;
@@ -17,7 +19,7 @@ class ControlNode;
 class QtModelPackageCommandExecutor;
 class ComponentPropertiesSection;
 
-class PropertiesModel : public QAbstractItemModel
+class PropertiesModel : public QAbstractItemModel, private PropertyListener
 {
     Q_OBJECT
     
@@ -26,8 +28,6 @@ public:
     virtual ~PropertiesModel();
     
     ControlNode *GetControlNode() const {return controlNode; }
-    void emitPropertyChanged(BaseProperty *property);
-    QModelIndex indexByProperty(BaseProperty *property, int column = 0);
     
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     virtual QModelIndex parent(const QModelIndex &child) const override;
@@ -42,8 +42,12 @@ public:
 
     void AddComponentSection(ComponentPropertiesSection *section);
     void RemoveComponentSection(ComponentPropertiesSection *section);
+
+private: // PropertyListener
+    virtual void PropertyChanged(BaseProperty *property) override;
     
 private:
+    QModelIndex indexByProperty(BaseProperty *property, int column = 0);
     QVariant makeQVariant(const BaseProperty *property) const;
     void initVariantType(DAVA::VariantType &var, const QVariant &val) const;
     

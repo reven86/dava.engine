@@ -4,22 +4,22 @@
 #include <QUndoCommand>
 #include "FileSystem/VariantType.h"
 
-class BaseProperty;
-class Document;
+class PackageNode;
 class ControlNode;
+class BaseProperty;
 
 class ChangePropertyValueCommand: public QUndoCommand
 {
 public:
-    explicit ChangePropertyValueCommand(Document *document, ControlNode *node, BaseProperty *property, const DAVA::VariantType &newValue, QUndoCommand *parent = 0);
-    explicit ChangePropertyValueCommand(Document *document, ControlNode *node, BaseProperty *property, QUndoCommand *parent = 0);
+    ChangePropertyValueCommand(PackageNode *_root, ControlNode *_node, BaseProperty *_property, const DAVA::VariantType &newValue, QUndoCommand *parent = 0);
+    ChangePropertyValueCommand(PackageNode *_root, ControlNode *_node, BaseProperty *_property, QUndoCommand *parent = 0);
     virtual ~ChangePropertyValueCommand();
 
-    virtual void undo();
     virtual void redo();
+    virtual void undo();
     
 private:
-    Document *document;
+    PackageNode *root;
     ControlNode *node;
     BaseProperty *property;
     DAVA::VariantType oldValue;

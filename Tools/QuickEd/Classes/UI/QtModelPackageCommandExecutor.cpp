@@ -40,7 +40,7 @@ void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, BaseProper
     if (!property->IsReadOnly())
     {
         BeginMacro("Change Property");
-        PushCommand(new ChangePropertyValueCommand(document, node, property, value));
+        PushCommand(new ChangePropertyValueCommand(document->GetPackage(), node, property, value));
         ChangeDefaultProperties(node->GetInstances(), property, value);
         EndMacro();
     }
@@ -51,7 +51,7 @@ void QtModelPackageCommandExecutor::ResetProperty(ControlNode *node, BasePropert
     if (!property->IsReadOnly())
     {
         BeginMacro("Reset Property");
-        PushCommand(new ChangePropertyValueCommand(document, node, property));
+        PushCommand(new ChangePropertyValueCommand(document->GetPackage(), node, property));
         ChangeDefaultProperties(node->GetInstances(), property, property->GetDefaultValue());
         EndMacro();
     }
@@ -65,7 +65,7 @@ void QtModelPackageCommandExecutor::ChangeDefaultProperties(const DAVA::Vector<C
         BaseProperty *nodeProperty = instance->GetPropertyByPath(path);
         if (nodeProperty)
         {
-            PushCommand(new ChangeDefaultValueCommand(document, instance, nodeProperty, value));
+            PushCommand(new ChangeDefaultValueCommand(document->GetPackage(), instance, nodeProperty, value));
             ChangeDefaultProperties(instance->GetInstances(), nodeProperty, nodeProperty->GetValue());
         }
         else

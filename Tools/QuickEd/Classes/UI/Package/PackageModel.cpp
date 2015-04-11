@@ -38,12 +38,6 @@ PackageModel::~PackageModel()
     SafeRelease(commandExecutor);
 }
 
-void PackageModel::emitNodeChanged(PackageBaseNode *node)
-{
-    QModelIndex index = indexByNode(node);
-    emit dataChanged(index, index);
-}
-
 QModelIndex PackageModel::indexByNode(PackageBaseNode *node) const
 {
     PackageBaseNode *parent = node->GetParent();
@@ -336,6 +330,12 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     }
 
     return false;
+}
+
+void PackageModel::ControlPropertyWasChanged(ControlNode *node, BaseProperty *property)
+{
+    QModelIndex index = indexByNode(node);
+    emit dataChanged(index, index);
 }
 
 void PackageModel::ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int row)

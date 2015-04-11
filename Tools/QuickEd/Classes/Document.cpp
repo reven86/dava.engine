@@ -59,17 +59,6 @@ const DAVA::FilePath &Document::GetPackageFilePath() const
     return package->GetPackageRef()->GetPath();
 }
 
-
-PropertiesModel *Document::GetPropertiesModel() const
-{
-    return reinterpret_cast<PropertiesModel*>(sharedData->GetData("propertiesModel").value<QAbstractItemModel*>()); //TODO this is ugly
-}
-
-PackageModel* Document::GetPackageModel() const
-{
-    return sharedData->GetData("packageModel").value<PackageModel*>();
-}
-
 void Document::UpdateLanguage()
 {
     QList<ControlNode*> activeRootControls;

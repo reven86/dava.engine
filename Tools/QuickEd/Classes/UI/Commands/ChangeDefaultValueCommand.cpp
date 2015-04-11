@@ -2,13 +2,11 @@
 
 #include "Model/ControlProperties/BaseProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
-#include "Document.h"
-#include "UI/Properties/PropertiesModel.h"
-#include "UI/Package/PackageModel.h"
+#include "Model/PackageHierarchy/PackageNode.h"
 
-ChangeDefaultValueCommand::ChangeDefaultValueCommand(Document *_document, ControlNode *_node, BaseProperty *_property, const DAVA::VariantType &_newValue, QUndoCommand *_parent)
+ChangeDefaultValueCommand::ChangeDefaultValueCommand(PackageNode *_root, ControlNode *_node, BaseProperty *_property, const DAVA::VariantType &_newValue, QUndoCommand *_parent)
     : QUndoCommand(_parent)
-    , document(_document)
+    , root(SafeRetain(_root))
     , node(SafeRetain(_node))
     , property(SafeRetain(_property))
     , newValue(_newValue)
@@ -18,33 +16,17 @@ ChangeDefaultValueCommand::ChangeDefaultValueCommand(Document *_document, Contro
 
 ChangeDefaultValueCommand::~ChangeDefaultValueCommand()
 {
+    SafeRelease(root);
     SafeRelease(property);
     SafeRelease(node);
-    document = nullptr;
-}
-
-void ChangeDefaultValueCommand::undo()
-{
-    property->SetDefaultValue(oldValue);
-
-    PropertiesModel *model = document->GetPropertiesModel();
-    if (model && model->GetControlNode()->GetPropertiesRoot() == property->GetRootProperty())
-        model->emitPropertyChanged(property);
-
-    PackageModel *packageModel = document->GetPackageModel();
-    packageModel->emitNodeChanged(node);
-
 }
 
 void ChangeDefaultValueCommand::redo()
 {
-    property->SetDefaultValue(newValue);
+    root->SetControlDefaultProperty(node, property, newValue);
+}
 
-    PropertiesModel *model = document->GetPropertiesModel();
-    if (model && model->GetControlNode()->GetPropertiesRoot() == property->GetRootProperty())
-        model->emitPropertyChanged(property);
-    
-    PackageModel *packageModel = document->GetPackageModel();
-    packageModel->emitNodeChanged(node);
-
+void ChangeDefaultValueCommand::undo()
+{
+    root->SetControlDefaultProperty(node, property, oldValue);
 }
