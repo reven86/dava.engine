@@ -40,12 +40,15 @@ public:
     virtual QVariant headerData(int section, Qt::Orientation orientation,
                                 int role = Qt::DisplayRole) const override;
 
-    void AddComponentSection(ComponentPropertiesSection *section);
-    void RemoveComponentSection(ComponentPropertiesSection *section);
-
 private: // PropertyListener
     virtual void PropertyChanged(BaseProperty *property) override;
+
+    virtual void ComponentPropertiesWillBeAdded(PropertiesRoot *root, ComponentPropertiesSection *section, int index) override;
+    virtual void ComponentPropertiesWasAdded(PropertiesRoot *root, ComponentPropertiesSection *section, int index) override;
     
+    virtual void ComponentPropertiesWillBeRemoved(PropertiesRoot *root, ComponentPropertiesSection *section, int index) override;
+    virtual void ComponentPropertiesWasRemoved(PropertiesRoot *root, ComponentPropertiesSection *section, int index) override;
+
 private:
     QModelIndex indexByProperty(BaseProperty *property, int column = 0);
     QVariant makeQVariant(const BaseProperty *property) const;

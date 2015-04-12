@@ -227,29 +227,35 @@ QVariant PropertiesModel::headerData(int section, Qt::Orientation /*orientation*
     return QVariant();
 }
 
-void PropertiesModel::AddComponentSection(ComponentPropertiesSection *section)
-{
-    int32 sectionRow = controlNode->GetPropertiesRoot()->GetIndexOfCompoentPropertiesSection(section);
-    QModelIndex parentIndex = indexByProperty(controlNode->GetPropertiesRoot(), 0);
-    beginInsertRows(parentIndex, sectionRow, sectionRow);
-    controlNode->GetPropertiesRoot()->AddComponentPropertiesSection(section);
-    endInsertRows();
-}
-
-void PropertiesModel::RemoveComponentSection(ComponentPropertiesSection *section)
-{
-    int32 sectionRow = controlNode->GetPropertiesRoot()->GetIndexOfCompoentPropertiesSection(section);
-    QModelIndex parentIndex = indexByProperty(controlNode->GetPropertiesRoot(), 0);
-    beginRemoveRows(parentIndex, sectionRow, sectionRow);
-    controlNode->GetPropertiesRoot()->RemoveComponentPropertiesSection(section);
-    endRemoveRows();
-}
-
 void PropertiesModel::PropertyChanged(BaseProperty *property)
 {
     QModelIndex nameIndex = indexByProperty(property, 0);
     QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
     emit dataChanged(nameIndex, valueIndex);
+}
+
+void PropertiesModel::ComponentPropertiesWillBeAdded(PropertiesRoot *root, ComponentPropertiesSection *section, int index)
+{
+    int32 sectionRow = root->GetIndexOfCompoentPropertiesSection(section);
+    QModelIndex parentIndex = indexByProperty(root, 0);
+    beginInsertRows(parentIndex, sectionRow, sectionRow);
+}
+
+void PropertiesModel::ComponentPropertiesWasAdded(PropertiesRoot *root, ComponentPropertiesSection *section, int index)
+{
+    endInsertRows();
+}
+
+void PropertiesModel::ComponentPropertiesWillBeRemoved(PropertiesRoot *root, ComponentPropertiesSection *section, int index)
+{
+    int32 sectionRow = root->GetIndexOfCompoentPropertiesSection(section);
+    QModelIndex parentIndex = indexByProperty(root, 0);
+    beginRemoveRows(parentIndex, sectionRow, sectionRow);
+}
+
+void PropertiesModel::ComponentPropertiesWasRemoved(PropertiesRoot *root, ComponentPropertiesSection *section, int index)
+{
+    endRemoveRows();
 }
 
 QModelIndex PropertiesModel::indexByProperty(BaseProperty *property, int column)

@@ -3,21 +3,21 @@
 
 #include <QUndoCommand>
 
-class PropertiesContext;
+class PackageNode;
 class ControlNode;
 class ComponentPropertiesSection;
 
 class RemoveComponentCommand : public QUndoCommand
 {
 public:
-    RemoveComponentCommand(PropertiesContext *_context, ControlNode *node, int componentType, QUndoCommand *parent = nullptr);
+    RemoveComponentCommand(PackageNode *_root, ControlNode *_node, int componentType, QUndoCommand *parent = nullptr);
     virtual ~RemoveComponentCommand();
     
     void redo() override;
     void undo() override;
     
 private:
-    PropertiesContext *context;
+    PackageNode *root;
     ControlNode *node;
     ComponentPropertiesSection *componentSection;
 };

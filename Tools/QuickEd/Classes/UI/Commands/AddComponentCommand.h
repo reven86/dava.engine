@@ -3,21 +3,21 @@
 
 #include <QUndoCommand>
 
-class PropertiesContext;
+class PackageNode;
 class ControlNode;
 class ComponentPropertiesSection;
 
 class AddComponentCommand : public QUndoCommand
 {
 public:
-    AddComponentCommand(PropertiesContext *_context, ControlNode *node, int componentType, QUndoCommand *parent = nullptr);
+    AddComponentCommand(PackageNode *root, ControlNode *node, int componentType, QUndoCommand *parent = nullptr);
     virtual ~AddComponentCommand();
     
     void redo() override;
     void undo() override;
     
 private:
-    PropertiesContext *context;
+    PackageNode *root;
     ControlNode *node;
     ComponentPropertiesSection *componentSection;
 };

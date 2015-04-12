@@ -13,6 +13,7 @@ class ControlNode;
 class PackageRef;
 class PackageListener;
 class BaseProperty;
+class ComponentPropertiesSection;
 
 class PackageNode : public PackageBaseNode
 {
@@ -41,6 +42,9 @@ public:
     void SetControlProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &newValue);
     void SetControlDefaultProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &newValue);
     void ResetControlProperty(ControlNode *node, BaseProperty *property);
+    
+    void AddComponent(ControlNode *node, ComponentPropertiesSection *section);
+    void RemoveComponent(ControlNode *node, ComponentPropertiesSection *section);
     
     void InsertControl(ControlNode *node, ControlsContainerNode *dest, DAVA::int32 index);
     void RemoveControl(ControlNode *node, ControlsContainerNode *from);

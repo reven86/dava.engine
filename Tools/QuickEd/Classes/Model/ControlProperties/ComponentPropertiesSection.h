@@ -16,11 +16,16 @@ public:
     virtual ~ComponentPropertiesSection();
     
     DAVA::UIComponent *GetComponent() const;
+    DAVA::uint32 GetComponentType() const;
     
     DAVA::String GetName() const;
     virtual bool CanRemove() const;
     
     virtual bool HasChanges() const override;
+    
+    void InstallComponent();
+    void UninstallComponent();
+
     virtual void Serialize(PackageSerializer *serializer) const override;
     
 private:

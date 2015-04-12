@@ -43,6 +43,11 @@ UIComponent *ComponentPropertiesSection::GetComponent() const
     return component;
 }
 
+DAVA::uint32 ComponentPropertiesSection::GetComponentType() const
+{
+    return component->GetType();
+}
+
 DAVA::String ComponentPropertiesSection::GetName() const
 {
     return String(GlobalEnumMap<UIComponent::eType>::Instance()->ToString(component->GetType()));
@@ -56,6 +61,28 @@ bool ComponentPropertiesSection::CanRemove() const
 bool ComponentPropertiesSection::HasChanges() const
 {
     return PropertiesSection::HasChanges();
+}
+
+void ComponentPropertiesSection::InstallComponent()
+{
+    if (!control->HasComponent(component->GetType()))
+    {
+        control->PutComponent(component);
+    }
+    else
+    {
+        DVASSERT(control->GetComponent(component->GetType()) == component);
+    }
+}
+
+void ComponentPropertiesSection::UninstallComponent()
+{
+    UIComponent *installedComponent = control->GetComponent(component->GetType());
+    if (installedComponent)
+    {
+        DVASSERT(installedComponent == component);
+        control->RemoveComponent(component);
+    }
 }
 
 void ComponentPropertiesSection::Serialize(PackageSerializer *serializer) const

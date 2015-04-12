@@ -77,7 +77,7 @@ void QtModelPackageCommandExecutor::ChangeDefaultProperties(const DAVA::Vector<C
 
 void QtModelPackageCommandExecutor::AddComponent(ControlNode *node, uint32 componentType)
 {
-    if (!node->GetPropertiesRoot()->IsReadOnly())
+    if (node->GetPropertiesRoot()->CanAddComponent(componentType))
     {
         BeginMacro("Add Component");
         AddComponentImpl(node, componentType);
@@ -87,7 +87,7 @@ void QtModelPackageCommandExecutor::AddComponent(ControlNode *node, uint32 compo
 
 void QtModelPackageCommandExecutor::RemoveComponent(ControlNode *node, uint32 componentType)
 {
-    if (!node->GetPropertiesRoot()->IsReadOnly())
+    if (node->GetPropertiesRoot()->CanRemoveComponent(componentType))
     {
         BeginMacro("Remove Component");
         RemoveComponentImpl(node, componentType);
@@ -248,20 +248,20 @@ void QtModelPackageCommandExecutor::RemoveControlImpl(ControlNode* node)
 
 void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode *node, uint32 componentType)
 {
-//    PushCommand(new AddComponentCommand(document->GetPropertiesContext(), node, componentType));
-//    Vector<ControlNode*> instances = node->GetInstances();
-//    for (ControlNode *instance : instances)
-//        AddComponentImpl(instance, componentType);
+    PushCommand(new AddComponentCommand(document->GetPackage(), node, componentType));
+    Vector<ControlNode*> instances = node->GetInstances();
+    for (ControlNode *instance : instances)
+        AddComponentImpl(instance, componentType);
 }
 
 void QtModelPackageCommandExecutor::RemoveComponentImpl(ControlNode *node, uint32 componentType)
 {
-//    PushCommand(new RemoveComponentCommand(document->GetPropertiesContext(), node, componentType));
-//    Vector<ControlNode*> instances = node->GetInstances();
-//    for (ControlNode *instance : instances)
-//    {
-//        RemoveComponentImpl(instance, componentType);
-//    }
+    PushCommand(new RemoveComponentCommand(document->GetPackage(), node, componentType));
+    Vector<ControlNode*> instances = node->GetInstances();
+    for (ControlNode *instance : instances)
+    {
+        RemoveComponentImpl(instance, componentType);
+    }
 }
 
 bool QtModelPackageCommandExecutor::IsNodeInHierarchy(const PackageBaseNode *node) const

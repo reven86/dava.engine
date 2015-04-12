@@ -1,15 +1,15 @@
 #include "AddComponentCommand.h"
 
+#include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
-#include "UI/Properties/PropertiesModel.h"
 #include "UI/Components/UIComponent.h"
 
 using namespace DAVA;
 
-AddComponentCommand::AddComponentCommand(PropertiesContext *_context, ControlNode *_node, int _componentType, QUndoCommand *parent)
+AddComponentCommand::AddComponentCommand(PackageNode *_root, ControlNode *_node, int _componentType, QUndoCommand *parent)
     : QUndoCommand(parent)
-    , context(_context)
+    , root(SafeRetain(_root))
     , node(SafeRetain(_node))
     , componentSection(nullptr)
 {
@@ -18,24 +18,17 @@ AddComponentCommand::AddComponentCommand(PropertiesContext *_context, ControlNod
 
 AddComponentCommand::~AddComponentCommand()
 {
+    SafeRelease(root);
     SafeRelease(node);
     SafeRelease(componentSection);
 }
 
 void AddComponentCommand::redo()
 {
-//    PropertiesModel *model = context->GetModel();
-//    if (model && model->GetControlNode() == node) // if model selected
-//        model->AddComponentSection(componentSection);
-//    else
-//        node->GetPropertiesRoot()->AddComponentPropertiesSection(componentSection);
+    root->AddComponent(node, componentSection);
 }
 
 void AddComponentCommand::undo()
 {
-//    PropertiesModel *model = context->GetModel();
-//    if (model && model->GetControlNode() == node)
-//        model->RemoveComponentSection(componentSection);
-//    else
-//        node->GetPropertiesRoot()->RemoveComponentPropertiesSection(componentSection);
+    root->RemoveComponent(node, componentSection);
 }

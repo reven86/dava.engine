@@ -24,7 +24,10 @@ public slots:
                             const QItemSelection &deselected);
 
 private:
+    ControlNode *GetSelectedControlNode() const;
     void UpdateActivatedControls();
+    
+private:
     SharedData *sharedData;
     QAction *addComponentAction;
     QAction *removeComponentAction;

@@ -95,7 +95,17 @@ ControlPropertiesSection *PropertiesRoot::GetControlPropertiesSection(const DAVA
     return nullptr;
 }
 
-int32 PropertiesRoot::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSection *section)
+bool PropertiesRoot::CanAddComponent(DAVA::uint32 componentType) const
+{
+    return !IsReadOnly() && FindComponentPropertiesSection(componentType) == nullptr;
+}
+
+bool PropertiesRoot::CanRemoveComponent(DAVA::uint32 componentType) const
+{
+    return !IsReadOnly() && FindComponentPropertiesSection(componentType) != nullptr;
+}
+
+int32 PropertiesRoot::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSection *section) const
 {
     int32 offset = (int32) controlProperties.size();
     auto it = std::find(componentProperties.begin(), componentProperties.end(), section);
@@ -115,7 +125,7 @@ int32 PropertiesRoot::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSec
     }
 }
 
-ComponentPropertiesSection *PropertiesRoot::FindComponentPropertiesSection(DAVA::uint32 componentType)
+ComponentPropertiesSection *PropertiesRoot::FindComponentPropertiesSection(DAVA::uint32 componentType) const
 {
     for (ComponentPropertiesSection *section : componentProperties)
     {
@@ -137,14 +147,26 @@ ComponentPropertiesSection *PropertiesRoot::AddComponentPropertiesSection(DAVA::
 
 void PropertiesRoot::AddComponentPropertiesSection(ComponentPropertiesSection *section)
 {
-    componentProperties.push_back(SafeRetain(section));
-    
-    DVASSERT(control->HasComponent(section->GetComponent()->GetType()) == false);
-    control->PutComponent(section->GetComponent());
-    std::stable_sort(componentProperties.begin(), componentProperties.end(), [](ComponentPropertiesSection * left, ComponentPropertiesSection * right) {
-        return left->GetComponent()->GetType() < right->GetComponent()->GetType();
-    });
+    if (FindComponentPropertiesSection(section->GetComponentType()) == nullptr)
+    {
+        int index = GetIndexOfCompoentPropertiesSection(section);
+        for (PropertyListener *listener : listeners)
+            listener->ComponentPropertiesWillBeAdded(this, section, index);
 
+        componentProperties.push_back(SafeRetain(section));
+        section->InstallComponent();
+
+        std::stable_sort(componentProperties.begin(), componentProperties.end(), [](ComponentPropertiesSection * left, ComponentPropertiesSection * right) {
+            return left->GetComponent()->GetType() < right->GetComponent()->GetType();
+        });
+
+        for (PropertyListener *listener : listeners)
+            listener->ComponentPropertiesWasAdded(this, section, index);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
 }
 
 void PropertiesRoot::RemoveComponentPropertiesSection(DAVA::uint32 componentType)
@@ -158,13 +180,29 @@ void PropertiesRoot::RemoveComponentPropertiesSection(DAVA::uint32 componentType
 
 void PropertiesRoot::RemoveComponentPropertiesSection(ComponentPropertiesSection *section)
 {
-    auto it = std::find(componentProperties.begin(), componentProperties.end(), section);
-    if (it != componentProperties.end())
+    uint32 componentType = section->GetComponentType();
+    
+    if (FindComponentPropertiesSection(componentType) == section)
     {
-        DVASSERT(control->GetComponent(section->GetComponent()->GetType()) == section->GetComponent());
-        control->RemoveComponent(section->GetComponent());
-        componentProperties.erase(it);
-        section->Release();
+        int index = GetIndexOfCompoentPropertiesSection(section);
+        for (PropertyListener *listener : listeners)
+            listener->ComponentPropertiesWillBeRemoved(this, section, index);
+
+        auto it = std::find(componentProperties.begin(), componentProperties.end(), section);
+        if (it != componentProperties.end())
+        {
+            componentProperties.erase(it);
+
+            section->UninstallComponent();
+            section->Release();
+        }
+        
+        for (PropertyListener *listener : listeners)
+            listener->ComponentPropertiesWasRemoved(this, section, index);
+    }
+    else
+    {
+        DVASSERT(false);
     }
 }
 

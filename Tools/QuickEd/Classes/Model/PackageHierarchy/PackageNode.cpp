@@ -120,6 +120,16 @@ void PackageNode::ResetControlProperty(ControlNode *node, BaseProperty *property
         listener->ControlPropertyWasChanged(node, property);
 }
 
+void PackageNode::AddComponent(ControlNode *node, ComponentPropertiesSection *section)
+{
+    node->GetPropertiesRoot()->AddComponentPropertiesSection(section);
+}
+
+void PackageNode::RemoveComponent(ControlNode *node, ComponentPropertiesSection *section)
+{
+    node->GetPropertiesRoot()->RemoveComponentPropertiesSection(section);
+}
+
 void PackageNode::InsertControl(ControlNode *node, ControlsContainerNode *dest, DAVA::int32 index)
 {
     for (PackageListener *listener : listeners)
