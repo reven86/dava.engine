@@ -98,6 +98,7 @@ elif sys.platform == "darwin":
     sub_process = subprocess.Popen([app_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 app_exit_code = None
+frameDeltaSum = 0.0
 
 continue_process_stdout = True
 
@@ -105,22 +106,32 @@ while continue_process_stdout:
     try:
         line = sub_process.stdout.readline()
         if line != '':
-            teamcity_line_index = line.find("##teamcity")
+
+            teamcity_line_index = line.find("buildStatisticValue key='Frame_delta'")
             if teamcity_line_index != -1:
-                teamcity_line = line[teamcity_line_index:]
+                statisticLine = line[teamcity_line_index:]
+                delta = statisticLine.split("value=")[1].split("]")[0].split("'")[1]
+                frameDeltaSum += float(delta)
+                teamcity_line = "##teamcity[buildStatisticValue key='Frame_delta' value='" + str(frameDeltaSum) + "'] \n"
                 sys.stdout.write(teamcity_line)
                 sys.stdout.flush()
-            if line.find("Finish all tests.") != -1:    # this text marker helps to detect good \
-                                                        #  finish tests on ios device (run with lldb)
-                app_exit_code = 0
-                if start_on_android:
-                    # we want to exit from logcat process because sub_process.stdout.readline() will block
-                    # current thread
-                    if sys.platform == "win32":
-                        sub_process.send_signal(signal.CTRL_C_EVENT)
-                    else:
-                        sub_process.send_signal(signal.SIGINT)
-                    continue_process_stdout = False
+            else:
+                teamcity_line_index = line.find("##teamcity")
+                if teamcity_line_index != -1:
+                    teamcity_line = line[teamcity_line_index:]
+                    sys.stdout.write(teamcity_line)
+                    sys.stdout.flush()
+                if line.find("Finish all tests.") != -1:    # this text marker helps to detect good \
+                                                            #  finish tests on ios device (run with lldb)
+                    app_exit_code = 0
+                    if start_on_android:
+                        # we want to exit from logcat process because sub_process.stdout.readline() will block
+                        # current thread
+                        if sys.platform == "win32":
+                            sub_process.send_signal(signal.CTRL_C_EVENT)
+                        else:
+                            sub_process.send_signal(signal.SIGINT)
+                        continue_process_stdout = False
         else:
             continue_process_stdout = False
     except IOError as err:
