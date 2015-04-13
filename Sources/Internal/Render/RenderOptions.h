@@ -80,6 +80,7 @@ public:
         DRAW_LOCALIZATION_ERRORS,
         DRAW_LINEBREAK_ERRORS,
 #endif
+        DRAW_NONDEF_GLYPH,
 		OPTIONS_COUNT
 	};
 
