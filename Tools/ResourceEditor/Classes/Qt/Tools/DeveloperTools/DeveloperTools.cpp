@@ -38,6 +38,8 @@
 #include "QtTools/SpyWidget/SpySearch/SpySearch.h"
 #include "Qt/ImageSplitterDialog/ImageSplitterDialogNormal.h"
 
+#include <QInputDialog>
+
 #include "DAVAEngine.h"
 using namespace DAVA;
 
@@ -174,4 +176,21 @@ void DeveloperTools::OnSpyWidget()
 {
     auto spySearch = new SpySearch(this);
     spySearch->show();
+}
+
+void DeveloperTools::OnReplaceTextureMipmap()
+{
+    QStringList items = QStringList()
+        << QString(NMaterial::TEXTURE_ALBEDO.c_str())
+        << QString(NMaterial::TEXTURE_LIGHTMAP.c_str())
+        << QString(NMaterial::TEXTURE_DETAIL.c_str())
+        << QString(NMaterial::TEXTURE_NORMAL.c_str())
+        ;
+
+    bool isOk;
+    QString item = QInputDialog::getItem(QtMainWindow::Instance(), "Replace mipmaps", "Textures:", items, 0, true, &isOk);
+    if (isOk)
+    {
+        MipMapReplacer::ReplaceMipMaps(QtMainWindow::Instance()->GetCurrentScene(), FastName(item.toStdString().c_str()));
+    }
 }

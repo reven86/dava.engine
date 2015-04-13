@@ -35,7 +35,8 @@
 #include "Render/3D/AnimatedMesh.h"
 #include "Render/Image/Image.h"
 #include "Render/Highlevel/RenderSystem.h"
-
+#include "Render/RenderOptions.h"
+#include "Render/MipmapReplacer.h"
 
 #include "Platform/SystemTimer.h"
 #include "FileSystem/FileSystem.h"
@@ -127,6 +128,8 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     SetGlobalMaterial(NULL);
     
     SceneCache::Instance()->InsertScene(this);
+
+    RenderManager::Instance()->GetOptions()->AddObserver(this);
 }
 
 void Scene::CreateComponents()
@@ -370,6 +373,8 @@ void Scene::CreateSystems()
 
 Scene::~Scene()
 {
+    RenderManager::Instance()->GetOptions()->RemoveObserver(this);
+
     SceneCache::Instance()->RemoveScene(this);
     
 	for (Vector<AnimatedMesh*>::iterator t = animatedMeshes.begin(); t != animatedMeshes.end(); ++t)
@@ -1150,5 +1155,12 @@ void Scene::Input(DAVA::UIEvent *event)
         system->Input(event);
     }
 }
-    
+
+void Scene::HandleEvent(Observable * observable)
+{
+    RenderOptions * options = dynamic_cast<RenderOptions *>(observable);
+    if (options->IsOptionEnabled(RenderOptions::REPLACE_MIPMAPS))
+        MipMapReplacer::ReplaceMipMaps(this, NMaterial::TEXTURE_LIGHTMAP);
+}
+
 };

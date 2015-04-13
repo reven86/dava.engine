@@ -83,6 +83,7 @@ RenderOptions::RenderOptions()
 
     options[DEBUG_DRAW_STATIC_OCCLUSION] = false;
     options[LAYER_OCCLUSION_STATS] = false;
+    options[REPLACE_MIPMAPS] = false;
 #if defined(LOCALIZATION_DEBUG)
     options[DRAW_LOCALIZATION_ERRORS] = false;
     options[DRAW_LOCALIZATION_WARINGS] = false;
