@@ -601,7 +601,7 @@ Vector4 UIControlBackground::GetMarginsAsVector4() const
 
 void UIControlBackground::SetMarginsAsVector4(const Vector4 &m)
 {
-    if (FLOAT_EQUAL(m.x, 0.0f)  && FLOAT_EQUAL(m.y, 0.0f) && FLOAT_EQUAL(m.w, 0.0f) && FLOAT_EQUAL(m.z, 0.0f))
+    if (FLOAT_EQUAL(m.x, 0.0f) && FLOAT_EQUAL(m.y, 0.0f) && FLOAT_EQUAL(m.w, 0.0f) && FLOAT_EQUAL(m.z, 0.0f))
     {
         SafeDelete(margins);
         return;

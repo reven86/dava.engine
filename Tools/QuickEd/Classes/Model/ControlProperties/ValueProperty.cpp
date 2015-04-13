@@ -175,39 +175,25 @@ bool ValueProperty::IsReplaced() const
 
 String ValueProperty::GetSubValueName(int index) const
 {
+    static std::vector<String> colorComponents = {{"Red", "Green", "Blue", "Alpha"}};
+    static std::vector<String> marginComponents = {{"Left", "Top", "Right", "Bottom"}};
+    static std::vector<String> vector2Components = {{"X", "Y"}};
+    
+    std::vector<String> *components = nullptr;
+    
     switch (defaultValue.GetType())
     {
         case VariantType::TYPE_VECTOR2:
-            return index == 0 ? "X" : "Y";
+            components = &vector2Components;
+            break;
 
         case VariantType::TYPE_COLOR:
-        {
-            if (index == 0)
-                return "Red";
-            else if (index == 1)
-                return "Green";
-            else if (index == 2)
-                return "Blue";
-            else
-                return "Alpha";
-        }
+            components = &colorComponents;
+            break;
 
         case VariantType::TYPE_VECTOR4:
-        {
-            if (index == 0)
-                return "left";
-            else if (index == 1)
-                return "top";
-            else if (index == 2)
-                return "right";
-            else if (index == 3)
-                return "bottom";
-            else
-            {
-                DVASSERT(false);
-                return "?";
-            }
-        }
+            components = &marginComponents;
+            break;
 
         case VariantType::TYPE_INT32:
             if (member->Desc().type == InspDesc::T_FLAGS)
@@ -217,66 +203,42 @@ String ValueProperty::GetSubValueName(int index) const
                 map->GetValue(index, val);
                 return map->ToString(val);
             }
-            else
-            {
-                DVASSERT(false);
-                return "???";
-            }
-
+            break;
             
         default:
+            break;
+    }
+    
+    if (components != nullptr)
+    {
+        if (0 <= index && index < components->size())
+            return components->at(index);
+        else
         {
             DVASSERT(false);
             return "???";
         }
     }
+    else
+    {
+        DVASSERT(false);
+        return "???";
+    }
 }
 
 VariantType ValueProperty::GetSubValue(int index) const
 {
-    switch (defaultValue.GetType())
-    {
-        case VariantType::TYPE_VECTOR2:
-            {
-                DVASSERT(index >= 0 && index < 2);
-                return VariantType(GetValue().AsVector2().data[index]);
-            }
-
-        case VariantType::TYPE_COLOR:
-        {
-            DVASSERT(index >= 0 && index < 4);
-            return VariantType(GetValue().AsColor().color[index]);
-        }
-            
-        case VariantType::TYPE_VECTOR4:
-        {
-            DVASSERT(index >= 0 && index < 4);
-            return VariantType(GetValue().AsVector4().data[index]);
-        }
-            
-        case VariantType::TYPE_INT32:
-            if (member->Desc().type == InspDesc::T_FLAGS)
-            {
-                const EnumMap *map = member->Desc().enumMap;
-                int val = 0;
-                map->GetValue(index, val);
-                return VariantType((GetValue().AsInt32() & val) != 0);
-            }
-            else
-            {
-                DVASSERT(false);
-                return VariantType();
-            }
-
-        default:
-            DVASSERT(false);
-            return VariantType();
-    }
+    return GetValueComponent(GetValue(), index);
 }
 
 void ValueProperty::SetSubValue(int index, const DAVA::VariantType &newValue)
 {
     SetValue(ChangeValueComponent(GetValue(), newValue, index));
+}
+
+VariantType ValueProperty::GetDefaultSubValue(int index) const
+{
+    return GetValueComponent(defaultValue, index);
 }
 
 void ValueProperty::SetDefaultSubValue(int index, const DAVA::VariantType &newValue)
@@ -289,7 +251,7 @@ void ValueProperty::ApplyValue(const DAVA::VariantType &value)
     member->SetValue(object, value);
 }
 
-VariantType ValueProperty::ChangeValueComponent(const VariantType &value, const VariantType &component, int32 index)
+VariantType ValueProperty::ChangeValueComponent(const VariantType &value, const VariantType &component, int32 index) const
 {
     switch (defaultValue.GetType())
     {
@@ -357,4 +319,46 @@ VariantType ValueProperty::ChangeValueComponent(const VariantType &value, const 
             break;
     }
     return VariantType();
+}
+
+DAVA::VariantType ValueProperty::GetValueComponent(const DAVA::VariantType &value, DAVA::int32 index) const
+{
+    switch (defaultValue.GetType())
+    {
+        case VariantType::TYPE_VECTOR2:
+        {
+            DVASSERT(index >= 0 && index < 2);
+            return VariantType(value.AsVector2().data[index]);
+        }
+            
+        case VariantType::TYPE_COLOR:
+        {
+            DVASSERT(index >= 0 && index < 4);
+            return VariantType(value.AsColor().color[index]);
+        }
+            
+        case VariantType::TYPE_VECTOR4:
+        {
+            DVASSERT(index >= 0 && index < 4);
+            return VariantType(value.AsVector4().data[index]);
+        }
+            
+        case VariantType::TYPE_INT32:
+            if (member->Desc().type == InspDesc::T_FLAGS)
+            {
+                const EnumMap *map = member->Desc().enumMap;
+                int val = 0;
+                map->GetValue(index, val);
+                return VariantType((value.AsInt32() & val) != 0);
+            }
+            else
+            {
+                DVASSERT(false);
+                return VariantType();
+            }
+            
+        default:
+            DVASSERT(false);
+            return VariantType();
+    }
 }
