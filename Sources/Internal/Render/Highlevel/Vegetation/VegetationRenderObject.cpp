@@ -1039,8 +1039,10 @@ void VegetationRenderObject::GetDataNodes(Set<DataNode*> & dataNodes)
 
 void VegetationRenderObject::SetupHeightmapParameters(Texture* tx)
 {
+#if RHI_COMPLETE
     tx->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
     tx->SetMinMagFilter(Texture::FILTER_NEAREST, Texture::FILTER_NEAREST);
+#endif // RHI_COMPLETE
 }
 
 void VegetationRenderObject::CreateRenderData()

@@ -48,7 +48,7 @@ void TextBlockGraphicsRender::Prepare(Texture *texture /*= NULL*/)
 	TextBlockRender::Prepare(texture);
 	
 	isPredrawed = false;
-    Texture * fbo = Texture::CreateFBO(textBlock->cacheDx, textBlock->cacheDy, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+    Texture * fbo = Texture::CreateFBO(textBlock->cacheDx, textBlock->cacheDy, FORMAT_RGBA8888);
     sprite = Sprite::CreateFromTexture(fbo, 0, 0, (float32)fbo->GetWidth(), (float32)fbo->GetHeight());
 	if (sprite && sprite->GetTexture())
 	{

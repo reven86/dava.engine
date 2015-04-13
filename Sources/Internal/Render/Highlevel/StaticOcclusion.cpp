@@ -93,7 +93,7 @@ namespace DAVA
         
         
         if (!renderTargetTexture)
-            renderTargetTexture = Texture::CreateFBO(RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT, FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER);
+            renderTargetTexture = Texture::CreateFBO(RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT, FORMAT_RGBA8888);
         
         /* Set<uint16> busyIndices;
          for (uint32 k = 0; k < renderObjects.size(); ++k)

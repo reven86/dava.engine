@@ -43,7 +43,7 @@ Image::Image()
 ,   data(0)
 ,   mipmapLevel(-1)
 ,   format(FORMAT_RGB565)
-,   cubeFaceID(Texture::CUBE_FACE_INVALID)
+,   cubeFaceID(Texture::INVALID_CUBEMAP_FACE)
 {
 }
 

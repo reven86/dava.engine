@@ -1337,7 +1337,7 @@ bool NvttHelper::InitDecompressor(nvtt::Decompressor & dec, const uint8 * mem, u
 	
 uint32 NvttHelper::GetCubeFaceId(uint32 nvttFaceDesc, int faceIndex)
 {
-	uint32 faceId = Texture::CUBE_FACE_INVALID;
+	uint32 faceId = Texture::INVALID_CUBEMAP_FACE;
 	
 	if(faceIndex >= 0 && faceIndex < 6)
 	{
@@ -1367,12 +1367,12 @@ uint32 NvttHelper::GetCubeFaceId(uint32 nvttFaceDesc, int faceIndex)
 		}
 
 		static uint32 faceIndexMap[] = {
-			Texture::CUBE_FACE_POSITIVE_X,
-			Texture::CUBE_FACE_NEGATIVE_X,
-			Texture::CUBE_FACE_POSITIVE_Y,
-			Texture::CUBE_FACE_NEGATIVE_Y,
-			Texture::CUBE_FACE_POSITIVE_Z,
-			Texture::CUBE_FACE_NEGATIVE_Z
+			rhi::TEXTURE_FACE_LEFT,
+			rhi::TEXTURE_FACE_RIGHT,
+			rhi::TEXTURE_FACE_FRONT,
+			rhi::TEXTURE_FACE_BACK,
+			rhi::TEXTURE_FACE_TOP,
+			rhi::TEXTURE_FACE_BOTTOM
 		};
 		
 		faceId = faceIndexMap[faceIdIndex];
@@ -1434,7 +1434,7 @@ eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vec
         return ERROR_WRITE_FAIL;
     }
     
-    if(imageSet.size() != Texture::CUBE_FACE_MAX_COUNT)
+    if(imageSet.size() != 6)
     {
         Logger::Error("[LibDdsHelper::WriteFile] Wrong input image set.");
         return ERROR_WRITE_FAIL;

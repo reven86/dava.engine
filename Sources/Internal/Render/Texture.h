@@ -38,6 +38,7 @@
 #include "Render/RenderResource.h"
 #include "FileSystem/FilePath.h"
 #include "Platform/Mutex.h"
+#include "Render/RHI/rhi_Type.h"
 
 #include "Render/UniqueStateSet.h"
 
@@ -72,50 +73,8 @@ public:
 
 class Texture : public RenderResource
 {
-public:
-    
-    enum TextureWrap
-	{
-		WRAP_CLAMP_TO_EDGE = 0,
-		WRAP_REPEAT,
-	};
-
-    enum TextureFilter
-	{
-        FILTER_NEAREST  = 0,
-        FILTER_LINEAR,
-
-        FILTER_NEAREST_MIPMAP_NEAREST,
-        FILTER_LINEAR_MIPMAP_NEAREST,
-        FILTER_NEAREST_MIPMAP_LINEAR,
-        FILTER_LINEAR_MIPMAP_LINEAR
-	};
-
-	enum DepthFormat
-	{
-		DEPTH_NONE = 0,
-		DEPTH_RENDERBUFFER
-	};
-	
-	//VI: each face is optional
-	enum CubemapFace
-	{
-		CUBE_FACE_POSITIVE_X = 0,
-		CUBE_FACE_NEGATIVE_X = 1,
-		CUBE_FACE_POSITIVE_Y = 2,
-		CUBE_FACE_NEGATIVE_Y = 3,
-		CUBE_FACE_POSITIVE_Z = 4,
-		CUBE_FACE_NEGATIVE_Z = 5,
-		CUBE_FACE_MAX_COUNT = 6,
-		CUBE_FACE_INVALID = 0xFFFFFFFF
-	};
-	
-	enum TextureType
-	{
-		TEXTURE_2D = 0,
-		TEXTURE_CUBE = 1,
-		TEXTURE_TYPE_COUNT = 2
-	};
+public:       
+        
 
 	enum TextureState
 	{
@@ -123,6 +82,7 @@ public:
 		STATE_DATA_LOADED,
 		STATE_VALID
 	};
+    const static uint32 INVALID_CUBEMAP_FACE = -1;
 	
 	// Main constructors
     /**
@@ -163,26 +123,18 @@ public:
 		If file cannot be opened, returns "pink placeholder" texture.
         \param[in] pathName path to the png or pvr file
      */
-	static Texture * CreateFromFile(const FilePath & pathName, const FastName &group = FastName(), TextureType typeHint = Texture::TEXTURE_2D);
+    static Texture * CreateFromFile(const FilePath & pathName, const FastName &group = FastName(), rhi::TextureType typeHint = rhi::TEXTURE_TYPE_2D);
 
 	/**
         \brief Create texture from given file. Supported formats .png, .pvr (only on iOS). 
 		If file cannot be opened, returns 0
         \param[in] pathName path to the png or pvr file
      */
-	static Texture * PureCreate(const FilePath & pathName, const FastName &group = FastName());
-    
-	/**
-        \brief Create FBO from given width, height and format
-        \param[in] width width of the fbo
-        \param[in] height height of the fbo
-        \param[in] format format of the fbo
-		\param[in] useDepthbuffer if set to true, addition depthbuffer will be created for this fbo
-        \todo reorder variables in function, and make format variable first to make it similar to CreateFromData function.
-     */
-	static Texture * CreateFBO(uint32 width, uint32 height, PixelFormat format, DepthFormat depthFormat);
+	static Texture * PureCreate(const FilePath & pathName, const FastName &group = FastName());    	    
 	
-	static Texture * CreatePink(TextureType requestedType = Texture::TEXTURE_2D, bool checkers = true);
+    static Texture * CreatePink(rhi::TextureType requestedType = rhi::TEXTURE_TYPE_2D, bool checkers = true);
+
+    static Texture * CreateFBO(uint32 width, uint32 height, PixelFormat format, rhi::TextureType requestedType = rhi::TEXTURE_TYPE_2D);
 
     
     /**
@@ -200,22 +152,13 @@ public:
 	inline int32 GetWidth() const { return width; }
 	inline int32 GetHeight() const { return height; }
 	
-	void GenerateMipmaps();
-	void GeneratePixelesation();
+	void GenerateMipmaps();	
 	
 	void TexImage(int32 level, uint32 width, uint32 height, const void * _data, uint32 dataSize, uint32 cubeFaceId);
     
-	void SetWrapMode(TextureWrap wrapS, TextureWrap wrapT);
-	void SetMinMagFilter(TextureFilter minFilter, TextureFilter magFilter);
-    /**
-        \brief This function can enable / disable autosave for render targets.
-        It's actual only for DX9 and for other systems is does nothing
-        If you refreshing your rendertargets every frame you can disable autosave for them for performance on DX9
-        By default autosave is enabled for all DX9 textures. 
-     */
-    inline void EnableRenderTargetAutosave(bool isEnabled);
-    
-    
+    void SetWrapMode(rhi::TextureAddrMode wrapU, rhi::TextureAddrMode wrapV, rhi::TextureAddrMode wrapW = rhi::TEXADDR_WRAP);
+    void SetMinMagFilter(rhi::TextureFilter minFilter, rhi::TextureFilter magFilter, rhi::TextureMipFilter mipFilter);
+        
     /**
         \brief Function to receive pathname of texture object
         \returns pathname of texture
@@ -242,15 +185,6 @@ public:
 	virtual void Invalidate();
 #endif //#if defined(__DAVAENGINE_ANDROID__)
     
-#if defined(__DAVAENGINE_DIRECTX9__)
-	static LPDIRECT3DTEXTURE9 CreateTextureNative(Vector2 & size, PixelFormat & format, bool isRenderTarget, int32 flags);
-	void SetAsHardwareCursor(const Vector2 & hotSpot);
-
-	virtual void SaveToSystemMemory();
-	virtual void Lost();
-	virtual void Invalidate();
-#endif //#if defined(__DAVAENGINE_DIRECTX9__)
-    
     void SetDebugInfo(const String & _debugInfo);
     
 	static const TexturesMap & GetTextureMap();
@@ -270,7 +204,6 @@ public:
 protected:
     
     void ReleaseTextureData();
-    void GenerateID();
 
 	static void AddToMap(Texture *tex);
     
@@ -279,14 +212,12 @@ protected:
 	bool LoadImages(eGPUFamily gpu, Vector<Image *> * images);
     
 	void SetParamsFromImages(const Vector<Image *> * images);
-	void FlushDataToRendererInternal(Vector<Image *> * images);
+	
 	void FlushDataToRenderer(Vector<Image *> * images);
 	void ReleaseImages(Vector<Image *> * images);
     
-    void MakePink(bool checkers = true);
-	void ReleaseTextureDataInternal(uint32 textureType, uint32 id, uint32 fboID, uint32 rboID, uint32 stencilRboID);
-    
-	void GeneratePixelesationInternal();
+    void MakePink(bool checkers = true);	
+    	
 	void GenerateMipmapsInternal();
 
     static bool CheckImageSize(const Vector<Image *> &imageSet);
@@ -294,12 +225,7 @@ protected:
 	Texture();
 	virtual ~Texture();
     
-    Image * ReadDataToImage();
-    
-#if defined(__DAVAENGINE_OPENGL__)
-	void HWglCreateFBOBuffers();
-	void HWglCreateFBOBuffersInternal();
-#endif //#if defined(__DAVAENGINE_OPENGL__)
+    Image * ReadDataToImage();    
     
     bool IsLoadAvailable(const eGPUFamily gpuFamily) const;
 	int32 GetBaseMipMap() const;
@@ -308,31 +234,19 @@ protected:
 
 public:							// properties for fast access
 
-#if defined(__DAVAENGINE_OPENGL__)
-	uint32		id;				// OpenGL id for texture
-	uint32		fboID;			// id of frame buffer object
-	uint32		rboID;
-#if defined(__DAVAENGINE_ANDROID__)
-    uint32		stencilRboID;
-#endif
-#endif //#if defined(__DAVAENGINE_OPENGL__)
+
+    rhi::Handle handle;
+    rhi::SamplerState::Descriptor::Sampler samplerState;
+
 	
     uint32		width:16;			// texture width
 	uint32		height:16;			// texture height
 
     eGPUFamily loadedAsFile:4;
 	TextureState state:2;
-	uint32		textureType:2;
-	DepthFormat depthFormat:2;
+	uint32		textureType:2;	
 	bool		isRenderTarget:1;
 	bool		isPink:1;
-
-#if defined(__DAVAENGINE_DIRECTX9__)
-	LPDIRECT3DTEXTURE9 id;
-	LPDIRECT3DTEXTURE9 saveTexture;
-	bool		 renderTargetModified:1;
-    bool         renderTargetAutosave:1;
-#endif //#if defined(__DAVAENGINE_OPENGL__)
 
     FastName		debugInfo;
 	TextureInvalidater* invalidater;
@@ -347,12 +261,7 @@ public:							// properties for fast access
 };
     
 // Implementation of inline functions
-inline void Texture::EnableRenderTargetAutosave(bool isEnabled)
-{
-#if defined(__DAVAENGINE_DIRECTX9__) //|| defined(__DAVAENGINE_ANDROID__)
-    renderTargetAutosave = isEnabled;
-#endif //#if defined(__DAVAENGINE_DIRECTX9__) //|| defined(__DAVAENGINE_ANDROID__)
-}
+
     
 inline const eGPUFamily Texture::GetSourceFileGPUFamily() const
 {

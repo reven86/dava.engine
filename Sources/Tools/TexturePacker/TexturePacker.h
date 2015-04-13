@@ -65,11 +65,13 @@ public:
 	{
 		int8 minFilter;
 		int8 magFilter;
+        int8 mipFilter;
 		
-		FilterItem(int8 minF, int8 magF)
+        FilterItem(int8 minF, int8 magF, int8 mipF)
 		{
 			minFilter = minF;
 			magFilter = magF;
+            mipFilter = mipF;
 		}
 	};
 
@@ -111,7 +113,7 @@ private:
     void ExportImage(PngImageExt *image, const FilePath &exportedPathname, eGPUFamily forGPU);
     TextureDescriptor * CreateDescriptor(eGPUFamily forGPU);
 	
-	Texture::TextureWrap GetDescriptorWrapMode();
+	rhi::TextureAddrMode GetDescriptorWrapMode();
 	FilterItem GetDescriptorFilter(bool generateMipMaps = false);
     
     bool CheckFrameSize(const Size2i &spriteSize, const Size2i &frameSize);

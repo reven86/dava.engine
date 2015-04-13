@@ -87,6 +87,7 @@ void MipMapReplacer::EnumerateTexturesRecursive(Entity * entity, Set<Texture *> 
 
 void MipMapReplacer::ReplaceMipMap(Texture * texture, int32 level)
 {
+#if RHI_COMPLETE
     if(!texture)
         return;
 
@@ -119,10 +120,12 @@ void MipMapReplacer::ReplaceMipMap(Texture * texture, int32 level)
     {
         return ReplaceMipMapFromMemory(texture, level);
     }
+#endif // RHI_COMPLETE
 }
 
 void MipMapReplacer::ReplaceMipMapFromMemory(Texture * texture, int32 level)
 {
+#if RHI_COMPLETE
     uint32 mipMapSize = texture->width / (1 << level);
     if(mipMapSize < 2)  //don't replace mipmaps less than 2x2
         return;
@@ -166,6 +169,7 @@ void MipMapReplacer::ReplaceMipMapFromMemory(Texture * texture, int32 level)
     texture->TexImage(level, mipMapSize, mipMapSize, data, dataSize, Texture::CUBE_FACE_INVALID);
 
     SafeDeleteArray(data);
+#endif // RHI_COMPLETE
 }
 
 uint32 MipMapReplacer::GetReplaceValue(PixelFormat format)

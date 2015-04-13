@@ -181,45 +181,6 @@ const int32 STENCIL_OP_MAP[STENCILOP_COUNT] =
 };
 #endif
     
-    
-#if defined(__DAVAENGINE_OPENGL__)
-    const GLint TEXTURE_WRAP_MAP[WRAP_COUNT] =
-    {
-        GL_CLAMP_TO_EDGE,
-        GL_REPEAT
-    };
-#elif defined(__DAVAENGINE_DIRECTX9__)
-    const int32 TEXTURE_WRAP_MAP[WRAP_COUNT] =
-    {
-        D3DTADDRESS_CLAMP,
-        D3DTADDRESS_WRAP
-    };
-#endif
-    
-    
-#if defined(__DAVAENGINE_OPENGL__)
-    const GLint TEXTURE_FILTER_MAP[FILTER_COUNT] =
-    {
-        GL_NEAREST,
-        GL_LINEAR,
-        GL_NEAREST_MIPMAP_NEAREST,
-        GL_LINEAR_MIPMAP_NEAREST,
-        GL_NEAREST_MIPMAP_LINEAR,
-        GL_LINEAR_MIPMAP_LINEAR
-    };
-#elif defined(__DAVAENGINE_DIRECTX9__)
-    const int32 TEXTURE_FILTER_MAP[FILTER_COUNT] =
-    {
-        D3DTEXF_POINT,
-        D3DTEXF_LINEAR,
-        
-        D3DTEXF_ANISOTROPIC,
-        D3DTEXF_PYRAMIDALQUAD,
-        D3DTEXF_GAUSSIANQUAD,
-        D3DTEXF_CONVOLUTIONMONO
-    };
-#endif
-
 
 const String FILL_MODE_NAMES[FILLMODE_COUNT] =
 {

@@ -330,7 +330,7 @@ namespace DAVA
 			
 			if (Material::MATERIAL_UNLIT_TEXTURE_DECAL == oldMaterial->type)
 			{
-				Texture* tex = PrepareTexture(Texture::TEXTURE_2D, oldMaterial->GetTexture(Material::TEXTURE_DECAL));
+				Texture* tex = PrepareTexture(rhi::TEXTURE_TYPE_2D, oldMaterial->GetTexture(Material::TEXTURE_DECAL));
 				material->SetTexture(NMaterialTextureName::TEXTURE_DECAL, tex);
 				
 				if(tex->isPink)
@@ -340,7 +340,7 @@ namespace DAVA
 			}
 			else if(Material::MATERIAL_UNLIT_TEXTURE_DETAIL == oldMaterial->type)
 			{
-				Texture* tex = PrepareTexture(Texture::TEXTURE_2D, oldMaterial->GetTexture(Material::TEXTURE_DETAIL));
+				Texture* tex = PrepareTexture(rhi::TEXTURE_TYPE_2D, oldMaterial->GetTexture(Material::TEXTURE_DETAIL));
 				material->SetTexture(NMaterialTextureName::TEXTURE_DETAIL, tex);
 				
 				if(tex->isPink)
@@ -352,7 +352,7 @@ namespace DAVA
 			if (Material::MATERIAL_FLAT_COLOR != oldMaterial->type &&
 				Material::MATERIAL_SKYBOX != oldMaterial->type)
 			{
-				Texture* tex = PrepareTexture(Texture::TEXTURE_2D, oldMaterial->GetTexture(Material::TEXTURE_DIFFUSE));
+				Texture* tex = PrepareTexture(rhi::TEXTURE_TYPE_2D, oldMaterial->GetTexture(Material::TEXTURE_DIFFUSE));
 				material->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, tex);
 				
 				if(tex->isPink)
@@ -365,7 +365,7 @@ namespace DAVA
 			   Material::MATERIAL_PIXEL_LIT_NORMAL_DIFFUSE_SPECULAR == oldMaterial->type ||
 			   Material::MATERIAL_PIXEL_LIT_NORMAL_DIFFUSE_SPECULAR_MAP == oldMaterial->type)
 			{
-				Texture* tex = PrepareTexture(Texture::TEXTURE_2D, oldMaterial->GetTexture(Material::TEXTURE_NORMALMAP));
+				Texture* tex = PrepareTexture(rhi::TEXTURE_TYPE_2D, oldMaterial->GetTexture(Material::TEXTURE_NORMALMAP));
 				material->SetTexture(NMaterialTextureName::TEXTURE_NORMAL, tex);
 				
 				if(tex->isPink)
@@ -376,7 +376,7 @@ namespace DAVA
             
             if(Material::MATERIAL_SKYBOX == oldMaterial->type)
             {
-                Texture* tex = PrepareTexture(Texture::TEXTURE_CUBE, oldMaterial->GetTexture(Material::TEXTURE_DIFFUSE));
+                Texture* tex = PrepareTexture(rhi::TEXTURE_TYPE_CUBE, oldMaterial->GetTexture(Material::TEXTURE_DIFFUSE));
                 material->SetTexture(NMaterialTextureName::TEXTURE_CUBEMAP, tex);
                 
                 if(tex->isPink)
@@ -440,7 +440,7 @@ namespace DAVA
 				instanceMaterial->GetIlluminationParams()->lightmapSize = oldMaterialState->GetLightmapSize();
 			}
 			
-			Texture* tex = PrepareTexture(Texture::TEXTURE_2D, oldMaterialState ? oldMaterialState->GetLightmap() : NULL);
+			Texture* tex = PrepareTexture(rhi::TEXTURE_TYPE_2D, oldMaterialState ? oldMaterialState->GetLightmap() : NULL);
 			instanceMaterial->SetTexture(NMaterialTextureName::TEXTURE_LIGHTMAP, tex);
 			
 			if(tex->isPink)

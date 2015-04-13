@@ -263,7 +263,7 @@ namespace DAVA
             Texture* tx = skyboxMaterial->GetTexture(NMaterialTextureName::TEXTURE_CUBEMAP);
             if(NULL != tx)
             {
-                DAVA::Texture* tx = DAVA::Texture::CreateFromFile(texPath, FastName(), Texture::TEXTURE_CUBE);
+                DAVA::Texture* tx = DAVA::Texture::CreateFromFile(texPath, FastName(), rhi::TEXTURE_TYPE_CUBE);
                 skyboxMaterial->SetTexture(NMaterialTextureName::TEXTURE_CUBEMAP, tx);
                 SafeRelease(tx);
                 
@@ -282,7 +282,7 @@ namespace DAVA
         
         if(!textureSet)
         {
-            DAVA::Texture* tx = DAVA::Texture::CreateFromFile(texPath, FastName(), Texture::TEXTURE_CUBE);
+            DAVA::Texture* tx = DAVA::Texture::CreateFromFile(texPath, FastName(), rhi::TEXTURE_TYPE_CUBE);
             topParent->SetTexture(NMaterialTextureName::TEXTURE_CUBEMAP, tx);
             SafeRelease(tx);
         }

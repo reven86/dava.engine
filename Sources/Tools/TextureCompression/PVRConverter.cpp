@@ -352,7 +352,7 @@ void PVRConverter::InitFileSuffixes()
 {
 	if(pvrToolSuffixes.empty())
 	{
-		for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
+		for(int i = 0; i < 6; ++i)
 		{
 			pvrToolSuffixes.push_back(PVRTOOL_INPUT_NAMES[i]);
 			cubemapSuffixes.push_back(PVRTOOL_MAP_NAMES[i]);

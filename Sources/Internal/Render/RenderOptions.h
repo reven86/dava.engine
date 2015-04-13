@@ -91,8 +91,6 @@ private:
 	RenderOptions();
 
 	bool options[OPTIONS_COUNT];
-
-	friend class RenderManager;
 };
 
 };

@@ -36,6 +36,7 @@
     using DAVA::uint16;
     using DAVA::uint32;
     using DAVA::uint64;
+    using DAVA::float32;
     using DAVA::Size2i;
 
 
@@ -189,6 +190,7 @@ public:
     unsigned        Stride() const;
     unsigned        ElementCount() const;
     VertexSemantics ElementSemantics( unsigned elem_i ) const;
+    unsigned        ElementSemanticsIndex( unsigned elem_i ) const;
     VertexDataType  ElementDataType( unsigned elem_i ) const;
     unsigned        ElementDataCount( unsigned elem_i ) const;
     unsigned        ElementOffset( unsigned elem_i ) const;
@@ -241,9 +243,13 @@ enum
     VATTR_POSITION      = 0,
     VATTR_NORMAL        = 1,
     VATTR_TEXCOORD_0    = 2,
+    VATTR_TEXCOORD_1    = 4,
+    VATTR_TEXCOORD_2    = 5,
+    VATTR_TEXCOORD_3    = 6,
     VATTR_COLOR_0       = 3,
+    VATTR_COLOR_1       = 7,
     
-    VATTR_COUNT         = 4
+    VATTR_COUNT         = 8
 };
 
 
@@ -263,8 +269,44 @@ enum
 TextureFormat
 {
     TEXTURE_FORMAT_A8R8G8B8,
+    TEXTURE_FORMAT_X8R8G8B8,
+
+    TEXTURE_FORMAT_A1R5G5B5,
+    TEXTURE_FORMAT_R5G6B5,
+
+    TEXTURE_FORMAT_A4R4G4B4,
+
+    TEXTURE_FORMAT_A16R16G16B16,
+    TEXTURE_FORMAT_A32R32G32B32,
+
+    TEXTURE_FORMAT_R8,
+    TEXTURE_FORMAT_R16,
+
+    TEXTURE_FORMAT_DXT1,
+    TEXTURE_FORMAT_DXT3,
+    TEXTURE_FORMAT_DXT5,
+
+    TEXTURE_FORMAT_PVRTC2_4BPP_RGB,
+    TEXTURE_FORMAT_PVRTC2_4BPP_RGBA,
+    TEXTURE_FORMAT_PVRTC2_2BPP_RGB,
+    TEXTURE_FORMAT_PVRTC2_2BPP_RGBA,
+
+    TEXTURE_FORMAT_ATC_RGB,
+    TEXTURE_FORMAT_ATC_RGBA_EXPLICIT,
+    TEXTURE_FORMAT_ATC_RGBA_INTERPOLATED,
+
+    TEXTURE_FORMAT_ETC1,
+    TEXTURE_FORMAT_ETC2_R8G8B8,
+    TEXTURE_FORMAT_ETC2_R8G8B8A8,
+    TEXTURE_FORMAT_ETC2_R8G8B8A1,
+
+    TEXTURE_FORMAT_EAC_R11_UNSIGNED,
+    TEXTURE_FORMAT_EAC_R11_SIGNED,
+    TEXTURE_FORMAT_EAC_R11G11_UNSIGNED,
+    TEXTURE_FORMAT_EAC_R11G11_SIGNED,
+
     TEXTURE_FORMAT_D16,
-    TEXTURE_FORMAT_D24S8,
+    TEXTURE_FORMAT_D24S8
 };
 
 enum
@@ -289,7 +331,7 @@ enum
 TextureFilter
 {
     TEXFILTER_NEAREST,
-    TEXFILTER_LINEAR,
+    TEXFILTER_LINEAR
 };
 
 enum
@@ -547,7 +589,7 @@ RenderPassConfig
                     ColorBuffer()
                       : texture(InvalidHandle),
                         loadAction(LOADACTION_CLEAR),
-                        storeAction(STOREACTION_STORE)                        
+                        storeAction(STOREACTION_NONE)
                     {
                         clearColor[0]=0; clearColor[1]=0; clearColor[2]=0; clearColor[3]=1.0f;
                     }
@@ -565,7 +607,7 @@ RenderPassConfig
                     DepthStencilBuffer()
                       : texture(InvalidHandle),
                         loadAction(LOADACTION_CLEAR),
-                        storeAction(STOREACTION_STORE),
+                        storeAction(STOREACTION_NONE),
                         clearDepth(1.0f),
                         clearStencil(0)
                     {}

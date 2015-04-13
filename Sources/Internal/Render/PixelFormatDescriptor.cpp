@@ -129,9 +129,7 @@ namespace DAVA
 PixelFormatDescriptor PixelFormatDescriptor::pixelDescriptors[FORMAT_COUNT];
 
 PixelFormatDescriptor::PixelFormatDescriptor()
-	:   format(0)
-	,   internalformat(0)
-	,   type(0)
+    : format(rhi::TextureFormat(-1))
 	,   formatID(FORMAT_INVALID)
 	,   pixelSize(0)
 	,   isHardwareSupported(false)
@@ -151,7 +149,7 @@ void PixelFormatDescriptor::InitializePixelFormatDescriptors()
 	const RenderCaps& caps = Renderer::GetCaps();    
 
     DVASSERT(FORMAT_COUNT == 33); // add new format below
-
+#if RHI_COMPLETE
 	SetPixelDescription(FORMAT_INVALID, FastName("WRONG FORMAT"), 0);
 	SetPixelDescription(FORMAT_RGBA8888, FastName("RGBA8888"), 32, GL_UNSIGNED_BYTE, GL_RGBA, GL_RGBA, true, false);
 	SetPixelDescription(FORMAT_RGBA5551, FastName("RGBA5551"), 16, GL_UNSIGNED_SHORT_5_5_5_1, GL_RGBA, GL_RGBA, true, false);
@@ -201,18 +199,18 @@ void PixelFormatDescriptor::InitializePixelFormatDescriptors()
 #if defined (__DAVAENGINE_WIN32__)
     SetPixelDescription(FORMAT_BGR888, FastName("BGR888"), 24, GL_UNSIGNED_BYTE, GL_BGR, GL_RGB, false, false);
 #endif
+
+#endif // RHI_COMPLETE
 }
 
-void PixelFormatDescriptor::SetPixelDescription(const PixelFormat formatID, const FastName &name, uint8 size, GLenum type, GLenum format, GLenum internalFormat, bool hardwareSupported, bool compressed)
+void PixelFormatDescriptor::SetPixelDescription(const PixelFormat formatID, const FastName &name, uint8 size, rhi::TextureFormat format, bool hardwareSupported, bool compressed)
 {
     DVASSERT((0 <= formatID) && (formatID < FORMAT_COUNT));
     
     pixelDescriptors[formatID].formatID = formatID;
     pixelDescriptors[formatID].name = name;
     pixelDescriptors[formatID].pixelSize = size;
-    pixelDescriptors[formatID].format = format;
-    pixelDescriptors[formatID].internalformat = internalFormat;
-    pixelDescriptors[formatID].type = type;
+    pixelDescriptors[formatID].format = format;    
 	pixelDescriptors[formatID].isHardwareSupported = hardwareSupported;
 	pixelDescriptors[formatID].isCompressedFormat = compressed;
 }

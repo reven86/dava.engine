@@ -68,13 +68,26 @@ public:
 
 		int8 minFilter;
 		int8 magFilter;
+        int8 mipFilter;
 
-		INTROSPECTION(TextureDrawSettings,
+		
+#if RHI_COMPLETE
+        INTROSPECTION(TextureDrawSettings,
 			MEMBER(wrapModeS, InspDesc("wrapModeS", GlobalEnumMap<Texture::TextureWrap>::Instance()), I_VIEW | I_EDIT | I_SAVE)
 			MEMBER(wrapModeT, InspDesc("wrapModeT", GlobalEnumMap<Texture::TextureWrap>::Instance()), I_VIEW | I_EDIT | I_SAVE)
 			MEMBER(minFilter, InspDesc("minFilter", GlobalEnumMap<Texture::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
 			MEMBER(magFilter, InspDesc("magFilter", GlobalEnumMap<Texture::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
-		)
+        )
+#else
+        INTROSPECTION(TextureDrawSettings,
+            MEMBER(wrapModeS, "wrapModeS", I_VIEW | I_EDIT | I_SAVE)
+            MEMBER(wrapModeT, "wrapModeT", I_VIEW | I_EDIT | I_SAVE)
+            MEMBER(minFilter, "minFilter", I_VIEW | I_EDIT | I_SAVE)
+            MEMBER(magFilter, "magFilter", I_VIEW | I_EDIT | I_SAVE)
+        )
+#endif // RHI_COMPLETE
+		
+
 	};
     
 	struct TextureDataSettings: public InspBase
@@ -137,9 +150,9 @@ public:
 	virtual ~TextureDescriptor();
 
 	static TextureDescriptor * CreateFromFile(const FilePath &filePathname);
-	static TextureDescriptor * CreateDescriptor(Texture::TextureWrap wrap, bool generateMipmaps);
+	static TextureDescriptor * CreateDescriptor(rhi::TextureAddrMode wrap, bool generateMipmaps);
 
-	void Initialize(Texture::TextureWrap wrap, bool generateMipmaps);
+    void Initialize(rhi::TextureAddrMode wrap, bool generateMipmaps);
 	void Initialize(const TextureDescriptor *descriptor);
 	bool Initialize(const FilePath &filePathname);
 

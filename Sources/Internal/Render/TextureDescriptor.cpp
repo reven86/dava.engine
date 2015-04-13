@@ -47,11 +47,12 @@ namespace DAVA
 //================   TextureDrawSettings  ===================
 void TextureDescriptor::TextureDrawSettings::SetDefaultValues()
 {
-    wrapModeS = Texture::WRAP_REPEAT;
-    wrapModeT = Texture::WRAP_REPEAT;
+    wrapModeS = rhi::TEXADDR_WRAP;
+    wrapModeT = rhi::TEXADDR_WRAP;
 
-    minFilter = Texture::FILTER_LINEAR_MIPMAP_LINEAR;
-    magFilter = Texture::FILTER_LINEAR;
+    minFilter = rhi::TEXFILTER_LINEAR;
+    magFilter = rhi::TEXFILTER_LINEAR;
+    mipFilter = rhi::TEXMIPFILTER_LINEAR;
 }
     
 //================   TextureDataSettings  ===================
@@ -142,7 +143,7 @@ TextureDescriptor * TextureDescriptor::CreateFromFile(const FilePath &filePathna
     return descriptor;
 }
     
-TextureDescriptor * TextureDescriptor::CreateDescriptor(Texture::TextureWrap wrap, bool generateMipmaps)
+TextureDescriptor * TextureDescriptor::CreateDescriptor(rhi::TextureAddrMode wrap, bool generateMipmaps)
 {
     TextureDescriptor *descriptor = new TextureDescriptor();
 	descriptor->Initialize(wrap, generateMipmaps);
@@ -618,7 +619,7 @@ PixelFormat TextureDescriptor::GetPixelFormatForCompression(eGPUFamily forGPU) c
     return (PixelFormat) compression[forGPU].format;
 }
 
-void TextureDescriptor::Initialize( Texture::TextureWrap wrap, bool generateMipmaps )
+void TextureDescriptor::Initialize(rhi::TextureAddrMode wrap, bool generateMipmaps)
 {
 	SetDefaultValues();
 
@@ -626,15 +627,16 @@ void TextureDescriptor::Initialize( Texture::TextureWrap wrap, bool generateMipm
 	drawSettings.wrapModeT = wrap;
 
 	dataSettings.SetGenerateMipmaps(generateMipmaps);
+    drawSettings.minFilter = rhi::TEXFILTER_LINEAR;
+    drawSettings.magFilter = rhi::TEXFILTER_LINEAR;
+
 	if(generateMipmaps)
 	{
-		drawSettings.minFilter = Texture::FILTER_LINEAR_MIPMAP_LINEAR;
-		drawSettings.magFilter = Texture::FILTER_LINEAR;
+        drawSettings.mipFilter = rhi::TEXMIPFILTER_LINEAR;		
 	}
 	else
 	{
-		drawSettings.minFilter = Texture::FILTER_LINEAR;
-		drawSettings.magFilter = Texture::FILTER_LINEAR;
+        drawSettings.mipFilter = rhi::TEXMIPFILTER_NONE;
 	}
 }
 

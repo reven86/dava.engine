@@ -87,8 +87,12 @@ bool    UpdateConstBuffer( Handle constBuf, uint32 constIndex, const float* data
 
 Handle  CreateTexture( const Texture::Descriptor& desc );
 void    DeleteTexture( Handle tex );
+
 void*   MapTexture( Handle tex, uint32 level=0 );
 void    UnmapTexture( Handle tex );
+
+void    UpdateTexture( Handle tex, uint32 level, TextureFace face, const void* data );
+
 
 struct
 TextureSetDescriptor
@@ -98,17 +102,24 @@ TextureSetDescriptor
 };
 
 Handle  AcquireTextureSet( const TextureSetDescriptor& desc );
-void    RetainTextureSet(Handle ts);
+Handle  CopyTextureSet( Handle ts );
 void    ReleaseTextureSet( Handle ts );
 
 
 ////////////////////////////////////////////////////////////////////////////////
+//  depthstencil-state
 
 Handle  AcquireDepthStencilState( const DepthStencilState::Descriptor& desc );
+Handle  CopyDepthStencilState( Handle ds );
 void    ReleaseDepthStencilState( Handle ds );
 
+
+////////////////////////////////////////////////////////////////////////////////
+//  sampler-state
+
 Handle  AcquireSamplerState( const SamplerState::Descriptor& desc );
-void    ReleaseSamplerState( Handle ds );
+Handle  CopySamplerState( Handle ss );
+void    ReleaseSamplerState( Handle ss );
 
 
 
@@ -121,7 +132,7 @@ void    EndRenderPass( Handle pass ); // no explicit render-pass 'release' neede
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// draw
+// rendering
 
 struct
 BatchDescriptor

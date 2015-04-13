@@ -290,41 +290,6 @@ extern const int32 STENCIL_OP_MAP[STENCILOP_COUNT];
 #endif
 
     
-enum TextureWrap
-{
-    WRAP_CLAMP_TO_EDGE = 0,
-    WRAP_REPEAT,
-    
-    WRAP_COUNT
-};
-
-#if defined(__DAVAENGINE_OPENGL__)
-    extern const GLint TEXTURE_WRAP_MAP[WRAP_COUNT];
-#elif defined(__DAVAENGINE_DIRECTX9__)
-    extern const int32 TEXTURE_WRAP_MAP[WRAP_COUNT];
-#endif
-
-    
-enum TextureFilter
-{
-    FILTER_NEAREST  = 0,
-    FILTER_LINEAR,
-    
-    FILTER_NEAREST_MIPMAP_NEAREST,
-    FILTER_LINEAR_MIPMAP_NEAREST,
-    FILTER_NEAREST_MIPMAP_LINEAR,
-    FILTER_LINEAR_MIPMAP_LINEAR,
-    
-    FILTER_COUNT
-};
-
-#if defined(__DAVAENGINE_OPENGL__)
-    extern const GLint TEXTURE_FILTER_MAP[FILTER_COUNT];
-#elif defined(__DAVAENGINE_DIRECTX9__)
-    extern const int32 TEXTURE_FILTER_MAP[FILTER_COUNT];
-#endif
-    
-    
     
 enum eFillMode
 {

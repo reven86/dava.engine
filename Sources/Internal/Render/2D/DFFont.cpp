@@ -221,8 +221,7 @@ Font * DFFont::Clone() const
     dfFont->fontInternal = SafeRetain(fontInternal);
     dfFont->fontTexture = SafeRetain(fontTexture);
     dfFont->size = size;
-    dfFont->fontTextureHandler = fontTextureHandler;
-    rhi::RetainTextureSet(fontTextureHandler);
+    dfFont->fontTextureHandler = rhi::CopyDepthStencilState(fontTextureHandler);    
 
     return dfFont;
 }

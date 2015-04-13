@@ -177,17 +177,17 @@ void Scene::InitGlobalMaterial()
 #if RHI_COMPLETE
     if(NULL == stubTexture2d)
     {
-        stubTexture2d = Texture::CreatePink(Texture::TEXTURE_2D);
+        stubTexture2d = Texture::CreatePink(rhi::TEXTURE_TYPE_2D);
     }
 
     if(NULL == stubTextureCube)
     {
-        stubTextureCube = Texture::CreatePink(Texture::TEXTURE_CUBE);
+        stubTextureCube = Texture::CreatePink(rhi::TEXTURE_TYPE_CUBE);
     }
 
     if(NULL == stubTexture2dLightmap)
     {
-        stubTexture2dLightmap = Texture::CreatePink(Texture::TEXTURE_2D, false);
+        stubTexture2dLightmap = Texture::CreatePink(rhi::TEXTURE_TYPE_2D, false);
     }
 
     Vector3 defaultVec3;
