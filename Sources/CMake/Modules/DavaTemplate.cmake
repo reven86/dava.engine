@@ -103,6 +103,12 @@ elseif( QT5_FOUND )
 endif()
 
 if( DAVA_FOUND )
+    if( ANDROID )
+        include_directories   ( ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
+        list( APPEND PATTERNS_CPP    ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.cpp )
+        list( APPEND PATTERNS_H      ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.h   )        
+
+    endif()
 
     if( QT_PREFIX )
         if( WIN32 )
@@ -116,10 +122,6 @@ if( DAVA_FOUND )
             list( APPEND PATTERNS_H      ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.h   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS/*.h   )        
 
         endif()
-
-        file( GLOB CPP_FILES ${PATTERNS_CPP} )
-        file( GLOB H_FILES   ${PATTERNS_H} )
-        list( APPEND ADDED_SRC ${H_FILES} ${CPP_FILES} )
      
         include_directories( ${PLATFORM_INCLUDES_DIR} )
 
@@ -130,13 +132,13 @@ if( DAVA_FOUND )
             list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.cpp 
                                     ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.h  )
 
-        elseif( MACOS )
-            #list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateMacOS/NPAPICorePlatformMacOS.cpp 
-            #                        ${DAVA_PLATFORM_SRC}/TemplateMacOS/NPAPICorePlatformMacOS.h )
-
         endif()
 
     endif()
+
+    file( GLOB_RECURSE CPP_FILES ${PATTERNS_CPP} )
+    file( GLOB_RECURSE H_FILES   ${PATTERNS_H} )
+    list( APPEND ADDED_SRC ${H_FILES} ${CPP_FILES} )
 
 endif()
 
