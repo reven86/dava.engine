@@ -34,6 +34,7 @@ public:
     virtual DAVA::String GetSubValueName(int index) const;
     virtual DAVA::VariantType GetSubValue(int index) const;
     virtual void SetSubValue(int index, const DAVA::VariantType &newValue);
+    virtual void SetDefaultSubValue(int index, const DAVA::VariantType &newValue);
     
     virtual DAVA::BaseObject *GetBaseObject() const {
         return object;
@@ -47,6 +48,9 @@ public:
 
 protected:
     virtual void ApplyValue(const DAVA::VariantType &value);
+    
+private:
+    DAVA::VariantType ChangeValueComponent(const DAVA::VariantType &value, const DAVA::VariantType &component, DAVA::int32 index);
     
 private:
     DAVA::BaseObject *object;

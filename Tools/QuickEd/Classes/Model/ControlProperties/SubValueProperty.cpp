@@ -52,6 +52,16 @@ void SubValueProperty::SetValue(const DAVA::VariantType &newValue)
     GetValueProperty()->SetSubValue(index, newValue);
 }
 
+void SubValueProperty::SetDefaultValue(const DAVA::VariantType &newValue)
+{
+    GetValueProperty()->SetDefaultSubValue(index, newValue);
+}
+
+void SubValueProperty::ResetValue()
+{
+    GetValueProperty()->ResetValue();
+}
+
 bool SubValueProperty::IsReplaced() const
 {
     return GetValueProperty()->IsReplaced();
