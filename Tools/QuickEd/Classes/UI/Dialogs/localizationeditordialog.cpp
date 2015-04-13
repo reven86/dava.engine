@@ -28,7 +28,6 @@
 
 
 #include "localizationeditordialog.h"
-#include "ui_localizationeditordialog.h"
 #include "Helpers/LocalizationSystemHelper.h"
 #include "FileSystem/LocalizationSystem.h"
 #include "FileSystem/FileSystem.h"
@@ -71,7 +70,7 @@ LocalizationTableController::LocalizationTableController(QTableView* view)
 LocalizationTableController::~LocalizationTableController()
 {
     SAFE_DELETE(tableModel);
-}
+} 
 
 void LocalizationTableController::ConnectToSignals()
 {
@@ -341,13 +340,13 @@ void LocalizationStringsTableController::UpdateUIControls(const QModelIndex &sel
 	QString localizationValue = tableModel->data(tableModel->index(selectedIndex.row(), LOCALIZATION_VALUE_INDEX), Qt::DisplayRole).toString();
     
 	ui->keyTextEdit->insertPlainText(localizationKey);
-	ui->valueTextEdit->insertPlainText(localizationValue);
+    ui->valueTextEdit->insertPlainText(localizationValue);
 }
 
 void LocalizationStringsTableController::CleanupUIControls()
 {
-	ui->keyTextEdit->clear();
-	ui->valueTextEdit->clear();
+    ui->keyTextEdit->clear();
+    ui->valueTextEdit->clear();
 }
 
 void LocalizationStringsTableController::OnDeselectedItem(const QModelIndex & deselectedIndex)
@@ -378,8 +377,8 @@ void LocalizationStringsTableController::UpdateLocalizationValueForCurrentKey(co
 	}
     
 	// Firstly verify if something was changed.
-	QString localizationKey = ui->keyTextEdit->toPlainText();
-	QString localizationValue = ui->valueTextEdit->toPlainText();
+    QString localizationKey = ui->keyTextEdit->toPlainText();
+    QString localizationValue = ui->valueTextEdit->toPlainText();
 	if (localizationKey.isEmpty())
 	{
 		return;
@@ -527,12 +526,11 @@ int LocalizationEditorDialog::addedStringsCount = 0;
 
 LocalizationEditorDialog::LocalizationEditorDialog(QWidget *parent) :
     QDialog(parent)
-,   ui(new Ui::LocalizationEditorDialog)
 {
-    ui->setupUi(this);
+    setupUi(this);
     
-    stringsTable = new LocalizationStringsTableController(ui->stringsTableView, ui);
-    fontsTable = new LocalizationFontsTableController(ui->fontsTableView, ui);
+    stringsTable = new LocalizationStringsTableController(stringsTableView, this);
+    fontsTable = new LocalizationFontsTableController(fontsTableView, this);
     
     stringsTable->SetupTable();
     fontsTable->SetupTable();
@@ -558,12 +556,9 @@ LocalizationEditorDialog::LocalizationEditorDialog(QWidget *parent) :
 
 LocalizationEditorDialog::~LocalizationEditorDialog()
 {
-    DisconnectFromSignals();
     
     delete stringsTable;
     delete fontsTable;
-    
-    delete ui;
 }
 
 void LocalizationEditorDialog::FillLocaleComboBox()
@@ -574,7 +569,7 @@ void LocalizationEditorDialog::FillLocaleComboBox()
     // Fill combobox with language values
     for (int i = 0; i < languagesCount; ++i) {
         languageDescription =  QString::fromStdString(LocalizationSystemHelper::GetSupportedLanguageDesc(i));
-        ui->currentLocaleComboBox->addItem(languageDescription);
+        currentLocaleComboBox->addItem(languageDescription);
     }
     // Setup default locale
     SetDefaultLanguage();
@@ -586,21 +581,21 @@ void LocalizationEditorDialog::ConnectToSignals()
     fontsTable->ConnectToSignals();
     
     // Open locale directory button clicked event
-    connect(ui->openLocalizationFileButton, SIGNAL(clicked()), this, SLOT(OnOpenLocalizationFileButtonClicked()));
+    connect(openLocalizationFileButton, SIGNAL(clicked()), this, SLOT(OnOpenLocalizationFileButtonClicked()));
     // Locale combobox value changed event
-    connect(ui->currentLocaleComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentLocaleChanged(int)));
+    connect(currentLocaleComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentLocaleChanged(int)));
     // Close dialog if ok button clicked
-    connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(CloseDialog()));
+    connect(closeButton, SIGNAL(clicked()), this, SLOT(CloseDialog()));
 	
-	connect(ui->addStringButton, SIGNAL(clicked()), this, SLOT(OnAddNewLocalizationString()));
-	connect(ui->removeStringButton, SIGNAL(clicked()), this, SLOT(OnRemoveSelectedLocalizationString()));
+	connect(addStringButton, SIGNAL(clicked()), this, SLOT(OnAddNewLocalizationString()));
+	connect(removeStringButton, SIGNAL(clicked()), this, SLOT(OnRemoveSelectedLocalizationString()));
     
     // Filter behaviour.
-    connect(ui->filterLineEdit, SIGNAL(textChanged(const QString&)), this->stringsTable, SLOT(OnFilterTextChanged(const QString&)));
-    connect(ui->clearFilterButton, SIGNAL(clicked()), this->stringsTable, SLOT(OnFilterTextCleared()));
+    connect(filterLineEdit, SIGNAL(textChanged(const QString&)), this->stringsTable, SLOT(OnFilterTextChanged(const QString&)));
+    connect(clearFilterButton, SIGNAL(clicked()), this->stringsTable, SLOT(OnFilterTextCleared()));
     
-    connect(ui->fontsFilterLineEdit, SIGNAL(textChanged(const QString&)), this->fontsTable, SLOT(OnFilterTextChanged(const QString&)));
-    connect(ui->clearFontsFilterButton, SIGNAL(clicked()), this->fontsTable, SLOT(OnFilterTextCleared()));
+    connect(fontsFilterLineEdit, SIGNAL(textChanged(const QString&)), this->fontsTable, SLOT(OnFilterTextChanged(const QString&)));
+    connect(clearFontsFilterButton, SIGNAL(clicked()), this->fontsTable, SLOT(OnFilterTextCleared()));
 }
 
 void LocalizationEditorDialog::DisconnectFromSignals()
@@ -609,21 +604,21 @@ void LocalizationEditorDialog::DisconnectFromSignals()
     fontsTable->DisconnectFromSignals();
     
     // Open locale directory button clicked event
-    disconnect(ui->openLocalizationFileButton, SIGNAL(clicked()), this, SLOT(OnOpenLocalizationFileButtonClicked()));
+    disconnect(openLocalizationFileButton, SIGNAL(clicked()), this, SLOT(OnOpenLocalizationFileButtonClicked()));
     // Locale combobox value changed event
-    disconnect(ui->currentLocaleComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentLocaleChanged(int)));
+    disconnect(currentLocaleComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentLocaleChanged(int)));
     // Close dialog if ok button clicked
-    disconnect(ui->closeButton, SIGNAL(clicked()), this, SLOT(CloseDialog()));
+    disconnect(closeButton, SIGNAL(clicked()), this, SLOT(CloseDialog()));
 	
-	disconnect(ui->addStringButton, SIGNAL(clicked()), this, SLOT(OnAddNewLocalizationString()));
-	disconnect(ui->removeStringButton, SIGNAL(clicked()), this, SLOT(OnRemoveSelectedLocalizationString()));
+	disconnect(addStringButton, SIGNAL(clicked()), this, SLOT(OnAddNewLocalizationString()));
+	disconnect(removeStringButton, SIGNAL(clicked()), this, SLOT(OnRemoveSelectedLocalizationString()));
     
     // Filter behaviour.
-    disconnect(ui->filterLineEdit, SIGNAL(textChanged(const QString&)), this->stringsTable, SLOT(OnFilterTextChanged(const QString&)));
-    disconnect(ui->clearFilterButton, SIGNAL(clicked()), this->stringsTable, SLOT(OnFilterTextCleared()));
+    disconnect(filterLineEdit, SIGNAL(textChanged(const QString&)), this->stringsTable, SLOT(OnFilterTextChanged(const QString&)));
+    disconnect(clearFilterButton, SIGNAL(clicked()), this->stringsTable, SLOT(OnFilterTextCleared()));
     
-    disconnect(ui->fontsFilterLineEdit, SIGNAL(textChanged(const QString&)), this->fontsTable, SLOT(OnFilterTextChanged(const QString&)));
-    disconnect(ui->clearFontsFilterButton, SIGNAL(clicked()), this->fontsTable, SLOT(OnFilterTextCleared()));
+    disconnect(fontsFilterLineEdit, SIGNAL(textChanged(const QString&)), this->fontsTable, SLOT(OnFilterTextChanged(const QString&)));
+    disconnect(clearFontsFilterButton, SIGNAL(clicked()), this->fontsTable, SLOT(OnFilterTextCleared()));
 }
 
 void LocalizationEditorDialog::SetLocalizationDirectoryPath()
@@ -631,7 +626,7 @@ void LocalizationEditorDialog::SetLocalizationDirectoryPath()
     QString defaultPath = QString::fromStdString(LocalizationSystem::Instance()->GetDirectoryPath().GetAbsolutePathname());
     if (!defaultPath.isEmpty())
     {
-        ui->localizationFilePathLineEdit->setText(defaultPath);
+        localizationFilePathLineEdit->setText(defaultPath);
 		stringsTable->ReloadTable();
         fontsTable->ReloadTable();
     }
@@ -644,8 +639,8 @@ void LocalizationEditorDialog::SetDefaultLanguage()
     String languageDescription = LocalizationSystemHelper::GetLanguageDescByLanguageID(currentLanguageID);
 
     // Setup combo box value
-    int index = ui->currentLocaleComboBox->findText(QString::fromStdString(languageDescription));
-    ui->currentLocaleComboBox->setCurrentIndex(index);
+    int index = currentLocaleComboBox->findText(QString::fromStdString(languageDescription));
+    currentLocaleComboBox->setCurrentIndex(index);
 }
 
 void LocalizationEditorDialog::OnOpenLocalizationFileButtonClicked()
@@ -670,7 +665,7 @@ void LocalizationEditorDialog::OnOpenLocalizationFileButtonClicked()
 			// Get localization relative path
 			QString localizationRelativePath = ResourcesManageHelper::GetResourceRelativePath(fileDirectory);
       		// Update ui
-      		ui->localizationFilePathLineEdit->setText(localizationRelativePath);
+      		localizationFilePathLineEdit->setText(localizationRelativePath);
      		ReinitializeLocalizationSystem(localizationRelativePath);
         }
 		else
@@ -690,7 +685,7 @@ void LocalizationEditorDialog::ReinitializeLocalizationSystem(const QString& loc
 	// Store the latest changes before the reinitialization.
 	stringsTable->UpdateLocalizationValueForCurrentKey();
 
-    int languageItemID = this->ui->currentLocaleComboBox->currentIndex();
+    int languageItemID = currentLocaleComboBox->currentIndex();
     if (languageItemID == -1)
     {
         return;
@@ -706,13 +701,15 @@ void LocalizationEditorDialog::ReinitializeLocalizationSystem(const QString& loc
         FilePath localizationFilePath(localizationDirectory.toStdString());
         localizationFilePath.MakeDirectoryPathname();
 
+        LocalizationSystem::Instance()->SetDirectory(localizationFilePath);
         Logger::Debug("HierarchyTreeController::ReinitializeLocalizationSystem LocalizationSystem::Instance()->SetCurrentLocale(%s);", languageId.c_str());
         LocalizationSystem::Instance()->SetCurrentLocale(languageId);
-        LocalizationSystem::Instance()->InitWithDirectory(localizationFilePath);
+        LocalizationSystem::Instance()->Init();
     }
     
 	stringsTable->ReloadTable();
     fontsTable->ReloadTable();
+    emit LanguageChanged();
     
 //    HierarchyTreeController::Instance()->UpdateLocalization(true);
 }

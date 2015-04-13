@@ -7,20 +7,20 @@
 #include <QVector2D>
 #include <QUndoStack>
 
+#include "Document.h"
+#include "Ui/QtModelPackageCommandExecutor.h"
+
 #include "Model/ControlProperties/BaseProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Utils/QtDavaConvertion.h"
 #include "UI/Commands/ChangePropertyValueCommand.h"
-#include "UI/Document.h"
 #include "UI/QtModelPackageCommandExecutor.h"
-#include "UI/PropertiesContext.h"
 
 using namespace DAVA;
 
-PropertiesModel::PropertiesModel(ControlNode *_controlNode, PropertiesContext *context)
-    : QAbstractItemModel(context)
+PropertiesModel::PropertiesModel(ControlNode *_controlNode, QObject *parent)
+    : QAbstractItemModel(parent)
     , controlNode(nullptr)
-    , propertiesContext(context)
 {
     controlNode = SafeRetain(_controlNode);
 }
@@ -184,7 +184,7 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
             if (property->GetValue().GetType() == VariantType::TYPE_BOOLEAN)
             {
                 VariantType newVal(value != Qt::Unchecked);
-                propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
+                qobject_cast<Document*>(QObject::parent())->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal); //TODO: this is ugly
                 return true;
             }
         }
@@ -203,14 +203,14 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
                 initVariantType(newVal, value);
             }
 
-            propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
+            qobject_cast<Document*>(QObject::parent())->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal); //TODO: this is ugly
             return true;
         }
         break;
 
     case DAVA::ResetRole:
         {
-            propertiesContext->GetDocument()->GetCommandExecutor()->ResetProperty(controlNode, property);
+            qobject_cast<Document*>(QObject::parent())->GetCommandExecutor()->ResetProperty(controlNode, property); //TODO: this is ugly
             return true;
         }
         break;

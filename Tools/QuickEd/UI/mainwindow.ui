@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1024</width>
-    <height>840</height>
+    <height>851</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -33,16 +33,7 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>0</number>
     </property>
     <item>
@@ -127,7 +118,7 @@
     <string>Edit Toolbar</string>
    </property>
    <property name="movable">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="iconSize">
     <size>
@@ -226,6 +217,17 @@
     <number>8</number>
    </attribute>
   </widget>
+  <widget class="QToolBar" name="toolBarLanguage">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
   <action name="actionOpen_project">
    <property name="enabled">
     <bool>true</bool>
@@ -263,7 +265,7 @@
   </action>
   <action name="actionNew_project">
    <property name="icon">
-    <iconset resource="../Data/icons.qrc">
+    <iconset resource="../DataQt/icons.qrc">
      <normaloff>:/Icons/newscene.png</normaloff>:/Icons/newscene.png</iconset>
    </property>
    <property name="text">
@@ -310,7 +312,7 @@
   </action>
   <action name="actionClose_project">
    <property name="icon">
-    <iconset resource="../Data/icons.qrc">
+    <iconset resource="../DataQt/icons.qrc">
      <normaloff>:/Icons/101.png</normaloff>:/Icons/101.png</iconset>
    </property>
    <property name="text">
@@ -333,7 +335,7 @@
   </action>
   <action name="actionSaveDocument">
    <property name="icon">
-    <iconset resource="../Data/icons.qrc">
+    <iconset resource="../DataQt/icons.qrc">
      <normaloff>:/Icons/savescene.png</normaloff>:/Icons/savescene.png</iconset>
    </property>
    <property name="text">
@@ -351,7 +353,7 @@
   </action>
   <action name="actionHelp">
    <property name="icon">
-    <iconset resource="../Data/icons.qrc">
+    <iconset resource="../DataQt/icons.qrc">
      <normaloff>:/Icons/help.png</normaloff>:/Icons/help.png</iconset>
    </property>
    <property name="text">
@@ -366,7 +368,7 @@
   </action>
   <action name="actionUndo">
    <property name="icon">
-    <iconset resource="../Data/icons.qrc">
+    <iconset resource="../DataQt/icons.qrc">
      <normaloff>:/Icons/118.png</normaloff>:/Icons/118.png</iconset>
    </property>
    <property name="text">
@@ -381,7 +383,7 @@
   </action>
   <action name="actionRedo">
    <property name="icon">
-    <iconset resource="../Data/icons.qrc">
+    <iconset resource="../DataQt/icons.qrc">
      <normaloff>:/Icons/117.png</normaloff>:/Icons/117.png</iconset>
    </property>
    <property name="text">
@@ -424,7 +426,7 @@
   </action>
   <action name="actionSaveAllDocuments">
    <property name="icon">
-    <iconset resource="../Data/icons.qrc">
+    <iconset resource="../DataQt/icons.qrc">
      <normaloff>:/Icons/savesceneall.png</normaloff>:/Icons/savesceneall.png</iconset>
    </property>
    <property name="text">
@@ -436,7 +438,7 @@
   </action>
   <action name="actionRepack_And_Reload">
    <property name="icon">
-    <iconset resource="../Data/icons.qrc">
+    <iconset resource="../DataQt/icons.qrc">
      <normaloff>:/Icons/reloadtextures.png</normaloff>:/Icons/reloadtextures.png</iconset>
    </property>
    <property name="text">
@@ -451,7 +453,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../Data/icons.qrc">
+    <iconset resource="../DataQt/icons.qrc">
      <normaloff>:/Icons/pixelated.png</normaloff>:/Icons/pixelated.png</iconset>
    </property>
    <property name="text">
@@ -506,7 +508,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../Data/icons.qrc"/>
+  <include location="../DataQt/icons.qrc"/>
  </resources>
  <connections/>
 </ui>

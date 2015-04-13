@@ -225,6 +225,11 @@ OpenGLWindow* DavaGLWidget::GetGLWindow() const
     return openGlWindow;
 }
 
+bool DavaGLWidget::IsInitialized() const
+{
+    return isInitialized;
+}
+
 void DavaGLWidget::OnWindowExposed()
 {
     disconnect( openGlWindow.data(), &OpenGLWindow::Exposed, this, &DavaGLWidget::OnWindowExposed );
