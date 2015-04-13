@@ -32,12 +32,10 @@
 #define __UIEditor__FontManager__
 
 #include <iostream>
-#include <QObject>
 #include <DAVAEngine.h>
 
-class EditorFontManager: public QObject, public DAVA::Singleton<EditorFontManager>
+class EditorFontManager: public DAVA::Singleton<EditorFontManager>
 {
-    Q_OBJECT
 public:
 	//typedef std::map<String, Font*> FONTSMAP;
 	EditorFontManager();
@@ -93,10 +91,7 @@ public:
     DAVA::FilePath GetLocalizedFontsPath(const DAVA::String &locale);
     const DAVA::FilePath& GetDefaultFontsPath();
     DAVA::String GetDefaultFontsFrameworkPath();
-    
-signals:
-    void FontLoaded();
-	
+    	
 private:
 	void Init();
     

@@ -45,7 +45,6 @@
 #include "Dialogs/LocalizationEditorDialog.h"
 #include "Dialogs/EditFontDialog.h"
 #include "Grid/GridVisualizer.h"
-#include "EditorFontManager.h"
 //////////////////////////////////////////////////////////////////////////
 
 #include "UI/FileSystemView/FileSystemDockWidget.h"

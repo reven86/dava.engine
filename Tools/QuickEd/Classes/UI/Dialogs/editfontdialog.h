@@ -76,7 +76,6 @@ private:
 
 private slots:
     void OnOkButtonClicked();
-    void OnRadioButtonClicked();
     void OnPushButtonClicked();
     void OnSpinBoxValueChanged(int newValue);
     void OnComboBoxValueChanged(QString value);

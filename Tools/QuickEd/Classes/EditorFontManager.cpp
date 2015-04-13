@@ -343,10 +343,7 @@ Font* EditorFontManager::CreateDefaultFont(const String& fontPath, const String&
 //		fonts[fontName] = font;
 //        FontManager::Instance()->RegisterFont(font);
         RegisterDefaultFont(font);
-        
-        //If font was successfully loaded - emit the signal
-        emit FontLoaded();
-	}
+  	}
 	
 	return font;
 }

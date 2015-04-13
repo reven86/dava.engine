@@ -55,14 +55,6 @@
 
 using namespace DAVA;
 
-//static const QString FONT_TABLE_NAME_COLUMN = "Font Name";
-//static const QString FONT_TABLE_TYPE_COLUMN = "Font Type";
-//static const QString FONT_TYPE_BASIC = "Basic";
-//static const QString FONT_TYPE_GRAPHIC = "Graphics";
-//static const QString LOAD_FONT_ERROR_MESSAGE = "Can't load font %1! Try again or select another one.";
-//static const QString LOAD_FONT_ERROR_INFO_TEXT = "An error occured while loading font...";
-
-
 EditFontDialog::EditFontDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::EditFontDialog)
@@ -84,21 +76,13 @@ void EditFontDialog::UpdateFontPreset(ControlNode *selectedControlNode)
     String editFontPresetName = findFont(selectedControlNode);
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
     ui->selectLocaleComboBox->clear();
-    //dialogResult.fontPresetOriginalName = editFontPresetName;
-    //dialogResult.fontPresetName = editFontPresetName;
     Font* font = EditorFontManager::Instance()->GetLocalizedFont(editFontPresetName, "default");
-
-    //dialogResult.font = font ? font->Clone() : EditorFontManager::Instance()->GetDefaultFont()->Clone();
 
     const Vector<String> &locales = EditorFontManager::Instance()->GetLocales();
     int32 localesCount = locales.size();
     for (int32 i = 0; i < localesCount; ++i)
     {
         Font* localizedFont = EditorFontManager::Instance()->GetLocalizedFont(editFontPresetName, locales[i]);
-        //dialogResult.localizedFonts[locales[i]] = localizedFont ? localizedFont->Clone() : dialogResult.font->Clone();
-
-        //Logger::FrameworkDebug("EditFontDialog::EditFontDialog dialogResult.localizedFonts[%s] = %p", locales[i].c_str(), dialogResult.localizedFonts[locales[i]]);
-
         ui->selectLocaleComboBox->addItem(QString::fromStdString(locales[i]));
     }
     if (0 < localesCount)
@@ -143,10 +127,7 @@ String EditFontDialog::findFont(ControlNode *node)
 
 void EditFontDialog::ConnectToSignals()
 {
-    //Connect signal and slots
-    connect(ui->createNewRadioButton, SIGNAL(clicked()), this, SLOT(OnRadioButtonClicked()));
-    connect(ui->applyToAllRadioButton, SIGNAL(clicked()), this, SLOT(OnRadioButtonClicked()));
-    
+    //Connect signal and slots    
     UpdateLineEditWidgetWithPropertyValue(ui->fontPresetNameLlineEdit);
     
     UpdateSpinBoxWidgetWithPropertyValue(ui->fontSizeSpinBox);
@@ -171,10 +152,7 @@ void EditFontDialog::ConnectToSignals()
 }
 
 void EditFontDialog::DisconnectFromSignals()
-{
-    disconnect(ui->createNewRadioButton, SIGNAL(clicked()), this, SLOT(OnRadioButtonClicked()));
-    disconnect(ui->applyToAllRadioButton, SIGNAL(clicked()), this, SLOT(OnRadioButtonClicked()));
-    
+{  
     disconnect(ui->fontSelectButton, SIGNAL(clicked()), this, SLOT(OnPushButtonClicked()));
     disconnect(ui->fontSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnSpinBoxValueChanged(int)));
     
@@ -182,23 +160,8 @@ void EditFontDialog::DisconnectFromSignals()
     
     disconnect(ui->localizedFontSelectButton, SIGNAL(clicked()), this, SLOT(OnPushButtonClicked()));
     disconnect(ui->localizedFontSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnSpinBoxValueChanged(int)));
-    
-    disconnect(ui->buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(OnButtonBoxButtonClicked(QAbstractButton*)));
 }
 
-void EditFontDialog::OnRadioButtonClicked()
-{
-    ui->buttonBox->button( QDialogButtonBox::Ok )->setEnabled(true);
-    QRadioButton* senderWidget = dynamic_cast<QRadioButton*>(QObject::sender());
-    if(senderWidget == ui->applyToAllRadioButton)
-    {
-        //dialogResult.isApplyToAll = true;
-    }
-    else if(senderWidget == ui->createNewRadioButton)
-    {
-        //dialogResult.isApplyToAll = false;
-    }
-}
 void EditFontDialog::OnPushButtonClicked()
 {
     QPushButton* senderWidget = dynamic_cast<QPushButton*>(QObject::sender());
