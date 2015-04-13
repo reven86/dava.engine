@@ -103,3 +103,4 @@ void IntegerPropertyDelegate::OnValueChanged()
     BasePropertyDelegate::SetValueModified(editor, true);
     itemDelegate->emitCommitData(editor);
 }
+

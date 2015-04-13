@@ -29,7 +29,7 @@ QWidget *ColorPropertyDelegate::createEditor( QWidget * parent, const QStyleOpti
     //validator->setRegExp(QRegExp("#{0,1}[A-F0-9]{8}", Qt::CaseInsensitive));
     //lineEdit->setValidator(validator);
 
-    connect(lineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(OnValueChanged()));
+    connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(OnEditingFinished()));
     return lineEdit;
 }
 
@@ -91,9 +91,9 @@ void ColorPropertyDelegate::OnChooseColorClicked()
     }
 }
 
-void ColorPropertyDelegate::OnValueChanged()
+void ColorPropertyDelegate::OnEditingFinished()
 {
-    QWidget *lineEdit = qobject_cast<QWidget *>(sender());
+    QLineEdit *lineEdit = qobject_cast<QLineEdit *>(sender());
     if (!lineEdit)
         return;
 
@@ -101,6 +101,6 @@ void ColorPropertyDelegate::OnValueChanged()
     if (!editor)
         return;
 
-    BasePropertyDelegate::SetValueModified(editor, true);
+    BasePropertyDelegate::SetValueModified(editor, lineEdit->isModified());
     itemDelegate->emitCommitData(editor);
 }
