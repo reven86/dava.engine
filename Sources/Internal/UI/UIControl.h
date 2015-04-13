@@ -1326,7 +1326,6 @@ public:
     // Access to Custom Control Type.
     const String &GetCustomControlClassName() const;
     void SetCustomControlClassName(const String& value);
-    void ResetCustomControlClassName();
 
     // Find the control by name and add it to the list, if found.
     bool AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive = false);
@@ -1340,6 +1339,11 @@ public:
     virtual void SetVisibleForUIEditor(bool value);
 
     void DumpInputs(int32 depthLevel);
+private:
+    String name;
+protected:
+    UIControl *parent;
+    List<UIControl*> childs;
 
 public:
     //TODO: store geometric data in UIGeometricData
@@ -1351,8 +1355,6 @@ public:
     float32 angle;//!<control rotation angle. Rotation around pivot point.
 
 protected:
-    UIControl *parent;
-    List<UIControl*> childs;
     List<UIControl*> realChilds;
 
     UIControlBackground *background;
@@ -1401,7 +1403,7 @@ protected:
     eDebugDrawPivotMode drawPivotPointMode;
 
     // If this UI control represents Custom Control - its type is stored here.
-    String customControlType;
+    String customClassName;
 
     // Initial control's state which is stored on Yaml.
     int32 initialState;
@@ -1423,7 +1425,6 @@ protected:
     void DrawPivotPoint(const Rect &drawRect);
 
 private:
-    String name;
     int32  tag;
     bool inputEnabled : 1;
     bool focusEnabled : 1;
@@ -1517,9 +1518,11 @@ public:
     inline void SetAndApplyBottomAlignEnabled(bool isEnabled);
 
     INTROSPECTION_EXTEND(UIControl, AnimatedObject,
+                         PROPERTY("customClass", "Custom Class", GetCustomControlClassName, SetCustomControlClassName, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("name", "Name", GetName, SetName, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("size", "Size", GetSize, SetSize, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("scale", "Scale", GetScale, SetScale, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("pivot", "Pivot", GetPivot, SetPivot, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("angle", "Angle", GetAngleInDegrees, SetAngleInDegrees, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("visible", "Visible", GetVisible, SetVisible, I_SAVE | I_VIEW | I_EDIT)

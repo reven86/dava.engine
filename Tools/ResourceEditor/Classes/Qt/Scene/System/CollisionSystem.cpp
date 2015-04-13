@@ -170,7 +170,7 @@ const EntityGroup* SceneCollisionSystem::ObjectsRayTest(const DAVA::Vector3 &fro
 						btCollisionObject *btObj = btCallback.m_collisionObjects[j];
 						DAVA::Entity *entity = collisionToEntity.value(btObj, NULL);
 
-						if(!rayIntersectedEntities.HasEntity(entity))
+						if(!rayIntersectedEntities.ContainsEntity(entity))
 						{
 							lowestFraction = btCallback.m_hitFractions[j];
 							lowestEntity = entity;

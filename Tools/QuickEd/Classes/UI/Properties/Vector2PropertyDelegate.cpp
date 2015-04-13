@@ -21,17 +21,15 @@ QWidget * Vector2PropertyDelegate::createEditor( QWidget * parent, const QStyleO
 {
     Vector2DEdit *vectorEditor = new Vector2DEdit(parent);
     vectorEditor->setObjectName(QString::fromUtf8("vectorEditor"));
-    connect(vectorEditor->lineEditX(), SIGNAL(textChanged(const QString &)), this, SLOT(OnValueChanged()));
-    connect(vectorEditor->lineEditY(), SIGNAL(textChanged(const QString &)), this, SLOT(OnValueChanged()));
+    connect(vectorEditor->lineEditX(), SIGNAL(editingFinished()), this, SLOT(OnEditingFinished()));
+    connect(vectorEditor->lineEditY(), SIGNAL(editingFinished()), this, SLOT(OnEditingFinished()));
     return vectorEditor;
 }
 
 void Vector2PropertyDelegate::setEditorData( QWidget * editor, const QModelIndex & index ) const 
 {
     Vector2DEdit *vectorEditor = editor->findChild<Vector2DEdit *>("vectorEditor");
-    vectorEditor->blockSignals(true);
     vectorEditor->setVector2D(Vector2ToQVector2D(index.data(Qt::EditRole).value<DAVA::VariantType>().AsVector2()));
-    vectorEditor->blockSignals(false);
 }
 
 bool Vector2PropertyDelegate::setModelData( QWidget * editor, QAbstractItemModel * model, const QModelIndex & index ) const 
@@ -47,9 +45,9 @@ bool Vector2PropertyDelegate::setModelData( QWidget * editor, QAbstractItemModel
     return model->setData(index, vectorVariant, Qt::EditRole);
 }
 
-void Vector2PropertyDelegate::OnValueChanged()
+void Vector2PropertyDelegate::OnEditingFinished()
 {
-    QWidget *lineEdit = qobject_cast<QWidget *>(sender());
+    QLineEdit *lineEdit = qobject_cast<QLineEdit *>(sender());
     if (!lineEdit)
         return;
 
@@ -57,6 +55,6 @@ void Vector2PropertyDelegate::OnValueChanged()
     if (!editor)
         return;
 
-    BasePropertyDelegate::SetValueModified(editor, true);
+    BasePropertyDelegate::SetValueModified(editor, lineEdit->isModified());
     itemDelegate->emitCommitData(editor);
 }

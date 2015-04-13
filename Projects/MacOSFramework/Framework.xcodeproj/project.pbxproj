@@ -134,6 +134,12 @@
 		1146E12019D00887009E5FAB /* AnimationSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 1146E11C19D00887009E5FAB /* AnimationSystem.h */; };
 		1146E12119D00887009E5FAB /* AnimationSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 1146E11C19D00887009E5FAB /* AnimationSystem.h */; };
 		1146E12219D00887009E5FAB /* AnimationSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 1146E11C19D00887009E5FAB /* AnimationSystem.h */; };
+		1166AC131A8CDF2D00F1618D /* dlmalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 1166AC111A8CDF2C00F1618D /* dlmalloc.c */; };
+		1166AC141A8CDF2D00F1618D /* dlmalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 1166AC111A8CDF2C00F1618D /* dlmalloc.c */; };
+		1166AC151A8CDF2D00F1618D /* dlmalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 1166AC111A8CDF2C00F1618D /* dlmalloc.c */; };
+		1166AC161A8CDF2D00F1618D /* dlmalloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 1166AC121A8CDF2D00F1618D /* dlmalloc.h */; };
+		1166AC171A8CDF2D00F1618D /* dlmalloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 1166AC121A8CDF2D00F1618D /* dlmalloc.h */; };
+		1166AC181A8CDF2D00F1618D /* dlmalloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 1166AC121A8CDF2D00F1618D /* dlmalloc.h */; };
 		11CB615019C3391B00B48A92 /* AnimationData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11CB614E19C3391B00B48A92 /* AnimationData.cpp */; };
 		11CB615119C3391B00B48A92 /* AnimationData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11CB614E19C3391B00B48A92 /* AnimationData.cpp */; };
 		11CB615219C3391B00B48A92 /* AnimationData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11CB614E19C3391B00B48A92 /* AnimationData.cpp */; };
@@ -2761,6 +2767,8 @@
 		1146E11419D00874009E5FAB /* AnimationComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationComponent.h; sourceTree = "<group>"; };
 		1146E11B19D00887009E5FAB /* AnimationSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimationSystem.cpp; sourceTree = "<group>"; };
 		1146E11C19D00887009E5FAB /* AnimationSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationSystem.h; sourceTree = "<group>"; };
+		1166AC111A8CDF2C00F1618D /* dlmalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dlmalloc.c; sourceTree = "<group>"; };
+		1166AC121A8CDF2D00F1618D /* dlmalloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dlmalloc.h; sourceTree = "<group>"; };
 		11CB614E19C3391B00B48A92 /* AnimationData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimationData.cpp; sourceTree = "<group>"; };
 		11CB614F19C3391B00B48A92 /* AnimationData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationData.h; sourceTree = "<group>"; };
 		155D77D6197DD22E006AEBCD /* YamlNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = YamlNode.cpp; sourceTree = "<group>"; };
@@ -4263,6 +4271,8 @@
 				E89EDE3F1A2E16FA0036E993 /* UIControlSwig.cpp */,
 				E89EDE401A2E16FA0036E993 /* Vector_wrap.cxx */,
 				E89EDE411A2E16FA0036E993 /* VectorSwig.cpp */,
+				1166AC111A8CDF2C00F1618D /* dlmalloc.c */,
+				1166AC121A8CDF2D00F1618D /* dlmalloc.h */,
 			);
 			path = Autotesting;
 			sourceTree = "<group>";
@@ -5502,6 +5512,7 @@
 				176DE9B7174B5561007A983B /* Box2DTileCollider.h in Headers */,
 				17FB4BB61923B97F00F3E3BC /* UIScrollViewContainer.h in Headers */,
 				176DE9B8174B5561007A983B /* GameObject.h in Headers */,
+				1166AC181A8CDF2D00F1618D /* dlmalloc.h in Headers */,
 				E8C486F2196BC9AC0082E634 /* LockGuard.h in Headers */,
 				176DE9B9174B5561007A983B /* GameObjectAnimations.h in Headers */,
 				644C86FF19476A7100964F91 /* VegetationSpatialData.h in Headers */,
@@ -5883,6 +5894,7 @@
 				E8989EBB16BD24E500732C04 /* SystemTimer.h in Headers */,
 				E8989EC716BD24E500732C04 /* AppDelegate.h in Headers */,
 				E8989ECB16BD24E500732C04 /* MainWindowController.h in Headers */,
+				1166AC161A8CDF2D00F1618D /* dlmalloc.h in Headers */,
 				50B429D41A5A704400CEB3D3 /* Discoverer.h in Headers */,
 				84CB6723191FC8850086483D /* LibJpegHelper.h in Headers */,
 				E8989ECD16BD24E500732C04 /* NSFullScreenWindow.h in Headers */,
@@ -6523,6 +6535,7 @@
 				E898A17916BD265400732C04 /* UI3DView.h in Headers */,
 				D7CC264419C43C7C00A3B754 /* LocalNotificationProgress.h in Headers */,
 				E898A17A16BD265400732C04 /* UIButton.h in Headers */,
+				1166AC171A8CDF2D00F1618D /* dlmalloc.h in Headers */,
 				E898A17B16BD265400732C04 /* UIControl.h in Headers */,
 				E898A17C16BD265400732C04 /* UIControlBackground.h in Headers */,
 				E898A17D16BD265400732C04 /* UIControlSystem.h in Headers */,
@@ -7126,6 +7139,7 @@
 				1146E11F19D00887009E5FAB /* AnimationSystem.cpp in Sources */,
 				176DEB5A174B5561007A983B /* SoundComponent.cpp in Sources */,
 				176DEB5B174B5561007A983B /* SoundUpdateSystem.cpp in Sources */,
+				1166AC151A8CDF2D00F1618D /* dlmalloc.c in Sources */,
 				176DEB5C174B5561007A983B /* NMaterialConsts.cpp in Sources */,
 				17F687E1174B63BA000783FD /* NPAPIEntryPoint.mm in Sources */,
 				1795E4BA174CB86800050F64 /* NPAPIPluginMacOS.mm in Sources */,
@@ -7360,6 +7374,7 @@
 				E8989F5C16BD24E500732C04 /* SharedFBO.cpp in Sources */,
 				E8989F6216BD24E500732C04 /* Texture.cpp in Sources */,
 				E8989F6416BD24E500732C04 /* TextureDescriptor.cpp in Sources */,
+				1166AC131A8CDF2D00F1618D /* dlmalloc.c in Sources */,
 				E8989F6716BD24E500732C04 /* UberShader.cpp in Sources */,
 				E8989F6A16BD24E500732C04 /* Box2DDebugDraw.cpp in Sources */,
 				644C86F119476A7100964F91 /* VegetationRenderData.cpp in Sources */,
@@ -7969,6 +7984,7 @@
 				CCC7A46016F1D6170061EA5D /* RenderPass.cpp in Sources */,
 				CCC7A46416F1D6170061EA5D /* RenderSystem.cpp in Sources */,
 				CCC7A46816F1D6170061EA5D /* ShadowRect.cpp in Sources */,
+				1166AC141A8CDF2D00F1618D /* dlmalloc.c in Sources */,
 				CCC7A46C16F1D6170061EA5D /* ShadowVolume.cpp in Sources */,
 				17B061711889276B00FD8007 /* WebViewControlMacOS.mm in Sources */,
 				D7CC262919C43C7C00A3B754 /* LocalNotification.cpp in Sources */,

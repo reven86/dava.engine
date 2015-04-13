@@ -3,6 +3,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import android.graphics.Rect;
+import android.os.Build;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
@@ -34,10 +35,17 @@ public class SoftKeyboardStateHelper implements ViewTreeObserver.OnGlobalLayoutL
     	}
     }
     
+    @SuppressWarnings("deprecation")
     public void unsubscribe() {
-    	if(activityRootView != null) {
-        	activityRootView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-    	}
+        if(activityRootView != null) {
+            ViewTreeObserver viewTreeObserver = activityRootView.getViewTreeObserver();
+
+            if(Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+                viewTreeObserver.removeGlobalOnLayoutListener(this);
+            } else {
+                viewTreeObserver.removeOnGlobalLayoutListener(this);
+            }
+        }
     }
 
     @Override

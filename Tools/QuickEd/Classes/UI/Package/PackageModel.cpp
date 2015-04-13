@@ -8,7 +8,6 @@
 #include "Base/ObjectFactory.h"
 
 #include "UI/IconHelper.h"
-#include "UI/Document.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 #include "Utils/QtDavaConvertion.h"
 #include "Model/PackageHierarchy/PackageNode.h"

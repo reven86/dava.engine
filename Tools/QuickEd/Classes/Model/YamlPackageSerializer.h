@@ -28,7 +28,7 @@ public:
     
     DAVA::YamlNode *GetYamlNode() const;
     void WriteToFile(const DAVA::FilePath &path);
-    DAVA::String WriteToString();
+    DAVA::String WriteToString() const;
     
 private:
     DAVA::Vector<DAVA::YamlNode*> nodesStack;

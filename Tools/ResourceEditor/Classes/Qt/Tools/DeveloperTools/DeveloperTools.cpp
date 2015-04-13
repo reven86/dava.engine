@@ -41,10 +41,9 @@
 #include "DAVAEngine.h"
 using namespace DAVA;
 
-DeveloperTools::DeveloperTools(QObject *parent /* = 0 */)
+DeveloperTools::DeveloperTools(QObject *parent)
     : QObject(parent)
 {
-
 }
 
 void DeveloperTools::OnDebugFunctionsGridCopy()
