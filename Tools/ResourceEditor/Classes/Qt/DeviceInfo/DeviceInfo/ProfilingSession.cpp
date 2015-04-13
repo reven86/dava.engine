@@ -31,7 +31,6 @@
 #include "FileSystem/File.h"
 #include "Platform/DateTime.h"
 #include "Debug/DVAssert.h"
-#include "Network/PeerDesription.h"
 
 #include "BacktraceSymbolTable.h"
 
