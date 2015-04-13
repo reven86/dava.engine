@@ -287,7 +287,7 @@ void UIScrollView::RecalculateContentSize()
 	PushContentToBounds(scrollContainer);
 	// Get max size of content - all childrens
 	Vector2 maxSize = GetMaxSize(scrollContainer,
-									Vector2(parentRect.dx + abs(contentRect.x), parentRect.dy + abs(contentRect.y)),
+									Vector2(parentRect.dx + Abs(contentRect.x), parentRect.dy + Abs(contentRect.y)),
 									Vector2(0, 0));
 									
 	// Update scroll view content size
