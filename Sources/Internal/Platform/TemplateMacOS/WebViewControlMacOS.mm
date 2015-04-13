@@ -327,8 +327,8 @@ void WebViewControl::SetRect(const Rect& rect)
     webImageCachePtr = imageRep;
     [imageRep retain];
 
-    DVASSERT([imageRep size].width == roundf(webViewRect.size.width));
-    DVASSERT([imageRep size].height == roundf(webViewRect.size.height));
+    DVASSERT(FLOAT_EQUAL([imageRep size].width, roundf(webViewRect.size.width)));
+    DVASSERT(FLOAT_EQUAL([imageRep size].height, roundf(webViewRect.size.height)));
 }
 
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
