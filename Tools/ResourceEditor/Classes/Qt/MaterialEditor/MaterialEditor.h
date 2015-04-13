@@ -66,6 +66,8 @@ public slots:
 	void commandExecuted(SceneEditor2 *scene, const Command2 *command, bool redo);
 	void materialSelected(const QItemSelection & selected, const QItemSelection & deselected);
 
+    void OnQualityChanged();
+
 protected slots:
 	void OnTemplateChanged(int index);
 	void OnPropertyEdited(const QModelIndex &);
