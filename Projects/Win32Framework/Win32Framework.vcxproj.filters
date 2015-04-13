@@ -1429,9 +1429,9 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
-	<ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h">
+  <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h">
       <Filter>Internal\Render\Image</Filter>
-	</ClInclude>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
@@ -1815,6 +1815,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h">
       <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Autotesting\dlmalloc.h">
+      <Filter>Internal\Autotesting</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2914,9 +2917,9 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
-	<ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp">
+  <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
-	</ClCompile>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
@@ -3243,6 +3246,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\AndroidMallocSize.cpp">
       <Filter>Internal\MemoryManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\dlmalloc.c">
+      <Filter>Internal\Autotesting</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

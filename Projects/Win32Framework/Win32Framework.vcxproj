@@ -252,6 +252,7 @@
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingDB.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingSystemLua.h" />
+    <ClInclude Include="..\..\Sources\Internal\Autotesting\dlmalloc.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\GameAPI.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\MongodbUpdateObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\AllocatorFactory.h" />
@@ -796,6 +797,7 @@
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingSystemLua.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingSystemSwig.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\dlmalloc.c" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\GameAPI.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\KeyedArchiveSwig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\MongodbUpdateObject.cpp" />

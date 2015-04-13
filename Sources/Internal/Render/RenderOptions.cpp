@@ -66,12 +66,13 @@ FastName optionsNames[RenderOptions::OPTIONS_COUNT] =
 
     FastName("Update Particle Emitters"),
     FastName("Draw Particles"),
-    FastName("Particle Prepare Buffers")
+    FastName("Particle Prepare Buffers"),
 #if defined(LOCALIZATION_DEBUG)
-    ,FastName("Localization Warings")
-    ,FastName("Localization Errors")
-    ,FastName("Line Break Errors")
+    FastName("Localization Warings"),
+    FastName("Localization Errors"),
+    FastName("Line Break Errors"),
 #endif
+    FastName("Highlight Hard Controls")
 };
 
 RenderOptions::RenderOptions()
@@ -89,6 +90,7 @@ RenderOptions::RenderOptions()
     options[DRAW_LOCALIZATION_WARINGS] = false;
     options[DRAW_LINEBREAK_ERRORS] = false;
 #endif
+    options[HIGHLIGHT_HARD_CONTROLS] = false;
 }
 
 bool RenderOptions::IsOptionEnabled(RenderOption option)

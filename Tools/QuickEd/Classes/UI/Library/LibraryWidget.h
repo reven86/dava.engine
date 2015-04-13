@@ -1,28 +1,22 @@
 #ifndef __QUICKED_LIBRARY_WIDGET_H__
 #define __QUICKED_LIBRARY_WIDGET_H__
 
-#include <QWidget>
 #include <QDockWidget>
+#include "ui_LibraryWidget.h"
 
-namespace Ui {
-    class LibraryWidget;
-}
+class SharedData;
 
-class Document;
-
-class LibraryWidget: public QDockWidget
+class LibraryWidget : public QDockWidget, public Ui::LibraryWidget
 {
     Q_OBJECT
 public:
-    LibraryWidget(QWidget *parent = NULL);
-    virtual ~LibraryWidget();
-
-public:
-    void SetDocument(Document *newDocument);
-    
+    LibraryWidget(QWidget *parent = nullptr);
+    ~LibraryWidget() = default;
+public slots:
+    void OnDocumentChanged(SharedData *data);
 private:
-    Ui::LibraryWidget *ui;
-    Document *document;
+    void LoadContext();
+    SharedData *sharedData;
 };
 
 #endif // __QUICKED_LIBRARY_WIDGET_H__

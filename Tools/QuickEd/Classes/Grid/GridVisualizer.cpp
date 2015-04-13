@@ -27,7 +27,7 @@
  =====================================================================================*/
 
 #include "GridVisualizer.h"
-
+#include "Render/RenderHelper.h"
 using namespace DAVA;
 // Construction/destruction.
 GridVisualizer::GridVisualizer() :

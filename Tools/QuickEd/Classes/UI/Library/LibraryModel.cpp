@@ -11,7 +11,7 @@
 #include "Utils/QtDavaConvertion.h"
 #include "UI/IconHelper.h"
 
-LibraryModel::LibraryModel(PackageNode *node, QObject *parent) : QAbstractItemModel(parent)
+LibraryModel::LibraryModel(PackageNode *node, QObject *parent) : QAbstractListModel(parent)
 {
     defaultControls.push_back("UIControl");
     defaultControls.push_back("UIButton");
@@ -25,9 +25,7 @@ LibraryModel::LibraryModel(PackageNode *node, QObject *parent) : QAbstractItemMo
     defaultControls.push_back("UISpinner");
     defaultControls.push_back("UISwitch");
     defaultControls.push_back("UIParticles");
-
-    defaultControlsCount = defaultControls.size();
-    
+   
     PackageControlsNode *packageControls = node->GetPackageControlsNode();
     for (int j = 0; j < packageControls->GetCount(); j++)
     {
@@ -53,31 +51,24 @@ LibraryModel::~LibraryModel()
 QModelIndex LibraryModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
+    {
         return QModelIndex();
-    
+    }
     if (!parent.isValid())
+    {
         return createIndex(row, column, row);
-    
+    }
     return QModelIndex();
     
-}
-
-QModelIndex LibraryModel::parent(const QModelIndex &child) const
-{
-    return QModelIndex();
 }
 
 int LibraryModel::rowCount(const QModelIndex &parent) const
 {
     if (!parent.isValid())
-        return (int) defaultControls.size();
-    
+    {
+        return defaultControls.size();
+    }
     return 0;
-}
-
-int LibraryModel::columnCount(const QModelIndex &parent) const
-{
-    return 1;
 }
 
 QVariant LibraryModel::data(const QModelIndex &index, int role) const
@@ -89,12 +80,8 @@ QVariant LibraryModel::data(const QModelIndex &index, int role) const
     else if (role == Qt::DecorationRole)
     {
         QString className = StringToQString(defaultControls[index.internalId()]);
-        QIcon icon;
-        if (index.internalId() < defaultControlsCount)
-            icon = QIcon(IconHelper::GetIconPathForClassName(className));
-        else
-            icon = QIcon(IconHelper::GetCustomIconPath());
-        return icon;
+        return index.internalId() < defaultControls.size() ? QIcon(IconHelper::GetIconPathForClassName(className))
+                                                           : QIcon(IconHelper::GetCustomIconPath());
     }
     return QVariant();
 }
@@ -102,34 +89,28 @@ QVariant LibraryModel::data(const QModelIndex &index, int role) const
 Qt::ItemFlags LibraryModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
+    {
         return Qt::NoItemFlags;
-    
-    Qt::ItemFlags flags = QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable;
-    flags |= Qt::ItemIsDragEnabled;
-    
-//    const PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-//    if ((node->GetFlags() & PackageBaseNode::FLAGS_CONTROL) != 0)
-    
-    return flags;
+    }
+
+    return QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled;
 }
 
 QStringList LibraryModel::mimeTypes() const
 {
-    QStringList types;
-    types << "text/plain";
-    return types;
+    return QStringList() << "text/plain";
 }
 
 QMimeData *LibraryModel::mimeData(const QModelIndexList &indexes) const
 {
-    QMimeData *data = new QMimeData();
     foreach (QModelIndex index, indexes)
     {
         if (index.isValid())
         {
+            QMimeData *data = new QMimeData();
             data->setText(StringToQString(defaultControls[index.row()]));
-            break;
+            return data;
         }
     }
-    return data;
+    return nullptr;
 }

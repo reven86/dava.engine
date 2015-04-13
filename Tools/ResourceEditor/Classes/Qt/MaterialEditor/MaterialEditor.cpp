@@ -369,6 +369,11 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
     }
 }
 
+void MaterialEditor::OnQualityChanged()
+{
+    SetCurMaterial(curMaterials);
+}
+
 void MaterialEditor::onCurrentExpandModeChange( bool mode )
 {
     QAction *action = ui->filterType->checkedAction();
