@@ -211,7 +211,7 @@ void UISpinner::Input(UIEvent *currentInput)
                 content->relativePosition.x = contentNewX;
                 nextContent->relativePosition.x = contentNewX; //for this to work we adjust pivotPoint above
                 
-                if (abs(content->relativePosition.x) > content->size.dx / 2)
+                if (Abs(content->relativePosition.x) > content->size.dx / 2)
                 {
                     OnSelectWithSlide(content->relativePosition.x > 0);
                     dragAnchorX = touchPos.x - content->relativePosition.x;
@@ -230,7 +230,7 @@ void UISpinner::Input(UIEvent *currentInput)
                 if (selectPrevious == content->relativePosition.x > 0) //switch only if selected item is already shifted in slide direction
                 {
                     bool isSelectedLast = selectPrevious ? adapter->IsSelectedFirst() : adapter->IsSelectedLast();
-                    if (abs(averageSpeed) > SLIDE_GESTURE_SPEED && !isSelectedLast)
+                    if (Abs(averageSpeed) > SLIDE_GESTURE_SPEED && !isSelectedLast)
                     {
                         OnSelectWithSlide(selectPrevious);
                     }

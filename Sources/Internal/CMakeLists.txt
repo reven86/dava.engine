@@ -63,8 +63,6 @@ if( ANDROID )
     set ( FRAMEWORK_DEFINITIONS  ${FRAMEWORK_DEFINITIONS} -D__ANDROID__ )
     set ( LIBRARY_OUTPUT_PATH    ${THIRD_PARTY_LIBRARIES_PATH} )
 
-    set( PLATFORM_SPECIFIC_FOLDER Platform/TemplateAndroid )
-
 elseif( MACOS )
     find_package( ZLIB )
     add_definitions( -D__DAVAENGINE_PTHREAD__ ) 
@@ -124,7 +122,6 @@ elseif( IOS )
     list ( APPEND LIST_SHARED_LIBRARIES ${RESOURCE}  )    
 
 elseif( WIN32 ) 
-
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/D/*" )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )
 
@@ -143,7 +140,7 @@ if( ZLIB_FOUND )
 endif()
 
 # Define source 
-define_source_folders  ( SRC_ROOT "." ${PLATFORM_SPECIFIC_FOLDER} )
+define_source_folders  ( SRC_ROOT "." )
 generate_source_groups_project ()
 
 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
