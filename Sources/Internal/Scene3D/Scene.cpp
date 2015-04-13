@@ -1159,8 +1159,10 @@ void Scene::Input(DAVA::UIEvent *event)
 void Scene::HandleEvent(Observable * observable)
 {
     RenderOptions * options = dynamic_cast<RenderOptions *>(observable);
-    if (options->IsOptionEnabled(RenderOptions::REPLACE_MIPMAPS))
+    if (options->IsOptionEnabled(RenderOptions::REPLACE_LIGHTMAP_MIPMAPS))
         MipMapReplacer::ReplaceMipMaps(this, NMaterial::TEXTURE_LIGHTMAP);
+    if (options->IsOptionEnabled(RenderOptions::REPLACE_ALBEDO_MIPMAPS))
+        MipMapReplacer::ReplaceMipMaps(this, NMaterial::TEXTURE_ALBEDO);
 }
 
 };

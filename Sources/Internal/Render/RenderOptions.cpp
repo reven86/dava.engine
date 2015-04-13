@@ -67,6 +67,8 @@ FastName optionsNames[RenderOptions::OPTIONS_COUNT] =
     FastName("Update Particle Emitters"),
     FastName("Draw Particles"),
     FastName("Particle Prepare Buffers"),
+    FastName("Albedo mipmaps"),
+    FastName("Lightmap mipmaps"),
 #if defined(LOCALIZATION_DEBUG)
     FastName("Localization Warings"),
     FastName("Localization Errors"),
@@ -84,7 +86,8 @@ RenderOptions::RenderOptions()
 
     options[DEBUG_DRAW_STATIC_OCCLUSION] = false;
     options[LAYER_OCCLUSION_STATS] = false;
-    options[REPLACE_MIPMAPS] = false;
+    options[REPLACE_ALBEDO_MIPMAPS] = false;
+    options[REPLACE_LIGHTMAP_MIPMAPS] = false;
 #if defined(LOCALIZATION_DEBUG)
     options[DRAW_LOCALIZATION_ERRORS] = false;
     options[DRAW_LOCALIZATION_WARINGS] = false;
