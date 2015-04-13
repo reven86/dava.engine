@@ -26,36 +26,24 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/BaseTypes.h"
+#ifndef __DAVAENGINE_PLATFORM_ANDROID__
+#define __DAVAENGINE_PLATFORM_ANDROID__
 
-#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+#ifndef __DAVAENGINE_ANDROID__
+#error Invalid direct including of this header! Use PlatformDetection.h instead
+#endif
 
-#include "MemoryManager.h"
+//Platform alias
+#define __DAVAENGINE_VEDROID__ __DAVAENGINE_ANDROID__
 
-/*
-* http://en.cppreference.com/w/cpp/memory/new/operator_new
-* The single-object version is called by the standard library implementations of all other versions,
-* so replacing that one function is sufficient to handle all deallocations.	(since C++11)
-*/
+//compiler features
+#define DAVA_NOINLINE   __attribute__((noinline))
+#define DAVA_ALIGNOF(x) alignof(x)
+#define DAVA_NOEXCEPT   noexcept
+#define DAVA_CONSTEXPR  constexpr
+#define DAVA_DEPRECATED(func) func __attribute__ ((deprecated))
 
-void* operator new(size_t size)
-{
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
-}
+// TODO: specific includes
+#undef __DAVASOUND_AL__
 
-void operator delete(void* ptr) DAVA_NOEXCEPT
-{
-    DAVA::MemoryManager::Instance()->Deallocate(ptr);
-}
-
-void* operator new [](size_t size)
-{
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
-}
-
-void operator delete[](void* ptr) DAVA_NOEXCEPT
-{
-    DAVA::MemoryManager::Instance()->Deallocate(ptr);
-}
-
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
+#endif // __DAVAENGINE_PLATFORM_ANDROID__

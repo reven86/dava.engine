@@ -27,11 +27,8 @@
 =====================================================================================*/
 
 #include <cstdio>
-
-#include <libuv/uv.h>
-
+#include "libuv.h"
 #include <Debug/DVAssert.h>
-
 #include <Network/Base/Endpoint.h>
 
 namespace DAVA

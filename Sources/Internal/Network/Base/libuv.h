@@ -1,5 +1,5 @@
 /*==================================================================================
-Copyright (c) 2008, binaryzebra
+Copyright(c) 2008, binaryzebra
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,36 +26,11 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/BaseTypes.h"
+#ifndef __DAVAENGINE_LIBUV_H__
+#define __DAVAENGINE_LIBUV_H__
 
-#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+//workaround for windows: _WIN32_WINNT macro MUST be defined before including of libuv
+#include "Platform/PlatformDetection.h"
+#include <libuv/uv.h>
 
-#include "MemoryManager.h"
-
-/*
-* http://en.cppreference.com/w/cpp/memory/new/operator_new
-* The single-object version is called by the standard library implementations of all other versions,
-* so replacing that one function is sufficient to handle all deallocations.	(since C++11)
-*/
-
-void* operator new(size_t size)
-{
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
-}
-
-void operator delete(void* ptr) DAVA_NOEXCEPT
-{
-    DAVA::MemoryManager::Instance()->Deallocate(ptr);
-}
-
-void* operator new [](size_t size)
-{
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
-}
-
-void operator delete[](void* ptr) DAVA_NOEXCEPT
-{
-    DAVA::MemoryManager::Instance()->Deallocate(ptr);
-}
-
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
+#endif //__DAVAENGINE_LIBUV_H__

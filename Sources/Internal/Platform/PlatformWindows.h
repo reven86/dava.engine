@@ -26,36 +26,44 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/BaseTypes.h"
+#ifndef __DAVAENGINE_PLATFORM_WINDOWS__
+#define __DAVAENGINE_PLATFORM_WINDOWS__
 
-#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+#ifndef __DAVAENGINE_WINDOWS__
+#error Invalid direct including of this header! Use PlatformDetection.h instead
+#endif
 
-#include "MemoryManager.h"
+//Platform alias
+#define __DAVAENGINE_WIN32__ __DAVAENGINE_WINDOWS__
 
-/*
-* http://en.cppreference.com/w/cpp/memory/new/operator_new
-* The single-object version is called by the standard library implementations of all other versions,
-* so replacing that one function is sufficient to handle all deallocations.	(since C++11)
-*/
+//Compiler features
+#define DAVA_NOINLINE   __declspec(noinline)
+#define DAVA_ALIGNOF(x) __alignof(x)
+#define DAVA_NOEXCEPT   throw()
+//Constexpr is not supported even in VS2013 (partially supported in 2015 CTP)
+#define DAVA_CONSTEXPR
+#define DAVA_DEPRECATED(func) __declspec(deprecated) func
 
-void* operator new(size_t size)
-{
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
-}
+//Platform defines
+#define __DAVASOUND_AL__
+#define WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#define NOMINMAX        // undef macro min and max from windows headers
+#endif
 
-void operator delete(void* ptr) DAVA_NOEXCEPT
-{
-    DAVA::MemoryManager::Instance()->Deallocate(ptr);
-}
+#include <Windows.h>
+#include <Windowsx.h>
 
-void* operator new [](size_t size)
-{
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
-}
+#undef DrawState
+#undef GetCommandLine
+#undef GetClassName
+#undef Yield
 
-void operator delete[](void* ptr) DAVA_NOEXCEPT
-{
-    DAVA::MemoryManager::Instance()->Deallocate(ptr);
-}
+//Detection of windows platform type
+#if !defined(WINAPI_FAMILY_PARTITION) || WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#define __DAVAENGINE_WINDOWS_DESKTOP__
+#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
+#define __DAVAENGINE_WINDOWS_STORE__
+#endif
 
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
+#endif // __DAVAENGINE_PLATFORM_WINDOWS__

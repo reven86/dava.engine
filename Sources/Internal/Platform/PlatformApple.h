@@ -26,36 +26,30 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/BaseTypes.h"
+#ifndef __DAVAENGINE_PLATFORM_APPLE__
+#define __DAVAENGINE_PLATFORM_APPLE__
 
-#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+#ifndef __DAVAENGINE_APPLE__
+#error Invalid direct including of this header! Use PlatformDetection.h instead
+#endif
 
-#include "MemoryManager.h"
+//?ompiler features
+#define DAVA_NOINLINE   __attribute__((noinline))
+#define DAVA_ALIGNOF(x) alignof(x)
+#define DAVA_NOEXCEPT   noexcept
+#define DAVA_CONSTEXPR  constexpr
+#define DAVA_DEPRECATED(func) func __attribute__ ((deprecated))
 
-/*
-* http://en.cppreference.com/w/cpp/memory/new/operator_new
-* The single-object version is called by the standard library implementations of all other versions,
-* so replacing that one function is sufficient to handle all deallocations.	(since C++11)
-*/
+#include <TargetConditionals.h>
 
-void* operator new(size_t size)
-{
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
-}
+#if MAC_OS_X_VERSION_10_6 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#define __DAVAENGINE_MACOS_VERSION_10_6__
+#endif
 
-void operator delete(void* ptr) DAVA_NOEXCEPT
-{
-    DAVA::MemoryManager::Instance()->Deallocate(ptr);
-}
+#define __DAVASOUND_AL__
 
-void* operator new [](size_t size)
-{
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
-}
+#include <mach/mach.h>
+#include <mach/mach_time.h>
+#include <unistd.h>
 
-void operator delete[](void* ptr) DAVA_NOEXCEPT
-{
-    DAVA::MemoryManager::Instance()->Deallocate(ptr);
-}
-
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
+#endif // __DAVAENGINE_PLATFORM_APPLE__

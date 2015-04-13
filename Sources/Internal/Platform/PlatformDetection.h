@@ -26,36 +26,62 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/BaseTypes.h"
-
-#if defined(DAVA_MEMORY_PROFILING_ENABLE)
-
-#include "MemoryManager.h"
-
 /*
-* http://en.cppreference.com/w/cpp/memory/new/operator_new
-* The single-object version is called by the standard library implementations of all other versions,
-* so replacing that one function is sufficient to handle all deallocations.	(since C++11)
 */
 
-void* operator new(size_t size)
-{
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
-}
+#ifndef __DAVAENGINE_PLATFORM_DETECTION__
+#define __DAVAENGINE_PLATFORM_DETECTION__
 
-void operator delete(void* ptr) DAVA_NOEXCEPT
-{
-    DAVA::MemoryManager::Instance()->Deallocate(ptr);
-}
+#include "DAVAConfig.h"
 
-void* operator new [](size_t size)
-{
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
-}
+//Detections of iPhone
+#if defined(TARGET_OS_IPHONE)
 
-void operator delete[](void* ptr) DAVA_NOEXCEPT
-{
-    DAVA::MemoryManager::Instance()->Deallocate(ptr);
-}
+#if !defined(__DAVAENGINE_IPHONE__) // for old projects we check if users defined it
+#define __DAVAENGINE_IPHONE__
+#endif
 
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
+//Detection of MacOS
+#elif defined(__GNUC__) && \
+       (defined(__APPLE_CPP__) || defined(__APPLE_CC__) || defined(__MACOS_CLASSIC__))
+#define __DAVAENGINE_MACOS__
+#endif
+
+//Detaction of Apple platform
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+
+#define __DAVAENGINE_APPLE__
+#include "PlatformApple.h"
+
+//Detection of Windows
+#elif defined(_WIN32)
+
+#define __DAVAENGINE_WINDOWS__
+#include "PlatformWindows.h"
+
+//Detection of Android
+#elif defined(__ANDROID__) || defined(ANDROID)
+
+#define __DAVAENGINE_ANDROID__
+#include "PlatformAndroid.h"
+
+#else
+#error Unsupported platform detected
+#endif
+
+//detecting of compiler features definitions
+#if !defined(DAVA_NOINLINE)  || \
+    !defined(DAVA_ALIGNOF)   || \
+    !defined(DAVA_NOEXCEPT)  || \
+    !defined(DAVA_CONSTEXPR) || \
+    !defined(DAVA_DEPRECATED)
+#error Some compiler features is not detected for current platform
+#endif
+
+//suppressing of deprecated functions
+#ifdef DAVAENGINE_HIDE_DEPRECATED
+#undef  DAVA_DEPRECATED
+#define DAVA_DEPRECATED(func) func
+#endif
+
+#endif // __DAVAENGINE_PLATFORM_DETECTION__

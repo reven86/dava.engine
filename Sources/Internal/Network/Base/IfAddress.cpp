@@ -26,8 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include <libuv/uv.h>
-
+#include "libuv.h"
 #include <Network/Base/Endpoint.h>
 #include <Network/Base/IfAddress.h>
 

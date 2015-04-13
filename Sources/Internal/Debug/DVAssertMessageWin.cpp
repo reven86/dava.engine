@@ -26,15 +26,17 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
+#include <Shlwapi.h>
 #include "Debug/DVAssertMessage.h"
 #include "FileSystem/Logger.h"
+#include "Utils/UTF8Utils.h"
 
 #if defined (__DAVAENGINE_WIN32__)
 
 namespace DAVA
 {
+
+#if defined (__DAVAENGINE_WINDOWS_DESKTOP__)
 
 bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 {
@@ -55,6 +57,37 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
     }
 }
 
-};
+#elif defined (__DAVAENGINE_WINDOWS_STORE__)
+
+bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
+{
+    using namespace Windows::UI::Popups;
+    
+    /*WideString contentStr = UTF8Utils::EncodeToWideString(content);
+    Platform::String^ lbl = ref new Platform::String(content);
+    MessageDialog^ msg = ref new MessageDialog(lbl);
+
+    bool breakExecution = true;
+
+    //creating message dialog commands
+    UICommand^ continueCommand = ref new UICommand(
+	"OK", 
+        ref new UICommandInvokedHandler([&] { breakExecution = false; } ));
+    UICommand^ cancelCommand = ref new UICommand(
+	"OK", 
+        ref new UICommandInvokedHandler([&] { breakExecution = true; } ));
+
+    msg->Commands->Append(continueCommand);
+    msg->Commands->Append(cancelCommand); */
+
+    
+
+
+    return true; //breakExecution;
+}
+
+#endif // defined (__DAVAENGINE_WINDOWS_STORE__)
+
+} // namespace DAVA
 
 #endif //#if defined (__DAVAENGINE_WIN32__)
