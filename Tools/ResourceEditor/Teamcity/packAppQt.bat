@@ -13,7 +13,7 @@ echo start ResourceEditor.exe >> app/ResourceEditor/start.cmd
            
 xcopy /e ..\Data\*.* app\ResourceEditor\dava.framework\Tools\ResourceEditor\Data 
 xcopy *.exe app\ResourceEditor\dava.framework\Tools\ResourceEditor
-xcopy qt.conf app\ResourceEditor\dava.framework\Tools\ResourceEditor
+xcopy *.conf app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy *.pdb app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy ..\Teamcity\imagesplitter\*.bat app\ResourceEditor\dava.framework\Tools\ResourceEditor
 
