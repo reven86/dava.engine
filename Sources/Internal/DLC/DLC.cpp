@@ -855,6 +855,8 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
     
     if(dlcContext.patchInProgress && PatchFileReader::ERROR_NO == dlcContext.patchingError)
     {
+        DVASSERT(dlcContext.appliedPatchCount == dlcContext.totalPatchCount);
+        
         // ensure directory, where resource version file should be, exists
         FileSystem::Instance()->CreateDirectory(dlcContext.localVerStorePath.GetDirectory(), true);
 
