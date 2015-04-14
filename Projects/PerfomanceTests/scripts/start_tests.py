@@ -20,6 +20,8 @@
 # > python start_unit_tests.py ios
 
 import subprocess
+import argparse
+import re
 import sys
 import os.path
 import signal
@@ -36,17 +38,22 @@ def get_postfix(platform):
 PRJ_NAME_BASE = "PerformanceTests"
 PRJ_POSTFIX = get_postfix(sys.platform)
 
+parser = argparse.ArgumentParser(description='Start tests')
+parser.add_argument('--build_num', nargs='?', default = 0)
+parser.add_argument('--branch', nargs='?', default = 'development')
+parser.add_argument('--platform', nargs='?', default = 'android')
+
+args = vars(parser.parse_args())
+
 start_on_android = False
 start_on_ios = False
 
-if len(sys.argv) > 1:
-    if sys.argv[1] == "android":
-        start_on_android = True
-    elif sys.argv[1] == "ios":
-        start_on_ios = True
+if args['platform'] == "android":
+    start_on_android = True
+elif args['platform']  == "ios":
+    start_on_ios = True
 
 sub_process = None
-
 
 def start_unittests_on_android_device():
     global sub_process
@@ -98,7 +105,21 @@ elif sys.platform == "darwin":
     sub_process = subprocess.Popen([app_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 app_exit_code = None
-frameDeltaSum = 0.0
+
+# read current build version
+os.system("git log -1 --format=\"%x22%ci%x22\" > git_time.txt")
+file_git_time = open("git_time.txt")
+data = file_git_time.read();
+file_git_time.close();
+
+version = re.sub('[: +]',"_", data).rstrip().split("\"")[1];
+
+build_num = args['build_num']
+branch = args['branch']
+
+if not os.path.exists("../artifacts"):
+    os.makedirs("../artifacts")
+frame_delta_file = open("../artifacts/frame_delta" + "_branch_" + branch + "_version_" + version + "_build_num_" + build_num + ".txt", "w")
 
 continue_process_stdout = True
 
@@ -107,31 +128,44 @@ while continue_process_stdout:
         line = sub_process.stdout.readline()
         if line != '':
 
-            teamcity_line_index = line.find("buildStatisticValue key='Frame_delta'")
+            # write Frame_delta build statistic to file
+            teamcity_line_index = line.find("##teamcity[buildStatisticValue key='Frame_delta'")
             if teamcity_line_index != -1:
-                statisticLine = line[teamcity_line_index:]
-                delta = statisticLine.split("value=")[1].split("]")[0].split("'")[1]
-                frameDeltaSum += float(delta)
-                teamcity_line = "##teamcity[buildStatisticValue key='Frame_delta' value='" + str(frameDeltaSum) + "'] \n"
-                sys.stdout.write(teamcity_line)
-                sys.stdout.flush()
+                teamcity_line = line[teamcity_line_index:]
+                frame_delta_file.write(teamcity_line)
             else:
-                teamcity_line_index = line.find("##teamcity")
+                # append build statistic keys for compare on teamcity
+                teamcity_line_index = line.find("buildStatisticValue key")
                 if teamcity_line_index != -1:
                     teamcity_line = line[teamcity_line_index:]
-                    sys.stdout.write(teamcity_line)
-                    sys.stdout.flush()
-                if line.find("Finish all tests.") != -1:    # this text marker helps to detect good \
-                                                            #  finish tests on ios device (run with lldb)
-                    app_exit_code = 0
-                    if start_on_android:
-                        # we want to exit from logcat process because sub_process.stdout.readline() will block
-                        # current thread
-                        if sys.platform == "win32":
-                            sub_process.send_signal(signal.CTRL_C_EVENT)
-                        else:
-                            sub_process.send_signal(signal.SIGINT)
-                        continue_process_stdout = False
+                    key = teamcity_line.split("key")[1].split("'")[1]
+                    value = teamcity_line.split("value")[1].split("'")[1]
+
+                    key = key + "_branch_" + branch + "_version_" + version + "_build_num_" + build_num
+                    value = value + "_branch_" + branch + "_version_" + version + "_build_num_" + build_num
+
+                    sys.stdout.write("##teamcity[buildStatisticValue key='" + key + "' value='" + value + "']")
+                    sys.stdout.flush()          
+                else:
+                    teamcity_line_index = line.find("##teamcity")
+                    if teamcity_line_index != -1:
+                        teamcity_line = line[teamcity_line_index:]
+                        sys.stdout.write(teamcity_line)
+                        sys.stdout.flush()
+
+            if line.find("Finish all tests.") != -1:    # this text marker helps to detect good \
+                                    
+                app_exit_code = 0
+                frame_delta_file.close()
+
+                if start_on_android:
+                    # we want to exit from logcat process because sub_process.stdout.readline() will block
+                    # current thread
+                    if sys.platform == "win32":
+                        sub_process.send_signal(signal.CTRL_C_EVENT)
+                    else:
+                        sub_process.send_signal(signal.SIGINT)
+                    continue_process_stdout = False
         else:
             continue_process_stdout = False
     except IOError as err:
