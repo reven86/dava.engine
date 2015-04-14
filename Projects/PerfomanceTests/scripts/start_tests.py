@@ -137,7 +137,7 @@ while continue_process_stdout:
                     key = teamcity_line.split("key")[1].split("'")[1]
                     value = teamcity_line.split("value")[1].split("'")[1]
 
-                    key = key + "_branch_" + branch + "_version_" + version + "_build_num_" + build_num + "_device_" + device
+                    key = key + "_branch_" + branch + "_build_num_" + build_num + "_device_" + device
 
                     sys.stdout.write("##teamcity[buildStatisticValue key='" + key + "' value='" + value + "']")
                     sys.stdout.flush()          
