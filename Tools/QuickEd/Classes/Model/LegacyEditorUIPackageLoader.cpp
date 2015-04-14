@@ -322,7 +322,7 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
         }
         else if (propertyName == "angle")
         {
-            return VariantType(valueNode->AsFloat() * 180.0f / (float) M_PI);
+            return VariantType(RadToDeg(valueNode->AsFloat()));
         }
         else if (member->Type() == MetaInfo::Instance<bool>())
             return VariantType(valueNode->AsBool());
