@@ -116,7 +116,7 @@ while continue_process_stdout:
         line = sub_process.stdout.readline()
         if line != '':
 
-            teamcity_line_index = line.find("Device : ")
+            teamcity_line_index = line.find("Device {")
             if teamcity_line_index != -1:
                 teamcity_line = line[teamcity_line_index:]
                 device = teamcity_line.split("{")[1].split("}")[0]
