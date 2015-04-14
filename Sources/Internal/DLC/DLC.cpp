@@ -802,15 +802,14 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
 {
     PatchFileReader patchReader(dlcContext.remotePatchStorePath);
     
-    auto applyPatchesMeetingCriterion = [&](std::function<bool (const PatchInfo* info)>  shouldApply)
+    //first apply only patches that either reduce or don't change resources size
+    if (!dlcContext.patchInProgress)
     {
-        if (!dlcContext.patchInProgress)
-            return;
-        
         bool readSucceeded = patchReader.ReadFirst();
         while (dlcContext.patchInProgress && readSucceeded)
         {
-            if(shouldApply(patchReader.GetCurInfo()))
+            const PatchInfo* info = patchReader.GetCurInfo();
+            if(info->newSize <= info->origSize)
             {
                 bool applySucceeded = patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath());
                 if (!applySucceeded)
@@ -825,19 +824,31 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
             }
             readSucceeded = patchReader.ReadNext();
         }
-    };
-    
-    //first apply only patches that either reduce or don't change resources size
-    applyPatchesMeetingCriterion([] (const PatchInfo* info)
-    {
-        return info->newSize <= info->origSize;
-    });
+    }
     
     //then apply patches that increase resources size
-    applyPatchesMeetingCriterion([] (const PatchInfo* info)
+    if (!dlcContext.patchInProgress)
     {
-       return info->newSize > info->origSize;
-    });
+        bool readSucceeded = patchReader.ReadFirst();
+        while (dlcContext.patchInProgress && readSucceeded)
+        {
+            const PatchInfo* info = patchReader.GetCurInfo();
+            if(info->newSize > info->origSize)
+            {
+                bool applySucceeded = patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath());
+                if (!applySucceeded)
+                {
+                    // stop patching process
+                    dlcContext.patchInProgress = false;
+                }
+                else
+                {
+                    dlcContext.appliedPatchCount++;
+                }
+            }
+            readSucceeded = patchReader.ReadNext();
+        }
+    }
     
     // check if no errors occurred during patching
     dlcContext.patchingError = patchReader.GetLastError();
