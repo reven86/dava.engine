@@ -33,6 +33,7 @@
 
 #include <iostream>
 #include <DAVAEngine.h>
+#include <QString>
 
 class EditorFontManager: public DAVA::Singleton<EditorFontManager>
 {
