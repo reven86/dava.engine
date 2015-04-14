@@ -42,6 +42,7 @@ parser = argparse.ArgumentParser(description='Start tests')
 parser.add_argument('--build_num', nargs='?', default = 0)
 parser.add_argument('--branch', nargs='?', default = 'development')
 parser.add_argument('--platform', nargs='?', default = 'android')
+parser.add_argument('--version', nargs='?', default = '')
 
 args = vars(parser.parse_args())
 
@@ -107,12 +108,12 @@ elif sys.platform == "darwin":
 app_exit_code = None
 
 # read current build version
-os.system("git log -1 --format=\"%x22%ci%x22\" > git_time.txt")
-file_git_time = open("git_time.txt")
-data = file_git_time.read();
-file_git_time.close();
+#os.system("git log -1 --format=\"%x22%ci%x22\" > git_time.txt")
+#file_git_time = open("git_time.txt")
+#data = file_git_time.read();
+#file_git_time.close();
 
-version = re.sub('[: +]',"_", data).rstrip().split("\"")[1];
+version = args['version'] #re.sub('[: +]',"_", data).rstrip().split("\"")[1];
 
 build_num = args['build_num']
 branch = args['branch']
