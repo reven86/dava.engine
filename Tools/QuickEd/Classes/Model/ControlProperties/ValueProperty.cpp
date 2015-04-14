@@ -175,9 +175,9 @@ bool ValueProperty::IsReplaced() const
 
 String ValueProperty::GetSubValueName(int index) const
 {
-    static std::vector<String> colorComponents = {{"Red", "Green", "Blue", "Alpha"}};
-    static std::vector<String> marginComponents = {{"Left", "Top", "Right", "Bottom"}};
-    static std::vector<String> vector2Components = {{"X", "Y"}};
+    static std::vector<String> colorComponents = {"Red", "Green", "Blue", "Alpha"};
+    static std::vector<String> marginComponents = {"Left", "Top", "Right", "Bottom"};
+    static std::vector<String> vector2Components = {"X", "Y"};
     
     std::vector<String> *components = nullptr;
     
