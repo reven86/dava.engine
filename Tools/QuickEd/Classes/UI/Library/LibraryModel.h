@@ -22,7 +22,8 @@ public:
     virtual QMimeData *mimeData(const QModelIndexList &indexes) const override;
 
 private:
-    DAVA::Vector<DAVA::String> defaultControls;
+    DAVA::Vector<DAVA::String> libraryControls;
+    size_t defaultCountrolsCount;
 };
 
 #endif // __UI_EDITOR_LIBRARY_MODEL_H__
