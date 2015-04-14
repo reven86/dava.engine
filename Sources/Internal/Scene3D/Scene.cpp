@@ -129,7 +129,11 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     
     SceneCache::Instance()->InsertScene(this);
 
-    RenderManager::Instance()->GetOptions()->AddObserver(this);
+    RenderOptions * options = RenderManager::Instance()->GetOptions();
+    options->AddObserver(this);
+
+    needShowStaticOcclusion = options->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION);
+    needUpdateLods = options->IsOptionEnabled(RenderOptions::UPDATE_LODS);
 }
 
 void Scene::CreateComponents()
@@ -766,12 +770,12 @@ void Scene::Update(float timeElapsed)
     
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
-    bool needShowStaticOcclusion = RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION);
-    if (needShowStaticOcclusion&&!staticOcclusionDebugDrawSystem)
+    if (needShowStaticOcclusion && !staticOcclusionDebugDrawSystem)
     {
         staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
         AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
-    }else if (!needShowStaticOcclusion&&staticOcclusionDebugDrawSystem)
+    }
+    else if (!needShowStaticOcclusion && staticOcclusionDebugDrawSystem)
     {
         RemoveSystem(staticOcclusionDebugDrawSystem);
         SafeDelete(staticOcclusionDebugDrawSystem);
@@ -789,7 +793,7 @@ void Scene::Update(float timeElapsed)
         }
         else if(system == lodSystem)
         {
-            if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LODS))
+            if(needUpdateLods)
             {
                 lodSystem->Process(timeElapsed);
             }
@@ -1163,6 +1167,9 @@ void Scene::HandleEvent(Observable * observable)
         MipMapReplacer::ReplaceMipMaps(this, NMaterial::TEXTURE_LIGHTMAP);
     if (options->IsOptionEnabled(RenderOptions::REPLACE_ALBEDO_MIPMAPS))
         MipMapReplacer::ReplaceMipMaps(this, NMaterial::TEXTURE_ALBEDO);
+
+    needShowStaticOcclusion = options->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION);
+    needUpdateLods = options->IsOptionEnabled(RenderOptions::UPDATE_LODS);
 }
 
 };
