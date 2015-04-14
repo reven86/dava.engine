@@ -32,6 +32,7 @@
 
 #include "DAVAEngine.h"
 #include "TeamCityTestsOutput.h"
+#include "Platform/DeviceInfo.h"
 
 #include "Infrastructure/Controller/TestFlowController.h"
 #include "Infrastructure/Controller/TestChainFlowController.h"

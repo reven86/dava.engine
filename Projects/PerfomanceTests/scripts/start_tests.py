@@ -42,7 +42,6 @@ parser = argparse.ArgumentParser(description='Start tests')
 parser.add_argument('--build_num', nargs='?', default = 0)
 parser.add_argument('--branch', nargs='?', default = 'development')
 parser.add_argument('--platform', nargs='?', default = 'android')
-parser.add_argument('--version', nargs='?', default = '')
 
 args = vars(parser.parse_args())
 
@@ -107,20 +106,8 @@ elif sys.platform == "darwin":
 
 app_exit_code = None
 
-# read current build version
-#os.system("git log -1 --format=\"%x22%ci%x22\" > git_time.txt")
-#file_git_time = open("git_time.txt")
-#data = file_git_time.read();
-#file_git_time.close();
-
-version = args['version'] #re.sub('[: +]',"_", data).rstrip().split("\"")[1];
-
 build_num = args['build_num']
 branch = args['branch']
-
-if not os.path.exists("../artifacts"):
-    os.makedirs("../artifacts")
-frame_delta_file = open("../artifacts/frame_delta" + "_branch_" + branch + "_version_" + version + "_build_num_" + build_num + ".txt", "w")
 
 continue_process_stdout = True
 
@@ -128,6 +115,14 @@ while continue_process_stdout:
     try:
         line = sub_process.stdout.readline()
         if line != '':
+
+            teamcity_line_index = line.find("Device : ")
+            if teamcity_line_index != -1:
+                teamcity_line = line[teamcity_line_index:]
+                device = teamcity_line.split("{")[1].split("}")[0]
+                if not os.path.exists("../artifacts"):
+                    os.makedirs("../artifacts")
+                    frame_delta_file = open("../artifacts/frame_delta" + "_branch_" + branch + "_build_num_" + build_num + "_device_" + device ".txt", "w")
 
             # write Frame_delta build statistic to file
             teamcity_line_index = line.find("##teamcity[buildStatisticValue key='Frame_delta'")
@@ -142,7 +137,7 @@ while continue_process_stdout:
                     key = teamcity_line.split("key")[1].split("'")[1]
                     value = teamcity_line.split("value")[1].split("'")[1]
 
-                    key = key + "_branch_" + branch + "_version_" + version + "_build_num_" + build_num
+                    key = key + "_branch_" + branch + "_version_" + version + "_build_num_" + build_num + "_device_" + device
 
                     sys.stdout.write("##teamcity[buildStatisticValue key='" + key + "' value='" + value + "']")
                     sys.stdout.flush()          
