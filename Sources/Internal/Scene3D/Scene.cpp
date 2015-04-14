@@ -131,9 +131,6 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
 
     RenderOptions * options = RenderManager::Instance()->GetOptions();
     options->AddObserver(this);
-
-    needShowStaticOcclusion = options->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION);
-    needUpdateLods = options->IsOptionEnabled(RenderOptions::UPDATE_LODS);
 }
 
 void Scene::CreateComponents()
@@ -770,17 +767,6 @@ void Scene::Update(float timeElapsed)
     
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
-    if (needShowStaticOcclusion && !staticOcclusionDebugDrawSystem)
-    {
-        staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
-        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
-    }
-    else if (!needShowStaticOcclusion && staticOcclusionDebugDrawSystem)
-    {
-        RemoveSystem(staticOcclusionDebugDrawSystem);
-        SafeDelete(staticOcclusionDebugDrawSystem);
-    }
-
     uint32 size = (uint32)systemsToProcess.size();
     for (uint32 k = 0; k < size; ++k)
     {
@@ -793,7 +779,7 @@ void Scene::Update(float timeElapsed)
         }
         else if(system == lodSystem)
         {
-            if(needUpdateLods)
+            if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LODS))
             {
                 lodSystem->Process(timeElapsed);
             }
@@ -1168,8 +1154,16 @@ void Scene::HandleEvent(Observable * observable)
     if (options->IsOptionEnabled(RenderOptions::REPLACE_ALBEDO_MIPMAPS))
         MipMapReplacer::ReplaceMipMaps(this, NMaterial::TEXTURE_ALBEDO);
 
-    needShowStaticOcclusion = options->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION);
-    needUpdateLods = options->IsOptionEnabled(RenderOptions::UPDATE_LODS);
+    if (options->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
+    {
+        staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
+        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
+    }
+    else if (!options->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && staticOcclusionDebugDrawSystem)
+    {
+        RemoveSystem(staticOcclusionDebugDrawSystem);
+        SafeDelete(staticOcclusionDebugDrawSystem);
+    }
 }
 
 };

@@ -336,9 +336,6 @@ protected:
 
 	ImposterManager * imposterManager;
     
-    bool needShowStaticOcclusion;
-    bool needUpdateLods;
-
     friend class Entity;
 };
 
