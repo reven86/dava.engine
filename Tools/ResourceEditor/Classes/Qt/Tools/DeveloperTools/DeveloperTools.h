@@ -43,8 +43,9 @@ public:
 public slots:
     
     void OnDebugFunctionsGridCopy();
-
     void OnDebugCreateTestSkinnedObject(); //creates
+    void OnSpyWidget();
+    void OnImageSplitterNormals();
 	
 };
 #endif /* defined(__DEBUG_TOOLS__) */

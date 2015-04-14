@@ -530,7 +530,6 @@ void SceneTree::ShowContextMenuInnerEmitter(DAVA::ParticleEffectComponent *effec
 	contextMenu.exec(pos);
 }
 
-
 void SceneTree::LookAtSelection()
 {
 	SceneEditor2* sceneEditor = treeModel->GetScene();

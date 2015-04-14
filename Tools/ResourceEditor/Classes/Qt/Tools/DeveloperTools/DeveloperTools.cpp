@@ -35,13 +35,15 @@
 #include "Scene3D/Components/SkeletonComponent.h"
 #include "Render/Highlevel/SkinnedMesh.h"
 
+#include "QtTools/SpyWidget/SpySearch/SpySearch.h"
+#include "Qt/ImageSplitterDialog/ImageSplitterDialogNormal.h"
+
 #include "DAVAEngine.h"
 using namespace DAVA;
 
-DeveloperTools::DeveloperTools(QObject *parent /* = 0 */)
+DeveloperTools::DeveloperTools(QObject *parent)
     : QObject(parent)
 {
-
 }
 
 void DeveloperTools::OnDebugFunctionsGridCopy()
@@ -75,6 +77,10 @@ void DeveloperTools::OnDebugFunctionsGridCopy()
                 float32 inSpecularity = (float32)y / 9.0;
                 material->SetPropertyValue(FastName("inGlossiness"), Shader::UT_FLOAT, 1, &inGlossiness);
                 material->SetPropertyValue(FastName("inSpecularity"), Shader::UT_FLOAT, 1, &inSpecularity);
+
+                StaticOcclusionSystem *sosystem = currentScene->staticOcclusionSystem;
+                DVASSERT(sosystem);
+                sosystem->InvalidateOcclusionIndicesRecursively(clonedEntity);
 
                 currentScene->AddNode(clonedEntity);
             }
@@ -155,5 +161,16 @@ void DeveloperTools::OnDebugCreateTestSkinnedObject()
     entity->AddComponent(renderComponent);
 
     currentScene->Exec(new EntityAddCommand(entity, currentScene));
-    currentScene->selectionSystem->SetSelection(entity);    
+}
+
+void DeveloperTools::OnImageSplitterNormals()
+{
+    ImageSplitterDialogNormal dlg(QtMainWindow::Instance());
+    dlg.exec();
+}
+
+void DeveloperTools::OnSpyWidget()
+{
+    auto spySearch = new SpySearch(this);
+    spySearch->show();
 }

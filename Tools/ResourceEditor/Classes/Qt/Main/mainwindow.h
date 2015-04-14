@@ -49,7 +49,6 @@
 class AddSwitchEntityDialog;
 class Request;
 class QtLabelWithActions;
-class LandscapeDialog;
 class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
@@ -180,12 +179,6 @@ public slots:
     void OnRebuildCurrentOcclusionCell();
     void OnInavalidateStaticOcclusion();
 
-	void OnCameraSpeed0();
-	void OnCameraSpeed1();
-	void OnCameraSpeed2();
-	void OnCameraSpeed3();
-	void OnCameraLookFromTop();
-
 	void OnLandscapeEditorToggled(SceneEditor2* scene);
 	void OnCustomColorsEditor();
 	void OnHeightmapEditor();
@@ -242,6 +235,7 @@ protected:
 	
 	static void SetActionCheckedSilently(QAction *action, bool checked);
 
+    
 private slots:
 	void ProjectOpened(const QString &path);
 	void ProjectClosed();
@@ -305,7 +299,7 @@ private:
 	// <--
 
     //Need for any debug functionality
-    DeveloperTools *developerTools;
+    QPointer<DeveloperTools> developerTools;
     QPointer<VersionInfoWidget> versionInfoWidget;
 
     QPointer<DeviceListController> deviceListController;

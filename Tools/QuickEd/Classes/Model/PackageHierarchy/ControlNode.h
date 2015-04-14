@@ -81,7 +81,7 @@ private:
 private:
     DAVA::UIControl *control;
     PropertiesRoot *propertiesRoot;
-    DAVA::Vector<ControlNode*>nodes;
+    DAVA::Vector<ControlNode*> nodes;
     
     ControlPrototype *prototype;
     DAVA::Vector<ControlNode*> instances; // week

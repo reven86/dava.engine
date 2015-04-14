@@ -73,7 +73,6 @@ void FrameworkDidLaunched()
     DAVA::Core::Instance()->SetOptions(appOptions);
 }
 
-
 void FrameworkWillTerminate()
 {
 

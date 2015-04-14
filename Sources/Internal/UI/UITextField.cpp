@@ -38,6 +38,7 @@
 #include "FileSystem/YamlNode.h"
 #ifdef __DAVAENGINE_ANDROID__
 #include "UITextFieldAndroid.h"
+#include "Utils/UTF8Utils.h"
 #endif
 
 extern void CreateTextField(DAVA::UITextField *);
@@ -91,7 +92,9 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 :	UIControl(rect, rectInAbsoluteCoordinates)
 ,	text()
 ,	delegate(0)
-,	cursorBlinkingTime(0.0f)
+,	cursorBlinkingTime{0.0f}
+,   isRenderToTexture{false}
+,   maxLength(-1)
 #if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
 ,   staticText(NULL)
 ,   textFont(NULL)
@@ -101,7 +104,7 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 	textFieldAndroid = new UITextFieldAndroid(this);
     textFieldAndroid->SetVisible(false);
 #elif defined(__DAVAENGINE_IPHONE__)
-	textFieldiPhone = new UITextFieldiPhone(this);
+	textFieldiPhone = new UITextFieldiPhone(*this);
     textFieldiPhone->SetVisible(false);
 #else
     staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
@@ -139,6 +142,7 @@ void UITextField::SetupDefaults()
     SetFontSize(26); //12 is default size for IOS
     
     SetText(L"");
+    SetRenderToTexture(true);
 }
 
 //void UITextField::InitAfterYaml()
@@ -174,6 +178,8 @@ UITextField::~UITextField()
 
 void UITextField::OpenKeyboard()
 {
+    // automatically disable render to texture on open virtual keyboard
+    SetRenderToTexture(false);
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->OpenKeyboard();
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -193,8 +199,8 @@ void UITextField::CloseKeyboard()
 void UITextField::Update(float32 timeElapsed)
 {
 #ifdef __DAVAENGINE_IPHONE__
-	Rect rect = GetGeometricData().GetUnrotatedRect();//GetRect(true);
-	textFieldiPhone->UpdateRect(rect);
+    // Calling UpdateRect with allowNativeControlMove set to true
+	textFieldiPhone->UpdateRect(GetGeometricData().GetUnrotatedRect());
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->UpdateRect(GetGeometricData().GetUnrotatedRect());
 #else
@@ -253,6 +259,7 @@ void UITextField::WillDisappear()
     
 void UITextField::OnFocused()
 {
+    SetRenderToTexture(false);
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->OpenKeyboard();
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -262,6 +269,7 @@ void UITextField::OnFocused()
     
 void UITextField::OnFocusLost(UIControl *newFocus)
 {
+    SetRenderToTexture(true);
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->CloseKeyboard();
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -381,6 +389,16 @@ void UITextField::SetSize(const DAVA::Vector2 &newSize)
     UIControl::SetSize(newSize);
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
     staticText->SetSize(newSize);
+#elif defined(__DAVAENGINE_IPHONE__)
+    textFieldiPhone->OnSetSize(newSize);
+#endif
+}
+    
+void UITextField::SetPosition(const DAVA::Vector2 &position)
+{
+    UIControl::SetPosition(position);
+#if defined(__DAVAENGINE_IPHONE__)
+    textFieldiPhone->OnSetPosition(position);
 #endif
 }
     
@@ -888,9 +906,7 @@ WideString UITextField::GetVisibleText() const
     if (!isPassword)
         return text;
     
-    WideString text = this->text;
-    text.replace(0, text.length(), text.length(), L'*');
-    return text;
+    return WideString(text.length(), L'*');
 }
 	
 int32 UITextField::GetAutoCapitalizationType() const
@@ -1008,6 +1024,38 @@ void UITextField::SetInputEnabled(bool isEnabled, bool hierarchic)
 #endif
 }
 
+void UITextField::SetRenderToTexture(bool value)
+{
+    // disable this functionality
+    value = false;
+#ifdef __DAVAENGINE_WIN32__
+    // do nothing
+#elif defined(__DAVAENGINE_MACOS__)
+    // do nothing
+#elif defined(__DAVAENGINE_ANDROID__)
+    textFieldAndroid->SetRenderToTexture(value);
+#elif defined(__DAVAENGINE_IPHONE__)
+    textFieldiPhone->SetRenderToTexture(value);
+#else
+#error "implement new platform"
+#endif
+}
+    
+bool UITextField::IsRenderToTexture() const
+{
+#ifdef __DAVAENGINE_WIN32__
+    return false;
+#elif defined(__DAVAENGINE_MACOS__)
+    return false;
+#elif defined(__DAVAENGINE_ANDROID__)
+    return textFieldAndroid->IsRenderToTexture();
+#elif defined(__DAVAENGINE_IPHONE__)
+    return textFieldiPhone->IsRenderToTexture();
+#else
+    static_assert(false, "implement new platform");
+#endif
+}
+
 uint32 UITextField::GetCursorPos()
 {
 #ifdef __DAVAENGINE_IPHONE__
@@ -1029,9 +1077,9 @@ void UITextField::SetCursorPos(uint32 pos)
     // TODO! implement for other OS!
 }
 
-void UITextField::SetMaxLength(int32 maxLength)
+void UITextField::SetMaxLength(int32 newMaxLength)
 {
-    this->maxLength = maxLength;
+    maxLength = Max(-1, newMaxLength); //-1 valid value
 #ifdef __DAVAENGINE_IPHONE__
     textFieldiPhone->SetMaxLength(maxLength);
 #elif defined(__DAVAENGINE_ANDROID__)

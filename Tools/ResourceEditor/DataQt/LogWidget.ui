@@ -122,7 +122,7 @@
   <customwidget>
    <class>CheckableComboBox</class>
    <extends>QComboBox</extends>
-   <header>Tools/Widgets/CheckableComboBox.h</header>
+   <header>QtTools/ComboBox/CheckableComboBox.h</header>
   </customwidget>
   <customwidget>
    <class>LineEditEx</class>

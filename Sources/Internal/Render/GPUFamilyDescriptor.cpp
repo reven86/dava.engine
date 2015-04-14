@@ -205,10 +205,27 @@ FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const TextureDescriptor *desc
 
 FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const FilePath & pathname, const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
 {
-    return FilePath::CreateWithNewExtension(pathname, GetFilenamePostfix(gpuFamily, pixelFormat));
+    // THIS CODE SHOULD BE COMPLEATLY REMOVED OR REWRITEN,
+    // WHEN SOURCE FORMAT WILL BE ADDED INTO TEXTURE DESCRIPTORS
+    // --->
+    String ext = GetFilenamePostfix(gpuFamily, pixelFormat);
+    if(!ext.empty())
+    { 
+        return FilePath::CreateWithNewExtension(pathname, ext);
+    }
+    else
+    {
+        if(pathname.GetExtension() == String(".tex"))
+        {
+            return FilePath::CreateWithNewExtension(pathname, ".png");
+        }
+        else
+        {
+            return pathname;
+        }
+    }
+    // <---
 }
-
-    
     
 const String & GPUFamilyDescriptor::GetGPUName(const eGPUFamily gpuFamily)
 {
@@ -254,7 +271,7 @@ const String & GPUFamilyDescriptor::GetCompressedFileExtension(const eGPUFamily 
 String GPUFamilyDescriptor::GetFilenamePostfix(const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
 {
     if(!IsGPUForDevice(gpuFamily) || pixelFormat == FORMAT_INVALID)
-        return ".png";
+        return String();
 
     DVASSERT(gpuFamily < GPU_FAMILY_COUNT);
     
@@ -263,7 +280,7 @@ String GPUFamilyDescriptor::GetFilenamePostfix(const eGPUFamily gpuFamily, const
 	if(format == gpuData[gpuFamily].availableFormats.end())
 	{
 		Logger::Error("[GPUFamilyDescriptor::GetFilenamePostfix: can't find format %s for gpu %s]", PixelFormatDescriptor::GetPixelFormatString(pixelFormat), gpuData[gpuFamily].name.c_str());
-		return ".png";
+		return String();
 	}
 
 	String postfix = gpuData[gpuFamily].prefix + format->second;

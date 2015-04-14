@@ -72,6 +72,12 @@ void ApplicationCore::Update(float32 timeElapsed)
 	AnimationManager::Instance()->Update(timeElapsed);    
 	UIControlSystem::Instance()->Update();
 }
+    
+void ApplicationCore::OnEnterFullscreen()
+{ }
+
+void ApplicationCore::OnExitFullscreen()
+{ }
 
 void ApplicationCore::Draw()
 {
@@ -87,14 +93,13 @@ void ApplicationCore::Draw()
 
 void ApplicationCore::BeginFrame()
 {
-    RenderSystem2D::Instance()->Reset();
 	RenderManager::Instance()->BeginFrame();
-    RenderSystem2D::Instance()->Reset();
+    RenderSystem2D::Instance()->BeginFrame();
 }
 
 void ApplicationCore::EndFrame()
 {
-    RenderSystem2D::Instance()->Flush();
+    RenderSystem2D::Instance()->EndFrame();
 	RenderManager::Instance()->EndFrame();
     RenderManager::Instance()->ProcessStats();
 }

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="External">
@@ -184,6 +184,9 @@
     <Filter Include="Internal\UI\Components">
       <UniqueIdentifier>{67f835b5-b545-4435-b494-f65f572ca435}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\MemoryManager">
+      <UniqueIdentifier>{f063e64b-fb58-42b8-a8f6-fc281f9d6404}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -342,9 +345,6 @@
     <ClInclude Include="..\..\Sources\Internal\Debug\ListAllocator.h">
       <Filter>Internal\Debug</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Debug\MemoryManager.h">
-      <Filter>Internal\Debug</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Debug\Replay.h">
       <Filter>Internal\Debug</Filter>
     </ClInclude>
@@ -391,9 +391,6 @@
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Input\Accelerometer.h">
-      <Filter>Internal\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Input\AccelerometeriPhone.h">
       <Filter>Internal\Input</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Math\AABBox2.h">
@@ -894,9 +891,6 @@
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbObject.h">
       <Filter>Internal\Database</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Debug\Backtrace.h">
-      <Filter>Internal\Debug</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
@@ -907,9 +901,6 @@
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\FixedSizePoolAllocator.h">
-      <Filter>Internal\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\Mallocator.h">
       <Filter>Internal\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\RenderOptions.h">
@@ -1438,10 +1429,10 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h">
+  <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelpers.h">
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.h">
@@ -1789,6 +1780,45 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h">
       <Filter>Internal\UI\Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Entity\BaseFamily.h">
+      <Filter>Internal\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIControlFamily.h">
+      <Filter>Internal\UI\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MallocHook.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManager.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocThunk.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerTypes.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocPools.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerAllocator.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetProto.h">
+      <Filter>Internal\Network\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetServer.h">
+      <Filter>Internal\Network\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetClient.h">
+      <Filter>Internal\Network\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Autotesting\dlmalloc.h">
+      <Filter>Internal\Autotesting</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -1910,9 +1940,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.cpp">
       <Filter>Internal\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Debug\MemoryManager.cpp">
-      <Filter>Internal\Debug</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Debug\Replay.cpp">
       <Filter>Internal\Debug</Filter>
@@ -2399,9 +2426,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingSystem.cpp">
       <Filter>Internal\Autotesting</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Debug\Backtrace.cpp">
-      <Filter>Internal\Debug</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp">
       <Filter>Internal\UI</Filter>
@@ -2893,10 +2917,10 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp">
+  <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelpers.cpp">
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.cpp">
@@ -2943,9 +2967,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.cpp">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageFormatInterface.cpp">
-      <Filter>Internal\Render\Image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlNode.cpp">
       <Filter>Internal\FileSystem</Filter>
@@ -3198,6 +3219,36 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIComponent.cpp">
       <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Entity\BaseFamily.cpp">
+      <Filter>Internal\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIControlFamily.cpp">
+      <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\MallocHook.cpp">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\MemoryManager.cpp">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\OperatorNewHook.cpp">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocThunk.cpp">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetServer.cpp">
+      <Filter>Internal\Network\Services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetClient.cpp">
+      <Filter>Internal\Network\Services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AndroidMallocSize.cpp">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\dlmalloc.c">
+      <Filter>Internal\Autotesting</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

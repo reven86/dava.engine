@@ -37,7 +37,7 @@
 
 #include "version.h"
 #include "Main/mainwindow.h"
-#include "Main/davaglwidget.h"
+#include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "Project/ProjectManager.h"
 #include "TeamcityOutput/TeamcityOutput.h"
 #include "TexturePacker/CommandLineParser.h"
@@ -56,12 +56,7 @@
 #include "Deprecated/SceneValidator.h"
 #include "Deprecated/ControlsFactory.h"
 
-#if defined (__DAVAENGINE_MACOS__)
-	#include "MacOS/QtLayerMacOS.h"
-#elif defined (__DAVAENGINE_WIN32__)
-	#include "Win32/QtLayerWin32.h"
-	#include "Win32/CorePlatformWin32Qt.h"
-#endif
+#include "Platform/Qt5/QtLayer.h"
 
 #ifdef __DAVAENGINE_BEAST__
 #include "BeastProxyImpl.h"
@@ -69,25 +64,28 @@
 #include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
 
+#include "QtTools/FrameworkBinding/DavaLoop.h"
+#include "QtTools/FrameworkBinding/FrameworkLoop.h"
+
+#include <QDebug>
+
 void UnpackHelpDoc();
 void FixOSXFonts();
 
+void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine );
+void RunGui( int argc, char *argv[], CommandLineManager& cmdLine );
+
 int main(int argc, char *argv[])
 {
-	int ret = 0;
-
 #if defined (__DAVAENGINE_MACOS__)
-    DAVA::Core::Run(argc, argv);
-	new DAVA::QtLayerMacOS();
-	DAVA::PVRConverter::Instance()->SetPVRTexTool(String("~res:/PVRTexToolCLI"));
+    const String pvrTexToolPath = "~res:/PVRTexToolCLI";
 #elif defined (__DAVAENGINE_WIN32__)
-	HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle(NULL);
-	DAVA::Core::Run(argc, argv, hInstance);
-	new DAVA::QtLayerWin32();
-	DAVA::PVRConverter::Instance()->SetPVRTexTool(String("~res:/PVRTexToolCLI.exe"));
-#else
-	DVASSERT(false && "Wrong platform")
+    const String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
 #endif
+
+    DAVA::Core::Run( argc, argv );
+    new DAVA::QtLayer();
+    DAVA::PVRConverter::Instance()->SetPVRTexTool( pvrTexToolPath );
 
 	DAVA::Logger::Instance()->SetLogFilename("ResEditor.txt");
 
@@ -97,146 +95,186 @@ int main(int argc, char *argv[])
 	new BeastProxy();
 #endif //__DAVAENGINE_BEAST__
 
-
 	new SettingsManager();
-    //TODO convert old settings to new gpu values
     SettingsManager::UpdateGPUSettings();
-    //END of TODO
     
 	new EditorConfig();
     ParticleEmitter::FORCE_DEEP_CLONE = true;
     QualitySettingsSystem::Instance()->SetKeepUnusedEntities(true);
 
 	CommandLineManager cmdLine;
+
 	if(cmdLine.IsEnabled())
 	{
-		Core::Instance()->EnableConsoleMode();
-        DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_WARNING);
-
-        new SceneValidator();
-
-#if defined (__DAVAENGINE_MACOS__)
-        DAVA::QtLayerMacOS *qtLayer = (DAVA::QtLayerMacOS *) DAVA::QtLayer::Instance();
-        qtLayer->InitializeGlWindow(nullptr, 0, 0);
-
-        DAVA::QtLayer::Instance()->Resize(0, 0);
-#elif defined (__DAVAENGINE_WIN32__)
-        QApplication a(argc, argv);
-        
-        DavaGLWidget* davaGL = new DavaGLWidget();
-#else
-        DVASSERT(false && "Wrong platform");
-#endif //#if defined (__DAVAENGINE_MACOS__)
-        
-        RenderManager::Instance()->Init(0, 0);
-
-		cmdLine.InitalizeTool();
-		if(!cmdLine.IsToolInitialized())
-		{
-			cmdLine.PrintUsageForActiveTool();
-		}
-		else
-		{
-            //Trick for correct loading of sprites.
-            VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
-            VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
-            
-			cmdLine.Process();
-			cmdLine.PrintResults();
-		}
-
-#if defined (__DAVAENGINE_MACOS__)
-#elif defined (__DAVAENGINE_WIN32__)
-        SafeDelete(davaGL);
-#endif //defined (__DAVAENGINE_WIN32__)
-        
-		SceneValidator::Instance()->Release();
+        RunConsole( argc, argv, cmdLine );
 	}
     else
     {
-        
-#ifdef Q_OS_MAC
-        FixOSXFonts();  // Must be called before creating QApplication instance
-#endif
-        
-        QApplication a(argc, argv);
-
-        a.setAttribute(Qt::AA_UseHighDpiPixmaps);
-
-        const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
-        const QString appUidPath = QCryptographicHash::hash( (appUid + a.applicationDirPath() ).toUtf8(), QCryptographicHash::Sha1 ).toHex();
-        RunGuard runGuard( appUidPath );
-
-        if ( runGuard.tryToRun() )
-        {
-            LicenceDialog licenceDlg;
-            if ( licenceDlg.process() )
-            {
-                new SceneValidator();
-                new TextureCache();
-                
-                LocalizationSystem::Instance()->SetCurrentLocale("en");
-                LocalizationSystem::Instance()->InitWithDirectory("~res:/Strings/");
-                
-                DAVA::Texture::SetDefaultGPU((eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
-                
-                // check and unpack help documents
-                UnpackHelpDoc();
-                
-                // create and init UI
-                new QtMainWindow();
-                QtMainWindow::Instance()->EnableGlobalTimeout(true);
-                QtMainWindow::Instance()->show();
-                ProjectManager::Instance()->ProjectOpenLast();
-                if(ProjectManager::Instance()->IsOpened())
-                    QtMainWindow::Instance()->OnSceneNew();
-                
-                DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
-                
-                // start app
-                ret = a.exec();
-                
-                QtMainWindow::Instance()->Release();
-                ControlsFactory::ReleaseFonts();
-                
-                SceneValidator::Instance()->Release();
-                TextureCache::Instance()->Release();
-            }
-        }
+        RunGui( argc, argv, cmdLine );
     }
 
-	EditorConfig::Instance()->Release();
-	SettingsManager::Instance()->Release();
-	BeastProxy::Instance()->Release();
-	DAVA::QtLayer::Instance()->Release();
-	DAVA::Core::Instance()->Release();
+    return 0;
+}
 
-    return ret;
+
+void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
+{
+    Core::Instance()->EnableConsoleMode();
+    DAVA::Logger::Instance()->SetLogLevel( DAVA::Logger::LEVEL_WARNING );
+
+    QApplication a( argc, argv );
+
+    const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
+    const QString appUidPath = QCryptographicHash::hash( ( appUid + QApplication::applicationDirPath() ).toUtf8(), QCryptographicHash::Sha1 ).toHex();
+    RunGuard runGuard( appUidPath );
+    if ( !runGuard.tryToRun() )
+        return;
+
+    new SceneValidator();
+
+    new DavaLoop();
+    new FrameworkLoop();
+
+    auto glWidget = new DavaGLWidget();
+    FrameworkLoop::Instance()->SetOpenGLWindow( glWidget );
+
+    DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
+
+    // Delayed initialization throught event loop
+    glWidget->show();
+#ifdef Q_OS_WIN
+    FrameworkLoop::Instance()->Context();   // Force context initialization
+    QObject::connect( glWidget, &DavaGLWidget::Initialized, &a, &QApplication::quit );
+    QTimer::singleShot( 0, glWidget, &DavaGLWidget::OnWindowExposed );
+    a.exec();
+#endif
+    glWidget->hide();
+
+    RenderManager::Instance()->Init( 0, 0 );
+
+    cmdLine.InitalizeTool();
+    if ( !cmdLine.IsToolInitialized() )
+    {
+        cmdLine.PrintUsageForActiveTool();
+    }
+    else
+    {
+        //Trick for correct loading of sprites.
+        VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
+        VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize( 1, 1, "Gfx" );
+
+        cmdLine.Process();
+        cmdLine.PrintResults();
+    }
+
+    SceneValidator::Instance()->Release();
+    EditorConfig::Instance()->Release();
+    SettingsManager::Instance()->Release();
+    BeastProxy::Instance()->Release();
+    Core::Instance()->Release();
+
+    FrameworkLoop::Instance()->Release();
+    QtLayer::Instance()->Release();
+    DavaLoop::Instance()->Release();
+
+    delete glWidget;
+}
+
+void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
+{
+#ifdef Q_OS_MAC
+    FixOSXFonts();  // Must be called before creating QApplication instance
+#endif
+ 
+    QApplication a( argc, argv );
+
+    const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
+    const QString appUidPath = QCryptographicHash::hash( ( appUid + QApplication::applicationDirPath() ).toUtf8(), QCryptographicHash::Sha1 ).toHex();
+    RunGuard runGuard( appUidPath );
+    if ( !runGuard.tryToRun() )
+        return;
+
+    a.setAttribute( Qt::AA_UseHighDpiPixmaps );
+    a.setAttribute( Qt::AA_ShareOpenGLContexts );
+
+    Q_INIT_RESOURCE( QtToolsResources );
+
+    new SceneValidator();
+    new TextureCache();
+
+    LocalizationSystem::Instance()->SetCurrentLocale( "en" );
+    LocalizationSystem::Instance()->InitWithDirectory( "~res:/Strings/" );
+
+    DAVA::Texture::SetDefaultGPU( static_cast<eGPUFamily>(SettingsManager::GetValue( Settings::Internal_TextureViewGPU ).AsInt32()) );
+
+    // check and unpack help documents
+    UnpackHelpDoc();
+
+    new DavaLoop();
+    new FrameworkLoop();
+
+    // create and init UI
+    auto mainWindow = new QtMainWindow();
+
+    mainWindow->EnableGlobalTimeout( true );
+    auto glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
+    FrameworkLoop::Instance()->SetOpenGLWindow( glWidget );
+
+    ProjectManager::Instance()->ProjectOpenLast();
+    QObject::connect( glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites );
+    QObject::connect( glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized );
+    QObject::connect( glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection );
+    
+    mainWindow->show();
+
+    DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
+
+    DavaLoop::Instance()->StartLoop( FrameworkLoop::Instance() );
+
+    // start app
+    QApplication::exec();
+
+    glWidget->setParent( nullptr );
+    mainWindow->Release();
+
+    TextureCache::Instance()->Release();
+    SceneValidator::Instance()->Release();
+    EditorConfig::Instance()->Release();
+    SettingsManager::Instance()->Release();
+    BeastProxy::Instance()->Release();
+    Core::Instance()->Release();
+
+    ControlsFactory::ReleaseFonts();
+
+    FrameworkLoop::Instance()->Release();
+    QtLayer::Instance()->Release();
+    DavaLoop::Instance()->Release();
+    delete glWidget;
 }
 
 void UnpackHelpDoc()
 {
-	DAVA::String editorVer =SettingsManager::GetValue(Settings::Internal_EditorVersion).AsString();
-	DAVA::FilePath docsPath = FilePath(ResourceEditor::DOCUMENTATION_PATH);
-	if(editorVer != RESOURCE_EDITOR_VERSION || !docsPath.Exists())
-	{
-		DAVA::Logger::Info("Unpacking Help...");
-		DAVA::ResourceArchive * helpRA = new DAVA::ResourceArchive();
-		if(helpRA->Open("~res:/Help.docs"))
-		{
-			DAVA::FileSystem::Instance()->DeleteDirectory(docsPath);
-			DAVA::FileSystem::Instance()->CreateDirectory(docsPath, true);
-			helpRA->UnpackToFolder(docsPath);
-		}
-		DAVA::SafeRelease(helpRA);
-	}
-	SettingsManager::SetValue(Settings::Internal_EditorVersion, VariantType(String(RESOURCE_EDITOR_VERSION)));
+    DAVA::String editorVer = SettingsManager::GetValue( Settings::Internal_EditorVersion ).AsString();
+    DAVA::FilePath docsPath = FilePath( ResourceEditor::DOCUMENTATION_PATH );
+    if ( editorVer != RESOURCE_EDITOR_VERSION || !docsPath.Exists() )
+    {
+        DAVA::Logger::FrameworkDebug( "Unpacking Help..." );
+        DAVA::ResourceArchive * helpRA = new DAVA::ResourceArchive();
+        if ( helpRA->Open( "~res:/Help.docs" ) )
+        {
+            DAVA::FileSystem::Instance()->DeleteDirectory( docsPath );
+            DAVA::FileSystem::Instance()->CreateDirectory( docsPath, true );
+            helpRA->UnpackToFolder( docsPath );
+        }
+        DAVA::SafeRelease( helpRA );
+    }
+    SettingsManager::SetValue( Settings::Internal_EditorVersion, VariantType( String( RESOURCE_EDITOR_VERSION ) ) );
 }
 
 void FixOSXFonts()
 {
 #ifdef Q_OS_MAC
-    if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_8)
+    if ( QSysInfo::MacintoshVersion > QSysInfo::MV_10_8 )
     {
         // fix Mac OS X 10.9 (mavericks) font issue
         QFont::insertSubstitution( ".Lucida Grande UI", "Lucida Grande" );

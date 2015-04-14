@@ -29,31 +29,42 @@
 #ifndef __DAVAENGINE_UI_COMPONENT_H__
 #define __DAVAENGINE_UI_COMPONENT_H__
 
-#include "Entity/Component.h"
+#include "Base/BaseObject.h"
 
 namespace DAVA
 {
 class UIControl;
 
-class UIComponent : public Component
+class UIComponent : public BaseObject
 {
+public:
+    enum eType
+    {
+        FAKE_COMPONENT,
+        
+        COMPONENT_COUNT
+    };
+    
 public:
     UIComponent();
     virtual ~UIComponent();
 
+    static UIComponent * CreateByType(uint32 componentType);
+
+    virtual uint32 GetType() const = 0;
+
     void SetControl(UIControl* _control);
     UIControl* GetControl() const;
 
-    virtual Component* Clone(Entity* toEntity);
-    virtual Component* Clone(UIControl * toControl) = 0;
+    virtual UIComponent* Clone(UIControl * toControl) = 0;
 
 private:
     UIControl* control;
 
 public:
-    INTROSPECTION_EXTEND(UIComponent, Component,
-        MEMBER(control, "control", I_SAVE)
-        );
+    INTROSPECTION_EXTEND(UIComponent, BaseObject, 
+        nullptr
+    );
 
 };
 

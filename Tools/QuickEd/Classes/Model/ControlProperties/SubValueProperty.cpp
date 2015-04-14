@@ -1,11 +1,3 @@
-//
-//  SubValueProperty.cpp
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 30.9.14.
-//
-//
-
 #include "SubValueProperty.h"
 
 #include "ValueProperty.h"
@@ -50,6 +42,21 @@ VariantType SubValueProperty::GetValue() const
 void SubValueProperty::SetValue(const DAVA::VariantType &newValue)
 {
     GetValueProperty()->SetSubValue(index, newValue);
+}
+
+VariantType SubValueProperty::GetDefaultValue() const
+{
+    return GetValueProperty()->GetDefaultSubValue(index);
+}
+
+void SubValueProperty::SetDefaultValue(const DAVA::VariantType &newValue)
+{
+    GetValueProperty()->SetDefaultSubValue(index, newValue);
+}
+
+void SubValueProperty::ResetValue()
+{
+    GetValueProperty()->ResetValue();
 }
 
 bool SubValueProperty::IsReplaced() const

@@ -89,8 +89,6 @@ elseif( MACOS )
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.a" )
     list ( APPEND LIST_SHARED_LIBRARIES ${LIB_LIST}  )   
 
-    set_source_files_properties( ${CMAKE_CURRENT_LIST_DIR}/Platform/ThreadPosix.cpp PROPERTIES COMPILE_FLAGS "-x objective-c++" )  
-
 elseif( IOS )  
     find_package( ZLIB )
 
@@ -121,23 +119,16 @@ elseif( IOS )
     endforeach()
 
     file ( GLOB RESOURCE "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.a" )
-    list ( APPEND LIST_SHARED_LIBRARIES ${RESOURCE}  )   
-
-    set_source_files_properties( ${CMAKE_CURRENT_LIST_DIR}/Platform/ThreadPosix.cpp 
-                                 ${CMAKE_CURRENT_LIST_DIR}/Notification/LocalNotificationIOS.cpp
-                                 ${CMAKE_CURRENT_LIST_DIR}/DataStorage/iOS/ICloudKeyValue.cpp                                 
-                                 PROPERTIES COMPILE_FLAGS "-x objective-c++" )  
-
+    list ( APPEND LIST_SHARED_LIBRARIES ${RESOURCE}  )    
 
 elseif( WIN32 ) 
-
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/D/*" )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )
 
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
 
-    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" )
+    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "msvcrtd.lib" )
 
@@ -149,8 +140,10 @@ if( ZLIB_FOUND )
 endif()
 
 # Define source 
-define_source_folders  ()
+define_source_folders  ( SRC_ROOT "." )
 generate_source_groups_project ()
+
+set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
 
 include_directories    (.)
 include_directories    ( ${DAVA_INCLUDE_DIR} )

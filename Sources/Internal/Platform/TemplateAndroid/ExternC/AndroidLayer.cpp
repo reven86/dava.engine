@@ -69,7 +69,7 @@ extern "C"
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnTerminate(JNIEnv * env, jobject classthis);
  	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_SetAssetManager(JNIEnv * env, jobject classthis, jobject assetManager);
  	
-	//FrameworkTestProject
+	//JNIActivity
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnCreate(JNIEnv * env, jobject classthis, jboolean isFirstRun);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnStart(JNIEnv * env, jobject classthis);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnStop(JNIEnv * env, jobject classthis);
@@ -78,6 +78,7 @@ extern "C"
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnAccelerometer(JNIEnv * env, jobject classthis, jfloat x, jfloat y, jfloat z);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnGamepadAvailable(JNIEnv * env, jobject classthis, jboolean isAvailable);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnGamepadTriggersAvailable(JNIEnv * env, jobject classthis, jboolean isAvailable);
+    JNIEXPORT bool JNICALL Java_com_dava_framework_JNIActivity_nativeIsMultitouchEnabled(JNIEnv * env, jobject classthis);
 
 	//JNIGLSurfaceView
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnInput(JNIEnv * env, jobject classthis, jint action, jint source, jint groupSize, jobject activeInputs, jobject allInputs);
@@ -134,7 +135,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 
 	androidDelegate = new AndroidDelegate(vm);
 
-	DAVA::AndroidCrashReport::Init();
+	 DAVA::AndroidCrashReport::Init(env);
 
 	return JNI_VERSION_1_6;
 }
@@ -157,6 +158,7 @@ void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
 	{
 		DAVA::Logger::Warning("[InitApplication] CoreAndroidPlatform has been created");
 	}
+   
 }
 
 void DeinitApplication()
@@ -367,7 +369,6 @@ namespace
 		event.tid = env->GetIntField(input, gInputEventTidField);
 		event.point.x = event.physPoint.x = env->GetFloatField(input, gInputEventXField);
 		event.point.y = event.physPoint.y = env->GetFloatField(input, gInputEventYField);
-		event.phase = GetPhase(action, source);
 		event.tapCount = env->GetIntField(input, gInputEventTapCountField);
 		event.timestamp = env->GetDoubleField(input, gInputEventTimeField);
 
@@ -404,13 +405,17 @@ void Java_com_dava_framework_JNIGLSurfaceView_nativeOnInput(JNIEnv * env, jobjec
 				{
 					jobject jInput = gArrayListGetMethod(javaAllInputs, touchIndex);
 
-					allInputs.push_back(CreateUIEventFromJavaEvent(env, jInput, action, source));
+					DAVA::UIEvent event = CreateUIEventFromJavaEvent(env, jInput, action, source);
+					event.phase = DAVA::UIEvent::PHASE_DRAG;
+					allInputs.push_back(event);
 				}
 				if (touchIndex < activeInputsCount)
 				{
 					jobject jInput = gArrayListGetMethod(javaActiveInputs, touchIndex);
 
-					activeInputs.push_back(CreateUIEventFromJavaEvent(env, jInput, action, source));
+					DAVA::UIEvent event = CreateUIEventFromJavaEvent(env, jInput, action, source);
+					event.phase = GetPhase(action, source);
+					activeInputs.push_back(event);
 				}
 			}
 			core->OnInput(action, source, activeInputs, allInputs);
@@ -442,6 +447,15 @@ void Java_com_dava_framework_JNIGLSurfaceView_nativeOnGamepadElement(JNIEnv * en
 		core->OnGamepadElement(elementKey, value, isKeycode);
 	}
 }
+
+JNIEXPORT bool JNICALL Java_com_dava_framework_JNIActivity_nativeIsMultitouchEnabled(JNIEnv * env, jobject classthis)
+{
+    if(core)
+    {
+        return core->IsMultitouchEnabled();
+    }
+    return true;
+}
 // END OF JNIGLSurfaceView
 
 
@@ -450,6 +464,7 @@ void Java_com_dava_framework_JNIGLSurfaceView_nativeOnGamepadElement(JNIEnv * en
 
 void Java_com_dava_framework_JNIRenderer_nativeOnResumeView(JNIEnv * env, jobject classthis)
 {
+    DAVA::Thread::InitGLThread();
 	if(core)
 	{
 		core->StartForeground();

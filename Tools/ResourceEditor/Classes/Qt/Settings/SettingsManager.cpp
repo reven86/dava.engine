@@ -59,6 +59,7 @@ void SettingsManager::Init()
 	CreateValue(Settings::General_DesinerName, DAVA::VariantType(DAVA::String("nobody")));
     CreateValue(Settings::General_RecentFilesCount, DAVA::VariantType((DAVA::int32) 5));
 	CreateValue(Settings::General_PreviewEnabled, DAVA::VariantType(false));
+    CreateValue(Settings::General_OpenByDBClick, DAVA::VariantType(false));
     CreateValue(Settings::General_CompressionQuality, DAVA::VariantType((DAVA::int32)DAVA::TextureConverter::ECQ_DEFAULT), DAVA::InspDesc("Compression quality", GlobalEnumMap<DAVA::TextureConverter::eConvertQuality>::Instance()));
 
     CreateValue(Settings::General_MaterialEditor_SwitchColor0, DAVA::VariantType(DAVA::Color(0.0f, 1.0f, 0.0f, 1.0f)));
@@ -96,6 +97,8 @@ void SettingsManager::Init()
     CreateValue(Settings::Scene_Sound_SoundObjectDraw, DAVA::VariantType(false));
     CreateValue(Settings::Scene_Sound_SoundObjectBoxColor, DAVA::VariantType(DAVA::Color(0.0f, 0.8f, 0.4f, 0.2f)));
     CreateValue(Settings::Scene_Sound_SoundObjectSphereColor, DAVA::VariantType(DAVA::Color(0.0f, 0.8f, 0.4f, 0.1f)));
+    CreateValue(Settings::Scene_AutoselectNewEntities, DAVA::VariantType(true));
+    
 
     CreateValue(Settings::Internal_TextureViewGPU, DAVA::VariantType((DAVA::int32) DAVA::GPU_PNG));
 	CreateValue(Settings::Internal_LastProjectPath, DAVA::VariantType(DAVA::FilePath()));

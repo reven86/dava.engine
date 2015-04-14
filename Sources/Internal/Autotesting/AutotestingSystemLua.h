@@ -34,7 +34,6 @@
 
 #ifdef __DAVAENGINE_AUTOTESTING__
 
-#include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Math/Vector.h"
@@ -61,7 +60,6 @@ public:
 };
 #endif //SWIG
 
-// TODO: Make one singleton -> AutotestingSystem. Lua and Mongo make as sub-sytem's
 class AutotestingSystemLua : public Singleton<AutotestingSystemLua>
 {
 public:
@@ -80,14 +78,16 @@ public:
 	static int Print(lua_State* L);
 	static int RequireModule(lua_State* L);
 
-	static void  StackDump(lua_State* L);
-	static const char *PushNextTemplate(lua_State* L, const char* path);
-	static const char *FindFile(lua_State* L, const char* name, const char* pname);
+	static void StackDump(lua_State* L);
+	const char *Pushnexttemplate (lua_State* L, const char* path);
+	const FilePath Findfile (lua_State* L, const char* name, const char* pname);
 #endif //SWIG
     
     // autotesting system api   
     void OnError(const String &errorMessage);
     void OnTestFinished();
+    
+    size_t GetUsedMemory() const;
     
     float32 GetTimeElapsed();
     
@@ -146,16 +146,14 @@ public:
 	bool IsPhoneScreen();
 
 	// DB storing
-	bool SaveKeyedArchiveToDB(const String &archiveName, KeyedArchive* archive, const String &docName = "aux");
+	bool SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive* archive);
 
 	String GetTestParameter(const String &device);
 
 	void WriteString(const String &name, const String &text);
 	String ReadString(const String &name);
 
-	String MakeScreenshot(bool skip);
-
-	inline lua_State* GetLuaState() { return luaState; };
+	String MakeScreenshot();
 
 protected:
 #if !defined(SWIG)
@@ -177,6 +175,10 @@ protected:
     LocalizationSystem* autotestingLocalizationSystem;
     
 #endif //SWIG
+private:
+    void* memoryPool;
+    void* memorySpace;
+    int resumeTestFunctionRef;
 };
 
 };

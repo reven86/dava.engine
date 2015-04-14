@@ -40,6 +40,7 @@ namespace Settings
     static const DAVA::FastName General_DesinerName("General/DesignerName");
     static const DAVA::FastName General_RecentFilesCount("General/RecentFilesCount");
 	static const DAVA::FastName General_PreviewEnabled("General/PreviewEnabled");
+    static const DAVA::FastName General_OpenByDBClick("General/OpenByDoubleClick");
     static const DAVA::FastName General_CompressionQuality("General/CompressionQuality");
 
     static const DAVA::FastName General_MaterialEditor_SwitchColor0("General/MaterialEditor/SwitchColor0");
@@ -79,7 +80,9 @@ namespace Settings
     static const DAVA::FastName Scene_Sound_SoundObjectDraw("Scene/Sound/SoundObjectDraw");
     static const DAVA::FastName Scene_Sound_SoundObjectBoxColor("Scene/Sound/SoundObjectBoxColor");
     static const DAVA::FastName Scene_Sound_SoundObjectSphereColor("Scene/Sound/SoundObjectSphereColor");
-    
+
+    static const DAVA::FastName Scene_AutoselectNewEntities("Scene/AutoselectNewEnities");
+
     // this settings won't be shown in settings dialog
     // and are used only by application
     static const DAVA::FastName InternalGroup("Internal");

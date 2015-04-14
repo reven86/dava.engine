@@ -41,7 +41,7 @@ namespace DAVA
 
 class AssetCache;
 
-class Asset  : public BaseObject
+class Asset : public BaseObject
 {
 public:
     /*

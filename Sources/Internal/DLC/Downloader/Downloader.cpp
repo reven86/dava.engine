@@ -29,6 +29,7 @@
 #include "Downloader.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "Platform/SystemTimer.h"
+#include "Thread/LockGuard.h"
 
 namespace DAVA
 {
@@ -79,6 +80,7 @@ void Downloader::ResetStatistics(uint64 sizeToDownload)
     dataToDownloadLeft = sizeToDownload;
     statistics.downloadSpeedBytesPerSec = 0;
     statistics.timeLeftSecs = static_cast<uint64>(DownloadStatistics::VALUE_UNKNOWN);
+    statistics.dataCameTotalBytes = 0;
 }
 
 void Downloader::CalcStatistics(uint32 dataCame)
@@ -96,22 +98,36 @@ void Downloader::CalcStatistics(uint32 dataCame)
     timeDelta += curTime - prevTime;
     prevTime = curTime;
     
+    DownloadStatistics tmpStats(statistics);
+    
+    tmpStats.dataCameTotalBytes += dataCame;
+
     // update download speed 5 times per second
     if (200 <= timeDelta)
     {
-        statistics.downloadSpeedBytesPerSec = 1000*dataSizeCame/timeDelta;
-        if (0 < statistics.downloadSpeedBytesPerSec)
+        tmpStats.downloadSpeedBytesPerSec = 1000*dataSizeCame/timeDelta;
+        if (0 < tmpStats.downloadSpeedBytesPerSec)
         {
-            statistics.timeLeftSecs = static_cast<uint64>(dataToDownloadLeft / statistics.downloadSpeedBytesPerSec);
+            tmpStats.timeLeftSecs = static_cast<uint64>(dataToDownloadLeft / tmpStats.downloadSpeedBytesPerSec);
         }
         else
         {
-            statistics.timeLeftSecs = static_cast<uint64>(DownloadStatistics::VALUE_UNKNOWN);
+            tmpStats.timeLeftSecs = static_cast<uint64>(DownloadStatistics::VALUE_UNKNOWN);
         }
         
         timeDelta = 0;
         dataSizeCame = 0;
     }
+
+    statisticsMutex.Lock();
+    statistics = tmpStats;
+    statisticsMutex.Unlock();
+}
+    
+DownloadStatistics Downloader::GetStatistics()
+{
+    LockGuard<Spinlock> lock(statisticsMutex);
+    return statistics;
 }
     
 }

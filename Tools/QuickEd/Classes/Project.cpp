@@ -1,5 +1,11 @@
-#include "Project.h"
 #include "DAVAEngine.h"
+
+#include <QDir>
+#include <QApplication>
+#include <QVariant>
+#include <QMessageBox>
+
+#include "Project.h"
 #include "EditorFontManager.h"
 #include "UI/UIPackageLoader.h"
 #include "UI/DefaultUIPackageBuilder.h"
@@ -8,12 +14,13 @@
 #include "Model/YamlPackageSerializer.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageRef.h"
-
-#include <QDir>
+#include "Helpers/ResourcesManageHelper.h"
 
 using namespace DAVA;
 
-Project::Project()
+Project::Project(QObject *parent)
+    : QObject(parent)
+    , isOpen(false)
 {
     legacyData = new LegacyControlData();
 }
@@ -25,22 +32,28 @@ Project::~Project()
 
 bool Project::Open(const QString &path)
 {
+    bool result = OpenInternal(path);
+    SetIsOpen(result);
+    return result;
+}
+
+bool Project::OpenInternal(const QString &path)
+{
     // Attempt to create a project
-	YamlParser* parser = YamlParser::Create(path.toStdString());
-	if (!parser)
-		return false;
+    YamlParser* parser = YamlParser::Create(path.toStdString());
+    if (!parser)
+        return false;
     
-    projectFile = path;
     QDir dir(path);
     dir.cdUp();
     projectDir = dir.absolutePath();
     
-	YamlNode* projectRoot = parser->GetRootNode();
-	if (!projectRoot)
-	{
-		SafeRelease(parser);
-		return false;
-	}
+    YamlNode* projectRoot = parser->GetRootNode();
+    if (!projectRoot)
+    {
+        SafeRelease(parser);
+        return false;
+    }
     
     // Build the list of file names to be locked.
     List<QString> fileNames;
@@ -64,27 +77,27 @@ bool Project::Open(const QString &path)
     const YamlNode *font = projectRoot->Get("font");
     
     // Get font node
-	if (font)
-	{
-		// Get default font node
-		const YamlNode *fontPath = font->Get("DefaultFontPath");
-		if (fontPath)
-		{
-			// Get font values into array
-			const Vector<YamlNode*> &fontPathArray = fontPath->AsVector();
-			EditorFontManager::DefaultFontPath defaultFontPath("", "");
-			// True type font
-			if (fontPathArray.size() == 1)
-			{
-				defaultFontPath.fontPath = FilePath(fontPathArray[0]->AsString());
-			}
-			else if (fontPathArray.size() == 2) // Graphics font
-			{
-				defaultFontPath.fontPath = FilePath(fontPathArray[0]->AsString());
-				defaultFontPath.fontSpritePath = FilePath(fontPathArray[1]->AsString());
-			}
-			EditorFontManager::Instance()->InitDefaultFontFromPath(defaultFontPath);
-		}
+    if (font)
+    {
+        // Get default font node
+        const YamlNode *fontPath = font->Get("DefaultFontPath");
+        if (fontPath)
+        {
+            // Get font values into array
+            const Vector<YamlNode*> &fontPathArray = fontPath->AsVector();
+            EditorFontManager::DefaultFontPath defaultFontPath("", "");
+            // True type font
+            if (fontPathArray.size() == 1)
+            {
+                defaultFontPath.fontPath = FilePath(fontPathArray[0]->AsString());
+            }
+            else if (fontPathArray.size() == 2) // Graphics font
+            {
+                defaultFontPath.fontPath = FilePath(fontPathArray[0]->AsString());
+                defaultFontPath.fontSpritePath = FilePath(fontPathArray[1]->AsString());
+            }
+            EditorFontManager::Instance()->InitDefaultFontFromPath(defaultFontPath);
+        }
         
         const YamlNode *localizationFontsPathNode = font->Get("DefaultFontsPath");
         if(localizationFontsPathNode)
@@ -108,10 +121,10 @@ bool Project::Open(const QString &path)
     EditorFontManager::Instance()->LoadLocalizedFonts();
     FontManager::Instance()->PrepareToSaveFonts(true);
     
-	const YamlNode* platforms = projectRoot->Get("platforms");
-	for (uint32 i = 0; i < platforms->GetCount(); i++)
-	{
-		const String &platformName = platforms->GetItemKeyName(i);
+    const YamlNode* platforms = projectRoot->Get("platforms");
+    for (uint32 i = 0; i < platforms->GetCount(); i++)
+    {
+        const String &platformName = platforms->GetItemKeyName(i);
         if (platformName.empty())
             continue;
         const YamlNode *platform = platforms->Get(platformName);
@@ -157,11 +170,34 @@ bool Project::Open(const QString &path)
                 LocalizationSystem::Instance()->Init();
             }
         }
-	}
+    }
     
-
     SafeRelease(parser);
     
+    return true;
+}
+
+bool Project::CheckAndUnlockProject(const QString& projectPath)
+{
+    if (!FileSystem::Instance()->IsFileLocked(projectPath.toStdString()))
+    {
+        // Nothing to unlock.
+        return true;
+    }
+
+    if (QMessageBox::question(qApp->activeWindow(), tr("File is locked!"), tr("The project file %1 is locked by other user. Do you want to unlock it?")) == QMessageBox::No)
+    {
+        return false;
+    }
+
+    // Check whether it is possible to unlock project file.
+    if (!FileSystem::Instance()->LockFile(projectPath.toStdString(), false))
+    {
+        QMessageBox::critical(qApp->activeWindow(), tr("Unable to unlock project file!"),
+            tr("Unable to unlock project file %1. Please check whether the project is opened in another QuickEd and close it, if yes.").arg(projectPath));
+        return false;
+    }
+
     return true;
 }
 
@@ -177,12 +213,12 @@ RefPtr<PackageNode> Project::OpenPackage(const QString &packagePath)
 
     EditorUIPackageBuilder builder;
     UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(path);
-    if (!newPackage)
+    if (nullptr == newPackage)
     {
         newPackage = LegacyEditorUIPackageLoader(&builder, legacyData).LoadPackage(path);
     }
 
-    if (newPackage)
+    if (nullptr != newPackage)
     {
         SafeRelease(newPackage);
         return builder.GetPackageNode();
@@ -198,3 +234,21 @@ bool Project::SavePackage(PackageNode *package)
     return true;
 }
 
+bool Project::IsOpen() const
+{
+    return isOpen;
+}
+
+void Project::SetIsOpen(bool arg)
+{
+    if (isOpen == arg)
+    {
+        return;
+    }
+    isOpen = arg;
+    if (arg)
+    {
+        ResourcesManageHelper::SetProjectPath(projectDir);
+    }
+    emit IsOpenChanged(arg);
+}
