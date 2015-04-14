@@ -797,43 +797,44 @@ void DLC::StepPatchCancel()
 {
     dlcContext.patchInProgress = false;
 }
-
-void DLC::ApplyPatchesMeetingCriterion(PatchFileReader &patchReader, std::function<bool (const PatchInfo* info)>  shouldApply)
-{
-    if (!dlcContext.patchInProgress)
-        return;
-    
-    bool readSucceeded = patchReader.ReadFirst();
-    while (dlcContext.patchInProgress && readSucceeded)
-    {
-        if(shouldApply(patchReader.GetCurInfo()))
-        {
-            if (!patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath()))
-            {
-                // stop patching process
-                dlcContext.patchInProgress = false;
-            }
-            else
-            {
-                dlcContext.appliedPatchCount++;
-            }
-       }
-       readSucceeded = patchReader.ReadNext();
-    }
-}
     
 void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
 {
     PatchFileReader patchReader(dlcContext.remotePatchStorePath);
     
+    auto applyPatchesMeetingCriterion = [&](std::function<bool (const PatchInfo* info)>  shouldApply)
+    {
+        if (!dlcContext.patchInProgress)
+            return;
+        
+        bool readSucceeded = patchReader.ReadFirst();
+        while (dlcContext.patchInProgress && readSucceeded)
+        {
+            if(shouldApply(patchReader.GetCurInfo()))
+            {
+                bool applySucceeded = patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath());
+                if (!applySucceeded)
+                {
+                    // stop patching process
+                    dlcContext.patchInProgress = false;
+                }
+                else
+                {
+                    dlcContext.appliedPatchCount++;
+                }
+            }
+            readSucceeded = patchReader.ReadNext();
+        }
+    };
+    
     //first apply only patches that either reduce or don't change resources size
-    ApplyPatchesMeetingCriterion(patchReader, [] (const PatchInfo* info)
+    applyPatchesMeetingCriterion([] (const PatchInfo* info)
     {
         return info->newSize <= info->origSize;
     });
     
     //then apply patches that increase resources size
-    ApplyPatchesMeetingCriterion(patchReader, [] (const PatchInfo* info)
+    applyPatchesMeetingCriterion([] (const PatchInfo* info)
     {
        return info->newSize > info->origSize;
     });

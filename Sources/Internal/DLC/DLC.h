@@ -212,8 +212,6 @@ protected:
     void StepClean();
     void StepDone();
 
-    void ApplyPatchesMeetingCriterion(PatchFileReader &patchReader, std::function<bool (const PatchInfo* info)>  shouldApply);
-    
     void PatchingThread(BaseObject *caller, void *callerData, void *userData);
 
     // helper functions
