@@ -235,12 +235,9 @@ void Core::SetOptions(KeyedArchive * archiveOfOptions)
 
 	options = SafeRetain(archiveOfOptions);
     
-    if (options->GetBool("autodetectScreenScaleFactor", false))
+    if (options->GetFloat("screenScaleFactor", -1.f) <= 0.f)
     {
-        options->SetFloat("screenScaleFactor", 1.0f);
-#if defined(__DAVAENGINE_IPHONE__)
         options->SetFloat("screenScaleFactor", DeviceInfo::GetScreenInfo().scale);
-#endif
     }
     
 #if !defined(__DAVAENGINE_ANDROID__)
