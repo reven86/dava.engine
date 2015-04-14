@@ -44,6 +44,7 @@ void    Uninitialize();
 void    Present(); // execute all submitted command-buffers & do flip/present
 
 Api     HostApi();
+bool    TextureFormatSupported( TextureFormat format );
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -126,7 +127,7 @@ void    ReleaseSamplerState( Handle ss );
 ////////////////////////////////////////////////////////////////////////////////
 // render-pass
 
-Handle  AllocateRenderPass( const RenderPassConfig& passDesc, uint32 batchDrawerCount, Handle* batchDrawer );
+Handle  AllocateRenderPass( const RenderPassConfig& passDesc, uint32 packetListCount, Handle* packetList );
 void    BeginRenderPass( Handle pass );
 void    EndRenderPass( Handle pass ); // no explicit render-pass 'release' needed
 
@@ -135,7 +136,7 @@ void    EndRenderPass( Handle pass ); // no explicit render-pass 'release' neede
 // rendering
 
 struct
-BatchDescriptor
+Packet
 {
     uint32          vertexStreamCount;
     Handle          vertexStream[MAX_VERTEX_STREAM_COUNT];
@@ -152,7 +153,7 @@ BatchDescriptor
     PrimitiveType   primitiveType;
     uint32          primitiveCount;
 
-                    BatchDescriptor()
+                    Packet()
                       : vertexStreamCount(0),
                         vertexLayout(VertexLayout::InvalidUID),
                         indexBuffer(InvalidHandle),
@@ -166,10 +167,11 @@ BatchDescriptor
                     {}
 };
 
-void    BeginDraw( Handle batchDrawer );
-void    EndDraw( Handle batchDrawer ); // 'batchDrawer' handle invalid after this, no explicit "release" needed
+void    BeginPacketList( Handle packetList );
+void    AddPackets( Handle packetList, const Packet* packet, uint32 packetCount );
+void    AddPacket( Handle packetList, const Packet& packet );
+void    EndPacketList( Handle packetList ); // 'packetList' handle invalid after this, no explicit "release" needed
 
-void    DrawBatch( Handle batchDrawer, const BatchDescriptor& batchDesc );
 
 
 } // namespace rhi

@@ -422,6 +422,7 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
     descriptor.isRenderTarget = false;
     descriptor.type = ((*images)[0]->cubeFaceID == Texture::INVALID_CUBEMAP_FACE) ? rhi::TEXTURE_TYPE_2D : rhi::TEXTURE_TYPE_CUBE;
     descriptor.format = formatDescriptor.format;
+    DVASSERT(descriptor.format != -1);//unsupported format
     handle = rhi::CreateTexture(descriptor);
 
     for (uint32 i = 0; i < (uint32)images->size(); ++i)
@@ -606,6 +607,7 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::Textur
     descriptor.isRenderTarget = true;
     descriptor.type = requestedType;
     descriptor.format = formatDescriptor.format;
+    DVASSERT(descriptor.format != -1);//unsupported format
     tx->handle = rhi::CreateTexture(descriptor);
 
     tx->isRenderTarget = true;

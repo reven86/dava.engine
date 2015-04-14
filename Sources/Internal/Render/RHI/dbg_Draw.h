@@ -66,9 +66,6 @@ private:
     void            _init();
     void            _uninit();
     Vertex_PC*      _alloc_pc_vertices( unsigned count );
-    Vertex_PC*      _alloc_nozwrite_pc_vertices( unsigned count );
-    void            _generate_permanent_marks();
-    void            _generate_permanent_text();
     
     struct
     Vertex_PC
@@ -94,7 +91,6 @@ private:
     {
     public:
 
-        void    disable_depth_write();
         void    set_small_text_size();
         void    set_normal_text_size();
 
@@ -155,7 +151,6 @@ private:
 
     Buffer<Vertex_PC,rhi::PRIMITIVE_LINELIST>       _line_buf1;
     Buffer<Vertex_PC,rhi::PRIMITIVE_LINELIST>       _line_buf2;
-    Buffer<Vertex_PC,rhi::PRIMITIVE_LINELIST>       _line_buf3;
     Buffer<Vertex_PC,rhi::PRIMITIVE_TRIANGLELIST>   _tri3d_buf;
     Buffer<Vertex_PC,rhi::PRIMITIVE_TRIANGLELIST>   _tri2d_buf;
     Buffer<Vertex_PTC,rhi::PRIMITIVE_TRIANGLELIST>  _normal_text2d_buf;
@@ -172,7 +167,7 @@ private:
 
     enum
     {
-        FontTexSize = 128
+        FontTextureSize = 128
     };
 
 

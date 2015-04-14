@@ -118,7 +118,7 @@ public:
     inline uint32 GetSortingKey() const;
     inline uint64 GetMaterialKey() const;
 
-    void BindParams(rhi::BatchDescriptor & target);
+    void BindParams(rhi::Packet& target);
 
 private:
 

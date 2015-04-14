@@ -41,7 +41,7 @@ namespace //for private variables
     int32 desiredFPS = 0;
     
     RenderOptions renderOptions;
-    RenderCaps caps;
+    RenderCaps renderCaps;
 
     ScreenShotCallbackDelegate * screenshotCallback = nullptr;
 }
@@ -61,6 +61,12 @@ void Uninitialize()
         
     rhi::Uninitialize();
     ininialized = true;
+}
+
+bool IsDeviceLost()
+{
+    DVASSERT(ininialized);
+    return false;
 }
 
 rhi::Api GetAPI()
@@ -84,6 +90,19 @@ RenderOptions *GetOptions()
     DVASSERT(ininialized);
     return &renderOptions;
 }
+
+const RenderCaps & GetCaps()
+{
+    return renderCaps;
+}
+
+void RequestGLScreenShot(ScreenShotCallbackDelegate *_screenShotCallback)
+{
+    screenshotCallback = _screenShotCallback;
+}
+
+
+
 
 }
 }

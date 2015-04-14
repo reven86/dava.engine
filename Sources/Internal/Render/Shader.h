@@ -39,16 +39,6 @@ namespace DAVA
 {
 using UniquePropertyLayout = UniqueHandle;
 
-
-/*implementation - move to cpp*/
-struct BufferPropertyLayout
-{
-    rhi::ShaderPropList props;
-};
-
-bool operator == (const BufferPropertyLayout& lhs, const BufferPropertyLayout& rhs);
-/*EOF implementation*/
-
 struct ConstBufferDescriptor
 {
     enum class Type{ Vertex, Fragment };
@@ -91,6 +81,7 @@ public:
 
     //utility
     static uint32 CalculateRegsCount(rhi::ShaderProp::Type type, uint32 arraySize);
+    static eShaderSemantic GetShaderSemanticByName(const FastName& name);
 
 private:
     Vector<ConstBufferDescriptor> constBuffers;

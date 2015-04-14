@@ -62,7 +62,7 @@ ResourceType
     RESOURCE_DEPTHSTENCIL_STATE = 51,
     RESOURCE_SAMPLER_STATE      = 52,
 
-    RESOURCE_BATCH_DRAWER       = 100,
+    RESOURCE_PACKET_LIST        = 100,
     RESOURCE_TEXTURE_SET        = 101
 };
 
@@ -270,6 +270,7 @@ TextureFormat
 {
     TEXTURE_FORMAT_A8R8G8B8,
     TEXTURE_FORMAT_X8R8G8B8,
+    TEXTURE_FORMAT_R8G8B8,
 
     TEXTURE_FORMAT_A1R5G5B5,
     TEXTURE_FORMAT_R5G6B5,
@@ -491,7 +492,8 @@ Descriptor
                     addrW(TEXADDR_WRAP),
                     minFilter(TEXFILTER_LINEAR),
                     magFilter(TEXFILTER_LINEAR),
-                    mipFilter(TEXMIPFILTER_LINEAR)
+                    mipFilter(TEXMIPFILTER_LINEAR),
+                    pad(0)
                 {}    
     };
     

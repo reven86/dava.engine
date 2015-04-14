@@ -262,6 +262,8 @@ public:
 	virtual void* GetOpenGLView() { return NULL; };
 	
 	void EnableConsoleMode();
+    
+    virtual void* NativeWindowHandle() { return nullptr; }
 
 protected:
 	int32 screenOrientation;

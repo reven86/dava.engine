@@ -49,6 +49,8 @@ public:
     HINSTANCE GetInstance() const;
     HWND GetWindow() const;
 
+    virtual void* NativeWindowHandle() { return (void*)hWindow; }
+
 protected:
     HINSTANCE hInstance;
     HWND hWindow;
