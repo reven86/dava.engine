@@ -146,14 +146,15 @@ bool PixelFormatDescriptor::IsFormatCompressed(const PixelFormat formatID)
 
 void PixelFormatDescriptor::InitializePixelFormatDescriptors()
 {
+#if RHI_COMPLETE
 	const RenderCaps& caps = Renderer::GetCaps();    
 
     DVASSERT(FORMAT_COUNT == 33); // add new format below
-#if RHI_COMPLETE
-	SetPixelDescription(FORMAT_INVALID, FastName("WRONG FORMAT"), 0);
-	SetPixelDescription(FORMAT_RGBA8888, FastName("RGBA8888"), 32, GL_UNSIGNED_BYTE, GL_RGBA, GL_RGBA, true, false);
-	SetPixelDescription(FORMAT_RGBA5551, FastName("RGBA5551"), 16, GL_UNSIGNED_SHORT_5_5_5_1, GL_RGBA, GL_RGBA, true, false);
-	SetPixelDescription(FORMAT_RGBA4444, FastName("RGBA4444"), 16, GL_UNSIGNED_SHORT_4_4_4_4, GL_RGBA, GL_RGBA, true, false);
+
+	//SetPixelDescription(FORMAT_INVALID, FastName("WRONG FORMAT"), 0);
+	SetPixelDescription(FORMAT_RGBA8888, FastName("RGBA8888"), 32, rhi::TEXTURE_FORMAT_A8R8G8B8, true, false);
+	SetPixelDescription(FORMAT_RGBA5551, FastName("RGBA5551"), 16, rhi::TEXTURE_FORMAT_A1R5G5B5, true, false);
+	SetPixelDescription(FORMAT_RGBA4444, FastName("RGBA4444"), 16, rhi::TEXTURE_FORMAT_A4R4G4B4, true, false);
 	SetPixelDescription(FORMAT_RGB888, FastName("RGB888"), 24, GL_UNSIGNED_BYTE, GL_RGB, GL_RGB, true, false);
 	SetPixelDescription(FORMAT_RGB565, FastName("RGB565"), 16, GL_UNSIGNED_SHORT_5_6_5, GL_RGB, GL_RGB, true, false);
 	SetPixelDescription(FORMAT_A8, FastName("A8"), 8, GL_UNSIGNED_BYTE, GL_ALPHA, GL_ALPHA, true, false);
@@ -199,7 +200,6 @@ void PixelFormatDescriptor::InitializePixelFormatDescriptors()
 #if defined (__DAVAENGINE_WIN32__)
     SetPixelDescription(FORMAT_BGR888, FastName("BGR888"), 24, GL_UNSIGNED_BYTE, GL_BGR, GL_RGB, false, false);
 #endif
-
 #endif // RHI_COMPLETE
 }
 

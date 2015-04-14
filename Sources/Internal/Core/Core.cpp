@@ -183,7 +183,7 @@ void Core::CreateSingletons()
 // We do not create RenderManager until we know which version of render manager we want to create
 void Core::CreateRenderManager()
 {
-    eRenderer renderer = (eRenderer)options->GetInt32("renderer");
+    rhi::Api renderer = (rhi::Api)options->GetInt32("renderer");
     
     Renderer::Initialize(renderer);
 }

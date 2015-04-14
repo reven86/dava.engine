@@ -103,19 +103,7 @@ public:
 		,	SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN
         ,   SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE
         ,   SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE
-	};
-    
-    enum eRenderer
-    {
-        RENDERER_OPENGL_ES_1_0, // 1.0 compatible OpenGL ES. Old generation iOS / Android devices. 
-        RENDERER_OPENGL_ES_2_0, // 2.0 compatible OpenGL ES. New generation iOS / Android devices. 
-        RENDERER_OPENGL_ES_3_0, // 3.0 compatible OpenGL ES. New generation iOS / Android devices.
-        RENDERER_OPENGL,        // here we assuming that it's 2.0 compatible. Renderer for MacOS X.
-        RENDERER_DIRECTX9,      // only renderer that works on win platforms right now. 
-//        RENDERER_DIRECTX10,   // written for self-motivation
-//        RENDERER_DIRECTX11,   // written for self-motivation
-    };
-    
+	};        
 	
 	Core();
 	virtual ~Core();

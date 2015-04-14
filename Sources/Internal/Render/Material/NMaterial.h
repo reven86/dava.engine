@@ -91,30 +91,34 @@ public:
     NMaterial();    
     ~NMaterial();
 
+    void Load(KeyedArchive * archive, SerializationContext * serializationContext) override;
+
+    /*properties*/
     void AddProperty(const FastName& propName, float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize = 1);
     void RemoveProperty(const FastName& propName);
     void SetPropertyValue(const FastName& propName, float32 *propData);
+    bool HasLocalProperty(const FastName& flagName);
 
-    void AddTexture(const FastName& slotName, rhi::Handle texture);
+    /*textures*/
+    void AddTexture(const FastName& slotName, Texture *texture);
     void RemoveTexture(const FastName& slotName);
-    void SetTexture(const FastName& slotName, rhi::Handle texture);
+    void SetTexture(const FastName& slotName, Texture *texture);
+    bool HasLocalTexture(const FastName& flagName);
 
+    /*flags*/
     void AddFlag(const FastName& flagName, int32 value);
     void RemoveFlag(const FastName& flagName);
     void SetFlag(const FastName& flagName, int32 value);
     bool HasLocalFlag(const FastName& flagName);
 
-
-    void BindParams(rhi::BatchDescriptor & target);    
-
     void SetParent(NMaterial *parent);
-    NMaterial* GetParent();
+    NMaterial* GetParent();       
 
-
-    inline uint32 GetRenderLayerID();
+    inline uint32 GetRenderLayerID() const;
     inline uint32 GetSortingKey() const;
-    
-    uint64 GetMaterialKey() const;
+    inline uint64 GetMaterialKey() const;
+
+    void BindParams(rhi::BatchDescriptor & target);
 
 private:
 
@@ -138,7 +142,7 @@ private:
 
 private:
     HashMap<FastName, NMaterialProperty *> localProperties;
-    HashMap<FastName, rhi::Handle> localTextures; //this is runtime only state, filepath storing will be separately done later
+    HashMap<FastName, Texture*> localTextures; //this is runtime only state, filepath storing will be separately done later
     HashMap<FastName, int32> localFlags; //integer flags are just more generic then boolean (eg. #if SHADING == HIGH), it has nothing in common with eFlagValue bullshit from old NMaterial    
 
     Vector<NMaterial *> children;

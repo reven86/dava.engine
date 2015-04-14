@@ -34,7 +34,7 @@ using namespace DAVA;
 
 
 void FrameworkDidLaunched()
-{
+{    
 #if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     
 #define WIDTH   960
@@ -43,7 +43,7 @@ void FrameworkDidLaunched()
 	KeyedArchive * appOptions = new KeyedArchive();
 	appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
     
-    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_3_0);
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 	
     
 	appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
@@ -55,6 +55,7 @@ void FrameworkDidLaunched()
 
 #else
 	KeyedArchive * appOptions = new KeyedArchive();
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 	
 	appOptions->SetInt32("width",	1024);
 	appOptions->SetInt32("height", 768);

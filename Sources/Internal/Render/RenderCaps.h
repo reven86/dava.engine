@@ -26,64 +26,49 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Renderer.h"
-#include "RHI/rhi_ShaderCache.h"
+#ifndef __DAVAENGINE_RENDERCAPS_H__
+#define __DAVAENGINE_RENDERCAPS_H__
 
 namespace DAVA
 {
-namespace Renderer
-{
 
-namespace //for private variables
-{
-    bool ininialized = false;
-    rhi::Api api;
-    int32 desiredFPS = 0;
-    
-    RenderOptions renderOptions;
-    RenderCaps caps;
 
-    ScreenShotCallbackDelegate * screenshotCallback = nullptr;
-}
+struct RenderCaps
+{
+    RenderCaps()
+    {
+        isHardwareCursorSupported = false;
 
-void Initialize(rhi::Api _api)
-{
-    DVASSERT(!ininialized);
-    api = api;
-    rhi::Initialize(api);
-    rhi::ShaderCache::Initialize();
-    
-    ininialized = true;
-}
-void Uninitialize()
-{
-    DVASSERT(ininialized);
-        
-    rhi::Uninitialize();
-    ininialized = true;
-}
+        isPVRTC2Supported = false;
+        isOpenGLES3Supported = false;
 
-rhi::Api GetAPI()
-{
-    DVASSERT(ininialized);
-    return api;
-}
+        isFramebufferFetchSupported = isPVRTCSupported = isETCSupported = isDXTSupported = isATCSupported = false;
+        isVertexTextureUnitsSupported = isBGRA8888Supported = isFloat16Supported = isFloat32Supported = false;
 
-int32 GetDesiredFPS()
-{
-    return desiredFPS;
-}
+#if defined(__DAVAENGINE_ANDROID__)
+        isGlDepth24Stencil8Supported = isGlDepthNvNonLinearSupported = false;
+#endif
+    }
+    bool isHardwareCursorSupported;
+    bool isPVRTCSupported;
+    bool isPVRTC2Supported;
+    bool isETCSupported;
+    bool isOpenGLES3Supported;
+    bool isBGRA8888Supported;
+    bool isFloat16Supported;
+    bool isFloat32Supported;
+    bool isDXTSupported;
+    bool isATCSupported;
+    bool isVertexTextureUnitsSupported;
+    bool isFramebufferFetchSupported;
 
-void SetDesiredFPS(int32 fps)
-{
-    desiredFPS = fps;
-}
+#if defined(__DAVAENGINE_ANDROID__)
+    bool isGlDepth24Stencil8Supported;
+    bool isGlDepthNvNonLinearSupported;
+#endif
 
-RenderOptions *GetOptions()
-{
-    DVASSERT(ininialized);
-    return &renderOptions;
-}
+};
 
 }
-}
+
+#endif

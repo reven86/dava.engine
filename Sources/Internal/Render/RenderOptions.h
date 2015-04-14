@@ -86,11 +86,11 @@ public:
 	bool IsOptionEnabled(RenderOption option);
 	void SetOption(RenderOption option, bool value);
     FastName GetOptionName(RenderOption option);
-
-private:
-	RenderOptions();
+    RenderOptions();
+private:	
 
 	bool options[OPTIONS_COUNT];
+    
 };
 
 };

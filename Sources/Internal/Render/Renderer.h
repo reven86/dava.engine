@@ -32,68 +32,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Core/Core.h"
 #include "RenderBase.h"
 #include "RenderOptions.h"
+#include "RenderCaps.h"
 #include "RHI/rhi_Public.h"
 #include "RHI/rhi_Type.h"
 
 namespace DAVA
 {
-class Image;
-struct ScreenShotCallbackDelegate
-{
-    void operator()(Image *image)
-    {
-        return OnScreenShot(image);
-    }
 
-protected:
-    virtual void OnScreenShot(Image *image) = 0;
-
-};
-
-struct RenderCaps
-{
-    RenderCaps()
-    {
-        isHardwareCursorSupported = false;
-
-        isPVRTC2Supported = false;
-        isOpenGLES3Supported = false;
-
-        isFramebufferFetchSupported = isPVRTCSupported = isETCSupported = isDXTSupported = isATCSupported = false;
-        isVertexTextureUnitsSupported = isBGRA8888Supported = isFloat16Supported = isFloat32Supported = false;
-
-#if defined(__DAVAENGINE_ANDROID__)
-        isGlDepth24Stencil8Supported = isGlDepthNvNonLinearSupported = false;
-#endif
-    }    
-    bool isHardwareCursorSupported;
-    bool isPVRTCSupported;
-    bool isPVRTC2Supported;
-    bool isETCSupported;
-    bool isOpenGLES3Supported;
-    bool isBGRA8888Supported;
-    bool isFloat16Supported;
-    bool isFloat32Supported;
-    bool isDXTSupported;
-    bool isATCSupported;
-    bool isVertexTextureUnitsSupported;
-    bool isFramebufferFetchSupported;
-
-#if defined(__DAVAENGINE_ANDROID__)
-    bool isGlDepth24Stencil8Supported;
-    bool isGlDepthNvNonLinearSupported;
-#endif
-
-};
+struct ScreenShotCallbackDelegate;
 
 namespace Renderer
 {
 
     //init
-    void Initialize(Core::eRenderer renderer);
+    void Initialize(rhi::Api api);
     void Uninitialize();
 
+    rhi::Api GetAPI();
+
     bool IsDeviceLost();
+
     void SetDesiredFPS(int32 fps);
     int32 GetDesiredFPS();
 
@@ -121,6 +79,17 @@ namespace Renderer
     pointer_size GetDynamicParamUpdateSemantic(eShaderSemantic shaderSemantic);        
 }
 
+
+class Image;
+struct ScreenShotCallbackDelegate
+{
+    void operator()(Image *image)
+    {
+        return OnScreenShot(image);
+    }
+protected:
+    virtual void OnScreenShot(Image *image) = 0;
+};
 
 }
 
