@@ -122,7 +122,7 @@ while continue_process_stdout:
                 device = teamcity_line.split("{")[1].split("}")[0]
                 if not os.path.exists("../artifacts"):
                     os.makedirs("../artifacts")
-                    frame_delta_file = open("../artifacts/frame_delta" + "_branch_" + branch + "_build_num_" + build_num + "_device_" + device ".txt", "w")
+                    frame_delta_file = open("../artifacts/frame_delta" + "_branch_" + branch + "_build_num_" + build_num + "_device_" + device + ".txt", "w")
 
             # write Frame_delta build statistic to file
             teamcity_line_index = line.find("##teamcity[buildStatisticValue key='Frame_delta'")
