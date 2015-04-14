@@ -82,8 +82,8 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
     dlcContext.remoteMetaStorePath = workingDir + "Remote.meta";
 
     dlcContext.patchInProgress = true;
-    dlcContext.patchCount = 0;
-    dlcContext.patchIndex = 0;
+    dlcContext.totalPatchCount = 0;
+    dlcContext.appliedPatchCount = 0;
 
     dlcContext.downloadInfoStorePath = workingDir + "Download.info";
     dlcContext.stateInfoStorePath = workingDir + "State.info";
@@ -126,8 +126,8 @@ void DLC::GetProgress(uint64 &cur, uint64 &total) const
             DownloadManager::Instance()->GetProgress(dlcContext.remotePatchDownloadId, cur);
             break;
         case DS_PATCHING:
-            total = dlcContext.patchCount;
-            cur = dlcContext.patchIndex;
+            total = dlcContext.totalPatchCount;
+            cur = dlcContext.appliedPatchCount;
             break;
         default:
             cur = 0;
@@ -738,8 +738,8 @@ void DLC::StepPatchBegin()
 
     dlcContext.patchingError = PatchFileReader::ERROR_NO;
     dlcContext.patchInProgress = true;
-    dlcContext.patchIndex = 0;
-    dlcContext.patchCount = 0;
+    dlcContext.appliedPatchCount = 0;
+    dlcContext.totalPatchCount = 0;
 
     // read number of available patches
     PatchFileReader patchReader(dlcContext.remotePatchStorePath);
@@ -747,12 +747,12 @@ void DLC::StepPatchBegin()
     {
         do
         {
-            dlcContext.patchCount++;
+            dlcContext.totalPatchCount++;
         }
         while(patchReader.ReadNext());
     }
     
-    Logger::Info("DLC: Patching, %d files to patch", dlcContext.patchCount);
+    Logger::Info("DLC: Patching, %d files to patch", dlcContext.totalPatchCount);
     patchingThread = Thread::Create(Message(this, &DLC::PatchingThread));
     patchingThread->Start();
 }
@@ -798,42 +798,60 @@ void DLC::StepPatchCancel()
     dlcContext.patchInProgress = false;
 }
 
+void DLC::ApplyPatchesMeetingCriterion(PatchFileReader &patchReader, std::function<bool (const PatchInfo* info)>  shouldApply)
+{
+    if (!dlcContext.patchInProgress)
+        return;
+    
+    bool readSucceeded = patchReader.ReadFirst();
+    while (dlcContext.patchInProgress && readSucceeded)
+    {
+        if(shouldApply(patchReader.GetCurInfo()))
+        {
+            if (!patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath()))
+            {
+                // stop patching process
+                dlcContext.patchInProgress = false;
+            }
+            else
+            {
+                dlcContext.appliedPatchCount++;
+            }
+       }
+       readSucceeded = patchReader.ReadNext();
+    }
+}
+    
 void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
 {
     PatchFileReader patchReader(dlcContext.remotePatchStorePath);
-    if(patchReader.ReadFirst())
+    
+    //first apply only patches that either reduce or don't change resources size
+    ApplyPatchesMeetingCriterion(patchReader, [] (const PatchInfo* info)
     {
-        do
-        {
-            if(!patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath()))
-            {
-                // stop patching process 
-                dlcContext.patchInProgress = false;
-            }
-
-            dlcContext.patchIndex++;
-        }
-        while(dlcContext.patchInProgress && patchReader.ReadNext());
-
-        // check if no errors occurred during patching
-        dlcContext.patchingError = patchReader.GetLastError();
-
-        if(PatchFileReader::ERROR_NO == dlcContext.patchingError)
-        {
-            // ensure directory, where resource version file should be, exists
-            FileSystem::Instance()->CreateDirectory(dlcContext.localVerStorePath.GetDirectory(), true);
-
-            // update local version
-            if(!WriteUint32(dlcContext.localVerStorePath, dlcContext.remoteVer))
-            {
-                // error, version can't be written
-                dlcContext.patchingError = PatchFileReader::ERROR_NEW_WRITE;
-            }
-        }
-    }
-    else
+        return info->newSize <= info->origSize;
+    });
+    
+    //then apply patches that increase resources size
+    ApplyPatchesMeetingCriterion(patchReader, [] (const PatchInfo* info)
     {
-        dlcContext.patchInProgress = false;
+       return info->newSize > info->origSize;
+    });
+    
+    // check if no errors occurred during patching
+    dlcContext.patchingError = patchReader.GetLastError();
+    
+    if(dlcContext.patchInProgress && PatchFileReader::ERROR_NO == dlcContext.patchingError)
+    {
+        // ensure directory, where resource version file should be, exists
+        FileSystem::Instance()->CreateDirectory(dlcContext.localVerStorePath.GetDirectory(), true);
+
+        // update local version
+        if(!WriteUint32(dlcContext.localVerStorePath, dlcContext.remoteVer))
+        {
+            // error, version can't be written
+            dlcContext.patchingError = PatchFileReader::ERROR_NEW_WRITE;
+        }
     }
 
 	Function<void()> fn(this, &DLC::StepPatchFinish);

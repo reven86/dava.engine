@@ -164,8 +164,8 @@ protected:
         uint32 remotePatchDownloadId;
         FilePath remotePatchStorePath;
 
-        uint32 patchCount;
-        uint32 patchIndex;
+        uint32 totalPatchCount;
+        uint32 appliedPatchCount;
         bool patchInProgress;
         PatchFileReader::PatchError patchingError;
 
@@ -212,6 +212,8 @@ protected:
     void StepClean();
     void StepDone();
 
+    void ApplyPatchesMeetingCriterion(PatchFileReader &patchReader, std::function<bool (const PatchInfo* info)>  shouldApply);
+    
     void PatchingThread(BaseObject *caller, void *callerData, void *userData);
 
     // helper functions
