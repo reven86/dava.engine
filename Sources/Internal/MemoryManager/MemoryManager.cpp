@@ -39,6 +39,9 @@
 #include <dlfcn.h>
 #include <cxxabi.h>
 #elif defined(__DAVAENGINE_ANDROID__)
+#include <unwind.h>
+#include <dlfcn.h>
+#include <cxxabi.h>
 #endif
 
 #include "Base/Hash.h"
@@ -148,7 +151,11 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, int32 poolIndex)
         block->pool = poolIndex;
         block->realBlockStart = static_cast<void*>(block);
         block->allocByApp = static_cast<uint32>(size);
+#if defined(__DAVAENGINE_ANDROID__)
+        block->allocTotal = static_cast<uint32>(totalSize);
+#else
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
+#endif
         if (!IsInternalAllocationPool(poolIndex))
         {
             Backtrace backtrace;
@@ -224,7 +231,11 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, in
         block->pool = poolIndex;
         block->realBlockStart = realPtr;
         block->allocByApp = static_cast<uint32>(size);
+#if defined(__DAVAENGINE_ANDROID__)
+        block->allocTotal = static_cast<uint32>(totalSize);
+#else
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
+#endif
         if (!IsInternalAllocationPool(poolIndex))
         {
             Backtrace backtrace;
@@ -336,7 +347,9 @@ void MemoryManager::Deallocate(void* ptr)
             {
                 LockType lock(mutex);
                 statGeneral.ghostBlockCount += 1;
+#if !defined(__DAVAENGINE_ANDROID__)
                 statGeneral.ghostSize += MallocHook::MallocSize(ptr);
+#endif
             }
             MallocHook::Free(ptr);
         }
@@ -493,23 +506,55 @@ void MemoryManager::RemoveBacktrace(uint32 hash)
     }
 }
 
+#if defined(__DAVAENGINE_ANDROID__)
+namespace
+{
+
+struct BacktraceState
+{
+    void** current;
+    void** end;
+};
+
+_Unwind_Reason_Code UnwindCallback(struct _Unwind_Context* context, void* arg)
+{
+    BacktraceState* state = static_cast<BacktraceState*>(arg);
+    uintptr_t pc = _Unwind_GetIP(context);
+    if (pc != 0)
+    {
+        if (state->current == state->end)
+        {
+            return _URC_END_OF_STACK;
+        }
+        else
+        {
+            *state->current++ = reinterpret_cast<void*>(pc);
+        }
+    }
+    return _URC_NO_REASON;
+}
+
+}   // unnamed namespace
+#endif
+
 DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t nskip)
 {
-    Memset(backtrace, 0, sizeof(Backtrace));
-#if defined(__DAVAENGINE_WIN32__)
-    CaptureStackBackTrace(nskip + 1, COUNT_OF(backtrace->frames), backtrace->frames, nullptr);
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     const size_t EXTRA_FRAMES = 5;
-    void* frames[BACKTRACE_DEPTH + EXTRA_FRAMES];
-    Memset(frames, 0, sizeof(frames));
-    ::backtrace(frames, BACKTRACE_DEPTH + EXTRA_FRAMES);
-    for (size_t idst = 0, isrc = nskip + 1;idst < BACKTRACE_DEPTH && frames[isrc] != nullptr;++idst, ++isrc)
+    void* frames[BACKTRACE_DEPTH + EXTRA_FRAMES] = {nullptr};
+    Memset(backtrace, 0, sizeof(Backtrace));
+    
+#if defined(__DAVAENGINE_WIN32__)
+    CaptureStackBackTrace(0, COUNT_OF(frames), frames, nullptr);
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+    ::backtrace(frames, COUNT_OF(frames));
+#elif defined(__DAVAENGINE_ANDROID__)
+    BacktraceState state = {frames, frames + COUNT_OF(frames)};
+    _Unwind_Backtrace(&UnwindCallback, &state);
+#endif
+    for (size_t idst = 0, isrc = nskip + 1;idst < BACKTRACE_DEPTH;++idst, ++isrc)
     {
         backtrace->frames[idst] = frames[isrc];
     }
-#elif defined(__DAVAENGINE_ANDROID__)
-
-#endif
     backtrace->hash = HashValue_N(reinterpret_cast<const char*>(backtrace->frames), sizeof(backtrace->frames));
     backtrace->nref = 1;
     backtrace->symbolsCollected = false;
@@ -552,18 +597,18 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
     symInfo->SizeOfStruct = sizeof(SYMBOL_INFO);
     symInfo->MaxNameLen = NAME_BUFFER_SIZE - sizeof(SYMBOL_INFO);
 
-    for (size_t i = 0;i < COUNT_OF(backtrace->frames) && backtrace->frames[i] != nullptr;++i)
+    for (size_t i = 0;i < COUNT_OF(backtrace->frames);++i)
     {
-        if (symbols->find(backtrace->frames[i]) == symbols->cend())
+        if (backtrace->frames[i] != nullptr && symbols->find(backtrace->frames[i]) == symbols->cend())
         {
             if (SymFromAddr(hprocess, reinterpret_cast<DWORD64>(backtrace->frames[i]), 0, symInfo))
                 symbols->emplace(backtrace->frames[i], InternalString(symInfo->Name));
         }
     }
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-    for (size_t i = 0;i < COUNT_OF(backtrace->frames) && backtrace->frames[i] != nullptr;++i)
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+    for (size_t i = 0;i < COUNT_OF(backtrace->frames);++i)
     {
-        if (symbols->find(backtrace->frames[i]) == symbols->cend())
+        if (backtrace->frames[i] != nullptr && symbols->find(backtrace->frames[i]) == symbols->cend())
         {
             /*
              https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man3/dladdr.3.html#//apple_ref/doc/man/3/dladdr

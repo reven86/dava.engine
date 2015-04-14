@@ -37,10 +37,6 @@
 #include <detours/detours.h>
 #elif defined(__DAVAENGINE_ANDROID__) 
 #include <dlfcn.h>
-
-// Function to retrive malloc'd size, its definition is in AndroidMallocSize.cpp
-size_t AndroidMallocSize(void* ptr);
-
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <dlfcn.h>
 #include <malloc/malloc.h>
@@ -126,8 +122,9 @@ size_t MallocHook::MallocSize(void* ptr)
     return _msize(ptr);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     return malloc_size(ptr);
-#elif defined(__DAVAENGINE_ANDROID__) 
-    return AndroidMallocSize(ptr);
+#elif defined(__DAVAENGINE_ANDROID__)
+    assert(0 && "MallocSize doesn't work on android");
+    return 0;
 #else
 #error "Unknown platform"
 #endif
