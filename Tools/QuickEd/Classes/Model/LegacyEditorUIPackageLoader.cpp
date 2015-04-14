@@ -13,9 +13,7 @@ using namespace DAVA;
 
 LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(AbstractUIPackageBuilder *builder, LegacyControlData *data) : builder(builder), legacyData(SafeRetain(data))
 {
-    
     // for legacy loading
-    propertyNamesMap["UIControl"]["visible"] = "recursiveVisible";
     
     // UIButton bg
     propertyNamesMap["UIButton"]["sprite"] = "stateSprite";
@@ -321,6 +319,10 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
             Vector2 size = sizeNode ? sizeNode->AsVector2() : rectNode->AsRect().GetSize();
             Vector2 pivotPoint = valueNode->AsVector2();
             return VariantType(pivotPoint / size);
+        }
+        else if (propertyName == "angle")
+        {
+            return VariantType(valueNode->AsFloat() * 180.0f / (float) M_PI);
         }
         else if (member->Type() == MetaInfo::Instance<bool>())
             return VariantType(valueNode->AsBool());
