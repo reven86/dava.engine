@@ -28,6 +28,7 @@
 
 
 #include "Base/BaseTypes.h"
+#include "Core/Core.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
@@ -103,10 +104,8 @@ namespace DAVA
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         float scaledSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size);
         
-        if( [[::UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)])
-        {
-            scaledSize /= [::UIScreen mainScreen].scale;
-        }
+        scaledSize /= Core::Instance()->GetScreenScaleFactor();
+        
         textFieldHolder->textField.font = [UIFont systemFontOfSize:scaledSize];
     }
     

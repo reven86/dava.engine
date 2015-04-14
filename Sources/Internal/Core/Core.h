@@ -201,10 +201,8 @@ public:
 	 */
 	virtual void SetIcon(int32 iconId);
 	
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-	static bool IsAutodetectContentScaleFactor();
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
+    virtual float32 GetScreenScaleFactor();
+    
 	virtual Core::eScreenOrientation GetScreenOrientation();
 	
     virtual uint32 GetScreenDPI();

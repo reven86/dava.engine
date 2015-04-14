@@ -83,10 +83,6 @@
 namespace DAVA 
 {
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-	static bool useAutodetectContentScaleFactor = false;
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    
 static ApplicationCore * core = nullptr;
 
 Core::Core()
@@ -238,12 +234,15 @@ void Core::SetOptions(KeyedArchive * archiveOfOptions)
 	SafeRelease(options);
 
 	options = SafeRetain(archiveOfOptions);
+    
+    if (options->GetBool("autodetectScreenScaleFactor", false))
+    {
+        options->SetFloat("screenScaleFactor", 1.0f);
 #if defined(__DAVAENGINE_IPHONE__)
-		useAutodetectContentScaleFactor = options->GetBool("iPhone_autodetectScreenScaleFactor", false);
-#elif defined(__DAVAENGINE_ANDROID__)
-		useAutodetectContentScaleFactor = options->GetBool("Android_autodetectScreenScaleFactor", false);
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
+        options->SetFloat("screenScaleFactor", DeviceInfo::GetScreenInfo().scale);
+#endif
+    }
+    
 #if !defined(__DAVAENGINE_ANDROID__)
 	//YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view  
 	screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_PORTRAIT);
@@ -273,12 +272,14 @@ KeyedArchive * Core::GetOptions()
 	return options;
 }
 	
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-bool Core::IsAutodetectContentScaleFactor()
+float32 Core::GetScreenScaleFactor()
 {
-	return useAutodetectContentScaleFactor;
+    if (!options)
+        return 1.0f;
+    if (!options->IsKeyExists("screenScaleFactor"))
+        return 1.0f;
+    return options->GetFloat("screenScaleFactor");
 }
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
 Core::eScreenOrientation Core::GetScreenOrientation()
 {
