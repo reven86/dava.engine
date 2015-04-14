@@ -72,6 +72,7 @@ FastName optionsNames[RenderOptions::OPTIONS_COUNT] =
     FastName("Localization Errors"),
     FastName("Line Break Errors"),
 #endif
+    FastName("Draw Nondef Glyph"),
     FastName("Highlight Hard Controls")
 };
 
@@ -89,6 +90,7 @@ RenderOptions::RenderOptions()
     options[DRAW_LOCALIZATION_WARINGS] = false;
     options[DRAW_LINEBREAK_ERRORS] = false;
 #endif
+    options[DRAW_NONDEF_GLYPH] = false;
     options[HIGHLIGHT_HARD_CONTROLS] = false;
 }
 
