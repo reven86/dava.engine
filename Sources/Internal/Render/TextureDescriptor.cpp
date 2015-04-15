@@ -555,18 +555,6 @@ const String& TextureDescriptor::GetFaceExtension(uint32 face) const
         GetDefaultFaceExtension() : dataSettings.cubefaceExtensions[face]);
 }
 
-FilePath TextureDescriptor::GetFacePathname(Texture::CubemapFace face) const
-{
-    if (!pathname.IsEmpty() && (dataSettings.cubefaceFlags & (1 << face)))
-    {
-        FilePath faceFilePath = pathname;
-        faceFilePath.ReplaceFilename(pathname.GetBasename() + Texture::FACE_NAME_SUFFIX[face] + GetFaceExtension(face));
-        return faceFilePath;
-    }
-    else
-        return FilePath();
-}
-
 void TextureDescriptor::GetFacePathnames(Vector<FilePath>& faceNames) const
 {
     GenerateFacePathnames(pathname, Texture::FACE_NAME_SUFFIX, faceNames);
@@ -580,11 +568,10 @@ void TextureDescriptor::GenerateFacePathnames(const FilePath & filePath, const s
 
     for (auto face = 0; face < Texture::CUBE_FACE_MAX_COUNT; ++face)
     {
-        FilePath faceFilePath;
-        if (!dataSettings.cubefaceFlags & (1 << face))
+        if (dataSettings.cubefaceFlags & (1 << face))
         {
-            faceFilePath = filePath;
-            faceFilePath.ReplaceFilename(baseName + faceNameSuffixes[face] + GetFaceExtension(face));
+            faceNames[face] = filePath;
+            faceNames[face].ReplaceFilename(baseName + faceNameSuffixes[face] + GetFaceExtension(face));
         }
     }
 }

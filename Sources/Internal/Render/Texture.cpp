@@ -98,7 +98,6 @@ static int32 CUBE_FACE_MAPPING[] =
 	Texture::CUBE_FACE_NEGATIVE_Z
 };
 
-//String Texture::FACE_NAME_SUFFIX[] =
 std::array<String, Texture::CUBE_FACE_MAX_COUNT> Texture::FACE_NAME_SUFFIX =
 {{
     String("_px"),
@@ -594,17 +593,18 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
     
 	if(texDescriptor->IsCubeMap() && (!GPUFamilyDescriptor::IsGPUForDevice(gpu)))
 	{
+        Vector<FilePath> facePathes;
+        texDescriptor->GetFacePathnames(facePathes);
 		for(auto i = 0; i < CUBE_FACE_MAX_COUNT; ++i)
 		{
-            FilePath facePath = texDescriptor->GetFacePathname(static_cast<CubemapFace>(i));
-            if (facePath.IsEmpty())
+            if (facePathes[i].IsEmpty())
                 continue;
 
             Vector<Image *> faceImage;
-            ImageSystem::Instance()->Load(facePath, faceImage, baseMipMap);
+            ImageSystem::Instance()->Load(facePathes[i], faceImage, baseMipMap);
             if(faceImage.size() == 0)
 			{
-                Logger::Error("[Texture::LoadImages] Cannot open file %s", facePath.GetAbsolutePathname().c_str());
+                Logger::Error("[Texture::LoadImages] Cannot open file %s", facePathes[i].GetAbsolutePathname().c_str());
 
 				ReleaseImages(images);
 				return false;
