@@ -525,7 +525,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
         {
             if(orientation == ORIENTATION_HORIZONTAL)
             {
-                if(abs(currentInput->point.x - newPos) > touchHoldSize)
+                if(Abs(currentInput->point.x - newPos) > touchHoldSize)
                 {
                     UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
                     newPos = currentInput->point.x;
@@ -534,7 +534,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
             }
             else
             {
-                if(abs(currentInput->point.y - newPos) > touchHoldSize)
+                if(Abs(currentInput->point.y - newPos) > touchHoldSize)
                 {
                     UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
                     newPos = currentInput->point.y;

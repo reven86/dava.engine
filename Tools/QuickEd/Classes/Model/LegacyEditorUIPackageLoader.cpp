@@ -13,9 +13,7 @@ using namespace DAVA;
 
 LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(AbstractUIPackageBuilder *builder, LegacyControlData *data) : builder(builder), legacyData(SafeRetain(data))
 {
-    
     // for legacy loading
-    propertyNamesMap["UIControl"]["visible"] = "recursiveVisible";
     
     // UIButton bg
     propertyNamesMap["UIButton"]["sprite"] = "stateSprite";
@@ -36,6 +34,7 @@ LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(AbstractUIPackageBuilde
     propertyNamesMap["UIButton"]["fitting"] = "stateFittingOption";
     propertyNamesMap["UIButton"]["textalign"] = "stateTextAlign";
     propertyNamesMap["UIButton"]["textcolorInheritType"] = "stateTextColorInheritType";
+    propertyNamesMap["UIButton"]["margins"] = "stateMargins";
     
     baseClasses["UIButton"] = "UIControl";
 }
@@ -322,6 +321,10 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
             Vector2 pivotPoint = valueNode->AsVector2();
             return VariantType(pivotPoint / size);
         }
+        else if (propertyName == "angle")
+        {
+            return VariantType(RadToDeg(valueNode->AsFloat()));
+        }
         else if (member->Type() == MetaInfo::Instance<bool>())
             return VariantType(valueNode->AsBool());
         else if (member->Type() == MetaInfo::Instance<int32>())
@@ -338,6 +341,8 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
             return VariantType(valueNode->AsVector2());
         else if (member->Type() == MetaInfo::Instance<Color>())
             return VariantType(valueNode->AsColor());
+        else if (member->Type() == MetaInfo::Instance<Vector4>())
+            return VariantType(valueNode->AsVector4());
         else if (member->Type() == MetaInfo::Instance<FilePath>())
             return VariantType(FilePath(valueNode->AsString()));
         else

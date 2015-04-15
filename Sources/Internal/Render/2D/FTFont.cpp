@@ -29,6 +29,7 @@
 
 #include "Render/2D/FTFont.h"
 #include "Render/2D/FontManager.h"
+#include "Render/RenderManager.h"
 #include "FileSystem/Logger.h"
 #include "Utils/Utils.h"
 #include "Debug/DVAssert.h"
@@ -385,48 +386,57 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
     metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, baseSize); // Setup rect with maximum int32 value for x/y, and zero width
     
 	int32 layoutWidth = 0; // width in FT points
+
+	bool drawNondefGlyph = RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_NONDEF_GLYPH);
 		
 	for(uint32 i = 0; i < strLen; ++i)
 	{
-		if ( i > 0 && (justifyOffset > 0 || fixJustifyOffset > 0))
-		{
-			if(str[i-1] == L' ')
-			{
-				pen.x += justifyOffset << ftToPixelShift;
-				layoutWidth += justifyOffset << ftToPixelShift;
-			}
-			if (fixJustifyOffset > 0)
-			{
-				fixJustifyOffset--;
-				pen.x += 1 << ftToPixelShift;
-				layoutWidth += 1 << ftToPixelShift;
-			}
-		}
-		
 		Glyph		& glyph = glyphs[i];
-		FT_Glyph	image;
+		FT_Glyph	image = nullptr;;
 		FT_BBox		bbox;
 
-		if (!glyph.image)
-			continue;
+		bool skipGlyph = true;
+        if(glyph.image && (glyph.index != 0 || drawNondefGlyph))
+        {
+            error = FT_Glyph_Copy(glyph.image, &image);
+            if(error == 0)
+            {
+                // Make justify offsets only for visible glyphs
+                if ( i > 0 && (justifyOffset > 0 || fixJustifyOffset > 0))
+                {
+                    if(str[i-1] == L' ')
+                    {
+                        pen.x += justifyOffset << ftToPixelShift;
+                        layoutWidth += justifyOffset << ftToPixelShift;
+                    }
+                    if (fixJustifyOffset > 0)
+                    {
+                        fixJustifyOffset--;
+                        pen.x += 1 << ftToPixelShift;
+                        layoutWidth += 1 << ftToPixelShift;
+                    }
+                }
 
-		error = FT_Glyph_Copy(glyph.image, &image);
-		if(error)
-			continue;
+                error = FT_Glyph_Transform(image, 0, &pen);
+                if(error == 0)
+                {
+                    FT_Glyph_Get_CBox(image, FT_GLYPH_BBOX_PIXELS, &bbox);
+                    error = FT_Glyph_To_Bitmap(&image, FT_RENDER_MODE_NORMAL, 0, 1);
 
-		if(!error)
-			error = FT_Glyph_Transform(image, 0, &pen);
+                    skipGlyph = error != 0;
+                }
+            }
+        }
 
-		if(error)
-		{
-			FT_Done_Glyph( image );
-			continue;
-		}
-
-		FT_Glyph_Get_CBox(image, FT_GLYPH_BBOX_PIXELS, &bbox);
-
- 		error = FT_Glyph_To_Bitmap(&image, FT_RENDER_MODE_NORMAL, 0, 1);
-		if(!error)
+        if(skipGlyph)
+        {
+            // Add zero char size for invalid glyph
+            if(charSizes)
+            {
+                charSizes->push_back(0.f);
+            }
+        }
+        else
 		{
 			FT_BitmapGlyph  bit = (FT_BitmapGlyph)image;
 			FT_Bitmap * bitmap = &bit->bitmap;
@@ -435,6 +445,14 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 			int32 top = multilineOffsetY - bit->top;
 			int32 width = bitmap->width;
 			int32 height = bitmap->rows;
+
+			if(glyph.index == 0)
+			{
+                width = ((int32)advances[i].x >> ftToPixelShift);
+                height = 2 * metrics.baseline - metrics.height;
+                left = ((int32)pen.x >> ftToPixelShift);
+                top = multilineOffsetY - ((int32)pen.y >> ftToPixelShift) - height;
+			}
 
 			if(charSizes)
 			{
@@ -450,23 +468,41 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 
 			if(realDraw && bbox.xMin < bufWidth && bbox.yMin < bufHeight && top >= 0)
 			{
-				int32 realH = Min((int32)bitmap->rows, (int32)(bufHeight - top));
-				int32 realW = Min((int32)bitmap->width, (int32)(bufWidth - left));
+				int32 realH = Min((int32)height, (int32)(bufHeight - top));
+				int32 realW = Min((int32)width, (int32)(bufWidth - left));
 				int32 ind = top*bufWidth + left;
 				DVASSERT(ind >= 0);
 				uint8 * writeBuf = resultBuf + ind;
-				uint8 * readBuf = bitmap->buffer;
-                    
-				for(int32 h = 0; h < realH; h++)
-				{
-					for(int32 w = 0; w < realW; w++)
-					{
-						*writeBuf++ += *readBuf++;
-					}
-					writeBuf += bufWidth-realW;
-					// DF-1827 - Increment read buffer with proper value
-					readBuf += (int32)bitmap->width-realW;
-				}
+                
+                if(glyph.index == 0)
+                {
+                    for(int32 h = 0; h < realH; h++)
+                    {
+                        for(int32 w = 0; w < realW; w++)
+                        {
+                            if (w == 0 || w == realW - 1 || h == 0 || h == realH - 1)
+                                *writeBuf++ = 255;
+                            else
+                                *writeBuf++ = 0;
+                        }
+                        writeBuf += bufWidth-realW;
+                    }
+                }
+                else
+                {
+                    uint8 * readBuf = bitmap->buffer;
+                    for(int32 h = 0; h < realH; h++)
+                    {
+                        for(int32 w = 0; w < realW; w++)
+                        {
+                            *writeBuf++ += *readBuf++;
+                        }
+                        writeBuf += bufWidth-realW;
+                        // DF-1827 - Increment read buffer with proper value
+                        readBuf += (int32)width-realW;
+                    }
+                }
+                
 				if(writeBuf > resultBuf + ind)
 				{
 					DVASSERT((writeBuf-resultBuf-(bufWidth-realW)) <= (bufWidth*bufHeight));
@@ -476,7 +512,11 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
             pen.x += advances[i].x;
             pen.y += advances[i].y;
 		}
-		FT_Done_Glyph(image);
+
+        if (image)
+        {
+            FT_Done_Glyph(image);
+        }
 	}
 
 	SafeDeleteArray(advances);

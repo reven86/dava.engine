@@ -393,6 +393,8 @@ VariantType UIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember *membe
             return VariantType(valueNode->AsVector2());
         else if (member->Type() == MetaInfo::Instance<Color>())
             return VariantType(valueNode->AsColor());
+        else if (member->Type() == MetaInfo::Instance<Vector4>())
+            return VariantType(valueNode->AsVector4());
         else if (member->Type() == MetaInfo::Instance<FilePath>())
             return VariantType(FilePath(valueNode->AsString()));
         else
