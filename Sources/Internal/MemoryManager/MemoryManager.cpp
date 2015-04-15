@@ -151,11 +151,7 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, int32 poolIndex)
         block->pool = poolIndex;
         block->realBlockStart = static_cast<void*>(block);
         block->allocByApp = static_cast<uint32>(size);
-#if defined(__DAVAENGINE_ANDROID__)
-        block->allocTotal = static_cast<uint32>(totalSize);
-#else
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
-#endif
         if (!IsInternalAllocationPool(poolIndex))
         {
             Backtrace backtrace;
@@ -231,11 +227,7 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, in
         block->pool = poolIndex;
         block->realBlockStart = realPtr;
         block->allocByApp = static_cast<uint32>(size);
-#if defined(__DAVAENGINE_ANDROID__)
-        block->allocTotal = static_cast<uint32>(totalSize);
-#else
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
-#endif
         if (!IsInternalAllocationPool(poolIndex))
         {
             Backtrace backtrace;
@@ -347,9 +339,7 @@ void MemoryManager::Deallocate(void* ptr)
             {
                 LockType lock(mutex);
                 statGeneral.ghostBlockCount += 1;
-#if !defined(__DAVAENGINE_ANDROID__)
                 statGeneral.ghostSize += MallocHook::MallocSize(ptr);
-#endif
             }
             MallocHook::Free(ptr);
         }
