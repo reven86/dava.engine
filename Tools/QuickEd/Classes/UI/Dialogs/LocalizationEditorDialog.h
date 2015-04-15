@@ -172,7 +172,7 @@ class LocalizationEditorDialog : public QDialog, public Ui::LocalizationEditorDi
 public:
     explicit LocalizationEditorDialog(QWidget *parent = 0);
     ~LocalizationEditorDialog();
-    void SetDefaultLanguage();
+    void UpdateDefaultLanguage();
 signals:
     void LanguageChanged();
 protected:

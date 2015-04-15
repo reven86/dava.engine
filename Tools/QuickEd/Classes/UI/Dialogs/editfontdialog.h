@@ -30,55 +30,45 @@
 #ifndef EDITFONTDIALOG_H
 #define EDITFONTDIALOG_H
 
-#include <QDialog>
-
-#include <QSpinBox>
-#include <QPushButton>
-#include <QRadioButton>
-#include <QLineEdit>
-#include <QComboBox>
-
+#include "ui_editfontdialog.h"
 #include "Base/BaseTypes.h"
 
-namespace Ui {
-class EditFontDialog;
-}
 class ControlNode;
+namespace DAVA {
+    class Font;
+}
 
-class EditFontDialog : public QDialog
+class EditFontDialog : public QDialog, public Ui::EditFontDialog
 {
     Q_OBJECT
 
 public:
-    explicit EditFontDialog(QWidget *parent = 0);
-    ~EditFontDialog();
+    explicit EditFontDialog(QWidget *parent = nullptr);
+    ~EditFontDialog() = default;
+    void OnPropjectOpened();
+    //! \brief update fields for existing dialog
+    //! \param[in] control node, which contains font property
     void UpdateFontPreset(ControlNode *selectedControlNode);
+    //! \brief functions return font preset from given node
     DAVA::String EditFontDialog::findFont(ControlNode *node);
-private:
-    Ui::EditFontDialog *ui;
-    
-    //ChangeFontPropertyCommandData dialogResult;
-    DAVA::String currentLocale;
-    
-    void ConnectToSignals();
-    void DisconnectFromSignals();
-    
-    virtual void ProcessComboBoxValueChanged(QComboBox *senderWidget, const QString& value);
-    virtual void ProcessPushButtonClicked(QPushButton *senderWidget);
-    
-    void UpdateDefaultFontParams();
-    void UpdateLocalizedFontParams();
-    
-    void UpdateLineEditWidgetWithPropertyValue(QLineEdit *lineEditWidget);
-    void UpdatePushButtonWidgetWithPropertyValue(QPushButton *pushButtonWidget);
-    void UpdateSpinBoxWidgetWithPropertyValue(QSpinBox *spinBoxWidget);
-    void UpdateComboBoxWidgetWithPropertyValue(QComboBox *comboBoxWidget);
-
 private slots:
-    void OnOkButtonClicked();
-    void OnPushButtonClicked();
-    void OnSpinBoxValueChanged(int newValue);
-    void OnComboBoxValueChanged(QString value);
+    //! \brief update locale button and locale spinbox for current language
+    void UpdateLocaleFontWidgets();
+    //! \brief set default font preset for current locale
+    void ResetCurrentLocale();
+    //! \brief set default font preset for all locales
+    void ResetAllLocales();
+    //! \brief apply changes
+    void OnApplyToAll();
+    void OnCreateNew();
+private:
+    void ResetFontForLocale(const QString &locale);
+    DAVA::Font* GetLocaleFont(const DAVA::String &locale) const;
+    //! \brief update current locale
+    void UpdateCurrentLocale();
+    //! \brief update 
+    void UpdateDefaultFontWidgets();
+    DAVA::String presetName;
 };
 
 #endif // EDITFONTDIALOG_H

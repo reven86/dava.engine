@@ -572,7 +572,7 @@ void LocalizationEditorDialog::FillLocaleComboBox()
         currentLocaleComboBox->addItem(languageDescription);
     }
     // Setup default locale
-    SetDefaultLanguage();
+    UpdateDefaultLanguage();
 }
 
 void LocalizationEditorDialog::ConnectToSignals()
@@ -632,7 +632,7 @@ void LocalizationEditorDialog::SetLocalizationDirectoryPath()
     }
 }
 
-void LocalizationEditorDialog::SetDefaultLanguage()
+void LocalizationEditorDialog::UpdateDefaultLanguage()
 {
     // Get description for current language ID
     String currentLanguageID = LocalizationSystem::Instance()->GetCurrentLocale();

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>338</width>
-    <height>322</height>
+    <height>294</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,12 +15,29 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="margin">
-    <number>2</number>
+    <number>5</number>
    </property>
+   <item>
+    <widget class="QLabel" name="fontPresetNameLabel">
+     <property name="text">
+      <string>Font Preset Name:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="lineEdit_fontPresetName">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="readOnly">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
    <item>
     <widget class="QGroupBox" name="fontPresetGroupBox">
      <property name="title">
-      <string>Font Preset default</string>
+      <string>Font Preset defaults</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <property name="margin">
@@ -32,16 +49,6 @@
          <property name="margin">
           <number>0</number>
          </property>
-         <item>
-          <widget class="QLabel" name="fontPresetNameLabel">
-           <property name="text">
-            <string>Font Preset Name:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="fontPresetNameLlineEdit"/>
-         </item>
         </layout>
        </widget>
       </item>
@@ -71,18 +78,10 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="fontSelectButton">
-           <property name="styleSheet">
-            <string notr="true">QPushButton {text-align:right; font-size: 11px; border-style: outset; border: 1px solid #969696; padding: 5px; border-radius: 4px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #e3e3e3, stop: 1 #f9f9f9);} 
-QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #7e7e7e, stop: 1 #f9f9f9); }</string>
-           </property>
-           <property name="text">
-            <string>default font</string>
-           </property>
-          </widget>
+          <widget class="QComboBox" name="comboBox_defaultFont"/>
          </item>
          <item>
-          <widget class="QSpinBox" name="fontSizeSpinBox">
+          <widget class="QSpinBox" name="spinBox_defaultFontSize">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -100,8 +99,28 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
         </layout>
        </widget>
       </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_resetFontForAllLocales">
+        <property name="text">
+         <string>accept for all locales</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
    <item>
     <widget class="QGroupBox" name="localizedFontPresetGroupBox">
@@ -138,7 +157,7 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="selectLocaleComboBox">
+          <widget class="QComboBox" name="comboBox_locale">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -148,11 +167,17 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="resetFontForLocalePushButton">
-           <property name="text">
-            <string>Reset Font for locale</string>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
            </property>
-          </widget>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </widget>
@@ -183,18 +208,10 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="localizedFontSelectButton">
-           <property name="styleSheet">
-            <string notr="true">QPushButton {text-align:right; font-size: 11px; border-style: outset; border: 1px solid #969696; padding: 5px; border-radius: 4px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #e3e3e3, stop: 1 #f9f9f9);} 
-QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #7e7e7e, stop: 1 #f9f9f9); }</string>
-           </property>
-           <property name="text">
-            <string>default font</string>
-           </property>
-          </widget>
+          <widget class="QComboBox" name="comboBox_localizedFont"/>
          </item>
          <item>
-          <widget class="QSpinBox" name="localizedFontSizeSpinBox">
+          <widget class="QSpinBox" name="spinBox_localizedFontSize">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -209,6 +226,22 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_resetLocaleFont">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="flat">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
@@ -216,98 +249,64 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="saveOptionsGroupBox">
-     <property name="title">
-      <string>Choose how to apply changes:</string>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_6">
-      <property name="margin">
-       <number>0</number>
-      </property>
-      <item>
-       <widget class="QRadioButton" name="createNewRadioButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>create a copy of font preset</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="applyToAllRadioButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>apply to all occurences of font preset</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_createNew">
+       <property name="text">
+        <string>Создать новый</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_applyToAll">
+       <property name="text">
+        <string>Применить ко всем</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_cancel">
+       <property name="text">
+        <string>Отмена</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
  <tabstops>
-  <tabstop>fontSizeSpinBox</tabstop>
-  <tabstop>buttonBox</tabstop>
+  <tabstop>spinBox_defaultFontSize</tabstop>
  </tabstops>
  <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>EditFontDialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>240</x>
-     <y>117</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>81</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>EditFontDialog</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>240</x>
-     <y>117</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>250</x>
-     <y>81</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

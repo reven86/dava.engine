@@ -423,7 +423,8 @@ void MainWindow::OnProjectOpened(Result result, QString projectPath)
         RebuildRecentMenu();
         fileSystemDockWidget->SetProjectDir(projectPath);
         fileSystemDockWidget->setEnabled(true);
-        localizationEditorDialog->SetDefaultLanguage();
+        localizationEditorDialog->UpdateDefaultLanguage();
+        editFontDialog->OnPropjectOpened();
     }
     else
     {

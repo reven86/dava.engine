@@ -28,24 +28,9 @@
 
 
 #include "editfontdialog.h"
-#include "ui_editfontdialog.h"
-
-//#include "ResourcesManageHelper.h"
-//#include "EditorFontManager.h"
-//#include "EditorSettings.h"
-//#include "TexturePacker/ResourcePacker2D.h"
-
-#include <QMessageBox>
-#include <QFileDialog>
-#include <QStandardItemModel>
-#include <QModelIndexList>
-#include <QStandardItemModel>
-#include <QStringList>
-#include <QTableWidgetItem>
 
 #include "Helpers/ResourcesManageHelper.h"
 #include "UI/fontmanagerdialog.h"
-#include "Helpers/WidgetSignalsBlocker.h"
 #include "EditorFontManager.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 
@@ -53,52 +38,50 @@
 #include "Model/ControlProperties/PropertiesSection.h"
 #include "Model/ControlProperties/ValueProperty.h"
 
+#include <QtGui>
+#include <QtWidgets>
+
 using namespace DAVA;
 
-EditFontDialog::EditFontDialog(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::EditFontDialog)
-{    
-    ui->setupUi(this);
-    
-    // Initialize dialog
-    ConnectToSignals();
+EditFontDialog::EditFontDialog(QWidget *parent) 
+	: QDialog(parent)
+{
+    setupUi(this);
+    pushButton_resetLocaleFont->setIcon(QIcon(":/Icons/edit_undo.png"));
+    pushButton_resetLocaleFont->setToolTip(tr("Reset Font for locale"));
+    connect(comboBox_locale, &QComboBox::currentTextChanged, this, &EditFontDialog::UpdateLocaleFontWidgets);
+    connect(pushButton_resetLocaleFont, &QPushButton::clicked, this, &EditFontDialog::ResetCurrentLocale);
+    connect(pushButton_resetFontForAllLocales, &QPushButton::clicked, this, &EditFontDialog::ResetAllLocales);
+    connect(pushButton_cancel, &QPushButton::clicked, this, &EditFontDialog::reject);
+    connect(pushButton_applyToAll, &QPushButton::clicked, this, &EditFontDialog::OnApplyToAll);
+    connect(pushButton_createNew, &QPushButton::clicked, this, &EditFontDialog::OnCreateNew);
 }
 
-EditFontDialog::~EditFontDialog()
+void EditFontDialog::OnPropjectOpened()
 {
-    DisconnectFromSignals();
-    SafeDelete(ui);
+    comboBox_locale->clear();
+    const Vector<String> &locales = EditorFontManager::Instance()->GetLocales();
+    for (auto &locale : EditorFontManager::Instance()->GetLocales())
+    {
+        comboBox_locale->addItem(QString::fromStdString(locale));
+    }
+    QStringList fontsList = ResourcesManageHelper::GetFontsList();
+    comboBox_defaultFont->clear();
+    comboBox_defaultFont->addItems(fontsList);
+
+    comboBox_localizedFont->clear();
+    comboBox_localizedFont->addItems(fontsList);
 }
 
 void EditFontDialog::UpdateFontPreset(ControlNode *selectedControlNode)
 {
-    String editFontPresetName = findFont(selectedControlNode);
-    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
-    ui->selectLocaleComboBox->clear();
-    Font* font = EditorFontManager::Instance()->GetLocalizedFont(editFontPresetName, "default");
+    presetName = findFont(selectedControlNode);
+    DVASSERT(!presetName.empty());
+    lineEdit_fontPresetName->setText(QString::fromStdString(presetName));   
 
-    const Vector<String> &locales = EditorFontManager::Instance()->GetLocales();
-    int32 localesCount = locales.size();
-    for (int32 i = 0; i < localesCount; ++i)
-    {
-        Font* localizedFont = EditorFontManager::Instance()->GetLocalizedFont(editFontPresetName, locales[i]);
-        ui->selectLocaleComboBox->addItem(QString::fromStdString(locales[i]));
-    }
-    if (0 < localesCount)
-    {
-        currentLocale = locales[0];
-    }
-
-    UpdateLineEditWidgetWithPropertyValue(ui->fontPresetNameLlineEdit);
-
-    UpdateSpinBoxWidgetWithPropertyValue(ui->fontSizeSpinBox);
-    UpdatePushButtonWidgetWithPropertyValue(ui->fontSelectButton);
-
-    UpdateSpinBoxWidgetWithPropertyValue(ui->localizedFontSizeSpinBox);
-    UpdatePushButtonWidgetWithPropertyValue(ui->localizedFontSelectButton);
-
-    UpdateComboBoxWidgetWithPropertyValue(ui->selectLocaleComboBox);
+    UpdateCurrentLocale();
+    UpdateDefaultFontWidgets();
+    UpdateLocaleFontWidgets();
 }
 
 String EditFontDialog::findFont(ControlNode *node)
@@ -125,114 +108,76 @@ String EditFontDialog::findFont(ControlNode *node)
     return String();
 }
 
-void EditFontDialog::ConnectToSignals()
+Font* EditFontDialog::GetLocaleFont(const DAVA::String &locale) const
 {
-    //Connect signal and slots    
-    UpdateLineEditWidgetWithPropertyValue(ui->fontPresetNameLlineEdit);
-    
-    UpdateSpinBoxWidgetWithPropertyValue(ui->fontSizeSpinBox);
-    UpdatePushButtonWidgetWithPropertyValue(ui->fontSelectButton);
-    
-    UpdateSpinBoxWidgetWithPropertyValue(ui->localizedFontSizeSpinBox);
-    UpdatePushButtonWidgetWithPropertyValue(ui->localizedFontSelectButton);
-    
-    UpdateComboBoxWidgetWithPropertyValue(ui->selectLocaleComboBox);
-    
-    connect(ui->fontSelectButton, SIGNAL(clicked()), this, SLOT(OnPushButtonClicked()));
-    connect(ui->fontSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnSpinBoxValueChanged(int)));
-    
-    connect(ui->selectLocaleComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(OnComboBoxValueChanged(QString)));
-    
-    connect(ui->resetFontForLocalePushButton, SIGNAL(clicked()), this, SLOT(OnPushButtonClicked()));
-    
-    connect(ui->localizedFontSelectButton, SIGNAL(clicked()), this, SLOT(OnPushButtonClicked()));
-    connect(ui->localizedFontSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnSpinBoxValueChanged(int)));
-    
-    connect(ui->buttonBox->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(OnOkButtonClicked()));
+    Font* tmpFont = EditorFontManager::Instance()->GetLocalizedFont(presetName, locale);
+    Font *defaultFont = nullptr != tmpFont ? tmpFont->Clone() : EditorFontManager::Instance()->GetDefaultFont()->Clone();
+    DVASSERT(nullptr != defaultFont);
+    return defaultFont;
 }
 
-void EditFontDialog::DisconnectFromSignals()
-{  
-    disconnect(ui->fontSelectButton, SIGNAL(clicked()), this, SLOT(OnPushButtonClicked()));
-    disconnect(ui->fontSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnSpinBoxValueChanged(int)));
-    
-    disconnect(ui->selectLocaleComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(OnComboBoxValueChanged(QString)));
-    
-    disconnect(ui->localizedFontSelectButton, SIGNAL(clicked()), this, SLOT(OnPushButtonClicked()));
-    disconnect(ui->localizedFontSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnSpinBoxValueChanged(int)));
+void EditFontDialog::UpdateCurrentLocale()
+{
+    String currentLanguageID = LocalizationSystem::Instance()->GetCurrentLocale();
+    comboBox_locale->setCurrentText(QString::fromStdString(currentLanguageID));
 }
 
-void EditFontDialog::OnPushButtonClicked()
+void EditFontDialog::UpdateDefaultFontWidgets()
 {
-    QPushButton* senderWidget = dynamic_cast<QPushButton*>(QObject::sender());
-    if (senderWidget == NULL)
-    {
-        Logger::Error("OnPushButtonClicked - sender is NULL!");
-        return;
-    }
-    
-    ProcessPushButtonClicked(senderWidget);
+    Font *defaultFont = GetLocaleFont("default");
+    spinBox_defaultFontSize->setValue(defaultFont->GetSize());
+
+    DVASSERT(defaultFont->GetFontType() == Font::TYPE_FT);
+    FTFont *ftFont = static_cast<FTFont*>(defaultFont);
+    QFileInfo fileInfo(QString::fromStdString(ftFont->GetFontPath().GetFrameworkPath()));
+    comboBox_defaultFont->setCurrentText(fileInfo.fileName());
 }
 
-void EditFontDialog::OnSpinBoxValueChanged(int newValue)
+void EditFontDialog::UpdateLocaleFontWidgets()
 {
-    QWidget* senderWidget = dynamic_cast<QWidget*>(QObject::sender());
-    if (senderWidget == NULL)
+    Font *defaultFont = GetLocaleFont(comboBox_locale->currentText().toStdString());
+    spinBox_localizedFontSize->setValue(defaultFont->GetSize());
+
+    DVASSERT(defaultFont->GetFontType() == Font::TYPE_FT);
+    FTFont *ftFont = static_cast<FTFont*>(defaultFont);
+    QFileInfo fileInfo(QString::fromStdString(ftFont->GetFontPath().GetFrameworkPath()));
+    comboBox_localizedFont->setCurrentText(fileInfo.fileName());
+}
+
+void EditFontDialog::ResetFontForLocale(const QString &locale)
+{
+    QString currentDefaultFont = comboBox_defaultFont->currentText();
+    QString fontPath = ResourcesManageHelper::GetFontRelativePath(currentDefaultFont);
+    Font* font = FTFont::Create(fontPath.toStdString());
+    font->SetSize(spinBox_defaultFontSize->value());
+    EditorFontManager::Instance()->SetLocalizedFont(presetName, font, presetName, true, locale.toStdString());
+    UpdateLocaleFontWidgets();
+}
+
+void EditFontDialog::ResetCurrentLocale()
+{
+    ResetFontForLocale(comboBox_locale->currentText());
+}
+
+void EditFontDialog::ResetAllLocales()
+{
+    for (auto i = comboBox_locale->count() - 1; i >= 0; ++i)
     {
-        Logger::Error("OnSpinBoxValueChanged - sender is NULL!");
-        return;
-    }
-    
-    if(senderWidget == ui->fontSizeSpinBox || senderWidget == ui->localizedFontSizeSpinBox)
-    {
-        Font *font = NULL;
-        if(senderWidget == ui->fontSizeSpinBox)
-        {
-            //font = dialogResult.font;
-        }
-        else if(senderWidget == ui->localizedFontSizeSpinBox)
-        {
-            //font = dialogResult.GetLocalizedFont(currentLocale);
-        }
-        
-        if(font == NULL)
-        {
-            Logger::Error("OnSpinBoxValueChanged - font is NULL!");
-            return;
-        }
-        
-        if(font)
-        {
-            font->SetSize(newValue);
-        }
+        ResetFontForLocale(comboBox_locale->itemText(i));
     }
 }
 
-void EditFontDialog::OnComboBoxValueChanged(QString value)
+void EditFontDialog::OnApplyToAll()
 {
-    QComboBox* senderWidget = dynamic_cast<QComboBox*>(QObject::sender());
-    if (senderWidget == NULL)
-    {
-        Logger::Error("OnComboBoxValueChanged - sender is NULL!");
-        return;
-    }
-    
-    ProcessComboBoxValueChanged(senderWidget, value);
+
 }
 
-void EditFontDialog::ProcessComboBoxValueChanged(QComboBox *senderWidget, const QString& value)
+void EditFontDialog::OnCreateNew()
 {
-    if(senderWidget == ui->selectLocaleComboBox)
-    {
-        currentLocale = value.toStdString();
-        
-        Logger::FrameworkDebug("EditFontDialog::ProcessComboBoxValueChanged currentLocale=%s", currentLocale.c_str());
-        
-        UpdatePushButtonWidgetWithPropertyValue(ui->localizedFontSelectButton);
-        UpdateSpinBoxWidgetWithPropertyValue(ui->localizedFontSizeSpinBox);
-    }
+
 }
 
+/*
 void EditFontDialog::ProcessPushButtonClicked(QPushButton *senderWidget)
 {
     if(senderWidget == ui->fontSelectButton || senderWidget == ui->localizedFontSelectButton)
@@ -286,7 +231,7 @@ void EditFontDialog::ProcessPushButtonClicked(QPushButton *senderWidget)
         }
         else
         {
-/*            dialogResult.SetLocalizedFont(resultFont, currentLocale);*/
+            dialogResult.SetLocalizedFont(resultFont, currentLocale);
             
             UpdateLocalizedFontParams();
         }
@@ -435,3 +380,4 @@ void EditFontDialog::OnOkButtonClicked()
     
     Logger::FrameworkDebug("EditFontDialog::OnOkButtonClicked");
 }
+*/
