@@ -802,15 +802,15 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
 {
     PatchFileReader patchReader(dlcContext.remotePatchStorePath);
     
-    //first apply only patches that either reduce or don't change resources size
-    if (dlcContext.patchInProgress)
+    auto applyPatchesIf = [&](std::function<bool (const PatchInfo* info)>  shouldApply)
     {
+        if (!dlcContext.patchInProgress || PatchFileReader::ERROR_NO != patchReader.GetLastError())
+            return;
+        
         bool lastOpSucceeded = patchReader.ReadFirst();
         while (dlcContext.patchInProgress && lastOpSucceeded)
         {
-            const PatchInfo* info = patchReader.GetCurInfo();
-            
-            if(info->newSize <= info->origSize)
+            if(shouldApply(patchReader.GetCurInfo()))
             {
                 lastOpSucceeded = patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath());
                 DVASSERT(lastOpSucceeded || PatchFileReader::ERROR_NO != patchReader.GetLastError())
@@ -819,38 +819,22 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
                     dlcContext.appliedPatchCount++;
                 }
             }
-            
-            if (lastOpSucceeded)
-            {//read next only if apply succeeded
-                lastOpSucceeded = patchReader.ReadNext();
-            }
+            lastOpSucceeded = lastOpSucceeded && /*only if apply succeeded*/patchReader.ReadNext();
         }
-    }
+    };
+    
+    //first apply only patches that either reduce or don't change resources size
+    applyPatchesIf([] (const PatchInfo* info)
+                   {
+                       return info->newSize <= info->origSize;
+                   });
     
     //then apply patches that increase resources size
-    if (dlcContext.patchInProgress && PatchFileReader::ERROR_NO == patchReader.GetLastError())
-    {
-        bool lastOpSucceeded = patchReader.ReadFirst();
-        while (dlcContext.patchInProgress && lastOpSucceeded)
-        {
-            const PatchInfo* info = patchReader.GetCurInfo();
-            
-            if(info->newSize > info->origSize)
-            {
-                lastOpSucceeded = patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath());
-                DVASSERT(lastOpSucceeded || PatchFileReader::ERROR_NO != patchReader.GetLastError())
-                if (lastOpSucceeded)
-                {
-                    dlcContext.appliedPatchCount++;
-                }
-            }
-            
-            if (lastOpSucceeded)
-            {//read next only if apply succeeded
-                lastOpSucceeded = patchReader.ReadNext();
-            }
-        }
-    }
+    applyPatchesIf([] (const PatchInfo* info)
+                   {
+                       return info->newSize > info->origSize;
+                   });
+    
     
     // check if no errors occurred during patching
     dlcContext.patchingError = patchReader.GetLastError();
