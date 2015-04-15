@@ -531,7 +531,14 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 		}
 		else
 		{
-			DAVA::Logger::Error("NULL descriptor or wrong GPU type", item->id);
+            if(descriptor)
+            {
+                DAVA::Logger::FrameworkDebug("%s has no converted image for %s", descriptor->pathname.GetStringValue().c_str(), DAVA::GPUFamilyDescriptor::GetGPUName(gpu).c_str());
+            }
+            else
+            {
+                DAVA::Logger::Error("[TextureConvertor::GetConvertedThread] NULL descriptor for job(%d)", item->id);
+            }
 		}
 
 	}
