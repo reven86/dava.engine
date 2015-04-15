@@ -136,6 +136,15 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
     new FrameworkLoop();
 
     auto glWidget = new DavaGLWidget();
+    glWidget->setWindowFlags( Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint | Qt::Tool );
+    glWidget->setAttribute( Qt::WA_TranslucentBackground );
+    glWidget->setAttribute( Qt::WA_TransparentForMouseEvents );
+    glWidget->setAttribute( Qt::WA_DontShowOnScreen );
+    glWidget->setAttribute( Qt::WA_ShowWithoutActivating );
+    glWidget->setWindowOpacity( 0.0 );
+    glWidget->setFixedSize( 0, 0 );
+    glWidget->move( 0, 0 );
+
     FrameworkLoop::Instance()->SetOpenGLWindow( glWidget );
 
     DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
