@@ -30,8 +30,14 @@
 #ifndef __IMAGE_TOOLS_H__
 #define __IMAGE_TOOLS_H__
 
+#include "Render/Image/Image.h"
+#include "FileSystem/FilePath.h"
+#include "Render/TextureDescriptor.h"
+
 #include "TextureCompression/TextureConverter.h"
-#include "DAVAEngine.h"
+
+
+#include <QImage>
 
 struct Channels
 {
@@ -93,6 +99,10 @@ public:
     static DAVA::Image* CreateMergedImage(const Channels& channes);
     
     static void SetChannel(DAVA::Image* image, eComponentsRGBA channel,  DAVA::uint8 value);
+    
+    
+    static QImage FromDavaImage(const DAVA::FilePath & pathname);
+    static QImage FromDavaImage(DAVA::Image *image);
 
 private:
     

@@ -37,6 +37,7 @@
 #include "Project/ProjectManager.h"
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
+#include "ImageTools/ImageTools.h"
 
 
 #include <QMouseEvent>
@@ -132,7 +133,7 @@ bool CubemapEditorDialog::LoadImageTo(const DAVA::FilePath& filePath, int face, 
     QString errorString;
     if (VerifyImage(filePath, face, errorString))
     {
-        QImage faceImage(fileName);
+        QImage faceImage = ImageTools::FromDavaImage(filePath);
 
         ClickableQLabel* label = GetLabelForFace(face);
         QImage scaledFace = faceImage.scaled(label->width(), label->height());
@@ -406,7 +407,7 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
 			{
 				QTransform transform;
 				transform.rotate(faceLabel->GetRotation());
-                QImage qimg(targetFacePathString.c_str());
+                QImage qimg = ImageTools::FromDavaImage(targetFacePathString.c_str());
 				QImage rotatedImage = qimg.transformed(transform);
                 rotatedImage.save(targetFacePathString.c_str());
                 faceLabel->SetRotation(0);

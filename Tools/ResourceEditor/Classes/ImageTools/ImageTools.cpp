@@ -38,6 +38,16 @@
 
 using namespace DAVA;
 
+
+void Channels::ReleaseImages()
+{
+    DAVA::SafeRelease(red);
+    DAVA::SafeRelease(green);
+    DAVA::SafeRelease(blue);
+    DAVA::SafeRelease(alpha);
+}
+
+
 uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, const eGPUFamily forGPU)
 {
 	uint32 size = 0;
@@ -186,7 +196,7 @@ DAVA::Image* ImageTools::CreateMergedImage(const Channels& channels)
 {
     if(!channels.ChannelesResolutionEqual() || !channels.HasFormat(FORMAT_A8))
     {
-        return NULL;
+        return nullptr;
     }
     Image *mergedImage = Image::Create(channels.red->width, channels.red->height, FORMAT_RGBA8888);
     int32 size = mergedImage->width * mergedImage->height;
@@ -217,10 +227,214 @@ void ImageTools::SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::u
     }
 }
 
-void Channels::ReleaseImages()
+
+QImage ImageTools::FromDavaImage(const DAVA::FilePath & pathname)
 {
-    DAVA::SafeRelease(red);
-    DAVA::SafeRelease(green);
-    DAVA::SafeRelease(blue);
-    DAVA::SafeRelease(alpha);
+    auto image = LoadImage(pathname);
+    if(image)
+    {
+        QImage img = FromDavaImage(image);
+        SafeRelease(image);
+        
+        return img;
+    }
+    
+    return QImage();
 }
+
+QImage ImageTools::FromDavaImage(DAVA::Image *image)
+{
+    QImage qtImage;
+    
+    if(nullptr != image)
+    {
+        QRgb *line = nullptr;
+        
+        switch(image->format)
+        {
+            case DAVA::FORMAT_DXT1:
+            case DAVA::FORMAT_DXT1A:
+            case DAVA::FORMAT_DXT3:
+            case DAVA::FORMAT_DXT5:
+            case DAVA::FORMAT_DXT5NM:
+            {
+                Vector<Image* > vec;
+                LibDdsHelper::DecompressImageToRGBA(*image, vec, true);
+                if(vec.size() == 1)
+                {
+                    qtImage = FromDavaImage(vec.front());
+                }
+                else
+                {
+                    DAVA::Logger::Error("Error during conversion from DDS to QImage.");
+                }
+                
+                for_each(vec.begin(), vec.end(), SafeRelease<DAVA::Image>);
+                
+                break;
+            }
+            case DAVA::FORMAT_PVR4:
+            case DAVA::FORMAT_PVR2:
+            case DAVA::FORMAT_RGBA8888:
+            {
+                DAVA::uint32 *data = (DAVA::uint32 *) image->data;
+                DAVA::uint32 c;
+                
+                qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
+                
+                // convert DAVA:RGBA8888 into Qt ARGB8888
+                for (int y = 0; y < (int)image->height; y++)
+                {
+                    line = (QRgb *) qtImage.scanLine(y);
+                    for (int x = 0; x < (int)image->width; x++)
+                    {
+                        c = data[y * image->width + x];
+                        line[x] = (c & 0xFF00FF00) | ((c & 0x00FF0000) >> 16) | ((c & 0x000000FF) << 16);
+                    }
+                }
+            }
+                break;
+                
+            case DAVA::FORMAT_RGBA5551:
+            {
+                DAVA::uint16 *data = (DAVA::uint16 *) image->data;
+                DAVA::uint32 c;
+                
+                qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
+                
+                // convert DAVA:RGBA5551 into Qt ARGB8888
+                for (int y = 0; y < (int)image->height; y++)
+                {
+                    line = (QRgb *) qtImage.scanLine(y);
+                    for (int x = 0; x < (int)image->width; x++)
+                    {
+                        DAVA::uint32 a;
+                        DAVA::uint32 r;
+                        DAVA::uint32 g;
+                        DAVA::uint32 b;
+                        
+                        c = data[y * image->width + x];
+                        r = (c >> 11) & 0x1f;
+                        g = (c >> 6) & 0x1f;
+                        b = (c >> 1) & 0x1f;
+                        a = (c & 0x1) ? 0xff000000 : 0x0;
+                        
+                        line[x] = (a | (r << (16 + 3)) | (g << (8 + 3)) | (b << 3));
+                    }
+                }
+            }
+                break;
+                
+            case DAVA::FORMAT_RGBA4444:
+            {
+                DAVA::uint16 *data = (DAVA::uint16 *) image->data;
+                DAVA::uint32 c;
+                
+                qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
+                
+                // convert DAVA:RGBA4444 into Qt ARGB8888
+                for (int y = 0; y < (int)image->height; y++)
+                {
+                    line = (QRgb *) qtImage.scanLine(y);
+                    for (int x = 0; x < (int)image->width; x++)
+                    {
+                        DAVA::uint32 a;
+                        DAVA::uint32 r;
+                        DAVA::uint32 g;
+                        DAVA::uint32 b;
+                        
+                        c = data[y * image->width + x];
+                        r = (c >> 12) & 0xf;
+                        g = (c >> 8) & 0xf;
+                        b = (c >> 4) & 0xf;
+                        a = (c & 0xf);
+                        
+                        line[x] = ((a << (24 + 4)) | (r << (16 + 4)) | (g << (8+4)) | (b << 4));
+                    }
+                }
+            }
+                break;
+                
+            case DAVA::FORMAT_RGB565:
+            {
+                DAVA::uint16 *data = (DAVA::uint16 *) image->data;
+                DAVA::uint32 c;
+                
+                qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
+                
+                // convert DAVA:RGBA565 into Qt ARGB8888
+                for (int y = 0; y < (int)image->height; y++)
+                {
+                    line = (QRgb *) qtImage.scanLine(y);
+                    for (int x = 0; x < (int)image->width; x++)
+                    {
+                        DAVA::uint32 a;
+                        DAVA::uint32 r;
+                        DAVA::uint32 g;
+                        DAVA::uint32 b;
+                        
+                        c = data[y * image->width + x];
+                        a = 0xff;
+                        r = (c >> 11) & 0x1f;
+                        g = (c >> 5) & 0x3f;
+                        b = c & 0x1f;
+                        
+                        line[x] = ((a << 24) | (r << (16 + 3)) | (g << (8 + 2)) | (b << 3));
+                    }
+                }
+            }
+                break;
+                
+            case DAVA::FORMAT_A8:
+            {
+                DAVA::uint8 *data = (DAVA::uint8 *) image->data;
+                DAVA::uint32 c;
+                
+                qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
+                
+                // convert DAVA:RGBA565 into Qt ARGB8888
+                for (int y = 0; y < (int)image->height; y++) 
+                {
+                    line = (QRgb *) qtImage.scanLine(y);
+                    for (int x = 0; x < (int)image->width; x++) 
+                    {
+                        c = data[y * image->width + x];
+                        line[x] = ((0xff << 24) | (c << 16) | (c << 8) | c);
+                    }
+                }
+            }
+                break;
+                
+            case DAVA::FORMAT_RGB888:
+            {
+                DAVA::uint8 *data = (DAVA::uint8 *) image->data;
+                
+                qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
+                
+                // convert DAVA:RGB888 into Qt ARGB8888
+                int32 imagewidth = image->width * 3;
+                for (int y = 0; y < (int)image->height; y++) 
+                {
+                    line = (QRgb *) qtImage.scanLine(y);
+                    for (int x = 0, i = 0; x < imagewidth; x += 3, i++) 
+                    {
+                        DAVA::uint32 a = 0xff000000;
+                        DAVA::uint32 r = data[y * imagewidth + x];
+                        DAVA::uint32 g = data[y * imagewidth + x + 1];
+                        DAVA::uint32 b = data[y * imagewidth + x + 2];
+                        
+                        line[i] = (a) | (r << 16) | (g << 8) | (b);
+                    }
+                }
+            }
+                break;
+                
+                
+            default:
+                break;
+        }
+    }
+    
+    return qtImage;
+}
+

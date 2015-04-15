@@ -36,6 +36,7 @@
 #include "Settings/SettingsManager.h"
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
+#include "ImageTools/ImageTools.h"
 
 #include <QFileDialog>
 #include <QDragEnterEvent>
@@ -180,7 +181,7 @@ void ImageArea::UpdatePreviewPicture()
     }
     DAVA::Image* scaledImage = DAVA::Image::CopyImageRegion(image, image->GetWidth(), image->GetHeight());
     scaledImage->ResizeImage(this->width(), this->height());
-    QPixmap scaledPixmap = QPixmap::fromImage(TextureConvertor::FromDavaImage(scaledImage));
+    QPixmap scaledPixmap = QPixmap::fromImage(ImageTools::FromDavaImage(scaledImage));
     DAVA::SafeRelease(scaledImage);
     setPixmap(scaledPixmap);
 }
