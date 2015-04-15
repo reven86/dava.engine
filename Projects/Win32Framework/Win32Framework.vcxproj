@@ -904,7 +904,6 @@
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Vector.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocThunk.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AndroidMallocSize.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\MallocHook.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\MemoryManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\OperatorNewHook.cpp" />
