@@ -75,8 +75,8 @@
 		}
 
 		// Subscribe to "keyboard change frame" notifications to block GL while keyboard change is performed (see please DF-2012 for details).
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillChangeFrame:) name:UIKeyboardWillChangeFrameNotification object:nil];
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidChangeFrame:) name:UIKeyboardDidChangeFrameNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidHide:) name:UIKeyboardDidHideNotification object:nil];
 
         CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
         
@@ -187,12 +187,6 @@
 
 - (void) drawView:(id)sender
 {
-	if (blockDrawView)
-	{
-		// Yuri Coder, 2013/02/06. In case we are displaying ASSERT dialog we need to block rendering because RenderManager might be already locked here.
-		return;
-	}
-
 	DAVA::RenderManager::Instance()->Lock();
     
     DAVA::uint64 renderManagerContextId = DAVA::RenderManager::Instance()->GetRenderContextId();
@@ -217,9 +211,19 @@
     
 	DAVA::RenderManager::Instance()->Unlock();
 	
-	if(currFPS != DAVA::RenderManager::Instance()->GetFPS())
+    DAVA::int32 targetFPS = 0;
+    if (blockDrawView)
+    {
+        targetFPS = 10;
+    }
+    else
+    {
+        targetFPS = DAVA::RenderManager::Instance()->GetFPS();
+    }
+    
+	if(currFPS != targetFPS)
 	{
-		currFPS = DAVA::RenderManager::Instance()->GetFPS();
+		currFPS = targetFPS;
 		float interval = 60.0f / currFPS;
 		if(interval < 1.0f)
 		{
@@ -415,15 +419,16 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
     blockDrawView = false;
 }
 
-- (void)keyboardWillChangeFrame:(NSNotification *)notification
+- (void)keyboardWillShow:(NSNotification *)notification
 {
-	blockDrawView = true;
+    blockDrawView = true;
 }
 
-- (void)keyboardDidChangeFrame:(NSNotification *)notification
+- (void)keyboardDidHide:(NSNotification *)notification
 {
-	blockDrawView = false;
+    blockDrawView = false;
 }
+
 
 @end
 
