@@ -348,6 +348,7 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
     {
         descriptor->SetDefaultValues();
         descriptor->drawSettings.wrapModeS = descriptor->drawSettings.wrapModeT = Texture::WRAP_CLAMP_TO_EDGE;
+        descriptor->pathname = filePath;
     }
 
     descriptor->dataSettings.cubefaceFlags = faceMask;
@@ -358,7 +359,6 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
 	//copy file to the location where .tex will be put. Add suffixes to file names to distinguish faces
 	for(int i = 0 ; i < CubemapUtils::GetMaxFaces(); ++i)
 	{
-        Texture::CubemapFace face = static_cast<Texture::CubemapFace>(i);
 		if(!facePath.at(i).isNull())
 		{
 			DAVA::String targetFullPath = faceNames[i].GetAbsolutePathname().c_str();
