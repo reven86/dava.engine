@@ -138,12 +138,28 @@ public:
     void DrawStretched(Sprite * sprite, Sprite::DrawState * drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData &gd, StretchDrawData ** pStreachData);
     void DrawTiled(Sprite * sprite, Sprite::DrawState * drawState, const Vector2& streatchCap, const UIGeometricData &gd, TiledDrawData ** pTiledData);
 
+    /**
+     * Destroy current buffers and create new.
+     * @param verticesCount vertices count per buffer (size of buffer equals verticesCount*GetVertexSize(vertexFormat))
+     * @param indicesCount indices count per buffer (size of buffer equals indicesCount*sizeof(uint16))
+     * @param buffersCount buffers count
+     */
+    void HardResetBatchingBuffers(uint32 verticesCount, uint32 indicesCount, uint8 buffersCount);
+
     void PushBatch(UniqueHandle state, UniqueHandle texture, Shader * shader, const Rect& clip,
         uint32 vertexCount, const float32* vertexPointer, const float32* texCoordPointer,
         uint32 indexCount, const uint16* indexPointer,
         const Color& color);
     
-    void Reset();
+    /*!
+     * Highlight controls which has vertices count bigger than verticesCount.
+     * Work only with RenderOptions::HIGHLIGHT_BIG_CONTROLS option enabled.
+     * @param verticesCount vertices limit
+     */
+    void SetHightlightControlsVerticesLimit(uint32 verticesCount);
+
+    void BeginFrame();
+    void EndFrame();
     void Flush();
     
     void SetClip(const Rect &rect);
@@ -182,8 +198,8 @@ private:
 
     Sprite::DrawState defaultSpriteDrawState;
 
-    float32* vboTemp;
-    uint16* iboTemp;
+    Vector<float32> vboTemp;
+    Vector<uint16> iboTemp;
 
     bool spriteClipping;
     bool clipChanged;
@@ -195,7 +211,21 @@ private:
 
     VboPool* pool;
 
+    // Batching errors handling
+    uint32 prevFrameErrorsFlags;
+    uint32 currFrameErrorsFlags;
+    enum ErrorFlag {
+        NO_ERRORS = 0,
+        BUFFER_OVERFLOW_ERROR = 1,
+    };
+    uint32 highlightControlsVerticesLimit;
+
 };
+
+inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCount)
+{
+    highlightControlsVerticesLimit = verticesCount;
+}
 
 } // ns
 

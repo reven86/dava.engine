@@ -203,7 +203,7 @@ void TextureConvertor::WaitConvertedAll(QWidget *parent)
 {
 	if(convertJobQueueSize > 0)
 	{
-        if(NULL == parent)
+        if (nullptr == parent)
         {
             parent = QtMainWindow::Instance();
         }
@@ -216,7 +216,7 @@ void TextureConvertor::WaitConvertedAll(QWidget *parent)
 			hasCancel = true;
 		}
 
-		QObject::connect(waitDialog, SIGNAL(canceled()), this, SLOT(waitCanceled()));
+        connect(waitDialog, &QtWaitDialog::canceled, this, &TextureConvertor::waitCanceled);
 
 		waitDialog->SetRange(0, convertJobQueueSize);
 		waitDialog->SetValue(convertJobQueueSize - jobStackConverted.size());
@@ -226,7 +226,7 @@ void TextureConvertor::WaitConvertedAll(QWidget *parent)
 		waitDialog->Exec("Waiting for conversion completion", waitStatusText, true, hasCancel);
 
 		waitDialog->deleteLater();
-		waitDialog = NULL;
+		waitDialog = nullptr;
 	}
 }
 

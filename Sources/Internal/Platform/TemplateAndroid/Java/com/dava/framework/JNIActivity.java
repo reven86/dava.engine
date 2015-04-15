@@ -62,6 +62,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     protected static SingalStrengthListner singalStrengthListner = null;
     private boolean isPausing = false;
     
+    private Runnable onResumeGLThread = null;
+    
     public boolean GetIsPausing()
     {
         return isPausing;
@@ -71,6 +73,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	{
 		return activity;
 	}
+    
+    public synchronized void setResumeGLActionOnWindowReady(Runnable action)
+    {
+        onResumeGLThread = action;
+    }
     
     @Override
     public void onCreate(Bundle savedInstanceState) 
@@ -373,6 +380,23 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
     	if(hasFocus) {
     		HideNavigationBar(getWindow().getDecorView());
+    		
+    		// we have to wait for window to get focus and only then
+    		// resume game
+    		// because on some slow devices:
+    		// Samsung Galaxy Note II LTE GT-N7105
+    		// Samsung Galaxy S3 Sprint SPH-L710
+    		// Xiaomi MiPad
+    		// before window not visible on screen main(ui thread)
+    		// can wait GLSurfaceView(onWindowSizeChange) on GLThread 
+    		// witch can be blocked with creation
+    		// TextField on GLThread and wait for ui thread - so we get deadlock
+    		Runnable action = onResumeGLThread;
+    		if (action != null)
+    		{
+    		    glView.queueEvent(action);
+    		    setResumeGLActionOnWindowReady(null);
+    		}
     	}
     	Log.i(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] finish");
     }
