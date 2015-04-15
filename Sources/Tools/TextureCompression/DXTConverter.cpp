@@ -90,11 +90,14 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor &descriptor, 
 	
 	Vector<Image*> inputImages;
 	Vector<FilePath> faceNames;
-	Texture::GenerateCubeFaceNames(descriptor.pathname, faceNames);
-	for(size_t i = 0; i < faceNames.size(); ++i)
+	descriptor.GetFacePathnames(faceNames);
+	for(auto faceName : faceNames)
 	{
+        if (faceName.IsEmpty())
+            continue;
+
         Vector<Image*> tempImages;
-        ImageSystem::Instance()->Load(faceNames[i], tempImages);
+        ImageSystem::Instance()->Load(faceName, tempImages);
 		if(tempImages.size() == 1)
 		{
 			inputImages.push_back(tempImages[0]);

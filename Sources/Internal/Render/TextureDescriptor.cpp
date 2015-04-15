@@ -60,7 +60,7 @@ void TextureDescriptor::TextureDrawSettings::SetDefaultValues()
 void TextureDescriptor::TextureDataSettings::SetDefaultValues()
 {
 	textureFlags = FLAG_GENERATE_MIPMAPS;
-    faceDescription = 0;
+    cubefaceFlags = 0;
     
     static ImageFormat defaultImageFormat = IMAGE_FORMAT_PNG;
 
@@ -119,7 +119,7 @@ void TextureDescriptor::Compression::Clear()
     
 //================   TextureDescriptor  ===================
 const String TextureDescriptor::DESCRIPTOR_EXTENSION = ".tex";
-
+const String TextureDescriptor::DEFAULT_CUBEFACE_EXTENSION = ".png";
 
 TextureDescriptor::TextureDescriptor()
 {
@@ -317,12 +317,23 @@ void TextureDescriptor::SaveInternal(File *file, const int32 signature, const ui
 
     //data settings
     file->Write(&dataSettings.textureFlags);
-    file->Write(&dataSettings.faceDescription);
+    file->Write(&dataSettings.cubefaceFlags);
     file->Write(&dataSettings.sourceFileFormat);
     
-    const uint32 length = dataSettings.sourceFileExtension.length();
+    uint32 length = dataSettings.sourceFileExtension.length();
     file->Write(&length);
     file->Write(dataSettings.sourceFileExtension.c_str(), length);
+
+    for (int i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
+    {
+        if (dataSettings.cubefaceFlags & (1 << i))
+        {
+            String faceExt = GetFaceExtension(i);
+            length = faceExt.length();
+            file->Write(&length);
+            file->Write(faceExt.c_str(), length);
+        }
+    }
 
     //compressions
     file->Write(&compressionCount);
@@ -403,7 +414,7 @@ void TextureDescriptor::LoadVersion7(DAVA::File *file)
         }
     }
     
-    file->Read(&dataSettings.faceDescription);
+    file->Read(&dataSettings.cubefaceFlags);
 }
 
 void TextureDescriptor::LoadVersion8(File *file)
@@ -441,7 +452,7 @@ void TextureDescriptor::LoadVersion8(File *file)
         }
     }
 
-    file->Read(&dataSettings.faceDescription);
+    file->Read(&dataSettings.cubefaceFlags);
 }
 
 void TextureDescriptor::LoadVersion9(File *file)
@@ -455,18 +466,29 @@ void TextureDescriptor::LoadVersion9(File *file)
 
     //data settings
     file->Read(&dataSettings.textureFlags);
-    file->Read(&dataSettings.faceDescription);
+    file->Read(&dataSettings.cubefaceFlags);
 
     int8 sourceFileFormat = 0;
     file->Read(&sourceFileFormat);
     dataSettings.sourceFileFormat = static_cast<ImageFormat>(sourceFileFormat);
     
     uint32 length = 0;
-    file->Read(&length);
-    
     std::array<char8, 20> extStr;
+
+    file->Read(&length);
     file->Read(extStr.data(), length);
     dataSettings.sourceFileExtension = String(extStr.data(), length);
+
+    for (int i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
+    {
+        if (dataSettings.cubefaceFlags & (1 << i))
+        {
+            file->Read(&length);
+            file->Read(extStr.data(), length);
+            dataSettings.cubefaceExtensions[i] = String(extStr.data(), length);
+        }
+    }
+    
 
     //compression
     uint8 compressionsCount = 0;
@@ -526,6 +548,47 @@ FilePath TextureDescriptor::GetSourceTexturePathname() const
     return FilePath::CreateWithNewExtension(pathname, GetSourceTextureExtension());
 }
 
+const String& TextureDescriptor::GetFaceExtension(uint32 face) const
+{
+    return (
+        dataSettings.cubefaceExtensions[face].empty() ? 
+        GetDefaultFaceExtension() : dataSettings.cubefaceExtensions[face]);
+}
+
+FilePath TextureDescriptor::GetFacePathname(Texture::CubemapFace face) const
+{
+    if (!pathname.IsEmpty() && (dataSettings.cubefaceFlags & (1 << face)))
+    {
+        FilePath faceFilePath = pathname;
+        faceFilePath.ReplaceFilename(pathname.GetBasename() + Texture::FACE_NAME_SUFFIX[face] + GetFaceExtension(face));
+        return faceFilePath;
+    }
+    else
+        return FilePath();
+}
+
+void TextureDescriptor::GetFacePathnames(Vector<FilePath>& faceNames) const
+{
+    GenerateFacePathnames(pathname, Texture::FACE_NAME_SUFFIX, faceNames);
+}
+
+void TextureDescriptor::GenerateFacePathnames(const FilePath & filePath, const std::array<String, Texture::CUBE_FACE_MAX_COUNT>& faceNameSuffixes, Vector<FilePath>& faceNames) const
+{
+    faceNames.resize(Texture::CUBE_FACE_MAX_COUNT, FilePath());
+
+    String baseName = filePath.GetBasename();
+
+    for (auto face = 0; face < Texture::CUBE_FACE_MAX_COUNT; ++face)
+    {
+        FilePath faceFilePath;
+        if (!dataSettings.cubefaceFlags & (1 << face))
+        {
+            faceFilePath = filePath;
+            faceFilePath.ReplaceFilename(baseName + faceNameSuffixes[face] + GetFaceExtension(face));
+        }
+    }
+}
+
 FilePath TextureDescriptor::GetDescriptorPathname(const FilePath &texturePathname)
 {
     DVASSERT(!texturePathname.IsEmpty());
@@ -545,7 +608,14 @@ const String & TextureDescriptor::GetDescriptorExtension()
 {
     return DESCRIPTOR_EXTENSION;
 }
-    
+
+
+
+const String & TextureDescriptor::GetDefaultFaceExtension()
+{
+    return DEFAULT_CUBEFACE_EXTENSION;
+}
+
 const String & TextureDescriptor::GetLightmapTextureExtension()
 {
     return ImageSystem::Instance()->GetExtensionsFor(IMAGE_FORMAT_PNG)[0];
@@ -624,7 +694,7 @@ bool TextureDescriptor::IsCompressedFile() const
 
 bool TextureDescriptor::IsCubeMap() const
 {
-	return (dataSettings.faceDescription != 0);
+	return (dataSettings.cubefaceFlags != 0);
 }
 
 uint32 TextureDescriptor::ReadSourceCRC() const

@@ -409,12 +409,12 @@ bool SceneExporter::ExportTexture(const TextureDescriptor * descriptor, Set<Stri
 		if(descriptor->IsCubeMap())
 		{
 			Vector<FilePath> faceNames;
-			Texture::GenerateCubeFaceNames(descriptor->pathname.GetAbsolutePathname().c_str(), faceNames);
-			for(Vector<FilePath>::iterator it = faceNames.begin();
-				it != faceNames.end();
-				++it)
+			descriptor->GetFacePathnames(faceNames);
+			for(auto faceName : faceNames)
 			{
-				bool result = sceneUtils.CopyFile(*it, errorLog);
+                if (faceName.IsEmpty())
+                    continue;
+				bool result = sceneUtils.CopyFile(faceName, errorLog);
 				copyResult = copyResult && result;
 			}
 		}

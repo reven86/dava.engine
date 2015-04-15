@@ -43,27 +43,17 @@
 namespace DAVA
 {
 static String CUBEMAP_TMP_DIR = "~doc:/ResourceEditor_Cubemap_Tmp/";
-	
-static String PVRTOOL_INPUT_NAMES[] =
+
+static std::array<String, Texture::CUBE_FACE_MAX_COUNT> PVRTOOL_FACE_SUFFIXES =
 {
-	String("1"), //pz
-	String("2"), //nz
-	String("3"), //px
-	String("4"), //nx
-	String("5"), //pz
-	String("6"), //nz
+    String("1"), //pz
+    String("2"), //nz
+    String("3"), //px
+    String("4"), //nx
+    String("5"), //pz
+    String("6"), //nz
 };
-	
-static DAVA::String PVRTOOL_MAP_NAMES[] =
-{
-	String("_px"), //1
-	String("_nx"), //2
-	String("_py"), //3
-	String("_ny"), //4
-	String("_pz"), //5
-	String("_nz"), //6
-};
-    
+
 static DAVA::String PVR_QUALITY_SETTING[] =
 {
     "pvrtcfastest",
@@ -107,8 +97,6 @@ PVRConverter::PVRConverter()
 	pixelFormatToPVRFormat[FORMAT_ETC2_RGB] = "ETC2_RGB";
 	pixelFormatToPVRFormat[FORMAT_ETC2_RGBA] = "ETC2_RGBA";
 	pixelFormatToPVRFormat[FORMAT_ETC2_RGB_A1] = "ETC2_RGB_A1";
-
-	InitFileSuffixes();
 }
 
 PVRConverter::~PVRConverter()
@@ -306,10 +294,8 @@ FilePath PVRConverter::PrepareCubeMapForPvrConvert(const TextureDescriptor& desc
 {
 	DAVA::Vector<DAVA::FilePath> pvrToolFaceNames;
 	DAVA::Vector<DAVA::FilePath> cubemapFaceNames;
-	DAVA::Texture::GenerateCubeFaceNames(CUBEMAP_TMP_DIR, pvrToolSuffixes, pvrToolFaceNames);
-	DAVA::Texture::GenerateCubeFaceNames(descriptor.pathname, cubemapSuffixes, cubemapFaceNames);
-		
-	DVASSERT(pvrToolSuffixes.size() == cubemapSuffixes.size());
+	descriptor.GenerateFacePathnames(CUBEMAP_TMP_DIR, PVRTOOL_FACE_SUFFIXES, pvrToolFaceNames);
+	descriptor.GetFacePathnames(cubemapFaceNames);
 		
 	if(!FileSystem::Instance()->IsDirectory(CUBEMAP_TMP_DIR))
 	{
@@ -343,35 +329,24 @@ FilePath PVRConverter::PrepareCubeMapForPvrConvert(const TextureDescriptor& desc
 void PVRConverter::CleanupCubemapAfterConversion(const TextureDescriptor& descriptor)
 {
 	Vector<FilePath> pvrToolFaceNames;
-	Texture::GenerateCubeFaceNames(CUBEMAP_TMP_DIR, pvrToolSuffixes, pvrToolFaceNames);
+	descriptor.GenerateFacePathnames(CUBEMAP_TMP_DIR, PVRTOOL_FACE_SUFFIXES, pvrToolFaceNames);
 		
-	for(size_t i = 0; i < pvrToolFaceNames.size(); ++i)
+	for(auto faceName : pvrToolFaceNames)
 	{
-		if(FileSystem::Instance()->IsFile(pvrToolFaceNames[i]))
+		if(FileSystem::Instance()->IsFile(faceName))
 		{
-			FileSystem::Instance()->DeleteFile(pvrToolFaceNames[i]);
+			FileSystem::Instance()->DeleteFile(faceName);
 		}
 	}
 }
-	
-void PVRConverter::InitFileSuffixes()
-{
-	if(pvrToolSuffixes.empty())
-	{
-		for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
-		{
-			pvrToolSuffixes.push_back(PVRTOOL_INPUT_NAMES[i]);
-			cubemapSuffixes.push_back(PVRTOOL_MAP_NAMES[i]);
-		}
-	}
-}	
+
 
 DAVA::String PVRConverter::GenerateInputName( const TextureDescriptor& descriptor, const FilePath & fileToConvert)
 {
 	if(descriptor.IsCubeMap())
 	{
 		Vector<FilePath> pvrToolFaceNames;
-		Texture::GenerateCubeFaceNames(CUBEMAP_TMP_DIR, pvrToolSuffixes, pvrToolFaceNames);
+		descriptor.GenerateFacePathnames(CUBEMAP_TMP_DIR, PVRTOOL_FACE_SUFFIXES, pvrToolFaceNames);
 
 		String retNames;
 		for(size_t i = 0; i < pvrToolFaceNames.size(); ++i)

@@ -98,18 +98,17 @@ static int32 CUBE_FACE_MAPPING[] =
 	Texture::CUBE_FACE_NEGATIVE_Z
 };
 
-static DAVA::String FACE_NAME_SUFFIX[] =
-{
-    DAVA::String("_px"),
-    DAVA::String("_nx"),
-    DAVA::String("_py"),
-    DAVA::String("_ny"),
-    DAVA::String("_pz"),
-    DAVA::String("_nz")
-};
+//String Texture::FACE_NAME_SUFFIX[] =
+std::array<String, Texture::CUBE_FACE_MAX_COUNT> Texture::FACE_NAME_SUFFIX =
+{{
+    String("_px"),
+    String("_nx"),
+    String("_py"),
+    String("_ny"),
+    String("_pz"),
+    String("_nz")
+}};
 
-const DAVA::String FACE_FILE_EXTENSION = ".png";
-	
 class TextureMemoryUsageInfo
 {
 public:
@@ -595,35 +594,36 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
     
 	if(texDescriptor->IsCubeMap() && (!GPUFamilyDescriptor::IsGPUForDevice(gpu)))
 	{
-		Vector<FilePath> faceNames;
-		GenerateCubeFaceNames(texDescriptor->GetSourceTexturePathname(), faceNames);
-
-		for(size_t i = 0; i < faceNames.size(); ++i)
+		for(auto i = 0; i < CUBE_FACE_MAX_COUNT; ++i)
 		{
-            Vector<Image *> imageFace;
-            ImageSystem::Instance()->Load(faceNames[i], imageFace,baseMipMap);
-            if(imageFace.size() == 0)
+            FilePath facePath = texDescriptor->GetFacePathname(static_cast<CubemapFace>(i));
+            if (facePath.IsEmpty())
+                continue;
+
+            Vector<Image *> faceImage;
+            ImageSystem::Instance()->Load(facePath, faceImage, baseMipMap);
+            if(faceImage.size() == 0)
 			{
-				Logger::Error("[Texture::LoadImages] Cannot open file %s", faceNames[i].GetAbsolutePathname().c_str());
+                Logger::Error("[Texture::LoadImages] Cannot open file %s", facePath.GetAbsolutePathname().c_str());
 
 				ReleaseImages(images);
 				return false;
 			}
 
-			DVASSERT(imageFace.size() == 1);
+			DVASSERT(faceImage.size() == 1);
 
-			imageFace[0]->cubeFaceID = CUBE_FACE_MAPPING[i];
-			imageFace[0]->mipmapLevel = 0;
+			faceImage[0]->cubeFaceID = CUBE_FACE_MAPPING[i];
+			faceImage[0]->mipmapLevel = 0;
 
             if(texDescriptor->GetGenerateMipMaps())
             {
-                Vector<Image *> mipmapsImages = imageFace[0]->CreateMipMapsImages();
+                Vector<Image *> mipmapsImages = faceImage[0]->CreateMipMapsImages();
                 images->insert(images->end(), mipmapsImages.begin(), mipmapsImages.end());
-                SafeRelease(imageFace[0]);
+                SafeRelease(faceImage[0]);
             }
             else
             {
-			    images->push_back(imageFace[0]);
+			    images->push_back(faceImage[0]);
             }
 		}
 	}
@@ -1174,7 +1174,7 @@ Texture * Texture::CreatePink(TextureType requestedType, bool checkers)
 	if(Texture::TEXTURE_CUBE == requestedType)
 	{
 		tex->texDescriptor->Initialize(WRAP_CLAMP_TO_EDGE, true);
-		tex->texDescriptor->dataSettings.faceDescription = 0x000000FF;
+		tex->texDescriptor->dataSettings.cubefaceFlags = 0x000000FF;
 	}
 	else
 	{
@@ -1259,37 +1259,6 @@ void Texture::SetInvalidater(TextureInvalidater* invalidater)
     }
 }
 
-void Texture::GenerateCubeFaceNames(const FilePath & baseName, Vector<FilePath>& faceNames)
-{
-	static Vector<String> defaultSuffixes;
-	if(defaultSuffixes.empty())
-	{
-		for(uint32 i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
-		{
-			defaultSuffixes.push_back(FACE_NAME_SUFFIX[i]);
-		}
-	}
-	
-	GenerateCubeFaceNames(baseName, defaultSuffixes, faceNames);
-}
-
-void Texture::GenerateCubeFaceNames(const FilePath & filePath, const Vector<String>& faceNameSuffixes, Vector<FilePath>& faceNames)
-{
-	faceNames.clear();
-	
-	String fileNameWithoutExtension = filePath.GetBasename();
-		
-	for(size_t i = 0; i < faceNameSuffixes.size(); ++i)
-	{
-		DAVA::FilePath faceFilePath = filePath;
-		faceFilePath.ReplaceFilename(fileNameWithoutExtension +
-									 faceNameSuffixes[i] +
-                                     GetDefaultFaceExtension());
-			
-		faceNames.push_back(faceFilePath);
-	}
-}
-
 const FilePath & Texture::GetPathname() const
 {
     return texDescriptor->pathname;
@@ -1347,11 +1316,6 @@ int32 Texture::GetBaseMipMap() const
     }
 
     return 0;
-}
-
-const String& Texture::GetDefaultFaceExtension()
-{
-    return FACE_FILE_EXTENSION;
 }
 
 };

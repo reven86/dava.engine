@@ -34,49 +34,23 @@
 #include "Project/ProjectManager.h"
 #include "Render/Texture.h"
 
-static DAVA::String FACE_NAME_SUFFIX[] = {
-	DAVA::String("_px"),
-	DAVA::String("_nx"),
-	DAVA::String("_py"),
-	DAVA::String("_ny"),
-	DAVA::String("_pz"),
-	DAVA::String("_nz")
-};
-
-void CubemapUtils::GenerateFaceNames(const DAVA::String& baseName, DAVA::Vector<DAVA::String>& faceNames)
+void CubemapUtils::GenerateFaceNames(const DAVA::String& baseName, DAVA::Vector<DAVA::FilePath>& faceNames)
 {
 	faceNames.clear();
 	
 	DAVA::FilePath filePath(baseName);
-	
-	DAVA::String fileNameWithoutExtension = filePath.GetFilename();
-	DAVA::String extension = filePath.GetExtension();
-	fileNameWithoutExtension.replace(fileNameWithoutExtension.find(extension), extension.size(), "");
 
-	for(int i = 0; i < CubemapUtils::GetMaxFaces(); ++i)
-	{
-		DAVA::FilePath faceFilePath = baseName;
-		faceFilePath.ReplaceFilename(fileNameWithoutExtension +
-									 CubemapUtils::GetFaceNameSuffix((i)) +
-									 CubemapUtils::GetDefaultFaceExtension());
+    std::unique_ptr<DAVA::TextureDescriptor> descriptor(new DAVA::TextureDescriptor());
+    bool descriptorReady = false;
+    if (!descriptor->Load(filePath))
+        return;
 
-		faceNames.push_back(faceFilePath.GetAbsolutePathname());
-	}
+    descriptor->GetFacePathnames(faceNames);
 }
 
 int CubemapUtils::GetMaxFaces()
 {
     return DAVA::Texture::CUBE_FACE_MAX_COUNT;
-}
-
-const DAVA::String& CubemapUtils::GetFaceNameSuffix(int faceId)
-{
-	return FACE_NAME_SUFFIX[faceId];
-}
-
-const DAVA::String& CubemapUtils::GetDefaultFaceExtension()
-{
-    return DAVA::Texture::GetDefaultFaceExtension();
 }
 
 DAVA::FilePath CubemapUtils::GetDialogSavedPath(const DAVA::String& key, const DAVA::String& defaultValue)

@@ -52,6 +52,7 @@ class File;
 class TextureDescriptor 
 {
 	static const String DESCRIPTOR_EXTENSION;
+    static const String DEFAULT_CUBEFACE_EXTENSION;
 
     static const int32 DATE_BUFFER_SIZE = 20;
     static const int32 LINE_SIZE = 256;
@@ -105,14 +106,15 @@ public:
         bool GetIsNormalMap() const;
 
 		int8 textureFlags;
-		uint8 faceDescription;
+		uint8 cubefaceFlags;
         ImageFormat sourceFileFormat;
         String sourceFileExtension;
+        String cubefaceExtensions[Texture::CUBE_FACE_MAX_COUNT];
 
 		INTROSPECTION(TextureDataSettings,
             PROPERTY("generateMipMaps", "generateMipMaps", GetGenerateMipMaps, SetGenerateMipmaps, I_VIEW | I_EDIT | I_SAVE)
             PROPERTY("isNormalMap", "isNormalMap", GetIsNormalMap, SetIsNormalMap, I_VIEW | I_EDIT | I_SAVE)
-			MEMBER(faceDescription, "faceDescription", I_SAVE)
+			MEMBER(cubefaceFlags, "cubefaceFlags", I_SAVE)
             MEMBER(sourceFileFormat, "sourceFileFormat", I_SAVE)
             MEMBER(sourceFileExtension, "sourceFileExtension", I_SAVE)
 		)
@@ -177,8 +179,13 @@ public:
 
     FilePath GetSourceTexturePathname() const;
 
+    FilePath GetFacePathname(Texture::CubemapFace face) const;
+    void GetFacePathnames(Vector<FilePath>& faceNames) const;
+    void GenerateFacePathnames(const FilePath & baseName, const std::array<String, Texture::CUBE_FACE_MAX_COUNT>& faceNameSuffixes, Vector<FilePath>& faceNames) const;
+
 	static const String & GetDescriptorExtension();
     static const String & GetLightmapTextureExtension();
+    static const String & GetDefaultFaceExtension();
 
     static bool IsSupportedTextureExtension(const String& extension);
     static bool IsSourceTextureExtension(const String& extension);
@@ -189,6 +196,7 @@ public:
     static bool IsSupportedCompressedFormat(ImageFormat imageFormat);
     
     const String& GetSourceTextureExtension() const;
+    const String& GetFaceExtension(uint32 face) const;
 
     static FilePath GetDescriptorPathname(const FilePath &texturePathname);
 

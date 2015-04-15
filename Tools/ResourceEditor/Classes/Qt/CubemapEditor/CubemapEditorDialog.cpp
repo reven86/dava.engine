@@ -303,71 +303,65 @@ int CubemapEditorDialog::GetLoadedFaceCount()
 void CubemapEditorDialog::LoadCubemap(const QString& path)
 {
 	FilePath filePath(path.toStdString());
-	TextureDescriptor* texDescriptor = TextureDescriptor::CreateFromFile(filePath);
+	std::unique_ptr<TextureDescriptor> texDescriptor(TextureDescriptor::CreateFromFile(filePath));
 	
-	if(NULL != texDescriptor &&
-	   texDescriptor->IsCubeMap())
+	if(texDescriptor && texDescriptor->IsCubeMap())
 	{
-		String fileNameWithoutExtension = filePath.GetFilename();
-		String extension = filePath.GetExtension();
-		fileNameWithoutExtension.replace(fileNameWithoutExtension.find(extension), extension.size(), "");
+        Vector<FilePath> faceNames;
+        texDescriptor->GetFacePathnames(faceNames);
+        bool cubemapLoadResult = true;
 
-		bool cubemapLoadResult = true;
-		for(int i = 0; i < CubemapUtils::GetMaxFaces(); ++i)
-		{
-            Texture::CubemapFace face = static_cast<Texture::CubemapFace>(i);
-			if(texDescriptor->dataSettings.faceDescription & (1 << face))
-			{
-				FilePath faceFilePath = filePath;
-				faceFilePath.ReplaceFilename(fileNameWithoutExtension +
-                    CubemapUtils::GetFaceNameSuffix(face) +
-											 CubemapUtils::GetDefaultFaceExtension());
+        for (auto i = 0; i < CubemapUtils::GetMaxFaces(); ++i)
+        {
+            bool faceLoadResult = LoadImageTo(faceNames[i].GetAbsolutePathname(), i, true);
+            cubemapLoadResult = cubemapLoadResult && faceLoadResult;
+        }
 
-				bool faceLoadResult = LoadImageTo(faceFilePath.GetAbsolutePathname(), i, true);
-				cubemapLoadResult = cubemapLoadResult && faceLoadResult;
-			}
-		}
-		
 		if(!cubemapLoadResult)
 		{
 			ShowErrorDialog("This cubemap texture seems to be damaged.\nPlease repair it by setting image(s) to empty face(s) and save to disk.");
 		}
 	}
-	else
-	{
-		if(NULL == texDescriptor)
-		{
-			ShowErrorDialog("Failed to load cubemap texture " + path.toStdString());
-		}
-		else
-		{
-			ShowErrorDialog("Failed to load cubemap texture " + path.toStdString() + ". Seems this is not a cubemap texture.");
-		}
-	}
-
-	SafeDelete(texDescriptor);
+	else if(!texDescriptor)
+    {
+        ShowErrorDialog("Failed to load cubemap texture " + path.toStdString());
+    }
+    else
+    {
+        ShowErrorDialog("Failed to load cubemap texture " + path.toStdString() + ". Seems this is not a cubemap texture.");
+    }
 }
 
 void CubemapEditorDialog::SaveCubemap(const QString& path)
 {
 	FilePath filePath(path.toStdString());
 	DAVA::uint8 faceMask = GetFaceMask();
+
+    std::unique_ptr<TextureDescriptor> descriptor(new TextureDescriptor());
+    bool descriptorReady = false;
+    if (filePath.Exists())
+    {
+        descriptorReady = descriptor->Load(filePath);
+    }
+
+    if (!descriptorReady)
+    {
+        descriptor->SetDefaultValues();
+        descriptor->drawSettings.wrapModeS = descriptor->drawSettings.wrapModeT = Texture::WRAP_CLAMP_TO_EDGE;
+    }
+
+    descriptor->dataSettings.cubefaceFlags = faceMask;
+
+    Vector<FilePath> faceNames;
+    descriptor->GetFacePathnames(faceNames);
 		
 	//copy file to the location where .tex will be put. Add suffixes to file names to distinguish faces
-	String fileNameWithoutExtension = filePath.GetFilename();
-	String extension = filePath.GetExtension();
-	fileNameWithoutExtension.replace(fileNameWithoutExtension.find(extension), extension.size(), "");
 	for(int i = 0 ; i < CubemapUtils::GetMaxFaces(); ++i)
 	{
         Texture::CubemapFace face = static_cast<Texture::CubemapFace>(i);
 		if(!facePath.at(i).isNull())
 		{
-			FilePath faceFilePath = filePath;
-			faceFilePath.ReplaceFilename(fileNameWithoutExtension +
-										 CubemapUtils::GetFaceNameSuffix(face) +
-										 CubemapUtils::GetDefaultFaceExtension());
-
-			DAVA::String targetFullPath = faceFilePath.GetAbsolutePathname().c_str();
+			DAVA::String targetFullPath = faceNames[i].GetAbsolutePathname().c_str();
 			if(facePath.at(i) != targetFullPath.c_str())
 			{
 				if(QFile::exists(targetFullPath.c_str()))
@@ -414,24 +408,8 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
 			}
 		}
 	}
-	
-	TextureDescriptor* descriptor = new TextureDescriptor();
-    bool descriptorReady = false;
-    if(filePath.Exists())
-    {
-        descriptorReady = descriptor->Load(filePath);
-    }
-    
-    if(!descriptorReady)
-    {
-        descriptor->SetDefaultValues();
-        descriptor->drawSettings.wrapModeS = descriptor->drawSettings.wrapModeT = Texture::WRAP_CLAMP_TO_EDGE;
-    }
-    
-	descriptor->dataSettings.faceDescription = faceMask;
 
     descriptor->Save(filePath);
-	SafeDelete(descriptor);
 	
 	QMessageBox::information(this, "Cubemap texture save result", "Cubemap texture was saved successfully!");
 }

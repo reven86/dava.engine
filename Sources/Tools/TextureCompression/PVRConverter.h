@@ -58,7 +58,6 @@ protected:
 	
 	FilePath PrepareCubeMapForPvrConvert(const TextureDescriptor& descriptor);
 	void CleanupCubemapAfterConversion(const TextureDescriptor& descriptor);
-	void InitFileSuffixes();
 	
 	void GetToolCommandLine(const TextureDescriptor &descriptor, const FilePath & fileToConvert, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, Vector<String>& args);
 

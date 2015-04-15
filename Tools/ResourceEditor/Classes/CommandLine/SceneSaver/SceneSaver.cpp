@@ -238,12 +238,11 @@ void SceneSaver::CopyTexture(const FilePath &texturePathname)
 	{
 		Vector<FilePath> faceNames;
 
-		Texture::GenerateCubeFaceNames(descriptorPathname.GetAbsolutePathname().c_str(), faceNames);
-		for(Vector<FilePath>::iterator it = faceNames.begin();
-			it != faceNames.end();
-			++it)
+		desc->GetFacePathnames(faceNames);
+		for(auto faceName : faceNames)
 		{
-			sceneUtils.AddFile(*it);
+            if (!faceName.IsEmpty())
+			    sceneUtils.AddFile(faceName);
 		}
 	}
 	else

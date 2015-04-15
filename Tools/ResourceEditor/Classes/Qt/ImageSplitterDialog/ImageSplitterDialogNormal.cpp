@@ -49,9 +49,9 @@ ImageSplitterDialogNormal::ImageSplitterDialogNormal(QWidget *parent) :
     imageArreas[2] = ui->blueImgLbl;
     imageArreas[3] = ui->alphaImgLbl;
 
-    for(auto i = 0; i < imageArreas.size(); ++i)
+    for(auto imageArea : imageArreas)
     {
-        imageArreas[i]->SetRequestedImageFormat(DAVA::FORMAT_RGBA8888);
+        imageArea->SetRequestedImageFormat(DAVA::FORMAT_RGBA8888);
     }
     
     connect(ui->saveBtn, &QPushButton::clicked, this, &ImageSplitterDialogNormal::OnSaveClicked);
@@ -72,7 +72,7 @@ void ImageSplitterDialogNormal::OnSaveClicked()
         return;
     }
     
-    for(auto i = 1; i < imageArreas.size(); ++i)
+    for(size_t i = 1; i < imageArreas.size(); ++i)
     {
         auto image = imageArreas[i]->GetImage();
         auto prevImage = imageArreas[i-1]->GetImage();

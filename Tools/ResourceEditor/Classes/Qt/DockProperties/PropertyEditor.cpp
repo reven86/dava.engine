@@ -461,14 +461,13 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
             else if(DAVA::MetaInfo::Instance<DAVA::FilePath>() == meta)
 			{
 				QString dataName = data->GetName();
-                PathDescriptor *pathDescriptor = (PathDescriptor *)&PathDescriptor::descriptors[0];
+                PathDescriptor *pathDescriptor = &PathDescriptor::descriptors[0];
 
-                auto count = PathDescriptor::descriptors.size();
-				for(auto i = 0; i < count; ++i)
+                for (auto descriptor : PathDescriptor::descriptors)
 				{
-                    if(PathDescriptor::descriptors[i].pathName == dataName)
+                    if(descriptor.pathName == dataName)
 					{
-                        pathDescriptor = (PathDescriptor *)&PathDescriptor::descriptors[i];
+                        pathDescriptor = &descriptor;
 						break;
 					}
 				}

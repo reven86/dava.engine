@@ -38,11 +38,8 @@ class CubemapUtils
 {
 public:
 	
-	static void GenerateFaceNames(const DAVA::String& baseName, DAVA::Vector<DAVA::String>& faceNames);
-	
+	static void GenerateFaceNames(const DAVA::String& baseName, DAVA::Vector<DAVA::FilePath>& faceNames);
 	static int GetMaxFaces();
-	static const DAVA::String& GetFaceNameSuffix(int faceId);
-	static const DAVA::String& GetDefaultFaceExtension();
 	static DAVA::FilePath GetDialogSavedPath(const DAVA::String& key, const DAVA::String& defaultValue);
 };
 

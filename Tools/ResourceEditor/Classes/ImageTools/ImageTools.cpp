@@ -47,12 +47,13 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 	if(descriptor->IsCubeMap() && forGPU == GPU_ORIGIN)
 	{
 		Vector<FilePath> faceNames;
-		Texture::GenerateCubeFaceNames(descriptor->pathname.GetAbsolutePathname().c_str(), faceNames);
+		descriptor->GetFacePathnames(faceNames);
         
         files.reserve(faceNames.size());
-		for(size_t i = 0 ; i < faceNames.size(); ++i)
+		for(auto faceName : faceNames)
 		{
-			files.push_back(FilePath(faceNames[i]));
+            if (!faceName.IsEmpty())
+			    files.push_back(faceName);
 		}
 	}
 	else

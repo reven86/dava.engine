@@ -404,18 +404,16 @@ TextureInfo TextureConvertor::GetThumbnailThread(JobItem *item)
 		if(descriptor->IsCubeMap())
 		{
 			DAVA::Vector<DAVA::FilePath> cubeFaceNames;
-			DAVA::Texture::GenerateCubeFaceNames(descriptor->GetSourceTexturePathname(), cubeFaceNames);
+			descriptor->GetFacePathnames(cubeFaceNames);
 
-			for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
+			for(auto faceName : cubeFaceNames)
 			{
-				if((descriptor->dataSettings.faceDescription & (1 << i)) != 0)
-				{
-					QImage img;
-					img = QImage(cubeFaceNames[i].GetAbsolutePathname().c_str());
-					result.images.push_back(img);
-				}
+                if(faceName.IsEmpty())
+                    continue;
 
-				fileSize += QFileInfo(cubeFaceNames[i].GetAbsolutePathname().c_str()).size();
+                QImage img(faceName.GetAbsolutePathname().c_str());
+                result.images.push_back(img);
+                fileSize += QFileInfo(faceName.GetAbsolutePathname().c_str()).size();
 			}
 		}
 		else
@@ -449,18 +447,17 @@ TextureInfo TextureConvertor::GetOriginalThread(JobItem *item)
 		if(descriptor->IsCubeMap())
 		{
 			DAVA::Vector<DAVA::FilePath> cubeFaceNames;
-			DAVA::Texture::GenerateCubeFaceNames(descriptor->GetSourceTexturePathname(), cubeFaceNames);
+			descriptor->GetFacePathnames(cubeFaceNames);
 			
-			for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
+			for(auto faceName : cubeFaceNames)
 			{
-				if((descriptor->dataSettings.faceDescription & (1 << i)) != 0)
-				{
-					QImage img;
-					img = QImage(cubeFaceNames[i].GetAbsolutePathname().c_str());
-					result.images.push_back(img);
-				}
+				if(faceName.IsEmpty())
+                    continue;
 
-				fileSize += QFileInfo(cubeFaceNames[i].GetAbsolutePathname().c_str()).size();
+                QImage img = QImage(faceName.GetAbsolutePathname().c_str());
+                result.images.push_back(img);
+
+                fileSize += QFileInfo(faceName.GetAbsolutePathname().c_str()).size();
 			}
 		}
 		else
