@@ -39,7 +39,6 @@ PRJ_NAME_BASE = "PerformanceTests"
 PRJ_POSTFIX = get_postfix(sys.platform)
 
 parser = argparse.ArgumentParser(description='Start tests')
-parser.add_argument('--build_num', nargs='?', default = 0)
 parser.add_argument('--branch', nargs='?', default = 'development')
 parser.add_argument('--platform', nargs='?', default = 'android')
 
@@ -106,8 +105,8 @@ elif sys.platform == "darwin":
 
 app_exit_code = None
 
-build_num = args['build_num']
 branch = args['branch']
+branch = branch.replace("/", "_")
 
 if not os.path.exists("../artifacts"):
     os.makedirs("../artifacts")
@@ -118,12 +117,12 @@ while continue_process_stdout:
     try:
         line = sub_process.stdout.readline()
         if line != '':
-            
+
             teamcity_line_index = line.find("Device")
             if teamcity_line_index != -1:
                 teamcity_line = line[teamcity_line_index:]
                 device = teamcity_line.split("{")[1].split("}")[0]
-                frame_delta_file = open("../artifacts/frame_delta" + "_branch_" + branch + "_build_num_" + build_num + "_device_" + device + ".txt", "w")
+                frame_delta_file = open("../artifacts/frame_delta" + "_branch_" + branch + "_device_" + device + ".txt", "w")
 
             # write Frame_delta build statistic to file
             teamcity_line_index = line.find("##teamcity[buildStatisticValue key='Frame_delta'")
@@ -138,7 +137,7 @@ while continue_process_stdout:
                     key = teamcity_line.split("key")[1].split("'")[1]
                     value = teamcity_line.split("value")[1].split("'")[1]
 
-                    key = key + "_branch_" + branch + "_build_num_" + build_num + "_device_" + device
+                    key = key + "_branch_" + branch + "_device_" + device
 
                     sys.stdout.write("##teamcity[buildStatisticValue key='" + key + "' value='" + value + "']")
                     sys.stdout.flush()          
