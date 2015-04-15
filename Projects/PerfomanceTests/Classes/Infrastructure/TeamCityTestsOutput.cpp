@@ -40,11 +40,11 @@ const String TeamcityTestsOutput::ERROR_TEST = "test error ";
 const String TeamcityTestsOutput::STATISTIC = "statistic";
 const String TeamcityTestsOutput::AT_FILE_TEST = " at file: ";
 
-const String TeamcityTestsOutput::MIN_DELTA = "Min_delta";
-const String TeamcityTestsOutput::MAX_DELTA = "Max_delta";
-const String TeamcityTestsOutput::AVERAGE_DELTA = "Average_delta";
-const String TeamcityTestsOutput::TEST_TIME = "Test_time";
-const String TeamcityTestsOutput::TIME_ELAPSED = "Time_elapsed";
+const String TeamcityTestsOutput::MIN_DELTA = "Min_frame_delta";
+const String TeamcityTestsOutput::MAX_DELTA = "Max_frame_delta";
+const String TeamcityTestsOutput::AVERAGE_DELTA = "Average_frame_delta";
+const String TeamcityTestsOutput::TEST_TIME = "Test_frame_time";
+const String TeamcityTestsOutput::TIME_ELAPSED = "Time_frame_elapsed";
 
 const String TeamcityTestsOutput::FRAME_DELTA = "Frame_delta";
 
