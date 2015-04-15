@@ -36,6 +36,7 @@
 #include "Scene3D/Systems/SkyboxSystem.h"
 #include "Tools/QtFileDialog/QtFileDialog.h"
 #include "Project/ProjectManager.h"
+#include "ImageTools/ImageTools.h"
 
 #include <QFileDialog>
 #include <QScrollBar>
@@ -377,8 +378,8 @@ bool CubeMapTextureBrowser::ValidateTextureAndFillThumbnails(DAVA::FilePath& fp,
         if (faceNames[i].IsEmpty())
             continue;
 
-		QImage faceImage;
-		if(!faceImage.load(faceNames[i].GetAbsolutePathname().c_str())) //file must be present
+		QImage faceImage = ImageTools::FromDavaImage(faceNames[i]);
+		if(faceImage.isNull()) //file must be present
 		{
 			result = false;
 		}
