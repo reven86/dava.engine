@@ -67,7 +67,7 @@ protected:
 protected:
     float faceWidth;
     float faceHeight;
-    QStringList facePath;
+    DAVA::Vector<DAVA::FilePath> facePathes;
     QString rootPath;
 
     bool faceChanged;
