@@ -13,24 +13,25 @@
 
 LibraryModel::LibraryModel(PackageNode *node, QObject *parent) : QAbstractListModel(parent)
 {
-    defaultControls.push_back("UIControl");
-    defaultControls.push_back("UIButton");
-    defaultControls.push_back("UIStaticText");
-    defaultControls.push_back("UITextField");
-    defaultControls.push_back("UISlider");
-    defaultControls.push_back("UIList");
-    defaultControls.push_back("UIListCell");
-    defaultControls.push_back("UIScrollBar");
-    defaultControls.push_back("UIScrollView");
-    defaultControls.push_back("UISpinner");
-    defaultControls.push_back("UISwitch");
-    defaultControls.push_back("UIParticles");
+    libraryControls.push_back("UIControl");
+    libraryControls.push_back("UIButton");
+    libraryControls.push_back("UIStaticText");
+    libraryControls.push_back("UITextField");
+    libraryControls.push_back("UISlider");
+    libraryControls.push_back("UIList");
+    libraryControls.push_back("UIListCell");
+    libraryControls.push_back("UIScrollBar");
+    libraryControls.push_back("UIScrollView");
+    libraryControls.push_back("UISpinner");
+    libraryControls.push_back("UISwitch");
+    libraryControls.push_back("UIParticles");
+    defaultCountrolsCount = libraryControls.size();
    
     PackageControlsNode *packageControls = node->GetPackageControlsNode();
     for (int j = 0; j < packageControls->GetCount(); j++)
     {
         ControlNode *node = static_cast<ControlNode*>(packageControls->Get(j));
-        defaultControls.push_back(node->GetName());
+        libraryControls.push_back(node->GetName());
     }
 
     for (int i = 0; i < node->GetImportedPackagesNode()->GetCount(); i++)
@@ -38,7 +39,7 @@ LibraryModel::LibraryModel(PackageNode *node, QObject *parent) : QAbstractListMo
         ImportedPackagesNode *importedPackage = (ImportedPackagesNode*) node->GetImportedPackagesNode()->Get(i);
         for (int j = 0; j < importedPackage->GetCount(); j++)
         {
-            defaultControls.push_back(importedPackage->GetName() + "/" + importedPackage->Get(j)->GetName());
+            libraryControls.push_back(importedPackage->GetName() + "/" + importedPackage->Get(j)->GetName());
         }
     }
 }
@@ -66,7 +67,7 @@ int LibraryModel::rowCount(const QModelIndex &parent) const
 {
     if (!parent.isValid())
     {
-        return defaultControls.size();
+        return libraryControls.size();
     }
     return 0;
 }
@@ -75,12 +76,12 @@ QVariant LibraryModel::data(const QModelIndex &index, int role) const
 {
     if (role == Qt::DisplayRole)
     {
-        return StringToQString(defaultControls[index.row()]);
+        return StringToQString(libraryControls[index.row()]);
     }
     else if (role == Qt::DecorationRole)
     {
-        QString className = StringToQString(defaultControls[index.internalId()]);
-        return index.internalId() < defaultControls.size() ? QIcon(IconHelper::GetIconPathForClassName(className))
+        QString className = StringToQString(libraryControls[index.internalId()]);
+        return index.internalId() < defaultCountrolsCount ? QIcon(IconHelper::GetIconPathForClassName(className))
                                                            : QIcon(IconHelper::GetCustomIconPath());
     }
     return QVariant();
@@ -108,7 +109,7 @@ QMimeData *LibraryModel::mimeData(const QModelIndexList &indexes) const
         if (index.isValid())
         {
             QMimeData *data = new QMimeData();
-            data->setText(StringToQString(defaultControls[index.row()]));
+            data->setText(StringToQString(libraryControls[index.row()]));
             return data;
         }
     }
