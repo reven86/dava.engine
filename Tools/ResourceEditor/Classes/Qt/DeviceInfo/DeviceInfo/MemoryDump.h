@@ -25,52 +25,23 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-
-#ifndef __ALLOCPOOLMODEL_H__
-#define __ALLOCPOOLMODEL_H__
-
-#include <QColor>
-#include <QAbstractTableModel>
+#ifndef __MEMORYDUMP_H__
+#define __MEMORYDUMP_H__
 
 #include "Base/BaseTypes.h"
 #include "MemoryManager/MemoryManagerTypes.h"
 
-class ProfilingSession;
-class StatItem;
+class BacktraceSymbolTable;
 
-class AllocPoolModel : public QAbstractTableModel
+class MemoryDump final
 {
-    Q_OBJECT
-
 public:
-    enum {
-        CLM_NAME = 0,
-        CLM_ALLOC_APP,
-        CLM_ALLOC_TOTAL,
-        CLM_NBLOCKS,
-        //CLM_MAX_SIZE,
-        NCOLUMNS = 4
-    };
-
-public:
-    AllocPoolModel(QObject* parent = nullptr);
-    virtual ~AllocPoolModel();
-
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-
-    void BeginNewProfileSession(ProfilingSession* profSession);
-    void SetCurrentValues(const StatItem& item);
-    void SetPoolColors(const DAVA::Vector<QColor>& poolColors);
+    MemoryDump(const BacktraceSymbolTable& symTable, DAVA::Vector<DAVA::MMBlock>&& mblocks);
+    ~MemoryDump();
 
 private:
-    ProfilingSession* profileSession;
-
-    DAVA::uint64 timestamp;
-    DAVA::Vector<DAVA::AllocPoolStat> curValues;
-    DAVA::Vector<QColor> poolColors;
+    const BacktraceSymbolTable& symbolTable;
+    DAVA::Vector<DAVA::MMBlock> blocks;
 };
 
-#endif  // __ALLOCPOOLMODEL_H__
+#endif  // __MEMORYDUMP_H__

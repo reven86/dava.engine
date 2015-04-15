@@ -28,11 +28,13 @@
 
 #include "Utils/StringFormat.h"
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/FileList.h"
 #include "FileSystem/File.h"
 #include "Platform/DateTime.h"
 #include "Debug/DVAssert.h"
 
 #include "BacktraceSymbolTable.h"
+#include "MemoryDump.h"
 
 #include "ProfilingSession.h"
 
@@ -166,7 +168,7 @@ void ProfilingSession::InitFileSystem()
     if (result != FileSystem::DIRECTORY_CANT_CREATE)
     {
         statFileName = storageDir;
-        statFileName += "statlog.bin";
+        statFileName += "memorylog.bin";
 
         {
             // DAVA::File doesn't allow creating new file for read/write
@@ -197,7 +199,7 @@ void ProfilingSession::AddStatItem(const DAVA::MMCurStat* rawStat)
 void ProfilingSession::AddDump(const DAVA::MMDump* rawDump)
 {
     FilePath dumpFileName = storageDir;
-    dumpFileName += Format("dump_%d.bin", dumpNo);
+    dumpFileName += Format("dump_%d.dump", dumpNo);
 
     RefPtr<File> dumpFile(File::Create(dumpFileName, File::CREATE | File::WRITE));
     if (dumpFile.Valid())
@@ -230,6 +232,15 @@ size_t ProfilingSession::ClosestStatItem(DAVA::uint64 timestamp) const
         return std::distance(stat.begin(), iter);
     }
     return size_t(-1);
+}
+
+MemoryDump* ProfilingSession::LoadDump(size_t index)
+{
+    DVASSERT(0 <= index && index < dump.size());
+
+    Vector<MMBlock> mblocks;
+    MemoryDump* mdump = new MemoryDump(symbolTable, std::forward<Vector<MMBlock>>(mblocks));
+    return mdump;
 }
 
 void ProfilingSession::SaveLogHeader(const DAVA::MMStatConfig* config)
@@ -317,6 +328,7 @@ void ProfilingSession::LoadLogFile()
         Init(statConfig);
 
         LoadStatItems(header.statCount, header.statItemSize);
+        LookForDumps();
     }
 }
 
@@ -342,6 +354,60 @@ void ProfilingSession::LoadStatItems(size_t count, uint32 itemSize)
         }
         nloaded += nitems;
     }
+}
+
+void ProfilingSession::LookForDumps()
+{
+    FileList* fileList = new FileList(storageDir);
+
+    for (int i = 0, n = fileList->GetCount();i < n;++i)
+    {
+        if (!fileList->IsDirectory(i))
+        {
+            const FilePath& path = fileList->GetPathname(i);
+            String ext = path.GetExtension();
+            if (ext == ".dump")  // TODO: accept different case
+            {
+                LoadDumpBrief(path);
+            }
+        }
+    }
+    std::sort(dump.begin(), dump.end(), [](const DumpBrief& l, const DumpBrief& r) -> bool { return l.Timestamp() < r.Timestamp(); });
+
+    fileList->Release();
+}
+
+void ProfilingSession::LoadDumpBrief(const DAVA::FilePath& path)
+{
+    RefPtr<File> file(File::Create(path, File::OPEN | File::READ));
+    if (file.Valid())
+    {
+        MMDump rawDump;
+        uint32 nread = file->Read(&rawDump);
+        if (sizeof(MMDump) == nread && rawDump.size == file->GetSize())
+        {
+            if (rawDump.blockCount > 0 && rawDump.bktraceDepth > 0)
+            {
+                dump.emplace_back(path, &rawDump);
+            }
+        }
+    }
+}
+
+bool ProfilingSession::LoadFullDump(const DumpBrief& brief, DAVA::Vector<DAVA::MMBlock> mblocks)
+{
+    RefPtr<File> file(File::Create(brief.FileName(), File::OPEN | File::READ));
+    if (file.Valid())
+    {
+        MMDump rawDump;
+        uint32 nread = file->Read(&rawDump);
+        if (sizeof(MMDump) == nread && rawDump.size == file->GetSize())
+        {
+            Vector<MMBlock> buf;
+            buf.resize()
+        }
+    }
+    return false;
 }
 
 void ProfilingSession::SaveDumpAsText(const DAVA::MMDump* rawDump, const char* filename)

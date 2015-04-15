@@ -28,6 +28,7 @@ namespace DAVA
 class AllocPoolModel;
 class TagModel;
 class GeneralStatModel;
+class DumpBriefModel;
 class StatItem;
 class ProfilingSession;
 
@@ -70,6 +71,7 @@ private:
     QPointer<AllocPoolModel> allocPoolModel;
     QPointer<TagModel> tagModel;
     QPointer<GeneralStatModel> generalStatModel;
+    QPointer<DumpBriefModel> dumpBriefModel;
 
     DAVA::Vector<QColor> poolColors;
 };

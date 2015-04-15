@@ -63,8 +63,8 @@ QVariant AllocPoolModel::headerData(int section, Qt::Orientation orientation, in
                 "Allocation pool",
                 "Allocation size",
                 "Overhead",
-                "Block count",
-                "Max block size"
+                "Block count"
+                //"Max block size"
             };
             return QVariant(headers[section]);
         }
@@ -95,8 +95,8 @@ QVariant AllocPoolModel::data(const QModelIndex& index, int role) const
                 return FormatNumberWithDigitGroups(stat.allocTotal - stat.allocByApp).c_str();
             case CLM_NBLOCKS:
                 return FormatNumberWithDigitGroups(stat.blockCount).c_str();
-            case CLM_MAX_SIZE:
-                return FormatNumberWithDigitGroups(stat.maxBlockSize).c_str();
+            //case CLM_MAX_SIZE:
+            //    return FormatNumberWithDigitGroups(stat.maxBlockSize).c_str();
             default:
                 break;
             }

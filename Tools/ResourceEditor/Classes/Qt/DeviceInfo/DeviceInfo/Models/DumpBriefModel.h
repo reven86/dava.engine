@@ -26,51 +26,30 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __ALLOCPOOLMODEL_H__
-#define __ALLOCPOOLMODEL_H__
-
-#include <QColor>
-#include <QAbstractTableModel>
+#ifndef __DUMPBRIEFMODEL_H__
+#define __DUMPBRIEFMODEL_H__
 
 #include "Base/BaseTypes.h"
-#include "MemoryManager/MemoryManagerTypes.h"
+
+#include <QAbstractListModel>
 
 class ProfilingSession;
-class StatItem;
 
-class AllocPoolModel : public QAbstractTableModel
+class DumpBriefModel : public QAbstractListModel
 {
-    Q_OBJECT
-
 public:
-    enum {
-        CLM_NAME = 0,
-        CLM_ALLOC_APP,
-        CLM_ALLOC_TOTAL,
-        CLM_NBLOCKS,
-        //CLM_MAX_SIZE,
-        NCOLUMNS = 4
-    };
-
-public:
-    AllocPoolModel(QObject* parent = nullptr);
-    virtual ~AllocPoolModel();
+    DumpBriefModel(QObject* parent = nullptr);
+    virtual ~DumpBriefModel();
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     void BeginNewProfileSession(ProfilingSession* profSession);
-    void SetCurrentValues(const StatItem& item);
-    void SetPoolColors(const DAVA::Vector<QColor>& poolColors);
+    void NewDumpArrived();
 
 private:
-    ProfilingSession* profileSession;
-
-    DAVA::uint64 timestamp;
-    DAVA::Vector<DAVA::AllocPoolStat> curValues;
-    DAVA::Vector<QColor> poolColors;
+    ProfilingSession* profileSession = nullptr;
 };
 
-#endif  // __ALLOCPOOLMODEL_H__
+#endif  // __DUMPBRIEFMODEL_H__

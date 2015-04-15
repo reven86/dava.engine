@@ -26,51 +26,68 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __ALLOCPOOLMODEL_H__
-#define __ALLOCPOOLMODEL_H__
+#include "DumpBriefModel.h"
 
-#include <QColor>
-#include <QAbstractTableModel>
+#include "../ProfilingSession.h"
 
-#include "Base/BaseTypes.h"
-#include "MemoryManager/MemoryManagerTypes.h"
+using namespace DAVA;
 
-class ProfilingSession;
-class StatItem;
+DumpBriefModel::DumpBriefModel(QObject* parent)
+    : QAbstractListModel(parent)
+{}
 
-class AllocPoolModel : public QAbstractTableModel
+DumpBriefModel::~DumpBriefModel()
+{}
+
+int DumpBriefModel::rowCount(const QModelIndex& parent) const
 {
-    Q_OBJECT
+    return profileSession != nullptr ? static_cast<int>(profileSession->DumpCount())
+                                     : 0;
+}
 
-public:
-    enum {
-        CLM_NAME = 0,
-        CLM_ALLOC_APP,
-        CLM_ALLOC_TOTAL,
-        CLM_NBLOCKS,
-        //CLM_MAX_SIZE,
-        NCOLUMNS = 4
-    };
+QVariant DumpBriefModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if (Qt::DisplayRole == role)
+    {
+        if (Qt::Horizontal == orientation)
+        {
+            return QVariant("Memory dumps");
+        }
+        else
+        {
+            return QVariant(section + 1);
+        }
+    }
+    return QVariant();
+}
 
-public:
-    AllocPoolModel(QObject* parent = nullptr);
-    virtual ~AllocPoolModel();
+QVariant DumpBriefModel::data(const QModelIndex& index, int role) const
+{
+    if (index.isValid() && profileSession != nullptr)
+    {
+        int row = index.row();
+        int clm = index.column();
+        if (Qt::DisplayRole == role)
+        {
+            const DumpBrief& dumpBrief = profileSession->Dump(row);
+            String filename = dumpBrief.FileName().GetFilename();
+            return QString("%1 - %2")
+                .arg(dumpBrief.Timestamp() / 1000)
+                .arg(filename.c_str());
+        }
+    }
+    return QVariant();
+}
 
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+void DumpBriefModel::BeginNewProfileSession(ProfilingSession* profSession)
+{
+    beginResetModel();
+    profileSession = profSession;
+    endResetModel();
+}
 
-    void BeginNewProfileSession(ProfilingSession* profSession);
-    void SetCurrentValues(const StatItem& item);
-    void SetPoolColors(const DAVA::Vector<QColor>& poolColors);
-
-private:
-    ProfilingSession* profileSession;
-
-    DAVA::uint64 timestamp;
-    DAVA::Vector<DAVA::AllocPoolStat> curValues;
-    DAVA::Vector<QColor> poolColors;
-};
-
-#endif  // __ALLOCPOOLMODEL_H__
+void DumpBriefModel::NewDumpArrived()
+{
+    beginResetModel();
+    endResetModel();
+}

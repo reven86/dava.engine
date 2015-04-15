@@ -5,6 +5,7 @@
 #include "Models/AllocPoolModel.h"
 #include "Models/TagModel.h"
 #include "Models/GeneralStatModel.h"
+#include "Models/DumpBriefModel.h"
 
 #include <QLabel>
 #include <QFrame>
@@ -37,10 +38,12 @@ MemProfWidget::MemProfWidget(ProfilingSession* profSession, QWidget *parent)
     allocPoolModel->BeginNewProfileSession(profileSession);
     tagModel->BeginNewProfileSession(profileSession);
     generalStatModel->BeginNewProfileSession(profileSession);
+    dumpBriefModel->BeginNewProfileSession(profileSession);
 
     ui->allocPoolTable->resizeRowsToContents();
     ui->tagTable->resizeRowsToContents();
     ui->generalStatTable->resizeRowsToContents();
+    //ui->dumpBriefList->resizeRowsToContents();
 
     ReinitPlot();
     SetPlotData();
@@ -62,6 +65,7 @@ void MemProfWidget::ConnectionEstablished(bool newConnection, ProfilingSession* 
     allocPoolModel->BeginNewProfileSession(profSession);
     tagModel->BeginNewProfileSession(profSession);
     generalStatModel->BeginNewProfileSession(profSession);
+    dumpBriefModel->BeginNewProfileSession(profileSession);
 
     ui->labelStatus->setText("Connection established");
     if (newConnection)
@@ -69,14 +73,16 @@ void MemProfWidget::ConnectionEstablished(bool newConnection, ProfilingSession* 
         ui->allocPoolTable->resizeRowsToContents();
         ui->tagTable->resizeRowsToContents();
         ui->generalStatTable->resizeRowsToContents();
+        //ui->dumpBriefList->resizeRowsToContents();
         ReinitPlot();
     }
 }
 
 void MemProfWidget::ConnectionLost(const char8* message)
 {
+    ui->dumpProgress->setValue(0);
     ui->labelStatus->setText(message != nullptr ? QString("Connection lost: %1").arg(message)
-                             : QString("Connection lost"));
+                                                : QString("Connection lost"));
     profileSession = nullptr;
 }
 
@@ -97,6 +103,10 @@ void MemProfWidget::DumpArrived(size_t sizeTotal, size_t sizeRecv)
 {
     int v = static_cast<int>(double(sizeRecv) / double(sizeTotal) * 100.0);
     ui->dumpProgress->setValue(v);
+    if (v >= 100)
+    {
+        dumpBriefModel->NewDumpArrived();
+    }
 }
 
 void MemProfWidget::RealtimeToggled(bool checked)
@@ -223,7 +233,6 @@ void MemProfWidget::ReinitPlot()
 
 void MemProfWidget::ShowDump(const DAVA::Vector<DAVA::uint8>& v)
 {
-    //DumpViewWidget* w = new DumpViewWidget(v, this);
 }
 
 void MemProfWidget::Init()
@@ -260,10 +269,12 @@ void MemProfWidget::Init()
         allocPoolModel->SetPoolColors(poolColors);
 
         generalStatModel = new GeneralStatModel;
+        dumpBriefModel = new DumpBriefModel;
 
         ui->allocPoolTable->setModel(allocPoolModel);
         ui->tagTable->setModel(tagModel);
         ui->generalStatTable->setModel(generalStatModel);
+        ui->dumpBriefList->setModel(dumpBriefModel);
     }
 
     QCustomPlot* plot = ui->plot;

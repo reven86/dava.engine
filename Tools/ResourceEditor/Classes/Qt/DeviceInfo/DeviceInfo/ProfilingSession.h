@@ -36,6 +36,8 @@
 #include "Network/PeerDesription.h"
 #include "MemoryManager/MemoryManagerTypes.h"
 
+#include "BacktraceSymbolTable.h"
+
 namespace DAVA
 {
 class File;
@@ -44,6 +46,9 @@ namespace Net
 class PeerDescription;
 }
 }
+
+class MemoryDump;
+class ProfilingSession;
 
 class StatItem final
 {
@@ -74,6 +79,8 @@ private:
 
 class DumpBrief final
 {
+    friend class ProfilingSession;
+
 public:
     DumpBrief(const DAVA::FilePath& filename, const DAVA::MMDump* rawDump)
         : dumpFileName(filename)
@@ -90,8 +97,13 @@ public:
     size_t BktraceCount() const { return bktraceCount; }
     size_t TotalSize() const { return totalSize; }
 
+    bool IsLoaded() const { return dumpLoaded; }
+
 private:
     void Init(const DAVA::MMDump* rawDump);
+
+    void SetSymbolsLoaded(bool flag) { symbolsLoaded = flag; }
+    void SetDumpLoaded(bool flag) { dumpLoaded = flag; }
 
 private:
     DAVA::FilePath dumpFileName;
@@ -102,6 +114,9 @@ private:
     size_t symbolCount;
     size_t bktraceCount;
     size_t totalSize;
+
+    bool symbolsLoaded = false;
+    bool dumpLoaded = false;
 };
 
 class ProfilingSession
@@ -133,6 +148,8 @@ public:
 
     size_t ClosestStatItem(DAVA::uint64 timestamp) const;
 
+    MemoryDump* LoadDump(size_t index);
+
 private:
     void Init(const DAVA::MMStatConfig* config);
     void InitFileSystem();
@@ -146,6 +163,9 @@ private:
 
     void LoadLogFile();
     void LoadStatItems(size_t count, DAVA::uint32 itemSize);
+    void LookForDumps();
+    void LoadDumpBrief(const DAVA::FilePath& path);
+    bool LoadFullDump(const DumpBrief& brief, DAVA::Vector<DAVA::MMBlock> mblocks);
 
 private:
     bool isFileLog;
@@ -161,6 +181,8 @@ private:
     DAVA::FilePath storageDir;
     DAVA::FilePath statFileName;
     DAVA::RefPtr<DAVA::File> statFile;
+
+    BacktraceSymbolTable symbolTable;
 };
 
 //////////////////////////////////////////////////////////////////////////
