@@ -206,7 +206,7 @@ struct ConvertARGB1555toRGBA5551
         const uint16 & in = *input;
 
 //        uint16 a = (in >> 15) & 0x0001; // true code, but ...
-        uint16 a = a = 1; //targa not use alpha bit https://forums.adobe.com/thread/1303965?tstart=0
+        uint16 a = 1; //targa not use alpha bit https://forums.adobe.com/thread/1303965?tstart=0
         uint16 r = (in >> 10) & 0x001F;
         uint16 g = (in >> 5) & 0x001F;
         uint16 b = (in) & 0x001F;
