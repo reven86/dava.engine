@@ -109,19 +109,20 @@ app_exit_code = None
 build_num = args['build_num']
 branch = args['branch']
 
+if not os.path.exists("../artifacts"):
+    os.makedirs("../artifacts")
+
 continue_process_stdout = True
 
 while continue_process_stdout:
     try:
         line = sub_process.stdout.readline()
         if line != '':
-
-            teamcity_line_index = line.find("Device {")
+            
+            teamcity_line_index = line.find("Device")
             if teamcity_line_index != -1:
                 teamcity_line = line[teamcity_line_index:]
                 device = teamcity_line.split("{")[1].split("}")[0]
-                if not os.path.exists("../artifacts"):
-                    os.makedirs("../artifacts")
                 frame_delta_file = open("../artifacts/frame_delta" + "_branch_" + branch + "_build_num_" + build_num + "_device_" + device + ".txt", "w")
 
             # write Frame_delta build statistic to file
