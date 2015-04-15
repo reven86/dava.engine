@@ -140,7 +140,7 @@ while continue_process_stdout:
                     ms = int(float(value) * 1000)
                     key = key + "_branch_" + branch + "_device_" + device
 
-                    sys.stdout.write("##teamcity[buildStatisticValue key='" + key + "' value='" + ms + "']")
+                    sys.stdout.write("##teamcity[buildStatisticValue key='" + key + "' value='" + str(ms) + "']")
                     sys.stdout.flush()          
                 else:
                     teamcity_line_index = line.find("##teamcity")
