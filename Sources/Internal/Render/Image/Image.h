@@ -122,6 +122,9 @@ public:
     
     void FlipVertical();
     void FlipHorizontal();
+    void Rotate(int degree);
+    void RotateClockwise();
+    void RotateCounterClockwise();
 
 private:
 
@@ -131,6 +134,11 @@ private:
 	template<class Type>
 	void FlipHorizontal(Type *buffer, uint32 width, uint32 height);
 
+    template<class Type>
+    void RotateClockwise(Type *srcBuffer, Type *dstBuffer, uint32 sideLen);
+
+    template<class Type>
+    void RotateCounterClockwise(Type *srcBuffer, Type *dstBuffer, uint32 sideLen);
 
 public:
     uint32 dataSize;
@@ -173,6 +181,30 @@ void Image::FlipHorizontal(Type *buffer, uint32 width, uint32 height)
 			Swap(buffer[y + x], buffer[y + width - x - 1]);
 		}
 	}
+}
+
+template<class Type>
+void Image::RotateClockwise(Type *src, Type *dst, uint32 sideLen)
+{
+    for (uint32 y = 0; y < sideLen; ++y)
+    {
+        for (uint32 x = 0; x < sideLen; ++x)
+        {
+            dst[(sideLen - y - 1) + (x * sideLen)] = src[x + y * sideLen];
+        }
+    }
+}
+
+template<class Type>
+void Image::RotateCounterClockwise(Type *src, Type *dst, uint32 sideLen)
+{
+    for (uint32 y = 0; y < sideLen; ++y)
+    {
+        for (uint32 x = 0; x < sideLen; ++x)
+        {
+            dst[x + y * sideLen] = src[(sideLen - y - 1) + (x * sideLen)];
+        }
+    }
 }
 
 

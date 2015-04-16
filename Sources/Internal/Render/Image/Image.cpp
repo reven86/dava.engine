@@ -462,6 +462,109 @@ void Image::FlipVertical()
 	}
 }
 
+void Image::Rotate(int degree)
+{
+    degree %= 360;
+
+    switch(degree)
+    {
+    case 0:
+        return;
+    case 90:
+    case -270:
+        RotateClockwise();
+        return;
+    case 180:
+    case -180:
+        FlipHorizontal();
+        FlipVertical();
+        return;
+    case 270:
+    case -90:
+        RotateCounterClockwise();
+        return;
+    default:
+        DVASSERT(false && "unsupported rotate degree");
+        return;
+    }
+}
+
+void Image::RotateClockwise()
+{
+    DVASSERT((width == height) && "image should be square to rotate");
+    DVASSERT(dataSize && "image is empty or dataSize is not set");
+
+    uint8* newData = new uint8[dataSize];
+
+    switch (format)
+    {
+    case FORMAT_A8:
+        RotateClockwise((uint8 *)data, (uint8 *)newData, height);
+        break;
+
+    case FORMAT_A16:
+    case FORMAT_RGBA5551:
+    case FORMAT_RGBA4444:
+    case FORMAT_RGB565:
+        RotateClockwise((uint16 *)data, (uint16 *)newData, height);
+        break;
+
+    case FORMAT_RGBA8888:
+        RotateClockwise((uint32 *)data, (uint32 *)newData, height);
+        break;
+
+    case FORMAT_RGB888:
+        RotateClockwise((RGB888 *)data, (RGB888 *)newData, height);
+        break;
+
+    default:
+        DVASSERT(false && "Not implemented");
+        break;
+    }
+
+    uint8* delData = data;
+    data = newData;
+    SafeDeleteArray(delData);
+}
+
+void Image::RotateCounterClockwise()
+{
+    DVASSERT((width == height) && "image should be square to rotate");
+    DVASSERT(dataSize && "image is empty or dataSize is not set");
+
+    uint8* newData = new uint8[dataSize];
+
+    switch (format)
+    {
+    case FORMAT_A8:
+        RotateCounterClockwise((uint8 *)data, (uint8 *)newData, height);
+        break;
+
+    case FORMAT_A16:
+    case FORMAT_RGBA5551:
+    case FORMAT_RGBA4444:
+    case FORMAT_RGB565:
+        RotateCounterClockwise((uint16 *)data, (uint16 *)newData, height);
+        break;
+
+    case FORMAT_RGBA8888:
+        RotateCounterClockwise((uint32 *)data, (uint32 *)newData, height);
+        break;
+
+    case FORMAT_RGB888:
+        RotateCounterClockwise((RGB888 *)data, (RGB888 *)newData, height);
+        break;
+
+    default:
+        DVASSERT(false && "Not implemented");
+        break;
+    }
+
+    uint8* delData = data;
+    data = newData;
+    SafeDeleteArray(delData);
+}
+
     
     
 };
