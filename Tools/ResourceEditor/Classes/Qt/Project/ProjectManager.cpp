@@ -174,6 +174,9 @@ void ProjectManager::ProjectClose()
         curProjectPathDataSource = "";
         curProjectPathParticles = "";
         SettingsManager::ResetPerProjectSettings();
+        
+        SettingsManager::SetValue(Settings::Internal_LastProjectPath, VariantType(DAVA::FilePath())); // reset last project path
+        
         emit ProjectClosed();
 	}
 }

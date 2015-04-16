@@ -5,6 +5,7 @@
 #include <QColor>
 #include <QFont>
 #include <QVector2D>
+#include <QVector4D>
 #include <QUndoStack>
 
 #include "Document.h"
@@ -309,13 +310,16 @@ QVariant PropertiesModel::makeQVariant(const BaseProperty *property) const
         case VariantType::TYPE_COLOR:
             return QColorToHex(ColorToQColor(val.AsColor()));
 
+        case VariantType::TYPE_VECTOR4:
+            return StringToQString(Format("%g; %g; %g; %g;", val.AsVector4().x, val.AsVector4().y, val.AsVector4().z, val.AsVector4().w));
+            
         case VariantType::TYPE_FILEPATH:
             return StringToQString(val.AsFilePath().GetStringValue());
             
         case VariantType::TYPE_BYTE_ARRAY:
         case VariantType::TYPE_KEYED_ARCHIVE:
         case VariantType::TYPE_VECTOR3:
-        case VariantType::TYPE_VECTOR4:
+            
         case VariantType::TYPE_MATRIX2:
         case VariantType::TYPE_MATRIX3:
         case VariantType::TYPE_MATRIX4:
@@ -378,7 +382,13 @@ void PropertiesModel::initVariantType(DAVA::VariantType &var, const QVariant &va
 //        case VariantType::TYPE_BYTE_ARRAY:
 //        case VariantType::TYPE_KEYED_ARCHIVE:
 //        case VariantType::TYPE_VECTOR3:
-//        case VariantType::TYPE_VECTOR4:
+        case VariantType::TYPE_VECTOR4:
+        {
+            QVector4D vector = val.value<QVector4D>();
+            var.SetVector4(DAVA::Vector4(vector.x(), vector.y(), vector.z(), vector.w()));
+        }
+            break;
+
 //        case VariantType::TYPE_MATRIX2:
 //        case VariantType::TYPE_MATRIX3:
 //        case VariantType::TYPE_MATRIX4:
