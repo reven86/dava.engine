@@ -176,6 +176,8 @@ void MipMapReplacer::ReplaceMipMaps(Texture * texture)
         miplevel++;
     }
 
+    RENDER_VERIFY(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, miplevel-1));
+    
     if (0 != saveId)
     {
         RenderManager::Instance()->HWglBindTexture(saveId, texture->textureType);
