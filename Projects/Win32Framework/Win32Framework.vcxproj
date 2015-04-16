@@ -536,6 +536,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\IndexBuffer.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material\MaterialCompiler.h" />
@@ -1030,6 +1031,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialCompiler.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialGraph.cpp" />
