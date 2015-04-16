@@ -34,7 +34,7 @@
 #include "Base/BaseMath.h"
 #include "Scene3D/DataNode.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
-#include "Render/RHI/rhi_Type.h"
+#include "Render/RHI/rhi_Public.h"
 
 namespace DAVA
 {	
@@ -180,7 +180,8 @@ public:
     void LoadPolygonData(KeyedArchive * keyedArchive, SerializationContext * serializationContext, int32 requiredFlags);
 
 
-    rhi::Handle vertexBuffer, indexBuffer;
+    rhi::HVertexBuffer vertexBuffer;
+    rhi::HIndexBuffer indexBuffer;
     uint32 vertexLayoutId;
 
 private:

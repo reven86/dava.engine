@@ -170,8 +170,7 @@ void Texture::AddToMap(Texture *tex)
 
     
 Texture::Texture()
-:	handle(rhi::InvalidHandle)
-,	width(0)
+:	width(0)
 ,	height(0)
 ,	loadedAsFile(GPU_PNG)
 ,	state(STATE_INVALID)
@@ -196,9 +195,9 @@ Texture::~Texture()
     
 void Texture::ReleaseTextureData()
 {
-    if (handle != rhi::InvalidHandle)
+    if (handle.IsValid())
         rhi::DeleteTexture(handle);
-    handle = rhi::InvalidHandle;
+    handle = rhi::HTexture(rhi::InvalidHandle);
 
 	state = STATE_INVALID;
     isRenderTarget = false;
@@ -227,7 +226,7 @@ Texture * Texture::CreateTextFromData(PixelFormat format, uint8 * data, uint32 w
 	
 void Texture::TexImage(int32 level, uint32 width, uint32 height, const void * _data, uint32 dataSize, uint32 cubeFaceId)
 {
-    rhi::UpdateTexture(handle, level, (rhi::TextureFace)cubeFaceId, _data);
+    rhi::UpdateTexture(handle, _data, level, (rhi::TextureFace)cubeFaceId);
 }
     
 Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint32 _width, uint32 _height, bool generateMipMaps)

@@ -31,7 +31,7 @@ public:
     static void     Uninitialize();
 
     static void     SetScreenSize( uint32 w, uint32 h );
-    static void     FlushBatched( rhi::Handle batchBuf, const Matrix4& view, const Matrix4& projection );
+    static void     FlushBatched( rhi::HPacketList batchBuf, const Matrix4& view, const Matrix4& projection );
     static void     SetNormalTextSize();
     static void     SetSmallTextSize();
 
@@ -122,7 +122,7 @@ private:
         Vertex*     alloc_vertices( unsigned count );
         void        flush_3d( rhi::Handle cmd_buf, const Matrix4& view, const Matrix4& projection );
         void        flush_2d( rhi::Handle cmd_buf );
-        void        flush_batched_2d( rhi::Handle cmd_buf );
+        void        flush_batched_2d( rhi::HPacketList packetList );
 
 
     private:
@@ -137,7 +137,7 @@ private:
         
         unsigned            _prim_count( unsigned v_cnt ) const;
 
-        rhi::Handle         _vb[VBCount];
+        rhi::HVertexBuffer  _vb[VBCount];
         unsigned            _cur_vb_i;
         
         unsigned            _vb_size;
@@ -171,18 +171,18 @@ private:
     };
 
 
-    bool            _permanent_text_small;
+    bool                    _permanent_text_small;
 
-    rhi::Handle     _ptc_pipeline_state;
-    rhi::Handle     _ptc_const;
-    rhi::Handle     _pc_pipeline_state;
-    rhi::Handle     _ptc_depth_state;
-    rhi::Handle     _ptc_sampler_state;
-    rhi::Handle     _pc_const;
-    rhi::Handle     _tex_small_font;
-    rhi::Handle     _tex_normal_font;
-    rhi::Handle     _texset_small_font;
-    rhi::Handle     _texset_normal_font;
+    rhi::HPipelineState     _ptc_pipeline_state;
+    rhi::HConstBuffer       _ptc_const;
+    rhi::HPipelineState     _pc_pipeline_state;
+    rhi::HDepthStencilState _ptc_depth_state;
+    rhi::HSamplerState      _ptc_sampler_state;
+    rhi::HConstBuffer       _pc_const;
+    rhi::HTexture           _tex_small_font;
+    rhi::HTexture           _tex_normal_font;
+    rhi::HTextureSet        _texset_small_font;
+    rhi::HTextureSet        _texset_normal_font;
 };
 
 

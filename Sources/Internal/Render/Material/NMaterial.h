@@ -62,7 +62,7 @@ struct MaterialPropertyBinding
 
 struct MaterialBufferBinding
 {
-    rhi::Handle constBuffer;
+    rhi::HConstBuffer constBuffer;
     Vector<MaterialPropertyBinding> propBindings;
     uint32 lastValidPropertySemantic;
 };
@@ -74,12 +74,12 @@ class RenderVariantInstance
     ShaderDescriptor *shader;
 
 
-    rhi::Handle depthState;
-    rhi::Handle samplerState;
-    rhi::Handle textureSet;
+    rhi::HDepthStencilState depthState;
+    rhi::HSamplerState samplerState;
+    rhi::HTextureSet textureSet;
 
-    Vector<rhi::Handle> vertexConstBuffers;
-    Vector<rhi::Handle> fragmentConstBuffers;
+    Vector<rhi::HConstBuffer> vertexConstBuffers;
+    Vector<rhi::HConstBuffer> fragmentConstBuffers;
 
     Vector<MaterialBufferBinding *> materialBufferBindings;
     

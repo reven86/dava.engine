@@ -67,8 +67,7 @@ NMaterial::NMaterial()
     RenderVariantInstance *renderVariant = new RenderVariantInstance();
 
     renderVariant->depthState = rhi::AcquireDepthStencilState(rhi::DepthStencilState::Descriptor());
-    renderVariant->samplerState = rhi::AcquireSamplerState(rhi::SamplerState::Descriptor());
-    renderVariant->textureSet = rhi::InvalidHandle;
+    renderVariant->samplerState = rhi::AcquireSamplerState(rhi::SamplerState::Descriptor());   
     renderVariant->renderLayer = RenderLayerManager::GetLayerIDByName(LAYER_OPAQUE);
 
     activeVariantInstance = renderVariant;
@@ -153,7 +152,7 @@ NMaterialProperty* NMaterial::GetMaterialProperty(const FastName& propName)
 Texture* NMaterial::GetMaterialTexture(const FastName& slotName)
 {
     Texture* res = localTextures.at(slotName);
-    if ((res == rhi::InvalidHandle) && (parent != nullptr))
+    if ((res == nullptr) && (parent != nullptr))
     {
         res = parent->GetMaterialTexture(slotName);
     }
@@ -297,7 +296,7 @@ void NMaterial::InjectChildBuffer(UniquePropertyLayout propLayoutId, MaterialBuf
         parent->InjectChildBuffer(propLayoutId, buffer);
     else
     {
-        DVASSERT(uint64(localConstBuffers.at(propLayoutId)) == rhi::InvalidHandle);
+        DVASSERT(localConstBuffers.at(propLayoutId) == nullptr);
         localConstBuffers[propLayoutId] = buffer;
     }
 }
@@ -307,8 +306,7 @@ void NMaterial::ClearLocalBuffers()
 
     for (auto& buffer : localConstBuffers)
     {
-        //RHI_COMPETE later release here this buffer handle too ... not implemented in RHI yet
-        
+        rhi::DeleteConstBuffer(buffer.second->constBuffer);        
         SafeDelete(buffer.second);
     }
     localConstBuffers.clear();
@@ -368,12 +366,12 @@ void NMaterial::RebuildBindings()
         ShaderDescriptor *currShader = currRenderVariant->shader;
         if (!currShader) //cant build for empty shader
             continue;
-        currRenderVariant->vertexConstBuffers.resize(currShader->GetVertexConstBuffersCount(), rhi::InvalidHandle);
-        currRenderVariant->fragmentConstBuffers.resize(currShader->GetFragmentConstBuffersCount(), rhi::InvalidHandle);
+        currRenderVariant->vertexConstBuffers.resize(currShader->GetVertexConstBuffersCount());
+        currRenderVariant->fragmentConstBuffers.resize(currShader->GetFragmentConstBuffersCount());
 
         for (auto& bufferDescr : currShader->constBuffers)
         {
-            rhi::Handle bufferHandle = rhi::InvalidHandle;
+            rhi::HConstBuffer bufferHandle;
             MaterialBufferBinding* bufferBinding = nullptr;
             //for static buffers resolve sharing and bindings
             if (bufferDescr.updateType == ConstBufferDescriptor::UpdateType::Static)
@@ -437,7 +435,7 @@ void NMaterial::RebuildBindings()
                 bufferHandle = currShader->GetDynamicBuffer(bufferDescr.type, bufferDescr.targetSlot);
             }
 
-            DVASSERT(bufferHandle != rhi::InvalidHandle);
+            DVASSERT(bufferHandle.IsValid());
             if (bufferDescr.type == ConstBufferDescriptor::Type::Vertex)
                 currRenderVariant->vertexConstBuffers[bufferDescr.targetSlot] = bufferHandle;
             else

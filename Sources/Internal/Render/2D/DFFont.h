@@ -135,7 +135,7 @@ public:
     /**
      \brief Get font texture handler
      */
-    inline rhi::Handle GetTextureHandler() const
+    inline rhi::HTextureSet GetTextureHandler() const
     {
         return fontTextureHandler;
     }
@@ -173,7 +173,7 @@ private:
     DFFontInternalData * fontInternal;
 
     Texture* fontTexture;
-    rhi::Handle fontTextureHandler;
+    rhi::HTextureSet fontTextureHandler;
 };
 
 }

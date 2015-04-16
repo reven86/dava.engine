@@ -48,91 +48,130 @@ bool    TextureFormatSupported( TextureFormat format );
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// resource-handle
+
+template <ResourceType T>
+class
+ResourceHandle
+{
+public:
+                        ResourceHandle()                            : handle(InvalidHandle) {}
+    explicit            ResourceHandle( Handle h )                  : handle(h) {}
+    bool                IsValid() const                             { return handle != InvalidHandle; }
+    operator            Handle() const                              { return handle; }
+    ResourceHandle<T>&  operator=( const ResourceHandle<T>& src )   { handle=src.handle; return *this; }
+
+private:
+
+    Handle      handle;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
 // vertex buffer
 
-Handle  CreateVertexBuffer( uint32 size );
-void    DeleteVertexBuffer( Handle vb );
+typedef ResourceHandle<RESOURCE_VERTEX_BUFFER> HVertexBuffer;
 
-void*   MapVertexBuffer( Handle vb, uint32 offset, uint32 size );
-void    UnmapVertexBuffer( Handle vb );
+HVertexBuffer   CreateVertexBuffer( uint32 size );
+void            DeleteVertexBuffer( HVertexBuffer vb );
 
-void    UpdateVertexBuffer( Handle vb, const void* data, uint32 offset, uint32 size );
+void*           MapVertexBuffer( HVertexBuffer vb, uint32 offset, uint32 size );
+void            UnmapVertexBuffer( HVertexBuffer vb );
+
+void            UpdateVertexBuffer( HVertexBuffer vb, const void* data, uint32 offset, uint32 size );
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // index buffer
 
-Handle  CreateIndexBuffer( uint32 size );
-void    DeleteIndexBuffer( Handle ib );
+typedef ResourceHandle<RESOURCE_INDEX_BUFFER> HIndexBuffer;
 
-void*   MapIndexBuffer( Handle ib, uint32 offset, uint32 size );
-void    UnmapIndexBuffer( Handle ib );
+HIndexBuffer    CreateIndexBuffer( uint32 size );
+void            DeleteIndexBuffer( HIndexBuffer ib );
 
-void    UpdateIndexBuffer( Handle ib, const void* data, uint32 offset, uint32 size );
+void*           MapIndexBuffer( HIndexBuffer ib, uint32 offset, uint32 size );
+void            UnmapIndexBuffer( HIndexBuffer ib );
+
+void            UpdateIndexBuffer( HIndexBuffer ib, const void* data, uint32 offset, uint32 size );
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // render-pipeline state & const-buffers
 
-Handle  AcquireRenderPipelineState( const PipelineState::Descriptor& desc );
-void    ReleaseRenderPipelineState( Handle rps );
+typedef ResourceHandle<RESOURCE_PIPELINE_STATE> HPipelineState;
+typedef ResourceHandle<RESOURCE_CONST_BUFFER>   HConstBuffer;
 
-Handle  CreateVertexConstBuffer( Handle rps, uint32 bufIndex );
-bool    CreateVertexConstBuffers( Handle rps, uint32 maxCount, Handle* constBuf );
 
-Handle  CreateFragmentConstBuffer( Handle rps, uint32 bufIndex );
-bool    CreateFragmentConstBuffers( Handle rps, uint32 maxCount, Handle* constBuf );
+HPipelineState  AcquireRenderPipelineState( const PipelineState::Descriptor& desc );
+void            ReleaseRenderPipelineState( HPipelineState rps );
 
-bool    UpdateConstBuffer( Handle constBuf, uint32 constIndex, const float* data, uint32 constCount );
+HConstBuffer    CreateVertexConstBuffer( HPipelineState rps, uint32 bufIndex );
+bool            CreateVertexConstBuffers( HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf );
+
+HConstBuffer    CreateFragmentConstBuffer( HPipelineState rps, uint32 bufIndex );
+bool            CreateFragmentConstBuffers( HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf );
+
+bool            UpdateConstBuffer( HConstBuffer constBuf, uint32 constIndex, const float* data, uint32 constCount );
+void            DeleteConstBuffer( HConstBuffer constBuf );
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // texture-set
 
-Handle  CreateTexture( const Texture::Descriptor& desc );
-void    DeleteTexture( Handle tex );
+typedef ResourceHandle<RESOURCE_TEXTURE> HTexture;
+typedef ResourceHandle<RESOURCE_TEXTURE_SET> HTextureSet;
 
-void*   MapTexture( Handle tex, uint32 level=0 );
-void    UnmapTexture( Handle tex );
+HTexture        CreateTexture( const Texture::Descriptor& desc );
+void            DeleteTexture( HTexture tex );
 
-void    UpdateTexture( Handle tex, uint32 level, TextureFace face, const void* data );
+void*           MapTexture( HTexture tex, uint32 level=0 );
+void            UnmapTexture( HTexture tex );
+
+void            UpdateTexture( HTexture tex, const void* data, uint32 level, TextureFace face=TEXTURE_FACE_LEFT );
 
 
 struct
 TextureSetDescriptor
 {
     uint32  count;
-    Handle  texture[MAX_TEXTURE_SAMPLER_COUNT];
+    HTexture    texture[MAX_TEXTURE_SAMPLER_COUNT];
 };
 
-Handle  AcquireTextureSet( const TextureSetDescriptor& desc );
-Handle  CopyTextureSet( Handle ts );
-void    ReleaseTextureSet( Handle ts );
+HTextureSet     AcquireTextureSet( const TextureSetDescriptor& desc );
+HTextureSet     CopyTextureSet( HTextureSet ts );
+void            ReleaseTextureSet( HTextureSet ts );
 
 
 ////////////////////////////////////////////////////////////////////////////////
 //  depthstencil-state
 
-Handle  AcquireDepthStencilState( const DepthStencilState::Descriptor& desc );
-Handle  CopyDepthStencilState( Handle ds );
-void    ReleaseDepthStencilState( Handle ds );
+typedef ResourceHandle<RESOURCE_DEPTHSTENCIL_STATE> HDepthStencilState;
+
+HDepthStencilState  AcquireDepthStencilState( const DepthStencilState::Descriptor& desc );
+HDepthStencilState  CopyDepthStencilState( HDepthStencilState ds );
+void                ReleaseDepthStencilState( HDepthStencilState ds );
 
 
 ////////////////////////////////////////////////////////////////////////////////
 //  sampler-state
 
-Handle  AcquireSamplerState( const SamplerState::Descriptor& desc );
-Handle  CopySamplerState( Handle ss );
-void    ReleaseSamplerState( Handle ss );
+typedef ResourceHandle<RESOURCE_SAMPLER_STATE> HSamplerState;
+
+HSamplerState       AcquireSamplerState( const SamplerState::Descriptor& desc );
+HSamplerState       CopySamplerState( HSamplerState ss );
+void                ReleaseSamplerState( HSamplerState ss );
 
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // render-pass
 
-Handle  AllocateRenderPass( const RenderPassConfig& passDesc, uint32 packetListCount, Handle* packetList );
-void    BeginRenderPass( Handle pass );
-void    EndRenderPass( Handle pass ); // no explicit render-pass 'release' needed
+typedef ResourceHandle<RESOURCE_RENDER_PASS> HRenderPass;
+typedef ResourceHandle<RESOURCE_PACKET_LIST> HPacketList;
+
+HRenderPass         AllocateRenderPass( const RenderPassConfig& passDesc, uint32 packetListCount, HPacketList* packetList );
+void                BeginRenderPass( HRenderPass pass );
+void                EndRenderPass( HRenderPass pass ); // no explicit render-pass 'release' needed
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -141,39 +180,36 @@ void    EndRenderPass( Handle pass ); // no explicit render-pass 'release' neede
 struct
 Packet
 {
-    uint32          vertexStreamCount;
-    Handle          vertexStream[MAX_VERTEX_STREAM_COUNT];
-    uint32          vertexLayout;
-    Handle          indexBuffer;
-    Handle          renderPipelineState;
-    Handle          depthStencilState;
-    Handle          samplerState;
-    uint32          vertexConstCount;
-    Handle          vertexConst[MAX_CONST_BUFFER_COUNT];
-    uint32          fragmentConstCount;
-    Handle          fragmentConst[MAX_CONST_BUFFER_COUNT];
-    Handle          textureSet;
-    PrimitiveType   primitiveType;
-    uint32          primitiveCount;
+    uint32              vertexStreamCount;
+    HVertexBuffer       vertexStream[MAX_VERTEX_STREAM_COUNT];
+    uint32              vertexLayoutUID;
+    HIndexBuffer        indexBuffer;
+    HPipelineState      renderPipelineState;
+    HDepthStencilState  depthStencilState;
+    HSamplerState       samplerState;
+    uint32              vertexConstCount;
+    HConstBuffer        vertexConst[MAX_CONST_BUFFER_COUNT];
+    uint32              fragmentConstCount;
+    HConstBuffer        fragmentConst[MAX_CONST_BUFFER_COUNT];
+    HTextureSet         textureSet;
+    PrimitiveType       primitiveType;
+    uint32              primitiveCount;
 
-                    Packet()
-                      : vertexStreamCount(0),
-                        vertexLayout(VertexLayout::InvalidUID),
-                        indexBuffer(InvalidHandle),
-                        renderPipelineState(InvalidHandle),
-                        depthStencilState(InvalidHandle),
-                        samplerState(InvalidHandle),
-                        vertexConstCount(0),
-                        fragmentConstCount(0),
-                        textureSet(InvalidHandle),
-                        primitiveCount(0)
-                    {}
+                        Packet()
+                          : vertexStreamCount(0),
+                            vertexLayoutUID(VertexLayout::InvalidUID),
+                            depthStencilState(InvalidHandle),
+                            samplerState(InvalidHandle),
+                            vertexConstCount(0),
+                            fragmentConstCount(0),
+                            primitiveCount(0)
+                        {}
 };
 
-void    BeginPacketList( Handle packetList );
-void    AddPackets( Handle packetList, const Packet* packet, uint32 packetCount );
-void    AddPacket( Handle packetList, const Packet& packet );
-void    EndPacketList( Handle packetList ); // 'packetList' handle invalid after this, no explicit "release" needed
+void    BeginPacketList( HPacketList packetList );
+void    AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount );
+void    AddPacket( HPacketList packetList, const Packet& packet );
+void    EndPacketList( HPacketList packetList ); // 'packetList' handle invalid after this, no explicit "release" needed
 
 
 

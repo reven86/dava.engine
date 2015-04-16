@@ -121,7 +121,7 @@ ShaderDescriptor* ShaderDescriptorCache::GetShaderDescriptor(FastName name, cons
     psDesc.fprogUid = fProgUid;
     psDesc.vertexLayout = vSource.ShaderVertexLayout();
     psDesc.blending = fSource.Blending();
-    rhi::Handle piplineState = rhi::AcquireRenderPipelineState(psDesc);
+    rhi::HPipelineState piplineState = rhi::AcquireRenderPipelineState(psDesc);
     
     ShaderDescriptor *res = new ShaderDescriptor(&vSource, &fSource, piplineState);
     shaderDescriptors[key] = res;

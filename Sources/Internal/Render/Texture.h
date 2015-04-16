@@ -38,7 +38,7 @@
 #include "Render/RenderResource.h"
 #include "FileSystem/FilePath.h"
 #include "Platform/Mutex.h"
-#include "Render/RHI/rhi_Type.h"
+#include "Render/RHI/rhi_Public.h"
 
 #include "Render/UniqueStateSet.h"
 
@@ -235,7 +235,7 @@ protected:
 public:							// properties for fast access
 
 
-    rhi::Handle handle;
+    rhi::HTexture handle;
     rhi::SamplerState::Descriptor::Sampler samplerState;
 
 	

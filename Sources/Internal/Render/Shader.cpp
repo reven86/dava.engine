@@ -112,14 +112,14 @@ uint32 ShaderDescriptor::GetFragmentConstBuffersCount()
     return fragmentConstBuffersCount;
 }
 
-rhi::Handle ShaderDescriptor::GetDynamicBuffer(ConstBufferDescriptor::Type type, uint32 index)
+rhi::HConstBuffer ShaderDescriptor::GetDynamicBuffer(ConstBufferDescriptor::Type type, uint32 index)
 {
     DVASSERT(dynamicBuffers.find(std::make_pair(type, index)) != dynamicBuffers.end()); //dynamic buffer not found
     return dynamicBuffers[std::make_pair(type, index)];
 }
 
 
-ShaderDescriptor::ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource *fSource, rhi::Handle _pipelineState)
+ShaderDescriptor::ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource *fSource, rhi::HPipelineState _pipelineState)
     :piplineState(_pipelineState)
 {    
     vertexConstBuffersCount = vSource->ConstBufferCount();
@@ -168,7 +168,7 @@ ShaderDescriptor::ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource
     {
         if (constBuffers[i].updateType == ConstBufferDescriptor::UpdateType::Dynamic)
         {
-            rhi::Handle dynamicBufferHandle;
+            rhi::HConstBuffer dynamicBufferHandle;
             if (constBuffers[i].type == ConstBufferDescriptor::Type::Vertex)
                 dynamicBufferHandle = rhi::CreateVertexConstBuffer(piplineState, constBuffers[i].targetSlot);
             else

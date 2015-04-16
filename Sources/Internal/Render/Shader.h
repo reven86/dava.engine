@@ -59,7 +59,7 @@ struct DynamicPropertyBinding
     rhi::ShaderProp::Type type;
     uint32 reg;
     uint32 updateSemantic;
-    rhi::Handle buffer;
+    rhi::HConstBuffer buffer;
     DynamicBindings::eShaderSemantic dynamicPropertySemantic;
 };
 
@@ -69,15 +69,15 @@ class ShaderDescriptor
 {
     
 public:
-    ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource *fSource, rhi::Handle pipelineState);
+    ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource *fSource, rhi::HPipelineState pipelineState);
 
     void UpdateDynamicParams();
 
     uint32 GetVertexConstBuffersCount();
     uint32 GetFragmentConstBuffersCount();
 
-    rhi::Handle GetDynamicBuffer(ConstBufferDescriptor::Type type, uint32 index);
-    inline rhi::Handle GetPiplineState(){ return piplineState; }
+    rhi::HConstBuffer GetDynamicBuffer(ConstBufferDescriptor::Type type, uint32 index);
+    inline rhi::HPipelineState GetPiplineState(){ return piplineState; }
 
     //utility
     static const rhi::ShaderPropList& GetProps(UniquePropertyLayout layout);
@@ -90,9 +90,9 @@ private:
     uint32 vertexConstBuffersCount, fragmentConstBuffersCount;
     Vector<DynamicPropertyBinding> dynamicPropertyBindings;
 
-    Map<std::pair<ConstBufferDescriptor::Type, uint32>, rhi::Handle> dynamicBuffers;    
+    Map<std::pair<ConstBufferDescriptor::Type, uint32>, rhi::HConstBuffer> dynamicBuffers;
 
-    rhi::Handle piplineState;
+    rhi::HPipelineState piplineState;
 
     rhi::ShaderSamplerList fragmentSamplerList; //no vertex samplers in rhi yet
 

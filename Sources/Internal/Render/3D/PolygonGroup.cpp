@@ -67,9 +67,7 @@ PolygonGroup::PolygonGroup()
 
     baseVertexArray(0),
 
-    vertexLayoutId(rhi::VertexLayout::InvalidUID),
-    vertexBuffer(rhi::InvalidHandle),
-    indexBuffer(rhi::InvalidHandle)
+    vertexLayoutId(rhi::VertexLayout::InvalidUID)    
 {
 }
 
@@ -274,14 +272,14 @@ void PolygonGroup::ReleaseData()
 	
 void PolygonGroup::BuildBuffers()
 {
-    if (vertexBuffer != rhi::InvalidHandle)
+    if (vertexBuffer.IsValid())
         rhi::DeleteVertexBuffer(vertexBuffer);    
 
     uint32 vertexDataSize = vertexStride * vertexCount;
     vertexBuffer = rhi::CreateVertexBuffer(vertexDataSize);
     rhi::UpdateVertexBuffer(vertexBuffer, meshData, 0, vertexDataSize);
 
-    if (indexBuffer != rhi::InvalidHandle)
+    if (indexBuffer.IsValid())
         rhi::DeleteIndexBuffer(indexBuffer);
     uint32 indexDataSize = indexCount * INDEX_FORMAT_SIZE[indexFormat];
     indexBuffer = rhi::CreateIndexBuffer(indexDataSize);
