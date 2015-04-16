@@ -117,7 +117,7 @@ void MipMapReplacer::ReplaceMipMaps(Texture * texture)
     if(!texture)
         return;
 
-    static uint32 mipmapColor[11] = {
+    static uint32 mipmapColor[8] = {
         0xff00ff00, //green
         0xff0000ff, //red
         0xffff0000, //blue
@@ -126,9 +126,6 @@ void MipMapReplacer::ReplaceMipMaps(Texture * texture)
         0xffffff00, //cyan
         0xffffffff, //white
         0xff000000, //black
-        0xff17b1fb, //beer
-        0xff372f72, //wine
-        0xff0fffbf, //lime
     };
 
     static GLuint CUBE_FACE_GL_NAMES[] =
@@ -152,9 +149,12 @@ void MipMapReplacer::ReplaceMipMaps(Texture * texture)
 
     int32 miplevel = 0;
     bool isCubemap = texture->GetDescriptor()->IsCubeMap();
-    while (width >= 2 && height >= 2 && miplevel < 11)
+    while (width > 0 || height > 0)
     {
-        const uint32 & color = mipmapColor[miplevel];
+        if(width == 0) width = 1;
+        if(height == 0) height = 1;
+        
+        const uint32 & color = mipmapColor[miplevel % 8];
         const uint32 dataCount = width * height;
         for (uint32 i = 0; i < dataCount; ++i)
             mipmapData[i] = color;
@@ -175,8 +175,6 @@ void MipMapReplacer::ReplaceMipMaps(Texture * texture)
         height /= 2;
         miplevel++;
     }
-
-    RENDER_VERIFY(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, miplevel-1));
     
     if (0 != saveId)
     {
