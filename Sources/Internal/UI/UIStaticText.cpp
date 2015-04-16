@@ -713,17 +713,17 @@ void  UIStaticText::DrawLocalizationErrors(const UIGeometricData & geometricData
             !controllPolygon.IsPointInside(textPolygon.GetPoints()[2]) ||
             !controllPolygon.IsPointInside(textPolygon.GetPoints()[3]))
         {
-            Renderer::SetColor(HIGHLITE_COLORS[MAGENTA]);
+            Renderer::GetDynamicBindings().SetColor(HIGHLITE_COLORS[MAGENTA]);
             RenderHelper::Instance()->DrawPolygon(textPolygon, true, RenderState::RENDERSTATE_2D_OPAQUE);
 
 
-            Renderer::SetColor(HIGHLITE_COLORS[RED]);
+            Renderer::GetDynamicBindings().SetColor(HIGHLITE_COLORS[RED]);
             RenderHelper::Instance()->FillPolygon(controllPolygon, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
 
         }
         if (textBlock->IsVisualTextCroped())
         {
-            Renderer::SetColor(HIGHLITE_COLORS[YELLOW]);
+            Renderer::GetDynamicBindings().SetColor(HIGHLITE_COLORS[YELLOW]);
             RenderHelper::Instance()->FillPolygon(textPolygon, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
         }
     }
@@ -733,40 +733,40 @@ void  UIStaticText::DrawLocalizationDebug(const UIGeometricData & textGeomData) 
     if (warningColor != NONE
         && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
     {
-        Renderer::SetColor(HIGHLITE_COLORS[warningColor]);
+        Renderer::GetDynamicBindings().SetColor(HIGHLITE_COLORS[warningColor]);
         DAVA::Polygon2 polygon;
         textGeomData.GetPolygon(polygon);
 
         RenderHelper::Instance()->DrawPolygon(polygon, true, RenderState::RENDERSTATE_2D_OPAQUE);
-        Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+        Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
     if (lineBreakError != NONE && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LINEBREAK_ERRORS))
     {
-        Renderer::SetColor(HIGHLITE_COLORS[lineBreakError]);
+        Renderer::GetDynamicBindings().SetColor(HIGHLITE_COLORS[lineBreakError]);
         DAVA::Polygon2 polygon;
         textGeomData.GetPolygon(polygon);
 
         RenderHelper::Instance()->FillPolygon(polygon, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
-        Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+        Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
     if (textBlock->GetFittingOption() != TextBlock::FITTING_DISABLED 
         && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
     {
-        Renderer::SetColor(HIGHLITE_COLORS[WHITE]);
+        Renderer::GetDynamicBindings().SetColor(HIGHLITE_COLORS[WHITE]);
         if (textBlock->GetFittingOptionUsed() != TextBlock::FITTING_DISABLED)
         {
             if (textBlock->GetFittingOptionUsed() & TextBlock::FITTING_REDUCE)
-                Renderer::SetColor(HIGHLITE_COLORS[RED]);
+                Renderer::GetDynamicBindings().SetColor(HIGHLITE_COLORS[RED]);
             if (textBlock->GetFittingOptionUsed() & TextBlock::FITTING_ENLARGE)
-                Renderer::SetColor(HIGHLITE_COLORS[YELLOW]);
+                Renderer::GetDynamicBindings().SetColor(HIGHLITE_COLORS[YELLOW]);
             if (textBlock->GetFittingOptionUsed() & TextBlock::FITTING_POINTS)
-                Renderer::SetColor(HIGHLITE_COLORS[BLUE]);
+                Renderer::GetDynamicBindings().SetColor(HIGHLITE_COLORS[BLUE]);
         }
         DAVA::Polygon2 polygon;
         textGeomData.GetPolygon(polygon);
         DVASSERT(polygon.GetPointCount() == 4);
         RenderHelper::Instance()->DrawLine(polygon.GetPoints()[0], polygon.GetPoints()[2], RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
-        Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+        Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
 }

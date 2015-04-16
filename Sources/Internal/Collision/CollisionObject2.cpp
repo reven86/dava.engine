@@ -199,7 +199,7 @@ void CollisionObject2::Update(const Sprite::DrawState & state/*const Vector2 & _
 void CollisionObject2::DebugDraw(NMaterial *material)
 {
 	if (!basePolygon)return;    
-    Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+    Renderer::GetDynamicBindings().SetColor(1.0f, 0.0f, 0.0f, 1.0f);
     RenderHelper::Instance()->DrawPoint(circle.center, 3, material);
 	
     RenderHelper::Instance()->DrawCircle(circle.center, circle.radius, material);
@@ -209,11 +209,11 @@ void CollisionObject2::DebugDraw(NMaterial *material)
         RenderHelper::Instance()->DrawPolygon(polygon, true, material);
 	}
 	
-    Renderer::SetColor(0.0f, 0.0f, 1.0f, 1.0f);
+    Renderer::GetDynamicBindings().SetColor(0.0f, 0.0f, 1.0f, 1.0f);
 	for (int32 k = 0; k < manifold.count; ++k)
         RenderHelper::Instance()->DrawPoint(manifold.contactPoints[k], 3, material);
 	
-    Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 	
 	

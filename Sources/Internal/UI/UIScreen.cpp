@@ -110,7 +110,7 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
 {
     RenderSystem2D::Instance()->Flush();
 
-	Renderer::SetColor(0, 0, 0, 1.0f);
+	Renderer::GetDynamicBindings().SetColor(0, 0, 0, 1.0f);
 	UIGeometricData drawData;
 	drawData.position = relativePosition;
 	drawData.size = size;
@@ -154,7 +154,7 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
                                                  ,  RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
 	}
 
-	Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 

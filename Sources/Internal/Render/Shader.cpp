@@ -64,21 +64,36 @@ namespace
     UniqueStateSet<BufferPropertyLayout> propertyLayoutSet;
 }
 
-	
-eShaderSemantic ShaderDescriptor::GetShaderSemanticByName(const FastName& name)
+uint32 ShaderDescriptor::CalculateRegsCount(rhi::ShaderProp::Type type, uint32 arraySize)
 {
-    for (int32 k = 0; k < DYNAMIC_PARAMETERS_COUNT; ++k)
-        if (name == DYNAMIC_PARAM_NAMES[k])return (eShaderSemantic)k;
-    return UNKNOWN_SEMANTIC;
+    switch (type)
+    {
+    case rhi::ShaderProp::TYPE_FLOAT1:
+        DVASSERT(false); //for some reason float1 is not yet supported in rhi
+        return 0;
+        break;
+    case rhi::ShaderProp::TYPE_FLOAT4:
+        return arraySize; //1 float4 register per array element
+        break;
+    case rhi::ShaderProp::TYPE_FLOAT4X4:
+        return arraySize * 4; //4 float4 register per array element
+        break;
+    default:
+        DVASSERT(false); //how did we get here? unknown property type
+        return 0;
+        break;
+    }
 }
+
+	
 	
 void ShaderDescriptor::UpdateDynamicParams()
 {
     //Logger::Info( " upd-dyn-params" );
     for (auto& dynamicBinding : dynamicPropertyBindings)
     {
-        float32 *data = (float32*)(Renderer::GetDynamicParam(dynamicBinding.dynamicPropertySemantic));
-        pointer_size updateSemantic = Renderer::GetDynamicParamUpdateSemantic(dynamicBinding.dynamicPropertySemantic);
+        float32 *data = (float32*)(Renderer::GetDynamicBindings().GetDynamicParam(dynamicBinding.dynamicPropertySemantic));
+        pointer_size updateSemantic = Renderer::GetDynamicBindings().GetDynamicParamUpdateSemantic(dynamicBinding.dynamicPropertySemantic);
         if (dynamicBinding.updateSemantic != updateSemantic)
         {
             uint32 arraySize = 1; //for now 1, later move it to something similar to RenderManager::GetDynamicParamArraySize from instancing branch            
@@ -104,26 +119,11 @@ rhi::Handle ShaderDescriptor::GetDynamicBuffer(ConstBufferDescriptor::Type type,
 }
 
 
-ShaderDescriptor::ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource *fSource)
-{
-    //TODO: uid generation should be moved to shader descriptor cache level
-    vProgUid = FastName(Format("vSource-%d", (uint64)vSource));
-    fProgUid = FastName(Format("fSource-%d", (uint64)fSource));
-
-    rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vSource->SourceCode());
-    rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fSource->SourceCode());
-
-
+ShaderDescriptor::ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource *fSource, rhi::Handle _pipelineState)
+    :piplineState(_pipelineState)
+{    
     vertexConstBuffersCount = vSource->ConstBufferCount();
-    fragmentConstBuffersCount = fSource->ConstBufferCount();
-
-    rhi::PipelineState::Descriptor  psDesc;
-    psDesc.vprogUid = vProgUid;
-    psDesc.fprogUid = fProgUid;
-    psDesc.vertexLayout = vSource->ShaderVertexLayout();
-    psDesc.blending = fSource->Blending();
-    piplineState = rhi::AcquireRenderPipelineState(psDesc);
-
+    fragmentConstBuffersCount = fSource->ConstBufferCount();        
 
     Vector<BufferPropertyLayout> bufferPropertyLayouts;
     bufferPropertyLayouts.resize(vertexConstBuffersCount + fragmentConstBuffersCount);
@@ -154,7 +154,7 @@ ShaderDescriptor::ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource
         for (auto& prop : bufferPropertyLayouts[i].props)
         {
 
-            if (GetShaderSemanticByName(prop.uid) != UNKNOWN_SEMANTIC)
+            if (DynamicBindings::GetShaderSemanticByName(prop.uid) != DynamicBindings::UNKNOWN_SEMANTIC)
             {
                 constBuffers[i].updateType = ConstBufferDescriptor::UpdateType::Dynamic;
             }
@@ -170,9 +170,9 @@ ShaderDescriptor::ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource
         {
             rhi::Handle dynamicBufferHandle;
             if (constBuffers[i].type == ConstBufferDescriptor::Type::Vertex)
-                dynamicBufferHandle = rhi::PipelineState::CreateVProgConstBuffer(piplineState, constBuffers[i].targetSlot);
+                dynamicBufferHandle = rhi::CreateVertexConstBuffer(piplineState, constBuffers[i].targetSlot);
             else
-                dynamicBufferHandle = rhi::PipelineState::CreateFProgConstBuffer(piplineState, constBuffers[i].targetSlot);
+                dynamicBufferHandle = rhi::CreateFragmentConstBuffer(piplineState, constBuffers[i].targetSlot);
 
             dynamicBuffers[std::make_pair(constBuffers[i].type, constBuffers[i].targetSlot)] = dynamicBufferHandle;
             for (auto &prop : bufferPropertyLayouts[i].props)
@@ -183,7 +183,7 @@ ShaderDescriptor::ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource
                 binding.buffer = dynamicBufferHandle;
                 binding.reg = prop.bufferReg;
                 binding.updateSemantic = 0;
-                binding.dynamicPropertySemantic = GetShaderSemanticByName(prop.uid);
+                binding.dynamicPropertySemantic = DynamicBindings::GetShaderSemanticByName(prop.uid);
                 dynamicPropertyBindings.push_back(binding);
             }
         }

@@ -184,7 +184,7 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
 //            Image * image = occlusion->GetRTTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_3D_BLEND);
 //            ImageLoader::Save(image, Format("~doc:/renderobj_%d_%d_%d.png", debugSide, k, result));
 //            SafeRelease(image);
-//            RenderManager::Instance()->SetDynamicParam(PARAM_PROJ, oldProj, UPDATE_SEMANTIC_ALWAYS);
+//            RenderManager::Instance()->SetDynamicParam(PARAM_PROJ, oldProj, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 // 
 //            //RenderManager::Instance()->RestoreRenderTarget();
 //        }
@@ -195,7 +195,7 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
 //            Image * image = occlusion->GetRTTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
 //            ImageLoader::Save(image, Format("~doc:/renderobj2_%d_%d.png", debugSide, k));
 //            SafeRelease(image);
-//            RenderManager::Instance()->SetDynamicParam(PARAM_PROJ, oldProj, UPDATE_SEMANTIC_ALWAYS);
+//            RenderManager::Instance()->SetDynamicParam(PARAM_PROJ, oldProj, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 //        }
         
 //        if ((debugK) && (debugI == 1) && (debugJ == 1))

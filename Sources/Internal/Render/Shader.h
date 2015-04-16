@@ -34,6 +34,7 @@
 #include "Render/Renderer.h"
 #include "Render/RHI/rhi_ShaderSource.h"
 #include "Render/UniqueStateSet.h"
+#include "Render/DynamicBindings.h"
 
 namespace DAVA
 {
@@ -59,7 +60,7 @@ struct DynamicPropertyBinding
     uint32 reg;
     uint32 updateSemantic;
     rhi::Handle buffer;
-    eShaderSemantic dynamicPropertySemantic;
+    DynamicBindings::eShaderSemantic dynamicPropertySemantic;
 };
 
 
@@ -68,7 +69,7 @@ class ShaderDescriptor
 {
     
 public:
-    ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource *fSource);
+    ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource *fSource, rhi::Handle pipelineState);
 
     void UpdateDynamicParams();
 
@@ -78,10 +79,9 @@ public:
     rhi::Handle GetDynamicBuffer(ConstBufferDescriptor::Type type, uint32 index);
     inline rhi::Handle GetPiplineState(){ return piplineState; }
 
-
     //utility
-    static uint32 CalculateRegsCount(rhi::ShaderProp::Type type, uint32 arraySize);
-    static eShaderSemantic GetShaderSemanticByName(const FastName& name);
+    static const rhi::ShaderPropList& GetProps(UniquePropertyLayout layout);
+    static uint32 CalculateRegsCount(rhi::ShaderProp::Type type, uint32 arraySize);    
 
 private:
     Vector<ConstBufferDescriptor> constBuffers;
@@ -90,13 +90,13 @@ private:
     uint32 vertexConstBuffersCount, fragmentConstBuffersCount;
     Vector<DynamicPropertyBinding> dynamicPropertyBindings;
 
-    Map<std::pair<ConstBufferDescriptor::Type, uint32>, rhi::Handle> dynamicBuffers;
-
-    FastName vProgUid, fProgUid;
+    Map<std::pair<ConstBufferDescriptor::Type, uint32>, rhi::Handle> dynamicBuffers;    
 
     rhi::Handle piplineState;
 
     rhi::ShaderSamplerList fragmentSamplerList; //no vertex samplers in rhi yet
+
+    friend class NMaterial;
 };
 
 };

@@ -34,6 +34,7 @@
 #include "Base/BaseObject.h"
 #include "Base/FastName.h"
 #include "FileSystem/FilePath.h"
+#include "Render/RHI/rhi_Type.h"
 
 namespace DAVA
 {
@@ -196,7 +197,7 @@ namespace DAVA
 											InstanceMaterialState* oldMaterialState,
 												   uint64 oldMaterialId);
 		
-		Texture* PrepareTexture(uint32 textureTypeHint, Texture* tx);
+        Texture* PrepareTexture(rhi::TextureType textureTypeHint, Texture* tx);
 		
 		void ResolveMaterialBindings();
 

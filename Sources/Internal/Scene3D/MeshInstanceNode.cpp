@@ -271,9 +271,9 @@ void MeshInstanceNode::Draw()
 
 //    if (GetFullName() == String("MaxScene->node-Cylinder01->VisualSceneNode14->instance_0"))
 //    {
-//        Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+//        Renderer::GetDynamicBindings().SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 //        RenderHelper::Instance()->DrawBox(transformedBox);
-//        Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+//        Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 //    }    
 
 	//now clipping in entity system
@@ -355,19 +355,19 @@ void MeshInstanceNode::Draw()
 		
 		if (debugFlags & DEBUG_DRAW_LOCAL_AXIS)
 		{
-			Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f); 
+			Renderer::GetDynamicBindings().SetColor(1.0f, 0.0f, 0.0f, 1.0f); 
 			RenderHelper::Instance()->DrawLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(50.0f, 0.0f, 0.0f));
 			
-			Renderer::SetColor(0.0f, 1.0f, 0.0f, 1.0f);
+			Renderer::GetDynamicBindings().SetColor(0.0f, 1.0f, 0.0f, 1.0f);
 			RenderHelper::Instance()->DrawLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 50.0f, 0.0f));
 			
-			Renderer::SetColor(0.0f, 0.0f, 1.0f, 1.0f);
+			Renderer::GetDynamicBindings().SetColor(0.0f, 0.0f, 1.0f, 1.0f);
 			RenderHelper::Instance()->DrawLine(Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 50.0f));
 		}
 
 //		if (debugFlags & DEBUG_DRAW_AABOX_CORNERS)
 //		{
-//			Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+//			Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 //			RenderHelper::Instance()->DrawCornerBox(bbox);
 //      }
         
@@ -410,17 +410,17 @@ void MeshInstanceNode::Draw()
                     Vector3 vertex2;
                      vertex2 = vertex + normal * DEBUG_VECTOR_LENGTH;
                     Color color(normal.x * 0.5f + 0.5f, normal.y * 0.5f + 0.5f, normal.z * 0.5f + 0.5f, 1.0f);
-                    Renderer::SetColor(color);
+                    Renderer::GetDynamicBindings().SetColor(color);
                     RenderHelper::Instance()->DrawLine(vertex, vertex2);
                     
                     vertex2 = vertex + tangent * DEBUG_VECTOR_LENGTH;
                     Color tcolor(0.0f, 1.0f, 0.0f, 1.0f);
-                    Renderer::SetColor(tcolor);
+                    Renderer::GetDynamicBindings().SetColor(tcolor);
                     RenderHelper::Instance()->DrawLine(vertex, vertex2);
                     
                     vertex2 = vertex + binormal * DEBUG_VECTOR_LENGTH;
                     Color bcolor(0.0f, 0.0f, 1.0f, 1.0f);
-                    Renderer::SetColor(bcolor);
+                    Renderer::GetDynamicBindings().SetColor(bcolor);
                     RenderHelper::Instance()->DrawLine(vertex, vertex2);
                     
                     
@@ -433,7 +433,7 @@ void MeshInstanceNode::Draw()
 //      RenderManager::Instance()->EnableDepthTest(true);
 //		RenderManager::Instance()->EnableTexturing(true);
         RenderManager::Instance()->SetState(oldState);
-        Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+        Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 #endif
 	//glPopMatrix();

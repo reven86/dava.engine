@@ -54,26 +54,26 @@ void Box2DDebugDraw::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, cons
 	}
 	glEnd();*/
 	
-	Renderer::SetColor(color.r, color.g, color.b, 1.0f);
+	Renderer::GetDynamicBindings().SetColor(color.r, color.g, color.b, 1.0f);
 	Polygon2 polygon;
 	for (int32 i = 0; i < vertexCount; ++i)
 	{
 		polygon.AddPoint(Vector2(vertices[i].x * ptdRatio + cameraPos.x, -vertices[i].y * ptdRatio + cameraPos.y));
 	}
 	RenderHelper::Instance()->DrawPolygon(polygon, true, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
-	Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void Box2DDebugDraw::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color)
 {
-	Renderer::SetColor(color.r, color.g, color.b, 1.0f);
+	Renderer::GetDynamicBindings().SetColor(color.r, color.g, color.b, 1.0f);
 	Polygon2 polygon;
 	for (int32 i = 0; i < vertexCount; ++i)
 	{
 		polygon.AddPoint(Vector2(vertices[i].x * ptdRatio + cameraPos.x, -vertices[i].y * ptdRatio + cameraPos.y));
 	}
 	RenderHelper::Instance()->DrawPolygon(polygon, true, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
-	Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	
 	/*glEnable(GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -97,7 +97,7 @@ void Box2DDebugDraw::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount,
 
 void Box2DDebugDraw::DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color)
 {
-	Renderer::SetColor(color.r, color.g, color.b, 1.0f);
+	Renderer::GetDynamicBindings().SetColor(color.r, color.g, color.b, 1.0f);
 	Polygon2 polygon;
 
 	const float32 k_segments = 16.0f;
@@ -111,12 +111,12 @@ void Box2DDebugDraw::DrawCircle(const b2Vec2& center, float32 radius, const b2Co
 		theta += k_increment;
 	}
 	RenderHelper::Instance()->DrawPolygon(polygon, true, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
-	Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void Box2DDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color)
 {
-	Renderer::SetColor(color.r, color.g, color.b, 1.0f);
+	Renderer::GetDynamicBindings().SetColor(color.r, color.g, color.b, 1.0f);
 	Polygon2 polygon;
 	
 	const float32 k_segments = 16.0f;
@@ -130,7 +130,7 @@ void Box2DDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const
 		theta += k_increment;
 	}
 	RenderHelper::Instance()->DrawPolygon(polygon, true, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
-	Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	/*const float32 k_segments = 16.0f;
 	const float32 k_increment = 2.0f * b2_pi / k_segments;
 	float32 theta = 0.0f;
@@ -167,10 +167,10 @@ void Box2DDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const
 
 void Box2DDebugDraw::DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color)
 {
-	Renderer::SetColor(color.r, color.g, color.b, 1.0f);
+	Renderer::GetDynamicBindings().SetColor(color.r, color.g, color.b, 1.0f);
 	RenderHelper::Instance()->DrawLine(Vector2(p1.x * ptdRatio + cameraPos.x, -p1.y * ptdRatio + cameraPos.y),
         Vector2(p2.x * ptdRatio + cameraPos.x, -p2.y * ptdRatio + cameraPos.y), RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
-	Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	/*glColor3f(color.r, color.g, color.b);
 	glBegin(GL_LINES);
 	glVertex2f(p1.x, p1.y);
@@ -208,9 +208,9 @@ void Box2DDebugDraw::DrawTransform(const b2Transform& xf)
 
 void Box2DDebugDraw::DrawPoint(const b2Vec2& p, float32 size, const b2Color& color)
 {
-	Renderer::SetColor(color.r, color.g, color.b, 1.0f);
+	Renderer::GetDynamicBindings().SetColor(color.r, color.g, color.b, 1.0f);
 	RenderHelper::Instance()->DrawPoint(Vector2(p.x * ptdRatio + cameraPos.x, -p.y * ptdRatio + cameraPos.y), size * ptdRatio, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
-	Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	/*glPointSize(size);
 	glBegin(GL_POINTS);
 	glColor3f(color.r, color.g, color.b);

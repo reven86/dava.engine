@@ -102,13 +102,6 @@
 #endif//PLATFORMS 
 
 
-#if defined(__DAVAENGINE_OPENGL__)
-#include "Render/OGLHelpers.h"
-#elif defined(__DAVAENGINE_DIRECTX9__)
-#include "Render/D3D9Helpers.h"
-#endif 
-
-
 namespace DAVA
 {
 
@@ -435,76 +428,7 @@ eFace GetFaceByName(const String & faceStr);
 eStencilOp GetStencilOpByName(const String & stencilOpStr);
 eFillMode GetFillModeByName(const String & fillModeStr);
     
-enum eShaderSemantic
-{
-    UNKNOWN_SEMANTIC = 0,
-    
-    AUTOBIND_UNIFORMS_START = 0,
-    
-    PARAM_WORLD,
-    PARAM_INV_WORLD,
-    PARAM_WORLD_INV_TRANSPOSE,
-    PARAM_VIEW,
-    PARAM_INV_VIEW,
-    PARAM_PROJ,
-    PARAM_INV_PROJ,
-    
-    PARAM_WORLD_VIEW,
-    PARAM_INV_WORLD_VIEW,
-    PARAM_WORLD_VIEW_INV_TRANSPOSE, //NORMAL, // NORMAL MATRIX
-    
-    PARAM_VIEW_PROJ,
-    PARAM_INV_VIEW_PROJ,
-    
-    PARAM_WORLD_VIEW_PROJ,
-    PARAM_INV_WORLD_VIEW_PROJ,
-    
-    PARAM_COLOR,
-    PARAM_GLOBAL_TIME,
-    PARAM_WORLD_SCALE,          
-    
-    PARAM_CAMERA_POS,
-    PARAM_CAMERA_DIR,
-    PARAM_CAMERA_UP,
-    
-    PARAM_LIGHT0_POSITION,
-    PARAM_LIGHT0_COLOR,
-    PARAM_LIGHT0_AMBIENT_COLOR,
 
-    PARAM_LOCAL_BOUNDING_BOX,
-    PARAM_WORLD_VIEW_OBJECT_CENTER,
-    PARAM_BOUNDING_BOX_SIZE,
-
-    PARAM_SPEED_TREE_TRUNK_OSCILLATION,
-    PARAM_SPEED_TREE_LEAFS_OSCILLATION,
-    PARAM_SPEED_TREE_LIGHT_SMOOTHING,
-
-    PARAM_SPHERICAL_HARMONICS,
-
-    PARAM_JOINT_POSITIONS,
-    PARAM_JOINT_QUATERNIONS,
-    PARAM_JOINTS_COUNT,     //it wil not be bound into shader, but will be used to bind joints
-
-    PARAM_RT_SIZE,
-    PARAM_RT_PIXEL_SIZE,
-    PARAM_RT_HALF_PIXEL_SIZE,
-    PARAM_RT_ASPECT_RATIO,
-
-    AUTOBIND_UNIFORMS_END,
-    
-//    PARAM_OBJECT_POS,
-//    PARAM_OBJECT_SCALE,
-    
-    
-    DYNAMIC_PARAMETERS_COUNT = AUTOBIND_UNIFORMS_END,
-};
-    
-extern const FastName DYNAMIC_PARAM_NAMES[DYNAMIC_PARAMETERS_COUNT];
-
-enum
-{
-    UPDATE_SEMANTIC_ALWAYS = 0,
-};
     
     
 enum eCullOrder

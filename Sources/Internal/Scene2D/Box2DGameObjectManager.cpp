@@ -154,7 +154,7 @@ void Box2DGameObjectManager::Draw()
         Matrix4 worldMx;
         worldMx.glTranslate(cameraPosition.x, cameraPosition.y, 0.f);
         worldMx = worldMx * Matrix4::MakeScale(Vector3(cameraScale.x, cameraScale.y, 1.f));
-        Renderer::SetDynamicParam(PARAM_WORLD, &worldMx, UPDATE_SEMANTIC_ALWAYS);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &worldMx, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
         
 		box2DWorld->SetDebugDraw(debugDraw);
 		box2DWorld->DrawDebugData();

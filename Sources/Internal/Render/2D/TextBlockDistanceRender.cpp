@@ -152,7 +152,7 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
     RenderSystem2D::Instance()->Flush();
     
     //TODO: temporary crutch until 2D render became fully stateless
-    const Matrix4 * oldMatrix = (Matrix4 *)Renderer::GetDynamicParam(PARAM_WORLD);
+    const Matrix4 * oldMatrix = (Matrix4 *)Renderer::GetDynamicBindings().GetDynamicParam(DynamicBindings::PARAM_WORLD);
     
 	//NOTE: correct affine transformations
 
@@ -175,7 +175,7 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 
 
 #if RHI_COMPLETE
-	Renderer::SetDynamicParam(PARAM_WORLD, &offsetMatrix, UPDATE_SEMANTIC_ALWAYS);
+	Renderer::GetDynamicBindings().SetDynamicParam(PARAM_WORLD, &offsetMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 
 	RenderManager::Instance()->SetRenderState(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
     RenderManager::Instance()->SetTextureState(dfFont->GetTextureHandler());
@@ -194,7 +194,7 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
     
 	RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, charDrawed * 6, EIF_16, this->indexBuffer);
     
-    Renderer::SetDynamicParam(PARAM_WORLD, oldMatrix, (pointer_size)oldMatrix);
+    Renderer::GetDynamicBindings().SetDynamicParam(PARAM_WORLD, oldMatrix, (pointer_size)oldMatrix);
 
 #endif RHI_COMPLETE
 }

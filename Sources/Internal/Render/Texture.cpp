@@ -37,7 +37,6 @@
 #include "Platform/SystemTimer.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
-#include "Render/OGLHelpers.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Render/RenderHelper.h"
 
@@ -50,7 +49,6 @@
 
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/ImageConvert.h"
-#include "Render/OGLHelpers.h"
 
 #include "Render/TextureDescriptor.h"
 #include "Render/GPUFamilyDescriptor.h"

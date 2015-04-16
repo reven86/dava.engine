@@ -73,7 +73,7 @@ void DebugRenderSystem::Process(float32 timeElapsed)
         //RenderComponent * renderComponent = cast_if_equal<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
         
         //Matrix4 worldTransform = camera->GetMatrix();
-        Renderer::SetDynamicParam(PARAM_VIEW, &camera->GetMatrix(), UPDATE_SEMANTIC_ALWAYS);
+        Renderer::GetDynamicBindings().SetDynamicParam(PARAM_VIEW, &camera->GetMatrix(), DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 
         AABBox3 debugBoundigBox = entity->GetWTMaximumBoundingBoxSlow();
         uint32 debugFlags = debugRenderComponent->GetDebugFlags();
@@ -97,11 +97,11 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 					if (entityCamera == entity->GetScene()->GetDrawCamera()) camColor = Color(1.0f, 0.0f, 0.0f, 1.0f);
 
 
-					Renderer::SetColor(camColor);
+					Renderer::GetDynamicBindings().SetColor(camColor);
 					RenderHelper::Instance()->DrawBox(camBox, 2.5f, depthWriteState);
 
 					//RenderManager::Instance()->SetState(RenderState::DEFAULT_3D_STATE);
-					Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+					Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 					debugBoundigBox = camBox;
 				}
@@ -119,22 +119,22 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 				//Matrix4 prevMatrix = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
 				//Matrix4 finalMatrix = transformComponent->GetWorldTransform() * prevMatrix;
 				
-                Renderer::SetDynamicParam(PARAM_WORLD, &transformComponent->GetWorldTransform(), UPDATE_SEMANTIC_ALWAYS);
-                Renderer::SetDynamicParam(PARAM_VIEW, &camera->GetMatrix(), UPDATE_SEMANTIC_ALWAYS);
+                Renderer::GetDynamicBindings().SetDynamicParam(PARAM_WORLD, &transformComponent->GetWorldTransform(), DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
+                Renderer::GetDynamicBindings().SetDynamicParam(PARAM_VIEW, &camera->GetMatrix(), DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 
 								
-				Renderer::SetColor(1.f, 1.f, 0, 1.0f);
+				Renderer::GetDynamicBindings().SetColor(1.f, 1.f, 0, 1.0f);
 				RenderHelper::Instance()->DrawLine(Vector3(0, 0, 0), Vector3(1.f, 0, 0), 1.0f, depthTestState);
-				Renderer::SetColor(1.f, 0, 1.f, 1.0f);
+				Renderer::GetDynamicBindings().SetColor(1.f, 0, 1.f, 1.0f);
 				RenderHelper::Instance()->DrawLine(Vector3(0, 0, 0), Vector3(0, 1.f, 0), 1.0f, depthTestState);
-				Renderer::SetColor(0, 1.f, 1.f, 1.0f);
+				Renderer::GetDynamicBindings().SetColor(0, 1.f, 1.f, 1.0f);
 				RenderHelper::Instance()->DrawLine(Vector3(0, 0, 0), Vector3(0, 0, 1.f), 1.0f, depthTestState);
 
-				Renderer::SetColor(dcColor);
+				Renderer::GetDynamicBindings().SetColor(dcColor);
 				RenderHelper::Instance()->DrawBox(dcBox, 1.0f, depthTestState);
 
 				//RenderManager::Instance()->SetState(RenderState::DEFAULT_3D_STATE);
-				Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+				Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 				//RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, prevMatrix);
 
 				dcBox.GetTransformedBox(transformComponent->GetWorldTransform(), debugBoundigBox);
@@ -154,7 +154,7 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 				{
 					Vector3 lPosition = light->GetPosition();
 
-					Renderer::SetColor(1.0f, 1.0f, 0.0f, 1.0f);
+					Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 0.0f, 1.0f);
 
 					switch (light->GetType())
 					{
@@ -180,22 +180,22 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 					}
 
 					//RenderManager::Instance()->SetState(RenderState::DEFAULT_3D_STATE);
-					Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+					Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 				}
 			}
 		}
         
         if ((debugFlags & DebugRenderComponent::DEBUG_DRAW_AABOX_CORNERS))
         {
-            Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+            Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
             RenderHelper::Instance()->DrawCornerBox(debugBoundigBox, 1.0f, depthTestState);
         }
         
         if (debugFlags & DebugRenderComponent::DEBUG_DRAW_RED_AABBOX)
         {
-            Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+            Renderer::GetDynamicBindings().SetColor(1.0f, 0.0f, 0.0f, 1.0f);
             RenderHelper::Instance()->DrawBox(debugBoundigBox, 1.0f, depthWriteState);
-            Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+            Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
         }               
     }*/
 }

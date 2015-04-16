@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#if RHI_COMPLETE
+
 
 #include "Scene3D/Systems/MaterialSystem.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
@@ -51,1750 +51,446 @@
 namespace DAVA
 {
 
-static const FastName DEFINE_VERTEX_LIT("VERTEX_LIT");
-static const FastName DEFINE_PIXEL_LIT("PIXEL_LIT");
-static const FastName DEFINE_LAND_SPECULAR("SPECULAR_LAND");
+uint32 NMaterialProperty::globalPropertyUpdateSemanticCounter = 0;
 
-
-
-static FastName TEXTURE_NAME_PROPS[] =
-{
-	NMaterialTextureName::TEXTURE_ALBEDO,
-	NMaterialTextureName::TEXTURE_NORMAL,
-	NMaterialTextureName::TEXTURE_DETAIL,
-	NMaterialTextureName::TEXTURE_LIGHTMAP,
-	NMaterialTextureName::TEXTURE_DECAL
-};
-
-static FastName RUNTIME_ONLY_FLAGS[] =
-{
-	NMaterialFlagName::FLAG_LIGHTMAPONLY,
-	NMaterialFlagName::FLAG_TEXTUREONLY,
-	NMaterialFlagName::FLAG_SETUPLIGHTMAP,
-
-    NMaterialFlagName::FLAG_DEBUG_UNITY_Z_NORMAL,
-    NMaterialFlagName::FLAG_DEBUG_Z_NORMAL_SCALE,
-    NMaterialFlagName::FLAG_DEBUG_NORMAL_ROTATION,
-	
-	NMaterialFlagName::FLAG_VIEWALBEDO,
-	NMaterialFlagName::FLAG_VIEWAMBIENT,
-	NMaterialFlagName::FLAG_VIEWDIFFUSE,
-	NMaterialFlagName::FLAG_VIEWSPECULAR
-};
-
-static FastName RUNTIME_ONLY_PROPERTIES[] =
-{
-    NMaterialParamName::PARAM_LIGHTMAP_SIZE,
-    NMaterialParamName::PARAM_LIGHT_POSITION0,
-    NMaterialParamName::PARAM_LIGHT_INTENSITY0,
-    NMaterialParamName::PARAM_LIGHT_AMBIENT_COLOR,
-    NMaterialParamName::PARAM_LIGHT_DIFFUSE_COLOR,
-    NMaterialParamName::PARAM_LIGHT_SPECULAR_COLOR,
-    NMaterialParamName::PARAM_RCP_SCREEN_SIZE,
-    NMaterialParamName::PARAM_SCREEN_OFFSET
-};
-
-static FastName RUNTIME_ONLY_TEXTURES[] =
-{
-    NMaterialTextureName::TEXTURE_DYNAMIC_REFLECTION,
-    NMaterialTextureName::TEXTURE_DYNAMIC_REFRACTION,
-    NMaterialTextureName::TEXTURE_HEIGHTMAP
-};
-
-const FastName NMaterialQualityName::DEFAULT_QUALITY_NAME = FastName("Normal");
-
-void IlluminationParams::SetLightmapSize(const int32 &size)
-{
-	lightmapSize = size;
-	
-	if(parent)
-	{
-		float32 floatLightmapSize = (float32)lightmapSize;
-		parent->SetPropertyValue(NMaterialParamName::PARAM_LIGHTMAP_SIZE,
-								 Shader::UT_FLOAT,
-								 1,
-								 &floatLightmapSize);
-	}
-}
-
-void IlluminationParams::SetParent(NMaterial* parentMaterial)
-{
-	parent = parentMaterial;
-	
-	if(parent)
-	{
-		float32 floatLightmapSize = (float32)lightmapSize;
-		parent->SetPropertyValue(NMaterialParamName::PARAM_LIGHTMAP_SIZE,
-								 Shader::UT_FLOAT,
-								 1,
-								 &floatLightmapSize);
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////////
-    
 NMaterial::NMaterial()
-    : materialType(NMaterial::MATERIALTYPE_NONE)
-    , materialKey(0)
-    , materialProperties(16)
-    , textures(8)
-    , parent(NULL)
-    , requiredVertexFormat(0)
-    , lightCount(0)
-    , dynamicBindFlags(0)
-    , materialSortKey(0)
-    , baseTechnique(NULL)
-    , instancePasses(4)
-    , instancePassRenderStates(4)
-    , activePassInstance(NULL)
-    , activeRenderPass(NULL)
-    , illuminationParams(NULL)
-    , materialTemplate(NULL)
-    , materialSetFlags(8)
+    : parent(nullptr)
+    , localProperties(16, nullptr)
+    , localConstBuffers(16, nullptr)
+    , localTextures(8, nullptr)
+    , needRebuildBindings(true)
+    , needRebuildTextures(true)
+    , needRebuildShader(true)
 {
-	memset(lights, 0, sizeof(lights));
+
+    /*for now we just init with one default render variant - later possible variants be read from .fx config and modified by engine flags*/
+    RenderVariantInstance *renderVariant = new RenderVariantInstance();
+
+    renderVariant->depthState = rhi::AcquireDepthStencilState(rhi::DepthStencilState::Descriptor());
+    renderVariant->samplerState = rhi::AcquireSamplerState(rhi::SamplerState::Descriptor());
+    renderVariant->textureSet = rhi::InvalidHandle;
+    renderVariant->renderLayer = RenderLayerManager::GetLayerIDByName(LAYER_OPAQUE);
+
+    activeVariantInstance = renderVariant;
+    renderVariants[FastName("FORWARD_PASS")] = renderVariant;
+
+    materialKey = (uint64)this;
 }
 
 NMaterial::~NMaterial()
 {
-	SetParentInternal(NULL);
-	ReleaseInstancePasses();
-	
-	for(HashMap<FastName, UniqueHandle>::iterator it = instancePassRenderStates.begin();
-		it != instancePassRenderStates.end();
-		++it)
-	{
-		RenderManager::Instance()->ReleaseRenderState(it->second);
-	}
-	
-	for(HashMap<FastName, NMaterialProperty*>::iterator it = materialProperties.begin();
-		it != materialProperties.end();
-		++it)
-	{
-		SafeDelete(it->second);
-	}
-	materialProperties.clear();
-	
-	for(HashMap<FastName, TextureBucket*>::iterator it = textures.begin();
-		it != textures.end();
-		++it)
-	{
-		SafeDelete(it->second);
-	}
-	textures.clear();
-	
-	SafeDelete(illuminationParams);
-	
-	SafeRelease(baseTechnique);
+    //RHI_COMPLETE
 }
 
-void NMaterial::SetParent(NMaterial* newParent, bool inheritTemplate)
+void NMaterial::BindParams(rhi::Packet& target)
 {
-	DVASSERT(this != newParent);
-	
-	if(newParent != parent &&
-	   newParent != this)
-	{
-        SetParentInternal(newParent);
-		OnParentChanged(newParent, inheritTemplate);
-	}
+    //Logger::Info( "bind-params" );
+    DVASSERT(activeVariantInstance);       //trying to bind config-only material 
+
+    //shader rebuild first - as it sets needRebuildBindings and needRebuildTextures
+    if (needRebuildShader)
+        RebuildShader();
+
+    if (needRebuildBindings)
+        RebuildBindings();
+    if (needRebuildTextures)
+        RebuildTextureBindings();
+
+    /*set pipeline state*/
+    target.renderPipelineState = activeVariantInstance->shader->GetPiplineState();
+    target.depthStencilState = activeVariantInstance->depthState;
+    target.samplerState = activeVariantInstance->samplerState;
+    target.textureSet = activeVariantInstance->textureSet;
+
+    activeVariantInstance->shader->UpdateDynamicParams();
+    /*update values in material const buffers*/
+    for (auto& materialBufferBinding : activeVariantInstance->materialBufferBindings)
+    {
+        if (materialBufferBinding->lastValidPropertySemantic == NMaterialProperty::GetCurrentUpdateSemantic()) //prevent buffer update if nothing changed
+            continue;
+        //assume that if we have no property - we bind default value on buffer allocation step - no binding is created in that case
+        for (auto& materialBinding : materialBufferBinding->propBindings)
+        {
+            DVASSERT(materialBinding.source)
+                if (materialBinding.updateSemantic != materialBinding.source->updateSemantic)
+                {
+                    //Logger::Info( " upd-prop " );
+                    rhi::UpdateConstBuffer(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.source->data.get(), ShaderDescriptor::CalculateRegsCount(materialBinding.type, materialBinding.source->arraySize));
+                    materialBinding.updateSemantic = materialBinding.source->updateSemantic;
+                }
+        }
+        materialBufferBinding->lastValidPropertySemantic = NMaterialProperty::GetCurrentUpdateSemantic();
+    }
+
+    target.vertexConstCount = activeVariantInstance->vertexConstBuffers.size();
+    target.fragmentConstCount = activeVariantInstance->fragmentConstBuffers.size();
+    /*bind material const buffers*/
+    for (size_t i = 0, sz = activeVariantInstance->vertexConstBuffers.size(); i < sz; ++i)
+        target.vertexConst[i] = activeVariantInstance->vertexConstBuffers[i];
+    for (size_t i = 0, sz = activeVariantInstance->fragmentConstBuffers.size(); i < sz; ++i)
+        target.fragmentConst[i] = activeVariantInstance->fragmentConstBuffers[i];
 }
+
+MaterialBufferBinding* NMaterial::GetConstBufferBinding(UniquePropertyLayout propertyLayout)
+{
+    MaterialBufferBinding* res = localConstBuffers.at(propertyLayout);
+    if ((res == nullptr) && (parent != nullptr))
+        res = parent->GetConstBufferBinding(propertyLayout);
+
+    return res;
+}
+
+NMaterialProperty* NMaterial::GetMaterialProperty(const FastName& propName)
+{
+    NMaterialProperty *res = localProperties.at(propName);
+    if ((res == nullptr) && (parent != nullptr))
+    {
+        res = parent->GetMaterialProperty(propName);
+    }
+    return res;
+}
+
+Texture* NMaterial::GetMaterialTexture(const FastName& slotName)
+{
+    Texture* res = localTextures.at(slotName);
+    if ((res == rhi::InvalidHandle) && (parent != nullptr))
+    {
+        res = parent->GetMaterialTexture(slotName);
+    }
+    return res;
+}
+
+void NMaterial::AddProperty(const FastName& propName, float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize)
+{
+    DVASSERT(localProperties.at(propName) == nullptr);
+    NMaterialProperty *prop = new NMaterialProperty();
+    prop->name = propName;
+    prop->type = type;
+    prop->arraySize = arraySize;
+    prop->data.reset(new float[sizeof(float32) * 4 * ShaderDescriptor::CalculateRegsCount(type, arraySize)]);
+    prop->SetPropertyValue(propData);
+    localProperties[propName] = prop;
+}
+
+void NMaterial::RemoveProperty(const FastName& propName)
+{
+
+    NMaterialProperty *prop = localProperties.at(propName);
+    DVASSERT(prop != nullptr);
+    localProperties.erase(propName);
+    SafeDelete(prop);
+
+    InvalidateBufferBindings();
+}
+
+void NMaterial::SetPropertyValue(const FastName& propName, float32 *propData)
+{
+    NMaterialProperty *prop = localProperties.at(propName);
+    DVASSERT(prop != nullptr);
+    prop->SetPropertyValue(propData);
+}
+
+
+void NMaterial::AddTexture(const FastName& slotName, Texture* texture)
+{
+    DVASSERT(localTextures.at(slotName) == nullptr);
+    localTextures[slotName] = SafeRetain(texture);
+    InvalidateTextureBindings();
+
+}
+void NMaterial::RemoveTexture(const FastName& slotName)
+{
+    Texture * currTexture = localTextures.at(slotName);
+    DVASSERT(currTexture != nullptr);
+    localTextures.erase(slotName);
+    SafeRelease(currTexture);    
+    InvalidateTextureBindings();
+}
+void NMaterial::SetTexture(const FastName& slotName, Texture* texture)
+{
+    Texture * currTexture = localTextures.at(slotName);
+    DVASSERT(currTexture != nullptr);
+    if (currTexture != texture)
+    {
+        SafeRelease(currTexture);
+        localTextures[slotName] = SafeRetain(texture);
+        InvalidateTextureBindings();
+    }
     
-void NMaterial::SetParentInternal(DAVA::NMaterial *newParent)
-{
-    if(parent)
-    {
-        Vector<NMaterial*>::iterator curMaterial = std::find(parent->children.begin(),
-                                                             parent->children.end(),
-                                                             this);
-        
-        DVASSERT(curMaterial != parent->children.end());
-        if(curMaterial != parent->children.end())
-        {
-            parent->children.erase(curMaterial);
-        }
-        
-        SafeRelease(parent);
-    }
     
-    if(newParent)
+}
+
+void NMaterial::AddFlag(const FastName& flagName, int32 value)
+{
+    DVASSERT(localFlags.find(flagName) == localFlags.end());
+    localFlags[flagName] = value;
+    InvalidateShader();
+}
+void NMaterial::RemoveFlag(const FastName& flagName)
+{
+    DVASSERT(localFlags.find(flagName) != localFlags.end());
+    localFlags.erase(flagName);
+    InvalidateShader();
+}
+void NMaterial::SetFlag(const FastName& flagName, int32 value)
+{
+    DVASSERT(localFlags.find(flagName) != localFlags.end());
+    localFlags[flagName] = value;
+    InvalidateShader();
+}
+
+bool NMaterial::HasLocalFlag(const FastName& flagName)
+{
+    return localFlags.find(flagName) != localFlags.end();
+}
+
+
+bool NMaterial::NeedLocalOverride(UniquePropertyLayout propertyLayout)
+{
+    for (auto& descr : ShaderDescriptor::GetProps(propertyLayout))
     {
-        DVASSERT(std::find(newParent->children.begin(), newParent->children.end(), this) == newParent->children.end());
-        newParent->children.push_back(this);
+        if (localProperties.at(descr.uid) != nullptr)
+            return true;
     }
-    
-    SafeRelease(parent);
-    parent = SafeRetain(newParent);
+    return false;
 }
 
-void NMaterial::SetFlag(const FastName& flag, eFlagValue flagValue)
+
+void NMaterial::SetParent(NMaterial *_parent)
 {
-	materialSetFlags.insert(flag, flagValue);
+    if (parent == _parent)
+        return;
 
-    // TODO: #################
-    // ....
+    if (parent)
+        parent->RemoveChildMaterial(this);
 
-    UpdateShaderWithFlags();
+    parent = _parent;
+    sortingKey = (uint32)parent;
+
+    if (parent)
+        parent->AddChildMaterial(this);
 }
 
-void NMaterial::ResetFlag(const FastName& flag)
+NMaterial* NMaterial::GetParent()
 {
-	if(materialSetFlags.count(flag) > 0)
-	{
-		materialSetFlags.erase(flag);
-		
-		UpdateShaderWithFlags();
-	}
+    return parent;
 }
 
-int32 NMaterial::GetFlagValue(const FastName& flag) const
-{
-	int32 flagValue = NMaterial::FlagOff | NMaterial::FlagInherited;
-	
-	if(materialSetFlags.count(flag) > 0)
-	{
-		flagValue = materialSetFlags.at(flag);
-	}
-	else
-	{
-		if(parent)
-		{
-			flagValue |= parent->GetFlagValue(flag);
-		}
-	}
-	
-	return flagValue;
+void NMaterial::AddChildMaterial(NMaterial *material)
+{    
+    DVASSERT(material);
+    children.push_back(SafeRetain(material));
+    material->InvalidateBufferBindings();
+    material->InvalidateTextureBindings();
 }
 
-bool NMaterial::IsFlagEffective(const FastName& flag) const
+void NMaterial::RemoveChildMaterial(NMaterial *material)
 {
-	int32 flagValue = GetFlagValue(flag);
-	
-	return ((flagValue & NMaterial::FlagOn) == NMaterial::FlagOn);
+    bool res = FindAndRemoveExchangingWithLast(children, material);
+    DVASSERT(res);
+    SafeRelease(material);
 }
 
-void NMaterial::Save(KeyedArchive * archive,
-					 SerializationContext* serializationContext)
+void NMaterial::InjectChildBuffer(UniquePropertyLayout propLayoutId, MaterialBufferBinding* buffer)
 {
-	DataNode::Save(archive, serializationContext);
-	
-	archive->SetString("materialName", (materialName.IsValid()) ? materialName.c_str() : "");
-	archive->SetInt32("materialType", (int32)materialType);
-	archive->SetUInt64("materialKey", materialKey);
-	
-	if(NMaterial::MATERIALTYPE_INSTANCE == materialType &&
-	   parent)
-	{
-		archive->SetUInt64("parentMaterialKey", parent->materialKey);
-		//Logger::FrameworkDebug("[NMaterial::Save] Parent: %s, Child %s, parent key% %ld",
-		//					   parent->GetName().c_str(),
-		//					   this->GetName().c_str(),
-		//					   parent->materialKey);
-	}
-	
-	if(GetMaterialGroup().IsValid())
-	{
-		archive->SetString("materialGroup", GetMaterialGroup().c_str());
-	}
-	
-	archive->SetString("materialTemplate", (materialTemplate) ? materialTemplate->name.c_str() : "");		
-	
-	KeyedArchive* materialTextures = new KeyedArchive();
-	for(HashMap<FastName, TextureBucket*>::iterator it = textures.begin();
-		it != textures.end();
-		++it)
-	{
-
-		if (IsRuntimeTexture(it->first))
-			continue;
-		
-        FilePath texturePath = it->second->GetPath();
-        if(!texturePath.IsEmpty())
-        {
-            String textureRelativePath = texturePath.GetRelativePathname(serializationContext->GetScenePath());
-            if(textureRelativePath.size() > 0)
-            {
-                materialTextures->SetString(it->first.c_str(), textureRelativePath);
-            }
-        }
-	}
-	archive->SetArchive("textures", materialTextures);
-	SafeRelease(materialTextures);
-	
-	KeyedArchive* materialProps = new KeyedArchive();
-	for(HashMap<FastName, NMaterialProperty*>::iterator it = materialProperties.begin();
-		it != materialProperties.end();
-		++it)
-	{
-		if(!IsRuntimeProperty(it->first))
-		{
-			NMaterialProperty* property = it->second;
-			
-			uint32 dataSize = Shader::GetUniformTypeSize(property->type) * property->size;
-			uint8* propertyStorage = new uint8[dataSize + sizeof(property->type) + sizeof(property->size)];
-			
-			memcpy(propertyStorage, &property->type, sizeof(property->type));
-			memcpy(propertyStorage + sizeof(property->type), &property->size, sizeof(property->size));
-			memcpy(propertyStorage + sizeof(property->type) + sizeof(property->size), property->data, dataSize);
-			
-			materialProps->SetByteArray(it->first.c_str(), propertyStorage, dataSize + sizeof(property->type) + sizeof(property->size));
-			
-			SafeDeleteArray(propertyStorage);
-		}
-	}
-	archive->SetArchive("properties", materialProps);
-	SafeRelease(materialProps);
-	
-	KeyedArchive* materialSetFlagsArchive = new KeyedArchive();
-	for(HashMap<FastName, int32>::iterator it = materialSetFlags.begin();
-		it != materialSetFlags.end();
-		++it)
-	{
-		if(!IsRuntimeFlag(it->first))
-		{
-			materialSetFlagsArchive->SetInt32(it->first.c_str(), it->second);
-		}
-	}
-	archive->SetArchive("setFlags", materialSetFlagsArchive);
-	SafeRelease(materialSetFlagsArchive);
-	
-	if(illuminationParams)
-	{
-		archive->SetBool("illumination.isUsed", illuminationParams->isUsed);
-		archive->SetBool("illumination.castShadow", illuminationParams->castShadow);
-		archive->SetBool("illumination.receiveShadow", illuminationParams->receiveShadow);
-		archive->SetInt32("illumination.lightmapSize", illuminationParams->lightmapSize);
-	}
-}
-
-void NMaterial::Load(KeyedArchive * archive,
-					 SerializationContext* serializationContext)
-{
-	DataNode::Load(archive, serializationContext);
-
-    if(archive->IsKeyExists("materialName"))
-    {
-        materialName = FastName(archive->GetString("materialName"));
-    }
-
-	if(archive->IsKeyExists("materialType"))
-    {
-        materialType = (NMaterial::eMaterialType)archive->GetInt32("materialType");
-    }
-
-	if(archive->IsKeyExists("materialKey")) 
-    {
-        materialKey = (NMaterial::NMaterialKey)archive->GetUInt64("materialKey");
-	    pointer = materialKey;
-    }	
-
-	if(archive->IsKeyExists("materialGroup"))
-	{
-		SetMaterialGroup(FastName(archive->GetString("materialGroup").c_str()));
-	}
-	else
-	{
-		SetMaterialGroup(materialGroup);
-	}
-	
-	// orderedQuality will be set, after SetMaterialGroup call
-	// but we are loading now, so currentQuality should be set to orderedQuality
-	// to process loading with exactly ordered quality
-	currentQuality = orderedQuality;
-	
-    if(archive->IsKeyExists("materialTemplate"))
-    {
-	    String materialTemplateName = archive->GetString("materialTemplate");
-	    if(materialTemplateName.size() > 0)
-	    {
-		    NMaterialHelper::SwitchTemplate(this, FastName(materialTemplateName.c_str()));
-	    }
-	    else
-	    {
-		    //VI: will inherit from parent probably
-		    materialTemplate = NULL;
-	    }
-    }
-	
-    if(archive->IsKeyExists("properties"))
-    {
-	    const Map<String, VariantType*>& propsMap = archive->GetArchive("properties")->GetArchieveData();
-	    for(Map<String, VariantType*>::const_iterator it = propsMap.begin();
-		    it != propsMap.end();
-		    ++it)
-	    {
-		    if (IsRuntimeProperty(FastName(it->first)))continue;
-
-		    const VariantType* propVariant = it->second;
-		    DVASSERT(VariantType::TYPE_BYTE_ARRAY == propVariant->type);
-		    DVASSERT(propVariant->AsByteArraySize() >= static_cast<int32>(sizeof(uint32) +sizeof(uint32)));
-		
-		    const uint8* ptr = propVariant->AsByteArray();
-		
-		    SetPropertyValue(FastName(it->first),
-						     *(Shader::eUniformType*)ptr,
-						     *(ptr + sizeof(Shader::eUniformType)),
-						     ptr + sizeof(Shader::eUniformType) + sizeof(uint8));
-	    }
-    }
-
-    if(archive->IsKeyExists("textures"))
-    {
-	    const Map<String, VariantType*>& texturesMap = archive->GetArchive("textures")->GetArchieveData();
-	    for(Map<String, VariantType*>::const_iterator it = texturesMap.begin();
-		    it != texturesMap.end();
-		    ++it)
-	    {
-		    String relativePathname = it->second->AsString();
-		    SetTexture(FastName(it->first), serializationContext->GetScenePath() + relativePathname);
-	    }
-    }
-	
-	if(archive->IsKeyExists("illumination.isUsed"))
-	{
-		illuminationParams = new IlluminationParams(this);
-		
-		illuminationParams->isUsed = archive->GetBool("illumination.isUsed", illuminationParams->isUsed);
-		illuminationParams->castShadow = archive->GetBool("illumination.castShadow", illuminationParams->castShadow);
-		illuminationParams->receiveShadow = archive->GetBool("illumination.receiveShadow", illuminationParams->receiveShadow);
-		illuminationParams->SetLightmapSize(archive->GetInt32("illumination.lightmapSize", illuminationParams->lightmapSize));
-	}
-	
-    if(archive->IsKeyExists("setFlags"))
-    {
-	    const Map<String, VariantType*>& flagsMap = archive->GetArchive("setFlags")->GetArchieveData();
-	    for(Map<String, VariantType*>::const_iterator it = flagsMap.begin();
-		    it != flagsMap.end();
-		    ++it)
-	    {
-		    SetFlag(FastName(it->first), (NMaterial::eFlagValue)it->second->AsInt32());
-	    }
-    }
-	
-	if(archive->IsKeyExists("parentMaterialKey") && NMaterial::MATERIALTYPE_INSTANCE == materialType)
-	{
-		uint64 parentKey = archive->GetUInt64("parentMaterialKey");
-		serializationContext->AddBinding(parentKey, this);
-	}
-}
-
-void NMaterial::SetQuality(const FastName& stateName)
-{
-	DVASSERT(stateName.IsValid());
-	orderedQuality = stateName;
-}
-
-FastName NMaterial::GetEffectiveQuality() const
-{
-	FastName ret = orderedQuality;
-	
-	const NMaterial* parent = GetParent();
-	while(!ret.IsValid() && NULL != parent)
-	{
-		ret = parent->orderedQuality;
-		parent = parent->parent;
-	}
-	
-	return ret;
-}
-
-bool NMaterial::ReloadQuality(bool force)
-{
-	bool ret = false;
-	
-	DVASSERT(materialTemplate);
-	
-	FastName effectiveQuality = GetEffectiveQuality();
-	FastName curGroupQuality = QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetMaterialGroup());
-	if(curGroupQuality != currentQuality)
-	{
-		effectiveQuality = curGroupQuality;
-	}
-	
-	bool hasQuality = (materialTemplate->techniqueStateMap.count(effectiveQuality) > 0);
-	if(hasQuality && (effectiveQuality != currentQuality || force))
-	{
-		ret = true;
-		currentQuality = effectiveQuality;
-		        
-		if(NMaterial::MATERIALTYPE_INSTANCE == materialType)
-		{
-			OnInstanceQualityChanged();
-		}
-		else if(NMaterial::MATERIALTYPE_MATERIAL == materialType)
-		{
-            SetQuality(currentQuality);
-
-			UpdateMaterialTemplate();
-			
-			LoadActiveTextures();
-			
-			this->Retain();
-			
-			size_t childrenCount = children.size();
-			for(size_t i = 0; i < childrenCount; ++i)
-			{
-				NMaterial* child = children[i];
-				
-				child->SetQuality(currentQuality);
-				child->ReloadQuality(force);
-			}
-			
-			//VI: TODO: review if this call is realy needed at this point
-			//CleanupUnusedTextures();
-			
-			this->Release();
-		}
-		else
-		{
-			DVASSERT(false && "Material is not initialized properly!");
-		}
-	}
-	
-	return ret;
-}
-
-NMaterial* NMaterial::Clone()
-{
-	NMaterial* clonedMaterial = NULL;
-	if(NMaterial::MATERIALTYPE_MATERIAL == materialType)
-	{
-		clonedMaterial = NMaterial::CreateMaterial(materialName,
-												   materialTemplate->name,
-												   currentQuality);
-		
-	}
-	else if(NMaterial::MATERIALTYPE_INSTANCE == materialType)
-	{
-		clonedMaterial = NMaterial::CreateMaterialInstance();
-	}
-    else if(NMaterial::MATERIALTYPE_GLOBAL == materialType)
-    {
-        clonedMaterial = NMaterial::CreateGlobalMaterial(materialName);
-    }
-	else
-	{
-		DVASSERT(false && "Material is not initialized properly!");
-		return clonedMaterial;
-	}
-	
-	//clonedMaterial->SetName(GetName());
-			
-	for(HashMap<FastName, NMaterialProperty*>::iterator it = materialProperties.begin();
-		it != materialProperties.end();
-		++it)
-	{
-		clonedMaterial->materialProperties.insert(it->first, it->second->Clone());
-	}
-	
-	for(HashMap<FastName, TextureBucket*>::iterator it = textures.begin();
-		it != textures.end();
-		++it)
-	{
-		clonedMaterial->SetTexture(it->first, it->second->GetPath());
-	}
-	
-	if(illuminationParams)
-	{
-		clonedMaterial->illuminationParams = new IlluminationParams(*illuminationParams);
-		clonedMaterial->illuminationParams->SetParent(clonedMaterial);
-	}
-	
-	if(NMaterial::MATERIALTYPE_INSTANCE == materialType)
-	{
-		clonedMaterial->SetParent(parent);
-	}
-	
-	for(HashMap<FastName, int32>::iterator it = materialSetFlags.begin();
-		it != materialSetFlags.end();
-		++it)
-	{
-		clonedMaterial->SetFlag(it->first, (NMaterial::eFlagValue)it->second);
-	}
-	
-	for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
-		it != instancePasses.end();
-		++it)
-	{
-		RenderPassInstance* currentPass = it->second;
-		
-		if(currentPass->dirtyState)
-		{
-			RenderPassInstance* clonedPass = clonedMaterial->instancePasses.at(it->first);
-			DVASSERT(clonedPass);
-			
-			clonedPass->dirtyState = true;
-			clonedPass->SetRenderStateHandle(currentPass->GetRenderStateHandle());
-		}
-	}
-	
-	for(HashMap<FastName, UniqueHandle>::iterator it = instancePassRenderStates.begin();
-		it != instancePassRenderStates.end();
-		++it)
-	{
-		clonedMaterial->instancePassRenderStates.insert(it->first, it->second);
-		RenderManager::Instance()->RetainRenderState(it->second);
-	}
-	
-	//DataNode properties
-	clonedMaterial->pointer = pointer;
-	clonedMaterial->scene = scene;
-	clonedMaterial->index = index;
-	clonedMaterial->nodeFlags = nodeFlags;
-	
-	return clonedMaterial;
-}
-
-NMaterial* NMaterial::Clone(const String& newName)
-{
-	NMaterial* clonedMaterial = Clone();
-	//clonedMaterial->SetName(newName);
-	clonedMaterial->SetMaterialName(FastName(newName));
-	clonedMaterial->SetMaterialKey((NMaterial::NMaterialKey)clonedMaterial);
-	
-	return clonedMaterial;
-}
-
-IlluminationParams * NMaterial::GetIlluminationParams(bool createIfNeeded /*= true*/)
-{
-	if(createIfNeeded && !illuminationParams)
-		illuminationParams = new IlluminationParams(this);
-	
-	return illuminationParams;
-}
-
-void NMaterial::ReleaseIlluminationParams()
-{
-	SafeDelete(illuminationParams);
-}
-
-void NMaterial::RemoveTexture(const FastName& textureFastName)
-{
-	TextureBucket* bucket = textures.at(textureFastName);
-	DVASSERT(bucket);
-	
-	if(bucket)
-	{
-		textures.erase(textureFastName);
-		SafeDelete(bucket);
-		
-		SetTexturesDirty();
-	}
-}
-
-void NMaterial::SetTexture(const FastName& textureFastName,
-						   const FilePath& texturePath)
-{
-	TextureBucket* bucket = textures.at(textureFastName);
-	if(NULL == bucket)
-	{
-		bucket = new TextureBucket();
-		textures.insert(textureFastName, bucket);
-	}
-	
-	if(bucket->GetPath() != texturePath)
-	{
-		bucket->SetTexture(NULL); //VI: texture WILL NOT BE RELOADED if it's not active in the current quality
-		bucket->SetPath(texturePath);
-		
-		if(IsTextureActive(textureFastName))
-		{
-			Texture* tx = Texture::CreateFromFile(texturePath, textureFastName);
-			bucket->SetTexture(tx);
-			SafeRelease(tx);
-		}
-		
-		SetTexturesDirty();
-	}
-}
-
-void NMaterial::SetTexture(const FastName& textureFastName,
-						   Texture* texture)
-{
-	TextureBucket* bucket = textures.at(textureFastName);
-	if(NULL == bucket)
-	{
-		bucket = new TextureBucket();
-		textures.insert(textureFastName, bucket);
-	}
-	
-	if(texture != bucket->GetTexture())
-	{
-		bucket->SetTexture(texture);
-		bucket->SetPath((texture) ? texture->texDescriptor->pathname : FilePath());
-		
-		SetTexturesDirty();
-	}
-}
-
-void NMaterial::SetTexturePath(const FastName& textureFastName, const FilePath& texturePath)
-{
-	TextureBucket* bucket = textures.at(textureFastName);
-	
-	if(NULL == bucket)
-	{
-		bucket = new TextureBucket();
-		textures.insert(textureFastName, bucket);
-	}
-	
-	bucket->SetPath(texturePath);
-}
-
-Texture * NMaterial::GetTexture(const FastName& textureFastName) const
-{
-	TextureBucket* bucket = textures.at(textureFastName);
-	return (NULL == bucket) ? NULL : bucket->GetTexture();
-}
-
-const FilePath& NMaterial::GetTexturePath(const FastName& textureFastName) const
-{
-	static FilePath invalidEmptyPath;
-	TextureBucket* bucket = textures.at(textureFastName);
-	return (NULL == bucket) ? invalidEmptyPath : bucket->GetPath();
-}
-
-Texture * NMaterial::GetEffectiveTexture(const FastName& textureFastName) const
-{
-	TextureBucket* bucket = GetEffectiveTextureBucket(textureFastName);
-	return (NULL == bucket) ? NULL : bucket->GetTexture();
-}
-
-const FilePath& NMaterial::GetEffectiveTexturePath(const FastName& textureFastName) const
-{
-	static FilePath invalidEmptyPath;
-	TextureBucket* bucket = GetEffectiveTextureBucket(textureFastName);
-	return (NULL == bucket) ? invalidEmptyPath : bucket->GetPath();
-}
-
-Texture * NMaterial::GetTexture(uint32 index) const
-{
-	DVASSERT(index < textures.size());
-	
-	TextureBucket* bucket = textures.valueByIndex(index);
-	return bucket->GetTexture();
-}
-
-const FilePath& NMaterial::GetTexturePath(uint32 index) const
-{
-	DVASSERT(index < textures.size());
-	
-	TextureBucket* bucket = textures.valueByIndex(index);
-	return bucket->GetPath();
-}
-
-const FastName& NMaterial::GetTextureName(uint32 index) const
-{
-	DVASSERT(index < textures.size());
-	
-	return textures.keyByIndex(index);
-}
-
-uint32 NMaterial::GetTextureCount() const
-{
-	return static_cast<uint32>(textures.size());
-}
-
-void NMaterial::SetPropertyValue(const FastName & keyName,
-								 Shader::eUniformType type,
-								 uint32 size,
-								 const void * data)
-{
-	DVASSERT(data);
-	DVASSERT(size);
-	DVASSERT(keyName.IsValid());
-	
-	size_t dataSize = Shader::GetUniformTypeSize(type) * size;
-	NMaterialProperty * materialProperty = materialProperties.at(keyName);
-	if (materialProperty)
-	{
-		if (materialProperty->type != type || materialProperty->size != size)
-		{
-			//VI: material property type or size chnage should never happen at runtime
-			DVASSERT(false && "Runtime change of material property type!");
-			
-			NMaterialProperty* newProp = new NMaterialProperty();
-			newProp->size = size;
-			newProp->type = type;
-			newProp->data = new uint8[dataSize];
-			
-			OnMaterialPropertyRemoved(keyName);
-			
-			SafeDelete(materialProperty);
-			materialProperties.insert(keyName, newProp);
-			
-			OnMaterialPropertyAdded(keyName);
-			
-			materialProperty = newProp;
-		}
-	}
-	else
-	{
-		materialProperty = new NMaterialProperty();
-		materialProperty->size = size;
-		materialProperty->type = type;
-		materialProperty->data = new uint8[dataSize];
-		materialProperties.insert(keyName, materialProperty);
-		
-		OnMaterialPropertyAdded(keyName);
-	}
-	
-	memcpy(materialProperty->data, data, dataSize);
-	
-	//VI: this is temporary solution. It has to be removed once lighting system + autobind system is ready
-//	if(IsDynamicLit() && IsLightingProperty(keyName))
-//	{
-//		UpdateLightingProperties(lights[0]);
-//	}
-}
-
-NMaterialProperty* NMaterial::GetPropertyValue(const FastName & keyName) const
-{
-	const NMaterial* currentMaterial = this;
-	NMaterialProperty * property = NULL;
-	while(currentMaterial != NULL)
-	{
-		property = currentMaterial->materialProperties.at(keyName);
-		if (property)
-		{
-			break;
-		}
-		
-		currentMaterial = currentMaterial->parent;
-	}
-	
-	return property;
-}
-
-NMaterialProperty* NMaterial::GetMaterialProperty(const FastName & keyName) const
-{
-	return materialProperties.at(keyName);
-}
-
-void NMaterial::RemoveMaterialProperty(const FastName & keyName)
-{
-	NMaterialProperty* prop = materialProperties.at(keyName);
-	if(prop)
-	{
-		materialProperties.erase(keyName);
-		SafeDelete(prop);
-	}
-	
-	OnMaterialPropertyRemoved(keyName);
-}
-
-void NMaterial::SetMaterialName(const FastName& name)
-{
-	materialName = name;
-}
-
-FastName NMaterial::GetMaterialGroup() const
-{
-	FastName result = materialGroup;
-	
-	NMaterial* curMaterial = GetParent();
-	while(!result.IsValid() && curMaterial != NULL)
-	{
-		result = curMaterial->materialGroup;
-		
-		curMaterial = curMaterial->GetParent();
-	}
-	
-	return result;
-}
-
-void NMaterial::SetMaterialGroup(const FastName &group)
-{
-	if(group.IsValid())
-	{
-		materialGroup = group;
-		const MaterialQuality* curQuality = QualitySettingsSystem::Instance()->GetMaterialQuality(group, QualitySettingsSystem::Instance()->GetCurMaterialQuality(group));
-		
-		if(NULL != curQuality)
-		{
-			SetQuality(curQuality->qualityName);
-		}
-        else
-        {
-            Logger::Error("Material \"%s\" uses quality group \"%s\", that isn't exist in quality system.", materialName.c_str(), group.c_str());
-        }
-	}
-}
-
-void NMaterial::SetMaterialTemplate(const NMaterialTemplate* matTemplate,
-									const FastName& defaultQuality)
-{
-	materialTemplate = matTemplate;
-	currentQuality = defaultQuality;
-	
-	OnMaterialTemplateChanged();
-	
-	LoadActiveTextures();
-	
-	this->Retain();		
-	
-	size_t childrenCount = children.size();
-	for(size_t i = 0; i < childrenCount; ++i)
-	{
-		children[i]->SetMaterialTemplate(matTemplate, defaultQuality);
-	}
-	
-	//VI: TODO: review if this call is realy needed at this point
-	//CleanupUnusedTextures();
-	
-	this->Release();
-}
-
-void NMaterial::OnMaterialTemplateChanged()
-{
-	UpdateMaterialTemplate();
-}
-
-void NMaterial::OnParentChanged(NMaterial* newParent, bool inheritTemplate)
-{
-	materialSortKey = (uint16)((pointer_size) newParent);
-	
-	bool useParentTemplate = (inheritTemplate || NULL == materialTemplate);
-
-    if(useParentTemplate)
-    {
-        if(newParent)
-        {
-            SetMaterialTemplate(newParent->materialTemplate, newParent->currentQuality);
-        }
-    }
+    if (parent&&!NeedLocalOverride(propLayoutId))
+        parent->InjectChildBuffer(propLayoutId, buffer);
     else
     {
-        UpdateShaderWithFlags();
-    }
-	
-	SetTexturesDirty();
-    InvalidateProperties();
-}
-
-void NMaterial::OnInstanceQualityChanged()
-{
-	UpdateMaterialTemplate();
-	
-	LoadActiveTextures();
-	
-	//VI: TODO: review if this call is realy needed at this point
-	//CleanupUnusedTextures();
-}
-
-void NMaterial::BuildEffectiveFlagSet(FastNameSet& effectiveFlagSet)
-{
-	effectiveFlagSet.clear();
-	
-	BuildEffectiveFlagSetInternal(effectiveFlagSet);
-}
-
-void NMaterial::BuildEffectiveFlagSetInternal(FastNameSet& effectiveFlagSet)
-{
-	if(parent)
-	{
-		parent->BuildEffectiveFlagSetInternal(effectiveFlagSet);
-	}
-	
-	//VI: now when flags were set by parent let's set them from our collection or filter out overriden flags.
-	for(HashMap<FastName, int32>::iterator it = materialSetFlags.begin();
-		it != materialSetFlags.end();
-		++it)
-	{
-		if(NMaterial::FlagOn == it->second)
-		{
-			effectiveFlagSet.Insert(it->first);
-		}
-		else
-		{
-			effectiveFlagSet.erase(it->first);
-		}
-	}
-}
-
-void NMaterial::ReleaseInstancePasses()
-{
-	for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
-		it != instancePasses.end();
-		++it)
-	{
-		SafeDelete(it->second);
-	}
-	instancePasses.clear();
-	
-	activePassInstance = NULL;
-	activePassName = FastName();
-	activeRenderPass = NULL;
-}
-
-void NMaterial::UpdateMaterialTemplate()
-{
-	DVASSERT(materialTemplate);
-	
-	ReleaseInstancePasses();
-	
-	FastNameSet effectiveFlags;
-	BuildEffectiveFlagSet(effectiveFlags);
-	
-	FastName techniqueName;
-	if(currentQuality.IsValid())
-	{
-		techniqueName = materialTemplate->techniqueStateMap.at(currentQuality);
-	}
-	
-	if(!techniqueName.IsValid())
-	{
-		techniqueName = materialTemplate->techniqueStateMap.valueByIndex(0);
-	}
-	
-	DVASSERT(techniqueName.IsValid());
-	
-	SafeRelease(baseTechnique);
-	baseTechnique = RenderTechniqueSingleton::Instance()->CreateTechniqueByName(techniqueName);
-	
-	//DVASSERT(baseTechnique);
-	//materialSortKey = baseTechnique->GetTechniqueId();
-    
-    if(NULL == baseTechnique)
-    {
-        baseTechnique = RenderTechniqueSingleton::Instance()->CreateTechniqueByName(NMaterialName::TEXTURED_OPAQUE);
-        DVASSERT(baseTechnique);
-    }
-	
-    requiredVertexFormat = 0;
-	uint32 passCount = baseTechnique->GetPassCount();
-	for(uint32 i = 0; i < passCount; ++i)
-	{
-		RenderTechniquePass* pass = baseTechnique->GetPassByIndex(i);
-		UpdateRenderPass(baseTechnique->GetPassName(i), effectiveFlags, pass);
-	}
-	
-	SetTexturesDirty();
-	
-	SetRenderLayers(RenderLayerManager::Instance()->GetLayerIDMaskBySet(baseTechnique->GetLayersSet()));
-
-    //{VI: temporray code should be removed once lighting system is up
-    dynamicBindFlags = (baseTechnique->GetLayersSet().count(LAYER_SHADOW_VOLUME) != 0) ? DYNAMIC_BIND_LIGHT : 0;
-    for(uint32 i = 0; i < passCount; ++i)
-    {
-        RenderTechniquePass* pass = baseTechnique->GetPassByIndex(i);
-        const FastNameSet& defines = pass->GetUniqueDefineSet();
-        dynamicBindFlags |= (defines.count(DEFINE_VERTEX_LIT) || defines.count(DEFINE_PIXEL_LIT) || defines.count(FLAG_SPHERICAL_LIT)) ? DYNAMIC_BIND_LIGHT : 0;
-        dynamicBindFlags |= defines.count(FLAG_SPHERICAL_LIT) ? DYNAMIC_BIND_OBJECT_CENTER : 0;
+        DVASSERT(uint64(localConstBuffers.at(propLayoutId)) == rhi::InvalidHandle);
+        localConstBuffers[propLayoutId] = buffer;
     }
 }
 
-void NMaterial::UpdateRenderPass(const FastName& passName,
-								 const FastNameSet& instanceDefines,
-								 RenderTechniquePass* pass)
+void NMaterial::ClearLocalBuffers()
 {
-	RenderState* parentRenderState = pass->GetRenderState();
-	
-	RenderPassInstance* passInstance = new RenderPassInstance();
-	passInstance->dirtyState = (instancePassRenderStates.count(passName) != 0);
-	
-	if(passInstance->dirtyState)
-	{
-		passInstance->SetRenderStateHandle(instancePassRenderStates.at(passName));
-	}
-	else
-	{
-		passInstance->SetRenderStateHandle(parentRenderState->stateHandle);
-	}
-	
-	passInstance->SetTextureStateHandle(InvalidUniqueHandle);
-	passInstance->texturesDirty = false;
-	
-	Shader* shader = pass->CompileShader(instanceDefines);
-	passInstance->SetShader(shader);
-    requiredVertexFormat |= shader->GetRequiredVertexFormat();
-	SafeRelease(shader);
-	
-	passInstance->SetRenderer(parentRenderState->renderer);
-	passInstance->SetColor(parentRenderState->color);
-	
-	instancePasses.insert(passName, passInstance);
-	
-	BuildTextureParamsCache(passInstance);
-	BuildActiveUniformsCacheParamsCache(passInstance);
-}
 
-void NMaterial::BuildTextureParamsCache(RenderPassInstance* passInstance)
-{
-	Shader* shader = passInstance->GetShader();
-	
-	uint32 uniformCount = shader->GetUniformCount();
-	for(uint32 uniformIndex = 0; uniformIndex < uniformCount; ++uniformIndex)
-	{
-		Shader::Uniform * uniform = shader->GetUniform(uniformIndex);
-		if(uniform->shaderSemantic == UNKNOWN_SEMANTIC)
-		{
-			if(uniform->type == Shader::UT_SAMPLER_2D ||
-			   uniform->type == Shader::UT_SAMPLER_CUBE)
-			{
-				ShaderAsset* asset = ShaderCache::Instance()->Get(shader->GetAssetName());
-				DVASSERT(asset);
-				int32 textureIndex = asset->GetDefaultValue(uniform->name).int32Value;
-				passInstance->textureIndexMap.insert(uniform->name, textureIndex);
-			}
-		}
-	}
-
-    SetTexturesDirty();
-}
-    
-void NMaterial::BuildTextureParamsCache()
-{
-    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator it = instancePasses.begin();
-    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator endIt = instancePasses.end();
-    while(it != endIt)
+    for (auto& buffer : localConstBuffers)
     {
-        BuildTextureParamsCache(it->second);
-        ++it;
+        //RHI_COMPETE later release here this buffer handle too ... not implemented in RHI yet
+        
+        SafeDelete(buffer.second);
     }
+    localConstBuffers.clear();
 }
-    
-void NMaterial::BuildActiveUniformsCacheParamsCache()
+
+void NMaterial::InvalidateBufferBindings()
 {
-    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator it = instancePasses.begin();
-    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator endIt = instancePasses.end();
-    while(it != endIt)
+    ClearLocalBuffers();
+    needRebuildBindings = true;
+    for (auto& child : children)
+        child->InvalidateBufferBindings();
+}
+
+void NMaterial::InvalidateTextureBindings()
+{
+    //reset existing handle?
+    needRebuildTextures = true;
+    for (auto& child : children)
+        child->InvalidateTextureBindings();
+}
+
+void NMaterial::InvalidateShader()
+{
+    //release existing descriptor?
+    needRebuildShader = true;
+    for (auto& child : children)
+        child->InvalidateShader();
+}
+
+void NMaterial::RebuildShader()
+{
+    HashMap<FastName, int32> flags;
+    CollectMaterialFlags(flags);
+    for (auto& variant : renderVariants)
     {
-        BuildActiveUniformsCacheParamsCache(it->second);
-        ++it;
+        RenderVariantInstance* currRenderVariant = variant.second;
+        currRenderVariant->shader = ShaderDescriptorCache::Instance()->GetShaderDescriptor(FastName("material.wgfx-blitz"), flags);
     }
+    needRebuildShader = false;
+    needRebuildBindings = true;
+    needRebuildTextures = true;
 }
 
-void NMaterial::BuildActiveUniformsCacheParamsCache(RenderPassInstance* passInstance)
+void NMaterial::CollectMaterialFlags(HashMap<FastName, int32>& target)
 {
-	Shader* shader = passInstance->GetShader();
-	passInstance->activeUniformsCache.clear();
-	
-	uint32 uniformCount = shader->GetUniformCount();
-	for(uint32 uniformIndex = 0; uniformIndex < uniformCount; ++uniformIndex)
-	{
-		Shader::Uniform * uniform = shader->GetUniform(uniformIndex);
-		
-		if((UNKNOWN_SEMANTIC == uniform->shaderSemantic ||
-			PARAM_COLOR == uniform->shaderSemantic) &&
-		   (Shader::UT_SAMPLER_2D != uniform->type &&
-			Shader::UT_SAMPLER_CUBE != uniform->type)) //TODO: do something with conditional binding
-		{
-			NMaterialProperty* prop = GetPropertyValue(uniform->name);
-			
-			UniformCacheEntry entry;
-			entry.uniform = uniform;
-			entry.index = uniformIndex;
-			entry.prop = prop;
-			
-			passInstance->activeUniformsCache.push_back(entry);
-		}
-	}
-	
-	passInstance->activeUniformsCachePtr = NULL;
-	passInstance->activeUniformsCacheSize = 0;
-	if(passInstance->activeUniformsCache.size())
-	{
-		passInstance->activeUniformsCachePtr = &passInstance->activeUniformsCache[0];
-		passInstance->activeUniformsCacheSize = passInstance->activeUniformsCache.size();
-	}
+    if (parent)
+        parent->CollectMaterialFlags(target);
+    for (auto &it : localFlags)
+        target[it.first] = it.second;
 }
 
-NMaterial::TextureBucket* NMaterial::GetEffectiveTextureBucket(const FastName& textureFastName) const
+void NMaterial::RebuildBindings()
 {
-	TextureBucket* bucket = NULL;
-	const NMaterial* currentMaterial = this;
-	while(currentMaterial &&
-		  NULL == bucket)
-	{
-		bucket = currentMaterial->textures.at(textureFastName);
-		
-		currentMaterial = currentMaterial->parent;
-	}
-	
-	return bucket;
-}
-
-void NMaterial::LoadActiveTextures()
-{
-	for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
-		it != instancePasses.end();
-		++it)
-	{
-		RenderPassInstance* pass = it->second;
-		
-		for(HashMap<FastName, int32>::iterator texIt = pass->textureIndexMap.begin();
-			texIt != pass->textureIndexMap.end();
-			++texIt)
-		{
-			GetOrLoadTextureRecursive(texIt->first);
-		}
-	}
-}
-
-void NMaterial::CleanupUnusedTextures()
-{
-	for(HashMap<FastName, TextureBucket*>::iterator it = textures.begin();
-		it != textures.end();
-		++it)
-	{
-		if(!IsTextureActive(it->first))
-		{
-			it->second->SetTexture(NULL);
-		}
-	}
-	
-	if(parent)
-	{
-		parent->CleanupUnusedTextures();
-	}
-}
-
-Texture* NMaterial::GetOrLoadTextureRecursive(const FastName& textureName)
-{
-	Texture* tex = NULL;
-	
-	NMaterial* currentMaterial = this;
-	while(currentMaterial)
-	{
-		TextureBucket* bucket = currentMaterial->textures.at(textureName);
-		
-		if(bucket)
-		{
-			if(NULL == bucket->GetTexture())
-			{
-				Texture* tx = Texture::CreateFromFile(bucket->GetPath(), textureName);
-				bucket->SetTexture(tx);
-				SafeRelease(tx);
-			}
-			
-			tex = bucket->GetTexture();
-			break;
-		}
-		
-		currentMaterial = currentMaterial->parent;
-	}
-	
-	return tex;
-}
-
-bool NMaterial::IsTextureActive(const FastName& textureName) const
-{
-	bool active = false;
-	for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
-		it != instancePasses.end();
-		++it)
-	{
-		RenderPassInstance* pass = it->second;
-		if(pass->textureIndexMap.count(textureName) > 0)
-		{
-			active = true;
-			break;
-		}
-	}
-	
-	if(!active)
-	{
-		size_t childrenCount = children.size();
-		for(size_t i = 0; i < childrenCount; ++i)
-		{
-			active = children[i]->IsTextureActive(textureName);
-			if(active)
-			{
-				break;
-			}
-		}
-	}
-	
-	return active;
-}
-
-void NMaterial::SetTexturesDirty()
-{
-	for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
-		it != instancePasses.end();
-		++it)
-	{
-		RenderPassInstance* pass = it->second;
-		pass->texturesDirty = true;
-	}
-	
-	size_t childrenCount = children.size();
-	for(size_t i = 0; i < childrenCount; ++i)
-	{
-		children[i]->SetTexturesDirty();
-	}
-}
-
-void NMaterial::PrepareTextureState(RenderPassInstance* passInstance)
-{
-	DVASSERT(passInstance);
-	
-	TextureStateData textureData;
-	for(HashMap<FastName, int32>::iterator texIt = passInstance->textureIndexMap.begin();
-		texIt != passInstance->textureIndexMap.end();
-		++texIt)
-	{
-		textureData.SetTexture(texIt->second, GetOrLoadTextureRecursive(texIt->first));
-		//VI: use commented out part of code for debugging texture setting
-		//if(NULL == textureData.GetTexture(texIt->second))
-		//{
-		//	//VI: this case is mostly for ResEditor
-		//	textureData.SetTexture(texIt->second, GetStubTexture(texIt->first));
-		//}
-	}
-	
-	UniqueHandle textureState = RenderManager::Instance()->CreateTextureState(textureData);
-	passInstance->SetTextureStateHandle(textureState);
-	RenderManager::Instance()->ReleaseTextureState(textureState);
-	
-	passInstance->texturesDirty = false;
-}
-
-void NMaterial::BindMaterialTechnique(const FastName & passName, Camera* camera)
-{
-	if(activePassName != passName)
-	{
-		activePassName = passName;
-		activeRenderPass = baseTechnique->GetPassByName(passName);
-		activePassInstance = instancePasses.at(passName);
-		
-		DVASSERT(activeRenderPass);
-		DVASSERT(activePassInstance);
-	}
-	
-	//VI: this call is temporary solution. It will be removed once autobind system and lighting system ready
-	//SetupPerFrameProperties(camera);
-	
-	BindMaterialTextures(activePassInstance);
-	
-	activePassInstance->FlushState();
-	
-	BindMaterialProperties(activePassInstance);
-}
-
-//void NMaterial::SetupPerFrameProperties(Camera* camera)
-//{
-//	if(camera && IsDynamicLit() && lights[0])
-//	{
-//		//const Matrix4 & matrix = camera->GetMatrix();
-//		//Vector3 lightPosition0InCameraSpace = lights[0]->GetPosition() * matrix;
-//		const Vector4 & lightPositionDirection0InCameraSpace = lights[0]->CalculatePositionDirectionBindVector(camera);
-//        
-//		SetPropertyValue(NMaterialParamName::PARAM_LIGHT_POSITION0, Shader::UT_FLOAT_VEC4, 1, lightPositionDirection0InCameraSpace.data);
-//	}
-//}
-
-void NMaterial::BindMaterialTextures(RenderPassInstance* passInstance)
-{
-	if(passInstance->texturesDirty)
-	{
-		PrepareTextureState(passInstance);
-	}
-}
-
-void NMaterial::BindMaterialProperties(RenderPassInstance* passInstance)
-{
-	//TODO: think of a way to re-bind only changed properties. (Move dirty flag to UniformCacheEntry or something?)
-	if(passInstance->propsDirty)
-	{
-		for(size_t i = 0; i < passInstance->activeUniformsCacheSize; ++i)
-		{
-			UniformCacheEntry& uniformEntry = passInstance->activeUniformsCachePtr[i];
-			uniformEntry.prop = GetPropertyValue(uniformEntry.uniform->name);
-		}
-		
-		passInstance->propsDirty = false;
-	}
-	
-	Shader* shader = passInstance->GetShader();
-	for(size_t i = 0; i < passInstance->activeUniformsCacheSize; ++i)
-	{
-		UniformCacheEntry& uniformEntry = passInstance->activeUniformsCachePtr[i];
-		Shader::Uniform* uniform = uniformEntry.uniform;
-		
-		if(uniformEntry.prop)
-		{
-			RENDERER_UPDATE_STATS(materialParamUniformBindCount++);
-			shader->SetUniformValueByUniform(uniform,
-											 uniform->type,
-											 uniform->size,
-											 uniformEntry.prop->data);
-		}
-	}
-}
-
-void NMaterial::OnMaterialPropertyAdded(const FastName& propName)
-{
-    // TODO: 
-    // now all properties are processed, but 
-    // should be processed only one - propName
-    // ...
-
-    InvalidateProperties();
-}
-
-void NMaterial::OnMaterialPropertyRemoved(const FastName& propName)
-{
-    // TODO: 
-    // now all properties are processed, but 
-    // should be processed only one - propName
-    // ...
-
-    InvalidateProperties();
-}
-
-void NMaterial::InvalidateProperties()
-{
-    for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
-        it != instancePasses.end();
-        ++it)
+    for (auto& variant : renderVariants)
     {
-        RenderPassInstance* pass = it->second;
-        pass->propsDirty = true;
-    }
+        RenderVariantInstance* currRenderVariant = variant.second;
+        ShaderDescriptor *currShader = currRenderVariant->shader;
+        if (!currShader) //cant build for empty shader
+            continue;
+        currRenderVariant->vertexConstBuffers.resize(currShader->GetVertexConstBuffersCount(), rhi::InvalidHandle);
+        currRenderVariant->fragmentConstBuffers.resize(currShader->GetFragmentConstBuffersCount(), rhi::InvalidHandle);
 
-    this->Retain();
-
-    size_t childrenCount = children.size();
-    for(size_t i = 0; i < childrenCount; ++i)
-    {
-        children[i]->InvalidateProperties();
-    }
-
-    this->Release();
-}
-
-void NMaterial::Draw(PolygonGroup * polygonGroup)
-{
-	// TODO: Remove support of OpenGL ES 1.0 from attach render data
-	RenderManager::Instance()->SetRenderData(polygonGroup->renderDataObject);
-	RenderManager::Instance()->AttachRenderData();
-	
-	//Logger::FrameworkDebug("[Material::Draw] %s", baseTechnique->GetName().c_str());
-	
-	// TODO: rethink this code
-	if(polygonGroup->renderDataObject->GetIndexBufferID() != 0)
-	{
-		RenderManager::Instance()->HWDrawElements(polygonGroup->primitiveType, polygonGroup->indexCount, polygonGroup->renderDataObject->GetIndexFormat(), 0);
-	}
-	else
-	{
-		RenderManager::Instance()->HWDrawElements(polygonGroup->primitiveType, polygonGroup->indexCount, polygonGroup->renderDataObject->GetIndexFormat(), polygonGroup->indexArray);
-	}
-}
-
-void NMaterial::Draw(RenderDataObject* renderData, uint16* indices, uint16 indexCount)
-{
-	DVASSERT(renderData);
-	
-	RenderManager::Instance()->SetRenderData(renderData);
-	RenderManager::Instance()->AttachRenderData();
-	
-	//Logger::FrameworkDebug("[Material::Draw] %s", baseTechnique->GetName().c_str());
-	
-	// TODO: rethink this code
-	if(renderData->GetIndexBufferID() != 0)
-	{
-		RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, renderData->indexCount, renderData->GetIndexFormat(), 0);
-	}
-	else
-	{
-		if(renderData->indexCount)
-		{
-			RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, renderData->indexCount, renderData->GetIndexFormat(), renderData->indices);
-		}
-		else
-		{
-			RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, indexCount, EIF_16, indices);
-		}
-	}
-}
-
-//void NMaterial::SetLight(uint32 index, Light * light, bool forceUpdate)
-//{
-//	if(NMaterial::MATERIALTYPE_INSTANCE == materialType)
-//	{
-//		if(parent)
-//		{
-//			parent->SetLight(index, light, forceUpdate);
-//		}
-//		else
-//		{
-//			SetLightInternal(index, light, forceUpdate);
-//		}
-//	}
-//	else if(NMaterial::MATERIALTYPE_MATERIAL == materialType)
-//	{
-//		SetLightInternal(index, light, forceUpdate);
-//		
-//		for(size_t i = 0; i < children.size(); ++i)
-//		{
-//			children[i]->SetLightInternal(index, light, forceUpdate);
-//		}
-//	}
-//}
-//
-//void NMaterial::SetLightInternal(int index, Light* light, bool forceUpdate)
-//{
-//	bool changed = forceUpdate || (light != lights[index]);
-//	lights[index] = light;
-//	
-//	if(changed && materialDynamicLit)
-//	{
-//		UpdateLightingProperties(lights[0]);
-//	}
-//}
-//
-//void NMaterial::UpdateLightingProperties(Light* light)
-//{
-//	NMaterialProperty* propAmbientColor = GetMaterialProperty(NMaterialParamName::PARAM_PROP_AMBIENT_COLOR);
-//	if(propAmbientColor)
-//	{
-//		Color lightAmbientColor = (light) ? light->GetAmbientColor() : Color(0, 0, 0, 0);
-//		Color materialAmbientColor = *(Color*) propAmbientColor->data;
-//		materialAmbientColor = materialAmbientColor * lightAmbientColor;
-//		SetPropertyValue(NMaterialParamName::PARAM_LIGHT_AMBIENT_COLOR, Shader::UT_FLOAT_VEC3, 1, &materialAmbientColor);
-//	}
-//	
-//	NMaterialProperty* propDiffuseColor = GetMaterialProperty(NMaterialParamName::PARAM_PROP_DIFFUSE_COLOR);
-//	if(propDiffuseColor)
-//	{
-//		Color lightDiffuseColor = (light) ? light->GetDiffuseColor() : Color(0, 0, 0, 0);
-//		Color materialDiffuseColor = *(Color*) propDiffuseColor->data;
-//		materialDiffuseColor = materialDiffuseColor * lightDiffuseColor;
-//		SetPropertyValue(NMaterialParamName::PARAM_LIGHT_DIFFUSE_COLOR, Shader::UT_FLOAT_VEC3, 1, &materialDiffuseColor);
-//	}
-//	
-//	NMaterialProperty* propSpecularColor = GetMaterialProperty(NMaterialParamName::PARAM_PROP_SPECULAR_COLOR);
-//	if(propSpecularColor)
-//	{
-//		Color lightSpecularColor = (light) ? light->GetSpecularColor() : Color(0, 0, 0, 0);
-//		Color materialSpecularColor = *(Color*) propSpecularColor->data;
-//		materialSpecularColor = materialSpecularColor * lightSpecularColor;
-//		SetPropertyValue(NMaterialParamName::PARAM_LIGHT_SPECULAR_COLOR, Shader::UT_FLOAT_VEC3, 1, &materialSpecularColor);
-//	}
-//	
-//	float32 intensity = (light) ? light->GetIntensity() : 0;
-//	SetPropertyValue(NMaterialParamName::PARAM_LIGHT_INTENSITY0, Shader::UT_FLOAT, 1, &intensity);
-//}
-
-//bool NMaterial::IsLightingProperty(const FastName& propName) const
-//{
-//	return (NMaterialParamName::PARAM_PROP_AMBIENT_COLOR == propName ||
-//			NMaterialParamName::PARAM_PROP_DIFFUSE_COLOR == propName ||
-//			NMaterialParamName::PARAM_PROP_SPECULAR_COLOR == propName);
-//}
-
-const RenderStateData& NMaterial::GetRenderState(const FastName& passName) const
-{
-	RenderPassInstance* pass = instancePasses.at(passName);
-	DVASSERT(pass);
-	
-	return RenderManager::Instance()->GetRenderStateData(pass->GetRenderStateHandle());
-}
-
-void NMaterial::GetRenderState(const FastName& passName, RenderStateData& target) const
-{
-	RenderPassInstance* pass = instancePasses.at(passName);
-	DVASSERT(pass);
-	
-	RenderManager::Instance()->GetRenderStateData(pass->GetRenderStateHandle(), target);
-}
-
-void NMaterial::SubclassRenderState(const FastName& passName, RenderStateData& newState)
-{
-	RenderPassInstance* pass = instancePasses.at(passName);
-	DVASSERT(pass);
-	
-	if(pass)
-	{
-		DVASSERT(!pass->dirtyState || (pass->GetRenderStateHandle() == instancePassRenderStates.at(passName)));
-		
-		UniqueHandle stateHandle = RenderManager::Instance()->CreateRenderState(newState);
-		pass->SetRenderStateHandle(stateHandle);
-		RenderManager::Instance()->ReleaseRenderState(stateHandle);
-		
-		pass->dirtyState = true;
-		
-		if(instancePassRenderStates.count(passName) > 0)
-		{
-			UniqueHandle currentState = instancePassRenderStates.at(passName);
-			
-			RenderManager::Instance()->RetainRenderState(stateHandle);
-			instancePassRenderStates.insert(passName, stateHandle);
-			
-			RenderManager::Instance()->ReleaseRenderState(currentState);
-		}
-		else
-		{
-			RenderManager::Instance()->RetainRenderState(stateHandle);
-			instancePassRenderStates.insert(passName, stateHandle);
-		}
-	}
-}
-
-void NMaterial::SubclassRenderState(RenderStateData& newState)
-{
-	for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
-		it != instancePasses.end();
-		++it)
-	{
-		SubclassRenderState(it->first, newState);
-	}
-}
-
-void NMaterial::UpdateShaderWithFlags()
-{
-    requiredVertexFormat = 0;
-	if(baseTechnique)
-	{
-		FastNameSet effectiveFlags(16);
-		BuildEffectiveFlagSet(effectiveFlags);
-		
-		for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
-			it != instancePasses.end();
-			++it)
-		{
-			RenderPassInstance* pass = it->second;
-			RenderTechniquePass* techniquePass = baseTechnique->GetPassByName(it->first);
-			
-			Shader* shader = techniquePass->CompileShader(effectiveFlags);
-			pass->SetShader(shader);
-            requiredVertexFormat |= shader->GetRequiredVertexFormat();
-			SafeRelease(shader);
-			
-            BuildTextureParamsCache(pass);
-			BuildActiveUniformsCacheParamsCache(pass);                            
-		}
-	}
-
-    // updateChildren
-    {
-        this->Retain();
-
-        size_t childrenCount = children.size();
-        for(size_t i = 0; i < childrenCount; ++i)
+        for (auto& bufferDescr : currShader->constBuffers)
         {
-            children[i]->UpdateShaderWithFlags();
+            rhi::Handle bufferHandle = rhi::InvalidHandle;
+            MaterialBufferBinding* bufferBinding = nullptr;
+            //for static buffers resolve sharing and bindings
+            if (bufferDescr.updateType == ConstBufferDescriptor::UpdateType::Static)
+            {
+
+                bufferBinding = GetConstBufferBinding(bufferDescr.propertyLayoutId);
+                bool needLocalOverride = NeedLocalOverride(bufferDescr.propertyLayoutId);
+                //Create local buffer and build it's bindings if required;
+                if ((bufferBinding == nullptr) || needLocalOverride)
+                {
+                    //create buffer
+                    bufferBinding = new MaterialBufferBinding();
+
+                    //create handles
+                    if (bufferDescr.type == ConstBufferDescriptor::Type::Vertex)
+                        bufferBinding->constBuffer = rhi::CreateVertexConstBuffer(currShader->GetPiplineState(), bufferDescr.targetSlot);
+                    else
+                        bufferBinding->constBuffer = rhi::CreateFragmentConstBuffer(currShader->GetPiplineState(), bufferDescr.targetSlot);
+
+                    //create bindings for this buffer
+                    for (auto& propDescr : ShaderDescriptor::GetProps(bufferDescr.propertyLayoutId))
+                    {
+                        NMaterialProperty *prop = GetMaterialProperty(propDescr.uid);
+                        if ((prop != nullptr) && (prop->type == propDescr.type)) //has property of the same type
+                        {
+                            //create property binding
+                            MaterialPropertyBinding binding;
+                            binding.type = propDescr.type;
+                            binding.reg = propDescr.bufferReg;
+                            binding.updateSemantic = 0; //mark as dirty - set it on next draw request
+                            binding.source = prop;
+                            bufferBinding->propBindings.push_back(binding);
+                        }
+                        else
+                        {
+                            //just set default property to const buffer
+                            rhi::UpdateConstBuffer(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.defaultValue, propDescr.bufferRegCount);
+                        }
+                    }
+
+                    //store it locally or at parent
+                    if (needLocalOverride || (!parent))
+                    {
+                        //buffer should be handled locally
+                        localConstBuffers[bufferDescr.propertyLayoutId] = bufferBinding;
+                    }
+                    else
+                    {
+                        //buffer can be propagated upward
+                        parent->InjectChildBuffer(bufferDescr.propertyLayoutId, bufferBinding);
+                    }
+                }
+                currRenderVariant->materialBufferBindings.push_back(bufferBinding);
+
+                bufferHandle = bufferBinding->constBuffer;
+            }
+
+            else //if (bufferDescr.updateType == ConstBufferDescriptor::ConstBufferUpdateType::Static)
+            {
+                //for dynamic buffers just copy it's handle to corresponding slot
+                bufferHandle = currShader->GetDynamicBuffer(bufferDescr.type, bufferDescr.targetSlot);
+            }
+
+            DVASSERT(bufferHandle != rhi::InvalidHandle);
+            if (bufferDescr.type == ConstBufferDescriptor::Type::Vertex)
+                currRenderVariant->vertexConstBuffers[bufferDescr.targetSlot] = bufferHandle;
+            else
+                currRenderVariant->fragmentConstBuffers[bufferDescr.targetSlot] = bufferHandle;
+
         }
-
-        this->Release();
     }
+
+    needRebuildBindings = false;
+
 }
 
-//VI: creates material of type MATERIALTYPE_INSTANCE
-//VI: These methods DO NOT add newly created materials to the material system
-NMaterial* NMaterial::CreateMaterialInstance()
+void NMaterial::RebuildTextureBindings()
 {
-	static int32 instanceCounter = 0;
-	instanceCounter++;
-	
-	NMaterial* mat = new NMaterial();
-	mat->SetMaterialType(NMaterial::MATERIALTYPE_INSTANCE);
-	mat->SetMaterialKey((NMaterial::NMaterialKey)mat);
-	mat->SetMaterialName(FastName(Format("Instance-%d", instanceCounter)));
-	//mat->SetName(mat->GetMaterialName().c_str());
-	
-	return mat;
+    for (auto& variant : renderVariants)
+    {
+        RenderVariantInstance* currRenderVariant = variant.second;
+        ShaderDescriptor *currShader = currRenderVariant->shader;
+        if (!currShader) //cant build for empty shader
+            continue;
+        rhi::TextureSetDescriptor descr;
+        descr.count = currShader->fragmentSamplerList.size();
+        for (size_t i = 0, sz = descr.count; i < sz; ++i)
+            descr.texture[i] = GetMaterialTexture(currShader->fragmentSamplerList[i].uid)->handle;
+        currRenderVariant->textureSet = rhi::AcquireTextureSet(descr);
+    }
+
+    needRebuildTextures = false;
 }
 
-//VI: creates material of type MATERIALTYPE_MATERIAL
-//VI: These methods DO NOT add newly created materials to the material system
-NMaterial* NMaterial::CreateMaterial(const FastName& materialName,
-									 const FastName& templateName,
-									 const FastName& defaultQuality)
+void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
-	NMaterial* mat = new NMaterial();
-	mat->SetMaterialType(NMaterial::MATERIALTYPE_MATERIAL);
-	mat->SetMaterialKey((NMaterial::NMaterialKey)mat); //this value may be temporary
-	mat->SetMaterialName(materialName);
-	//mat->SetName(mat->GetMaterialName().c_str());
-	
-	const NMaterialTemplate* matTemplate = NMaterialTemplateCache::Instance()->Get(templateName);
-	DVASSERT(matTemplate);
-	mat->SetMaterialTemplate(matTemplate, defaultQuality);
-	
-	return mat;
-}
+    //RHI_COMPLETE
+    DataNode::Load(archive, serializationContext);
+    if (archive->IsKeyExists("materialKey"))
+    {
+        materialKey = archive->GetUInt64("materialKey");
+        pointer = materialKey;
+    }
 
-NMaterial* NMaterial::CreateGlobalMaterial(const FastName& materialName)
-{
-	NMaterial* mat = new NMaterial();
-	mat->SetMaterialType(NMaterial::MATERIALTYPE_GLOBAL);
-	mat->SetMaterialKey((NMaterial::NMaterialKey)mat); //this value may be temporary
-	mat->SetMaterialName(materialName);
-	//mat->SetName(mat->GetMaterialName().c_str());
-
-	return mat;
-}
-
-//VI: creates material of type MATERIALTYPE_INSTANCE
-//VI: These methods DO NOT add newly created materials to the material system
-NMaterial* NMaterial::CreateMaterialInstance(const FastName& materialName,
-											 const FastName& templateName,
-											 const FastName& defaultQuality)
-{
-	NMaterial* parentMat = CreateMaterial(materialName, templateName, defaultQuality);
-	
-	NMaterial* mat = CreateMaterialInstance();
-	mat->SetParent(parentMat);
-	
-	SafeRelease(parentMat);
-	
-	return mat;
-}
-
-bool NMaterial::IsNamePartOfArray(const FastName& fastName, FastName* array, uint32 count)
-{
-	DVASSERT(array);
-	
-	bool result = false;
-	for(size_t i = 0; i < count; ++i)
-	{
-		if(array[i] == fastName)
-		{
-			result = true;
-			break;
-		}
-	}
-	
-	return result;
-	
-}
-
-bool NMaterial::IsRuntimeFlag(const FastName& flagName)
-{
-	return IsNamePartOfArray(flagName, RUNTIME_ONLY_FLAGS, COUNT_OF(RUNTIME_ONLY_FLAGS));
-}
-
-bool NMaterial::IsRuntimeProperty(const FastName& propName)
-{
-	return IsNamePartOfArray(propName, RUNTIME_ONLY_PROPERTIES, COUNT_OF(RUNTIME_ONLY_PROPERTIES));
-}
-
-bool NMaterial::IsRuntimeTexture(const FastName& textureName)
-{
-    return IsNamePartOfArray(textureName, RUNTIME_ONLY_TEXTURES, COUNT_OF(RUNTIME_ONLY_TEXTURES));
-}
-
-void NMaterial::SetMaterialTemplateName(const FastName& templateName)
-{
-	const NMaterialTemplate* matTemplate = NMaterialTemplateCache::Instance()->Get(templateName);
-	DVASSERT(matTemplate);
-	
-	SetMaterialTemplate(matTemplate, currentQuality);
-}
-
-FastName NMaterial::GetMaterialTemplateName() const
-{
-	return (materialTemplate) ? materialTemplate->name : FastName();
-}
-    
-void NMaterial::UpdateUniqueKey(uint64 newKeyValue)
-{
-    materialKey = newKeyValue;
-    pointer = newKeyValue;
+    if (archive->IsKeyExists("textures"))
+    {
+        const Map<String, VariantType*>& texturesMap = archive->GetArchive("textures")->GetArchieveData();
+        for (Map<String, VariantType*>::const_iterator it = texturesMap.begin();
+            it != texturesMap.end();
+            ++it)
+        {
+            String relativePathname = it->second->AsString();
+            Texture* tx = Texture::CreateFromFile(serializationContext->GetScenePath() + relativePathname, FastName(""));
+            AddTexture(FastName(it->first), tx);
+            SafeRelease(tx);
+        }
+    }
 }
 
 };
-#endif // RHI_COMPLETE

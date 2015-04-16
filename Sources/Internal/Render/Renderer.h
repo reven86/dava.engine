@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "RenderBase.h"
 #include "RenderOptions.h"
 #include "RenderCaps.h"
+#include "DynamicBindings.h"
 #include "RHI/rhi_Public.h"
 #include "RHI/rhi_Type.h"
 
@@ -69,14 +70,7 @@ namespace Renderer
     RenderOptions *GetOptions();    
 
     //dynamic params
-    //color will just use internal storage for dynamic PARAM_COLOR and bind it to dynamic params - it's here only to simplify legacy code moving to new renderer
-    const Color& GetColor();
-    void SetColor(const Color& color);
-    void SetColor(float32 r, float32 g, float32 b, float32 a); 
-
-    void SetDynamicParam(eShaderSemantic shaderSemantic, const void * value, pointer_size updateSemantic);
-    const void * GetDynamicParam(eShaderSemantic shaderSemantic);
-    pointer_size GetDynamicParamUpdateSemantic(eShaderSemantic shaderSemantic);        
+    DynamicBindings& GetDynamicBindings();
 }
 
 

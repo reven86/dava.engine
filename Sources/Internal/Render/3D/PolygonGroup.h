@@ -32,7 +32,6 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "Render/VertexBuffer.h"
 #include "Scene3D/DataNode.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Render/RHI/rhi_Type.h"

@@ -101,7 +101,7 @@ bool Polygon3::IsPointInside(const Vector3 & pt)
 	 */	
 //#define DEBUG_DRAW_INTERSECTIONS
 #if defined(DEBUG_DRAW_INTERSECTIONS)
-	Renderer::SetColor(0.0f, 1.0f, 0.0f, 1.0f);
+	Renderer::GetDynamicBindings().SetColor(0.0f, 1.0f, 0.0f, 1.0f);
 	RenderHelper::DrawLine(ray0, ray1);
 #endif 
 	
@@ -116,7 +116,7 @@ bool Polygon3::IsPointInside(const Vector3 & pt)
 		{
 			
 #if defined(DEBUG_DRAW_INTERSECTIONS)
-			Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+			Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 			RenderHelper::DrawPoint(result, 5.0f);
 #endif 
 			

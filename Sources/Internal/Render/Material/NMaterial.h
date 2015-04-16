@@ -70,7 +70,7 @@ struct MaterialBufferBinding
 
 class RenderVariantInstance
 {
-    friend class NMaterialV3;
+    friend class NMaterial;
     ShaderDescriptor *shader;
 
 
@@ -82,6 +82,8 @@ class RenderVariantInstance
     Vector<rhi::Handle> fragmentConstBuffers;
 
     Vector<MaterialBufferBinding *> materialBufferBindings;
+    
+    uint32 renderLayer;
 };
 
 class NMaterial : public DataNode
@@ -116,7 +118,7 @@ public:
 
     inline uint32 GetRenderLayerID() const;
     inline uint32 GetSortingKey() const;
-    inline uint64 GetMaterialKey() const;
+    inline uint64 GetMaterialKey() const;    
 
     void BindParams(rhi::Packet& target);
 
@@ -138,7 +140,10 @@ private:
     NMaterialProperty* GetMaterialProperty(const FastName& propName);
     void CollectMaterialFlags(HashMap<FastName, int32>& target);
 
-    rhi::Handle GetMaterialTexture(const FastName& slotName);
+    Texture* GetMaterialTexture(const FastName& slotName);
+
+    void AddChildMaterial(NMaterial *material);
+    void RemoveChildMaterial(NMaterial *material);
 
 private:
     HashMap<FastName, NMaterialProperty *> localProperties;
@@ -159,8 +164,10 @@ private:
 
     bool needRebuildBindings;
     bool needRebuildTextures;
-    bool needRebuildShader;
+    bool needRebuildShader;    
 
+    uint32 sortingKey;
+    uint64 materialKey;
 };
 
 
@@ -170,6 +177,23 @@ void NMaterialProperty::SetPropertyValue(float32 *newValue)
     //4 is because register size is float4
     Memcpy(data.get(), newValue, sizeof(float32) * 4 * ShaderDescriptor::CalculateRegsCount(type, arraySize));
     updateSemantic = ++globalPropertyUpdateSemanticCounter;
+}
+
+
+uint32 NMaterial::GetRenderLayerID() const
+{
+    if (activeVariantInstance)
+        return activeVariantInstance->renderLayer;
+    else
+        return (uint32)-1;
+}
+uint32 NMaterial::GetSortingKey() const
+{
+    return sortingKey;
+}
+uint64 NMaterial::GetMaterialKey() const
+{
+    return materialKey;
 }
 };
 

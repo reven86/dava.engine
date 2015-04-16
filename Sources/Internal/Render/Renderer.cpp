@@ -42,6 +42,7 @@ namespace //for private variables
     
     RenderOptions renderOptions;
     RenderCaps renderCaps;
+    DynamicBindings dynamicBindings;
 
     ScreenShotCallbackDelegate * screenshotCallback = nullptr;
 }
@@ -96,12 +97,24 @@ const RenderCaps & GetCaps()
     return renderCaps;
 }
 
+DynamicBindings& GetDynamicBindings()
+{
+    return dynamicBindings;
+}
+
 void RequestGLScreenShot(ScreenShotCallbackDelegate *_screenShotCallback)
 {
     screenshotCallback = _screenShotCallback;
 }
 
+void BeginFrame()
+{
 
+}
+void EndFrame()
+{
+    rhi::Present();
+}
 
 
 }

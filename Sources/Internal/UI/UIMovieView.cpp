@@ -111,7 +111,7 @@ void UIMovieView::SystemDraw(const UIGeometricData &geometricData)
 	Color curDebugDrawColor = GetDebugDrawColor();
 
 	Rect absRect = GetRect(true);
-	Renderer::SetColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
+	Renderer::GetDynamicBindings().SetColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
 	RenderHelper::Instance()->DrawRect(absRect, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
 
 	float32 minRadius = Min(GetSize().x, GetSize().y);

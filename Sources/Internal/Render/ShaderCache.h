@@ -23,18 +23,14 @@
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-    Revision History:
-        * Created by Vitaliy Borodovsky 
 =====================================================================================*/
 #ifndef __DAVAENGINE_SHADER_CACHE_H__
 #define __DAVAENGINE_SHADER_CACHE_H__
 
+#include "Base/FastNameMap.h"
 #include "Base/Singleton.h"
 #include "Base/FastName.h"
 #include "Render/Shader.h"
-
-
 
 
 

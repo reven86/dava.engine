@@ -39,6 +39,7 @@
 #include "Utils/StringFormat.h"
 
 #include "Render/Material/NMaterialNames.h"
+#include "Render/Texture.h"
 
 namespace DAVA
 {
@@ -471,27 +472,22 @@ namespace DAVA
         return NULL;
 	}
 			
-	Texture* SerializationContext::PrepareTexture(uint32 textureTypeHint,
-												  Texture* tx)
-	{
-#if RHI_COMPLETE
-		if(tx)
-		{
-			if(tx->isPink)
-			{
-				tx->Retain();
-			}
+Texture* SerializationContext::PrepareTexture(rhi::TextureType textureTypeHint, Texture* tx)
+{
 
-			return tx;
+	if(tx)
+	{
+		if(tx->isPink)
+		{
+			tx->Retain();
 		}
 
-		return Texture::CreatePink((Texture::TextureType)textureTypeHint);
-//		return (tx) ? tx : Texture::CreatePink((Texture::TextureType)textureTypeHint);
-#else
-        return tx;
-#endif //RHI_COMPLETE
-
+		return tx;
 	}
+
+	return Texture::CreatePink(textureTypeHint);
+
+}
 
 
 void SerializationContext::AddLoadedPolygonGroup(PolygonGroup *group, uint32 dataFilePos)

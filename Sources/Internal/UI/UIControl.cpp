@@ -1384,18 +1384,18 @@ namespace DAVA
 
     void UIControl::DrawDebugRect(const UIGeometricData &gd, bool useAlpha)
     {
-        Color oldColor = Renderer::GetColor();
+        Color oldColor = Renderer::GetDynamicBindings().GetColor();
         RenderSystem2D::Instance()->PushClip();
 
         if (useAlpha)
         {
             Color drawColor = debugDrawColor;
             drawColor.a = 0.4f;
-            Renderer::SetColor(drawColor);
+            Renderer::GetDynamicBindings().SetColor(drawColor);
         }
         else
         {
-            Renderer::SetColor(debugDrawColor);
+            Renderer::GetDynamicBindings().SetColor(debugDrawColor);
         }
 
         if( gd.angle != 0.0f )
@@ -1411,7 +1411,7 @@ namespace DAVA
         }
 
         RenderSystem2D::Instance()->PopClip();
-        Renderer::SetColor(oldColor);
+        Renderer::GetDynamicBindings().SetColor(oldColor);
     }
 
     void UIControl::DrawPivotPoint(const Rect &drawRect)
@@ -1429,9 +1429,9 @@ namespace DAVA
         static const float32 PIVOT_POINT_MARK_RADIUS = 10.0f;
         static const float32 PIVOT_POINT_MARK_HALF_LINE_LENGTH = 13.0f;
 
-        Color oldColor = Renderer::GetColor();
+        Color oldColor = Renderer::GetDynamicBindings().GetColor();
         RenderSystem2D::Instance()->PushClip();
-        Renderer::SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+        Renderer::GetDynamicBindings().SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 
         Vector2 pivotPointCenter = drawRect.GetPosition() + GetPivotPoint();
         RenderHelper::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
@@ -1450,7 +1450,7 @@ namespace DAVA
         RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
 
         RenderSystem2D::Instance()->PopClip();
-        Renderer::SetColor(oldColor);
+        Renderer::GetDynamicBindings().SetColor(oldColor);
     }
 
     bool UIControl::IsPointInside(const Vector2 &_point, bool expandWithFocus/* = false*/) const

@@ -275,7 +275,7 @@ void GameObjectManager::Draw()
     Matrix4 worldMx;
     worldMx.glTranslate(cameraPosition.x, cameraPosition.y, 0.f);
     worldMx = worldMx * Matrix4::MakeScale(Vector3(cameraScale.x, cameraScale.y, 1.f));
-    Renderer::SetDynamicParam(PARAM_WORLD, &worldMx, UPDATE_SEMANTIC_ALWAYS);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &worldMx, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
     
     const List<GameObject*>::iterator currentObjEnd = objects.end();
 	for(List<GameObject*>::iterator currentObj = objects.begin(); currentObj != currentObjEnd; ++currentObj)
@@ -287,7 +287,7 @@ void GameObjectManager::Draw()
 		    object->Draw();
 	}
 
-    Renderer::SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void GameObjectManager::SetCameraPosition(float32 _cameraPositionX, float32 _cameraPositionY)

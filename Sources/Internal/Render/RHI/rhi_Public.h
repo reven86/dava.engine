@@ -77,7 +77,10 @@ void    UpdateIndexBuffer( Handle ib, const void* data, uint32 offset, uint32 si
 Handle  AcquireRenderPipelineState( const PipelineState::Descriptor& desc );
 void    ReleaseRenderPipelineState( Handle rps );
 
+Handle  CreateVertexConstBuffer( Handle rps, uint32 bufIndex );
 bool    CreateVertexConstBuffers( Handle rps, uint32 maxCount, Handle* constBuf );
+
+Handle  CreateFragmentConstBuffer( Handle rps, uint32 bufIndex );
 bool    CreateFragmentConstBuffers( Handle rps, uint32 maxCount, Handle* constBuf );
 
 bool    UpdateConstBuffer( Handle constBuf, uint32 constIndex, const float* data, uint32 constCount );

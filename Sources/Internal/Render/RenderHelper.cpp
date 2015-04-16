@@ -34,6 +34,7 @@
 
 namespace DAVA
 {
+    NMaterial* RenderHelper::DEFAULT_2D_BLEND_MATERIAL = nullptr;
 	/*
 	static Vector3 DodecVertexes[20] = {
 		Vector3( 0.607f,  0.000f,  0.795f),
@@ -239,7 +240,7 @@ void RenderHelper::DrawGrid(const Rect & rect, const Vector2& gridSize, const Co
 
     vertexStream->Set(TYPE_FLOAT, 2, 0, gridVertices.data());
 
-    Renderer::SetColor(color.r, color.g, color.b, color.a);
+    Renderer::GetDynamicBindings().SetColor(color.r, color.g, color.b, color.a);
 
     RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
@@ -1261,7 +1262,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, NMater
 		drawMatrix.CreateScale(DAVA::Vector3(radius, radius, radius));
 		drawMatrix.SetTranslationVector(center);
 
-		RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &drawMatrix, UPDATE_SEMANTIC_ALWAYS);
+		RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &drawMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
         RenderManager::Instance()->SetRenderState(renderState);
         RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(gDodecObject);
@@ -1294,7 +1295,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, NMater
 		drawMatrix.CreateScale(DAVA::Vector3(radius, radius, radius));
 		drawMatrix.SetTranslationVector(center);
 
-		RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &drawMatrix, UPDATE_SEMANTIC_ALWAYS);
+		RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &drawMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
         RenderManager::Instance()->SetRenderState(renderState);
         RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(gDodecObject);
@@ -1322,7 +1323,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, NMater
         RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)renderTarget->GetWidth(), (float32)renderTarget->GetHeight()));
 
         tempProjectionMatrix.glOrtho(0.0f, (float32)renderTarget->GetWidth(),  0.0f, (float32)renderTarget->GetHeight(), -1.0f, 1.0f);
-        Renderer::SetDynamicParam(PARAM_PROJ, &tempProjectionMatrix, UPDATE_SEMANTIC_ALWAYS);
+        Renderer::GetDynamicBindings().SetDynamicParam(PARAM_PROJ, &tempProjectionMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 #endif // RHI_COMPLETE
     }
 
