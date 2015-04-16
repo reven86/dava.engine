@@ -43,14 +43,15 @@ const String TeamcityTestsOutput::AT_FILE_TEST = " at file: ";
 const String TeamcityTestsOutput::MIN_DELTA = "Min_frame_delta";
 const String TeamcityTestsOutput::MAX_DELTA = "Max_frame_delta";
 const String TeamcityTestsOutput::AVERAGE_DELTA = "Average_frame_delta";
-const String TeamcityTestsOutput::TEST_TIME = "Test_frame_time";
-const String TeamcityTestsOutput::TIME_ELAPSED = "Time_frame_elapsed";
+const String TeamcityTestsOutput::TEST_TIME = "Test_time";
+const String TeamcityTestsOutput::TIME_ELAPSED = "Time_elapsed";
 
 const String TeamcityTestsOutput::MIN_FPS = "Min_fps";
 const String TeamcityTestsOutput::MAX_FPS = "Max_fps";
 const String TeamcityTestsOutput::AVERAGE_FPS = "Average_fps";
 
 const String TeamcityTestsOutput::FRAME_DELTA = "Frame_delta";
+const String TeamcityTestsOutput::MAX_MEM_USAGE = "Max_memory_usage";
 
 void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
 {
@@ -103,9 +104,9 @@ String TeamcityTestsOutput::FormatTestFinished(const String& testName)
     return FINISH_TEST + "\n" + testName;
 }
 
-String TeamcityTestsOutput::FormatBuildStatistic(const String& key, const String& value)
+String TeamcityTestsOutput::FormatBuildStatistic(const String& testName, const String& key, const String& value)
 {
-    return STATISTIC + "\n" + "##teamcity[buildStatisticValue key=\'" + key + "\' value=\'" + value + "\']\n";
+    return STATISTIC + "\n" + "##teamcity[buildStatisticValue key=\'" + testName + "_" + key + "\' value=\'" + value + "\']\n";
 }
 
 String TeamcityTestsOutput::FormatTestFailed(const String& testName, const String& condition, const String& errMsg)

@@ -30,9 +30,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __BASE_TEST_H__
 
 #include "Infrastructure/Screen/BaseScreen.h"
+#include "MemoryManager/MemoryProfiler.h"
 #include "Utils/ConverterUtils.h"
 #include "TeamCityTestsOutput.h"
-
 
 class BaseTest : public BaseScreen
 {
@@ -80,6 +80,8 @@ protected:
 
     void LoadResources() override;
     void UnloadResources() override;
+
+    size_t GetAllocatedMemory();
     
     virtual void PerformTestLogic(float32 timeElapsed) = 0;
     
@@ -102,6 +104,7 @@ private:
     Scene* scene;
     UI3DView* sceneView;
     
+    size_t maxAllocatedMemory;
     bool debuggable;
 };
 

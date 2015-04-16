@@ -80,6 +80,30 @@ void BaseTest::UnloadResources()
 {
     SafeRelease(scene);
 }
+
+size_t BaseTest::GetAllocatedMemory()
+{
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+    MemoryManager* mm = MemoryManager::Instance();
+    size_t bufSize = mm->CalcStatSize();
+    uint8* buf = new uint8[bufSize];
+
+    MMStat* stat = reinterpret_cast<MMStat*>(buf);
+    mm->GetStat(stat);
+
+    size_t total = 0;
+    for (uint32 ipool = 0; ipool < stat->allocPoolCount; ++ipool)
+    {
+        total += stat->poolStat[ipool].allocByApp;
+    }
+
+    delete[] buf;
+    return total;
+#else
+    return 0;
+#endif
+
+}
 void BaseTest::OnStart()
 {
     Logger::Info(TeamcityTestsOutput::FormatTestStarted(testName).c_str());
@@ -122,35 +146,48 @@ void BaseTest::OnFinish()
     elapsedTime = GetElapsedTime() / 1000.0f;
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
+        testName,
         TeamcityTestsOutput::MIN_DELTA,
         ConverterUtils::NumberToString(minDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
+        testName,
         TeamcityTestsOutput::MAX_DELTA,
         ConverterUtils::NumberToString(maxDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
+        testName,
         TeamcityTestsOutput::AVERAGE_DELTA,
         ConverterUtils::NumberToString(averageDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
+        testName,
         TeamcityTestsOutput::MAX_FPS,
         ConverterUtils::NumberToString(1.0f / minDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
+        testName,
         TeamcityTestsOutput::MIN_FPS,
         ConverterUtils::NumberToString(1.0f / maxDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
+        testName,
         TeamcityTestsOutput::AVERAGE_FPS,
         ConverterUtils::NumberToString(1.0f / averageDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
+        testName,
         TeamcityTestsOutput::TEST_TIME,
         ConverterUtils::NumberToString(testTime)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
+        testName,
         TeamcityTestsOutput::TIME_ELAPSED,
+        ConverterUtils::NumberToString(elapsedTime)).c_str());
+
+    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
+        testName,
+        TeamcityTestsOutput::MAX_MEM_USAGE,
         ConverterUtils::NumberToString(elapsedTime)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatTestFinished(testName).c_str());
@@ -158,6 +195,12 @@ void BaseTest::OnFinish()
 
 void BaseTest::SystemUpdate(float32 timeElapsed)
 {
+    size_t allocatedMem = GetAllocatedMemory();
+    if (allocatedMem > maxAllocatedMemory)
+    {
+        maxAllocatedMemory = allocatedMem;
+    }
+
     bool frameForDebug = GetFrameNumber() > (GetDebugFrame() + BaseTest::FRAME_OFFSET);
     float32 delta = 0.0f;
     
