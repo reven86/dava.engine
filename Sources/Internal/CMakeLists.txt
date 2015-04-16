@@ -156,6 +156,8 @@ include_directories    (.)
 include_directories    ( ${DAVA_INCLUDE_DIR} )
 include_directories    ( ${ADD_ENGINE_INCLUDES_DIR} ) 
 include_directories    ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} ) 
+include_directories    ( $ENV{DXSDK_DIR}/include ) 
+
 set                    ( DAVA_INCLUDE_DIR ${DAVA_INCLUDE_DIR} ${ADD_ENGINE_INCLUDES_DIR} PARENT_SCOPE )
 
 add_definitions        ( ${FRAMEWORK_DEFINITIONS} )

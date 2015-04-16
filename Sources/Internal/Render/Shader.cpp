@@ -85,6 +85,11 @@ uint32 ShaderDescriptor::CalculateRegsCount(rhi::ShaderProp::Type type, uint32 a
     }
 }
 
+const rhi::ShaderPropList& ShaderDescriptor::GetProps(UniquePropertyLayout layout)
+{
+    return propertyLayoutSet.GetUnique(layout).props;
+}
+
 	
 	
 void ShaderDescriptor::UpdateDynamicParams()
