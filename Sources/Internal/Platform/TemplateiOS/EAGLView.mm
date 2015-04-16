@@ -77,9 +77,7 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
 		}
 
 		// Subscribe to "keyboard change frame" notifications to block GL while keyboard change is performed (see please DF-2012 for details).
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidHide:) name:UIKeyboardDidHideNotification object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidFrameChanged) name:UIKeyboardDidChangeFrameNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidFrameChanged:) name:UIKeyboardDidChangeFrameNotification object:nil];
 
         CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
         
@@ -172,6 +170,7 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
 		displayLink = nil;
 		animationTimer = nil;
 		blockDrawView = false;
+        limitKeyboardFps = false;
 		
         // A system version of 3.1 or greater is required to use CADisplayLink. The NSTimer
         // class is used as fallback when it isn't available.
@@ -190,6 +189,12 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
 
 - (void) drawView:(id)sender
 {
+    if (blockDrawView)
+    {
+        // Yuri Coder, 2013/02/06. In case we are displaying ASSERT dialog we need to block rendering because RenderManager might be already locked here.
+        return;
+    }
+    
 	DAVA::RenderManager::Instance()->Lock();
     
     DAVA::uint64 renderManagerContextId = DAVA::RenderManager::Instance()->GetRenderContextId();
@@ -215,7 +220,7 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
 	DAVA::RenderManager::Instance()->Unlock();
 	
     DAVA::int32 targetFPS = 0;
-    if (blockDrawView)
+    if (limitKeyboardFps)
     {
         targetFPS = KEYBOARD_FPS_LIMIT;
     }
@@ -422,29 +427,19 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
     blockDrawView = false;
 }
 
-- (void)keyboardWillShow:(NSNotification *)notification
-{
-    blockDrawView = true;
-    NSLog(@"keyboardWillShow");
-}
-
-- (void)keyboardDidHide:(NSNotification *)notification
-{
-    blockDrawView = false;
-    NSLog(@"keyboardDidHide");
-}
-
 - (void)keyboardDidFrameChanged:(NSNotification *)notification
 {
     CGRect keyboardEndFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
     CGRect screenRect = [[UIScreen mainScreen] bounds];
     if (CGRectIntersectsRect(keyboardEndFrame, screenRect))
     {
-        NSLog(@"Keyboard is visible");
+        // Keyboard did show or move
+        limitKeyboardFps = true;
     }
     else
     {
-        NSLog(@"Keyboard is hidden");
+        // Keyboard did hide
+        limitKeyboardFps = false;
     }
 }
 
