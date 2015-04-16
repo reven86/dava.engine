@@ -39,12 +39,16 @@ namespace DAVA
 FastName::FastName()
 	: index(-1)
 {
+    // make sure FastNameDB exists
+    FastNameDB::Instance();
+
 #ifdef __DAVAENGINE_DEBUG__
-	debug_str_ptr = NULL;
+    debug_str_ptr = NULL;
 #endif
 }
     
 FastName::FastName(const String & name)
+    : index(-1)
 {
     Init(name.c_str());
 }
@@ -79,12 +83,11 @@ FastName::~FastName()
 
 void FastName::Init(const char * name)
 {
-	DVASSERT(NULL != name);
-	
-    FastNameDB *db = FastNameDB::Instance();
+    DVASSERT(NULL != name);
 
-	LockGuard<Mutex> guard(FastNameDB::Instance()->dbMutex);
-    
+    FastNameDB *db = FastNameDB::Instance();
+    LockGuard<Mutex> guard(FastNameDB::Instance()->dbMutex);
+
     // search if that name is already in hash
     if(db->namesHash.count(name))
     {
@@ -122,7 +125,7 @@ void FastName::Init(const char * name)
         // add name and its index into hash
         db->namesHash.insert(nameCopy, index);
     }
-    
+
     DVASSERT(index != -1);
 #ifdef __DAVAENGINE_DEBUG__
     debug_str_ptr = c_str();
