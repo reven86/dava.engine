@@ -129,9 +129,9 @@ TextureBrowser::~TextureBrowser()
 
 void TextureBrowser::Close()
 {
-	hide();
+    hide();
 
-	TextureConvertor::Instance()->CancelConvert();
+    TextureConvertor::Instance()->CancelConvert();
 	TextureConvertor::Instance()->WaitConvertedAll();
 
 	DAVA::SafeRelease(curScene);

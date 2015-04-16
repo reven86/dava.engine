@@ -59,6 +59,7 @@ void SettingsManager::Init()
 	CreateValue(Settings::General_DesinerName, DAVA::VariantType(DAVA::String("nobody")));
     CreateValue(Settings::General_RecentFilesCount, DAVA::VariantType((DAVA::int32) 5));
 	CreateValue(Settings::General_PreviewEnabled, DAVA::VariantType(false));
+    CreateValue(Settings::General_OpenByDBClick, DAVA::VariantType(false));
     CreateValue(Settings::General_CompressionQuality, DAVA::VariantType((DAVA::int32)DAVA::TextureConverter::ECQ_DEFAULT), DAVA::InspDesc("Compression quality", GlobalEnumMap<DAVA::TextureConverter::eConvertQuality>::Instance()));
 
     CreateValue(Settings::General_MaterialEditor_SwitchColor0, DAVA::VariantType(DAVA::Color(0.0f, 1.0f, 0.0f, 1.0f)));

@@ -29,7 +29,6 @@
 #ifndef __PIXELIZATIONCONTROLLER__H__
 #define __PIXELIZATIONCONTROLLER__H__
 
-#include "DAVAEngine.h"
 #include "Render/2D/TextBlock.h"
 
 #if 0

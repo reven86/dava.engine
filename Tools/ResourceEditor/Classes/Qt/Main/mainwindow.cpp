@@ -143,12 +143,12 @@
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
-	, waitDialog(NULL)
-	, beastWaitDialog(NULL)
+    , waitDialog(nullptr)
+    , beastWaitDialog(nullptr)
 	, globalInvalidate(false)
-    , modificationWidget(NULL)
-    , addSwitchEntityDialog(NULL)
-    , hangingObjectsWidget(NULL)
+    , modificationWidget(nullptr)
+    , addSwitchEntityDialog(nullptr)
+    , hangingObjectsWidget(nullptr)
     , developerTools(new DeveloperTools(this))
 {
     PathDescriptor::InitializePathDescriptors();
@@ -214,7 +214,6 @@ QtMainWindow::QtMainWindow(QWidget *parent)
 QtMainWindow::~QtMainWindow()
 {
 	SafeDelete(addSwitchEntityDialog);
-    SafeDelete(developerTools);
     
     TextureBrowser::Instance()->Release();
 	MaterialEditor::Instance()->Release();
@@ -222,7 +221,7 @@ QtMainWindow::~QtMainWindow()
 	posSaver.SaveState(this);
 
 	delete ui;
-	ui = NULL;
+	ui = nullptr;
 
 	ProjectManager::Instance()->Release();
 	RecentFilesManager::Instance()->Release();
@@ -386,7 +385,7 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
 {
 	QEvent::Type eventType = event->type();
 
-	if(qApp == obj && ProjectManager::Instance()->IsOpened())
+    if(qApp == obj)
 	{
 		if(QEvent::ApplicationStateChange == eventType)
 		{
@@ -1091,10 +1090,12 @@ void QtMainWindow::OnProjectClose()
     }
 }
 
-
 void QtMainWindow::OnSceneNew()
 {
-    ui->sceneTabWidget->OpenTab();
+    if (ProjectManager::Instance()->IsOpened())
+    {
+        ui->sceneTabWidget->OpenTab();
+    }
 }
 
 void QtMainWindow::OnSceneOpen()

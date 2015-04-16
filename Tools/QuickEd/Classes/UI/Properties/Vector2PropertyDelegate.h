@@ -16,7 +16,7 @@ public:
     virtual bool setModelData( QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
 
 private slots:
-    void OnValueChanged();
+    void OnEditingFinished();
 };
 
 #endif // __PROPERTIESTREEQVARIANTITEMDELEGATE_H__

@@ -173,11 +173,13 @@ QStringList LibraryWidget::GetExtensions(DAVA::ImageFormat imageFormat) const
 
 void LibraryWidget::SetupSignals()
 {
-    QObject::connect(ProjectManager::Instance(), SIGNAL(ProjectOpened(const QString &)), this, SLOT(ProjectOpened(const QString &)));
-	QObject::connect(ProjectManager::Instance(), SIGNAL(ProjectClosed()), this, SLOT(ProjectClosed()));
+    QObject::connect(ProjectManager::Instance(), &ProjectManager::ProjectOpened, this, &LibraryWidget::ProjectOpened);
+    QObject::connect(ProjectManager::Instance(), &ProjectManager::ProjectClosed, this, &LibraryWidget::ProjectClosed);
     
-    QObject::connect(filesView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(SelectionChanged(const QItemSelection &, const QItemSelection &)));
-    QObject::connect(filesView, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ShowContextMenu(const QPoint &)));
+    QObject::connect(filesView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &LibraryWidget::SelectionChanged);
+
+    QObject::connect(filesView, &QTreeView::customContextMenuRequested, this, &LibraryWidget::ShowContextMenu);
+    QObject::connect(filesView, &QTreeView::doubleClicked, this, &LibraryWidget::fileDoubleClicked);
 }
 
 void LibraryWidget::SetupToolbar()
@@ -304,6 +306,19 @@ void LibraryWidget::SelectionChanged(const QItemSelection &selected, const QItem
     else
     {
         HidePreview();
+    }
+}
+
+void LibraryWidget::fileDoubleClicked(const QModelIndex & index)
+{
+    if(SettingsManager::GetValue(Settings::General_OpenByDBClick).AsBool())
+    {
+        HidePreview();
+        QFileInfo fileInfo = filesModel->fileInfo(index);
+        if(0 == fileInfo.suffix().compare("sc2", Qt::CaseInsensitive))
+        {
+            QtMainWindow::Instance()->OpenScene(fileInfo.absoluteFilePath());
+        }
     }
 }
 

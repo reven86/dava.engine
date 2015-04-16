@@ -96,6 +96,7 @@ protected slots:
     
 	void SelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void ShowContextMenu(const QPoint & point);
+    void fileDoubleClicked(const QModelIndex & index);
     
     void OnFilesTypeChanged(int typeIndex);
     

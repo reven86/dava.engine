@@ -40,9 +40,12 @@ public:
     static void Show();
     static void ShowModal();
 
+signals:
+    void QualityChanged();
+
 protected:
-    QualitySwitcher(QWidget *parent = NULL);
-    ~QualitySwitcher();
+    QualitySwitcher(QWidget *parent = nullptr);
+    ~QualitySwitcher() = default;
 
     void ApplyTx();
     void ApplyMa();

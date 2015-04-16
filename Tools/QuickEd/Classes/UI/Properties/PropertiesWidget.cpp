@@ -2,60 +2,51 @@
 
 #include <qitemeditorfactory>
 #include <qstyleditemdelegate>
+#include <QAbstractItemModel>
+#include "SharedData.h"
 
 #include "ui_PropertiesWidget.h"
 #include "PropertiesModel.h"
-#include "UI/Document.h"
-#include "UI/PropertiesContext.h"
 #include "UI/Properties/PropertiesTreeItemDelegate.h"
-#include "Model/PackageHierarchy/ControlNode.h"
 
 using namespace DAVA;
 
 PropertiesWidget::PropertiesWidget(QWidget *parent)
     : QDockWidget(parent)
-    , ui(new Ui::PropertiesWidget())
-    , context(nullptr)
+    , sharedData(nullptr)
 {
-    ui->setupUi(this);
-    ui->treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
+    setupUi(this);
+    treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
 }
 
-PropertiesWidget::~PropertiesWidget()
+void PropertiesWidget::OnDocumentChanged(SharedData *arg)
 {
-    delete ui;
+    sharedData = arg;
+    UpdateActivatedControls();
 }
-
-void PropertiesWidget::SetDocument(Document *document)
+void PropertiesWidget::OnDataChanged(const QByteArray &role)
 {
-    if (nullptr != context) //remove previous context
+    if (role == "activatedControls")
     {
-        disconnect(context, SIGNAL(ModelChanged(PropertiesModel*)), this, SLOT(OnModelChanged(PropertiesModel*)));
-        ui->treeView->setModel(nullptr);
+        UpdateActivatedControls();
     }
-    /*set new context*/
-    if (nullptr == document)
+}
+
+void PropertiesWidget::UpdateActivatedControls()
+{
+    QAbstractItemModel *prevModel = treeView->model();
+    if (nullptr == sharedData)
     {
-        context = nullptr;
+        treeView->setModel(nullptr);
     }
     else
     {
-        context = document->GetPropertiesContext();
+        const QList<ControlNode*> &activatedControls = sharedData->GetData("activatedControls").value<QList<ControlNode*> >();
+        QAbstractItemModel* model = activatedControls.empty() ? nullptr : new PropertiesModel(activatedControls.first(), sharedData->GetDocument());//TODO this is ugly
+        sharedData->SetData("propertiesModel", QVariant::fromValue(model)); //TODO: bad architecture
+        treeView->setModel(model);
+        treeView->expandToDepth(0);
+        treeView->resizeColumnToContents(0);
     }
-
-    if (nullptr != context)
-    {
-        connect(context, SIGNAL(ModelChanged(PropertiesModel*)), this, SLOT(OnModelChanged(PropertiesModel*)));
-        ui->treeView->setModel(context->GetModel());
-    }
-}
-
-void PropertiesWidget::OnModelChanged(PropertiesModel *model)
-{
-    ui->treeView->setModel(model);
-    if (nullptr != model)
-    {
-        ui->treeView->expandToDepth(0);
-        ui->treeView->resizeColumnToContents(0);
-    }
+    delete prevModel;
 }

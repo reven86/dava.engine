@@ -299,7 +299,7 @@ private:
 	// <--
 
     //Need for any debug functionality
-    DeveloperTools *developerTools;
+    QPointer<DeveloperTools> developerTools;
     QPointer<VersionInfoWidget> versionInfoWidget;
 
     QPointer<DeviceListController> deviceListController;

@@ -1,25 +1,24 @@
-#ifndef __GRAPHICSVIEWCONTEXT_H__
-#define __GRAPHICSVIEWCONTEXT_H__
+#ifndef __QUICKED_PREVIEW_MODEL_H__
+#define __QUICKED_PREVIEW_MODEL_H__
 
 #include <QObject>
 #include <QPoint>
 #include <QSize>
 #include "DAVAEngine.h"
 
-#include "Preview/ControlSelectionListener.h"
+#include "Result.h"
+#include "ControlSelectionListener.h"
 
 class PackageCanvas;
 class ControlNode;
 class CheckeredCanvas;
 
-class Document;
-
-class PreviewContext: public QObject, ControlSelectionListener
+class PreviewModel : public QObject, ControlSelectionListener
 {
     Q_OBJECT
 public:
-    PreviewContext(Document *document);
-    virtual ~PreviewContext();
+    PreviewModel(QObject *parent);
+    virtual ~PreviewModel();
 
     void SetViewControlSize(const QSize &newSize);
     void SetCanvasControlSize(const QSize &newSize);
@@ -31,27 +30,26 @@ public:
 
     QSize GetScaledCanvasSize() const;
     QSize GetViewSize() const;
+    DAVA::UIControl *GetViewControl() const;
 
-    inline DAVA::UIControl *GetViewControl() const { return view; }
+    void SetRootControls(const QList<ControlNode*> &activatedControls);
+    void ControlsDeactivated(const QList<ControlNode*> &deactivatedControls);
+    void ControlsActivated(const QList<ControlNode *> &activatedControls);
+
+    // ControlSelectionListener
+    virtual void OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl *, DAVA::UIControl*> > &selectedPairs) override;
 signals:
     void CanvasPositionChanged(const QPoint &canvasPosition);
     void CanvasOrViewChanged(const QSize &viewSize, const QSize &scaledContentSize);
     void CanvasScaleChanged(int canvasScale);
-    
-    void ControlNodeSelected(ControlNode *node);
-    void AllControlsDeselected();
 
-public: // ControlSelectionListener
-    virtual void OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIControl *selectedControl);
-    virtual void OnAllControlsDeselected();
-    
-public slots:
-    void OnActiveRootControlsChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode*> &deactivatedControls);
-    void OnSelectedControlsChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode*> &deactivatedControls);
+    void ControlNodeSelected(const QList<ControlNode *> &selectedNodes);
+
+    void ErrorOccurred(const Result &error);
 
 private:
     CheckeredCanvas *FindControlContainer(DAVA::UIControl *control);
-    
+
 private:
     DAVA::Vector2 canvasPosition;
 
@@ -61,5 +59,10 @@ private:
     DAVA::Map<DAVA::UIControl*, ControlNode*> rootNodes;
 };
 
+inline DAVA::UIControl *PreviewModel::GetViewControl() const 
+{
+    return view;
+}
 
-#endif // __GRAPHICSVIEWCONTEXT_H__
+
+#endif // __QUICKED_PREVIEW_MODEL_H__
