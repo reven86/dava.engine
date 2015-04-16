@@ -40,6 +40,7 @@ BaseTest::BaseTest(const String& _testName, uint32 frames, float32 delta, uint32
     ,   testName(_testName)
     ,   debugFrame(_debugFrame)
     ,   debuggable(false)
+    ,   maxAllocatedMemory(0)
 
 {
 }
@@ -54,7 +55,7 @@ BaseTest::BaseTest(const String& _testName, uint32 _time)
     ,   testName(_testName)
     ,   debugFrame(0)
     ,   debuggable(false)
-
+    , maxAllocatedMemory(0)
 {
 }
 
