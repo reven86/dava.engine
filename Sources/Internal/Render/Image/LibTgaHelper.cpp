@@ -178,7 +178,21 @@ eErrorCode LibTgaHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
 
     if (readResult == SUCCESS)
     {
-        ImageConvert::SwapRedBlueChannels(image);
+        // color formats are stored by TGA with swapped red-blue channels, 
+        // excepting RGBA5551 that is stored as ARGB1555
+        if (tgaInfo.imageType == TgaInfo::TRUECOLOR || tgaInfo.imageType == TgaInfo::COMPRESSED_TRUECOLOR)
+        {
+            if (tgaInfo.pixelFormat == FORMAT_RGBA5551)
+            {
+                uint32 pitch = image->width * tgaInfo.bytesPerPixel;
+                ConvertDirect<uint16, uint16, ConvertARGB1555toRGBA5551> swap;
+                swap(image->data, image->width, image->height, pitch, image->data);
+            }
+            else
+            {
+                ImageConvert::SwapRedBlueChannels(image);
+            }
+        }
         
         SafeRetain(pImage);
         imageSet.push_back(pImage);
@@ -398,7 +412,15 @@ eErrorCode LibTgaHelper::WriteFile(const FilePath & fileName, const Vector<Image
     {
         convertedData.reset(new uint8[width * height * tgaInfo.bytesPerPixel]);
         uint32 pitch = width * tgaInfo.bytesPerPixel;
-        ImageConvert::SwapRedBlueChannels(pixelFormat, imageData, width, height, pitch, convertedData.get());
+        if (pixelFormat == FORMAT_RGBA5551) // for RGBA5551, TGA stores it as ARGB1555
+        {
+            ConvertDirect<uint16, uint16, ConvertRGBA5551toARGB1555> swap;
+            swap(imageData, width, height, pitch, convertedData.get());
+        }
+        else
+        {
+            ImageConvert::SwapRedBlueChannels(pixelFormat, imageData, width, height, pitch, convertedData.get());
+        }
         imageData = convertedData.get();
     }
 

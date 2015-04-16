@@ -203,15 +203,18 @@ struct ConvertARGB1555toRGBA5551
     inline void operator()(const uint16 * input, uint16 *output)
     {
         //arrr rrgg gggb bbbb --> rrrr rggg ggbb bbba
-        const uint16 & in = *input;
 
-//        uint16 a = (in >> 15) & 0x0001; // true code, but ...
-        uint16 a = 1; //targa not use alpha bit https://forums.adobe.com/thread/1303965?tstart=0
-        uint16 r = (in >> 10) & 0x001F;
-        uint16 g = (in >> 5) & 0x001F;
-        uint16 b = (in) & 0x001F;
+        //targa does not use alpha bit https://forums.adobe.com/thread/1303965?tstart=0
+        *output = (*input << 1) | 0x1;
+    }
+};
 
-        *output = (r << 11) | (g << 6) | (b << 1) | a;
+struct ConvertRGBA5551toARGB1555
+{
+    //rrrr rggg ggbb bbba --> arrr rrgg gggb bbbb
+    inline void operator()(const uint16 * input, uint16 *output)
+    {
+        *output = (*input >> 1) | 0x8000;
     }
 };
     
@@ -606,12 +609,6 @@ public:
         case FORMAT_RGBA8888:
         {
             ConvertDirect<BGRA8888, uint32, ConvertBGRA8888toRGBA8888> swap;
-            swap(srcData, width, height, pitch, dstData);
-            return;
-        }
-        case FORMAT_RGBA5551:
-        {
-            ConvertDirect<uint16, uint16, ConvertARGB1555toRGBA5551> swap;
             swap(srcData, width, height, pitch, dstData);
             return;
         }
