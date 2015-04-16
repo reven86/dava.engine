@@ -40,6 +40,7 @@ namespace Settings
     static const DAVA::FastName General_DesinerName("General/DesignerName");
     static const DAVA::FastName General_RecentFilesCount("General/RecentFilesCount");
 	static const DAVA::FastName General_PreviewEnabled("General/PreviewEnabled");
+    static const DAVA::FastName General_OpenByDBClick("General/OpenByDoubleClick");
     static const DAVA::FastName General_CompressionQuality("General/CompressionQuality");
 
     static const DAVA::FastName General_MaterialEditor_SwitchColor0("General/MaterialEditor/SwitchColor0");
