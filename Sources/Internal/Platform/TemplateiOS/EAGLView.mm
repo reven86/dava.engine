@@ -46,6 +46,8 @@
 
 #include "Utils/Utils.h"
 
+static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
+
 @implementation EAGLView
 
 @synthesize animating;
@@ -77,6 +79,7 @@
 		// Subscribe to "keyboard change frame" notifications to block GL while keyboard change is performed (see please DF-2012 for details).
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidHide:) name:UIKeyboardDidHideNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidFrameChanged) name:UIKeyboardDidChangeFrameNotification object:nil];
 
         CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
         
@@ -214,7 +217,7 @@
     DAVA::int32 targetFPS = 0;
     if (blockDrawView)
     {
-        targetFPS = 10;
+        targetFPS = KEYBOARD_FPS_LIMIT;
     }
     else
     {
@@ -422,11 +425,27 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 - (void)keyboardWillShow:(NSNotification *)notification
 {
     blockDrawView = true;
+    NSLog(@"keyboardWillShow");
 }
 
 - (void)keyboardDidHide:(NSNotification *)notification
 {
     blockDrawView = false;
+    NSLog(@"keyboardDidHide");
+}
+
+- (void)keyboardDidFrameChanged:(NSNotification *)notification
+{
+    CGRect keyboardEndFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    CGRect screenRect = [[UIScreen mainScreen] bounds];
+    if (CGRectIntersectsRect(keyboardEndFrame, screenRect))
+    {
+        NSLog(@"Keyboard is visible");
+    }
+    else
+    {
+        NSLog(@"Keyboard is hidden");
+    }
 }
 
 
