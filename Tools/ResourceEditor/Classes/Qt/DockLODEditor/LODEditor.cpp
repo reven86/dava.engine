@@ -46,8 +46,8 @@
 
 
 LODEditor::LODEditor(QWidget* parent)
-:   QWidget(parent),
-    ui(new Ui::LODEditor)
+    : QWidget(parent)
+    , ui(new Ui::LODEditor)
 {
     ui->setupUi(this);
 
@@ -175,11 +175,9 @@ void LODEditor::SceneActivated(SceneEditor2 *scene)
     ui->checkBoxLodEditorMode->setChecked(sceneEditorLodSystem->GetAllSceneModeEnabled());
     ui->enableForceDistance->setChecked(sceneEditorLodSystem->GetForceDistanceEnabled());
     ui->forceSlider->setValue(sceneEditorLodSystem->GetForceDistance());
-    int index = ui->forceLayer->findData(sceneEditorLodSystem->GetForceLayer());
-    if (-1 != index)
-    {
-        ui->forceLayer->setCurrentIndex(index);
-    }
+
+    UpdateForceLayer(sceneEditorLodSystem);
+    UpdateForceDistance(sceneEditorLodSystem);
     LODDataChanged(scene);
 }
 
@@ -224,6 +222,9 @@ void LODEditor::LODDataChanged(SceneEditor2 *scene /* = nullptr */)
     UpdateWidgetVisibility(currentLODSystem);
 
     UpdateLODButtons(currentLODSystem);
+
+    UpdateForceLayer(currentLODSystem);
+    UpdateForceDistance(currentLODSystem);
 }
 
 void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continious)
@@ -375,6 +376,28 @@ void LODEditor::UpdateLODButtons(const EditorLODSystem *editorLODSystem)
     bool canCreatePlaneLOD = editorLODSystem->CanCreatePlaneLOD();
     ui->lastLodToFrontButton->setEnabled(canCreatePlaneLOD);
     ui->createPlaneLodButton->setEnabled(canCreatePlaneLOD);
+}
+
+void LODEditor::UpdateForceLayer(const EditorLODSystem *editorLODSystem)
+{
+    int32 forceLayer = editorLODSystem->GetCurrentForceLayer();
+    if (forceLayer + 1 > ui->forceLayer->count())
+    {
+        ui->forceLayer->setCurrentIndex(-1);
+        return;
+    }
+
+    int index = ui->forceLayer->findData(forceLayer);
+    if (-1 != index)
+    {
+        ui->forceLayer->setCurrentIndex(index);
+    }
+}
+
+void LODEditor::UpdateForceDistance(const EditorLODSystem *editorLODSystem)
+{
+    float32 forceDistance = editorLODSystem->GetCurrentDistance();
+    ui->forceSlider->setValue(forceDistance);
 }
 
 void LODEditor::CopyLODToLod0Clicked()

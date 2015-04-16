@@ -136,6 +136,7 @@ void LabeledSlider::setValue(int val)
     bool wasBlocked = slider->blockSignals(true);
 
     slider->setValue(val);
+    valueText->setText(QString::number(val));
 
     slider->blockSignals(wasBlocked);
 }

@@ -82,6 +82,8 @@ namespace Settings
 
     static const DAVA::FastName Scene_AutoselectNewEntities("Scene/AutoselectNewEnities");
 
+    static const DAVA::FastName Scene_RememberForceParameters("Scene/RememberForceParameters");
+
     // this settings won't be shown in settings dialog
     // and are used only by application
     static const DAVA::FastName InternalGroup("Internal");

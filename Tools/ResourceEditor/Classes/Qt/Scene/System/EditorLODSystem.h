@@ -31,12 +31,27 @@
 #ifndef __SCENE_LOD_SYSTEM_H__
 #define __SCENE_LOD_SYSTEM_H__
 
+#include <QPair>
+#include <QMap>
+
 class Command2;
 class SceneEditor2;
 class EntityGroup;
 
 class EditorLODSystem : public DAVA::SceneSystem
 {
+    struct ForceData
+    {
+        DAVA::int32 forceLayer;
+        DAVA::float32 forceDistance;
+
+        ForceData(DAVA::int32 newForceLayer = -1, DAVA::float32 newDistance = -1)
+            : forceLayer(newForceLayer)
+            , forceDistance(newDistance)
+        {
+        }
+    };
+
     friend class SceneEditor2;
     friend class EntityModificationSystem;
 
@@ -52,7 +67,7 @@ public:
     DAVA::FilePath GetDefaultTexturePathForPlaneEntity() const;
 
     static void AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> &triangles, DAVA::LodComponent *lod, bool onlyVisibleBatches);
-    
+
     void SolidChanged(const DAVA::Entity *entity, bool value);
 
     bool CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath);
@@ -79,9 +94,11 @@ public:
 
     inline DAVA::float32 GetForceDistance() const;
     void SetForceDistance(DAVA::float32 distance);
+    DAVA::float32 GetCurrentDistance() const;
 
     inline DAVA::int32 GetForceLayer() const;
     void SetForceLayer(DAVA::int32 layer);
+    DAVA::int32 GetCurrentForceLayer() const;
 
     void CollectLODDataFromScene();
 
@@ -103,15 +120,17 @@ protected:
     DAVA::int32 currentLodsLayersCount;
     bool forceDistanceEnabled;
     DAVA::float32 forceDistance;
-    DAVA::int32 forceLayer;    
+    DAVA::int32 forceLayer;
     bool allSceneModeEnabled;
 
     std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> lodTrianglesCount;
     std::array<DAVA::float32, DAVA::LodComponent::MAX_LOD_LAYERS > lodDistances;
 
-    DAVA::Deque<DAVA::LodComponent *> sceneLODs;
-    DAVA::Deque<DAVA::LodComponent *> selectedLODs;
-    inline const DAVA::Deque<DAVA::LodComponent *> &GetCurrentLODs() const;
+    QMap<DAVA::LodComponent *, ForceData> sceneLODsQMap;
+    QList<DAVA::LodComponent *> selectedLODs;
+    inline const QList<DAVA::LodComponent *> GetCurrentLODs() const;
+
+    bool mixedForce;
 };
 
 inline DAVA::uint32 EditorLODSystem::GetLayerTriangles(DAVA::uint32 layerNum) const
@@ -149,9 +168,10 @@ inline bool EditorLODSystem::GetAllSceneModeEnabled() const
     return allSceneModeEnabled;
 }
 
-inline const DAVA::Deque<DAVA::LodComponent *> &EditorLODSystem::GetCurrentLODs() const
+inline const QList<DAVA::LodComponent *> EditorLODSystem::GetCurrentLODs() const
 {
-    return allSceneModeEnabled ? sceneLODs : selectedLODs;
+    QList<DAVA::LodComponent *> lods = sceneLODsQMap.keys();
+    return allSceneModeEnabled ? lods : selectedLODs;
 }
 
 #endif // __SCENE_LOD_SYSTEM_H__
