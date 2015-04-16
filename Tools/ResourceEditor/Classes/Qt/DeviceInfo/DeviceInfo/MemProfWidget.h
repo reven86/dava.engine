@@ -46,8 +46,6 @@ public:
     explicit MemProfWidget(ProfilingSession* profSession, QWidget *parent = nullptr);
     ~MemProfWidget();
 
-    void ShowDump(const DAVA::Vector<DAVA::uint8>& v);
-
 public slots:
     void ConnectionEstablished(bool newConnection, ProfilingSession* profSession);
     void ConnectionLost(const DAVA::char8* message);
@@ -55,8 +53,11 @@ public slots:
     void DumpArrived(size_t sizeTotal, size_t sizeRecv);
 
     void RealtimeToggled(bool checked);
+    void DiffClicked();
     void PlotClicked(QMouseEvent* ev);
-    
+
+    void DumpBriefList_OnDoubleClicked(const QModelIndex& index);
+
 private:
     void Init();
     void ReinitPlot();

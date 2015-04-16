@@ -52,7 +52,7 @@ bool SymbolsFilterModel::filterAcceptsRow(int source_row, const QModelIndex& sou
     {
         SymbolsTreeModel::NameNode* node = static_cast<SymbolsTreeModel::NameNode*>(p);
         String name = node->Name();
-        if (hideStd && name.find("std::") == 0)
+        if (hideStd && (name.find("std::") == 0 || name.find("#_") == 0))
         {
             return false;
         }

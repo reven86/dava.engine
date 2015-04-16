@@ -12,7 +12,15 @@
 #include <QToolBar>
 #include <QGridLayout>
 #include <QVBoxLayout>
+#include <QMessageBox>
 #include "qcustomplot.h"
+
+#include "DumpViewerWidget.h"
+#include "DiffViewerWidget.h"
+
+#include "BranchDiff.h"
+#include "Branch.h"
+#include "MemoryDump.h"
 
 #include "MemProfWidget.h"
 #include "ui_MemProfWidget.h"
@@ -43,7 +51,6 @@ MemProfWidget::MemProfWidget(ProfilingSession* profSession, QWidget *parent)
     ui->allocPoolTable->resizeRowsToContents();
     ui->tagTable->resizeRowsToContents();
     ui->generalStatTable->resizeRowsToContents();
-    //ui->dumpBriefList->resizeRowsToContents();
 
     ReinitPlot();
     SetPlotData();
@@ -73,7 +80,6 @@ void MemProfWidget::ConnectionEstablished(bool newConnection, ProfilingSession* 
         ui->allocPoolTable->resizeRowsToContents();
         ui->tagTable->resizeRowsToContents();
         ui->generalStatTable->resizeRowsToContents();
-        //ui->dumpBriefList->resizeRowsToContents();
         ReinitPlot();
     }
 }
@@ -147,6 +153,49 @@ void MemProfWidget::PlotClicked(QMouseEvent* ev)
     }
 }
 
+void MemProfWidget::DiffClicked()
+{
+    Vector<int> selected;
+    QItemSelectionModel* selModel = ui->dumpBriefList->selectionModel();
+    if (selModel->hasSelection())
+    {
+        QModelIndexList list = selModel->selectedRows(0);
+        for (auto x : list)
+        {
+            selected.push_back(x.row());
+        }
+    }
+    if (selected.size() != 2)
+    {
+        QMessageBox::warning(this, "Achtung", "Select only two dumps");
+        return;
+    }
+
+    int index1 = selected[0];
+    int index2 = selected[1];
+    if (profileSession->LoadDump(index1) && profileSession->LoadDump(index2))
+    {
+        const DumpBrief& d0 = profileSession->Dump(index1);
+        const DumpBrief& d1 = profileSession->Dump(index2);
+
+        DiffViewerWidget* w = new DiffViewerWidget(d0, d1, this);
+        w->resize(800, 600);
+        w->show();
+    }
+}
+
+void MemProfWidget::DumpBriefList_OnDoubleClicked(const QModelIndex& index)
+{
+    int row = index.row();
+    if (profileSession->LoadDump(row))
+    {
+        const DumpBrief& brief = profileSession->Dump(row);
+        DumpViewerWidget* w = new DumpViewerWidget(brief, this);
+        w->resize(800, 600);
+        w->show();
+    }
+}
+
 void MemProfWidget::UpdatePlot(const StatItem& stat)
 {
     QCustomPlot* plot = ui->plot;
@@ -215,8 +264,6 @@ void MemProfWidget::ReinitPlot()
         QPen pen(poolColors[i % ncolors]);
         pen.setWidth(2);
         graph->setPen(pen);
-        //graph->setPen(poolColors[i % ncolors]);
-        //graph->setBrush(poolColors[i % ncolors]);
         graph->setAntialiasedFill(false);
     }
 
@@ -231,10 +278,6 @@ void MemProfWidget::ReinitPlot()
     connect(plot->yAxis, SIGNAL(rangeChanged(QCPRange)), plot->yAxis2, SLOT(setRange(QCPRange)));
 }
 
-void MemProfWidget::ShowDump(const DAVA::Vector<DAVA::uint8>& v)
-{
-}
-
 void MemProfWidget::Init()
 {
     ui->setupUi(this);
@@ -246,7 +289,12 @@ void MemProfWidget::Init()
 
         QAction* actionToggleRealtime = toolbar->addAction("Realtime");
         actionToggleRealtime->setCheckable(true);
+        if (realtime)
+            actionToggleRealtime->toggle();
         connect(actionToggleRealtime, &QAction::toggled, this, &MemProfWidget::RealtimeToggled);
+
+        QAction* actionDiff = toolbar->addAction("Diff");
+        connect(actionDiff, &QAction::triggered, this, &MemProfWidget::DiffClicked);
     }
     ui->vertLayout->insertWidget(0, toolbar);
 
@@ -275,6 +323,8 @@ void MemProfWidget::Init()
         ui->tagTable->setModel(tagModel);
         ui->generalStatTable->setModel(generalStatModel);
         ui->dumpBriefList->setModel(dumpBriefModel);
+
+        connect(ui->dumpBriefList, &QListView::doubleClicked, this, &MemProfWidget::DumpBriefList_OnDoubleClicked);
     }
 
     QCustomPlot* plot = ui->plot;

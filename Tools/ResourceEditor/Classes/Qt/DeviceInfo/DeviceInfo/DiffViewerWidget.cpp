@@ -1,15 +1,16 @@
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 
-#include "DumpViewerWidget.h"
+#include "DiffViewerWidget.h"
 
 #include "Models/SymbolsTreeModel.h"
 #include "Models/SymbolsFilterModel.h"
-#include "Models/BranchTreeModel.h"
+#include "Models/BranchDiffTreeModel.h"
 #include "Models/BlockListModel.h"
 
 #include "ProfilingSession.h"
 #include "Branch.h"
+#include "BranchDiff.h"
 #include "MemoryDump.h"
 
 #include <QDebug>
@@ -17,6 +18,7 @@
 #include <QTabWidget>
 #include <QTreeView>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QAction>
 #include <QLabel>
 #include <QFrame>
@@ -26,24 +28,28 @@
 
 using namespace DAVA;
 
-DumpViewerWidget::DumpViewerWidget(const DumpBrief& brief, QWidget* parent)
+DiffViewerWidget::DiffViewerWidget(const DumpBrief& brief1, const DumpBrief& brief2, QWidget* parent)
     : QWidget(parent, Qt::Window)
-    , dumpBrief(brief)
-    , memoryDump(brief.Dump())
+    , dumpBrief1(brief1)
+    , dumpBrief2(brief2)
+    , memoryDump1(brief1.Dump())
+    , memoryDump2(brief2.Dump())
 {
-    DVASSERT(memoryDump != nullptr);
+    DVASSERT(memoryDump1 != nullptr);
+    DVASSERT(memoryDump2 != nullptr);
     Init();
 }
 
-DumpViewerWidget::~DumpViewerWidget()
+DiffViewerWidget::~DiffViewerWidget()
 {
     delete symbolsFilterModel;
     delete symbolsTreeModel;
     delete branchTreeModel;
-    delete blockListModel;
+    delete blockListModel1;
+    delete blockListModel2;
 }
 
-void DumpViewerWidget::Init()
+void DiffViewerWidget::Init()
 {
     tab = new QTabWidget;
 
@@ -55,9 +61,9 @@ void DumpViewerWidget::Init()
     setLayout(mainLayout);
 }
 
-void DumpViewerWidget::InitSymbolsView()
+void DiffViewerWidget::InitSymbolsView()
 {
-    symbolsTreeModel = new SymbolsTreeModel(memoryDump->SymbolTable());
+    symbolsTreeModel = new SymbolsTreeModel(memoryDump1->SymbolTable());
     symbolsFilterModel = new SymbolsFilterModel;
     symbolsFilterModel->setSourceModel(symbolsTreeModel);
     symbolsFilterModel->sort(0);
@@ -73,7 +79,7 @@ void DumpViewerWidget::InitSymbolsView()
 
     connect(filter, &QLineEdit::textChanged, symbolsFilterModel, &SymbolsFilterModel::SetFilterString);
     connect(toggleStd, &QPushButton::clicked, symbolsFilterModel, &SymbolsFilterModel::ToggleStd);
-    connect(buildTree, &QPushButton::clicked, this, &DumpViewerWidget::SymbolView_OnBuldTree);
+    connect(buildTree, &QPushButton::clicked, this, &DiffViewerWidget::SymbolView_OnBuldTree);
 
     QVBoxLayout* layout = new QVBoxLayout;
     layout->addWidget(filter);
@@ -86,26 +92,35 @@ void DumpViewerWidget::InitSymbolsView()
     tab->addTab(frame, "Symbols");
 }
 
-void DumpViewerWidget::InitBranchView()
+void DiffViewerWidget::InitBranchView()
 {
-    branchTreeModel = new BranchTreeModel(memoryDump);
-    blockListModel = new BlockListModel;
+    branchTreeModel = new BranchDiffTreeModel(memoryDump1, memoryDump2);
+    blockListModel1 = new BlockListModel;
+    blockListModel2 = new BlockListModel;
 
     branchTree = new QTreeView;
     branchTree->setFont(QFont("Consolas", 10, 500));
     branchTree->setModel(branchTreeModel);
 
-    blockList = new QListView;
-    blockList->setFont(QFont("Consolas", 10, 500));
-    blockList->setModel(blockListModel);
+    blockList1 = new QListView;
+    blockList1->setFont(QFont("Consolas", 10, 500));
+    blockList1->setModel(blockListModel1);
+
+    blockList2 = new QListView;
+    blockList2->setFont(QFont("Consolas", 10, 500));
+    blockList2->setModel(blockListModel2);
 
     QItemSelectionModel* selModel = branchTree->selectionModel();
-    connect(selModel, &QItemSelectionModel::currentChanged, this, &DumpViewerWidget::BranchView_SelectionChanged);
-    connect(blockList, &QTreeView::doubleClicked, this, &DumpViewerWidget::BranchBlockView_DoubleClicked);
+    connect(selModel, &QItemSelectionModel::currentChanged, this, &DiffViewerWidget::BranchView_SelectionChanged);
+    //connect(blockList, &QTreeView::doubleClicked, this, &DiffViewerWidget::BranchBlockView_DoubleClicked);
+
+    QHBoxLayout* hlayout = new QHBoxLayout;
+    hlayout->addWidget(blockList1);
+    hlayout->addWidget(blockList2);
 
     QVBoxLayout* layout = new QVBoxLayout;
     layout->addWidget(branchTree);
-    layout->addWidget(blockList);
+    layout->addLayout(hlayout);
 
     QFrame* frame = new QFrame;
     frame->setLayout(layout);
@@ -113,7 +128,7 @@ void DumpViewerWidget::InitBranchView()
     tab->addTab(frame, "Branches");
 }
 
-void DumpViewerWidget::SymbolView_OnBuldTree()
+void DiffViewerWidget::SymbolView_OnBuldTree()
 {
     Vector<const char*> selection = GetSelectedSymbols();
     if (!selection.empty())
@@ -122,31 +137,33 @@ void DumpViewerWidget::SymbolView_OnBuldTree()
     }
 }
 
-void DumpViewerWidget::BranchView_SelectionChanged(const QModelIndex& current, const QModelIndex& previous)
+void DiffViewerWidget::BranchView_SelectionChanged(const QModelIndex& current, const QModelIndex& previous)
 {
-    Branch* branch = static_cast<Branch*>(current.internalPointer());
-    Vector<const MMBlock*> blocks = branch->GetMemoryBlocks();
+    BranchDiff* branchDiff = static_cast<BranchDiff*>(current.internalPointer());
 
-    blockListModel->PrepareModel(blocks);
-}
-
-void DumpViewerWidget::BranchBlockView_DoubleClicked(const QModelIndex& current)
-{
-    const MMBlock* block = blockListModel->GetBlock(current);
-    if (block != nullptr)
+    if (branchDiff->left)
     {
-        /*Vector<QModelIndex> v = branchTreeModel->Select2(p);
-        if (!v.empty())
-        {
-            for (auto& x : v)
-                branchTree->expand(x);
-            branchTree->setCurrentIndex(v.back());
-            branchTree->selectionModel()->select(v.back(), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
-        }*/
+        Vector<const MMBlock*> blocks = branchDiff->left->GetMemoryBlocks();
+        blockListModel1->PrepareModel(blocks);
     }
+    else
+        blockListModel1->ResetModel();
+
+    if (branchDiff->right)
+    {
+        Vector<const MMBlock*> blocks = branchDiff->right->GetMemoryBlocks();
+        blockListModel2->PrepareModel(blocks);
+    }
+    else
+        blockListModel2->ResetModel();
 }
 
-Vector<const char*> DumpViewerWidget::GetSelectedSymbols()
+void DiffViewerWidget::BranchBlockView_DoubleClicked(const QModelIndex& current)
+{
+    
+}
+
+Vector<const char*> DiffViewerWidget::GetSelectedSymbols()
 {
     Vector<const char*> result;
     QItemSelectionModel* selModel = symbolsTree->selectionModel();

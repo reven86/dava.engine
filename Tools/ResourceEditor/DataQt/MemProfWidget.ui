@@ -76,7 +76,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QListView" name="dumpBriefList"/>
+        <widget class="QListView" name="dumpBriefList">
+         <property name="selectionMode">
+          <enum>QAbstractItemView::MultiSelection</enum>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>

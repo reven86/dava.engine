@@ -17,7 +17,7 @@ public:
         {}
         Backtrace& operator = (Backtrace&&) = delete;
         DAVA::uint32 hash;
-        DAVA::Vector<const DAVA::char8*> frameNames;
+        DAVA::Vector<const char*> frameNames;
     };
 
 public:
@@ -25,7 +25,7 @@ public:
     void AddBacktrace(DAVA::uint32 hash, const DAVA::uint64* frames, size_t maxFrameDepth);
 
     const DAVA::String& GetSymbol(DAVA::uint64 frameAddr) const;
-    const DAVA::Vector<const DAVA::char8*>& GetFrames(DAVA::uint32 hash) const;
+    const DAVA::Vector<const char*>& GetFrames(DAVA::uint32 hash) const;
 
     template<typename F>
     void IterateOverSymbols(F fn) const;

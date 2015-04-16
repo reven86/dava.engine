@@ -67,13 +67,18 @@ QVariant DumpBriefModel::data(const QModelIndex& index, int role) const
     {
         int row = index.row();
         int clm = index.column();
+        const DumpBrief& dumpBrief = profileSession->Dump(row);
         if (Qt::DisplayRole == role)
         {
-            const DumpBrief& dumpBrief = profileSession->Dump(row);
             String filename = dumpBrief.FileName().GetFilename();
             return QString("%1 - %2")
                 .arg(dumpBrief.Timestamp() / 1000)
                 .arg(filename.c_str());
+        }
+        else if (Qt::BackgroundRole == role)
+        {
+            //if (dumpBrief.Dump() != nullptr)
+            //    return Qt::green;
         }
     }
     return QVariant();

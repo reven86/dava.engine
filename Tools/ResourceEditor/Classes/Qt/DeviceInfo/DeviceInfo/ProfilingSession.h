@@ -47,6 +47,8 @@ class PeerDescription;
 }
 }
 
+struct Branch;
+struct BranchDiff;
 class MemoryDump;
 class ProfilingSession;
 
@@ -87,36 +89,37 @@ public:
     {
         Init(rawDump);
     }
+    ~DumpBrief()
+    {
+        ReleaseDump();
+    }
 
     const DAVA::FilePath& FileName() const { return dumpFileName; }
     DAVA::uint64 Timestamp() const { return timestamp; }
-    size_t CollectTime() const { return collectTime; }
-    size_t PackTime() const { return packTime; }
-    size_t BlockCount() const { return blockCount; }
-    size_t SymbolCount() const { return symbolCount; }
-    size_t BktraceCount() const { return bktraceCount; }
-    size_t TotalSize() const { return totalSize; }
+    DAVA::uint32 CollectTime() const { return collectTime; }
+    DAVA::uint32 PackTime() const { return packTime; }
+    DAVA::uint32 BlockCount() const { return blockCount; }
+    DAVA::uint32 SymbolCount() const { return symbolCount; }
+    DAVA::uint32 BktraceCount() const { return bktraceCount; }
+    DAVA::uint32 TotalSize() const { return totalSize; }
 
-    bool IsLoaded() const { return dumpLoaded; }
+    MemoryDump* Dump() const { return memoryDump; }
+    void ReleaseDump();
 
 private:
     void Init(const DAVA::MMDump* rawDump);
 
-    void SetSymbolsLoaded(bool flag) { symbolsLoaded = flag; }
-    void SetDumpLoaded(bool flag) { dumpLoaded = flag; }
-
 private:
     DAVA::FilePath dumpFileName;
     DAVA::uint64 timestamp;
-    size_t collectTime;
-    size_t packTime;
-    size_t blockCount;
-    size_t symbolCount;
-    size_t bktraceCount;
-    size_t totalSize;
+    DAVA::uint32 collectTime;
+    DAVA::uint32 packTime;
+    DAVA::uint32 blockCount;
+    DAVA::uint32 symbolCount;
+    DAVA::uint32 bktraceCount;
+    DAVA::uint32 totalSize;
 
-    bool symbolsLoaded = false;
-    bool dumpLoaded = false;
+    MemoryDump* memoryDump = nullptr;
 };
 
 class ProfilingSession
@@ -138,6 +141,7 @@ public:
     size_t StatCount() const { return stat.size(); }
     size_t DumpCount() const { return dump.size(); }
     const DAVA::Net::PeerDescription& DeviceInfo() const { return deviceInfo; }
+    const BacktraceSymbolTable& SymbolTable() const { return symbolTable; }
 
     const DAVA::String& AllocPoolName(size_t index) const;
     const DAVA::String& TagName(size_t index) const;
@@ -148,7 +152,7 @@ public:
 
     size_t ClosestStatItem(DAVA::uint64 timestamp) const;
 
-    MemoryDump* LoadDump(size_t index);
+    bool LoadDump(size_t index);
 
 private:
     void Init(const DAVA::MMStatConfig* config);
@@ -165,7 +169,7 @@ private:
     void LoadStatItems(size_t count, DAVA::uint32 itemSize);
     void LookForDumps();
     void LoadDumpBrief(const DAVA::FilePath& path);
-    bool LoadFullDump(const DumpBrief& brief, DAVA::Vector<DAVA::MMBlock> mblocks);
+    bool LoadFullDump(const DumpBrief& brief, DAVA::Vector<DAVA::MMBlock>& mblocks);
 
 private:
     bool isFileLog;

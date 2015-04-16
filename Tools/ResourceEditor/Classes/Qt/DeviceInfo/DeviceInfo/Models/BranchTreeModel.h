@@ -5,23 +5,24 @@
 
 #include "Base/BaseTypes.h"
 
-#include "GenericTreeModel.h"
-#include "../MemoryDumpSession.h"
+struct Branch;
+class MemoryDump;
 
 class BranchTreeModel : public QAbstractItemModel
 {
 public:
-    BranchTreeModel(const MemoryDumpSession& session, bool diff, QObject* parent = nullptr);
+    enum {
+        CLM_NAME = 0,
+        CLM_STAT,
+        NCOLUMNS = 2
+    };
+
+public:
+    BranchTreeModel(MemoryDump* mdump, QObject* parent = nullptr);
     virtual ~BranchTreeModel();
 
-    void PrepareModel(const char* fromName);
-    void PrepareDiffModel(const char* fromName);
     void PrepareModel(const DAVA::Vector<const char*>& names);
-    void PrepareDiffModel(const DAVA::Vector<const char*>& names);
-
-
-    QModelIndex Select(const DAVA::MMBlock* block) const;
-    DAVA::Vector<QModelIndex> Select2(const DAVA::MMBlock* block) const;
+    void ResetModel();
 
     QVariant data(const QModelIndex& index, int role) const override;
 
@@ -33,20 +34,8 @@ public:
     QModelIndex parent(const QModelIndex& index) const override;
 
 private:
-    void BuildTree(const char* fromName);
-    void BuildTree(const DAVA::Vector<const char*>& names);
-    QVariant dataBranch(Branch* branch, int row, int clm) const;
-    QVariant dataDiff(Branch* branch, int row, int clm) const;
-    QVariant colorDiff(Branch* branch, int row, int clm) const;
-
-    QModelIndex Find(Branch* p, const QModelIndex& par) const;
-    void Find(Branch* p, const QModelIndex& par, DAVA::Vector<QModelIndex>& v) const;
-
-private:
-    const MemoryDumpSession& dumpSession;
-    Branch* rootBranch;
-    bool diffModel;
-    int ncolumns;
+    MemoryDump* memoryDump = nullptr;
+    Branch* rootBranch = nullptr;
 };
 
 #endif  // __BRANCHTREEMODEL_H__

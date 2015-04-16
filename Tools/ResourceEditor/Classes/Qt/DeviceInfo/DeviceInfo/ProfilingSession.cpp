@@ -95,6 +95,14 @@ void DumpBrief::Init(const DAVA::MMDump* rawDump)
     totalSize = rawDump->size;
 }
 
+void DumpBrief::ReleaseDump()
+{
+    if (memoryDump != nullptr)
+    {
+        delete memoryDump;
+    }
+}
+
 ProfilingSession::ProfilingSession(const DAVA::MMStatConfig* config, const DAVA::Net::PeerDescription& devInfo)
     : isFileLog(false)
     , deviceInfo(devInfo)
@@ -234,13 +242,20 @@ size_t ProfilingSession::ClosestStatItem(DAVA::uint64 timestamp) const
     return size_t(-1);
 }
 
-MemoryDump* ProfilingSession::LoadDump(size_t index)
+bool ProfilingSession::LoadDump(size_t index)
 {
     DVASSERT(0 <= index && index < dump.size());
 
-    Vector<MMBlock> mblocks;
-    MemoryDump* mdump = new MemoryDump(symbolTable, std::forward<Vector<MMBlock>>(mblocks));
-    return mdump;
+    DumpBrief& brief = dump[index];
+    if (brief.Dump() == nullptr)
+    {
+        Vector<MMBlock> mblocks;
+        if (LoadFullDump(brief, mblocks))
+        {
+            brief.memoryDump = new MemoryDump(brief, symbolTable, std::forward<Vector<MMBlock>>(mblocks));
+        }
+    }
+    return brief.memoryDump != nullptr;
 }
 
 void ProfilingSession::SaveLogHeader(const DAVA::MMStatConfig* config)
@@ -394,20 +409,72 @@ void ProfilingSession::LoadDumpBrief(const DAVA::FilePath& path)
     }
 }
 
-bool ProfilingSession::LoadFullDump(const DumpBrief& brief, DAVA::Vector<DAVA::MMBlock> mblocks)
+bool ProfilingSession::LoadFullDump(const DumpBrief& brief, DAVA::Vector<DAVA::MMBlock>& mblocks)
 {
     RefPtr<File> file(File::Create(brief.FileName(), File::OPEN | File::READ));
-    if (file.Valid())
+    if (!file.Valid())
+        return false;
+
+    // Load and check file header
+    MMDump rawDump;
+    uint32 nread = file->Read(&rawDump);
+    if (sizeof(MMDump) != nread || rawDump.size != file->GetSize())
+        return false;
+
+    // Load and skip statistics
+    MMCurStat curStat;
+    nread = file->Read(&curStat, sizeof(curStat));
+    if (sizeof(MMCurStat) != nread)
+        return false;
+    file->Seek(curStat.size - sizeof(MMCurStat), File::SEEK_FROM_CURRENT);
+
+    const uint32 bktraceSize = sizeof(MMBacktrace) + rawDump.bktraceDepth * sizeof(uint64);
+    Vector<MMBlock> blocks(rawDump.blockCount, MMBlock());
+    Vector<MMSymbol> symbols(rawDump.symbolCount, MMSymbol());
+    Vector<uint8> bktrace(bktraceSize * rawDump.bktraceCount, 0);
+
+    // Read memory blocks
+    nread = file->Read(&*blocks.begin(), rawDump.blockCount * sizeof(MMBlock));
+    if (nread != rawDump.blockCount * sizeof(MMBlock))
+        return false;
+
+    // Read symbols
+    nread = file->Read(&*symbols.begin(), rawDump.symbolCount * sizeof(MMSymbol));
+    if (nread != rawDump.symbolCount * sizeof(MMSymbol))
+        return false;
+
+    // Read backtraces
+    nread = file->Read(&*bktrace.begin(), bktraceSize * rawDump.bktraceCount);
+    if (nread != bktraceSize * rawDump.bktraceCount)
+        return false;
+
+    for (auto& sym : symbols)
     {
-        MMDump rawDump;
-        uint32 nread = file->Read(&rawDump);
-        if (sizeof(MMDump) == nread && rawDump.size == file->GetSize())
+        if (sym.name[0] == '\0')
+            Snprintf(sym.name, COUNT_OF(sym.name), "%08llX", sym.addr);
+        if (sym.name[0] == ' ')
         {
-            Vector<MMBlock> buf;
-            buf.resize()
+            int h = 0;
+            h = 0;
         }
+        symbolTable.AddSymbol(sym.addr, sym.name);
     }
-    return false;
+
+    const uint8* curOffset = bktrace.data();
+    for (size_t i = 0, n = rawDump.bktraceCount;i < n;++i)
+    {
+        const MMBacktrace* curBktrace = reinterpret_cast<const MMBacktrace*>(curOffset);
+        const uint64* frames = OffsetPointer<uint64>(curBktrace, sizeof(MMBacktrace));
+        symbolTable.AddBacktrace(curBktrace->hash, frames, rawDump.bktraceDepth);
+        curOffset += bktraceSize;
+    }
+
+    std::sort(blocks.begin(), blocks.end(), [](const MMBlock& l, const MMBlock& r) -> bool {
+        return l.orderNo < r.orderNo;
+    });
+    mblocks.swap(blocks);
+
+    return true;
 }
 
 void ProfilingSession::SaveDumpAsText(const DAVA::MMDump* rawDump, const char* filename)

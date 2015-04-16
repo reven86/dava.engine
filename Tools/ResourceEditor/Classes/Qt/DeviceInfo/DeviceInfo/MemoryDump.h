@@ -31,17 +31,34 @@
 #include "Base/BaseTypes.h"
 #include "MemoryManager/MemoryManagerTypes.h"
 
+struct Branch;
+class DumpBrief;
 class BacktraceSymbolTable;
 
 class MemoryDump final
 {
 public:
-    MemoryDump(const BacktraceSymbolTable& symTable, DAVA::Vector<DAVA::MMBlock>&& mblocks);
+    MemoryDump(const DumpBrief& brief, const BacktraceSymbolTable& symTable, DAVA::Vector<DAVA::MMBlock>&& mblocks);
     ~MemoryDump();
 
+    const DumpBrief& Brief() const { return dumpBrief; }
+    const BacktraceSymbolTable& SymbolTable() const { return symbolTable; }
+
+    DAVA::Vector<const DAVA::MMBlock*> GetMemoryBlocks() const;
+
+    Branch* CreateBranch(const DAVA::Vector<const char*>& startNames) const;
+
 private:
+    Branch* BuildPath(Branch* parent, int startFrame, const DAVA::Vector<const char*>& frames) const;
+    int FindNamesInBacktrace(const DAVA::Vector<const char*>& names, const DAVA::Vector<const char*>& frames) const;
+    void BuildBlockMap();
+
+private:
+    const DumpBrief& dumpBrief;
     const BacktraceSymbolTable& symbolTable;
-    DAVA::Vector<DAVA::MMBlock> blocks;
+    DAVA::Vector<DAVA::MMBlock> memoryBlocks;
+    DAVA::Map<DAVA::uint32, DAVA::Vector<const DAVA::MMBlock*>> blockMap;   // key - backtrace hash,
+                                                                            // value - vector of memory blocks allocated at backtrace
 };
 
 #endif  // __MEMORYDUMP_H__

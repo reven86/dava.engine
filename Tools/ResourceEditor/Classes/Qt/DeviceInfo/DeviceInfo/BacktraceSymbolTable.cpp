@@ -68,7 +68,7 @@ const DAVA::String& BacktraceSymbolTable::GetSymbol(DAVA::uint64 frameAddr) cons
     return empty;
 }
 
-const DAVA::Vector<const DAVA::char8*>& BacktraceSymbolTable::GetFrames(DAVA::uint32 hash) const
+const DAVA::Vector<const char*>& BacktraceSymbolTable::GetFrames(DAVA::uint32 hash) const
 {
     auto iterBktrace = bktraces.find(hash);
     DVASSERT(iterBktrace != bktraces.end());
@@ -77,7 +77,7 @@ const DAVA::Vector<const DAVA::char8*>& BacktraceSymbolTable::GetFrames(DAVA::ui
         const Backtrace& o = iterBktrace->second;
         return o.frameNames;
     }
-    static const Vector<const char8*> empty;
+    static const Vector<const char*> empty;
     return empty;
 }
 
@@ -90,7 +90,15 @@ BacktraceSymbolTable::Backtrace BacktraceSymbolTable::CreateBacktrace(DAVA::uint
     bktrace.frameNames.reserve(nframes);
     for (size_t i = 0;i < nframes;++i)
     {
-        const char8* s = GetSymbol(frames[i]).c_str();
+        const char* s = GetSymbol(frames[i]).c_str();
+        if (s[0] == '\0')
+        {
+            char buf[32];
+            Snprintf(buf, COUNT_OF(buf), "#_%08llX", frames[i]);
+            // Ugly hack with const_cast
+            const_cast<BacktraceSymbolTable*>(this)->AddSymbol(frames[i], buf);
+            s = GetSymbol(frames[i]).c_str();
+        }
         bktrace.frameNames.push_back(s);
     }
     return bktrace;
