@@ -293,11 +293,18 @@ private:
     
     void CheckDataTypeSizes();
     template <class T> void CheckType(T t, int32 expectedSize, const char * typeString);
+    
+    float32 screenScaleFactor;
 };
     
 inline bool Core::IsActive()
 {
     return isActive;
+}
+    
+inline float32 Core::GetScreenScaleFactor()
+{
+    return screenScaleFactor;
 }
 
 };

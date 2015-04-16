@@ -92,6 +92,7 @@ Core::Core()
     firstRun = true;
 	isConsoleMode = false;
 	options = new KeyedArchive();
+    screenScaleFactor = 1.f;
 }
 
 Core::~Core()
@@ -171,6 +172,9 @@ void Core::CreateSingletons()
 #ifdef __DAVAENGINE_AUTOTESTING__
 	new AutotestingSystem();
 #endif
+    
+    // Init default screen scale factor from screen info
+    screenScaleFactor = DeviceInfo::GetScreenInfo().scale;
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
@@ -235,9 +239,10 @@ void Core::SetOptions(KeyedArchive * archiveOfOptions)
 
 	options = SafeRetain(archiveOfOptions);
     
-    if (options->GetFloat("screenScaleFactor", -1.f) <= 0.f)
+    screenScaleFactor = options->GetFloat("screenScaleFactor", screenScaleFactor);
+    if (screenScaleFactor <= 0.f)
     {
-        options->SetFloat("screenScaleFactor", DeviceInfo::GetScreenInfo().scale);
+        screenScaleFactor = DeviceInfo::GetScreenInfo().scale;
     }
     
 #if !defined(__DAVAENGINE_ANDROID__)
@@ -269,15 +274,6 @@ KeyedArchive * Core::GetOptions()
 	return options;
 }
 	
-float32 Core::GetScreenScaleFactor()
-{
-    if (!options)
-        return 1.0f;
-    if (!options->IsKeyExists("screenScaleFactor"))
-        return 1.0f;
-    return options->GetFloat("screenScaleFactor");
-}
-
 Core::eScreenOrientation Core::GetScreenOrientation()
 {
 	return (Core::eScreenOrientation)screenOrientation;

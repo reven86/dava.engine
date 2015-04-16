@@ -62,7 +62,7 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
         height = screenInfo.width;
 	}
 		
-    int32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
+    float32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
 		
 	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
     VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width * scale, height * scale);
@@ -198,11 +198,6 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 
 	FrameworkWillTerminate();
 	NSLog(@"Application termination finished");
-}
-
-+ (DAVA::float32) GetScale
-{
-    return DAVA::Core::Instance()->GetScreenScaleFactor();
 }
 
 @end
