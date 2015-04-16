@@ -125,8 +125,9 @@ while continue_process_stdout:
                 frame_delta_file = open("../artifacts/frame_delta" + "_branch_" + branch + "_device_" + device + ".txt", "w")
 
             # write Frame_delta build statistic to file
-            teamcity_line_index = line.find("##teamcity[buildStatisticValue key='Frame_delta'")
+            teamcity_line_index = line.find("Frame_delta")
             if teamcity_line_index != -1:
+                teamcity_line_index = line.find("##teamcity")
                 teamcity_line = line[teamcity_line_index:]
                 frame_delta_file.write(teamcity_line)
             else:
@@ -137,9 +138,9 @@ while continue_process_stdout:
                     key = teamcity_line.split("key")[1].split("'")[1]
                     value = teamcity_line.split("value")[1].split("'")[1]
 
-                    if line.find("fps") == -1:
+                    if line.find("frame") != -1:
                         value = str(float(value) * 1000)
-                        
+
                     key = key + "_branch_" + branch + "_device_" + device
 
                     sys.stdout.write("##teamcity[buildStatisticValue key='" + key + "' value='" + value + "']")

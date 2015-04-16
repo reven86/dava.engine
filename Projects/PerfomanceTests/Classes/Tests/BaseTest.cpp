@@ -189,7 +189,7 @@ void BaseTest::OnFinish()
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
         testName,
         TeamcityTestsOutput::MAX_MEM_USAGE,
-        ConverterUtils::NumberToString(elapsedTime)).c_str());
+        ConverterUtils::NumberToString(maxAllocatedMemory)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatTestFinished(testName).c_str());
 }
