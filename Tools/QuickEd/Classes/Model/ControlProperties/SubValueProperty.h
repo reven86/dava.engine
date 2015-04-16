@@ -20,6 +20,9 @@ public:
     virtual ePropertyType GetType() const;
     virtual DAVA::VariantType GetValue() const;
     virtual void SetValue(const DAVA::VariantType &newValue);
+    virtual DAVA::VariantType GetDefaultValue() const;
+    virtual void SetDefaultValue(const DAVA::VariantType &newValue) override;
+    virtual void ResetValue() override;
     virtual bool IsReplaced() const;
 
 private:

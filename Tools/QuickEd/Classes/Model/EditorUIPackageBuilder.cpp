@@ -146,7 +146,6 @@ UIControl *EditorUIPackageBuilder::BeginControlWithCustomClass(const String &cus
 
 UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String &customClassName, AbstractUIPackageLoader *loader)
 {
-    
     PackageControlsNode *controlsNode = nullptr;
     if (packageName.empty())
         controlsNode = packageNode->GetPackageControlsNode();
