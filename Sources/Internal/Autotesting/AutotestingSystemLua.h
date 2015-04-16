@@ -108,7 +108,8 @@ public:
 	UIControl* FindControl(UIList* srcList, int32 index);
 
 	bool IsCenterInside(UIControl* parent, UIControl* child);
-	
+	bool IsSelected(UIControl* control);
+
 	bool IsListHorisontal(UIControl* control);
 	float32 GetListScrollPosition(UIControl* control);
 	float32 GetMaxListOffsetSize(UIControl* control);
