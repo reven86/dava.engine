@@ -28,6 +28,7 @@
 #include "FloatPropertyDelegate.h"
 #include "BoolPropertyDelegate.h"
 #include "SpritePropertyDelegate.h"
+#include "Vector4PropertyDelegate.h"
 
 using namespace DAVA;
 
@@ -46,6 +47,7 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject *parent)
     variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT64] = new IntegerPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_FLOAT] = new FloatPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_BOOLEAN] = new BoolPropertyDelegate(this);
+    variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR4] = new Vector4PropertyDelegate(this);
 
     propertyNameTypeItemDelegates[QString("Sprite")] = new SpritePropertyDelegate(this);
 }

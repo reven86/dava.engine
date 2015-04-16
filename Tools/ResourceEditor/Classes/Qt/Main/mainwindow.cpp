@@ -381,7 +381,7 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
 {
 	QEvent::Type eventType = event->type();
 
-	if(qApp == obj && ProjectManager::Instance()->IsOpened())
+    if(qApp == obj)
 	{
 		if(QEvent::ApplicationStateChange == eventType)
 		{
