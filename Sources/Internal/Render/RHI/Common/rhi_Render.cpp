@@ -131,7 +131,7 @@ CreateIndexBuffer( uint32 size )
 //------------------------------------------------------------------------------
 
 void
-DeleteIndexBuffer( Handle vb )
+DeleteIndexBuffer( HIndexBuffer vb )
 {
     VertexBuffer::Delete( vb );
 }
@@ -140,7 +140,7 @@ DeleteIndexBuffer( Handle vb )
 //------------------------------------------------------------------------------
 
 void*
-MapIndexBuffer( Handle ib, uint32 offset, uint32 size )
+MapIndexBuffer( HIndexBuffer ib, uint32 offset, uint32 size )
 {
     return IndexBuffer::Map( ib, offset, size );
 }
@@ -149,7 +149,7 @@ MapIndexBuffer( Handle ib, uint32 offset, uint32 size )
 //------------------------------------------------------------------------------
 
 void
-UnmapIndexBuffer( Handle ib )
+UnmapIndexBuffer( HIndexBuffer ib )
 {
     IndexBuffer::Unmap( ib );
 }
@@ -158,7 +158,7 @@ UnmapIndexBuffer( Handle ib )
 //------------------------------------------------------------------------------
 
 void
-UpdateIndexBuffer( Handle ib, const void* data, uint32 offset, uint32 size )
+UpdateIndexBuffer( HIndexBuffer ib, const void* data, uint32 offset, uint32 size )
 {
     IndexBuffer::Update( ib, data, offset, size );
 }
