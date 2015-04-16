@@ -3,14 +3,17 @@
 
 #include <QWidget>
 #include <QPointer>
+#include "ui_PreviewWidget.h"
+#include "Result.h"
 
 namespace Ui {
     class PreviewWidget;
 }
 
-class Document;
-class PreviewContext;
+class SharedData;
+class PreviewModel;
 class DavaGLWidget;
+class ControlNode;
 
 enum ScreenId
 {
@@ -18,15 +21,16 @@ enum ScreenId
     EDIT_SCREEN = 0,
 };
 
-class PreviewWidget : public QWidget
+class PreviewWidget : public QWidget, public Ui::PreviewWidget
 {
     Q_OBJECT
 public:
     explicit PreviewWidget(QWidget *parent = nullptr);
-    virtual ~PreviewWidget();
-    
-    void SetDocument(Document *newDocument);
-    DavaGLWidget *GetGLWidget() const;
+    ~PreviewWidget() = default;
+    DavaGLWidget *GetDavaGLWidget();
+public slots:
+    void OnDocumentChanged(SharedData *context);
+    void OnDataChanged(const QByteArray &role);
 
 private slots:
     // Zoom.
@@ -45,16 +49,18 @@ private slots:
     
     void OnMonitorChanged();
 
-private:
-    void OnScaleByZoom(int scaleDelta);
+    void OnControlNodeSelected(QList<ControlNode*> selectedNodes);
 
-    QSize GetGLViewSize() const;
-    void setScale(int scale);
+    void OnError(const Result &result);
 
 private:
-    Ui::PreviewWidget *ui;
-    Document *document;
-    QPointer<PreviewContext> context;
+    void OnScaleByZoom(int scaleDelta); 
+    void UpdateActiveRootControls();
+
+private:
+    DavaGLWidget *davaGLWidget;
+    SharedData *sharedData;
+    PreviewModel *model;
 };
 
 #endif // __QUICKED_PREVIEW_WIDGET_H__

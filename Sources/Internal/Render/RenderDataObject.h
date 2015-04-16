@@ -101,13 +101,14 @@ public:
     void UpdateIndexBuffer(int32 offset, bool synchronously = false);
     void UpdateIndexBufferInternal(int32 offset);
 
-    void SetForceVerticesCount(int32 count);
-    void SetForceIndicesCount(int32 count);
-
 #if defined (__DAVAENGINE_ANDROID__)
 	virtual void SaveToSystemMemory();
 	virtual void Lost();
 	virtual void Invalidate();
+
+	// Methods for set vertices and indices count to rebuild buffers after context lost
+	void SetForceVerticesCount(int32 count);
+    void SetForceIndicesCount(int32 count);
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
 private:
@@ -156,19 +157,17 @@ inline bool RenderDataObject::HasVertexAttachment() const
     return vertexAttachmentActive;
 }
 
+#if defined (__DAVAENGINE_ANDROID__)
 inline void RenderDataObject::SetForceVerticesCount(int32 count)
 {
-#if defined (__DAVAENGINE_ANDROID__)
 	forceVerticesCount = count;
-#endif
 }
 
 inline void RenderDataObject::SetForceIndicesCount(int32 count)
 {
-#if defined (__DAVAENGINE_ANDROID__)
 	forceIndicesCount = count;
-#endif
 }
+#endif
 
 };
 

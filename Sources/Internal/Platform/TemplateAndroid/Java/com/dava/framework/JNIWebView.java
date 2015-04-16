@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.KeyEvent;
 import android.webkit.CookieManager;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
@@ -95,6 +96,17 @@ public class JNIWebView {
         {
             isLoadingData = true;
             super.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, failUrl);
+        }
+        
+        // Workaround to pass hardware-BACK key out from webview
+        // to the top parent receiver
+        @Override
+        public boolean onKeyPreIme(int keyCode, KeyEvent event) {
+            if (keyCode == KeyEvent.KEYCODE_BACK) {
+                clearFocus();
+                return false;
+            }
+            return super.onKeyPreIme(keyCode, event);
         }
     }
 

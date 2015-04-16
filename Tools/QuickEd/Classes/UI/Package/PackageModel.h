@@ -5,6 +5,7 @@
 #include <QMimeData>
 #include <QStringList>
 #include <QUndoStack>
+#include <QItemSelection>
 #include "DAVAEngine.h"
 
 class PackageNode;
@@ -17,7 +18,7 @@ class QtModelPackageCommandExecutor;
 class PackageModel : public QAbstractItemModel
 {
     Q_OBJECT
-    
+
 public:
     PackageModel(PackageNode *root, QtModelPackageCommandExecutor *commandExecutor, QObject *parent = 0);
     virtual ~PackageModel();
@@ -47,6 +48,8 @@ public:
 private:
     PackageNode *root;
     QtModelPackageCommandExecutor *commandExecutor;
+
+
 };
 
 #endif // __QUICKED_PACKAGE_MODEL_H__

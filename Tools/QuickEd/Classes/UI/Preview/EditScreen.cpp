@@ -60,25 +60,25 @@ void CheckeredCanvas::DrawAfterChilds( const UIGeometricData &geometricData )
 
 bool CheckeredCanvas::SystemInput(UIEvent *currentInput)
 {
+    DAVA::List<std::pair<UIControl*, UIControl*> > selectedControls;
     if (currentInput->phase == UIEvent::PHASE_BEGAN || currentInput->phase == UIEvent::PHASE_DRAG)
     {
         UIControl *control = GetControlByPos(this, currentInput->point);
-        if (control)
+        if (nullptr != control)
         {
-            for (auto listener : selectionListeners)
+            UIControl *rootControl = control;
+            while (rootControl->GetParent() != nullptr && rootControl->GetParent() != this)
             {
-                UIControl *parentControl = control;
-                while (parentControl->GetParent() != nullptr && parentControl->GetParent() != this)
-                    parentControl = parentControl->GetParent();
-
-                if (parentControl->GetParent() == this)
-                    listener->OnControlSelected(parentControl, control);
+                rootControl = rootControl->GetParent();
+            }
+            if (rootControl->GetParent() == this)
+            {
+                selectedControls.push_back(std::make_pair(rootControl, control));
             }
         }
-        else
+        for (auto listener : selectionListeners)
         {
-            for (auto listener : selectionListeners)
-                listener->OnAllControlsDeselected();
+            listener->OnControlSelected(selectedControls);
         }
     }
     return true;
@@ -105,8 +105,9 @@ void CheckeredCanvas::RemoveSelection(UIControl *control)
 void CheckeredCanvas::ClearSelections()
 {
     for (auto &control : selectionControls)
+    {
         control->Release();
-    
+    }
     selectionControls.clear();
 }
 
@@ -116,13 +117,16 @@ UIControl *CheckeredCanvas::GetControlByPos(UIControl *control, const DAVA::Vect
     for (auto it = children.rbegin(); it != children.rend(); ++it)
     {
         UIControl *c = GetControlByPos(*it, pos);
-        if (c)
+        if (nullptr != c)
+        {
             return c;
+        }
     }
     
     if (control->IsPointInside(pos) && control->GetVisible() && control->GetVisibleForUIEditor())
+    {
         return control;
-    
+    }
     return nullptr;
 }
 
@@ -135,7 +139,9 @@ void CheckeredCanvas::RemoveControlSelectionListener(ControlSelectionListener *l
 {
     auto it = std::find(selectionListeners.begin(), selectionListeners.end(), listener);
     if (it != selectionListeners.end())
+    {
         selectionListeners.erase(it);
+    }
 }
 
 

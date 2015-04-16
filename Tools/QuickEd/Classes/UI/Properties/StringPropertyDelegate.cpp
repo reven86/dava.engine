@@ -21,7 +21,7 @@ QWidget *StringPropertyDelegate::createEditor( QWidget * parent, const QStyleOpt
 {
     QLineEdit *lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
-    connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(OnValueChanged()));
+    connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(OnEditingFinished()));
 
     return lineEdit;
 }
@@ -69,9 +69,9 @@ bool StringPropertyDelegate::setModelData( QWidget * rawEditor, QAbstractItemMod
     return model->setData(index, variant, Qt::EditRole);
 }
 
-void StringPropertyDelegate::OnValueChanged()
+void StringPropertyDelegate::OnEditingFinished()
 {
-    QWidget *lineEdit = qobject_cast<QWidget *>(sender());
+    QLineEdit *lineEdit = qobject_cast<QLineEdit *>(sender());
     if (!lineEdit)
         return;
 
@@ -79,6 +79,6 @@ void StringPropertyDelegate::OnValueChanged()
     if (!editor)
         return;
 
-    BasePropertyDelegate::SetValueModified(editor, true);
+    BasePropertyDelegate::SetValueModified(editor, lineEdit->isModified());
     itemDelegate->emitCommitData(editor);
 }

@@ -7,7 +7,6 @@
 #include "Model/ControlProperties/BackgroundPropertiesSection.h"
 #include "Model/ControlProperties/InternalControlPropertiesSection.h"
 #include "Model/ControlProperties/ValueProperty.h"
-#include "Model/ControlProperties/LocalizedTextValueProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/ControlPrototype.h"
 #include "Model/PackageHierarchy/PackageRef.h"
@@ -147,7 +146,6 @@ UIControl *EditorUIPackageBuilder::BeginControlWithCustomClass(const String &cus
 
 UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String &customClassName, AbstractUIPackageLoader *loader)
 {
-    
     PackageControlsNode *controlsNode = nullptr;
     if (packageName.empty())
         controlsNode = packageNode->GetPackageControlsNode();
