@@ -37,7 +37,7 @@ namespace DAVA
 
 Mutex::Mutex()
 {
-    mutex = CreateMutex(NULL, false, NULL);
+    mutex = CreateMutexEx(NULL, false, NULL, MUTEX_ALL_ACCESS);
     if(mutex == NULL)
     {
         Logger::Error("Mutex::Mutex() error");
@@ -54,7 +54,7 @@ Mutex::~Mutex()
 
 void Mutex::Lock()
 {
-    int32 ret = WaitForSingleObject(mutex, INFINITE);
+    int32 ret = WaitForSingleObjectEx(mutex, INFINITE, FALSE);
     if(ret == -1)
     {
         Logger::Error("Mutex::Lock() error");

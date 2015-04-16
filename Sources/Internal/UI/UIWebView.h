@@ -63,7 +63,7 @@ public:
 	// Delete all cookies for target URL
 	void DeleteCookies(const String& targetUrl);
 	// Get cookie for specific domain and name
-	String GetCookie(const String& targetUrl, const String& name) const;
+	String GetCookie(const String& targetUrl, const String& _name) const;
 	// Get the list of cookies for specific domain
 	Map<String, String> GetCookies(const String& targetUrl) const;
 	// Perform Java script

@@ -1433,13 +1433,13 @@ private:
 
     void ApplyAlignSettings();
 
-    void GetAxisDataByAlignData(float32 size, float32 parentSize,
+    void GetAxisDataByAlignData(float32 _size, float32 parentSize,
                                 bool firstSideAlignEnabled, float32 firstSideAlign,
                                 bool centerAlignEnabled, float32 centerAlign,
                                 bool secondSideAlignEnabled, float32 secondSideAlign,
                                 float32 &newPos, float32 &newSize);
 
-    void GetAlignDataByAxisData(float32 size, float32 pos, float32 parentSize,
+    void GetAlignDataByAxisData(float32 _size, float32 pos, float32 parentSize,
                                 bool firstSideAlignEnabled, bool centerAlignEnabled, bool secondSideAlignEnabled,
                                 float32 &firstSideAlign, float32 &centerAlign, float32 &secondSideAlign);
     

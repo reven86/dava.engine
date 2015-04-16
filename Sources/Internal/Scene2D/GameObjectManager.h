@@ -69,7 +69,7 @@ public:
 	virtual void Draw();
 
 	virtual void SetCameraPosition(float32 cameraPositionX, float32 cameraPositionY);	
-	virtual void SetCameraScale(float32 cameraScale);
+	virtual void SetCameraScale(float32 _cameraScale);
     virtual float32 GetCameraScale() const;
 
 	/*	

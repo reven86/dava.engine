@@ -118,15 +118,19 @@ void Thread::Yield()
 
 void Thread::Join()
 {
-    if (WaitForSingleObject(handle, INFINITE) != WAIT_OBJECT_0)
+    if (WaitForSingleObjectEx(handle, INFINITE, FALSE) != WAIT_OBJECT_0)
     {
-        DAVA::Logger::Error("Thread::Join() failed in WaitForSingleObject");
+        DAVA::Logger::Error("Thread::Join() failed in WaitForSingleObjectEx");
     }
 }
 
 void Thread::KillNative()
 {
+#if defined(__DAVA_ENGINE_WINDOWS_DESKTOP__)
     TerminateThread(handle, 0);
+#elif defined(__DAVA_ENGINE_WINDOWS_STORE__)
+    DAVA::Logger::Error("Thread::KillNative() is not implemented for Windows Store platform");
+#endif
 }
 
 Thread::Id Thread::GetCurrentId()

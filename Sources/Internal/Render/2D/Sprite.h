@@ -94,8 +94,8 @@ public:
         inline void SetScaleSize(float32 x, float32 y,
                                 float32 width, float32 height);
 		inline void SetAngle(float32 a);
-		inline void SetFrame(uint32 frame);
-		inline void SetFlags(uint32 flags);
+		inline void SetFrame(uint32 _frame);
+		inline void SetFlags(uint32 _flags);
 		inline void SetPerPixelAccuracyUsage(bool needToUse);
 		void BuildStateFromParentAndLocal(const Sprite::DrawState &parentState, const Sprite::DrawState &localState);
         

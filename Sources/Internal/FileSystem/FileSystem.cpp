@@ -32,8 +32,9 @@
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
+#include "Utils/UTF8Utils.h"
 #include "FileSystem/ResourceArchive.h"
-
+#include "Core/Core.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <sys/types.h>
@@ -148,14 +149,24 @@ FileSystem::eCreateDirectoryResult FileSystem::CreateExactDirectory(const FilePa
 #endif //PLATFORMS
 }
 
-
 bool FileSystem::CopyFile(const FilePath & existingFile, const FilePath & newFile, bool overwriteExisting /* = false */)
 {
     DVASSERT(newFile.GetType() != FilePath::PATH_IN_RESOURCES);
 
-#ifdef __DAVAENGINE_WIN32__
+#ifdef __DAVAENGINE_WINDOWS_DESKTOP__
+
 	BOOL ret = ::CopyFileA(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), !overwriteExisting);
 	return ret != 0;
+
+#elif defined(__DAVAENGINE_WINDOWS_STORE__)
+
+    WideString existingFilePath = UTF8Utils::EncodeToWideString(existingFile.GetAbsolutePathname());
+    WideString newFilePath = UTF8Utils::EncodeToWideString(newFile.GetAbsolutePathname());
+    COPYFILE2_EXTENDED_PARAMETERS params = { sizeof(COPYFILE2_EXTENDED_PARAMETERS), 
+                                             overwriteExisting ? DWORD(0) : COPY_FILE_FAIL_IF_EXISTS };
+
+    return ::CopyFile2(existingFilePath.c_str(), newFilePath.c_str(), &params) == S_OK;
+
 #elif defined(__DAVAENGINE_ANDROID__)
 
 	bool copied = false;
@@ -201,7 +212,7 @@ bool FileSystem::CopyFile(const FilePath & existingFile, const FilePath & newFil
 
 #else //iphone & macos
     int ret = copyfile(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), NULL, overwriteExisting ? COPYFILE_ALL : COPYFILE_ALL | COPYFILE_EXCL);
-    return ret==0;
+    return ret == 0;
 #endif //PLATFORMS
 }
 
@@ -388,7 +399,8 @@ const FilePath & FileSystem::GetCurrentWorkingDirectory()
 FilePath FileSystem::GetCurrentExecutableDirectory()
 {
     FilePath currentExecuteDirectory;
-#if defined(__DAVAENGINE_WIN32__)
+
+#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
     std::array<char, 2048> tempDir;
     ::GetModuleFileNameA( NULL, tempDir.data(), tempDir.size() );
     currentExecuteDirectory = FilePath(tempDir.data()).GetDirectory();
@@ -396,11 +408,11 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
     std::array<char, 2048> tempDir;
     proc_pidpath(getpid(), tempDir.data(), tempDir.size());
     currentExecuteDirectory = FilePath(dirname(tempDir.data()));
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-	DVASSERT(0);
+#else
+    currentExecuteDirectory = FilePath(Core::Instance()->GetCommandLine().at(0)).GetDirectory();
 #endif //PLATFORMS
-	currentExecuteDirectory.MakeDirectoryPathname();
-	return currentExecuteDirectory;
+
+	return currentExecuteDirectory.MakeDirectoryPathname();
 }
 
 bool FileSystem::SetCurrentWorkingDirectory(const FilePath & newWorkingDirectory)
@@ -435,11 +447,12 @@ bool FileSystem::IsFile(const FilePath & pathToCheck)
 
 bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 {
-#if defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_WINDOWS_DESKTOP__)
+
 	DWORD stats = GetFileAttributesA(pathToCheck.GetAbsolutePathname().c_str());
 	return (stats != -1) && (0 != (stats & FILE_ATTRIBUTE_DIRECTORY));
-#else //defined (__DAVAENGINE_WIN32__)
-#if defined(__DAVAENGINE_ANDROID__)
+
+#elif defined(__DAVAENGINE_ANDROID__)
     
 	String path = pathToCheck.GetAbsolutePathname();
 	if (path.length() &&
@@ -447,17 +460,43 @@ bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 		path.erase(path.begin() + path.length() - 1);
 	if (IsAPKPath(path))
 		return (dirSet.find(path) != dirSet.end());
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+#else
 
 	struct stat s;
 	if(stat(pathToCheck.GetAbsolutePathname().c_str(), &s) == 0)
 	{
 		return (0 != (s.st_mode & S_IFDIR));
 	}
-#endif //#if defined (__DAVAENGINE_WIN32__)
+
+#endif
 
 	return false;
 }
+
+#if defined (__DAVAENGINE_WINDOWS__)
+HANDLE CreateFileWin(const String& path)
+{
+#if defined (__DAVAENGINE_WINDOWS_DESKTOP__)
+
+    HANDLE hFile = CreateFileA(path.c_str(), GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+#elif defined(__DAVAENGINE_WINDOWS_STORE__)
+
+    WideString pathWide = UTF8Utils::EncodeToWideString(path);
+    CREATEFILE2_EXTENDED_PARAMETERS params = { sizeof(CREATEFILE2_EXTENDED_PARAMETERS) };
+    params.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+    params.dwFileFlags = 0;
+    params.dwSecurityQosFlags = SECURITY_ANONYMOUS;
+    params.lpSecurityAttributes = NULL;
+    params.hTemplateFile = NULL;
+
+    HANDLE hFile = CreateFile2(pathWide.c_str(), GENERIC_READ, FILE_SHARE_READ, OPEN_ALWAYS, &params);
+
+#endif
+
+    return hFile;
+}
+#endif
 
 bool FileSystem::LockFile(const FilePath & filePath, bool isLock)
 {
@@ -472,10 +511,11 @@ bool FileSystem::LockFile(const FilePath & filePath, bool isLock)
     }
 
     String path = filePath.GetAbsolutePathname();
+
 #if defined (__DAVAENGINE_WIN32__)
     if (isLock)
     {
-        HANDLE hFile = CreateFileA(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+        HANDLE hFile = CreateFileWin(path);
         if (hFile != INVALID_HANDLE_VALUE)
         {
             lockedFileHandles[path] = hFile;
@@ -494,7 +534,9 @@ bool FileSystem::LockFile(const FilePath & filePath, bool isLock)
     }
 
     return false;
+
 #elif defined(__DAVAENGINE_MACOS__)
+
     if (isLock)
     {
         if (chflags(path.c_str(), UF_IMMUTABLE) == 0)
@@ -530,8 +572,10 @@ bool FileSystem::LockFile(const FilePath & filePath, bool isLock)
 bool FileSystem::IsFileLocked(const FilePath & filePath) const
 {
     String path = filePath.GetAbsolutePathname();
+
 #if defined (__DAVAENGINE_WIN32__)
-	HANDLE hFile = CreateFileA(path.c_str(), GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	HANDLE hFile = CreateFileWin(path);
 	if (hFile == INVALID_HANDLE_VALUE || GetLastError() == ERROR_SHARING_VIOLATION)
 	{
 		return true;
@@ -539,7 +583,9 @@ bool FileSystem::IsFileLocked(const FilePath & filePath) const
 
 	CloseHandle(hFile);
 	return false;
+
 #elif defined(__DAVAENGINE_MACOS__)
+
 	struct stat s;
 	if(stat(path.c_str(), &s) == 0)
 	{
@@ -547,6 +593,7 @@ bool FileSystem::IsFileLocked(const FilePath & filePath) const
 	}
 
 	return false;
+
 #else
 	// Not implemented for all other platforms yet.
 	return false;

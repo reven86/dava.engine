@@ -261,7 +261,7 @@ public:
 	 \brief Sets the size of the font.
 	 \param[in] size font size to be set.
 	 */
-    void SetFontSize(float32 size);
+    void SetFontSize(float32 _size);
 	/**
 	 \brief Sets shadow offset of text control.
 	 \param[in] offset offset of text shadow relative to base text.

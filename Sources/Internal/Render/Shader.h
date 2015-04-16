@@ -316,7 +316,7 @@ private:
     
     GLint CompileShader(GLuint *shader, GLenum type, GLint count, const GLchar * sources, const String & defines);
     GLint LinkProgram(GLuint prog);
-	
+
 	void RecompileInternal(bool silentDelete);
     
 	void DeleteShaders();
@@ -326,7 +326,7 @@ private:
 		GLuint vertexShader;
 		GLuint fragmentShader;
 	};
-	void DeleteShadersInternal(GLuint program, GLuint vertexShader, GLuint fragmentShader);
+	void DeleteShadersInternal(GLuint _program, GLuint _vertexShader, GLuint _fragmentShader);
 
     eShaderSemantic GetShaderSemanticByName(const FastName &name);
     int32 GetAttributeIndexByName(const FastName &name);

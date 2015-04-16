@@ -97,7 +97,7 @@ public:
     inline const Color & GetColor() const;
     
     // SHADER
-    inline void SetShader(Shader * shader);
+    inline void SetShader(Shader * _shader);
     
 	//FILL
 	inline void SetFillMode(eFillMode fillMode);

@@ -37,7 +37,7 @@ namespace DAVA
 {
 	
 //! Clip poly by plane
-void Polygon3::ClipByPlane(const Plane & plane)
+void Polygon3::ClipByPlane(const Plane & pln)
 {
 	// TODO: test / check performance / optimize / эта пиздец! count чему в начале равен?
 	Vector<Vector3> resultVector;
@@ -48,8 +48,8 @@ void Polygon3::ClipByPlane(const Plane & plane)
 		i2 = i + 1;
 		if (i2 >= pointCount) i2 = 0;
 		
-		float32 d1 = plane.DistanceToPoint(points[i]);
-		float32 d2 = plane.DistanceToPoint(points[i2]);
+		float32 d1 = pln.DistanceToPoint(points[i]);
+		float32 d2 = pln.DistanceToPoint(points[i2]);
 		if ((d1 >= POLYGON_EPSILON) && (d2 >= POLYGON_EPSILON))
 		{
 			resultVector.push_back(points[i]);

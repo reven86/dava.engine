@@ -111,8 +111,8 @@ protected:
 	void InitInactiveParts(Sprite* spr);
 
     // Load/save the background.
-    void LoadBackgound(const char* prefix, UIControlBackground* background, const YamlNode* rootNodem, const UIYamlLoader* loader);
-    void SaveBackground(const char* prefix, UIControlBackground* background, YamlNode* rootNode, const UIYamlLoader * loader);
+    void LoadBackgound(const char* prefix, UIControlBackground* _background, const YamlNode* rootNodem, const UIYamlLoader* loader);
+    void SaveBackground(const char* prefix, UIControlBackground* _background, YamlNode* rootNode, const UIYamlLoader * loader);
 
     void CopyBackgroundAndRemoveControl(UIControl* from, UIControlBackground*& to);
 

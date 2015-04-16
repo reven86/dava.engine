@@ -104,7 +104,7 @@ private:
 	Vector2 startPoint;
 	Vector2 startOffset;
 	
-	float32 GetValidSliderSize(float32 size);
+	float32 GetValidSliderSize(float32 _size);
 public:
     INTROSPECTION_EXTEND(UIScrollBar, UIControl,
         PROPERTY("orientation",  InspDesc("Bar orientation", GlobalEnumMap<UIScrollBar::eScrollOrientation>::Instance()), GetOrientation, SetOrientation, I_SAVE | I_VIEW | I_EDIT)

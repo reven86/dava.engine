@@ -357,13 +357,13 @@ public:
     // for introspection
     
     inline int GetBgDrawType() const;
-    inline void SetBgDrawType(int type);
+    inline void SetBgDrawType(int _type);
     inline FilePath GetBgSpritePath() const;
     inline void SetBgSpriteFromPath(const FilePath &path);
     inline int32 GetBgColorInherit() const;
-    inline void SetBgColorInherit(int32 type);
+    inline void SetBgColorInherit(int32 _type);
     inline int32 GetBgPerPixelAccuracy() const;
-    inline void SetBgPerPixelAccuracy(int32 type);
+    inline void SetBgPerPixelAccuracy(int32 _type);
     
     INTROSPECTION_EXTEND(UIControlBackground, BaseObject,
                          PROPERTY("drawType", InspDesc("Draw Type", GlobalEnumMap<eDrawType>::Instance()), GetBgDrawType, SetBgDrawType, I_SAVE | I_VIEW | I_EDIT)
@@ -433,9 +433,9 @@ int UIControlBackground::GetBgDrawType() const
     return GetDrawType();
 }
 
-void UIControlBackground::SetBgDrawType(int type)
+void UIControlBackground::SetBgDrawType(int _type)
 { // TODO: FIXME: type
-    SetDrawType((UIControlBackground::eDrawType) type);
+    SetDrawType(UIControlBackground::eDrawType(_type));
 }
 
 FilePath UIControlBackground::GetBgSpritePath() const
@@ -461,9 +461,9 @@ int32 UIControlBackground::GetBgColorInherit() const
     return GetColorInheritType();
 }
 
-void UIControlBackground::SetBgColorInherit(int32 type)
+void UIControlBackground::SetBgColorInherit(int32 _type)
 {
-    SetColorInheritType((UIControlBackground::eColorInheritType) type);
+    SetColorInheritType(UIControlBackground::eColorInheritType(_type));
 }
 
 int32 UIControlBackground::GetBgPerPixelAccuracy() const
@@ -471,9 +471,9 @@ int32 UIControlBackground::GetBgPerPixelAccuracy() const
     return GetPerPixelAccuracyType();
 }
 
-void UIControlBackground::SetBgPerPixelAccuracy(int32 type)
+void UIControlBackground::SetBgPerPixelAccuracy(int32 _type)
 {
-    SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType) type);
+    SetPerPixelAccuracyType(UIControlBackground::ePerPixelAccuracyType(_type));
 }
 
 

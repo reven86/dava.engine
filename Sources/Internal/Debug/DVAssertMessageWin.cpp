@@ -63,27 +63,29 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 {
     using namespace Windows::UI::Popups;
     
-    /*WideString contentStr = UTF8Utils::EncodeToWideString(content);
-    Platform::String^ lbl = ref new Platform::String(content);
+    WideString contentStr = UTF8Utils::EncodeToWideString(content);
+    Platform::String^ lbl = ref new Platform::String(contentStr.c_str());
     MessageDialog^ msg = ref new MessageDialog(lbl);
 
-    bool breakExecution = true;
-
-    //creating message dialog commands
+    //creating commands for message dialog
     UICommand^ continueCommand = ref new UICommand(
-	"OK", 
-        ref new UICommandInvokedHandler([&] { breakExecution = false; } ));
+		"OK", 
+        ref new UICommandInvokedHandler([&] (IUICommand^) {} ));
     UICommand^ cancelCommand = ref new UICommand(
-	"OK", 
-        ref new UICommandInvokedHandler([&] { breakExecution = true; } ));
+		"Cancel", 
+        ref new UICommandInvokedHandler([&] (IUICommand^) {} ));
 
     msg->Commands->Append(continueCommand);
-    msg->Commands->Append(cancelCommand); */
+    msg->Commands->Append(cancelCommand);
 
-    
+	//command options
+	msg->DefaultCommandIndex = 0;
+	msg->CancelCommandIndex = 1;
 
+	//show message and blocking thread
+	msg->ShowAsync()->GetResults();
 
-    return true; //breakExecution;
+    return false;
 }
 
 #endif // defined (__DAVAENGINE_WINDOWS_STORE__)

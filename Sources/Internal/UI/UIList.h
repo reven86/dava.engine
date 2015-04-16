@@ -246,7 +246,7 @@ protected:
     virtual bool SystemInput(UIEvent *currentInput);// Internal method used by ControlSystem
 
     Vector<UIListCell*> *GetStoreVector(const String &cellIdentifier);
-    void AddCellAtPos(UIListCell *cell, float32 pos, float32 size, int32 index);
+    void AddCellAtPos(UIListCell *cell, float32 pos, float32 _size, int32 index);
 
     void OnSelectEvent(BaseObject *pCaller, void *pUserData, void *callerData);
 
