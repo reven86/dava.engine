@@ -35,7 +35,7 @@
 
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
-
+#include <functional>
 
 namespace DAVA
 {
