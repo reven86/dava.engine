@@ -65,8 +65,7 @@ protected:
     } eEditorMode;
 
 protected:
-    float faceWidth;
-    float faceHeight;
+    DAVA::ImageInfo facesInfo;
     DAVA::Vector<DAVA::FilePath> facePathes;
     QString rootPath;
 
@@ -78,7 +77,8 @@ protected:
 protected:
     void ConnectSignals();
     void LoadImageFromUserFile(float rotation, int face);
-    bool VerifyImage(const DAVA::FilePath& path, int faceIndex, QString &errorString);
+    bool VerifyFirstImage(DAVA::ImageInfo imgInfo, QString &errorString);
+    bool VerifyNextImage(DAVA::ImageInfo imgInfo, QString &errorString);
     bool IsFormatValid(const DAVA::ImageInfo &info);
     void UpdateFaceInfo();
     void UpdateButtonState();

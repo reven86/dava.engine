@@ -53,6 +53,14 @@ struct ImageInfo
         return Size2i(width, height);
     }
 
+    bool operator==(const ImageInfo& another)
+    {
+        return (
+            width == another.width && 
+            height == another.height && 
+            format == another.format);
+    }
+
     uint32 width = 0;
     uint32 height = 0;
     PixelFormat format = FORMAT_INVALID;

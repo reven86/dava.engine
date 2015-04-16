@@ -55,8 +55,8 @@ CubemapEditorDialog::CubemapEditorDialog(QWidget *parent) :
 
     ui->lblSaving->setVisible(false);
 
-    faceHeight = -1.0f;
-    faceWidth = -1.0f;
+    facesInfo.width = facesInfo.height = 0;
+    facesInfo.format = FORMAT_INVALID;
     
     facePathes.resize(Texture::CUBE_FACE_MAX_COUNT, FilePath());
     
@@ -131,7 +131,22 @@ bool CubemapEditorDialog::LoadImageTo(const DAVA::FilePath& filePath, int face, 
 
     QString fileName = filePath.GetAbsolutePathname().c_str();
     QString errorString;
-    if (VerifyImage(filePath, face, errorString))
+    ImageInfo loadedImageInfo = ImageSystem::Instance()->GetImageInfo(filePath);
+
+    bool verified = false;
+    bool isFirstImage = false;
+    auto loaded = GetLoadedFaceCount();
+    if ( loaded > 1 || (loaded == 1 && facePathes[face].IsEmpty()))
+    {
+        verified = VerifyNextImage(loadedImageInfo, errorString);
+    }
+    else
+    {
+        isFirstImage = true;
+        verified = VerifyFirstImage(loadedImageInfo, errorString);
+    }
+
+    if (verified)
     {
         QImage faceImage = ImageTools::FromDavaImage(filePath);
 
@@ -143,10 +158,9 @@ bool CubemapEditorDialog::LoadImageTo(const DAVA::FilePath& filePath, int face, 
 
         facePathes[face] = filePath;
 
-        if(faceHeight != faceImage.height())
+        if(isFirstImage)
         {
-            faceHeight = faceImage.height();
-            faceWidth = faceImage.width();
+            facesInfo = loadedImageInfo;
             UpdateFaceInfo();
         }
 
@@ -185,37 +199,31 @@ ClickableQLabel* CubemapEditorDialog::GetLabelForFace(int face)
     return labels[face];
 }
 
-bool CubemapEditorDialog::VerifyImage(const DAVA::FilePath& path, int faceIndex, QString &errorString)
+bool CubemapEditorDialog::VerifyFirstImage(ImageInfo imgInfo, QString &errorString)
 {
-    ImageInfo info = ImageSystem::Instance()->GetImageInfo(path);
-    if (!IsFormatValid(info))
+    if (!IsFormatValid(imgInfo))
     {
         errorString = QString("Incorrect format.");
         return false;
     }
-    else if (GetLoadedFaceCount() > 1 ||
-             (GetLoadedFaceCount() == 1 && facePathes[faceIndex].IsEmpty()))
-    {
-        if (info.width != faceWidth ||
-            info.height != faceHeight)
-        {
-            errorString = QString("Image size not equal face size.");
-            return false;
-        }
-    }
-
-    if (info.width != info.height)
+    
+    if (imgInfo.width != imgInfo.height)
     {
         errorString = QString("Width and height are not equal");
         return false;
     }
-    else if (!IsPowerOf2(info.width))
+    else if (!IsPowerOf2(imgInfo.width))
     {
         errorString = QString("Width or height are not power of two");
         return false;
     }
 
     return true;
+}
+
+bool CubemapEditorDialog::VerifyNextImage(ImageInfo imgInfo, QString &errorString)
+{
+    return (imgInfo == facesInfo);
 }
 
 bool CubemapEditorDialog::IsFormatValid(const DAVA::ImageInfo &info)
@@ -237,8 +245,8 @@ bool CubemapEditorDialog::IsFormatValid(const DAVA::ImageInfo &info)
 
 void CubemapEditorDialog::UpdateFaceInfo()
 {
-    ui->labelFaceHeight->setText(QString::number(faceHeight));
-    ui->labelFaceWidth->setText(QString::number(faceWidth));
+    ui->labelFaceHeight->setText(QString::number(facesInfo.height));
+    ui->labelFaceWidth->setText(QString::number(facesInfo.width));
 }
 
 void CubemapEditorDialog::UpdateButtonState()
