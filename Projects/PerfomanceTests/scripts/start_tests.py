@@ -137,10 +137,12 @@ while continue_process_stdout:
                     key = teamcity_line.split("key")[1].split("'")[1]
                     value = teamcity_line.split("value")[1].split("'")[1]
 
-                    ms = int(float(value) * 1000)
+                    if line.find("fps") == -1:
+                        value = str(float(value) * 1000)
+                        
                     key = key + "_branch_" + branch + "_device_" + device
 
-                    sys.stdout.write("##teamcity[buildStatisticValue key='" + key + "' value='" + str(ms) + "']")
+                    sys.stdout.write("##teamcity[buildStatisticValue key='" + key + "' value='" + value + "']")
                     sys.stdout.flush()          
                 else:
                     teamcity_line_index = line.find("##teamcity")

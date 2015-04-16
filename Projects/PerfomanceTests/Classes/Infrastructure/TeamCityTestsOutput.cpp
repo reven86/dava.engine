@@ -46,6 +46,10 @@ const String TeamcityTestsOutput::AVERAGE_DELTA = "Average_frame_delta";
 const String TeamcityTestsOutput::TEST_TIME = "Test_frame_time";
 const String TeamcityTestsOutput::TIME_ELAPSED = "Time_frame_elapsed";
 
+const String TeamcityTestsOutput::MIN_FPS = "Min_fps";
+const String TeamcityTestsOutput::MAX_FPS = "Max_fps";
+const String TeamcityTestsOutput::AVERAGE_FPS = "Average_fps";
+
 const String TeamcityTestsOutput::FRAME_DELTA = "Frame_delta";
 
 void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)

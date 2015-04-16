@@ -52,6 +52,10 @@ public:
     static const String TEST_TIME;
     static const String TIME_ELAPSED;
 
+    static const String MIN_FPS;
+    static const String MAX_FPS;
+    static const String AVERAGE_FPS;
+
     static const String FRAME_DELTA;
 
 private:
