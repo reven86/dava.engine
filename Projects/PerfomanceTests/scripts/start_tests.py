@@ -142,10 +142,6 @@ while continue_process_stdout:
                     if line.find("frame") != -1:
                         value = str(float(value) * 1000)
 
-                    #memory in megabytes
-                    if line.find("memory") != -1:
-                        value = str(float(value) / (1024 * 1024))    
-
                     key = key + "_branch_" + branch + "_device_" + device
 
                     sys.stdout.write("##teamcity[buildStatisticValue key='" + key + "' value='" + value + "']")
