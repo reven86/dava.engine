@@ -201,7 +201,7 @@ public:
 	 */
 	virtual void SetIcon(int32 iconId);
 	
-    virtual float32 GetScreenScaleFactor();
+    inline float32 GetScreenScaleFactor() const;
     
 	virtual Core::eScreenOrientation GetScreenOrientation();
 	
@@ -302,7 +302,7 @@ inline bool Core::IsActive()
     return isActive;
 }
     
-inline float32 Core::GetScreenScaleFactor()
+inline float32 Core::GetScreenScaleFactor() const
 {
     return screenScaleFactor;
 }
