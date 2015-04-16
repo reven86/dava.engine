@@ -134,15 +134,15 @@ void BaseTest::OnFinish()
         ConverterUtils::NumberToString(averageDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-        TeamcityTestsOutput::MIN_DELTA,
+        TeamcityTestsOutput::MIN_FPS,
         ConverterUtils::NumberToString(1.0f / minDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-        TeamcityTestsOutput::MAX_DELTA,
+        TeamcityTestsOutput::MAX_FPS,
         ConverterUtils::NumberToString(1.0f / maxDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-        TeamcityTestsOutput::AVERAGE_DELTA,
+        TeamcityTestsOutput::AVERAGE_FPS,
         ConverterUtils::NumberToString(1.0f / averageDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
