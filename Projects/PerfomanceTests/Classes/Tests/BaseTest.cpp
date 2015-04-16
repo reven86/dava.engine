@@ -136,6 +136,7 @@ void BaseTest::OnFinish()
         averageDelta += frameInfo.delta;
 
         Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
+            testName, 
             TeamcityTestsOutput::FRAME_DELTA,
             ConverterUtils::NumberToString(frameInfo.delta)).c_str());
     }
