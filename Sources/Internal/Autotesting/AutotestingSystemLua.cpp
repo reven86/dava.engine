@@ -561,7 +561,7 @@ namespace DAVA
 		return "";
 	}
 
-	bool AutotestingSystemLua::IsSelected(UIControl* control)
+	bool AutotestingSystemLua::IsSelected(UIControl* control) const
 	{
 		Logger::Debug("AutotestingSystemLua::IsSelected Check is control %s selected", control->GetName().c_str());
 		UISwitch* switchControl = dynamic_cast<UISwitch*>(control);
