@@ -67,6 +67,7 @@ public:
     const DAVA::Vector<DAVA::AllocPoolStat>& PoolStat() const { return statPools; }
     const DAVA::Vector<DAVA::TagAllocStat>& TagStat() const { return statTags; }
 
+    // Total memory consumption
     const DAVA::AllocPoolStat& TotalStat() const { return statPools[0]; }
 
 private:
@@ -103,6 +104,7 @@ public:
     DAVA::uint32 BktraceCount() const { return bktraceCount; }
     DAVA::uint32 TotalSize() const { return totalSize; }
 
+    // Get memory dump or null if not loaded
     MemoryDump* Dump() const { return memoryDump; }
     void ReleaseDump();
 
@@ -125,33 +127,49 @@ private:
 class ProfilingSession
 {
 public:
+    // Init ProfilingSession for working with realtime data (realtime mode)
     ProfilingSession(const DAVA::MMStatConfig* config, const DAVA::Net::PeerDescription& devInfo);
+    // Init ProfilingSession for working with saved data (file mode)
     ProfilingSession(const DAVA::FilePath& filename);
     ~ProfilingSession();
     // TODO: implement move semantic
 
+    // Returns true if ProfilingSession has been restored from saved file, i.e. works in file mode
     bool IsFileLog() const { return isFileLog; }
 
+    // Add statistics item for memory consumption trends (realtime mode)
     void AddStatItem(const DAVA::MMCurStat* rawStat);
+    // Add memory dump retrieved from profiled device (realtime mode)
     void AddDump(const DAVA::MMDump* rawDump);
+    // Flush file buffers to storage (realtime mode)
     void Flush();
 
+    // Number of registered allocation pools
     size_t AllocPoolCount() const { return allocPoolCount; }
+    // Number of registered memory block tags
     size_t TagCount() const { return tagCount; }
+    // Number of collected statistics items for trends
     size_t StatCount() const { return stat.size(); }
+    // Number of collected memory dumps
     size_t DumpCount() const { return dump.size(); }
+    // Profiled device description
     const DAVA::Net::PeerDescription& DeviceInfo() const { return deviceInfo; }
+    // Symbol and backtrace table for
     const BacktraceSymbolTable& SymbolTable() const { return symbolTable; }
 
     const DAVA::String& AllocPoolName(size_t index) const;
     const DAVA::String& TagName(size_t index) const;
+    // Get stat item by index, items are sorted by timestamp
     const StatItem& Stat(size_t index) const;
     const StatItem& LastStat() const;
+    // Get memory dump brief description by index, dumps are sorted by timestamp
     const DumpBrief& Dump(size_t index) const;
     const DumpBrief& LastDump() const;
 
+    // Get index of the closest stat unit or -1 if not found
     size_t ClosestStatItem(DAVA::uint64 timestamp) const;
 
+    // Load memory dump
     bool LoadDump(size_t index);
 
 private:

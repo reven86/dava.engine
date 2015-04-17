@@ -44,8 +44,10 @@ public:
     const DumpBrief& Brief() const { return dumpBrief; }
     const BacktraceSymbolTable& SymbolTable() const { return symbolTable; }
 
+    // Get list of all memory blocks in dump
     DAVA::Vector<const DAVA::MMBlock*> GetMemoryBlocks() const;
 
+    // Create call tree branch starting from given names
     Branch* CreateBranch(const DAVA::Vector<const char*>& startNames) const;
 
 private:
