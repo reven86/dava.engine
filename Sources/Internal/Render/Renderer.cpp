@@ -51,7 +51,9 @@ namespace //for private variables
 
 void Initialize(rhi::Api _api)
 {
-    rhi::Initialize( _api );
+    DVASSERT(!ininialized);
+    api = _api;
+    rhi::Initialize(api);    
     rhi::ShaderCache::Initialize();
     new ShaderDescriptorCache();
     PixelFormatDescriptor::InitializePixelFormatDescriptors();
