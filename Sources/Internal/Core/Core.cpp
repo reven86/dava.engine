@@ -83,6 +83,12 @@
 #endif
 
 
+#include "Debug/Profiler.h"
+#define PROF__FRAME             0
+#define PROF__FRAME_UPDATE      1
+#define PROF__FRAME_DRAW        2
+
+
 namespace DAVA 
 {
 
@@ -185,7 +191,17 @@ void Core::CreateRenderManager()
 {
     rhi::Api renderer = (rhi::Api)options->GetInt32("renderer");
     
-    Renderer::Initialize(renderer);
+#if defined(__DAVAENGINE_WIN32__)
+    renderer = rhi::RHI_DX9;
+//    renderer = rhi::RHI_GLES2;
+#elif defined(__DAVAENGINE_MACOS__)
+    renderer = rhi::RHI_GLES2;
+#elif defined(__DAVAENGINE_IPHONE__)
+    renderer = rhi::RHI_METAL;
+    renderer = rhi::RHI_GLES2;
+#endif
+
+    Renderer::Initialize( renderer );
 }
         
 void Core::ReleaseSingletons()
@@ -431,6 +447,14 @@ ApplicationCore * Core::GetApplicationCore()
 	
 void Core::SystemAppStarted()
 {
+Logger::Info("Core::SystemAppStarted");
+    #if PROFILER_ENABLED
+    profiler::EnsureInited();
+    NAME_COUNTER(PROF__FRAME,"frame");
+    NAME_COUNTER(PROF__FRAME_UPDATE,"frame-update");
+    NAME_COUNTER(PROF__FRAME_DRAW,"frame-draw");
+    #endif
+
 	if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
 	{
 		VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
@@ -439,8 +463,10 @@ void Core::SystemAppStarted()
          */
 	}
 
+
 	if (core != nullptr)
 	{
+        Core::Instance()->CreateRenderManager();
         core->OnAppStarted();
     }
 }
@@ -456,6 +482,13 @@ void Core::SystemAppFinished()
 
 void Core::SystemProcessFrame()
 {
+    #if PROFILER_ENABLED
+    profiler::EnsureInited();
+    profiler::Start();
+    START_NAMED_TIMING("frame");
+    #endif
+
+
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 	static bool isInit = false;
 	static EGLuint64NV frequency;
@@ -477,8 +510,17 @@ void Core::SystemProcessFrame()
     Stats::Instance()->BeginFrame();
     TIME_PROFILE("Core::SystemProcessFrame");
     
-	if (!core) return;
-	if (!isActive)return;
+    if( !core )
+    {
+        profiler::Stop();
+        return;
+    }
+
+    if( !isActive )
+    {
+        profiler::Stop();
+        return;
+    }
 	
 	SystemTimer::Instance()->Start();
 
@@ -526,6 +568,9 @@ void Core::SystemProcessFrame()
 				SystemTimer::Instance()->SetFrameDelta(frameDelta);
 			}
 		}
+
+        
+        START_TIMING(PROF__FRAME_UPDATE);
 		
 		LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
@@ -536,7 +581,9 @@ void Core::SystemProcessFrame()
 
 		core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();
-		core->Draw();
+        STOP_TIMING(PROF__FRAME_UPDATE);
+		
+        core->Draw();
 
 		core->EndFrame();
 // #ifdef __DAVAENGINE_DIRECTX9__
@@ -550,6 +597,13 @@ void Core::SystemProcessFrame()
 	EGLuint64NV end = eglGetSystemTimeNV() / frequency;
 	EGLuint64NV interval = end - start;
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
+
+    #if PROFILER_ENABLED
+        STOP_TIMING(PROF__FRAME);
+        profiler::Stop();
+        //profiler::Dump();
+        profiler::DumpAverage();
+    #endif
 }
 
 	
