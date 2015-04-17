@@ -206,6 +206,13 @@ include $(CLEAR_VARS)
 # set module name
 LOCAL_MODULE := libInternalPart1
 
+# On arm architectures add sysroot option to be able to use 
+# _Unwind_Backtrace and _Unwind_GetIP for collecting backtraces
+# TODO: review checking arm arch and $(ANDROID_NDK_ROOT) 
+ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
+       MY_LOCAL_CFLAGS += --sysroot=$(ANDROID_NDK_ROOT)/platforms/$(APP_PLATFORM)/arch-arm
+endif
+
 LOCAL_C_INCLUDES := $(MY_LOCAL_C_INCLUDES)
 LOCAL_EXPORT_C_INCLUDES := $(MY_LOCAL_EXPORT_C_INCLUDES)
 LOCAL_ARM_NEON := $(MY_LOCAL_ARM_NEON)
