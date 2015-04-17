@@ -155,8 +155,8 @@ DX9_TextureFormat( TextureFormat format )
         case TEXTURE_FORMAT_A16R16G16B16    : return D3DFMT_A16B16G16R16F;
         case TEXTURE_FORMAT_A32R32G32B32    : return D3DFMT_A32B32G32R32F;
 
-        case TEXTURE_FORMAT_R8              : return D3DFMT_UNKNOWN;
-        case TEXTURE_FORMAT_R16             : return D3DFMT_UNKNOWN;
+        case TEXTURE_FORMAT_R8              : return D3DFMT_A8;
+        case TEXTURE_FORMAT_R16             : return D3DFMT_R16F;
 
         case TEXTURE_FORMAT_DXT1            : return D3DFMT_DXT1;
         case TEXTURE_FORMAT_DXT3            : return D3DFMT_DXT3;
