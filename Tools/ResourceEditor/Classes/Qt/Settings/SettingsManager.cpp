@@ -58,6 +58,7 @@ void SettingsManager::Init()
 {
 	CreateValue(Settings::General_DesinerName, DAVA::VariantType(DAVA::String("nobody")));
     CreateValue(Settings::General_RecentFilesCount, DAVA::VariantType((DAVA::int32) 5));
+    CreateValue(Settings::General_RecentProjectsCount, DAVA::VariantType((DAVA::int32) 5));
 	CreateValue(Settings::General_PreviewEnabled, DAVA::VariantType(false));
     CreateValue(Settings::General_OpenByDBClick, DAVA::VariantType(false));
     CreateValue(Settings::General_CompressionQuality, DAVA::VariantType((DAVA::int32)DAVA::TextureConverter::ECQ_DEFAULT), DAVA::InspDesc("Compression quality", GlobalEnumMap<DAVA::TextureConverter::eConvertQuality>::Instance()));
@@ -107,7 +108,9 @@ void SettingsManager::Init()
 	CreateValue(Settings::Internal_CubemapLastProjDir, DAVA::VariantType(DAVA::FilePath()));
     CreateValue(Settings::Internal_ParticleLastEmitterDir, DAVA::VariantType(DAVA::FilePath()));
 
-	CreateValue(Settings::Internal_RecentFiles, DAVA::VariantType((DAVA::KeyedArchive *) NULL));
+	CreateValue(Settings::Internal_RecentFiles, DAVA::VariantType((DAVA::KeyedArchive *) nullptr));
+    CreateValue(Settings::Internal_RecentProjects, DAVA::VariantType((DAVA::KeyedArchive *) nullptr));
+    
     CreateValue(Settings::Internal_MaterialsLightViewMode, DAVA::VariantType((DAVA::int32) EditorMaterialSystem::LIGHTVIEW_ALL));
     CreateValue(Settings::Internal_MaterialsShowLightmapCanvas, DAVA::VariantType((bool) false));
     CreateValue(Settings::Internal_LicenceAccepted, DAVA::VariantType((bool) false));

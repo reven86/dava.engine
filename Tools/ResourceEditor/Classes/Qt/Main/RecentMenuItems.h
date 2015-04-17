@@ -28,25 +28,50 @@
 
 
 
-#ifndef __RECENT_FILES_MANAGER_H__
-#define __RECENT_FILES_MANAGER_H__
+#ifndef __RECENT_MENU_ITEMS_H__
+#define __RECENT_MENU_ITEMS_H__
 
-#include "DAVAEngine.h"
-#include "Base/StaticSingleton.h"
-#include "Qt/Scene/SceneEditor2.h"
+#include "Base/BaseTypes.h"
+#include "Base/FastName.h"
 
-#include <QObject>
+#include <QList>
 
+class QMenu;
+class QAction;
 
-class RecentFilesManager : public DAVA::Singleton<RecentFilesManager>
+class RecentMenuItems
 {
-
 public:
-
-	DAVA::Vector<String> GetRecentFiles();
-
-	void SetFileToRecent(const DAVA::String&);
     
+    RecentMenuItems(const DAVA::FastName & settingsKeyCount, const DAVA::FastName & settingsKeyData);
+
+    void SetMenu(QMenu *menu);
+    void InitMenuItems();
+    void EnableMenuItems(bool enabled);
+    
+    void Add(const DAVA::String & recent);
+    DAVA::Vector<DAVA::String> Get() const;
+
+    DAVA::String GetItem(const QAction *action) const;
+    
+protected:
+
+    void AddInternal(const DAVA::String & recent);
+    void RemoveMenuItems();
+
+protected:
+    
+    QList<QAction *> actions;
+    QMenu *menu;
+
+    const DAVA::FastName settingsKeyCount;
+    const DAVA::FastName settingsKeyData;
 };
 
-#endif // __RECENT_FILES_MANAGER_H__
+inline void RecentMenuItems::SetMenu(QMenu *_menu)
+{
+    DVASSERT(_menu);
+    menu = _menu;
+}
+
+#endif // __RECENT_MENU_ITEMS_H__
