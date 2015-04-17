@@ -48,6 +48,15 @@ RenderPass::RenderPass(const FastName & _name, RenderPassID _id)
 {
     renderPassBatchArray = new RenderPassBatchArray();
     renderLayers.reserve(RENDER_LAYER_ID_COUNT);
+    
+    passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+    passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
+    passConfig.colorBuffer[0].clearColor[0] = 0.25f;
+    passConfig.colorBuffer[0].clearColor[1] = 0.25f;
+    passConfig.colorBuffer[0].clearColor[2] = 0.35f;
+    passConfig.colorBuffer[0].clearColor[3] = 1.0f;
+    passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+    passConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
 }
 
 RenderPass::~RenderPass()
@@ -116,7 +125,12 @@ void RenderPass::PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSy
 
 void RenderPass::DrawLayers(Camera *camera)
 {    
-    //ShaderCache::Instance()->ClearAllLastBindedCaches();
+    //ShaderCache::Instance()->ClearAllLastBindedCaches();        
+
+    rhi::HPacketList pl;
+    rhi::HRenderPass pass = rhi::AllocateRenderPass(passConfig, 1, &pl);
+    rhi::BeginRenderPass(pass);
+    rhi::BeginPacketList(pl);
 
     // Draw all layers with their materials
     uint32 size = (uint32)renderLayers.size();
@@ -126,9 +140,11 @@ void RenderPass::DrawLayers(Camera *camera)
         RenderLayerBatchArray * renderLayerBatchArray = renderPassBatchArray->Get(layer->GetRenderLayerID());
         if (renderLayerBatchArray)
         {
-            layer->Draw(name, camera, renderLayerBatchArray); //why camera here?
+            layer->Draw(camera, renderLayerBatchArray, pl); 
         }
     }
+    rhi::EndPacketList(pl);
+    rhi::EndRenderPass(pass);
 }
 
 
@@ -262,8 +278,7 @@ void MainForwardRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBuffer
         renderPassBatchArray->PrepareVisibilityArray(&visibilityArray, mainCamera);
                 
 	}	
-    needWaterPrepass = (waterBatchesCount!=0); //for next frame;
-
+    needWaterPrepass = (waterBatchesCount!=0); //for next frame;    
     //ClearBuffers(clearBuffers);
 
 	DrawLayers(mainCamera);   

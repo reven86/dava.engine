@@ -65,6 +65,8 @@ protected:
     Vector<RenderLayer*> renderLayers;    
     FastName name;
     RenderPassID id;
+    
+    rhi::RenderPassConfig passConfig;
 
     /*convinience*/
     void PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSystem);

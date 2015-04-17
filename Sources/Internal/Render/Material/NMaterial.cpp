@@ -459,7 +459,12 @@ void NMaterial::RebuildTextureBindings()
         rhi::TextureSetDescriptor descr;
         descr.count = currShader->fragmentSamplerList.size();
         for (size_t i = 0, sz = descr.count; i < sz; ++i)
-            descr.texture[i] = GetMaterialTexture(currShader->fragmentSamplerList[i].uid)->handle;
+        {
+            Texture *tex = GetMaterialTexture(currShader->fragmentSamplerList[i].uid);
+            if (tex)
+                descr.texture[i] = tex->handle;                
+        }
+            
         currRenderVariant->textureSet = rhi::AcquireTextureSet(descr);
     }
 

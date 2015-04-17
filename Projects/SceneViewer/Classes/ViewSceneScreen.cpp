@@ -60,13 +60,7 @@ void ViewSceneScreen::LoadResources()
 	camera->SetLeft(Vector3(1, 0, 0));
 	camera->SetUp(Vector3(0, 0, 1.f));
     camera->SetTarget(Vector3(0, 0, 0));
-    camera->SetPosition(Vector3(0, 0, 100));
-
-
-    //TODO: debug
-    camera->SetPosition(Vector3(18.7855f, 111.0697f, 57.0635f));
-    camera->SetDirection(Vector3(-1.2904f, 9.0496f, -4.0545f));
-    //ENDOFTODO
+    camera->SetPosition(Vector3(0, 0, -10));    
 
     
     scene->AddCamera(camera);

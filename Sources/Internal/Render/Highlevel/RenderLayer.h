@@ -52,7 +52,7 @@ public:
 	inline const FastName & GetName() const;
 	inline uint32 GetFlags() const;
 
-    virtual void Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray);
+    virtual void Draw(Camera* camera, RenderLayerBatchArray * renderLayerBatchArray, rhi::HPacketList packetList);
     
 protected:
     FastName name;

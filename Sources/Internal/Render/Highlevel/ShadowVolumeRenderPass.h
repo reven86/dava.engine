@@ -48,7 +48,7 @@ public:
     ShadowVolumeRenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id);
     virtual ~ShadowVolumeRenderLayer();
     
-    virtual void Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray);
+    virtual void Draw(Camera* camera, RenderLayerBatchArray * renderLayerBatchArray, rhi::HPacketList packetList);
     
     ShadowRect * GetShadowRect();
 

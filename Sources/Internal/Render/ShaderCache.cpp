@@ -65,7 +65,7 @@ const char* fProgText =
 "\n"
 "DECL_SAMPLER2D(albedo)\n"
 "FPROG_BEGIN\n"
-"    float4  texColor = FP_TEXTURE2D( alpha, FP_IN(uv) );\n"
+"    float4  texColor = FP_TEXTURE2D( albedo, FP_IN(uv) );\n"
 "    texColor.a = 1.0;\n"
 "    FP_OUT_COLOR = texColor;\n"
 "FPROG_END\n";
@@ -127,6 +127,11 @@ ShaderDescriptor* ShaderDescriptorCache::GetShaderDescriptor(FastName name, cons
     shaderDescriptors[key] = res;
 
     return res;
+}
+
+ShaderDescriptorCache::~ShaderDescriptorCache()
+{
+    //RHI_COMPLETE
 }
 };
 

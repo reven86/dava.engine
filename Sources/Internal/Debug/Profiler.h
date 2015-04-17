@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     using DAVA::uint64;
     #include <Base/Hash.h>
 
-    #define PROFILER_ENABLED        1
+    #define PROFILER_ENABLED        0
 
 
 namespace profiler

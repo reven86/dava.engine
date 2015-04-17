@@ -49,7 +49,7 @@ RenderLayer::~RenderLayer()
 {
 }
 
-void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray)
+void RenderLayer::Draw(Camera* camera, RenderLayerBatchArray * renderLayerBatchArray, rhi::HPacketList packetList)
 {
     TIME_PROFILE("RenderLayer::Draw");
     
@@ -61,7 +61,31 @@ void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, Render
     
     for (uint32 k = 0; k < size; ++k)
     {
-        RenderBatch * batch = renderLayerBatchArray->Get(k);
+        RenderBatch* batch = renderLayerBatchArray->Get(k);
+        RenderObject* renderObject = batch->GetRenderObject();
+        DVASSERT(renderObject != 0);
+        renderObject->BindDynamicParameters(camera);
+        
+        PolygonGroup *pg = batch->GetPolygonGroup();
+        NMaterial *mat = batch->GetMaterial();
+        if (pg && mat)
+        {
+
+            rhi::Packet packet;
+         
+            packet.vertexStreamCount = 1;
+            packet.vertexStream[0] = pg->vertexBuffer;
+            packet.indexBuffer = pg->indexBuffer;
+            packet.primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+            packet.primitiveCount = pg->indexCount/3;
+            packet.vertexLayoutUID = pg->vertexLayoutId;
+
+            mat->BindParams(packet);
+
+            rhi::AddPacket(packetList, packet);
+        }
+        
+
 
 #if RHI_COMPLETE
         batch->Draw(ownerRenderPass, camera);
