@@ -315,6 +315,8 @@ gles2_Initialize()
     {
         Logger::Error( "can't create GL-context" ); 
     }                
+    
+    _Inited = true;
 }
 
 #elif defined(__DAVAENGINE_MACOS__)
