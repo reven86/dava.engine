@@ -69,7 +69,7 @@ public:
     {
     public:
 
-        void    operator++()    { do { ++entry; } while( !entry->allocated  &&  entry != end ); }
+        void    operator++()    { do { ++entry; } while( entry != end  &&  !entry->allocated ); }
         T*      operator->()    { return &(entry->object); }
         T&      operator*()     { return entry->object; }
 
@@ -203,7 +203,7 @@ template <class T, ResourceType RT>
 inline typename Pool<T,RT>::Iterator
 Pool<T,RT>::Begin()
 {
-    return Iterator(Object,Object+ObjectCount);
+    return (Object)  ? Iterator(Object,Object+ObjectCount)  : Iterator(nullptr,nullptr);
 }
 
 
@@ -213,7 +213,7 @@ template <class T, ResourceType RT>
 inline typename Pool<T,RT>::Iterator
 Pool<T,RT>::End()
 {
-    return Iterator(Object+ObjectCount,Object+ObjectCount);
+    return (Object)  ? Iterator(Object+ObjectCount,Object+ObjectCount)  : Iterator(nullptr,nullptr);
 }
 
 

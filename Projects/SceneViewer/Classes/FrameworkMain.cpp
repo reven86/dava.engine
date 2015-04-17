@@ -55,7 +55,7 @@ void FrameworkDidLaunched()
 
 #else
 	KeyedArchive * appOptions = new KeyedArchive();
-    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    appOptions->SetInt32("renderer", rhi::RHI_DX9);
 	
 	appOptions->SetInt32("width",	1024);
 	appOptions->SetInt32("height", 768);
