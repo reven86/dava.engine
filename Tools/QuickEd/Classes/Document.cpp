@@ -2,6 +2,8 @@
 #include <QLineEdit>
 #include <QAction>
 #include <QItemSelection>
+
+#include "Base/BaseTypes.h"
 #include "UI/Preview/EditScreen.h"
 
 #include "UI/Package/PackageModel.h"
@@ -75,10 +77,10 @@ void Document::UpdateLanguage()
     QList<ControlNode*> activeRootControls;
     PackageControlsNode *controlsNode = package->GetPackageControlsNode();
     for (int32 index = 0; index < controlsNode->GetCount(); ++index)
-        UpdateLanguageRecursively(controlsNode->Get(index));
+        UpdatePropertyRecursively(controlsNode->Get(index), "text");
 }
 
-void Document::UpdateLanguageRecursively(ControlNode *node)
+void Document::UpdatePropertyRecursively(ControlNode* node, ::DAVA::String property)
 {
     PropertiesRoot *propertiesRoot = node->GetPropertiesRoot();
     int propertiesCount = propertiesRoot->GetCount();
@@ -89,7 +91,7 @@ void Document::UpdateLanguageRecursively(ControlNode *node)
         for (int prop = 0; prop < sectionCount; ++prop)
         {
             ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
-            if (!strcmp(valueProperty->GetMember()->Name(), "text"))
+            if (property == valueProperty->GetMember()->Name())
             {
                 valueProperty->SetValue(valueProperty->GetValue());
             }
@@ -97,6 +99,6 @@ void Document::UpdateLanguageRecursively(ControlNode *node)
     }
     for (int index = 0; index < node->GetCount(); ++index)
     {
-        UpdateLanguageRecursively(node->Get(index));
+        UpdatePropertyRecursively(node->Get(index), property);
     }
 }

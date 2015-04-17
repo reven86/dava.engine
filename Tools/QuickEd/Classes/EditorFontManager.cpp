@@ -542,13 +542,7 @@ String EditorFontManager::SetLocalizedFont(const String& fontOriginalName, Font*
         Logger::Error("EditorFontManager::SetLocalizedFont (locale=%s) fonts=NULL", locale.c_str());
         return newFontName;
     }
-    
-    if(!registeredFonts)
-    {
-        Logger::Error("EditorFontManager::SetLocalizedFont (locale=%s) registeredFonts=NULL", locale.c_str());
-        return newFontName;
-    }
-    
+        
     bool isSameFontName = (fontOriginalName == newFontName);
     
     Map<String, Font*>::const_iterator endIt = fonts->end();

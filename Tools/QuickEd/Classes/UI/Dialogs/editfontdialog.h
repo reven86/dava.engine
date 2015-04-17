@@ -50,7 +50,7 @@ public:
     //! \param[in] control node, which contains font property
     void UpdateFontPreset(ControlNode *selectedControlNode);
     //! \brief functions return font preset from given node
-    DAVA::String EditFontDialog::findFont(ControlNode *node);
+    DAVA::String findFont(ControlNode *node);
 private slots:
     //! \brief update locale button and locale spinbox for current language
     void UpdateLocaleFontWidgets();

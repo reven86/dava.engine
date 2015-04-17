@@ -2,6 +2,7 @@
 #define __QUICKED_DOCUMENT_H__
 
 #include <QUndoStack>
+#include "Base/BaseTypes.h"
 
 namespace DAVA {
     class FilePath;
@@ -38,8 +39,7 @@ public slots:
     void UpdateLanguage();
 
 private:
-    void UpdateLanguageRecursively(ControlNode *node);
-    void UpdateControlCanvas();
+    void UpdatePropertyRecursively(ControlNode* node, DAVA::String property);
     void InitSharedData();
 
 private:
