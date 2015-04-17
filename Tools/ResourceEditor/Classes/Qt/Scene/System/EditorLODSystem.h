@@ -45,11 +45,7 @@ class EditorLODSystem : public DAVA::SceneSystem
         DAVA::int32 forceLayer;
         DAVA::float32 forceDistance;
 
-        ForceData(DAVA::int32 newForceLayer = -1, DAVA::float32 newDistance = -1)
-            : forceLayer(newForceLayer)
-            , forceDistance(newDistance)
-        {
-        }
+        ForceData(DAVA::int32 newForceLayer = -1, DAVA::float32 newDistance = -1);
     };
 
     friend class SceneEditor2;
@@ -104,6 +100,7 @@ public:
 
     inline bool GetAllSceneModeEnabled() const;
     void SetAllSceneModeEnabled(bool enabled);
+
 protected:
     bool CheckSelectedContainsEntity(const DAVA::Entity *arg) const;
 
@@ -116,6 +113,9 @@ protected:
     void UpdateForceData();
     void ResetForceState(DAVA::Entity *entity);
     void ResetForceState(DAVA::LodComponent *lodComponent);
+
+    DAVA::int32 CalculateForceLayer() const;
+    DAVA::float32 CalculateForceDistance() const;
 
     DAVA::int32 currentLodsLayersCount;
     bool forceDistanceEnabled;
@@ -131,6 +131,8 @@ protected:
     inline const QList<DAVA::LodComponent *> GetCurrentLODs() const;
 
     bool mixedForce;
+    DAVA::int32 allSceneForceLayer;
+    DAVA::float32 allSceneForceDistance;
 };
 
 inline DAVA::uint32 EditorLODSystem::GetLayerTriangles(DAVA::uint32 layerNum) const

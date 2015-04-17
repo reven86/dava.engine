@@ -381,13 +381,13 @@ void LODEditor::UpdateLODButtons(const EditorLODSystem *editorLODSystem)
 void LODEditor::UpdateForceLayer(const EditorLODSystem *editorLODSystem)
 {
     int32 forceLayer = editorLODSystem->GetCurrentForceLayer();
-    if (forceLayer + 1 > ui->forceLayer->count())
+    if (forceLayer + 1 >= ui->forceLayer->count())
     {
         ui->forceLayer->setCurrentIndex(-1);
         return;
     }
 
-    int index = ui->forceLayer->findData(forceLayer);
+    auto index = ui->forceLayer->findData(forceLayer);
     if (-1 != index)
     {
         ui->forceLayer->setCurrentIndex(index);
