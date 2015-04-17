@@ -35,34 +35,6 @@ void MemProfController::OnDumpPressed()
     netClient.RequestDump();
 }
 
-void MemProfController::OnViewDump()
-{
-    //if (!dumpData.empty())
-    //{
-    //    DumpViewWidget* w = new DumpViewWidget(dumpData, parentWidget, Qt::Window);
-    //    w->resize(640, 480);
-    //    w->show();
-    //}
-}
-
-void MemProfController::OnViewFileDump()
-{
-    /*
-#if defined(Q_OS_WIN32)
-    QString filename = QFileDialog::getOpenFileName(parentWidget, "Select dump file", "d:\\temp\\dumps\\4");
-#else
-    QString filename = QFileDialog::getOpenFileName(parentWidget, "Select dump file");
-#endif
-    if (!filename.isEmpty())
-    {
-        std::string s = filename.toStdString();
-        DumpViewWidget* w = new DumpViewWidget(s.c_str(), parentWidget, Qt::Window);
-        w->resize(640, 480);
-        w->show();
-    }
-    */
-}
-
 void MemProfController::ShowView()
 {
     if (NULL == view)

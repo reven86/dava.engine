@@ -35,8 +35,6 @@ signals:
 
 public slots:
     void OnDumpPressed();
-    void OnViewDump();
-    void OnViewFileDump();
     
 private:
     QPointer<MemProfWidget> view;

@@ -216,7 +216,7 @@ void ProfilingSession::AddDump(const DAVA::MMDump* rawDump)
 
         dumpFile->Write(rawDump, rawDump->size);
 
-        SaveDumpAsText(rawDump, (storageDir + Format("dump_%d.log", dumpNo)).GetAbsolutePathname().c_str());
+        //SaveDumpAsText(rawDump, (storageDir + Format("dump_%d.log", dumpNo)).GetAbsolutePathname().c_str());
     }
     dumpNo += 1;
 }
