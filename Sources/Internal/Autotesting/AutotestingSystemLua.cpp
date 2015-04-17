@@ -570,7 +570,7 @@ namespace DAVA
 			return switchControl->GetIsLeftSelected();
 		}
 		AutotestingSystem::Instance()->OnError(Format("AutotestingSystemLua::IsSelected Couldn't get parameter for '%s'", control->GetName().c_str()));
-		return NULL;
+		return nullptr;
 	}
 
 	bool AutotestingSystemLua::IsListHorisontal(UIControl* control)
