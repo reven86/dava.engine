@@ -80,6 +80,8 @@ void RenderLayer::Draw(Camera* camera, RenderLayerBatchArray * renderLayerBatchA
             packet.primitiveCount = pg->indexCount/3;
             packet.vertexLayoutUID = pg->vertexLayoutId;
 
+            DVASSERT(packet.primitiveCount);
+
             mat->BindParams(packet);
 
             rhi::AddPacket(packetList, packet);

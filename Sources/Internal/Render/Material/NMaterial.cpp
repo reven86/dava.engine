@@ -261,13 +261,21 @@ void NMaterial::SetParent(NMaterial *_parent)
         return;
 
     if (parent)
+    {
+        SafeRelease(parent);
         parent->RemoveChildMaterial(this);
+    }
+        
 
     parent = _parent;
     sortingKey = (uint32)parent;
 
     if (parent)
+    {
+        SafeRetain(parent);
         parent->AddChildMaterial(this);
+    }
+        
 }
 
 NMaterial* NMaterial::GetParent()
@@ -278,7 +286,7 @@ NMaterial* NMaterial::GetParent()
 void NMaterial::AddChildMaterial(NMaterial *material)
 {    
     DVASSERT(material);
-    children.push_back(SafeRetain(material));
+    children.push_back(material);
     material->InvalidateBufferBindings();
     material->InvalidateTextureBindings();
 }
@@ -286,8 +294,7 @@ void NMaterial::AddChildMaterial(NMaterial *material)
 void NMaterial::RemoveChildMaterial(NMaterial *material)
 {
     bool res = FindAndRemoveExchangingWithLast(children, material);
-    DVASSERT(res);
-    SafeRelease(material);
+    DVASSERT(res);    
 }
 
 void NMaterial::InjectChildBuffer(UniquePropertyLayout propLayoutId, MaterialBufferBinding* buffer)
@@ -459,10 +466,10 @@ void NMaterial::RebuildTextureBindings()
         rhi::TextureSetDescriptor descr;
         descr.count = currShader->fragmentSamplerList.size();
         for (size_t i = 0, sz = descr.count; i < sz; ++i)
-        {
+        {            
             Texture *tex = GetMaterialTexture(currShader->fragmentSamplerList[i].uid);
-            if (tex)
-                descr.texture[i] = tex->handle;                
+            DVASSERT(tex);
+            descr.texture[i] = tex->handle;            
         }
             
         currRenderVariant->textureSet = rhi::AcquireTextureSet(descr);
@@ -479,6 +486,12 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
     {
         materialKey = archive->GetUInt64("materialKey");
         pointer = materialKey;
+    }
+
+    if (archive->IsKeyExists("parentMaterialKey"))
+    {
+        uint64 parentKey = archive->GetUInt64("parentMaterialKey");
+        serializationContext->AddBinding(parentKey, this);
     }
 
     if (archive->IsKeyExists("textures"))
