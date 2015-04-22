@@ -61,6 +61,8 @@ public:
 	 */
 	ScrollHelper();
 	
+    void CopyDataFrom(ScrollHelper *src);
+
 	/**
 	 \brief Sets new scrolling position.
 	 \param[in] pos new scrolling position.
