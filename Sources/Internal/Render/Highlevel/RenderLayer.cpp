@@ -72,7 +72,7 @@ void RenderLayer::Draw(Camera* camera, RenderLayerBatchArray * renderLayerBatchA
         {
 
             rhi::Packet packet;
-         
+                     
             packet.vertexStreamCount = 1;
             packet.vertexStream[0] = pg->vertexBuffer;
             packet.indexBuffer = pg->indexBuffer;
