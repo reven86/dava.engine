@@ -135,6 +135,14 @@ void LabeledSlider::setValue(int val)
 {
     bool wasBlocked = slider->blockSignals(true);
 
+    if (val < slider->minimum())
+    {
+        val = slider->minimum();
+    }
+    else if (val > slider->maximum())
+    {
+        val = slider->maximum();
+    }
     slider->setValue(val);
     valueText->setText(QString::number(val));
 

@@ -127,7 +127,6 @@ protected:
     DAVA::List<DAVA::LodComponent *> selectedLODs;
     inline const DAVA::List<DAVA::LodComponent *> GetCurrentLODs() const;
 
-    bool mixedForce;
     DAVA::int32 allSceneForceLayer;
     DAVA::float32 allSceneForceDistance;
 };
