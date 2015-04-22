@@ -68,6 +68,8 @@
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 
+
+
 class SceneCameraSystem;
 class SceneCollisionSystem;
 
@@ -75,6 +77,7 @@ class HoodSystem;
 
 class EditorLODSystem;
 class FogSettingsChangedReceiver;
+class EditorSoundSystem;
 
 class SceneEditor2 : public DAVA::Scene
 {
@@ -126,6 +129,8 @@ public:
 
 	WayEditSystem *wayEditSystem;
 	PathSystem *pathSystem;
+    
+    EditorSoundSystem *editorSoundSystem;
 
 	// save/load
 	bool Load(const DAVA::FilePath &path);
@@ -180,6 +185,10 @@ public:
 	bool IsToolsEnabled(int32 toolFlags);
 	int32 GetEnabledTools();
 
+    void Activate();
+    void Deactivate();
+    
+    
 	SceneEditor2 *CreateCopyForExport();	//Need to prevent changes of original scene
     virtual Entity * Clone(Entity *dstNode /* = NULL */);
 
