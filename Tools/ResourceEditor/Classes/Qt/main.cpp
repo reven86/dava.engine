@@ -139,10 +139,10 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
     glWidget->setWindowFlags( Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint | Qt::Tool );
     glWidget->setAttribute( Qt::WA_TranslucentBackground );
     glWidget->setAttribute( Qt::WA_TransparentForMouseEvents );
-    glWidget->setAttribute( Qt::WA_DontShowOnScreen );
     glWidget->setAttribute( Qt::WA_ShowWithoutActivating );
     glWidget->setWindowOpacity( 0.0 );
-    glWidget->setFixedSize( 0, 0 );
+    glWidget->setFixedSize( 1, 1 );
+    glWidget->setEnabled( false );
     glWidget->move( 0, 0 );
 
     FrameworkLoop::Instance()->SetOpenGLWindow( glWidget );
@@ -151,12 +151,12 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 
     // Delayed initialization throught event loop
     glWidget->show();
-#ifdef Q_OS_WIN
+//#ifdef Q_OS_WIN
     FrameworkLoop::Instance()->Context();   // Force context initialization
     QObject::connect( glWidget, &DavaGLWidget::Initialized, &a, &QApplication::quit );
     QTimer::singleShot( 0, glWidget, &DavaGLWidget::OnWindowExposed );
     a.exec();
-#endif
+//#endif
     glWidget->hide();
 
     RenderManager::Instance()->Init( 0, 0 );
