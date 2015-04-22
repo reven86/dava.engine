@@ -195,14 +195,14 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
 {
 #ifdef Q_OS_MAC
-    // Must be called before creating QApplication instance
-
+    // http://stackoverflow.com/a/7602677/1035613
     ProcessSerialNumber psn;
     if ( GetCurrentProcess( &psn ) == noErr )
     {
         TransformProcessType( &psn, kProcessTransformToForegroundApplication );
     }
 
+    // Must be called before creating QApplication instance
     FixOSXFonts();
 #endif
  
