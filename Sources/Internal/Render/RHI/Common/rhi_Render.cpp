@@ -650,10 +650,13 @@ AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
                                   ? p->samplerState
                                   : pl->defSamplerState;
 
-        if( p->renderPipelineState != pl->curPipelineState )
+        if(     p->renderPipelineState != pl->curPipelineState 
+            ||  p->vertexLayoutUID != pl->curVertexLayout
+          )
         {
             rhi::CommandBuffer::SetPipelineState( cmdBuf, p->renderPipelineState, p->vertexLayoutUID );
             pl->curPipelineState = p->renderPipelineState;
+            pl->curVertexLayout  = p->vertexLayoutUID;
         }
 
         if( dsState != pl->curDepthStencilState )
