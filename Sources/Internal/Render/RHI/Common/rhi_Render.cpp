@@ -55,16 +55,17 @@ static std::vector<SamplerState_t>      _SamplerStateInfo;
 struct
 PacketList_t
 {
-    Handle  cmdBuf;
+    Handle      cmdBuf;
 
-    Handle  curPipelineState;
-    uint32  curVertexLayout;
-    Handle  curTextureSet;
-    Handle  curSamplerState;
-    Handle  curDepthStencilState;
+    Handle      curPipelineState;
+    uint32      curVertexLayout;
+    Handle      curTextureSet;
+    Handle      curSamplerState;
+    Handle      curDepthStencilState;
+    CullMode    curCullMode;
 
-    Handle  defDepthStencilState;
-    Handle  defSamplerState;
+    Handle      defDepthStencilState;
+    Handle      defSamplerState;
 
     // debug
     uint32  batchIndex;
@@ -616,6 +617,9 @@ BeginPacketList( HPacketList packetList )
     CommandBuffer::SetSamplerState( pl->cmdBuf, def_ss );
     pl->curSamplerState = pl->defSamplerState;
 
+    CommandBuffer::SetCullMode( pl->cmdBuf, CULL_NONE );
+    pl->curCullMode = CULL_NONE;
+
     pl->batchIndex = 0;
 }
 
@@ -668,6 +672,11 @@ AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
         {
             rhi::CommandBuffer::SetSamplerState( cmdBuf, p->samplerState );
             pl->curSamplerState = p->samplerState;
+        }
+        if( p->cullMode !=  pl->curCullMode )
+        {
+            rhi::CommandBuffer::SetCullMode( cmdBuf, p->cullMode );
+            pl->curCullMode = p->cullMode;
         }
 
         for( unsigned i=0; i!=p->vertexStreamCount; ++i )

@@ -579,7 +579,7 @@ SCOPED_FUNCTION_TIMING();
                     case CULL_CCW   : mode = D3DCULL_CCW; break;
                 }
 
-                _D3D9_Device->SetRenderState( D3DRS_CULLMODE, mode); 
+                _D3D9_Device->SetRenderState( D3DRS_CULLMODE, mode ); 
                 c += 1;
             }   break;
 
