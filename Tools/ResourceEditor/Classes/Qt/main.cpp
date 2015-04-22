@@ -137,6 +137,9 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 
     auto glWidget = new DavaGLWidget();
     glWidget->setWindowFlags( Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint | Qt::Tool );
+#ifdef Q_OS_WIN
+    glWidget->setAttribute( Qt::WA_DontShowOnScreen );
+#endif
     glWidget->setAttribute( Qt::WA_TranslucentBackground );
     glWidget->setAttribute( Qt::WA_TransparentForMouseEvents );
     glWidget->setAttribute( Qt::WA_ShowWithoutActivating );
@@ -151,12 +154,12 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 
     // Delayed initialization throught event loop
     glWidget->show();
-//#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN
     FrameworkLoop::Instance()->Context();   // Force context initialization
     QObject::connect( glWidget, &DavaGLWidget::Initialized, &a, &QApplication::quit );
     QTimer::singleShot( 0, glWidget, &DavaGLWidget::OnWindowExposed );
     a.exec();
-//#endif
+#endif
     glWidget->hide();
 
     RenderManager::Instance()->Init( 0, 0 );
@@ -192,7 +195,15 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
 {
 #ifdef Q_OS_MAC
-    FixOSXFonts();  // Must be called before creating QApplication instance
+    // Must be called before creating QApplication instance
+
+    ProcessSerialNumber psn;
+    if ( GetCurrentProcess( &psn ) == noErr )
+    {
+        TransformProcessType( &psn, kProcessTransformToForegroundApplication );
+    }
+
+    FixOSXFonts();
 #endif
  
     QApplication a( argc, argv );
