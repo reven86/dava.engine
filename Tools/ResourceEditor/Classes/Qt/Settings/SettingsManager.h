@@ -77,7 +77,6 @@ namespace Settings
     static const DAVA::FastName Scene_DebugBoxWaypointScale("Scene/DebugBoxWaypointScale");
     static const DAVA::FastName Scene_DragAndDropWithShift("Scene/Drag&DropInTreeWithShift");
     static const DAVA::FastName Scene_AutoselectNewEntities("Scene/AutoselectNewEnities");
-    static const DAVA::FastName Scene_RememberForceParameters("Scene/RememberForceParameters");
     static const DAVA::FastName Scene_RefreshLodForNonSolid("Scene/RefreshLodForNonSolid");
 
     static const DAVA::FastName Scene_Sound_SoundObjectDraw("Scene/Sound/SoundObjectDraw");
