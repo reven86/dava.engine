@@ -47,14 +47,13 @@ void EditorLODSystem::AddSelectedLODsRecursive(DAVA::Entity *entity)
     {
         selectedLODs.push_back(tmpComponent);
     }
-    if (!entity->GetSolid())
+    if (entity->GetSolid() || !SettingsManager::GetValue(Settings::Scene_RefreshLodForNonSolid).AsBool())
     {
-        return;
-    }
-    DAVA::int32 count = entity->GetChildrenCount();
-    for (DAVA::int32 i = 0; i < count; ++i)
-    {
-        AddSelectedLODsRecursive(entity->GetChild(i));
+        DAVA::int32 count = entity->GetChildrenCount();
+        for (DAVA::int32 i = 0; i < count; ++i)
+        {
+            AddSelectedLODsRecursive(entity->GetChild(i));
+        }
     }
 }
 
@@ -242,11 +241,6 @@ bool EditorLODSystem::CheckSelectedContainsEntity(const DAVA::Entity *arg) const
 void EditorLODSystem::SolidChanged(const Entity *entity, bool value)
 {
     DVASSERT(entity);
-    if (!CheckSelectedContainsEntity(entity))
-    {
-        return;
-    }
-
     if (value)
     {
         DAVA::int32 count = entity->GetChildrenCount();
