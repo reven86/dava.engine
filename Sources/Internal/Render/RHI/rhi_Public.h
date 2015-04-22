@@ -187,6 +187,7 @@ Packet
     HPipelineState      renderPipelineState;
     HDepthStencilState  depthStencilState;
     HSamplerState       samplerState;
+    CullMode            cullMode;
     uint32              vertexConstCount;
     HConstBuffer        vertexConst[MAX_CONST_BUFFER_COUNT];
     uint32              fragmentConstCount;
@@ -200,6 +201,7 @@ Packet
                             vertexLayoutUID(VertexLayout::InvalidUID),
                             depthStencilState(InvalidHandle),
                             samplerState(InvalidHandle),
+                            cullMode(CULL_CCW),
                             vertexConstCount(0),
                             fragmentConstCount(0),
                             primitiveCount(0)

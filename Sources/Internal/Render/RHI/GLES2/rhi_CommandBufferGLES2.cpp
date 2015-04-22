@@ -1,4 +1,4 @@
-
+﻿
     #include "../Common/rhi_Pool.h"
     #include "rhi_GLES2.h"
     #include "rhi_ProgGLES2.h"
@@ -34,6 +34,7 @@ CommandGLES2
     GLES2__SET_INDICES,
 
     GLES2__SET_PIPELINE_STATE,
+    GLES2__SET_CULL_MODE,
     GLES2__SET_VERTEX_PROG_CONST_BUFFER,
     GLES2__SET_FRAGMENT_PROG_CONST_BUFFER,
     GLES2__SET_TEXTURE,
@@ -221,6 +222,15 @@ static void
 gles2_CommandBuffer_SetPipelineState( Handle cmdBuf, Handle ps, uint32 vdecl )
 {
     CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_PIPELINE_STATE, ps, vdecl );
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_CommandBuffer_SetCullMode( Handle cmdBuf, CullMode mode )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_CULL_MODE, mode );
 }
 
 
@@ -633,6 +643,30 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                 }
 
                 c += 2;
+            }   break;
+            
+            case GLES2__SET_CULL_MODE :
+            {
+                switch( CullMode(arg[0]) )
+                {
+                    case CULL_NONE :
+                        glDisable( GL_CULL_FACE );
+                        break;
+
+                    case CULL_CCW :
+                        glEnable( GL_CULL_FACE );
+                        glFrontFace( GL_CW );
+                        glCullFace( GL_BACK );
+                        break;
+
+                    case CULL_CW :
+                        glEnable( GL_CULL_FACE );
+                        glFrontFace( GL_CW );
+                        glCullFace( GL_FRONT );
+                        break;
+                }
+
+                c += 1;
             }   break;
 
             case GLES2__SET_DEPTHSTENCIL_STATE :
@@ -1203,6 +1237,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_Begin                  = &gles2_CommandBuffer_Begin;
     dispatch->impl_CommandBuffer_End                    = &gles2_CommandBuffer_End;
     dispatch->impl_CommandBuffer_SetPipelineState       = &gles2_CommandBuffer_SetPipelineState;
+    dispatch->impl_CommandBuffer_SetCullMode            = &gles2_CommandBuffer_SetCullMode;
     dispatch->impl_CommandBuffer_SetVertexData          = &gles2_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &gles2_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &gles2_CommandBuffer_SetVertexTexture;

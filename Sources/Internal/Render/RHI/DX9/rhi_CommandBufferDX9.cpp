@@ -45,6 +45,7 @@ CommandDX9
     DX9__SET_INDICES,
 
     DX9__SET_PIPELINE_STATE,
+    DX9__SET_CULL_MODE,
     DX9__SET_VERTEX_PROG_CONST_BUFFER,
     DX9__SET_FRAGMENT_PROG_CONST_BUFFER,
     DX9__SET_TEXTURE,
@@ -198,6 +199,15 @@ static void
 dx9_CommandBuffer_SetPipelineState( Handle cmdBuf, Handle ps, uint32 vdecl )
 {
     CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_PIPELINE_STATE, ps, vdecl );
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+dx9_CommandBuffer_SetCullMode( Handle cmdBuf, CullMode mode )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_CULL_MODE, mode );
 }
 
 
@@ -495,7 +505,6 @@ SCOPED_FUNCTION_TIMING();
                     bool    clear_depth = passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR;
 
                     DX9_CALL(_D3D9_Device->BeginScene(),"BeginScene");
-                    DX9_CALL(_D3D9_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW), "SetInitialCull");
                     
                     if( clear_color  ||  clear_depth )
                     {
@@ -557,6 +566,21 @@ SCOPED_FUNCTION_TIMING();
 
                 StatSet::IncStat( stat_SET_PS, 1 );
                 c += 2;
+            }   break;
+            
+            case DX9__SET_CULL_MODE :
+            {
+                DWORD   mode = D3DCULL_CCW;
+
+                switch( CullMode(arg[0]) )
+                {
+                    case CULL_NONE  : mode = D3DCULL_NONE; break;
+                    case CULL_CW    : mode = D3DCULL_CW; break;
+                    case CULL_CCW   : mode = D3DCULL_CCW; break;
+                }
+
+                _D3D9_Device->SetRenderState( D3DRS_CULLMODE, mode); 
+                c += 1;
             }   break;
 
             case DX9__SET_DEPTHSTENCIL_STATE :
@@ -699,6 +723,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_Begin                  = &dx9_CommandBuffer_Begin;
     dispatch->impl_CommandBuffer_End                    = &dx9_CommandBuffer_End;
     dispatch->impl_CommandBuffer_SetPipelineState       = &dx9_CommandBuffer_SetPipelineState;
+    dispatch->impl_CommandBuffer_SetCullMode            = &dx9_CommandBuffer_SetCullMode;
     dispatch->impl_CommandBuffer_SetVertexData          = &dx9_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &dx9_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &dx9_CommandBuffer_SetVertexTexture;

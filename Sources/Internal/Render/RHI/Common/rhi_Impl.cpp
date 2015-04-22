@@ -404,6 +404,12 @@ SetPipelineState( Handle cmdBuf, Handle ps, uint32 layout )
 }
 
 void
+SetCullMode( Handle cmdBuf, CullMode mode )
+{
+    (*_Impl.impl_CommandBuffer_SetCullMode)( cmdBuf, mode );
+}
+
+void
 SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex )
 {
     (*_Impl.impl_CommandBuffer_SetVertexData)( cmdBuf, vb, streamIndex );

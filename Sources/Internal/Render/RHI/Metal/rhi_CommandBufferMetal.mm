@@ -202,8 +202,38 @@ metal_CommandBuffer_SetPipelineState( Handle cmdBuf, Handle ps, uint32 layoutUID
 {
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
 
-    PipelineStateMetal::SetToRHI( ps, layoutUID, cb->encoder );        
+    PipelineStateMetal::SetToRHI( ps, layoutUID, cb->encoder );
     StatSet::IncStat( stat_SET_PS, 1 );
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+metal_CommandBuffer_SetCullMode( Handle cmdBuf, CullMode mode )
+{
+    CommandBufferMetal_t*   cb = ;
+    id<MTLParallelRenderCommandEncoder> encoder = CommandBufferPool::Get( cmdBuf )->encoder;
+
+
+    switch( mode )
+    {
+        case CULL_NONE :
+            [encoder setCullMode:MTLCullModeNode ]
+            break;
+        
+        case CULL_CCW :
+            [encoder setFrontFacingWinding:MTLWindingClockwise ]
+            [encoder setCullMode:MTLCullModeBack ]
+            break;
+        
+        case CULL_CW :
+            [encoder setFrontFacingWinding:MTLWindingClockwise ]
+            [encoder setCullMode:MTLCullModeFront ]
+            break;
+    }
+    
+    [cb->encoder ];
 }
 
 
@@ -389,6 +419,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_Begin                  = &metal_CommandBuffer_Begin;
     dispatch->impl_CommandBuffer_End                    = &metal_CommandBuffer_End;
     dispatch->impl_CommandBuffer_SetPipelineState       = &metal_CommandBuffer_SetPipelineState;
+    dispatch->impl_CommandBuffer_SetCullMode            = &metal_CommandBuffer_SetCullMode;
     dispatch->impl_CommandBuffer_SetVertexData          = &metal_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &metal_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &metal_CommandBuffer_SetVertexTexture;

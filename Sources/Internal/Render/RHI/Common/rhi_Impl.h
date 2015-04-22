@@ -92,6 +92,7 @@ Dispatch
     void    (*impl_CommandBuffer_Begin)( Handle );
     void    (*impl_CommandBuffer_End)( Handle );
     void    (*impl_CommandBuffer_SetPipelineState)( Handle, Handle, uint32 vdecl );
+    void    (*impl_CommandBuffer_SetCullMode)( Handle, CullMode );
     void    (*impl_CommandBuffer_SetVertexData)( Handle, Handle, uint32 );
     void    (*impl_CommandBuffer_SetVertexConstBuffer)( Handle, uint32, Handle );
     void    (*impl_CommandBuffer_SetVertexTexture)( Handle, uint32, Handle );
