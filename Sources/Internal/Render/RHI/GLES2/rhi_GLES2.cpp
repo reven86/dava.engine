@@ -494,6 +494,13 @@ GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* 
             *type           = GL_UNSIGNED_BYTE;
             success         = true;
             break;
+
+        case TEXTURE_FORMAT_R8 :
+            *internalFormat = GL_ALPHA; 
+            *format         = GL_ALPHA;
+            *type           = GL_UNSIGNED_BYTE;
+            success         = true;
+            break;
             
         default :
             success = false;

@@ -81,7 +81,6 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
     {
         case TEXTURE_TYPE_2D :
         {
-
             hr = _D3D9_Device->CreateTexture( desc.width, desc.height,
                                               mip_count,
                                               usage,
