@@ -74,7 +74,7 @@ VDeclDX9::Get( const VertexLayout& layout )
             elem[elemCount].Stream      = 0;
             elem[elemCount].Offset      = (WORD)(layout.ElementOffset( i ));
             elem[elemCount].Method      = D3DDECLMETHOD_DEFAULT;
-            elem[elemCount].UsageIndex  = 0;
+            elem[elemCount].UsageIndex  = layout.ElementSemanticsIndex( i );
 
             switch( layout.ElementSemantics(i) )
             {
