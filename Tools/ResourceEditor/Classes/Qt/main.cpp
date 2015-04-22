@@ -119,6 +119,7 @@ int main(int argc, char *argv[])
 
 void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 {
+    DAVA::QtLayer::MakeAppForeground(false);
     Core::Instance()->EnableConsoleMode();
     DAVA::Logger::Instance()->SetLogLevel( DAVA::Logger::LEVEL_WARNING );
 
@@ -194,6 +195,8 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 
 void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
 {
+    DAVA::QtLayer::MakeAppForeground();
+    
 #ifdef Q_OS_MAC
     // Must be called before creating QApplication instance
     FixOSXFonts();

@@ -78,7 +78,7 @@ public:
 
     void MouseEvent(const UIEvent & event);
 
-    void MakeAppForeground();
+    static void MakeAppForeground( bool foreground = true );
     
 protected:
     void CopyEvents(UIEvent & newEvent, const UIEvent & sourceEvent);
