@@ -34,6 +34,7 @@
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #elif defined(__DAVAENGINE_WIN32__)
 #include <stdlib.h>
 #include <stdio.h>
@@ -108,7 +109,19 @@ FileList::FileList(const FilePath & filepath)
 			entry.path = path + namelist[n]->d_name;
 			entry.name = namelist[n]->d_name;
 			entry.size = 0;
-			entry.isDirectory = namelist[n]->d_type == DT_DIR;
+
+            if(namelist[n]->d_type==DT_LNK)
+            {
+                struct stat link_stat;
+                if (stat(entry.path.GetAbsolutePathname().c_str(), &link_stat) == 0)
+                {
+                    entry.isDirectory = ((link_stat.st_mode) & S_IFMT) == S_IFDIR;
+                }
+            }
+            else
+            {
+                entry.isDirectory = namelist[n]->d_type == DT_DIR;
+            }
             if(entry.isDirectory)
             {
                 entry.path.MakeDirectoryPathname();
