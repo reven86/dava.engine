@@ -230,7 +230,7 @@ void
 gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace face )
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
-    Size2i          sz   = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
+    Size2i          sz   = TextureExtents( Size2i(self->width,self->height), level );
     
     DVASSERT(!self->isMapped);
 
@@ -238,7 +238,7 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
     GLCommand   cmd[]  =
     {
         { GLCommand::BIND_TEXTURE, {target, self->uid} },
-        { GLCommand::TEX_IMAGE2D, {target, uint64(level), GL_RGBA, uint64(sz.dx), uint64(sz.dy), 0, GL_BGRA, GL_UNSIGNED_BYTE, (uint64)(level)} },
+        { GLCommand::TEX_IMAGE2D, {target, uint64(level), GL_RGBA, uint64(sz.dx), uint64(sz.dy), 0, GL_BGRA, GL_UNSIGNED_BYTE, (uint64)(data)} },
         { GLCommand::BIND_TEXTURE, {target, 0} }
     };
 

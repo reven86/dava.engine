@@ -496,6 +496,7 @@ SCOPED_FUNCTION_TIMING();
                     bool    clear_depth = passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR;
 
                     DX9_CALL(_D3D9_Device->BeginScene(),"BeginScene");
+                    DX9_CALL(_D3D9_Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW), "SetInitialCull");
                     
                     if( clear_color  ||  clear_depth )
                     {

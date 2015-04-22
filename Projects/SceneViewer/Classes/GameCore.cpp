@@ -50,8 +50,9 @@ void GameCore::OnAppStarted()
     selectSceneScreen = new SelectSceneScreen();
     viewSceneScreen = new ViewSceneScreen();
     
-    //SetScenePath("~doc:/karelia/karelia.sc2");
-    SetScenePath("~doc:/karelia/gates.sc2");
+    SetScenePath("~doc:/karelia/karelia.sc2");
+    //SetScenePath("~doc:/karelia/gates.sc2");
+    //SetScenePath("~doc:/karelia/objects/k_s01.sc2");
     UIScreenManager::Instance()->SetFirst(viewSceneScreen->GetScreenID());
     //UIScreenManager::Instance()->SetFirst(selectSceneScreen->GetScreenID());
 }

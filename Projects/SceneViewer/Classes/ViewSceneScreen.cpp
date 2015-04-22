@@ -60,10 +60,10 @@ void ViewSceneScreen::LoadResources()
 	camera->SetLeft(Vector3(1, 0, 0));
 	camera->SetUp(Vector3(0, 0, 1.f));
     camera->SetTarget(Vector3(0, 0, 0));
-    camera->SetPosition(Vector3(0, 0, -10));    
+    camera->SetPosition(Vector3(0, -45, 10));    
 
     
-    scene->AddCamera(camera);
+    scene->AddCamera(camera);    
     scene->SetCurrentCamera(camera);
     
     const Rect screenRect = GetRect();
