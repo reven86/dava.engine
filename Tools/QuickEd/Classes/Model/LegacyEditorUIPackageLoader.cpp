@@ -108,12 +108,14 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
     UIControl *control = NULL;
     const YamlNode *type = node->Get("type");
     const YamlNode *baseType = node->Get("baseType");
+    bool loadChildren = true;
     if (type->AsString() == "UIAggregatorControl")
     {
+        loadChildren = false;
         const YamlNode *pathNode = node->Get("aggregatorPath");
         RefPtr<UIPackage> importedPackage = builder->ProcessImportedPackage(pathNode->AsString(), this);
         DVASSERT(importedPackage.Get());
-        builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), importedPackage->GetControl(0)->GetName(), "", this);
+        control = builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), importedPackage->GetControl(0)->GetName(), "", this);
     }
     else if (baseType)
         control = builder->BeginControlWithCustomClass(type->AsString(), baseType->AsString());
@@ -129,16 +131,19 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
         LoadInternalControlPropertiesFromYamlNode(control, node);
         
         // load children
-        const YamlNode * childrenNode = node->Get("children");
-        if (childrenNode == NULL)
-            childrenNode = node;
-        for (uint32 i = 0; i < childrenNode->GetCount(); ++i)
+        if (loadChildren)
         {
-            const YamlNode *childNode = childrenNode->Get(i);
-            if (childNode->Get("type"))
+            const YamlNode * childrenNode = node->Get("children");
+            if (childrenNode == NULL)
+                childrenNode = node;
+            for (uint32 i = 0; i < childrenNode->GetCount(); ++i)
             {
-                String name = childrenNode->GetItemKeyName(i);
-                LoadControl(name, childNode);
+                const YamlNode *childNode = childrenNode->Get(i);
+                if (childNode->Get("type"))
+                {
+                    String name = childrenNode->GetItemKeyName(i);
+                    LoadControl(name, childNode);
+                }
             }
         }
         
