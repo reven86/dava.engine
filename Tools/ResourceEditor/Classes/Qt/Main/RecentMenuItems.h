@@ -43,6 +43,7 @@ class RecentMenuItems
 {
 public:
     
+    RecentMenuItems(RecentMenuItems &rmi) = delete;
     RecentMenuItems(const DAVA::FastName & settingsKeyCount, const DAVA::FastName & settingsKeyData);
 
     void SetMenu(QMenu *menu);
@@ -54,13 +55,11 @@ public:
 
     DAVA::String GetItem(const QAction *action) const;
     
-protected:
+private:
 
     void AddInternal(const DAVA::String & recent);
     void RemoveMenuItems();
 
-protected:
-    
     QList<QAction *> actions;
     QMenu *menu;
 
