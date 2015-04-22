@@ -38,12 +38,12 @@
 #include "Commands2/CopyLastLODCommand.h"
 
 EditorLODSystem::EditorLODSystem(DAVA::Scene * scene)
-    :    DAVA::SceneSystem(scene)
-    ,    currentLodsLayersCount(0)
-    ,    forceDistanceEnabled(false)
-    ,    forceDistance(DAVA::LodComponent::MIN_LOD_DISTANCE)
-    ,    forceLayer(DAVA::LodComponent::INVALID_LOD_LAYER)
-    ,    allSceneModeEnabled(false)
+    : DAVA::SceneSystem(scene)
+    , currentLodsLayersCount(0)
+    , forceDistanceEnabled(false)
+    , forceDistance(DAVA::LodComponent::MIN_LOD_DISTANCE)
+    , forceLayer(DAVA::LodComponent::INVALID_LOD_LAYER)
+    , allSceneModeEnabled(false)
 {
 }
 

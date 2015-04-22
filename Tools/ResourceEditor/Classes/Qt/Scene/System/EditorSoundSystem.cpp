@@ -33,7 +33,7 @@
 #include "Debug/DVAssert.h"
 
 EditorSoundSystem::EditorSoundSystem(DAVA::Scene * scene)
-    :   DAVA::SceneSystem(scene)
+    : DAVA::SceneSystem(scene)
 {
 }
 
@@ -67,17 +67,14 @@ void EditorSoundSystem::Pause()
         for(auto i = 0; i < eventCount; ++i)
         {
             auto soundEvent = sound->GetSoundEvent(i);
-            auto flags = sound->GetSoundEventFlags(i);
-            if((flags & DAVA::SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER) == DAVA::SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER)
+            if(soundEvent->IsActive())
             {
-                if(soundEvent->IsActive())
+                auto flags = sound->GetSoundEventFlags(i);
+                if((flags & DAVA::SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER) == DAVA::SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER)
                 {
                     soundEvent->Stop();
                 }
-            }
-            else
-            {
-                if(soundEvent->IsActive())
+                else
                 {
                     soundEvent->SetPaused(true);
                     pausedEvents.push_back(soundEvent);
