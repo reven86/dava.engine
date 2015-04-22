@@ -50,6 +50,17 @@ void QtLayer::ReleaseAutoreleasePool(void *pool)
     [autoreleasePool release];
 }
     
+void QtLayer::MakeAppForeground()
+{
+    ProcessSerialNumber psn = { 0, kCurrentProcess };
+    OSStatus transformStatus = TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+    
+    if ( transformStatus == 0 )
+    {
+        [NSApp activateIgnoringOtherApps:YES];
+    }
+}
+    
 };
 
 

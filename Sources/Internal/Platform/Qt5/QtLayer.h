@@ -77,6 +77,8 @@ public:
     void KeyReleased(char16 key);
 
     void MouseEvent(const UIEvent & event);
+
+    void MakeAppForeground();
     
 protected:
     void CopyEvents(UIEvent & newEvent, const UIEvent & sourceEvent);

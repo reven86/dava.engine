@@ -22,6 +22,7 @@ FrameworkLoop::FrameworkLoop()
     SetMaxFps( 60 );
 
     DAVA::QtLayer::Instance()->SetDelegate( this );
+    DAVA::QtLayer::Instance()->MakeAppForeground();
 }
 
 FrameworkLoop::~FrameworkLoop()
