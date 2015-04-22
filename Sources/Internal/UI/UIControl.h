@@ -1445,13 +1445,13 @@ private:
     
 /* Components */
 public:
-    void PutComponent(UIComponent * component);
+    void AddComponent(UIComponent * component);
     void RemoveComponent(UIComponent * component);
-    void RemoveComponent(uint32 componentType);
+    void RemoveComponent(uint32 componentType, uint32 index = 0);
     void RemoveAllComponents();
 
-    UIComponent * GetComponent(uint32 componentType) const;
-    UIComponent * GetOrCreateComponent(uint32 componentType);
+    UIComponent * GetComponent(uint32 componentType, uint32 index = 0) const;
+    UIComponent * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
 
     template<class T> inline T* GetComponent(uint32 index = 0) const
     {
@@ -1461,13 +1461,13 @@ public:
     {
         return DynamicTypeCheck<T*>(GetOrCreateComponent(T::C_TYPE, index));
     }
-    template<class T> inline uint32 HasComponent() const
+    template<class T> inline uint32 GetComonentCount() const
     {
-        return HasComponent(T::C_TYPE);
+        return GetComponentCount(T::C_TYPE);
     }
 
     uint32 GetComponentCount() const;
-    bool HasComponent(uint32 componentType) const;
+    uint32 GetComponentCount(uint32 componentType) const;
     uint64 GetAvailableComponentFlags() const;
 
 private:

@@ -15,7 +15,7 @@ ComponentPropertiesSection::ComponentPropertiesSection(UIControl *control, UICom
     component = UIComponent::CreateByType(type);
     DVASSERT(component);
 
-    control->PutComponent(component);
+    control->AddComponent(component);
     
     if (component)
     {
@@ -65,13 +65,9 @@ bool ComponentPropertiesSection::HasChanges() const
 
 void ComponentPropertiesSection::InstallComponent()
 {
-    if (!control->HasComponent(component->GetType()))
+    if (control->GetComponent(component->GetType(), 0) != component)
     {
-        control->PutComponent(component);
-    }
-    else
-    {
-        DVASSERT(control->GetComponent(component->GetType()) == component);
+        control->AddComponent(component);
     }
 }
 

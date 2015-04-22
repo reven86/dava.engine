@@ -339,7 +339,7 @@ UIComponent *DefaultUIPackageBuilder::BeginComponentPropertiesSecion(uint32 comp
 {
     UIComponent *component = UIComponent::CreateByType(componentType);
     UIControl *control = controlsStack.back()->control.Get();
-    control->PutComponent(component);
+    control->AddComponent(component);
     component->Release();
     currentObject = component;
     return component;

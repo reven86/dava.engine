@@ -2769,49 +2769,36 @@ namespace DAVA
 
     /* Components */
 
-    void UIControl::PutComponent(UIComponent * component)
+    void UIControl::AddComponent(UIComponent * component)
     {
         component->SetControl(this);
-        uint32 componentType = component->GetType();
-        uint32 maxCount = family->GetComponentsCount(componentType);
-        if (maxCount > 0)
-        {
-            DVASSERT(maxCount == 1);
-            uint32 index = family->GetComponentIndex(componentType, 0);
-            SafeRetain(component);
-            SafeRelease(components[index]);
-            components[index] = component;
-        }
-        else
-        {
-            components.push_back(SafeRetain(component));
-            std::stable_sort(components.begin(), components.end(), [](UIComponent * left, UIComponent * right) {
-                return left->GetType() < right->GetType();
-            });
-            UpdateFamily();
-        }
+        components.push_back(SafeRetain(component));
+        std::stable_sort(components.begin(), components.end(), [](UIComponent * left, UIComponent * right) {
+            return left->GetType() < right->GetType();
+        });
+        UpdateFamily();
     }
 
-    UIComponent * UIControl::GetComponent(uint32 componentType) const
+    UIComponent * UIControl::GetComponent(uint32 componentType, uint32 index) const
     {
         uint32 maxCount = family->GetComponentsCount(componentType);
-        if (maxCount > 0)
+        if (index < maxCount)
         {
-            DVASSERT(maxCount == 1);
-            return components[family->GetComponentIndex(componentType, 0)];
+            return components[family->GetComponentIndex(componentType, index)];
         }
         return nullptr;
     }
 
-    UIComponent * UIControl::GetOrCreateComponent(uint32 componentType)
+    UIComponent * UIControl::GetOrCreateComponent(uint32 componentType, uint32 index)
     {
-        UIComponent * ret = GetComponent(componentType);
+        UIComponent * ret = GetComponent(componentType, index);
         if (!ret)
         {
+            DVASSERT(index == 0);
             ret = UIComponent::CreateByType(componentType);
             if (ret)
             {
-                PutComponent(ret);
+                AddComponent(ret);
                 ret->Release(); // refCount was increased in AddComponent
             }
         }
@@ -2845,9 +2832,9 @@ namespace DAVA
         }
     }
 
-    void UIControl::RemoveComponent(uint32 componentType)
+    void UIControl::RemoveComponent(uint32 componentType, uint32 index)
     {
-        UIComponent * c = GetComponent(componentType);
+        UIComponent * c = GetComponent(componentType, index);
         if (c)
         {
             RemoveComponent(c);
@@ -2866,9 +2853,9 @@ namespace DAVA
         return static_cast<uint32>(components.size());
     }
     
-    bool UIControl::HasComponent(uint32 componentType) const
+    uint32 UIControl::GetComponentCount(uint32 componentType) const
     {
-        return family->GetComponentsCount(componentType) > 0;
+        return family->GetComponentsCount(componentType);
     }
     
     uint64 UIControl::GetAvailableComponentFlags() const
