@@ -110,17 +110,19 @@ FileList::FileList(const FilePath & filepath)
 			entry.name = namelist[n]->d_name;
 			entry.size = 0;
 
-            if(namelist[n]->d_type==DT_LNK)
+#if defined(__DAVAENGINE_MACOS__)
+            if(DT_LNK == namelist[n]->d_type)
             {
                 struct stat link_stat;
-                if (stat(entry.path.GetAbsolutePathname().c_str(), &link_stat) == 0)
+                if (0 == stat(entry.path.GetAbsolutePathname().c_str(), &link_stat))
                 {
-                    entry.isDirectory = ((link_stat.st_mode) & S_IFMT) == S_IFDIR;
+                    entry.isDirectory = (S_IFDIR == ((link_stat.st_mode) & S_IFMT));
                 }
             }
             else
+#endif
             {
-                entry.isDirectory = namelist[n]->d_type == DT_DIR;
+                entry.isDirectory = (DT_DIR == namelist[n]->d_type);
             }
             if(entry.isDirectory)
             {
