@@ -61,7 +61,7 @@ public:
 	 */
 	ScrollHelper();
 	
-    void CopyDataFrom(ScrollHelper *src);
+    void CopyDataFrom(const ScrollHelper *src);
 
 	/**
 	 \brief Sets new scrolling position.

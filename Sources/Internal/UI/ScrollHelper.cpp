@@ -55,7 +55,7 @@ namespace DAVA
 		backward = 0.3f;
 	}
 
-    void ScrollHelper::CopyDataFrom(ScrollHelper *src)
+    void ScrollHelper::CopyDataFrom(const ScrollHelper *src)
     {
         position = src->position;
         elementSize = src->elementSize;
