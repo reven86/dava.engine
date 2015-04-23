@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib\CMakeLibTests.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testGeneratedFileStream.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testRST.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testSystemTools.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testUTF8.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testXMLParser.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testXMLSafe.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testVisualStudioSlnParser.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{12B62A34-3523-4EA4-B67D-6A82F89A6C58}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

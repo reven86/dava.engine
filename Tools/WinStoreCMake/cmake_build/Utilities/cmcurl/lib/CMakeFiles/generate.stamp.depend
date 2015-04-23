@@ -1,0 +1,5 @@
+# CMake generation dependency list for this directory.
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Utilities/cmcurl/lib/CMakeLists.txt
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Utilities/cmcurl/include/curl/curlbuild.h.cmake
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Utilities/cmcurl/lib/curl_config.h.cmake
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Utilities/cmcurl/lib/Makefile.inc.cmake

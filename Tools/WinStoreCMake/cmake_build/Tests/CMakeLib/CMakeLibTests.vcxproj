@@ -1,0 +1,363 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|Win32">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|Win32">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGUID>{C7558671-679C-4246-AF76-6BAA55F45C44}</ProjectGUID>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>Win32</Platform>
+    <ProjectName>CMakeLibTests</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+    <PropertyGroup>
+      <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib\Debug\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CMakeLibTests.dir\Debug\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CMakeLibTests</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.exe</TargetExt>
+      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+      <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</GenerateManifest>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib\Release\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CMakeLibTests.dir\Release\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CMakeLibTests</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.exe</TargetExt>
+      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+      <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateManifest>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib\MinSizeRel\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CMakeLibTests.dir\MinSizeRel\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CMakeLibTests</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">.exe</TargetExt>
+      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkIncremental>
+      <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">true</GenerateManifest>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib\RelWithDebInfo\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CMakeLibTests.dir\RelWithDebInfo\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CMakeLibTests</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">.exe</TargetExt>
+      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">true</LinkIncremental>
+      <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">true</GenerateManifest>
+    </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Debug/</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;CURL_STATICLIB;LIBARCHIVE_STATIC;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;CURL_STATICLIB;LIBARCHIVE_STATIC;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalOptions> /machine:X86 /debug %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;..\..\Source\Debug\CMakeLib.lib;..\..\Source\kwsys\Debug\cmsys.lib;Psapi.lib;..\..\Utilities\cmexpat\Debug\cmexpat.lib;..\..\Utilities\cmlibarchive\libarchive\Debug\cmlibarchive.lib;..\..\Utilities\cmliblzma\Debug\cmliblzma.lib;..\..\Utilities\cmbzip2\Debug\cmbzip2.lib;..\..\Utilities\cmcompress\Debug\cmcompress.lib;..\..\Utilities\cmcurl\lib\Debug\cmcurl.lib;..\..\Utilities\cmzlib\Debug\cmzlib.lib;winmm.lib;ws2_32.lib;..\..\Utilities\cmjsoncpp\Debug\cmjsoncpp.lib;rpcrt4.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Tests/CMakeLib/Debug/CMakeLibTests.lib</ImportLibrary>
+      <ProgramDataBaseFile>E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Tests/CMakeLib/Debug/CMakeLibTests.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <Version></Version>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Release/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;CURL_STATICLIB;LIBARCHIVE_STATIC;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat></DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;CURL_STATICLIB;LIBARCHIVE_STATIC;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalOptions> /machine:X86 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;..\..\Source\Release\CMakeLib.lib;..\..\Source\kwsys\Release\cmsys.lib;Psapi.lib;..\..\Utilities\cmexpat\Release\cmexpat.lib;..\..\Utilities\cmlibarchive\libarchive\Release\cmlibarchive.lib;..\..\Utilities\cmliblzma\Release\cmliblzma.lib;..\..\Utilities\cmbzip2\Release\cmbzip2.lib;..\..\Utilities\cmcompress\Release\cmcompress.lib;..\..\Utilities\cmcurl\lib\Release\cmcurl.lib;..\..\Utilities\cmzlib\Release\cmzlib.lib;winmm.lib;ws2_32.lib;..\..\Utilities\cmjsoncpp\Release\cmjsoncpp.lib;rpcrt4.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Tests/CMakeLib/Release/CMakeLibTests.lib</ImportLibrary>
+      <ProgramDataBaseFile>E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Tests/CMakeLib/Release/CMakeLibTests.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <Version></Version>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>MinSizeRel/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;CURL_STATICLIB;LIBARCHIVE_STATIC;CMAKE_INTDIR="MinSizeRel";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat></DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;CURL_STATICLIB;LIBARCHIVE_STATIC;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalOptions> /machine:X86 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;..\..\Source\MinSizeRel\CMakeLib.lib;..\..\Source\kwsys\MinSizeRel\cmsys.lib;Psapi.lib;..\..\Utilities\cmexpat\MinSizeRel\cmexpat.lib;..\..\Utilities\cmlibarchive\libarchive\MinSizeRel\cmlibarchive.lib;..\..\Utilities\cmliblzma\MinSizeRel\cmliblzma.lib;..\..\Utilities\cmbzip2\MinSizeRel\cmbzip2.lib;..\..\Utilities\cmcompress\MinSizeRel\cmcompress.lib;..\..\Utilities\cmcurl\lib\MinSizeRel\cmcurl.lib;..\..\Utilities\cmzlib\MinSizeRel\cmzlib.lib;winmm.lib;ws2_32.lib;..\..\Utilities\cmjsoncpp\MinSizeRel\cmjsoncpp.lib;rpcrt4.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Tests/CMakeLib/MinSizeRel/CMakeLibTests.lib</ImportLibrary>
+      <ProgramDataBaseFile>E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Tests/CMakeLib/MinSizeRel/CMakeLibTests.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <Version></Version>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>RelWithDebInfo/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;CURL_STATICLIB;LIBARCHIVE_STATIC;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;CURL_STATICLIB;LIBARCHIVE_STATIC;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalOptions> /machine:X86 /debug %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;..\..\Source\RelWithDebInfo\CMakeLib.lib;..\..\Source\kwsys\RelWithDebInfo\cmsys.lib;Psapi.lib;..\..\Utilities\cmexpat\RelWithDebInfo\cmexpat.lib;..\..\Utilities\cmlibarchive\libarchive\RelWithDebInfo\cmlibarchive.lib;..\..\Utilities\cmliblzma\RelWithDebInfo\cmliblzma.lib;..\..\Utilities\cmbzip2\RelWithDebInfo\cmbzip2.lib;..\..\Utilities\cmcompress\RelWithDebInfo\cmcompress.lib;..\..\Utilities\cmcurl\lib\RelWithDebInfo\cmcurl.lib;..\..\Utilities\cmzlib\RelWithDebInfo\cmzlib.lib;winmm.lib;ws2_32.lib;..\..\Utilities\cmjsoncpp\RelWithDebInfo\cmjsoncpp.lib;rpcrt4.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Tests/CMakeLib/RelWithDebInfo/CMakeLibTests.lib</ImportLibrary>
+      <ProgramDataBaseFile>E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Tests/CMakeLib/RelWithDebInfo/CMakeLibTests.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <Version></Version>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CMakeLib/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo -BE:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build --check-stamp-file E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib\CMakeFiles\generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CMakeLib/CMakeLists.txt;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\CMakeLists.txt;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testVisualStudioSlnParser.h.in;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testXMLParser.h.in;C:\Program Files (x86)\CMake\share\cmake-3.2\Templates\TestDriver.cxx.in;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CMakeLib/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo -BE:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build --check-stamp-file E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib\CMakeFiles\generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CMakeLib/CMakeLists.txt;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\CMakeLists.txt;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testVisualStudioSlnParser.h.in;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testXMLParser.h.in;C:\Program Files (x86)\CMake\share\cmake-3.2\Templates\TestDriver.cxx.in;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CMakeLib/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo -BE:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build --check-stamp-file E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib\CMakeFiles\generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CMakeLib/CMakeLists.txt;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\CMakeLists.txt;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testVisualStudioSlnParser.h.in;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testXMLParser.h.in;C:\Program Files (x86)\CMake\share\cmake-3.2\Templates\TestDriver.cxx.in;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CMakeLib/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo -BE:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build --check-stamp-file E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib\CMakeFiles\generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CMakeLib/CMakeLists.txt;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\CMakeLists.txt;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testVisualStudioSlnParser.h.in;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testXMLParser.h.in;C:\Program Files (x86)\CMake\share\cmake-3.2\Templates\TestDriver.cxx.in;E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Tests\CMakeLib\CMakeLibTests.cxx"  />
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testGeneratedFileStream.cxx"  />
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testRST.cxx"  />
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testSystemTools.cxx"  />
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testUTF8.cxx"  />
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testXMLParser.cxx"  />
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testXMLSafe.cxx"  />
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Tests\CMakeLib\testVisualStudioSlnParser.cxx"  />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Source/CMakeLib.vcxproj">
+      <Project>EC742DD8-CD66-42FA-8892-870FE30CED86</Project>
+    </ProjectReference>
+    <ProjectReference Include="E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/ZERO_CHECK.vcxproj">
+      <Project>44B82225-7E3A-4A90-AC9B-6006A5AFB1EA</Project>
+    </ProjectReference>
+    <ProjectReference Include="E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Utilities/cmbzip2/cmbzip2.vcxproj">
+      <Project>CED32B44-0208-4324-A295-B7EF5F94B95F</Project>
+    </ProjectReference>
+    <ProjectReference Include="E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Utilities/cmcompress/cmcompress.vcxproj">
+      <Project>593BD1EF-60E4-4677-AE62-96BF106F8354</Project>
+    </ProjectReference>
+    <ProjectReference Include="E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Utilities/cmcurl/lib/cmcurl.vcxproj">
+      <Project>3C6A6ECF-4A77-4179-B006-C5E04DF5603F</Project>
+    </ProjectReference>
+    <ProjectReference Include="E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Utilities/cmexpat/cmexpat.vcxproj">
+      <Project>A59E8750-281C-4B3E-A073-8AC4E7921BB3</Project>
+    </ProjectReference>
+    <ProjectReference Include="E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Utilities/cmjsoncpp/cmjsoncpp.vcxproj">
+      <Project>75671BC5-C247-4F37-A135-02F10EB9C366</Project>
+    </ProjectReference>
+    <ProjectReference Include="E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Utilities/cmlibarchive/libarchive/cmlibarchive.vcxproj">
+      <Project>26B67A6C-A2B9-4E6A-99DF-A312BA802604</Project>
+    </ProjectReference>
+    <ProjectReference Include="E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Utilities/cmliblzma/cmliblzma.vcxproj">
+      <Project>376378D2-02CE-4CBC-A0F1-192D57ED4E60</Project>
+    </ProjectReference>
+    <ProjectReference Include="E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Source/kwsys/cmsys.vcxproj">
+      <Project>5C2C8561-C559-417D-A598-7182596A7DEC</Project>
+    </ProjectReference>
+    <ProjectReference Include="E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_build/Utilities/cmzlib/cmzlib.vcxproj">
+      <Project>225B2B13-3940-4E11-B0A2-1A0BF846E63A</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

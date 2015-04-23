@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmjsoncpp\src\lib_json\json_reader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmjsoncpp\src\lib_json\json_value.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmjsoncpp\src\lib_json\json_writer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmjsoncpp\src\lib_json\json_batchallocator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmjsoncpp\src\lib_json\json_tool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmjsoncpp\src\lib_json\json_valueiterator.inl">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmjsoncpp\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{12B62A34-3523-4EA4-B67D-6A82F89A6C58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{260D4E18-2095-47A2-8C53-2E4D3376F338}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

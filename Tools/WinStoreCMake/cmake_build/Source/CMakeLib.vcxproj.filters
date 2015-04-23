@@ -1,0 +1,867 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmArchiveWrite.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmBootstrapCommands1.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmBootstrapCommands2.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCacheManager.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmCommands.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCommandArgumentLexer.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCommandArgumentParser.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCommandArgumentParserHelper.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmComputeComponentGraph.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmComputeLinkDepends.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmComputeLinkInformation.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmComputeTargetDepends.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCPackPropertiesGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCryptoHash.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCurl.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCustomCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCustomCommandGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDefinitions.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDepends.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDependsC.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDependsFortran.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDependsFortranLexer.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDependsFortranParser.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDependsJava.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDependsJavaLexer.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDependsJavaParser.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDependsJavaParserHelper.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDocumentation.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDocumentationFormatter.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDocumentationSection.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDynamicLoader.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExprLexer.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExprParser.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExprParserHelper.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExportBuildFileGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExportFileGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExportInstallFileGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExportTryCompileFileGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExportSet.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExportSetMap.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExtraCodeBlocksGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExtraCodeLiteGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExtraEclipseCDT4Generator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExtraKateGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExtraSublimeTextGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmFileLock.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmFileLockPool.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmFileLockResult.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmFileTimeComparison.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGeneratedFileStream.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGeneratorExpressionDAGChecker.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGeneratorExpressionEvaluator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGeneratorExpressionLexer.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGeneratorExpressionParser.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGeneratorExpression.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGeneratorTarget.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalUnixMakefileGenerator3.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGraphVizWriter.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmInstallGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmInstallExportGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmInstalledFile.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmInstallFilesGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmInstallScriptGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmInstallTargetGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmInstallDirectoryGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmListFileCache.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmListFileLexer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmLocalGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmLocalUnixMakefileGenerator3.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmMakeDepend.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmMakefile.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmMakefileTargetGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmMakefileExecutableTargetGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmMakefileLibraryTargetGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmMakefileUtilityTargetGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmOSXBundleGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmNewLineStyle.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmOrderDirectories.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmPolicies.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmProcessTools.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmProperty.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmPropertyDefinition.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmPropertyDefinitionMap.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmPropertyMap.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmQtAutoGenerators.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmRST.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmScriptGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmSourceFile.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmSourceFileLocation.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmSourceGroup.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmSystemTools.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmTarget.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmTest.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmTestGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmUuid.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmVariableWatch.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmVersion.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmXMLParser.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmXMLSafe.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmake.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cm_get_date.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cm_sha2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cm_utf8.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCallVisualStudioMacro.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalBorlandMakefileGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalMSYSMakefileGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalMinGWMakefileGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalNMakeMakefileGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalJOMMakefileGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio6Generator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio71Generator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio7Generator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio8Generator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio9Generator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmVisualStudioGeneratorOptions.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmVisualStudio10TargetGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmLocalVisualStudio10Generator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio10Generator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio11Generator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio12Generator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio14Generator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudioGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmIDEOptions.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmLocalVisualStudio6Generator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmLocalVisualStudio7Generator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmLocalVisualStudioGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmVisualStudioSlnData.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmVisualStudioSlnParser.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmVisualStudioWCEPlatformParser.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalWatcomWMakeGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalNinjaGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmLocalNinjaGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmNinjaTargetGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmNinjaNormalTargetGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmNinjaUtilityTargetGenerator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCacheManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCommands.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmComputeComponentGraph.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmComputeLinkDepends.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmComputeLinkInformation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmComputeTargetDepends.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCPackPropertiesGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCryptoHash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCurl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCustomCommand.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCustomCommandGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDefinitions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDepends.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDependsC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDependsFortran.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDependsFortranParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDependsJava.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDependsJavaParserHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmDynamicLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExportBuildFileGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExportFileGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExportInstallFileGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExportTryCompileFileGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExportSet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExportSetMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExtraCodeBlocksGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExtraCodeLiteGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExtraEclipseCDT4Generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExtraKateGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExtraSublimeTextGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmFileLock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmFileLockPool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmFileLockResult.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmFileTimeComparison.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGeneratorExpressionDAGChecker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGeneratorExpressionEvaluator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGeneratorExpressionLexer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGeneratorExpressionParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGeneratorExpression.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGeneratorTarget.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalGeneratorFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalUnixMakefileGenerator3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGraphAdjacencyList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGraphVizWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmInstallGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmInstalledFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmInstallFilesGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmInstallScriptGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmInstallTargetGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmInstallDirectoryGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmListFileCache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmLocalGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmLocale.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmMakeDepend.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmMakefile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmOSXBundleGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmNewLineStyle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmOrderDirectories.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmPolicies.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmProcessTools.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmProperty.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmPropertyDefinition.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmPropertyDefinitionMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmPropertyMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmQtAutoGenerators.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmRST.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmScriptGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmSourceFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmSourceFileLocation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmSourceGroup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmSystemTools.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmTarget.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmTargetExport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmTest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmTestGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmVariableWatch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmVersion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmXMLParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmXMLSafe.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmake.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cm_get_date.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cm_sha2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cm_utf8.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmTargetPropCommandBase.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmAddCompileOptionsCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmAuxSourceDirectoryCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmBuildNameCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCMakeHostSystemInformationCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmElseIfCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExportCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmExportLibraryDependenciesCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmFLTKWrapUICommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmIncludeExternalMSProjectCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmInstallProgramsCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmLinkLibrariesCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmLoadCacheCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmOutputRequiredFilesCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmQTWrapCPPCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmQTWrapUICommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmRemoveCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmRemoveDefinitionsCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmSourceGroupCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmSubdirDependsCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmTargetCompileDefinitionsCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmTargetCompileFeaturesCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmTargetCompileOptionsCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmTargetIncludeDirectoriesCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmTargetSourcesCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmUseMangledMesaCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmUtilitySourceCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmVariableRequiresCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmVariableWatchCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmWriteFileCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmLoadCommandCommand.cxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmCallVisualStudioMacro.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalBorlandMakefileGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalNMakeMakefileGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalJOMMakefileGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio6Generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio71Generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio7Generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio8Generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio9Generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmVisualStudioGeneratorOptions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmVisualStudio10TargetGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmLocalVisualStudio10Generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio10Generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio11Generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio12Generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudio14Generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalVisualStudioGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmIDEFlagTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmIDEOptions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmLocalVisualStudio6Generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmLocalVisualStudio7Generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmLocalVisualStudioGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmVisualStudioSlnData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmVisualStudioSlnParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmVisualStudioWCEPlatformParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalWatcomWMakeGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmGlobalNinjaGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmNinjaTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmLocalNinjaGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmNinjaTargetGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmNinjaNormalTargetGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\cmNinjaUtilityTargetGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{12B62A34-3523-4EA4-B67D-6A82F89A6C58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{260D4E18-2095-47A2-8C53-2E4D3376F338}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

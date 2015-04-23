@@ -1,0 +1,687 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\file.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\timeval.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\base64.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\hostip.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\progress.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\formdata.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\cookie.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\http.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\sendf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\ftp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\url.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\dict.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\if2ip.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\speedcheck.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\ldap.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\version.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\getenv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\escape.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\mprintf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\telnet.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\netrc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\getinfo.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\transfer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\strequal.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\easy.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\security.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_fnmatch.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\fileinfo.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\ftplistparser.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\wildcard.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\krb5.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\memdebug.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\http_chunks.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\strtok.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\connect.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\llist.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\hash.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\multi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\content_encoding.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\share.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\http_digest.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\md4.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\md5.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\http_negotiate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\inet_pton.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\strtoofft.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\strerror.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\amigaos.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\hostasyn.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\hostip4.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\hostip6.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\hostsyn.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\inet_ntop.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\parsedate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\select.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\tftp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\splay.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\strdup.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\socks.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\ssh.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\rawstr.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_addrinfo.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\socks_gssapi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\socks_sspi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_sspi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\slist.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\nonblock.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_memrchr.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\imap.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\pop3.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\smtp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\pingpong.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\rtsp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_threads.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\warnless.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\hmac.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_rtmp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\openldap.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_gethostname.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\gopher.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\idn_win32.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\http_negotiate_sspi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\http_proxy.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\non-ascii.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\asyn-ares.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\asyn-thread.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_gssapi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_ntlm.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_ntlm_wb.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_ntlm_core.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_ntlm_msgs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_sasl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_multibyte.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\hostcheck.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\bundles.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\conncache.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\pipeline.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\dotdot.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\x509asn1.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\http2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_sasl_sspi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\openssl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\gtls.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\vtls.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\nss.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\qssl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\polarssl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\polarssl_threadlock.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\axtls.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\cyassl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\curl_schannel.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\curl_darwinssl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\gskit.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\arpa_telnet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\netrc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\file.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\timeval.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\hostip.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\progress.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\formdata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\cookie.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\http.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\sendf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\ftp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\url.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\dict.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\if2ip.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\speedcheck.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\urldata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_ldap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\escape.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\telnet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\getinfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\strequal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_sec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\memdebug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\http_chunks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_fnmatch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\wildcard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\fileinfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\ftplistparser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\strtok.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\connect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\llist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\hash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\content_encoding.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\share.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_md4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_md5.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\http_digest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\http_negotiate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\inet_pton.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\amigaos.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\strtoofft.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\strerror.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\inet_ntop.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curlx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_memory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_setup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\transfer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\select.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\easyif.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\multiif.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\parsedate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\tftp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\sockaddr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\splay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\strdup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\socks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\ssh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_base64.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\rawstr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_addrinfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_sspi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\slist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\nonblock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_memrchr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\imap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\pop3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\smtp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\pingpong.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\rtsp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_threads.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\warnless.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_hmac.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_rtmp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_gethostname.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\gopher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\http_proxy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\non-ascii.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\asyn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_ntlm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_gssapi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_ntlm_wb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_ntlm_core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_ntlm_msgs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_sasl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_multibyte.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\hostcheck.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\bundles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\conncache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\curl_setup_once.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\multihandle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\setup-vms.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\pipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\dotdot.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\x509asn1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\http2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\sigpipe.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\qssl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\openssl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\vtls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\gtls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\nssg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\polarssl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\polarssl_threadlock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\axtls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\cyassl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\curl_schannel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\curl_darwinssl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\vtls\gskit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Utilities\cmcurl\lib\curl_config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Utilities\cmcurl\include\curl\curlbuild.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Utilities\cmcurl\lib\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{12B62A34-3523-4EA4-B67D-6A82F89A6C58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{260D4E18-2095-47A2-8C53-2E4D3376F338}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

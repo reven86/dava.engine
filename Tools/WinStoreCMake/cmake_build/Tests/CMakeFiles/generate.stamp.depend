@@ -1,0 +1,102 @@
+# CMake generation dependency list for this directory.
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CMakeLists.txt
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/RegexEscapeString.cmake
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CheckFortran.cmake
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/EnforceConfig.cmake.in
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindCVS.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindPackageMessage.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/CMakeParseArguments.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindQt4.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/CheckCXXSymbolExists.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/CheckSymbolExists.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/MacroAddFileDependencies.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindPackageMessage.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/CMakeParseArguments.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/CMakePushCheckState.cmake
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CMakeBuildTest.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CMakeBuildTest.cmake.in
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindGTK2.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/SelectLibraryConfigurations.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/CMakeParseArguments.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindFreetype.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindPackageMessage.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/CMakeParseArguments.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindPackageMessage.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/CMakeParseArguments.cmake
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/MFC/try_compile/CMakeLists.txt
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/MFC/mfc1/stdafx.cpp
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/MFC/mfc1/stdafx.h
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestScriptMode/CTestTestScriptMode.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestBuildCommandProjectInSubdir/CTestBuildCommandProjectInSubdir.cmake.in
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindSubversion.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindPackageMessage.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/CMakeParseArguments.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindCVS.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindPackageMessage.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/CMakeParseArguments.cmake
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestUpdateGIT.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestFailure/testNoBuild.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestFailure/testNoExe.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestUpload/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestCoverageCollectGCOV/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestEmptyBinaryDirectory/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestConfigFileInBuildDir/test1.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestConfigFileInBuildDir/test2.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestConfigFileInBuildDir/CTestConfig.cmake
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/MumpsCoverage/DartConfiguration.tcl.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/MumpsCoverage/gtm_coverage.mcov.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/MumpsCoverage/DartConfiguration.cache.tcl.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/MumpsCoverage/cache_coverage.cmcov.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/PythonCoverage/coverage.xml.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/PythonCoverage/DartConfiguration.tcl.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CoberturaCoverage/DartConfiguration.tcl.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CoberturaCoverage/coverage.xml.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/JacocoCoverage/DartConfiguration.tcl.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/JavascriptCoverage/DartConfiguration.tcl.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/JavascriptCoverage/output.json.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/DelphiCoverage/DartConfiguration.tcl.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestConfig/script.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestConfig/dashboard.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestConfig/script.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestConfig/dashboard.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestConfig/script.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestConfig/dashboard.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestConfig/script.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestConfig/dashboard.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestCrash/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestBadExe/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestBadGenerator/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestParallel/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestSkipReturnCode/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestLabelRegExp/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestResourceLock/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestScheduler/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestCostSerial/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestStopTime/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestStopTime/GetDate.cmake
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestSubdir/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestTimeout/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestZeroTimeout/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestDepends/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestCycle/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestRunScript/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestRunScript/hello.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestFdSetSize/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestFailedSubmits/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestFailedSubmits/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestFailedSubmits/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestFailedSubmits/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestFailedSubmits/test.cmake.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CTestTestFailedSubmits/test.cmake.in
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindJava.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/CMakeFindJavaCommon.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/FindPackageMessage.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/CMakeParseArguments.cmake
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/test_clean.cmake.in

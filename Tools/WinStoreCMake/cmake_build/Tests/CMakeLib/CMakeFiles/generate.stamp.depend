@@ -1,0 +1,5 @@
+# CMake generation dependency list for this directory.
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CMakeLib/CMakeLists.txt
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CMakeLib/testVisualStudioSlnParser.h.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Tests/CMakeLib/testXMLParser.h.in
+C:/Program Files (x86)/CMake/share/cmake-3.2/Templates/TestDriver.cxx.in

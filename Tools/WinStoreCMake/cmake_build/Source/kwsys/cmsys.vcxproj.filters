@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\ProcessWin32.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\Base64.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\EncodingC.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\MD5.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\Terminal.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\System.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\String.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\Directory.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\DynamicLoader.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\EncodingCXX.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\Glob.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\RegularExpression.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\SystemTools.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\CommandLineArguments.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\IOStream.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\FStream.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\SystemInformation.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\Configure.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\SharedForward.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\Process.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\Base64.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\Encoding.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\FundamentalType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\MD5.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\Terminal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\System.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\String.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\CPU.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\Directory.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\DynamicLoader.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\Encoding.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\Glob.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\RegularExpression.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\SystemTools.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\CommandLineArguments.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\IOStream.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\FStream.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\SystemInformation.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\Configure.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\String.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\hashtable.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\hash_fun.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\hash_map.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\hash_set.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_build\Source\cmsys\auto_ptr.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="E:\repo\WindowsStore\dava.framework\Tools\WinStoreCMake\cmake_repo\Source\kwsys\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{12B62A34-3523-4EA4-B67D-6A82F89A6C58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{260D4E18-2095-47A2-8C53-2E4D3376F338}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

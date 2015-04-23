@@ -1,0 +1,12 @@
+# CMake generation dependency list for this directory.
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Utilities/cmexpat/CMakeLists.txt
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/TestBigEndian.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/CheckTypeSize.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/CheckIncludeFile.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/CheckIncludeFileCXX.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/TestEndianess.c.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Utilities/cmexpat/expatConfig.h.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Utilities/cmexpat/expatDllConfig.h.in
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Utilities/cmexpat/.NoDartCoverage
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Utilities/cmexpat/cm_expat_mangle.h
+E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Utilities/cmexpat/expat.h
