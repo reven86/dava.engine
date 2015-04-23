@@ -26,6 +26,32 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#include "Platform/PlatformDetection.h"
+
+#if defined(__DAVAENGINE_MACOS__)
+#include <copyfile.h>
+#include <libproc.h>
+#include <libgen.h>
+#include <sys/errno.h>
+#elif defined(__DAVAENGINE_IPHONE__)
+#include <copyfile.h>
+#include <libgen.h>
+#include <sys/sysctl.h>
+#include <sys/errno.h>
+#elif defined(__DAVAENGINE_WIN32__)
+#include <direct.h>
+#include <io.h> 
+#include <process.h>
+#include <Shlobj.h>
+#include <tchar.h>
+#elif defined(__DAVAENGINE_ANDROID__)
+#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include <unistd.h>
+#include <sys/errno.h>
+#endif //PLATFORMS
 
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
@@ -35,36 +61,6 @@
 #include "Utils/UTF8Utils.h"
 #include "FileSystem/ResourceArchive.h"
 #include "Core/Core.h"
-
-#if defined(__DAVAENGINE_MACOS__)
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/errno.h>
-#include <copyfile.h>
-#include <libproc.h>
-#include <libgen.h>
-#elif defined(__DAVAENGINE_IPHONE__)
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/errno.h>
-#include <copyfile.h>
-#include <libgen.h>
-#include <sys/sysctl.h>
-#elif defined(__DAVAENGINE_WIN32__)
-#include <direct.h>
-#include <io.h> 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <Shlobj.h>
-#include <tchar.h>
-#elif defined(__DAVAENGINE_ANDROID__)
-#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/errno.h>
-
-#endif //PLATFORMS
 
 namespace DAVA
 {
@@ -619,36 +615,55 @@ void FileSystem::SetDefaultDocumentsDirectory()
 #if defined(__DAVAENGINE_WIN32__)
 const FilePath FileSystem::GetUserDocumentsPath()
 {
-    char * szPath = new char[MAX_PATH];
+#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+
+    char szPath[MAX_PATH + 2];
     SHGetFolderPathA(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, szPath);
     int32 n = strlen(szPath);
     szPath[n] = '\\';
     szPath[n+1] = 0;
     String str(szPath);
-    delete[] szPath;
 
-	FilePath docPath(str);
-	docPath.MakeDirectoryPathname();
-    return docPath;
+    return FilePath(str).MakeDirectoryPathname();
+
+#elif defined(__DAVAENGINE_WINDOWS_STORE__)
+
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+
+    //take roaming folder as user documents folder
+    using namespace Windows::Storage;
+    WideString roamingFolder = ApplicationData::Current->RoamingFolder->Path->Data();
+    return FilePath(UTF8Utils::EncodeToUTF8(roamingFolder)).MakeDirectoryPathname();
+
+#endif
 }
 
 const FilePath FileSystem::GetPublicDocumentsPath()
 {
-    char * szPath = new char[MAX_PATH];
+#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+
+    char szPath[MAX_PATH + 2];
     SHGetFolderPathA(NULL, CSIDL_COMMON_DOCUMENTS, NULL, SHGFP_TYPE_CURRENT, szPath);
     int32 n = strlen(szPath);
     szPath[n] = '\\';
     szPath[n+1] = 0;
     String str(szPath);
-    delete[] szPath;
 
-	FilePath docPath(str);
-	docPath.MakeDirectoryPathname();
-	return docPath;
+    return FilePath(str).MakeDirectoryPathname();
+
+#elif defined(__DAVAENGINE_WINDOWS_STORE__)
+
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+
+    //take roaming folder as user documents folder
+    using namespace Windows::Storage;
+    WideString localFolder = ApplicationData::Current->LocalFolder->Path->Data();
+    return FilePath(UTF8Utils::EncodeToUTF8(localFolder)).MakeDirectoryPathname();
+
+#endif
 }
 #endif //#if defined(__DAVAENGINE_WIN32__)
 
-    
 #if defined(__DAVAENGINE_ANDROID__)
 const FilePath FileSystem::GetUserDocumentsPath()
 {
@@ -750,7 +765,7 @@ int32 FileSystem::Spawn(const String& command)
 	*/
 
  	String startString = "start \"\" /WAIT " + command;
-	retCode = std::system(startString.c_str());
+	retCode = ::system(startString.c_str());
 #endif
 
 	if(retCode != 0)
