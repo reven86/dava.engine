@@ -46,6 +46,7 @@
 #include <Thread/LockGuard.h>
 #include "fribidi/fribidi-bidi-types.h"
 #include "fribidi/fribidi-unicode.h"
+#include "TextLayout.h"
 
 namespace DAVA 
 {
@@ -486,18 +487,13 @@ void TextBlock::CalculateCacheParams()
     }
 
     visualText = logicalText;
-    WideString preparedText = logicalText;
-    isRtl = false;
+    
+    TextLayout textLayout(isBiDiSupportEnabled);
+    Vector<float32> charSizes;
+    
+    textLayout.Reset(logicalText, *font);
 
-    if (isBiDiSupportEnabled) // Check BiDi support
-    {
-        if (bidiHelper.PrepareString(logicalText, preparedText, &isRtl))
-        {
-            visualText = preparedText;
-            bidiHelper.ReorderString(visualText, isRtl);
-        }
-    }
-    CleanLine(visualText);
+    visualText = textLayout.GetVisualText(false);
 
     bool useJustify = ((align & ALIGN_HJUSTIFY) != 0);
     renderSize = originalFontSize * scale.y;
@@ -520,16 +516,11 @@ void TextBlock::CalculateCacheParams()
     // which can't be broken to the separate lines.
     if (isMultilineEnabled)
     {
-        if(isMultilineBySymbolEnabled)
+        if (textLayout.HasNext())
         {
-            SplitTextBySymbolsToStrings(preparedText, drawSize, multilineStrings, isRtl);
+            textLayout.Next(drawSize.dx, isMultilineBySymbolEnabled);
         }
-        else
-        {
-            SplitTextToStrings(preparedText, drawSize, multilineStrings, isRtl);
-        }
-
-        treatMultilineAsSingleLine = multilineStrings.size() == 1;
+        treatMultilineAsSingleLine = !textLayout.HasNext();
     }
 
     if(!isMultilineEnabled || treatMultilineAsSingleLine)
@@ -717,15 +708,14 @@ void TextBlock::CalculateCacheParams()
     {
         if (fittingType && (requestedSize.dy >= 0/* || requestedSize.dx >= 0*/) && visualText.size() > 3)
         {
-            if (isMultilineBySymbolEnabled)
+            multilineStrings.clear();
+            textLayout.Seek(0);
+            while (textLayout.HasNext())
             {
-                SplitTextBySymbolsToStrings(preparedText, drawSize, multilineStrings, isRtl);
+                textLayout.Next(drawSize.dx, isMultilineBySymbolEnabled);
+                multilineStrings.push_back(textLayout.GetVisualLine(true));
             }
-            else
-            {
-                SplitTextToStrings(preparedText, drawSize, multilineStrings, isRtl);
-            }
-
+        
             int32 yOffset = font->GetVerticalSpacing();
             int32 fontHeight = font->GetFontHeight() + yOffset;
             float32 lastSize = renderSize;
@@ -806,13 +796,12 @@ void TextBlock::CalculateCacheParams()
                 font->SetSize(renderSize);
 
 
-                if (isMultilineBySymbolEnabled)
+                multilineStrings.clear();
+                textLayout.Reset(logicalText, *font);
+                while (textLayout.HasNext())
                 {
-                    SplitTextBySymbolsToStrings(preparedText, drawSize, multilineStrings, isRtl);
-                }
-                else
-                {
-                    SplitTextToStrings(preparedText, drawSize, multilineStrings, isRtl);
+                    textLayout.Next(drawSize.dx, isMultilineBySymbolEnabled);
+                    multilineStrings.push_back(textLayout.GetVisualLine(true));
                 }
 
                 yOffset = font->GetVerticalSpacing();
@@ -822,15 +811,14 @@ void TextBlock::CalculateCacheParams()
             };
         }
 
-        if (isMultilineBySymbolEnabled)
+        multilineStrings.clear();
+        textLayout.Reset(logicalText, *font);
+        while (textLayout.HasNext())
         {
-            SplitTextBySymbolsToStrings(preparedText, drawSize, multilineStrings, isRtl);
+            textLayout.Next(drawSize.dx, isMultilineBySymbolEnabled);
+            WideString line = textLayout.GetVisualLine(true);
+            multilineStrings.push_back(line);
         }
-        else
-        {
-            SplitTextToStrings(preparedText, drawSize, multilineStrings, isRtl);
-        }
-
 
         int32 yOffset = font->GetVerticalSpacing();
         int32 fontHeight = font->GetFontHeight() + yOffset;
@@ -896,6 +884,8 @@ void TextBlock::CalculateCacheParams()
     {
         textSize.drawRect.dx = Max(textSize.drawRect.dx, (int)drawSize.dx);
     }
+
+    isRtl = textLayout.IsRtl();
 
     //calc texture size
     int32 dx = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)textSize.drawRect.dx));
@@ -1023,187 +1013,6 @@ const Vector2& TextBlock::GetSpriteOffset()
 {
     LockGuard<Mutex> guard(mutex);
     return cacheSpriteOffset;
-}
-
-void TextBlock::SplitTextToStrings(const WideString& string, Vector2 const& targetRectSize, Vector<WideString>& resultVector, const bool isRtl)
-{
-    resultVector.clear();
-
-    Vector<float32> sizes;
-    font->GetStringSize(string, &sizes);
-    for(uint32 i = 0; i < sizes.size(); ++i)
-        if (FRIBIDI_IS_EXPLICIT_OR_BN (fribidi_get_bidi_type (string[i]))
-	    || string[i] == FRIBIDI_CHAR_LRM || string[i] == FRIBIDI_CHAR_RLM)
-        {
-            sizes[i] = 0.0f;
-        }
-    if (sizes.size() != string.length())
-    {
-        return;
-    }
-
-    Vector<uint8> breaks;
-    StringUtils::GetLineBreaks(string, breaks);
-    if (breaks.size() != string.length())
-    {
-        return;
-    }
-
-    int32 targetWidth = (int32)targetRectSize.dx;
-    float32 currentWidth = 0;
-    uint32 lastPossibleBreak = 0;
-
-    uint32 fromPos = 0;
-    uint32 textLength = static_cast<uint32>(string.length());
-    for (uint32 pos = 0; pos < textLength; ++pos)
-    {
-        char16 ch = string[pos];
-        uint8 canBreak = breaks[pos];
-
-        currentWidth += VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(sizes[pos]);
-
-        // Check that targetWidth defined and currentWidth less than targetWidth.
-        // If symbol is whitespace skip it and go to next (add all whitespaces to current line)
-        if (targetWidth == 0 || currentWidth <= targetWidth || StringUtils::IsWhitespace(ch))
-        {
-            if (canBreak == StringUtils::LB_MUSTBREAK) // If symbol is line breaker then split string
-            {
-                WideString line = string.substr(fromPos, pos - fromPos + 1);
-                if (isBiDiSupportEnabled)
-                {
-                    bidiHelper.ReorderString(line, isRtl);
-                }
-                CleanLine(line, pos < textLength - 1, isRtl);
-                resultVector.push_back(line);
-                currentWidth = 0.f;
-                lastPossibleBreak = 0;
-                fromPos = pos + 1;
-            }
-            else if (canBreak == StringUtils::LB_ALLOWBREAK) // Store breakable symbol position
-            {
-                lastPossibleBreak = pos;
-            }
-            continue;
-        }
-
-        if (lastPossibleBreak > 0) // If we have any breakable symbol in current substring then split by it
-        {
-            pos = lastPossibleBreak;
-        }
-        else // If not then split by previous symbol
-        {
-            pos--;
-        }
-
-        WideString line = string.substr(fromPos, pos - fromPos + 1);
-        if (isBiDiSupportEnabled)
-        {
-            bidiHelper.ReorderString(line, isRtl);
-        }
-        CleanLine(line, true, isRtl);
-        resultVector.push_back(line);
-        currentWidth = 0.f;
-        lastPossibleBreak = 0;
-        fromPos = pos + 1;
-    }
-
-    DVASSERT(fromPos == textLength && "Incorrect line split.")
-}
-
-void TextBlock::SplitTextBySymbolsToStrings(const WideString& string, Vector2 const& targetRectSize, Vector<WideString>& resultVector, const bool isRtl)
-{
-    int32 targetWidth = (int32)(targetRectSize.dx);
-    int32 totalSize = (int)string.length();
-
-    int32 currentLineStart = 0;
-    int32 currentLineEnd = 0;
-    float32 currentLineDx = 0;
-
-    resultVector.clear();
-
-    Vector<float32> sizes;
-    font->GetStringSize(string, &sizes);
-    if (sizes.size() == 0)
-    {
-        return;
-    }
-
-    for (int pos = 0; pos < totalSize; pos++)
-    {
-        char16 t = string[pos];
-        char16 tNext = 0;
-        if (pos + 1 < totalSize)
-            tNext = string[pos + 1];
-
-        currentLineEnd = pos;
-
-        if (t == L'\n')
-        {
-            WideString currentLine = string.substr(currentLineStart, currentLineEnd - currentLineStart);
-            if (isBiDiSupportEnabled)
-            {
-                bidiHelper.ReorderString(currentLine, isRtl);
-            }
-            CleanLine(currentLine);
-            resultVector.push_back(currentLine);
-
-            currentLineStart = pos + 1;
-            currentLineDx = 0;
-        }
-        if (t == L'\\' && tNext == L'n')
-        {
-            WideString currentLine = string.substr(currentLineStart, currentLineEnd - currentLineStart);
-            if (isBiDiSupportEnabled)
-            {
-                bidiHelper.ReorderString(currentLine, isRtl);
-            }
-            CleanLine(currentLine);
-            resultVector.push_back(currentLine);
-
-            currentLineStart = pos + 2;
-            currentLineDx = 0;
-        }
-		// Use additional condition to prevent endless loop, when target size is less than
-		// size of one symbol (sizes[pos] > targetWidth)
-		// To keep initial index logic we should always perform action currentLineDx += sizes[pos]
-		// before entering this condition, so currentLineDx > 0.
-        if ((currentLineDx > 0) && ((currentLineDx + VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(sizes[pos])) > targetWidth))
-        {
-            WideString currentLine = string.substr(currentLineStart, currentLineEnd - currentLineStart);
-            if (isBiDiSupportEnabled)
-            {
-                bidiHelper.ReorderString(currentLine, isRtl);
-            }
-            CleanLine(currentLine);
-            resultVector.push_back(currentLine);
-
-            currentLineStart = pos;
-            currentLineDx = 0;
-            pos--;
-        }
-        else
-        {
-            currentLineDx += VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(sizes[pos]);
-        }
-    }
-
-    WideString currentLine = string.substr(currentLineStart, currentLineEnd - currentLineStart + 1);
-    if (isBiDiSupportEnabled)
-    {
-        bidiHelper.ReorderString(currentLine, isRtl);
-    }
-    CleanLine(currentLine);
-    resultVector.push_back(currentLine);
-}
-
-void TextBlock::CleanLine(WideString& string, bool trim /*= false*/, bool rtl /*= false*/)
-{
-    WideString out = StringUtils::RemoveNonPrintable(string, 1);
-    if (trim)
-    {
-        out = !rtl ? StringUtils::TrimRight(out) : StringUtils::TrimLeft(out);
-    }
-    string.swap(out);
 }
 
 };

@@ -472,6 +472,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicsRender.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockRender.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockSoftwareRender.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextLayout.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\3D\EdgeAdjacency.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\3D\MeshUtils.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Cursor.h" />
@@ -974,6 +975,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicsRender.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockRender.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockSoftwareRender.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextLayout.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\3D\EdgeAdjacency.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\3D\MeshUtils.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\CursorWin32.cpp" />

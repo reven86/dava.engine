@@ -134,19 +134,11 @@ public:
     static void SetBiDiSupportEnabled(bool value);
 
     /**
-     * \brief Is BiDi trasformations support enabled.
-     * \return true if BiDi trasformations supported.
+     * \brief Is BiDi transformations support enabled.
+     * \return true if BiDi transformations supported.
      */
     static bool IsBiDiSupportEnabled();
     TextBlockRender* GetRenderer(){ return textBlockRender; }
-
-    /**
-     * \brief Clean line.
-     * \param [in,out] string The string.
-     * \param trim (Optional) true to trim.
-     * \param rtl (Optional) true to trim for rtl text.
-     */
-    static void CleanLine(WideString& string, bool trim = false, bool rtl = false);
 
 	void SetAngle(const float _angle);
 	void SetPivot(const Vector2 & _pivot);
@@ -160,24 +152,6 @@ protected:
 	void CalculateCacheParams();
 
 	int32 GetVisualAlignNoMutexLock() const; // Return align for displaying BiDi-text (w/o mutex lock)
-
-    /**
-     * \brief Splits text to strings.
-     * \param string The string.
-     * \param targetRectSize Size of the target rectangle.
-     * \param [out] resultVector The result vector.
-     * \param forceRtl Flag for force RTL transformation splited lines.
-     */
-    void SplitTextToStrings(const WideString & string, const Vector2 & targetRectSize, Vector<WideString> & resultVector, const bool forceRtl);
-
-    /**
-     * \brief Splits text to strings by symbols.
-     * \param string The string.
-     * \param targetRectSize Size of the target rectangle.
-     * \param [out] resultVector The result vector.
-     * \param forceRtl Flag for force RTL transformation splited lines.
-     */
-    void SplitTextBySymbolsToStrings(const WideString & string, const Vector2 & targetRectSize, Vector<WideString> & resultVector, const bool forceRtl);
 
     Vector2 scale;
     Vector2 rectSize;
