@@ -33,6 +33,12 @@
 #include "Render/Cursor.h"
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 
+void DAVA::Cursor::SetCursorPinning(bool pin)
+{
+    ShowSystemCursor(!pin);
+    MoveToCenterOfWindow();
+}
+
 void DAVA::Cursor::ShowSystemCursor(bool show)
 {
     ShowCursor(show);
