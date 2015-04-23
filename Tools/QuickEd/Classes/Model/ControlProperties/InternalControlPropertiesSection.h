@@ -1,14 +1,14 @@
 #ifndef __UI_EDITOR_INTERNAL_CONTROL_PROPERTIES_SECTION_H__
 #define __UI_EDITOR_INTERNAL_CONTROL_PROPERTIES_SECTION_H__
 
-#include "PropertiesSection.h"
+#include "SectionProperty.h"
 
 namespace DAVA
 {
     class UIControl;
 }
 
-class InternalControlPropertiesSection : public PropertiesSection
+class InternalControlPropertiesSection : public SectionProperty
 {
 public:
     InternalControlPropertiesSection(DAVA::UIControl *control, int num, const InternalControlPropertiesSection *sourceSection, eCopyType copyType);

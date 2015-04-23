@@ -4,7 +4,7 @@
 #include "PackageBaseNode.h"
 #include "ControlsContainerNode.h"
 
-#include "Model/ControlProperties/PropertiesRoot.h"
+#include "Model/ControlProperties/RootProperty.h"
 
 class PackageSerializer;
 class PackageNode;
@@ -22,7 +22,7 @@ public:
     };
     
 private:
-    ControlNode(DAVA::UIControl *control, PropertiesRoot *propertiesRoot, eCreationType creationType);
+    ControlNode(DAVA::UIControl *control, RootProperty *propertiesRoot, eCreationType creationType);
     virtual ~ControlNode();
 
 public:
@@ -60,8 +60,8 @@ public:
 
     eCreationType GetCreationType() const { return creationType; }
 
-    PropertiesRoot *GetPropertiesRoot() const {return propertiesRoot; }
-    BaseProperty *GetPropertyByPath(const DAVA::Vector<DAVA::String> &path);
+    RootProperty *GetPropertiesRoot() const {return propertiesRoot; }
+    AbstractProperty *GetPropertyByPath(const DAVA::Vector<DAVA::String> &path);
 
 
     void MarkAsRemoved();
@@ -80,7 +80,7 @@ private:
 
 private:
     DAVA::UIControl *control;
-    PropertiesRoot *propertiesRoot;
+    RootProperty *propertiesRoot;
     DAVA::Vector<ControlNode*> nodes;
     
     ControlPrototype *prototype;

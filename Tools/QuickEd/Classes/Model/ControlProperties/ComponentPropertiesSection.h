@@ -1,7 +1,7 @@
 #ifndef __QUICKED_COMPONENT_PROPERTIES_SECTION_H__
 #define __QUICKED_COMPONENT_PROPERTIES_SECTION_H__
 
-#include "PropertiesSection.h"
+#include "SectionProperty.h"
 #include "UI/Components/UIComponent.h"
 
 namespace DAVA
@@ -9,7 +9,7 @@ namespace DAVA
     class UIControl;
 }
 
-class ComponentPropertiesSection : public PropertiesSection
+class ComponentPropertiesSection : public SectionProperty
 {
 public:
     ComponentPropertiesSection(DAVA::UIControl *control, DAVA::UIComponent::eType type, const ComponentPropertiesSection *sourceSection, eCopyType copyType);

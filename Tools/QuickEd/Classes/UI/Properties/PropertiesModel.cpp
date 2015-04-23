@@ -11,7 +11,7 @@
 #include "Document.h"
 #include "Ui/QtModelPackageCommandExecutor.h"
 
-#include "Model/ControlProperties/BaseProperty.h"
+#include "Model/ControlProperties/AbstractProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Utils/QtDavaConvertion.h"
 #include "UI/Commands/ChangePropertyValueCommand.h"
@@ -43,7 +43,7 @@ QModelIndex PropertiesModel::index(int row, int column, const QModelIndex &paren
     if (!parent.isValid())
         return createIndex(row, column, controlNode->GetPropertiesRoot()->GetProperty(row));
     
-    BaseProperty *property = static_cast<BaseProperty*>(parent.internalPointer());
+    AbstractProperty *property = static_cast<AbstractProperty*>(parent.internalPointer());
     return createIndex(row, column, property->GetProperty(row));
 }
 
@@ -52,8 +52,8 @@ QModelIndex PropertiesModel::parent(const QModelIndex &child) const
     if (!child.isValid())
         return QModelIndex();
     
-    BaseProperty *property = static_cast<BaseProperty*>(child.internalPointer());
-    BaseProperty *parent = property->GetParent();
+    AbstractProperty *property = static_cast<AbstractProperty*>(child.internalPointer());
+    AbstractProperty *parent = property->GetParent();
     
     if (parent == NULL || parent == controlNode->GetPropertiesRoot())
         return QModelIndex();
@@ -72,7 +72,7 @@ int PropertiesModel::rowCount(const QModelIndex &parent) const
     if (!parent.isValid())
         return controlNode->GetPropertiesRoot() ? controlNode->GetPropertiesRoot()->GetCount() : 0;
     
-    return static_cast<BaseProperty*>(parent.internalPointer())->GetCount();
+    return static_cast<AbstractProperty*>(parent.internalPointer())->GetCount();
 }
 
 int PropertiesModel::columnCount(const QModelIndex &parent) const
@@ -88,7 +88,7 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
     
-    BaseProperty *property = static_cast<BaseProperty*>(index.internalPointer());
+    AbstractProperty *property = static_cast<AbstractProperty*>(index.internalPointer());
     switch (role)
     {
         case Qt::CheckStateRole:
@@ -136,7 +136,7 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
             break;
 
         case Qt::BackgroundRole:
-            return property->GetType() == BaseProperty::TYPE_HEADER ? QColor(Qt::lightGray) : QColor(Qt::white);
+            return property->GetType() == AbstractProperty::TYPE_HEADER ? QColor(Qt::lightGray) : QColor(Qt::white);
             
         case Qt::FontRole:
             {
@@ -159,7 +159,7 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
     if (!index.isValid())
         return false;
 
-    BaseProperty *property = static_cast<BaseProperty*>(index.internalPointer());
+    AbstractProperty *property = static_cast<AbstractProperty*>(index.internalPointer());
     if (property->IsReadOnly())
         return false;
     
@@ -209,9 +209,9 @@ Qt::ItemFlags PropertiesModel::flags(const QModelIndex &index) const
     if (index.column() != 1)
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
     
-    BaseProperty* prop = static_cast<BaseProperty*>(index.internalPointer());
+    AbstractProperty* prop = static_cast<AbstractProperty*>(index.internalPointer());
     Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
-    if (!prop->IsReadOnly() && (prop->GetType() == BaseProperty::TYPE_ENUM || prop->GetType() == BaseProperty::TYPE_FLAGS || prop->GetType() == BaseProperty::TYPE_VARIANT))
+    if (!prop->IsReadOnly() && (prop->GetType() == AbstractProperty::TYPE_ENUM || prop->GetType() == AbstractProperty::TYPE_FLAGS || prop->GetType() == AbstractProperty::TYPE_VARIANT))
         flags |= Qt::ItemIsEditable;
     return flags;
 }
@@ -228,40 +228,40 @@ QVariant PropertiesModel::headerData(int section, Qt::Orientation /*orientation*
     return QVariant();
 }
 
-void PropertiesModel::PropertyChanged(BaseProperty *property)
+void PropertiesModel::PropertyChanged(AbstractProperty *property)
 {
     QModelIndex nameIndex = indexByProperty(property, 0);
     QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
     emit dataChanged(nameIndex, valueIndex);
 }
 
-void PropertiesModel::ComponentPropertiesWillBeAdded(PropertiesRoot *root, ComponentPropertiesSection *section, int index)
+void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index)
 {
     int32 sectionRow = root->GetIndexOfCompoentPropertiesSection(section);
     QModelIndex parentIndex = indexByProperty(root, 0);
     beginInsertRows(parentIndex, sectionRow, sectionRow);
 }
 
-void PropertiesModel::ComponentPropertiesWasAdded(PropertiesRoot *root, ComponentPropertiesSection *section, int index)
+void PropertiesModel::ComponentPropertiesWasAdded(RootProperty *root, ComponentPropertiesSection *section, int index)
 {
     endInsertRows();
 }
 
-void PropertiesModel::ComponentPropertiesWillBeRemoved(PropertiesRoot *root, ComponentPropertiesSection *section, int index)
+void PropertiesModel::ComponentPropertiesWillBeRemoved(RootProperty *root, ComponentPropertiesSection *section, int index)
 {
     int32 sectionRow = root->GetIndexOfCompoentPropertiesSection(section);
     QModelIndex parentIndex = indexByProperty(root, 0);
     beginRemoveRows(parentIndex, sectionRow, sectionRow);
 }
 
-void PropertiesModel::ComponentPropertiesWasRemoved(PropertiesRoot *root, ComponentPropertiesSection *section, int index)
+void PropertiesModel::ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index)
 {
     endRemoveRows();
 }
 
-QModelIndex PropertiesModel::indexByProperty(BaseProperty *property, int column)
+QModelIndex PropertiesModel::indexByProperty(AbstractProperty *property, int column)
 {
-    BaseProperty *parent = property->GetParent();
+    AbstractProperty *parent = property->GetParent();
     if (parent == NULL)
         return QModelIndex();
     
@@ -271,7 +271,7 @@ QModelIndex PropertiesModel::indexByProperty(BaseProperty *property, int column)
         return createIndex(0, column, parent);
 }
 
-QVariant PropertiesModel::makeQVariant(const BaseProperty *property) const
+QVariant PropertiesModel::makeQVariant(const AbstractProperty *property) const
 {
     const VariantType &val = property->GetValue();
     switch (val.GetType())
@@ -283,12 +283,12 @@ QVariant PropertiesModel::makeQVariant(const BaseProperty *property) const
             return QString();
 
         case VariantType::TYPE_INT32:
-            if (property->GetType() == BaseProperty::TYPE_ENUM)
+            if (property->GetType() == AbstractProperty::TYPE_ENUM)
             {
                 int32 e = val.AsInt32();
                 return QString::fromStdString(property->GetEnumMap()->ToString(e));
             }
-            else if (property->GetType() == BaseProperty::TYPE_FLAGS)
+            else if (property->GetType() == AbstractProperty::TYPE_FLAGS)
             {
                 int32 e = val.AsInt32();
                 QString res = "";

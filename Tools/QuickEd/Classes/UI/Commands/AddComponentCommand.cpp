@@ -13,7 +13,7 @@ AddComponentCommand::AddComponentCommand(PackageNode *_root, ControlNode *_node,
     , node(SafeRetain(_node))
     , componentSection(nullptr)
 {
-    componentSection = new ComponentPropertiesSection(node->GetControl(), (UIComponent::eType) _componentType, nullptr, BaseProperty::COPY_VALUES);
+    componentSection = new ComponentPropertiesSection(node->GetControl(), (UIComponent::eType) _componentType, nullptr, AbstractProperty::COPY_VALUES);
 }
 
 AddComponentCommand::~AddComponentCommand()

@@ -16,7 +16,7 @@ ValueProperty::ValueProperty(BaseObject *object, const InspMember *member, Value
         if (sourceProperty->GetValue() != member->Value(object))
             member->SetValue(object, sourceProperty->GetValue());
         
-        if (copyType == BaseProperty::COPY_FULL)
+        if (copyType == AbstractProperty::COPY_FULL)
         {
             defaultValue = sourceProperty->defaultValue;
             replaced = sourceProperty->replaced;
@@ -75,7 +75,7 @@ int ValueProperty::GetCount() const
     return (int) children.size();
 }
 
-BaseProperty *ValueProperty::GetProperty(int index) const
+AbstractProperty *ValueProperty::GetProperty(int index) const
 {
     return children[index];
 }

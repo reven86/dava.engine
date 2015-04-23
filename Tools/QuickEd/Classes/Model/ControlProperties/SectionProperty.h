@@ -1,22 +1,22 @@
-#ifndef __UI_EDITOR_PROPERTIES_SECTION_H__
-#define __UI_EDITOR_PROPERTIES_SECTION_H__
+#ifndef __UI_EDITOR_SECTION_PROPERTY_H__
+#define __UI_EDITOR_SECTION_PROPERTY_H__
 
-#include "BaseProperty.h"
+#include "AbstractProperty.h"
 
 class ValueProperty;
 
-class PropertiesSection : public BaseProperty
+class SectionProperty : public AbstractProperty
 {
 public:
-    PropertiesSection();
+    SectionProperty();
 
 protected:
-    virtual ~PropertiesSection();
+    virtual ~SectionProperty();
     
 public:
     void AddProperty(ValueProperty *section);
     virtual int GetCount() const override;
-    virtual BaseProperty *GetProperty(int index) const override;
+    virtual AbstractProperty *GetProperty(int index) const override;
     virtual ValueProperty *FindProperty(const DAVA::InspMember *member) const;
 
     virtual ePropertyType GetType() const {
@@ -28,4 +28,4 @@ protected:
 
 };
 
-#endif // __UI_EDITOR_PROPERTIES_SECTION_H__
+#endif // __UI_EDITOR_SECTION_PROPERTY_H__

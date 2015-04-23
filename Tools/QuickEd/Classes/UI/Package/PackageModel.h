@@ -40,7 +40,7 @@ public:
     virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
     
 private: // PackageListener
-    virtual void ControlPropertyWasChanged(ControlNode *node, BaseProperty *property) override;
+    virtual void ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property) override;
 
     virtual void ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int row) override;
     virtual void ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int row) override;

@@ -10,7 +10,7 @@
 
 using namespace DAVA;
 
-ControlNode::ControlNode(UIControl *control, PropertiesRoot *_propertiesRoot, eCreationType creationType)
+ControlNode::ControlNode(UIControl *control, RootProperty *_propertiesRoot, eCreationType creationType)
     : ControlsContainerNode(nullptr)
     , control(SafeRetain(control))
     , propertiesRoot(SafeRetain(_propertiesRoot))
@@ -38,7 +38,7 @@ ControlNode::~ControlNode()
 
 ControlNode *ControlNode::CreateFromControl(DAVA::UIControl *control)
 {
-    PropertiesRoot *propertiesRoot = new PropertiesRoot(control);
+    RootProperty *propertiesRoot = new RootProperty(control);
     ControlNode *node = new ControlNode(control, propertiesRoot, CREATED_FROM_CLASS);
     SafeRelease(propertiesRoot);
     return node;
@@ -61,8 +61,8 @@ ControlNode *ControlNode::CreateFromPrototypeImpl(ControlNode *sourceNode, Packa
     RefPtr<UIControl> newControl(ObjectFactory::Instance()->New<UIControl>(sourceNode->GetControl()->GetControlClassName()));
     newControl->SetCustomControlClassName(sourceNode->GetControl()->GetCustomControlClassName());
     
-    RefPtr<PropertiesRoot> propertiesRoot(new PropertiesRoot(newControl.Get(),
-                                                             sourceNode->GetPropertiesRoot(), PropertiesRoot::COPY_VALUES));
+    RefPtr<RootProperty> propertiesRoot(new RootProperty(newControl.Get(),
+                                                             sourceNode->GetPropertiesRoot(), RootProperty::COPY_VALUES));
     
     ControlNode *node = new ControlNode(newControl.Get(), propertiesRoot.Get(), root ? CREATED_FROM_PROTOTYPE : CREATED_FROM_PROTOTYPE_CHILD);
     node->prototype = new ControlPrototype(sourceNode, nodePackage);
@@ -83,7 +83,7 @@ ControlNode *ControlNode::Clone()
     RefPtr<UIControl> newControl(ObjectFactory::Instance()->New<UIControl>(control->GetControlClassName()));
     newControl->SetCustomControlClassName(control->GetCustomControlClassName());
 
-    RefPtr<PropertiesRoot> newPropRoot(new PropertiesRoot(newControl.Get(), propertiesRoot, PropertiesRoot::COPY_FULL));
+    RefPtr<RootProperty> newPropRoot(new RootProperty(newControl.Get(), propertiesRoot, RootProperty::COPY_FULL));
 
     ControlNode *node = new ControlNode(newControl.Get(), newPropRoot.Get(), creationType);
     node->prototype = SafeRetain(prototype);
@@ -246,7 +246,7 @@ bool ControlNode::CanCopy() const
     return creationType != CREATED_FROM_PROTOTYPE_CHILD;
 }
 
-BaseProperty *ControlNode::GetPropertyByPath(const DAVA::Vector<DAVA::String> &path)
+AbstractProperty *ControlNode::GetPropertyByPath(const DAVA::Vector<DAVA::String> &path)
 {
     return propertiesRoot->GetPropertyByPath(path);
 }

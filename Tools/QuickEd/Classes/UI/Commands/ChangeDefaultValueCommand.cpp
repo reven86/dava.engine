@@ -1,10 +1,10 @@
 #include "ChangeDefaultValueCommand.h"
 
-#include "Model/ControlProperties/BaseProperty.h"
+#include "Model/ControlProperties/AbstractProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 
-ChangeDefaultValueCommand::ChangeDefaultValueCommand(PackageNode *_root, ControlNode *_node, BaseProperty *_property, const DAVA::VariantType &_newValue, QUndoCommand *_parent)
+ChangeDefaultValueCommand::ChangeDefaultValueCommand(PackageNode *_root, ControlNode *_node, AbstractProperty *_property, const DAVA::VariantType &_newValue, QUndoCommand *_parent)
     : QUndoCommand(_parent)
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))

@@ -35,7 +35,7 @@ void QtModelPackageCommandExecutor::AddImportedPackageIntoPackage(PackageControl
     PushCommand(new InsertImportedPackageCommand(package, importedPackageControls, package->GetImportedPackagesNode()->GetCount()));
 }
 
-void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &value)
+void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value)
 {
     if (!property->IsReadOnly())
     {
@@ -46,7 +46,7 @@ void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, BaseProper
     }
 }
 
-void QtModelPackageCommandExecutor::ResetProperty(ControlNode *node, BaseProperty *property)
+void QtModelPackageCommandExecutor::ResetProperty(ControlNode *node, AbstractProperty *property)
 {
     if (!property->IsReadOnly())
     {
@@ -57,12 +57,12 @@ void QtModelPackageCommandExecutor::ResetProperty(ControlNode *node, BasePropert
     }
 }
 
-void QtModelPackageCommandExecutor::ChangeDefaultProperties(const DAVA::Vector<ControlNode *> &instances, BaseProperty *property, const DAVA::VariantType &value)
+void QtModelPackageCommandExecutor::ChangeDefaultProperties(const DAVA::Vector<ControlNode *> &instances, AbstractProperty *property, const DAVA::VariantType &value)
 {
     for (ControlNode *instance : instances)
     {
         Vector<String> path = property->GetPath();
-        BaseProperty *nodeProperty = instance->GetPropertyByPath(path);
+        AbstractProperty *nodeProperty = instance->GetPropertyByPath(path);
         if (nodeProperty)
         {
             PushCommand(new ChangeDefaultValueCommand(document->GetPackage(), instance, nodeProperty, value));

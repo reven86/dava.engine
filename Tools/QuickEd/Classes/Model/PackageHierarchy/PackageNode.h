@@ -12,7 +12,7 @@ class PackageSerializer;
 class ControlNode;
 class PackageRef;
 class PackageListener;
-class BaseProperty;
+class AbstractProperty;
 class ComponentPropertiesSection;
 
 class PackageNode : public PackageBaseNode
@@ -39,9 +39,9 @@ public:
     void AddListener(PackageListener *listener);
     void RemoveListener(PackageListener *listener);
     
-    void SetControlProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &newValue);
-    void SetControlDefaultProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &newValue);
-    void ResetControlProperty(ControlNode *node, BaseProperty *property);
+    void SetControlProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue);
+    void SetControlDefaultProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue);
+    void ResetControlProperty(ControlNode *node, AbstractProperty *property);
     
     void AddComponent(ControlNode *node, ComponentPropertiesSection *section);
     void RemoveComponent(ControlNode *node, ComponentPropertiesSection *section);

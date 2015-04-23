@@ -6,7 +6,7 @@
 
 class PackageNode;
 class ControlNode;
-class PropertiesSection;
+class SectionProperty;
 class PackageCommandExecutor;
 class ControlsContainerNode;
 
@@ -66,7 +66,7 @@ private:
     
     DAVA::List<ControlDescr> controlsStack;
     DAVA::BaseObject *currentObject;
-    PropertiesSection *currentSection;
+    SectionProperty *currentSection;
     
     PackageCommandExecutor *commandExecutor;
 };

@@ -14,7 +14,7 @@ namespace DAVA {
     };
 }
 
-class BaseProperty;
+class AbstractProperty;
 class ControlNode;
 class QtModelPackageCommandExecutor;
 class ComponentPropertiesSection;
@@ -41,17 +41,17 @@ public:
                                 int role = Qt::DisplayRole) const override;
 
 private: // PropertyListener
-    virtual void PropertyChanged(BaseProperty *property) override;
+    virtual void PropertyChanged(AbstractProperty *property) override;
 
-    virtual void ComponentPropertiesWillBeAdded(PropertiesRoot *root, ComponentPropertiesSection *section, int index) override;
-    virtual void ComponentPropertiesWasAdded(PropertiesRoot *root, ComponentPropertiesSection *section, int index) override;
+    virtual void ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+    virtual void ComponentPropertiesWasAdded(RootProperty *root, ComponentPropertiesSection *section, int index) override;
     
-    virtual void ComponentPropertiesWillBeRemoved(PropertiesRoot *root, ComponentPropertiesSection *section, int index) override;
-    virtual void ComponentPropertiesWasRemoved(PropertiesRoot *root, ComponentPropertiesSection *section, int index) override;
+    virtual void ComponentPropertiesWillBeRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+    virtual void ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
 
 private:
-    QModelIndex indexByProperty(BaseProperty *property, int column = 0);
-    QVariant makeQVariant(const BaseProperty *property) const;
+    QModelIndex indexByProperty(AbstractProperty *property, int column = 0);
+    QVariant makeQVariant(const AbstractProperty *property) const;
     void initVariantType(DAVA::VariantType &var, const QVariant &val) const;
     
 private:

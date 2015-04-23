@@ -1,15 +1,15 @@
-#include "PropertiesSection.h"
+#include "SectionProperty.h"
 
 #include "Model/ControlProperties/ValueProperty.h"
 
 using namespace DAVA;
 
-PropertiesSection::PropertiesSection()
+SectionProperty::SectionProperty()
 {
     
 }
 
-PropertiesSection::~PropertiesSection()
+SectionProperty::~SectionProperty()
 {
     for (auto it = children.begin(); it != children.end(); ++it)
     {
@@ -20,24 +20,24 @@ PropertiesSection::~PropertiesSection()
     children.clear();
 }
 
-void PropertiesSection::AddProperty(ValueProperty *value)
+void SectionProperty::AddProperty(ValueProperty *value)
 {
     DVASSERT(value->GetParent() == NULL);
     value->SetParent(this);
     children.push_back(SafeRetain(value));
 }
 
-int PropertiesSection::GetCount() const
+int SectionProperty::GetCount() const
 {
     return (int) children.size();
 }
 
-BaseProperty *PropertiesSection::GetProperty(int index) const
+AbstractProperty *SectionProperty::GetProperty(int index) const
 {
     return children[index];
 }
 
-ValueProperty *PropertiesSection::FindProperty(const DAVA::InspMember *member) const
+ValueProperty *SectionProperty::FindProperty(const DAVA::InspMember *member) const
 {
     for (auto it = children.begin(); it != children.end(); ++it)
     {

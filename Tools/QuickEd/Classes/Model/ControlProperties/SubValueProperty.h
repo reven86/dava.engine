@@ -1,20 +1,20 @@
 #ifndef __UI_EDITOR_SUB_VALUE_PROPERTY__
 #define __UI_EDITOR_SUB_VALUE_PROPERTY__
 
-#include "BaseProperty.h"
+#include "AbstractProperty.h"
 
 class ValueProperty;
 
 class SubValueProperty;
 
-class SubValueProperty : public BaseProperty
+class SubValueProperty : public AbstractProperty
 {
 public:
     SubValueProperty(int index);
     virtual ~SubValueProperty();
 
     virtual int GetCount() const override;
-    virtual BaseProperty *GetProperty(int index) const override;
+    virtual AbstractProperty *GetProperty(int index) const override;
 
     virtual DAVA::String GetName() const;
     virtual ePropertyType GetType() const;

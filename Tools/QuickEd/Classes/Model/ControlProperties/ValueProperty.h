@@ -1,11 +1,11 @@
 #ifndef __UI_EDITOR_VALUE_PROPERTY__
 #define __UI_EDITOR_VALUE_PROPERTY__
 
-#include "BaseProperty.h"
+#include "AbstractProperty.h"
 
 class SubValueProperty;
 
-class ValueProperty : public BaseProperty
+class ValueProperty : public AbstractProperty
 {
 public:
     ValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, ValueProperty *sourceProperty, eCopyType copyType);
@@ -15,7 +15,7 @@ protected:
     
 public:
     virtual int GetCount() const override;
-    virtual BaseProperty *GetProperty(int index) const override;
+    virtual AbstractProperty *GetProperty(int index) const override;
 
     virtual bool HasChanges() const override;
     virtual void Serialize(PackageSerializer *serializer) const override;

@@ -60,7 +60,7 @@ bool ComponentPropertiesSection::CanRemove() const
 
 bool ComponentPropertiesSection::HasChanges() const
 {
-    return PropertiesSection::HasChanges();
+    return SectionProperty::HasChanges();
 }
 
 void ComponentPropertiesSection::InstallComponent()

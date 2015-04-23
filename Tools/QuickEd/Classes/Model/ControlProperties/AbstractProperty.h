@@ -1,11 +1,11 @@
-#ifndef __UI_EDITOR_BASE_PROPERTY_H__
-#define __UI_EDITOR_BASE_PROPERTY_H__
+#ifndef __UI_EDITOR_ABSTRACT_PROPERTY_H__
+#define __UI_EDITOR_ABSTRACT_PROPERTY_H__
 
 #include "Base/BaseObject.h"
 
 class PackageSerializer;
 
-class BaseProperty : public DAVA::BaseObject
+class AbstractProperty : public DAVA::BaseObject
 {
 public:
     enum ePropertyType
@@ -31,15 +31,15 @@ public:
     };
     
 public:
-    BaseProperty();
-    virtual ~BaseProperty();
+    AbstractProperty();
+    virtual ~AbstractProperty();
 
-    BaseProperty *GetParent() const;
-    void SetParent(BaseProperty *parent);
+    AbstractProperty *GetParent() const;
+    void SetParent(AbstractProperty *parent);
     
     virtual int GetCount() const = 0;
-    virtual BaseProperty *GetProperty(int index) const = 0;
-    virtual int GetIndex(BaseProperty *property) const;
+    virtual AbstractProperty *GetProperty(int index) const = 0;
+    virtual int GetIndex(AbstractProperty *property) const;
 
     virtual bool HasChanges() const;
     virtual void Serialize(PackageSerializer *serializer) const;
@@ -62,14 +62,14 @@ public:
     virtual bool IsReplaced() const;
 
     DAVA::Vector<DAVA::String> GetPath() const;
-    BaseProperty *GetPropertyByPath(const DAVA::Vector<DAVA::String> &path);
-    BaseProperty *GetRootProperty();
-    const BaseProperty *GetRootProperty() const;
+    AbstractProperty *GetPropertyByPath(const DAVA::Vector<DAVA::String> &path);
+    AbstractProperty *GetRootProperty();
+    const AbstractProperty *GetRootProperty() const;
 
 private:
-    BaseProperty *parent;
+    AbstractProperty *parent;
     bool readOnly;
 };
 
 
-#endif // __UI_EDITOR_BASE_PROPERTY_H__
+#endif // __UI_EDITOR_ABSTRACT_PROPERTY_H__

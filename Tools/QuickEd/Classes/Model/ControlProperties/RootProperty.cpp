@@ -1,4 +1,4 @@
-#include "PropertiesRoot.h"
+#include "RootProperty.h"
 
 #include "UI/UIControl.h"
 
@@ -14,7 +14,7 @@
 
 using namespace DAVA;
 
-PropertiesRoot::PropertiesRoot(UIControl *_control)
+RootProperty::RootProperty(UIControl *_control)
     : control(SafeRetain(_control))
 {
     MakeControlPropertiesSection(control, control->GetTypeInfo(), nullptr, COPY_VALUES);
@@ -22,7 +22,7 @@ PropertiesRoot::PropertiesRoot(UIControl *_control)
     MakeInternalControlPropertiesSection(control, nullptr, COPY_VALUES);
 }
 
-PropertiesRoot::PropertiesRoot(UIControl *_control, const PropertiesRoot *sourceProperties, eCopyType copyType)
+RootProperty::RootProperty(UIControl *_control, const RootProperty *sourceProperties, eCopyType copyType)
     : control(SafeRetain(_control))
 {
     MakeControlPropertiesSection(control, control->GetTypeInfo(), sourceProperties, copyType);
@@ -37,7 +37,7 @@ PropertiesRoot::PropertiesRoot(UIControl *_control, const PropertiesRoot *source
     }
 }
 
-PropertiesRoot::~PropertiesRoot()
+RootProperty::~RootProperty()
 {
     SafeRelease(control);
     
@@ -63,12 +63,12 @@ PropertiesRoot::~PropertiesRoot()
     internalControlProperties.clear();
 }
 
-int PropertiesRoot::GetCount() const
+int RootProperty::GetCount() const
 {
     return (int) (controlProperties.size() + componentProperties.size() + backgroundProperties.size() + internalControlProperties.size());
 }
 
-BaseProperty *PropertiesRoot::GetProperty(int index) const
+AbstractProperty *RootProperty::GetProperty(int index) const
 {
     if (index < (int) controlProperties.size())
         return controlProperties[index];
@@ -85,7 +85,7 @@ BaseProperty *PropertiesRoot::GetProperty(int index) const
     return internalControlProperties[index];
 }
 
-ControlPropertiesSection *PropertiesRoot::GetControlPropertiesSection(const DAVA::String &name) const
+ControlPropertiesSection *RootProperty::GetControlPropertiesSection(const DAVA::String &name) const
 {
     for (auto it = controlProperties.begin(); it != controlProperties.end(); ++it)
     {
@@ -95,17 +95,17 @@ ControlPropertiesSection *PropertiesRoot::GetControlPropertiesSection(const DAVA
     return nullptr;
 }
 
-bool PropertiesRoot::CanAddComponent(DAVA::uint32 componentType) const
+bool RootProperty::CanAddComponent(DAVA::uint32 componentType) const
 {
     return !IsReadOnly() && FindComponentPropertiesSection(componentType) == nullptr;
 }
 
-bool PropertiesRoot::CanRemoveComponent(DAVA::uint32 componentType) const
+bool RootProperty::CanRemoveComponent(DAVA::uint32 componentType) const
 {
     return !IsReadOnly() && FindComponentPropertiesSection(componentType) != nullptr;
 }
 
-int32 PropertiesRoot::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSection *section) const
+int32 RootProperty::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSection *section) const
 {
     int32 offset = (int32) controlProperties.size();
     auto it = std::find(componentProperties.begin(), componentProperties.end(), section);
@@ -125,7 +125,7 @@ int32 PropertiesRoot::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSec
     }
 }
 
-ComponentPropertiesSection *PropertiesRoot::FindComponentPropertiesSection(DAVA::uint32 componentType) const
+ComponentPropertiesSection *RootProperty::FindComponentPropertiesSection(DAVA::uint32 componentType) const
 {
     for (ComponentPropertiesSection *section : componentProperties)
     {
@@ -137,7 +137,7 @@ ComponentPropertiesSection *PropertiesRoot::FindComponentPropertiesSection(DAVA:
     return nullptr;
 }
 
-ComponentPropertiesSection *PropertiesRoot::AddComponentPropertiesSection(DAVA::uint32 componentType)
+ComponentPropertiesSection *RootProperty::AddComponentPropertiesSection(DAVA::uint32 componentType)
 {
     ComponentPropertiesSection *section = new ComponentPropertiesSection(control, (UIComponent::eType) componentType, nullptr, COPY_VALUES);
     AddComponentPropertiesSection(section);
@@ -145,7 +145,7 @@ ComponentPropertiesSection *PropertiesRoot::AddComponentPropertiesSection(DAVA::
     return section;
 }
 
-void PropertiesRoot::AddComponentPropertiesSection(ComponentPropertiesSection *section)
+void RootProperty::AddComponentPropertiesSection(ComponentPropertiesSection *section)
 {
     if (FindComponentPropertiesSection(section->GetComponentType()) == nullptr)
     {
@@ -169,7 +169,7 @@ void PropertiesRoot::AddComponentPropertiesSection(ComponentPropertiesSection *s
     }
 }
 
-void PropertiesRoot::RemoveComponentPropertiesSection(DAVA::uint32 componentType)
+void RootProperty::RemoveComponentPropertiesSection(DAVA::uint32 componentType)
 {
     ComponentPropertiesSection *section = FindComponentPropertiesSection(componentType);
     if (section)
@@ -178,7 +178,7 @@ void PropertiesRoot::RemoveComponentPropertiesSection(DAVA::uint32 componentType
     }
 }
 
-void PropertiesRoot::RemoveComponentPropertiesSection(ComponentPropertiesSection *section)
+void RootProperty::RemoveComponentPropertiesSection(ComponentPropertiesSection *section)
 {
     uint32 componentType = section->GetComponentType();
     
@@ -206,26 +206,26 @@ void PropertiesRoot::RemoveComponentPropertiesSection(ComponentPropertiesSection
     }
 }
 
-BackgroundPropertiesSection *PropertiesRoot::GetBackgroundPropertiesSection(int num) const
+BackgroundPropertiesSection *RootProperty::GetBackgroundPropertiesSection(int num) const
 {
     if (0 <= num && num < (int) backgroundProperties.size())
         return backgroundProperties[num];
     return nullptr;
 }
 
-InternalControlPropertiesSection *PropertiesRoot::GetInternalControlPropertiesSection(int num) const
+InternalControlPropertiesSection *RootProperty::GetInternalControlPropertiesSection(int num) const
 {
     if (0 <= num && num < (int) internalControlProperties.size())
         return internalControlProperties[num];
     return nullptr;
 }
 
-void PropertiesRoot::AddListener(PropertyListener *listener)
+void RootProperty::AddListener(PropertyListener *listener)
 {
     listeners.push_back(listener);
 }
 
-void PropertiesRoot::RemoveListener(PropertyListener *listener)
+void RootProperty::RemoveListener(PropertyListener *listener)
 {
     auto it = std::find(listeners.begin(), listeners.end(), listener);
     if (it != listeners.end())
@@ -238,7 +238,7 @@ void PropertiesRoot::RemoveListener(PropertyListener *listener)
     }
 }
 
-void PropertiesRoot::SetProperty(BaseProperty *property, const DAVA::VariantType &newValue)
+void RootProperty::SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue)
 {
     property->SetValue(newValue);
     
@@ -246,7 +246,7 @@ void PropertiesRoot::SetProperty(BaseProperty *property, const DAVA::VariantType
         listener->PropertyChanged(property);
 }
 
-void PropertiesRoot::SetDefaultProperty(BaseProperty *property, const DAVA::VariantType &newValue)
+void RootProperty::SetDefaultProperty(AbstractProperty *property, const DAVA::VariantType &newValue)
 {
     property->SetDefaultValue(newValue);
 
@@ -254,7 +254,7 @@ void PropertiesRoot::SetDefaultProperty(BaseProperty *property, const DAVA::Vari
         listener->PropertyChanged(property);
 }
 
-void PropertiesRoot::ResetProperty(BaseProperty *property)
+void RootProperty::ResetProperty(AbstractProperty *property)
 {
     property->ResetValue();
 
@@ -262,7 +262,7 @@ void PropertiesRoot::ResetProperty(BaseProperty *property)
         listener->PropertyChanged(property);
 }
 
-void PropertiesRoot::Serialize(PackageSerializer *serializer) const
+void RootProperty::Serialize(PackageSerializer *serializer) const
 {
     for (const auto section : controlProperties)
         section->Serialize(serializer);
@@ -311,15 +311,15 @@ void PropertiesRoot::Serialize(PackageSerializer *serializer) const
     }
 }
 
-String PropertiesRoot::GetName() const {
+String RootProperty::GetName() const {
     return "ROOT";
 }
 
-BaseProperty::ePropertyType PropertiesRoot::GetType() const {
+AbstractProperty::ePropertyType RootProperty::GetType() const {
     return TYPE_HEADER;
 }
 
-void PropertiesRoot::MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const PropertiesRoot *sourceProperties, eCopyType copyType)
+void RootProperty::MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const RootProperty *sourceProperties, eCopyType copyType)
 {
     const InspInfo *baseInfo = typeInfo->BaseInfo();
     if (baseInfo)
@@ -344,7 +344,7 @@ void PropertiesRoot::MakeControlPropertiesSection(DAVA::UIControl *control, cons
     }
 }
 
-void PropertiesRoot::MakeBackgroundPropertiesSection(DAVA::UIControl *control, const PropertiesRoot *sourceProperties, eCopyType copyType)
+void RootProperty::MakeBackgroundPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCopyType copyType)
 {
     for (int i = 0; i < control->GetBackgroundComponentsCount(); i++)
     {
@@ -355,7 +355,7 @@ void PropertiesRoot::MakeBackgroundPropertiesSection(DAVA::UIControl *control, c
     }
 }
 
-void PropertiesRoot::MakeInternalControlPropertiesSection(DAVA::UIControl *control, const PropertiesRoot *sourceProperties, eCopyType copyType)
+void RootProperty::MakeInternalControlPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCopyType copyType)
 {
     for (int i = 0; i < control->GetInternalControlsCount(); i++)
     {

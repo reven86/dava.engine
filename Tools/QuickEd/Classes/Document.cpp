@@ -13,8 +13,8 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageRef.h"
 
-#include "Model/ControlProperties/PropertiesRoot.h"
-#include "Model/ControlProperties/PropertiesSection.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/SectionProperty.h"
 #include "Model/ControlProperties/ValueProperty.h"
 
 #include "SharedData.h"
@@ -69,11 +69,11 @@ void Document::UpdateLanguage()
 
 void Document::UpdateLanguageRecursively(ControlNode *node)
 {
-    PropertiesRoot *propertiesRoot = node->GetPropertiesRoot();
+    RootProperty *propertiesRoot = node->GetPropertiesRoot();
     int propertiesCount = propertiesRoot->GetCount();
     for (int index = 0; index < propertiesCount; ++index)
     {
-        PropertiesSection *section = dynamic_cast<PropertiesSection*>(propertiesRoot->GetProperty(index));
+        SectionProperty *section = dynamic_cast<SectionProperty*>(propertiesRoot->GetProperty(index));
         int sectionCount = section->GetCount();
         for (int prop = 0; prop < sectionCount; ++prop)
         {

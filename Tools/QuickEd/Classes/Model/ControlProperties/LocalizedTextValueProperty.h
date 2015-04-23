@@ -10,7 +10,7 @@ public:
     virtual ~LocalizedTextValueProperty();
     
     int GetCount() const override;
-    BaseProperty *GetProperty(int index) const override;
+    AbstractProperty *GetProperty(int index) const override;
 
     DAVA::VariantType GetValue() const override;
 protected:

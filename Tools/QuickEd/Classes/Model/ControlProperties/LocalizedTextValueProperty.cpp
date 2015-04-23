@@ -20,7 +20,7 @@ int LocalizedTextValueProperty::GetCount() const
     return 0;
 }
 
-BaseProperty *LocalizedTextValueProperty::GetProperty(int index) const
+AbstractProperty *LocalizedTextValueProperty::GetProperty(int index) const
 {
     return NULL;
 }

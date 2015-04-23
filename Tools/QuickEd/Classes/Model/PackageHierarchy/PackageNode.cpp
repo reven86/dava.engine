@@ -96,7 +96,7 @@ void PackageNode::RemoveListener(PackageListener *listener)
     }
 }
 
-void PackageNode::SetControlProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &newValue)
+void PackageNode::SetControlProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue)
 {
     node->GetPropertiesRoot()->SetProperty(property, newValue);
 
@@ -104,7 +104,7 @@ void PackageNode::SetControlProperty(ControlNode *node, BaseProperty *property, 
         listener->ControlPropertyWasChanged(node, property);
 }
 
-void PackageNode::SetControlDefaultProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &newValue)
+void PackageNode::SetControlDefaultProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue)
 {
     node->GetPropertiesRoot()->SetDefaultProperty(property, newValue);
 
@@ -112,7 +112,7 @@ void PackageNode::SetControlDefaultProperty(ControlNode *node, BaseProperty *pro
         listener->ControlPropertyWasChanged(node, property);
 }
 
-void PackageNode::ResetControlProperty(ControlNode *node, BaseProperty *property)
+void PackageNode::ResetControlProperty(ControlNode *node, AbstractProperty *property)
 {
     node->GetPropertiesRoot()->ResetProperty(property);
 

@@ -1,27 +1,27 @@
-#include "BaseProperty.h"
+#include "AbstractProperty.h"
 
 using namespace DAVA;
 
-BaseProperty::BaseProperty() : parent(NULL), readOnly(false)
+AbstractProperty::AbstractProperty() : parent(NULL), readOnly(false)
 {
     
 }
 
-BaseProperty::~BaseProperty()
+AbstractProperty::~AbstractProperty()
 {
 }
 
-BaseProperty *BaseProperty::GetParent() const
+AbstractProperty *AbstractProperty::GetParent() const
 {
     return parent;
 }
 
-void BaseProperty::SetParent(BaseProperty *parent)
+void AbstractProperty::SetParent(AbstractProperty *parent)
 {
     this->parent = parent;
 }
 
-int BaseProperty::GetIndex(BaseProperty *property) const
+int AbstractProperty::GetIndex(AbstractProperty *property) const
 {
     for (int i = 0; i < GetCount(); i++)
     {
@@ -31,7 +31,7 @@ int BaseProperty::GetIndex(BaseProperty *property) const
     return -1;
 }
 
-bool BaseProperty::HasChanges() const
+bool AbstractProperty::HasChanges() const
 {
     for (int i = 0; i < GetCount(); i++)
     {
@@ -41,62 +41,62 @@ bool BaseProperty::HasChanges() const
     return false;
 }
 
-void BaseProperty::Serialize(PackageSerializer *serializer) const
+void AbstractProperty::Serialize(PackageSerializer *serializer) const
 {
     for (int i = 0; i < GetCount(); i++)
         GetProperty(i)->Serialize(serializer);
 }
 
-bool BaseProperty::IsReadOnly() const
+bool AbstractProperty::IsReadOnly() const
 {
     return readOnly;
 }
 
-void BaseProperty::SetReadOnly()
+void AbstractProperty::SetReadOnly()
 {
     readOnly = true;
     for (int i = 0; i < GetCount(); i++)
         GetProperty(i)->SetReadOnly();
 }
 
-DAVA::VariantType BaseProperty::GetValue() const
+DAVA::VariantType AbstractProperty::GetValue() const
 {
     return DAVA::VariantType();
 }
 
-void BaseProperty::SetValue(const DAVA::VariantType &/*newValue*/)
+void AbstractProperty::SetValue(const DAVA::VariantType &/*newValue*/)
 {
     // Do nothing by default
 }
 
-VariantType BaseProperty::GetDefaultValue() const
+VariantType AbstractProperty::GetDefaultValue() const
 {
     return VariantType();
 }
 
-void BaseProperty::SetDefaultValue(const DAVA::VariantType &newValue)
+void AbstractProperty::SetDefaultValue(const DAVA::VariantType &newValue)
 {
     // Do nothing by default
 }
 
-const EnumMap *BaseProperty::GetEnumMap() const
+const EnumMap *AbstractProperty::GetEnumMap() const
 {
     return NULL;
 }
 
-void BaseProperty::ResetValue()
+void AbstractProperty::ResetValue()
 {
     // Do nothing by default
 }
 
-bool BaseProperty::IsReplaced() const
+bool AbstractProperty::IsReplaced() const
 {
     return false; // false by default
 }
 
-Vector<String> BaseProperty::GetPath() const
+Vector<String> AbstractProperty::GetPath() const
 {
-    const BaseProperty *p = this;
+    const AbstractProperty *p = this;
     
     int32 count = 0;
     while (p && p->parent)
@@ -121,16 +121,16 @@ Vector<String> BaseProperty::GetPath() const
     return path;
 }
 
-BaseProperty *BaseProperty::GetPropertyByPath(const Vector<String> &path)
+AbstractProperty *AbstractProperty::GetPropertyByPath(const Vector<String> &path)
 {
-    BaseProperty *prop = this;
+    AbstractProperty *prop = this;
     
     for (const String &name : path)
     {
-        BaseProperty *child = nullptr;
+        AbstractProperty *child = nullptr;
         for (int32 index = 0; index < prop->GetCount(); index++)
         {
-            BaseProperty *candidate = prop->GetProperty(index);
+            AbstractProperty *candidate = prop->GetProperty(index);
             if (candidate->GetName() == name)
             {
                 child = candidate;
@@ -145,17 +145,17 @@ BaseProperty *BaseProperty::GetPropertyByPath(const Vector<String> &path)
     return prop;
 }
 
-BaseProperty *BaseProperty::GetRootProperty()
+AbstractProperty *AbstractProperty::GetRootProperty()
 {
-    BaseProperty *property = this;
+    AbstractProperty *property = this;
     while (property->parent)
         property = property->parent;
     return property;
 }
 
-const BaseProperty *BaseProperty::GetRootProperty() const
+const AbstractProperty *AbstractProperty::GetRootProperty() const
 {
-    const BaseProperty *property = this;
+    const AbstractProperty *property = this;
     while (property->parent)
         property = property->parent;
     return property;

@@ -72,7 +72,7 @@ DAVA::String InternalControlPropertiesSection::GetName() const
 
 bool InternalControlPropertiesSection::HasChanges() const
 {
-    return internalControl && PropertiesSection::HasChanges();
+    return internalControl && SectionProperty::HasChanges();
 }
 
 void InternalControlPropertiesSection::Serialize(PackageSerializer *serializer) const

@@ -2,9 +2,9 @@
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
-#include "Model/ControlProperties/BaseProperty.h"
+#include "Model/ControlProperties/AbstractProperty.h"
 
-ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode *_root, ControlNode *_node, BaseProperty *prop, const DAVA::VariantType &newVal, QUndoCommand *parent /*= 0*/ )
+ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode *_root, ControlNode *_node, AbstractProperty *prop, const DAVA::VariantType &newVal, QUndoCommand *parent /*= 0*/ )
     : QUndoCommand(parent)
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))
@@ -18,7 +18,7 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode *_root, Contr
     setText( QString("change %1").arg(QString(property->GetName().c_str())));
 }
 
-ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode *_root, ControlNode *_node, BaseProperty *prop, QUndoCommand *parent /*= 0*/ )
+ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode *_root, ControlNode *_node, AbstractProperty *prop, QUndoCommand *parent /*= 0*/ )
     : QUndoCommand(parent)
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))

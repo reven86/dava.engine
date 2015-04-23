@@ -83,7 +83,7 @@ RefPtr<UIPackage> EditorUIPackageBuilder::ProcessImportedPackage(const String &p
         DAVA::List<ControlDescr> prevControlsStack = controlsStack;
         
         DAVA::BaseObject *prevObj = currentObject;
-        PropertiesSection *prevSect = currentSection;
+        SectionProperty *prevSect = currentSection;
 
         // clear state
         packageNode = nullptr;

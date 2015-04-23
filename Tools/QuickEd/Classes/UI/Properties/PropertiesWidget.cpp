@@ -104,7 +104,7 @@ void PropertiesWidget::OnSelectionChanged(const QItemSelection &selected, const 
     {
         const QItemSelectionRange &range = selected.first();
         const QPersistentModelIndex &index = range.topLeft();
-        BaseProperty *property = static_cast<BaseProperty*>(index.internalPointer());
+        AbstractProperty *property = static_cast<AbstractProperty*>(index.internalPointer());
         
         bool enabled = property->CanRemove();
 

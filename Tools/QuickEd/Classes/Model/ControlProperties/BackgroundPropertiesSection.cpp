@@ -69,7 +69,7 @@ DAVA::String BackgroundPropertiesSection::GetName() const
 
 bool BackgroundPropertiesSection::HasChanges() const
 {
-    return bg && PropertiesSection::HasChanges();
+    return bg && SectionProperty::HasChanges();
 }
 
 void BackgroundPropertiesSection::Serialize(PackageSerializer *serializer) const

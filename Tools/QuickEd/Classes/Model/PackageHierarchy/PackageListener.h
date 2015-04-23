@@ -5,12 +5,12 @@ class PackageNode;
 class ControlNode;
 class ControlsContainerNode;
 class PackageControlsNode;
-class BaseProperty;
+class AbstractProperty;
 
 class PackageListener
 {
 public:
-    virtual void ControlPropertyWasChanged(ControlNode *node, BaseProperty *property) = 0;
+    virtual void ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property) = 0;
     
     virtual void ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int index) = 0;
     virtual void ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int index) = 0;

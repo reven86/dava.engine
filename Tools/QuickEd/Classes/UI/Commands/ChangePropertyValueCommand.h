@@ -6,13 +6,13 @@
 
 class PackageNode;
 class ControlNode;
-class BaseProperty;
+class AbstractProperty;
 
 class ChangePropertyValueCommand: public QUndoCommand
 {
 public:
-    ChangePropertyValueCommand(PackageNode *_root, ControlNode *_node, BaseProperty *_property, const DAVA::VariantType &newValue, QUndoCommand *parent = 0);
-    ChangePropertyValueCommand(PackageNode *_root, ControlNode *_node, BaseProperty *_property, QUndoCommand *parent = 0);
+    ChangePropertyValueCommand(PackageNode *_root, ControlNode *_node, AbstractProperty *_property, const DAVA::VariantType &newValue, QUndoCommand *parent = 0);
+    ChangePropertyValueCommand(PackageNode *_root, ControlNode *_node, AbstractProperty *_property, QUndoCommand *parent = 0);
     virtual ~ChangePropertyValueCommand();
 
     virtual void redo();
@@ -21,7 +21,7 @@ public:
 private:
     PackageNode *root;
     ControlNode *node;
-    BaseProperty *property;
+    AbstractProperty *property;
     DAVA::VariantType oldValue;
     DAVA::VariantType newValue;
 };
