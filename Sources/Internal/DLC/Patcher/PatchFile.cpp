@@ -434,6 +434,7 @@ PatchFileReader::PatchFileReader(const FilePath &path, bool beVerbose)
 , curDiffPos(0)
 , curPatchSize(0)
 , verbose(beVerbose)
+, lastError(ERROR_NO)
 {
     patchFile = File::Create(path, File::OPEN | File::READ);
 }
