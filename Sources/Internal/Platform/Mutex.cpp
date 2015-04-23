@@ -28,71 +28,45 @@
 
 
 #include "Platform/Mutex.h"
-
+#include "FileSystem/Logger.h"
 
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_WIN32__)
-
 Mutex::Mutex()
 {
-    mutex = CreateMutexEx(NULL, false, NULL, MUTEX_ALL_ACCESS);
-    if(mutex == NULL)
+    int ret = pthread_mutex_init(&mutex, NULL);
+    if (ret != 0)
     {
-        Logger::Error("Mutex::Mutex() error");
+        Logger::Error("Mutex::Mutex() error: %d", ret);
     }
 }
 
 Mutex::~Mutex()
 {
-    if(!CloseHandle(mutex))
+    int ret = pthread_mutex_destroy(&mutex);
+    if (ret != 0)
     {
-        Logger::Error("Mutex::~Mutex() error");
+        Logger::Error("Mutex::~Mutex() error: %d", ret);
     }
 }
 
 void Mutex::Lock()
 {
-    int32 ret = WaitForSingleObjectEx(mutex, INFINITE, FALSE);
-    if(ret == -1)
+    int ret = pthread_mutex_lock(&mutex);
+    if (ret != 0)
     {
-        Logger::Error("Mutex::Lock() error");
+        Logger::Error("Mutex::Lock() error: %d", ret);
     }
 }
 
 void Mutex::Unlock()
 {
-    if(!ReleaseMutex(mutex))
+    int ret = pthread_mutex_unlock(&mutex);
+    if (ret != 0)
     {
-        return Logger::Error("Mutex::Unlock() error");
+        Logger::Error("Mutex::Unlock() error: %d", ret);
     }
 }
-
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
-
-Mutex::Mutex()
-{
-//	mutex = PTHREAD_MUTEX_INITIALIZER;
-	pthread_mutex_init(&mutex, 0);
-}
-
-Mutex::~Mutex()
-{
-	
-}
-
-void Mutex::Lock()
-{
-	pthread_mutex_lock(&mutex);
-}
-
-void Mutex::Unlock()
-{
-	pthread_mutex_unlock(&mutex);
-}
-
-#endif //PLATFORMS
-
 
 };

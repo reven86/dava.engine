@@ -30,7 +30,10 @@
 #ifndef __DAVAENGINE_PTHREAD_WIN32_H__
 #define __DAVAENGINE_PTHREAD_WIN32_H__ 
 
-#include "Base/BaseTypes.h"
+#include "Platform/PlatformDetection.h"
+
+//mimic to some posix threads api
+//No cancellations!
 
 #ifdef __DAVAENGINE_WIN32__
 
@@ -38,30 +41,11 @@ namespace DAVA
 {
 
 typedef void pthread_condattr_t;
-typedef HANDLE pthread_mutex_t;
+typedef CRITICAL_SECTION pthread_mutex_t;
 typedef void pthread_mutexattr_t;
+typedef CONDITION_VARIABLE pthread_cond_t;
 
-typedef struct
-{
-    int waiters_count_;
-    // Number of waiting threads.
-
-    CRITICAL_SECTION waiters_count_lock_;
-    // Serialize access to <waiters_count_>.
-
-    HANDLE sema_;
-    // Semaphore used to queue up threads waiting for the condition to
-    // become signaled. 
-
-    HANDLE waiters_done_;
-    // An auto-reset event used by the broadcast/signal thread to wait
-    // for all the waiting thread(s) to wake up and be released from the
-    // semaphore. 
-
-    size_t was_broadcast_;
-    // Keeps track of whether we were broadcasting or signaling.  This
-    // allows us to optimize the code if we're just signaling.
-} pthread_cond_t;
+#define PTHREAD_COND_INITIALIZER {0}
 
 int pthread_cond_init(pthread_cond_t *cv, const pthread_condattr_t *);
 int pthread_cond_wait(pthread_cond_t *cv, pthread_mutex_t *external_mutex);
