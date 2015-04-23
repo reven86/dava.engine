@@ -191,7 +191,7 @@ void DLC::FSM(DLCEvent event)
             switch(event)
             {
                 case EVENT_DOWNLOAD_START:
-                    //fsmAutoReady = true;
+                    fsmAutoReady = true;
                     // don't break here
 
                 case EVENT_CHECK_START:
@@ -526,6 +526,13 @@ void DLC::StepCheckInfoCancel()
 
 void DLC::StepCheckPatchBegin()
 {
+    File *f = File::Create(dlcContext.remotePatchStorePath, File::OPEN | File::READ);
+    if(nullptr != f)
+    {
+        dlcContext.remotePatchReadySize = f->GetSize();
+        f->Release();
+    }
+
     dlcContext.remotePatchFullUrl = dlcContext.remoteUrl + MakePatchUrl(0, dlcContext.remoteVer);
     dlcContext.remotePatchLiteUrl = dlcContext.remoteUrl + MakePatchUrl(dlcContext.localVer, dlcContext.remoteVer);
 
@@ -535,8 +542,6 @@ void DLC::StepCheckPatchBegin()
     DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepCheckPatchFinish));
     dlcContext.remoteFullSizeDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchFullUrl, dlcContext.remotePatchStorePath, GET_SIZE); // full size should be first
     dlcContext.remoteLiteSizeDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchLiteUrl, dlcContext.remotePatchStorePath, GET_SIZE); // lite size should be last
-    
-    //dlcContext.remotePatchReadySize = FileSystem::
 }
 
 void DLC::StepCheckPatchFinish(const uint32 &id, const DownloadStatus &status)
