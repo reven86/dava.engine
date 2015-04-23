@@ -67,12 +67,14 @@ UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
     const LegacyControlData::Data *data = legacyData ? legacyData->Get(packagePath.GetFrameworkPath()) : NULL;
     if (data)
     {
-        builder->ProcessProperty(legacyControl->TypeInfo()->Member("name"), VariantType(data->name));
+        legacyControl->SetName(data->name);
+        //builder->ProcessProperty(legacyControl->TypeInfo()->Member("name"), VariantType(data->name));
         builder->ProcessProperty(legacyControl->TypeInfo()->Member("size"), VariantType(data->size));
     }
     else
     {
-        builder->ProcessProperty(legacyControl->TypeInfo()->Member("name"), VariantType(String("LegacyControl")));
+        //builder->ProcessProperty(legacyControl->TypeInfo()->Member("name"), VariantType(String("LegacyControl")));
+        legacyControl->SetName("LegacyControl");
     }
     builder->EndControlPropertiesSection();
 
@@ -171,9 +173,7 @@ void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *c
         memberName = GetOldPropertyName(className, memberName);
         
         VariantType res;
-        if (memberName == "name")
-            res = VariantType(control->GetName());
-        else if (node)
+        if (node)
             res = ReadVariantTypeFromYamlNode(member, node, -1, memberName);
         
         builder->ProcessProperty(member, res);

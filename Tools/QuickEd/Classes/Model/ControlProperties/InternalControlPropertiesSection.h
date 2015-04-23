@@ -11,9 +11,10 @@ namespace DAVA
 class InternalControlPropertiesSection : public SectionProperty
 {
 public:
-    InternalControlPropertiesSection(DAVA::UIControl *control, int num, const InternalControlPropertiesSection *sourceSection, eCopyType copyType);
+    InternalControlPropertiesSection(DAVA::UIControl *control, int num, const InternalControlPropertiesSection *sourceSection, eCloneType copyType);
+protected:
     virtual ~InternalControlPropertiesSection();
-
+public:
     virtual DAVA::UIControl *GetInternalControl() const;
     void CreateInternalControl();
     

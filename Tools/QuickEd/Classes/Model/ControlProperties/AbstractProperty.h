@@ -24,16 +24,18 @@ public:
         EF_ADD_REMOVE = 1 << 1,
     };
     
-    enum eCopyType
+    enum eCloneType
     {
-        COPY_VALUES,
-        COPY_FULL
+        CT_INHERIT,
+        CT_COPY
     };
     
 public:
     AbstractProperty();
+protected:
     virtual ~AbstractProperty();
 
+public:
     AbstractProperty *GetParent() const;
     void SetParent(AbstractProperty *parent);
     
@@ -42,7 +44,7 @@ public:
     virtual int GetIndex(AbstractProperty *property) const;
 
     virtual bool HasChanges() const;
-    virtual void Serialize(PackageSerializer *serializer) const;
+    virtual void Serialize(PackageSerializer *serializer) const = 0;
 
     virtual DAVA::String GetName() const = 0;
     virtual ePropertyType GetType() const = 0;

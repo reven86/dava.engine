@@ -12,9 +12,11 @@ namespace DAVA
 class ComponentPropertiesSection : public SectionProperty
 {
 public:
-    ComponentPropertiesSection(DAVA::UIControl *control, DAVA::UIComponent::eType type, const ComponentPropertiesSection *sourceSection, eCopyType copyType);
+    ComponentPropertiesSection(DAVA::UIControl *control, DAVA::UIComponent::eType type, const ComponentPropertiesSection *sourceSection, eCloneType copyType);
+protected:
     virtual ~ComponentPropertiesSection();
-    
+
+public:
     DAVA::UIComponent *GetComponent() const;
     DAVA::uint32 GetComponentType() const;
     

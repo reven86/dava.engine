@@ -41,12 +41,6 @@ bool AbstractProperty::HasChanges() const
     return false;
 }
 
-void AbstractProperty::Serialize(PackageSerializer *serializer) const
-{
-    for (int i = 0; i < GetCount(); i++)
-        GetProperty(i)->Serialize(serializer);
-}
-
 bool AbstractProperty::IsReadOnly() const
 {
     return readOnly;

@@ -1518,8 +1518,6 @@ public:
     inline void SetAndApplyBottomAlignEnabled(bool isEnabled);
 
     INTROSPECTION_EXTEND(UIControl, AnimatedObject,
-                         PROPERTY("customClass", "Custom Class", GetCustomControlClassName, SetCustomControlClassName, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("name", "Name", GetName, SetName, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("size", "Size", GetSize, SetSize, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("scale", "Scale", GetScale, SetScale, I_SAVE | I_VIEW | I_EDIT)

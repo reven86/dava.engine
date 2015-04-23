@@ -78,7 +78,7 @@ void Document::UpdateLanguageRecursively(ControlNode *node)
         for (int prop = 0; prop < sectionCount; ++prop)
         {
             ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
-            if (!strcmp(valueProperty->GetMember()->Name(), "text"))
+            if (valueProperty->GetName() == "text")
             {
                 valueProperty->SetValue(valueProperty->GetValue());
             }

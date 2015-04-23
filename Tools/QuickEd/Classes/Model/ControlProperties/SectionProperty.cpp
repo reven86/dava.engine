@@ -37,11 +37,19 @@ AbstractProperty *SectionProperty::GetProperty(int index) const
     return children[index];
 }
 
+void SectionProperty::Serialize(PackageSerializer *serializer) const
+{
+    for (ValueProperty* prop : children)
+    {
+        prop->Serialize(serializer);
+    }
+}
+
 ValueProperty *SectionProperty::FindProperty(const DAVA::InspMember *member) const
 {
     for (auto it = children.begin(); it != children.end(); ++it)
     {
-        if ((*it)->GetMember() == member)
+        if ((*it)->IsSameMember(member))
             return *it;
     }
     return NULL;

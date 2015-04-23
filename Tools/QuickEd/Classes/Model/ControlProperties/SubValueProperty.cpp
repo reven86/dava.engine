@@ -4,7 +4,9 @@
 
 using namespace DAVA;
 
-SubValueProperty::SubValueProperty(int index) : index(index)
+SubValueProperty::SubValueProperty(int anIndex, const DAVA::String &propName)
+    : index(anIndex)
+    , name(propName)
 {
     
 }
@@ -26,7 +28,7 @@ AbstractProperty *SubValueProperty::GetProperty(int index) const
 
 String SubValueProperty::GetName() const
 {
-    return GetValueProperty()->GetSubValueName(index);
+    return name;
 }
 
 SubValueProperty::ePropertyType SubValueProperty::GetType() const

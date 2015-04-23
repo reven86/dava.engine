@@ -9,37 +9,45 @@
 #include "InternalControlPropertiesSection.h"
 
 #include "PropertyListener.h"
+#include "ValueProperty.h"
 
-#include "../PackageSerializer.h"
+#include "Model/PackageSerializer.h"
+#include "StringProperty.h"
+#include <Base/FunctionTraits.h>
 
 using namespace DAVA;
 
-RootProperty::RootProperty(UIControl *_control)
-    : control(SafeRetain(_control))
+RootProperty::RootProperty(UIControl *aControl, const RootProperty *sourceProperties, eCloneType cloneType)
+    : control(SafeRetain(aControl))
+    , classProperty(nullptr)
+    , customClassProperty(nullptr)
+    , prototypeProperty(nullptr)
+    , nameProperty(nullptr)
 {
-    MakeControlPropertiesSection(control, control->GetTypeInfo(), nullptr, COPY_VALUES);
-    MakeBackgroundPropertiesSection(control, nullptr, COPY_VALUES);
-    MakeInternalControlPropertiesSection(control, nullptr, COPY_VALUES);
-}
-
-RootProperty::RootProperty(UIControl *_control, const RootProperty *sourceProperties, eCopyType copyType)
-    : control(SafeRetain(_control))
-{
-    MakeControlPropertiesSection(control, control->GetTypeInfo(), sourceProperties, copyType);
-    MakeBackgroundPropertiesSection(control, sourceProperties, copyType);
-    MakeInternalControlPropertiesSection(control, sourceProperties, copyType);
+    MakeBaseProperties(control, sourceProperties, cloneType);
+    MakeControlPropertiesSection(control, control->GetTypeInfo(), sourceProperties, cloneType);
+    MakeBackgroundPropertiesSection(control, sourceProperties, cloneType);
+    MakeInternalControlPropertiesSection(control, sourceProperties, cloneType);
     
-    for (ComponentPropertiesSection *section : sourceProperties->componentProperties)
+    if (sourceProperties)
     {
-        UIComponent::eType type = (UIComponent::eType) section->GetComponent()->GetType();
-        ScopedPtr<ComponentPropertiesSection> newSection(new ComponentPropertiesSection(control, type, section, copyType));
-        AddComponentPropertiesSection(newSection);
+        for (ComponentPropertiesSection *section : sourceProperties->componentProperties)
+        {
+            UIComponent::eType type = (UIComponent::eType) section->GetComponent()->GetType();
+            ScopedPtr<ComponentPropertiesSection> newSection(new ComponentPropertiesSection(control, type, section, cloneType));
+            AddComponentPropertiesSection(newSection);
+        }
     }
 }
 
 RootProperty::~RootProperty()
 {
     SafeRelease(control);
+
+    SafeRelease(classProperty);
+    SafeRelease(customClassProperty);
+    SafeRelease(prototypeProperty);
+    SafeRelease(nameProperty);
     
     for (ControlPropertiesSection *section : controlProperties)
     {
@@ -65,11 +73,25 @@ RootProperty::~RootProperty()
 
 int RootProperty::GetCount() const
 {
-    return (int) (controlProperties.size() + componentProperties.size() + backgroundProperties.size() + internalControlProperties.size());
+    return (int)(controlProperties.size() + componentProperties.size() + backgroundProperties.size() + internalControlProperties.size()) + 4;
 }
 
 AbstractProperty *RootProperty::GetProperty(int index) const
 {
+    if (index == 0)
+        return classProperty;
+
+    if (index == 1)
+        return customClassProperty;
+
+    if (index == 2)
+        return prototypeProperty;
+
+    if (index == 3)
+        return nameProperty;
+
+    index -= 4;
+
     if (index < (int) controlProperties.size())
         return controlProperties[index];
     index -= controlProperties.size();
@@ -107,7 +129,7 @@ bool RootProperty::CanRemoveComponent(DAVA::uint32 componentType) const
 
 int32 RootProperty::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSection *section) const
 {
-    int32 offset = (int32) controlProperties.size();
+    int32 offset = controlProperties.size() + 4;
     auto it = std::find(componentProperties.begin(), componentProperties.end(), section);
     if (it != componentProperties.end())
     {
@@ -139,7 +161,7 @@ ComponentPropertiesSection *RootProperty::FindComponentPropertiesSection(DAVA::u
 
 ComponentPropertiesSection *RootProperty::AddComponentPropertiesSection(DAVA::uint32 componentType)
 {
-    ComponentPropertiesSection *section = new ComponentPropertiesSection(control, (UIComponent::eType) componentType, nullptr, COPY_VALUES);
+    ComponentPropertiesSection *section = new ComponentPropertiesSection(control, (UIComponent::eType) componentType, nullptr, CT_INHERIT);
     AddComponentPropertiesSection(section);
     section->Release();
     return section;
@@ -311,15 +333,36 @@ void RootProperty::Serialize(PackageSerializer *serializer) const
     }
 }
 
-String RootProperty::GetName() const {
+String RootProperty::GetName() const
+{
     return "ROOT";
 }
 
-AbstractProperty::ePropertyType RootProperty::GetType() const {
+AbstractProperty::ePropertyType RootProperty::GetType() const
+{
     return TYPE_HEADER;
 }
 
-void RootProperty::MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const RootProperty *sourceProperties, eCopyType copyType)
+void RootProperty::MakeBaseProperties(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType)
+{
+    ValueProperty *sourceClassProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetClassProperty();
+    classProperty = new StringProperty("Class", control, DAVA::MakeFunction(&DAVA::UIControl::GetControlClassName), NULL, dynamic_cast<StringProperty*>(sourceClassProperty), cloneType);
+    //allProperties.push_back(classProperty);
+
+    ValueProperty *sourceCustomClassProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetCustomClassProperty();
+    customClassProperty = new StringProperty("Custom class", control, DAVA::MakeFunction(&DAVA::UIControl::GetCustomControlClassName), DAVA::MakeFunction(&DAVA::UIControl::SetCustomControlClassName), dynamic_cast<StringProperty*>(sourceCustomClassProperty), cloneType);
+    //allProperties.push_back(customClassProperty);
+
+    ValueProperty *sourcePrototypeProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetPrototypeProperty();
+    prototypeProperty = new StringProperty("Prototype", control, DAVA::MakeFunction(&DAVA::UIControl::GetCustomControlClassName), NULL, dynamic_cast<StringProperty*>(sourcePrototypeProperty), cloneType);
+    //allProperties.push_back(prototypeProperty);
+
+    ValueProperty *sourceNameProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetNameProperty();
+    nameProperty = new StringProperty("Name", control, DAVA::MakeFunction(&DAVA::UIControl::GetName), DAVA::MakeFunction(&DAVA::UIControl::SetName), dynamic_cast<StringProperty*>(sourceNameProperty), cloneType);
+    //allProperties.push_back(nameProperty);
+}
+
+void RootProperty::MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const RootProperty *sourceProperties, eCloneType copyType)
 {
     const InspInfo *baseInfo = typeInfo->BaseInfo();
     if (baseInfo)
@@ -344,7 +387,7 @@ void RootProperty::MakeControlPropertiesSection(DAVA::UIControl *control, const 
     }
 }
 
-void RootProperty::MakeBackgroundPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCopyType copyType)
+void RootProperty::MakeBackgroundPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType copyType)
 {
     for (int i = 0; i < control->GetBackgroundComponentsCount(); i++)
     {
@@ -355,7 +398,7 @@ void RootProperty::MakeBackgroundPropertiesSection(DAVA::UIControl *control, con
     }
 }
 
-void RootProperty::MakeInternalControlPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCopyType copyType)
+void RootProperty::MakeInternalControlPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType copyType)
 {
     for (int i = 0; i < control->GetInternalControlsCount(); i++)
     {

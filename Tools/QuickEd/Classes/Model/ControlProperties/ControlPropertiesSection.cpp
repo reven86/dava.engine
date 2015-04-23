@@ -6,7 +6,7 @@
 
 using namespace DAVA;
 
-ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const ControlPropertiesSection *sourceSection, eCopyType copyType) : control(SafeRetain(control))
+ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const ControlPropertiesSection *sourceSection, eCloneType copyType) : control(SafeRetain(control))
 {
     name = typeInfo->Name();
     
@@ -19,8 +19,8 @@ ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *control, con
             
             ValueProperty *sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(member);
 
-            ValueProperty *prop = strcmp(member->Name(), "text") == 0 ? new LocalizedTextValueProperty(control, member, sourceProperty, copyType)
-                                                                      : new ValueProperty(control, member, sourceProperty, copyType);
+            ValueProperty *prop = strcmp(member->Name(), "text") == 0 ? new LocalizedTextValueProperty(control, member, dynamic_cast<LocalizedTextValueProperty*>(sourceProperty), copyType)
+                                                                      : new IntrospectionProperty(control, member, dynamic_cast<IntrospectionProperty *>(sourceProperty), copyType);
 
             AddProperty(prop);
             SafeRelease(prop);

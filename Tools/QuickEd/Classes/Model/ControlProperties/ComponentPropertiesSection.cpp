@@ -1,17 +1,15 @@
 #include "ComponentPropertiesSection.h"
 
-#include "ValueProperty.h"
+#include "IntrospectionProperty.h"
 
 #include "UI/UIControl.h"
 #include "../PackageSerializer.h"
 
 using namespace DAVA;
 
-ComponentPropertiesSection::ComponentPropertiesSection(UIControl *control, UIComponent::eType type, const ComponentPropertiesSection *sourceSection, eCopyType copyType)
-    : control(nullptr), component(nullptr)
+ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl *aControl, DAVA::UIComponent::eType type, const ComponentPropertiesSection *sourceSection, eCloneType cloneType)
+    : control(SafeRetain(aControl)), component(nullptr)
 {
-    this->control = SafeRetain(control);
-    
     component = UIComponent::CreateByType(type);
     DVASSERT(component);
 
@@ -24,8 +22,8 @@ ComponentPropertiesSection::ComponentPropertiesSection(UIControl *control, UICom
         {
             const InspMember *member = insp->Member(j);
             
-            ValueProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
-            ValueProperty *prop = new ValueProperty(component, member, sourceProp, copyType);
+            const ValueProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
+            ValueProperty *prop = new IntrospectionProperty(component, member, dynamic_cast<const IntrospectionProperty *>(sourceProp), cloneType);
             AddProperty(prop);
             SafeRelease(prop);
         }

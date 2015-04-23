@@ -11,7 +11,7 @@ namespace DAVA
 class ControlPropertiesSection : public SectionProperty
 {
 public:
-    ControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const ControlPropertiesSection *sourceSection, eCopyType copyType);
+    ControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const ControlPropertiesSection *sourceSection, eCloneType copyType);
 
 protected:
     virtual ~ControlPropertiesSection();

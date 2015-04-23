@@ -12,9 +12,10 @@ namespace DAVA
 class BackgroundPropertiesSection : public SectionProperty
 {
 public:
-    BackgroundPropertiesSection(DAVA::UIControl *control, int bgNum, const BackgroundPropertiesSection *sourceSection, eCopyType copyType);
+    BackgroundPropertiesSection(DAVA::UIControl *control, int bgNum, const BackgroundPropertiesSection *sourceSection, eCloneType copyType);
+protected:
     virtual ~BackgroundPropertiesSection();
-    
+public:
     DAVA::UIControlBackground *GetBg() const;
     void CreateControlBackground();
 
