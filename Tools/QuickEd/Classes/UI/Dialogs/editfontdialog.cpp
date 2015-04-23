@@ -184,6 +184,10 @@ void EditFontDialog::OnApplyToAll()
             , locale
             );
     }
+    if (!EditorFontManager::Instance()->GetDefaultFontsPath().IsEmpty())
+    {
+        EditorFontManager::Instance()->SaveLocalizedFonts();
+    }
     accept();
 }
 
@@ -203,6 +207,10 @@ void EditFontDialog::OnCreateNew()
             , false
             , locale
             );
+    }
+    if (!EditorFontManager::Instance()->GetDefaultFontsPath().IsEmpty())
+    {
+        EditorFontManager::Instance()->SaveLocalizedFonts();
     }
     accept();
 }

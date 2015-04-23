@@ -120,8 +120,8 @@ void PackageWidget::LoadContext()
         if (nullptr == context)
         {
             context = new PackageContext(qobject_cast<Document*>(sharedData->parent()));
-            connect(packageModel, &PackageModel::rowsInserted, this, &PackageWidget::OnRowsInserted);
-            connect(packageModel, &PackageModel::rowsAboutToBeRemoved, this, &PackageWidget::OnRowsAboutToBeRemoved);
+            connect(context->packageModel, &PackageModel::rowsInserted, this, &PackageWidget::OnRowsInserted);
+            connect(context->packageModel, &PackageModel::rowsAboutToBeRemoved, this, &PackageWidget::OnRowsAboutToBeRemoved);
             sharedData->SetContext(this, context);
         }
         //store model to work with indexes
