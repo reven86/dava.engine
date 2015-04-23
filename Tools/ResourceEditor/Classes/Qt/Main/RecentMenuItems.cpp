@@ -40,6 +40,12 @@ RecentMenuItems::RecentMenuItems(const DAVA::FastName & _settingsKeyCount, const
 {
 }
 
+void RecentMenuItems::SetMenu(QMenu *_menu)
+{
+    DVASSERT(_menu);
+    menu = _menu;
+}
+
 void RecentMenuItems::Add(const DAVA::String & recent)
 {
     RemoveMenuItems();
@@ -79,6 +85,9 @@ void RecentMenuItems::InitMenuItems()
         
         actions.push_back(action);
     }
+
+    bool hasActions = (menu->actions().size() != 0);
+    menu->setEnabled(hasActions);
 }
 
 void RecentMenuItems::EnableMenuItems(bool enabled)

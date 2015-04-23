@@ -44,6 +44,8 @@ class RecentMenuItems
 public:
     
     RecentMenuItems(RecentMenuItems &rmi) = delete;
+    RecentMenuItems& operator=(RecentMenuItems& rmi) = delete;
+
     RecentMenuItems(const DAVA::FastName & settingsKeyCount, const DAVA::FastName & settingsKeyData);
 
     void SetMenu(QMenu *menu);
@@ -67,10 +69,5 @@ private:
     const DAVA::FastName settingsKeyData;
 };
 
-inline void RecentMenuItems::SetMenu(QMenu *_menu)
-{
-    DVASSERT(_menu);
-    menu = _menu;
-}
 
 #endif // __RECENT_MENU_ITEMS_H__
