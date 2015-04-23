@@ -153,16 +153,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] isFirstRun is " + isFirstRun); 
         nativeOnCreate(isFirstRun);
 
-        try {
-        	ConnectivityManager cm = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
-        	NetworkInfo networkInfo = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-        	if (cm != null && networkInfo != null && networkInfo.isConnectedOrConnecting())
-            {
-            	TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
-            	singalStrengthListner = new SingalStrengthListner();
-            	tm.listen(singalStrengthListner, SingalStrengthListner.LISTEN_SIGNAL_STRENGTHS);
-            }
-		} catch (Exception e) {
+        TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
+        if (tm != null) {
+            singalStrengthListner = new SingalStrengthListner();
+            tm.listen(singalStrengthListner, SingalStrengthListner.LISTEN_SIGNAL_STRENGTHS);
+        } else {
 			Log.d("", "no singalStrengthListner");
 		}
         
