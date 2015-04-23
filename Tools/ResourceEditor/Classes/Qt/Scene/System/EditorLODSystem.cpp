@@ -251,7 +251,7 @@ void EditorLODSystem::AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodCompone
 bool EditorLODSystem::CheckSelectedContainsEntity(const DAVA::Entity *arg) const
 {
     DVASSERT(arg);
-    if (!allSceneModeEnabled)
+    const EntityGroup &selection = static_cast<SceneEditor2*>(GetScene())->selectionSystem->GetSelection();
     for (size_t i = 0;  i < selection.Size();  ++i)
     {
         if (selection.GetEntity(i) == arg)
