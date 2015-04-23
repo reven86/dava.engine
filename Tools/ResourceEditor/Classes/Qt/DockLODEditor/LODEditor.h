@@ -82,7 +82,7 @@ protected slots:
     void CreatePlaneLODClicked();
     void DeleteFirstLOD();
     void DeleteLastLOD();
-    
+
 protected:
     void SetupInternalUI();
     void InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int index);
@@ -98,6 +98,8 @@ protected:
     void SetForceLayerValues(const EditorLODSystem *editorLODSystem, int layersCount);
     void UpdateWidgetVisibility(const EditorLODSystem *editorLODSystem);
     void UpdateLODButtons(const EditorLODSystem *editorLODSystem);
+    void UpdateForceLayer(const EditorLODSystem *editorLODSystem);
+    void UpdateForceDistance(const EditorLODSystem *editorLODSystem);
 
     EditorLODSystem *GetCurrentEditorLODSystem();
 
@@ -112,8 +114,6 @@ private:
         void SetVisible(bool visible);
     };
     DAVA::Map<DAVA::uint32, DistanceWidget> distanceWidgets;
-
-    
 };
 
 #endif //#ifndef __LOD_EDITOR_H__

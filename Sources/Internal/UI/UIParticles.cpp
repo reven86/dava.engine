@@ -412,31 +412,34 @@ void UIParticles::SetStartDelay(float32 value)
     
 void UIParticles::HandleDelayedAction(float32 timeElapsed)
 {
-    delayedActionTime += timeElapsed;
-    if (delayedActionTime >= startDelay)
+    if(IsOnScreen())
     {
-        switch (delayedActionType)
+        delayedActionTime += timeElapsed;
+        if (delayedActionTime >= startDelay)
         {
-            case UIParticles::actionStart:
+            switch (delayedActionType)
             {
-                DoStart();
-                break;
+                case UIParticles::actionStart:
+                {
+                    DoStart();
+                    break;
+                }
+
+                case UIParticles::actionRestart:
+                {
+                    DoRestart();
+                    break;
+                }
+
+                default:
+                {
+                    break;
+                }
             }
 
-            case UIParticles::actionRestart:
-            {
-                DoRestart();
-                break;
-            }
-
-            default:
-            {
-                break;
-            }
+            delayedActionType = UIParticles::actionNone;
+            delayedActionTime = 0.0f;
         }
-
-        delayedActionType = UIParticles::actionNone;
-        delayedActionTime = 0.0f;
     }
 }
 
