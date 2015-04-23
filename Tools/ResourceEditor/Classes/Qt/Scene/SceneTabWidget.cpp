@@ -270,7 +270,6 @@ void SceneTabWidget::SetCurrentTab(int index)
 		if(NULL != oldScene)
 		{
             oldScene->Deactivate();
-			SceneSignals::Instance()->EmitDeactivated(oldScene);
 		}
 
 		tabBar->blockSignals(true);
@@ -282,7 +281,6 @@ void SceneTabWidget::SetCurrentTab(int index)
 			dava3DView->SetScene(curScene);
 			curScene->SetViewportRect(dava3DView->GetRect());
 
-			SceneSignals::Instance()->EmitActivated(curScene);
             curScene->Activate();
 
 			davaWidget->setEnabled(true);

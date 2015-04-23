@@ -77,7 +77,6 @@ class HoodSystem;
 
 class EditorLODSystem;
 class FogSettingsChangedReceiver;
-class EditorSoundSystem;
 
 class SceneEditor2 : public DAVA::Scene
 {
@@ -130,8 +129,6 @@ public:
 	WayEditSystem *wayEditSystem;
 	PathSystem *pathSystem;
     
-    EditorSoundSystem *editorSoundSystem;
-
 	// save/load
 	bool Load(const DAVA::FilePath &path);
     virtual SceneFileV2::eError Save(const DAVA::FilePath & pathname, bool saveForGame = false);
@@ -185,13 +182,13 @@ public:
 	bool IsToolsEnabled(int32 toolFlags);
 	int32 GetEnabledTools();
 
-    void Activate();
-    void Deactivate();
-    
-    
 	SceneEditor2 *CreateCopyForExport();	//Need to prevent changes of original scene
-    virtual Entity * Clone(Entity *dstNode /* = NULL */);
+    Entity * Clone(Entity *dstNode /* = NULL */) override;
 
+    void Activate() override;
+    void Deactivate() override;
+    
+    
 	DAVA_DEPRECATED(void MarkAsChanged()); // for old material & particle editors
 	
 	INTROSPECTION(SceneEditor2, 

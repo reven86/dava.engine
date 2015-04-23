@@ -53,7 +53,6 @@
 #include "Scene/System/HoodSystem.h"
 
 #include "Scene/System/EditorLODSystem.h"
-#include "Scene/System/EditorSoundSystem.h"
 
 
 
@@ -159,10 +158,6 @@ SceneEditor2::SceneEditor2()
 	editorLODSystem = new EditorLODSystem(this);
 	AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT));
 
-    editorSoundSystem = new EditorSoundSystem(this);
-    AddSystem(editorSoundSystem, MAKE_COMPONENT_MASK(Component::SOUND_COMPONENT));
-
-    
 	SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
 
 	SceneSignals::Instance()->EmitOpened(this);
@@ -739,14 +734,15 @@ void SceneEditor2::Setup3DDrawing()
 
 void SceneEditor2::Activate()
 {
-    selectionSystem->SetLocked(false);
-    editorSoundSystem->Start();
+    SceneSignals::Instance()->EmitActivated(this);
+    Scene::Activate();
 }
 
 void SceneEditor2::Deactivate()
 {
-    selectionSystem->SetLocked(true);
-    editorSoundSystem->Pause();
+    Scene::Deactivate();
+    SceneSignals::Instance()->EmitDeactivated(this);
 }
+
 
 
