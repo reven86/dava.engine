@@ -303,9 +303,19 @@ CURLMcode CurlDownloader::Perform()
             {
                 return ret;
             }
-            break;
         }
-    } while (handlesRunning);
+
+        
+        // workaround which allows to finish broken download on MacOS
+        if (curlTimeout < 1)
+        {
+            for (auto easyHandle : easyHandles)
+            {
+                curl_easy_setopt(easyHandle, CURLOPT_TIMEOUT, 1);
+            }
+        }
+        
+    } while (handlesRunning > 0);
 
     return ret;
 }
