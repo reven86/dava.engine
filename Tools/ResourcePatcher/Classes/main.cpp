@@ -367,6 +367,7 @@ int main(int argc, char *argv[])
     applyAllOptions.AddArgument("PatchFile");
     applyAllOptions.AddOption("-bo", DAVA::VariantType(DAVA::String("")), "Original file base dir.");
     applyAllOptions.AddOption("-bn", DAVA::VariantType(DAVA::String("")), "New file base dir.");
+    applyAllOptions.AddOption("-t", DAVA::VariantType(false), "Truncate patch file, when applying it.");
     applyAllOptions.AddOption("-v", DAVA::VariantType(false), "Verbose output.");
 
     new DAVA::FileSystem;
@@ -560,7 +561,7 @@ int main(int argc, char *argv[])
                 DAVA::FilePath origBasePath = applyAllOptions.GetOption("-bo").AsString();
                 DAVA::FilePath newBasePath = applyAllOptions.GetOption("-bn").AsString();
                 bool verbose = applyAllOptions.GetOption("-v").AsBool();
-
+                bool truncate = applyAllOptions.GetOption("-t").AsBool();
 
                 if(!patchPath.Exists())
                 {
@@ -583,15 +584,33 @@ int main(int argc, char *argv[])
                 if(0 == ret)
                 {
                     DAVA::PatchFileReader patchReader(patchPath, verbose);
-                    patchReader.ReadFirst();
 
-                    const DAVA::PatchInfo *patchInfo = patchReader.GetCurInfo();
-                    while(NULL != patchInfo && 0 == ret)
+                    // go from last patch to the first one and truncate applied patch
+                    if(truncate)
                     {
-                        ret = DoPatch(&patchReader, origBasePath, DAVA::FilePath(), newBasePath, DAVA::FilePath());
+                        patchReader.ReadLast();
+                        const DAVA::PatchInfo *patchInfo = patchReader.GetCurInfo();
+                        while(NULL != patchInfo && 0 == ret)
+                        {
+                            ret = DoPatch(&patchReader, origBasePath, DAVA::FilePath(), newBasePath, DAVA::FilePath());
 
-                        patchReader.ReadNext();
-                        patchInfo = patchReader.GetCurInfo();
+                            patchReader.Truncate();
+                            patchReader.ReadPrev();
+                            patchInfo = patchReader.GetCurInfo();
+                        }
+                    }
+                    // go from first to the last once and apply patch
+                    else
+                    {
+                        patchReader.ReadFirst();
+                        const DAVA::PatchInfo *patchInfo = patchReader.GetCurInfo();
+                        while(NULL != patchInfo && 0 == ret)
+                        {
+                            ret = DoPatch(&patchReader, origBasePath, DAVA::FilePath(), newBasePath, DAVA::FilePath());
+
+                            patchReader.ReadNext();
+                            patchInfo = patchReader.GetCurInfo();
+                        }
                     }
                 }
             }
