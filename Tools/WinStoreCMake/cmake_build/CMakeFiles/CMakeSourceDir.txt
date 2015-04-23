@@ -1,1 +1,0 @@
-E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo

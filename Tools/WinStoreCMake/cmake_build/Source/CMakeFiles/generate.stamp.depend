@@ -1,9 +1,0 @@
-# CMake generation dependency list for this directory.
-E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Source/CMakeLists.txt
-C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/CheckIncludeFile.cmake
-C:/Program Files (x86)/CMake/share/cmake-3.2/Modules/CheckIncludeFile.c.in
-E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Source/cmConfigure.cmake.h.in
-E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Source/cmVersionConfig.h.in
-E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Source/CPack/cmCPackConfigure.h.in
-E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Source/CMakeSourceDir.txt.in
-E:/repo/WindowsStore/dava.framework/Tools/WinStoreCMake/cmake_repo/Source/cmCommands.cxx.in
