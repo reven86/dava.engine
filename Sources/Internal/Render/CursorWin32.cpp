@@ -26,21 +26,29 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "Base/BaseTypes.h"
-#include "Render/Cursor.h"
-#include "FileSystem/FileSystem.h"
-#include "Render/RenderManager.h"
 
 #if defined(__DAVAENGINE_WIN32__)
+
+#include "Render/Cursor.h"
+#include "Platform/TemplateWin32/CorePlatformWin32.h"
+
 void DAVA::Cursor::ShowSystemCursor(bool show)
 {
     ShowCursor(show);
+}
+
+void DAVA::Cursor::MoveToCenterOfWindow()
+{
+    CoreWin32Platform * winCore = static_cast<CoreWin32Platform *>(Core::Instance());
+    winCore->SetCursorPosCenter();
 }
 #endif
 
 #if defined(__DAVAENGINE_WIN32__) && defined (__DAVAENGINE_DIRECTX9__)
 
+#include "FileSystem/FileSystem.h"
+#include "Render/RenderManager.h"
 #include "Render/D3D9Helpers.h"
 
 
