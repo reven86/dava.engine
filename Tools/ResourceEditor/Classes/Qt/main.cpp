@@ -119,7 +119,10 @@ int main(int argc, char *argv[])
 
 void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 {
+#ifdef Q_OS_MAC
     DAVA::QtLayer::MakeAppForeground(false);
+#endif
+    
     Core::Instance()->EnableConsoleMode();
     DAVA::Logger::Instance()->SetLogLevel( DAVA::Logger::LEVEL_WARNING );
 
@@ -185,8 +188,6 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 
 void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
 {
-    DAVA::QtLayer::MakeAppForeground();
-    
 #ifdef Q_OS_MAC
     // Must be called before creating QApplication instance
     FixOSXFonts();
@@ -218,6 +219,12 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
 
     new DavaLoop();
     new FrameworkLoop();
+    
+#ifdef Q_OS_MAC
+    QTimer::singleShot(0, []{ DAVA::QtLayer::PrepareForegroundApp(); } );
+    QTimer::singleShot(0, []{ DAVA::QtLayer::MakeAppForeground();    } );
+    QTimer::singleShot(0, []{ DAVA::QtLayer::RestoreMenuBar();       } );
+#endif
 
     // create and init UI
     auto mainWindow = new QtMainWindow();

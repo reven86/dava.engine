@@ -31,6 +31,9 @@
   <property name="dockOptions">
    <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks</set>
   </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>true</bool>
+  </property>
   <widget class="QFrame" name="mainFrame">
    <layout class="QVBoxLayout" name="verticalLayout_8">
     <property name="spacing">
@@ -198,7 +201,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -669,7 +672,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>82</height>
+          <height>92</height>
          </rect>
         </property>
        </widget>
@@ -776,16 +779,7 @@
    </attribute>
    <widget class="QWidget" name="dockLandscapeEditorControlsContent">
     <layout class="QVBoxLayout" name="verticalLayout_3">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -799,7 +793,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>103</height>
+          <height>92</height>
          </rect>
         </property>
        </widget>

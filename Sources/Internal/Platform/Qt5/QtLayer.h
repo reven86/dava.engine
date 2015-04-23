@@ -78,7 +78,11 @@ public:
 
     void MouseEvent(const UIEvent & event);
 
+#ifdef __DAVAENGINE_MACOS__
+    static void PrepareForegroundApp();
     static void MakeAppForeground( bool foreground = true );
+    static void RestoreMenuBar();
+#endif
     
 protected:
     void CopyEvents(UIEvent & newEvent, const UIEvent & sourceEvent);

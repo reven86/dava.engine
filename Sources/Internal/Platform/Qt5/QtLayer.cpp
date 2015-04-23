@@ -263,10 +263,6 @@ void QtLayer::ReleaseAutoreleasePool(void *pool)
     (void)pool;
 }
     
-void QtLayer::MakeAppForeground(bool)
-{
-}
-    
 #endif
 
 };

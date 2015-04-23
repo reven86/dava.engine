@@ -50,15 +50,33 @@ void QtLayer::ReleaseAutoreleasePool(void *pool)
     [autoreleasePool release];
 }
     
+void QtLayer::PrepareForegroundApp()
+{
+    for (NSRunningApplication * app in [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.finder"])
+    {
+        [app activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+        break;
+    }
+}
+    
 void QtLayer::MakeAppForeground(bool foreground)
 {
     ProcessSerialNumber psn = { 0, kCurrentProcess };
     TransformProcessType(&psn, foreground ? kProcessTransformToForegroundApplication : kProcessTransformToBackgroundApplication);
     
     [NSApp activateIgnoringOtherApps: foreground ? YES : NO ];
+    
+    if ( foreground )
+    {
+        [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+    }
+}
+    
+void QtLayer::RestoreMenuBar()
+{
+    [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
 }
     
 };
-
 
 #endif // #if defined(__DAVAENGINE_MACOS__)
