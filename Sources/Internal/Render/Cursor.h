@@ -81,9 +81,6 @@ public:
 #if defined(__DAVAENGINE_MACOS__)
 	void * GetMacOSXCursor();
 #endif 
-#if defined(__DAVAENGINE_WIN32__)
-    static void MoveToCenterOfWindow();
-#endif
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
     static void ShowSystemCursor(bool show);
     static void SetCursorPinning(bool pin);

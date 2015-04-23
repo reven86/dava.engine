@@ -54,7 +54,9 @@ public:
 
 	void SetIcon(int32 iconId) override;
 
-    void SetCursorPosCenter();
+    void SetCursorPositionCenter();
+    void SetCursorPosition(Point2i position);
+    Point2i GetCursorPosition();
 
 #if defined(__DAVAENGINE_DIRECTX9__)
 	LPDIRECT3D9 d3d9;

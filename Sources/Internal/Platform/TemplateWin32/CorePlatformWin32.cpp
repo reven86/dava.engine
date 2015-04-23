@@ -440,9 +440,21 @@ namespace DAVA
         SetCursorPos(centerX, centerY);
     }
 
-    void CoreWin32Platform::SetCursorPosCenter()
+    void CoreWin32Platform::SetCursorPositionCenter()
     {
         SetCursorPosCenterInternal(hWindow);
+    }
+
+    void CoreWin32Platform::SetCursorPosition(Point2i position)
+    {
+        SetCursorPos(position.x, position.y);
+    }
+
+    Point2i CoreWin32Platform::GetCursorPosition()
+    {
+        POINT p;
+        GetCursorPos(&p);
+        return Point2i(p.x, p.y);
     }
 
 	int32 CoreWin32Platform::MoveTouchsToVector(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent> *outTouches)

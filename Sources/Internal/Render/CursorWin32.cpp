@@ -35,19 +35,25 @@
 
 void DAVA::Cursor::SetCursorPinning(bool pin)
 {
+    static DAVA::Point2i lastCursorPosition;
+
     ShowSystemCursor(!pin);
-    MoveToCenterOfWindow();
+
+    CoreWin32Platform * winCore = static_cast<CoreWin32Platform *>(Core::Instance());
+    if (pin)
+    {
+        lastCursorPosition = winCore->GetCursorPosition();
+        winCore->SetCursorPositionCenter();
+    }
+    else
+    {
+        winCore->SetCursorPosition(lastCursorPosition);
+    }
 }
 
 void DAVA::Cursor::ShowSystemCursor(bool show)
 {
     ShowCursor(show);
-}
-
-void DAVA::Cursor::MoveToCenterOfWindow()
-{
-    CoreWin32Platform * winCore = static_cast<CoreWin32Platform *>(Core::Instance());
-    winCore->SetCursorPosCenter();
 }
 #endif
 
