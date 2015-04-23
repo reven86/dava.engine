@@ -17,9 +17,19 @@ protected:
     virtual ~ControlPropertiesSection();
 
 public:
-    virtual DAVA::String GetName() const;
+    virtual DAVA::String GetName() const override;
+
+    ValueProperty *GetClassProperty() const { return classProperty; }
+    ValueProperty *GetCustomClassProperty() const { return customClassProperty; }
+    ValueProperty *GetPrototypeProperty() const { return prototypeProperty; }
+    ValueProperty *GetNameProperty() const { return nameProperty; }
 
 private:
+    ValueProperty *classProperty;
+    ValueProperty *customClassProperty;
+    ValueProperty *prototypeProperty;
+    ValueProperty *nameProperty;
+
     DAVA::UIControl *control;
     DAVA::String name;
 };

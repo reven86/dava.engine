@@ -273,12 +273,16 @@ void ControlNode::Serialize(PackageSerializer *serializer, PackageRef *currentPa
 
         if (!control->GetCustomControlClassName().empty() && prototype->GetControlNode()->GetControl()->GetCustomControlClassName() != control->GetCustomControlClassName())
             serializer->PutValue("customClass", control->GetCustomControlClassName());
+
+        serializer->PutValue("name", control->GetName());
     }
     else if (creationType == CREATED_FROM_CLASS)
     {
         serializer->PutValue("class", control->GetClassName());
         if (!control->GetCustomControlClassName().empty())
             serializer->PutValue("customClass", control->GetCustomControlClassName());
+
+        serializer->PutValue("name", control->GetName());
     }
     else if (creationType == CREATED_FROM_PROTOTYPE_CHILD)
     {
@@ -295,7 +299,7 @@ void ControlNode::Serialize(PackageSerializer *serializer, PackageRef *currentPa
     {
         DVASSERT(false);
     }
-    
+
     propertiesRoot->Serialize(serializer);
     
     if (!nodes.empty())

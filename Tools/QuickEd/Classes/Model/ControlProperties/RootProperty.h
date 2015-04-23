@@ -37,11 +37,6 @@ public:
     void AddComponentPropertiesSection(ComponentPropertiesSection *section);
     void RemoveComponentPropertiesSection(DAVA::uint32 componentType);
     void RemoveComponentPropertiesSection(ComponentPropertiesSection *section);
-    
-    ValueProperty *GetClassProperty() const { return classProperty; }
-    ValueProperty *GetCustomClassProperty() const { return customClassProperty; }
-    ValueProperty *GetPrototypeProperty() const { return prototypeProperty; }
-    ValueProperty *GetNameProperty() const { return nameProperty; }
 
     BackgroundPropertiesSection *GetBackgroundPropertiesSection(int num) const;
     InternalControlPropertiesSection *GetInternalControlPropertiesSection(int num) const;
@@ -62,15 +57,9 @@ private:
     void MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const RootProperty *sourceProperties, eCloneType copyType);
     void MakeBackgroundPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType copyType);
     void MakeInternalControlPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType copyType);
-
-    void MakeBaseProperties(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType copyType);
 private:
     DAVA::UIControl *control;
 
-    ValueProperty *classProperty;
-    ValueProperty *customClassProperty;
-    ValueProperty *prototypeProperty;
-    ValueProperty *nameProperty;
     DAVA::Vector<ControlPropertiesSection*> controlProperties;
     DAVA::Vector<ComponentPropertiesSection*> componentProperties;
     DAVA::Vector<BackgroundPropertiesSection*> backgroundProperties;
