@@ -33,6 +33,10 @@
 #include "UI/UIControlSystem.h"
 #include "Render/RenderManager.h"
 
+#if defined(__DAVAENGINE_WIN32__)
+#include "Platform/TemplateWin32/CorePlatformWin32.h"
+#endif
+
 namespace DAVA 
 {
 
@@ -100,6 +104,11 @@ void InputSystem::OnAfterUpdate()
 void InputSystem::SetCursorPining(bool isPin)
 {
     pinCursor = isPin;
+#if defined(__DAVAENGINE_WIN32__)
+    CoreWin32Platform * winCore = static_cast<CoreWin32Platform *>(Core::Instance());
+    winCore->SetCursorPosCenter();
+#endif
+
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
     Cursor::ShowSystemCursor(!isPin);
 #endif

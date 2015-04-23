@@ -54,6 +54,8 @@ public:
 
 	void SetIcon(int32 iconId) override;
 
+    void SetCursorPosCenter();
+
 #if defined(__DAVAENGINE_DIRECTX9__)
 	LPDIRECT3D9 d3d9;
 #endif 
@@ -70,6 +72,8 @@ private:
 
 	void OnMouseEvent(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData);
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+    static void SetCursorPosCenterInternal (HWND hWnd);
 
 	RECT GetWindowedRectForDisplayMode(DisplayMode & dm);
 	int32 MoveTouchsToVector(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent> *outTouches);

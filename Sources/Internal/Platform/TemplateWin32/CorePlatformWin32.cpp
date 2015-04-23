@@ -430,6 +430,21 @@ namespace DAVA
 		SendMessage(hWindow, WM_SETICON, ICON_BIG, (LPARAM)smallIcon);
 	}
 
+
+    void CoreWin32Platform::SetCursorPosCenterInternal(HWND hWnd)
+    {
+        RECT wndRect;
+        GetWindowRect(hWnd, &wndRect);
+        int centerX = (int)((wndRect.left + wndRect.right) >> 1);
+        int centerY = (int)((wndRect.bottom + wndRect.top) >> 1);
+        SetCursorPos(centerX, centerY);
+    }
+
+    void CoreWin32Platform::SetCursorPosCenter()
+    {
+        SetCursorPosCenterInternal(hWindow);
+    }
+
 	int32 CoreWin32Platform::MoveTouchsToVector(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent> *outTouches)
 	{
 		int button = 0;
@@ -733,11 +748,7 @@ namespace DAVA
 
                 if(InputSystem::Instance()->IsCursorPining())
                 {
-                    RECT wndRect;
-                    GetWindowRect(hWnd, &wndRect);
-                    int centerX = (int)((wndRect.left + wndRect.right) >> 1);
-                    int centerY = (int)((wndRect.bottom + wndRect.top) >> 1);
-                    SetCursorPos(centerX, centerY);
+                    SetCursorPosCenterInternal(hWnd);
                 }
                 else
                 {
