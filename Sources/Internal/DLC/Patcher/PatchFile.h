@@ -102,13 +102,14 @@ public:
     enum PatchError
     {
         ERROR_NO = 0,
-		ERROR_MEMORY,		// can't allocate memory
+        ERROR_MEMORY,       // can't allocate memory
         ERROR_CANT_READ,    // path file can't be read
         ERROR_CORRUPTED,    // path file is corrupted
         ERROR_EMPTY_PATCH,  // no data to apply patch
         ERROR_ORIG_READ,    // file on origPath can't be opened for reading
         ERROR_ORIG_CRC,     // file on origPath has wrong crc to apply patch
-        ERROR_NEW_WRITE,    // file on newPath can't be opened for writing
+        ERROR_NEW_CREATE,   // file on newPath can't be opened for writing
+        ERROR_NEW_WRITE,    // file on newPath can't be written
         ERROR_NEW_CRC,      // file on newPath has wrong crc after applied patch
         ERROR_APPLY,        // patch can't be applied
         ERROR_UNKNOWN
@@ -118,23 +119,27 @@ public:
     ~PatchFileReader();
 
     bool ReadFirst();
+    bool ReadLast();
     bool ReadNext();
+    bool ReadPrev();
 
     const PatchInfo* GetCurInfo() const;
     PatchError GetLastError() const;
 
+    bool Truncate();
     bool Apply(const FilePath &origBase, const FilePath &origPath, const FilePath &newBase, const FilePath &newPath);
 
 protected:
     File *patchFile;
     PatchInfo curInfo;
     PatchError lastError;
-    uint32 curInfoPos;
-    uint32 curDiffPos;
+    uint32 curPatchPos;
     uint32 curPatchSize;
+    uint32 curBSDiffPos;
     bool verbose;
 
     bool DoRead();
+    bool ReadDataBack(void *data, uint32 size);
 };
 
 }

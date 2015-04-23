@@ -58,7 +58,7 @@ void PatchInfo::Reset()
 
 bool PatchInfo::Write(File* file)
 {
-    if(NULL != file)
+    if(nullptr != file)
     {
         if(!WriteString(file, origPath)) return false;
         if(sizeof(origSize) != file->Write(&origSize)) return false;
@@ -76,7 +76,7 @@ bool PatchInfo::Write(File* file)
 
 bool PatchInfo::Read(File *file)
 {
-    if(NULL != file)
+    if(nullptr != file)
     {
         if(!ReadString(file, origPath)) return false;
         if(sizeof(origSize) != file->Read(&origSize)) return false;
@@ -121,21 +121,21 @@ bool PatchInfo::ReadString(File* file, String &str)
     {
         if(len > 0)
         {
-			char8 *buffer = new(std::nothrow) char8[len + 1];
-			if(NULL != buffer)
-			{
-				buffer[len] = 0;
-				rlen = file->Read(buffer, len);
+            char8 *buffer = new(std::nothrow) char8[len + 1];
+            if(nullptr != buffer)
+            {
+                buffer[len] = 0;
+                rlen = file->Read(buffer, len);
 
-				if(rlen == len)
-				{
-					str = buffer;
-					ret = true;
-				}
+                if(rlen == len)
+                {
+                    str = buffer;
+                    ret = true;
+                }
 
-				SafeDeleteArray(buffer);
-			}
-		}
+                SafeDeleteArray(buffer);
+            }
+        }
         else
         {
             str = "";
@@ -260,15 +260,15 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
         }
 
         File *patchFile = File::Create(patchPath, File::APPEND | File::WRITE);
-        if(NULL != patchFile)
+        if(nullptr != patchFile)
         {
             PatchInfo patchInfo;
 
-            char8 *origData = NULL;
-            char8 *newData = NULL;
+            char8 *origData = nullptr;
+            char8 *newData = nullptr;
 
             File* origFile = File::Create(origPath, File::OPEN | File::READ);
-            if(NULL != origFile)
+            if(nullptr != origFile)
             {
                 uint32 origSize = origFile->GetSize();
                 origData = new char8[origSize];
@@ -280,7 +280,7 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
             }
 
             File* newFile = File::Create(newPath, File::OPEN | File::READ);
-            if(NULL != newFile)
+            if(nullptr != newFile)
             {
                 uint32 newSize = newFile->GetSize();
                 newData = new char8[newSize];
@@ -295,7 +295,7 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
             bool needWriteDiff = false;
 
             // if both files were opened
-            if(NULL != origFile && NULL != newFile)
+            if(nullptr != origFile && nullptr != newFile)
             {
                 // if there is some diff - write it
                 if(patchInfo.origSize != patchInfo.newSize || patchInfo.origCRC != patchInfo.newCRC)
@@ -312,7 +312,7 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
             // one or both files weren't opened
             else
             {
-                if(NULL != origFile || NULL != newFile)
+                if(nullptr != origFile || nullptr != newFile)
                 {
                     needWriteHeader = true;
                     needWriteDiff = true;
@@ -343,6 +343,8 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
                 uint32 patchSizePos;
                 uint32 patchSize = 0;
                 uint32 signatureSize = sizeof(davaPatchSignature) - 1;
+                
+                uint32 patchBeginPos = patchFile->GetPos();
 
                 // write signature
                 patchFile->Write(davaPatchSignature, signatureSize);
@@ -369,6 +371,11 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
                     }
                 }
 
+                // write patch full-size at the end of the data
+                // this will allow as to calculate offset from one patch to the previous
+                uint32 patchFullSize = patchFile->GetPos() - patchBeginPos;
+                patchFile->Write(&patchFullSize);
+
                 // calculate patch size (without signature and patchSize fields)
                 patchSize = patchFile->GetPos() - patchSizePos - sizeof(patchSize);
                 if(ret && patchSize > 0)
@@ -380,6 +387,7 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
                     patchFile->Seek(patchSizePos, File::SEEK_FROM_START);
                     patchFile->Write(&patchSize);
                 }
+
 
                 if(ret && verbose)
                 {
@@ -430,13 +438,13 @@ void PatchFileWriter::EnumerateDir(const FilePath &dirPath, const FilePath &base
 // PatchFileReader
 // ======================================================================================
 PatchFileReader::PatchFileReader(const FilePath &path, bool beVerbose)
-: curInfoPos(0)
-, curDiffPos(0)
+: curPatchPos(0)
 , curPatchSize(0)
+, curBSDiffPos(0)
 , verbose(beVerbose)
 , lastError(ERROR_NO)
 {
-    patchFile = File::Create(path, File::OPEN | File::READ);
+    patchFile = File::Create(path, File::OPEN | File::READ | File::WRITE);
 }
 
 PatchFileReader::~PatchFileReader()
@@ -448,9 +456,9 @@ bool PatchFileReader::ReadFirst()
 {
     bool ret = false;
 
-    if(NULL != patchFile)
+    if(nullptr != patchFile)
     {
-        curInfoPos = 0;
+        curPatchPos = 0;
         curPatchSize = 0;
 
         ret = DoRead();
@@ -463,7 +471,7 @@ bool PatchFileReader::ReadNext()
 {
     bool ret = false;
 
-    if(NULL != patchFile)
+    if(nullptr != patchFile)
     {
         ret = DoRead();
     }
@@ -471,11 +479,75 @@ bool PatchFileReader::ReadNext()
     return ret;
 }
 
+bool PatchFileReader::ReadLast()
+{
+    bool ret = false;
+
+    if(nullptr != patchFile)
+    {
+        curPatchPos = patchFile->GetSize();
+        curPatchSize = 0;
+
+        ReadPrev();
+    }
+
+    return ret;
+
+}
+
+bool PatchFileReader::ReadPrev()
+{
+    bool ret = false;
+
+    if(nullptr != patchFile)
+    {
+        curPatchSize = 0;
+        curBSDiffPos = 0;
+
+        // seek to the beginning of the current patch
+        if(!patchFile->Seek(curPatchPos, File::SEEK_FROM_START))
+        {
+            return false;
+        }
+
+        // read last 4 bytes from file, that can be tread as size of the previous patch
+        uint32 prevPatchSize = 0;
+        if(!ReadDataBack(&prevPatchSize, sizeof(prevPatchSize)))
+        {
+            return false;
+        }
+
+        // seek to the start of previous patch
+        if(!patchFile->Seek(-(int32)(prevPatchSize + sizeof(prevPatchSize)), File::SEEK_FROM_CURRENT))
+        {
+            return false;
+        }
+
+        curPatchPos = patchFile->GetPos();
+        ret = DoRead();
+    }
+
+    return ret;
+}
+
+bool PatchFileReader::ReadDataBack(void *data, uint32 size)
+{
+    bool ret = false;
+    if(patchFile->Seek(-(int32)size, File::SEEK_FROM_CURRENT))
+    {
+        if(size == patchFile->Read(data, size))
+        {
+            ret = true;
+        }
+    }
+    return ret;
+}
+
 const PatchInfo* PatchFileReader::GetCurInfo() const
 {
-    const PatchInfo* ret = NULL;
+    const PatchInfo* ret = nullptr;
 
-    if(curDiffPos > 0)
+    if(curBSDiffPos > 0)
     {
         ret = &curInfo;
     }
@@ -494,29 +566,37 @@ bool PatchFileReader::DoRead()
     lastError = ERROR_NO;
 
     char8 signature[sizeof(davaPatchSignature) - 1];
-
     signature[0] = 0;
-    curDiffPos = 0;
+
     curInfo.Reset();
 
     // seek to next patch
-    patchFile->Seek(curInfoPos + curPatchSize, File::SEEK_FROM_START);
+    patchFile->Seek(curPatchPos + curPatchSize, File::SEEK_FROM_START);
+    
+    // remember next patch position and size
+    curPatchPos = patchFile->GetPos();
+    curPatchSize = 0;
+    curBSDiffPos = 0;
 
+    // read signature
     uint32 signatureSize = sizeof(davaPatchSignature) - 1;
     uint32 readSize = patchFile->Read(signature, signatureSize);
     if(signatureSize == readSize)
     {
+        // check signature
         if(0 == Memcmp(signature, davaPatchSignature, signatureSize))
         {
-            if( sizeof(curPatchSize) == patchFile->Read(&curPatchSize) &&
-                curPatchSize > 0)
+            // read patch size
+            uint32 patchSize = 0;
+            if(sizeof(patchSize) == patchFile->Read(&patchSize) && patchSize > 0)
             {
-                curInfoPos = patchFile->GetPos();
+                // calculate full patch size
+                curPatchSize = patchSize + sizeof(patchSize) + signatureSize;
 
                 // read header
                 if(curInfo.Read(patchFile))
                 {
-                    curDiffPos = patchFile->GetPos();
+                    curBSDiffPos = patchFile->GetPos();
                     ret = true;
                 }
             }
@@ -530,6 +610,18 @@ bool PatchFileReader::DoRead()
         {
             lastError = ERROR_CORRUPTED;
         }
+    }
+
+    return ret;
+}
+
+bool PatchFileReader::Truncate()
+{
+    bool ret = false;
+
+    if(nullptr != patchFile)
+    {
+        ret = patchFile->Truncate(curPatchPos);
     }
 
     return ret;
@@ -553,7 +645,7 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
     if(origPath.IsEmpty()) origPath = origBase + curInfo.origPath;
     if(newPath.IsEmpty()) newPath = newBase + curInfo.newPath;
 
-    if(0 == curDiffPos)
+    if(0 == curBSDiffPos)
     {
         lastError = ERROR_EMPTY_PATCH;
         return false;
@@ -575,8 +667,8 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
     }
     else
     {
-        char8 *origData = NULL;
-        char8 *newData = NULL;
+        char8 *origData = nullptr;
+        char8 *newData = nullptr;
 
         // if new file should exist after patching 
         if(!curInfo.newPath.empty())
@@ -586,7 +678,7 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
             if(newPath.Exists())
             {
                 File* checkFile = File::Create(newPath, File::OPEN | File::READ);
-                if(NULL != checkFile)
+                if(nullptr != checkFile)
                 {
                     uint32 checkCRC = CRC32::ForFile(newPath);
                     uint32 checkSize = checkFile->GetSize();
@@ -604,7 +696,7 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
             if(!curInfo.origPath.empty())
             {
                 File* origFile = File::Create(origPath, File::OPEN | File::READ);
-                if(NULL == origFile)
+                if(nullptr == origFile)
                 {
                     lastError = ERROR_ORIG_READ;
                     ret = false;
@@ -612,37 +704,37 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                 else
                 {
                     uint32 origSize = origFile->GetSize();
-					origData = new(std::nothrow) char8[origSize];
+                    origData = new(std::nothrow) char8[origSize];
 
-					if(NULL != origData)
-					{
-						if(origSize != origFile->Read(origData, origSize))
-						{
-							lastError = ERROR_ORIG_READ;
-							ret = false;
-						}
+                    if(nullptr != origData)
+                    {
+                        if(origSize != origFile->Read(origData, origSize))
+                        {
+                            lastError = ERROR_ORIG_READ;
+                            ret = false;
+                        }
 
-						origFile->Release();
+                        origFile->Release();
 
-						// if there was no errors when reading patch file, check for read data CRC
-						if(ret)
-						{
-							uint32 origCRC = CRC32::ForBuffer(origData, origSize);
-							if(origSize != curInfo.origSize || origCRC != curInfo.origCRC)
-							{
-								// source crc differ for expected
-								lastError = ERROR_ORIG_CRC;
-								ret = false;
-							}
-						}
-					}
-					else
-					{
-						// can't allocate memory
-						lastError = ERROR_MEMORY;
-						ret = false;
-					}
-				}
+                        // if there was no errors when reading patch file, check for read data CRC
+                        if(ret)
+                        {
+                            uint32 origCRC = CRC32::ForBuffer(origData, origSize);
+                            if(origSize != curInfo.origSize || origCRC != curInfo.origCRC)
+                            {
+                                // source crc differ for expected
+                                lastError = ERROR_ORIG_CRC;
+                                ret = false;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // can't allocate memory
+                        lastError = ERROR_MEMORY;
+                        ret = false;
+                    }
+                }
             }
 
             if(ret)
@@ -662,39 +754,39 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                     FileSystem::Instance()->CreateDirectory(tmpNewPath.GetDirectory(), true);
 
                     File* newFile = File::Create(tmpNewPath, File::CREATE | File::WRITE);
-                    if(NULL == newFile)
+                    if(nullptr == newFile)
                     {
-                        lastError = ERROR_NEW_WRITE;
+                        lastError = ERROR_NEW_CREATE;
                         ret = false;
                     }
                     else
                     {
                         if(curInfo.newSize > 0)
                         {
-							newData = new(std::nothrow) char8[curInfo.newSize];
+                            newData = new(std::nothrow) char8[curInfo.newSize];
 
-                            if(NULL != newData)
+                            if(nullptr != newData)
                             {
-								if(BSDiff::Patch(origData, curInfo.origSize, newData, curInfo.newSize, patchFile))
-								{
-									if(curInfo.newSize != newFile->Write(newData, curInfo.newSize))
-									{
-										lastError = ERROR_NEW_WRITE;
-										ret = false;
-									}
-								}
-								else
-								{
-									lastError = ERROR_CORRUPTED;
-									ret = false;
-								}
+                                if(BSDiff::Patch(origData, curInfo.origSize, newData, curInfo.newSize, patchFile))
+                                {
+                                    if(curInfo.newSize != newFile->Write(newData, curInfo.newSize))
+                                    {
+                                        lastError = ERROR_NEW_WRITE;
+                                        ret = false;
+                                    }
+                                }
+                                else
+                                {
+                                    lastError = ERROR_CORRUPTED;
+                                    ret = false;
+                                }
                             }
-							else
-							{
-								// can't allocate memory
-								lastError = ERROR_MEMORY;
-								ret = false;
-							}
+                            else
+                            {
+                                // can't allocate memory
+                                lastError = ERROR_MEMORY;
+                                ret = false;
+                            }
                         }
                         newFile->Release();
 

@@ -40,7 +40,7 @@
 namespace DAVA
 {
 
-DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinationDir, const FilePath &workingDir, const String &gameVersion, const FilePath &resVersionPath, bool forceFullUpdate)
+DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinationDir, const FilePath &workingDir, const String &gameVersion, const FilePath &resVersionPath, DLCFlags flags)
 : dlcState(DS_INIT)
 , dlcError(DE_NO_ERROR)
 , patchingThread(NULL)
@@ -59,10 +59,14 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
     //  we suppose that downloaded data should not be media data and exclude it from index.
     FileSystem::Instance()->MarkFolderAsNoMedia(destinationDir);
 
+    Logger::Info("DLC: Source Dir = %s", sourceDir.GetAbsolutePathname().c_str());
+    Logger::Info("DLC: Destination Dir = %s", destinationDir.GetAbsolutePathname().c_str());
+    Logger::Info("DLC: Working Dir = %s", workingDir.GetAbsolutePathname().c_str());
+
     // initial values
     dlcContext.remoteUrl = url;
     dlcContext.localVer = 0;
-    dlcContext.forceFullUpdate = forceFullUpdate;
+    dlcContext.flags = flags;
 
     dlcContext.localWorkingDir = workingDir;
     dlcContext.localDestinationDir = destinationDir;
@@ -78,6 +82,7 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
     dlcContext.remoteVerStotePath = workingDir + "RemoteVersion.info";
     dlcContext.remotePatchDownloadId = 0;
     dlcContext.remotePatchSize = 0;
+    dlcContext.remotePatchReadySize = 0;
     dlcContext.remotePatchStorePath = workingDir + "Remote.patch";
     dlcContext.remoteMetaStorePath = workingDir + "Remote.meta";
 
@@ -87,10 +92,16 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
 
     dlcContext.downloadInfoStorePath = workingDir + "Download.info";
     dlcContext.stateInfoStorePath = workingDir + "State.info";
+    dlcContext.flagsStorePath = workingDir + "Flags.info";
     dlcContext.prevState = 0;
+    dlcContext.prevFlags = static_cast<uint32>(DLCFlags::DF_NONE);
 
-    ReadUint32(dlcContext.stateInfoStorePath, dlcContext.prevState);
     ReadUint32(dlcContext.remoteVerStotePath, dlcContext.remoteVer);
+    ReadUint32(dlcContext.stateInfoStorePath, dlcContext.prevState);
+    ReadUint32(dlcContext.flagsStorePath, dlcContext.prevFlags);
+
+    // remember new flags
+    WriteUint32(dlcContext.flagsStorePath, static_cast<uint32>(flags));
 
     // FSM variables
     fsmAutoReady = false;
@@ -121,6 +132,9 @@ void DLC::GetProgress(uint64 &cur, uint64 &total) const
     switch(dlcState)
     {
         case DS_READY:
+            total = dlcContext.remotePatchSize;
+            cur = dlcContext.remotePatchReadySize;
+            break;
         case DS_DOWNLOADING:
             total = dlcContext.remotePatchSize;
             DownloadManager::Instance()->GetProgress(dlcContext.remotePatchDownloadId, cur);
@@ -177,12 +191,15 @@ void DLC::FSM(DLCEvent event)
             switch(event)
             {
                 case EVENT_DOWNLOAD_START:
-                    fsmAutoReady = true;
+                    //fsmAutoReady = true;
                     // don't break here
 
                 case EVENT_CHECK_START:
                     // if last time stopped on the patching state and patch file exists - continue patching
-                    if(DS_PATCHING == dlcContext.prevState && dlcContext.remotePatchStorePath.Exists() && dlcContext.remoteVerStotePath.Exists())
+                    if( DS_PATCHING == dlcContext.prevState && 
+                        static_cast<uint32>(dlcContext.flags) == dlcContext.prevFlags &&
+                        dlcContext.remotePatchStorePath.Exists() &&
+                        dlcContext.remoteVerStotePath.Exists())
                     {
                         dlcContext.prevState = 0;
                         dlcState = DS_PATCHING;
@@ -447,7 +464,7 @@ void DLC::StepCheckInfoBegin()
         return;
     }
 
-    if(!dlcContext.forceFullUpdate)
+    if(!(dlcContext.flags & DLCFlags::DF_FORCE_FULL_UPDATE))
     {
         ReadUint32(dlcContext.localVerStorePath, dlcContext.localVer);
     }
@@ -518,6 +535,8 @@ void DLC::StepCheckPatchBegin()
     DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepCheckPatchFinish));
     dlcContext.remoteFullSizeDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchFullUrl, dlcContext.remotePatchStorePath, GET_SIZE); // full size should be first
     dlcContext.remoteLiteSizeDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchLiteUrl, dlcContext.remotePatchStorePath, GET_SIZE); // lite size should be last
+    
+    //dlcContext.remotePatchReadySize = FileSystem::
 }
 
 void DLC::StepCheckPatchFinish(const uint32 &id, const DownloadStatus &status)
@@ -778,6 +797,7 @@ void DLC::StepPatchFinish()
             PostError(DE_READ_ERROR);
             break;
 
+        case PatchFileReader::ERROR_NEW_CREATE:
         case PatchFileReader::ERROR_NEW_WRITE:
             PostError(DE_WRITE_ERROR);
             break;
@@ -796,49 +816,81 @@ void DLC::StepPatchFinish()
 void DLC::StepPatchCancel()
 {
     dlcContext.patchInProgress = false;
+    patchingThread->Join();
 }
     
 void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
 {
     PatchFileReader patchReader(dlcContext.remotePatchStorePath);
-    
-    auto applyPatchesIf = [&](std::function<bool (const PatchInfo* info)>  shouldApply)
+
+    bool applySuccess = true;
+    const PatchInfo *patchInfo = nullptr;
+
+    auto applyPatchesFn = [&](bool truncate, std::function<bool(const PatchInfo* info)> confitionFn)
     {
-        if (!dlcContext.patchInProgress || PatchFileReader::ERROR_NO != patchReader.GetLastError())
-            return;
-        
-        bool lastOpSucceeded = patchReader.ReadFirst();
-        while (dlcContext.patchInProgress && lastOpSucceeded)
+        if(applySuccess)
         {
-            if(shouldApply(patchReader.GetCurInfo()))
+            // If truncate we should go from last patch on the first one, otherwise we will go in
+            // a old style way - from first to last. This  will allow as to support old patch files,
+            // that don't have reverse pass.
+            if(truncate)
             {
-                lastOpSucceeded = patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath());
-                DVASSERT(lastOpSucceeded || PatchFileReader::ERROR_NO != patchReader.GetLastError())
-                if (lastOpSucceeded)
+                patchReader.ReadLast();
+            }
+            else
+            {
+                patchReader.ReadFirst();
+            }
+
+            // Get current patch info
+            patchInfo = patchReader.GetCurInfo();
+            while(applySuccess && nullptr != patchInfo && dlcContext.patchInProgress)
+            {
+                // Patch will be applied only if it fit condition, specified by caller
+                if(confitionFn(patchInfo))
                 {
-                    dlcContext.appliedPatchCount++;
+                    applySuccess = patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath());
+                    if(applySuccess)
+                    {
+                        dlcContext.appliedPatchCount++;
+                    }
+                }
+
+                // Go to the next patch and check if we need to truncate applyid patch
+                if(applySuccess && dlcContext.patchInProgress)
+                {
+                    if(truncate)
+                    {
+                        patchReader.Truncate();
+                        patchReader.ReadPrev();
+                    }
+                    else
+                    {
+                        patchReader.ReadNext();
+                    }
+
+                    patchInfo = patchReader.GetCurInfo();
                 }
             }
-            lastOpSucceeded = lastOpSucceeded && /*only if apply succeeded*/patchReader.ReadNext();
         }
     };
-    
-    //first apply only patches that either reduce or don't change resources size
-    applyPatchesIf([] (const PatchInfo* info)
-                   {
-                       return info->newSize <= info->origSize;
-                   });
-    
-    //then apply patches that increase resources size
-    applyPatchesIf([] (const PatchInfo* info)
-                   {
-                       return info->newSize > info->origSize;
-                   });
-    
-    
+
+    // first step - apply patches, that either reduce or don't change resources size
+    applyPatchesFn(false, 
+        [](const PatchInfo* info) 
+        { 
+            return info->newSize <= info->origSize; 
+        });
+
+    // no errors on first step - continue applying patches, that increase resources size
+    applyPatchesFn((dlcContext.flags & DLCFlags::DF_TRUNCATE_PATCHFILE),
+        [](const PatchInfo* info) 
+        { 
+            return info->newSize > info->origSize; 
+        });
+
     // check if no errors occurred during patching
     dlcContext.patchingError = patchReader.GetLastError();
-    
     if(dlcContext.patchInProgress && PatchFileReader::ERROR_NO == dlcContext.patchingError)
     {
         DVASSERT(dlcContext.appliedPatchCount == dlcContext.totalPatchCount);
@@ -875,6 +927,7 @@ void DLC::StepDone()
     {
         FileSystem::Instance()->DeleteFile(dlcContext.remoteVerStotePath);
         FileSystem::Instance()->DeleteFile(dlcContext.stateInfoStorePath);
+        FileSystem::Instance()->DeleteFile(dlcContext.flagsStorePath);
     }
 
     Logger::Info("DLC: Done!");
@@ -935,6 +988,19 @@ String DLC::MakePatchUrl(uint32 localVer, uint32 remoteVer)
     }
 
     return ret;
+}
+
+
+DLC::DLCFlags operator|(DLC::DLCFlags a, DLC::DLCFlags b)
+{
+    using enum_type = std::underlying_type<DLC::DLCFlags>::type;
+    return static_cast<DLC::DLCFlags>(static_cast<enum_type>(a) | static_cast<enum_type>(b));
+}
+
+bool operator&(DLC::DLCFlags a, DLC::DLCFlags b)
+{
+    using enum_type = std::underlying_type<DLC::DLCFlags>::type;
+    return (0 != (static_cast<enum_type>(a)& static_cast<enum_type>(b)));
 }
 
 }

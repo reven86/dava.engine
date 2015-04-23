@@ -192,7 +192,6 @@ public:
 	virtual uint32 ReadString(char8 * destinationBuffer, uint32 destinationBufferSize);
     uint32 ReadString(String & destinationString);
     
-    
 	/** 
 		\brief Get current file position
 	*/
@@ -214,6 +213,8 @@ public:
 	
 	//! return true if end of file reached and false in another case
 	virtual bool IsEof();
+
+    bool Truncate(int32 size);
 	
     static String GetModificationDate(const FilePath & filePathname);
 

@@ -69,6 +69,13 @@ public:
         DS_DONE
     };
 
+    enum class DLCFlags : int
+    {
+        DF_NONE,
+        DF_FORCE_FULL_UPDATE    = 1 << 0,
+        DF_TRUNCATE_PATCHFILE   = 1 << 1
+    };
+
     /**
         \brief Create DLC state machine, that will check or apply patch from given URL.
         \param[in] url - remote server url.
@@ -79,7 +86,7 @@ public:
         \param[in] resVersionPath - path to file, where resources version is stored. This file will be re-wrote after patch finished.
         \param[in] forceFullUpdate - "true" value will force full-patch to be downloaded from the server. "false" leaves patch version to be determined automatically.
     */
-    DLC(const String &url, const FilePath &sourceDir, const FilePath &destinationDir, const FilePath &workingDir, const String &gameVersion, const FilePath &resVersionPath, bool forceFullUpdate = false);
+    DLC(const String &url, const FilePath &sourceDir, const FilePath &destinationDir, const FilePath &workingDir, const String &gameVersion, const FilePath &resVersionPath, DLCFlags flags = DLCFlags::DF_NONE);
     ~DLC();
 
     /**
@@ -139,7 +146,7 @@ protected:
     {
         String remoteUrl;
         uint32 localVer;
-        bool forceFullUpdate;
+        DLCFlags flags;
 
         FilePath localWorkingDir;
         FilePath localSourceDir;
@@ -161,17 +168,20 @@ protected:
 
         String remotePatchUrl;
         uint64 remotePatchSize;
+        uint64 remotePatchReadySize;
         uint32 remotePatchDownloadId;
         FilePath remotePatchStorePath;
 
         uint32 totalPatchCount;
         uint32 appliedPatchCount;
-        bool patchInProgress;
+        volatile bool patchInProgress;
         PatchFileReader::PatchError patchingError;
 
         FilePath stateInfoStorePath;
+        FilePath flagsStorePath;
         FilePath downloadInfoStorePath;
         uint32 prevState;
+        uint32 prevFlags;
     };
 
     DLCState dlcState;
@@ -220,6 +230,9 @@ protected:
 
     String MakePatchUrl(uint32 localVer, uint32 removeVer);
 };
+
+DLC::DLCFlags operator|(DLC::DLCFlags a, DLC::DLCFlags b);
+bool operator&(DLC::DLCFlags a, DLC::DLCFlags b);
 
 }
 

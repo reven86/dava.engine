@@ -34,9 +34,14 @@
 
 #include "Utils/StringFormat.h"
 
+#if defined (__DAVAENGINE_WIN32__)
+#include <io.h>
+#elif defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_IPHONE__)
+#include <unistd.h>
+#endif
+
 #include <sys/stat.h>
 #include <time.h>
-
 
 namespace DAVA 
 {
@@ -343,6 +348,17 @@ bool File::Seek(int32 position, uint32 seekType)
 bool File::IsEof()
 {
 	return (feof(file) != 0);
+}
+
+bool File::Truncate(int32 size)
+{
+#if defined (__DAVAENGINE_WIN32__)
+    return (0 == _chsize(_fileno(file), size));
+#elif defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+    return (0 == ftruncate(fileno(file), size));
+#else
+    return false;
+#endif
 }
 
 bool File::WriteString(const String & strtowrite, bool shouldNullBeWritten)
