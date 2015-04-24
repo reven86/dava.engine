@@ -13,7 +13,7 @@ RemoveComponentCommand::RemoveComponentCommand(PackageNode *_root, ControlNode *
     , node(SafeRetain(_node))
     , componentSection(nullptr) // comment
 {
-    componentSection = SafeRetain(node->GetPropertiesRoot()->FindComponentPropertiesSection(_componentType));
+    componentSection = SafeRetain(node->GetRootProperty()->FindComponentPropertiesSection(_componentType));
 }
 
 RemoveComponentCommand::~RemoveComponentCommand()

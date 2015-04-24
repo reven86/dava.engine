@@ -30,6 +30,12 @@ AbstractProperty *ValueProperty::GetProperty(int index) const
     return children[index];
 }
 
+void ValueProperty::Refresh()
+{
+    for (SubValueProperty *prop : children)
+        prop->Refresh();
+}
+
 bool ValueProperty::HasChanges() const
 {
     return replaced;

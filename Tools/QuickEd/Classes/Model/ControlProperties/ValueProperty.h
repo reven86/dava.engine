@@ -17,6 +17,7 @@ public:
     virtual int GetCount() const override;
     virtual AbstractProperty *GetProperty(int index) const override;
 
+    virtual void Refresh() override;
     virtual bool HasChanges() const override;
     virtual void Serialize(PackageSerializer *serializer) const override;
 

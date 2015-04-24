@@ -39,10 +39,7 @@ void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, AbstractPr
 {
     if (!property->IsReadOnly())
     {
-        BeginMacro("Change Property");
         PushCommand(new ChangePropertyValueCommand(document->GetPackage(), node, property, value));
-        ChangeDefaultProperties(node->GetInstances(), property, value);
-        EndMacro();
     }
 }
 
@@ -50,34 +47,13 @@ void QtModelPackageCommandExecutor::ResetProperty(ControlNode *node, AbstractPro
 {
     if (!property->IsReadOnly())
     {
-        BeginMacro("Reset Property");
         PushCommand(new ChangePropertyValueCommand(document->GetPackage(), node, property));
-        ChangeDefaultProperties(node->GetInstances(), property, property->GetDefaultValue());
-        EndMacro();
-    }
-}
-
-void QtModelPackageCommandExecutor::ChangeDefaultProperties(const DAVA::Vector<ControlNode *> &instances, AbstractProperty *property, const DAVA::VariantType &value)
-{
-    for (ControlNode *instance : instances)
-    {
-        Vector<String> path = property->GetPath();
-        AbstractProperty *nodeProperty = instance->GetPropertyByPath(path);
-        if (nodeProperty)
-        {
-            PushCommand(new ChangeDefaultValueCommand(document->GetPackage(), instance, nodeProperty, value));
-            ChangeDefaultProperties(instance->GetInstances(), nodeProperty, nodeProperty->GetValue());
-        }
-        else
-        {
-            DVASSERT(false);
-        }
     }
 }
 
 void QtModelPackageCommandExecutor::AddComponent(ControlNode *node, uint32 componentType)
 {
-    if (node->GetPropertiesRoot()->CanAddComponent(componentType))
+    if (node->GetRootProperty()->CanAddComponent(componentType))
     {
         BeginMacro("Add Component");
         AddComponentImpl(node, componentType);
@@ -87,7 +63,7 @@ void QtModelPackageCommandExecutor::AddComponent(ControlNode *node, uint32 compo
 
 void QtModelPackageCommandExecutor::RemoveComponent(ControlNode *node, uint32 componentType)
 {
-    if (node->GetPropertiesRoot()->CanRemoveComponent(componentType))
+    if (node->GetRootProperty()->CanRemoveComponent(componentType))
     {
         BeginMacro("Remove Component");
         RemoveComponentImpl(node, componentType);

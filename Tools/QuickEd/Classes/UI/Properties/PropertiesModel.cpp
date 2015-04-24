@@ -25,12 +25,12 @@ PropertiesModel::PropertiesModel(ControlNode *_controlNode, QtModelPackageComman
     , commandExecutor(SafeRetain(_commandExecutor))
 {
     controlNode = SafeRetain(_controlNode);
-    controlNode->GetPropertiesRoot()->AddListener(this);
+    controlNode->GetRootProperty()->AddListener(this);
 }
 
 PropertiesModel::~PropertiesModel()
 {
-    controlNode->GetPropertiesRoot()->RemoveListener(this);
+    controlNode->GetRootProperty()->RemoveListener(this);
     SafeRelease(commandExecutor);
     SafeRelease(controlNode);
 }
@@ -41,7 +41,7 @@ QModelIndex PropertiesModel::index(int row, int column, const QModelIndex &paren
         return QModelIndex();
     
     if (!parent.isValid())
-        return createIndex(row, column, controlNode->GetPropertiesRoot()->GetProperty(row));
+        return createIndex(row, column, controlNode->GetRootProperty()->GetProperty(row));
     
     AbstractProperty *property = static_cast<AbstractProperty*>(parent.internalPointer());
     return createIndex(row, column, property->GetProperty(row));
@@ -55,7 +55,7 @@ QModelIndex PropertiesModel::parent(const QModelIndex &child) const
     AbstractProperty *property = static_cast<AbstractProperty*>(child.internalPointer());
     AbstractProperty *parent = property->GetParent();
     
-    if (parent == NULL || parent == controlNode->GetPropertiesRoot())
+    if (parent == NULL || parent == controlNode->GetRootProperty())
         return QModelIndex();
 
     if (parent->GetParent())
@@ -70,14 +70,14 @@ int PropertiesModel::rowCount(const QModelIndex &parent) const
         return 0;
     
     if (!parent.isValid())
-        return controlNode->GetPropertiesRoot() ? controlNode->GetPropertiesRoot()->GetCount() : 0;
+        return controlNode->GetRootProperty() ? controlNode->GetRootProperty()->GetCount() : 0;
     
     return static_cast<AbstractProperty*>(parent.internalPointer())->GetCount();
 }
 
 int PropertiesModel::columnCount(const QModelIndex &parent) const
 {
-    if (!parent.isValid() || parent.internalPointer() == controlNode->GetPropertiesRoot())
+    if (!parent.isValid() || parent.internalPointer() == controlNode->GetRootProperty())
         return 2;
     
     return 2;

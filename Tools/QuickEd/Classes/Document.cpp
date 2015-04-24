@@ -69,7 +69,7 @@ void Document::UpdateLanguage()
 
 void Document::UpdateLanguageRecursively(ControlNode *node)
 {
-    RootProperty *propertiesRoot = node->GetPropertiesRoot();
+    RootProperty *propertiesRoot = node->GetRootProperty();
     int propertiesCount = propertiesRoot->GetCount();
     for (int index = 0; index < propertiesCount; ++index)
     {

@@ -21,8 +21,6 @@ public:
 public:
     void ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value) override;
     void ResetProperty(ControlNode *node, AbstractProperty *property) override;
-private:
-    void ChangeDefaultProperties(const DAVA::Vector<ControlNode *> &node, AbstractProperty *property, const DAVA::VariantType &value);
 
 public:
     void AddComponent(ControlNode *node, DAVA::uint32 componentType) override;

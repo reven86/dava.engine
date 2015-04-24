@@ -44,7 +44,7 @@ RootProperty::RootProperty(ControlNode *_node, const RootProperty *sourcePropert
 
 RootProperty::~RootProperty()
 {
-    node = nullptr; // don't release, just week ptr
+    node = nullptr; // don't release, just weak ptr
     
     SafeRelease(classProperty);
     SafeRelease(customClassProperty);
@@ -276,6 +276,20 @@ void RootProperty::ResetProperty(AbstractProperty *property)
         listener->PropertyChanged(property);
 }
 
+void RootProperty::RefreshProperty(AbstractProperty *property)
+{
+    property->Refresh();
+
+    for (PropertyListener *listener : listeners)
+        listener->PropertyChanged(property);
+}
+
+void RootProperty::Refresh()
+{
+    for (int32 i = 0; i < GetCount(); i++)
+        GetProperty(i)->Refresh();
+}
+
 void RootProperty::Serialize(PackageSerializer *serializer) const
 {
     for (const auto section : controlProperties)
@@ -323,6 +337,11 @@ void RootProperty::Serialize(PackageSerializer *serializer) const
         
         serializer->EndArray();
     }
+}
+
+bool RootProperty::IsReadOnly() const
+{
+    return !node->IsEditingSupported();
 }
 
 const DAVA::String & RootProperty::GetName() const

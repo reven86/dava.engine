@@ -47,12 +47,12 @@ void DefaultPackageCommandExecutor::ResetProperty(ControlNode *node, AbstractPro
 
 void DefaultPackageCommandExecutor::AddComponent(ControlNode *node, DAVA::uint32 componentType)
 {
-    node->GetPropertiesRoot()->AddComponentPropertiesSection(componentType);
+    node->GetRootProperty()->AddComponentPropertiesSection(componentType);
 }
 
 void DefaultPackageCommandExecutor::RemoveComponent(ControlNode *node, DAVA::uint32 componentType)
 {
-    node->GetPropertiesRoot()->RemoveComponentPropertiesSection(componentType);
+    node->GetRootProperty()->RemoveComponentPropertiesSection(componentType);
 }
 
 void DefaultPackageCommandExecutor::InsertControl(ControlNode *control, ControlsContainerNode *dest, int32 destIndex)

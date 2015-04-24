@@ -35,6 +35,7 @@ public:
 public:
     ControlNode *Clone();
     
+    void RefreshPropertyInInstances(AbstractProperty *property);
     void Add(ControlNode *node) override;
     void InsertAtIndex(int index, ControlNode *node) override;
     void Remove(ControlNode *node) override;
@@ -58,9 +59,7 @@ public:
 
     eCreationType GetCreationType() const { return creationType; }
 
-    RootProperty *GetPropertiesRoot() const {return propertiesRoot; }
-    AbstractProperty *GetPropertyByPath(const DAVA::Vector<DAVA::String> &path);
-
+    RootProperty *GetRootProperty() const {return rootProperty; }
 
     void MarkAsRemoved();
     void MarkAsAlive();
@@ -78,11 +77,11 @@ private:
 
 private:
     DAVA::UIControl *control;
-    RootProperty *propertiesRoot;
+    RootProperty *rootProperty;
     DAVA::Vector<ControlNode*> nodes;
     
     ControlPrototype *prototype;
-    DAVA::Vector<ControlNode*> instances; // week
+    DAVA::Vector<ControlNode*> instances; // weak
 
     eCreationType creationType;
     

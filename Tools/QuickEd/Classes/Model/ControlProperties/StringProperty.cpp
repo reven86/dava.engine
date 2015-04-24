@@ -7,8 +7,6 @@ StringProperty::StringProperty(const DAVA::String &propName, DAVA::UIControl *an
     object = SafeRetain(anObject);
     getter = aGetter;
     setter = aSetter;
-    if (aSetter == NULL)
-        SetReadOnly();
 
     if (sourceProperty && setter != NULL && sourceProperty->GetValue() != DAVA::VariantType(getter(object)))
         setter(object, sourceProperty->GetValue().AsString());
@@ -36,6 +34,11 @@ DAVA::VariantType StringProperty::GetValue() const
         return DAVA::VariantType(getter(object));
     }
     return DAVA::VariantType();
+}
+
+bool StringProperty::IsReadOnly() const
+{
+    return setter == NULL || ValueProperty::IsReadOnly();
 }
 
 void StringProperty::SetEditFlag(DAVA::uint32 newEditFlags)

@@ -43,6 +43,8 @@ public:
     virtual AbstractProperty *GetProperty(int index) const = 0;
     virtual int GetIndex(AbstractProperty *property) const;
 
+    virtual void Refresh();
+    virtual AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype);
     virtual bool HasChanges() const;
     virtual void Serialize(PackageSerializer *serializer) const = 0;
 
@@ -50,8 +52,7 @@ public:
     virtual ePropertyType GetType() const = 0;
     virtual DAVA::uint32 GetEditFlag() const { return EF_NONE; };
 
-    bool IsReadOnly() const;
-    void SetReadOnly();
+    virtual bool IsReadOnly() const;
     virtual bool CanRemove() const {return false; }
     virtual bool CanCreate() const {return false; }
 
@@ -63,14 +64,11 @@ public:
     virtual void ResetValue();
     virtual bool IsReplaced() const;
 
-    DAVA::Vector<DAVA::String> GetPath() const;
-    AbstractProperty *GetPropertyByPath(const DAVA::Vector<DAVA::String> &path);
     AbstractProperty *GetRootProperty();
     const AbstractProperty *GetRootProperty() const;
 
 private:
     AbstractProperty *parent;
-    bool readOnly;
 };
 
 

@@ -38,6 +38,12 @@ AbstractProperty *SectionProperty::GetProperty(int index) const
     return children[index];
 }
 
+void SectionProperty::Refresh()
+{
+    for (ValueProperty *prop : children)
+        prop->Refresh();
+}
+
 void SectionProperty::Serialize(PackageSerializer *serializer) const
 {
     for (ValueProperty* prop : children)

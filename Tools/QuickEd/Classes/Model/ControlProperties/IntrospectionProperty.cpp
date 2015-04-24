@@ -9,6 +9,7 @@ using namespace DAVA;
 IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const DAVA::InspMember *aMember, const IntrospectionProperty *sourceProperty, eCloneType copyType)
     : ValueProperty(aMember->Desc().text)
     , object(SafeRetain(anObject))
+    , prototypeProperty(nullptr)
     , member(aMember)
 {
     if (sourceProperty)
@@ -23,6 +24,7 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const D
         }
         else
         {
+            prototypeProperty = sourceProperty;
             defaultValue = member->Value(object);
         }
     }
@@ -31,29 +33,22 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const D
         defaultValue = member->Value(object);
     }
 
+    static std::vector<String> vector2ComponentNames = { "X", "Y" };
+    static std::vector<String> colorComponentNames = { "Red", "Green", "Blue", "Alpha" };
+    static std::vector<String> marginsComponentNames = { "Left", "Top", "Right", "Bottom" };
+
+    std::vector<String> *componentNames = nullptr;
     if (defaultValue.GetType() == VariantType::TYPE_VECTOR2)
     {
-        static std::vector<String> componentNames = { "X", "Y" };
-        for (size_t i = 0; i < componentNames.size(); ++i)
-        {
-            children.push_back(new SubValueProperty(i, componentNames[i]));
-        }
+        componentNames = &vector2ComponentNames;
     }
     else if (defaultValue.GetType() == VariantType::TYPE_COLOR)
     {
-        static std::vector<String> componentNames = { "Red", "Green", "Blue", "Alpha" };
-        for (size_t i = 0; i < componentNames.size(); ++i)
-        {
-            children.push_back(new SubValueProperty(i, componentNames[i]));
-        }
+        componentNames = &colorComponentNames;
     }
     else if (defaultValue.GetType() == VariantType::TYPE_VECTOR4)
     {
-        static std::vector<String> componentNames = { "Left", "Top", "Right", "Bottom" };
-        for (size_t i = 0; i < componentNames.size(); ++i)
-        {
-            children.push_back(new SubValueProperty(i, componentNames[i]));
-        }
+        componentNames = &marginsComponentNames;
     }
     else if (defaultValue.GetType() == VariantType::TYPE_INT32 && member->Desc().type == InspDesc::T_FLAGS)
     {
@@ -65,6 +60,13 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const D
             children.push_back(new SubValueProperty(i, map->ToString(val)));
         }
     }
+    
+    if (componentNames != nullptr)
+    {
+        for (size_t i = 0; i < componentNames->size(); ++i)
+            children.push_back(new SubValueProperty(i, componentNames->at(i)));
+    }
+
 
     for (auto child : children)
     {
@@ -75,6 +77,21 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const D
 IntrospectionProperty::~IntrospectionProperty()
 {
     SafeRelease(object);
+    prototypeProperty = nullptr;
+}
+
+void IntrospectionProperty::Refresh()
+{
+    if (prototypeProperty)
+    {
+        SetDefaultValue(prototypeProperty->GetValue());
+    }
+    ValueProperty::Refresh();
+}
+
+AbstractProperty *IntrospectionProperty::FindPropertyByPrototype(AbstractProperty *prototype)
+{
+    return prototype == prototypeProperty ? this : nullptr;
 }
 
 void IntrospectionProperty::Serialize(PackageSerializer *serializer) const
@@ -142,4 +159,3 @@ void IntrospectionProperty::ApplyValue(const DAVA::VariantType &value)
 {
     member->SetValue(object, value);
 }
-

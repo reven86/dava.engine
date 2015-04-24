@@ -2,7 +2,7 @@
 
 using namespace DAVA;
 
-AbstractProperty::AbstractProperty() : parent(NULL), readOnly(false)
+AbstractProperty::AbstractProperty() : parent(NULL)
 {
     
 }
@@ -23,7 +23,7 @@ void AbstractProperty::SetParent(AbstractProperty *parent)
 
 int AbstractProperty::GetIndex(AbstractProperty *property) const
 {
-    for (int i = 0; i < GetCount(); i++)
+    for (int32 i = 0; i < GetCount(); i++)
     {
         if (GetProperty(i) == property)
             return i;
@@ -31,9 +31,24 @@ int AbstractProperty::GetIndex(AbstractProperty *property) const
     return -1;
 }
 
+void AbstractProperty::Refresh()
+{
+}
+
+AbstractProperty *AbstractProperty::FindPropertyByPrototype(AbstractProperty *prototype)
+{
+    for (int32 i = 0; i < GetCount(); i++)
+    {
+        AbstractProperty *result = GetProperty(i)->FindPropertyByPrototype(prototype);
+        if (result)
+            return result;
+    }
+    return nullptr;
+}
+
 bool AbstractProperty::HasChanges() const
 {
-    for (int i = 0; i < GetCount(); i++)
+    for (int32 i = 0; i < GetCount(); i++)
     {
         if (GetProperty(i)->HasChanges())
             return true;
@@ -43,14 +58,7 @@ bool AbstractProperty::HasChanges() const
 
 bool AbstractProperty::IsReadOnly() const
 {
-    return readOnly;
-}
-
-void AbstractProperty::SetReadOnly()
-{
-    readOnly = true;
-    for (int i = 0; i < GetCount(); i++)
-        GetProperty(i)->SetReadOnly();
+    return parent ? parent->IsReadOnly() : true;
 }
 
 DAVA::VariantType AbstractProperty::GetValue() const
@@ -87,58 +95,7 @@ bool AbstractProperty::IsReplaced() const
 {
     return false; // false by default
 }
-
-Vector<String> AbstractProperty::GetPath() const
-{
-    const AbstractProperty *p = this;
-    
-    int32 count = 0;
-    while (p && p->parent)
-    {
-        count++;
-        p = p->parent;
-    }
-
-    Vector<String> path;
-    path.resize(count);
-    
-    p = this;
-    while (p && p->parent)
-    {
-        path[count - 1] = (p->GetName());
-        p = p->parent;
-        count--;
-    }
-    
-    DVASSERT(count == 0);
-    
-    return path;
-}
-
-AbstractProperty *AbstractProperty::GetPropertyByPath(const Vector<String> &path)
-{
-    AbstractProperty *prop = this;
-    
-    for (const String &name : path)
-    {
-        AbstractProperty *child = nullptr;
-        for (int32 index = 0; index < prop->GetCount(); index++)
-        {
-            AbstractProperty *candidate = prop->GetProperty(index);
-            if (candidate->GetName() == name)
-            {
-                child = candidate;
-                break;
-            }
-        }
-        prop = child;
-        if (!prop)
-            break;
-    }
-    
-    return prop;
-}
-
+˘
 AbstractProperty *AbstractProperty::GetRootProperty()
 {
     AbstractProperty *property = this;

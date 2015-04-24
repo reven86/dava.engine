@@ -53,8 +53,11 @@ public:
     void SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue);
     void SetDefaultProperty(AbstractProperty *property, const DAVA::VariantType &newValue);
     void ResetProperty(AbstractProperty *property);
-    
+    void RefreshProperty(AbstractProperty *property);
+
+    virtual void Refresh() override;
     virtual void Serialize(PackageSerializer *serializer) const override;
+    virtual bool IsReadOnly() const override;
 
     virtual const DAVA::String &GetName() const;
     virtual ePropertyType GetType() const;
@@ -65,7 +68,7 @@ private:
     void MakeBackgroundPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType);
     void MakeInternalControlPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType);
 private:
-    ControlNode *node;
+    ControlNode *node; // weak ref
 
     ValueProperty *classProperty;
     ValueProperty *customClassProperty;

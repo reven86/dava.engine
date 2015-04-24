@@ -14,6 +14,8 @@ protected:
     virtual ~IntrospectionProperty();
     
 public:
+    virtual void Refresh();
+    virtual AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype) override;
     virtual void Serialize(PackageSerializer *serializer) const override;
 
     virtual ePropertyType GetType() const override;
@@ -38,6 +40,7 @@ protected:
 
 protected:
     DAVA::BaseObject *object;
+    const IntrospectionProperty *prototypeProperty;
     const DAVA::InspMember *member;
 };
 

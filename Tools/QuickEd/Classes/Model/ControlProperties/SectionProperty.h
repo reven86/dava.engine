@@ -16,6 +16,8 @@ public:
     void AddProperty(ValueProperty *section);
     virtual int GetCount() const override;
     virtual AbstractProperty *GetProperty(int index) const override;
+    
+    virtual void Refresh() override;
     virtual void Serialize(PackageSerializer *serializer) const;
     virtual const DAVA::String &GetName() const;
 

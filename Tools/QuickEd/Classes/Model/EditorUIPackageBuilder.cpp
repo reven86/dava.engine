@@ -241,7 +241,7 @@ void EditorUIPackageBuilder::EndControl(bool isRoot)
 
 void EditorUIPackageBuilder::BeginControlPropertiesSection(const String &name)
 {
-    currentSection = controlsStack.back().node->GetPropertiesRoot()->GetControlPropertiesSection(name);
+    currentSection = controlsStack.back().node->GetRootProperty()->GetControlPropertiesSection(name);
     currentObject = controlsStack.back().node->GetControl();
 }
 
@@ -254,7 +254,7 @@ void EditorUIPackageBuilder::EndControlPropertiesSection()
 UIComponent *EditorUIPackageBuilder::BeginComponentPropertiesSecion(uint32 componentType)
 {
     ControlNode *node = controlsStack.back().node;
-    ComponentPropertiesSection * section = node->GetPropertiesRoot()->AddComponentPropertiesSection(componentType);
+    ComponentPropertiesSection * section = node->GetRootProperty()->AddComponentPropertiesSection(componentType);
     currentObject = section->GetComponent();
     currentSection = section;
     return section->GetComponent();
@@ -269,7 +269,7 @@ void EditorUIPackageBuilder::EndComponentPropertiesSecion()
 UIControlBackground *EditorUIPackageBuilder::BeginBgPropertiesSection(int index, bool sectionHasProperties)
 {
     ControlNode *node = controlsStack.back().node;
-    BackgroundPropertiesSection *section = node->GetPropertiesRoot()->GetBackgroundPropertiesSection(index);
+    BackgroundPropertiesSection *section = node->GetRootProperty()->GetBackgroundPropertiesSection(index);
     if (section && sectionHasProperties)
     {
         if (section->GetBg() == NULL)
@@ -295,7 +295,7 @@ void EditorUIPackageBuilder::EndBgPropertiesSection()
 UIControl *EditorUIPackageBuilder::BeginInternalControlSection(int index, bool sectionHasProperties)
 {
     ControlNode *node = controlsStack.back().node;
-    InternalControlPropertiesSection *section = node->GetPropertiesRoot()->GetInternalControlPropertiesSection(index);
+    InternalControlPropertiesSection *section = node->GetRootProperty()->GetInternalControlPropertiesSection(index);
     if (section && sectionHasProperties)
     {
         if (section->GetInternalControl() == NULL)
