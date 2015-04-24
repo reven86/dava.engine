@@ -1068,7 +1068,6 @@ void Scene::OptimizeBeforeExport()
 
 void Scene::ImportShadowColor(Entity * rootNode)
 {
-#if RHI_COMPLETE
     if(NULL != sceneGlobalMaterial)
     {
 		Entity * landscapeNode = FindLandscapeEntity(rootNode);
@@ -1078,17 +1077,15 @@ void Scene::ImportShadowColor(Entity * rootNode)
 			KeyedArchive * props = GetCustomPropertiesArchieve(landscapeNode);
 			if (props->IsKeyExists("ShadowColor"))
 			{
-				Color shadowColor = props->GetVariant("ShadowColor")->AsColor();
-				sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_SHADOW_COLOR,
-					Shader::UT_FLOAT_VEC4,
-					1,
-					shadowColor.color);
+                if (sceneGlobalMaterial->HasLocalProperty(NMaterialParamName::PARAM_SHADOW_COLOR))
+                    sceneGlobalMaterial->RemoveProperty(NMaterialParamName::PARAM_SHADOW_COLOR);
 
+				Color shadowColor = props->GetVariant("ShadowColor")->AsColor();
+                sceneGlobalMaterial->AddProperty(NMaterialParamName::PARAM_SHADOW_COLOR, shadowColor.color, rhi::ShaderProp::TYPE_FLOAT4);					
 				props->DeleteKey("ShadowColor");
 			}
 		}
     }
-#endif  // RHI_COMPLETE
 }
 
 void Scene::OnSceneReady(Entity * rootNode)

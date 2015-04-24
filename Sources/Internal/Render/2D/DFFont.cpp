@@ -406,16 +406,12 @@ bool DFFont::LoadTexture(const FilePath & path)
     if(!fontTexture)
     {
         return false;
-    }
-    
-    rhi::TextureSetDescriptor textureData;
-    
-#if RHI_COMPLETE
-    TextureStateData textureData;
-    textureData.SetTexture(0, fontTexture);
-#endif //RHI_COMPLETE
+    }            
 
-    fontTextureHandler = rhi::AcquireTextureSet(textureData);
+    rhi::TextureSetDescriptor descriptor;
+    descriptor.count = 1;
+    descriptor.texture[0] = fontTexture->handle;    
+    fontTextureHandler = rhi::AcquireTextureSet(descriptor);
 
     return true;
 }

@@ -58,6 +58,7 @@ void RenderLayer::Draw(Camera* camera, RenderLayerBatchArray * renderLayerBatchA
     uint32 size = (uint32)renderLayerBatchArray->GetRenderBatchCount();
 
     FrameOcclusionQueryManager::Instance()->BeginQuery(name);
+    rhi::Packet packet;
     
     for (uint32 k = 0; k < size; ++k)
     {
@@ -69,10 +70,7 @@ void RenderLayer::Draw(Camera* camera, RenderLayerBatchArray * renderLayerBatchA
         PolygonGroup *pg = batch->GetPolygonGroup();
         NMaterial *mat = batch->GetMaterial();
         if (pg && mat)
-        {
-
-            rhi::Packet packet;
-                     
+        {                     
             packet.vertexStreamCount = 1;
             packet.vertexStream[0] = pg->vertexBuffer;
             packet.indexBuffer = pg->indexBuffer;
@@ -85,13 +83,7 @@ void RenderLayer::Draw(Camera* camera, RenderLayerBatchArray * renderLayerBatchA
             mat->BindParams(packet);
 
             rhi::AddPacket(packetList, packet);
-        }
-        
-
-
-#if RHI_COMPLETE
-        batch->Draw(ownerRenderPass, camera);
-#endif RHI_COMPLETE
+        }        
 
     }
     

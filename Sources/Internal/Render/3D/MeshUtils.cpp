@@ -295,7 +295,7 @@ void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true
 SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::JointConfig> & outJoints)
 {
     SkinnedMesh * newRenderObject = new SkinnedMesh();
-#if RHI_COMPLETE
+
     Map<SkinnedMeshWorkKey, Vector<SkinnedMeshJointWork> > collapseDataMap;
 
     Vector<Entity *> childrenNodes;
@@ -403,9 +403,9 @@ SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::J
             indexOffset += currentBatchIndexCount;
         }
 
-        NMaterial * material = NMaterial::CreateMaterialInstance();
+        NMaterial * material = new NMaterial();
         material->SetParent(key.materialParent);
-        material->SetFlag(NMaterialFlagName::FLAG_SKINNING, NMaterial::FlagOn);
+        material->SetFlag(NMaterialFlagName::FLAG_SKINNING, 1);
 
         RenderBatch * newBatch = new RenderBatch();
         polygonGroup->RecalcAABBox();
@@ -420,7 +420,7 @@ SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::J
         newBatch->Release();
     }
 
-#endif // RHI_COMPLETE
+
     
     return newRenderObject;
 }

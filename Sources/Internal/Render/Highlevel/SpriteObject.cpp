@@ -164,7 +164,7 @@ RenderObject * SpriteObject::Clone(RenderObject *newObject)
 
 void SpriteObject::SetFrame(int32 newFrame)
 {
-#if RHI_COMPLETE
+
 	frame = Clamp(newFrame, 0, sprite->GetFrameCount() - 1);
 
 	int32 count = GetRenderBatchCount();
@@ -172,7 +172,7 @@ void SpriteObject::SetFrame(int32 newFrame)
 	{
 		GetRenderBatch(0)->GetMaterial()->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, sprite->GetTexture(frame));
 	}
-#endif // RHI_COMPLETE
+
 }
 
 int32 SpriteObject::GetFrame() const
