@@ -215,7 +215,6 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     new FrameworkLoop();
     
 #ifdef Q_OS_MAC
-    //DAVA::QtLayer::PrepareForegroundApp();
     QTimer::singleShot(0, []{ DAVA::QtLayer::MakeAppForeground();    } );
     QTimer::singleShot(0, []{ DAVA::QtLayer::RestoreMenuBar();       } );
 #endif

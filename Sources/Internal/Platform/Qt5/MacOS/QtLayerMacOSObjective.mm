@@ -50,15 +50,6 @@ void QtLayer::ReleaseAutoreleasePool(void *pool)
     [autoreleasePool release];
 }
     
-void QtLayer::PrepareForegroundApp()
-{
-    for (NSRunningApplication * app in [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.finder"])
-    {
-        [app activateWithOptions:NSApplicationActivateIgnoringOtherApps];
-        break;
-    }
-}
-    
 void QtLayer::MakeAppForeground(bool foreground)
 {
     ProcessSerialNumber psn = { 0, kCurrentProcess };
