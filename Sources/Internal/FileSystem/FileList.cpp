@@ -113,13 +113,13 @@ FileList::FileList(const FilePath & filepath, bool includeHidden)
 			entry.name = namelist[n]->d_name;
 			entry.size = 0;
 			entry.isDirectory = namelist[n]->d_type == DT_DIR;
-            entry.isHidden = (!entry.path.IsEmpty() && entry.path[0] == '.');
+            entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
             if(entry.isDirectory)
             {
                 entry.path.MakeDirectoryPathname();
             }
 
-            if (!entry.isHidden || omitHidden)
+            if (!entry.isHidden || includeHidden)
             {
                 fileList.push_back(entry);
             }
@@ -140,14 +140,14 @@ FileList::FileList(const FilePath & filepath, bool includeHidden)
 		entry.name = jniEntry.name;
 		entry.size = jniEntry.size;
 		entry.isDirectory = jniEntry.isDirectory;
-        entry.isHidden = (!entry.path.IsEmpty() && entry.path[0] == '.');
+        entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
 
 		if(entry.isDirectory)
 		{
 			entry.path.MakeDirectoryPathname();
 		}
 
-        if (!entry.isHidden || omitHidden)
+        if (!entry.isHidden || includeHidden)
         {
             fileList.push_back(entry);
         }

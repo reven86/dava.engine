@@ -326,7 +326,7 @@ void FileListTest::HiddenFileTest(PerfFuncData* data)
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     auto ClearHidden = [&]()
     {
-        rename(dotFile1Str.c_str(), file1str.c_str());
+        rename(dotFile1str.c_str(), file1str.c_str());
     };
 #endif //PLATFORMS
 
@@ -359,7 +359,7 @@ void FileListTest::HiddenDirTest(PerfFuncData* data)
     };
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     FilePath dotDir1 = FilePath("~res:/TestData/FileListTest/.Folder1/");
-    auto dotDir1str = dotDir1str.GetAbsolutePathname();
+    auto dotDir1str = dotDir1.GetAbsolutePathname();
     auto SetHidden = [&]()
     {
         rename(dir1str.c_str(), dotDir1str.c_str());
