@@ -140,7 +140,7 @@ void ControlMapper::dragMoveEvent(QDragMoveEvent * event)
     davaEvent.tid = MapQtButtonToDAVA(Qt::LeftButton);
     davaEvent.timestamp = 0;
     davaEvent.tapCount = 1;
-    davaEvent.phase = DAVA::UIEvent::PHASE_DRAG;
+    davaEvent.phase = DAVA::UIEvent::PHASE_MOVE;
 
     DAVA::QtLayer::Instance()->MouseEvent( davaEvent );
 }
