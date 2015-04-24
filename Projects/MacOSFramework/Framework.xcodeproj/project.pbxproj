@@ -7233,7 +7233,6 @@
 				647EFC51195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */,
 				E89EDE541A2E16FA0036E993 /* AutotestingSystemLua.cpp in Sources */,
 				327343BC1ACD36B10003F2A8 /* BaseFamily.cpp in Sources */,
-				E8989DFB16BD24E500732C04 /* MemoryManager.cpp in Sources */,
 				C172EC0C18C9F1E9004309CF /* TextBlockDistanceRender.cpp in Sources */,
 				E8989DFD16BD24E500732C04 /* Replay.cpp in Sources */,
 				EA106063188921FC00CB99A3 /* ParticleRenderObject.cpp in Sources */,
@@ -8253,7 +8252,7 @@
 					__DAVAENGINE_DEBUG__,
 					DAVA_FMOD,
 				);
-				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_MASTER_OBJECT_FILE = NO;
@@ -8292,7 +8291,7 @@
 					FT2_BUILD_LIBRARY,
 					DAVA_FMOD,
 				);
-				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_MASTER_OBJECT_FILE = NO;
