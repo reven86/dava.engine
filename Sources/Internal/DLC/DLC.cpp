@@ -795,7 +795,14 @@ void DLC::StepPatchFinish()
             break;
 
         default:
-            (dlcContext.remotePatchUrl == dlcContext.remotePatchFullUrl) ? PostError(DE_PATCH_ERROR_FULL) : PostError(DE_PATCH_ERROR_LITE);
+            if(!dlcContext.remotePatchUrl.empty() && dlcContext.remotePatchUrl == dlcContext.remotePatchFullUrl)
+            {
+                PostError(DE_PATCH_ERROR_FULL);
+            }
+            else
+            {
+                PostError(DE_PATCH_ERROR_LITE);
+            }
             break;
     }
 
