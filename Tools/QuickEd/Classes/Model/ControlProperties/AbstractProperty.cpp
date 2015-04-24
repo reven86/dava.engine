@@ -95,7 +95,7 @@ bool AbstractProperty::IsReplaced() const
 {
     return false; // false by default
 }
-˘
+
 AbstractProperty *AbstractProperty::GetRootProperty()
 {
     AbstractProperty *property = this;
