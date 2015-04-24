@@ -19,8 +19,6 @@ public:
     DAVA::UIControlBackground *GetBg() const;
     void CreateControlBackground();
 
-    DAVA::String GetName() const;
-    
     virtual bool HasChanges() const override;
     virtual void Serialize(PackageSerializer *serializer) const override;
 

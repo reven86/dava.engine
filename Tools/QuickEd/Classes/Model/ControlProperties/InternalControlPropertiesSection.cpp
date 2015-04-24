@@ -7,9 +7,13 @@
 
 using namespace DAVA;
 
-InternalControlPropertiesSection::InternalControlPropertiesSection(DAVA::UIControl *control, int num, const InternalControlPropertiesSection *sourceSection, eCloneType cloneType) : control(nullptr), internalControl(nullptr), internalControlNum(num)
+InternalControlPropertiesSection::InternalControlPropertiesSection(DAVA::UIControl *aControl, int num, const InternalControlPropertiesSection *sourceSection, eCloneType cloneType)
+    : SectionProperty("")
+    , control(SafeRetain(aControl))
+    , internalControl(nullptr)
+    , internalControlNum(num)
 {
-    this->control = SafeRetain(control);
+    name = control->GetInternalControlName(internalControlNum) + control->GetInternalControlDescriptions();
     
     internalControl = SafeRetain(control->GetInternalControl(num));
     if (internalControl == nullptr && sourceSection != nullptr && sourceSection->GetInternalControl() != nullptr)
@@ -64,11 +68,6 @@ void InternalControlPropertiesSection::CreateInternalControl()
             SafeRelease(prop);
         }
     }
-}
-
-DAVA::String InternalControlPropertiesSection::GetName() const
-{
-    return control->GetInternalControlName(internalControlNum) + control->GetInternalControlDescriptions();
 }
 
 bool InternalControlPropertiesSection::HasChanges() const

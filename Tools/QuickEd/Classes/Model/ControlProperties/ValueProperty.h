@@ -8,7 +8,7 @@ class SubValueProperty;
 class ValueProperty : public AbstractProperty
 {
 public:
-    ValueProperty();
+    ValueProperty(const DAVA::String &propName);
 
 protected:
     virtual ~ValueProperty();
@@ -20,9 +20,8 @@ public:
     virtual bool HasChanges() const override;
     virtual void Serialize(PackageSerializer *serializer) const override;
 
-    virtual DAVA::String GetName() const override;
+    virtual const DAVA::String &GetName() const override;
     virtual ePropertyType GetType() const override;
-    virtual eEditFrags GetEditFlag() const override{ return EF_CAN_RESET; };
 
     virtual DAVA::VariantType GetValue() const override;
     virtual void SetValue(const DAVA::VariantType &newValue) override;
@@ -50,6 +49,7 @@ private:
     DAVA::VariantType GetValueComponent(const DAVA::VariantType &value, DAVA::int32 index) const;
     
 protected:
+    DAVA::String name;
     bool replaced;
     DAVA::VariantType defaultValue;
     DAVA::Vector<SubValueProperty*> children;

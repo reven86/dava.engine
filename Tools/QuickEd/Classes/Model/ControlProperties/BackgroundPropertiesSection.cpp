@@ -7,8 +7,11 @@
 
 using namespace DAVA;
 
-BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl *aControl, int bgNum, const BackgroundPropertiesSection *sourceSection, eCloneType cloneType)
-    : control(SafeRetain(aControl)), bg(NULL), bgNum(bgNum)
+BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl *aControl, int aBgNum, const BackgroundPropertiesSection *sourceSection, eCloneType cloneType)
+    : SectionProperty(aControl->GetBackgroundComponentName(aBgNum))
+    , control(SafeRetain(aControl))
+    , bg(nullptr)
+    , bgNum(aBgNum)
 {
     bg = SafeRetain(control->GetBackgroundComponent(bgNum));
     if (bg == NULL && sourceSection != NULL && sourceSection->GetBg() != NULL)
@@ -61,12 +64,6 @@ void BackgroundPropertiesSection::CreateControlBackground()
         }
     }
 }
-
-DAVA::String BackgroundPropertiesSection::GetName() const
-{
-    return control->GetBackgroundComponentName(bgNum);
-}
-
 bool BackgroundPropertiesSection::HasChanges() const
 {
     return bg && SectionProperty::HasChanges();

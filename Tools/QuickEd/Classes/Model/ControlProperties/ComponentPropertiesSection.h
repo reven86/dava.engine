@@ -20,7 +20,6 @@ public:
     DAVA::UIComponent *GetComponent() const;
     DAVA::uint32 GetComponentType() const;
     
-    DAVA::String GetName() const;
     virtual bool CanRemove() const;
     
     virtual bool HasChanges() const override;

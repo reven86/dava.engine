@@ -16,9 +16,8 @@ protected:
 public:
     virtual void Serialize(PackageSerializer *serializer) const override;
 
-    virtual DAVA::String GetName() const override;
     virtual ePropertyType GetType() const override;
-    virtual eEditFrags GetEditFlag() const  override{ return EF_CAN_RESET; };
+    virtual DAVA::uint32 GetEditFlag() const  override{ return EF_CAN_RESET; };
 
     virtual DAVA::VariantType GetValue() const override;
 
@@ -29,7 +28,7 @@ public:
     
     virtual const EnumMap *GetEnumMap() const override;
 
-    virtual bool IsSameMember(const DAVA::InspMember *aMember) const
+    virtual bool IsSameMember(const DAVA::InspMember *aMember) const override
     {
         return (aMember == member);
     }

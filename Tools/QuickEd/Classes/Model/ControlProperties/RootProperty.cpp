@@ -12,16 +12,23 @@
 #include "ValueProperty.h"
 
 #include "Model/PackageSerializer.h"
+#include "StringProperty.h"
+#include "Base/FunctionTraits.h"
 
 using namespace DAVA;
 
 RootProperty::RootProperty(UIControl *aControl, const RootProperty *sourceProperties, eCloneType cloneType)
     : control(SafeRetain(aControl))
+    , classProperty(nullptr)
+    , customClassProperty(nullptr)
+    , prototypeProperty(nullptr)
+    , nameProperty(nullptr)
 {
+    AddBaseProperties(control, sourceProperties, cloneType);
     MakeControlPropertiesSection(control, control->GetTypeInfo(), sourceProperties, cloneType);
     MakeBackgroundPropertiesSection(control, sourceProperties, cloneType);
     MakeInternalControlPropertiesSection(control, sourceProperties, cloneType);
-    
+
     if (sourceProperties)
     {
         for (ComponentPropertiesSection *section : sourceProperties->componentProperties)
@@ -35,6 +42,11 @@ RootProperty::RootProperty(UIControl *aControl, const RootProperty *sourceProper
 
 RootProperty::~RootProperty()
 {
+    SafeRelease(classProperty);
+    SafeRelease(customClassProperty);
+    SafeRelease(prototypeProperty);
+    SafeRelease(nameProperty);
+
     SafeRelease(control);
 
     for (ControlPropertiesSection *section : controlProperties)
@@ -61,11 +73,15 @@ RootProperty::~RootProperty()
 
 int RootProperty::GetCount() const
 {
-    return (int)(controlProperties.size() + componentProperties.size() + backgroundProperties.size() + internalControlProperties.size());
+    return (int)(baseProperties.size() + controlProperties.size() + componentProperties.size() + backgroundProperties.size() + internalControlProperties.size());
 }
 
 AbstractProperty *RootProperty::GetProperty(int index) const
 {
+    if (index < (int)baseProperties.size())
+        return baseProperties[index];
+    index -= baseProperties.size();
+
     if (index < (int) controlProperties.size())
         return controlProperties[index];
     index -= controlProperties.size();
@@ -103,7 +119,7 @@ bool RootProperty::CanRemoveComponent(DAVA::uint32 componentType) const
 
 int32 RootProperty::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSection *section) const
 {
-    int32 offset = controlProperties.size();
+    int32 offset = controlProperties.size() + baseProperties.size();
     auto it = std::find(componentProperties.begin(), componentProperties.end(), section);
     if (it != componentProperties.end())
     {
@@ -307,14 +323,34 @@ void RootProperty::Serialize(PackageSerializer *serializer) const
     }
 }
 
-String RootProperty::GetName() const
+const DAVA::String & RootProperty::GetName() const
 {
-    return "ROOT";
+    static String rootName = "ROOT";
+    return rootName;
 }
 
 AbstractProperty::ePropertyType RootProperty::GetType() const
 {
     return TYPE_HEADER;
+}
+
+void RootProperty::AddBaseProperties(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType)
+{
+    ValueProperty *sourceClassProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetClassProperty();
+    classProperty = new StringProperty("Class", control, DAVA::MakeFunction(&DAVA::UIControl::GetControlClassName), NULL, dynamic_cast<StringProperty*>(sourceClassProperty), cloneType);
+    baseProperties.push_back(classProperty);
+
+    ValueProperty *sourceCustomClassProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetCustomClassProperty();
+    customClassProperty = new StringProperty("Custom class", control, DAVA::MakeFunction(&DAVA::UIControl::GetCustomControlClassName), DAVA::MakeFunction(&DAVA::UIControl::SetCustomControlClassName), dynamic_cast<StringProperty*>(sourceCustomClassProperty), cloneType);
+    baseProperties.push_back(customClassProperty);
+
+    ValueProperty *sourcePrototypeProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetPrototypeProperty();
+    prototypeProperty = new StringProperty("Prototype", control, DAVA::MakeFunction(&DAVA::UIControl::GetCustomControlClassName), NULL, dynamic_cast<StringProperty*>(sourcePrototypeProperty), cloneType);
+    baseProperties.push_back(prototypeProperty);
+
+    ValueProperty *sourceNameProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetNameProperty();
+    nameProperty = new StringProperty("Name", control, DAVA::MakeFunction(&DAVA::UIControl::GetName), DAVA::MakeFunction(&DAVA::UIControl::SetName), dynamic_cast<StringProperty*>(sourceNameProperty), cloneType);
+    baseProperties.push_back(nameProperty);
 }
 
 void RootProperty::MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const RootProperty *sourceProperties, eCloneType copyType)

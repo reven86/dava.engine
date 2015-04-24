@@ -18,7 +18,6 @@ public:
     virtual DAVA::UIControl *GetInternalControl() const;
     void CreateInternalControl();
     
-    virtual DAVA::String GetName() const;
     virtual bool HasChanges() const override;
     virtual void Serialize(PackageSerializer *serializer) const override;
 

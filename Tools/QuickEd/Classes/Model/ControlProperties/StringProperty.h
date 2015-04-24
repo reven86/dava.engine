@@ -21,19 +21,21 @@ protected:
     
 public:
     virtual void Serialize(PackageSerializer *serializer) const override;
+    virtual DAVA::uint32 GetEditFlag() const override{ return editFlags; };
 
-    virtual DAVA::String GetName() const override;
     virtual ePropertyType GetType() const override;
     virtual DAVA::VariantType GetValue() const override;
 
+public:
+    void SetEditFlag(DAVA::uint32 newEditFlags);
 protected:
     virtual void ApplyValue(const DAVA::VariantType &value);
 
 protected:
-    DAVA::String name;
     DAVA::UIControl *object;
     Getter getter;
     Setter setter;
+    DAVA::uint32 editFlags;
 };
 
 #endif //__UI_EDITOR_CUSTOM_PROPERTY__

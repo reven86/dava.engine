@@ -6,16 +6,17 @@
 
 using namespace DAVA;
 
-ValueProperty::ValueProperty()
-    : replaced(false)
+ValueProperty::ValueProperty(const DAVA::String &propName)
+    : name(propName)
+    , replaced(false)
 {
 
 }
 
 ValueProperty::~ValueProperty()
 {
-    for (auto it = children.begin(); it != children.end(); ++it)
-        (*it)->Release();
+    for (auto child : children)
+        child->Release();
     children.clear();
 }
 
@@ -38,9 +39,9 @@ void ValueProperty::Serialize(PackageSerializer *serializer) const
 {
 }
 
-String ValueProperty::GetName() const
+const DAVA::String &ValueProperty::GetName() const
 {
-    return "";
+    return name;
 }
 
 ValueProperty::ePropertyType ValueProperty::GetType() const

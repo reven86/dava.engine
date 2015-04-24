@@ -19,7 +19,7 @@ public:
     virtual int GetCount() const override;
     virtual AbstractProperty *GetProperty(int index) const override;
     virtual void Serialize(PackageSerializer *serializer) const override {};
-    virtual DAVA::String GetName() const;
+    virtual const DAVA::String &GetName() const;
     virtual ePropertyType GetType() const;
     virtual DAVA::VariantType GetValue() const;
     virtual void SetValue(const DAVA::VariantType &newValue);

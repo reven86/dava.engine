@@ -8,7 +8,9 @@
 using namespace DAVA;
 
 ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl *aControl, DAVA::UIComponent::eType type, const ComponentPropertiesSection *sourceSection, eCloneType cloneType)
-    : control(SafeRetain(aControl)), component(nullptr)
+    : SectionProperty("")
+    , control(SafeRetain(aControl))
+    , component(nullptr)
 {
     component = UIComponent::CreateByType(type);
     DVASSERT(component);
@@ -17,6 +19,8 @@ ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl *aControl
     
     if (component)
     {
+        name = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(component->GetType());
+
         const InspInfo *insp = component->GetTypeInfo();
         for (int j = 0; j < insp->MembersCount(); j++)
         {
@@ -44,11 +48,6 @@ UIComponent *ComponentPropertiesSection::GetComponent() const
 DAVA::uint32 ComponentPropertiesSection::GetComponentType() const
 {
     return component->GetType();
-}
-
-DAVA::String ComponentPropertiesSection::GetName() const
-{
-    return String(GlobalEnumMap<UIComponent::eType>::Instance()->ToString(component->GetType()));
 }
 
 bool ComponentPropertiesSection::CanRemove() const

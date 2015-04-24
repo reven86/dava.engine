@@ -26,6 +26,11 @@ protected:
 public:
     virtual int GetCount() const override;
     virtual AbstractProperty *GetProperty(int index) const override;
+
+    ValueProperty *GetClassProperty() const { return classProperty; }
+    ValueProperty *GetCustomClassProperty() const { return customClassProperty; }
+    ValueProperty *GetPrototypeProperty() const { return prototypeProperty; }
+    ValueProperty *GetNameProperty() const { return nameProperty; }
     
     ControlPropertiesSection *GetControlPropertiesSection(const DAVA::String &name) const;
 
@@ -50,16 +55,23 @@ public:
     
     virtual void Serialize(PackageSerializer *serializer) const override;
 
-    virtual DAVA::String GetName() const;
+    virtual const DAVA::String &GetName() const;
     virtual ePropertyType GetType() const;
 
 private:
-    void MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const RootProperty *sourceProperties, eCloneType copyType);
-    void MakeBackgroundPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType copyType);
-    void MakeInternalControlPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType copyType);
+    void AddBaseProperties(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType);
+    void MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const RootProperty *sourceProperties, eCloneType cloneType);
+    void MakeBackgroundPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType);
+    void MakeInternalControlPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType);
 private:
     DAVA::UIControl *control;
 
+    ValueProperty *classProperty;
+    ValueProperty *customClassProperty;
+    ValueProperty *prototypeProperty;
+    ValueProperty *nameProperty;
+
+    DAVA::Vector<ValueProperty *> baseProperties;
     DAVA::Vector<ControlPropertiesSection*> controlProperties;
     DAVA::Vector<ComponentPropertiesSection*> componentProperties;
     DAVA::Vector<BackgroundPropertiesSection*> backgroundProperties;

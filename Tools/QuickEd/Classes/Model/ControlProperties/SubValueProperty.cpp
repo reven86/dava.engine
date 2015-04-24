@@ -26,7 +26,7 @@ AbstractProperty *SubValueProperty::GetProperty(int index) const
     return NULL;
 }
 
-String SubValueProperty::GetName() const
+const DAVA::String &SubValueProperty::GetName() const
 {
     return name;
 }

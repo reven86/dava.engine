@@ -4,7 +4,8 @@
 
 using namespace DAVA;
 
-SectionProperty::SectionProperty()
+SectionProperty::SectionProperty(const DAVA::String &sectionName)
+    : name(sectionName)
 {
     
 }
@@ -45,12 +46,17 @@ void SectionProperty::Serialize(PackageSerializer *serializer) const
     }
 }
 
+const DAVA::String & SectionProperty::GetName() const
+{
+    return name;
+}
+
 ValueProperty *SectionProperty::FindProperty(const DAVA::InspMember *member) const
 {
-    for (auto it = children.begin(); it != children.end(); ++it)
+    for (auto child : children)
     {
-        if ((*it)->IsSameMember(member))
-            return *it;
+        if (child->IsSameMember(member))
+            return child;
     }
-    return NULL;
+    return nullptr;
 }

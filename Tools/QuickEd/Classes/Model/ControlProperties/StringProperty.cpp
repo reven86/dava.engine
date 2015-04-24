@@ -1,8 +1,9 @@
 #include "StringProperty.h"
 
 StringProperty::StringProperty(const DAVA::String &propName, DAVA::UIControl *anObject, const Getter &aGetter, const Setter &aSetter, const StringProperty *sourceProperty, eCloneType cloneType)
+    : ValueProperty(propName)
+    , editFlags(0)
 {
-    name = propName;
     object = SafeRetain(anObject);
     getter = aGetter;
     setter = aSetter;
@@ -23,11 +24,6 @@ void StringProperty::Serialize(PackageSerializer *serializer) const
 
 }
 
-DAVA::String StringProperty::GetName() const
-{
-    return name;
-}
-
 AbstractProperty::ePropertyType StringProperty::GetType() const
 {
     return TYPE_VARIANT;
@@ -40,6 +36,11 @@ DAVA::VariantType StringProperty::GetValue() const
         return DAVA::VariantType(getter(object));
     }
     return DAVA::VariantType();
+}
+
+void StringProperty::SetEditFlag(DAVA::uint32 newEditFlags)
+{
+    editFlags = newEditFlags;
 }
 
 void StringProperty::ApplyValue(const DAVA::VariantType &value)

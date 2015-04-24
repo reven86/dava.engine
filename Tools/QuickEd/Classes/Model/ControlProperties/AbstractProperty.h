@@ -46,9 +46,9 @@ public:
     virtual bool HasChanges() const;
     virtual void Serialize(PackageSerializer *serializer) const = 0;
 
-    virtual DAVA::String GetName() const = 0;
+    virtual const DAVA::String &GetName() const = 0;
     virtual ePropertyType GetType() const = 0;
-    virtual eEditFrags GetEditFlag() const { return EF_NONE; };
+    virtual DAVA::uint32 GetEditFlag() const { return EF_NONE; };
 
     bool IsReadOnly() const;
     void SetReadOnly();
