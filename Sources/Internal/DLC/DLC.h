@@ -156,7 +156,9 @@ protected:
         FilePath remoteMetaStorePath;
 
         String remotePatchFullUrl;
+        uint64 remotePatchFullSize;
         String remotePatchLiteUrl;
+        uint64 remotePatchLiteSize;
         String remoteMetaUrl;
 
         String remotePatchUrl;
