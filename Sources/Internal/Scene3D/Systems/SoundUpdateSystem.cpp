@@ -58,6 +58,8 @@ SoundUpdateSystem::SoundUpdateSystem(Scene * scene)
 
 SoundUpdateSystem::~SoundUpdateSystem()
 {
+    DVASSERT(sounds.size() == 0);
+    pausedEvents.clear();
 }
 
 void SoundUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
@@ -130,6 +132,8 @@ void SoundUpdateSystem::AddEntity(Entity * entity)
             AddAutoTriggerSound(entity, sc->GetSoundEvent(i));
         }
     }
+    
+    sounds.push_back(entity);
 }
 
 void SoundUpdateSystem::RemoveEntity(Entity * entity)
@@ -145,6 +149,7 @@ void SoundUpdateSystem::RemoveEntity(Entity * entity)
     }
 
     RemoveAutoTriggerSound(entity);
+    FindAndRemoveExchangingWithLast(sounds, entity);
 }
 
 void SoundUpdateSystem::AddAutoTriggerSound(Entity * soundOwner, SoundEvent * sound)
@@ -171,5 +176,47 @@ void SoundUpdateSystem::RemoveAutoTriggerSound(Entity * soundOwner, SoundEvent *
         }
     }
 }
+    
+void SoundUpdateSystem::Deactivate()
+{
+    DVASSERT(pausedEvents.size() == 0);
+    
+    for(auto entity: sounds)
+    {
+        auto sound = DAVA::GetSoundComponent(entity);
+        DVASSERT(sound);
+        
+        auto eventCount = sound->GetEventsCount();
+        for(auto i = 0; i < eventCount; ++i)
+        {
+            auto soundEvent = sound->GetSoundEvent(i);
+            if(soundEvent->IsActive())
+            {
+                auto flags = sound->GetSoundEventFlags(i);
+                if((flags & DAVA::SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER) == DAVA::SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER)
+                {
+                    soundEvent->Stop();
+                }
+                else
+                {
+                    soundEvent->SetPaused(true);
+                    pausedEvents.push_back(soundEvent);
+                }
+            }
+        }
+    }
+}
+
+void SoundUpdateSystem::Activate()
+{
+    for(auto soundEvent: pausedEvents)
+    {
+        soundEvent->SetPaused(false);
+    }
+    
+    pausedEvents.clear();
+}
+
+
 
 };
