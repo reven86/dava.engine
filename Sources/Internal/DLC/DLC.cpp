@@ -87,16 +87,10 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
 
     dlcContext.downloadInfoStorePath = workingDir + "Download.info";
     dlcContext.stateInfoStorePath = workingDir + "State.info";
-    dlcContext.flagsStorePath = workingDir + "Flags.info";
     dlcContext.prevState = 0;
-    dlcContext.prevFlags = 0;
 
     ReadUint32(dlcContext.stateInfoStorePath, dlcContext.prevState);
     ReadUint32(dlcContext.remoteVerStotePath, dlcContext.remoteVer);
-    ReadUint32(dlcContext.flagsStorePath, dlcContext.prevFlags);
-
-    // remember new flags
-    WriteUint32(dlcContext.flagsStorePath, static_cast<uint32>(forceFullUpdate));
 
     // FSM variables
     fsmAutoReady = false;
@@ -188,8 +182,8 @@ void DLC::FSM(DLCEvent event)
 
                 case EVENT_CHECK_START:
                     // if last time stopped on the patching state and patch file exists - continue patching
-                    if( DS_PATCHING == dlcContext.prevState &&
-                        static_cast<uint32>(dlcContext.forceFullUpdate) == dlcContext.prevFlags &&
+                    if( !dlcContext.forceFullUpdate &&
+                        DS_PATCHING == dlcContext.prevState &&
                         dlcContext.remotePatchStorePath.Exists() &&
                         dlcContext.remoteVerStotePath.Exists())
                     {
@@ -518,6 +512,8 @@ void DLC::StepCheckInfoCancel()
 
 void DLC::StepCheckPatchBegin()
 {
+    dlcContext.remotePatchFullSize = 0;
+    dlcContext.remotePatchLiteSize = 0;
     dlcContext.remotePatchFullUrl = dlcContext.remoteUrl + MakePatchUrl(0, dlcContext.remoteVer);
     dlcContext.remotePatchLiteUrl = dlcContext.remoteUrl + MakePatchUrl(dlcContext.localVer, dlcContext.remoteVer);
 
@@ -545,20 +541,23 @@ void DLC::StepCheckPatchFinish(const uint32 &id, const DownloadStatus &status)
 
             // when lite id finishing, full id should be already finished
             DVASSERT(DL_FINISHED == statusFull);
-    
+
+            DownloadManager::Instance()->GetTotal(dlcContext.remoteLiteSizeDownloadId, dlcContext.remotePatchLiteSize);
+            DownloadManager::Instance()->GetTotal(dlcContext.remoteFullSizeDownloadId, dlcContext.remotePatchFullSize);
+
             if(DLE_NO_ERROR == downloadErrorLite)
             {
                 dlcContext.remotePatchUrl = dlcContext.remotePatchLiteUrl;
-                DownloadManager::Instance()->GetTotal(dlcContext.remoteLiteSizeDownloadId, dlcContext.remotePatchSize);
+                dlcContext.remotePatchSize = dlcContext.remotePatchLiteSize;
 
                 PostEvent(EVENT_CHECK_OK);
             }
             else
             {
-                if(DL_FINISHED == statusFull && DLE_NO_ERROR == downloadErrorFull)
+                if(DLE_NO_ERROR == downloadErrorFull)
                 {
                     dlcContext.remotePatchUrl = dlcContext.remotePatchFullUrl;
-                    DownloadManager::Instance()->GetTotal(dlcContext.remoteFullSizeDownloadId, dlcContext.remotePatchSize);
+                    dlcContext.remotePatchSize = dlcContext.remotePatchFullSize;
 
                     PostEvent(EVENT_CHECK_OK);
                 }
@@ -662,9 +661,13 @@ void DLC::StepDownloadPatchBegin()
 
         lastSize = atoi(lastSizeStr.c_str());
 
-        // last url is same as we are trying to download now
-        if(lastUrl == dlcContext.remotePatchUrl && lastSize == dlcContext.remotePatchSize)
+        // if last url is same as current full or lite url we should continue downloading it
+        if( (lastUrl == dlcContext.remotePatchFullUrl && lastSize == dlcContext.remotePatchFullSize) ||
+            (lastUrl == dlcContext.remotePatchLiteUrl && lastSize == dlcContext.remotePatchLiteSize))
         {
+            dlcContext.remotePatchUrl = lastUrl;
+            dlcContext.remotePatchSize = lastSize;
+
             // now we can resume last download
             donwloadType = RESUMED;
         }
