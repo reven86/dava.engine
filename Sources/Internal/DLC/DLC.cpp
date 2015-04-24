@@ -87,10 +87,16 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
 
     dlcContext.downloadInfoStorePath = workingDir + "Download.info";
     dlcContext.stateInfoStorePath = workingDir + "State.info";
+    dlcContext.flagsStorePath = workingDir + "Flags.info";
     dlcContext.prevState = 0;
+    dlcContext.prevFlags = 0;
 
     ReadUint32(dlcContext.stateInfoStorePath, dlcContext.prevState);
     ReadUint32(dlcContext.remoteVerStotePath, dlcContext.remoteVer);
+    ReadUint32(dlcContext.flagsStorePath, dlcContext.prevFlags);
+
+    // remember new flags
+    WriteUint32(dlcContext.flagsStorePath, static_cast<uint32>(forceFullUpdate));
 
     // FSM variables
     fsmAutoReady = false;
@@ -182,7 +188,10 @@ void DLC::FSM(DLCEvent event)
 
                 case EVENT_CHECK_START:
                     // if last time stopped on the patching state and patch file exists - continue patching
-                    if(DS_PATCHING == dlcContext.prevState && dlcContext.remotePatchStorePath.Exists() && dlcContext.remoteVerStotePath.Exists())
+                    if( DS_PATCHING == dlcContext.prevState &&
+                        static_cast<uint32>(dlcContext.forceFullUpdate) == dlcContext.prevFlags &&
+                        dlcContext.remotePatchStorePath.Exists() &&
+                        dlcContext.remoteVerStotePath.Exists())
                     {
                         dlcContext.prevState = 0;
                         dlcState = DS_PATCHING;
