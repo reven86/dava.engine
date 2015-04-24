@@ -39,6 +39,7 @@ namespace Settings
 
     static const DAVA::FastName General_DesinerName("General/DesignerName");
     static const DAVA::FastName General_RecentFilesCount("General/RecentFilesCount");
+    static const DAVA::FastName General_RecentProjectsCount("General/RecentProjectsCount");
 	static const DAVA::FastName General_PreviewEnabled("General/PreviewEnabled");
     static const DAVA::FastName General_OpenByDBClick("General/OpenByDoubleClick");
     static const DAVA::FastName General_CompressionQuality("General/CompressionQuality");
@@ -94,6 +95,7 @@ namespace Settings
 	static const DAVA::FastName Internal_CubemapLastProjDir("Internal/CubemapLastProjDir");
     static const DAVA::FastName Internal_ParticleLastEmitterDir("Internal/ParticleLastEmitterDir");
 	static const DAVA::FastName Internal_RecentFiles("Internal/RecentFiles");
+    static const DAVA::FastName Internal_RecentProjects("Internal/RecentProjects");
     static const DAVA::FastName Internal_MaterialsLightViewMode("Internal/MaterialsLightViewMode");
     static const DAVA::FastName Internal_MaterialsShowLightmapCanvas("Internal/MaterialsShowLightmapCanvas");
     static const DAVA::FastName Internal_LicenceAccepted("Internal/LicenceAccepted");
