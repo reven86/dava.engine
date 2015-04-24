@@ -806,6 +806,8 @@
 		4F34E1C61A234DF8000681BB /* Spinlock.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F34E1C21A234DF8000681BB /* Spinlock.h */; };
 		4F34E1C71A234DF8000681BB /* Spinlock.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F34E1C21A234DF8000681BB /* Spinlock.h */; };
 		4F34E1C81A234DF8000681BB /* Spinlock.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F34E1C21A234DF8000681BB /* Spinlock.h */; };
+		4F503B9D1AEA702B005C3F89 /* MemoryManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D9E1A92446700BDB8A2 /* MemoryManager.cpp */; };
+		4F503B9E1AEA702C005C3F89 /* MemoryManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D9E1A92446700BDB8A2 /* MemoryManager.cpp */; };
 		4F53ED2419A23BE100D3869D /* DLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7E6C58E198255BF00B96D1A /* DLC.cpp */; };
 		4F53ED2519A23BE100D3869D /* DLC.h in Headers */ = {isa = PBXBuildFile; fileRef = D7E6C58F198255BF00B96D1A /* DLC.h */; };
 		4F53ED2619A23BE200D3869D /* DLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7E6C58E198255BF00B96D1A /* DLC.cpp */; };
@@ -7057,6 +7059,7 @@
 				176DEB16174B5561007A983B /* UIHierarchyCell.cpp in Sources */,
 				176DEB17174B5561007A983B /* UIHierarchyNode.cpp in Sources */,
 				176DEB18174B5561007A983B /* UIHoleTransition.cpp in Sources */,
+				4F503B9E1AEA702C005C3F89 /* MemoryManager.cpp in Sources */,
 				176DEB19174B5561007A983B /* UIJoypad.cpp in Sources */,
 				11CB615219C3391B00B48A92 /* AnimationData.cpp in Sources */,
 				176DEB1A174B5561007A983B /* UIList.cpp in Sources */,
@@ -7680,6 +7683,7 @@
 				CC0D7B3A1A76055A00309408 /* PathComponent.cpp in Sources */,
 				E898A1C016BD265400732C04 /* Replay.cpp in Sources */,
 				641A61DB18CDC2F4003359E7 /* FoliageSystem.cpp in Sources */,
+				4F503B9D1AEA702B005C3F89 /* MemoryManager.cpp in Sources */,
 				E898A1C116BD265400732C04 /* Stats.cpp in Sources */,
 				E898A1C516BD265400732C04 /* Component.cpp in Sources */,
 				E898A1C616BD265400732C04 /* SceneSystem.cpp in Sources */,
