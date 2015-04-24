@@ -286,6 +286,12 @@ public:
     
     void Input(UIEvent *event);
     
+    /**
+        \brief This functions activate and deactivate scene sustems
+     */
+    virtual void Activate();
+    virtual void Deactivate();
+
     
 protected:
     void UpdateLights();
