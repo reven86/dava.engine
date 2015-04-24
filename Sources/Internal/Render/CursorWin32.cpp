@@ -31,7 +31,7 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include "Render/Cursor.h"
-#include "Platform/TemplateWin32/CorePlatformWin32.h"
+#include "Platform/TemplateWin32/CoreWin32PlatformBase.h"
 
 void DAVA::Cursor::SetCursorPinning(bool pin)
 {
@@ -39,7 +39,7 @@ void DAVA::Cursor::SetCursorPinning(bool pin)
 
     ShowSystemCursor(!pin);
 
-    CoreWin32Platform * winCore = static_cast<CoreWin32Platform *>(Core::Instance());
+    CoreWin32PlatformBase * winCore = static_cast<CoreWin32PlatformBase *>(Core::Instance());
     if (pin)
     {
         lastCursorPosition = winCore->GetCursorPosition();
