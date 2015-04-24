@@ -2,8 +2,8 @@
 #define __UI_EDITOR_CUSTOM_PROPERTY__
 
 #include "ValueProperty.h"
-#include <Base\Function.h>
-#include <UI\UIControl.h>
+#include <Base/Function.h>
+#include <UI/UIControl.h>
 
 class SubValueProperty;
 

@@ -22,17 +22,15 @@ public:
     };
     
 private:
-    ControlNode(DAVA::UIControl *control, RootProperty *propertiesRoot, eCreationType creationType);
+    ControlNode(DAVA::UIControl *control);
+    ControlNode(ControlNode *node);
+    ControlNode(ControlPrototype *prototype, eCreationType creationType);
     virtual ~ControlNode();
 
 public:
     static ControlNode *CreateFromControl(DAVA::UIControl *control);
-    
     static ControlNode *CreateFromPrototype(ControlNode *sourceNode, PackageRef *nodePackage);
     static ControlNode *CreateFromPrototypeChild(ControlNode *sourceNode, PackageRef *nodePackage);
-    
-private:
-    static ControlNode *CreateFromPrototypeImpl(ControlNode *sourceNode, PackageRef *nodePackage, bool root);
 
 public:
     ControlNode *Clone();

@@ -10,6 +10,7 @@ class InternalControlPropertiesSection;
 class PackageSerializer;
 class PropertyListener;
 class ValueProperty;
+class ControlNode;
 
 namespace DAVA
 {
@@ -19,7 +20,7 @@ namespace DAVA
 class RootProperty : public AbstractProperty
 {
 public:
-    RootProperty(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType);
+    RootProperty(ControlNode *node, const RootProperty *sourceProperties, eCloneType cloneType);
 protected:
     virtual ~RootProperty();
     
@@ -64,7 +65,7 @@ private:
     void MakeBackgroundPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType);
     void MakeInternalControlPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType);
 private:
-    DAVA::UIControl *control;
+    ControlNode *node;
 
     ValueProperty *classProperty;
     ValueProperty *customClassProperty;

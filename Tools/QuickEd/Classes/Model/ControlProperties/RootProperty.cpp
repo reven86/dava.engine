@@ -1,7 +1,5 @@
 #include "RootProperty.h"
 
-#include "UI/UIControl.h"
-
 #include "ControlPropertiesSection.h"
 #include "ComponentPropertiesSection.h"
 
@@ -13,28 +11,32 @@
 
 #include "Model/PackageSerializer.h"
 #include "StringProperty.h"
+
+#include "../PackageHierarchy/ControlNode.h"
+
 #include "Base/FunctionTraits.h"
+#include "UI/UIControl.h"
 
 using namespace DAVA;
 
-RootProperty::RootProperty(UIControl *aControl, const RootProperty *sourceProperties, eCloneType cloneType)
-    : control(SafeRetain(aControl))
+RootProperty::RootProperty(ControlNode *_node, const RootProperty *sourceProperties, eCloneType cloneType)
+    : node(_node)
     , classProperty(nullptr)
     , customClassProperty(nullptr)
     , prototypeProperty(nullptr)
     , nameProperty(nullptr)
 {
-    AddBaseProperties(control, sourceProperties, cloneType);
-    MakeControlPropertiesSection(control, control->GetTypeInfo(), sourceProperties, cloneType);
-    MakeBackgroundPropertiesSection(control, sourceProperties, cloneType);
-    MakeInternalControlPropertiesSection(control, sourceProperties, cloneType);
+    AddBaseProperties(node->GetControl(), sourceProperties, cloneType);
+    MakeControlPropertiesSection(node->GetControl(), node->GetControl()->GetTypeInfo(), sourceProperties, cloneType);
+    MakeBackgroundPropertiesSection(node->GetControl(), sourceProperties, cloneType);
+    MakeInternalControlPropertiesSection(node->GetControl(), sourceProperties, cloneType);
 
     if (sourceProperties)
     {
         for (ComponentPropertiesSection *section : sourceProperties->componentProperties)
         {
             UIComponent::eType type = (UIComponent::eType) section->GetComponent()->GetType();
-            ScopedPtr<ComponentPropertiesSection> newSection(new ComponentPropertiesSection(control, type, section, cloneType));
+            ScopedPtr<ComponentPropertiesSection> newSection(new ComponentPropertiesSection(node->GetControl(), type, section, cloneType));
             AddComponentPropertiesSection(newSection);
         }
     }
@@ -42,12 +44,12 @@ RootProperty::RootProperty(UIControl *aControl, const RootProperty *sourceProper
 
 RootProperty::~RootProperty()
 {
+    node = nullptr; // don't release, just week ptr
+    
     SafeRelease(classProperty);
     SafeRelease(customClassProperty);
     SafeRelease(prototypeProperty);
     SafeRelease(nameProperty);
-
-    SafeRelease(control);
 
     for (ControlPropertiesSection *section : controlProperties)
     {
@@ -151,7 +153,7 @@ ComponentPropertiesSection *RootProperty::FindComponentPropertiesSection(DAVA::u
 
 ComponentPropertiesSection *RootProperty::AddComponentPropertiesSection(DAVA::uint32 componentType)
 {
-    ComponentPropertiesSection *section = new ComponentPropertiesSection(control, (UIComponent::eType) componentType, nullptr, CT_INHERIT);
+    ComponentPropertiesSection *section = new ComponentPropertiesSection(node->GetControl(), (UIComponent::eType) componentType, nullptr, CT_INHERIT);
     AddComponentPropertiesSection(section);
     section->Release();
     return section;

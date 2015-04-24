@@ -10,14 +10,58 @@
 
 using namespace DAVA;
 
-ControlNode::ControlNode(UIControl *control, RootProperty *_propertiesRoot, eCreationType creationType)
+ControlNode::ControlNode(UIControl *control)
     : ControlsContainerNode(nullptr)
     , control(SafeRetain(control))
-    , propertiesRoot(SafeRetain(_propertiesRoot))
+    , propertiesRoot(nullptr)
     , prototype(nullptr)
-    , creationType(creationType)
+    , creationType(CREATED_FROM_CLASS)
     , readOnly(false)
 {
+    propertiesRoot = new RootProperty(this, nullptr, AbstractProperty::CT_COPY);
+}
+
+ControlNode::ControlNode(ControlNode *node)
+    : ControlsContainerNode(nullptr)
+    , control(nullptr)
+    , propertiesRoot(nullptr)
+    , prototype(SafeRetain(node->prototype))
+    , creationType(node->creationType)
+    , readOnly(false)
+{
+    control = ObjectFactory::Instance()->New<UIControl>(node->control->GetControlClassName());
+    control->SetCustomControlClassName(node->control->GetCustomControlClassName());
+    
+    propertiesRoot = new RootProperty(this, node->propertiesRoot, RootProperty::CT_COPY);
+    
+    for (ControlNode *sourceChild : nodes)
+    {
+        RefPtr<ControlNode> childNode(sourceChild->Clone());
+        Add(childNode.Get());
+    }
+}
+
+ControlNode::ControlNode(ControlPrototype *_prototype, eCreationType _creationType)
+    : ControlsContainerNode(nullptr)
+    , control(nullptr)
+    , propertiesRoot(nullptr)
+    , prototype(SafeRetain(_prototype))
+    , creationType(_creationType)
+    , readOnly(false)
+{
+    control = ObjectFactory::Instance()->New<UIControl>(prototype->GetControlNode()->GetControl()->GetControlClassName());
+    control->SetCustomControlClassName(prototype->GetControlNode()->GetControl()->GetCustomControlClassName());
+
+    propertiesRoot = new RootProperty(this, prototype->GetControlNode()->GetPropertiesRoot(), RootProperty::CT_INHERIT);
+    
+    prototype->GetControlNode()->AddControlToInstances(this);
+
+    for (ControlNode *sourceChild : prototype->GetControlNode()->nodes)
+    {
+        ScopedPtr<ControlPrototype> childPrototype(new ControlPrototype(sourceChild, prototype->GetPackageRef()));
+        ScopedPtr<ControlNode> childNode(new ControlNode(childPrototype, CREATED_FROM_PROTOTYPE_CHILD));
+        Add(childNode);
+    }
 }
 
 ControlNode::~ControlNode()
@@ -38,63 +82,24 @@ ControlNode::~ControlNode()
 
 ControlNode *ControlNode::CreateFromControl(DAVA::UIControl *control)
 {
-    RootProperty *propertiesRoot = new RootProperty(control, nullptr, AbstractProperty::CT_COPY);
-    ControlNode *node = new ControlNode(control, propertiesRoot, CREATED_FROM_CLASS);
-    SafeRelease(propertiesRoot);
-    return node;
+    return new ControlNode(control);
 }
 
 ControlNode *ControlNode::CreateFromPrototype(ControlNode *sourceNode, PackageRef *nodePackage)
 {
-    ControlNode *node = CreateFromPrototypeImpl(sourceNode, nodePackage, true);
-    return node;
+    ScopedPtr<ControlPrototype> prototype(new ControlPrototype(sourceNode, nodePackage));
+    return new ControlNode(prototype, CREATED_FROM_PROTOTYPE);
 }
 
 ControlNode *ControlNode::CreateFromPrototypeChild(ControlNode *sourceNode, PackageRef *nodePackage)
 {
-    ControlNode *node = CreateFromPrototypeImpl(sourceNode, nodePackage, false);
-    return node;
-}
-
-ControlNode *ControlNode::CreateFromPrototypeImpl(ControlNode *sourceNode, PackageRef *nodePackage, bool root)
-{
-    RefPtr<UIControl> newControl(ObjectFactory::Instance()->New<UIControl>(sourceNode->GetControl()->GetControlClassName()));
-    newControl->SetCustomControlClassName(sourceNode->GetControl()->GetCustomControlClassName());
-    
-    RefPtr<RootProperty> propertiesRoot(new RootProperty(newControl.Get(),
-                                                             sourceNode->GetPropertiesRoot(), RootProperty::CT_INHERIT));
-    
-    ControlNode *node = new ControlNode(newControl.Get(), propertiesRoot.Get(), root ? CREATED_FROM_PROTOTYPE : CREATED_FROM_PROTOTYPE_CHILD);
-    node->prototype = new ControlPrototype(sourceNode, nodePackage);
-    sourceNode->AddControlToInstances(node);
-
-    for (ControlNode *sourceChild : sourceNode->nodes)
-    {
-        RefPtr<ControlNode> childNode(CreateFromPrototypeImpl(sourceChild, nodePackage, false));
-        node->Add(childNode.Get());
-    }
-    
-    return node;
-    
+    ScopedPtr<ControlPrototype> prototype(new ControlPrototype(sourceNode, nodePackage));
+    return new ControlNode(prototype, CREATED_FROM_PROTOTYPE_CHILD);
 }
 
 ControlNode *ControlNode::Clone()
 {
-    RefPtr<UIControl> newControl(ObjectFactory::Instance()->New<UIControl>(control->GetControlClassName()));
-    newControl->SetCustomControlClassName(control->GetCustomControlClassName());
-
-    RefPtr<RootProperty> newPropRoot(new RootProperty(newControl.Get(), propertiesRoot, RootProperty::CT_COPY));
-
-    ControlNode *node = new ControlNode(newControl.Get(), newPropRoot.Get(), creationType);
-    node->prototype = SafeRetain(prototype);
-
-    for (ControlNode *sourceChild : nodes)
-    {
-        RefPtr<ControlNode> childNode(sourceChild->Clone());
-        node->Add(childNode.Get());
-    }
-
-    return node;
+    return new ControlNode(this);
 }
 
 void ControlNode::Add(ControlNode *node)
