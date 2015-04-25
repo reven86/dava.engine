@@ -92,39 +92,35 @@ LocalNotificationText *const LocalNotificationController::CreateNotificationText
 bool LocalNotificationController::Remove(LocalNotification *notification)
 {
 	LockGuard<Mutex> guard(notificationsListMutex);
-    if (!notificationsList.empty())
-    {
-        auto end = notificationsList.end();
-        for (auto it = notificationsList.begin(); it != end; ++it)
-        {
-        	if (notification == (*it))
-        	{
-        		it = notificationsList.erase(it);
-        		notification->Release();
-        		return true;
-        	}
-        }
-    }
 
+    auto endIt = end(notificationsList);
+    auto it = find(begin(notificationsList), endIt, notification);
+    if (endIt != it)
+    {
+        auto note = *it;
+        notificationsList.erase(it);
+        note->Release();
+        return true;
+    }
     return false;
 }
 
 bool LocalNotificationController::RemoveById(const String &notificationId)
 {
     LockGuard<Mutex> guard(notificationsListMutex);
-    if (!notificationsList.empty())
+
+    auto endIt = end(notificationsList);
+    auto it = find_if(begin(notificationsList), endIt, [&notificationId](LocalNotification* note)->bool
     {
-        auto end = notificationsList.end();
-        for (auto it = notificationsList.begin(); it != end; ++it)
-        {
-            if (0 == (*it)->GetId().compare(notificationId))
-            {
-                auto noteToRelease = *it;
-                it = notificationsList.erase(it);
-                noteToRelease->Release();
-                return true;
-            }
-        }
+        return 0 == note->GetId().compare(notificationId);
+    });
+    
+    if (it != endIt)
+    {
+        auto noteToRelease = *it;
+        it = notificationsList.erase(it);
+        noteToRelease->Release();
+        return true;
     }
 
     return false;
