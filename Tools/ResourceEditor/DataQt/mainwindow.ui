@@ -438,6 +438,7 @@
     <addaction name="actionCreateTestSkinnedObject"/>
     <addaction name="actionDeviceList"/>
     <addaction name="actionImageSplitterForNormals"/>
+    <addaction name="actionReplaceTextureMipmap"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -2117,6 +2118,11 @@
   <action name="actionImageSplitterForNormals">
    <property name="text">
     <string>ImageSplitter for Normals</string>
+   </property>
+  </action>
+  <action name="actionReplaceTextureMipmap">
+   <property name="text">
+    <string>Replace Textures mipmaps</string>
    </property>
   </action>
   <action name="action22">
