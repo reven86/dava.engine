@@ -40,13 +40,13 @@ elseif ( MACOS )
     set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS YES )
 
 elseif ( WIN32 )
-    #dynamic runtime on windows store
-    if (CMAKE_SYSTEM_NAME STREQUAL WindowsStore OR CMAKE_SYSTEM_NAME STREQUAL WindowsPhone)
-	    set ( WINSTORE 1 )
+    #specify compiler options for windows store platform
+    if ( WINDOWS_STORE OR WINDOWS_PHONE )
+		#dynamic runtime on windows store
 	    set ( CRT_TYPE_DEBUG "/MDd" )
 		set ( CRT_TYPE_RELEASE "/MD" )
-		#consume windows runtime extension (C++/CX)
-		set ( ADDITIONAL_CXX_FLAGS "/ZW")
+		#consume windows runtime extension (C++/CX) and supress warning C4458
+		set ( ADDITIONAL_CXX_FLAGS "/ZW /wd4458")
 	else ()
 	    set ( CRT_TYPE_DEBUG "/MTd" )
 		set ( CRT_TYPE_RELEASE "/MT" )
