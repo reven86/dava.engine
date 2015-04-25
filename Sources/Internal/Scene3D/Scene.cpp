@@ -1165,5 +1165,21 @@ void Scene::HandleEvent(Observable * observable)
         SafeDelete(staticOcclusionDebugDrawSystem);
     }
 }
+    
+void Scene::Activate()
+{
+    for(auto system : systems)
+    {
+        system->Activate();
+    }
+}
+
+void Scene::Deactivate()
+{
+    for(auto system : systems)
+    {
+        system->Deactivate();
+    }
+}
 
 };

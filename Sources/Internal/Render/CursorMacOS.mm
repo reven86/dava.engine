@@ -104,18 +104,10 @@ DAVA::Vector2 Cursor::GetPosition()
     return static_cast<CoreMacOSPlatform *>(CoreMacOSPlatform::Instance())->GetMousePosition();
 }
     
-void Cursor::MoveToCenterOfWindow()
+void Cursor::SetCursorPinning(bool pin)
 {
-#ifdef __DAVAENGINE_NPAPI__
-	// Just position to the center of the main screen.
-    NSScreen *mainScreen = [NSScreen mainScreen];
-	NSRect wndRect = [mainScreen visibleFrame];
-#else
-    NSRect wndRect =[[[NSApplication sharedApplication] mainWindow] frame];
-#endif
-
-    CGPoint center = {wndRect.origin.x + wndRect.size.width / 2, wndRect.origin.y + wndRect.size.height / 2};
-    CGWarpMouseCursorPosition(center);
+    ShowSystemCursor(!pin);
+    CGAssociateMouseAndMouseCursorPosition(!pin);
 }
     
 void Cursor::ShowSystemCursor(bool show)

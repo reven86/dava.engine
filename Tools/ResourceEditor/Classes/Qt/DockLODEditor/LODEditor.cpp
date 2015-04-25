@@ -485,8 +485,11 @@ void LODEditor::SolidChanged(SceneEditor2 *scene, const Entity *entity, bool val
 {
     DVASSERT(scene);
     DVASSERT(entity);
-    scene->editorLODSystem->SolidChanged(entity, value);
-    LODDataChanged(scene);
+    if (SettingsManager::GetValue(Settings::Scene_RefreshLodForNonSolid).AsBool())
+    {
+        scene->editorLODSystem->SolidChanged(entity, value);
+        LODDataChanged(scene);
+    }
 }
 
 void LODEditor::DistanceWidget::SetVisible(bool visible)

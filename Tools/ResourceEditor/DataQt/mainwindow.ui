@@ -198,13 +198,18 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuRecentProjects">
+     <property name="title">
+      <string>Recent Projects</string>
+     </property>
+    </widget>
     <widget class="QMenu" name="menuExport">
      <property name="title">
       <string>Export</string>
@@ -224,6 +229,7 @@
      <addaction name="actionImportSpeedTreeXML"/>
     </widget>
     <addaction name="actionOpenProject"/>
+    <addaction name="menuRecentProjects"/>
     <addaction name="actionCloseProject"/>
     <addaction name="separator"/>
     <addaction name="actionNewScene"/>
@@ -670,7 +676,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>82</height>
+          <height>92</height>
          </rect>
         </property>
        </widget>
@@ -777,16 +783,7 @@
    </attribute>
    <widget class="QWidget" name="dockLandscapeEditorControlsContent">
     <layout class="QVBoxLayout" name="verticalLayout_3">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -800,7 +797,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>103</height>
+          <height>92</height>
          </rect>
         </property>
        </widget>
@@ -2126,6 +2123,11 @@
   <action name="actionReplaceTextureMipmap">
    <property name="text">
     <string>Replace Textures mipmaps</string>
+   </property>
+  </action>
+  <action name="action22">
+   <property name="text">
+    <string>22</string>
    </property>
   </action>
  </widget>
