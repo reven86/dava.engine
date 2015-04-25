@@ -2668,7 +2668,7 @@ bool QtMainWindow::OpenScene( const QString & path )
 			if(scene && (ui->sceneTabWidget->GetTabCount() == 1))
 			{
 				FilePath path = scene->GetScenePath();
-				if(path.GetFilename() == "newscene1.sc2" && !scene->CanUndo())
+				if(path.GetFilename() == "newscene1.sc2" && !scene->CanUndo() && !scene->IsLoaded())
 				{
 					needCloseIndex = 0;
 				}

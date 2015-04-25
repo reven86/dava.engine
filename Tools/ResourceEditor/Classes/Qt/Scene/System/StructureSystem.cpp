@@ -420,6 +420,7 @@ void StructureSystem::Add(const DAVA::FilePath &newModelPath, const DAVA::Vector
             SceneValidator::Instance()->ValidateSceneAndShowErrors(sceneEditor, sceneEditor->GetScenePath());
 			// <--
             
+            SafeRelease(loadedEntity);
 			EmitChanged();
 		}
 	}
