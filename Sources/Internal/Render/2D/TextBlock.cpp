@@ -52,7 +52,6 @@ namespace DAVA
 {
 
 bool TextBlock::isBiDiSupportEnabled = true;    //!< Enable BiDi support by default
-BiDiHelper TextBlock::bidiHelper;
 
 struct TextBlockData
 {

@@ -169,8 +169,8 @@ void SplitTest::SplitBySymbolsWithNewLine(PerfFuncData * data)
     resultStrings.push_back(L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTIN");
     resultStrings.push_back(L"G,");
     resultStrings.push_back(L"LLC AND");
-    resultStrings.push_back(L"CONTRIBUTORS AS IS AND ANY EXPRESS OR IMPLIED ");
-    resultStrings.push_back(L"WARRANTIES");
+    resultStrings.push_back(L"CONTRIBUTORS AS IS AND ANY EXPRESS OR IMPLIED W");
+    resultStrings.push_back(L"ARRANTIES");
     
     staticText->SetMultiline(true, true);
     
