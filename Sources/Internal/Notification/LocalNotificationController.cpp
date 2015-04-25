@@ -97,9 +97,8 @@ bool LocalNotificationController::Remove(LocalNotification *notification)
     auto it = find(begin(notificationsList), endIt, notification);
     if (endIt != it)
     {
-        auto note = *it;
+        (*it)->Release();
         notificationsList.erase(it);
-        note->Release();
         return true;
     }
     return false;
@@ -117,9 +116,8 @@ bool LocalNotificationController::RemoveById(const String &notificationId)
     
     if (it != endIt)
     {
-        auto noteToRelease = *it;
-        it = notificationsList.erase(it);
-        noteToRelease->Release();
+        (*it)->Release();
+        notificationsList.erase(it);
         return true;
     }
 
