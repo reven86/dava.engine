@@ -382,7 +382,7 @@ void RenderHelper::DrawCircle(const Vector2 & center, float32 radius, UniqueHand
     pts.points.reserve(ptsCount);
 	for (int k = 0; k < ptsCount; ++k)
 	{
-		float32 angle = ((float)k / (ptsCount - 1)) * 2 * PI;
+		angle = (float32(k) / (ptsCount - 1)) * 2 * PI;
 		float32 sinA = sinf(angle);
 		float32 cosA = cosf(angle);
 		Vector2 pos = center - Vector2(sinA * radius, cosA * radius);
@@ -406,7 +406,7 @@ void RenderHelper::DrawCircle(const Vector3 & center, float32 radius, UniqueHand
     pts.points.reserve(ptsCount);
 	for (int k = 0; k < ptsCount; ++k)
 	{
-		float32 angle = ((float)k / (ptsCount - 1)) * 2 * PI;
+		angle = ((float)k / (ptsCount - 1)) * 2 * PI;
 		float32 sinA = sinf(angle);
 		float32 cosA = cosf(angle);
 		Vector3 pos = center - Vector3(sinA * radius, cosA * radius, 0);

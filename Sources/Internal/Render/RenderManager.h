@@ -174,7 +174,7 @@ public:
 
 #endif 
 
-#ifdef __DAVAENGINE_WIN32__
+#ifdef __DAVAENGINE_WINDOWS_DESKTOP__
 	bool Create(HINSTANCE hInstance, HWND hWnd);
 #else
 	bool Create();

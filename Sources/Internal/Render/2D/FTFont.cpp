@@ -40,9 +40,17 @@
 #include "FileSystem/FilePath.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+#define generic GenericFromFreeTypeLibrary
+#endif
+
 #include <ft2build.h>
 #include <freetype/ftglyph.h>
 #include FT_FREETYPE_H
+
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+#undef generic
+#endif
 
 namespace DAVA
 {

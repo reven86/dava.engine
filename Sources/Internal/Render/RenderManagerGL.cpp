@@ -45,7 +45,7 @@
 namespace DAVA
 {
 	
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 
 static HDC hDC = nullptr;
 static HGLRC hRC = nullptr;
@@ -99,7 +99,7 @@ bool RenderManager::ChangeDisplayMode(DisplayMode mode, bool isFullscreen)
 	return true;
 }	
 	
-#else //#if defined(__DAVAENGINE_WIN32__)
+#else //#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 
 bool RenderManager::Create()
 {
@@ -111,7 +111,7 @@ void RenderManager::Release()
 	
 }
 
-#endif //#if defined(__DAVAENGINE_WIN32__)
+#endif //#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 
 #if defined(__DAVAENGINE_ANDROID__)
 typedef void (GL_APIENTRYP PFNGLDISCARDFRAMEBUFFEREXTPROC) (GLenum target, GLsizei numAttachments, const GLenum *attachments);
@@ -227,9 +227,9 @@ void RenderManager::BeginFrame()
 void RenderManager::EndFrame()
 {
 	isInsideDraw = false;
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 	::SwapBuffers(hDC);
-#endif //#if defined(__DAVAENGINE_WIN32__)
+#endif //#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 	
 	RENDER_VERIFY(;);	// verify at the end of the frame
     

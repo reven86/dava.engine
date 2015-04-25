@@ -33,7 +33,10 @@
 
 namespace DAVA
 {
-	uint32 DPIHelper::GetScreenDPI()
+
+#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+
+    uint32 DPIHelper::GetScreenDPI()
 	{
 		HDC screen = GetDC(NULL);
 
@@ -41,6 +44,7 @@ namespace DAVA
 		// in any case under win this value is 96dpi due to OS limitation
 		uint32 hDPI = GetDeviceCaps(screen, LOGPIXELSX);
 		ReleaseDC(NULL, screen);
+
 		return hDPI;
 	}
 
@@ -58,4 +62,45 @@ namespace DAVA
         ReleaseDC(NULL, screen);
         return screenSize;
     }
+
+#elif defined(__DAVAENGINE_WINDOWS_STORE__)
+
+    uint32 DPIHelper::GetScreenDPI()
+    {
+        using namespace Windows::Graphics::Display;
+        return uint32(DisplayInformation::GetForCurrentView()->LogicalDpi);
+    }
+
+    float64 DPIHelper::GetDpiScaleFactor(int32 /*screenId*/)
+    {
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+
+        using namespace Windows::Graphics::Display;
+        ResolutionScale scale = DisplayInformation::GetForCurrentView()->ResolutionScale;
+
+        switch (scale)
+        {
+        case ResolutionScale::Scale120Percent: return 1.2;
+        case ResolutionScale::Scale140Percent: return 1.4;
+        case ResolutionScale::Scale150Percent: return 1.5;
+        case ResolutionScale::Scale160Percent: return 1.6;
+        case ResolutionScale::Scale180Percent: return 1.8;
+        case ResolutionScale::Scale225Percent: return 2.25;
+        case ResolutionScale::Invalid:
+        case ResolutionScale::Scale100Percent:
+        default:
+            return 1.0;
+        }
+    }
+
+    Size2i DPIHelper::GetScreenSize()
+    {
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+
+        auto winBounds = Windows::UI::Core::CoreWindow::GetForCurrentThread()->Bounds;
+        return Size2i(uint32(winBounds.X), uint32(winBounds.Y));
+    }
+
+#endif
+
 }

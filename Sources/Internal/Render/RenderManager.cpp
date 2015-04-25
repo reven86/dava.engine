@@ -439,9 +439,9 @@ uint64 RenderManager::GetRenderContextId()
 void RenderManager::VerifyRenderContext()
 {
 	
-#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
+#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_WINDOWS_DESKTOP__) || defined(__DAVAENGINE_MACOS__))
 	
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 	uint64 curRenderContext = (uint64)wglGetCurrentContext();
 #elif defined(__DAVAENGINE_MACOS__)
 	uint64 curRenderContext = (uint64)CGLGetCurrentContext();

@@ -34,7 +34,7 @@
 #include "Utils/Utils.h"
 #include "Debug/DVAssert.h"
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 
 #include "winsock2.h"
 #include "Iphlpapi.h"
@@ -214,4 +214,4 @@ void DeviceInfo::InitializeScreenInfo()
 
 }
 
-#endif
+#endif // defined(__DAVAENGINE_WINDOWS_DESKTOP__)

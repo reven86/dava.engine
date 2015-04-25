@@ -30,6 +30,7 @@
 #include "Debug/DVAssertMessage.h"
 #include "FileSystem/Logger.h"
 #include "Utils/UTF8Utils.h"
+#include "Debug/DVAssert.h"
 
 #if defined (__DAVAENGINE_WIN32__)
 
@@ -61,6 +62,7 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 
 bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 {
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
     using namespace Windows::UI::Popups;
     
     WideString contentStr = UTF8Utils::EncodeToWideString(content);
@@ -83,7 +85,7 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 	msg->CancelCommandIndex = 1;
 
 	//show message and blocking thread
-	msg->ShowAsync()->GetResults();
+	msg->ShowAsync();
 
     return false;
 }

@@ -27,10 +27,20 @@
 =====================================================================================*/
 
 
+#include "Platform/PlatformDetection.h"
+
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+#define generic GenericFromFreeTypeLibrary
+#endif
+
 #include <ft2build.h>
 #include <freetype/ftglyph.h>
 //#include "ftglyph.h"
 #include FT_FREETYPE_H
+
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+#undef generic
+#endif
 
 #include "Render/2D/FontManager.h"
 #include "Render/2D/FTFont.h"
@@ -217,12 +227,8 @@ void FontManager::PrepareToSaveFonts(bool saveAllFonts)
         else
         {
             bool fontAdded = false;
-            for (FONTS_NAME::iterator iter = fontsName.begin();
-                 iter != fontsName.end();
-                 ++iter)
+            for (FONT_NAME* fontName : fontsName)
             {
-                FONT_NAME* fontName = (*iter);
-                
                 Font* firstFont = (*fontName->fonts.begin());
                 if (firstFont && firstFont->IsEqual(font))
                 {

@@ -34,13 +34,14 @@ namespace DAVA
 {
 	DAVA::WideString DateTime::AsWString(const wchar_t* format) const
 	{
-		DAVA::String configLocale = LocalizationSystem::Instance()->GetCountryCode();
+        String configLocale = LocalizationSystem::Instance()->GetCountryCode();
+        WideString configLocaleWide = StringToWString(configLocale);
+
 		configLocale.replace(configLocale.find("_"), 1, "-");
-		LCID locale = LocaleNameToLCID(StringToWString(configLocale).c_str(), 0);
-		int nchars = GetLocaleInfoW(locale, LOCALE_SENGLANGUAGE, NULL, 0);
-		wchar_t* languageCode = new wchar_t[nchars];
-		memset(languageCode, 0, nchars);
-		GetLocaleInfoW(locale, LOCALE_SENGLANGUAGE, languageCode, nchars);
+		int nchars = GetLocaleInfoEx(configLocaleWide.c_str(), LOCALE_SENGLANGUAGE, NULL, 0);
+		wchar_t* languageCode = new wchar_t[nchars + 1];
+		memset(languageCode, 0, nchars + 1);
+		GetLocaleInfoEx(configLocaleWide.c_str(), LOCALE_SENGLANGUAGE, languageCode, nchars);
 
 		DAVA::WideString locID(languageCode);
 		SafeDeleteArray(languageCode);
