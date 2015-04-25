@@ -138,6 +138,25 @@
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 
 
+#include "AssetCache/TCPConnection/TCP.h"
+#include "Network/Base/Endpoint.h"
+
+
+void TestFunction()
+{
+    DAVA::uint32 service = 11;
+    
+    
+    auto server = DAVA::TCPServer::Create(service, DAVA::Net::Endpoint(9999));
+    auto client = DAVA::TCPClient::Connect(service, DAVA::Net::Endpoint("127.0.0.1", 9999));
+    
+    Net::NetCore::Instance()->Poll();
+
+    SafeDelete(client);
+    SafeDelete(server);
+}
+
+
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
@@ -149,6 +168,8 @@ QtMainWindow::QtMainWindow(QWidget *parent)
     , hangingObjectsWidget(nullptr)
     , developerTools(new DeveloperTools(this))
 {
+    TestFunction();
+    
 	new ProjectManager();
 	new RecentFilesManager();
 	ui->setupUi(this);
