@@ -240,8 +240,10 @@ GameCore::SetupCube()
 
     if( tex )
     {
-        uint8   color1[4] = { 0xFF, 0xFF, 0xFF, 0xFF };
-        uint8   color2[4] = { 0x80, 0x80, 0x80, 0x80 };
+//        uint8   color1[4] = { 0xFF, 0xFF, 0xFF, 0xFF };
+//        uint8   color2[4] = { 0x80, 0x80, 0x80, 0xFF };
+        uint8   color1[4] = { 0xFF, 0x00, 0x00, 0xFF };
+        uint8   color2[4] = { 0x80, 0x00, 0x00, 0xFF };
         uint32  cell_size = 8;
 
         for( unsigned y=0; y!=128; ++y )
@@ -1177,7 +1179,7 @@ SCOPED_NAMED_TIMING("app-draw");
         {
             for( unsigned i=0; i!=col_cnt; ++i )
             {
-                const uint32 c      = (z*row_cnt+i+1) * 0x775511; // 0x15015
+                const uint32 c      = 0xFFFFFFFF;//(z*row_cnt+i+1) * 0x775511; // 0x15015
                 const uint8* cc     = (const uint8*)(&c);
                 const float  clr2[] = { float(cc[2])/255.0f, float(cc[1])/255.0f, float(cc[0])/255.0f, 1.0f };
 
