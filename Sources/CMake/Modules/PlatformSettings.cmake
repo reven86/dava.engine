@@ -109,7 +109,7 @@ if( WARNINGS_AS_ERRORS )
     if( ANDROID )
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
     elseif( APPLE )
-        set( ${LOCAL_DISABLED_WARNINGS} "${LOCAL_DISABLED_WARNINGS} -Wno-old-style-cast" )
+        set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS} -Wno-old-style-cast" )
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
     elseif( WIN32 )
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX" )
