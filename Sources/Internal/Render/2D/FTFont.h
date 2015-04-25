@@ -120,6 +120,11 @@ public:
 	// Put font properties into YamlNode
 	virtual YamlNode * SaveToYamlNode() const;
 
+    void SetAscendScale(float32 ascend) override;
+    float32 GetAscendScale() const override;
+    void SetDescendScale(float32 ascend) override;
+    float32 GetDescendScale() const override;
+
 protected:
 	// Get the raw hash string (identical for identical fonts).
 	virtual String GetRawHashString();

@@ -61,6 +61,9 @@ class FTInternalFont : public BaseObject
 	FT_StreamRec streamFont;
 	File * fontFile;
 
+    float32 ascendScale;
+    float32 descendScale;
+
 private:
 	FTInternalFont(const FilePath & path);
 	virtual ~FTInternalFont();
@@ -234,6 +237,25 @@ YamlNode * FTFont::SaveToYamlNode() const
 	return node;
 }
 
+void FTFont::SetAscendScale(float32 ascendScale)
+{
+    internalFont->ascendScale = ascendScale;
+}
+
+DAVA::float32 FTFont::GetAscendScale() const
+{
+    return internalFont->ascendScale;
+}
+
+void FTFont::SetDescendScale(float32 descendScale)
+{
+    internalFont->descendScale = descendScale;
+}
+
+DAVA::float32 FTFont::GetDescendScale() const
+{
+    return internalFont->descendScale;
+}
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -261,7 +283,8 @@ FTInternalFont::FTInternalFont(const FilePath & path)
 , streamFont()
 , fontFile(NULL)
 , face(NULL)
-	
+, ascendScale(1.f)
+, descendScale(1.f)
 {
     FilePath pathName(path);
     pathName.ReplaceDirectory(path.GetDirectory() + (LocalizationSystem::Instance()->GetCurrentLocale() + "/"));
@@ -342,8 +365,8 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 		FT_Set_Transform(face, &matrix, 0);
 	}
 
-	int32 faceBboxYMin = (int32)FT_MulFix_Wrapper(face->bbox.yMin, face->size->metrics.y_scale);
-	int32 faceBboxYMax = (int32)FT_MulFix_Wrapper(face->bbox.yMax, face->size->metrics.y_scale);
+    int32 faceBboxYMin = (int32)((float32)FT_MulFix_Wrapper(face->bbox.yMin, face->size->metrics.y_scale) * descendScale);
+    int32 faceBboxYMax = (int32)((float32)FT_MulFix_Wrapper(face->bbox.yMax, face->size->metrics.y_scale) * ascendScale);
 	
 	if(!contentScaleIncluded) 
 	{
@@ -561,7 +584,9 @@ uint32 FTInternalFont::GetFontHeight(float32 size) const
     drawStringMutex.Lock();
 
 	SetFTCharSize(size);
-	uint32 height = (uint32)ceilf((float32)((FT_MulFix_Wrapper(face->bbox.yMax-face->bbox.yMin, face->size->metrics.y_scale))) / ftToPixelScale);
+    float32 yMax = (float32)FT_MulFix_Wrapper(face->bbox.yMax, face->size->metrics.y_scale) * ascendScale;
+    float32 yMin = (float32)FT_MulFix_Wrapper(face->bbox.yMin, face->size->metrics.y_scale) * descendScale;
+    uint32 height = (uint32)ceilf((yMax - yMin) / ftToPixelScale);
 	
     drawStringMutex.Unlock();
 
