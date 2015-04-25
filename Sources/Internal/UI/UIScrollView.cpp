@@ -210,6 +210,9 @@ UIControl* UIScrollView::Clone()
 void UIScrollView::CopyDataFrom(UIControl *srcControl)
 {
 	UIControl::CopyDataFrom(srcControl);
+    UIScrollView *src = DynamicTypeCheck<UIScrollView*>(srcControl);
+    scrollHorizontal->CopyDataFrom(src->scrollHorizontal);
+    scrollVertical->CopyDataFrom(src->scrollVertical);
 }
 
 void UIScrollView::SetPadding(const Vector2 & padding)

@@ -64,15 +64,8 @@
     if ((self = [super initWithFrame:aRect]))
 	{
         // Get the layer
-		if (DAVA::Core::IsAutodetectContentScaleFactor()) 
-		{
-			if ([UIScreen instancesRespondToSelector: @selector(scale) ]
-				&& [UIView instancesRespondToSelector: @selector(contentScaleFactor) ]) 
-			{
-				float scf = (int)[[UIScreen mainScreen] scale];
-				[self setContentScaleFactor: scf];
-			}
-		}
+        float scf = DAVA::Core::Instance()->GetScreenScaleFactor();
+        [self setContentScaleFactor: scf];
 
 		// Subscribe to "keyboard change frame" notifications to block GL while keyboard change is performed (see please DF-2012 for details).
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillChangeFrame:) name:UIKeyboardWillChangeFrameNotification object:nil];
