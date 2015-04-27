@@ -653,7 +653,6 @@ void GameCore::OnAppStarted()
 
     DbgDraw::EnsureInited();
     
-/*
     #if defined(__DAVAENGINE_WIN32__)
     {
     KeyedArchive*   opt = new KeyedArchive();
@@ -673,7 +672,7 @@ void GameCore::OnAppStarted()
     DAVA::Core::Instance()->SetOptions(opt);
     }
     #endif
-*/
+
 
     SetupTriangle();
     SetupCube();
@@ -682,7 +681,7 @@ void GameCore::OnAppStarted()
 
 //    sceneRenderTest.reset(new SceneRenderTestV3());    
 
-    
+/*
     // ShaderSource smoke-test
     const char*  fp_src =
     "FPROG_IN_BEGIN\n"
@@ -711,6 +710,7 @@ void GameCore::OnAppStarted()
     fp.Construct( rhi::PROG_FRAGMENT, fp_src );
     Logger::Info( "\n\n====================" );
     fp.Dump();
+*/
 /*
     const char*  vp_src =
     "VPROG_IN_BEGIN\n"

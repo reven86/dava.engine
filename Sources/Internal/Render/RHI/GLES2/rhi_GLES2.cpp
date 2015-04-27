@@ -112,6 +112,7 @@ gles2_TextureFormatSupported( TextureFormat format )
 
     
 //------------------------------------------------------------------------------
+#if defined(__DAVAENGINE_WIN32__)
 
 static void GLAPIENTRY
 _OGLErrorCallback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userdata )
@@ -157,6 +158,8 @@ _OGLErrorCallback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsiz
 //    else
 //        Logger::Info( "[gl.info] %s\n", message );
 }
+
+#endif // defined(__DAVAENGINE_WIN32__)
 
 
 //------------------------------------------------------------------------------
