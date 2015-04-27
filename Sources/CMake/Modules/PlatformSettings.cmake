@@ -18,7 +18,7 @@ elseif ( IOS     )
     set( CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 7.0 )
 
     set( CMAKE_IOS_SDK_ROOT Latest IOS )
-    set( CMAKE_OSX_ARCHITECTURES armv7 armv7s i386 arm64 )
+    set( CMAKE_OSX_ARCHITECTURES armv7 armv7s arm64 )
 
     if( NOT IOS_BUNDLE_IDENTIFIER )
         set( IOS_BUNDLE_IDENTIFIER com.davaconsulting.${PROJECT_NAME} )

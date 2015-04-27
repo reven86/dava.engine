@@ -198,7 +198,7 @@ void Core::CreateRenderManager()
     renderer = rhi::RHI_GLES2;
 #elif defined(__DAVAENGINE_IPHONE__)
     renderer = rhi::RHI_METAL;
-    renderer = rhi::RHI_GLES2;
+//    renderer = rhi::RHI_GLES2;
 #endif
 
     Renderer::Initialize( renderer );

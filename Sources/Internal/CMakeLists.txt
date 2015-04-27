@@ -107,6 +107,7 @@ elseif( IOS )
                    Foundation 
                    UIKit 
                    OpenGLES
+                   Metal
                    OpenAL
                    CoreAudio
                    AVFoundation

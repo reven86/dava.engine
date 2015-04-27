@@ -46,6 +46,19 @@
 
 #include "Utils/Utils.h"
 
+#define USE_METAL 1
+
+#if USE_METAL
+#include <QuartzCore/CAMetalLayer.h>
+#include <Metal/Metal.h>
+#endif
+
+
+static CALayer* _ViewLayer = nil;
+
+CALayer* GetAppViewLayer() { return _ViewLayer; }
+
+
 @implementation EAGLView
 
 @synthesize animating;
@@ -54,7 +67,11 @@
 // You must implement this method
 + (Class) layerClass
 {
+    #if USE_METAL
+        return [CAMetalLayer class];
+    #else
     return [CAEAGLLayer class];
+    #endif
 }
 
 //The GL view is stored in the nib file. When it's unarchived it's sent -initWithCoder:
@@ -78,14 +95,22 @@
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillChangeFrame:) name:UIKeyboardWillChangeFrameNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidChangeFrame:) name:UIKeyboardDidChangeFrameNotification object:nil];
 
-        CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
+        #if USE_METAL 
+        CAMetalLayer*   layer = (CAMetalLayer*)self.layer;
+        #else
+        CAEAGLLayer*    layer = (CAEAGLLayer*)self.layer;
+        #endif
         
-        eaglLayer.opaque = TRUE;
-        eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
+        layer.opaque = TRUE;
+        
+        #if USE_METAL
+        #else
+        layer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
                                         [NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
+        #endif
             
         DAVA::KeyedArchive * options = DAVA::Core::Instance()->GetOptions();
-        DAVA::Core::eRenderer rendererRequested = (DAVA::Core::eRenderer)options->GetInt32("renderer", DAVA::Core::RENDERER_OPENGL_ES_1_0);
+//        DAVA::Core::eRenderer rendererRequested = (DAVA::Core::eRenderer)options->GetInt32("renderer", DAVA::Core::RENDERER_OPENGL_ES_1_0);
 
         switch ((DAVA::Core::eScreenOrientation)options->GetInt32("orientation", DAVA::Core::SCREEN_ORIENTATION_PORTRAIT)) 
         {
@@ -114,8 +139,8 @@
                 break;
         }
         
-        DAVA::Core::eRenderer rendererCreated = DAVA::Core::RENDERER_OPENGL_ES_1_0;
-        
+//        DAVA::Core::eRenderer rendererCreated = DAVA::Core::RENDERER_OPENGL_ES_1_0;
+/*
         if (rendererRequested == DAVA::Core::RENDERER_OPENGL_ES_3_0)
         {
             renderer = [[ES3Renderer alloc] init];
@@ -130,17 +155,18 @@
                 rendererRequested =DAVA::Core::RENDERER_OPENGL_ES_2_0;
             }
         }
-        
-        if (rendererRequested == DAVA::Core::RENDERER_OPENGL_ES_2_0)
+*/
+//        if (rendererRequested == DAVA::Core::RENDERER_OPENGL_ES_2_0)
         {
             ES2Renderer* es2Renderer =  [[ES2Renderer alloc] init];
             renderer = es2Renderer;
-            BOOL isGL30Created = [es2Renderer getIsGL30];
-            rendererCreated = (NO == isGL30Created) ? DAVA::Core::RENDERER_OPENGL_ES_2_0 : DAVA::Core::RENDERER_OPENGL_ES_3_0;
-            DAVA::RenderManager::Create(rendererCreated);
-            DAVA::RenderManager::Instance()->InitFBO([renderer getColorRenderbuffer], [renderer getDefaultFramebuffer]);
+//            BOOL isGL30Created = [es2Renderer getIsGL30];
+//            rendererCreated = (NO == isGL30Created) ? DAVA::Core::RENDERER_OPENGL_ES_2_0 : DAVA::Core::RENDERER_OPENGL_ES_3_0;
+BOOL isGL30Created = NO;
+//            DAVA::RenderManager::Create(rendererCreated);
+//            DAVA::RenderManager::Instance()->InitFBO([renderer getColorRenderbuffer], [renderer getDefaultFramebuffer]);
         }
-        
+ /*
         if (!renderer)
         {
             renderer = [[ES1Renderer alloc] init];
@@ -154,11 +180,11 @@
                 return nil;
             }
         }
-        
-        DAVA::RenderManager::Instance()->SetRenderContextId(DAVA::EglGetCurrentContext());
+*/
+//        DAVA::RenderManager::Instance()->SetRenderContextId(DAVA::EglGetCurrentContext());
         DAVA::Size2i physicalScreen = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
-        DAVA::RenderManager::Instance()->Init(physicalScreen.dx, physicalScreen.dy);
-        DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
+//        DAVA::RenderManager::Instance()->Init(physicalScreen.dx, physicalScreen.dy);
+//        DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
         DAVA::RenderSystem2D::Instance()->Init();
         
         self.multipleTouchEnabled = (DAVA::InputSystem::Instance()->GetMultitouchEnabled()) ? YES : NO;
@@ -180,6 +206,9 @@
         DAVA::Logger::Debug("OpenGL ES View Created successfully. displayLink: %d", (int)displayLinkSupported);
     }
     
+
+    _ViewLayer = self.layer;
+
     return self;
 }
 
@@ -193,15 +222,15 @@
         return;
     }
 
-    DAVA::RenderManager::Instance()->Lock();
+//    DAVA::RenderManager::Instance()->Lock();
     
-    DAVA::uint64 renderManagerContextId = DAVA::RenderManager::Instance()->GetRenderContextId();
+//    DAVA::uint64 renderManagerContextId = DAVA::RenderManager::Instance()->GetRenderContextId();
     DAVA::uint64 currentContextId = DAVA::EglGetCurrentContext();
-    if (renderManagerContextId!=currentContextId)
-    {
-        EAGLContext * context =  (EAGLContext *)renderManagerContextId;
-        [EAGLContext setCurrentContext:context];
-    }
+//    if (renderManagerContextId!=currentContextId)
+//    {
+//        EAGLContext * context =  (EAGLContext *)renderManagerContextId;
+//        [EAGLContext setCurrentContext:context];
+//    }
     
 //    if(DAVA::Core::Instance()->IsActive())
 //    {
@@ -214,12 +243,13 @@
 //    {
 //        [renderer endRendering];
 //    }
+
+currFPS = 60;
+//    DAVA::RenderManager::Instance()->Unlock();
     
-    DAVA::RenderManager::Instance()->Unlock();
-    
-    if(currFPS != DAVA::RenderManager::Instance()->GetFPS())
+//    if(currFPS != DAVA::RenderManager::Instance()->GetFPS())
     {
-        currFPS = DAVA::RenderManager::Instance()->GetFPS();
+//        currFPS = DAVA::RenderManager::Instance()->GetFPS();
         float interval = 60.0f / currFPS;
         if(interval < 1.0f)
         {
