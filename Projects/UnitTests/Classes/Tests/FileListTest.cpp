@@ -181,7 +181,7 @@ void FileListTest::DocTestFunction(PerfFuncData * data)
     
     ScopedPtr<FileList> fileList( new FileList("~doc:/TestData/FileListTest/") );
     
-    TEST_VERIFY(fileList->GetDirectoryCount() == 3);
+    TEST_VERIFY(fileList->GetDirectoryCount() == 4);
     TEST_VERIFY(fileList->GetFileCount() == 0);
     
     for(int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
@@ -196,7 +196,7 @@ void FileListTest::DocTestFunction(PerfFuncData * data)
         if(filename == "Folder1")
         {
             TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder1/");
-            TEST_VERIFY(files->GetFileCount() == 3);
+            TEST_VERIFY(files->GetFileCount() == 4);
             
             for(int32 ifi = 0; ifi < files->GetCount(); ++ifi)
             {
@@ -208,6 +208,10 @@ void FileListTest::DocTestFunction(PerfFuncData * data)
                 if(filename == "file1")
                 {
                     TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder1/file1");
+                }
+                if(filename == ".file1")
+                {
+                    TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder1/.file1");
                 }
                 else if(filename == "file2.txt")
                 {
@@ -300,95 +304,90 @@ void FileListTest::HiddenFileTest(PerfFuncData* data)
 {
     Logger::Debug(__FUNCTION__);
 
+#if defined(__DAVAENGINE_WIN32__)
+    
     FilePath file1 = FilePath("~res:/TestData/FileListTest/Folder1/file1");
     auto file1str = file1.GetAbsolutePathname();
-
-#if defined(__DAVAENGINE_WIN32__)
-    auto attrs = GetFileAttributesA(file1str.c_str());
-    auto SetHidden = [&]()
+    auto attrs = GetFileAttributesA(dir1str.c_str());
+    
+    if (attrs & FILE_ATTRIBUTE_HIDDEN)
     {
-        SetFileAttributesA(file1str.c_str(), attrs | FILE_ATTRIBUTE_HIDDEN);
-    };
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    FilePath dotFile1 = FilePath("~res:/TestData/FileListTest/Folder1/.file1");
-    auto dotFile1str = dotFile1.GetAbsolutePathname();
-    auto SetHidden = [&]()
-    {
-        rename(file1str.c_str(), dotFile1str.c_str());
-    };
-#endif //PLATFORMS
-
-#if defined(__DAVAENGINE_WIN32__)
-    auto ClearHidden = [&]()
-    {
-        SetFileAttributesA(file1str.c_str(), attrs);
-    };
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    auto ClearHidden = [&]()
-    {
-        rename(dotFile1str.c_str(), file1str.c_str());
-    };
-#endif //PLATFORMS
-
+        SetFileAttributesA(file1str.c_str(), attrs ^ FILE_ATTRIBUTE_HIDDEN );
+    }
 
     ScopedPtr<FileList> files(new FileList("~res:/TestData/FileListTest/Folder1/"));
-    TEST_VERIFY(files->GetFileCount() == 3);
+    files->Sort();
+    TEST_VERIFY(files->GetFileCount() == 4);
     TEST_VERIFY(files->IsHidden(2) == false);
-
-    SetHidden();
+    
+    SetFileAttributesA(file1str.c_str(), attrs | FILE_ATTRIBUTE_HIDDEN);
 
     files = new FileList("~res:/TestData/FileListTest/Folder1/");
-    TEST_VERIFY(files->GetFileCount() == 3);
+    files->Sort();
+    TEST_VERIFY(files->GetFileCount() == 4);
     TEST_VERIFY(files->IsHidden(2) == true);
 
-    ClearHidden();
+    SetFileAttributesA(file1str.c_str(), attrs);
+    
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+    
+    ScopedPtr<FileList> files(new FileList("~res:/TestData/FileListTest/Folder1/"));
+    TEST_VERIFY(files->GetFileCount() == 4);
+    for (auto i=0; i < files->GetCount(); ++i)
+    {
+        if (!files->IsDirectory(i))
+        {
+            bool startsWithDot = (files->GetFilename(i)[0] == '.');
+            TEST_VERIFY(files->IsHidden(i) == startsWithDot);
+        }
+    }
+    
+#endif //PLATFORMS
 }
 
 void FileListTest::HiddenDirTest(PerfFuncData* data)
 {
     Logger::Debug(__FUNCTION__);
-
+    
+#if defined(__DAVAENGINE_WIN32__)
+    
     FilePath dir1 = FilePath("~res:/TestData/FileListTest/Folder1/");
     auto dir1str = dir1.GetAbsolutePathname();
-
-#if defined(__DAVAENGINE_WIN32__)
     auto attrs = GetFileAttributesA(dir1str.c_str());
-    auto SetHidden = [&]()
+    
+    if (attrs & FILE_ATTRIBUTE_HIDDEN)
     {
-        SetFileAttributesA(dir1str.c_str(), attrs | FILE_ATTRIBUTE_HIDDEN);
-    };
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    FilePath dotDir1 = FilePath("~res:/TestData/FileListTest/.Folder1/");
-    auto dotDir1str = dotDir1.GetAbsolutePathname();
-    auto SetHidden = [&]()
-    {
-        rename(dir1str.c_str(), dotDir1str.c_str());
-};
-#endif //PLATFORMS
-
-#if defined(__DAVAENGINE_WIN32__)
-    auto ClearHidden = [&]()
-    {
-        SetFileAttributesA(dir1str.c_str(), attrs);
-    };
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    auto ClearHidden = [&]()
-    {
-        rename(dotDir1str.c_str(), dir1str.c_str());
-    };
-#endif //PLATFORMS
-
+        SetFileAttributesA(dir1str.c_str(), attrs ^ FILE_ATTRIBUTE_HIDDEN );
+    }
+    
     ScopedPtr<FileList> files(new FileList("~res:/TestData/FileListTest/"));
-    TEST_VERIFY(files->GetDirectoryCount() == 3);
+    files->Sort();
+    TEST_VERIFY(files->GetDirectoryCount() == 4);
     TEST_VERIFY(files->IsHidden(2) == false);
-
-    SetHidden();
-
+    
+    SetFileAttributesA(dir1str.c_str(), attrs | FILE_ATTRIBUTE_HIDDEN);
+    
     files = new FileList("~res:/TestData/FileListTest/");
-    TEST_VERIFY(files->GetDirectoryCount() == 3);
+    files->Sort();
+    TEST_VERIFY(files->GetDirectoryCount() == 4);
     TEST_VERIFY(files->IsHidden(2) == true);
-
-    ClearHidden();
+    
+    SetFileAttributesA(dir1str.c_str(), attrs);
+    
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+    
+    ScopedPtr<FileList> files(new FileList("~res:/TestData/FileListTest/"));
+    TEST_VERIFY(files->GetDirectoryCount() == 4);
+    for (auto i=0; i < files->GetCount(); ++i)
+    {
+        if (files->IsDirectory(i))
+        {
+            bool startsWithDot = (files->GetFilename(i)[0] == '.');
+            TEST_VERIFY(files->IsHidden(i) == startsWithDot);
+        }
+    }
+    
+#endif //PLATFORMS
 }
 
 void FileListTest::RecursiveCopy(const DAVA::FilePath &src, const DAVA::FilePath &dst)
