@@ -27,23 +27,63 @@
 =====================================================================================*/
 
 
+#ifndef __DAVAENGINE_ASSET_CACHE_CLIENT_CACHE_DESCRIPTION_H__
+#define __DAVAENGINE_ASSET_CACHE_CLIENT_CACHE_DESCRIPTION_H__
 
-#include "AssetCache/TCPConnection/TCPClient.h"
+#include "Base/BaseTypes.h"
+#include "Base/Data.h"
+#include "FileSystem/FilePath.h"
+#include "Utils/MD5.h"
 
 
 namespace DAVA
 {
-    
-TCPClient * TCPClient::Connect(uint32 service, const Net::Endpoint &endpoint)
+class KeyedArchive;
+
+namespace AssetCache
 {
-    auto client = new TCPClient(service, endpoint);
-    return client;
-}
     
-TCPClient::TCPClient(uint32 service, const Net::Endpoint & endpoint)
-    : TCPConnection(Net::CLIENT_ROLE, service, endpoint)
+class ClientCacheEntry
 {
-}
+public:
     
-}; // end of namespace DAVA
+    enum eEntryType: uint8
+    {
+        ENTRY_UNKNOWN          =   0,
+        ENTRY_FILE,
+        ENTRY_FOLDER,
+    };
+    
+public:
+    
+    ClientCacheEntry(const ClientCacheEntry &) = default;
+    ClientCacheEntry & operator= (const ClientCacheEntry &) = default;
+
+    ClientCacheEntry();
+    ClientCacheEntry(eEntryType type, const FilePath &pathname);
+
+    virtual ~ClientCacheEntry() = default;
+
+    void Serialize(KeyedArchive * archieve) const;
+    void Deserialize(KeyedArchive * archieve);
+
+private:
+    
+
+public:
+    
+    eEntryType type;
+    uint8 hash[MD5::DIGEST_SIZE];
+    FilePath pathname;
+    
+    String toolDescription;
+    List<String> params;
+};
+
+    
+};
+
+};
+
+#endif // __DAVAENGINE_ASSET_CACHE_CLIENT_CACHE_DESCRIPTION_H__
 

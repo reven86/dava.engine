@@ -113,7 +113,7 @@ bool KeyedArchive::Load(File *archive)
 	return true;
 }
 	
-bool KeyedArchive::Save(const FilePath & pathName)
+bool KeyedArchive::Save(const FilePath & pathName) const
 {
 	File * archive = File::Create(pathName, File::CREATE|File::WRITE);
 	if (!archive)return false;
@@ -124,7 +124,7 @@ bool KeyedArchive::Save(const FilePath & pathName)
 	return true;
 }
 
-bool KeyedArchive::Save(File *archive)
+bool KeyedArchive::Save(File *archive) const
 {
     char header[2];
     uint16 version = 1;
@@ -135,7 +135,7 @@ bool KeyedArchive::Save(File *archive)
     uint32 size = static_cast<uint32>(objectMap.size());
     archive->Write(&size, 4);
     
-	for (Map<String, VariantType*>::iterator it = objectMap.begin(); it != objectMap.end(); ++it)
+	for (Map<String, VariantType*>::const_iterator it = objectMap.begin(); it != objectMap.end(); ++it)
 	{
 		VariantType key;
 		key.SetString(it->first);
@@ -638,6 +638,33 @@ const char* KeyedArchive::GenKeyFromIndex(uint32 index)
 	return tmpKey;
 }
 
+uint32 KeyedArchive::Serialize(uint8 *data, uint32 size) const
+{
+    ScopedPtr<DynamicMemoryFile> file(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
+
+    Save(file);
+    
+    auto archieveSize = file->GetSize();
+    if(data && size >= archieveSize)
+    {
+        Memcpy(data, file->GetData(), archieveSize);
+    }
+    return archieveSize;
+}
+
+void KeyedArchive::Deserialize(uint8 *data, uint32 size)
+{
+    if(nullptr == data || 0 == size)
+    {
+        return;
+    }
+    
+    ScopedPtr<DynamicMemoryFile> file(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
+    auto written = file->Write(data, size);
+    DVASSERT(written == size);
+    
+    Load(file);
+}
 
 
 

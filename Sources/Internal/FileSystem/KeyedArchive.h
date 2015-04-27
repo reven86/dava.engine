@@ -111,7 +111,7 @@ public:
 		\param[in] key string key
 		\param[in] defaultValue this is value that is used if variable with this key do not exists in archive
 		\returns value of variable or defaultValue if key isn't available
-		*/
+    */
 
 	WideString GetWideString(const String & key, const WideString & defaultValue = L"");
 	/**
@@ -397,7 +397,7 @@ public:
 		\brief Function saves data to given file.
 		\param[in] pathName relative pathname in application documents folder
 	 */
-	bool Save(const FilePath & pathName);
+	bool Save(const FilePath & pathName) const;
 
 	/**
         \brief Function loads data from given file.
@@ -408,7 +408,7 @@ public:
         \brief Function saves data to given file.
         \param[in] file to save
 	 */
-	bool Save(File *file);
+	bool Save(File *file) const;
     
     /**
      \brief Function loads data from given yaml file.
@@ -467,6 +467,22 @@ public:
 // 	bool SaveToYaml(const String & pathName);
     
 	static const char* GenKeyFromIndex(uint32 index);
+    
+    
+    /**
+         \brief Function to serialize archieve to byte array.
+         \param[in] data byte arrat for archieve data, if data is null function returns only requested size of data for serialization
+         \param[in] size size of byte array, if size is 0 function returns only requested size of data for serialization
+         \returns size of really serialized data
+     */
+    uint32 Serialize(uint8 *data, uint32 size) const;
+
+    /**
+         \brief Function to deserialize archieve from byte array.
+         \param[in] data byte arrat with archieve data
+         \param[in] size size of byte array
+     */
+    void Deserialize(uint8 *data, uint32 size);
 
 
 private:

@@ -28,22 +28,77 @@
 
 
 
-#include "AssetCache/TCPConnection/TCPClient.h"
-
+#include "AssetCache/CachedFiles.h"
+#include "FileSystem/KeyedArchive.h"
+#include "FileSystem/FileList.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
     
-TCPClient * TCPClient::Connect(uint32 service, const Net::Endpoint &endpoint)
+namespace AssetCache
 {
-    auto client = new TCPClient(service, endpoint);
-    return client;
-}
     
-TCPClient::TCPClient(uint32 service, const Net::Endpoint & endpoint)
-    : TCPConnection(Net::CLIENT_ROLE, service, endpoint)
+CachedFiles::CachedFiles()
 {
 }
     
+CachedFiles::CachedFiles(const FilePath & path)
+{
+    if(path.IsDirectoryPathname())
+    {
+        ScopedPtr<FileList> flist(new FileList(path));
+        
+        auto count = flist->GetCount();
+        for(auto i = 0; i < count; ++i)
+        {
+            if(!flist->IsDirectory(i))
+            {
+                files.insert(flist->GetPathname(i));
+            }
+        }
+    }
+    else
+    {
+        files.insert(path);
+    }
+}
+
+    
+void CachedFiles::Serialize(KeyedArchive * archieve) const
+{
+    DVASSERT(nullptr != archieve);
+    
+    auto count = files.size();
+    archieve->SetUInt32("count", count);
+    
+    int32 index = 0;
+    for(auto & file : files)
+    {
+        archieve->SetString(Format("file_%d", index++), file.GetAbsolutePathname());
+    }
+}
+
+void CachedFiles::Deserialize(KeyedArchive * archieve)
+{
+    DVASSERT(nullptr != archieve);
+    
+    files.clear();
+    
+    auto count = archieve->GetUInt32("count");
+    for(uint32 i = 0; i < count; ++i)
+    {
+        files.insert(archieve->GetString(Format("file_%d", i)));
+    }
+}
+
+
+bool CachedFiles::operator == (const CachedFiles &cf) const
+{
+    return (files == cf.files);
+}
+
+    
+}; // end of namespace AssetCache
 }; // end of namespace DAVA
 

@@ -112,7 +112,60 @@ void TCPConnection::Delete(Net::IChannelListener* obj, void* context)
     //not need do anything - called from descructor of TCPClient
 }
 
+uint32 TCPConnection::SendData(const uint8 * data, const size_t dataSize)
+{
+    uint32 packetID = 0;
+    bool sent = Send(data, dataSize, &packetID);
+    if(sent)
+    {
+        return packetID;
+    }
+    
+    return 0;
+}
     
     
+void TCPConnection::ChannelOpen()
+{
+    if(delegate)
+    {
+        delegate->ChannelOpen();
+    }
+}
+
+void TCPConnection::ChannelClosed(const char8* message)
+{
+    if(delegate)
+    {
+        delegate->ChannelClosed(message);
+    }
+}
+
+void TCPConnection::PacketReceived(const void* packet, size_t length)
+{
+    if(delegate)
+    {
+        delegate->PacketReceived(packet, length);
+    }
+}
+
+void TCPConnection::PacketSent()
+{
+    if(delegate)
+    {
+        delegate->PacketSent();
+    }
+}
+
+void TCPConnection::PacketDelivered()
+{
+    if(delegate)
+    {
+        delegate->PacketDelivered();
+    }
+}
+    
+
+
 }; // end of namespace DAVA
 

@@ -137,18 +137,66 @@
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 
-
-#include "AssetCache/TCPConnection/TCP.h"
+#include "AssetCache/AssetCache.h"
 #include "Network/Base/Endpoint.h"
+
+
+void TestClient(DAVA::AssetCache::Client *client, const DAVA::AssetCache::ClientCacheEntry &cacheEntry, const DAVA::AssetCache::CachedFiles & cachedFiles)
+{
+    Logger::FrameworkDebug("============    %s start    ==============", __FUNCTION__);
+
+    auto inCache = client->IsInCache(cacheEntry);
+    Logger::FrameworkDebug("1. inCache = %d", inCache);
+    
+    if(!inCache)
+    {
+        auto addedToCache = client->AddToCache(cacheEntry, cachedFiles);
+        Logger::FrameworkDebug("2. addedToCache = %d", addedToCache);
+    }
+    
+    inCache = client->IsInCache(cacheEntry);
+    Logger::FrameworkDebug("3. inCache = %d", inCache);
+
+    auto filesRequested = client->GetFromCache(cacheEntry);
+    Logger::FrameworkDebug("4. filesRequested size = %d", filesRequested);
+    
+    Logger::FrameworkDebug("============    %s finish    ==============", __FUNCTION__);
+}
 
 
 void TestFunction()
 {
-    DAVA::uint32 service = 11;
+    static const DAVA::uint16 port = 5566;
+
+    auto server = new DAVA::AssetCache::Server();
+    server->Listen(port);
+
+    auto client = new DAVA::AssetCache::Client();
+    client->Connect("127.0.0.1", port);
+
+    auto retries = 10;
+    while(retries--)
+    {
+        Net::NetCore::Instance()->Poll();
+    }
+
     
+    const FilePath testFile("~res:/3d/lights/directlight/directlight.sc2");
+    DAVA::AssetCache::ClientCacheEntry fileEntry(DAVA::AssetCache::ClientCacheEntry::ENTRY_FILE, testFile);
+    fileEntry.toolDescription = "Resource Packer 1.0";
+    fileEntry.params.push_back("PVR4");
+    fileEntry.params.push_back("mipmaps");
+    DAVA::AssetCache::CachedFiles cachedFile(testFile);
     
-    auto server = DAVA::TCPServer::Create(service, DAVA::Net::Endpoint(9999));
-    auto client = DAVA::TCPClient::Connect(service, DAVA::Net::Endpoint("127.0.0.1", 9999));
+    const FilePath testFolder("~res:/3d/Skybox/");
+    DAVA::AssetCache::ClientCacheEntry folderEntry(DAVA::AssetCache::ClientCacheEntry::ENTRY_FOLDER, testFolder);
+    folderEntry.toolDescription = "Resource Packer 1.0";
+    folderEntry.params.push_back("RGBA8888");
+    folderEntry.params.push_back("normalmap");
+    DAVA::AssetCache::CachedFiles cachedFolder(testFolder);
+
+    TestClient(client, fileEntry, cachedFile);
+    TestClient(client, folderEntry, cachedFolder);
     
     Net::NetCore::Instance()->Poll();
 

@@ -27,23 +27,42 @@
 =====================================================================================*/
 
 
+#ifndef __DAVAENGINE_ASSET_CACHE_SERVER_H__
+#define __DAVAENGINE_ASSET_CACHE_SERVER_H__
 
-#include "AssetCache/TCPConnection/TCPClient.h"
-
+#include "Base/BaseTypes.h"
+#include "Base/Data.h"
 
 namespace DAVA
 {
-    
-TCPClient * TCPClient::Connect(uint32 service, const Net::Endpoint &endpoint)
+
+class TCPServer;
+namespace AssetCache
 {
-    auto client = new TCPClient(service, endpoint);
-    return client;
-}
-    
-TCPClient::TCPClient(uint32 service, const Net::Endpoint & endpoint)
-    : TCPConnection(Net::CLIENT_ROLE, service, endpoint)
+ 
+class ClientCacheDescription;
+class CachedFiles;
+
+class Server
 {
-}
+    static const uint32 NET_SERVICE_ID = 0xACCA;
     
-}; // end of namespace DAVA
+public:
+    
+    Server();
+    virtual ~Server();
+    
+    bool Listen(uint16 port);
+    
+private:
+    
+    TCPServer * netServer;
+};
+
+    
+};
+
+};
+
+#endif // __DAVAENGINE_ASSET_CACHE_SERVER_H__
 

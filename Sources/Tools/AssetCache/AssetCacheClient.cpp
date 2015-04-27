@@ -29,39 +29,46 @@
 
 
 #include "AssetCache/AssetCacheClient.h"
+#include "AssetCache/CachedFiles.h"
+#include "AssetCache/ClientCacheEntry.h"
 #include "AssetCache/TCPConnection/TCPClient.h"
+#include "FileSystem/KeyedArchive.h"
 #include "Debug/DVAssert.h"
 
 namespace DAVA
 {
     
-AssetCacheClient::AssetCacheClient()
-    : netClient(nullptr)
+namespace AssetCache
+{
+    
+Client::Client()
 {
 
 }
     
-AssetCacheClient::~AssetCacheClient()
+Client::~Client()
 {
+    delegate = nullptr;
     SafeDelete(netClient);
 }
 
-bool AssetCacheClient::Connect(const String &ip, uint32 port)
+bool Client::Connect(const String &ip, uint16 port)
 {
     DVASSERT(nullptr == netClient);
     
     netClient = TCPClient::Connect(NET_SERVICE_ID, Net::Endpoint(ip.c_str(), port));
+    netClient->SetDelegate(this);
     
     return (nullptr != netClient);
 }
     
-void AssetCacheClient::Disconnect()
+void Client::Disconnect()
 {
     DVASSERT(nullptr != netClient);
     SafeDelete(netClient);
 }
     
-bool AssetCacheClient::IsConnected()
+bool Client::IsConnected()
 {
     if(netClient)
     {
@@ -71,7 +78,107 @@ bool AssetCacheClient::IsConnected()
     return false;
 }
     
+bool Client::AddToCache(const ClientCacheEntry &entry, const CachedFiles &files)
+{
+    if(IsConnected())
+    {
+        ScopedPtr<KeyedArchive> entryArchieve(new KeyedArchive());
+        entry.Serialize(entryArchieve);
+        
+        ScopedPtr<KeyedArchive> filesArchieve(new KeyedArchive());
+        files.Serialize(filesArchieve);
+
+        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
+        archieve->SetUInt32("PacketID", PACKET_ADD_FILES);
+        
+        archieve->SetArchive("entry", entryArchieve);
+        archieve->SetArchive("files", filesArchieve);
+        
+        return SendArchieve(archieve);
+    }
+    
+    return false;
+}
+    
+bool Client::IsInCache(const ClientCacheEntry &entry)
+{
+    if(IsConnected())
+    {
+        ScopedPtr<KeyedArchive> entryArchieve(new KeyedArchive());
+        entry.Serialize(entryArchieve);
+        
+        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
+        archieve->SetUInt32("PacketID", PACKET_IS_IN_CACHE);
+        
+        archieve->SetArchive("entry", entryArchieve);
+        
+        return SendArchieve(archieve);
+    }
+    
+    return false;
+}
+
+bool Client::GetFromCache(const ClientCacheEntry &entry)
+{
+    if(IsConnected())
+    {
+        ScopedPtr<KeyedArchive> entryArchieve(new KeyedArchive());
+        entry.Serialize(entryArchieve);
+        
+        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
+        archieve->SetUInt32("PacketID", PACKET_GET_FILES);
+        
+        archieve->SetArchive("entry", entryArchieve);
+    }
+    
+    return false;
+}
+    
+bool Client::SendArchieve(KeyedArchive * archieve)
+{
+    DVASSERT(archieve);
+    
+    auto packedSize = archieve->Serialize(nullptr, 0);
+    uint8 *packedData = new uint8[packedSize];
+    
+    DVVERIFY(packedSize == archieve->Serialize(packedData, packedSize));
+    
+    auto packedId = netClient->SendData(packedData, packedSize);
+    Logger::FrameworkDebug("[Client::%s] packedId = %d", __FUNCTION__, packedId);
+    
+    return (packedId != 0);
+}
+
     
     
+void Client::ChannelOpen()
+{
+    Logger::FrameworkDebug("[Client::%s]", __FUNCTION__);
+}
+
+void Client::ChannelClosed(const char8* message)
+{
+    Logger::FrameworkDebug("[Client::%s]", __FUNCTION__);
+}
+
+void Client::PacketReceived(const void* packet, size_t length)
+{
+    Logger::FrameworkDebug("[Client::%s]", __FUNCTION__);
+}
+
+void Client::PacketSent()
+{
+    Logger::FrameworkDebug("[Client::%s]", __FUNCTION__);
+
+//    delete [] static_cast<const char8*>(buffer);
+
+}
+
+void Client::PacketDelivered()
+{
+    Logger::FrameworkDebug("[Client::%s]", __FUNCTION__);
+}
+    
+}; // end of namespace AssetCache
 }; // end of namespace DAVA
 

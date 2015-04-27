@@ -174,7 +174,7 @@ void LandscapeRenderer::BindMaterial(DAVA::UniqueHandle textureStateHandle)
 
 void LandscapeRenderer::UnbindMaterial()
 {
-   // RenderManager::Instance()->SetTexture(0, 0);
+    // RenderManager::Instance()->SetTexture(0, 0);
     
     RenderManager::Instance()->SetShader(NULL);
     RenderManager::Instance()->FlushState();

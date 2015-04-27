@@ -28,22 +28,39 @@
 
 
 
-#include "AssetCache/TCPConnection/TCPClient.h"
-
+#include "AssetCache/AssetCacheServer.h"
+#include "AssetCache/TCPConnection/TCPServer.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
     
-TCPClient * TCPClient::Connect(uint32 service, const Net::Endpoint &endpoint)
+namespace AssetCache
 {
-    auto client = new TCPClient(service, endpoint);
-    return client;
+    
+Server::Server()
+    : netServer(nullptr)
+{
+
 }
     
-TCPClient::TCPClient(uint32 service, const Net::Endpoint & endpoint)
-    : TCPConnection(Net::CLIENT_ROLE, service, endpoint)
+Server::~Server()
 {
+    SafeDelete(netServer);
+}
+
+bool Server::Listen(uint16 port)
+{
+    DVASSERT(nullptr == netServer);
+    
+    netServer = TCPServer::Create(NET_SERVICE_ID, Net::Endpoint(port));
+    
+    return (nullptr != netServer);
 }
     
+
+    
+    
+}; // end of namespace AssetCache
 }; // end of namespace DAVA
 

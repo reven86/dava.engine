@@ -27,23 +27,67 @@
 =====================================================================================*/
 
 
+#ifndef __DAVAENGINE_ASSET_CACHE_CACHED_FILES_H__
+#define __DAVAENGINE_ASSET_CACHE_CACHED_FILES_H__
 
-#include "AssetCache/TCPConnection/TCPClient.h"
-
+#include "Base/BaseTypes.h"
+#include "Base/Data.h"
+#include "FileSystem/FilePath.h"
+#include "Utils/MD5.h"
 
 namespace DAVA
 {
+
+class KeyedArchive;
     
-TCPClient * TCPClient::Connect(uint32 service, const Net::Endpoint &endpoint)
+namespace AssetCache
 {
-    auto client = new TCPClient(service, endpoint);
-    return client;
-}
     
-TCPClient::TCPClient(uint32 service, const Net::Endpoint & endpoint)
-    : TCPConnection(Net::CLIENT_ROLE, service, endpoint)
+class CachedFiles
 {
-}
+public:
     
-}; // end of namespace DAVA
+    CachedFiles(const CachedFiles &) = default;
+    CachedFiles & operator= (const CachedFiles &) = default;
+    
+    CachedFiles();
+    CachedFiles(const FilePath & path);
+    virtual ~CachedFiles() = default;
+    
+    void AddFile(const FilePath &path);
+    Set<FilePath> GetFiles() const;
+    
+    bool IsEmtpy() const;
+    
+    void Serialize(KeyedArchive * archieve) const;
+    void Deserialize(KeyedArchive * archieve);
+    
+    bool operator == (const CachedFiles &cf) const;
+    
+private:
+
+    Set<FilePath> files;
+};
+
+inline void CachedFiles::AddFile(const FilePath &path)
+{
+    files.insert(path);
+}
+
+inline Set<FilePath> CachedFiles::GetFiles() const
+{
+    return files;
+}
+
+inline bool CachedFiles::IsEmtpy() const
+{
+    return (files.size() == 0);
+}
+
+    
+};
+
+};
+
+#endif // __DAVAENGINE_ASSET_CACHE_CACHED_FILES_H__
 

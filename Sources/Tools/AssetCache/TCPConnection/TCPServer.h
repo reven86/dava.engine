@@ -41,7 +41,7 @@ public:
     ~TCPServer() = default;
     
     static TCPServer * Create(uint32 service, const Net::Endpoint & endpoint);
-    
+  
 private:
 
     TCPServer(uint32 service, const Net::Endpoint & endpoint);

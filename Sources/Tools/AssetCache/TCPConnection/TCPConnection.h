@@ -36,6 +36,17 @@
 
 namespace DAVA
 {
+    
+class TCPConnectionDelegate
+{
+public:
+    
+    virtual void ChannelOpen() = 0;
+    virtual void ChannelClosed(const char8* message) = 0;
+    virtual void PacketReceived(const void* packet, size_t length) = 0;
+    virtual void PacketSent() = 0;
+    virtual void PacketDelivered() = 0;
+};
 
 class TCPConnection: public Net::NetService
 {
@@ -43,6 +54,18 @@ public:
 
     ~TCPConnection() override;
 
+    uint32 SendData(const uint8 * data, const size_t dataSize);
+
+    void SetDelegate(TCPConnectionDelegate * delegate);
+    
+    
+    //Net::NetService
+    void ChannelOpen() override;
+    void ChannelClosed(const char8* message) override;
+    void PacketReceived(const void* packet, size_t length) override;
+    void PacketSent() override;
+    void PacketDelivered() override;
+    
 protected:
 
     TCPConnection(Net::eNetworkRole role, uint32 service, const Net::Endpoint & endpoint);
@@ -51,6 +74,7 @@ protected:
     static void Delete(Net::IChannelListener* obj, void* context);
 
     static bool RegisterService(uint32 service);
+    
     
 protected:
     
@@ -61,8 +85,15 @@ protected:
 
     static Set<uint32> registeredServices;
     static Mutex serviceMutex;
+    
+    TCPConnectionDelegate * delegate = nullptr;
 };
 
+
+inline void TCPConnection::SetDelegate(TCPConnectionDelegate * _delegate)
+{
+    delegate = _delegate;
+}
 
 };
 

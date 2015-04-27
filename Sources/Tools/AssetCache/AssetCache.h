@@ -27,23 +27,14 @@
 =====================================================================================*/
 
 
+#ifndef __DAVAENGINE_ASSET_CACHE_SKOPPED_INCLUDE_H__
+#define __DAVAENGINE_ASSET_CACHE_SKOPPED_INCLUDE_H__
 
-#include "AssetCache/TCPConnection/TCPClient.h"
+#include "AssetCache/AssetCacheClient.h"
+#include "AssetCache/AssetCacheServer.h"
+#include "AssetCache/CachedFiles.h"
+#include "AssetCache/ClientCacheEntry.h"
 
 
-namespace DAVA
-{
-    
-TCPClient * TCPClient::Connect(uint32 service, const Net::Endpoint &endpoint)
-{
-    auto client = new TCPClient(service, endpoint);
-    return client;
-}
-    
-TCPClient::TCPClient(uint32 service, const Net::Endpoint & endpoint)
-    : TCPConnection(Net::CLIENT_ROLE, service, endpoint)
-{
-}
-    
-}; // end of namespace DAVA
+#endif // __DAVAENGINE_ASSET_CACHE_SKOPPED_INCLUDE_H__
 
