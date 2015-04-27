@@ -168,6 +168,8 @@ void RootProperty::AddComponentPropertiesSection(ComponentPropertiesSection *sec
             listener->ComponentPropertiesWillBeAdded(this, section, index);
 
         componentProperties.push_back(SafeRetain(section));
+        DVASSERT(section->GetParent() == nullptr);
+        section->SetParent(this);
         section->InstallComponent();
 
         std::stable_sort(componentProperties.begin(), componentProperties.end(), [](ComponentPropertiesSection * left, ComponentPropertiesSection * right) {
@@ -207,6 +209,8 @@ void RootProperty::RemoveComponentPropertiesSection(ComponentPropertiesSection *
         {
             componentProperties.erase(it);
 
+            DVASSERT(section->GetParent() == this);
+            section->SetParent(nullptr);
             section->UninstallComponent();
             section->Release();
         }
@@ -372,6 +376,9 @@ void RootProperty::AddBaseProperties(DAVA::UIControl *control, const RootPropert
     ValueProperty *sourceNameProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetNameProperty();
     nameProperty = new StringProperty("Name", control, DAVA::MakeFunction(&DAVA::UIControl::GetName), DAVA::MakeFunction(&DAVA::UIControl::SetName), dynamic_cast<StringProperty*>(sourceNameProperty), cloneType);
     baseProperties.push_back(nameProperty);
+    
+    for (ValueProperty *prop : baseProperties)
+        prop->SetParent(this);
 }
 
 void RootProperty::MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const RootProperty *sourceProperties, eCloneType copyType)
