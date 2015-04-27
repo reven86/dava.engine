@@ -120,7 +120,8 @@ if( WARNINGS_AS_ERRORS )
 -Wno-direct-ivar-access \
 -Wno-objc-missing-property-synthesis \
 -Wno-over-aligned \
--Wno-unused-exception-parameter" )
+-Wno-unused-exception-parameter \
+-Wno-idiomatic-parentheses" )
 
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
     elseif( WIN32 )
