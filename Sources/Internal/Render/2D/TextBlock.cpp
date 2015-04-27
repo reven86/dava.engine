@@ -852,27 +852,21 @@ void TextBlock::CalculateCacheParams()
         {
             Font::StringMetrics stringSize = font->GetStringMetrics(multilineStrings[line]);
             stringSizes.push_back(stringSize.width);
-            if(requestedSize.dx >= 0)
+            textSize.width = Max(textSize.width, stringSize.width);
+            textSize.drawRect.dx = Max(textSize.drawRect.dx, stringSize.drawRect.dx + stringSize.drawRect.x);
+            textSize.drawRect.x = Min(textSize.drawRect.x, stringSize.drawRect.x);
+            
+            if(0 == line)
             {
-                textSize.width = Max(textSize.width, Min(stringSize.width, (int)drawSize.x));
-                textSize.drawRect.dx = Max(textSize.drawRect.dx, Min(stringSize.drawRect.dx + stringSize.drawRect.x, (int)drawSize.x));
+                textSize.drawRect.y = stringSize.drawRect.y;
             }
-            else
-            {
-                textSize.width = Max(textSize.width, stringSize.width);
-                textSize.drawRect.dx = Max(textSize.drawRect.dx, stringSize.drawRect.dx + stringSize.drawRect.x);
-            }
+
 #if defined(LOCALIZATION_DEBUG)
             if(textSize.width < stringSize.width)
             {
                 visualTextCroped = true;
             }
 #endif
-            textSize.drawRect.x = Min(textSize.drawRect.x, stringSize.drawRect.x);
-            if(0 == line)
-            {
-                textSize.drawRect.y = stringSize.drawRect.y;
-            }
         }
         // Translate right/bottom edge to width/height
         textSize.drawRect.dx -= textSize.drawRect.x;
