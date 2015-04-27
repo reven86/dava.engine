@@ -112,11 +112,11 @@ gles2_TextureFormatSupported( TextureFormat format )
 
     
 //------------------------------------------------------------------------------
-/*
+
 static void GLAPIENTRY
 _OGLErrorCallback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userdata )
 {   
-
+/*
     const char* ssource     = "unknown";
     const char* stype       = "unknown";
     const char* sseverity   = "unknown";
@@ -151,11 +151,14 @@ _OGLErrorCallback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsiz
         case GL_DEBUG_SEVERITY_NOTIFICATION     : sseverity = "notification"; break;
         default                                 : sseverity = "unknown"; break;
     }
-
-    if( type == GL_DEBUG_TYPE_ERROR  ||  type == GL_DEBUG_TYPE_PERFORMANCE )
-        Logger::Error( "[gl] %s\n", message );
-}
 */
+    if( type == GL_DEBUG_TYPE_ERROR  ||  type == GL_DEBUG_TYPE_PERFORMANCE )
+        Logger::Error( "[gl.error] %s\n", message );
+//    else
+//        Logger::Info( "[gl.info] %s\n", message );
+}
+
+
 //------------------------------------------------------------------------------
 
 void
@@ -290,7 +293,7 @@ gles2_Initialize()
             Logger::Info( "  GPU          : %s", glGetString( GL_RENDERER ) );
             Logger::Info( "  GLSL version : %s", glGetString( GL_SHADING_LANGUAGE_VERSION ) );
 
-            #if 0
+            #if 1
             glEnable( GL_DEBUG_OUTPUT );
             glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE );
             glDebugMessageCallback( &_OGLErrorCallback, 0 );

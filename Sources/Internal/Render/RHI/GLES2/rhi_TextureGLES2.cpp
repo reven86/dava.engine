@@ -117,7 +117,7 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
         self->uid        = uid;
         self->mappedData = nullptr;
         self->width      = desc.width;
-        self->height     = desc.width;
+        self->height     = desc.height;
         self->format     = desc.format;
         self->isCubeMap  = desc.type == TEXTURE_TYPE_CUBE;
         self->isMapped   = false;
@@ -231,6 +231,11 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
     Size2i          sz   = TextureExtents( Size2i(self->width,self->height), level );
+    GLint           int_fmt;
+    GLint           fmt;
+    GLenum          type;
+    
+    GetGLTextureFormat( self->format, &int_fmt, &fmt, &type );
     
     DVASSERT(!self->isMapped);
 
@@ -238,7 +243,7 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
     GLCommand   cmd[]  =
     {
         { GLCommand::BIND_TEXTURE, {target, self->uid} },
-        { GLCommand::TEX_IMAGE2D, {target, uint64(level), GL_RGBA, uint64(sz.dx), uint64(sz.dy), 0, GL_BGRA, GL_UNSIGNED_BYTE, (uint64)(data)} },
+        { GLCommand::TEX_IMAGE2D, {target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, (uint64)(data)} },
         { GLCommand::BIND_TEXTURE, {target, 0} }
     };
 
