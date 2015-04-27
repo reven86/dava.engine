@@ -197,6 +197,9 @@ DeviceInfo::StorageInfo JniDeviceInfo::StorageInfoFromJava(jobject object)
 		fieldID = env->GetFieldID(classInfo, "readOnly", "Z");
 		info.readOnly = env->GetBooleanField(object, fieldID);
 
+		fieldID = env->GetFieldID(classInfo, "removable", "Z");
+		info.removable = env->GetBooleanField(object, fieldID);
+		
 		fieldID = env->GetFieldID(classInfo, "emulated", "Z");
 		info.emulated = env->GetBooleanField(object, fieldID);
 

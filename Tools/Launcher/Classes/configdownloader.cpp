@@ -44,7 +44,7 @@ ConfigDownloader::ConfigDownloader(ApplicationManager * manager, QNetworkAccessM
     ui->setupUi(this);
 
     downloader = new FileDownloader(accessManager);
-    connect(ui->cancelButton, SIGNAL(clicked()), downloader, SLOT(Cancel));
+    connect(ui->cancelButton, SIGNAL(clicked()), downloader, SLOT(Cancel()));
     
     connect(downloader, SIGNAL(Finished(QByteArray, QList< QPair<QByteArray, QByteArray> >, int, QString)),
             this, SLOT(DownloadFinished(QByteArray, QList< QPair<QByteArray, QByteArray> >, int, QString)));
