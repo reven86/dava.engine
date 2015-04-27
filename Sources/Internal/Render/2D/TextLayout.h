@@ -79,14 +79,14 @@ public:
 
     /**
      * \brief Set process text and font for text splitting
-     * \param input[in] text to process
-     * \param font[in] font for detecting characters sizes
+     * \param[in] input text to process
+     * \param[in] font font for detecting characters sizes
      */
     void Reset(const WideString& input, const Font& font);
 
     /**
      * \brief Puts cursor to given position
-     * \param position[in] cursor position in input text
+     * \param[in] position cursor position in input text
      */
     void Seek(const uint32 position);
 
