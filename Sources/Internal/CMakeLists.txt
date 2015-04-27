@@ -22,6 +22,8 @@ endif()
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )
 
+set ( IGNORED_RHI_FOLDER "" )
+
 if( ANDROID )
     find_package( ZLIB )
 
@@ -63,6 +65,8 @@ if( ANDROID )
     set ( FRAMEWORK_DEFINITIONS  ${FRAMEWORK_DEFINITIONS} -D__ANDROID__ )
     set ( LIBRARY_OUTPUT_PATH    ${THIRD_PARTY_LIBRARIES_PATH} )
 
+    set ( IGNORED_RHI_FOLDER "Metal" "DX9" )
+
 elseif( MACOS )
     find_package( ZLIB )
     add_definitions( -D__DAVAENGINE_PTHREAD__ ) 
@@ -90,6 +94,8 @@ elseif( MACOS )
     list ( APPEND LIST_SHARED_LIBRARIES ${LIB_LIST}  )   
 
     set_source_files_properties( ${CMAKE_CURRENT_LIST_DIR}/Platform/ThreadPosix.cpp PROPERTIES COMPILE_FLAGS "-x objective-c++" )  
+    
+    set ( IGNORED_RHI_FOLDER "Metal" "DX9" )
 
 elseif( IOS )  
     find_package( ZLIB )
@@ -129,6 +135,8 @@ elseif( IOS )
                                  PROPERTIES COMPILE_FLAGS "-x objective-c++" )  
 
 
+    set ( IGNORED_RHI_FOLDER "DX9" )
+
 elseif( WIN32 ) 
 
     link_directories       ( $ENV{DXSDK_DIR}/lib/x86 )
@@ -144,6 +152,8 @@ elseif( WIN32 )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "msvcrtd.lib" )
 
+    set ( IGNORED_RHI_FOLDER "Metal" )
+
 endif()
 
 if( ZLIB_FOUND )
@@ -152,7 +162,7 @@ if( ZLIB_FOUND )
 endif()
 
 # Define source 
-define_source_folders  ()
+define_source_folders  ( GLOB_ERASE_FOLDERS "${IGNORED_RHI_FOLDER}" )
 generate_source_groups_project ()
 
 include_directories    (.)
