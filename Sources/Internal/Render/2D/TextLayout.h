@@ -36,33 +36,41 @@ namespace DAVA
 class TextLayout
 {
 public:
+    enum WrapMode {
+        WRAP_BY_WORDS = 0,
+        WRAP_BY_SYMBOLS
+    };
+
     TextLayout();
-    TextLayout(const bool useBiDi);
+    TextLayout(const WrapMode wrapMode, const bool useBiDi);
     virtual ~TextLayout();
+
+    void SetWrapMode(const WrapMode mode);
+    const WrapMode GetWrapMode() const;
 
     void Reset(const WideString& input, const Font& font);
     void Seek(const uint32 position);
+    
+    bool HasNext();
+    void Next(const float32 lineWidth);
 
     const WideString& GetText() const;
     const WideString& GetPreparedText() const;
     const WideString GetVisualText(const bool trimEnd) const;
-    const bool IsRtl() const;
-
-    bool HasNext();
-    void Next(const float32 lineWidth, const bool bySymbols = false);
-    void NextByWords(const float32 lineWidth);
-    void NextBySymbols(const float32 lineWidth);
-
     const WideString& GetPreparedLine() const;
     const WideString GetVisualLine(const bool trimEnd) const;
-    
+    const bool IsRtlText() const;
+
 private:
     const WideString BuildVisualString(const WideString& _input, const bool trimEnd) const;
+    void NextByWords(const float32 lineWidth);
+    void NextBySymbols(const float32 lineWidth);
 
     WideString inputText;
     WideString preparedText;
     WideString preparedLine;
     
+    WrapMode wrapMode;
     bool useBiDi;
     bool isRtl;
     Vector<float32> characterSizes;
@@ -86,9 +94,15 @@ inline const WideString& TextLayout::GetPreparedText() const
     return preparedText;
 }
 
-inline const bool TextLayout::IsRtl() const
+inline const bool TextLayout::IsRtlText() const
 {
     return useBiDi && isRtl;
 }
+
+inline const TextLayout::WrapMode TextLayout::GetWrapMode() const
+{
+    return wrapMode;
+}
+
 
 }

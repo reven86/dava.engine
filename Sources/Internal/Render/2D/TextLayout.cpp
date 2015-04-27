@@ -35,14 +35,15 @@ namespace DAVA
 {
 
 TextLayout::TextLayout()
-    : TextLayout(false)
+    : TextLayout(WRAP_BY_WORDS, false)
 {
 }
 
-TextLayout::TextLayout(const bool useBiDi)
-    : useBiDi(useBiDi)
+TextLayout::TextLayout(const WrapMode _wrapMode, const bool _useBiDi)
+    : useBiDi(_useBiDi)
     , isRtl(false)
     , fromPos(0)
+    , wrapMode(_wrapMode)
 {
 }
 
@@ -62,11 +63,14 @@ void TextLayout::Reset(const WideString& _input, const Font& _font)
             bidiHelper.PrepareString(inputText, preparedText, &isRtl);
         }
 
-        StringUtils::GetLineBreaks(preparedText, breaks);
-        DVASSERT(breaks.size() == preparedText.length());
+        if(wrapMode == WRAP_BY_WORDS)
+        {
+            StringUtils::GetLineBreaks(preparedText, breaks);
+            DVASSERT_MSG(breaks.size() == preparedText.length(), "Incorrect breaks information");    
+        }
     }
     
-    // Update characters sizes from font always
+    // Update characters sizes from font
     characterSizes.clear();
     _font.GetStringMetrics(preparedText, &characterSizes);
     DVASSERT(characterSizes.size() == preparedText.length());
@@ -91,20 +95,36 @@ void TextLayout::Seek(const uint32 _position)
     preparedLine.clear();
 }
 
+void TextLayout::SetWrapMode(const WrapMode mode)
+{
+    if (wrapMode != mode)
+    {
+        wrapMode = mode;
+        if (wrapMode == WRAP_BY_WORDS)
+        {
+            StringUtils::GetLineBreaks(preparedText, breaks);
+            DVASSERT_MSG(breaks.size() == preparedText.length(), "Incorrect breaks information");
+        }
+    }
+}
+
 bool TextLayout::HasNext()
 {
     return fromPos < preparedText.length();
 }
 
-void TextLayout::Next(const float32 lineWidth, const bool bySymbols /*= false*/)
+void TextLayout::Next(const float32 lineWidth)
 {
-    if (bySymbols)
+    switch (wrapMode)
     {
-        NextBySymbols(lineWidth);
-    }
-    else
-    {
+    case WRAP_BY_WORDS:
         NextByWords(lineWidth);
+        break;
+    case WRAP_BY_SYMBOLS:
+        NextBySymbols(lineWidth);
+        break;
+    default:
+        DVASSERT_MSG(false, "Use correct WrapMode");
     }
 }
 
@@ -114,6 +134,8 @@ void TextLayout::NextByWords(const float32 lineWidth)
     float32 currentWidth = 0;
     uint32 textLength = (uint32)preparedText.length();
     uint32 lastPossibleBreak = 0;
+
+    DVASSERT_MSG(textLength == breaks.size(), "Reset with wrong wrap mode");
 
     for (uint32 pos = fromPos; pos < textLength; ++pos)
     {
@@ -185,34 +207,24 @@ void TextLayout::NextBySymbols(const float32 lineWidth)
         if (t == L'\n')
         {
             preparedLine = preparedText.substr(fromPos, currentLineEnd - fromPos);
-
             fromPos = pos + 1;
             return;
         }
 
-        if (t == L'\\' && tNext == L'n')
-        {
-            preparedLine = preparedText.substr(fromPos, currentLineEnd - fromPos);
-
-            fromPos = pos + 2;
-            return;
-        }
+        float32 characterSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(characterSizes[pos]);
 
         // Use additional condition to prevent endless loop, when target size is less than
         // size of one symbol (sizes[pos] > targetWidth)
         // To keep initial index logic we should always perform action currentLineDx += sizes[pos]
         // before entering this condition, so currentLineDx > 0.
-        if ((currentLineDx > 0) && ((currentLineDx + VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(characterSizes[pos])) > targetWidth))
+        if ((currentLineDx > 0) && ((currentLineDx + characterSize) > targetWidth))
         {
             preparedLine = preparedText.substr(fromPos, currentLineEnd - fromPos);
-
             fromPos = pos;
             return;
         }
-        else
-        {
-            currentLineDx += VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(characterSizes[pos]);
-        }
+        
+        currentLineDx += characterSize;
     }
 
     preparedLine = preparedText.substr(fromPos, currentLineEnd - fromPos + 1);

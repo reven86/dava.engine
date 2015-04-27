@@ -164,7 +164,7 @@ void SplitTest::SplitByWordsWithNewLine(PerfFuncData * data)
 
 void SplitTest::SplitBySymbolsWithNewLine(PerfFuncData * data)
 {
-    staticText->SetText(L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTING,\nLLC AND\\nCONTRIBUTORS AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES");
+    staticText->SetText(L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTING,\nLLC AND\nCONTRIBUTORS AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES");
     Vector<WideString> resultStrings;
     resultStrings.push_back(L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTIN");
     resultStrings.push_back(L"G,");

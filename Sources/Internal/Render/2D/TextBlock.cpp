@@ -487,10 +487,11 @@ void TextBlock::CalculateCacheParams()
 
     visualText = logicalText;
     
-    TextLayout textLayout(isBiDiSupportEnabled);
+    TextLayout textLayout(isMultilineBySymbolEnabled ? TextLayout::WRAP_BY_SYMBOLS : TextLayout::WRAP_BY_WORDS, isBiDiSupportEnabled);
     Vector<float32> charSizes;
     
     textLayout.Reset(logicalText, *font);
+    isRtl = textLayout.IsRtlText();
 
     visualText = textLayout.GetVisualText(false);
 
@@ -517,7 +518,7 @@ void TextBlock::CalculateCacheParams()
     {
         if (textLayout.HasNext())
         {
-            textLayout.Next(drawSize.dx, isMultilineBySymbolEnabled);
+            textLayout.Next(drawSize.dx);
         }
         treatMultilineAsSingleLine = !textLayout.HasNext();
     }
@@ -711,7 +712,7 @@ void TextBlock::CalculateCacheParams()
             textLayout.Seek(0);
             while (textLayout.HasNext())
             {
-                textLayout.Next(drawSize.dx, isMultilineBySymbolEnabled);
+                textLayout.Next(drawSize.dx);
                 multilineStrings.push_back(textLayout.GetVisualLine(true));
             }
         
@@ -799,7 +800,7 @@ void TextBlock::CalculateCacheParams()
                 textLayout.Reset(logicalText, *font);
                 while (textLayout.HasNext())
                 {
-                    textLayout.Next(drawSize.dx, isMultilineBySymbolEnabled);
+                    textLayout.Next(drawSize.dx);
                     multilineStrings.push_back(textLayout.GetVisualLine(true));
                 }
 
@@ -814,9 +815,8 @@ void TextBlock::CalculateCacheParams()
         textLayout.Reset(logicalText, *font);
         while (textLayout.HasNext())
         {
-            textLayout.Next(drawSize.dx, isMultilineBySymbolEnabled);
-            WideString line = textLayout.GetVisualLine(true);
-            multilineStrings.push_back(line);
+            textLayout.Next(drawSize.dx);
+            multilineStrings.push_back(textLayout.GetVisualLine(true));
         }
 
         int32 yOffset = font->GetVerticalSpacing();
@@ -884,9 +884,7 @@ void TextBlock::CalculateCacheParams()
         textSize.drawRect.dx = Max(textSize.drawRect.dx, (int)drawSize.dx);
     }
 
-    isRtl = textLayout.IsRtl();
-
-    //calc texture size
+    //calculate texture size
     int32 dx = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)textSize.drawRect.dx));
     int32 dy = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)textSize.drawRect.dy));
     int32 ox = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)textSize.drawRect.x));
