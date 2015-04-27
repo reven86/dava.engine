@@ -33,37 +33,138 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace DAVA
 {
 
+/**
+ * \brief TextLayout class
+ * \details Using for splitting text to lines with specified width
+ */
 class TextLayout
 {
 public:
+    /**
+     * Wrap modes for text splitting
+     */
     enum WrapMode {
-        WRAP_BY_WORDS = 0,
-        WRAP_BY_SYMBOLS
+        WRAP_BY_WORDS = 0, //!< Wrap by words
+        WRAP_BY_SYMBOLS //!<  Wrap by symbols
     };
 
+    /**
+     * \brief Create TextLayout with word wrap and disabled bidi transformations
+     */
     TextLayout();
+
+    /**
+     * \brief Create TextLayout with specified wrap mode and bidi transformations
+     * \param[in] wrapMode selected wrap mode (WRAP_BY_WORD or WRAP_BY_SYMBOLS)
+     * \param[in] useBiDi true for enabling bidi transformations
+     */
     TextLayout(const WrapMode wrapMode, const bool useBiDi);
+
+    /**
+     * \brief Destructor
+     */
     virtual ~TextLayout();
 
+    /**
+     * \brief Set current wrap mode
+     * \param[in] mode selected wrap mode, \see WrapMode
+     */
     void SetWrapMode(const WrapMode mode);
+
+    /**
+     * \brief Return current wrap mode
+     * \return current wrap mode
+     */
     const WrapMode GetWrapMode() const;
 
+    /**
+     * \brief Set process text and font for text splitting
+     * \param input[in] text to process
+     * \param font[in] font for detecting characters sizes
+     */
     void Reset(const WideString& input, const Font& font);
+
+    /**
+     * \brief Puts cursor to given position
+     * \param position[in] cursor position in input text
+     */
     void Seek(const uint32 position);
+
+    /**
+     * \brief Returns current cursor position
+     * \return current cursor position
+     */
+    const uint32 Tell() const;
     
+    /**
+     * \brief Checks that text didn't finished yet
+     * \return true if not all text processed
+     */
     bool HasNext();
+
+    /**
+     * \brief Process next text block from current cursor to end and get possible line with specified width or less
+     * \param[in] lineWidth maximum of line width in pixels
+     */
     void Next(const float32 lineWidth);
 
-    const WideString& GetText() const;
-    const WideString& GetPreparedText() const;
-    const WideString GetVisualText(const bool trimEnd) const;
-    const WideString& GetPreparedLine() const;
-    const WideString GetVisualLine(const bool trimEnd) const;
+    /**
+     * \brief Checks that input text is Right-To-Left
+     * \return true if input text is Right-To-Left text or has Right-To-Left blocks
+     */
     const bool IsRtlText() const;
 
+    /**
+     * \brief Returns original text
+     * \return original text that sets with TextLayout::Reset
+     */
+    const WideString& GetOriginalText() const;
+
+    /**
+     * \brief Returns internal representation of original text
+     * \return text after bidi transformations without reordering
+     */
+    const WideString& GetPreparedText() const;
+
+    /**
+     * \brief Returns visual representation of original text
+     * \param[in] trimEnd true for trims whitespace characters on line end
+     * \return text after bidi transformations with reordering and removing non-printable characters
+     */    
+    const WideString GetVisualText(const bool trimEnd) const;
+
+    /**
+     * \brief Returns internal representation of last split line
+     * \return last split line after bidi transformations without reordering
+     */
+    const WideString& GetPreparedLine() const;
+
+    /**
+     * \brief Returns visual representation of last split line
+     * \param[in] trimEnd true for trims whitespace characters on line end
+     * \return last after bidi transformations with reordering and removing non-printable characters
+     */
+    const WideString GetVisualLine(const bool trimEnd) const;
+
 private:
-    const WideString BuildVisualString(const WideString& _input, const bool trimEnd) const;
+    /**
+     * \brief Returns string after bidi reordering and removing non-printable characters
+     * \param[in] input string for processing
+     * \param[in] trimEnd true for trims whitespace characters on line end
+     * \return string after bidi transformations with reordering and removing non-printable characters
+     */
+    const WideString BuildVisualString(const WideString& input, const bool trimEnd) const;
+
+    /**
+     * \brief Split text by words from current cursor position with specified width
+     * \param[in] lineWidth maximum line width in pixels
+     */
     void NextByWords(const float32 lineWidth);
+
+    /**
+     * \brief Split text by symbols from current cursor position with specified width
+     * \param[in] lineWidth maximum line width in pixels
+     */
     void NextBySymbols(const float32 lineWidth);
 
     WideString inputText;
@@ -84,7 +185,7 @@ inline const WideString& TextLayout::GetPreparedLine() const
     return preparedLine;
 }
 
-inline const WideString& TextLayout::GetText() const
+inline const WideString& TextLayout::GetOriginalText() const
 {
     return inputText;
 }
@@ -102,6 +203,11 @@ inline const bool TextLayout::IsRtlText() const
 inline const TextLayout::WrapMode TextLayout::GetWrapMode() const
 {
     return wrapMode;
+}
+
+inline const uint32 TextLayout::Tell() const
+{
+    return fromPos;
 }
 
 
