@@ -127,7 +127,8 @@ if( WARNINGS_AS_ERRORS )
 -Wno-overriding-method-mismatch \
 -Wno-method-signatures \
 -Wno-receiver-forward-class \
--Wno-semicolon-before-method-body" )
+-Wno-semicolon-before-method-body \
+-Wno-import-preprocessor-directive-pedantic" )
 
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
     elseif( WIN32 )
