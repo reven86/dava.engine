@@ -40,7 +40,7 @@
 namespace DAVA
 {
 
-DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinationDir, const FilePath &workingDir, const String &gameVersion, const FilePath &resVersionPath, DLCFlags flags)
+DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinationDir, const FilePath &workingDir, const String &gameVersion, const FilePath &resVersionPath, bool forceFullUpdate)
 : dlcState(DS_INIT)
 , dlcError(DE_NO_ERROR)
 , patchingThread(NULL)
@@ -66,7 +66,7 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
     // initial values
     dlcContext.remoteUrl = url;
     dlcContext.localVer = 0;
-    dlcContext.flags = flags;
+    dlcContext.forceFullUpdate = forceFullUpdate;
 
     dlcContext.localWorkingDir = workingDir;
     dlcContext.localDestinationDir = destinationDir;
@@ -92,16 +92,10 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
 
     dlcContext.downloadInfoStorePath = workingDir + "Download.info";
     dlcContext.stateInfoStorePath = workingDir + "State.info";
-    dlcContext.flagsStorePath = workingDir + "Flags.info";
     dlcContext.prevState = 0;
-    dlcContext.prevFlags = static_cast<uint32>(DLCFlags::DF_NONE);
 
-    ReadUint32(dlcContext.remoteVerStotePath, dlcContext.remoteVer);
     ReadUint32(dlcContext.stateInfoStorePath, dlcContext.prevState);
-    ReadUint32(dlcContext.flagsStorePath, dlcContext.prevFlags);
-
-    // remember new flags
-    WriteUint32(dlcContext.flagsStorePath, static_cast<uint32>(flags));
+    ReadUint32(dlcContext.remoteVerStotePath, dlcContext.remoteVer);
 
     // FSM variables
     fsmAutoReady = false;
@@ -196,8 +190,8 @@ void DLC::FSM(DLCEvent event)
 
                 case EVENT_CHECK_START:
                     // if last time stopped on the patching state and patch file exists - continue patching
-                    if( DS_PATCHING == dlcContext.prevState && 
-                        static_cast<uint32>(dlcContext.flags) == dlcContext.prevFlags &&
+                    if( !dlcContext.forceFullUpdate &&
+                        DS_PATCHING == dlcContext.prevState &&
                         dlcContext.remotePatchStorePath.Exists() &&
                         dlcContext.remoteVerStotePath.Exists())
                     {
@@ -464,7 +458,7 @@ void DLC::StepCheckInfoBegin()
         return;
     }
 
-    if(!(dlcContext.flags & DLCFlags::DF_FORCE_FULL_UPDATE))
+    if(!dlcContext.forceFullUpdate)
     {
         ReadUint32(dlcContext.localVerStorePath, dlcContext.localVer);
     }
@@ -533,6 +527,9 @@ void DLC::StepCheckPatchBegin()
         f->Release();
     }
 
+    dlcContext.remotePatchLiteSize = 0;
+    dlcContext.remotePatchFullSize = 0;
+
     dlcContext.remotePatchFullUrl = dlcContext.remoteUrl + MakePatchUrl(0, dlcContext.remoteVer);
     dlcContext.remotePatchLiteUrl = dlcContext.remoteUrl + MakePatchUrl(dlcContext.localVer, dlcContext.remoteVer);
 
@@ -560,20 +557,23 @@ void DLC::StepCheckPatchFinish(const uint32 &id, const DownloadStatus &status)
 
             // when lite id finishing, full id should be already finished
             DVASSERT(DL_FINISHED == statusFull);
-    
+
+            DownloadManager::Instance()->GetTotal(dlcContext.remoteLiteSizeDownloadId, dlcContext.remotePatchLiteSize);
+            DownloadManager::Instance()->GetTotal(dlcContext.remoteFullSizeDownloadId, dlcContext.remotePatchFullSize);
+
             if(DLE_NO_ERROR == downloadErrorLite)
             {
                 dlcContext.remotePatchUrl = dlcContext.remotePatchLiteUrl;
-                DownloadManager::Instance()->GetTotal(dlcContext.remoteLiteSizeDownloadId, dlcContext.remotePatchSize);
+                dlcContext.remotePatchSize = dlcContext.remotePatchLiteSize;
 
                 PostEvent(EVENT_CHECK_OK);
             }
             else
             {
-                if(DL_FINISHED == statusFull && DLE_NO_ERROR == downloadErrorFull)
+                if(DLE_NO_ERROR == downloadErrorFull)
                 {
                     dlcContext.remotePatchUrl = dlcContext.remotePatchFullUrl;
-                    DownloadManager::Instance()->GetTotal(dlcContext.remoteFullSizeDownloadId, dlcContext.remotePatchSize);
+                    dlcContext.remotePatchSize = dlcContext.remotePatchFullSize;
 
                     PostEvent(EVENT_CHECK_OK);
                 }
@@ -677,9 +677,13 @@ void DLC::StepDownloadPatchBegin()
 
         lastSize = atoi(lastSizeStr.c_str());
 
-        // last url is same as we are trying to download now
-        if(lastUrl == dlcContext.remotePatchUrl && lastSize == dlcContext.remotePatchSize)
+        // if last url is same as current full or lite url we should continue downloading it
+        if( (lastUrl == dlcContext.remotePatchFullUrl && lastSize == dlcContext.remotePatchFullSize) ||
+            (lastUrl == dlcContext.remotePatchLiteUrl && lastSize == dlcContext.remotePatchLiteSize))
         {
+            dlcContext.remotePatchUrl = lastUrl;
+            dlcContext.remotePatchSize = lastSize;
+
             // now we can resume last download
             donwloadType = RESUMED;
         }
@@ -808,7 +812,14 @@ void DLC::StepPatchFinish()
             break;
 
         default:
-            (dlcContext.remotePatchUrl == dlcContext.remotePatchFullUrl) ? PostError(DE_PATCH_ERROR_FULL) : PostError(DE_PATCH_ERROR_LITE);
+            if(!dlcContext.remotePatchUrl.empty() && dlcContext.remotePatchUrl == dlcContext.remotePatchFullUrl)
+            {
+                PostError(DE_PATCH_ERROR_FULL);
+            }
+            else
+            {
+                PostError(DE_PATCH_ERROR_LITE);
+            }
             break;
     }
 
@@ -932,7 +943,6 @@ void DLC::StepDone()
     {
         FileSystem::Instance()->DeleteFile(dlcContext.remoteVerStotePath);
         FileSystem::Instance()->DeleteFile(dlcContext.stateInfoStorePath);
-        FileSystem::Instance()->DeleteFile(dlcContext.flagsStorePath);
     }
 
     Logger::Info("DLC: Done!");
@@ -993,19 +1003,6 @@ String DLC::MakePatchUrl(uint32 localVer, uint32 remoteVer)
     }
 
     return ret;
-}
-
-
-DLC::DLCFlags operator|(DLC::DLCFlags a, DLC::DLCFlags b)
-{
-    using enum_type = std::underlying_type<DLC::DLCFlags>::type;
-    return static_cast<DLC::DLCFlags>(static_cast<enum_type>(a) | static_cast<enum_type>(b));
-}
-
-bool operator&(DLC::DLCFlags a, DLC::DLCFlags b)
-{
-    using enum_type = std::underlying_type<DLC::DLCFlags>::type;
-    return (0 != (static_cast<enum_type>(a)& static_cast<enum_type>(b)));
 }
 
 }

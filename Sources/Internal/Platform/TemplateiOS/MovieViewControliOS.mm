@@ -93,7 +93,7 @@ void MovieViewControl::SetRect(const Rect& rect)
     playerViewRect.size.height = physicalRect.dy;
 	
 	// Apply the Retina scale divider, if any.
-    DAVA::float32 scaleDivider = [HelperAppDelegate GetScale];
+    DAVA::float32 scaleDivider = Core::Instance()->GetScreenScaleFactor();
 	playerViewRect.origin.x /= scaleDivider;
 	playerViewRect.origin.y /= scaleDivider;
 	playerViewRect.size.height /= scaleDivider;

@@ -583,3 +583,14 @@ void SceneSelectionSystem::SetSelectionComponentMask(DAVA::uint64 mask)
     }
 }
 
+void SceneSelectionSystem::Activate()
+{
+    SetLocked(false);
+}
+
+void SceneSelectionSystem::Deactivate()
+{
+    SetLocked(true);
+}
+
+
