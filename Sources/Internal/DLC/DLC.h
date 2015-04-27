@@ -173,7 +173,6 @@ protected:
         PatchFileReader::PatchError patchingError;
 
         FilePath stateInfoStorePath;
-        FilePath flagsStorePath;
         FilePath downloadInfoStorePath;
         uint32 prevState;
     };
