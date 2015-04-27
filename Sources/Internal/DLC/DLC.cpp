@@ -842,7 +842,7 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
     bool applySuccess = true;
     const PatchInfo *patchInfo = nullptr;
 
-    auto applyPatchesFn = [&](bool allowTruncate, std::function<bool(const PatchInfo* info)> confitionFn)
+    auto applyPatchesFn = [&](bool allowTruncate, std::function<bool(const PatchInfo* info)> conditionFn)
     {
         if(applySuccess)
         {
@@ -866,7 +866,7 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
             while(applySuccess && nullptr != patchInfo && dlcContext.patchInProgress)
             {
                 // Patch will be applied only if it fit condition, specified by caller
-                if(confitionFn(patchInfo))
+                if(conditionFn(patchInfo))
                 {
                     applySuccess = patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath());
                     if(applySuccess)
