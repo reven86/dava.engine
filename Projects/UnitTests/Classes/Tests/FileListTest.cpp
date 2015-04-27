@@ -60,7 +60,7 @@ void FileListTest::ResTestFunction(PerfFuncData * data)
 
     ScopedPtr<FileList> fileList( new FileList("~res:/TestData/FileListTest/") );
 
-    TEST_VERIFY(fileList->GetDirectoryCount() == 3);
+    TEST_VERIFY(fileList->GetDirectoryCount() == 4);
     TEST_VERIFY(fileList->GetFileCount() == 0);
 
     for(int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
@@ -75,7 +75,7 @@ void FileListTest::ResTestFunction(PerfFuncData * data)
         if(filename == "Folder1")
         {
             TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder1/");
-            TEST_VERIFY(files->GetFileCount() == 3);
+            TEST_VERIFY(files->GetFileCount() == 4);
 
             for(int32 ifi = 0; ifi < files->GetCount(); ++ifi)
             {
@@ -87,6 +87,10 @@ void FileListTest::ResTestFunction(PerfFuncData * data)
                 if(filename == "file1")
                 {
                     TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder1/file1");
+                }
+                else if (filename == ".file1")
+                {
+                    TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder1/.file1");
                 }
                 else if(filename == "file2.txt")
                 {
@@ -101,6 +105,11 @@ void FileListTest::ResTestFunction(PerfFuncData * data)
                     TEST_VERIFY(false);
                 }
             }
+        }
+        else if (filename == ".Folder1")
+        {
+            TEST_VERIFY(pathname == "~res:/TestData/FileListTest/.Folder1/");
+            TEST_VERIFY(files->GetFileCount() == 1);
         }
         else if(filename == "Folder2")
         {
@@ -209,7 +218,7 @@ void FileListTest::DocTestFunction(PerfFuncData * data)
                 {
                     TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder1/file1");
                 }
-                if(filename == ".file1")
+                else if(filename == ".file1")
                 {
                     TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder1/.file1");
                 }
@@ -226,6 +235,11 @@ void FileListTest::DocTestFunction(PerfFuncData * data)
                     TEST_VERIFY(false);
                 }
             }
+        }
+        else if (filename == ".Folder1")
+        {
+            TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/.Folder1/");
+            TEST_VERIFY(files->GetFileCount() == 1);
         }
         else if(filename == "Folder2")
         {
@@ -300,6 +314,17 @@ void FileListTest::DocTestFunction(PerfFuncData * data)
     }
 }
 
+auto GetIndex = [](const FileList* files, DAVA::String filename)
+{
+    auto i = 0;
+    for (; i < files->GetCount(); ++i)
+    {
+        if (files->GetFilename(i) == filename)
+            break;
+    }
+    return i;
+};
+
 void FileListTest::HiddenFileTest(PerfFuncData* data)
 {
     Logger::Debug(__FUNCTION__);
@@ -308,7 +333,7 @@ void FileListTest::HiddenFileTest(PerfFuncData* data)
     
     FilePath file1 = FilePath("~res:/TestData/FileListTest/Folder1/file1");
     auto file1str = file1.GetAbsolutePathname();
-    auto attrs = GetFileAttributesA(dir1str.c_str());
+    auto attrs = GetFileAttributesA(file1str.c_str());
     
     if (attrs & FILE_ATTRIBUTE_HIDDEN)
     {
@@ -316,16 +341,18 @@ void FileListTest::HiddenFileTest(PerfFuncData* data)
     }
 
     ScopedPtr<FileList> files(new FileList("~res:/TestData/FileListTest/Folder1/"));
-    files->Sort();
     TEST_VERIFY(files->GetFileCount() == 4);
-    TEST_VERIFY(files->IsHidden(2) == false);
-    
+    auto i = GetIndex(files, "file1");
+    TEST_VERIFY(i < files->GetCount());
+    TEST_VERIFY(files->IsHidden(i) == false);
+
     SetFileAttributesA(file1str.c_str(), attrs | FILE_ATTRIBUTE_HIDDEN);
 
     files = new FileList("~res:/TestData/FileListTest/Folder1/");
-    files->Sort();
     TEST_VERIFY(files->GetFileCount() == 4);
-    TEST_VERIFY(files->IsHidden(2) == true);
+    i = GetIndex(files, "file1");
+    TEST_VERIFY(i < files->GetCount());
+    TEST_VERIFY(files->IsHidden(i) == true);
 
     SetFileAttributesA(file1str.c_str(), attrs);
     
@@ -333,7 +360,7 @@ void FileListTest::HiddenFileTest(PerfFuncData* data)
     
     ScopedPtr<FileList> files(new FileList("~res:/TestData/FileListTest/Folder1/"));
     TEST_VERIFY(files->GetFileCount() == 4);
-    for (auto i=0; i < files->GetCount(); ++i)
+    for (auto i = 0; i < files->GetCount(); ++i)
     {
         if (!files->IsDirectory(i))
         {
@@ -361,16 +388,18 @@ void FileListTest::HiddenDirTest(PerfFuncData* data)
     }
     
     ScopedPtr<FileList> files(new FileList("~res:/TestData/FileListTest/"));
-    files->Sort();
     TEST_VERIFY(files->GetDirectoryCount() == 4);
-    TEST_VERIFY(files->IsHidden(2) == false);
+    auto i = GetIndex(files, "Folder1");
+    TEST_VERIFY(i < files->GetCount());
+    TEST_VERIFY(files->IsHidden(i) == false);
     
     SetFileAttributesA(dir1str.c_str(), attrs | FILE_ATTRIBUTE_HIDDEN);
     
     files = new FileList("~res:/TestData/FileListTest/");
-    files->Sort();
     TEST_VERIFY(files->GetDirectoryCount() == 4);
-    TEST_VERIFY(files->IsHidden(2) == true);
+    i = GetIndex(files, "Folder1");
+    TEST_VERIFY(i < files->GetCount());
+    TEST_VERIFY(files->IsHidden(i) == true);
     
     SetFileAttributesA(dir1str.c_str(), attrs);
     
@@ -378,7 +407,7 @@ void FileListTest::HiddenDirTest(PerfFuncData* data)
     
     ScopedPtr<FileList> files(new FileList("~res:/TestData/FileListTest/"));
     TEST_VERIFY(files->GetDirectoryCount() == 4);
-    for (auto i=0; i < files->GetCount(); ++i)
+    for (auto i = 0; i < files->GetCount(); ++i)
     {
         if (files->IsDirectory(i))
         {
