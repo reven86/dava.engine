@@ -842,18 +842,21 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
     bool applySuccess = true;
     const PatchInfo *patchInfo = nullptr;
 
-    auto applyPatchesFn = [&](bool truncate, std::function<bool(const PatchInfo* info)> confitionFn)
+    auto applyPatchesFn = [&](bool allowTruncate, std::function<bool(const PatchInfo* info)> confitionFn)
     {
         if(applySuccess)
         {
-            // If truncate we should go from last patch on the first one, otherwise we will go in
-            // a old style way - from first to last. This  will allow as to support old patch files,
-            // that don't have reverse pass.
-            if(truncate)
+            bool truncate = false;
+
+            // To be able to truncate patch-file we should go from last patch to the first one.
+            // If incoming patch-file doesn't support reverse pass we will try to apply it without truncation.
+            // This will allow us to support old patch files.
+            if(allowTruncate && patchReader.ReadLast())
             {
-                patchReader.ReadLast();
+                truncate = true;
             }
-            else
+
+            if(!truncate)
             {
                 patchReader.ReadFirst();
             }
@@ -872,7 +875,7 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
                     }
                 }
 
-                // Go to the next patch and check if we need to truncate applyid patch
+                // Go to the next patch and check if we need to truncate applied patch
                 if(applySuccess && dlcContext.patchInProgress)
                 {
                     if(truncate)
@@ -899,7 +902,7 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
         });
 
     // no errors on first step - continue applying patches, that increase resources size
-    applyPatchesFn((dlcContext.flags & DLCFlags::DF_TRUNCATE_PATCHFILE),
+    applyPatchesFn(true,
         [](const PatchInfo* info) 
         { 
             return info->newSize > info->origSize; 

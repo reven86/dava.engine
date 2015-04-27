@@ -488,11 +488,10 @@ bool PatchFileReader::ReadLast()
         curPatchPos = patchFile->GetSize();
         curPatchSize = 0;
 
-        ReadPrev();
+        ret = ReadPrev();
     }
 
     return ret;
-
 }
 
 bool PatchFileReader::ReadPrev()
