@@ -121,19 +121,14 @@ bool PatchInfo::ReadString(File* file, String &str)
     {
         if(len > 0)
         {
-            char8 *buffer = new(std::nothrow) char8[len + 1];
-            if(nullptr != buffer)
+            String tmpStr;
+            tmpStr.resize(len);
+            rlen = file->Read(&tmpStr[0], tmpStr.size());
+
+            if(rlen == tmpStr.size())
             {
-                buffer[len] = 0;
-                rlen = file->Read(buffer, len);
-
-                if(rlen == len)
-                {
-                    str = buffer;
-                    ret = true;
-                }
-
-                SafeDeleteArray(buffer);
+                str.swap(tmpStr);
+                ret = true;
             }
         }
         else

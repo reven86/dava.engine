@@ -357,6 +357,7 @@ bool File::Truncate(int32 size)
 #elif defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     return (0 == ftruncate(fileno(file), size));
 #else
+#error No implementation for current platform
     return false;
 #endif
 }
