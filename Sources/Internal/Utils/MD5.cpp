@@ -110,7 +110,7 @@ void MD5::RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRec
     fileList->Sort();
 	for(int i = 0; i < fileList->GetCount(); ++i)
 	{
-        if (includeHidden && fileList->IsHidden(i))
+        if (fileList->IsHidden(i) && !includeHidden)
         {
             continue;
         }
