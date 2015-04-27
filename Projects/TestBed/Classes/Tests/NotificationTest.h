@@ -41,19 +41,20 @@ public:
 protected:
 	~NotificationScreen() {}
 public:
-	virtual void LoadResources();
-	virtual void UnloadResources();
-	virtual void WillAppear();
-	virtual void WillDisappear();
+    
+    void TestFunction(TestTemplate<NotificationScreen>::PerfFuncData *data);
+    
+	void LoadResources() override;
+	void UnloadResources() override;
+	void WillAppear() override;
+	void WillDisappear() override;
 
-	virtual void Update(float32 timeElapsed);
-	virtual void Draw(const UIGeometricData &geometricData);
+	void Update(float32 timeElapsed) override;
+	void Draw(const UIGeometricData &geometricData) override;
 
 	void UpdateNotification();
 
 private:
-	void ReturnBack(BaseObject *obj, void *data, void *callerData);
-
 	void OnNotifyText(BaseObject *obj, void *data, void *callerData);
 	void OnHideText(BaseObject *obj, void *data, void *callerData);
 	void OnNotifyProgress(BaseObject *obj, void *data, void *callerData);
@@ -74,8 +75,6 @@ private:
 	LocalNotificationText *notificationText;
 
 	uint32 progress;
-    
-    bool isFinished = false;
 };
 
 #endif

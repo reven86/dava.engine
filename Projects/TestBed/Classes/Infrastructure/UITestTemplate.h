@@ -31,6 +31,7 @@
 
 #include "DAVAEngine.h"
 #include "TestTemplate.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 using namespace DAVA;
 
@@ -45,12 +46,12 @@ protected:
 public:
     UITestTemplate(const String & screenName);
 
-    virtual void LoadResources();
-    virtual void UnloadResources();
-    virtual bool RunTest(int32 testNum);
+    void LoadResources() override;
+    void UnloadResources() override;
+    bool RunTest(int32 testNum) override;
 
-    virtual void DidAppear();
-    virtual void Update(float32 timeElapsed);
+    void DidAppear() override;
+    void Update(float32 timeElapsed) override;
 
 private:
 
@@ -88,7 +89,9 @@ void UITestTemplate<T>::LoadResources()
     DVASSERT(font);
     font->SetSize(20);
     
-    finishButton = new UIButton(Rect(0, 0, 300, 30));
+    Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+    
+    finishButton = new UIButton(Rect(screenSize.dx-300, screenSize.dy-30, 300, 30));
     finishButton->SetStateFont(0xFF, font);
     finishButton->SetStateText(0xFF, L"Finish Test");
     finishButton->SetStateFontColor(0xFF, Color::White);

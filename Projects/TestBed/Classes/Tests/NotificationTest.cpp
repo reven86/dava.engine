@@ -34,18 +34,24 @@ using namespace DAVA;
 
 NotificationScreen::NotificationScreen()
     : UITestTemplate<NotificationScreen>("NotificationScreen")
-    , showNotificationText(NULL)
-	, showNotificationProgress(NULL)
-	, hideNotificationProgress(NULL)
-	, returnButton(NULL)
-	, notificationProgress(NULL)
-	, notificationText(NULL)
+    , showNotificationText(nullptr)
+	, showNotificationProgress(nullptr)
+	, hideNotificationProgress(nullptr)
+	, returnButton(nullptr)
+	, notificationProgress(nullptr)
+	, notificationText(nullptr)
 	, progress(0)
+{
+    RegisterFunction(this, &NotificationScreen::TestFunction, Format("NotificationScreen test"), nullptr);
+}
+
+void NotificationScreen::TestFunction(TestTemplate<NotificationScreen>::PerfFuncData *data)
 {
 }
 
 void NotificationScreen::LoadResources()
 {
+    UITestTemplate::LoadResources();
 	Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
 	DVASSERT(font);
 
@@ -87,21 +93,13 @@ void NotificationScreen::LoadResources()
 	hideNotificationProgress->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnHideProgress));
 	AddControl(hideNotificationProgress);
 
-	returnButton = new UIButton(Rect(10, 410, 450, 60));
-	returnButton->SetStateFont(0xFF, font);
-	returnButton->SetStateFontColor(0xFF, Color::White);
-	returnButton->SetStateText(0xFF, L"Back to test list");
-
-	returnButton->SetDebugDraw(true);
-	returnButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::ReturnBack));
-	AddControl(returnButton);
-
-
 	SafeRelease(font);
 }
 
 void NotificationScreen::UnloadResources()
 {
+    UITestTemplate::UnloadResources();
+
     RemoveAllControls();
     SafeRelease(returnButton);
     SafeRelease(showNotificationText);
@@ -119,7 +117,10 @@ void NotificationScreen::WillDisappear()
 
 void NotificationScreen::Update(float32 timeElapsed)
 {
-	if (NULL == notificationProgress)
+    
+    UITestTemplate::Update(timeElapsed);
+                               
+	if (nullptr == notificationProgress)
 		return;
 
 	static float32 timeCounter = 0;
@@ -145,7 +146,7 @@ void NotificationScreen::Draw(const UIGeometricData &geometricData)
 
 void NotificationScreen::UpdateNotification()
 {
-	if (NULL == notificationProgress)
+	if (nullptr == notificationProgress)
 		return;
 
 	if (100 == progress)
@@ -156,23 +157,9 @@ void NotificationScreen::UpdateNotification()
 	notificationProgress->SetProgressCurrent(progress++);
 }
 
-void NotificationScreen::ReturnBack(BaseObject *obj, void *data, void *callerData)
-{
-    if (nullptr != notificationProgress)
-    {
-        notificationProgress->Hide();
-    }
-    if (nullptr != notificationText)
-    {
-        notificationText->Hide();
-    }
-//	UIScreenManager::Instance()->SetScreen(SCREEN_START);
-    isFinished = true;
-}
-
 void NotificationScreen::OnNotifyText(BaseObject *obj, void *data, void *callerData)
 {
-	if (NULL == notificationText)
+	if (nullptr == notificationText)
 	{
 		notificationText = LocalNotificationController::Instance()->CreateNotificationText();
         notificationText->Update();
@@ -201,7 +188,7 @@ void NotificationScreen::OnHideText(BaseObject *obj, void *data, void *callerDat
 
 void NotificationScreen::OnNotifyProgress(BaseObject *obj, void *data, void *callerData)
 {
-	if (NULL == notificationProgress)
+	if (nullptr == notificationProgress)
 	{
 		notificationProgress = LocalNotificationController::Instance()->CreateNotificationProgress(L"", L"", 100, 0);
 		notificationProgress->SetAction(Message(this, &NotificationScreen::OnNotificationProgressPressed));
