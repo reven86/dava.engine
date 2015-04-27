@@ -61,12 +61,12 @@ void CoreWin32PlatformBase::InitArgs()
 
 void CoreWin32PlatformBase::Quit()
 {
-#ifdef __DAVAENGINE_WINDOWS__DESKTOP_
+#ifdef __DAVAENGINE_WINDOWS_DESKTOP__
 
     PostQuitMessage(0);
 	exit(0);
 
-#elif __DAVAENGINE_WINDOWS__STORE_
+#elif __DAVAENGINE_WINDOWS_STORE__
 
     Windows::ApplicationModel::Core::CoreApplication::Exit();
 
