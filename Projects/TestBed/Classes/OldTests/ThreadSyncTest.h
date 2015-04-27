@@ -58,6 +58,7 @@ public:
 private:
     Thread * someThread;
 
+    Mutex cvMutex;
     ConditionalVariable cv;
     int someValue;
 };

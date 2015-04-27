@@ -26,54 +26,56 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __NOTIFICATION_SCREEN_H__
+#define __NOTIFICATION_SCREEN_H__
 
 #include "DAVAEngine.h"
-#include "GameCore.h"
- 
+#include "UITestTemplate.h"
+
 using namespace DAVA;
 
-
-void FrameworkDidLaunched()
+class NotificationScreen : public UITestTemplate<NotificationScreen>
 {
-#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+public:
+	NotificationScreen();
+protected:
+	~NotificationScreen() {}
+public:
+	virtual void LoadResources();
+	virtual void UnloadResources();
+	virtual void WillAppear();
+	virtual void WillDisappear();
+
+	virtual void Update(float32 timeElapsed);
+	virtual void Draw(const UIGeometricData &geometricData);
+
+	void UpdateNotification();
+
+private:
+	void ReturnBack(BaseObject *obj, void *data, void *callerData);
+
+	void OnNotifyText(BaseObject *obj, void *data, void *callerData);
+	void OnHideText(BaseObject *obj, void *data, void *callerData);
+	void OnNotifyProgress(BaseObject *obj, void *data, void *callerData);
+	void OnHideProgress(BaseObject *obj, void *data, void *callerData);
+
+	void OnNotificationTextPressed(BaseObject *obj, void *data, void *callerData);
+	void OnNotificationProgressPressed(BaseObject *obj, void *data, void *callerData);
+
+private:
+	UIButton *showNotificationText;
+	UIButton *hideNotificationText;
+	UIButton *showNotificationProgress;
+	UIButton *hideNotificationProgress;
+
+	UIButton *returnButton;
+
+	LocalNotificationProgress *notificationProgress;
+	LocalNotificationText *notificationText;
+
+	uint32 progress;
     
-#define WIDTH   1024
-#define HEIGHT  768
-    
-    
-    KeyedArchive * appOptions = new KeyedArchive();
-    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
+    bool isFinished = false;
+};
 
-    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_3_0);
-
-    appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
-    
-    appOptions->SetInt32("width", WIDTH);
-    appOptions->SetInt32("height", HEIGHT);
-    
-    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
-    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(WIDTH, HEIGHT, "Gfx");
-    
-#else
-    KeyedArchive * appOptions = new KeyedArchive();
-
-    appOptions->SetInt32("width",    1024);
-    appOptions->SetInt32("height", 768);
-
-    appOptions->SetInt32("fullscreen", 0);
-    appOptions->SetInt32("bpp", 32);
-    appOptions->SetString(String("title"), String("Unit Tests"));
-
-    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(1024, 768);
-    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
-#endif 
-
-    GameCore * core = new GameCore();
-    DAVA::Core::SetApplicationCore(core);
-    DAVA::Core::Instance()->SetOptions(appOptions);
-}
-
-void FrameworkWillTerminate()
-{
-
-}
+#endif
