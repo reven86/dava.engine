@@ -39,10 +39,10 @@ namespace DAVA
 
 #define FMOD_VERIFY(command) \
 	{ \
-	FMOD_RESULT result = command; \
-	if(result != FMOD_OK && result != FMOD_ERR_EVENT_FAILED) \
+	FMOD_RESULT execResult = command; \
+	if(execResult != FMOD_OK && execResult != FMOD_ERR_EVENT_FAILED) \
 	{ \
-		Logger::Error("FMOD: %s file:%s line:%d failed with error: %s", #command, __FILE__, __LINE__, FMOD_ErrorString(result)); \
+		Logger::Error("FMOD: %s file:%s line:%d failed with error: %s", #command, __FILE__, __LINE__, FMOD_ErrorString(execResult)); \
 	} \
 } \
 

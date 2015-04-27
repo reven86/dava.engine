@@ -33,8 +33,6 @@
 #include "DAVAEngine.h"
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "WindowsSpecifics.h"
-
 namespace DAVA
 {
 

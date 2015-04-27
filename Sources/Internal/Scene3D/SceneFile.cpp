@@ -823,7 +823,7 @@ void SceneFile::ProcessLOD(Entity *forRootNode)
             }
             else 
             {//if layer is dummy
-                Entity *ln = (*it)->GetParent()->FindByName(Format("%s_lod%ddummy", nodeName.c_str(), i).c_str());
+                ln = (*it)->GetParent()->FindByName(Format("%s_lod%ddummy", nodeName.c_str(), i).c_str());
                 if (ln) 
                 {
                     if (debugLogEnabled) 

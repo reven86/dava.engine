@@ -659,8 +659,8 @@ void SceneFileV2::LoadDataNode(DataNode * parent, File * file)
         
         if (isDebugLogEnabled)
         {
-            String name = archive->GetString("name");
-            Logger::FrameworkDebug("- %s(%s)", name.c_str(), node->GetClassName().c_str());
+            String arcName = archive->GetString("name");
+            Logger::FrameworkDebug("- %s(%s)", arcName.c_str(), node->GetClassName().c_str());
         }
         node->Load(archive, &serializationContext);
         AddToNodeMap(node);
@@ -709,8 +709,8 @@ void SceneFileV2::LoadDataHierarchy(Scene * scene, DataNode * root, File * file,
         
         if (isDebugLogEnabled)
         {
-            String name = archive->GetString("name");
-            Logger::FrameworkDebug("%s %s(%s)", GetIndentString('-', level).c_str(), name.c_str(), node->GetClassName().c_str());
+            String arcName = archive->GetString("name");
+            Logger::FrameworkDebug("%s %s(%s)", GetIndentString('-', level).c_str(), arcName.c_str(), node->GetClassName().c_str());
         }
 
         node->Load(archive, &serializationContext);
@@ -813,8 +813,8 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
     {
         if(isDebugLogEnabled)
         {
-            String name = archive->GetString("name");
-            Logger::FrameworkDebug("%s %s(%s)", GetIndentString('-', level).c_str(), name.c_str(), node->GetClassName().c_str());
+            String arcName = archive->GetString("name");
+            Logger::FrameworkDebug("%s %s(%s)", GetIndentString('-', level).c_str(), arcName.c_str(), node->GetClassName().c_str());
         }
 
         if (!skipNode && (keepUnusedQualityEntities||QualitySettingsSystem::Instance()->IsQualityVisible(node)))

@@ -160,9 +160,9 @@ bool RenderTechniqueSingleton::LoadRenderTechniqueFromYamlNode(const YamlNode * 
             if (definesNode)
             {
                 int32 count = definesNode->GetCount();
-                for (int32 k = 0; k < count; ++k)
+                for (int32 n = 0; n < count; ++n)
                 {
-                    const YamlNode * singleDefineNode = definesNode->Get(k);
+                    const YamlNode * singleDefineNode = definesNode->Get(n);
                     definesSet.Insert(FastName(singleDefineNode->AsString().c_str()));
                 }
             }

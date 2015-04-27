@@ -82,7 +82,7 @@ public:
 	void * GetMacOSXCursor();
     static void MoveToCenterOfWindow();
 #endif 
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_WINDOWS_DESKTOP__) || defined(__DAVAENGINE_MACOS__)
     static void ShowSystemCursor(bool show);
 #endif
     

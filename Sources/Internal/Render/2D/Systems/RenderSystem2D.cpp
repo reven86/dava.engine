@@ -1000,11 +1000,11 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
             float32 cosA = cosf(state->angle);
             for(int32 k = 0; k < 4; ++k)
             {
-                float32 x = spriteTempVertices[(k << 1)] - state->position.x;
-                float32 y = spriteTempVertices[(k << 1) + 1] - state->position.y;
+                float32 coordX = spriteTempVertices[(k << 1)] - state->position.x;
+                float32 coordY = spriteTempVertices[(k << 1) + 1] - state->position.y;
 
-                float32 nx = (x) * cosA  - (y) * sinA + state->position.x;
-                float32 ny = (x) * sinA  + (y) * cosA + state->position.y;
+                float32 nx = (coordX) * cosA  - (coordY) * sinA + state->position.x;
+                float32 ny = (coordX) * sinA  + (coordY) * cosA + state->position.y;
 
                 spriteTempVertices[(k << 1)] = nx;
                 spriteTempVertices[(k << 1) + 1] = ny;
@@ -1115,19 +1115,19 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
         Rect clipRect;
         if( sprite->flags & Sprite::EST_SCALE )
         {
-            float32 x = state->position.x - state->pivotPoint.x * state->scale.x;
-            float32 y = state->position.y - state->pivotPoint.y * state->scale.y;
-            clipRect = Rect(  sprite->GetRectOffsetValueForFrame( state->frame, Sprite::X_OFFSET_TO_ACTIVE ) * state->scale.x + x
-                            , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::Y_OFFSET_TO_ACTIVE ) * state->scale.y + y
+            float32 coordX = state->position.x - state->pivotPoint.x * state->scale.x;
+            float32 coordY = state->position.y - state->pivotPoint.y * state->scale.y;
+            clipRect = Rect(  sprite->GetRectOffsetValueForFrame( state->frame, Sprite::X_OFFSET_TO_ACTIVE ) * state->scale.x + coordX
+                            , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::Y_OFFSET_TO_ACTIVE ) * state->scale.y + coordY
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_WIDTH  ) * state->scale.x
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_HEIGHT ) * state->scale.y );
         }
         else
         {
-            float32 x = state->position.x - state->pivotPoint.x;
-            float32 y = state->position.y - state->pivotPoint.y;
-            clipRect = Rect(  sprite->GetRectOffsetValueForFrame( state->frame, Sprite::X_OFFSET_TO_ACTIVE ) + x
-                            , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::Y_OFFSET_TO_ACTIVE ) + y
+            float32 coordX = state->position.x - state->pivotPoint.x;
+            float32 coordY = state->position.y - state->pivotPoint.y;
+            clipRect = Rect(  sprite->GetRectOffsetValueForFrame( state->frame, Sprite::X_OFFSET_TO_ACTIVE ) + coordX
+                            , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::Y_OFFSET_TO_ACTIVE ) + coordY
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_WIDTH )
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_HEIGHT ) );
         }

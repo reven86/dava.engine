@@ -213,7 +213,7 @@ namespace DAVA
         
         AABBox3 cellBox = GetCellBox(cellX, cellY, cellZ);
         Vector3 stepSize = cellBox.GetSize();
-        stepSize /= stepCount;
+        stepSize /= float32(stepCount);
         
         
         Vector3 directions[6] =

@@ -39,44 +39,39 @@ namespace DAVA
 
 void  UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & resultString)
 {
-	resultString = L"";
-
 	int32 wstringLen = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, size, NULL, NULL);
-	if (!wstringLen)
+    resultString.resize(wstringLen);
+    if (!wstringLen)
 	{
 		return;
 	}
 
-	wchar_t* buf = new wchar_t[wstringLen];
-	int32 convertRes = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, size, buf, wstringLen);
-	if (convertRes)
+	int32 convertRes = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, size, &resultString[0], wstringLen);
+	if (!convertRes)
 	{
-		resultString = WideString(buf, wstringLen);
+		resultString.clear();
 	}
-
-	delete[] buf;
-};
+}
 
 String UTF8Utils::EncodeToUTF8(const WideString& wstring)
 {
-	int32 bufSize = WideCharToMultiByte(CP_UTF8, 0, wstring.c_str(), -1, 0, 0, NULL, NULL);
-	if (!bufSize)
-	{
-		return "";
-	}
+    return EncodeToUTF8(wstring.c_str(), wstring.size());
+}
 
-	String resStr = "";
+String DAVA::UTF8Utils::EncodeToUTF8(const wchar_t * wstring, uint_t lenght)
+{
+    int32 bufSize = WideCharToMultiByte(CP_UTF8, 0, wstring, lenght, 0, 0, NULL, NULL);
+    if (bufSize == 0)
+    {
+        return "";
+    }
 
-	char* buf = new char[bufSize];
-	int32 res = WideCharToMultiByte(CP_UTF8, 0, wstring.c_str(), -1, buf, bufSize, NULL, NULL);
-	if (res)
-	{
-		resStr = String(buf);
-	}
+    String result;
+    result.resize(size_t(bufSize));
 
-	delete[] buf;
-	return resStr;
-};
+    WideCharToMultiByte(CP_UTF8, 0, wstring, lenght, &result[0], bufSize, NULL, NULL);
+    return result;
+}
 
 };
 

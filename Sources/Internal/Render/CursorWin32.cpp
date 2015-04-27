@@ -32,7 +32,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Render/RenderManager.h"
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 void DAVA::Cursor::ShowSystemCursor(bool show)
 {
     ShowCursor(show);

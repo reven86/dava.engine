@@ -275,6 +275,7 @@ protected:
 public:
     INTROSPECTION_EXTEND(UIList, UIControl,
         PROPERTY("orientation",  InspDesc("List orientation", GlobalEnumMap<UIList::eListOrientation>::Instance()), GetOrientation, SetOrientation, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("aggregatorPath", "Aggregator Path", GetAggregatorPath, SetAggregatorPath, I_SAVE | I_VIEW | I_EDIT)
         );
 };
 };

@@ -145,7 +145,7 @@ public:
     // Should be called after full release
 	void ReleaseSingletons();
 
-	Vector<String> & GetCommandLine(); 
+	const Vector<String> & GetCommandLine(); 
 	bool IsConsoleMode();
 	
 public:

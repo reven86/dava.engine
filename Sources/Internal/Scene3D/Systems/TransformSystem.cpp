@@ -97,7 +97,7 @@ void TransformSystem::FindNodeThatRequireUpdate(Entity * entity)
     
     while(stackPosition > 0)
     {
-        Entity * entity = stack[--stackPosition];
+        entity = stack[--stackPosition];
         
         if (entity->GetFlags() & Entity::TRANSFORM_NEED_UPDATE)
         {
@@ -135,7 +135,7 @@ void TransformSystem::TransformAllChildEntities(Entity * entity)
     
     while(stackPosition > 0)
     {
-        Entity * entity = stack[--stackPosition];
+        entity = stack[--stackPosition];
         
         TransformComponent * transform = (TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT);
         if(transform->parentMatrix)

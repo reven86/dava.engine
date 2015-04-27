@@ -594,7 +594,7 @@ void Core::SetCommandLine(const DAVA::String& cmdLine)
     Split(cmdLine, " ", commandLine);
 }
 
-Vector<String> & Core::GetCommandLine()
+const Vector<String> & Core::GetCommandLine()
 {
 	return commandLine;
 }
