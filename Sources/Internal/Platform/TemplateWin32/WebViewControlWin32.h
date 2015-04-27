@@ -31,6 +31,8 @@
 #ifndef __WEBVIEWCONTROL_WIN32_H__
 #define __WEBVIEWCONTROL_WIN32_H__
 
+#if defined __DAVAENGINE_WINDOWS_DESKTOP__
+
 #pragma warning(push)
 #pragma warning(disable: 4005)//prevent 'macros redefinition' warning in winerror.h vs dxgitype.h
 #include <MsHTML.h>
@@ -203,4 +205,7 @@ inline bool WebViewControl::IsRenderToTexture() const
 }
 
 };
+
+#endif //__DAVAENGINE_WINDOWS_DESKTOP__
+
 #endif //__WEBVIEWCONTROL_WIN32_H__

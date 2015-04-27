@@ -30,6 +30,8 @@
 // recursive on all control paths, function will cause runtime stack overflow
 // and only then include DAVA includes because of free, malloc redefine error
 
+#if defined __DAVAENGINE_WINDOWS_DESKTOP__
+
 #pragma warning(push)
 #pragma warning(disable: 4717)
 #include <atlbase.h>
@@ -1165,3 +1167,5 @@ void WebViewControl::CleanData()
 }
 
 } // end namespace DAVA
+
+#endif //__DAVAENGINE_WINDOWS_DESKTOP__
