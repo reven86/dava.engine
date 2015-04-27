@@ -118,7 +118,8 @@ namespace DAVA
 
 - (id)init
 {
-	if (self = [super init])
+    self = [super init];
+	if (seft)
 	{
 		mainWindowController = self;
 		openGLView = nil;

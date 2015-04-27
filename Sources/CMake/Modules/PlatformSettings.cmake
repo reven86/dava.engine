@@ -118,7 +118,9 @@ if( WARNINGS_AS_ERRORS )
 -Wno-infinite-recursion \
 -Wno-objc-interface-ivars \
 -Wno-direct-ivar-access \
--Wno-objc-missing-property-synthesis" )
+-Wno-objc-missing-property-synthesis \
+-Wno-over-aligned \
+-Wno-unused-exception-parameter" )
 
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
     elseif( WIN32 )
