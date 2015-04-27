@@ -113,6 +113,7 @@ if( WARNINGS_AS_ERRORS )
 -Wno-old-style-cast \
 -Wno-cstring-format-directive \
 -Wno-duplicate-enum \
+-Wno-unreachable-code-break \
 -Wno-unreachable-code-return" )
 
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
