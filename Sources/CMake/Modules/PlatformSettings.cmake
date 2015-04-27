@@ -124,7 +124,8 @@ if( WARNINGS_AS_ERRORS )
 -Wno-idiomatic-parentheses \
 -Wno-vla-extension \
 -Wno-vla \
--Wno-overriding-method-mismatch" )
+-Wno-overriding-method-mismatch \
+-Wno-method-signatures" )
 
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
     elseif( WIN32 )
