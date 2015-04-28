@@ -9,12 +9,16 @@ NameProperty::NameProperty(ControlNode *anControl, const NameProperty *sourcePro
     , control(anControl) // weak ptr
     , prototypeProperty(nullptr)
 {
-    if (cloneType == CT_INHERIT)
+    if (sourceProperty)
     {
-        prototypeProperty = sourceProperty;
+        SetValue(sourceProperty->GetValue());
+        if (cloneType == CT_INHERIT)
+        {
+            prototypeProperty = sourceProperty;
+        }
     }
 }
-    
+
 NameProperty::~NameProperty()
 {
     control = nullptr; // weak ptr
@@ -26,6 +30,7 @@ void NameProperty::Refresh()
     if (prototypeProperty)
     {
         SetDefaultValue(prototypeProperty->GetValue());
+        ApplyValue(defaultValue);
     }
     ValueProperty::Refresh();
 }

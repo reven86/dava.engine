@@ -99,28 +99,41 @@ void PackageNode::RemoveListener(PackageListener *listener)
 void PackageNode::SetControlProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue)
 {
     node->GetRootProperty()->SetProperty(property, newValue);
-    node->RefreshPropertyInInstances(property);
     
     for (PackageListener *listener : listeners)
         listener->ControlPropertyWasChanged(node, property);
+
+    RefreshPropertiesInInstances(node, property);
 }
 
 void PackageNode::SetControlDefaultProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue)
 {
     node->GetRootProperty()->SetDefaultProperty(property, newValue);
-    node->RefreshPropertyInInstances(property);
 
     for (PackageListener *listener : listeners)
         listener->ControlPropertyWasChanged(node, property);
+
+    RefreshPropertiesInInstances(node, property);
 }
 
 void PackageNode::ResetControlProperty(ControlNode *node, AbstractProperty *property)
 {
     node->GetRootProperty()->ResetProperty(property);
-    node->RefreshPropertyInInstances(property);
-
+    
     for (PackageListener *listener : listeners)
         listener->ControlPropertyWasChanged(node, property);
+    
+    RefreshPropertiesInInstances(node, property);
+}
+
+void PackageNode::RefreshProperty(ControlNode *node, AbstractProperty *property)
+{
+    node->GetRootProperty()->RefreshProperty(property);
+    
+    for (PackageListener *listener : listeners)
+        listener->ControlPropertyWasChanged(node, property);
+
+    RefreshPropertiesInInstances(node, property);
 }
 
 void PackageNode::AddComponent(ControlNode *node, ComponentPropertiesSection *section)
@@ -217,4 +230,18 @@ void PackageNode::CollectPackages(Set<PackageRef*> &packageRefs, ControlNode *no
     
     for (int32 index = 0; index < node->GetCount(); index++)
         CollectPackages(packageRefs, node->Get(index));
+}
+
+void PackageNode::RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property)
+{
+    for (ControlNode *instance : node->GetInstances())
+    {
+        AbstractProperty *instanceProperty = instance->GetRootProperty()->FindPropertyByPrototype(property);
+        DVASSERT(instanceProperty);
+        if (instanceProperty)
+        {
+            instance->GetRootProperty()->RefreshProperty(instanceProperty);
+            RefreshProperty(instance, instanceProperty);
+        }
+    }
 }

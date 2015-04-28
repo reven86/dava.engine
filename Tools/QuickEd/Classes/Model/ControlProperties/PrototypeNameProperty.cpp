@@ -1,14 +1,19 @@
 #include "PrototypeNameProperty.h"
 
-PrototypeNameProperty::PrototypeNameProperty(const DAVA::String &propName, DAVA::UIControl *anObject, const PrototypeNameProperty *sourceProperty, eCloneType cloneType)
-    : ValueProperty(propName)
+#include "../PackageHierarchy/ControlNode.h"
+#include "../PackageHierarchy/ControlPrototype.h"
+
+using namespace DAVA;
+
+PrototypeNameProperty::PrototypeNameProperty(ControlNode *aNode, const PrototypeNameProperty *sourceProperty, eCloneType cloneType)
+    : ValueProperty("Prototype")
+    , node(aNode) // weak
 {
-    object = SafeRetain(anObject);
 }
 
 PrototypeNameProperty::~PrototypeNameProperty()
 {
-    SafeRelease(object);
+    node = nullptr; // weak
 }
 
 void PrototypeNameProperty::Serialize(PackageSerializer *serializer) const
@@ -23,10 +28,27 @@ AbstractProperty::ePropertyType PrototypeNameProperty::GetType() const
 
 DAVA::VariantType PrototypeNameProperty::GetValue() const
 {
-    return DAVA::VariantType();
+    if (node->GetPrototype())
+    {
+        if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
+        {
+            return VariantType(node->GetPathToPrototypeChild(true));
+        }
+        else
+        {
+            return VariantType(node->GetPrototype()->GetName(true));
+        }
+    }
+
+    return VariantType(String("-"));
+}
+
+bool PrototypeNameProperty::IsReadOnly() const
+{
+    return true;
 }
 
 void PrototypeNameProperty::ApplyValue(const DAVA::VariantType &value)
 {
+    // do nothing
 }
-

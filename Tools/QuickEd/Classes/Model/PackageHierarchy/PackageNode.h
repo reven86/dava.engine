@@ -42,7 +42,8 @@ public:
     void SetControlProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue);
     void SetControlDefaultProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue);
     void ResetControlProperty(ControlNode *node, AbstractProperty *property);
-    
+    void RefreshProperty(ControlNode *node, AbstractProperty *property);
+
     void AddComponent(ControlNode *node, ComponentPropertiesSection *section);
     void RemoveComponent(ControlNode *node, ComponentPropertiesSection *section);
     
@@ -58,6 +59,7 @@ public:
     
 private:
     void CollectPackages(DAVA::Set<PackageRef*> &packageRefs, ControlNode *node) const;
+    void RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property);
     
 private:
     PackageRef *packageRef;

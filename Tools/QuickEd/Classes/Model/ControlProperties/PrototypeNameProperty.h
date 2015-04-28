@@ -2,14 +2,14 @@
 #define __UI_EDITOR_PROTOTYPE_NAME_PROPERTY__
 
 #include "ValueProperty.h"
-#include <Base\Function.h>
-#include <UI\UIControl.h>
+
+class ControlNode;
 
 class PrototypeNameProperty : public ValueProperty
 {
 
 public:
-    PrototypeNameProperty(const DAVA::String &propName, DAVA::UIControl *anObject, const PrototypeNameProperty *sourceProperty, eCloneType cloneType);
+    PrototypeNameProperty(ControlNode *aNode, const PrototypeNameProperty *sourceProperty, eCloneType cloneType);
 
 protected:
     virtual ~PrototypeNameProperty();
@@ -19,12 +19,13 @@ public:
 
     virtual ePropertyType GetType() const override;
     virtual DAVA::VariantType GetValue() const override;
+    virtual bool IsReadOnly() const override;
 
 protected:
     virtual void ApplyValue(const DAVA::VariantType &value);
 
-protected:
-    DAVA::UIControl *object;
+private:
+    ControlNode *node; // weak
 };
 
 #endif //__UI_EDITOR_PROTOTYPE_NAME_PROPERTY__

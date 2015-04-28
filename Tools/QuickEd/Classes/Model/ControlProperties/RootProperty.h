@@ -11,6 +11,7 @@ class PackageSerializer;
 class PropertyListener;
 class ValueProperty;
 class NameProperty;
+class PrototypeNameProperty;
 class ControlNode;
 
 namespace DAVA
@@ -31,7 +32,7 @@ public:
 
     ValueProperty *GetClassProperty() const { return classProperty; }
     ValueProperty *GetCustomClassProperty() const { return customClassProperty; }
-    ValueProperty *GetPrototypeProperty() const { return prototypeProperty; }
+    PrototypeNameProperty *GetPrototypeProperty() const { return prototypeProperty; }
     NameProperty *GetNameProperty() const { return nameProperty; }
     
     ControlPropertiesSection *GetControlPropertiesSection(const DAVA::String &name) const;
@@ -73,7 +74,7 @@ private:
 
     ValueProperty *classProperty;
     ValueProperty *customClassProperty;
-    ValueProperty *prototypeProperty;
+    PrototypeNameProperty *prototypeProperty;
     NameProperty *nameProperty;
 
     DAVA::Vector<ValueProperty *> baseProperties;

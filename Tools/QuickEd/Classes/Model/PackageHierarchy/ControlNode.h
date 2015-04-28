@@ -35,7 +35,6 @@ public:
 public:
     ControlNode *Clone();
     
-    void RefreshPropertyInInstances(AbstractProperty *property);
     void Add(ControlNode *node) override;
     void InsertAtIndex(int index, ControlNode *node) override;
     void Remove(ControlNode *node) override;
@@ -65,6 +64,7 @@ public:
     void MarkAsAlive();
 
     void Serialize(PackageSerializer *serializer, PackageRef *currentPackage) const;
+    DAVA::String GetPathToPrototypeChild(bool withRootPrototypeName = false) const;
 
 private:
     void CollectPrototypeChildrenWithChanges(DAVA::Vector<ControlNode*> &out) const;

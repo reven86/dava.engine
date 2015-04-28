@@ -102,20 +102,6 @@ ControlNode *ControlNode::Clone()
     return new ControlNode(this);
 }
 
-void ControlNode::RefreshPropertyInInstances(AbstractProperty *property)
-{
-    for (ControlNode *instance : instances)
-    {
-        AbstractProperty *instanceProperty = instance->rootProperty->FindPropertyByPrototype(property);
-        DVASSERT(instanceProperty);
-        if (instanceProperty)
-        {
-            instance->rootProperty->RefreshProperty(instanceProperty);
-            instance->RefreshPropertyInInstances(instanceProperty);
-        }
-    }
-}
-
 void ControlNode::Add(ControlNode *node)
 {
     DVASSERT(node->GetParent() == nullptr);
@@ -299,14 +285,7 @@ void ControlNode::Serialize(PackageSerializer *serializer, PackageRef *currentPa
     }
     else if (creationType == CREATED_FROM_PROTOTYPE_CHILD)
     {
-        String path = GetName();
-        PackageBaseNode *p = GetParent();
-        while (p != nullptr && p->GetControl() != nullptr && static_cast<ControlNode*>(p)->GetCreationType() != CREATED_FROM_PROTOTYPE)
-        {
-            path = p->GetName() + "/" + path;
-            p = p->GetParent();
-        }
-        serializer->PutValue("path", path);
+        serializer->PutValue("path", GetPathToPrototypeChild(false));
     }
     else
     {
@@ -344,6 +323,30 @@ void ControlNode::Serialize(PackageSerializer *serializer, PackageRef *currentPa
     }
     
     serializer->EndMap();
+}
+
+String ControlNode::GetPathToPrototypeChild(bool withRootPrototypeName) const
+{
+    if (creationType == CREATED_FROM_PROTOTYPE_CHILD)
+    {
+        String path = GetName();
+        PackageBaseNode *p = GetParent();
+        while (p != nullptr && p->GetControl() != nullptr && static_cast<ControlNode*>(p)->GetCreationType() != CREATED_FROM_PROTOTYPE)
+        {
+            path = p->GetName() + "/" + path;
+            p = p->GetParent();
+        }
+        
+        if (withRootPrototypeName && p != nullptr && p->GetControl() != nullptr && static_cast<ControlNode*>(p)->GetCreationType() == CREATED_FROM_PROTOTYPE)
+        {
+            ControlNode *c = static_cast<ControlNode*>(p);
+            if (c->GetPrototype())
+                path = c->GetPrototype()->GetName(true) + "/" + path;
+        }
+        
+        return path;
+    }
+    return "";
 }
 
 void ControlNode::CollectPrototypeChildrenWithChanges(Vector<ControlNode*> &out) const
