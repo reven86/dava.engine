@@ -70,6 +70,7 @@ namespace PipelineStateGLES2
 {
 void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle ps, uint32 vdeclUID );
+void        SetVertexDeclToRHI( Handle ps, uint32 vdeclUID );
 }
 
 namespace DepthStencilStateGLES2

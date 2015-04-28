@@ -67,6 +67,8 @@ PacketList_t
     Handle      defDepthStencilState;
     Handle      defSamplerState;
 
+    Handle      curVertexStream[MAX_VERTEX_STREAM_COUNT];
+
     // debug
     uint32  batchIndex;
 };
@@ -132,9 +134,9 @@ CreateIndexBuffer( uint32 size )
 //------------------------------------------------------------------------------
 
 void
-DeleteIndexBuffer( HIndexBuffer vb )
+DeleteIndexBuffer( HIndexBuffer ib )
 {
-    VertexBuffer::Delete( vb );
+    IndexBuffer::Delete( ib );
 }
 
 
@@ -620,6 +622,10 @@ BeginPacketList( HPacketList packetList )
     CommandBuffer::SetCullMode( pl->cmdBuf, CULL_NONE );
     pl->curCullMode = CULL_NONE;
 
+    for( unsigned i=0; i!=countof(pl->curVertexStream); ++i )
+        pl->curVertexStream[i] = InvalidHandle;
+
+
     pl->batchIndex = 0;
 }
 
@@ -681,7 +687,11 @@ AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
 
         for( unsigned i=0; i!=p->vertexStreamCount; ++i )
         {
-            rhi::CommandBuffer::SetVertexData( cmdBuf, p->vertexStream[i] );
+            if( p->vertexStream[i] != pl->curVertexStream[i] )
+            {
+                rhi::CommandBuffer::SetVertexData( cmdBuf, p->vertexStream[i] );
+                pl->curVertexStream[i] = p->vertexStream[i];
+            }
         }
     
         if( p->indexBuffer != InvalidHandle )

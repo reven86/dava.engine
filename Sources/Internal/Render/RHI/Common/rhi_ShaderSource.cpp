@@ -205,6 +205,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     memset( line+mbegin+sl, ' ', sn-sl );
                 sampler.resize( sampler.size()+1 );
                 sampler.back().uid  = FastName(sname);
+                sampler.back().type = TEXTURE_TYPE_2D;
 
                 code.append( line, strlen(line) );
                 code.push_back( '\n' );

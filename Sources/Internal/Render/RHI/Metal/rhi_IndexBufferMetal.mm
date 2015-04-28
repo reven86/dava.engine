@@ -66,7 +66,6 @@ metal_IndexBuffer_Delete( Handle ib )
 
     if( self )
     {
-        delete self;
     }
 }
 

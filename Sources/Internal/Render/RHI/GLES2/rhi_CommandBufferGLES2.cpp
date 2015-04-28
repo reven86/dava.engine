@@ -529,6 +529,7 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
     const void* vp_const_data[MAX_CONST_BUFFER_COUNT];
     Handle      fp_const[MAX_CONST_BUFFER_COUNT];
     const void* fp_const_data[MAX_CONST_BUFFER_COUNT];
+    Handle      cur_vb    = InvalidHandle;
 
     for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
     {
@@ -612,7 +613,15 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
             
             case GLES2__SET_VERTEX_DATA :
             {
-                VertexBufferGLES2::SetToRHI( (Handle)(arg[0]) );
+                Handle  vb = (Handle)(arg[0]);
+
+                VertexBufferGLES2::SetToRHI( vb );
+                if( cur_vb != vb )
+                {
+                    PipelineStateGLES2::SetVertexDeclToRHI( cur_ps, cur_vdecl );
+                    cur_vb = vb;
+                }
+                
                 c += 2;
             }   break;
             
@@ -640,6 +649,7 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                     cur_ps    = ps;
                     cur_vdecl = vdecl;
                     last_ps   = InvalidHandle;
+                    cur_vb    = InvalidHandle;
                 }
 
                 c += 2;
