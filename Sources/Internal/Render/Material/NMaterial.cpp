@@ -160,7 +160,7 @@ Texture* NMaterial::GetMaterialTexture(const FastName& slotName)
     return res;
 }
 
-void NMaterial::AddProperty(const FastName& propName, float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize)
+void NMaterial::AddProperty(const FastName& propName, const float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize)
 {
     DVASSERT(localProperties.at(propName) == nullptr);
     NMaterialProperty *prop = new NMaterialProperty();
@@ -183,7 +183,7 @@ void NMaterial::RemoveProperty(const FastName& propName)
     InvalidateBufferBindings();
 }
 
-void NMaterial::SetPropertyValue(const FastName& propName, float32 *propData)
+void NMaterial::SetPropertyValue(const FastName& propName, const float32 *propData)
 {
     NMaterialProperty *prop = localProperties.at(propName);
     DVASSERT(prop != nullptr);

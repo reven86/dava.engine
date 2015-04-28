@@ -66,12 +66,12 @@ RenderObject::~RenderObject()
 	}
 }
   
-void RenderObject::AddRenderBatch(RenderBatch * batch)
+uint32 RenderObject::AddRenderBatch(RenderBatch * batch)
 {
-	AddRenderBatch(batch, -1, -1);
+	return AddRenderBatch(batch, -1, -1);
 }
   
-void RenderObject::AddRenderBatch(RenderBatch * batch, int32 _lodIndex, int32 _switchIndex)
+uint32 RenderObject::AddRenderBatch(RenderBatch * batch, int32 _lodIndex, int32 _switchIndex)
 {    
 	batch->Retain();
     DVASSERT((batch->GetRenderObject() == 0) || (batch->GetRenderObject() == this));
@@ -92,6 +92,8 @@ void RenderObject::AddRenderBatch(RenderBatch * batch, int32 _lodIndex, int32 _s
         renderSystem->RegisterBatch(batch);
             
     RecalcBoundingBox();
+
+    return (uint32)(renderBatchArray.size() - 1);
 }
 
 void RenderObject::RemoveRenderBatch(RenderBatch * batch)

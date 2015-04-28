@@ -46,7 +46,7 @@ struct NMaterialProperty
     std::unique_ptr<float32[]> data;
     uint32 updateSemantic;
 
-    inline void SetPropertyValue(float32 *newValue);    
+    inline void SetPropertyValue(const float32 *newValue);    
     inline static uint32 GetCurrentUpdateSemantic(){ return globalPropertyUpdateSemanticCounter; }
 private:
     static uint32 globalPropertyUpdateSemanticCounter;
@@ -96,9 +96,9 @@ public:
     void Load(KeyedArchive * archive, SerializationContext * serializationContext) override;
 
     /*properties*/
-    void AddProperty(const FastName& propName, float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize = 1);
+    void AddProperty(const FastName& propName, const float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize = 1);
     void RemoveProperty(const FastName& propName);
-    void SetPropertyValue(const FastName& propName, float32 *propData);
+    void SetPropertyValue(const FastName& propName, const float32 *propData);
     bool HasLocalProperty(const FastName& propName);
 
     /*textures*/
@@ -134,7 +134,7 @@ private:
 
     bool NeedLocalOverride(UniquePropertyLayout propertyLayout);
     void ClearLocalBuffers();
-    void  InjectChildBuffer(UniquePropertyLayout propLayoutId, MaterialBufferBinding* buffer);
+    void InjectChildBuffer(UniquePropertyLayout propLayoutId, MaterialBufferBinding* buffer);
 
     MaterialBufferBinding* GetConstBufferBinding(UniquePropertyLayout propertyLayout);
     NMaterialProperty* GetMaterialProperty(const FastName& propName);
@@ -172,7 +172,7 @@ private:
 
 
 
-void NMaterialProperty::SetPropertyValue(float32 *newValue)
+void NMaterialProperty::SetPropertyValue(const float32 *newValue)
 {
     //4 is because register size is float4
     Memcpy(data.get(), newValue, sizeof(float32) * 4 * ShaderDescriptor::CalculateRegsCount(type, arraySize));

@@ -118,7 +118,6 @@ public:
         TOP = 2,
         BOTTOM = 3,
     };
-#if RHI_COMPLETE
 	Landscape();
 	virtual ~Landscape();
 
@@ -208,21 +207,6 @@ public:
 	virtual Texture * GetTexture(eTextureLevel level);
     
 	/**
-        \brief Get texture name that was previously set in SetTexture.
-        \param[in] level level of texture you want to get name
-        \returns current texture name
-	 */
-    const FilePath & GetTextureName(eTextureLevel level);
-
-	/**
-        \brief Set texture name for export.
-        \param[in] level level of texture you want to set name
-        \param[in] newTextureName new texture name
-	 */
-    void SetTextureName(eTextureLevel level, const FilePath &newTextureName);
-    
-    
-	/**
         \brief Set tiling for specific texture level.
         This function gives you can control of tiling for specific landscape level.
      */    
@@ -240,7 +224,7 @@ public:
     /**
         \brief Overloaded draw function to draw landscape
      */
-	virtual void Draw(Camera * camera);
+    virtual void PrepareToRender(Camera * camera);
 
 	/**
         \brief Get landscape mesh geometry.
@@ -266,7 +250,7 @@ public:
 	
 	void SetLandscapeHeight(float32 newHeight);
     
-    void Create(NMaterial *fromMaterial = NULL);
+    void Create(NMaterial * materialParent = NULL);
     void Save(KeyedArchive * archive, SerializationContext * serializationContext);
     void Load(KeyedArchive * archive, SerializationContext * serializationContext);
 
@@ -296,7 +280,6 @@ public:
 
 protected:
 	
-	const static FastName PARAM_CAMERA_POSITION;
 	const static FastName PARAM_TEXTURE0_TILING;
 	const static FastName PARAM_TEXTURE1_TILING;
 	const static FastName PARAM_TEXTURE2_TILING;
@@ -336,12 +319,9 @@ protected:
     LandQuadTreeNode<LandscapeQuad> * FindNodeWithXY(LandQuadTreeNode<LandscapeQuad> * currentNode, int16 quadX, int16 quadY, int16 quadSize);
     void FindNeighbours(LandQuadTreeNode<LandscapeQuad> * currentNode);
     void MarkFrames(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 & depth);
-
-    void BindMaterial(int32 lodLayer, Camera* camera);
-    void UnbindMaterial();
     
     void DrawQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod);
-    void Draw(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippingFlags);
+    void Draw(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippingFlags, Camera * camera);
     void DrawFans();
 
     Texture * CreateTexture(eTextureLevel level, const FilePath & textureName);
@@ -352,8 +332,6 @@ protected:
 	int GetMaxLod(float32 quadDistance);
 	float32 GetQuadToCameraDistance(const Vector3& camPos, const LandscapeQuad& quad);
 	
-	void SetupMaterialProperties();
-	
 	void SetSpecularColor(const Color& color);
 	Color GetSpecularColor();
 	void SetSpecularShininess(const float32& shininess);
@@ -362,13 +340,16 @@ protected:
 	FilePath GetSpecularMapPath();
     
     void SetLandscapeSize(const Vector3 & newSize);
-	
-    Vector<LandscapeVertex *> landscapeVerticesArray;
-    Vector<RenderDataObject *> landscapeRDOArray;
     
+    struct LandscapeBatch
+    {
+        RenderBatch * renderBatch = nullptr; //PolygonGroup used here only as pair VertexBuffer + IndexBuffer 
+        int32 nextIndexBuffer = 0;
+        std::array<rhi::HIndexBuffer, 3> indexBuffers;
+    };
+    Vector<LandscapeBatch> landscapeBatches;
+
     uint16 * indices;
-    //Texture * textures[TEXTURE_COUNT];
-    //Vector<FilePath> textureNames;
     
     int32 lodLevelsCount;
     float32 lodDistance[8]; //
@@ -379,14 +360,10 @@ protected:
     Vector<LandQuadTreeNode<LandscapeQuad>*> fans;
     
     int32 allocatedMemoryForQuads;
-    
-    Vector3 cameraPos;
+
     Frustum *frustum;
     
     ePrimitiveType primitypeType;
-    
-    //Vector2 textureTiling[TEXTURE_COUNT];
-    //Color tileColor[TEXTURE_COUNT];
     
 	LandscapeCursor * cursor;
         
@@ -415,8 +392,6 @@ protected:
     int32 farLodIndex;
     
 	NMaterial* tileMaskMaterial;
-	//NMaterial* fullTiledMaterial;
-	//NMaterial* currentMaterial;
 	
 	uint32 drawIndices;
 	
@@ -431,7 +406,6 @@ public:
         PROPERTY("size", "Size", GetLandscapeSize, SetLandscapeSize, I_VIEW | I_EDIT)
         PROPERTY("height", "Height", GetLandscapeHeight, SetLandscapeHeight, I_VIEW | I_EDIT)
 		);
-#endif //RHI_COMPLETE
 };
 
 };
