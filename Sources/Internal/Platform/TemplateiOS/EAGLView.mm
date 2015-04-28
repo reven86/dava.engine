@@ -46,7 +46,7 @@
 
 #include "Utils/Utils.h"
 
-#define USE_METAL 1
+#define USE_METAL 0
 
 #if USE_METAL
 #include <QuartzCore/CAMetalLayer.h>
@@ -245,8 +245,10 @@ BOOL isGL30Created = NO;
 //    }
 
 currFPS = 60;
+[self setAnimationFrameInterval:1];
 //    DAVA::RenderManager::Instance()->Unlock();
-    
+
+/*    
 //    if(currFPS != DAVA::RenderManager::Instance()->GetFPS())
     {
 //        currFPS = DAVA::RenderManager::Instance()->GetFPS();
@@ -257,6 +259,7 @@ currFPS = 60;
         }
         [self setAnimationFrameInterval:(int)interval];
     }
+*/
 }
 
 
