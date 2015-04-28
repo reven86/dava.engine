@@ -652,16 +652,18 @@ uint32 KeyedArchive::Serialize(uint8 *data, uint32 size) const
     return archieveSize;
 }
 
-void KeyedArchive::Deserialize(uint8 *data, uint32 size)
+void KeyedArchive::Deserialize(const uint8 *data, uint32 size)
 {
     if(nullptr == data || 0 == size)
     {
         return;
     }
     
-    ScopedPtr<DynamicMemoryFile> file(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
+    ScopedPtr<DynamicMemoryFile> file(DynamicMemoryFile::Create(File::CREATE | File::WRITE | File::READ));
     auto written = file->Write(data, size);
     DVASSERT(written == size);
+    
+    file->Seek(0, File::SEEK_FROM_START);
     
     Load(file);
 }

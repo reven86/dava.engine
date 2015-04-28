@@ -29,6 +29,7 @@
 
 
 #include "AssetCache/AssetCacheClient.h"
+#include "AssetCache/AssetCacheConstants.h"
 #include "AssetCache/CachedFiles.h"
 #include "AssetCache/ClientCacheEntry.h"
 #include "AssetCache/TCPConnection/TCPClient.h"
@@ -72,7 +73,7 @@ bool Client::IsConnected()
 {
     if(netClient)
     {
-        return true;
+        return netClient->IsConnected();
     }
 
     return false;
@@ -80,6 +81,7 @@ bool Client::IsConnected()
     
 bool Client::AddToCache(const ClientCacheEntry &entry, const CachedFiles &files)
 {
+    bool addRequestSent = false;
     if(IsConnected())
     {
         ScopedPtr<KeyedArchive> entryArchieve(new KeyedArchive());
@@ -94,14 +96,32 @@ bool Client::AddToCache(const ClientCacheEntry &entry, const CachedFiles &files)
         archieve->SetArchive("entry", entryArchieve);
         archieve->SetArchive("files", filesArchieve);
         
-        return SendArchieve(archieve);
+        addRequestSent = SendArchieve(archieve);
     }
     
-    return false;
+    return addRequestSent;
 }
     
+void Client::OnAddToCache(KeyedArchive * archieve)
+{
+    if(delegate)
+    {
+        KeyedArchive *entryArchieve = archieve->GetArchive("entry");
+        DVASSERT(entryArchieve);
+        
+        ClientCacheEntry entry;
+        entry.Deserialize(entryArchieve);
+        
+        bool added = archieve->GetBool("added");
+        
+        delegate->OnAddedToCache(entry, added);
+    }
+}
+    
+
 bool Client::IsInCache(const ClientCacheEntry &entry)
 {
+    bool isInCacheSent = false;
     if(IsConnected())
     {
         ScopedPtr<KeyedArchive> entryArchieve(new KeyedArchive());
@@ -112,14 +132,31 @@ bool Client::IsInCache(const ClientCacheEntry &entry)
         
         archieve->SetArchive("entry", entryArchieve);
         
-        return SendArchieve(archieve);
+        isInCacheSent = SendArchieve(archieve);
     }
     
-    return false;
+    return isInCacheSent;
 }
+    
+void Client::OnIsInCache(KeyedArchive * archieve)
+{
+    if(delegate)
+    {
+        KeyedArchive *entryArchieve = archieve->GetArchive("entry");
+        DVASSERT(entryArchieve);
+        
+        ClientCacheEntry entry;
+        entry.Deserialize(entryArchieve);
+        
+        bool isInCache = archieve->GetBool("isInCache");
+        delegate->OnIsInCache(entry, isInCache);
+    }
+}
+
 
 bool Client::GetFromCache(const ClientCacheEntry &entry)
 {
+    bool getFromCacheSent = false;
     if(IsConnected())
     {
         ScopedPtr<KeyedArchive> entryArchieve(new KeyedArchive());
@@ -129,10 +166,33 @@ bool Client::GetFromCache(const ClientCacheEntry &entry)
         archieve->SetUInt32("PacketID", PACKET_GET_FILES);
         
         archieve->SetArchive("entry", entryArchieve);
+        
+        getFromCacheSent = SendArchieve(archieve);
     }
     
-    return false;
+    return getFromCacheSent;
 }
+
+void Client::OnGetFromCache(KeyedArchive * archieve)
+{
+    if(delegate)
+    {
+        KeyedArchive *entryArchieve = archieve->GetArchive("entry");
+        DVASSERT(entryArchieve);
+        
+        ClientCacheEntry entry;
+        entry.Deserialize(entryArchieve);
+        
+        KeyedArchive *filesArchieve = archieve->GetArchive("files");
+        DVASSERT(entryArchieve);
+        
+        CachedFiles files;
+        files.Deserialize(filesArchieve);
+        
+        delegate->OnReceivedFromCache(entry, files);
+    }
+}
+
     
 bool Client::SendArchieve(KeyedArchive * archieve)
 {
@@ -144,39 +204,58 @@ bool Client::SendArchieve(KeyedArchive * archieve)
     DVVERIFY(packedSize == archieve->Serialize(packedData, packedSize));
     
     auto packedId = netClient->SendData(packedData, packedSize);
-    Logger::FrameworkDebug("[Client::%s] packedId = %d", __FUNCTION__, packedId);
-    
     return (packedId != 0);
 }
 
     
-    
 void Client::ChannelOpen()
 {
-    Logger::FrameworkDebug("[Client::%s]", __FUNCTION__);
 }
 
 void Client::ChannelClosed(const char8* message)
 {
-    Logger::FrameworkDebug("[Client::%s]", __FUNCTION__);
 }
 
 void Client::PacketReceived(const void* packet, size_t length)
 {
-    Logger::FrameworkDebug("[Client::%s]", __FUNCTION__);
+    if(length)
+    {
+        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
+
+        const uint8 *packetData = reinterpret_cast<const uint8 *>(packet);
+        
+        archieve->Deserialize(packetData, length);
+        
+        auto packetID = archieve->GetUInt32("PacketID", PACKET_UNKNOWN);
+        
+        switch (packetID)
+        {
+            case PACKET_ADD_FILES:
+                OnAddToCache(archieve);
+                break;
+
+            case PACKET_IS_IN_CACHE:
+                OnIsInCache(archieve);
+                break;
+
+            case PACKET_GET_FILES:
+                OnGetFromCache(archieve);
+                break;
+
+            default:
+                Logger::Error("[Client::%s] Cannot parce packet (%d)", __FUNCTION__, packetID);
+                break;
+        }
+        
+    }
 }
 
 void Client::PacketSent()
 {
-    Logger::FrameworkDebug("[Client::%s]", __FUNCTION__);
-
-//    delete [] static_cast<const char8*>(buffer);
-
 }
 
 void Client::PacketDelivered()
 {
-    Logger::FrameworkDebug("[Client::%s]", __FUNCTION__);
 }
     
 }; // end of namespace AssetCache

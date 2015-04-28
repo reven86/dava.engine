@@ -33,6 +33,8 @@
 #include "Base/BaseTypes.h"
 #include "Base/Data.h"
 
+#include "AssetCache/TCPConnection/TCPConnection.h"
+
 namespace DAVA
 {
 
@@ -40,25 +42,69 @@ class TCPServer;
 namespace AssetCache
 {
  
-class ClientCacheDescription;
 class CachedFiles;
+class ClientCacheEntry;
 
-class Server
-{
-    static const uint32 NET_SERVICE_ID = 0xACCA;
     
+class ServerDelegate
+{
+public:
+    
+    virtual void OnAddedToCache(const ClientCacheEntry &entry, const CachedFiles &files) = 0;
+    virtual void OnIsInCache(const ClientCacheEntry &entry) = 0;
+    virtual void OnRequestedFromCache(const ClientCacheEntry &entry) = 0;
+};
+    
+    
+class Server: public TCPConnectionDelegate
+{
 public:
     
     Server();
     virtual ~Server();
     
+    void SetDelegate(ServerDelegate * delegate);
+
     bool Listen(uint16 port);
+    
+    bool IsConnected() const;
+    void Disconnect();
+    
+    
+    //TCPConnectionDelegate
+    void ChannelOpen() override;
+    void ChannelClosed(const char8* message) override;
+    void PacketReceived(const void* packet, size_t length) override;
+    void PacketSent() override;
+    void PacketDelivered() override;
+    //END of TCPConnectionDelegate
+    
+    bool FilesAddedToCache(const ClientCacheEntry &entry, bool added);
+    bool FilesInCache(const ClientCacheEntry &entry, bool isInCache);
+    bool SendFiles(const ClientCacheEntry &entry, const CachedFiles &files);
     
 private:
     
-    TCPServer * netServer;
+    bool SendArchieve(KeyedArchive * archieve);
+
+    void OnAddToCache(KeyedArchive * archieve);
+    void OnIsInCache(KeyedArchive * archieve);
+    void OnGetFromCache(KeyedArchive * archieve);
+
+    
+    
+private:
+    
+    TCPServer * netServer = nullptr;
+    ServerDelegate *delegate = nullptr;
 };
 
+inline void Server::SetDelegate(ServerDelegate * _delegate)
+{
+    delegate = _delegate;
+}
+    
+    
     
 };
 

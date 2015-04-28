@@ -30,10 +30,24 @@
 #ifndef __DAVAENGINE_ASSET_CACHE_SKOPPED_INCLUDE_H__
 #define __DAVAENGINE_ASSET_CACHE_SKOPPED_INCLUDE_H__
 
-#include "AssetCache/AssetCacheClient.h"
-#include "AssetCache/AssetCacheServer.h"
-#include "AssetCache/CachedFiles.h"
-#include "AssetCache/ClientCacheEntry.h"
+namespace DAVA
+{
+namespace AssetCache
+{
+
+static const uint32 NET_SERVICE_ID = 0xACCA;
+
+enum ePacketID: uint8
+{
+    PACKET_UNKNOWN = 0,
+    PACKET_ADD_FILES,
+    PACKET_GET_FILES,
+    PACKET_IS_IN_CACHE,
+};
+    
+};
+};
+
 
 #endif // __DAVAENGINE_ASSET_CACHE_SKOPPED_INCLUDE_H__
 

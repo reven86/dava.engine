@@ -55,7 +55,7 @@ public:
     virtual ~CachedFiles() = default;
     
     void AddFile(const FilePath &path);
-    Set<FilePath> GetFiles() const;
+    const Set<FilePath> & GetFiles() const;
     
     bool IsEmtpy() const;
     
@@ -74,7 +74,7 @@ inline void CachedFiles::AddFile(const FilePath &path)
     files.insert(path);
 }
 
-inline Set<FilePath> CachedFiles::GetFiles() const
+inline const Set<FilePath> & CachedFiles::GetFiles() const
 {
     return files;
 }

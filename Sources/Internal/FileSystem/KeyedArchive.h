@@ -482,7 +482,7 @@ public:
          \param[in] data byte arrat with archieve data
          \param[in] size size of byte array
      */
-    void Deserialize(uint8 *data, uint32 size);
+    void Deserialize(const uint8 *data, uint32 size);
 
 
 private:

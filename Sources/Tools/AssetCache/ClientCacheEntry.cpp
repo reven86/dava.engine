@@ -106,7 +106,32 @@ void ClientCacheEntry::Deserialize(KeyedArchive * archieve)
     }
 }
     
+bool ClientCacheEntry::operator == (const ClientCacheEntry &cce) const
+{
+    return (    (type == cce.type)
+            &&  (Memcmp(hash, cce.hash, MD5::DIGEST_SIZE) == 0)
+            &&  (pathname == cce.pathname)
+            &&  (toolDescription == cce.toolDescription)
+            &&  (params == cce.params)
+            );
+}
     
+bool operator < (const ClientCacheEntry& left, const ClientCacheEntry& right)
+{
+    if(left.type != right.type)
+        return left.type < right.type;
+    
+    if(left.pathname != right.pathname)
+        return left.pathname < right.pathname;
+
+    if(left.toolDescription != right.toolDescription)
+        return left.toolDescription < right.toolDescription;
+
+    if(left.params != right.params)
+        return left.params < right.params;
+    
+    return Memcmp(left.hash, right.hash, MD5::DIGEST_SIZE) < 0;
+}
     
     
 }; // end of namespace AssetCache

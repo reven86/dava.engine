@@ -131,6 +131,7 @@ void TCPConnection::ChannelOpen()
     {
         delegate->ChannelOpen();
     }
+    Net::NetService::ChannelOpen();
 }
 
 void TCPConnection::ChannelClosed(const char8* message)
@@ -139,6 +140,8 @@ void TCPConnection::ChannelClosed(const char8* message)
     {
         delegate->ChannelClosed(message);
     }
+    
+    Net::NetService::ChannelClosed(message);
 }
 
 void TCPConnection::PacketReceived(const void* packet, size_t length)
@@ -147,6 +150,10 @@ void TCPConnection::PacketReceived(const void* packet, size_t length)
     {
         delegate->PacketReceived(packet, length);
     }
+    
+    Net::NetService::PacketReceived(packet, length);
+    
+//    delete [] static_cast<const char8*>(packet);
 }
 
 void TCPConnection::PacketSent()
@@ -155,6 +162,8 @@ void TCPConnection::PacketSent()
     {
         delegate->PacketSent();
     }
+    
+    Net::NetService::PacketSent();
 }
 
 void TCPConnection::PacketDelivered()
@@ -163,6 +172,8 @@ void TCPConnection::PacketDelivered()
     {
         delegate->PacketDelivered();
     }
+    
+    Net::NetService::PacketDelivered();
 }
     
 

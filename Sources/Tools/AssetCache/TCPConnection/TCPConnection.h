@@ -58,13 +58,14 @@ public:
 
     void SetDelegate(TCPConnectionDelegate * delegate);
     
-    
     //Net::NetService
     void ChannelOpen() override;
     void ChannelClosed(const char8* message) override;
     void PacketReceived(const void* packet, size_t length) override;
     void PacketSent() override;
     void PacketDelivered() override;
+    
+    bool IsConnected() const;
     
 protected:
 
@@ -95,6 +96,11 @@ inline void TCPConnection::SetDelegate(TCPConnectionDelegate * _delegate)
     delegate = _delegate;
 }
 
+inline bool TCPConnection::IsConnected() const
+{
+    return IsChannelOpen();
+}
+    
 };
 
 #endif // __DAVAENGINE_TCP_CONNECTION_H__

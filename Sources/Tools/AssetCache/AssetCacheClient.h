@@ -44,7 +44,6 @@ namespace AssetCache
  
 class ClientCacheEntry;
 class CachedFiles;
-
     
 class ClientDelegate
 {
@@ -55,17 +54,8 @@ public:
     virtual void OnReceivedFromCache(const ClientCacheEntry &entry, const CachedFiles &files) = 0;
 };
 
-    
 class Client: public TCPConnectionDelegate
 {
-    static const uint32 NET_SERVICE_ID = 0xACCA;
-    
-    enum ePacketID: uint8
-    {
-        PACKET_ADD_FILES = 1,
-        PACKET_GET_FILES,
-        PACKET_IS_IN_CACHE,
-    };
     
 public:
     
@@ -94,6 +84,10 @@ public:
 private:
     
     bool SendArchieve(KeyedArchive * archieve);
+    
+    void OnAddToCache(KeyedArchive * archieve);
+    void OnIsInCache(KeyedArchive * archieve);
+    void OnGetFromCache(KeyedArchive * archieve);
     
     
     TCPClient * netClient = nullptr;

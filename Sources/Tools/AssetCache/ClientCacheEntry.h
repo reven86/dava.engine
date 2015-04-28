@@ -67,6 +67,8 @@ public:
     void Serialize(KeyedArchive * archieve) const;
     void Deserialize(KeyedArchive * archieve);
 
+    bool operator == (const ClientCacheEntry &cce) const;
+
 private:
     
 
@@ -79,6 +81,8 @@ public:
     String toolDescription;
     List<String> params;
 };
+
+bool operator < (const ClientCacheEntry& left, const ClientCacheEntry& right);
 
     
 };
