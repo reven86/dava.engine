@@ -806,6 +806,7 @@ void DLC::StepPatchFinish()
             PostError(DE_READ_ERROR);
             break;
 
+        case PatchFileReader::ERROR_APPLY:
         case PatchFileReader::ERROR_NEW_CREATE:
         case PatchFileReader::ERROR_NEW_WRITE:
             PostError(DE_WRITE_ERROR);
