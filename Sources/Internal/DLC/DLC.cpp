@@ -59,10 +59,6 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
     //  we suppose that downloaded data should not be media data and exclude it from index.
     FileSystem::Instance()->MarkFolderAsNoMedia(destinationDir);
 
-    Logger::Info("DLC: Source Dir = %s", sourceDir.GetAbsolutePathname().c_str());
-    Logger::Info("DLC: Destination Dir = %s", destinationDir.GetAbsolutePathname().c_str());
-    Logger::Info("DLC: Working Dir = %s", workingDir.GetAbsolutePathname().c_str());
-
     // initial values
     dlcContext.remoteUrl = url;
     dlcContext.localVer = 0;
