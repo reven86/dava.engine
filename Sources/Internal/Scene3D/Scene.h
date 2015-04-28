@@ -39,6 +39,7 @@
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
+#include "Base/Observer.h"
 
 namespace DAVA
 {
@@ -97,7 +98,7 @@ class UIEvent;
  
  
  */
-class Scene : public Entity
+class Scene : public Entity, Observer
 {
 protected:
 	virtual ~Scene();
@@ -198,7 +199,7 @@ public:
 	AnimatedMesh * GetAnimatedMesh(int32 index);
 	inline int32	GetAnimatedMeshCount();
 
-    
+    virtual void HandleEvent(Observable * observable); //Handle RenderOptions
     
     /**
         \brief Function to add root node.
@@ -286,6 +287,12 @@ public:
     
     void Input(UIEvent *event);
     
+    /**
+        \brief This functions activate and deactivate scene sustems
+     */
+    virtual void Activate();
+    virtual void Deactivate();
+
     
 protected:
     void UpdateLights();
