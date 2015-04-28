@@ -146,7 +146,7 @@ void PackageControlsNode::Serialize(PackageSerializer *serializer, const DAVA::V
     serializer->BeginArray("Controls");
     
     for (auto it = nodes.begin(); it != nodes.end(); ++it)
-        (*it)->Serialize(serializer, packageRef);
+        (*it)->Serialize(serializer);
     
     serializer->EndArray();
 }

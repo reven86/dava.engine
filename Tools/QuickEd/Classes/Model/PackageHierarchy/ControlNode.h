@@ -63,7 +63,7 @@ public:
     void MarkAsRemoved();
     void MarkAsAlive();
 
-    void Serialize(PackageSerializer *serializer, PackageRef *currentPackage) const;
+    void Serialize(PackageSerializer *serializer) const;
     DAVA::String GetPathToPrototypeChild(bool withRootPrototypeName = false) const;
 
 private:

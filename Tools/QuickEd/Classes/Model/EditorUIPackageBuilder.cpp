@@ -8,6 +8,7 @@
 #include "Model/ControlProperties/BackgroundPropertiesSection.h"
 #include "Model/ControlProperties/InternalControlPropertiesSection.h"
 #include "Model/ControlProperties/ValueProperty.h"
+#include "Model/ControlProperties/CustomClassProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/ControlPrototype.h"
 #include "Model/PackageHierarchy/PackageRef.h"
@@ -135,13 +136,14 @@ UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className
 UIControl *EditorUIPackageBuilder::BeginControlWithCustomClass(const String &customClassName, const String &className)
 {
     UIControl *control = ObjectFactory::Instance()->New<UIControl>(className);
-    control->SetCustomControlClassName(customClassName);
     if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }
 
-    controlsStack.push_back(ControlDescr(ControlNode::CreateFromControl(control), true));
+    ControlNode *node = ControlNode::CreateFromControl(control);
+    node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(customClassName));
+    controlsStack.push_back(ControlDescr(node, true));
     return control;
 }
 
@@ -167,7 +169,8 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packa
     
     DVASSERT(prototypeNode);
     ControlNode *node = ControlNode::CreateFromPrototype(prototypeNode, controlsNode->GetPackageRef());
-    node->GetControl()->SetCustomControlClassName(customClassName);
+    if (!customClassName.empty())
+        node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(customClassName));
     controlsStack.push_back(ControlDescr(node, true));
 
     return node->GetControl();

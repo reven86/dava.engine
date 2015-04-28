@@ -12,6 +12,8 @@ class PropertyListener;
 class ValueProperty;
 class NameProperty;
 class PrototypeNameProperty;
+class ClassProperty;
+class CustomClassProperty;
 class ControlNode;
 
 namespace DAVA
@@ -30,8 +32,8 @@ public:
     virtual int GetCount() const override;
     virtual AbstractProperty *GetProperty(int index) const override;
 
-    ValueProperty *GetClassProperty() const { return classProperty; }
-    ValueProperty *GetCustomClassProperty() const { return customClassProperty; }
+    ClassProperty *GetClassProperty() const { return classProperty; }
+    CustomClassProperty *GetCustomClassProperty() const { return customClassProperty; }
     PrototypeNameProperty *GetPrototypeProperty() const { return prototypeProperty; }
     NameProperty *GetNameProperty() const { return nameProperty; }
     
@@ -72,8 +74,8 @@ private:
 private:
     ControlNode *node; // weak ref
 
-    ValueProperty *classProperty;
-    ValueProperty *customClassProperty;
+    ClassProperty *classProperty;
+    CustomClassProperty *customClassProperty;
     PrototypeNameProperty *prototypeProperty;
     NameProperty *nameProperty;
 

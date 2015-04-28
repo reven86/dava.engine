@@ -29,7 +29,7 @@ public:
     virtual DAVA::String GetName() const override;
     int GetFlags() const override;
     
-    PackageRef *GetPackageRef() const;
+    virtual PackageRef *GetPackageRef() const override;
     
     ImportedPackagesNode *GetImportedPackagesNode() const;
     PackageControlsNode *GetPackageControlsNode() const;

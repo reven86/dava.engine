@@ -2,6 +2,7 @@
 
 #include "../PackageHierarchy/ControlNode.h"
 #include "../PackageHierarchy/ControlPrototype.h"
+#include "../PackageSerializer.h"
 
 using namespace DAVA;
 
@@ -18,7 +19,11 @@ PrototypeNameProperty::~PrototypeNameProperty()
 
 void PrototypeNameProperty::Serialize(PackageSerializer *serializer) const
 {
-
+    if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
+    {
+        bool includePackageName = node->GetPackageRef() != node->GetPrototype()->GetPackageRef();
+        serializer->PutValue("prototype", node->GetPrototype()->GetName(includePackageName));
+    }
 }
 
 AbstractProperty::ePropertyType PrototypeNameProperty::GetType() const

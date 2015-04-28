@@ -1,6 +1,9 @@
 #include "NameProperty.h"
 
 #include "../PackageHierarchy/ControlNode.h"
+#include "../PackageSerializer.h"
+
+#include "UI/UIControl.h"
 
 using namespace DAVA;
 
@@ -11,8 +14,9 @@ NameProperty::NameProperty(ControlNode *anControl, const NameProperty *sourcePro
 {
     if (sourceProperty)
     {
-        SetValue(sourceProperty->GetValue());
-        if (cloneType == CT_INHERIT)
+        control->GetControl()->SetName(sourceProperty->GetValue().AsString());
+
+        if (cloneType == CT_INHERIT && control->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
         {
             prototypeProperty = sourceProperty;
         }
@@ -42,7 +46,20 @@ AbstractProperty *NameProperty::FindPropertyByPrototype(AbstractProperty *protot
 
 void NameProperty::Serialize(PackageSerializer *serializer) const
 {
-    // TODO: impl
+    switch (control->GetCreationType())
+    {
+        case ControlNode::CREATED_FROM_PROTOTYPE:
+        case ControlNode::CREATED_FROM_CLASS:
+            serializer->PutValue("name", control->GetName());
+            break;
+
+        case ControlNode::CREATED_FROM_PROTOTYPE_CHILD:
+            serializer->PutValue("path", control->GetPathToPrototypeChild(false));
+            break;
+            
+        default:
+            DVASSERT(false);
+    }
 }
 
 bool NameProperty::IsReadOnly() const

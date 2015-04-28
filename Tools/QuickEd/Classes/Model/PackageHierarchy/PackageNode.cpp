@@ -48,7 +48,7 @@ String PackageNode::GetName() const
     return packageRef->GetName();
 }
 
-int PackageNode::GetFlags() const 
+int PackageNode::GetFlags() const
 {
     return 0;
 }
@@ -237,7 +237,7 @@ void PackageNode::RefreshPropertiesInInstances(ControlNode *node, AbstractProper
     for (ControlNode *instance : node->GetInstances())
     {
         AbstractProperty *instanceProperty = instance->GetRootProperty()->FindPropertyByPrototype(property);
-        DVASSERT(instanceProperty);
+
         if (instanceProperty)
         {
             instance->GetRootProperty()->RefreshProperty(instanceProperty);

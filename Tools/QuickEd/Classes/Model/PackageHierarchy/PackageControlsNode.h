@@ -29,7 +29,7 @@ public:
     DAVA::String GetName() const override;
     void SetName(const DAVA::String &name);
     
-    PackageRef *GetPackageRef() const;
+    virtual PackageRef *GetPackageRef() const override;
     
     int GetFlags() const override;
     void SetReadOnly();

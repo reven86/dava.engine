@@ -2,8 +2,6 @@
 #define __QUICKED_NAME_PROPERTY_H__
 
 #include "ValueProperty.h"
-#include <Base/Function.h>
-#include <UI/UIControl.h>
 
 class ControlNode;
 
@@ -16,7 +14,7 @@ protected:
     virtual ~NameProperty();
     
 public:
-    virtual void Refresh();
+    virtual void Refresh() override;
     virtual AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype) override;
     virtual void Serialize(PackageSerializer *serializer) const override;
     virtual bool IsReadOnly() const override;
@@ -27,7 +25,7 @@ public:
     virtual bool IsReplaced() const override;
 
 protected:
-    virtual void ApplyValue(const DAVA::VariantType &value);
+    virtual void ApplyValue(const DAVA::VariantType &value) override;
     
 protected:
     ControlNode *control; // weak

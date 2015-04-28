@@ -37,6 +37,11 @@ String PackageBaseNode::GetName() const
     return "Unknown";
 }
 
+PackageRef *PackageBaseNode::GetPackageRef() const
+{
+    return parent == nullptr ? nullptr : parent->GetPackageRef();
+}
+
 UIControl *PackageBaseNode::GetControl() const
 {
     return NULL;

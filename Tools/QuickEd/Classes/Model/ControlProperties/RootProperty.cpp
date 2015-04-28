@@ -10,9 +10,10 @@
 #include "ValueProperty.h"
 
 #include "Model/PackageSerializer.h"
-#include "StringProperty.h"
 #include "NameProperty.h"
 #include "PrototypeNameProperty.h"
+#include "ClassProperty.h"
+#include "CustomClassProperty.h"
 
 #include "../PackageHierarchy/ControlNode.h"
 
@@ -298,6 +299,11 @@ void RootProperty::Refresh()
 
 void RootProperty::Serialize(PackageSerializer *serializer) const
 {
+    prototypeProperty->Serialize(serializer);
+    classProperty->Serialize(serializer);
+    customClassProperty->Serialize(serializer);
+    nameProperty->Serialize(serializer);
+    
     for (const auto section : controlProperties)
         section->Serialize(serializer);
 
@@ -363,12 +369,11 @@ AbstractProperty::ePropertyType RootProperty::GetType() const
 
 void RootProperty::AddBaseProperties(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType)
 {
-    ValueProperty *sourceClassProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetClassProperty();
-    classProperty = new StringProperty("Class", control, DAVA::MakeFunction(&DAVA::UIControl::GetControlClassName), NULL, dynamic_cast<StringProperty*>(sourceClassProperty), cloneType);
+    classProperty = new ClassProperty(node);
     baseProperties.push_back(classProperty);
 
-    ValueProperty *sourceCustomClassProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetCustomClassProperty();
-    customClassProperty = new StringProperty("Custom class", control, DAVA::MakeFunction(&DAVA::UIControl::GetCustomControlClassName), DAVA::MakeFunction(&DAVA::UIControl::SetCustomControlClassName), dynamic_cast<StringProperty*>(sourceCustomClassProperty), cloneType);
+    CustomClassProperty *sourceCustomClassProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetCustomClassProperty();
+    customClassProperty = new CustomClassProperty(node, sourceCustomClassProperty, cloneType);
     baseProperties.push_back(customClassProperty);
 
     PrototypeNameProperty *sourcePrototypeProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetPrototypeProperty();

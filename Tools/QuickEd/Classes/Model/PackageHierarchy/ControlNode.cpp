@@ -262,36 +262,10 @@ void ControlNode::MarkAsAlive()
         prototype->GetControlNode()->AddControlToInstances(this);
 }
 
-void ControlNode::Serialize(PackageSerializer *serializer, PackageRef *currentPackage) const
+void ControlNode::Serialize(PackageSerializer *serializer) const
 {
     serializer->BeginMap();
     
-    if (creationType == CREATED_FROM_PROTOTYPE)
-    {
-        serializer->PutValue("prototype", prototype->GetName(currentPackage != prototype->GetPackageRef()));
-
-        if (!control->GetCustomControlClassName().empty() && prototype->GetControlNode()->GetControl()->GetCustomControlClassName() != control->GetCustomControlClassName())
-            serializer->PutValue("customClass", control->GetCustomControlClassName());
-
-        serializer->PutValue("name", control->GetName());
-    }
-    else if (creationType == CREATED_FROM_CLASS)
-    {
-        serializer->PutValue("class", control->GetClassName());
-        if (!control->GetCustomControlClassName().empty())
-            serializer->PutValue("customClass", control->GetCustomControlClassName());
-
-        serializer->PutValue("name", control->GetName());
-    }
-    else if (creationType == CREATED_FROM_PROTOTYPE_CHILD)
-    {
-        serializer->PutValue("path", GetPathToPrototypeChild(false));
-    }
-    else
-    {
-        DVASSERT(false);
-    }
-
     rootProperty->Serialize(serializer);
     
     if (!nodes.empty())
@@ -310,12 +284,12 @@ void ControlNode::Serialize(PackageSerializer *serializer, PackageRef *currentPa
             serializer->BeginArray("children");
 
             for (const auto &child : prototypeChildrenWithChanges)
-                child->Serialize(serializer, currentPackage);
+                child->Serialize(serializer);
 
             for (const auto &child : nodes)
             {
                 if (child->GetCreationType() != CREATED_FROM_PROTOTYPE_CHILD)
-                    child->Serialize(serializer, currentPackage);
+                    child->Serialize(serializer);
             }
             
             serializer->EndArray();
