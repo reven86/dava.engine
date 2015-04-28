@@ -101,6 +101,7 @@ static FastName TILEMASK_COLOR_PROPS_NAMES[] =
 	INVALID_PROPERTY_NAME
 };
 
+const uint32 LANDSCAPE_BATCHES_POOL_SIZE = 32;
 	
 //#define DRAW_OLD_STYLE
 // const float32 LandscapeNode::TEXTURE_TILE_FULL_SIZE = 2048;
@@ -109,6 +110,7 @@ Landscape::Landscape()
     : indices(0)
     , tileMaskMaterial(NULL)
     , foliageSystem(NULL)
+    , vertexLayoutUID(rhi::VertexLayout::InvalidUID)
 {
 	drawIndices = 0;
     
@@ -125,13 +127,20 @@ Landscape::Landscape()
     prevLodLayer = -1;
 
     AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
+
+    rhi::VertexLayout vLayout;
+    vLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
+    vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
+#ifdef LANDSCAPE_SPECULAR_LIT
+    vLayout.AddElement(rhi::VS_NORMAL, 0, rhi::VDT_FLOAT, 3);
+    vLayout.AddElement(rhi::VS_TANGENT, 0, rhi::VDT_FLOAT, 3);
+#endif
+    vertexLayoutUID = rhi::VertexLayout::UniqueId(vLayout);
 }
 
 Landscape::~Landscape()
 {
-    ReleaseAllRDOQuads();
-    
-    SafeDeleteArray(indices);
+    ReleaseAllGeometryData();
 
     SafeRelease(heightmap);
 #if RHI_COMPLETE
@@ -142,7 +151,7 @@ Landscape::~Landscape()
 }
     
 
-int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
+int16 Landscape::AllocateQuadVertexBuffer(LandscapeQuad * quad)
 {
     DVASSERT(quad->size == RENDER_QUAD_WIDTH - 1);
     uint32 verticesCount = (quad->size + 1) * (quad->size + 1);
@@ -210,44 +219,32 @@ int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
         }
     }
 
-    ScopedPtr<RenderBatch> batch(new RenderBatch());
-    uint32 batchIndex = AddRenderBatch(batch);
-    batch->SetMaterial(tileMaskMaterial);
-
-    ScopedPtr<PolygonGroup> pg(new PolygonGroup()); //PolygonGroup used here only as pair VertexBuffer + IndexBuffer 
-    pg->aabbox = bbox;
-    batch->SetPolygonGroup(pg);
-    batch->SetMaterial(tileMaskMaterial);
-
-    rhi::VertexLayout vLayout;
-    vLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
-    vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
-#ifdef LANDSCAPE_SPECULAR_LIT
-    vLayout.AddElement(rhi::VS_NORMAL, 0, rhi::VDT_FLOAT, 3);
-    vLayout.AddElement(rhi::VS_TANGENT, 0, rhi::VDT_FLOAT, 3);
-#endif
-    pg->vertexLayoutId = rhi::VertexLayout::UniqueId(vLayout);
-
     uint32 vBufferSize = verticesCount * sizeof(LandscapeVertex);
-    pg->vertexBuffer = rhi::CreateVertexBuffer(vBufferSize); //RHI_COMPLETE unusing PolygonGroup as handles container
-    rhi::UpdateVertexBuffer(pg->vertexBuffer, landscapeVertices, 0, vBufferSize);
-    pg->vertexCount = verticesCount;
-
-    landscapeBatches.push_back(LandscapeBatch());
-    landscapeBatches.back().renderBatch = batch; //weak link
-    for (auto & handle : landscapeBatches.back().indexBuffers)
-        handle = rhi::CreateIndexBuffer(INDEX_ARRAY_COUNT * 2); //RHI_COMPLETE think about reducing of memory consumption (buffers size)
+    rhi::HVertexBuffer vertexBuffer = rhi::CreateVertexBuffer(vBufferSize); //RHI_COMPLETE unusing PolygonGroup as handles container
+    rhi::UpdateVertexBuffer(vertexBuffer, landscapeVertices, 0, vBufferSize);
+    vertexBuffers.push_back(vertexBuffer);
     
     SafeDeleteArray(landscapeVertices);
 
-    return (int16)batchIndex;
+    return (int16)(vertexBuffers.size() - 1);
 }
 
-void Landscape::ReleaseAllRDOQuads()
+void Landscape::ReleaseAllGeometryData()
 {
+    SafeDeleteArray(indices);
+
     for (IndexedRenderBatch & batch : renderBatchArray)
         batch.renderBatch->Release();
     renderBatchArray.clear();
+
+    for (CircularIndexBufferArray & cbuffer : indexBuffers)
+        for (rhi::HIndexBuffer handle : cbuffer.elements)
+            rhi::DeleteIndexBuffer(handle);
+    indexBuffers.clear();
+
+    for (rhi::HVertexBuffer handle : vertexBuffers)
+        rhi::DeleteVertexBuffer(handle);
+    vertexBuffers.clear();
 }
 
 void Landscape::SetLods(const Vector4 & lods)
@@ -276,6 +273,11 @@ void Landscape::BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathn
     {
         foliageSystem->SyncFoliageWithLandscape();
     }
+}
+
+void Landscape::RecalcBoundingBox()
+{
+    //do nothing, bbox setup in BuildLandscapeFromHeightmapImage()
 }
 
 bool Landscape::BuildHeightmap()
@@ -316,13 +318,35 @@ bool Landscape::BuildHeightmap()
 
     return retValue;
 }
-    
+
+void Landscape::AllocateLandscapeBatches(int32 count)
+{
+    for (int32 i = 0; i < count; i++)
+    {
+        ScopedPtr<RenderBatch> batch(new RenderBatch());
+        AddRenderBatch(batch);
+
+        ScopedPtr<PolygonGroup> pg(new PolygonGroup()); //PolygonGroup used here only as pair VertexBuffer + IndexBuffer 
+        pg->aabbox = bbox;
+        batch->SetPolygonGroup(pg);
+        batch->SetMaterial(tileMaskMaterial);
+
+        DVASSERT(vertexLayoutUID != rhi::VertexLayout::InvalidUID);
+        pg->vertexLayoutId = vertexLayoutUID;
+        pg->vertexCount = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH;
+
+        indexBuffers.push_back(CircularIndexBufferArray());
+        for (auto & handle : indexBuffers.back().elements)
+            handle = rhi::CreateIndexBuffer(INDEX_ARRAY_COUNT * 2); //RHI_COMPLETE think about reducing of memory consumption (buffers size)
+    }
+}
+
 void Landscape::BuildLandscape()
 {
-    ReleaseAllRDOQuads();
-    SafeDeleteArray(indices);
-
+    ReleaseAllGeometryData();
     
+    AllocateLandscapeBatches(LANDSCAPE_BATCHES_POOL_SIZE);
+
     quadTreeHead.data.x = quadTreeHead.data.y = quadTreeHead.data.lod = 0;
     //quadTreeHead.data.xbuf = quadTreeHead.data.ybuf = 0;
     quadTreeHead.data.rdoQuad = -1;
@@ -456,7 +480,7 @@ void Landscape::RecursiveBuild(LandQuadTreeNode<LandscapeQuad> * currentNode, in
     
     if ((currentNode->data.rdoQuad == -1) && (currentNode->data.size == RENDER_QUAD_WIDTH - 1))
     {
-        currentNode->data.rdoQuad = AllocateRDOQuad(&currentNode->data);
+        currentNode->data.rdoQuad = AllocateQuadVertexBuffer(&currentNode->data);
         //currentNode->data.xbuf = 0;
         //currentNode->data.ybuf = 0;
     }
@@ -716,28 +740,26 @@ Texture * Landscape::GetTexture(eTextureLevel level)
 void Landscape::FlushQueue()
 {
     if (queueRenderCount == 0) return;
-    
-    LandscapeBatch & batch = landscapeBatches[queueRdoQuad];
 
-    int32 & nextIndexBuffer = batch.nextIndexBuffer;
-    rhi::HIndexBuffer bufferHandle = batch.indexBuffers[nextIndexBuffer];
-    rhi::UpdateIndexBuffer(bufferHandle, indices, 0, queueRenderCount * 2);
+    DVASSERT(flushQueueCounter < (int32)renderBatchArray.size());
+    DVASSERT(flushQueueCounter < (int32)indexBuffers.size());
 
-    nextIndexBuffer++;
-    if (nextIndexBuffer == (int32)batch.indexBuffers.size())
-        nextIndexBuffer = 0;
+    RenderBatch * batch = renderBatchArray[flushQueueCounter].renderBatch;
+    activeRenderBatchArray.push_back(batch);
 
-    PolygonGroup * pg = batch.renderBatch->GetPolygonGroup(); //RHI_COMPLETE unusing PolygonGroup as handles container
-    pg->indexBuffer = bufferHandle;
+    //RHI_COMPLETE unusing PolygonGroup as handles container
+    PolygonGroup * pg = batch->GetPolygonGroup();
+    pg->indexBuffer = indexBuffers[flushQueueCounter].Next();
     pg->indexCount = queueRenderCount;
+    pg->vertexBuffer = vertexBuffers[queueRdoQuad];
 
-    activeRenderBatchArray.push_back(batch.renderBatch);
+    rhi::UpdateIndexBuffer(pg->indexBuffer, indices, 0, queueRenderCount * 2);
 
 	drawIndices += queueRenderCount;
 
     ClearQueue();
     
-    ++flashQueueCounter;
+    ++flushQueueCounter;
 }
     
 void Landscape::ClearQueue()
@@ -1197,7 +1219,7 @@ void Landscape::PrepareToRender(Camera * camera)
 
     frustum = camera->GetFrustum();    
     
-    flashQueueCounter = 0;
+    flushQueueCounter = 0;
     
 #if defined (DRAW_OLD_STYLE)    
     BindMaterial(0);

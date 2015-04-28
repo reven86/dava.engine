@@ -94,10 +94,29 @@ class LinearQuadTree
 {
 public:
     
-    
-    
-
 };
+
+template <class T, std::size_t size>
+class CircularArray
+{
+public:
+    T & Next()
+    {
+        T & ret = elements[currentIndex];
+
+        if ((++currentIndex) == elements.size())
+            currentIndex = 0;
+
+        return ret;
+    }
+
+    std::array < T, size > elements;
+
+protected:
+    std::size_t currentIndex = 0;
+};
+
+using CircularIndexBufferArray = CircularArray<rhi::HIndexBuffer, 3>;
 
 /**    
     \brief Implementation of cdlod algorithm to render landscapes
@@ -273,6 +292,7 @@ public:
     LandscapeCursor *GetCursor();
     
 	virtual RenderObject * Clone(RenderObject *newObject);
+    virtual void RecalcBoundingBox();
 
 	int32 GetDrawIndices() const;
 	
@@ -326,8 +346,9 @@ protected:
 
     Texture * CreateTexture(eTextureLevel level, const FilePath & textureName);
     
-    int16 AllocateRDOQuad(LandscapeQuad * quad);
-    void ReleaseAllRDOQuads();
+    int16 AllocateQuadVertexBuffer(LandscapeQuad * quad);
+    void AllocateLandscapeBatches(int32 count);
+    void ReleaseAllGeometryData();
 
 	int GetMaxLod(float32 quadDistance);
 	float32 GetQuadToCameraDistance(const Vector3& camPos, const LandscapeQuad& quad);
@@ -341,16 +362,12 @@ protected:
     
     void SetLandscapeSize(const Vector3 & newSize);
     
-    struct LandscapeBatch
-    {
-        RenderBatch * renderBatch = nullptr; //PolygonGroup used here only as pair VertexBuffer + IndexBuffer 
-        int32 nextIndexBuffer = 0;
-        std::array<rhi::HIndexBuffer, 3> indexBuffers;
-    };
-    Vector<LandscapeBatch> landscapeBatches;
+    Vector<rhi::HVertexBuffer> vertexBuffers;
+    Vector< CircularIndexBufferArray > indexBuffers;
 
     uint16 * indices;
-    
+    uint32 vertexLayoutUID;
+
     int32 lodLevelsCount;
     float32 lodDistance[8]; //
     float32 lodSqDistance[8];
@@ -386,7 +403,7 @@ protected:
 
     int32 prevLodLayer;
     
-    int32 flashQueueCounter;
+    int32 flushQueueCounter;
     
     int32 nearLodIndex;
     int32 farLodIndex;
