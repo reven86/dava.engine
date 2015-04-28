@@ -256,6 +256,7 @@ uint32 File::ReadLine(void * pointerToData, uint32 bufferSize)
             }
         }
         *inPtr = 0;
+        inPtr++;
         ret = (uint32)(inPtr - (uint8*)pointerToData);
     }
 
