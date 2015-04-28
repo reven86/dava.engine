@@ -11,6 +11,7 @@
 
 #include "Model/PackageSerializer.h"
 #include "StringProperty.h"
+#include "NameProperty.h"
 
 #include "../PackageHierarchy/ControlNode.h"
 
@@ -373,8 +374,8 @@ void RootProperty::AddBaseProperties(DAVA::UIControl *control, const RootPropert
     prototypeProperty = new StringProperty("Prototype", control, DAVA::MakeFunction(&DAVA::UIControl::GetCustomControlClassName), NULL, dynamic_cast<StringProperty*>(sourcePrototypeProperty), cloneType);
     baseProperties.push_back(prototypeProperty);
 
-    ValueProperty *sourceNameProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetNameProperty();
-    nameProperty = new StringProperty("Name", control, DAVA::MakeFunction(&DAVA::UIControl::GetName), DAVA::MakeFunction(&DAVA::UIControl::SetName), dynamic_cast<StringProperty*>(sourceNameProperty), cloneType);
+    NameProperty *sourceNameProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetNameProperty();
+    nameProperty = new NameProperty(node, sourceNameProperty, cloneType);
     baseProperties.push_back(nameProperty);
     
     for (ValueProperty *prop : baseProperties)

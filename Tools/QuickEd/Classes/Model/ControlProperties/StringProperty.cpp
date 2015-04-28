@@ -2,7 +2,6 @@
 
 StringProperty::StringProperty(const DAVA::String &propName, DAVA::UIControl *anObject, const Getter &aGetter, const Setter &aSetter, const StringProperty *sourceProperty, eCloneType cloneType)
     : ValueProperty(propName)
-    , editFlags(0)
 {
     object = SafeRetain(anObject);
     getter = aGetter;
@@ -39,11 +38,6 @@ DAVA::VariantType StringProperty::GetValue() const
 bool StringProperty::IsReadOnly() const
 {
     return setter == NULL || ValueProperty::IsReadOnly();
-}
-
-void StringProperty::SetEditFlag(DAVA::uint32 newEditFlags)
-{
-    editFlags = newEditFlags;
 }
 
 void StringProperty::ApplyValue(const DAVA::VariantType &value)
