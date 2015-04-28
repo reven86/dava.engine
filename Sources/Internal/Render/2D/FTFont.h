@@ -132,6 +132,9 @@ protected:
 private:
 	FTFont(FTInternalFont* internalFont);
 	FTInternalFont	* internalFont;
+
+    float32 ascendScale;
+    float32 descendScale;
 	
 	FilePath fontPath;
 };

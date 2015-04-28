@@ -61,9 +61,6 @@ class FTInternalFont : public BaseObject
 	FT_StreamRec streamFont;
 	File * fontFile;
 
-    float32 ascendScale;
-    float32 descendScale;
-
 private:
 	FTInternalFont(const FilePath & path);
 	virtual ~FTInternalFont();
@@ -75,9 +72,10 @@ public:
 		float32 size, bool realDraw, 
 		int32 offsetX, int32 offsetY,
 		int32 justifyWidth, int32 spaceAddon,
+        float32 ascendScale, float32 descendScale,
 		Vector<float32> *charSizes = NULL,
 		bool contentScaleIncluded = false);
-	uint32 GetFontHeight(float32 size) const;
+    uint32 GetFontHeight(float32 size, float32 ascendScale, float32 descendScale) const;
 
 	bool IsCharAvaliable(char16 ch) const;
 
@@ -122,6 +120,8 @@ FTFont::FTFont(FTInternalFont* _internalFont)
 	internalFont = _internalFont;
 	internalFont->Retain();
 	fontType = TYPE_FT;
+    ascendScale = 1.f;
+    descendScale = 1.f;
 }
 
 FTFont::~FTFont()
@@ -173,6 +173,8 @@ FTFont *	FTFont::Clone() const
 	retFont->size =	size;
 
 	retFont->verticalSpacing =	verticalSpacing;
+    retFont->ascendScale = ascendScale;
+    retFont->descendScale = descendScale;
 
 	retFont->fontPath = fontPath;
 	
@@ -202,17 +204,17 @@ String FTFont::GetRawHashString()
 
 Font::StringMetrics FTFont::DrawStringToBuffer(void * buffer, int32 bufWidth, int32 bufHeight, int32 offsetX, int32 offsetY, int32 justifyWidth, int32 spaceAddon, const WideString& str, bool contentScaleIncluded )
 {
-	return internalFont->DrawString(str, buffer, bufWidth, bufHeight, 255, 255, 255, 255, size, true, offsetX, offsetY, justifyWidth, spaceAddon, NULL, contentScaleIncluded );
+	return internalFont->DrawString(str, buffer, bufWidth, bufHeight, 255, 255, 255, 255, size, true, offsetX, offsetY, justifyWidth, spaceAddon, ascendScale, descendScale, NULL, contentScaleIncluded );
 }
 
 Font::StringMetrics FTFont::GetStringMetrics(const WideString& str, Vector<float32> *charSizes) const
 {
-	return internalFont->DrawString(str, 0, 0, 0, 0, 0, 0, 0, size, false, 0, 0, 0, 0, charSizes);
+	return internalFont->DrawString(str, 0, 0, 0, 0, 0, 0, 0, size, false, 0, 0, 0, 0, ascendScale, descendScale, charSizes);
 }
 
 uint32 FTFont::GetFontHeight() const
 {
-	return internalFont->GetFontHeight(size);
+	return internalFont->GetFontHeight(size, ascendScale, descendScale);
 }
 
 bool FTFont::IsCharAvaliable(char16 ch) const
@@ -237,24 +239,24 @@ YamlNode * FTFont::SaveToYamlNode() const
 	return node;
 }
 
-void FTFont::SetAscendScale(float32 ascendScale)
+void FTFont::SetAscendScale(float32 _ascendScale)
 {
-    internalFont->ascendScale = ascendScale;
+    ascendScale = _ascendScale;
 }
 
 DAVA::float32 FTFont::GetAscendScale() const
 {
-    return internalFont->ascendScale;
+    return ascendScale;
 }
 
-void FTFont::SetDescendScale(float32 descendScale)
+void FTFont::SetDescendScale(float32 _descendScale)
 {
-    internalFont->descendScale = descendScale;
+    descendScale = _descendScale;
 }
 
 DAVA::float32 FTFont::GetDescendScale() const
 {
-    return internalFont->descendScale;
+    return descendScale;
 }
 
 
@@ -283,8 +285,6 @@ FTInternalFont::FTInternalFont(const FilePath & path)
 , streamFont()
 , fontFile(NULL)
 , face(NULL)
-, ascendScale(1.f)
-, descendScale(1.f)
 {
     FilePath pathName(path);
     pathName.ReplaceDirectory(path.GetDirectory() + (LocalizationSystem::Instance()->GetCurrentLocale() + "/"));
@@ -345,6 +345,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 					float32 size, bool realDraw, 
 					int32 offsetX, int32 offsetY,
 					int32 justifyWidth, int32 spaceAddon,
+                    float32 ascendScale, float32 descendScale,
 					Vector<float32> *charSizes,
 					bool contentScaleIncluded )
 {
@@ -579,7 +580,7 @@ bool FTInternalFont::IsCharAvaliable(char16 ch) const
 }
 	
 
-uint32 FTInternalFont::GetFontHeight(float32 size) const
+uint32 FTInternalFont::GetFontHeight(float32 size, float32 ascendScale, float32 descendScale) const
 {
     drawStringMutex.Lock();
 
