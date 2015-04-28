@@ -236,25 +236,30 @@ uint32 File::ReadString(String & destinationString)
 
 uint32 File::ReadLine(void * pointerToData, uint32 bufferSize)
 {
-    uint8 *inPtr = (uint8*)pointerToData;
-    while (0 < bufferSize && !IsEof())
-    {
-        uint8 nextChar;
-        if (GetNextChar(&nextChar))
-        {
-            *inPtr = nextChar;
-            inPtr++;
-            bufferSize--;
-            DVASSERT_MSG(0 < bufferSize, "Small buffer!!!");
-        }
-        else
-        {
-            break;
-        }
-    }
-    *inPtr = 0;
+    uint32 ret = 0;
 
-    return (uint32)(inPtr - (uint8*)pointerToData);
+    if(bufferSize > 0)
+    {
+        uint8 *inPtr = (uint8 *) pointerToData;
+        while(!IsEof() && bufferSize > 1)
+        {
+            uint8 nextChar;
+            if(GetNextChar(&nextChar))
+            {
+                *inPtr = nextChar;
+                inPtr++;
+                bufferSize--;
+            }
+            else
+            {
+                break;
+            }
+        }
+        *inPtr = 0;
+        ret = (uint32)(inPtr - (uint8*)pointerToData);
+    }
+
+    return ret;
 }
 
 String File::ReadLine()

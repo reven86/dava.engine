@@ -214,6 +214,10 @@ public:
 	//! return true if end of file reached and false in another case
 	virtual bool IsEof();
 
+    /**
+        \brief Truncate a file to a specified length
+        \param size A size, that file is going to be truncated to
+    */
     bool Truncate(int32 size);
 	
     static String GetModificationDate(const FilePath & filePathname);
