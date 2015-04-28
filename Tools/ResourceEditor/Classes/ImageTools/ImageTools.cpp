@@ -31,8 +31,10 @@
 
 #include "TextureCompression/TextureConverter.h"
 
+#include "Base/GlobalEnum.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/PixelFormatDescriptor.h"
+#include "Render/Image/ImageConvert.h"
 
 #include "Main/QtUtils.h"
 
@@ -242,7 +244,7 @@ QImage ImageTools::FromDavaImage(const DAVA::FilePath & pathname)
     return QImage();
 }
 
-QImage ImageTools::FromDavaImage(DAVA::Image *image)
+QImage ImageTools::FromDavaImage(Image *image)
 {
     QImage qtImage;
     
@@ -252,11 +254,11 @@ QImage ImageTools::FromDavaImage(DAVA::Image *image)
         
         switch(image->format)
         {
-            case DAVA::FORMAT_DXT1:
-            case DAVA::FORMAT_DXT1A:
-            case DAVA::FORMAT_DXT3:
-            case DAVA::FORMAT_DXT5:
-            case DAVA::FORMAT_DXT5NM:
+            case FORMAT_DXT1:
+            case FORMAT_DXT1A:
+            case FORMAT_DXT3:
+            case FORMAT_DXT5:
+            case FORMAT_DXT5NM:
             {
                 Vector<Image* > vec;
                 LibDdsHelper::DecompressImageToRGBA(*image, vec, true);
@@ -273,165 +275,70 @@ QImage ImageTools::FromDavaImage(DAVA::Image *image)
                 
                 break;
             }
-            case DAVA::FORMAT_PVR4:
-            case DAVA::FORMAT_PVR2:
-            case DAVA::FORMAT_RGBA8888:
+            case FORMAT_PVR4:
+            case FORMAT_PVR2:
+            case FORMAT_RGBA8888:
             {
-                DAVA::uint32 *data = (DAVA::uint32 *) image->data;
-                DAVA::uint32 c;
-                
-                qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
-                
-                // convert DAVA:RGBA8888 into Qt ARGB8888
-                for (int y = 0; y < (int)image->height; y++)
-                {
-                    line = (QRgb *) qtImage.scanLine(y);
-                    for (int x = 0; x < (int)image->width; x++)
-                    {
-                        c = data[y * image->width + x];
-                        line[x] = (c & 0xFF00FF00) | ((c & 0x00FF0000) >> 16) | ((c & 0x000000FF) << 16);
-                    }
-                }
-            }
+                qtImage = QImage(image->width, image->height, QImage::Format_RGBA8888);
+                Memcpy(qtImage.bits(), image->data, image->dataSize);
                 break;
-                
-            case DAVA::FORMAT_RGBA5551:
+            }
+
+            case FORMAT_RGBA5551:
             {
-                DAVA::uint16 *data = (DAVA::uint16 *) image->data;
-                DAVA::uint32 c;
-                
-                qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
-                
-                // convert DAVA:RGBA5551 into Qt ARGB8888
-                for (int y = 0; y < (int)image->height; y++)
-                {
-                    line = (QRgb *) qtImage.scanLine(y);
-                    for (int x = 0; x < (int)image->width; x++)
-                    {
-                        DAVA::uint32 a;
-                        DAVA::uint32 r;
-                        DAVA::uint32 g;
-                        DAVA::uint32 b;
-                        
-                        c = data[y * image->width + x];
-                        r = (c >> 11) & 0x1f;
-                        g = (c >> 6) & 0x1f;
-                        b = (c >> 1) & 0x1f;
-                        a = (c & 0x1) ? 0xff000000 : 0x0;
-                        
-                        line[x] = (a | (r << (16 + 3)) | (g << (8 + 3)) | (b << 3));
-                    }
-                }
-            }
+                qtImage = QImage(image->width, image->height, QImage::Format_RGBA8888);
+
+                auto srcPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA5551);
+                auto dstPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+                ImageConvert::ConvertImageDirect(FORMAT_RGBA5551, FORMAT_RGBA8888, image->data, image->width, image->height, srcPitch, qtImage.bits(), image->width, image->height, dstPitch);
                 break;
-                
-            case DAVA::FORMAT_RGBA4444:
+            }
+
+            case FORMAT_RGBA4444:
             {
-                DAVA::uint16 *data = (DAVA::uint16 *) image->data;
-                DAVA::uint32 c;
-                
-                qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
-                
-                // convert DAVA:RGBA4444 into Qt ARGB8888
-                for (int y = 0; y < (int)image->height; y++)
-                {
-                    line = (QRgb *) qtImage.scanLine(y);
-                    for (int x = 0; x < (int)image->width; x++)
-                    {
-                        DAVA::uint32 a;
-                        DAVA::uint32 r;
-                        DAVA::uint32 g;
-                        DAVA::uint32 b;
-                        
-                        c = data[y * image->width + x];
-                        r = (c >> 12) & 0xf;
-                        g = (c >> 8) & 0xf;
-                        b = (c >> 4) & 0xf;
-                        a = (c & 0xf);
-                        
-                        line[x] = ((a << (24 + 4)) | (r << (16 + 4)) | (g << (8+4)) | (b << 4));
-                    }
-                }
-            }
+                qtImage = QImage(image->width, image->height, QImage::Format_RGBA8888);
+
+                auto srcPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA4444);
+                auto dstPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+                ImageConvert::ConvertImageDirect(FORMAT_RGBA4444, FORMAT_RGBA8888, image->data, image->width, image->height, srcPitch, qtImage.bits(), image->width, image->height, dstPitch);
                 break;
-                
-            case DAVA::FORMAT_RGB565:
+            }
+
+            case FORMAT_RGB565:
             {
-                DAVA::uint16 *data = (DAVA::uint16 *) image->data;
-                DAVA::uint32 c;
-                
-                qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
-                
-                // convert DAVA:RGBA565 into Qt ARGB8888
-                for (int y = 0; y < (int)image->height; y++)
-                {
-                    line = (QRgb *) qtImage.scanLine(y);
-                    for (int x = 0; x < (int)image->width; x++)
-                    {
-                        DAVA::uint32 a;
-                        DAVA::uint32 r;
-                        DAVA::uint32 g;
-                        DAVA::uint32 b;
-                        
-                        c = data[y * image->width + x];
-                        a = 0xff;
-                        r = (c >> 11) & 0x1f;
-                        g = (c >> 5) & 0x3f;
-                        b = c & 0x1f;
-                        
-                        line[x] = ((a << 24) | (r << (16 + 3)) | (g << (8 + 2)) | (b << 3));
-                    }
-                }
-            }
+                qtImage = QImage(image->width, image->height, QImage::Format_RGBA8888);
+
+                auto srcPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGB565);
+                auto dstPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+                ImageConvert::ConvertImageDirect(FORMAT_RGB565, FORMAT_RGBA8888, image->data, image->width, image->height, srcPitch, qtImage.bits(), image->width, image->height, dstPitch);
                 break;
-                
-            case DAVA::FORMAT_A8:
+            }
+
+            case FORMAT_A8:
             {
-                DAVA::uint8 *data = (DAVA::uint8 *) image->data;
-                DAVA::uint32 c;
-                
-                qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
-                
-                // convert DAVA:RGBA565 into Qt ARGB8888
-                for (int y = 0; y < (int)image->height; y++) 
-                {
-                    line = (QRgb *) qtImage.scanLine(y);
-                    for (int x = 0; x < (int)image->width; x++) 
-                    {
-                        c = data[y * image->width + x];
-                        line[x] = ((0xff << 24) | (c << 16) | (c << 8) | c);
-                    }
-                }
-            }
+                qtImage = QImage(image->width, image->height, QImage::Format_RGBA8888);
+
+                auto srcPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_A8);
+                auto dstPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+                ImageConvert::ConvertImageDirect(FORMAT_A8, FORMAT_RGBA8888, image->data, image->width, image->height, srcPitch, qtImage.bits(), image->width, image->height, dstPitch);
                 break;
-                
-            case DAVA::FORMAT_RGB888:
+            }
+
+            case FORMAT_RGB888:
             {
-                DAVA::uint8 *data = (DAVA::uint8 *) image->data;
-                
-                qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
-                
-                // convert DAVA:RGB888 into Qt ARGB8888
-                int32 imagewidth = image->width * 3;
-                for (int y = 0; y < (int)image->height; y++) 
-                {
-                    line = (QRgb *) qtImage.scanLine(y);
-                    for (int x = 0, i = 0; x < imagewidth; x += 3, i++) 
-                    {
-                        DAVA::uint32 a = 0xff000000;
-                        DAVA::uint32 r = data[y * imagewidth + x];
-                        DAVA::uint32 g = data[y * imagewidth + x + 1];
-                        DAVA::uint32 b = data[y * imagewidth + x + 2];
-                        
-                        line[i] = (a) | (r << 16) | (g << 8) | (b);
-                    }
-                }
-            }
+                qtImage = QImage(image->width, image->height, QImage::Format_RGBA8888);
+
+                auto srcPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGB888);
+                auto dstPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+                ImageConvert::ConvertImageDirect(FORMAT_RGB888, FORMAT_RGBA8888, image->data, image->width, image->height, srcPitch, qtImage.bits(), image->width, image->height, dstPitch);
                 break;
-                
-                
+            }
+
             default:
+            {
+                Logger::Error("[%s] Converting from %s is not implemented", __FUNCTION__, GlobalEnumMap<PixelFormat>::Instance()->ToString(image->format));
                 break;
+            }
         }
     }
     

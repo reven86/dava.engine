@@ -194,7 +194,7 @@ struct ConvertA8toRGBA8888
 	inline void operator()(const uint8 * input, uint32 *output)
 	{
 		uint32 pixel = *input;
-		*output = ((pixel) << 24) | (pixel << 16) | (pixel << 8) | pixel;
+		*output = (0xFF << 24) | (pixel << 16) | (pixel << 8) | pixel;
 	}
 };
 
