@@ -105,14 +105,12 @@ void SpeedTreeObject::BindDynamicParameters(Camera * camera)
 
 void SpeedTreeObject::UpdateAnimationFlag(int32 maxAnimatedLod)
 {
-#if RHI_COMPLETE
     uint32 size = (uint32)renderBatchArray.size();
     for (uint32 k = 0; k < size; ++k)
     {
-        NMaterial::eFlagValue flagValue = (renderBatchArray[k].lodIndex > maxAnimatedLod) ? NMaterial::FlagOff : NMaterial::FlagOn;
+        int32 flagValue = (renderBatchArray[k].lodIndex > maxAnimatedLod) ? 0 : 1;
         renderBatchArray[k].renderBatch->GetMaterial()->SetFlag(FLAG_WIND_ANIMATION, flagValue);
     }
-#endif // RHI_COMPLETE
 }
 
 RenderObject * SpeedTreeObject::Clone(RenderObject *newObject)
@@ -157,11 +155,15 @@ void SpeedTreeObject::Load(KeyedArchive *archive, SerializationContext *serializ
 
     lightSmoothing = archive->GetFloat("sto.lightSmoothing", lightSmoothing);
     
-#if RHI_COMPLETE
     uint32 size = (uint32)renderBatchArray.size();
     for (uint32 k = 0; k < size; ++k)
-        renderBatchArray[k].renderBatch->GetMaterial()->SetFlag(FLAG_WIND_ANIMATION, NMaterial::FlagOn);
-#endif // RHI_COMPLETE
+    {
+        NMaterial *material = renderBatchArray[k].renderBatch->GetMaterial();
+        if (!material->HasLocalFlag(FLAG_WIND_ANIMATION))
+            material->AddFlag(FLAG_WIND_ANIMATION, 1);
+        else
+            material->SetFlag(FLAG_WIND_ANIMATION, 1);
+    }
 }
 
 AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeGeometry(RenderBatch * rb)

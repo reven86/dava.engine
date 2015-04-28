@@ -190,6 +190,11 @@ void NMaterial::SetPropertyValue(const FastName& propName, float32 *propData)
     prop->SetPropertyValue(propData);
 }
 
+bool NMaterial::HasLocalProperty(const FastName& propName)
+{
+    return localProperties.at(propName)!=nullptr;
+}
+
 
 void NMaterial::AddTexture(const FastName& slotName, Texture* texture)
 {

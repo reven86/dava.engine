@@ -99,7 +99,7 @@ public:
     void AddProperty(const FastName& propName, float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize = 1);
     void RemoveProperty(const FastName& propName);
     void SetPropertyValue(const FastName& propName, float32 *propData);
-    bool HasLocalProperty(const FastName& flagName);
+    bool HasLocalProperty(const FastName& propName);
 
     /*textures*/
     void AddTexture(const FastName& slotName, Texture *texture);

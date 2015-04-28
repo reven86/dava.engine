@@ -294,7 +294,7 @@ protected:
 	int32 *frameTextureIndex;
 	int32 textureCount;
 
-	Vector<UniqueHandle> textureHandles;
+	Vector<rhi::HTextureSet> textureHandles;
 	
 	float32 **frameVertices;
 	float32 **texCoords;
