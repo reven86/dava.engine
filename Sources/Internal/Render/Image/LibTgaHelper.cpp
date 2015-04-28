@@ -157,6 +157,26 @@ DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File *infile, TgaInfo& tgaInfo) con
     return SUCCESS;
 }
 
+struct Convert_TgaARGB1555_to_RGBA5551
+{
+    inline void operator()(const uint16 * input, uint16 *output)
+    {
+        //arrr rrgg gggb bbbb --> rrrr rggg ggbb bbba
+
+        //targa does not use alpha bit https://forums.adobe.com/thread/1303965?tstart=0
+        *output = (*input << 1) | 0x1;
+    }
+};
+
+struct Convert_RGBA5551_to_TgaARGB1555
+{
+    //rrrr rggg ggbb bbba --> arrr rrgg gggb bbbb
+    inline void operator()(const uint16 * input, uint16 *output)
+    {
+        *output = (*input >> 1) | 0x8000;
+    }
+};
+
 eErrorCode LibTgaHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
 {
     DVASSERT(infile);
@@ -185,7 +205,7 @@ eErrorCode LibTgaHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
             if (tgaInfo.pixelFormat == FORMAT_RGBA5551)
             {
                 uint32 pitch = image->width * tgaInfo.bytesPerPixel;
-                ConvertDirect<uint16, uint16, ConvertARGB1555toRGBA5551> swap;
+                ConvertDirect<uint16, uint16, Convert_TgaARGB1555_to_RGBA5551> swap;
                 swap(image->data, image->width, image->height, pitch, image->data);
             }
             else
@@ -414,7 +434,7 @@ eErrorCode LibTgaHelper::WriteFile(const FilePath & fileName, const Vector<Image
         uint32 pitch = width * tgaInfo.bytesPerPixel;
         if (pixelFormat == FORMAT_RGBA5551) // for RGBA5551, TGA stores it as ARGB1555
         {
-            ConvertDirect<uint16, uint16, ConvertRGBA5551toARGB1555> swap;
+            ConvertDirect<uint16, uint16, Convert_RGBA5551_to_TgaARGB1555> swap;
             swap(imageData, width, height, pitch, convertedData.get());
         }
         else

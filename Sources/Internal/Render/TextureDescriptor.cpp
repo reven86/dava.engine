@@ -324,7 +324,7 @@ void TextureDescriptor::SaveInternal(File *file, const int32 signature, const ui
     file->Write(&length);
     file->Write(dataSettings.sourceFileExtension.c_str(), length);
 
-    for (int i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
+    for (int i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
     {
         if (dataSettings.cubefaceFlags & (1 << i))
         {
@@ -479,7 +479,7 @@ void TextureDescriptor::LoadVersion9(File *file)
     file->Read(extStr.data(), length);
     dataSettings.sourceFileExtension = String(extStr.data(), length);
 
-    for (int i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
+    for (int i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
     {
         if (dataSettings.cubefaceFlags & (1 << i))
         {
@@ -560,13 +560,13 @@ void TextureDescriptor::GetFacePathnames(Vector<FilePath>& faceNames) const
     GenerateFacePathnames(pathname, Texture::FACE_NAME_SUFFIX, faceNames);
 }
 
-void TextureDescriptor::GenerateFacePathnames(const FilePath & filePath, const std::array<String, Texture::CUBE_FACE_MAX_COUNT>& faceNameSuffixes, Vector<FilePath>& faceNames) const
+void TextureDescriptor::GenerateFacePathnames(const FilePath & filePath, const std::array<String, Texture::CUBE_FACE_COUNT>& faceNameSuffixes, Vector<FilePath>& faceNames) const
 {
-    faceNames.resize(Texture::CUBE_FACE_MAX_COUNT, FilePath());
+    faceNames.resize(Texture::CUBE_FACE_COUNT, FilePath());
 
     String baseName = filePath.GetBasename();
 
-    for (auto face = 0; face < Texture::CUBE_FACE_MAX_COUNT; ++face)
+    for (auto face = 0; face < Texture::CUBE_FACE_COUNT; ++face)
     {
         if (dataSettings.cubefaceFlags & (1 << face))
         {

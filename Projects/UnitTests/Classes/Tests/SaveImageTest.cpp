@@ -7,9 +7,9 @@ using namespace DAVA;
 SaveImageTest::SaveImageTest()
 : TestTemplate<SaveImageTest>("SaveImageTest")
 {
-    imageRGBA8888 = Get8888Image();
-    imageRGB888 = Get888Image();
-    imageA8 = GetA8Image();
+    imageRGBA8888 = Create8888Image();
+    imageRGB888 = Create888Image();
+    imageA8 = CreateA8Image();
     RegisterFunction(this, &SaveImageTest::PngTest, "PngTest", NULL);
     RegisterFunction(this, &SaveImageTest::JpegTest, "JpegTest", NULL);
     RegisterFunction(this, &SaveImageTest::TgaTest, "TgaTest", NULL);
@@ -60,9 +60,14 @@ void SaveImageTest::SaveLoadCheck(PerfFuncData* data, const Image* img, const St
     const TextureUtils::CompareResult cmpRes = TextureUtils::CompareImages(img, imgSet[0], img->format);
     float32 differencePersentage = ((float32)cmpRes.difference / ((float32)cmpRes.bytesCount * 256.f)) * 100.f;
     TEST_VERIFY(differencePersentage <= diffThreshold);
+
+    for (auto img : imgSet)
+    {
+        img->Release();
+    }
 }
 
-Image* SaveImageTest::Get8888Image() const
+Image* SaveImageTest::Create8888Image() const
 {
     uint32 size = 512;
     Image* img = Image::Create(size, size, FORMAT_RGBA8888);
@@ -81,7 +86,7 @@ Image* SaveImageTest::Get8888Image() const
     return img;
 }
 
-Image* SaveImageTest::Get888Image() const
+Image* SaveImageTest::Create888Image() const
 {
     uint32 size = 512;
     Image* img = Image::Create(size, size, FORMAT_RGB888);
@@ -99,7 +104,7 @@ Image* SaveImageTest::Get888Image() const
     return img;
 }
 
-Image* SaveImageTest::GetA8Image() const
+Image* SaveImageTest::CreateA8Image() const
 {
     uint32 size = 512;
     Image* img = Image::Create(size, size, FORMAT_A8);

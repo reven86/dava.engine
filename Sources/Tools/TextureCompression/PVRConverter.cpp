@@ -44,7 +44,7 @@ namespace DAVA
 {
 static String CUBEMAP_TMP_DIR = "~doc:/ResourceEditor_Cubemap_Tmp/";
 
-static std::array<String, Texture::CUBE_FACE_MAX_COUNT> PVRTOOL_FACE_SUFFIXES =
+static std::array<String, Texture::CUBE_FACE_COUNT> PVRTOOL_FACE_SUFFIXES =
 {
     String("1"), //pz
     String("2"), //nz

@@ -259,6 +259,9 @@ QImage ImageTools::FromDavaImage(Image *image)
             case FORMAT_DXT3:
             case FORMAT_DXT5:
             case FORMAT_DXT5NM:
+            case FORMAT_ATC_RGB:
+            case FORMAT_ATC_RGBA_EXPLICIT_ALPHA:
+            case FORMAT_ATC_RGBA_INTERPOLATED_ALPHA:
             {
                 Vector<Image* > vec;
                 LibDdsHelper::DecompressImageToRGBA(*image, vec, true);
@@ -277,6 +280,16 @@ QImage ImageTools::FromDavaImage(Image *image)
             }
             case FORMAT_PVR4:
             case FORMAT_PVR2:
+            case FORMAT_PVR2_2:
+            case FORMAT_PVR4_2:
+            case FORMAT_ETC1:
+            case FORMAT_EAC_R11_UNSIGNED:
+            case FORMAT_EAC_R11_SIGNED:
+            case FORMAT_EAC_RG11_UNSIGNED:
+            case FORMAT_EAC_RG11_SIGNED:
+            case FORMAT_ETC2_RGB:
+            case FORMAT_ETC2_RGBA:
+            case FORMAT_ETC2_RGB_A1:
             case FORMAT_RGBA8888:
             {
                 qtImage = QImage(image->width, image->height, QImage::Format_RGBA8888);
@@ -285,52 +298,21 @@ QImage ImageTools::FromDavaImage(Image *image)
             }
 
             case FORMAT_RGBA5551:
-            {
-                qtImage = QImage(image->width, image->height, QImage::Format_RGBA8888);
-
-                auto srcPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA5551);
-                auto dstPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
-                ImageConvert::ConvertImageDirect(FORMAT_RGBA5551, FORMAT_RGBA8888, image->data, image->width, image->height, srcPitch, qtImage.bits(), image->width, image->height, dstPitch);
-                break;
-            }
-
             case FORMAT_RGBA4444:
-            {
-                qtImage = QImage(image->width, image->height, QImage::Format_RGBA8888);
-
-                auto srcPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA4444);
-                auto dstPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
-                ImageConvert::ConvertImageDirect(FORMAT_RGBA4444, FORMAT_RGBA8888, image->data, image->width, image->height, srcPitch, qtImage.bits(), image->width, image->height, dstPitch);
-                break;
-            }
-
             case FORMAT_RGB565:
-            {
-                qtImage = QImage(image->width, image->height, QImage::Format_RGBA8888);
-
-                auto srcPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGB565);
-                auto dstPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
-                ImageConvert::ConvertImageDirect(FORMAT_RGB565, FORMAT_RGBA8888, image->data, image->width, image->height, srcPitch, qtImage.bits(), image->width, image->height, dstPitch);
-                break;
-            }
-
             case FORMAT_A8:
-            {
-                qtImage = QImage(image->width, image->height, QImage::Format_RGBA8888);
-
-                auto srcPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_A8);
-                auto dstPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
-                ImageConvert::ConvertImageDirect(FORMAT_A8, FORMAT_RGBA8888, image->data, image->width, image->height, srcPitch, qtImage.bits(), image->width, image->height, dstPitch);
-                break;
-            }
-
+            case FORMAT_A16:
             case FORMAT_RGB888:
+            case FORMAT_BGR888:
+            case FORMAT_BGRA8888:
+            case FORMAT_RGBA16161616:
+            case FORMAT_RGBA32323232:
             {
                 qtImage = QImage(image->width, image->height, QImage::Format_RGBA8888);
 
-                auto srcPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGB888);
+                auto srcPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(image->format);
                 auto dstPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
-                ImageConvert::ConvertImageDirect(FORMAT_RGB888, FORMAT_RGBA8888, image->data, image->width, image->height, srcPitch, qtImage.bits(), image->width, image->height, dstPitch);
+                ImageConvert::ConvertImageDirect(image->format, FORMAT_RGBA8888, image->data, image->width, image->height, srcPitch, qtImage.bits(), image->width, image->height, dstPitch);
                 break;
             }
 

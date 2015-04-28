@@ -462,7 +462,7 @@ void Image::FlipVertical()
 	}
 }
 
-void Image::Rotate(int degree)
+void Image::RotateDeg(int degree)
 {
     degree %= 360;
 
@@ -472,7 +472,7 @@ void Image::Rotate(int degree)
         return;
     case 90:
     case -270:
-        RotateClockwise();
+        Rotate90Right();
         return;
     case 180:
     case -180:
@@ -481,7 +481,7 @@ void Image::Rotate(int degree)
         return;
     case 270:
     case -90:
-        RotateCounterClockwise();
+        Rotate90Left();
         return;
     default:
         DVASSERT(false && "unsupported rotate degree");
@@ -489,7 +489,7 @@ void Image::Rotate(int degree)
     }
 }
 
-void Image::RotateClockwise()
+void Image::Rotate90Right()
 {
     DVASSERT((width == height) && "image should be square to rotate");
     DVASSERT(dataSize && "image is empty or dataSize is not set");
@@ -499,22 +499,22 @@ void Image::RotateClockwise()
     switch (format)
     {
     case FORMAT_A8:
-        RotateClockwise((uint8 *)data, (uint8 *)newData, height);
+        Rotate90Right((uint8 *)data, (uint8 *)newData, height);
         break;
 
     case FORMAT_A16:
     case FORMAT_RGBA5551:
     case FORMAT_RGBA4444:
     case FORMAT_RGB565:
-        RotateClockwise((uint16 *)data, (uint16 *)newData, height);
+        Rotate90Right((uint16 *)data, (uint16 *)newData, height);
         break;
 
     case FORMAT_RGBA8888:
-        RotateClockwise((uint32 *)data, (uint32 *)newData, height);
+        Rotate90Right((uint32 *)data, (uint32 *)newData, height);
         break;
 
     case FORMAT_RGB888:
-        RotateClockwise((RGB888 *)data, (RGB888 *)newData, height);
+        Rotate90Right((RGB888 *)data, (RGB888 *)newData, height);
         break;
 
     default:
@@ -522,12 +522,11 @@ void Image::RotateClockwise()
         break;
     }
 
-    uint8* delData = data;
+    SafeDeleteArray(data);
     data = newData;
-    SafeDeleteArray(delData);
 }
 
-void Image::RotateCounterClockwise()
+void Image::Rotate90Left()
 {
     DVASSERT((width == height) && "image should be square to rotate");
     DVASSERT(dataSize && "image is empty or dataSize is not set");
@@ -537,22 +536,22 @@ void Image::RotateCounterClockwise()
     switch (format)
     {
     case FORMAT_A8:
-        RotateCounterClockwise((uint8 *)data, (uint8 *)newData, height);
+        Rotate90Left((uint8 *)data, (uint8 *)newData, height);
         break;
 
     case FORMAT_A16:
     case FORMAT_RGBA5551:
     case FORMAT_RGBA4444:
     case FORMAT_RGB565:
-        RotateCounterClockwise((uint16 *)data, (uint16 *)newData, height);
+        Rotate90Left((uint16 *)data, (uint16 *)newData, height);
         break;
 
     case FORMAT_RGBA8888:
-        RotateCounterClockwise((uint32 *)data, (uint32 *)newData, height);
+        Rotate90Left((uint32 *)data, (uint32 *)newData, height);
         break;
 
     case FORMAT_RGB888:
-        RotateCounterClockwise((RGB888 *)data, (RGB888 *)newData, height);
+        Rotate90Left((RGB888 *)data, (RGB888 *)newData, height);
         break;
 
     default:
@@ -560,9 +559,8 @@ void Image::RotateCounterClockwise()
         break;
     }
 
-    uint8* delData = data;
+    SafeDeleteArray(data);
     data = newData;
-    SafeDeleteArray(delData);
 }
 
     

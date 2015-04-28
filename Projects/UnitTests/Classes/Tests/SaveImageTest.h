@@ -42,9 +42,9 @@ public:
     void TgaTest(PerfFuncData * data);
 private:
     void SaveLoadCheck(PerfFuncData* data, const Image* img, const String& filename, float32 diffThreshold);
-    Image* Get888Image() const;
-    Image* Get8888Image() const;
-    Image* GetA8Image() const;
+    Image* Create888Image() const;
+    Image* Create8888Image() const;
+    Image* CreateA8Image() const;
 
     Image* imageRGBA8888;
     Image* imageRGB888;

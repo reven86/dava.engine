@@ -162,7 +162,7 @@ eGPUFamily GPUFamilyDescriptor::GetGPUForPathname(const FilePath &pathname)
     {
         if (String::npos != filename.rfind(gpuData[i].prefix))
         {
-            return (eGPUFamily)i;
+            return static_cast<eGPUFamily>(i);
         }
     }
 

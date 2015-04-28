@@ -58,7 +58,7 @@ CubemapEditorDialog::CubemapEditorDialog(QWidget *parent) :
     facesInfo.width = facesInfo.height = 0;
     facesInfo.format = FORMAT_INVALID;
     
-    facePathes.resize(Texture::CUBE_FACE_MAX_COUNT, FilePath());
+    facePathes.resize(Texture::CUBE_FACE_COUNT, FilePath());
     
     faceChanged = false;
 
@@ -312,7 +312,7 @@ void CubemapEditorDialog::LoadCubemap(const QString& path)
         texDescriptor->GetFacePathnames(faceNames);
         bool cubemapLoadResult = true;
 
-        for (auto i = 0; i < CubemapUtils::GetMaxFaces(); ++i)
+        for (auto i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
         {
             bool faceLoadResult = LoadImageTo(faceNames[i].GetAbsolutePathname(), i, true);
             cubemapLoadResult = cubemapLoadResult && faceLoadResult;
@@ -358,7 +358,7 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
     descriptor->GetFacePathnames(targetFacePathes);
 		
 	//copy file to the location where .tex will be put. Add suffixes to file names to distinguish faces
-	for(int i = 0 ; i < CubemapUtils::GetMaxFaces(); ++i)
+	for(int i = 0 ; i < Texture::CUBE_FACE_COUNT; ++i)
 	{
 		if(!facePathes[i].IsEmpty())
 		{
@@ -414,7 +414,7 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
 			if(faceLabel->GetRotation() != 0)
 			{
                 ScopedPtr<Image> image(CreateTopLevelImage(targetFacePathes[i]));
-                image->Rotate(faceLabel->GetRotation());
+                image->RotateDeg(faceLabel->GetRotation());
                 ImageSystem::Instance()->Save(targetFacePathes[i], image);
                 faceLabel->SetRotation(0);
 			}
@@ -429,7 +429,7 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
 DAVA::uint8 CubemapEditorDialog::GetFaceMask()
 {
 	DAVA::uint8 mask = 0;
-	for(int i = 0 ; i < CubemapUtils::GetMaxFaces(); ++i)
+    for (int i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
 	{
 		if(!facePathes[i].IsEmpty())
 		{
@@ -582,7 +582,7 @@ bool CubemapEditorDialog::IsCubemapEdited()
 			ui->labelNZ
 		};
 
-		for(int i = 0; i < CubemapUtils::GetMaxFaces(); ++i)
+        for (int i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
 		{
 			if(labels[i]->GetRotation() != 0)
 			{
@@ -597,7 +597,7 @@ bool CubemapEditorDialog::IsCubemapEdited()
 
 void CubemapEditorDialog::OnRotationChanged()
 {
-	UpdateButtonState();
+    
 }
 
 void CubemapEditorDialog::mouseMoveEvent(QMouseEvent *ev)
@@ -612,7 +612,7 @@ void CubemapEditorDialog::mouseMoveEvent(QMouseEvent *ev)
 		ui->labelNZ
 	};
 
-	for(int i = 0; i < CubemapUtils::GetMaxFaces(); ++i)
+    for (int i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
 	{
 		labels[i]->OnParentMouseMove(ev);
 	}

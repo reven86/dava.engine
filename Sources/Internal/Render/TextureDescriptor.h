@@ -109,7 +109,7 @@ public:
 		uint8 cubefaceFlags;
         ImageFormat sourceFileFormat;
         String sourceFileExtension;
-        String cubefaceExtensions[Texture::CUBE_FACE_MAX_COUNT];
+        String cubefaceExtensions[Texture::CUBE_FACE_COUNT];
 
 		INTROSPECTION(TextureDataSettings,
             PROPERTY("generateMipMaps", "generateMipMaps", GetGenerateMipMaps, SetGenerateMipmaps, I_VIEW | I_EDIT | I_SAVE)
@@ -180,7 +180,7 @@ public:
     FilePath GetSourceTexturePathname() const;
 
     void GetFacePathnames(Vector<FilePath>& faceNames) const;
-    void GenerateFacePathnames(const FilePath & baseName, const std::array<String, Texture::CUBE_FACE_MAX_COUNT>& faceNameSuffixes, Vector<FilePath>& faceNames) const;
+    void GenerateFacePathnames(const FilePath & baseName, const std::array<String, Texture::CUBE_FACE_COUNT>& faceNameSuffixes, Vector<FilePath>& faceNames) const;
 
 	static const String & GetDescriptorExtension();
     static const String & GetLightmapTextureExtension();

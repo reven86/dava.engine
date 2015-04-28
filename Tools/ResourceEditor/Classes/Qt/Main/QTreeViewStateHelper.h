@@ -46,7 +46,7 @@ public:
 		this->treeView = treeView;
 	}
 
-    virtual ~QTreeViewStateHelper() {;};
+    virtual ~QTreeViewStateHelper() = default;
     
 	virtual void SaveTreeViewState(bool needCleanupStorage = true)
 	{

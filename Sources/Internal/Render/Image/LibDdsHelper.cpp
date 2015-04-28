@@ -54,7 +54,7 @@ using namespace nvtt;
 namespace DAVA
 {
 
-class QualcommHeler
+class QualcommHelper
 {
 public:
     
@@ -77,22 +77,22 @@ public:
 	PixelFormat static GetDavaFormat(int32 qFormat);
 };
 
-const std::array<QualcommHeler::PairQualcommPixelGLFormat, QualcommHeler::Q_FORMAT_COUNT> QualcommHeler::formatPair =
+const std::array<QualcommHelper::PairQualcommPixelGLFormat, QualcommHelper::Q_FORMAT_COUNT> QualcommHelper::formatPair =
 {{
-    QualcommHeler::PairQualcommPixelGLFormat(Q_FORMAT_ATC_RGB, FORMAT_ATC_RGB),
-    QualcommHeler::PairQualcommPixelGLFormat(Q_FORMAT_ATC_RGBA_EXPLICIT_ALPHA, FORMAT_ATC_RGBA_EXPLICIT_ALPHA),
-    QualcommHeler::PairQualcommPixelGLFormat(Q_FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, FORMAT_ATC_RGBA_INTERPOLATED_ALPHA),
+    QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_ATC_RGB, FORMAT_ATC_RGB),
+    QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_ATC_RGBA_EXPLICIT_ALPHA, FORMAT_ATC_RGBA_EXPLICIT_ALPHA),
+    QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, FORMAT_ATC_RGBA_INTERPOLATED_ALPHA),
 
-    QualcommHeler::PairQualcommPixelGLFormat(Q_FORMAT_RGBA_8UI, FORMAT_RGBA8888),
-    QualcommHeler::PairQualcommPixelGLFormat(Q_FORMAT_RGB_8UI, FORMAT_RGB888),
-    QualcommHeler::PairQualcommPixelGLFormat(Q_FORMAT_RGB5_A1UI, FORMAT_RGBA5551),
-    QualcommHeler::PairQualcommPixelGLFormat(Q_FORMAT_RGBA_4444, FORMAT_RGBA4444),
-    QualcommHeler::PairQualcommPixelGLFormat(Q_FORMAT_RGB_565, FORMAT_RGB565),
-    QualcommHeler::PairQualcommPixelGLFormat(Q_FORMAT_ALPHA_8, FORMAT_A8),
+    QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_RGBA_8UI, FORMAT_RGBA8888),
+    QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_RGB_8UI, FORMAT_RGB888),
+    QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_RGB5_A1UI, FORMAT_RGBA5551),
+    QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_RGBA_4444, FORMAT_RGBA4444),
+    QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_RGB_565, FORMAT_RGB565),
+    QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_ALPHA_8, FORMAT_A8),
 }};
 
     
-int32 QualcommHeler::GetQualcommFormat(PixelFormat format)
+int32 QualcommHelper::GetQualcommFormat(PixelFormat format)
 {
     for (auto &pair : formatPair)
 	{
@@ -106,7 +106,7 @@ int32 QualcommHeler::GetQualcommFormat(PixelFormat format)
 	return -1;
 }
 
-PixelFormat QualcommHeler::GetDavaFormat(int32 format)
+PixelFormat QualcommHelper::GetDavaFormat(int32 format)
 {
     for (auto &pair : formatPair)
     {
@@ -601,7 +601,7 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, Pix
 
 	bool res = true;
 	unsigned char* buffer = compressedImges;
-    const int32 qualcommFormat = QualcommHeler::GetQualcommFormat(format);
+    const int32 qualcommFormat = QualcommHelper::GetQualcommFormat(format);
     
 	for(uint32 faceIndex = 0; faceIndex < info.faceCount; ++faceIndex)
 	{
@@ -726,7 +726,7 @@ eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vec
         return ERROR_WRITE_FAIL;
     }
     
-    if(imageSet.size() != Texture::CUBE_FACE_MAX_COUNT)
+    if(imageSet.size() != Texture::CUBE_FACE_COUNT)
     {
         Logger::Error("[LibDdsHelper::WriteFile] Wrong input image set.");
         return ERROR_WRITE_FAIL;
@@ -1149,7 +1149,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
 	}
 
     auto pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(imageSet[0]->format);
-    auto atcFormat = QualcommHeler::GetQualcommFormat(imageSet[0]->format);
+    auto atcFormat = QualcommHelper::GetQualcommFormat(imageSet[0]->format);
 	for(int32 i = 0; i < dataCount; ++i)
 	{
 		TQonvertImage srcImg = {0};
@@ -1164,7 +1164,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
 		TQonvertImage dstImg = {0};
 		dstImg.nWidth = imageSet[i]->width;
 		dstImg.nHeight = imageSet[i]->height;
-		dstImg.nFormat = QualcommHeler::GetQualcommFormat(compressionFormat);
+		dstImg.nFormat = QualcommHelper::GetQualcommFormat(compressionFormat);
 		dstImg.nDataSize = 0;
 		dstImg.pData = NULL;
 
@@ -1194,7 +1194,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
 		TQonvertImage dstImg = {0};
 		dstImg.nWidth = imageSet[i]->width;
 		dstImg.nHeight = imageSet[i]->height;
-		dstImg.nFormat = QualcommHeler::GetQualcommFormat(compressionFormat);
+		dstImg.nFormat = QualcommHelper::GetQualcommFormat(compressionFormat);
 		dstImg.nDataSize = mipSize[i];
 		dstImg.pData = tmpBuffer;
 		tmpBuffer += dstImg.nDataSize;
@@ -1358,10 +1358,10 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath &fileNameOriginal,
     Vector<Vector<int32> > mipSize;
     mipSize.resize(facesCount);
     
-    const int32 qualcommFormat = QualcommHeler::GetQualcommFormat(compressionFormat);
+    const int32 qualcommFormat = QualcommHelper::GetQualcommFormat(compressionFormat);
 
     auto pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(imageSet[0][0]->format);
-    auto atcFormat = QualcommHeler::GetQualcommFormat(imageSet[0][0]->format);
+    auto atcFormat = QualcommHelper::GetQualcommFormat(imageSet[0][0]->format);
     for(int32 f = 0; f < facesCount; ++f)
     {
         mipSize[f].resize(mipmapsCount);

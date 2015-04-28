@@ -104,6 +104,38 @@ struct ConvertRGB888toRGBA8888
     }
 };
 
+struct ConvertBGR888toRGBA8888
+{
+    inline void operator()(const BGR888 *input, uint32 * output)
+    {
+        *output = ((0xFF) << 24) | (input->b << 16) | (input->g << 8) | input->r;
+    }
+};
+
+struct ConvertRGBA16161616toRGBA8888
+{
+    inline void operator()(const RGBA16161616 * input, uint32 *output)
+    {
+        uint8 r = (input->r >> 8) & 0xFF;
+        uint8 g = (input->g >> 8) & 0xFF;
+        uint8 b = (input->b >> 8) & 0xFF;
+        uint8 a = (input->a >> 8) & 0xFF;
+        *output = (a << 24) | (b << 16) | (g << 8) | r;
+    }
+};
+
+struct ConvertRGBA32323232toRGBA8888
+{
+    inline void operator()(const RGBA32323232 * input, uint32 *output)
+    {
+        uint8 r = (input->r >> 24) & 0xFF;
+        uint8 g = (input->g >> 24) & 0xFF;
+        uint8 b = (input->b >> 24) & 0xFF;
+        uint8 a = (input->a >> 24) & 0xFF;
+        *output = (a << 24) | (b << 16) | (g << 8) | r;
+    }
+};
+
 struct ConvertBGR888toRGB888
 {
     inline void operator()(const BGR888 *input, RGB888* output)
@@ -139,10 +171,10 @@ struct ConvertRGBA8888toRGBA4444
 	{
 		uint32 pixel = *input;
 		uint32 a = ((pixel >> 24) & 0xFF) >> 4;
-		uint32 r = ((pixel >> 16) & 0xFF) >> 4;
+		uint32 b = ((pixel >> 16) & 0xFF) >> 4;
 		uint32 g = ((pixel >> 8) & 0xFF) >> 4;
-		uint32 b = (pixel & 0xFF) >> 4;
-		*output = ((b) << 12) | (g << 8) | (r << 4) | a;
+		uint32 r = (pixel & 0xFF) >> 4;
+		*output = ((r) << 12) | (g << 8) | (b << 4) | a;
 	}
 };
 
@@ -160,7 +192,7 @@ struct ConvertRGBA5551toRGBA8888
 	}
 };
 
-struct ConvertRGBA4444toRGBA888
+struct ConvertRGBA4444toRGBA8888
 {
 	inline void operator()(const uint16 * input, uint32 *output)
 	{
@@ -198,27 +230,15 @@ struct ConvertA8toRGBA8888
 	}
 };
 
-struct ConvertARGB1555toRGBA5551
+struct ConvertA16toRGBA8888
 {
-    inline void operator()(const uint16 * input, uint16 *output)
+    inline void operator()(const uint16 * input, uint32 *output)
     {
-        //arrr rrgg gggb bbbb --> rrrr rggg ggbb bbba
-
-        //targa does not use alpha bit https://forums.adobe.com/thread/1303965?tstart=0
-        *output = (*input << 1) | 0x1;
+        uint32 pixel = *input;
+        *output = (0xFF << 24) | (pixel << 16) | (pixel << 8) | pixel;
     }
 };
 
-struct ConvertRGBA5551toARGB1555
-{
-    //rrrr rggg ggbb bbba --> arrr rrgg gggb bbbb
-    inline void operator()(const uint16 * input, uint16 *output)
-    {
-        *output = (*input >> 1) | 0x8000;
-    }
-};
-    
-    
 struct ConvertBGRA4444toRGBA4444
 {
     inline void operator()(const uint16 * input, uint16 *output)
@@ -547,7 +567,7 @@ public:
         }
         else if (inFormat == FORMAT_RGBA4444 && outFormat == FORMAT_RGBA8888)
         {
-            ConvertDirect<uint16, uint32, ConvertRGBA4444toRGBA888> convert;
+            ConvertDirect<uint16, uint32, ConvertRGBA4444toRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         }
         else if (inFormat == FORMAT_RGB888 && outFormat == FORMAT_RGBA8888)
@@ -565,9 +585,19 @@ public:
             ConvertDirect<uint8, uint32, ConvertA8toRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         }
+        else if (inFormat == FORMAT_A16 && outFormat == FORMAT_RGBA8888)
+        {
+            ConvertDirect<uint16, uint32, ConvertA16toRGBA8888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
         else if (inFormat == FORMAT_BGR888 && outFormat == FORMAT_RGB888)
         {
             ConvertDirect<BGR888, RGB888, ConvertBGR888toRGB888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if (inFormat == FORMAT_BGR888 && outFormat == FORMAT_RGBA8888)
+        {
+            ConvertDirect<BGR888, uint32, ConvertBGR888toRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         }
         else if (inFormat == FORMAT_BGRA8888 && outFormat == FORMAT_RGBA8888)
@@ -578,6 +608,16 @@ public:
         else if (inFormat == FORMAT_RGBA8888 && outFormat == FORMAT_RGB888)
         {
             ConvertDirect<uint32, RGB888, ConvertRGBA8888toRGB888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if (inFormat == FORMAT_RGBA16161616 && outFormat == FORMAT_RGBA8888)
+        {
+            ConvertDirect<RGBA16161616, uint32, ConvertRGBA16161616toRGBA8888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if (inFormat == FORMAT_RGBA32323232 && outFormat == FORMAT_RGBA8888)
+        {
+            ConvertDirect<RGBA32323232, uint32, ConvertRGBA32323232toRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         }
         else

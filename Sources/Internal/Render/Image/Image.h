@@ -103,28 +103,11 @@ public:
 
     // changes size of image canvas to square
     void ResizeToSquare();
-
-	/*
-     //	void ConvertToFormat(PixelFormat format);
-        \todo extract all image format conversion functions to separate functions to allow to use them in different places, like textures.
-        enum eAlphaAction
-        {  
-            ALPHA_ACTION_NONE,
-            ALPHA_ACTION_REMOVE_PREMULTIPLICATION,
-            ALPHA_ACTION_ADD_PREMULTIPLICATION, 
-        };
-        static void ConvertFromRGBA8888toRGB565(const uint8 * sourceData, int32 width, int32 height, uint8 * destData, eAlphaAction action = ALPHA_ACTION_NONE);
-        static void ConvertFromRGBA8888toRGBA4444(const uint8 * sourceData, int32 width, int32 height, uint8 * destData, eAlphaAction action = ALPHA_ACTION_NONE);
-        static void ConvertFromRGBA8888toA8(const uint8 * sourceData, int32 width, int32 height, uint8 * destData, eAlphaAction action = ALPHA_ACTION_NONE);
-        
-     */
-    
-    
     void FlipVertical();
     void FlipHorizontal();
-    void Rotate(int degree);
-    void RotateClockwise();
-    void RotateCounterClockwise();
+    void RotateDeg(int degree);
+    void Rotate90Right();
+    void Rotate90Left();
 
 private:
 
@@ -135,10 +118,10 @@ private:
 	void FlipHorizontal(Type *buffer, uint32 width, uint32 height);
 
     template<class Type>
-    void RotateClockwise(Type *srcBuffer, Type *dstBuffer, uint32 sideLen);
+    void Rotate90Right(Type *srcBuffer, Type *dstBuffer, uint32 sideLen);
 
     template<class Type>
-    void RotateCounterClockwise(Type *srcBuffer, Type *dstBuffer, uint32 sideLen);
+    void Rotate90Left(Type *srcBuffer, Type *dstBuffer, uint32 sideLen);
 
 public:
     uint32 dataSize;
@@ -184,7 +167,7 @@ void Image::FlipHorizontal(Type *buffer, uint32 width, uint32 height)
 }
 
 template<class Type>
-void Image::RotateClockwise(Type *src, Type *dst, uint32 sideLen)
+void Image::Rotate90Right(Type *src, Type *dst, uint32 sideLen)
 {
     for (uint32 y = 0; y < sideLen; ++y)
     {
@@ -196,7 +179,7 @@ void Image::RotateClockwise(Type *src, Type *dst, uint32 sideLen)
 }
 
 template<class Type>
-void Image::RotateCounterClockwise(Type *src, Type *dst, uint32 sideLen)
+void Image::Rotate90Left(Type *src, Type *dst, uint32 sideLen)
 {
     for (uint32 y = 0; y < sideLen; ++y)
     {

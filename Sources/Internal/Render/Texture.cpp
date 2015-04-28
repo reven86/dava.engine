@@ -98,7 +98,7 @@ static int32 CUBE_FACE_MAPPING[] =
 	Texture::CUBE_FACE_NEGATIVE_Z
 };
 
-std::array<String, Texture::CUBE_FACE_MAX_COUNT> Texture::FACE_NAME_SUFFIX =
+std::array<String, Texture::CUBE_FACE_COUNT> Texture::FACE_NAME_SUFFIX =
 {{
     String("_px"),
     String("_nx"),
@@ -595,7 +595,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 	{
         Vector<FilePath> facePathes;
         texDescriptor->GetFacePathnames(facePathes);
-		for(auto i = 0; i < CUBE_FACE_MAX_COUNT; ++i)
+		for(auto i = 0; i < CUBE_FACE_COUNT; ++i)
 		{
             if (facePathes[i].IsEmpty())
                 continue;
@@ -1191,7 +1191,7 @@ void Texture::MakePink(bool checkers)
     Vector<Image *> *images = new Vector<Image *> ();
 	if(texDescriptor->IsCubeMap())
 	{
-		for(uint32 i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
+		for(uint32 i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
 		{
             Image *img = Image::CreatePinkPlaceholder(checkers);
 			img->cubeFaceID = i;

@@ -48,11 +48,6 @@ void CubemapUtils::GenerateFaceNames(const DAVA::String& baseName, DAVA::Vector<
     descriptor->GetFacePathnames(faceNames);
 }
 
-int CubemapUtils::GetMaxFaces()
-{
-    return DAVA::Texture::CUBE_FACE_MAX_COUNT;
-}
-
 DAVA::FilePath CubemapUtils::GetDialogSavedPath(const DAVA::String& key, const DAVA::String& defaultValue)
 {
     DAVA::VariantType settinsValue = SettingsManager::GetValue(key);
