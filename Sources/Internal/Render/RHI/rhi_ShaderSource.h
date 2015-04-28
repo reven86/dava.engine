@@ -61,6 +61,7 @@ typedef std::vector<ShaderProp> ShaderPropList;
 struct
 ShaderSampler
 {
+    TextureType type;
     FastName    uid;
 };
 
