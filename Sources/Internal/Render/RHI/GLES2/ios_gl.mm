@@ -1,9 +1,11 @@
+#if defined(__DAVAENGINE_IPHONE__)
+
 
     #include "ios_gl.h"
     #include "Platform/TemplateiOS/EAGLView.h"
 
-    #include <OpenGLES/ES3/gl.h>
-    #include <OpenGLES/ES3/glext.h>
+//    #include <OpenGLES/ES3/gl.h>
+//    #include <OpenGLES/ES3/glext.h>
     #include <OpenGLES/ES2/gl.h>
     #include <OpenGLES/ES2/glext.h>
 
@@ -78,4 +80,8 @@ SCOPED_NAMED_TIMING("ios_GL_end_frame");
     glBindRenderbuffer( GL_RENDERBUFFER, colorRenderbuffer );
     [_Context presentRenderbuffer:GL_RENDERBUFFER];
 }
+
+
+#endif
+
 

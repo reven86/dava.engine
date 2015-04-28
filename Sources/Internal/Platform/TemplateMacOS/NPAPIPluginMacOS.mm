@@ -31,7 +31,7 @@
 
 #include "NPAPICorePlatformMacOS.h"
 
-#include "Render/RenderManager.h"
+//#include "Render/RenderManager.h"
 
 #include <pwd.h>
 
@@ -477,7 +477,9 @@ extern void FrameworkWillTerminate();
 	#endif // #if defined (__DAVAENGINE_NPAPI__)
 
 	FrameworkDidLaunched();
+#if RHI_COMPLETE
     DAVA::RenderManager::Create(DAVA::Core::RENDERER_OPENGL);
+#endif
     DAVA::RenderSystem2D::Instance()->Init();
 
 	appCore = DAVA::Core::GetApplicationCore();
@@ -485,11 +487,15 @@ extern void FrameworkWillTerminate();
 
 -(void) doInitializationOnFirstDraw
 {
+#if RHI_COMPLETE
     DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
+#endif
 
 	NSRect rect = NSRectFromCGRect([openGLLayer frame]);
+#if RHI_COMPLETE
 	DAVA::RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
 	DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
+#endif
 	DAVA::VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
 	DAVA::VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
     DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(rect.size.width, rect.size.height);

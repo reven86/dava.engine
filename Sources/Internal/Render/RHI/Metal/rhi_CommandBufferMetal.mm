@@ -190,14 +190,6 @@ metal_CommandBuffer_End( Handle cmdBuf )
 //------------------------------------------------------------------------------
 
 static void
-metal_CommandBuffer_Clear( Handle cmdBuf )
-{
-}
-
-
-//------------------------------------------------------------------------------
-
-static void
 metal_CommandBuffer_SetPipelineState( Handle cmdBuf, Handle ps, uint32 layoutUID )
 {
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
@@ -212,28 +204,25 @@ metal_CommandBuffer_SetPipelineState( Handle cmdBuf, Handle ps, uint32 layoutUID
 static void
 metal_CommandBuffer_SetCullMode( Handle cmdBuf, CullMode mode )
 {
-    CommandBufferMetal_t*   cb = ;
-    id<MTLParallelRenderCommandEncoder> encoder = CommandBufferPool::Get( cmdBuf )->encoder;
+    id<MTLRenderCommandEncoder> encoder = CommandBufferPool::Get( cmdBuf )->encoder;
 
 
     switch( mode )
     {
         case CULL_NONE :
-            [encoder setCullMode:MTLCullModeNode ]
+            [encoder setCullMode:MTLCullModeNone ];
             break;
         
         case CULL_CCW :
-            [encoder setFrontFacingWinding:MTLWindingClockwise ]
-            [encoder setCullMode:MTLCullModeBack ]
+            [encoder setFrontFacingWinding:MTLWindingClockwise ];
+            [encoder setCullMode:MTLCullModeBack ];
             break;
         
         case CULL_CW :
-            [encoder setFrontFacingWinding:MTLWindingClockwise ]
-            [encoder setCullMode:MTLCullModeFront ]
+            [encoder setFrontFacingWinding:MTLWindingClockwise ];
+            [encoder setCullMode:MTLCullModeFront ];
             break;
     }
-    
-    [cb->encoder ];
 }
 
 

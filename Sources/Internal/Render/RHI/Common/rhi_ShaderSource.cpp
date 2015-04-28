@@ -86,7 +86,6 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
             std::cmatch match;
 
 
-Logger::Info(line);
             if( std::regex_match( line, match, prop_re ) )
             {
                 prop.resize( prop.size()+1 );

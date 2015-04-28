@@ -50,7 +50,8 @@ MetalTextureFormat( TextureFormat format )
     switch( format )
     {
 //        case TEXTURE_FORMAT_R8G8B8      : return MTLPixelFormatBGRA8Unorm;
-        case TEXTURE_FORMAT_A8R8G8B8    : return MTLPixelFormatBGRA8Unorm;
+//        case TEXTURE_FORMAT_A8R8G8B8    : return MTLPixelFormatBGRA8Unorm;
+        case TEXTURE_FORMAT_A8R8G8B8    : return MTLPixelFormatRGBA8Unorm;
 //        TEXTURE_FORMAT_X8R8G8B8,
 
         case TEXTURE_FORMAT_A1R5G5B5    : return MTLPixelFormatA1BGR5Unorm;
