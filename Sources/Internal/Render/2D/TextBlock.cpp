@@ -852,10 +852,19 @@ void TextBlock::CalculateCacheParams()
         {
             Font::StringMetrics stringSize = font->GetStringMetrics(multilineStrings[line]);
             stringSizes.push_back(stringSize.width);
-            textSize.width = Max(textSize.width, stringSize.width);
+
             textSize.drawRect.dx = Max(textSize.drawRect.dx, stringSize.drawRect.dx + stringSize.drawRect.x);
             textSize.drawRect.x = Min(textSize.drawRect.x, stringSize.drawRect.x);
-            
+
+            if (requestedSize.dx >= 0)
+            {
+                textSize.width = Max(textSize.width, Min(stringSize.width, (int32)drawSize.x));
+            }
+            else
+            {
+                textSize.width = Max(textSize.width, stringSize.width);
+            }
+
             if(0 == line)
             {
                 textSize.drawRect.y = stringSize.drawRect.y;
