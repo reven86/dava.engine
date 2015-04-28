@@ -366,6 +366,22 @@ SetToRHI( Handle ps, uint32 layoutUID )
     
     GL_CALL(glUseProgram( ps2->glProg ));
     
+    if( ps2->blendEnabled )
+    {
+        GL_CALL(glEnable( GL_BLEND ));
+        GL_CALL(glBlendFunc( ps2->blendSrc, ps2->blendDst ));
+    }
+    else
+    {
+        GL_CALL(glDisable( GL_BLEND ));
+    }
+}
+
+void
+SetVertexDeclToRHI( Handle ps, uint32 layoutUID )
+{
+    PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
+
     if( layoutUID != VertexLayout::InvalidUID )
     {
         bool    do_add = true;
@@ -392,16 +408,6 @@ SetToRHI( Handle ps, uint32 layoutUID )
     }
     
     ps2->vprog.SetToRHI( layoutUID );
-    
-    if( ps2->blendEnabled )
-    {
-        GL_CALL(glEnable( GL_BLEND ));
-        GL_CALL(glBlendFunc( ps2->blendSrc, ps2->blendDst ));
-    }
-    else
-    {
-        GL_CALL(glDisable( GL_BLEND ));
-    }
 }
 
 } // namespace PipelineStateGLES2
