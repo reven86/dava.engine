@@ -39,15 +39,14 @@ add_subdirectory( ${DAVA_TOOLS_DIR} ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
 set( WIN32_DATA                 ${CMAKE_CURRENT_LIST_DIR}/Data )
 
-set( IOS_PLISTT                 ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/RHI-Cube-Info.plist )
+set( IOS_PLISTT                 ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist )
 set( IOS_XIB                    ${XIB_LIST} )
 set( IOS_DATA                   Data )
 
-set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/RHI-Cube-Info.plist )
+set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist )
 set( MACOS_XIB                  ${XIB_LIST} )
 
 set( MACOS_ICO                  )
-set( MACOS_DATA                 ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_DYLIB                )
 
 set( ANDROID_PACKAGE            "com.dava.unittests" )

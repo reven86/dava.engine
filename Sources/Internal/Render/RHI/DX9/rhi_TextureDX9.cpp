@@ -34,6 +34,7 @@ public:
     unsigned                    lastUnit;
     unsigned                    mappedLevel;
     TextureFace                 mappedFace;
+    void*                       mappedData;
     unsigned                    isMapped:1;
 };
 
@@ -46,6 +47,7 @@ TextureDX9_t::TextureDX9_t()
     cubetex9(nullptr),
     surf9(nullptr),
     lastUnit(InvalidIndex),
+    mappedData(nullptr),
     isMapped(false)
 {
 }
@@ -53,6 +55,20 @@ TextureDX9_t::TextureDX9_t()
 typedef Pool<TextureDX9_t,RESOURCE_TEXTURE>   TextureDX9Pool;
 RHI_IMPL_POOL(TextureDX9_t,RESOURCE_TEXTURE);
 
+
+//------------------------------------------------------------------------------
+
+static void
+_SwapRB( void* data, uint32 size )
+{
+    for( uint8* d=(uint8*)data,*d_end=(uint8*)data+size; d!=d_end; d+=4 )
+    {
+        uint8   t = d[0];
+
+        d[0] = d[2];
+        d[2] = t;
+    }
+}
 
 
 //------------------------------------------------------------------------------
@@ -224,6 +240,7 @@ dx9_Texture_Map( Handle tex, unsigned level, TextureFace face )
         {
             mem = rc.pBits;
 
+            self->mappedData  = mem;
             self->mappedLevel = level;
             self->mappedFace  = face;
             self->isMapped    = true;
@@ -236,10 +253,18 @@ dx9_Texture_Map( Handle tex, unsigned level, TextureFace face )
         if( SUCCEEDED(hr) )
         {
             mem = rc.pBits;
-
+            
+            self->mappedData  = mem;
             self->mappedLevel = level;
             self->isMapped    = true;
         }
+    }
+
+    if( self->format == TEXTURE_FORMAT_A8R8G8B8 )
+    {
+        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
+        
+        _SwapRB( self->mappedData, ext.dx*ext.dy*sizeof(uint32) );
     }
 
     return mem;
@@ -254,6 +279,13 @@ dx9_Texture_Unmap( Handle tex )
     TextureDX9_t*   self = TextureDX9Pool::Get( tex );
 
     DVASSERT(self->isMapped);
+
+    if( self->format == TEXTURE_FORMAT_A8R8G8B8 )
+    {
+        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
+        
+        _SwapRB( self->mappedData, ext.dx*ext.dy*sizeof(uint32) );
+    }
 
     if( self->cubetex9 )
     {
@@ -296,6 +328,14 @@ dx9_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace face
     uint32          sz   = TextureSize( self->format, self->width, self->height, level );
     
     memcpy( dst, data, sz );
+    
+    if( self->format == TEXTURE_FORMAT_A8R8G8B8 )
+    {
+        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
+        
+        _SwapRB( self->mappedData, ext.dx*ext.dy*sizeof(uint32) );
+    }
+
     dx9_Texture_Unmap( tex );
 }
 

@@ -158,7 +158,9 @@ namespace DAVA
 	DisplayMode fullscreenMode = Core::Instance()->GetCurrentDisplayMode();
 	
 	FrameworkDidLaunched();
+#if RHI_COMPLETE
     RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
+#endif
     	KeyedArchive * options = DAVA::Core::Instance()->GetOptions();
 	int32 width = options->GetInt32("width", 800);
 	int32 height = options->GetInt32("height", 600);
@@ -183,14 +185,20 @@ namespace DAVA
 	[openGLView setFrame: rect];
 	
 	core = Core::GetApplicationCore();
+#if RHI_COMPLETE
     RenderManager::Instance()->DetectRenderingCapabilities();
+#endif
     RenderSystem2D::Instance()->Init();
 
 
 	// start animation
 	isAnimating = NO;
 	
+#if RHI_COMPLETE
 	currFPS = RenderManager::Instance()->GetFPS();
+#else
+    currFPS = 60;
+#endif
     [self startAnimation];
 
 	// make window main
@@ -351,13 +359,17 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 	
 	NSLog(@"[CoreMacOSPlatform] init internal renderer: %d x %d", currentMode.width, currentMode.height);
 	
+#if RHI_COMPLETE
 	RenderManager::Instance()->Init(currentMode.width, currentMode.height);
+#endif
 	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
 	VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 	
 	
+#if RHI_COMPLETE
 	RENDER_VERIFY(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
     RENDER_VERIFY(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+#endif
     [fullScreenContext flushBuffer];
 	
     // Now that we've got the screen, we enter a loop in which we alternately process input events and computer and render the next frame of our animation.  The shift here is from a model in which we passively receive events handed to us by the AppKit to one in which we are actively driving event processing.
@@ -430,6 +442,7 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
                     break;
             }
         }
+#if RHI_COMPLETE
 		DAVA::Cursor * activeCursor = RenderManager::Instance()->GetCursor();
 		if (activeCursor)
 		{
@@ -438,6 +451,7 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 		}
 
 		DAVA::RenderManager::Instance()->Lock();
+#endif
 		Core::Instance()->SystemProcessFrame();
 		
 		int err = glGetError();
@@ -447,7 +461,9 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 		}
 		[fullScreenContext flushBuffer];
 		
+#if RHI_COMPLETE
 		DAVA::RenderManager::Instance()->Unlock();
+#endif
 		
 		// NSLog(@"GL fullscreen frame");
         // Clean up any autoreleased objects that were created this time through the loop.
@@ -661,12 +677,14 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 {
 //	NSLog(@"anim timer fired: %@", openGLView);
     [openGLView setNeedsDisplay:YES];
+#if RHI_COMPLETE
 	if (currFPS != RenderManager::Instance()->GetFPS())
 	{
 		currFPS = RenderManager::Instance()->GetFPS();
 		[self stopAnimationTimer];
 		[self startAnimationTimer];
 	}
+#endif
 }
 
 - (void) switchFullscreenTimerFired:(NSTimer *)timer
@@ -682,12 +700,14 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
     
     [self OnResume];
     
+#if RHI_COMPLETE
     DAVA::Cursor * activeCursor = RenderManager::Instance()->GetCursor();
     if (activeCursor)
     {
         NSCursor * cursor = (NSCursor*)activeCursor->GetMacOSXCursor();
         [cursor set];
     }
+#endif
 
 }
 

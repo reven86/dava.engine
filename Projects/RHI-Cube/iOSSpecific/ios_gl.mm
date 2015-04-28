@@ -1,11 +1,9 @@
-#if defined(__DAVAENGINE_IPHONE__)
-
 
     #include "ios_gl.h"
     #include "Platform/TemplateiOS/EAGLView.h"
 
-//    #include <OpenGLES/ES3/gl.h>
-//    #include <OpenGLES/ES3/glext.h>
+    #include <OpenGLES/ES3/gl.h>
+    #include <OpenGLES/ES3/glext.h>
     #include <OpenGLES/ES2/gl.h>
     #include <OpenGLES/ES2/glext.h>
 
@@ -63,7 +61,7 @@ ios_GL_init()
 void 
 ios_GL_begin_frame()
 {
-SCOPED_NAMED_TIMING("ios_GL_begin_frame");
+//SCOPED_NAMED_TIMING("ios_GL_begin_frame");
     glBindFramebuffer( GL_FRAMEBUFFER, defaultFramebuffer );
     glViewport( 0, 0, backingWidth, backingHeight );
 }
@@ -71,7 +69,7 @@ SCOPED_NAMED_TIMING("ios_GL_begin_frame");
 void 
 ios_GL_end_frame()
 {
-SCOPED_NAMED_TIMING("ios_GL_end_frame");
+//SCOPED_NAMED_TIMING("ios_GL_end_frame");
     const GLenum discards[]  = { GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT };
 
     glBindFramebuffer( GL_FRAMEBUFFER, defaultFramebuffer );
@@ -80,8 +78,4 @@ SCOPED_NAMED_TIMING("ios_GL_end_frame");
     glBindRenderbuffer( GL_RENDERBUFFER, colorRenderbuffer );
     [_Context presentRenderbuffer:GL_RENDERBUFFER];
 }
-
-
-#endif
-
 

@@ -31,9 +31,12 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #import "Platform/TemplateiOS/ES3Renderer.h"
-#include "Render/RenderManager.h"
+//#include "Render/RenderManager.h"
 #include "Platform/Thread.h"
 #include "FileSystem/Logger.h"
+
+
+#define RENDER_VERIFY(expr) expr
 
 using namespace DAVA;
 
@@ -90,7 +93,7 @@ using namespace DAVA;
 	// This call is redundant, but needed if dealing with multiple renderbuffers.
     glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
     const GLenum discards[]  = {GL_DEPTH_ATTACHMENT, GL_COLOR_ATTACHMENT0};
-    RENDER_VERIFY(glDiscardFramebufferEXT(GL_FRAMEBUFFER,2,discards));
+//    RENDER_VERIFY(glDiscardFramebufferEXT(GL_FRAMEBUFFER,2,discards));
     [context presentRenderbuffer:GL_RENDERBUFFER];
     
     
@@ -106,7 +109,7 @@ using namespace DAVA;
 	      
     glGenRenderbuffers(1, &depthRenderbuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, backingWidth, backingHeight);
+//    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, backingWidth, backingHeight);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
     

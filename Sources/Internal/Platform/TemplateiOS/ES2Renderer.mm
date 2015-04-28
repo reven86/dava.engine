@@ -31,9 +31,11 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #import "Platform/TemplateiOS/ES2Renderer.h"
-#include "Render/RenderManager.h"
+//#include "Render/RenderManager.h"
 #include "Platform/Thread.h"
 #include "FileSystem/Logger.h"
+
+#define RENDER_VERIFY(expr) expr
 
 using namespace DAVA;
 
