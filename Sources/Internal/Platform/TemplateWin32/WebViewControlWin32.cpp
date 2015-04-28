@@ -30,6 +30,8 @@
 // recursive on all control paths, function will cause runtime stack overflow
 // and only then include DAVA includes because of free, malloc redefine error
 
+#include "Platform/PlatformDetection.h"
+
 #if defined __DAVAENGINE_WINDOWS_DESKTOP__
 
 #pragma warning(push)
@@ -44,6 +46,7 @@
 
 #include <ObjIdl.h>
 #include <Shlwapi.h>
+#include <Shellapi.h>
 
 #include "WebViewControlWin32.h"
 #include "CorePlatformWin32.h"
