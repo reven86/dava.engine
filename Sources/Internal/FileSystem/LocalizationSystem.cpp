@@ -34,6 +34,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/FileList.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/YamlEmitter.h"
 #include "Sound/SoundSystem.h"
@@ -48,6 +49,7 @@
 
 namespace DAVA 
 {
+//TODO: move it to DateTimeWin32 or remove
 const LocalizationSystem::LanguageLocalePair LocalizationSystem::languageLocaleMap[] =
 {
     { "en", "en_US" },
@@ -95,6 +97,26 @@ void LocalizationSystem::SetDirectory(const FilePath &directoryPath)
 #else
     SetCurrentLocale(Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE));
 #endif
+}
+
+Vector<String> LocalizationSystem::GetAvailableLocales() const
+{
+    Vector<String> availableLocales;
+    if (directoryPath.IsEmpty())
+    {
+        return availableLocales;
+    }
+    FileList * fileList = new FileList(directoryPath);
+    for (auto i = fileList->GetCount(), k = 0; k < i; ++k)
+    {
+        if (!fileList->IsDirectory(k))
+        {
+            availableLocales.push_back(fileList->GetPathname(k).GetBasename());
+        }
+    }
+
+    SafeRelease(fileList);
+    return availableLocales;
 }
 
 void LocalizationSystem::Init()

@@ -36,7 +36,6 @@
 #include "EditorSettings.h"
 #include <QtGui>
 #include <QtWidgets>
-#include <QAbstractItemModel>
 
 
 class PackageWidget;
@@ -93,8 +92,6 @@ signals:
 public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
-    void OnDocumentChanged(SharedData *data);
-    void OnDataChanged(const QByteArray &role);
 private slots:
     void OnCurrentIndexChanged(int arg);
     void OnSaveDocument();
@@ -110,7 +107,6 @@ private slots:
     
     // Pixelization.
     void OnPixelizationStateChanged();
-    void OnEditFontButtonPressed();
 private:
     void InitLanguageBox();
 	void InitMenu();
@@ -128,7 +124,6 @@ private:
     QAction* backgroundFrameUseCustomColorAction;
     QAction* backgroundFrameSelectCustomColorAction;
     LocalizationEditorDialog *localizationEditorDialog;
-    EditFontDialog *editFontDialog;
     QPushButton *editFontButton;
     SharedData *sharedData;
 };

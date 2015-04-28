@@ -1,6 +1,6 @@
 #include "Platform/Qt5/QtLayer.h"
 
-#include "Project.h"
+#include "Project/Project.h"
 #include "UI/mainwindow.h"
 #include "DocumentGroup.h"
 #include "Document.h"
@@ -10,9 +10,9 @@
 
 EditorCore::EditorCore(QObject *parent)
     : QObject(parent)
+    , project(new Project(this))
     , documentGroup(new DocumentGroup(this))
     , mainWindow(new MainWindow())
-    , project(new Project(this))
 {
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
      
@@ -26,9 +26,6 @@ EditorCore::EditorCore(QObject *parent)
     connect(mainWindow, &MainWindow::OpenPackageFile, this, &EditorCore::OnOpenPackageFile);
     connect(mainWindow, &MainWindow::SaveAllDocuments, this, &EditorCore::SaveAllDocuments);
     connect(mainWindow, &MainWindow::SaveDocument, this, static_cast<void(EditorCore::*)(int)>(&EditorCore::SaveDocument));
-
-    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow, &MainWindow::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::SharedDataChanged, mainWindow, &MainWindow::OnDataChanged);
 
     connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
 

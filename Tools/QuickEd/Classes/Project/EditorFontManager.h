@@ -31,91 +31,45 @@
 #ifndef __UIEditor__FontManager__
 #define __UIEditor__FontManager__
 
-#include <iostream>
-#include <DAVAEngine.h>
-#include <QString>
+#include "Base/BaseTypes.h"
+#include "Render/2d/Font.h"
+#include <QObject>
 
-class EditorFontManager: public DAVA::Singleton<EditorFontManager>
+class EditorFontManager: public QObject
 {
+Q_OBJECT
 public:
 	//typedef std::map<String, Font*> FONTSMAP;
-	EditorFontManager();
-	~EditorFontManager();
+	EditorFontManager(QObject *parent = nullptr);
+	~EditorFontManager() = default;
 	
-	void Reset();
-
     void LoadLocalizedFonts();
     void SaveLocalizedFonts();
     
     void ClearLocalizedFonts();
-    
-    void OnProjectLoaded();
-
-    DAVA::Font* GetDefaultFont() const;
-    void SetDefaultFont(DAVA::Font* font);
-	void ResetDefaultFont();
-    
-	//Font* GetFont(const String& name) const;
-    //QString GetFontName(Font* font) const;
-    
-    const DAVA::Vector<DAVA::String> &GetLocales() { return locales; }
-    
-    DAVA::String GetFontDisplayName(DAVA::Font* font);
-    
+           
     const DAVA::Map<DAVA::String, DAVA::Font*> &GetLocalizedFonts(const DAVA::String& locale) const;
     DAVA::Font* GetLocalizedFont(const DAVA::String& fontName, const DAVA::String& locale) const;
-    DAVA::String GetLocalizedFontName(DAVA::Font* font) const;
-    DAVA::Font* GetLocalizedFont(DAVA::Font* font) const;
     
-    DAVA::String SetLocalizedFont(const DAVA::String& fontOriginalName, DAVA::Font* font, const DAVA::String& fontName, bool replaceExisting, const DAVA::String& locale);
-
-	//const FONTSMAP& GetAllFonts() const;
-	
-	struct DefaultFontPath
-	{
-        DAVA::FilePath fontPath;
-        DAVA::FilePath fontSpritePath;
-		
-        DefaultFontPath(const DAVA::FilePath & fontPath, const DAVA::FilePath & fontSpritePath)
-		{
-			this->fontPath = fontPath;
-			this->fontSpritePath = fontSpritePath;
-		}
-	};
-	
-	DefaultFontPath GetDefaultFontPath();
-	void InitDefaultFontFromPath(const DefaultFontPath& defaultFontPath);
-	QString GetDefaultFontName() const;
+    DAVA::String UseNewPreset(const DAVA::String& fontOriginalName, DAVA::Font* font, const DAVA::String& fontName, const DAVA::String& locale);
+    DAVA::String CreateNewPreset(const DAVA::String &presetName, DAVA::Font *font, const DAVA::String &locale);                      
     
-    void SetProjectDataPath(const DAVA::FilePath& path);
     void SetDefaultFontsPath(const DAVA::FilePath& path);
     DAVA::FilePath GetLocalizedFontsPath(const DAVA::String &locale);
-    const DAVA::FilePath& GetDefaultFontsPath();
-    DAVA::String GetDefaultFontsFrameworkPath();
-    	
+    DAVA::FilePath GetDefaultFontsPath();
+signals:
+    void UpdateFontPreset(const QString &oldPresetName, const QString &newPresetName);
+
 private:
-	void Init();
-    
-    DAVA::Font* CreateDefaultFont(const DAVA::String& fontPath, const DAVA::String& fontName);
-    void RegisterDefaultFont(DAVA::Font* font);
-    
     void ClearFonts(DAVA::Map<DAVA::String, DAVA::Font*>& fonts);
-    
-    void ResetLocalizedFontsPath();
-	
+    DAVA::Vector<DAVA::String> GetAvailableFonts() const;
+
 private:
-    DAVA::Font* defaultFont;
-    DAVA::Font* baseFont;
-    
-    DAVA::FilePath projectDataPath;
+   
     DAVA::FilePath defaultFontsPath;
-    
-    DAVA::Vector<DAVA::String> locales;
-    
+       
     DAVA::Map<DAVA::String, DAVA::Font*> defaultFonts;
     DAVA::Map<DAVA::String, DAVA::Map<DAVA::String, DAVA::Font*> > localizedFonts;
-    
-    DAVA::Map<DAVA::Font*, DAVA::String> defaultRegisteredFonts;
 };
 
 #endif /* defined(__UIEditor__FontManager__) */

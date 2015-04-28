@@ -16,8 +16,7 @@ public:
     virtual void enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const;
 
 private slots:
-    void openFileDialogClicked();
-    void clearSpriteClicked();
+    void editPresetClicked();
     void valueChanged();
 };
 

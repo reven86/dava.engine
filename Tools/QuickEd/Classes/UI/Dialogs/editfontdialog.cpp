@@ -31,7 +31,8 @@
 
 #include "Helpers/ResourcesManageHelper.h"
 #include "UI/fontmanagerdialog.h"
-#include "EditorFontManager.h"
+#include "Project/Project.h"
+#include "Project/EditorFontManager.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 
 #include "Model/ControlProperties/PropertiesRoot.h"
@@ -39,6 +40,7 @@
 #include "Model/ControlProperties/ValueProperty.h"
 
 #include <QFileInfo>
+#include <QFontComboBox>
 
 using namespace DAVA;
 
@@ -48,7 +50,7 @@ EditFontDialog::EditFontDialog(QWidget *parent)
     setupUi(this);
     pushButton_resetLocaleFont->setIcon(QIcon(":/Icons/edit_undo.png"));
     pushButton_resetLocaleFont->setToolTip(tr("Reset Font for locale"));
-    connect(comboBox_locale, &QComboBox::currentTextChanged, this, &EditFontDialog::UpdateLocaleFontWidgets);
+    connect(comboBox_locale, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::activated), this, &EditFontDialog::UpdateLocaleFontWidgets);
     connect(pushButton_resetLocaleFont, &QPushButton::clicked, this, &EditFontDialog::ResetCurrentLocale);
     connect(pushButton_resetFontForAllLocales, &QPushButton::clicked, this, &EditFontDialog::ResetAllLocales);
     connect(pushButton_cancel, &QPushButton::clicked, this, &EditFontDialog::reject);
@@ -57,10 +59,9 @@ EditFontDialog::EditFontDialog(QWidget *parent)
 }
 
 void EditFontDialog::OnPropjectOpened()
-{
+{ 
     comboBox_locale->clear();
-    const Vector<String> &locales = EditorFontManager::Instance()->GetLocales();
-    for (auto &locale : EditorFontManager::Instance()->GetLocales())
+    for (auto &locale : LocalizationSystem::Instance()->GetAvailableLocales())
     {
         comboBox_locale->addItem(QString::fromStdString(locale));
     }
@@ -72,18 +73,19 @@ void EditFontDialog::OnPropjectOpened()
     comboBox_localizedFont->addItems(fontsList);
 }
 
-void EditFontDialog::UpdateFontPreset(ControlNode *selectedControlNode)
+void EditFontDialog::UpdateFontPreset(const QString &presetNameArg)
 {
-    presetName = findFont(selectedControlNode);
-    DVASSERT(!presetName.empty());
-    lineEdit_fontPresetName->setText(QString::fromStdString(presetName));   
+    OnPropjectOpened();
+    presetName = presetNameArg;
+    DVASSERT(!presetName.isEmpty());
+    lineEdit_fontPresetName->setText(presetName);
 
     UpdateCurrentLocale();
     UpdateDefaultFontWidgets();
     UpdateLocaleFontWidgets();
 }
 
-String EditFontDialog::findFont(ControlNode *node)
+String EditFontDialog::FindFontRecursive(const ControlNode *node)
 {
     PropertiesRoot *propertiesRoot = node->GetPropertiesRoot();
     int propertiesCount = propertiesRoot->GetCount();
@@ -102,17 +104,39 @@ String EditFontDialog::findFont(ControlNode *node)
     }
     for (int index = 0; index < node->GetCount(); ++index)
     {
-        return findFont(node->Get(index));
+        return FindFontRecursive(node->Get(index));
     }
     return String();
 }
 
+void EditFontDialog::SetFontPresetRecursively(ControlNode *node, const String &presetName)
+{
+    PropertiesRoot *propertiesRoot = node->GetPropertiesRoot();
+    int propertiesCount = propertiesRoot->GetCount();
+    for (int index = 0; index < propertiesCount; ++index)
+    {
+        PropertiesSection *section = dynamic_cast<PropertiesSection*>(propertiesRoot->GetProperty(index));
+        int sectionCount = section->GetCount();
+        for (int prop = 0; prop < sectionCount; ++prop)
+        {
+            ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
+            if (!strcmp(valueProperty->GetMember()->Name(), "font"))
+            {
+                valueProperty->SetValue(VariantType(presetName));
+            }
+        }
+    }
+    for (int index = 0; index < node->GetCount(); ++index)
+    {
+        SetFontPresetRecursively(node->Get(index), presetName);
+    }
+}
+
 Font* EditFontDialog::GetLocaleFont(const DAVA::String &locale) const
 {
-    Font* tmpFont = EditorFontManager::Instance()->GetLocalizedFont(presetName, locale);
-    Font *defaultFont = nullptr != tmpFont ? tmpFont->Clone() : EditorFontManager::Instance()->GetDefaultFont()->Clone();
-    DVASSERT(nullptr != defaultFont);
-    return defaultFont;
+    Font* tmpFont = Project::Instance()->GetEditorFontManager()->GetLocalizedFont(presetName.toStdString(), locale);
+    DVASSERT(nullptr != tmpFont);
+    return tmpFont->Clone();
 }
 
 void EditFontDialog::UpdateCurrentLocale()
@@ -150,7 +174,7 @@ void EditFontDialog::ResetFontForLocale(const QString &locale)
     Font* font = FTFont::Create(fontPath.toStdString());
     font->SetSize(spinBox_defaultFontSize->value());
     Logger::FrameworkDebug("EditFontDialog::ResetFontForLocale SetLocalizedFont def");
-    EditorFontManager::Instance()->SetLocalizedFont(presetName, font, presetName, true, locale.toStdString());
+    //Project::Instance()->GetEditorFontManager()->SetLocalizedFont(presetName.toStdString(), font, presetName.toStdString(), true, locale.toStdString());
     UpdateLocaleFontWidgets();
 }
 
@@ -173,22 +197,22 @@ void EditFontDialog::OnApplyToAll()
     QString fontPath = ResourcesManageHelper::GetFontRelativePath(currentDefaultFont);
     Font* font = FTFont::Create(fontPath.toStdString());
     font->SetSize(spinBox_defaultFontSize->value());
-    EditorFontManager::Instance()->SetLocalizedFont(presetName, font->Clone(), lineEdit_fontPresetName->text().toStdString(), true, "default");
+    Project::Instance()->GetEditorFontManager()->UseNewPreset(presetName.toStdString(), font->Clone(), lineEdit_fontPresetName->text().toStdString(), "default");
 
-    for (auto &locale : EditorFontManager::Instance()->GetLocales())
+    for (auto &locale : LocalizationSystem::Instance()->GetAvailableLocales())
     {
-        EditorFontManager::Instance()->SetLocalizedFont(presetName
-            , EditorFontManager::Instance()->GetLocalizedFont(presetName, locale)->Clone()
+        String newFontName = Project::Instance()->GetEditorFontManager()->UseNewPreset(presetName.toStdString()
+            , Project::Instance()->GetEditorFontManager()->GetLocalizedFont(presetName.toStdString(), locale)->Clone()
             , lineEdit_fontPresetName->text().toStdString()
-            , true
             , locale
             );
+        lineEdit_fontPresetName->setText(QString::fromStdString(newFontName));
     }
-    if (!EditorFontManager::Instance()->GetDefaultFontsPath().IsEmpty())
+    if (!Project::Instance()->GetEditorFontManager()->GetDefaultFontsPath().IsEmpty())
     {
-        EditorFontManager::Instance()->SaveLocalizedFonts();
+        Project::Instance()->GetEditorFontManager()->SaveLocalizedFonts();
     }
-    accept();
+    done(ApplyToAll);
 }
 
 void EditFontDialog::OnCreateNew()
@@ -197,21 +221,20 @@ void EditFontDialog::OnCreateNew()
     QString fontPath = ResourcesManageHelper::GetFontRelativePath(currentDefaultFont);
     Font* font = FTFont::Create(fontPath.toStdString());
     font->SetSize(spinBox_defaultFontSize->value());
-    EditorFontManager::Instance()->SetLocalizedFont(presetName, font->Clone(), lineEdit_fontPresetName->text().toStdString(), false, "default");
+    Project::Instance()->GetEditorFontManager()->CreateNewPreset(lineEdit_fontPresetName->text().toStdString(), font->Clone(), "default");
     
-    for (auto &locale : EditorFontManager::Instance()->GetLocales())
+    for (auto &locale : LocalizationSystem::Instance()->GetAvailableLocales())
     {
-        EditorFontManager::Instance()->SetLocalizedFont(presetName
-            , EditorFontManager::Instance()->GetLocalizedFont(presetName, locale)->Clone()
-            , lineEdit_fontPresetName->text().toStdString()
-            , false
+        String newFontName = Project::Instance()->GetEditorFontManager()->CreateNewPreset(lineEdit_fontPresetName->text().toStdString()
+            , Project::Instance()->GetEditorFontManager()->GetLocalizedFont(presetName.toStdString(), locale)->Clone()
             , locale
             );
+        lineEdit_fontPresetName->setText(QString::fromStdString(newFontName));
     }
-    if (!EditorFontManager::Instance()->GetDefaultFontsPath().IsEmpty())
+    if (!Project::Instance()->GetEditorFontManager()->GetDefaultFontsPath().IsEmpty())
     {
-        EditorFontManager::Instance()->SaveLocalizedFonts();
+        Project::Instance()->GetEditorFontManager()->SaveLocalizedFonts();
     }
-    accept();
+    done(CreateNew);
 }
 

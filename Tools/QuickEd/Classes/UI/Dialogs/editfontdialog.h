@@ -43,14 +43,20 @@ class EditFontDialog : public QDialog, public Ui::EditFontDialog
     Q_OBJECT
 
 public:
+    enum Result
+    {
+        CreateNew = 1, 
+        ApplyToAll
+    };
     explicit EditFontDialog(QWidget *parent = nullptr);
     ~EditFontDialog() = default;
     void OnPropjectOpened();
     //! \brief update fields for existing dialog
     //! \param[in] control node, which contains font property
-    void UpdateFontPreset(ControlNode *selectedControlNode);
+    void UpdateFontPreset(const QString &presetNameArg);
     //! \brief functions return font preset from given node
-    DAVA::String findFont(ControlNode *node);
+    static DAVA::String FindFontRecursive(const ControlNode *node);
+    static void SetFontPresetRecursively(ControlNode *node, const DAVA::String &presetName);
 private slots:
     //! \brief update locale button and locale spinbox for current language
     void UpdateLocaleFontWidgets();
@@ -68,7 +74,7 @@ private:
     void UpdateCurrentLocale();
     //! \brief update 
     void UpdateDefaultFontWidgets();
-    DAVA::String presetName;
+    QString presetName;
 };
 
 #endif // EDITFONTDIALOG_H

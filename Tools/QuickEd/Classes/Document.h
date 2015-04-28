@@ -6,6 +6,7 @@
 
 namespace DAVA {
     class FilePath;
+    class VariantType;
 }
 
 class PackageNode;
@@ -37,9 +38,11 @@ signals:
     void SharedDataChanged(const QByteArray &role);
 public slots:
     void UpdateLanguage();
+    void UpdateFontPreset(const QString &oldPresetName, const QString &newPresetName);
 
 private:
-    void UpdatePropertyRecursively(ControlNode* node, DAVA::String property);
+    static void UpdatePropertyRecursively(ControlNode* node, const DAVA::String &property);
+    static void SetPropertyValueRecursively(ControlNode *node, const DAVA::String &property, const DAVA::VariantType &findValue, const DAVA::VariantType &newValue);
     void InitSharedData();
 
 private:

@@ -6,6 +6,7 @@
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
 #include "Helpers/ResourcesManageHelper.h"
+#include "UI/Dialogs/editfontdialog.h"
 
 using namespace DAVA;
 
@@ -35,7 +36,6 @@ void FontPropertyDelegate::setEditorData(QWidget * rawEditor, const QModelIndex 
     QLineEdit *editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
     DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
-    QString stringValue = StringToQString(variant.AsString());
     editor->setText(QString::fromStdString(variant.AsString()));
 }
 
@@ -47,8 +47,8 @@ bool FontPropertyDelegate::setModelData(QWidget * rawEditor, QAbstractItemModel 
     QLineEdit *editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
     DAVA::VariantType variantType = index.data(Qt::EditRole).value<DAVA::VariantType>();
-    DAVA::FilePath filePath = QStringToString(editor->text());
-    variantType.SetFilePath(filePath);
+    DAVA::String str = QStringToString(editor->text());
+    variantType.SetString(str);
 
     QVariant variant;
     variant.setValue<DAVA::VariantType>(variantType);
@@ -58,69 +58,37 @@ bool FontPropertyDelegate::setModelData(QWidget * rawEditor, QAbstractItemModel 
 
 void FontPropertyDelegate::enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const
 {
-    QAction *openFileDialogAction = new QAction(tr("..."), parent);
-    openFileDialogAction->setToolTip(tr("Select sprite descriptor"));
-    actions.push_back(openFileDialogAction);
-    connect(openFileDialogAction, SIGNAL(triggered(bool)), this, SLOT(openFileDialogClicked()));
-
-    QAction *clearSpriteAction = new QAction(QIcon(":/Icons/editclear.png"), tr("clear"), parent);
-    clearSpriteAction->setToolTip(tr("Clear sprite descriptor"));
-    actions.push_back(clearSpriteAction);
-    connect(clearSpriteAction, SIGNAL(triggered(bool)), this, SLOT(clearSpriteClicked()));
+    QAction *editPresetAction = new QAction(tr("..."), parent);
+    editPresetAction->setToolTip(tr("Edit preset"));
+    actions.push_back(editPresetAction);
+    connect(editPresetAction, SIGNAL(triggered(bool)), this, SLOT(editPresetClicked()));
 
     BasePropertyDelegate::enumEditorActions(parent, index, actions);
 }
 
-void FontPropertyDelegate::openFileDialogClicked()
+void FontPropertyDelegate::editPresetClicked()
 {
-    QAction *openFileDialogAction = qobject_cast<QAction *>(sender());
-    if (!openFileDialogAction)
+    QAction *editPresetAction = qobject_cast<QAction *>(sender());
+    if (!editPresetAction)
         return;
 
-    QWidget *editor = openFileDialogAction->parentWidget();
+    QWidget *editor = editPresetAction->parentWidget();
     if (!editor)
         return;
 
     QLineEdit *lineEdit = editor->findChild<QLineEdit*>("lineEdit");
 
-    QString dir;
-    QString pathText = lineEdit->text();
-    if (!pathText.isEmpty())
+    EditFontDialog editFontDialog;
+    editFontDialog.UpdateFontPreset(lineEdit->text());
+    int dialogResult = editFontDialog.exec();
+    QString presetResult = editFontDialog.lineEdit_fontPresetName->text();
+    if (!presetResult.isEmpty())
     {
-        DAVA::FilePath filePath = QStringToString(pathText);
-        dir = StringToQString(filePath.GetDirectory().GetAbsolutePathname());
-    }
-    else
-    {
-        dir = ResourcesManageHelper::GetSpritesDirectory();
-    }
-
-    QString filePathText = QFileDialog::getOpenFileName(editor->parentWidget(), tr("Select sprite descriptor"), dir, QString("*.txt"));
-    if (!filePathText.isEmpty())
-    {
-        lineEdit->setText(filePathText);
+        lineEdit->setText(presetResult);
 
         BasePropertyDelegate::SetValueModified(editor, true);
         itemDelegate->emitCommitData(editor);
     }
-}
-
-void FontPropertyDelegate::clearSpriteClicked()
-{
-    QAction *clearSpriteAction = qobject_cast<QAction *>(sender());
-    if (!clearSpriteAction)
-        return;
-
-    QWidget *editor = clearSpriteAction->parentWidget();
-    if (!editor)
-        return;
-
-    QLineEdit *lineEdit = editor->findChild<QLineEdit*>("lineEdit");
-
-    lineEdit->setText(QString(""));
-
-    BasePropertyDelegate::SetValueModified(editor, true);
-    itemDelegate->emitCommitData(editor);
 }
 
 void FontPropertyDelegate::valueChanged()
@@ -132,7 +100,7 @@ void FontPropertyDelegate::valueChanged()
     QWidget *editor = lineEdit->parentWidget();
     if (!editor)
         return;
-
+    
     BasePropertyDelegate::SetValueModified(editor, true);
     itemDelegate->emitCommitData(editor);
 }

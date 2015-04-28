@@ -15,7 +15,7 @@
 #include "Model/YamlPackageSerializer.h"
 #include "Model/EditorUIPackageBuilder.h"
 
-#include "Project.h"
+#include "Project/Project.h"
 #include "Utils/QtDavaConvertion.h"
 
 #include "SharedData.h"

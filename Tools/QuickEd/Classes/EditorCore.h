@@ -43,9 +43,9 @@ private:
     void CloseDocument(int index);
     int GetIndexByPackagePath(const QString &fileName) const;
     ///Return: pointer to currentDocument if exists, nullptr if not
+    Project *project;
     QList<Document*> documents;
     DocumentGroup *documentGroup;
-    Project *project;
     MainWindow *mainWindow;
 };
 

@@ -8,8 +8,6 @@
 
 #include "UI/Package/PackageModel.h"
 
-#include "UI/Library/LibraryModel.h"
-
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -20,6 +18,8 @@
 #include "Model/ControlProperties/ValueProperty.h"
 
 #include "SharedData.h"
+#include "Project/Project.h"
+#include "Project/EditorFontManager.h"
 
 #include "Ui/QtModelPackageCommandExecutor.h"
 
@@ -34,6 +34,7 @@ Document::Document(PackageNode *_package, QObject *parent)
 {
     InitSharedData();
     connect(sharedData, &SharedData::DataChanged, this, &Document::SharedDataChanged);
+    connect(Project::Instance()->GetEditorFontManager(), &EditorFontManager::UpdateFontPreset, this, &Document::UpdateFontPreset);
 }
 
 void Document::InitSharedData()
@@ -77,10 +78,22 @@ void Document::UpdateLanguage()
     QList<ControlNode*> activeRootControls;
     PackageControlsNode *controlsNode = package->GetPackageControlsNode();
     for (int32 index = 0; index < controlsNode->GetCount(); ++index)
+    {
         UpdatePropertyRecursively(controlsNode->Get(index), "text");
+    }
 }
 
-void Document::UpdatePropertyRecursively(ControlNode* node, ::DAVA::String property)
+void Document::UpdateFontPreset(const QString &oldPresetName, const QString& newPresetName)
+{
+    QList<ControlNode*> activeRootControls;
+    PackageControlsNode *controlsNode = package->GetPackageControlsNode();
+    for (int32 index = 0; index < controlsNode->GetCount(); ++index)
+    {
+        SetPropertyValueRecursively(controlsNode->Get(index), "font", VariantType(oldPresetName.toStdString()), VariantType(newPresetName.toStdString()));
+    }
+}
+
+void Document::UpdatePropertyRecursively(ControlNode* node, const DAVA::String &property)
 {
     PropertiesRoot *propertiesRoot = node->GetPropertiesRoot();
     int propertiesCount = propertiesRoot->GetCount();
@@ -102,3 +115,27 @@ void Document::UpdatePropertyRecursively(ControlNode* node, ::DAVA::String prope
         UpdatePropertyRecursively(node->Get(index), property);
     }
 }
+
+void Document::SetPropertyValueRecursively(ControlNode* node, const DAVA::String& property, const VariantType& originalValue, const VariantType &newValue)
+{
+    PropertiesRoot *propertiesRoot = node->GetPropertiesRoot();
+    int propertiesCount = propertiesRoot->GetCount();
+    for (int index = 0; index < propertiesCount; ++index)
+    {
+        PropertiesSection *section = dynamic_cast<PropertiesSection*>(propertiesRoot->GetProperty(index));
+        int sectionCount = section->GetCount();
+        for (int prop = 0; prop < sectionCount; ++prop)
+        {
+            ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
+            if (property == valueProperty->GetMember()->Name() && originalValue == valueProperty->GetValue())
+            {
+                valueProperty->SetValue(newValue);
+            }
+        }
+    }
+    for (int index = 0; index < node->GetCount(); ++index)
+    {
+        SetPropertyValueRecursively(node->Get(index), property, originalValue, newValue);
+    }
+}
+

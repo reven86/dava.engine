@@ -15,11 +15,14 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageRef.h"
 #include "Helpers/ResourcesManageHelper.h"
+#include "Project/EditorFontManager.h"
 
 using namespace DAVA;
 
 Project::Project(QObject *parent)
     : QObject(parent)
+    , Singleton<Project>()
+    , editorFontManager(new EditorFontManager(this))
     , isOpen(false)
 {
     legacyData = new LegacyControlData();
@@ -71,54 +74,31 @@ bool Project::OpenInternal(const QString &path)
     {
         FilePath::AddResourcesFolder(bundleName);
     }
-    
-    EditorFontManager::Instance()->SetProjectDataPath(bundleName.GetAbsolutePathname() + "Data/");
-    
-    const YamlNode *font = projectRoot->Get("font");
+      
+    const YamlNode *fontNode = projectRoot->Get("font");
     
     // Get font node
-    if (font)
+    if (nullptr != fontNode)
     {
         // Get default font node
-        const YamlNode *fontPath = font->Get("DefaultFontPath");
-        if (fontPath)
-        {
-            // Get font values into array
-            const Vector<YamlNode*> &fontPathArray = fontPath->AsVector();
-            EditorFontManager::DefaultFontPath defaultFontPath("", "");
-            // True type font
-            if (fontPathArray.size() == 1)
-            {
-                defaultFontPath.fontPath = FilePath(fontPathArray[0]->AsString());
-            }
-            else if (fontPathArray.size() == 2) // Graphics font
-            {
-                defaultFontPath.fontPath = FilePath(fontPathArray[0]->AsString());
-                defaultFontPath.fontSpritePath = FilePath(fontPathArray[1]->AsString());
-            }
-            EditorFontManager::Instance()->InitDefaultFontFromPath(defaultFontPath);
-        }
-        
-        const YamlNode *localizationFontsPathNode = font->Get("DefaultFontsPath");
-        if(localizationFontsPathNode)
-        {
-            FilePath localizationFontsPath(localizationFontsPathNode->AsString());
+        const YamlNode *defaultFontPath = fontNode->Get("DefaultFontsPath");
+        if (nullptr != defaultFontPath)
+        {        
+            FilePath localizationFontsPath(defaultFontPath->AsString());
             if(localizationFontsPath.Exists())
             {
-                EditorFontManager::Instance()->SetDefaultFontsPath(localizationFontsPath.GetAbsolutePathname());
-            }
-            else
-            {
-                EditorFontManager::Instance()->SetDefaultFontsPath(bundleName.GetAbsolutePathname() + "Data" + localizationFontsPath.GetAbsolutePathname().substr(5));
+                editorFontManager->SetDefaultFontsPath(localizationFontsPath.GetDirectory());
             }
         }
     }
     
-    if(EditorFontManager::Instance()->GetDefaultFontsPath().IsEmpty())
+    if(editorFontManager->GetDefaultFontsPath().IsEmpty())
     {
-        EditorFontManager::Instance()->SetDefaultFontsPath(FilePath(bundleName.GetAbsolutePathname() + "Data/UI/Fonts/fonts.yaml"));
+        editorFontManager->SetDefaultFontsPath(FilePath(bundleName.GetAbsolutePathname() + "Data/UI/Fonts/"));
     }
-    EditorFontManager::Instance()->LoadLocalizedFonts();
+
+    editorFontManager->LoadLocalizedFonts();
+
     FontManager::Instance()->PrepareToSaveFonts(true);
     
     const YamlNode* platforms = projectRoot->Get("platforms");
@@ -233,6 +213,12 @@ bool Project::SavePackage(PackageNode *package)
     serializer.WriteToFile(package->GetPackageRef()->GetPath());
     return true;
 }
+
+EditorFontManager* Project::GetEditorFontManager() const
+{
+    return editorFontManager;
+}
+
 
 bool Project::IsOpen() const
 {

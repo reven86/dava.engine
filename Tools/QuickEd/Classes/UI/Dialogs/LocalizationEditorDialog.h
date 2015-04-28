@@ -173,6 +173,8 @@ public:
     explicit LocalizationEditorDialog(QWidget *parent = 0);
     ~LocalizationEditorDialog();
     void UpdateDefaultLanguage();
+    void FillLocaleComboBox();
+
 signals:
     void LanguageChanged();
 protected:
@@ -207,7 +209,6 @@ protected:
 //	void SelectStringItemByKey(const QString& keyToBeSelected);
 
 private:
-    void FillLocaleComboBox();
     
     void ConnectToSignals();
     void DisconnectFromSignals();

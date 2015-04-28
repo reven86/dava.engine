@@ -48,11 +48,12 @@ public:
 	
 	void InitWithDirectory(const FilePath &directoryPath);
 	void SetDirectory(const FilePath &directoryPath);
+    Vector<String> GetAvailableLocales() const;
+
 	void Init();
 	
 	const String &GetCurrentLocale();
 	void SetCurrentLocale(const String &newLangId);
-    
     String GetDeviceLocale();
     
     String GetCountryCode() const;
