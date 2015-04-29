@@ -203,10 +203,9 @@ void MainWindow::OnRefreshClicked()
     FileManager::Instance()->ClearTempDirectory();
 
     ConfigDownloader downloader(appManager, networkManager, this);
-    if(downloader.exec() == QDialog::Accepted)
-    {
-        RefreshApps();
-    }
+    downloader.exec();
+
+    RefreshApps();
 }
 
 void MainWindow::RefreshApps()

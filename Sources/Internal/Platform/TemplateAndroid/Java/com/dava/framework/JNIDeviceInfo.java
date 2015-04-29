@@ -223,15 +223,17 @@ public class JNIDeviceInfo {
 		public final String path;
 
 		public final boolean readOnly;
+		public final boolean removable;
 		public final boolean emulated;
 
 		public final long capacity;
 		public final long freeSpace;
 
-		StorageInfo(String path, boolean readOnly, boolean emulated, long capacity, long freeSpace)
+		StorageInfo(String path, boolean readOnly, boolean removable, boolean emulated, long capacity, long freeSpace)
 		{
 			this.path = path;
 			this.readOnly = readOnly;
+			this.removable = removable;
 			this.emulated = emulated;
 			this.capacity = capacity;
 			this.freeSpace = freeSpace;
@@ -275,7 +277,7 @@ public class JNIDeviceInfo {
 		String path = Environment.getDataDirectory().getPath();
 		path += "/";
 		StorageCapacity st = getCapacityAndFreeSpace(path);
-		return new StorageInfo(path, false, false, st.capacity, st.free);
+		return new StorageInfo(path, false, false, false, st.capacity, st.free);
 	}
 
 	public static boolean IsPrimaryExternalStoragePresent()
@@ -298,13 +300,14 @@ public class JNIDeviceInfo {
 			
 			StorageCapacity st = getCapacityAndFreeSpace(path);
 
+			boolean isRemovable = Environment.isExternalStorageRemovable();
             boolean isEmulated = Environment.isExternalStorageEmulated();
             boolean isReadOnly = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY);
 
-            return new StorageInfo(path, isReadOnly, isEmulated, st.capacity, st.free);
+            return new StorageInfo(path, isReadOnly, isRemovable, isEmulated, st.capacity, st.free);
         }
 
-		return new StorageInfo("", false, false, -1, -1);
+		return new StorageInfo("", false, false, false, -1, -1);
 	}
 
 	public static StorageInfo[] GetSecondaryExternalStoragesList()
@@ -362,7 +365,7 @@ public class JNIDeviceInfo {
 						
 						fillCapacityAndFreeSpace(statFs, sc);
 
-						infos.add(new StorageInfo(mountPoint, readonly, false, sc.capacity, sc.free));
+						infos.add(new StorageInfo(mountPoint, readonly, true, false, sc.capacity, sc.free));
 					}
 				}
 			}

@@ -22,7 +22,8 @@ _DebugQt
 Release
 ReleaseQt
 _ReleaseQt
-_build
+_build*
+.build*
 *Generated*
 *.vcxproj.user
 *.suo
