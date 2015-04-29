@@ -27,54 +27,38 @@
 =====================================================================================*/
 
 
-#ifndef EDITFONTDIALOG_H
-#define EDITFONTDIALOG_H
+#ifndef __DIALOG_CONFIGURE_RESET_H__
+#define __DIALOG_CONFIGURE_RESET_H__
 
-#include "ui_editfontdialog.h"
-#include "Base/BaseTypes.h"
+#include "ui_DialogConfigurePreset.h"
 
-class ControlNode;
 namespace DAVA {
     class Font;
 }
 
-class EditFontDialog : public QDialog, public Ui::EditFontDialog
+class DialogConfigurePreset : public QDialog, public Ui::DialogConfigurePreset
 {
     Q_OBJECT
 
 public:
-    enum Result
-    {
-        CreateNew = 1, 
-        ApplyToAll
-    };
-    explicit EditFontDialog(QWidget *parent = nullptr);
-    ~EditFontDialog() = default;
-    void OnPropjectOpened();
-    //! \brief update fields for existing dialog
-    //! \param[in] control node, which contains font property
-    void UpdateFontPreset(const QString &presetNameArg);
-    //! \brief functions return font preset from given node
-    static DAVA::String FindFontRecursive(const ControlNode *node);
-    static void SetFontPresetRecursively(ControlNode *node, const DAVA::String &presetName);
+    explicit DialogConfigurePreset(const QString &originalPresetName, QWidget *parent = nullptr);
+    ~DialogConfigurePreset() = default;
 private slots:
-    //! \brief update locale button and locale spinbox for current language
-    void UpdateLocaleFontWidgets();
-    //! \brief set default font preset for current locale
-    void ResetCurrentLocale();
-    //! \brief set default font preset for all locales
-    void ResetAllLocales();
-    //! \brief apply changes
-    void OnApplyToAll();
-    void OnCreateNew();
+    void initPreset();
+    void OnDefaultFontChanged(const QString &arg);
+    void OnDefaultFontSizeChanged(int size);
+    void OnLocalizedFontChanged(const QString &arg);
+    void OnLocalizedFontSizeChanged(int size);
+
+    void OnLocaleChanged(const QString &arg);
+    void OnResetLocale();
+    void OnApplyToAllLocales();
+    void OnSave();
 private:
-    void ResetFontForLocale(const QString &locale);
-    DAVA::Font* GetLocaleFont(const DAVA::String &locale) const;
-    //! \brief update current locale
-    void UpdateCurrentLocale();
-    //! \brief update 
     void UpdateDefaultFontWidgets();
-    QString presetName;
+    void UpdateLocalizedFontWidgets();
+    void SetFont(const QString &font, const int fontSize, const QString &locale);
+    const QString originalPresetName;
 };
 
-#endif // EDITFONTDIALOG_H
+#endif // __DIALOG_CONFIGURE_RESET_H__

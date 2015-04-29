@@ -19,7 +19,7 @@
 
 #include "SharedData.h"
 #include "Project/Project.h"
-#include "Project/EditorFontManager.h"
+#include "Project/EditorFontSystem.h"
 
 #include "Ui/QtModelPackageCommandExecutor.h"
 
@@ -34,7 +34,7 @@ Document::Document(PackageNode *_package, QObject *parent)
 {
     InitSharedData();
     connect(sharedData, &SharedData::DataChanged, this, &Document::SharedDataChanged);
-    connect(Project::Instance()->GetEditorFontManager(), &EditorFontManager::UpdateFontPreset, this, &Document::UpdateFontPreset);
+    connect(Project::Instance()->GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::UpdateFontPreset);
 }
 
 void Document::InitSharedData()
@@ -127,9 +127,14 @@ void Document::SetPropertyValueRecursively(ControlNode* node, const DAVA::String
         for (int prop = 0; prop < sectionCount; ++prop)
         {
             ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
-            if (property == valueProperty->GetMember()->Name() && originalValue == valueProperty->GetValue())
+            if (property == valueProperty->GetMember()->Name())
             {
-                valueProperty->SetValue(newValue);
+                String original = originalValue.AsString();
+                String readed = valueProperty->GetValue().AsString();
+                if(originalValue == valueProperty->GetValue())
+                {
+                    valueProperty->SetValue(newValue);
+                }
             }
         }
     }

@@ -34,25 +34,26 @@
 #include "Base/BaseTypes.h"
 #include "Render/2d/Font.h"
 #include <QObject>
+#include <QStringList>
 
-class EditorFontManager: public QObject
+class EditorFontSystem: public QObject
 {
 Q_OBJECT
 public:
 	//typedef std::map<String, Font*> FONTSMAP;
-	EditorFontManager(QObject *parent = nullptr);
-	~EditorFontManager() = default;
-	
+	EditorFontSystem(QObject *parent = nullptr);
+	~EditorFontSystem();
+    DAVA::Font* GetFont(const DAVA::String &presetName, const DAVA::String &locale) const;
+    void SetFont(const DAVA::String &presetName, const DAVA::String &locale, DAVA::Font *font);
+    const QStringList &GetAvailableFontLocales() const;
+    const QStringList &GetDefaultPresetNames();
     void LoadLocalizedFonts();
     void SaveLocalizedFonts();
     
-    void ClearLocalizedFonts();
-           
-    const DAVA::Map<DAVA::String, DAVA::Font*> &GetLocalizedFonts(const DAVA::String& locale) const;
-    DAVA::Font* GetLocalizedFont(const DAVA::String& fontName, const DAVA::String& locale) const;
-    
-    DAVA::String UseNewPreset(const DAVA::String& fontOriginalName, DAVA::Font* font, const DAVA::String& fontName, const DAVA::String& locale);
-    DAVA::String CreateNewPreset(const DAVA::String &presetName, DAVA::Font *font, const DAVA::String &locale);                      
+    void ClearAllFonts();
+              
+    void UseNewPreset(const DAVA::String& fontOriginalName, const DAVA::String& fontName);
+    void CreateNewPreset(const DAVA::String &originalPresetName, const DAVA::String &newPresetName);                      
     
     void SetDefaultFontsPath(const DAVA::FilePath& path);
     DAVA::FilePath GetLocalizedFontsPath(const DAVA::String &locale);
@@ -62,14 +63,25 @@ signals:
 
 private:
     void ClearFonts(DAVA::Map<DAVA::String, DAVA::Font*>& fonts);
-    DAVA::Vector<DAVA::String> GetAvailableFonts() const;
+    void RemoveFont(DAVA::Map<DAVA::String, DAVA::Font*> *fonts, const DAVA::String &fontName);
 
-private:
-   
     DAVA::FilePath defaultFontsPath;
        
     DAVA::Map<DAVA::String, DAVA::Font*> defaultFonts;
     DAVA::Map<DAVA::String, DAVA::Map<DAVA::String, DAVA::Font*> > localizedFonts;
+
+    QStringList availableFontLocales;
+    QStringList defaultPresetNames;
 };
+
+inline const QStringList &EditorFontSystem::GetAvailableFontLocales() const
+{
+    return availableFontLocales;
+}
+
+inline const QStringList &EditorFontSystem::GetDefaultPresetNames()
+{
+    return defaultPresetNames;
+}
 
 #endif /* defined(__UIEditor__FontManager__) */

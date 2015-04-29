@@ -29,6 +29,7 @@
 #include "FloatPropertyDelegate.h"
 #include "BoolPropertyDelegate.h"
 #include "SpritePropertyDelegate.h"
+
 #include "FontPropertyDelegate.h"
 
 using namespace DAVA;
@@ -117,7 +118,6 @@ QWidget *PropertiesTreeItemDelegate::createEditor( QWidget * parent, const QStyl
             {
                 QToolButton *toolButton = new QToolButton(editorWidget);
                 toolButton->setDefaultAction(action);
-                toolButton->setText(action->text());
                 toolButton->setIconSize(QSize(15, 15));
                 toolButton->setFocusPolicy(Qt::StrongFocus);
                 editorWidget->layout()->addWidget(toolButton);

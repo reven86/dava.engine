@@ -6,7 +6,7 @@
 #include <QMessageBox>
 
 #include "Project.h"
-#include "EditorFontManager.h"
+#include "EditorFontSystem.h"
 #include "UI/UIPackageLoader.h"
 #include "UI/DefaultUIPackageBuilder.h"
 #include "Model/EditorUIPackageBuilder.h"
@@ -15,14 +15,14 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageRef.h"
 #include "Helpers/ResourcesManageHelper.h"
-#include "Project/EditorFontManager.h"
+#include "Project/EditorFontSystem.h"
 
 using namespace DAVA;
 
 Project::Project(QObject *parent)
     : QObject(parent)
     , Singleton<Project>()
-    , editorFontManager(new EditorFontManager(this))
+    , editorFontSystem(new EditorFontSystem(this))
     , isOpen(false)
 {
     legacyData = new LegacyControlData();
@@ -87,17 +87,17 @@ bool Project::OpenInternal(const QString &path)
             FilePath localizationFontsPath(defaultFontPath->AsString());
             if(localizationFontsPath.Exists())
             {
-                editorFontManager->SetDefaultFontsPath(localizationFontsPath.GetDirectory());
+                editorFontSystem->SetDefaultFontsPath(localizationFontsPath.GetDirectory());
             }
         }
     }
     
-    if(editorFontManager->GetDefaultFontsPath().IsEmpty())
+    if(editorFontSystem->GetDefaultFontsPath().IsEmpty())
     {
-        editorFontManager->SetDefaultFontsPath(FilePath(bundleName.GetAbsolutePathname() + "Data/UI/Fonts/"));
+        editorFontSystem->SetDefaultFontsPath(FilePath(bundleName.GetAbsolutePathname() + "Data/UI/Fonts/"));
     }
 
-    editorFontManager->LoadLocalizedFonts();
+    editorFontSystem->LoadLocalizedFonts();
 
     FontManager::Instance()->PrepareToSaveFonts(true);
     
@@ -214,9 +214,9 @@ bool Project::SavePackage(PackageNode *package)
     return true;
 }
 
-EditorFontManager* Project::GetEditorFontManager() const
+EditorFontSystem* Project::GetEditorFontSystem() const
 {
-    return editorFontManager;
+    return editorFontSystem;
 }
 
 

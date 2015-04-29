@@ -102,20 +102,19 @@ void LocalizationSystem::SetDirectory(const FilePath &directoryPath)
 Vector<String> LocalizationSystem::GetAvailableLocales() const
 {
     Vector<String> availableLocales;
-    if (directoryPath.IsEmpty())
+    if (!directoryPath.IsEmpty())
     {
-        return availableLocales;
-    }
-    FileList * fileList = new FileList(directoryPath);
-    for (auto i = fileList->GetCount(), k = 0; k < i; ++k)
-    {
-        if (!fileList->IsDirectory(k))
+        FileList * fileList = new FileList(directoryPath);
+        for (auto count = fileList->GetCount(), k = 0; k < count; ++k)
         {
-            availableLocales.push_back(fileList->GetPathname(k).GetBasename());
+            if (!fileList->IsDirectory(k))
+            {
+                availableLocales.push_back(fileList->GetPathname(k).GetBasename());
+            }
         }
-    }
 
-    SafeRelease(fileList);
+        SafeRelease(fileList);
+    }
     return availableLocales;
 }
 

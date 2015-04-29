@@ -13,10 +13,11 @@ public:
     virtual QWidget * createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
     virtual void setEditorData(QWidget * editor, const QModelIndex & index) const override;
     virtual bool setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
-    virtual void enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const;
+    virtual void enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const override;
 
 private slots:
-    void editPresetClicked();
+    void addPresetClicked();
+    void configurePresetClicked();
     void valueChanged();
 };
 

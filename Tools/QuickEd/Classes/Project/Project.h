@@ -5,7 +5,7 @@
 #include "Model/LegacyEditorUIPackageLoader.h"
 
 class PackageNode;
-class EditorFontManager;
+class EditorFontSystem;
 
 class Project : public QObject, public DAVA::Singleton<Project>
 {
@@ -22,7 +22,7 @@ public:
     DAVA::RefPtr<PackageNode> NewPackage(const QString &path);
     DAVA::RefPtr<PackageNode> OpenPackage(const QString &path);
     bool SavePackage(PackageNode *package);
-    EditorFontManager *GetEditorFontManager() const;
+    EditorFontSystem *GetEditorFontSystem() const;
 signals:
     void ProjectOpened();
 
@@ -31,7 +31,7 @@ private:
     QString projectDir;
     
     LegacyControlData *legacyData;
-    EditorFontManager *editorFontManager;
+    EditorFontSystem *editorFontSystem;
     //properties
 public:
     bool IsOpen() const;

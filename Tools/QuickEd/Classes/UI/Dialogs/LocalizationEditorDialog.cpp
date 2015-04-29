@@ -466,7 +466,7 @@ bool LocalizationFontsTableController::LoadTable()
 {
     const String &locale = LocalizationSystem::Instance()->GetCurrentLocale();
     Logger::Debug("LocalizationFontsTableController::LoadTable locale=%s", locale.c_str());
-    //const Map<String, Font*> &localizationFonts = EditorFontManager::Instance()->GetLocalizedFonts(locale);
+    //const Map<String, Font*> &localizationFonts = EditorFontSystem::Instance()->GetLocalizedFonts(locale);
     return false;
 	/*if (localizationFonts.empty())
 	{
@@ -483,7 +483,7 @@ bool LocalizationFontsTableController::LoadTable()
         QString keyValue(it->first.c_str());
         if (filterValue.isEmpty() || keyValue.contains(filterValue, Qt::CaseInsensitive))
         {
-            //QString fontName = QString::fromStdString(EditorFontManager::Instance()->GetFontDisplayName(font));
+            //QString fontName = QString::fromStdString(EditorFontSystem::Instance()->GetFontDisplayName(font));
             //QString fontSize = QString("%1").arg(font->GetSize());
             
             QList<QStandardItem *> itemsList;
