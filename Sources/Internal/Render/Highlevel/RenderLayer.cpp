@@ -74,7 +74,7 @@ void RenderLayer::Draw(Camera* camera, RenderLayerBatchArray * renderLayerBatchA
             packet.vertexStreamCount = 1;
             packet.vertexStream[0] = pg->vertexBuffer;
             packet.indexBuffer = pg->indexBuffer;
-            packet.primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+            packet.primitiveType = rhi::PRIMITIVE_TRIANGLELIST; //RHI_COMPLETE
             packet.primitiveCount = pg->indexCount/3;
             packet.vertexLayoutUID = pg->vertexLayoutId;
 

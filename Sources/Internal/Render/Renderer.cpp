@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "Render/ShaderCache.h"
+#include "Render/Material/FXCache.h"
 
 namespace DAVA
 {
@@ -56,6 +57,7 @@ void Initialize(rhi::Api _api)
     rhi::Initialize(api);    
     rhi::ShaderCache::Initialize();
     new ShaderDescriptorCache();
+    FXCache::Initialize();
     PixelFormatDescriptor::InitializePixelFormatDescriptors();
 
     
@@ -65,6 +67,7 @@ void Uninitialize()
 {
     DVASSERT(ininialized);
         
+    FXCache::Initialize();
     rhi::Uninitialize();
     ininialized = true;
 }

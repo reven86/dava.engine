@@ -74,6 +74,7 @@ PolygonGroup::PolygonGroup()
 PolygonGroup::~PolygonGroup()
 {
 	ReleaseData();
+    //RHI_COMPLETE - release handles
 }
     
 void PolygonGroup::UpdateDataPointersAndStreams()

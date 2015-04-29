@@ -215,11 +215,7 @@
 #include "Render/3D/EdgeAdjacency.h"
 #include "Render/3D/MeshUtils.h"
 
-// Material compiler
-#include "Render/Material/MaterialCompiler.h"
-#include "Render/Material/MaterialGraph.h"
-#include "Render/Material/MaterialGraphNode.h"
-#include "Render/Material/RenderTechnique.h"
+
 #include "Render/Material/NMaterialNames.h"
 
 // 3D scene management

@@ -73,21 +73,25 @@ const char* fProgText =
 namespace DAVA
 {
 
-
-ShaderDescriptor* ShaderDescriptorCache::GetShaderDescriptor(FastName name, const HashMap<FastName, int32>& defines)
-{
-    
-    
-    Vector<int32> key;
+void ShaderDescriptorCache::BuildFlagsKey(const FastName& name,const HashMap<FastName, int32>& defines, Vector<int32>& key)
+{    
     key.clear();
     key.reserve(defines.size() * 2 + 1);
-
     for (auto& define : defines)
     {
         key.push_back(define.first.Index());
         key.push_back(define.second);
     }
     key.push_back(name.Index());
+}
+
+ShaderDescriptor* ShaderDescriptorCache::GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines)
+{
+    
+    
+    Vector<int32> key;
+    BuildFlagsKey(name, defines, key);
+    
 
     auto it = shaderDescriptors.find(key);
     if (it != shaderDescriptors.end())

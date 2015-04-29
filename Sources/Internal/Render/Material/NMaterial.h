@@ -118,19 +118,23 @@ public:
 
     inline uint32 GetRenderLayerID() const;
     inline uint32 GetSortingKey() const;
-    inline uint64 GetMaterialKey() const;    
+    inline uint64 GetMaterialKey() const;            
 
-    void BindParams(rhi::Packet& target);
+    void BindParams(rhi::Packet& target);    
+
+    //returns true if has variant for this pass, false otherwise - if material doesn't support pass active variant will be not changed
+    bool PreBuildMaterial(const FastName& passName); //later add engine flags here
 
 private:
 
     void InvalidateBufferBindings();
     void InvalidateTextureBindings();
-    void InvalidateShader();
+    void InvalidateRenderVariants();
 
     void RebuildBindings();
     void RebuildTextureBindings();
-    void RebuildShader();
+    void RebuildRenderVariants();
+
 
     bool NeedLocalOverride(UniquePropertyLayout propertyLayout);
     void ClearLocalBuffers();
@@ -146,14 +150,25 @@ private:
     void RemoveChildMaterial(NMaterial *material);
 
 private:
+    //config time
+    FastName materialName;
+
+    FastName fxName;
+    
+    FastName qualityGroup;
+
     HashMap<FastName, NMaterialProperty *> localProperties;
     HashMap<FastName, Texture*> localTextures; //this is runtime only state, filepath storing will be separately done later
     HashMap<FastName, int32> localFlags; //integer flags are just more generic then boolean (eg. #if SHADING == HIGH), it has nothing in common with eFlagValue bullshit from old NMaterial    
 
-    Vector<NMaterial *> children;
-    NMaterial *parent;
+    
+    
 
     //runtime
+    NMaterial *parent;
+    Vector<NMaterial *> children;
+    
+
     HashMap<UniquePropertyLayout, MaterialBufferBinding*> localConstBuffers;
 
     /*this is for render passes - not used right now - only active variant instance*/
@@ -164,7 +179,7 @@ private:
 
     bool needRebuildBindings;
     bool needRebuildTextures;
-    bool needRebuildShader;    
+    bool needRebuildVariants;    
 
     uint32 sortingKey;
     uint64 materialKey;

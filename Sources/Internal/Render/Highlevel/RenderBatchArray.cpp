@@ -94,9 +94,8 @@ void RenderPassBatchArray::Clear()
     }
 }
 
-void RenderPassBatchArray::PrepareVisibilityArray(VisibilityArray * visibilityArray, Camera * camera)
-{
-    cameraWorldMatrices.clear();
+void RenderPassBatchArray::PrepareVisibilityArray(VisibilityArray * visibilityArray, Camera * camera, const FastName& passName)
+{    
     uint32 size = visibilityArray->GetCount();
     for (uint32 ro = 0; ro < size; ++ro)
     {
@@ -113,22 +112,9 @@ void RenderPassBatchArray::PrepareVisibilityArray(VisibilityArray * visibilityAr
             //batch->SetCameraWorldTransformPtr(&cameraWorldMatrices[ro]);
 
 			NMaterial * material = batch->GetMaterial();
-			if (material)
-			{
-                /*uint32 renderLayerBitmask = material->GetRenderLayerIDsBitmask();
-                for (uint32 layer = (renderLayerBitmask >> RENDER_LAYER_ID_BITMASK_MIN_POS) & RENDER_LAYER_ID_BITMASK_MIN_MASK,
-                     max = (renderLayerBitmask >> RENDER_LAYER_ID_BITMASK_MAX_POS) & RENDER_LAYER_ID_BITMASK_MAX_MASK; layer <= max; ++layer)
-                {
-                    if (renderLayerBitmask & (1 << layer))
-                    {
-                        AddRenderBatch(layer, batch);
-
-                    }
-                }*/
-
-                AddRenderBatch(material->GetRenderLayerID(), batch);
-
-			}
+            DVASSERT(material);			
+            if (material->PreBuildMaterial(passName))
+                AddRenderBatch(material->GetRenderLayerID(), batch);			
 		}
     }
 }
