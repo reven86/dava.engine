@@ -102,7 +102,7 @@ Dispatch
     void    (*impl_CommandBuffer_SetDepthStencilState)( Handle, Handle );
     void    (*impl_CommandBuffer_SetSamplerState)( Handle, const Handle );
     void    (*impl_CommandBuffer_DrawPrimitive)( Handle, PrimitiveType, uint32 );
-    void    (*impl_CommandBuffer_DrawIndexedPrimitive)( Handle, PrimitiveType, uint32 );
+    void    (*impl_CommandBuffer_DrawIndexedPrimitive)( Handle, PrimitiveType, uint32, uint32, uint32 );
     void    (*impl_CommandBuffer_SetMarker)( Handle, const char* );
 };
 

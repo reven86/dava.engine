@@ -342,7 +342,7 @@ gles2_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 cou
 //------------------------------------------------------------------------------
 
 static void
-gles2_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
+gles2_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count, uint32 /*vertexCount*/, uint32 /*firstVertex*/ )
 {
     unsigned    v_cnt   = 0;
     int         mode    = GL_TRIANGLES;

@@ -54,8 +54,9 @@ GameCore::~GameCore()
 void    
 GameCore::SetupTriangle()
 {
-    triangle.vb = rhi::HVertexBuffer(rhi::VertexBuffer::Create( 3*sizeof(VertexP) ));
-    triangle.ib = rhi::HIndexBuffer(rhi::IndexBuffer::Create( 3*sizeof(uint16) ));
+    triangle.vb     = rhi::HVertexBuffer(rhi::VertexBuffer::Create( 3*sizeof(VertexP) ));
+    triangle.v_cnt  = 3;
+    triangle.ib     = rhi::HIndexBuffer(rhi::IndexBuffer::Create( 3*sizeof(uint16) ));
     
     VertexP*    v = (VertexP*)rhi::VertexBuffer::Map( triangle.vb, 0, 3*sizeof(VertexP) );
 
@@ -861,6 +862,7 @@ void GameCore::BeginFrame()
 
 void GameCore::DrawTank()
 {
+/*
     rhi::RenderPassConfig   pass_desc;
 
     pass_desc.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
@@ -912,6 +914,7 @@ void GameCore::DrawTank()
 
     rhi::CommandBuffer::End(cb[0]);
     rhi::RenderPass::End(pass);
+*/
 }
 
 void
@@ -1044,6 +1047,8 @@ GameCore::rhiDraw()
     rhi::CommandBuffer::End( cb[0] );
 
     rhi::RenderPass::End( pass );
+
+    #undef USE_SECOND_CB
 }
 
 
@@ -1105,21 +1110,21 @@ SCOPED_NAMED_TIMING("app-draw");
 
 #if 0
     
-    rhi::BatchDescriptor    desc;
+    rhi::Packet packet;
 
-    desc.vertexStreamCount      = 1;
-    desc.vertexStream[0]        = triangle.vb;
-    desc.indexBuffer            = triangle.ib;
-    desc.renderPipelineState    = triangle.ps;
-    desc.vertexConstCount       = 0;
-    desc.fragmentConstCount     = 1;
-    desc.fragmentConst[0]       = triangle.fp_const;
-    desc.textureSet             = rhi::InvalidHandle;
-    desc.primitiveType          = rhi::PRIMITIVE_TRIANGLELIST;
-    desc.primitiveCount         = 1;
+    packet.vertexStreamCount    = 1;
+    packet.vertexStream[0]      = triangle.vb;
+    packet.vertexCount          = triangle.v_cnt;
+    packet.indexBuffer          = triangle.ib;
+    packet.renderPipelineState  = triangle.ps;
+    packet.vertexConstCount     = 0;
+    packet.fragmentConstCount   = 1;
+    packet.fragmentConst[0]     = triangle.fp_const;
+    packet.primitiveType        = rhi::PRIMITIVE_TRIANGLELIST;
+    packet.primitiveCount       = 1;
 
     rhi::UpdateConstBuffer( triangle.fp_const, 0, clr, 1 );
-    rhi::AddPacket( cb[0], desc );
+    rhi::AddPacket( pl[0], packet );
 
 #else
 
