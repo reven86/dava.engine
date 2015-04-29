@@ -1562,7 +1562,7 @@ void NMaterial::Draw(PolygonGroup * polygonGroup)
 	}
 }
 
-void NMaterial::Draw(RenderDataObject* renderData, uint16* indices, uint16 indexCount)
+void NMaterial::Draw(RenderDataObject* renderData, uint16* indices, int32 indexCount)
 {
 	DVASSERT(renderData);
 	

@@ -45,6 +45,12 @@
 
 #define LANDSCAPE_SPECULAR_LIT 1
 
+#define PATCH_VERTEX_COUNT 17
+#define PATCH_QUAD_COUNT (PATCH_VERTEX_COUNT - 1)
+#define MAX_LANDSCAPE_SUBDIV_LEVELS 9
+#define MAX_QUAD_COUNT_IN_VBO 128
+
+
 namespace DAVA
 {
 
@@ -306,6 +312,70 @@ protected:
 	const static FastName TEXTURE_SPECULAR_MAP;
 	const static FastName TECHNIQUE_TILEMASK_NAME;
     
+    
+    
+    struct PatchQuadInfo
+    {
+        uint32 rdoQuad;
+        AABBox3 bbox;
+        Vector3 positionOfMaxError;
+        float32 maxError;
+    };
+    
+    struct SubdivisionPatchInfo
+    {
+        enum
+        {
+            CLIPPED = 1,
+            DRAW = 2,
+            SUBDIVIDED = 3,
+            TERMINATED = 4,
+        };
+        
+        SubdivisionPatchInfo()
+        {
+            subdivisionState = CLIPPED;
+            startClipPlane = 0;
+        }
+        
+        uint32 lastSubdividedSize;
+        uint32 subdivisionState;
+        uint8 startClipPlane;
+    };
+    
+    struct SubdivisionLevelInfo
+    {
+        uint32 offset;
+        uint32 size;
+    };
+    
+    uint32 subdivLevelCount;
+    uint32 subdivPatchCount;
+    uint32 rdoQuadWidth;
+    
+    SubdivisionLevelInfo subdivLevelInfoArray[MAX_LANDSCAPE_SUBDIV_LEVELS];
+    PatchQuadInfo * patchQuadArray;
+    SubdivisionPatchInfo * subdivPatchArray;
+    Vector<SubdivisionPatchInfo*> drawPatchArray;
+    
+    uint32 GetQuadPosition(uint32 level, uint32 x, uint32 y);
+    PatchQuadInfo * GetQuad(uint32 level, uint32 x, uint32 y);
+    SubdivisionPatchInfo * GetSubdivPatch(uint32 level, uint32 x, uint32 y);
+    
+    void UpdatePatchInfo(uint32 level, uint32 x, uint32 y);
+    void SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags);
+    void TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdividedSize);
+    void DrawPatch(uint32 level, uint32 x, uint32 y,
+                   uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize);
+    void AddPatchToRenderNoInstancing(uint32 level, uint32 x, uint32 y);
+    void DrawNoInstancing();
+    uint16 GetXYIndex(uint16 x, uint16 y);
+
+    
+    
+    uint8 testMatrix[32][32];
+
+    
     class LandscapeQuad
     {
     public:
@@ -326,10 +396,12 @@ protected:
 		uint8 startClipPlane;
         uint32  frame;
     };
-   
+    
+    LandscapeQuad * rdoArray;
+    
     static const int32 RENDER_QUAD_WIDTH = 129;
     static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
-    static const int32 INDEX_ARRAY_COUNT = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH * 6;
+    static const int32 INDEX_ARRAY_COUNT = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH * 6 * 2;
     
 
     void RecursiveBuild(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 level, int32 maxLevels);
@@ -380,7 +452,9 @@ protected:
     
     int32 allocatedMemoryForQuads;
     
+    Camera * camera;
     Vector3 cameraPos;
+    float32 fovCorrection;
     Frustum *frustum;
     
     ePrimitiveType primitypeType;

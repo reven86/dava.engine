@@ -110,8 +110,9 @@ static FastName TILEMASK_COLOR_PROPS_NAMES[] =
 
 Landscape::Landscape()
     : indices(0)
-    , tileMaskMaterial(NULL)
-    , foliageSystem(NULL)
+    , tileMaskMaterial(nullptr)
+    , camera(nullptr)
+    , foliageSystem(nullptr)
 {
 	drawIndices = 0;
     //textureNames.resize(TEXTURE_COUNT);
@@ -328,7 +329,458 @@ bool Landscape::BuildHeightmap()
 
     return retValue;
 }
+
     
+Landscape::SubdivisionPatchInfo * Landscape::GetSubdivPatch(uint32 level, uint32 x, uint32 y)
+{
+    SubdivisionLevelInfo & levelInfo = subdivLevelInfoArray[level];
+    
+    if (x < levelInfo.size && y < levelInfo.size)
+        return &subdivPatchArray[levelInfo.offset + levelInfo.size * y + x];
+    else return 0;
+}
+    
+void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
+{
+    if (level >= subdivLevelCount)return;
+    
+    SubdivisionLevelInfo & levelInfo = subdivLevelInfoArray[level];
+    PatchQuadInfo * patch = &patchQuadArray[levelInfo.offset + levelInfo.size * y + x];
+    
+    
+    // Calculate patch bounding box
+    
+    uint32 realQuadCountInPatch = (heightmap->Size() - 1) / levelInfo.size;
+    uint32 heightMapStartX = x * realQuadCountInPatch;
+    uint32 heightMapStartY = y * realQuadCountInPatch;
+    
+    
+    {
+        patch->bbox = AABBox3();
+        // Brute force / Think about recursive approach
+        
+        patch->maxError = 0.0f;
+        
+        uint16 * data = heightmap->Data();
+        
+        int16 patchMod = realQuadCountInPatch / PATCH_QUAD_COUNT;
+        
+        for (int16 xx = heightMapStartX; xx <= heightMapStartX + realQuadCountInPatch; ++xx)
+            for (int16 yy = heightMapStartY; yy <= heightMapStartY + realQuadCountInPatch; ++yy)
+            {
+                uint16 value = data[heightmap->Size() * yy + xx];
+                Vector3 pos = GetPoint(xx, yy, value);
+                patch->bbox.AddPoint(pos);
+
+                //float32 xt = ((float)xx - (float)heightMapStartX) / realQuadCountInPatch;
+                //float32 yt = ((float)yy - (float)heightMapStartY) / realQuadCountInPatch;
+
+                if (patchMod == 1)continue;
+                if ((xx % patchMod) == 0)continue;
+                if ((yy % patchMod) == 0)continue;
+                
+                {
+                    int16 x0 = (xx / (patchMod)) * patchMod;
+                    int16 y0 = (yy / (patchMod)) * patchMod;
+                    
+                    int16 x1 = x0 + (realQuadCountInPatch / PATCH_QUAD_COUNT);
+                    int16 y1 = y0 + (realQuadCountInPatch / PATCH_QUAD_COUNT);
+                    
+                    DVASSERT(x0 >= heightMapStartX && x0 <= heightMapStartX + realQuadCountInPatch);
+                    DVASSERT(x1 >= heightMapStartX && x1 <= heightMapStartX + realQuadCountInPatch);
+                    DVASSERT(y0 >= heightMapStartY && y0 <= heightMapStartY + realQuadCountInPatch);
+                    DVASSERT(y1 >= heightMapStartY && y1 <= heightMapStartY + realQuadCountInPatch);
+                    
+                    float xin = (float32)(xx - x0) / (float32) (x1 - x0);
+                    float yin = (float32)(yy - y0) / (float32) (y1 - y0);
+                    
+                    Vector3 p00 = GetPoint(x0, y0, data[heightmap->Size() * y0 + x0]);
+                    Vector3 p01 = GetPoint(x0, y1, data[heightmap->Size() * y1 + x0]);
+                    Vector3 p10 = GetPoint(x1, y0, data[heightmap->Size() * y0 + x1]);
+                    Vector3 p11 = GetPoint(x1, y1, data[heightmap->Size() * y1 + x1]);
+                    
+                    Vector3 lodPos =  p00 * (1.0f - xin) * (1.0f - yin)
+                                    + p01 * (1.0f - xin) * yin
+                                    + p10 * xin * (1.0f - yin)
+                                    + p11 * xin * yin;
+                    
+                    
+                    DVASSERT(FLOAT_EQUAL(lodPos.x, pos.x) && FLOAT_EQUAL(lodPos.y, pos.y));
+                    
+                    if (Abs(lodPos.z - pos.z) > patch->maxError)
+                    {
+                        patch->maxError = pos.z - lodPos.z;
+                        patch->positionOfMaxError = pos;
+                    }
+                }
+            }
+    }
+    
+    // Logger::FrameworkDebug("%d - (%d, %d) - %d", level, x, y, realQuadCountInPatch);
+    
+    if (realQuadCountInPatch > MAX_QUAD_COUNT_IN_VBO)
+    {
+        patch->rdoQuad = -1;
+    }else
+    {
+        uint32 x = heightMapStartX / MAX_QUAD_COUNT_IN_VBO;
+        uint32 y = heightMapStartY / MAX_QUAD_COUNT_IN_VBO;
+
+//        uint32 xCheck = (heightMapStartX + realQuadCountInPatch) / MAX_QUAD_COUNT_IN_VBO;
+//        uint32 yCheck = (heightMapStartY + realQuadCountInPatch) / MAX_QUAD_COUNT_IN_VBO;
+//        
+//        DVASSERT(x == xCheck && y == yCheck);
+        
+        patch->rdoQuad = y * rdoQuadWidth + x;
+    }
+    
+    uint32 x2 = x * 2;
+    uint32 y2 = y * 2;
+    
+    UpdatePatchInfo(level + 1, x2 + 0, y2 + 0);
+    UpdatePatchInfo(level + 1, x2 + 1, y2 + 0);
+    UpdatePatchInfo(level + 1, x2 + 0, y2 + 1);
+    UpdatePatchInfo(level + 1, x2 + 1, y2 + 1);
+
+}
+    
+void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingFlags)
+{
+    if (level == subdivLevelCount)
+    {
+        DVASSERT(true);
+        return;
+    }
+    
+    SubdivisionLevelInfo & levelInfo = subdivLevelInfoArray[level];
+    PatchQuadInfo * patch = &patchQuadArray[levelInfo.offset + levelInfo.size * y + x];
+    SubdivisionPatchInfo * subdivPatchInfo = &subdivPatchArray[levelInfo.offset + levelInfo.size * y + x];
+    
+    // Calculate patch bounding box
+    Frustum::eFrustumResult frustumRes = Frustum::EFR_INSIDE;
+    
+    if (clippingFlags)
+        frustumRes = frustum->Classify(patch->bbox, clippingFlags, subdivPatchInfo->startClipPlane);
+    
+    if (frustumRes == Frustum::EFR_OUTSIDE)
+    {
+        subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::CLIPPED;
+        return;
+    }
+    
+    if (level == subdivLevelCount - 1)
+    {
+        TerminateSubdivision(level, x, y, levelInfo.size);
+        return;
+    }
+    
+    
+    //Vector3 error = patch->positionOfMaxError + Vector3(0.0f, )
+    float32 geometryRadius = Abs(patch->maxError);
+    float32 geometryDistance = Distance(cameraPos, patch->positionOfMaxError);
+    float32 geometryError = atanf(geometryRadius / geometryDistance);
+    
+    
+    Vector3 max = patch->bbox.max;
+    Vector3 origin = patch->bbox.GetCenter();
+    
+    float32 distance = Distance(origin, cameraPos);
+    float32 radius = Distance(origin, max);
+    float32 solidAngle = atanf(radius / distance);
+    
+    //float32 fovCorrection = camera->GetFOV() / 70.f;
+    float32 fovCorrection = 1.0f;
+    float32 solidAngleError = (20.0f * PI / 180.0f) * fovCorrection;
+    
+    
+    if ((patch->rdoQuad == -1) || (solidAngle > solidAngleError))
+    {
+        subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::SUBDIVIDED;
+        subdivPatchInfo->lastSubdividedSize = levelInfo.size;
+        
+        uint32 x2 = x * 2;
+        uint32 y2 = y * 2;
+        
+        SubdividePatch(level + 1, x2 + 0, y2 + 0, clippingFlags);
+        SubdividePatch(level + 1, x2 + 1, y2 + 0, clippingFlags);
+        SubdividePatch(level + 1, x2 + 0, y2 + 1, clippingFlags);
+        SubdividePatch(level + 1, x2 + 1, y2 + 1, clippingFlags);
+    }else
+    {
+        //DrawPatch(level, x, y, 0, 0, 0, 0);
+        TerminateSubdivision(level, x, y, levelInfo.size);
+        subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::DRAW;
+    }
+}
+    
+void Landscape::TerminateSubdivision(uint32 level, uint32 x, uint32 y, uint32 lastSubdividedSize)
+{
+    if (level == subdivLevelCount)
+    {
+        return;
+    }
+    
+    SubdivisionLevelInfo & levelInfo = subdivLevelInfoArray[level];
+    SubdivisionPatchInfo * subdivPatchInfo = &subdivPatchArray[levelInfo.offset + levelInfo.size * y + x];
+
+    subdivPatchInfo->lastSubdividedSize = lastSubdividedSize;
+    subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::TERMINATED;
+    
+    uint32 x2 = x * 2;
+    uint32 y2 = y * 2;
+    
+    TerminateSubdivision(level + 1, x2 + 0, y2 + 0, lastSubdividedSize);
+    TerminateSubdivision(level + 1, x2 + 1, y2 + 0, lastSubdividedSize);
+    TerminateSubdivision(level + 1, x2 + 0, y2 + 1, lastSubdividedSize);
+    TerminateSubdivision(level + 1, x2 + 1, y2 + 1, lastSubdividedSize);
+}
+    
+void Landscape::AddPatchToRenderNoInstancing(uint32 level, uint32 x, uint32 y)
+{
+    DVASSERT(level < subdivLevelCount);
+    
+    SubdivisionLevelInfo & levelInfo = subdivLevelInfoArray[level];
+    
+    // TODO: optimise all offset calculations in all places
+    PatchQuadInfo * patch = &patchQuadArray[levelInfo.offset + levelInfo.size * y + x];
+    SubdivisionPatchInfo * subdivPatchInfo = &subdivPatchArray[levelInfo.offset + levelInfo.size * y + x];
+
+    uint32 state = subdivPatchInfo->subdivisionState;
+    if (state == SubdivisionPatchInfo::CLIPPED)return;
+    
+    if (state == SubdivisionPatchInfo::SUBDIVIDED)
+    {
+        uint32 x2 = x * 2;
+        uint32 y2 = y * 2;
+        
+        AddPatchToRenderNoInstancing(level + 1, x2 + 0, y2 + 0);
+        AddPatchToRenderNoInstancing(level + 1, x2 + 1, y2 + 0);
+        AddPatchToRenderNoInstancing(level + 1, x2 + 0, y2 + 1);
+        AddPatchToRenderNoInstancing(level + 1, x2 + 1, y2 + 1);
+    }else
+    {
+        SubdivisionPatchInfo * xNeg = GetSubdivPatch(level, x - 1, y);
+        SubdivisionPatchInfo * xPos = GetSubdivPatch(level, x + 1, y);
+        SubdivisionPatchInfo * yNeg = GetSubdivPatch(level, x, y - 1);
+        SubdivisionPatchInfo * yPos = GetSubdivPatch(level, x, y + 1);
+        
+        uint32 xNegSize = levelInfo.size;
+        uint32 xPosSize = levelInfo.size;
+        uint32 yNegSize = levelInfo.size;
+        uint32 yPosSize = levelInfo.size;
+        
+        
+        if (xNeg)xNegSize = xNeg->lastSubdividedSize;
+        if (xPos)xPosSize = xPos->lastSubdividedSize;
+        if (yNeg)yNegSize = yNeg->lastSubdividedSize;
+        if (yPos)yPosSize = yPos->lastSubdividedSize;
+        
+        DrawPatch(level, x, y, xNegSize, xPosSize, yNegSize, yPosSize);
+    }
+}
+    
+void Landscape::DrawNoInstancing()
+{
+    AddPatchToRenderNoInstancing(0, 0, 0);
+}
+    
+
+uint16 Landscape::GetXYIndex(uint16 x, uint16 y)
+{
+    return x + y * RENDER_QUAD_WIDTH;
+}
+    
+void Landscape::DrawPatch(uint32 level, uint32 xx, uint32 yy,
+                          uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize)
+{
+    SubdivisionLevelInfo & levelInfo = subdivLevelInfoArray[level];
+    PatchQuadInfo * patch = &patchQuadArray[levelInfo.offset + levelInfo.size * yy + xx];
+    SubdivisionPatchInfo * subdivPatchInfo = &subdivPatchArray[levelInfo.offset + levelInfo.size * yy + xx];
+    
+    if ((patch->rdoQuad != queueRdoQuad) && (queueRdoQuad != -1))
+    {
+        FlushQueue();
+    }
+    
+    
+    queueRdoQuad = patch->rdoQuad;
+    
+//  Original Patch Drawing Code
+/*  uint32 realVertexCountInPatch = (heightmap->Size() - 1) / levelInfo.size;
+    uint32 step = realVertexCountInPatch / PATCH_QUAD_COUNT;
+    uint32 heightMapStartX = xx * realVertexCountInPatch;
+    uint32 heightMapStartY = yy * realVertexCountInPatch;
+
+    testMatrix[heightMapStartX / 16][heightMapStartY / 16]++;
+    
+    for (uint16 y = (heightMapStartY & RENDER_QUAD_AND); y < (heightMapStartY & RENDER_QUAD_AND) + realVertexCountInPatch; y += step)
+        for (uint16 x = (heightMapStartX & RENDER_QUAD_AND); x < (heightMapStartX & RENDER_QUAD_AND) + realVertexCountInPatch; x += step)
+        {
+            *queueDrawIndices++ = x + y * RENDER_QUAD_WIDTH;
+            *queueDrawIndices++ = (x + step) + y * RENDER_QUAD_WIDTH;
+            *queueDrawIndices++ = x + (y + step) * RENDER_QUAD_WIDTH;
+            
+            *queueDrawIndices++ = (x + step) + y * RENDER_QUAD_WIDTH;
+            *queueDrawIndices++ = (x + step) + (y + step) * RENDER_QUAD_WIDTH;
+            *queueDrawIndices++ = x + (y + step) * RENDER_QUAD_WIDTH;
+            
+            queueRenderCount += 6;
+        }
+ */
+ 
+    // Draw Middle
+    uint32 realVertexCountInPatch = (heightmap->Size() - 1) / levelInfo.size;
+    uint32 step = realVertexCountInPatch / PATCH_QUAD_COUNT;
+    uint32 heightMapStartX = xx * realVertexCountInPatch;
+    uint32 heightMapStartY = yy * realVertexCountInPatch;
+    
+    // Draw middle block
+    {
+        for (uint16 y = (heightMapStartY & RENDER_QUAD_AND); y < (heightMapStartY & RENDER_QUAD_AND) + realVertexCountInPatch; y += step)
+            for (uint16 x = (heightMapStartX & RENDER_QUAD_AND); x < (heightMapStartX & RENDER_QUAD_AND) + realVertexCountInPatch; x += step)
+            {
+                uint16 x0 = x;
+                uint16 y0 = y;
+                uint16 x1 = x + step;
+                uint16 y1 = y + step;
+                
+                uint16 x0aligned = x0;
+                uint16 y0aligned = y0;
+                uint16 x1aligned = x1;
+                uint16 y1aligned = y1;
+
+                uint16 x0aligned2 = x0;
+                uint16 y0aligned2 = y0;
+                uint16 x1aligned2 = x1;
+                uint16 y1aligned2 = y1;
+
+                
+                if (x == (heightMapStartX & RENDER_QUAD_AND) && (xNegSize != 0))
+                {
+                    uint16 alignMod = levelInfo.size / xNegSize;
+                    if (alignMod > 1)
+                    {
+                        y0aligned = y0 / (alignMod * step) * (alignMod * step);
+                        y1aligned = y1 / (alignMod * step) * (alignMod * step);
+                    }
+                }
+                
+                if (y == (heightMapStartY & RENDER_QUAD_AND) && (yNegSize != 0))
+                {
+                    uint16 alignMod = levelInfo.size / yNegSize;
+                    if (alignMod > 1)
+                    {
+                        x0aligned = x0 / (alignMod * step) * (alignMod * step);
+                        x1aligned = x1 / (alignMod * step) * (alignMod * step);
+                    }
+                }
+                
+                
+                if ((x == ((heightMapStartX & RENDER_QUAD_AND) + realVertexCountInPatch - step)) && (xPosSize != 0))
+                {
+                    uint16 alignMod = levelInfo.size / xPosSize;
+                    if (alignMod > 1)
+                    {
+                        y0aligned2 = y0 / (alignMod * step) * (alignMod * step);
+                        y1aligned2 = y1 / (alignMod * step) * (alignMod * step);
+                    }
+                }
+                
+                if ((y == ((heightMapStartY & RENDER_QUAD_AND) + realVertexCountInPatch - step)) && (yPosSize != 0))
+                {
+                    uint16 alignMod = levelInfo.size / yPosSize;
+                    if (alignMod > 1)
+                    {
+                        x0aligned2 = x0 / (alignMod * step) * (alignMod * step);
+                        x1aligned2 = x1 / (alignMod * step) * (alignMod * step);
+                    }
+                }
+            
+                
+                *queueDrawIndices++ = GetXYIndex(x0aligned, y0aligned);
+                *queueDrawIndices++ = GetXYIndex(x1aligned, y0aligned2);
+                *queueDrawIndices++ = GetXYIndex(x0aligned2, y1aligned);
+                
+                *queueDrawIndices++ = GetXYIndex(x1aligned, y0aligned2);
+                *queueDrawIndices++ = GetXYIndex(x1aligned2, y1aligned2);
+                *queueDrawIndices++ = GetXYIndex(x0aligned2, y1aligned);
+                
+                queueRenderCount += 6;
+            }
+    }
+    
+//    // Draw top hz line
+//    {
+//        uint16 y = heightMapStartY & RENDER_QUAD_AND;
+//        for (uint16 x = (heightMapStartX & RENDER_QUAD_AND); x < (heightMapStartX & RENDER_QUAD_AND) + realVertexCountInPatch; x += step)
+//        {
+//            *queueDrawIndices++ = GetXYIndex(x / (2 * step) * (2 * step), y);
+//            *queueDrawIndices++ = GetXYIndex((x + step) / (2 * step) * (2 * step), y);
+//            *queueDrawIndices++ = GetXYIndex(x, y + step);
+//            
+//            *queueDrawIndices++ = GetXYIndex((x + step) / (2 * step) * (2 * step), y);
+//            *queueDrawIndices++ = GetXYIndex((x + step), y + step);
+//            *queueDrawIndices++ = GetXYIndex(x, y + step);
+//            
+//            queueRenderCount += 6;
+//        }
+//    }
+   
+    DVASSERT(queueRenderCount < INDEX_ARRAY_COUNT);
+}
+
+
+#define NEW_LANDSCAPE_ALGORITHM
+    
+#if defined(NEW_LANDSCAPE_ALGORITHM)
+void Landscape::BuildLandscape()
+{
+    ReleaseAllRDOQuads();
+    SafeDeleteArray(indices);
+    
+    uint32 heightmapSizeMinus1 = heightmap->Size() - 1;
+    uint32 maxLevels = FastLog2(heightmapSizeMinus1 / PATCH_QUAD_COUNT) + 1;
+    subdivLevelCount = Min(maxLevels, (uint32)MAX_LANDSCAPE_SUBDIV_LEVELS);
+
+    subdivPatchCount = 0;
+    uint32 size = 1;
+    for (uint32 k = 0; k < subdivLevelCount; ++k)
+    {
+        subdivLevelInfoArray[k].offset = subdivPatchCount;
+        subdivLevelInfoArray[k].size = size;
+        subdivPatchCount += size * size;
+        Logger::FrameworkDebug("level: %d size: %d quadCount: %d", k, size, heightmapSizeMinus1 / size);
+        size *= 2;
+    }
+    
+    //TODO: Release those arrays
+    indices = new uint16[INDEX_ARRAY_COUNT];
+    subdivPatchArray = new SubdivisionPatchInfo[subdivPatchCount];
+    patchQuadArray = new PatchQuadInfo[subdivPatchCount];
+    
+    rdoQuadWidth = heightmapSizeMinus1 / (RENDER_QUAD_WIDTH - 1);
+    uint32 quadCountInOneRDO = heightmapSizeMinus1 / rdoQuadWidth;
+    
+    rdoArray = new LandscapeQuad[rdoQuadWidth * rdoQuadWidth];
+    
+    for (uint32 y = 0; y < rdoQuadWidth; ++y)
+        for (uint32 x = 0; x  < rdoQuadWidth; ++x)
+        {
+            LandscapeQuad * quad = &rdoArray[x + y * rdoQuadWidth];
+            quad->x = x * 128;
+            quad->y = y * 128;
+            quad->size = quadCountInOneRDO;
+            
+            uint16 check = AllocateRDOQuad(quad);
+            DVASSERT(check == (uint16)(x + y * rdoQuadWidth));
+        }
+
+    UpdatePatchInfo(0, 0, 0);
+}
+    
+    
+
+#else
 void Landscape::BuildLandscape()
 {
     ReleaseAllRDOQuads();
@@ -363,6 +815,10 @@ void Landscape::BuildLandscape()
 //    Logger::FrameworkDebug("sizeof(LandscapeQuad): %d bytes", sizeof(LandscapeQuad));
 //    Logger::FrameworkDebug("sizeof(QuadTreeNode): %d bytes", sizeof(QuadTreeNode<LandscapeQuad>));
 }
+#endif
+    
+    
+
     
 /*
     level 0 = full landscape
@@ -713,11 +1169,14 @@ Texture * Landscape::GetTexture(eTextureLevel level)
 void Landscape::FlushQueue()
 {
     if (queueRenderCount == 0) return;
+    if (queueRdoQuad == -1) return;
     
 	//currentMaterial->Draw(landscapeRDOArray[queueRdoQuad], indices, queueRenderCount);
 	tileMaskMaterial->Draw(landscapeRDOArray[queueRdoQuad], indices, queueRenderCount);
 	
 	drawIndices += queueRenderCount;
+    
+    //Logger::FrameworkDebug("flush: %d %d", queueRdoQuad, queueRenderCount);
 
     ClearQueue();
     
@@ -730,6 +1189,7 @@ void Landscape::ClearQueue()
     queueRdoQuad = -1;
     queueDrawIndices = indices;
 }
+
 
 void Landscape::DrawQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod)
 {
@@ -1145,7 +1605,7 @@ void Landscape::UnbindMaterial()
 
     
     
-void Landscape::Draw(Camera * camera)
+void Landscape::Draw(Camera * drawCamera)
 {
     TIME_PROFILE("LandscapeNode.Draw");
 	
@@ -1175,6 +1635,7 @@ void Landscape::Draw(Camera * camera)
 //    {
 //        RenderManager::Instance()->ResetColor();
 //    }
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 #else
     RenderManager::Instance()->ResetColor();
 #endif //#if defined(__DAVAENGINE_OPENGL__)
@@ -1197,6 +1658,7 @@ void Landscape::Draw(Camera * camera)
 //    RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, meshFinalMatrix);
 //    frustum->Set();
 
+    camera = GetRenderSystem()->GetMainCamera();
     frustum = camera->GetFrustum();
     cameraPos = camera->GetPosition();        
     
@@ -1209,8 +1671,15 @@ void Landscape::Draw(Camera * camera)
     
 
     RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-    //RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, camera->GetMatrix());
 
+#if defined(NEW_LANDSCAPE_ALGORITHM)
+    memset(testMatrix, sizeof(testMatrix), 0);
+    BindMaterial(nearLodIndex, camera);
+    SubdividePatch(0, 0, 0, 0x3f);
+    DrawNoInstancing();
+    FlushQueue();
+    
+#else
 	if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LANDSCAPE_LODS))
 	{
 		fans.clear();
@@ -1238,18 +1707,22 @@ void Landscape::Draw(Camera * camera)
     {
         DrawQuad(lodNot0quads[i], lodNot0quads[i]->data.lod);
     }
+#endif //#if defined(NEW_LANDSCAPE_ALGORITHM)
+    
+    
 #endif //#if defined (DRAW_OLD_STYLE)    
 
     
 	FlushQueue();
-    //    Logger::FrameworkDebug("[LN] flashQueueCounter = %d", flashQueueCounter);
+    //Logger::FrameworkDebug("[LN] flashQueueCounter = %d", flashQueueCounter);
 	DrawFans();
     
 #if defined(__DAVAENGINE_MACOS__)
 //    if (debugFlags & DEBUG_DRAW_ALL)
 //    {
 //        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-//    }   
+//    }
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif
 
 	if(cursor)
@@ -1734,45 +2207,7 @@ Texture * Landscape::CreateLandscapeTexture()
     
     return fullTiled;
 }
-    
-//FilePath Landscape::SaveFullTiledTexture()
-//{
-//    FilePath pathToSave;
-//    
-//    if(textures[TEXTURE_TILE_FULL])
-//    {
-//        if(textures[TEXTURE_TILE_FULL]->isRenderTarget)
-//        {
-//            pathToSave = GetTextureName(TEXTURE_COLOR);
-//            pathToSave.ReplaceExtension(".thumbnail.png");
-//            Image *image = textures[TEXTURE_TILE_FULL]->CreateImageFromMemory();
-//            if(image)
-//            {
-//                ImageLoader::Save(image, pathToSave);
-//                SafeRelease(image);
-//            }
-//        }
-//        else
-//        {
-//            pathToSave = textureNames[TEXTURE_TILE_FULL];
-//        }
-//    }
-//    
-//    Logger::FrameworkDebug("[LN] SaveFullTiledTexture: %s", pathToSave.GetAbsolutePathname().c_str());
-//    return pathToSave;
-//}
-//    
-//void Landscape::UpdateFullTiledTexture()
-//{
-//	//TODO: WTF? this method is called during load phase when not all properties have been initialized potentially!
-//    if(textureNames[TEXTURE_TILE_FULL].IsEmpty())
-//    {
-//        Texture *t = CreateFullTiledTexture();
-//        t->GenerateMipmaps();
-//        SetTexture(TEXTURE_TILE_FULL, t);
-//        SafeRelease(t);
-//    }
-//}
+
     
 LandscapeCursor * Landscape::GetCursor()
 {

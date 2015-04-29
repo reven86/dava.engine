@@ -35,6 +35,7 @@
 #include "Scene3D/Scene.h"
 
 #include "Render/Highlevel/Camera.h"
+#include "Render/Highlevel/RenderSystem.h"
 
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
@@ -85,8 +86,11 @@ void WASDControllerSystem::Process(float32 timeElapsed)
     for(uint32 i = 0; i < size; ++i)
     {
         Camera *camera = GetCamera(entities[i]);
+        
         if(camera)
         {
+            if (camera != GetScene()->GetRenderSystem()->GetDrawCamera())continue;
+
             if(keyboard.IsKeyPressed(DVKEY_W) || keyboard.IsKeyPressed(DVKEY_UP))
             {
                 MoveForward(camera, actualMoveSpeed, DIRECTION_STRAIGHT);
