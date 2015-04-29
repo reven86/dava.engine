@@ -72,7 +72,7 @@ void TextBlockRender::DrawText()
             int32 align = textBlock->GetVisualAlignNoMutexLock();
 			if (align & ALIGN_RIGHT)
 			{
-                xOffset = (int32)(textBlock->cacheFinalSize.dx - textBlock->stringSizes[line]);
+                xOffset = (int32)(textBlock->cacheTextSize.dx - textBlock->stringSizes[line]);
 				if(xOffset < 0)
 				{
 					xOffset = 0;
@@ -80,7 +80,7 @@ void TextBlockRender::DrawText()
 			}
 			else if(align & ALIGN_HCENTER)
 			{
-                xOffset = (int32)(textBlock->cacheFinalSize.dx - textBlock->stringSizes[line]) / 2;
+                xOffset = (int32)(textBlock->cacheTextSize.dx - textBlock->stringSizes[line]) / 2;
 				if(xOffset < 0)
 				{
 					xOffset = 0;

@@ -21,7 +21,6 @@ import android.util.Log;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnAttachStateChangeListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.InputDevice.MotionRange;
@@ -260,9 +259,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         	nativeFinishing();
         }
         
-        // Destroy keyboard helper window
-        JNITextField.DestroyKeyboardLayout(getWindowManager());
-        
         super.onPause();
 
         Log.i(JNIConst.LOG_TAG, "[Activity::onPause] finish");
@@ -297,26 +293,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         {
             glView.onResume();
-            
-            // Create keyboard layout over glView window.
-            if(glView.getWindowToken() != null)
-            {
-                JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
-            }
-            else
-            {
-                glView.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
-                    @Override
-                    public void onViewDetachedFromWindow(View v) {}
-                    
-                    @Override
-                    public void onViewAttachedToWindow(View v) {
-                        JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
-                        glView.removeOnAttachStateChangeListener(this);
-                    }
-                });
-                
-            }
         }
         
         JNITextField.RelinkNativeControls();
@@ -394,6 +370,25 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     		}
     	}
     	Log.i(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] finish");
+    }
+    
+    // we have to call next function after initialization of glView
+    void InitKeyboardLayout() {
+        // first destroy if any keyboard layout
+        WindowManager windowManager = getWindowManager();
+        JNITextField.DestroyKeyboardLayout(windowManager);
+        
+        // now initialize one more time
+        // http://stackoverflow.com/questions/7776768/android-what-is-android-r-id-content-used-for
+        final View v = findViewById(android.R.id.content);
+        if(v.getWindowToken() != null)
+        {
+            JNITextField.InitializeKeyboardLayout(windowManager, v.getWindowToken());
+        }
+        else
+        {
+            throw new RuntimeException("v.getWindowToken() != null strange null pointer view");
+        }
     }
     
     protected final List<Integer> supportedAxises = Arrays.asList(
@@ -542,5 +537,31 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		
 		glView.SetMultitouchEnabled(nativeIsMultitouchEnabled());
 	}
+	
+	// Workaround! this function called from c++ when game wish to 
+    // Quit it block GLThread because we already destroy singletons and can't 
+    // return to GLThread back
+    public static void finishActivity()
+    {
+        final Object mutex = new Object();
+        final JNIActivity activity = JNIActivity.GetActivity();
+        activity.runOnUiThread(new Runnable(){
+            @Override
+            public void run() {
+                Log.v(JNIConst.LOG_TAG, "finish Activity");
+                activity.finish();
+                System.exit(0);
+            }
+        });
+        // never return back from this function!
+        synchronized(mutex)
+        {
+            try {
+                mutex.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
 

@@ -98,20 +98,19 @@ public:
 
     static void ForData(const uint8 *data, uint32 dataSize, uint8 * digest);
 	static void ForFile(const FilePath & pathName, uint8 * digest);
-	static void ForDirectory(const FilePath & pathName, uint8 * digest, bool isRecursive);
-
+	static void ForDirectory(const FilePath & pathName, uint8 * digest, bool isRecursive, bool includeHidden);
+    
     static void HashToChar(const uint8 * hash, char8 *buffer, uint32 bufferSize);
 	static void CharToHash(const char8 *buffer, uint8 * hash);
 
-    
-    
-	void Init ();
-	void Update (const uint8 *inBuf, uint32 inLen);
-	void Final ();
-
-	uint8 * GetDigest() { return digest; };
 private:
-	static void RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRecursive);
+
+    void Init ();
+    void Update (const uint8 *inBuf, uint32 inLen);
+    void Final ();
+    uint8 * GetDigest() { return digest; };
+
+    static void RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRecursive, bool includeHidden);
     
     static uint8 GetNumberFromCharacter(char8 character);
     static char8 GetCharacterFromNumber(uint8 number);

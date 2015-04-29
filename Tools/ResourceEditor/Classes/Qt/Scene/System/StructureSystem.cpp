@@ -370,17 +370,17 @@ void StructureSystem::ReloadInternal(DAVA::Set<DAVA::Entity *> &entitiesToReload
 void StructureSystem::Add(const DAVA::FilePath &newModelPath, const DAVA::Vector3 pos)
 {
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
-	if(NULL != sceneEditor)
+	if(nullptr != sceneEditor)
 	{
-		DAVA::Entity *loadedEntity = Load(newModelPath, true);
-		if(NULL != loadedEntity)
+        ScopedPtr<Entity> loadedEntity(Load(newModelPath, true));
+        if (static_cast<DAVA::Entity *>(loadedEntity) != nullptr)
 		{
 			DAVA::Vector3 entityPos = pos;
 
 			KeyedArchive *customProps = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
             customProps->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, newModelPath.GetAbsolutePathname());
 
-			if(entityPos.IsZero() && FindLandscape(loadedEntity) == NULL)
+			if(entityPos.IsZero() && FindLandscape(loadedEntity) == nullptr)
 			{
 				SceneCameraSystem *cameraSystem = sceneEditor->cameraSystem;
 
@@ -415,7 +415,7 @@ void StructureSystem::Add(const DAVA::FilePath &newModelPath, const DAVA::Vector
 
 			// TODO: move this code to some another place (into command itself or into ProcessCommand function)
 			// 
-			// œÂÂÌÂÒÚË ‚ Load Ë Á‡‚‡ÎË‰ÂÈÚËÚ¸ ÚÓÎ¸ÍÓ ÔÓ‰„ÛÊÂÌÌÛ˛ Entity
+			// Перенести в Load и завалидейтить только подгруженную Entity
 			// -->
             SceneValidator::Instance()->ValidateSceneAndShowErrors(sceneEditor, sceneEditor->GetScenePath());
 			// <--

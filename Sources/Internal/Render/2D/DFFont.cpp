@@ -223,6 +223,8 @@ Font * DFFont::Clone() const
     dfFont->fontTexture = SafeRetain(fontTexture);
     dfFont->size = size;
     dfFont->fontTextureHandler = fontTextureHandler;
+    dfFont->SetAscendScale(GetAscendScale());
+    dfFont->SetDescendScale(GetDescendScale());
     RenderManager::Instance()->RetainTextureState(fontTextureHandler);
 
     return dfFont;
