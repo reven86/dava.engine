@@ -277,6 +277,15 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
             }
             else
             {
+                static const std::set<String> textFieldEnums = {
+                    "autoCapitalizationType",
+                    "autoCorrectionType",
+                    "spellCheckingType",
+                    "keyboardAppearanceType",
+                    "keyboardType",
+                    "returnKeyType"
+                };
+
                 if (propertyName == "multiline")
                 {
                     if (valueNode->AsBool())
@@ -291,6 +300,10 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
                     {
                         return VariantType(UIStaticText::MULTILINE_DISABLED);
                     }
+                }
+                else if (textFieldEnums.find(propertyName) != textFieldEnums.end())
+                {
+                    return VariantType(valueNode->AsInt32());
                 }
                 else
                 {
