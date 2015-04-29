@@ -347,8 +347,8 @@ protected:
     Texture * CreateTexture(eTextureLevel level, const FilePath & textureName);
     
     int16 AllocateQuadVertexBuffer(LandscapeQuad * quad);
-    void AllocateLandscapeBatches(int32 count);
-    void ReleaseAllGeometryData();
+    void AllocateGeometryData();
+    void ReleaseGeometryData();
 
 	int GetMaxLod(float32 quadDistance);
 	float32 GetQuadToCameraDistance(const Vector3& camPos, const LandscapeQuad& quad);

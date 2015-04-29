@@ -116,8 +116,8 @@ public:
 	inline void SetTreeNodeIndex(uint16 index);
 	inline uint16 GetTreeNodeIndex();
     
-    uint32 AddRenderBatch(RenderBatch * batch);
-    uint32 AddRenderBatch(RenderBatch * batch, int32 lodIndex, int32 switchIndex);
+    void AddRenderBatch(RenderBatch * batch);
+    void AddRenderBatch(RenderBatch * batch, int32 lodIndex, int32 switchIndex);
     void RemoveRenderBatch(RenderBatch * batch);
     void RemoveRenderBatch(uint32 batchIndex);
     void ReplaceRenderBatch(RenderBatch * oldBatch, RenderBatch * newBatch);
@@ -242,7 +242,7 @@ protected:
 			);
 	};
     
-	virtual void UpdateActiveRenderBatches();
+	void UpdateActiveRenderBatches();
     Vector<IndexedRenderBatch> renderBatchArray;
 	Vector<RenderBatch*> activeRenderBatchArray;
 

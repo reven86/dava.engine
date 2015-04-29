@@ -140,7 +140,7 @@ Landscape::Landscape()
 
 Landscape::~Landscape()
 {
-    ReleaseAllGeometryData();
+    ReleaseGeometryData();
 
     SafeRelease(heightmap);
 #if RHI_COMPLETE
@@ -220,7 +220,7 @@ int16 Landscape::AllocateQuadVertexBuffer(LandscapeQuad * quad)
     }
 
     uint32 vBufferSize = verticesCount * sizeof(LandscapeVertex);
-    rhi::HVertexBuffer vertexBuffer = rhi::CreateVertexBuffer(vBufferSize); //RHI_COMPLETE unusing PolygonGroup as handles container
+    rhi::HVertexBuffer vertexBuffer = rhi::CreateVertexBuffer(vBufferSize);
     rhi::UpdateVertexBuffer(vertexBuffer, landscapeVertices, 0, vBufferSize);
     vertexBuffers.push_back(vertexBuffer);
     
@@ -229,7 +229,7 @@ int16 Landscape::AllocateQuadVertexBuffer(LandscapeQuad * quad)
     return (int16)(vertexBuffers.size() - 1);
 }
 
-void Landscape::ReleaseAllGeometryData()
+void Landscape::ReleaseGeometryData()
 {
     SafeDeleteArray(indices);
 
@@ -319,9 +319,9 @@ bool Landscape::BuildHeightmap()
     return retValue;
 }
 
-void Landscape::AllocateLandscapeBatches(int32 count)
+void Landscape::AllocateGeometryData()
 {
-    for (int32 i = 0; i < count; i++)
+    for (int32 i = 0; i < LANDSCAPE_BATCHES_POOL_SIZE; i++)
     {
         ScopedPtr<RenderBatch> batch(new RenderBatch());
         AddRenderBatch(batch);
@@ -339,13 +339,15 @@ void Landscape::AllocateLandscapeBatches(int32 count)
         for (auto & handle : indexBuffers.back().elements)
             handle = rhi::CreateIndexBuffer(INDEX_ARRAY_COUNT * 2); //RHI_COMPLETE think about reducing of memory consumption (buffers size)
     }
+
+    indices = new uint16[INDEX_ARRAY_COUNT];
 }
 
 void Landscape::BuildLandscape()
 {
-    ReleaseAllGeometryData();
+    ReleaseGeometryData();
     
-    AllocateLandscapeBatches(LANDSCAPE_BATCHES_POOL_SIZE);
+    AllocateGeometryData();
 
     quadTreeHead.data.x = quadTreeHead.data.y = quadTreeHead.data.lod = 0;
     //quadTreeHead.data.xbuf = quadTreeHead.data.ybuf = 0;
@@ -361,8 +363,6 @@ void Landscape::BuildLandscape()
         
         RecursiveBuild(&quadTreeHead, 0, lodLevelsCount);
         FindNeighbours(&quadTreeHead);
-        
-        indices = new uint16[INDEX_ARRAY_COUNT];
     }
     else
     {
@@ -1460,7 +1460,7 @@ void Landscape::Create(NMaterial * materialParent/* = NULL */)
     if (parent == nullptr)
     {
         NMaterial * parent = new NMaterial();
-        //here need to set template, .fx, shader or some else similar
+        //RHI_COMPLETE here need to set template, .fx, shader or some else similar
     }
 
     tileMaskMaterial = new NMaterial();
@@ -1479,7 +1479,11 @@ void Landscape::Create(NMaterial * materialParent/* = NULL */)
     
 void Landscape::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
-    RenderObject::Save(archive, serializationContext);
+    //RHI_COMPLETE think about save-load
+    //need refuse LandscapeChunk and save landscape material across data-nodes
+    //and don't save render bathes cause it creating runtime
+
+    //RenderObject::Save(archive, serializationContext);
 
     //TODO: remove code in future. Need for transition from *.png to *.heightmap
     if(!heightmapPath.IsEqualToExtension(Heightmap::FileExtension()))
@@ -1530,7 +1534,7 @@ void Landscape::Load(KeyedArchive * archive, SerializationContext * serializatio
         
         // remember pointer on loaded landscape material
         tileMaskMaterial = SafeRetain(landCunk->GetMaterial());
-        tileMaskMaterial->AddFlag(FastName("COLOR_TEXTURE"), 1);
+        tileMaskMaterial->AddFlag(FastName("COLOR_TEXTURE"), 1); //RHI_COMPLETE temporary flag for 'uber shader'
 
         RemoveRenderBatch(0U);
     }
