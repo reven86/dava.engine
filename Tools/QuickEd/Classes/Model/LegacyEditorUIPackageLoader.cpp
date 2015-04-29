@@ -314,21 +314,32 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
         }
         else if (member->Desc().type == InspDesc::T_FLAGS)
         {
-            int32 val = 0;
-            for (uint32 i = 0; i < valueNode->GetCount(); i++)
+            if (valueNode->GetType() == YamlNode::TYPE_ARRAY)
             {
-                const YamlNode *flagNode = valueNode->Get(i);
-                int32 flag = 0;
-                if (member->Desc().enumMap->ToValue(flagNode->AsString().c_str(), flag))
+                int32 val = 0;
+                for (uint32 i = 0; i < valueNode->GetCount(); i++)
                 {
-                    val |= flag;
+                    const YamlNode *flagNode = valueNode->Get(i);
+                    int32 flag = 0;
+                    if (member->Desc().enumMap->ToValue(flagNode->AsString().c_str(), flag))
+                    {
+                        val |= flag;
+                    }
+                    else
+                    {
+                        DVASSERT(false);
+                    }
                 }
-                else
-                {
-                    DVASSERT(false);
-                }
+                return VariantType(val);
             }
-            return VariantType(val);
+            else if (propertyName.find("stateFittingOption") != String::npos)
+            {
+                return VariantType(valueNode->AsInt32());
+            }
+            else
+            {
+                DVASSERT(false);
+            }
         }
         else if (propertyName == "pivot")
         {
