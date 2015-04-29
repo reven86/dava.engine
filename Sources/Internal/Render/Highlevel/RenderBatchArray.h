@@ -51,12 +51,11 @@ public:
     void InitPassLayersWithSingleLayer(RenderPass * renderPass, RenderLayerBatchArray * singleLayer);
     void Clear();
 
-    void PrepareVisibilityArray(VisibilityArray * visibilityArray, Camera * camera);
+    void PrepareVisibilityArray(VisibilityArray * visibilityArray, Camera * camera, const FastName& passName);
     inline void AddRenderBatch(RenderLayerID id, RenderBatch * renderBatch);
     inline RenderLayerBatchArray * Get(RenderLayerID id) { return layerBatchArrays[id]; };
 
-private:
-    Vector<Matrix4> cameraWorldMatrices;
+private:    
     RenderLayerBatchArray* layerBatchArrays[RENDER_LAYER_ID_COUNT];
     friend class RenderLayerBatchArray;
 };

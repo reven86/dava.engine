@@ -343,7 +343,7 @@ metal_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 cou
 //------------------------------------------------------------------------------
 
 static void
-metal_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
+metal_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count, uint32 /*vertexCount*/, uint32 /*firstVertex*/ )
 {
     CommandBufferMetal_t*   cb    = CommandBufferPool::Get( cmdBuf );
     MTLPrimitiveType        ptype = MTLPrimitiveTypeTriangle;

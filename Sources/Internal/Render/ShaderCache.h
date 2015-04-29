@@ -41,7 +41,9 @@ class ShaderDescriptorCache : public Singleton < ShaderDescriptorCache >
 {        
 public:
     ~ShaderDescriptorCache();
-    ShaderDescriptor* GetShaderDescriptor(FastName name, const HashMap<FastName, int32>& defines);    
+    ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
+
+    static void BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines, Vector<int32>& key);
 private:
     Map<Vector<int32>, ShaderDescriptor *> shaderDescriptors;
 };
