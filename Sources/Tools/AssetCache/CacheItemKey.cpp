@@ -27,30 +27,68 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_ASSET_CACHE_CONSTANTS_H__
-#define __DAVAENGINE_ASSET_CACHE_CONSTANTS_H__
+
+#include "AssetCache/CacheItemKey.h"
+#include "FileSystem/KeyedArchive.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
+    
 namespace AssetCache
 {
-
-static const uint32 NET_SERVICE_ID = 0xACCA;
-
-enum ePacketID: uint8
+    
+CacheItemKey::CacheItemKey()
 {
-    PACKET_UNKNOWN = 0,
-    PACKET_ADD_FILES_REQUEST,
-    PACKET_ADD_FILES_RESPONCE,
-    PACKET_GET_FILES_REQUEST,
-    PACKET_GET_FILES_RESPONCE,
-    PACKET_CHECK_FILE_IN_CACHE_REQUEST,
-    PACKET_CHECK_FILE_IN_CACHE_RESPONCE,
-};
+    Memset(primaryKey, 0, MD5::DIGEST_SIZE);
+    Memset(secondaryKey, 0, MD5::DIGEST_SIZE);
+}
+
+    
+void CacheItemKey::Serialize(KeyedArchive * archieve) const
+{
+    DVASSERT(nullptr != archieve);
+    
+    archieve->SetByteArray("primaryKey", primaryKey, MD5::DIGEST_SIZE);
+    archieve->SetByteArray("secondaryKey", secondaryKey, MD5::DIGEST_SIZE);
+}
+    
+void CacheItemKey::Deserialize(KeyedArchive * archieve)
+{
+    DVASSERT(nullptr != archieve);
+    
+    auto hashArray = archieve->GetByteArray("primaryKey");
+    if(hashArray)
+    {
+        Memcpy(primaryKey, hashArray, MD5::DIGEST_SIZE);
+    }
+
+    hashArray = archieve->GetByteArray("secondaryKey");
+    if(hashArray)
+    {
+        Memcpy(secondaryKey, hashArray, MD5::DIGEST_SIZE);
+    }
+}
+    
+bool CacheItemKey::operator == (const CacheItemKey &right) const
+{
+    return (    (Memcmp(primaryKey, right.primaryKey, MD5::DIGEST_SIZE) == 0)
+            &&  (Memcmp(secondaryKey, right.secondaryKey, MD5::DIGEST_SIZE) == 0)
+            );
+}
+    
+bool operator < (const CacheItemKey& left, const CacheItemKey& right)
+{
+    auto cmpPrimary = Memcmp(left.primaryKey, right.primaryKey, MD5::DIGEST_SIZE);
+    if(0 == cmpPrimary)
+    {
+        return Memcmp(left.secondaryKey, right.secondaryKey, MD5::DIGEST_SIZE) < 0;
+    }
+
+    return cmpPrimary < 0;
+}
+    
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
-
-
-#endif // __DAVAENGINE_ASSET_CACHE_CONSTANTS_H__
 

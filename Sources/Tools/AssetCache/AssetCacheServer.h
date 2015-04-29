@@ -31,7 +31,6 @@
 #define __DAVAENGINE_ASSET_CACHE_SERVER_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Data.h"
 
 #include "AssetCache/TCPConnection/TCPConnection.h"
 
@@ -43,16 +42,16 @@ namespace AssetCache
 {
  
 class CachedFiles;
-class ClientCacheEntry;
+class CacheItemKey;
 
     
 class ServerDelegate
 {
 public:
     
-    virtual void OnAddedToCache(const ClientCacheEntry &entry, const CachedFiles &files) = 0;
-    virtual void OnIsInCache(const ClientCacheEntry &entry) = 0;
-    virtual void OnRequestedFromCache(const ClientCacheEntry &entry) = 0;
+    virtual void OnAddedToCache(const CacheItemKey &key, const CachedFiles &files) = 0;
+    virtual void OnIsInCache(const CacheItemKey &key) = 0;
+    virtual void OnRequestedFromCache(const CacheItemKey &key) = 0;
 };
     
     
@@ -79,9 +78,9 @@ public:
     void PacketDelivered() override;
     //END of TCPConnectionDelegate
     
-    bool FilesAddedToCache(const ClientCacheEntry &entry, bool added);
-    bool FilesInCache(const ClientCacheEntry &entry, bool isInCache);
-    bool SendFiles(const ClientCacheEntry &entry, const CachedFiles &files);
+    bool FilesAddedToCache(const CacheItemKey &key, bool added);
+    bool FilesInCache(const CacheItemKey &key, bool isInCache);
+    bool SendFiles(const CacheItemKey &key, const CachedFiles &files);
     
 private:
     
@@ -90,8 +89,6 @@ private:
     void OnAddToCache(KeyedArchive * archieve);
     void OnIsInCache(KeyedArchive * archieve);
     void OnGetFromCache(KeyedArchive * archieve);
-
-    
     
 private:
     
@@ -106,9 +103,8 @@ inline void Server::SetDelegate(ServerDelegate * _delegate)
     
     
     
-};
-
-};
+}; // end of namespace AssetCache
+}; // end of namespace DAVA
 
 #endif // __DAVAENGINE_ASSET_CACHE_SERVER_H__
 

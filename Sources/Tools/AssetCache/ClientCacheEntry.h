@@ -27,13 +27,15 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_ASSET_CACHE_CLIENT_CACHE_DESCRIPTION_H__
-#define __DAVAENGINE_ASSET_CACHE_CLIENT_CACHE_DESCRIPTION_H__
+#ifndef __DAVAENGINE_ASSET_CACHE_CLIENT_CACHE_ENTRY_H__
+#define __DAVAENGINE_ASSET_CACHE_CLIENT_CACHE_ENTRY_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Data.h"
 #include "FileSystem/FilePath.h"
-#include "Utils/MD5.h"
+
+#include "AssetCache/CacheItemKey.h"
+#include "AssetCache/CacheItemParams.h"
+#include "AssetCache/CachedFiles.h"
 
 
 namespace DAVA
@@ -42,52 +44,57 @@ class KeyedArchive;
 
 namespace AssetCache
 {
-    
+
 class ClientCacheEntry
 {
 public:
     
-    enum eEntryType: uint8
-    {
-        ENTRY_UNKNOWN          =   0,
-        ENTRY_FILE,
-        ENTRY_FOLDER,
-    };
-    
-public:
-    
-    ClientCacheEntry(const ClientCacheEntry &) = default;
-    ClientCacheEntry & operator= (const ClientCacheEntry &) = default;
-
     ClientCacheEntry();
-    ClientCacheEntry(eEntryType type, const FilePath &pathname);
-
     virtual ~ClientCacheEntry() = default;
 
     void Serialize(KeyedArchive * archieve) const;
     void Deserialize(KeyedArchive * archieve);
 
-    bool operator == (const ClientCacheEntry &cce) const;
+    bool operator == (const ClientCacheEntry &right) const;
 
+    
+    void InvalidatePrimaryKey();
+    void InvalidatePrimaryKey(const uint8 *digest);
+    void InvalidateSecondaryKey();
+    
+    const CacheItemKey & GetKey() const;
+    const CacheItemParams & GetParams() const;
+    const CachedFiles & GetFiles() const;
+    
+    void AddParam(const String &param);
+    void AddFile(const FilePath &pathname);
+    
 private:
     
-
-public:
-    
-    eEntryType type;
-    uint8 hash[MD5::DIGEST_SIZE];
-    FilePath pathname;
-    
-    String toolDescription;
-    List<String> params;
+    CacheItemKey key;
+    CacheItemParams params;
+    CachedFiles files;
 };
 
-bool operator < (const ClientCacheEntry& left, const ClientCacheEntry& right);
+inline const CacheItemKey & ClientCacheEntry::GetKey() const
+{
+    return key;
+}
+
+inline const CacheItemParams & ClientCacheEntry::GetParams() const
+{
+    return params;
+}
+
+inline const CachedFiles & ClientCacheEntry::GetFiles() const
+{
+    return files;
+}
 
     
-};
+    
+}; // end of namespace AssetCache
+}; // end of namespace DAVA
 
-};
-
-#endif // __DAVAENGINE_ASSET_CACHE_CLIENT_CACHE_DESCRIPTION_H__
+#endif // __DAVAENGINE_ASSET_CACHE_CLIENT_CACHE_ENTRY_H__
 

@@ -32,7 +32,11 @@
 
 #include "AssetCache/AssetCacheClient.h"
 #include "AssetCache/AssetCacheServer.h"
+
+#include "AssetCache/CacheItemKey.h"
+#include "AssetCache/CacheItemParams.h"
 #include "AssetCache/CachedFiles.h"
+
 #include "AssetCache/ClientCacheEntry.h"
 
 #endif // __DAVAENGINE_ASSET_CACHE_SKOPPED_INCLUDE_H__

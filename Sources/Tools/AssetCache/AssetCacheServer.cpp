@@ -31,7 +31,7 @@
 #include "AssetCache/AssetCacheServer.h"
 #include "AssetCache/AssetCacheConstants.h"
 #include "AssetCache/CachedFiles.h"
-#include "AssetCache/ClientCacheEntry.h"
+#include "AssetCache/CacheItemKey.h"
 #include "AssetCache/TCPConnection/TCPServer.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Debug/DVAssert.h"
@@ -98,19 +98,18 @@ void Server::PacketReceived(const void* packet, size_t length)
         
         archieve->Deserialize(packetData, length);
         
-        auto packetID = archieve->GetUInt32("PacketID", PACKET_UNKNOWN);
-        
+        const auto packetID = archieve->GetUInt32("PacketID", PACKET_UNKNOWN);
         switch (packetID)
         {
-            case PACKET_ADD_FILES:
+            case PACKET_ADD_FILES_REQUEST:
                 OnAddToCache(archieve);
                 break;
                 
-            case PACKET_IS_IN_CACHE:
+            case PACKET_CHECK_FILE_IN_CACHE_REQUEST:
                 OnIsInCache(archieve);
                 break;
                 
-            case PACKET_GET_FILES:
+            case PACKET_GET_FILES_REQUEST:
                 OnGetFromCache(archieve);
                 break;
                 
@@ -130,67 +129,63 @@ void Server::PacketDelivered()
 {
 }
     
-bool Server::FilesAddedToCache(const ClientCacheEntry &entry, bool added)
+bool Server::FilesAddedToCache(const CacheItemKey &key, bool added)
 {
-    bool requestSent = false;
     if(IsConnected())
     {
-        ScopedPtr<KeyedArchive> entryArchieve(new KeyedArchive());
-        entry.Serialize(entryArchieve);
-        
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->SetUInt32("PacketID", PACKET_ADD_FILES);
-        
-        archieve->SetArchive("entry", entryArchieve);
+        archieve->SetUInt32("PacketID", PACKET_ADD_FILES_RESPONCE);
+
+        ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
+        key.Serialize(keyArchieve);
+        archieve->SetArchive("key", keyArchieve);
+       
         archieve->SetBool("added", added);
         
-        requestSent = SendArchieve(archieve);
+        return SendArchieve(archieve);
     }
     
-    return requestSent;
+    return false;
 }
     
-bool Server::FilesInCache(const ClientCacheEntry &entry, bool isInCache)
+bool Server::FilesInCache(const CacheItemKey &key, bool isInCache)
 {
-    bool requestSent = false;
     if(IsConnected())
     {
-        ScopedPtr<KeyedArchive> entryArchieve(new KeyedArchive());
-        entry.Serialize(entryArchieve);
-        
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->SetUInt32("PacketID", PACKET_IS_IN_CACHE);
+        archieve->SetUInt32("PacketID", PACKET_CHECK_FILE_IN_CACHE_RESPONCE);
         
-        archieve->SetArchive("entry", entryArchieve);
+        ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
+        key.Serialize(keyArchieve);
+        archieve->SetArchive("key", keyArchieve);
+
         archieve->SetBool("isInCache", isInCache);
         
-        requestSent = SendArchieve(archieve);
+        return SendArchieve(archieve);
     }
     
-    return requestSent;
+    return false;
 }
     
-bool Server::SendFiles(const ClientCacheEntry &entry, const CachedFiles &files)
+bool Server::SendFiles(const CacheItemKey &key, const CachedFiles &files)
 {
-    bool requestSent = false;
     if(IsConnected())
     {
-        ScopedPtr<KeyedArchive> entryArchieve(new KeyedArchive());
-        entry.Serialize(entryArchieve);
+        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
+        archieve->SetUInt32("PacketID", PACKET_GET_FILES_RESPONCE);
         
+        ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
+        key.Serialize(keyArchieve);
+        archieve->SetArchive("key", keyArchieve);
+
         ScopedPtr<KeyedArchive> filesArchieve(new KeyedArchive());
         files.Serialize(filesArchieve);
-        
-        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->SetUInt32("PacketID", PACKET_GET_FILES);
-        
-        archieve->SetArchive("entry", entryArchieve);
         archieve->SetArchive("files", filesArchieve);
         
-        requestSent = SendArchieve(archieve);
+        return SendArchieve(archieve);
     }
     
-    return requestSent;
+    return false;
 }
 
 
@@ -198,19 +193,19 @@ void Server::OnAddToCache(KeyedArchive * archieve)
 {
     if(delegate)
     {
-        KeyedArchive *entryArchieve = archieve->GetArchive("entry");
-        DVASSERT(entryArchieve);
+        KeyedArchive *keyArchieve = archieve->GetArchive("key");
+        DVASSERT(keyArchieve);
         
-        ClientCacheEntry entry;
-        entry.Deserialize(entryArchieve);
+        CacheItemKey key;
+        key.Deserialize(keyArchieve);
         
         KeyedArchive *filesArchieve = archieve->GetArchive("files");
-        DVASSERT(entryArchieve);
+        DVASSERT(filesArchieve);
         
         CachedFiles files;
         files.Deserialize(filesArchieve);
         
-        delegate->OnAddedToCache(entry, files);
+        delegate->OnAddedToCache(key, files);
     }
 }
     
@@ -218,25 +213,25 @@ void Server::OnIsInCache(KeyedArchive * archieve)
 {
     if(delegate)
     {
-        KeyedArchive *entryArchieve = archieve->GetArchive("entry");
-        DVASSERT(entryArchieve);
+        KeyedArchive *keyArchieve = archieve->GetArchive("key");
+        DVASSERT(keyArchieve);
         
-        ClientCacheEntry entry;
-        entry.Deserialize(entryArchieve);
+        CacheItemKey key;
+        key.Deserialize(keyArchieve);
         
-        delegate->OnIsInCache(entry);
+        delegate->OnIsInCache(key);
     }
 }
     
 void Server::OnGetFromCache(KeyedArchive * archieve)
 {
-    KeyedArchive *entryArchieve = archieve->GetArchive("entry");
-    DVASSERT(entryArchieve);
+    KeyedArchive *keyArchieve = archieve->GetArchive("key");
+    DVASSERT(keyArchieve);
     
-    ClientCacheEntry entry;
-    entry.Deserialize(entryArchieve);
+    CacheItemKey key;
+    key.Deserialize(keyArchieve);
     
-    delegate->OnRequestedFromCache(entry);
+    delegate->OnRequestedFromCache(key);
 }
     
 bool Server::SendArchieve(KeyedArchive * archieve)

@@ -29,6 +29,8 @@
 
 
 #include "AssetCache/ClientCacheEntry.h"
+
+
 #include "FileSystem/KeyedArchive.h"
 #include "Debug/DVAssert.h"
 
@@ -39,99 +41,96 @@ namespace AssetCache
 {
     
 ClientCacheEntry::ClientCacheEntry()
-    : type(ENTRY_UNKNOWN)
 {
-    Memset(hash, 0, MD5::DIGEST_SIZE);
 }
-    
-ClientCacheEntry::ClientCacheEntry(ClientCacheEntry::eEntryType _type, const FilePath &_pathname)
-    : type(_type)
-    , pathname(_pathname)
-{
-    if(ENTRY_FILE == type)
-    {
-        MD5::ForFile(pathname, hash);
-    }
-    else if(ENTRY_FOLDER == type)
-    {
-        MD5::ForDirectory(pathname, hash, false);
-    }
-}
-    
     
 void ClientCacheEntry::Serialize(KeyedArchive * archieve) const
 {
     DVASSERT(nullptr != archieve);
     
-    archieve->SetUInt32("type", type);
-    archieve->SetByteArray("hash", hash, MD5::DIGEST_SIZE);
-    archieve->SetString("path", pathname.GetAbsolutePathname());
-    archieve->SetString("tool", toolDescription);
+    ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
+    key.Serialize(keyArchieve);
+    archieve->SetArchive("key", keyArchieve);
 
-    auto count = params.size();
-    archieve->SetUInt32("paramsCount", count);
-    
-    int32 index = 0;
-    for(auto & param : params)
-    {
-        archieve->SetString(Format("param_%d", index++), param);
-    }
+    ScopedPtr<KeyedArchive> paramsArchieve(new KeyedArchive());
+    params.Serialize(paramsArchieve);
+    archieve->SetArchive("params", paramsArchieve);
+
+    ScopedPtr<KeyedArchive> filesArchieve(new KeyedArchive());
+    files.Serialize(filesArchieve);
+    archieve->SetArchive("files", filesArchieve);
 }
     
 void ClientCacheEntry::Deserialize(KeyedArchive * archieve)
 {
     DVASSERT(nullptr != archieve);
     
-    type = static_cast<eEntryType>(archieve->GetUInt32("type", ENTRY_UNKNOWN));
-
-    auto hashArray = archieve->GetByteArray("hash");
-    if(hashArray)
-    {
-        Memcpy(hash, hashArray, MD5::DIGEST_SIZE);
-    }
-    else
-    {
-        Memset(hash, 0, MD5::DIGEST_SIZE);
-    }
-
-    pathname = FilePath(archieve->GetString("path"));
-    toolDescription = archieve->GetString("tool");
-
-    params.clear();
+    KeyedArchive *keyArchieve = archieve->GetArchive("key");
+    DVASSERT(keyArchieve);
+    key.Deserialize(keyArchieve);
     
-    auto count = archieve->GetUInt32("paramsCount");
-    for(uint32 i = 0; i < count; ++i)
-    {
-        params.push_back(archieve->GetString(Format("param_%d", i)));
-    }
+    KeyedArchive *paramsArchieve = archieve->GetArchive("params");
+    DVASSERT(paramsArchieve);
+    params.Deserialize(paramsArchieve);
+
+    KeyedArchive *filesArchieve = archieve->GetArchive("files");
+    DVASSERT(filesArchieve);
+    files.Deserialize(filesArchieve);
 }
     
-bool ClientCacheEntry::operator == (const ClientCacheEntry &cce) const
+bool ClientCacheEntry::operator == (const ClientCacheEntry &right) const
 {
-    return (    (type == cce.type)
-            &&  (Memcmp(hash, cce.hash, MD5::DIGEST_SIZE) == 0)
-            &&  (pathname == cce.pathname)
-            &&  (toolDescription == cce.toolDescription)
-            &&  (params == cce.params)
+    return (    (key == right.key)
+            &&  (params == right.params)
+            &&  (files == right.files)
             );
 }
     
-bool operator < (const ClientCacheEntry& left, const ClientCacheEntry& right)
+void ClientCacheEntry::InvalidatePrimaryKey()
 {
-    if(left.type != right.type)
-        return left.type < right.type;
+    ScopedPtr<KeyedArchive> filesArchieve(new KeyedArchive());
+    files.Serialize(filesArchieve);
     
-    if(left.pathname != right.pathname)
-        return left.pathname < right.pathname;
-
-    if(left.toolDescription != right.toolDescription)
-        return left.toolDescription < right.toolDescription;
-
-    if(left.params != right.params)
-        return left.params < right.params;
+    auto dataSize = filesArchieve->Serialize(nullptr, 0);
+    auto data = new uint8[dataSize];
     
-    return Memcmp(left.hash, right.hash, MD5::DIGEST_SIZE) < 0;
+    DVVERIFY(dataSize == filesArchieve->Serialize(data, dataSize));
+    MD5::ForData(data, dataSize, key.primaryKey);
+    
+    SafeDeleteArray(data);
 }
+    
+void ClientCacheEntry::InvalidatePrimaryKey(const uint8 *digest)
+{
+    Memcpy(key.primaryKey, digest, MD5::DIGEST_SIZE);
+}
+    
+
+void ClientCacheEntry::InvalidateSecondaryKey()
+{
+    ScopedPtr<KeyedArchive> paramsArchieve(new KeyedArchive());
+    params.Serialize(paramsArchieve);
+
+    auto dataSize = paramsArchieve->Serialize(nullptr, 0);
+    auto data = new uint8[dataSize];
+    
+    DVVERIFY(dataSize == paramsArchieve->Serialize(data, dataSize));
+    MD5::ForData(data, dataSize, key.secondaryKey);
+    
+    SafeDeleteArray(data);
+}
+    
+void ClientCacheEntry::AddParam(const String &param)
+{
+    DVASSERT(std::find(params.params.begin(), params.params.end(), param) == params.params.end());
+    params.params.push_back(param);
+}
+    
+void ClientCacheEntry::AddFile(const FilePath &pathname)
+{
+    files.AddFile(pathname);
+}
+    
     
     
 }; // end of namespace AssetCache

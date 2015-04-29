@@ -71,7 +71,19 @@
 namespace DAVA
 {
 
-void MD5::ForFile(const FilePath & pathName, unsigned char * digest)
+void MD5::ForData(const uint8 *data, uint32 dataSize, uint8 * digest)
+{
+    MD5 md5;
+    md5.Init();
+    
+    md5.Update(data, dataSize);
+    
+    md5.Final();
+    
+    memcpy(digest, md5.GetDigest(), DIGEST_SIZE);
+}
+
+void MD5::ForFile(const FilePath & pathName, uint8 * digest)
 {
 	MD5 md5;
 	md5.Init();

@@ -142,29 +142,24 @@
 
 
 
-
-
 class ClientTest: public DAVA::AssetCache::ClientDelegate
 {
 public:
 
     DAVA::AssetCache::Client *client = nullptr;
     DAVA::AssetCache::ClientCacheEntry clientEntry;
-    DAVA::AssetCache::CachedFiles cachedFiles;
     
     bool testIsRunning = false;
     
 public:
     
-    ClientTest(DAVA::AssetCache::Client *_client, const DAVA::AssetCache::ClientCacheEntry &entry, const DAVA::AssetCache::CachedFiles &files)
+    ClientTest(DAVA::AssetCache::Client *_client)
         : client(_client)
-        , clientEntry(entry)
-        , cachedFiles(files)
     {
         client->SetDelegate(this);
     }
     
-    void OnAddedToCache(const DAVA::AssetCache::ClientCacheEntry &entry, bool added) override
+    void OnAddedToCache(const DAVA::AssetCache::CacheItemKey &key, bool added) override
     {
         Logger::FrameworkDebug("=====    ClientTest::%s start    =====", __FUNCTION__);
         Logger::FrameworkDebug("\tadded is %d", added);
@@ -172,7 +167,7 @@ public:
         Logger::FrameworkDebug("=====    ClientTest::%s finish   =====", __FUNCTION__);
     }
     
-    void OnIsInCache(const DAVA::AssetCache::ClientCacheEntry &entry, bool isInCache) override
+    void OnIsInCache(const DAVA::AssetCache::CacheItemKey &key, bool isInCache) override
     {
         Logger::FrameworkDebug("=====    ClientTest::%s start    =====", __FUNCTION__);
         
@@ -180,23 +175,23 @@ public:
         
         if(isInCache)
         {
-            auto getRequestSent = client->GetFromCache(clientEntry);
+            auto getRequestSent = client->GetFromCache(key);
             Logger::FrameworkDebug("\tgetRequestSent is %d", getRequestSent);
         }
         else
         {
-            auto addRequestSent = client->AddToCache(clientEntry, cachedFiles);
+            auto addRequestSent = client->AddToCache(key, clientEntry.GetFiles());
             Logger::FrameworkDebug("\taddRequestSent is %d", addRequestSent);
         }
 
         Logger::FrameworkDebug("=====    ClientTest::%s finish   =====", __FUNCTION__);
     }
     
-    void OnReceivedFromCache(const DAVA::AssetCache::ClientCacheEntry &entry, const DAVA::AssetCache::CachedFiles &files) override
+    void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files) override
     {
         Logger::FrameworkDebug("=====    ClientTest::%s start    =====", __FUNCTION__);
         
-        bool entriesAreEqual = (entry == clientEntry);
+        bool entriesAreEqual = (key == clientEntry.GetKey());
         Logger::FrameworkDebug("\tentriesAreEqual is %d", entriesAreEqual);
         
         auto filesSet = files.GetFiles();
@@ -215,10 +210,17 @@ public:
     }
     
 
-    void Run()
+    void Run(const DAVA::AssetCache::ClientCacheEntry &entry)
     {
+        clientEntry = entry;
+        
         testIsRunning = true;
-        auto inCacheRequestSent = client->IsInCache(clientEntry);
+        client->IsInCache(clientEntry.GetKey());
+        
+        while(testIsRunning)
+        {
+            //wait
+        }
     }
 };
 
@@ -228,7 +230,7 @@ public:
     
     DAVA::AssetCache::Server *server = nullptr;
     
-    Map<DAVA::AssetCache::ClientCacheEntry, DAVA::AssetCache::CachedFiles> cache;
+    Map<DAVA::AssetCache::CacheItemKey, DAVA::AssetCache::CachedFiles> cache;
     
 public:
     
@@ -238,42 +240,42 @@ public:
         server->SetDelegate(this);
     }
 
-    void OnAddedToCache(const DAVA::AssetCache::ClientCacheEntry &entry, const DAVA::AssetCache::CachedFiles &files) override
+    void OnAddedToCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files) override
     {
         Logger::FrameworkDebug("=====    ServerTest::%s start    =====", __FUNCTION__);
         if(server)
         {
-            cache[entry] = files;
-            server->FilesAddedToCache(entry, true);
+            cache[key] = files;
+            server->FilesAddedToCache(key, true);
         }
         Logger::FrameworkDebug("=====    ServerTest::%s finish   =====", __FUNCTION__);
     }
     
-    void OnIsInCache(const DAVA::AssetCache::ClientCacheEntry &entry) override
+    void OnIsInCache(const DAVA::AssetCache::CacheItemKey &key) override
     {
         Logger::FrameworkDebug("=====    ServerTest::%s start    =====", __FUNCTION__);
         if(server)
         {
-            bool inCache = cache.count(entry) > 0;
-            server->FilesInCache(entry, inCache);
+            bool inCache = cache.count(key) > 0;
+            server->FilesInCache(key, inCache);
         }
         Logger::FrameworkDebug("=====    ServerTest::%s finish   =====", __FUNCTION__);
     }
     
-    void OnRequestedFromCache(const DAVA::AssetCache::ClientCacheEntry &entry) override
+    void OnRequestedFromCache(const DAVA::AssetCache::CacheItemKey &key) override
     {
         Logger::FrameworkDebug("=====    ServerTest::%s start    =====", __FUNCTION__);
 
         if(server)
         {
-            auto cachedFiles = cache.find(entry);
+            auto cachedFiles = cache.find(key);
             if(cachedFiles != cache.end())
             {
-                server->SendFiles(entry, cachedFiles->second);
+                server->SendFiles(key, cachedFiles->second);
             }
             else
             {
-                server->SendFiles(entry, DAVA::AssetCache::CachedFiles());
+                server->SendFiles(key, DAVA::AssetCache::CachedFiles());
             }
         }
 
@@ -283,6 +285,7 @@ public:
 
 void TestFunction()
 {
+// --- INITIALIZATION OF NETWORK ---
     static const DAVA::uint16 port = 5566;
 
     auto server = new DAVA::AssetCache::Server();
@@ -297,51 +300,57 @@ void TestFunction()
         sleep(10);
     }
     
+// --- INITIALIZATION OF NETWORK ---
+    
+    
+    
+// --- INITIALIZATION OF FILE TEST ---
     const FilePath testFile("~res:/3d/lights/directlight/directlight.sc2");
-    DAVA::AssetCache::ClientCacheEntry fileEntry(DAVA::AssetCache::ClientCacheEntry::ENTRY_FILE, testFile);
-    fileEntry.toolDescription = "Resource Packer 1.0";
-    fileEntry.params.push_back("PVR4");
-    fileEntry.params.push_back("mipmaps");
-    DAVA::AssetCache::CachedFiles cachedFile(testFile);
+    DAVA::AssetCache::ClientCacheEntry fileEntry;
+    fileEntry.AddParam("Resource Packer 1.0");
+    fileEntry.AddParam("PVR4");
+    fileEntry.AddParam("mipmaps");
+    fileEntry.AddFile(testFile);
+
+    fileEntry.InvalidatePrimaryKey();
+    fileEntry.InvalidateSecondaryKey();
+// --- INITIALIZATION OF FILE TEST ---
     
+    
+    
+// --- INITIALIZATION OF FOLDER TEST ---
     const FilePath testFolder("~res:/3d/Skybox/");
-    DAVA::AssetCache::ClientCacheEntry folderEntry(DAVA::AssetCache::ClientCacheEntry::ENTRY_FOLDER, testFolder);
-    folderEntry.toolDescription = "Resource Editor 5.0";
-    folderEntry.params.push_back("RGBA8888");
-    folderEntry.params.push_back("normalmap");
-    DAVA::AssetCache::CachedFiles cachedFolder(testFolder);
-
-    ClientTest testOfFile(client, fileEntry, cachedFile);
-    ClientTest testOfFolder(client, folderEntry, cachedFolder);
+    DAVA::AssetCache::ClientCacheEntry folderEntry;
+    folderEntry.AddParam("Resource Editor 5.0");
+    folderEntry.AddParam("RGBA8888");
+    folderEntry.AddParam("normalmap");
+    ScopedPtr<FileList> flist(new FileList(testFolder));
+    auto count = flist->GetCount();
+    for(auto i = 0; i < count; ++i)
+    {
+        if(!flist->IsDirectory(i))
+        {
+            folderEntry.AddFile(flist->GetPathname(i));
+        }
+    }
     
+    folderEntry.InvalidatePrimaryKey();
+    folderEntry.InvalidateSecondaryKey();
+// --- INITIALIZATION OF FOLDER TEST ---
+
+    
+    
+// --- RUNNING TEST ---
     ServerTest serverTest(server);
-    
+    ClientTest clientTest(client);
 
-    auto runTestCount = 2;
-    while (runTestCount > 0 || testOfFile.testIsRunning)
-    {
-        if(testOfFile.testIsRunning == false)
-        {
-            --runTestCount;
-            testOfFile.Run();
-        }
-        Net::NetCore::Instance()->Poll();
-        sleep(10);
-    }
-    
-    
-    runTestCount = 2;
-    while (runTestCount > 0 || testOfFolder.testIsRunning)
-    {
-        if(testOfFolder.testIsRunning == false)
-        {
-            --runTestCount;
-            testOfFolder.Run();
-        }
-        Net::NetCore::Instance()->Poll();
-        sleep(10);
-    }
+    clientTest.Run(fileEntry);
+    clientTest.Run(fileEntry);
 
+    clientTest.Run(folderEntry);
+    clientTest.Run(folderEntry);
+// --- RUNNING TEST ---
+    
     Net::NetCore::Instance()->DestroyAllControllersBlocked();
     Net::NetCore::Instance()->UnregisterAllServices();
     

@@ -27,30 +27,44 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_ASSET_CACHE_CONSTANTS_H__
-#define __DAVAENGINE_ASSET_CACHE_CONSTANTS_H__
+#ifndef __DAVAENGINE_ASSET_CACHE_ITEM_KEY_H__
+#define __DAVAENGINE_ASSET_CACHE_ITEM_KEY_H__
+
+#include "Base/BaseTypes.h"
+#include "Utils/MD5.h"
+
 
 namespace DAVA
 {
+    
+class KeyedArchive;
+    
 namespace AssetCache
 {
-
-static const uint32 NET_SERVICE_ID = 0xACCA;
-
-enum ePacketID: uint8
+    
+class CacheItemKey
 {
-    PACKET_UNKNOWN = 0,
-    PACKET_ADD_FILES_REQUEST,
-    PACKET_ADD_FILES_RESPONCE,
-    PACKET_GET_FILES_REQUEST,
-    PACKET_GET_FILES_RESPONCE,
-    PACKET_CHECK_FILE_IN_CACHE_REQUEST,
-    PACKET_CHECK_FILE_IN_CACHE_RESPONCE,
+public:
+    
+    CacheItemKey();
+    virtual ~CacheItemKey() = default;
+
+    void Serialize(KeyedArchive * archieve) const;
+    void Deserialize(KeyedArchive * archieve);
+
+    bool operator == (const CacheItemKey &right) const;
+
+public:
+    
+    uint8 primaryKey[MD5::DIGEST_SIZE];     // hash of data files
+    uint8 secondaryKey[MD5::DIGEST_SIZE];   // hash of params
 };
+
+bool operator < (const CacheItemKey& left, const CacheItemKey& right);
+
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
 
-
-#endif // __DAVAENGINE_ASSET_CACHE_CONSTANTS_H__
+#endif // __DAVAENGINE_ASSET_CACHE_ITEM_KEY_H__
 

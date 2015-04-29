@@ -95,9 +95,10 @@ class MD5
 public:
     
     static const int32 DIGEST_SIZE = 16;
-    
-	static void ForFile(const FilePath & pathName, uint8 * buffer);
-	static void ForDirectory(const FilePath & pathName, uint8 * buffer, bool isRecursive);
+
+    static void ForData(const uint8 *data, uint32 dataSize, uint8 * digest);
+	static void ForFile(const FilePath & pathName, uint8 * digest);
+	static void ForDirectory(const FilePath & pathName, uint8 * digest, bool isRecursive);
 
     static void HashToChar(const uint8 * hash, char8 *buffer, uint32 bufferSize);
 	static void CharToHash(const char8 *buffer, uint8 * hash);

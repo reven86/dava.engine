@@ -31,7 +31,6 @@
 #define __DAVAENGINE_ASSET_CACHE_CLIENT_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Data.h"
 
 #include "AssetCache/TCPConnection/TCPConnection.h"
 
@@ -42,16 +41,16 @@ class TCPClient;
 namespace AssetCache
 {
  
-class ClientCacheEntry;
+class CacheItemKey;
 class CachedFiles;
     
 class ClientDelegate
 {
 public:
     
-    virtual void OnAddedToCache(const ClientCacheEntry &entry, bool added) = 0;
-    virtual void OnIsInCache(const ClientCacheEntry &entry, bool isInCache) = 0;
-    virtual void OnReceivedFromCache(const ClientCacheEntry &entry, const CachedFiles &files) = 0;
+    virtual void OnAddedToCache(const CacheItemKey &key, bool added) = 0;
+    virtual void OnIsInCache(const CacheItemKey &key, bool isInCache) = 0;
+    virtual void OnReceivedFromCache(const CacheItemKey &key, const CachedFiles &files) = 0;
 };
 
 class Client: public TCPConnectionDelegate
@@ -68,9 +67,9 @@ public:
     void Disconnect();
     bool IsConnected();
     
-    bool AddToCache(const ClientCacheEntry &entry, const CachedFiles &files);
-    bool IsInCache(const ClientCacheEntry &entry);
-    bool GetFromCache(const ClientCacheEntry &entry);
+    bool AddToCache(const CacheItemKey &key, const CachedFiles &files);
+    bool IsInCache(const CacheItemKey &key);
+    bool GetFromCache(const CacheItemKey &key);
     
     
     //TCPConnectionDelegate
@@ -101,9 +100,8 @@ inline void Client::SetDelegate(ClientDelegate * _delegate)
 
     
     
-};
-
-};
+}; // end of namespace AssetCache
+}; // end of namespace DAVA
 
 #endif // __DAVAENGINE_ASSET_CACHE_CLIENT_H__
 

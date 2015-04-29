@@ -43,25 +43,16 @@ CachedFiles::CachedFiles()
 {
 }
     
-CachedFiles::CachedFiles(const FilePath & path)
+CachedFiles::~CachedFiles()
 {
-    if(path.IsDirectoryPathname())
-    {
-        ScopedPtr<FileList> flist(new FileList(path));
-        
-        auto count = flist->GetCount();
-        for(auto i = 0; i < count; ++i)
-        {
-            if(!flist->IsDirectory(i))
-            {
-                files.insert(flist->GetPathname(i));
-            }
-        }
-    }
-    else
-    {
-        files.insert(path);
-    }
+    files.clear();
+}
+    
+void CachedFiles::AddFile(const FilePath &path)
+{
+    DVASSERT(files.count(path) == 0);
+    
+    files.insert(path);
 }
 
     
@@ -75,7 +66,7 @@ void CachedFiles::Serialize(KeyedArchive * archieve) const
     int32 index = 0;
     for(auto & file : files)
     {
-        archieve->SetString(Format("file_%d", index++), file.GetAbsolutePathname());
+        archieve->SetString(Format("file_%d", index++), file.GetStringValue());
     }
 }
 
@@ -93,9 +84,9 @@ void CachedFiles::Deserialize(KeyedArchive * archieve)
 }
 
 
-bool CachedFiles::operator == (const CachedFiles &cf) const
+bool CachedFiles::operator == (const CachedFiles &right) const
 {
-    return (files == cf.files);
+    return (files == right.files);
 }
 
     

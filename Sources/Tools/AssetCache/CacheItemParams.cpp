@@ -27,30 +27,55 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_ASSET_CACHE_CONSTANTS_H__
-#define __DAVAENGINE_ASSET_CACHE_CONSTANTS_H__
+
+#include "AssetCache/CacheItemParams.h"
+#include "FileSystem/KeyedArchive.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
+    
 namespace AssetCache
 {
-
-static const uint32 NET_SERVICE_ID = 0xACCA;
-
-enum ePacketID: uint8
+    
+CacheItemParams::CacheItemParams()
 {
-    PACKET_UNKNOWN = 0,
-    PACKET_ADD_FILES_REQUEST,
-    PACKET_ADD_FILES_RESPONCE,
-    PACKET_GET_FILES_REQUEST,
-    PACKET_GET_FILES_RESPONCE,
-    PACKET_CHECK_FILE_IN_CACHE_REQUEST,
-    PACKET_CHECK_FILE_IN_CACHE_RESPONCE,
-};
+}
+    
+    
+void CacheItemParams::Serialize(KeyedArchive * archieve) const
+{
+    DVASSERT(nullptr != archieve);
+    
+    auto count = params.size();
+    archieve->SetUInt32("paramsCount", count);
+    
+    int32 index = 0;
+    for(auto & param : params)
+    {
+        archieve->SetString(Format("param_%d", index++), param);
+    }
+}
+    
+void CacheItemParams::Deserialize(KeyedArchive * archieve)
+{
+    DVASSERT(nullptr != archieve);
+    DVASSERT(params.size() == 0);
+    
+    auto count = archieve->GetUInt32("paramsCount");
+    for(uint32 i = 0; i < count; ++i)
+    {
+        params.push_back(archieve->GetString(Format("param_%d", i)));
+    }
+}
+    
+bool CacheItemParams::operator == (const CacheItemParams &right) const
+{
+    return (params == right.params);
+}
+    
+        
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
-
-
-#endif // __DAVAENGINE_ASSET_CACHE_CONSTANTS_H__
 

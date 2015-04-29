@@ -31,7 +31,6 @@
 #define __DAVAENGINE_ASSET_CACHE_CACHED_FILES_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Data.h"
 #include "FileSystem/FilePath.h"
 #include "Utils/MD5.h"
 
@@ -47,12 +46,8 @@ class CachedFiles
 {
 public:
     
-    CachedFiles(const CachedFiles &) = default;
-    CachedFiles & operator= (const CachedFiles &) = default;
-    
     CachedFiles();
-    CachedFiles(const FilePath & path);
-    virtual ~CachedFiles() = default;
+    virtual ~CachedFiles();
     
     void AddFile(const FilePath &path);
     const Set<FilePath> & GetFiles() const;
@@ -62,17 +57,13 @@ public:
     void Serialize(KeyedArchive * archieve) const;
     void Deserialize(KeyedArchive * archieve);
     
-    bool operator == (const CachedFiles &cf) const;
+    bool operator == (const CachedFiles &right) const;
     
 private:
 
     Set<FilePath> files;
 };
 
-inline void CachedFiles::AddFile(const FilePath &path)
-{
-    files.insert(path);
-}
 
 inline const Set<FilePath> & CachedFiles::GetFiles() const
 {
@@ -85,9 +76,8 @@ inline bool CachedFiles::IsEmtpy() const
 }
 
     
-};
-
-};
+}; // end of namespace AssetCache
+}; // end of namespace DAVA
 
 #endif // __DAVAENGINE_ASSET_CACHE_CACHED_FILES_H__
 
