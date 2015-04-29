@@ -1534,7 +1534,6 @@ void Landscape::Load(KeyedArchive * archive, SerializationContext * serializatio
         
         // remember pointer on loaded landscape material
         tileMaskMaterial = SafeRetain(landCunk->GetMaterial());
-        tileMaskMaterial->AddFlag(FastName("COLOR_TEXTURE"), 1); //RHI_COMPLETE temporary flag for 'uber shader'
 
         RemoveRenderBatch(0U);
     }
