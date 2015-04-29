@@ -102,9 +102,13 @@ public:
 
     DAVA::Entity* GetSelectableEntity(DAVA::Entity* entity);
 
-	virtual void Process(DAVA::float32 timeElapsed);
-    virtual void Input(DAVA::UIEvent *event);
+	void Process(DAVA::float32 timeElapsed) override;
+    void Input(DAVA::UIEvent *event) override;
 
+    void Activate() override;
+    void Deactivate() override;
+    
+    
     bool IsEntitySelected(DAVA::Entity *entity);
     bool IsEntitySelectedHierarchically(DAVA::Entity *entity);
 

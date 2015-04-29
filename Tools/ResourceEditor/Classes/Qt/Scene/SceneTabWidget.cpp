@@ -269,8 +269,7 @@ void SceneTabWidget::SetCurrentTab(int index)
 
 		if(NULL != oldScene)
 		{
-			oldScene->selectionSystem->SetLocked(true);
-			SceneSignals::Instance()->EmitDeactivated(oldScene);
+            oldScene->Deactivate();
 		}
 
 		tabBar->blockSignals(true);
@@ -282,8 +281,7 @@ void SceneTabWidget::SetCurrentTab(int index)
 			dava3DView->SetScene(curScene);
 			curScene->SetViewportRect(dava3DView->GetRect());
 
-			SceneSignals::Instance()->EmitActivated(curScene);
-			curScene->selectionSystem->SetLocked(false);
+            curScene->Activate();
 
 			davaWidget->setEnabled(true);
 		}

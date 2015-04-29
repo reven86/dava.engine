@@ -43,6 +43,7 @@ extern void FrameworkWillTerminate();
 #include "Scene3D/SceneCache.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
@@ -99,7 +100,11 @@ namespace DAVA
 	{
 		Logger::Debug("[CorePlatformAndroid::Quit]");
 		QuitAction();
-		Core::Quit();
+
+		// finish java activity, never return back
+		JNI::JavaClass javaClass("com.dava.framework.JNIActivity");
+		Function<void()> finishActivity = javaClass.GetStaticMethod<void>("finishActivity");
+		finishActivity();
 	}
 
 	void CorePlatformAndroid::QuitAction()
