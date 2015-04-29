@@ -128,7 +128,7 @@ bool OpenGLWindow::event(QEvent *event)
 
     // Focus
     case QEvent::FocusOut:
-        controlMapper->ClearAllKeys();
+        controlMapper->releaseKeyboard();
         break;
 
     default:
@@ -277,10 +277,8 @@ bool DavaGLWidget::eventFilter( QObject* watched, QEvent* event )
             focusTracker->OnClick();
             break;
         case QEvent::Enter:
-            focusTracker->OnEnter();
             break;
         case QEvent::Leave:
-            focusTracker->OnLeave();
             break;
         case QEvent::FocusIn:
             focusTracker->OnFocusIn();

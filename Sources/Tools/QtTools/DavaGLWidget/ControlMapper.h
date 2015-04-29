@@ -33,8 +33,11 @@
 
 #include <QObject>
 #include <QPointer>
+#include <QPoint>
 
 #include "UI/UIEvent.h"
+
+#include <QObject>
 
 class QWindow;
 class QKeyEvent;
@@ -44,9 +47,12 @@ class QDragMoveEvent;
 
 
 class ControlMapper
+    : public QObject
 {
+    Q_OBJECT
+
 public:
-    ControlMapper( QWindow *w );
+    explicit ControlMapper( QWindow *w );
     ~ControlMapper() = default;
     
     void keyPressEvent(QKeyEvent *e);
@@ -60,15 +66,18 @@ public:
     void wheelEvent(QWheelEvent *event);
     void dragMoveEvent(QDragMoveEvent * event);
     
-    void ClearAllKeys();
+public slots:
+    void releaseKeyboard();
+    void releaseMouse();
     
 private:
     Q_DISABLE_COPY(ControlMapper);
 
-    DAVA::UIEvent MapMouseEventToDAVA( const QPoint& pos, const Qt::MouseButton button = Qt::NoButton, ulong timestamp = 0 ) const;
+    DAVA::UIEvent MapMouseEventToDAVA( const QPoint& pos, const Qt::MouseButton button = Qt::NoButton, ulong timestamp = 0 );
     DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button) const;
     
     QPointer< QWindow > window;
+    //QPoint lastMouseEventPos;
 };
 
 

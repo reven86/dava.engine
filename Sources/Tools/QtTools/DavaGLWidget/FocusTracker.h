@@ -44,27 +44,23 @@ class FocusTracker
 {
     Q_OBJECT
     
+signals:
+    void focusIn();
+    void focusOut();
+
 public:
     explicit FocusTracker( DavaGLWidget *glWidget );
     ~FocusTracker();
     
     void OnClick();
-    void OnEnter();
-    void OnLeave();
     void OnFocusIn();
     void OnFocusOut();
     
 private:
     QPointer< DavaGLWidget > glWidget;
     QPointer< QWindow > glWindow;
-    QPointer< QWidget > prevWidget;
-    QPointer< QWindow > prevWindow;
     
     bool isFocused;
-    bool needToRestoreFocus;
-    
-private:
-    static bool isEditor( QWidget *w );
 };
 
 
