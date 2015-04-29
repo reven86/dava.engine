@@ -1,4 +1,4 @@
-package com.dava.tests;
+package com.dava.testbed;
 
 public class JNITestObject {
 

@@ -1,4 +1,4 @@
-package com.dava.tests;
+package com.dava.testbed;
 
 import android.os.Bundle;
 import android.view.Menu;
