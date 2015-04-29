@@ -86,7 +86,6 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
             std::cmatch match;
 
 
-Logger::Info(line);
             if( std::regex_match( line, match, prop_re ) )
             {
                 prop.resize( prop.size()+1 );
@@ -206,6 +205,7 @@ Logger::Info(line);
                     memset( line+mbegin+sl, ' ', sn-sl );
                 sampler.resize( sampler.size()+1 );
                 sampler.back().uid  = FastName(sname);
+                sampler.back().type = TEXTURE_TYPE_2D;
 
                 code.append( line, strlen(line) );
                 code.push_back( '\n' );

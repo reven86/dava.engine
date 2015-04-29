@@ -31,7 +31,7 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #import "Platform/TemplateiOS/ES1Renderer.h"
-#include "Render/RenderManager.h"
+//#include "Render/RenderManager.h"
 
 @implementation ES1Renderer
 

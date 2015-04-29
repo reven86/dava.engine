@@ -43,7 +43,7 @@ void FrameworkDidLaunched()
     KeyedArchive * appOptions = new KeyedArchive();
     appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
     
-    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_3_0);
+//    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_3_0);
     
     
     appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);

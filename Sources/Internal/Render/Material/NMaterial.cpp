@@ -258,7 +258,7 @@ void NMaterial::SetParent(NMaterial *_parent)
         
 
     parent = _parent;
-    sortingKey = (uint32)parent;
+    sortingKey = (uint32)((uint64)parent);
 
     if (parent)
     {

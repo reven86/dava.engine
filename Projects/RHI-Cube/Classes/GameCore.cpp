@@ -54,8 +54,9 @@ GameCore::~GameCore()
 void    
 GameCore::SetupTriangle()
 {
-    triangle.vb = rhi::HVertexBuffer(rhi::VertexBuffer::Create( 3*sizeof(VertexP) ));
-    triangle.ib = rhi::HIndexBuffer(rhi::IndexBuffer::Create( 3*sizeof(uint16) ));
+    triangle.vb     = rhi::HVertexBuffer(rhi::VertexBuffer::Create( 3*sizeof(VertexP) ));
+    triangle.v_cnt  = 3;
+    triangle.ib     = rhi::HIndexBuffer(rhi::IndexBuffer::Create( 3*sizeof(uint16) ));
     
     VertexP*    v = (VertexP*)rhi::VertexBuffer::Map( triangle.vb, 0, 3*sizeof(VertexP) );
 
@@ -240,8 +241,10 @@ GameCore::SetupCube()
 
     if( tex )
     {
-        uint8   color1[4] = { 0xFF, 0xFF, 0xFF, 0xFF };
-        uint8   color2[4] = { 0x80, 0x80, 0x80, 0x80 };
+//        uint8   color1[4] = { 0xFF, 0xFF, 0xFF, 0xFF };
+//        uint8   color2[4] = { 0x80, 0x80, 0x80, 0xFF };
+        uint8   color1[4] = { 0xFF, 0x00, 0x00, 0xFF };
+        uint8   color2[4] = { 0x80, 0x00, 0x00, 0xFF };
         uint32  cell_size = 8;
 
         for( unsigned y=0; y!=128; ++y )
@@ -651,7 +654,6 @@ void GameCore::OnAppStarted()
 
     DbgDraw::EnsureInited();
     
-/*
     #if defined(__DAVAENGINE_WIN32__)
     {
     KeyedArchive*   opt = new KeyedArchive();
@@ -671,7 +673,7 @@ void GameCore::OnAppStarted()
     DAVA::Core::Instance()->SetOptions(opt);
     }
     #endif
-*/
+
 
     SetupTriangle();
     SetupCube();
@@ -680,7 +682,7 @@ void GameCore::OnAppStarted()
 
 //    sceneRenderTest.reset(new SceneRenderTestV3());    
 
-    
+/*
     // ShaderSource smoke-test
     const char*  fp_src =
     "FPROG_IN_BEGIN\n"
@@ -709,6 +711,7 @@ void GameCore::OnAppStarted()
     fp.Construct( rhi::PROG_FRAGMENT, fp_src );
     Logger::Info( "\n\n====================" );
     fp.Dump();
+*/
 /*
     const char*  vp_src =
     "VPROG_IN_BEGIN\n"
@@ -859,6 +862,7 @@ void GameCore::BeginFrame()
 
 void GameCore::DrawTank()
 {
+/*
     rhi::RenderPassConfig   pass_desc;
 
     pass_desc.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
@@ -910,6 +914,7 @@ void GameCore::DrawTank()
 
     rhi::CommandBuffer::End(cb[0]);
     rhi::RenderPass::End(pass);
+*/
 }
 
 void
@@ -1042,6 +1047,8 @@ GameCore::rhiDraw()
     rhi::CommandBuffer::End( cb[0] );
 
     rhi::RenderPass::End( pass );
+
+    #undef USE_SECOND_CB
 }
 
 
@@ -1103,21 +1110,21 @@ SCOPED_NAMED_TIMING("app-draw");
 
 #if 0
     
-    rhi::BatchDescriptor    desc;
+    rhi::Packet packet;
 
-    desc.vertexStreamCount      = 1;
-    desc.vertexStream[0]        = triangle.vb;
-    desc.indexBuffer            = triangle.ib;
-    desc.renderPipelineState    = triangle.ps;
-    desc.vertexConstCount       = 0;
-    desc.fragmentConstCount     = 1;
-    desc.fragmentConst[0]       = triangle.fp_const;
-    desc.textureSet             = rhi::InvalidHandle;
-    desc.primitiveType          = rhi::PRIMITIVE_TRIANGLELIST;
-    desc.primitiveCount         = 1;
+    packet.vertexStreamCount    = 1;
+    packet.vertexStream[0]      = triangle.vb;
+    packet.vertexCount          = triangle.v_cnt;
+    packet.indexBuffer          = triangle.ib;
+    packet.renderPipelineState  = triangle.ps;
+    packet.vertexConstCount     = 0;
+    packet.fragmentConstCount   = 1;
+    packet.fragmentConst[0]     = triangle.fp_const;
+    packet.primitiveType        = rhi::PRIMITIVE_TRIANGLELIST;
+    packet.primitiveCount       = 1;
 
     rhi::UpdateConstBuffer( triangle.fp_const, 0, clr, 1 );
-    rhi::AddPacket( cb[0], desc );
+    rhi::AddPacket( pl[0], packet );
 
 #else
 
@@ -1177,7 +1184,7 @@ SCOPED_NAMED_TIMING("app-draw");
         {
             for( unsigned i=0; i!=col_cnt; ++i )
             {
-                const uint32 c      = (z*row_cnt+i+1) * 0x775511; // 0x15015
+                const uint32 c      = 0xFFFFFFFF;//(z*row_cnt+i+1) * 0x775511; // 0x15015
                 const uint8* cc     = (const uint8*)(&c);
                 const float  clr2[] = { float(cc[2])/255.0f, float(cc[1])/255.0f, float(cc[0])/255.0f, 1.0f };
 
