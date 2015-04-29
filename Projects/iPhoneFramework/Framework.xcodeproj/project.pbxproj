@@ -1141,6 +1141,10 @@
 		B72364A51A8D01D6009940BE /* UIComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B72364A21A8D01D6009940BE /* UIComponent.cpp */; };
 		B72364A61A8D01D6009940BE /* UIComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B72364A31A8D01D6009940BE /* UIComponent.h */; };
 		B72364A71A8D01D6009940BE /* UIComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B72364A31A8D01D6009940BE /* UIComponent.h */; };
+		B7464C7F1AEA705E00D3AB13 /* TextLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7464C7D1AEA705E00D3AB13 /* TextLayout.cpp */; };
+		B7464C801AEA705E00D3AB13 /* TextLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7464C7D1AEA705E00D3AB13 /* TextLayout.cpp */; };
+		B7464C811AEA705E00D3AB13 /* TextLayout.h in Headers */ = {isa = PBXBuildFile; fileRef = B7464C7E1AEA705E00D3AB13 /* TextLayout.h */; };
+		B7464C821AEA705E00D3AB13 /* TextLayout.h in Headers */ = {isa = PBXBuildFile; fileRef = B7464C7E1AEA705E00D3AB13 /* TextLayout.h */; };
 		B78601481A08EAD40041F817 /* libunibreak_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B78601471A08EAD40041F817 /* libunibreak_ios.a */; };
 		B78601491A08EAE60041F817 /* libunibreak_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B78601471A08EAD40041F817 /* libunibreak_ios.a */; };
 		B786014A1A08EAEB0041F817 /* libfribidi_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C97319C9856B0095250A /* libfribidi_ios.a */; };
@@ -2215,6 +2219,8 @@
 		B4C29D51199B933F001B83FE /* SceneCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneCache.h; sourceTree = "<group>"; };
 		B72364A21A8D01D6009940BE /* UIComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIComponent.cpp; sourceTree = "<group>"; };
 		B72364A31A8D01D6009940BE /* UIComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIComponent.h; sourceTree = "<group>"; };
+		B7464C7D1AEA705E00D3AB13 /* TextLayout.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextLayout.cpp; sourceTree = "<group>"; };
+		B7464C7E1AEA705E00D3AB13 /* TextLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextLayout.h; sourceTree = "<group>"; };
 		B78601471A08EAD40041F817 /* libunibreak_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libunibreak_ios.a; path = ../../Libs/libs/libunibreak_ios.a; sourceTree = "<group>"; };
 		B786014B1A08EB140041F817 /* StringUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringUtils.cpp; sourceTree = "<group>"; };
 		B786014C1A08EB140041F817 /* StringUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringUtils.h; sourceTree = "<group>"; };
@@ -3836,6 +3842,8 @@
 		E8B3C8FA16B9326D002BD35F /* 2D */ = {
 			isa = PBXGroup;
 			children = (
+				B7464C7D1AEA705E00D3AB13 /* TextLayout.cpp */,
+				B7464C7E1AEA705E00D3AB13 /* TextLayout.h */,
 				024BD5B41A2C9299000BECC1 /* Systems */,
 				C172EC2218C9F9D4004309CF /* TextBlockDistanceRender.cpp */,
 				C172EC2318C9F9D4004309CF /* TextBlockDistanceRender.h */,
@@ -4566,6 +4574,7 @@
 				02FD7F861924997C007762C0 /* Spline.h in Headers */,
 				02FD7F871924997C007762C0 /* Vector.h in Headers */,
 				15D311931982861500919AAA /* YamlEmitter.h in Headers */,
+				B7464C821AEA705E00D3AB13 /* TextLayout.h in Headers */,
 				D7CC267419C517E500A3B754 /* LocalNotificationProgress.h in Headers */,
 				D7FEF15C19864E5C00B2C7AF /* PatchFile.h in Headers */,
 				17675C1C19472C1400054F8F /* Image.h in Headers */,
@@ -4897,6 +4906,7 @@
 				E8B3CA9216B9326E002BD35F /* AutotestingSystem.h in Headers */,
 				50C7D5FD186082B100D8936D /* StaticOcclusionComponent.h in Headers */,
 				E8B3CA9516B9326E002BD35F /* MongodbUpdateObject.h in Headers */,
+				B7464C811AEA705E00D3AB13 /* TextLayout.h in Headers */,
 				E8B3CA9916B9326E002BD35F /* BaseMath.h in Headers */,
 				E8525D161A30910400FDF76E /* RotationControllerComponent.h in Headers */,
 				E8B3CA9B16B9326E002BD35F /* BaseObject.h in Headers */,
@@ -5498,6 +5508,7 @@
 				02FD80A11924997C007762C0 /* BaseObject.cpp in Sources */,
 				02FD80A21924997C007762C0 /* BaseObjectChecker.cpp in Sources */,
 				02E9B4C619407C3E001DBDDF /* TreeToAnimatedTreeConverter.cpp in Sources */,
+				B7464C801AEA705E00D3AB13 /* TextLayout.cpp in Sources */,
 				02FD80A31924997C007762C0 /* Data.cpp in Sources */,
 				02FD80A41924997C007762C0 /* DynamicObjectCache.cpp in Sources */,
 				02FD80A51924997C007762C0 /* EventDispatcher.cpp in Sources */,
@@ -5907,6 +5918,7 @@
 				E8B3CA8816B9326E002BD35F /* KeyframeAnimation.cpp in Sources */,
 				E8B3CA8A16B9326E002BD35F /* LinearAnimation.cpp in Sources */,
 				50194DA81A52D92600557DAB /* IPAddress.cpp in Sources */,
+				B7464C7F1AEA705E00D3AB13 /* TextLayout.cpp in Sources */,
 				E8B3CA9116B9326E002BD35F /* AutotestingSystem.cpp in Sources */,
 				505EB41C18250C53009BEA3C /* OcclusionQuery.cpp in Sources */,
 				E8B3CA9416B9326E002BD35F /* MongodbUpdateObject.cpp in Sources */,
