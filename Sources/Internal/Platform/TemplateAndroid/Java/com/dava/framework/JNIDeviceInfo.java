@@ -32,38 +32,37 @@ public class JNIDeviceInfo {
 	final static String TAG = "JNIDeviceInfo";
 	static int gpuFamily = -1;
 
-	public static void GetVersion()
+	public static String GetVersion()
 	{
-		SetJString(Build.VERSION.RELEASE);
+		return Build.VERSION.RELEASE;
 	}
 
-	public static void GetManufacturer()
+	public static String GetManufacturer()
 	{
-		SetJString(Build.MANUFACTURER);
+		return Build.MANUFACTURER;
 	}
 
-	public static void GetModel()
+	public static String GetModel()
 	{
-		SetJString(Build.MODEL);
+		return Build.MODEL;
 	}
 
-	public static void GetLocale()
+	public static String GetLocale()
 	{
-		SetJString(Locale.getDefault().getDisplayLanguage(Locale.US));
+		return Locale.getDefault().getDisplayLanguage(Locale.US);
 	}
 
-	public static void GetRegion()
+	public static String GetRegion()
 	{
-		String country = JNIActivity.GetActivity().getResources().getConfiguration().locale.getCountry();
-		SetJString(country);
+		return JNIActivity.GetActivity().getResources().getConfiguration().locale.getCountry();
 	}
 
-	public static void GetTimeZone()
+	public static String GetTimeZone()
 	{
-		SetJString(TimeZone.getDefault().getID());
+		return TimeZone.getDefault().getID();
 	}
 
-	public static void GetUDID()
+	public static String GetUDID()
 	{
 		String aid = Secure.getString(JNIActivity.GetActivity().getApplicationContext() .getContentResolver(), Secure.ANDROID_ID);
 
@@ -77,15 +76,15 @@ public class JNIDeviceInfo {
 			obj = aid.substring(0, 32);
 		}
 
-		SetJString(obj.toString().toLowerCase());
+		return obj.toString().toLowerCase();
 	}
 	
-	public static void GetName()
+	public static String GetName()
 	{
 		String serial = android.os.Build.SERIAL;
 		if (serial == null || serial.isEmpty())
 			serial = "ErrorGetSerialNumber";
-		SetJString(serial);
+		return serial;
 	}
 	
 	public static int GetZBufferSize()
@@ -397,6 +396,4 @@ public class JNIDeviceInfo {
 		infos.toArray(arr);
 		return arr;
 	}
-	
-	public static native void SetJString(String str);
 }
