@@ -252,14 +252,17 @@ void QtLayer::MouseEvent(const UIEvent & event)
 
     
 #if defined (__DAVAENGINE_WIN32__)
+
 void* QtLayer::CreateAutoreleasePool()
 {
     return nullptr;
 }
+
 void QtLayer::ReleaseAutoreleasePool(void *pool)
 {
     (void)pool;
 }
+    
 #endif
 
 };

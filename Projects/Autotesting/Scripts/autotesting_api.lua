@@ -47,6 +47,7 @@ local function __GetNewPosition(list, vertical, invert, notInCenter)
     return position, newPosition
 end
 
+
 ----------------------------------------------------------------------------------------------------
 -- High-level test function
 ----------------------------------------------------------------------------------------------------
@@ -149,6 +150,7 @@ end
 function StopTest()
     autotestingSystem:OnTestFinished()
 end
+
 
 -- DB communication
 function SaveKeyedArchiveToDevice(name, archive)
@@ -304,7 +306,7 @@ function GetControl(name)
     if control then
         return control
     end
-    OnError("Couldn't find control " .. tostring(name))
+    --OnError("Couldn't find control " .. tostring(name))
 end
 
 function GetCenter(element)
@@ -374,6 +376,14 @@ function IsCenterOnScreen(control, background)
     local backRect = geomData:GetUnrotatedRect()
     return toboolean((center.x >= backRect.x) and (center.x <= backRect.x + backRect.dx) and (center.y >= backRect.y)
             and (center.y <= backRect.y + backRect.dy))
+end
+
+function IsSelected(name)
+    local control = GetControl(name)
+    if control then
+        return autotestingSystem:IsSelected(control)
+    end
+    OnError("Control not found: " .. name)
 end
 
 function CheckText(name, txt)
@@ -690,10 +700,8 @@ function ShiftClickControl(name, x, y, touchId)
     end
     if IsVisible(name) and IsCenterOnScreen(name) then
         local position = GetCenter(name)
-        Log("Position= " .. position.x .. ", " .. position.y)
         position.x = position.x + x
         position.y = position.y + y
-        Log("Position= " .. position.x .. ", " .. position.y)
         ClickPosition(position, TIMECLICK, touchId)
         return true
     end

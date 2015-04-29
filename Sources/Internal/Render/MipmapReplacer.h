@@ -32,6 +32,8 @@
 
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
+#include "Render/Material/NMaterial.h"
+#include "Base/Observer.h"
 
 namespace DAVA
 {
@@ -42,14 +44,17 @@ class Entity;
 class MipMapReplacer
 {
 public:
-    static void ReplaceMipMap(Texture * texture, int32 level);
-    static void ReplaceMipMaps(Entity * entity, int32 level);
-    
+    static void ReplaceMipMaps(Entity * entity, const FastName & textureName = NMaterial::TEXTURE_ALBEDO);
+
 private:
-    static FilePath GetDummyTextureFilePath(Texture * texture);
-    static void ReplaceMipMapFromMemory(Texture * texture, int32 level);
-    static uint32 GetReplaceValue(PixelFormat format);
-    static void EnumerateTexturesRecursive(Entity * entity, Set<Texture *> & textures);
+    static void EnumerateTexturesRecursive(Entity * entity, Set<Texture *> & textures, const FastName & textureName);
+    static void ReplaceMipMaps(Texture * texture);
+
+    static void AllocateInternalDataIfNeeded(int32 requestedSize);
+    static void ReleaseInternalData();
+
+    static uint32 * mipmapData;
+    static int32 mipmapDataSize;
 };
     
 };
