@@ -457,7 +457,8 @@ int32 RenderObject::GetMaxSwitchIndex() const
 
 void RenderObject::GetDataNodes(Set<DataNode*> & dataNodes)
 {
-    //empty by default
+    for (IndexedRenderBatch & batch : renderBatchArray)
+        batch.renderBatch->GetDataNodes(dataNodes);
 }
 
 };

@@ -230,7 +230,6 @@
 #include "Render/Highlevel/SpriteObject.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/RenderFastNames.h"
-#include "Render/Highlevel/LandscapeChunk.h"
 #include "Render/Highlevel/SkyboxRenderObject.h"
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Render/Highlevel/Vegetation/TextureSheet.h"

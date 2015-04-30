@@ -154,6 +154,7 @@ public:
 	const static FastName PARAM_TILE_COLOR2;
 	const static FastName PARAM_TILE_COLOR3;
 
+    static NMaterial * CreateLandscapeMaterial();
     
     /**
         \brief Builds landscape from heightmap image and bounding box of this landscape block
@@ -224,26 +225,8 @@ public:
         \returns current texture
 	 */
 	virtual Texture * GetTexture(eTextureLevel level);
-    
-	/**
-        \brief Set tiling for specific texture level.
-        This function gives you can control of tiling for specific landscape level.
-     */    
-    void SetTextureTiling(eTextureLevel level, const Vector2 & tiling);
 
-    /**
-        \brief Get tiling for specified texture level.
-        \returns Tiling for specified texture level.
-     */
-    Vector2 GetTextureTiling(eTextureLevel level); 
-
-    void SetTileColor(eTextureLevel level, const Color & color);
-    Color GetTileColor(eTextureLevel level);
-
-    /**
-        \brief Overloaded draw function to draw landscape
-     */
-    virtual void PrepareToRender(Camera * camera);
+    void PrepareToRender(Camera * camera) override;
 
 	/**
         \brief Get landscape mesh geometry.
@@ -258,23 +241,18 @@ public:
         \returns pathname of heightmap
      */
     const FilePath & GetHeightmapPathname();
-	
 	void SetHeightmapPathname(const FilePath & newPath);
 	
 	float32 GetLandscapeSize() const;
-	
 	void SetLandscapeSize(float32 newSize);
 
 	float32 GetLandscapeHeight() const;
-	
 	void SetLandscapeHeight(float32 newHeight);
     
-    void Create(NMaterial * materialParent = NULL);
+    void GetDataNodes(Set<DataNode*> & dataNodes) override;
+
     void Save(KeyedArchive * archive, SerializationContext * serializationContext);
     void Load(KeyedArchive * archive, SerializationContext * serializationContext);
-
-    DAVA_DEPRECATED(void LoadFog(KeyedArchive * archive, SerializationContext * serializationContext));
-    DAVA_DEPRECATED(void LoadMaterialProps(KeyedArchive * archive, SerializationContext * serializationContext));
     
     // TODO: Need comment here
 	bool PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * normal = 0) const;
@@ -339,26 +317,14 @@ protected:
     LandQuadTreeNode<LandscapeQuad> * FindNodeWithXY(LandQuadTreeNode<LandscapeQuad> * currentNode, int16 quadX, int16 quadY, int16 quadSize);
     void FindNeighbours(LandQuadTreeNode<LandscapeQuad> * currentNode);
     void MarkFrames(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 & depth);
-    
-    void DrawQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod);
-    void Draw(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippingFlags, Camera * camera);
-    void DrawFans();
 
-    Texture * CreateTexture(eTextureLevel level, const FilePath & textureName);
+    void GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippingFlags, Camera * camera);
+    void GenQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod);
+    void GenFans();
     
     int16 AllocateQuadVertexBuffer(LandscapeQuad * quad);
     void AllocateGeometryData();
     void ReleaseGeometryData();
-
-	int GetMaxLod(float32 quadDistance);
-	float32 GetQuadToCameraDistance(const Vector3& camPos, const LandscapeQuad& quad);
-	
-	void SetSpecularColor(const Color& color);
-	Color GetSpecularColor();
-	void SetSpecularShininess(const float32& shininess);
-	float32 GetSpecularShininess();
-	void SetSpecularMapPath(const FilePath& path);
-	FilePath GetSpecularMapPath();
     
     void SetLandscapeSize(const Vector3 & newSize);
     
@@ -408,11 +374,9 @@ protected:
     int32 nearLodIndex;
     int32 farLodIndex;
     
-	NMaterial* tileMaskMaterial;
+	NMaterial* landscapeMaterial;
 	
 	uint32 drawIndices;
-	
-	void SetDefaultValues();
 
     FoliageSystem* foliageSystem;
 
