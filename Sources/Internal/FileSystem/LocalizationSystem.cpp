@@ -34,7 +34,6 @@
 #include "Utils/UTF8Utils.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
-#include "FileSystem/FileList.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/YamlEmitter.h"
 #include "Sound/SoundSystem.h"
@@ -97,25 +96,6 @@ void LocalizationSystem::SetDirectory(const FilePath &directoryPath)
 #else
     SetCurrentLocale(Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE));
 #endif
-}
-
-Vector<String> LocalizationSystem::GetAvailableLocales() const
-{
-    Vector<String> availableLocales;
-    if (!directoryPath.IsEmpty())
-    {
-        FileList * fileList = new FileList(directoryPath);
-        for (auto count = fileList->GetCount(), k = 0; k < count; ++k)
-        {
-            if (!fileList->IsDirectory(k))
-            {
-                availableLocales.push_back(fileList->GetPathname(k).GetBasename());
-            }
-        }
-
-        SafeRelease(fileList);
-    }
-    return availableLocales;
 }
 
 void LocalizationSystem::Init()

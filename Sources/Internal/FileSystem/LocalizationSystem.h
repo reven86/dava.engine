@@ -48,7 +48,6 @@ public:
 	
 	void InitWithDirectory(const FilePath &directoryPath);
 	void SetDirectory(const FilePath &directoryPath);
-    Vector<String> GetAvailableLocales() const;
 
 	void Init();
 	

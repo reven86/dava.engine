@@ -39,6 +39,9 @@
 #include <QLocale>
 #include "Utils/QtDavaConvertion.h"
 
+#include "Project/Project.h"
+#include "Project/EditorLocalizationSystem.h"
+
 using namespace DAVA;
 
 //TODO: move to utils
@@ -559,10 +562,10 @@ void LocalizationEditorDialog::FillLocaleComboBox()
 {
     currentLocaleComboBox->clear();
     // Get count of supported languages
-    auto locales = LocalizationSystem::Instance()->GetAvailableLocales();
+    const auto &locales = Project::Instance()->GetEditorLocalizationSystem()->GetAvailableLocales();
     for (auto &localeName : locales)    // Fill combobox with language values
     {        
-        QLocale locale(QString::fromStdString(localeName));
+        QLocale locale(localeName);
         QString lang;
         switch (locale.script())
         {
@@ -643,8 +646,8 @@ void LocalizationEditorDialog::UpdateDefaultLanguage()
 {
     // Get description for current language ID
     auto id = LocalizationSystem::Instance()->GetCurrentLocale();
-    auto locales = LocalizationSystem::Instance()->GetAvailableLocales();
-    auto it = std::find(locales.begin(), locales.end(), id);
+    auto locales = Project::Instance()->GetEditorLocalizationSystem()->GetAvailableLocales();
+    auto it = std::find(locales.begin(), locales.end(), QString::fromStdString(id));
     auto index = std::distance(locales.begin(), it); // this is works only for arrays and vectors
     currentLocaleComboBox->setCurrentIndex(index);
 }
@@ -697,20 +700,20 @@ void LocalizationEditorDialog::ReinitializeLocalizationSystem(const QString& loc
         return;
     }
 
-    Vector<String> locales = LocalizationSystem::Instance()->GetAvailableLocales();
-    String locale = locales.at(languageItemID);
+    const QStringList &locales = Project::Instance()->GetEditorLocalizationSystem()->GetAvailableLocales();
+    QString locale = locales.at(languageItemID);
     // Re-initialize the Localization System with the new Locale.
-    LocalizationSystem::Instance()->Cleanup();
+    Project::Instance()->GetEditorLocalizationSystem()->Cleanup();
     
     if (!localizationDirectory.isEmpty())
     {
         FilePath localizationFilePath(localizationDirectory.toStdString());
         localizationFilePath.MakeDirectoryPathname();
 
-        LocalizationSystem::Instance()->SetDirectory(localizationFilePath);
-        Logger::Debug("HierarchyTreeController::ReinitializeLocalizationSystem LocalizationSystem::Instance()->SetCurrentLocale(%s);", locale.c_str());
-        LocalizationSystem::Instance()->SetCurrentLocale(locale);
-        LocalizationSystem::Instance()->Init();
+        Project::Instance()->GetEditorLocalizationSystem()->SetDirectory(localizationFilePath);
+        Logger::Debug("HierarchyTreeController::ReinitializeLocalizationSystem LocalizationSystem::Instance()->SetCurrentLocale(%s);", locale);
+        Project::Instance()->GetEditorLocalizationSystem()->SetCurrentLocale(locale.toStdString());
+        Project::Instance()->GetEditorLocalizationSystem()->Init();
     }
     
 	stringsTable->ReloadTable();

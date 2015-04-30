@@ -602,6 +602,11 @@ Rect UIStaticText::CalculateTextBlockRect(const UIGeometricData &geometricData) 
 String UIStaticText::GetFontPresetName() const
 {
     Font *font = GetFont();
+    if(GetName() == "battleType")
+    {
+        int dummy = 0;
+        dummy = 1;
+    }
     if (!font)
         return "";
     return FontManager::Instance()->GetFontName(font);

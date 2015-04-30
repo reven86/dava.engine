@@ -27,89 +27,49 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_FONTMANAGER_H__
-#define __DAVAENGINE_FONTMANAGER_H__
+#include "Project/EditorLocalizationSystem.h"
+#include "FileSystem/LocalizationSystem.h"
+#include "FileSystem/FileList.h"
 
-#include "Base/BaseTypes.h"
-#include "Base/Singleton.h"
-#include "Base/BaseMath.h"
+using namespace DAVA;
 
-struct FT_LibraryRec_;
-typedef struct FT_LibraryRec_  *FT_Library;
-
-namespace DAVA
+EditorLocalizationSystem::EditorLocalizationSystem(QObject* parent)
 {
-	
-class Font;
-class FTFont;
-class FTInternalFont;
-class Sprite;
-class UIStaticText;
-	
-class FontManager : public Singleton<FontManager>
+
+}
+
+void EditorLocalizationSystem::SetDirectory(const FilePath &directoryPath)
 {
-	FT_Library		library;
+    LocalizationSystem::Instance()->SetDirectory(directoryPath);
+    if (!directoryPath.IsEmpty())
+    {
+        FileList * fileList = new FileList(directoryPath);
+        for (auto count = fileList->GetCount(), k = 0; k < count; ++k)
+        {
+            if (!fileList->IsDirectory(k))
+            {
+                availableLocales.push_back(QString::fromStdString(fileList->GetPathname(k).GetBasename()));
+            }
+        }
 
-	
-public:
-	FontManager();
-	virtual ~FontManager();
-	
-	FT_Library GetFTLibrary() { return library; }
-	
-	/**
-	 \brief Register font.
-	 */
-	void RegisterFont(Font* font);
-	/**
-	 \brief Unregister font.
-	 */
-	void UnregisterFont(Font *font);
-    /**
-	 \brief Register all fonts.
-	 */
-    void RegisterFonts(const Map<String, Font*> &fonts);
-    /**
-	 \brief Unregister all fonts.
-	 */
-    void UnregisterFonts();
-    
-	/**
-	 \brief Set font name.
-	 */
-	void SetFontName(Font* font, const String& name);
+        SafeRelease(fileList);
+    }
+}
 
-	/**
-	 \brief Get traked font name. Add font to track list.
-	 */
-	String GetFontName(Font *font) const;
-    
-    /**
-	 \brief Get font by name.
-	 */
-    Font* GetFont(const String &name) const;
-	
-    /**
-	 \brief Get registered fonts.
-	 */
-	const Map<Font*, String>& GetRegisteredFonts() const;
-    
-    /**
-     \brief Get name->font map.
-     */
-    const Map<String, Font*>& GetFontMap() const;
-	
-    
-private:
-    String GetFontHashName(Font* font) const;
+void EditorLocalizationSystem::SetCurrentLocale(const String &localeId)
+{
+    LocalizationSystem::Instance()->SetCurrentLocale(localeId);
+    LocaleChanged(localeId);
+}
 
-private:
-    Map<Font*, String> registeredFonts;
-    Map<String, Font*> fontMap;
-};
-	
-};
+void EditorLocalizationSystem::Init()
+{
+    LocalizationSystem::Instance()->Init();
+}
 
+void EditorLocalizationSystem::Cleanup()
+{
+    availableLocales.clear();
+    LocalizationSystem::Instance()->Cleanup();
 
-#endif //__DAVAENGINE_FONTMANAGER_H__
-
+}

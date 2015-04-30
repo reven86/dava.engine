@@ -6,6 +6,7 @@
 
 class PackageNode;
 class EditorFontSystem;
+class EditorLocalizationSystem;
 
 class Project : public QObject, public DAVA::Singleton<Project>
 {
@@ -23,6 +24,7 @@ public:
     DAVA::RefPtr<PackageNode> OpenPackage(const QString &path);
     bool SavePackage(PackageNode *package);
     EditorFontSystem *GetEditorFontSystem() const;
+    EditorLocalizationSystem *GetEditorLocalizationSystem() const;
 signals:
     void ProjectOpened();
 
@@ -32,6 +34,7 @@ private:
     
     LegacyControlData *legacyData;
     EditorFontSystem *editorFontSystem;
+    EditorLocalizationSystem *editorLocalizationSystem;
     //properties
 public:
     bool IsOpen() const;
@@ -41,5 +44,17 @@ private:
     void SetIsOpen(bool arg);
     bool isOpen;
 };
+
+inline EditorFontSystem* Project::GetEditorFontSystem() const
+{
+    return editorFontSystem;
+}
+
+inline EditorLocalizationSystem* Project::GetEditorLocalizationSystem() const
+{
+    return editorLocalizationSystem;
+}
+
+
 
 #endif // QUICKED__PROJECT_H__

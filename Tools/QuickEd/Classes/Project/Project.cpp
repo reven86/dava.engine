@@ -2,20 +2,18 @@
 
 #include <QDir>
 #include <QApplication>
-#include <QVariant>
 #include <QMessageBox>
 
 #include "Project.h"
 #include "EditorFontSystem.h"
 #include "UI/UIPackageLoader.h"
-#include "UI/DefaultUIPackageBuilder.h"
 #include "Model/EditorUIPackageBuilder.h"
 #include "Model/LegacyEditorUIPackageLoader.h"
 #include "Model/YamlPackageSerializer.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageRef.h"
 #include "Helpers/ResourcesManageHelper.h"
-#include "Project/EditorFontSystem.h"
+#include "Project/EditorLocalizationSystem.h"
 
 using namespace DAVA;
 
@@ -23,9 +21,11 @@ Project::Project(QObject *parent)
     : QObject(parent)
     , Singleton<Project>()
     , editorFontSystem(new EditorFontSystem(this))
+    , editorLocalizationSystem(new EditorLocalizationSystem(this))
     , isOpen(false)
 {
     legacyData = new LegacyControlData();
+    connect(editorLocalizationSystem, &EditorLocalizationSystem::LocaleChanged, editorFontSystem, &EditorFontSystem::RegisterCurrentLocaleFonts);
 }
 
 Project::~Project()
@@ -62,7 +62,7 @@ bool Project::OpenInternal(const QString &path)
     List<QString> fileNames;
     fileNames.push_back(path);
     
-    LocalizationSystem::Instance()->Cleanup();
+    editorLocalizationSystem->Cleanup();
     
     FilePath bundleName(projectDir.toStdString());
     bundleName.MakeDirectoryPathname();
@@ -98,8 +98,6 @@ bool Project::OpenInternal(const QString &path)
     }
 
     editorFontSystem->LoadLocalizedFonts();
-
-    FontManager::Instance()->PrepareToSaveFonts(true);
     
     const YamlNode* platforms = projectRoot->Get("platforms");
     for (uint32 i = 0; i < platforms->GetCount(); i++)
@@ -145,9 +143,9 @@ bool Project::OpenInternal(const QString &path)
             const YamlNode *localeNode = platform->Get("Locale");
             if (localizationPathNode && localeNode)
             {
-                LocalizationSystem::Instance()->SetDirectory(localizationPathNode->AsString());
-                LocalizationSystem::Instance()->SetCurrentLocale(localeNode->AsString());
-                LocalizationSystem::Instance()->Init();
+                editorLocalizationSystem->SetDirectory(localizationPathNode->AsString());
+                editorLocalizationSystem->SetCurrentLocale(localeNode->AsString());
+                editorLocalizationSystem->Init();
             }
         }
     }
@@ -213,12 +211,6 @@ bool Project::SavePackage(PackageNode *package)
     serializer.WriteToFile(package->GetPackageRef()->GetPath());
     return true;
 }
-
-EditorFontSystem* Project::GetEditorFontSystem() const
-{
-    return editorFontSystem;
-}
-
 
 bool Project::IsOpen() const
 {

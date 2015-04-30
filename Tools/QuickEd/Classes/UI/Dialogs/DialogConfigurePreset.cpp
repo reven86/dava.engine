@@ -64,7 +64,6 @@ DialogConfigurePreset::DialogConfigurePreset(const QString& originalPresetNameAr
     connect(pushButton_applyDefaultToAllLocales, &QPushButton::clicked, this, &DialogConfigurePreset::OnApplyToAllLocales);
     connect(pushButton_save, &QPushButton::clicked, this, &DialogConfigurePreset::OnSave);
     connect(pushButton_cancel, &QPushButton::clicked, this, &DialogConfigurePreset::reject);
-
 }
 
 void DialogConfigurePreset::initPreset()
@@ -75,26 +74,22 @@ void DialogConfigurePreset::initPreset()
 
 void DialogConfigurePreset::OnDefaultFontChanged(const QString& arg)
 {
-    SetFont(comboBox_defaultFont->currentText(), spinBox_defaultFontSize->value(), "default");
-    Project::Instance()->GetEditorFontSystem()->UpdateFontPreset(originalPresetName, originalPresetName);
+    SetFont(arg, spinBox_defaultFontSize->value(), "default");
 }
 
 void DialogConfigurePreset::OnDefaultFontSizeChanged(int size)
 {
-    SetFont(comboBox_defaultFont->currentText(), spinBox_defaultFontSize->value(), "default");
-    Project::Instance()->GetEditorFontSystem()->UpdateFontPreset(originalPresetName, originalPresetName);
+    SetFont(comboBox_defaultFont->currentText(), size, "default");
 }
 
 void DialogConfigurePreset::OnLocalizedFontChanged(const QString& arg)
 {
-    SetFont(comboBox_defaultFont->currentText(), spinBox_defaultFontSize->value(), comboBox_locale->currentText());
-    Project::Instance()->GetEditorFontSystem()->UpdateFontPreset(originalPresetName, originalPresetName);
+    SetFont(arg, spinBox_localizedFontSize->value(), comboBox_locale->currentText());
 }
 
 void DialogConfigurePreset::OnLocalizedFontSizeChanged(int size)
 {
-    SetFont(comboBox_defaultFont->currentText(), spinBox_defaultFontSize->value(), comboBox_locale->currentText());
-    Project::Instance()->GetEditorFontSystem()->UpdateFontPreset(originalPresetName, originalPresetName);
+    SetFont(comboBox_localizedFont->currentText(), size, comboBox_locale->currentText());
 }
 
 void DialogConfigurePreset::OnLocaleChanged(const QString& arg)
@@ -105,7 +100,6 @@ void DialogConfigurePreset::OnLocaleChanged(const QString& arg)
 void DialogConfigurePreset::OnResetLocale()
 {
     SetFont(comboBox_defaultFont->currentText(), spinBox_defaultFontSize->value(), comboBox_locale->currentText());
-    Project::Instance()->GetEditorFontSystem()->UpdateFontPreset(originalPresetName, originalPresetName);
     UpdateLocalizedFontWidgets();
 }
 
@@ -121,12 +115,12 @@ void DialogConfigurePreset::OnApplyToAllLocales()
 void DialogConfigurePreset::OnSave()
 {
     Project::Instance()->GetEditorFontSystem()->SaveLocalizedFonts();
-    Project::Instance()->GetEditorFontSystem()->UpdateFontPreset(originalPresetName, originalPresetName);
 }
 
 void DialogConfigurePreset::UpdateDefaultFontWidgets()
 {
-    blockSignals(true);
+    spinBox_defaultFontSize->blockSignals(true);
+    comboBox_defaultFont->blockSignals(true);
     Font *font = Project::Instance()->GetEditorFontSystem()->GetFont(lineEdit_currentFontPresetName->text().toStdString(), "default");
     spinBox_defaultFontSize->setValue(font->GetSize());
 
@@ -134,12 +128,14 @@ void DialogConfigurePreset::UpdateDefaultFontWidgets()
     FTFont *ftFont = static_cast<FTFont*>(font);
     QFileInfo fileInfo(QString::fromStdString(ftFont->GetFontPath().GetFrameworkPath()));
     comboBox_defaultFont->setCurrentText(fileInfo.fileName());
-    blockSignals(false);
+    spinBox_defaultFontSize->blockSignals(false);
+    comboBox_defaultFont->blockSignals(false);
 }
 
 void DialogConfigurePreset::UpdateLocalizedFontWidgets()
 {
-    blockSignals(true);
+    spinBox_localizedFontSize->blockSignals(true);
+    comboBox_localizedFont->blockSignals(true);
     Font *font = Project::Instance()->GetEditorFontSystem()->GetFont(lineEdit_currentFontPresetName->text().toStdString(), comboBox_locale->currentText().toStdString());
     spinBox_localizedFontSize->setValue(font->GetSize());
 
@@ -147,7 +143,8 @@ void DialogConfigurePreset::UpdateLocalizedFontWidgets()
     FTFont *ftFont = static_cast<FTFont*>(font);
     QFileInfo fileInfo = QFileInfo(QString::fromStdString(ftFont->GetFontPath().GetFrameworkPath()));
     comboBox_localizedFont->setCurrentText(fileInfo.fileName());
-    blockSignals(false);
+    spinBox_localizedFontSize->blockSignals(false);
+    comboBox_localizedFont->blockSignals(false);
 }
 
 void DialogConfigurePreset::SetFont(const QString& fontType, const int fontSize, const QString& locale)

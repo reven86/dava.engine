@@ -387,13 +387,13 @@ bool UIYamlLoader::SaveFonts(const FilePath & yamlPathname)
     bool res = false;
 
     //save used fonts
-    const FontManager::TRACKED_FONTS& usedFonts = FontManager::Instance()->GetTrackedFont();
+    const auto& usedFonts = FontManager::Instance()->GetFontMap();
     ScopedPtr<YamlNode> fontsNode( new YamlNode(YamlNode::TYPE_MAP) );
-    for (FontManager::TRACKED_FONTS::const_iterator iter = usedFonts.begin();
+    for (auto iter = usedFonts.begin();
          iter != usedFonts.end();
          ++iter)
     {
-        Font* font = (*iter);
+        Font* font = iter->second;
         if (!font)
             continue;
 
