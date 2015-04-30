@@ -51,6 +51,8 @@ signals:
 public:
     explicit FocusTracker( DavaGLWidget *glWidget );
     ~FocusTracker();
+
+    bool eventFilter( QObject* watched, QEvent* event ) override;
     
     void OnClick();
     void OnFocusIn();

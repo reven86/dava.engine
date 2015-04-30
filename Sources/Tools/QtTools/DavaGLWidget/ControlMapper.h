@@ -77,7 +77,8 @@ private:
     DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button) const;
     
     QPointer< QWindow > window;
-    //QPoint lastMouseEventPos;
+    QPoint lastMouseEventPos;
+    Qt::MouseButtons lastMouseButtons;
 };
 
 

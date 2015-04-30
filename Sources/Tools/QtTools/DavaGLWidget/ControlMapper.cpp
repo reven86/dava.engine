@@ -101,6 +101,9 @@ void ControlMapper::mousePressEvent(QMouseEvent * event)
     davaEvent.phase = DAVA::UIEvent::PHASE_BEGAN;
     
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+
+    lastMouseButtons = event->buttons();
+    qDebug() << __FUNCTION__;
 }
 
 void ControlMapper::mouseReleaseEvent(QMouseEvent * event)
@@ -109,6 +112,9 @@ void ControlMapper::mouseReleaseEvent(QMouseEvent * event)
     davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
     
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+    
+    lastMouseButtons = event->buttons();
+    qDebug() << __FUNCTION__;
 }
 
 void ControlMapper::mouseDoubleClickEvent(QMouseEvent *event)
@@ -165,7 +171,7 @@ DAVA::UIEvent ControlMapper::MapMouseEventToDAVA( const QPoint& pos, const Qt::M
     davaEvent.timestamp = timestamp;
     davaEvent.tapCount = 1;
 
-    //lastMouseEventPos = QPoint( pos.x() * currentDPR, pos.y() * currentDPR );
+    lastMouseEventPos = QPoint( pos.x() * currentDPR, pos.y() * currentDPR );
     
     return davaEvent;
 }

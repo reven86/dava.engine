@@ -209,8 +209,6 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     container->setMouseTracking(true);
     container->setFocusPolicy(Qt::NoFocus);
 
-    openGlWindow->installEventFilter(this);
-
     layout()->addWidget(container);
 
     focusTracker = new FocusTracker(this);
@@ -265,34 +263,6 @@ void DavaGLWidget::resizeEvent(QResizeEvent *e)
     
     QWidget::resizeEvent(e);
     PerformSizeChange();
-}
-
-bool DavaGLWidget::eventFilter( QObject* watched, QEvent* event )
-{
-    if ( watched == openGlWindow )
-    {
-        switch ( event->type() )
-        {
-        case QEvent::MouseButtonPress:
-            focusTracker->OnClick();
-            break;
-        case QEvent::Enter:
-            break;
-        case QEvent::Leave:
-            break;
-        case QEvent::FocusIn:
-            focusTracker->OnFocusIn();
-            break;
-        case QEvent::FocusOut:
-            focusTracker->OnFocusOut();
-            break;
-
-        default:
-            break;
-        }
-    }
-
-    return QWidget::eventFilter( watched, event );
 }
 
 void DavaGLWidget::PerformSizeChange()
