@@ -1318,7 +1318,7 @@ public class JNITextField {
             @Override
             public void safeRun() {
                 final TextField text = GetTextField(id);
-                text.setRenderToTexture(false);
+                text.setRenderToTexture(value);
             }
         });
     }

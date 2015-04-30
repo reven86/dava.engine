@@ -1026,8 +1026,6 @@ void UITextField::SetInputEnabled(bool isEnabled, bool hierarchic)
 
 void UITextField::SetRenderToTexture(bool value)
 {
-    // disable this functionality
-    value = false;
 #ifdef __DAVAENGINE_WIN32__
     // do nothing
 #elif defined(__DAVAENGINE_MACOS__)
