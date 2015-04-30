@@ -357,13 +357,13 @@ public:
     // for introspection
     
     inline int GetBgDrawType() const;
-    inline void SetBgDrawType(int _type);
+    inline void SetBgDrawType(int type);
     inline FilePath GetBgSpritePath() const;
     inline void SetBgSpriteFromPath(const FilePath &path);
     inline int32 GetBgColorInherit() const;
-    inline void SetBgColorInherit(int32 _type);
+    inline void SetBgColorInherit(int32 type);
     inline int32 GetBgPerPixelAccuracy() const;
-    inline void SetBgPerPixelAccuracy(int32 _type);
+    inline void SetBgPerPixelAccuracy(int32 type);
     
     INTROSPECTION_EXTEND(UIControlBackground, BaseObject,
                          PROPERTY("drawType", InspDesc("Draw Type", GlobalEnumMap<eDrawType>::Instance()), GetBgDrawType, SetBgDrawType, I_SAVE | I_VIEW | I_EDIT)
@@ -433,9 +433,9 @@ int UIControlBackground::GetBgDrawType() const
     return GetDrawType();
 }
 
-void UIControlBackground::SetBgDrawType(int _type)
+void UIControlBackground::SetBgDrawType(int type)
 { // TODO: FIXME: type
-    SetDrawType(UIControlBackground::eDrawType(_type));
+    SetDrawType(UIControlBackground::eDrawType(type));
 }
 
 FilePath UIControlBackground::GetBgSpritePath() const
