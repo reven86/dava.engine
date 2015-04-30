@@ -43,6 +43,7 @@ void PrintUsage()
     printf("\t-usage or --help to display this help\n");
 	printf("\t-file - pvr or dds file to unpack as png");
 	printf("\t-folder - folder with pvr or dds files to unpack as png");
+    printf("\t-pngtotga -folder - will open png files from folder and save as tga");
 }
 
 
@@ -76,13 +77,12 @@ void SaveSingleImage(const FilePath & newImagePath, Image *image)
         ImageSystem::Instance()->Save(newImagePath, savedImage);
         savedImage->Release();
     }
-
 }
 
 void SaveCubemap(const FilePath & newImagePath, const Vector<Image *> &images)
 {
     Vector<FilePath> faceNames;
-    Texture::GenerateCubeFaceNames(newImagePath, faceNames);
+    TextureDescriptor::GenerateFacePathnames(newImagePath, faceNames, ".png");
 
     for (auto image: images)
     {
@@ -123,7 +123,7 @@ void UnpackFile(const FilePath & sourceImagePath)
 
 void UnpackFolder(const FilePath & folderPath)
 {
-    FileList * fileList = new FileList(folderPath);
+    ScopedPtr<FileList> fileList(new FileList(folderPath));
 	for (int fi = 0; fi < fileList->GetCount(); ++fi)
 	{
         const FilePath & pathname = fileList->GetPathname(fi);
@@ -139,8 +139,33 @@ void UnpackFolder(const FilePath & folderPath)
             }
         }
 	}
+}
+
+void ResavePNGtoTGA(const FilePath & folderPath)
+{
+    ScopedPtr<FileList> fileList(new FileList(folderPath));
     
-    fileList->Release();
+    for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    {
+        const FilePath & pathname = fileList->GetPathname(fi);
+        if (fileList->IsDirectory(fi) && !fileList->IsNavigationDirectory(fi))
+        {
+            ResavePNGtoTGA(pathname);
+        }
+        else
+        {
+            if(pathname.IsEqualToExtension(".png"))
+            {
+                Vector<Image *> images;
+                ImageSystem::Instance()->Load(pathname, images);
+                
+                FilePath tgaPathname = FilePath::CreateWithNewExtension(pathname, ".tga");
+                ImageSystem::Instance()->Save(tgaPathname, images);
+
+                for_each(images.begin(), images.end(), SafeRelease<Image>);
+            }
+        }
+    }
 }
 
 
@@ -152,7 +177,12 @@ void ProcessImageUnpacker()
     FilePath sourceFolderPath = CommandLineParser::GetCommandParam(String("-folder"));
     FilePath sourceFilePath = CommandLineParser::GetCommandParam(String("-file"));
     
-    if(sourceFolderPath.IsEmpty() == false)
+    if(CommandLineParser::CommandIsFound("-pngtotga") && sourceFolderPath.IsEmpty() == false)
+    {
+        sourceFolderPath.MakeDirectoryPathname();
+        ResavePNGtoTGA(sourceFolderPath);
+    }
+    else if(sourceFolderPath.IsEmpty() == false)
     {
         sourceFolderPath.MakeDirectoryPathname();
         UnpackFolder(sourceFolderPath);

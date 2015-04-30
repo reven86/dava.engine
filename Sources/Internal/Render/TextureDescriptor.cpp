@@ -565,7 +565,6 @@ void TextureDescriptor::GenerateFacePathnames(const FilePath & filePath, const s
     faceNames.resize(Texture::CUBE_FACE_COUNT, FilePath());
 
     String baseName = filePath.GetBasename();
-
     for (auto face = 0; face < Texture::CUBE_FACE_COUNT; ++face)
     {
         if (dataSettings.cubefaceFlags & (1 << face))
@@ -575,6 +574,19 @@ void TextureDescriptor::GenerateFacePathnames(const FilePath & filePath, const s
         }
     }
 }
+    
+void TextureDescriptor::GenerateFacePathnames(const FilePath & filePath, Vector<FilePath>& faceNames, const String &extension)
+{
+    faceNames.resize(Texture::CUBE_FACE_COUNT, FilePath());
+    
+    const String baseName = filePath.GetBasename();
+    for (auto face = 0; face < Texture::CUBE_FACE_COUNT; ++face)
+    {
+        faceNames[face] = filePath;
+        faceNames[face].ReplaceFilename(baseName + Texture::FACE_NAME_SUFFIX[face] + extension);
+    }
+}
+    
 
 FilePath TextureDescriptor::GetDescriptorPathname(const FilePath &texturePathname)
 {
