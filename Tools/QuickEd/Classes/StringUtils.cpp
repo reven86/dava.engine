@@ -56,10 +56,10 @@ QString TruncateFileExtension(const QString& fileName, const QString& extension)
 
 bool FindAndReplace(String& str, const String& from, const String& to)
 {
-    size_t start_pos = str.find(from);
-    if (start_pos == String::npos)
+    size_t startPos = str.find(from);
+    if (startPos == String::npos)
         return false;
-    str.replace(start_pos, from.length(), to);
+    str.replace(startPos, from.length(), to);
     return true;
 }
 
