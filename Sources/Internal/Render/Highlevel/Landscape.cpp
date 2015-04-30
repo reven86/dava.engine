@@ -328,15 +328,12 @@ void Landscape::AllocateGeometryData()
         ScopedPtr<RenderBatch> batch(new RenderBatch());
         AddRenderBatch(batch);
 
-        ScopedPtr<PolygonGroup> pg(new PolygonGroup()); //PolygonGroup used here only as pair VertexBuffer + IndexBuffer 
-        pg->aabbox = bbox;
-        batch->SetPolygonGroup(pg);
         batch->SetMaterial(landscapeMaterial);
         batch->SetSortingKey(10);
 
         DVASSERT(vertexLayoutUID != rhi::VertexLayout::InvalidUID);
-        pg->vertexLayoutId = vertexLayoutUID;
-        pg->vertexCount = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH;
+        batch->vertexLayoutId = vertexLayoutUID;
+        batch->vertexCount = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH;
 
         indexBuffers.push_back(CircularIndexBufferArray());
         for (auto & handle : indexBuffers.back().elements)
@@ -681,13 +678,11 @@ void Landscape::FlushQueue()
     RenderBatch * batch = renderBatchArray[flushQueueCounter].renderBatch;
     activeRenderBatchArray.push_back(batch);
 
-    //RHI_COMPLETE unusing PolygonGroup as handles container
-    PolygonGroup * pg = batch->GetPolygonGroup();
-    pg->indexBuffer = indexBuffers[flushQueueCounter].Next();
-    pg->indexCount = queueRenderCount;
-    pg->vertexBuffer = vertexBuffers[queueRdoQuad];
+    batch->indexBuffer = indexBuffers[flushQueueCounter].Next();
+    batch->indexCount = queueRenderCount;
+    batch->vertexBuffer = vertexBuffers[queueRdoQuad];
 
-    rhi::UpdateIndexBuffer(pg->indexBuffer, indices, 0, queueRenderCount * 2);
+    rhi::UpdateIndexBuffer(batch->indexBuffer, indices, 0, queueRenderCount * 2);
 
 	drawIndices += queueRenderCount;
 

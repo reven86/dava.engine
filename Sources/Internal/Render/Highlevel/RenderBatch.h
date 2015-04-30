@@ -114,35 +114,35 @@ public:
 
     /*sorting offset allowed in 0..31 range, 15 default, more - closer to camera*/
     void SetSortingOffset(uint32 offset);
-    inline uint32 GetSortingOffset();
-	
-    //bool GetVisible() const;       
+    inline uint32 GetSortingOffset();    
     
 	virtual void UpdateAABBoxFromSource();
 	
     pointer_size layerSortingKey;
 
+    rhi::HVertexBuffer vertexBuffer;
+    uint32 vertexCount;
+    uint32 vertexBase;
+    rhi::HIndexBuffer indexBuffer;
+    uint32 startIndex;
+    uint32 indexCount;
+
+    rhi::PrimitiveType primitiveType;
+    uint32 vertexLayoutId;
+
 protected:
-    void BindDynamicParameters(Camera * camera);
-        
     PolygonGroup * dataSource;
     
     NMaterial * material;                    // Should be replaced to NMaterial
 	RenderObject * renderObject;
     Matrix4 *sortingTransformPtr;
     
-    uint32 startIndex;
-    uint32 indexCount;
-    
-//    ePrimitiveType type; //TODO: waiting for enums at introspection
-    uint32 type;
     uint32 sortingKey; //oooookkkk -where o is offset, k is key    
 
     const static uint32 SORTING_KEY_MASK = 0x0f;
     const static uint32 SORTING_OFFSET_MASK = 0x1f0;
     const static uint32 SORTING_OFFSET_SHIFT = 4;
     const static uint32 SORTING_KEY_DEF_VALUE = 0xf8;
-    
     
 	AABBox3 aabbox;
 #if defined(__DAVA_USE_OCCLUSION_QUERY__)
@@ -164,7 +164,7 @@ public:
 
         MEMBER(startIndex, "Start Index", I_SAVE)
         MEMBER(indexCount, "Index Count", I_SAVE)
-        MEMBER(type, "Type", I_SAVE | I_VIEW | I_EDIT)
+        MEMBER(primitiveType, "Type", I_SAVE | I_VIEW | I_EDIT)
                          
         MEMBER(aabbox, "AABBox",  I_SAVE | I_VIEW | I_EDIT )
         MEMBER(material, "Material", I_VIEW | I_EDIT)

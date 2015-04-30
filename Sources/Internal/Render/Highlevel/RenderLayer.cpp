@@ -67,18 +67,32 @@ void RenderLayer::Draw(Camera* camera, RenderLayerBatchArray * renderLayerBatchA
         DVASSERT(renderObject != 0);
         renderObject->BindDynamicParameters(camera);
         
-        PolygonGroup *pg = batch->GetPolygonGroup();
         NMaterial *mat = batch->GetMaterial();
-        if (pg && mat)
-        {                     
-            packet.vertexStreamCount = 1;
-            packet.vertexStream[0] = pg->vertexBuffer;
-            packet.indexBuffer = pg->indexBuffer;
-            packet.primitiveType = rhi::PRIMITIVE_TRIANGLELIST; //RHI_COMPLETE
-            packet.primitiveCount = pg->indexCount/3;
-            packet.vertexLayoutUID = pg->vertexLayoutId;
-            packet.vertexCount = pg->vertexCount;
-            DVASSERT(packet.primitiveCount);
+        if (mat)
+        {
+            PolygonGroup *pg = batch->GetPolygonGroup();
+            if (pg)
+            {
+                packet.vertexStreamCount = 1;
+                packet.vertexStream[0] = pg->vertexBuffer;
+                packet.indexBuffer = pg->indexBuffer;
+                packet.primitiveType = rhi::PRIMITIVE_TRIANGLELIST; //RHI_COMPLETE
+                packet.primitiveCount = pg->indexCount / 3;
+                packet.vertexLayoutUID = pg->vertexLayoutId;
+                packet.vertexCount = pg->vertexCount;
+                DVASSERT(packet.primitiveCount);
+            }
+            else
+            {
+                packet.vertexStreamCount = 1;
+                packet.vertexStream[0] = batch->vertexBuffer;
+                packet.indexBuffer = batch->indexBuffer;
+                packet.primitiveType = batch->primitiveType;
+                packet.primitiveCount = batch->indexCount / 3;
+                packet.vertexLayoutUID = batch->vertexLayoutId;
+                packet.vertexCount = batch->vertexCount;
+                DVASSERT(packet.primitiveCount);
+            }
 
             mat->BindParams(packet);
 
