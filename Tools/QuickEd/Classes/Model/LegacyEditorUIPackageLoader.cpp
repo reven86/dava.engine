@@ -227,6 +227,15 @@ void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *contro
                 }
                 
                 memberName = GetOldBgPrefix(className, bgName) + memberName + GetOldBgPostfix(className, bgName);
+
+                if (memberName == "minperPixelAccuracy")
+                {
+                    memberName = "minpixelAccuracy";
+                }
+                else if (memberName == "maxperPixelAccuracy")
+                {
+                    memberName = "maxpixelAccuracy";
+                }
                 
                 VariantType res = ReadVariantTypeFromYamlNode(member, node, subNodeIndex, memberName);
                 builder->ProcessProperty(member, res);
