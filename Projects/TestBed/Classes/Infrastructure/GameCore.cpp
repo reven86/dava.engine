@@ -33,24 +33,6 @@
 #include "TexturePacker/CommandLineParser.h"
 #include "Utils/Utils.h"
 
-#include "Tests/MathTest.h"
-#include "Tests/FunctionBindSingalTest.h"
-#include "Tests/ImageSizeTest.h"
-#include "Tests/SaveImageTest.h"
-#include "Tests/StringFormatTest.h"
-#include "Tests/ComponentsTest.h"
-#include "Tests/FileListTest.h"
-#include "Tests/FileSystemTest.h"
-#include "Tests/DateTimeTest.h"
-#include "Tests/LocalizationTest.h"
-#include "Tests/MemoryAllocatorsTest.h"
-#include "Tests/HashMapTest.h"
-#include "Tests/SplitTest.h"
-#include "Tests/TextSizeTest.h"
-#include "Tests/KeyedArchiveYamlTest.h"
-#include "Tests/JobManagerTest.h"
-#include "Tests/Cpp14.h"
-#include "Tests/JNITest.h"
 #include "Tests/NotificationTest.h"
 //$UNITTEST_INCLUDE
 
@@ -67,26 +49,6 @@ void GameCore::OnError()
 void GameCore::RegisterTests()
 {
     new NotificationScreen();
-#if defined(__DAVAENGINE_ANDROID__)
-	new JNITest();
-#endif
-    new MathTest();
-    new FunctionBindSignalTest();
-    new ImageSizeTest();
-    new SaveImageTest();
-    new StringFormatTest();
-    new ComponentsTest();
-    new FileListTest();
-    new FileSystemTest();
-    new DateTimeTest();
-    new LocalizationTest();
-    new MemoryAllocatorsTest();
-    new HashMapTest();
-    new SplitTest();
-    new TextSizeTest();
-    new KeyedArchiveYamlTest();
-    new JobManagerTest();
-    new Cpp14Test ();
 }
 
 #include <fstream>
