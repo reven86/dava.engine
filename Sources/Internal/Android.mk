@@ -107,29 +107,79 @@ MY_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/lua/include
 # set exported includes
 MY_LOCAL_EXPORT_C_INCLUDES := $(MY_LOCAL_C_INCLUDES)
 
-ifneq ($(filter $(TARGET_ARCH_ABI), armeabi-v7a armeabi-v7a-hard),)
-ifndef USE_NEON
+ifeq ($(TARGET_ARCH_ABI), $(filter $(TARGET_ARCH_ABI), armeabi-v7a armeabi-v7a-hard))
 MY_USE_NEON := true
-endif
-ifeq ($(USE_NEON), true)
 MY_LOCAL_ARM_NEON := true
 MY_LOCAL_ARM_MODE := arm
 MY_LOCAL_NEON_CFLAGS := -mfloat-abi=softfp -mfpu=neon -march=armv7
 MY_LOCAL_CFLAGS += -DUSE_NEON
 endif
-endif
 
 # set build flags
 MY_LOCAL_CPPFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
-MY_LOCAL_CPPFLAGS += -Wno-invalid-offsetof
-MY_LOCAL_CFLAGS += -DDAVA_FMOD
 MY_LOCAL_CPPFLAGS += -std=c++1y
+
+MY_LOCAL_CFLAGS += -DDAVA_FMOD
+
+# remove warnings about unused arguments to compiler
 MY_LOCAL_CFLAGS += -Qunused-arguments
-# temporal fix to turn off warning in release
-ifeq ($(APP_OPTIM), debug)
-MY_LOCAL_CFLAGS += -Werror
-endif
-MY_LOCAL_CFLAGS += -Wno-error=deprecated-register
+# enable ALL warnings
+# we write C++ so check warnings only inside our C++ code not C libraries
+MY_LOCAL_CPPFLAGS += -Weverything
+# treat warnings as errors
+MY_LOCAL_CPPFLAGS += -Werror
+# disable common simple warnings
+# read about any clang warning messages http://fuckingclangwarnings.com/
+MY_LOCAL_CPPFLAGS += -Wno-c++98-compat-pedantic
+MY_LOCAL_CPPFLAGS += -Wno-newline-eof
+MY_LOCAL_CPPFLAGS += -Wno-gnu-anonymous-struct
+MY_LOCAL_CPPFLAGS += -Wno-nested-anon-types
+MY_LOCAL_CPPFLAGS += -Wno-float-equal
+MY_LOCAL_CPPFLAGS += -Wno-extra-semi
+MY_LOCAL_CPPFLAGS += -Wno-unused-parameter
+MY_LOCAL_CPPFLAGS += -Wno-shadow
+MY_LOCAL_CPPFLAGS += -Wno-exit-time-destructors
+MY_LOCAL_CPPFLAGS += -Wno-documentation
+MY_LOCAL_CPPFLAGS += -Wno-global-constructors
+MY_LOCAL_CPPFLAGS += -Wno-padded
+MY_LOCAL_CPPFLAGS += -Wno-weak-vtables
+MY_LOCAL_CPPFLAGS += -Wno-variadic-macros
+MY_LOCAL_CPPFLAGS += -Wno-deprecated-register
+MY_LOCAL_CPPFLAGS += -Wno-sign-conversion
+MY_LOCAL_CPPFLAGS += -Wno-sign-compare
+MY_LOCAL_CPPFLAGS += -Wno-format-nonliteral
+
+# TODO fix next warnings first
+MY_LOCAL_CPPFLAGS += -Wno-cast-align
+MY_LOCAL_CPPFLAGS += -Wno-conversion
+MY_LOCAL_CPPFLAGS += -Wno-unreachable-code
+MY_LOCAL_CPPFLAGS += -Wno-zero-length-array
+MY_LOCAL_CPPFLAGS += -Wno-switch-enum
+MY_LOCAL_CPPFLAGS += -Wno-c99-extensions
+MY_LOCAL_CPPFLAGS += -Wno-missing-prototypes
+MY_LOCAL_CPPFLAGS += -Wno-missing-field-initializers
+MY_LOCAL_CPPFLAGS += -Wno-conditional-uninitialized
+MY_LOCAL_CPPFLAGS += -Wno-covered-switch-default
+MY_LOCAL_CPPFLAGS += -Wno-deprecated
+MY_LOCAL_CPPFLAGS += -Wno-unused-macros
+MY_LOCAL_CPPFLAGS += -Wno-disabled-macro-expansion
+MY_LOCAL_CPPFLAGS += -Wno-undef
+MY_LOCAL_CPPFLAGS += -Wno-non-virtual-dtor
+MY_LOCAL_CPPFLAGS += -Wno-char-subscripts
+MY_LOCAL_CPPFLAGS += -Wno-unneeded-internal-declaration
+MY_LOCAL_CPPFLAGS += -Wno-unused-variable
+MY_LOCAL_CPPFLAGS += -Wno-used-but-marked-unused
+MY_LOCAL_CPPFLAGS += -Wno-missing-variable-declarations
+MY_LOCAL_CPPFLAGS += -Wno-gnu-statement-expression
+MY_LOCAL_CPPFLAGS += -Wno-missing-braces
+MY_LOCAL_CPPFLAGS += -Wno-reorder
+MY_LOCAL_CPPFLAGS += -Wno-implicit-fallthrough
+MY_LOCAL_CPPFLAGS += -Wno-ignored-qualifiers
+MY_LOCAL_CPPFLAGS += -Wno-shift-sign-overflow
+MY_LOCAL_CPPFLAGS += -Wno-mismatched-tags
+MY_LOCAL_CPPFLAGS += -Wno-missing-noreturn
+MY_LOCAL_CPPFLAGS += -Wno-consumed
+MY_LOCAL_CPPFLAGS += -Wno-sometimes-uninitialized
 
 MY_LOCAL_CPP_FEATURES += exceptions
 
@@ -158,7 +208,6 @@ ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
 MY_LOCAL_STATIC_LIBRARIES += android-ndk-profiler
 endif
 endif
-
 
 MY_LOCAL_SHARED_LIBRARIES += iconv_android-prebuilt
 MY_LOCAL_SHARED_LIBRARIES += fmodex-prebuild

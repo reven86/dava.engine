@@ -13,9 +13,7 @@ using namespace DAVA;
 
 LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(AbstractUIPackageBuilder *builder, LegacyControlData *data) : builder(builder), legacyData(SafeRetain(data))
 {
-    
     // for legacy loading
-    propertyNamesMap["UIControl"]["visible"] = "recursiveVisible";
     
     // UIButton bg
     propertyNamesMap["UIButton"]["sprite"] = "stateSprite";
@@ -36,6 +34,7 @@ LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(AbstractUIPackageBuilde
     propertyNamesMap["UIButton"]["fitting"] = "stateFittingOption";
     propertyNamesMap["UIButton"]["textalign"] = "stateTextAlign";
     propertyNamesMap["UIButton"]["textcolorInheritType"] = "stateTextColorInheritType";
+    propertyNamesMap["UIButton"]["margins"] = "stateMargins";
     
     baseClasses["UIButton"] = "UIControl";
 }
@@ -109,12 +108,14 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
     UIControl *control = NULL;
     const YamlNode *type = node->Get("type");
     const YamlNode *baseType = node->Get("baseType");
+    bool loadChildren = true;
     if (type->AsString() == "UIAggregatorControl")
     {
+        loadChildren = false;
         const YamlNode *pathNode = node->Get("aggregatorPath");
         RefPtr<UIPackage> importedPackage = builder->ProcessImportedPackage(pathNode->AsString(), this);
         DVASSERT(importedPackage.Get());
-        builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), importedPackage->GetControl(0)->GetName(), "", this);
+        control = builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), importedPackage->GetControl(0)->GetName(), "", this);
     }
     else if (baseType)
         control = builder->BeginControlWithCustomClass(type->AsString(), baseType->AsString());
@@ -130,16 +131,19 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
         LoadInternalControlPropertiesFromYamlNode(control, node);
         
         // load children
-        const YamlNode * childrenNode = node->Get("children");
-        if (childrenNode == NULL)
-            childrenNode = node;
-        for (uint32 i = 0; i < childrenNode->GetCount(); ++i)
+        if (loadChildren)
         {
-            const YamlNode *childNode = childrenNode->Get(i);
-            if (childNode->Get("type"))
+            const YamlNode * childrenNode = node->Get("children");
+            if (childrenNode == NULL)
+                childrenNode = node;
+            for (uint32 i = 0; i < childrenNode->GetCount(); ++i)
             {
-                String name = childrenNode->GetItemKeyName(i);
-                LoadControl(name, childNode);
+                const YamlNode *childNode = childrenNode->Get(i);
+                if (childNode->Get("type"))
+                {
+                    String name = childrenNode->GetItemKeyName(i);
+                    LoadControl(name, childNode);
+                }
             }
         }
         
@@ -322,6 +326,10 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
             Vector2 pivotPoint = valueNode->AsVector2();
             return VariantType(pivotPoint / size);
         }
+        else if (propertyName == "angle")
+        {
+            return VariantType(RadToDeg(valueNode->AsFloat()));
+        }
         else if (member->Type() == MetaInfo::Instance<bool>())
             return VariantType(valueNode->AsBool());
         else if (member->Type() == MetaInfo::Instance<int32>())
@@ -338,6 +346,8 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
             return VariantType(valueNode->AsVector2());
         else if (member->Type() == MetaInfo::Instance<Color>())
             return VariantType(valueNode->AsColor());
+        else if (member->Type() == MetaInfo::Instance<Vector4>())
+            return VariantType(valueNode->AsVector4());
         else if (member->Type() == MetaInfo::Instance<FilePath>())
             return VariantType(FilePath(valueNode->AsString()));
         else
