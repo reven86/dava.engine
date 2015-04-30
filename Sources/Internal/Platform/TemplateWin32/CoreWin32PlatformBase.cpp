@@ -26,13 +26,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Platform/PlatformDetection.h"
+#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #include "Platform/Thread.h"
 #include "Utils/UTF8Utils.h"
-
-#if defined(__DAVAENGINE_WIN32__)
-
 #include <shellapi.h>
 
 namespace DAVA
@@ -61,18 +60,10 @@ void CoreWin32PlatformBase::InitArgs()
 
 void CoreWin32PlatformBase::Quit()
 {
-#ifdef __DAVAENGINE_WINDOWS_DESKTOP__
-
     PostQuitMessage(0);
 	exit(0);
-
-#elif defined __DAVAENGINE_WINDOWS_STORE__
-
-    Windows::ApplicationModel::Core::CoreApplication::Exit();
-
-#endif
 }
 
 }
 
-#endif // #if defined(__DAVAENGINE_WIN32__)
+#endif // #if defined(__DAVAENGINE_WINDOWS_DESKTOP__)

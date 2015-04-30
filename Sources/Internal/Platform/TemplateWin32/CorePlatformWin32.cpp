@@ -26,13 +26,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Platform/PlatformDetection.h"
+#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #include "Platform/Thread.h"
 #include "Platform/DeviceInfo.h"
 #include "Utils/Utils.h"
-
-#if defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
 
@@ -43,9 +43,9 @@ namespace DAVA
 {
 	int Core::Run(int argc, char * argv[], AppHandle handle)
 	{
-		CoreWin32Platform * core = new CoreWin32Platform();
-		core->CreateSingletons();
+		CoreWin32Platform* core = new CoreWin32Platform();
         core->InitArgs();
+        core->CreateSingletons();
 
         bool windowCreated = core->CreateWin32Window(handle);
 		if(windowCreated)
@@ -55,30 +55,19 @@ namespace DAVA
 			
 		}
 
-		//CloseHandle(core->hMutex);
 		return 0;
 	
 	}
 
-	/*const Vector2 & Core::GetMouseLocation();
-	{
-		POINT pt;
-		GetCursorPos(&pt);
-		
-	}*/
-    
 	int Core::RunCmdTool(int argc, char * argv[], AppHandle handle)
 	{
 		CoreWin32Platform * core = new CoreWin32Platform();
+        core->InitArgs();
 
-		//core->CreateWin32Window(handle);
-		//core->Run();
 		core->EnableConsoleMode();
 		core->CreateSingletons();
 
-		core->InitArgs();
-
-		Logger::Instance()->EnableConsoleMode();
+        Logger::Instance()->EnableConsoleMode();
 		
 		FrameworkDidLaunched();
 		FrameworkWillTerminate();
@@ -823,4 +812,4 @@ namespace DAVA
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 }
-#endif // #if defined(__DAVAENGINE_WIN32__)
+#endif // #if defined(__DAVAENGINE_WINDOWS_DESKTOP__)

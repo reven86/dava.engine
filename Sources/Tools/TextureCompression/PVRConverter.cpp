@@ -124,6 +124,12 @@ PVRConverter::~PVRConverter()
 
 FilePath PVRConverter::ConvertPngToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, bool addCRC /* = true */)
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    return FilePath();
+
+#else
 	FilePath outputName = (descriptor.IsCubeMap()) ? PrepareCubeMapForPvrConvert(descriptor) : FilePath::CreateWithNewExtension(descriptor.pathname, ".png");
 
 	Vector<String> args;
@@ -158,6 +164,7 @@ FilePath PVRConverter::ConvertPngToPvr(const TextureDescriptor &descriptor, eGPU
 	    helper.AddCRCIntoMetaData(outputName);
     }
 	return outputName;
+#endif
 }
 
 FilePath PVRConverter::ConvertNormalMapPngToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality)

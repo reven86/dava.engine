@@ -2,6 +2,9 @@ cmake_minimum_required( VERSION 3.0 )
                    
 project( DavaTools )
 
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../CMake/Modules/" ) 
+include( CMake-common )
+
 add_definitions       ( 
 -D_CRT_SECURE_NO_DEPRECATE
 -DSTATIC_MAGICK 
@@ -13,7 +16,6 @@ add_definitions       (
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )  
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib ) 
-
 
 if( IOS OR ANDROID )
     set( ADDED_CPP_PATTERNS TeamcityOutput/*.cpp  TexturePacker/CommandLineParser.cpp )

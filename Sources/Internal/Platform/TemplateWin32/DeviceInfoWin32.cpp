@@ -26,8 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
 #include "Platform/DeviceInfo.h"
 #include "Utils/StringFormat.h"
 #include "Utils/MD5.h"

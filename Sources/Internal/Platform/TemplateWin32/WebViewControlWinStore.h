@@ -26,32 +26,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
 #ifndef __WEBVIEWCONTROL_WINSTORE_H__
 #define __WEBVIEWCONTROL_WINSTORE_H__
 
-#pragma warning(push)
-#pragma warning(disable: 4005)//prevent 'macros redefinition' warning in winerror.h vs dxgitype.h
-#include <MsHTML.h>
-#pragma warning(pop)
-
-#include "Wininet.h" //for functions to delete cache entry and to end session
+#include "Platform/PlatformDetection.h"
+#if defined(__DAVAENGINE_WINDOWS_STORE__)
 
 #include "UI/IWebViewControl.h"
-#include "FileSystem/FilePath.h"
-
-#pragma warning(push)
-#pragma warning(disable: 4717)
-#include <atlbase.h>
-#pragma warning(pop)
-
-namespace Gdiplus
-{
-    using std::min;
-    using std::max;
-}
-#include <gdiplus.h>
 
 namespace DAVA {
 
@@ -59,43 +40,93 @@ namespace DAVA {
 class WebViewControl : public IWebViewControl
 {
 public:
-	WebViewControl(UIWebView& uiWebView) {}
-	virtual ~WebViewControl() {}
+	WebViewControl(UIWebView& uiWebView) 
+    {
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    }
+	virtual ~WebViewControl()
+    {
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    }
 
 	// Initialize the control.
-	void Initialize(const Rect& rect) override {}
+	void Initialize(const Rect& rect) override
+    {
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    }
 	
 	// Open the URL requested.
-	void OpenURL(const String& urlToOpen) override {}
+	void OpenURL(const String& urlToOpen) override
+    {
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    }
+
 	// Load html page from string
-	void LoadHtmlString(const WideString& htmlString) override {}
+	void LoadHtmlString(const WideString& htmlString) override
+    {
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    }
+
 	// Delete all cookies associated with target URL
-	void DeleteCookies(const String& targetUrl) override {}
+	void DeleteCookies(const String& targetUrl) override
+    {
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    }
+
 	// Get cookie for specific domain and name
-	String GetCookie(const String& url, const String& name) const override { return String();  }
+	String GetCookie(const String& url, const String& name) const override
+    {
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        return String();
+    }
+
 	// Get the list of cookies for specific domain
-	Map<String, String> GetCookies(const String& url) const override { return Map<String, String>();  }
+	Map<String, String> GetCookies(const String& url) const override
+    {
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        return Map<String, String>();
+    }
+
 	// Execute javascript string in webview
-	void ExecuteJScript(const String& scriptString) override {}
+	void ExecuteJScript(const String& scriptString) override
+    {
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    }
 	
-    void OpenFromBuffer(const String& string, const FilePath& basePath) override {}
+    void OpenFromBuffer(const String& string, const FilePath& basePath) override
+    {
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    }
 
     // Size/pos/visibility changes.
-	void SetRect(const Rect& rect) override {}
-	void SetVisible(bool isVisible, bool hierarchic) override {}
+	void SetRect(const Rect& rect) override
+    {
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    }
 
-	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView) override {}
+	void SetVisible(bool isVisible, bool hierarchic) override
+    {
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    }
 
-    void SetRenderToTexture(bool value) override {}
-    bool IsRenderToTexture() const override { return false; }
+	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView) override
+    {
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    }
 
-protected:
-	// Initialize the COM and create the browser container.
-	bool InititalizeBrowserContainer() { return false; }
+    void SetRenderToTexture(bool value) override
+    {
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    }
 
-	void CleanData() {}
-
+    bool IsRenderToTexture() const override
+    {
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        return false;
+    }
 };
 
 };
+
+#endif // defined(__DAVAENGINE_WINDOWS_STORE__)
 #endif //__WEBVIEWCONTROL_WINSTORE_H__

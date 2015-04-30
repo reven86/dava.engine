@@ -45,8 +45,7 @@
 namespace DAVA 
 {
 	
-	
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 	typedef HINSTANCE AppHandle;
 #elif defined(__DAVAENGINE_ANDROID__)
     typedef struct android_app* AppHandle;

@@ -30,8 +30,10 @@
 #ifndef __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
 #define __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
 
+#include "Platform/PlatformDetection.h"
+#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+
 #include "DAVAEngine.h"
-#if defined(__DAVAENGINE_WIN32__)
 
 namespace DAVA
 {
@@ -54,5 +56,5 @@ protected:
 
 };
 
-#endif // #if defined(__DAVAENGINE_WIN32__)
+#endif // #if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 #endif // __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
