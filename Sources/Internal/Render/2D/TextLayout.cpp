@@ -146,7 +146,7 @@ void TextLayout::NextByWords(const float32 lineWidth)
 
         // Check that targetWidth defined and currentWidth less than targetWidth.
         // If symbol is whitespace skip it and go to next (add all whitespace to current line)
-        if (targetWidth == 0.f || currentWidth <= targetWidth || StringUtils::IsWhitespace(ch))
+        if (currentWidth <= targetWidth || StringUtils::IsWhitespace(ch))
         {
             if (canBreak == StringUtils::LB_MUSTBREAK) // If symbol is line breaker then split string
             {
@@ -155,7 +155,6 @@ void TextLayout::NextByWords(const float32 lineWidth)
                 currentWidth = 0.f;
                 lastPossibleBreak = 0;
                 fromPos = pos + 1;
-
                 return;
             }
             else if (canBreak == StringUtils::LB_ALLOWBREAK) // Store breakable symbol position
@@ -169,7 +168,7 @@ void TextLayout::NextByWords(const float32 lineWidth)
         {
             pos = lastPossibleBreak;
         }
-        else // If not then split by previous symbol
+        else if (pos > fromPos) // If not then split by previous symbol which position bigger or equal that fromPos
         {
             pos--;
         }
@@ -179,7 +178,6 @@ void TextLayout::NextByWords(const float32 lineWidth)
         currentWidth = 0.f;
         lastPossibleBreak = 0;
         fromPos = pos + 1;
-
         return;
     }
 
