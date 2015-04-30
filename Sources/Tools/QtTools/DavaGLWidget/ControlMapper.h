@@ -33,11 +33,8 @@
 
 #include <QObject>
 #include <QPointer>
-#include <QPoint>
 
 #include "UI/UIEvent.h"
-
-#include <QObject>
 
 class QWindow;
 class QKeyEvent;
@@ -76,8 +73,6 @@ private:
     DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button) const;
     
     QPointer< QWindow > window;
-    QPoint lastMouseEventPos;
-    Qt::MouseButtons lastMouseButtons;
 };
 
 
