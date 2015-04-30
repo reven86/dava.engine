@@ -38,6 +38,7 @@ LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(AbstractUIPackageBuilde
     propertyNamesMap["UIStaticText"]["textColor"] = "textcolor";
 
     baseClasses["UIButton"] = "UIControl";
+    baseClasses["UIListCell"] = "UIButton";
 }
 
 LegacyEditorUIPackageLoader::~LegacyEditorUIPackageLoader()
@@ -435,6 +436,10 @@ String LegacyEditorUIPackageLoader::GetOldBgPostfix(const String &controlClassNa
 {
     if (controlClassName == "UIButton")
         return name;
-    else
-        return "";
+
+    auto baseIt = baseClasses.find(controlClassName);
+    if (baseIt != baseClasses.end())
+        return GetOldBgPostfix(baseIt->second, name);
+
+    return "";
 }
