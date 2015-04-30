@@ -8,6 +8,7 @@
 #include "UI/UIStaticText.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/UIPackage.h"
+#include "StringUtils.h"
 
 using namespace DAVA;
 
@@ -297,11 +298,18 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
                     "returnKeyType"
                 };
 
-                if (propertyName == "multiline")
+                if (strcmp(member->Name(), "multiline") == 0)
                 {
                     if (valueNode->AsBool())
                     {
-                        const YamlNode *bySymbolNode = node->Get("multilineBySymbol");
+                        String multilineBySymbolProperty = "multilineBySymbol";
+                        if (propertyName != "multiline")
+                        {
+                            multilineBySymbolProperty = propertyName;
+                            DVVERIFY(FindAndReplace(multilineBySymbolProperty, "Multiline", "MultilineBySymbol"));
+                        }
+
+                        const YamlNode *bySymbolNode = node->Get(multilineBySymbolProperty);
                         if (bySymbolNode && bySymbolNode->AsBool())
                             return VariantType(UIStaticText::MULTILINE_ENABLED_BY_SYMBOL);
                         else

@@ -54,4 +54,13 @@ QString TruncateFileExtension(const QString& fileName, const QString& extension)
     return QString::fromStdString(truncatedName);
 }
 
+bool FindAndReplace(String& str, const String& from, const String& to)
+{
+    size_t start_pos = str.find(from);
+    if (start_pos == String::npos)
+        return false;
+    str.replace(start_pos, from.length(), to);
+    return true;
+}
+
 }
