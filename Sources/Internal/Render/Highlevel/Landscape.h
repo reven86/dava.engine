@@ -310,7 +310,7 @@ protected:
    
     static const int32 RENDER_QUAD_WIDTH = 129;
     static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
-    static const int32 INDEX_ARRAY_COUNT = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH * 6;
+    static const int32 INDEX_ARRAY_COUNT = 10000 * 6; //10k triangles max
     
 
     void RecursiveBuild(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 level, int32 maxLevels);
@@ -329,7 +329,8 @@ protected:
     void SetLandscapeSize(const Vector3 & newSize);
     
     Vector<rhi::HVertexBuffer> vertexBuffers;
-    Vector< CircularIndexBufferArray > indexBuffers;
+    CircularIndexBufferArray indexBuffers;
+    rhi::HIndexBuffer currentIndexBuffer;
 
     uint16 * indices;
     uint32 vertexLayoutUID;
@@ -346,12 +347,11 @@ protected:
 
     Frustum *frustum;
     
-    ePrimitiveType primitypeType;
-    
 	LandscapeCursor * cursor;
         
     int16 queueRdoQuad;
-    int32 queueRenderCount;
+    int32 queueIndexCount;
+    int32 queueIndexOffset;
     uint16 * queueDrawIndices;
     
     void FlushQueue();

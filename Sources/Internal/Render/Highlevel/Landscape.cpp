@@ -236,10 +236,8 @@ void Landscape::ReleaseGeometryData()
         batch.renderBatch->Release();
     renderBatchArray.clear();
 
-    for (CircularIndexBufferArray & cbuffer : indexBuffers)
-        for (rhi::HIndexBuffer handle : cbuffer.elements)
-            rhi::DeleteIndexBuffer(handle);
-    indexBuffers.clear();
+    for (rhi::HIndexBuffer handle : indexBuffers.elements)
+        rhi::DeleteIndexBuffer(handle);
 
     for (rhi::HVertexBuffer handle : vertexBuffers)
         rhi::DeleteVertexBuffer(handle);
@@ -320,6 +318,8 @@ bool Landscape::BuildHeightmap()
 
 void Landscape::AllocateGeometryData()
 {
+    DVASSERT(vertexLayoutUID != rhi::VertexLayout::InvalidUID);
+
     if (!landscapeMaterial)
         landscapeMaterial = CreateLandscapeMaterial();
 
@@ -331,14 +331,14 @@ void Landscape::AllocateGeometryData()
         batch->SetMaterial(landscapeMaterial);
         batch->SetSortingKey(10);
 
-        DVASSERT(vertexLayoutUID != rhi::VertexLayout::InvalidUID);
         batch->vertexLayoutId = vertexLayoutUID;
         batch->vertexCount = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH;
-
-        indexBuffers.push_back(CircularIndexBufferArray());
-        for (auto & handle : indexBuffers.back().elements)
-            handle = rhi::CreateIndexBuffer(INDEX_ARRAY_COUNT * 2); //RHI_COMPLETE think about reducing of memory consumption (buffers size)
     }
+
+    for (auto & handle : indexBuffers.elements)
+        handle = rhi::CreateIndexBuffer(INDEX_ARRAY_COUNT * 2);
+
+    currentIndexBuffer = indexBuffers.Next();
 
     indices = new uint16[INDEX_ARRAY_COUNT];
 }
@@ -368,11 +368,6 @@ void Landscape::BuildLandscape()
         quadTreeHead.ReleaseChildren();
         quadTreeHead.data.size = 0;
     }
-    
-//    Logger::FrameworkDebug("Allocated indices: %d KB", RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH * 6 * 2 / 1024);
-//    Logger::FrameworkDebug("Allocated memory for quads: %d KB", allocatedMemoryForQuads / 1024);
-//    Logger::FrameworkDebug("sizeof(LandscapeQuad): %d bytes", sizeof(LandscapeQuad));
-//    Logger::FrameworkDebug("sizeof(QuadTreeNode): %d bytes", sizeof(QuadTreeNode<LandscapeQuad>));
 }
     
 /*
@@ -650,8 +645,6 @@ void Landscape::SetTexture(eTextureLevel level, const FilePath & textureName)
 
 void Landscape::SetTexture(eTextureLevel level, Texture *texture)
 {
- 	//textureNames[level] = String("");
-
 	if(TILEMASK_TEXTURE_PROPS_NAMES[level] != INVALID_PROPERTY_NAME)
 	{
 		landscapeMaterial->SetTexture(TILEMASK_TEXTURE_PROPS_NAMES[level], texture);
@@ -670,30 +663,31 @@ Texture * Landscape::GetTexture(eTextureLevel level)
     
 void Landscape::FlushQueue()
 {
-    if (queueRenderCount == 0) return;
+    if ((queueIndexCount - queueIndexOffset) == 0) return;
 
+    DVASSERT(queueIndexCount < INDEX_ARRAY_COUNT);
     DVASSERT(flushQueueCounter < (int32)renderBatchArray.size());
-    DVASSERT(flushQueueCounter < (int32)indexBuffers.size());
+    DVASSERT(queueRdoQuad != -1);
 
     RenderBatch * batch = renderBatchArray[flushQueueCounter].renderBatch;
     activeRenderBatchArray.push_back(batch);
 
-    batch->indexBuffer = indexBuffers[flushQueueCounter].Next();
-    batch->indexCount = queueRenderCount;
+    batch->indexBuffer = currentIndexBuffer;
+    batch->indexCount = queueIndexCount - queueIndexOffset;
+    batch->startIndex = queueIndexOffset;
     batch->vertexBuffer = vertexBuffers[queueRdoQuad];
 
-    rhi::UpdateIndexBuffer(batch->indexBuffer, indices, 0, queueRenderCount * 2);
+    queueIndexOffset = queueIndexCount;
+    queueRdoQuad = -1;
 
-	drawIndices += queueRenderCount;
-
-    ClearQueue();
-    
+    drawIndices += batch->indexCount;
     ++flushQueueCounter;
 }
     
 void Landscape::ClearQueue()
 {
-    queueRenderCount = 0;
+    queueIndexCount = 0;
+    queueIndexOffset = 0;
     queueRdoQuad = -1;
     queueDrawIndices = indices;
 }
@@ -723,7 +717,6 @@ void Landscape::GenQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod)
     
     queueRdoQuad = currentNode->data.rdoQuad;
     
-    //int16 width = heightmap->GetWidth();
     for (uint16 y = (currentNode->data.y & RENDER_QUAD_AND); y < (currentNode->data.y & RENDER_QUAD_AND) + currentNode->data.size; y += step)
         for (uint16 x = (currentNode->data.x & RENDER_QUAD_AND); x < (currentNode->data.x & RENDER_QUAD_AND) + currentNode->data.size; x += step)
         {
@@ -735,45 +728,35 @@ void Landscape::GenQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod)
             *queueDrawIndices++ = (x + step) + (y + step) * RENDER_QUAD_WIDTH;
             *queueDrawIndices++ = x + (y + step) * RENDER_QUAD_WIDTH;     
  
-            queueRenderCount += 6;
+            queueIndexCount += 6;
         }
-    
-    DVASSERT(queueRenderCount < INDEX_ARRAY_COUNT);
 }
     
 void Landscape::GenFans()
 {
     uint32 currentFrame = Core::Instance()->GetGlobalFrameIndex();;
     int16 width = RENDER_QUAD_WIDTH;//heightmap->GetWidth();
-    
-    ClearQueue();
+
+    queueRdoQuad = -1;
     
     Vector<LandQuadTreeNode<LandscapeQuad>*>::const_iterator end = fans.end();
     for (Vector<LandQuadTreeNode<LandscapeQuad>*>::iterator t = fans.begin(); t != end; ++t)
     {
-        //uint16 * drawIndices = indices;
         LandQuadTreeNode<LandscapeQuad>* node = *t;
-        
-        //RenderManager::Instance()->SetRenderData(landscapeRDOArray[node->data.rdoQuad]);
         
         if ((node->data.rdoQuad != queueRdoQuad) && (queueRdoQuad != -1))
         {
-            
             FlushQueue();
         }
         queueRdoQuad = node->data.rdoQuad;
         
-        //int32 count = 0;
         int16 halfSize = (node->data.size >> 1);
         int16 xbuf = node->data.x & RENDER_QUAD_AND;
         int16 ybuf = node->data.y & RENDER_QUAD_AND;
-        
-        
-#define ADD_VERTEX(index) queueDrawIndices[queueRenderCount++] = (index);
-        
-        //drawIndices[count++] = (xbuf + halfSize) + (ybuf + halfSize) * width;
-        //drawIndices[count++] = (xbuf) + (ybuf) * width;
 
+
+#define ADD_VERTEX(index) {*queueDrawIndices++ = (index); queueIndexCount++;}
+        
         ADD_VERTEX((xbuf + halfSize) + (ybuf + halfSize) * width);
         ADD_VERTEX((xbuf) + (ybuf) * width);
         
@@ -821,56 +804,9 @@ void Landscape::GenFans()
         ADD_VERTEX((xbuf) + (ybuf) * width);
         
 #undef ADD_VERTEX
-        //Renderer::GetDynamicBindings().SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-//        RenderManager::Instance()->SetRenderData(landscapeRDOArray[node->data.rdoQuad]);
-//        RenderManager::Instance()->FlushState();
-//        RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, count, EIF_16, indices); 
     }
     
     FlushQueue();
-    
-/*  DRAW TRIANGLE FANS
-    List<LandQuadTreeNode<LandscapeQuad>*>::const_iterator end = fans.end();
-    for (List<LandQuadTreeNode<LandscapeQuad>*>::iterator t = fans.begin(); t != end; ++t)
-    {
-        uint16 * drawIndices = indices;
-        LandQuadTreeNode<LandscapeQuad>* node = *t;
-        
-        RenderManager::Instance()->SetRenderData(landscapeRDOArray[node->data.rdoQuad]);
-
-        int32 count = 0;
-        int16 halfSize = (node->data.size >> 1);
-        int16 xbuf = node->data.x & RENDER_QUAD_AND;
-        int16 ybuf = node->data.y & RENDER_QUAD_AND;
-        
-        drawIndices[count++] = (xbuf + halfSize) + (ybuf + halfSize) * width;
-        drawIndices[count++] = (xbuf) + (ybuf) * width;
-        
-        if ((node->neighbours[TOP]) && (node->neighbours[TOP]->data.frame == currentFrame))
-            drawIndices[count++] = (xbuf + halfSize) + (ybuf) * width;
-        
-        drawIndices[count++] = (xbuf + node->data.size) + (ybuf) * width;
-        
-        if ((node->neighbours[RIGHT]) && (node->neighbours[RIGHT]->data.frame == currentFrame))
-            drawIndices[count++] = (xbuf + node->data.size) + (ybuf + halfSize) * width;
-            
-        drawIndices[count++] = (xbuf + node->data.size) + (ybuf + node->data.size) * width;
-        
-        if ((node->neighbours[BOTTOM]) && (node->neighbours[BOTTOM]->data.frame == currentFrame))
-            drawIndices[count++] = (xbuf + halfSize) + (ybuf + node->data.size) * width;
-
-        drawIndices[count++] = (xbuf) + (ybuf + node->data.size) * width;
-        
-        if ((node->neighbours[LEFT]) && (node->neighbours[LEFT]->data.frame == currentFrame))
-            drawIndices[count++] = (xbuf) + (ybuf + halfSize) * width;
-
-        drawIndices[count++] = (xbuf) + (ybuf) * width;
-        
-        //Renderer::GetDynamicBindings().SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-        RenderManager::Instance()->FlushState();
-        RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLEFAN, count, EIF_16, indices); 
-    }
- */
 }
 	
 void Landscape::GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippingFlags, Camera * camera)
@@ -1037,35 +973,9 @@ void Landscape::PrepareToRender(Camera * camera)
 	{
 		return;
 	}
-	
-#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
-//    if (debugFlags & DEBUG_DRAW_GRID)
-//    {
-//        Renderer::GetDynamicBindings().SetColor(1.0f, 0.f, 0.f, 1.f);
-//        RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
-//        RenderManager::Instance()->SetShader(0);
-//        RenderManager::Instance()->FlushState();
-//
-//        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-//    }
-#endif //#if defined(__DAVAENGINE_OPENGL__)
-    
-    //SceneNode::Draw();
-
-#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
-//    if (!(debugFlags & DEBUG_DRAW_GRID))
-//    {
-//        Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-//    }
-#else
-    Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-#endif //#if defined(__DAVAENGINE_OPENGL__)
-
 
     ClearQueue();
 
-    
-    
 /*
     Boroda: I do not understand why, but this code breaks frustrum culling on landscape.
     I've spent an hour, trying to understand what's going on, without luck. 
@@ -1112,18 +1022,13 @@ void Landscape::PrepareToRender(Camera * camera)
         GenQuad(lodNot0quads[i], lodNot0quads[i]->data.lod);
     }
 #endif //#if defined (DRAW_OLD_STYLE)    
-
     
 	FlushQueue();
-    //    Logger::FrameworkDebug("[LN] flashQueueCounter = %d", flashQueueCounter);
+
 	GenFans();
-    
-#if defined(__DAVAENGINE_MACOS__)
-//    if (debugFlags & DEBUG_DRAW_ALL)
-//    {
-//        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-//    }   
-#endif
+
+    rhi::UpdateIndexBuffer(currentIndexBuffer, indices, 0, queueIndexCount * sizeof(uint16));
+    currentIndexBuffer = indexBuffers.Next();
 
 #if RHI_COMPLETE
 	if(cursor)
@@ -1177,25 +1082,6 @@ void Landscape::PrepareToRender(Camera * camera)
 		//RenderManager::Instance()->SetBlendMode(src, dst);
 	}
 #endif
-
-//#if defined(__DAVAENGINE_MACOS__)
-//    if (debugFlags & DEBUG_DRAW_ALL)
-//    {
-//        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-//        glEnable(GL_POLYGON_OFFSET_LINE);
-//        glPolygonOffset(0.0f, 1.0f);
-//        RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
-//        fans.clear();
-//        Draw(&quadTreeHead);
-//        DrawFans();
-//        glDisable(GL_POLYGON_OFFSET_LINE);
-//        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-//    }   
-//#endif
-    
-    //RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, prevMatrix);
-    //uint64 drawTime = SystemTimer::Instance()->AbsoluteMS() - time;
-    //Logger::FrameworkDebug("landscape draw time: %lld", drawTime);
 }
 
 

@@ -80,6 +80,7 @@ void RenderLayer::Draw(Camera* camera, RenderLayerBatchArray * renderLayerBatchA
                 packet.primitiveCount = pg->indexCount / 3;
                 packet.vertexLayoutUID = pg->vertexLayoutId;
                 packet.vertexCount = pg->vertexCount;
+                packet.startIndex = 0;
                 DVASSERT(packet.primitiveCount);
             }
             else
@@ -91,6 +92,7 @@ void RenderLayer::Draw(Camera* camera, RenderLayerBatchArray * renderLayerBatchA
                 packet.primitiveCount = batch->indexCount / 3;
                 packet.vertexLayoutUID = batch->vertexLayoutId;
                 packet.vertexCount = batch->vertexCount;
+                packet.startIndex = batch->startIndex;
                 DVASSERT(packet.primitiveCount);
             }
 
