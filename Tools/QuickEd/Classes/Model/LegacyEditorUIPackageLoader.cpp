@@ -306,10 +306,6 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
                 {
                     return VariantType(valueNode->AsInt32());
                 }
-                else
-                {
-                    DVASSERT(false);
-                }
             }
         }
         else if (member->Desc().type == InspDesc::T_FLAGS)
@@ -327,7 +323,10 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
                     }
                     else
                     {
-                        DVASSERT(false);
+                        DVASSERT_MSG(false, Format("No convertion from string to flag value."
+                                                   "\n Yaml property name: \"%s\""
+                                                   "\n Introspection property name: \"%s\""
+                                                   "\n String value: \"%s\"", propertyName.c_str(), member->Name(), flagNode->AsString().c_str()).c_str());
                     }
                 }
                 return VariantType(val);
@@ -335,10 +334,6 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
             else if (propertyName.find("stateFittingOption") != String::npos)
             {
                 return VariantType(valueNode->AsInt32());
-            }
-            else
-            {
-                DVASSERT(false);
             }
         }
         else if (propertyName == "pivot")
@@ -375,11 +370,10 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
             return VariantType(valueNode->AsVector4());
         else if (member->Type() == MetaInfo::Instance<FilePath>())
             return VariantType(FilePath(valueNode->AsString()));
-        else
-        {
-            DVASSERT(false);
-            return VariantType();
-        }
+
+        DVASSERT_MSG(false, Format("No legacy convertion for property."
+                                   "\n Yaml property name: \"%s\""
+                                   "\n Introspection property name: \"%s\"", propertyName.c_str(), member->Name()).c_str());
     }
     else
     {
