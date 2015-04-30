@@ -26,27 +26,28 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Platform/PlatformDetection.h"
+#if defined(__DAVAENGINE_WINDOWS_STORE__)
 
 #include "DAVAEngine.h"
 
-int APIENTRY WinMain(HINSTANCE hInstance,
-                    HINSTANCE hPrevInstance,
-                    LPSTR    lpCmdLine,
-                    int       nCmdShow)
+[Platform::MTAThread]
+int main(Platform::Array<Platform::String^>^ args)
 {
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
+    using namespace DAVA;
 
-    return DAVA::Core::Run(0, 0, hInstance);
+    //converting unicode args to char* args
+    Vector<String> conv_args(args->Length);
+    char** args_array = new char*[args->Length];
+    SCOPE_EXIT { delete[] args_array; };
+
+    for (size_t i = 0; i < conv_args.size(); ++i)
+    {
+        conv_args[i] = UTF8Utils::EncodeToUTF8(args[i]->Data());
+        args_array[i] = &conv_args[i][0];
+    }
+
+    return Core::Run(args->Length, args_array);
 }
 
-
-/*int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR    lpCmdLine, int       nCmdShow)
-{
-    // find leaks mega-string: {,,msvcr71d.dll}_crtBreakAlloc
-    //
-    // POSSIBLE LEAKS LIST:
-    // remember -- always clear all allocated data for static STL containers
-    // 
-    return 0;
-}*/
+#endif // defined(__DAVAENGINE_WINDOWS_STORE__)
