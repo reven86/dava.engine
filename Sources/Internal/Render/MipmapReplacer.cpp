@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "Render/MipMapReplacer.h"
+#include "Render/MipmapReplacer.h"
 #include "Render/Texture.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/Image.h"

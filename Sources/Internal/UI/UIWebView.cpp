@@ -37,7 +37,7 @@
 #if defined(__DAVAENGINE_MACOS__)
 #include "../Platform/TemplateMacOS/WebViewControlMacOS.h"
 #elif defined(__DAVAENGINE_IPHONE__)
-#include "../Platform/TemplateIOS/WebViewControliOS.h"
+#include "../Platform/TemplateiOS/WebViewControliOS.h"
 #elif defined(__DAVAENGINE_WIN32__)
 #include "../Platform/TemplateWin32/WebViewControlWin32.h"
 #elif defined(__DAVAENGINE_ANDROID__)
