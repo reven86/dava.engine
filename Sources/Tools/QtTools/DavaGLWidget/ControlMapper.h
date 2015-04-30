@@ -68,7 +68,6 @@ public:
     
 public slots:
     void releaseKeyboard();
-    void releaseMouse();
     
 private:
     Q_DISABLE_COPY(ControlMapper);
