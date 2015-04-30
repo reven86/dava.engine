@@ -654,7 +654,7 @@ void TextBlock::CalculateCacheParams()
                 }
 
 
-                if (((!xBigger && !yBigger) && (!xLower || !yLower)) || renderSize == 0.f)
+                if (((!xBigger && !yBigger) && (!xLower || !yLower)) || FLOAT_EQUAL(renderSize, 0.f))
                 {
                     break;
                 }
@@ -773,7 +773,7 @@ void TextBlock::CalculateCacheParams()
                     }
                 }
 
-                if((!yBigger && !yLower) || renderSize == 0.f)
+                if((!yBigger && !yLower) || FLOAT_EQUAL(renderSize,0.f))
                 {
                     break;
                 }
