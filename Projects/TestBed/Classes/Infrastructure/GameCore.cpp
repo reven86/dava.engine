@@ -34,6 +34,7 @@
 #include "Utils/Utils.h"
 
 #include "Tests/NotificationTest.h"
+#include "Tests/UIScrollViewTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -48,6 +49,7 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
+    new UIScrollViewTest();
     new NotificationScreen();
 }
 

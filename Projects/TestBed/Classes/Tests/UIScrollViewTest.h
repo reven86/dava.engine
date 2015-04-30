@@ -42,9 +42,9 @@
 
 using namespace DAVA;
 
-#include "TestTemplate.h"
+#include "UITestTemplate.h"
 
-class UIScrollViewTest: public TestTemplate<UIScrollViewTest>
+class UIScrollViewTest: public UITestTemplate<UIScrollViewTest>
 {
 protected:
     ~UIScrollViewTest(){}

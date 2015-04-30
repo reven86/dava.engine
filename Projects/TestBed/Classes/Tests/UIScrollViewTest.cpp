@@ -40,7 +40,7 @@
 static const float LIST_TEST_AUTO_CLOSE_TIME = 30.0f;
 
 UIScrollViewTest::UIScrollViewTest() :
- TestTemplate<UIScrollViewTest>("UIScrollViewTest")
+ UITestTemplate<UIScrollViewTest>("UIScrollViewTest")
 {
 	testFinished = false;
 	
@@ -202,7 +202,7 @@ void UIScrollViewTest::Update(float32 timeElapsed)
         testFinished = true;
     }
     
-    TestTemplate<UIScrollViewTest>::Update(timeElapsed);
+    UITestTemplate<UIScrollViewTest>::Update(timeElapsed);
 }
 
 void UIScrollViewTest::TestFunction(PerfFuncData * data)
@@ -212,7 +212,7 @@ void UIScrollViewTest::TestFunction(PerfFuncData * data)
 
 bool UIScrollViewTest::RunTest(int32 testNum)
 {
-	TestTemplate<UIScrollViewTest>::RunTest(testNum);
+	UITestTemplate<UIScrollViewTest>::RunTest(testNum);
 	return testFinished;
 }
 
