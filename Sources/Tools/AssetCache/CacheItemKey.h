@@ -44,6 +44,11 @@ namespace AssetCache
     
 class CacheItemKey
 {
+    static const uint32 INTERNAL_DATA_SIZE = MD5::DIGEST_SIZE * 2;
+    
+public:
+    static const uint32 HASH_SIZE = MD5::DIGEST_SIZE;
+    
 public:
     
     CacheItemKey();
@@ -53,15 +58,23 @@ public:
     void Deserialize(KeyedArchive * archieve);
 
     bool operator == (const CacheItemKey &right) const;
+    bool operator < (const CacheItemKey &right) const;
 
 public:
     
-    uint8 primaryKey[MD5::DIGEST_SIZE];     // hash of data files
-    uint8 secondaryKey[MD5::DIGEST_SIZE];   // hash of params
+    union InternalData
+    {
+        struct Keys
+        {
+            uint8 primary[HASH_SIZE];     // hash of data files
+            uint8 secondary[HASH_SIZE];   // hash of params
+        }hash;
+        
+        uint8 internalData[INTERNAL_DATA_SIZE];
+    };
+    
+    InternalData keyData;
 };
-
-bool operator < (const CacheItemKey& left, const CacheItemKey& right);
-
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA

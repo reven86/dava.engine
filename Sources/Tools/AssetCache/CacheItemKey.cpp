@@ -40,8 +40,7 @@ namespace AssetCache
     
 CacheItemKey::CacheItemKey()
 {
-    Memset(primaryKey, 0, MD5::DIGEST_SIZE);
-    Memset(secondaryKey, 0, MD5::DIGEST_SIZE);
+    Memset(keyData.internalData, 0, INTERNAL_DATA_SIZE);
 }
 
     
@@ -49,43 +48,28 @@ void CacheItemKey::Serialize(KeyedArchive * archieve) const
 {
     DVASSERT(nullptr != archieve);
     
-    archieve->SetByteArray("primaryKey", primaryKey, MD5::DIGEST_SIZE);
-    archieve->SetByteArray("secondaryKey", secondaryKey, MD5::DIGEST_SIZE);
+    archieve->SetByteArray("keyData", keyData.internalData, INTERNAL_DATA_SIZE);
 }
     
 void CacheItemKey::Deserialize(KeyedArchive * archieve)
 {
     DVASSERT(nullptr != archieve);
     
-    auto hashArray = archieve->GetByteArray("primaryKey");
+    auto hashArray = archieve->GetByteArray("keyData");
     if(hashArray)
     {
-        Memcpy(primaryKey, hashArray, MD5::DIGEST_SIZE);
-    }
-
-    hashArray = archieve->GetByteArray("secondaryKey");
-    if(hashArray)
-    {
-        Memcpy(secondaryKey, hashArray, MD5::DIGEST_SIZE);
+        Memcpy(keyData.internalData, hashArray, INTERNAL_DATA_SIZE);
     }
 }
     
 bool CacheItemKey::operator == (const CacheItemKey &right) const
 {
-    return (    (Memcmp(primaryKey, right.primaryKey, MD5::DIGEST_SIZE) == 0)
-            &&  (Memcmp(secondaryKey, right.secondaryKey, MD5::DIGEST_SIZE) == 0)
-            );
+    return (Memcmp(keyData.internalData, right.keyData.internalData, INTERNAL_DATA_SIZE) == 0);
 }
     
-bool operator < (const CacheItemKey& left, const CacheItemKey& right)
+bool CacheItemKey::operator < (const CacheItemKey& right) const
 {
-    auto cmpPrimary = Memcmp(left.primaryKey, right.primaryKey, MD5::DIGEST_SIZE);
-    if(0 == cmpPrimary)
-    {
-        return Memcmp(left.secondaryKey, right.secondaryKey, MD5::DIGEST_SIZE) < 0;
-    }
-
-    return cmpPrimary < 0;
+    return (Memcmp(keyData.internalData, right.keyData.internalData, INTERNAL_DATA_SIZE) < 0);
 }
     
     

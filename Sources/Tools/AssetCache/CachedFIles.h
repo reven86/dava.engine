@@ -51,6 +51,7 @@ public:
     
     void AddFile(const FilePath &path);
     const Set<FilePath> & GetFiles() const;
+    const Set<FilePath> & GetFileNames() const;
     
     bool IsEmtpy() const;
     
@@ -70,6 +71,12 @@ inline const Set<FilePath> & CachedFiles::GetFiles() const
     return files;
 }
 
+inline const Set<FilePath> & CachedFiles::GetFileNames() const
+{
+    return files;
+}
+    
+    
 inline bool CachedFiles::IsEmtpy() const
 {
     return (files.size() == 0);

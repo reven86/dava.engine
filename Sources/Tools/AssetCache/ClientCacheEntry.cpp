@@ -95,27 +95,37 @@ void ClientCacheEntry::InvalidatePrimaryKey()
     auto data = new uint8[dataSize];
     
     DVVERIFY(dataSize == filesArchieve->Serialize(data, dataSize));
-    MD5::ForData(data, dataSize, key.primaryKey);
+    MD5::ForData(data, dataSize, key.keyData.hash.primary);
     
     SafeDeleteArray(data);
 }
     
 void ClientCacheEntry::InvalidatePrimaryKey(const uint8 *digest)
 {
-    Memcpy(key.primaryKey, digest, MD5::DIGEST_SIZE);
+    Memcpy(key.keyData.hash.primary, digest, CacheItemKey::HASH_SIZE);
 }
     
 
 void ClientCacheEntry::InvalidateSecondaryKey()
 {
-    ScopedPtr<KeyedArchive> paramsArchieve(new KeyedArchive());
-    params.Serialize(paramsArchieve);
+    ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
+    params.Serialize(archieve);
 
-    auto dataSize = paramsArchieve->Serialize(nullptr, 0);
+    auto fileNames = files.GetFileNames();
+    auto count = fileNames.size();
+    archieve->SetUInt32("count", count);
+    
+    int32 index = 0;
+    for(auto & file : fileNames)
+    {
+        archieve->SetString(Format("file_%d", index++), file.GetStringValue());
+    }
+    
+    auto dataSize = archieve->Serialize(nullptr, 0);
     auto data = new uint8[dataSize];
     
-    DVVERIFY(dataSize == paramsArchieve->Serialize(data, dataSize));
-    MD5::ForData(data, dataSize, key.secondaryKey);
+    DVVERIFY(dataSize == archieve->Serialize(data, dataSize));
+    MD5::ForData(data, dataSize, key.keyData.hash.secondary);
     
     SafeDeleteArray(data);
 }
