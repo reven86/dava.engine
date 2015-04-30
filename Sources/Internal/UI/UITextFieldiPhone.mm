@@ -43,7 +43,7 @@
 
 #import "Platform/TemplateiOS/HelperAppDelegate.h"
 
-//#define USE_STATIC_TEXTFIELD
+#define USE_STATIC_TEXTFIELD
 
 namespace
 {
