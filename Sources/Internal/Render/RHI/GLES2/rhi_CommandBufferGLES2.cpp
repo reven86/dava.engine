@@ -342,8 +342,10 @@ gles2_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 cou
 //------------------------------------------------------------------------------
 
 static void
-gles2_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count, uint32 /*vertexCount*/, uint32 /*firstVertex*/ )
+gles2_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count, uint32 /*vertexCount*/, uint32 firstVertex, uint32 startIndex )
 {
+    DVASSERT(firstVertex == 0); // not supported yet
+
     unsigned    v_cnt   = 0;
     int         mode    = GL_TRIANGLES;
 
@@ -357,7 +359,7 @@ gles2_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uin
         default: {}
     }
 
-    CommandBufferPool::Get(cmdBuf)->Command( GLES2__DRAW_INDEXED_PRIMITIVE, uint32(mode), v_cnt );
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__DRAW_INDEXED_PRIMITIVE, uint32(mode), v_cnt, firstVertex, startIndex );
 }
 
 
@@ -766,8 +768,10 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
             
             case GLES2__DRAW_INDEXED_PRIMITIVE :
             {
-                unsigned    v_cnt   = unsigned(arg[1]);
-                int         mode    = int(arg[0]);
+                unsigned    v_cnt       = unsigned(arg[1]);
+                int         mode        = int(arg[0]);
+                uint32      firstVertex = uint32(arg[2]);
+                uint32      startIndex  = uint32(arg[3]);
 
                 if( last_ps != cur_ps )
                 {
@@ -787,11 +791,11 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                         ConstBufferGLES2::SetToRHI( fp_const[i], fp_const_data[i] );
                 }
 
-                GL_CALL(glDrawElements( mode, v_cnt, GL_UNSIGNED_SHORT, NULL ));
+                GL_CALL(glDrawElements( mode, v_cnt, GL_UNSIGNED_SHORT, (void*)(startIndex*sizeof(uint16)) ));
                 StatSet::IncStat( stat_DIP, 1 );
 //Logger::Info( "  dip" );
 
-                c += 2;
+                c += 4;
             }   break;
 
             case GLES2__SET_MARKER :

@@ -184,6 +184,7 @@ Packet
     HVertexBuffer       vertexStream[MAX_VERTEX_STREAM_COUNT];
     uint32              vertexCount;
     uint32              baseVertex;
+    uint32              startIndex;
     uint32              vertexLayoutUID;
     HIndexBuffer        indexBuffer;
     HPipelineState      renderPipelineState;
@@ -202,6 +203,7 @@ Packet
                           : vertexStreamCount(0),
                             vertexCount(0),
                             baseVertex(0),
+                            startIndex(0),
                             vertexLayoutUID(VertexLayout::InvalidUID),
                             depthStencilState(InvalidHandle),
                             samplerState(InvalidHandle),

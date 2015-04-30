@@ -181,7 +181,7 @@ void    SetDepthStencilState( Handle cmdBuf, Handle depthStencilState );
 void    SetSamplerState( Handle cmdBuf, const Handle samplerState );
 
 void    DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count );
-void    DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count, uint32 vertexCount, uint32 firstVertex=0 );
+void    DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count, uint32 vertexCount, uint32 firstVertex=0, uint32 startIndex=0 );
 
 void    SetMarker( Handle cmdBuf, const char* text );
 

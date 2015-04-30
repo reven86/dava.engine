@@ -311,7 +311,7 @@ dx9_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count
 //------------------------------------------------------------------------------
 
 static void
-dx9_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count, uint32 vertexCount, uint32 firstVertex )
+dx9_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count, uint32 vertexCount, uint32 firstVertex, uint32 startIndex )
 {
     unsigned            v_cnt   = 0;
     D3DPRIMITIVETYPE    type9   = D3DPT_TRIANGLELIST;
@@ -323,7 +323,7 @@ dx9_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint3
             break;
     }
 
-    CommandBufferPool::Get(cmdBuf)->Command( DX9__DRAW_INDEXED_PRIMITIVE, type9, count, vertexCount, firstVertex );
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__DRAW_INDEXED_PRIMITIVE, type9, count, vertexCount, firstVertex, startIndex );
 }
 
 
@@ -622,10 +622,11 @@ SCOPED_FUNCTION_TIMING();
                 uint32              primCount   = uint32(arg[1]);
                 uint32              vertexCount = uint32(arg[2]);
                 uint32              firstVertex = uint32(arg[3]);
+                uint32              startIndex  = uint32(arg[4]);
 
-                DX9_CALL(_D3D9_Device->DrawIndexedPrimitive( type, firstVertex, 0, vertexCount, 0, primCount ),"DrawIndexedPrimitive");
+                DX9_CALL(_D3D9_Device->DrawIndexedPrimitive( type, firstVertex, 0, vertexCount, startIndex, primCount ),"DrawIndexedPrimitive");
                 StatSet::IncStat( stat_DIP, 1 );
-                c += 4;    
+                c += 5;
             }   break;
 
         }
