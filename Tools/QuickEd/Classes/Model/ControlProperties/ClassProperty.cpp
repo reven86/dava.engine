@@ -23,7 +23,7 @@ void ClassProperty::Serialize(PackageSerializer *serializer) const
 {
     if (control->GetCreationType() == ControlNode::CREATED_FROM_CLASS)
     {
-        serializer->PutValue("class", control->GetControl()->GetClassName());
+        serializer->PutValue("class", control->GetControl()->GetControlClassName());
     }
 }
 
@@ -39,5 +39,5 @@ ClassProperty::ePropertyType ClassProperty::GetType() const
 
 VariantType ClassProperty::GetValue() const
 {
-    return VariantType(control->GetControl()->GetClassName());
+    return VariantType(control->GetControl()->GetControlClassName());
 }

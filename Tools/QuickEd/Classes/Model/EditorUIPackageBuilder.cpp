@@ -136,6 +136,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className
 UIControl *EditorUIPackageBuilder::BeginControlWithCustomClass(const String &customClassName, const String &className)
 {
     UIControl *control = ObjectFactory::Instance()->New<UIControl>(className);
+
     if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();

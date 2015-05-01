@@ -793,6 +793,12 @@
 		327343C71ACD36D70003F2A8 /* UIControlFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = 327343C31ACD36D70003F2A8 /* UIControlFamily.h */; };
 		327343C81ACD36D70003F2A8 /* UIControlFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = 327343C31ACD36D70003F2A8 /* UIControlFamily.h */; };
 		327343C91ACD36D70003F2A8 /* UIControlFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = 327343C31ACD36D70003F2A8 /* UIControlFamily.h */; };
+		32B9B9831AF114F50090D827 /* UIFakeComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B9B9811AF114F50090D827 /* UIFakeComponent.cpp */; };
+		32B9B9841AF114F50090D827 /* UIFakeComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B9B9811AF114F50090D827 /* UIFakeComponent.cpp */; };
+		32B9B9851AF114F50090D827 /* UIFakeComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B9B9811AF114F50090D827 /* UIFakeComponent.cpp */; };
+		32B9B9861AF114F50090D827 /* UIFakeComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B9B9821AF114F50090D827 /* UIFakeComponent.h */; };
+		32B9B9871AF114F50090D827 /* UIFakeComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B9B9821AF114F50090D827 /* UIFakeComponent.h */; };
+		32B9B9881AF114F50090D827 /* UIFakeComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B9B9821AF114F50090D827 /* UIFakeComponent.h */; };
 		4910CBF6167B73EC00CF948A /* libdxt_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4910CBF5167B73EC00CF948A /* libdxt_macos.a */; };
 		4F34E1BB1A234DDA000681BB /* JobThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F34E1B91A234DDA000681BB /* JobThread.cpp */; };
 		4F34E1BC1A234DDA000681BB /* JobThread.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F34E1BA1A234DDA000681BB /* JobThread.h */; };
@@ -2817,6 +2823,8 @@
 		327343BB1ACD36B10003F2A8 /* BaseFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseFamily.h; sourceTree = "<group>"; };
 		327343C21ACD36D70003F2A8 /* UIControlFamily.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIControlFamily.cpp; sourceTree = "<group>"; };
 		327343C31ACD36D70003F2A8 /* UIControlFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIControlFamily.h; sourceTree = "<group>"; };
+		32B9B9811AF114F50090D827 /* UIFakeComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIFakeComponent.cpp; sourceTree = "<group>"; };
+		32B9B9821AF114F50090D827 /* UIFakeComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFakeComponent.h; sourceTree = "<group>"; };
 		4910CBF5167B73EC00CF948A /* libdxt_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_macos.a; path = ../../Libs/libs/libdxt_macos.a; sourceTree = "<group>"; };
 		4F34E1B91A234DDA000681BB /* JobThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JobThread.cpp; path = Job/JobThread.cpp; sourceTree = "<group>"; };
 		4F34E1BA1A234DDA000681BB /* JobThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JobThread.h; path = Job/JobThread.h; sourceTree = "<group>"; };
@@ -4099,6 +4107,8 @@
 		B72364881A8CEEF0009940BE /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				32B9B9811AF114F50090D827 /* UIFakeComponent.cpp */,
+				32B9B9821AF114F50090D827 /* UIFakeComponent.h */,
 				327343C21ACD36D70003F2A8 /* UIControlFamily.cpp */,
 				327343C31ACD36D70003F2A8 /* UIControlFamily.h */,
 				B72364891A8CEEF0009940BE /* UIComponent.cpp */,
@@ -5591,6 +5601,7 @@
 				322FFD5519C042880000ED71 /* UIPackage.h in Headers */,
 				176DE9EF174B5561007A983B /* TheoraPlayer.h in Headers */,
 				176DE9F0174B5561007A983B /* UI3DView.h in Headers */,
+				32B9B9881AF114F50090D827 /* UIFakeComponent.h in Headers */,
 				176DE9F1174B5561007A983B /* UIButton.h in Headers */,
 				176DE9F2174B5561007A983B /* UIControl.h in Headers */,
 				176DE9F3174B5561007A983B /* UIControlBackground.h in Headers */,
@@ -5834,6 +5845,7 @@
 				02FD7EEC19237DA2007762C0 /* WindComponent.h in Headers */,
 				E8989E3716BD24E500732C04 /* FileSystem.h in Headers */,
 				E8989E3A16BD24E500732C04 /* KeyedArchive.h in Headers */,
+				32B9B9861AF114F50090D827 /* UIFakeComponent.h in Headers */,
 				84CB6725191FC8850086483D /* LibPngHelper.h in Headers */,
 				E8989E3C16BD24E500732C04 /* KeyedArchiver.h in Headers */,
 				50C16DB01A52D7B9003C307A /* NetworkUtils.h in Headers */,
@@ -6492,6 +6504,7 @@
 				E898A14616BD265400732C04 /* ImposterNode.h in Headers */,
 				E898A14716BD265400732C04 /* LodNode.h in Headers */,
 				E898A14816BD265400732C04 /* MeshInstance.h in Headers */,
+				32B9B9871AF114F50090D827 /* UIFakeComponent.h in Headers */,
 				E898A14916BD265400732C04 /* MeshInstanceNode.h in Headers */,
 				E898A14A16BD265400732C04 /* ParticleEffectNode.h in Headers */,
 				76C741B21A48374B00184019 /* QtLayerWin32.h in Headers */,
@@ -6941,6 +6954,7 @@
 				176DEAC9174B5561007A983B /* RenderOptions.cpp in Sources */,
 				E89C58EA18B245A6002C25FE /* AtomicMacOS.mm in Sources */,
 				176DEACA174B5561007A983B /* RenderResource.cpp in Sources */,
+				32B9B9851AF114F50090D827 /* UIFakeComponent.cpp in Sources */,
 				E89EDE801A2E16FA0036E993 /* UIControlSwig.cpp in Sources */,
 				176DEACB174B5561007A983B /* Shader.cpp in Sources */,
 				E89EDE861A2E16FA0036E993 /* VectorSwig.cpp in Sources */,
@@ -7342,6 +7356,7 @@
 				E8989EFB16BD24E500732C04 /* TextureMulColorAlphaTestEffect.cpp in Sources */,
 				E8989EFD16BD24E500732C04 /* TextureMulColorEffect.cpp in Sources */,
 				B78601391A08B6170041F817 /* StringUtils.cpp in Sources */,
+				32B9B9831AF114F50090D827 /* UIFakeComponent.cpp in Sources */,
 				E8989F3216BD24E500732C04 /* MaterialCompiler.cpp in Sources */,
 				E8989F3416BD24E500732C04 /* MaterialGraph.cpp in Sources */,
 				E8989F3616BD24E500732C04 /* MaterialGraphNode.cpp in Sources */,
@@ -7944,6 +7959,7 @@
 				176395AA1863373D00EADDA2 /* GamepadDevice.cpp in Sources */,
 				E898A2A916BD265400732C04 /* UIYamlLoader.cpp in Sources */,
 				E898A2AA16BD265400732C04 /* HTTPDownloader.mm in Sources */,
+				32B9B9841AF114F50090D827 /* UIFakeComponent.cpp in Sources */,
 				E898A2AB16BD265400732C04 /* MD5.cpp in Sources */,
 				E898A2AC16BD265400732C04 /* StringFormat.cpp in Sources */,
 				E8990B361A288C2000FF71A1 /* SnapToLandscapeControllerComponent.cpp in Sources */,
