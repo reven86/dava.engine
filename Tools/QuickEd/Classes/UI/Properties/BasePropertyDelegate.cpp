@@ -18,7 +18,7 @@ BasePropertyDelegate::~BasePropertyDelegate()
     itemDelegate = NULL;
 }
 
-bool BasePropertyDelegate::setModelData( QWidget *editor, QAbstractItemModel *model, const QModelIndex &index ) const
+bool BasePropertyDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
     if (!BasePropertyDelegate::IsValueModified(editor))
         return true;
@@ -38,10 +38,10 @@ bool BasePropertyDelegate::setModelData( QWidget *editor, QAbstractItemModel *mo
 
 }
 
-void BasePropertyDelegate::enumEditorActions( QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const
+void BasePropertyDelegate::enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const
 {
     AbstractProperty *property = static_cast<AbstractProperty *>(index.internalPointer());
-    if (property && property->GetEditFlag() & AbstractProperty::EF_CAN_RESET )
+    if (property && property->GetFlags() & AbstractProperty::EF_CAN_RESET )
     {
         QAction *resetAction = new QAction(QIcon(":/Icons/edit_undo.png"), tr("reset"), parent);
         resetAction->setToolTip(tr("Reset property value to default"));

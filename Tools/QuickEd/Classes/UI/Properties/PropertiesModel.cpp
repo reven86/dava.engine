@@ -89,7 +89,7 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
         return QVariant();
     
     AbstractProperty *property = static_cast<AbstractProperty*>(index.internalPointer());
-    uint32 flags = property->GetEditFlag();
+    uint32 flags = property->GetFlags();
     switch (role)
     {
         case Qt::CheckStateRole:

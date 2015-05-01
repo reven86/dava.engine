@@ -50,14 +50,21 @@ DAVA::uint32 ComponentPropertiesSection::GetComponentType() const
     return component->GetType();
 }
 
-bool ComponentPropertiesSection::CanRemove() const
-{
-    return !IsReadOnly();
-}
-
 bool ComponentPropertiesSection::HasChanges() const
 {
     return SectionProperty::HasChanges();
+}
+
+uint32 ComponentPropertiesSection::GetFlags() const
+{
+    bool readOnly = IsReadOnly();
+    
+    uint32 flags = 0;
+    
+    if (!readOnly)
+        flags |= EF_CAN_REMOVE;
+    
+    return flags;
 }
 
 void ComponentPropertiesSection::InstallComponent()

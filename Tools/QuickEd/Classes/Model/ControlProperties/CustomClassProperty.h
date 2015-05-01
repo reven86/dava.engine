@@ -20,7 +20,7 @@ public:
     virtual bool IsReadOnly() const override;
     
     virtual ePropertyType GetType() const override;
-    virtual DAVA::uint32 GetEditFlag() const  override { return EF_CAN_RESET; };
+    virtual DAVA::uint32 GetFlags() const  override { return EF_CAN_RESET; };
     virtual DAVA::VariantType GetValue() const override;
     
 protected:

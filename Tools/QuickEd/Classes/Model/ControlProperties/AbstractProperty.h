@@ -19,10 +19,11 @@ public:
 
     enum eEditFrags
     {
-        EF_NONE = 0,
         EF_CAN_RESET = 0x01,
         EF_ADD_REMOVE = 0x02,
-        EF_INHERITED = 0x04
+        EF_INHERITED = 0x04,
+        EF_CAN_REMOVE = 0x08,
+        EF_CAN_CREATE = 0x10,
     };
     
     enum eCloneType
@@ -51,11 +52,9 @@ public:
 
     virtual const DAVA::String &GetName() const = 0;
     virtual ePropertyType GetType() const = 0;
-    virtual DAVA::uint32 GetEditFlag() const { return EF_NONE; };
+    virtual DAVA::uint32 GetFlags() const { return 0; };
 
     virtual bool IsReadOnly() const;
-    virtual bool CanRemove() const {return false; }
-    virtual bool CanCreate() const {return false; }
 
     virtual DAVA::VariantType GetValue() const;
     virtual void SetValue(const DAVA::VariantType &newValue);
