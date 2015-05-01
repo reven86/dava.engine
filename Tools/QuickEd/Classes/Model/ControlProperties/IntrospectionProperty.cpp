@@ -139,6 +139,14 @@ IntrospectionProperty::ePropertyType IntrospectionProperty::GetType() const
     return TYPE_VARIANT;
 }
 
+uint32 IntrospectionProperty::GetEditFlag() const
+{
+    uint32 flags = EF_CAN_RESET;
+    if (prototypeProperty && !replaced)
+        flags |= EF_INHERITED;
+    return flags;
+}
+
 VariantType IntrospectionProperty::GetValue() const
 {
     return member->Value(object);

@@ -50,6 +50,9 @@ public:
     virtual bool CanInsertImportedPackage() const;
     virtual bool CanRemove() const;
     virtual bool CanCopy() const;
+
+protected:
+    virtual bool IsReadOnly() const;
     
 private:
     PackageBaseNode *parent;

@@ -48,7 +48,6 @@ public:
     const DAVA::Vector<ControlNode*> &GetInstances() const;
 
     int GetFlags() const override;
-    void SetReadOnly();
     
     virtual bool IsEditingSupported() const override;
     virtual bool IsInsertingSupported() const override;
@@ -84,9 +83,6 @@ private:
     DAVA::Vector<ControlNode*> instances; // weak
 
     eCreationType creationType;
-    
-    bool readOnly;
-    
 };
 
 

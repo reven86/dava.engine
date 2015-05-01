@@ -16,7 +16,6 @@ ControlNode::ControlNode(UIControl *control)
     , rootProperty(nullptr)
     , prototype(nullptr)
     , creationType(CREATED_FROM_CLASS)
-    , readOnly(false)
 {
     rootProperty = new RootProperty(this, nullptr, AbstractProperty::CT_COPY);
 }
@@ -27,7 +26,6 @@ ControlNode::ControlNode(ControlNode *node)
     , rootProperty(nullptr)
     , prototype(SafeRetain(node->prototype))
     , creationType(node->creationType)
-    , readOnly(false)
 {
     control = ObjectFactory::Instance()->New<UIControl>(node->control->GetControlClassName());
     control->SetCustomControlClassName(node->control->GetCustomControlClassName());
@@ -47,7 +45,6 @@ ControlNode::ControlNode(ControlPrototype *_prototype, eCreationType _creationTy
     , rootProperty(nullptr)
     , prototype(SafeRetain(_prototype))
     , creationType(_creationType)
-    , readOnly(false)
 {
     control = ObjectFactory::Instance()->New<UIControl>(prototype->GetControlNode()->GetControl()->GetControlClassName());
     control->SetCustomControlClassName(prototype->GetControlNode()->GetControl()->GetCustomControlClassName());
@@ -206,29 +203,22 @@ int ControlNode::GetFlags() const
             DVASSERT(false);
             break;
     }
-    return readOnly ? (FLAG_READ_ONLY | flag) : flag ;
-}
-
-void ControlNode::SetReadOnly()
-{
-    readOnly = true;
-    for (auto it = nodes.begin(); it != nodes.end(); ++it)
-        (*it)->SetReadOnly();
+    return IsReadOnly() ? (FLAG_READ_ONLY | flag) : flag ;
 }
 
 bool ControlNode::IsEditingSupported() const
 {
-    return !readOnly;
+    return !IsReadOnly();
 }
 
 bool ControlNode::IsInsertingSupported() const
 {
-    return !readOnly;
+    return !IsReadOnly();
 }
 
 bool ControlNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
 {
-    if (readOnly)
+    if (IsReadOnly())
         return false;
     
     if (pos < nodes.size() && nodes[pos]->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)
@@ -242,7 +232,7 @@ bool ControlNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
 
 bool ControlNode::CanRemove() const
 {
-    return !readOnly && creationType != CREATED_FROM_PROTOTYPE_CHILD;
+    return !IsReadOnly() && creationType != CREATED_FROM_PROTOTYPE_CHILD;
 }
 
 bool ControlNode::CanCopy() const

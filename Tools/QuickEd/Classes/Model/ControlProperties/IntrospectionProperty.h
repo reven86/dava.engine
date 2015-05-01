@@ -19,7 +19,7 @@ public:
     virtual void Serialize(PackageSerializer *serializer) const override;
 
     virtual ePropertyType GetType() const override;
-    virtual DAVA::uint32 GetEditFlag() const  override{ return EF_CAN_RESET; };
+    virtual DAVA::uint32 GetEditFlag() const  override;
 
     virtual DAVA::VariantType GetValue() const override;
 

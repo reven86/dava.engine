@@ -86,3 +86,8 @@ bool PackageBaseNode::CanCopy() const
 {
     return false;
 }
+
+bool PackageBaseNode::IsReadOnly() const
+{
+    return parent ? parent->IsReadOnly() : true;
+}

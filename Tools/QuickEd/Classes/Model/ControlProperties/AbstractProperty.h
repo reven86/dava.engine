@@ -20,8 +20,9 @@ public:
     enum eEditFrags
     {
         EF_NONE = 0,
-        EF_CAN_RESET = 1 << 0,
-        EF_ADD_REMOVE = 1 << 1,
+        EF_CAN_RESET = 0x01,
+        EF_ADD_REMOVE = 0x02,
+        EF_INHERITED = 0x04
     };
     
     enum eCloneType

@@ -245,3 +245,8 @@ void PackageNode::RefreshPropertiesInInstances(ControlNode *node, AbstractProper
         }
     }
 }
+
+bool PackageNode::IsReadOnly() const
+{
+    return false;
+}

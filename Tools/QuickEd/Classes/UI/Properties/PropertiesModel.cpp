@@ -89,6 +89,7 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
         return QVariant();
     
     AbstractProperty *property = static_cast<AbstractProperty*>(index.internalPointer());
+    uint32 flags = property->GetEditFlag();
     switch (role)
     {
         case Qt::CheckStateRole:
@@ -149,6 +150,10 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
                 }
             }
             break;
+            
+        case Qt::TextColorRole:
+            return (flags & AbstractProperty::EF_INHERITED) != 0 ? QColor(Qt::blue) : QColor(Qt::black);
+
     }
 
     return QVariant();

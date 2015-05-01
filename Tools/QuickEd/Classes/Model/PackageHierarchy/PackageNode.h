@@ -60,6 +60,9 @@ public:
 private:
     void CollectPackages(DAVA::Set<PackageRef*> &packageRefs, ControlNode *node) const;
     void RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property);
+
+protected:
+    virtual bool IsReadOnly() const override;
     
 private:
     PackageRef *packageRef;

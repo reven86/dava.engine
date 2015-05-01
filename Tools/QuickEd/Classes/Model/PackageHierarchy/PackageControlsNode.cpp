@@ -13,7 +13,6 @@ using namespace DAVA;
 PackageControlsNode::PackageControlsNode(PackageNode *_parent, PackageRef *_packageRef)
     : ControlsContainerNode(_parent)
     , name("Controls")
-    , readOnly(false)
     , packageRef(SafeRetain(_packageRef))
 {
 }
@@ -89,16 +88,7 @@ PackageRef *PackageControlsNode::GetPackageRef() const
 
 int PackageControlsNode::GetFlags() const
 {
-    return readOnly ? FLAG_READ_ONLY : 0;
-}
-
-void PackageControlsNode::SetReadOnly()
-{
-    readOnly = true;
-    for (auto it = nodes.begin(); it != nodes.end(); ++it)
-    {
-        (*it)->SetReadOnly();
-    }
+    return IsReadOnly() ? FLAG_READ_ONLY : 0;
 }
 
 bool PackageControlsNode::IsEditingSupported() const
@@ -108,12 +98,12 @@ bool PackageControlsNode::IsEditingSupported() const
 
 bool PackageControlsNode::IsInsertingSupported() const
 {
-    return !readOnly;
+    return !IsReadOnly();
 }
 
 bool PackageControlsNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
 {
-    return !readOnly;
+    return !IsReadOnly();
 }
 
 bool PackageControlsNode::CanRemove() const

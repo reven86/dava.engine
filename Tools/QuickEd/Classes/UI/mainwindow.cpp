@@ -76,7 +76,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     InitLanguageBox();
 
-
     tabBar->setElideMode(Qt::ElideNone);
     setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 

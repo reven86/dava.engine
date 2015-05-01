@@ -32,7 +32,6 @@ public:
     virtual PackageRef *GetPackageRef() const override;
     
     int GetFlags() const override;
-    void SetReadOnly();
 
     virtual bool IsEditingSupported() const override;
     virtual bool IsInsertingSupported() const override;
@@ -50,7 +49,6 @@ private:
 private:
     DAVA::String name;
     DAVA::Vector<ControlNode*> nodes;
-    bool readOnly;
     
     PackageRef *packageRef;
 };
