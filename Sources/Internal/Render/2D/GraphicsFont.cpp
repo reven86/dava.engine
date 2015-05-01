@@ -120,6 +120,9 @@ Font * GraphicsFont::Clone() const
     cloneFont->SetHorizontalSpacing(this->GetHorizontalSpacing());
 	cloneFont->SetSize(this->GetSize());
 
+    cloneFont->SetAscendScale(this->GetAscendScale());
+    cloneFont->SetDescendScale(this->GetDescendScale());
+
     cloneFont->fontDefinitionName = this->GetFontDefinitionName();
 	
 	return cloneFont;

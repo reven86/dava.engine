@@ -49,7 +49,7 @@ public:
     * \param [out] isRTL If non-null, store in isRTL true if line contains Right-to-left text.
     * \return true if it succeeds, false if it fails.
     */
-    bool PrepareString(const WideString& logicalStr, WideString& preparedStr, bool* isRTL);
+    bool PrepareString(const WideString& logicalStr, WideString& preparedStr, bool* isRTL) const;
 
     /**
     * \brief Reorder characters in string based.
@@ -57,7 +57,9 @@ public:
     * \param forceRtl (Optional) true if input text is mixed and must be processed as RTL.
     * \return true if it succeeds, false if it fails.
     */
-    bool ReorderString(WideString& string, const bool forceRtl = false);
+    bool ReorderString(WideString& string, const bool forceRtl = false) const;
+
+    bool IsBiDiSpecialCharacter(uint32 character) const;
 
 private:
     BiDiWrapper* wrapper;
