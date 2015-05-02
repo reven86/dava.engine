@@ -74,7 +74,7 @@ public:
     virtual void BeginControlPropertiesSection(const String &name) = 0;
     virtual void EndControlPropertiesSection() = 0;
     
-    virtual UIComponent *BeginComponentPropertiesSecion(uint32 componentType) = 0;
+    virtual UIComponent *BeginComponentPropertiesSecion(uint32 componentType, uint32 componentIndex) = 0;
     virtual void EndComponentPropertiesSecion() = 0;
     
     virtual UIControlBackground *BeginBgPropertiesSection(int32 index, bool sectionHasProperties) = 0;

@@ -255,7 +255,7 @@ void EditorUIPackageBuilder::EndControlPropertiesSection()
     currentObject = NULL;
 }
 
-UIComponent *EditorUIPackageBuilder::BeginComponentPropertiesSecion(uint32 componentType)
+UIComponent *EditorUIPackageBuilder::BeginComponentPropertiesSecion(uint32 componentType, DAVA::uint32 componentIndex)
 {
     ControlNode *node = controlsStack.back().node;
     ComponentPropertiesSection * section = node->GetRootProperty()->AddComponentPropertiesSection(componentType);

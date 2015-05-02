@@ -26,8 +26,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_FAKE_COMPONENT_H__
-#define __DAVAENGINE_UI_FAKE_COMPONENT_H__
+#ifndef __DAVAENGINE_UI_FAKE_MULTI_COMPONENT_H__
+#define __DAVAENGINE_UI_FAKE_MULTI_COMPONENT_H__
 
 #include "UIComponent.h"
 
@@ -35,44 +35,59 @@ namespace DAVA
 {
     class UIControl;
     
-    class UIFakeComponent : public UIComponent
+    class UIFakeMultiComponent : public UIComponent
     {
     public:
-        UIFakeComponent();
-        UIFakeComponent(UIFakeComponent *src);
+        UIFakeMultiComponent();
+        UIFakeMultiComponent(UIFakeMultiComponent *src);
         
     protected:
-        virtual ~UIFakeComponent();
+        virtual ~UIFakeMultiComponent();
         
     public:
-        IMPLEMENT_COMPONENT_TYPE(FAKE_COMPONENT);
+        IMPLEMENT_COMPONENT_TYPE(FAKE_MULTI_COMPONENT);
         
-        virtual UIFakeComponent* Clone() override;
-
+        virtual UIFakeMultiComponent* Clone() override;
+        
         int32 GetValue() const;
         void SetValue(int32 val);
+
+        const String &GetStrValue() const;
+        void SetStrValue(const String &val);
         
     private:
         int32 value;
+        String strValue;
         
     public:
-        INTROSPECTION_EXTEND(UIFakeComponent, UIComponent,
+        INTROSPECTION_EXTEND(UIFakeMultiComponent, UIComponent,
                              PROPERTY("value", "Value", GetValue, SetValue, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("strValue", "String Value", GetStrValue, SetStrValue, I_SAVE | I_VIEW | I_EDIT)
                              );
         
     };
-
-    inline int32 UIFakeComponent::GetValue() const
+    
+    inline int32 UIFakeMultiComponent::GetValue() const
     {
         return value;
     }
     
-    inline void UIFakeComponent::SetValue(int32 val)
+    inline void UIFakeMultiComponent::SetValue(int32 val)
     {
         value = val;
+    }
+
+    inline const String &UIFakeMultiComponent::GetStrValue() const
+    {
+        return strValue;
+    }
+    
+    inline void UIFakeMultiComponent::SetStrValue(const String &val)
+    {
+        strValue = val;
     }
 
 }
 
 
-#endif //__DAVAENGINE_UI_FAKE_COMPONENT_H__
+#endif //__DAVAENGINE_UI_FAKE_MULTI_COMPONENT_H__

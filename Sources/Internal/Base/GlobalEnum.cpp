@@ -283,6 +283,7 @@ ENUM_DECLARE(UITextField::eReturnKeyType)
 ENUM_DECLARE(UIComponent::eType)
 {
     ENUM_ADD_DESCR(UIComponent::FAKE_COMPONENT       , "Fake"       );
+    ENUM_ADD_DESCR(UIComponent::FAKE_MULTI_COMPONENT       , "FakeMultiple"       );
 };
 
 /*

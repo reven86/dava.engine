@@ -30,6 +30,7 @@
 #include "UI/UIControl.h"
 
 #include "UIFakeComponent.h"
+#include "UIFakeMultiComponent.h"
 
 namespace DAVA
 {
@@ -49,6 +50,9 @@ UIComponent * UIComponent::CreateByType(uint32 componentType)
     {
         case FAKE_COMPONENT:
             return new UIFakeComponent();
+
+        case FAKE_MULTI_COMPONENT:
+            return new UIFakeMultiComponent();
             
         default:
             DVASSERT(false);
@@ -56,5 +60,23 @@ UIComponent * UIComponent::CreateByType(uint32 componentType)
     }
     
 }
+    
+bool UIComponent::IsMultiple(uint32 componentType)
+{
+    switch (componentType)
+    {
+        case FAKE_COMPONENT:
+            return false;
+            
+        case FAKE_MULTI_COMPONENT:
+            return true;
+            
+        default:
+            DVASSERT(false);
+            return nullptr;
+    }
+    
+}
+
 
 }

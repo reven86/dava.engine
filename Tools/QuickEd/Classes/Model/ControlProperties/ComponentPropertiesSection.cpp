@@ -11,15 +11,14 @@ ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl *aControl
     : SectionProperty("")
     , control(SafeRetain(aControl))
     , component(nullptr)
+    , index(0)
 {
     component = UIComponent::CreateByType(type);
     DVASSERT(component);
 
-    control->AddComponent(component);
-    
     if (component)
     {
-        name = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(component->GetType());
+        name = GetComponentName();
 
         const InspInfo *insp = component->GetTypeInfo();
         for (int j = 0; j < insp->MembersCount(); j++)
@@ -72,6 +71,10 @@ void ComponentPropertiesSection::InstallComponent()
     if (control->GetComponent(component->GetType(), 0) != component)
     {
         control->AddComponent(component);
+        
+        name = GetComponentName();
+        if (UIComponent::IsMultiple(component->GetType()))
+            name += Format(" [%d]", index);
     }
 }
 
@@ -87,10 +90,19 @@ void ComponentPropertiesSection::UninstallComponent()
 
 void ComponentPropertiesSection::Serialize(PackageSerializer *serializer) const
 {
-    serializer->BeginMap(GetName());
+    String name = GetComponentName();
+    if (UIComponent::IsMultiple(component->GetType()))
+        name += Format("%d", index);
+    
+    serializer->BeginMap(name);
     
     for (const auto child : children)
         child->Serialize(serializer);
     
     serializer->EndMap();
+}
+
+String ComponentPropertiesSection::GetComponentName() const
+{
+    return GlobalEnumMap<UIComponent::eType>::Instance()->ToString(component->GetType());
 }

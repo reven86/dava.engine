@@ -41,6 +41,7 @@ public:
     enum eType
     {
         FAKE_COMPONENT,
+        FAKE_MULTI_COMPONENT,
         
         COMPONENT_COUNT
     };
@@ -50,13 +51,14 @@ public:
     virtual ~UIComponent();
 
     static UIComponent * CreateByType(uint32 componentType);
+    static bool IsMultiple(uint32 componentType);
 
     virtual uint32 GetType() const = 0;
 
     void SetControl(UIControl* _control);
     UIControl* GetControl() const;
 
-    virtual UIComponent* Clone(UIControl * toControl) = 0;
+    virtual UIComponent* Clone() = 0;
 
 private:
     UIControl* control;

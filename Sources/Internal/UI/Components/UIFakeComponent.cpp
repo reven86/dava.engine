@@ -8,20 +8,21 @@ UIFakeComponent::UIFakeComponent()
 {
     
 }
+    
+UIFakeComponent::UIFakeComponent(UIFakeComponent *src)
+    : value(src->value)
+{
+}
+
 
 UIFakeComponent::~UIFakeComponent()
 {
     
 }
 
-UIFakeComponent* UIFakeComponent::Clone(UIControl * toControl)
+UIFakeComponent* UIFakeComponent::Clone()
 {
-    UIFakeComponent *component = new UIFakeComponent();
-    component->SetControl(toControl);
-    
-    component->Clone(toControl);
-    component->SetValue(value);
-    return component;
+    return new UIFakeComponent(this);
 }
 
 }

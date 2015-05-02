@@ -114,7 +114,16 @@ ControlPropertiesSection *RootProperty::GetControlPropertiesSection(const DAVA::
 
 bool RootProperty::CanAddComponent(DAVA::uint32 componentType) const
 {
-    return !IsReadOnly() && FindComponentPropertiesSection(componentType) == nullptr;
+    if (IsReadOnly())
+        return false;
+    
+    if (UIComponent::IsMultiple(componentType))
+        return true;
+    
+    if (FindComponentPropertiesSection(componentType) == nullptr)
+        return true;
+    
+    return false;
 }
 
 bool RootProperty::CanRemoveComponent(DAVA::uint32 componentType) const
@@ -164,7 +173,8 @@ ComponentPropertiesSection *RootProperty::AddComponentPropertiesSection(DAVA::ui
 
 void RootProperty::AddComponentPropertiesSection(ComponentPropertiesSection *section)
 {
-    if (FindComponentPropertiesSection(section->GetComponentType()) == nullptr)
+    uint32 componentType = section->GetComponentType();
+    if (UIComponent::IsMultiple(componentType) || FindComponentPropertiesSection(componentType) == nullptr)
     {
         int index = GetIndexOfCompoentPropertiesSection(section);
         for (PropertyListener *listener : listeners)

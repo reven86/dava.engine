@@ -27,10 +27,14 @@ public:
     void UninstallComponent();
 
     virtual void Serialize(PackageSerializer *serializer) const override;
+
+private:
+    DAVA::String GetComponentName() const;
     
 private:
     DAVA::UIControl *control;
     DAVA::UIComponent *component;
+    DAVA::int32 index;
 };
 
 #endif // __QUICKED_COMPONENT_PROPERTIES_SECTION_H__

@@ -257,37 +257,65 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, cons
     
 void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
 {
-    const YamlNode *componentsNode = node ? node->Get("components") : nullptr;
-    
-    if (componentsNode)
+    Vector<ComponentNode> components = ExtractComponentNodes(node);
+    for (auto &nodeDescr : components)
     {
-        for (uint32 i = 0; i < componentsNode->GetCount(); i++)
+        UIComponent *component = builder->BeginComponentPropertiesSecion(nodeDescr.type, nodeDescr.index);
+        if (component)
         {
-            const YamlNode *componentNode = componentsNode->Get(i);
-
-            const EnumMap *componentTypes = GlobalEnumMap<UIComponent::eType>::Instance();
-            int32 componentType = 0;
-            if (componentTypes->ToValue(componentsNode->GetItemKeyName(i).c_str(), componentType))
+            const InspInfo *insp = component->GetTypeInfo();
+            for (int32 j = 0; j < insp->MembersCount(); j++)
             {
-                DVASSERT(componentType < UIComponent::COMPONENT_COUNT);
-                UIComponent *component = builder->BeginComponentPropertiesSecion(componentType);
-                if (component)
-                {
-                    const InspInfo *insp = component->GetTypeInfo();
-                    for (int32 j = 0; j < insp->MembersCount(); j++)
-                    {
-                        const InspMember *member = insp->Member(j);
-                        VariantType res;
-                        if (componentNode)
-                            res = ReadVariantTypeFromYamlNode(member, componentNode);
-                        builder->ProcessProperty(member, res);
-                    }
-                }
-                
-                builder->EndComponentPropertiesSecion();
+                const InspMember *member = insp->Member(j);
+                VariantType res = ReadVariantTypeFromYamlNode(member, nodeDescr.node);
+                builder->ProcessProperty(member, res);
             }
         }
+        
+        builder->EndComponentPropertiesSecion();
     }
+}
+
+Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(const YamlNode *node)
+{
+    const YamlNode *componentsNode = node ? node->Get("components") : nullptr;
+
+    Vector<ComponentNode> components;
+
+    if (componentsNode)
+    {
+        const EnumMap *componentTypes = GlobalEnumMap<UIComponent::eType>::Instance();
+        
+        for (uint32 i = 0; i < componentsNode->GetCount(); i++)
+        {
+            const String &fullName = componentsNode->GetItemKeyName(i);
+            String::size_type lastChar = fullName.find_last_not_of("0123456789");
+            String componentName = fullName.substr(0, lastChar + 1);
+            uint32 componentIndex = atoi(fullName.substr(lastChar + 1).c_str());
+            
+            int32 componentType = 0;
+            if (componentTypes->ToValue(componentName.c_str(), componentType))
+            {
+                if (componentType < UIComponent::COMPONENT_COUNT)
+                {
+                    ComponentNode n;
+                    n.node = componentsNode->Get(i);
+                    n.type = componentType;
+                    n.index = componentIndex;
+                    components.push_back(n);
+                }
+                else
+                {
+                    DVASSERT(false);
+                }
+            }
+        }
+        
+        std::stable_sort(components.begin(), components.end(), [](ComponentNode l, ComponentNode r) {
+            return l.type == r.type ? l.index < r.index : l.type < r.type;
+        });
+    }
+    return components;
 }
 
 void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
