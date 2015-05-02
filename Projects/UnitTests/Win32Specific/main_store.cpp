@@ -38,8 +38,7 @@ int main(Platform::Array<Platform::String^>^ args)
 
     //converting unicode args to char* args
     Vector<String> conv_args(args->Length);
-    char** args_array = new char*[args->Length];
-    SCOPE_EXIT { delete[] args_array; };
+    Vector<char*> args_array(args->Length);
 
     for (size_t i = 0; i < conv_args.size(); ++i)
     {
@@ -47,7 +46,7 @@ int main(Platform::Array<Platform::String^>^ args)
         args_array[i] = &conv_args[i][0];
     }
 
-    return Core::Run(args->Length, args_array);
+    return Core::Run(args->Length, args_array.data());
 }
 
 #endif // defined(__DAVAENGINE_WINDOWS_STORE__)
