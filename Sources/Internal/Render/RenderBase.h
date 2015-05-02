@@ -65,7 +65,7 @@
 
 	#include <OpenGL/OpenGL.h>
 	//	#include <GLUT/glut.h>
-#elif defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WINDOWS_DESKTOP__)
  	#if defined(__DAVAENGINE_RENDER_AUTOCONFIG__)
  	#define __DAVAENGINE_DIRECTX9__
 //	#define __DAVAENGINE_OPENGL__
@@ -82,7 +82,17 @@
 		#define D3D_DEBUG_INFO
 		#include <d3d9.h>
 		#include <dxerr.h>
-#endif 
+    #endif
+
+
+#elif defined(__DAVAENGINE_WINDOWS_STORE__)
+
+#define GL_GLEXT_PROTOTYPES
+#include <angle_gl.h>
+#include <angle_windowsstore.h>
+
+#define __DAVAENGINE_OPENGL_ES__
+
 #elif defined(__DAVAENGINE_ANDROID__)
 	#define __DAVAENGINE_OPENGL__
     #include <android/api-level.h>

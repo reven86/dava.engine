@@ -409,7 +409,9 @@ void RenderManager::ClearWithColor(float32 r, float32 g, float32 b, float32 a)
 
 void RenderManager::ClearDepthBuffer(float32 depth)
 {
-#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || \
+    defined (__DAVAENGINE_ANDROID__) || \
+    defined (__DAVAENGINE_WINDOWS_STORE__)
     RENDER_VERIFY(glClearDepthf(depth));
 #else //#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glClearDepth(depth));
@@ -426,7 +428,9 @@ void RenderManager::ClearStencilBuffer(int32 stencil)
 void RenderManager::Clear(const Color & color, float32 depth, int32 stencil)
 {
     RENDER_VERIFY(glClearColor(color.r, color.g, color.b, color.a));
-#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || \
+    defined (__DAVAENGINE_ANDROID__) || \
+    defined (__DAVAENGINE_WINDOWS_STORE__)
     RENDER_VERIFY(glClearDepthf(depth));
 #else //#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glClearDepth(depth));

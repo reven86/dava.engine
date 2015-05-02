@@ -335,7 +335,7 @@ void RenderHelper::DrawPoint(const Vector2 & pt, float32 ptSize, UniqueHandle re
 
     RenderSystem2D::Instance()->UpdateClip();
 
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
     glPointSize(ptSize);
 #endif 
     vertexStream->Set(TYPE_FLOAT, 2, 0, (void*)&pt);
@@ -344,7 +344,7 @@ void RenderHelper::DrawPoint(const Vector2 & pt, float32 ptSize, UniqueHandle re
     RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, 1);
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
     glPointSize(1.0f);
 #endif
 }
@@ -355,7 +355,7 @@ void RenderHelper::DrawPoint(const Vector3 & pt, float32 ptSize, UniqueHandle re
 
     RenderSystem2D::Instance()->UpdateClip();
 
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
     glPointSize(ptSize);
 #endif 
     vertexStream->Set(TYPE_FLOAT, 3, 0, (void*)&pt);
@@ -364,7 +364,7 @@ void RenderHelper::DrawPoint(const Vector3 & pt, float32 ptSize, UniqueHandle re
     RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, 1);
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
     glPointSize(1.0f);
 #endif		
 }
@@ -530,7 +530,7 @@ void RenderHelper::DrawPolygonPoints(const Polygon2 & polygon, UniqueHandle rend
 	int ptCount = polygon.pointCount;
 	if (ptCount >= 1)
 	{
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
         glPointSize(3.0f);
 #endif 
         
@@ -539,7 +539,7 @@ void RenderHelper::DrawPolygonPoints(const Polygon2 & polygon, UniqueHandle rend
         RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(renderDataObject);
 		RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, ptCount);
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
 		glPointSize(1.0f);
 #endif		
 	}
@@ -554,7 +554,7 @@ void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon, UniqueHandle rend
 	int ptCount = polygon.pointCount;
 	if (ptCount >= 1)
 	{
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
         glPointSize(3.0f);
 #endif 
 		vertexStream->Set(TYPE_FLOAT, 3, 0, polygon.GetPoints());
@@ -562,7 +562,7 @@ void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon, UniqueHandle rend
         RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(renderDataObject);
 		RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, ptCount);
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
 		glPointSize(1.0f);
 #endif		
 	}
@@ -1337,8 +1337,17 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 		int32 lineWidthMax = 1;
 
 #if defined (__DAVAENGINE_OPENGL__)
+
+        GLenum pname;
+#if defined (__DAVAENGINE_OPENGL_ES__)
+        pname = GL_ALIASED_LINE_WIDTH_RANGE;
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#else
+        pname = GL_LINE_WIDTH_RANGE;
+#endif
+
 		GLint range[2];
-		glGetIntegerv(GL_LINE_WIDTH_RANGE, range);
+		glGetIntegerv(pname, range);
 		lineWidthMin = range[0];
 		lineWidthMax = range[1];
 #endif

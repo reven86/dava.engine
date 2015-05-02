@@ -457,7 +457,11 @@ inline void RenderState::SetScissorTestInHW(uint32 state) const
 
 inline void RenderState::SetFillModeInHW(eFillMode fillMode) const
 {
-#if defined(__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS_STORE__)
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#endif
+
+#if defined(__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS_DESKTOP__)
 	RENDER_VERIFY(glPolygonMode(GL_FRONT_AND_BACK, FILLMODE_MAP[fillMode]));
 #endif
 }
