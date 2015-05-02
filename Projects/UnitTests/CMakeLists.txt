@@ -11,7 +11,7 @@ endif()
 if ( NOT WINDOWS_STORE AND NOT WINDOWS_PHONE )
     add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
 else()
-    message(WARNING "Windows store platform detected. Memory profiling is disabled")
+    message(WARNING "Windows Store platform detected. Memory profiling is disabled")
 endif()
 
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
