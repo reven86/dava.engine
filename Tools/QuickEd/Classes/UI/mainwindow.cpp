@@ -70,12 +70,9 @@ MainWindow::MainWindow(QWidget *parent)
     , backgroundFrameSelectCustomColorAction(nullptr)
     , localizationEditorDialog(new LocalizationEditorDialog(this))
 {
-    connect(localizationEditorDialog, &LocalizationEditorDialog::LanguageChanged, this, &MainWindow::LanguageChanged);
-
     setupUi(this);
 
     InitLanguageBox();
-
 
     tabBar->setElideMode(Qt::ElideNone);
     setWindowTitle(ResourcesManageHelper::GetProjectTitle());

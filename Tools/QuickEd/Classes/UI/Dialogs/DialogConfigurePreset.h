@@ -50,10 +50,11 @@ private slots:
     void OnLocalizedFontChanged(const QString &arg);
     void OnLocalizedFontSizeChanged(int size);
 
-    void OnLocaleChanged(const QString &arg);
+    void OnCurrentLocaleChanged(const QString &arg);
     void OnResetLocale();
     void OnApplyToAllLocales();
-    void OnSave();
+    void OnOk();
+    void OnCancel();
 private:
     void UpdateDefaultFontWidgets();
     void UpdateLocalizedFontWidgets();

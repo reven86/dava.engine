@@ -25,7 +25,6 @@ Project::Project(QObject *parent)
     , isOpen(false)
 {
     legacyData = new LegacyControlData();
-    connect(editorLocalizationSystem, &EditorLocalizationSystem::LocaleChanged, editorFontSystem, &EditorFontSystem::RegisterCurrentLocaleFonts);
 }
 
 Project::~Project()

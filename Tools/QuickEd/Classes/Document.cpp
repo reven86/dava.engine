@@ -20,6 +20,7 @@
 #include "SharedData.h"
 #include "Project/Project.h"
 #include "Project/EditorFontSystem.h"
+#include "Project/EditorLocalizationSystem.h"
 
 #include "Ui/QtModelPackageCommandExecutor.h"
 
@@ -34,7 +35,6 @@ Document::Document(PackageNode *_package, QObject *parent)
 {
     InitSharedData();
     connect(sharedData, &SharedData::DataChanged, this, &Document::SharedDataChanged);
-    connect(Project::Instance()->GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::UpdateFontPreset);
 }
 
 void Document::InitSharedData()
@@ -75,15 +75,25 @@ PackageModel* Document::GetPackageModel() const
 
 void Document::UpdateLanguage()
 {
+    UpdateProperty("text");
+}
+
+void Document::UpdateFontPreset()
+{
+    UpdateProperty("font");
+}
+
+void Document::UpdateProperty(const String &property)
+{
     QList<ControlNode*> activeRootControls;
     PackageControlsNode *controlsNode = package->GetPackageControlsNode();
     for (int32 index = 0; index < controlsNode->GetCount(); ++index)
     {
-        UpdatePropertyRecursively(controlsNode->Get(index), "text");
+        UpdatePropertyRecursively(controlsNode->Get(index), property);
     }
 }
 
-void Document::UpdateFontPreset(const QString &oldPresetName, const QString& newPresetName)
+void Document::NewFontPreset(const QString &oldPresetName, const QString& newPresetName)
 {
     QList<ControlNode*> activeRootControls;
     PackageControlsNode *controlsNode = package->GetPackageControlsNode();

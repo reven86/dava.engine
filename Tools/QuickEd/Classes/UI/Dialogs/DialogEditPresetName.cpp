@@ -97,6 +97,6 @@ void DialogEditPresetName::OnApplyToAllClicked()
     auto editorFontSystem = Project::Instance()->GetEditorFontSystem();
     editorFontSystem->UseNewPreset(originalPresetName.toStdString(), lineEdit_newFontPresetName->text().toStdString());
     editorFontSystem->SaveLocalizedFonts();
-    editorFontSystem->UpdateFontPreset(originalPresetName, lineEdit_newFontPresetName->text());
+    editorFontSystem->NewFontPreset(originalPresetName, lineEdit_newFontPresetName->text());
     accept();
 }

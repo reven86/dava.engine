@@ -66,7 +66,7 @@ void EditorFontSystem::SetFont(const String &presetName, const String &locale, F
     if (locale == LocalizationSystem::Instance()->GetCurrentLocale())
     {
         FontManager::Instance()->SetFontName(font, presetName);
-        emit UpdateFontPreset(QString::fromStdString(presetName), QString::fromStdString(presetName));
+        emit NewFontPreset(QString::fromStdString(presetName), QString::fromStdString(presetName));
         FontManager::Instance()->UnregisterFont(oldFont);
     }
     font->Release();
@@ -134,9 +134,12 @@ void EditorFontSystem::ClearAllFonts()
 
 void EditorFontSystem::RegisterCurrentLocaleFonts()
 {
+    auto locale = LocalizationSystem::Instance()->GetCurrentLocale();
+    Logger::FrameworkDebug("EditorFontSystem::RegisterCurrentLocaleFonts: locale = %s", locale.c_str());
     auto it = localizedFonts.find(LocalizationSystem::Instance()->GetCurrentLocale());
     const auto &fonts = it != localizedFonts.end() ? it->second : localizedFonts.at("default");
     FontManager::Instance()->RegisterFonts(fonts);
+    emit UpdateFontPreset();
 }
 
 

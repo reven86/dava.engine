@@ -31,6 +31,10 @@ protected slots:
     void Exit();
     void RecentMenu(QAction *);
     void OnCurrentTabChanged(int index);
+    
+    void UpdateLanguage();
+    void UpdateFontPreset();
+    void NewFontPreset(const QString &oldPresetName, const QString &newPresetName);
 
 protected:
     void OpenProject(const QString &path);

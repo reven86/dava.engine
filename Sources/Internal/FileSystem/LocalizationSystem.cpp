@@ -103,7 +103,7 @@ void LocalizationSystem::Init()
 	LoadStringFile(langId, directoryPath + (langId + ".yaml"));
 }
 
-String LocalizationSystem::GetDeviceLocale()
+String LocalizationSystem::GetDeviceLocale() const
 {
 #if defined(__DAVAENGINE_IPHONE__)
 	return String(LocalizationIPhone::GetDeviceLang());
@@ -114,7 +114,7 @@ String LocalizationSystem::GetDeviceLocale()
 #endif
 }
     
-const String &LocalizationSystem::GetCurrentLocale()
+const String &LocalizationSystem::GetCurrentLocale() const
 {
 	return langId;
 }
@@ -349,14 +349,14 @@ void LocalizationSystem::UnloadStringFile(const FilePath & fileName)
 	DVASSERT(0 && "Method do not implemented");
 }
 
-WideString LocalizationSystem::GetLocalizedString(const WideString & key)
+WideString LocalizationSystem::GetLocalizedString(const WideString & key) const
 {
 	//List<StringFile*>::const_reverse_iterator rEnd = stringsList.rend();
-	for (List<StringFile*>::reverse_iterator it = stringsList.rbegin(); it != stringsList.rend(); ++it)
+	for (List<StringFile*>::const_reverse_iterator it = stringsList.rbegin(); it != stringsList.rend(); ++it)
 	{
 		StringFile * file = *it;
 
-		Map<WideString, WideString>::iterator res = file->strings.find(key);
+		Map<WideString, WideString>::const_iterator res = file->strings.find(key);
 		if (res != file->strings.end())
 		{
 			return res->second;
@@ -365,15 +365,15 @@ WideString LocalizationSystem::GetLocalizedString(const WideString & key)
 	return key;
 }
 
-WideString LocalizationSystem::GetLocalizedString(const WideString & key, const String &langId)
+WideString LocalizationSystem::GetLocalizedString(const WideString & key, const String &langId) const
 {
-    for (List<StringFile*>::reverse_iterator it = stringsList.rbegin(); it != stringsList.rend(); ++it)
+    for (List<StringFile*>::const_reverse_iterator it = stringsList.rbegin(); it != stringsList.rend(); ++it)
     {
         StringFile * file = *it;
 
         if(file->langId.compare(langId) == 0)
         {
-            Map<WideString, WideString>::iterator res = file->strings.find(key);
+            Map<WideString, WideString>::const_iterator res = file->strings.find(key);
             if (res != file->strings.end())
             {
                 return res->second;
@@ -430,9 +430,9 @@ void LocalizationSystem::Cleanup()
 	SafeDeleteArray(dataHolder->data);
 }
 
-bool LocalizationSystem::GetStringsForCurrentLocale(Map<WideString, WideString>& strings)
+bool LocalizationSystem::GetStringsForCurrentLocale(Map<WideString, WideString>& strings) const
 {
-	for (List<StringFile*>::iterator iter = stringsList.begin(); iter != stringsList.end();
+	for (List<StringFile*>::const_iterator iter = stringsList.begin(); iter != stringsList.end();
 		 iter ++)
 	{
 		if ((*iter)->langId == GetCurrentLocale())

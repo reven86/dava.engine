@@ -175,8 +175,6 @@ public:
     void UpdateDefaultLanguage();
     void FillLocaleComboBox();
 
-signals:
-    void LanguageChanged();
 protected:
 	// Setup the Localization Table Model.
 //	void SetupLocalizationTable();

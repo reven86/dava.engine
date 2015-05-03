@@ -59,11 +59,11 @@ DialogConfigurePreset::DialogConfigurePreset(const QString& originalPresetNameAr
     connect(spinBox_defaultFontSize, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &DialogConfigurePreset::OnDefaultFontSizeChanged);
     connect(comboBox_localizedFont, &QComboBox::currentTextChanged, this, &DialogConfigurePreset::OnLocalizedFontChanged);
     connect(spinBox_localizedFontSize, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &DialogConfigurePreset::OnLocalizedFontSizeChanged);
-    connect(comboBox_locale, &QComboBox::currentTextChanged, this, &DialogConfigurePreset::OnLocaleChanged);
+    connect(comboBox_locale, &QComboBox::currentTextChanged, this, &DialogConfigurePreset::OnCurrentLocaleChanged);
     connect(pushButton_resetLocale, &QPushButton::clicked, this, &DialogConfigurePreset::OnResetLocale);
     connect(pushButton_applyDefaultToAllLocales, &QPushButton::clicked, this, &DialogConfigurePreset::OnApplyToAllLocales);
-    connect(pushButton_save, &QPushButton::clicked, this, &DialogConfigurePreset::OnSave);
-    connect(pushButton_cancel, &QPushButton::clicked, this, &DialogConfigurePreset::reject);
+    connect(pushButton_ok, &QPushButton::clicked, this, &DialogConfigurePreset::OnOk);
+    connect(pushButton_cancel, &QPushButton::clicked, this, &DialogConfigurePreset::OnCancel);
 }
 
 void DialogConfigurePreset::initPreset()
@@ -92,7 +92,7 @@ void DialogConfigurePreset::OnLocalizedFontSizeChanged(int size)
     SetFont(comboBox_localizedFont->currentText(), size, comboBox_locale->currentText());
 }
 
-void DialogConfigurePreset::OnLocaleChanged(const QString& arg)
+void DialogConfigurePreset::OnCurrentLocaleChanged(const QString& arg)
 {
     UpdateLocalizedFontWidgets();
 }
@@ -112,9 +112,16 @@ void DialogConfigurePreset::OnApplyToAllLocales()
     }
 }
 
-void DialogConfigurePreset::OnSave()
+void DialogConfigurePreset::OnOk()
 {
     Project::Instance()->GetEditorFontSystem()->SaveLocalizedFonts();
+    accept();
+}
+
+void DialogConfigurePreset::OnCancel()
+{
+    Project::Instance()->GetEditorFontSystem()->LoadLocalizedFonts();
+    reject();
 }
 
 void DialogConfigurePreset::UpdateDefaultFontWidgets()

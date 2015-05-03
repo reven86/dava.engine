@@ -88,7 +88,6 @@ signals:
     void SaveDocument(int index);
     void CurrentTabChanged(int index);
     void CloseRequested();
-    void LanguageChanged();
 public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);

@@ -560,10 +560,11 @@ LocalizationEditorDialog::~LocalizationEditorDialog()
 
 void LocalizationEditorDialog::FillLocaleComboBox()
 {
+    currentLocaleComboBox->blockSignals(true);
     currentLocaleComboBox->clear();
     // Get count of supported languages
     const auto &locales = Project::Instance()->GetEditorLocalizationSystem()->GetAvailableLocales();
-    for (auto &localeName : locales)    // Fill combobox with language values
+    for (const auto &localeName : locales)    // Fill combobox with language values
     {        
         QLocale locale(localeName);
         QString lang;
@@ -581,6 +582,7 @@ void LocalizationEditorDialog::FillLocaleComboBox()
         }
         currentLocaleComboBox->addItem(lang);
     }
+    currentLocaleComboBox->blockSignals(false);
     // Setup default locale
     UpdateDefaultLanguage();
 }
@@ -593,7 +595,7 @@ void LocalizationEditorDialog::ConnectToSignals()
     // Open locale directory button clicked event
     connect(openLocalizationFileButton, SIGNAL(clicked()), this, SLOT(OnOpenLocalizationFileButtonClicked()));
     // Locale combobox value changed event
-    connect(currentLocaleComboBox, SIGNAL(activated(int)), this, SLOT(OnCurrentLocaleChanged(int)));
+    connect(currentLocaleComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentLocaleChanged(int)));
     // Close dialog if ok button clicked
     connect(closeButton, SIGNAL(clicked()), this, SLOT(CloseDialog()));
 	
@@ -616,7 +618,7 @@ void LocalizationEditorDialog::DisconnectFromSignals()
     // Open locale directory button clicked event
     disconnect(openLocalizationFileButton, SIGNAL(clicked()), this, SLOT(OnOpenLocalizationFileButtonClicked()));
     // Locale combobox value changed event
-    disconnect(currentLocaleComboBox, SIGNAL(activated(int)), this, SLOT(OnCurrentLocaleChanged(int)));
+    disconnect(currentLocaleComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentLocaleChanged(int)));
     // Close dialog if ok button clicked
     disconnect(closeButton, SIGNAL(clicked()), this, SLOT(CloseDialog()));
 	
@@ -711,15 +713,12 @@ void LocalizationEditorDialog::ReinitializeLocalizationSystem(const QString& loc
         localizationFilePath.MakeDirectoryPathname();
 
         Project::Instance()->GetEditorLocalizationSystem()->SetDirectory(localizationFilePath);
-        Logger::Debug("HierarchyTreeController::ReinitializeLocalizationSystem LocalizationSystem::Instance()->SetCurrentLocale(%s);", locale);
         Project::Instance()->GetEditorLocalizationSystem()->SetCurrentLocale(locale.toStdString());
         Project::Instance()->GetEditorLocalizationSystem()->Init();
     }
     
 	stringsTable->ReloadTable();
-    fontsTable->ReloadTable();
-    emit LanguageChanged();
-    
+    fontsTable->ReloadTable();    
 //    HierarchyTreeController::Instance()->UpdateLocalization(true);
 }
 

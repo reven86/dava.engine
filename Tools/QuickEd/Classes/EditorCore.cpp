@@ -7,6 +7,9 @@
 #include "EditorCore.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "SharedData.h"
+#include "Project/Project.h"
+#include "Project/EditorFontSystem.h"
+#include "Project/EditorLocalizationSystem.h"
 
 EditorCore::EditorCore(QObject *parent)
     : QObject(parent)
@@ -37,6 +40,10 @@ EditorCore::EditorCore(QObject *parent)
 
     connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->previewWidget, &PreviewWidget::OnDocumentChanged);
     connect(documentGroup, &DocumentGroup::SharedDataChanged, mainWindow->previewWidget, &PreviewWidget::OnDataChanged);
+    
+    connect(Project::Instance()->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
+    connect(Project::Instance()->GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &EditorCore::UpdateFontPreset);
+    connect(Project::Instance()->GetEditorFontSystem(), &EditorFontSystem::NewFontPreset, this, &EditorCore::NewFontPreset);
 
     qApp->installEventFilter(this);
 }
@@ -154,6 +161,31 @@ void EditorCore::OnCurrentTabChanged(int index)
     documentGroup->SetActiveDocument(index == -1 ? nullptr : documents.at(index));
 }
 
+void EditorCore::UpdateLanguage()
+{
+    project->GetEditorFontSystem()->RegisterCurrentLocaleFonts();
+    for(auto &document : documents)
+    {
+        document->UpdateLanguage();
+    }
+}
+
+void EditorCore::UpdateFontPreset()
+{
+    for(auto &document : documents)
+    {
+        document->UpdateFontPreset();
+    }
+}
+
+void EditorCore::NewFontPreset(const QString &oldPresetName, const QString &newPresetName)
+{
+    for(auto &document : documents)
+    {
+        document->NewFontPreset(oldPresetName, newPresetName);
+    }
+}
+
 void EditorCore::OpenProject(const QString &path)
 {
     if (!CloseProject())
@@ -226,7 +258,6 @@ void EditorCore::CloseDocument(int index)
 int EditorCore::CreateDocument(PackageNode *package)
 {
     Document *document = new Document(package, this);
-    connect(mainWindow, &MainWindow::LanguageChanged, document, &Document::UpdateLanguage);
     connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &EditorCore::OnCleanChanged);
     documents.push_back(document);
     documentGroup->AddDocument(document);
