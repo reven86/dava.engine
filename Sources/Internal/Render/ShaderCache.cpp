@@ -64,8 +64,11 @@ const char* fProgText =
 "\n"
 "\n"
 "DECL_SAMPLER2D(albedo)\n"
+"\n"
 "FPROG_BEGIN\n"
-"    float4  texColor = FP_TEXTURE2D( albedo, FP_IN(uv) );\n"
+"\n"
+"float4  texColor = FP_TEXTURE2D( albedo, FP_IN(uv) );\n"
+"\n"
 "    texColor.a = 1.0;\n"
 "    FP_OUT_COLOR = texColor;\n"
 "FPROG_END\n";

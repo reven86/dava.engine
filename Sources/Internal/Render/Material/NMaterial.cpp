@@ -154,7 +154,7 @@ const FastName& NMaterial::GetQualityGroup()
     return qualityGroup;
 }
 
-void NMaterial::AddProperty(const FastName& propName, float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize)
+void NMaterial::AddProperty(const FastName& propName, const float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize)
 {
     DVASSERT(localProperties.at(propName) == nullptr);
     NMaterialProperty *prop = new NMaterialProperty();
@@ -177,7 +177,7 @@ void NMaterial::RemoveProperty(const FastName& propName)
     InvalidateBufferBindings();
 }
 
-void NMaterial::SetPropertyValue(const FastName& propName, float32 *propData)
+void NMaterial::SetPropertyValue(const FastName& propName, const float32 *propData)
 {
     NMaterialProperty *prop = localProperties.at(propName);
     DVASSERT(prop != nullptr);
@@ -570,7 +570,10 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
         {
             String relativePathname = it->second->AsString();
             Texture* tx = Texture::CreateFromFile(serializationContext->GetScenePath() + relativePathname, FastName(""));
-            AddTexture(FastName(it->first), tx);
+            if (it->first == "colorTexture") //RHI_COMPLETE temporary for load landscape material
+                AddTexture(FastName("albedo"), tx);
+            else
+                AddTexture(FastName(it->first), tx);
             SafeRelease(tx);
         }
     }

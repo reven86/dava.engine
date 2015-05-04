@@ -94,10 +94,29 @@ class LinearQuadTree
 {
 public:
     
-    
-    
-
 };
+
+template <class T, std::size_t size>
+class CircularArray
+{
+public:
+    T & Next()
+    {
+        T & ret = elements[currentIndex];
+
+        if ((++currentIndex) == elements.size())
+            currentIndex = 0;
+
+        return ret;
+    }
+
+    std::array < T, size > elements;
+
+protected:
+    std::size_t currentIndex = 0;
+};
+
+using CircularIndexBufferArray = CircularArray<rhi::HIndexBuffer, 3>;
 
 /**    
     \brief Implementation of cdlod algorithm to render landscapes
@@ -118,7 +137,6 @@ public:
         TOP = 2,
         BOTTOM = 3,
     };
-#if RHI_COMPLETE
 	Landscape();
 	virtual ~Landscape();
 
@@ -136,6 +154,7 @@ public:
 	const static FastName PARAM_TILE_COLOR2;
 	const static FastName PARAM_TILE_COLOR3;
 
+    static NMaterial * CreateLandscapeMaterial();
     
     /**
         \brief Builds landscape from heightmap image and bounding box of this landscape block
@@ -206,41 +225,8 @@ public:
         \returns current texture
 	 */
 	virtual Texture * GetTexture(eTextureLevel level);
-    
-	/**
-        \brief Get texture name that was previously set in SetTexture.
-        \param[in] level level of texture you want to get name
-        \returns current texture name
-	 */
-    const FilePath & GetTextureName(eTextureLevel level);
 
-	/**
-        \brief Set texture name for export.
-        \param[in] level level of texture you want to set name
-        \param[in] newTextureName new texture name
-	 */
-    void SetTextureName(eTextureLevel level, const FilePath &newTextureName);
-    
-    
-	/**
-        \brief Set tiling for specific texture level.
-        This function gives you can control of tiling for specific landscape level.
-     */    
-    void SetTextureTiling(eTextureLevel level, const Vector2 & tiling);
-
-    /**
-        \brief Get tiling for specified texture level.
-        \returns Tiling for specified texture level.
-     */
-    Vector2 GetTextureTiling(eTextureLevel level); 
-
-    void SetTileColor(eTextureLevel level, const Color & color);
-    Color GetTileColor(eTextureLevel level);
-
-    /**
-        \brief Overloaded draw function to draw landscape
-     */
-	virtual void Draw(Camera * camera);
+    void PrepareToRender(Camera * camera) override;
 
 	/**
         \brief Get landscape mesh geometry.
@@ -255,23 +241,18 @@ public:
         \returns pathname of heightmap
      */
     const FilePath & GetHeightmapPathname();
-	
 	void SetHeightmapPathname(const FilePath & newPath);
 	
 	float32 GetLandscapeSize() const;
-	
 	void SetLandscapeSize(float32 newSize);
 
 	float32 GetLandscapeHeight() const;
-	
 	void SetLandscapeHeight(float32 newHeight);
     
-    void Create(NMaterial *fromMaterial = NULL);
+    void GetDataNodes(Set<DataNode*> & dataNodes) override;
+
     void Save(KeyedArchive * archive, SerializationContext * serializationContext);
     void Load(KeyedArchive * archive, SerializationContext * serializationContext);
-
-    DAVA_DEPRECATED(void LoadFog(KeyedArchive * archive, SerializationContext * serializationContext));
-    DAVA_DEPRECATED(void LoadMaterialProps(KeyedArchive * archive, SerializationContext * serializationContext));
     
     // TODO: Need comment here
 	bool PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * normal = 0) const;
@@ -289,6 +270,7 @@ public:
     LandscapeCursor *GetCursor();
     
 	virtual RenderObject * Clone(RenderObject *newObject);
+    virtual void RecalcBoundingBox();
 
 	int32 GetDrawIndices() const;
 	
@@ -296,7 +278,6 @@ public:
 
 protected:
 	
-	const static FastName PARAM_CAMERA_POSITION;
 	const static FastName PARAM_TEXTURE0_TILING;
 	const static FastName PARAM_TEXTURE1_TILING;
 	const static FastName PARAM_TEXTURE2_TILING;
@@ -329,7 +310,7 @@ protected:
    
     static const int32 RENDER_QUAD_WIDTH = 129;
     static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
-    static const int32 INDEX_ARRAY_COUNT = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH * 6;
+    static const int32 INDEX_ARRAY_COUNT = 10000 * 6; //10k triangles max
     
 
     void RecursiveBuild(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 level, int32 maxLevels);
@@ -337,39 +318,23 @@ protected:
     void FindNeighbours(LandQuadTreeNode<LandscapeQuad> * currentNode);
     void MarkFrames(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 & depth);
 
-    void BindMaterial(int32 lodLayer, Camera* camera);
-    void UnbindMaterial();
+    void GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippingFlags, Camera * camera);
+    void GenQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod);
+    void GenFans();
     
-    void DrawQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod);
-    void Draw(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippingFlags);
-    void DrawFans();
-
-    Texture * CreateTexture(eTextureLevel level, const FilePath & textureName);
-    
-    int16 AllocateRDOQuad(LandscapeQuad * quad);
-    void ReleaseAllRDOQuads();
-
-	int GetMaxLod(float32 quadDistance);
-	float32 GetQuadToCameraDistance(const Vector3& camPos, const LandscapeQuad& quad);
-	
-	void SetupMaterialProperties();
-	
-	void SetSpecularColor(const Color& color);
-	Color GetSpecularColor();
-	void SetSpecularShininess(const float32& shininess);
-	float32 GetSpecularShininess();
-	void SetSpecularMapPath(const FilePath& path);
-	FilePath GetSpecularMapPath();
+    int16 AllocateQuadVertexBuffer(LandscapeQuad * quad);
+    void AllocateGeometryData();
+    void ReleaseGeometryData();
     
     void SetLandscapeSize(const Vector3 & newSize);
-	
-    Vector<LandscapeVertex *> landscapeVerticesArray;
-    Vector<RenderDataObject *> landscapeRDOArray;
     
+    Vector<rhi::HVertexBuffer> vertexBuffers;
+    CircularIndexBufferArray indexBuffers;
+    rhi::HIndexBuffer currentIndexBuffer;
+
     uint16 * indices;
-    //Texture * textures[TEXTURE_COUNT];
-    //Vector<FilePath> textureNames;
-    
+    uint32 vertexLayoutUID;
+
     int32 lodLevelsCount;
     float32 lodDistance[8]; //
     float32 lodSqDistance[8];
@@ -379,19 +344,14 @@ protected:
     Vector<LandQuadTreeNode<LandscapeQuad>*> fans;
     
     int32 allocatedMemoryForQuads;
-    
-    Vector3 cameraPos;
+
     Frustum *frustum;
-    
-    ePrimitiveType primitypeType;
-    
-    //Vector2 textureTiling[TEXTURE_COUNT];
-    //Color tileColor[TEXTURE_COUNT];
     
 	LandscapeCursor * cursor;
         
     int16 queueRdoQuad;
-    int32 queueRenderCount;
+    int32 queueIndexCount;
+    int32 queueIndexOffset;
     uint16 * queueDrawIndices;
     
     void FlushQueue();
@@ -409,18 +369,14 @@ protected:
 
     int32 prevLodLayer;
     
-    int32 flashQueueCounter;
+    int32 flushQueueCounter;
     
     int32 nearLodIndex;
     int32 farLodIndex;
     
-	NMaterial* tileMaskMaterial;
-	//NMaterial* fullTiledMaterial;
-	//NMaterial* currentMaterial;
+	NMaterial* landscapeMaterial;
 	
 	uint32 drawIndices;
-	
-	void SetDefaultValues();
 
     FoliageSystem* foliageSystem;
 
@@ -431,7 +387,6 @@ public:
         PROPERTY("size", "Size", GetLandscapeSize, SetLandscapeSize, I_VIEW | I_EDIT)
         PROPERTY("height", "Height", GetLandscapeHeight, SetLandscapeHeight, I_VIEW | I_EDIT)
 		);
-#endif //RHI_COMPLETE
 };
 
 };

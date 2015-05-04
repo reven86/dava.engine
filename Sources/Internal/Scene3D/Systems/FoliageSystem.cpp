@@ -55,7 +55,6 @@ FoliageSystem::~FoliageSystem()
     
 void FoliageSystem::AddEntity(Entity * entity)
 {
-#if RHI_COMPLETE
     Landscape* landscapeRO = GetLandscape(entity);
     if(landscapeRO &&
         entity != landscapeEntity)
@@ -66,7 +65,6 @@ void FoliageSystem::AddEntity(Entity * entity)
         
         SyncFoliageWithLandscape();
     }
-#endif // RHI_COMPLETE
     
     VegetationRenderObject* vegetationRO = GetVegetation(entity);
     if(vegetationRO &&
@@ -178,7 +176,6 @@ void FoliageSystem::Process(float32 timeElapsed)
     
 void FoliageSystem::SyncFoliageWithLandscape()
 {
-#if RHI_COMPLETE
     if(landscapeEntity && foliageEntity)
     {
         Landscape* landscapeRO = GetLandscape(landscapeEntity);
@@ -190,7 +187,6 @@ void FoliageSystem::SyncFoliageWithLandscape()
                                            landscapeRO->GetLandscapeSize(),
                                            landscapeRO->GetLandscapeHeight()));
     }
-#endif // RHI_COMPLETE
 }
 
 void FoliageSystem::SetPerturbation(const Vector3& point,
