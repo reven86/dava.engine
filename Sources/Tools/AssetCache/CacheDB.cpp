@@ -27,59 +27,104 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_ASSET_CACHE_ITEM_KEY_H__
-#define __DAVAENGINE_ASSET_CACHE_ITEM_KEY_H__
 
-#include "Base/BaseTypes.h"
-#include "Utils/MD5.h"
+#include "AssetCache/CacheDB.h"
 
+#include "AssetCache/CacheItemKey.h"
+#include "AssetCache/ServerCacheEntry.h"
+
+#include "FileSystem/File.h"
+#include "FileSystem/FilePath.h"
+#include "FileSystem/KeyedArchive.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
     
-class KeyedArchive;
-    
 namespace AssetCache
 {
     
-class CacheItemKey
+CacheDB::CacheDB(const FilePath &path)
+    : storagePath(path)
 {
-    
-public:
-    static const uint32 HASH_SIZE = MD5::DIGEST_SIZE;
-    static const uint32 INTERNAL_DATA_SIZE = MD5::DIGEST_SIZE * 2;
-    
-public:
-    
-    CacheItemKey();
-    virtual ~CacheItemKey() = default;
+}
 
-    void Serialize(KeyedArchive * archieve) const;
-    void Deserialize(KeyedArchive * archieve);
-
-    bool operator == (const CacheItemKey &right) const;
-    bool operator < (const CacheItemKey &right) const;
-
-public:
-    
-    union InternalData
+ 
+void CacheDB::Save() const
+{
+    ScopedPtr<File> file(File::Create(storagePath, File::CREATE | File::WRITE));
+    if(static_cast<File*>(file) == nullptr)
     {
-        struct Keys
-        {
-            uint8 primary[HASH_SIZE];     // hash of data files
-            uint8 secondary[HASH_SIZE];   // hash of params
-        }hash;
-        
-        uint8 internalData[INTERNAL_DATA_SIZE];
-    };
+        Logger::Error("[CacheDB::%s] Cannot create file %s", __FUNCTION__, storagePath.GetStringValue().c_str());
+        return;
+    }
+
     
-    InternalData keyData;
-};
+}
+
+void CacheDB::Load()
+{
+    ScopedPtr<File> file(File::Create(storagePath, File::OPEN | File::READ));
+    if(static_cast<File*>(file) == nullptr)
+    {
+        Logger::Error("[CacheDB::%s] Cannot create file %s", __FUNCTION__, storagePath.GetStringValue().c_str());
+        return;
+    }
+    
+    
+}
+
+    
+void CacheDB::Serialize(KeyedArchive * archieve) const
+{
+    DVASSERT(nullptr != archieve);
+}
+    
+void CacheDB::Deserialize(KeyedArchive * archieve)
+{
+    DVASSERT(nullptr != archieve);
+}
+    
+bool CacheDB::operator == (const CacheDB &right) const
+{
+    return true;
+}
+    
+bool CacheDB::operator < (const CacheDB& right) const
+{
+    return false;
+}
+    
+bool CacheDB::Contains(const CacheItemKey &key) const
+{
+    auto found = cache.find(key);
+    
+    if(found != cache.end())
+    {
+        //TODO UpdateTouchTime
+        return true;
+    }
+    
+    return false;
+}
+    
+void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
+{
+    cache[key] = entry;
+    //TODO InitializeTouchTime
+}
+
+void CacheDB::Remove(const CacheItemKey &key)
+{
+    auto found = cache.find(key);
+    if(found != cache.end())
+    {
+        cache.erase(found);
+    }
+}
+    
     
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
-
-
-#endif // __DAVAENGINE_ASSET_CACHE_ITEM_KEY_H__
 

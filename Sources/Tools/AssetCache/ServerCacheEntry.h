@@ -27,59 +27,43 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_ASSET_CACHE_ITEM_KEY_H__
-#define __DAVAENGINE_ASSET_CACHE_ITEM_KEY_H__
+#ifndef __DAVAENGINE_ASSET_CACHE_SERVER_CACHE_ENTRY_H__
+#define __DAVAENGINE_ASSET_CACHE_SERVER_CACHE_ENTRY_H__
 
 #include "Base/BaseTypes.h"
-#include "Utils/MD5.h"
+#include "FileSystem/FilePath.h"
+
+#include "AssetCache/CacheItemKey.h"
+#include "AssetCache/CacheItemParams.h"
+#include "AssetCache/CachedFiles.h"
 
 
 namespace DAVA
 {
-    
 class KeyedArchive;
-    
+
 namespace AssetCache
 {
-    
-class CacheItemKey
+
+class ServerCacheEntry
 {
-    
-public:
-    static const uint32 HASH_SIZE = MD5::DIGEST_SIZE;
-    static const uint32 INTERNAL_DATA_SIZE = MD5::DIGEST_SIZE * 2;
-    
 public:
     
-    CacheItemKey();
-    virtual ~CacheItemKey() = default;
+    ServerCacheEntry();
+    virtual ~ServerCacheEntry() = default;
 
     void Serialize(KeyedArchive * archieve) const;
     void Deserialize(KeyedArchive * archieve);
 
-    bool operator == (const CacheItemKey &right) const;
-    bool operator < (const CacheItemKey &right) const;
+    bool operator == (const ServerCacheEntry &right) const;
 
-public:
+private:
     
-    union InternalData
-    {
-        struct Keys
-        {
-            uint8 primary[HASH_SIZE];     // hash of data files
-            uint8 secondary[HASH_SIZE];   // hash of params
-        }hash;
-        
-        uint8 internalData[INTERNAL_DATA_SIZE];
-    };
-    
-    InternalData keyData;
 };
-    
+
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
 
-
-#endif // __DAVAENGINE_ASSET_CACHE_ITEM_KEY_H__
+#endif // __DAVAENGINE_ASSET_CACHE_SERVER_CACHE_ENTRY_H__
 
