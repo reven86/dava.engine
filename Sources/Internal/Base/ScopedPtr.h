@@ -52,6 +52,7 @@ public:
 	
 	ScopedPtr(const ScopedPtr&);
 	const ScopedPtr& operator=(const ScopedPtr&);
+    const ScopedPtr& operator=(BASE_OBJECT* p);
 
 private:
 	BASE_OBJECT * object;
@@ -84,6 +85,18 @@ const ScopedPtr<BASE_OBJECT>& ScopedPtr<BASE_OBJECT>::operator=(const ScopedPtr&
 	object->Retain();
 
 	return *this;
+}
+
+template<typename BASE_OBJECT>
+const ScopedPtr<BASE_OBJECT>& ScopedPtr<BASE_OBJECT>::operator=(BASE_OBJECT* p)
+{
+    if (p != object)
+    {
+        SafeRelease(object);
+        object = p;
+    }
+
+    return *this;
 }
 
 template<typename BASE_OBJECT>

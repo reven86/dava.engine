@@ -46,7 +46,7 @@ class	FileList : public BaseObject
 protected:
 	virtual ~FileList();
 public:
-	FileList(const FilePath & filepath);
+	FileList(const FilePath & filepath, bool includeHidden = true);
 
 	/**
 		\brief Get total item count in current list
@@ -92,6 +92,8 @@ public:
 		\return true if this is ".", or ".." directory
 	 */
 	bool IsNavigationDirectory(int32 index) const;
+
+    bool IsHidden(int32 index) const;
 	
     void Sort();
     
@@ -102,6 +104,7 @@ private:
         String name;
 		uint32		size;
 		bool		isDirectory;
+        bool        isHidden;
         
         bool operator< (const FileEntry &other) const
         {
@@ -122,7 +125,6 @@ private:
 	int32				fileCount;
 	int32				directoryCount;
 };
-
 
 }; // end of namespace DAVA
 

@@ -32,6 +32,7 @@
 
 #include "fribidi/fribidi.h"
 #include "fribidi/fribidi-bidi-types.h"
+#include "fribidi/fribidi-unicode.h"
 
 namespace DAVA
 {
@@ -138,14 +139,21 @@ BiDiHelper::~BiDiHelper()
     SAFE_DELETE(wrapper);
 }
 
-bool BiDiHelper::PrepareString(const WideString& logicalStr, WideString& preparedStr, bool* isRTL)
+bool BiDiHelper::PrepareString(const WideString& logicalStr, WideString& preparedStr, bool* isRTL) const
 {
     return wrapper->Prepare(logicalStr, preparedStr, isRTL);
 }
 
-bool BiDiHelper::ReorderString(WideString& string, const bool forceRtl)
+bool BiDiHelper::ReorderString(WideString& string, const bool forceRtl) const
 {
     return wrapper->Reorder(string, forceRtl);
+}
+
+bool BiDiHelper::IsBiDiSpecialCharacter(uint32 character) const
+{
+    return FRIBIDI_IS_EXPLICIT_OR_BN(fribidi_get_bidi_type(character))
+        || character == FRIBIDI_CHAR_LRM 
+        || character == FRIBIDI_CHAR_RLM;
 }
 
 }

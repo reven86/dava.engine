@@ -1819,6 +1819,9 @@
     <ClInclude Include="..\..\Sources\Internal\Autotesting\dlmalloc.h">
       <Filter>Internal\Autotesting</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextLayout.h">
+      <Filter>Internal\Render\2D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -3246,6 +3249,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\dlmalloc.c">
       <Filter>Internal\Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextLayout.cpp">
+      <Filter>Internal\Render\2D</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

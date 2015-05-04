@@ -131,4 +131,5 @@ void FrameworkLoop::OnWindowDestroyed()
 void FrameworkLoop::OnWindowInitialized()
 {
     DAVA::QtLayer::Instance()->InitializeGlWindow( GetRenderContextId() );
+    DAVA::QtLayer::Instance()->OnResume();
 }

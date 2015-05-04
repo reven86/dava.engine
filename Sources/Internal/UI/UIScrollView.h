@@ -43,15 +43,17 @@ class ScrollHelper;
 
 class UIScrollView : public UIControl, public UIScrollBarDelegate
 {
-protected:
-	virtual ~UIScrollView();
 public:
 	UIScrollView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-	
+
+protected:
+    virtual ~UIScrollView();
+
+public:
 	virtual void AddControl(UIControl *control);
     virtual void RemoveControl(UIControl *control);
     virtual List<UIControl* > GetSubcontrols();
-
+    
 	// Add the control directly to the Scroll View Container.
 	void AddControlToContainer(UIControl* control);
 
