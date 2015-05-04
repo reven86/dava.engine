@@ -119,7 +119,6 @@ private:
     QAction* backgroundFrameUseCustomColorAction;
     QAction* backgroundFrameSelectCustomColorAction;
     LocalizationEditorDialog *localizationEditorDialog;
-    QPushButton *editFontButton;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);

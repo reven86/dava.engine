@@ -1,6 +1,5 @@
 #include "Platform/Qt5/QtLayer.h"
 
-#include "Project/Project.h"
 #include "UI/mainwindow.h"
 #include "DocumentGroup.h"
 #include "Document.h"
