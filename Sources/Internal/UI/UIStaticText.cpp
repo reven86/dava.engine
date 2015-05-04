@@ -670,6 +670,21 @@ void UIStaticText::SetMultilineType(int32 multilineType)
             break;
     }
 }
+
+DAVA::Vector4 UIStaticText::GetMarginsAsVector4() const
+{
+    if (GetMargins())
+        return GetMargins()->AsVector4();
+    else
+        return Vector4();
+}
+
+void UIStaticText::SetMarginsAsVector4(const Vector4 &vMargins)
+{
+    UIControlBackground::UIMargins newMargins(vMargins);
+    SetMargins(&newMargins);
+}
+
 #if defined(LOCALIZATION_DEBUG)
 void  UIStaticText::DrawLocalizationErrors(const UIGeometricData & geometricData, const UIGeometricData & elementGeomData) const
 {
