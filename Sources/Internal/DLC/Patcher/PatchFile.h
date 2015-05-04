@@ -133,10 +133,13 @@ protected:
     File *patchFile;
     PatchInfo curInfo;
     PatchError lastError;
-    uint32 curPatchPos;
-    uint32 curPatchSize;
-    uint32 curBSDiffPos;
+    PatchError parseError;
     bool verbose;
+    bool eof;
+
+    Vector<int32> patchPositions;
+    size_t curPatchIndex;
+    uint32 curBSDiffPos;
 
     bool DoRead();
     bool ReadDataBack(void *data, uint32 size);

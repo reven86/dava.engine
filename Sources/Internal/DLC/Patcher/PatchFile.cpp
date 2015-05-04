@@ -35,7 +35,8 @@
 namespace DAVA
 {
 
-static char8 davaPatchSignature[] = "[DAVAPATCH]";
+static const char8 davaPatchSignature[] = "[DAVAPATCH]";
+static const uint32 davaPatchSignatureSize = sizeof(davaPatchSignature) - 1;
 
 // ======================================================================================
 // PatchInfo
@@ -337,12 +338,9 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
             {
                 uint32 patchSizePos;
                 uint32 patchSize = 0;
-                uint32 signatureSize = sizeof(davaPatchSignature) - 1;
-                
-                uint32 patchBeginPos = patchFile->GetPos();
 
                 // write signature
-                patchFile->Write(davaPatchSignature, signatureSize);
+                patchFile->Write(davaPatchSignature, davaPatchSignatureSize);
 
                 // remember pos were patch size should be written
                 patchSizePos = patchFile->GetPos();
@@ -366,11 +364,6 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
                     }
                 }
 
-                // write patch full-size at the end of the data
-                // this will allow as to calculate offset from one patch to the previous
-                uint32 patchFullSize = patchFile->GetPos() - patchBeginPos;
-                patchFile->Write(&patchFullSize);
-
                 // calculate patch size (without signature and patchSize fields)
                 patchSize = patchFile->GetPos() - patchSizePos - sizeof(patchSize);
                 if(ret && patchSize > 0)
@@ -382,7 +375,6 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
                     patchFile->Seek(patchSizePos, File::SEEK_FROM_START);
                     patchFile->Write(&patchSize);
                 }
-
 
                 if(ret && verbose)
                 {
@@ -433,13 +425,51 @@ void PatchFileWriter::EnumerateDir(const FilePath &dirPath, const FilePath &base
 // PatchFileReader
 // ======================================================================================
 PatchFileReader::PatchFileReader(const FilePath &path, bool beVerbose)
-: curPatchPos(0)
-, curPatchSize(0)
-, curBSDiffPos(0)
-, verbose(beVerbose)
+: verbose(beVerbose)
 , lastError(ERROR_NO)
+, parseError(ERROR_NO)
+, curPatchIndex(0)
+, curBSDiffPos(0)
+, eof(true)
 {
     patchFile = File::Create(path, File::OPEN | File::READ | File::WRITE);
+    if(nullptr != patchFile)
+    {
+        // search patch positions
+        char8 signature[davaPatchSignatureSize];
+        while(true)
+        {
+            bool next = false;
+            signature[0] = 0;
+
+            uint32 readSize = patchFile->Read(signature, davaPatchSignatureSize);
+            if(davaPatchSignatureSize == readSize)
+            {
+                // check signature
+                if(0 == Memcmp(signature, davaPatchSignature, davaPatchSignatureSize))
+                {
+                    // read patch size
+                    uint32 patchSize = 0;
+                    if(sizeof(patchSize) == patchFile->Read(&patchSize) && patchSize > 0)
+                    {
+                        patchPositions.push_back(patchFile->GetPos());
+                        next = patchFile->Seek(patchSize, File::SEEK_FROM_CURRENT);
+                    }
+                }
+                else
+                {
+                    parseError = ERROR_CORRUPTED;
+                    break;
+                }
+            }
+
+            if(!next) break;
+        }
+    }
+    else
+    {
+        parseError = ERROR_CANT_READ;
+    }
 }
 
 PatchFileReader::~PatchFileReader()
@@ -449,92 +479,60 @@ PatchFileReader::~PatchFileReader()
 
 bool PatchFileReader::ReadFirst()
 {
-    bool ret = false;
-
-    if(nullptr != patchFile)
+    if(patchPositions.size() > 0)
     {
-        curPatchPos = 0;
-        curPatchSize = 0;
-
-        ret = DoRead();
+        curPatchIndex = 0;
+        eof = false;
+    }
+    else
+    {
+        eof = true;
     }
 
-    return ret;
+    return DoRead();
 }
 
 bool PatchFileReader::ReadNext()
 {
-    bool ret = false;
-
-    if(nullptr != patchFile)
+    if(patchPositions.size() > 0 && curPatchIndex < (patchPositions.size() - 1))
     {
-        ret = DoRead();
+        curPatchIndex++;
+    }
+    else
+    {
+        eof = true;
     }
 
-    return ret;
+    return DoRead();
 }
 
 bool PatchFileReader::ReadLast()
 {
-    bool ret = false;
-
-    if(nullptr != patchFile)
+    if(patchPositions.size() > 0)
     {
-        curPatchPos = patchFile->GetSize();
-        curPatchSize = 0;
-
-        ret = ReadPrev();
+        curPatchIndex = patchPositions.size() - 1;
+        eof = false;
+    }
+    else
+    {
+        eof = true;
     }
 
-    return ret;
+    return DoRead();
 }
 
 bool PatchFileReader::ReadPrev()
 {
-    bool ret = false;
-
-    if(nullptr != patchFile)
+    if(curPatchIndex > 0 && curPatchIndex <= patchPositions.size())
     {
-        curPatchSize = 0;
-        curBSDiffPos = 0;
-
-        // seek to the beginning of the current patch
-        if(!patchFile->Seek(curPatchPos, File::SEEK_FROM_START))
-        {
-            return false;
-        }
-
-        // read last 4 bytes from file, that can be tread as size of the previous patch
-        uint32 prevPatchSize = 0;
-        if(!ReadDataBack(&prevPatchSize, sizeof(prevPatchSize)))
-        {
-            return false;
-        }
-
-        // seek to the start of previous patch
-        if(!patchFile->Seek(-(int32)(prevPatchSize + sizeof(prevPatchSize)), File::SEEK_FROM_CURRENT))
-        {
-            return false;
-        }
-
-        curPatchPos = patchFile->GetPos();
-        ret = DoRead();
+        curPatchIndex--;
+    }
+    else
+    {
+        eof = true;
     }
 
-    return ret;
-}
-
-bool PatchFileReader::ReadDataBack(void *data, uint32 size)
-{
-    bool ret = false;
-    if(patchFile->Seek(-(int32)size, File::SEEK_FROM_CURRENT))
-    {
-        if(size == patchFile->Read(data, size))
-        {
-            ret = true;
-        }
-    }
-    return ret;
+    return DoRead();
 }
 
 const PatchInfo* PatchFileReader::GetCurInfo() const
@@ -557,53 +555,37 @@ PatchFileReader::PatchError PatchFileReader::GetLastError() const
 bool PatchFileReader::DoRead()
 {
     bool ret = false;
+
     lastError = ERROR_NO;
 
-    char8 signature[sizeof(davaPatchSignature) - 1];
-    signature[0] = 0;
-
+    // reset header and bsdiff pos
+    curBSDiffPos = 0;
     curInfo.Reset();
 
-    // seek to next patch
-    patchFile->Seek(curPatchPos + curPatchSize, File::SEEK_FROM_START);
-    
-    // remember next patch position and size
-    curPatchPos = patchFile->GetPos();
-    curPatchSize = 0;
-    curBSDiffPos = 0;
-
-    // read signature
-    uint32 signatureSize = sizeof(davaPatchSignature) - 1;
-    uint32 readSize = patchFile->Read(signature, signatureSize);
-    if(signatureSize == readSize)
+    if(nullptr != patchFile && parseError == ERROR_NO)
     {
-        // check signature
-        if(0 == Memcmp(signature, davaPatchSignature, signatureSize))
-        {
-            // read patch size
-            uint32 patchSize = 0;
-            if(sizeof(patchSize) == patchFile->Read(&patchSize) && patchSize > 0)
+        if(!eof)
+        { 
+            // read header and remember bsdiff pos
+            int32 patchPos = patchPositions[curPatchIndex];
+            if(patchFile->Seek(patchPos, File::SEEK_FROM_START) && curInfo.Read(patchFile))
             {
-                // calculate full patch size
-                curPatchSize = patchSize + sizeof(patchSize) + signatureSize;
-
-                // read header
-                if(curInfo.Read(patchFile))
-                {
-                    curBSDiffPos = patchFile->GetPos();
-                    ret = true;
-                }
+                curBSDiffPos = patchFile->GetPos();
+                ret = true;
+            }
+            else
+            {
+                lastError = ERROR_CORRUPTED;
             }
         }
-    }
-
-    if(!ret)
-    {
-        // if something was read, but not parsed - this is corrupted patch file.
-        if(0 != readSize)
+        else if(patchPositions.size() == 0)
         {
-            lastError = ERROR_CORRUPTED;
+            lastError = ERROR_EMPTY_PATCH;
         }
+    }
+    else
+    {
+        lastError = parseError;
     }
 
     return ret;
@@ -613,9 +595,19 @@ bool PatchFileReader::Truncate()
 {
     bool ret = false;
 
-    if(nullptr != patchFile)
+    if(nullptr != patchFile && !eof && curPatchIndex < patchPositions.size())
     {
-        ret = patchFile->Truncate(curPatchPos);
+        int32 patchPos = patchPositions[curPatchIndex];
+        int32 signarutePos = patchPos - davaPatchSignatureSize - sizeof(uint32);
+        if(signarutePos > 0)
+        {
+            if(patchFile->Truncate(signarutePos))
+            {
+                curBSDiffPos = 0;
+                patchPositions.resize(curPatchIndex);
+                ret = true;
+            }
+        }
     }
 
     return ret;
