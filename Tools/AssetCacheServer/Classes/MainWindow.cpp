@@ -3,6 +3,7 @@
 
 #include "RemoteAssetCacheServer.h"
 #include <FileSystem/KeyedArchive.h>
+#include "FileSystem/FileSystem.h"
 
 #include <QFileDialog>
 #include <QMenu>
@@ -241,7 +242,6 @@ void MainWindow::ReadSettings()
     arch->Release();
 }
 
-#include "FileSystem/FileSystem.h"
 void MainWindow::WriteSettings()
 {
     using namespace DAVA;
