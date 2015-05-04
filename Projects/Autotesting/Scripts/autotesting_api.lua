@@ -332,7 +332,6 @@ function GetSize(element)
     end
     local geomData = control:GetGeometricData()
     local rect = geomData:GetUnrotatedRect()
-    --print(element .. " = " .. tostring(rect.x))
     local result = {}
     result.x = math.floor(rect.x + 0.5)
     result.y = math.floor(rect.y + 0.5)
