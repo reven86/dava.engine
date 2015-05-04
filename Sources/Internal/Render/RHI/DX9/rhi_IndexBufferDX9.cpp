@@ -98,8 +98,6 @@ dx9_IndexBuffer_Delete( Handle ib )
         }
 
         self->_size = 0;
-        
-        delete self;
     }
 
 }

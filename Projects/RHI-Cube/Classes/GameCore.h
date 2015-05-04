@@ -122,6 +122,7 @@ protected:
     {
         rhi::HVertexBuffer  vb;
         uint32              vb_layout;
+        uint32              v_cnt;
         rhi::HIndexBuffer   ib;
         rhi::HPipelineState ps;
         rhi::HConstBuffer   vp_const[2];

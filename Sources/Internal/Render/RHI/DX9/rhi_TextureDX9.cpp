@@ -328,14 +328,6 @@ dx9_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace face
     uint32          sz   = TextureSize( self->format, self->width, self->height, level );
     
     memcpy( dst, data, sz );
-    
-    if( self->format == TEXTURE_FORMAT_A8R8G8B8 )
-    {
-        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
-        
-        _SwapRB( self->mappedData, ext.dx*ext.dy*sizeof(uint32) );
-    }
-
     dx9_Texture_Unmap( tex );
 }
 

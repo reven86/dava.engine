@@ -1,3 +1,4 @@
 /DebugQt/
 /ReleaseQt/
 *ignore*
+*.dll

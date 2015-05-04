@@ -464,9 +464,9 @@ DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
 }
 
 void
-DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
+DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 primCount, uint32 vertexCount, uint32 firstVertex, uint32 startIndex )
 {
-    (*_Impl.impl_CommandBuffer_DrawIndexedPrimitive)( cmdBuf, type, count );
+    (*_Impl.impl_CommandBuffer_DrawIndexedPrimitive)( cmdBuf, type, primCount, vertexCount, firstVertex, startIndex );
 }
 
 void
