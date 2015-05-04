@@ -20,8 +20,24 @@ function assert(isTrue, errorMsg)
     if not isTrue then OnError(tostring(errorMsg)) end
 end
 
+function assertEq(arg1, arg2, errorMsg)
+    if arg1 ~= arg2 then 
+        Log(string.format("Assert failed: '%s' is not equals to '%s'", tostring(arg1), tostring(arg2)), "ERROR")
+        OnError(tostring(errorMsg)) 
+    end
+end
+
 local function toboolean(condition)
     return not not condition
+end
+
+function Compare(arg1, arg2, delta)
+    local delta = delta or EPSILON
+    if math.abs(arg1 - arg2) <= delta then
+        return true
+    end
+    Log(string.format("Diff between (%s) and (%s) is: %s", arg1, arg2, arg1 - arg2), "DEBUG")
+    return false 
 end
 
 local function __GetNewPosition(list, vertical, invert, notInCenter)
@@ -302,24 +318,37 @@ function GetControl(name)
     else
         control = name
     end
-    Yield()
+
     if control then
         return control
     end
     --OnError("Couldn't find control " .. tostring(name))
 end
 
-function GetCenter(element)
+function GetSize(element)
     local control = GetControl(element)
     if not control then
         OnError("Couldn't find element: " .. element)
     end
-    local position = Vector.Vector2()
     local geomData = control:GetGeometricData()
     local rect = geomData:GetUnrotatedRect()
-    position.x = rect.x + rect.dx / 2
-    position.y = rect.y + rect.dy / 2
-    return position
+    --print(element .. " = " .. tostring(rect.x))
+    local result = {}
+    result.x = math.floor(rect.x + 0.5)
+    result.y = math.floor(rect.y + 0.5)
+    result.dx = math.floor(rect.dx + 0.5)
+    result.dy = math.floor(rect.dy + 0.5)
+    return result
+end
+
+function GetCenter(element)
+    local control = GetSize(element)
+    local result = {}
+    result.dx = control.dx
+    result.dy = control.dy
+    result.x = control.x + control.dx / 2
+    result.y = control.y + control.dy / 2
+    return result
 end
 
 function GetFrame(element)
@@ -344,11 +373,20 @@ function GetElementRect(element)
     return geomData:GetUnrotatedRect()
 end
 
+function GetPosition(element)
+    local control = GetSize(element)
+    local result = {}
+    result.x = control.x
+    result.y = control.y
+    result.dx = control.x + control.dx
+    result.dy = control.y + control.dy
+    return result
+end
+
 ------------------------------------------------------------------------------------------------------------------------
 -- Check states
 ------------------------------------------------------------------------------------------------------------------------
 function IsVisible(element, background)
-    Yield()
     local control = autotestingSystem:FindControl(element) or autotestingSystem:FindControlOnPopUp(element)
     return toboolean(control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(control, background))
 end
@@ -396,6 +434,13 @@ function CheckMsgText(name, key)
     Log("Check that text with key [" .. key .. "] is present on control " .. name)
     local control = GetControl(name)
     return autotestingSystem:CheckMsgText(control, key)
+end
+
+-- Check if control intersect between each other - return false
+function ControlIntersection(elementA, elementB)
+    local rectA = GetPosition(elementA)
+    local rectB= GetPosition(elementB)
+    return ( rectA.dx <= rectB.x or rectA.x >= rectB.dx or rectA.dy <= rectB.y or rectA.y >= rectB.dy );
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -638,7 +683,8 @@ end
 ----------------------------------------------------------------------------------------------------
 
 -- Touch down
-function TouchDownPosition(position, touchId)
+function TouchDownPosition(pos, touchId)
+    local position = Vector.Vector2(pos.x, pos.y)
     autotestingSystem:TouchDown(position, touchId or 1)
     Yield()
 end
@@ -660,6 +706,7 @@ function ClickPosition(position, time, touchId)
     Wait(waitTime)
     TouchUp(touchId)
     Wait(TIMECLICK)
+    return true
 end
 
 function Click(x, y, time, touchId)
@@ -710,7 +757,8 @@ function ShiftClickControl(name, x, y, touchId)
 end
 
 -- Move touch actions
-function TouchMovePosition(position, touchId)
+function TouchMovePosition(pos, touchId)
+    local position = Vector.Vector2(pos.x, pos.y)
     autotestingSystem:TouchMove(position, touchId or 1)
     Yield()
 end
