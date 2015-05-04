@@ -44,8 +44,6 @@ class LibraryWidget;
 class PreviewWidget;
 
 class LocalizationEditorDialog;
-class EditFontDialog;
-class SharedData;
 class DavaGLWidget;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
@@ -66,10 +64,8 @@ public:
 
     ~MainWindow();
     void CreateUndoRedoActions(const QUndoGroup *undoGroup);
-    bool ConfirmClose();
     int CloseTab(int index);
     void SetCurrentTab(int index);
-    int GetTabIndexByPath(const QString &fileName) const;
     void OnProjectOpened(Result result, QString projectPath);
     int AddTab(const QString &tabText);
     void OnCleanChanged(int index, bool val);
@@ -124,7 +120,6 @@ private:
     QAction* backgroundFrameSelectCustomColorAction;
     LocalizationEditorDialog *localizationEditorDialog;
     QPushButton *editFontButton;
-    SharedData *sharedData;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);

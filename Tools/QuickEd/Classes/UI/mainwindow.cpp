@@ -29,28 +29,14 @@
 
 #include "mainwindow.h"
 
-#include <QDir>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QDesktopServices>
-#include <QUrl>
-#include <QSettings>
-#include <QColorDialog>
-#include <QPushButton>
-
 //////////////////////////////////////////////////////////////////////////
 #include "fontmanagerdialog.h"
-#include "FileSystem/FileSystem.h"
 #include "Helpers/ResourcesManageHelper.h"
 #include "Dialogs/LocalizationEditorDialog.h"
-#include "Grid/GridVisualizer.h"
 //////////////////////////////////////////////////////////////////////////
 
 #include "UI/FileSystemView/FileSystemDockWidget.h"
-#include "UI/UIPackageLoader.h"
 #include "Utils/QtDavaConvertion.h"
-#include "Model/PackageHierarchy/PackageNode.h"
-#include "SharedData.h"
 
 namespace
 {
