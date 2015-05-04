@@ -727,7 +727,7 @@ AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
         if( p->indexBuffer != InvalidHandle )
         {
             DVASSERT(p->vertexCount); // vertexCount MUST BE SPECIFIED
-            rhi::CommandBuffer::DrawIndexedPrimitive( cmdBuf, p->primitiveType, p->primitiveCount, p->vertexCount, p->baseVertex );
+            rhi::CommandBuffer::DrawIndexedPrimitive( cmdBuf, p->primitiveType, p->primitiveCount, p->vertexCount, p->baseVertex, p->startIndex );
         }
         else
         {
