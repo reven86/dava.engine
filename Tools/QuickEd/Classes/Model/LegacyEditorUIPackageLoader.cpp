@@ -35,6 +35,7 @@ LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(AbstractUIPackageBuilde
     propertyNamesMap["UIButton"]["fitting"] = "stateFittingOption";
     propertyNamesMap["UIButton"]["textalign"] = "stateTextAlign";
     propertyNamesMap["UIButton"]["textcolorInheritType"] = "stateTextColorInheritType";
+    propertyNamesMap["UIButton"]["textUseRtlAlign"] = "stateTextUseRtlAlign";
     propertyNamesMap["UIButton"]["textMargins"] = "stateTextMargins";
     propertyNamesMap["UIButton"]["margins"] = "stateMargins";
     propertyNamesMap["UIStaticText"]["textColor"] = "textcolor";
