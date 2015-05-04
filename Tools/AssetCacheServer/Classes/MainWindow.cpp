@@ -44,7 +44,6 @@ void MainWindow::closeEvent(QCloseEvent *e)
 {
     hide();
     e->ignore();
-    openAction->setEnabled(true);
 }
 
 void MainWindow::OnAddNewServerWidget()
@@ -65,13 +64,12 @@ void MainWindow::OnRemoveServerWidget()
     emit ServerRemoved(w->GetServerData());
     w->deleteLater();
     QTimer::singleShot(10, [this]{adjustSize();});
-    adjustSize();
 }
 
 void MainWindow::OnSelectFolder()
 {
     QString directory = QFileDialog::getExistingDirectory(this, "Choose directory", QDir::currentPath(),
-                                                          QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+                                                           QFileDialog::ShowDirsOnly);
     ui->cachFolderLineEdit->setText(directory);
     emit FolderChanged(directory);
 }
@@ -110,11 +108,8 @@ void MainWindow::OnServerParametersChanged()
 
 void MainWindow::OnOpenAction()
 {
-    if (!this->isVisible())
-    {
-        this->show();
-        openAction->setEnabled(false);
-    }
+    this->raise();
+    this->show();
 }
 
 void MainWindow::OnSaveButtonClicked()
@@ -174,8 +169,7 @@ void MainWindow::CreateTrayIconActions()
     QAction *quitAction = new QAction("Quit", this);
     connect(quitAction, &QAction::triggered, qApp, &QApplication::quit);
 
-    openAction = new QAction("Open server", this);
-    openAction->setEnabled(false);
+    QAction *openAction = new QAction("Open server", this);
     connect(openAction, &QAction::triggered, this, &MainWindow::OnOpenAction);
 
     trayActionsMenu = new QMenu(this);

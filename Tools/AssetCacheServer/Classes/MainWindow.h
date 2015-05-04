@@ -59,7 +59,6 @@ private:
 private:
     Ui::MainWindow *ui;
     QSystemTrayIcon *trayIcon;
-    QAction *openAction;
     QMenu *trayActionsMenu;
 
     QList<RemoteAssetCacheServer *> servers;
