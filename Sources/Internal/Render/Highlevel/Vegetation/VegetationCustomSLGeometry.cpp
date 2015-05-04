@@ -277,25 +277,25 @@ void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderData
     }
 #if RHI_COMPLETE    
     SafeRelease(vertexRDO);
-    
-    NMaterial* material = customGeometryData[0].material;
-    renderData->SetMaterial(material);
+#endif
 
-    material->SetFlag(VegetationPropertyNames::FLAG_GRASS_OPAQUE, NMaterial::FlagOn);
-    material->SetFlag(VegetationPropertyNames::FLAG_GRASS_TRANSFORM_WAVE, NMaterial::FlagOn);
-    material->SetRenderLayers(1 << RENDER_LAYER_VEGETATION_ID);
-    
-    FastNameSet::iterator end = materialFlags.end();
-    for(FastNameSet::iterator it = materialFlags.begin(); it != end; ++it)
+    // RHI_COMPLETE - note: copy-paste form VegetationCustomGeometry
     {
-        material->SetFlag(it->first, NMaterial::FlagOn);
+        NMaterial* material = customGeometryData[0].material;
+        renderData->SetMaterial(material);
+
+        material->AddFlag(VegetationPropertyNames::FLAG_GRASS_OPAQUE, 1);
+        material->AddFlag(VegetationPropertyNames::FLAG_GRASS_TRANSFORM_WAVE, 1);
+
+        FastNameSet::iterator end = materialFlags.end();
+        for (FastNameSet::iterator it = materialFlags.begin(); it != end; ++it)
+        {
+            material->AddFlag(it->first, 1);
+        }
+
+        Vector4 worldSize4(worldSize.x, worldSize.y, worldSize.z, 0.f);
+        material->AddProperty(VegetationPropertyNames::UNIFORM_WORLD_SIZE, worldSize4.data, rhi::ShaderProp::TYPE_FLOAT4);
     }
-    
-    material->SetPropertyValue(VegetationPropertyNames::UNIFORM_WORLD_SIZE,
-                                                 Shader::UT_FLOAT_VEC3,
-                                                 1,
-                                                 &worldSize);
-#endif  // RHI_COMPLETE - note: copy-paste form VegetationCustomGeometry
     //fill in metrics data
     size_t layerCount = customGeometryData.size();
     for(size_t layerIndex = 0; layerIndex < layerCount; ++layerIndex)
