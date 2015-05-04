@@ -140,11 +140,14 @@ private:
     void ClearLocalBuffers();
     void  InjectChildBuffer(UniquePropertyLayout propLayoutId, MaterialBufferBinding* buffer);
 
+    /*the following functions will collect data recursively*/
     MaterialBufferBinding* GetConstBufferBinding(UniquePropertyLayout propertyLayout);
-    NMaterialProperty* GetMaterialProperty(const FastName& propName);
+    NMaterialProperty* GetMaterialProperty(const FastName& propName);    
     void CollectMaterialFlags(HashMap<FastName, int32>& target);
-
     Texture* GetMaterialTexture(const FastName& slotName);
+    const FastName& GetFXName();
+    const FastName& GetQualityGroup();
+
 
     void AddChildMaterial(NMaterial *material);
     void RemoveChildMaterial(NMaterial *material);

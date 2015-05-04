@@ -56,7 +56,7 @@ void Initialize(rhi::Api _api)
     api = _api;
     rhi::Initialize(api);    
     rhi::ShaderCache::Initialize();
-    new ShaderDescriptorCache();
+    ShaderDescriptorCache::Initialize();
     FXCache::Initialize();
     PixelFormatDescriptor::InitializePixelFormatDescriptors();
 
@@ -66,10 +66,12 @@ void Initialize(rhi::Api _api)
 void Uninitialize()
 {
     DVASSERT(ininialized);
-        
-    FXCache::Initialize();
+            
+    FXCache::Uninitialize();
+    ShaderDescriptorCache::Uninitialize();
+    rhi::ShaderCache::Unitialize();
     rhi::Uninitialize();
-    ininialized = true;
+    ininialized = false;
 }
 
 bool IsDeviceLost()

@@ -70,9 +70,12 @@ static const FastName LAYER_AFTER_TRANSLUCENT("AfterTransclucentRenderLayer");
 static const FastName LAYER_SHADOW_VOLUME("ShadowVolumeRenderLayer");
 static const FastName LAYER_VEGETATION("VegetationRenderLayer");
 static const FastName LAYER_DEBUG_DRAW("DebugRenderLayer");
+
+static const FastName LAST_LAYER("Last layer");
     
 enum eRenderLayerID
 {
+    RENDER_LAYER_INVALID_ID = -1,
     RENDER_LAYER_OPAQUE_ID = 0,
     RENDER_LAYER_AFTER_OPAQUE_ID = 1,
     RENDER_LAYER_ALPHA_TEST_LAYER_ID = 2,
@@ -84,16 +87,10 @@ enum eRenderLayerID
     RENDER_LAYER_DEBUG_DRAW_ID = 8,
     RENDER_LAYER_ID_COUNT,
 };
-    
-#define RENDER_LAYER_ID_BITMASK_MIN_POS 16
-#define RENDER_LAYER_ID_BITMASK_MIN_MASK 0xF
-#define RENDER_LAYER_ID_BITMASK_MAX_POS 20
-#define RENDER_LAYER_ID_BITMASK_MAX_MASK 0xF
-    
 
-    
-static const FastName INHERIT_FROM_MATERIAL("Inherit from material");
-static const FastName LAST_LAYER("Last layer");
+eRenderLayerID GetLayerIdByName(const char* name);
+       
+
 
 } // ns
 

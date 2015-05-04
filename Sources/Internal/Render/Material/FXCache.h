@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Render/Shader.h"
 #include "Render/RHI/rhi_Type.h"
+#include "Render/Highlevel/RenderFastNames.h"
 
 namespace DAVA
 {
@@ -38,8 +39,8 @@ struct RenderPassDescriptor
 {  
     FastName passName;
     ShaderDescriptor *shader;
-    rhi::HDepthStencilState depthState;    
-    uint32 renderLayer;
+    rhi::DepthStencilState::Descriptor depthStateDescriptor;    
+    eRenderLayerID renderLayer;    
 };
 
 struct FXDescriptor
@@ -52,7 +53,7 @@ namespace FXCache
     void Initialize();
     void Uninitialize();
     void Clear();
-    const FXDescriptor& GetFXDescriptor(const FastName &fxName, const HashMap<FastName, int32>& defines);
+    const FXDescriptor& GetFXDescriptor(const FastName &fxName, HashMap<FastName, int32>& defines);
 }
 }
 

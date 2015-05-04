@@ -37,15 +37,16 @@
 namespace DAVA
 {
 
-class ShaderDescriptorCache : public Singleton < ShaderDescriptorCache >
+namespace ShaderDescriptorCache
 {        
-public:
-    ~ShaderDescriptorCache();
+    void Initialize();
+    void Uninitialize();
+    void Clear();
+    
     ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
 
-    static void BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines, Vector<int32>& key);
-private:
-    Map<Vector<int32>, ShaderDescriptor *> shaderDescriptors;
+
+    void BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines, Vector<int32>& key);
 };
 
 };

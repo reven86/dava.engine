@@ -57,15 +57,7 @@ NMaterial::NMaterial()
     , needRebuildBindings(true)
     , needRebuildTextures(true)
     , needRebuildVariants(true)
-{
-
-    /*for now we just init with one default render variant - later possible variants be read from .fx config and modified by engine flags*/
-    RenderVariantInstance *renderVariant = new RenderVariantInstance();
-
-    renderVariant->depthState = rhi::AcquireDepthStencilState(rhi::DepthStencilState::Descriptor());
-    renderVariant->samplerState = rhi::AcquireSamplerState(rhi::SamplerState::Descriptor());   
-    //renderVariant->renderLayer = RenderLayerManager::GetLayerIDByName(LAYER_OPAQUE);    
-
+{    
     materialKey = (uint64)this;
 }
 
@@ -142,6 +134,24 @@ Texture* NMaterial::GetMaterialTexture(const FastName& slotName)
         res = parent->GetMaterialTexture(slotName);
     }
     return res;
+}
+
+const FastName& NMaterial::GetFXName()
+{   
+    if ((!fxName.IsValid()) && (parent != nullptr))
+    {
+        return parent->GetFXName();
+    }
+    return fxName;
+}
+
+const FastName& NMaterial::GetQualityGroup()
+{    
+    if ((!qualityGroup.IsValid()) && (parent != nullptr))
+    {
+        return parent->GetQualityGroup();
+    }
+    return qualityGroup;
 }
 
 void NMaterial::AddProperty(const FastName& propName, float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize)
@@ -339,9 +349,9 @@ void NMaterial::RebuildRenderVariants()
     CollectMaterialFlags(flags);
     
     //RHI_COMPLETE - move quality to numbers, or flags to fastname
-    flags[NMaterialQualityName::QUALITY_FLAG_NAME] = 1;// QualitySettingsSystem::Instance()->GetCurMaterialQuality(qualityGroup);
-
-    const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(fxName, flags);
+    flags[NMaterialQualityName::QUALITY_FLAG_NAME] = 1;// QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup());
+    
+    const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetFXName(), flags);
 
     /*at least in theory flag changes can lead to changes in number of render pa*/
     activeVariantInstance = nullptr;
@@ -356,7 +366,7 @@ void NMaterial::RebuildRenderVariants()
     {
         RenderVariantInstance *variant = new RenderVariantInstance();                
         variant->renderLayer = variantDescr.renderLayer;
-        variant->depthState = variantDescr.depthState;
+        variant->depthState = rhi::AcquireDepthStencilState(variantDescr.depthStateDescriptor);
         variant->shader = variantDescr.shader;
         renderVariants[variantDescr.passName] = variant;
     }
@@ -524,6 +534,11 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 {
     //RHI_COMPLETE
     DataNode::Load(archive, serializationContext);
+    if (archive->IsKeyExists("materialName"))
+    {
+        materialName = FastName(archive->GetString("materialName"));
+    }
+
     if (archive->IsKeyExists("materialKey"))
     {
         materialKey = archive->GetUInt64("materialKey");
@@ -534,6 +549,16 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
     {
         uint64 parentKey = archive->GetUInt64("parentMaterialKey");
         serializationContext->AddBinding(parentKey, this);
+    }
+
+    if (archive->IsKeyExists("materialGroup"))
+    {
+        qualityGroup = FastName(archive->GetString("materialGroup").c_str());
+    }
+
+    if (archive->IsKeyExists("materialTemplate"))
+    {
+        fxName = FastName(archive->GetString("materialTemplate").c_str());
     }
 
     if (archive->IsKeyExists("textures"))
