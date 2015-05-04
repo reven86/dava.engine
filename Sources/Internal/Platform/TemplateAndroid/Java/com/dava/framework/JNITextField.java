@@ -710,6 +710,7 @@ public class JNITextField {
                 text.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                     @Override
                     public void onFocusChange(View v, final boolean hasFocus) {
+                        
                         // Select UITextField when native filed selected (like
                         // iOS)
                         JNIActivity.GetActivity().PostEventToGL(new SafeRunnable() {
@@ -717,22 +718,6 @@ public class JNITextField {
                             public void safeRun() {
                                 JNITextField
                                 .TextFieldFocusChanged(id, hasFocus);
-                                final TextField text = GetTextField(id);
-                                // Workaround we have to call one more time
-                                // updateStaticTexture with delay
-                                // because if control is password 
-                                // android can visually convert ****1 to *****
-                                // with some delay
-                                Runnable runnable = new Runnable(){
-                                    @Override
-                                    public void run() {
-                                        text.updateStaticTexture();
-                                    }
-                                };
-                                
-                                text.post(runnable);
-
-                                handler.postDelayed(runnable, JNITextField.TEXT_CHANGE_DELAY_REFRESH);
                             }
                         });
 
@@ -808,6 +793,10 @@ public class JNITextField {
                                 }
                             }, CLOSE_KEYBOARD_DELAY);
                         }
+                        final TextField text = GetTextField(id);
+                        // if control is password 
+                        // android can visually convert ****1 to *****
+                        text.updateStaticTexture();
                     }
                 });
 
