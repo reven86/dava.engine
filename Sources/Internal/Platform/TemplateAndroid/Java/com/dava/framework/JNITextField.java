@@ -922,8 +922,14 @@ public class JNITextField {
                 params.width = Math.round(dx);
                 params.height = Math.round(dy);
                 
-                editText.viewWidth = params.width;
-                editText.viewHeight = params.height;
+                if (editText.viewWidth != params.width
+                        || editText.viewHeight != params.height)
+                {
+                    editText.viewWidth = params.width;
+                    editText.viewHeight = params.height;
+                    
+                    editText.updateStaticTexture();
+                }
                 
                 editText.setLayoutParams(params);
             }
