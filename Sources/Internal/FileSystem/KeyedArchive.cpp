@@ -62,10 +62,10 @@ bool KeyedArchive::Load(const FilePath & pathName)
 	File * archive = File::Create(pathName, File::OPEN|File::READ);
 	if (!archive)return false;
 
-	Load(archive);
-
+	bool ret = Load(archive);
 	SafeRelease(archive);
-	return true;
+
+	return ret;
 }
 	
 bool KeyedArchive::Load(File *archive)
@@ -118,10 +118,10 @@ bool KeyedArchive::Save(const FilePath & pathName) const
 	File * archive = File::Create(pathName, File::CREATE|File::WRITE);
 	if (!archive)return false;
 
-	Save(archive);
-
+	bool ret = Save(archive);
 	SafeRelease(archive);
-	return true;
+
+	return ret;
 }
 
 bool KeyedArchive::Save(File *archive) const
