@@ -673,10 +673,8 @@ void UIStaticText::SetMultilineType(int32 multilineType)
 
 DAVA::Vector4 UIStaticText::GetMarginsAsVector4() const
 {
-    if (GetMargins())
-        return GetMargins()->AsVector4();
-    else
-        return Vector4();
+    auto *margins = GetMargins();
+    return (margins != nullptr) ? margins->AsVector4() : Vector4();
 }
 
 void UIStaticText::SetMarginsAsVector4(const Vector4 &vMargins)
