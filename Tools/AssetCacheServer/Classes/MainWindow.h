@@ -41,6 +41,9 @@ private slots:
     void OnServerParametersChanged();
     void OnOpenAction();
 
+    void OnSaveButtonClicked();
+    void OnCancelButtonClicked();
+
     void SetFolder(QString &folderPath);
     void SetFolderSize(qreal folderSize);
     void SetFilesCount(quint32 filesCounts);

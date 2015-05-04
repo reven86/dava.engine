@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>229</height>
+    <height>254</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -36,9 +36,6 @@
     </item>
     <item row="0" column="1">
      <layout class="QHBoxLayout" name="folderLayout">
-      <property name="spacing">
-       <number>0</number>
-      </property>
       <item>
        <widget class="QLineEdit" name="cachFolderLineEdit"/>
       </item>
@@ -140,14 +137,14 @@
       </property>
      </widget>
     </item>
-    <item row="4" column="0">
+    <item row="3" column="0">
      <widget class="QLabel" name="startupLabel">
       <property name="text">
        <string>Run on startup:</string>
       </property>
      </widget>
     </item>
-    <item row="4" column="1">
+    <item row="3" column="1">
      <widget class="QCheckBox" name="startupCheckBox">
       <property name="text">
        <string/>
@@ -157,46 +154,14 @@
       </property>
      </widget>
     </item>
-    <item row="6" column="0">
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Fixed</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>15</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="7" column="0" colspan="2">
-     <widget class="QGroupBox" name="serversBox">
-      <property name="title">
-       <string>Remote Asset Cach Server</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QPushButton" name="addNewServerButton">
-         <property name="text">
-          <string>Add server</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="5" column="0">
+    <item row="4" column="0">
      <widget class="QLabel" name="portLabel">
       <property name="text">
        <string>Port:</string>
       </property>
      </widget>
     </item>
-    <item row="5" column="1">
+    <item row="4" column="1">
      <widget class="QSpinBox" name="portSpinBox">
       <property name="maximumSize">
        <size>
@@ -213,6 +178,56 @@
       <property name="value">
        <number>80</number>
       </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>15</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="7" column="0" colspan="2">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="saveButton">
+        <property name="text">
+         <string>Save</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cancelButton">
+        <property name="text">
+         <string>Cancel</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="6" column="0" colspan="2">
+     <widget class="QGroupBox" name="serversBox">
+      <property name="title">
+       <string>Remote Asset Cach Server</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QPushButton" name="addNewServerButton">
+         <property name="text">
+          <string>Add server</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>

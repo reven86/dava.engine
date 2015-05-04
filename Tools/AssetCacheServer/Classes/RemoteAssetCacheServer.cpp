@@ -22,7 +22,6 @@ RemoteAssetCacheServer::RemoteAssetCacheServer(QWidget *parent)
 {
     ui->setupUi(this);
 
-//    QRegExp ipRegExp("(([0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])[.]){3}([0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])");
     QRegExp ipRegExp("(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])");
     QRegExpValidator *ipValidator = new QRegExpValidator(ipRegExp);
     ui->ipLineEdit->setValidator(ipValidator);
