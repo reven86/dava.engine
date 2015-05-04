@@ -126,6 +126,14 @@ public:
     
 	virtual void SetLocked(bool locked);
 	bool IsLocked() const;
+    
+    
+    /**
+         \brief This functions should be overloaded if system need to do specific actions on scene activation or deactivation 
+     */
+    virtual void Activate() {};
+    virtual void Deactivate() {};
+    
 	
 protected:
 	inline Scene * GetScene() const;

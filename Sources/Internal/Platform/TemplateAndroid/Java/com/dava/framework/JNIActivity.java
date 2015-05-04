@@ -21,7 +21,6 @@ import android.util.Log;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnAttachStateChangeListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.InputDevice.MotionRange;
@@ -62,6 +61,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     protected static SingalStrengthListner singalStrengthListner = null;
     private boolean isPausing = false;
     
+    private Runnable onResumeGLThread = null;
+    
     public boolean GetIsPausing()
     {
         return isPausing;
@@ -71,6 +72,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	{
 		return activity;
 	}
+    
+    public synchronized void setResumeGLActionOnWindowReady(Runnable action)
+    {
+        onResumeGLThread = action;
+    }
     
     @Override
     public void onCreate(Bundle savedInstanceState) 
@@ -146,16 +152,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] isFirstRun is " + isFirstRun); 
         nativeOnCreate(isFirstRun);
 
-        try {
-        	ConnectivityManager cm = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
-        	NetworkInfo networkInfo = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-        	if (cm != null && networkInfo != null && networkInfo.isConnectedOrConnecting())
-            {
-            	TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
-            	singalStrengthListner = new SingalStrengthListner();
-            	tm.listen(singalStrengthListner, SingalStrengthListner.LISTEN_SIGNAL_STRENGTHS);
-            }
-		} catch (Exception e) {
+        TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
+        if (tm != null) {
+            singalStrengthListner = new SingalStrengthListner();
+            tm.listen(singalStrengthListner, SingalStrengthListner.LISTEN_SIGNAL_STRENGTHS);
+        } else {
 			Log.d("", "no singalStrengthListner");
 		}
         
@@ -258,9 +259,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         	nativeFinishing();
         }
         
-        // Destroy keyboard helper window
-        JNITextField.DestroyKeyboardLayout(getWindowManager());
-        
         super.onPause();
 
         Log.i(JNIConst.LOG_TAG, "[Activity::onPause] finish");
@@ -295,26 +293,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         {
             glView.onResume();
-            
-            // Create keyboard layout over glView window.
-            if(glView.getWindowToken() != null)
-            {
-                JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
-            }
-            else
-            {
-                glView.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
-                    @Override
-                    public void onViewDetachedFromWindow(View v) {}
-                    
-                    @Override
-                    public void onViewAttachedToWindow(View v) {
-                        JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
-                        glView.removeOnAttachStateChangeListener(this);
-                    }
-                });
-                
-            }
         }
         
         JNITextField.RelinkNativeControls();
@@ -373,8 +351,44 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
     	if(hasFocus) {
     		HideNavigationBar(getWindow().getDecorView());
+    		
+    		// we have to wait for window to get focus and only then
+    		// resume game
+    		// because on some slow devices:
+    		// Samsung Galaxy Note II LTE GT-N7105
+    		// Samsung Galaxy S3 Sprint SPH-L710
+    		// Xiaomi MiPad
+    		// before window not visible on screen main(ui thread)
+    		// can wait GLSurfaceView(onWindowSizeChange) on GLThread 
+    		// witch can be blocked with creation
+    		// TextField on GLThread and wait for ui thread - so we get deadlock
+    		Runnable action = onResumeGLThread;
+    		if (action != null)
+    		{
+    		    glView.queueEvent(action);
+    		    setResumeGLActionOnWindowReady(null);
+    		}
     	}
     	Log.i(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] finish");
+    }
+    
+    // we have to call next function after initialization of glView
+    void InitKeyboardLayout() {
+        // first destroy if any keyboard layout
+        WindowManager windowManager = getWindowManager();
+        JNITextField.DestroyKeyboardLayout(windowManager);
+        
+        // now initialize one more time
+        // http://stackoverflow.com/questions/7776768/android-what-is-android-r-id-content-used-for
+        final View v = findViewById(android.R.id.content);
+        if(v.getWindowToken() != null)
+        {
+            JNITextField.InitializeKeyboardLayout(windowManager, v.getWindowToken());
+        }
+        else
+        {
+            throw new RuntimeException("v.getWindowToken() != null strange null pointer view");
+        }
     }
     
     protected final List<Integer> supportedAxises = Arrays.asList(
@@ -523,5 +537,31 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		
 		glView.SetMultitouchEnabled(nativeIsMultitouchEnabled());
 	}
+	
+	// Workaround! this function called from c++ when game wish to 
+    // Quit it block GLThread because we already destroy singletons and can't 
+    // return to GLThread back
+    public static void finishActivity()
+    {
+        final Object mutex = new Object();
+        final JNIActivity activity = JNIActivity.GetActivity();
+        activity.runOnUiThread(new Runnable(){
+            @Override
+            public void run() {
+                Log.v(JNIConst.LOG_TAG, "finish Activity");
+                activity.finish();
+                System.exit(0);
+            }
+        });
+        // never return back from this function!
+        synchronized(mutex)
+        {
+            try {
+                mutex.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
 

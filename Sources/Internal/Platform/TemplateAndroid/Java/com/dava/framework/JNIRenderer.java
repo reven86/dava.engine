@@ -84,8 +84,20 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
                 Log.d(JNIConst.LOG_TAG, "Renderer call nativeResize(w, h)");
                 nativeResize(w, h);
                 JNIApplication.setEglContextWasDestroyed(false);
+                
                 cachedWidth = w;
                 cachedHeight = h;
+                
+                // Workaround! we have to initialize keyboard after glView(OpenGL)
+                // initialization for some devices like
+                // HTC One (adreno 320, os 4.3)
+                final JNIActivity activity = JNIActivity.GetActivity();
+                activity.runOnUiThread(new Runnable(){
+                    @Override
+                    public void run() {
+                        activity.InitKeyboardLayout();
+                    }
+                });
             }
             
         }

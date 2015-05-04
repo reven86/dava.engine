@@ -29,6 +29,7 @@
 #include "FloatPropertyDelegate.h"
 #include "BoolPropertyDelegate.h"
 #include "SpritePropertyDelegate.h"
+#include "Vector4PropertyDelegate.h"
 
 #include "FontPropertyDelegate.h"
 
@@ -49,6 +50,7 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject *parent)
     variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT32] = new IntegerPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_FLOAT] = new FloatPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_BOOLEAN] = new BoolPropertyDelegate(this);
+    variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR4] = new Vector4PropertyDelegate(this);
 
     propertyNameTypeItemDelegates["Sprite"] = new SpritePropertyDelegate(this);
     propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);

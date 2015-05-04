@@ -102,6 +102,9 @@ public:
     ~DavaGLWidget();
 
     OpenGLWindow *GetGLWindow() const;
+    bool IsInitialized() const;
+
+    void MakeInvisible();
 
 public slots:
     void OnWindowExposed();

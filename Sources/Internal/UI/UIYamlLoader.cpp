@@ -566,6 +566,18 @@ void UIYamlLoader::LoadFontsFromNode(const YamlNode * rootNode)
                 font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt32());
             }
 
+            const YamlNode * fontFontAscendNode = node->Get("ascendScale");
+            if (fontFontAscendNode)
+            {
+                font->SetAscendScale(fontFontAscendNode->AsFloat());
+            }
+
+            const YamlNode * fontFontDescendNode = node->Get("descendScale");
+            if (fontFontDescendNode)
+            {
+                font->SetDescendScale(fontFontDescendNode->AsFloat());
+            }
+
             //fontMap[t->first] = font;
             FontManager::Instance()->SetFontName(font, t->first);
             SafeRelease(font);
@@ -595,6 +607,18 @@ void UIYamlLoader::LoadFontsFromNode(const YamlNode * rootNode)
             if(fontVerticalSpacingNode)
             {
                 font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt32());
+            }
+            
+            const YamlNode * fontFontAscendNode = node->Get("ascendScale");
+            if (fontFontAscendNode)
+            {
+                font->SetAscendScale(fontFontAscendNode->AsFloat());
+            }
+
+            const YamlNode * fontFontDescendNode = node->Get("descendScale");
+            if (fontFontDescendNode)
+            {
+                font->SetDescendScale(fontFontDescendNode->AsFloat());
             }
 
             const YamlNode * fontHorizontalSpacingNode = node->Get("horizontalSpacing");
@@ -629,6 +653,18 @@ void UIYamlLoader::LoadFontsFromNode(const YamlNode * rootNode)
             if(fontVerticalSpacingNode)
             {
                 font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt());
+            }
+
+            const YamlNode * fontFontAscendNode = node->Get("ascendScale");
+            if (fontFontAscendNode)
+            {
+                font->SetAscendScale(fontFontAscendNode->AsFloat());
+            }
+
+            const YamlNode * fontFontDescendNode = node->Get("descendScale");
+            if (fontFontDescendNode)
+            {
+                font->SetDescendScale(fontFontDescendNode->AsFloat());
             }
 
             //fontMap[t->first] = font;

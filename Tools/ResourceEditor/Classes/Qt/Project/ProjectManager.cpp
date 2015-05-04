@@ -41,17 +41,20 @@
 #include "FileSystem/YamlParser.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
+#include <QDebug>
+
+
 ProjectManager::ProjectManager()
 	: curProjectPath()
 	, curProjectPathDataSource()
     , curProjectPathParticles()
+    , useDelayInitialization(true)
+    , isParticleSpritesUpdated(false)
 {
-
 }
 
 ProjectManager::~ProjectManager()
 {
-
 }
 
 bool ProjectManager::IsOpened() const
@@ -125,7 +128,10 @@ void ProjectManager::ProjectOpen(const FilePath & incomePath)
 			EditorConfig::Instance()->ParseConfig(curProjectPath + "EditorConfig.yaml");
 
 			SceneValidator::Instance()->SetPathForChecking(curProjectPath);
-            SpritePackerHelper::Instance()->UpdateParticleSprites((eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
+            if (!useDelayInitialization)
+            {
+                UpdateParticleSprites();
+            }
 
             DAVA::FilePath::AddTopResourcesFolder(curProjectPath);
 
@@ -137,6 +143,16 @@ void ProjectManager::ProjectOpen(const FilePath & incomePath)
             emit ProjectOpened(curProjectPath.GetAbsolutePathname().c_str());
         }
 	}
+}
+
+void ProjectManager::UpdateParticleSprites()
+{
+    useDelayInitialization = false;
+    if (!isParticleSpritesUpdated)
+    {
+        SpritePackerHelper::Instance()->UpdateParticleSprites( static_cast<eGPUFamily>(SettingsManager::GetValue( Settings::Internal_TextureViewGPU ).AsInt32()) );
+        isParticleSpritesUpdated = true;
+    }
 }
 
 void ProjectManager::ProjectOpenLast()
@@ -152,13 +168,22 @@ void ProjectManager::ProjectClose()
 {
 	if(!curProjectPath.IsEmpty())
 	{
+        isParticleSpritesUpdated = false;
 		DAVA::FilePath::RemoveResourcesFolder(curProjectPath);
         curProjectPath = "";
         curProjectPathDataSource = "";
         curProjectPathParticles = "";
         SettingsManager::ResetPerProjectSettings();
+        
+        SettingsManager::SetValue(Settings::Internal_LastProjectPath, VariantType(DAVA::FilePath())); // reset last project path
+        
         emit ProjectClosed();
 	}
+}
+
+void ProjectManager::OnSceneViewInitialized()
+{
+    useDelayInitialization = false;
 }
 
 void ProjectManager::LoadProjectSettings()

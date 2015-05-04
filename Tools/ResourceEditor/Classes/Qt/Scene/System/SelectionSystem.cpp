@@ -174,7 +174,7 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 					    for(size_t i = 0; i < selectableItems.Size(); i++)
 					    {
 						    DAVA::Entity *entity = selectableItems.GetEntity(i);
-						    if(curSelections.HasEntity(entity))
+						    if(curSelections.ContainsEntity(entity))
 						    {
 							    if((i + 1) < selectableItems.Size())
 							    {
@@ -301,7 +301,7 @@ void SceneSelectionSystem::SetSelection(DAVA::Entity *entity)
 
 void SceneSelectionSystem::AddSelection(DAVA::Entity *entity)
 {
-    if(IsEntitySelectable(entity) && !curSelections.HasEntity(entity))
+    if(IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
     {
         EntityGroupItem selectableItem;
         
@@ -330,7 +330,7 @@ void SceneSelectionSystem::RemSelection(DAVA::Entity *entity)
 {
 	if(!IsLocked())
 	{
-		if(curSelections.HasEntity(entity))
+		if(curSelections.ContainsEntity(entity))
 		{
 			curSelections.Rem(entity);
 			curDeselections.Add(entity);
@@ -377,14 +377,14 @@ DAVA::Entity* SceneSelectionSystem::GetSelectionEntity(int index) const
 
 bool SceneSelectionSystem::IsEntitySelected(Entity *entity)
 {
-    return curSelections.HasEntity(entity);
+    return curSelections.ContainsEntity(entity);
 }
 
 bool SceneSelectionSystem::IsEntitySelectedHierarchically(Entity *entity)
 {
     while (entity)
     {
-        if (curSelections.HasEntity(entity))
+        if (curSelections.ContainsEntity(entity))
             return true;
 
         entity = entity->GetParent();
@@ -582,4 +582,15 @@ void SceneSelectionSystem::SetSelectionComponentMask(DAVA::uint64 mask)
         selectionHasChanges = true; // magic to say to selectionModel() of scene tree to reset selection
     }
 }
+
+void SceneSelectionSystem::Activate()
+{
+    SetLocked(false);
+}
+
+void SceneSelectionSystem::Deactivate()
+{
+    SetLocked(true);
+}
+
 

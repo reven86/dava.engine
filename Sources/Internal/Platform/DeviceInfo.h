@@ -44,7 +44,7 @@ public:
 	{
 		int32 width;
 		int32 height;
-		int32 scale;
+		float32 scale;
 		
 		ScreenInfo()
 		{
@@ -53,7 +53,7 @@ public:
 			scale = 1;
 		}
 		
-		ScreenInfo(int32 w, int32 h, int32 _scale)
+		ScreenInfo(int32 w, int32 h, float32 _scale)
 		{
 			width = w;
 			height = h;
@@ -117,6 +117,7 @@ public:
         int64 freeSpace;
 
         bool readOnly;
+        bool removable;
         bool emulated;
 
         FilePath path;
@@ -126,6 +127,7 @@ public:
             , totalSpace(0)
             , freeSpace(0)
             , readOnly(false)
+            , removable(false)
             , emulated(false)
         {}
     };

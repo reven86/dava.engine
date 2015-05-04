@@ -4,6 +4,7 @@ cmake_minimum_required (VERSION 3.0)
 # this macro should be defined in all dependant projects (dava framework, etc)
 add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
 
+set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include      ( CMake-common  )
 
