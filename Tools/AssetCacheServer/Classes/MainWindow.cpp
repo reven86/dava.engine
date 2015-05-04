@@ -206,9 +206,9 @@ void MainWindow::ReadSettings()
     DAVA::float32 folderSize = arch->GetFloat(String("FolderSize"));
     ui->cachSizeSpinBox->setValue(folderSize);
 
-    DAVA::Vector<ServerData> servers;
-    servers = arch->GetByteArrayAsType<DAVA::Vector<ServerData>>(String("Servers"));
-    QString ip = servers[0].ip;
+    //DAVA::Vector<ServerData> servers;
+    //servers = arch->GetByteArrayAsType<DAVA::Vector<ServerData>>(String("Servers"));
+    //QString ip = servers[0].ip;
 
     arch->Release();
 }

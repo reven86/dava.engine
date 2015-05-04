@@ -1,5 +1,4 @@
 cmake_minimum_required( VERSION 3.0 )
-set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
 project               ( AssetCacheServer )
 
@@ -15,13 +14,9 @@ find_package          ( DavaTools     REQUIRED )
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR}/DavaTools/QtTools )
 
-#include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
+include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   (.)
 include_directories   ( "Classes" )
-
-include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/FCollada )
-include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/External/Cg/include )
-include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib )      
 
 add_definitions       ( 
 -DQT_GUI_LIB
@@ -34,8 +29,6 @@ add_definitions       (
 -DQT_HAVE_SSE2
 -DQT_THREAD_SUPPORT
 -DDAVA_QT
--DDAVA_FMOD
--D_DISABLE_IMAGE_MAGICK
 )
 
 
@@ -55,9 +48,8 @@ define_source_folders          ( SRC_ROOT "Classes" GLOBAL_ERASE_FOLDER )
 generate_source_groups_project ( SRC_ROOT "Classes" "DataQt" Generated UiList)
 
 #set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
-#set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
-#set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
-#set( MACOS_DYLIB          ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
+set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
+set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
 set( ADDED_SRC            ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set( LIBRARIES            ${QT_LIBRARIES} )
 set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
