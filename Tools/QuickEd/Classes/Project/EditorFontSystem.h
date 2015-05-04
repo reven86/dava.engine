@@ -58,8 +58,10 @@ public:
     DAVA::FilePath GetLocalizedFontsPath(const DAVA::String &locale);
     DAVA::FilePath GetDefaultFontsPath();
 signals:
+    void BeginUpdatePreset();
     void UpdateFontPreset();
-    void NewFontPreset(const QString &oldPresetName, const QString &newPresetName);
+    void BeginChangePreset(const DAVA::String &oldPresetName);
+    void ChangePreset(const DAVA::String &newPresetName);
 public slots:
     void RegisterCurrentLocaleFonts();
 private:

@@ -712,9 +712,7 @@ void LocalizationEditorDialog::ReinitializeLocalizationSystem(const QString& loc
         FilePath localizationFilePath(localizationDirectory.toStdString());
         localizationFilePath.MakeDirectoryPathname();
 
-        Project::Instance()->GetEditorLocalizationSystem()->SetDirectory(localizationFilePath);
-        Project::Instance()->GetEditorLocalizationSystem()->SetCurrentLocale(locale.toStdString());
-        Project::Instance()->GetEditorLocalizationSystem()->Init();
+        Project::Instance()->GetEditorLocalizationSystem()->InitLanguageWithDirectory(localizationFilePath, locale.toStdString());
     }
     
 	stringsTable->ReloadTable();

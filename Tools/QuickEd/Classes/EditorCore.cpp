@@ -42,8 +42,6 @@ EditorCore::EditorCore(QObject *parent)
     connect(documentGroup, &DocumentGroup::SharedDataChanged, mainWindow->previewWidget, &PreviewWidget::OnDataChanged);
     
     connect(Project::Instance()->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
-    connect(Project::Instance()->GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &EditorCore::UpdateFontPreset);
-    connect(Project::Instance()->GetEditorFontSystem(), &EditorFontSystem::NewFontPreset, this, &EditorCore::NewFontPreset);
 
     qApp->installEventFilter(this);
 }
@@ -108,13 +106,13 @@ bool EditorCore::CloseOneDocument(int index)
             QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
             QMessageBox::Save
             );
-        if (ret == QMessageBox::Cancel)
-        {
-            return false;
-        }
-        else if (ret == QMessageBox::Save)
+        if (ret == QMessageBox::Save)
         {
             SaveDocument(index);
+        }
+        else if (ret == QMessageBox::Cancel)
+        {
+            return false;
         }
     }
     CloseDocument(index);
@@ -163,26 +161,12 @@ void EditorCore::OnCurrentTabChanged(int index)
 
 void EditorCore::UpdateLanguage()
 {
+    project->GetEditorFontSystem()->BeginUpdatePreset();
     project->GetEditorFontSystem()->RegisterCurrentLocaleFonts();
     for(auto &document : documents)
     {
-        document->UpdateLanguage();
-    }
-}
-
-void EditorCore::UpdateFontPreset()
-{
-    for(auto &document : documents)
-    {
-        document->UpdateFontPreset();
-    }
-}
-
-void EditorCore::NewFontPreset(const QString &oldPresetName, const QString &newPresetName)
-{
-    for(auto &document : documents)
-    {
-        document->NewFontPreset(oldPresetName, newPresetName);
+        document->BeginUpdateProperty("text");
+        document->UpdateProperty("text");
     }
 }
 

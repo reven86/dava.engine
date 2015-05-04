@@ -63,17 +63,21 @@ void EditorFontSystem::SetFont(const String &presetName, const String &locale, F
     auto oldFont = it->second;
     oldFont->Release();
     it->second = SafeRetain(font);
+
     if (locale == LocalizationSystem::Instance()->GetCurrentLocale())
     {
-        FontManager::Instance()->SetFontName(font, presetName);
-        emit NewFontPreset(QString::fromStdString(presetName), QString::fromStdString(presetName));
+        emit BeginChangePreset(presetName);
         FontManager::Instance()->UnregisterFont(oldFont);
+        FontManager::Instance()->RegisterFont(font);
+        FontManager::Instance()->SetFontName(font, presetName);
+        emit ChangePreset(presetName); 
     }
     font->Release();
 }
  
 void EditorFontSystem::LoadLocalizedFonts()
 {
+    emit BeginUpdatePreset();
     ClearAllFonts();
     
     FontManager::Instance()->UnregisterFonts();
@@ -106,6 +110,7 @@ void EditorFontSystem::LoadLocalizedFonts()
 
 void EditorFontSystem::SaveLocalizedFonts()
 {   
+    emit BeginUpdatePreset();
     if(!FileSystem::Instance()->IsDirectory(defaultFontsPath.GetDirectory()))
     {
         FileSystem::Instance()->CreateDirectory(defaultFontsPath.GetDirectory());

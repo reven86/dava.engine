@@ -142,9 +142,7 @@ bool Project::OpenInternal(const QString &path)
             const YamlNode *localeNode = platform->Get("Locale");
             if (localizationPathNode && localeNode)
             {
-                editorLocalizationSystem->SetDirectory(localizationPathNode->AsString());
-                editorLocalizationSystem->SetCurrentLocale(localeNode->AsString());
-                editorLocalizationSystem->Init();
+                editorLocalizationSystem->InitLanguageWithDirectory(localizationPathNode->AsString(), localeNode->AsString());
             }
         }
     }

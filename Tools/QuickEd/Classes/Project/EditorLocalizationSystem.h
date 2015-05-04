@@ -43,9 +43,7 @@ public:
     explicit EditorLocalizationSystem(QObject *parent = nullptr);
     ~EditorLocalizationSystem() = default;
     const QStringList& GetAvailableLocales() const;
-    void SetDirectory(const DAVA::FilePath &directoryPath);
-    void SetCurrentLocale(const DAVA::String &locale);
-    void Init();
+    void InitLanguageWithDirectory(const DAVA::FilePath &directoryPath, const DAVA::String &locale);
     void Cleanup();
 signals:
     void LocaleChanged(const DAVA::String &locale);

@@ -38,7 +38,7 @@ EditorLocalizationSystem::EditorLocalizationSystem(QObject* parent)
 
 }
 
-void EditorLocalizationSystem::SetDirectory(const FilePath &directoryPath)
+void EditorLocalizationSystem::InitLanguageWithDirectory(const FilePath &directoryPath, const String &localeId)
 {
     LocalizationSystem::Instance()->SetDirectory(directoryPath);
     if (!directoryPath.IsEmpty())
@@ -54,17 +54,12 @@ void EditorLocalizationSystem::SetDirectory(const FilePath &directoryPath)
 
         SafeRelease(fileList);
     }
-}
 
-void EditorLocalizationSystem::SetCurrentLocale(const String &localeId)
-{
     LocalizationSystem::Instance()->SetCurrentLocale(localeId);
-    LocaleChanged(localeId);
-}
 
-void EditorLocalizationSystem::Init()
-{
     LocalizationSystem::Instance()->Init();
+
+    emit LocaleChanged(LocalizationSystem::Instance()->GetCurrentLocale());
 }
 
 void EditorLocalizationSystem::Cleanup()

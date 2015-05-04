@@ -89,6 +89,7 @@ void FontManager::RegisterFonts(const Map<String, Font*> &fonts)
         {
             SafeRelease(findIt->second);
         }
+
         fontMap[it->first] = SafeRetain(it->second);
         registeredFonts[it->second] = it->first;
     }

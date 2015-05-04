@@ -8,6 +8,7 @@ namespace DAVA {
     class FilePath;
     class VariantType;
 }
+class ValueProperty;
 
 class PackageNode;
 class QtModelPackageCommandExecutor;
@@ -21,7 +22,7 @@ class Document : public QObject
 {
     Q_OBJECT
 public:
-    Document(PackageNode *package, QObject *parent = NULL);
+    Document(PackageNode *package, QObject *parent = nullptr);
 
     virtual ~Document();
     
@@ -38,13 +39,20 @@ signals:
     void SharedDataChanged(const QByteArray &role);
 public slots:
     void UpdateLanguage();
+    void BeginUpdatePreset();
     void UpdateFontPreset();
-    void NewFontPreset(const QString &oldPresetName, const QString &newPresetName);
+    void BeginChangePreset(const DAVA::String &oldPresetName);
+    void ChangePreset(const DAVA::String &newPresetName);
 
-private:
+    void BeginSetProperty(const DAVA::String &property, const DAVA::VariantType &findValue);
+    void SetProperty(const DAVA::String &property, const DAVA::VariantType &newValue);
+    void BeginUpdateProperty(const DAVA::String &property);
     void UpdateProperty(const DAVA::String &property);
+private:
+
+    static void BeginUpdatePropertyRecuresively(ControlNode* node, const DAVA::String &property);
     static void UpdatePropertyRecursively(ControlNode* node, const DAVA::String &property);
-    static void SetPropertyValueRecursively(ControlNode *node, const DAVA::String &property, const DAVA::VariantType &findValue, const DAVA::VariantType &newValue);
+    void BeginSetPropertyRecursively(ControlNode *node, const DAVA::String &property, const DAVA::VariantType &findValue);
     void InitSharedData();
 
 private:
@@ -54,6 +62,7 @@ private:
 
     QtModelPackageCommandExecutor *commandExecutor;
     QUndoStack *undoStack;
+    DAVA::Map<DAVA::String, DAVA::Vector<ValueProperty*> >savedProperties;
 };
 
 inline QUndoStack *Document::GetUndoStack() const
