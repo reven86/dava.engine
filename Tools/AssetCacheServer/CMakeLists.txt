@@ -10,6 +10,9 @@ find_package          ( QT5           REQUIRED )
 find_package          ( DavaFramework REQUIRED )
 find_package          ( DavaTools     REQUIRED )
 
+if( WIN32 )
+	set( EXECUTABLE_FLAG WIN32 )
+endif()
 
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR}/DavaTools/QtTools )
