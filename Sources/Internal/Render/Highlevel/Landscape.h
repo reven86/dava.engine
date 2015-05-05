@@ -36,7 +36,6 @@
 #include "Render/RenderBase.h"
 #include "Scene3D/Entity.h"
 #include "Render/Highlevel/Frustum.h"
-#include "Render/Highlevel/LandscapeCursor.h"
 #include "Render/Highlevel/RenderObject.h"
 
 #include "FileSystem/FilePath.h"
@@ -140,6 +139,18 @@ public:
 	Landscape();
 	virtual ~Landscape();
 
+    const static FastName PARAM_TEXTURE_TILING;
+    const static FastName PARAM_TILE_COLOR0;
+    const static FastName PARAM_TILE_COLOR1;
+    const static FastName PARAM_TILE_COLOR2;
+    const static FastName PARAM_TILE_COLOR3;
+
+    const static FastName TEXTURE_NAME_COLOR;
+    const static FastName TEXTURE_NAME_TILE;
+    const static FastName TEXTURE_NAME_TILEMASK;
+    const static FastName TEXTURE_NAME_SPECULAR;
+
+    const static FastName TEXTURE_NAME_FULL_TILED;
     
     /**
         \brief Set lod coefficients for dynamic roam landscape
@@ -147,12 +158,6 @@ public:
         Every next value should be almost twice higher than previous to avoid gaps between levels
      */
     void SetLods(const Vector4 & lods);
-    
-    
-    const static FastName PARAM_TILE_COLOR0;
-	const static FastName PARAM_TILE_COLOR1;
-	const static FastName PARAM_TILE_COLOR2;
-	const static FastName PARAM_TILE_COLOR3;
 
     static NMaterial * CreateLandscapeMaterial();
     
@@ -161,23 +166,6 @@ public:
         \param[in] landscapeBox axial-aligned bounding box of the landscape block
      */
     virtual void BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathname, const AABBox3 & landscapeBox);
-    
-    enum eTextureLevel
-    {
-        TEXTURE_COLOR = 0,  // in case of BLENDED_SHADER in alpha channel it can be tile mask for TILED_TEXTURES
-        TEXTURE_TILE_MASK,
-        TEXTURE_TILE0,   
-        TEXTURE_TILE1,
-        TEXTURE_TILE2,
-        TEXTURE_TILE3,
-        // TEXTURE_BUMP,
-        
-        TEXTURE_DETAIL, 
-        
-        TEXTURE_TILE_FULL, 
-        
-        TEXTURE_COUNT
-    };
 
 	//TODO: think about how to switch normal generation for landscape on/off
 	//ideally it should be runtime option and normal generaiton should happen when material that requires landscape has been set
@@ -191,40 +179,6 @@ public:
         Vector3 tangent;
 #endif
 	};
-    
-    /**
-        \brief Set texture for the specific texture level
-        
-     To render landscape you need to set textures.  
-        For RENDERING_MODE_TEXTURE you need to set only TEXTURE_TEXTURE0.
-        For RENDERING_MODE_DETAIL_SHADER you have to set TEXTURE_TEXTURE0 and TEXTURE_DETAIL
-        For RENDERING_MODE_BLENDED_SHADER you have to set TEXTURE_TEXTURE0, TEXTURE_TEXTURE1, TEXTURE_TEXTUREMASK
-          
-        \param[in] level level of texture you want to set
-        \param[in] textureName name of texture you want to open and set to specific level
-     */
-    void SetTexture(eTextureLevel level, const FilePath & textureName);
-
-    
-    /**
-     \brief Set texture for the specific texture level
-     
-     To render landscape you need to set textures.  
-     For RENDERING_MODE_TEXTURE you need to set only TEXTURE_TEXTURE0.
-     For RENDERING_MODE_DETAIL_SHADER you have to set TEXTURE_TEXTURE0 and TEXTURE_DETAIL
-     For RENDERING_MODE_BLENDED_SHADER you have to set TEXTURE_TEXTURE0, TEXTURE_TEXTURE1, TEXTURE_TEXTUREMASK
-     
-     \param[in] level level of texture you want to set
-     \param[in] texture you want to set to specific level
-     */
-    void SetTexture(eTextureLevel level, Texture * texture);
-
-	/**
-        \brief Get texture that was previously set in SetTexture.
-        \param[in] level 
-        \returns current texture
-	 */
-	virtual Texture * GetTexture(eTextureLevel level);
 
     void PrepareToRender(Camera * camera) override;
 
@@ -258,16 +212,12 @@ public:
 	bool PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * normal = 0) const;
 	Vector3 GetPoint(int16 x, int16 y, uint16 height);
 
-	void CursorEnable();
-	void CursorDisable();
-
     Heightmap *GetHeightmap();
     virtual void SetHeightmap(Heightmap *height);
     
 //    virtual void UpdateFullTiledTexture();
 //    FilePath SaveFullTiledTexture();
     Texture *CreateLandscapeTexture();
-    LandscapeCursor *GetCursor();
     
 	virtual RenderObject * Clone(RenderObject *newObject);
     virtual void RecalcBoundingBox();
@@ -277,16 +227,9 @@ public:
     void SetFoliageSystem(FoliageSystem* _foliageSystem);
 
 protected:
-	
-	const static FastName PARAM_TEXTURE0_TILING;
-	const static FastName PARAM_TEXTURE1_TILING;
-	const static FastName PARAM_TEXTURE2_TILING;
-	const static FastName PARAM_TEXTURE3_TILING;
-	const static FastName PARAM_PROP_SPECULAR_COLOR;
-	const static FastName PARAM_SPECULAR_SHININESS;
-	const static FastName TEXTURE_SPECULAR_MAP;
-	const static FastName TECHNIQUE_TILEMASK_NAME;
-    
+
+    static const uint32 TEXTURE_SIZE_FULL_TILED = 2048;
+
     class LandscapeQuad
     {
     public:
@@ -346,8 +289,6 @@ protected:
     int32 allocatedMemoryForQuads;
 
     Frustum *frustum;
-    
-	LandscapeCursor * cursor;
         
     int16 queueRdoQuad;
     int32 queueIndexCount;
@@ -361,8 +302,6 @@ protected:
     void BuildLandscape();
     Heightmap *heightmap;
     FilePath heightmapPath;
-    
-	static const uint32 TEXTURE_TILE_FULL_SIZE = 2048;
     
     Vector<LandQuadTreeNode<LandscapeQuad> *>lod0quads;
     Vector<LandQuadTreeNode<LandscapeQuad> *>lodNot0quads;

@@ -570,10 +570,7 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
         {
             String relativePathname = it->second->AsString();
             Texture* tx = Texture::CreateFromFile(serializationContext->GetScenePath() + relativePathname, FastName(""));
-            if (it->first == "colorTexture") //RHI_COMPLETE temporary for load landscape material
-                AddTexture(FastName("albedo"), tx);
-            else
-                AddTexture(FastName(it->first), tx);
+            AddTexture(FastName(it->first), tx);
             SafeRelease(tx);
         }
     }

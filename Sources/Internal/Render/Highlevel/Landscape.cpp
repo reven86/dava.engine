@@ -49,61 +49,19 @@
 
 namespace DAVA
 {
-const FastName Landscape::PARAM_TEXTURE0_TILING("texture0Tiling");
-const FastName Landscape::PARAM_TEXTURE1_TILING("texture1Tiling");
-const FastName Landscape::PARAM_TEXTURE2_TILING("texture2Tiling");
-const FastName Landscape::PARAM_TEXTURE3_TILING("texture3Tiling");
+const FastName Landscape::PARAM_TEXTURE_TILING("textureTiling");
 const FastName Landscape::PARAM_TILE_COLOR0("tileColor0");
 const FastName Landscape::PARAM_TILE_COLOR1("tileColor1");
 const FastName Landscape::PARAM_TILE_COLOR2("tileColor2");
 const FastName Landscape::PARAM_TILE_COLOR3("tileColor3");
-const FastName Landscape::PARAM_PROP_SPECULAR_COLOR("prop_specularColor");
-const FastName Landscape::PARAM_SPECULAR_SHININESS("materialSpecularShininess");
-const FastName Landscape::TEXTURE_SPECULAR_MAP("specularMap");
-const FastName Landscape::TECHNIQUE_TILEMASK_NAME("ForwardPass");
-	   
-const FastName INVALID_PROPERTY_NAME = FastName("");
-	
-static FastName TILEMASK_TEXTURE_PROPS_NAMES[] =
-{
-	FastName("colorTexture"),
-	FastName("tileMask"),
-	FastName("tileTexture0"),
-	FastName("tileTexture1"),
-	FastName("tileTexture2"),
-	FastName("tileTexture3"),
-    FastName("textureDetail"),
-    FastName("textureTileFull"),
-};
 
-static FastName TILEMASK_TILING_PROPS_NAMES[] =
-{
-	INVALID_PROPERTY_NAME,
-	INVALID_PROPERTY_NAME,
-	FastName("texture0Tiling"),
-	FastName("texture1Tiling"),
-	FastName("texture2Tiling"),
-	FastName("texture3Tiling"),
-	INVALID_PROPERTY_NAME,
-	INVALID_PROPERTY_NAME
-};
-
-static FastName TILEMASK_COLOR_PROPS_NAMES[] =
-{
-	INVALID_PROPERTY_NAME,
-	INVALID_PROPERTY_NAME,
-	FastName("tileColor0"),
-	FastName("tileColor1"),
-	FastName("tileColor2"),
-	FastName("tileColor3"),
-	INVALID_PROPERTY_NAME,
-	INVALID_PROPERTY_NAME
-};
+const FastName Landscape::TEXTURE_NAME_COLOR("colorTexture");
+const FastName Landscape::TEXTURE_NAME_TILE("tileTexture0");
+const FastName Landscape::TEXTURE_NAME_TILEMASK("tileMask");
+const FastName Landscape::TEXTURE_NAME_SPECULAR("specularMap");
+const FastName Landscape::TEXTURE_NAME_FULL_TILED("fullTiledTexture");
 
 const uint32 LANDSCAPE_BATCHES_POOL_SIZE = 32;
-	
-//#define DRAW_OLD_STYLE
-// const float32 LandscapeNode::TEXTURE_TILE_FULL_SIZE = 2048;
 
 Landscape::Landscape()
     : indices(0)
@@ -115,12 +73,10 @@ Landscape::Landscape()
     
     type = TYPE_LANDSCAPE;
     
-    frustum = 0; //new Frustum();
+    frustum = 0;
     
     nearLodIndex = 0;
     farLodIndex = 0;
-    
-	cursor = 0;
     
     heightmap = new Heightmap();
     prevLodLayer = -1;
@@ -142,9 +98,6 @@ Landscape::~Landscape()
     ReleaseGeometryData();
 
     SafeRelease(heightmap);
-#if RHI_COMPLETE
-	SafeDelete(cursor);
-#endif
 		
 	SafeRelease(landscapeMaterial);
 }
@@ -631,36 +584,6 @@ void Landscape::MarkFrames(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 
     depth++;
 }
     
-void Landscape::SetTexture(eTextureLevel level, const FilePath & textureName)
-{
-	if(TEXTURE_TILE_FULL != level &&
-       TILEMASK_TEXTURE_PROPS_NAMES[level] != INVALID_PROPERTY_NAME)
-	{
-        Texture * tx = Texture::CreateFromFile(textureName);
-		landscapeMaterial->SetTexture(TILEMASK_TEXTURE_PROPS_NAMES[level], tx);
-        tx->Release();
-	}
-}
-
-
-void Landscape::SetTexture(eTextureLevel level, Texture *texture)
-{
-	if(TILEMASK_TEXTURE_PROPS_NAMES[level] != INVALID_PROPERTY_NAME)
-	{
-		landscapeMaterial->SetTexture(TILEMASK_TEXTURE_PROPS_NAMES[level], texture);
-	}
-}
-
-    
-Texture * Landscape::GetTexture(eTextureLevel level)
-{
-    DVASSERT(nullptr);
-    return 0;
-#if RHI_COMPLETE
-	//return tileMaskMaterial->GetEffectiveTexture(TILEMASK_TEXTURE_PROPS_NAMES[level]);
-#endif
-}
-    
 void Landscape::FlushQueue()
 {
     if ((queueIndexCount - queueIndexOffset) == 0) return;
@@ -1029,59 +952,6 @@ void Landscape::PrepareToRender(Camera * camera)
 
     rhi::UpdateIndexBuffer(currentIndexBuffer, indices, 0, queueIndexCount * sizeof(uint16));
     currentIndexBuffer = indexBuffers.Next();
-
-#if RHI_COMPLETE
-	if(cursor)
-	{
-		//TODO: setup appropriate cursor state and set it
-		//TODO: RenderManager::Instance()->SetRenderState(cursorStateHandle);
-		RenderManager::Instance()->SetRenderState(cursor->GetRenderState());
-		RenderManager::Instance()->FlushState();
-		
-		/*RenderManager::Instance()->AppendState(RenderState::STATE_BLEND);
-		eBlendMode src = RenderManager::Instance()->GetSrcBlend();
-		eBlendMode dst = RenderManager::Instance()->GetDestBlend();
-		RenderManager::Instance()->SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
-		RenderManager::Instance()->SetDepthFunc(CMP_LEQUAL);*/
-		
-		cursor->Prepare();
-		ClearQueue();
-
-        
-#if defined (DRAW_OLD_STYLE)    
-        GenLods(&quadTreeHead);
-#else //#if defined (DRAW_OLD_STYLE)            
-        if(nearLodIndex != farLodIndex)     
-		{
-			BindMaterial(nearLodIndex, camera);
-		}
-        int32 count0 = static_cast<int32>(lod0quads.size());
-        for(int32 i = 0; i < count0; ++i)
-        {
-            GenQuad(lod0quads[i], 0);
-        }
-        FlushQueue();
-        
-        if(nearLodIndex != farLodIndex)
-		{
-			BindMaterial(farLodIndex, camera);
-		}
-        
-        int32 countNot0 = static_cast<int32>(lodNot0quads.size());
-        for(int32 i = 0; i < countNot0; ++i)
-        {
-            GenQuad(lodNot0quads[i], lodNot0quads[i]->data.lod);
-        }
-#endif //#if defined (DRAW_OLD_STYLE)    
-
-        
-		FlushQueue();
-		GenFans();
-		//RenderManager::Instance()->SetDepthFunc(CMP_LESS);
-		//RenderManager::Instance()->RemoveState(RenderState::STATE_BLEND);
-		//RenderManager::Instance()->SetBlendMode(src, dst);
-	}
-#endif
 }
 
 
@@ -1212,13 +1082,8 @@ NMaterial * Landscape::CreateLandscapeMaterial()
 {
     NMaterial * material = new NMaterial();
     //RHI_COMPLETE here need to set fx name
-    //and remove default properties values, it will setup in fx config
-    Vector4 tiling(1.f, 1.f, 0.f, 0.f);
-    for (int32 i = (int32)TEXTURE_TILE0; i <= (int32)TEXTURE_TILE3; ++i)
-    {
-        material->AddProperty(TILEMASK_COLOR_PROPS_NAMES[i], Color::White.color, rhi::ShaderProp::TYPE_FLOAT4);
-        material->AddProperty(TILEMASK_TILING_PROPS_NAMES[i], tiling.data, rhi::ShaderProp::TYPE_FLOAT4);
-    }
+
+    DVASSERT(nullptr);
 
     return material;
 }
@@ -1301,21 +1166,6 @@ void Landscape::Load(KeyedArchive * archive, SerializationContext * serializatio
         illuminationParams->receiveShadow = archive->GetBool("illumination.receiveShadow", illuminationParams->receiveShadow);
         illuminationParams->SetLightmapSize(archive->GetInt32("illumination.lightmapSize", illuminationParams->lightmapSize));
     }
-#endif
-}
-
-void Landscape::CursorEnable()
-{
-	DVASSERT(0 == cursor);
-#if RHI_COMPLETE
-	cursor = new LandscapeCursor();
-#endif
-}
-
-void Landscape::CursorDisable()
-{
-#if RHI_COMPLETE
-	SafeDelete(cursor);
 #endif
 }
     
@@ -1476,22 +1326,17 @@ Texture * Landscape::CreateLandscapeTexture()
 //    }
 //}
 
-LandscapeCursor * Landscape::GetCursor()
-{
-    return cursor;
-}
-
-	//TODO: review landscape cloning
 RenderObject * Landscape::Clone( RenderObject *newObject )
 {
 	if(!newObject)
 	{
 		DVASSERT_MSG(IsPointerToExactClass<Landscape>(this), "Can clone only Landscape");
 		newObject = new Landscape();
-	}
+    }
+
+    //RHI_COMPLETE to think about material clone and review landscape cloning
     
     Landscape *newLandscape = static_cast<Landscape *>(newObject);
-    //RHI_COMPLETE to think about material clone
     newLandscape->landscapeMaterial = SafeRetain(landscapeMaterial);
 
     newLandscape->flags = flags;
