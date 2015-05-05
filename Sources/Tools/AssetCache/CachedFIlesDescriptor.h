@@ -27,44 +27,40 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_ASSET_CACHE_SERVER_CACHE_ENTRY_H__
-#define __DAVAENGINE_ASSET_CACHE_SERVER_CACHE_ENTRY_H__
+#ifndef __DAVAENGINE_ASSET_CACHE_CACHED_FILES_DESCRIPTOR_H__
+#define __DAVAENGINE_ASSET_CACHE_CACHED_FILES_DESCRIPTOR_H__
 
 #include "Base/BaseTypes.h"
 
-#include "AssetCache/CacheItemKey.h"
-#include "AssetCache/CachedFilesDescriptor.h"
-
-
 namespace DAVA
 {
-class KeyedArchive;
 
+class KeyedArchive;
+    
 namespace AssetCache
 {
-
-class ServerCacheEntry
+    
+class CachedFilesDescriptor
 {
 public:
     
-    ServerCacheEntry();
-    virtual ~ServerCacheEntry() = default;
-
+    CachedFilesDescriptor();
+    virtual ~CachedFilesDescriptor();
+    
     void Serialize(KeyedArchive * archieve) const;
     void Deserialize(KeyedArchive * archieve);
-
-    bool operator == (const ServerCacheEntry &right) const;
-
-private:
     
-    CacheItemKey key;
-    CachedFilesDescriptor descriptor;
+    bool operator == (const CachedFilesDescriptor &right) const;
+    
+private:
 
+    uint64 accessTime = 0;
+    
 };
 
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
 
-#endif // __DAVAENGINE_ASSET_CACHE_SERVER_CACHE_ENTRY_H__
+#endif // __DAVAENGINE_ASSET_CACHE_CACHED_FILES_DESCRIPTOR_H__
 

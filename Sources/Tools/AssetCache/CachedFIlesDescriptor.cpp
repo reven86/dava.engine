@@ -27,44 +27,46 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_ASSET_CACHE_SERVER_CACHE_ENTRY_H__
-#define __DAVAENGINE_ASSET_CACHE_SERVER_CACHE_ENTRY_H__
 
-#include "Base/BaseTypes.h"
-
-#include "AssetCache/CacheItemKey.h"
 #include "AssetCache/CachedFilesDescriptor.h"
+#include "FileSystem/KeyedArchive.h"
+#include "FileSystem/FileList.h"
+#include "Debug/DVAssert.h"
+#include "Platform/SystemTimer.h"
 
 
 namespace DAVA
 {
-class KeyedArchive;
-
+    
 namespace AssetCache
 {
-
-class ServerCacheEntry
+    
+CachedFilesDescriptor::CachedFilesDescriptor()
+    : accessTime(0)
 {
-public:
+}
     
-    ServerCacheEntry();
-    virtual ~ServerCacheEntry() = default;
-
-    void Serialize(KeyedArchive * archieve) const;
-    void Deserialize(KeyedArchive * archieve);
-
-    bool operator == (const ServerCacheEntry &right) const;
-
-private:
+CachedFilesDescriptor::~CachedFilesDescriptor()
+{
+}
     
-    CacheItemKey key;
-    CachedFilesDescriptor descriptor;
+void CachedFilesDescriptor::Serialize(KeyedArchive * archieve) const
+{
+    DVASSERT(nullptr != archieve);
+}
 
-};
+void CachedFilesDescriptor::Deserialize(KeyedArchive * archieve)
+{
+    DVASSERT(nullptr != archieve);
+}
+
+
+bool CachedFilesDescriptor::operator == (const CachedFilesDescriptor &right) const
+{
+    return (accessTime == right.accessTime);
+}
 
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
-
-#endif // __DAVAENGINE_ASSET_CACHE_SERVER_CACHE_ENTRY_H__
 
