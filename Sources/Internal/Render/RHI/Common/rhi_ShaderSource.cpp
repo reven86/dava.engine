@@ -5,6 +5,7 @@
     using DAVA::Logger;
     #include "FileSystem/DynamicMemoryFile.h"
     using DAVA::DynamicMemoryFile;
+    #include "Utils/Utils.h"
 
     #include "PreProcess.h"
 
@@ -146,6 +147,21 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 memset( p.defaultValue, 0, sizeof(p.defaultValue) );
                 if( script.length() )
                 {
+                    const char* def_value = strstr( script.c_str(), "def_value" );
+                    
+                    if( def_value )
+                    {
+                        char    val[128];
+
+                        if( sscanf( def_value, "def_value=%s", val ) == 1 )
+                        {
+                            DAVA::Vector<DAVA::String>  v;
+                            
+                            DAVA::Split( val, ",", v );
+                            for( uint32 i=0; i!=v.size(); ++i )
+                                p.defaultValue[i] = float(atof( v[i].c_str() ));
+                        }
+                    }
                 }
 
                 buf_t*  cbuf = 0;

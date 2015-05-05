@@ -733,7 +733,7 @@ void GameCore::OnAppStarted()
 
 //    sceneRenderTest.reset(new SceneRenderTestV3());    
 
-/*
+
     // ShaderSource smoke-test
     const char*  fp_src =
     "FPROG_IN_BEGIN\n"
@@ -745,7 +745,7 @@ void GameCore::OnAppStarted()
     "    FPROG_OUT_COLOR\n"
     "FPROG_OUT_END\n"
     "\n"
-    "property float4 tfactor : unique,dynamic : ;"
+    "property float4 tfactor : unique,dynamic :   def_value=1,1,1,1 ;"
     "\n"
     "DECL_SAMPLER2D(albedo)\n"
     "DECL_SAMPLER2D(albedo2)\n"
@@ -755,14 +755,16 @@ void GameCore::OnAppStarted()
     "    float4  diffuse = FP_TEXTURE2D( albedo, FP_IN(uv) );\n"
     "    float4  diffuse2 = FP_TEXTURE2D( albedo2, FP_IN(uv) );\n"
     "    FP_OUT_COLOR = tfactor * FP_IN(color);\n"
-    "FPROG_END\n";
+    "FPROG_END\n"
+    "blending : src=src_alpha dst=inv_src_alpha\n"
+    ;
 
     rhi::ShaderSource   fp;
 
     fp.Construct( rhi::PROG_FRAGMENT, fp_src );
     Logger::Info( "\n\n====================" );
     fp.Dump();
-*/
+
 /*
     const char*  vp_src =
     "VPROG_IN_BEGIN\n"
