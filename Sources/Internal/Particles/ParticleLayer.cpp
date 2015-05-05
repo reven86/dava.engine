@@ -73,8 +73,7 @@ ParticleLayer::ParticleLayer()
 	angle = 0;
 	angleVariation = 0;
 	
-	srcBlendFactor = BLEND_SRC_ALPHA;
-	dstBlendFactor = BLEND_ONE;
+    blending = BLENDING_ALPHABLEND;
 	enableFog = true;
 	enableFrameBlend = false;
 	inheritPosition = false;
@@ -197,8 +196,7 @@ ParticleLayer * ParticleLayer::Clone()
 	
 	dstLayer->layerName = layerName;
 	
-	dstLayer->srcBlendFactor = srcBlendFactor;
-	dstLayer->dstBlendFactor = dstBlendFactor;
+	dstLayer->blending = blending;	
 	dstLayer->enableFog=enableFog;
 	dstLayer->enableFrameBlend = enableFrameBlend;
 	dstLayer->inheritPosition = inheritPosition;
@@ -563,13 +561,11 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 	{
 		if (blend->AsString() == "alpha")
 		{
-			srcBlendFactor = BLEND_SRC_ALPHA;
-			dstBlendFactor = BLEND_ONE_MINUS_SRC_ALPHA;
+            blending = BLENDING_ALPHABLEND;
 		}
 		if (blend->AsString() == "add")
 		{
-			srcBlendFactor = BLEND_SRC_ALPHA;
-			dstBlendFactor = BLEND_ONE;
+            blending = BLENDING_ADDITIVE;
 		}			
 	}
 	

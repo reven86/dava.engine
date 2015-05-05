@@ -49,13 +49,13 @@ namespace DAVA
 {
 
 
-NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, bool enableFrameBlend, eBlendMode srcFactor, eBlendMode dstFactor)
+NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, bool enableFrameBlend, eBlending blending)
 {
 #if RHI_COMPLETE
 	if (!texture) //for superemmiter particles eg
 		return NULL;
 
-	uint32 materialKey = srcFactor<<4 | dstFactor;
+	uint32 materialKey = blending;
 	if (enableFog)
 		materialKey+=1<<8;
 	if (enableFrameBlend)
@@ -147,7 +147,7 @@ void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleE
 		group.loopDuration = group.layer->endTime;		
 
 		if (layer->sprite&&(layer->type != ParticleLayer::TYPE_SUPEREMITTER_PARTICLES))
-			group.material = GetMaterial(layer->sprite->GetTexture(0), layer->enableFog, layer->enableFrameBlend, layer->srcBlendFactor, layer->dstBlendFactor);
+			group.material = GetMaterial(layer->sprite->GetTexture(0), layer->enableFog, layer->enableFrameBlend, layer->blending);
 		else
 			group.material = NULL;
 

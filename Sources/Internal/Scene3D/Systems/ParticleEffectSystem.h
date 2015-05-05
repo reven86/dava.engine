@@ -87,7 +87,7 @@ private:
 private: //materials stuff
 	NMaterial *particleRegularMaterial, *particleFrameBlendMaterial;
 	Map<uint32, NMaterial *> materialMap;
-	NMaterial *GetMaterial(Texture *texture, bool enableFog, bool enableFrameBlend, eBlendMode srcFactor, eBlendMode dstFactor);
+	NMaterial *GetMaterial(Texture *texture, bool enableFog, bool enableFrameBlend, eBlending blending);
     bool forceDisableDepthTest;
     bool allowLodDegrade;
 };

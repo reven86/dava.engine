@@ -29,7 +29,7 @@
 #include "Render/Material/NMaterial.h"
 #include "Render/Material/NMaterialHelper.h"
 
-#if _NMATERIAL_OFF
+#if RHI_COMPLETE
 
 namespace DAVA
 {
@@ -208,4 +208,4 @@ void NMaterialHelper::SetStencilOp(const FastName& passName, NMaterial* target, 
 
 };
 
-#endif //_NMATERIAL_OFF
+#endif //RHI_COMPLETE

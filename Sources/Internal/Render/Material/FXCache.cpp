@@ -200,7 +200,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
             }
 
             //state
-            const YamlNode * renderStateNode = rootNode->Get("RenderState");
+            const YamlNode * renderStateNode = renderPassNode->Get("RenderState");
             if (renderStateNode)
             {                
                 const YamlNode * stateNode = renderStateNode->Get("state");
@@ -214,7 +214,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                     {
                         if (state == "STATE_BLEND")
                         {
-                            shaderDefines[FastName("BLENDING")] = 1; //ALPHA
+                            shaderDefines[FastName("BLENDING")] = BLENDING_ALPHABLEND;
                         }
                         else if (state == "STATE_CULL")
                         {
@@ -222,7 +222,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                             const YamlNode * cullModeNode = renderStateNode->Get("cullMode");
                             if (cullModeNode)
                             {
-                                if (cullModeNode->AsString() == "FACE_BACK")
+                                if (cullModeNode->AsString() == "FACE_FRONT")
                                     passDescriptor.cullMode = rhi::CULL_CCW;
                             }
                         }
