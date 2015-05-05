@@ -108,7 +108,13 @@ void Uninitialize()
 void Clear()
 {
     DVASSERT(initialized);
-    //RHI_COMPLETE
+    for (auto &it : shaderSourceCodes)
+    {        
+        SafeDelete(it.second.vProgText);
+        SafeDelete(it.second.fProgText);
+    }
+    shaderSourceCodes.clear();
+
 }
 
 void BuildFlagsKey(const FastName& name,const HashMap<FastName, int32>& defines, Vector<int32>& key)
@@ -126,9 +132,11 @@ void BuildFlagsKey(const FastName& name,const HashMap<FastName, int32>& defines,
 ShaderSourceCode LoadFromSource(const String& source)
 {
     ShaderSourceCode sourceCode;
-    FilePath vertexShaderPath = FilePath(source + ".vsh");
-    FilePath fragmentShaderPath = FilePath(source + ".fsh");
+    FilePath vertexShaderPath = FilePath(source + "-vp.cg");
+    FilePath fragmentShaderPath = FilePath(source + "-fp.cg");
     
+    //later move it into FileSystem
+
     //vertex
     File * fp = File::Create(vertexShaderPath, File::OPEN | File::READ);
     if (fp)
@@ -201,16 +209,16 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     }
     else
     {
-     //   sourceCode = LoadFromSource(name.c_str());
-        sourceCode = LoadFromSource("~res:/Materials/Shaders/Default/materials");
+        sourceCode = LoadFromSource(name.c_str());
+        //sourceCode = LoadFromSource("~res:/Materials/Shaders/Default/materials");
         shaderSourceCodes[name] = sourceCode;
     }
 
     rhi::ShaderSource vSource, fSource;
     vSource.Construct(rhi::PROG_VERTEX, sourceCode.vProgText, progDefines);
     fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fProgText, progDefines);
-    vSource.Dump();
-    fSource.Dump();    
+    /*vSource.Dump();
+    fSource.Dump();    */
     
     FastName vProgUid, fProgUid;    
     vProgUid = FastName(String("vSource: ") + resName);

@@ -349,7 +349,7 @@ void NMaterial::RebuildRenderVariants()
     CollectMaterialFlags(flags);
     
     //RHI_COMPLETE - move quality to numbers, or flags to fastname
-    flags[NMaterialQualityName::QUALITY_FLAG_NAME] = 1;// QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup());
+    flags[NMaterialQualityName::QUALITY_FLAG_NAME] = 0;// QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup());
     
     const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetFXName(), flags);
 

@@ -1,0 +1,14 @@
+FPROG_IN_BEGIN
+FPROG_IN_TEXCOORD0(uv,2)
+FPROG_IN_END
+
+FPROG_OUT_BEGIN
+    FPROG_OUT_COLOR
+FPROG_OUT_END
+
+DECL_SAMPLER2D(albedo)
+FPROG_BEGIN
+    float4  texColor = FP_TEXTURE2D( albedo, FP_IN(uv) );
+    texColor.a = 1.0;
+    FP_OUT_COLOR = texColor;
+FPROG_END;
