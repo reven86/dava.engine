@@ -476,7 +476,7 @@ int main(int argc, char *argv[])
                         index++;
                     }
                     
-                    PrintError(patchReader.GetParseError());
+                    PrintError(patchReader.GetLastError());
                 }
             }
         }
@@ -619,6 +619,8 @@ int main(int argc, char *argv[])
                             patchInfo = patchReader.GetCurInfo();
                         }
                     }
+
+                    PrintError(patchReader.GetLastError());
                 }
             }
         }
@@ -635,6 +637,5 @@ int main(int argc, char *argv[])
     }
 
     DAVA::FileSystem::Instance()->Release();
-
     return ret;
 }
