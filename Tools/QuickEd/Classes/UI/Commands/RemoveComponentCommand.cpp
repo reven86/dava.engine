@@ -7,13 +7,12 @@
 
 using namespace DAVA;
 
-RemoveComponentCommand::RemoveComponentCommand(PackageNode *_root, ControlNode *_node, int _componentType, QUndoCommand *parent)
+RemoveComponentCommand::RemoveComponentCommand(PackageNode *_root, ControlNode *_node, ComponentPropertiesSection *_section, QUndoCommand *parent)
     : QUndoCommand(parent)
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))
-    , componentSection(nullptr) // comment
+    , componentSection(SafeRetain(_section))
 {
-    componentSection = SafeRetain(node->GetRootProperty()->FindComponentPropertiesSection(_componentType));
 }
 
 RemoveComponentCommand::~RemoveComponentCommand()

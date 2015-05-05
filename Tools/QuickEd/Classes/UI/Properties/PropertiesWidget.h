@@ -31,6 +31,8 @@ private:
     SharedData *sharedData;
     QAction *addComponentAction;
     QAction *removeComponentAction;
+    int selectedComponentType;
+    int selectedComponentIndex;
 };
 
 #endif //__QUICKED_PROPERTIES_WIDGET_H__

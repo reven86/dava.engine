@@ -14,6 +14,9 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/ImportedPackagesNode.h"
+
+#include "Model/ControlProperties/ComponentPropertiesSection.h"
+
 #include "Model/YamlPackageSerializer.h"
 #include "Model/EditorUIPackageBuilder.h"
 
@@ -56,18 +59,26 @@ void QtModelPackageCommandExecutor::AddComponent(ControlNode *node, uint32 compo
     if (node->GetRootProperty()->CanAddComponent(componentType))
     {
         BeginMacro("Add Component");
-        AddComponentImpl(node, componentType);
+        UIComponent::eType type = static_cast<UIComponent::eType>(componentType);
+        int32 index = node->GetControl()->GetComponentCount(componentType);
+        ComponentPropertiesSection *section = new ComponentPropertiesSection(node->GetControl(), type, index, nullptr, AbstractProperty::CT_COPY);
+        AddComponentImpl(node, section);
+        SafeRelease(section);
         EndMacro();
     }
 }
 
-void QtModelPackageCommandExecutor::RemoveComponent(ControlNode *node, uint32 componentType)
+void QtModelPackageCommandExecutor::RemoveComponent(ControlNode *node, uint32 componentType, DAVA::uint32 componentIndex)
 {
     if (node->GetRootProperty()->CanRemoveComponent(componentType))
     {
-        BeginMacro("Remove Component");
-        RemoveComponentImpl(node, componentType);
-        EndMacro();
+        ComponentPropertiesSection *section = node->GetRootProperty()->FindComponentPropertiesSection(componentType, componentIndex);
+        if (section)
+        {
+            BeginMacro("Remove Component");
+            RemoveComponentImpl(node, section);
+            EndMacro();
+        }
     }
 }
 
@@ -222,21 +233,28 @@ void QtModelPackageCommandExecutor::RemoveControlImpl(ControlNode* node)
     
 }
 
-void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode *node, uint32 componentType)
+void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode *node, ComponentPropertiesSection *section)
 {
-    PushCommand(new AddComponentCommand(document->GetPackage(), node, componentType));
-    Vector<ControlNode*> instances = node->GetInstances();
-    for (ControlNode *instance : instances)
-        AddComponentImpl(instance, componentType);
-}
-
-void QtModelPackageCommandExecutor::RemoveComponentImpl(ControlNode *node, uint32 componentType)
-{
-    PushCommand(new RemoveComponentCommand(document->GetPackage(), node, componentType));
+    PushCommand(new AddComponentCommand(document->GetPackage(), node, section));
     Vector<ControlNode*> instances = node->GetInstances();
     for (ControlNode *instance : instances)
     {
-        RemoveComponentImpl(instance, componentType);
+        UIComponent::eType type = static_cast<UIComponent::eType>(section->GetComponentType());
+        int32 index = section->GetComponentIndex();
+        ComponentPropertiesSection *instanceSection = new ComponentPropertiesSection(node->GetControl(), type, index, section, AbstractProperty::CT_INHERIT);
+        AddComponentImpl(instance, instanceSection);
+        SafeRelease(instanceSection);
+    }
+}
+
+void QtModelPackageCommandExecutor::RemoveComponentImpl(ControlNode *node, ComponentPropertiesSection *section)
+{
+    PushCommand(new RemoveComponentCommand(document->GetPackage(), node, section));
+    Vector<ControlNode*> instances = node->GetInstances();
+    for (ControlNode *instance : instances)
+    {
+        ComponentPropertiesSection *instanceSection = instance->GetRootProperty()->FindComponentPropertiesSection(section->GetComponentType(), section->GetComponentIndex());
+        RemoveComponentImpl(instance, instanceSection);
     }
 }
 

@@ -12,7 +12,7 @@ namespace DAVA
 class ComponentPropertiesSection : public SectionProperty
 {
 public:
-    ComponentPropertiesSection(DAVA::UIControl *control, DAVA::UIComponent::eType type, const ComponentPropertiesSection *sourceSection, eCloneType copyType);
+    ComponentPropertiesSection(DAVA::UIControl *control, DAVA::UIComponent::eType type, DAVA::int32 index, const ComponentPropertiesSection *sourceSection, eCloneType copyType);
 protected:
     virtual ~ComponentPropertiesSection();
 
@@ -25,6 +25,9 @@ public:
     
     void InstallComponent();
     void UninstallComponent();
+    
+    DAVA::int32 GetComponentIndex() const;
+    void RefreshIndex();
 
     virtual void Serialize(PackageSerializer *serializer) const override;
 
@@ -35,6 +38,7 @@ private:
     DAVA::UIControl *control;
     DAVA::UIComponent *component;
     DAVA::int32 index;
+    const ComponentPropertiesSection *prototypeSection;
 };
 
 #endif // __QUICKED_COMPONENT_PROPERTIES_SECTION_H__

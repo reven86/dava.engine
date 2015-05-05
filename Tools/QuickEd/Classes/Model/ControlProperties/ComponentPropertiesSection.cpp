@@ -7,15 +7,21 @@
 
 using namespace DAVA;
 
-ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl *aControl, DAVA::UIComponent::eType type, const ComponentPropertiesSection *sourceSection, eCloneType cloneType)
+ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl *aControl, DAVA::UIComponent::eType type, int32 _index, const ComponentPropertiesSection *sourceSection, eCloneType cloneType)
     : SectionProperty("")
     , control(SafeRetain(aControl))
     , component(nullptr)
-    , index(0)
+    , index(_index)
+    , prototypeSection(nullptr) // weak
 {
     component = UIComponent::CreateByType(type);
     DVASSERT(component);
 
+    if (sourceSection && cloneType == CT_INHERIT)
+    {
+        prototypeSection = sourceSection; // weak
+    }
+    
     if (component)
     {
         name = GetComponentName();
@@ -37,6 +43,7 @@ ComponentPropertiesSection::~ComponentPropertiesSection()
 {
     SafeRelease(control);
     SafeRelease(component);
+    prototypeSection = nullptr; // weak
 }
 
 UIComponent *ComponentPropertiesSection::GetComponent() const
@@ -60,8 +67,11 @@ uint32 ComponentPropertiesSection::GetFlags() const
     
     uint32 flags = 0;
     
-    if (!readOnly)
+    if (!readOnly && prototypeSection == nullptr)
         flags |= EF_CAN_REMOVE;
+    
+    if (prototypeSection)
+        flags |= EF_INHERITED;
     
     return flags;
 }
@@ -70,7 +80,7 @@ void ComponentPropertiesSection::InstallComponent()
 {
     if (control->GetComponent(component->GetType(), 0) != component)
     {
-        control->AddComponent(component);
+        control->InsertComponentAt(component, index);
         
         name = GetComponentName();
         if (UIComponent::IsMultiple(component->GetType()))
@@ -85,6 +95,19 @@ void ComponentPropertiesSection::UninstallComponent()
     {
         DVASSERT(installedComponent == component);
         control->RemoveComponent(component);
+    }
+}
+
+int32 ComponentPropertiesSection::GetComponentIndex() const
+{
+    return index;
+}
+
+void ComponentPropertiesSection::RefreshIndex()
+{
+    if (component->GetControl() == control)
+    {
+        index = control->GetComponentIndex(component);
     }
 }
 

@@ -50,9 +50,9 @@ void DefaultPackageCommandExecutor::AddComponent(ControlNode *node, DAVA::uint32
     node->GetRootProperty()->AddComponentPropertiesSection(componentType);
 }
 
-void DefaultPackageCommandExecutor::RemoveComponent(ControlNode *node, DAVA::uint32 componentType)
+void DefaultPackageCommandExecutor::RemoveComponent(ControlNode *node, DAVA::uint32 componentType, DAVA::uint32 componentIndex)
 {
-    node->GetRootProperty()->RemoveComponentPropertiesSection(componentType);
+    node->GetRootProperty()->RemoveComponentPropertiesSection(componentType, componentIndex);
 }
 
 void DefaultPackageCommandExecutor::InsertControl(ControlNode *control, ControlsContainerNode *dest, int32 destIndex)

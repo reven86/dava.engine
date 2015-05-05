@@ -7,28 +7,26 @@
 
 using namespace DAVA;
 
-AddComponentCommand::AddComponentCommand(PackageNode *_root, ControlNode *_node, int _componentType, QUndoCommand *parent)
+AddComponentCommand::AddComponentCommand(PackageNode *_root, ControlNode *_node, ComponentPropertiesSection *_section, QUndoCommand *parent)
     : QUndoCommand(parent)
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))
-    , componentSection(nullptr)
+    , section(SafeRetain(_section))
 {
-    componentSection = new ComponentPropertiesSection(node->GetControl(), (UIComponent::eType) _componentType, nullptr, AbstractProperty::CT_INHERIT);
 }
 
 AddComponentCommand::~AddComponentCommand()
 {
     SafeRelease(root);
     SafeRelease(node);
-    SafeRelease(componentSection);
 }
 
 void AddComponentCommand::redo()
 {
-    root->AddComponent(node, componentSection);
+    root->AddComponent(node, section);
 }
 
 void AddComponentCommand::undo()
 {
-    root->RemoveComponent(node, componentSection);
+    root->RemoveComponent(node, section);
 }

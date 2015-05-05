@@ -2771,12 +2771,32 @@ namespace DAVA
 
     void UIControl::AddComponent(UIComponent * component)
     {
+        DVASSERT(component->GetControl() == nullptr);
         component->SetControl(this);
         components.push_back(SafeRetain(component));
         std::stable_sort(components.begin(), components.end(), [](UIComponent * left, UIComponent * right) {
             return left->GetType() < right->GetType();
         });
         UpdateFamily();
+    }
+    
+    void UIControl::InsertComponentAt(UIComponent * component, uint32 index)
+    {
+        uint32 count = family->GetComponentsCount(component->GetType());
+        if (count == 0 || index >= count)
+        {
+            AddComponent(component);
+        }
+        else
+        {
+            DVASSERT(component->GetControl() == nullptr);
+            component->SetControl(this);
+            
+            uint32 insertIndex = family->GetComponentIndex(component->GetType(), index);
+            components.insert(components.begin() + insertIndex, component);
+            
+            UpdateFamily();
+        }
     }
 
     UIComponent * UIControl::GetComponent(uint32 componentType, uint32 index) const
@@ -2787,6 +2807,18 @@ namespace DAVA
             return components[family->GetComponentIndex(componentType, index)];
         }
         return nullptr;
+    }
+    
+    int32 UIControl::GetComponentIndex(const UIComponent *component) const
+    {
+        uint32 count = family->GetComponentsCount(component->GetType());
+        uint32 index = family->GetComponentIndex(component->GetType(), 0);
+        for (uint32 i = 0; i < count; i++)
+        {
+            if (components[index + i] == component)
+                return i;
+        }
+        return -1;
     }
 
     UIComponent * UIControl::GetOrCreateComponent(uint32 componentType, uint32 index)

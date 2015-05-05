@@ -39,7 +39,8 @@ RootProperty::RootProperty(ControlNode *_node, const RootProperty *sourcePropert
         for (ComponentPropertiesSection *section : sourceProperties->componentProperties)
         {
             UIComponent::eType type = (UIComponent::eType) section->GetComponent()->GetType();
-            ScopedPtr<ComponentPropertiesSection> newSection(new ComponentPropertiesSection(node->GetControl(), type, section, cloneType));
+            int32 index = section->GetComponentIndex();
+            ScopedPtr<ComponentPropertiesSection> newSection(new ComponentPropertiesSection(node->GetControl(), type, index, section, cloneType));
             AddComponentPropertiesSection(newSection);
         }
     }
@@ -120,7 +121,7 @@ bool RootProperty::CanAddComponent(DAVA::uint32 componentType) const
     if (UIComponent::IsMultiple(componentType))
         return true;
     
-    if (FindComponentPropertiesSection(componentType) == nullptr)
+    if (FindComponentPropertiesSection(componentType, 0) == nullptr)
         return true;
     
     return false;
@@ -128,7 +129,7 @@ bool RootProperty::CanAddComponent(DAVA::uint32 componentType) const
 
 bool RootProperty::CanRemoveComponent(DAVA::uint32 componentType) const
 {
-    return !IsReadOnly() && FindComponentPropertiesSection(componentType) != nullptr;
+    return !IsReadOnly() && FindComponentPropertiesSection(componentType, 0) != nullptr; // TODO
 }
 
 int32 RootProperty::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSection *section) const
@@ -141,23 +142,21 @@ int32 RootProperty::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSecti
     }
     else
     {
-        int32 componentsCount = (int32) componentProperties.size();
-        for (int32 i = 0; i < componentsCount; i++)
-        {
-            if (componentProperties[i]->GetType() > section->GetType())
-                return i + offset;
-        }
-        return componentsCount + offset;
+        return GetComponentAbsIndex(section->GetComponentType(), section->GetComponentIndex()) + offset;
     }
 }
 
-ComponentPropertiesSection *RootProperty::FindComponentPropertiesSection(DAVA::uint32 componentType) const
+ComponentPropertiesSection *RootProperty::FindComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex) const
 {
+    int32 index = 0;
     for (ComponentPropertiesSection *section : componentProperties)
     {
         if (section->GetComponent()->GetType() == componentType)
         {
-            return section;
+            if (componentIndex == index)
+                return section;
+            
+            index++;
         }
     }
     return nullptr;
@@ -165,7 +164,15 @@ ComponentPropertiesSection *RootProperty::FindComponentPropertiesSection(DAVA::u
 
 ComponentPropertiesSection *RootProperty::AddComponentPropertiesSection(DAVA::uint32 componentType)
 {
-    ComponentPropertiesSection *section = new ComponentPropertiesSection(node->GetControl(), (UIComponent::eType) componentType, nullptr, CT_INHERIT);
+    uint32 index = 0;
+    
+    for (ComponentPropertiesSection *s : componentProperties)
+    {
+        if (s->GetComponentType() == componentType)
+            index++;
+    }
+    
+    ComponentPropertiesSection *section = new ComponentPropertiesSection(node->GetControl(), (UIComponent::eType) componentType, index, nullptr, CT_INHERIT);
     AddComponentPropertiesSection(section);
     section->Release();
     return section;
@@ -174,23 +181,44 @@ ComponentPropertiesSection *RootProperty::AddComponentPropertiesSection(DAVA::ui
 void RootProperty::AddComponentPropertiesSection(ComponentPropertiesSection *section)
 {
     uint32 componentType = section->GetComponentType();
-    if (UIComponent::IsMultiple(componentType) || FindComponentPropertiesSection(componentType) == nullptr)
+    if (UIComponent::IsMultiple(componentType) || FindComponentPropertiesSection(componentType, 0) == nullptr)
     {
-        int index = GetIndexOfCompoentPropertiesSection(section);
+        int32 index = GetComponentAbsIndex(componentType, section->GetComponentIndex());
+        
+        int32 globalIndex = GetIndexOfCompoentPropertiesSection(section);
         for (PropertyListener *listener : listeners)
-            listener->ComponentPropertiesWillBeAdded(this, section, index);
+            listener->ComponentPropertiesWillBeAdded(this, section, globalIndex);
 
-        componentProperties.push_back(SafeRetain(section));
+        componentProperties.insert(componentProperties.begin() + index, SafeRetain(section));
         DVASSERT(section->GetParent() == nullptr);
         section->SetParent(this);
         section->InstallComponent();
 
-        std::stable_sort(componentProperties.begin(), componentProperties.end(), [](ComponentPropertiesSection * left, ComponentPropertiesSection * right) {
-            return left->GetComponent()->GetType() < right->GetComponent()->GetType();
-        });
+        // TODO REMOVE Check code
+        ComponentPropertiesSection *prev = nullptr;
+        for (ComponentPropertiesSection * section : componentProperties)
+        {
+            if (prev != nullptr)
+            {
+                if (prev->GetComponentType() == section->GetComponentType())
+                {
+                    DVASSERT(prev->GetComponentIndex() < section->GetComponentIndex());
+                }
+                else
+                {
+                    DVASSERT(prev->GetComponentType() < section->GetComponentType());
+                }
+            }
+        }
+//        std::stable_sort(componentProperties.begin(), componentProperties.end(), [](ComponentPropertiesSection * left, ComponentPropertiesSection * right) {
+//            return left->GetComponent()->GetType() < right->GetComponent()->GetType();
+//        });
+        // #END TODO
 
         for (PropertyListener *listener : listeners)
-            listener->ComponentPropertiesWasAdded(this, section, index);
+            listener->ComponentPropertiesWasAdded(this, section, globalIndex);
+        
+        RefreshComponentIndices();
     }
     else
     {
@@ -198,9 +226,9 @@ void RootProperty::AddComponentPropertiesSection(ComponentPropertiesSection *sec
     }
 }
 
-void RootProperty::RemoveComponentPropertiesSection(DAVA::uint32 componentType)
+void RootProperty::RemoveComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex)
 {
-    ComponentPropertiesSection *section = FindComponentPropertiesSection(componentType);
+    ComponentPropertiesSection *section = FindComponentPropertiesSection(componentType, componentIndex);
     if (section)
     {
         RemoveComponentPropertiesSection(section);
@@ -211,7 +239,7 @@ void RootProperty::RemoveComponentPropertiesSection(ComponentPropertiesSection *
 {
     uint32 componentType = section->GetComponentType();
     
-    if (FindComponentPropertiesSection(componentType) == section)
+    if (FindComponentPropertiesSection(componentType, section->GetComponentIndex()) == section) // TODO fix
     {
         int index = GetIndexOfCompoentPropertiesSection(section);
         for (PropertyListener *listener : listeners)
@@ -230,6 +258,8 @@ void RootProperty::RemoveComponentPropertiesSection(ComponentPropertiesSection *
         
         for (PropertyListener *listener : listeners)
             listener->ComponentPropertiesWasRemoved(this, section, index);
+        
+        RefreshComponentIndices();
     }
     else
     {
@@ -442,5 +472,31 @@ void RootProperty::MakeInternalControlPropertiesSection(DAVA::UIControl *control
         InternalControlPropertiesSection *section = new InternalControlPropertiesSection(control, i, sourceSection, copyType);
         section->SetParent(this);
         internalControlProperties.push_back(section);
+    }
+}
+
+uint32 RootProperty::GetComponentAbsIndex(DAVA::uint32 componentType, DAVA::uint32 index) const
+{
+    uint32 i = 0;
+    for (ComponentPropertiesSection *section : componentProperties)
+    {
+        if (section->GetComponentType() >= componentType)
+        {
+            return index + i;
+        }
+        i++;
+    }
+    DVASSERT(index == 0);
+    return (uint32) componentProperties.size();
+}
+
+void RootProperty::RefreshComponentIndices()
+{
+    for (ComponentPropertiesSection *section : componentProperties)
+    {
+        section->RefreshIndex();
+        
+        for (PropertyListener *listener : listeners)
+            listener->PropertyChanged(section);
     }
 }

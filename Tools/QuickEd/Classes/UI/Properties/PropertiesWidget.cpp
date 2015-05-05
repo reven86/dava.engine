@@ -24,6 +24,8 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
     , sharedData(nullptr)
     , addComponentAction(nullptr)
     , removeComponentAction(nullptr)
+    , selectedComponentType(-1)
+    , selectedComponentIndex(-1)
 {
     setupUi(this);
     treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
@@ -85,15 +87,14 @@ void PropertiesWidget::OnRemoveComponent()
 {
     if (sharedData)
     {
-        uint32 componentType = removeComponentAction->data().toUInt();
-        if (componentType < UIComponent::COMPONENT_COUNT)
+        if (0 <= selectedComponentIndex && selectedComponentIndex < UIComponent::COMPONENT_COUNT)
         {
             ControlNode *node = GetSelectedControlNode();
-            sharedData->GetDocument()->GetCommandExecutor()->RemoveComponent(node, componentType);
+            sharedData->GetDocument()->GetCommandExecutor()->RemoveComponent(node, selectedComponentType, selectedComponentIndex);
         }
         else
         {
-            DVASSERT(componentType < UIComponent::COMPONENT_COUNT);
+            DVASSERT(false);
         }
     }
 }
@@ -113,8 +114,8 @@ void PropertiesWidget::OnSelectionChanged(const QItemSelection &selected, const 
             ComponentPropertiesSection *section = dynamic_cast<ComponentPropertiesSection*>(property);
             if (section)
             {
-                int componentType = (int) section->GetComponent()->GetType();
-                removeComponentAction->setData(componentType);
+                selectedComponentType = (int) section->GetComponentType();
+                selectedComponentIndex = (int) section->GetComponentIndex();
             }
             else
             {

@@ -10,7 +10,7 @@ class ComponentPropertiesSection;
 class RemoveComponentCommand : public QUndoCommand
 {
 public:
-    RemoveComponentCommand(PackageNode *_root, ControlNode *_node, int componentType, QUndoCommand *parent = nullptr);
+    RemoveComponentCommand(PackageNode *_root, ControlNode *_node, ComponentPropertiesSection *_section, QUndoCommand *parent = nullptr);
     virtual ~RemoveComponentCommand();
     
     void redo() override;

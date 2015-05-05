@@ -1446,11 +1446,13 @@ private:
 /* Components */
 public:
     void AddComponent(UIComponent * component);
+    void InsertComponentAt(UIComponent * component, uint32 index);
     void RemoveComponent(UIComponent * component);
     void RemoveComponent(uint32 componentType, uint32 index = 0);
     void RemoveAllComponents();
 
     UIComponent * GetComponent(uint32 componentType, uint32 index = 0) const;
+    int32 GetComponentIndex(const UIComponent *component) const;
     UIComponent * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
 
     template<class T> inline T* GetComponent(uint32 index = 0) const

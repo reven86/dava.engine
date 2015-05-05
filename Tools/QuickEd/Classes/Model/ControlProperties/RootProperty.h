@@ -42,10 +42,10 @@ public:
     bool CanAddComponent(DAVA::uint32 componentType) const;
     bool CanRemoveComponent(DAVA::uint32 componentType) const;
     DAVA::int32 GetIndexOfCompoentPropertiesSection(ComponentPropertiesSection *section) const;
-    ComponentPropertiesSection *FindComponentPropertiesSection(DAVA::uint32 componentType) const;
+    ComponentPropertiesSection *FindComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 index) const;
     ComponentPropertiesSection *AddComponentPropertiesSection(DAVA::uint32 componentType);
     void AddComponentPropertiesSection(ComponentPropertiesSection *section);
-    void RemoveComponentPropertiesSection(DAVA::uint32 componentType);
+    void RemoveComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex);
     void RemoveComponentPropertiesSection(ComponentPropertiesSection *section);
 
     BackgroundPropertiesSection *GetBackgroundPropertiesSection(int num) const;
@@ -71,6 +71,9 @@ private:
     void MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const RootProperty *sourceProperties, eCloneType cloneType);
     void MakeBackgroundPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType);
     void MakeInternalControlPropertiesSection(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType);
+    DAVA::uint32 GetComponentAbsIndex(DAVA::uint32 componentType, DAVA::uint32 index) const;
+    void RefreshComponentIndices();
+    
 private:
     ControlNode *node; // weak ref
 
