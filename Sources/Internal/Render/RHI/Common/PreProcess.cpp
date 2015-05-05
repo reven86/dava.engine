@@ -135,19 +135,28 @@ PreProcessText( const char* text, std::string* result )
 void
 PreProcessText( const char* text, const char** arg, unsigned argCount, std::string* result )
 {
-    const char* argv[128];
-    int         argc    = 0;
-    DVASSERT(argCount<countof(argv)-2);
+    if( text )
+    {
+        const char* argv[128];
+        int         argc    = 0;
+        DVASSERT(argCount<countof(argv)-2);
 
-    argv[argc++] = "<mcpp>";
-    for( const char** a=arg,**a_end=arg+argCount; a!=a_end; ++a )
-        argv[argc++] = *a;
-    argv[argc++] = MCPP_Text;
+        argv[argc++] = "<mcpp>";// we just need first arg
+        argv[argc++] = "-P";    // do not output #line directives
+        argv[argc++] = "-C";    // keep comments
+        for( const char** a=arg,**a_end=arg+argCount; a!=a_end; ++a )
+            argv[argc++] = *a;
+        argv[argc++] = MCPP_Text;
 
-    _PreprocessedText = result;
-    mcpp__set_input( text, strlen(text) );
+        _PreprocessedText = result;
+        mcpp__set_input( text, strlen(text) );
 
-    mcpp_set_out_func( &_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf );
-    mcpp_lib_main( argc, (char**)argv );
-    _PreprocessedText = nullptr;
+        mcpp_set_out_func( &_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf );
+        mcpp_lib_main( argc, (char**)argv );
+        _PreprocessedText = nullptr;
+    }
+    else
+    {
+        *result = "";
+    }
 }

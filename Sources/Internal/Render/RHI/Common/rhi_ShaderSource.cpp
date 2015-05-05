@@ -5,6 +5,7 @@
     using DAVA::Logger;
     #include "FileSystem/DynamicMemoryFile.h"
     using DAVA::DynamicMemoryFile;
+    #include "Utils/Utils.h"
 
     #include "PreProcess.h"
 
@@ -24,6 +25,19 @@ ShaderSource::ShaderSource()
 
 ShaderSource::~ShaderSource()
 {
+}
+
+
+//------------------------------------------------------------------------------
+
+static rhi::BlendOp
+BlendOpFromText( const char* op )
+{
+    if     ( stricmp( op, "zero" ) == 0 )           return rhi::BLENDOP_ZERO;
+    else if( stricmp( op, "one" ) == 0 )            return rhi::BLENDOP_ONE;
+    else if( stricmp( op, "src_alpha" ) == 0 )      return rhi::BLENDOP_SRC_ALPHA;
+    else if( stricmp( op, "inv_src_alpha" ) == 0)   return rhi::BLENDOP_INV_SRC_ALPHA;
+    else                                            return rhi::BLENDOP_ONE;
 }
 
 
@@ -73,9 +87,12 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
     if( in )
     {
         std::regex  prop_re(".*property\\s*(float|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
-        std::regex  sampler_re(".*DECL_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
-        std::regex  texture_re(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+        std::regex  sampler2d_re(".*DECL_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
+        std::regex  samplercube_re(".*DECL_SAMPLERCUBE\\s*\\(\\s*(.*)\\s*\\).*");
+        std::regex  texture2d_re(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+        std::regex  texturecube_re(".*FP_TEXTURECUBE\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
         std::regex  blend_re(".*BLEND_MODE\\s*\\(\\s*(.*)\\s*\\).*");
+        std::regex  blending2_re(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha)\\s+dst=(zero|one|src_alpha|inv_src_alpha).*");
 
         _Reset();
 
@@ -130,6 +147,21 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 memset( p.defaultValue, 0, sizeof(p.defaultValue) );
                 if( script.length() )
                 {
+                    const char* def_value = strstr( script.c_str(), "def_value" );
+                    
+                    if( def_value )
+                    {
+                        char    val[128];
+
+                        if( sscanf( def_value, "def_value=%s", val ) == 1 )
+                        {
+                            DAVA::Vector<DAVA::String>  v;
+                            
+                            DAVA::Split( val, ",", v );
+                            for( uint32 i=0; i!=v.size(); ++i )
+                                p.defaultValue[i] = float(atof( v[i].c_str() ));
+                        }
+                    }
                 }
 
                 buf_t*  cbuf = 0;
@@ -190,7 +222,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     cbuf->regCount     += p.bufferRegCount;
                 }
             }
-            else if( std::regex_match( line, match, sampler_re ) )
+            else if( std::regex_match( line, match, sampler2d_re ) )
             {
                 std::string sname   = match[1].str();
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
@@ -210,7 +242,51 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 code.append( line, strlen(line) );
                 code.push_back( '\n' );
             }
-            else if( std::regex_match( line, match, texture_re ) )
+            else if( std::regex_match( line, match, samplercube_re ) )
+            {
+                std::string sname   = match[1].str();
+                int         mbegin  = strstr( line, sname.c_str() ) - line;
+                int         sn      = sname.length();
+
+                DVASSERT(sampler.size()<10);
+                char ch = line[mbegin+1];
+                int  sl = sprintf( line+mbegin, "%u", (unsigned)(sampler.size()) );
+                DVASSERT(sn>=sl);
+                line[mbegin+1]=ch;
+                if( sn > sl )
+                    memset( line+mbegin+sl, ' ', sn-sl );
+                sampler.resize( sampler.size()+1 );
+                sampler.back().uid  = FastName(sname);
+                sampler.back().type = TEXTURE_TYPE_CUBE;
+
+                code.append( line, strlen(line) );
+                code.push_back( '\n' );
+            }
+            else if( std::regex_match( line, match, texture2d_re ) )
+            {
+                std::string sname   = match[1].str();
+                int         mbegin  = strstr( line, sname.c_str() ) - line;
+                FastName    suid    ( sname );
+                
+                for( unsigned s=0; s!=sampler.size(); ++s )
+                {
+                    if( sampler[s].uid == suid )
+                    {
+                        int sl = sprintf( line+mbegin, "%u", s );
+                        int sn = sname.length();
+                        DVASSERT(sn>=sl);
+                        line[mbegin+sl] = ',';
+                        if( sn > sl )
+                            memset( line+mbegin+sl, ' ', sn-sl );
+                        
+                        break;
+                    }
+                }
+
+                code.append( line, strlen(line) );
+                code.push_back( '\n' );
+            }
+            else if( std::regex_match( line, match, texturecube_re ) )
             {
                 std::string sname   = match[1].str();
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
@@ -246,6 +322,15 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     blending.rtBlend[0].alphaSrc = BLENDOP_SRC_ALPHA;
                     blending.rtBlend[0].alphaDst = BLENDOP_INV_SRC_ALPHA;
                 }
+            }
+            else if( std::regex_match( line, match, blending2_re ) )
+            {
+                std::string src   = match[1].str();
+                std::string dst   = match[2].str();
+                
+                blending.rtBlend[0].blendEnabled = true;
+                blending.rtBlend[0].colorSrc     = blending.rtBlend[0].alphaSrc = BlendOpFromText( src.c_str() );
+                blending.rtBlend[0].colorDst     = blending.rtBlend[0].alphaDst = BlendOpFromText( dst.c_str() );
             }
             else
             {
