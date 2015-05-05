@@ -27,46 +27,30 @@
 =====================================================================================*/
 
 
-#include "DAVAEngine.h"
-#include "GameCore.h"
- 
-using namespace DAVA;
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
+#include <QMainWindow>
 
-void FrameworkDidLaunched()
+class DavaGLWidget;
+
+namespace Ui
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-	KeyedArchive * appOptions = new KeyedArchive();
-	appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT);
-    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_2_0);
-	
-	DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(960, 480);
-	DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(960, 480, "Gfx");
-
-#else
-	KeyedArchive * appOptions = new KeyedArchive();
-	
-	appOptions->SetInt32("width", 700);
-	appOptions->SetInt32("height", 500);
-
-// 	appOptions->SetInt("fullscreen.width",	1280);
-// 	appOptions->SetInt("fullscreen.height", 800);
-	
-	appOptions->SetInt32("fullscreen", 0);
-	appOptions->SetInt32("bpp", 32); 
-
-	DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(700, 500);
-	DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(700, 500, "Gfx");
-	DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(500, 700, "Gfx");
-#endif 
-
-	GameCore * core = new GameCore();
-	DAVA::Core::SetApplicationCore(core);
-	DAVA::Core::Instance()->SetOptions(appOptions);
+    class MainWindow;
 }
 
-
-void FrameworkWillTerminate() 
+class MainWindow : public QMainWindow
 {
+    Q_OBJECT
 
-}
+public:
+    explicit MainWindow(QWidget *parent = 0);
+    ~MainWindow();
+
+private:
+    Ui::MainWindow *ui;
+
+    DavaGLWidget *glWidget;
+};
+
+#endif // MAINWINDOW_H

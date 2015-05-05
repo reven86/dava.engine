@@ -27,28 +27,34 @@
 =====================================================================================*/
 
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#include <QApplication>
+#include "MainWindow.h"
 
-#include <QMainWindow>
+#include "DAVAEngine.h"
 
-namespace Ui {
-class MainWindow;
+void FrameworkWillTerminate()
+{
 }
 
-class MainWindow : public QMainWindow
+void FrameworkDidLaunched()
 {
-    Q_OBJECT
-    
-public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
-    
-protected:
-    
+}
 
-private:
-    Ui::MainWindow *ui;
-};
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
 
-#endif // MAINWINDOW_H
+#if defined (__DAVAENGINE_MACOS__)
+    DAVA::Core::Run(argc, argv);
+#elif defined (__DAVAENGINE_WIN32__)
+    HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle(nullptr);
+    DAVA::Core::Run(argc, argv, hInstance);
+#else
+    DVASSERT(false && "Wrong platform")
+#endif
+
+    MainWindow w;
+    w.show();
+
+    return a.exec();
+}
