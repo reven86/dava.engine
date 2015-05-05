@@ -139,50 +139,54 @@ void RulerToolSystem::Input(DAVA::UIEvent *event)
 	Vector3 point;
 	collisionSystem->LandRayTestFromCamera(point);
 
-	if (UIEvent::PHASE_KEYCHAR == event->phase)
-	{
-		if (DVKEY_BACKSPACE == event->tid)
-		{
-			if (previewEnabled)
-			{
-				RemoveLastPoint();
-			}
-			else
-			{
-				previewEnabled = true;
-			}
-			CalcPreviewPoint(point, true);
-			DrawPoints();
-		}
-		else if (DVKEY_ESCAPE == event->tid)
-		{
-			DisablePreview();
-			DrawPoints();
-		}
-	}
-	else if(UIEvent::BUTTON_1 == event->tid)
-	{
-		if(UIEvent::PHASE_ENDED == event->phase)
-		{
-			if (isIntersectsLandscape)
-			{
-				if (IsKeyModificatorPressed(DVKEY_SHIFT))
-				{
-					SetStartPoint(Vector3(point));
-				}
-				else
-				{
-					AddPoint(Vector3(point));
-				}
-			}
-		}
-		else
-		{
-			CalcPreviewPoint(point);
-		}
+    switch ( event->phase )
+    {
+    case UIEvent::PHASE_KEYCHAR:
+        if ( DVKEY_BACKSPACE == event->tid )
+        {
+            RemoveLastPoint();
+            previewEnabled = true;
+            CalcPreviewPoint( point, true );
+        }
+        else if ( DVKEY_ESCAPE == event->tid )
+        {
+            previewEnabled = false;
+        }
+        DrawPoints();
+        break;
 
-		DrawPoints();
-	}
+    case UIEvent::PHASE_MOVE:
+        if ( previewEnabled )
+        {
+            CalcPreviewPoint( point );
+            DrawPoints();
+        }
+        break;
+
+    case UIEvent::PHASE_ENDED:
+        if ( event->tid == UIEvent::BUTTON_1 && isIntersectsLandscape )
+        {
+            if ( IsKeyModificatorPressed( DVKEY_SHIFT ) )
+            {
+                SetStartPoint( Vector3( point ) );
+            }
+            else
+            {
+                if ( previewEnabled )
+                {
+                    AddPoint( Vector3( point ) );
+                }
+            }
+
+            previewEnabled = true;
+            CalcPreviewPoint( point );
+            DrawPoints();
+        }
+        break;
+
+    default:
+        break;
+    }
 }
 
 void RulerToolSystem::SetStartPoint(const DAVA::Vector3 &point)

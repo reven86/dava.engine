@@ -25,6 +25,8 @@
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSHighResolutionCapable</key>
-    <string>True</string>
+	<string>True</string>
+	<key>LSUIElement</key>
+	<string>1</string>
 </dict>
 </plist>

@@ -41,7 +41,7 @@
 {
 	if (self = [super init])
 	{
-        DAVA::float32 divider = [HelperAppDelegate GetScale];
+        DAVA::float32 divider = DAVA::Core::Instance()->GetScreenScaleFactor();
         
         DAVA::Size2i physicalScreenSize = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
         
