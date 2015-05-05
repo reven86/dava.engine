@@ -435,35 +435,55 @@ PatchFileReader::PatchFileReader(const FilePath &path, bool beVerbose)
     patchFile = File::Create(path, File::OPEN | File::READ | File::WRITE);
     if(nullptr != patchFile)
     {
-        // search patch positions
         char8 signature[davaPatchSignatureSize];
+        
         while(true)
         {
-            bool next = false;
             signature[0] = 0;
 
-            uint32 readSize = patchFile->Read(signature, davaPatchSignatureSize);
-            if(davaPatchSignatureSize == readSize)
+            // read signature and patch size
+            uint32 sigReadSize = patchFile->Read(signature, davaPatchSignatureSize);
+            
+            // if nothing was read, this should be normal end of file
+            // so we can break loop without errors
+            if(0 == sigReadSize && patchFile->IsEof())
             {
-                // check signature
-                if(0 == Memcmp(signature, davaPatchSignature, davaPatchSignatureSize))
-                {
-                    // read patch size
-                    uint32 patchSize = 0;
-                    if(sizeof(patchSize) == patchFile->Read(&patchSize) && patchSize > 0)
-                    {
-                        patchPositions.push_back(patchFile->GetPos());
-                        next = patchFile->Seek(patchSize, File::SEEK_FROM_CURRENT);
-                    }
-                }
-                else
-                {
-                    parseError = ERROR_CORRUPTED;
-                    break;
-                }
+                break;
             }
-
-            if(!next) break;
+            
+            // check for signature match
+            if(sigReadSize != davaPatchSignatureSize ||
+               Memcmp(signature, davaPatchSignature, davaPatchSignatureSize) != 0)
+            {
+                // wrong signature, we should break with error
+                parseError = ERROR_CORRUPTED;
+                break;
+            }
+            
+            // now read size of patch
+            uint32 patchSize = 0;
+            uint32 szReadSize = patchFile->Read(&patchSize);
+            
+            // check for correct patch size
+            if(sizeof(patchSize) != szReadSize || 0 == patchSize)
+            {
+                // wrong patch size, or failer read operation
+                parseError = ERROR_CORRUPTED;
+                break;
+            }
+            
+            // remember current file pos
+            uint32 patchPos = patchFile->GetPos();
+            
+            // now try to seek to the end of patch
+            if(!patchFile->Seek(patchSize, File::SEEK_FROM_CURRENT))
+            {
+                parseError = ERROR_CORRUPTED;
+                break;
+            }
+            
+            // store remebered patch pos in our internal list
+            patchPositions.push_back(patchPos);
         }
     }
     else
@@ -550,6 +570,12 @@ const PatchInfo* PatchFileReader::GetCurInfo() const
 PatchFileReader::PatchError PatchFileReader::GetLastError() const
 {
     return lastError;
+}
+
+PatchFileReader::PatchError PatchFileReader::GetParseError() const
+{
+    printf("%d\b", parseError);
+    return parseError;
 }
 
 bool PatchFileReader::DoRead()

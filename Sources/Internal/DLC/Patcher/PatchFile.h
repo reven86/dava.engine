@@ -124,7 +124,9 @@ public:
     bool ReadPrev();
 
     const PatchInfo* GetCurInfo() const;
+    
     PatchError GetLastError() const;
+    PatchError GetParseError() const;
 
     bool Truncate();
     bool Apply(const FilePath &origBase, const FilePath &origPath, const FilePath &newBase, const FilePath &newPath);
