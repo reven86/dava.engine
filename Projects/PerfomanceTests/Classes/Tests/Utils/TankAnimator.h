@@ -26,30 +26,29 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __GLOBAL_PERFORMANCE_TEST_H__
-#define __GLOBAL_PERFORMANCE_TEST_H__
+#ifndef __CONQUEROR_ANIMATOR_H__
+#define __CONQUEROR_ANIMATOR_H__
 
-#include "BaseTest.h"
-#include "Tests/Utils/WaypointsInterpolator.h"
+#include "DAVAEngine.h"
+#include "Infrastructure/Settings/GraphicsDetect.h"
 
-class GlobalPerformanceTest : public BaseTest
+using namespace DAVA;
+
+class TankAnimator
 {
 public:
-    GlobalPerformanceTest(uint32 frames, float32 delta, uint32 targetFrame);
-    GlobalPerformanceTest(uint32 time);
+    TankAnimator();
+    ~TankAnimator();
 
-protected:
-
-    void LoadResources() override;
-    void UnloadResources() override;
-
-    void PerformTestLogic(float32 timeElapsed) override;
+    static void Animate(Entity* skinnedTank, const Vector<uint16>& jointIndexes, float32 angle);
+    static void MakeSkinnedTank(Entity* entity, Vector<uint16>& jointsInfo);
 
 private:
-    static const String TEST_NAME;
 
-    WaypointsInterpolator* waypointInterpolator;
-    Camera* camera;
+    static void SetReflectionRefractionVisibility(Entity *node, DAVA::uint32 visibility);
+
+    const static FastName TURRET;
+    const static FastName SKINNED_TANK;
 };
 
 #endif

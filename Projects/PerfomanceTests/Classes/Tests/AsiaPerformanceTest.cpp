@@ -26,27 +26,29 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "GlobalPerformanceTest.h"
+#include "AsiaPerformanceTest.h"
 
-const String GlobalPerformanceTest::TEST_NAME = "RudnikiPerformanceTest";
+const String AsiaPerformanceTest::TEST_NAME = "AsiaPerformanceTest";
 
-GlobalPerformanceTest::GlobalPerformanceTest(uint32 frames, float32 delta, uint32 targetFrame)
-    :   BaseTest(TEST_NAME, frames, delta, targetFrame)
-    ,   camera(nullptr)
+AsiaPerformanceTest::AsiaPerformanceTest(uint32 frames, float32 delta, uint32 targetFrame)
+    : BaseTest(TEST_NAME, frames, delta, targetFrame)
+    , camera(nullptr)
+    , time(0.0f)
 {
 }
 
-GlobalPerformanceTest::GlobalPerformanceTest(uint32 time)
-    :   BaseTest(TEST_NAME, time)
-    ,   camera(nullptr)
+AsiaPerformanceTest::AsiaPerformanceTest(uint32 time)
+    : BaseTest(TEST_NAME, time)
+    , camera(nullptr)
+    , time(0.0f)
 {
 }
 
-void GlobalPerformanceTest::LoadResources()
+void AsiaPerformanceTest::LoadResources()
 {
     BaseTest::LoadResources();
 
-    Entity* rootEntity = GetScene()->GetRootNode(FilePath("~res:/3d/Maps/rudniki/rudniki.sc2"));
+    Entity* rootEntity = GetScene()->GetRootNode(FilePath("~res:/3d/Maps/10_asia_as/10_asia_as.sc2"));
     GetScene()->AddNode(rootEntity);
 
     Entity* cameraPathEntity = rootEntity->FindByName("CameraPath");
@@ -63,23 +65,65 @@ void GlobalPerformanceTest::LoadResources()
 
     GetScene()->SetCurrentCamera(camera);
 
-    waypointInterpolator = new WaypointsInterpolator(pathComponent->GetPoints(), 90.0f);
+    waypointInterpolator = new WaypointsInterpolator(pathComponent->GetPoints(), 130.0f);
+    tankAnimator = new TankAnimator();
+
+    Vector<Entity*> tanks;
+
+    tanks.push_back(rootEntity->FindByName("Centurion.sc2"));
+    tanks.push_back(rootEntity->FindByName("Conqueror.sc2"));
+    tanks.push_back(rootEntity->FindByName("Valentine_LL.sc2"));
+    tanks.push_back(rootEntity->FindByName("T150.sc2"));
+    tanks.push_back(rootEntity->FindByName("T110E5.sc2"));
+
+    for (uint32 i = 0; i < tanks.size(); i++)
+    {
+        Entity* tank = tanks[i];
+        Vector<uint16> jointsInfo;
+
+        tankAnimator->MakeSkinnedTank(tank, jointsInfo);
+        skinnedTankData.insert(std::pair<FastName, std::pair<Entity*, Vector<uint16>>>(tank->GetName(), std::pair<Entity*, Vector<uint16>>(tank, jointsInfo)));
+    }
+    
+    rootEntity->FindNodesByNamePart("TankStub", tankStubs);
+
+    auto tankIt = skinnedTankData.cbegin();
+    auto tankEnd = skinnedTankData.cend();
+
+    for (Entity* tankStub : tankStubs)
+    {
+        Entity* tank = tankIt->second.first;
+        Entity* newTank = tank->Clone();
+
+        tankStub->AddNode(newTank);
+
+        tankIt++;
+        if (tankIt == tankEnd)
+        {
+            tankIt = skinnedTankData.cbegin();
+        }
+    }
 }
 
-void GlobalPerformanceTest::UnloadResources()
+void AsiaPerformanceTest::UnloadResources()
 {
     BaseTest::UnloadResources();
 
     delete waypointInterpolator;
+    delete tankAnimator;
 }
 
-void GlobalPerformanceTest::PerformTestLogic(float32 timeElapsed)
+void AsiaPerformanceTest::PerformTestLogic(float32 timeElapsed)
 {
-    Vector3 pos;
-    Vector3 target; 
+    time += timeElapsed;
+    waypointInterpolator->NextPosition(camPos, camDst, timeElapsed);
 
-    waypointInterpolator->NextPosition(pos, target, timeElapsed);
+    camera->SetPosition(camPos);
+    camera->SetTarget(camDst);
 
-    camera->SetPosition(pos);
-    camera->SetTarget(target);
+    for (Entity* tank : tankStubs)
+    {
+        Vector<uint16>& jointIndexes = skinnedTankData.at(tank->GetChild(0)->GetName()).second;
+        tankAnimator->Animate(tank, jointIndexes, DegToRad(time * 45));
+    }
 }

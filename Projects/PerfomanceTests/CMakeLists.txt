@@ -44,6 +44,7 @@ generate_source_groups_project( )
 add_subdirectory( ${DAVA_TOOLS_DIR} ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
 set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
+set( PERFORMANCE_TEST_DATA_SVN ${DAVA_ROOT_DIR}/../performance.test)
 
 set( MACOS_XIB            ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/MainMenu.xib )
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist )
@@ -71,6 +72,12 @@ endif()
 
 set (RES_EDITOR_DATA ${DAVA_ROOT_DIR}/Tools/ResourceEditor/Data)
 
+if( NOT EXISTS ${PERFORMANCE_TEST_DATA_SVN})
+    message( "Error !!!: Please checkout performance.test"  )
+    message( " " )
+    exit()
+endif()
+
 if( NOT RES_EDITOR_PATH )
     message( "Error !!!: Please set the correct path to Resource editor in file DavaConfig.in"  )
     message( " " )
@@ -90,8 +97,15 @@ configure_file( ${CMAKE_CURRENT_LIST_DIR}/scripts/TemplateConvert3D_FX.in
 configure_file( ${CMAKE_CURRENT_LIST_DIR}/scripts/TemplateConvert3DTanks.in
                     ${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_3d_tanks.py @ONLY )
 
+message( "============================ Copy resources ============================"  )
+
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${RES_EDITOR_DATA}/Materials ${APP_DATA}/Materials )
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${RES_EDITOR_DATA}/Shaders ${APP_DATA}/Shaders )
+
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PERFORMANCE_TEST_DATA_SVN}/Data ${APP_DATA} )
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PERFORMANCE_TEST_DATA_SVN}/DataSource ${APP_DATA}/../DataSource )
+
+message( "============================Convert resources ============================"  )
 
 execute_process( COMMAND python convert_everything.py --gpu ${GPU_PARAM} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
 

@@ -26,17 +26,18 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __GLOBAL_PERFORMANCE_TEST_H__
-#define __GLOBAL_PERFORMANCE_TEST_H__
+#ifndef ASIA_PERFORMANCE_TEST_H__
+#define ASIA_PERFORMANCE_TEST_H__
 
-#include "BaseTest.h"
+#include "Tests/BaseTest.h"
 #include "Tests/Utils/WaypointsInterpolator.h"
+#include "Tests/Utils/TankAnimator.h"
 
-class GlobalPerformanceTest : public BaseTest
+class AsiaPerformanceTest : public BaseTest
 {
 public:
-    GlobalPerformanceTest(uint32 frames, float32 delta, uint32 targetFrame);
-    GlobalPerformanceTest(uint32 time);
+    AsiaPerformanceTest(uint32 frames, float32 delta, uint32 targetFrame);
+    AsiaPerformanceTest(uint32 time);
 
 protected:
 
@@ -48,8 +49,18 @@ protected:
 private:
     static const String TEST_NAME;
 
+    Map<FastName, std::pair<Entity*, Vector<uint16>>> skinnedTankData;
+    List<Entity*> tankStubs;
+
     WaypointsInterpolator* waypointInterpolator;
+    TankAnimator* tankAnimator;
+
     Camera* camera;
+    Vector3 camPos;
+    Vector3 camDst;
+
+    float32 time;
+
 };
 
 #endif

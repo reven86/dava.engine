@@ -119,7 +119,7 @@ void GameCore::EndFrame()
 void GameCore::RegisterTests()
 {
   //  testChain.push_back(new GlobalPerformanceTest(1000, 0.016f, 200));
-    testChain.push_back(new GlobalPerformanceTest(90000));
+    testChain.push_back(new AsiaPerformanceTest(130000));
 }
 
 void GameCore::InitScreenController()

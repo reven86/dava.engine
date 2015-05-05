@@ -40,6 +40,7 @@
 #include "Infrastructure/Settings/GraphicsDetect.h"
 
 #include "Tests/GlobalPerformanceTest.h"
+#include "Tests/AsiaPerformanceTest.h"
 
 #include <fstream>
 

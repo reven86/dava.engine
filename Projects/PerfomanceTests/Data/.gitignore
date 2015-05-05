@@ -1,5 +1,6 @@
-/Gfx/
-Materials
-Shaders
-3d
-fileSystem.yaml
+/Shaders
+/Materials
+/Configs
+/Gfx
+/3d
+/fileSystem.yaml
