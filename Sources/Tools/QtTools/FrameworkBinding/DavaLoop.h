@@ -26,11 +26,20 @@ public:
     int MaxFps() const;
     int Fps() const;
 
-    virtual void ProcessFrame();
+    void SetPaused(bool paused);
+    bool GetPaused() const;
+    
+    void ProcessFrame();
 
+protected:
+    
+    virtual void ProcessFrameInternal();
+    
 private:
     int maxFps;
     int fps;
+    
+    bool paused;
 };
 
 

@@ -102,7 +102,7 @@ quint64 FrameworkLoop::GetRenderContextId() const
     return id;
 }
 
-void FrameworkLoop::ProcessFrame()
+void FrameworkLoop::ProcessFrameInternal()
 {
     // We need to call makeCurrent, because there is a crash in native OS X open file dialog
     if ( glWidget != nullptr && DAVA::RenderManager::Instance()->GetRenderContextId() != GetRenderContextId() )
