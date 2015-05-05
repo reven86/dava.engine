@@ -29,6 +29,19 @@ ShaderSource::~ShaderSource()
 
 //------------------------------------------------------------------------------
 
+static rhi::BlendOp
+BlendOpFromText( const char* op )
+{
+    if     ( stricmp( op, "zero" ) == 0 )           return rhi::BLENDOP_ZERO;
+    else if( stricmp( op, "one" ) == 0 )            return rhi::BLENDOP_ONE;
+    else if( stricmp( op, "src_alpha" ) == 0 )      return rhi::BLENDOP_SRC_ALPHA;
+    else if( stricmp( op, "inv_src_alpha" ) == 0)   return rhi::BLENDOP_INV_SRC_ALPHA;
+    else                                            return rhi::BLENDOP_ONE;
+}
+
+
+//------------------------------------------------------------------------------
+
 bool
 ShaderSource::Construct( ProgType progType, const char* srcText )
 {
@@ -76,6 +89,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
         std::regex  sampler_re(".*DECL_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
         std::regex  texture_re(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
         std::regex  blend_re(".*BLEND_MODE\\s*\\(\\s*(.*)\\s*\\).*");
+        std::regex  blending2_re(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha)\\s+dst=(zero|one|src_alpha|inv_src_alpha).*");
 
         _Reset();
 
@@ -246,6 +260,15 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     blending.rtBlend[0].alphaSrc = BLENDOP_SRC_ALPHA;
                     blending.rtBlend[0].alphaDst = BLENDOP_INV_SRC_ALPHA;
                 }
+            }
+            else if( std::regex_match( line, match, blending2_re ) )
+            {
+                std::string src   = match[1].str();
+                std::string dst   = match[2].str();
+                
+                blending.rtBlend[0].blendEnabled = true;
+                blending.rtBlend[0].colorSrc     = blending.rtBlend[0].alphaSrc = BlendOpFromText( src.c_str() );
+                blending.rtBlend[0].colorDst     = blending.rtBlend[0].alphaDst = BlendOpFromText( dst.c_str() );
             }
             else
             {
