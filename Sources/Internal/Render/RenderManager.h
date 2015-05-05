@@ -173,8 +173,14 @@ public:
 	LPDIRECT3DSURFACE9 depthStencilSurface;
 
 #endif 
-
-#ifdef __DAVAENGINE_WINDOWS_DESKTOP__
+#if defined __DAVAENGINE_WINDOWS_STORE__
+private:
+	EGLDisplay mEglDisplay;
+	EGLContext mEglContext;
+	EGLSurface mEglSurface;
+public:
+	bool Create(Windows::UI::Core::CoreWindow^ window);
+#elif defined __DAVAENGINE_WINDOWS_DESKTOP__
 	bool Create(HINSTANCE hInstance, HWND hWnd);
 #else
 	bool Create();

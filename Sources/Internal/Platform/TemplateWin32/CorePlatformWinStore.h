@@ -34,32 +34,84 @@
 #if defined(__DAVAENGINE_WINDOWS_STORE__)
 
 #include "DAVAEngine.h"
+#include "agile.h"
 
 namespace DAVA
 {
-
+//=============================================================================================
 class CorePlatformWinStore : public Core, Noncopyable
 {
 public:
-    CorePlatformWinStore();
-    virtual ~CorePlatformWinStore();
+	CorePlatformWinStore();
+	virtual ~CorePlatformWinStore();
 
-    virtual eScreenMode GetScreenMode() override;
-    virtual void SwitchScreenToMode(eScreenMode screenMode) override;
+	void Run();
+	void InitArgs(); // if need
 
-    virtual void GetAvailableDisplayModes(List<DisplayMode> & availableModes) override;
-    virtual void ToggleFullscreen();
-    virtual DisplayMode FindBestMode(const DisplayMode & requestedMode) override;
-    virtual DisplayMode GetCurrentDisplayMode() override;
-    virtual void Quit() override;
-    virtual void SetIcon(int32 iconId) override;
+	virtual eScreenMode GetScreenMode() override;
+	virtual void SwitchScreenToMode(eScreenMode screenMode) override;
 
-    virtual eScreenOrientation GetScreenOrientation() override;
-    virtual uint32 GetScreenDPI() override;
+	virtual void GetAvailableDisplayModes(List<DisplayMode> & availableModes) override;
+	virtual void ToggleFullscreen();
+	virtual DisplayMode FindBestMode(const DisplayMode & requestedMode) override;
+	virtual DisplayMode GetCurrentDisplayMode() override;
+	virtual void Quit() override;
+	virtual void SetIcon(int32 iconId) override;
 
-    virtual void GoBackground(bool isLock) override;
-    virtual void GoForeground() override;
+	virtual eScreenOrientation GetScreenOrientation() override;
+	virtual uint32 GetScreenDPI() override;
+
+	virtual void GoBackground(bool isLock) override;
+	virtual void GoForeground() override;
+private:
+
 };
+//=============================================================================================
+ref class WinStoreApplicationSource : Windows::ApplicationModel::Core::IFrameworkViewSource
+{
+public:
+	virtual Windows::ApplicationModel::Core::IFrameworkView^ CreateView();
+};
+//=============================================================================================
+ref class WinStoreFrame sealed : public Windows::ApplicationModel::Core::IFrameworkView
+{
+public:
+	WinStoreFrame();
+
+	// IFrameworkView Methods
+	virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView);
+	virtual void SetWindow(Windows::UI::Core::CoreWindow^ window);
+	virtual void Load(Platform::String^ entryPoint);
+	virtual void Run();
+	virtual void Uninitialize();
+
+protected:
+	// Application lifecycle event handlers.
+	void OnActivated(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView,
+		             Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
+	void OnSuspending(Platform::Object^ sender,
+		              Windows::ApplicationModel::SuspendingEventArgs^ args);
+	void OnResuming(Platform::Object^ sender,
+		            Platform::Object^ args);
+	// Window event handlers.
+	void OnWindowActivationChanged(Windows::UI::Core::CoreWindow^ sender,
+		                           Windows::UI::Core::WindowActivatedEventArgs^ args);
+	void OnWindowClosed(Windows::UI::Core::CoreWindow^ sender,
+						Windows::UI::Core::CoreWindowEventArgs^ args
+		);
+	void OnWindowSizeChanged(Windows::UI::Core::CoreWindow^ sender,
+							 Windows::UI::Core::WindowSizeChangedEventArgs^ args);
+
+private:
+	Platform::Agile<Windows::UI::Core::CoreWindow> win_store_frame;
+	bool willQuit;
+	bool isWindowClosed;
+	bool isWindowVisible;
+	GLsizei windowWidth;
+	GLsizei windowHeight;
+
+};
+
 
 } // namespace DAVA
 

@@ -30,24 +30,271 @@
 #if defined(__DAVAENGINE_WINDOWS_STORE__)
 
 #include "CorePlatformWinStore.h"
+#include <angle_windowsstore.h>
 
 namespace DAVA
 {
 
+using namespace Windows::UI::Core;
+using namespace Windows::Foundation;
+using namespace Windows::ApplicationModel;
+using namespace Windows::ApplicationModel::Core;
+using namespace Windows::ApplicationModel::Activation;
+
+//extern void FrameworkDidLaunched();
+//extern void FrameworkWillTerminate();
+
+//------------------------------------------------------------------------------------------------------
+//                                      Core
+//------------------------------------------------------------------------------------------------------
 int Core::Run(int argc, char * argv[], AppHandle handle)
 {
-    return 0;
-}
+	CorePlatformWinStore* core = new CorePlatformWinStore();
+	core->InitArgs(); // if need
+	core->CreateSingletons();
+	// create window
+	auto winStoreApplicationSource = ref new WinStoreApplicationSource();
+	CoreApplication::Run(winStoreApplicationSource);
 
+	core->Run();
+	core->ReleaseSingletons();
+	return 0;
+}
+//------------------------------------------------------------------------------------------------------
 int Core::RunCmdTool(int argc, char * argv[], AppHandle handle)
 {
-    return 0;
+	return 1;
 }
-
-
+//------------------------------------------------------------------------------------------------------
+//                                      CorePlatformWinStore
+//------------------------------------------------------------------------------------------------------
 CorePlatformWinStore::CorePlatformWinStore()
 {
 }
+//------------------------------------------------------------------------------------------------------
+CorePlatformWinStore::~CorePlatformWinStore()
+{
+}
+//------------------------------------------------------------------------------------------------------
+void CorePlatformWinStore::InitArgs()
+{
+	SetCommandLine(UTF8Utils::EncodeToUTF8(::GetCommandLineW()));
+}
+//------------------------------------------------------------------------------------------------------
+void CorePlatformWinStore::Run()
+{
+
+}
+//------------------------------------------------------------------------------------------------------
+Core::eScreenMode CorePlatformWinStore::GetScreenMode()
+{
+	return Core::MODE_FULLSCREEN;
+}
+//------------------------------------------------------------------------------------------------------
+void CorePlatformWinStore::SwitchScreenToMode(eScreenMode screenMode)
+{
+
+}
+//------------------------------------------------------------------------------------------------------
+void CorePlatformWinStore::GetAvailableDisplayModes(List<DisplayMode> & availableModes)
+{
+
+}
+//------------------------------------------------------------------------------------------------------
+void CorePlatformWinStore::ToggleFullscreen()
+{
+
+}
+//------------------------------------------------------------------------------------------------------
+DisplayMode CorePlatformWinStore::FindBestMode(const DisplayMode & requestedMode)
+{
+	return DisplayMode(800, 600, 16, 0);
+}
+//------------------------------------------------------------------------------------------------------
+DisplayMode CorePlatformWinStore::GetCurrentDisplayMode()
+{
+	return DisplayMode(800, 600, 16, 0);
+}
+//------------------------------------------------------------------------------------------------------
+void CorePlatformWinStore::Quit()
+{
+
+}
+//------------------------------------------------------------------------------------------------------
+void CorePlatformWinStore::SetIcon(int32 iconId)
+{
+
+}
+//------------------------------------------------------------------------------------------------------
+Core::eScreenOrientation CorePlatformWinStore::GetScreenOrientation()
+{
+	return Core::eScreenOrientation::SCREEN_ORIENTATION_LANDSCAPE_RIGHT;
+}
+//------------------------------------------------------------------------------------------------------
+uint32 CorePlatformWinStore::GetScreenDPI()
+{
+	return 1;
+}
+//------------------------------------------------------------------------------------------------------
+void CorePlatformWinStore::GoBackground(bool isLock)
+{
+
+}
+//------------------------------------------------------------------------------------------------------
+void CorePlatformWinStore::GoForeground()
+{
+
+}
+//------------------------------------------------------------------------------------------------------
+//                          WinStoreApplicationSource
+//------------------------------------------------------------------------------------------------------
+IFrameworkView^ WinStoreApplicationSource::CreateView()
+{
+	return ref new WinStoreFrame();
+}
+//------------------------------------------------------------------------------------------------------
+//                          WinStoreFrame
+//------------------------------------------------------------------------------------------------------
+WinStoreFrame::WinStoreFrame() : willQuit(true), isWindowClosed(true), isWindowVisible(false),
+                                 windowWidth(800), windowHeight(600)
+{
+}
+//------------------------------------------------------------------------------------------------------
+// This method is called on application launch.
+void WinStoreFrame::Initialize(CoreApplicationView^ applicationView)
+{
+	applicationView->Activated +=
+		ref new TypedEventHandler<CoreApplicationView^, IActivatedEventArgs^>(this, &WinStoreFrame::OnActivated);
+
+	CoreApplication::Suspending +=
+		ref new EventHandler<SuspendingEventArgs^>(this, &WinStoreFrame::OnSuspending);
+
+	CoreApplication::Resuming +=
+		ref new EventHandler<Platform::Object^>(this, &WinStoreFrame::OnResuming);
+
+	// At this point we have access to the device. 
+	// We can create the device-dependent resources.
+	
+	// Create resource
+}
+//------------------------------------------------------------------------------------------------------
+// This method is called after Initialize.
+void WinStoreFrame::SetWindow(CoreWindow^ window)
+{
+	win_store_frame = window;
+	//init angle
+	RenderManager::Instance()->Create(win_store_frame.Get());
+	RenderSystem2D::Instance()->Init();
+	//FrameworkDidLaunched();
+	//RegisterRawInputDevices(&Rid, 1, sizeof(Rid));
+	//RenderManager::Instance()->ChangeDisplayMode(DisplayMode(800, 600, 16, 0), false);
+	RenderManager::Instance()->Init(800, 600);
+	//VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
+	//VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+
+	// Specify the cursor type as the standard arrow cursor.
+	win_store_frame->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
+	// Allow the application to respond when the window size changes.
+	win_store_frame->Activated +=
+		ref new TypedEventHandler<CoreWindow^, WindowActivatedEventArgs^>(this, &WinStoreFrame::OnWindowActivationChanged);
+	win_store_frame->SizeChanged +=
+		ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &WinStoreFrame::OnWindowSizeChanged);
+	win_store_frame->Closed +=
+		ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>(this, &WinStoreFrame::OnWindowClosed);
+}
+//------------------------------------------------------------------------------------------------------
+void WinStoreFrame::Load(Platform::String^ entryPoint)
+{
+}
+//------------------------------------------------------------------------------------------------------
+// This method is called after Load.
+void WinStoreFrame::Run()
+{
+	Core::Instance()->SystemAppStarted();
+
+	while (!isWindowClosed)
+	{
+		if (isWindowVisible)
+		{
+			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+			DAVA::uint64 startTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
+			RenderManager::Instance()->Lock();
+			CorePlatformWinStore::Instance()->SystemProcessFrame();
+			RenderManager::Instance()->Unlock();
+			uint32 elapsedTime = (uint32)(SystemTimer::Instance()->AbsoluteMS() - startTime);
+			int32 sleepMs = 1;
+
+			int32 fps = RenderManager::Instance()->GetFPS();
+			if (fps > 0)
+			{
+				sleepMs = (1000 / fps) - elapsedTime;
+				if (sleepMs < 1)
+				{
+					sleepMs = 1;
+				}
+			}
+			Sleep(sleepMs);
+		}
+		else
+		{
+			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
+		}
+	}
+	RenderManager::Instance()->Release();
+
+	ApplicationCore * appCore = Core::Instance()->GetApplicationCore();
+	if (appCore && appCore->OnQuit())
+	{
+		exit(0);
+	}
+	else
+	{
+		willQuit = true;
+	}
+	Core::Instance()->SystemAppFinished();
+	
+//	FrameworkWillTerminate();
+}
+//------------------------------------------------------------------------------------------------------
+// This method is called before the application exits.
+void WinStoreFrame::Uninitialize()
+{
+}
+//------------------------------------------------------------------------------------------------------
+void WinStoreFrame::OnActivated(CoreApplicationView^ /* applicationView */, IActivatedEventArgs^ /* args */)
+{
+	// Activate the application window, making it visible and enabling it to receive events.
+	CoreWindow::GetForCurrentThread()->Activate();
+	isWindowClosed = FALSE;
+	isWindowVisible = TRUE;
+}
+//------------------------------------------------------------------------------------------------------
+void WinStoreFrame::OnSuspending(Platform::Object^ /* sender */, SuspendingEventArgs^ args)
+{
+	isWindowVisible = FALSE;
+}
+//------------------------------------------------------------------------------------------------------
+void WinStoreFrame::OnResuming(Platform::Object^ /* sender */, Platform::Object^ /* args */)
+{
+	isWindowVisible = TRUE;
+}
+//------------------------------------------------------------------------------------------------------
+void WinStoreFrame::OnWindowActivationChanged(CoreWindow^ sender, WindowActivatedEventArgs^ args)
+{
+
+}
+//------------------------------------------------------------------------------------------------------
+void WinStoreFrame::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
+{
+	isWindowClosed = TRUE;
+}
+//------------------------------------------------------------------------------------------------------
+// This method is called whenever the application window size changes.
+void WinStoreFrame::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args)
+{
+
+}
+//------------------------------------------------------------------------------------------------------
 
 } // namespace DAVA
 

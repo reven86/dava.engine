@@ -88,6 +88,9 @@
 #elif defined(__DAVAENGINE_WINDOWS_STORE__)
 
 #define GL_GLEXT_PROTOTYPES
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <EGL/eglplatform.h>
 #include <angle_gl.h>
 #include <angle_windowsstore.h>
 
