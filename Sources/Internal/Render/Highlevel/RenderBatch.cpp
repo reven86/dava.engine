@@ -50,13 +50,17 @@ RenderBatch::RenderBatch()
     ,   material(0)
     ,   renderObject(0)
     ,   sortingTransformPtr(NULL)
+    ,   indexBuffer(rhi::InvalidHandle)
     ,   startIndex(0)
     ,   indexCount(0)
-    ,   type(PRIMITIVETYPE_TRIANGLELIST)
+    ,   vertexBuffer(rhi::InvalidHandle)
+    ,   vertexCount(0)
+    ,   vertexBase(0)
+    ,   primitiveType(rhi::PRIMITIVE_TRIANGLELIST)
+    ,   vertexLayoutId(rhi::VertexLayout::InvalidUID)
     ,   sortingKey(SORTING_KEY_DEF_VALUE)
     ,   aabbox(Vector3(), Vector3())
 {
-	
 #if defined(__DAVA_USE_OCCLUSION_QUERY__)
     occlusionQuery = new OcclusionQuery();
     queryRequested = -1;
@@ -161,9 +165,19 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
 	}
 #endif RHI_COMPLETE
 
+    rb->vertexBuffer = vertexBuffer;
+    rb->vertexCount = vertexCount;
+    rb->vertexBase = vertexBase;
+
+    rb->indexBuffer = indexBuffer;
+    rb->startIndex = startIndex;
+    rb->indexCount = indexCount;
+
+    rb->primitiveType = primitiveType;
+    rb->vertexLayoutId = vertexLayoutId;
+
 	rb->startIndex = startIndex;
 	rb->indexCount = indexCount;
-	rb->type = type;
 
 	rb->aabbox = aabbox;
 	rb->sortingKey = sortingKey;
@@ -176,85 +190,39 @@ void RenderBatch::Save(KeyedArchive * archive, SerializationContext* serializati
 	BaseObject::SaveObject(archive);
 
 	if(NULL != archive)
-	{
-		archive->SetUInt32("rb.type", type);
-		archive->SetUInt32("rb.indexCount", indexCount);
-		archive->SetUInt32("rb.startIndex", startIndex);
-		archive->SetVariant("rb.aabbox", VariantType(aabbox));
+	{		
 		archive->SetVariant("rb.datasource", VariantType((uint64)dataSource));
         archive->SetUInt32("rb.sortingKey", sortingKey);
-		
-		NMaterial* material = GetMaterial();
+        archive->SetVariant("rb.aabbox", VariantType(aabbox));
+				
 		if(material)
 		{
 			uint64 matKey = material->GetMaterialKey();
 			archive->SetUInt64("rb.nmatname", matKey);
-		}
-		
-		//archive->SetVariant("rb.material", VariantType((uint64)GetMaterial()));
-		
-		//KeyedArchive *mia = new KeyedArchive();
-		//archive->SetArchive("rb.matinst", mia);
-		//mia->Release();
+		}		
 	}
 }
 
 void RenderBatch::Load(KeyedArchive * archive, SerializationContext *serializationContext)
 {
 	if(NULL != archive)
-	{
-		type = archive->GetUInt32("rb.type", type);
-		indexCount = archive->GetUInt32("rb.indexCount", indexCount);
-		startIndex = archive->GetUInt32("rb.startIndex", startIndex);
-		aabbox = archive->GetVariant("rb.aabbox")->AsAABBox3();
+	{		
         sortingKey = archive->GetUInt32("rb.sortingKey", SORTING_KEY_DEF_VALUE);
-		PolygonGroup *pg = static_cast<PolygonGroup*>(serializationContext->GetDataBlock(archive->GetVariant("rb.datasource")->AsUInt64()));
+
+        aabbox = archive->GetVariant("rb.aabbox")->AsAABBox3(); //this is historical "shield" as polygon group data loads after structure
 		
-		NMaterial * newMaterial = NULL;
-		bool shouldConvertMaterial = archive->IsKeyExists("rb.material");
-		if(shouldConvertMaterial)
-		{
-			uint64 materialId = archive->GetVariant("rb.material")->AsUInt64();
-			Material *mat = static_cast<Material*>(serializationContext->GetDataBlock(materialId));
-			
-			InstanceMaterialState * oldMaterialInstance = new InstanceMaterialState();
-			KeyedArchive *mia = archive->GetArchive("rb.matinst");
-			if(NULL != mia)
-			{
-				oldMaterialInstance->Load(mia, serializationContext);
-			}
-			
-			if(mat)
-			{
-				newMaterial = serializationContext->ConvertOldMaterialToNewMaterial(mat, oldMaterialInstance, materialId);
-			}
-			
-			SafeRelease(oldMaterialInstance);
-		}
-		else
-		{
-			int64 matKey = archive->GetUInt64("rb.nmatname");
-			
-			newMaterial = static_cast<NMaterial*>(serializationContext->GetDataBlock(matKey));
-
-			SafeRetain(newMaterial); //VI: material refCount should be >1 at this point
-		}
-
-        if (pg!=dataSource)
+        PolygonGroup *pg = static_cast<PolygonGroup*>(serializationContext->GetDataBlock(archive->GetVariant("rb.datasource")->AsUInt64()));
+        if (pg != dataSource)
         {
             SafeRelease(dataSource);
             dataSource = SafeRetain(pg);
         }
-
-		if(newMaterial)
-		{
-			SetMaterial(newMaterial);
-			DVASSERT(material->GetRetainCount() > 1);
-
-			SafeRelease(newMaterial);
-		}
-
-        
+		
+		int64 matKey = archive->GetUInt64("rb.nmatname");			        
+        NMaterial *mat = static_cast<NMaterial*>(serializationContext->GetDataBlock(matKey));
+        SetMaterial(mat);
+        if (material)
+            material->PreBuildMaterial(PASS_FORWARD);
 	}
 
 	BaseObject::LoadObject(archive);

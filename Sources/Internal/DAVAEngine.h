@@ -215,11 +215,7 @@
 #include "Render/3D/EdgeAdjacency.h"
 #include "Render/3D/MeshUtils.h"
 
-// Material compiler
-#include "Render/Material/MaterialCompiler.h"
-#include "Render/Material/MaterialGraph.h"
-#include "Render/Material/MaterialGraphNode.h"
-#include "Render/Material/RenderTechnique.h"
+
 #include "Render/Material/NMaterialNames.h"
 
 // 3D scene management
@@ -234,7 +230,6 @@
 #include "Render/Highlevel/SpriteObject.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/RenderFastNames.h"
-#include "Render/Highlevel/LandscapeChunk.h"
 #include "Render/Highlevel/SkyboxRenderObject.h"
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Render/Highlevel/Vegetation/TextureSheet.h"

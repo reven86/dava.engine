@@ -46,7 +46,7 @@ struct NMaterialProperty
     std::unique_ptr<float32[]> data;
     uint32 updateSemantic;
 
-    inline void SetPropertyValue(float32 *newValue);    
+    inline void SetPropertyValue(const float32 *newValue);    
     inline static uint32 GetCurrentUpdateSemantic(){ return globalPropertyUpdateSemanticCounter; }
 private:
     static uint32 globalPropertyUpdateSemanticCounter;
@@ -96,9 +96,9 @@ public:
     void Load(KeyedArchive * archive, SerializationContext * serializationContext) override;
 
     /*properties*/
-    void AddProperty(const FastName& propName, float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize = 1);
+    void AddProperty(const FastName& propName, const float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize = 1);
     void RemoveProperty(const FastName& propName);
-    void SetPropertyValue(const FastName& propName, float32 *propData);
+    void SetPropertyValue(const FastName& propName, const float32 *propData);
     bool HasLocalProperty(const FastName& propName);
 
     /*textures*/
@@ -118,42 +118,60 @@ public:
 
     inline uint32 GetRenderLayerID() const;
     inline uint32 GetSortingKey() const;
-    inline uint64 GetMaterialKey() const;    
+    inline uint64 GetMaterialKey() const;            
 
-    void BindParams(rhi::Packet& target);
+    void BindParams(rhi::Packet& target);    
+
+    //returns true if has variant for this pass, false otherwise - if material doesn't support pass active variant will be not changed
+    bool PreBuildMaterial(const FastName& passName); //later add engine flags here
 
 private:
 
     void InvalidateBufferBindings();
     void InvalidateTextureBindings();
-    void InvalidateShader();
+    void InvalidateRenderVariants();
 
     void RebuildBindings();
     void RebuildTextureBindings();
-    void RebuildShader();
+    void RebuildRenderVariants();
+
 
     bool NeedLocalOverride(UniquePropertyLayout propertyLayout);
     void ClearLocalBuffers();
-    void  InjectChildBuffer(UniquePropertyLayout propLayoutId, MaterialBufferBinding* buffer);
+    void InjectChildBuffer(UniquePropertyLayout propLayoutId, MaterialBufferBinding* buffer);
 
+    /*the following functions will collect data recursively*/
     MaterialBufferBinding* GetConstBufferBinding(UniquePropertyLayout propertyLayout);
-    NMaterialProperty* GetMaterialProperty(const FastName& propName);
+    NMaterialProperty* GetMaterialProperty(const FastName& propName);    
     void CollectMaterialFlags(HashMap<FastName, int32>& target);
-
     Texture* GetMaterialTexture(const FastName& slotName);
+    const FastName& GetFXName();
+    const FastName& GetQualityGroup();
+
 
     void AddChildMaterial(NMaterial *material);
     void RemoveChildMaterial(NMaterial *material);
 
 private:
+    //config time
+    FastName materialName;
+
+    FastName fxName;
+    
+    FastName qualityGroup;
+
     HashMap<FastName, NMaterialProperty *> localProperties;
     HashMap<FastName, Texture*> localTextures; //this is runtime only state, filepath storing will be separately done later
     HashMap<FastName, int32> localFlags; //integer flags are just more generic then boolean (eg. #if SHADING == HIGH), it has nothing in common with eFlagValue bullshit from old NMaterial    
 
-    Vector<NMaterial *> children;
-    NMaterial *parent;
+    
+    
 
     //runtime
+    NMaterial *parent;
+    Vector<NMaterial *> children;
+    
+
     HashMap<UniquePropertyLayout, MaterialBufferBinding*> localConstBuffers;
 
     /*this is for render passes - not used right now - only active variant instance*/
@@ -164,7 +182,7 @@ private:
 
     bool needRebuildBindings;
     bool needRebuildTextures;
-    bool needRebuildShader;    
+    bool needRebuildVariants;    
 
     uint32 sortingKey;
     uint64 materialKey;
@@ -172,7 +190,7 @@ private:
 
 
 
-void NMaterialProperty::SetPropertyValue(float32 *newValue)
+void NMaterialProperty::SetPropertyValue(const float32 *newValue)
 {
     //4 is because register size is float4
     Memcpy(data.get(), newValue, sizeof(float32) * 4 * ShaderDescriptor::CalculateRegsCount(type, arraySize));

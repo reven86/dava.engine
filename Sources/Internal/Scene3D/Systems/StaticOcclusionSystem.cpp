@@ -117,7 +117,6 @@ void StaticOcclusionBuildSystem::ImmediateEvent(Entity * entity, uint32 event)
         boxSize.x /= xSubdivisions;
         boxSize.y /= ySubdivisions;
 
-#if RHI_COMPLETE
         if (landscape)
         {
             //place on landscape
@@ -128,8 +127,7 @@ void StaticOcclusionBuildSystem::ImmediateEvent(Entity * entity, uint32 event)
                     if (landscape->PlacePoint(v, v))
                        component->cellHeightOffset[xs+ys*xSubdivisions] = v.z - bbox.min.z;
                 }
-        }        
-#endif // RHI_COMPLETE
+        }
     }    
 
 }

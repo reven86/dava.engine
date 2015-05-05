@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "Render/ShaderCache.h"
+#include "Render/Material/FXCache.h"
 
 namespace DAVA
 {
@@ -55,7 +56,8 @@ void Initialize(rhi::Api _api)
     api = _api;
     rhi::Initialize(api);    
     rhi::ShaderCache::Initialize();
-    new ShaderDescriptorCache();
+    ShaderDescriptorCache::Initialize();
+    FXCache::Initialize();
     PixelFormatDescriptor::InitializePixelFormatDescriptors();
 
     
@@ -64,9 +66,12 @@ void Initialize(rhi::Api _api)
 void Uninitialize()
 {
     DVASSERT(ininialized);
-        
+            
+    FXCache::Uninitialize();
+    ShaderDescriptorCache::Uninitialize();
+    rhi::ShaderCache::Unitialize();
     rhi::Uninitialize();
-    ininialized = true;
+    ininialized = false;
 }
 
 bool IsDeviceLost()

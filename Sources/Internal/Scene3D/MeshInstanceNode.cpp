@@ -37,8 +37,6 @@
 #include "Scene3D/ShadowVolumeNode.h"
 #include "Debug/Stats.h"
 #include "Render/Material/NMaterial.h"
-#include "Render/Material/MaterialCompiler.h"
-#include "Render/Material/MaterialGraph.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 

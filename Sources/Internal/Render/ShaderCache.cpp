@@ -28,7 +28,7 @@
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "FileSystem/FileSystem.h"
 
-namespace
+/*namespace
 {
 const char* vProgText =
 "VPROG_IN_BEGIN\n"
@@ -64,34 +64,122 @@ const char* fProgText =
 "\n"
 "\n"
 "DECL_SAMPLER2D(albedo)\n"
+"\n"
 "FPROG_BEGIN\n"
-"    float4  texColor = FP_TEXTURE2D( albedo, FP_IN(uv) );\n"
+"\n"
+"float4  texColor = FP_TEXTURE2D( albedo, FP_IN(uv) );\n"
+"\n"
 "    texColor.a = 1.0;\n"
 "    FP_OUT_COLOR = texColor;\n"
 "FPROG_END\n";
-}
+}*/
 namespace DAVA
 {
-
-
-ShaderDescriptor* ShaderDescriptorCache::GetShaderDescriptor(FastName name, const HashMap<FastName, int32>& defines)
+namespace ShaderDescriptorCache
 {
+struct ShaderSourceCode
+{
+    char8* vProgText;
+    char8* fProgText;
+    ShaderSourceCode() : vProgText(nullptr), fProgText(nullptr){};
+};
     
-    
-    Vector<int32> key;
+namespace
+{
+    Map<Vector<int32>, ShaderDescriptor *> shaderDescriptors;
+    Map<FastName, ShaderSourceCode> shaderSourceCodes;
+    bool initialized = false;
+}
+        
+
+void Initialize()
+{
+    DVASSERT(!initialized);
+    initialized = true;
+}
+
+void Uninitialize()
+{
+    DVASSERT(initialized);
+    Clear();
+    initialized = false;
+}
+
+void Clear()
+{
+    DVASSERT(initialized);
+    //RHI_COMPLETE
+}
+
+void BuildFlagsKey(const FastName& name,const HashMap<FastName, int32>& defines, Vector<int32>& key)
+{    
     key.clear();
     key.reserve(defines.size() * 2 + 1);
-
     for (auto& define : defines)
     {
         key.push_back(define.first.Index());
         key.push_back(define.second);
     }
     key.push_back(name.Index());
+}
 
-    auto it = shaderDescriptors.find(key);
-    if (it != shaderDescriptors.end())
-        return it->second;
+ShaderSourceCode LoadFromSource(const String& source)
+{
+    ShaderSourceCode sourceCode;
+    FilePath vertexShaderPath = FilePath(source + ".vsh");
+    FilePath fragmentShaderPath = FilePath(source + ".fsh");
+    
+    //vertex
+    File * fp = File::Create(vertexShaderPath, File::OPEN | File::READ);
+    if (fp)
+    {
+        uint32 fileSize = fp->GetSize();
+        sourceCode.vProgText = new char8[fileSize + 1];
+        sourceCode.vProgText[fileSize] = 0;
+        uint32 dataRead = fp->Read((uint8*)sourceCode.vProgText, fileSize);
+        if (dataRead != fileSize)
+        {
+            Logger::Error("Failed to open vertex shader source file: %s", vertexShaderPath.GetAbsolutePathname().c_str());
+        }
+    }
+    else
+    {
+        Logger::Error("Failed to open vertex shader source file: %s", vertexShaderPath.GetAbsolutePathname().c_str());
+    }
+    SafeRelease(fp);
+
+    //fragment
+    fp = File::Create(fragmentShaderPath, File::OPEN | File::READ);
+    if (fp)
+    {
+        uint32 fileSize = fp->GetSize();
+        sourceCode.fProgText = new char8[fileSize + 1];
+        sourceCode.fProgText[fileSize] = 0;
+        uint32 dataRead = fp->Read((uint8*)sourceCode.fProgText, fileSize);
+        if (dataRead != fileSize)
+        {
+            Logger::Error("Failed to open fragment shader source file: %s", fragmentShaderPath.GetAbsolutePathname().c_str());
+        }
+    }
+    else
+    {
+        Logger::Error("Failed to open fragment shader source file: %s", fragmentShaderPath.GetAbsolutePathname().c_str());
+    }
+    SafeRelease(fp);
+
+    return sourceCode;
+}
+
+ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines)
+{    
+    DVASSERT(initialized);
+ 
+    Vector<int32> key;
+    BuildFlagsKey(name, defines, key);    
+
+    auto descriptorIt = shaderDescriptors.find(key);
+    if (descriptorIt != shaderDescriptors.end())
+        return descriptorIt->second;
 
     //not found - create new shader
     Vector<String> progDefines;
@@ -103,9 +191,24 @@ ShaderDescriptor* ShaderDescriptorCache::GetShaderDescriptor(FastName name, cons
         progDefines.push_back(DAVA::Format("%d", it.second));        
         resName += Format("#define %s %d\n", it.first.c_str(), it.second);
     }
+
+
+    ShaderSourceCode sourceCode;
+    auto sourceIt = shaderSourceCodes.find(name);
+    if (sourceIt != shaderSourceCodes.end()) //source found
+    {
+        sourceCode = sourceIt->second;
+    }
+    else
+    {
+     //   sourceCode = LoadFromSource(name.c_str());
+        sourceCode = LoadFromSource("~res:/Materials/Shaders/Default/materials");
+        shaderSourceCodes[name] = sourceCode;
+    }
+
     rhi::ShaderSource vSource, fSource;
-    vSource.Construct(rhi::PROG_VERTEX, vProgText, progDefines);
-    fSource.Construct(rhi::PROG_FRAGMENT, fProgText, progDefines);
+    vSource.Construct(rhi::PROG_VERTEX, sourceCode.vProgText, progDefines);
+    fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fProgText, progDefines);
     vSource.Dump();
     fSource.Dump();    
     
@@ -129,9 +232,6 @@ ShaderDescriptor* ShaderDescriptorCache::GetShaderDescriptor(FastName name, cons
     return res;
 }
 
-ShaderDescriptorCache::~ShaderDescriptorCache()
-{
-    //RHI_COMPLETE
 }
 };
 

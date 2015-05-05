@@ -120,7 +120,7 @@ void RenderPass::PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSy
     visibilityArray.Clear();
     renderSystem->GetRenderHierarchy()->Clip(camera, &visibilityArray, currVisibilityCriteria);    
     renderPassBatchArray->Clear();
-    renderPassBatchArray->PrepareVisibilityArray(&visibilityArray, camera); 
+    renderPassBatchArray->PrepareVisibilityArray(&visibilityArray, camera, name); 
 }
 
 void RenderPass::DrawLayers(Camera *camera)
@@ -275,7 +275,7 @@ void MainForwardRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBuffer
         /*to avoid this happening every frame water visibility is cached from previous frame (needWaterPrepass)*/
         /*however if there was no water on previous frame and there is water on this frame visibilityArray should be re-prepared*/
         renderPassBatchArray->Clear();
-        renderPassBatchArray->PrepareVisibilityArray(&visibilityArray, mainCamera);
+        renderPassBatchArray->PrepareVisibilityArray(&visibilityArray, mainCamera, name);
                 
 	}	
     needWaterPrepass = (waterBatchesCount!=0); //for next frame;    
@@ -363,7 +363,7 @@ void WaterReflectionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
 	visibilityArray.Clear();
 	renderSystem->GetRenderHierarchy()->Clip(currMainCamera, &visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA | RenderObject::VISIBLE_REFLECTION);	
 	renderPassBatchArray->Clear();
-	renderPassBatchArray->PrepareVisibilityArray(&visibilityArray, currMainCamera); 
+	renderPassBatchArray->PrepareVisibilityArray(&visibilityArray, currMainCamera, name); 
 
     //ClearBuffers(clearBuffers);
 
@@ -415,7 +415,7 @@ void WaterRefractionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
     visibilityArray.Clear();
     renderSystem->GetRenderHierarchy()->Clip(currMainCamera, &visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA | RenderObject::VISIBLE_REFRACTION);	
     renderPassBatchArray->Clear();
-    renderPassBatchArray->PrepareVisibilityArray(&visibilityArray, currMainCamera); 
+    renderPassBatchArray->PrepareVisibilityArray(&visibilityArray, currMainCamera, name); 
 
     //ClearBuffers(clearBuffers);
 
