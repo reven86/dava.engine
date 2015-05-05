@@ -39,10 +39,8 @@ public:
     explicit DialogEditPresetName(const QString &originalPresetName, QWidget *parent = nullptr);
     ~DialogEditPresetName() = default;
 private slots:
-    void OnNewPresetNameChanged(const QString &arg);
+    void OnNewPresetNameChanged();
     void OnAccept();
-private:
-    const QString originalPresetName;
 };
 
 #endif // __DIALOG_EDIT_PRESET_NAME_H__

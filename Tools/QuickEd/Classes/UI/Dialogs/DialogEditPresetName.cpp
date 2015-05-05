@@ -35,46 +35,49 @@ using namespace DAVA;
 
 DialogEditPresetName::DialogEditPresetName(const QString& originalPresetNameArg, QWidget* parent)
     : QDialog(parent)
-    , originalPresetName(originalPresetNameArg)
 {
     setupUi(this);
-    lineEdit_currentFontPresetName->setText(originalPresetName);
+    comboBox_baseFontPresetName->addItems(GetEditorFontSystem()->GetDefaultPresetNames());
+    comboBox_baseFontPresetName->setCurrentText(originalPresetNameArg);
     lineEdit_newFontPresetName->setText(originalPresetNameArg);
 
     lineEdit_newFontPresetName->setCompleter(new QCompleter(GetEditorFontSystem()->GetDefaultPresetNames(), lineEdit_newFontPresetName));
 
     connect(lineEdit_newFontPresetName, &QLineEdit::textChanged, this, &DialogEditPresetName::OnNewPresetNameChanged);
+    connect(comboBox_baseFontPresetName, &QComboBox::currentTextChanged, this, &DialogEditPresetName::OnNewPresetNameChanged);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &DialogEditPresetName::reject);
     connect(buttonBox, &QDialogButtonBox::accepted, this, &DialogEditPresetName::OnAccept);
 
-    OnNewPresetNameChanged(lineEdit_newFontPresetName->text());
+    OnNewPresetNameChanged();
 }
 
-void DialogEditPresetName::OnNewPresetNameChanged(const QString& arg)
+void DialogEditPresetName::OnNewPresetNameChanged()
 {
-    QString text;
+    QString baseName = comboBox_baseFontPresetName->currentText();
+    QString newName = lineEdit_newFontPresetName->text();
+    QString resultText;
     bool enabled = false;
-    if (arg.isEmpty())
+    if (newName.isEmpty())
     {
         enabled = false;
-        text = tr("enter new preset name");
+        resultText = tr("enter new preset name");
     }
-    else if (arg == originalPresetName)
+    else if (baseName == newName)
     {
         enabled = false;
-        text = tr("names match!");
+        resultText = tr("names match!");
     }
-    else if (GetEditorFontSystem()->GetDefaultPresetNames().contains(arg))
+    else if (GetEditorFontSystem()->GetDefaultPresetNames().contains(newName))
     {
-        enabled = true;
-        text = tr("This preset name already exists in the system");
+        enabled = false;
+        resultText = tr("This preset name already exists in the system");
     }
     else
     {
         enabled = true;
-        text = tr("New font preset will be created");
+        resultText = tr("New font preset will be created");
     }
-    label_info->setText(text);
+    label_info->setText(resultText);
     buttonBox->button(QDialogButtonBox::Ok)->setEnabled(enabled);
 }
 
@@ -83,7 +86,7 @@ void DialogEditPresetName::OnAccept()
     auto editorFontSystem = GetEditorFontSystem();
     if (!editorFontSystem->GetDefaultPresetNames().contains(lineEdit_newFontPresetName->text()))
     {
-        editorFontSystem->CreateNewPreset(originalPresetName.toStdString(), lineEdit_newFontPresetName->text().toStdString());
+        editorFontSystem->CreateNewPreset(comboBox_baseFontPresetName->currentText().toStdString(), lineEdit_newFontPresetName->text().toStdString());
         editorFontSystem->SaveLocalizedFonts();
     }
     accept();

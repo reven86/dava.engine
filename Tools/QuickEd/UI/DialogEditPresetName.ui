@@ -19,20 +19,10 @@
      <property name="text">
       <string>Current font preset name</string>
      </property>
-     <property name="buddy">
-      <cstring>lineEdit_currentFontPresetName</cstring>
-     </property>
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="lineEdit_currentFontPresetName">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
-    </widget>
+    <widget class="QComboBox" name="comboBox_baseFontPresetName"/>
    </item>
    <item>
     <widget class="QLabel" name="label_newPresetName">
