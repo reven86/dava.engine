@@ -40,12 +40,18 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    new DAVA::QtLayer();
+    using namespace DAVA;
+
+    new QtLayer();
     new DavaLoop();
     new FrameworkLoop();
 
     DavaGLWidget *glWidget = new DavaGLWidget(this);
     FrameworkLoop::Instance()->SetOpenGLWindow(glWidget);
+
+    UIScreen *screen = new UIScreen();
+    UIScreenManager::Instance()->RegisterScreen(1, screen);
+    UIScreenManager::Instance()->SetFirst(1);
 
     DavaLoop::Instance()->StartLoop(FrameworkLoop::Instance());
 
