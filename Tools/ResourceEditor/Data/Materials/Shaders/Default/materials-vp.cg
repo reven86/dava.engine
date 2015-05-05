@@ -1,0 +1,881 @@
+
+#define MAX_JOINTS 32
+const float _PI = 3.141592654;
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vprog-input
+
+VPROG_IN_BEGIN
+    
+    VPROG_IN_POSITION
+    
+    #if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(MATERIAL_GRASS_TRANSFORM)
+    VPROG_IN_NORMAL
+    #endif
+
+    #if defined(MATERIAL_SKYBOX)
+    VPROG_IN_TEXCOORD0(3)
+    #else
+    VPROG_IN_TEXCOORD0(2)
+    #endif
+
+    #if defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
+    VPROG_IN_TEXCOORD1(2)
+    #endif
+
+    #if defined(VERTEX_COLOR)
+    VPROG_IN_COLOR0()
+    #endif
+    
+    #if defined(PIXEL_LIT) || defined(MATERIAL_GRASS_TRANSFORM)
+    VPROG_IN_TANGENT()
+    VPROG_IN_BINORMAL()
+    #endif
+    
+    #if defined (SKINNING)
+    VPROG_IN_BLENDINDEX()
+    VPROG_IN_BLENDWEIGHT()
+    #endif
+
+/*
+    #if defined(SPEED_TREE_LEAF)
+    attribute vec3 inPivot;
+    #if defined(WIND_ANIMATION)
+    attribute vec2 inAngleSinCos;
+    #endif
+    #endif
+*/
+
+/*    
+    #if defined(WIND_ANIMATION)
+    attribute float inFlexibility;
+    #endif
+
+    #if defined(FRAME_BLEND)
+    attribute float inTime;
+    #endif
+*/
+
+
+VPROG_IN_END
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vprog-output
+
+VPROG_OUT_BEGIN
+
+    VPROG_OUT_POSITION
+
+    #if defined(MATERIAL_SKYBOX)
+    VPROG_OUT_TEXCOORD0(varTexCoord0,3)
+    #else
+    VPROG_OUT_TEXCOORD0(varTexCoord0,2)
+    #endif
+
+    #if defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
+    VPROG_OUT_TEXCOORD1(varTexCoord1,2)
+    #endif
+
+    #if defined(MATERIAL_DETAIL)
+    VPROG_OUT_TEXCOORD2(varDetailTexCoord,2)
+    #endif
+
+    #if defined(TILED_DECAL_MASK)
+    VPROG_OUT_TEXCOORD2(varDecalTileTexCoord,2)
+    #endif
+    
+    
+    #if defined(VERTEX_LIT)
+        varying lowp float varDiffuseColor;
+        #if defined(BLINN_PHONG)
+        varying lowp float varSpecularColor;
+        #elif defined(NORMALIZED_BLINN_PHONG)
+        varying lowp vec3 varSpecularColor;
+        varying lowp float varNdotH;
+        #endif
+    #endif
+
+    #if defined(PIXEL_LIT)
+        varying vec3 varLightPosition;
+        varying vec3 varToLightVec;
+        varying vec3 varHalfVec;
+        varying vec3 varToCameraVec;
+        varying float varPerPixelAttenuation;
+    #endif
+
+    #if defined(SETUP_LIGHTMAP)
+        uniform float lightmapSize;
+        varying lowp float varLightmapSize;
+    #endif
+    
+    #if defined(VERTEX_COLOR) || defined(SPHERICAL_LIT)
+        varying lowp vec4 varVertexColor;
+    #endif
+    
+    #if defined(FRAME_BLEND)
+        varying lowp float varTime;
+    #endif
+
+    #if defined(VERTEX_FOG)
+        varying lowp float varFogAmoung;
+        varying lowp vec3 varFogColor;
+    #endif
+
+    #if defined(REFLECTION) // works now only with VERTEX_LIT
+        #if defined(VERTEX_LIT)
+            varying mediump vec3 reflectionDirectionInWorldSpace;
+        #elif defined(PIXEL_LIT)
+            varying mediump vec3 cameraToPointInTangentSpace;
+            varying mediump mat3 tbnToWorldMatrix;
+        #endif
+    #endif
+
+
+VPROG_OUT_END
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// properties
+
+property float4x4 worldViewProjMatrix : shared,dynamic : ;
+
+#if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG) || defined(SPEED_TREE_LEAF) || defined(SPHERICAL_LIT)
+property float4x4 worldViewMatrix : shared,dynamic : ;
+#endif
+
+#if defined(VERTEX_LIT) || defined(PIXEL_LIT) || (defined(VERTEX_FOG) && defined(FOG_ATMOSPHERE))
+property float4x4 worldViewInvTransposeMatrix : shared,dynamic : ;
+property float4 lightPosition0 : shared,dynamic : ;
+property float lightIntensity0 : shared,dynamic : ; 
+#endif
+
+#if defined(VERTEX_LIT)
+property float materialSpecularShininess : shared,dynamic : ;
+property float inSpecularity : shared,dynamic : ;
+property float inGlossiness : shared,dynamic : ;
+property float physicalFresnelReflectance : shared,dynamic : ;
+property float3 metalFresnelReflectance : shared,dynamic : ;
+#endif
+
+#if defined (SKINNING)
+property float4 jointPositions[MAX_JOINTS] : shared,dynamic : ; // (x, y, z, scale)
+property float4 jointQuaternions[MAX_JOINTS] : shared,dynamic : ;
+#endif
+
+#if defined(VERTEX_FOG)
+    property float3 fogColor : shared,dynamic : ;
+    property float fogLimit : shared,dynamic : ;
+    #if defined(FOG_LINEAR)
+    property float fogStart : shared,dynamic : ;
+    property float fogEnd : shared,dynamic : ;
+    #else
+    property float fogDensity : shared,dynamic : ;
+    #endif
+    #if defined(FOG_ATMOSPHERE)
+        property float fogAtmosphereDistance : shared,dynamic : ;
+        #if defined(FOG_ATMOSPHERE_MAP)
+            DECL_SAMPLERCUBE(atmospheremap) : shared,dynamic : ;
+        #else
+            property float3 fogAtmosphereColorSun : shared,dynamic : ;
+            property float3 fogAtmosphereColorSky : shared,dynamic : ;
+            property float fogAtmosphereScattering : shared,dynamic : ;
+        #endif
+    #endif
+    #if defined(FOG_HALFSPACE)
+        property float fogHalfspaceHeight : shared,dynamic : ;
+        property float fogHalfspaceFalloff : shared,dynamic : ;
+        property float fogHalfspaceDensity : shared,dynamic : ;
+        property float fogHalfspaceLimit : shared,dynamic : ;
+    #endif
+#endif
+
+#if defined(MATERIAL_LIGHTMAP)
+property float2 uvOffset : shared,dynamic : ;
+property float2 uvScale : shared,dynamic : ;
+#endif
+
+#if defined(WIND_ANIMATION)
+property float2 trunkOscillationParams : shared,dynamic : ;
+#endif
+
+#if defined(SPEED_TREE_LEAF)
+property float3 worldViewTranslate : shared,dynamic : ;
+property float3 worldScale : shared,dynamic : ;
+property float4x4 projMatrix : shared,dynamic : ;
+property float cutDistance : shared,dynamic : ;
+
+    #if !defined(SPHERICAL_LIT) //legacy for old tree lighting
+        property float3 treeLeafColorMul : shared,dynamic : ;
+        property float treeLeafOcclusionOffset : shared,dynamic : ;
+        property float treeLeafOcclusionMul : shared,dynamic : ;
+    #endif
+    
+    #if defined(WIND_ANIMATION)
+        property float2 leafOscillationParams : shared,dynamic : ; //x: A*sin(T); y: A*cos(T);
+    #endif
+    
+    #if defined(SPHERICAL_LIT)
+        property float speedTreeLightSmoothing : shared,dynamic : ;
+    #endif
+#endif
+
+#if defined(SPHERICAL_LIT)
+property float3 worldViewObjectCenter : shared,dynamic : ;
+property float4x4 invViewMatrix : shared,dynamic : ;
+property float3 boundingBoxSize : shared,dynamic : ;
+
+    #if defined(SPHERICAL_HARMONICS_9)
+        property float3 sphericalHarmonics[9] : shared,dynamic : ;
+    #elif defined(SPHERICAL_HARMONICS_4)
+        property float3 sphericalHarmonics[4] : shared,dynamic : ;
+    #else
+        property float3 sphericalHarmonics[1] : shared,dynamic : ;
+    #endif
+    
+#endif
+
+#if defined(TILED_DECAL_MASK)
+property float2 decalTileCoordScale : shared,dynamic : ;
+#endif
+
+#if defined(MATERIAL_DETAIL)
+property float2 detailTileCoordScale : shared,dynamic : ;
+#endif
+
+#if defined(TEXTURE0_SHIFT_ENABLED)
+property float2 texture0Shift : shared,dynamic : ;
+#endif 
+#if defined(TEXTURE0_ANIMATION_SHIFT)
+property float globalTime : shared,dynamic : ;
+property float2 tex0ShiftPerSecond : shared,dynamic : ;
+#endif
+
+
+property float3 cameraPosition : shared,dynamic : ;
+property float4x4 worldMatrix : shared,dynamic : ;
+
+
+
+#if defined(REFLECTION) // works now only with VERTEX_LIT
+    property float3x3 worldInvTransposeMatrix;
+#endif
+
+/*
+#if defined(MATERIAL_GRASS_TRANSFORM)
+    
+    property float3 tilePos;
+    property float3 worldSize;
+    property float2 lodSwitchScale;
+    property float3 billboardDirection;
+
+//    uniform sampler2D heightmap;
+//    uniform sampler2D vegetationmap;
+//    uniform sampler2D densitymap;
+
+    uniform vec2 heightmapScale;
+
+    #if defined(MATERIAL_GRASS_TRANSFORM_WAVE)
+        uniform float vegWaveOffset[8]; //2 floats (xy) per layer
+    #endif
+
+    #if defined(MATERIAL_GRASS_OPAQUE) || defined(MATERIAL_GRASS_BLEND)
+        varying lowp vec3 varVegetationColor;
+    #endif
+
+#endif
+*/
+
+#if defined(WAVE_ANIMATION)
+property float globalTime : shared,dynamic : ;
+#endif
+
+
+
+float
+FresnelShlick( float NdotL, float Cspec )
+{
+    float fresnel_exponent = 5.0;
+    return (1.0 - Cspec) * pow(1.0 - NdotL, fresnel_exponent) + Cspec;
+}
+
+float3
+FresnelShlickVec3( float NdotL, float3 Cspec )
+{
+    float fresnel_exponent = 5.0;
+    return (1.0 - Cspec) * (pow(1.0 - NdotL, fresnel_exponent)) + Cspec;
+}
+
+float3
+JointTransformTangent( float3 inVec, float44 jointQuaternion )
+{
+    vec3 t = 2.0 * cross( jointQuaternion.xyz, inVec );
+    return inVec + jointQuaternion.w * t + cross(jointQuaternion.xyz, t); 
+}
+
+
+float4
+Wave( float time, float4 pos, float2 uv )
+{
+//  float time = globalTime;
+//  vec4 pos = inPosition;
+//  vec2 uv = inTexCoord0;
+#if 1
+    float4 off;
+    float sinOff = pos.x + pos.y + pos.z;
+    float t = -time * 3.0;
+    float cos1 = cos(t * 1.45 + sinOff);
+    float cos2 = cos(t * 3.12 + sinOff);
+    float cos3 = cos(t * 2.2 + sinOff);
+    float fx= uv.x;
+    float fy= uv.x * uv.y;
+    
+    off.y = pos.y + cos2 * fx * 0.5 - fy * 0.9;
+    off.x = pos.x + cos1 * fx * 0.5;
+    off.z = pos.z + cos3 * fx * 0.5;
+    off.w = pos.w;
+#else
+    float4 off;
+    float t = -time;
+    float sin2 = sin(4.0 * sqrt(uv.x + uv.x + uv.y * uv.y) + time);
+    
+    off.x = pos.x;// + cos1 * fx * 0.5;
+    off.y = pos.y + sin2 * 0.5;// - fy * 0.9;
+    off.z = pos.z;// + cos3 * fx * 0.5;
+    off.w = pos.w;
+#endif
+    
+    return off;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// main
+
+void
+main()
+{
+#if defined (SKINNING)
+    // compute final state - for now just effected by 1 bone - later blend everything here
+    int     index                    = int(inJointIndex);
+    float4  weightedVertexPosition   = jointPositions[index];
+    float4  weightedVertexQuaternion = jointQuaternions[index];
+#endif
+
+
+#if defined(MATERIAL_SKYBOX)
+    
+    float4 vecPos = (worldViewProjMatrix * inPosition);
+    VP_OUT_POSITION = float4(vecPos.xy, vecPos.w - 0.0001, vecPos.w);
+
+#elif defined(SKYOBJECT)
+    
+    float4x4 mwpWOtranslate = float4x4(worldViewProjMatrix[0], worldViewProjMatrix[1], worldViewProjMatrix[2], float4(0.0, 0.0, 0.0, 1.0));
+    float4   vecPos         = (mwpWOtranslate * inPosition);
+    VP_OUT_POSITION = float4x4(vecPos.xy, vecPos.w - 0.0001, vecPos.w);
+
+#elif defined(SPEED_TREE_LEAF)
+
+    float4  eyeCoordsPosition4;
+
+    #if defined (CUT_LEAF)
+        float4 tangentInCameraSpace = worldViewMatrix * float4(inPivot, 1.0);
+        if (tangentInCameraSpace.z < -cutDistance)
+        {
+            VP_OUT_POSITION = worldViewProjMatrix * float4(inPivot, inPosition.w);
+        }
+        else
+        {
+    #endif
+
+            float3 offset = inPosition.xyz - inPivot;
+            float3 pivot = inPivot;
+            
+            
+            #if defined(WIND_ANIMATION)
+            
+            //inAngleSinCos:        x: cos(T0);  y: sin(T0);
+            //leafOscillationParams:  x: A*sin(T); y: A*cos(T);
+            float3 windVectorFlex = float3(trunkOscillationParams * inFlexibility, 0.0);
+            pivot += windVectorFlex;
+            
+            float2 SinCos = inAngleSinCos * leafOscillationParams; //vec2(A*sin(t)*cos(t0), A*cos(t)*sin(t0))
+            float sinT = SinCos.x + SinCos.y;     //sin(t+t0)*A = sin*cos + cos*sin
+            float cosT = 1.0 - 0.5 * sinT * sinT; //cos(t+t0)*A = 1 - 0.5*sin^2
+            
+            float4 SinCosT = float4(sinT, cosT, cosT, sinT); //temp vec for mul
+            float4 offsetXY = float4(offset.x, offset.y, offset.x, offset.y); //temp vec for mul
+            float4 rotatedOffsetXY = offsetXY * SinCosT; //vec4(x*sin, y*cos, x*cos, y*sin)
+            
+            offset.x = rotatedOffsetXY.z - rotatedOffsetXY.w; //x*cos - y*sin
+            offset.y = rotatedOffsetXY.x + rotatedOffsetXY.y; //x*sin + y*cos
+
+            #endif //end of (not WIND_ANIMATION and SPEED_TREE_LEAF)
+
+            
+            float4 eyeCoordsPivot = worldViewMatrix * float4(pivot, inPosition.w);
+            eyeCoordsPosition4 = float4(worldScale * offset, 0.0) + eyeCoordsPivot;
+            VP_OUT_POSITION = projMatrix * eyeCoordsPosition4;
+        
+    #if defined (CUT_LEAF)   
+        }
+    #endif // not CUT_LEAF
+
+#else // not SPEED_TREE_LEAF
+
+    #if defined(WIND_ANIMATION)
+
+        float3 windVectorFlex = float3(trunkOscillationParams * inFlexibility, 0.0);
+        VP_OUT_POSITION = worldViewProjMatrix * float4(inPosition.xyz + windVectorFlex, inPosition.w);
+        
+    #else //!defined(WIND_ANIMATION)
+
+        #if defined(WAVE_ANIMATION)
+            VP_OUT_POSITION = worldViewProjMatrix * Wave(globalTime, inPosition, inTexCoord0);
+        #elif defined(MATERIAL_GRASS_TRANSFORM)
+        
+            //inTangent.y - cluster type (0...3)
+            //inTangent.z - cluster's reference density (0...15)
+        
+            //clusterScaleDensityMap[0] - density
+            //clusterScaleDensityMap[1] - scale
+        
+            float4 clusterCenter = float4(inBinormal.x + tilePos.x,
+                                          inBinormal.y + tilePos.y,
+                                          inBinormal.z,
+                                          inPosition.w);
+        
+            float4 pos = float4(inPosition.x + tilePos.x,
+                                inPosition.y + tilePos.y,
+                                inPosition.z,
+                                inPosition.w);
+        
+            #if defined(MATERIAL_GRASS_BILLBOARD)
+                //1st method of billboards when cameraPosition is point
+                float3 toCamera = normalize(float3(clusterCenter.xyz) - float3(cameraPosition.xy, clusterCenter.z));
+                float3 actualDirection = normalize(cross(inNormal, toCamera));
+            
+            
+                //2nd method of billboards when cameraDirection is vector
+                //vec2 actualDirection = inNormal.z * vec2(billboardDirection);
+                //
+            
+                float2 planeDirection = float2(actualDirection.x, actualDirection.y) * length(float2(inPosition.x - inBinormal.x, inPosition.y - inBinormal.y));
+                pos = clusterCenter + vec4(planeDirection.x, planeDirection.y, inPosition.z, 0.0);
+            #endif
+        
+            float2 hUVheight = float2(clamp(1.0 - (0.5 * worldSize.x - clusterCenter.x) / worldSize.x, 0.0, 1.0),
+                            clamp(1.0 - (0.5 * worldSize.y - clusterCenter.y) / worldSize.y, 0.0, 1.0));
+        
+            hUVheight = float2(clamp(hUVheight.x * heightmapScale.x, 0.0, 1.0),
+                       clamp(hUVheight.y * heightmapScale.y, 0.0, 1.0));
+        
+            float4 heightVec = texture2DLod(heightmap, hUVheight, 0.0);
+            float height = dot(heightVec, float4(0.93751430533303, 0.05859464408331, 0.00366216525521, 0.00022888532845)) * worldSize.z;
+        
+        
+            pos.z += height;
+            clusterCenter.z += height;
+        
+            float clusterScale = tilePos.z;
+            if(int(inTangent.x) == int(lodSwitchScale.x))
+            {
+                clusterScale *= lodSwitchScale.y;
+            }
+        
+            #if defined(MATERIAL_GRASS_BLEND)
+                    varTexCoord2.x = clusterLodScale;
+            #endif
+        
+            float2 hUVcolor = float2(hUVheight.x, 1.0 - hUVheight.y);
+            float4 vegetationMask = texture2DLod(vegetationmap, hUVcolor, 0.0);
+        
+            
+            #if defined(MATERIAL_GRASS_OPAQUE) || defined(MATERIAL_GRASS_BLEND)
+            varVegetationColor = vegetationMask.rgb;
+        
+            /*if(int(inTangent.y) == 0)
+            {
+               varVegetationColor.r += 0.5;
+            }
+            else if(int(inTangent.y) == 1)
+            {
+               varVegetationColor.g += 0.5;
+            }
+            else if(int(inTangent.y) == 2)
+            {
+                varVegetationColor.rb += vec2(0.75, 0.75);
+            }
+            else
+            {
+                varVegetationColor.rgb += vec3(0.5, 0.5, 0.5);
+            }*/
+            #endif
+        
+            #if defined(MATERIAL_GRASS_TRANSFORM_WAVE)
+                
+                int clusterType = int(inTangent.y);
+                int waveIndex = clusterType * 2;
+                
+                pos.x += inTangent.z * vegWaveOffset[waveIndex];
+                pos.y += inTangent.z * vegWaveOffset[waveIndex + 1];
+                
+            #endif
+
+            pos = mix(clusterCenter, pos, vegetationMask.a * clusterScale);
+        
+            VP_OUT_POSITION = worldViewProjMatrix * pos;
+        
+        #else
+            #if defined (SKINNING)
+                float3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, inPosition.xyz);
+                float4 skinnedPosition = float4(weightedVertexPosition.xyz + (inPosition.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, inPosition.w);
+                VP_OUT_POSITION = worldViewProjMatrix * skinnedPosition;
+            #else
+                VP_OUT_POSITION = worldViewProjMatrix * inPosition;
+            #endif
+        #endif
+
+    #endif //defined(WIND_ANIMATION)
+
+#endif //end "not SPEED_TREE_LEAF
+
+
+#if defined(SPEED_TREE_LEAF)
+    float3 eyeCoordsPosition = float3(eyeCoordsPosition4);
+#elif defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG) || defined(SPHERICAL_LIT)
+    #if defined(MATERIAL_GRASS_TRANSFORM)
+        float3 eyeCoordsPosition = float3(worldViewMatrix * pos); // view direction in view space
+    #else
+        #if defined (SKINNING)
+            float3 eyeCoordsPosition = float3(worldViewMatrix * skinnedPosition); // view direction in view space
+        #else
+            float3 eyeCoordsPosition = float3(worldViewMatrix *  inPosition); // view direction in view space
+        #endif
+    #endif
+#endif
+
+
+#if defined(VERTEX_LIT) || defined(PIXEL_LIT) || (defined(VERTEX_FOG) && defined(FOG_ATMOSPHERE))
+    float3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
+#endif
+
+
+#if defined(VERTEX_LIT)
+    
+    float3 normal = normalize(worldViewInvTransposeMatrix * inNormal); // normal in eye coordinates
+   
+    #if defined(DISTANCE_ATTENUATION)
+        float attenuation = lightIntensity0;
+        float distAttenuation = length(toLightDir);
+        attenuation /= (distAttenuation * distAttenuation); // use inverse distance for distance attenuation
+    #endif
+    
+    toLightDir = normalize(toLightDir);
+    
+    #if defined(REFLECTION)
+        float3 viewDirectionInWorldSpace = float3(worldMatrix * inPosition) - cameraPosition;
+        float3 normalDirectionInWorldSpace = normalize(vec3(worldInvTransposeMatrix * inNormal));
+        reflectionDirectionInWorldSpace = reflect(viewDirectionInWorldSpace, normalDirectionInWorldSpace);
+    #endif
+    
+    #if defined(BLINN_PHONG)
+        
+        varDiffuseColor = max(0.0, dot(normal, toLightDir));
+
+        // Blinn-phong reflection
+        float3 toCameraDir = normalize(-eyeCoordsPosition);
+        float3 H = normalize(toLightDir + toCameraDir);
+        float nDotHV = max(0.0, dot(normal, H));
+        varSpecularColor = pow(nDotHV, materialSpecularShininess);
+        
+    #elif defined(NORMALIZED_BLINN_PHONG)
+        
+        float3 toCameraNormalized = normalize(-eyeCoordsPosition);
+        float3 H = normalize(toLightDir + toCameraNormalized);
+
+        float NdotL = max (dot (normal, toLightDir), 0.0);
+        float NdotH = max (dot (normal, H), 0.0);
+        float LdotH = max (dot (toLightDir, H), 0.0);
+        float NdotV = max (dot (normal, toCameraNormalized), 0.0);
+
+        //float3 fresnelIn = FresnelShlickVec3(NdotL, metalFresnelReflectance);
+        float3 fresnelOut  = FresnelShlickVec3(NdotV, metalFresnelReflectance);
+        float  specularity = inSpecularity;
+
+        float Dbp = NdotL;
+        float Geo = 1.0 / LdotH * LdotH;
+        
+        varDiffuseColor = NdotL / _PI;
+        
+        varSpecularColor = Dbp * Geo * fresnelOut * specularity;
+        varNdotH = NdotH;
+    
+    #endif
+    
+#endif // defined(VERTEX_LIT)
+
+
+#if defined(PIXEL_LIT)
+
+    #if defined (SKINNING)
+        float3 n = normalize (worldViewInvTransposeMatrix * JointTransformTangent(inNormal, weightedVertexQuaternion));
+        float3 t = normalize (worldViewInvTransposeMatrix * JointTransformTangent(inTangent, weightedVertexQuaternion));
+        float3 b = normalize (worldViewInvTransposeMatrix * JointTransformTangent(inBinormal, weightedVertexQuaternion));
+    #else
+        float3 n = normalize (worldViewInvTransposeMatrix * inNormal);
+        float3 t = normalize (worldViewInvTransposeMatrix * inTangent);
+        float3 b = normalize (worldViewInvTransposeMatrix * inBinormal);
+    #endif
+    
+    #if defined(DISTANCE_ATTENUATION)
+        varPerPixelAttenuation = length(toLightDir);
+    #endif
+    //lightDir = normalize(lightDir);
+    
+    // transform light and half angle vectors by tangent basis
+    float3 v;
+    v.x = dot (toLightDir, t);
+    v.y = dot (toLightDir, b);
+    v.z = dot (toLightDir, n);
+    
+    #if !defined(FAST_NORMALIZATION)
+        varToLightVec = v;
+    #else
+        varToLightVec = normalize(v);
+    #endif
+
+    float3 toCameraDir = -eyeCoordsPosition;
+
+    v.x = dot (toCameraDir, t);
+    v.y = dot (toCameraDir, b);
+    v.z = dot (toCameraDir, n);
+    
+    #if !defined(FAST_NORMALIZATION)
+        varToCameraVec = v;
+    #else
+        varToCameraVec = normalize(v);
+    #endif
+    
+    /* Normalize the halfVector to pass it to the fragment shader */
+    // No need to divide by two, the result is normalized anyway.
+    // float3 halfVector = normalize((E + lightDir) / 2.0);
+    #if defined(FAST_NORMALIZATION)
+        float3 halfVector = normalize(normalize(toCameraDir) + normalize(toLightDir));
+        v.x = dot (halfVector, t);
+        v.y = dot (halfVector, b);
+        v.z = dot (halfVector, n);
+        
+        // No need to normalize, t,b,n and halfVector are normal vectors.
+        varHalfVec = v;
+    #endif
+
+//    varLightPosition.x = dot (lightPosition0.xyz, t);
+//    varLightPosition.y = dot (lightPosition0.xyz, b);
+//    varLightPosition.z = dot (lightPosition0.xyz, n);
+    
+    #if defined(REFLECTION)
+        v.x = dot (eyeCoordsPosition, t);
+        v.y = dot (eyeCoordsPosition, b);
+        v.z = dot (eyeCoordsPosition, n);
+        cameraToPointInTangentSpace = normalize (v);
+        
+        float3 binormTS = cross(inNormal, inTangent);
+    //    tbnToWorldMatrix = mat3(vec3(inTangent.x, binormTS.x, inNormal.x),
+    //                            vec3(inTangent.y, binormTS.y, inNormal.y),
+    //                            vec3(inTangent.z, binormTS.z, inNormal.z));
+        tbnToWorldMatrix = float3x3(inTangent, binormTS, inNormal);
+    #endif
+
+#endif // defined(PIXEL_LIT)
+
+
+#if defined(VERTEX_FOG)
+
+    float fogDistance = length(eyeCoordsPosition);
+    
+    // calculating fog amoung, depending on distance 
+    #if !defined(FOG_LINEAR)
+        varFogAmoung = 1.0 - exp(-fogDensity * fogDistance);
+    #else
+        varFogAmoung = (fogDistance - fogStart) / (fogEnd - fogStart);
+    #endif
+    
+    // calculating view direction in world space, point of view in world space
+    #if defined(FOG_HALFSPACE) || defined(FOG_ATMOSPHERE_MAP)
+        #if defined(MATERIAL_GRASS_TRANSFORM)
+            float3 viewPointInWorldSpace = float3(worldMatrix * pos);
+        #else
+            float3 viewPointInWorldSpace = float3(worldMatrix * inPosition);
+        #endif
+        float3 viewDirectionInWorldSpace = viewPointInWorldSpace - cameraPosition;
+    #endif
+    
+    // calculating halfSpaceFog amoung
+    #if defined(FOG_HALFSPACE)
+        #if defined(FOG_HALFSPACE_LINEAR)
+            // view http://www.terathon.com/lengyel/Lengyel-UnifiedFog.pdf
+            // to get more clear understanding about this calculations
+            float fogK = step(cameraPosition.z, fogHalfspaceHeight);
+            float fogFdotP = viewPointInWorldSpace.z - fogHalfspaceHeight;
+            float fogFdotC = cameraPosition.z - fogHalfspaceHeight;
+            
+            float fogC1 = fogK * (fogFdotP + fogFdotC);
+            float fogC2 = (1.0 - 2.0 * fogK) * fogFdotP;
+            float fogG = min(fogC2, 0.0);
+            fogG = -length(viewDirectionInWorldSpace) * fogHalfspaceDensity * (fogC1 - fogG * fogG / abs(viewDirectionInWorldSpace.z));
+            
+            float halfSpaceFogAmoung = 1.0 - exp2(-fogG);
+        #else
+            float fogK = viewDirectionInWorldSpace.z / fogDistance;
+            float fogB = cameraPosition.z - fogHalfspaceHeight;
+            
+            float halfSpaceFogAmoung = fogHalfspaceDensity * exp(-fogHalfspaceFalloff * fogB) * (1.0 - exp(-fogHalfspaceFalloff * fogK * fogDistance)) / fogK;
+        #endif
+        varFogAmoung = varFogAmoung + clamp(halfSpaceFogAmoung, 0.0, fogHalfspaceLimit);
+    #endif
+
+    // limit fog amoung
+    varFogAmoung = clamp(varFogAmoung, 0.0, fogLimit);
+    
+    // calculating fog color
+    #if defined(FOG_ATMOSPHERE)
+        float3 atmosphereColor;
+        #if defined(FOG_ATMOSPHERE_MAP)
+            float3 viewDirection = normalize(float3(worldMatrix * inPosition) - cameraPosition);
+            viewDirection.z = clamp(viewDirection.z, 0.01, 1.0);
+            atmosphereColor = textureCube(atmospheremap, viewDirection).xyz;
+        #else
+            float atmospheteAngleFactor = dot(normalize(eyeCoordsPosition), normalize(toLightDir)) * 0.5 + 0.5;
+            atmosphereColor = mix(fogAtmosphereColorSky, fogAtmosphereColorSun, pow(atmospheteAngleFactor, fogAtmosphereScattering));
+        #endif
+        float fogAtmosphereAttenuation = clamp(fogDistance / fogAtmosphereDistance, 0.0, 1.0);
+        varFogColor = mix(fogColor, atmosphereColor, fogAtmosphereAttenuation);
+    #else
+        varFogColor = fogColor;
+    #endif
+
+#endif // defined(VERTEX_FOG)
+
+
+#if defined(VERTEX_COLOR)
+    varVertexColor = inColor;
+#endif
+
+
+#if defined(SPHERICAL_LIT)
+
+    #define A0      (0.282094)
+    #define A1      (0.325734)
+
+    #define Y2_2(n) (0.273136 * (n.y * n.x))                                // (1.0 / 2.0) * sqrt(15.0 / PI) * ((n.y * n.x)) * 0.785398 / PI
+    #define Y2_1(n) (0.273136 * (n.y * n.z))                                // (1.0 / 2.0) * sqrt(15.0 / PI) * ((n.y * n.z)) * 0.785398 / PI
+    #define Y20(n)  (0.078847 * (3.0 * n.z * n.z - 1.0))                    // (1.0 / 4.0) * sqrt(5.0 / PI) * ((3.0 * n.z * n.z - 1.0)) * 0.785398 / PI
+    #define Y21(n)  (0.273136 * (n.z * n.x))                                // (1.0 / 2.0) * sqrt(15.0 / PI) * ((n.z * n.x)) * 0.785398 / PI
+    #define Y22(n)  (0.136568 * (n.x * n.x - n.y * n.y))                    // (1.0 / 4.0) * sqrt(15.0 / PI) * ((n.x * n.x - n.y * n.y)) * 0.785398 / PI
+
+    float3 sphericalLightFactor = A0 * sphericalHarmonics[0];
+    
+    #if defined(SPEED_TREE_LEAF)
+        float3 localSphericalLightFactor = sphericalLightFactor;
+    #endif
+    
+    #if !defined(CUT_LEAF)
+
+        #if defined(SPHERICAL_HARMONICS_4) || defined(SPHERICAL_HARMONICS_9)
+
+            float3x3 invViewMatrix3 = float3x3(float3(invViewMatrix[0]), float3(invViewMatrix[1]), float3(invViewMatrix[2]));
+            float3 normal = invViewMatrix3 * (eyeCoordsPosition - worldViewObjectCenter);
+            normal /= boundingBoxSize;
+            float3 n = normalize(normal);
+
+            float3x3 shMatrix = float3x3(sphericalHarmonics[1], sphericalHarmonics[2], sphericalHarmonics[3]);
+            sphericalLightFactor += A1 * shMatrix * float3(n.y, n.z, n.x);
+        
+            #if defined(SPEED_TREE_LEAF)
+                float3 localNormal = invViewMatrix3 * (eyeCoordsPosition - float3(eyeCoordsPivot));
+                float3 ln = normalize(localNormal);
+                localSphericalLightFactor += A1 * shMatrix * float3(ln.y, ln.z, ln.x);
+            #endif
+
+            #if defined(SPHERICAL_HARMONICS_9)
+                sphericalLightFactor += Y2_2(n) * sphericalHarmonics[4];
+                sphericalLightFactor += Y2_1(n) * sphericalHarmonics[5];
+                sphericalLightFactor += Y20(n) * sphericalHarmonics[6];
+                sphericalLightFactor += Y21(n) * sphericalHarmonics[7];
+                sphericalLightFactor += Y22(n) * sphericalHarmonics[8];
+            #endif
+
+            #if defined(SPEED_TREE_LEAF)
+                sphericalLightFactor = mix(sphericalLightFactor, localSphericalLightFactor, speedTreeLightSmoothing);
+            #endif
+        
+        #endif // defined(SPHERICAL_HARMONICS_4) || defined(SPHERICAL_HARMONICS_9)
+
+    #endif // !defined(CUT_LEAF)
+
+    varVertexColor = float4(sphericalLightFactor * 2.0, 1.0);
+
+    #undef A0     
+    #undef A1     
+
+    #undef Y2_2
+    #undef Y2_1
+    #undef Y20 
+    #undef Y21 
+    #undef Y22 
+
+#elif defined(SPEED_TREE_LEAF) //legacy for old tree lighting
+    
+    varVertexColor.rgb = varVertexColor.rgb * treeLeafColorMul * treeLeafOcclusionMul + float3(treeLeafOcclusionOffset);
+
+#endif
+
+
+    varTexCoord0 = inTexCoord0;
+    
+
+#if defined(TEXTURE0_SHIFT_ENABLED)
+    varTexCoord0 += texture0Shift;
+#endif
+
+    
+#if defined(TEXTURE0_ANIMATION_SHIFT)
+    varTexCoord0 += tex0ShiftPerSecond * globalTime;
+#endif
+
+    
+#if defined(TILED_DECAL_MASK)
+    varDecalTileTexCoord = varTexCoord0 * decalTileCoordScale;
+#endif
+
+    
+#if defined(MATERIAL_DETAIL)
+    varDetailTexCoord = varTexCoord0 * detailTileCoordScale;
+#endif
+
+
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
+    
+    #if defined(SETUP_LIGHTMAP)
+        varLightmapSize = lightmapSize;
+        varTexCoord1    = inTexCoord1;
+    #elif defined(MATERIAL_LIGHTMAP)
+        varTexCoord1    = uvScale*inTexCoord1+uvOffset;
+    #else
+        varTexCoord1    = inTexCoord1;
+    #endif
+#endif
+
+
+#if defined(FRAME_BLEND)
+    varTime = inTime;
+#endif
+
+}
+
+
+
+
