@@ -41,6 +41,8 @@ struct RenderPassDescriptor
     ShaderDescriptor *shader;
     rhi::DepthStencilState::Descriptor depthStateDescriptor;    
     eRenderLayerID renderLayer;    
+    rhi::CullMode cullMode;
+    RenderPassDescriptor();
 };
 
 struct FXDescriptor

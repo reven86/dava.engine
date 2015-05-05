@@ -76,7 +76,7 @@ void NMaterial::BindParams(rhi::Packet& target)
     target.depthStencilState = activeVariantInstance->depthState;
     target.samplerState = activeVariantInstance->samplerState;
     target.textureSet = activeVariantInstance->textureSet;
-    target.cullMode = rhi::CULL_CW;
+    target.cullMode = activeVariantInstance->cullMode;
 
     activeVariantInstance->shader->UpdateDynamicParams();
     /*update values in material const buffers*/
@@ -368,6 +368,7 @@ void NMaterial::RebuildRenderVariants()
         variant->renderLayer = variantDescr.renderLayer;
         variant->depthState = rhi::AcquireDepthStencilState(variantDescr.depthStateDescriptor);
         variant->shader = variantDescr.shader;
+        variant->cullMode = variantDescr.cullMode;
         renderVariants[variantDescr.passName] = variant;
     }
 

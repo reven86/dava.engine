@@ -73,10 +73,10 @@ class RenderVariantInstance
     friend class NMaterial;
     ShaderDescriptor *shader;
 
-
     rhi::HDepthStencilState depthState;
     rhi::HSamplerState samplerState;
     rhi::HTextureSet textureSet;
+    rhi::CullMode cullMode;
 
     Vector<rhi::HConstBuffer> vertexConstBuffers;
     Vector<rhi::HConstBuffer> fragmentConstBuffers;

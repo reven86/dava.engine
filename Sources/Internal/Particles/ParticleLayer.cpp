@@ -576,12 +576,13 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 	//or set blending factors directly
 	const YamlNode * blendSrcNode = node->Get("srcBlendFactor");
 	const YamlNode * blendDestNode = node->Get("dstBlendFactor");
-	if(blendSrcNode && blendDestNode)
+#if RHI_COMPLETE
+    if(blendSrcNode && blendDestNode)
 	{
 		srcBlendFactor = GetBlendModeByName(blendSrcNode->AsString());
 		dstBlendFactor = GetBlendModeByName(blendDestNode->AsString());	
 	}
-
+#endif // RHI_COMPLETE
 	const YamlNode * fogNode = node->Get("enableFog");
 	if (fogNode)
 	{
@@ -718,8 +719,10 @@ void ParticleLayer::SaveToYamlNode(const FilePath & configPath, YamlNode* parent
 	    PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "sprite", relativePath);
     }
 
+#if RHI_COMPLETE
 	layerNode->Add("srcBlendFactor", BLEND_MODE_NAMES[(int32)srcBlendFactor]);
 	layerNode->Add("dstBlendFactor", BLEND_MODE_NAMES[(int32)dstBlendFactor]);
+#endif RHI_COMPLETE
 
 	layerNode->Add("enableFog", enableFog);	
 	layerNode->Add("enableFrameBlend", enableFrameBlend);	
