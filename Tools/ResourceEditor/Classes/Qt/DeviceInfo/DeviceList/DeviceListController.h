@@ -21,7 +21,7 @@ class MemProfController;
 // For now only one service - log receiver
 struct DeviceServices
 {
-    DeviceServices() : log(NULL) {}
+    DeviceServices() : log(nullptr), memprof(nullptr) {}
 
     DeviceLogController* log;
     MemProfController* memprof;
