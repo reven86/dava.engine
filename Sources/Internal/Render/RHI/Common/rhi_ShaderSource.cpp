@@ -86,8 +86,10 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
     if( in )
     {
         std::regex  prop_re(".*property\\s*(float|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
-        std::regex  sampler_re(".*DECL_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
-        std::regex  texture_re(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+        std::regex  sampler2d_re(".*DECL_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
+        std::regex  samplercube_re(".*DECL_SAMPLERCUBE\\s*\\(\\s*(.*)\\s*\\).*");
+        std::regex  texture2d_re(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+        std::regex  texturecube_re(".*FP_TEXTURECUBE\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
         std::regex  blend_re(".*BLEND_MODE\\s*\\(\\s*(.*)\\s*\\).*");
         std::regex  blending2_re(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha)\\s+dst=(zero|one|src_alpha|inv_src_alpha).*");
 
@@ -204,7 +206,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     cbuf->regCount     += p.bufferRegCount;
                 }
             }
-            else if( std::regex_match( line, match, sampler_re ) )
+            else if( std::regex_match( line, match, sampler2d_re ) )
             {
                 std::string sname   = match[1].str();
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
@@ -224,7 +226,51 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 code.append( line, strlen(line) );
                 code.push_back( '\n' );
             }
-            else if( std::regex_match( line, match, texture_re ) )
+            else if( std::regex_match( line, match, samplercube_re ) )
+            {
+                std::string sname   = match[1].str();
+                int         mbegin  = strstr( line, sname.c_str() ) - line;
+                int         sn      = sname.length();
+
+                DVASSERT(sampler.size()<10);
+                char ch = line[mbegin+1];
+                int  sl = sprintf( line+mbegin, "%u", (unsigned)(sampler.size()) );
+                DVASSERT(sn>=sl);
+                line[mbegin+1]=ch;
+                if( sn > sl )
+                    memset( line+mbegin+sl, ' ', sn-sl );
+                sampler.resize( sampler.size()+1 );
+                sampler.back().uid  = FastName(sname);
+                sampler.back().type = TEXTURE_TYPE_CUBE;
+
+                code.append( line, strlen(line) );
+                code.push_back( '\n' );
+            }
+            else if( std::regex_match( line, match, texture2d_re ) )
+            {
+                std::string sname   = match[1].str();
+                int         mbegin  = strstr( line, sname.c_str() ) - line;
+                FastName    suid    ( sname );
+                
+                for( unsigned s=0; s!=sampler.size(); ++s )
+                {
+                    if( sampler[s].uid == suid )
+                    {
+                        int sl = sprintf( line+mbegin, "%u", s );
+                        int sn = sname.length();
+                        DVASSERT(sn>=sl);
+                        line[mbegin+sl] = ',';
+                        if( sn > sl )
+                            memset( line+mbegin+sl, ' ', sn-sl );
+                        
+                        break;
+                    }
+                }
+
+                code.append( line, strlen(line) );
+                code.push_back( '\n' );
+            }
+            else if( std::regex_match( line, match, texturecube_re ) )
             {
                 std::string sname   = match[1].str();
                 int         mbegin  = strstr( line, sname.c_str() ) - line;

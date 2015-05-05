@@ -141,7 +141,9 @@ PreProcessText( const char* text, const char** arg, unsigned argCount, std::stri
         int         argc    = 0;
         DVASSERT(argCount<countof(argv)-2);
 
-        argv[argc++] = "<mcpp>";
+        argv[argc++] = "<mcpp>";// we just need first arg
+        argv[argc++] = "-P";    // do not output #line directives
+        argv[argc++] = "-C";    // keep comments
         for( const char** a=arg,**a_end=arg+argCount; a!=a_end; ++a )
             argv[argc++] = *a;
         argv[argc++] = MCPP_Text;
