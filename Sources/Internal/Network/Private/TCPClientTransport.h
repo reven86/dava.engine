@@ -43,6 +43,7 @@ namespace Net
 class IOLoop;
 class TCPClientTransport : public IClientTransport
 {
+    static const uint32 DEFAULT_READ_TIMEOUT = 5 * 1000;
     static const uint32 RESTART_DELAY_PERIOD = 3000;
 
 public:
