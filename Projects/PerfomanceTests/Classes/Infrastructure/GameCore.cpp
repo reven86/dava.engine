@@ -50,6 +50,7 @@ void GameCore::OnAppStarted()
 {
     new GraphicsDetect();
     GraphicsDetect::Instance()->ReloadSettings();
+    SoundSystem::Instance()->InitFromQualitySettings();
 
 	RegisterTests();
 	InitScreenController();
