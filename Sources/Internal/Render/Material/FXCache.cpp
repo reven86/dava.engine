@@ -121,7 +121,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
         {
             renderTechniqueNode = parserTechnique->GetRootNode();
         }
-        if (!rootNode)
+        if (!renderTechniqueNode)
         {
             Logger::Error("Can't load technique from template: %s with quality %d", fxPath.GetAbsolutePathname().c_str(), quality);
             SafeRelease(parserTechnique);
@@ -138,7 +138,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
     }
 
     //now load render technique
-    const YamlNode * stateNode = rootNode->Get("RenderTechnique");
+    const YamlNode * stateNode = renderTechniqueNode->Get("RenderTechnique");
     if (!stateNode)
     {
         SafeRelease(parser);
