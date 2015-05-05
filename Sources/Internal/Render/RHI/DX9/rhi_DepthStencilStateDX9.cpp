@@ -21,6 +21,7 @@ DepthStencilStateDX9_t
     uint32  depthWriteEnabled:1;
     DWORD   depthFunc;
 
+    uint32  stencilEnabled:1;
     DWORD   stencilFunc;
     DWORD   stencilReadMask;
     DWORD   stencilWriteMask;
@@ -92,6 +93,7 @@ dx9_DepthStencilState_Create( const DepthStencilState::Descriptor& desc )
     state->depthWriteEnabled         = desc.depthWriteEnabled;
     state->depthFunc                 = _CmpFunc( CmpFunc(desc.depthFunc) );
 
+    state->stencilEnabled            = !(desc.stencilFunc == CMP_ALWAYS  &&  desc.stencilReadMask == 0xFF  && desc.stencilWriteMask == 0xFF);
     state->stencilFunc               = _CmpFunc( CmpFunc(desc.stencilFunc) );
     state->stencilReadMask           = desc.stencilReadMask;
     state->stencilWriteMask          = desc.stencilWriteMask;
@@ -133,14 +135,22 @@ SetToRHI( Handle hstate )
     _D3D9_Device->SetRenderState( D3DRS_ZENABLE, state->depthTestEnabled );
     _D3D9_Device->SetRenderState( D3DRS_ZWRITEENABLE, state->depthWriteEnabled );
     _D3D9_Device->SetRenderState( D3DRS_ZFUNC, state->depthFunc );
-
-    _D3D9_Device->SetRenderState( D3DRS_STENCILFUNC, state->stencilFunc );
-    _D3D9_Device->SetRenderState( D3DRS_STENCILREF, state->stencilRefValue );
-    _D3D9_Device->SetRenderState( D3DRS_STENCILMASK, state->stencilReadMask );
-    _D3D9_Device->SetRenderState( D3DRS_STENCILWRITEMASK, state->stencilWriteMask );
-    _D3D9_Device->SetRenderState( D3DRS_STENCILZFAIL, state->depthFailOperation );
-    _D3D9_Device->SetRenderState( D3DRS_STENCILFAIL, state->stencilFailOperation );
-    _D3D9_Device->SetRenderState( D3DRS_STENCILPASS, state->depthStencilPassOperation );
+    
+    if( state->stencilEnabled )
+    {
+        _D3D9_Device->SetRenderState( D3DRS_STENCILENABLE, TRUE );
+        _D3D9_Device->SetRenderState( D3DRS_STENCILFUNC, state->stencilFunc );
+        _D3D9_Device->SetRenderState( D3DRS_STENCILREF, state->stencilRefValue );
+        _D3D9_Device->SetRenderState( D3DRS_STENCILMASK, state->stencilReadMask );
+        _D3D9_Device->SetRenderState( D3DRS_STENCILWRITEMASK, state->stencilWriteMask );
+        _D3D9_Device->SetRenderState( D3DRS_STENCILZFAIL, state->depthFailOperation );
+        _D3D9_Device->SetRenderState( D3DRS_STENCILFAIL, state->stencilFailOperation );
+        _D3D9_Device->SetRenderState( D3DRS_STENCILPASS, state->depthStencilPassOperation );
+    }
+    else
+    {
+        _D3D9_Device->SetRenderState( D3DRS_STENCILENABLE, FALSE );
+    }
 }
 
 }

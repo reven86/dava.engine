@@ -21,6 +21,7 @@ DepthStencilStateGLES2_t
     GLuint  depthMask;
     GLenum  depthFunc;
     
+    uint32  stencilEnabled:1;
     GLenum  stencilFailOp;
     GLenum  depthFailOp;
     GLenum  depthStencilPassOp;
@@ -92,6 +93,7 @@ gles2_DepthStencilState_Create( const DepthStencilState::Descriptor& desc )
     state->depthMask            = (desc.depthWriteEnabled)  ? GL_TRUE  : GL_FALSE;
     state->depthFunc            = _CmpFunc( CmpFunc(desc.depthFunc) );
     
+    state->stencilEnabled       = !(desc.stencilFunc == CMP_ALWAYS  &&  desc.stencilReadMask == 0xFF  && desc.stencilWriteMask == 0xFF);
     state->stencilFailOp        = _StencilOp( StencilOperation(desc.stencilFailOperation) );
     state->depthFailOp          = _StencilOp( StencilOperation(desc.depthFailOperation) );
     state->depthStencilPassOp   = _StencilOp( StencilOperation(desc.depthStencilPassOperation) );
@@ -144,9 +146,17 @@ SetToRHI( Handle hstate )
     GL_CALL(glDepthMask( state->depthMask ));
 
     
-    glStencilOp( state->stencilFailOp, state->depthFailOp, state->depthStencilPassOp );
-    glStencilFunc( state->stencilFunc, state->stencilRefValue, state->stencilReadMask );
-    glStencilMask( state->stencilWriteMask );
+    if( state->stencilEnabled  )
+    {
+        glEnable( GL_STENCIL_TEST );
+        glStencilOp( state->stencilFailOp, state->depthFailOp, state->depthStencilPassOp );
+        glStencilFunc( state->stencilFunc, state->stencilRefValue, state->stencilReadMask );
+        glStencilMask( state->stencilWriteMask );
+    }
+    else
+    {
+        glDisable( GL_STENCIL_TEST );
+    }
 }
 
 }
