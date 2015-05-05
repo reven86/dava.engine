@@ -436,6 +436,7 @@ PatchFileReader::PatchFileReader(const FilePath &path, bool beVerbose)
     if(nullptr != patchFile)
     {
         char8 signature[davaPatchSignatureSize];
+        uint32 patchFileSize = patchFile->GetSize();
         
         while(true)
         {
@@ -473,17 +474,19 @@ PatchFileReader::PatchFileReader(const FilePath &path, bool beVerbose)
             }
             
             // remember current file pos
-            uint32 patchPos = patchFile->GetPos();
+            uint32 curPos = patchFile->GetPos();
             
-            // now try to seek to the end of patch
-            if(!patchFile->Seek(patchSize, File::SEEK_FROM_CURRENT))
+            // now try to seek to the end of patch and than check file pos
+            if((curPos + patchSize) > patchFileSize)
             {
                 parseError = ERROR_CORRUPTED;
                 break;
             }
             
-            // store remebered patch pos in our internal list
-            patchPositions.push_back(patchPos);
+            // store remembered patch pos in our internal list 
+            // and go to the next patch chunk
+            patchPositions.push_back(curPos);
+            patchFile->Seek(patchSize, File::SEEK_FROM_CURRENT);
         }
     }
     else
@@ -574,7 +577,6 @@ PatchFileReader::PatchError PatchFileReader::GetLastError() const
 
 PatchFileReader::PatchError PatchFileReader::GetParseError() const
 {
-    printf("%d\b", parseError);
     return parseError;
 }
 
@@ -588,7 +590,7 @@ bool PatchFileReader::DoRead()
     curBSDiffPos = 0;
     curInfo.Reset();
 
-    if(nullptr != patchFile && parseError == ERROR_NO)
+    if(nullptr != patchFile)
     {
         if(!eof)
         { 
@@ -604,9 +606,18 @@ bool PatchFileReader::DoRead()
                 lastError = ERROR_CORRUPTED;
             }
         }
-        else if(patchPositions.size() == 0)
+        else 
         {
-            lastError = ERROR_EMPTY_PATCH;
+            // end of file, so we should set lastError to 
+            // the parseError value
+            lastError = parseError;
+
+            // no errors, check if patch file wasn't empty
+            if(NO_ERROR == lastError && 0 == patchPositions.size())
+            {
+                // patch file without
+                lastError = ERROR_EMPTY_PATCH;
+            }
         }
     }
     else
