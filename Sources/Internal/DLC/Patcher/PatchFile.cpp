@@ -468,15 +468,15 @@ PatchFileReader::PatchFileReader(const FilePath &path, bool beVerbose)
             // check for correct patch size
             if(sizeof(patchSize) != szReadSize || 0 == patchSize)
             {
-                // wrong patch size, or failer read operation
+                // wrong patch size, or failed read operation
                 parseError = ERROR_CORRUPTED;
                 break;
             }
             
             // remember current file pos
             uint32 curPos = patchFile->GetPos();
-            
-            // now try to seek to the end of patch and than check file pos
+
+            // check if next patch position isn't out of file size
             if((curPos + patchSize) > patchFileSize)
             {
                 parseError = ERROR_CORRUPTED;
@@ -632,7 +632,7 @@ bool PatchFileReader::Truncate()
 {
     bool ret = false;
 
-    if(nullptr != patchFile && !eof && curPatchIndex < patchPositions.size())
+    if(nullptr != patchFile && NO_ERROR == parseError && !eof && curPatchIndex < patchPositions.size())
     {
         int32 patchPos = patchPositions[curPatchIndex];
         int32 signarutePos = patchPos - davaPatchSignatureSize - sizeof(uint32);
