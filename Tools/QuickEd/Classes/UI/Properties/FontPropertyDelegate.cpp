@@ -1,12 +1,10 @@
 #include "FontPropertyDelegate.h"
 #include <DAVAEngine.h>
 #include <QAction>
-#include <QLineEdit>
-#include <QCompleter>
+#include <QComboBox>
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
-#include "Project/Project.h"
-#include "Project/EditorFontSystem.h"
+#include "EditorCore.h"
 #include "UI/Dialogs/DialogConfigurePreset.h"
 #include "UI/Dialogs/DialogEditPresetName.h"
 
@@ -26,20 +24,19 @@ FontPropertyDelegate::~FontPropertyDelegate()
 
 QWidget * FontPropertyDelegate::createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
-    QLineEdit *lineEdit = new QLineEdit(parent);
-    lineEdit->setCompleter(new QCompleter(Project::Instance()->GetEditorFontSystem()->GetDefaultPresetNames(), lineEdit));
-    lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
-    connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(valueChanged()));
-
-    return lineEdit;
+    QComboBox *comboBox = new QComboBox(parent);
+    comboBox->setObjectName("comboBox");
+    comboBox->addItems(GetEditorFontSystem()->GetDefaultPresetNames());
+    connect(comboBox, static_cast<void(QComboBox::*)(const QString&)>(&QComboBox::activated), this, &FontPropertyDelegate::valueChanged);
+    return comboBox;
 }
 
-void FontPropertyDelegate::setEditorData(QWidget * rawEditor, const QModelIndex & index) const
+void FontPropertyDelegate::setEditorData(QWidget *rawEditor, const QModelIndex &index) const
 {
-    QLineEdit *editor = rawEditor->findChild<QLineEdit*>("lineEdit");
+    QComboBox *editor = rawEditor->findChild<QComboBox*>("comboBox");
 
-    DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
-    editor->setText(QString::fromStdString(variant.AsString()));
+    VariantType variant = index.data(Qt::EditRole).value<VariantType>();
+    editor->setCurrentText(QString::fromStdString(variant.AsString()));
 }
 
 bool FontPropertyDelegate::setModelData(QWidget * rawEditor, QAbstractItemModel * model, const QModelIndex & index) const
@@ -47,14 +44,14 @@ bool FontPropertyDelegate::setModelData(QWidget * rawEditor, QAbstractItemModel 
     if (BasePropertyDelegate::setModelData(rawEditor, model, index))
         return true;
 
-    QLineEdit *editor = rawEditor->findChild<QLineEdit*>("lineEdit");
+    QComboBox *editor = rawEditor->findChild<QComboBox*>("comboBox");
 
-    DAVA::VariantType variantType = index.data(Qt::EditRole).value<DAVA::VariantType>();
-    DAVA::String str = QStringToString(editor->text());
+    VariantType variantType = index.data(Qt::EditRole).value<VariantType>();
+    String str = QStringToString(editor->currentText());
     variantType.SetString(str);
 
     QVariant variant;
-    variant.setValue<DAVA::VariantType>(variantType);
+    variant.setValue<VariantType>(variantType);
 
     return model->setData(index, variant, Qt::EditRole);
 }
@@ -83,13 +80,13 @@ void FontPropertyDelegate::addPresetClicked()
     QWidget *editor = editPresetAction->parentWidget();
     if (!editor)
         return;
-
-    QLineEdit *lineEdit = editor->findChild<QLineEdit*>("lineEdit");
-    DialogEditPresetName dialogEditPresetName(lineEdit->text(), qApp->activeWindow());
+    QComboBox *comboBox = editor->findChild<QComboBox*>("comboBox");
+    DialogEditPresetName dialogEditPresetName(comboBox->currentText(), qApp->activeWindow());
     if(dialogEditPresetName.exec())
     {
-        lineEdit->setCompleter(new QCompleter(Project::Instance()->GetEditorFontSystem()->GetDefaultPresetNames(), lineEdit));
-        lineEdit->setText(dialogEditPresetName.lineEdit_newFontPresetName->text());
+        comboBox->clear();
+        comboBox->addItems(GetEditorFontSystem()->GetDefaultPresetNames());
+        comboBox->setCurrentText(dialogEditPresetName.lineEdit_newFontPresetName->text());
 
         BasePropertyDelegate::SetValueModified(editor, true);
         itemDelegate->emitCommitData(editor);
@@ -106,13 +103,10 @@ void FontPropertyDelegate::configurePresetClicked()
     if (!editor)
         return;
 
-    QLineEdit *lineEdit = editor->findChild<QLineEdit*>("lineEdit");
-    DialogConfigurePreset dialogConfigurePreset(lineEdit->text(), qApp->activeWindow());
+    QComboBox *comboBox = editor->findChild<QComboBox*>("comboBox");
+    DialogConfigurePreset dialogConfigurePreset(comboBox->currentText(), qApp->activeWindow());
     if (dialogConfigurePreset.exec())
     {
-        lineEdit->setCompleter(new QCompleter(Project::Instance()->GetEditorFontSystem()->GetDefaultPresetNames(), lineEdit));
-        lineEdit->setText(dialogConfigurePreset.lineEdit_currentFontPresetName->text());
-
         BasePropertyDelegate::SetValueModified(editor, true);
         itemDelegate->emitCommitData(editor);
     }
@@ -120,14 +114,17 @@ void FontPropertyDelegate::configurePresetClicked()
 
 void FontPropertyDelegate::valueChanged()
 {
-    QWidget *lineEdit = qobject_cast<QWidget *>(sender());
-    if (!lineEdit)
+    QWidget *widget = qobject_cast<QWidget *>(sender());
+    if (nullptr == widget)
+    {
         return;
+    }
+    QWidget *editor = widget->parentWidget();
+    if (nullptr == editor)
+    {
+        return;
+    }
 
-    QWidget *editor = lineEdit->parentWidget();
-    if (!editor)
-        return;
-    
     BasePropertyDelegate::SetValueModified(editor, true);
     itemDelegate->emitCommitData(editor);
 }

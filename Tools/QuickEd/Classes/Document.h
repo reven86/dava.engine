@@ -38,21 +38,15 @@ public:
 signals:
     void SharedDataChanged(const QByteArray &role);
 public slots:
-    void UpdateLanguage();
     void BeginUpdatePreset();
     void UpdateFontPreset();
-    void BeginChangePreset(const DAVA::String &oldPresetName);
-    void ChangePreset(const DAVA::String &newPresetName);
 
-    void BeginSetProperty(const DAVA::String &property, const DAVA::VariantType &findValue);
-    void SetProperty(const DAVA::String &property, const DAVA::VariantType &newValue);
     void BeginUpdateProperty(const DAVA::String &property);
     void UpdateProperty(const DAVA::String &property);
 private:
 
     static void BeginUpdatePropertyRecuresively(ControlNode* node, const DAVA::String &property);
     static void UpdatePropertyRecursively(ControlNode* node, const DAVA::String &property);
-    void BeginSetPropertyRecursively(ControlNode *node, const DAVA::String &property, const DAVA::VariantType &findValue);
     void InitSharedData();
 
 private:

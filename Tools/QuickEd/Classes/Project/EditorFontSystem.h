@@ -50,8 +50,6 @@ public:
     void SaveLocalizedFonts();
     
     void ClearAllFonts();
-              
-    void UseNewPreset(const DAVA::String& fontOriginalName, const DAVA::String& fontName);
     void CreateNewPreset(const DAVA::String &originalPresetName, const DAVA::String &newPresetName);                      
     
     void SetDefaultFontsPath(const DAVA::FilePath& path);
@@ -60,8 +58,6 @@ public:
 signals:
     void BeginUpdatePreset();
     void UpdateFontPreset();
-    void BeginChangePreset(const DAVA::String &oldPresetName);
-    void ChangePreset(const DAVA::String &newPresetName);
 public slots:
     void RegisterCurrentLocaleFonts();
 private:

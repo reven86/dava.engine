@@ -39,8 +39,7 @@
 #include <QLocale>
 #include "Utils/QtDavaConvertion.h"
 
-#include "Project/Project.h"
-#include "Project/EditorLocalizationSystem.h"
+#include "EditorCore.h"
 
 using namespace DAVA;
 
@@ -563,7 +562,7 @@ void LocalizationEditorDialog::FillLocaleComboBox()
     currentLocaleComboBox->blockSignals(true);
     currentLocaleComboBox->clear();
     // Get count of supported languages
-    const auto &locales = Project::Instance()->GetEditorLocalizationSystem()->GetAvailableLocales();
+    const auto &locales = GetEditorLocalizationSystem()->GetAvailableLocales();
     for (const auto &localeName : locales)    // Fill combobox with language values
     {        
         QLocale locale(localeName);
@@ -648,7 +647,7 @@ void LocalizationEditorDialog::UpdateDefaultLanguage()
 {
     // Get description for current language ID
     auto id = LocalizationSystem::Instance()->GetCurrentLocale();
-    auto locales = Project::Instance()->GetEditorLocalizationSystem()->GetAvailableLocales();
+    auto locales = GetEditorLocalizationSystem()->GetAvailableLocales();
     auto it = std::find(locales.begin(), locales.end(), QString::fromStdString(id));
     auto index = std::distance(locales.begin(), it); // this is works only for arrays and vectors
     currentLocaleComboBox->setCurrentIndex(index);
@@ -702,17 +701,17 @@ void LocalizationEditorDialog::ReinitializeLocalizationSystem(const QString& loc
         return;
     }
 
-    const QStringList &locales = Project::Instance()->GetEditorLocalizationSystem()->GetAvailableLocales();
+    const QStringList &locales = GetEditorLocalizationSystem()->GetAvailableLocales();
     QString locale = locales.at(languageItemID);
     // Re-initialize the Localization System with the new Locale.
-    Project::Instance()->GetEditorLocalizationSystem()->Cleanup();
+    GetEditorLocalizationSystem()->Cleanup();
     
     if (!localizationDirectory.isEmpty())
     {
         FilePath localizationFilePath(localizationDirectory.toStdString());
         localizationFilePath.MakeDirectoryPathname();
 
-        Project::Instance()->GetEditorLocalizationSystem()->InitLanguageWithDirectory(localizationFilePath, locale.toStdString());
+        GetEditorLocalizationSystem()->InitLanguageWithDirectory(localizationFilePath, locale.toStdString());
     }
     
 	stringsTable->ReloadTable();

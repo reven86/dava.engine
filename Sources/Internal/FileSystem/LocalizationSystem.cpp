@@ -323,8 +323,7 @@ bool LocalizationSystem::SaveToYamlFile(const StringFile* stringFile)
 	}
 
 	YamlNode *node = YamlNode::CreateMapNode(true, YamlNode::MR_BLOCK_REPRESENTATION, YamlNode::SR_DOUBLE_QUOTED_REPRESENTATION);
-	for (Map<WideString, WideString>::const_iterator iter = stringFile->strings.begin();
-		 iter != stringFile->strings.end(); iter ++)
+	for (auto iter = stringFile->strings.begin(); iter != stringFile->strings.end(); ++iter)
 	{
 		node->Add(UTF8Utils::EncodeToUTF8(iter->first), iter->second);
 	}
@@ -355,7 +354,7 @@ WideString LocalizationSystem::GetLocalizedString(const WideString & key) const
 	{
 		StringFile * file = *it;
 
-		Map<WideString, WideString>::const_iterator res = file->strings.find(key);
+		auto res = file->strings.find(key);
 		if (res != file->strings.end())
 		{
 			return res->second;
@@ -372,7 +371,7 @@ WideString LocalizationSystem::GetLocalizedString(const WideString & key, const 
 
         if(file->langId.compare(langId) == 0)
         {
-            Map<WideString, WideString>::const_iterator res = file->strings.find(key);
+            auto res = file->strings.find(key);
             if (res != file->strings.end())
             {
                 return res->second;

@@ -30,9 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "UI/Dialogs/DialogConfigurePreset.h"
 #include "Helpers/ResourcesManageHelper.h"
 #include "FileSystem/LocalizationSystem.h"
-#include "Project/Project.h"
-#include "Project/EditorFontSystem.h"
-#include <QFileInfo>
+#include "EditorCore.h"
 
 using namespace DAVA;
 
@@ -49,7 +47,7 @@ DialogConfigurePreset::DialogConfigurePreset(const QString& originalPresetNameAr
     comboBox_defaultFont->addItems(fontsList);
     comboBox_localizedFont->addItems(fontsList);
 
-    comboBox_locale->addItems(Project::Instance()->GetEditorFontSystem()->GetAvailableFontLocales());
+    comboBox_locale->addItems(GetEditorFontSystem()->GetAvailableFontLocales());
 
     comboBox_locale->setCurrentText(QString::fromStdString(LocalizationSystem::Instance()->GetCurrentLocale()));
 
@@ -106,7 +104,7 @@ void DialogConfigurePreset::OnResetLocale()
 
 void DialogConfigurePreset::OnApplyToAllLocales()
 {
-    for (const auto &locale : Project::Instance()->GetEditorFontSystem()->GetAvailableFontLocales())
+    for (const auto &locale : GetEditorFontSystem()->GetAvailableFontLocales())
     {
         SetFont(comboBox_defaultFont->currentText(), spinBox_defaultFontSize->value(), locale);
         UpdateLocalizedFontWidgets();
@@ -115,13 +113,13 @@ void DialogConfigurePreset::OnApplyToAllLocales()
 
 void DialogConfigurePreset::OnOk()
 {
-    Project::Instance()->GetEditorFontSystem()->SaveLocalizedFonts();
+    GetEditorFontSystem()->SaveLocalizedFonts();
     accept();
 }
 
 void DialogConfigurePreset::OnCancel()
 {
-    Project::Instance()->GetEditorFontSystem()->LoadLocalizedFonts();
+    GetEditorFontSystem()->LoadLocalizedFonts();
     reject();
 }
 
@@ -129,7 +127,7 @@ void DialogConfigurePreset::UpdateDefaultFontWidgets()
 {
     spinBox_defaultFontSize->blockSignals(true);
     comboBox_defaultFont->blockSignals(true);
-    Font *font = Project::Instance()->GetEditorFontSystem()->GetFont(lineEdit_currentFontPresetName->text().toStdString(), "default");
+    Font *font = GetEditorFontSystem()->GetFont(lineEdit_currentFontPresetName->text().toStdString(), "default");
     spinBox_defaultFontSize->setValue(font->GetSize());
 
     DVASSERT(font->GetFontType() == Font::TYPE_FT);
@@ -144,7 +142,7 @@ void DialogConfigurePreset::UpdateLocalizedFontWidgets()
 {
     spinBox_localizedFontSize->blockSignals(true);
     comboBox_localizedFont->blockSignals(true);
-    Font *font = Project::Instance()->GetEditorFontSystem()->GetFont(lineEdit_currentFontPresetName->text().toStdString(), comboBox_locale->currentText().toStdString());
+    Font *font = GetEditorFontSystem()->GetFont(lineEdit_currentFontPresetName->text().toStdString(), comboBox_locale->currentText().toStdString());
     spinBox_localizedFontSize->setValue(font->GetSize());
 
     DVASSERT(font->GetFontType() == Font::TYPE_FT);
@@ -160,5 +158,5 @@ void DialogConfigurePreset::SetFont(const QString& fontType, const int fontSize,
     QString fontPath = ResourcesManageHelper::GetFontRelativePath(fontType);
     Font* font = FTFont::Create(fontPath.toStdString());
     font->SetSize(fontSize);
-    Project::Instance()->GetEditorFontSystem()->SetFont(lineEdit_currentFontPresetName->text().toStdString(), locale.toStdString(), font);
+    GetEditorFontSystem()->SetFont(lineEdit_currentFontPresetName->text().toStdString(), locale.toStdString(), font);
 }

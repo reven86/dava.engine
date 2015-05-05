@@ -66,11 +66,11 @@ void EditorFontSystem::SetFont(const String &presetName, const String &locale, F
 
     if (locale == LocalizationSystem::Instance()->GetCurrentLocale())
     {
-        emit BeginChangePreset(presetName);
+        emit BeginUpdatePreset();
         FontManager::Instance()->UnregisterFont(oldFont);
         FontManager::Instance()->RegisterFont(font);
         FontManager::Instance()->SetFontName(font, presetName);
-        emit ChangePreset(presetName); 
+        emit UpdateFontPreset(); 
     }
     font->Release();
 }
@@ -105,6 +105,7 @@ void EditorFontSystem::LoadLocalizedFonts()
             DVASSERT(localizedMap.find(pair.first) != localizedMap.end());
         }
     }
+    defaultPresetNames.sort();
     RegisterCurrentLocaleFonts();
 }
 
@@ -193,15 +194,6 @@ FilePath EditorFontSystem::GetLocalizedFontsPath(const String &locale)
     return locale == "default" ? GetDefaultFontsPath() : defaultFontsPath + locale + "/fonts.yaml";
 }
 
-void EditorFontSystem::UseNewPreset(const String& originalPresetName, const String& newPresetName)
-{
-    if (!defaultPresetNames.contains(QString::fromStdString(newPresetName)))
-    {
-        CreateNewPreset(originalPresetName, newPresetName);
-    }
-    //TODO : iterate file system to replace preset, remove old preset from system
-}
-
 void EditorFontSystem::CreateNewPreset(const String& originalPresetName, const String& newPresetName)
 {
     for (auto &localizedFontsPairs : localizedFonts)
@@ -209,4 +201,5 @@ void EditorFontSystem::CreateNewPreset(const String& originalPresetName, const S
         localizedFontsPairs.second[newPresetName] = localizedFonts.at(localizedFontsPairs.first).at(originalPresetName)->Clone();
     }
     defaultPresetNames.append(QString::fromStdString(newPresetName));
+    defaultPresetNames.sort();
 }

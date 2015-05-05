@@ -20,8 +20,7 @@
 #include "SharedData.h"
 #include "Ui/QtModelPackageCommandExecutor.h"
 
-#include "Project/Project.h"
-#include "Project/EditorFontSystem.h"
+#include "EditorCore.h"
 
 using namespace DAVA;
 
@@ -34,10 +33,8 @@ Document::Document(PackageNode *_package, QObject *parent)
 {
     InitSharedData();
     connect(sharedData, &SharedData::DataChanged, this, &Document::SharedDataChanged);
-    connect(Project::Instance()->GetEditorFontSystem(), &EditorFontSystem::BeginChangePreset, this, &Document::BeginChangePreset);
-    connect(Project::Instance()->GetEditorFontSystem(), &EditorFontSystem::ChangePreset, this, &Document::ChangePreset);
-    connect(Project::Instance()->GetEditorFontSystem(), &EditorFontSystem::BeginUpdatePreset, this, &Document::BeginUpdatePreset);
-    connect(Project::Instance()->GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::UpdateFontPreset);
+    connect(GetEditorFontSystem(), &EditorFontSystem::BeginUpdatePreset, this, &Document::BeginUpdatePreset);
+    connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::UpdateFontPreset);
 }
 
 void Document::InitSharedData()
@@ -76,11 +73,6 @@ PackageModel* Document::GetPackageModel() const
     return sharedData->GetData("packageModel").value<PackageModel*>();
 }
 
-void Document::UpdateLanguage()
-{
-    UpdateProperty("text");
-}
-
 void Document::BeginUpdatePreset()
 {
     BeginUpdateProperty("font");
@@ -89,37 +81,6 @@ void Document::BeginUpdatePreset()
 void Document::UpdateFontPreset()
 {
     UpdateProperty("font");
-}
-
-void Document::BeginChangePreset(const String& oldPresetName)
-{
-    BeginSetProperty("font", VariantType(oldPresetName));
-}
-
-void Document::ChangePreset(const String& newPresetName)
-{
-    SetProperty("font", VariantType(newPresetName));
-}
-
-void Document::BeginSetProperty(const String &property, const VariantType &findValue)
-{
-    savedProperties.erase(property);
-    PackageControlsNode *controlsNode = package->GetPackageControlsNode();
-    for (int32 index = 0; index < controlsNode->GetCount(); ++index)
-    {
-        BeginSetPropertyRecursively(controlsNode->Get(index), property, findValue);
-    }
-}
-
-void Document::SetProperty(const String &property, const VariantType &newValue)
-{
-    auto it = savedProperties.find(property);
-    DVASSERT(it != savedProperties.end() && "begin save properties not bieng called");
-    for (auto &valueProperty: it->second)
-    {
-        valueProperty->SetValue(newValue);
-    }
-    savedProperties.erase(it);
 }
 
 void Document::BeginUpdateProperty(const DAVA::String& property)
@@ -185,32 +146,3 @@ void Document::UpdatePropertyRecursively(ControlNode* node, const DAVA::String &
         UpdatePropertyRecursively(node->Get(index), property);
     }
 }
-
-void Document::BeginSetPropertyRecursively(ControlNode* node, const String& property, const VariantType& findValue)
-{
-    PropertiesRoot *propertiesRoot = node->GetPropertiesRoot();
-    int propertiesCount = propertiesRoot->GetCount();
-    for (int index = 0; index < propertiesCount; ++index)
-    {
-        PropertiesSection *section = dynamic_cast<PropertiesSection*>(propertiesRoot->GetProperty(index));
-        int sectionCount = section->GetCount();
-        for (int prop = 0; prop < sectionCount; ++prop)
-        {
-            ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
-            if (property == valueProperty->GetMember()->Name())
-            {
-                String original = findValue.AsString();
-                String readed = valueProperty->GetValue().AsString();
-                if (findValue == valueProperty->GetValue())
-                {
-                    savedProperties[property].push_back(valueProperty);
-                }
-            }
-        }
-    }
-    for (int index = 0; index < node->GetCount(); ++index)
-    {
-        BeginSetPropertyRecursively(node->Get(index), property, findValue);
-    }
-}
-

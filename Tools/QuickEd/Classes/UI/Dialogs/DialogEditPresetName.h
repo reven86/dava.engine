@@ -40,8 +40,7 @@ public:
     ~DialogEditPresetName() = default;
 private slots:
     void OnNewPresetNameChanged(const QString &arg);
-    void OnApplyClicked();
-    void OnApplyToAllClicked();
+    void OnAccept();
 private:
     const QString originalPresetName;
 };

@@ -6,12 +6,12 @@
 #include "EditorCore.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "SharedData.h"
-#include "Project/Project.h"
-#include "Project/EditorFontSystem.h"
-#include "Project/EditorLocalizationSystem.h"
+
+using namespace DAVA;
 
 EditorCore::EditorCore(QObject *parent)
     : QObject(parent)
+    , Singleton<EditorCore>()
     , project(new Project(this))
     , documentGroup(new DocumentGroup(this))
     , mainWindow(new MainWindow())
@@ -40,7 +40,7 @@ EditorCore::EditorCore(QObject *parent)
     connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->previewWidget, &PreviewWidget::OnDocumentChanged);
     connect(documentGroup, &DocumentGroup::SharedDataChanged, mainWindow->previewWidget, &PreviewWidget::OnDataChanged);
     
-    connect(Project::Instance()->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
+    connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
 
     qApp->installEventFilter(this);
 }
@@ -53,11 +53,6 @@ EditorCore::~EditorCore()
 void EditorCore::Start()
 {
     mainWindow->show();
-}
-
-MainWindow* EditorCore::GetMainWindow() const
-{
-    return const_cast<MainWindow*>( mainWindow );
 }
 
 void EditorCore::OnCleanChanged(bool clean)

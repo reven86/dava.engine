@@ -13,13 +13,11 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageRef.h"
 #include "Helpers/ResourcesManageHelper.h"
-#include "Project/EditorLocalizationSystem.h"
 
 using namespace DAVA;
 
 Project::Project(QObject *parent)
     : QObject(parent)
-    , Singleton<Project>()
     , editorFontSystem(new EditorFontSystem(this))
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
     , isOpen(false)

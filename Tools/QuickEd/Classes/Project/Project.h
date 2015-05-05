@@ -3,12 +3,12 @@
 
 #include <QObject>
 #include "Model/LegacyEditorUIPackageLoader.h"
+#include "Project/EditorFontSystem.h"
+#include "Project/EditorLocalizationSystem.h"
 
 class PackageNode;
-class EditorFontSystem;
-class EditorLocalizationSystem;
 
-class Project : public QObject, public DAVA::Singleton<Project>
+class Project : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool isOpen READ IsOpen NOTIFY IsOpenChanged)
@@ -16,7 +16,6 @@ class Project : public QObject, public DAVA::Singleton<Project>
 public:
     Project(QObject *parent = nullptr);
     virtual ~Project();
-
     bool Open(const QString &path);
     bool CheckAndUnlockProject(const QString& projectPath);
 

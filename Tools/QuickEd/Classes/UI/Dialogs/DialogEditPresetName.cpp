@@ -27,8 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "DialogEditPresetName.h"
-#include "Project/EditorFontSystem.h"
-#include "Project/Project.h"
+#include "EditorCore.h"
 
 #include <QCompleter>
 
@@ -42,12 +41,11 @@ DialogEditPresetName::DialogEditPresetName(const QString& originalPresetNameArg,
     lineEdit_currentFontPresetName->setText(originalPresetName);
     lineEdit_newFontPresetName->setText(originalPresetNameArg);
 
-    lineEdit_newFontPresetName->setCompleter(new QCompleter(Project::Instance()->GetEditorFontSystem()->GetDefaultPresetNames(), lineEdit_newFontPresetName));
+    lineEdit_newFontPresetName->setCompleter(new QCompleter(GetEditorFontSystem()->GetDefaultPresetNames(), lineEdit_newFontPresetName));
 
     connect(lineEdit_newFontPresetName, &QLineEdit::textChanged, this, &DialogEditPresetName::OnNewPresetNameChanged);
-    connect(pushButton_apply, &QPushButton::clicked, this, &DialogEditPresetName::OnApplyClicked);
-    connect(pushButton_applyToAll, &QPushButton::clicked, this, &DialogEditPresetName::OnApplyToAllClicked);
-    connect(pushButton_cancel, &QPushButton::clicked, this, &DialogEditPresetName::reject);
+    connect(buttonBox, &QDialogButtonBox::rejected, this, &DialogEditPresetName::reject);
+    connect(buttonBox, &QDialogButtonBox::accepted, this, &DialogEditPresetName::OnAccept);
 
     OnNewPresetNameChanged(lineEdit_newFontPresetName->text());
 }
@@ -66,7 +64,7 @@ void DialogEditPresetName::OnNewPresetNameChanged(const QString& arg)
         enabled = false;
         text = tr("names match!");
     }
-    else if (Project::Instance()->GetEditorFontSystem()->GetDefaultPresetNames().contains(arg))
+    else if (GetEditorFontSystem()->GetDefaultPresetNames().contains(arg))
     {
         enabled = true;
         text = tr("This preset name already exists in the system");
@@ -77,31 +75,16 @@ void DialogEditPresetName::OnNewPresetNameChanged(const QString& arg)
         text = tr("New font preset will be created");
     }
     label_info->setText(text);
-    pushButton_apply->setEnabled(enabled);
-    pushButton_applyToAll->setEnabled(enabled);
+    buttonBox->button(QDialogButtonBox::Ok)->setEnabled(enabled);
 }
 
-void DialogEditPresetName::OnApplyClicked()
+void DialogEditPresetName::OnAccept()
 {
-    auto editorFontSystem = Project::Instance()->GetEditorFontSystem();
+    auto editorFontSystem = GetEditorFontSystem();
     if (!editorFontSystem->GetDefaultPresetNames().contains(lineEdit_newFontPresetName->text()))
     {
         editorFontSystem->CreateNewPreset(originalPresetName.toStdString(), lineEdit_newFontPresetName->text().toStdString());
         editorFontSystem->SaveLocalizedFonts();
     }
-    accept();
-}
-
-void DialogEditPresetName::OnApplyToAllClicked()
-{
-    auto editorFontSystem = Project::Instance()->GetEditorFontSystem();
-    const auto &oldVal = originalPresetName.toStdString();
-    const auto &newVal = lineEdit_newFontPresetName->text().toStdString();
-    editorFontSystem->BeginChangePreset(oldVal);
-
-    editorFontSystem->UseNewPreset(oldVal, newVal);
-    editorFontSystem->SaveLocalizedFonts();
-
-    editorFontSystem->ChangePreset(newVal);
     accept();
 }

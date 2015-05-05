@@ -206,7 +206,15 @@ void MainWindow::InitLanguageBox()
 {
     QComboBox *comboboxLanguage = new QComboBox();
     comboboxLanguage->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    toolBarLanguage->addWidget(comboboxLanguage);
+    QLabel *label = new QLabel(tr("language"));
+    label->setBuddy(comboboxLanguage);
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->setMargin(0);
+    layout->addWidget(label);
+    layout->addWidget(comboboxLanguage);
+    QWidget *wrapper = new QWidget();
+    wrapper->setLayout(layout);
+    toolBarLanguage->addWidget(wrapper);
     comboboxLanguage->setModel(localizationEditorDialog->currentLocaleComboBox->model());
     connect(comboboxLanguage, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), localizationEditorDialog->currentLocaleComboBox, &QComboBox::setCurrentIndex);
     connect(localizationEditorDialog->currentLocaleComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), comboboxLanguage, &QComboBox::setCurrentIndex);
