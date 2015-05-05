@@ -178,8 +178,6 @@ UITextField::~UITextField()
 
 void UITextField::OpenKeyboard()
 {
-    // automatically disable render to texture on open virtual keyboard
-    SetRenderToTexture(false);
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->OpenKeyboard();
 #elif defined(__DAVAENGINE_ANDROID__)

@@ -80,6 +80,15 @@ namespace DAVA
         [textFieldHolder setTextField:&davaTextField];
 
         objcClassPtr = textFieldHolder;
+        
+        prevRect = tf.GetRect();
+        if (renderToTexture)
+        {
+            UpdateNativeRect(prevRect, MOVE_TO_OFFSCREEN_STEP);
+        } else
+        {
+            UpdateNativeRect(prevRect, 0);
+        }
     }
     UITextFieldiPhone::~UITextFieldiPhone()
     {
@@ -112,10 +121,6 @@ namespace DAVA
     void UITextFieldiPhone::OnSetSize(const DAVA::Vector2 &size)
     {
 #ifdef USE_STATIC_TEXTFIELD
-        if(size.dx > 0 && size.dy > 0)
-        {
-            UpdateStaticTexture();
-        }
 #endif
     }
     
@@ -308,11 +313,16 @@ namespace DAVA
         if(renderToTexture)
         {
             UpdateNativeRect(rect, MOVE_TO_OFFSCREEN_STEP);
+            if (rect.dx != prevRect.dx || rect.dy != prevRect.dy)
+            {
+                UpdateStaticTexture();
+            }
         }
         else
         {
             UpdateNativeRect(rect, 0);
         }
+        prevRect = rect;
     }
 	
     void UITextFieldiPhone::SetText(const WideString & string)
@@ -324,7 +334,7 @@ namespace DAVA
                                                        encoding : CFStringConvertEncodingToNSStringEncoding ( kCFStringEncodingUTF32LE ) ] autorelease];
         NSString* truncatedText = (NSString*)TruncateText(text, textFieldHolder->cppTextField->GetMaxLength());
         
-        bool needStaticUpdate = ![textFieldHolder->textField.text isEqualToString:truncatedText];
+        bool textChanged = ![textFieldHolder->textField.text isEqualToString:truncatedText];
         
         textFieldHolder->textField.text = truncatedText;
         [textFieldHolder->textField.undoManager removeAllActions];
@@ -333,8 +343,7 @@ namespace DAVA
         [textFieldHolder->textField sendActionsForControlEvents:UIControlEventEditingChanged];
         
 #ifdef USE_STATIC_TEXTFIELD
-        // update only when text was really changed
-        if(needStaticUpdate)
+        if(textChanged)
         {
             UpdateStaticTexture();
         }
@@ -478,18 +487,16 @@ namespace DAVA
             DAVA::Rect rect = davaTextField.GetGeometricData().GetUnrotatedRect();
             if (rect.dx > 0 && rect.dy > 0)
             {
-                // update native contol rect, but don't move if outside screen (xOffset = 0) even if renderToTexture == true
-                // because it will be automatically moved on next frame from UpdateRect, that is calling each frame
-                UpdateNativeRect(rect, 0);
-                
                 if (renderToTexture)
                 {
                     void* imgPtr = DAVA::WebViewControl::RenderIOSUIViewToImage(textField);
                     ::UIImage* image = static_cast<::UIImage*>(imgPtr);
-                    DVASSERT(image);
-                    
-                    // set backgroud image into davaTextField control
-                    WebViewControl::SetImageAsSpriteToControl(image, davaTextField);
+                    if (nullptr != image) // can't render to empty rect so skip
+                    {
+                        // set backgroud image into davaTextField control
+                        WebViewControl::SetImageAsSpriteToControl(image, davaTextField);
+                        DAVA::Logger::Warning("%s", "render to texture");
+                    }
                 }
                 else
                 {
