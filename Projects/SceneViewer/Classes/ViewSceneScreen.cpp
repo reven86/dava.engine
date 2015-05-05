@@ -29,10 +29,13 @@
 
 #include "ViewSceneScreen.h"
 #include "GameCore.h"
+#include "Scene3D/Systems/Controller/RotationControllerSystem.h"
+#include "Scene3D/Systems/Controller/WASDControllerSystem.h"
+
+using namespace DAVA;
 
 ViewSceneScreen::ViewSceneScreen()
     : BaseScreen()
-    , camera(NULL)
     , info(NULL)
     , frameCounter(0)
     , framesTime(0.f)
@@ -45,13 +48,12 @@ void ViewSceneScreen::LoadResources()
 {
     BaseScreen::LoadResources();
  
-    ScopedPtr<Scene> scene(new Scene());
+    scene = new Scene();
     Entity *entity = scene->GetRootNode(GameCore::Instance()->GetScenePath());
     scene->AddNode(entity);
     scene->ReleaseRootNode(GameCore::Instance()->GetScenePath());
     
-    DVASSERT(camera == NULL);
-    camera = new Camera();
+    ScopedPtr<Camera> camera(new Camera());
     
     VirtualCoordinatesSystem* vcs = DAVA::VirtualCoordinatesSystem::Instance();
 	float32 aspect = (float32)vcs->GetVirtualScreenSize().dy / (float32)vcs->GetVirtualScreenSize().dx;
@@ -61,39 +63,35 @@ void ViewSceneScreen::LoadResources()
 	camera->SetUp(Vector3(0, 0, 1.f));
     camera->SetTarget(Vector3(0, 0, 0));
     camera->SetPosition(Vector3(0, -45, 10));    
-
     
     scene->AddCamera(camera);    
     scene->SetCurrentCamera(camera);
     
+    Entity * cameraEntity = new Entity();
+    cameraEntity->AddComponent(new CameraComponent(camera));
+    cameraEntity->AddComponent(new WASDControllerComponent());
+    cameraEntity->AddComponent(new RotationControllerComponent());
+    scene->AddNode(cameraEntity);
+    cameraEntity->Release();
+
+    rotationControllerSystem = new RotationControllerSystem(scene);
+    scene->AddSystem(rotationControllerSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT),
+        Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
+
+    wasdSystem = new WASDControllerSystem(scene);
+    scene->AddSystem(wasdSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::WASD_CONTROLLER_COMPONENT),
+        Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
+
     const Rect screenRect = GetRect();
     ScopedPtr<UI3DView> sceneView(new UI3DView(screenRect));
     sceneView->SetScene(scene);
-    sceneView->SetInputEnabled(false);
     AddControl(sceneView);
     
     ScopedPtr<UIButton> backButton(CreateButton(Rect(0, 0, 90, 30), L"Back"));
     backButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ViewSceneScreen::OnBack));
     backButton->SetDebugDraw(true);
     AddControl(backButton);
-    
-    
-    const float32 joyPADSize = 100.f;
-    
-    moveJoyPAD = new UIJoypad(Rect(0, screenRect.dy - joyPADSize, joyPADSize, joyPADSize));
-    moveJoyPAD->GetBackground()->SetSprite("~res:/Gfx/Joypad/joypad", 0);
-    moveJoyPAD->SetStickSprite("~res:/Gfx/Joypad/joypad", 1);
-
-    AddControl(moveJoyPAD);
-    
-    viewJoyPAD = new UIJoypad(Rect(screenRect.dx - joyPADSize, screenRect.dy - joyPADSize, joyPADSize, joyPADSize));
-    viewJoyPAD->GetBackground()->SetSprite("~res:/Gfx/Joypad/joypad", 0);
-    viewJoyPAD->SetStickSprite("~res:/Gfx/Joypad/joypad", 1);
-    AddControl(viewJoyPAD);
-    
-    viewXAngle = 0;
-    viewYAngle = 0;
-    
+   
     DVASSERT(info == NULL);
     info = new UIStaticText(Rect(0, 0, screenRect.dx, 30.f));
     info->SetFont(font);
@@ -105,12 +103,13 @@ void ViewSceneScreen::LoadResources()
 
 void ViewSceneScreen::UnloadResources()
 {
+    scene->RemoveSystem(wasdSystem);
+    scene->RemoveSystem(rotationControllerSystem);
+    SafeDelete(wasdSystem);
+    SafeDelete(rotationControllerSystem);
+
+    SafeRelease(scene);
     SafeRelease(info);
-    
-    SafeRelease(viewJoyPAD);
-    SafeRelease(moveJoyPAD);
-    
-    SafeRelease(camera);
     
     BaseScreen::UnloadResources();
 }
@@ -140,40 +139,16 @@ void ViewSceneScreen::Update(float32 timeElapsed)
 {
     uint64 startTime = SystemTimer::Instance()->GetAbsoluteNano();
 
+    if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SPACE))
+        wasdSystem->SetMoveSpeed(30.f);
+    else
+        wasdSystem->SetMoveSpeed(10.f);
+
     BaseScreen::Update(timeElapsed);
     
     updateTime += (SystemTimer::Instance()->GetAbsoluteNano() - startTime);
 
-    UpdateCamera(timeElapsed);
     UpdateInfo(timeElapsed);
-}
-
-
-void ViewSceneScreen::UpdateCamera(float32 timeElapsed)
-{
-    Vector2 angleJoypadPos = viewJoyPAD->GetDigitalPosition();
-    viewXAngle += angleJoypadPos.x * timeElapsed * 25.0f;
-    viewYAngle += angleJoypadPos.y * timeElapsed * 25.0f;
-    
-    aimUser.Identity();
-    Matrix4 mt, mt2;
-    mt.CreateTranslation(Vector3(0,10,0));
-    aimUser *= mt;
-    mt.CreateRotation(Vector3(0,0,1), DegToRad(viewXAngle));
-    mt2.CreateRotation(Vector3(1,0,0), DegToRad(viewYAngle));
-    mt2 *= mt;
-    aimUser *= mt2;
-    
-    Vector3 dir = Vector3() * aimUser;
-    
-    Vector2 joypadPos = moveJoyPAD->GetDigitalPosition();
-    
-    Vector3 pos = camera->GetPosition();
-    pos += -joypadPos.y * dir * timeElapsed * 4;
-    //pos.y += joypadPos.y * dir.y;
-    
-    camera->SetPosition(pos);
-    camera->SetDirection(dir);
 }
 
 static const float32 INFO_UPDATE_TIME = 1.0f;

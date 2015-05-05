@@ -32,7 +32,11 @@
 
 #include "BaseScreen.h"
 
-using namespace DAVA;
+namespace DAVA
+{
+class RotationControllerSystem;
+class WASDControllerSystem;
+};
 
 class ViewSceneScreen: public BaseScreen
 {
@@ -50,29 +54,21 @@ public:
     virtual void DidAppear();
 
 protected:
-  
     void OnBack(BaseObject *caller, void *param, void *callerData);
-    
-    void UpdateCamera(float32 timeElapsed);
     void UpdateInfo(float32 timeElapsed);
     
-    Camera *camera;
+    DAVA::UIStaticText *info;
     
-    UIJoypad *moveJoyPAD;
-    UIJoypad *viewJoyPAD;
+    DAVA::float32 framesTime;
+    DAVA::uint32 frameCounter;
     
-    UIStaticText *info;
-    
-    Matrix4 aimUser;
-    float32 viewXAngle, viewYAngle;
-    Vector3 targetPosition;
-    
-    float32 framesTime;
-    uint32 frameCounter;
-    
-    
-    uint64 drawTime;
-    uint64 updateTime;
+    DAVA::uint64 drawTime;
+    DAVA::uint64 updateTime;
+
+    DAVA::Scene * scene = nullptr;
+    DAVA::RotationControllerSystem * rotationControllerSystem = nullptr;
+    DAVA::WASDControllerSystem * wasdSystem = nullptr;
+
 };
 
 #endif //__VIEW_SCENE_SCREEN_H__
