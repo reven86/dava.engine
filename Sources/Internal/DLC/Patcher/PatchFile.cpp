@@ -613,7 +613,7 @@ bool PatchFileReader::DoRead()
             lastError = parseError;
 
             // no errors, check if patch file wasn't empty
-            if(NO_ERROR == lastError && 0 == patchPositions.size())
+            if(ERROR_NO == lastError && 0 == patchPositions.size())
             {
                 // patch file without
                 lastError = ERROR_EMPTY_PATCH;
@@ -632,7 +632,7 @@ bool PatchFileReader::Truncate()
 {
     bool ret = false;
 
-    if(nullptr != patchFile && NO_ERROR == parseError && !eof && curPatchIndex < patchPositions.size())
+    if(nullptr != patchFile && ERROR_NO == parseError && !eof && curPatchIndex < patchPositions.size())
     {
         int32 patchPos = patchPositions[curPatchIndex];
         int32 signarutePos = patchPos - davaPatchSignatureSize - sizeof(uint32);
