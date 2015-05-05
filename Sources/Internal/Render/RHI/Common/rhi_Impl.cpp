@@ -298,6 +298,12 @@ SetConst( Handle cb, uint32 constIndex, uint32 constCount, const float* data )
     return (*_Impl.impl_ConstBuffer_SetConst)( cb, constIndex, constCount, data );
 }
 
+bool
+SetConst( Handle cb, uint32 constIndex, uint32 constSubIndex, float data )
+{
+    return (*_Impl.impl_ConstBuffer_SetConst1)( cb, constIndex, constSubIndex, data );
+}
+
 void
 Delete( Handle cb )
 {

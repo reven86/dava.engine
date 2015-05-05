@@ -91,7 +91,7 @@ void NMaterial::BindParams(rhi::Packet& target)
                 if (materialBinding.updateSemantic != materialBinding.source->updateSemantic)
                 {
                     //Logger::Info( " upd-prop " );
-                    rhi::UpdateConstBuffer(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.source->data.get(), ShaderDescriptor::CalculateRegsCount(materialBinding.type, materialBinding.source->arraySize));
+                    rhi::UpdateConstBuffer4fv(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.source->data.get(), ShaderDescriptor::CalculateRegsCount(materialBinding.type, materialBinding.source->arraySize));
                     materialBinding.updateSemantic = materialBinding.source->updateSemantic;
                 }
         }
@@ -436,7 +436,7 @@ void NMaterial::RebuildBindings()
                         else
                         {
                             //just set default property to const buffer
-                            rhi::UpdateConstBuffer(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.defaultValue, propDescr.bufferRegCount);
+                            rhi::UpdateConstBuffer4fv(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.defaultValue, propDescr.bufferRegCount);
                         }
                     }
 

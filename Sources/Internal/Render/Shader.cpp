@@ -102,7 +102,7 @@ void ShaderDescriptor::UpdateDynamicParams()
         if (dynamicBinding.updateSemantic != updateSemantic)
         {
             uint32 arraySize = 1; //for now 1, later move it to something similar to RenderManager::GetDynamicParamArraySize from instancing branch            
-            rhi::UpdateConstBuffer(dynamicBinding.buffer, dynamicBinding.reg, data, CalculateRegsCount(dynamicBinding.type, arraySize));
+            rhi::UpdateConstBuffer4fv(dynamicBinding.buffer, dynamicBinding.reg, data, CalculateRegsCount(dynamicBinding.type, arraySize));
             dynamicBinding.updateSemantic = updateSemantic;
         }
     }

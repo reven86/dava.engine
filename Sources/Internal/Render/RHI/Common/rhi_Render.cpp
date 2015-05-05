@@ -241,9 +241,18 @@ CreateFragmentConstBuffers( HPipelineState rps, uint32 maxCount, HConstBuffer* c
 //------------------------------------------------------------------------------
 
 bool
-UpdateConstBuffer( HConstBuffer constBuf, uint32 constIndex, const float* data, uint32 constCount )
+UpdateConstBuffer4fv( HConstBuffer constBuf, uint32 constIndex, const float* data, uint32 constCount )
 {
     return ConstBuffer::SetConst( constBuf, constIndex, constCount, data );
+}
+
+
+//------------------------------------------------------------------------------
+
+bool
+UpdateConstBuffer1f( HConstBuffer constBuf, uint32 constIndex, uint32 constSubIndex, float data )
+{
+    return ConstBuffer::SetConst( constBuf, constIndex, constSubIndex, data );
 }
 
 
