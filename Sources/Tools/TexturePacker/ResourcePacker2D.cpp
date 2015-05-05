@@ -237,7 +237,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 	int height = cropped_data.layer_height;
 		
 	DefinitionFile * defFile = new DefinitionFile;
-	defFile->filename = FilePath::CreateWithNewExtension(psdNameWithoutExtension, ".txt");
+	defFile->filename = psdNameWithoutExtension + ".txt";
 
 	defFile->spriteWidth = width;
 	defFile->spriteHeight = height;
@@ -504,7 +504,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 	{
         String flagsString;
         Merge(currentCommandFlags, ' ', flagsString);
-        Logger::Info("[%d files packed with flags: %s]", (int)definitionFileList.size(), flagsString);
+        Logger::Info("[%d files packed with flags: %s]", (int)definitionFileList.size(), flagsString.c_str());
 	
         const char* result = (modified && !definitionFileList.empty()) ? "[REPACKED]" : "[unchanged]";
 		Logger::Info("[%s - %.2lf secs] - %s", inputPath.GetAbsolutePathname().c_str(), (float64)packTime / 1000.0f, result);
