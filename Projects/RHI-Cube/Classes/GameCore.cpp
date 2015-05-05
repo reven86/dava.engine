@@ -651,6 +651,57 @@ void GameCore::SetupTank()
 
 void GameCore::OnAppStarted()
 {
+/*
+{
+    File*   file = File::CreateFromSystemPath( "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", File::OPEN|File::READ );
+    
+    if( file )
+    {
+        rhi::ShaderSource   vp;
+        uint32              sz = file->GetSize();
+        char                buf[64*1024];
+
+        DVASSERT(sz < sizeof(buf));
+        file->Read( buf, sz );
+        buf[sz] = '\0';
+
+
+        std::vector<std::string>    defines;
+        
+        defines.push_back( "VERTEX_LIT" );
+        defines.push_back( "1" );
+        if( vp.Construct( rhi::PROG_VERTEX, buf, defines ) )
+        {
+            vp.Dump();
+        }
+    }
+}
+{
+    File*   file = File::CreateFromSystemPath( "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-fp.cg", File::OPEN|File::READ );
+    
+    if( file )
+    {
+        rhi::ShaderSource   fp;
+        uint32              sz = file->GetSize();
+        char                buf[64*1024];
+
+        DVASSERT(sz < sizeof(buf));
+        file->Read( buf, sz );
+        buf[sz] = '\0';
+
+
+        std::vector<std::string>    defines;
+        
+        defines.push_back( "VERTEX_LIT" );
+        defines.push_back( "1" );
+        if( fp.Construct( rhi::PROG_FRAGMENT, buf, defines ) )
+        {
+            fp.Dump();
+        }
+    }
+}
+*/
+
 
     DbgDraw::EnsureInited();
     
