@@ -74,7 +74,6 @@ void EditorFontSystem::SetFont(const String &presetName, const String &locale, F
 
     if (locale == LocalizationSystem::Instance()->GetCurrentLocale())
     {
-        emit BeginUpdatePreset();
         FontManager::Instance()->UnregisterFont(oldFont);
         FontManager::Instance()->RegisterFont(font);
         FontManager::Instance()->SetFontName(font, presetName);
@@ -85,7 +84,6 @@ void EditorFontSystem::SetFont(const String &presetName, const String &locale, F
  
 void EditorFontSystem::LoadLocalizedFonts()
 {
-    emit BeginUpdatePreset();
     ClearAllFonts();
     
     FontManager::Instance()->UnregisterFonts();
@@ -119,7 +117,6 @@ void EditorFontSystem::LoadLocalizedFonts()
 
 void EditorFontSystem::SaveLocalizedFonts()
 {   
-    emit BeginUpdatePreset();
     if(!FileSystem::Instance()->IsDirectory(defaultFontsPath.GetDirectory()))
     {
         FileSystem::Instance()->CreateDirectory(defaultFontsPath.GetDirectory());
@@ -148,8 +145,7 @@ void EditorFontSystem::ClearAllFonts()
 
 void EditorFontSystem::RegisterCurrentLocaleFonts()
 {
-    auto locale = LocalizationSystem::Instance()->GetCurrentLocale();
-    Logger::FrameworkDebug("EditorFontSystem::RegisterCurrentLocaleFonts: locale = %s", locale.c_str());
+    const auto &locale = LocalizationSystem::Instance()->GetCurrentLocale();
     auto it = localizedFonts.find(LocalizationSystem::Instance()->GetCurrentLocale());
     const auto &fonts = it != localizedFonts.end() ? it->second : localizedFonts.at("default");
     FontManager::Instance()->RegisterFonts(fonts);

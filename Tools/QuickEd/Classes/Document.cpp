@@ -2,11 +2,11 @@
 #include <QLineEdit>
 #include <QAction>
 #include <QItemSelection>
-
-#include "Base/BaseTypes.h"
 #include "UI/Preview/EditScreen.h"
 
 #include "UI/Package/PackageModel.h"
+
+#include "UI/Library/LibraryModel.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
@@ -16,10 +16,12 @@
 #include "Model/ControlProperties/PropertiesRoot.h"
 #include "Model/ControlProperties/PropertiesSection.h"
 #include "Model/ControlProperties/ValueProperty.h"
+#include "Model/ControlProperties/LocalizedTextValueProperty.h"
+#include "Model/ControlProperties/FontValueProperty.h"
 
 #include "SharedData.h"
-#include "Ui/QtModelPackageCommandExecutor.h"
 
+#include "Ui/QtModelPackageCommandExecutor.h"
 #include "EditorCore.h"
 
 using namespace DAVA;
@@ -33,8 +35,7 @@ Document::Document(PackageNode *_package, QObject *parent)
 {
     InitSharedData();
     connect(sharedData, &SharedData::DataChanged, this, &Document::SharedDataChanged);
-    connect(GetEditorFontSystem(), &EditorFontSystem::BeginUpdatePreset, this, &Document::BeginUpdatePreset);
-    connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::UpdateFontPreset);
+    connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::UpdateFonts);
 }
 
 void Document::InitSharedData()
@@ -51,9 +52,9 @@ void Document::InitSharedData()
 }
 
 Document::~Document()
-{   
+{
     SafeRelease(package);
-    
+
     SafeRelease(commandExecutor);
 }
 
@@ -61,7 +62,6 @@ const DAVA::FilePath &Document::GetPackageFilePath() const
 {
     return package->GetPackageRef()->GetPath();
 }
-
 
 PropertiesModel *Document::GetPropertiesModel() const
 {
@@ -73,76 +73,76 @@ PackageModel* Document::GetPackageModel() const
     return sharedData->GetData("packageModel").value<PackageModel*>();
 }
 
-void Document::BeginUpdatePreset()
-{
-    BeginUpdateProperty("font");
-}
-
-void Document::UpdateFontPreset()
-{
-    UpdateProperty("font");
-}
-
-void Document::BeginUpdateProperty(const DAVA::String& property)
+void Document::UpdateLanguage()
 {
     PackageControlsNode *controlsNode = package->GetPackageControlsNode();
     for (int32 index = 0; index < controlsNode->GetCount(); ++index)
-    {
-        BeginUpdatePropertyRecuresively(controlsNode->Get(index), property);
-    }
+        UpdateLanguageRecursively(controlsNode->Get(index));
 }
 
-void Document::UpdateProperty(const String &property)
+void Document::UpdateFonts()
 {
     PackageControlsNode *controlsNode = package->GetPackageControlsNode();
     for (int32 index = 0; index < controlsNode->GetCount(); ++index)
-    {
-        UpdatePropertyRecursively(controlsNode->Get(index), property);
-    }
+        UpdateFontsRecursively(controlsNode->Get(index));
 }
 
-void Document::BeginUpdatePropertyRecuresively(ControlNode* node, const DAVA::String& property)
+void Document::UpdateLanguageRecursively(ControlNode *node)
 {
     PropertiesRoot *propertiesRoot = node->GetPropertiesRoot();
     int propertiesCount = propertiesRoot->GetCount();
     for (int index = 0; index < propertiesCount; ++index)
     {
         PropertiesSection *section = dynamic_cast<PropertiesSection*>(propertiesRoot->GetProperty(index));
-        int sectionCount = section->GetCount();
-        for (int prop = 0; prop < sectionCount; ++prop)
+        if (nullptr != section)
         {
-            ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
-            if (property == valueProperty->GetMember()->Name())
+            int sectionCount = section->GetCount();
+            for (int prop = 0; prop < sectionCount; ++prop)
             {
-                valueProperty->SetDefaultValue(valueProperty->GetValue());
+                ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
+                if (nullptr != valueProperty && strcmp(valueProperty->GetMember()->Name(), "text") == 0)
+                {
+                    LocalizedTextValueProperty *textValueProperty = dynamic_cast<LocalizedTextValueProperty*>(valueProperty);
+                    if (nullptr != textValueProperty)
+                    {
+                        textValueProperty->RefreshLocalizedValue();
+                    }
+                }
             }
         }
     }
     for (int index = 0; index < node->GetCount(); ++index)
     {
-        BeginUpdatePropertyRecuresively(node->Get(index), property);
+        UpdateLanguageRecursively(node->Get(index));
     }
 }
 
-void Document::UpdatePropertyRecursively(ControlNode* node, const DAVA::String &property)
+void Document::UpdateFontsRecursively(ControlNode *node)
 {
     PropertiesRoot *propertiesRoot = node->GetPropertiesRoot();
     int propertiesCount = propertiesRoot->GetCount();
     for (int index = 0; index < propertiesCount; ++index)
     {
         PropertiesSection *section = dynamic_cast<PropertiesSection*>(propertiesRoot->GetProperty(index));
-        int sectionCount = section->GetCount();
-        for (int prop = 0; prop < sectionCount; ++prop)
+        if (nullptr != section)
         {
-            ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
-            if (property == valueProperty->GetMember()->Name())
+            int sectionCount = section->GetCount();
+            for (int prop = 0; prop < sectionCount; ++prop)
             {
-                valueProperty->SetValue(valueProperty->GetDefaultValue()); //TODO: here must be ResetValue, but it not work, because clear "replaced" flag
+                ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
+                if (nullptr != valueProperty && strcmp(valueProperty->GetMember()->Name(), "font") == 0)
+                {
+                    FontValueProperty *fontValueProperty = dynamic_cast<FontValueProperty*>(valueProperty);
+                    if (nullptr != fontValueProperty)
+                    {
+                        fontValueProperty->RefreshFontValue();
+                    }
+                }
             }
         }
     }
     for (int index = 0; index < node->GetCount(); ++index)
     {
-        UpdatePropertyRecursively(node->Get(index), property);
+        UpdateFontsRecursively(node->Get(index));
     }
 }

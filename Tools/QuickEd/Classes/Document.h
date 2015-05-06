@@ -2,13 +2,10 @@
 #define __QUICKED_DOCUMENT_H__
 
 #include <QUndoStack>
-#include "Base/BaseTypes.h"
 
 namespace DAVA {
     class FilePath;
-    class VariantType;
 }
-class ValueProperty;
 
 class PackageNode;
 class QtModelPackageCommandExecutor;
@@ -22,13 +19,13 @@ class Document : public QObject
 {
     Q_OBJECT
 public:
-    Document(PackageNode *package, QObject *parent = nullptr);
+    Document(PackageNode *package, QObject *parent = NULL);
 
     virtual ~Document();
-    
+
     const DAVA::FilePath &GetPackageFilePath() const;
     PackageNode *GetPackage() const;
-    
+
     SharedData *GetContext() const;
     PropertiesModel *GetPropertiesModel() const; //TODO: this is deprecated
     PackageModel* GetPackageModel() const; //TODO: this is deprecated
@@ -38,15 +35,13 @@ public:
 signals:
     void SharedDataChanged(const QByteArray &role);
 public slots:
-    void BeginUpdatePreset();
-    void UpdateFontPreset();
+    void UpdateLanguage();
+    void UpdateFonts();
 
-    void BeginUpdateProperty(const DAVA::String &property);
-    void UpdateProperty(const DAVA::String &property);
 private:
-
-    static void BeginUpdatePropertyRecuresively(ControlNode* node, const DAVA::String &property);
-    static void UpdatePropertyRecursively(ControlNode* node, const DAVA::String &property);
+    void UpdateLanguageRecursively(ControlNode *node);
+    void UpdateFontsRecursively(ControlNode *node);
+    void UpdateControlCanvas();
     void InitSharedData();
 
 private:
@@ -63,9 +58,9 @@ inline QUndoStack *Document::GetUndoStack() const
     return undoStack;
 }
 
-inline PackageNode *Document::GetPackage() const 
+inline PackageNode *Document::GetPackage() const
 {
-    return package; 
+    return package;
 }
 
 inline QtModelPackageCommandExecutor *Document::GetCommandExecutor() const

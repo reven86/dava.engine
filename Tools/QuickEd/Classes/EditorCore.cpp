@@ -155,12 +155,10 @@ void EditorCore::OnCurrentTabChanged(int index)
 
 void EditorCore::UpdateLanguage()
 {
-    project->GetEditorFontSystem()->BeginUpdatePreset();
     project->GetEditorFontSystem()->RegisterCurrentLocaleFonts();
     for(auto &document : documents)
     {
-        document->BeginUpdateProperty("text");
-        document->UpdateProperty("text");
+        document->UpdateLanguage();
     }
 }
 
