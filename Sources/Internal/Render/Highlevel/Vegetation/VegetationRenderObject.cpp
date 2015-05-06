@@ -126,8 +126,6 @@ inline uint32 MapCellSquareToResolutionIndex(uint32 cellSquare)
     
     return index;
 }
-
-
     
 VegetationRenderObject::VegetationRenderObject() :
     heightmap(nullptr),
@@ -1337,8 +1335,7 @@ void VegetationRenderObject::GenerateDensityMapFromTransparencyMask(FilePath lig
             DVASSERT(lightmapImage->GetPixelFormat() == FORMAT_RGBA8888);
             DVASSERT(ratio > 0);
             
-            if(ratio > 0 &&
-               lightmapImage->GetPixelFormat() == FORMAT_RGBA8888)
+            if(ratio > 0 && lightmapImage->GetPixelFormat() == FORMAT_RGBA8888)
             {
                 densityMapBits.resize(DENSITY_MAP_SIZE * DENSITY_MAP_SIZE);
                 uint32 stride = sizeof(uint32);

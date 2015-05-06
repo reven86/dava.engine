@@ -40,8 +40,6 @@
 
 namespace DAVA
 {
-//static const float32 MAX_ROTATION_ANGLE = 180.0f;
-//static const float32 HEIGHT_VARIATION = 0.2f;
 
 void VegetationGeometry::CustomGeometryLayerData::BuildBBox()
 {
@@ -351,14 +349,11 @@ void VegetationGeometry::GenerateClusterPositionData(const Vector<VegetationLaye
             float32 randomX = unitSize.x * (float32)Random::Instance()->RandFloat();
             float32 randomY = unitSize.y * (float32)Random::Instance()->RandFloat();
             
-            
-            
-            
             clusters.push_back(ClusterPositionData());
             ClusterPositionData& cluster = clusters[clusters.size() - 1];
             
             cluster.pos = Vector3((matrixCellX * unitSize.x) + randomX,
-                                  (matrixCellY * unitSize.y) + randomY,
+                (matrixCellY * unitSize.y) + randomY,
                                   0.0f);
             cluster.rotation = layerParamsData.instanceRotationVariation * ((float32)Random::Instance()->RandFloat() - 0.5f);
             cluster.scale = 1.0f - layerParamsData.instanceScaleVariation * (float32)Random::Instance()->RandFloat();
@@ -371,7 +366,7 @@ void VegetationGeometry::GenerateClusterPositionData(const Vector<VegetationLaye
 }
 
 void VegetationGeometry::GenerateClusterResolutionData(uint32 resolutionId, const Vector<VegetationLayerParams>& layerClusterCount, const Vector<ClusterPositionData>& clusterPosition,
-                                                               const Vector<VertexRangeData>& layerRanges, Vector<ClusterResolutionData>& clusterResolution)
+                                                                            const Vector<VertexRangeData>& layerRanges, Vector<ClusterResolutionData>& clusterResolution)
 {
     uint32 layerCount = static_cast<uint32>(layerRanges.size());
     uint32 totalClusterCountInResolution = 0;
@@ -432,7 +427,7 @@ uint32 VegetationGeometry::PrepareResolutionId(uint32 currentResolutionId, uint3
 }
 
 void VegetationGeometry::GenerateVertexData(const Vector<CustomGeometryEntityData>& sourceGeomData, const Vector<ClusterResolutionData>& clusterResolution,
-                                                    Vector<VegetationVertex>& vertexData, Vector<BufferCellData>& cellOffsets)
+                                                  Vector<VegetationVertex>& vertexData, Vector<BufferCellData>& cellOffsets)
 {
     cellOffsets.clear();
     
@@ -468,19 +463,9 @@ void VegetationGeometry::GenerateVertexData(const Vector<CustomGeometryEntityDat
         
         const CustomGeometryLayerData& clusterGeometry = sourceGeomData[clusterData.position.layerId].lods[clusterData.effectiveResolutionId];
         
-        Scale(clusterGeometry.pivot,
-              clusterData.position.scale,
-              clusterGeometry.sourcePositions,
-              clusterGeometry.sourceNormals,
-              scaledVertices,
-              scaledNormals);
+        Scale(clusterGeometry.pivot, clusterData.position.scale, clusterGeometry.sourcePositions, clusterGeometry.sourceNormals, scaledVertices, scaledNormals);
         
-        
-        Rotate(clusterData.position.rotation,
-               scaledVertices,
-               scaledNormals,
-               transformedVertices,
-               transformedNormals);
+        Rotate(clusterData.position.rotation, scaledVertices, scaledNormals, transformedVertices, transformedNormals);
 
         size_t vertexCount = clusterGeometry.sourcePositions.size();
         for(size_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
@@ -609,9 +594,7 @@ void VegetationGeometry::GenerateIndexData(const Vector<CustomGeometryEntityData
     
     for(uint32 cameraPositionIndex = 0; cameraPositionIndex < cameraPositionCount; ++cameraPositionIndex)
     {
-        GenerateSortedClusterIndexData(cameraPositions[cameraPositionIndex],
-                                       sortDataArray,
-                                       vertexData);
+        GenerateSortedClusterIndexData(cameraPositions[cameraPositionIndex], sortDataArray, vertexData);
         
         SortBufferData bufferData;
         bufferData.sortDirection = boundingBox.GetCenter() - cameraPositions[cameraPositionIndex];
@@ -634,9 +617,7 @@ void VegetationGeometry::GenerateIndexData(const Vector<CustomGeometryEntityData
 void VegetationGeometry::GenerateSortedClusterIndexData(Vector3& cameraPosition, Vector<PolygonSortData>& sourceIndices, Vector<VegetationVertex>& vertexData)
 {
     size_t sortedIndicesCount = sourceIndices.size();
-    for(size_t sortItemIndex = 0;
-        sortItemIndex < sortedIndicesCount;
-        ++sortItemIndex)
+    for(size_t sortItemIndex = 0; sortItemIndex < sortedIndicesCount; ++sortItemIndex)
     {
         PolygonSortData& sortData = sourceIndices[sortItemIndex];
         sortData.cameraDistance = FLT_MAX;
