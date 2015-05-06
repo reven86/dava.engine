@@ -35,7 +35,8 @@
 #include "Render/3D/AnimatedMesh.h"
 #include "Render/Image/Image.h"
 #include "Render/Highlevel/RenderSystem.h"
-
+#include "Render/RenderOptions.h"
+#include "Render/MipmapReplacer.h"
 
 #include "Platform/SystemTimer.h"
 #include "FileSystem/FileSystem.h"
@@ -127,6 +128,9 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     SetGlobalMaterial(NULL);
     
     SceneCache::Instance()->InsertScene(this);
+
+    RenderOptions * options = RenderManager::Instance()->GetOptions();
+    options->AddObserver(this);
 }
 
 void Scene::CreateComponents()
@@ -370,6 +374,8 @@ void Scene::CreateSystems()
 
 Scene::~Scene()
 {
+    RenderManager::Instance()->GetOptions()->RemoveObserver(this);
+
     SceneCache::Instance()->RemoveScene(this);
     
 	for (Vector<AnimatedMesh*>::iterator t = animatedMeshes.begin(); t != animatedMeshes.end(); ++t)
@@ -761,17 +767,6 @@ void Scene::Update(float timeElapsed)
     
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
-    bool needShowStaticOcclusion = RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION);
-    if (needShowStaticOcclusion&&!staticOcclusionDebugDrawSystem)
-    {
-        staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
-        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
-    }else if (!needShowStaticOcclusion&&staticOcclusionDebugDrawSystem)
-    {
-        RemoveSystem(staticOcclusionDebugDrawSystem);
-        SafeDelete(staticOcclusionDebugDrawSystem);
-    }
-
     uint32 size = (uint32)systemsToProcess.size();
     for (uint32 k = 0; k < size; ++k)
     {
@@ -1150,5 +1145,41 @@ void Scene::Input(DAVA::UIEvent *event)
         system->Input(event);
     }
 }
+
+void Scene::HandleEvent(Observable * observable)
+{
+    RenderOptions * options = dynamic_cast<RenderOptions *>(observable);
+    if (options->IsOptionEnabled(RenderOptions::REPLACE_LIGHTMAP_MIPMAPS))
+        MipMapReplacer::ReplaceMipMaps(this, NMaterial::TEXTURE_LIGHTMAP);
+    if (options->IsOptionEnabled(RenderOptions::REPLACE_ALBEDO_MIPMAPS))
+        MipMapReplacer::ReplaceMipMaps(this, NMaterial::TEXTURE_ALBEDO);
+
+    if (options->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
+    {
+        staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
+        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
+    }
+    else if (!options->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && staticOcclusionDebugDrawSystem)
+    {
+        RemoveSystem(staticOcclusionDebugDrawSystem);
+        SafeDelete(staticOcclusionDebugDrawSystem);
+    }
+}
     
+void Scene::Activate()
+{
+    for(auto system : systems)
+    {
+        system->Activate();
+    }
+}
+
+void Scene::Deactivate()
+{
+    for(auto system : systems)
+    {
+        system->Deactivate();
+    }
+}
+
 };

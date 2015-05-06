@@ -230,6 +230,21 @@ bool DavaGLWidget::IsInitialized() const
     return isInitialized;
 }
 
+void DavaGLWidget::MakeInvisible()
+{
+    setWindowFlags( Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint | Qt::Tool );    // Remove border
+#ifdef Q_OS_WIN
+   setAttribute( Qt::WA_DontShowOnScreen );             // Under OS X gl widget will be not initialized with this flag
+#endif
+    setAttribute( Qt::WA_TranslucentBackground );       // Transparent background
+    setAttribute( Qt::WA_TransparentForMouseEvents );   // Rethrow mouse events
+    setAttribute( Qt::WA_ShowWithoutActivating );       // Do not get focus
+    setWindowOpacity( 0.0 );
+    setFixedSize( 1, 1 );
+    setEnabled( false );
+    move( 0, 0 );
+}
+
 void DavaGLWidget::OnWindowExposed()
 {
     disconnect( openGlWindow.data(), &OpenGLWindow::Exposed, this, &DavaGLWidget::OnWindowExposed );
