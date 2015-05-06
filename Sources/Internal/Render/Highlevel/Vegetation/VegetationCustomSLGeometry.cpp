@@ -283,9 +283,10 @@ void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderData
     {
         NMaterial* material = customGeometryData[0].material;
         renderData->SetMaterial(material);
-
+#if RHI_COMPLETE
         material->AddFlag(VegetationPropertyNames::FLAG_GRASS_OPAQUE, 1);
         material->AddFlag(VegetationPropertyNames::FLAG_GRASS_TRANSFORM_WAVE, 1);
+
 
         FastNameSet::iterator end = materialFlags.end();
         for (FastNameSet::iterator it = materialFlags.begin(); it != end; ++it)
@@ -295,6 +296,7 @@ void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderData
 
         Vector4 worldSize4(worldSize.x, worldSize.y, worldSize.z, 0.f);
         material->AddProperty(VegetationPropertyNames::UNIFORM_WORLD_SIZE, worldSize4.data, rhi::ShaderProp::TYPE_FLOAT4);
+#endif // RHI_COMPLETE
     }
     //fill in metrics data
     size_t layerCount = customGeometryData.size();
