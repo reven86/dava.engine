@@ -39,8 +39,7 @@
 namespace DAVA
 {
 
-typedef int32 VegetationIndex;
-#define VEGETATION_INDEX_TYPE EIF_32
+typedef uint16 VegetationIndex;
 
 struct VegetationVertex
 {
@@ -60,16 +59,13 @@ struct VegetationVertex
 struct VegetationSortedBufferItem
 {
     Vector3 sortDirection;
-#if RHI_COMPLETE
-    RenderDataObject* rdo;
-    RenderDataObject* rdoAttachment;    
-        
-    inline VegetationSortedBufferItem();
-    inline VegetationSortedBufferItem(const VegetationSortedBufferItem& src);
-    inline ~VegetationSortedBufferItem();
-    inline void SetRenderDataObject(RenderDataObject* dataObject);
-    inline void SetRenderDataObjectAttachment(RenderDataObject* dataObject);
-#endif // RHI_COMPLETE
+
+    rhi::HVertexBuffer vertexBuffer;
+    uint32 vertexCount;
+    uint32 vertexBase;
+    rhi::HIndexBuffer indexBuffer;
+    uint32 startIndex;
+    uint32 indexCount;
 };
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -100,14 +96,10 @@ public:
 
     inline Vector<VegetationVertex>& GetVertices();
     inline Vector<VegetationIndex>& GetIndices();
-#if RHI_COMPLETE
-    inline RenderDataObject* GetRenderDataObject();
-#endif  // RHI_COMPLETE
     inline Vector<Vector<Vector<VegetationSortedBufferItem> > >& GetIndexBuffers();
     inline NMaterial* GetMaterial();
     inline void SetMaterial(NMaterial* mat);
-    
-    void CreateRenderData();
+
     void ReleaseRenderData();
     
     Vector<Vector<uint32> > instanceCount; //layer - lod
@@ -119,9 +111,6 @@ private:
     NMaterial* material;
     Vector<VegetationVertex> vertexData;
     Vector<VegetationIndex> indexData;
-#if RHI_COMPLETE
-    RenderDataObject* vertexRenderDataObject;
-#endif RHI_COMPLETE
     Vector<Vector<Vector<VegetationSortedBufferItem> > > indexRenderDataObject; //resolution - cell - direction
 };
 
@@ -136,12 +125,6 @@ inline Vector<VegetationIndex>& VegetationRenderData::GetIndices()
 {
     return indexData;
 }
-#if RHI_COMPLETE
-inline RenderDataObject* VegetationRenderData::GetRenderDataObject()
-{
-    return vertexRenderDataObject;
-}
-#endif RHI_COMPLETE
 
 inline Vector<Vector<Vector<VegetationSortedBufferItem> > >& VegetationRenderData::GetIndexBuffers()
 {
@@ -162,46 +145,6 @@ inline void VegetationRenderData::SetMaterial(NMaterial* mat)
     }
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-
-#if RHI_COMPLETE
-inline VegetationSortedBufferItem::VegetationSortedBufferItem()
-{
-    rdo = NULL;
-    rdoAttachment = NULL;
-}
-
-inline VegetationSortedBufferItem::VegetationSortedBufferItem(const VegetationSortedBufferItem& src)
-{
-    rdo = SafeRetain(src.rdo);
-    rdoAttachment = SafeRetain(src.rdoAttachment);
-    sortDirection = src.sortDirection;
-}
-
-inline VegetationSortedBufferItem::~VegetationSortedBufferItem()
-{
-    SafeRelease(rdoAttachment);
-    SafeRelease(rdo);
-}
-
-inline void VegetationSortedBufferItem::SetRenderDataObject(RenderDataObject* dataObject)
-{
-    if(dataObject != rdo)
-    {
-        SafeRelease(rdo);
-        rdo = SafeRetain(dataObject);
-    }
-}
-
-inline void VegetationSortedBufferItem::SetRenderDataObjectAttachment(RenderDataObject* dataObject)
-{
-    if(dataObject != rdoAttachment)
-    {
-        SafeRelease(rdoAttachment);
-        rdoAttachment = SafeRetain(dataObject);
-    }
-}
-#endif // RHI_COMPLETE
 };
 
 #endif /* defined(__Framework__VegetationRenderData__) */

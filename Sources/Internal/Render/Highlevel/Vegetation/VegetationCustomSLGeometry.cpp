@@ -37,6 +37,7 @@
 #include "Render/Highlevel/Vegetation/VegetationPropertyNames.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Render/Texture.h"
 
 namespace DAVA
 {
@@ -46,10 +47,8 @@ namespace DAVA
 
 void VegetationCustomSLGeometry::CustomMaterialTransformer::TransformMaterialOnCreate(NMaterial* mat)
 {
-#if RHI_COMPLETE
     mat->AddNodeFlags(DataNode::NodeRuntimeFlag);
-    mat->SetRenderLayers(1 << RENDER_LAYER_VEGETATION_ID);
-#endif  // RHI_COMPLETE
+    //mat->SetRenderLayers(1 << RENDER_LAYER_VEGETATION_ID);  //RHI_COMPLETE render layer for material
 }
 
 void VegetationCustomSLGeometry::CustomGeometryLayerData::BuildBBox()
@@ -163,8 +162,7 @@ VegetationCustomSLGeometry::~VegetationCustomSLGeometry()
 {
 }
 
-void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderDataArray,
-                                       const FastNameSet& materialFlags)
+void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderDataArray, const FastNameSet& materialFlags)
 {
     renderDataArray.clear();
     
@@ -184,59 +182,40 @@ void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderData
     
     Vector<ClusterPositionData> clusterPositions;
     Vector<VertexRangeData> layerClusterRanges;
-    
-    GenerateClusterPositionData(maxClusters,
-                                clusterPositions,
-                                layerClusterRanges);
+    GenerateClusterPositionData(maxClusters, clusterPositions, layerClusterRanges);
     
     Vector<Vector<Vector<SortBufferData> > > resolutionDataArray;
-    for(uint32 resolutionIndex = 0;
-        resolutionIndex < resolutionCount;
-        ++resolutionIndex)
+    for(uint32 resolutionIndex = 0; resolutionIndex < resolutionCount; ++resolutionIndex)
     {
         resolutionDataArray.push_back(Vector<Vector<SortBufferData> >());
         Vector<Vector<SortBufferData> >& cellDataArray = resolutionDataArray[resolutionDataArray.size() - 1];
     
         Vector<ClusterResolutionData> clusterResolution;
         Vector<BufferCellData> cellOffsets;
-        
-        GenerateClusterResolutionData(resolutionIndex,
-                                      maxClusters,
-                                      clusterPositions,
-                                      layerClusterRanges,
-                                      clusterResolution);
+        GenerateClusterResolutionData(resolutionIndex, maxClusters, clusterPositions, layerClusterRanges, clusterResolution);
+
         std::stable_sort(clusterResolution.begin(), clusterResolution.end(), ClusterByMatrixCompareFunction);
         
-        GenerateVertexData(customGeometryData,
-                           clusterResolution,
-                           vertexData,
-                           cellOffsets);
+        GenerateVertexData(customGeometryData, clusterResolution, vertexData, cellOffsets);
         
         size_t cellCount = cellOffsets.size();
         for(size_t cellIndex = 0; cellIndex < cellCount; ++cellIndex)
         {
             cellDataArray.push_back(Vector<SortBufferData>());
             Vector<SortBufferData>& directionOffsets = cellDataArray[cellDataArray.size() - 1];
-            GenerateIndexData(customGeometryData,
-                              clusterResolution,
-                              cellOffsets[cellIndex],
-                              vertexData,
-                              indexData,
-                              directionOffsets);
+            GenerateIndexData(customGeometryData, clusterResolution, cellOffsets[cellIndex], vertexData, indexData, directionOffsets);
         }
     }
-#if RHI_COMPLETE    
-    RenderDataObject* vertexRDO = new RenderDataObject();
-    vertexRDO->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].coord));
-    vertexRDO->SetStream(EVF_NORMAL, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].normal));
-    vertexRDO->SetStream(EVF_BINORMAL, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].binormal));
-    vertexRDO->SetStream(EVF_TANGENT, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].tangent));
-    vertexRDO->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, sizeof(VegetationVertex), &(vertexData[0].texCoord0));
-    vertexRDO->BuildVertexBuffer(static_cast<int32>(vertexData.size()), BDT_STATIC_DRAW, true);
-#endif RHI_COMPLETE
     
+    uint32 vertexBufferSize = vertexData.size() * sizeof(VegetationVertex);
+    rhi::HVertexBuffer vertexBuffer = rhi::CreateVertexBuffer(vertexBufferSize);
+    rhi::UpdateVertexBuffer(vertexBuffer, &vertexData.front(), 0, vertexBufferSize);
+
+    uint32 indexBufferSize = indexData.size() * sizeof(VegetationIndex);
+    rhi::HIndexBuffer indexBuffer = rhi::CreateIndexBuffer(indexBufferSize);
+    rhi::UpdateIndexBuffer(indexBuffer, &indexData.front(), 0, indexBufferSize);
+
     Vector<Vector<Vector<VegetationSortedBufferItem> > >& indexBuffers = renderData->GetIndexBuffers();
-    
     for(size_t resolutionIndex = 0; resolutionIndex < resolutionCount; ++resolutionIndex)
     {
         Vector<Vector<SortBufferData> >& sortedIndexBuffers = resolutionDataArray[resolutionIndex];
@@ -259,44 +238,37 @@ void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderData
                 
                 sortedIndexBufferItems.push_back(VegetationSortedBufferItem());
                 VegetationSortedBufferItem& sortBufferItem = sortedIndexBufferItems[directionIndex];
-#if RHI_COMPLETE
-                RenderDataObject* indexBuffer = new RenderDataObject();
-                indexBuffer->SetIndices(VEGETATION_INDEX_TYPE, (uint8*)(&indexData[sortData.indexOffset]), sortData.size);
-                
-                sortBufferItem.SetRenderDataObject(indexBuffer);
-                sortBufferItem.SetRenderDataObjectAttachment(vertexRDO);
+
+                sortBufferItem.vertexBuffer = vertexBuffer;
+                sortBufferItem.vertexCount = vertexData.size();
+                sortBufferItem.vertexBase = 0;
+                sortBufferItem.indexBuffer = indexBuffer;
+                sortBufferItem.startIndex = sortData.indexOffset;
+                sortBufferItem.indexCount = sortData.size;
+
                 sortBufferItem.sortDirection = sortData.sortDirection;
-                
-                sortBufferItem.rdo->BuildIndexBuffer(BDT_STATIC_DRAW, true);
-                sortBufferItem.rdo->AttachVertices(vertexRDO);
-                
-                SafeRelease(indexBuffer);
-#endif //RHI_COMPLETE
             }
         }
     }
-#if RHI_COMPLETE    
-    SafeRelease(vertexRDO);
-#endif
 
     // RHI_COMPLETE - note: copy-paste form VegetationCustomGeometry
     {
         NMaterial* material = customGeometryData[0].material;
         renderData->SetMaterial(material);
-#if RHI_COMPLETE
-        material->AddFlag(VegetationPropertyNames::FLAG_GRASS_OPAQUE, 1);
-        material->AddFlag(VegetationPropertyNames::FLAG_GRASS_TRANSFORM_WAVE, 1);
+
+        material->SetFlag(VegetationPropertyNames::FLAG_GRASS_OPAQUE, 1);
+        material->SetFlag(VegetationPropertyNames::FLAG_GRASS_TRANSFORM_WAVE, 1);
+        //material->SetRenderLayers(1 << RENDER_LAYER_VEGETATION_ID); //RHI_COMPLETE render layer for material
 
 
         FastNameSet::iterator end = materialFlags.end();
         for (FastNameSet::iterator it = materialFlags.begin(); it != end; ++it)
         {
-            material->AddFlag(it->first, 1);
+            material->SetFlag(it->first, 1);
         }
 
         Vector4 worldSize4(worldSize.x, worldSize.y, worldSize.z, 0.f);
         material->AddProperty(VegetationPropertyNames::UNIFORM_WORLD_SIZE, worldSize4.data, rhi::ShaderProp::TYPE_FLOAT4);
-#endif // RHI_COMPLETE
     }
     //fill in metrics data
     size_t layerCount = customGeometryData.size();
@@ -323,7 +295,6 @@ void VegetationCustomSLGeometry::Build(Vector<VegetationRenderData*>& renderData
 
 void VegetationCustomSLGeometry::OnVegetationPropertiesChanged(Vector<VegetationRenderData*>& renderDataArray, KeyedArchive* props)
 {
-#if RHI_COMPLETE
     NMaterial* mat = renderDataArray[0]->GetMaterial();
     
     if(mat)
@@ -332,24 +303,25 @@ void VegetationCustomSLGeometry::OnVegetationPropertiesChanged(Vector<Vegetation
         if(props->IsKeyExists(lightmapKeyName))
         {
             FilePath lightmapPath = props->GetString(lightmapKeyName);
-            mat->SetTexture(VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP, lightmapPath);
+            mat->SetTexture(VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP, ScopedPtr<Texture>(Texture::CreateFromFile(lightmapPath)));
         }
         
         String heightmapKeyName = NMaterialTextureName::TEXTURE_HEIGHTMAP.c_str();
         if(props->IsKeyExists(heightmapKeyName))
         {
             Texture* heightmap = (Texture*)props->GetUInt64(heightmapKeyName);
-            mat->SetTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightmap);
+            mat->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightmap);
         }
         
         String heightmapScaleKeyName = VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE.c_str();
         if(props->IsKeyExists(heightmapScaleKeyName))
         {
             Vector2 heightmapScale = props->GetVector2(heightmapScaleKeyName);
-            mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE,
-                                  Shader::UT_FLOAT_VEC2,
-                                  1,
-                                  heightmapScale.data);
+            Vector4 heightmapScaleProp(heightmapScale.x, heightmapScale.y, 0.f, 0.f);
+            if (mat->HasLocalProperty(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE))
+                mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE, heightmapScale.data);
+            else
+                mat->AddProperty(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE, heightmapScale.data, rhi::ShaderProp::TYPE_FLOAT4);
         }
         
         String densityMapPathKey = VegetationPropertyNames::UNIFORM_SAMPLER_DENSITYMAP.c_str();
@@ -357,15 +329,12 @@ void VegetationCustomSLGeometry::OnVegetationPropertiesChanged(Vector<Vegetation
         {
             FilePath densityMapPath = props->GetString(densityMapPathKey);
             densityMapPath.ReplaceExtension(".tex");
-            mat->SetTexture(VegetationPropertyNames::UNIFORM_SAMPLER_DENSITYMAP, densityMapPath);
+            mat->SetTexture(VegetationPropertyNames::UNIFORM_SAMPLER_DENSITYMAP, ScopedPtr<Texture>(Texture::CreateFromFile(densityMapPath)));
         }
     }
-#endif // RHI_COMPLETE
 }
 
-void VegetationCustomSLGeometry::GenerateClusterPositionData(const Vector<VegetationLayerParams>& layerClusterCount,
-                                 Vector<ClusterPositionData>& clusters,
-                                 Vector<VertexRangeData>& layerRanges)
+void VegetationCustomSLGeometry::GenerateClusterPositionData(const Vector<VegetationLayerParams>& layerClusterCount, Vector<ClusterPositionData>& clusters, Vector<VertexRangeData>& layerRanges)
 {
     clusters.clear();
     
@@ -433,11 +402,8 @@ void VegetationCustomSLGeometry::GenerateClusterPositionData(const Vector<Vegeta
     }
 }
 
-void VegetationCustomSLGeometry::GenerateClusterResolutionData(uint32 resolutionId,
-                                                               const Vector<VegetationLayerParams>& layerClusterCount,
-                                                               const Vector<ClusterPositionData>& clusterPosition,
-                                                               const Vector<VertexRangeData>& layerRanges,
-                                                               Vector<ClusterResolutionData>& clusterResolution)
+void VegetationCustomSLGeometry::GenerateClusterResolutionData(uint32 resolutionId, const Vector<VegetationLayerParams>& layerClusterCount, const Vector<ClusterPositionData>& clusterPosition,
+                                                               const Vector<VertexRangeData>& layerRanges, Vector<ClusterResolutionData>& clusterResolution)
 {
     uint32 layerCount = static_cast<uint32>(layerRanges.size());
     uint32 totalClusterCountInResolution = 0;
@@ -497,11 +463,8 @@ uint32 VegetationCustomSLGeometry::PrepareResolutionId(uint32 currentResolutionI
     return (isNextResolution) ? nextResolutionId : currentResolutionId;
 }
 
-void VegetationCustomSLGeometry::GenerateVertexData(const Vector<CustomGeometryEntityData>& sourceGeomData,
-                                                    const Vector<ClusterResolutionData>& clusterResolution,
-                                                    
-                                                    Vector<VegetationVertex>& vertexData,
-                                                    Vector<BufferCellData>& cellOffsets)
+void VegetationCustomSLGeometry::GenerateVertexData(const Vector<CustomGeometryEntityData>& sourceGeomData, const Vector<ClusterResolutionData>& clusterResolution,
+                                                    Vector<VegetationVertex>& vertexData, Vector<BufferCellData>& cellOffsets)
 {
     cellOffsets.clear();
     
@@ -585,11 +548,7 @@ void VegetationCustomSLGeometry::GenerateVertexData(const Vector<CustomGeometryE
     cellOffsets.push_back(rangeData);
 }
 
-void VegetationCustomSLGeometry::Rotate(float32 angle,
-                                        const Vector<Vector3>& sourcePositions,
-                                        const Vector<Vector3>& sourceNormals,
-                                        Vector<Vector3>& rotatedPositions,
-                                        Vector<Vector3>& rotatedNormals)
+void VegetationCustomSLGeometry::Rotate(float32 angle, const Vector<Vector3>& sourcePositions, const Vector<Vector3>& sourceNormals, Vector<Vector3>& rotatedPositions, Vector<Vector3>& rotatedNormals)
 {
     rotatedPositions.clear();
     rotatedNormals.clear();
@@ -616,12 +575,8 @@ void VegetationCustomSLGeometry::Rotate(float32 angle,
     }
 }
 
-void VegetationCustomSLGeometry::Scale(const Vector3& clusterPivot,
-                                       float32 scale,
-                                       const Vector<Vector3>& sourcePositions,
-                                       const Vector<Vector3>& sourceNormals,
-                                       Vector<Vector3>& scaledPositions,
-                                       Vector<Vector3>& scaledNormals)
+void VegetationCustomSLGeometry::Scale(const Vector3& clusterPivot, float32 scale, const Vector<Vector3>& sourcePositions, const Vector<Vector3>& sourceNormals,
+                                       Vector<Vector3>& scaledPositions, Vector<Vector3>& scaledNormals)
 {
     scaledPositions.clear();
     scaledNormals.clear();
@@ -638,13 +593,8 @@ void VegetationCustomSLGeometry::Scale(const Vector3& clusterPivot,
     
 }
 
-void VegetationCustomSLGeometry::GenerateIndexData(const Vector<CustomGeometryEntityData>& sourceGeomData,
-                                                   const Vector<ClusterResolutionData>& clusterResolution,
-                                                   const BufferCellData& rangeData,
-                                                 
-                                                   Vector<VegetationVertex>& vertexData,
-                                                   Vector<VegetationIndex>& indexData,
-                                                   Vector<SortBufferData>& directionOffsets)
+void VegetationCustomSLGeometry::GenerateIndexData(const Vector<CustomGeometryEntityData>& sourceGeomData, const Vector<ClusterResolutionData>& clusterResolution, const BufferCellData& rangeData,
+                                                   Vector<VegetationVertex>& vertexData, Vector<VegetationIndex>& indexData, Vector<SortBufferData>& directionOffsets)
 {
     uint32 lastClusterIndex = rangeData.clusterStartIndex + rangeData.clusterCount;
     uint32 vertexIndexOffset = 0;
@@ -658,7 +608,9 @@ void VegetationCustomSLGeometry::GenerateIndexData(const Vector<CustomGeometryEn
         
         for(size_t i = 0; i < clusterIndexCount; ++i)
         {
-            sourceCellIndices.push_back(rangeData.vertexStartIndex + vertexIndexOffset + layerGeometry.sourceIndices[i]);
+            uint32 index = rangeData.vertexStartIndex + vertexIndexOffset + layerGeometry.sourceIndices[i];
+            DVASSERT(index < 65535);
+            sourceCellIndices.push_back((VegetationIndex)index);
         }
         
         vertexIndexOffset += layerGeometry.sourcePositions.size();
@@ -711,9 +663,7 @@ void VegetationCustomSLGeometry::GenerateIndexData(const Vector<CustomGeometryEn
     }
 }
 
-void VegetationCustomSLGeometry::GenerateSortedClusterIndexData(Vector3& cameraPosition,
-                                                              Vector<PolygonSortData>& sourceIndices,
-                                                              Vector<VegetationVertex>& vertexData)
+void VegetationCustomSLGeometry::GenerateSortedClusterIndexData(Vector3& cameraPosition, Vector<PolygonSortData>& sourceIndices, Vector<VegetationVertex>& vertexData)
 {
     size_t sortedIndicesCount = sourceIndices.size();
     for(size_t sortItemIndex = 0;

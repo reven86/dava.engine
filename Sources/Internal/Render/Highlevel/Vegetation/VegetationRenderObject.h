@@ -224,30 +224,21 @@ private:
     
     inline uint32 MapToResolution(float32 squareDistance);
     
-    inline bool IsNodeEmpty(AbstractQuadTreeNode<VegetationSpatialData>* node,
-                            const Vector<bool>& map) const;
+    inline bool IsNodeEmpty(AbstractQuadTreeNode<VegetationSpatialData>* node, const Vector<bool>& map) const;
     
     void ClearRenderBatches();
     
-    void InitWithFixedGeometry(FastNameSet& materialFlags);
     void InitWithCustomGeometry(FastNameSet& materialFlags);
     
     void SetCustomGeometryPathInternal(const FilePath& path);
     VegetationCustomGeometrySerializationDataPtr LoadCustomGeometryData(SerializationContext* context, KeyedArchive* srcArchive);
     void SaveCustomGeometryData(SerializationContext* context, KeyedArchive* dstArchive, const VegetationCustomGeometrySerializationDataPtr& data);
     
-    void GenerateDensityMapFromTransparencyMask(FilePath lightmapPath,
-                                           Vector<bool>& densityMapBits);
+    void GenerateDensityMapFromTransparencyMask(FilePath lightmapPath, Vector<bool>& densityMapBits);
     Image* LoadSingleImage(const FilePath& path) const;
-    float32 GetMeanAlpha(uint32 x, uint32 y,
-                        uint32 ratio,
-                        uint32 stride,
-                        Image* src) const;
+    float32 GetMeanAlpha(uint32 x, uint32 y, uint32 ratio, uint32 stride, Image* src) const;
     
     void SetDensityMap(const Vector<bool>& densityBits);
-    
-    void PrepareToRenderMultipleMaterials(Camera *camera);
-    void PrepareToRenderSingleMaterial(Camera *camera);
     
     bool IsDataLoadNeeded();
     
