@@ -1,3 +1,12 @@
+#define BLENDING_NONE 0
+#define BLENDING_ALPHABLEND 1
+#define BLENDING_ADDITIVE 2
+
+
+#if BLENDING == BLENDING_ALPHABLEND
+    blending : src=src_alpha dst=inv_src_alpha
+#endif
+
 FPROG_IN_BEGIN
 FPROG_IN_TEXCOORD0(uv,2)
 FPROG_IN_END
@@ -8,7 +17,6 @@ FPROG_OUT_END
 
 DECL_SAMPLER2D(albedo)
 FPROG_BEGIN
-    float4  texColor = FP_TEXTURE2D( albedo, FP_IN(uv) );
-    texColor.a = 1.0;
+    float4  texColor = FP_TEXTURE2D( albedo, FP_IN(uv) );    
     FP_OUT_COLOR = texColor;
 FPROG_END;

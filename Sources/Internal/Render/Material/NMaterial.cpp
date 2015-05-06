@@ -69,7 +69,7 @@ NMaterial::~NMaterial()
 void NMaterial::BindParams(rhi::Packet& target)
 {
     //Logger::Info( "bind-params" );
-    DVASSERT(activeVariantInstance);       //trying to bind config-only material     
+    DVASSERT(activeVariantInstance);       //trying to bind material that was not staged to render
 
     /*set pipeline state*/
     target.renderPipelineState = activeVariantInstance->shader->GetPiplineState();
@@ -571,7 +571,7 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
     if (archive->IsKeyExists("materialTemplate"))
     {
         fxName = FastName(archive->GetString("materialTemplate").c_str());
-    }
+    }    
 
     if (archive->IsKeyExists("textures"))
     {
@@ -586,6 +586,38 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
             SafeRelease(tx);
         }
     }
+
+    if (archive->IsKeyExists("setFlags"))
+    {
+        const Map<String, VariantType*>& flagsMap = archive->GetArchive("setFlags")->GetArchieveData();
+        for (Map<String, VariantType*>::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
+        {
+            AddFlag(FastName(it->first), it->second->AsInt32());
+        }
+    }
+
+    //for now just pad to size
+    /*if (archive->IsKeyExists("properties"))
+    {
+    const Map<String, VariantType*>& propsMap = archive->GetArchive("properties")->GetArchieveData();
+    for (Map<String, VariantType*>::const_iterator it = propsMap.begin();
+    it != propsMap.end();
+    ++it)
+    {
+    if (IsRuntimeProperty(FastName(it->first)))continue;
+
+    const VariantType* propVariant = it->second;
+    DVASSERT(VariantType::TYPE_BYTE_ARRAY == propVariant->type);
+    DVASSERT(propVariant->AsByteArraySize() >= static_cast<int32>(sizeof(uint32) + sizeof(uint32)));
+
+    const uint8* ptr = propVariant->AsByteArray();
+
+    SetPropertyValue(FastName(it->first),
+    *(Shader::eUniformType*)ptr,
+    *(ptr + sizeof(Shader::eUniformType)),
+    ptr + sizeof(Shader::eUniformType) + sizeof(uint8));
+    }
+    }*/
 }
 
 };
