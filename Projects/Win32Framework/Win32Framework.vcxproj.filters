@@ -1821,6 +1821,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.h">
       <Filter>Internal\Render\Image</Filter>
+	</ClInclude>
+	<ClInclude Include="..\..\Sources\Internal\Render\2D\TextLayout.h">
+      <Filter>Internal\Render\2D</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3255,6 +3258,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
+    </ClCompile>
+	<ClCompile Include="..\..\Sources\Internal\Render\2D\TextLayout.cpp">
+      <Filter>Internal\Render\2D</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

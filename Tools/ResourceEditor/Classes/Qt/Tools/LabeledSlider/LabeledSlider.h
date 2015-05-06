@@ -35,44 +35,38 @@
 
 class QLabel;
 class QSlider;
-class LabeledSlider: public QWidget
+class LabeledSlider : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	LabeledSlider(QWidget *parent = 0);
-	~LabeledSlider();
+    LabeledSlider(QWidget *parent = 0);
+    ~LabeledSlider();
 
-    
     void setMinimum(int);
     int minimum() const;
-    
+
     void setMaximum(int);
     int maximum() const;
-    
+
     void setRange(int min, int max);
-    
+
     int value() const;
-    
-Q_SIGNALS:
+
+signals:
     void valueChanged(int value);
 
-    
-public Q_SLOTS:
+public slots:
     void setValue(int);
-    
-    
+
 protected slots:
-    
     void ValueChanged(int value);
     void RangeChanged(int min, int max);
-    
-protected:
-    
-    void InitUI();
-    
-private:
 
+protected:
+    void InitUI();
+
+private:
     QSlider *slider;
     QLabel * minText;
     QLabel * maxText;

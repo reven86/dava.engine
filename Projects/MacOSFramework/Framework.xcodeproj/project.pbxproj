@@ -806,6 +806,8 @@
 		4F34E1C61A234DF8000681BB /* Spinlock.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F34E1C21A234DF8000681BB /* Spinlock.h */; };
 		4F34E1C71A234DF8000681BB /* Spinlock.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F34E1C21A234DF8000681BB /* Spinlock.h */; };
 		4F34E1C81A234DF8000681BB /* Spinlock.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F34E1C21A234DF8000681BB /* Spinlock.h */; };
+		4F503B9D1AEA702B005C3F89 /* MemoryManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D9E1A92446700BDB8A2 /* MemoryManager.cpp */; };
+		4F503B9E1AEA702C005C3F89 /* MemoryManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D9E1A92446700BDB8A2 /* MemoryManager.cpp */; };
 		4F53ED2419A23BE100D3869D /* DLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7E6C58E198255BF00B96D1A /* DLC.cpp */; };
 		4F53ED2519A23BE100D3869D /* DLC.h in Headers */ = {isa = PBXBuildFile; fileRef = D7E6C58F198255BF00B96D1A /* DLC.h */; };
 		4F53ED2619A23BE200D3869D /* DLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7E6C58E198255BF00B96D1A /* DLC.cpp */; };
@@ -1282,6 +1284,12 @@
 		B723648E1A8CEEF0009940BE /* UIComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B723648A1A8CEEF0009940BE /* UIComponent.h */; };
 		B723648F1A8CEEF0009940BE /* UIComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B723648A1A8CEEF0009940BE /* UIComponent.h */; };
 		B72364901A8CEEF0009940BE /* UIComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B723648A1A8CEEF0009940BE /* UIComponent.h */; };
+		B7464C871AEA7BEE00D3AB13 /* TextLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7464C851AEA7BEE00D3AB13 /* TextLayout.cpp */; };
+		B7464C881AEA7BEE00D3AB13 /* TextLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7464C851AEA7BEE00D3AB13 /* TextLayout.cpp */; };
+		B7464C891AEA7BEE00D3AB13 /* TextLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7464C851AEA7BEE00D3AB13 /* TextLayout.cpp */; };
+		B7464C8A1AEA7BEE00D3AB13 /* TextLayout.h in Headers */ = {isa = PBXBuildFile; fileRef = B7464C861AEA7BEE00D3AB13 /* TextLayout.h */; };
+		B7464C8B1AEA7BEE00D3AB13 /* TextLayout.h in Headers */ = {isa = PBXBuildFile; fileRef = B7464C861AEA7BEE00D3AB13 /* TextLayout.h */; };
+		B7464C8C1AEA7BEE00D3AB13 /* TextLayout.h in Headers */ = {isa = PBXBuildFile; fileRef = B7464C861AEA7BEE00D3AB13 /* TextLayout.h */; };
 		B77953CC1A07D528001FB673 /* libunibreak_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B77953CB1A07D528001FB673 /* libunibreak_macos.a */; };
 		B77953CD1A07D52E001FB673 /* libunibreak_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B77953CB1A07D528001FB673 /* libunibreak_macos.a */; };
 		B77953CE1A07D52E001FB673 /* libunibreak_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B77953CB1A07D528001FB673 /* libunibreak_macos.a */; };
@@ -3049,6 +3057,8 @@
 		B4C29D3E199B592D001B83FE /* SceneCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneCache.h; sourceTree = "<group>"; };
 		B72364891A8CEEF0009940BE /* UIComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIComponent.cpp; sourceTree = "<group>"; };
 		B723648A1A8CEEF0009940BE /* UIComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIComponent.h; sourceTree = "<group>"; };
+		B7464C851AEA7BEE00D3AB13 /* TextLayout.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextLayout.cpp; sourceTree = "<group>"; };
+		B7464C861AEA7BEE00D3AB13 /* TextLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextLayout.h; sourceTree = "<group>"; };
 		B77953CB1A07D528001FB673 /* libunibreak_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libunibreak_macos.a; path = ../../Libs/libs/libunibreak_macos.a; sourceTree = "<group>"; };
 		B78601371A08B6170041F817 /* StringUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringUtils.cpp; sourceTree = "<group>"; };
 		B78601381A08B6170041F817 /* StringUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringUtils.h; sourceTree = "<group>"; };
@@ -4701,6 +4711,8 @@
 		E8989C1616BD24E400732C04 /* 2D */ = {
 			isa = PBXGroup;
 			children = (
+				B7464C851AEA7BEE00D3AB13 /* TextLayout.cpp */,
+				B7464C861AEA7BEE00D3AB13 /* TextLayout.h */,
 				024BD5931A2C8371000BECC1 /* Systems */,
 				C172EC0018C9F1E9004309CF /* DFFont.cpp */,
 				C172EC0118C9F1E9004309CF /* DFFont.h */,
@@ -5345,6 +5357,7 @@
 				176DE91D174B5561007A983B /* ObjectFactory.h in Headers */,
 				176DE91E174B5561007A983B /* Observable.h in Headers */,
 				176DE91F174B5561007A983B /* Observer.h in Headers */,
+				B7464C8C1AEA7BEE00D3AB13 /* TextLayout.h in Headers */,
 				B72364901A8CEEF0009940BE /* UIComponent.h in Headers */,
 				176DE920174B5561007A983B /* Radix.h in Headers */,
 				176DE921174B5561007A983B /* RefPtr.h in Headers */,
@@ -5835,6 +5848,7 @@
 				E8989E2F16BD24E500732C04 /* DynamicMemoryFile.h in Headers */,
 				E8989E3116BD24E500732C04 /* File.h in Headers */,
 				E8989E3316BD24E500732C04 /* FileList.h in Headers */,
+				B7464C8A1AEA7BEE00D3AB13 /* TextLayout.h in Headers */,
 				E8989E3516BD24E500732C04 /* FilePath.h in Headers */,
 				02FD7EEC19237DA2007762C0 /* WindComponent.h in Headers */,
 				E8989E3716BD24E500732C04 /* FileSystem.h in Headers */,
@@ -6401,6 +6415,7 @@
 				4F53ED2919A23BE700D3869D /* CurlDownloader.h in Headers */,
 				E898A0DE16BD265400732C04 /* SystemTimer.h in Headers */,
 				D7CC263819C43C7C00A3B754 /* LocalNotificationController.h in Headers */,
+				B7464C8B1AEA7BEE00D3AB13 /* TextLayout.h in Headers */,
 				02FD8270192A3861007762C0 /* WaveComponent.h in Headers */,
 				E898A0E416BD265400732C04 /* Thread.h in Headers */,
 				E89EDE8F1A2E177B0036E993 /* OpenUDIDMacOS.h in Headers */,
@@ -6922,6 +6937,7 @@
 				E89EDE561A2E16FA0036E993 /* AutotestingSystemLua.cpp in Sources */,
 				176DEAB3174B5561007A983B /* MultiTextureEffect.cpp in Sources */,
 				50A3044618575C370082CA8D /* StaticOcclusionRenderPass.cpp in Sources */,
+				B7464C891AEA7BEE00D3AB13 /* TextLayout.cpp in Sources */,
 				176DEAB4174B5561007A983B /* TextureMulColorAlphaTestEffect.cpp in Sources */,
 				176DEAB5174B5561007A983B /* TextureMulColorEffect.cpp in Sources */,
 				176DEABB174B5561007A983B /* MaterialCompiler.cpp in Sources */,
@@ -7064,6 +7080,7 @@
 				176DEB16174B5561007A983B /* UIHierarchyCell.cpp in Sources */,
 				176DEB17174B5561007A983B /* UIHierarchyNode.cpp in Sources */,
 				176DEB18174B5561007A983B /* UIHoleTransition.cpp in Sources */,
+				4F503B9E1AEA702C005C3F89 /* MemoryManager.cpp in Sources */,
 				176DEB19174B5561007A983B /* UIJoypad.cpp in Sources */,
 				11CB615219C3391B00B48A92 /* AnimationData.cpp in Sources */,
 				176DEB1A174B5561007A983B /* UIList.cpp in Sources */,
@@ -7489,6 +7506,7 @@
 				E89EDE781A2E16FA0036E993 /* RectSwig.cpp in Sources */,
 				50B429D31A5A704400CEB3D3 /* Discoverer.cpp in Sources */,
 				50B06920186D4C4C00B44A39 /* RenderLayerManager.cpp in Sources */,
+				B7464C871AEA7BEE00D3AB13 /* TextLayout.cpp in Sources */,
 				E898A01716BD24E500732C04 /* UIHierarchy.cpp in Sources */,
 				641A61DA18CDC2F4003359E7 /* FoliageSystem.cpp in Sources */,
 				D7E6C5A8198255BF00B96D1A /* CurlDownloader.cpp in Sources */,
@@ -7688,6 +7706,7 @@
 				CC0D7B3A1A76055A00309408 /* PathComponent.cpp in Sources */,
 				E898A1C016BD265400732C04 /* Replay.cpp in Sources */,
 				641A61DB18CDC2F4003359E7 /* FoliageSystem.cpp in Sources */,
+				4F503B9D1AEA702B005C3F89 /* MemoryManager.cpp in Sources */,
 				E898A1C116BD265400732C04 /* Stats.cpp in Sources */,
 				E898A1C516BD265400732C04 /* Component.cpp in Sources */,
 				E898A1C616BD265400732C04 /* SceneSystem.cpp in Sources */,
@@ -7940,6 +7959,7 @@
 				E898A2A316BD265400732C04 /* UIScreenManagerMacOS.cpp in Sources */,
 				E898A2A416BD265400732C04 /* UIScreenTransition.cpp in Sources */,
 				E898A2A516BD265400732C04 /* UIScrollBar.cpp in Sources */,
+				B7464C881AEA7BEE00D3AB13 /* TextLayout.cpp in Sources */,
 				02A03DAD1871C49E00FA72CE /* SpeedTreeObject.cpp in Sources */,
 				E898A2A616BD265400732C04 /* UISlider.cpp in Sources */,
 				E898A2A716BD265400732C04 /* UIStaticText.cpp in Sources */,
@@ -8260,7 +8280,7 @@
 					__DAVAENGINE_DEBUG__,
 					DAVA_FMOD,
 				);
-				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_MASTER_OBJECT_FILE = NO;
@@ -8299,7 +8319,7 @@
 					FT2_BUILD_LIBRARY,
 					DAVA_FMOD,
 				);
-				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_MASTER_OBJECT_FILE = NO;

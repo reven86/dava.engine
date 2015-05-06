@@ -205,6 +205,11 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuRecentProjects">
+     <property name="title">
+      <string>Recent Projects</string>
+     </property>
+    </widget>
     <widget class="QMenu" name="menuExport">
      <property name="title">
       <string>Export</string>
@@ -224,6 +229,7 @@
      <addaction name="actionImportSpeedTreeXML"/>
     </widget>
     <addaction name="actionOpenProject"/>
+    <addaction name="menuRecentProjects"/>
     <addaction name="actionCloseProject"/>
     <addaction name="separator"/>
     <addaction name="actionNewScene"/>
@@ -432,6 +438,7 @@
     <addaction name="actionCreateTestSkinnedObject"/>
     <addaction name="actionDeviceList"/>
     <addaction name="actionImageSplitterForNormals"/>
+    <addaction name="actionReplaceTextureMipmap"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -2111,6 +2118,16 @@
   <action name="actionImageSplitterForNormals">
    <property name="text">
     <string>ImageSplitter for Normals</string>
+   </property>
+  </action>
+  <action name="actionReplaceTextureMipmap">
+   <property name="text">
+    <string>Replace Textures mipmaps</string>
+   </property>
+  </action>
+  <action name="action22">
+   <property name="text">
+    <string>22</string>
    </property>
   </action>
  </widget>

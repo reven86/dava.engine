@@ -226,12 +226,11 @@ void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr)
 {
     ::UIView* view = static_cast<::UIView*>(uiviewPtr);
     DVASSERT(view);
-    CGFloat contentScaleFactor =  [HelperAppDelegate GetScale];
+    DAVA::float32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
     
-    size_t w = view.frame.size.width * contentScaleFactor;
-    size_t h = view.frame.size.height * contentScaleFactor;
+    size_t w = view.frame.size.width * scale;
+    size_t h = view.frame.size.height * scale;
     
-    CGFloat scale = [[::UIScreen mainScreen] scale];
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(w, h), NO, scale);
     CGRect rect = CGRectMake(0, 0, w, h);
     [view drawViewHierarchyInRect:rect afterScreenUpdates:YES];
@@ -489,7 +488,7 @@ void WebViewControl::SetRect(const Rect& rect)
     webViewRect.size.height = physicalRect.dy;
 	
 	// Apply the Retina scale divider, if any.
-    DAVA::float32 scaleDivider = [HelperAppDelegate GetScale];
+    DAVA::float32 scaleDivider = Core::Instance()->GetScreenScaleFactor();
 	webViewRect.origin.x /= scaleDivider;
 	webViewRect.origin.y /= scaleDivider;
 	webViewRect.size.height /= scaleDivider;

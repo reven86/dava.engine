@@ -108,7 +108,6 @@
 #include "Classes/Constants.h"
 
 #include "TextureCompression/TextureConverter.h"
-#include "RecentFilesManager.h"
 #include "Deprecated/SceneValidator.h"
 
 #include "Tools/DeveloperTools/DeveloperTools.h"
@@ -127,6 +126,7 @@
 
 #include "Tools/HeightDeltaTool/HeightDeltaTool.h"
 #include "Tools/ColorPicker/ColorPicker.h"
+#include "Settings/SettingsManager.h"
 
 #include "SceneProcessing/SceneProcessor.h"
 #include "QtLayer.h"
@@ -150,12 +150,17 @@ QtMainWindow::QtMainWindow(QWidget *parent)
     , addSwitchEntityDialog(nullptr)
     , hangingObjectsWidget(nullptr)
     , developerTools(new DeveloperTools(this))
+    , recentFiles(Settings::General_RecentFilesCount, Settings::Internal_RecentFiles)
+    , recentProjects(Settings::General_RecentProjectsCount, Settings::Internal_RecentProjects)
 {
     PathDescriptor::InitializePathDescriptors();
     
 	new ProjectManager();
-	new RecentFilesManager();
 	ui->setupUi(this);
+    
+    recentFiles.SetMenu(ui->menuFile);
+    recentProjects.SetMenu(ui->menuRecentProjects);
+    
     
     centralWidget()->setMinimumSize(ui->sceneTabWidget->minimumSize());
     
@@ -224,7 +229,6 @@ QtMainWindow::~QtMainWindow()
 	ui = nullptr;
 
 	ProjectManager::Instance()->Release();
-	RecentFilesManager::Instance()->Release();
 }
 
 Ui::MainWindow* QtMainWindow::GetUI()
@@ -303,7 +307,7 @@ bool QtMainWindow::SaveSceneAs(SceneEditor2 *scene)
 				else
 				{
 					ret = true;
-					AddRecent(scenePath.GetAbsolutePathname().c_str());
+                    recentFiles.Add(scenePath.GetAbsolutePathname());
 				}
 			}
 		}
@@ -450,7 +454,8 @@ void QtMainWindow::SetupMainMenu()
     ui->menuDockWindows->addAction(dockActionEvent->toggleViewAction());
     ui->menuDockWindows->addAction(dockConsole->toggleViewAction());
 
-	InitRecent();
+    recentFiles.InitMenuItems();
+    recentProjects.InitMenuItems();
 }
 
 
@@ -622,7 +627,8 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionSaveSceneAs, SIGNAL(triggered()), this, SLOT(OnSceneSaveAs()));
 	QObject::connect(ui->actionSaveToFolder, SIGNAL(triggered()), this, SLOT(OnSceneSaveToFolder()));
 
-	QObject::connect(ui->menuFile, SIGNAL(triggered(QAction *)), this, SLOT(OnRecentTriggered(QAction *)));
+    QObject::connect(ui->menuFile, &QMenu::triggered, this, &QtMainWindow::OnRecentFilesTriggered);
+    QObject::connect(ui->menuRecentProjects, &QMenu::triggered, this, &QtMainWindow::OnRecentProjectsTriggered);
 
 	// export
 	QObject::connect(ui->menuExport, SIGNAL(triggered(QAction *)), this, SLOT(ExportMenuTriggered(QAction *)));
@@ -772,7 +778,7 @@ void QtMainWindow::SetupActions()
 	}
     
     connect(ui->actionImageSplitterForNormals, &QAction::triggered, developerTools, &DeveloperTools::OnImageSplitterNormals);
-
+    connect(ui->actionReplaceTextureMipmap, &QAction::triggered, developerTools, &DeveloperTools::OnReplaceTextureMipmap);
     
     connect( ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList );
 
@@ -821,35 +827,6 @@ void QtMainWindow::SetupShortCuts()
 #if defined (__DAVAENGINE_WIN32__)
 	connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F4), ui->sceneTabWidget), SIGNAL(activated()), ui->sceneTabWidget, SLOT(TabBarCloseCurrentRequest()));
 #endif
-}
-
-void QtMainWindow::InitRecent()
-{
-	Vector<String> filesList = RecentFilesManager::Instance()->GetRecentFiles();
-
-	foreach(String path, filesList)
-	{
-		if (path.empty())
-		{
-			continue;
-		}
-		QAction *action = ui->menuFile->addAction(path.c_str());
-
-		action->setData(QString(path.c_str()));
-		recentScenes.push_back(action);
-	}
-}
-
-void QtMainWindow::AddRecent(const QString &pathString)
-{
-    while(recentScenes.size())
-    {
-        ui->menuFile->removeAction(recentScenes[0]);
-        recentScenes.removeAt(0);
-    }
-    
-	RecentFilesManager::Instance()->SetFileToRecent(pathString.toStdString());
-	InitRecent();
 }
 
 // ###################################################################################################
@@ -925,11 +902,7 @@ void QtMainWindow::EnableProjectActions(bool enable)
 	ui->dockLibrary->setEnabled(enable);
     ui->actionCloseProject->setEnabled(enable);
     
-    auto endIt = recentScenes.end();
-    for(auto it = recentScenes.begin(); it != endIt; ++it)
-    {
-        (*it)->setEnabled(enable);
-    }
+    recentFiles.EnableMenuItems(enable);
 }
 
 void QtMainWindow::EnableSceneActions(bool enable)
@@ -1073,14 +1046,20 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2 *scene, const Command2* com
 void QtMainWindow::OnProjectOpen()
 {
     FilePath incomePath = ProjectManager::Instance()->ProjectOpenDialog();
-    
-    if(!incomePath.IsEmpty() &&
-       ProjectManager::Instance()->CurProjectPath() != incomePath &&
+    OpenProject(incomePath);
+}
+
+void QtMainWindow::OpenProject(const DAVA::FilePath & projectPath)
+{
+    if(!projectPath.IsEmpty() &&
+       ProjectManager::Instance()->CurProjectPath() != projectPath &&
        ui->sceneTabWidget->CloseAllTabs())
     {
-        ProjectManager::Instance()->ProjectOpen(incomePath);
+        ProjectManager::Instance()->ProjectOpen(projectPath);
+        recentProjects.Add(projectPath.GetAbsolutePathname());
     }
 }
+
 
 void QtMainWindow::OnProjectClose()
 {
@@ -1271,14 +1250,24 @@ void QtMainWindow::OnImportSpeedTreeXML()
 #endif //__DAVAENGINE_SPEEDTREE__
 }
 
-void QtMainWindow::OnRecentTriggered(QAction *recentAction)
+void QtMainWindow::OnRecentFilesTriggered(QAction *recentAction)
 {
-	if(recentScenes.contains(recentAction))
-	{
-		QString path = recentAction->data().toString();
-        OpenScene(path);
-	}
+    DAVA::String path = recentFiles.GetItem(recentAction);
+    if(!path.empty())
+    {
+        OpenScene(QString::fromStdString(path));
+    }
 }
+
+void QtMainWindow::OnRecentProjectsTriggered(QAction *recentAction)
+{
+    DAVA::String path = recentProjects.GetItem(recentAction);
+    if(!path.empty())
+    {
+        OpenProject(path);
+    }
+}
+
 
 void QtMainWindow::OnUndo()
 {
@@ -2672,7 +2661,7 @@ bool QtMainWindow::OpenScene( const QString & path )
 			if(scene && (ui->sceneTabWidget->GetTabCount() == 1))
 			{
 				FilePath path = scene->GetScenePath();
-				if(path.GetFilename() == "newscene1.sc2" && !scene->CanUndo())
+				if(path.GetFilename() == "newscene1.sc2" && !scene->CanUndo() && !scene->IsLoaded())
 				{
 					needCloseIndex = 0;
 				}
@@ -2684,7 +2673,7 @@ bool QtMainWindow::OpenScene( const QString & path )
 
             if(index != -1)
 			{
-				AddRecent(path);
+                recentFiles.Add(path.toStdString());
 
                 // close empty default scene
                 if(-1 != needCloseIndex)

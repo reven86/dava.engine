@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		021414161819851100925E51 /* DAVAClassRegistrator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 021414141819851100925E51 /* DAVAClassRegistrator.cpp */; };
 		021414171819851100925E51 /* DAVAClassRegistrator.h in Headers */ = {isa = PBXBuildFile; fileRef = 021414151819851100925E51 /* DAVAClassRegistrator.h */; };
+		021E56F51ADE773D00648157 /* MipmapReplacer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 021E56F31ADE773D00648157 /* MipmapReplacer.cpp */; };
+		021E56F61ADE773D00648157 /* MipmapReplacer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 021E56F31ADE773D00648157 /* MipmapReplacer.cpp */; };
+		021E56F71ADE773D00648157 /* MipmapReplacer.h in Headers */ = {isa = PBXBuildFile; fileRef = 021E56F41ADE773D00648157 /* MipmapReplacer.h */; };
+		021E56F81ADE773D00648157 /* MipmapReplacer.h in Headers */ = {isa = PBXBuildFile; fileRef = 021E56F41ADE773D00648157 /* MipmapReplacer.h */; };
 		0224B7331598AC2800CDEF9E /* libtheora_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0224B7311598AC2800CDEF9E /* libtheora_ios.a */; };
 		0224B7341598AC2800CDEF9E /* libtheora_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0224B7321598AC2800CDEF9E /* libtheora_macos.a */; };
 		0224B74A1598B40100CDEF9E /* libogg_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0224B7481598B40100CDEF9E /* libogg_ios.a */; };
@@ -1137,6 +1141,10 @@
 		B72364A51A8D01D6009940BE /* UIComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B72364A21A8D01D6009940BE /* UIComponent.cpp */; };
 		B72364A61A8D01D6009940BE /* UIComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B72364A31A8D01D6009940BE /* UIComponent.h */; };
 		B72364A71A8D01D6009940BE /* UIComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B72364A31A8D01D6009940BE /* UIComponent.h */; };
+		B7464C7F1AEA705E00D3AB13 /* TextLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7464C7D1AEA705E00D3AB13 /* TextLayout.cpp */; };
+		B7464C801AEA705E00D3AB13 /* TextLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7464C7D1AEA705E00D3AB13 /* TextLayout.cpp */; };
+		B7464C811AEA705E00D3AB13 /* TextLayout.h in Headers */ = {isa = PBXBuildFile; fileRef = B7464C7E1AEA705E00D3AB13 /* TextLayout.h */; };
+		B7464C821AEA705E00D3AB13 /* TextLayout.h in Headers */ = {isa = PBXBuildFile; fileRef = B7464C7E1AEA705E00D3AB13 /* TextLayout.h */; };
 		B78601481A08EAD40041F817 /* libunibreak_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B78601471A08EAD40041F817 /* libunibreak_ios.a */; };
 		B78601491A08EAE60041F817 /* libunibreak_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B78601471A08EAD40041F817 /* libunibreak_ios.a */; };
 		B786014A1A08EAEB0041F817 /* libfribidi_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C97319C9856B0095250A /* libfribidi_ios.a */; };
@@ -1890,6 +1898,8 @@
 /* Begin PBXFileReference section */
 		021414141819851100925E51 /* DAVAClassRegistrator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DAVAClassRegistrator.cpp; sourceTree = "<group>"; };
 		021414151819851100925E51 /* DAVAClassRegistrator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DAVAClassRegistrator.h; sourceTree = "<group>"; };
+		021E56F31ADE773D00648157 /* MipmapReplacer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MipmapReplacer.cpp; sourceTree = "<group>"; };
+		021E56F41ADE773D00648157 /* MipmapReplacer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MipmapReplacer.h; sourceTree = "<group>"; };
 		0224B7311598AC2800CDEF9E /* libtheora_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtheora_ios.a; path = ../../Libs/libs/libtheora_ios.a; sourceTree = "<group>"; };
 		0224B7321598AC2800CDEF9E /* libtheora_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtheora_macos.a; path = ../../Libs/libs/libtheora_macos.a; sourceTree = "<group>"; };
 		0224B7481598B40100CDEF9E /* libogg_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libogg_ios.a; path = ../../Libs/libs/libogg_ios.a; sourceTree = "<group>"; };
@@ -2211,6 +2221,8 @@
 		B4C29D51199B933F001B83FE /* SceneCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneCache.h; sourceTree = "<group>"; };
 		B72364A21A8D01D6009940BE /* UIComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIComponent.cpp; sourceTree = "<group>"; };
 		B72364A31A8D01D6009940BE /* UIComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIComponent.h; sourceTree = "<group>"; };
+		B7464C7D1AEA705E00D3AB13 /* TextLayout.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextLayout.cpp; sourceTree = "<group>"; };
+		B7464C7E1AEA705E00D3AB13 /* TextLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextLayout.h; sourceTree = "<group>"; };
 		B78601471A08EAD40041F817 /* libunibreak_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libunibreak_ios.a; path = ../../Libs/libs/libunibreak_ios.a; sourceTree = "<group>"; };
 		B786014B1A08EB140041F817 /* StringUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringUtils.cpp; sourceTree = "<group>"; };
 		B786014C1A08EB140041F817 /* StringUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringUtils.h; sourceTree = "<group>"; };
@@ -3765,6 +3777,8 @@
 		E8B3C8F916B9326D002BD35F /* Render */ = {
 			isa = PBXGroup;
 			children = (
+				021E56F31ADE773D00648157 /* MipmapReplacer.cpp */,
+				021E56F41ADE773D00648157 /* MipmapReplacer.h */,
 				84D18BEB19201BDA009E3E90 /* Image */,
 				E8ADAEC618CA1325000B251C /* PixelFormatDescriptor.cpp */,
 				E8ADAEC718CA1325000B251C /* PixelFormatDescriptor.h */,
@@ -3834,6 +3848,8 @@
 		E8B3C8FA16B9326D002BD35F /* 2D */ = {
 			isa = PBXGroup;
 			children = (
+				B7464C7D1AEA705E00D3AB13 /* TextLayout.cpp */,
+				B7464C7E1AEA705E00D3AB13 /* TextLayout.h */,
 				024BD5B41A2C9299000BECC1 /* Systems */,
 				C172EC2218C9F9D4004309CF /* TextBlockDistanceRender.cpp */,
 				C172EC2318C9F9D4004309CF /* TextBlockDistanceRender.h */,
@@ -4564,6 +4580,7 @@
 				02FD7F861924997C007762C0 /* Spline.h in Headers */,
 				02FD7F871924997C007762C0 /* Vector.h in Headers */,
 				15D311931982861500919AAA /* YamlEmitter.h in Headers */,
+				B7464C821AEA705E00D3AB13 /* TextLayout.h in Headers */,
 				D7CC267419C517E500A3B754 /* LocalNotificationProgress.h in Headers */,
 				D7FEF15C19864E5C00B2C7AF /* PatchFile.h in Headers */,
 				17675C1C19472C1400054F8F /* Image.h in Headers */,
@@ -4723,6 +4740,7 @@
 				02FD801B1924997C007762C0 /* LodSystem.h in Headers */,
 				02FD801C1924997C007762C0 /* SwitchToRenerObjectConverter.h in Headers */,
 				02FD801D1924997C007762C0 /* ParticleEffectSystem.h in Headers */,
+				021E56F81ADE773D00648157 /* MipmapReplacer.h in Headers */,
 				02FD801E1924997C007762C0 /* RenderUpdateSystem.h in Headers */,
 				02FD801F1924997C007762C0 /* SwitchSystem.h in Headers */,
 				02FD80201924997C007762C0 /* TransformSystem.h in Headers */,
@@ -4895,6 +4913,7 @@
 				E8B3CA9216B9326E002BD35F /* AutotestingSystem.h in Headers */,
 				50C7D5FD186082B100D8936D /* StaticOcclusionComponent.h in Headers */,
 				E8B3CA9516B9326E002BD35F /* MongodbUpdateObject.h in Headers */,
+				B7464C811AEA705E00D3AB13 /* TextLayout.h in Headers */,
 				E8B3CA9916B9326E002BD35F /* BaseMath.h in Headers */,
 				E8525D161A30910400FDF76E /* RotationControllerComponent.h in Headers */,
 				E8B3CA9B16B9326E002BD35F /* BaseObject.h in Headers */,
@@ -5046,6 +5065,7 @@
 				64493E1A19476F4700AB2715 /* VegetationRenderObject.h in Headers */,
 				64493E0E19476F4700AB2715 /* VegetationMaterialTransformer.h in Headers */,
 				CCF00D6A1A443F6200A577C2 /* EntityFamily.h in Headers */,
+				021E56F71ADE773D00648157 /* MipmapReplacer.h in Headers */,
 				E8B3CB6016B9326E002BD35F /* RectPacker.h in Headers */,
 				32F29AB61A7B733800EB2325 /* UIPackagesCache.h in Headers */,
 				E8B3CB6116B9326E002BD35F /* Sphere.h in Headers */,
@@ -5495,6 +5515,7 @@
 				02FD80A11924997C007762C0 /* BaseObject.cpp in Sources */,
 				02FD80A21924997C007762C0 /* BaseObjectChecker.cpp in Sources */,
 				02E9B4C619407C3E001DBDDF /* TreeToAnimatedTreeConverter.cpp in Sources */,
+				B7464C801AEA705E00D3AB13 /* TextLayout.cpp in Sources */,
 				02FD80A31924997C007762C0 /* Data.cpp in Sources */,
 				02FD80A41924997C007762C0 /* DynamicObjectCache.cpp in Sources */,
 				02FD80A51924997C007762C0 /* EventDispatcher.cpp in Sources */,
@@ -5682,6 +5703,7 @@
 				02FD81471924997C007762C0 /* CameraComponent.cpp in Sources */,
 				02FD81481924997C007762C0 /* RenderTechnique.cpp in Sources */,
 				02FD81491924997C007762C0 /* DebugRenderComponent.cpp in Sources */,
+				021E56F61ADE773D00648157 /* MipmapReplacer.cpp in Sources */,
 				02FD814A1924997C007762C0 /* LightComponent.cpp in Sources */,
 				02FD814B1924997C007762C0 /* LodComponent.cpp in Sources */,
 				64493E1919476F4700AB2715 /* VegetationRenderObject.cpp in Sources */,
@@ -5903,6 +5925,7 @@
 				E8B3CA8816B9326E002BD35F /* KeyframeAnimation.cpp in Sources */,
 				E8B3CA8A16B9326E002BD35F /* LinearAnimation.cpp in Sources */,
 				50194DA81A52D92600557DAB /* IPAddress.cpp in Sources */,
+				B7464C7F1AEA705E00D3AB13 /* TextLayout.cpp in Sources */,
 				E8B3CA9116B9326E002BD35F /* AutotestingSystem.cpp in Sources */,
 				505EB41C18250C53009BEA3C /* OcclusionQuery.cpp in Sources */,
 				E8B3CA9416B9326E002BD35F /* MongodbUpdateObject.cpp in Sources */,
@@ -6262,6 +6285,7 @@
 				D7FEF14719864E5C00B2C7AF /* DownloaderCommon.cpp in Sources */,
 				D7FEF13F19864E5C00B2C7AF /* CurlDownloader.cpp in Sources */,
 				E8FC1307186972C80095D8FE /* QualitySettingsSystem.cpp in Sources */,
+				021E56F51ADE773D00648157 /* MipmapReplacer.cpp in Sources */,
 				E95B4C5C16DF78EE00880713 /* UISpinner.cpp in Sources */,
 				D7FEF15319864E5C00B2C7AF /* bs_patch.c in Sources */,
 				024BD5B91A2C9299000BECC1 /* RenderSystem2D.cpp in Sources */,
