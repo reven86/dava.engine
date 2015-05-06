@@ -22,13 +22,17 @@ DepthStencilStateGLES2_t
     GLenum  depthFunc;
     
     uint32  stencilEnabled:1;
-    GLenum  stencilFailOp;
+    uint32  stencilSeparate:1;
+    struct    
+    {
+    GLenum  failOp;
     GLenum  depthFailOp;
     GLenum  depthStencilPassOp;
-    GLenum  stencilFunc;
-    uint32  stencilWriteMask;
-    uint32  stencilReadMask;
-    uint32  stencilRefValue;
+    GLenum  func;
+    uint32  writeMask;
+    uint32  readMask;
+    uint32  refValue;
+    }       stencilFront, stencilBack;
 };
 
 typedef Pool<DepthStencilStateGLES2_t,RESOURCE_DEPTHSTENCIL_STATE>  DepthStencilStateGLES2Pool;
@@ -93,15 +97,24 @@ gles2_DepthStencilState_Create( const DepthStencilState::Descriptor& desc )
     state->depthMask            = (desc.depthWriteEnabled)  ? GL_TRUE  : GL_FALSE;
     state->depthFunc            = _CmpFunc( CmpFunc(desc.depthFunc) );
     
-    state->stencilEnabled       = !(desc.stencilFunc == CMP_ALWAYS  &&  desc.stencilReadMask == 0xFF  && desc.stencilWriteMask == 0xFF);
-    state->stencilFailOp        = _StencilOp( StencilOperation(desc.stencilFailOperation) );
-    state->depthFailOp          = _StencilOp( StencilOperation(desc.depthFailOperation) );
-    state->depthStencilPassOp   = _StencilOp( StencilOperation(desc.depthStencilPassOperation) );
-    state->stencilFunc          = _CmpFunc( CmpFunc(desc.stencilFunc) );
-    state->stencilReadMask      = desc.stencilReadMask;
-    state->stencilWriteMask     = desc.stencilWriteMask;
-    state->stencilRefValue      = desc.stencilRefValue;
+    state->stencilEnabled                   = !(desc.stencilFront.func == CMP_ALWAYS  &&  desc.stencilFront.readMask == 0xFF  && desc.stencilFront.writeMask == 0xFF);
+    state->stencilSeparate                  = desc.stencilTwoSided;
+    
+    state->stencilFront.failOp              = _StencilOp( StencilOperation(desc.stencilFront.failOperation) );
+    state->stencilFront.depthFailOp         = _StencilOp( StencilOperation(desc.stencilFront.depthFailOperation) );
+    state->stencilFront.depthStencilPassOp  = _StencilOp( StencilOperation(desc.stencilFront.depthStencilPassOperation) );
+    state->stencilFront.func                = _CmpFunc( CmpFunc(desc.stencilFront.func) );
+    state->stencilFront.readMask            = desc.stencilFront.readMask;
+    state->stencilFront.writeMask           = desc.stencilFront.writeMask;
+    state->stencilFront.refValue            = desc.stencilFront.refValue;
 
+    state->stencilBack.failOp               = _StencilOp( StencilOperation(desc.stencilBack.failOperation) );
+    state->stencilBack.depthFailOp          = _StencilOp( StencilOperation(desc.stencilBack.depthFailOperation) );
+    state->stencilBack.depthStencilPassOp   = _StencilOp( StencilOperation(desc.stencilBack.depthStencilPassOperation) );
+    state->stencilBack.func                 = _CmpFunc( CmpFunc(desc.stencilBack.func) );
+    state->stencilBack.readMask             = desc.stencilBack.readMask;
+    state->stencilBack.writeMask            = desc.stencilBack.writeMask;
+    state->stencilBack.refValue             = desc.stencilBack.refValue;
     
     
     return handle;
@@ -149,9 +162,23 @@ SetToRHI( Handle hstate )
     if( state->stencilEnabled  )
     {
         glEnable( GL_STENCIL_TEST );
-        glStencilOp( state->stencilFailOp, state->depthFailOp, state->depthStencilPassOp );
-        glStencilFunc( state->stencilFunc, state->stencilRefValue, state->stencilReadMask );
-        glStencilMask( state->stencilWriteMask );
+        
+        if( state->stencilSeparate )
+        {
+            glStencilOpSeparate( GL_FRONT, state->stencilFront.failOp, state->stencilFront.depthFailOp, state->stencilFront.depthStencilPassOp );
+            glStencilFuncSeparate( GL_FRONT, state->stencilFront.func, state->stencilFront.refValue, state->stencilFront.readMask );
+            glStencilMaskSeparate( GL_FRONT, state->stencilFront.writeMask );
+
+            glStencilOpSeparate( GL_BACK, state->stencilBack.failOp, state->stencilBack.depthFailOp, state->stencilBack.depthStencilPassOp );
+            glStencilFuncSeparate( GL_BACK, state->stencilBack.func, state->stencilBack.refValue, state->stencilBack.readMask );
+            glStencilMaskSeparate( GL_BACK, state->stencilBack.writeMask );
+        }
+        else
+        {
+            glStencilOp( state->stencilFront.failOp, state->stencilFront.depthFailOp, state->stencilFront.depthStencilPassOp );
+            glStencilFunc( state->stencilFront.func, state->stencilFront.refValue, state->stencilFront.readMask );
+            glStencilMask( state->stencilFront.writeMask );
+        }
     }
     else
     {

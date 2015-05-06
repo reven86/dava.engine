@@ -71,24 +71,37 @@ _CmpFunc( CmpFunc func )
 static Handle
 metal_DepthStencilState_Create( const DepthStencilState::Descriptor& desc )
 {
-    Handle                      handle  = DepthStencilStateMetalPool::Alloc();
-    DepthStencilStateMetal_t*   state   = DepthStencilStateMetalPool::Get( handle );
-    MTLDepthStencilDescriptor*  ds_desc = [MTLDepthStencilDescriptor new];
-    MTLStencilDescriptor*       s_desc  = [MTLStencilDescriptor new];
+    Handle                      handle      = DepthStencilStateMetalPool::Alloc();
+    DepthStencilStateMetal_t*   state       = DepthStencilStateMetalPool::Get( handle );
+    MTLDepthStencilDescriptor*  ds_desc     = [MTLDepthStencilDescriptor new];
+    MTLStencilDescriptor*       front_desc  = [MTLStencilDescriptor new];
+    MTLStencilDescriptor*       back_desc   = [MTLStencilDescriptor new];
 
-    s_desc.readMask                     = desc.stencilReadMask;
-    s_desc.writeMask                    = desc.stencilWriteMask;
-    s_desc.stencilFailureOperation      = _StencilOp( StencilOperation(desc.stencilFailOperation) );
-    s_desc.depthFailureOperation        = _StencilOp( StencilOperation(desc.depthFailOperation) );
-    s_desc.depthStencilPassOperation    = _StencilOp( StencilOperation(desc.depthStencilPassOperation) );
-    s_desc.stencilCompareFunction       = _CmpFunc( CmpFunc(desc.stencilFunc) );
+    front_desc.readMask                     = desc.stencilFront.readMask;
+    front_desc.writeMask                    = desc.stencilFront.writeMask;
+    front_desc.stencilFailureOperation      = _StencilOp( StencilOperation(desc.stencilFront.failOperation) );
+    front_desc.depthFailureOperation        = _StencilOp( StencilOperation(desc.stencilFront.depthFailOperation) );
+    front_desc.depthStencilPassOperation    = _StencilOp( StencilOperation(desc.stencilFront.depthStencilPassOperation) );
+    front_desc.stencilCompareFunction       = _CmpFunc( CmpFunc(desc.stencilFront.func) );
+    
+    back_desc.readMask                      = desc.stencilBack.readMask;
+    back_desc.writeMask                     = desc.stencilBack.writeMask;
+    back_desc.stencilFailureOperation       = _StencilOp( StencilOperation(desc.stencilBack.failOperation) );
+    back_desc.depthFailureOperation         = _StencilOp( StencilOperation(desc.stencilBack.depthFailOperation) );
+    back_desc.depthStencilPassOperation     = _StencilOp( StencilOperation(desc.stencilBack.depthStencilPassOperation) );
+    back_desc.stencilCompareFunction        = _CmpFunc( CmpFunc(desc.stencilBack.func) );
 
+    
     ds_desc.depthWriteEnabled       = (desc.depthWriteEnabled)  ? YES  : NO;
     ds_desc.depthCompareFunction    = _CmpFunc( CmpFunc(desc.depthFunc) );
-    ds_desc.frontFaceStencil        = s_desc;
+    ds_desc.frontFaceStencil        = front_desc;
+
+    if( desc.stencilTwoSided )
+        ds_desc.backFaceStencil = back_desc;
+
     
     state->uid              = [_Metal_Device newDepthStencilStateWithDescriptor:ds_desc];
-    state->stencilRefValue  = desc.stencilRefValue;
+    state->stencilRefValue  = desc.stencilFront.refValue;
     
     return handle;
 }
