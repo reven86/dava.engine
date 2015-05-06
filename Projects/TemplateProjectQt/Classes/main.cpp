@@ -57,6 +57,13 @@ int main(int argc, char *argv[])
 
 void RunGui(int argc, char *argv[])
 {
+#ifdef Q_OS_MAC
+    // Must be called before creating QApplication instance
+    DAVA::QtLayer::MakeAppForeground(false);
+    QTimer::singleShot(0, []{DAVA::QtLayer::MakeAppForeground();});
+    QTimer::singleShot(0, []{DAVA::QtLayer::RestoreMenuBar(););
+#endif
+
     new DavaLoop();
     new FrameworkLoop();
 
