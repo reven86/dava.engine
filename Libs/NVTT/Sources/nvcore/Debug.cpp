@@ -3,6 +3,8 @@
 #include <nvcore/Debug.h>
 #include <nvcore/StrLib.h>
 
+#ifndef NV_NO_DEBUG
+
 #ifdef ANDROID
 	#include <sys/syscall.h>
 #endif
@@ -306,7 +308,8 @@ namespace
 			return result;
 		}
 		
-		// Flush the message queue. This is necessary for the message box to show up.
+#       ifndef POSH_OS_WIN_STORE
+        // Flush the message queue. This is necessary for the message box to show up.
 		static void flushMessageQueue()
 		{
 			MSG msg;
@@ -316,6 +319,7 @@ namespace
 				DispatchMessage( &msg );
 			}
 		}
+#       endif
 	
 		// Assert handler method.
 		virtual int assert( const char * exp, const char * file, int line, const char * func/*=NULL*/ )
@@ -332,8 +336,7 @@ namespace
 				nvDebug( error_string );
 			}
 			
-		#if _DEBUG
-			
+#           ifndef POSH_OS_WIN_STORE
 			if( isDebuggerPresent() ) {
 				return NV_ABORT_DEBUG;
 			}
@@ -355,8 +358,7 @@ namespace
 			/*if( _CrtDbgReport( _CRT_ASSERT, file, line, module, exp ) == 1 ) {
 				return NV_ABORT_DEBUG;
 			}*/
-			
-		#endif
+#           endif
 			
 			if( ret == NV_ABORT_EXIT ) {
 				// Exit cleanly.
@@ -435,25 +437,6 @@ namespace
 #endif
 
 } // namespace
-
-
-/// Handle assertion through the asset handler.
-int nvAbort(const char * exp, const char * file, int line, const char * func)
-{
-#if NV_OS_WIN32 //&& NV_CC_MSVC
-	static Win32AssertHandler s_default_assert_handler;
-#else
-	static UnixAssertHandler s_default_assert_handler;
-#endif
-	
-	if( s_assert_handler != NULL ) {
-		return s_assert_handler->assert( exp, file, line, func );
-	}
-	else {
-		return s_default_assert_handler.assert( exp, file, line, func );
-	}
-}
-
 
 /// Shows a message through the message handler.
 void NV_CDECL nvDebug(const char *msg, ...)
@@ -553,3 +536,25 @@ void debug::disableSigHandler()
 #endif
 }
 
+#endif
+
+/// Handle assertion through the asset handler.
+int nvAbort(const char * exp, const char * file, int line, const char * func)
+{
+#ifndef POSH_OS_WIN_STORE
+#if NV_OS_WIN32 //&& NV_CC_MSVC
+    static Win32AssertHandler s_default_assert_handler;
+#else
+    static UnixAssertHandler s_default_assert_handler;
+#endif
+
+    if (s_assert_handler != NULL) {
+        return s_assert_handler->assert(exp, file, line, func);
+    }
+    else {
+        return s_default_assert_handler.assert(exp, file, line, func);
+    }
+#else
+    return 0;
+#endif
+}

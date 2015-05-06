@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6E6CC842-0570-4C63-A98E-EC8A56A2EE48}</ProjectGuid>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <RootNamespace>nvtt</RootNamespace>
+    <AppContainerApplication>true</AppContainerApplication>
+    <ApplicationTypeRevision>8.2</ApplicationTypeRevision>
+    <ApplicationType>Windows Store</ApplicationType>
+    <TargetPlatformVersion>10.0.10069.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.10069.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../../Sources</AdditionalIncludeDirectories>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <MinimalRebuild>false</MinimalRebuild>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PreprocessorDefinitions>POSH_OS_WIN_STORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+    </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>
+      </LinkLibraryDependencies>
+    </ProjectReference>
+    <PostBuildEvent>
+      <Command>xcopy $(ProjectDir)..\..\Debug\libdxtd.lib $(ProjectDir)..\..\libs\ /Y /L
+xcopy $(ProjectDir)..\..\Release\libdxt.lib $(ProjectDir)..\..\libs\ /Y /L</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>
+      </FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>../../Sources</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <PreprocessorDefinitions>POSH_OS_WIN_STORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAsWinRT>false</CompileAsWinRT>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy $(ProjectDir)..\..\Debug\libdxtd.lib $(ProjectDir)..\..\..\Libs\ /Y
+xcopy $(ProjectDir)..\..\Release\libdxt.lib $(ProjectDir)..\..\..\Libs\ /Y</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Sources\nvtt\CompressDXT.cpp" />
+    <ClCompile Include="..\..\Sources\nvtt\CompressionOptions.cpp" />
+    <ClCompile Include="..\..\Sources\nvtt\Compressor.cpp" />
+    <ClCompile Include="..\..\Sources\nvtt\CompressRGB.cpp" />
+    <ClCompile Include="..\..\Sources\nvtt\cuda\CudaCompressDXT.cpp" />
+    <ClCompile Include="..\..\Sources\nvtt\cuda\CudaUtils.cpp" />
+    <ClCompile Include="..\..\Sources\nvtt\Decompressor.cpp" />
+    <ClCompile Include="..\..\Sources\nvtt\InputOptions.cpp" />
+    <ClCompile Include="..\..\Sources\nvtt\nvtt.cpp" />
+    <ClCompile Include="..\..\Sources\nvtt\nvtt_wrapper.cpp" />
+    <ClCompile Include="..\..\Sources\nvtt\OptimalCompressDXT.cpp" />
+    <ClCompile Include="..\..\Sources\nvtt\OutputOptions.cpp" />
+    <ClCompile Include="..\..\Sources\nvtt\QuickCompressDXT.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Sources\nvtt\CompressDXT.h" />
+    <ClInclude Include="..\..\Sources\nvtt\CompressionOptions.h" />
+    <ClInclude Include="..\..\Sources\nvtt\Compressor.h" />
+    <ClInclude Include="..\..\Sources\nvtt\CompressRGB.h" />
+    <ClInclude Include="..\..\Sources\nvtt\cuda\Bitmaps.h" />
+    <ClInclude Include="..\..\Sources\nvtt\cuda\CudaCompressDXT.h" />
+    <ClInclude Include="..\..\Sources\nvtt\cuda\CudaMath.h" />
+    <ClInclude Include="..\..\Sources\nvtt\cuda\CudaUtils.h" />
+    <ClInclude Include="..\..\Sources\nvtt\Decompressor.h" />
+    <ClInclude Include="..\..\Sources\nvtt\InputOptions.h" />
+    <ClInclude Include="..\..\Sources\nvtt\nvtt.h" />
+    <ClInclude Include="..\..\Sources\nvtt\nvtt_extra.h" />
+    <ClInclude Include="..\..\Sources\nvtt\nvtt_wrapper.h" />
+    <ClInclude Include="..\..\Sources\nvtt\OptimalCompressDXT.h" />
+    <ClInclude Include="..\..\Sources\nvtt\OutputOptions.h" />
+    <ClInclude Include="..\..\Sources\nvtt\QuickCompressDXT.h" />
+    <ClInclude Include="..\..\Sources\nvtt\SingleColorLookup.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Sources\nvtt\cuda\CompressKernel.cu" />
+    <None Include="..\..\Sources\nvtt\cuda\ConvolveKernel.cu" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
