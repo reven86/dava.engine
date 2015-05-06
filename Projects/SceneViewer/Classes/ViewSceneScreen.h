@@ -53,6 +53,8 @@ public:
 
     virtual void DidAppear();
 
+    virtual void Input(UIEvent *currentInput);
+
 protected:
     void OnBack(BaseObject *caller, void *param, void *callerData);
     void UpdateInfo(float32 timeElapsed);
@@ -68,6 +70,9 @@ protected:
     DAVA::Scene * scene = nullptr;
     DAVA::RotationControllerSystem * rotationControllerSystem = nullptr;
     DAVA::WASDControllerSystem * wasdSystem = nullptr;
+
+    Vector2 cursorPosition;
+    float32 cursorSize;
 
 };
 

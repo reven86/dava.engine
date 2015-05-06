@@ -41,6 +41,7 @@ ViewSceneScreen::ViewSceneScreen()
     , framesTime(0.f)
     , drawTime(0)
     , updateTime(0)
+    , cursorSize(.1f)
 {
 }
 
@@ -53,6 +54,18 @@ void ViewSceneScreen::LoadResources()
     scene->AddNode(entity);
     scene->ReleaseRootNode(GameCore::Instance()->GetScenePath());
     
+    Landscape * landscape = FindLandscape(scene);
+    if (landscape)
+    {
+        NMaterial * landscapeMaterial = landscape->GetMaterial();
+        landscapeMaterial->AddFlag(FastName("CURSOR"), 1);
+        ScopedPtr<Texture> texture(Texture::CreateFromFile("~res:/cursor/cursor.tex"));
+        texture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
+        landscapeMaterial->AddTexture(Landscape::TEXTURE_NAME_CURSOR, texture);
+        Vector4 cursorCoordSize(cursorPosition.x, cursorPosition.y, cursorSize, cursorSize);
+        landscapeMaterial->AddProperty(Landscape::PARAM_CURSOR_COORD_SIZE, cursorCoordSize.data, rhi::ShaderProp::TYPE_FLOAT4);
+    }
+
     ScopedPtr<Camera> camera(new Camera());
     
     VirtualCoordinatesSystem* vcs = DAVA::VirtualCoordinatesSystem::Instance();
@@ -121,6 +134,13 @@ void ViewSceneScreen::OnBack(BaseObject *caller, void *param, void *callerData)
 
 void ViewSceneScreen::Draw(const DAVA::UIGeometricData &geometricData)
 {
+    Landscape * landscape = FindLandscape(scene);
+    if (landscape)
+    {
+        Vector4 cursorCoordSize(cursorPosition.x, cursorPosition.y, cursorSize, cursorSize);
+        landscape->GetMaterial()->SetPropertyValue(Landscape::PARAM_CURSOR_COORD_SIZE, cursorCoordSize.data);
+    }
+
     uint64 startTime = SystemTimer::Instance()->GetAbsoluteNano();
 
 #if RHI_COMPLETE    
@@ -130,25 +150,33 @@ void ViewSceneScreen::Draw(const DAVA::UIGeometricData &geometricData)
     BaseScreen::Draw(geometricData);
 
     drawTime += (SystemTimer::Instance()->GetAbsoluteNano() - startTime);
-
 }
-
-
 
 void ViewSceneScreen::Update(float32 timeElapsed)
 {
     uint64 startTime = SystemTimer::Instance()->GetAbsoluteNano();
-
-    if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SPACE))
-        wasdSystem->SetMoveSpeed(30.f);
-    else
-        wasdSystem->SetMoveSpeed(10.f);
 
     BaseScreen::Update(timeElapsed);
     
     updateTime += (SystemTimer::Instance()->GetAbsoluteNano() - startTime);
 
     UpdateInfo(timeElapsed);
+
+    KeyboardDevice & keyboard = InputSystem::Instance()->GetKeyboard();
+    if (keyboard.IsKeyPressed(DVKEY_NUMPAD6))
+        cursorPosition.x += timeElapsed / 16.f;
+    if (keyboard.IsKeyPressed(DVKEY_NUMPAD4))
+        cursorPosition.x -= timeElapsed / 16.f;
+    if (keyboard.IsKeyPressed(DVKEY_NUMPAD8))
+        cursorPosition.y += timeElapsed / 16.f;
+    if (keyboard.IsKeyPressed(DVKEY_NUMPAD2))
+        cursorPosition.y -= timeElapsed / 16.f;
+    if (keyboard.IsKeyPressed(DVKEY_SPACE))
+        wasdSystem->SetMoveSpeed(30.f);
+    else
+        wasdSystem->SetMoveSpeed(10.f);
+
+
 }
 
 static const float32 INFO_UPDATE_TIME = 1.0f;
@@ -179,3 +207,15 @@ void ViewSceneScreen::DidAppear()
     info->SetText(L"");
 }
 
+void ViewSceneScreen::Input(UIEvent *currentInput)
+{
+    if (currentInput->phase == UIEvent::PHASE_KEYCHAR)
+    {
+        if (currentInput->keyChar == '+')
+            cursorSize *= 1.25f;
+        if (currentInput->keyChar == '-')
+            cursorSize *= .8f;
+    }
+
+    BaseScreen::Input(currentInput);
+}

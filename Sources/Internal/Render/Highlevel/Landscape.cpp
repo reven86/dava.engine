@@ -54,12 +54,14 @@ const FastName Landscape::PARAM_TILE_COLOR0("tileColor0");
 const FastName Landscape::PARAM_TILE_COLOR1("tileColor1");
 const FastName Landscape::PARAM_TILE_COLOR2("tileColor2");
 const FastName Landscape::PARAM_TILE_COLOR3("tileColor3");
+const FastName Landscape::PARAM_CURSOR_COORD_SIZE("cursorCoordSize");
 
 const FastName Landscape::TEXTURE_NAME_COLOR("colorTexture");
 const FastName Landscape::TEXTURE_NAME_TILE("tileTexture0");
 const FastName Landscape::TEXTURE_NAME_TILEMASK("tileMask");
 const FastName Landscape::TEXTURE_NAME_SPECULAR("specularMap");
 const FastName Landscape::TEXTURE_NAME_FULL_TILED("fullTiledTexture");
+const FastName Landscape::TEXTURE_NAME_CURSOR("cursorTexture");
 
 const uint32 LANDSCAPE_BATCHES_POOL_SIZE = 32;
 
@@ -1181,7 +1183,12 @@ void Landscape::SetHeightmap(DAVA::Heightmap *height)
     
     BuildLandscape();
 }
-    
+
+NMaterial * Landscape::GetMaterial()
+{
+    return landscapeMaterial;
+}
+
 #if RHI_COMPLETE
 Texture * Landscape::CreateLandscapeTexture()
 {

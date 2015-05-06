@@ -144,14 +144,16 @@ public:
     const static FastName PARAM_TILE_COLOR1;
     const static FastName PARAM_TILE_COLOR2;
     const static FastName PARAM_TILE_COLOR3;
+    const static FastName PARAM_CURSOR_COORD_SIZE; //x,y - cursor position [0...1] (in landscape space); z,w - cursor size [0...1] (fraction of landscape)
 
     const static FastName TEXTURE_NAME_COLOR;
     const static FastName TEXTURE_NAME_TILE;
     const static FastName TEXTURE_NAME_TILEMASK;
     const static FastName TEXTURE_NAME_SPECULAR;
-
     const static FastName TEXTURE_NAME_FULL_TILED;
     
+    const static FastName TEXTURE_NAME_CURSOR; //should use clamp wrap mode
+
     /**
         \brief Set lod coefficients for dynamic roam landscape
         Default values: (60, 120, 240, 480)
@@ -215,6 +217,8 @@ public:
     Heightmap *GetHeightmap();
     virtual void SetHeightmap(Heightmap *height);
     
+    NMaterial * GetMaterial();
+
 //    virtual void UpdateFullTiledTexture();
 //    FilePath SaveFullTiledTexture();
     Texture *CreateLandscapeTexture();
