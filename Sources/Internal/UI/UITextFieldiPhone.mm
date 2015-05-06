@@ -252,12 +252,6 @@ namespace DAVA
         
         CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this,
             func,
-            (__bridge CFStringRef) UIKeyboardWillShowNotification, nil,
-            CFNotificationSuspensionBehaviorDeliverImmediately);
-        
-        
-        CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this,
-            func,
             (__bridge CFStringRef) UIKeyboardDidHideNotification, nil,
             CFNotificationSuspensionBehaviorDeliverImmediately);
     }
@@ -272,9 +266,6 @@ namespace DAVA
 		[center removeObserver:textFieldHolder name:UIKeyboardDidShowNotification object:nil];
 		[center removeObserver:textFieldHolder name:UIKeyboardWillHideNotification object:nil];
         [center removeObserver:textFieldHolder name:UIKeyboardDidChangeFrameNotification object:nil];
- 
-        CFNotificationCenterRemoveObserver(CFNotificationCenterGetLocalCenter(), this,
-           (__bridge CFStringRef) UIKeyboardWillShowNotification, nil);
         
         CFNotificationCenterRemoveObserver(CFNotificationCenterGetLocalCenter(), this,
             (__bridge CFStringRef) UIKeyboardDidHideNotification, nil);
@@ -488,6 +479,7 @@ namespace DAVA
     void UITextFieldiPhone::SetRenderToTexture(bool value)
     {
         renderToTexture = value;
+        UpdateStaticTexture();
     }
     
     bool UITextFieldiPhone::IsRenderToTexture() const
