@@ -217,9 +217,23 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
     DVASSERT(newFile.GetType() != FilePath::PATH_IN_RESOURCES);
 
 #ifdef __DAVAENGINE_WIN32__
+
 	DWORD flags = (overwriteExisting) ? MOVEFILE_REPLACE_EXISTING : 0;
-	BOOL ret = ::MoveFileExA(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), flags);
+
+#ifdef __DAVAENGINE_WINDOWS_DESKTOP__
+
+    BOOL ret = ::MoveFileExA(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), flags);
+
+#elif defined(__DAVAENGINE_WINDOWS_STORE__)
+
+    WideString existingFileWide = UTF8Utils::EncodeToWideString(existingFile.GetAbsolutePathname());
+    WideString newFileWide = UTF8Utils::EncodeToWideString(newFile.GetAbsolutePathname());
+    BOOL ret = ::MoveFileExW(existingFileWide.c_str(), newFileWide.c_str(), flags);
+
+#endif
+
 	return ret != 0;
+
 #elif defined(__DAVAENGINE_ANDROID__)
 	if (!overwriteExisting && access(newFile.GetAbsolutePathname().c_str(), 0) != -1)
 	{
