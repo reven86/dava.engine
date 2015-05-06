@@ -39,6 +39,7 @@
 #include <QCloseEvent>
 #include <QSettings>
 #include <QTimer>
+#include <QCheckBox>
 
 #include <QDebug>
 
@@ -57,6 +58,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->saveButton, &QPushButton::clicked, this, &MainWindow::OnSaveButtonClicked);
     connect(ui->cancelButton, &QPushButton::clicked, this, &MainWindow::OnCancelButtonClicked);
+
+    connect(ui->startupCheckBox, &QCheckBox::stateChanged, this, &MainWindow::OnStartupChanged);
 
     ReadSettings();
 
@@ -139,6 +142,27 @@ void MainWindow::OnOpenAction()
 {
     this->raise();
     this->show();
+}
+
+void MainWindow::OnStartupChanged(int state)
+{
+    if (state == Qt::Checked)
+    {
+#ifdef Q_OS_WIN
+        QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+                           QSettings::NativeFormat);
+        settings.setValue(QDir::toNativeSeparators(qApp->applicationName()),
+                          QDir::toNativeSeparators(qApp->applicationFilePath()));
+#endif
+    }
+    else if (state == Qt::Unchecked)
+    {
+#ifdef Q_OS_WIN
+        QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+                           QSettings::NativeFormat);
+        settings.remove(QDir::toNativeSeparators(qApp->applicationName()));
+#endif
+    }
 }
 
 void MainWindow::OnSaveButtonClicked()
@@ -246,9 +270,6 @@ void MainWindow::ReadSettings()
     DAVA::uint32 numberOfFiles = arch->GetUInt32(String("NumberOfFiles"));
     ui->numberOfFilesSpinBox->setValue(numberOfFiles);
 
-    bool startup = arch->GetBool(String("Startup"));
-    ui->startupCheckBox->setChecked(startup);
-
     DAVA::uint32 port = arch->GetUInt32(String("Port"));
     ui->portSpinBox->setValue(port);
 
@@ -263,6 +284,18 @@ void MainWindow::ReadSettings()
 
     f->Release();
     arch->Release();
+
+#ifdef Q_OS_WIN
+    QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+                       QSettings::NativeFormat);
+    QString key = settings.value(QDir::toNativeSeparators(qApp->applicationName())).toString();
+    if (!key.isEmpty())
+    {
+        ui->startupCheckBox->blockSignals(true);
+        ui->startupCheckBox->setChecked(true);
+        ui->startupCheckBox->blockSignals(false);
+    }
+#endif
 }
 
 void MainWindow::WriteSettings()
@@ -282,7 +315,6 @@ void MainWindow::WriteSettings()
     arch->SetString(String("FolderPath"), String(ui->cachFolderLineEdit->text().toStdString()));
     arch->SetFloat(String("FolderSize"), static_cast<DAVA::float32>(ui->cachSizeSpinBox->value()));
     arch->SetUInt32(String("NumberOfFiles"), static_cast<DAVA::uint32>(ui->numberOfFilesSpinBox->value()));
-    arch->SetBool(String("Startup"), ui->startupCheckBox->isChecked());
     arch->SetUInt32(String("Port"), static_cast<DAVA::uint32>(ui->portSpinBox->value()));
 
     auto size = servers.size();

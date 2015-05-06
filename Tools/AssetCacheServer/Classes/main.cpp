@@ -27,10 +27,11 @@
 =====================================================================================*/
 
 
+#include "SingleApplication.h"
+
 #include "DAVAEngine.h"
 
 #include "MainWindow.h"
-#include <QApplication>
 
 void FrameworkWillTerminate()
 {
@@ -44,7 +45,7 @@ int main(int argc, char *argv[])
 {
     DAVA::Core::Run(argc, argv);
 
-    QApplication a(argc, argv);
+    SingleApplication a(argc, argv);
     MainWindow w;
     w.show();
 

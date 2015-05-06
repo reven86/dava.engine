@@ -69,6 +69,7 @@ private slots:
     void OnTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
     void OnServerParametersChanged();
     void OnOpenAction();
+    void OnStartupChanged(int state);
 
     void OnSaveButtonClicked();
     void OnCancelButtonClicked();
