@@ -536,26 +536,40 @@ Descriptor
     uint32  depthWriteEnabled:1;
     uint32  depthFunc:3;
 
-    uint8   stencilReadMask;
-    uint8   stencilWriteMask;
-    uint8   stencilRefValue;
-    uint32  stencilFunc:3;
-    uint32  stencilFailOperation:3;
+    uint32  stencilTwoSided:1;
+    struct
+    {
+    uint8   readMask;
+    uint8   writeMask;
+    uint8   refValue;
+    uint32  func:3;
+    uint32  failOperation:3;
     uint32  depthFailOperation:3;
     uint32  depthStencilPassOperation:3;
+    }       stencilFront,stencilBack;
 
             Descriptor()
               : depthTestEnabled(true),
                 depthWriteEnabled(true),
                 depthFunc(CMP_LESSEQUAL),
-                stencilReadMask(0xFF),
-                stencilWriteMask(0xFF),
-                stencilRefValue(0),
-                stencilFunc(CMP_ALWAYS),
-                stencilFailOperation(STENCILOP_KEEP),
-                depthFailOperation(STENCILOP_KEEP),
-                depthStencilPassOperation(STENCILOP_KEEP)
-            {}
+                stencilTwoSided(false)
+            {
+                stencilFront.readMask                   = 0xFF;
+                stencilFront.writeMask                  = 0xFF;
+                stencilFront.refValue                   = 0;
+                stencilFront.func                       = CMP_ALWAYS;
+                stencilFront.failOperation              = STENCILOP_KEEP;
+                stencilFront.depthFailOperation         = STENCILOP_KEEP;
+                stencilFront.depthStencilPassOperation  = STENCILOP_KEEP;
+                
+                stencilBack.readMask                    = 0xFF;
+                stencilBack.writeMask                   = 0xFF;
+                stencilBack.refValue                    = 0;
+                stencilBack.func                        = CMP_ALWAYS;
+                stencilBack.failOperation               = STENCILOP_KEEP;
+                stencilBack.depthFailOperation          = STENCILOP_KEEP;
+                stencilBack.depthStencilPassOperation   = STENCILOP_KEEP;
+            }
 };
 
 }

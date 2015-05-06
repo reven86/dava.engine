@@ -478,7 +478,7 @@ DbgDraw::Buffer<Vertex,Prim>::flush_batched_2d( rhi::HPacketList batch_buf )
                 case Vertex_PC::Format :
                     batch.renderPipelineState = dd->_pc_pipeline_state;
                     batch.vertexConst[0]      = dd->_pc_const;
-                    rhi::UpdateConstBuffer( dd->_pc_const, 0, ortho.data, 4 );
+                    rhi::UpdateConstBuffer4fv( dd->_pc_const, 0, ortho.data, 4 );
                     break;
 
                 case Vertex_PTC::Format :
@@ -486,7 +486,7 @@ DbgDraw::Buffer<Vertex,Prim>::flush_batched_2d( rhi::HPacketList batch_buf )
                     batch.vertexConst[0]      = dd->_ptc_const;
                     batch.depthStencilState   = dd->_ptc_depth_state;
                     batch.samplerState        = dd->_ptc_sampler_state;
-                    rhi::UpdateConstBuffer( dd->_ptc_const, 0, ortho.data, 4 );
+                    rhi::UpdateConstBuffer4fv( dd->_ptc_const, 0, ortho.data, 4 );
                     break;
             }
 
