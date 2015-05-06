@@ -44,6 +44,14 @@ FXDescriptor defaultFX;
 bool initialized = false;
 }
 
+RenderPassDescriptor::RenderPassDescriptor()
+    :cullMode(rhi::CULL_NONE)
+    , renderLayer(RENDER_LAYER_INVALID_ID)
+    , shader(nullptr)
+{
+
+}
+
 namespace FXCache
 {
 rhi::DepthStencilState::Descriptor LoadDepthStencilState(const YamlNode* stateNode);
@@ -86,8 +94,7 @@ const FXDescriptor& GetFXDescriptor(const FastName &fxName, HashMap<FastName, in
     //not found - load new        
     return LoadFXFromOldTemplate(fxName, defines, key);        
 }
-
-
+    
 
 const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastName, int32>& defines, Vector<int32>& key)
 {
@@ -171,14 +178,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
             {
                 passDescriptor.passName = renderPassNameNode->AsFastName();
             }
-
-            //state
-            const YamlNode * renderStateNode = rootNode->Get("RenderState");
-            if (renderStateNode)
-            {
-                passDescriptor.depthStateDescriptor = LoadDepthStencilState(renderStateNode);
-            }
-
+            
             //shader
             const YamlNode * shaderNode = renderPassNode->Get("Shader");
             if (!shaderNode)
@@ -198,6 +198,120 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                     shaderDefines[FastName(singleDefineNode->AsString().c_str())] = 1;
                 }
             }
+
+            //state
+            const YamlNode * renderStateNode = renderPassNode->Get("RenderState");
+            if (renderStateNode)
+            {                
+                const YamlNode * stateNode = renderStateNode->Get("state");
+                if (stateNode)
+                {
+                    Vector<String> states;
+                    Split(stateNode->AsString(), "| ", states);                    
+                    passDescriptor.depthStateDescriptor.depthTestEnabled = false;
+                    passDescriptor.depthStateDescriptor.depthWriteEnabled = false;
+                    for (auto& state : states)
+                    {
+                        if (state == "STATE_BLEND")
+                        {
+                            shaderDefines[FastName("BLENDING")] = BLENDING_ALPHABLEND;
+                        }
+                        else if (state == "STATE_CULL")
+                        {
+                            passDescriptor.cullMode = rhi::CULL_CW; //default
+                            const YamlNode * cullModeNode = renderStateNode->Get("cullMode");
+                            if (cullModeNode)
+                            {
+                                if (cullModeNode->AsString() == "FACE_FRONT")
+                                    passDescriptor.cullMode = rhi::CULL_CCW;
+                            }
+                        }
+                        else if (state == "STATE_DEPTH_WRITE")
+                        {
+                            passDescriptor.depthStateDescriptor.depthWriteEnabled = true;
+                        }
+                        else if (state == "STATE_DEPTH_TEST")
+                        {
+                            passDescriptor.depthStateDescriptor.depthTestEnabled = true;
+                            const YamlNode * depthFuncNode = renderStateNode->Get("depthFunc");
+                            if (depthFuncNode)
+                            {                                
+                                passDescriptor.depthStateDescriptor.depthFunc = GetCmpFuncByName(depthFuncNode->AsString()); 
+                            }
+                        }
+                        else if (state == "STATE_STENCIL_TEST")
+                        {                            
+                            const YamlNode * stencilNode = renderStateNode->Get("stencil");
+                            if (stencilNode)
+                            {
+                                const YamlNode * stencilRefNode = stencilNode->Get("ref");
+                                if (stencilRefNode)
+                                    passDescriptor.depthStateDescriptor.stencilRefValue = stencilRefNode->AsInt32();
+
+                                const YamlNode * stencilMaskNode = stencilNode->Get("mask");
+                                if (stencilMaskNode)
+                                {
+                                    passDescriptor.depthStateDescriptor.stencilWriteMask = stencilMaskNode->AsUInt32();
+                                }                                                                        
+#if RHI_COMPLETE
+                                const YamlNode * stencilFuncNode = stencilNode->Get("funcFront");
+                                if (stencilFuncNode)
+                                {
+                                    passDescriptor.depthStateDescriptor.stencilFunc
+                                    stateData.stencilFunc[FACE_FRONT] = GetCmpFuncByName(stencilFuncNode->AsString());
+                                }
+
+                                stencilFuncNode = stencilNode->Get("funcBack");
+                                if (stencilFuncNode)
+                                {
+                                    stateData.stencilFunc[FACE_BACK] = GetCmpFuncByName(stencilFuncNode->AsString());
+                                }
+
+                                const YamlNode * stencilPassNode = stencilNode->Get("passFront");
+                                if (stencilPassNode)
+                                {
+                                    stateData.stencilPass[FACE_FRONT] = GetStencilOpByName(stencilPassNode->AsString());
+                                }
+
+                                stencilPassNode = stencilNode->Get("passBack");
+                                if (stencilPassNode)
+                                {
+                                    stateData.stencilPass[FACE_BACK] = GetStencilOpByName(stencilPassNode->AsString());
+                                }
+
+                                const YamlNode * stencilFailNode = stencilNode->Get("failFront");
+                                if (stencilFailNode)
+                                {
+                                    stateData.stencilFail[FACE_FRONT] = GetStencilOpByName(stencilFailNode->AsString());
+                                }
+
+                                stencilFailNode = stencilNode->Get("failBack");
+                                if (stencilFailNode)
+                                {
+                                    stateData.stencilFail[FACE_BACK] = GetStencilOpByName(stencilFailNode->AsString());
+                                }
+
+                                const YamlNode * stencilZFailNode = stencilNode->Get("zFailFront");
+                                if (stencilZFailNode)
+                                {
+                                    stateData.stencilZFail[FACE_FRONT] = GetStencilOpByName(stencilZFailNode->AsString());
+                                }
+
+                                stencilZFailNode = stencilNode->Get("zFailBack");
+                                if (stencilZFailNode)
+                                {
+                                    stateData.stencilZFail[FACE_BACK] = GetStencilOpByName(stencilZFailNode->AsString());
+                                }
+#endif // RHI_COMPLETE
+                            }
+                        }
+
+                    }                        
+                }
+                passDescriptor.depthStateDescriptor = LoadDepthStencilState(renderStateNode);
+            }
+
+            
             passDescriptor.shader = ShaderDescriptorCache::GetShaderDescriptor(shaderName, shaderDefines);
 
             target.renderPassDescriptors.push_back(passDescriptor);

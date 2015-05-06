@@ -33,6 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "DAVAConfig.h"
 #include "Base/FastName.h"
+#include "Render/RHI/rhi_Type.h"
 
 /**
 	\defgroup render Rendering abstraction
@@ -105,25 +106,12 @@
 namespace DAVA
 {
 
-enum eBlendMode
+enum eBlending
 {
-	BLEND_NONE = 0,				// blend mode not defined
-	BLEND_ZERO,
-	BLEND_ONE,
-	BLEND_DST_COLOR,
-	BLEND_ONE_MINUS_DST_COLOR,
-	BLEND_SRC_ALPHA,
-	BLEND_ONE_MINUS_SRC_ALPHA,
-	BLEND_DST_ALPHA,
-	BLEND_ONE_MINUS_DST_ALPHA,
-	BLEND_SRC_ALPHA_SATURATE,
-	BLEND_SRC_COLOR,
-	BLEND_ONE_MINUS_SRC_COLOR,
-
-	BLEND_MODE_COUNT,
+    BLENDING_NONE = 0,
+    BLENDING_ALPHABLEND,
+    BLENDING_ADDITIVE
 };
-
-extern const String BLEND_MODE_NAMES[BLEND_MODE_COUNT];
 
 enum PixelFormat
 {
@@ -185,54 +173,9 @@ enum eGPUFamily
     GPU_DEVICE_COUNT = GPU_PNG,
     GPU_INVALID = 0x07
 };
-    
-#if defined(__DAVAENGINE_OPENGL__)
-extern const GLint BLEND_MODE_MAP[BLEND_MODE_COUNT];
-#elif defined(__DAVAENGINE_DIRECTX9__)
-extern const GLint BLEND_MODE_MAP[BLEND_MODE_COUNT];
-#endif
-  
-enum eCmpFunc
-{
-    CMP_NEVER = 0,   // Never passes.
-    CMP_LESS,    // Passes if the incoming value is less than the reference value.
-    CMP_EQUAL,   // Passes if the incoming value is equal to the reference value.
-    CMP_LEQUAL,  // Passes if the incoming value is less than or equal to the reference value.
-    CMP_GREATER, // Passes if the incoming value is greater than the reference value.
-    CMP_NOTEQUAL, // Passes if the incoming value is not equal to the reference value.
-    CMP_GEQUAL,   // Passes if the incoming value is greater than or equal to the reference value.
-    CMP_ALWAYS,
-    CMP_TEST_MODE_COUNT, 
-};
+      
 
-extern const String CMP_FUNC_NAMES[CMP_TEST_MODE_COUNT];
 
-#if defined(__DAVAENGINE_OPENGL__)
-extern const GLint COMPARE_FUNCTION_MAP[CMP_TEST_MODE_COUNT];
-#elif defined(__DAVAENGINE_DIRECTX9__)  
-extern const GLint COMPARE_FUNCTION_MAP[CMP_TEST_MODE_COUNT];
-#endif
-    
-enum eVertexDataType
-{
-	TYPE_FLOAT = 0,
-	TYPE_UNSIGNED_BYTE,
-
-	TYPE_COUNT
-};
-    
-#if defined(__DAVAENGINE_OPENGL__)
-    static const GLint VERTEX_DATA_TYPE_TO_GL[TYPE_COUNT] = {GL_FLOAT, GL_UNSIGNED_BYTE};
-#endif
-    
-enum eIndexDataType
-{
-    TYPE_UNSIGNED_SHORT = 0,
-};
-
-#if defined(__DAVAENGINE_OPENGL__)
-    static const GLint INDEX_DATA_TYPE_TO_GL[TYPE_COUNT] = {GL_UNSIGNED_SHORT};
-#endif
 
 enum eIndexFormat
 {
@@ -240,66 +183,16 @@ enum eIndexFormat
 	EIF_32 = 0x1,
 };
     
-static const int32 INDEX_FORMAT_SIZE[2] = {2, 4};
-    
-enum eFace
-{
-    FACE_FRONT = 0,
-    FACE_BACK,
-    FACE_FRONT_AND_BACK,
+static const int32 INDEX_FORMAT_SIZE[2] = {2, 4};   
 
-    FACE_COUNT,
-};
-
-extern const String FACE_NAMES[FACE_COUNT];
-
-#if defined(__DAVAENGINE_OPENGL__)
-extern const GLint CULL_FACE_MAP[FACE_COUNT];
-#elif defined(__DAVAENGINE_DIRECTX9__) 
-extern const int32 CULL_FACE_MAP[FACE_COUNT];
-#endif
-
-
-enum eStencilOp
-{
-	STENCILOP_KEEP = 0,
-	STENCILOP_ZERO,
-	STENCILOP_REPLACE,
-	STENCILOP_INCR,
-	STENCILOP_INCR_WRAP,
-	STENCILOP_DECR,
-	STENCILOP_DECR_WRAP,
-	STENCILOP_INVERT,
-
-	STENCILOP_COUNT
-};
-
-extern const String STENCIL_OP_NAMES[STENCILOP_COUNT];
-
-#if defined(__DAVAENGINE_OPENGL__)
-extern const GLint STENCIL_OP_MAP[STENCILOP_COUNT];
-#elif defined(__DAVAENGINE_DIRECTX9__) 
-extern const int32 STENCIL_OP_MAP[STENCILOP_COUNT];
-#endif
-
-    
-    
-enum eFillMode
-{
-	FILLMODE_POINT,
-	FILLMODE_WIREFRAME,
-	FILLMODE_SOLID,
-
-	FILLMODE_COUNT
-};
+const int32 STENCILOP_COUNT = 8; //rhi::StencilOperation
+const int32 CMP_TEST_MODE_COUNT = 8; //rhi::CmpFunc
+const int32 FILLMODE_COUNT = 3;
+extern const String CMP_FUNC_NAMES[CMP_TEST_MODE_COUNT];
+extern const String STENCIL_OP_NAMES[STENCILOP_COUNT];     
 
 extern const String FILL_MODE_NAMES[FILLMODE_COUNT];
 
-#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__))
-extern const GLint FILLMODE_MAP[FILLMODE_COUNT];
-#elif defined(__DAVAENGINE_DIRECTX9__) 
-extern const int32 FILLMODE_MAP[FILLMODE_COUNT];
-#endif
     
 enum ePrimitiveType
 {
@@ -348,19 +241,6 @@ enum
     VERTEX_FORMAT_STREAM_MAX_COUNT = 16
 };
 
-enum eBufferDrawType
-{
-    BDT_STATIC_DRAW = 0,
-    BDT_DYNAMIC_DRAW,
-
-    BDT_COUNT
-};
-
-#if defined(__DAVAENGINE_OPENGL__)
-extern const GLint BUFFERDRAWTYPE_MAP[BDT_COUNT];
-#elif defined(__DAVAENGINE_DIRECTX9__) 
-extern const int32 BUFFERDRAWTYPE_MAP[BDT_COUNT];
-#endif
 
 inline int32 GetTexCoordCount(int32 vertexFormat)
 {
@@ -422,26 +302,9 @@ inline int32 GetVertexSize(int32 flags)
     return size;
 }
 
-eBlendMode GetBlendModeByName(const String & blendStr);
-eCmpFunc GetCmpFuncByName(const String & cmpFuncStr);
-eFace GetFaceByName(const String & faceStr);
-eStencilOp GetStencilOpByName(const String & stencilOpStr);
-eFillMode GetFillModeByName(const String & fillModeStr);
-    
 
-    
-    
-enum eCullOrder
-{
-#if defined(__DAVAENGINE_OPENGL__)
-    ORDER_CCW = GL_CCW,
-    ORDER_CW = GL_CW,
-#elif defined(__DAVAENGINE_DIRECTX__)
-    ORDER_CCW = 0,
-    ORDER_CW = 0,
-#error "Need to define this"
-#endif
-};
+rhi::CmpFunc GetCmpFuncByName(const String & cmpFuncStr);
+rhi::StencilOperation GetStencilOpByName(const String & stencilOpStr);          
     
 };
 

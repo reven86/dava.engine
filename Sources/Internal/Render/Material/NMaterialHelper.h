@@ -25,7 +25,7 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
-#if _NMATERIAL_OFF
+#if RHI_COMPLETE
 
 #ifndef __DAVAENGINE_NMATERIALHELPER_H__
 #define __DAVAENGINE_NMATERIALHELPER_H__
@@ -61,6 +61,6 @@ public:
 
 };
 
-#endif //_NMATERIAL_OFF
+#endif //RHI_COMPLETE
 
 #endif /* defined(__DAVAENGINE_NMATERIALHELPER_H__) */

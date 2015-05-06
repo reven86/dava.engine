@@ -325,11 +325,9 @@ public:
 
 	//RenderState * GetRenderState();
     
-    inline void SetBlendSrc(eBlendMode _blendSrc);
-	inline void SetBlendDest(eBlendMode _blendDest);
-	inline void SetStaticLightingParams(StaticLightingParams * params);
-    inline eBlendMode GetBlendSrc() const;
-    inline eBlendMode GetBlendDest() const;
+    inline void SetBlending(eBlending blending);
+	
+	inline void SetStaticLightingParams(StaticLightingParams * params);    
 	inline StaticLightingParams * GetStaticLightingParams() const;
     
     const String& GetName() const;
@@ -345,11 +343,8 @@ private:
     String textureSlotNames[TEXTURE_COUNT];
     uint32 textureSlotCount;
 
-//	eBlendMode blendSrc; //TODO: waiting for enums at introspection
-//	eBlendMode blendDst; //TODO: waiting for enums at introspection
-	uint32 blendSrc;
-	uint32 blendDst;
 
+	eBlending blending;	
 
     void RebuildShader();
     
@@ -445,9 +440,7 @@ public:
         PROPERTY("isTexture0ShiftEnabled", "Is texture shift enabled", IsTextureShiftEnabled, EnableTextureShift, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("isExportOwnerLayerEnabled", "Is export owner layer enabled. (Export layer settings to render batch on set)", IsExportOwnerLayerEnabled, SetExportOwnerLayer, I_SAVE)
         PROPERTY("ownerLayerName", "Owner layer name", GetOwnerLayerName, SetOwnerLayerName, I_SAVE | I_VIEW)
-                         
-        MEMBER(blendSrc, "Blend Source", I_SAVE | I_VIEW | I_EDIT)
-        MEMBER(blendDst, "Blend Destination", I_SAVE | I_VIEW | I_EDIT)
+                                         
         MEMBER(isWireframe, "Is Wire Frame", I_SAVE | I_VIEW | I_EDIT)
 		MEMBER(type, "Type", I_SAVE | I_VIEW | I_EDIT)
                          
@@ -469,28 +462,15 @@ inline const FilePath & Material::GetTextureName(eTextureLevel level) const
 	return names[level];
 }
 
-inline void Material::SetBlendSrc(eBlendMode _blendSrc)
+inline void Material::SetBlending(eBlending _blending)
 {
-    blendSrc = _blendSrc;
-}
-inline void Material::SetBlendDest(eBlendMode _blendDest)
-{
-    blendDst = _blendDest;
+    blending = _blending;
 }
 
 inline void Material::SetStaticLightingParams(StaticLightingParams * params)
 {
 	SafeDelete(lightingParams);
 	lightingParams = params;
-}
-
-inline eBlendMode Material::GetBlendSrc() const
-{
-    return (eBlendMode)blendSrc;
-}
-inline eBlendMode Material::GetBlendDest() const
-{
-    return (eBlendMode)blendDst;
 }
 
 inline StaticLightingParams * Material::GetStaticLightingParams() const

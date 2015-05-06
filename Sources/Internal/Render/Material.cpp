@@ -260,8 +260,7 @@ const char8 * Material::GetTypeName(eType format)
 Material::Material() 
     :   DataNode()
     ,	viewOptions(MATERIAL_VIEW_TEXTURE_LIGHTMAP)
-    ,	blendSrc(BLEND_ONE)
-    ,	blendDst(BLEND_ONE)
+    ,   blending(BLENDING_ALPHABLEND)
     ,   isTranslucent(false)
     ,   isTwoSided(false)
     ,	isSetupLightmap(false)
@@ -379,8 +378,7 @@ void Material::CopySettings(Material *fromMaterial)
 
 	textureSlotCount = fromMaterial->textureSlotCount;
 
-	blendSrc = fromMaterial->blendSrc;
-	blendDst = fromMaterial->blendDst;
+    blending = fromMaterial->blending;
 
 	isTranslucent = fromMaterial->isTranslucent;
 	isTwoSided = fromMaterial->isTwoSided;
@@ -759,8 +757,7 @@ void Material::Save(KeyedArchive * keyedArchive, SerializationContext * serializ
     keyedArchive->SetBool("mat.isTwoSided", isTwoSided);
 
 	keyedArchive->SetBool("mat.isAlphablend", isAlphablend);
-	keyedArchive->SetInt32("mat.blendSrc", blendSrc);
-	keyedArchive->SetInt32("mat.blendDst", blendDst);
+    keyedArchive->SetInt32("mat.blend", blending);	
 
     keyedArchive->SetInt32("mat.type", type);
     
@@ -828,8 +825,8 @@ void Material::Load(KeyedArchive * keyedArchive, SerializationContext * serializ
     isTwoSided = keyedArchive->GetBool("mat.isTwoSided", isTwoSided);
 
 	isAlphablend = keyedArchive->GetBool("mat.isAlphablend", isAlphablend);
-	blendSrc = (eBlendMode)keyedArchive->GetInt32("mat.blendSrc", blendSrc);
-	blendDst = (eBlendMode)keyedArchive->GetInt32("mat.blendDst", blendDst);
+    blending = isAlphablend ? BLENDING_ALPHABLEND : BLENDING_NONE;
+	
 
 	fogColor = keyedArchive->GetByteArrayAsType("mat.fogcolor", fogColor);
 	isFogEnabled = keyedArchive->GetBool("mat.isFogEnabled", isFogEnabled);

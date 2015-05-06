@@ -76,7 +76,7 @@ void NMaterial::BindParams(rhi::Packet& target)
     target.depthStencilState = activeVariantInstance->depthState;
     target.samplerState = activeVariantInstance->samplerState;
     target.textureSet = activeVariantInstance->textureSet;
-    target.cullMode = rhi::CULL_CW;
+    target.cullMode = activeVariantInstance->cullMode;
 
     activeVariantInstance->shader->UpdateDynamicParams();
     /*update values in material const buffers*/
@@ -368,6 +368,7 @@ void NMaterial::RebuildRenderVariants()
         variant->renderLayer = variantDescr.renderLayer;
         variant->depthState = rhi::AcquireDepthStencilState(variantDescr.depthStateDescriptor);
         variant->shader = variantDescr.shader;
+        variant->cullMode = variantDescr.cullMode;
         renderVariants[variantDescr.passName] = variant;
     }
 
@@ -481,19 +482,30 @@ void NMaterial::RebuildTextureBindings()
     for (auto& variant : renderVariants)
     {
         RenderVariantInstance* currRenderVariant = variant.second;
+        
+        //release existing
+        if (currRenderVariant->textureSet.IsValid())
+            rhi::ReleaseTextureSet(currRenderVariant->textureSet);
+        if (currRenderVariant->samplerState.IsValid())
+            rhi::ReleaseSamplerState(currRenderVariant->samplerState);
+
         ShaderDescriptor *currShader = currRenderVariant->shader;
         if (!currShader) //cant build for empty shader
             continue;
-        rhi::TextureSetDescriptor descr;
-        descr.count = currShader->fragmentSamplerList.size();
-        for (size_t i = 0, sz = descr.count; i < sz; ++i)
+        rhi::TextureSetDescriptor textureDescr;
+        rhi::SamplerState::Descriptor samplerDescr;
+        textureDescr.count = currShader->fragmentSamplerList.size();
+        samplerDescr.count = currShader->fragmentSamplerList.size();
+        for (size_t i = 0, sz = textureDescr.count; i < sz; ++i)
         {            
             Texture *tex = GetMaterialTexture(currShader->fragmentSamplerList[i].uid);
             DVASSERT(tex);
-            descr.texture[i] = tex->handle;            
+            textureDescr.texture[i] = tex->handle;      
+            samplerDescr.sampler[i] = tex->samplerState;
         }
-            
-        currRenderVariant->textureSet = rhi::AcquireTextureSet(descr);
+                    
+        currRenderVariant->textureSet = rhi::AcquireTextureSet(textureDescr);
+        currRenderVariant->samplerState = rhi::AcquireSamplerState(samplerDescr);
     }
 
     needRebuildTextures = false;

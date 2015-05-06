@@ -49,7 +49,7 @@ _CmpFunc( CmpFunc func )
         case CMP_LESSEQUAL      : f = D3DCMP_LESSEQUAL; break;
         case CMP_GREATER        : f = D3DCMP_GREATER; break;
         case CMP_NOTEQUAL       : f = D3DCMP_NOTEQUAL; break;
-        case CML_GREATEREQUAL   : f = D3DCMP_GREATEREQUAL; break;
+        case CMP_GREATEREQUAL   : f = D3DCMP_GREATEREQUAL; break;
         case CMP_ALWAYS         : f = D3DCMP_ALWAYS; break;
     }
 

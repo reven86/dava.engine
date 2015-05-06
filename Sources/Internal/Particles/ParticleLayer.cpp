@@ -73,8 +73,7 @@ ParticleLayer::ParticleLayer()
 	angle = 0;
 	angleVariation = 0;
 	
-	srcBlendFactor = BLEND_SRC_ALPHA;
-	dstBlendFactor = BLEND_ONE;
+    blending = BLENDING_ALPHABLEND;
 	enableFog = true;
 	enableFrameBlend = false;
 	inheritPosition = false;
@@ -197,8 +196,7 @@ ParticleLayer * ParticleLayer::Clone()
 	
 	dstLayer->layerName = layerName;
 	
-	dstLayer->srcBlendFactor = srcBlendFactor;
-	dstLayer->dstBlendFactor = dstBlendFactor;
+	dstLayer->blending = blending;	
 	dstLayer->enableFog=enableFog;
 	dstLayer->enableFrameBlend = enableFrameBlend;
 	dstLayer->inheritPosition = inheritPosition;
@@ -563,25 +561,24 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 	{
 		if (blend->AsString() == "alpha")
 		{
-			srcBlendFactor = BLEND_SRC_ALPHA;
-			dstBlendFactor = BLEND_ONE_MINUS_SRC_ALPHA;
+            blending = BLENDING_ALPHABLEND;
 		}
 		if (blend->AsString() == "add")
 		{
-			srcBlendFactor = BLEND_SRC_ALPHA;
-			dstBlendFactor = BLEND_ONE;
+            blending = BLENDING_ADDITIVE;
 		}			
 	}
 	
 	//or set blending factors directly
 	const YamlNode * blendSrcNode = node->Get("srcBlendFactor");
 	const YamlNode * blendDestNode = node->Get("dstBlendFactor");
-	if(blendSrcNode && blendDestNode)
+#if RHI_COMPLETE
+    if(blendSrcNode && blendDestNode)
 	{
 		srcBlendFactor = GetBlendModeByName(blendSrcNode->AsString());
 		dstBlendFactor = GetBlendModeByName(blendDestNode->AsString());	
 	}
-
+#endif // RHI_COMPLETE
 	const YamlNode * fogNode = node->Get("enableFog");
 	if (fogNode)
 	{
@@ -718,8 +715,10 @@ void ParticleLayer::SaveToYamlNode(const FilePath & configPath, YamlNode* parent
 	    PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "sprite", relativePath);
     }
 
+#if RHI_COMPLETE
 	layerNode->Add("srcBlendFactor", BLEND_MODE_NAMES[(int32)srcBlendFactor]);
 	layerNode->Add("dstBlendFactor", BLEND_MODE_NAMES[(int32)dstBlendFactor]);
+#endif RHI_COMPLETE
 
 	layerNode->Add("enableFog", enableFog);	
 	layerNode->Add("enableFrameBlend", enableFrameBlend);	

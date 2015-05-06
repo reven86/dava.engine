@@ -114,7 +114,7 @@ struct ParticleLayer : public BaseObject
 	FilePath		spritePath;		
 	bool isLooped;
 	bool isLong;
-	eBlendMode srcBlendFactor, dstBlendFactor;
+	eBlending blending;
 	bool enableFog;
 	bool enableFrameBlend;
 	bool inheritPosition;  //for super emitter - if true the whole emitter would be moved, otherwise just emission point	

@@ -49,7 +49,7 @@ _CmpFunc( CmpFunc func )
         case CMP_LESSEQUAL      : f = GL_LEQUAL; break;
         case CMP_GREATER        : f = GL_GREATER; break;
         case CMP_NOTEQUAL       : f = GL_NOTEQUAL; break;
-        case CML_GREATEREQUAL   : f = GL_GEQUAL; break;
+        case CMP_GREATEREQUAL   : f = GL_GEQUAL; break;
         case CMP_ALWAYS         : f = GL_ALWAYS; break;
     }
     
