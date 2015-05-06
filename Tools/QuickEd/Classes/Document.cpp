@@ -16,6 +16,7 @@
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/SectionProperty.h"
 #include "Model/ControlProperties/ValueProperty.h"
+#include "Model/ControlProperties/LocalizedTextValueProperty.h"
 
 #include "SharedData.h"
 
@@ -74,13 +75,18 @@ void Document::UpdateLanguageRecursively(ControlNode *node)
     for (int index = 0; index < propertiesCount; ++index)
     {
         SectionProperty *section = dynamic_cast<SectionProperty*>(propertiesRoot->GetProperty(index));
-        int sectionCount = section->GetCount();
-        for (int prop = 0; prop < sectionCount; ++prop)
+        if (section)
         {
-            ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
-            if (valueProperty->GetName() == "text")
+            int sectionCount = section->GetCount();
+            for (int prop = 0; prop < sectionCount; ++prop)
             {
-                valueProperty->SetValue(valueProperty->GetValue());
+                ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
+                if (valueProperty && valueProperty->GetName() == "text")
+                {
+                    LocalizedTextValueProperty *textValueProperty = dynamic_cast<LocalizedTextValueProperty*>(valueProperty);
+                    if (textValueProperty)
+                        textValueProperty->RefreshLocalizedValue();
+                }
             }
         }
     }

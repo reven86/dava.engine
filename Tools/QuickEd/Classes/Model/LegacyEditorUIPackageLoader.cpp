@@ -8,6 +8,7 @@
 #include "UI/UIStaticText.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/UIPackage.h"
+#include "StringUtils.h"
 
 using namespace DAVA;
 
@@ -34,9 +35,13 @@ LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(AbstractUIPackageBuilde
     propertyNamesMap["UIButton"]["fitting"] = "stateFittingOption";
     propertyNamesMap["UIButton"]["textalign"] = "stateTextAlign";
     propertyNamesMap["UIButton"]["textcolorInheritType"] = "stateTextColorInheritType";
+    propertyNamesMap["UIButton"]["textUseRtlAlign"] = "stateTextUseRtlAlign";
+    propertyNamesMap["UIButton"]["textMargins"] = "stateTextMargins";
     propertyNamesMap["UIButton"]["margins"] = "stateMargins";
-    
+    propertyNamesMap["UIStaticText"]["textColor"] = "textcolor";
+
     baseClasses["UIButton"] = "UIControl";
+    baseClasses["UIListCell"] = "UIButton";
 }
 
 LegacyEditorUIPackageLoader::~LegacyEditorUIPackageLoader()
@@ -226,6 +231,15 @@ void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *contro
                 }
                 
                 memberName = GetOldBgPrefix(className, bgName) + memberName + GetOldBgPostfix(className, bgName);
+
+                if (memberName == "minperPixelAccuracy")
+                {
+                    memberName = "minpixelAccuracy";
+                }
+                else if (memberName == "maxperPixelAccuracy")
+                {
+                    memberName = "maxpixelAccuracy";
+                }
                 
                 VariantType res = ReadVariantTypeFromYamlNode(member, node, subNodeIndex, memberName);
                 builder->ProcessProperty(member, res);
@@ -277,11 +291,27 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
             }
             else
             {
-                if (propertyName == "multiline")
+                static const std::set<String> textFieldEnums = {
+                    "autoCapitalizationType",
+                    "autoCorrectionType",
+                    "spellCheckingType",
+                    "keyboardAppearanceType",
+                    "keyboardType",
+                    "returnKeyType"
+                };
+
+                if (strcmp(member->Name(), "multiline") == 0)
                 {
                     if (valueNode->AsBool())
                     {
-                        const YamlNode *bySymbolNode = node->Get("multilineBySymbol");
+                        String multilineBySymbolProperty = "multilineBySymbol";
+                        if (propertyName != "multiline")
+                        {
+                            multilineBySymbolProperty = propertyName;
+                            DVVERIFY(FindAndReplace(multilineBySymbolProperty, "Multiline", "MultilineBySymbol"));
+                        }
+
+                        const YamlNode *bySymbolNode = node->Get(multilineBySymbolProperty);
                         if (bySymbolNode && bySymbolNode->AsBool())
                             return VariantType(UIStaticText::MULTILINE_ENABLED_BY_SYMBOL);
                         else
@@ -292,29 +322,39 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
                         return VariantType(UIStaticText::MULTILINE_DISABLED);
                     }
                 }
-                else
+                else if (textFieldEnums.find(propertyName) != textFieldEnums.end())
                 {
-                    DVASSERT(false);
+                    return VariantType(valueNode->AsInt32());
                 }
             }
         }
         else if (member->Desc().type == InspDesc::T_FLAGS)
         {
-            int32 val = 0;
-            for (uint32 i = 0; i < valueNode->GetCount(); i++)
+            if (valueNode->GetType() == YamlNode::TYPE_ARRAY)
             {
-                const YamlNode *flagNode = valueNode->Get(i);
-                int32 flag = 0;
-                if (member->Desc().enumMap->ToValue(flagNode->AsString().c_str(), flag))
+                int32 val = 0;
+                for (uint32 i = 0; i < valueNode->GetCount(); i++)
                 {
-                    val |= flag;
+                    const YamlNode *flagNode = valueNode->Get(i);
+                    int32 flag = 0;
+                    if (member->Desc().enumMap->ToValue(flagNode->AsString().c_str(), flag))
+                    {
+                        val |= flag;
+                    }
+                    else
+                    {
+                        DVASSERT_MSG(false, Format("No convertion from string to flag value."
+                                                   "\n Yaml property name: \"%s\""
+                                                   "\n Introspection property name: \"%s\""
+                                                   "\n String value: \"%s\"", propertyName.c_str(), member->Name(), flagNode->AsString().c_str()).c_str());
+                    }
                 }
-                else
-                {
-                    DVASSERT(false);
-                }
+                return VariantType(val);
             }
-            return VariantType(val);
+            else if (propertyName.find("stateFittingOption") != String::npos)
+            {
+                return VariantType(valueNode->AsInt32());
+            }
         }
         else if (propertyName == "pivot")
         {
@@ -350,11 +390,10 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
             return VariantType(valueNode->AsVector4());
         else if (member->Type() == MetaInfo::Instance<FilePath>())
             return VariantType(FilePath(valueNode->AsString()));
-        else
-        {
-            DVASSERT(false);
-            return VariantType();
-        }
+
+        DVASSERT_MSG(false, Format("No legacy convertion for property."
+                                   "\n Yaml property name: \"%s\""
+                                   "\n Introspection property name: \"%s\"", propertyName.c_str(), member->Name()).c_str());
     }
     else
     {
@@ -407,6 +446,10 @@ String LegacyEditorUIPackageLoader::GetOldBgPostfix(const String &controlClassNa
 {
     if (controlClassName == "UIButton")
         return name;
-    else
-        return "";
+
+    auto baseIt = baseClasses.find(controlClassName);
+    if (baseIt != baseClasses.end())
+        return GetOldBgPostfix(baseIt->second, name);
+
+    return "";
 }
