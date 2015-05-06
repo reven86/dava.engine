@@ -51,7 +51,7 @@
 #include "Render/Highlevel/Vegetation/RenderBatchPool.h"
 #include "Render/Highlevel/Vegetation/VegetationRenderData.h"
 #include "Render/Highlevel/Vegetation/VegetationSpatialData.h"
-#include "Render/Highlevel/Vegetation/VegetationCustomGeometrySerializationData.h"
+#include "Render/Highlevel/Vegetation/VegetationGeometryData.h"
 #include "Render/Highlevel/Vegetation/VegetationGeometry.h"
 
 namespace DAVA
@@ -187,23 +187,14 @@ private:
     Vector2 GetVegetationUnitWorldSize(float32 resolution) const;
     
     void BuildSpatialStructure();
-    void BuildSpatialQuad(AbstractQuadTreeNode<VegetationSpatialData>* node,
-                          AbstractQuadTreeNode<VegetationSpatialData>* firstRenderableParent,
-                          int16 x, int16 y,
-                          uint16 width, uint16 height,
-                          AABBox3& parentBox);
+    void BuildSpatialQuad(AbstractQuadTreeNode<VegetationSpatialData>* node, AbstractQuadTreeNode<VegetationSpatialData>* firstRenderableParent, int16 x, int16 y, uint16 width, uint16 height, AABBox3& parentBox);
     
     Vector<AbstractQuadTreeNode<VegetationSpatialData>*> & BuildVisibleCellList(Camera * forCamera);
     
-    void BuildVisibleCellList(const Vector3& cameraPoint,
-                              Frustum* frustum,
-                              uint8 planeMask,
-                              AbstractQuadTreeNode<VegetationSpatialData>* node,
-                              Vector<AbstractQuadTreeNode<VegetationSpatialData>*>& cellList,
-                              bool evaluateVisibility);
-    inline void AddVisibleCell(AbstractQuadTreeNode<VegetationSpatialData>* node,
-                               float32 refDistance,
-                               Vector<AbstractQuadTreeNode<VegetationSpatialData>*>& cellList);
+    void BuildVisibleCellList(const Vector3& cameraPoint, Frustum* frustum, uint8 planeMask, AbstractQuadTreeNode<VegetationSpatialData>* node,
+        Vector<AbstractQuadTreeNode<VegetationSpatialData>*>& cellList, bool evaluateVisibility);
+
+    inline void AddVisibleCell(AbstractQuadTreeNode<VegetationSpatialData>* node, float32 refDistance, Vector<AbstractQuadTreeNode<VegetationSpatialData>*>& cellList);
     
     static bool CellByDistanceCompareFunction(const AbstractQuadTreeNode<VegetationSpatialData>* a, const AbstractQuadTreeNode<VegetationSpatialData>*  b);
     
@@ -231,8 +222,8 @@ private:
     void InitWithCustomGeometry(FastNameSet& materialFlags);
     
     void SetCustomGeometryPathInternal(const FilePath& path);
-    VegetationCustomGeometrySerializationDataPtr LoadCustomGeometryData(SerializationContext* context, KeyedArchive* srcArchive);
-    void SaveCustomGeometryData(SerializationContext* context, KeyedArchive* dstArchive, const VegetationCustomGeometrySerializationDataPtr& data);
+    VegetationGeometryDataPtr LoadCustomGeometryData(SerializationContext* context, KeyedArchive* srcArchive);
+    void SaveCustomGeometryData(SerializationContext* context, KeyedArchive* dstArchive, const VegetationGeometryDataPtr & data);
     
     void GenerateDensityMapFromTransparencyMask(FilePath lightmapPath, Vector<bool>& densityMapBits);
     Image* LoadSingleImage(const FilePath& path) const;
@@ -288,7 +279,7 @@ private:
     
     float32 cameraBias;
     
-    VegetationCustomGeometrySerializationDataPtr customGeometryData;
+    VegetationGeometryDataPtr customGeometryData;
     
     Vector4 layersAnimationAmplitude;
     Vector4 layersAnimationSpring;
@@ -297,7 +288,6 @@ private:
     Vector<bool> densityMap;
     
     Vector<VegetationLayerParams> layerParams;
-    
     
 public:
     

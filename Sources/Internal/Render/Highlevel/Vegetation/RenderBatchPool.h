@@ -34,7 +34,6 @@
 #include "Base/FastName.h"
 #include "Render/RenderBase.h"
 #include "Base/BaseMath.h"
-#include "Render/Highlevel/Vegetation/VegetationMaterialTransformer.h"
 
 
 namespace DAVA
@@ -53,9 +52,9 @@ public:
     RenderBatchPool();
     ~RenderBatchPool();
 
-    void Init(NMaterial* key, uint32 initialCount, VegetationMaterialTransformer* transform);
+    void Init(NMaterial* key, uint32 initialCount);
     void Clear();
-    RenderBatch* Get(NMaterial* key, VegetationMaterialTransformer* transform);
+    RenderBatch* Get(NMaterial* key);
     void Return(NMaterial* key, uint32 count);
     void ReturnAll(NMaterial* key);
     void ReturnAll();
@@ -74,7 +73,7 @@ private:
     HashMap<NMaterial*, RenderBatchPoolEntry*> pool;
     
     void ReleasePool();
-    RenderBatch* CreateRenderBatch(NMaterial* mat, RenderBatchPoolEntry* entry, VegetationMaterialTransformer* transform);
+    RenderBatch* CreateRenderBatch(NMaterial* mat, RenderBatchPoolEntry* entry);
 };
 
 }

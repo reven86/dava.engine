@@ -39,7 +39,7 @@
 #include "Platform/SystemTimer.h"
 #include "Job/JobManager.h"
 
-#include "Render/Highlevel/Vegetation/VegetationCustomSLGeometry.h"
+#include "Render/Highlevel/Vegetation/VegetationGeometry.h"
 
 namespace DAVA
 {
@@ -198,7 +198,7 @@ RenderObject* VegetationRenderObject::Clone(RenderObject *newObject)
     vegetationRenderObject->customGeometryData.reset();
     if(customGeometryData)
     {
-        vegetationRenderObject->customGeometryData.reset(new VegetationCustomGeometrySerializationData(*customGeometryData));
+        vegetationRenderObject->customGeometryData.reset(new VegetationGeometryData(*customGeometryData));
     }
     
     vegetationRenderObject->densityMap.clear();
@@ -457,13 +457,12 @@ void VegetationRenderObject::PrepareToRender(Camera * camera)
     
     if(visibleCellCount > renderBatchCount)
     {
-        VegetationMaterialTransformer* materialTransform = vegetationGeometry->GetMaterialTransform();
         NMaterial* rootMaterial = renderDataObj->GetMaterial();
         
         size_t batchDelta = visibleCellCount - renderBatchCount;
         for(size_t i = 0; i < batchDelta; ++i)
         {
-            RenderBatch* rb = renderBatchPool.Get(rootMaterial, materialTransform);
+            RenderBatch* rb = renderBatchPool.Get(rootMaterial);
             AddRenderBatch(rb);
         }
     }
@@ -977,18 +976,17 @@ void VegetationRenderObject::CreateRenderData()
     
     SafeRelease(props);
 
-    VegetationMaterialTransformer* materialTransform = vegetationGeometry->GetMaterialTransform();
     renderBatchPool.Clear();
     size_t renderDataCount = renderData.size();
     for(size_t i = 0; i < renderDataCount; ++i)
     {
-        renderBatchPool.Init(renderData[i]->GetMaterial(), 16, materialTransform);
+        renderBatchPool.Init(renderData[i]->GetMaterial(), 16);
     }
 }
    
 void VegetationRenderObject::InitWithCustomGeometry(FastNameSet& materialFlags)
 {
-    vegetationGeometry = new VegetationCustomSLGeometry(layerParams,
+    vegetationGeometry = new VegetationGeometry(layerParams,
                                                       MAX_DENSITY_LEVELS,
                                                       GetVegetationUnitWorldSize(RESOLUTION_SCALE[0]),
                                                       customGeometryPath,
@@ -1086,8 +1084,8 @@ void VegetationRenderObject::SetCustomGeometryPath(const FilePath& path)
 {
     if (!path.IsEmpty() && path.Exists())
     {
-        VegetationCustomGeometrySerializationDataPtr fetchedData = 
-            VegetationCustomGeometrySerializationDataReader::ReadScene(path);
+        VegetationGeometryDataPtr fetchedData = 
+            VegetationGeometryDataReader::ReadScene(path);
 
         if (fetchedData)
         {
@@ -1107,7 +1105,7 @@ void VegetationRenderObject::SetCustomGeometryPathInternal(const FilePath& path)
     }
 }
 
-VegetationCustomGeometrySerializationDataPtr VegetationRenderObject::LoadCustomGeometryData(SerializationContext* context, KeyedArchive* srcArchive)
+VegetationGeometryDataPtr VegetationRenderObject::LoadCustomGeometryData(SerializationContext* context, KeyedArchive* srcArchive)
 {
     uint32 layerCount = srcArchive->GetUInt32("cgsd.layerCount");
     
@@ -1183,18 +1181,12 @@ VegetationCustomGeometrySerializationDataPtr VegetationRenderObject::LoadCustomG
         }
     }
 
-    VegetationCustomGeometrySerializationDataPtr data(new VegetationCustomGeometrySerializationData(materials,
-                                                                                                    positions,
-                                                                                                    texCoords,
-                                                                                                    normals,
-                                                                                                    indices));
+    VegetationGeometryDataPtr data(new VegetationGeometryData(materials, positions, texCoords, normals, indices));
     
     return data;
 }
     
-void VegetationRenderObject::SaveCustomGeometryData(SerializationContext* context,
-                                                    KeyedArchive* dstArchive,
-                                                    const VegetationCustomGeometrySerializationDataPtr& data)
+void VegetationRenderObject::SaveCustomGeometryData(SerializationContext* context, KeyedArchive* dstArchive, const VegetationGeometryDataPtr & data)
 {
     uint32 layerCount = data->GetLayerCount();
     dstArchive->SetUInt32("cgsd.layerCount", layerCount);

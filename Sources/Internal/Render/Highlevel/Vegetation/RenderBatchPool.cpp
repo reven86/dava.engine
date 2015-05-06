@@ -58,7 +58,7 @@ RenderBatchPool::~RenderBatchPool()
     ReleasePool();
 }
 
-void RenderBatchPool::Init(NMaterial* key, uint32 initialCount, VegetationMaterialTransformer* transform)
+void RenderBatchPool::Init(NMaterial* key, uint32 initialCount)
 {
     DVASSERT(key);
     
@@ -68,7 +68,7 @@ void RenderBatchPool::Init(NMaterial* key, uint32 initialCount, VegetationMateri
         entry = new RenderBatchPoolEntry();
         for(uint32 i = 0; i < initialCount; ++i)
         {
-            CreateRenderBatch(key, entry, transform);
+            CreateRenderBatch(key, entry);
         }
         
         pool.insert(key, entry);
@@ -80,7 +80,7 @@ void RenderBatchPool::Clear()
     ReleasePool();
 }
 
-RenderBatch* RenderBatchPool::Get(NMaterial* key, VegetationMaterialTransformer* transform)
+RenderBatch* RenderBatchPool::Get(NMaterial* key)
 {
     DVASSERT(key);
 
@@ -92,7 +92,7 @@ RenderBatch* RenderBatchPool::Get(NMaterial* key, VegetationMaterialTransformer*
     size_t currentPoolSize = entry->renderBatches.size();
     if(currentPoolSize <= (size_t)entry->poolLine)
     {
-        rb = CreateRenderBatch(key, entry, transform);
+        rb = CreateRenderBatch(key, entry);
     }
     else
     {
@@ -145,21 +145,15 @@ void RenderBatchPool::ReleasePool()
     pool.clear();
 }
 
-RenderBatch* RenderBatchPool::CreateRenderBatch(NMaterial* mat,
-                                        RenderBatchPoolEntry* entry,
-                                        VegetationMaterialTransformer* transform)
+RenderBatch* RenderBatchPool::CreateRenderBatch(NMaterial* mat, RenderBatchPoolEntry* entry)
 {
     RenderBatch* rb = new RenderBatch();
 
     NMaterial* batchMaterial = new NMaterial();
     batchMaterial->AddNodeFlags(DataNode::NodeRuntimeFlag);
     batchMaterial->SetParent(mat);
-    
-    if(transform)
-    {
-        transform->TransformMaterialOnCreate(batchMaterial);
-    }
-    
+    //batchMaterial->SetRenderLayers(1 << RENDER_LAYER_VEGETATION_ID);  //RHI_COMPLETE render layer for material
+
     rb->SetMaterial(batchMaterial);
     
     SafeRelease(batchMaterial);
