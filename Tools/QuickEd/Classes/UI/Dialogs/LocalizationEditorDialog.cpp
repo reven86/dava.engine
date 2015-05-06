@@ -647,7 +647,7 @@ void LocalizationEditorDialog::UpdateDefaultLanguage()
 {
     // Get description for current language ID
     auto id = LocalizationSystem::Instance()->GetCurrentLocale();
-    auto locales = GetEditorLocalizationSystem()->GetAvailableLocales();
+    const auto &locales = GetEditorLocalizationSystem()->GetAvailableLocales();
     auto it = std::find(locales.begin(), locales.end(), QString::fromStdString(id));
     auto index = std::distance(locales.begin(), it); // this is works only for arrays and vectors
     currentLocaleComboBox->setCurrentIndex(index);
@@ -701,7 +701,7 @@ void LocalizationEditorDialog::ReinitializeLocalizationSystem(const QString& loc
         return;
     }
 
-    const QStringList &locales = GetEditorLocalizationSystem()->GetAvailableLocales();
+    const auto &locales = GetEditorLocalizationSystem()->GetAvailableLocales();
     QString locale = locales.at(languageItemID);
     // Re-initialize the Localization System with the new Locale.
     GetEditorLocalizationSystem()->Cleanup();
