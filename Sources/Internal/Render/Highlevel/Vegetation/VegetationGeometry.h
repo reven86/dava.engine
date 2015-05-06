@@ -41,7 +41,6 @@
 #include "Render/Material.h"
 #include "Render/Material/NMaterial.h"
 
-#include "Render/Highlevel/Vegetation/TextureSheet.h"
 #include "Render/Highlevel/Vegetation/VegetationGeometry.h"
 #include "Render/Highlevel/Vegetation/VegetationSpatialData.h"
 #include "Render/Highlevel/Vegetation/VegetationGeometryData.h"
@@ -85,8 +84,8 @@ public:
                              const VegetationGeometryDataPtr & geometryData);
     virtual ~VegetationGeometry();
     
-    void Build(Vector<VegetationRenderData*>& renderDataArray, const FastNameSet& materialFlags);
-    void OnVegetationPropertiesChanged(Vector<VegetationRenderData*>& renderDataArray, KeyedArchive* props);
+    void Build(VegetationRenderData* renderData, const FastNameSet& materialFlags);
+    void OnVegetationPropertiesChanged(NMaterial* material, KeyedArchive* props);
 
     void SetupCameraPositions(const AABBox3& bbox, Vector<Vector3>& positions);
     uint32 GetSortDirectionCount();

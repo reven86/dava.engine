@@ -60,10 +60,6 @@ struct VegetationSortedBufferItem
 {
     Vector3 sortDirection;
 
-    rhi::HVertexBuffer vertexBuffer;
-    uint32 vertexCount;
-    uint32 vertexBase;
-    rhi::HIndexBuffer indexBuffer;
     uint32 startIndex;
     uint32 indexCount;
 };

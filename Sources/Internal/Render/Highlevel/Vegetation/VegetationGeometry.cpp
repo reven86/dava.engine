@@ -30,7 +30,6 @@
 
 #include "Render/Material/NMaterial.h"
 #include "Render/Material/NMaterialNames.h"
-#include "Render/Highlevel/Vegetation/TextureSheet.h"
 #include "Render/Highlevel/Vegetation/VegetationGeometry.h"
 #include "Utils/Random.h"
 #include "FileSystem/KeyedArchive.h"
@@ -153,10 +152,8 @@ VegetationGeometry::~VegetationGeometry()
 {
 }
 
-void VegetationGeometry::Build(Vector<VegetationRenderData*>& renderDataArray, const FastNameSet& materialFlags)
+void VegetationGeometry::Build(VegetationRenderData * renderData, const FastNameSet& materialFlags)
 {
-    renderDataArray.clear();
-    
     size_t customGeometryDataCount = customGeometryData.size();
     if(customGeometryDataCount == 0)
     {
@@ -164,9 +161,6 @@ void VegetationGeometry::Build(Vector<VegetationRenderData*>& renderDataArray, c
     }
     
     PrepareBoundingBoxes();
-    
-    VegetationRenderData* renderData = new VegetationRenderData();
-    renderDataArray.push_back(renderData);
     
     Vector<VegetationVertex>& vertexData = renderData->GetVertices();
     Vector<VegetationIndex>& indexData = renderData->GetIndices();
@@ -197,14 +191,6 @@ void VegetationGeometry::Build(Vector<VegetationRenderData*>& renderDataArray, c
             GenerateIndexData(customGeometryData, clusterResolution, cellOffsets[cellIndex], vertexData, indexData, directionOffsets);
         }
     }
-    
-    uint32 vertexBufferSize = vertexData.size() * sizeof(VegetationVertex);
-    rhi::HVertexBuffer vertexBuffer = rhi::CreateVertexBuffer(vertexBufferSize);
-    rhi::UpdateVertexBuffer(vertexBuffer, &vertexData.front(), 0, vertexBufferSize);
-
-    uint32 indexBufferSize = indexData.size() * sizeof(VegetationIndex);
-    rhi::HIndexBuffer indexBuffer = rhi::CreateIndexBuffer(indexBufferSize);
-    rhi::UpdateIndexBuffer(indexBuffer, &indexData.front(), 0, indexBufferSize);
 
     Vector<Vector<Vector<VegetationSortedBufferItem> > >& indexBuffers = renderData->GetIndexBuffers();
     for(size_t resolutionIndex = 0; resolutionIndex < resolutionCount; ++resolutionIndex)
@@ -230,10 +216,6 @@ void VegetationGeometry::Build(Vector<VegetationRenderData*>& renderDataArray, c
                 sortedIndexBufferItems.push_back(VegetationSortedBufferItem());
                 VegetationSortedBufferItem& sortBufferItem = sortedIndexBufferItems[directionIndex];
 
-                sortBufferItem.vertexBuffer = vertexBuffer;
-                sortBufferItem.vertexCount = vertexData.size();
-                sortBufferItem.vertexBase = 0;
-                sortBufferItem.indexBuffer = indexBuffer;
                 sortBufferItem.startIndex = sortData.indexOffset;
                 sortBufferItem.indexCount = sortData.size;
 
@@ -242,25 +224,22 @@ void VegetationGeometry::Build(Vector<VegetationRenderData*>& renderDataArray, c
         }
     }
 
-    // RHI_COMPLETE - note: copy-paste form VegetationCustomGeometry
+    NMaterial* material = customGeometryData[0].material;
+    renderData->SetMaterial(material);
+
+    material->SetFlag(VegetationPropertyNames::FLAG_GRASS_OPAQUE, 1);
+    material->SetFlag(VegetationPropertyNames::FLAG_GRASS_TRANSFORM_WAVE, 1);
+    //material->SetRenderLayers(1 << RENDER_LAYER_VEGETATION_ID); //RHI_COMPLETE render layer for material
+
+    FastNameSet::iterator end = materialFlags.end();
+    for (FastNameSet::iterator it = materialFlags.begin(); it != end; ++it)
     {
-        NMaterial* material = customGeometryData[0].material;
-        renderData->SetMaterial(material);
-
-        material->SetFlag(VegetationPropertyNames::FLAG_GRASS_OPAQUE, 1);
-        material->SetFlag(VegetationPropertyNames::FLAG_GRASS_TRANSFORM_WAVE, 1);
-        //material->SetRenderLayers(1 << RENDER_LAYER_VEGETATION_ID); //RHI_COMPLETE render layer for material
-
-
-        FastNameSet::iterator end = materialFlags.end();
-        for (FastNameSet::iterator it = materialFlags.begin(); it != end; ++it)
-        {
-            material->SetFlag(it->first, 1);
-        }
-
-        Vector4 worldSize4(worldSize.x, worldSize.y, worldSize.z, 0.f);
-        material->AddProperty(VegetationPropertyNames::UNIFORM_WORLD_SIZE, worldSize4.data, rhi::ShaderProp::TYPE_FLOAT4);
+        material->SetFlag(it->first, 1);
     }
+
+    Vector4 worldSize4(worldSize.x, worldSize.y, worldSize.z, 0.f);
+    material->AddProperty(VegetationPropertyNames::UNIFORM_WORLD_SIZE, worldSize4.data, rhi::ShaderProp::TYPE_FLOAT4);
+
     //fill in metrics data
     size_t layerCount = customGeometryData.size();
     for(size_t layerIndex = 0; layerIndex < layerCount; ++layerIndex)
@@ -284,10 +263,8 @@ void VegetationGeometry::Build(Vector<VegetationRenderData*>& renderDataArray, c
     }
 }
 
-void VegetationGeometry::OnVegetationPropertiesChanged(Vector<VegetationRenderData*>& renderDataArray, KeyedArchive* props)
+void VegetationGeometry::OnVegetationPropertiesChanged(NMaterial * mat, KeyedArchive* props)
 {
-    NMaterial* mat = renderDataArray[0]->GetMaterial();
-    
     if(mat)
     {
         String lightmapKeyName = VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP.c_str();
