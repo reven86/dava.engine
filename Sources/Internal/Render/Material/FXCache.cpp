@@ -246,69 +246,74 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                             {
                                 const YamlNode * stencilRefNode = stencilNode->Get("ref");
                                 if (stencilRefNode)
-                                    passDescriptor.depthStateDescriptor.stencilRefValue = stencilRefNode->AsInt32();
+                                {
+                                    uint8 refValue = (uint8) stencilRefNode->AsInt32();
+                                    passDescriptor.depthStateDescriptor.stencilBack.refValue = refValue;
+                                    passDescriptor.depthStateDescriptor.stencilFront.refValue = refValue;
+                                }                                    
 
                                 const YamlNode * stencilMaskNode = stencilNode->Get("mask");
                                 if (stencilMaskNode)
                                 {
-                                    passDescriptor.depthStateDescriptor.stencilWriteMask = stencilMaskNode->AsUInt32();
+                                    uint8 maskValue = (uint8)stencilMaskNode->AsInt32();
+                                    passDescriptor.depthStateDescriptor.stencilBack.readMask = maskValue;
+                                    passDescriptor.depthStateDescriptor.stencilBack.writeMask = maskValue;
+                                    passDescriptor.depthStateDescriptor.stencilFront.readMask = maskValue;
+                                    passDescriptor.depthStateDescriptor.stencilFront.writeMask = maskValue;                                    
                                 }                                                                        
-#if RHI_COMPLETE
+
                                 const YamlNode * stencilFuncNode = stencilNode->Get("funcFront");
                                 if (stencilFuncNode)
                                 {
-                                    passDescriptor.depthStateDescriptor.stencilFunc
-                                    stateData.stencilFunc[FACE_FRONT] = GetCmpFuncByName(stencilFuncNode->AsString());
+                                    passDescriptor.depthStateDescriptor.stencilFront.func = GetCmpFuncByName(stencilFuncNode->AsString());
                                 }
 
                                 stencilFuncNode = stencilNode->Get("funcBack");
                                 if (stencilFuncNode)
                                 {
-                                    stateData.stencilFunc[FACE_BACK] = GetCmpFuncByName(stencilFuncNode->AsString());
+                                    passDescriptor.depthStateDescriptor.stencilBack.func = GetCmpFuncByName(stencilFuncNode->AsString());
                                 }
 
                                 const YamlNode * stencilPassNode = stencilNode->Get("passFront");
                                 if (stencilPassNode)
                                 {
-                                    stateData.stencilPass[FACE_FRONT] = GetStencilOpByName(stencilPassNode->AsString());
+                                    passDescriptor.depthStateDescriptor.stencilFront.depthStencilPassOperation = GetStencilOpByName(stencilPassNode->AsString());                                    
                                 }
 
                                 stencilPassNode = stencilNode->Get("passBack");
                                 if (stencilPassNode)
                                 {
-                                    stateData.stencilPass[FACE_BACK] = GetStencilOpByName(stencilPassNode->AsString());
+                                    passDescriptor.depthStateDescriptor.stencilBack.depthStencilPassOperation = GetStencilOpByName(stencilPassNode->AsString());
                                 }
 
                                 const YamlNode * stencilFailNode = stencilNode->Get("failFront");
                                 if (stencilFailNode)
                                 {
-                                    stateData.stencilFail[FACE_FRONT] = GetStencilOpByName(stencilFailNode->AsString());
+                                    passDescriptor.depthStateDescriptor.stencilFront.failOperation = GetStencilOpByName(stencilFailNode->AsString());
                                 }
 
                                 stencilFailNode = stencilNode->Get("failBack");
                                 if (stencilFailNode)
                                 {
-                                    stateData.stencilFail[FACE_BACK] = GetStencilOpByName(stencilFailNode->AsString());
+                                    passDescriptor.depthStateDescriptor.stencilBack.failOperation = GetStencilOpByName(stencilFailNode->AsString());
                                 }
 
                                 const YamlNode * stencilZFailNode = stencilNode->Get("zFailFront");
                                 if (stencilZFailNode)
                                 {
-                                    stateData.stencilZFail[FACE_FRONT] = GetStencilOpByName(stencilZFailNode->AsString());
+                                    passDescriptor.depthStateDescriptor.stencilFront.depthFailOperation = GetStencilOpByName(stencilZFailNode->AsString());
                                 }
 
                                 stencilZFailNode = stencilNode->Get("zFailBack");
                                 if (stencilZFailNode)
                                 {
-                                    stateData.stencilZFail[FACE_BACK] = GetStencilOpByName(stencilZFailNode->AsString());
+                                    passDescriptor.depthStateDescriptor.stencilBack.depthFailOperation = GetStencilOpByName(stencilZFailNode->AsString());
                                 }
-#endif // RHI_COMPLETE
                             }
                         }
 
                     }                        
-                }
-                passDescriptor.depthStateDescriptor = LoadDepthStencilState(renderStateNode);
+                }                
             }
 
             
@@ -322,115 +327,6 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
     return fxDescriptors[key] = target;
 }
 
-
-rhi::DepthStencilState::Descriptor LoadDepthStencilState(const YamlNode* stateNode)
-{
-    rhi::DepthStencilState::Descriptor descr;
-    return descr;
-    /*const YamlNode * stateNode = renderStateNode->Get("state");
-    if (stateNode)
-    {
-        Vector<String> states;
-        Split(stateNode->AsString(), "| ", states);
-        uint32 currentState = 0;
-        for (Vector<String>::const_iterator it = states.begin(); it != states.end(); it++)
-            currentState |= GetRenderStateByName((*it));
-
-        stateData.state = currentState;
-    }
-
-    const YamlNode * blendSrcNode = renderStateNode->Get("blendSrc");
-    const YamlNode * blendDestNode = renderStateNode->Get("blendDest");
-    if (blendSrcNode && blendDestNode)
-    {
-        eBlendMode newBlendScr = GetBlendModeByName(blendSrcNode->AsString());
-        eBlendMode newBlendDest = GetBlendModeByName(blendDestNode->AsString());
-
-        stateData.sourceFactor = newBlendScr;
-        stateData.destFactor = newBlendDest;
-    }
-
-    const YamlNode * cullModeNode = renderStateNode->Get("cullMode");
-    if (cullModeNode)
-    {
-        int32 newCullMode = (int32)GetFaceByName(cullModeNode->AsString());
-        stateData.cullMode = (eFace)newCullMode;
-    }
-
-    const YamlNode * depthFuncNode = renderStateNode->Get("depthFunc");
-    if (depthFuncNode)
-    {
-        eCmpFunc newDepthFunc = GetCmpFuncByName(depthFuncNode->AsString());
-        stateData.depthFunc = newDepthFunc;
-    }
-
-    const YamlNode * fillModeNode = renderStateNode->Get("fillMode");
-    if (fillModeNode)
-    {
-        eFillMode newFillMode = GetFillModeByName(fillModeNode->AsString());
-        stateData.fillMode = newFillMode;
-    }    
-
-    const YamlNode * stencilNode = renderStateNode->Get("stencil");
-    if (stencilNode)
-    {
-        const YamlNode * stencilRefNode = stencilNode->Get("ref");
-        if (stencilRefNode)
-            stateData.stencilRef = stencilRefNode->AsInt32();
-
-        const YamlNode * stencilMaskNode = stencilNode->Get("mask");
-        if (stencilMaskNode)
-            stateData.stencilMask = stencilMaskNode->AsUInt32();
-
-        const YamlNode * stencilFuncNode = stencilNode->Get("funcFront");
-        if (stencilFuncNode)
-        {
-            stateData.stencilFunc[FACE_FRONT] = GetCmpFuncByName(stencilFuncNode->AsString());
-        }
-
-        stencilFuncNode = stencilNode->Get("funcBack");
-        if (stencilFuncNode)
-        {
-            stateData.stencilFunc[FACE_BACK] = GetCmpFuncByName(stencilFuncNode->AsString());
-        }
-
-        const YamlNode * stencilPassNode = stencilNode->Get("passFront");
-        if (stencilPassNode)
-        {
-            stateData.stencilPass[FACE_FRONT] = GetStencilOpByName(stencilPassNode->AsString());
-        }
-
-        stencilPassNode = stencilNode->Get("passBack");
-        if (stencilPassNode)
-        {
-            stateData.stencilPass[FACE_BACK] = GetStencilOpByName(stencilPassNode->AsString());
-        }
-
-        const YamlNode * stencilFailNode = stencilNode->Get("failFront");
-        if (stencilFailNode)
-        {
-            stateData.stencilFail[FACE_FRONT] = GetStencilOpByName(stencilFailNode->AsString());
-        }
-
-        stencilFailNode = stencilNode->Get("failBack");
-        if (stencilFailNode)
-        {
-            stateData.stencilFail[FACE_BACK] = GetStencilOpByName(stencilFailNode->AsString());
-        }
-
-        const YamlNode * stencilZFailNode = stencilNode->Get("zFailFront");
-        if (stencilZFailNode)
-        {
-            stateData.stencilZFail[FACE_FRONT] = GetStencilOpByName(stencilZFailNode->AsString());
-        }
-
-        stencilZFailNode = stencilNode->Get("zFailBack");
-        if (stencilZFailNode)
-        {
-            stateData.stencilZFail[FACE_BACK] = GetStencilOpByName(stencilZFailNode->AsString());
-        }
-    }*/
-}
 
 }
 }
