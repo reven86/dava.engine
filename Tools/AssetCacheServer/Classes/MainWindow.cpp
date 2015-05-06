@@ -300,6 +300,7 @@ void MainWindow::ReadSettings()
 
 void MainWindow::WriteSettings()
 {
+#ifdef Q_OS_WIN
     using namespace DAVA;
 
     FileSystem::Instance()->CreateDirectoryA("~doc:/AssetServer", true);
@@ -330,4 +331,5 @@ void MainWindow::WriteSettings()
     arch->Save(f);
     f->Release();
     arch->Release();
+#endif
 }
