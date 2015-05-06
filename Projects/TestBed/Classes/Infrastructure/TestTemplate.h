@@ -31,9 +31,11 @@
 #define __TESTTEMPLATE_H__
 
 #include "DAVAEngine.h"
-using namespace DAVA;
+
 #include "GameCore.h"
 #include "BaseScreen.h"
+
+using namespace DAVA;
 
 template <class T>
 class TestTemplate : public BaseScreen

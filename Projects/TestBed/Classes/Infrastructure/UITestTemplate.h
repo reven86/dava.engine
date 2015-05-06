@@ -38,8 +38,6 @@ using namespace DAVA;
 template <class T>
 class UITestTemplate: public TestTemplate<T>
 {
-    const static float32 TEST_TIME;
-    
 protected:
     ~UITestTemplate();
 
@@ -50,29 +48,21 @@ public:
     void UnloadResources() override;
     bool RunTest(int32 testNum) override;
 
-    void DidAppear() override;
-    void Update(float32 timeElapsed) override;
-
 private:
 
     UIButton* finishButton;
 
     bool testFinished;
-    float testTime;
 
     void ButtonPressed(BaseObject *obj, void *data, void *callerData);
 };
 
 
 template <class T>
-const float32 UITestTemplate<T>::TEST_TIME = 10.f;
-
-template <class T>
 UITestTemplate<T>::UITestTemplate(const String & screenName)
 :    TestTemplate<T>(screenName)
 ,   finishButton(NULL)
 ,   testFinished(false)
-,   testTime(0.f)
 {
 }
 
@@ -91,7 +81,7 @@ void UITestTemplate<T>::LoadResources()
     
     Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
     
-    finishButton = new UIButton(Rect(screenSize.dx-300, screenSize.dy-30, 300, 30));
+    finishButton = new UIButton(Rect(screenSize.dx-500, screenSize.dy-50, 500, 50));
     finishButton->SetStateFont(0xFF, font);
     finishButton->SetStateText(0xFF, L"Finish Test");
     finishButton->SetStateFontColor(0xFF, Color::White);
@@ -114,25 +104,6 @@ bool UITestTemplate<T>::RunTest(int32 testNum)
 {
     TestTemplate<T>::RunTest(testNum);
     return testFinished;
-}
-
-
-template <class T>
-void UITestTemplate<T>::DidAppear()
-{
-    testTime = 0.f;
-}
-
-template <class T>
-void UITestTemplate<T>::Update(float32 timeElapsed)
-{
-    testTime += timeElapsed;
-    if(testTime > TEST_TIME)
-    {
-        testFinished = true;
-    }
-    
-    TestTemplate<T>::Update(timeElapsed);
 }
 
 template <class T>

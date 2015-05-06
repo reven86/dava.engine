@@ -35,6 +35,8 @@
 
 #include <fstream>
 
+#include "TestListScreen.h"
+
 using namespace DAVA;
 
 class TestData;
@@ -111,6 +113,7 @@ private:
     std::ofstream logFile;
 
     BaseScreen *currentScreen;
+    TestListScreen *mainScreen;
 
     int32 currentScreenIndex;
     Vector<BaseScreen *> screens;

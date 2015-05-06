@@ -189,6 +189,8 @@ void GameCore::RunTests()
         }
     }
     
+    currentScreen = static_cast< >(mainScreen);
+    
     if(currentScreen)
     {
         Logger::Info(TeamcityTestsOutput::FormatTestStarted(currentScreen->GetTestName()).c_str());
