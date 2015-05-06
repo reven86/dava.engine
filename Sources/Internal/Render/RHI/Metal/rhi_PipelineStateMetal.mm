@@ -65,6 +65,7 @@ public:
 
         unsigned            ConstCount() const;
         bool                SetConst( unsigned const_i, unsigned count, const float* cdata );
+        bool                SetConst( unsigned const_i, unsigned const_sub_i, float cdata );
         
         void                SetToRHI( unsigned bufIndex, id<MTLRenderCommandEncoder> ce ) const;
         void                InvalidateInst();
@@ -332,6 +333,24 @@ PipelineStateMetal_t::ConstBuf::SetConst( unsigned const_i, unsigned const_count
     if( const_i + const_count <= count )
     {
         memcpy( data + const_i*4, cdata, const_count*4*sizeof(float) );
+        inst    = nullptr;
+        success = true;
+    }
+
+    return success;
+}
+
+
+//------------------------------------------------------------------------------
+
+bool
+PipelineStateMetal_t::ConstBuf::SetConst( unsigned const_i, unsigned const_sub_i, float cdata )
+{
+    bool    success = false;
+
+    if( const_i <= count  &&  const_sub_i < 4 )
+    {
+        data[ const_i*4 + const_sub_i ] = cdata;
         inst    = nullptr;
         success = true;
     }
@@ -612,6 +631,14 @@ metal_ConstBuffer_SetConst( Handle cb, uint32 constIndex, uint32 constCount, con
     return buf->SetConst( constIndex, constCount, data );
 }
 
+static bool
+metal_ConstBuffer_SetConst1( Handle cb, uint32 constIndex, uint32 constSubIndex, float data )
+{
+    PipelineStateMetal_t::ConstBuf* buf = ConstBufMetalPool::Get( cb );
+
+    return buf->SetConst( constIndex, constSubIndex, data );
+}
+
 static void
 metal_ConstBuffer_Delete( Handle cb )
 {
@@ -629,6 +656,7 @@ void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_ConstBuffer_SetConst     = &metal_ConstBuffer_SetConst;
+    dispatch->impl_ConstBuffer_SetConst1    = &metal_ConstBuffer_SetConst1;
     dispatch->impl_ConstBuffer_ConstCount   = nullptr;//&metal_ConstBuffer_ConstCount;
     dispatch->impl_ConstBuffer_Delete       = &metal_ConstBuffer_Delete;
 }

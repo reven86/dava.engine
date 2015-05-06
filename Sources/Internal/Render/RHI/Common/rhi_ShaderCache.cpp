@@ -270,8 +270,10 @@ static const char* _ShaderDefine_Metal =
 
 //"#define DECL_SAMPLER2D(unit)    texture2d<float> Texture##unit [[ texture(unit) ]]; sampler TextureSampler##unit ;\n"
 "#define DECL_SAMPLER2D(unit)    \n"
+"#define DECL_SAMPLERCUBE(unit)  \n"
 
 "#define FP_TEXTURE2D(unit,uv)   tex##unit.sample( tex##unit##_sampler, uv );\n"
+"#define FP_TEXTURECUBE(unit,uv) tex##unit.sample( tex##unit##_sampler, uv );\n"
 "#define FP_IN(name)             IN.##name\n"
 
 "#define FP_OUT_COLOR            OUT.color\n"
@@ -387,8 +389,10 @@ static const char* _ShaderDefine_GLES2 =
 "#define FPROG_OUT_END           \n"
             
 "#define DECL_SAMPLER2D(unit)    uniform sampler2D Texture##unit;\n"
+"#define DECL_SAMPLERCUBE(unit)  uniform samplerCube Texture##unit;\n"
         
 "#define FP_TEXTURE2D(unit,uv)   texture2D( Texture##unit, uv );\n"
+"#define FP_TEXTURECUBE(unit,uv) textureCube( Texture##unit, uv );\n"
 "#define FP_IN(name)             var_##name\n"
 
 "#define FP_OUT_COLOR            gl_FragColor\n"
@@ -461,8 +465,10 @@ static const char* _ShaderDefine_DX9 =
 "#define FPROG_OUT_END           };\n"
 
 "#define DECL_SAMPLER2D(unit)    uniform sampler2D Texture##unit;\n"
+"#define DECL_SAMPLERCUBE(unit)  uniform samplerCube Texture##unit;\n"
     
 "#define FP_TEXTURE2D(unit,uv)   tex2D( Texture##unit, uv );\n"
+"#define FP_TEXTURECUBE(unit,uv) texCube( Texture##unit, uv );\n"
 "#define FP_IN(name)             IN.##name\n"
 
 "#define FP_OUT_COLOR            OUT.color\n"
@@ -562,6 +568,19 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
                 sscanf( decl, "DECL_SAMPLER2D(%i,", &i );
 
                 src_len += sprintf( src+src_len, "#define FPROG_IN_TEXTURE_%i  , texture2d<float> tex%i [[ texture(%i) ]]\n", i, i, i );
+                src_len += sprintf( src+src_len, "#define FPROG_SAMPLER_%i    sampler tex%i_sampler; \n", i, i );
+                fp_tex_declared[i] = true;
+
+                s += strlen("DECL_SAMPLER2D");
+            }
+            s = srcText;
+            while( (decl = strstr( s, "DECL_SAMPLERCUBE" )) )
+            {
+                int i = 0;
+
+                sscanf( decl, "DECL_SAMPLERCUBE(%i,", &i );
+
+                src_len += sprintf( src+src_len, "#define FPROG_IN_TEXTURE_%i  , texturecube<float> tex%i [[ texture(%i) ]]\n", i, i, i );
                 src_len += sprintf( src+src_len, "#define FPROG_SAMPLER_%i    sampler tex%i_sampler; \n", i, i );
                 fp_tex_declared[i] = true;
 

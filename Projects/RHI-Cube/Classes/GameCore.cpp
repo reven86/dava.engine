@@ -733,7 +733,7 @@ void GameCore::OnAppStarted()
 
 //    sceneRenderTest.reset(new SceneRenderTestV3());    
 
-/*
+
     // ShaderSource smoke-test
     const char*  fp_src =
     "FPROG_IN_BEGIN\n"
@@ -745,7 +745,7 @@ void GameCore::OnAppStarted()
     "    FPROG_OUT_COLOR\n"
     "FPROG_OUT_END\n"
     "\n"
-    "property float4 tfactor : unique,dynamic : ;"
+    "property float4 tfactor : unique,dynamic :   def_value=1,1,1,1 ;"
     "\n"
     "DECL_SAMPLER2D(albedo)\n"
     "DECL_SAMPLER2D(albedo2)\n"
@@ -755,14 +755,16 @@ void GameCore::OnAppStarted()
     "    float4  diffuse = FP_TEXTURE2D( albedo, FP_IN(uv) );\n"
     "    float4  diffuse2 = FP_TEXTURE2D( albedo2, FP_IN(uv) );\n"
     "    FP_OUT_COLOR = tfactor * FP_IN(color);\n"
-    "FPROG_END\n";
+    "FPROG_END\n"
+    "blending : src=src_alpha dst=inv_src_alpha\n"
+    ;
 
     rhi::ShaderSource   fp;
 
     fp.Construct( rhi::PROG_FRAGMENT, fp_src );
     Logger::Info( "\n\n====================" );
     fp.Dump();
-*/
+
 /*
     const char*  vp_src =
     "VPROG_IN_BEGIN\n"
@@ -1219,9 +1221,9 @@ SCOPED_NAMED_TIMING("app-draw");
     packet.primitiveType        = rhi::PRIMITIVE_TRIANGLELIST;
     packet.primitiveCount       = 12;
 
-    rhi::UpdateConstBuffer( cube.fp_const, 0, clr, 1 );
-    rhi::UpdateConstBuffer( cube.vp_const[0], 0, view_proj.data, 4 );
-    rhi::UpdateConstBuffer( cube.vp_const[1], 0, world.data, 4 );
+    rhi::UpdateConstBuffer4fv( cube.fp_const, 0, clr, 1 );
+    rhi::UpdateConstBuffer4fv( cube.vp_const[0], 0, view_proj.data, 4 );
+    rhi::UpdateConstBuffer4fv( cube.vp_const[1], 0, world.data, 4 );
     rhi::AddPacket( pl[0], packet );
 
     #if USE_SECOND_CB
@@ -1244,9 +1246,9 @@ START_NAMED_TIMING("app.cb--upd");
                 world.CreateRotation( Vector3(1,0,0), cube_angle );
                 world.SetTranslationVector( Vector3(-0.5f*w+float(i)*(w/float(col_cnt)),1-z*0.4f,10+float(z)*w) );
 
-                rhi::UpdateConstBuffer( cube.fp_const, 0, clr2, 1 );
+                rhi::UpdateConstBuffer4fv( cube.fp_const, 0, clr2, 1 );
     //            rhi::UpdateConstBuffer( cube.vp_const[0], 0, view_proj.data, 4 );
-                rhi::UpdateConstBuffer( cube.vp_const[1], 0, world.data, 4 );
+                rhi::UpdateConstBuffer4fv( cube.vp_const[1], 0, world.data, 4 );
 STOP_NAMED_TIMING("app.cb--upd");
                 rhi::AddPacket( pl[1], packet );
             }
@@ -1341,9 +1343,9 @@ GameCore::rtDraw()
     packet.primitiveType        = rhi::PRIMITIVE_TRIANGLELIST;
     packet.primitiveCount       = 12;
 
-    rhi::UpdateConstBuffer( cube.fp_const, 0, clr, 1 );
-    rhi::UpdateConstBuffer( cube.vp_const[0], 0, view_proj.data, 4 );
-    rhi::UpdateConstBuffer( cube.vp_const[1], 0, world.data, 4 );
+    rhi::UpdateConstBuffer4fv( cube.fp_const, 0, clr, 1 );
+    rhi::UpdateConstBuffer4fv( cube.vp_const[0], 0, view_proj.data, 4 );
+    rhi::UpdateConstBuffer4fv( cube.vp_const[1], 0, world.data, 4 );
     rhi::AddPacket( pl[0], packet );
 
     #if USE_SECOND_CB
@@ -1365,9 +1367,9 @@ GameCore::rtDraw()
                 world.CreateRotation( Vector3(1,0,0), cube_angle );
                 world.SetTranslationVector( Vector3(-0.5f*w+float(i)*(w/float(col_cnt)),1,10+float(z)*w) );
 
-                rhi::UpdateConstBuffer( cube.fp_const, 0, clr2, 1 );
+                rhi::UpdateConstBuffer4fv( cube.fp_const, 0, clr2, 1 );
     //            rhi::UpdateConstBuffer( cube.vp_const[0], 0, view_proj.data, 4 );
-                rhi::UpdateConstBuffer( cube.vp_const[1], 0, world.data, 4 );
+                rhi::UpdateConstBuffer4fv( cube.vp_const[1], 0, world.data, 4 );
                 rhi::AddPacket( pl[1], packet );
             }
         }

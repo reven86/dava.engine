@@ -111,7 +111,8 @@ bool            CreateVertexConstBuffers( HPipelineState rps, uint32 maxCount, H
 HConstBuffer    CreateFragmentConstBuffer( HPipelineState rps, uint32 bufIndex );
 bool            CreateFragmentConstBuffers( HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf );
 
-bool            UpdateConstBuffer( HConstBuffer constBuf, uint32 constIndex, const float* data, uint32 constCount );
+bool            UpdateConstBuffer4fv( HConstBuffer constBuf, uint32 constIndex, const float* data, uint32 constCount );
+bool            UpdateConstBuffer1f( HConstBuffer constBuf, uint32 constIndex, uint32 constSubIndex, float data );
 void            DeleteConstBuffer( HConstBuffer constBuf );
 
 

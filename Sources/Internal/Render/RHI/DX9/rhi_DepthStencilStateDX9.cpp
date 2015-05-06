@@ -21,13 +21,19 @@ DepthStencilStateDX9_t
     uint32  depthWriteEnabled:1;
     DWORD   depthFunc;
 
-    DWORD   stencilFunc;
-    DWORD   stencilReadMask;
-    DWORD   stencilWriteMask;
-    DWORD   stencilRefValue;
-    DWORD   stencilFailOperation;
+    uint32  stencilEnabled:1;
+    uint32  stencilTwoSided:1;
+    
+    struct  
+    {
+    DWORD   func;
+    DWORD   readMask;
+    DWORD   writeMask;
+    DWORD   refValue;
+    DWORD   failOperation;
     DWORD   depthFailOperation;
     DWORD   depthStencilPassOperation;
+    }       stencilFront,stencilBack;
 };
 
 typedef Pool<DepthStencilStateDX9_t,RESOURCE_DEPTHSTENCIL_STATE>    DepthStencilStateDX9Pool;
@@ -92,13 +98,24 @@ dx9_DepthStencilState_Create( const DepthStencilState::Descriptor& desc )
     state->depthWriteEnabled         = desc.depthWriteEnabled;
     state->depthFunc                 = _CmpFunc( CmpFunc(desc.depthFunc) );
 
-    state->stencilFunc               = _CmpFunc( CmpFunc(desc.stencilFunc) );
-    state->stencilReadMask           = desc.stencilReadMask;
-    state->stencilWriteMask          = desc.stencilWriteMask;
-    state->stencilRefValue           = desc.stencilRefValue;
-    state->stencilFailOperation      = _StencilOp( StencilOperation(desc.stencilFailOperation) );
-    state->depthFailOperation        = _StencilOp( StencilOperation(desc.stencilFailOperation) );
-    state->depthStencilPassOperation = _StencilOp( StencilOperation(desc.depthStencilPassOperation) );
+    state->stencilEnabled            = !(desc.stencilFront.func == CMP_ALWAYS  &&  desc.stencilFront.readMask == 0xFF  && desc.stencilFront.writeMask == 0xFF);
+    state->stencilTwoSided           = desc.stencilTwoSided;
+
+    state->stencilFront.func                        = _CmpFunc( CmpFunc(desc.stencilFront.func) );
+    state->stencilFront.readMask                    = desc.stencilFront.readMask;
+    state->stencilFront.writeMask                   = desc.stencilFront.writeMask;
+    state->stencilFront.refValue                    = desc.stencilFront.refValue;
+    state->stencilFront.failOperation               = _StencilOp( StencilOperation(desc.stencilFront.failOperation) );
+    state->stencilFront.depthFailOperation          = _StencilOp( StencilOperation(desc.stencilFront.failOperation) );
+    state->stencilFront.depthStencilPassOperation   = _StencilOp( StencilOperation(desc.stencilFront.depthStencilPassOperation) );
+
+    state->stencilBack.func                         = _CmpFunc( CmpFunc(desc.stencilBack.func) );
+    state->stencilBack.readMask                     = desc.stencilBack.readMask;
+    state->stencilBack.writeMask                    = desc.stencilBack.writeMask;
+    state->stencilBack.refValue                     = desc.stencilBack.refValue;
+    state->stencilBack.failOperation                = _StencilOp( StencilOperation(desc.stencilBack.failOperation) );
+    state->stencilBack.depthFailOperation           = _StencilOp( StencilOperation(desc.stencilBack.failOperation) );
+    state->stencilBack.depthStencilPassOperation    = _StencilOp( StencilOperation(desc.stencilBack.depthStencilPassOperation) );
 
     return handle;
 }
@@ -133,14 +150,40 @@ SetToRHI( Handle hstate )
     _D3D9_Device->SetRenderState( D3DRS_ZENABLE, state->depthTestEnabled );
     _D3D9_Device->SetRenderState( D3DRS_ZWRITEENABLE, state->depthWriteEnabled );
     _D3D9_Device->SetRenderState( D3DRS_ZFUNC, state->depthFunc );
-
-    _D3D9_Device->SetRenderState( D3DRS_STENCILFUNC, state->stencilFunc );
-    _D3D9_Device->SetRenderState( D3DRS_STENCILREF, state->stencilRefValue );
-    _D3D9_Device->SetRenderState( D3DRS_STENCILMASK, state->stencilReadMask );
-    _D3D9_Device->SetRenderState( D3DRS_STENCILWRITEMASK, state->stencilWriteMask );
-    _D3D9_Device->SetRenderState( D3DRS_STENCILZFAIL, state->depthFailOperation );
-    _D3D9_Device->SetRenderState( D3DRS_STENCILFAIL, state->stencilFailOperation );
-    _D3D9_Device->SetRenderState( D3DRS_STENCILPASS, state->depthStencilPassOperation );
+    
+    if( state->stencilEnabled )
+    {
+        _D3D9_Device->SetRenderState( D3DRS_STENCILENABLE, TRUE );
+        
+        _D3D9_Device->SetRenderState( D3DRS_STENCILFUNC, state->stencilFront.func );
+        _D3D9_Device->SetRenderState( D3DRS_STENCILREF, state->stencilFront.refValue );
+        _D3D9_Device->SetRenderState( D3DRS_STENCILMASK, state->stencilFront.readMask );
+        _D3D9_Device->SetRenderState( D3DRS_STENCILWRITEMASK, state->stencilFront.writeMask );
+        _D3D9_Device->SetRenderState( D3DRS_STENCILZFAIL, state->stencilFront.depthFailOperation );
+        _D3D9_Device->SetRenderState( D3DRS_STENCILFAIL, state->stencilFront.failOperation );
+        _D3D9_Device->SetRenderState( D3DRS_STENCILPASS, state->stencilFront.depthStencilPassOperation );
+        
+        if( state->stencilTwoSided )
+        {
+            _D3D9_Device->SetRenderState( D3DRS_TWOSIDEDSTENCILMODE, TRUE );
+            
+            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILFUNC, state->stencilFront.func );
+//            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILREF, state->stencilFront.refValue );
+//            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILMASK, state->stencilFront.readMask );
+//            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILWRITEMASK, state->stencilFront.writeMask );
+            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILZFAIL, state->stencilFront.depthFailOperation );
+            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILFAIL, state->stencilFront.failOperation );
+            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILPASS, state->stencilFront.depthStencilPassOperation );
+        }
+        else
+        {
+            _D3D9_Device->SetRenderState( D3DRS_TWOSIDEDSTENCILMODE, FALSE );
+        }
+    }
+    else
+    {
+        _D3D9_Device->SetRenderState( D3DRS_STENCILENABLE, FALSE );
+    }
 }
 
 }
