@@ -49,20 +49,28 @@ EditorFontSystem::~EditorFontSystem()
 
 Font* EditorFontSystem::GetFont(const String &presetName, const String &locale) const
 {
-    const auto &fonts = localizedFonts.at(locale);
+    auto fontsIt = localizedFonts.find(locale);
+    if (fontsIt == localizedFonts.end())
+    {
+        return nullptr;
+    }
+    const auto &fonts = fontsIt->second;
     auto it = fonts.find(presetName);
     return it != fonts.end() ? it->second : nullptr;
 }
 
 void EditorFontSystem::SetFont(const String &presetName, const String &locale, Font *font)
 {
+    DVASSERT(nullptr != font);
     auto *fonts = &localizedFonts.at(locale);
     auto it = fonts->find(presetName);
     DVASSERT(it != fonts->end());
 
     auto oldFont = it->second;
+    DVASSERT(nullptr != oldFont);
     oldFont->Release();
-    it->second = SafeRetain(font);
+    it->second = font;
+    it->second->Retain();
 
     if (locale == LocalizationSystem::Instance()->GetCurrentLocale())
     {

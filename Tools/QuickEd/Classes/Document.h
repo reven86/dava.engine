@@ -56,7 +56,6 @@ private:
 
     QtModelPackageCommandExecutor *commandExecutor;
     QUndoStack *undoStack;
-    DAVA::Map<DAVA::String, DAVA::Vector<ValueProperty*> >savedProperties;
 };
 
 inline QUndoStack *Document::GetUndoStack() const

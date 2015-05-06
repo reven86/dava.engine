@@ -712,6 +712,7 @@ void LocalizationEditorDialog::ReinitializeLocalizationSystem(const QString& loc
         localizationFilePath.MakeDirectoryPathname();
 
         GetEditorLocalizationSystem()->InitLanguageWithDirectory(localizationFilePath, locale.toStdString());
+        //TODO: move all controller code to EditorLocalizationSystem
     }
     
 	stringsTable->ReloadTable();

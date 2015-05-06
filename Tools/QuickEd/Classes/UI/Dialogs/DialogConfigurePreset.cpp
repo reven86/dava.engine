@@ -157,6 +157,11 @@ void DialogConfigurePreset::SetFont(const QString& fontType, const int fontSize,
 {
     QString fontPath = ResourcesManageHelper::GetFontRelativePath(fontType);
     Font* font = FTFont::Create(fontPath.toStdString());
+	if (nullptr == font)
+	{
+		QMessageBox::warning(this, tr("Font creation error"), tr("Can not create font from %1").arg(fontPath));
+		return;
+	}
     font->SetSize(fontSize);
     GetEditorFontSystem()->SetFont(lineEdit_currentFontPresetName->text().toStdString(), locale.toStdString(), font);
 }
