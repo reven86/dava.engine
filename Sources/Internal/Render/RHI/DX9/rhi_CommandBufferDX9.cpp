@@ -587,6 +587,12 @@ SCOPED_FUNCTION_TIMING();
                 DepthStencilStateDX9::SetToRHI( (Handle)(arg[0]) );
                 c += 1;
             }   break;
+
+            case DX9__SET_SAMPLER_STATE :
+            {
+                SamplerStateDX9::SetToRHI( (Handle)(arg[0]) );
+                c += 1;
+            }   break;
             
             case DX9__SET_VERTEX_PROG_CONST_BUFFER :
             {
@@ -629,6 +635,8 @@ SCOPED_FUNCTION_TIMING();
                 c += 5;
             }   break;
 
+            default:
+                DVASSERT("unknown DX9 render-command");
         }
     }
 
