@@ -18,7 +18,9 @@
 #define NV_CONST
 
 // Set standard function names.
-#define snprintf _snprintf
+#ifndef POSH_OS_WIN_STORE
+#   define snprintf _snprintf
+#endif
 #if _MSC_VER < 1500
 #	define vsnprintf _vsnprintf
 #endif
@@ -26,7 +28,9 @@
 #define chdir _chdir
 #define getcwd _getcwd 
 
-#define va_copy(a, b)	a = b
+#ifndef POSH_OS_WIN_STORE
+#   define va_copy(a, b)	a = b
+#endif
 
 #if !defined restrict
 #define restrict
