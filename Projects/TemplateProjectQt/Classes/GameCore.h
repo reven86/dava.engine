@@ -27,65 +27,33 @@
 =====================================================================================*/
 
 
-#include "MainWindow.h"
-#include "ui_mainwindow.h"
+#ifndef __GAMECORE_H__
+#define __GAMECORE_H__
 
 #include "DAVAEngine.h"
-#include "QtTools/DavaGLWidget/davaglwidget.h"
-#include "QtTools/FrameworkBinding/FrameworkLoop.h"
 
-const quint8 MainWindow::NUMBER_OF_SCREEN(0);
+class ResourcePackerScreen;
+class SceneEditorScreen;
+class SceneEditorScreenMain;
+class SceneUtilsScreen;
+class ImageSplitterScreen;
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+class GameCore : public DAVA::ApplicationCore
 {
-    ui->setupUi(this);
+public:
+    GameCore();
+    virtual ~GameCore();
 
-    this->setWindowTitle("Template Project Qt");
+    virtual void OnAppStarted();
+    virtual void OnAppFinished();
 
-    CreateGlWidget();
-}
+    virtual void OnSuspend();
+    virtual void OnResume();
+    virtual void OnBackground();
 
-MainWindow::~MainWindow()
-{
-    delete ui;
-}
+    virtual void BeginFrame();
+    virtual void Update(DAVA::float32 update);
+    virtual void Draw();
+};
 
-void MainWindow::CreateGlWidget()
-{
-    using namespace DAVA;
-
-    DavaGLWidget *glWidget = new DavaGLWidget(this);
-    connect(glWidget, &DavaGLWidget::Initialized, this, &MainWindow::OnGlInitialized, Qt::QueuedConnection);
-    connect(glWidget, &DavaGLWidget::Resized, this, &MainWindow::OnGlWidgedResized);
-    FrameworkLoop::Instance()->SetOpenGLWindow(glWidget);
-
-    ui->verticalLayout->addWidget(glWidget);
-}
-
-void MainWindow::OnGlInitialized()
-{
-    using namespace DAVA;
-
-    UIScreen *screen = new UIScreen();
-    screen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-    screen->GetBackground()->SetColor(DAVA::Color(1.f, 0.f, 0.f, 1.f));
-    screen->GetBackground()->SetDrawColor(DAVA::Color(1.f, 0.f, 0.f, 1.f));
-    UIScreenManager::Instance()->RegisterScreen(NUMBER_OF_SCREEN, screen);
-    UIScreenManager::Instance()->SetFirst(NUMBER_OF_SCREEN);
-}
-
-void MainWindow::OnGlWidgedResized(int width, int height, int dpr)
-{
-    using namespace DAVA;
-    UIScreen *screen = UIScreenManager::Instance()->GetScreen(NUMBER_OF_SCREEN);
-    if (screen == nullptr)
-    {
-        return;
-    }
-
-    qint64 scaleWidth = width * dpr;
-    qint64 scaleHeight = height * dpr;
-    screen->SetSize(Vector2(scaleWidth, scaleHeight));
-}
+#endif // __GAMECORE_H__

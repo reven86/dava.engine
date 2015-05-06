@@ -24,42 +24,58 @@
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
+    =====================================================================================*/
 
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#include "GameCore.h"
+#include "FileSystem/ResourceArchive.h"
 
-#include <QMainWindow>
+using namespace DAVA;
 
-class DavaGLWidget;
-
-namespace Ui
+GameCore::GameCore()
 {
-    class MainWindow;
 }
 
-class MainWindow : public QMainWindow
+GameCore::~GameCore()
 {
-    Q_OBJECT
+}
 
-public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+void GameCore::OnAppStarted()
+{
+    RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::LAYER_OCCLUSION_STATS, true);
+}
 
-private:
-    void CreateGlWidget();
+void GameCore::OnAppFinished()
+{
+}
 
-private slots:
-    void OnGlInitialized();
-    void OnGlWidgedResized(int width, int height, int dpr);
+void GameCore::OnSuspend()
+{
+    //prevent going to suspend
+}
 
-private:
-    Ui::MainWindow *ui;
+void GameCore::OnResume()
+{
+    ApplicationCore::OnResume();
+}
 
-    DavaGLWidget *glWidget;
+void GameCore::OnBackground()
+{
+    //prevent going to background
+}
 
-    static const quint8 NUMBER_OF_SCREEN;
-};
+void GameCore::BeginFrame()
+{
+    ApplicationCore::BeginFrame();
+    RenderManager::Instance()->ClearWithColor(1, 0, 0, 0);
+}
 
-#endif // MAINWINDOW_H
+void GameCore::Update(float32 timeElapsed)
+{
+    ApplicationCore::Update(timeElapsed);
+}
+
+void GameCore::Draw()
+{
+    ApplicationCore::Draw();
+}

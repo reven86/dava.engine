@@ -28,22 +28,17 @@
 
 
 #include <QApplication>
+
 #include "MainWindow.h"
 
 #include "DAVAEngine.h"
+#include "QtTools/FrameworkBinding/FrameworkLoop.h"
+#include "QtTools/DavaGLWidget/davaglwidget.h"
 
-void FrameworkWillTerminate()
-{
-}
-
-void FrameworkDidLaunched()
-{
-}
+void RunGui(int argc, char *argv[]);
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-
 #if defined (__DAVAENGINE_MACOS__)
     DAVA::Core::Run(argc, argv);
 #elif defined (__DAVAENGINE_WIN32__)
@@ -53,8 +48,30 @@ int main(int argc, char *argv[])
     DVASSERT(false && "Wrong platform")
 #endif
 
-    MainWindow w;
-    w.show();
+    new DAVA::QtLayer();
 
-    return a.exec();
+    RunGui(argc, argv);
+
+    return 0;
+}
+
+void RunGui(int argc, char *argv[])
+{
+    new DavaLoop();
+    new FrameworkLoop();
+
+    QApplication a(argc, argv);
+
+    MainWindow *w = new MainWindow();
+    w->show();
+
+    DavaLoop::Instance()->StartLoop(FrameworkLoop::Instance());
+
+    QApplication::exec();
+
+    FrameworkLoop::Instance()->Release();
+    DAVA::QtLayer::Instance()->Release();
+    DavaLoop::Instance()->Release();
+
+    delete w;
 }

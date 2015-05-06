@@ -1,9 +1,11 @@
 cmake_minimum_required( VERSION 3.0 )
 
-project               ( TemplateProjectQt ) # to change the name
+project               ( TemplateProjectQt ) # to change the project name
 
 set                   ( DAVA_USE_QT_WIDGETS true )
-set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
+
+set                   ( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ) # path to framework
+set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
 include               ( CMake-common )
 
 find_package          ( QT5           REQUIRED )
