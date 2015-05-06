@@ -536,8 +536,6 @@ void debug::disableSigHandler()
 #endif
 }
 
-#endif
-
 /// Handle assertion through the asset handler.
 int nvAbort(const char * exp, const char * file, int line, const char * func)
 {
@@ -558,3 +556,15 @@ int nvAbort(const char * exp, const char * file, int line, const char * func)
     return 0;
 #endif
 }
+
+#else
+
+int nvAbort(const char * exp, const char * file, int line, const char * func)
+{
+    return 0;
+}
+
+void nvDebug(const char *msg, ...)
+{ }
+
+#endif
