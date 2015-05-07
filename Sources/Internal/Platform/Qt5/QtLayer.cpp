@@ -88,12 +88,6 @@ void QtLayer::AppFinished()
     Core::Instance()->SystemAppFinished();
     FrameworkWillTerminate();
     Core::Instance()->ReleaseSingletons();
-#ifdef ENABLE_MEMORY_MANAGER
-    if (MemoryManager::Instance() != 0)
-    {
-        MemoryManager::Instance()->FinalLog();
-    }
-#endif
 }
 
     

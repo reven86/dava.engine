@@ -40,7 +40,7 @@
 
 DAVA_NOINLINE void* operator new(size_t size)
 {
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
+    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_DEFAULT);
 }
 
 void operator delete(void* ptr) DAVA_NOEXCEPT
@@ -50,7 +50,7 @@ void operator delete(void* ptr) DAVA_NOEXCEPT
 
 DAVA_NOINLINE void* operator new [](size_t size)
 {
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
+    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_DEFAULT);
 }
 
 void operator delete[](void* ptr) DAVA_NOEXCEPT

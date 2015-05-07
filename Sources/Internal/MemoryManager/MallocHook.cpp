@@ -54,7 +54,7 @@ namespace
 
 void* HookedMalloc(size_t size)
 {
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
+    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_DEFAULT);
 }
 
 void* HookedRealloc(void* ptr, size_t newSize)

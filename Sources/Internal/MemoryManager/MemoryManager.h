@@ -34,8 +34,6 @@
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
 #include <type_traits>
-#include <unordered_map>
-#include <unordered_set>
 
 #include "Thread/Spinlock.h"
 #include "Thread/LockGuard.h"

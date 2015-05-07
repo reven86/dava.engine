@@ -84,9 +84,10 @@ MMItemName MemoryManager::tagNames[MAX_TAG_COUNT];
 
 MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT] = {
     { "total"       },
-    { "application" },
-    { "fmod"        }, 
-    { "renderbatch" }, 
+    { "default"     },
+    { "fmod"        },
+    {" base object" },
+    { "renderbatch" },
     { "component"   },
     { "entity"      }
 };

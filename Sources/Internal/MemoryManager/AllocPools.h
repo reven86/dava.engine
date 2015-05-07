@@ -36,8 +36,9 @@ namespace DAVA
 enum ePredefAllocPools
 {
     ALLOC_POOL_TOTAL = 0,   // Virtual allocation pool for total allocations - sum of all other allocation pools
-    ALLOC_POOL_APP,         // Allocation pool used for all other application memory allocations, except custom if any
+    ALLOC_POOL_DEFAULT,     // Allocation pool used for all other application memory allocations, except custom if any
     ALLOC_POOL_FMOD,
+    ALLOC_POOL_BASEOBJECT,
     ALLOC_POOL_RENDERBATCH,
     ALLOC_POOL_COMPONENT,
     ALLOC_POOL_ENTITY,
