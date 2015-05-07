@@ -245,7 +245,6 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 }
                 else if( p.type == ShaderProp::TYPE_FLOAT3 )
                 {
-                    // CRAP: using whole float4 for float3
                     bool    do_add = true;
                     
                     for( std::vector<ShaderProp>::const_iterator pp=prop.begin(),pp_end=prop.end(); pp!=pp_end; ++pp )
@@ -457,6 +456,33 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     {
                         char xyzw[] = "xyzw";
                         var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    float %s = %cP_Buffer%u[%u].%c;\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount] );
+                    }   break;
+                    
+                    case ShaderProp::TYPE_FLOAT2 :
+                    {
+                        char xyzw[] = "xyzw";
+                        var_len += Snprinf
+                        ( 
+                            var_def+var_len, sizeof(var_def)-var_len, 
+                            "    float2 %s = float2( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n", 
+                            p->uid.c_str(), 
+                            pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+0],
+                            pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+1]
+                        );
+                    }   break;
+                    
+                    case ShaderProp::TYPE_FLOAT3 :
+                    {
+                        char xyzw[] = "xyzw";
+                        var_len += Snprinf
+                        ( 
+                            var_def+var_len, sizeof(var_def)-var_len, 
+                            "    float3 %s = float3( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n", 
+                            p->uid.c_str(), 
+                            pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+0],
+                            pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+1],
+                            pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+2]
+                        );
                     }   break;
 
                     case ShaderProp::TYPE_FLOAT4 :
