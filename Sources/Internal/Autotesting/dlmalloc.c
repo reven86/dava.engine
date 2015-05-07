@@ -1739,7 +1739,7 @@ static int init_mparams(void) {
       else
 #endif /* USE_DEV_RANDOM */
 #ifdef WIN32
-      magic = (size_t)(GetTickCount() ^ (size_t)0x55555555U);
+      magic = (size_t)((size_t)GetTickCount64() ^ (size_t)0x55555555U);
 #elif defined(LACKS_TIME_H)
       magic = (size_t)&magic ^ (size_t)0x55555555U;
 #else
