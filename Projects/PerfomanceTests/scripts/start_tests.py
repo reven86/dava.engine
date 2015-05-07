@@ -121,7 +121,7 @@ while continue_process_stdout:
             teamcity_line_index = line.find("Device")
             if teamcity_line_index != -1:
                 teamcity_line = line[teamcity_line_index:]
-                sys.stdout.write(teamcity_line_index)
+                sys.stdout.write(teamcity_line)
                 sys.stdout.flush() 
                 
                 device = teamcity_line.split("{")[1].split("}")[0]
