@@ -245,7 +245,6 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 }
                 else if( p.type == ShaderProp::TYPE_FLOAT3 )
                 {
-                    // CRAP: using whole float4 for float3
                     bool    do_add = true;
                     
                     for( std::vector<ShaderProp>::const_iterator pp=prop.begin(),pp_end=prop.end(); pp!=pp_end; ++pp )
