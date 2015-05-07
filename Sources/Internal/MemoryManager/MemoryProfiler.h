@@ -41,20 +41,40 @@ void operator delete(void * ptr, DAVA::ePredefAllocPools pool);
 void operator delete[](void * ptr, DAVA::ePredefAllocPools pool);
 #define MEMORY_PROFILER_REGISTER_TAG(index, name)           DAVA::MemoryManager::RegisterTagName(index, name)
 #define MEMORY_PROFILER_REGISTER_ALLOC_POOL(index, name)    DAVA::MemoryManager::RegisterAllocPoolName(index, name)
-#define MEMORY_PROFILER_REGISTER_LABEL(index,name)         DAVA::MemoryManager::RegisterLabelName(index,name)
-
-
 
 #define MEMORY_PROFILER_ENTER_TAG(tag)                      DAVA::MemoryManager::Instance()->EnterTagScope(tag)
 #define MEMORY_PROFILER_LEAVE_TAG(tag)                      DAVA::MemoryManager::Instance()->LeaveTagScope(tag)
-
-#define MEMORY_PROFILER_CHECKPOINT(checkpoint)              DAVA::MemoryManager::Instance()->Checkpoint(checkpoint)
 
 #define MEMORY_PROFILER_NEW(pool,construct)                 new (pool) construct
 
 #define MEMORY_PROFILER_ALLOCATE(size,pool)                 DAVA::MemoryManager::Instance()->Allocate(size,pool)
 
-#define MEMORY_PROFILER_SETLABEL(label)                   DAVA::MemoryManager::Instance()->SetCurrentActiveLabel(label)
+#define ENABLE_CLASS_ALLOCATION_TRACKING(allocPool)                                                             \
+private:                                                                                                        \
+    template<typename T> static T* TrackedNew() {                                                               \
+        void* buf = DAVA::MemoryManager::Instance()->Allocate(sizeof(T), allocPool);                            \
+        return new (buf) T;                                                                                     \
+    }                                                                                                           \
+    template<typename T, typename... Args> static T* TrackedNew(Args&&... args) {                               \
+        void* buf = DAVA::MemoryManager::Instance()->Allocate(sizeof(T), allocPool);                            \
+        return new (buf) T(std::forward<Args...>(args...));                                                     \
+    }                                                                                                           \
+    template<typename T> static T* TrackedNewArray(size_t n) {                                                  \
+        void* buf = DAVA::MemoryManager::Instance()->Allocate(sizeof(T) * n, allocPool);                        \
+        return new (buf) T[n];                                                                                  \
+    }                                                                                                           \
+public:                                                                                                         \
+    static void* operator new (size_t size) { return MemoryManager::Instance()->Allocate(size, allocPool); }    \
+    static void* operator new [](size_t size) { return MemoryManager::Instance()->Allocate(size, allocPool); }  \
+    static void operator delete (void* ptr) DAVA_NOEXCEPT { MemoryManager::Instance()->Deallocate(ptr); }       \
+    static void operator delete [](void* ptr) DAVA_NOEXCEPT { MemoryManager::Instance()->Deallocate(ptr); }     \
+    static void* operator new (size_t size, void* place) DAVA_NOEXCEPT{ return place; }                         \
+    static void* operator new [](size_t size, void* place) DAVA_NOEXCEPT{ return place; }                       \
+    static void operator delete (void* ptr, void* place) DAVA_NOEXCEPT {}                                       \
+    static void operator delete [] (void* ptr, void* place) DAVA_NOEXCEPT {}                                    \
+
+#define TRACKED_NEW(type, ...)      TrackedNew<type>(##__VA_ARGS__)
+#define TRACKED_NEW_ARRAY(type, n)  TrackedNewArray<type>(n)
 
 #else   // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
@@ -69,7 +89,10 @@ void operator delete[](void * ptr, DAVA::ePredefAllocPools pool);
 
 #define MEMORY_PROFILER_ALLOCATE(size,pool)                malloc(size);
 
-#define MEMORY_PROFILER_SETLABEL(label)     
+#define ENABLE_CLASS_ALLOCATION_TRACKING(allocPool)
+
+#define TRACKED_NEW(type, ...)      new type(##__VA_ARGS__)
+#define TRACKED_NEW_ARRAY(type, n)  new type[n]
 
 #endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
