@@ -40,13 +40,10 @@ class SingleApplication : public QApplication
 
 public:
     explicit SingleApplication(int argc, char *argv[]);
+    bool AlreadyExists();
 
 private:
-    bool sendMessage(const QString &message);
-    inline int maxBufferSize();
-
-public slots:
-    void checkForMessage();
+    inline int maxBufferSize() const;
 
 private:
     bool alreadyExists;

@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QWidget>
 
 #include "SingleApplication.h"
+#include <QMessageBox>
 
 SingleApplication::SingleApplication(int argc, char *argv[])
     : QApplication(argc, argv)
@@ -48,17 +49,11 @@ SingleApplication::SingleApplication(int argc, char *argv[])
         sharedMemory.unlock();
 
         alreadyExists = false;
-
-        // start checking for messages of other instances.
-        QTimer *pTimer = new QTimer(this);
-        connect(pTimer, SIGNAL(timeout()), this, SLOT(checkForMessage()));
-        pTimer->start(200);
     }
     // it exits, so we can attach it?!
     else if (sharedMemory.attach())
     {
-        sendMessage("--open");
-        exit(EXIT_SUCCESS);
+        alreadyExists = true;
     }
     else
     {
@@ -66,73 +61,12 @@ SingleApplication::SingleApplication(int argc, char *argv[])
     }
 }
 
-int SingleApplication::maxBufferSize()
+bool SingleApplication::AlreadyExists()
+{
+    return alreadyExists;
+}
+
+int SingleApplication::maxBufferSize() const
 {
     return 0xffff; //it must be maximum file name length, but who cares;
-}
-
-void SingleApplication::checkForMessage()
-{
-    QStringList arguments;
-
-    sharedMemory.lock();
-    char *from = static_cast<char*>(sharedMemory.data());
-
-    while (*from != '\0')
-    {
-        unsigned char sizeToRead = *from;
-        ++from;
-
-        QByteArray byteArray = QByteArray(from, sizeToRead);
-        byteArray.append('\0');
-        from += sizeToRead;
-
-        arguments << QString::fromUtf8(byteArray.constData());
-    }
-
-    static_cast<char*>(sharedMemory.data())[0] = '\0';
-    sharedMemory.unlock();
-
-    for (QString arg : arguments)
-    {
-        if (arg.compare("--opened") == 0)
-        {
-            QApplication::activeWindow()->raise();
-            QApplication::activeWindow()->show();
-        }
-    }
-}
-
-bool SingleApplication::sendMessage(const QString &message)
-{
-    //we cannot send mess if we are master process!
-    if (!alreadyExists)
-    {
-        return false;
-    }
-
-    QByteArray byteArray;
-    byteArray.append(message.toUtf8());
-    byteArray.prepend(byteArray.size());
-    byteArray.append('\0');
-    if (byteArray.size() > maxBufferSize())
-    {
-        int size = byteArray.size();
-        byteArray.clear();
-        byteArray.append(QString("data more than buffer size. Data size: $%1").arg(size));
-    }
-
-    sharedMemory.lock();
-    char *to = static_cast<char*>(sharedMemory.data());
-    while (*to != '\0')
-    {
-        int sizeToRead = int(*to);
-        to += sizeToRead + 1;
-    }
-
-    const char *from = byteArray.data();
-    memcpy(to, from, qMin(sharedMemory.size(), byteArray.size()));
-    sharedMemory.unlock();
-
-    return true;
 }

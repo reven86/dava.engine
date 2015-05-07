@@ -46,6 +46,10 @@ int main(int argc, char *argv[])
     DAVA::Core::Run(argc, argv);
 
     SingleApplication a(argc, argv);
+    if (a.AlreadyExists())
+    {
+        return 0;
+    }
     MainWindow w;
     w.show();
 

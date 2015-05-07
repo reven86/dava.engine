@@ -255,6 +255,7 @@ void MainWindow::ReadSettings()
     File *f = File::Create(path, File::OPEN | File::READ);
     if (f == nullptr)
     {
+        Logger::Error("File not open"); 
         return;
     }
 
@@ -307,6 +308,7 @@ void MainWindow::WriteSettings()
     File *f = File::Create(path, File::CREATE | File::WRITE);
     if (f == nullptr)
     {
+        Logger::Error("File not open");
         return;
     }
 
