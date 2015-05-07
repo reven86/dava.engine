@@ -246,10 +246,14 @@ enum
     VATTR_TEXCOORD_1    = 4,
     VATTR_TEXCOORD_2    = 5,
     VATTR_TEXCOORD_3    = 6,
+    VATTR_TEXCOORD_4    = 8,
+    VATTR_TEXCOORD_5    = 9,
+    VATTR_TEXCOORD_6    = 10,
+    VATTR_TEXCOORD_7    = 11,
     VATTR_COLOR_0       = 3,
     VATTR_COLOR_1       = 7,
     
-    VATTR_COUNT         = 8
+    VATTR_COUNT         = 12
 };
 
 

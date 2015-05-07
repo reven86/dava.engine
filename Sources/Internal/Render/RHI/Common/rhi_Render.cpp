@@ -250,9 +250,9 @@ UpdateConstBuffer4fv( HConstBuffer constBuf, uint32 constIndex, const float* dat
 //------------------------------------------------------------------------------
 
 bool
-UpdateConstBuffer1f( HConstBuffer constBuf, uint32 constIndex, uint32 constSubIndex, float data )
+UpdateConstBuffer1fv( HConstBuffer constBuf, uint32 constIndex, uint32 constSubIndex, const float* data, uint32 dataCount )
 {
-    return ConstBuffer::SetConst( constBuf, constIndex, constSubIndex, data );
+    return ConstBuffer::SetConst( constBuf, constIndex, constSubIndex, data, dataCount );
 }
 
 
