@@ -19,7 +19,7 @@ class Document : public QObject
 {
     Q_OBJECT
 public:
-    Document(PackageNode *package, QObject *parent = NULL);
+    Document(PackageNode *package, QObject *parent = nullptr);
 
     virtual ~Document();
 
