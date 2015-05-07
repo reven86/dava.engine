@@ -118,11 +118,10 @@ while continue_process_stdout:
         line = sub_process.stdout.readline()
         if line != '':
 
-            teamcity_line_index = line.find("Device")
+            teamcity_line_index = line.find("device")
             if teamcity_line_index != -1:
                 teamcity_line = line[teamcity_line_index:]
-                device = teamcity_line.split("{")[1].split("}")[0]
-                frame_delta_file = open("../artifacts/frame_delta" + "_branch_" + branch + "_device_" + device + ".txt", "w")
+                frame_delta_file = open("../artifacts/frame_delta" + "_branch_" + branch + "_" + teamcity_line+ ".txt", "w")
 
             # write Frame_delta build statistic to file
             teamcity_line_index = line.find("Frame_delta")

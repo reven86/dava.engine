@@ -147,7 +147,7 @@ void GameCore::InitScreenController()
     Logger::Instance()->AddCustomOutput(&teamCityOutput);
 
     testFlowController->Init(testChain);
-    String device = "Device {";
+    String device = "device_";
 
     #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
         device += DeviceInfo::GetManufacturer() + DeviceInfo::GetModel();
@@ -155,7 +155,7 @@ void GameCore::InitScreenController()
         device += UTF8Utils::EncodeToUTF8(DeviceInfo::GetName());
     #endif
 
-    device += "}";
+    device += "_";
 
     Logger::Info(device.c_str());
 }
