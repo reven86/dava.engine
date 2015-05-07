@@ -763,7 +763,7 @@ CurlDownloader::InactivityTimer::InactivityTimer(int32 duration)
 void CurlDownloader::InactivityTimer::Start()
 {
     Reset();
-    timerStartTime = static_cast<int32>(SystemTimer::Instance()->AbsoluteMS()/1000);
+    timerStartTime = static_cast<int64>(SystemTimer::Instance()->AbsoluteMS()/1000);
     isStarted = true;
 }
 
@@ -774,7 +774,7 @@ void CurlDownloader::InactivityTimer::Reset()
 
 bool CurlDownloader::InactivityTimer::IsReached()
 {
-    int32 timeDelta = static_cast<int32>(SystemTimer::Instance()->AbsoluteMS()/1000) - timerStartTime;
+    int64 timeDelta = static_cast<int64>(SystemTimer::Instance()->AbsoluteMS()/1000) - timerStartTime;
     
     timeLeft -= timeDelta;
     

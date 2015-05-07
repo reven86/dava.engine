@@ -170,9 +170,9 @@ private:
         bool IsStarted() {return isStarted;}
         
     private:
-        const int32 timeout;
-        int32 timeLeft;
-        int32 timerStartTime;
+        const int64 timeout;
+        int64 timeLeft;
+        int64 timerStartTime;
         bool isStarted = false;
     };
     
