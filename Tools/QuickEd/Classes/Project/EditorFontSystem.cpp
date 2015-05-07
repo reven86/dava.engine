@@ -85,7 +85,6 @@ void EditorFontSystem::SetFont(const String &presetName, const String &locale, F
 void EditorFontSystem::LoadLocalizedFonts()
 {
     ClearAllFonts();
-    
     FontManager::Instance()->UnregisterFonts();
     for (auto &locale : availableFontLocales)
     {
@@ -141,6 +140,7 @@ void EditorFontSystem::ClearAllFonts()
     {
         ClearFonts(map.second);
     }
+    defaultPresetNames.clear();
 }
 
 void EditorFontSystem::RegisterCurrentLocaleFonts()
