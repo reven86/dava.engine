@@ -457,6 +457,33 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                         char xyzw[] = "xyzw";
                         var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    float %s = %cP_Buffer%u[%u].%c;\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount] );
                     }   break;
+                    
+                    case ShaderProp::TYPE_FLOAT2 :
+                    {
+                        char xyzw[] = "xyzw";
+                        var_len += Snprinf
+                        ( 
+                            var_def+var_len, sizeof(var_def)-var_len, 
+                            "    float2 %s = float2( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n", 
+                            p->uid.c_str(), 
+                            pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+0],
+                            pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+1]
+                        );
+                    }   break;
+                    
+                    case ShaderProp::TYPE_FLOAT3 :
+                    {
+                        char xyzw[] = "xyzw";
+                        var_len += Snprinf
+                        ( 
+                            var_def+var_len, sizeof(var_def)-var_len, 
+                            "    float3 %s = float3( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n", 
+                            p->uid.c_str(), 
+                            pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+0],
+                            pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+1],
+                            pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+2]
+                        );
+                    }   break;
 
                     case ShaderProp::TYPE_FLOAT4 :
                         var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    float4 %s = %cP_Buffer%u[%u];\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg );
