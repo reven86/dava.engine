@@ -166,7 +166,7 @@ bool ImageTools::MergeImages(const FilePath &folder, Set<String> &errorLog)
 
 void ImageTools::SaveImage(Image *image, const FilePath &pathname)
 {
-    ImageSystem::Instance()->Save(pathname, image);
+    ImageSystem::Instance()->Save(pathname, image, image->format);
 }
 
 Image * ImageTools::LoadImage(const FilePath &pathname)
