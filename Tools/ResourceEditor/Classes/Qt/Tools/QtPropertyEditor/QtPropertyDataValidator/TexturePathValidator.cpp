@@ -73,15 +73,11 @@ void TexturePathValidator::FixupInternal(QVariant& v) const
                     DAVA::SafeDelete(texDescriptor);
                 }
 
-				if(wasCreated)
+				auto texturesMap = DAVA::Texture::GetTextureMap();
+				auto found = texturesMap.find(FILEPATH_MAP_KEY(texFile));
+				if(found != texturesMap.end())
 				{
-                    // we need to reload textures in case we change path on existing on disk
-					auto texturesMap = DAVA::Texture::GetTextureMap();
-					auto found = texturesMap.find(FILEPATH_MAP_KEY(texFile));
-					if(found != texturesMap.end())
-					{
-                        found->second->Reload();
-					}
+                    found->second->Reload();
 				}
 
                 v = QVariant(QString::fromStdString(texFile.GetAbsolutePathname()));

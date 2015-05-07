@@ -223,7 +223,26 @@ bool CubemapEditorDialog::VerifyFirstImage(ImageInfo imgInfo, QString &errorStri
 
 bool CubemapEditorDialog::VerifyNextImage(ImageInfo imgInfo, QString &errorString)
 {
-    return (imgInfo == facesInfo);
+    if (imgInfo.height != facesInfo.height || imgInfo.width != facesInfo.width)
+    {
+        errorString = QString("Image size is %1 x %2, should be %3 x %4")
+            .arg(QString::number(imgInfo.width))
+            .arg(QString::number(imgInfo.height))
+            .arg(QString::number(facesInfo.width))
+            .arg(QString::number(facesInfo.height));
+        return false;
+    }
+    else if (imgInfo.format != facesInfo.format)
+    {
+        errorString = QString("Image format is %1, should be %3")
+            .arg(GlobalEnumMap<PixelFormat>::Instance()->ToString(imgInfo.format))
+            .arg(GlobalEnumMap<PixelFormat>::Instance()->ToString(facesInfo.format));
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }
 
 bool CubemapEditorDialog::IsFormatValid(const DAVA::ImageInfo &info)
