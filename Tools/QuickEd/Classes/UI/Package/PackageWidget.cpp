@@ -1,5 +1,7 @@
 
 #include <QClipboard>
+#include <QFileDialog>
+
 #include "PackageWidget.h"
 #include "PackageModel.h"
 
@@ -9,16 +11,10 @@
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
-#include "Model/PackageHierarchy/ImportedPackagesNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
-#include "Model/PackageHierarchy/PackageRef.h"
 #include "Model/YamlPackageSerializer.h"
-#include "Model/EditorUIPackageBuilder.h"
-
-#include "Project/Project.h"
-#include "Utils/QtDavaConvertion.h"
-
 #include "SharedData.h"
+#include "EditorCore.h"
 #include "Document.h"
 
 using namespace DAVA;
@@ -55,6 +51,10 @@ PackageWidget::PackageWidget(QWidget *parent)
     connect(filterLine, &QLineEdit::textChanged, this, &PackageWidget::filterTextChanged);
 
     importPackageAction = new QAction(tr("Import package"), this);
+    importPackageAction->setShortcut(QKeySequence(QKeySequence::New));
+    importPackageAction->setShortcutContext(Qt::WidgetShortcut);
+    connect(importPackageAction, &QAction::triggered, this, &PackageWidget::OnImport);
+
 
     cutAction = new QAction(tr("Cut"), this);
     cutAction->setShortcut(QKeySequence(QKeySequence::Cut));
@@ -171,14 +171,13 @@ void PackageWidget::RefreshActions(const QModelIndexList &indexList)
     for(const auto &index : indexList)
     {
         PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-        if (!node->CanCopy())
-            canCopy = false;    
-
-        if (!node->IsInsertingSupported())
-            canInsert = false;
-
-        if (!node->CanRemove())
-            canRemove = false;
+        canCopy &= node->CanCopy();
+        canInsert &= node->IsInsertingSupported();
+        canRemove &= node->CanRemove();
+        if (!canCopy && !canInsert && !canRemove)
+        {
+            break;
+        }
     }
     
     RefreshAction(copyAction, canCopy, true);
@@ -186,7 +185,7 @@ void PackageWidget::RefreshActions(const QModelIndexList &indexList)
     RefreshAction(cutAction, canCopy && canRemove, true);
     RefreshAction(delAction, canRemove, true);
 
-    RefreshAction(importPackageAction, false, false);
+    RefreshAction(importPackageAction, canInsert, canInsert);
 
 }
 
@@ -318,6 +317,18 @@ void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, cons
     sharedData->SetData("activeRootControls", QVariant::fromValue(selectedRootControls));
     sharedData->SetData("activatedControls", QVariant::fromValue(selectedControls));
     sharedData->SetData("deactivatedControls", QVariant::fromValue(deselectedControls));
+}
+#include <QDebug>
+void PackageWidget::OnImport()
+{
+    qDebug() << QString::fromStdString(sharedData->GetDocument()->GetPackageFilePath().GetAbsolutePathname());
+    qDebug() << QString::fromStdString(sharedData->GetDocument()->GetPackageFilePath().GetDirectory().GetStringValue());
+    QStringList fileNames = QFileDialog::getOpenFileNames(
+        qApp->activeWindow()
+        , tr("Select one or move files to import")
+        , QString::fromStdString(sharedData->GetDocument()->GetPackageFilePath().GetDirectory().GetStringValue())
+        , "Packages (*.yaml)"
+        );
 }
 
 void PackageWidget::OnCopy()
