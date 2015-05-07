@@ -34,7 +34,6 @@
 #include "Utils/StringFormat.h"
 #include "FileSystem/ResourceArchive.h"
 
-
 #if defined(__DAVAENGINE_MACOS__)
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -56,6 +55,7 @@
 #include <sys/stat.h>
 #include <Shlobj.h>
 #include <tchar.h>
+#include <errno.h>
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include <unistd.h>
@@ -868,6 +868,11 @@ bool FileSystem::CompareBinaryFiles(const FilePath &filePath1, const FilePath &f
     }
 
     return res;
+}
+
+int32 FileSystem::GetErrno() const
+{
+    return errno;
 }
 
 }

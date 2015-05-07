@@ -115,6 +115,11 @@ public:
     */
     DLCError GetError() const;
 
+    /** 
+        \brief Return errno from patching process
+    */
+    int32 GetPatchingErrno() const;
+
     /**
         \brief Returns path to appropriate meta-file that was downloaded from DLC server.
     */
@@ -171,6 +176,7 @@ protected:
         uint32 appliedPatchCount;
         volatile bool patchInProgress;
         PatchFileReader::PatchError patchingError;
+        int32 patchingErrno;
 
         FilePath stateInfoStorePath;
         FilePath downloadInfoStorePath;

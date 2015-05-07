@@ -270,6 +270,8 @@ public:
     */
     bool CompareBinaryFiles(const FilePath &filePath1, const FilePath &filePath2);
 
+    int32 GetErrno() const;
+
 private:
     bool HasLineEnding(File *f);
 

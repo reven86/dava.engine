@@ -150,6 +150,11 @@ DLC::DLCError DLC::GetError() const
     return dlcError;
 }
 
+int32 DLC::GetPatchingErrno() const
+{
+    return dlcContext.patchingErrno;
+}
+
 FilePath DLC::GetMetaStorePath() const
 {
     return dlcContext.remoteMetaStorePath;
@@ -761,6 +766,7 @@ void DLC::StepPatchBegin()
     }
 
     dlcContext.patchingError = PatchFileReader::ERROR_NO;
+    dlcContext.patchingErrno = 0;
     dlcContext.patchInProgress = true;
     dlcContext.appliedPatchCount = 0;
     dlcContext.totalPatchCount = 0;
@@ -802,7 +808,6 @@ void DLC::StepPatchFinish()
             PostError(DE_READ_ERROR);
             break;
 
-        case PatchFileReader::ERROR_APPLY:
         case PatchFileReader::ERROR_NEW_CREATE:
         case PatchFileReader::ERROR_NEW_WRITE:
             PostError(DE_WRITE_ERROR);
@@ -822,7 +827,7 @@ void DLC::StepPatchFinish()
 
     if(errors)
     {
-        Logger::Error("DLC: Error applying patch: %u", dlcContext.patchingError);
+        Logger::Error("DLC: Error applying patch: %u, errno %u", dlcContext.patchingError, dlcContext.patchingErrno);
     }
 }
 
@@ -906,6 +911,7 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
         });
 
     // check if no errors occurred during patching
+    dlcContext.patchingErrno = patchReader.GetErrno();
     dlcContext.patchingError = patchReader.GetLastError();
     if(dlcContext.patchInProgress && PatchFileReader::ERROR_NO == dlcContext.patchingError)
     {
@@ -919,6 +925,7 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
         {
             // error, version can't be written
             dlcContext.patchingError = PatchFileReader::ERROR_NEW_WRITE;
+            dlcContext.patchingErrno = FileSystem::Instance()->GetErrno();
         }
     }
 

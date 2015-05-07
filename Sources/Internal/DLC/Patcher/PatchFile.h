@@ -111,7 +111,6 @@ public:
         ERROR_NEW_CREATE,   // file on newPath can't be opened for writing
         ERROR_NEW_WRITE,    // file on newPath can't be written
         ERROR_NEW_CRC,      // file on newPath has wrong crc after applied patch
-        ERROR_APPLY,        // patch can't be applied
         ERROR_UNKNOWN
     };
 
@@ -127,6 +126,7 @@ public:
     
     PatchError GetLastError() const;
     PatchError GetParseError() const;
+    int32 GetErrno() const;
 
     bool Truncate();
     bool Apply(const FilePath &origBase, const FilePath &origPath, const FilePath &newBase, const FilePath &newPath);
@@ -136,6 +136,7 @@ protected:
     PatchInfo curInfo;
     PatchError lastError;
     PatchError parseError;
+    int32 curErrno;
     bool verbose;
     bool eof;
 
