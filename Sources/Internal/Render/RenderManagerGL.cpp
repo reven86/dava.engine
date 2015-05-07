@@ -204,6 +204,7 @@ bool RenderManager::Create(Windows::UI::Core::CoreWindow^ window)
 	{
 		throw Exception::CreateException(E_FAIL, L"Failed to make fullscreen EGLSurface current");
 	}
+	return true;
 }
 
 void RenderManager::Release()
