@@ -86,7 +86,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
     if( in )
     {
-        std::regex  prop_re(".*property\\s*(float|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
+        std::regex  prop_re(".*property\\s*(float|float2|float3|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
         std::regex  sampler2d_re(".*DECL_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
         std::regex  samplercube_re(".*DECL_SAMPLERCUBE\\s*\\(\\s*(.*)\\s*\\).*");
         std::regex  texture2d_re(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
@@ -115,8 +115,11 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                 p.uid   = FastName(uid);
                 p.scope = ShaderProp::SCOPE_SHARED;
+                p.type  = ShaderProp::TYPE_FLOAT4;
 
                 if     ( stricmp( type.c_str(), "float" ) == 0 )    p.type = ShaderProp::TYPE_FLOAT1;
+                else if( stricmp( type.c_str(), "float2" ) == 0 )   p.type = ShaderProp::TYPE_FLOAT2;
+                else if( stricmp( type.c_str(), "float3" ) == 0 )   p.type = ShaderProp::TYPE_FLOAT3;
                 else if( stricmp( type.c_str(), "float4" ) == 0 )   p.type = ShaderProp::TYPE_FLOAT4;
                 else if( stricmp( type.c_str(), "float4x4" ) == 0 ) p.type = ShaderProp::TYPE_FLOAT4X4;
                 
@@ -195,7 +198,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     for( std::vector<ShaderProp>::const_iterator pp=prop.begin(),pp_end=prop.end(); pp!=pp_end; ++pp )
                     {
                         if(     pp->type == ShaderProp::TYPE_FLOAT1 
-                            &&  pp->bufferRegCount < 3
+                            &&  pp->bufferRegCount < (4-1)
                           )
                         {
                             p.bufferReg      = pp->bufferReg;
@@ -209,6 +212,58 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     if( do_add )
                     {
                         p.bufferReg       = cbuf->regCount;
+                        p.bufferRegCount = 0;
+
+                        ++cbuf->regCount;
+                    }
+                }
+                else if( p.type == ShaderProp::TYPE_FLOAT2 )
+                {
+                    bool    do_add = true;
+                    
+                    for( std::vector<ShaderProp>::const_iterator pp=prop.begin(),pp_end=prop.end(); pp!=pp_end; ++pp )
+                    {
+                        if(     pp->type == ShaderProp::TYPE_FLOAT1 
+                            &&  pp->bufferRegCount < (4-2)
+                          )
+                        {
+                            p.bufferReg      = pp->bufferReg;
+                            p.bufferRegCount = pp->bufferRegCount + 1;
+
+                            do_add = false;
+                            break;
+                        }
+                    }
+
+                    if( do_add )
+                    {
+                        p.bufferReg      = cbuf->regCount;
+                        p.bufferRegCount = 0;
+
+                        ++cbuf->regCount;
+                    }
+                }
+                else if( p.type == ShaderProp::TYPE_FLOAT3 )
+                {
+                    bool    do_add = true;
+                    
+                    for( std::vector<ShaderProp>::const_iterator pp=prop.begin(),pp_end=prop.end(); pp!=pp_end; ++pp )
+                    {
+                        if(     pp->type == ShaderProp::TYPE_FLOAT1 
+                            &&  pp->bufferRegCount < (4-3)
+                          )
+                        {
+                            p.bufferReg      = pp->bufferReg;
+                            p.bufferRegCount = pp->bufferRegCount + 1;
+
+                            do_add = false;
+                            break;
+                        }
+                    }
+
+                    if( do_add )
+                    {
+                        p.bufferReg      = cbuf->regCount;
                         p.bufferRegCount = 0;
 
                         ++cbuf->regCount;
@@ -239,8 +294,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 sampler.back().uid  = FastName(sname);
                 sampler.back().type = TEXTURE_TYPE_2D;
 
-                code.append( line, strlen(line) );
-                code.push_back( '\n' );
+                _AppendLine( line, strlen(line) );
             }
             else if( std::regex_match( line, match, samplercube_re ) )
             {
@@ -259,8 +313,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 sampler.back().uid  = FastName(sname);
                 sampler.back().type = TEXTURE_TYPE_CUBE;
 
-                code.append( line, strlen(line) );
-                code.push_back( '\n' );
+                _AppendLine( line, strlen(line) );
             }
             else if( std::regex_match( line, match, texture2d_re ) )
             {
@@ -282,9 +335,8 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                         break;
                     }
                 }
-
-                code.append( line, strlen(line) );
-                code.push_back( '\n' );
+                
+                _AppendLine( line, strlen(line) );
             }
             else if( std::regex_match( line, match, texturecube_re ) )
             {
@@ -307,8 +359,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     }
                 }
 
-                code.append( line, strlen(line) );
-                code.push_back( '\n' );
+                _AppendLine( line, strlen(line) );
             }
             else if( std::regex_match( line, match, blend_re ) )
             {
@@ -334,8 +385,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
             }
             else
             {
-                code.append( line, lineLen );
-                code.push_back( '\n' );
+                _AppendLine( line, strlen(line) );
             }
 
 
@@ -345,8 +395,26 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 vdecl.AddElement( VS_POSITION, 0, VDT_FLOAT, 3 );
             if( strstr( line, "VPROG_IN_NORMAL" ) )
                 vdecl.AddElement( VS_NORMAL, 0, VDT_FLOAT, 3 );
+            
             if( strstr( line, "VPROG_IN_TEXCOORD" ) )
-                vdecl.AddElement( VS_TEXCOORD, 0, VDT_FLOAT, 2 );
+            {
+                uint32  usage_i  = 0;
+                uint32  data_cnt = 2;
+
+                std::regex  texcoord_re(".*VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(([0-7])\\s*\\).*");
+
+                if( std::regex_match( line, match, texcoord_re ) )
+                {
+                    std::string u = match[1].str();
+                    std::string c = match[2].str();
+                    
+                    usage_i  = atoi( u.c_str() );                
+                    data_cnt = atoi( c.c_str() );                
+                }
+
+                vdecl.AddElement( VS_TEXCOORD, usage_i, VDT_FLOAT, data_cnt );
+            }
+
             if( strstr( line, "VPROG_IN_COLOR" ) )
                 vdecl.AddElement( VS_COLOR, 0, VDT_UINT8N, 4 );
         } // for each line
@@ -388,6 +456,33 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     {
                         char xyzw[] = "xyzw";
                         var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    float %s = %cP_Buffer%u[%u].%c;\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount] );
+                    }   break;
+                    
+                    case ShaderProp::TYPE_FLOAT2 :
+                    {
+                        char xyzw[] = "xyzw";
+                        var_len += Snprinf
+                        ( 
+                            var_def+var_len, sizeof(var_def)-var_len, 
+                            "    float2 %s = float2( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n", 
+                            p->uid.c_str(), 
+                            pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+0],
+                            pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+1]
+                        );
+                    }   break;
+                    
+                    case ShaderProp::TYPE_FLOAT3 :
+                    {
+                        char xyzw[] = "xyzw";
+                        var_len += Snprinf
+                        ( 
+                            var_def+var_len, sizeof(var_def)-var_len, 
+                            "    float3 %s = float3( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n", 
+                            p->uid.c_str(), 
+                            pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+0],
+                            pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+1],
+                            pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+2]
+                        );
                     }   break;
 
                     case ShaderProp::TYPE_FLOAT4 :
@@ -505,12 +600,35 @@ ShaderSource::_Reset()
     sampler.clear();
     buf.clear();
     code.clear();
+    codeLineCount = 0;
     
     for( unsigned i=0; i!=countof(blending.rtBlend); ++i )
     {
         blending.rtBlend[i].blendEnabled    = false;
         blending.rtBlend[i].alphaToCoverage = false;
     }
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+ShaderSource::_AppendLine( const char* line, uint32 lineLen )
+{
+code.append( line, lineLen );
+code.push_back( '\n' );
+return;
+
+    char    text[4*1024];
+    int     len = Snprinf( text, sizeof(text)-1, "/*%04u*/ ", codeLineCount+1 );
+
+    strncpy( text+len, line, lineLen );
+    text[len+lineLen] = '\0';
+
+    code.append( text, strlen(text) );
+    code.push_back( '\n' );
+
+    ++codeLineCount;        
 }
 
 

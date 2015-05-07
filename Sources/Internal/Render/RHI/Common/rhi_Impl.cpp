@@ -299,9 +299,9 @@ SetConst( Handle cb, uint32 constIndex, uint32 constCount, const float* data )
 }
 
 bool
-SetConst( Handle cb, uint32 constIndex, uint32 constSubIndex, float data )
+SetConst( Handle cb, uint32 constIndex, uint32 constSubIndex, const float* data, uint32 dataCount )
 {
-    return (*_Impl.impl_ConstBuffer_SetConst1)( cb, constIndex, constSubIndex, data );
+    return (*_Impl.impl_ConstBuffer_SetConst1fv)( cb, constIndex, constSubIndex, data, dataCount );
 }
 
 void

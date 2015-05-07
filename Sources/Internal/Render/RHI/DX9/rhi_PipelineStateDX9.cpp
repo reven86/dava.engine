@@ -164,7 +164,7 @@ public:
         void        InvalidateInst();
 
         bool        SetConst( unsigned const_i, unsigned count, const float* data );
-        bool        SetConst( unsigned const_i, unsigned const_sub_i, float data );
+        bool        SetConst( unsigned const_i, unsigned const_sub_i, const float* data, unsigned dataCount );
         void        SetToRHI( const void* inst_data ) const;
 
 
@@ -360,13 +360,13 @@ PipelineStateDX9_t::ConstBuf::SetConst( unsigned const_i, unsigned const_count, 
 //------------------------------------------------------------------------------
 
 bool
-PipelineStateDX9_t::ConstBuf::SetConst( unsigned const_i, unsigned const_sub_i, float data )
+PipelineStateDX9_t::ConstBuf::SetConst( unsigned const_i, unsigned const_sub_i, const float* data, unsigned dataCount )
 {
     bool    success = false;
 
     if( const_i <= regCount  &&  const_sub_i < 4 )
     {
-        value[ const_i*4 + const_sub_i ] = data;
+        memcpy( value + const_i*4 + const_sub_i, data, dataCount*sizeof(float) );
         inst    = nullptr;
         success = true;
     }
@@ -782,11 +782,11 @@ dx9_ConstBuffer_SetConst( Handle cb, unsigned const_i, unsigned const_count, con
 //------------------------------------------------------------------------------
 
 static bool
-dx9_ConstBuffer_SetConst1( Handle cb, unsigned const_i, unsigned const_sub_i, float data )
+dx9_ConstBuffer_SetConst1fv( Handle cb, unsigned const_i, unsigned const_sub_i, const float* data, uint32 dataCount )
 {
     PipelineStateDX9_t::ConstBuf* cb9 = ConstBufDX9Pool::Get( cb );
 
-    return cb9->SetConst( const_i, const_sub_i, data );
+    return cb9->SetConst( const_i, const_sub_i, data, dataCount );
 }
 
 
@@ -811,7 +811,7 @@ void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_ConstBuffer_SetConst     = &dx9_ConstBuffer_SetConst;
-    dispatch->impl_ConstBuffer_SetConst1    = &dx9_ConstBuffer_SetConst1;
+    dispatch->impl_ConstBuffer_SetConst1fv  = &dx9_ConstBuffer_SetConst1fv;
     dispatch->impl_ConstBuffer_Delete       = &dx9_ConstBuffer_Delete;
 }
 

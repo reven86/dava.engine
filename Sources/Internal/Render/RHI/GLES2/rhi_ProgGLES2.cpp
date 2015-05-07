@@ -318,13 +318,13 @@ ProgGLES2::ConstBuf::SetConst( unsigned const_i, unsigned const_count, const flo
 //------------------------------------------------------------------------------
 
 bool
-ProgGLES2::ConstBuf::SetConst( unsigned const_i, unsigned const_sub_i, float cdata )
+ProgGLES2::ConstBuf::SetConst( unsigned const_i, unsigned const_sub_i, const float* cdata, unsigned data_count )
 {
     bool    success = false;
 
     if( const_i <= count  &&  const_sub_i < 4 )
     {
-        data[ const_i*4 + const_sub_i ] = cdata;
+        memcpy( data + const_i*4 + const_sub_i, cdata, data_count*sizeof(float) );
         inst    = nullptr;
         success = true;
     }
@@ -426,12 +426,12 @@ gles2_ConstBuffer_SetConst( Handle cb, unsigned const_i, unsigned const_count, c
 //------------------------------------------------------------------------------
 
 static bool
-gles2_ConstBuffer_SetConst1( Handle cb, unsigned const_i, unsigned const_sub_i, float data )
+gles2_ConstBuffer_SetConst1( Handle cb, unsigned const_i, unsigned const_sub_i, const float* data, unsigned dataCount )
 {
     ProgGLES2::ConstBuf*  self = ConstBufGLES2Pool::Get( cb );
 
 //Logger::Info( "  upd-cb %u", unsigned(RHI_HANDLE_INDEX(cb)) );
-    return self->SetConst( const_i, const_sub_i, data );
+    return self->SetConst( const_i, const_sub_i, data, dataCount );
 }
 
 
@@ -456,7 +456,7 @@ void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_ConstBuffer_SetConst     = &gles2_ConstBuffer_SetConst;
-    dispatch->impl_ConstBuffer_SetConst1    = &gles2_ConstBuffer_SetConst1;
+    dispatch->impl_ConstBuffer_SetConst1fv  = &gles2_ConstBuffer_SetConst1;
     dispatch->impl_ConstBuffer_ConstCount   = &gles2_ConstBuffer_ConstCount;
     dispatch->impl_ConstBuffer_Delete       = &gles2_ConstBuffer_Delete;
 }

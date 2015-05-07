@@ -1,19 +1,33 @@
 VPROG_IN_BEGIN
     VPROG_IN_POSITION
     VPROG_IN_TEXCOORD
+#if defined(MATERIAL_LIGHTMAP)
+    VPROG_IN_TEXCOORD1(2)
+#endif
 VPROG_IN_END
 
 VPROG_OUT_BEGIN
     VPROG_OUT_POSITION
     VPROG_OUT_TEXCOORD0(uv,2)
+#if defined(MATERIAL_LIGHTMAP)
+    VPROG_OUT_TEXCOORD1(uv1,2)
+#endif
 VPROG_OUT_END
 
 property float4x4 worldViewProjMatrix : unique,dynamic : ui_hidden=yes ;
+#if defined(MATERIAL_LIGHTMAP)
+property float2 uvOffset : unique,static : ui_hidden=yes ;
+property float2 uvScale : unique,static : ui_hidden=yes ;
+#endif
 
 VPROG_BEGIN
     float3 in_pos      = VP_IN_POSITION;
     float2 in_texcoord = VP_IN_TEXCOORD;
     VP_OUT(uv) =  in_texcoord;
+#if defined(MATERIAL_LIGHTMAP)
+    float2 in_texcoord_lm = VP_IN_TEXCOORD1;
+    VP_OUT(uv1) =  uvScale*in_texcoord_lm+uvOffset;
+#endif
 #if defined(SKYOBJECT)
 	float4x4 mwpWOtranslate = float4x4(worldViewProjMatrix[0], worldViewProjMatrix[1], worldViewProjMatrix[2], float4(0.0, 0.0, 0.0, 1.0));
 	float4 vecPos = mul(float4(in_pos.x,in_pos.y,in_pos.z,1.0), mwpWOtranslate);

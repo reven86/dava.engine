@@ -65,7 +65,7 @@ public:
 
         unsigned            ConstCount() const;
         bool                SetConst( unsigned const_i, unsigned count, const float* cdata );
-        bool                SetConst( unsigned const_i, unsigned const_sub_i, float cdata );
+        bool                SetConst( unsigned const_i, unsigned const_sub_i, const float* cdata, unsigned data_count );
         
         void                SetToRHI( unsigned bufIndex, id<MTLRenderCommandEncoder> ce ) const;
         void                InvalidateInst();
@@ -344,13 +344,13 @@ PipelineStateMetal_t::ConstBuf::SetConst( unsigned const_i, unsigned const_count
 //------------------------------------------------------------------------------
 
 bool
-PipelineStateMetal_t::ConstBuf::SetConst( unsigned const_i, unsigned const_sub_i, float cdata )
+PipelineStateMetal_t::ConstBuf::SetConst( unsigned const_i, unsigned const_sub_i, const float* cdata, unsigned data_count )
 {
     bool    success = false;
 
     if( const_i <= count  &&  const_sub_i < 4 )
     {
-        data[ const_i*4 + const_sub_i ] = cdata;
+        memcpy( data + const_i*4 + const_sub_i, cdata, data_count*sizeof(float) );
         inst    = nullptr;
         success = true;
     }
@@ -632,11 +632,11 @@ metal_ConstBuffer_SetConst( Handle cb, uint32 constIndex, uint32 constCount, con
 }
 
 static bool
-metal_ConstBuffer_SetConst1( Handle cb, uint32 constIndex, uint32 constSubIndex, float data )
+metal_ConstBuffer_SetConst1fv( Handle cb, uint32 constIndex, uint32 constSubIndex, const float* data, uint32 dataCount )
 {
     PipelineStateMetal_t::ConstBuf* buf = ConstBufMetalPool::Get( cb );
 
-    return buf->SetConst( constIndex, constSubIndex, data );
+    return buf->SetConst( constIndex, constSubIndex, data, dataCount );
 }
 
 static void
@@ -656,7 +656,7 @@ void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_ConstBuffer_SetConst     = &metal_ConstBuffer_SetConst;
-    dispatch->impl_ConstBuffer_SetConst1    = &metal_ConstBuffer_SetConst1;
+    dispatch->impl_ConstBuffer_SetConst1fv  = &metal_ConstBuffer_SetConst1fv;
     dispatch->impl_ConstBuffer_ConstCount   = nullptr;//&metal_ConstBuffer_ConstCount;
     dispatch->impl_ConstBuffer_Delete       = &metal_ConstBuffer_Delete;
 }

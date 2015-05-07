@@ -43,7 +43,7 @@ namespace rhi
 struct 
 ShaderProp 
 {
-    enum Type   { TYPE_FLOAT1, TYPE_FLOAT4, TYPE_FLOAT4X4 };
+    enum Type   { TYPE_FLOAT1, TYPE_FLOAT2, TYPE_FLOAT3, TYPE_FLOAT4, TYPE_FLOAT4X4 };
     enum Scope  { SCOPE_UNIQUE, SCOPE_SHARED };
 
     FastName    uid;
@@ -93,6 +93,7 @@ public:
 private:
 
     void                    _Reset();
+    void                    _AppendLine( const char* line, uint32 lineLen );
 
     struct
     buf_t
@@ -105,6 +106,7 @@ private:
 
     ProgType                    type;
     std::string                 code;
+    uint32                      codeLineCount;
     VertexLayout                vdecl;
     std::vector<ShaderProp>     prop;
     std::vector<buf_t>          buf;
