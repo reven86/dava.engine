@@ -26,6 +26,7 @@ QWidget * FontPropertyDelegate::createEditor(QWidget * parent, const QStyleOptio
 {
     QComboBox *comboBox = new QComboBox(parent);
     comboBox->setObjectName("comboBox");
+    comboBox->addItem("");
     comboBox->addItems(GetEditorFontSystem()->GetDefaultPresetNames());
     connect(comboBox, static_cast<void(QComboBox::*)(const QString&)>(&QComboBox::activated), this, &FontPropertyDelegate::valueChanged);
     return comboBox;
