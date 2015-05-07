@@ -48,6 +48,7 @@ ShaderProp
 
     FastName    uid;
     Type        type;
+    uint32      arraySize;
     Scope       scope;
     FastName    tag;
     uint32      bufferindex;
