@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "CurlDownloader.h"
+#include "Platform/SystemTimer.h"
 
 namespace DAVA
 {
@@ -50,7 +51,8 @@ CurlDownloader::CurlDownloader()
     , multiHandle(NULL)
     , storePath("")
     , downloadUrl("")
-    , operationTimeout(2)
+    , operationTimeout(30)
+    , inactivityConnectionTimer(30)
     , remoteFileSize(0)
     , sizeToDownload(0)
     , downloadSpeedLimit(0)
@@ -76,6 +78,11 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
 {
     DownloadPart *thisPart = static_cast<DownloadPart *>(part);
     CurlDownloader *thisDownloader = static_cast<CurlDownloader *>(thisPart->GetDownloader());
+ 
+    if (thisDownloader->inactivityConnectionTimer.IsStarted())
+    {
+        thisDownloader->inactivityConnectionTimer.Reset();
+    }
     
     uint32 dataLeft = thisPart->GetSize() - thisPart->GetProgress();
     size_t dataSizeCame = size*nmemb;
@@ -101,6 +108,17 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
     {
         return 0; // download is interrupted
     }
+    
+    if (dataLeft < dataSizeCame)
+    {
+        // we received more data for chunk than expected, it is not a big deal.
+        return dataSizeCame;
+    }
+    else
+    {
+        return static_cast<size_t>(dataSizeToBuffer);
+    }
+
     
     // no errors was found
     return dataSizeToBuffer;
@@ -297,21 +315,23 @@ CURLMcode CurlDownloader::Perform()
             /* select error */
             break;
         case 0: /* timeout */
+            if (!inactivityConnectionTimer.IsStarted() && 0 >= curlTimeout)
+            {
+                inactivityConnectionTimer.Start();
+            }
+            if (inactivityConnectionTimer.IsStarted() && inactivityConnectionTimer.IsReached())
+            {
+                // workaround which allows to finish broken download on MacOS
+                for (auto easyHandle : easyHandles)
+                {
+                    curl_easy_setopt(easyHandle, CURLOPT_TIMEOUT, 1);
+                }
+            }
         default: /* action */
             ret = curl_multi_perform(multiHandle, &handlesRunning);
             if (CURLM_OK != ret)
             {
                 return ret;
-            }
-        }
-
-        
-        // workaround which allows to finish broken download on MacOS
-        if (curlTimeout < 1)
-        {
-            for (auto easyHandle : easyHandles)
-            {
-                curl_easy_setopt(easyHandle, CURLOPT_TIMEOUT, 1);
             }
         }
         
@@ -659,7 +679,7 @@ void CurlDownloader::SetTimeout(CURL *easyHandle)
     curl_easy_setopt(easyHandle, CURLOPT_DNS_CACHE_TIMEOUT, operationTimeout);
     curl_easy_setopt(easyHandle, CURLOPT_SERVER_RESPONSE_TIMEOUT, operationTimeout);
 }
-    
+
 DownloadError CurlDownloader::HandleDownloadResults(CURLM *multiHandle)
 {
     // handle easy handles states
@@ -734,4 +754,37 @@ DownloadError CurlDownloader::TakeMostImportantReturnValue(const Vector<Download
     return errorsByPriority[retIndex].error;
 }
 
+CurlDownloader::InactivityTimer::InactivityTimer(int32 duration)
+    : timeout(duration)
+    , timeLeft(timeout)
+{
+}
+    
+void CurlDownloader::InactivityTimer::Start()
+{
+    Reset();
+    timerStartTime = static_cast<int32>(SystemTimer::Instance()->AbsoluteMS()/1000);
+    isStarted = true;
+}
+
+void CurlDownloader::InactivityTimer::Reset()
+{
+    timeLeft = timeout;
+}
+
+bool CurlDownloader::InactivityTimer::IsReached()
+{
+    int32 timeDelta = static_cast<int32>(SystemTimer::Instance()->AbsoluteMS()/1000) - timerStartTime;
+    
+    timeLeft -= timeDelta;
+    
+    bool isReached = 0 >= timeLeft;
+    
+    if (isReached)
+    {
+        isStarted = false;
+    }
+    
+    return isReached;
+}
 }

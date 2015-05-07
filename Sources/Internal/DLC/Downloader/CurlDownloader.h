@@ -158,6 +158,24 @@ private:
         char8 priority;
     };
     
+    class InactivityTimer
+    {
+    public:
+        InactivityTimer(int32 duration);
+
+        void Start();
+        void Reset();
+        bool IsReached();
+        
+        bool IsStarted() {return isStarted;}
+        
+    private:
+        const int32 timeout;
+        int32 timeLeft;
+        int32 timerStartTime;
+        bool isStarted = false;
+    };
+    
 private:
     static bool isCURLInit;
     bool isDownloadInterrupting;
@@ -168,6 +186,7 @@ private:
     FilePath storePath;
     String downloadUrl;
     int32 operationTimeout;
+    InactivityTimer inactivityConnectionTimer;
     uint64 remoteFileSize;
     uint64 sizeToDownload;
     uint64 downloadSpeedLimit;
