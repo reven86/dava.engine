@@ -49,7 +49,6 @@ ENUM_DECLARE(eGPUFamily)
 	ENUM_ADD_DESCR(GPU_TEGRA, "tegra");
 	ENUM_ADD_DESCR(GPU_MALI, "mali");
 	ENUM_ADD_DESCR(GPU_ADRENO, "adreno");
-    ENUM_ADD_DESCR(GPU_PNG, "PNG"); // GPU_PNG is deprecated. left for backward compatibility
     ENUM_ADD_DESCR(GPU_ORIGIN, "origin");
 }
 

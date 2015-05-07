@@ -198,7 +198,6 @@ enum eGPUFamily
     GPU_MALI,
     GPU_ADRENO,
     GPU_ORIGIN,
-    GPU_PNG = GPU_ORIGIN, // GPU_PNG is deprecated. left for backward compatibility
     GPU_FAMILY_COUNT,
     
     GPU_DEVICE_COUNT = GPU_ORIGIN,
