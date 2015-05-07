@@ -197,12 +197,19 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                     for( std::vector<ShaderProp>::const_iterator pp=prop.begin(),pp_end=prop.end(); pp!=pp_end; ++pp )
                     {
-                        if(     pp->type == ShaderProp::TYPE_FLOAT1 
+                        if(     (pp->type == ShaderProp::TYPE_FLOAT1  ||  pp->type == ShaderProp::TYPE_FLOAT2  ||  pp->type == ShaderProp::TYPE_FLOAT3)
                             &&  pp->bufferRegCount < (4-1)
                           )
                         {
                             p.bufferReg      = pp->bufferReg;
-                            p.bufferRegCount = pp->bufferRegCount + 1;
+                            p.bufferRegCount = pp->bufferRegCount;
+
+                            switch( pp->type )
+                            {
+                                case ShaderProp::TYPE_FLOAT1 : p.bufferRegCount += 1; break;
+                                case ShaderProp::TYPE_FLOAT2 : p.bufferRegCount += 2; break;
+                                case ShaderProp::TYPE_FLOAT3 : p.bufferRegCount += 3; break;
+                            }
 
                             do_add = false;
                             break;
@@ -223,13 +230,20 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     
                     for( std::vector<ShaderProp>::const_iterator pp=prop.begin(),pp_end=prop.end(); pp!=pp_end; ++pp )
                     {
-                        if(     pp->type == ShaderProp::TYPE_FLOAT1 
+                        if(     (pp->type == ShaderProp::TYPE_FLOAT1  ||  pp->type == ShaderProp::TYPE_FLOAT2  ||  pp->type == ShaderProp::TYPE_FLOAT3)
                             &&  pp->bufferRegCount < (4-2)
                           )
                         {
                             p.bufferReg      = pp->bufferReg;
-                            p.bufferRegCount = pp->bufferRegCount + 1;
+                            p.bufferRegCount = pp->bufferRegCount;
 
+                            switch( pp->type )
+                            {
+                                case ShaderProp::TYPE_FLOAT1 : p.bufferRegCount += 1; break;
+                                case ShaderProp::TYPE_FLOAT2 : p.bufferRegCount += 2; break;
+                                case ShaderProp::TYPE_FLOAT3 : p.bufferRegCount += 3; break;
+                            }
+                            
                             do_add = false;
                             break;
                         }
@@ -249,12 +263,19 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     
                     for( std::vector<ShaderProp>::const_iterator pp=prop.begin(),pp_end=prop.end(); pp!=pp_end; ++pp )
                     {
-                        if(     pp->type == ShaderProp::TYPE_FLOAT1 
+                        if(     (pp->type == ShaderProp::TYPE_FLOAT1  ||  pp->type == ShaderProp::TYPE_FLOAT2  ||  pp->type == ShaderProp::TYPE_FLOAT3)
                             &&  pp->bufferRegCount < (4-3)
                           )
                         {
                             p.bufferReg      = pp->bufferReg;
-                            p.bufferRegCount = pp->bufferRegCount + 1;
+                            p.bufferRegCount = pp->bufferRegCount;
+
+                            switch( pp->type )
+                            {
+                                case ShaderProp::TYPE_FLOAT1 : p.bufferRegCount += 1; break;
+                                case ShaderProp::TYPE_FLOAT2 : p.bufferRegCount += 2; break;
+                                case ShaderProp::TYPE_FLOAT3 : p.bufferRegCount += 3; break;
+                            }
 
                             do_add = false;
                             break;
