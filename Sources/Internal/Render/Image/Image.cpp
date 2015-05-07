@@ -208,8 +208,9 @@ void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 
 	if(formatSize>0)
 	{
-		newData = new uint8[newWidth * newHeight * formatSize];
-		memset(newData, 0, newWidth * newHeight * formatSize);
+        const uint32 newDataSize = newWidth * newHeight * formatSize;
+		newData = new uint8[newDataSize];
+		memset(newData, 0, newDataSize);
 
 		float32 kx = (float32)width / (float32)newWidth;
 		float32 ky = (float32)height / (float32)newHeight;
@@ -244,8 +245,10 @@ void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 		// resized data
 		width = newWidth;
 		height = newHeight;
+        
 		SafeDeleteArray(data);
 		data = newData;
+        dataSize = newDataSize;
 	}
 }
 
