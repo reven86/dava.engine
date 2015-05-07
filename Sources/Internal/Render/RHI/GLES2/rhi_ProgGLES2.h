@@ -59,7 +59,7 @@ public:
 
         unsigned            ConstCount() const;
         bool                SetConst( unsigned const_i, unsigned count, const float* cdata );
-        bool                SetConst( unsigned const_i, unsigned const_sub_i, float cdata );
+        bool                SetConst( unsigned const_i, unsigned const_sub_i, const float* cdata, unsigned data_count );
         
         const void*         Instance() const;
         void                SetToRHI( const void* instData ) const;

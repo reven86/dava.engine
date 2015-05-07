@@ -122,7 +122,7 @@ namespace ConstBuffer
 
 uint32  ConstCount( Handle cb );
 bool    SetConst( Handle cb, uint32 constIndex, uint32 constCount, const float* data );
-bool    SetConst( Handle cb, uint32 constIndex, uint32 constSubIndex, float data );
+bool    SetConst( Handle cb, uint32 constIndex, uint32 constSubIndex, const float* data, uint32 dataCount );
 void    Delete( Handle cb );
 
 } // namespace ConstBuffer

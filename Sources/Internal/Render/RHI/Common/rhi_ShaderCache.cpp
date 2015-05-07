@@ -200,6 +200,10 @@ static const char* _ShaderDefine_Metal =
 "#define VPROG_IN_TEXCOORD1(sz)  float##sz texcoord1 [[ attribute(VATTR_TEXCOORD_1) ]] ; \n"
 "#define VPROG_IN_TEXCOORD2(sz)  float##sz texcoord2 [[ attribute(VATTR_TEXCOORD_2) ]] ; \n"
 "#define VPROG_IN_TEXCOORD3(sz)  float##sz texcoord3 [[ attribute(VATTR_TEXCOORD_3) ]] ; \n"
+"#define VPROG_IN_TEXCOORD4(sz)  float##sz texcoord3 [[ attribute(VATTR_TEXCOORD_4) ]] ; \n"
+"#define VPROG_IN_TEXCOORD5(sz)  float##sz texcoord3 [[ attribute(VATTR_TEXCOORD_5) ]] ; \n"
+"#define VPROG_IN_TEXCOORD6(sz)  float##sz texcoord3 [[ attribute(VATTR_TEXCOORD_6) ]] ; \n"
+"#define VPROG_IN_TEXCOORD7(sz)  float##sz texcoord3 [[ attribute(VATTR_TEXCOORD_7) ]] ; \n"
 "#define VPROG_IN_COLOR          uchar4 color0 [[ attribute(VATTR_COLOR_0) ]] ; \n"
 "#define VPROG_IN_COLOR0         uchar4 color0 [[ attribute(VATTR_COLOR_0) ]] ; \n"
 "#define VPROG_IN_COLOR1         uchar4 color1 [[ attribute(VATTR_COLOR_1) ]] ; \n"
@@ -211,6 +215,10 @@ static const char* _ShaderDefine_Metal =
 "#define VPROG_OUT_TEXCOORD1(name,size)    float##size name [[ user(texcoord1) ]];\n"
 "#define VPROG_OUT_TEXCOORD2(name,size)    float##size name [[ user(texcoord2) ]];\n"
 "#define VPROG_OUT_TEXCOORD3(name,size)    float##size name [[ user(texcoord3) ]];\n"
+"#define VPROG_OUT_TEXCOORD4(name,size)    float##size name [[ user(texcoord4) ]];\n"
+"#define VPROG_OUT_TEXCOORD5(name,size)    float##size name [[ user(texcoord5) ]];\n"
+"#define VPROG_OUT_TEXCOORD6(name,size)    float##size name [[ user(texcoord6) ]];\n"
+"#define VPROG_OUT_TEXCOORD7(name,size)    float##size name [[ user(texcoord7) ]];\n"
 "#define VPROG_OUT_COLOR0(name,size)       float##size name [[ user(color0) ]];\n"
 "#define VPROG_OUT_COLOR1(name,size)       float##size name [[ user(color1) ]];\n"
 "#define VPROG_OUT_END           };\n"
@@ -260,6 +268,10 @@ static const char* _ShaderDefine_Metal =
 "#define FPROG_IN_TEXCOORD1(name,size)    float##size name [[ user(texcoord1) ]];\n"
 "#define FPROG_IN_TEXCOORD2(name,size)    float##size name [[ user(texcoord2) ]];\n"
 "#define FPROG_IN_TEXCOORD3(name,size)    float##size name [[ user(texcoord3) ]];\n"
+"#define FPROG_IN_TEXCOORD4(name,size)    float##size name [[ user(texcoord4) ]];\n"
+"#define FPROG_IN_TEXCOORD5(name,size)    float##size name [[ user(texcoord5) ]];\n"
+"#define FPROG_IN_TEXCOORD6(name,size)    float##size name [[ user(texcoord6) ]];\n"
+"#define FPROG_IN_TEXCOORD7(name,size)    float##size name [[ user(texcoord7) ]];\n"
 "#define FPROG_IN_COLOR0(name,size)       float##size name [[ user(color0) ]];\n"
 "#define FPROG_IN_COLOR1(name,size)       float##size name [[ user(color1) ]];\n"
 "#define FPROG_IN_END                };\n"
@@ -340,6 +352,10 @@ static const char* _ShaderDefine_GLES2 =
 "#define VPROG_IN_TEXCOORD1(sz)  attribute vec##sz attr_texcoord1;\n"
 "#define VPROG_IN_TEXCOORD2(sz)  attribute vec##sz attr_texcoord2;\n"
 "#define VPROG_IN_TEXCOORD3(sz)  attribute vec##sz attr_texcoord3;\n"
+"#define VPROG_IN_TEXCOORD4(sz)  attribute vec##sz attr_texcoord4;\n"
+"#define VPROG_IN_TEXCOORD5(sz)  attribute vec##sz attr_texcoord5;\n"
+"#define VPROG_IN_TEXCOORD6(sz)  attribute vec##sz attr_texcoord6;\n"
+"#define VPROG_IN_TEXCOORD7(sz)  attribute vec##sz attr_texcoord7;\n"
 "#define VPROG_IN_COLOR          attribute vec4 attr_color0;\n"
 "#define VPROG_IN_COLOR0         attribute vec4 attr_color0;\n"
 "#define VPROG_IN_COLOR1         attribute vec4 attr_color1;\n"
@@ -351,6 +367,10 @@ static const char* _ShaderDefine_GLES2 =
 "#define VPROG_OUT_TEXCOORD1(name,size)    varying vec##size var_##name;\n"
 "#define VPROG_OUT_TEXCOORD2(name,size)    varying vec##size var_##name;\n"
 "#define VPROG_OUT_TEXCOORD3(name,size)    varying vec##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD4(name,size)    varying vec##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD5(name,size)    varying vec##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD6(name,size)    varying vec##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD7(name,size)    varying vec##size var_##name;\n"
 "#define VPROG_OUT_COLOR0(name,size)       varying vec##size var_##name;\n"
 "#define VPROG_OUT_END           \n"
 
@@ -367,6 +387,10 @@ static const char* _ShaderDefine_GLES2 =
 "#define VP_IN_TEXCOORD1         attr_texcoord1\n"
 "#define VP_IN_TEXCOORD2         attr_texcoord2\n"
 "#define VP_IN_TEXCOORD3         attr_texcoord3\n"
+"#define VP_IN_TEXCOORD4         attr_texcoord4\n"
+"#define VP_IN_TEXCOORD5         attr_texcoord5\n"
+"#define VP_IN_TEXCOORD6         attr_texcoord6\n"
+"#define VP_IN_TEXCOORD7         attr_texcoord7\n"
 "#define VP_IN_COLOR             attr_color0\n"
 "#define VP_IN_COLOR0            attr_color0\n"
 "#define VP_IN_COLOR1            attr_color1\n"
@@ -380,6 +404,10 @@ static const char* _ShaderDefine_GLES2 =
 "#define FPROG_IN_TEXCOORD1(name,size)    varying vec##size var_##name;\n"
 "#define FPROG_IN_TEXCOORD2(name,size)    varying vec##size var_##name;\n"
 "#define FPROG_IN_TEXCOORD3(name,size)    varying vec##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD4(name,size)    varying vec##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD5(name,size)    varying vec##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD6(name,size)    varying vec##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD7(name,size)    varying vec##size var_##name;\n"
 "#define FPROG_IN_COLOR0(name,size)       varying vec##size var_##name;\n"
 "#define FPROG_IN_COLOR1(name,size)       varying vec##size var_##name;\n"
 "#define FPROG_IN_END            \n"
@@ -415,7 +443,10 @@ static const char* _ShaderDefine_DX9 =
 "#define VPROG_IN_POSITION       float3 position : POSITION0;\n"
 "#define VPROG_IN_NORMAL         float3 normal : NORMAL0;\n"
 "#define VPROG_IN_TEXCOORD       float2 texcoord0 : TEXCOORD0;\n"
-"#define VPROG_IN_TEXCOORD0(sz)  float#sz texcoord0 : TEXCOORD0;\n"
+"#define VPROG_IN_TEXCOORD0(sz)  float##sz texcoord0 : TEXCOORD0;\n"
+"#define VPROG_IN_TEXCOORD1(sz)  float##sz texcoord1 : TEXCOORD1;\n"
+"#define VPROG_IN_TEXCOORD2(sz)  float##sz texcoord2 : TEXCOORD2;\n"
+"#define VPROG_IN_TEXCOORD3(sz)  float##sz texcoord3 : TEXCOORD3;\n"
 "#define VPROG_IN_COLOR          float4 color0 : COLOR0;\n"
 "#define VPROG_IN_COLOR0         float4 color0 : COLOR0;\n"
 "#define VPROG_IN_COLOR1         float4 color1 : COLOR1;\n"
@@ -427,6 +458,10 @@ static const char* _ShaderDefine_DX9 =
 "#define VPROG_OUT_TEXCOORD1(name,size)    float##size name : TEXCOORD1;\n"
 "#define VPROG_OUT_TEXCOORD2(name,size)    float##size name : TEXCOORD2;\n"
 "#define VPROG_OUT_TEXCOORD3(name,size)    float##size name : TEXCOORD3;\n"
+"#define VPROG_OUT_TEXCOORD4(name,size)    float##size name : TEXCOORD4;\n"
+"#define VPROG_OUT_TEXCOORD5(name,size)    float##size name : TEXCOORD5;\n"
+"#define VPROG_OUT_TEXCOORD6(name,size)    float##size name : TEXCOORD6;\n"
+"#define VPROG_OUT_TEXCOORD7(name,size)    float##size name : TEXCOORD7;\n"
 "#define VPROG_OUT_COLOR0(name,size)       float##size name : COLOR0;\n"
 "#define VPROG_OUT_END           };\n"
 
@@ -456,6 +491,10 @@ static const char* _ShaderDefine_DX9 =
 "#define FPROG_IN_TEXCOORD1(name,size)    float##size name : TEXCOORD1;\n"
 "#define FPROG_IN_TEXCOORD2(name,size)    float##size name : TEXCOORD2;\n"
 "#define FPROG_IN_TEXCOORD3(name,size)    float##size name : TEXCOORD3;\n"
+"#define FPROG_IN_TEXCOORD4(name,size)    float##size name : TEXCOORD4;\n"
+"#define FPROG_IN_TEXCOORD5(name,size)    float##size name : TEXCOORD5;\n"
+"#define FPROG_IN_TEXCOORD6(name,size)    float##size name : TEXCOORD6;\n"
+"#define FPROG_IN_TEXCOORD7(name,size)    float##size name : TEXCOORD7;\n"
 "#define FPROG_IN_COLOR0(name,size)       float##size name : COLOR0;\n"
 "#define FPROG_IN_COLOR1(name,size)       float##size name : COLOR1;\n"
 "#define FPROG_IN_END            };\n"
@@ -467,8 +506,8 @@ static const char* _ShaderDefine_DX9 =
 "#define DECL_SAMPLER2D(unit)    uniform sampler2D Texture##unit;\n"
 "#define DECL_SAMPLERCUBE(unit)  uniform samplerCube Texture##unit;\n"
     
-"#define FP_TEXTURE2D(unit,uv)   tex2D( Texture##unit, uv );\n"
-"#define FP_TEXTURECUBE(unit,uv) texCube( Texture##unit, uv );\n"
+"#define FP_TEXTURE2D(unit,uv)   tex2D( Texture##unit, uv )\n"
+"#define FP_TEXTURECUBE(unit,uv) texCube( Texture##unit, uv )\n"
 "#define FP_IN(name)             IN.##name\n"
 
 "#define FP_OUT_COLOR            OUT.color\n"
@@ -502,6 +541,10 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
             { "VATTR_TEXCOORD_1",   VATTR_TEXCOORD_1 },
             { "VATTR_TEXCOORD_2",   VATTR_TEXCOORD_2 },
             { "VATTR_TEXCOORD_3",   VATTR_TEXCOORD_3 },
+            { "VATTR_TEXCOORD_3",   VATTR_TEXCOORD_4 },
+            { "VATTR_TEXCOORD_3",   VATTR_TEXCOORD_5 },
+            { "VATTR_TEXCOORD_3",   VATTR_TEXCOORD_6 },
+            { "VATTR_TEXCOORD_3",   VATTR_TEXCOORD_7 },
             { "VATTR_COLOR_0",      VATTR_COLOR_0 },
             { "VATTR_COLOR_1",      VATTR_COLOR_1 }
         };

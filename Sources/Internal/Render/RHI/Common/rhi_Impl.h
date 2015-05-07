@@ -77,7 +77,7 @@ Dispatch
 
     uint32  (*impl_ConstBuffer_ConstCount)( Handle);
     bool    (*impl_ConstBuffer_SetConst)( Handle, uint32, uint32, const float* );
-    bool    (*impl_ConstBuffer_SetConst1)( Handle, uint32, uint32, float );
+    bool    (*impl_ConstBuffer_SetConst1fv)( Handle, uint32, uint32, const float*, uint32 );
     void    (*impl_ConstBuffer_Delete)( Handle );
 
     Handle  (*impl_DepthStencilState_Create)( const DepthStencilState::Descriptor& );

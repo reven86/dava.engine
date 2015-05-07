@@ -112,7 +112,7 @@ HConstBuffer    CreateFragmentConstBuffer( HPipelineState rps, uint32 bufIndex )
 bool            CreateFragmentConstBuffers( HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf );
 
 bool            UpdateConstBuffer4fv( HConstBuffer constBuf, uint32 constIndex, const float* data, uint32 constCount );
-bool            UpdateConstBuffer1f( HConstBuffer constBuf, uint32 constIndex, uint32 constSubIndex, float data );
+bool            UpdateConstBuffer1fv( HConstBuffer constBuf, uint32 constIndex, uint32 constSubIndex, const float* data, uint32 dataCount );
 void            DeleteConstBuffer( HConstBuffer constBuf );
 
 
