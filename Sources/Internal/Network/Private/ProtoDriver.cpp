@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include <base/FunctionTraits.h>
+#include <Base/FunctionTraits.h>
 #include <Debug/DVAssert.h>
 #include <Base/Atomic.h>
 #include <Thread/LockGuard.h>

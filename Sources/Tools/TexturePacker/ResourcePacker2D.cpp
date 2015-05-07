@@ -151,8 +151,7 @@ bool ResourcePacker2D::IsMD5ChangedDir(const FilePath & processDirectoryPath, co
 	}
 	SafeRelease(file);
 
-
-	MD5::ForDirectory(pathname, newMD5Digest, isRecursive);
+    MD5::ForDirectory(pathname, newMD5Digest, isRecursive, /*includeHidden=*/false);
 
 	file = File::Create(md5FileName, File::CREATE | File::WRITE);
     DVASSERT(file);
@@ -435,19 +434,16 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 	// Reset processed flag
 	bool flagsProcessed = false;
 	// Find flags and setup them
-	FileList * fileList = new FileList(inputPath);
+	FileList * fileList = new FileList(inputPath, /*includeHidden=*/false);
     fileList->Sort();
 	for (int fi = 0; fi < fileList->GetCount(); ++fi)
 	{
-		if (!fileList->IsDirectory(fi))
-		{
-			if (fileList->GetFilename(fi) == "flags.txt")
-			{
-				currentCommandFlags = ProcessFlags(fileList->GetPathname(fi));
-				flagsProcessed = true;
-				break;
-			}
-		}
+		if (!fileList->IsDirectory(fi) && fileList->GetFilename(fi) == "flags.txt")
+        {
+            currentCommandFlags = ProcessFlags(fileList->GetPathname(fi));
+            flagsProcessed = true;
+            break;
+        }
 	}
 	
 	// If "flags.txt" do not exist - try to use previous flags command line
