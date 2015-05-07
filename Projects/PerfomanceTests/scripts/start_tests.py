@@ -54,7 +54,7 @@ elif args['platform']  == "ios":
 
 sub_process = None
 
-def start_unittests_on_android_device():
+def start_performance_tests_on_android_device():
     global sub_process
     # if screen turned off
     device_state = subprocess.check_output(['adb', 'shell', 'dumpsys', 'power'])
@@ -83,7 +83,7 @@ if start_on_ios:
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     print("copy " + PRJ_NAME_BASE + PRJ_POSTFIX + " on device and run")
 elif start_on_android:
-    sub_process = start_unittests_on_android_device()
+    sub_process = start_performance_tests_on_android_device()
 elif sys.platform == 'win32':
     if os.path.isfile("..\\Release\\app\\" + PRJ_NAME_BASE + PRJ_POSTFIX):  # run on build server (TeamCity)
         sub_process = subprocess.Popen(["..\\Release\\app\\" + PRJ_NAME_BASE + PRJ_POSTFIX], cwd="./..",
@@ -118,10 +118,14 @@ while continue_process_stdout:
         line = sub_process.stdout.readline()
         if line != '':
 
-            teamcity_line_index = line.find("device")
+            teamcity_line_index = line.find("Device")
             if teamcity_line_index != -1:
                 teamcity_line = line[teamcity_line_index:]
-                frame_delta_file = open("../artifacts/frame_delta" + "_branch_" + branch + "_" + teamcity_line+ ".txt", "w")
+                sys.stdout.write(teamcity_line)
+                sys.stdout.flush() 
+                
+                device = teamcity_line.split("{")[1].split("}")[0]
+                frame_delta_file = open("../artifacts/frame_delta" + "_branch_" + branch + "_device_" + device + ".txt", "w")
 
             # write Frame_delta build statistic to file
             teamcity_line_index = line.find("Frame_delta")
