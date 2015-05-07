@@ -24,29 +24,42 @@
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-    =====================================================================================*/
+=====================================================================================*/
 
 
-#include "GameCore.h"
-#include "FileSystem/ResourceArchive.h"
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
-using namespace DAVA;
+#include <QMainWindow>
 
-GameCore::GameCore()
-    : ApplicationCore()
+class DavaGLWidget;
+
+namespace Ui
 {
+    class MainWindow;
 }
 
-GameCore::~GameCore()
+class MainWindow : public QMainWindow
 {
-}
+    Q_OBJECT
 
-void GameCore::OnAppStarted()
-{
+public:
+    explicit MainWindow(QWidget *parent = 0);
+    ~MainWindow();
 
-}
+private:
+    void CreateGlWidget();
 
-void GameCore::OnAppFinished()
-{
+private slots:
+    void OnGlInitialized();
+    void OnGlWidgedResized(int width, int height, int dpr);
 
-}
+private:
+    Ui::MainWindow *ui;
+
+    DavaGLWidget *glWidget;
+
+    static const quint8 NUMBER_OF_SCREEN;
+};
+
+#endif // MAINWINDOW_H

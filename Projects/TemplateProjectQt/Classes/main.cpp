@@ -24,29 +24,61 @@
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-    =====================================================================================*/
+=====================================================================================*/
 
 
-#include "GameCore.h"
-#include "FileSystem/ResourceArchive.h"
+#include <QApplication>
 
-using namespace DAVA;
+#include "MainWindow.h"
 
-GameCore::GameCore()
-    : ApplicationCore()
+#include "DAVAEngine.h"
+#include "QtTools/FrameworkBinding/FrameworkLoop.h"
+#include "QtTools/DavaGLWidget/davaglwidget.h"
+
+void RunGui(int argc, char *argv[]);
+
+int main(int argc, char *argv[])
 {
+#if defined (__DAVAENGINE_MACOS__)
+    DAVA::Core::Run(argc, argv);
+#elif defined (__DAVAENGINE_WIN32__)
+    HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle(nullptr);
+    DAVA::Core::Run(argc, argv, hInstance);
+#else
+    DVASSERT(false && "Wrong platform")
+#endif
+
+    RunGui(argc, argv);
+
+    return 0;
 }
 
-GameCore::~GameCore()
+void RunGui(int argc, char *argv[])
 {
-}
+    new DAVA::QtLayer();
 
-void GameCore::OnAppStarted()
-{
+#ifdef Q_OS_MAC
+    // Must be called before creating QApplication instance
+    DAVA::QtLayer::MakeAppForeground(false);
+    QTimer::singleShot(0, []{DAVA::QtLayer::MakeAppForeground();});
+    QTimer::singleShot(0, []{DAVA::QtLayer::RestoreMenuBar(););
+#endif
 
-}
+    new DavaLoop();
+    new FrameworkLoop();
 
-void GameCore::OnAppFinished()
-{
+    QApplication a(argc, argv);
 
+    MainWindow *w = new MainWindow();
+    w->show();
+
+    DavaLoop::Instance()->StartLoop(FrameworkLoop::Instance());
+
+    QApplication::exec();
+
+    FrameworkLoop::Instance()->Release();
+    DAVA::QtLayer::Instance()->Release();
+    DavaLoop::Instance()->Release();
+
+    delete w;
 }
