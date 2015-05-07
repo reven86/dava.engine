@@ -58,7 +58,7 @@ _CmpFunc( CmpFunc func )
         case CMP_LESSEQUAL      : f = MTLCompareFunctionLessEqual; break;
         case CMP_GREATER        : f = MTLCompareFunctionGreater; break;
         case CMP_NOTEQUAL       : f = MTLCompareFunctionNotEqual; break;
-        case CML_GREATEREQUAL   : f = MTLCompareFunctionGreaterEqual; break;
+        case CMP_GREATEREQUAL   : f = MTLCompareFunctionGreaterEqual; break;
         case CMP_ALWAYS         : f = MTLCompareFunctionAlways; break;
     }
     
