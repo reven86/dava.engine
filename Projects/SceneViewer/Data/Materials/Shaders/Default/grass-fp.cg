@@ -1,0 +1,24 @@
+
+uniform sampler2D albedo;
+
+#if defined(VEGETATION_DRAW_LOD_COLOR)
+uniform vec3 lodColor;
+#endif
+
+varying vec2 varTexCoord0;
+varying vec3 varVegetationColor;
+
+
+
+
+void main()
+{
+    vec3 textureColor0 = texture2D(albedo, varTexCoord0).rgb;
+    vec3 color = textureColor0.rgb * varVegetationColor * 2.0;
+
+#if defined(VEGETATION_DRAW_LOD_COLOR)
+    color += lodColor;
+#endif
+        
+    gl_FragColor = vec4(color, 1.0);
+}

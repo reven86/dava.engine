@@ -464,7 +464,7 @@ void VegetationRenderObject::PrepareToRender(Camera * camera)
     
     Vector3 posScale(0.0f, 0.0f, 0.0f);
     Vector2 switchLodScale;
-    Vector2 vegetationAnimationOffset[4];
+    float32 vegetationAnimationOffset[8];
     
     Vector3 cameraDirection = camera->GetDirection();
     cameraDirection.Normalize();
@@ -510,7 +510,9 @@ void VegetationRenderObject::PrepareToRender(Camera * camera)
         
         for(uint32 i = 0; i < 4; ++i)
         {
-            vegetationAnimationOffset[i] = treeNode->data.animationOffset[i] * layersAnimationAmplitude.data[i];
+            Vector2 animationOffset = treeNode->data.animationOffset[i] * layersAnimationAmplitude.data[i];
+            vegetationAnimationOffset[i] = animationOffset.x;
+            vegetationAnimationOffset[i + 4] = animationOffset.y;
         }
 #if RHI_COMPLETE        
         mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_SWITCH_LOD_SCALE,
@@ -923,13 +925,6 @@ void VegetationRenderObject::CreateRenderData()
                                                 worldSize,
                                                 customGeometryData);
 
-    FastNameSet materialFlags;
-    materialFlags.Insert(VegetationPropertyNames::FLAG_GRASS_TRANSFORM);
-    
-#ifdef VEGETATION_DRAW_LOD_COLOR
-    materialFlags.Insert(VegetationPropertyNames::FLAG_VEGETATION_DRAW_LOD_COLOR);
-#endif
-
     if (renderData)
     {
         delete renderData;
@@ -938,7 +933,7 @@ void VegetationRenderObject::CreateRenderData()
     }
 
     renderData = new VegetationRenderData();
-    vegetationGeometry->Build(renderData, materialFlags);
+    vegetationGeometry->Build(renderData);
 
     const Vector<VegetationVertex>& vertexData = renderData->GetVertices();
     const Vector<VegetationIndex>& indexData = renderData->GetIndices();
@@ -954,7 +949,9 @@ void VegetationRenderObject::CreateRenderData()
     indexBuffer = rhi::CreateIndexBuffer(indexBufferSize);
     rhi::UpdateIndexBuffer(indexBuffer, &indexData.front(), 0, indexBufferSize);
 
+#if defined(__DAVAENGINE_IPHONE__)
     renderData->ReleaseRenderData(); //release vertex and index buffers data
+#endif
 
     KeyedArchive* props = new KeyedArchive();
     props->SetUInt64(NMaterialTextureName::TEXTURE_HEIGHTMAP.c_str(), (uint64)heightmapTexture);
@@ -971,10 +968,10 @@ void VegetationRenderObject::CreateRenderData()
 
     rhi::VertexLayout vertexLayout;
     vertexLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
-    vertexLayout.AddElement(rhi::VS_NORMAL, 0, rhi::VDT_FLOAT, 3);
-    vertexLayout.AddElement(rhi::VS_BINORMAL, 0, rhi::VDT_FLOAT, 3);
-    vertexLayout.AddElement(rhi::VS_TANGENT, 0, rhi::VDT_FLOAT, 3);
+    //vertexLayout.AddElement(rhi::VS_NORMAL, 0, rhi::VDT_FLOAT, 3); uncomment, when normals will be used for vertex lit implementation
     vertexLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
+    vertexLayout.AddElement(rhi::VS_TEXCOORD, 1, rhi::VDT_FLOAT, 3);
+    vertexLayout.AddElement(rhi::VS_TEXCOORD, 2, rhi::VDT_FLOAT, 3);
     vertexLayoutUID = rhi::VertexLayout::UniqueId(vertexLayout);
 
     ClearRenderBatches();

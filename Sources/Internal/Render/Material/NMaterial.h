@@ -96,6 +96,9 @@ public:
 
     void Load(KeyedArchive * archive, SerializationContext * serializationContext) override;
 
+    void SetFXName(const FastName & fxName);
+    const FastName & GetFXName();
+
     /*properties*/
     void AddProperty(const FastName& propName, const float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize = 1);
     void RemoveProperty(const FastName& propName);
@@ -152,9 +155,7 @@ private:
     NMaterialProperty* GetMaterialProperty(const FastName& propName);    
     void CollectMaterialFlags(HashMap<FastName, int32>& target);
     
-    const FastName& GetFXName();
     const FastName& GetQualityGroup();
-
 
     void AddChildMaterial(NMaterial *material);
     void RemoveChildMaterial(NMaterial *material);

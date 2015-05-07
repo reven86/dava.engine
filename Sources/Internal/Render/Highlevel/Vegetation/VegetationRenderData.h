@@ -44,10 +44,10 @@ typedef uint16 VegetationIndex;
 struct VegetationVertex
 {
     Vector3 coord;
-    Vector3 normal;
-    Vector3 binormal;
-    Vector3 tangent;
+    //Vector3 normal; uncomment, when normals will be used for vertex lit implementation
     Vector2 texCoord0;
+    Vector3 texCoord1;
+    Vector3 texCoord2;
 };
 
 /////////////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,84 @@
+VPROG_IN_BEGIN
+    VPROG_IN_POSITION
+    VPROG_IN_TEXCOORD0
+    VPROG_IN_TEXCOORD1
+    VPROG_IN_TEXCOORD2
+VPROG_IN_END
+
+VPROG_OUT_BEGIN
+    VPROG_OUT_POSITION
+    VPROG_OUT_TEXCOORD0(outTexCoord,2)
+    VPROG_OUT_COLOR0(outVegetationColor,3)
+VPROG_OUT_END
+
+//uniform sampler2D heightmap;
+//uniform sampler2D vegetationmap;
+
+property float4x4 worldViewProjMatrix;
+property float4 worldSize;
+property float4 heightmapScale;
+property float4x4 vegetationParams; // vegetationParams[0] - tilePos; vegetationParams[1] - lodSwitchScale; vegetationParams[2..3] - vegWaveOffset, 
+
+property float3 tilePos;
+property float3 worldSize;
+property float2 lodSwitchScale;
+property float2 heightmapScale;
+property float4 vegWaveOffset[2]; //8 floats: xxxxyyyy (xy per layer)
+
+VPROG_BEGIN
+
+    float4 inPosition = VP_IN_POSITION;
+    float2 inTexCoord0 = VP_IN_TEXCOORD0;
+    float3 inTexCoord1 = VP_IN_TEXCOORD1;
+    float3 inTexCoord2 = VP_IN_TEXCOORD2;
+    
+	VP_OUT(outTexCoord) = inTexCoord0;
+    
+    //inTexCoord1.y - cluster type (0...3)
+    //inTexCoord1.z - cluster's reference density (0...15)
+
+    float4 clusterCenter = float4(inTexCoord2.x + vegetationParams[0].x,
+                              inTexCoord2.y + vegetationParams[0].y,
+                              inTexCoord2.z,
+                              inPosition.w);
+
+    float4 pos = float4(inPosition.x + vegetationParams[0].x,
+                    inPosition.y + vegetationParams[0].y,
+                    inPosition.z,
+                    inPosition.w);
+
+    float2 hUVheight = float2(clamp(1.0 - (0.5 * worldSize.x - clusterCenter.x) / worldSize.x, 0.0, 1.0),
+                    clamp(1.0 - (0.5 * worldSize.y - clusterCenter.y) / worldSize.y, 0.0, 1.0));
+
+    hUVheight = float2(clamp(hUVheight.x * heightmapScale.x, 0.0, 1.0),
+               clamp(hUVheight.y * heightmapScale.y, 0.0, 1.0));
+
+    //float4 heightVec = texture2DLod(heightmap, hUVheight, 0.0);
+    //float height = dot(heightVec, vec4(0.93751430533303, 0.05859464408331, 0.00366216525521, 0.00022888532845)) * worldSize.z;
+
+    //pos.z += height;
+    //clusterCenter.z += height;
+
+    float clusterScale = vegetationParams[0].z;
+    if(int(inTexCoord1.x) == int(vegetationParams[1].x))
+    {
+        clusterScale *= vegetationParams[1].y;
+    }
+
+    //float2 hUVcolor = float2(hUVheight.x, 1.0 - hUVheight.y);
+    //float4 vegetationMask = texture2DLod(vegetationmap, hUVcolor, 0.0);
+
+    float4 vegetationMask = float4(0.0, 0.0, 0.0, 0.0);
+    VP_OUT(outVegetationColor) = vegetationMask.rgb;
+    
+    //wave transform
+    int clusterType = int(inTexCoord1.y);
+    int waveIndex = clusterType * 2;
+    
+    pos.x += inTexCoord1.z * vegetationParams[2][waveIndex];
+    pos.y += inTexCoord1.z * vegetationParams[3][waveIndex];
+    
+    pos = lerp(clusterCenter, pos, vegetationMask.a * clusterScale);
+    VP_OUT_POSITION = worldViewProjMatrix * pos;
+
+VPROG_END;

@@ -84,12 +84,10 @@ public:
                              const VegetationGeometryDataPtr & geometryData);
     virtual ~VegetationGeometry();
     
-    void Build(VegetationRenderData* renderData, const FastNameSet& materialFlags);
+    void Build(VegetationRenderData* renderData);
     void OnVegetationPropertiesChanged(NMaterial* material, KeyedArchive* props);
 
     void SetupCameraPositions(const AABBox3& bbox, Vector<Vector3>& positions);
-    uint32 GetSortDirectionCount();
-    void ReleaseRenderData(Vector<VegetationRenderData*>& renderDataArray);
 
 private:
     struct ClusterPositionData

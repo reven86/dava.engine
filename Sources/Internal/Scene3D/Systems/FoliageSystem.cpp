@@ -125,9 +125,7 @@ void FoliageSystem::Process(float32 timeElapsed)
         const Vector4& layerAnimationDrag = vegetationRO->GetLayerAnimationDragCoefficient();
         
         Set<AbstractQuadTreeNode<VegetationSpatialData>* >::iterator endIt = updatableCells.end();
-        for(Set<AbstractQuadTreeNode<VegetationSpatialData>* >::iterator it = updatableCells.begin();
-            it != endIt;
-            ++it)
+        for(Set<AbstractQuadTreeNode<VegetationSpatialData>* >::iterator it = updatableCells.begin(); it != endIt; ++it)
         {
             AbstractQuadTreeNode<VegetationSpatialData>* cell = *it;
             
@@ -183,15 +181,11 @@ void FoliageSystem::SyncFoliageWithLandscape()
         
         vegetationRO->SetHeightmap(landscapeRO->GetHeightmap());
         vegetationRO->SetHeightmapPath(landscapeRO->GetHeightmapPathname());
-        vegetationRO->SetWorldSize(Vector3(landscapeRO->GetLandscapeSize(),
-                                           landscapeRO->GetLandscapeSize(),
-                                           landscapeRO->GetLandscapeHeight()));
+        vegetationRO->SetWorldSize(Vector3(landscapeRO->GetLandscapeSize(), landscapeRO->GetLandscapeSize(), landscapeRO->GetLandscapeHeight()));
     }
 }
 
-void FoliageSystem::SetPerturbation(const Vector3& point,
-                                    const Vector3& force,
-                                    float32 distance)
+void FoliageSystem::SetPerturbation(const Vector3& point, const Vector3& force, float32 distance)
 {
     VegetationRenderObject* vegetationRO = GetVegetation(foliageEntity);
     if(vegetationRO != NULL)

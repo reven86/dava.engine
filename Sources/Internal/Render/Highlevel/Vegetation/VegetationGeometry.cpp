@@ -150,7 +150,7 @@ VegetationGeometry::~VegetationGeometry()
 {
 }
 
-void VegetationGeometry::Build(VegetationRenderData * renderData, const FastNameSet& materialFlags)
+void VegetationGeometry::Build(VegetationRenderData * renderData)
 {
     size_t customGeometryDataCount = customGeometryData.size();
     if(customGeometryDataCount == 0)
@@ -223,17 +223,12 @@ void VegetationGeometry::Build(VegetationRenderData * renderData, const FastName
     }
 
     NMaterial* material = customGeometryData[0].material;
+    material->SetFXName(NMaterialName::GRASS);
     renderData->SetMaterial(material);
 
-    material->SetFlag(VegetationPropertyNames::FLAG_GRASS_OPAQUE, 1);
-    material->SetFlag(VegetationPropertyNames::FLAG_GRASS_TRANSFORM_WAVE, 1);
-    //material->SetRenderLayers(1 << RENDER_LAYER_VEGETATION_ID); //RHI_COMPLETE render layer for material
-
-    FastNameSet::iterator end = materialFlags.end();
-    for (FastNameSet::iterator it = materialFlags.begin(); it != end; ++it)
-    {
-        material->SetFlag(it->first, 1);
-    }
+#ifdef VEGETATION_DRAW_LOD_COLOR
+    material->AddFlag(VegetationPropertyNames::FLAG_VEGETATION_DRAW_LOD_COLOR, 1);
+#endif
 
     Vector4 worldSize4(worldSize.x, worldSize.y, worldSize.z, 0.f);
     material->AddProperty(VegetationPropertyNames::UNIFORM_WORLD_SIZE, worldSize4.data, rhi::ShaderProp::TYPE_FLOAT4);
@@ -284,9 +279,6 @@ void VegetationGeometry::OnVegetationPropertiesChanged(NMaterial * mat, KeyedArc
         {
             Vector2 heightmapScale = props->GetVector2(heightmapScaleKeyName);
             Vector4 heightmapScaleProp(heightmapScale.x, heightmapScale.y, 0.f, 0.f);
-            if (mat->HasLocalProperty(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE))
-                mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE, heightmapScale.data);
-            else
                 mat->AddProperty(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE, heightmapScale.data, rhi::ShaderProp::TYPE_FLOAT4);
         }
         
@@ -476,15 +468,15 @@ void VegetationGeometry::GenerateVertexData(const Vector<CustomGeometryEntityDat
             vertex.coord.y = clusterData.position.pos.y + transformedVertices[vertexIndex].y;
             vertex.coord.z = clusterData.position.pos.z + transformedVertices[vertexIndex].z;
             
-            vertex.normal = transformedNormals[vertexIndex];
-            
-            vertex.binormal.x = clusterData.position.pos.x + clusterGeometry.pivot.x;
-            vertex.binormal.y = clusterData.position.pos.y + clusterGeometry.pivot.y;
-            vertex.binormal.z = clusterData.position.pos.z + clusterGeometry.pivot.z;
-            
-            vertex.tangent.x = (float32)clusterData.resolutionId;
-            vertex.tangent.y = (float32)clusterData.position.layerId;
-            vertex.tangent.z = Max(0.0f, ((vertex.coord.z - clusterGeometry.pivot.z) / (clusterGeometry.bbox.max.z - clusterGeometry.pivot.z)));
+            //vertex.normal = transformedNormals[vertexIndex]; uncomment, when normals will be used for vertex lit implementation
+
+            vertex.texCoord1.x = (float32)clusterData.resolutionId;
+            vertex.texCoord1.y = (float32)clusterData.position.layerId;
+            vertex.texCoord1.z = Max(0.0f, ((vertex.coord.z - clusterGeometry.pivot.z) / (clusterGeometry.bbox.max.z - clusterGeometry.pivot.z)));
+
+            vertex.texCoord2.x = clusterData.position.pos.x + clusterGeometry.pivot.x;
+            vertex.texCoord2.y = clusterData.position.pos.y + clusterGeometry.pivot.y;
+            vertex.texCoord2.z = clusterData.position.pos.z + clusterGeometry.pivot.z;
             
             vertex.texCoord0 = clusterGeometry.sourceTextureCoords[vertexIndex];
             
@@ -747,23 +739,6 @@ void VegetationGeometry::SetupCameraPositions(const AABBox3& bbox, Vector<Vector
     positions.push_back(Vector3(bbox.min.x + (bbox.max.x - bbox.min.x) * 0.5f, bbox.max.y, z));
     positions.push_back(Vector3(bbox.min.x, bbox.max.y, z));
     positions.push_back(Vector3(bbox.min.x, bbox.min.y + (bbox.max.y - bbox.min.y) * 0.5f, z));
-}
-
-uint32 VegetationGeometry::GetSortDirectionCount()
-{
-    return 8;
-}
-
-void VegetationGeometry::ReleaseRenderData(Vector<VegetationRenderData*>& renderDataArray)
-{
-    size_t renderDataCount = renderDataArray.size();
-    for (size_t i = 0; i < renderDataCount; ++i)
-    {
-        renderDataArray[i]->ReleaseRenderData();
-        SafeDelete(renderDataArray[i]);
-    }
-
-    renderDataArray.clear();
 }
 
 };

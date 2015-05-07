@@ -145,6 +145,12 @@ Texture* NMaterial::GetEffectiveTexture(const FastName& slotName)
     return res;
 }
 
+void NMaterial::SetFXName(const FastName & fx)
+{
+    fxName = fx;
+    InvalidateRenderVariants();
+}
+
 const FastName& NMaterial::GetFXName()
 {   
     if ((!fxName.IsValid()) && (parent != nullptr))

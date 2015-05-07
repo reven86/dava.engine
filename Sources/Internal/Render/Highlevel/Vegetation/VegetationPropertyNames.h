@@ -53,12 +53,8 @@ public:
     static const FastName UNIFORM_PERTURBATION_FORCE;
     static const FastName UNIFORM_PERTURBATION_POINT;
     static const FastName UNIFORM_PERTURBATION_FORCE_DISTANCE;
-    static const FastName UNIFORM_BILLBOARD_DIRECTION;
     
-    static const FastName FLAG_FRAMEBUFFER_FETCH;
-    static const FastName FLAG_BILLBOARD_DRAW;
     static const FastName FLAG_GRASS_TRANSFORM;
-    static const FastName FLAG_GRASS_BLEND;
     static const FastName FLAG_GRASS_OPAQUE;
     static const FastName FLAG_VEGETATION_DRAW_LOD_COLOR;
     static const FastName FLAG_GRASS_TRANSFORM_WAVE;
