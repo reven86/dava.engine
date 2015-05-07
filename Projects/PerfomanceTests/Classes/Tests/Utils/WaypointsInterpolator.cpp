@@ -89,7 +89,7 @@ void WaypointsInterpolator::Init()
     }
 
     currentPosition = waypoints[0]->position;
-    targetPosition = currentPosition;
+    targetPosition = waypoints[1]->position;
 
     targetSegmentTime = segmentsLength[0];
 }
