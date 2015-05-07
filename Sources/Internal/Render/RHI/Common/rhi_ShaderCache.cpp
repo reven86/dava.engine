@@ -676,7 +676,7 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
         MCPP_Text
     };
 
-DAVA::Logger::Info( "src=\n%s\n", src );
+//DAVA::Logger::Info( "src=\n%s\n", src );
     _PreprocessedText = preprocessedText;
     mcpp__set_input( src, strlen(src) );
 
@@ -704,7 +704,7 @@ DAVA::Logger::Info( "src=\n%s\n", src );
             break;
     }
     ;
-DAVA::Logger::Info( "pre-processed=\n%s\n", preprocessedText->c_str() );
+//DAVA::Logger::Info( "pre-processed=\n%s\n", preprocessedText->c_str() );
 }
 
 
