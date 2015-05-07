@@ -1,7 +1,5 @@
 #include "FontValueProperty.h"
 
-#include "FileSystem/LocalizationSystem.h"
-
 using namespace DAVA;
 
 FontValueProperty::FontValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, ValueProperty *sourceProperty, eCopyType copyType)
