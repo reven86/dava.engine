@@ -48,8 +48,6 @@ int main(int argc, char *argv[])
     DVASSERT(false && "Wrong platform")
 #endif
 
-    new DAVA::QtLayer();
-
     RunGui(argc, argv);
 
     return 0;
@@ -57,6 +55,8 @@ int main(int argc, char *argv[])
 
 void RunGui(int argc, char *argv[])
 {
+    new DAVA::QtLayer();
+
 #ifdef Q_OS_MAC
     // Must be called before creating QApplication instance
     DAVA::QtLayer::MakeAppForeground(false);

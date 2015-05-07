@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    this->setWindowTitle("Template Project Qt");
+    setWindowTitle("Template Project Qt");
 
     CreateGlWidget();
 }

@@ -32,28 +32,14 @@
 
 #include "DAVAEngine.h"
 
-class ResourcePackerScreen;
-class SceneEditorScreen;
-class SceneEditorScreenMain;
-class SceneUtilsScreen;
-class ImageSplitterScreen;
-
 class GameCore : public DAVA::ApplicationCore
 {
 public:
     GameCore();
-    virtual ~GameCore();
+    ~GameCore() override;
 
-    virtual void OnAppStarted();
-    virtual void OnAppFinished();
-
-    virtual void OnSuspend();
-    virtual void OnResume();
-    virtual void OnBackground();
-
-    virtual void BeginFrame();
-    virtual void Update(DAVA::float32 update);
-    virtual void Draw();
+    void OnAppStarted() override;
+    void OnAppFinished() override;
 };
 
 #endif // __GAMECORE_H__
