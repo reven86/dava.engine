@@ -5,9 +5,9 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
-	<string>UnitTests</string>
+	<string>PerformanceTests</string>
 	<key>CFBundleExecutable</key>
-	<string>UnitTests</string>
+	<string>PerformanceTests</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.davaconsulting.PerformanceTests</string>
 	<key>CFBundleInfoDictionaryVersion</key>

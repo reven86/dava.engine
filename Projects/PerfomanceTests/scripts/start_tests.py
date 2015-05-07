@@ -121,9 +121,6 @@ while continue_process_stdout:
             teamcity_line_index = line.find("device")
             if teamcity_line_index != -1:
                 device_name = line[teamcity_line_index:]
-                sys.stdout.write(device_name)
-                sys.stdout.flush() 
-
                 frame_delta_file = open("../artifacts/frame_delta" + "_branch_" + branch + "_" + device_name + ".txt", "w")
 
             # write Frame_delta build statistic to file
