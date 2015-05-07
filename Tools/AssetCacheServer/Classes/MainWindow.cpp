@@ -38,10 +38,7 @@
 #include <QMenu>
 #include <QCloseEvent>
 #include <QSettings>
-#include <QTimer>
 #include <QCheckBox>
-
-#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -60,6 +57,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->cancelButton, &QPushButton::clicked, this, &MainWindow::OnCancelButtonClicked);
 
     connect(ui->startupCheckBox, &QCheckBox::stateChanged, this, &MainWindow::OnStartupChanged);
+
+    boxLayout = new QVBoxLayout();
+    ui->scrollAreaWidgetContents_2->setLayout(boxLayout);
+    ui->scrollAreaWidgetContents_2->layout()->addItem(new QSpacerItem(0, 0, QSizePolicy::Fixed, QSizePolicy::Expanding));
 
     ReadSettings();
 
@@ -80,13 +81,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
 
 void MainWindow::OnAddNewServerWidget()
 {
-    RemoteAssetCacheServer *server = new RemoteAssetCacheServer(this);
-    servers << server;
-
-    connect(server, &RemoteAssetCacheServer::RemoveLater, this, &MainWindow::OnRemoveServerWidget);
-
-    ui->serversBox->layout()->addWidget(server);
-    emit NewServerAdded(server->GetServerData());
+    AddServer(ServerData());
 }
 
 void MainWindow::OnRemoveServerWidget()
@@ -95,7 +90,6 @@ void MainWindow::OnRemoveServerWidget()
     servers.removeOne(w);
     emit ServerRemoved(w->GetServerData());
     w->deleteLater();
-    QTimer::singleShot(10, [this]{adjustSize();});
 }
 
 void MainWindow::OnSelectFolder()
@@ -109,6 +103,7 @@ void MainWindow::OnSelectFolder()
 void MainWindow::CheckEnableClearButton()
 {
     ui->clearDirectoryButton->setEnabled(!ui->cachFolderLineEdit->text().isEmpty());
+    ui->cachFolderLineEdit->setFocus();
 }
 
 void MainWindow::OnTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
@@ -212,7 +207,7 @@ void MainWindow::AddServer(ServerData newServer)
 
     connect(server, &RemoteAssetCacheServer::RemoveLater, this, &MainWindow::OnRemoveServerWidget);
 
-    ui->serversBox->layout()->addWidget(server);
+    boxLayout->insertWidget(boxLayout->count() - 1, server);
 
     emit NewServerAdded(server->GetServerData());
 }

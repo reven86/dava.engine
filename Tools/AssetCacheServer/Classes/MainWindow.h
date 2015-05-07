@@ -36,6 +36,7 @@
 #include "RemoteAssetCacheServer.h"
 
 class QMenu;
+class QVBoxLayout;
 
 namespace Ui
 {
@@ -92,6 +93,8 @@ private:
     QMenu *trayActionsMenu;
 
     QList<RemoteAssetCacheServer *> servers;
+
+    QVBoxLayout *boxLayout;
 };
 
 #endif // MAINWINDOW_H
