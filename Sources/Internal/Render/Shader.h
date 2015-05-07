@@ -58,6 +58,7 @@ struct DynamicPropertyBinding
 {
     rhi::ShaderProp::Type type;
     uint32 reg;
+    uint32 regCount; //offset for props less than 1 reg size
     uint32 updateSemantic;
     rhi::HConstBuffer buffer;
     DynamicBindings::eShaderSemantic dynamicPropertySemantic;
@@ -67,6 +68,10 @@ struct DynamicPropertyBinding
 
 class ShaderDescriptor
 {
+public://utility    
+    static const rhi::ShaderPropList& GetProps(UniquePropertyLayout layout);
+    static uint32 CalculateRegsCount(rhi::ShaderProp::Type type, uint32 arraySize);  //return in registers  
+    static uint32 CalculateDataSize(rhi::ShaderProp::Type type, uint32 arraySize); //return in float  
     
 public:
     ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource *fSource, rhi::HPipelineState pipelineState);
@@ -79,9 +84,7 @@ public:
     rhi::HConstBuffer GetDynamicBuffer(ConstBufferDescriptor::Type type, uint32 index);
     inline rhi::HPipelineState GetPiplineState(){ return piplineState; }
 
-    //utility
-    static const rhi::ShaderPropList& GetProps(UniquePropertyLayout layout);
-    static uint32 CalculateRegsCount(rhi::ShaderProp::Type type, uint32 arraySize);    
+    
 
 private:
     Vector<ConstBufferDescriptor> constBuffers;

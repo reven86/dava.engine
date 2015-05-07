@@ -69,8 +69,10 @@ uint32 ShaderDescriptor::CalculateRegsCount(rhi::ShaderProp::Type type, uint32 a
     switch (type)
     {
     case rhi::ShaderProp::TYPE_FLOAT1:
-        DVASSERT(false); //for some reason float1 is not yet supported in rhi
-        return 0;
+    case rhi::ShaderProp::TYPE_FLOAT2:
+    case rhi::ShaderProp::TYPE_FLOAT3:
+        DVASSERT(arraySize==1); //arrays of non register aligned types are not supported
+        return 1;
         break;
     case rhi::ShaderProp::TYPE_FLOAT4:
         return arraySize; //1 float4 register per array element
@@ -82,6 +84,29 @@ uint32 ShaderDescriptor::CalculateRegsCount(rhi::ShaderProp::Type type, uint32 a
         DVASSERT(false); //how did we get here? unknown property type
         return 0;
         break;
+    }
+}
+
+uint32 ShaderDescriptor::CalculateDataSize(rhi::ShaderProp::Type type, uint32 arraySize)
+{
+    switch (type)
+    {
+    case rhi::ShaderProp::TYPE_FLOAT1:
+        DVASSERT(arraySize == 1); //arrays of non register aligned types are not supported
+        return 1;
+    case rhi::ShaderProp::TYPE_FLOAT2:
+        DVASSERT(arraySize == 1); //arrays of non register aligned types are not supported
+        return 2;
+    case rhi::ShaderProp::TYPE_FLOAT3:
+        DVASSERT(arraySize == 1); //arrays of non register aligned types are not supported
+        return 3;        
+    case rhi::ShaderProp::TYPE_FLOAT4:
+        return arraySize * 4; //1 float4 register per array element        
+    case rhi::ShaderProp::TYPE_FLOAT4X4:
+        return arraySize * 16; //4 float4 register per array element        
+    default:
+        DVASSERT(false); //how did we get here? unknown property type
+        return 0;        
     }
 }
 
@@ -101,8 +126,19 @@ void ShaderDescriptor::UpdateDynamicParams()
         pointer_size updateSemantic = Renderer::GetDynamicBindings().GetDynamicParamUpdateSemantic(dynamicBinding.dynamicPropertySemantic);
         if (dynamicBinding.updateSemantic != updateSemantic)
         {
-            uint32 arraySize = 1; //for now 1, later move it to something similar to RenderManager::GetDynamicParamArraySize from instancing branch            
-            rhi::UpdateConstBuffer4fv(dynamicBinding.buffer, dynamicBinding.reg, data, CalculateRegsCount(dynamicBinding.type, arraySize));
+            
+            if (dynamicBinding.type < rhi::ShaderProp::TYPE_FLOAT4)
+            {
+                DVASSERT(Renderer::GetDynamicBindings().GetDynamicParamArraySize(dynamicBinding.dynamicPropertySemantic, 1) == 1);
+                rhi::UpdateConstBuffer1fv(dynamicBinding.buffer, dynamicBinding.reg, dynamicBinding.regCount, data, CalculateDataSize(dynamicBinding.type, 1));            
+            }
+            else
+            {
+                uint32 arraySize = Renderer::GetDynamicBindings().GetDynamicParamArraySize(dynamicBinding.dynamicPropertySemantic, 1);
+                DVASSERT(arraySize <= dynamicBinding.regCount);
+                rhi::UpdateConstBuffer4fv(dynamicBinding.buffer, dynamicBinding.reg, data, CalculateRegsCount(dynamicBinding.type, arraySize));
+            }
+            
             dynamicBinding.updateSemantic = updateSemantic;
         }
     }
@@ -187,6 +223,7 @@ ShaderDescriptor::ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource
                 binding.type = prop.type;
                 binding.buffer = dynamicBufferHandle;
                 binding.reg = prop.bufferReg;
+                binding.regCount = prop.bufferRegCount;
                 binding.updateSemantic = 0;
                 binding.dynamicPropertySemantic = DynamicBindings::GetShaderSemanticByName(prop.uid);
                 dynamicPropertyBindings.push_back(binding);
