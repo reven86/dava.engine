@@ -446,7 +446,7 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 		
 		for (int frame = 0; frame < defFile->frameCount; ++frame)
 		{
-			PackedInfo* packedInfo;
+			PackedInfo* packedInfo = nullptr;
 			ImagePacker * foundPacker = 0;
 			int packerIndex = 0;
 			FilePath imagePath;
