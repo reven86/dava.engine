@@ -300,10 +300,9 @@ void MainWindow::ReadSettings()
 
 void MainWindow::WriteSettings()
 {
-#ifdef Q_OS_WIN
     using namespace DAVA;
 
-    FileSystem::Instance()->CreateDirectoryA("~doc:/AssetServer", true);
+    FileSystem::Instance()->CreateDirectory("~doc:/AssetServer", true);
     FilePath path("~doc:/AssetServer/ACS_settings.dat");
     File *f = File::Create(path, File::CREATE | File::WRITE);
     if (f == nullptr)
@@ -331,5 +330,4 @@ void MainWindow::WriteSettings()
     arch->Save(f);
     f->Release();
     arch->Release();
-#endif
 }
