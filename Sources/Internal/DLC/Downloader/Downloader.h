@@ -36,6 +36,7 @@
 #include "FileSystem/FileSystem.h"
 #include "DownloaderCommon.h"
 #include "Base/Function.h"
+#include "Thread/Spinlock.h"
 
 namespace DAVA
 {
@@ -98,7 +99,7 @@ protected:
     /**
         \brief Returns download statistics structure
      */
-    inline const DownloadStatistics * const GetStatistics() const;
+    DownloadStatistics GetStatistics();
     /**
          \brief Sets maximum allowed download speed. 0 means unlimited.
          \param[in] limit - speed limit in bytes per second.
@@ -110,14 +111,12 @@ protected:
     
 private:
     uint64 dataToDownloadLeft;
+    
+    Spinlock statisticsMutex;
     DownloadStatistics statistics;
 
 };
 
-const DownloadStatistics * const Downloader::GetStatistics() const
-{
-    return &statistics;
-}
 
 }
 

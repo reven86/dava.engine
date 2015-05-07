@@ -35,15 +35,17 @@
 #include "Scene3D/Components/SkeletonComponent.h"
 #include "Render/Highlevel/SkinnedMesh.h"
 
+#include "QtTools/SpyWidget/SpySearch/SpySearch.h"
 #include "Qt/ImageSplitterDialog/ImageSplitterDialogNormal.h"
+
+#include <QInputDialog>
 
 #include "DAVAEngine.h"
 using namespace DAVA;
 
-DeveloperTools::DeveloperTools(QObject *parent /* = 0 */)
+DeveloperTools::DeveloperTools(QObject *parent)
     : QObject(parent)
 {
-
 }
 
 void DeveloperTools::OnDebugFunctionsGridCopy()
@@ -161,11 +163,33 @@ void DeveloperTools::OnDebugCreateTestSkinnedObject()
     entity->AddComponent(renderComponent);
 
     currentScene->Exec(new EntityAddCommand(entity, currentScene));
-    currentScene->selectionSystem->SetSelection(entity);    
 }
 
 void DeveloperTools::OnImageSplitterNormals()
 {
     ImageSplitterDialogNormal dlg(QtMainWindow::Instance());
     dlg.exec();
+}
+
+void DeveloperTools::OnSpyWidget()
+{
+    auto spySearch = new SpySearch(this);
+    spySearch->show();
+}
+
+void DeveloperTools::OnReplaceTextureMipmap()
+{
+    QStringList items = QStringList()
+        << QString(NMaterial::TEXTURE_ALBEDO.c_str())
+        << QString(NMaterial::TEXTURE_LIGHTMAP.c_str())
+        << QString(NMaterial::TEXTURE_DETAIL.c_str())
+        << QString(NMaterial::TEXTURE_NORMAL.c_str())
+        ;
+
+    bool isOk;
+    QString item = QInputDialog::getItem(QtMainWindow::Instance(), "Replace mipmaps", "Textures:", items, 0, true, &isOk);
+    if (isOk)
+    {
+        MipMapReplacer::ReplaceMipMaps(QtMainWindow::Instance()->GetCurrentScene(), FastName(item.toStdString().c_str()));
+    }
 }

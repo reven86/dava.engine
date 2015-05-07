@@ -368,8 +368,6 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
                     
                     sceneEditor->EndBatch();
                     
-                    selectionSystem->SetSelection(newWaypoint);
-                    
                     newWaypoint->Release();
                 }
             }
@@ -524,7 +522,7 @@ void WayEditSystem::Draw()
             redValue = 0.6f;
             greenValue = 0.6f;
         }
-        else if(selectionGroup.HasEntity(e))
+        else if(selectionGroup.ContainsEntity(e))
         {
             redValue = 1.0f;
         }

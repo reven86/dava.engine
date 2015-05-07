@@ -26,12 +26,12 @@ macro ( qt_deploy )
 
         endforeach ()
 
-
     elseif( MACOS )
-            ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD 
-                COMMAND ${QT5_PATH_MAC}/bin/macdeployqt ${DEPLOY_DIR}/${PROJECT_NAME}.app
-            )
-            
+    
+        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD 
+            COMMAND ${QT5_PATH_MAC}/bin/macdeployqt ${DEPLOY_DIR}/${PROJECT_NAME}.app
+        )
+        
     endif()
 
 endmacro ()
@@ -56,7 +56,7 @@ find_path( QT5_LIB_PATH
     ${QT_CORE_LIB}
   PATHS 
     ${QT5_PATH_MAC}
-    ${QT5_PATH_WIN}    
+    ${QT5_PATH_WIN}
   PATH_SUFFIXES 
     lib
 )
@@ -88,8 +88,11 @@ if( QT5_LIB_PATH )
         endif()
 
     endif()
+    
+    set ( DAVA_EXTRA_ENVIRONMENT QT_QPA_PLATFORM_PLUGIN_PATH=$ENV{QT_QPA_PLATFORM_PLUGIN_PATH} )                
 
 endif()
+
 
 if( NOT QT5_FOUND )
     message( "Error !!!: Please set the correct path to QT5 in file DavaConfig.in"  )

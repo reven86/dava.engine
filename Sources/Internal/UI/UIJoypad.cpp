@@ -358,6 +358,22 @@ List<UIControl* >& UIJoypad::GetRealChildren()
     return realChilds;
 }
 
+DAVA::FilePath UIJoypad::GetStickSpritePath() const
+{
+    Sprite *sprite = GetStickSprite();
+    if (sprite == nullptr)
+        return "";
+    else if (sprite->GetRelativePathname().GetType() == FilePath::PATH_IN_MEMORY)
+        return "";
+
+    return Sprite::GetPathString(sprite);
+}
+
+void UIJoypad::SetStickSpritePath(const FilePath &path)
+{
+    SetStickSprite(path, GetStickSpriteFrame());
+}
+
 };
 
 

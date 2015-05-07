@@ -84,6 +84,33 @@ void CoreWin32PlatformBase::InitArgs()
 void CoreWin32PlatformBase::Quit()
 {
     PostQuitMessage(0);
+	exit(0);
+}
+
+void CoreWin32PlatformBase::SetCursorPosCenterInternal(HWND hWnd)
+{
+    RECT wndRect;
+    GetWindowRect(hWnd, &wndRect);
+    int centerX = (int)((wndRect.left + wndRect.right) >> 1);
+    int centerY = (int)((wndRect.bottom + wndRect.top) >> 1);
+    SetCursorPos(centerX, centerY);
+}
+
+void CoreWin32PlatformBase::SetCursorPositionCenter()
+{
+    SetCursorPosCenterInternal(hWindow);
+}
+
+void CoreWin32PlatformBase::SetCursorPosition(Point2i position)
+{
+    SetCursorPos(position.x, position.y);
+}
+
+Point2i CoreWin32PlatformBase::GetCursorPosition()
+{
+    POINT p;
+    GetCursorPos(&p);
+    return Point2i(p.x, p.y);
 }
 
 }

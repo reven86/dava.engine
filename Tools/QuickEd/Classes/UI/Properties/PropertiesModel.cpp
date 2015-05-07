@@ -5,22 +5,23 @@
 #include <QColor>
 #include <QFont>
 #include <QVector2D>
+#include <QVector4D>
 #include <QUndoStack>
+
+#include "Document.h"
+#include "Ui/QtModelPackageCommandExecutor.h"
 
 #include "Model/ControlProperties/BaseProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Utils/QtDavaConvertion.h"
 #include "UI/Commands/ChangePropertyValueCommand.h"
-#include "UI/Document.h"
 #include "UI/QtModelPackageCommandExecutor.h"
-#include "UI/PropertiesContext.h"
 
 using namespace DAVA;
 
-PropertiesModel::PropertiesModel(ControlNode *_controlNode, PropertiesContext *context)
-    : QAbstractItemModel(context)
+PropertiesModel::PropertiesModel(ControlNode *_controlNode, QObject *parent)
+    : QAbstractItemModel(parent)
     , controlNode(nullptr)
-    , propertiesContext(context)
 {
     controlNode = SafeRetain(_controlNode);
 }
@@ -184,7 +185,7 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
             if (property->GetValue().GetType() == VariantType::TYPE_BOOLEAN)
             {
                 VariantType newVal(value != Qt::Unchecked);
-                propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
+                qobject_cast<Document*>(QObject::parent())->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal); //TODO: this is ugly
                 return true;
             }
         }
@@ -203,14 +204,14 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
                 initVariantType(newVal, value);
             }
 
-            propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
+            qobject_cast<Document*>(QObject::parent())->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal); //TODO: this is ugly
             return true;
         }
         break;
 
     case DAVA::ResetRole:
         {
-            propertiesContext->GetDocument()->GetCommandExecutor()->ResetProperty(controlNode, property);
+            qobject_cast<Document*>(QObject::parent())->GetCommandExecutor()->ResetProperty(controlNode, property); //TODO: this is ugly
             return true;
         }
         break;
@@ -309,13 +310,16 @@ QVariant PropertiesModel::makeQVariant(const BaseProperty *property) const
         case VariantType::TYPE_COLOR:
             return QColorToHex(ColorToQColor(val.AsColor()));
 
+        case VariantType::TYPE_VECTOR4:
+            return StringToQString(Format("%g; %g; %g; %g;", val.AsVector4().x, val.AsVector4().y, val.AsVector4().z, val.AsVector4().w));
+            
         case VariantType::TYPE_FILEPATH:
             return StringToQString(val.AsFilePath().GetStringValue());
             
         case VariantType::TYPE_BYTE_ARRAY:
         case VariantType::TYPE_KEYED_ARCHIVE:
         case VariantType::TYPE_VECTOR3:
-        case VariantType::TYPE_VECTOR4:
+            
         case VariantType::TYPE_MATRIX2:
         case VariantType::TYPE_MATRIX3:
         case VariantType::TYPE_MATRIX4:
@@ -378,7 +382,13 @@ void PropertiesModel::initVariantType(DAVA::VariantType &var, const QVariant &va
 //        case VariantType::TYPE_BYTE_ARRAY:
 //        case VariantType::TYPE_KEYED_ARCHIVE:
 //        case VariantType::TYPE_VECTOR3:
-//        case VariantType::TYPE_VECTOR4:
+        case VariantType::TYPE_VECTOR4:
+        {
+            QVector4D vector = val.value<QVector4D>();
+            var.SetVector4(DAVA::Vector4(vector.x(), vector.y(), vector.z(), vector.w()));
+        }
+            break;
+
 //        case VariantType::TYPE_MATRIX2:
 //        case VariantType::TYPE_MATRIX3:
 //        case VariantType::TYPE_MATRIX4:

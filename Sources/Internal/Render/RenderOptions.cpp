@@ -66,12 +66,16 @@ FastName optionsNames[RenderOptions::OPTIONS_COUNT] =
 
     FastName("Update Particle Emitters"),
     FastName("Draw Particles"),
-    FastName("Particle Prepare Buffers")
+    FastName("Particle Prepare Buffers"),
+    FastName("Albedo mipmaps"),
+    FastName("Lightmap mipmaps"),
 #if defined(LOCALIZATION_DEBUG)
-    ,FastName("Localization Warings")
-    ,FastName("Localization Errors")
-    ,FastName("Line Break Errors")
+    FastName("Localization Warings"),
+    FastName("Localization Errors"),
+    FastName("Line Break Errors"),
 #endif
+    FastName("Draw Nondef Glyph"),
+    FastName("Highlight Hard Controls")
 };
 
 RenderOptions::RenderOptions()
@@ -83,11 +87,15 @@ RenderOptions::RenderOptions()
 
     options[DEBUG_DRAW_STATIC_OCCLUSION] = false;
     options[LAYER_OCCLUSION_STATS] = false;
+    options[REPLACE_ALBEDO_MIPMAPS] = false;
+    options[REPLACE_LIGHTMAP_MIPMAPS] = false;
 #if defined(LOCALIZATION_DEBUG)
     options[DRAW_LOCALIZATION_ERRORS] = false;
     options[DRAW_LOCALIZATION_WARINGS] = false;
     options[DRAW_LINEBREAK_ERRORS] = false;
 #endif
+    options[DRAW_NONDEF_GLYPH] = false;
+    options[HIGHLIGHT_HARD_CONTROLS] = false;
 }
 
 bool RenderOptions::IsOptionEnabled(RenderOption option)

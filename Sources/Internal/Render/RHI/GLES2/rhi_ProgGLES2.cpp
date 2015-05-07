@@ -181,7 +181,7 @@ ProgGLES2::GetProgParams( unsigned progUid )
         {
             char    name[16];   
 
-            Snprinf( name, countof(name), "Texture%u", i );
+            Snprintf(name, countof(name), "Texture%u", i);
             cmd[i].func   = GLCommand::GET_UNIFORM_LOCATION;
             cmd[i].arg[0] = progUid;
             cmd[i].arg[1] = uint64(tname[i]);

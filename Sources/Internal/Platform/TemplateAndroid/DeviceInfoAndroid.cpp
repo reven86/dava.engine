@@ -35,21 +35,7 @@
 #include "ExternC/AndroidLayer.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
-#include "unistd.h"
-
-DAVA::String intermediateStr;
-
-extern "C"
-{
-
-void Java_com_dava_framework_JNIDeviceInfo_SetJString(JNIEnv* env, jobject classthis, jstring jString)
-{
-	char str[256] = {0};
-	DAVA::JNI::CreateStringFromJni(env, jString, str);
-	intermediateStr = DAVA::String(str);
-}
-
-}
+#include <unistd.h>
 
 namespace DAVA
 {
@@ -57,14 +43,14 @@ namespace DAVA
 JniDeviceInfo::JniDeviceInfo()
     : jniDeviceInfo("com/dava/framework/JNIDeviceInfo")
 {
-	getVersion = jniDeviceInfo.GetStaticMethod<void>("GetVersion");
-	getManufacturer = jniDeviceInfo.GetStaticMethod<void>("GetManufacturer");
-	getModel = jniDeviceInfo.GetStaticMethod<void>("GetModel");
-	getLocale = jniDeviceInfo.GetStaticMethod<void>("GetLocale");
-	getRegion = jniDeviceInfo.GetStaticMethod<void>("GetRegion");
-	getTimeZone = jniDeviceInfo.GetStaticMethod<void>("GetTimeZone");
-	getUDID = jniDeviceInfo.GetStaticMethod<void>("GetUDID");
-	getName = jniDeviceInfo.GetStaticMethod<void>("GetName");
+	getVersion = jniDeviceInfo.GetStaticMethod<jstring>("GetVersion");
+	getManufacturer = jniDeviceInfo.GetStaticMethod<jstring>("GetManufacturer");
+	getModel = jniDeviceInfo.GetStaticMethod<jstring>("GetModel");
+	getLocale = jniDeviceInfo.GetStaticMethod<jstring>("GetLocale");
+	getRegion = jniDeviceInfo.GetStaticMethod<jstring>("GetRegion");
+	getTimeZone = jniDeviceInfo.GetStaticMethod<jstring>("GetTimeZone");
+	getUDID = jniDeviceInfo.GetStaticMethod<jstring>("GetUDID");
+	getName = jniDeviceInfo.GetStaticMethod<jstring>("GetName");
 	getZBufferSize = jniDeviceInfo.GetStaticMethod<jint>("GetZBufferSize");
 	getHTTPProxyHost = jniDeviceInfo.GetStaticMethod<jstring>("GetHTTPProxyHost");
 	getHTTPNonProxyHosts = jniDeviceInfo.GetStaticMethod<jstring>("GetHTTPNonProxyHosts");
@@ -76,85 +62,80 @@ JniDeviceInfo::JniDeviceInfo()
 
 }
 
+namespace
+{
+    String jstringToString(jstring s)
+    {
+        DVASSERT(0 != s);
+        String result;
+        JNI::CreateStringFromJni(s, result);
+        return result;
+    }
+}
+
 String JniDeviceInfo::GetVersion()
 {
-	intermediateStr.clear();
-	getVersion();
-	return intermediateStr;
+	jstring s = getVersion();
+	return jstringToString(s);
 }
 
 String JniDeviceInfo::GetManufacturer()
 {
-	intermediateStr.clear();
-	getManufacturer();
-	return intermediateStr;
+	jstring s = getManufacturer();
+	return jstringToString(s);
 }
 
 String JniDeviceInfo::GetModel()
 {
-	intermediateStr.clear();
-
-	getModel();
-	return intermediateStr;
+	jstring s = getModel();
+	return jstringToString(s);
 }
 
 String JniDeviceInfo::GetLocale()
 {
-	intermediateStr.clear();
-	getLocale();
-	return intermediateStr;
+	jstring s = getLocale();
+	return jstringToString(s);
 }
 
 String JniDeviceInfo::GetRegion()
 {
-	intermediateStr.clear();
-	getRegion();
-	return intermediateStr;
+	jstring s = getRegion();
+	return jstringToString(s);
 }
 
 String JniDeviceInfo::GetTimeZone()
 {
-	intermediateStr.clear();
-	getTimeZone();
-	return intermediateStr;
+	jstring s = getTimeZone();
+	return jstringToString(s);
 }
 
 String JniDeviceInfo::GetUDID()
 {
-	intermediateStr.clear();
-	getUDID();
-	return intermediateStr;
+	jstring s = getUDID();
+	return jstringToString(s);
 }
 
 String JniDeviceInfo::GetName()
 {
-	intermediateStr.clear();
-	getName();
-	return intermediateStr;
+    jstring s = getName();
+	return jstringToString(s);
 }
 
 int32 JniDeviceInfo::GetZBufferSize()
 {
-	getZBufferSize();
-	// TODO need future refactoring
-	return 0;
+	return getZBufferSize();
 }
 
 String JniDeviceInfo::GetHTTPProxyHost()
 {
-	String returnStr;
-	jobject obj = getHTTPProxyHost();
-	JNI::CreateStringFromJni(jstring(obj), returnStr);
-
-	return returnStr;
+	jstring s = getHTTPProxyHost();
+	return jstringToString(s);
 }
 
 String JniDeviceInfo::GetHTTPNonProxyHosts()
 {
-	String returnStr;
-	jobject obj = getHTTPNonProxyHosts();
-	JNI::CreateStringFromJni(jstring(obj), returnStr);
-	return returnStr;
+	jstring s = getHTTPNonProxyHosts();
+	return jstringToString(s);
 }
 
 int32 JniDeviceInfo::GetHTTPProxyPort()
@@ -197,6 +178,9 @@ DeviceInfo::StorageInfo JniDeviceInfo::StorageInfoFromJava(jobject object)
 		fieldID = env->GetFieldID(classInfo, "readOnly", "Z");
 		info.readOnly = env->GetBooleanField(object, fieldID);
 
+		fieldID = env->GetFieldID(classInfo, "removable", "Z");
+		info.removable = env->GetBooleanField(object, fieldID);
+		
 		fieldID = env->GetFieldID(classInfo, "emulated", "Z");
 		info.emulated = env->GetBooleanField(object, fieldID);
 

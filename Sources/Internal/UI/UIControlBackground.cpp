@@ -169,7 +169,8 @@ void UIControlBackground::SetSprite(Sprite* drawSprite, int32 drawFrame)
 void UIControlBackground::SetFrame(int32 drawFrame)
 {
     DVASSERT(spr);
-    frame = drawFrame;
+    int32 maxFrame = (spr != nullptr) ? (spr->GetFrameCount() - 1) : (0);
+    frame = Clamp(drawFrame, 0, maxFrame);
 }
 
 void UIControlBackground::SetFrame(const FastName& frameName)
@@ -591,6 +592,17 @@ void UIControlBackground::SetMargins(const UIMargins* uiMargins)
     }
 
     *margins = *uiMargins;
+}
+
+Vector4 UIControlBackground::GetMarginsAsVector4() const
+{
+    return (margins != nullptr) ? margins->AsVector4() : Vector4();
+}
+
+void UIControlBackground::SetMarginsAsVector4(const Vector4 &m)
+{
+    UIControlBackground::UIMargins newMargins(m);
+    SetMargins(&newMargins);
 }
 
 };

@@ -162,19 +162,10 @@
 
 - (UIImage *)renderUIViewToImage:(UIView *)view
 {
-    CGFloat contentScaleFactor =  [HelperAppDelegate GetScale];
-    
-    size_t w = view.frame.size.width * contentScaleFactor;
-    size_t h = view.frame.size.height * contentScaleFactor;
-    
-    UIGraphicsBeginImageContext(CGSizeMake(w, h));
-    CGRect rect = CGRectMake(0, 0, w, h);
-    [view drawViewHierarchyInRect:rect afterScreenUpdates:YES];
-
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    
-    return image;
+    void* image = DAVA::WebViewControl::RenderIOSUIViewToImage(view);
+    DVASSERT(image);
+    UIImage* uiImage = static_cast<UIImage*>(image);
+    return uiImage;
 }
 
 - (void)onExecuteJScript:(NSString *)result
@@ -231,21 +222,31 @@ DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb):
     [localWebView becomeFirstResponder];
 }
 
-void DAVA::WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
-                                            DAVA::UIWebView& control)
+void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr)
 {
-    WebViewURLDelegate* webURLDelegate =
-                (WebViewURLDelegate*)webViewURLDelegatePtr;
-    DVASSERT(webURLDelegate);
+    ::UIView* view = static_cast<::UIView*>(uiviewPtr);
+    DVASSERT(view);
+    DAVA::float32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
     
-    ::UIWebView* iosWebView = (::UIWebView*)webViewPtr;
-    DVASSERT(iosWebView);
+    size_t w = view.frame.size.width * scale;
+    size_t h = view.frame.size.height * scale;
     
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(w, h), NO, scale);
+    CGRect rect = CGRectMake(0, 0, w, h);
+    [view drawViewHierarchyInRect:rect afterScreenUpdates:YES];
     
-    UIImage* image = [webURLDelegate renderUIViewToImage:iosWebView];
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
     DVASSERT(image);
-    
+    return image;
+}
+
+void DAVA::WebViewControl::SetImageAsSpriteToControl(void* imagePtr, UIControl& control)
+{
+    ::UIImage* image = static_cast<::UIImage*>(imagePtr);
+    DVASSERT(image);
     // copy image into our buffer with bitmap context
+    // TODO create fucntion static void copyImageToTexture(UIControl& control, ::UIImage* image
     CGImageRef imageRef = [image CGImage];
     DAVA::int32 width = static_cast<DAVA::int32>(CGImageGetWidth(imageRef));
     DAVA::int32 height = static_cast<DAVA::int32>(CGImageGetHeight(imageRef));
@@ -265,8 +266,8 @@ void DAVA::WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
         // this way we can copy image from system memory into our buffer
         
         CGContextRef context = CGBitmapContextCreate(rawData, width, height,
-                                bitsPerComponent, bytesPerRow, colorSpace,
-                                kCGImageAlphaPremultipliedLast
+                                                     bitsPerComponent, bytesPerRow, colorSpace,
+                                                     kCGImageAlphaPremultipliedLast
                                                      | kCGBitmapByteOrder32Big);
         CGColorSpaceRelease(colorSpace);
         
@@ -277,18 +278,35 @@ void DAVA::WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
             DAVA::Texture* tex = DAVA::Texture::CreateFromData(imageRGB, false);
             DVASSERT(tex);
             
-            DAVA::Rect rect = uiWebView.GetRect();
+            DAVA::Rect rect = control.GetRect();
             {
                 DAVA::Sprite* spr = DAVA::Sprite::CreateFromTexture(tex, 0, 0, width, height, rect.dx, rect.dy);
                 DVASSERT(spr);
                 
-                uiWebView.GetBackground()->SetSprite(spr, 0);
+                control.GetBackground()->SetSprite(spr, 0);
                 DAVA::SafeRelease(spr);
             }
             DAVA::SafeRelease(tex);
         }
         DAVA::SafeRelease(imageRGB);
     }
+}
+
+void DAVA::WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
+                                            DAVA::UIWebView& control)
+{
+    WebViewURLDelegate* webURLDelegate =
+                (WebViewURLDelegate*)webViewURLDelegatePtr;
+    DVASSERT(webURLDelegate);
+    
+    ::UIWebView* iosWebView = (::UIWebView*)webViewPtr;
+    DVASSERT(iosWebView);
+    
+    
+    UIImage* image = [webURLDelegate renderUIViewToImage:iosWebView];
+    DVASSERT(image);
+    
+    WebViewControl::SetImageAsSpriteToControl(image, control);
 }
 
 namespace DAVA
@@ -470,7 +488,7 @@ void WebViewControl::SetRect(const Rect& rect)
     webViewRect.size.height = physicalRect.dy;
 	
 	// Apply the Retina scale divider, if any.
-    DAVA::float32 scaleDivider = [HelperAppDelegate GetScale];
+    DAVA::float32 scaleDivider = Core::Instance()->GetScreenScaleFactor();
 	webViewRect.origin.x /= scaleDivider;
 	webViewRect.origin.y /= scaleDivider;
 	webViewRect.size.height /= scaleDivider;

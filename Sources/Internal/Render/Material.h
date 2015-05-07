@@ -43,13 +43,10 @@ namespace DAVA
 {
 
 
-class UberShader;
-class Shader;
 class Texture;    
 class SceneFileV2;
 class Light;
 class PolygonGroup;
-class RenderDataObject;
     
     
 // TODO: move Material to Scene3D
@@ -375,9 +372,7 @@ private:
     
     bool isTexture0ShiftEnabled;
     
-    bool isWireframe;
-    
-    Shader  * shader;
+    bool isWireframe;    
     
     int32 uniformTexture0;
     int32 uniformTexture1;
@@ -407,9 +402,7 @@ private:
         TODO: Uniform array, with set of all uniforms, with one set.
      */
     bool isExportOwnerLayerEnabled;
-    FastName ownerLayerName;
-    
-    static UberShader * uberShader;
+    FastName ownerLayerName;        
     
 public:
     

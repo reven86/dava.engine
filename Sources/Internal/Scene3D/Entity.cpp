@@ -70,6 +70,7 @@ Entity::Entity()
     : scene(nullptr)
     , parent(nullptr)
     , tag(0)
+    , family(nullptr)
 {
 	flags = NODE_VISIBLE | NODE_UPDATABLE | NODE_LOCAL_MATRIX_IDENTITY;
     UpdateFamily();
@@ -83,6 +84,7 @@ Entity::~Entity()
 	RemoveAllChildren();	
 	RemoveAllComponents();	
 	SetScene(nullptr);
+    EntityFamily::Release(family);
 }
 
 bool ComponentLessPredicate(Component * left, Component * right)
@@ -158,8 +160,8 @@ void Entity::SetScene(Scene * _scene)
 		GlobalEventSystem::Instance()->PerformAllEventsFromCache(this);
 	}
 
-	const std::vector<Entity*>::iterator & childrenEnd = children.end();
-	for (std::vector<Entity*>::iterator t = children.begin(); t != childrenEnd; ++t)
+	const Vector<Entity*>::iterator & childrenEnd = children.end();
+	for (Vector<Entity*>::iterator t = children.begin(); t != childrenEnd; ++t)
 	{
 		(*t)->SetScene(_scene);
 	}
@@ -238,8 +240,8 @@ void Entity::RemoveNode(Entity * node)
 		return;
 	}
 		
-	const std::vector<Entity*>::iterator & childrenEnd = children.end();
-	for (std::vector<Entity*>::iterator t = children.begin(); t != childrenEnd; ++t)
+	const Vector<Entity*>::iterator & childrenEnd = children.end();
+	for (Vector<Entity*>::iterator t = children.begin(); t != childrenEnd; ++t)
 	{
 		if (*t == node)
 		{
@@ -280,7 +282,7 @@ int32 Entity::GetChildrenCountRecursive() const
 {
 	int32 result = 0;
 	result += (int32)children.size();
-	for (std::vector<Entity*>::const_iterator t = children.begin(); t != children.end(); ++t)
+	for (Vector<Entity*>::const_iterator t = children.begin(); t != children.end(); ++t)
 	{
 		Entity *node = *t;
 		result += node->GetChildrenCountRecursive();
@@ -291,7 +293,7 @@ int32 Entity::GetChildrenCountRecursive() const
     
 void Entity::RemoveAllChildren()
 {
-	for (std::vector<Entity*>::iterator t = children.begin(); t != children.end(); ++t)
+	for (Vector<Entity*>::iterator t = children.begin(); t != children.end(); ++t)
 	{
 		Entity *node = *t;
         node->SetScene(nullptr);
@@ -568,8 +570,8 @@ Entity* Entity::Clone(Entity *dstNode)
 		
 	dstNode->RemoveAllChildren();
     dstNode->children.reserve(children.size());
-	std::vector<Entity*>::iterator it = children.begin();
-	const std::vector<Entity*>::iterator & childsEnd = children.end();
+	Vector<Entity*>::iterator it = children.begin();
+	const Vector<Entity*>::iterator & childsEnd = children.end();
 	for(; it != childsEnd; it++)
 	{
 		Entity *n = (*it)->Clone();
@@ -602,8 +604,8 @@ void Entity::SetDebugFlags(uint32 debugFlags, bool isRecursive)
 		
 	if (isRecursive)
 	{
-		std::vector<Entity*>::iterator it = children.begin();
-		const std::vector<Entity*>::iterator & childrenEnd = children.end();
+		Vector<Entity*>::iterator it = children.begin();
+		const Vector<Entity*>::iterator & childrenEnd = children.end();
 		for(; it != childrenEnd; it++)
 		{
 			Entity *n = (*it);

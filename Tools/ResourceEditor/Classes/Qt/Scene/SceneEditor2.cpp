@@ -55,16 +55,16 @@
 #include "Scene/System/EditorLODSystem.h"
 
 
+
 const FastName MATERIAL_FOR_REBIND = FastName("Global");
 
 SceneEditor2::SceneEditor2()
 	: Scene()
+	, wasdSystem(nullptr)
+	, rotationSystem(nullptr)
+	, snapToLandscapeSystem(nullptr)
 	, isLoaded(false)
 	, isHUDVisible(true)
-    , rotationSystem(0)
-    , snapToLandscapeSystem(0)
-    , wasdSystem(0)
-
 {
     SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
 
@@ -731,5 +731,18 @@ void SceneEditor2::Setup3DDrawing()
         drawCamera->SetupDynamicParameters();
     }
 }
+
+void SceneEditor2::Activate()
+{
+    SceneSignals::Instance()->EmitActivated(this);
+    Scene::Activate();
+}
+
+void SceneEditor2::Deactivate()
+{
+    Scene::Deactivate();
+    SceneSignals::Instance()->EmitDeactivated(this);
+}
+
 
 

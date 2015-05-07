@@ -35,7 +35,8 @@
 #include "Render/3D/AnimatedMesh.h"
 #include "Render/Image/Image.h"
 #include "Render/Highlevel/RenderSystem.h"
-
+#include "Render/RenderOptions.h"
+#include "Render/MipmapReplacer.h"
 
 #include "Platform/SystemTimer.h"
 #include "FileSystem/FileSystem.h"
@@ -126,6 +127,9 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     SetGlobalMaterial(NULL);
     
     SceneCache::Instance()->InsertScene(this);
+
+    RenderOptions * options = Renderer::GetOptions();
+    options->AddObserver(this);
 }
 
 void Scene::CreateComponents()
@@ -246,7 +250,9 @@ void Scene::InitGlobalMaterial()
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_DECAL_TILE_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_DECAL_TILE_COLOR, Shader::UT_FLOAT_VEC4, 1, &Color::White);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_DETAIL_TILE_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_DETAIL_TILE_SCALE, Shader::UT_FLOAT_VEC2, 1, &defaultVec2);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_SHADOW_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_SHADOW_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
+    if (NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_NORMAL_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_NORMAL_SCALE, Shader::UT_FLOAT, 1, &defaultFloat10);
 #endif //RHI_COMPLETE
+
 }
 
 void Scene::CreateSystems()
@@ -371,6 +377,8 @@ void Scene::CreateSystems()
 
 Scene::~Scene()
 {
+    Renderer::GetOptions()->RemoveObserver(this);
+
     SceneCache::Instance()->RemoveScene(this);
     
 	for (Vector<AnimatedMesh*>::iterator t = animatedMeshes.begin(); t != animatedMeshes.end(); ++t)
@@ -760,17 +768,6 @@ void Scene::Update(float timeElapsed)
     
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
-    bool needShowStaticOcclusion = Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION);
-    if (needShowStaticOcclusion&&!staticOcclusionDebugDrawSystem)
-    {
-        staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
-        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
-    }else if (!needShowStaticOcclusion&&staticOcclusionDebugDrawSystem)
-    {
-        RemoveSystem(staticOcclusionDebugDrawSystem);
-        SafeDelete(staticOcclusionDebugDrawSystem);
-    }
-
     uint32 size = (uint32)systemsToProcess.size();
     for (uint32 k = 0; k < size; ++k)
     {
@@ -1112,5 +1109,44 @@ void Scene::Input(DAVA::UIEvent *event)
         system->Input(event);
     }
 }
+
+void Scene::HandleEvent(Observable * observable)
+{
+
+    RenderOptions * options = dynamic_cast<RenderOptions *>(observable);
+#if RHI_COMPLETE
+    if (options->IsOptionEnabled(RenderOptions::REPLACE_LIGHTMAP_MIPMAPS))
+        MipMapReplacer::ReplaceMipMaps(this, NMaterial::TEXTURE_LIGHTMAP);
+    if (options->IsOptionEnabled(RenderOptions::REPLACE_ALBEDO_MIPMAPS))
+        MipMapReplacer::ReplaceMipMaps(this, NMaterial::TEXTURE_ALBEDO);
+#endif // RHI_COMPLETE
+
+    if (options->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
+    {
+        staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
+        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
+    }
+    else if (!options->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && staticOcclusionDebugDrawSystem)
+    {
+        RemoveSystem(staticOcclusionDebugDrawSystem);
+        SafeDelete(staticOcclusionDebugDrawSystem);
+    }
+}
     
+void Scene::Activate()
+{
+    for(auto system : systems)
+    {
+        system->Activate();
+    }
+}
+
+void Scene::Deactivate()
+{
+    for(auto system : systems)
+    {
+        system->Deactivate();
+    }
+}
+
 };

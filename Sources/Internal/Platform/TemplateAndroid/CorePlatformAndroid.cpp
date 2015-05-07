@@ -43,6 +43,7 @@ extern void FrameworkWillTerminate();
 #include "Scene3D/SceneCache.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
@@ -92,21 +93,18 @@ namespace DAVA
 // 		core->CreateWin32Window(handle);
 		// 		core->Run();
 // 		core->ReleaseSingletons();
-// #ifdef ENABLE_MEMORY_MANAGER
-// 		if (DAVA::MemoryManager::Instance() != 0)
-// 		{
-// 			DAVA::MemoryManager::Instance()->FinalLog();
-// 		}
-// #endif
 		return 0;
-
 	}
 
 	void CorePlatformAndroid::Quit()
 	{
 		Logger::Debug("[CorePlatformAndroid::Quit]");
 		QuitAction();
-		Core::Quit();
+
+		// finish java activity, never return back
+		JNI::JavaClass javaClass("com.dava.framework.JNIActivity");
+		Function<void()> finishActivity = javaClass.GetStaticMethod<void>("finishActivity");
+		finishActivity();
 	}
 
 	void CorePlatformAndroid::QuitAction()
@@ -119,13 +117,6 @@ namespace DAVA
 		}
 
 		FrameworkWillTerminate();
-
-#ifdef ENABLE_MEMORY_MANAGER
-		if (DAVA::MemoryManager::Instance() != 0)
-		{
-			DAVA::MemoryManager::Instance()->FinalLog();
-		}
-#endif
 
 		Logger::Debug("[CorePlatformAndroid::QuitAction] done");
 	}

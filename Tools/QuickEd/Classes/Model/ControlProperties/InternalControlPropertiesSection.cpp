@@ -3,15 +3,16 @@
 #include "ValueProperty.h"
 #include "UI/UIControl.h"
 #include "../PackageSerializer.h"
+#include "LocalizedTextValueProperty.h"
 
 using namespace DAVA;
 
-InternalControlPropertiesSection::InternalControlPropertiesSection(DAVA::UIControl *control, int num, const InternalControlPropertiesSection *sourceSection, eCopyType copyType) : control(NULL), internalControl(NULL), internalControlNum(num)
+InternalControlPropertiesSection::InternalControlPropertiesSection(DAVA::UIControl *control, int num, const InternalControlPropertiesSection *sourceSection, eCopyType copyType) : control(nullptr), internalControl(nullptr), internalControlNum(num)
 {
     this->control = SafeRetain(control);
     
     internalControl = SafeRetain(control->GetInternalControl(num));
-    if (internalControl == NULL && sourceSection != NULL && sourceSection->GetInternalControl() != NULL)
+    if (internalControl == nullptr && sourceSection != nullptr && sourceSection->GetInternalControl() != nullptr)
     {
         internalControl = control->CreateInternalControl(num);
         control->SetInternalControl(num, internalControl);
@@ -24,8 +25,10 @@ InternalControlPropertiesSection::InternalControlPropertiesSection(DAVA::UIContr
         {
             const InspMember *member = insp->Member(j);
             
-            ValueProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
-            ValueProperty *prop = new ValueProperty(internalControl, member, sourceProp, copyType);
+            ValueProperty *sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(member);
+
+            ValueProperty *prop = strcmp(member->Name(), "text") == 0 ? new LocalizedTextValueProperty(internalControl, member, sourceProperty, copyType)
+                                                                      : new ValueProperty(internalControl, member, sourceProperty, copyType);
             AddProperty(prop);
             SafeRelease(prop);
         }
@@ -54,7 +57,8 @@ void InternalControlPropertiesSection::CreateInternalControl()
         for (int j = 0; j < insp->MembersCount(); j++)
         {
             const InspMember *member = insp->Member(j);
-            ValueProperty *prop = new ValueProperty(internalControl, member, NULL, COPY_VALUES);
+            ValueProperty *prop = strcmp(member->Name(), "text") == 0 ? new LocalizedTextValueProperty(internalControl, member, nullptr, COPY_VALUES)
+                                                                      : new ValueProperty(internalControl, member, nullptr, COPY_VALUES);
             AddProperty(prop);
             SafeRelease(prop);
         }

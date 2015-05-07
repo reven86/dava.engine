@@ -56,7 +56,8 @@ namespace DAVA
 
         // incoming class type
         typedef typename std::remove_pointer<P1>::type Check1;
-        typedef typename std::conditional<std::is_class<Check1>::value, Check1, NullType>::type C;
+        typedef typename std::remove_cv<Check1>::type Check2;
+        typedef typename std::conditional<std::is_class<Check2>::value, Check2, NullType>::type C;
 
 		// evaluating best functor argument types
 		typedef typename TypeTraits<P1>::ParamType ParamRefType1;

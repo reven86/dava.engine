@@ -208,12 +208,7 @@ void InstanceMaterialState::InitFromState(const InstanceMaterialState * state)
 	flatColor = state->flatColor;
 	texture0Shift = state->texture0Shift;
 }
-
-
-
-
-    
-UberShader * Material::uberShader = 0;
+   
     
 const char8 * Material::GetTypeName(eType format)
 {
@@ -319,9 +314,7 @@ Material * Material::Clone(Material *newMaterial /* = NULL */)
 	newMaterial->CopySettings(this);
 
     newMaterial->reflective = reflective;
-    newMaterial->reflectivity =	reflectivity;
-
-	newMaterial->shader = shader;
+    newMaterial->reflectivity =	reflectivity;	
 
 	newMaterial->uniformTexture0 = uniformTexture0;
 	newMaterial->uniformTexture1 = uniformTexture1;

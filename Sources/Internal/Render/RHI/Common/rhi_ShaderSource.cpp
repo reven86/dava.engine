@@ -439,15 +439,15 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
             char        pt      = (progType == PROG_VERTEX)?'V':'F';
             unsigned    reg     = 0;
 
-            buf_len += Snprinf( buf_def+buf_len, sizeof(buf_def)-buf_len, "//--------\n" );
+            buf_len += Snprintf( buf_def+buf_len, sizeof(buf_def)-buf_len, "//--------\n" );
             for( unsigned i=0; i!=buf.size(); ++i )
             {
-                buf_len += Snprinf( buf_def+buf_len, sizeof(buf_def)-buf_len, "DECL_%cPROG_BUFFER(%u,%u,%u)\n", pt, i, buf[i].regCount, reg );
+                buf_len += Snprintf(buf_def + buf_len, sizeof(buf_def) - buf_len, "DECL_%cPROG_BUFFER(%u,%u,%u)\n", pt, i, buf[i].regCount, reg);
                 reg += buf[i].regCount;
             }
-            buf_len += Snprinf( buf_def+buf_len, sizeof(buf_def)-buf_len, "\n\n" );
+            buf_len += Snprintf(buf_def + buf_len, sizeof(buf_def) - buf_len, "\n\n");
 
-            var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    //--------\n" );
+            var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "    //--------\n");
             for( std::vector<ShaderProp>::const_iterator p=prop.begin(),p_end=prop.end(); p!=p_end; ++p )
             {
                 switch( p->type )
@@ -455,13 +455,13 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     case ShaderProp::TYPE_FLOAT1 :
                     {
                         char xyzw[] = "xyzw";
-                        var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    float %s = %cP_Buffer%u[%u].%c;\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount] );
+                        var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "    float %s = %cP_Buffer%u[%u].%c;\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount]);
                     }   break;
                     
                     case ShaderProp::TYPE_FLOAT2 :
                     {
                         char xyzw[] = "xyzw";
-                        var_len += Snprinf
+                        var_len += Snprintf
                         ( 
                             var_def+var_len, sizeof(var_def)-var_len, 
                             "    float2 %s = float2( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n", 
@@ -474,7 +474,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     case ShaderProp::TYPE_FLOAT3 :
                     {
                         char xyzw[] = "xyzw";
-                        var_len += Snprinf
+                        var_len += Snprintf
                         ( 
                             var_def+var_len, sizeof(var_def)-var_len, 
                             "    float3 %s = float3( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n", 
@@ -486,12 +486,12 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     }   break;
 
                     case ShaderProp::TYPE_FLOAT4 :
-                        var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    float4 %s = %cP_Buffer%u[%u];\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg );
+                        var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "    float4 %s = %cP_Buffer%u[%u];\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg);
                         break;
 
                     case ShaderProp::TYPE_FLOAT4X4 :
                     {
-                        var_len += Snprinf
+                        var_len += Snprintf
                         ( 
                             var_def+var_len, sizeof(var_def)-var_len, 
                             "    float4x4 %s = float4x4( %cP_Buffer%u[%u], %cP_Buffer%u[%u], %cP_Buffer%u[%u], %cP_Buffer%u[%u] );\n", 
@@ -504,8 +504,8 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     }   break;
                 };
             }
-            var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    //--------\n" );
-            var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "\n\n" );
+            var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "    //--------\n");
+            var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "\n\n");
             
             unsigned var_pos = (prog-code.c_str()) + strlen("XPROG_BEGIN") + buf_len +2;
 
@@ -620,7 +620,7 @@ code.push_back( '\n' );
 return;
 
     char    text[4*1024];
-    int     len = Snprinf( text, sizeof(text)-1, "/*%04u*/ ", codeLineCount+1 );
+    int     len = Snprintf(text, sizeof(text) - 1, "/*%04u*/ ", codeLineCount + 1);
 
     strncpy( text+len, line, lineLen );
     text[len+lineLen] = '\0';
