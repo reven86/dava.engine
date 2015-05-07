@@ -29,35 +29,35 @@
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/FrameworkBinding/FrameworkLoop.h"
 
-class ScopedLoopPause
+class FrameworkLoopGuard
 {
 public:
     
-    ScopedLoopPause(LoopItem *_loop): loop(_loop)
+    FrameworkLoopGuard()
     {
+        auto loop = FrameworkLoop::Instance();
         if(loop)
         {
             loop->SetPaused(true);
         }
     }
     
-    ~ScopedLoopPause()
+    ~FrameworkLoopGuard()
     {
+        auto loop = FrameworkLoop::Instance();
         if(loop)
-        {
+        {   //INFO: this magic helps us with OSX OpenGL Context on File dialog
+            loop->Context();
             loop->SetPaused(false);
-            loop = nullptr;
         }
     }
-private:
-    LoopItem *loop;
 };
 
 
 QString FileDialog::getOpenFileName(QWidget *parent, const QString &caption, const QString &dir,
                                      const QString &filter, QString *selectedFilter, Options options)
 {
-    ScopedLoopPause guard(FrameworkLoop::Instance());
+    FrameworkLoopGuard guard;
 
     auto fileName = QFileDialog::getOpenFileName(parent, caption, dir, filter, selectedFilter, options);
 
@@ -68,7 +68,7 @@ QString FileDialog::getOpenFileName(QWidget *parent, const QString &caption, con
 QUrl FileDialog::getOpenFileUrl(QWidget *parent, const QString &caption, const QUrl &dir,
                                  const QString &filter, QString *selectedFilter, Options options, const QStringList &supportedSchemes)
 {
-    ScopedLoopPause guard(FrameworkLoop::Instance());
+    FrameworkLoopGuard guard;
 
     auto fileUrl = QFileDialog::getOpenFileUrl(parent, caption, dir, filter, selectedFilter, options, supportedSchemes);
     
@@ -79,7 +79,7 @@ QUrl FileDialog::getOpenFileUrl(QWidget *parent, const QString &caption, const Q
 QString FileDialog::getSaveFileName(QWidget *parent, const QString &caption, const QString &dir,
                                const QString &filter, QString *selectedFilter, Options options)
 {
-    ScopedLoopPause guard(FrameworkLoop::Instance());
+    FrameworkLoopGuard guard;
 
     auto fileName = QFileDialog::getSaveFileName(parent, caption, dir, filter, selectedFilter, options);
     
@@ -91,7 +91,7 @@ QUrl FileDialog::getSaveFileUrl(QWidget *parent, const QString &caption, const Q
                            const QString &filter, QString *selectedFilter, Options options,
                            const QStringList &supportedSchemes)
 {
-    ScopedLoopPause guard(FrameworkLoop::Instance());
+    FrameworkLoopGuard guard;
 
     auto fileUrl = QFileDialog::getSaveFileUrl(parent, caption, dir, filter, selectedFilter, options, supportedSchemes);
     
@@ -101,7 +101,7 @@ QUrl FileDialog::getSaveFileUrl(QWidget *parent, const QString &caption, const Q
 
 QString FileDialog::getExistingDirectory(QWidget *parent, const QString &caption, const QString &dir, Options options)
 {
-    ScopedLoopPause guard(FrameworkLoop::Instance());
+    FrameworkLoopGuard guard;
 
     auto directory = QFileDialog::getExistingDirectory(parent, caption, dir, options);
     
@@ -112,7 +112,7 @@ QString FileDialog::getExistingDirectory(QWidget *parent, const QString &caption
 QUrl FileDialog::getExistingDirectoryUrl(QWidget *parent, const QString &caption, const QUrl &dir,
                                           Options options, const QStringList &supportedSchemes)
 {
-    ScopedLoopPause guard(FrameworkLoop::Instance());
+    FrameworkLoopGuard guard;
 
     auto dirrectoryUrl = QFileDialog::getExistingDirectoryUrl(parent, caption, dir, options, supportedSchemes);
     
@@ -123,7 +123,7 @@ QUrl FileDialog::getExistingDirectoryUrl(QWidget *parent, const QString &caption
 QStringList FileDialog::getOpenFileNames(QWidget *parent, const QString &caption, const QString &dir,
                                     const QString &filter, QString *selectedFilter, Options options)
 {
-    ScopedLoopPause guard(FrameworkLoop::Instance());
+    FrameworkLoopGuard guard;
 
     auto fileNames = QFileDialog::getOpenFileNames(parent, caption, dir, filter, selectedFilter, options);
     
@@ -135,7 +135,7 @@ QList<QUrl> FileDialog::getOpenFileUrls(QWidget *parent, const QString &caption,
                                    const QString &filter, QString *selectedFilter, Options options,
                                    const QStringList &supportedSchemes)
 {
-    ScopedLoopPause guard(FrameworkLoop::Instance());
+    FrameworkLoopGuard guard;
 
     auto fileUrls = QFileDialog::getOpenFileUrls(parent, caption, dir, filter, selectedFilter, options, supportedSchemes);
     

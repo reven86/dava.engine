@@ -42,6 +42,8 @@ protected:
 private slots:
     void OnWindowDestroyed();
     void OnWindowInitialized();
+    
+    void ContextWillBeDestroyed();
 
 private:
     QPointer< QOpenGLContext > context;

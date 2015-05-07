@@ -251,7 +251,6 @@ void DavaGLWidget::OnWindowExposed()
 
     const auto contextId = FrameworkLoop::Instance()->GetRenderContextId();
     DAVA::QtLayer::Instance()->InitializeGlWindow( contextId );
-    
     isInitialized = true;
 
     PerformSizeChange();
@@ -299,6 +298,11 @@ bool DavaGLWidget::eventFilter( QObject* watched, QEvent* event )
 
 void DavaGLWidget::PerformSizeChange()
 {
+    if(isInitialized)
+    {   //INFO: this magic helps us with OSX OpenGL Context on File dialog
+        FrameworkLoop::Instance()->Context();
+    }
+    
     currentDPR = openGlWindow->devicePixelRatio();
     if (isInitialized)
     {
