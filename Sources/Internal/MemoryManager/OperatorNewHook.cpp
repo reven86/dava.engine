@@ -58,21 +58,4 @@ void operator delete[](void* ptr) DAVA_NOEXCEPT
     DAVA::MemoryManager::Instance()->Deallocate(ptr);
 }
 
-void* operator new(size_t size, DAVA::ePredefAllocPools pool)
-{
-    return DAVA::MemoryManager::Instance()->Allocate(size, pool);
-}
-void* operator new [](size_t size, DAVA::ePredefAllocPools pool)
-{
-    return DAVA::MemoryManager::Instance()->Allocate(size, pool);
-}
-void operator delete(void * ptr, DAVA::ePredefAllocPools pool)
-{
-    DAVA::MemoryManager::Instance()->Deallocate(ptr);
-}
-void operator delete[](void * ptr, DAVA::ePredefAllocPools pool)
-{
-    DAVA::MemoryManager::Instance()->Deallocate(ptr);
-}
-
 #endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)

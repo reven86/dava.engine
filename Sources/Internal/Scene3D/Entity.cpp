@@ -51,8 +51,6 @@
 #include "Utils/Random.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
-#include "MemoryManager/MemoryProfiler.h"
-
 #define USE_VECTOR(x) ((((uint64)1 << (uint64)x) & vectorComponentsMask) != (uint64)0)
 
 namespace DAVA
@@ -1159,15 +1157,6 @@ uint32 Entity::CountChildEntitiesWithComponent(Component::eType type, bool recur
         }
     }
     return count;
-}
-	
-void * Entity::operator new(size_t size)
-{
-    return MEMORY_PROFILER_ALLOCATE(size, ePredefAllocPools::ALLOC_POOL_ENTITY);
-}
-void * Entity::operator new[](size_t size)
-{
-    return MEMORY_PROFILER_ALLOCATE(size, ePredefAllocPools::ALLOC_POOL_ENTITY);
 }
 
 };

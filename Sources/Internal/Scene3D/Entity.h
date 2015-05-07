@@ -42,6 +42,8 @@
 #include "Scene3D/EntityFamily.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
 
+#include "MemoryManager/MemoryProfiler.h"
+
 namespace DAVA
 {
 
@@ -58,6 +60,8 @@ class TransformComponent;
  */
 class Entity : public BaseObject
 {
+    ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_ENTITY);
+
 protected:
 	virtual ~Entity();
 public:	
@@ -368,8 +372,6 @@ public:
     
     void UpdateFamily();
 
-    void * operator new(size_t size);
-    void * operator new[](size_t size);
 protected:
     void RemoveAllComponents();
     void LoadComponentsV6(KeyedArchive *compsArch, SerializationContext * serializationContext);

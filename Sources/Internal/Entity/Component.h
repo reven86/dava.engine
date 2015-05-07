@@ -35,12 +35,16 @@
 #include "Base/Introspection.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
+#include "MemoryManager/MemoryProfiler.h"
+
 namespace DAVA 
 {
     
 class Entity;
 class Component : public Serializable, public InspBase
 {
+    ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_COMPONENT);
+
 public:
     enum eType
     {
@@ -111,10 +115,8 @@ public:
          \brief Function to get data nodes of requested type to specific container you provide.
      */
     template<template <typename> class Container, class T>
-	void GetDataNodes(Container<T> & container);
+    void GetDataNodes(Container<T> & container);
 
-    void * operator new(size_t size);
-    void * operator new[](size_t size);
 protected:
     Entity * entity; // entity is a Entity, that this component belongs to
 
