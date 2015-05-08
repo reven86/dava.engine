@@ -161,18 +161,17 @@ private:
     class InactivityTimer
     {
     public:
-        InactivityTimer(int32 duration);
+        InactivityTimer(uint64 duration);
 
         void Start();
-        void Stop() {isStarted = false; timeLeft = timeout;}
-        void Reset() {timeLeft = timeout; isReached = false;}
+        void Stop() {isStarted = false;}
+        void Reset();
         void Tick();
         bool IsReached() {return isReached;}
         bool IsStarted() {return isStarted;}
         
     private:
         const uint64 timeout;
-        uint64 timeLeft;
         uint64 timerStartTime;
         bool isStarted = false;
         bool isReached;

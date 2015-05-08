@@ -52,7 +52,7 @@ CurlDownloader::CurlDownloader()
     , storePath("")
     , downloadUrl("")
     , operationTimeout(30)
-    , inactivityConnectionTimer(30)
+    , inactivityConnectionTimer(30000) //30s
     , remoteFileSize(0)
     , sizeToDownload(0)
     , downloadSpeedLimit(0)
@@ -248,7 +248,7 @@ CURLMcode CurlDownloader::Perform()
         return ret;
     }
 
-    inactivityConnectionTimer.Reset();
+    inactivityConnectionTimer.Stop();
     do
     {
         struct timeval timeout;
@@ -344,7 +344,7 @@ CURLMcode CurlDownloader::Perform()
         }
         
     } while (handlesRunning > 0);
-
+    
     return ret;
 }
 
@@ -762,9 +762,8 @@ DownloadError CurlDownloader::TakeMostImportantReturnValue(const Vector<Download
     return errorsByPriority[retIndex].error;
 }
 
-CurlDownloader::InactivityTimer::InactivityTimer(int32 duration)
+CurlDownloader::InactivityTimer::InactivityTimer(uint64 duration)
     : timeout(duration)
-    , timeLeft(timeout)
     , isReached(false)
 {
 }
@@ -772,17 +771,20 @@ CurlDownloader::InactivityTimer::InactivityTimer(int32 duration)
 void CurlDownloader::InactivityTimer::Start()
 {
     Reset();
-    timerStartTime = SystemTimer::Instance()->AbsoluteMS();
     isStarted = true;
+}
+    
+void CurlDownloader::InactivityTimer::Reset()
+{
+    isReached = false;
+    timerStartTime = SystemTimer::Instance()->AbsoluteMS();
 }
 
 void CurlDownloader::InactivityTimer::Tick()
 {
     uint64 timeDelta = SystemTimer::Instance()->AbsoluteMS() - timerStartTime;
     
-    timeLeft = timeout - timeDelta/1000;
-    
-    isReached = timeDelta >= timeout*1000;
+    isReached = timeDelta >= timeout;
     
     if (isReached)
     {
