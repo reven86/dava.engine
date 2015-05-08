@@ -36,7 +36,7 @@ namespace DAVA
 {
     
 struct AdoptLock_t { };
-const AdoptLock_t AdoptLock;
+const AdoptLock_t AdoptLock {};
 
 template<typename MutexType>
 class LockGuard
