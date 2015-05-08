@@ -85,7 +85,8 @@ public slots:
     void UpdateInfoByTimer();
     void TexturesReloaded();
     void SpritesReloaded();
-
+    void OnQualityChanged();
+    
 
 protected slots:
     void SceneActivated(SceneEditor2 *scene);

@@ -32,31 +32,14 @@
 
 #include "DAVAEngine.h"
 
-class TestScreen;
-
 class GameCore : public DAVA::ApplicationCore
 {
-protected:
-	virtual ~GameCore();
-public:	
-	GameCore();
-	
-	virtual void OnAppStarted();
-	virtual void OnAppFinished();
-	
-	virtual void OnSuspend();
-	virtual void OnResume();
-	virtual void OnBackground();
-	
-	virtual void BeginFrame();
-	virtual void Update(DAVA::float32 update);
-	virtual void Draw();
-	
-private:
-	DAVA::Cursor * cursor;
-	TestScreen * testScreen;
+public:
+    GameCore();
+    ~GameCore() override;
+
+    void OnAppStarted() override;
+    void OnAppFinished() override;
 };
-
-
 
 #endif // __GAMECORE_H__
