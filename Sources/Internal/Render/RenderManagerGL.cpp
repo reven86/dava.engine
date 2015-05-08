@@ -128,7 +128,14 @@ bool IsGLExtensionSupported(const String &extension)
         return false;
     }
     
-    String extensions((const char8 *)glGetString(GL_EXTENSIONS));
+    auto extString = glGetString(GL_EXTENSIONS);
+    if(nullptr == extString)
+    {
+        DVASSERT(false && "GL not initialized");
+        return false;
+    }
+
+    String extensions((const char8 *)extString);
     String::size_type extPosition = extensions.find(extension);
     return (String::npos != extPosition);
 }

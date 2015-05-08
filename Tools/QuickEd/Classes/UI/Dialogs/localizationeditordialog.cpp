@@ -37,10 +37,12 @@
 
 #include "regexpinputdialog.h"
 
-#include <QFileDialog>
 #include <QMenu>
 #include <QMessageBox>
 #include "Utils/QtDavaConvertion.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
+
 
 using namespace DAVA;
 
@@ -653,7 +655,7 @@ void LocalizationEditorDialog::OnOpenLocalizationFileButtonClicked()
 		absoluteLocalizationPath = ResourcesManageHelper::GetResourceRootDirectory();
 	}
 
-    QString fileDirectory = QFileDialog::getExistingDirectory(this, tr( "Select localization files directory" ), absoluteLocalizationPath);
+    QString fileDirectory = FileDialog::getExistingDirectory(this, tr( "Select localization files directory" ), absoluteLocalizationPath);
 
 	if(!fileDirectory.isNull() && !fileDirectory.isEmpty())
     {
