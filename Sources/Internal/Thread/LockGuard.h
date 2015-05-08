@@ -36,7 +36,7 @@ namespace DAVA
 {
     
 struct AdoptLock_t { };
-const AdoptLock_t AdoptLock();
+const AdoptLock_t AdoptLock;
 
 template<typename MutexType>
 class LockGuard
@@ -45,14 +45,14 @@ public:
     
     explicit LockGuard(MutexType& m) : mutex(m) { mutex.Lock(); }; //own and lock mutex
     
-    LockGuard(MutexType& m, const AdoptLock_t &al) : mutex(m) { }; //just own mutex
-    
+    LockGuard(MutexType& m, AdoptLock_t) : mutex(m) { }; //just own mutex
+
+    LockGuard(const LockGuard&) = delete;
+    LockGuard& operator = (const LockGuard&) = delete;
+
     ~LockGuard() { mutex.Unlock(); } //unlock mutex
     
 private:
-	LockGuard(const LockGuard&) { DVASSERT(false); }; // disable wrong using
-	LockGuard& operator=(const LockGuard&){ DVASSERT(false);  return *this; }; // disable wrong using
-
     MutexType &mutex;
 };
     
