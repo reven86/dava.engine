@@ -113,7 +113,9 @@ Landscape::Landscape()
     , tileMaskMaterial(NULL)
     , foliageSystem(NULL)
 {
-	drawIndices = 0;
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    drawIndices = 0;
     //textureNames.resize(TEXTURE_COUNT);
     
     type = TYPE_LANDSCAPE;
@@ -125,7 +127,7 @@ Landscape::Landscape()
     
     cursor = 0;
     
-    heightmap = TRACKED_NEW(Heightmap);
+    heightmap = new Heightmap;
     prevLodLayer = -1;
 }
 
@@ -136,17 +138,19 @@ Landscape::~Landscape()
     SafeDeleteArray(indices);
 
     SafeRelease(heightmap);
-	SafeDelete(cursor);
-		
-	SafeRelease(tileMaskMaterial);
+    SafeDelete(cursor);
+
+    SafeRelease(tileMaskMaterial);
 }
     
 
 int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 //    Logger::FrameworkDebug("AllocateRDOQuad: %d %d size: %d", quad->x, quad->y, quad->size);
     DVASSERT(quad->size == RENDER_QUAD_WIDTH - 1);
-    LandscapeVertex * landscapeVertices = TRACKED_NEW_ARRAY(LandscapeVertex, (quad->size + 1) * (quad->size + 1));
+    LandscapeVertex * landscapeVertices = new LandscapeVertex[(quad->size + 1) * (quad->size + 1)];
     
     int32 index = 0;
     for (int32 y = quad->y; y < quad->y + quad->size + 1; ++y)
@@ -235,6 +239,8 @@ int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
 
 void Landscape::ReleaseAllRDOQuads()
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     for (size_t k = 0; k < landscapeRDOArray.size(); ++k)
     {
         SafeRelease(landscapeRDOArray[k]);
@@ -246,6 +252,8 @@ void Landscape::ReleaseAllRDOQuads()
 
 void Landscape::SetLods(const Vector4 & lods)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     lodLevelsCount = 4;
     
     lodDistance[0] = lods.x;
@@ -259,10 +267,12 @@ void Landscape::SetLods(const Vector4 & lods)
     
 void Landscape::BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathname, const AABBox3 & _box)
 {
-	heightmapPath = heightmapPathname;
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    heightmapPath = heightmapPathname;
     BuildHeightmap();
 
-	bbox = _box;
+    bbox = _box;
 
     BuildLandscape();
     
@@ -274,6 +284,8 @@ void Landscape::BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathn
 
 bool Landscape::BuildHeightmap()
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     bool retValue = false;
     if(heightmapPath.IsEqualToExtension(".png"))
     {
@@ -313,10 +325,11 @@ bool Landscape::BuildHeightmap()
     
 void Landscape::BuildLandscape()
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     ReleaseAllRDOQuads();
     SafeDeleteArray(indices);
 
-    
     quadTreeHead.data.x = quadTreeHead.data.y = quadTreeHead.data.lod = 0;
     //quadTreeHead.data.xbuf = quadTreeHead.data.ybuf = 0;
     quadTreeHead.data.rdoQuad = -1;
@@ -332,7 +345,7 @@ void Landscape::BuildLandscape()
         RecursiveBuild(&quadTreeHead, 0, lodLevelsCount);
         FindNeighbours(&quadTreeHead);
         
-        indices = TRACKED_NEW_ARRAY(uint16, INDEX_ARRAY_COUNT);
+        indices = new uint16[INDEX_ARRAY_COUNT];
     }
     else
     {
@@ -366,6 +379,8 @@ Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height)
 
 bool Landscape::PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * normal) const
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	if (point.x > bbox.max.x ||
 		point.x < bbox.min.x ||
 		point.y > bbox.max.y ||
@@ -434,11 +449,11 @@ bool Landscape::PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * no
 	}
 	return true;
 };
-	
-	
-	
+
 void Landscape::RecursiveBuild(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 level, int32 maxLevels)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     allocatedMemoryForQuads += sizeof(LandQuadTreeNode<LandscapeQuad>);
     currentNode->data.lod = level;
     
@@ -609,6 +624,8 @@ void Landscape::MarkFrames(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 
     
 void Landscape::SetTextureTiling(eTextureLevel level, const Vector2 & tiling)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if(TILEMASK_TILING_PROPS_NAMES[level] != INVALID_PROPERTY_NAME)
     {
         tileMaskMaterial->SetPropertyValue(TILEMASK_TILING_PROPS_NAMES[level], Shader::UT_FLOAT_VEC2, 1, &tiling);
@@ -617,6 +634,8 @@ void Landscape::SetTextureTiling(eTextureLevel level, const Vector2 & tiling)
 
 Vector2 Landscape::GetTextureTiling(eTextureLevel level)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     Vector2 propValue;
     NMaterialProperty* prop = tileMaskMaterial->GetPropertyValue(TILEMASK_TILING_PROPS_NAMES[level]);
     
@@ -630,6 +649,8 @@ Vector2 Landscape::GetTextureTiling(eTextureLevel level)
     
 void Landscape::SetTileColor(eTextureLevel level, const Color & color)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if(TILEMASK_COLOR_PROPS_NAMES[level] != INVALID_PROPERTY_NAME)
     {
         tileMaskMaterial->SetPropertyValue(TILEMASK_COLOR_PROPS_NAMES[level], Shader::UT_FLOAT_VEC3, 1, &color);
@@ -638,6 +659,8 @@ void Landscape::SetTileColor(eTextureLevel level, const Color & color)
 
 Color Landscape::GetTileColor(eTextureLevel level)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     Color propValue;
     NMaterialProperty* prop = tileMaskMaterial->GetPropertyValue(TILEMASK_COLOR_PROPS_NAMES[level]);
     
@@ -653,6 +676,8 @@ Color Landscape::GetTileColor(eTextureLevel level)
     
 void Landscape::SetTexture(eTextureLevel level, const FilePath & textureName)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	if(TEXTURE_TILE_FULL != level &&
        TILEMASK_TEXTURE_PROPS_NAMES[level] != INVALID_PROPERTY_NAME)
 	{
@@ -662,6 +687,8 @@ void Landscape::SetTexture(eTextureLevel level, const FilePath & textureName)
     
 Texture * Landscape::CreateTexture(eTextureLevel level, const FilePath & textureName)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if(TEXTURE_TILE_FULL == level)
     {
         //must not zero only for finalized maps
@@ -678,6 +705,8 @@ Texture * Landscape::CreateTexture(eTextureLevel level, const FilePath & texture
 
 void Landscape::SetTexture(eTextureLevel level, Texture *texture)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
  	//textureNames[level] = String("");
 
 	if(TILEMASK_TEXTURE_PROPS_NAMES[level] != INVALID_PROPERTY_NAME)
@@ -689,11 +718,15 @@ void Landscape::SetTexture(eTextureLevel level, Texture *texture)
     
 Texture * Landscape::GetTexture(eTextureLevel level)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	return tileMaskMaterial->GetEffectiveTexture(TILEMASK_TEXTURE_PROPS_NAMES[level]);
 }
     
 void Landscape::FlushQueue()
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if (queueRenderCount == 0) return;
     
 	//currentMaterial->Draw(landscapeRDOArray[queueRdoQuad], indices, queueRenderCount);
@@ -715,6 +748,8 @@ void Landscape::ClearQueue()
 
 void Landscape::DrawQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     int32 depth = currentNode->data.size / (1 << lod);
     if (depth == 1)
     {
@@ -758,6 +793,8 @@ void Landscape::DrawQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod
     
 void Landscape::DrawFans()
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     uint32 currentFrame = Core::Instance()->GetGlobalFrameIndex();;
     int16 width = RENDER_QUAD_WIDTH;//heightmap->GetWidth();
     
@@ -921,6 +958,8 @@ float32 Landscape::GetQuadToCameraDistance(const Vector3& camPos, const Landscap
 	
 void Landscape::Draw(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippingFlags)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     //Frustum * frustum = scene->GetClipCamera()->GetFrustum();
     // if (!frustum->IsInside(currentNode->data.bbox))return;
     Frustum::eFrustumResult frustumRes = Frustum::EFR_INSIDE; 
@@ -1109,9 +1148,11 @@ void Landscape::Draw(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippi
 
     
 void Landscape::BindMaterial(int32 lodLayer, Camera* camera)
-{	
-	tileMaskMaterial->SetPropertyValue(Landscape::PARAM_CAMERA_POSITION, Shader::UT_FLOAT_VEC3, 1, &cameraPos);
-	tileMaskMaterial->BindMaterialTechnique(TECHNIQUE_TILEMASK_NAME, camera);
+{
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    tileMaskMaterial->SetPropertyValue(Landscape::PARAM_CAMERA_POSITION, Shader::UT_FLOAT_VEC3, 1, &cameraPos);
+    tileMaskMaterial->BindMaterialTechnique(TECHNIQUE_TILEMASK_NAME, camera);
     
     prevLodLayer = lodLayer;
 }
@@ -1120,15 +1161,15 @@ void Landscape::UnbindMaterial()
 {
     if(-1 != prevLodLayer)
     {
-		//TODO: review if should unbind new material
+        //TODO: review if should unbind new material
         prevLodLayer = -1;
     }
 }
 
-    
-    
 void Landscape::Draw(Camera * camera)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     TIME_PROFILE("LandscapeNode.Draw");
 	
 	drawIndices = 0;
@@ -1310,6 +1351,8 @@ void Landscape::Draw(Camera * camera)
 
 void Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<int32> & indices)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	LandQuadTreeNode<LandscapeQuad> * currentNode = &quadTreeHead;
 	LandscapeQuad * quad = &currentNode->data;
 	
@@ -1371,6 +1414,8 @@ const FilePath & Landscape::GetHeightmapPathname()
 	
 void Landscape::SetHeightmapPathname(const FilePath & newHeightMapPath)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	if(newHeightMapPath == heightmapPath)
 	{
 		return;
@@ -1385,23 +1430,29 @@ float32 Landscape::GetLandscapeSize() const
 	
 void Landscape::SetLandscapeSize(float32 newSize)
 {
-	Vector3 newLandscapeSize(newSize, newSize, bbox.GetSize().z);
-	SetLandscapeSize(newLandscapeSize);
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    Vector3 newLandscapeSize(newSize, newSize, bbox.GetSize().z);
+    SetLandscapeSize(newLandscapeSize);
 }
-	
+
 float32 Landscape::GetLandscapeHeight() const
 {
-	return bbox.GetSize().z;
+    return bbox.GetSize().z;
 }
 	
 void Landscape::SetLandscapeHeight(float32 newHeight)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	Vector3 newLandscapeSize(bbox.GetSize().x, bbox.GetSize().y, newHeight);
 	SetLandscapeSize(newLandscapeSize);
 }
 
 void Landscape::SetLandscapeSize(const Vector3 & newLandscapeSize)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if(newLandscapeSize.z < 0.0f || newLandscapeSize.x <0 || newLandscapeSize.y < 0)
 	{
 		return;
@@ -1423,32 +1474,36 @@ void Landscape::SetLandscapeSize(const Vector3 & newLandscapeSize)
 
 void Landscape::Create(NMaterial *fromMaterial/* = NULL */)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(NULL == tileMaskMaterial);
     DVASSERT(0 == GetRenderBatchCount());
 
     if(NULL == fromMaterial)
     {
         NMaterial* landscapeParent = NMaterial::CreateMaterial(FastName("Landscape_Tilemask_Material"), NMaterialName::TILE_MASK, NMaterial::DEFAULT_QUALITY_NAME);
-	    tileMaskMaterial = NMaterial::CreateMaterialInstance();
-	    tileMaskMaterial->SetParent(landscapeParent);
-    	SafeRelease(landscapeParent);
+        tileMaskMaterial = NMaterial::CreateMaterialInstance();
+        tileMaskMaterial->SetParent(landscapeParent);
+        SafeRelease(landscapeParent);
 
-    	SetDefaultValues();
+        SetDefaultValues();
     }
     else
     {
         tileMaskMaterial = fromMaterial->Clone();
     }
-	
-	LandscapeChunk * chunk = TRACKED_NEW(LandscapeChunk, this);
-	chunk->SetMaterial(tileMaskMaterial);
-	chunk->SetSortingKey(10);
-	AddRenderBatch(chunk);
-	SafeRelease(chunk);
+
+    LandscapeChunk * chunk = new LandscapeChunk(this);
+    chunk->SetMaterial(tileMaskMaterial);
+    chunk->SetSortingKey(10);
+    AddRenderBatch(chunk);
+    SafeRelease(chunk);
 }
     
 void Landscape::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     RenderObject::Save(archive, serializationContext);
 
     //TODO: remove code in future. Need for transition from *.png to *.heightmap
@@ -1457,7 +1512,7 @@ void Landscape::Save(KeyedArchive * archive, SerializationContext * serializatio
         heightmapPath.ReplaceExtension(Heightmap::FileExtension());
     }
 
-	heightmap->Save(heightmapPath);
+    heightmap->Save(heightmapPath);
     archive->SetString("hmap", heightmapPath.GetRelativePathname(serializationContext->GetScenePath()));
     archive->SetByteArrayAsType("bbox", bbox);
     
@@ -1474,6 +1529,8 @@ void Landscape::Save(KeyedArchive * archive, SerializationContext * serializatio
     
 void Landscape::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	RenderObject::Load(archive, serializationContext);
 	
     DVASSERT(serializationContext->GetVersion() >= 4);
@@ -1520,6 +1577,8 @@ void Landscape::Load(KeyedArchive * archive, SerializationContext * serializatio
 
 void Landscape::LoadFog(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DAVA::NMaterial *globalMaterial = serializationContext->GetScene()->GetGlobalMaterial();
 
     if(NULL != globalMaterial)
@@ -1546,6 +1605,8 @@ void Landscape::LoadFog(KeyedArchive * archive, SerializationContext * serializa
 
 void Landscape::LoadMaterialProps(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     for (int32 k = 0; k < TEXTURE_COUNT; ++k)
     {
         if(TEXTURE_DETAIL == k) continue;
@@ -1578,12 +1639,16 @@ void Landscape::LoadMaterialProps(KeyedArchive * archive, SerializationContext *
 
 const FilePath & Landscape::GetTextureName(DAVA::Landscape::eTextureLevel level)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(0 <= level && level < TEXTURE_COUNT);
     return tileMaskMaterial->GetEffectiveTexturePath(TILEMASK_TEXTURE_PROPS_NAMES[level]);
 }
     
 void Landscape::SetTextureName(eTextureLevel level, const FilePath &newTextureName)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(0 <= level && level < TEXTURE_COUNT);
     tileMaskMaterial->SetTexturePath(TILEMASK_TEXTURE_PROPS_NAMES[level], newTextureName);
 }
@@ -1591,15 +1656,17 @@ void Landscape::SetTextureName(eTextureLevel level, const FilePath &newTextureNa
 
 void Landscape::CursorEnable()
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(nullptr == cursor);
-    cursor = TRACKED_NEW(LandscapeCursor);
+    cursor = new LandscapeCursor;
 }
 
 void Landscape::CursorDisable()
 {
-	SafeDelete(cursor);
+    SafeDelete(cursor);
 }
-    
+
 Heightmap * Landscape::GetHeightmap()
 {
     return heightmap;
@@ -1607,6 +1674,8 @@ Heightmap * Landscape::GetHeightmap()
 
 void Landscape::SetHeightmap(DAVA::Heightmap *height)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     SafeRelease(heightmap);
     heightmap = SafeRetain(height);
     
@@ -1616,6 +1685,8 @@ void Landscape::SetHeightmap(DAVA::Heightmap *height)
     
 Texture * Landscape::CreateLandscapeTexture()
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     //Set indexes
     Vector<float32> ftVertexes;
     Vector<float32> ftTextureCoords;
@@ -1764,6 +1835,8 @@ LandscapeCursor * Landscape::GetCursor()
 	//TODO: review landscape cloning
 RenderObject * Landscape::Clone( RenderObject *newObject )
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	if(!newObject)
 	{
 		DVASSERT_MSG(IsPointerToExactClass<Landscape>(this), "Can clone only Landscape");
@@ -1797,6 +1870,8 @@ int32 Landscape::GetDrawIndices() const
 
 void Landscape::SetDefaultValues()
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     Color color;
     SetTileColor(TEXTURE_TILE0, color);
     SetTileColor(TEXTURE_TILE1, color);
@@ -1806,12 +1881,14 @@ void Landscape::SetDefaultValues()
 
 void Landscape::SetupMaterialProperties()
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	if(tileMaskMaterial)
 	{
 		tileMaskMaterial->SetPropertyValue(Landscape::PARAM_CAMERA_POSITION, Shader::UT_FLOAT_VEC3, 1, &cameraPos);
 	}
 }
-	
+
 void Landscape::SetFoliageSystem(FoliageSystem* _foliageSystem)
 {
     foliageSystem = _foliageSystem;

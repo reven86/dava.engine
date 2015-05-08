@@ -53,6 +53,25 @@
 namespace DAVA
 {
 
+namespace
+{
+
+struct AllocPoolScopeItem
+{
+    AllocPoolScopeItem* next;
+    int32 allocPool;
+};
+
+#if defined(__DAVAENGINE_WIN32__)
+__declspec(thread) AllocPoolScopeItem* allocPoolScopeStack = nullptr;
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+__thread AllocPoolScopeItem* allocPoolScopeStack = nullptr;
+#elif defined(__DAVAENGINE_ANDROID__)
+thread_local AllocPoolScopeItem* allocPoolScopeStack = nullptr;
+#endif
+
+}
+
 struct MemoryManager::MemoryBlock
 {
     MemoryBlock* prev;      // Pointer to previous block
@@ -159,6 +178,12 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, int32 poolIndex)
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
         if (!IsInternalAllocationPool(poolIndex))
         {
+            AllocPoolScopeItem* scopeItem = allocPoolScopeStack;
+            if (scopeItem != nullptr)
+            {
+                block->pool = scopeItem->allocPool;
+            }
+
             Backtrace backtrace;
             {
                 // Lock is required only here:
@@ -173,7 +198,7 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, int32 poolIndex)
                 block->bktraceHash = backtrace.hash;
 
                 InsertBlock(block);
-                UpdateStatAfterAlloc(block, poolIndex);
+                UpdateStatAfterAlloc(block, block->pool);
             }
             {
                 LockType backtraceLock(bktraceMutex);
@@ -235,6 +260,12 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, in
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
         if (!IsInternalAllocationPool(poolIndex))
         {
+            AllocPoolScopeItem* scopeItem = allocPoolScopeStack;
+            if (scopeItem != nullptr)
+            {
+                block->pool = scopeItem->allocPool;
+            }
+
             Backtrace backtrace;
             {
                 // Lock is required only here:
@@ -249,7 +280,7 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, in
                 block->bktraceHash = backtrace.hash;
 
                 InsertBlock(block);
-                UpdateStatAfterAlloc(block, poolIndex);
+                UpdateStatAfterAlloc(block, block->pool);
             }
             {
                 LockType backtraceLock(bktraceMutex);
@@ -371,6 +402,25 @@ void MemoryManager::LeaveTagScope(uint32 tag)
     LockType lock(mutex);
     statGeneral.activeTags &= ~tag;
     statGeneral.activeTagCount -= 1;
+}
+
+void MemoryManager::EnterAllocPoolScope(int32 allocPool)
+{
+    AllocPoolScopeItem* item = new AllocPoolScopeItem;
+    item->next = allocPoolScopeStack;
+    item->allocPool = allocPool;
+
+    allocPoolScopeStack = item;
+}
+
+void MemoryManager::LeaveAllocPoolScope(int32 allocPool)
+{
+    AllocPoolScopeItem* cur = allocPoolScopeStack;
+    assert(cur != nullptr);
+    assert(cur->allocPool == allocPool);
+
+    allocPoolScopeStack = cur->next;
+    delete cur;
 }
 
 void MemoryManager::InsertBlock(MemoryBlock* block)

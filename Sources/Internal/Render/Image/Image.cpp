@@ -36,13 +36,13 @@ namespace DAVA
 {
 
 Image::Image()
-:   dataSize(0)
-,   width(0)
-,   height(0)
-,   data(0)
-,   mipmapLevel(-1)
-,   format(FORMAT_RGB565)
-,   cubeFaceID(Texture::CUBE_FACE_INVALID)
+    : dataSize(0)
+    , width(0)
+    , height(0)
+    , data(0)
+    , mipmapLevel(-1)
+    , format(FORMAT_RGB565)
+    , cubeFaceID(Texture::CUBE_FACE_INVALID)
 {
 }
 
@@ -56,6 +56,8 @@ Image::~Image()
 
 Image * Image::Create(uint32 width, uint32 height, PixelFormat format)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	Image * image = new Image();
 	image->width = width;
 	image->height = height;
@@ -85,7 +87,7 @@ Image * Image::Create(uint32 width, uint32 height, PixelFormat format)
 			image->dataSize = dSize;
 		}
         
-        image->data = TRACKED_NEW_ARRAY(uint8, image->dataSize);
+        image->data = new uint8[image->dataSize];
     }
     else 
     {
@@ -98,6 +100,8 @@ Image * Image::Create(uint32 width, uint32 height, PixelFormat format)
 
 Image * Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, const uint8 *data)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	Image * image = Image::Create(width, height, format);
 	if(!image) return NULL;
 
@@ -111,6 +115,8 @@ Image * Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, c
 
 Image * Image::CreatePinkPlaceholder(bool checkers)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     Image * image = Image::Create(16, 16, FORMAT_RGBA8888);
     image->MakePink(checkers);
     
@@ -119,6 +125,8 @@ Image * Image::CreatePinkPlaceholder(bool checkers)
 
 void Image::MakePink(bool checkers)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if(data == NULL) return;
     
     uint32 pink = 0xffff00ff;
@@ -139,8 +147,10 @@ void Image::MakePink(bool checkers)
 
 void Image::Normalize()
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
-    uint8 * newImage0Data = TRACKED_NEW_ARRAY(uint8, width * height * formatSize);
+    uint8 * newImage0Data = new uint8[width * height * formatSize];
     memset(newImage0Data, 0, width * height * formatSize);
     ImageConvert::Normalize(format, data, width, height, width * formatSize, newImage0Data);
     SafeDeleteArray(data);
@@ -149,6 +159,8 @@ void Image::Normalize()
     
 Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     Vector<Image *> imageSet;
 
     int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
@@ -171,7 +183,7 @@ Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
         uint32 newHeight = imageHeight;
         if(newWidth > 1) newWidth >>= 1;
         if(newHeight > 1) newHeight >>= 1;
-        uint8 * newData = TRACKED_NEW_ARRAY(uint8, newWidth * newHeight * formatSize);
+        uint8 * newData = new uint8[newWidth * newHeight * formatSize];
         memset(newData, 0, newWidth * newHeight * formatSize);
 
         ImageConvert::DownscaleTwiceBillinear(format, format,
@@ -197,12 +209,14 @@ Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
 
 void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	uint8 * newData = NULL;
 	int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
 
 	if(formatSize>0)
 	{
-        newData = TRACKED_NEW_ARRAY(uint8, newWidth * newHeight * formatSize);
+        newData = new uint8[newWidth * newHeight * formatSize];
 		memset(newData, 0, newWidth * newHeight * formatSize);
 
 		float32 kx = (float32)width / (float32)newWidth;
@@ -245,6 +259,8 @@ void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 
 void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     uint8 * newData = NULL;
     uint32 newDataSize = 0;
     int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
@@ -252,7 +268,7 @@ void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
     if(formatSize>0)
     {
         newDataSize = newWidth * newHeight * formatSize;
-        newData = TRACKED_NEW_ARRAY(uint8, newDataSize);
+        newData = new uint8[newDataSize];
         memset(newData, 0, newDataSize);
             
         uint32 currentLine = 0;
@@ -308,6 +324,8 @@ Image* Image::CopyImageRegion(const Image* imageToCopy,
 							  uint32 newWidth, uint32 newHeight,
 							  uint32 xOffset, uint32 yOffset)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	uint32 oldWidth = imageToCopy->GetWidth();
 	uint32 oldHeight = imageToCopy->GetHeight();
 	DVASSERT((newWidth + xOffset) <= oldWidth && (newHeight + yOffset) <= oldHeight);
@@ -339,6 +357,8 @@ void Image::InsertImage(const Image* image, uint32 dstX, uint32 dstY,
 						uint32 srcX /* = 0 */, uint32 srcY /* = 0 */,
 						uint32 srcWidth /* = -1 */, uint32 srcHeight /* = -1 */)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	if (GetPixelFormat() != image->GetPixelFormat())
 	{
 		return;
@@ -393,12 +413,16 @@ void Image::InsertImage(const Image* image, const Vector2& dstPos, const Rect& s
 
 bool Image::Save(const FilePath &path) const
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     return ImageSystem::Instance()->Save(path, const_cast<Image*>(this), format) == SUCCESS;
 }
     
 
 void Image::FlipHorizontal()
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	switch(format)
 	{
 	case FORMAT_A8:
@@ -424,6 +448,8 @@ void Image::FlipHorizontal()
 
 void Image::FlipVertical()
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	switch(format)
 	{
 	case FORMAT_A8:

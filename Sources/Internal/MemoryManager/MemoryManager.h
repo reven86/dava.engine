@@ -61,6 +61,16 @@ public:
     struct Backtrace;
 
 public:
+    class AllocPoolScope final
+    {
+    public:
+        explicit AllocPoolScope(int32 aPool) : allocPool(aPool) { MemoryManager::Instance()->EnterAllocPoolScope(allocPool); }
+        ~AllocPoolScope() { MemoryManager::Instance()->LeaveAllocPoolScope(allocPool); }
+    private:
+        int32 allocPool;
+    };
+
+public:
     static MemoryManager* Instance();
 
     static void RegisterAllocPoolName(int32 index, const char8* name);
@@ -73,6 +83,9 @@ public:
 
     void EnterTagScope(uint32 tag);
     void LeaveTagScope(uint32 tag);
+
+    void EnterAllocPoolScope(int32 allocPool);
+    void LeaveAllocPoolScope(int32 allocPool);
 
     MMStatConfig* GetStatConfig() const;
     MMCurStat* GetCurStat() const;

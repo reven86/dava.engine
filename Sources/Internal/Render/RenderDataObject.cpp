@@ -66,7 +66,7 @@ void RenderDataStream::Set(eVertexDataType _type, int32 _size, int32 _stride, co
 }
     
 RenderDataObject::RenderDataObject()
-	: RenderResource()
+    : RenderResource()
 {
     resultVertexFormat = 0;
     vboBuffer = 0;
@@ -123,6 +123,8 @@ void RenderDataObject::DeleteBuffersInternal(uint32 vboBuffer, uint32 indexBuffe
 
 RenderDataStream * RenderDataObject::SetStream(eVertexFormat formatMark, eVertexDataType vertexType, int32 size, int32 stride, const void * pointer)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(!vertexAttachmentActive);
     
     Map<eVertexFormat, RenderDataStream *>::iterator iter = streamMap.find(formatMark);
@@ -131,7 +133,7 @@ RenderDataStream * RenderDataObject::SetStream(eVertexFormat formatMark, eVertex
     {
         // New item - add it
         resultVertexFormat |= formatMark;
-        stream = TRACKED_NEW(RenderDataStream); // todo optimize dynamic object cache
+        stream = new RenderDataStream; // todo optimize dynamic object cache
         
         streamMap[formatMark] = stream;
         streamArray.push_back(stream);
@@ -148,6 +150,8 @@ RenderDataStream * RenderDataObject::SetStream(eVertexFormat formatMark, eVertex
 
 void RenderDataObject::RemoveStream(eVertexFormat formatMark)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(!vertexAttachmentActive);
     
 	Map<eVertexFormat, RenderDataStream*>::iterator it = streamMap.find(formatMark);
@@ -168,8 +172,6 @@ void RenderDataObject::RemoveStream(eVertexFormat formatMark)
         
         SafeRelease(stream);
 	}
-	
-	
 }
 
 uint32 RenderDataObject::GetResultFormat() const
@@ -179,6 +181,8 @@ uint32 RenderDataObject::GetResultFormat() const
     
 void RenderDataObject::BuildVertexBuffer(int32 vertexCount, eBufferDrawType type, bool synchronously)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	DVASSERT(!vertexAttachmentActive);
 
 	Function<void()> fn = Bind(MakeFunction(PointerWrapper<RenderDataObject>::WrapRetainRelease(this), &RenderDataObject::BuildVertexBufferInternal), vertexCount, type);
@@ -195,6 +199,8 @@ void RenderDataObject::BuildVertexBuffer(int32 vertexCount, eBufferDrawType type
 
 void RenderDataObject::BuildVertexBufferInternal(int32 vertexCount, eBufferDrawType type)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
     
@@ -264,7 +270,9 @@ void RenderDataObject::BuildIndexBuffer(eBufferDrawType type, bool synchronously
 
 void RenderDataObject::BuildIndexBufferInternal(eBufferDrawType type)
 {
-	DVASSERT(Thread::IsMainThread());
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
     
     
@@ -305,6 +313,8 @@ void RenderDataObject::BuildIndexBufferInternal(eBufferDrawType type)
 
 void RenderDataObject::AttachVertices(RenderDataObject* vertexSource)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(vertexSource);
     DVASSERT(0 == vboBuffer);
     DVASSERT(streamArray.size() == 0);
@@ -357,6 +367,8 @@ void RenderDataObject::UpdateVertexBuffer(int32 offset, int32 vertexCount, bool 
 
 void RenderDataObject::UpdateVertexBufferInternal(int32 offset, int32 vertexCount)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(Thread::IsMainThread());
 
 #if defined (__DAVAENGINE_OPENGL__)
@@ -401,6 +413,8 @@ void RenderDataObject::UpdateIndexBuffer(int32 offset, bool synchronously)
 
 void RenderDataObject::UpdateIndexBufferInternal(int32 offset)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
     DVASSERT(indexBuffer);
@@ -425,6 +439,8 @@ void RenderDataObject::Lost()
 
 void RenderDataObject::Invalidate()
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 //    Logger::FrameworkDebug("[RenderDataObject::Invalidate]");
 
     if(isLost)

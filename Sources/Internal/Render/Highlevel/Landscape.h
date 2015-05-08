@@ -114,6 +114,7 @@ class NMaterial;
 class Landscape : public RenderObject
 {
     ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_LANDSCAPE)
+
 public:
     enum 
     {

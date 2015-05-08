@@ -41,32 +41,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MEMORY_PROFILER_ENTER_TAG(tag)                      DAVA::MemoryManager::Instance()->EnterTagScope(tag)
 #define MEMORY_PROFILER_LEAVE_TAG(tag)                      DAVA::MemoryManager::Instance()->LeaveTagScope(tag)
 
-#define ENABLE_CLASS_ALLOCATION_TRACKING(allocPool)                                                             \
-private:                                                                                                        \
-    template<typename T> static T* TrackedNew() {                                                               \
-        void* buf = DAVA::MemoryManager::Instance()->Allocate(sizeof(T), allocPool);                            \
-        return new (buf) T;                                                                                     \
-    }                                                                                                           \
-    template<typename T, typename... Args> static T* TrackedNew(Args&&... args) {                               \
-        void* buf = DAVA::MemoryManager::Instance()->Allocate(sizeof(T), allocPool);                            \
-        return new (buf) T(std::forward<Args...>(args...));                                                     \
-    }                                                                                                           \
-    template<typename T> static T* TrackedNewArray(size_t n) {                                                  \
-        void* buf = DAVA::MemoryManager::Instance()->Allocate(sizeof(T) * n, allocPool);                        \
-        return new (buf) T[n];                                                                                  \
-    }                                                                                                           \
-public:                                                                                                         \
-    static void* operator new (size_t size) { return MemoryManager::Instance()->Allocate(size, allocPool); }    \
-    static void* operator new [](size_t size) { return MemoryManager::Instance()->Allocate(size, allocPool); }  \
-    static void operator delete (void* ptr) DAVA_NOEXCEPT { MemoryManager::Instance()->Deallocate(ptr); }       \
-    static void operator delete [](void* ptr) DAVA_NOEXCEPT { MemoryManager::Instance()->Deallocate(ptr); }     \
-    static void* operator new (size_t size, void* place) DAVA_NOEXCEPT{ return place; }                         \
-    static void* operator new [](size_t size, void* place) DAVA_NOEXCEPT{ return place; }                       \
-    static void operator delete (void* ptr, void* place) DAVA_NOEXCEPT {}                                       \
-    static void operator delete [] (void* ptr, void* place) DAVA_NOEXCEPT {}                                    \
+#define MEMORY_PROFILER_ALLOC_SCOPE(allocPool)              DAVA::MemoryManager::AllocPoolScope memory_profiler_alloc_scope(allocPool)
+#define MEMORY_PROFILER_CLASS_ALLOC_SCOPE()                 DAVA::MemoryManager::AllocPoolScope memory_profiler_alloc_scope(this_class_allocation_pool)
 
-#define TRACKED_NEW(type, ...)      TrackedNew<type>(##__VA_ARGS__)
-#define TRACKED_NEW_ARRAY(type, n)  TrackedNewArray<type>(n)
+#define ENABLE_CLASS_ALLOCATION_TRACKING(allocPool)                                                                                     \
+private:                                                                                                                                \
+    static const DAVA::int32 this_class_allocation_pool = allocPool;                                                                    \
+public:                                                                                                                                 \
+    static void* operator new (size_t size){return DAVA::MemoryManager::Instance()->Allocate(size, this_class_allocation_pool);}        \
+    static void* operator new [](size_t size) { return DAVA::MemoryManager::Instance()->Allocate(size, this_class_allocation_pool); }   \
+    static void operator delete (void* ptr) DAVA_NOEXCEPT { DAVA::MemoryManager::Instance()->Deallocate(ptr); }                         \
+    static void operator delete [](void* ptr) DAVA_NOEXCEPT { DAVA::MemoryManager::Instance()->Deallocate(ptr); }
 
 #else   // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
@@ -75,12 +60,11 @@ public:                                                                         
 
 #define MEMORY_PROFILER_ENTER_TAG(tag)
 #define MEMORY_PROFILER_LEAVE_TAG(tag)
-#define MEMORY_PROFILER_CHECKPOINT(checkpoint)
+
+#define MEMORY_PROFILER_ALLOC_SCOPE(allocPool)
+#define MEMORY_PROFILER_CLASS_ALLOC_SCOPE()
 
 #define ENABLE_CLASS_ALLOCATION_TRACKING(allocPool)
-
-#define TRACKED_NEW(type, ...)      new type(##__VA_ARGS__)
-#define TRACKED_NEW_ARRAY(type, n)  new type[n]
 
 #endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
 

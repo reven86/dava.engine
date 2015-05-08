@@ -37,37 +37,37 @@ namespace DAVA
 {
 
 PolygonGroup::PolygonGroup()
-:	DataNode(),
-    vertexCount(0),
-    indexCount(0),
-    textureCoordCount(0),
-    vertexStride(0),
-    vertexFormat(0),
-    indexFormat(EIF_16),
-    triangleCount(0),
-    primitiveType(PRIMITIVETYPE_TRIANGLELIST),
-    cubeTextureCoordCount(0),
+    : DataNode()
+    , vertexCount(0)
+    , indexCount(0)
+    , textureCoordCount(0)
+    , vertexStride(0)
+    , vertexFormat(0)
+    , indexFormat(EIF_16)
+    , triangleCount(0)
+    , primitiveType(PRIMITIVETYPE_TRIANGLELIST)
+    , cubeTextureCoordCount(0)
 
-    vertexArray(0),
-    textureCoordArray(0),
-    normalArray(0),
-    tangentArray(0),
-    binormalArray(0),
-    jointIdxArray(0),
-    jointWeightArray(0),
-    cubeTextureCoordArray(0),
-    jointCountArray(0),
+    , vertexArray(0)
+    , textureCoordArray(0)
+    , normalArray(0)
+    , tangentArray(0)
+    , binormalArray(0)
+    , jointIdxArray(0)
+    , jointWeightArray(0)
+    , cubeTextureCoordArray(0)
+    , jointCountArray(0)
 
-    pivotArray(0),
-    flexArray(0),
-    angleArray(0),
+    , pivotArray(0)
+    , flexArray(0)
+    , angleArray(0)
 
-    colorArray(0),
-    indexArray(0),
-    meshData(0),
+    , colorArray(0)
+    , indexArray(0)
+    , meshData(0)
 
-    baseVertexArray(0),
-    renderDataObject(0)
+    , baseVertexArray(0)
+    , renderDataObject(0)
 {
 }
 
@@ -78,6 +78,8 @@ PolygonGroup::~PolygonGroup()
     
 void PolygonGroup::UpdateDataPointersAndStreams()
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     int32 baseShift = 0;
 	if (vertexFormat & EVF_VERTEX)
 	{
@@ -150,7 +152,7 @@ void PolygonGroup::UpdateDataPointersAndStreams()
         renderDataObject->SetStream(EVF_JOINTINDEX , TYPE_UNSIGNED_BYTE, 4, vertexStride, jointIdxArray);
 
         SafeDeleteArray(jointCountArray);
-        jointCountArray = TRACKED_NEW_ARRAY(int32, vertexCount);
+        jointCountArray = new int32[vertexCount];
     }
 	if (vertexFormat & EVF_JOINTWEIGHT)
 	{
@@ -212,19 +214,21 @@ void PolygonGroup::UpdateDataPointersAndStreams()
 
 void PolygonGroup::AllocateData(int32 _meshFormat, int32 _vertexCount, int32 _indexCount)
 {
-	vertexCount = _vertexCount;
-	indexCount = _indexCount;
-	vertexStride = GetVertexSize(_meshFormat);
-	vertexFormat = _meshFormat;
-	textureCoordCount = GetTexCoordCount(vertexFormat);
-	cubeTextureCoordCount = GetCubeTexCoordCount(vertexFormat);
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    meshData = TRACKED_NEW_ARRAY(uint8, vertexStride * vertexCount);
-    indexArray = TRACKED_NEW_ARRAY(int16, indexCount);
-    textureCoordArray = TRACKED_NEW_ARRAY(Vector2*, textureCoordCount);
-    cubeTextureCoordArray = TRACKED_NEW_ARRAY(Vector3*, cubeTextureCoordCount);
+    vertexCount = _vertexCount;
+    indexCount = _indexCount;
+    vertexStride = GetVertexSize(_meshFormat);
+    vertexFormat = _meshFormat;
+    textureCoordCount = GetTexCoordCount(vertexFormat);
+    cubeTextureCoordCount = GetCubeTexCoordCount(vertexFormat);
 
-    renderDataObject = TRACKED_NEW(RenderDataObject);
+    meshData = new uint8[vertexStride * vertexCount];
+    indexArray = new int16[indexCount];
+    textureCoordArray = new Vector2*[textureCoordCount];
+    cubeTextureCoordArray = new Vector3*[cubeTextureCoordCount];
+
+    renderDataObject = new RenderDataObject;
 
     UpdateDataPointersAndStreams();
 }
@@ -239,6 +243,8 @@ void PolygonGroup::TangentVectors(  const Vector3 &v0,
                                     Vector3 &tdir, 
                                     Vector3 &normal)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     Vector3 dv0 = v1 - v0;
     Vector3 dv1 = v2 - v0;
     
@@ -254,6 +260,8 @@ void PolygonGroup::TangentVectors(  const Vector3 &v0,
     
 void PolygonGroup::BuildTangentsBinormals(uint32 flagsToAdd)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if (!(vertexFormat & EVF_TANGENT))
     {
         // Dirty hack. Copy pointers of this polygon group 
@@ -399,17 +407,21 @@ void PolygonGroup::BuildTangentsBinormals(uint32 flagsToAdd)
     
 void PolygonGroup::CreateBaseVertexArray()
 {
-	SafeDeleteArray(baseVertexArray);
-    baseVertexArray = TRACKED_NEW_ARRAY(Vector3, vertexCount);
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	for (int v = 0; v < vertexCount; ++v)
-	{
-		GetCoord(v, baseVertexArray[v]);
-	}
+    SafeDeleteArray(baseVertexArray);
+    baseVertexArray = new Vector3[vertexCount];
+
+    for (int v = 0; v < vertexCount; ++v)
+    {
+        GetCoord(v, baseVertexArray[v]);
+    }
 }
     
 void PolygonGroup::ApplyMatrix(const Matrix4 & matrix)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     aabbox = AABBox3(); // reset bbox
     
     Matrix4 normalMatrix4;
@@ -451,13 +463,17 @@ void PolygonGroup::ReleaseData()
 	
 void PolygonGroup::BuildBuffers()
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     UpdateDataPointersAndStreams();
-	JobManager::Instance()->CreateMainJob(MakeFunction(PointerWrapper<PolygonGroup>::WrapRetainRelease(this), &PolygonGroup::BuildBuffersInternal));
+    JobManager::Instance()->CreateMainJob(MakeFunction(PointerWrapper<PolygonGroup>::WrapRetainRelease(this), &PolygonGroup::BuildBuffersInternal));
 };
     
 void PolygonGroup::BuildBuffersInternal()
 {
-    DVASSERT(Thread::IsMainThread());    
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    DVASSERT(Thread::IsMainThread());
     
     renderDataObject->BuildVertexBuffer(vertexCount);
     renderDataObject->SetIndices((eIndexFormat)indexFormat, (uint8*)indexArray, indexCount);
@@ -468,6 +484,8 @@ void PolygonGroup::BuildBuffersInternal()
     
 void PolygonGroup::Save(KeyedArchive * keyedArchive, SerializationContext * serializationContext)
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DataNode::Save(keyedArchive, serializationContext);
     
     keyedArchive->SetInt32("vertexFormat", vertexFormat);
@@ -493,14 +511,16 @@ void PolygonGroup::Save(KeyedArchive * keyedArchive, SerializationContext * seri
 }
 
 void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationContext * serializationContext, int32 requiredFlags)
-{            
+{
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     vertexFormat = keyedArchive->GetInt32("vertexFormat");
     vertexStride = GetVertexSize(vertexFormat);
     vertexCount = keyedArchive->GetInt32("vertexCount");
     indexCount = keyedArchive->GetInt32("indexCount");
     textureCoordCount = keyedArchive->GetInt32("textureCoordCount");
     primitiveType = (ePrimitiveType)keyedArchive->GetInt32("primitiveType");
-	cubeTextureCoordCount = keyedArchive->GetInt32("cubeTextureCoordCount");
+    cubeTextureCoordCount = keyedArchive->GetInt32("cubeTextureCoordCount");
     
     int32 formatPacking = keyedArchive->GetInt32("packing");
     if (formatPacking == PACKING_NONE)
@@ -511,7 +531,7 @@ void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationCon
             Logger::Error("PolygonGroup::Load - Something is going wrong, size of vertex array is incorrect");
             return;
         }
-		
+
         const uint8 * archiveData = keyedArchive->GetByteArray("vertices");
 
         if (vertexFormat&~requiredFlags) //not all streams in data are required - smart copy
@@ -520,7 +540,7 @@ void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationCon
             DVASSERT(newFormat);
             int32 newVertexStride = GetVertexSize(newFormat);
             SafeDeleteArray(meshData);
-            meshData = TRACKED_NEW_ARRAY(uint8, vertexCount * newVertexStride);
+            meshData = new uint8[vertexCount * newVertexStride];
             uint8 *dst = meshData;
             const uint8 *src = &archiveData[0];
             for (int32 i = 0; i < vertexCount; ++i)
@@ -537,7 +557,7 @@ void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationCon
         else
         {
             SafeDeleteArray(meshData);
-            meshData = TRACKED_NEW_ARRAY(uint8, vertexCount * vertexStride);
+            meshData = new uint8[vertexCount * vertexStride];
             Memcpy(meshData, archiveData, size); //all streams in data required - just copy
         }
         
@@ -553,22 +573,22 @@ void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationCon
             return;
         }
         SafeDeleteArray(indexArray);
-        indexArray = TRACKED_NEW_ARRAY(int16, indexCount);
+        indexArray = new int16[indexCount];
         const uint8 * archiveData = keyedArchive->GetByteArray("indices");
         memcpy(indexArray, archiveData, indexCount * INDEX_FORMAT_SIZE[indexFormat]);         
     }
 
     SafeDeleteArray(textureCoordArray);
-    textureCoordArray = TRACKED_NEW_ARRAY(Vector2*, textureCoordCount);
+    textureCoordArray = new Vector2*[textureCoordCount];
 
     SafeDeleteArray(cubeTextureCoordArray);
     if(cubeTextureCoordCount)
     {
-        cubeTextureCoordArray = TRACKED_NEW_ARRAY(Vector3*, cubeTextureCoordCount);
+        cubeTextureCoordArray = new Vector3*[cubeTextureCoordCount];
     }
 
     SafeRelease(renderDataObject);
-    renderDataObject = TRACKED_NEW(RenderDataObject);
+    renderDataObject = new RenderDataObject;
     UpdateDataPointersAndStreams();
     RecalcAABBox();
 
@@ -577,6 +597,8 @@ void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationCon
     
 void PolygonGroup::RecalcAABBox()
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     aabbox = AABBox3(); // reset bbox
 
     // recalc aabbox
@@ -590,6 +612,8 @@ void PolygonGroup::RecalcAABBox()
     
 void PolygonGroup::DebugDraw()
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
     for (int k = 0; k < indexCount / 3; ++k)
     {
@@ -629,6 +653,8 @@ public:
 
 void PolygonGroup::CopyData(const uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	if (vertexFormat & format)
 	{
 		uint32 formatSize = GetVertexSize(format);
@@ -643,6 +669,8 @@ void PolygonGroup::CopyData(const uint8 ** meshData, uint8 ** newMeshData, uint3
 
 bool PolygonGroup::IsFloatDataEqual(const float32 ** meshData, const float32 ** optData, uint32 vertexFormat, uint32 format) const
 {
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	if (vertexFormat & format)
 	{
 		uint32 size = GetVertexSize(format);
@@ -659,10 +687,12 @@ bool PolygonGroup::IsFloatDataEqual(const float32 ** meshData, const float32 ** 
 	}
 	return true;
 }
-	
+
 int32 PolygonGroup::OptimazeVertexes(const uint8 * meshData, Vector<uint8> & optMeshData, uint32 vertexFormat) const
 {
-	uint32 optimizedVertexCount = static_cast<uint32>(optMeshData.size() / GetVertexSize(vertexFormat));
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    uint32 optimizedVertexCount = static_cast<uint32>(optMeshData.size() / GetVertexSize(vertexFormat));
 
 	for (uint32 i = 0; i < optimizedVertexCount; ++i)
 	{
@@ -684,19 +714,21 @@ int32 PolygonGroup::OptimazeVertexes(const uint8 * meshData, Vector<uint8> & opt
 		return i;
 	}
 
-	optMeshData.resize(GetVertexSize(vertexFormat) * (optimizedVertexCount + 1));
-	
-	uint8* dest = &optMeshData[GetVertexSize(vertexFormat) * optimizedVertexCount];
-	memcpy(dest, meshData, GetVertexSize(vertexFormat));
-	return optimizedVertexCount;
+    optMeshData.resize(GetVertexSize(vertexFormat) * (optimizedVertexCount + 1));
+
+    uint8* dest = &optMeshData[GetVertexSize(vertexFormat) * optimizedVertexCount];
+    memcpy(dest, meshData, GetVertexSize(vertexFormat));
+    return optimizedVertexCount;
 }
-	
+
 void PolygonGroup::OptimizeVertices(uint32 newVertexFormat, float32 eplison)
-{	
-	int32 newVertexStride = GetVertexSize(newVertexFormat);
-    uint8 * newMeshData = TRACKED_NEW_ARRAY(uint8, newVertexStride * vertexCount);
-	memset(newMeshData, 0, sizeof(newVertexStride * vertexCount));
-	
+{
+    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    int32 newVertexStride = GetVertexSize(newVertexFormat);
+    uint8 * newMeshData = new uint8[newVertexStride * vertexCount];
+    memset(newMeshData, 0, sizeof(newVertexStride * vertexCount));
+
 	const uint8 * tmpMesh = meshData;
 	uint8 * tmpNewMesh = newMeshData;
 	for (int32 i = 0; i < vertexCount; ++i)
@@ -729,7 +761,7 @@ void PolygonGroup::OptimizeVertices(uint32 newVertexFormat, float32 eplison)
 	vertexStride = newVertexStride;
 	vertexFormat = newVertexFormat;
 
-    meshData = TRACKED_NEW_ARRAY(uint8, vertexStride * vertexCount);
+    meshData = new uint8[vertexStride * vertexCount];
     memcpy(meshData, &optMeshData[0], vertexStride * vertexCount);
 };
 
