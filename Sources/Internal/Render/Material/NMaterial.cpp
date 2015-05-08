@@ -76,6 +76,7 @@ void NMaterial::BindParams(rhi::Packet& target)
     target.depthStencilState = activeVariantInstance->depthState;
     target.samplerState = activeVariantInstance->samplerState;
     target.fragmentTextureSet = activeVariantInstance->textureSet;
+    target.vertexTextureSet = activeVariantInstance->vertexTextureSet;
     target.cullMode = activeVariantInstance->cullMode;
 
     activeVariantInstance->shader->UpdateDynamicParams();
@@ -530,9 +531,9 @@ void NMaterial::RebuildTextureBindings()
         ShaderDescriptor *currShader = currRenderVariant->shader;
         if (!currShader) //cant build for empty shader
             continue;
-        rhi::TextureSetDescriptor textureDescr;
+        rhi::TextureSetDescriptor textureDescr;        
         rhi::SamplerState::Descriptor samplerDescr;
-        textureDescr.count = currShader->fragmentSamplerList.size();
+        textureDescr.count = currShader->fragmentSamplerList.size();       
         samplerDescr.count = currShader->fragmentSamplerList.size();
         for (size_t i = 0, sz = textureDescr.count; i < sz; ++i)
         {            
@@ -541,9 +542,18 @@ void NMaterial::RebuildTextureBindings()
             textureDescr.texture[i] = tex->handle;      
             samplerDescr.sampler[i] = tex->samplerState;
         }
-                    
         currRenderVariant->textureSet = rhi::AcquireTextureSet(textureDescr);
         currRenderVariant->samplerState = rhi::AcquireSamplerState(samplerDescr);
+
+        rhi::TextureSetDescriptor vertexTextureDescr;
+        vertexTextureDescr.count = currShader->vertexSamplerList.size();
+        for (size_t i = 0, sz = vertexTextureDescr.count; i < sz; ++i)
+        {
+            Texture *tex = GetEffectiveTexture(currShader->vertexSamplerList[i].uid);
+            DVASSERT(tex);
+            vertexTextureDescr.texture[i] = tex->handle;
+        }                            
+        currRenderVariant->vertexTextureSet = rhi::AcquireTextureSet(vertexTextureDescr);
     }
 
     needRebuildTextures = false;
