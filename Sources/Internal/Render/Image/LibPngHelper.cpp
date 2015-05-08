@@ -324,11 +324,11 @@ ImageInfo LibPngHelper::GetImageInfo(File *infile) const
     png_set_sig_bytes(png_ptr, 8);
     png_read_info(png_ptr, info_ptr);
 
-    int bit_depth;
-    int color_type;
+    int bit_depth = 8;
+    int color_type = PNG_COLOR_TYPE_RGBA;
 
-    png_uint_32 width;
-    png_uint_32 height;
+    png_uint_32 width = 0;
+    png_uint_32 height = 0;
 
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, nullptr, nullptr, nullptr);
 
@@ -371,9 +371,17 @@ ImageInfo LibPngHelper::GetImageInfo(File *infile) const
             info.format = FORMAT_A16;
             break;
         }
+            
+        case PNG_COLOR_TYPE_PALETTE:
+        {
+            info.format = FORMAT_RGBA8888;
+            break;
+        }
         default:
+        {
             info.format = FORMAT_INVALID;
             break;
+        }
     }
 
     // Clean up
