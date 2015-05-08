@@ -589,32 +589,48 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
         return false;
     }
 	
-    int32 baseMipMap = GetBaseMipMap();
-    
+    const int32 baseMipMap = GetBaseMipMap();
 	if(texDescriptor->IsCubeMap() && (!GPUFamilyDescriptor::IsGPUForDevice(gpu)))
 	{
         Vector<FilePath> facePathes;
         texDescriptor->GetFacePathnames(facePathes);
+        
+        PixelFormat imagesFormat = FORMAT_INVALID;
 		for(auto i = 0; i < CUBE_FACE_COUNT; ++i)
 		{
-            if (facePathes[i].IsEmpty())
+            auto & currentfacePath = facePathes[i];
+            if (currentfacePath.IsEmpty())
                 continue;
 
             Vector<Image *> faceImage;
-            ImageSystem::Instance()->Load(facePathes[i], faceImage, baseMipMap);
+            ImageSystem::Instance()->Load(currentfacePath, faceImage, baseMipMap);
             if(faceImage.size() == 0)
 			{
-                Logger::Error("[Texture::LoadImages] Cannot open file %s", facePathes[i].GetAbsolutePathname().c_str());
+                Logger::Error("[Texture::LoadImages] Cannot open file %s", currentfacePath.GetAbsolutePathname().c_str());
 
 				ReleaseImages(images);
 				return false;
 			}
-
+            
 			DVASSERT(faceImage.size() == 1);
 
 			faceImage[0]->cubeFaceID = CUBE_FACE_MAPPING[i];
 			faceImage[0]->mipmapLevel = 0;
 
+            //cubemap formats validation
+            if(FORMAT_INVALID == imagesFormat)
+            {
+                imagesFormat = faceImage[0]->format;
+            }
+            else if(imagesFormat != faceImage[0]->format)
+            {
+                Logger::Error("[Texture::LoadImages] Face(%s) has different pixel format(%s)", currentfacePath.GetAbsolutePathname().c_str(), PixelFormatDescriptor::GetPixelFormatString(faceImage[0]->format));
+                
+                ReleaseImages(images);
+                return false;
+            }
+            //end of cubemap formats validation
+            
             if(texDescriptor->GetGenerateMipMaps())
             {
                 Vector<Image *> mipmapsImages = faceImage[0]->CreateMipMapsImages();
