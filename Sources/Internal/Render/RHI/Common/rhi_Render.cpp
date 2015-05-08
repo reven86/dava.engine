@@ -730,7 +730,7 @@ AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
                 {
                     rhi::CommandBuffer::SetFragmentTexture( cmdBuf, i, ts->texture[i] );
                 }
-            }
+            }                                                
 
             pl->curFragmentTextureSet = p->fragmentTextureSet;
         }

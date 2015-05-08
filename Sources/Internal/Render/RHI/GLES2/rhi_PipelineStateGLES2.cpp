@@ -163,8 +163,6 @@ public:
 
         void                    SetToRHI( uint32 layoutUID )
                                 {
-                                    ProgGLES2::SetToRHI();
-
                                     if( layoutUID == VertexLayout::InvalidUID )
                                     {
                                         vdecl.SetToRHI();
@@ -369,6 +367,7 @@ SetToRHI( Handle ps, uint32 layoutUID )
     DVASSERT(ps2);
     
     GL_CALL(glUseProgram( ps2->glProg ));
+    ps2->fprog.ProgGLES2::SetToRHI();
     
     if( ps2->blendEnabled )
     {
@@ -409,7 +408,7 @@ SetVertexDeclToRHI( Handle ps, uint32 layoutUID )
             vdecl.vdecl.InitVattr( ps2->glProg );
             ps2->vprog.altVdecl.push_back( vdecl );
         }
-    }
+    }    
     
     ps2->vprog.SetToRHI( layoutUID );
 }

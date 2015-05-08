@@ -1163,6 +1163,11 @@ if( err != GL_NO_ERROR ) \
                 cmd->status = 0;
             }   break;        
 
+            case GLCommand::SET_UNIFORM_1I :
+            {
+                EXEC_GL(glUniform1i( GLint(arg[0]), GLint(arg[1]) ));
+            }   break;
+
             case GLCommand::GEN_FRAMEBUFFERS :
             {
                 EXEC_GL(glGenFramebuffers( (GLuint)(arg[0]), (GLuint*)(arg[1]) ));
