@@ -150,7 +150,7 @@ size_t PeerDescription::Serialize(void* dstBuffer, size_t buflen) const
     general->gpuFamily = static_cast<uint32>(gpuFamily);
     general->screenWidth = screenInfo.width;
     general->screenHeight = screenInfo.height;
-    general->screenScale = screenInfo.scale;
+    general->screenScale = static_cast<int32>(screenInfo.scale);
     strncpy(general->platform, platform.c_str(), COUNT_OF(general->platform));
     general->platform[COUNT_OF(general->platform) - 1] = '\0';
     strncpy(general->version, version.c_str(), COUNT_OF(general->version));
@@ -210,7 +210,7 @@ size_t PeerDescription::Deserialize(const void* srcBuffer, size_t buflen)
     const SerializedGeneralInfo* general = reinterpret_cast<const SerializedGeneralInfo*>(header + 1);
     temp.platformType = IntToPlatform(general->platfromType);
     temp.gpuFamily = IntToGPUFamily(general->gpuFamily);
-    temp.screenInfo = DeviceInfo::ScreenInfo(general->screenWidth, general->screenHeight, general->screenScale);
+    temp.screenInfo = DeviceInfo::ScreenInfo(general->screenWidth, general->screenHeight, static_cast<float32>(general->screenScale));
     temp.platform = general->platform;
     temp.version = general->version;
     temp.manufacturer = general->manufacturer;

@@ -26,12 +26,32 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "Base/BaseTypes.h"
-#include "Render/Cursor.h"
-#include "FileSystem/FileSystem.h"
 
 #if defined(__DAVAENGINE_WIN32__)
+
+#include "Render/Cursor.h"
+#include "Platform/TemplateWin32/CoreWin32PlatformBase.h"
+#include "FileSystem/FileSystem.h"
+
+void DAVA::Cursor::SetCursorPinning(bool pin)
+{
+    static DAVA::Point2i lastCursorPosition;
+
+    ShowSystemCursor(!pin);
+
+    CoreWin32PlatformBase * winCore = static_cast<CoreWin32PlatformBase *>(Core::Instance());
+    if (pin)
+    {
+        lastCursorPosition = winCore->GetCursorPosition();
+        winCore->SetCursorPositionCenter();
+    }
+    else
+    {
+        winCore->SetCursorPosition(lastCursorPosition);
+    }
+}
+
 void DAVA::Cursor::ShowSystemCursor(bool show)
 {
     ShowCursor(show);
@@ -40,6 +60,8 @@ void DAVA::Cursor::ShowSystemCursor(bool show)
 
 #if defined(__DAVAENGINE_WIN32__) && defined (__DAVAENGINE_DIRECTX9__)
 
+#include "FileSystem/FileSystem.h"
+#include "Render/RenderManager.h"
 #include "Render/D3D9Helpers.h"
 
 

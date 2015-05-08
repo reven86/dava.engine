@@ -91,11 +91,6 @@
 
 namespace DAVA 
 {
-
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    static bool useAutodetectContentScaleFactor = false;
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    
 static ApplicationCore * core = nullptr;
 
 Core::Core()
@@ -103,8 +98,11 @@ Core::Core()
     globalFrameIndex = 1;
     isActive = false;
     firstRun = true;
+
     isConsoleMode = false;
     options = new KeyedArchive();
+    screenScaleFactor = 1.f;
+
 }
 
 Core::~Core()
@@ -184,6 +182,9 @@ void Core::CreateSingletons()
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
 #endif
+    
+    // Init default screen scale factor from screen info
+    screenScaleFactor = DeviceInfo::GetScreenInfo().scale;
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
@@ -254,18 +255,19 @@ void Core::ReleaseSingletons()
 
 void Core::SetOptions(KeyedArchive * archiveOfOptions)
 {
-    SafeRelease(options);
+SafeRelease(options);
 
     options = SafeRetain(archiveOfOptions);
-#if defined(__DAVAENGINE_IPHONE__)
-        useAutodetectContentScaleFactor = options->GetBool("iPhone_autodetectScreenScaleFactor", false);
-#elif defined(__DAVAENGINE_ANDROID__)
-        useAutodetectContentScaleFactor = options->GetBool("Android_autodetectScreenScaleFactor", false);
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
+    
+    screenScaleFactor = options->GetFloat("screenScaleFactor", screenScaleFactor);
+    if (screenScaleFactor <= 0.f)
+    {
+        screenScaleFactor = DeviceInfo::GetScreenInfo().scale;
+    }
+    
 #if !defined(__DAVAENGINE_ANDROID__)
-    //YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view  
-    screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_PORTRAIT);
+	//YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view  
+	screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_PORTRAIT);
 #endif
 }
     
@@ -291,13 +293,6 @@ KeyedArchive * Core::GetOptions()
 {
     return options;
 }
-    
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-bool Core::IsAutodetectContentScaleFactor()
-{
-    return useAutodetectContentScaleFactor;
-}
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
 Core::eScreenOrientation Core::GetScreenOrientation()
 {

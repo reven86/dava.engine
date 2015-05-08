@@ -46,6 +46,7 @@
 
 #include "Utils/Utils.h"
 
+
 #define USE_METAL 1
 
 #if USE_METAL
@@ -57,6 +58,7 @@
 static CALayer* _ViewLayer = nil;
 
 CALayer* GetAppViewLayer() { return _ViewLayer; }
+static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
 
 
 @implementation EAGLView
@@ -81,19 +83,12 @@ CALayer* GetAppViewLayer() { return _ViewLayer; }
     if ((self = [super initWithFrame:aRect]))
     {
         // Get the layer
-        if (DAVA::Core::IsAutodetectContentScaleFactor()) 
-        {
-            if ([UIScreen instancesRespondToSelector: @selector(scale) ]
-                && [UIView instancesRespondToSelector: @selector(contentScaleFactor) ]) 
-            {
-                float scf = (int)[[UIScreen mainScreen] scale];
-                [self setContentScaleFactor: scf];
-            }
-        }
 
-        // Subscribe to "keyboard change frame" notifications to block GL while keyboard change is performed (see please DF-2012 for details).
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillChangeFrame:) name:UIKeyboardWillChangeFrameNotification object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidChangeFrame:) name:UIKeyboardDidChangeFrameNotification object:nil];
+        float scf = DAVA::Core::Instance()->GetScreenScaleFactor();
+        [self setContentScaleFactor: scf];
+
+		// Subscribe to "keyboard change frame" notifications to block GL while keyboard change is performed (see please DF-2012 for details).
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidFrameChanged:) name:UIKeyboardDidChangeFrameNotification object:nil];
 
         #if USE_METAL 
         CAMetalLayer*   layer = (CAMetalLayer*)self.layer;
@@ -187,6 +182,7 @@ BOOL isGL30Created = NO;
 //        DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
         DAVA::RenderSystem2D::Instance()->Init();
         
+
         self.multipleTouchEnabled = (DAVA::InputSystem::Instance()->GetMultitouchEnabled()) ? YES : NO;
         animating = FALSE;
         displayLinkSupported = FALSE;
@@ -195,7 +191,8 @@ BOOL isGL30Created = NO;
         displayLink = nil;
         animationTimer = nil;
         blockDrawView = false;
-        
+        limitKeyboardFps = false;
+
         // A system version of 3.1 or greater is required to use CADisplayLink. The NSTimer
         // class is used as fallback when it isn't available.
         NSString *reqSysVer = @"3.1";
@@ -222,7 +219,9 @@ BOOL isGL30Created = NO;
         return;
     }
 
+
 //    DAVA::RenderManager::Instance()->Lock();
+
     
 //    DAVA::uint64 renderManagerContextId = DAVA::RenderManager::Instance()->GetRenderContextId();
     DAVA::uint64 currentContextId = DAVA::EglGetCurrentContext();
@@ -257,6 +256,33 @@ currFPS = 60;
         }
         [self setAnimationFrameInterval:(int)interval];
     }
+
+    
+	//DAVA::RenderManager::Instance()->Unlock();
+	
+    DAVA::int32 targetFPS = 60;
+    if (limitKeyboardFps)
+    {
+        targetFPS = KEYBOARD_FPS_LIMIT;
+    }
+#if RHI_COMPLETE
+    else
+    {
+        targetFPS = DAVA::RenderManager::Instance()->GetFPS();
+    }
+#endif RHI_COMPLETE
+    
+	if(currFPS != targetFPS)
+	{
+		currFPS = targetFPS;
+		float interval = 60.0f / currFPS;
+		if(interval < 1.0f)
+		{
+			interval = 1.0f;
+		}
+		[self setAnimationFrameInterval:(int)interval];
+	}
+
 }
 
 
@@ -445,15 +471,22 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
     blockDrawView = false;
 }
 
-- (void)keyboardWillChangeFrame:(NSNotification *)notification
+- (void)keyboardDidFrameChanged:(NSNotification *)notification
 {
-    blockDrawView = true;
+    CGRect keyboardEndFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    CGRect screenRect = [[UIScreen mainScreen] bounds];
+    if (CGRectIntersectsRect(keyboardEndFrame, screenRect))
+    {
+        // Keyboard did show or move
+        limitKeyboardFps = true;
+    }
+    else
+    {
+        // Keyboard did hide
+        limitKeyboardFps = false;
+    }
 }
 
-- (void)keyboardDidChangeFrame:(NSNotification *)notification
-{
-    blockDrawView = false;
-}
 
 @end
 

@@ -185,6 +185,11 @@ static const char* _ShaderHeader_Metal =
 "float4 mul( float4x4 m, float4 v ) { return v*m; }\n"
 "float3 mul( float3 v, float3x3 m );\n"
 "float3 mul( float3 v, float3x3 m ) { return m*v; }\n"
+
+"float  lerp( float a, float b, float t ) { mix( a, b, t ); }\n"
+"float2 lerp( float2 a, float2 b, float t ) { mix( a, b, t ); }\n"
+"float3 lerp( float3 a, float3 b, float t ) { mix( a, b, t ); }\n"
+"float4 lerp( float4 a, float4 b, float t ) { mix( a, b, t ); }\n"
 ;
     
 static const char* _ShaderDefine_Metal =
@@ -207,6 +212,10 @@ static const char* _ShaderDefine_Metal =
 "#define VPROG_IN_COLOR          uchar4 color0 [[ attribute(VATTR_COLOR_0) ]] ; \n"
 "#define VPROG_IN_COLOR0         uchar4 color0 [[ attribute(VATTR_COLOR_0) ]] ; \n"
 "#define VPROG_IN_COLOR1         uchar4 color1 [[ attribute(VATTR_COLOR_1) ]] ; \n"
+"#define VPROG_IN_TANGENT        float3 tangent [[ attribute(VATTR_TANGENT) ]] ; \n"
+"#define VPROG_IN_BINORMAL       float3 binormal [[ attribute(VATTR_BINORMAL) ]] ; \n"
+"#define VPROG_IN_BLENDWEIGHT    float3 blendweight [[ attribute(VATTR_BLENDWEIGHT) ]] ; \n"
+"#define VPROG_IN_BLENDINDEX     float3 blendindex [[ attribute(VATTR_BLENDINDEX) ]] ; \n"
 "#define VPROG_IN_END            };\n"
 
 "#define VPROG_OUT_BEGIN         struct VP_Output {\n"
@@ -255,9 +264,19 @@ static const char* _ShaderDefine_Metal =
 "#define VP_IN_TEXCOORD1         IN.texcoord1\n"
 "#define VP_IN_TEXCOORD2         IN.texcoord2\n"
 "#define VP_IN_TEXCOORD3         IN.texcoord3\n"
+"#define VP_IN_TEXCOORD4         IN.texcoord4\n"
+"#define VP_IN_TEXCOORD5         IN.texcoord5\n"
+"#define VP_IN_TEXCOORD6         IN.texcoord6\n"
+"#define VP_IN_TEXCOORD7         IN.texcoord7\n"
 "#define VP_IN_COLOR             (float4(IN.color0[0],IN.color0[1],IN.color0[2],IN.color0[3]))\n"
 "#define VP_IN_COLOR0            (float4(IN.color0[0],IN.color0[1],IN.color0[2],IN.color0[3]))\n"
 "#define VP_IN_COLOR1            (float4(IN.color1[0],IN.color1[1],IN.color1[2],IN.color1[3]))\n"
+"#define VP_IN_TANGENT           (float3(IN.tangent))\n"
+"#define VP_IN_BINORMAL          (float3(IN.binormal))\n"
+"#define VP_IN_BLENDWEIGHT       (float3(IN.blendweight))\n"
+"#define VP_IN_BLENDINDEX        (float3(IN.blendindex))\n"
+
+"#define VP_TEXTURE2D(unit,uv)   tex##unit.sample( tex##unit##_sampler, uv );\n"
 
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.name\n"
@@ -341,6 +360,11 @@ static const char* _ShaderHeader_GLES2 =
 "vec3 mul( vec3 v, mat3 m ) { return m*v; }\n"
 
 "float4 tex2D( sampler2D s, vec2 t ) { return texture2D(s,t); }\n"
+
+"float  lerp( float a, float b, float t ) { mix( a, b, t ); }\n"
+"float2 lerp( float2 a, float2 b, float t ) { mix( a, b, t ); }\n"
+"float3 lerp( float3 a, float3 b, float t ) { mix( a, b, t ); }\n"
+"float4 lerp( float4 a, float4 b, float t ) { mix( a, b, t ); }\n"
 ;
 
 static const char* _ShaderDefine_GLES2 =
@@ -359,6 +383,10 @@ static const char* _ShaderDefine_GLES2 =
 "#define VPROG_IN_COLOR          attribute vec4 attr_color0;\n"
 "#define VPROG_IN_COLOR0         attribute vec4 attr_color0;\n"
 "#define VPROG_IN_COLOR1         attribute vec4 attr_color1;\n"
+"#define VPROG_IN_TANGENT        attribute vec3 attr_tangent;\n"
+"#define VPROG_IN_BINORMAL       attribute vec3 attr_binormal;\n"
+"#define VPROG_IN_BLENDWEIGHT    attribute vec3 attr_blendweight;\n"
+"#define VPROG_IN_BLENDINDEX     attribute vec3 attr_blendindex;\n"
 "#define VPROG_IN_END            \n"
 
 "#define VPROG_OUT_BEGIN         \n"
@@ -394,9 +422,15 @@ static const char* _ShaderDefine_GLES2 =
 "#define VP_IN_COLOR             attr_color0\n"
 "#define VP_IN_COLOR0            attr_color0\n"
 "#define VP_IN_COLOR1            attr_color1\n"
+"#define VP_IN_TANGENT           attr_tangent\n"
+"#define VP_IN_BINORMAL          attr_binormal\n"
+"#define VP_IN_BLENDWEIGHT       attr_blendweigh\n"
+"#define VP_IN_BLENDINDEX        attr_blendindex\n"
 
 "#define VP_OUT_POSITION         gl_Position\n"
 "#define VP_OUT(name)            var_##name\n"
+
+"#define VP_TEXTURE2D(unit,uv)   texture2D( Texture##unit, uv );\n"
 
 
 "#define FPROG_IN_BEGIN          \n"
@@ -447,9 +481,17 @@ static const char* _ShaderDefine_DX9 =
 "#define VPROG_IN_TEXCOORD1(sz)  float##sz texcoord1 : TEXCOORD1;\n"
 "#define VPROG_IN_TEXCOORD2(sz)  float##sz texcoord2 : TEXCOORD2;\n"
 "#define VPROG_IN_TEXCOORD3(sz)  float##sz texcoord3 : TEXCOORD3;\n"
+"#define VPROG_IN_TEXCOORD4(sz)  float##sz texcoord4 : TEXCOORD4;\n"
+"#define VPROG_IN_TEXCOORD5(sz)  float##sz texcoord5 : TEXCOORD5;\n"
+"#define VPROG_IN_TEXCOORD6(sz)  float##sz texcoord6 : TEXCOORD6;\n"
+"#define VPROG_IN_TEXCOORD7(sz)  float##sz texcoord7 : TEXCOORD7;\n"
 "#define VPROG_IN_COLOR          float4 color0 : COLOR0;\n"
 "#define VPROG_IN_COLOR0         float4 color0 : COLOR0;\n"
 "#define VPROG_IN_COLOR1         float4 color1 : COLOR1;\n"
+"#define VPROG_IN_TANGENT        float3 tangent : TANGENT;\n"
+"#define VPROG_IN_BINORMAL       float3 binormal : BINORMAL;\n"
+"#define VPROG_IN_BLENDWEIGHT    float3 blendweight : BLENDWEIGHT;\n"
+"#define VPROG_IN_BLENDINDEX     float3 blendindex : BLENDINDEX;\n"
 "#define VPROG_IN_END            };\n"
 
 "#define VPROG_OUT_BEGIN         struct VP_Output {\n"
@@ -481,9 +523,15 @@ static const char* _ShaderDefine_DX9 =
 "#define VP_IN_COLOR             IN.color0\n"
 "#define VP_IN_COLOR0            IN.color0\n"
 "#define VP_IN_COLOR1            IN.color1\n"
+"#define VP_IN_TANGENT           IN.tangent\n"
+"#define VP_IN_BINORMAL          IN.binormal\n"
+"#define VP_IN_BLENDWEIGHT       IN.blendweight\n"
+"#define VP_IN_BLENDINDEX        IN.blendindex\n"
 
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.##name\n"
+
+"#define VP_TEXTURE2D(unit,uv)   tex2D( Texture##unit, uv )\n"
 
 
 "#define FPROG_IN_BEGIN          struct FP_Input {\n"
@@ -541,12 +589,17 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
             { "VATTR_TEXCOORD_1",   VATTR_TEXCOORD_1 },
             { "VATTR_TEXCOORD_2",   VATTR_TEXCOORD_2 },
             { "VATTR_TEXCOORD_3",   VATTR_TEXCOORD_3 },
-            { "VATTR_TEXCOORD_3",   VATTR_TEXCOORD_4 },
-            { "VATTR_TEXCOORD_3",   VATTR_TEXCOORD_5 },
-            { "VATTR_TEXCOORD_3",   VATTR_TEXCOORD_6 },
-            { "VATTR_TEXCOORD_3",   VATTR_TEXCOORD_7 },
+            { "VATTR_TEXCOORD_4",   VATTR_TEXCOORD_4 },
+            { "VATTR_TEXCOORD_5",   VATTR_TEXCOORD_5 },
+            { "VATTR_TEXCOORD_6",   VATTR_TEXCOORD_6 },
+            { "VATTR_TEXCOORD_7",   VATTR_TEXCOORD_7 },
             { "VATTR_COLOR_0",      VATTR_COLOR_0 },
-            { "VATTR_COLOR_1",      VATTR_COLOR_1 }
+            { "VATTR_COLOR_1",      VATTR_COLOR_1 },
+            { "VATTR_TANGENT",      VATTR_TANGENT },
+            { "VATTR_BINORMAL",     VATTR_BINORMAL },
+            { "VATTR_BLENDWEIGHT",  VATTR_BLENDWEIGHT },
+            { "VATTR_BLENDINDEX",   VATTR_BLENDINDEX }
+
         };
 
         for( unsigned i=0; i!=countof(vattr); ++i )
@@ -676,7 +729,7 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
         MCPP_Text
     };
 
-DAVA::Logger::Info( "src=\n%s\n", src );
+//DAVA::Logger::Info( "src=\n%s\n", src );
     _PreprocessedText = preprocessedText;
     mcpp__set_input( src, strlen(src) );
 
@@ -704,7 +757,7 @@ DAVA::Logger::Info( "src=\n%s\n", src );
             break;
     }
     ;
-DAVA::Logger::Info( "pre-processed=\n%s\n", preprocessedText->c_str() );
+//DAVA::Logger::Info( "pre-processed=\n%s\n", preprocessedText->c_str() );
 }
 
 

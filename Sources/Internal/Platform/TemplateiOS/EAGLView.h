@@ -72,9 +72,10 @@
 	// mutex (since assertion might be called in the middle of drawing, DAVA::RenderManager::Instance()->Lock()
 	// mutex might be already locked so we'll got a deadlock.
 	// Return to this code after RenderManager mutex will be removed.
-	
-	// Also it is used to block drawing while device keyboard is changed (see please DF-2012 for details).
 	bool blockDrawView;
+    
+    // Used to limit fps while device keyboard is changed
+    bool limitKeyboardFps;
 }
 
 @property (readonly, nonatomic, getter=isAnimating) BOOL animating;

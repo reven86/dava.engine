@@ -52,18 +52,24 @@ class SoundUpdateSystem : public SceneSystem
 
 public:
     SoundUpdateSystem(Scene * scene);
-    virtual ~SoundUpdateSystem();
+    ~SoundUpdateSystem() override;
 
-    virtual void ImmediateEvent(Entity * entity, uint32 event);
-    virtual void Process(float32 timeElapsed);
-    virtual void AddEntity(Entity * entity);
-    virtual void RemoveEntity(Entity * entity);
+    void ImmediateEvent(Entity * entity, uint32 event) override;
+    void Process(float32 timeElapsed) override;
+    void AddEntity(Entity * entity) override;
+    void RemoveEntity(Entity * entity) override;
+
+    void Activate() override;
+    void Deactivate() override;
 
 protected:
     void AddAutoTriggerSound(Entity * soundOwner, SoundEvent * sound);
     void RemoveAutoTriggerSound(Entity * soundOwner, SoundEvent * sound = 0);
 
     Vector<AutoTriggerSound> autoTriggerSounds;
+
+    Vector<Entity *> sounds;
+    Vector<SoundEvent *> pausedEvents;
 
     friend class SoundComponent;
 };

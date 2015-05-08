@@ -2,9 +2,7 @@
 
 #include "Model/ControlProperties/BaseProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
-#include "UI/Document.h"
-#include "UI/PropertiesContext.h"
-#include "UI/PackageContext.h"
+#include "Document.h"
 #include "UI/Properties/PropertiesModel.h"
 #include "UI/Package/PackageModel.h"
 
@@ -29,11 +27,11 @@ void ChangeDefaultValueCommand::undo()
 {
     property->SetDefaultValue(oldValue);
 
-    PropertiesModel *model = document->GetPropertiesContext()->GetModel();
+    PropertiesModel *model = document->GetPropertiesModel();
     if (model && model->GetControlNode()->GetPropertiesRoot() == property->GetRootProperty())
         model->emitPropertyChanged(property);
 
-    PackageModel *packageModel = document->GetPackageContext()->GetModel();
+    PackageModel *packageModel = document->GetPackageModel();
     packageModel->emitNodeChanged(node);
 
 }
@@ -42,11 +40,11 @@ void ChangeDefaultValueCommand::redo()
 {
     property->SetDefaultValue(newValue);
 
-    PropertiesModel *model = document->GetPropertiesContext()->GetModel();
+    PropertiesModel *model = document->GetPropertiesModel();
     if (model && model->GetControlNode()->GetPropertiesRoot() == property->GetRootProperty())
         model->emitPropertyChanged(property);
     
-    PackageModel *packageModel = document->GetPackageContext()->GetModel();
+    PackageModel *packageModel = document->GetPackageModel();
     packageModel->emitNodeChanged(node);
 
 }

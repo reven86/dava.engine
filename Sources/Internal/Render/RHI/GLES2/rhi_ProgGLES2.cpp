@@ -181,7 +181,7 @@ ProgGLES2::GetProgParams( unsigned progUid )
         {
             char    name[16];   
 
-            Snprinf( name, countof(name), "Texture%u", i );
+            Snprintf(name, countof(name), "Texture%u", i);
             cmd[i].func   = GLCommand::GET_UNIFORM_LOCATION;
             cmd[i].arg[0] = progUid;
             cmd[i].arg[1] = uint64(tname[i]);
@@ -241,17 +241,21 @@ ProgGLES2::InstanceConstBuffer( unsigned bufIndex )
 void
 ProgGLES2::SetToRHI() const
 {
+    GLCommand   cmd[countof(texunitLoc)];
+    uint32      cnt = 0;
 
-    if( !texunitInited )
+    for( unsigned i=0; i!=countof(texunitLoc); ++i )
     {
-        for( unsigned i=0; i!=countof(texunitLoc); ++i )
+        if( texunitLoc[i] != -1 )
         {
-            if( texunitLoc[i] != -1 )
-                GL_CALL(glUniform1i( texunitLoc[i], i ));
+            cmd[cnt].func   = GLCommand::SET_UNIFORM_1I;
+            cmd[cnt].arg[0] = texunitLoc[i];
+            cmd[cnt].arg[1] = i;
+                    
+            ++cnt;
         }
-
-        texunitInited = true;
     }
+    ExecGL( cmd, cnt );
 }
 
 

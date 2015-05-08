@@ -87,35 +87,76 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
     if( in )
     {
         std::regex  prop_re(".*property\\s*(float|float2|float3|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
+        std::regex  proparr_re(".*property\\s*(float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\[([0-9]+)\\]\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
         std::regex  sampler2d_re(".*DECL_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
         std::regex  samplercube_re(".*DECL_SAMPLERCUBE\\s*\\(\\s*(.*)\\s*\\).*");
         std::regex  texture2d_re(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+        std::regex  vtexture2d_re(".*VP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
         std::regex  texturecube_re(".*FP_TEXTURECUBE\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
         std::regex  blend_re(".*BLEND_MODE\\s*\\(\\s*(.*)\\s*\\).*");
         std::regex  blending2_re(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha)\\s+dst=(zero|one|src_alpha|inv_src_alpha).*");
+        std::regex  comment_re("\\s*//.*");
+
+        std::vector<int> AvlRegIndex;
 
         _Reset();
 
         while( !in->IsEof() )
         {
             char        line[4*1024];
-            uint32      lineLen = in->ReadLine( line, sizeof(line) );
+            uint32      lineLen     = in->ReadLine( line, sizeof(line) );
             std::cmatch match;
+            bool        isComment   = std::regex_match( line, match, comment_re );
+            bool        propDefined = false;
+            bool        propArray   = false;
+
+            if( !isComment  &&  std::regex_match( line, match, prop_re ) )
+            {
+                propDefined = true;
+                propArray   = false;
+            }
+            else if( !isComment  &&  std::regex_match( line, match, proparr_re ) )
+            {
+                propDefined = true;
+                propArray   = true;
+            }
 
 
-            if( std::regex_match( line, match, prop_re ) )
+            if( propDefined )
             {
                 prop.resize( prop.size()+1 );
 
                 ShaderProp& p      = prop.back();
-                std::string type   = match[1].str();
-                std::string uid    = match[2].str();
-                std::string tags   = match[3].str();
-                std::string script = match[4].str();
+                std::string type;
+                std::string uid;
+                std::string tags;
+                std::string script;
+                std::string arrSz;
 
-                p.uid   = FastName(uid);
-                p.scope = ShaderProp::SCOPE_SHARED;
-                p.type  = ShaderProp::TYPE_FLOAT4;
+                if( propArray )
+                {
+                    type   = match[1].str();
+                    uid    = match[2].str();
+                    arrSz  = match[3].str();
+                    tags   = match[4].str();
+                    script = match[5].str();
+                   
+                    p.arraySize = atoi( arrSz.c_str() );
+                }
+                else
+                {
+                    type   = match[1].str();
+                    uid    = match[2].str();
+                    tags   = match[3].str();
+                    script = match[4].str();
+                    
+                    p.arraySize = 1;
+                }
+
+
+                p.uid       = FastName(uid);
+                p.scope     = ShaderProp::SCOPE_SHARED;
+                p.type      = ShaderProp::TYPE_FLOAT4;
 
                 if     ( stricmp( type.c_str(), "float" ) == 0 )    p.type = ShaderProp::TYPE_FLOAT1;
                 else if( stricmp( type.c_str(), "float2" ) == 0 )   p.type = ShaderProp::TYPE_FLOAT2;
@@ -190,20 +231,28 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 }
 
                 p.bufferindex = cbuf - &(buf[0]);
-
-                if( p.type == ShaderProp::TYPE_FLOAT1 )
+                
+                if( p.type == ShaderProp::TYPE_FLOAT1  ||  p.type == ShaderProp::TYPE_FLOAT2  ||  p.type == ShaderProp::TYPE_FLOAT3 )
                 {
                     bool    do_add = true;
-
-                    for( std::vector<ShaderProp>::const_iterator pp=prop.begin(),pp_end=prop.end(); pp!=pp_end; ++pp )
+                    uint32  sz     = 0;
+                    
+                    switch( p.type )
                     {
-                        if(     pp->type == ShaderProp::TYPE_FLOAT1 
-                            &&  pp->bufferRegCount < (4-1)
-                          )
-                        {
-                            p.bufferReg      = pp->bufferReg;
-                            p.bufferRegCount = pp->bufferRegCount + 1;
+                        case ShaderProp::TYPE_FLOAT1 : sz = 1; break;
+                        case ShaderProp::TYPE_FLOAT2 : sz = 2; break;
+                        case ShaderProp::TYPE_FLOAT3 : sz = 3; break;
+                    }
 
+                    for( unsigned r=0; r!=AvlRegIndex.size(); ++r )                    
+                    {
+                        if( AvlRegIndex[r] + sz <= 4 )
+                        {
+                            p.bufferReg      = r;
+                            p.bufferRegCount = AvlRegIndex[r];
+
+                            AvlRegIndex[r] += sz;
+                            
                             do_add = false;
                             break;
                         }
@@ -215,69 +264,22 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                         p.bufferRegCount = 0;
 
                         ++cbuf->regCount;
+
+                        AvlRegIndex.push_back( sz );
                     }
                 }
-                else if( p.type == ShaderProp::TYPE_FLOAT2 )
-                {
-                    bool    do_add = true;
-                    
-                    for( std::vector<ShaderProp>::const_iterator pp=prop.begin(),pp_end=prop.end(); pp!=pp_end; ++pp )
-                    {
-                        if(     pp->type == ShaderProp::TYPE_FLOAT1 
-                            &&  pp->bufferRegCount < (4-2)
-                          )
-                        {
-                            p.bufferReg      = pp->bufferReg;
-                            p.bufferRegCount = pp->bufferRegCount + 1;
-
-                            do_add = false;
-                            break;
-                        }
-                    }
-
-                    if( do_add )
-                    {
-                        p.bufferReg      = cbuf->regCount;
-                        p.bufferRegCount = 0;
-
-                        ++cbuf->regCount;
-                    }
-                }
-                else if( p.type == ShaderProp::TYPE_FLOAT3 )
-                {
-                    bool    do_add = true;
-                    
-                    for( std::vector<ShaderProp>::const_iterator pp=prop.begin(),pp_end=prop.end(); pp!=pp_end; ++pp )
-                    {
-                        if(     pp->type == ShaderProp::TYPE_FLOAT1 
-                            &&  pp->bufferRegCount < (4-3)
-                          )
-                        {
-                            p.bufferReg      = pp->bufferReg;
-                            p.bufferRegCount = pp->bufferRegCount + 1;
-
-                            do_add = false;
-                            break;
-                        }
-                    }
-
-                    if( do_add )
-                    {
-                        p.bufferReg      = cbuf->regCount;
-                        p.bufferRegCount = 0;
-
-                        ++cbuf->regCount;
-                    }
-                }
-                else
+                else if( p.type == ShaderProp::TYPE_FLOAT4  ||  p.type == ShaderProp::TYPE_FLOAT4X4 )
                 {
                     p.bufferReg        = cbuf->regCount;
-                    p.bufferRegCount   = (p.type == ShaderProp::TYPE_FLOAT4)  ? 1  : 4;
+                    p.bufferRegCount   = p.arraySize * ((p.type == ShaderProp::TYPE_FLOAT4)  ? 1  : 4);
 
                     cbuf->regCount     += p.bufferRegCount;
+
+                    for( int i=0; i!=p.bufferRegCount; ++i )
+                        AvlRegIndex.push_back( 4 );
                 }
             }
-            else if( std::regex_match( line, match, sampler2d_re ) )
+            else if( !isComment  &&  std::regex_match( line, match, sampler2d_re ) )
             {
                 std::string sname   = match[1].str();
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
@@ -296,7 +298,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                 _AppendLine( line, strlen(line) );
             }
-            else if( std::regex_match( line, match, samplercube_re ) )
+            else if( !isComment  &&  std::regex_match( line, match, samplercube_re ) )
             {
                 std::string sname   = match[1].str();
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
@@ -315,7 +317,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                 _AppendLine( line, strlen(line) );
             }
-            else if( std::regex_match( line, match, texture2d_re ) )
+            else if( !isComment  &&  std::regex_match( line, match, texture2d_re ) )
             {
                 std::string sname   = match[1].str();
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
@@ -338,7 +340,30 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 
                 _AppendLine( line, strlen(line) );
             }
-            else if( std::regex_match( line, match, texturecube_re ) )
+            else if( !isComment  &&  std::regex_match( line, match, vtexture2d_re ) )
+            {
+                std::string sname   = match[1].str();
+                int         mbegin  = strstr( line, sname.c_str() ) - line;
+                FastName    suid    ( sname );
+                
+                for( unsigned s=0; s!=sampler.size(); ++s )
+                {
+                    if( sampler[s].uid == suid )
+                    {
+                        int sl = sprintf( line+mbegin, "%u", s );
+                        int sn = sname.length();
+                        DVASSERT(sn>=sl);
+                        line[mbegin+sl] = ',';
+                        if( sn > sl )
+                            memset( line+mbegin+sl, ' ', sn-sl );
+                        
+                        break;
+                    }
+                }
+                
+                _AppendLine( line, strlen(line) );
+            }
+            else if( !isComment  &&  std::regex_match( line, match, texturecube_re ) )
             {
                 std::string sname   = match[1].str();
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
@@ -361,7 +386,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                 _AppendLine( line, strlen(line) );
             }
-            else if( std::regex_match( line, match, blend_re ) )
+            else if( !isComment  &&  std::regex_match( line, match, blend_re ) )
             {
                 std::string mode   = match[1].str();
                 
@@ -374,7 +399,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     blending.rtBlend[0].alphaDst = BLENDOP_INV_SRC_ALPHA;
                 }
             }
-            else if( std::regex_match( line, match, blending2_re ) )
+            else if( !isComment  &&  std::regex_match( line, match, blending2_re ) )
             {
                 std::string src   = match[1].str();
                 std::string dst   = match[2].str();
@@ -439,29 +464,29 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
             char        pt      = (progType == PROG_VERTEX)?'V':'F';
             unsigned    reg     = 0;
 
-            buf_len += Snprinf( buf_def+buf_len, sizeof(buf_def)-buf_len, "//--------\n" );
+            buf_len += Snprintf( buf_def+buf_len, sizeof(buf_def)-buf_len, "//--------\n" );
             for( unsigned i=0; i!=buf.size(); ++i )
             {
-                buf_len += Snprinf( buf_def+buf_len, sizeof(buf_def)-buf_len, "DECL_%cPROG_BUFFER(%u,%u,%u)\n", pt, i, buf[i].regCount, reg );
+                buf_len += Snprintf(buf_def + buf_len, sizeof(buf_def) - buf_len, "DECL_%cPROG_BUFFER(%u,%u,%u)\n", pt, i, buf[i].regCount, reg);
                 reg += buf[i].regCount;
             }
-            buf_len += Snprinf( buf_def+buf_len, sizeof(buf_def)-buf_len, "\n\n" );
+            buf_len += Snprintf(buf_def + buf_len, sizeof(buf_def) - buf_len, "\n\n");
 
-            var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    //--------\n" );
+            var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "    //--------\n");
             for( std::vector<ShaderProp>::const_iterator p=prop.begin(),p_end=prop.end(); p!=p_end; ++p )
             {
                 switch( p->type )
                 {
                     case ShaderProp::TYPE_FLOAT1 :
                     {
-                        char xyzw[] = "xyzw";
-                        var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    float %s = %cP_Buffer%u[%u].%c;\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount] );
+                        const char* xyzw = "xyzw";
+                        var_len += Snprintf( var_def+var_len, sizeof(var_def)-var_len, "    float %s = %cP_Buffer%u[%u].%c;\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount] );
                     }   break;
                     
                     case ShaderProp::TYPE_FLOAT2 :
                     {
-                        char xyzw[] = "xyzw";
-                        var_len += Snprinf
+                        const char* xyzw = "xyzw";
+                        var_len += Snprintf
                         ( 
                             var_def+var_len, sizeof(var_def)-var_len, 
                             "    float2 %s = float2( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n", 
@@ -473,8 +498,8 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     
                     case ShaderProp::TYPE_FLOAT3 :
                     {
-                        char xyzw[] = "xyzw";
-                        var_len += Snprinf
+                        const char* xyzw = "xyzw";
+                        var_len += Snprintf
                         ( 
                             var_def+var_len, sizeof(var_def)-var_len, 
                             "    float3 %s = float3( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n", 
@@ -486,12 +511,12 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     }   break;
 
                     case ShaderProp::TYPE_FLOAT4 :
-                        var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    float4 %s = %cP_Buffer%u[%u];\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg );
+                        var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "    float4 %s = %cP_Buffer%u[%u];\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg);
                         break;
 
                     case ShaderProp::TYPE_FLOAT4X4 :
                     {
-                        var_len += Snprinf
+                        var_len += Snprintf
                         ( 
                             var_def+var_len, sizeof(var_def)-var_len, 
                             "    float4x4 %s = float4x4( %cP_Buffer%u[%u], %cP_Buffer%u[%u], %cP_Buffer%u[%u], %cP_Buffer%u[%u] );\n", 
@@ -504,8 +529,8 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     }   break;
                 };
             }
-            var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    //--------\n" );
-            var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "\n\n" );
+            var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "    //--------\n");
+            var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "\n\n");
             
             unsigned var_pos = (prog-code.c_str()) + strlen("XPROG_BEGIN") + buf_len +2;
 
@@ -620,7 +645,7 @@ code.push_back( '\n' );
 return;
 
     char    text[4*1024];
-    int     len = Snprinf( text, sizeof(text)-1, "/*%04u*/ ", codeLineCount+1 );
+    int     len = Snprintf(text, sizeof(text) - 1, "/*%04u*/ ", codeLineCount + 1);
 
     strncpy( text+len, line, lineLen );
     text[len+lineLen] = '\0';
@@ -643,7 +668,39 @@ ShaderSource::Dump() const
     Logger::Info( "properties (%u) :", prop.size() );
     for( std::vector<ShaderProp>::const_iterator p=prop.begin(),p_end=prop.end(); p!=p_end; ++p )
     {
-        Logger::Info( "  %-16s    buf#%u  -  %u, %u x float4", p->uid.c_str(), p->bufferindex, p->bufferReg, p->bufferRegCount );
+        if( p->type == ShaderProp::TYPE_FLOAT4  ||  p->type == ShaderProp::TYPE_FLOAT4X4 )
+        {
+            if( p->arraySize == 1 )
+            {
+                Logger::Info( "  %-16s    buf#%u  -  %u, %u x float4", p->uid.c_str(), p->bufferindex, p->bufferReg, p->bufferRegCount );
+            }
+            else
+            {
+                char    name[128];
+
+                Snprintf( name, sizeof(name)-1, "%s[%u]", p->uid.c_str(), p->arraySize );
+                Logger::Info( "  %-16s    buf#%u  -  %u, %u x float4", name, p->bufferindex, p->bufferReg, p->bufferRegCount );
+            }
+        }
+        else
+        {
+            const char* xyzw = "xyzw";
+
+            switch( p->type )
+            {
+                case ShaderProp::TYPE_FLOAT1 :
+                    Logger::Info( "  %-16s    buf#%u  -  %u, %c", p->uid.c_str(), p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount] );
+                    break;
+                
+                case ShaderProp::TYPE_FLOAT2 :
+                    Logger::Info( "  %-16s    buf#%u  -  %u, %c%c", p->uid.c_str(), p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+0], xyzw[p->bufferRegCount+1] );
+                    break;
+                
+                case ShaderProp::TYPE_FLOAT3 :
+                    Logger::Info( "  %-16s    buf#%u  -  %u, %c%c%c", p->uid.c_str(), p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+0], xyzw[p->bufferRegCount+1], xyzw[p->bufferRegCount+2] );
+                    break;
+            }
+        }
     }
 
     Logger::Info( "buffers (%u) :", buf.size() );

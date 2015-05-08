@@ -74,7 +74,7 @@ public:
 	static QColor errorColor;
 
 protected:
-	void closeEvent(QCloseEvent * e);
+	void closeEvent(QCloseEvent * e) override;
 
 public slots:
 	void sceneActivated(SceneEditor2 *scene);
@@ -127,7 +127,6 @@ private:
 	void updateInfoConverted();
 	void updatePropertiesWarning();
 
-	void reloadTextureProperties();
 	void reloadTextureToScene(DAVA::Texture *texture, const DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu);
 
     void ConvertMultipleTextures(eTextureConvertMode convertMode);

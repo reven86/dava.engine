@@ -75,7 +75,7 @@ void NMaterial::BindParams(rhi::Packet& target)
     target.renderPipelineState = activeVariantInstance->shader->GetPiplineState();
     target.depthStencilState = activeVariantInstance->depthState;
     target.samplerState = activeVariantInstance->samplerState;
-    target.textureSet = activeVariantInstance->textureSet;
+    target.fragmentTextureSet = activeVariantInstance->textureSet;
     target.cullMode = activeVariantInstance->cullMode;
 
     activeVariantInstance->shader->UpdateDynamicParams();
@@ -474,7 +474,14 @@ void NMaterial::RebuildBindings()
                         else
                         {
                             //just set default property to const buffer
-                            rhi::UpdateConstBuffer4fv(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.defaultValue, propDescr.bufferRegCount);
+                            if (propDescr.type < rhi::ShaderProp::TYPE_FLOAT4)
+                            {                                
+                                rhi::UpdateConstBuffer1fv(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.bufferRegCount, propDescr.defaultValue, ShaderDescriptor::CalculateDataSize(propDescr.type, 1));
+                            }
+                            else
+                            {
+                                rhi::UpdateConstBuffer4fv(bufferBinding->constBuffer, propDescr.bufferReg, propDescr.defaultValue, propDescr.bufferRegCount);
+                            }
                         }
                     }
 

@@ -116,8 +116,32 @@ public:
 	 \returns vertical spacing value in pixels
 	 */
 	virtual int32 GetVerticalSpacing() const;
+
+    /**
+     \brief Set font ascend scale factor for FT font. Using for vertical align.
+     \param[in] ascendScale ascend scale factor
+    */
+    virtual void SetAscendScale(float32 ascendScale);
     
-	/**
+    /**
+    \brief Get font ascend scale factor for FT font. Using for vertical align.
+    \returns ascend scale factor
+    */
+    virtual float32 GetAscendScale() const;
+
+    /**
+     \brief Set font descend scale factor for FT font. Using for vertical align.
+     \param[in] descendScale descend scale factor
+    */
+    virtual void SetDescendScale(float32 descendScale);
+
+    /**
+     \brief Get font descend scale factor for FT font. Using for vertical align.
+     \returns descend scale factor
+    */
+    virtual float32 GetDescendScale() const;
+
+    /**
 		\brief Get string size(rect).
 		\param[in] str - processed string
 		\param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str 

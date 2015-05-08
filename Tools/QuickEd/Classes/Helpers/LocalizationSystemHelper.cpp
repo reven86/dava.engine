@@ -91,17 +91,6 @@ String LocalizationSystemHelper::GetLanguageDescByLanguageID(String languageID)
     return helperData[0].languageDescription;
 }
 
-String LocalizationSystemHelper::GetLanguageIDByLanguageDesc(String languageDesc)
-{
-    for (int i = 0; i < GetSupportedLanguagesCount(); ++i)
-    {
-        if ( languageDesc.compare(helperData[i].languageDescription) == 0) {
-            return helperData[i].languageID;
-        }
-    }
-    return helperData[0].languageID;
-}
-
 bool LocalizationSystemHelper::ValidateLanguageIndex(int index)
 {
     if (index < 0 || index >= GetSupportedLanguagesCount())

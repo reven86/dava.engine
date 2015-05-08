@@ -1,5 +1,11 @@
-#include "Project.h"
 #include "DAVAEngine.h"
+
+#include <QDir>
+#include <QApplication>
+#include <QVariant>
+#include <QMessageBox>
+
+#include "Project.h"
 #include "EditorFontManager.h"
 #include "UI/UIPackageLoader.h"
 #include "UI/DefaultUIPackageBuilder.h"
@@ -9,11 +15,6 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageRef.h"
 #include "Helpers/ResourcesManageHelper.h"
-
-#include <QDir>
-#include <QApplication>
-#include <QVariant>
-#include <QMessageBox>
 
 using namespace DAVA;
 
@@ -212,12 +213,12 @@ RefPtr<PackageNode> Project::OpenPackage(const QString &packagePath)
 
     EditorUIPackageBuilder builder;
     UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(path);
-    if (!newPackage)
+    if (nullptr == newPackage)
     {
         newPackage = LegacyEditorUIPackageLoader(&builder, legacyData).LoadPackage(path);
     }
 
-    if (newPackage)
+    if (nullptr != newPackage)
     {
         SafeRelease(newPackage);
         return builder.GetPackageNode();

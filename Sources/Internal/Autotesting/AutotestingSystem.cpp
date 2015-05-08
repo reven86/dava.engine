@@ -322,7 +322,7 @@ namespace DAVA
 	{
 		Logger::Error("AutotestingSystem::ForceQuit %s", errorMessage.c_str());
 
-		ExitApp();
+		Core::Instance()->Quit();
 	}
 
 	void AutotestingSystem::MakeScreenShot()
@@ -330,7 +330,7 @@ namespace DAVA
 		Logger::Info("AutotestingSystem::MakeScreenShot");
 		String currentDateTime = GetCurrentTimeString();
 		screenShotName = Format("%s_%s_%s_%d_%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
-		Logger::FrameworkDebug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
+		Logger::Debug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
 		Renderer::RequestGLScreenShot(this);
 	}
 
@@ -379,7 +379,11 @@ namespace DAVA
 
 	void AutotestingSystem::OnInput(const UIEvent &input)
 	{
-		Logger::Info("AutotestingSystem::OnInput %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", input.tid, input.phase, input.tapCount, input.point.x, input.point.y, input.physPoint.x, input.physPoint.y, input.keyChar);
+		if (UIScreenManager::Instance())
+		{
+			String screenName = (UIScreenManager::Instance()->GetScreen()) ? UIScreenManager::Instance()->GetScreen()->GetName() : "noname";
+			Logger::Info("AutotestingSystem::OnInput screen is %s (%d)", screenName.c_str(), UIScreenManager::Instance()->GetScreenId());
+		}
 
 		int32 id = input.tid;
 		switch (input.phase)

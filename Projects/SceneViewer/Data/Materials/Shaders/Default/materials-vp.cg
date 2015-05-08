@@ -35,4 +35,4 @@ VPROG_BEGIN
 #else
     VP_OUT_POSITION   = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), worldViewProjMatrix );
 #endif
-VPROG_END;
+VPROG_END

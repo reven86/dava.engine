@@ -10,10 +10,10 @@
 CheckableComboBox::CheckableComboBox(QWidget* parent)
     : QComboBox(parent)
 {
-    connect(model(), SIGNAL( rowsInserted( const QModelIndex&, int, int ) ), SLOT( OnRowsInserted( const QModelIndex&, int, int ) ));
-    connect(this, SIGNAL( done() ), SLOT( UpdateTextHints() ) );
+    connect( model(), &QAbstractItemModel::rowsInserted, this, &CheckableComboBox::onRowsInserted );
+    connect( this, &CheckableComboBox::done, this, &CheckableComboBox::updateTextHints );
 
-    QListView* v = new QListView();
+    auto v = new QListView();
     setView(v);
 
     installEventFilter(this);
@@ -24,12 +24,12 @@ CheckableComboBox::~CheckableComboBox()
 {
 }
 
-QStringList CheckableComboBox::GetSelectedItems() const
+QStringList CheckableComboBox::selectedItems() const
 {
-    const QModelIndexList& indexes = GetCheckedIndexes();
+    const auto& indexes = checkedIndexes();
     QStringList list;
 
-    for (int i = 0; i < indexes.size(); i++)
+    for ( auto i = 0; i < indexes.size(); i++)
     {
         list << indexes[i].data(Qt::DisplayRole).toString();
     }
@@ -37,12 +37,12 @@ QStringList CheckableComboBox::GetSelectedItems() const
     return list;
 }
 
-QList<QVariant> CheckableComboBox::GetSelectedUserData() const
+QList<QVariant> CheckableComboBox::selectedUserData() const
 {
-    const QModelIndexList& indexes = GetCheckedIndexes();
+    const auto& indexes = checkedIndexes();
     QVariantList list;
 
-    for (int i = 0; i < indexes.size(); i++)
+    for ( auto i = 0; i < indexes.size(); i++)
     {
         list << indexes[i].data(Qt::UserRole);
     }
@@ -50,59 +50,59 @@ QList<QVariant> CheckableComboBox::GetSelectedUserData() const
     return list;
 }
 
-void CheckableComboBox::SelectUserData(const QList<QVariant>& dataList)
+void CheckableComboBox::selectUserData(const QList<QVariant>& dataList)
 {
-    QAbstractItemModel* m = model();
-    const int n = m->rowCount();
-    for (int i = 0; i < n; i++)
+    auto m = model();
+    const auto n = m->rowCount();
+    for ( auto i = 0; i < n; i++)
     {
-        const QModelIndex index = m->index(i, 0, QModelIndex());
-        const Qt::CheckState checkState = dataList.contains(index.data(Qt::UserRole)) ? Qt::Checked : Qt::Unchecked;
+        const auto index = m->index(i, 0, QModelIndex());
+        const auto checkState = dataList.contains(index.data(Qt::UserRole)) ? Qt::Checked : Qt::Unchecked;
         m->setData(index, checkState, Qt::CheckStateRole);
     }
 
-    UpdateTextHints();
+    updateTextHints();
 }
 
-void CheckableComboBox::OnRowsInserted(const QModelIndex& parent, int start, int end)
+void CheckableComboBox::onRowsInserted(const QModelIndex& parent, int start, int end)
 {
     QStandardItemModel* m = qobject_cast<QStandardItemModel *>(model());
-    if (m == NULL)
+    if (m == nullptr)
         return ;
 
-    for (int i = start; i <= end; i++)
+    for ( auto i = start; i <= end; i++)
     {
-        QStandardItem* item = m->item(i);
+        auto item = m->item(i);
         item->setCheckable(true);
     }
 
     if ( isVisible() )
     {
-        UpdateTextHints();
+        updateTextHints();
     }
 }
 
-void CheckableComboBox::UpdateTextHints()
+void CheckableComboBox::updateTextHints()
 {
-    const QStringList& items = GetSelectedItems();
+    const auto& items = selectedItems();
 
     textHint = items.join(", ");
-    const QString toolTip = items.join("\n");
+    const auto toolTip = items.join("\n");
     setToolTip(toolTip);
 
     update();
 }
 
-QModelIndexList CheckableComboBox::GetCheckedIndexes() const
+QModelIndexList CheckableComboBox::checkedIndexes() const
 {
     QModelIndexList list;
 
-    QAbstractItemModel* m = model();
-    const int n = m->rowCount();
-    for (int i = 0; i < n; i++)
+    auto m = model();
+    const auto n = m->rowCount();
+    for ( auto i = 0; i < n; i++)
     {
-        const QModelIndex index = m->index(i, 0, QModelIndex());
-        const bool isChecked = (index.data(Qt::CheckStateRole).toInt() == Qt::Checked);
+        const auto index = m->index(i, 0, QModelIndex());
+        const auto isChecked = (index.data(Qt::CheckStateRole).toInt() == Qt::Checked);
         if (isChecked)
         {
             list << index;
@@ -120,10 +120,10 @@ bool CheckableComboBox::eventFilter(QObject* obj, QEvent* e)
         {
         case QEvent::MouseButtonPress:
             {
-                QAbstractItemView* v = view();
-                QAbstractItemModel* m = v->model();
-                const QModelIndex index = v->currentIndex();
-                const bool isChecked = (m->data(index, Qt::CheckStateRole).toInt() == Qt::Checked);
+                auto v = view();
+                auto m = v->model();
+                const auto index = v->currentIndex();
+                const auto isChecked = (m->data(index, Qt::CheckStateRole).toInt() == Qt::Checked);
                 m->setData(index, isChecked ? Qt::Unchecked : Qt::Checked, Qt::CheckStateRole);
             }
             break;
@@ -131,7 +131,7 @@ bool CheckableComboBox::eventFilter(QObject* obj, QEvent* e)
             return true;
 
         case QEvent::Show:
-            UpdateTextHints();
+            updateTextHints();
             break;
 
         case QEvent::Hide:
@@ -148,7 +148,7 @@ bool CheckableComboBox::eventFilter(QObject* obj, QEvent* e)
         switch(e->type())
         {
         case QEvent::Show:
-            UpdateTextHints();
+            updateTextHints();
             break;
 
         default:
@@ -171,9 +171,9 @@ void CheckableComboBox::paintEvent(QPaintEvent* event)
 
     p.drawComplexControl(QStyle::CC_ComboBox, option);
 
-    const QRect textRect = style()->subControlRect(QStyle::CC_ComboBox, &option, QStyle::SC_ComboBoxEditField);
+    const auto textRect = style()->subControlRect(QStyle::CC_ComboBox, &option, QStyle::SC_ComboBoxEditField);
     const QFontMetrics metrics(font());
-    const QString elidedText = metrics.elidedText(textHint, Qt::ElideRight, textRect.width());
+    const auto elidedText = metrics.elidedText(textHint, Qt::ElideRight, textRect.width());
 
     p.drawText(textRect, Qt::AlignVCenter, elidedText);
 }

@@ -238,6 +238,7 @@ dx9_CommandBuffer_SetVertexConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle b
 static void
 dx9_CommandBuffer_SetVertexTexture( Handle cmdBuf, uint32 unitIndex, Handle tex )
 {
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_TEXTURE, D3DDMAPSAMPLER+1+unitIndex, (uint64)(tex) );
 }
 
 

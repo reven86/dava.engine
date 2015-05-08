@@ -73,12 +73,7 @@ namespace DAVA
 		FrameworkWillTerminate();
 		
 		core->ReleaseSingletons();
-#ifdef ENABLE_MEMORY_MANAGER
-		if (DAVA::MemoryManager::Instance() != 0)
-		{
-			DAVA::MemoryManager::Instance()->FinalLog();
-		}
-#endif
+
 		[globalPool release];
 		globalPool = 0;
 		return 0;
@@ -86,16 +81,9 @@ namespace DAVA
 }
 
 @interface MainWindowController ()
-- (BOOL) isAnimating;
-- (void) startAnimation;
-- (void) stopAnimation;
-- (void) toggleAnimation;
-
 - (void) startAnimationTimer;
 - (void) stopAnimationTimer;
 - (void) animationTimerFired:(NSTimer *)timer;
-
-- (void) switchToFullScreen;
 
 - (void)windowWillMiniaturize:(NSNotification *)notification;
 - (void)windowDidMiniaturize:(NSNotification *)notification;
@@ -103,7 +91,6 @@ namespace DAVA
 @end
 
 @implementation MainWindowController
-
 
 static MainWindowController * mainWindowController = nil;
 
@@ -131,18 +118,14 @@ namespace DAVA
 
 - (id)init
 {
-	if (self = [super init])
+    self = [super init];
+	if (self)
 	{
 		mainWindowController = self;
 		openGLView = nil;
 		mainWindow = nil;
-		fullscreenWindow = nil;
-		fullScreenContext = nil;
-		isAnimating = false;
 		animationTimer = nil;
-		timeBefore = 0;
-		stayInFullScreenMode = NO;          // this flag indicating that we want to leave full screen mode
-		core = 0;		
+		core = 0;
 
 	}
 	return self;
@@ -155,101 +138,67 @@ namespace DAVA
 
 -(void)createWindows
 {
-	DisplayMode fullscreenMode = Core::Instance()->GetCurrentDisplayMode();
+    NSRect fullscreenRect = [[NSScreen mainScreen] frame];
 	
 	FrameworkDidLaunched();
 #if RHI_COMPLETE
     RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
 #endif
-    	KeyedArchive * options = DAVA::Core::Instance()->GetOptions();
-	int32 width = options->GetInt32("width", 800);
-	int32 height = options->GetInt32("height", 600);
-	
-	String title = options->GetString("title", "[set application title using core options property 'title']");
-	
-	mainWindow = [[NSWindow alloc] initWithContentRect:NSMakeRect((fullscreenMode.width - width) / 2, 
-																  (fullscreenMode.height - height) / 2, width, height) 
-											 styleMask:NSTitledWindowMask+NSMiniaturizableWindowMask+NSClosableWindowMask
-											backing:NSBackingStoreBuffered defer:FALSE];
-	[mainWindow setDelegate:self];
-	openGLView = [[OpenGLView alloc]initWithFrame: NSMakeRect(0, 0, width, height)];
-	[mainWindow setContentView: openGLView];
 
-	NSRect rect;
-	rect.origin.x = 0;
-	rect.origin.y = 0;
-	rect.size.width = width;
-	rect.size.height = height;
+    
+    String title;
+    int32 width = 800;
+    int32 height = 600;
 
-	[mainWindow setContentSize:rect.size];
-	[openGLView setFrame: rect];
-	
+    KeyedArchive * options = DAVA::Core::Instance()->GetOptions();
+    if(nullptr != options)
+    {
+        title = options->GetString("title", "[set application title using core options property 'title']");
+        if(options->IsKeyExists("width") && options->IsKeyExists("height"))
+        {
+            width = options->GetInt32("width");
+            height = options->GetInt32("height");
+        }
+    }
+    
+    openGLView = [[OpenGLView alloc]initWithFrame: NSMakeRect(0, 0, width, height)];
+    
+    NSUInteger wStyle = NSTitledWindowMask + NSMiniaturizableWindowMask + NSClosableWindowMask + NSResizableWindowMask;
+    NSRect wRect = NSMakeRect((fullscreenRect.size.width - width) / 2, (fullscreenRect.size.height - height) / 2, width, height);
+    mainWindow = [[NSWindow alloc] initWithContentRect:wRect styleMask:wStyle backing:NSBackingStoreBuffered defer:FALSE];
+    [mainWindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+    [mainWindow setDelegate:self];
+    [mainWindow setContentView: openGLView];
+    
+    NSRect rect;
+    rect.origin.x = 0;
+    rect.origin.y = 0;
+    rect.size.width = width;
+    rect.size.height = height;
+    
+    [mainWindow setContentSize:rect.size];
+    [openGLView setFrame: rect];
+    
+
 	core = Core::GetApplicationCore();
 #if RHI_COMPLETE
     RenderManager::Instance()->DetectRenderingCapabilities();
 #endif
     RenderSystem2D::Instance()->Init();
 
-
 	// start animation
-	isAnimating = NO;
-	
 #if RHI_COMPLETE
-	currFPS = RenderManager::Instance()->GetFPS();
+    currFPS = RenderManager::Instance()->GetFPS();
 #else
     currFPS = 60;
 #endif
-    [self startAnimation];
+    [self startAnimationTimer];
+
 
 	// make window main
 	[mainWindow makeKeyAndOrderFront:nil];
 	[mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
 	[mainWindow setAcceptsMouseMovedEvents:YES];
-}
-
-
-- (NSWindow *) beginFullScreen
-{
-    fullscreenWindow = [ [NSFullScreenWindow alloc]
-                        initWithContentRect:[[NSScreen mainScreen] frame]
-                        styleMask:NSBorderlessWindowMask
-                        backing:NSBackingStoreBuffered
-                        defer:NO];
-    
-	[NSMenu setMenuBarVisible:NO];
-	[fullscreenWindow setHasShadow:NO];
-	[fullscreenWindow setContentView:[mainWindow contentView]];
-	
-	[fullscreenWindow makeKeyAndOrderFront: fullscreenWindow];
-	[mainWindow orderOut:nil];
-	return fullscreenWindow;
-}
-
-- (void)endFullScreen
-{ 
-	[NSMenu setMenuBarVisible:YES];
-	[mainWindow setContentView:[fullscreenWindow contentView]];
-	[mainWindow makeKeyAndOrderFront:nil];
-	[fullscreenWindow orderOut:nil];
-	[fullscreenWindow release];
-}
-
-// some macros to make code more readable.
-#define GetModeWidth(mode) GetDictionaryLong((mode), kCGDisplayWidth)
-#define GetModeHeight(mode) GetDictionaryLong((mode), kCGDisplayHeight)
-#define GetModeRefreshRate(mode) GetDictionaryLong((mode), kCGDisplayRefreshRate)
-#define GetModeBitsPerPixel(mode) GetDictionaryLong((mode), kCGDisplayBitsPerPixel)
-
-//------------------------------------------------------------------------------------------
-long GetDictionaryLong(CFDictionaryRef theDict, const void* key) 
-{
-	// get a long from the dictionary
-	long value = 0;
-	CFNumberRef numRef;
-	numRef = (CFNumberRef)CFDictionaryGetValue(theDict, key); 
-	if (numRef != NULL)
-		CFNumberGetValue(numRef, kCFNumberLongType, &value); 	
-	return value;
 }
 
 - (void)windowWillMiniaturize:(NSNotification *)notification
@@ -266,274 +215,61 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
     [self OnResume];
 }
 
-// Action method wired up to fire when the user clicks the "Go FullScreen" button.  We remain in this method until the user exits FullScreen mode.
-- (void) switchToFullScreen
+- (void)windowDidEnterFullScreen:(NSNotification *)notification
 {
-    [self beginFullScreen];
-	CGDisplayErr err;
- 	
-	// Take control of the display where we're about to go FullScreen.
-  
-    err = CGDisplayCapture (kCGDirectMainDisplay);
-    if (err != CGDisplayNoErr) 
-	{
-        return;
-    }
+    fullScreen = true;
+    Core::Instance()->GetApplicationCore()->OnEnterFullscreen();
+}
 
-	DisplayMode fullscreenMode = Core::Instance()->GetCurrentDisplayMode();
+- (void)windowDidExitFullScreen:(NSNotification *)notification
+{
+    fullScreen = false;
+}
 
-    // Pixel Format Attributes for the FullScreen NSOpenGLContext
-    NSOpenGLPixelFormatAttribute attrs[] = 
-	{
-		
-        // Specify that we want a full-screen OpenGL context.
-        //deprecated since macos 10.6, require additional research
-        //NSOpenGLPFAFullScreen,
-        // We may be on a multi-display system (and each screen may be driven by a different renderer), so we need to specify which screen we want to take over.  For this demo, we'll specify the main screen.
-        NSOpenGLPFAScreenMask, CGDisplayIDToOpenGLDisplayMask(kCGDirectMainDisplay),
-        // Attributes Common to FullScreen and non-FullScreen
+-(bool) isFullScreen
+{
+    return fullScreen;
+}
 
-        NSOpenGLPFANoRecovery,	/* disable all failure recovery systems         */
-
-#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-        NSOpenGLPFAColorSize, static_cast<NSOpenGLPixelFormatAttribute>([openGLView displayBitsPerPixel:kCGDirectMainDisplay]), //24,
-#else //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-        NSOpenGLPFAColorSize, CGDisplayBitsPerPixel(kCGDirectMainDisplay), //24,
-#endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-
-        NSOpenGLPFADepthSize, 16,
-        NSOpenGLPFAStencilSize, 8,
-        NSOpenGLPFADoubleBuffer,
-        NSOpenGLPFAAccelerated,
-        0
-    };
-    GLint rendererID;
-	
-    // Create the FullScreen NSOpenGLContext with the attributes listed above.
-    NSOpenGLPixelFormat *pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
-    
-    // Just as a diagnostic, report the renderer ID that this pixel format binds to.  CGLRenderers.h contains a list of known renderers and their corresponding RendererID codes.
-    [pixelFormat getValues:&rendererID forAttribute:NSOpenGLPFARendererID forVirtualScreen:0];
-    NSLog(@"[CoreMacOSPlatform] fullScreen pixelFormat rendererID = %08x %@", (unsigned)rendererID, openGLView);
-	
-    // Create an NSOpenGLContext with the FullScreen pixel format.  By specifying the non-FullScreen context as our "shareContext", we automatically inherit all of the textures, display lists, and other OpenGL objects it has defined.
-    fullScreenContext = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:[openGLView openGLContext]];
-    [pixelFormat release];
-    pixelFormat = nil;
-	
-    if (fullScreenContext == nil) 
-	{
-        NSLog(@"[CoreMacOSPlatform] failed to create fullScreenContext");
-        return;
-    }
-	
-    // Pause animation in the OpenGL view.  While we're in full-screen mode, we'll drive the animation actively instead of using a timer callback.
-    if ([self isAnimating]) 
-	{
-        [self stopAnimationTimer];
-    }
-	
-	// enable vsync
-	GLint swapInt = 1;
-    [fullScreenContext setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
-    [fullScreenContext makeCurrentContext];
-	
-	CGLContextObj cglContext;
-    long oldSwapInterval;
-    long newSwapInterval;
-	
-    // Save the current swap interval so we can restore it later, and then set the new swap interval to lock us to the display's refresh rate.
-    cglContext = CGLGetCurrentContext();
-    CGLGetParameter(cglContext, kCGLCPSwapInterval, (GLint*)&oldSwapInterval);
-    newSwapInterval = 1;
-    CGLSetParameter(cglContext, kCGLCPSwapInterval, (GLint*)&newSwapInterval);
-	
-    // Tell the scene the dimensions of the area it's going to render to, so it can set up an appropriate viewport and viewing transformation.
-//	int32 oldWidth = RenderManager::Instance()->GetScreenWidth();
-//	int32 oldHeight = RenderManager::Instance()->GetScreenHeight();	
-//	RenderManager::Instance()->Init(RenderManager::ORIENTATION_PORTRAIT, CGDisplayPixelsWide(kCGDirectMainDisplay), CGDisplayPixelsHigh(kCGDirectMainDisplay));
-	
-	DisplayMode currentMode;
-	currentMode.width = fullscreenMode.width;
-	currentMode.height = fullscreenMode.height;
-	
-	NSLog(@"[CoreMacOSPlatform] init internal renderer: %d x %d", currentMode.width, currentMode.height);
-	
-#if RHI_COMPLETE
-	RenderManager::Instance()->Init(currentMode.width, currentMode.height);
-#endif
-	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-	VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
-	
-	
-#if RHI_COMPLETE
-	RENDER_VERIFY(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
-    RENDER_VERIFY(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-#endif
-    [fullScreenContext flushBuffer];
-	
-    // Now that we've got the screen, we enter a loop in which we alternately process input events and computer and render the next frame of our animation.  The shift here is from a model in which we passively receive events handed to us by the AppKit to one in which we are actively driving event processing.
-    timeBefore = CFAbsoluteTimeGetCurrent();
-    stayInFullScreenMode = YES;
-    while (stayInFullScreenMode) 
-	{
-        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-		
-	
-        // Check for and process input events.
-        NSEvent *event;
-        while ((event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES])) 
-		{
-            switch ([event type]) 
-			{
-                case NSLeftMouseDown:
-                    [self mouseDown:event];
-                    break;
-					
-                case NSLeftMouseUp:
-                    [self mouseUp:event];
-                    break;
-					
-                case NSLeftMouseDragged:
-                    [self mouseDragged:event];
-                    break;
-					
-                case NSRightMouseDown:
-                    [self rightMouseDown:event];
-                    break;
-					
-                case NSRightMouseUp:
-                    [self rightMouseUp:event];
-                    break;
-					
-                case NSRightMouseDragged:
-                    [self rightMouseDragged:event];
-                    break;
-					
-                case NSOtherMouseDown:
-                    [self rightMouseDown:event];
-                    break;
-					
-                case NSOtherMouseUp:
-                    [self rightMouseUp:event];
-                    break;
-					
-                case NSOtherMouseDragged:
-                    [self rightMouseDragged:event];
-                    break;
-					
-                case NSMouseMoved:
-                    [self mouseMoved:event];
-                    break;
-					
-                case NSKeyDown:
-                    //[self keyDown:event];
-                    [NSApp sendEvent:event];
-                    //[fullscreenWindow keyDown:event];
-                    break;
-                case NSKeyUp:
-                        //[self keyDown:event];
-                    [NSApp sendEvent:event];
-                        //[fullscreenWindow keyDown:event];
-                    break;
-					
-                default:
-                    [NSApp sendEvent:event];
-                    break;
+- (void) setFullScreen:(bool)_fullScreen
+{
+if(fullScreen != _fullScreen)
+    {
+        double macOSVer = floor(NSAppKitVersionNumber);
+        // fullscreen for new 10.7+ MacOS
+        if(macOSVer >= NSAppKitVersionNumber10_7)
+        {
+            // just toggle current state
+            // fullScreen variable will be set in windowDidEnterFullScreen/windowDidExitFullScreen callbacks
+            [mainWindowController->mainWindow toggleFullScreen: nil];
+        }
+        // fullsreen for 10.5+ MacOS
+        // this code can be uncommented to have 10.5+ fullscreen support
+        /*
+        else if(macOSVer >= NSAppKitVersionNumber10_5)
+        {
+            fullScreen = _fullScreen;
+            if(fullScreen)
+            {
+                [openGLView enterFullScreenMode:[NSScreen mainScreen] withOptions:nil];
+            }
+            else
+            {
+                [openGLView exitFullScreenModeWithOptions:nil];
             }
         }
-#if RHI_COMPLETE
-		DAVA::Cursor * activeCursor = RenderManager::Instance()->GetCursor();
-		if (activeCursor)
-		{
-			NSCursor * cursor = (NSCursor*)activeCursor->GetMacOSXCursor();
-			[cursor set];
-		}
-
-		DAVA::RenderManager::Instance()->Lock();
-#endif
-		Core::Instance()->SystemProcessFrame();
-		
-		int err = glGetError();
-		if (err != GL_NO_ERROR)
-		{
-			NSLog(@"GL error: %d", err);
-		}
-		[fullScreenContext flushBuffer];
-		
-#if RHI_COMPLETE
-		DAVA::RenderManager::Instance()->Unlock();
-#endif
-		
-		// NSLog(@"GL fullscreen frame");
-        // Clean up any autoreleased objects that were created this time through the loop.
-        [pool release];
+        */
+        else
+        {
+            // fullscreen for older macOS isn't supperted
+            DVASSERT_MSG(false, "Fullscreen isn't supperted for this MacOS version");
+        }
     }
-    
-    // Clear the front and back framebuffers before switching out of FullScreen mode.  (This is not strictly necessary, but avoids an untidy flash of garbage.)
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    [fullScreenContext flushBuffer];
-	
-    // Restore the previously set swap interval.
-    CGLSetParameter(cglContext, kCGLCPSwapInterval, (GLint*)&oldSwapInterval);
-	
-	//[NSMenu setMenuBarVisible: YES];
-	//CGDisplayShowCursor(kCGDirectMainDisplay);
-	//SetSystemUIMode(kUIModeNormal, 0);
-
-	//if ([[mainWindow screen] isEqual:[[NSScreen screens] objectAtIndex:0]])
-	//	{
-	//		[NSMenu setMenuBarVisible:YES];
-	//	}
-	
-	
-    // Exit fullscreen mode and release our FullScreen NSOpenGLContext.
-    [NSOpenGLContext clearCurrentContext];
-    [fullScreenContext clearDrawable];
-    [fullScreenContext release];
-    fullScreenContext = nil;
-	
-    // Release control of the display.
-    CGReleaseAllDisplays();
-	
-    // Mark our view as needing drawing.  (The animation has advanced while we were in FullScreen mode, so its current contents are stale.)
-//  	RenderManager::Instance()->Init(RenderManager::ORIENTATION_PORTRAIT, oldWidth, oldHeight);
-	[openGLView setNeedsDisplay:YES];
-	[openGLView enableTrackingArea];
-
-    // Resume animation timer firings.
-    if ([self isAnimating]) 
-	{
-        [self startAnimationTimer];
-    }
-	[self endFullScreen];
 }
 
 - (void) keyDown:(NSEvent *)event
 {
 	[openGLView keyDown:event];
-
-//	unichar c = [[event charactersIgnoringModifiers] characterAtIndex:0];
-//	
-//	if ([event modifierFlags] & NSCommandKeyMask)
-//	{
-//		if (c == 'm')
-//		{
-//			NSLog(@"[CoreMacOSPlatform] keyDown cmd+m");
-//			[fullscreenWindow miniaturize:fullscreenWindow];
-//		}
-//	}
-    
-//	// TODO: remove that from template
-//	switch (c) 
-//	{
-//		case 27:
-//            stayInFullScreenMode = NO;
-//            break;
-//		default:
-//            break;
-//    }	
 }
 
 - (void) keyUp:(NSEvent *)event
@@ -558,7 +294,6 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 
 - (void)mouseMoved:(NSEvent *)theEvent
 {
-	//NSLog(@"[CoreMacOSPlatform] mouse moved fullscreen");	
 	[openGLView mouseMoved:theEvent];
 }
 
@@ -610,51 +345,6 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 	[openGLView otherMouseUp:theEvent];
 }
 
-
-- (BOOL) isInFullScreenMode
-{
-    return fullScreenContext != nil;
-}
-
-- (BOOL) isAnimating
-{
-    return isAnimating;
-}
-
-- (void) startAnimation
-{
-    if (!isAnimating) 
-	{
-        isAnimating = YES;
-        if (![self isInFullScreenMode]) 
-		{
-            [self startAnimationTimer];
-        }
-    }
-}
-
-- (void) stopAnimation
-{
-    if (isAnimating) 
-	{
-        if (animationTimer != nil) 
-		{
-            [self stopAnimationTimer];
-        }
-        isAnimating = NO;
-    }
-}
-
-- (void) toggleAnimation
-{
-    if ([self isAnimating]) 
-	{
-        [self stopAnimation];
-    } else {
-        [self startAnimation];
-    }
-}
-
 - (void) startAnimationTimer
 {
     if (animationTimer == nil) 
@@ -687,13 +377,6 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 #endif
 }
 
-- (void) switchFullscreenTimerFired:(NSTimer *)timer
-{
-	[openGLView disableTrackingArea];
-	[self switchToFullScreen];
-	[timer invalidate];
-}
-
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
 	NSLog(@"[CoreMacOSPlatform] Application did finish launching");	
@@ -708,7 +391,6 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
         [cursor set];
     }
 #endif
-
 }
 
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification
@@ -766,12 +448,6 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 	Core::Instance()->SystemAppFinished();
 	FrameworkWillTerminate();
     Core::Instance()->ReleaseSingletons();
-#ifdef ENABLE_MEMORY_MANAGER
-    if (DAVA::MemoryManager::Instance() != 0)
-    {
-        DAVA::MemoryManager::Instance()->FinalLog();
-    }
-#endif
 
 	NSLog(@"[CoreMacOSPlatform] Application terminate");
 	return NSTerminateNow;
@@ -809,38 +485,34 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 
 namespace DAVA 
 {
-	
+
 Core::eScreenMode CoreMacOSPlatform::GetScreenMode()
 {
-        if ([mainWindowController isInFullScreenMode])return Core::MODE_FULLSCREEN;
-	else return Core::MODE_WINDOWED;
+    return ([mainWindowController isFullScreen]) ? Core::MODE_FULLSCREEN : Core::MODE_WINDOWED;
 }
-	
+
 void CoreMacOSPlatform::ToggleFullscreen()
 {
-	if (GetScreenMode() == Core::MODE_FULLSCREEN) // check if we try to switch mode
-	{
-		SwitchScreenToMode(Core::MODE_WINDOWED);
-	}else {
-		SwitchScreenToMode(Core::MODE_FULLSCREEN);
-	}
+    if (GetScreenMode() == Core::MODE_FULLSCREEN) // check if we try to switch mode
+    {
+        [mainWindowController setFullScreen:false];
+    }
+    else
+    {
+        [mainWindowController setFullScreen:true];
+    }
 }
 
 void CoreMacOSPlatform::SwitchScreenToMode(eScreenMode screenMode)
 {
-	if (GetScreenMode() != screenMode) // check if we try to switch mode
-	{
-		if (screenMode == Core::MODE_FULLSCREEN)
-		{
-			[NSTimer scheduledTimerWithTimeInterval:0.01 target:mainWindowController selector:@selector(switchFullscreenTimerFired:) userInfo:nil repeats:NO];
-		}else if (screenMode == Core::MODE_WINDOWED)
-		{
-			mainWindowController->stayInFullScreenMode = NO;
-		}
-	}else
-	{
-		Logger::FrameworkDebug("[CoreMacOSPlatform::SwitchScreenToMode] Current screen mode is the same as previous. Do nothing");
-	}
+    if (screenMode == Core::MODE_FULLSCREEN)
+    {
+        [mainWindowController setFullScreen:true];
+    }
+    else if (screenMode == Core::MODE_WINDOWED)
+    {
+        [mainWindowController setFullScreen:false];
+    }
 }
 
 void CoreMacOSPlatform::Quit()

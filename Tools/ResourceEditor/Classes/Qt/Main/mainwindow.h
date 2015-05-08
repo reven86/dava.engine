@@ -43,6 +43,7 @@
 
 #include "Scene/SceneEditor2.h"
 #include "Tools/QtPosSaver/QtPosSaver.h"
+#include "Main/RecentMenuItems.h"
 
 #include "Beast/BeastProxy.h"
 
@@ -54,6 +55,8 @@ class DeveloperTools;
 class VersionInfoWidget;
 
 class DeviceListController;
+
+
 
 class QtMainWindow
     : public QMainWindow
@@ -104,7 +107,8 @@ public slots:
 	void OnSceneSave();
 	void OnSceneSaveAs();
 	void OnSceneSaveToFolder();
-	void OnRecentTriggered(QAction *recentAction);
+	void OnRecentFilesTriggered(QAction *recentAction);
+    void OnRecentProjectsTriggered(QAction *recentAction);
 	void ExportMenuTriggered(QAction *exportAsAction);
     void OnImportSpeedTreeXML();
 
@@ -220,9 +224,6 @@ protected:
 	void SetupTitle();
 	void SetupShortCuts();
 
-	void InitRecent();
-	void AddRecent(const QString &path);
-    
     void StartGlobalInvalidateTimer();
 
 	void RunBeast(const QString& outputPath, BeastProxy::eBeastMode mode);
@@ -235,6 +236,8 @@ protected:
 	
 	static void SetActionCheckedSilently(QAction *action, bool checked);
 
+    void OpenProject(const DAVA::FilePath & projectPath);
+    
     
 private slots:
 	void ProjectOpened(const QString &path);
@@ -264,7 +267,6 @@ private:
 	QtPosSaver posSaver;
 	bool globalInvalidate;
 
-	QList<QAction *> recentScenes;
 	ModificationWidget *modificationWidget;
 
     QComboBox *objectTypesWidget;
@@ -299,10 +301,13 @@ private:
 	// <--
 
     //Need for any debug functionality
-    DeveloperTools *developerTools;
+    QPointer<DeveloperTools> developerTools;
     QPointer<VersionInfoWidget> versionInfoWidget;
 
     QPointer<DeviceListController> deviceListController;
+
+    RecentMenuItems recentFiles;
+    RecentMenuItems recentProjects;
 };
 
 

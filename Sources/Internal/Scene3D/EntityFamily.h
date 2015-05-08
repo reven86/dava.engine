@@ -28,49 +28,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __DAVAENGINE_ENTITY_FAMILY_H__
 #define __DAVAENGINE_ENTITY_FAMILY_H__
 
-#include "Base/BaseTypes.h"
+#include "Entity/BaseFamily.h"
 #include "Entity/Component.h"
 
 namespace DAVA
 {
 
-class EntityFamily
+class EntityFamily : public BaseFamily<Component>
 {
-public:
-    EntityFamily ();
-
-    static EntityFamily * GetOrCreate (const Vector<Component*> & components);
-    uint32 GetComponentIndex (uint32 componentType, uint32 index) const;
-    uint32 GetComponentsCount (uint32 componentType) const;
-    uint64 GetComponentsFlags () const;
-
 private:
-    uint32 componentIndices[Component::COMPONENT_COUNT];
-    uint32 componentCount[Component::COMPONENT_COUNT];
-    uint64 componentsFlags;
-    static Vector<EntityFamily*> families;
-    friend bool operator==(const EntityFamily & lhs, const EntityFamily & rhs);
+    EntityFamily(const Vector<Component*> & components);
+
+public:
+    static EntityFamily * GetOrCreate(const Vector<Component*> & components);
+    static void Release(EntityFamily *&family);
+    
+private:
+    static BaseFamilyRepository<EntityFamily> repository;
 };
-
-inline uint32 EntityFamily::GetComponentIndex(uint32 componentType, uint32 index) const
-{
-    return componentIndices[componentType] + index;
-}
-
-inline uint32 EntityFamily::GetComponentsCount (uint32 componentType) const
-{
-    return componentCount[componentType];
-}
-
-inline uint64 EntityFamily::GetComponentsFlags () const
-{
-    return componentsFlags;
-}
-
-inline bool operator==(const EntityFamily & lhs, const EntityFamily & rhs)
-{
-    return (lhs.componentsFlags == rhs.componentsFlags) && (0 == Memcmp (lhs.componentCount, rhs.componentCount, sizeof (lhs.componentCount)));
-}
 
 }
 

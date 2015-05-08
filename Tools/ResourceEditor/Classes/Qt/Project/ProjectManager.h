@@ -35,7 +35,9 @@
 #include <QVector>
 #include "DAVAEngine.h"
 
-class ProjectManager : public QObject, public DAVA::Singleton<ProjectManager>
+class ProjectManager
+    : public QObject
+    , public DAVA::Singleton<ProjectManager>
 {
 	Q_OBJECT
 
@@ -58,9 +60,9 @@ public:
 
 	bool IsOpened() const;
 
-	DAVA::FilePath CurProjectPath() const;
-	DAVA::FilePath CurProjectDataSourcePath() const;
-    DAVA::FilePath CurProjectDataParticles() const;
+	const DAVA::FilePath & CurProjectPath() const;
+	const DAVA::FilePath & CurProjectDataSourcePath() const;
+    const DAVA::FilePath & CurProjectDataParticles() const;
     
     const QVector<ProjectManager::AvailableMaterialTemplate>* GetAvailableMaterialTemplates() const;
     const QVector<ProjectManager::AvailableMaterialQuality>* GetAvailableMaterialQualities() const;
@@ -71,21 +73,24 @@ public slots:
     void ProjectOpen(const DAVA::FilePath &path);
 	void ProjectOpenLast();
 	void ProjectClose();
+    void OnSceneViewInitialized();
+    void UpdateParticleSprites();
 
 signals:
 	void ProjectOpened(const QString &path);
 	void ProjectClosed();
     
 private:
+    void LoadProjectSettings();
+    void LoadMaterialsSettings();
+
     DAVA::FilePath curProjectPath;
 	DAVA::FilePath curProjectPathDataSource;
     DAVA::FilePath curProjectPathParticles;
-
-	void LoadProjectSettings();
-    void LoadMaterialsSettings();
-
     QVector<AvailableMaterialTemplate> templates;
     QVector<AvailableMaterialQuality> qualities;
+    bool useDelayInitialization;
+    bool isParticleSpritesUpdated;
 };
 
 #endif // __PROJECT_MANAGER_H__ 

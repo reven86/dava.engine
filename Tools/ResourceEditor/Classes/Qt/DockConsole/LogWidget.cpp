@@ -83,7 +83,7 @@ LogModel* LogWidget::Model()
 
 void LogWidget::OnFilterChanged()
 {
-    QList<QVariant> selection = ui->filter->GetSelectedUserData();
+    QList<QVariant> selection = ui->filter->selectedUserData();
     QSet<int> levels;
 
     for (int i = 0; i < selection.size(); i++)
@@ -138,7 +138,7 @@ void LogWidget::LoadSettings()
         levels << a[i];
     }
 
-    ui->filter->SelectUserData(levels);
+    ui->filter->selectUserData(levels);
 
     const DAVA::String text = SettingsManager::Instance()->GetValue(Settings::Internal_LogTextFilter).AsString();
     ui->search->setText(QString::fromStdString(text));
@@ -151,7 +151,7 @@ void LogWidget::SaveSettings()
 
     DAVA::Logger::RemoveCustomOutput(logModel);
 
-    const QList<QVariant>& selection = ui->filter->GetSelectedUserData();
+    const QList<QVariant>& selection = ui->filter->selectedUserData();
     const int n = selection.size();
     DAVA::Vector<DAVA::uint32> v;
     v.reserve(selection.size());

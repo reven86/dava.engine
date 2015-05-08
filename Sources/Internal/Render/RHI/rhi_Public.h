@@ -196,7 +196,8 @@ Packet
     HConstBuffer        vertexConst[MAX_CONST_BUFFER_COUNT];
     uint32              fragmentConstCount;
     HConstBuffer        fragmentConst[MAX_CONST_BUFFER_COUNT];
-    HTextureSet         textureSet;
+    HTextureSet         fragmentTextureSet;
+    HTextureSet         vertexTextureSet;
     PrimitiveType       primitiveType;
     uint32              primitiveCount;
 

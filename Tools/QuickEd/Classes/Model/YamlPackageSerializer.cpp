@@ -94,7 +94,7 @@ void YamlPackageSerializer::WriteToFile(const FilePath &path)
     YamlEmitter::SaveToYamlFile(path, GetYamlNode());
 }
 
-String YamlPackageSerializer::WriteToString()
+String YamlPackageSerializer::WriteToString() const
 {
     DynamicMemoryFile *file = DynamicMemoryFile::Create(File::WRITE);
     YamlEmitter::SaveToYamlFile(GetYamlNode(), file);

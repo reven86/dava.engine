@@ -252,8 +252,12 @@ enum
     VATTR_TEXCOORD_7    = 11,
     VATTR_COLOR_0       = 3,
     VATTR_COLOR_1       = 7,
+    VATTR_TANGENT       = 12,
+    VATTR_BINORMAL      = 13,
+    VATTR_BLENDWEIGHT   = 14,
+    VATTR_BLENDINDEX    = 15,
     
-    VATTR_COUNT         = 12
+    VATTR_COUNT         = 16
 };
 
 

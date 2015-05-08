@@ -37,11 +37,14 @@
 #include "ExternC/AndroidLayer.h"
 
 #include "AndroidCrashReport.h"
+#include "Debug/Backtrace.h"
 
 using namespace DAVA;
 
 bool DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 {
+    Logger::FrameworkDebug("DAVA BACKTRACE PRINTING");
+    PrintBackTraceToLog(Logger::LEVEL_ERROR);
 	JNI::JavaClass msg("com/dava/framework/JNIAssert");
 	auto showMessage = msg.GetStaticMethod<jboolean, jboolean, jstring>("Assert");
 
