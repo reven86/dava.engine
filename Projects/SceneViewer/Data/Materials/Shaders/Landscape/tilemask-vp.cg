@@ -5,8 +5,8 @@ VPROG_IN_END
 
 VPROG_OUT_BEGIN
     VPROG_OUT_POSITION
-    VPROG_OUT_TEXCOORD0(outTexCoord,2)
-    VPROG_OUT_TEXCOORD1(outTexCoordTiled,2)
+    VPROG_OUT_TEXCOORD0(texCoord,2)
+    VPROG_OUT_TEXCOORD1(texCoordTiled,2)
 VPROG_OUT_END
 
 property float4x4 worldViewProjMatrix : shared,dynamic : ;
@@ -20,7 +20,7 @@ VPROG_BEGIN
     
     VP_OUT_POSITION = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), worldViewProjMatrix );
     
-    VP_OUT(outTexCoord) = in_texcoord;
-    VP_OUT(outTexCoordTiled) = in_texcoord * float2(textureTiling.x, textureTiling.y);
+    VP_OUT(texCoord) = in_texcoord;
+    VP_OUT(texCoordTiled) = in_texcoord * float2(textureTiling.x, textureTiling.y);
     
-VPROG_END;
+VPROG_END

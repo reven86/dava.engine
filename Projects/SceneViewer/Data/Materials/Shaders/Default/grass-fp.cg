@@ -1,6 +1,6 @@
 FPROG_IN_BEGIN
-    FPROG_IN_TEXCOORD0(inTexCoord,2)
-    VPROG_OUT_COLOR0(inVegetationColor,3)
+    FPROG_IN_TEXCOORD0(texCoord,2)
+    VPROG_OUT_COLOR0(vegetationColor,3)
 FPROG_IN_END
 
 FPROG_OUT_BEGIN
@@ -15,8 +15,8 @@ property float3 lodColor : shared,static : def_value=1,1,1;
 
 FPROG_BEGIN
 
-    float4 textureColor0 = FP_TEXTURE2D( albedo, FP_IN(inTexCoord) );
-    float3 color = textureColor0.rgb * FP_IN(inVegetationColor) * 2.0;
+    float4 textureColor0 = FP_TEXTURE2D( albedo, FP_IN(texCoord) );
+    float3 color = textureColor0.rgb * FP_IN(vegetationColor) * 2.0;
 
 #if LOD_COLOR
     color += lodColor;
@@ -24,4 +24,4 @@ FPROG_BEGIN
         
     FP_OUT_COLOR = float4(color, 1.0);
 
-FPROG_END;
+FPROG_END

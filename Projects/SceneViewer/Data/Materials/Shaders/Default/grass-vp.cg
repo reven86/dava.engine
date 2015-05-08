@@ -7,8 +7,8 @@ VPROG_IN_END
 
 VPROG_OUT_BEGIN
     VPROG_OUT_POSITION
-    VPROG_OUT_TEXCOORD0(outTexCoord,2)
-    VPROG_OUT_COLOR0(outVegetationColor,3)
+    VPROG_OUT_TEXCOORD0(texCoord,2)
+    VPROG_OUT_COLOR0(vegetationColor,3)
 VPROG_OUT_END
 
 //uniform sampler2D heightmap;
@@ -32,7 +32,7 @@ VPROG_BEGIN
     float3 inTexCoord1 = VP_IN_TEXCOORD1;
     float3 inTexCoord2 = VP_IN_TEXCOORD2;
     
-	VP_OUT(outTexCoord) = inTexCoord0;
+	VP_OUT(texCoord) = inTexCoord0;
     
     //inTexCoord1.y - cluster type (0...3)
     //inTexCoord1.z - cluster's reference density (0...15)
@@ -63,7 +63,7 @@ VPROG_BEGIN
     //float4 vegetationMask = texture2DLod(vegetationmap, hUVcolor, 0.0);
     float4 vegetationMask = float4(0.5, 0.5, 0.5, 0.5);
     
-    VP_OUT(outVegetationColor) = vegetationMask.rgb;
+    VP_OUT(vegetationColor) = vegetationMask.rgb;
     
     //wave transform
     int clusterType = int(inTexCoord1.y);
@@ -75,4 +75,4 @@ VPROG_BEGIN
     pos = lerp(clusterCenter, pos, vegetationMask.a * clusterScale);
     VP_OUT_POSITION = mul(float4(pos, 1.0), worldViewProjMatrix);
 
-VPROG_END;
+VPROG_END
