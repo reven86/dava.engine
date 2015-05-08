@@ -219,7 +219,9 @@ protected:
     void LoadVersion8(File *file);
     void LoadVersion9(File *file);
     
+    void RecalculateCompressionSourceCRC();
 	uint32 ReadSourceCRC() const;
+    uint32 ReadSourceCRC_V8_or_less() const;
 	uint32 GetConvertedCRC(eGPUFamily forGPU) const;
 
 	uint32 GenerateDescriptorCRC() const;

@@ -347,7 +347,19 @@ void TextureDescriptor::SaveInternal(File *file, const int32 signature, const ui
     int8 exportedAsPixelFormat = format;
     file->Write(&exportedAsPixelFormat);
 }
-    
+
+void TextureDescriptor::RecalculateCompressionSourceCRC()
+{
+    auto sourceCrcOld = ReadSourceCRC_V8_or_less();
+    auto sourceCrcNew = ReadSourceCRC();
+
+    for (auto& compr : compression)
+    {
+        if (compr.sourceFileCrc == sourceCrcOld)
+            compr.sourceFileCrc = sourceCrcNew;
+    }
+}
+
 void TextureDescriptor::LoadVersion6(DAVA::File *file)
 {
 	file->Read(&drawSettings.wrapModeS);
@@ -378,6 +390,8 @@ void TextureDescriptor::LoadVersion6(DAVA::File *file)
 			file->Read(&compression[i].compressToHeight);
 			file->Read(&compression[i].sourceFileCrc);
         }
+
+        RecalculateCompressionSourceCRC();
     }
 }
 
@@ -412,6 +426,8 @@ void TextureDescriptor::LoadVersion7(DAVA::File *file)
             file->Read(&compression[i].sourceFileCrc);
             file->Read(&compression[i].convertedFileCrc);
         }
+
+        RecalculateCompressionSourceCRC();
     }
     
     file->Read(&dataSettings.cubefaceFlags);
@@ -450,6 +466,8 @@ void TextureDescriptor::LoadVersion8(File *file)
             file->Read(&compression[i].sourceFileCrc);
             file->Read(&compression[i].convertedFileCrc);
         }
+
+        RecalculateCompressionSourceCRC();
     }
 
     file->Read(&dataSettings.cubefaceFlags);
@@ -696,10 +714,45 @@ bool TextureDescriptor::IsCubeMap() const
 	return (dataSettings.cubefaceFlags != 0);
 }
 
+uint32 TextureDescriptor::ReadSourceCRC_V8_or_less() const
+{
+    uint32 crc = 0;
+
+    DAVA::File *f = DAVA::File::Create(GetSourceTexturePathname(), DAVA::File::OPEN | DAVA::File::READ);
+    if (NULL != f)
+    {
+        uint8 buffer[8];
+
+        // Read PNG header
+        f->Read(buffer, 8);
+
+        // read chunk header
+        while (0 != f->Read(buffer, 8))
+        {
+            int32 chunk_size = 0;
+            chunk_size |= (buffer[0] << 24);
+            chunk_size |= (buffer[1] << 16);
+            chunk_size |= (buffer[2] << 8);
+            chunk_size |= buffer[3];
+
+            // jump thought data
+            DVASSERT(chunk_size >= 0);
+            f->Seek(chunk_size, File::SEEK_FROM_CURRENT);
+
+            // read crc
+            f->Read(buffer, 4);
+            crc += ((uint32 *)buffer)[0];
+        }
+
+        f->Release();
+    }
+
+    return crc;
+}
+
 uint32 TextureDescriptor::ReadSourceCRC() const
 {
-    uint32 crc = CRC32::ForFile(GetSourceTexturePathname());
-	return crc;
+    return CRC32::ForFile(GetSourceTexturePathname());
 }
     
 uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
