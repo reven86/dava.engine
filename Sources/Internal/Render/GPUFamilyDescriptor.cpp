@@ -43,19 +43,6 @@ namespace DAVA
     
 GPUFamilyDescriptor::GPUData GPUFamilyDescriptor::gpuData[GPU_FAMILY_COUNT];
 
-void GPUFamilyDescriptor::GPUData::SetName(const String &newName)
-{
-    name = newName;
-    if(!name.empty())
-    {
-        prefix = "." + name;
-    }
-    else
-    {
-        prefix = "";
-    }
-}
-
 void GPUFamilyDescriptor::SetupGPUParameters()
 {
     SetupGPUFormats();
@@ -139,12 +126,18 @@ void GPUFamilyDescriptor::SetupGPUFormats()
 
 void GPUFamilyDescriptor::SetupGPUPostfixes()
 {
-    gpuData[GPU_POWERVR_IOS].SetName("PowerVR_iOS");
-    gpuData[GPU_POWERVR_ANDROID].SetName("PowerVR_Android");
-    gpuData[GPU_TEGRA].SetName("tegra");
-    gpuData[GPU_MALI].SetName("mali");
-    gpuData[GPU_ADRENO].SetName("adreno");
-    gpuData[GPU_ORIGIN].SetName("");
+    gpuData[GPU_POWERVR_IOS].name = "PowerVR_iOS";
+    gpuData[GPU_POWERVR_IOS].prefix = ".PowerVR_iOS";
+    gpuData[GPU_POWERVR_ANDROID].name = "PowerVR_Android";
+    gpuData[GPU_POWERVR_ANDROID].prefix = ".PowerVR_Android";
+    gpuData[GPU_TEGRA].name = "tegra";
+    gpuData[GPU_TEGRA].prefix = ".tegra";
+    gpuData[GPU_MALI].name = "mali";
+    gpuData[GPU_MALI].prefix = ".mali";
+    gpuData[GPU_ADRENO].name = "adreno";
+    gpuData[GPU_ADRENO].prefix = ".adreno";
+    gpuData[GPU_ORIGIN].name = "origin";
+    gpuData[GPU_ORIGIN].prefix = "";
 }
 
 const Map<PixelFormat, ImageFormat> & GPUFamilyDescriptor::GetAvailableFormatsForGpu(eGPUFamily gpuFamily)

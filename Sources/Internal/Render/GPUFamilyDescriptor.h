@@ -45,8 +45,6 @@ public:
     
     struct GPUData
     {
-        void SetName(const String & newName);
-        
         String name;
         String prefix;
         

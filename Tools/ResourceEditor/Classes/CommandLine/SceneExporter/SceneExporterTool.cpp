@@ -47,7 +47,7 @@ void SceneExporterTool::PrintUsage()
     printf("\t-outdir - path for Poject/Data/3d/ folder\n");
     printf("\t-processdir - foldername from DataSource/3d/ for exporting\n");
     printf("\t-processfile - filename from DataSource/3d/ for exporting\n");
-    printf("\t-gpu - PoverVR_iOS, PoverVR_Android, tegra, mali, adreno\n");
+    printf("\t-gpu - PoverVR_iOS, PoverVR_Android, tegra, mali, adreno, origin\n");
 	printf("\t-saveNormals - disable removing of normals from vertexes\n");
 	printf("\t-quality [0-4] - quality of pvr/etc compression. default is 4 - the best quality\n");
     printf("\t-qualitycfgpath - path for quality.yaml file\n");
