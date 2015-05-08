@@ -43,11 +43,32 @@
 
 #include "Components/UIComponent.h"
 #include "Components/UIControlFamily.h"
+#include "Thread/LockGuard.h"
 
 namespace DAVA
 {
+    static Mutex controlsListMutex;
+    static Vector<const UIControl *> controlsList;//weak pointers
+
+    static void StartControlTracking(const UIControl *control)
+    {
+#if defined(__DAVAENGINE_DEBUG__)
+        LockGuard<Mutex> lock(controlsListMutex);
+        controlsList.push_back(control);
+#endif
+    }
+
+    static void StopControlTracking(const UIControl *control)
+    {
+#if defined(__DAVAENGINE_DEBUG__)
+        LockGuard<Mutex> lock(controlsListMutex);
+        controlsList.erase(find(controlsList.begin(), controlsList.end(), control));
+#endif
+    }
+
     UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) : family(nullptr)
     {
+        StartControlTracking(this);
         UpdateFamily();
 
         parent = NULL;
@@ -112,6 +133,7 @@ namespace DAVA
         RemoveAllControls();
         RemoveAllComponents();
         UIControlFamily::Release(family);
+        StopControlTracking(this);
     }
 
     void UIControl::SetParent(UIControl *newParent)
@@ -2682,7 +2704,23 @@ namespace DAVA
         {
             (*it)->DumpInputs(depthLevel + 1);
         }
-    }    
+    }
+
+    void UIControl::DumpControls(bool onlyOrphans)
+    {
+        LockGuard<Mutex> lock(controlsListMutex);
+        Logger::FrameworkDebug("============================================================");
+        Logger::FrameworkDebug("--------------- Currently allocated controls ----------------");
+
+        for (auto control : controlsList)
+        {
+            if (onlyOrphans && control->GetParent() != nullptr)
+                continue;
+            Logger::FrameworkDebug("class:\"%s\" name:\"%s\" count:%d", control->GetClassName().c_str(), control->GetName().c_str(), control->GetRetainCount());
+        }
+
+        Logger::FrameworkDebug("============================================================");
+    }
 
     int32 UIControl::GetBackgroundComponentsCount() const
     {

@@ -30,10 +30,12 @@
 #include "Debug/DVAssert.h"
 #include "Main/QtUtils.h"
 #include "QtPropertyDataDavaVariant.h"
-#include "Tools/QtFileDialog/QtFileDialog.h"
 #include "Tools/QtPropertyEditor/QtPropertyWidgets/FlagSelectorCombo.h"
 #include "Tools/ColorPicker/ColorPicker.h"
 #include "Tools/Widgets/MultilineEditor.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
+
 
 #include <QListWidget>
 #include <QDoubleSpinBox>
@@ -1152,7 +1154,7 @@ void QtPropertyDataDavaVariant::FilePathOWPressed()
     {
         openFilePath = defaultOpenDialogPath;
     }
-	QString path = QtFileDialog::getOpenFileName(GetOWViewport(), "Select file", openFilePath, openDialogFilter);
+	QString path = FileDialog::getOpenFileName(GetOWViewport(), "Select file", openFilePath, openDialogFilter);
 	if(!path.isEmpty())
 	{
 		SetValue(path, QtPropertyData::VALUE_EDITED);
