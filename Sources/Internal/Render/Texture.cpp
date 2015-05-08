@@ -224,7 +224,7 @@ Texture::Texture()
 
 #endif
 
-	texDescriptor = new TextureDescriptor();
+    texDescriptor = TRACKED_NEW(TextureDescriptor);
 }
 
 Texture::~Texture()

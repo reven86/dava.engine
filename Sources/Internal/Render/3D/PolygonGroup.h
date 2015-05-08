@@ -49,7 +49,7 @@ namespace DAVA
 class SceneFileV2;    
 class PolygonGroup : public DataNode
 {
-    ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_RENDERBATCH)
+    ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_POLYGONGROUP)
 
 public:
 	enum VertexDataType

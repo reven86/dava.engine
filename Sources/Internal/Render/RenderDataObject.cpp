@@ -131,7 +131,7 @@ RenderDataStream * RenderDataObject::SetStream(eVertexFormat formatMark, eVertex
     {
         // New item - add it
         resultVertexFormat |= formatMark;
-        stream = new RenderDataStream(); // todo optimize dynamic object cache
+        stream = TRACKED_NEW(RenderDataStream); // todo optimize dynamic object cache
         
         streamMap[formatMark] = stream;
         streamArray.push_back(stream);

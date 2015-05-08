@@ -123,9 +123,9 @@ Landscape::Landscape()
     nearLodIndex = 0;
     farLodIndex = 0;
     
-	cursor = 0;
+    cursor = 0;
     
-    heightmap = new Heightmap();
+    heightmap = TRACKED_NEW(Heightmap);
     prevLodLayer = -1;
 }
 
@@ -146,7 +146,7 @@ int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
 {
 //    Logger::FrameworkDebug("AllocateRDOQuad: %d %d size: %d", quad->x, quad->y, quad->size);
     DVASSERT(quad->size == RENDER_QUAD_WIDTH - 1);
-    LandscapeVertex * landscapeVertices = new LandscapeVertex[(quad->size + 1) * (quad->size + 1)];
+    LandscapeVertex * landscapeVertices = TRACKED_NEW_ARRAY(LandscapeVertex, (quad->size + 1) * (quad->size + 1));
     
     int32 index = 0;
     for (int32 y = quad->y; y < quad->y + quad->size + 1; ++y)
@@ -332,7 +332,7 @@ void Landscape::BuildLandscape()
         RecursiveBuild(&quadTreeHead, 0, lodLevelsCount);
         FindNeighbours(&quadTreeHead);
         
-        indices = new uint16[INDEX_ARRAY_COUNT];
+        indices = TRACKED_NEW_ARRAY(uint16, INDEX_ARRAY_COUNT);
     }
     else
     {
@@ -1440,7 +1440,7 @@ void Landscape::Create(NMaterial *fromMaterial/* = NULL */)
         tileMaskMaterial = fromMaterial->Clone();
     }
 	
-	LandscapeChunk * chunk = new LandscapeChunk(this);
+	LandscapeChunk * chunk = TRACKED_NEW(LandscapeChunk, this);
 	chunk->SetMaterial(tileMaskMaterial);
 	chunk->SetSortingKey(10);
 	AddRenderBatch(chunk);
@@ -1591,8 +1591,8 @@ void Landscape::SetTextureName(eTextureLevel level, const FilePath &newTextureNa
 
 void Landscape::CursorEnable()
 {
-	DVASSERT(0 == cursor);
-	cursor = new LandscapeCursor();
+    DVASSERT(nullptr == cursor);
+    cursor = TRACKED_NEW(LandscapeCursor);
 }
 
 void Landscape::CursorDisable()

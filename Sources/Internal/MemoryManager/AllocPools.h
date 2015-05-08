@@ -39,9 +39,13 @@ enum ePredefAllocPools
     ALLOC_POOL_DEFAULT,     // Allocation pool used for all other application memory allocations, except custom if any
     ALLOC_POOL_FMOD,
     ALLOC_POOL_BASEOBJECT,
-    ALLOC_POOL_RENDERBATCH,
+    ALLOC_POOL_POLYGONGROUP,
+    ALLOC_POOL_RENDERDATAOBJECT,
     ALLOC_POOL_COMPONENT,
     ALLOC_POOL_ENTITY,
+    ALLOC_POOL_LANDSCAPE,
+    ALLOC_POOL_IMAGE,
+    ALLOC_POOL_TEXTURE,
 
     PREDEF_POOL_COUNT,
     FIRST_CUSTOM_ALLOC_POOL = PREDEF_POOL_COUNT   // First custom allocation pool must be FIRST_CUSTOM_ALLOC_POOL

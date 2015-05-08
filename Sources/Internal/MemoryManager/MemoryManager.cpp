@@ -83,13 +83,17 @@ struct MemoryManager::Backtrace
 MMItemName MemoryManager::tagNames[MAX_TAG_COUNT];
 
 MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT] = {
-    { "total"       },
-    { "default"     },
-    { "fmod"        },
-    {" base object" },
-    { "renderbatch" },
-    { "component"   },
-    { "entity"      }
+    { "total"          },
+    { "default"        },
+    { "fmod"           },
+    { "base object"    },
+    { "polygon group"  },
+    { "render dataobj" },
+    { "component"      },
+    { "entity"         },
+    { "landscape"      },
+    { "image"          },
+    { "texture"        }
 };
 
 size_t MemoryManager::registeredTagCount = 0;

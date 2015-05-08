@@ -43,6 +43,8 @@
 
 #include "Scene3D/SceneFile/SerializationContext.h"
 
+#include "MemoryManager/MemoryProfiler.h"
+
 //#define LANDSCAPE_SPECULAR_LIT 1
 
 namespace DAVA
@@ -111,7 +113,8 @@ class FoliageSystem;
 class NMaterial;
 class Landscape : public RenderObject
 {
-public:	
+    ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_LANDSCAPE)
+public:
     enum 
     {
         LEFT = 0,

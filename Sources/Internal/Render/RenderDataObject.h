@@ -35,6 +35,8 @@
 #include "Render/RenderBase.h"
 #include "Render/RenderResource.h"
 
+#include "MemoryManager/MemoryProfiler.h"
+
 namespace DAVA
 {
     
@@ -64,6 +66,8 @@ public:
 
 class RenderDataObject : public RenderResource //BaseObject
 {
+    ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_RENDERDATAOBJECT)
+
 protected:
     virtual ~RenderDataObject();
 public:
