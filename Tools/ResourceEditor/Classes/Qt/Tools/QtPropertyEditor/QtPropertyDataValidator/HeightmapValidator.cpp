@@ -57,7 +57,9 @@ bool HeightMapValidator::ValidateInternal(const QVariant &v)
     else if(path.IsEqualToExtension(".png"))
     {
         DAVA::ImageFormatInterface *pngImageSystem = DAVA::ImageSystem::Instance()->GetImageFormatInterface(DAVA::ImageSystem::FILE_FORMAT_PNG);
-        DAVA::Size2i size = pngImageSystem->GetImageSize(path);
+        DAVA::File *infile = DAVA::File::Create(path, DAVA::File::OPEN | DAVA::File::READ);
+        DAVA::Size2i size = pngImageSystem->GetImageInfo(infile).GetImageSize();
+        SafeRelease(infile);
         if(size.dx != size.dy)
         {
             notifyMessage = DAVA::Format("\"%s\" has wrong size: landscape requires square heightmap.",

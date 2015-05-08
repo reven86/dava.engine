@@ -41,14 +41,31 @@
 namespace DAVA
 {
 
+#ifndef USE_BATCHING
+// Enable batching for 2D render
 #define USE_BATCHING 1
+#endif
+
+#ifndef BATCHING_DEBUG
+// Enable buffer checks (reuse VBO which already used in triple buffer)
+#define BATCHING_DEBUG 0
+#endif
 
 #if USE_BATCHING
-static const uint32 MAX_VERTICES = 4096;
+static const uint32 MAX_VERTICES = 1024;
 static const uint32 MAX_INDECES = MAX_VERTICES * 2;
-static const uint32 VBO_POOL_SIZE = 10;
+static const uint32 VBO_POOL_SIZE = 40;
 static const uint32 RESERVED_BATCHES = 1024;
 static const uint32 VBO_FORMAT = EVF_VERTEX | EVF_TEXCOORD0 | EVF_COLOR;
+#if BATCHING_DEBUG
+static const uint32 VBO_USING_FRAME_LIFE = 3; // "triple buffer"
+#endif
+#else
+// Support render with disabled batching
+// Global variables for pointers to render data streams
+// Use ONLY for testing and debugging because they has been removed from the class declaration
+RenderDataStream* spriteVertexStream = nullptr;
+RenderDataStream* spriteTexCoordStream = nullptr;
 #endif
 
 FastName RenderSystem2D::FLAT_COLOR_SHADER("~res:/Shaders/renderer2dColor");
@@ -68,41 +85,142 @@ Shader * RenderSystem2D::TEXTURE_ADD_COLOR = 0;
 Shader * RenderSystem2D::TEXTURE_ADD_COLOR_ALPHA_TEST = 0;
 Shader * RenderSystem2D::TEXTURE_ADD_COLOR_IMAGE_A8 = 0;
 
-VboPool::VboPool(uint32 verticesCount, uint32 format, uint32 indicesCount, uint8 buffersCount)
+#if USE_BATCHING
+class VboPool
 {
+public:
+    VboPool(uint32 verticesCount, uint32 format, uint32 indicesCount, uint8 buffersCount);
+    ~VboPool();
+
+    void ReleaseBuffers();
+    void HardReset(uint32 verticesCount, uint32 indicesCount, uint8 buffersCount);
+
+    void Next();
+    void SetVertexData(uint32 offset, uint32 count, float32 * data);
+    void SetIndexData(uint32 offset, uint32 count, uint8 * data);
+
+#if BATCHING_DEBUG
+    void NextFrame();
+    void CheckForBufferReuse();
+    void EnableBuffersLoopingWarning(int8 framesCount);
+#endif
+
 #if RHI_COMPLETE
-    verticesLimit = verticesCount;
-    indicesLimit = indicesCount;
-	vertexFormat = format;
+    RenderDataObject* GetRenderDataObject() const;
+#endif //RHI_COMPLETE
+    uint32 GetVerticesLimit() const;
+    uint32 GetIndicesLimit() const;
+    uint32 GetVertexFormat() const;
+    uint32 GetVertexStride() const;
+
+private:
+#if RHI_COMPLETE
+    RenderDataObject * currentDataObject;
+    Vector<RenderDataObject*> dataObjects;
+#endif //RHI_COMPLETE
+    uint8 currentDataObjectIndex;
+    uint32 vertexStride;
+    uint32 vertexFormat;
+    uint32 verticesLimit;
+    uint32 indicesLimit;
+
+#if BATCHING_DEBUG
+    int8 defaultVboFrameLife;
+    int8 currentFrame;
+    Vector<int8> vboFrameLifes;
+#endif
+};
+
+#if RHI_COMPLETE
+inline RenderDataObject* VboPool::GetRenderDataObject() const
+{
+    return currentDataObject;
+}
+#endif // RHI_COMPLETE
+
+inline uint32 VboPool::GetVerticesLimit() const
+{
+    return verticesLimit;
+}
+
+inline uint32 VboPool::GetIndicesLimit() const
+{
+    return indicesLimit;
+}
+
+inline uint32 VboPool::GetVertexFormat() const
+{
+    return vertexFormat;
+}
+
+inline uint32 VboPool::GetVertexStride() const
+{
+    return vertexStride;
+}
+
+VboPool::VboPool(uint32 verticesCount, uint32 format, uint32 indicesCount, uint8 buffersCount)
+    : verticesLimit(0)
+    , indicesLimit(0)
+#if BATCHING_DEBUG
+    , defaultVboFrameLife(0)
+    , currentFrame(0)
+    , vboFrameLifes()
+#endif
+{
+    vertexFormat = format;
     vertexStride = GetVertexSize(vertexFormat);
-    for (uint8 i = 0; i < buffersCount; ++i)
-    {
-        RenderDataObject* obj = new RenderDataObject();
-        obj->SetForceVerticesCount(verticesCount);
-        obj->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
-        obj->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, 0);
-        obj->SetStream(EVF_COLOR, TYPE_UNSIGNED_BYTE, 4, vertexStride, 0);
-        obj->BuildVertexBuffer(verticesCount, BDT_DYNAMIC_DRAW, false);
-        obj->SetForceIndicesCount(indicesCount);
-        obj->SetIndices(EIF_16, 0, indicesCount);
-        obj->BuildIndexBuffer(BDT_DYNAMIC_DRAW, false);
-        dataObjects.push_back(obj);
-    }
-    currentDataObjectIndex = 0;
-    currentDataObject = dataObjects[currentDataObjectIndex];
-#endif RHI_COMPLETE
+    HardReset(verticesCount, indicesCount, buffersCount);
 }
 
 VboPool::~VboPool()
 {
+    ReleaseBuffers();
+}
+
+void VboPool::ReleaseBuffers()
+{
 #if RHI_COMPLETE
-    const uint8 count = dataObjects.size();
-    for(uint8 i = 0; i < count; ++i)
+    for(auto dataObj : dataObjects)
     {
-        SafeRelease(dataObjects[i]);
+        SafeRelease(dataObj);
     }
     dataObjects.clear();
-#endif // RHI_COMPLETE
+#endif RHI_COMPLETE
+}
+
+void VboPool::HardReset(uint32 verticesCount, uint32 indicesCount, uint8 buffersCount)
+{
+#if RHI_COMPLETE
+    if(verticesLimit == verticesCount && indicesLimit == indicesCount && dataObjects.size() == buffersCount)
+    {
+        return;
+    }
+    // Destroy exist buffers
+    ReleaseBuffers();
+    // Create new buffers
+    verticesLimit = verticesCount;
+    indicesLimit = indicesCount;
+    for (uint8 i = 0; i < buffersCount; ++i)
+    {
+        RenderDataObject* obj = new RenderDataObject();
+#if defined (__DAVAENGINE_ANDROID__)
+        obj->SetForceVerticesCount(verticesCount);
+#endif
+        obj->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
+        obj->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, 0);
+        obj->SetStream(EVF_COLOR, TYPE_UNSIGNED_BYTE, 4, vertexStride, 0);
+        obj->BuildVertexBuffer(verticesCount, BDT_DYNAMIC_DRAW, false);
+#if defined (__DAVAENGINE_ANDROID__)
+        obj->SetForceIndicesCount(indicesCount);
+#endif
+        obj->SetIndices(EIF_16, 0, indicesCount);
+        obj->BuildIndexBuffer(BDT_DYNAMIC_DRAW, false);
+        dataObjects.push_back(obj);
+    }
+    // Set current buffer
+    currentDataObjectIndex = 0;
+    currentDataObject = dataObjects[currentDataObjectIndex];
+#endif RHI_COMPLETE
 }
     
 void VboPool::Next()
@@ -131,6 +249,50 @@ void VboPool::SetIndexData(uint32 offset, uint32 count, uint8* data)
 #endif // RHI_COMPLETE
 }
 
+#if BATCHING_DEBUG
+void VboPool::EnableBuffersLoopingWarning(int8 framesCount)
+{
+    if(defaultVboFrameLife != framesCount)
+    {
+        vboFrameLifes.clear();
+        defaultVboFrameLife = framesCount;
+        if(defaultVboFrameLife > 0)
+        {
+            vboFrameLifes.resize(dataObjects.size(), -1);
+        }
+    }
+}
+
+void VboPool::CheckForBufferReuse()
+{
+    if(defaultVboFrameLife > 0)
+    {
+        if(vboFrameLifes[currentDataObjectIndex] > 0)
+        {
+            // Check if we try reuse buffer which can be used in triple buffer (or n-frames per buffer)
+            Logger::Warning("RenderSystem2D: Reuse buffer (%d) which is still being processed", currentDataObjectIndex);
+        }
+        vboFrameLifes[currentDataObjectIndex] = defaultVboFrameLife;
+    }
+}
+
+void VboPool::NextFrame()
+{
+    if(defaultVboFrameLife > 0)
+    {
+        currentFrame = ++currentFrame % defaultVboFrameLife;
+        std::for_each(vboFrameLifes.begin(), vboFrameLifes.end(), [](int8 &val){
+            if(val > 0)
+            {
+                val--;
+            }
+        });
+    }
+}
+#endif //BATCHING_DEBUG
+
+#endif //USE_BATCHING
+
 RenderSystem2D::RenderSystem2D() 
 #if RHI_COMPLETE
     : spriteRenderObject(0)
@@ -140,6 +302,14 @@ RenderSystem2D::RenderSystem2D()
     , spriteClipping(true)
     , clipChanged(false)
     , pool(NULL)
+    , indexIndex(0)
+    , vertexIndex(0)
+    , spriteIndexCount(0)
+    , spriteVertexCount(0)
+    , spritePrimitiveToDraw(PRIMITIVETYPE_TRIANGLELIST)
+    , prevFrameErrorsFlags(NO_ERRORS)
+    , currFrameErrorsFlags(NO_ERRORS)
+    , highlightControlsVerticesLimit(0)
 {
 }
 
@@ -149,8 +319,15 @@ void RenderSystem2D::Init()
     if(!pool)
     {
         pool = new VboPool(MAX_VERTICES, VBO_FORMAT, MAX_INDECES, VBO_POOL_SIZE);
-        vboTemp = new float32[MAX_VERTICES * GetVertexSize(VBO_FORMAT)];
-        iboTemp = new uint16[MAX_INDECES];
+#if BATCHING_DEBUG
+        pool->EnableBuffersLoopingWarning(VBO_USING_FRAME_LIFE);
+#endif
+        vboTemp.resize(MAX_VERTICES * GetVertexSize(VBO_FORMAT));
+        iboTemp.resize(MAX_INDECES);
+        // Render data object for drawing big batches
+#if RHI_COMPLETE
+        spriteRenderObject = new RenderDataObject();
+#endif // RHI_COMPLETE
     }
 #else
     if (!spriteRenderObject) //used as flag 'isInited'
@@ -226,8 +403,6 @@ void RenderSystem2D::Init()
 RenderSystem2D::~RenderSystem2D()
 {
     SafeDelete(pool);
-    SafeDeleteArray(vboTemp);
-    SafeDeleteArray(iboTemp);
     
 #if RHI_COMPLETE
     SafeRelease(spriteRenderObject);
@@ -247,7 +422,7 @@ RenderSystem2D::~RenderSystem2D()
 #endif // RHI_COMPLETE
 }
 
-void RenderSystem2D::Reset()
+void RenderSystem2D::BeginFrame()
 {
     currentClip.x = 0;
     currentClip.y = 0;
@@ -259,12 +434,23 @@ void RenderSystem2D::Reset()
     defaultSpriteDrawState.Reset();
     defaultSpriteDrawState.material = RenderHelper::DEFAULT_2D_BLEND_MATERIAL;    
 
+#if USE_BATCHING
     batches.clear();
     batches.reserve(RESERVED_BATCHES);
     currentBatch.Reset();
-
     vertexIndex = 0;
     indexIndex = 0;
+#if BATCHING_DEBUG
+    pool->NextFrame();
+#endif
+#endif
+}
+
+void RenderSystem2D::EndFrame()
+{
+    Flush();
+    prevFrameErrorsFlags = currFrameErrorsFlags;
+    currFrameErrorsFlags = 0;
 }
 
 void RenderSystem2D::Setup2DProjection()
@@ -470,8 +656,11 @@ void RenderSystem2D::Flush()
 
     spritePrimitiveToDraw = PRIMITIVETYPE_TRIANGLELIST;
 
-    pool->SetVertexData(0, vertexIndex, vboTemp);
-    pool->SetIndexData(0, indexIndex, (uint8*)iboTemp);
+#if BATCHING_DEBUG
+    pool->CheckForBufferReuse();
+#endif
+    pool->SetVertexData(0, vertexIndex, &vboTemp.front());
+    pool->SetIndexData(0, indexIndex, (uint8*)&iboTemp.front());
     
     RenderManager::Instance()->SetRenderData(pool->GetRenderDataObject());
 
@@ -504,12 +693,19 @@ void RenderSystem2D::Flush()
 
     vertexIndex = 0;
     indexIndex = 0;
-
     pool->Next();
-    
 #endif
 
 #endif // RHI_COMPLETE
+}
+
+void RenderSystem2D::HardResetBatchingBuffers(uint32 verticesCount, uint32 indicesCount, uint8 buffersCount)
+{
+#if USE_BATCHING
+    vboTemp.resize(verticesCount * GetVertexSize(VBO_FORMAT));
+    iboTemp.resize(indicesCount);
+    pool->HardReset(verticesCount, indicesCount, buffersCount);
+#endif
 }
 
 void RenderSystem2D::PushBatch(UniqueHandle state, UniqueHandle texture, Shader* shader, Rect const& clip,
@@ -517,15 +713,57 @@ void RenderSystem2D::PushBatch(UniqueHandle state, UniqueHandle texture, Shader*
     uint32 indexCount, const uint16* indexPointer,
     const Color& color)
 {
-    if (vertexIndex + vertexCount > pool->GetVerticesLimit())
+#if RHI_COMPLETE
+#if USE_BATCHING
+    if ((vertexIndex + vertexCount > pool->GetVerticesLimit()) || (indexIndex + indexCount > pool->GetIndicesLimit()))
     {
-        Logger::Warning("RenderSystem2D: Too much vertices in one frame on UI (%d of %d)", vertexIndex + vertexCount, pool->GetVerticesLimit());
+        // Buffer overflow. Switch to next VBO.
         Flush();
+
+        // Draw immediately if batch is too big to buffer
+        if(vertexCount > pool->GetVerticesLimit() || indexCount > pool->GetIndicesLimit())
+        {
+            if( ((prevFrameErrorsFlags & BUFFER_OVERFLOW_ERROR) != BUFFER_OVERFLOW_ERROR) )
+            {
+                Logger::Warning("PushBatch: Vertices overhead (%d of %d)! Direct draw.", vertexCount, pool->GetVerticesLimit());
+            }
+            currFrameErrorsFlags |= BUFFER_OVERFLOW_ERROR;
+
+            spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, vertexPointer);
+            spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, texCoordPointer);
+
+            UpdateClip();
+
+            if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::HIGHLIGHT_HARD_CONTROLS))
+            {
+                // Highlight too big controls with red color
+                static Color red = Color(1.f, 0.f, 0.f, 1.f);
+                RenderManager::Instance()->SetColor(red);
+            }
+            else
+            {
+                RenderManager::Instance()->SetColor(color);
+            }
+
+            RenderManager::Instance()->SetRenderState(state);
+            RenderManager::Instance()->SetTextureState(texture);
+            RenderManager::Instance()->SetRenderData(spriteRenderObject);
+            RenderManager::Instance()->SetRenderEffect(shader);
+
+            void* indeces = reinterpret_cast<void*>(const_cast<uint16*>(indexPointer));
+            RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, indexCount, EIF_16, indeces);
+            return;
+        }
     }
-    else if (indexIndex + indexCount > pool->GetIndicesLimit())
+
+    Color useColor = color;
+    if(highlightControlsVerticesLimit > 0
+            && vertexCount > highlightControlsVerticesLimit
+            && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::HIGHLIGHT_HARD_CONTROLS))
     {
-        Logger::Warning("RenderSystem2D: Too much indices in one frame on UI (%d of %d)", indexIndex + indexCount, pool->GetIndicesLimit());
-        Flush();
+        // Highlight too big controls with magenta color
+        static Color magenta = Color(1.f, 0.f, 1.f, 1.f);
+        useColor = magenta;
     }
 
     Shader * convShader = GetShaderForBatching(shader);
@@ -539,7 +777,7 @@ void RenderSystem2D::PushBatch(UniqueHandle state, UniqueHandle texture, Shader*
         vboTemp[vi++] = 0.f; // axe Z, empty but need for EVF_VERTEX format
         vboTemp[vi++] = texCoordPointer[i * 2];
         vboTemp[vi++] = texCoordPointer[i * 2 + 1];
-        *(uint32*)(&vboTemp[vi++]) = color.GetRGBA();
+        *(uint32*)(&vboTemp[vi++]) = useColor.GetRGBA();
     }
     for (uint32 i = 0; i < indexCount; ++i)
     {
@@ -567,6 +805,8 @@ void RenderSystem2D::PushBatch(UniqueHandle state, UniqueHandle texture, Shader*
     currentBatch.count += indexCount;
     indexIndex += indexCount;
     vertexIndex += vertexCount;
+#endif
+#endif // RHI_COMPLETE
 }
 
 
@@ -1511,4 +1751,3 @@ void StretchDrawData::GenerateStretchData()
 }
 
 };
-

@@ -67,7 +67,7 @@
 #include "QtTools/FrameworkBinding/DavaLoop.h"
 #include "QtTools/FrameworkBinding/FrameworkLoop.h"
 
-#include <QOpenGLContext>
+#include <QDebug>
 
 void UnpackHelpDoc();
 void FixOSXFonts();
@@ -119,16 +119,14 @@ int main(int argc, char *argv[])
 
 void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 {
+#ifdef Q_OS_MAC
+    DAVA::QtLayer::MakeAppForeground(false);
+#endif
+    
     Core::Instance()->EnableConsoleMode();
     DAVA::Logger::Instance()->SetLogLevel( DAVA::Logger::LEVEL_WARNING );
 
     QApplication a( argc, argv );
-
-    const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
-    const QString appUidPath = QCryptographicHash::hash( ( appUid + QApplication::applicationDirPath() ).toUtf8(), QCryptographicHash::Sha1 ).toHex();
-    RunGuard runGuard( appUidPath );
-    if ( !runGuard.tryToRun() )
-        return;
 
     new SceneValidator();
 
@@ -136,6 +134,8 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
     new FrameworkLoop();
 
     auto glWidget = new DavaGLWidget();
+    glWidget->MakeInvisible();
+
     FrameworkLoop::Instance()->SetOpenGLWindow( glWidget );
 
     DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
@@ -143,7 +143,9 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
     // Delayed initialization throught event loop
     glWidget->show();
 #ifdef Q_OS_WIN
+    FrameworkLoop::Instance()->Context();   // Force context initialization
     QObject::connect( glWidget, &DavaGLWidget::Initialized, &a, &QApplication::quit );
+    QTimer::singleShot( 0, glWidget, &DavaGLWidget::OnWindowExposed );
     a.exec();
 #endif
     glWidget->hide();
@@ -181,9 +183,11 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
 {
 #ifdef Q_OS_MAC
-    FixOSXFonts();  // Must be called before creating QApplication instance
+    // Must be called before creating QApplication instance
+    FixOSXFonts();
+    DAVA::QtLayer::MakeAppForeground(false);
 #endif
-
+ 
     QApplication a( argc, argv );
 
     const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
@@ -195,41 +199,55 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     a.setAttribute( Qt::AA_UseHighDpiPixmaps );
     a.setAttribute( Qt::AA_ShareOpenGLContexts );
 
+    Q_INIT_RESOURCE( QtToolsResources );
+
     new SceneValidator();
     new TextureCache();
 
     LocalizationSystem::Instance()->SetCurrentLocale( "en" );
     LocalizationSystem::Instance()->InitWithDirectory( "~res:/Strings/" );
 
-    DAVA::Texture::SetDefaultGPU( (eGPUFamily)SettingsManager::GetValue( Settings::Internal_TextureViewGPU ).AsInt32() );
+    DAVA::Texture::SetDefaultGPU( static_cast<eGPUFamily>(SettingsManager::GetValue( Settings::Internal_TextureViewGPU ).AsInt32()) );
 
     // check and unpack help documents
     UnpackHelpDoc();
 
+#ifdef Q_OS_MAC
+    QTimer::singleShot(0, []{ DAVA::QtLayer::MakeAppForeground();    } );
+    QTimer::singleShot(0, []{ DAVA::QtLayer::RestoreMenuBar();       } );
+#endif
+    
     new DavaLoop();
     new FrameworkLoop();
+    
+    DavaGLWidget *glWidget = nullptr;
+    QtMainWindow *mainWindow = nullptr;
 
-    // create and init UI
-    auto mainWindow = new QtMainWindow();
-
-    mainWindow->EnableGlobalTimeout( true );
-    auto glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
-    FrameworkLoop::Instance()->SetOpenGLWindow( glWidget );
-    mainWindow->show();
-
-    ProjectManager::Instance()->ProjectOpenLast();
-    if ( ProjectManager::Instance()->IsOpened() )
+    QTimer::singleShot(0, [&]
     {
-        mainWindow->OnSceneNew();
-    }
-
-    DavaLoop::Instance()->StartLoop( FrameworkLoop::Instance() );
-
-    DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
-
+        // create and init UI
+        mainWindow = new QtMainWindow();
+        
+        mainWindow->EnableGlobalTimeout( true );
+        glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
+        FrameworkLoop::Instance()->SetOpenGLWindow( glWidget );
+        
+        ProjectManager::Instance()->ProjectOpenLast();
+        QObject::connect( glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites );
+        QObject::connect( glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized );
+        QObject::connect( glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection );
+        
+        mainWindow->show();
+        
+        DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
+        
+        DavaLoop::Instance()->StartLoop( FrameworkLoop::Instance() );
+    } );
+    
+    
     // start app
     QApplication::exec();
-
+ 
     glWidget->setParent( nullptr );
     mainWindow->Release();
 
@@ -254,7 +272,7 @@ void UnpackHelpDoc()
     DAVA::FilePath docsPath = FilePath( ResourceEditor::DOCUMENTATION_PATH );
     if ( editorVer != RESOURCE_EDITOR_VERSION || !docsPath.Exists() )
     {
-        DAVA::Logger::Info( "Unpacking Help..." );
+        DAVA::Logger::FrameworkDebug( "Unpacking Help..." );
         DAVA::ResourceArchive * helpRA = new DAVA::ResourceArchive();
         if ( helpRA->Open( "~res:/Help.docs" ) )
         {

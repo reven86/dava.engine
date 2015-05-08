@@ -62,11 +62,7 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
         height = screenInfo.width;
 	}
 		
-	int32 scale = 1;
-    if(DAVA::Core::IsAutodetectContentScaleFactor())
-    {
-        scale = screenInfo.scale;
-    }
+    float32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
 		
 	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
     VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width * scale, height * scale);
@@ -95,7 +91,6 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 
 #include "Core/Core.h"
 #include "Core/ApplicationCore.h"
-#include "Debug/MemoryManager.h"
 #include "UI/UIScreenManager.h"
 
 
@@ -200,29 +195,9 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 
 //	DAVA::Sprite::DumpSprites();
 //	DAVA::Texture::DumpTextures();
-#ifdef ENABLE_MEMORY_MANAGER
-	if (DAVA::MemoryManager::Instance() != 0)
-	{
-		DAVA::MemoryManager::Instance()->FinalLog();
-	}
-#endif
+
 	FrameworkWillTerminate();
 	NSLog(@"Application termination finished");
-}
-
-+ (DAVA::float32) GetScale
-{
-    DAVA::float32 retScale = 1.f;
-    if (DAVA::Core::IsAutodetectContentScaleFactor())
-    {
-        if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
-            && [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
-        {
-            retScale = [[::UIScreen mainScreen] scale];
-        }
-    }
-    
-    return retScale;
 }
 
 @end

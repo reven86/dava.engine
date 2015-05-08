@@ -22,6 +22,16 @@ public class JNIApplication extends Application
 	private String internalDocumentsDir;
 	private Locale launchLocale;
 	private boolean firstLaunch = true;
+	private final String TAG = "JNIApplication";
+	
+	private static volatile boolean eglContextDestroed = false;
+    
+    public static boolean isEglContextWasDestroyed() {
+        return eglContextDestroed;
+    }
+    public static void setEglContextWasDestroyed(boolean value) {
+        eglContextDestroed = value;
+    }
 
 	/**
 	 * Initialize native framework core in first time.
@@ -50,8 +60,13 @@ public class JNIApplication extends Application
 		 * Core initialization moved to JNIActivity
 		 */
 	    JNINotificationProvider.Init();
-	    
-        externalDocumentsDir = this.getExternalFilesDir(null).getAbsolutePath() + "/"; 
+        
+	    if(null != this.getExternalFilesDir(null)) {
+            externalDocumentsDir = this.getExternalFilesDir(null).getAbsolutePath() + "/"; 
+        } else {
+            externalDocumentsDir = "";
+        }
+        
         internalDocumentsDir = this.getFilesDir().getAbsolutePath() + "/";
         launchLocale = Locale.getDefault();
 		
@@ -61,10 +76,9 @@ public class JNIApplication extends Application
 	@Override
 	public void onConfigurationChanged(Configuration newConfig)
 	{
-		Log.i(JNIConst.LOG_TAG, "[Application::onConfigurationChanged]"); 
-
+		Log.i(JNIConst.LOG_TAG, "[Application::onConfigurationChanged]");
 		super.onConfigurationChanged(newConfig);
-		
+		// useless call to native empty method...
 		OnConfigurationChanged();
 
 		if (IsApplicationShouldBeRestarted())

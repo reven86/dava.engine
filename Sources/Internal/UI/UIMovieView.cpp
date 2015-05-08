@@ -31,7 +31,7 @@
 #include "UIMovieView.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
-#include "../Platform/TemplateIOS/MovieViewControliOS.h"
+#include "../Platform/TemplateiOS/MovieViewControliOS.h"
 #elif defined(__DAVAENGINE_MACOS__)
 #include "../Platform/TemplateMacOS/MovieViewControlMacOS.h"
 #elif defined(__DAVAENGINE_ANDROID__)

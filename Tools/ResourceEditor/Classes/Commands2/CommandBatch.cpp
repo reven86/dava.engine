@@ -117,3 +117,15 @@ void CommandBatch::Clear(int commandId)
 		}
 	}
 }
+
+bool CommandBatch::ContainsCommand(int commandId) const
+{
+    for(auto command: commandList)
+    {
+        if(command->GetId() == commandId)
+            return true;
+    }
+    
+    return false;
+}
+

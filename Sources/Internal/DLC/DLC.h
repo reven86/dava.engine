@@ -156,7 +156,9 @@ protected:
         FilePath remoteMetaStorePath;
 
         String remotePatchFullUrl;
+        uint64 remotePatchFullSize;
         String remotePatchLiteUrl;
+        uint64 remotePatchLiteSize;
         String remoteMetaUrl;
 
         String remotePatchUrl;
@@ -164,8 +166,8 @@ protected:
         uint32 remotePatchDownloadId;
         FilePath remotePatchStorePath;
 
-        uint32 patchCount;
-        uint32 patchIndex;
+        uint32 totalPatchCount;
+        uint32 appliedPatchCount;
         bool patchInProgress;
         PatchFileReader::PatchError patchingError;
 

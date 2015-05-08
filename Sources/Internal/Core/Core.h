@@ -189,10 +189,8 @@ public:
 	 */
 	virtual void SetIcon(int32 iconId);
 	
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-	static bool IsAutodetectContentScaleFactor();
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
+    inline float32 GetScreenScaleFactor() const;
+    
 	virtual Core::eScreenOrientation GetScreenOrientation();
 	
     virtual uint32 GetScreenDPI();
@@ -285,11 +283,18 @@ private:
     
     void CheckDataTypeSizes();
     template <class T> void CheckType(T t, int32 expectedSize, const char * typeString);
+    
+    float32 screenScaleFactor;
 };
     
 inline bool Core::IsActive()
 {
     return isActive;
+}
+    
+inline float32 Core::GetScreenScaleFactor() const
+{
+    return screenScaleFactor;
 }
 
 };

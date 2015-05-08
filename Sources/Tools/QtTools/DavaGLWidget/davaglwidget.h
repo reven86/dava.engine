@@ -61,11 +61,11 @@ public:
     OpenGLWindow();
     ~OpenGLWindow();
     
-    void render();
     void renderNow();
 
 signals:
     void Exposed();
+    void OnDrop( const QMimeData *mimeData );
     
 protected:
     bool event(QEvent *event) override;
@@ -83,7 +83,6 @@ protected:
     void handleDragMoveEvent(QDragMoveEvent * event);
     
 private:
-    QOpenGLPaintDevice *paintDevice;
     QScopedPointer< ControlMapper > controlMapper;
 };
 
@@ -92,24 +91,26 @@ class DavaGLWidget
     : public QWidget
 {
     Q_OBJECT
-    
+
+signals :
+    void Initialized();
+    void Resized( int width, int height, int dpr );
+    void OnDrop( const QMimeData *mimeData );
+
 public:
     explicit DavaGLWidget(QWidget *parent = nullptr);
     ~DavaGLWidget();
 
     OpenGLWindow *GetGLWindow() const;
-    
-signals:
-    void Initialized();
-    void Resized(int width, int height, int dpr);
-	void OnDrop(const QMimeData *mimeData);
+    bool IsInitialized() const;
 
-private slots:
+    void MakeInvisible();
+
+public slots:
     void OnWindowExposed();
     
 private:
     void resizeEvent(QResizeEvent *) override;
-    bool eventFilter( QObject * watched, QEvent * event ) override;
 
     void PerformSizeChange();
     

@@ -30,23 +30,24 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QCloseEvent>
+#include "Result.h"
+#include "ui_mainwindow.h"
 
 #include "EditorSettings.h"
-#include <QLineEdit>
-#include <QUndoGroup>
+#include <QtGui>
+#include <QtWidgets>
+#include <QAbstractItemModel>
 
-#include "Result.h"
-
-namespace Ui {
-class MainWindow;
-}
 
 class PackageWidget;
-class Document;
+class PropertiesWidget;
+class LibraryWidget;
+class PreviewWidget;
+
+class LocalizationEditorDialog;
+
 class DavaGLWidget;
-class MainWindow : public QMainWindow
+class MainWindow : public QMainWindow, public Ui::MainWindow
 {
     Q_OBJECT
     
@@ -61,18 +62,18 @@ public:
         bool isModified;
     };
     explicit MainWindow(QWidget *parent = 0);
+
     ~MainWindow();
-    void CreateUndoRedoActions(const QUndoGroup &undoGroup);
-    void OnCurrentIndexChanged(int arg);
-    PackageWidget *GetPackageWidget() const;
+    void CreateUndoRedoActions(const QUndoGroup *undoGroup);
     bool ConfirmClose();
     int CloseTab(int index);
     void SetCurrentTab(int index);
     int GetTabIndexByPath(const QString &fileName) const;
     void OnProjectOpened(Result result, QString projectPath);
     int AddTab(const QString &tabText);
-    void SetDocumentToWidgets(Document *document);
     void OnCleanChanged(int index, bool val);
+    DavaGLWidget *GetGLWidget() const;
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 signals:
@@ -86,13 +87,12 @@ signals:
     void SaveDocument(int index);
     void CurrentTabChanged(int index);
     void CloseRequested();
-
+    void LanguageChanged();
 public slots:
-    DavaGLWidget *GetGLWidget() const;
-
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
 private slots:
+    void OnCurrentIndexChanged(int arg);
     void OnSaveDocument();
     void OnOpenFontManager();
     void OnOpenLocalizationManager();
@@ -108,6 +108,7 @@ private slots:
     void OnPixelizationStateChanged();
     
 private:
+    void InitLanguageBox();
 	void InitMenu();
     void SetupViewMenu();
     void DisableActions();
@@ -118,15 +119,13 @@ private:
 	void RestoreMainWindowState();
 
 private:
-    Ui::MainWindow *ui;
-
     // Background Frame Color menu actions.
     QList<QAction*> backgroundFramePredefinedColorActions;
     QAction* backgroundFrameUseCustomColorAction;
     QAction* backgroundFrameSelectCustomColorAction;
+    LocalizationEditorDialog *localizationEditorDialog;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);
-
 
 #endif // MAINWINDOW_H

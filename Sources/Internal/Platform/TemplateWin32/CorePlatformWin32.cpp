@@ -54,12 +54,6 @@ namespace DAVA
 			core->Run();
 			core->ReleaseSingletons();
 			
-#ifdef ENABLE_MEMORY_MANAGER
-			if (DAVA::MemoryManager::Instance() != 0)
-			{
-				DAVA::MemoryManager::Instance()->FinalLog();
-			}
-#endif
 		}
 
 		//CloseHandle(core->hMutex);
@@ -90,14 +84,7 @@ namespace DAVA
 		FrameworkDidLaunched();
 		FrameworkWillTerminate();
 		core->ReleaseSingletons();
-#ifdef ENABLE_MEMORY_MANAGER
-		if (DAVA::MemoryManager::Instance() != 0)
-		{
-			DAVA::MemoryManager::Instance()->FinalLog();
-		}
-#endif
 		return 0;
-
 	}
 
 	bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
@@ -735,11 +722,7 @@ namespace DAVA
 
                 if(InputSystem::Instance()->IsCursorPining())
                 {
-                    RECT wndRect;
-                    GetWindowRect(hWnd, &wndRect);
-                    int centerX = (int)((wndRect.left + wndRect.right) >> 1);
-                    int centerY = (int)((wndRect.bottom + wndRect.top) >> 1);
-                    SetCursorPos(centerX, centerY);
+                    SetCursorPosCenterInternal(hWnd);
                 }
                 else
                 {

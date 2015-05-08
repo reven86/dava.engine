@@ -35,9 +35,6 @@
 #include "Animation/AnimatedObject.h"
 #include "Animation/Interpolation.h"
 
-#include "Scene3D/EntityFamily.h"
-#include "Scene3D/Entity.h"
-
 namespace DAVA
 {
 class UIYamlLoader;
@@ -46,6 +43,8 @@ class EventDispatcher;
 class UIEvent;
 class UIControlBackground;
 class Message;
+class UIComponent;
+class UIControlFamily;
 
 #define CONTROL_TOUCH_AREA  15
     /**
@@ -1327,7 +1326,6 @@ public:
     // Access to Custom Control Type.
     const String &GetCustomControlClassName() const;
     void SetCustomControlClassName(const String& value);
-    void ResetCustomControlClassName();
 
     // Find the control by name and add it to the list, if found.
     bool AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive = false);
@@ -1341,6 +1339,11 @@ public:
     virtual void SetVisibleForUIEditor(bool value);
 
     void DumpInputs(int32 depthLevel);
+private:
+    String name;
+protected:
+    UIControl *parent;
+    List<UIControl*> childs;
 
 public:
     //TODO: store geometric data in UIGeometricData
@@ -1352,8 +1355,6 @@ public:
     float32 angle;//!<control rotation angle. Rotation around pivot point.
 
 protected:
-    UIControl *parent;
-    List<UIControl*> childs;
     List<UIControl*> realChilds;
 
     UIControlBackground *background;
@@ -1402,7 +1403,7 @@ protected:
     eDebugDrawPivotMode drawPivotPointMode;
 
     // If this UI control represents Custom Control - its type is stored here.
-    String customControlType;
+    String customClassName;
 
     // Initial control's state which is stored on Yaml.
     int32 initialState;
@@ -1424,7 +1425,6 @@ protected:
     void DrawPivotPoint(const Rect &drawRect);
 
 private:
-    String name;
     int32  tag;
     bool inputEnabled : 1;
     bool focusEnabled : 1;
@@ -1445,14 +1445,13 @@ private:
     
 /* Components */
 public:
-    void AddComponent(Component * component);
-    void RemoveComponent(Component * component);
+    void AddComponent(UIComponent * component);
+    void RemoveComponent(UIComponent * component);
     void RemoveComponent(uint32 componentType, uint32 index = 0);
     void RemoveAllComponents();
-    void DetachComponent(Component * component);
 
-    Component * GetComponent(uint32 componentType, uint32 index = 0) const;
-    Component * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
+    UIComponent * GetComponent(uint32 componentType, uint32 index = 0) const;
+    UIComponent * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
 
     template<class T> inline T* GetComponent(uint32 index = 0) const
     {
@@ -1472,10 +1471,9 @@ public:
     inline uint64 GetAvailableComponentFlags() const;
 
 private:
-    Vector<Component *> components;
-    EntityFamily * family;
-    void DetachComponent(const Vector<Component *>::iterator & it);
-    void RemoveComponent(const Vector<Component *>::iterator & it);
+    Vector<UIComponent *> components;
+    UIControlFamily * family;
+    void RemoveComponent(const Vector<UIComponent *>::iterator & it);
     void UpdateFamily();
 /* Components */
 
@@ -1520,9 +1518,11 @@ public:
     inline void SetAndApplyBottomAlignEnabled(bool isEnabled);
 
     INTROSPECTION_EXTEND(UIControl, AnimatedObject,
+                         PROPERTY("customClass", "Custom Class", GetCustomControlClassName, SetCustomControlClassName, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("name", "Name", GetName, SetName, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("size", "Size", GetSize, SetSize, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("scale", "Scale", GetScale, SetScale, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("pivot", "Pivot", GetPivot, SetPivot, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("angle", "Angle", GetAngleInDegrees, SetAngleInDegrees, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("visible", "Visible", GetVisible, SetVisible, I_SAVE | I_VIEW | I_EDIT)
@@ -1753,22 +1753,6 @@ void UIControl::SetAndApplyBottomAlignEnabled(bool isEnabled)
     SetBottomAlignEnabled(isEnabled, true);
 }
 
-/* Components */
-inline uint32 UIControl::GetComponentCount() const
-{
-    return static_cast<uint32>(components.size());
-}
-
-inline uint32 UIControl::GetComponentCount(uint32 componentType) const
-{
-    return family->GetComponentsCount(componentType);
-}
-
-inline uint64 UIControl::GetAvailableComponentFlags() const
-{
-    return family->GetComponentsFlags();
-}
-/* Components */
 
 };
 

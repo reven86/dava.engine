@@ -69,6 +69,7 @@ QOpenGLContext* FrameworkLoop::Context()
         
         openGlFunctions.reset( new QOpenGLFunctions( context ) );
         openGlFunctions->initializeOpenGLFunctions();
+        
     #ifdef Q_OS_WIN
         glewInit();
     #endif
@@ -103,6 +104,12 @@ quint64 FrameworkLoop::GetRenderContextId() const
 
 void FrameworkLoop::ProcessFrame()
 {
+    // We need to call makeCurrent, because there is a crash in native OS X open file dialog
+    if ( glWidget != nullptr && DAVA::RenderManager::Instance()->GetRenderContextId() != GetRenderContextId() )
+    {
+        context->makeCurrent(glWidget->GetGLWindow());
+    }
+    
     DAVA::QtLayer::Instance()->ProcessFrame();
     if ( glWidget != nullptr )
     {
@@ -124,4 +131,5 @@ void FrameworkLoop::OnWindowDestroyed()
 void FrameworkLoop::OnWindowInitialized()
 {
     DAVA::QtLayer::Instance()->InitializeGlWindow( GetRenderContextId() );
+    DAVA::QtLayer::Instance()->OnResume();
 }

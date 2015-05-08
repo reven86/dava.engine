@@ -370,17 +370,17 @@ void StructureSystem::ReloadInternal(DAVA::Set<DAVA::Entity *> &entitiesToReload
 void StructureSystem::Add(const DAVA::FilePath &newModelPath, const DAVA::Vector3 pos)
 {
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
-	if(NULL != sceneEditor)
+	if(nullptr != sceneEditor)
 	{
-		DAVA::Entity *loadedEntity = Load(newModelPath, true);
-		if(NULL != loadedEntity)
+        ScopedPtr<Entity> loadedEntity(Load(newModelPath, true));
+        if (static_cast<DAVA::Entity *>(loadedEntity) != nullptr)
 		{
 			DAVA::Vector3 entityPos = pos;
 
 			KeyedArchive *customProps = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
             customProps->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, newModelPath.GetAbsolutePathname());
 
-			if(entityPos.IsZero() && FindLandscape(loadedEntity) == NULL)
+			if(entityPos.IsZero() && FindLandscape(loadedEntity) == nullptr)
 			{
 				SceneCameraSystem *cameraSystem = sceneEditor->cameraSystem;
 
@@ -405,13 +405,17 @@ void StructureSystem::Add(const DAVA::FilePath &newModelPath, const DAVA::Vector
 			loadedEntity->SetLocalTransform(transform);
             
             if (GetPathComponent(loadedEntity))
+            {
                 sceneEditor->pathSystem->AddPath(loadedEntity);
+            }
             else
-			    sceneEditor->Exec(new EntityAddCommand(loadedEntity, sceneEditor));
+            {
+                sceneEditor->Exec(new EntityAddCommand(loadedEntity, sceneEditor));
+            }
 
 			// TODO: move this code to some another place (into command itself or into ProcessCommand function)
 			// 
-			// œÂÂÌÂÒÚË ‚ Load Ë Á‡‚‡ÎË‰ÂÈÚËÚ¸ ÚÓÎ¸ÍÓ ÔÓ‰„ÛÊÂÌÌÛ˛ Entity
+			// Перенести в Load и завалидейтить только подгруженную Entity
 			// -->
             SceneValidator::Instance()->ValidateSceneAndShowErrors(sceneEditor, sceneEditor->GetScenePath());
 			// <--
@@ -446,16 +450,69 @@ void StructureSystem::ProcessCommand(const Command2 *command, bool redo)
 {
 	if(NULL != command)
 	{
-		int cmdId = command->GetId();
-		if( cmdId == CMDID_PARTICLE_LAYER_REMOVE ||
-			cmdId == CMDID_PARTICLE_LAYER_MOVE ||
-			cmdId == CMDID_PARTICLE_FORCE_REMOVE ||
-			cmdId == CMDID_PARTICLE_FORCE_MOVE)
-		{
-			EmitChanged();
-		}
-	}
+        switch(command->GetId())
+        {
+            case CMDID_PARTICLE_LAYER_REMOVE:
+            case CMDID_PARTICLE_LAYER_MOVE:
+            case CMDID_PARTICLE_FORCE_REMOVE:
+            case CMDID_PARTICLE_FORCE_MOVE:
+                EmitChanged();
+                break;
+
+            default:
+                break;
+        }
+        
+        auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoselectNewEntities).AsBool();
+        if(autoSelectionEnabled)
+        {
+            ProcessAutoSelection(command, redo);
+        }
+    }
 }
+
+void StructureSystem::ProcessAutoSelection(const Command2 *command, bool redo) const
+{
+    auto commandId = command->GetId();
+
+    auto sceneEditor = static_cast<SceneEditor2 *>(GetScene());
+    auto selectionSystem = sceneEditor->selectionSystem;
+    
+    if(CMDID_BATCH == commandId)
+    {
+        auto batch = static_cast<const CommandBatch *>(command);
+        
+        auto contain = batch->ContainsCommand(CMDID_ENTITY_ADD) || batch->ContainsCommand(CMDID_ENTITY_REMOVE);
+        if(contain)
+        {
+            selectionSystem->Clear();
+
+            auto count = batch->Size();
+            for(auto i = 0; i < count; ++i)
+            {
+                auto cmd = batch->GetCommand(i);
+                auto cmdID = cmd->GetId();
+                
+                auto needAddEntity = ((CMDID_ENTITY_ADD == cmdID && redo) || (CMDID_ENTITY_REMOVE == cmdID && !redo));
+                if(needAddEntity)
+                {
+                    selectionSystem->AddSelection(cmd->GetEntity());
+                }
+            }
+        }
+    }
+    else if(CMDID_ENTITY_ADD == commandId || CMDID_ENTITY_REMOVE == commandId)
+    {
+        selectionSystem->Clear();
+        
+        auto needAddEntity = ((CMDID_ENTITY_ADD == commandId && redo) || (CMDID_ENTITY_REMOVE == commandId && !redo));
+        if(needAddEntity)
+        {
+            selectionSystem->AddSelection(command->GetEntity());
+        }
+    }
+}
+
 
 void StructureSystem::AddEntity(DAVA::Entity * entity)
 {

@@ -25,10 +25,10 @@ DECL_SAMPLER2D(albedo)
 #endif
 
 FPROG_BEGIN
-    float4  resColor = FP_TEXTURE2D( albedo, FP_IN(uv) );        
+    float4  resColor = FP_TEXTURE2D( albedo, FP_IN(uv) );
 #if defined(MATERIAL_LIGHTMAP)
-    float4  lmColor = FP_TEXTURE2D( lightmap, FP_IN(uv1) );        
+    float4  lmColor = FP_TEXTURE2D( lightmap, FP_IN(uv1) );
     resColor *= lmColor * 2.0;
 #endif
     FP_OUT_COLOR = resColor;
-FPROG_END;
+FPROG_END

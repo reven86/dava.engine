@@ -1,39 +1,48 @@
 #include "LibraryWidget.h"
-#include "ui_LibraryWidget.h"
+#include "SharedData.h"
+#include "Document.h"
+#include "LibraryModel.h"
 
-#include "UI/Document.h"
-#include "UI/LibraryContext.h"
+namespace
+{
+    struct LibraryContext : public WidgetContext
+    {
+        LibraryContext(Document *document)
+        {
+            DVASSERT(nullptr != document);
+            libraryModel = new LibraryModel(document->GetPackage(), document);
+        }
+        LibraryModel *libraryModel;
+    };
+}
 
 LibraryWidget::LibraryWidget(QWidget *parent)
     : QDockWidget(parent)
-    , ui(new Ui::LibraryWidget())
-    , document(NULL)
+    , sharedData(nullptr)
 {
-    ui->setupUi(this);
+    setupUi(this);
 }
 
-LibraryWidget::~LibraryWidget()
+void LibraryWidget::OnDocumentChanged(SharedData *arg)
 {
-    delete ui;
+    sharedData = arg;
+    LoadContext();
 }
 
-void LibraryWidget::SetDocument(Document *newDocument)
+void LibraryWidget::LoadContext()
 {
-    if (document)
+    if (nullptr == sharedData)
     {
-//        disconnect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(OnSelectionChanged(const QItemSelection &, const QItemSelection &)));
-        ui->treeView->setModel(NULL);
+        treeView->setModel(nullptr);
     }
-    
-    document = newDocument;
-    
-    if (document)
+    else
     {
-        ui->treeView->setModel(document->GetLibraryContext()->GetModel());
-        ui->treeView->expandToDepth(0);
-        ui->treeView->setColumnWidth(0, ui->treeView->size().width());
-        
-//        connect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(OnSelectionChanged(const QItemSelection &, const QItemSelection &)));
+        LibraryContext *context = reinterpret_cast<LibraryContext*>(sharedData->GetContext(this));
+        if (nullptr == context)
+        {
+            context = new LibraryContext(qobject_cast<Document*>(sharedData->parent())); //TODO this is arch. fail
+            sharedData->SetContext(this, context);
+        }
+        treeView->setModel(context->libraryModel);
     }
-
 }

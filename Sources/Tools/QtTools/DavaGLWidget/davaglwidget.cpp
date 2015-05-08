@@ -32,38 +32,17 @@
 
 #include "Platform/Qt5/QtLayer.h"
 
-#if defined (__DAVAENGINE_MACOS__)
-    #include "Platform/Qt5/MacOS/CoreMacOSPlatformQt.h"
-#elif defined (__DAVAENGINE_WIN32__)
-#endif
-
 #include "davaglwidget.h"
 #include "FocusTracker.h"
 #include "ControlMapper.h"
+#include "QtTools/FrameworkBinding/FrameworkLoop.h"
 
-#include <QMessageBox>
-#include <QTimer>
-#include <QElapsedTimer>
 #include <QKeyEvent>
-#include <QMouseEvent>
-#include <QDebug>
 #include <QScreen>
-#include <QDragMoveEvent>
-#include <QApplication>
-#include <QLineEdit>
-#include <QSpinBox>
+#include <QDebug>
 
 #include <QOpenGLContext>
-#include <QOpenGLPaintDevice>
-
 #include <QBoxLayout>
-
-#if defined( Q_OS_WIN )
-#include <QtPlatformheaders/QWGLNativeContext>
-#elif defined( Q_OS_MAC )
-#endif
-
-#include "QtTools/FrameworkBinding/FrameworkLoop.h"
 
 
 namespace
@@ -71,11 +50,8 @@ namespace
     const QSize cMinSize = QSize( 180, 180 );
 }
 
-
-
 OpenGLWindow::OpenGLWindow()
     : QWindow()
-    , paintDevice(nullptr)
     , controlMapper(new ControlMapper(this))
 {
     setSurfaceType(QWindow::OpenGLSurface);
@@ -90,25 +66,13 @@ OpenGLWindow::~OpenGLWindow()
 {
 }
 
-void OpenGLWindow::render()
-{
-    if (!paintDevice)
-    {
-        paintDevice = new QOpenGLPaintDevice();
-    }
-
-    if (paintDevice->size() != size())
-    {
-        paintDevice->setSize(size());
-    }
-}
-
 void OpenGLWindow::renderNow()
 {
     if (!isExposed())
+    {
         return;
+    }
 
-    render();
     auto context = FrameworkLoop::Instance()->Context();
     context->swapBuffers( this );
 }
@@ -119,7 +83,9 @@ void OpenGLWindow::exposeEvent(QExposeEvent *event)
     
     if (isExposed())
     {
-        renderNow();
+        //just initialize DAVAGL context
+        FrameworkLoop::Instance()->Context();
+
         emit Exposed();
     }
 }
@@ -128,12 +94,43 @@ bool OpenGLWindow::event(QEvent *event)
 {
     switch ( event->type() )
     {
+    // Render
     case QEvent::UpdateRequest:
         renderNow();
         return true;
-    case QEvent::FocusOut:
-        controlMapper->ClearAllKeys();
+
+    // Drag-n-drop
+    case QEvent::DragEnter:
+        {
+            auto e = static_cast<QDragEnterEvent *>( event );
+            e->setDropAction( Qt::LinkAction );
+            e->accept();
+        }
         break;
+    case QEvent::DragMove:
+        {
+            auto e = static_cast<QDragMoveEvent *>( event );
+            handleDragMoveEvent( e );
+            e->setDropAction( Qt::LinkAction );
+            e->accept();
+        }
+        break;
+    case QEvent::DragLeave:
+        break;
+    case QEvent::Drop:
+        {
+            auto e = static_cast<QDropEvent *>( event );
+            emit OnDrop( e->mimeData() );
+            e->setDropAction( Qt::LinkAction );
+            e->accept();
+        }
+        break;
+
+    // Focus
+    case QEvent::FocusOut:
+        controlMapper->releaseKeyboard();
+        break;
+
     default:
         break;
     }
@@ -199,8 +196,9 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     setMinimumSize(cMinSize);
     
     openGlWindow = new OpenGLWindow();
-    connect( openGlWindow, &OpenGLWindow::Exposed, this, &DavaGLWidget::OnWindowExposed );
-    connect( openGlWindow, &QWindow::screenChanged, this, &DavaGLWidget::PerformSizeChange );
+    connect( openGlWindow.data(), &OpenGLWindow::Exposed, this, &DavaGLWidget::OnWindowExposed );
+    connect( openGlWindow.data(), &QWindow::screenChanged, this, &DavaGLWidget::PerformSizeChange );
+    connect( openGlWindow.data(), &OpenGLWindow::OnDrop, this, &DavaGLWidget::OnDrop );
     
     auto l = new QBoxLayout(QBoxLayout::TopToBottom, this);
     l->setMargin( 0 );
@@ -209,10 +207,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     container = createWindowContainer( openGlWindow );
     container->setAcceptDrops(true);
     container->setMouseTracking(true);
-    container->setFocusPolicy(Qt::WheelFocus);
-    //container->setFocusPolicy(Qt::NoFocus);
-
-    openGlWindow->installEventFilter(this);
+    container->setFocusPolicy(Qt::NoFocus);
 
     layout()->addWidget(container);
 
@@ -228,12 +223,30 @@ OpenGLWindow* DavaGLWidget::GetGLWindow() const
     return openGlWindow;
 }
 
+bool DavaGLWidget::IsInitialized() const
+{
+    return isInitialized;
+}
+
+void DavaGLWidget::MakeInvisible()
+{
+    setWindowFlags( Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint | Qt::Tool );    // Remove border
+#ifdef Q_OS_WIN
+   setAttribute( Qt::WA_DontShowOnScreen );             // Under OS X gl widget will be not initialized with this flag
+#endif
+    setAttribute( Qt::WA_TranslucentBackground );       // Transparent background
+    setAttribute( Qt::WA_TransparentForMouseEvents );   // Rethrow mouse events
+    setAttribute( Qt::WA_ShowWithoutActivating );       // Do not get focus
+    setWindowOpacity( 0.0 );
+    setFixedSize( 1, 1 );
+    setEnabled( false );
+    move( 0, 0 );
+}
+
 void DavaGLWidget::OnWindowExposed()
 {
-    disconnect( openGlWindow, &OpenGLWindow::Exposed, this, &DavaGLWidget::OnWindowExposed );
+    disconnect( openGlWindow.data(), &OpenGLWindow::Exposed, this, &DavaGLWidget::OnWindowExposed );
 
-    currentDPR = devicePixelRatio();
-    
     const auto contextId = FrameworkLoop::Instance()->GetRenderContextId();
     DAVA::QtLayer::Instance()->InitializeGlWindow( contextId );
     
@@ -252,61 +265,6 @@ void DavaGLWidget::resizeEvent(QResizeEvent *e)
     PerformSizeChange();
 }
 
-bool DavaGLWidget::eventFilter( QObject* watched, QEvent* event )
-{
-    if ( watched == openGlWindow )
-    {
-        switch ( event->type() )
-        {
-        case QEvent::DragEnter:
-            {
-                auto e = static_cast<QDragEnterEvent *>( event );
-                e->setDropAction( Qt::LinkAction );
-                e->accept();
-            }
-            break;
-        case QEvent::DragMove:
-            {
-                auto e = static_cast<QDragMoveEvent *>( event );
-                openGlWindow->handleDragMoveEvent( e );
-                e->setDropAction( Qt::LinkAction );
-                e->accept();
-            }
-            break;
-        case QEvent::DragLeave:
-            break;
-        case QEvent::Drop:
-            {
-                auto e = static_cast<QDropEvent *>( event );
-                emit OnDrop( e->mimeData() );
-                e->setDropAction( Qt::LinkAction );
-                e->accept();
-            }
-            break;
-
-        case QEvent::MouseButtonPress:
-            focusTracker->OnClick();
-            break;
-        case QEvent::Enter:
-            focusTracker->OnEnter();
-            break;
-        case QEvent::Leave:
-            focusTracker->OnLeave();
-            break;
-        case QEvent::FocusIn:
-            focusTracker->OnFocusIn();
-            break;
-        case QEvent::FocusOut:
-            focusTracker->OnFocusOut();
-            break;
-        default:
-            break;
-        }
-    }
-
-    return QWidget::eventFilter( watched, event );
-}
-
 void DavaGLWidget::PerformSizeChange()
 {
     currentDPR = openGlWindow->devicePixelRatio();
@@ -317,4 +275,3 @@ void DavaGLWidget::PerformSizeChange()
     
     emit Resized(currentWidth, currentHeight, currentDPR);
 }
-

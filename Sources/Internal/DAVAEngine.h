@@ -32,9 +32,8 @@
 
 #include "DAVAVersion.h"
 #include "DAVAConfig.h"
-#include "Debug/MemoryManager.h"
 #include "Debug/Stats.h"
-#include "Debug/Backtrace.h"
+#include "MemoryManager/MemoryProfiler.h"
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
@@ -84,7 +83,7 @@
 #include "FileSystem/LocalizationSystem.h"
 
 // Image formats stuff (PNG & JPG & other formats)
-#include "Render/Image/LibPngHelpers.h"
+#include "Render/Image/LibPngHelper.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/LibDdsHelper.h"

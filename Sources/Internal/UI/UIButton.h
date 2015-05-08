@@ -365,6 +365,9 @@ public:
     virtual String GetInternalControlName(int32 index) const;
     virtual String GetInternalControlDescriptions() const;
 
+    INTROSPECTION_EXTEND(UIButton, UIControl,
+        nullptr
+        );
 };
 };
 

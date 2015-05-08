@@ -138,9 +138,33 @@ YamlNode * Font::SaveToYamlNode() const
     //Vertical Spacing
     node->Set("verticalSpacing", this->GetVerticalSpacing());
 
+    //Ascend / descend
+    node->Set("ascendScale", this->GetAscendScale());
+    node->Set("descendScale", this->GetDescendScale());
+
     SafeDelete(nodeValue);
     
     return node;
+}
+
+void Font::SetAscendScale(float32 ascendScale)
+{
+    // Not implemented
+}
+
+DAVA::float32 Font::GetAscendScale() const
+{
+    return 1.f;
+}
+
+void Font::SetDescendScale(float32 descendScale)
+{
+    // Not implemented
+}
+
+DAVA::float32 Font::GetDescendScale() const
+{
+    return 1.f;
 }
 
 };

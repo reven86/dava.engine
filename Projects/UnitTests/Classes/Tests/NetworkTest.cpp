@@ -74,7 +74,7 @@ void TestEchoServer::OnPacketSent(IChannel* aChannel, const void* buffer, size_t
             {
                 lastPacketId = parcel.packetId; // Save packet ID for end marker
             }
-            Free(parcel.outbuf);
+            free(parcel.outbuf);
             parcel.outbuf = NULL;
         }
         bytesSent += length;
@@ -106,7 +106,7 @@ void TestEchoServer::SendEcho(const void* buffer, size_t length)
     parcels.push_back(Parcel());
     Parcel& parcel = parcels.back();
 
-    parcel.outbuf = Alloc(length);
+    parcel.outbuf = malloc(length);
     parcel.length = length;
     parcel.packetId = 0;
     Memcpy(parcel.outbuf, buffer, length);
@@ -126,12 +126,12 @@ TestEchoClient::TestEchoClient()
 {
     // Prepare data of various length
     Parcel a[] = {
-        {Alloc(1)       , 1       , 0},
-        {Alloc(1000)    , 1000    , 0},
-        {Alloc(10000)   , 10000   , 0},
-        {Alloc(100000)  , 100000  , 0},
-        {Alloc(1000000) , 1000000 , 0},
-        {Alloc(10000000), 10000000, 0}
+        {malloc(1)       , 1       , 0},
+        {malloc(1000)    , 1000    , 0},
+        {malloc(10000)   , 10000   , 0},
+        {malloc(100000)  , 100000  , 0},
+        {malloc(1000000) , 1000000 , 0},
+        {malloc(10000000), 10000000, 0}
     };
     uint8 v = 'A';
     for (size_t i = 0;i < COUNT_OF(a);++i, ++v)
@@ -141,7 +141,7 @@ TestEchoClient::TestEchoClient()
     }
 
     // Prepare end marker
-    Parcel end = {Alloc(3), 3, 0};
+    Parcel end = {malloc(3), 3, 0};
     Memcpy(end.outbuf, "END", 3);
     parcels.push_back(end);
 }
@@ -149,7 +149,7 @@ TestEchoClient::TestEchoClient()
 TestEchoClient::~TestEchoClient()
 {
     for (size_t i = 0, n = parcels.size();i < n;++i)
-        Free(parcels[i].outbuf);
+        free(parcels[i].outbuf);
 }
 
 void TestEchoClient::ChannelOpen()

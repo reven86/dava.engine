@@ -47,6 +47,8 @@ public:
 
 	void ResTestFunction(PerfFuncData * data);
 	void DocTestFunction(PerfFuncData * data);
+    void HiddenFileTest(PerfFuncData* data);
+    void HiddenDirTest(PerfFuncData* data);
     
 protected:
     

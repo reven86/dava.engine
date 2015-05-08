@@ -22,7 +22,8 @@ _DebugQt
 Release
 ReleaseQt
 _ReleaseQt
-_build
+_build*
+.build*
 *Generated*
 *.vcxproj.user
 *.suo
@@ -42,3 +43,4 @@ fmod.log
 *.xccheckout
 Projects/UnitTests/android/assets
 
+Projects/UnitTests/android/.settings/*
