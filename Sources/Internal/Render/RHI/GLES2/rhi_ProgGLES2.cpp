@@ -241,17 +241,21 @@ ProgGLES2::InstanceConstBuffer( unsigned bufIndex )
 void
 ProgGLES2::SetToRHI() const
 {
+    GLCommand   cmd[countof(texunitLoc)];
+    uint32      cnt = 0;
 
-    if( !texunitInited )
+    for( unsigned i=0; i!=countof(texunitLoc); ++i )
     {
-        for( unsigned i=0; i!=countof(texunitLoc); ++i )
+        if( texunitLoc[i] != -1 )
         {
-            if( texunitLoc[i] != -1 )
-                GL_CALL(glUniform1i( texunitLoc[i], i ));
+            cmd[cnt].func   = GLCommand::SET_UNIFORM_1I;
+            cmd[cnt].arg[0] = texunitLoc[i];
+            cmd[cnt].arg[1] = i;
+                    
+            ++cnt;
         }
-
-        texunitInited = true;
     }
+    ExecGL( cmd, cnt );
 }
 
 

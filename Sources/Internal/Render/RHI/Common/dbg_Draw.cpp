@@ -471,7 +471,7 @@ DbgDraw::Buffer<Vertex,Prim>::flush_batched_2d( rhi::HPacketList batch_buf )
             batch.fragmentConstCount = 0;
             batch.primitiveType      = Prim;
             batch.primitiveCount     = _prim_count(_v_cnt);
-            batch.textureSet         = (_small_text)  ? dd->_texset_small_font : dd->_texset_normal_font;
+            batch.fragmentTextureSet = (_small_text)  ? dd->_texset_small_font : dd->_texset_normal_font;
 
             switch( Vertex::Format )
             {

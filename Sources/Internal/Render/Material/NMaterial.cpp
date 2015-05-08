@@ -75,7 +75,7 @@ void NMaterial::BindParams(rhi::Packet& target)
     target.renderPipelineState = activeVariantInstance->shader->GetPiplineState();
     target.depthStencilState = activeVariantInstance->depthState;
     target.samplerState = activeVariantInstance->samplerState;
-    target.textureSet = activeVariantInstance->textureSet;
+    target.fragmentTextureSet = activeVariantInstance->textureSet;
     target.cullMode = activeVariantInstance->cullMode;
 
     activeVariantInstance->shader->UpdateDynamicParams();

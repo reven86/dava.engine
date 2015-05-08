@@ -402,7 +402,7 @@ PipelineStateDX9_t::VertexProgDX9::Construct( const void* bin, unsigned bin_sz, 
         NULL, // no defines
         NULL, // no include-interfaces
         "vp_main",
-        "vs_2_0",
+        "vs_3_0",
         0,
         &shader,
         &err,
@@ -550,7 +550,7 @@ PipelineStateDX9_t::FragmentProgDX9::Construct( const void* bin, unsigned bin_sz
         NULL, // no defines
         NULL, // no include-interfaces
         "fp_main",
-        "ps_2_0",
+        "ps_3_0",
         0,
         &shader,
         &err,

@@ -16,16 +16,40 @@ namespace rhi
 {
 
 static inline unsigned
-_VertexAttribIndex( VertexSemantics s )
+_VertexAttribIndex( VertexSemantics s, uint32 i )
 {
     unsigned    attr_i   = InvalidIndex;
     
     switch( s )
     {
-        case VS_POSITION : attr_i = VATTR_POSITION; break;
-        case VS_NORMAL   : attr_i = VATTR_NORMAL; break;
-        case VS_TEXCOORD : attr_i = VATTR_TEXCOORD_0; break;
-        case VS_COLOR    : attr_i = VATTR_COLOR_0; break;
+        case VS_POSITION    : attr_i = VATTR_POSITION; break;
+        case VS_NORMAL      : attr_i = VATTR_NORMAL; break;
+        case VS_TEXCOORD    :
+        {
+            switch( i )
+            {
+                case 0 : attr_i = VATTR_TEXCOORD_0; break;
+                case 1 : attr_i = VATTR_TEXCOORD_1; break;
+                case 2 : attr_i = VATTR_TEXCOORD_2; break;
+                case 3 : attr_i = VATTR_TEXCOORD_3; break;
+                case 4 : attr_i = VATTR_TEXCOORD_4; break;
+                case 5 : attr_i = VATTR_TEXCOORD_5; break;
+                case 6 : attr_i = VATTR_TEXCOORD_6; break;
+                case 7 : attr_i = VATTR_TEXCOORD_7; break;
+            }
+        }   break;
+        case VS_COLOR       :
+        {
+            switch( i )
+            {
+                case 0 : attr_i = VATTR_COLOR_0; break;
+                case 1 : attr_i = VATTR_COLOR_1; break;
+            }
+        }   break;
+        case VS_TANGENT     : attr_i = VATTR_TANGENT; break;
+        case VS_BINORMAL    : attr_i = VATTR_BINORMAL; break;
+        case VS_BLENDWEIGHT : attr_i = VATTR_BLENDWEIGHT; break;
+        case VS_BLENDINDEX  : attr_i = VATTR_BLENDINDEX; break;
     }
     
     DVASSERT(attr_i != InvalidIndex);
@@ -529,7 +553,7 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
 
         for( unsigned i=0; i!=desc.vertexLayout.ElementCount(); ++i )
         {
-            unsigned        attr_i   = _VertexAttribIndex( desc.vertexLayout.ElementSemantics(i) );
+            unsigned        attr_i   = _VertexAttribIndex( desc.vertexLayout.ElementSemantics(i), desc.vertexLayout.ElementSemanticsIndex(i) );
             MTLVertexFormat fmt      = MTLVertexFormatInvalid;
             
             switch( desc.vertexLayout.ElementDataType(i) )
@@ -726,7 +750,7 @@ SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
             
             for( unsigned i=0; i!=psm->layout.ElementCount(); ++i )
             {
-                unsigned    attr_i   = _VertexAttribIndex( psm->layout.ElementSemantics(i) );
+                unsigned    attr_i   = _VertexAttribIndex( psm->layout.ElementSemantics(i), psm->layout.ElementSemanticsIndex(i) );
                 bool        attr_set = false;
                 
                 for( unsigned j=0; j!=layout->ElementCount(); ++j )
