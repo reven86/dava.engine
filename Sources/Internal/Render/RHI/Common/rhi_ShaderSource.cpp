@@ -479,24 +479,14 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 {
                     case ShaderProp::TYPE_FLOAT1 :
                     {
-<<<<<<< HEAD
                         const char* xyzw = "xyzw";
-                        var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    float %s = %cP_Buffer%u[%u].%c;\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount] );
-=======
-                        char xyzw[] = "xyzw";
-                        var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "    float %s = %cP_Buffer%u[%u].%c;\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount]);
->>>>>>> 265a3beebd4ffd682df6af000660842a5ffe5e4e
+                        var_len += Snprintf( var_def+var_len, sizeof(var_def)-var_len, "    float %s = %cP_Buffer%u[%u].%c;\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount] );
                     }   break;
                     
                     case ShaderProp::TYPE_FLOAT2 :
                     {
-<<<<<<< HEAD
                         const char* xyzw = "xyzw";
-                        var_len += Snprinf
-=======
-                        char xyzw[] = "xyzw";
                         var_len += Snprintf
->>>>>>> 265a3beebd4ffd682df6af000660842a5ffe5e4e
                         ( 
                             var_def+var_len, sizeof(var_def)-var_len, 
                             "    float2 %s = float2( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n", 
@@ -508,13 +498,8 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     
                     case ShaderProp::TYPE_FLOAT3 :
                     {
-<<<<<<< HEAD
                         const char* xyzw = "xyzw";
-                        var_len += Snprinf
-=======
-                        char xyzw[] = "xyzw";
                         var_len += Snprintf
->>>>>>> 265a3beebd4ffd682df6af000660842a5ffe5e4e
                         ( 
                             var_def+var_len, sizeof(var_def)-var_len, 
                             "    float3 %s = float3( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n", 
@@ -693,7 +678,7 @@ ShaderSource::Dump() const
             {
                 char    name[128];
 
-                Snprinf( name, sizeof(name)-1, "%s[%u]", p->uid.c_str(), p->arraySize );
+                Snprintf( name, sizeof(name)-1, "%s[%u]", p->uid.c_str(), p->arraySize );
                 Logger::Info( "  %-16s    buf#%u  -  %u, %u x float4", name, p->bufferindex, p->bufferReg, p->bufferRegCount );
             }
         }
