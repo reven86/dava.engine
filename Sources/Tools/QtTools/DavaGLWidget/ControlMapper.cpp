@@ -145,12 +145,12 @@ void ControlMapper::dragMoveEvent(QDragMoveEvent * event)
     DAVA::QtLayer::Instance()->MouseEvent( davaEvent );
 }
 
-void ControlMapper::ClearAllKeys()
+void ControlMapper::releaseKeyboard()
 {
     DAVA::InputSystem::Instance()->GetKeyboard().ClearAllKeys();
 }
 
-DAVA::UIEvent ControlMapper::MapMouseEventToDAVA( const QPoint& pos, const Qt::MouseButton button, ulong timestamp ) const
+DAVA::UIEvent ControlMapper::MapMouseEventToDAVA( const QPoint& pos, const Qt::MouseButton button, ulong timestamp )
 {
     DAVA::UIEvent davaEvent;
     auto davaButton = MapQtButtonToDAVA( button );
