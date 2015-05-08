@@ -226,7 +226,6 @@ uniform mediump vec2 texture0Shift;
 uniform vec3 cameraPosition;
 uniform mat4 worldMatrix;
 
-#define REFLECTION
 #if defined(REFLECTION) // works now only with VERTEX_LIT
 uniform mat3 worldInvTransposeMatrix;
 #if defined(VERTEX_LIT)

@@ -62,49 +62,7 @@ class Shader;
 class SceneFileV2;
 class Heightmap;
 class NMaterial;
-    
-template<class T>
-class LandQuadTreeNode
-{
-public:
-    LandQuadTreeNode()
-    {
-        children = 0;
-        parent = 0;
-        for (int32 k = 0; k < 4; ++k)
-            neighbours[k] = 0;
-    }
-    ~LandQuadTreeNode()
-    {
-        ReleaseChildren();
-    }
-    
-    void AllocChildren()
-    {
-        ReleaseChildren();
-        children = new LandQuadTreeNode[4];
-    }
-    
-    void ReleaseChildren()
-    {
-        SafeDeleteArray(children);
-    }
-    
-    LandQuadTreeNode * children;  // It's array of 4 child nodes
-    LandQuadTreeNode * parent;
-    LandQuadTreeNode * neighbours[4]; 
-    T data;
-};
-    
-template <class T>
-class LinearQuadTree
-{
-public:
-    
-    
-    
 
-};
 
 /**    
     \brief Implementation of cdlod algorithm to render landscapes
@@ -118,14 +76,6 @@ class NMaterial;
 class Landscape : public RenderObject
 {
 public:	
-    enum 
-    {
-        LEFT = 0,
-        RIGHT = 1,
-        TOP = 2,
-        BOTTOM = 3,
-    };
-    
 	Landscape();
 	virtual ~Landscape();
     
@@ -178,6 +128,8 @@ public:
         Vector3 tangent;
 #endif
 	};
+    
+    // TODO: Remove functions to work with texture through landscape
     
     /**
         \brief Set texture for the specific texture level
@@ -289,8 +241,7 @@ public:
     Heightmap *GetHeightmap();
     virtual void SetHeightmap(Heightmap *height);
     
-//    virtual void UpdateFullTiledTexture();
-//    FilePath SaveFullTiledTexture();
+
     Texture *CreateLandscapeTexture();
     LandscapeCursor *GetCursor();
     
@@ -312,8 +263,7 @@ protected:
 	const static FastName TEXTURE_SPECULAR_MAP;
 	const static FastName TECHNIQUE_TILEMASK_NAME;
     
-    
-    
+
     struct PatchQuadInfo
     {
         uint32 rdoQuad;
@@ -369,6 +319,7 @@ protected:
                    uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize);
     void AddPatchToRenderNoInstancing(uint32 level, uint32 x, uint32 y);
     void DrawNoInstancing();
+    void DrawLandscape();
     uint16 GetXYIndex(uint16 x, uint16 y);
 
     
@@ -403,23 +354,11 @@ protected:
     static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
     static const int32 INDEX_ARRAY_COUNT = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH * 6 * 2;
     
-
-    void RecursiveBuild(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 level, int32 maxLevels);
-    LandQuadTreeNode<LandscapeQuad> * FindNodeWithXY(LandQuadTreeNode<LandscapeQuad> * currentNode, int16 quadX, int16 quadY, int16 quadSize);
-    void FindNeighbours(LandQuadTreeNode<LandscapeQuad> * currentNode);
-    void MarkFrames(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 & depth);
-
-    void BindMaterial(int32 lodLayer, Camera* camera);
-    void UnbindMaterial();
-    
-    void DrawQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod);
-    void Draw(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippingFlags);
-    void DrawFans();
-
-    Texture * CreateTexture(eTextureLevel level, const FilePath & textureName);
+    void BindMaterial(Camera* camera);
+    //Texture * CreateTexture(eTextureLevel level, const FilePath & textureName);
     
     int16 AllocateRDOQuad(LandscapeQuad * quad);
-    void ReleaseAllRDOQuads();
+    void ReleaseLandscape();
 
 	int GetMaxLod(float32 quadDistance);
 	float32 GetQuadToCameraDistance(const Vector3& camPos, const LandscapeQuad& quad);
@@ -439,71 +378,68 @@ protected:
     Vector<RenderDataObject *> landscapeRDOArray;
     
     uint16 * indices;
-    //Texture * textures[TEXTURE_COUNT];
-    //Vector<FilePath> textureNames;
-    
-    int32 lodLevelsCount;
-    float32 lodDistance[8]; //
-    float32 lodSqDistance[8];
-    
-    LandQuadTreeNode<LandscapeQuad> quadTreeHead;
 
-    Vector<LandQuadTreeNode<LandscapeQuad>*> fans;
-    
-    int32 allocatedMemoryForQuads;
     
     Camera * camera;
     Vector3 cameraPos;
     float32 fovCorrection;
     Frustum *frustum;
     
-    ePrimitiveType primitypeType;
-    
-    //Vector2 textureTiling[TEXTURE_COUNT];
-    //Color tileColor[TEXTURE_COUNT];
-    
 	LandscapeCursor * cursor;
-        
+    
+    // Render Queue
     int16 queueRdoQuad;
     int32 queueRenderCount;
     uint16 * queueDrawIndices;
+    uint32 drawIndices;
+    int32 flushQueueCounter;
     
     void FlushQueue();
     void ClearQueue();
     
+    // Heightmap
     bool BuildHeightmap();
-    void BuildLandscape();
+    void ReallocateLandscape();
     Heightmap *heightmap;
     FilePath heightmapPath;
     
+    // Material
 	static const uint32 TEXTURE_TILE_FULL_SIZE = 2048;
     
-    Vector<LandQuadTreeNode<LandscapeQuad> *>lod0quads;
-    Vector<LandQuadTreeNode<LandscapeQuad> *>lodNot0quads;
-
-    int32 prevLodLayer;
-    
-    int32 flashQueueCounter;
-    
-    int32 nearLodIndex;
-    int32 farLodIndex;
-    
 	NMaterial* tileMaskMaterial;
-	//NMaterial* fullTiledMaterial;
-	//NMaterial* currentMaterial;
-	
-	uint32 drawIndices;
-	
 	void SetDefaultValues();
 
     FoliageSystem* foliageSystem;
-
+    
+    float32 defaultFov;
+    
+    float32 solidAngleError;
+    float32 geometryAngleError;
+    float32 absHeightError;
+    
+    float32 zoomSolidAngleError;
+    float32 zoomGeometryAngleError;
+    float32 zoomAbsHeightError;
+    
+    float32 fovSolidAngleError;
+    float32 fovGeometryAngleError;
+    float32 fovAbsHeightError;
+    
+    bool    isDebugDraw;
 public:
    
     INTROSPECTION_EXTEND(Landscape, RenderObject,
         PROPERTY("heightmapPath", "Height Map Path", GetHeightmapPathname, SetHeightmapPathname, I_VIEW | I_EDIT)
         PROPERTY("size", "Size", GetLandscapeSize, SetLandscapeSize, I_VIEW | I_EDIT)
         PROPERTY("height", "Height", GetLandscapeHeight, SetLandscapeHeight, I_VIEW | I_EDIT)
+        MEMBER(solidAngleError, "solidAngleError", I_VIEW | I_EDIT)
+        MEMBER(geometryAngleError, "geometryAngleError", I_VIEW | I_EDIT)
+        MEMBER(absHeightError, "absHeightError", I_VIEW | I_EDIT)
+
+        MEMBER(zoomSolidAngleError, "solidAngleError", I_VIEW | I_EDIT)
+        MEMBER(zoomGeometryAngleError, "geometryAngleError", I_VIEW | I_EDIT)
+        MEMBER(zoomAbsHeightError, "absHeightError", I_VIEW | I_EDIT)
+        MEMBER(isDebugDraw, "isDebugDraw", I_VIEW | I_EDIT)
 		);
 };
 

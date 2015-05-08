@@ -64,7 +64,7 @@ uniform samplerCube cubemap;
 varying mediump vec3 varTexCoord0;
 #endif
 
-#define REFLECTION
+//#define REFLECTION
 #if defined(REFLECTION)
 uniform samplerCube cubemap;
 #if defined(VERTEX_LIT)
@@ -429,7 +429,7 @@ void main()
 //#define GOTANDA
 #if defined(GOTANDA)
     vec3 fresnelIn = FresnelShlickVec3(NdotL, metalFresnelReflectance);
-    vec3 diffuse = NdotL / _PI * (1.0 - fresnelIn * specularity);
+	vec3 diffuse = NdotL / _PI * (1.0 - fresnelIn * specularity);
 #else
 	float diffuse = NdotL / _PI;// * (1.0 - fresnelIn * specularity);
 #endif
@@ -462,7 +462,7 @@ void main()
     
     #if defined(VIEW_AMBIENT) && !defined(MATERIAL_LIGHTMAP)
     
-        #if defined(PIXEL_LIT)
+        #if 0
             vec3 sphericalHarmonics[9];
             sphericalHarmonics[0] = vec3(1.23840332, 1.37246668, 1.50493050);
             sphericalHarmonics[1] = vec3(0.184020087, 0.177677527, 0.168910921);
