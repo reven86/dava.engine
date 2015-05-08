@@ -186,8 +186,18 @@ RenderBatch * VegetationRenderObject::CreateRenderBatch()
 {
     DVASSERT(renderData);
 
+    NMaterial * batchMaterial = new NMaterial();
+    batchMaterial->SetParent(renderData->GetMaterial());
+
+    float32 fakeData[4];
+    Memset(fakeData, 0, sizeof(float32) * 4);
+    batchMaterial->AddProperty(VegetationPropertyNames::UNIFORM_SWITCH_LOD_SCALE, fakeData, rhi::ShaderProp::TYPE_FLOAT2);
+    batchMaterial->AddProperty(VegetationPropertyNames::UNIFORM_TILEPOS, fakeData, rhi::ShaderProp::TYPE_FLOAT3);
+    batchMaterial->AddProperty(VegetationPropertyNames::UNIFORM_VEGWAVEOFFSET_X, fakeData, rhi::ShaderProp::TYPE_FLOAT4);
+    batchMaterial->AddProperty(VegetationPropertyNames::UNIFORM_VEGWAVEOFFSET_Y, fakeData, rhi::ShaderProp::TYPE_FLOAT4);
+
     RenderBatch * batch = new RenderBatch();
-    batch->SetMaterial(renderData->GetMaterial());
+    batch->SetMaterial(batchMaterial);
     batch->vertexBuffer = vertexBuffer;
     batch->indexBuffer = indexBuffer;
     batch->vertexCount = vertexCount;
@@ -464,7 +474,7 @@ void VegetationRenderObject::PrepareToRender(Camera * camera)
     
     Vector3 posScale(0.0f, 0.0f, 0.0f);
     Vector2 switchLodScale;
-    float32 vegetationAnimationOffset[8];
+    Vector4 vegetationAnimationOffset[2];
     
     Vector3 cameraDirection = camera->GetDirection();
     cameraDirection.Normalize();
@@ -511,28 +521,16 @@ void VegetationRenderObject::PrepareToRender(Camera * camera)
         for(uint32 i = 0; i < 4; ++i)
         {
             Vector2 animationOffset = treeNode->data.animationOffset[i] * layersAnimationAmplitude.data[i];
-            vegetationAnimationOffset[i] = animationOffset.x;
-            vegetationAnimationOffset[i + 4] = animationOffset.y;
+            vegetationAnimationOffset[0].data[i] = animationOffset.x;
+            vegetationAnimationOffset[1].data[i] = animationOffset.y;
         }
-#if RHI_COMPLETE        
-        mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_SWITCH_LOD_SCALE,
-                              Shader::UT_FLOAT_VEC2,
-                              1,
-                              switchLodScale.data);
-        
-        mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_TILEPOS,
-                              Shader::UT_FLOAT_VEC3,
-                              1,
-                              posScale.data);
-        
-        mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_VEGWAVEOFFSET,
-                              Shader::UT_FLOAT,
-                              8,
-                              vegetationAnimationOffset);
-#endif // RHI_COMPLETE
-        
+
+        mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_SWITCH_LOD_SCALE, switchLodScale.data);
+        mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_TILEPOS, posScale.data);
+        mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_VEGWAVEOFFSET_X, vegetationAnimationOffset[0].data);
+        mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_VEGWAVEOFFSET_Y, vegetationAnimationOffset[1].data);
 #ifdef VEGETATION_DRAW_LOD_COLOR
-        mat->SetPropertyValue(UNIFORM_LOD_COLOR, Shader::UT_FLOAT_VEC3, 1, &RESOLUTION_COLOR[resolutionIndex]);
+        mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_LOD_COLOR, RESOLUTION_COLOR[resolutionIndex].color);
 #endif
 
     }

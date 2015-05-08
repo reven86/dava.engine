@@ -226,12 +226,15 @@ void VegetationGeometry::Build(VegetationRenderData * renderData)
     material->SetFXName(NMaterialName::GRASS);
     renderData->SetMaterial(material);
 
+    if (material->HasLocalProperty(VegetationPropertyNames::UNIFORM_WORLD_SIZE))
+        material->SetPropertyValue(VegetationPropertyNames::UNIFORM_WORLD_SIZE, worldSize.data);
+    else
+        material->AddProperty(VegetationPropertyNames::UNIFORM_WORLD_SIZE, worldSize.data, rhi::ShaderProp::TYPE_FLOAT3);
+
 #ifdef VEGETATION_DRAW_LOD_COLOR
     material->AddFlag(VegetationPropertyNames::FLAG_VEGETATION_DRAW_LOD_COLOR, 1);
+    material->AddProperty(VegetationPropertyNames::UNIFORM_LOD_COLOR, fakeData, rhi::ShaderProp::TYPE_FLOAT3);
 #endif
-
-    Vector4 worldSize4(worldSize.x, worldSize.y, worldSize.z, 0.f);
-    material->AddProperty(VegetationPropertyNames::UNIFORM_WORLD_SIZE, worldSize4.data, rhi::ShaderProp::TYPE_FLOAT4);
 
     //fill in metrics data
     size_t layerCount = customGeometryData.size();
@@ -278,16 +281,10 @@ void VegetationGeometry::OnVegetationPropertiesChanged(NMaterial * mat, KeyedArc
         if(props->IsKeyExists(heightmapScaleKeyName))
         {
             Vector2 heightmapScale = props->GetVector2(heightmapScaleKeyName);
-            Vector4 heightmapScaleProp(heightmapScale.x, heightmapScale.y, 0.f, 0.f);
-                mat->AddProperty(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE, heightmapScale.data, rhi::ShaderProp::TYPE_FLOAT4);
-        }
-        
-        String densityMapPathKey = VegetationPropertyNames::UNIFORM_SAMPLER_DENSITYMAP.c_str();
-        if(props->IsKeyExists(densityMapPathKey))
-        {
-            FilePath densityMapPath = props->GetString(densityMapPathKey);
-            densityMapPath.ReplaceExtension(".tex");
-            mat->SetTexture(VegetationPropertyNames::UNIFORM_SAMPLER_DENSITYMAP, ScopedPtr<Texture>(Texture::CreateFromFile(densityMapPath)));
+            if (mat->HasLocalProperty(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE))
+                mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE, heightmapScale.data);
+            else
+                mat->AddProperty(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE, heightmapScale.data, rhi::ShaderProp::TYPE_FLOAT2);
         }
     }
 }

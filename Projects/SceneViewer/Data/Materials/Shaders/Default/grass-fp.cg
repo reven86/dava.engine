@@ -1,24 +1,27 @@
+FPROG_IN_BEGIN
+    FPROG_IN_TEXCOORD0(inTexCoord,2)
+    VPROG_OUT_COLOR0(inVegetationColor,3)
+FPROG_IN_END
 
-uniform sampler2D albedo;
+FPROG_OUT_BEGIN
+    FPROG_OUT_COLOR
+FPROG_OUT_END
 
-#if defined(VEGETATION_DRAW_LOD_COLOR)
-uniform vec3 lodColor;
+DECL_SAMPLER2D(albedo)
+
+#if LOD_COLOR
+property float3 lodColor : shared,static : def_value=1,1,1;
 #endif
 
-varying vec2 varTexCoord0;
-varying vec3 varVegetationColor;
+FPROG_BEGIN
 
+    float4 textureColor0 = FP_TEXTURE2D( albedo, FP_IN(inTexCoord) );
+    float3 color = textureColor0.rgb * FP_IN(inVegetationColor) * 2.0;
 
-
-
-void main()
-{
-    vec3 textureColor0 = texture2D(albedo, varTexCoord0).rgb;
-    vec3 color = textureColor0.rgb * varVegetationColor * 2.0;
-
-#if defined(VEGETATION_DRAW_LOD_COLOR)
+#if LOD_COLOR
     color += lodColor;
 #endif
         
-    gl_FragColor = vec4(color, 1.0);
-}
+    FP_OUT_COLOR = float4(color, 1.0);
+
+FPROG_END;
