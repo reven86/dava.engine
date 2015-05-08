@@ -141,7 +141,7 @@ while continue_process_stdout:
                     if line.find("frame") != -1:
                         value = str(float(value) * 1000)
 
-                    key = key + "_branch_" + branch + "_device_" + device
+                    key = key + "_branch_" + branch + "_" + device_name
 
                     sys.stdout.write("##teamcity[buildStatisticValue key='" + key + "' value='" + value + "']")
                     sys.stdout.flush()          
