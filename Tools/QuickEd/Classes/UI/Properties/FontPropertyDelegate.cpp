@@ -6,7 +6,7 @@
 #include "Utils/QtDavaConvertion.h"
 #include "EditorCore.h"
 #include "UI/Dialogs/DialogConfigurePreset.h"
-#include "UI/Dialogs/DialogEditPresetName.h"
+#include "UI/Dialogs/DialogAddPreset.h"
 
 using namespace DAVA;
 
@@ -65,8 +65,7 @@ void FontPropertyDelegate::enumEditorActions(QWidget *parent, const QModelIndex 
     actions.push_back(configurePresetAction);
     connect(configurePresetAction, &QAction::triggered, this, &FontPropertyDelegate::configurePresetClicked);
 
-    addPresetAction = new QAction(QIcon(":/Icons/add.png"), tr("configure"), parent);
-    addPresetAction->setEnabled(false);
+    QAction *addPresetAction = new QAction(QIcon(":/Icons/add.png"), tr("configure"), parent);
     addPresetAction->setToolTip(tr("add preset"));
     actions.push_back(addPresetAction);
     connect(addPresetAction, &QAction::triggered, this, &FontPropertyDelegate::addPresetClicked);
@@ -84,12 +83,12 @@ void FontPropertyDelegate::addPresetClicked()
     if (!editor)
         return;
     QComboBox *comboBox = editor->findChild<QComboBox*>("comboBox");
-    DialogEditPresetName dialogEditPresetName(comboBox->currentText(), qApp->activeWindow());
-    if(dialogEditPresetName.exec())
+    DialogAddPreset dialogAddPreset(comboBox->currentText(), qApp->activeWindow());
+    if (dialogAddPreset.exec())
     {
         comboBox->clear();
         comboBox->addItems(GetEditorFontSystem()->GetDefaultPresetNames());
-        comboBox->setCurrentText(dialogEditPresetName.lineEdit_newFontPresetName->text());
+        comboBox->setCurrentText(dialogAddPreset.lineEdit_newFontPresetName->text());
 
         BasePropertyDelegate::SetValueModified(editor, true);
         itemDelegate->emitCommitData(editor);
@@ -119,7 +118,6 @@ void FontPropertyDelegate::valueChanged()
 {
     QComboBox *comboBox= qobject_cast<QComboBox *>(sender());
     configurePresetAction->setDisabled(comboBox->currentText().isEmpty());
-    addPresetAction->setDisabled(comboBox->currentText().isEmpty());
     if (nullptr == comboBox)
     {
         return;

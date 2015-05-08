@@ -20,7 +20,7 @@ private slots:
     void configurePresetClicked();
     void valueChanged();
 private:
-    mutable QAction *configurePresetAction, *addPresetAction;
+    mutable QAction *configurePresetAction;
 };
 
 #endif // __FONT_PROPERTY_DELEGATE_H__s
