@@ -58,8 +58,8 @@ private:
     
 public:
     
-    INTROSPECTION_EXTEND(LandscapeComponent, Component,
-    );
+//    INTROSPECTION_EXTEND(LandscapeComponent, Component,
+//    );
 };
 
 
