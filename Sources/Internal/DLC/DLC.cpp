@@ -156,6 +156,11 @@ int32 DLC::GetLastErrno() const
     return dlcContext.lastErrno;
 }
 
+PatchFileReader::PatchError DLC::GetPatchError() const
+{
+    return dlcContext.patchingError;
+}
+
 FilePath DLC::GetMetaStorePath() const
 {
     return dlcContext.remoteMetaStorePath;
@@ -746,6 +751,7 @@ void DLC::StepDownloadPatchFinish(const uint32 &id, const DownloadStatus &status
 
                 case DAVA::DLE_FILE_ERROR:
                     // writing file problem
+                    dlcContext.lastErrno = FileSystem::Instance()->GetErrno();
                     PostError(DE_WRITE_ERROR);
                     break;
 

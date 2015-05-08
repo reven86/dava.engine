@@ -121,6 +121,11 @@ public:
     int32 GetLastErrno() const;
 
     /**
+        \brief Return patching error
+    */
+    PatchFileReader::PatchError GetPatchError() const;
+
+    /**
         \brief Returns path to appropriate meta-file that was downloaded from DLC server.
     */
     FilePath GetMetaStorePath() const;
