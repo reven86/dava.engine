@@ -164,16 +164,18 @@ private:
         InactivityTimer(int32 duration);
 
         void Start();
-        void Reset();
-        bool IsReached();
-        
+        void Stop() {isStarted = false; timeLeft = timeout;}
+        void Reset() {timeLeft = timeout; isReached = false;}
+        void Tick();
+        bool IsReached() {return isReached;}
         bool IsStarted() {return isStarted;}
         
     private:
-        const int64 timeout;
-        int64 timeLeft;
-        int64 timerStartTime;
+        const uint64 timeout;
+        uint64 timeLeft;
+        uint64 timerStartTime;
         bool isStarted = false;
+        bool isReached;
     };
     
 private:

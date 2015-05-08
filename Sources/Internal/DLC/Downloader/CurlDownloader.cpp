@@ -116,12 +116,9 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
     }
     else
     {
+        // no errors was found
         return static_cast<size_t>(dataSizeToBuffer);
     }
-
-    
-    // no errors was found
-    return dataSizeToBuffer;
 }
     
 void CurlDownloader::Interrupt()
@@ -251,6 +248,7 @@ CURLMcode CurlDownloader::Perform()
         return ret;
     }
 
+    inactivityConnectionTimer.Reset();
     do
     {
         struct timeval timeout;
@@ -315,16 +313,26 @@ CURLMcode CurlDownloader::Perform()
             /* select error */
             break;
         case 0: /* timeout */
+            // workaround which allows to finish broken download on MacOS and iOS
+            // operation don't interrupts at connection lose (if we turn off wi-fi at example)
+            // so we check if curl timeout is reached and then starts inactivity timer
+            // timer.Reset placed inside data receive handler.
+            // so if we have some data comming, timer will not reach his maximu value
+            // and IsReached will be false.
+            // if data don't comes - timer will reaches and we use a hack to interrupt curl by limit operation time.
             if (!inactivityConnectionTimer.IsStarted() && 0 >= curlTimeout)
             {
                 inactivityConnectionTimer.Start();
             }
-            if (inactivityConnectionTimer.IsStarted() && inactivityConnectionTimer.IsReached())
+            if (inactivityConnectionTimer.IsStarted())
             {
-                // workaround which allows to finish broken download on MacOS
-                for (auto easyHandle : easyHandles)
+                inactivityConnectionTimer.Tick();
+                if (inactivityConnectionTimer.IsReached())
                 {
-                    curl_easy_setopt(easyHandle, CURLOPT_TIMEOUT, 1);
+                    for (auto easyHandle : easyHandles)
+                    {
+                        curl_easy_setopt(easyHandle, CURLOPT_TIMEOUT, 1);
+                    }
                 }
             }
         default: /* action */
@@ -757,34 +765,28 @@ DownloadError CurlDownloader::TakeMostImportantReturnValue(const Vector<Download
 CurlDownloader::InactivityTimer::InactivityTimer(int32 duration)
     : timeout(duration)
     , timeLeft(timeout)
+    , isReached(false)
 {
 }
     
 void CurlDownloader::InactivityTimer::Start()
 {
     Reset();
-    timerStartTime = static_cast<int64>(SystemTimer::Instance()->AbsoluteMS()/1000);
+    timerStartTime = SystemTimer::Instance()->AbsoluteMS();
     isStarted = true;
 }
 
-void CurlDownloader::InactivityTimer::Reset()
+void CurlDownloader::InactivityTimer::Tick()
 {
-    timeLeft = timeout;
-}
-
-bool CurlDownloader::InactivityTimer::IsReached()
-{
-    int64 timeDelta = static_cast<int64>(SystemTimer::Instance()->AbsoluteMS()/1000) - timerStartTime;
+    uint64 timeDelta = SystemTimer::Instance()->AbsoluteMS() - timerStartTime;
     
-    timeLeft -= timeDelta;
+    timeLeft = timeout - timeDelta/1000;
     
-    bool isReached = 0 >= timeLeft;
+    isReached = timeDelta >= timeout*1000;
     
     if (isReached)
     {
-        isStarted = false;
+        Stop();
     }
-    
-    return isReached;
 }
 }
