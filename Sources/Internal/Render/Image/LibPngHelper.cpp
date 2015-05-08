@@ -376,6 +376,24 @@ ImageInfo LibPngHelper::GetImageInfo(File *infile) const
             break;
     }
 
+//==== temporary solution for legasy png loading =====
+    
+    switch (info.format)
+    {
+        case FORMAT_INVALID:
+        case FORMAT_A8:
+        case FORMAT_A16:
+            //do nothing
+            break;
+            
+        default:
+            info.format = FORMAT_RGBA8888;
+            break;
+    }
+    
+//==== temporary solution for legasy png loading =====
+    
+    
     info.dataSize = info.height * info.width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(info.format);
 
     // Clean up
