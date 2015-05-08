@@ -798,6 +798,7 @@ namespace DAVA
 		if (!result)
 		{
 			Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't load buffer %s", luaFilePath.GetAbsolutePathname().c_str());
+			Logger::Error("%s", lua_tostring(luaState, -1));
 			return false;
 		}
 		return true;
