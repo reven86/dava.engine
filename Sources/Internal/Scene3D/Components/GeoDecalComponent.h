@@ -56,8 +56,8 @@ private:
     
 public:
     
-    INTROSPECTION_EXTEND(GeoDecalComponent, Component,
-    );
+//    INTROSPECTION_EXTEND(GeoDecalComponent, Component,
+//    );
 };
 
 
