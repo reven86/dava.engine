@@ -22,10 +22,24 @@ _VertexAttribIndex( VertexSemantics s )
     
     switch( s )
     {
-        case VS_POSITION : attr_i = VATTR_POSITION; break;
-        case VS_NORMAL   : attr_i = VATTR_NORMAL; break;
-        case VS_TEXCOORD : attr_i = VATTR_TEXCOORD_0; break;
-        case VS_COLOR    : attr_i = VATTR_COLOR_0; break;
+        case VS_POSITION    : attr_i = VATTR_POSITION; break;
+        case VS_NORMAL      : attr_i = VATTR_NORMAL; break;
+        case VS_TEXCOORD    : attr_i = VATTR_TEXCOORD_0; break;
+        case VS_TEXCOORD_0  : attr_i = VATTR_TEXCOORD_0; break;
+        case VS_TEXCOORD_1  : attr_i = VATTR_TEXCOORD_1; break;
+        case VS_TEXCOORD_2  : attr_i = VATTR_TEXCOORD_2; break;
+        case VS_TEXCOORD_3  : attr_i = VATTR_TEXCOORD_3; break;
+        case VS_TEXCOORD_4  : attr_i = VATTR_TEXCOORD_4; break;
+        case VS_TEXCOORD_5  : attr_i = VATTR_TEXCOORD_5; break;
+        case VS_TEXCOORD_6  : attr_i = VATTR_TEXCOORD_6; break;
+        case VS_TEXCOORD_7  : attr_i = VATTR_TEXCOORD_7; break;
+        case VS_COLOR       : attr_i = VATTR_COLOR_0; break;
+        case VS_COLOR_0     : attr_i = VATTR_COLOR_0; break;
+        case VS_COLOR_1     : attr_i = VATTR_COLOR_1; break;
+        case VS_TANGENT     : attr_i = VATTR_TANGENT; break;
+        case VS_BINORMAL    : attr_i = VATTR_BINORMAL; break;
+        case VS_BLENDWEIGHT : attr_i = VATTR_BLENDWEIGHT; break;
+        case VS_BLENDINDEX  : attr_i = VATTR_BLENDINDEX; break;
     }
     
     DVASSERT(attr_i != InvalidIndex);

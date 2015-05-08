@@ -261,6 +261,8 @@ gles2_CommandBuffer_SetVertexConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle
 static void
 gles2_CommandBuffer_SetVertexTexture( Handle cmdBuf, uint32 unitIndex, Handle tex )
 {
+    if( tex != InvalidHandle )
+        CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_TEXTURE, unitIndex, tex );
 }
 
 
@@ -1160,6 +1162,11 @@ if( err != GL_NO_ERROR ) \
                 cmd->retval = glGetUniformLocation( (GLuint)(arg[0]), (const GLchar*)(arg[1]) );
                 cmd->status = 0;
             }   break;        
+
+            case GLCommand::SET_UNIFORM_1I :
+            {
+                EXEC_GL(glUniform1i( GLint(arg[0]), GLint(arg[1]) ));
+            }   break;
 
             case GLCommand::GEN_FRAMEBUFFERS :
             {

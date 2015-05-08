@@ -78,12 +78,16 @@ VertexDeclGLES2
 
                             switch( layout.ElementSemantics(i) )
                             {
-                                case VS_POSITION : strcpy( elem[elemCount].name, "attr_position" ); break;
-                                case VS_NORMAL   : strcpy( elem[elemCount].name, "attr_normal" ); break;
-                                case VS_TEXCOORD : sprintf( elem[elemCount].name, "attr_texcoord%u", layout.ElementSemanticsIndex(i) ); break;
-                                case VS_COLOR    : sprintf( elem[elemCount].name, "attr_color%u", layout.ElementSemanticsIndex(i) ); break;
+                                case VS_POSITION    : strcpy( elem[elemCount].name, "attr_position" ); break;
+                                case VS_NORMAL      : strcpy( elem[elemCount].name, "attr_normal" ); break;
+                                case VS_TEXCOORD    : sprintf( elem[elemCount].name, "attr_texcoord%u", layout.ElementSemanticsIndex(i) ); break;
+                                case VS_COLOR       : sprintf( elem[elemCount].name, "attr_color%u", layout.ElementSemanticsIndex(i) ); break;
+                                case VS_TANGENT     : strcpy( elem[elemCount].name, "attr_tangent" ); break;
+                                case VS_BINORMAL    : strcpy( elem[elemCount].name, "attr_binormal" ); break;
+                                case VS_BLENDWEIGHT : strcpy( elem[elemCount].name, "attr_blendweight" ); break;
+                                case VS_BLENDINDEX  : strcpy( elem[elemCount].name, "attr_blendindex" ); break;
                                     
-                                default          : strcpy( elem[elemCount].name, "<unsupported>" );
+                                default             : strcpy( elem[elemCount].name, "<unsupported>" );
                             }
                             
                             elem[elemCount].count  = layout.ElementDataCount( i );
@@ -159,8 +163,6 @@ public:
 
         void                    SetToRHI( uint32 layoutUID )
                                 {
-                                    ProgGLES2::SetToRHI();
-
                                     if( layoutUID == VertexLayout::InvalidUID )
                                     {
                                         vdecl.SetToRHI();
@@ -365,6 +367,7 @@ SetToRHI( Handle ps, uint32 layoutUID )
     DVASSERT(ps2);
     
     GL_CALL(glUseProgram( ps2->glProg ));
+    ps2->fprog.ProgGLES2::SetToRHI();
     
     if( ps2->blendEnabled )
     {
@@ -405,7 +408,7 @@ SetVertexDeclToRHI( Handle ps, uint32 layoutUID )
             vdecl.vdecl.InitVattr( ps2->glProg );
             ps2->vprog.altVdecl.push_back( vdecl );
         }
-    }
+    }    
     
     ps2->vprog.SetToRHI( layoutUID );
 }

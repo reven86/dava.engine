@@ -134,7 +134,9 @@ GLCommand
         GET_SHADER_INFO_LOG,
         GET_PROGRAM_IV,
         GET_ACTIVE_UNIFORM,
-        GET_UNIFORM_LOCATION
+        GET_UNIFORM_LOCATION,
+
+        SET_UNIFORM_1I
     };
 
     Func    func;

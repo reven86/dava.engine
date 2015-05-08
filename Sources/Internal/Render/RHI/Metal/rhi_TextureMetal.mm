@@ -284,11 +284,19 @@ SetupDispatch( Dispatch* dispatch )
 }
     
 void
-SetToRHI( Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce )
+SetToRHIFragment( Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce )
 {
     TextureMetal_t* self = TextureMetalPool::Get( tex );
 
     [ce setFragmentTexture:self->uid atIndex:unitIndex];
+}
+
+void
+SetToRHIVertex( Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce )
+{
+    TextureMetal_t* self = TextureMetalPool::Get( tex );
+
+    [ce setVertexTexture:self->uid atIndex:unitIndex];
 }
 
 void

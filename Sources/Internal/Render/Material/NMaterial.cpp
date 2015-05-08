@@ -75,7 +75,7 @@ void NMaterial::BindParams(rhi::Packet& target)
     target.renderPipelineState = activeVariantInstance->shader->GetPiplineState();
     target.depthStencilState = activeVariantInstance->depthState;
     target.samplerState = activeVariantInstance->samplerState;
-    target.textureSet = activeVariantInstance->textureSet;
+    target.fragmentTextureSet = activeVariantInstance->textureSet;
     target.cullMode = activeVariantInstance->cullMode;
 
     activeVariantInstance->shader->UpdateDynamicParams();
@@ -90,8 +90,17 @@ void NMaterial::BindParams(rhi::Packet& target)
             DVASSERT(materialBinding.source)
                 if (materialBinding.updateSemantic != materialBinding.source->updateSemantic)
                 {
-                    //Logger::Info( " upd-prop " );
-                    rhi::UpdateConstBuffer4fv(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.source->data.get(), ShaderDescriptor::CalculateRegsCount(materialBinding.type, materialBinding.source->arraySize));
+                    //Logger::Info( " upd-prop " );                    
+                    if (materialBinding.type < rhi::ShaderProp::TYPE_FLOAT4)
+                    {
+                        DVASSERT(materialBinding.source->arraySize == 1);
+                        rhi::UpdateConstBuffer1fv(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.regCount, materialBinding.source->data.get(), ShaderDescriptor::CalculateDataSize(materialBinding.type, materialBinding.source->arraySize));
+                    }
+                    else
+                    {
+                        DVASSERT(materialBinding.source->arraySize <= materialBinding.regCount);
+                        rhi::UpdateConstBuffer4fv(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.source->data.get(), ShaderDescriptor::CalculateRegsCount(materialBinding.type, materialBinding.source->arraySize));
+                    }                                        
                     materialBinding.updateSemantic = materialBinding.source->updateSemantic;
                 }
         }
@@ -126,12 +135,12 @@ NMaterialProperty* NMaterial::GetMaterialProperty(const FastName& propName)
     return res;
 }
 
-Texture* NMaterial::GetMaterialTexture(const FastName& slotName)
+Texture* NMaterial::GetEffectiveTexture(const FastName& slotName)
 {
     Texture* res = localTextures.at(slotName);
     if ((res == nullptr) && (parent != nullptr))
     {
-        res = parent->GetMaterialTexture(slotName);
+        res = parent->GetEffectiveTexture(slotName);
     }
     return res;
 }
@@ -161,7 +170,7 @@ void NMaterial::AddProperty(const FastName& propName, const float32 *propData, r
     prop->name = propName;
     prop->type = type;
     prop->arraySize = arraySize;
-    prop->data.reset(new float[sizeof(float32) * 4 * ShaderDescriptor::CalculateRegsCount(type, arraySize)]);
+    prop->data.reset(new float[ShaderDescriptor::CalculateDataSize(type, arraySize)]);
     prop->SetPropertyValue(propData);
     localProperties[propName] = prop;
 }
@@ -189,6 +198,19 @@ bool NMaterial::HasLocalProperty(const FastName& propName)
     return localProperties.at(propName)!=nullptr;
 }
 
+rhi::ShaderProp::Type NMaterial::GetLocalPropType(const FastName& propName)
+{
+    NMaterialProperty *prop = localProperties.at(propName);
+    DVASSERT(prop != nullptr);
+    return prop->type;
+}
+const float32* NMaterial::GetLocalPropValue(const FastName& propName)
+{
+    NMaterialProperty *prop = localProperties.at(propName);
+    DVASSERT(prop != nullptr);
+    return prop->data.get();
+}
+
 
 void NMaterial::AddTexture(const FastName& slotName, Texture* texture)
 {
@@ -206,7 +228,7 @@ void NMaterial::RemoveTexture(const FastName& slotName)
     InvalidateTextureBindings();
 }
 void NMaterial::SetTexture(const FastName& slotName, Texture* texture)
-{
+{    
     Texture * currTexture = localTextures.at(slotName);
     DVASSERT(currTexture != nullptr);
     if (currTexture != texture)
@@ -214,9 +236,17 @@ void NMaterial::SetTexture(const FastName& slotName, Texture* texture)
         SafeRelease(currTexture);
         localTextures[slotName] = SafeRetain(texture);
         InvalidateTextureBindings();
-    }
-    
-    
+    }        
+}
+
+bool NMaterial::HasLocalTexture(const FastName& slotName)
+{
+    return localTextures.find(slotName) != localTextures.end();
+}
+Texture* NMaterial::GetLocalTexture(const FastName& slotName)
+{
+    DVASSERT(HasLocalTexture(slotName));
+    return localTextures.at(slotName);
 }
 
 void NMaterial::AddFlag(const FastName& flagName, int32 value)
@@ -430,6 +460,7 @@ void NMaterial::RebuildBindings()
                             MaterialPropertyBinding binding;
                             binding.type = propDescr.type;
                             binding.reg = propDescr.bufferReg;
+                            binding.regCount = propDescr.bufferRegCount;
                             binding.updateSemantic = 0; //mark as dirty - set it on next draw request
                             binding.source = prop;
                             bufferBinding->propBindings.push_back(binding);
@@ -498,7 +529,7 @@ void NMaterial::RebuildTextureBindings()
         samplerDescr.count = currShader->fragmentSamplerList.size();
         for (size_t i = 0, sz = textureDescr.count; i < sz; ++i)
         {            
-            Texture *tex = GetMaterialTexture(currShader->fragmentSamplerList[i].uid);
+            Texture *tex = GetEffectiveTexture(currShader->fragmentSamplerList[i].uid);
             DVASSERT(tex);
             textureDescr.texture[i] = tex->handle;      
             samplerDescr.sampler[i] = tex->samplerState;
@@ -544,8 +575,17 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
 
 void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
-    //RHI_COMPLETE
+    //RHI_COMPLETE - increment version and save/load to new format
     DataNode::Load(archive, serializationContext);
+    LoadOldNMaterial(archive, serializationContext);
+}
+
+
+void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * serializationContext)
+{
+    //RHI_COMPLETE
+    /*the following stuff is for importing old NMaterial stuff*/
+    
     if (archive->IsKeyExists("materialName"))
     {
         materialName = FastName(archive->GetString("materialName"));
@@ -595,29 +635,42 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
             AddFlag(FastName(it->first), it->second->AsInt32());
         }
     }
-
-    //for now just pad to size
-    /*if (archive->IsKeyExists("properties"))
+    //NMaterial hell - for some reason property types were saved as GL_XXX defines O_o
+    const uint32 originalTypesCount = 5;
+    struct { uint32 originalType; rhi::ShaderProp::Type newType;} propertyTypeRemapping[originalTypesCount] =
     {
-    const Map<String, VariantType*>& propsMap = archive->GetArchive("properties")->GetArchieveData();
-    for (Map<String, VariantType*>::const_iterator it = propsMap.begin();
-    it != propsMap.end();
-    ++it)
+        { 0x1406/*GL_FLOAT*/, rhi::ShaderProp::TYPE_FLOAT1},
+        { 0x8B50/*GL_FLOAT_VEC2*/, rhi::ShaderProp::TYPE_FLOAT2},
+        { 0x8B51/*GL_FLOAT_VEC3*/, rhi::ShaderProp::TYPE_FLOAT3},
+        { 0x8B52/*GL_FLOAT_VEC4*/, rhi::ShaderProp::TYPE_FLOAT4},
+        { 0x8B5C/*GL_FLOAT_MAT4*/, rhi::ShaderProp::TYPE_FLOAT4X4}
+    };
+            
+    if (archive->IsKeyExists("properties"))
     {
-    if (IsRuntimeProperty(FastName(it->first)))continue;
+        const Map<String, VariantType*>& propsMap = archive->GetArchive("properties")->GetArchieveData();
+        for (Map<String, VariantType*>::const_iterator it = propsMap.begin(); it != propsMap.end(); ++it)
+        {            
+            const VariantType* propVariant = it->second;
+            DVASSERT(VariantType::TYPE_BYTE_ARRAY == propVariant->type);
+            DVASSERT(propVariant->AsByteArraySize() >= static_cast<int32>(sizeof(uint32) + sizeof(uint32)));
 
-    const VariantType* propVariant = it->second;
-    DVASSERT(VariantType::TYPE_BYTE_ARRAY == propVariant->type);
-    DVASSERT(propVariant->AsByteArraySize() >= static_cast<int32>(sizeof(uint32) + sizeof(uint32)));
+            const uint8* ptr = propVariant->AsByteArray();
+            
+            FastName propName = FastName(it->first);
+            uint32 propType = *(uint32*)ptr; ptr += sizeof(uint32);
+            uint8 propSize = *(uint8*)ptr; ptr += sizeof(uint8);
+            float32 *data = (float32*)ptr;            
+            for (uint32 i = 0; i < originalTypesCount; i++)
+            {
+                if (propType == propertyTypeRemapping[i].originalType)
+                {                         
+                    AddProperty(propName, data, propertyTypeRemapping[i].newType, 1);
+                }
+            }
 
-    const uint8* ptr = propVariant->AsByteArray();
-
-    SetPropertyValue(FastName(it->first),
-    *(Shader::eUniformType*)ptr,
-    *(ptr + sizeof(Shader::eUniformType)),
-    ptr + sizeof(Shader::eUniformType) + sizeof(uint8));
+        }
     }
-    }*/
 }
 
 };

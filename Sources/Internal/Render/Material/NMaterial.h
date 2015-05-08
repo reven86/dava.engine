@@ -56,6 +56,7 @@ struct MaterialPropertyBinding
 {
     rhi::ShaderProp::Type type;
     uint32 reg;
+    uint32 regCount; //offset for props less than 1 reg size
     uint32 updateSemantic;
     NMaterialProperty *source;
 };
@@ -98,20 +99,24 @@ public:
     /*properties*/
     void AddProperty(const FastName& propName, const float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize = 1);
     void RemoveProperty(const FastName& propName);
-    void SetPropertyValue(const FastName& propName, const float32 *propData);
-    bool HasLocalProperty(const FastName& propName);
+    void SetPropertyValue(const FastName& propName, const float32 *propData);    
+    bool HasLocalProperty(const FastName& propName);   
+    rhi::ShaderProp::Type GetLocalPropType(const FastName& propName);
+    const float32* GetLocalPropValue(const FastName& propName);
 
     /*textures*/
     void AddTexture(const FastName& slotName, Texture *texture);
     void RemoveTexture(const FastName& slotName);
     void SetTexture(const FastName& slotName, Texture *texture);
-    bool HasLocalTexture(const FastName& flagName);
+    bool HasLocalTexture(const FastName& slotName);
+    Texture* GetLocalTexture(const FastName& slotName);
+    Texture* GetEffectiveTexture(const FastName& slotName);
 
     /*flags*/
     void AddFlag(const FastName& flagName, int32 value);
     void RemoveFlag(const FastName& flagName);
     void SetFlag(const FastName& flagName, int32 value);
-    bool HasLocalFlag(const FastName& flagName);
+    bool HasLocalFlag(const FastName& flagName);    
 
     void SetParent(NMaterial *parent);
     NMaterial* GetParent();       
@@ -126,6 +131,8 @@ public:
     bool PreBuildMaterial(const FastName& passName); //later add engine flags here
 
 private:
+
+    void LoadOldNMaterial(KeyedArchive * archive, SerializationContext * serializationContext);
 
     void InvalidateBufferBindings();
     void InvalidateTextureBindings();
@@ -144,7 +151,7 @@ private:
     MaterialBufferBinding* GetConstBufferBinding(UniquePropertyLayout propertyLayout);
     NMaterialProperty* GetMaterialProperty(const FastName& propName);    
     void CollectMaterialFlags(HashMap<FastName, int32>& target);
-    Texture* GetMaterialTexture(const FastName& slotName);
+    
     const FastName& GetFXName();
     const FastName& GetQualityGroup();
 
@@ -193,7 +200,7 @@ private:
 void NMaterialProperty::SetPropertyValue(const float32 *newValue)
 {
     //4 is because register size is float4
-    Memcpy(data.get(), newValue, sizeof(float32) * 4 * ShaderDescriptor::CalculateRegsCount(type, arraySize));
+    Memcpy(data.get(), newValue, sizeof(float32) * ShaderDescriptor::CalculateDataSize(type, arraySize));
     updateSemantic = ++globalPropertyUpdateSemanticCounter;
 }
 

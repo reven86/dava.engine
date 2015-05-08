@@ -554,7 +554,7 @@ GameCore::SetupRT()
     rtQuadBatch.renderPipelineState = rtQuad.ps;
     rtQuadBatch.primitiveType       = rhi::PRIMITIVE_TRIANGLELIST;
     rtQuadBatch.primitiveCount      = 2;
-    rtQuadBatch.textureSet          = rhi::AcquireTextureSet( tsDesc );
+    rtQuadBatch.fragmentTextureSet  = rhi::AcquireTextureSet( tsDesc );
 }
 
 
@@ -733,7 +733,7 @@ void GameCore::OnAppStarted()
 
 //    sceneRenderTest.reset(new SceneRenderTestV3());    
 
-
+/*
     // ShaderSource smoke-test
     const char*  fp_src =
     "FPROG_IN_BEGIN\n"
@@ -745,7 +745,11 @@ void GameCore::OnAppStarted()
     "    FPROG_OUT_COLOR\n"
     "FPROG_OUT_END\n"
     "\n"
-    "property float4 tfactor : unique,dynamic :   def_value=1,1,1,1 ;"
+    "property float4 tfactor : unique,dynamic :   def_value=1,1,1,1 ;\n"
+    "property float4 bla[3]  : unique,dynamic :    ;\n"
+    "property float2 scale   : unique,dynamic :    ;\n"
+    "property float  aa      : unique,dynamic :    ;\n"
+    "property float  bb      : unique,dynamic :    ;\n"
     "\n"
     "DECL_SAMPLER2D(albedo)\n"
     "DECL_SAMPLER2D(albedo2)\n"
@@ -764,7 +768,45 @@ void GameCore::OnAppStarted()
     fp.Construct( rhi::PROG_FRAGMENT, fp_src );
     Logger::Info( "\n\n====================" );
     fp.Dump();
+*/
+    // ShaderSource smoke-test
+    const char*  vp_src =
+    "VPROG_IN_BEGIN\n"
+    "    VPROG_IN_POSITION\n"
+    "    VPROG_IN_NORMAL\n"
+    "    VPROG_IN_TEXCOORD\n"
+    "VPROG_IN_END\n"
+    "\n"
+    "VPROG_OUT_BEGIN\n"
+    "    VPROG_OUT_POSITION\n"
+    "    VPROG_OUT_TEXCOORD0(uv,2)\n"
+    "    VPROG_OUT_TEXCOORD1(color,4)\n"
+    "VPROG_OUT_END\n"
+    "\n"
+    "property float4x4 ViewProjection : shared,dynamic : ui_hidden=yes ;\n"
+    "property float4x4 World : unique,dynamic : ui_hidden=yes ;\n"
+    "\n"
+    "DECL_SAMPLER2D(stuff)\n"
+    ""
+    "VPROG_BEGIN\n"
+    "\n"
+    "    float3 in_pos      = VP_IN_POSITION;\n"
+    "    float3 in_normal   = VP_IN_NORMAL;\n"
+    "    float2 in_texcoord = VP_IN_TEXCOORD;\n"
+    "    float3x3 World3 = VP_BUF_FLOAT3X3(1,0);"
+    "    float4 wpos = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), World );\n"
+    "    float i   = dot( float3(0,0,-1), normalize(mul(float3(in_normal),World3)) );\n"
+    "    VP_OUT_POSITION   = mul( wpos, ViewProjection ) + VP_TEXTURE2D( stuff, in_texcoord );\n"
+    "    VP_OUT(uv)        = in_texcoord;\n"
+    "    VP_OUT(color)     = float4(i,i,i,1.0);\n"
+    "\n"
+    "VPROG_END\n";
 
+    rhi::ShaderSource   vp;
+
+    vp.Construct( rhi::PROG_VERTEX, vp_src );
+    Logger::Info( "\n\n====================" );
+    vp.Dump();
 /*
     const char*  vp_src =
     "VPROG_IN_BEGIN\n"
@@ -1216,7 +1258,7 @@ SCOPED_NAMED_TIMING("app-draw");
     packet.vertexConst[1]       = cube.vp_const[1];
     packet.fragmentConstCount   = 1;
     packet.fragmentConst[0]     = cube.fp_const;
-    packet.textureSet           = cube.texSet;
+    packet.fragmentTextureSet   = cube.texSet;
     packet.samplerState         = cube.samplerState;
     packet.primitiveType        = rhi::PRIMITIVE_TRIANGLELIST;
     packet.primitiveCount       = 12;
@@ -1339,7 +1381,7 @@ GameCore::rtDraw()
     packet.vertexConst[1]       = cube.vp_const[1];
     packet.fragmentConstCount   = 1;
     packet.fragmentConst[0]     = cube.fp_const;
-    packet.textureSet           = cube.texSet;
+    packet.fragmentTextureSet   = cube.texSet;
     packet.primitiveType        = rhi::PRIMITIVE_TRIANGLELIST;
     packet.primitiveCount       = 12;
 

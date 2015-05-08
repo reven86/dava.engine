@@ -434,7 +434,7 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
     samplerState.addrV = texDescriptor->drawSettings.wrapModeT;
     samplerState.minFilter = texDescriptor->drawSettings.minFilter;
     samplerState.magFilter = texDescriptor->drawSettings.magFilter;
-    samplerState.mipFilter = texDescriptor->drawSettings.minFilter;
+    samplerState.mipFilter = texDescriptor->drawSettings.mipFilter;
 
     state = STATE_VALID;
 

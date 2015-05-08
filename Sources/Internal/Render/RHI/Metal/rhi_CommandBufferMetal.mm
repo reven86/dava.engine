@@ -256,6 +256,10 @@ metal_CommandBuffer_SetVertexConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle
 static void
 metal_CommandBuffer_SetVertexTexture( Handle cmdBuf, uint32 unitIndex, Handle tex )
 {
+    CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
+
+    TextureMetal::SetToRHIVertex( tex, unitIndex, cb->encoder );
+    StatSet::IncStat( stat_SET_TEX, 1 );
 }
 
 
@@ -291,7 +295,7 @@ metal_CommandBuffer_SetFragmentTexture( Handle cmdBuf, uint32 unitIndex, Handle 
 {
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
 
-    TextureMetal::SetToRHI( tex, unitIndex, cb->encoder );
+    TextureMetal::SetToRHIFragment( tex, unitIndex, cb->encoder );
     StatSet::IncStat( stat_SET_TEX, 1 );
 }
 

@@ -64,6 +64,7 @@ void ViewSceneScreen::LoadResources()
         landscapeMaterial->AddTexture(Landscape::TEXTURE_NAME_CURSOR, texture);
         Vector4 cursorCoordSize(cursorPosition.x, cursorPosition.y, cursorSize, cursorSize);
         landscapeMaterial->AddProperty(Landscape::PARAM_CURSOR_COORD_SIZE, cursorCoordSize.data, rhi::ShaderProp::TYPE_FLOAT4);
+        landscapeMaterial->GetEffectiveTexture(Landscape::TEXTURE_NAME_TILE)->SetWrapMode(rhi::TEXADDR_WRAP, rhi::TEXADDR_WRAP, rhi::TEXADDR_WRAP);
     }
 
     ScopedPtr<Camera> camera(new Camera());
