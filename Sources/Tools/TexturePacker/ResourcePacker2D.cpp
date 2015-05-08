@@ -237,7 +237,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 	int height = cropped_data.layer_height;
 		
 	DefinitionFile * defFile = new DefinitionFile;
-	defFile->filename = FilePath::CreateWithNewExtension(psdNameWithoutExtension, ".txt");
+	defFile->filename = psdNameWithoutExtension + ".txt";
 
 	defFile->spriteWidth = width;
 	defFile->spriteHeight = height;
@@ -306,12 +306,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 			defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, width, height);
 
 		// add borders
-		if ( twoSideMargin )
-		{
-			defFile->frameRects[k - 1].dx+=2;
-			defFile->frameRects[k - 1].dy+=2;
-		}
-		else
+		if (!twoSideMargin )
 		{
 			defFile->frameRects[k - 1].dx += texturesMargin;
 			defFile->frameRects[k - 1].dy += texturesMargin;
@@ -322,64 +317,26 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 
 }
 
-Vector<String> ResourcePacker2D::ProcessFlags(const FilePath & flagsPathname)
+Vector<String> ResourcePacker2D::FetchFlags(const FilePath & flagsPathname)
 {
+    Vector<String> tokens;
+
 	File * file = File::Create(flagsPathname, File::READ | File::OPEN);
 	if (!file)
 	{
 		AddError(Format("Failed to open file: %s", flagsPathname.GetAbsolutePathname().c_str()));
 		
-        return Vector<String>();
+        return tokens;
 	}
 
-	Vector<char> flagsTmpVector;
-	flagsTmpVector.reserve(file->GetSize() + 1);
-	while(!file->IsEof())
-	{
-		char c = 0x00;
-		int32 readSize = file->Read(&c, 1);
-		if (readSize == 1)
-		{
-			// Terminate reading if end-of-line is detected.
-			if (c == 0x0D || c == 0x0A)
-			{
-				break;
-			}
+	String tokenString = file->ReadLine();
+    Split(tokenString, " ", tokens, true);
 
-			flagsTmpVector.push_back(c);
-		}	
-	}
-	flagsTmpVector.push_back(0);
-
-	currentFlags = flagsTmpVector.data();
-	String flags = flagsTmpVector.data();
-	
-	const String & delims=" ";
-	
-	// Skip delims at beginning, find start of first token
-	String::size_type lastPos = flags.find_first_not_of(delims, 0);
-	// Find next delimiter @ end of token
-	String::size_type pos     = flags.find_first_of(delims, lastPos);
-	// output vector
-	Vector<String> tokens;
-	
-	while (String::npos != pos || String::npos != lastPos)
-	{
-		// Found a token, add it to the vector.
-		tokens.push_back(flags.substr(lastPos, pos - lastPos));
-		// Skip delims.  Note the "not_of". this is beginning of token
-		lastPos = flags.find_first_not_of(delims, pos);
-		// Find next delimiter at end of token.
-		pos     = flags.find_first_of(delims, lastPos);
-	}
-	
-    for (int k = 0; k < (int) tokens.size(); ++k)
+    for (auto& token : tokens)
     {
-        Logger::FrameworkDebug("Token: %s", tokens[k].c_str());
+        Logger::FrameworkDebug("Token: %s", token.c_str());
     }
 
-	CommandLineParser::Instance()->SetArguments(tokens);
-	
 	SafeRelease(file);
 	
 	return tokens;
@@ -399,89 +356,61 @@ bool ResourcePacker2D::isRecursiveFlagSet(const Vector<String> & flags)
 	return false;
 }
 
-void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath, const Vector<String> & flags)
+void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath, const Vector<String> & passedFlags)
 {
-	// Local list for flags command arguments
-	Vector<String> currentCommandFlags = flags;
-
     DVASSERT(inputPath.IsDirectoryPathname() && outputPath.IsDirectoryPathname());
-    
+
 	uint64 packTime = SystemTimer::Instance()->AbsoluteMS();
 
-	/* New $process folder structure */
-	
-	String dataSourceRelativePath = inputPath.GetRelativePathname(excludeDirectory);
-	FilePath processDirectoryPath = excludeDirectory  + GetProcessFolderName() + dataSourceRelativePath;
-	if (FileSystem::Instance()->CreateDirectory(processDirectoryPath, true) == FileSystem::DIRECTORY_CANT_CREATE)
-	{
-		//Logger::Error("Can't create directory: %s", processDirectoryPath.c_str());
-	}
+	String inputRelativePath = inputPath.GetRelativePathname(excludeDirectory);
+	FilePath processDirectoryPath = excludeDirectory  + GetProcessFolderName() + inputRelativePath;
+    FileSystem::Instance()->CreateDirectory(processDirectoryPath, true);
 
 	if(clearProcessDirectory)
 	{
 		FileSystem::Instance()->DeleteDirectoryFiles(processDirectoryPath, false);
 	}
 
-	//String outputPath = outputPath;
-	if (FileSystem::Instance()->CreateDirectory(outputPath) == FileSystem::DIRECTORY_CANT_CREATE)
-	{
-		//Logger::Error("Can't create directory: %s", outputPath.c_str());
-	}
+    FileSystem::Instance()->CreateDirectory(outputPath);
 	
-	CommandLineParser::Instance()->Clear();
-	List<DefinitionFile *> definitionFileList;
+    Vector<String> currentCommandFlags;
+    List<DefinitionFile *> definitionFileList;
 
-	// Reset processed flag
-	bool flagsProcessed = false;
-	// Find flags and setup them
-	FileList * fileList = new FileList(inputPath, /*includeHidden=*/false);
+    ScopedPtr<FileList> fileList(new FileList(inputPath));
     fileList->Sort();
+
+	bool flagsFileFound = false;
 	for (int fi = 0; fi < fileList->GetCount(); ++fi)
 	{
-		if (!fileList->IsDirectory(fi) && fileList->GetFilename(fi) == "flags.txt")
-        {
-            currentCommandFlags = ProcessFlags(fileList->GetPathname(fi));
-            flagsProcessed = true;
-            break;
-        }
-	}
-	
-	// If "flags.txt" do not exist - try to use previous flags command line
-	if (!flagsProcessed)
-	{
-		currentFlags = "";
-		if (currentCommandFlags.size() > 0)
+		if (fileList->GetFilename(fi) == "flags.txt")
 		{
-			CommandLineParser::Instance()->SetArguments(currentCommandFlags);
-			for (uint32 k = 0; k < currentCommandFlags.size(); ++k)
-			{
-				currentFlags += currentCommandFlags[k];
-				if (k != (currentCommandFlags.size() - 1))
-				{
-					 currentFlags += " ";
-				}
-			}
+			currentCommandFlags = FetchFlags(fileList->GetPathname(fi));
+			flagsFileFound = true;
+			break;
 		}
 	}
+	if (!flagsFileFound)
+    {
+        currentCommandFlags = passedFlags;
+    }
+
+    CommandLineParser::Instance()->SetArguments(currentCommandFlags);
+
 	
 	bool modified = isGfxModified;
 	// Process all psd / png files
 
-	if (IsMD5ChangedDir(processDirectoryPath, inputPath, "dir.md5", false))
-	{
-		modified = true;
-		//if (Core::Instance()->IsConsoleMode())
-		//	printf("[Directory changed - rebuild: %s]\n", inputGfxDirectory.c_str());
-	}
-	else if (CommandLineParser::CommandIsFound(String("-forceModify")))
-		modified = true;
+    if (IsMD5ChangedDir(processDirectoryPath, inputPath, "dir.md5", false) || 
+        CommandLineParser::CommandIsFound(String("-forceModify")))
+    {
+        modified = true;
+    }
 
 	// read textures margins settings
 	bool useTwoSideMargin = CommandLineParser::Instance()->IsFlagSet("--add2sidepixel");
 	uint32 marginInPixels = TexturePacker::DEFAULT_MARGIN;
 	if (!useTwoSideMargin)
 	{
-		useTwoSideMargin = false;
 		if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
 			marginInPixels = 0;
 		else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
@@ -505,7 +434,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 				if (fullname.IsEqualToExtension(".psd"))
 				{
                     //TODO: check if we need filename or pathname
-					DefinitionFile * defFile = ProcessPSD(processDirectoryPath, fullname, fullname.GetFilename(),useTwoSideMargin,marginInPixels);
+					DefinitionFile * defFile = ProcessPSD(processDirectoryPath, fullname, fullname.GetFilename(), useTwoSideMargin, marginInPixels);
 					if (!defFile)
 					{
 						// An error occured while converting this PSD file - cancel converting in this directory.
@@ -524,7 +453,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 				else if (fullname.IsEqualToExtension(".pngdef"))
 				{
 					DefinitionFile * defFile = new DefinitionFile();
-					if (defFile->LoadPNGDef(fullname, processDirectoryPath,useTwoSideMargin,marginInPixels))
+					if (defFile->LoadPNGDef(fullname, processDirectoryPath, useTwoSideMargin, marginInPixels))
 					{
 						definitionFileList.push_back(defFile);
 					}
@@ -536,8 +465,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 			}
 		}
 
-		// 
-		if (needPackResourcesInThisDir && definitionFileList.size() > 0 && modified)
+        if (modified && !definitionFileList.empty())
 		{
 			TexturePacker packer;
 			if(isLightmapsPacking)
@@ -548,19 +476,6 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
             else if(CommandLineParser::Instance()->IsFlagSet("--tsize4096"))
             {
                 packer.SetMaxTextureSize(TexturePacker::TSIZE_4096);
-            }
-
-            if(definitionFileList.size() == 1)
-            {
-                DefinitionFile * def = definitionFileList.front();
-                if(def->frameCount == 1)
-                {
-                    if (!useTwoSideMargin)
-                    {
-                        def->frameRects[0] = packer.ReduceRectToOriginalSize(def->frameRects[0],marginInPixels,marginInPixels);
-                        marginInPixels = 0;
-                    }
-                }
             }
 
 			packer.SetTwoSideMargin(useTwoSideMargin);
@@ -587,13 +502,12 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 
 	if (Core::Instance()->IsConsoleMode())
 	{
-        Logger::Info("[%d files packed with flags: %s]", (int)definitionFileList.size(), currentFlags.c_str());
+        String flagsString;
+        Merge(currentCommandFlags, ' ', flagsString);
+        Logger::Info("[%d files packed with flags: %s]", (int)definitionFileList.size(), flagsString.c_str());
 	
-		String result = "[unchanged]";
-		if (modified)
-			result = "[REPACKED]";
-
-		Logger::Info("[%s - %.2lf secs] - %s", inputPath.GetAbsolutePathname().c_str(), (float64)packTime / 1000.0f, result.c_str());
+        const char* result = (modified && !definitionFileList.empty()) ? "[REPACKED]" : "[unchanged]";
+		Logger::Info("[%s - %.2lf secs] - %s", inputPath.GetAbsolutePathname().c_str(), (float64)packTime / 1000.0f, result);
 	}
 
 	
@@ -631,8 +545,6 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 			}
 		}
 	}
-	
-	SafeRelease(fileList);
 }
 
 const Set<String>& ResourcePacker2D::GetErrors() const

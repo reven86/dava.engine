@@ -30,7 +30,6 @@
 
 #include "Project/ProjectManager.h"
 #include "Main/QtUtils.h"
-#include "Tools/QtFileDialog/QtFileDialog.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
 #include "Deprecated/EditorConfig.h"
@@ -40,6 +39,8 @@
 
 #include "FileSystem/YamlParser.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
 
 #include <QDebug>
 
@@ -91,7 +92,7 @@ FilePath ProjectManager::ProjectOpenDialog()
 {
     FilePath ret;
 
-    QString newPathStr = QtFileDialog::getExistingDirectory(NULL, QString("Open Project Folder"), QString("/"));
+    QString newPathStr = FileDialog::getExistingDirectory(NULL, QString("Open Project Folder"), QString("/"));
     if(!newPathStr.isEmpty())
     {
         ret = FilePath(PathnameToDAVAStyle(newPathStr));

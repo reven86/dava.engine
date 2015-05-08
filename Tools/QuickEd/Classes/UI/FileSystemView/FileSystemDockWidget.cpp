@@ -12,7 +12,9 @@
 #include <QMenu>
 #include <QInputDialog>
 #include <QMessageBox>
-#include <QFileDialog>
+
+#include "QtTools/FileDialog/FileDialog.h"
+
 
 FileSystemDockWidget::FileSystemDockWidget(QWidget *parent)
     : QDockWidget(parent)
@@ -163,7 +165,7 @@ void FileSystemDockWidget::onNewFile(bool checked)
     QModelIndex currIndex = ui->treeView->currentIndex();
     QString folderPath = model->filePath(currIndex);
 
-    QString strFile = QFileDialog::getSaveFileName(this, tr("Create new file"), folderPath, "*.yaml");
+    QString strFile = FileDialog::getSaveFileName(this, tr("Create new file"), folderPath, "*.yaml");
 
     QFileInfo fileInfo(strFile);
     if (fileInfo.suffix().toLower() != "yaml")
