@@ -1108,11 +1108,9 @@ namespace DAVA
         debugDrawEnabled = srcControl->debugDrawEnabled;
 
         SafeRelease(eventDispatcher);
-        if(srcControl->eventDispatcher)
-        {
-            eventDispatcher = new EventDispatcher();
-            eventDispatcher->CopyDataFrom(srcControl->eventDispatcher);
-        }
+        DVASSERT_MSG(!srcControl->eventDispatcher || srcControl->eventDispatcher->GetEventsCount() == 0
+                    , Format("Source control \"%s:%s\" have some events. please show this message d_belsy or a_strokachuk"
+                    , srcControl->GetClassName().c_str(), srcControl->GetName().c_str()).c_str());
 
         RemoveAllControls();
         if (inputEnabled)
