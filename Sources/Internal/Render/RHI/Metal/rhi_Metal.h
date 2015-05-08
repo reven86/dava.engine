@@ -56,7 +56,8 @@ id<MTLBuffer> GetBuffer( Handle ib );
 
 namespace TextureMetal
 {
-void    SetToRHI( Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce );
+void    SetToRHIFragment( Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce );
+void    SetToRHIVertex( Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce );
 void    SetAsRenderTarget( Handle tex, MTLRenderPassDescriptor* desc );
 }
 

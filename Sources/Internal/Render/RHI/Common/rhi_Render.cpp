@@ -59,7 +59,8 @@ PacketList_t
 
     Handle      curPipelineState;
     uint32      curVertexLayout;
-    Handle      curTextureSet;
+    Handle      curFragmentTextureSet;
+    Handle      curVertexTextureSet;
     Handle      curSamplerState;
     Handle      curDepthStencilState;
     CullMode    curCullMode;
@@ -614,11 +615,12 @@ BeginPacketList( HPacketList packetList )
     }
     
 
-    pl->curPipelineState     = InvalidHandle;
-    pl->curVertexLayout      = rhi::VertexLayout::InvalidUID;
-    pl->curTextureSet        = InvalidHandle;
-    pl->defDepthStencilState = def_ds;
-    pl->defSamplerState      = def_ss;
+    pl->curPipelineState      = InvalidHandle;
+    pl->curVertexLayout       = rhi::VertexLayout::InvalidUID;
+    pl->curFragmentTextureSet = InvalidHandle;
+    pl->curVertexTextureSet   = InvalidHandle;
+    pl->defDepthStencilState  = def_ds;
+    pl->defSamplerState       = def_ss;
 
     CommandBuffer::Begin( pl->cmdBuf );
 
@@ -718,9 +720,9 @@ AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
             rhi::CommandBuffer::SetFragmentConstBuffer( cmdBuf, i, p->fragmentConst[i] );
         }
 
-        if( p->textureSet != pl->curTextureSet )
+        if( p->fragmentTextureSet != pl->curFragmentTextureSet )
         {
-            TextureSet_t*   ts  = TextureSetPool::Get( p->textureSet );
+            TextureSet_t*   ts  = TextureSetPool::Get( p->fragmentTextureSet );
 
             if( ts )
             {
@@ -730,7 +732,22 @@ AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
                 }
             }
 
-            pl->curTextureSet = p->textureSet;
+            pl->curFragmentTextureSet = p->fragmentTextureSet;
+        }
+        
+        if( p->vertexTextureSet != pl->curVertexTextureSet )
+        {
+            TextureSet_t*   ts  = TextureSetPool::Get( p->vertexTextureSet );
+
+            if( ts )
+            {
+                for( unsigned i=0; i!=ts->textureCount; ++i )
+                {
+                    rhi::CommandBuffer::SetVertexTexture( cmdBuf, i, ts->texture[i] );
+                }
+            }
+
+            pl->curVertexTextureSet = p->vertexTextureSet;
         }
 
         if( p->indexBuffer != InvalidHandle )

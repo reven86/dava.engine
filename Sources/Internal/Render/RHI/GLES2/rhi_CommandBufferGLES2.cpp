@@ -261,6 +261,8 @@ gles2_CommandBuffer_SetVertexConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle
 static void
 gles2_CommandBuffer_SetVertexTexture( Handle cmdBuf, uint32 unitIndex, Handle tex )
 {
+    if( tex != InvalidHandle )
+        CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_TEXTURE, unitIndex, tex );
 }
 
 

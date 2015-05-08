@@ -91,6 +91,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
         std::regex  sampler2d_re(".*DECL_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
         std::regex  samplercube_re(".*DECL_SAMPLERCUBE\\s*\\(\\s*(.*)\\s*\\).*");
         std::regex  texture2d_re(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+        std::regex  vtexture2d_re(".*VP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
         std::regex  texturecube_re(".*FP_TEXTURECUBE\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
         std::regex  blend_re(".*BLEND_MODE\\s*\\(\\s*(.*)\\s*\\).*");
         std::regex  blending2_re(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha)\\s+dst=(zero|one|src_alpha|inv_src_alpha).*");
@@ -317,6 +318,29 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 _AppendLine( line, strlen(line) );
             }
             else if( !isComment  &&  std::regex_match( line, match, texture2d_re ) )
+            {
+                std::string sname   = match[1].str();
+                int         mbegin  = strstr( line, sname.c_str() ) - line;
+                FastName    suid    ( sname );
+                
+                for( unsigned s=0; s!=sampler.size(); ++s )
+                {
+                    if( sampler[s].uid == suid )
+                    {
+                        int sl = sprintf( line+mbegin, "%u", s );
+                        int sn = sname.length();
+                        DVASSERT(sn>=sl);
+                        line[mbegin+sl] = ',';
+                        if( sn > sl )
+                            memset( line+mbegin+sl, ' ', sn-sl );
+                        
+                        break;
+                    }
+                }
+                
+                _AppendLine( line, strlen(line) );
+            }
+            else if( !isComment  &&  std::regex_match( line, match, vtexture2d_re ) )
             {
                 std::string sname   = match[1].str();
                 int         mbegin  = strstr( line, sname.c_str() ) - line;

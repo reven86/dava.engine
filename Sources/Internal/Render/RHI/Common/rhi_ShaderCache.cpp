@@ -271,6 +271,8 @@ static const char* _ShaderDefine_Metal =
 "#define VP_IN_BLENDWEIGHT       (float3(IN.blendweight))\n"
 "#define VP_IN_BLENDINDEX        (float3(IN.blendindex))\n"
 
+"#define VP_TEXTURE2D(unit,uv)   tex##unit.sample( tex##unit##_sampler, uv );\n"
+
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.name\n"
 
@@ -418,6 +420,8 @@ static const char* _ShaderDefine_GLES2 =
 "#define VP_OUT_POSITION         gl_Position\n"
 "#define VP_OUT(name)            var_##name\n"
 
+"#define VP_TEXTURE2D(unit,uv)   texture2D( Texture##unit, uv );\n"
+
 
 "#define FPROG_IN_BEGIN          \n"
 "#define FPROG_IN_TEXCOORD0(name,size)    varying vec##size var_##name;\n"
@@ -516,6 +520,8 @@ static const char* _ShaderDefine_DX9 =
 
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.##name\n"
+
+"#define VP_TEXTURE2D(unit,uv)   tex2D( Texture##unit, uv )\n"
 
 
 "#define FPROG_IN_BEGIN          struct FP_Input {\n"
