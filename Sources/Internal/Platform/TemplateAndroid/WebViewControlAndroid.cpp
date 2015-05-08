@@ -208,7 +208,7 @@ bool JniWebView::IsRenderToTexture(int id)
     return isRenderToTexture(id) == 0 ? false : true;
 }
 
-IUIWebViewDelegate::eAction JniWebView::URLChanged(int id, const String& newURL)
+IUIWebViewDelegate::eAction JniWebView::URLChanged(int id, const String& newURL, bool isRedirectedByMouseClick)
 {
 	CONTROLS_MAP::iterator iter = controls.find(id);
 	if (iter == controls.end())
@@ -222,7 +222,7 @@ IUIWebViewDelegate::eAction JniWebView::URLChanged(int id, const String& newURL)
 	if (!delegate)
 		return IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 
-	return delegate->URLChanged(&control->webView, newURL, true);
+	return delegate->URLChanged(&control->webView, newURL, isRedirectedByMouseClick);
 }
 
 void JniWebView::PageLoaded(int id, int* rawPixels, int width, int height)

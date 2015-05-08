@@ -29,6 +29,7 @@ public class JNIWebView {
         private final static int MAX_DELAY = 1600;
         private final static int START_DELAY = 50;
         private int delay = 50; //50, 100, 200, 400, 800, 1600
+        private String lastLoadedUrl = null;
         volatile boolean isLoadingData = false;
         
         public WebViewWrapper(Context context, InternalViewClientV14 client) {
@@ -74,6 +75,7 @@ public class JNIWebView {
         @Override
         public void loadUrl(String url)
         {
+            lastLoadedUrl = url;
             isLoadingData = true;
             super.loadUrl(url);
         }
@@ -100,6 +102,14 @@ public class JNIWebView {
                 return false;
             }
             return super.onKeyPreIme(keyCode, event);
+        }
+        /*
+         * HACK to get last known loaded url from any thread
+         * cause standard getUrl method can't be called from chromium thread
+         */
+        public String getLastLoadedUrl()
+        {
+            return lastLoadedUrl;
         }
     }
 
@@ -527,7 +537,7 @@ public class JNIWebView {
         }
     }
 
-    static native int OnUrlChange(int id, String url);
+    static native int OnUrlChange(int id, String url, boolean isRedirectedByMouseClick);
 
     static native int OnPageLoaded(int id, int[] pixels, int width,
             int height);

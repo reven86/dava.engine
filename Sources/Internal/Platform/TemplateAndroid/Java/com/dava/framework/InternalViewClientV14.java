@@ -15,6 +15,14 @@ import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+// see c++ IUIWebViewDelegate
+class eAction
+{
+    static int PROCESS_IN_WEBVIEW = 0;
+    static int PROCESS_IN_SYSTEM_BROWSER = 1;
+    static int NO_PROCESS = 2;
+};
+
 public class InternalViewClientV14 extends WebViewClient {
         int id;
 
@@ -177,30 +185,15 @@ public class InternalViewClientV14 extends WebViewClient {
         }
 
         @Override
-        public void onLoadResource(WebView view, String url) {
-            String[] urlParts = url.split("/");
-            if (urlParts.length > 0) {
-                String urlPart = urlParts[urlParts.length - 1];
-                if (urlPart.charAt(0) == '?' && !urlPart.contains("."))
-                    PostOnUrlChangeTask(url, false);
-            }
-
-            super.onLoadResource(view, url);
-        }
-
-        @Override
         public boolean shouldOverrideUrlLoading(WebView view, final String url) {
             if (null == JNIActivity.GetActivity()
                     || JNIActivity.GetActivity().GetIsPausing())
                 return false; // false means the current WebView handles the url
 
-            FutureTask<Integer> task = PostOnUrlChangeTask(url, false);
+            boolean isRedirectedByMouseClick = true; // old default value from inside c++
+            FutureTask<Integer> task = PostOnUrlChangeTask(url, isRedirectedByMouseClick);
 
-            while (!task.isDone()) {
-                Thread.yield();
-            }
-
-            int res = 0;
+            int res = eAction.PROCESS_IN_WEBVIEW;
             try {
                 res = task.get();
             } catch (InterruptedException e) {
@@ -209,9 +202,9 @@ public class InternalViewClientV14 extends WebViewClient {
                 e.printStackTrace();
             }
 
-            if (res == 0) {
+            if (eAction.PROCESS_IN_WEBVIEW == res) {
                 return false;
-            } else if (res == 1) {
+            } else if (eAction.PROCESS_IN_SYSTEM_BROWSER == res) {
                 Intent exWeb = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 JNIActivity.GetActivity().startActivity(exWeb);
                 return true; // return true means the host application handles the url
@@ -228,8 +221,7 @@ public class InternalViewClientV14 extends WebViewClient {
 
                 @Override
                 public Integer call() throws Exception {
-                    // TODO implement hasGesture
-                    return JNIWebView.OnUrlChange(id, url);
+                    return JNIWebView.OnUrlChange(id, url, hasGesture);
                 }
             };
 
