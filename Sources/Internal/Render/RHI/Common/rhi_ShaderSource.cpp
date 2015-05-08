@@ -94,6 +94,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
         std::regex  texturecube_re(".*FP_TEXTURECUBE\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
         std::regex  blend_re(".*BLEND_MODE\\s*\\(\\s*(.*)\\s*\\).*");
         std::regex  blending2_re(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha)\\s+dst=(zero|one|src_alpha|inv_src_alpha).*");
+        std::regex  comment_re("\\s*//.*");
 
         std::vector<int> AvlRegIndex;
 
@@ -104,15 +105,16 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
             char        line[4*1024];
             uint32      lineLen     = in->ReadLine( line, sizeof(line) );
             std::cmatch match;
+            bool        isComment   = std::regex_match( line, match, comment_re );
             bool        propDefined = false;
             bool        propArray   = false;
 
-            if( std::regex_match( line, match, prop_re ) )
+            if( !isComment  &&  std::regex_match( line, match, prop_re ) )
             {
                 propDefined = true;
                 propArray   = false;
             }
-            else if( std::regex_match( line, match, proparr_re ) )
+            else if( !isComment  &&  std::regex_match( line, match, proparr_re ) )
             {
                 propDefined = true;
                 propArray   = true;
@@ -276,7 +278,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                         AvlRegIndex.push_back( 4 );
                 }
             }
-            else if( std::regex_match( line, match, sampler2d_re ) )
+            else if( !isComment  &&  std::regex_match( line, match, sampler2d_re ) )
             {
                 std::string sname   = match[1].str();
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
@@ -295,7 +297,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                 _AppendLine( line, strlen(line) );
             }
-            else if( std::regex_match( line, match, samplercube_re ) )
+            else if( !isComment  &&  std::regex_match( line, match, samplercube_re ) )
             {
                 std::string sname   = match[1].str();
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
@@ -314,7 +316,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                 _AppendLine( line, strlen(line) );
             }
-            else if( std::regex_match( line, match, texture2d_re ) )
+            else if( !isComment  &&  std::regex_match( line, match, texture2d_re ) )
             {
                 std::string sname   = match[1].str();
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
@@ -337,7 +339,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 
                 _AppendLine( line, strlen(line) );
             }
-            else if( std::regex_match( line, match, texturecube_re ) )
+            else if( !isComment  &&  std::regex_match( line, match, texturecube_re ) )
             {
                 std::string sname   = match[1].str();
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
@@ -360,7 +362,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                 _AppendLine( line, strlen(line) );
             }
-            else if( std::regex_match( line, match, blend_re ) )
+            else if( !isComment  &&  std::regex_match( line, match, blend_re ) )
             {
                 std::string mode   = match[1].str();
                 
@@ -373,7 +375,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     blending.rtBlend[0].alphaDst = BLENDOP_INV_SRC_ALPHA;
                 }
             }
-            else if( std::regex_match( line, match, blending2_re ) )
+            else if( !isComment  &&  std::regex_match( line, match, blending2_re ) )
             {
                 std::string src   = match[1].str();
                 std::string dst   = match[2].str();
