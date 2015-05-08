@@ -26,32 +26,33 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "DialogEditPresetName.h"
+#include "DialogAddPreset.h"
 #include "EditorCore.h"
 
 #include <QCompleter>
 
 using namespace DAVA;
 
-DialogEditPresetName::DialogEditPresetName(const QString& originalPresetNameArg, QWidget* parent)
+DialogAddPreset::DialogAddPreset(const QString& originalPresetNameArg, QWidget* parent)
     : QDialog(parent)
 {
     setupUi(this);
+    comboBox_baseFontPresetName->addItem("");
     comboBox_baseFontPresetName->addItems(GetEditorFontSystem()->GetDefaultPresetNames());
     comboBox_baseFontPresetName->setCurrentText(originalPresetNameArg);
     lineEdit_newFontPresetName->setText(originalPresetNameArg);
 
     lineEdit_newFontPresetName->setCompleter(new QCompleter(GetEditorFontSystem()->GetDefaultPresetNames(), lineEdit_newFontPresetName));
 
-    connect(lineEdit_newFontPresetName, &QLineEdit::textChanged, this, &DialogEditPresetName::OnNewPresetNameChanged);
-    connect(comboBox_baseFontPresetName, &QComboBox::currentTextChanged, this, &DialogEditPresetName::OnNewPresetNameChanged);
-    connect(buttonBox, &QDialogButtonBox::rejected, this, &DialogEditPresetName::reject);
-    connect(buttonBox, &QDialogButtonBox::accepted, this, &DialogEditPresetName::OnAccept);
+    connect(lineEdit_newFontPresetName, &QLineEdit::textChanged, this, &DialogAddPreset::OnNewPresetNameChanged);
+    connect(comboBox_baseFontPresetName, &QComboBox::currentTextChanged, this, &DialogAddPreset::OnNewPresetNameChanged);
+    connect(buttonBox, &QDialogButtonBox::rejected, this, &DialogAddPreset::reject);
+    connect(buttonBox, &QDialogButtonBox::accepted, this, &DialogAddPreset::OnAccept);
 
     OnNewPresetNameChanged();
 }
 
-void DialogEditPresetName::OnNewPresetNameChanged()
+void DialogAddPreset::OnNewPresetNameChanged()
 {
     QString baseName = comboBox_baseFontPresetName->currentText();
     QString newName = lineEdit_newFontPresetName->text();
@@ -81,7 +82,7 @@ void DialogEditPresetName::OnNewPresetNameChanged()
     buttonBox->button(QDialogButtonBox::Ok)->setEnabled(enabled);
 }
 
-void DialogEditPresetName::OnAccept()
+void DialogAddPreset::OnAccept()
 {
     auto editorFontSystem = GetEditorFontSystem();
     if (!editorFontSystem->GetDefaultPresetNames().contains(lineEdit_newFontPresetName->text()))

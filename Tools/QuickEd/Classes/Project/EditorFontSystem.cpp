@@ -200,9 +200,13 @@ FilePath EditorFontSystem::GetLocalizedFontsPath(const String &locale)
 
 void EditorFontSystem::CreateNewPreset(const String& originalPresetName, const String& newPresetName)
 {
+    DVASSERT(localizedFonts["default"].size() > 0);
+    const auto &defaultPreset = defaultPresetNames.contains(QString::fromStdString(originalPresetName)) ? nullptr : localizedFonts["default"].begin()->first;
     for (auto &localizedFontsPairs : localizedFonts)
     {
-        localizedFontsPairs.second[newPresetName] = localizedFonts.at(localizedFontsPairs.first).at(originalPresetName)->Clone();
+        const auto &fonts = localizedFontsPairs.second;
+        const auto &font = defaultPreset.empty() ? fonts.at(originalPresetName) : fonts.at(defaultPreset);
+        localizedFontsPairs.second[newPresetName] = font->Clone();
     }
     defaultPresetNames.append(QString::fromStdString(newPresetName));
     defaultPresetNames.sort();

@@ -27,20 +27,20 @@
 =====================================================================================*/
 
 
-#ifndef __DIALOG_EDIT_PRESET_NAME_H__
-#define __DIALOG_EDIT_PRESET_NAME_H__
+#ifndef __DIALOG_ADD_PRESET_H__
+#define __DIALOG_ADD_PRESET_H__
 
-#include "ui_DialogEditPresetName.h"
+#include "ui_DialogAddPreset.h"
 
-class DialogEditPresetName : public QDialog, public Ui::DialogEditPresetName
+class DialogAddPreset : public QDialog, public Ui::DialogAddPreset
 {
     Q_OBJECT
 public:
-    explicit DialogEditPresetName(const QString &originalPresetName, QWidget *parent = nullptr);
-    ~DialogEditPresetName() = default;
+    explicit DialogAddPreset(const QString &originalPresetName, QWidget *parent = nullptr);
+    ~DialogAddPreset() = default;
 private slots:
     void OnNewPresetNameChanged();
     void OnAccept();
 };
 
-#endif // __DIALOG_EDIT_PRESET_NAME_H__
+#endif // __DIALOG_ADD_PRESET_H__
