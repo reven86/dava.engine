@@ -57,7 +57,7 @@ class UISwitch : public UIControl
 protected:
     virtual ~UISwitch();
 public:
-    UISwitch(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
+    UISwitch(const Rect &rect = Rect());
 
     virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
     virtual void LoadFromYamlNodeCompleted();
@@ -68,22 +68,22 @@ public:
     virtual List<UIControl* > GetSubcontrols();
     virtual void AddControl(UIControl *control) override;
     virtual void RemoveControl(UIControl *control) override;
-    virtual UIControl *Clone();
+    virtual UISwitch *Clone() override;
 
-    virtual void Input(UIEvent *currentInput);
+    virtual void Input(UIEvent *currentInput) override;
 
-    bool GetIsLeftSelected() {return isLeftSelected;}
+    bool GetIsLeftSelected() const {return isLeftSelected;}
     void SetIsLeftSelected(bool aIsLeftSelected);
 
-    UIButton * GetButtonNext() {return buttonLeft;}
-    UIButton * GetButtonPrevious() {return buttonRight;}
-    UIButton * GetToggle() {return toggle;}
+    UIButton * GetButtonNext() const {return buttonLeft.Get();}
+    UIButton * GetButtonPrevious() const { return buttonRight.Get(); }
+    UIButton * GetToggle() const { return toggle.Get(); }
 
     /*
      * If tap on any place beside toggle must provoke switch of controls state.
      */
     void SetSwitchOnTapBesideToggle(bool aSwitchOnTapBesideToggle) {switchOnTapBesideToggle = aSwitchOnTapBesideToggle;}
-    bool GetSwitchOnTapBesideToggle() {return switchOnTapBesideToggle;}
+    bool GetSwitchOnTapBesideToggle() const {return switchOnTapBesideToggle;}
 
 protected:
     void InternalSetIsLeftSelected(bool aIsLeftSelected, bool changeVisualState, UIEvent *inputEvent = NULL);
@@ -94,13 +94,18 @@ protected:
     void CheckToggleSideChange(UIEvent *inputEvent = NULL);
     void ChangeVisualState();
 
-    UIButton * buttonLeft;
-    UIButton * buttonRight;
-    UIButton * toggle;
+    RefPtr<UIButton> buttonLeft;
+    RefPtr<UIButton> buttonRight;
+    RefPtr<UIButton> toggle;
 
 	// Boolean variables are grouped together because of DF-2149.
     bool switchOnTapBesideToggle : 1;
     bool isLeftSelected : 1;
+
+public:
+    INTROSPECTION_EXTEND(UISwitch, UIControl,
+        nullptr
+        );
 };
 
 }

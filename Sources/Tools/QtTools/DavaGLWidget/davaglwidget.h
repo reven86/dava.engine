@@ -111,7 +111,6 @@ public slots:
     
 private:
     void resizeEvent(QResizeEvent *) override;
-    bool eventFilter( QObject * watched, QEvent * event ) override;
 
     void PerformSizeChange();
     
