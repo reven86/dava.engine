@@ -318,17 +318,37 @@ void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, cons
     sharedData->SetData("activatedControls", QVariant::fromValue(selectedControls));
     sharedData->SetData("deactivatedControls", QVariant::fromValue(deselectedControls));
 }
-#include <QDebug>
+
 void PackageWidget::OnImport()
 {
-    qDebug() << QString::fromStdString(sharedData->GetDocument()->GetPackageFilePath().GetAbsolutePathname());
-    qDebug() << QString::fromStdString(sharedData->GetDocument()->GetPackageFilePath().GetDirectory().GetStringValue());
+    QItemSelection selected = filteredPackageModel->mapSelectionToSource(treeView->selectionModel()->selection());
+    QModelIndexList selectedIndexList = selected.indexes();
+    if (selectedIndexList.isEmpty())
+    {
+        return;
+    }
     QStringList fileNames = QFileDialog::getOpenFileNames(
         qApp->activeWindow()
         , tr("Select one or move files to import")
         , QString::fromStdString(sharedData->GetDocument()->GetPackageFilePath().GetDirectory().GetStringValue())
         , "Packages (*.yaml)"
         );
+    if (fileNames.isEmpty())
+    {
+        return;
+    }
+
+    const QModelIndex &index = selectedIndexList.first();
+
+    PackageBaseNode *baseNode = static_cast<PackageBaseNode*>(index.internalPointer());
+    ControlsContainerNode *node = dynamic_cast<ControlsContainerNode*>(baseNode);
+    DVASSERT(nullptr != node && (node->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) == 0);
+
+    for (const auto &fileName : fileNames)
+    {
+        //read file
+        //GetCommandExecutor->paste
+    }
 }
 
 void PackageWidget::OnCopy()
