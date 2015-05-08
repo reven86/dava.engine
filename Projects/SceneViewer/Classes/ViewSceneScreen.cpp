@@ -61,6 +61,7 @@ void ViewSceneScreen::LoadResources()
         landscapeMaterial->AddFlag(FastName("CURSOR"), 1);
         ScopedPtr<Texture> texture(Texture::CreateFromFile("~res:/cursor/cursor.tex"));
         texture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
+        texture->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_NONE);
         landscapeMaterial->AddTexture(Landscape::TEXTURE_NAME_CURSOR, texture);
         Vector4 cursorCoordSize(cursorPosition.x, cursorPosition.y, cursorSize, cursorSize);
         landscapeMaterial->AddProperty(Landscape::PARAM_CURSOR_COORD_SIZE, cursorCoordSize.data, rhi::ShaderProp::TYPE_FLOAT4);

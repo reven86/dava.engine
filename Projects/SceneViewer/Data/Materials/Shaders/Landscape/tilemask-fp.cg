@@ -31,8 +31,8 @@ FPROG_BEGIN
     float4 outColor = FP_TEXTURE2D( fullTiledTexture, FP_IN(texCoord) );
     outColor.a = 1.0;
 #else
-    float4 tileColor = 0.000001 * FP_TEXTURE2D( tileTexture0, FP_IN(texCoordTiled) );
-    float4 mask = 0.000001 * FP_TEXTURE2D( tileMask, FP_IN(texCoord) );
+    float4 tileColor = FP_TEXTURE2D( tileTexture0, FP_IN(texCoordTiled) );
+    float4 mask = FP_TEXTURE2D( tileMask, FP_IN(texCoord) );
     float4 color = FP_TEXTURE2D( colorTexture, FP_IN(texCoord) );
     
     float3 color3 = (tileColor.r * mask.r * tileColor0.rgb + 
