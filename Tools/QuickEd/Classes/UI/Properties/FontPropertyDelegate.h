@@ -2,7 +2,7 @@
 #define __FONT_PROPERTY_DELEGATE_H__
 
 #include "BasePropertyDelegate.h"
-
+class QAction;
 class FontPropertyDelegate : public BasePropertyDelegate
 {
     Q_OBJECT
@@ -19,6 +19,8 @@ private slots:
     void addPresetClicked();
     void configurePresetClicked();
     void valueChanged();
+private:
+    mutable QAction *configurePresetAction, *addPresetAction;
 };
 
 #endif // __FONT_PROPERTY_DELEGATE_H__s

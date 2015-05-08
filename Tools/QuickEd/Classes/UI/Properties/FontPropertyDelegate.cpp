@@ -28,7 +28,7 @@ QWidget * FontPropertyDelegate::createEditor(QWidget * parent, const QStyleOptio
     comboBox->setObjectName("comboBox");
     comboBox->addItem("");
     comboBox->addItems(GetEditorFontSystem()->GetDefaultPresetNames());
-    connect(comboBox, static_cast<void(QComboBox::*)(const QString&)>(&QComboBox::activated), this, &FontPropertyDelegate::valueChanged);
+    connect(comboBox, &QComboBox::currentTextChanged, this, &FontPropertyDelegate::valueChanged);
     return comboBox;
 }
 
@@ -59,12 +59,14 @@ bool FontPropertyDelegate::setModelData(QWidget * rawEditor, QAbstractItemModel 
 
 void FontPropertyDelegate::enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const
 {
-    QAction *configurePresetAction = new QAction(QIcon(":/Icons/configure.png"), tr("configure"), parent);
+    configurePresetAction = new QAction(QIcon(":/Icons/configure.png"), tr("configure"), parent);
+    configurePresetAction->setEnabled(false);
     configurePresetAction->setToolTip(tr("configure preset"));
     actions.push_back(configurePresetAction);
     connect(configurePresetAction, &QAction::triggered, this, &FontPropertyDelegate::configurePresetClicked);
 
-    QAction *addPresetAction = new QAction(QIcon(":/Icons/add.png"), tr("configure"), parent);
+    addPresetAction = new QAction(QIcon(":/Icons/add.png"), tr("configure"), parent);
+    addPresetAction->setEnabled(false);
     addPresetAction->setToolTip(tr("add preset"));
     actions.push_back(addPresetAction);
     connect(addPresetAction, &QAction::triggered, this, &FontPropertyDelegate::addPresetClicked);
@@ -115,12 +117,14 @@ void FontPropertyDelegate::configurePresetClicked()
 
 void FontPropertyDelegate::valueChanged()
 {
-    QWidget *widget = qobject_cast<QWidget *>(sender());
-    if (nullptr == widget)
+    QComboBox *comboBox= qobject_cast<QComboBox *>(sender());
+    configurePresetAction->setDisabled(comboBox->currentText().isEmpty());
+    addPresetAction->setDisabled(comboBox->currentText().isEmpty());
+    if (nullptr == comboBox)
     {
         return;
     }
-    QWidget *editor = widget->parentWidget();
+    QWidget *editor = comboBox->parentWidget();
     if (nullptr == editor)
     {
         return;

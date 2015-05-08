@@ -53,7 +53,6 @@ DialogConfigurePreset::DialogConfigurePreset(const QString& originalPresetNameAr
 
     initPreset();
 
-
     connect(comboBox_defaultFont, &QComboBox::currentTextChanged, this, &DialogConfigurePreset::OnDefaultFontChanged);
     connect(spinBox_defaultFontSize, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &DialogConfigurePreset::OnDefaultFontSizeChanged);
     connect(comboBox_localizedFont, &QComboBox::currentTextChanged, this, &DialogConfigurePreset::OnLocalizedFontChanged);
