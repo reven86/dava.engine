@@ -102,6 +102,7 @@ private:
         ShaderProp::Scope   scope;
         FastName            tag;
         uint32              regCount;
+        std::vector<int>    avlRegIndex;
     };
 
 

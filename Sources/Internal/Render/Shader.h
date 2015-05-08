@@ -97,7 +97,8 @@ private:
 
     rhi::HPipelineState piplineState;
 
-    rhi::ShaderSamplerList fragmentSamplerList; //no vertex samplers in rhi yet
+    rhi::ShaderSamplerList fragmentSamplerList;
+    rhi::ShaderSamplerList vertexSamplerList;
 
     friend class NMaterial;
 };

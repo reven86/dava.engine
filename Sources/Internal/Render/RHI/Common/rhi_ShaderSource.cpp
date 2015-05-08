@@ -97,8 +97,6 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
         std::regex  blending2_re(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha)\\s+dst=(zero|one|src_alpha|inv_src_alpha).*");
         std::regex  comment_re("\\s*//.*");
 
-        std::vector<int> AvlRegIndex;
-
         _Reset();
 
         while( !in->IsEof() )
@@ -244,14 +242,14 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                         case ShaderProp::TYPE_FLOAT3 : sz = 3; break;
                     }
 
-                    for( unsigned r=0; r!=AvlRegIndex.size(); ++r )                    
+                    for( unsigned r=0; r!=cbuf->avlRegIndex.size(); ++r )                    
                     {
-                        if( AvlRegIndex[r] + sz <= 4 )
+                        if( cbuf->avlRegIndex[r] + sz <= 4 )
                         {
                             p.bufferReg      = r;
-                            p.bufferRegCount = AvlRegIndex[r];
+                            p.bufferRegCount = cbuf->avlRegIndex[r];
 
-                            AvlRegIndex[r] += sz;
+                            cbuf->avlRegIndex[r] += sz;
                             
                             do_add = false;
                             break;
@@ -265,7 +263,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                         ++cbuf->regCount;
 
-                        AvlRegIndex.push_back( sz );
+                        cbuf->avlRegIndex.push_back( sz );
                     }
                 }
                 else if( p.type == ShaderProp::TYPE_FLOAT4  ||  p.type == ShaderProp::TYPE_FLOAT4X4 )
@@ -276,7 +274,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     cbuf->regCount     += p.bufferRegCount;
 
                     for( int i=0; i!=p.bufferRegCount; ++i )
-                        AvlRegIndex.push_back( 4 );
+                        cbuf->avlRegIndex.push_back( 4 );
                 }
             }
             else if( !isComment  &&  std::regex_match( line, match, sampler2d_re ) )
