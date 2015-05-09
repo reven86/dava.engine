@@ -239,7 +239,7 @@ void RootProperty::RemoveComponentPropertiesSection(ComponentPropertiesSection *
 {
     uint32 componentType = section->GetComponentType();
     
-    if (FindComponentPropertiesSection(componentType, section->GetComponentIndex()) == section) // TODO fix
+    if (FindComponentPropertiesSection(componentType, section->GetComponentIndex()) == section)
     {
         int index = GetIndexOfCompoentPropertiesSection(section);
         for (PropertyListener *listener : listeners)
@@ -347,7 +347,16 @@ void RootProperty::Serialize(PackageSerializer *serializer) const
     for (const auto section : controlProperties)
         section->Serialize(serializer);
 
-    bool hasChanges = componentProperties.size() > 0;
+    bool hasChanges = false;
+    
+    for (ComponentPropertiesSection *section : componentProperties)
+    {
+        if (section->HasChanges() || (section->GetFlags() & AbstractProperty::EF_INHERITED) == 0)
+        {
+            hasChanges = true;
+            break;
+        }
+    }
     
     if (!hasChanges)
     {
@@ -492,6 +501,7 @@ uint32 RootProperty::GetComponentAbsIndex(DAVA::uint32 componentType, DAVA::uint
 
 void RootProperty::RefreshComponentIndices()
 {
+    Logger::Debug("REFRESH SECTION %s", node->GetName().c_str());
     for (ComponentPropertiesSection *section : componentProperties)
     {
         section->RefreshIndex();

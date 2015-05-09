@@ -21,21 +21,18 @@ ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl *aControl
     {
         prototypeSection = sourceSection; // weak
     }
-    
-    if (component)
-    {
-        name = GetComponentName();
 
-        const InspInfo *insp = component->GetTypeInfo();
-        for (int j = 0; j < insp->MembersCount(); j++)
-        {
-            const InspMember *member = insp->Member(j);
-            
-            const ValueProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
-            ValueProperty *prop = new IntrospectionProperty(component, member, dynamic_cast<const IntrospectionProperty *>(sourceProp), cloneType);
-            AddProperty(prop);
-            SafeRelease(prop);
-        }
+    RefreshName();
+
+    const InspInfo *insp = component->GetTypeInfo();
+    for (int j = 0; j < insp->MembersCount(); j++)
+    {
+        const InspMember *member = insp->Member(j);
+        
+        const ValueProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
+        ValueProperty *prop = new IntrospectionProperty(component, member, dynamic_cast<const IntrospectionProperty *>(sourceProp), cloneType);
+        AddProperty(prop);
+        SafeRelease(prop);
     }
 }
 
@@ -81,16 +78,12 @@ void ComponentPropertiesSection::InstallComponent()
     if (control->GetComponent(component->GetType(), 0) != component)
     {
         control->InsertComponentAt(component, index);
-        
-        name = GetComponentName();
-        if (UIComponent::IsMultiple(component->GetType()))
-            name += Format(" [%d]", index);
     }
 }
 
 void ComponentPropertiesSection::UninstallComponent()
 {
-    UIComponent *installedComponent = control->GetComponent(component->GetType());
+    UIComponent *installedComponent = control->GetComponent(component->GetType(), index);
     if (installedComponent)
     {
         DVASSERT(installedComponent == component);
@@ -108,24 +101,38 @@ void ComponentPropertiesSection::RefreshIndex()
     if (component->GetControl() == control)
     {
         index = control->GetComponentIndex(component);
+        
+        Logger::Debug("Refresh %s, %d, %d", control->GetName().c_str(), component->GetType(), index);
+
+        RefreshName();
     }
 }
 
 void ComponentPropertiesSection::Serialize(PackageSerializer *serializer) const
 {
-    String name = GetComponentName();
-    if (UIComponent::IsMultiple(component->GetType()))
-        name += Format("%d", index);
-    
-    serializer->BeginMap(name);
-    
-    for (const auto child : children)
-        child->Serialize(serializer);
-    
-    serializer->EndMap();
+    if (HasChanges() || (GetFlags() & AbstractProperty::EF_INHERITED) == 0)
+    {
+        String name = GetComponentName();
+        if (UIComponent::IsMultiple(component->GetType()))
+            name += Format("%d", index);
+        
+        serializer->BeginMap(name);
+        
+        for (const auto child : children)
+            child->Serialize(serializer);
+        
+        serializer->EndMap();
+    }
 }
 
 String ComponentPropertiesSection::GetComponentName() const
 {
     return GlobalEnumMap<UIComponent::eType>::Instance()->ToString(component->GetType());
+}
+
+void ComponentPropertiesSection::RefreshName()
+{
+    name = GetComponentName();
+    if (UIComponent::IsMultiple(component->GetType()))
+        name += Format(" [%d]", index);
 }

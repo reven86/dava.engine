@@ -87,7 +87,7 @@ void PropertiesWidget::OnRemoveComponent()
 {
     if (sharedData)
     {
-        if (0 <= selectedComponentIndex && selectedComponentIndex < UIComponent::COMPONENT_COUNT)
+        if (0 <= selectedComponentType && selectedComponentType < UIComponent::COMPONENT_COUNT)
         {
             ControlNode *node = GetSelectedControlNode();
             sharedData->GetDocument()->GetCommandExecutor()->RemoveComponent(node, selectedComponentType, selectedComponentIndex);
@@ -97,33 +97,12 @@ void PropertiesWidget::OnRemoveComponent()
             DVASSERT(false);
         }
     }
+    UpdateActions();
 }
 
 void PropertiesWidget::OnSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
-    if (!selected.empty())
-    {
-        const QItemSelectionRange &range = selected.first();
-        const QPersistentModelIndex &index = range.topLeft();
-        AbstractProperty *property = static_cast<AbstractProperty*>(index.internalPointer());
-        
-        bool enabled = (property->GetFlags() & AbstractProperty::EF_CAN_REMOVE) != 0;
-
-        if (enabled)
-        {
-            ComponentPropertiesSection *section = dynamic_cast<ComponentPropertiesSection*>(property);
-            if (section)
-            {
-                selectedComponentType = (int) section->GetComponentType();
-                selectedComponentIndex = (int) section->GetComponentIndex();
-            }
-            else
-            {
-                enabled = false;
-            }
-        }
-        removeComponentAction->setEnabled(enabled);
-    }
+    UpdateActions();
 }
 
 ControlNode *PropertiesWidget::GetSelectedControlNode() const
@@ -167,4 +146,31 @@ void PropertiesWidget::UpdateActivatedControls()
     }
     
     delete prevModel;
+}
+
+void PropertiesWidget::UpdateActions()
+{
+    QModelIndexList indices = treeView->selectionModel()->selectedIndexes();
+    if (!indices.empty())
+    {
+        const QModelIndex &index = indices.first();
+        AbstractProperty *property = static_cast<AbstractProperty*>(index.internalPointer());
+        
+        bool enabled = (property->GetFlags() & AbstractProperty::EF_CAN_REMOVE) != 0;
+        
+        if (enabled)
+        {
+            ComponentPropertiesSection *section = dynamic_cast<ComponentPropertiesSection*>(property);
+            if (section)
+            {
+                selectedComponentType = (int) section->GetComponentType();
+                selectedComponentIndex = (int) section->GetComponentIndex();
+            }
+            else
+            {
+                enabled = false;
+            }
+        }
+        removeComponentAction->setEnabled(enabled);
+    }
 }

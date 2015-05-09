@@ -33,6 +33,7 @@ public:
 
 private:
     DAVA::String GetComponentName() const;
+    void RefreshName();
     
 private:
     DAVA::UIControl *control;

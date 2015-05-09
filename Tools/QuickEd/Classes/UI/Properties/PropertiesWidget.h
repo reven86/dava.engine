@@ -26,6 +26,7 @@ public slots:
 private:
     ControlNode *GetSelectedControlNode() const;
     void UpdateActivatedControls();
+    void UpdateActions();
     
 private:
     SharedData *sharedData;

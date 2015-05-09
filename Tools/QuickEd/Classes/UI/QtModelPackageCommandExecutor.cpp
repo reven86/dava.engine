@@ -241,7 +241,7 @@ void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode *node, Componen
     {
         UIComponent::eType type = static_cast<UIComponent::eType>(section->GetComponentType());
         int32 index = section->GetComponentIndex();
-        ComponentPropertiesSection *instanceSection = new ComponentPropertiesSection(node->GetControl(), type, index, section, AbstractProperty::CT_INHERIT);
+        ComponentPropertiesSection *instanceSection = new ComponentPropertiesSection(instance->GetControl(), type, index, section, AbstractProperty::CT_INHERIT);
         AddComponentImpl(instance, instanceSection);
         SafeRelease(instanceSection);
     }
