@@ -57,12 +57,14 @@ public:
 
     ServerData GetServerData() const;
 
+    bool IsCorrectData();
+
 signals:
     void ParametersChanged();
     void RemoveLater();
 
 private slots:
-    void OnParanetersChanged();
+    void OnParametersChanged();
 
 private:
     Ui::RemoteAssetCacheServer *ui;

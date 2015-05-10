@@ -86,6 +86,7 @@ private:
     void ShowTrayIcon();
     void ReadSettings();
     void WriteSettings();
+    void VerifyData();
 
 private:
     Ui::MainWindow *ui;

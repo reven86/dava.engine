@@ -6,19 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>420</width>
     <height>335</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>400</width>
+    <width>420</width>
     <height>0</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>400</width>
+    <width>420</width>
     <height>498</height>
    </size>
   </property>
@@ -252,7 +252,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>360</width>
+            <width>380</width>
             <height>69</height>
            </rect>
           </property>
@@ -266,6 +266,9 @@
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QPushButton" name="saveButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Save</string>
         </property>
@@ -281,16 +284,6 @@
      </layout>
     </item>
    </layout>
-   <zorder>cachSizeSpinBox</zorder>
-   <zorder>numberOfFilesSpinBox</zorder>
-   <zorder>startupCheckBox</zorder>
-   <zorder>portSpinBox</zorder>
-   <zorder>serversBox</zorder>
-   <zorder>startupLabel</zorder>
-   <zorder>folderSizeLabel</zorder>
-   <zorder>cachLabel</zorder>
-   <zorder>numberOfFilesLabel</zorder>
-   <zorder>portLabel</zorder>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

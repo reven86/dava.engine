@@ -65,6 +65,8 @@ MainWindow::MainWindow(QWidget *parent)
     ReadSettings();
 
     ShowTrayIcon();
+
+    ui->saveButton->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -82,6 +84,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
 void MainWindow::OnAddNewServerWidget()
 {
     AddServer(ServerData());
+    VerifyData();
 }
 
 void MainWindow::OnRemoveServerWidget()
@@ -90,6 +93,7 @@ void MainWindow::OnRemoveServerWidget()
     servers.removeOne(w);
     emit ServerRemoved(w->GetServerData());
     w->deleteLater();
+    VerifyData();
 }
 
 void MainWindow::OnSelectFolder()
@@ -98,6 +102,7 @@ void MainWindow::OnSelectFolder()
                                                            QFileDialog::ShowDirsOnly);
     ui->cachFolderLineEdit->setText(directory);
     emit FolderChanged(directory);
+    VerifyData();
 }
 
 void MainWindow::CheckEnableClearButton()
@@ -131,6 +136,7 @@ void MainWindow::OnServerParametersChanged()
         serversData << server->GetServerData();
     }
     emit ServersChanged(serversData);
+    VerifyData();
 }
 
 void MainWindow::OnOpenAction()
@@ -158,6 +164,7 @@ void MainWindow::OnStartupChanged(int state)
         settings.remove(QDir::toNativeSeparators(qApp->applicationName()));
 #endif
     }
+    VerifyData();
 }
 
 void MainWindow::OnSaveButtonClicked()
@@ -206,16 +213,18 @@ void MainWindow::AddServer(ServerData newServer)
     servers << server;
 
     connect(server, &RemoteAssetCacheServer::RemoveLater, this, &MainWindow::OnRemoveServerWidget);
+    connect(server, &RemoteAssetCacheServer::ParametersChanged, this, &MainWindow::OnServerParametersChanged);
 
     boxLayout->insertWidget(boxLayout->count() - 1, server);
 
     emit NewServerAdded(server->GetServerData());
+    VerifyData();
 }
 
 void MainWindow::CreateTrayIconActions()
 {
     QAction *quitAction = new QAction("Quit", this);
-    connect(quitAction, &QAction::triggered, qApp, &QApplication::quit);
+    connect(quitAction, &QAction::triggered, qApp, QApplication::quit);
 
     QAction *openAction = new QAction("Open server", this);
     connect(openAction, &QAction::triggered, this, &MainWindow::OnOpenAction);
@@ -327,4 +336,20 @@ void MainWindow::WriteSettings()
     arch->Save(f);
     f->Release();
     arch->Release();
+
+    ui->saveButton->setEnabled(false);
+}
+
+void MainWindow::VerifyData()
+{
+    bool isCorrect = true;
+    for (auto &server : servers)
+    {
+        if (!server->IsCorrectData())
+        {
+            isCorrect = false;
+            break;
+        }
+    }
+    ui->saveButton->setEnabled(isCorrect);
 }

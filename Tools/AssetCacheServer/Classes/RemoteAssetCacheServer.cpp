@@ -58,10 +58,9 @@ RemoteAssetCacheServer::RemoteAssetCacheServer(QWidget *parent)
 
     connect(ui->removeServerButton, &QPushButton::clicked,
             this, &RemoteAssetCacheServer::RemoveLater);
-    connect(ui->ipLineEdit, &QLineEdit::editingFinished,
-            this, &RemoteAssetCacheServer::OnParanetersChanged);
-    connect(ui->portSpinBox, &QSpinBox::editingFinished,
-            this, &RemoteAssetCacheServer::OnParanetersChanged);
+    connect(ui->ipLineEdit, &QLineEdit::textChanged,
+            this, &RemoteAssetCacheServer::OnParametersChanged);
+    connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnParametersChanged()));
 }
 
 RemoteAssetCacheServer::RemoteAssetCacheServer(ServerData &newServer, QWidget *parent)
@@ -81,7 +80,19 @@ ServerData RemoteAssetCacheServer::GetServerData() const
     return ServerData(ui->ipLineEdit->text(), ui->portSpinBox->value());
 }
 
-void RemoteAssetCacheServer::OnParanetersChanged()
+bool RemoteAssetCacheServer::IsCorrectData()
+{
+    QString ip(ui->ipLineEdit->text());
+    QStringList ipList = ip.split(".", QString::SkipEmptyParts);
+    if (ipList.count() != 4)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+void RemoteAssetCacheServer::OnParametersChanged()
 {
     emit ParametersChanged();
 }
