@@ -328,7 +328,7 @@ void MainWindow::WriteSettings()
 
     for (int i = 0; i < size; ++i)
     {
-        auto &sData = servers.at(i)->GetServerData();
+        auto sData = servers.at(i)->GetServerData();
         arch->SetString(Format("Server_%d_ip", i), String(sData.ip.toStdString()));
         arch->SetUInt32(Format("Server_%d_port", i), static_cast<DAVA::uint32>(sData.port));
     }
