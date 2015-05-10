@@ -259,7 +259,7 @@ void MainWindow::ReadSettings()
     File *f = File::Create(path, File::OPEN | File::READ);
     if (f == nullptr)
     {
-        Logger::Error("File not open"); 
+        Logger::Error("File not open. %s. %s", String("MainWindow::ReadSettings"), path.GetFilename());
         return;
     }
 
