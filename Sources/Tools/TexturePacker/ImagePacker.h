@@ -32,32 +32,32 @@
 
 #include "Base/BaseTypes.h"
 #include "Math/Math2D.h"
-#include "TexturePacker.h"
 
 namespace DAVA
 {
     
 
+    struct PackedInfo
+    {
+        Rect2i rect;
+        bool isTwoSideMargin = false;
+        uint32 topMargin = 0;
+        uint32 leftMargin = 0;
+        uint32 rightMargin = 0;
+        uint32 bottomMargin = 0;
+    };
+
 //! helper class to simplify packing of many small 2D images to one big 2D image
 class ImagePacker
 {
 public:
-	//! \brief constructor
-	//! \param[in] size of this imagePacker
 	ImagePacker(const Rect2i & _rect, bool _useTwoSideMargin, int32 _texturesMargin);
-	
-	//! \brief destructor
 	virtual ~ImagePacker();
 
-	//! \brief release all data allocated by image packer and reset it internal state
 	void Release(); 
 	
-	//! \brief Add image to image packer & image packer must allocate position for this image
-	//! \param[in] imageSize image size of image we want to pack
-	//! \return rectangle with image position in current image topology
 	bool AddImage(const Size2i & imageSize, void * searchPtr);
-	Rect2i * SearchRectForPtr(void * searchPtr);
-	Rect2i * SearchRectForPtr(void * searchPtr, uint32& rmargin, uint32& bmargin);
+	PackedInfo * SearchRectForPtr(void * searchPtr);
 	
 	Rect2i & GetRect() { return rect; };
 
@@ -66,37 +66,21 @@ public:
 	int32 texturesMargin;
 
 private:
-	// Implementation details
 	Rect2i rect;
 	
 	struct PackNode
 	{
-		PackNode(ImagePacker * _packer) :
-			packer(_packer)
-		{
-			isLeaf = true;
-			child[0] = 0;
-			child[1] = 0;
-			isImageSet = false;
-			searchPtr = 0;
-			touchesRightBorder = false;
-			touchesBottomBorder = false;
-			rightMargin = TexturePacker::DEFAULT_MARGIN;
-			bottomMargin = TexturePacker::DEFAULT_MARGIN;
-		}
-	
-		bool			isImageSet;
-		Rect2i			rect;
-		bool			isLeaf;
-		PackNode *		child[2];
-		ImagePacker *	packer;
-		void *			searchPtr;
-		bool			touchesRightBorder;
-		bool			touchesBottomBorder;
-		uint32			rightMargin;
-		uint32			bottomMargin;
+        PackNode(const ImagePacker* _packer) : packer(_packer) { child[0] = nullptr; child[1] = nullptr; }
+        const ImagePacker*  packer;
+        bool            isImageSet = false;
+        bool            isLeaf = true;
+        PackNode*       child[2];
+        void*           searchPtr = nullptr;
+        bool            touchesRightBorder = false;
+        bool            touchesBottomBorder = false;
+        PackedInfo      packCell;
 
-		PackNode *	Insert(const Size2i & imageSize);
+		PackNode *	Insert(const Size2i& frameSize);
 		PackNode *	SearchRectForPtr(void * searchPtr);
 		void		Release();
 	};

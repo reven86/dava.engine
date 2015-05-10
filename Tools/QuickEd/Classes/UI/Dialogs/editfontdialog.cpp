@@ -36,7 +36,6 @@
 //#include "TexturePacker/ResourcePacker2D.h"
 
 #include <QMessageBox>
-#include <QFileDialog>
 #include <QStandardItemModel>
 #include <QModelIndexList>
 #include <QStandardItemModel>

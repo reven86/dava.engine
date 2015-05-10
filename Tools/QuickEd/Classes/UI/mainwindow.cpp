@@ -30,7 +30,6 @@
 #include "mainwindow.h"
 
 #include <QDir>
-#include <QFileDialog>
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QUrl>
@@ -51,6 +50,8 @@
 #include "UI/UIPackageLoader.h"
 #include "Utils/QtDavaConvertion.h"
 #include "Model/PackageHierarchy/PackageNode.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
 
 namespace
 {
@@ -402,7 +403,7 @@ void MainWindow::OnProjectOpened(Result result, QString projectPath)
 
 void MainWindow::OnOpenProject()
 {
-    QString projectPath = QFileDialog::getOpenFileName(this, tr("Select a project file"),
+    QString projectPath = FileDialog::getOpenFileName(this, tr("Select a project file"),
                                                         ResourcesManageHelper::GetDefaultDirectory(),
                                                         tr( "Project (*.uieditor)"));
     if (projectPath.isEmpty())

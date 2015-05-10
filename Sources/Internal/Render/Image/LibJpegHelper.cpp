@@ -284,6 +284,7 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
             info.format = FORMAT_INVALID;
     }
     info.dataSize = static_cast<uint32>(cinfo.src->bytes_in_buffer);
+    info.mipmapsCount = 1;
 
     jpeg_destroy_decompress(&cinfo);
     SafeDeleteArray(fileBuffer);
