@@ -33,6 +33,7 @@
 #include "RemoteAssetCacheServer.h"
 #include <FileSystem/KeyedArchive.h>
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/Logger.h"
 
 #include <QFileDialog>
 #include <QMenu>
@@ -257,9 +258,9 @@ void MainWindow::ReadSettings()
 
     FilePath path("~doc:/AssetServer/ACS_settings.dat");
     File *f = File::Create(path, File::OPEN | File::READ);
-    if (f == nullptr)
+    //if (f == nullptr)
     {
-        Logger::Error("File not open. %s. %s", String("MainWindow::ReadSettings"), path.GetFilename());
+        Logger::Error("File not open. %s. %s", String("MainWindow::ReadSettings").c_str(), path.GetAbsolutePathname().c_str());
         return;
     }
 
