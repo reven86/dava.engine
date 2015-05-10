@@ -127,8 +127,9 @@ while continue_process_stdout:
             # write Frame_delta build statistic to file
             teamcity_line_index = line.find("Frame_delta")
             if teamcity_line_index != -1:
-                teamcity_line_index = line.find("##teamcity")
+                teamcity_line_index = line.find("value")
                 teamcity_line = line[teamcity_line_index:]
+                teamcity_line = teamcity_line.split("'")[1] + "\n"
                 frame_delta_file.write(teamcity_line)
             else:
                 # append build statistic keys for compare on teamcity
