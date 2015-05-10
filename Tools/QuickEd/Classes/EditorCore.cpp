@@ -14,6 +14,7 @@ EditorCore::EditorCore(QObject *parent)
     , mainWindow(new MainWindow())
     , project(new Project(this))
 {
+    mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
      
     connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
