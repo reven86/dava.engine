@@ -6,6 +6,7 @@
 #include "PackageListener.h"
 #include "PackageRef.h"
 #include "../PackageSerializer.h"
+#include "../ControlProperties/RootProperty.h"
 
 using namespace DAVA;
 

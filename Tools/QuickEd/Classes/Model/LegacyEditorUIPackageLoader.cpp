@@ -122,7 +122,7 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
         const YamlNode *pathNode = node->Get("aggregatorPath");
         RefPtr<UIPackage> importedPackage = builder->ProcessImportedPackage(pathNode->AsString(), this);
         DVASSERT(importedPackage.Get());
-        control = builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), importedPackage->GetControl(0)->GetName(), "", this);
+        control = builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), importedPackage->GetControl(0)->GetName(), nullptr, this);
     }
     else if (baseType)
         control = builder->BeginControlWithCustomClass(type->AsString(), baseType->AsString());
@@ -169,7 +169,7 @@ void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *c
     
     builder->BeginControlPropertiesSection(typeInfo->Name());
 
-    String className = control->GetControlClassName();
+    String className = control->GetClassName();
     for (int32 i = 0; i < typeInfo->MembersCount(); i++)
     {
         const InspMember *member = typeInfo->Member(i);
@@ -198,7 +198,7 @@ void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *c
 
 void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
 {
-    String className = control->GetControlClassName();
+    String className = control->GetClassName();
     for (int32 i = 0; i < control->GetBackgroundComponentsCount(); i++)
     {
         UIControlBackground *bg = builder->BeginBgPropertiesSection(i, true);
@@ -251,7 +251,7 @@ void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *contro
 
 void LegacyEditorUIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
 {
-    String className = control->GetControlClassName();
+    String className = control->GetClassName();
     for (int32 i = 0; i < control->GetInternalControlsCount(); i++)
     {
         UIControl *internalControl = builder->BeginInternalControlSection(i, true);

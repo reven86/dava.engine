@@ -16,6 +16,11 @@
 #include "Model/PackageHierarchy/ImportedPackagesNode.h"
 #include "Model/PackageHierarchy/ControlPrototype.h"
 #include "Model/PackageHierarchy/ControlsContainerNode.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/NameProperty.h"
+#include "Model/ControlProperties/ClassProperty.h"
+#include "Model/ControlProperties/CustomClassProperty.h"
+#include "Model/ControlProperties/PrototypeNameProperty.h"
 #include "Model/YamlPackageSerializer.h"
 #include "Model/EditorUIPackageBuilder.h"
 
@@ -107,7 +112,23 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
             return StringToQString(node->GetName());
             
         case Qt::DecorationRole:
-            return node->GetControl() != nullptr ? QIcon(IconHelper::GetIconPathForUIControl(node->GetControl())) : QVariant();
+            if (node->GetControl())
+            {
+                ControlNode *controlNode = DynamicTypeCheck<ControlNode *>(node);
+                if (controlNode)
+                {
+                    if (controlNode->GetRootProperty()->GetCustomClassProperty()->IsSet())
+                    {
+                        return QIcon(IconHelper::GetCustomIconPath());
+                    }
+                    else
+                    {
+                        const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
+                        return QIcon(IconHelper::GetIconPathForClassName(QString::fromStdString(className)));
+                    }
+                }
+            }
+            return QVariant();
             
         case Qt::CheckStateRole:
             if (node->GetControl())
@@ -119,16 +140,18 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
             if (node->GetControl() != nullptr)
             {
                 ControlNode *controlNode = DynamicTypeCheck<ControlNode *>(node);
-                QString toolTip = QString("class: ") + controlNode->GetControl()->GetControlClassName().c_str();
-                if (!controlNode->GetControl()->GetCustomControlClassName().empty())
+                const String &prototype = controlNode->GetRootProperty()->GetPrototypeProperty()->GetPrototypeName();
+                const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
+                const String &customClassName = controlNode->GetRootProperty()->GetCustomClassProperty()->GetCustomClassName();
+                QString toolTip = QString("class: ") + className.c_str();
+                if (!customClassName.empty())
                 {
-                    toolTip += QString("\ncustom class: ") + controlNode->GetControl()->GetCustomControlClassName().c_str();
+                    toolTip += QString("\ncustom class: ") + customClassName.c_str();
                 }
 
                 if (controlNode->GetPrototype())
                 {
-                    bool withPackage = true; // TODO fix for currentPackage
-                    toolTip += QString("\nprototype: ") + controlNode->GetPrototype()->GetName(withPackage).c_str();
+                    toolTip += QString("\nprototype: ") + prototype.c_str();
                 }
                 return toolTip;
             }

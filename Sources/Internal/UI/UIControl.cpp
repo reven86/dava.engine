@@ -1123,7 +1123,6 @@ namespace DAVA
         inputEnabled = srcControl->inputEnabled;
         clipContents = srcControl->clipContents;
 
-        customClassName = srcControl->GetCustomControlClassName();
         initialState = srcControl->GetInitialState();
         drawPivotPointMode = srcControl->drawPivotPointMode;
         debugDrawColor = srcControl->debugDrawColor;
@@ -1893,7 +1892,7 @@ namespace DAVA
         ScopedPtr<UIControl> baseControl(new UIControl());
 
         // Control name
-        SetPreferredNodeType(node, GetControlClassName());
+        SetPreferredNodeType(node, GetClassName());
 
         // Transform data
         // Position
@@ -2602,36 +2601,9 @@ namespace DAVA
         UpdateChildrenLayout();
     }
 
-    const String & UIControl::GetControlClassName() const
-    {
-        return GetClassName();
-    }
-
-    const String &UIControl::GetCustomControlClassName() const
-    {
-        return customClassName;
-    }
-
-    void UIControl::SetCustomControlClassName(const String& value)
-    {
-        customClassName = value;
-    }
-
     void UIControl::SetPreferredNodeType(YamlNode* node, const String& nodeTypeName)
     {
-        // Do we have Custom Control name? If yes, use it as type and passed one
-        // as the "Base Type"
-        bool hasCustomControl = !GetCustomControlClassName().empty();
-        if (hasCustomControl)
-        {
-            node->Set("type", GetCustomControlClassName());
-            node->Set("baseType", nodeTypeName);
-        }
-        else
-        {
-            // The type coincides with the node type name passed, no base type exists.
-            node->Set("type", nodeTypeName);
-        }
+        node->Set("type", nodeTypeName);
     }
 
     int32 UIControl::GetInitialState() const

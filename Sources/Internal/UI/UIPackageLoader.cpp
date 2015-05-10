@@ -185,7 +185,7 @@ void UIPackageLoader::LoadControl(const YamlNode *node, bool root)
     else if (prototypeNode)
     {
         const YamlNode *customClassNode = node->Get("customClass");
-        String customClass = customClassNode == nullptr ? "" : customClassNode->AsString();
+        const String *customClass = customClassNode == nullptr ? nullptr : &(customClassNode->AsString());
         String controlName = prototypeNode->AsString();
         String packageName = "";
         size_t pos = controlName.find('/');

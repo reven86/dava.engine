@@ -4,12 +4,11 @@
 #include "PackageBaseNode.h"
 #include "ControlsContainerNode.h"
 
-#include "Model/ControlProperties/RootProperty.h"
-
 class PackageSerializer;
 class PackageNode;
 class ControlPrototype;
 class PackageRef;
+class RootProperty;
 
 class ControlNode : public ControlsContainerNode
 {

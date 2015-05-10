@@ -1322,11 +1322,6 @@ public:
     // Recalculate the size and positions for the child controls according to their Align Options.
     void ApplyAlignSettingsForChildren();
 
-    const String &GetControlClassName() const;
-    // Access to Custom Control Type.
-    const String &GetCustomControlClassName() const;
-    void SetCustomControlClassName(const String& value);
-
     // Find the control by name and add it to the list, if found.
     bool AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive = false);
 
@@ -1403,9 +1398,6 @@ protected:
     Color debugDrawColor;
 
     eDebugDrawPivotMode drawPivotPointMode;
-
-    // If this UI control represents Custom Control - its type is stored here.
-    String customClassName;
 
     // Initial control's state which is stored on Yaml.
     int32 initialState;

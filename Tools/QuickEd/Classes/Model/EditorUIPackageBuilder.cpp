@@ -9,6 +9,7 @@
 #include "Model/ControlProperties/InternalControlPropertiesSection.h"
 #include "Model/ControlProperties/ValueProperty.h"
 #include "Model/ControlProperties/CustomClassProperty.h"
+#include "Model/ControlProperties/RootProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/ControlPrototype.h"
 #include "Model/PackageHierarchy/PackageRef.h"
@@ -148,7 +149,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithCustomClass(const String &cus
     return control;
 }
 
-UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String &customClassName, AbstractUIPackageLoader *loader)
+UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String *customClassName, AbstractUIPackageLoader *loader)
 {
     PackageControlsNode *controlsNode = nullptr;
     if (packageName.empty())
@@ -170,8 +171,8 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packa
     
     DVASSERT(prototypeNode);
     ControlNode *node = ControlNode::CreateFromPrototype(prototypeNode, controlsNode->GetPackageRef());
-    if (!customClassName.empty())
-        node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(customClassName));
+    if (customClassName)
+        node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(*customClassName));
     controlsStack.push_back(ControlDescr(node, true));
 
     return node->GetControl();

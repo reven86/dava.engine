@@ -5,6 +5,7 @@
 
 #include "PackageNode.h"
 #include "../PackageSerializer.h"
+#include "../ControlProperties/RootProperty.h"
 
 #include "ControlPrototype.h"
 
@@ -27,8 +28,7 @@ ControlNode::ControlNode(ControlNode *node)
     , prototype(SafeRetain(node->prototype))
     , creationType(node->creationType)
 {
-    control = ObjectFactory::Instance()->New<UIControl>(node->control->GetControlClassName());
-    control->SetCustomControlClassName(node->control->GetCustomControlClassName());
+    control = ObjectFactory::Instance()->New<UIControl>(node->control->GetClassName());
     
     rootProperty = new RootProperty(this, node->rootProperty, RootProperty::CT_COPY);
     
@@ -46,8 +46,7 @@ ControlNode::ControlNode(ControlPrototype *_prototype, eCreationType _creationTy
     , prototype(SafeRetain(_prototype))
     , creationType(_creationType)
 {
-    control = ObjectFactory::Instance()->New<UIControl>(prototype->GetControlNode()->GetControl()->GetControlClassName());
-    control->SetCustomControlClassName(prototype->GetControlNode()->GetControl()->GetCustomControlClassName());
+    control = ObjectFactory::Instance()->New<UIControl>(prototype->GetControlNode()->GetControl()->GetClassName());
 
     rootProperty = new RootProperty(this, prototype->GetControlNode()->GetRootProperty(), RootProperty::CT_INHERIT);
     

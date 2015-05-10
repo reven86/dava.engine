@@ -33,24 +33,25 @@ AbstractProperty::ePropertyType PrototypeNameProperty::GetType() const
 
 DAVA::VariantType PrototypeNameProperty::GetValue() const
 {
-    if (node->GetPrototype())
-    {
-        if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
-        {
-            return VariantType(node->GetPathToPrototypeChild(true));
-        }
-        else
-        {
-            return VariantType(node->GetPrototype()->GetName(true));
-        }
-    }
-
-    return VariantType(String("-"));
+    return VariantType(GetPrototypeName());
 }
 
 bool PrototypeNameProperty::IsReadOnly() const
 {
     return true;
+}
+
+String PrototypeNameProperty::GetPrototypeName() const
+{
+    if (node->GetPrototype())
+    {
+        if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
+            return node->GetPathToPrototypeChild(true);
+        else
+            return node->GetPrototype()->GetName(true);
+    }
+    
+    return String("");
 }
 
 void PrototypeNameProperty::ApplyValue(const DAVA::VariantType &value)

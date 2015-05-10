@@ -25,7 +25,7 @@ public:
     
     virtual DAVA::UIControl *BeginControlWithClass(const DAVA::String &className) override;
     virtual DAVA::UIControl *BeginControlWithCustomClass(const DAVA::String &customClassName, const DAVA::String &className) override;
-    virtual DAVA::UIControl *BeginControlWithPrototype(const DAVA::String &packageName, const DAVA::String &prototypeName, const DAVA::String &customClassName, DAVA::AbstractUIPackageLoader *loader) override;
+    virtual DAVA::UIControl *BeginControlWithPrototype(const DAVA::String &packageName, const DAVA::String &prototypeName, const DAVA::String *customClassName, DAVA::AbstractUIPackageLoader *loader) override;
     virtual DAVA::UIControl *BeginControlWithPath(const DAVA::String &pathName) override;
     virtual DAVA::UIControl *BeginUnknownControl(const DAVA::YamlNode *node) override;
     virtual void EndControl(bool isRoot) override;

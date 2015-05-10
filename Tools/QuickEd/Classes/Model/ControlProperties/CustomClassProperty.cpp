@@ -12,11 +12,11 @@ CustomClassProperty::CustomClassProperty(ControlNode *aControl, const CustomClas
     , control(aControl) // weak
     , prototypeProperty(nullptr)
 {
-    defaultValue = VariantType(aControl->GetControl()->GetCustomControlClassName());
+    defaultValue = VariantType(String(""));
     
     if (sourceProperty)
     {
-        aControl->GetControl()->SetCustomControlClassName(sourceProperty->GetValue().AsString());
+        customClass = sourceProperty->customClass;
         
         if (cloneType == CT_COPY)
         {
@@ -54,7 +54,7 @@ void CustomClassProperty::Serialize(PackageSerializer *serializer) const
 {
     if (IsReplaced())
     {
-        serializer->PutValue("customClass", control->GetControl()->GetCustomControlClassName());
+        serializer->PutValue("customClass", customClass);
     }
 }
 
@@ -70,10 +70,25 @@ CustomClassProperty::ePropertyType CustomClassProperty::GetType() const
 
 VariantType CustomClassProperty::GetValue() const
 {
-    return VariantType(control->GetControl()->GetCustomControlClassName());
+    return VariantType(customClass);
+}
+
+const String &CustomClassProperty::GetCustomClassName() const
+{
+    return customClass;
 }
 
 void CustomClassProperty::ApplyValue(const DAVA::VariantType &value)
 {
-    control->GetControl()->SetCustomControlClassName(value.AsString());
+    customClass = value.AsString();
 }
+
+bool CustomClassProperty::IsSet() const
+{
+    if (IsReplaced())
+        return true;
+    if (prototypeProperty)
+        return prototypeProperty->IsReplaced();
+    return false;
+}
+

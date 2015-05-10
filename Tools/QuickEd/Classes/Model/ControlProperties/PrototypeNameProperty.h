@@ -20,6 +20,7 @@ public:
     virtual ePropertyType GetType() const override;
     virtual DAVA::VariantType GetValue() const override;
     virtual bool IsReadOnly() const override;
+    DAVA::String GetPrototypeName() const;
 
 protected:
     virtual void ApplyValue(const DAVA::VariantType &value);

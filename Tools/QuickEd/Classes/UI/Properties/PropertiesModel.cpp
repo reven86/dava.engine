@@ -12,6 +12,7 @@
 #include "Ui/QtModelPackageCommandExecutor.h"
 
 #include "Model/ControlProperties/AbstractProperty.h"
+#include "Model/ControlProperties/RootProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Utils/QtDavaConvertion.h"
 #include "UI/Commands/ChangePropertyValueCommand.h"

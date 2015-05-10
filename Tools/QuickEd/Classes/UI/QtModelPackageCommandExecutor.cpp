@@ -16,6 +16,7 @@
 #include "Model/PackageHierarchy/ImportedPackagesNode.h"
 
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
+#include "Model/ControlProperties/RootProperty.h"
 
 #include "Model/YamlPackageSerializer.h"
 #include "Model/EditorUIPackageBuilder.h"

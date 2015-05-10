@@ -5,6 +5,8 @@
 #include "PackageHierarchy/PackageControlsNode.h"
 #include "PackageHierarchy/PackageNode.h"
 #include "PackageHierarchy/ImportedPackagesNode.h"
+#include "ControlProperties/AbstractProperty.h"
+#include "ControlProperties/RootProperty.h"
 
 using namespace DAVA;
 

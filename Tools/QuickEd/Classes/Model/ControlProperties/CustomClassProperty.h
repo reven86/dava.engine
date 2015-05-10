@@ -23,11 +23,15 @@ public:
     virtual DAVA::uint32 GetFlags() const  override { return EF_CAN_RESET; };
     virtual DAVA::VariantType GetValue() const override;
     
+    const DAVA::String &GetCustomClassName() const;
+    bool IsSet() const;
+    
 protected:
     virtual void ApplyValue(const DAVA::VariantType &value) override;
     
 protected:
     ControlNode *control; // weak
+    DAVA::String customClass;
     const CustomClassProperty *prototypeProperty;
 };
 

@@ -19,6 +19,7 @@ public:
     
     virtual ePropertyType GetType() const override;
     virtual DAVA::VariantType GetValue() const override;
+    const DAVA::String &GetClassName() const;
     
 protected:
     ControlNode *control; // weak
