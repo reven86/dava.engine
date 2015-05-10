@@ -72,6 +72,7 @@ public:
 private:
     void InitScreenController();
 	void RegisterTests();
+    String GetDeviceName();
 
 	Vector<BaseTest*> testChain;
 	TestFlowController* testFlowController;

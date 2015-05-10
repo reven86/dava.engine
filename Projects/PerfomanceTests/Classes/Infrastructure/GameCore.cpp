@@ -119,13 +119,29 @@ void GameCore::EndFrame()
 
 void GameCore::RegisterTests()
 {
-  //  testChain.push_back(new GlobalPerformanceTest(1000, 0.016f, 200));
     testChain.push_back(new AsiaPerformanceTest(130000));
+}
+
+String GameCore::GetDeviceName()
+{
+    String device = "device_";
+
+#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+    device += DeviceInfo::GetManufacturer() + DeviceInfo::GetModel();
+#else
+    device += UTF8Utils::EncodeToUTF8(DeviceInfo::GetName());
+#endif
+
+    device.replace(device.begin(), device.end(), " ", "_");
+    return device;
 }
 
 void GameCore::InitScreenController()
 {
     Random::Instance()->Seed(0);
+
+    Logger::Instance()->AddCustomOutput(&teamCityOutput);
+    Logger::Info(GetDeviceName().c_str());
 
 	bool chooser = CommandLineParser::Instance()->CommandIsFound("chooser");
 	bool screenOut = CommandLineParser::Instance()->CommandIsFound("screen_out");
@@ -144,20 +160,7 @@ void GameCore::InitScreenController()
 		testFlowController = new TestChainFlowController(false);
 	}
 
-    Logger::Instance()->AddCustomOutput(&teamCityOutput);
-
     testFlowController->Init(testChain);
-    String device = "device_";
-
-    #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-        device += DeviceInfo::GetManufacturer() + DeviceInfo::GetModel();
-    #else
-        device += UTF8Utils::EncodeToUTF8(DeviceInfo::GetName());
-    #endif
-
-    device += "_";
-
-    Logger::Info(device.c_str());
 }
 
 
