@@ -132,7 +132,9 @@ String GameCore::GetDeviceName()
     device += UTF8Utils::EncodeToUTF8(DeviceInfo::GetName());
 #endif
 
-    device.replace(device.begin(), device.end(), " ", "_");
+    std::replace(device.begin(), device.end(), ' ', '_');
+    std::replace(device.begin(), device.end(), '.', '_');
+    
     return device;
 }
 
@@ -141,7 +143,8 @@ void GameCore::InitScreenController()
     Random::Instance()->Seed(0);
 
     Logger::Instance()->AddCustomOutput(&teamCityOutput);
-    Logger::Info(GetDeviceName().c_str());
+    String deviceName = GetDeviceName();
+    Logger::Info(deviceName.c_str());
 
 	bool chooser = CommandLineParser::Instance()->CommandIsFound("chooser");
 	bool screenOut = CommandLineParser::Instance()->CommandIsFound("screen_out");
