@@ -2,10 +2,11 @@
 #include <DAVAEngine.h>
 #include <QAction>
 #include <QLineEdit>
-#include <QFileDialog>
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
 #include "Helpers/ResourcesManageHelper.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
 
 using namespace DAVA;
 
@@ -95,7 +96,7 @@ void SpritePropertyDelegate::openFileDialogClicked()
         dir = ResourcesManageHelper::GetSpritesDirectory();
     }
 
-    QString filePathText = QFileDialog::getOpenFileName(editor->parentWidget(), tr("Select sprite descriptor"), dir, QString("*.txt"));
+    QString filePathText = FileDialog::getOpenFileName(editor->parentWidget(), tr("Select sprite descriptor"), dir, QString("*.txt"));
     if (!filePathText.isEmpty())
     {
         lineEdit->setText(filePathText);

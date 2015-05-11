@@ -77,10 +77,10 @@ void QtLayer::SetDelegate(QtLayerDelegate *delegate)
     
 void QtLayer::AppStarted()
 {
-    Core::Instance()->SystemAppStarted();
-    
     RenderManager::Create(Core::RENDERER_OPENGL);
     FrameworkDidLaunched();
+
+    Core::Instance()->SystemAppStarted();
 }
 
 void QtLayer::AppFinished()

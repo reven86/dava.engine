@@ -2,11 +2,12 @@
 
 #include <QEventLoop>
 #include <QDir>
-#include <QFileDialog>
 #include <QMessageBox>
 #include <QDebug>
 
-#include "Classes/Qt/Scene/SceneEditor2.h"
+#include "QtTools/FileDialog/FileDialog.h"
+
+#include "Qt/Scene/SceneEditor2.h"
 
 
 namespace
@@ -88,7 +89,7 @@ void BeastDialog::OnCancel()
 
 void BeastDialog::OnBrowse()
 {
-    const QString path = QFileDialog::getExistingDirectory( this, QString(), GetPath(), QFileDialog::ShowDirsOnly );
+    const QString path = FileDialog::getExistingDirectory( this, QString(), GetPath(), FileDialog::ShowDirsOnly );
     if ( !path.isEmpty() )
     {
         SetPath( path );

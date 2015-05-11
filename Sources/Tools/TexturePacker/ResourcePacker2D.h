@@ -57,7 +57,7 @@ public:
 	bool IsMD5ChangedFile(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName);
 	
     DefinitionFile * ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName, bool twoSideMargin, uint32 texturesMargin);
-	Vector<String> ProcessFlags(const FilePath & flagsPathname);
+	Vector<String> FetchFlags(const FilePath & flagsPathname);
 
 	static String GetProcessFolderName();
 	bool SaveFileListToYaml(const FilePath & yamlFilePath);
@@ -69,7 +69,6 @@ public:
 	FilePath outputGfxDirectory;
 	FilePath excludeDirectory;
 	String gfxDirName;
-	String currentFlags;
     
 	bool isGfxModified;
     

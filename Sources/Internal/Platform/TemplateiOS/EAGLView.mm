@@ -46,6 +46,8 @@
 
 #include "Utils/Utils.h"
 
+static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
+
 @implementation EAGLView
 
 @synthesize animating;
@@ -68,8 +70,7 @@
         [self setContentScaleFactor: scf];
 
 		// Subscribe to "keyboard change frame" notifications to block GL while keyboard change is performed (see please DF-2012 for details).
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillChangeFrame:) name:UIKeyboardWillChangeFrameNotification object:nil];
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidChangeFrame:) name:UIKeyboardDidChangeFrameNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidFrameChanged:) name:UIKeyboardDidChangeFrameNotification object:nil];
 
         CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
         
@@ -162,6 +163,7 @@
 		displayLink = nil;
 		animationTimer = nil;
 		blockDrawView = false;
+        limitKeyboardFps = false;
 		
         // A system version of 3.1 or greater is required to use CADisplayLink. The NSTimer
         // class is used as fallback when it isn't available.
@@ -180,12 +182,12 @@
 
 - (void) drawView:(id)sender
 {
-	if (blockDrawView)
-	{
-		// Yuri Coder, 2013/02/06. In case we are displaying ASSERT dialog we need to block rendering because RenderManager might be already locked here.
-		return;
-	}
-
+    if (blockDrawView)
+    {
+        // Yuri Coder, 2013/02/06. In case we are displaying ASSERT dialog we need to block rendering because RenderManager might be already locked here.
+        return;
+    }
+    
 	DAVA::RenderManager::Instance()->Lock();
     
     DAVA::uint64 renderManagerContextId = DAVA::RenderManager::Instance()->GetRenderContextId();
@@ -210,9 +212,19 @@
     
 	DAVA::RenderManager::Instance()->Unlock();
 	
-	if(currFPS != DAVA::RenderManager::Instance()->GetFPS())
+    DAVA::int32 targetFPS = 0;
+    if (limitKeyboardFps)
+    {
+        targetFPS = KEYBOARD_FPS_LIMIT;
+    }
+    else
+    {
+        targetFPS = DAVA::RenderManager::Instance()->GetFPS();
+    }
+    
+	if(currFPS != targetFPS)
 	{
-		currFPS = DAVA::RenderManager::Instance()->GetFPS();
+		currFPS = targetFPS;
 		float interval = 60.0f / currFPS;
 		if(interval < 1.0f)
 		{
@@ -408,15 +420,22 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
     blockDrawView = false;
 }
 
-- (void)keyboardWillChangeFrame:(NSNotification *)notification
+- (void)keyboardDidFrameChanged:(NSNotification *)notification
 {
-	blockDrawView = true;
+    CGRect keyboardEndFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    CGRect screenRect = [[UIScreen mainScreen] bounds];
+    if (CGRectIntersectsRect(keyboardEndFrame, screenRect))
+    {
+        // Keyboard did show or move
+        limitKeyboardFps = true;
+    }
+    else
+    {
+        // Keyboard did hide
+        limitKeyboardFps = false;
+    }
 }
 
-- (void)keyboardDidChangeFrame:(NSNotification *)notification
-{
-	blockDrawView = false;
-}
 
 @end
 
