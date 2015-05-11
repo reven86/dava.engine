@@ -29,6 +29,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "AsiaPerformanceTest.h"
 
 const String AsiaPerformanceTest::TEST_NAME = "AsiaPerformanceTest";
+const String AsiaPerformanceTest::CAMERA_PATH = "CameraPath";
+const String AsiaPerformanceTest::TANK_STUB = "TankStub";
+
+const String AsiaPerformanceTest::CENTURION = "Centurion.sc2";
+const String AsiaPerformanceTest::CONQUEROR = "Conqueror.sc2";
+const String AsiaPerformanceTest::VALENTINE = "Valentine_LL.sc2";
+const String AsiaPerformanceTest::T150 = "T150.sc2";
+const String AsiaPerformanceTest::T110E5 = "T110E5.sc2";
+
+const float32 AsiaPerformanceTest::TANK_ROTATION_ANGLE = 45.0f;
 
 AsiaPerformanceTest::AsiaPerformanceTest(uint32 frames, float32 delta, uint32 targetFrame)
     : BaseTest(TEST_NAME, frames, delta, targetFrame)
@@ -51,7 +61,7 @@ void AsiaPerformanceTest::LoadResources()
     Entity* rootEntity = GetScene()->GetRootNode(FilePath("~res:/3d/Maps/10_asia_as/10_asia_as.sc2"));
     GetScene()->AddNode(rootEntity);
 
-    Entity* cameraPathEntity = rootEntity->FindByName("CameraPath");
+    Entity* cameraPathEntity = rootEntity->FindByName(CAMERA_PATH.c_str());
     PathComponent* pathComponent = static_cast<PathComponent*>(cameraPathEntity->GetComponent(Component::PATH_COMPONENT));
 
     const Vector3& startPosition = pathComponent->GetStartWaypoint()->position;
@@ -60,21 +70,21 @@ void AsiaPerformanceTest::LoadResources()
     camera = new Camera();
     camera->SetPosition(startPosition);
     camera->SetTarget(destinationPoint);
-    camera->SetUp(Vector3(0.0f, 0.0f, 1.0f));
-    camera->SetLeft(Vector3(0.0f, 1.0f, 0.0f));
+    camera->SetUp(Vector3::UnitZ);
+    camera->SetLeft(Vector3::UnitY);
 
     GetScene()->SetCurrentCamera(camera);
 
-    waypointInterpolator = new WaypointsInterpolator(pathComponent->GetPoints(), 130.0f);
+    waypointInterpolator = new WaypointsInterpolator(pathComponent->GetPoints(),  GetTargetTestTime());
     tankAnimator = new TankAnimator();
 
     Vector<Entity*> tanks;
 
-    tanks.push_back(rootEntity->FindByName("Centurion.sc2"));
-    tanks.push_back(rootEntity->FindByName("Conqueror.sc2"));
-    tanks.push_back(rootEntity->FindByName("Valentine_LL.sc2"));
-    tanks.push_back(rootEntity->FindByName("T150.sc2"));
-    tanks.push_back(rootEntity->FindByName("T110E5.sc2"));
+    tanks.push_back(rootEntity->FindByName(CENTURION.c_str()));
+    tanks.push_back(rootEntity->FindByName(CONQUEROR.c_str()));
+    tanks.push_back(rootEntity->FindByName(VALENTINE.c_str()));
+    tanks.push_back(rootEntity->FindByName(T150.c_str()));
+    tanks.push_back(rootEntity->FindByName(T110E5.c_str()));
 
     for (uint32 i = 0; i < tanks.size(); i++)
     {
@@ -85,7 +95,7 @@ void AsiaPerformanceTest::LoadResources()
         skinnedTankData.insert(std::pair<FastName, std::pair<Entity*, Vector<uint16>>>(tank->GetName(), std::pair<Entity*, Vector<uint16>>(tank, jointsInfo)));
     }
     
-    rootEntity->FindNodesByNamePart("TankStub", tankStubs);
+    rootEntity->FindNodesByNamePart(TANK_STUB.c_str(), tankStubs);
 
     auto tankIt = skinnedTankData.cbegin();
     auto tankEnd = skinnedTankData.cend();
@@ -123,7 +133,7 @@ void AsiaPerformanceTest::PerformTestLogic(float32 timeElapsed)
 
     for (Entity* tank : tankStubs)
     {
-        Vector<uint16>& jointIndexes = skinnedTankData.at(tank->GetChild(0)->GetName()).second;
-        tankAnimator->Animate(tank, jointIndexes, DegToRad(time * 45));
+        const Vector<uint16>& jointIndexes = skinnedTankData.at(tank->GetChild(0)->GetName()).second;
+        tankAnimator->Animate(tank, jointIndexes, DegToRad(time * TANK_ROTATION_ANGLE));
     }
 }

@@ -29,6 +29,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Tests/Utils/TankAnimator.h"
 
 const FastName TankAnimator::TURRET = FastName("turret");
+const FastName TankAnimator::L_WHEELS = FastName("l_wheels");
+const FastName TankAnimator::R_WHEELS = FastName("r_wheels");
+const FastName TankAnimator::GUN_SHOT = FastName("GunShot");
 const FastName TankAnimator::SKINNED_TANK = FastName("SKINNED_TANK");
 
 TankAnimator::TankAnimator()
@@ -44,8 +47,8 @@ void TankAnimator::MakeSkinnedTank(Entity* sourceTank, Vector<uint16>& outJointI
     Entity* skinnedTank = new Entity(); 
     skinnedTank->SetName(SKINNED_TANK);
     
-    Entity* lWheelsRoot = sourceTank->FindByName("l_wheels");
-    Entity* rWheelsRoot = sourceTank->FindByName("r_wheels");
+    Entity* lWheelsRoot = sourceTank->FindByName(L_WHEELS);
+    Entity* rWheelsRoot = sourceTank->FindByName(R_WHEELS);
 
     Vector<Entity*> wheels;
 
@@ -134,12 +137,12 @@ void TankAnimator::SetReflectionRefractionVisibility(Entity *node, DAVA::uint32 
 void TankAnimator::Animate(Entity* tank, const Vector<uint16>& jointIndexes, float32 angle)
 {
     Entity* skinnedTank = tank->FindByName(SKINNED_TANK);
-    Entity* gunShotEffect = tank->FindByName("GunShot");
+    Entity* gunShotEffect = tank->FindByName(GUN_SHOT);
 
     SkeletonComponent* skeleton = (SkeletonComponent*)skinnedTank->GetComponent(Component::SKELETON_COMPONENT);
 
-    Quaternion wheelsRotation = Quaternion::MakeRotation(Vector3(1.0f, 0.0f, 0.0f), angle);
-    Quaternion turrentRotation = Quaternion::MakeRotation(Vector3(0.0f, 0.0f, 1.0f), angle);
+    Quaternion wheelsRotation = Quaternion::MakeRotation(Vector3::UnitX, angle);
+    Quaternion turrentRotation = Quaternion::MakeRotation(Vector3::UnitZ, angle);
 
     for (uint32 i = 0; i < jointIndexes.size(); i++)
     {

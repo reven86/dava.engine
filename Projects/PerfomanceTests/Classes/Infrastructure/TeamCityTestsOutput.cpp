@@ -80,7 +80,7 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
             + "\' details=\'" + errorFileLine + "\']\n";
     } else if (STATISTIC == lines[0])
     {
-        for (int i = 1; i < lines.size(); i++)
+        for (uint32 i = 1; i < lines.size(); i++)
         {
             output += lines[i];
         }

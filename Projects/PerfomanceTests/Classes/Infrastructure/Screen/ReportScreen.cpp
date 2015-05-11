@@ -68,7 +68,7 @@ void ReportScreen::CreateReportScreen()
     {
         if (test->IsFinished())
         {
-            List<BaseTest::FrameInfo> frameInfoList = test->GetFramesInfo();
+            Vector<BaseTest::FrameInfo> frameInfoList = test->GetFramesInfo();
             
             float32 minDelta = FLT_MAX;
             float32 maxDelta = FLT_MIN;

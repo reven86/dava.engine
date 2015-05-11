@@ -35,7 +35,7 @@ class TestFlowController : public BaseObject
 {
 public:
     
-    virtual void Init(Vector<BaseTest*>& registeredTests);
+    virtual void Init(const Vector<BaseTest*>& registeredTests);
     virtual void Finish() {};
     
     virtual void Update(float32 delta) {};

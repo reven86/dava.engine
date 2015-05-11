@@ -37,7 +37,7 @@ class TestChainFlowController: public TestFlowController
 public:
     TestChainFlowController(bool showUIReport);
     
-    void Init(Vector<BaseTest*>& testChain) override;
+    void Init(const Vector<BaseTest*>& testChain) override;
     
     void BeginFrame() override;
     void EndFrame() override;

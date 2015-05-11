@@ -48,6 +48,9 @@ private:
     static void SetReflectionRefractionVisibility(Entity *node, DAVA::uint32 visibility);
 
     const static FastName TURRET;
+    const static FastName L_WHEELS;
+    const static FastName R_WHEELS;
+    const static FastName GUN_SHOT;
     const static FastName SKINNED_TANK;
 };
 

@@ -37,7 +37,7 @@ class SingleTestFlowController : public TestFlowController
 public:
     SingleTestFlowController();
     
-    void Init(Vector<BaseTest*>& testChain) override;
+    void Init(const Vector<BaseTest*>& testChain) override;
     
     void BeginFrame() override;
     void EndFrame() override;

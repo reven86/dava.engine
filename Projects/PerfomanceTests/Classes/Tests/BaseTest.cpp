@@ -30,48 +30,42 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 const float32 BaseTest::FRAME_OFFSET = 5;
 
-BaseTest::BaseTest(const String& _testName, uint32 frames, float32 delta, uint32 _debugFrame)
+BaseTest::BaseTest(const String& _testName, uint32 _targetFramesCount, float32 _targetFrameDelta, uint32 _frameForDebug)
     :   frameNumber(0)
-    ,   fixedDelta(delta)
-    ,   targetFramesCount(frames)
+    ,   targetFrameDelta(_targetFrameDelta)
+    ,   targetFramesCount(_targetFramesCount)
     ,   targetTestTime(0)
     ,   testTime(0.0f)
     ,   startTime(0)
     ,   testName(_testName)
-    ,   debugFrame(_debugFrame)
+    ,   frameForDebug(_frameForDebug)
     ,   debuggable(false)
     ,   maxAllocatedMemory(0)
 
 {
 }
 
-BaseTest::BaseTest(const String& _testName, uint32 _time)
+BaseTest::BaseTest(const String& _testName, uint32 _targetTestTime)
     :   frameNumber(0)
-    ,   fixedDelta(0.0f)
+    ,   targetFrameDelta(0.0f)
     ,   targetFramesCount(0)
-    ,   targetTestTime(_time)
+    ,   targetTestTime(_targetTestTime)
     ,   testTime(0.0f)
     ,   startTime(0)
     ,   testName(_testName)
-    ,   debugFrame(0)
+    ,   frameForDebug(0)
     ,   debuggable(false)
-    , maxAllocatedMemory(0)
+    ,   maxAllocatedMemory(0)
 {
 }
 
 void BaseTest::LoadResources()
 {
     const Size2i& size = DAVA::VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
-    Rect viewport;
-
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.dx = size.dx;
-    viewport.dy = size.dy;
 
     scene = new Scene();
 
-    sceneView = new UI3DView(viewport, true);
+    sceneView = new UI3DView(Rect(0.0f, 0.0f, size.dx, size.dy), true);
     sceneView->SetScene(scene);
 
     AddControl(sceneView);
@@ -208,9 +202,9 @@ void BaseTest::SystemUpdate(float32 timeElapsed)
     
     if (frameNumber > FRAME_OFFSET && !(IsDebuggable() && frameForDebug))
     {
-        delta = fixedDelta > 0 ? fixedDelta : timeElapsed;
+        delta = targetFrameDelta > 0 ? targetFrameDelta : timeElapsed;
 
-        frames.push_back(FrameInfo(timeElapsed, frameNumber));
+        frames.push_back(FrameInfo(timeElapsed));
         testTime += timeElapsed;
 
         PerformTestLogic(delta);

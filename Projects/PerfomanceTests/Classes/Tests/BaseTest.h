@@ -41,14 +41,13 @@ public:
     struct FrameInfo
     {
         FrameInfo() {}
-        FrameInfo(float32 delta, uint32 frame) : delta(delta), frame(frame) {}
+        FrameInfo(float32 delta) : delta(delta) {}
 
         float32 delta;
-        uint32 frame;
     };
 
-    BaseTest(const String& testName, uint32 frames, float32 delta, uint32 debugFrame);
-    BaseTest(const String& testName, uint32 time);
+    BaseTest(const String& testName, uint32 targetFramesCount, float32 targetFrameDelta, uint32 frameForDebug);
+    BaseTest(const String& testName, uint32 targetTime);
     
     void OnStart() override;
     void OnFinish() override;
@@ -61,7 +60,7 @@ public:
     void EndFrame() override;
     void SystemUpdate(float32 timeElapsed) override;
     
-    const List<FrameInfo>& GetFramesInfo() const;
+    const Vector<FrameInfo>& GetFramesInfo() const;
     const String& GetName() const;
     
     float32 GetTestTime() const;
@@ -69,6 +68,8 @@ public:
     uint64 GetElapsedTime() const;
     uint32 GetFrameNumber() const; 
     uint32 GetDebugFrame() const;
+
+    float32 GetTargetTestTime() const;
     
     Scene* GetScene() const;
     
@@ -87,7 +88,7 @@ protected:
     
 private:
     
-    List<FrameInfo> frames;
+    Vector<FrameInfo> frames;
     String testName;
     
     uint32 frameNumber;
@@ -95,11 +96,11 @@ private:
     uint64 startTime;
     uint64 elapsedTime;
     
-    uint32 targetFramesCount;
-    float32 fixedDelta;
-    
     uint32 targetTestTime;
-    uint32 debugFrame;
+    uint32 targetFramesCount;
+    float32 targetFrameDelta;
+    
+    uint32 frameForDebug;
     
     Scene* scene;
     UI3DView* sceneView;
@@ -108,7 +109,7 @@ private:
     bool debuggable;
 };
 
-inline const List<BaseTest::FrameInfo>& BaseTest::GetFramesInfo() const
+inline const Vector<BaseTest::FrameInfo>& BaseTest::GetFramesInfo() const
 {
     return frames;
 }
@@ -149,7 +150,7 @@ inline float32 BaseTest::GetTestTime() const
 
 inline uint32 BaseTest::GetDebugFrame() const
 {
-    return debugFrame;
+    return frameForDebug;
 }
 
 inline uint32 BaseTest::GetFrameNumber() const
@@ -169,7 +170,17 @@ inline void BaseTest::SetDebuggable(bool value)
 
 inline float32 BaseTest::GetFixedDelta() const
 {
-    return fixedDelta;
+    return targetFrameDelta;
+}
+
+inline float32 BaseTest::GetTargetTestTime() const
+{
+    if (targetTestTime > 0)
+    {
+        return targetTestTime / 1000.0f;
+    }
+
+    return targetFramesCount * targetFrameDelta;
 }
 
 #endif

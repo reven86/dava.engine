@@ -48,6 +48,16 @@ protected:
 
 private:
     static const String TEST_NAME;
+    static const String CAMERA_PATH;
+    static const String TANK_STUB;
+
+    static const String CENTURION;
+    static const String CONQUEROR;
+    static const String VALENTINE;
+    static const String T150;
+    static const String T110E5;
+
+    static const float32 TANK_ROTATION_ANGLE;
 
     Map<FastName, std::pair<Entity*, Vector<uint16>>> skinnedTankData;
     List<Entity*> tankStubs;

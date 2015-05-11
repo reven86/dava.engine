@@ -39,7 +39,7 @@ TestChainFlowController::TestChainFlowController(bool _showUIReport)
 {
 }
 
-void TestChainFlowController::Init(Vector<BaseTest*>& _testChain)
+void TestChainFlowController::Init(const Vector<BaseTest*>& _testChain)
 {
     TestFlowController::Init(_testChain);
     

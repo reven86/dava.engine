@@ -47,6 +47,7 @@ protected:
 
 private:
     static const String TEST_NAME;
+    static const String CAMERA_PATH;
 
     WaypointsInterpolator* waypointInterpolator;
     Camera* camera;

@@ -36,7 +36,7 @@ SingleTestFlowController::SingleTestFlowController()
 {
 }
 
-void SingleTestFlowController::Init(Vector<BaseTest*>& _testChain)
+void SingleTestFlowController::Init(const Vector<BaseTest*>& _testChain)
 {
     TestFlowController::Init(_testChain);
     

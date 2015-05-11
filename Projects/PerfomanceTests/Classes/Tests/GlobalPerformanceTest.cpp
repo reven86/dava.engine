@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "GlobalPerformanceTest.h"
 
 const String GlobalPerformanceTest::TEST_NAME = "RudnikiPerformanceTest";
+const String GlobalPerformanceTest::CAMERA_PATH = "CameraPath";
 
 GlobalPerformanceTest::GlobalPerformanceTest(uint32 frames, float32 delta, uint32 targetFrame)
     :   BaseTest(TEST_NAME, frames, delta, targetFrame)
@@ -49,7 +50,7 @@ void GlobalPerformanceTest::LoadResources()
     Entity* rootEntity = GetScene()->GetRootNode(FilePath("~res:/3d/Maps/rudniki/rudniki.sc2"));
     GetScene()->AddNode(rootEntity);
 
-    Entity* cameraPathEntity = rootEntity->FindByName("CameraPath");
+    Entity* cameraPathEntity = rootEntity->FindByName(CAMERA_PATH.c_str());
     PathComponent* pathComponent = static_cast<PathComponent*>(cameraPathEntity->GetComponent(Component::PATH_COMPONENT));
 
     const Vector3& startPosition = pathComponent->GetStartWaypoint()->position;
@@ -58,12 +59,12 @@ void GlobalPerformanceTest::LoadResources()
     camera = new Camera();
     camera->SetPosition(startPosition);
     camera->SetTarget(destinationPoint);
-    camera->SetUp(Vector3(0.0f, 0.0f, 1.0f));
-    camera->SetLeft(Vector3(0.0f, 1.0f, 0.0f));
+    camera->SetUp(Vector3::UnitZ);
+    camera->SetLeft(Vector3::UnitX);
 
     GetScene()->SetCurrentCamera(camera);
 
-    waypointInterpolator = new WaypointsInterpolator(pathComponent->GetPoints(), 90.0f);
+    waypointInterpolator = new WaypointsInterpolator(pathComponent->GetPoints(), GetTargetTestTime());
 }
 
 void GlobalPerformanceTest::UnloadResources()
