@@ -148,16 +148,9 @@ public:
     SpinnerAdapter * GetAdater() const { return adapter; }
     void SetAdapter(SpinnerAdapter * adapter);
 
-    UIButton * GetButtonNext() const {return buttonNext.Get();}
+    UIButton * GetButtonNext() const     { return buttonNext.Get(); }
     UIButton * GetButtonPrevious() const { return buttonPrevious.Get(); }
-    
-    UIControl * GetContent() const { return content.Get(); }
-    
-    /*
-     * You have to call it if you change 'content' from code.
-     */
-    void ContentChanged();
-
+    UIControl * GetContent() const       { return content.Get(); }
 protected:
     
     struct Move
@@ -173,8 +166,9 @@ protected:
     
     //we need these 'content' controls to scroll items with slide
     RefPtr<UIControl> content;
-    UIControl *nextContent;
-    UIControl *contentViewport; //area that clips items when we scroll them
+    //internal controls, need only for animation
+    RefPtr<UIControl> nextContent;
+    RefPtr<UIControl> contentViewport; //area that clips items when we scroll them
     
     float32 dragAnchorX;
     
@@ -191,8 +185,8 @@ protected:
     
     virtual void OnSelectedChanged(bool isSelectedFirst, bool isSelectedLast, bool isSelectedChanged);
 
-    void InitButtons();
     void OnSelectWithSlide(bool isPrevious);
+    void SetupInternalControls();
 };
 
 }

@@ -88,7 +88,7 @@ void SpinnerAdapter::DisplaySelectedData(UISpinner * spinner)
     
 UISpinner::UISpinner(const Rect &rect)
     : UIControl(rect)
-    , adapter(NULL)
+    , adapter(nullptr)
     , buttonNext(new UIButton())
     , buttonPrevious(new UIButton())
     , content(new UIControl())
@@ -108,21 +108,16 @@ UISpinner::UISpinner(const Rect &rect)
     AddControl(buttonPrevious.Get());
     AddControl(content.Get());
 
-    contentViewport->AddControl(nextContent);
+    contentViewport->AddControl(nextContent.Get());
     contentViewport->SetInputEnabled(false);
     contentViewport->SetClipContents(true);
 }
 
 UISpinner::~UISpinner()
 {
-    if (adapter)
-        adapter->RemoveObserver(this);
-
-    SafeRelease(adapter);
-    SafeRelease(contentViewport);
-    SafeRelease(nextContent);
+    SetAdapter(nullptr);
 }
-    
+
 void UISpinner::Update(DAVA::float32 timeElapsed)
 {
     if (currentTouchX < X_UNDEFINED)
@@ -142,18 +137,6 @@ void UISpinner::Update(DAVA::float32 timeElapsed)
         }
         previousTouchX = currentTouchX;
     }
-}
-    
-void UISpinner::ContentChanged()
-{
-    content->SetInputEnabled(false);
-    contentViewport->SetRect(content->GetRect());
-    contentViewport->SetPivotPoint(content->GetPivotPoint());
-    nextContent->CopyDataFrom(content.Get());
-    nextContent->relativePosition = Vector2();
-    Vector2 newPivotPoint = nextContent->GetPivotPoint();
-    newPivotPoint.x = content->size.dx;
-    nextContent->SetPivotPoint(newPivotPoint);
 }
     
 void UISpinner::Input(UIEvent *currentInput)
@@ -179,7 +162,7 @@ void UISpinner::Input(UIEvent *currentInput)
             content->SetPivot(Vector2());
             
             contentViewport->AddControl(content.Get());
-            AddControl(contentViewport);
+            AddControl(contentViewport.Get());
             dragAnchorX = touchPos.x - content->relativePosition.x;
             currentTouchX = touchPos.x;
             previousTouchX = currentTouchX;
@@ -206,7 +189,7 @@ void UISpinner::Input(UIEvent *currentInput)
                         Vector2 newPivotPoint = nextContent->GetPivotPoint();
                         newPivotPoint.x = contentNewX > 0 ? content->size.dx : -content->size.dx;
                         nextContent->SetPivotPoint(newPivotPoint);
-                        adapter->FillScrollableContent(nextContent, contentNewX > 0 ? SpinnerAdapter::PREVIOUS : SpinnerAdapter::NEXT);
+                        adapter->FillScrollableContent(nextContent.Get(), contentNewX > 0 ? SpinnerAdapter::PREVIOUS : SpinnerAdapter::NEXT);
                     }
                 }
                 content->relativePosition.x = contentNewX;
@@ -256,7 +239,7 @@ void UISpinner::Input(UIEvent *currentInput)
     
 void UISpinner::OnSelectWithSlide(bool isPrevious)
 {
-    UIControl * temp = content.Get();
+    RefPtr<UIControl> temp = content;
     content = nextContent;
     nextContent = temp;
     
@@ -283,28 +266,24 @@ void UISpinner::OnScrollAnimationEnd(BaseObject * caller, void * param, void *ca
     DVASSERT(NULL != contentViewport->GetParent());
     content->SetPivotPoint(contentViewport->GetPivotPoint());
     content->relativePosition = contentViewport->relativePosition;
-    RemoveControl(contentViewport);
+    RemoveControl(contentViewport.Get());
     AddControl(content.Get());
-}
-    
-void UISpinner::InitButtons()
-{
-    ContentChanged();
-    buttonNext->SetDisabled(!adapter || adapter->IsSelectedLast());
-    buttonPrevious->SetDisabled(!adapter || adapter->IsSelectedFirst());
 }
 
 void UISpinner::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 {
     //release default buttons - they have to be loaded from yaml
     RemoveAllControls();
+    content = nullptr;
     UIControl::LoadFromYamlNode(node, loader);
 }
 
 void UISpinner::CopyDataFrom(UIControl *srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
-    InitButtons();
+    SetupInternalControls();
+    UISpinner *src = DynamicTypeCheck<UISpinner *>(srcControl);
+    SetAdapter(src->GetAdater());
 }
 
 UISpinner* UISpinner::Clone()
@@ -320,19 +299,11 @@ void UISpinner::AddControl(UIControl *control)
 
     if (control->GetName() == UISPINNER_BUTTON_NEXT_NAME && control != buttonNext.Get())
     {
-        buttonNext->RemoveEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UISpinner::OnNextPressed));
         buttonNext = DynamicTypeCheck<UIButton*>(control);
-        buttonNext->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UISpinner::OnNextPressed));
     }
     else if (control->GetName() == UISPINNER_BUTTON_PREVIOUS_NAME && control != buttonPrevious.Get())
     {
-        buttonPrevious->RemoveEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UISpinner::OnPreviousPressed));
         buttonPrevious = DynamicTypeCheck<UIButton*>(control);
-        buttonPrevious->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UISpinner::OnPreviousPressed));
-    }
-    else if (control->GetName() == UISPINNER_CONTENT_NAME && control != content.Get())
-    {
-        content = control;
     }
 }
 
@@ -346,17 +317,14 @@ void UISpinner::RemoveControl(UIControl *control)
     {
         buttonPrevious = nullptr;
     }
-    else if (control == content.Get())
-    {
-        content = nullptr;
-    }
-
+    
     UIControl::RemoveControl(control);
 }
 
 void UISpinner::LoadFromYamlNodeCompleted()
 {
-    InitButtons();
+    SetupInternalControls();
+    SetAdapter(nullptr);
 }
 
 YamlNode * UISpinner::SaveToYamlNode(UIYamlLoader * loader)
@@ -383,6 +351,9 @@ List<UIControl* > UISpinner::GetSubcontrols()
 
 void UISpinner::SetAdapter(SpinnerAdapter * anAdapter)
 {
+    buttonNext->RemoveEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UISpinner::OnNextPressed));
+    buttonPrevious->RemoveEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UISpinner::OnPreviousPressed));
+
     if (adapter)
     {
         adapter->RemoveObserver(this);
@@ -392,16 +363,15 @@ void UISpinner::SetAdapter(SpinnerAdapter * anAdapter)
     adapter = SafeRetain(anAdapter);
     if (adapter)
     {
-        buttonNext->SetDisabled(adapter->IsSelectedLast());
-        buttonPrevious->SetDisabled(adapter->IsSelectedFirst());
         adapter->DisplaySelectedData(this);
         adapter->AddObserver(this);
+
+        buttonNext->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UISpinner::OnNextPressed));
+        buttonPrevious->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UISpinner::OnPreviousPressed));
     }
-    else
-    {
-        buttonNext->SetDisabled(true);
-        buttonPrevious->SetDisabled(true);
-    }
+
+    buttonNext->SetDisabled(!adapter || adapter->IsSelectedLast());
+    buttonPrevious->SetDisabled(!adapter || adapter->IsSelectedFirst());
 }
 
 void UISpinner::OnNextPressed(DAVA::BaseObject * caller, void * param, void *callerData)
@@ -433,6 +403,19 @@ void UISpinner::OnSelectedChanged(bool isSelectedFirst, bool isSelectedLast, boo
         adapter->DisplaySelectedData(this);
         PerformEvent(UIControl::EVENT_VALUE_CHANGED);
     }
+}
+
+void UISpinner::SetupInternalControls()
+{
+    content = FindByPath(UISPINNER_CONTENT_NAME);
+    content->SetInputEnabled(false);
+    contentViewport->SetRect(content->GetRect());
+    contentViewport->SetPivotPoint(content->GetPivotPoint());
+    nextContent->CopyDataFrom(content.Get());
+    nextContent->relativePosition = Vector2();
+    Vector2 newPivotPoint = nextContent->GetPivotPoint();
+    newPivotPoint.x = content->size.dx;
+    nextContent->SetPivotPoint(newPivotPoint);
 }
 
 }
