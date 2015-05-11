@@ -97,6 +97,18 @@ void Uint16ToLowEndian(const uint16 u16, uint8* p)
     p[1] = u16 >> 8;
 }
 
+DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(const FilePath& filepath, TgaInfo& tgaInfo) const
+{
+    ScopedPtr<File> fileRead(File::Create(filepath, File::READ | File::OPEN));
+    if (!fileRead)
+    {
+        return ERROR_FILE_NOTFOUND;
+    }
+
+    fileRead->Seek(0, File::SEEK_FROM_START);
+    return ReadTgaHeader(fileRead, tgaInfo);
+}
+
 DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File *infile, TgaInfo& tgaInfo) const
 {
     std::array<uint8, 18> fields;

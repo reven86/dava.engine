@@ -37,6 +37,7 @@
 #include "Render/Image/LibPVRHelper.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/Image.h"
+#include "Render/Image/LibTgaHelper.h"
 
 #include "Base/GlobalEnum.h"
 
@@ -236,6 +237,39 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const
 #else //defined (__DAVAENGINE_WIN32__)
 	args.push_back(String("\"") + outputFile.GetAbsolutePathname() + String("\""));
 #endif //MAC-WIN
+
+    // flip for some TGA files
+    // PVR converter seems to have a bug:
+    // if source file is a top-left TGA, then the resulting file will be flipped vertically.
+    // to fix this, -flip param will be passed for such files
+    if (descriptor.dataSettings.sourceFileFormat == IMAGE_FORMAT_TGA)
+    {
+        LibTgaHelper tgaHelper;
+        LibTgaHelper::TgaInfo tgaInfo;
+        auto readRes = tgaHelper.ReadTgaHeader(inputName, tgaInfo);
+        if (readRes == DAVA::SUCCESS)
+        {
+            switch (tgaInfo.origin_corner)
+            {
+            case LibTgaHelper::TgaInfo::BOTTOM_LEFT:
+                break;
+            case LibTgaHelper::TgaInfo::BOTTOM_RIGHT:
+                args.push_back("-flip x");
+                break;
+            case LibTgaHelper::TgaInfo::TOP_LEFT:
+                args.push_back("-flip y");
+                break;
+            case LibTgaHelper::TgaInfo::TOP_RIGHT:
+                args.push_back("-flip x");
+                args.push_back("-flip y");
+                break;
+            }
+        }
+        else
+        {
+            Logger::Error("Failed to read %s: error %d", inputName, readRes);
+        }
+    }
 
 	//quality
 	args.push_back("-q");

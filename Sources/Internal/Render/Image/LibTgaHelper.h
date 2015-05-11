@@ -56,17 +56,16 @@ public:
     
     ImageInfo GetImageInfo(File *infile) const override;
 
-private:
     struct TgaInfo
     {
-        enum IMAGE_TYPE : uint8 
+        enum IMAGE_TYPE : uint8
         {
             TRUECOLOR = 2,
             GRAYSCALE = 3,
             COMPRESSED_TRUECOLOR = 10,
             COMPRESSED_GRAYSCALE = 11
         };
-        enum ORIGIN_CORNER : uint8 
+        enum ORIGIN_CORNER : uint8
         {
             BOTTOM_LEFT = 0,
             BOTTOM_RIGHT = 1,
@@ -83,7 +82,12 @@ private:
         PixelFormat pixelFormat;
     };
 
+    eErrorCode ReadTgaHeader(const FilePath& filepath, TgaInfo& tgaHeader) const;
+
+private:
+
     eErrorCode ReadTgaHeader(File *infile, TgaInfo& tgaHeader) const;
+
     eErrorCode ReadCompressedTga(File *infile, const TgaInfo& tgaHeader, ScopedPtr<Image>& image) const;
     eErrorCode ReadUncompressedTga(File *infile, const TgaInfo& tgaHeader, ScopedPtr<Image>& image) const;
     PixelFormat DefinePixelFormat(const TgaInfo& tgaHeader) const;
