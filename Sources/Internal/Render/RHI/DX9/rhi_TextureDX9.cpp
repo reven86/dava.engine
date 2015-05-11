@@ -59,7 +59,7 @@ RHI_IMPL_POOL(TextureDX9_t,RESOURCE_TEXTURE);
 //------------------------------------------------------------------------------
 
 static void
-_SwapRB( void* data, uint32 size )
+_SwapRB8( void* data, uint32 size )
 {
     for( uint8* d=(uint8*)data,*d_end=(uint8*)data+size; d!=d_end; d+=4 )
     {
@@ -67,6 +67,22 @@ _SwapRB( void* data, uint32 size )
 
         d[0] = d[2];
         d[2] = t;
+    }
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+_SwapRB4( void* data, uint32 size )
+{
+    for( uint8* d=(uint8*)data,*d_end=(uint8*)data+size; d!=d_end; d+=2 )
+    {
+        uint8   t0 = d[0];
+        uint8   t1 = d[1];
+
+        d[0] = (t0&0x00FF) | (t1&0x00FF);
+        d[1] = (t1&0x00FF) | (t0&0x00FF);
     }
 }
 
@@ -264,7 +280,13 @@ dx9_Texture_Map( Handle tex, unsigned level, TextureFace face )
     {
         Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
         
-        _SwapRB( self->mappedData, ext.dx*ext.dy*sizeof(uint32) );
+        _SwapRB8( self->mappedData, ext.dx*ext.dy*sizeof(uint32) );
+    }
+    else if( self->format == TEXTURE_FORMAT_A4R4G4B4 )
+    {
+        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
+        
+        _SwapRB4( self->mappedData, ext.dx*ext.dy*sizeof(uint16) );
     }
 
     return mem;
@@ -284,7 +306,13 @@ dx9_Texture_Unmap( Handle tex )
     {
         Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
         
-        _SwapRB( self->mappedData, ext.dx*ext.dy*sizeof(uint32) );
+        _SwapRB8( self->mappedData, ext.dx*ext.dy*sizeof(uint32) );
+    }
+    else if( self->format == TEXTURE_FORMAT_A4R4G4B4 )
+    {
+        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
+        
+        _SwapRB4( self->mappedData, ext.dx*ext.dy*sizeof(uint16) );
     }
 
     if( self->cubetex9 )
