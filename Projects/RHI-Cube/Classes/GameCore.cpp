@@ -268,9 +268,9 @@ GameCore::SetupCube()
     sdesc.count = 1;
     sdesc.sampler[0].addrU      = rhi::TEXADDR_WRAP;
     sdesc.sampler[0].addrV      = rhi::TEXADDR_WRAP;
-    sdesc.sampler[0].minFilter  = rhi::TEXFILTER_NEAREST;
-    sdesc.sampler[0].magFilter  = rhi::TEXFILTER_NEAREST;
-    sdesc.sampler[0].mipFilter  = rhi::TEXFILTER_NEAREST;
+    sdesc.sampler[0].minFilter  = rhi::TEXFILTER_LINEAR;
+    sdesc.sampler[0].magFilter  = rhi::TEXFILTER_LINEAR;
+    sdesc.sampler[0].mipFilter  = rhi::TEXMIPFILTER_NONE;
     
     cube.samplerState = rhi::HSamplerState(rhi::SamplerState::Create( sdesc ));
 

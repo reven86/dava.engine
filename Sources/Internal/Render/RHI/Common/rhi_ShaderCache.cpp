@@ -186,10 +186,10 @@ static const char* _ShaderHeader_Metal =
 "float3 mul( float3 v, float3x3 m );\n"
 "float3 mul( float3 v, float3x3 m ) { return m*v; }\n"
 
-"float  lerp( float a, float b, float t ) { return mix( a, b, t ); }\n"
-"float2 lerp( float2 a, float2 b, float t ) { return mix( a, b, t ); }\n"
-"float3 lerp( float3 a, float3 b, float t ) { return mix( a, b, t ); }\n"
-"float4 lerp( float4 a, float4 b, float t ) { return mix( a, b, t ); }\n"
+"inline float  lerp( float a, float b, float t ) { return mix( a, b, t ); }\n"
+"inline float2 lerp( float2 a, float2 b, float t ) { return mix( a, b, t ); }\n"
+"inline float3 lerp( float3 a, float3 b, float t ) { return mix( a, b, t ); }\n"
+"inline float4 lerp( float4 a, float4 b, float t ) { return mix( a, b, t ); }\n"
 ;
     
 static const char* _ShaderDefine_Metal =
@@ -359,12 +359,7 @@ static const char* _ShaderHeader_GLES2 =
 "vec4 mul( mat4 m, vec4 v ) { return v*m; }\n"
 "vec3 mul( vec3 v, mat3 m ) { return m*v; }\n"
 
-"float4 tex2D( sampler2D s, vec2 t ) { return texture2D(s,t); }\n"
-
-"float  lerp( float a, float b, float t ) { return mix( a, b, t ); }\n"
-"float2 lerp( float2 a, float2 b, float t ) { return mix( a, b, t ); }\n"
-"float3 lerp( float3 a, float3 b, float t ) { return mix( a, b, t ); }\n"
-"float4 lerp( float4 a, float4 b, float t ) { return mix( a, b, t ); }\n"
+"#define lerp(a,b,t) mix( (a), (b), (t) )\n"
 ;
 
 static const char* _ShaderDefine_GLES2 =
