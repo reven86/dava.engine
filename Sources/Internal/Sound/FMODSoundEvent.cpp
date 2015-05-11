@@ -84,7 +84,7 @@ bool FMODSoundEvent::Trigger()
         FMOD_VERIFY(fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo));
         if(fmodEventInfo)
         {
-            Logger::Info("[FMODSoundEvent::%s] pos(%f, %f, %f), dir(%f, %f, %f), isDirectional = %d", __FUNCTION__, isDirectional, position.x, position.y, position.z, direction.x, direction.y, direction.z, isDirectional);
+            Logger::Info("[FMODSoundEvent::%s] %s, pos(%f, %f, %f), dir(%f, %f, %f), isDirectional = %d", __FUNCTION__, eventName.c_str(), position.x, position.y, position.z, direction.x, direction.y, direction.z, isDirectional);
             
             if(isDirectional)
             {
