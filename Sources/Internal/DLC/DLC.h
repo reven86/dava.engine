@@ -163,12 +163,13 @@ protected:
 
         String remotePatchUrl;
         uint64 remotePatchSize;
+        uint64 remotePatchReadySize;
         uint32 remotePatchDownloadId;
         FilePath remotePatchStorePath;
 
         uint32 totalPatchCount;
         uint32 appliedPatchCount;
-        bool patchInProgress;
+        volatile bool patchInProgress;
         PatchFileReader::PatchError patchingError;
 
         FilePath stateInfoStorePath;

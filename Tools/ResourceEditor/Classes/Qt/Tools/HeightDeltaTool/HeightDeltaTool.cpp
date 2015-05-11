@@ -1,15 +1,16 @@
 #include "HeightDeltaTool.h"
 
-#include <QFileDialog>
 #include <QFileInfo>
 #include <QImageReader>
 #include <QMessageBox>
 
 #include "ui_HeightDeltaTool.h"
 
-#include "Classes/Qt/Main/mainwindow.h"
+#include "Qt/Main/mainwindow.h"
 #include "Project/ProjectManager.h"
 #include "Commands2/PaintHeightDeltaAction.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
 
 
 HeightDeltaTool::HeightDeltaTool( QWidget* p )
@@ -49,7 +50,7 @@ void HeightDeltaTool::SetOutputTemplate( QString const& prefix, QString const& s
 
 void HeightDeltaTool::OnBrowse()
 {
-    const QString path = QFileDialog::getOpenFileName( this, QString(), defaultDir, "Png images (*.png)" );
+    const QString path = FileDialog::getOpenFileName( this, QString(), defaultDir, "Png images (*.png)" );
     
     if ( path != NULL )
     {
