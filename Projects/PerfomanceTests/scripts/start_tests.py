@@ -118,7 +118,7 @@ while continue_process_stdout:
         line = sub_process.stdout.readline()
         if line != '':
 
-            line = line.replace("(lldb)", "")
+            line = line.replace("(lldb) ", "")
 
             # open Frame delta file for writing
             teamcity_line_index = line.find("##teamcity[message text='device")
