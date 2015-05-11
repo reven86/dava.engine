@@ -254,20 +254,24 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const
             case LibTgaHelper::TgaInfo::BOTTOM_LEFT:
                 break;
             case LibTgaHelper::TgaInfo::BOTTOM_RIGHT:
-                args.push_back("-flip x");
+                args.push_back("-flip");
+                args.push_back("x");
                 break;
             case LibTgaHelper::TgaInfo::TOP_LEFT:
-                args.push_back("-flip y");
+                args.push_back("-flip");
+                args.push_back("y");
                 break;
             case LibTgaHelper::TgaInfo::TOP_RIGHT:
-                args.push_back("-flip x");
-                args.push_back("-flip y");
+                args.push_back("-flip");
+                args.push_back("x");
+                args.push_back("-flip");
+                args.push_back("y");
                 break;
             }
         }
         else
         {
-            Logger::Error("Failed to read %s: error %d", inputName, readRes);
+            Logger::Error("Failed to read %s: error %d", inputName.c_str(), readRes);
         }
     }
 
