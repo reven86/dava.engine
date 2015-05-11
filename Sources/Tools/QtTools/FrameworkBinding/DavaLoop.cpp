@@ -11,6 +11,7 @@ LoopItem::LoopItem( QObject* parent )
     : QObject( parent )
     , maxFps( 0 )
     , fps( 0 )
+    , paused(false)
 {
 }
 
@@ -36,7 +37,27 @@ int LoopItem::Fps() const
 
 void LoopItem::ProcessFrame()
 {
+    if(!paused)
+    {
+        ProcessFrameInternal();
+    }
 }
+
+void LoopItem::ProcessFrameInternal()
+{
+    
+}
+
+void LoopItem::SetPaused(bool _paused)
+{
+    paused = _paused;
+}
+
+bool LoopItem::GetPaused() const
+{
+    return paused;
+}
+
 
 
 DavaLoop::DavaLoop()

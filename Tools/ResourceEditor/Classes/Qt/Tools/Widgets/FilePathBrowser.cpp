@@ -4,10 +4,10 @@
 #include <QAbstractButton>
 #include <QDebug>
 #include <QBoxLayout>
-#include <QFileDialog>
 #include <QFileInfo>
 #include <QKeyEvent>
 
+#include "QtTools/FileDialog/FileDialog.h"
 
 namespace
 {
@@ -96,7 +96,7 @@ QString FilePathBrowser::DefaultBrowsePath()
 
 void FilePathBrowser::OnBrowse()
 {
-    const QString newPath = QFileDialog::getOpenFileName( this, hintText, DefaultBrowsePath(), filter, NULL, 0 );
+    const QString newPath = FileDialog::getOpenFileName( this, hintText, DefaultBrowsePath(), filter, NULL, 0 );
     TryToAcceptPath(newPath);
 }
 

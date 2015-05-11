@@ -35,12 +35,14 @@
 #include "Validators/DistanceFontValidator.h"
 
 #include <QMessageBox>
-#include <QFileDialog>
 #include <QStandardItemModel>
 #include <QModelIndexList>
 #include <QStandardItemModel>
 #include <QStringList>
 #include <QTableWidgetItem>
+
+#include "QtTools/FileDialog/FileDialog.h"
+
 
 using namespace DAVA;
 
@@ -260,7 +262,7 @@ Font* FontManagerDialog::GetSelectedFont(QItemSelectionModel *selectionModel)
     {
 		// Get sprites directory to open
 		QString currentFontSpriteDir = ResourcesManageHelper::GetDefaultFontSpritesPath(currentFontPath);
-    	QString fontSpritePath = QFileDialog::getOpenFileName(this, tr( "Select font sprite" ),
+    	QString fontSpritePath = FileDialog::getOpenFileName(this, tr( "Select font sprite" ),
 																	currentFontSpriteDir,
 																	tr( "Sprites (*.txt)" ));
              

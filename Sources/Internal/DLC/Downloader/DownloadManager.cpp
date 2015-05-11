@@ -291,8 +291,6 @@ void DownloadManager::ThreadFunction(BaseObject *caller, void *callerData, void 
         if (!isThreadStarted)
             break;
     }
-    currentTask = NULL;
-    isThreadStarted = false;
 }
 
 void DownloadManager::ClearAll()

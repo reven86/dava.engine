@@ -201,6 +201,7 @@ void QualitySwitcher::Show()
     QualitySwitcher *sw = new QualitySwitcher(QtMainWindow::Instance());
     sw->setAttribute(Qt::WA_DeleteOnClose, true);
     connect(sw, &QualitySwitcher::QualityChanged, MaterialEditor::Instance(), &MaterialEditor::OnQualityChanged);
+    connect(sw, &QualitySwitcher::QualityChanged, QtMainWindow::Instance()->GetUI()->sceneInfo, &SceneInfo::OnQualityChanged);
     sw->show();
 }
 
@@ -208,6 +209,7 @@ void QualitySwitcher::ShowModal()
 {
     QualitySwitcher sw(QtMainWindow::Instance());
     connect(&sw, &QualitySwitcher::QualityChanged, MaterialEditor::Instance(), &MaterialEditor::OnQualityChanged);
+    connect(&sw, &QualitySwitcher::QualityChanged, QtMainWindow::Instance()->GetUI()->sceneInfo, &SceneInfo::OnQualityChanged);
     sw.exec();
 }
 

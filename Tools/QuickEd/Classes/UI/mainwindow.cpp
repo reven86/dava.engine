@@ -38,6 +38,8 @@
 #include "UI/FileSystemView/FileSystemDockWidget.h"
 #include "Utils/QtDavaConvertion.h"
 
+#include "QtTools/FileDialog/FileDialog.h"
+
 namespace
 {
     const QString APP_NAME = "QuickEd";
@@ -395,7 +397,7 @@ void MainWindow::OnProjectOpened(Result result, QString projectPath)
 
 void MainWindow::OnOpenProject()
 {
-    QString projectPath = QFileDialog::getOpenFileName(this, tr("Select a project file"),
+    QString projectPath = FileDialog::getOpenFileName(this, tr("Select a project file"),
                                                         ResourcesManageHelper::GetDefaultDirectory(),
                                                         tr( "Project (*.uieditor)"));
     if (projectPath.isEmpty())
