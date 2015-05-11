@@ -34,9 +34,14 @@
 
 #include "Utils/StringFormat.h"
 
+#if defined (__DAVAENGINE_WIN32__)
+#include <io.h>
+#elif defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_IPHONE__)
+#include <unistd.h>
+#endif
+
 #include <sys/stat.h>
 #include <time.h>
-
 
 namespace DAVA 
 {
@@ -231,25 +236,31 @@ uint32 File::ReadString(String & destinationString)
 
 uint32 File::ReadLine(void * pointerToData, uint32 bufferSize)
 {
-    uint8 *inPtr = (uint8*)pointerToData;
-    while (0 < bufferSize && !IsEof())
-    {
-        uint8 nextChar;
-        if (GetNextChar(&nextChar))
-        {
-            *inPtr = nextChar;
-            inPtr++;
-            bufferSize--;
-            DVASSERT_MSG(0 < bufferSize, "Small buffer!!!");
-        }
-        else
-        {
-            break;
-        }
-    }
-    *inPtr = 0;
+    uint32 ret = 0;
 
-    return (uint32)(inPtr - (uint8*)pointerToData);
+    if(bufferSize > 0)
+    {
+        uint8 *inPtr = (uint8 *) pointerToData;
+        while(!IsEof() && bufferSize > 1)
+        {
+            uint8 nextChar;
+            if(GetNextChar(&nextChar))
+            {
+                *inPtr = nextChar;
+                inPtr++;
+                bufferSize--;
+            }
+            else
+            {
+                break;
+            }
+        }
+        *inPtr = 0;
+        inPtr++;
+        ret = (uint32)(inPtr - (uint8*)pointerToData);
+    }
+
+    return ret;
 }
 
 String File::ReadLine()
@@ -343,6 +354,18 @@ bool File::Seek(int32 position, uint32 seekType)
 bool File::IsEof()
 {
 	return (feof(file) != 0);
+}
+
+bool File::Truncate(int32 size)
+{
+#if defined (__DAVAENGINE_WIN32__)
+    return (0 == _chsize(_fileno(file), size));
+#elif defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+    return (0 == ftruncate(fileno(file), size));
+#else
+#error No implementation for current platform
+    return false;
+#endif
 }
 
 bool File::WriteString(const String & strtowrite, bool shouldNullBeWritten)
