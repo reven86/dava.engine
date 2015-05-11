@@ -128,7 +128,9 @@ int32 TCPSocketTemplate<T>::RemoteEndpoint(Endpoint& endpoint)
 {
     DVASSERT(true == isOpen && false == isClosing);
     int size = static_cast<int>(endpoint.Size());
-    return uv_tcp_getpeername(&uvhandle, endpoint.CastToSockaddr(), &size);
+    //UNCOMMENT
+    //return uv_tcp_getpeername(&uvhandle, endpoint.CastToSockaddr(), &size);
+    return 0;
 }
 
 template <typename T>
@@ -153,7 +155,8 @@ template <typename T>
 int32 TCPSocketTemplate<T>::DoOpen()
 {
     DVASSERT(false == isOpen && false == isClosing);
-    int32 error = uv_tcp_init(loop->Handle(), &uvhandle);
+    //UNCOMMENT
+    int32 error = 0;//uv_tcp_init(loop->Handle(), &uvhandle);
     if (0 == error)
     {
         isOpen = true;
@@ -172,8 +175,9 @@ int32 TCPSocketTemplate<T>::DoConnect(const Endpoint& endpoint)
     int32 error = 0;
     if (false == isOpen)
         error = DoOpen();   // Automatically open on first call
-    if (0 == error)
-        error = uv_tcp_connect(&uvconnect, &uvhandle, endpoint.CastToSockaddr(), &HandleConnectThunk);
+    //UNCOMMENT
+    //if (0 == error)
+      //  error = uv_tcp_connect(&uvconnect, &uvhandle, endpoint.CastToSockaddr(), &HandleConnectThunk);
     return error;
 }
 
@@ -181,7 +185,9 @@ template <typename T>
 int32 TCPSocketTemplate<T>::DoStartRead()
 {
     DVASSERT(true == isOpen && false == isClosing);
-    return uv_read_start(reinterpret_cast<uv_stream_t*>(&uvhandle), &HandleAllocThunk, &HandleReadThunk);
+    //UNCOMMENT
+    //return uv_read_start(reinterpret_cast<uv_stream_t*>(&uvhandle), &HandleAllocThunk, &HandleReadThunk);
+    return 0;
 }
 
 template <typename T>
@@ -198,14 +204,18 @@ int32 TCPSocketTemplate<T>::DoWrite(const Buffer* buffers, size_t bufferCount)
         writeBuffers[i] = buffers[i];
     }
 
-    return uv_write(&uvwrite, reinterpret_cast<uv_stream_t*>(&uvhandle), writeBuffers, static_cast<unsigned int>(writeBufferCount), &HandleWriteThunk);
+    //UNCOMMENT
+    //return uv_write(&uvwrite, reinterpret_cast<uv_stream_t*>(&uvhandle), writeBuffers, static_cast<unsigned int>(writeBufferCount), &HandleWriteThunk);
+    return 0;
 }
 
 template <typename T>
 int32 TCPSocketTemplate<T>::DoShutdown()
 {
     DVASSERT(true == isOpen && false == isClosing);
-    return uv_shutdown(&uvshutdown, reinterpret_cast<uv_stream_t*>(&uvhandle), &HandleShutdownThunk);
+    //UNCOMMENT
+    //return uv_shutdown(&uvshutdown, reinterpret_cast<uv_stream_t*>(&uvhandle), &HandleShutdownThunk);
+    return 0;
 }
 
 template <typename T>
@@ -214,7 +224,8 @@ void TCPSocketTemplate<T>::DoClose()
     DVASSERT(true == isOpen && false == isClosing);
     isOpen = false;
     isClosing = true;
-    uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
+    //UNCOMMENT
+    //uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
 }
 
 ///   Thunks   ///////////////////////////////////////////////////////////

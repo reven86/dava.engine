@@ -42,7 +42,8 @@ IOLoop::IOLoop(bool useDefaultIOLoop) : uvloop()
                                       , quitFlag(false)
                                       , uvasync()
 {
-    if (useDefaultIOLoop)
+    //UNCOMMENT
+    /*if (useDefaultIOLoop)
     {
         actualLoop = uv_default_loop();
     }
@@ -54,13 +55,14 @@ IOLoop::IOLoop(bool useDefaultIOLoop) : uvloop()
     actualLoop->data = this;
 
     DVVERIFY(0 == uv_async_init(actualLoop, &uvasync, &HandleAsyncThunk));
-    uvasync.data = this;
+    uvasync.data = this;*/
 }
 
 IOLoop::~IOLoop()
 {
     // We can close default loop too
-    DVVERIFY(0 == uv_loop_close(actualLoop));
+    //UNCOMMENT
+    //DVVERIFY(0 == uv_loop_close(actualLoop));
 }
 
 int32 IOLoop::Run(eRunMode runMode)
@@ -71,7 +73,9 @@ int32 IOLoop::Run(eRunMode runMode)
         UV_RUN_NOWAIT
     };
     DVASSERT(RUN_DEFAULT == runMode || RUN_ONCE == runMode || RUN_NOWAIT == runMode);
-    return uv_run(actualLoop, modes[runMode]);
+    //UNCOMMENT
+    //return uv_run(actualLoop, modes[runMode]);
+    return 0;
 }
 
 void IOLoop::Post(UserHandlerType handler)
@@ -81,7 +85,8 @@ void IOLoop::Post(UserHandlerType handler)
         // TODO: maybe do not insert duplicates
         queuedHandlers.push_back(handler);
     }
-    uv_async_send(&uvasync);
+    //UNCOMMENT
+    //uv_async_send(&uvasync);
 }
 
 void IOLoop::PostQuit()
@@ -89,7 +94,8 @@ void IOLoop::PostQuit()
     if (false == quitFlag)
     {
         quitFlag = true;
-        uv_async_send(&uvasync);
+        //UNCOMMENT
+        //uv_async_send(&uvasync);
     }
 }
 
@@ -111,7 +117,8 @@ void IOLoop::HandleAsync()
 
     if (true == quitFlag)
     {
-        uv_close(reinterpret_cast<uv_handle_t*>(&uvasync), NULL);
+        //UNCOMMENT
+        //uv_close(reinterpret_cast<uv_handle_t*>(&uvasync), NULL);
     }
 }
 

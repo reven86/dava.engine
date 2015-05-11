@@ -93,7 +93,8 @@ template<typename T>
 void DeadlineTimerTemplate<T>::CancelWait()
 {
     DVASSERT(true == isOpen && false == isClosing);
-    uv_timer_stop(&uvhandle);
+    //UNCOMMENT
+    //uv_timer_stop(&uvhandle);
 }
 
 template<typename T>
@@ -112,7 +113,8 @@ template<typename T>
 int32 DeadlineTimerTemplate<T>::DoOpen()
 {
     DVASSERT(false == isOpen && false == isClosing);
-    int32 error = uv_timer_init(loop->Handle(), &uvhandle);
+    //UNCOMMENT
+    int32 error = 0;//uv_timer_init(loop->Handle(), &uvhandle);
     if (0 == error)
     {
         isOpen = true;
@@ -128,8 +130,9 @@ int32 DeadlineTimerTemplate<T>::DoWait(uint32 timeout)
     int32 error = 0;
     if (false == isOpen)
         error = DoOpen();   // Automatically open on first call
-    if (0 == error)
-        error = uv_timer_start(&uvhandle, &HandleTimerThunk, timeout, 0);
+    //UNCOMMENT
+    //if (0 == error)
+      //  error = uv_timer_start(&uvhandle, &HandleTimerThunk, timeout, 0);
     return error;
 }
 
@@ -139,7 +142,7 @@ void DeadlineTimerTemplate<T>::DoClose()
     DVASSERT(true == isOpen && false == isClosing);
     isOpen = false;
     isClosing = true;
-    uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
+    //uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
 }
 
 ///   Thunks   ///////////////////////////////////////////////////////////

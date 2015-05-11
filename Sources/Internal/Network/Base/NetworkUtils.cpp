@@ -36,7 +36,9 @@ namespace Net
 
 const char8* ErrorToString(int32 error)
 {
-    return uv_strerror(error);
+    //UNCOMMENT
+    //return uv_strerror(error);
+    return "";
 }
 
 }   // namespace Net

@@ -43,12 +43,16 @@ typedef uv_buf_t Buffer;
 template<typename T>
 Buffer CreateBuffer(T* buffer, std::size_t count = 1)
 {
-    return uv_buf_init(static_cast<char8*>(static_cast<void*>(buffer)), static_cast<uint32>(sizeof(T) * count));
+    //UNCOMMENT
+    //return uv_buf_init(static_cast<char8*>(static_cast<void*>(buffer)), static_cast<uint32>(sizeof(T) * count));
+    return Buffer();
 }
 
 inline Buffer CreateBuffer(void* rawBuffer, std::size_t size)
 {
-    return uv_buf_init(static_cast<char8*>(rawBuffer), static_cast<uint32>(size));
+    //UNCOMMENT
+    //return uv_buf_init(static_cast<char8*>(rawBuffer), static_cast<uint32>(size));
+    return Buffer();
 }
 
 /*
@@ -57,12 +61,16 @@ inline Buffer CreateBuffer(void* rawBuffer, std::size_t size)
 template<typename T>
 Buffer CreateBuffer(const T* buffer, std::size_t count = 1)
 {
-    return uv_buf_init(static_cast<char8*>(static_cast<void*>(const_cast<T*>(buffer))), static_cast<uint32>(sizeof(T) * count));
+    //UNCOMMENT
+    //return uv_buf_init(static_cast<char8*>(static_cast<void*>(const_cast<T*>(buffer))), static_cast<uint32>(sizeof(T) * count));
+    return Buffer();
 }
 
 inline Buffer CreateBuffer(const void* rawBuffer, std::size_t size)
 {
-    return uv_buf_init(static_cast<char8*>(const_cast<void*>(rawBuffer)), static_cast<uint32>(size));
+    //UNCOMMENT
+    //return uv_buf_init(static_cast<char8*>(const_cast<void*>(rawBuffer)), static_cast<uint32>(size));
+    return Buffer();
 }
 
 }   // namespace Net

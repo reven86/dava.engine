@@ -114,21 +114,27 @@ int32 UDPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 {
     DVASSERT(true == isOpen && false == isClosing);
     int size = static_cast<int> (endpoint.Size());
-    return uv_udp_getsockname(&uvhandle, endpoint.CastToSockaddr(), &size);
+    //UNCOMMENT
+    //return uv_udp_getsockname(&uvhandle, endpoint.CastToSockaddr(), &size);
+    return 0;
 }
 
 template <typename T>
 int32 UDPSocketTemplate<T>::JoinMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr)
 {
     DVASSERT(true == isOpen && false == isClosing && multicastAddr != NULL);
-    return uv_udp_set_membership(&uvhandle, multicastAddr, interfaceAddr, UV_JOIN_GROUP);
+    //UNCOMMENT
+    //return uv_udp_set_membership(&uvhandle, multicastAddr, interfaceAddr, UV_JOIN_GROUP);
+    return 0;
 }
 
 template <typename T>
 int32 UDPSocketTemplate<T>::LeaveMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr)
 {
     DVASSERT(true == isOpen && false == isClosing && multicastAddr != NULL);
-    return uv_udp_set_membership(&uvhandle, multicastAddr, interfaceAddr, UV_LEAVE_GROUP);
+    //UNCOMMENT
+    //return uv_udp_set_membership(&uvhandle, multicastAddr, interfaceAddr, UV_LEAVE_GROUP);
+    return 0;
 }
 
 template <typename T>
@@ -138,8 +144,9 @@ int32 UDPSocketTemplate<T>::Bind(const Endpoint& endpoint, bool reuseAddrOption)
     int32 error = 0;
     if (false == isOpen)
         error = DoOpen();   // Automatically open on first call
-    if (0 == error)
-        error = uv_udp_bind(&uvhandle, endpoint.CastToSockaddr(), reuseAddrOption ? UV_UDP_REUSEADDR : 0);
+    //UNCOMMENT
+    //if (0 == error)
+      //  error = uv_udp_bind(&uvhandle, endpoint.CastToSockaddr(), reuseAddrOption ? UV_UDP_REUSEADDR : 0);
     return error;
 }
 
@@ -159,7 +166,8 @@ template <typename T>
 int32 UDPSocketTemplate<T>::DoOpen()
 {
     DVASSERT(false == isOpen && false == isClosing);
-    int32 error = uv_udp_init(loop->Handle(), &uvhandle);
+    //UNCOMMENT
+    int32 error = 0;//uv_udp_init(loop->Handle(), &uvhandle);
     if (0 == error)
     {
         isOpen = true;
@@ -176,8 +184,9 @@ int32 UDPSocketTemplate<T>::DoStartReceive()
     int32 error = 0;
     if (false == isOpen)
         error = DoOpen();   // Automatically open on first call
-    if (0 == error)
-        error = uv_udp_recv_start(&uvhandle, &HandleAllocThunk, &HandleReceiveThunk);
+    //UNCOMMENT
+    //if (0 == error)
+      //  error = uv_udp_recv_start(&uvhandle, &HandleAllocThunk, &HandleReceiveThunk);
     return error;
 }
 
@@ -195,7 +204,9 @@ int32 UDPSocketTemplate<T>::DoSend(const Buffer* buffers, size_t bufferCount, co
         sendBuffers[i] = buffers[i];
     }
 
-    return uv_udp_send(&uvsend, &uvhandle, sendBuffers, static_cast<uint32>(sendBufferCount), endpoint.CastToSockaddr(), &HandleSendThunk);
+    //UNCOMMENT
+    //return uv_udp_send(&uvsend, &uvhandle, sendBuffers, static_cast<uint32>(sendBufferCount), endpoint.CastToSockaddr(), &HandleSendThunk);
+    return 0;
 }
 
 template <typename T>
@@ -204,7 +215,8 @@ void UDPSocketTemplate<T>::DoClose()
     DVASSERT(true == isOpen && false == isClosing);
     isOpen = false;
     isClosing = true;
-    uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
+    //UNCOMMENT
+    //uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
 }
 
 ///   Thunks   ///////////////////////////////////////////////////////////
