@@ -117,10 +117,6 @@ void EditorFontSystem::LoadLocalizedFonts()
 
 void EditorFontSystem::SaveLocalizedFonts()
 {   
-    if(!FileSystem::Instance()->IsDirectory(defaultFontsPath.GetDirectory()))
-    {
-        FileSystem::Instance()->CreateDirectory(defaultFontsPath.GetDirectory());
-    }
     for (auto &localizedFontsIt : localizedFonts)
     {       
         FontManager::Instance()->RegisterFonts(localizedFontsIt.second);
@@ -176,7 +172,7 @@ void EditorFontSystem::RemoveFont(Map<String, Font*>* fonts, const String& fontN
 
 void EditorFontSystem::SetDefaultFontsPath(const FilePath& path)
 {
-    defaultFontsPath = path;
+    defaultFontsPath = path.GetType() == FilePath::PATH_IN_RESOURCES ? path.GetAbsolutePathname() : path;
     availableFontLocales.clear();
     FileList * fileList = new FileList(defaultFontsPath);
     for (auto count = fileList->GetCount(), i = 0; i < count; ++i)
@@ -197,7 +193,7 @@ FilePath EditorFontSystem::GetDefaultFontsPath()
 
 FilePath EditorFontSystem::GetLocalizedFontsPath(const String &locale)
 {
-    return locale == defaultFontLocale ? GetDefaultFontsPath() : defaultFontsPath + locale + "/fonts.yaml";
+    return locale == defaultFontLocale ? GetDefaultFontsPath() : (defaultFontsPath + locale + "/fonts.yaml");
 }
 
 void EditorFontSystem::CreateNewPreset(const String& originalPresetName, const String& newPresetName)
