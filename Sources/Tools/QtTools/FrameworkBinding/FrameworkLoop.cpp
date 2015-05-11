@@ -106,8 +106,10 @@ quint64 FrameworkLoop::GetRenderContextId() const
 
 void FrameworkLoop::ProcessFrameInternal()
 {
-    context->makeCurrent(glWidget->GetGLWindow());
-    
+    if (nullptr != context && nullptr != glWidget)
+    {
+        context->makeCurrent(glWidget->GetGLWindow());
+    }
     DAVA::QtLayer::Instance()->ProcessFrame();
     if ( glWidget != nullptr )
     {
