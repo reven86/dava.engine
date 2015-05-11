@@ -31,6 +31,7 @@
 
 #include "Downloader.h"
 #include "curl/curl.h"
+#include "Timer/RawTimer.h"
 
 namespace DAVA
 {
@@ -158,25 +159,6 @@ private:
         char8 priority;
     };
     
-    class InactivityTimer
-    {
-    public:
-        InactivityTimer(uint64 duration);
-
-        void Start();
-        void Stop() {isStarted = false;}
-        void Reset();
-        void Tick();
-        bool IsReached() {return isReached;}
-        bool IsStarted() {return isStarted;}
-        
-    private:
-        const uint64 timeout;
-        uint64 timerStartTime;
-        bool isStarted = false;
-        bool isReached;
-    };
-    
 private:
     static bool isCURLInit;
     bool isDownloadInterrupting;
@@ -187,7 +169,7 @@ private:
     FilePath storePath;
     String downloadUrl;
     int32 operationTimeout;
-    InactivityTimer inactivityConnectionTimer;
+    RawTimer inactivityConnectionTimer;
     uint64 remoteFileSize;
     uint64 sizeToDownload;
     uint64 downloadSpeedLimit;

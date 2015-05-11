@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 #include "CurlDownloader.h"
-#include "Platform/SystemTimer.h"
 
 namespace DAVA
 {
@@ -52,7 +51,6 @@ CurlDownloader::CurlDownloader()
     , storePath("")
     , downloadUrl("")
     , operationTimeout(30)
-    , inactivityConnectionTimer(30000) //30s
     , remoteFileSize(0)
     , sizeToDownload(0)
     , downloadSpeedLimit(0)
@@ -81,7 +79,7 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
  
     if (thisDownloader->inactivityConnectionTimer.IsStarted())
     {
-        thisDownloader->inactivityConnectionTimer.Reset();
+        thisDownloader->inactivityConnectionTimer.Stop();
     }
     
     uint32 dataLeft = thisPart->GetSize() - thisPart->GetProgress();
@@ -102,11 +100,6 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
     {
         thisDownloader->chunkInfo->progress += dataSizeToBuffer;
         thisDownloader->CalcStatistics(dataSizeToBuffer);
-    }
-
-    if (thisDownloader->isDownloadInterrupting)
-    {
-        return 0; // download is interrupted
     }
     
     if (dataLeft < dataSizeCame)
@@ -309,39 +302,47 @@ CURLMcode CurlDownloader::Perform()
 
         switch (rc)
         {
-        case -1:
-            /* select error */
-            break;
-        case 0: /* timeout */
-            // workaround which allows to finish broken download on MacOS and iOS
-            // operation don't interrupts at connection lose (if we turn off wi-fi at example)
-            // so we check if curl timeout is reached and then starts inactivity timer
-            // timer.Reset placed inside data receive handler.
-            // so if we have some data comming, timer will not reach his maximu value
-            // and IsReached will be false.
-            // if data don't comes - timer will reaches and we use a hack to interrupt curl by limit operation time.
-            if (!inactivityConnectionTimer.IsStarted() && 0 >= curlTimeout)
+            case -1: /* select error */
             {
-                inactivityConnectionTimer.Start();
+                break;
             }
-            if (inactivityConnectionTimer.IsStarted())
+            case 0: /* timeout */
             {
-                inactivityConnectionTimer.Tick();
-                if (inactivityConnectionTimer.IsReached())
+                // workaround which allows to finish broken download on MacOS and iOS
+                // operation don't interrupts at connection lose (if we turn off wi-fi at example)
+                // so we check if curl timeout is reached and then starts inactivity timer
+                // timer.Reset placed inside data receive handler.
+                // so if we have some data comming, timer will not reach his maximu value
+                // and IsReached will be false.
+                // if data don't comes - timer will reaches and we use a hack to interrupt curl by limit operation time.
+                if (!inactivityConnectionTimer.IsStarted() && 0 >= curlTimeout)
+                {
+                    inactivityConnectionTimer.Start();
+                }
+
+                uint64 timeoutOnInactivityTime = static_cast<uint64>(operationTimeout*1000);
+                uint64 inactivityTimeElapsed = inactivityConnectionTimer.GetElapsed();
+                bool isTimedOut = inactivityConnectionTimer.IsStarted() && timeoutOnInactivityTime < inactivityTimeElapsed;
+
+                if (isDownloadInterrupting || isTimedOut)
                 {
                     for (auto easyHandle : easyHandles)
                     {
                         curl_easy_setopt(easyHandle, CURLOPT_TIMEOUT, 1);
                     }
+                    inactivityConnectionTimer.Stop();
                 }
             }
-        default: /* action */
-            ret = curl_multi_perform(multiHandle, &handlesRunning);
-            if (CURLM_OK != ret)
+            default: /* action */
             {
-                return ret;
+                ret = curl_multi_perform(multiHandle, &handlesRunning);
+                if (CURLM_OK != ret)
+                {
+                    return ret;
+                }
             }
         }
+        
         
     } while (handlesRunning > 0);
     
@@ -762,33 +763,4 @@ DownloadError CurlDownloader::TakeMostImportantReturnValue(const Vector<Download
     return errorsByPriority[retIndex].error;
 }
 
-CurlDownloader::InactivityTimer::InactivityTimer(uint64 duration)
-    : timeout(duration)
-    , isReached(false)
-{
-}
-    
-void CurlDownloader::InactivityTimer::Start()
-{
-    Reset();
-    isStarted = true;
-}
-    
-void CurlDownloader::InactivityTimer::Reset()
-{
-    isReached = false;
-    timerStartTime = SystemTimer::Instance()->AbsoluteMS();
-}
-
-void CurlDownloader::InactivityTimer::Tick()
-{
-    uint64 timeDelta = SystemTimer::Instance()->AbsoluteMS() - timerStartTime;
-    
-    isReached = timeDelta >= timeout;
-    
-    if (isReached)
-    {
-        Stop();
-    }
-}
 }
