@@ -137,25 +137,25 @@ inline T ThreadLocal<T>::GetTlsValue() const DAVA_NOEXCEPT
 template<typename T>
 inline void ThreadLocal<T>::CreateTlsKey() DAVA_NOEXCEPT
 {
-    key = ...;
+    pthread_key_create(&key, nullptr);
 }
 
 template<typename T>
 inline void ThreadLocal<T>::DeleteTlsKey() const DAVA_NOEXCEPT
 {
-    
+    pthread_key_delete(key);
 }
 
 template<typename T>
 inline void ThreadLocal<T>::SetTlsValue(T value) const DAVA_NOEXCEPT
 {
-    
+    pthread_setspecific(key, reinterpret_cast<void*>(value));
 }
 
 template<typename T>
 inline T ThreadLocal<T>::GetTlsValue() const DAVA_NOEXCEPT
 {
-    return ...;
+    return reinterpret_cast<T>(pthread_getspecific(key));
 }
 
 #endif
