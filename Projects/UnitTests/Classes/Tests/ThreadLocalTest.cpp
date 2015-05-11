@@ -75,7 +75,7 @@ void ThreadLocalTest::ThreadLocalTestFunc(PerfFuncData * data)
     TEST_VERIFY(*tlsInt64Ptr == 1010);
 
     TlsClass* p = tlsClassPtr;
-    TEST_VERIFY(p->Int() == 5);
+    TEST_VERIFY(p->Int() == 4);
     TEST_VERIFY(p->String() == "Main thread");
 
     // Delete memory occupied by thread local variables
