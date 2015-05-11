@@ -34,6 +34,7 @@
 #include <FileSystem/KeyedArchive.h>
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/Logger.h"
+#include "QtTools/FileDialog/FileDialog.h"
 
 #include <QFileDialog>
 #include <QMenu>
@@ -99,8 +100,8 @@ void MainWindow::OnRemoveServerWidget()
 
 void MainWindow::OnSelectFolder()
 {
-    QString directory = QFileDialog::getExistingDirectory(this, "Choose directory", QDir::currentPath(),
-                                                           QFileDialog::ShowDirsOnly);
+    QString directory = FileDialog::getExistingDirectory(this, "Choose directory", QDir::currentPath(),
+                                                         QFileDialog::ShowDirsOnly);
     ui->cachFolderLineEdit->setText(directory);
     emit FolderChanged(directory);
     VerifyData();
