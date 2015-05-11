@@ -11,10 +11,8 @@ VPROG_OUT_BEGIN
     VPROG_OUT_COLOR0(vegetationColor,3)
 VPROG_OUT_END
 
-//uniform sampler2D heightmap;
-//uniform sampler2D vegetationmap;
-
-property float4x4 vegetationParams; // vegetationParams[0] - tilePos; vegetationParams[1] - lodSwitchScale; vegetationParams[2..3] - vegWaveOffset, 
+DECL_SAMPLER2D(heightmap)
+DECL_SAMPLER2D(vegetationmap)
 
 property float4x4 worldViewProjMatrix : shared,dynamic : ;
 property float3 tilePos : shared,static : ;
@@ -42,16 +40,16 @@ VPROG_BEGIN
     float3 pos = float3(inPosition.x + tilePos.x, inPosition.y + tilePos.y, inPosition.z);
 
     float2 hUVheight = float2(clamp(1.0 - (0.5 * worldSize.x - clusterCenter.x) / worldSize.x, 0.0, 1.0),
-                    clamp(1.0 - (0.5 * worldSize.y - clusterCenter.y) / worldSize.y, 0.0, 1.0));
+                              clamp(1.0 - (0.5 * worldSize.y - clusterCenter.y) / worldSize.y, 0.0, 1.0));
 
     hUVheight = float2(clamp(hUVheight.x * heightmapScale.x, 0.0, 1.0),
-               clamp(hUVheight.y * heightmapScale.y, 0.0, 1.0));
+                       clamp(hUVheight.y * heightmapScale.y, 0.0, 1.0));
 
-    //float4 heightVec = texture2DLod(heightmap, hUVheight, 0.0);
-    //float height = dot(heightVec, vec4(0.93751430533303, 0.05859464408331, 0.00366216525521, 0.00022888532845)) * worldSize.z;
+    float4 heightVec = VP_TEXTURE2D(heightmap, hUVheight);
+    float height = dot(heightVec, float4(0.05859464408331, 0.00366216525521, 0.00022888532845, 0.93751430533303)) * worldSize.z;
 
-    //pos.z += height;
-    //clusterCenter.z += height;
+    pos.z += height;
+    clusterCenter.z += height;
 
     float clusterScale = tilePos.z;
     if(int(inTexCoord1.x) == int(lodSwitchScale.x))
@@ -59,9 +57,8 @@ VPROG_BEGIN
         clusterScale *= lodSwitchScale.y;
     }
 
-    //float2 hUVcolor = float2(hUVheight.x, 1.0 - hUVheight.y);
-    //float4 vegetationMask = texture2DLod(vegetationmap, hUVcolor, 0.0);
-    float4 vegetationMask = float4(0.5, 0.5, 0.5, 0.5);
+    float2 hUVcolor = float2(hUVheight.x, 1.0 - hUVheight.y);
+    float4 vegetationMask = VP_TEXTURE2D(vegetationmap, hUVcolor);
     
     VP_OUT(vegetationColor) = vegetationMask.rgb;
     
