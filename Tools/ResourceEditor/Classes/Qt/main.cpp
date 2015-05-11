@@ -185,6 +185,7 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
 #ifdef Q_OS_MAC
     // Must be called before creating QApplication instance
     FixOSXFonts();
+    DAVA::QtLayer::MakeAppForeground(false);
 #endif
  
     QApplication a( argc, argv );
@@ -211,13 +212,13 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     // check and unpack help documents
     UnpackHelpDoc();
 
-    new DavaLoop();
-    new FrameworkLoop();
-    
 #ifdef Q_OS_MAC
     QTimer::singleShot(0, []{ DAVA::QtLayer::MakeAppForeground();    } );
     QTimer::singleShot(0, []{ DAVA::QtLayer::RestoreMenuBar();       } );
 #endif
+    
+    new DavaLoop();
+    new FrameworkLoop();
     
     DavaGLWidget *glWidget = nullptr;
     QtMainWindow *mainWindow = nullptr;
@@ -242,6 +243,7 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
         
         DavaLoop::Instance()->StartLoop( FrameworkLoop::Instance() );
     } );
+    
     
     // start app
     QApplication::exec();

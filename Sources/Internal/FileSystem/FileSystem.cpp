@@ -209,8 +209,12 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
 {
     DVASSERT(newFile.GetType() != FilePath::PATH_IN_RESOURCES);
 
-#ifdef __DAVAENGINE_WIN32__
+#if defined(__DAVAENGINE_WIN32__)
 	DWORD flags = (overwriteExisting) ? MOVEFILE_REPLACE_EXISTING : 0;
+    // Add flag MOVEFILE_COPY_ALLOWED to allow file moving between different volumes
+    // Without this flags MoveFileEx fails and GetLastError return ERROR_NOT_SAME_DEVICE
+    // see https://msdn.microsoft.com/en-us/library/windows/desktop/aa365240%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+    flags |= MOVEFILE_COPY_ALLOWED;
 	BOOL ret = ::MoveFileExA(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), flags);
 	return ret != 0;
 #elif defined(__DAVAENGINE_ANDROID__)

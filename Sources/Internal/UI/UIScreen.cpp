@@ -144,7 +144,7 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
 		RenderHelper::Instance()->FillRect(Rect(
 													0
 												 ,	fullRect.y
-												 ,	virtualSize.y + 1
+												 ,	virtualSize.x + 1
 												 ,	-fullRect.y)
                                                  ,  RenderState::RENDERSTATE_2D_BLEND);
 		RenderHelper::Instance()->FillRect(Rect(
