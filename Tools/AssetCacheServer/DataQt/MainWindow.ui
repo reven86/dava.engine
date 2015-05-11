@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>420</width>
-    <height>335</height>
+    <height>430</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -26,11 +26,11 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout_4">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <layout class="QVBoxLayout" name="labelLayout">
         <item>
          <widget class="QLabel" name="cachLabel">
           <property name="text">
@@ -69,23 +69,36 @@
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <layout class="QVBoxLayout" name="parametersLayout">
         <item>
-         <layout class="QHBoxLayout" name="folderLayout">
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QLineEdit" name="cachFolderLineEdit"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="selectFolderButton">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+           <widget class="QLineEdit" name="cachFolderLineEdit">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>22</height>
+             </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>25</width>
+              <width>16777215</width>
+              <height>22</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="selectFolderButton">
+            <property name="minimumSize">
+             <size>
+              <width>50</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>50</width>
               <height>16777215</height>
              </size>
             </property>
@@ -96,18 +109,15 @@
           </item>
           <item>
            <widget class="QPushButton" name="clearDirectoryButton">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+            <property name="minimumSize">
+             <size>
+              <width>50</width>
+              <height>0</height>
+             </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>25</width>
+              <width>50</width>
               <height>16777215</height>
              </size>
             </property>
@@ -161,6 +171,12 @@
         </item>
         <item>
          <widget class="QCheckBox" name="startupCheckBox">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>28</height>
+           </size>
+          </property>
           <property name="text">
            <string/>
           </property>
@@ -228,12 +244,6 @@
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <widget class="QPushButton" name="addNewServerButton">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>23</height>
-          </size>
-         </property>
          <property name="text">
           <string>Add server</string>
          </property>
@@ -252,8 +262,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>380</width>
-            <height>69</height>
+            <width>364</width>
+            <height>77</height>
            </rect>
           </property>
          </widget>
@@ -263,7 +273,7 @@
      </widget>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QHBoxLayout" name="saveCancelLayout">
       <item>
        <widget class="QPushButton" name="saveButton">
         <property name="enabled">

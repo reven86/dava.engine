@@ -145,6 +145,7 @@ void MainWindow::OnOpenAction()
 {
     this->raise();
     this->show();
+    trayIcon->show();
 }
 
 void MainWindow::OnStartupChanged(int state)
