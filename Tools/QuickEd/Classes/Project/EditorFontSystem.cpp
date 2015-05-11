@@ -138,6 +138,7 @@ void EditorFontSystem::ClearAllFonts()
     {
         ClearFonts(map.second);
     }
+    localizedFonts.clear();
     defaultPresetNames.clear();
 }
 
