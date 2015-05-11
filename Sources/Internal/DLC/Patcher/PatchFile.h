@@ -141,6 +141,7 @@ protected:
     bool eof;
 
     Vector<int32> patchPositions;
+    size_t initialPositionsCount;
     size_t curPatchIndex;
     uint32 curBSDiffPos;
 

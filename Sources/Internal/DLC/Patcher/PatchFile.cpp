@@ -428,6 +428,7 @@ PatchFileReader::PatchFileReader(const FilePath &path, bool beVerbose)
 : verbose(beVerbose)
 , lastError(ERROR_NO)
 , parseError(ERROR_NO)
+, initialPositionsCount(0)
 , curErrno(0)
 , curPatchIndex(0)
 , curBSDiffPos(0)
@@ -489,6 +490,8 @@ PatchFileReader::PatchFileReader(const FilePath &path, bool beVerbose)
             patchPositions.push_back(curPos);
             patchFile->Seek(patchSize, File::SEEK_FROM_CURRENT);
         }
+
+        initialPositionsCount = patchPositions.size();
     }
     else
     {
@@ -621,7 +624,7 @@ bool PatchFileReader::DoRead()
             lastError = parseError;
 
             // no errors, check if patch file wasn't empty
-            if(ERROR_NO == lastError && 0 == patchPositions.size())
+            if(ERROR_NO == lastError && 0 == initialPositionsCount)
             {
                 // patch file without
                 lastError = ERROR_EMPTY_PATCH;
@@ -644,7 +647,7 @@ bool PatchFileReader::Truncate()
     {
         int32 patchPos = patchPositions[curPatchIndex];
         int32 signarutePos = patchPos - davaPatchSignatureSize - sizeof(uint32);
-        if(signarutePos > 0)
+        if(signarutePos >= 0)
         {
             if(patchFile->Truncate(signarutePos))
             {
