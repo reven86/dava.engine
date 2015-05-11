@@ -186,6 +186,7 @@ void PackageWidget::RefreshActions(const QModelIndexList &indexList)
     RefreshAction(delAction, canRemove, true);
 
     RefreshAction(importPackageAction, canInsert, canInsert);
+    //TODO: DF-6265, implement canInsert correctly
 
 }
 
@@ -346,6 +347,7 @@ void PackageWidget::OnImport()
 
     for (const auto &fileName : fileNames)
     {
+        //TODO: DF-6265, add paste implementation
         //read file
         //GetCommandExecutor->paste
     }
