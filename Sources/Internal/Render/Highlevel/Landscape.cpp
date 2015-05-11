@@ -145,7 +145,7 @@ Landscape::~Landscape()
 int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
 {
 //    Logger::FrameworkDebug("AllocateRDOQuad: %d %d size: %d", quad->x, quad->y, quad->size);
-    DVASSERT(quad->size == RENDER_QUAD_WIDTH - 1);
+    DVASSERT(quad->size <= RENDER_QUAD_WIDTH - 1);
     LandscapeVertex * landscapeVertices = new LandscapeVertex[(quad->size + 1) * (quad->size + 1)];
     
     int32 index = 0;
@@ -724,6 +724,10 @@ void Landscape::ReallocateLandscape()
     patchQuadArray = new PatchQuadInfo[subdivPatchCount];
     
     rdoQuadWidth = heightmapSizeMinus1 / (RENDER_QUAD_WIDTH - 1);
+
+    // For cases where landscape is very small allocate 1 RDO.
+    if (rdoQuadWidth == 0)rdoQuadWidth = 1;
+    
     uint32 quadCountInOneRDO = heightmapSizeMinus1 / rdoQuadWidth;
     
     rdoArray = new LandscapeQuad[rdoQuadWidth * rdoQuadWidth];
