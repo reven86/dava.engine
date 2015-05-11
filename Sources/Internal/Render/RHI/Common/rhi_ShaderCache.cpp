@@ -186,10 +186,10 @@ static const char* _ShaderHeader_Metal =
 "float3 mul( float3 v, float3x3 m );\n"
 "float3 mul( float3 v, float3x3 m ) { return m*v; }\n"
 
-"float  lerp( float a, float b, float t ) { mix( a, b, t ); }\n"
-"float2 lerp( float2 a, float2 b, float t ) { mix( a, b, t ); }\n"
-"float3 lerp( float3 a, float3 b, float t ) { mix( a, b, t ); }\n"
-"float4 lerp( float4 a, float4 b, float t ) { mix( a, b, t ); }\n"
+"float  lerp( float a, float b, float t ) { return mix( a, b, t ); }\n"
+"float2 lerp( float2 a, float2 b, float t ) { return mix( a, b, t ); }\n"
+"float3 lerp( float3 a, float3 b, float t ) { return mix( a, b, t ); }\n"
+"float4 lerp( float4 a, float4 b, float t ) { return mix( a, b, t ); }\n"
 ;
     
 static const char* _ShaderDefine_Metal =
@@ -276,7 +276,7 @@ static const char* _ShaderDefine_Metal =
 "#define VP_IN_BLENDWEIGHT       (float3(IN.blendweight))\n"
 "#define VP_IN_BLENDINDEX        (float3(IN.blendindex))\n"
 
-"#define VP_TEXTURE2D(unit,uv)   tex##unit.sample( tex##unit##_sampler, uv );\n"
+"#define VP_TEXTURE2D(unit,uv)   tex##unit.sample( tex##unit##_sampler, uv, level(0) );\n"
 
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.name\n"
@@ -361,10 +361,10 @@ static const char* _ShaderHeader_GLES2 =
 
 "float4 tex2D( sampler2D s, vec2 t ) { return texture2D(s,t); }\n"
 
-"float  lerp( float a, float b, float t ) { mix( a, b, t ); }\n"
-"float2 lerp( float2 a, float2 b, float t ) { mix( a, b, t ); }\n"
-"float3 lerp( float3 a, float3 b, float t ) { mix( a, b, t ); }\n"
-"float4 lerp( float4 a, float4 b, float t ) { mix( a, b, t ); }\n"
+"float  lerp( float a, float b, float t ) { return mix( a, b, t ); }\n"
+"float2 lerp( float2 a, float2 b, float t ) { return mix( a, b, t ); }\n"
+"float3 lerp( float3 a, float3 b, float t ) { return mix( a, b, t ); }\n"
+"float4 lerp( float4 a, float4 b, float t ) { return mix( a, b, t ); }\n"
 ;
 
 static const char* _ShaderDefine_GLES2 =
@@ -430,7 +430,7 @@ static const char* _ShaderDefine_GLES2 =
 "#define VP_OUT_POSITION         gl_Position\n"
 "#define VP_OUT(name)            var_##name\n"
 
-"#define VP_TEXTURE2D(unit,uv)   texture2D( Texture##unit, uv );\n"
+"#define VP_TEXTURE2D(unit,uv)   texture2DLod( Texture##unit, uv, 0 );\n"
 
 
 "#define FPROG_IN_BEGIN          \n"
@@ -531,7 +531,7 @@ static const char* _ShaderDefine_DX9 =
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.##name\n"
 
-"#define VP_TEXTURE2D(unit,uv)   tex2D( Texture##unit, uv )\n"
+"#define VP_TEXTURE2D(unit,uv)   tex2Dlod( Texture##unit, float4(uv.x,uv.y,0,0) )\n"
 
 
 "#define FPROG_IN_BEGIN          struct FP_Input {\n"
