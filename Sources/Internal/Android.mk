@@ -107,12 +107,14 @@ DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/lua/include
 # set exported includes
 DV_LOCAL_EXPORT_C_INCLUDES := $(DV_LOCAL_C_INCLUDES)
 
-ifeq ($(TARGET_ARCH_ABI), $(filter $(TARGET_ARCH_ABI), armeabi-v7a armeabi-v7a-hard))
-DV_USE_NEON := true
+# starting from ndk10b x86 support NEON too! Add latter
+ifeq ($(TARGET_ARCH_ABI), $(filter $(TARGET_ARCH_ABI), armeabi-v7a))
 DV_LOCAL_ARM_NEON := true
 DV_LOCAL_ARM_MODE := arm
 DV_LOCAL_NEON_CFLAGS := -mfloat-abi=softfp -mfpu=neon -march=armv7
 DV_LOCAL_CFLAGS += -DUSE_NEON
+else
+DV_LOCAL_ARM_NEON := false
 endif
 
 # set build flags
@@ -269,8 +271,6 @@ LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
 LOCAL_SHARED_LIBRARIES := $(DV_LOCAL_SHARED_LIBRARIES)
 LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
 
-USE_NEON := $(DV_USE_NEON)
-
 # set source files 
 LOCAL_SRC_FILES := \
                      $(subst $(LOCAL_PATH)/,, \
@@ -320,8 +320,6 @@ LOCAL_SHARED_LIBRARIES := $(DV_LOCAL_SHARED_LIBRARIES)
 LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
 
 LOCAL_WHOLE_STATIC_LIBRARIES := libInternalPart1
-
-USE_NEON := $(DV_USE_NEON)
 
 LOCAL_SRC_FILES := \
                      $(subst $(LOCAL_PATH)/,, \
