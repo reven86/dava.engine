@@ -41,10 +41,14 @@ namespace DAVA
     Specified type can be pointer or fundamental type (int, char, etc). Size of type cannot exceed pointer size.
 
     C++ 11 supports thread_local keyword which does the same thing but not all compilers support it.
+    Also, compiler specific stuff (__declspec(thread), __thread) does not work well between platforms.
 
     Restrictions:
         variables of type ThreadLocal can have only static storage duration (global or local static, and static data member)
         if you declare ThreadLocal as automatic object it's your own problems, so don't cry: Houston, we've got a problem
+        
+        initialization of 'ThreadLocal<T> tls = value' is not implemented as thread variable will be initialized only
+        in main thread, other threads will have default value
 */
 template<typename T>
 class ThreadLocal final
@@ -56,6 +60,13 @@ class ThreadLocal final
 #else
     using KeyType = pthread_key_t;
 #endif
+
+    // This union is used for conversion between void* and T without UB, I hope
+    union ValueUnion
+    {
+        void* voidPtr;
+        T typedValue;
+    };
 
 public:
     ThreadLocal() DAVA_NOEXCEPT;
@@ -70,10 +81,14 @@ public:
     operator T () const DAVA_NOEXCEPT;
 
 private:
+    void SetValue(T value) const DAVA_NOEXCEPT;
+    T GetValue() const DAVA_NOEXCEPT;
+    
+    // Platform-specific methods
     void CreateTlsKey() DAVA_NOEXCEPT;
     void DeleteTlsKey() const DAVA_NOEXCEPT;
-    void SetTlsValue(T value) const DAVA_NOEXCEPT;
-    T GetTlsValue() const DAVA_NOEXCEPT;
+    void SetTlsValue(void* rawValue) const DAVA_NOEXCEPT;
+    void* GetTlsValue() const DAVA_NOEXCEPT;
 
 private:
     KeyType key;
@@ -95,14 +110,30 @@ inline ThreadLocal<T>::~ThreadLocal() DAVA_NOEXCEPT
 template<typename T>
 inline ThreadLocal<T>& ThreadLocal<T>::operator = (const T value) DAVA_NOEXCEPT
 {
-    SetTlsValue(value);
+    SetValue(value);
     return *this;
 }
 
 template<typename T>
 inline ThreadLocal<T>::operator T () const DAVA_NOEXCEPT
 {
-    return GetTlsValue();
+    return GetValue();
+}
+
+template<typename T>
+inline void ThreadLocal<T>::SetValue(T value) const DAVA_NOEXCEPT
+{
+    ValueUnion x;
+    x.typedValue = value;
+    SetTlsValue(x.voidPtr);
+}
+
+template<typename T>
+inline T ThreadLocal<T>::GetValue() const DAVA_NOEXCEPT
+{
+    ValueUnion x;
+    x.voidPtr = GetTlsValue();
+    return x.typedValue;
 }
 
 // Win32 specific implementation
@@ -121,15 +152,15 @@ inline void ThreadLocal<T>::DeleteTlsKey() const DAVA_NOEXCEPT
 }
 
 template<typename T>
-inline void ThreadLocal<T>::SetTlsValue(T value) const DAVA_NOEXCEPT
+inline void ThreadLocal<T>::SetTlsValue(void* rawValue) const DAVA_NOEXCEPT
 {
-    TlsSetValue(key, reinterpret_cast<LPVOID>(value));
+    TlsSetValue(key, rawValue);
 }
 
 template<typename T>
-inline T ThreadLocal<T>::GetTlsValue() const DAVA_NOEXCEPT
+inline void* ThreadLocal<T>::GetTlsValue() const DAVA_NOEXCEPT
 {
-    return reinterpret_cast<T>(TlsGetValue(key));
+    return TlsGetValue(key);
 }
 
 #else   // POSIX specific implementation
@@ -147,15 +178,15 @@ inline void ThreadLocal<T>::DeleteTlsKey() const DAVA_NOEXCEPT
 }
 
 template<typename T>
-inline void ThreadLocal<T>::SetTlsValue(T value) const DAVA_NOEXCEPT
+inline void ThreadLocal<T>::SetTlsValue(void* rawValue) const DAVA_NOEXCEPT
 {
-    pthread_setspecific(key, reinterpret_cast<void*>(value));
+    pthread_setspecific(key, rawValue);
 }
 
 template<typename T>
-inline T ThreadLocal<T>::GetTlsValue() const DAVA_NOEXCEPT
+inline void* ThreadLocal<T>::GetTlsValue() const DAVA_NOEXCEPT
 {
-    return reinterpret_cast<T>(pthread_getspecific(key));
+    return pthread_getspecific(key);
 }
 
 #endif
