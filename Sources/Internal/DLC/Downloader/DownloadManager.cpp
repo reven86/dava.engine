@@ -458,6 +458,17 @@ bool DownloadManager::GetError(const uint32 &taskId, DownloadError &error)
 
     return true;
 }
+
+bool DownloadManager::GetFileErrno(const uint32 &taskId, int32 &fileErrno)
+{
+    DownloadTaskDescription *task = GetTaskForId(taskId);
+    if(!task)
+        return false;
+
+    fileErrno = task->fileErrno;
+
+    return true;
+}
     
 DownloadStatistics DownloadManager::GetStatistics()
 {
@@ -591,7 +602,8 @@ DownloadError DownloadManager::TryDownload()
 {
     // retrieve remote file size
     currentTask->error = downloader->GetSize(currentTask->url, currentTask->downloadTotal, currentTask->timeout);
-    if (DLE_NO_ERROR != currentTask->error)
+    currentTask->fileErrno = downloader->GetFileErrno();
+    if(DLE_NO_ERROR != currentTask->error)
     {        
         return currentTask->error;
     }
@@ -619,6 +631,7 @@ DownloadError DownloadManager::TryDownload()
     }
     
     currentTask->error = downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
+    currentTask->fileErrno = downloader->GetFileErrno();
 
     // seems server doesn't supports download resuming. So we need to download whole file.
     if (DLE_COULDNT_RESUME == currentTask->error)
@@ -627,6 +640,7 @@ DownloadError DownloadManager::TryDownload()
         if (DLE_NO_ERROR == currentTask->error)
         {
             currentTask->error = downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
+            currentTask->fileErrno = downloader->GetFileErrno();
         }
     }
 

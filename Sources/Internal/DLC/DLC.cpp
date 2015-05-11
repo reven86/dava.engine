@@ -751,7 +751,7 @@ void DLC::StepDownloadPatchFinish(const uint32 &id, const DownloadStatus &status
 
                 case DAVA::DLE_FILE_ERROR:
                     // writing file problem
-                    dlcContext.lastErrno = FileSystem::Instance()->GetErrno();
+                    DownloadManager::Instance()->GetFileErrno(id, dlcContext.lastErrno);
                     PostError(DE_WRITE_ERROR);
                     break;
 

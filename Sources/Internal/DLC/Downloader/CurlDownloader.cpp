@@ -356,8 +356,9 @@ void CurlDownloader::SaveChunkHandler(BaseObject * caller, void * callerData, vo
             SafeRelease(chunk);
             if (!isWritten)
             {
-                Logger::Error("[CurlDownloader::CurlDataRecvHandler] Couldn't save downloaded data chunk");
                 saveResult = DLE_FILE_ERROR; // this case means that not all data which we wants to save is saved. So we produce file system error.
+                fileErrno = FileSystem::Instance()->GetErrno();
+                Logger::Error("[CurlDownloader::CurlDataRecvHandler] Couldn't save downloaded data chunk");
                 return;
             }
             
@@ -416,6 +417,7 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     storePath = savePath;
     downloadUrl = url;
     currentDownloadPartsCount = partsCount;
+    fileErrno = 0;
     DownloadError retCode = GetSize(downloadUrl, remoteFileSize, operationTimeout);
 
     if (DLE_NO_ERROR != retCode)
@@ -435,6 +437,7 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
         dstFile = File::Create(storePath, File::CREATE | File::WRITE);
         if (NULL == dstFile)
         {
+            fileErrno = FileSystem::Instance()->GetErrno();
             return DLE_FILE_ERROR;
         }
     }
