@@ -692,6 +692,7 @@
     <ClInclude Include="..\..\Sources\Internal\Thread\LockGuard.h" />
     <ClInclude Include="..\..\Sources\Internal\Thread\Semaphore.h" />
     <ClInclude Include="..\..\Sources\Internal\Thread\Spinlock.h" />
+    <ClInclude Include="..\..\Sources\Internal\Thread\ThreadLocal.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIControlFamily.h" />
