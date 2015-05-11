@@ -82,10 +82,11 @@ void EditorFontSystem::SetFont(const String &presetName, const String &locale, F
     }
     font->Release();
 }
- 
+
 void EditorFontSystem::LoadLocalizedFonts()
 {
     ClearAllFonts();
+    RefreshAvailableFontLocales();
     FontManager::Instance()->UnregisterFonts();
     for (auto &locale : availableFontLocales)
     {
@@ -170,9 +171,8 @@ void EditorFontSystem::RemoveFont(Map<String, Font*>* fonts, const String& fontN
     }
 }
 
-void EditorFontSystem::SetDefaultFontsPath(const FilePath& path)
+void EditorFontSystem::RefreshAvailableFontLocales()
 {
-    defaultFontsPath = path.GetType() == FilePath::PATH_IN_RESOURCES ? path.GetAbsolutePathname() : path;
     availableFontLocales.clear();
     FileList * fileList = new FileList(defaultFontsPath);
     for (auto count = fileList->GetCount(), i = 0; i < count; ++i)
@@ -182,8 +182,13 @@ void EditorFontSystem::SetDefaultFontsPath(const FilePath& path)
             availableFontLocales.push_back(QString::fromStdString(fileList->GetFilename(i)));
         }
     }
-
     SafeRelease(fileList);
+}
+
+void EditorFontSystem::SetDefaultFontsPath(const FilePath& path)
+{
+    defaultFontsPath = path.GetType() == FilePath::PATH_IN_RESOURCES ? path.GetAbsolutePathname() : path;
+    RefreshAvailableFontLocales();
 }
 
 FilePath EditorFontSystem::GetDefaultFontsPath()

@@ -63,7 +63,7 @@ public slots:
 private:
     void ClearFonts(DAVA::Map<DAVA::String, DAVA::Font*>& fonts);
     void RemoveFont(DAVA::Map<DAVA::String, DAVA::Font*> *fonts, const DAVA::String &fontName);
-
+    void RefreshAvailableFontLocales();
     DAVA::FilePath defaultFontsPath;
        
     DAVA::Map<DAVA::String, DAVA::Map<DAVA::String, DAVA::Font*> > localizedFonts;
