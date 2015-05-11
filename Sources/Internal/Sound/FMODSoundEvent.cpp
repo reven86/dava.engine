@@ -84,6 +84,8 @@ bool FMODSoundEvent::Trigger()
         FMOD_VERIFY(fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo));
         if(fmodEventInfo)
         {
+            Logger::Info("[FMODSoundEvent::%s] pos(%f, %f, %f), dir(%f, %f, %f)", __FUNCTION__, isDirectional, position.x, position.y, position.z, direction.x, direction.y, direction.z);
+            
             if(isDirectional)
             {
                 DVASSERT(direction.IsZero() == false);
