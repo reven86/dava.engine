@@ -179,9 +179,8 @@ ProgGLES2::GetProgParams( unsigned progUid )
 
         for( unsigned i=0; i!=countof(texunitLoc); ++i )
         {
-            char    name[16];   
+            Snprintf( tname[i], countof(tname[i]), "Texture%u", i);
 
-            Snprintf(name, countof(name), "Texture%u", i);
             cmd[i].func   = GLCommand::GET_UNIFORM_LOCATION;
             cmd[i].arg[0] = progUid;
             cmd[i].arg[1] = uint64(tname[i]);

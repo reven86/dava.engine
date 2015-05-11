@@ -430,7 +430,7 @@ static const char* _ShaderDefine_GLES2 =
 "#define VP_OUT_POSITION         gl_Position\n"
 "#define VP_OUT(name)            var_##name\n"
 
-"#define VP_TEXTURE2D(unit,uv)   texture2DLod( Texture##unit, uv, 0 );\n"
+"#define VP_TEXTURE2D(unit,uv)   texture2DLod( Texture##unit, uv, 0.0 );\n"
 
 
 "#define FPROG_IN_BEGIN          \n"
@@ -468,8 +468,7 @@ static const char* _ShaderDefine_GLES2 =
 
 
 static const char* _ShaderHeader_DX9 =
-//"float4 tex2D( sampler2D s, float2 t ) { return texture2D(s,t); }\n"
-""
+"\n"
 ;
 
 static const char* _ShaderDefine_DX9 =
