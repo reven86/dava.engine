@@ -85,6 +85,7 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
     dlcContext.patchInProgress = true;
     dlcContext.totalPatchCount = 0;
     dlcContext.appliedPatchCount = 0;
+    dlcContext.patchingError = PatchFileReader::ERROR_NO;
     dlcContext.lastErrno = 0;
 
     dlcContext.downloadInfoStorePath = workingDir + "Download.info";
