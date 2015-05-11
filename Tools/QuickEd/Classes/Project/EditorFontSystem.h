@@ -42,6 +42,7 @@ Q_OBJECT
 public:
     EditorFontSystem(QObject *parent = nullptr);
     ~EditorFontSystem();
+    const char *GetDefaultFontLocale() const;
     DAVA::Font* GetFont(const DAVA::String &presetName, const DAVA::String &locale) const;
     void SetFont(const DAVA::String &presetName, const DAVA::String &locale, DAVA::Font *font);
     const QStringList &GetAvailableFontLocales() const;
@@ -69,7 +70,14 @@ private:
 
     QStringList availableFontLocales;
     QStringList defaultPresetNames;
+    const char* defaultFontLocale;
+    DAVA::String currentFontLocale; //wraps LocalizationSystem::currentLocale
 };
+
+inline const char* EditorFontSystem::GetDefaultFontLocale() const
+{
+    return defaultFontLocale;
+}
 
 inline const QStringList &EditorFontSystem::GetAvailableFontLocales() const
 {

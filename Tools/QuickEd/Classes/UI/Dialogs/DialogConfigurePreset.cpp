@@ -72,12 +72,12 @@ void DialogConfigurePreset::initPreset()
 
 void DialogConfigurePreset::OnDefaultFontChanged(const QString& arg)
 {
-    SetFont(arg, spinBox_defaultFontSize->value(), "default");
+    SetFont(arg, spinBox_defaultFontSize->value(), GetEditorFontSystem()->GetDefaultFontLocale());
 }
 
 void DialogConfigurePreset::OnDefaultFontSizeChanged(int size)
 {
-    SetFont(comboBox_defaultFont->currentText(), size, "default");
+    SetFont(comboBox_defaultFont->currentText(), size, GetEditorFontSystem()->GetDefaultFontLocale());
 }
 
 void DialogConfigurePreset::OnLocalizedFontChanged(const QString& arg)
@@ -126,7 +126,7 @@ void DialogConfigurePreset::UpdateDefaultFontWidgets()
 {
     spinBox_defaultFontSize->blockSignals(true);
     comboBox_defaultFont->blockSignals(true);
-    Font *font = GetEditorFontSystem()->GetFont(lineEdit_currentFontPresetName->text().toStdString(), "default");
+    Font *font = GetEditorFontSystem()->GetFont(lineEdit_currentFontPresetName->text().toStdString(), GetEditorFontSystem()->GetDefaultFontLocale());
     spinBox_defaultFontSize->setValue(font->GetSize());
 
     DVASSERT(font->GetFontType() == Font::TYPE_FT);
