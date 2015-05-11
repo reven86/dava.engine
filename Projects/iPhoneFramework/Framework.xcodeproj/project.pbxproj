@@ -962,6 +962,7 @@
 		50194DCF1A52D92600557DAB /* NetLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 50194D9D1A52D92600557DAB /* NetLogger.h */; };
 		505EB41C18250C53009BEA3C /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 505EB41A18250C53009BEA3C /* OcclusionQuery.cpp */; };
 		505EB41D18250C53009BEA3C /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 505EB41B18250C53009BEA3C /* OcclusionQuery.h */; };
+		50780DA01B00FE3D0065073A /* ThreadLocal.h in Headers */ = {isa = PBXBuildFile; fileRef = 50780D9F1B00FE3D0065073A /* ThreadLocal.h */; };
 		50C7D5FC186082B100D8936D /* StaticOcclusionComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50C7D5FA186082B100D8936D /* StaticOcclusionComponent.cpp */; };
 		50C7D5FD186082B100D8936D /* StaticOcclusionComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 50C7D5FB186082B100D8936D /* StaticOcclusionComponent.h */; };
 		50C7D604186082D600D8936D /* StaticOcclusionRenderPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50C7D600186082D600D8936D /* StaticOcclusionRenderPass.cpp */; };
@@ -2075,6 +2076,7 @@
 		50194DD01A52D94B00557DAB /* libuv_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv_ios.a; path = ../../Libs/libs/libuv_ios.a; sourceTree = "<group>"; };
 		505EB41A18250C53009BEA3C /* OcclusionQuery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OcclusionQuery.cpp; sourceTree = "<group>"; };
 		505EB41B18250C53009BEA3C /* OcclusionQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OcclusionQuery.h; sourceTree = "<group>"; };
+		50780D9F1B00FE3D0065073A /* ThreadLocal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadLocal.h; sourceTree = "<group>"; };
 		50C7D5F6186082A600D8936D /* StaticOcclusionSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusionSystem.cpp; sourceTree = "<group>"; };
 		50C7D5F7186082A600D8936D /* StaticOcclusionSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusionSystem.h; sourceTree = "<group>"; };
 		50C7D5FA186082B100D8936D /* StaticOcclusionComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusionComponent.cpp; sourceTree = "<group>"; };
@@ -4359,6 +4361,7 @@
 		E8C486F4196BD2390082E634 /* Thread */ = {
 			isa = PBXGroup;
 			children = (
+				50780D9F1B00FE3D0065073A /* ThreadLocal.h */,
 				4F34E1A91A234D86000681BB /* Semaphore.h */,
 				4F34E1AA1A234D86000681BB /* Spinlock.h */,
 				E8C486F5196BD2390082E634 /* LockGuard.h */,
@@ -5199,6 +5202,7 @@
 				D7C556371A7A117000175ED9 /* DataStorage.h in Headers */,
 				E8B3CC7916B9326E002BD35F /* SwitchComponent.h in Headers */,
 				E8B3CC7B16B9326E002BD35F /* TransformComponent.h in Headers */,
+				50780DA01B00FE3D0065073A /* ThreadLocal.h in Headers */,
 				E8B3CC7D16B9326E002BD35F /* UpdatableComponent.h in Headers */,
 				E8B3CC7F16B9326E002BD35F /* DataNode.h in Headers */,
 				E8B3CC8016B9326E002BD35F /* Drawable.h in Headers */,
