@@ -118,6 +118,9 @@ while continue_process_stdout:
         line = sub_process.stdout.readline()
         if line != '':
 
+            line = line.replace("(lldb)", "")
+
+            # open Frame delta file for writing
             teamcity_line_index = line.find("##teamcity[message text='device")
             if teamcity_line_index != -1:
                 device_name = line[teamcity_line_index:]
