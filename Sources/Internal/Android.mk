@@ -370,4 +370,4 @@ $(call import-module,android-ndk-profiler)
 endif
 endif
 
-$(call import-module,box2d)
+$(call import-module,Box2D)
