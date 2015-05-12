@@ -11,8 +11,8 @@ VPROG_OUT_BEGIN
     VPROG_OUT_COLOR0(vegetationColor,3)
 VPROG_OUT_END
 
-DECL_SAMPLER2D(heightmap)
-DECL_SAMPLER2D(vegetationmap)
+DECL_VP_SAMPLER2D(heightmap)
+DECL_VP_SAMPLER2D(vegetationmap)
 
 property float4x4 worldViewProjMatrix : shared,dynamic : ;
 property float3 tilePos : shared,static : ;

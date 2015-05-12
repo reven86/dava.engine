@@ -7,7 +7,7 @@ FPROG_OUT_BEGIN
     FPROG_OUT_COLOR
 FPROG_OUT_END
 
-DECL_SAMPLER2D(albedo)
+DECL_FP_SAMPLER2D(albedo)
 
 #if LOD_COLOR
 property float3 lodColor : shared,static : def_value=1,1,1;
