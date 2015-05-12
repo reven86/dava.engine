@@ -277,7 +277,7 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
     DVASSERT(!self->isMapped);
     if( self->format == TEXTURE_FORMAT_A4R4G4B4 )
     {
-        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
+        Size2i  ext = TextureExtents( Size2i(self->width,self->height), level );
         
         gles2_Texture_Map( tex, level, face );
         memcpy( self->mappedData, data, ext.dx*ext.dy*sizeof(uint16) );
