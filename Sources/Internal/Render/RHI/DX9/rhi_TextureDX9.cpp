@@ -81,8 +81,8 @@ _SwapRB4( void* data, uint32 size )
         uint8   t0 = d[0];
         uint8   t1 = d[1];
 
-        d[0] = (t0&0x00FF) | (t1&0x00FF);
-        d[1] = (t1&0x00FF) | (t0&0x00FF);
+        d[0] = (t0&0xF0) | (t1&0x0F);
+        d[1] = (t1&0xF0) | (t0&0x0F);
     }
 }
 
