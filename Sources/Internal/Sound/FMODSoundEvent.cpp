@@ -84,7 +84,18 @@ bool FMODSoundEvent::Trigger()
         FMOD_VERIFY(fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo));
         if(fmodEventInfo)
         {
-            Logger::Info("[FMODSoundEvent::%s] %s, pos(%f, %f, %f), dir(%f, %f, %f), isDirectional = %d", __FUNCTION__, eventName.c_str(), position.x, position.y, position.z, direction.x, direction.y, direction.z, isDirectional);
+            Logger::Info("[FMODSoundEvent::%s] %s", __FUNCTION__, eventName.c_str());
+            
+            int numProjects = 0;
+            FMOD_VERIFY(fmodEventSystem->getNumProjects(&numProjects));
+
+            int numEvents = 0;
+            FMOD_VERIFY(fmodEventSystem->getNumEvents(&numEvents));
+            
+            int numlisteners = 0;
+            FMOD_VERIFY(fmodEventSystem->get3DNumListeners(&numlisteners));
+
+            Logger::Info("[FMODSoundEvent::%s] numProjects(%d), numEvents(%d), numlisteners(%d)", __FUNCTION__, numProjects, numEvents, numlisteners);
             
             if(isDirectional)
             {
