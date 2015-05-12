@@ -621,8 +621,8 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, Pix
             dstImg.nDataSize = 0;
             dstImg.pData = NULL;
 
-            if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS ||
-                dstImg.nDataSize == 0)
+            if (/*Qonvert(&srcImg, &dstImg) != Q_SUCCESS ||
+                dstImg.nDataSize == 0*/false)
             {
                 Logger::Error("[NvttHelper::DecompressAtc] Reading decompress atc data.");
                 res = false;
@@ -630,7 +630,7 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, Pix
             }
 
             dstImg.pData = new unsigned char[dstImg.nDataSize];
-            if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS)
+            if (/*Qonvert(&srcImg, &dstImg) != Q_SUCCESS*/false)
             {
                 Logger::Error("[NvttHelper::DecompressAtc] Reading decompress atc data.");
                 SafeDeleteArray(dstImg.pData);
@@ -1135,7 +1135,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
         dstImg.nDataSize = 0;
         dstImg.pData = NULL;
 
-        if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
+        if (/*Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0*/false)
         {
             Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
             return false;
@@ -1166,7 +1166,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
         dstImg.pData = tmpBuffer;
         tmpBuffer += dstImg.nDataSize;
 
-        if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
+        if (/*Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0*/false)
         {
             Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
             SafeDeleteArray(buffer);
@@ -1351,7 +1351,7 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath &fileNameOriginal,
             dstImg.nDataSize = 0;
             dstImg.pData = NULL;
 
-            if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
+            if (/*Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0*/false)
             {
                 Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
                 return false;
@@ -1394,7 +1394,7 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath &fileNameOriginal,
             dstImg.pData = tmpBuffer;
             tmpBuffer += dstImg.nDataSize;
 
-            if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
+            if (/*Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0*/false)
             {
                 Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
                 SafeDeleteArray(buffer);
