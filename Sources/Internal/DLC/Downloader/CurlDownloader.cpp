@@ -358,7 +358,7 @@ void CurlDownloader::SaveChunkHandler(BaseObject * caller, void * callerData, vo
             {
                 saveResult = DLE_FILE_ERROR; // this case means that not all data which we wants to save is saved. So we produce file system error.
                 fileErrno = errno;
-                Logger::Error("[CurlDownloader::CurlDataRecvHandler] Couldn't save downloaded data chunk");
+                Logger::Error("[CurlDownloader::CurlDataRecvHandler] Couldn't save downloaded data chunk (errno=%d)", errno);
                 return;
             }
             
