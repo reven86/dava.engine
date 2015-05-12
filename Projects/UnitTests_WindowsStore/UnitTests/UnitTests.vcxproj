@@ -135,8 +135,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Link>
-      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;windowscodecs.lib;dwrite.lib;..\_build\DavaFramework\Debug\DavaFramework.lib;..\_build\DavaTools\Debug\DavaTools.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;windowscodecs.lib;dwrite.lib;..\_build\DavaFramework\Debug\DavaFramework.lib;..\_build\DavaTools\Debug\DavaTools.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\angle_common.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fmodexWSA80L_vc.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fmodexWSA81L_vc.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fmod_eventWSA80L.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fmod_eventWSA81L.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\freetype.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fribidid.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\jpeg_win10.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libANGLE.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libcurl.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libdxtd.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libEGL.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libGLESv2.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libmongodb_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libogg_static.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libtheora10_static.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libvorbis_static.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libxml_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libyaml_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\lua_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\pnglib_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\preprocessor.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\PVRTexLib32.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\translator.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\translator_lib.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\translator_static.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\unibreak.lib;..\..\..\Libs\IMagickHelpLib\IMagickHelper.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories); $(VCInstallDir)\lib\store; $(VCInstallDir)\lib</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libcmt.lib;libcmtd.lib;</IgnoreSpecificDefaultLibraries>
     </Link>
     <ClCompile>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -144,14 +145,15 @@
       <AdditionalIncludeDirectories>$(ProjectDir);$(IntermediateOutputPath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;_DEBUG;__DAVAENGINE_DEBUG__;NOMINMAX;_CRT_SECURE_NO_DEPRECATE;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Link>
-      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;windowscodecs.lib;dwrite.lib;..\_build\DavaFramework\Release\DavaFramework.lib;..\_build\DavaTools\Release\DavaTools.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;windowscodecs.lib;dwrite.lib;..\_build\DavaFramework\Release\DavaFramework.lib;..\_build\DavaTools\Release\DavaTools.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\angle_common.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\fmodexWSA80L_vc.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\fmodexWSA81L_vc.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\fmod_eventWSA80L.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\fmod_eventWSA81L.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\freetype.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\fribidid.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\jpeg_win10.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libANGLE.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libcurl.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libdxtd.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libEGL.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libGLESv2.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libmongodb_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libogg_static.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libtheora10_static.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libvorbis_static.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libxml_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libyaml_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\lua_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\pnglib_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\preprocessor.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\PVRTexLib32.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\translator.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\translator_lib.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\translator_static.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\unibreak.lib;..\..\..\Libs\IMagickHelpLib\IMagickHelper.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories); $(VCInstallDir)\lib\store; $(VCInstallDir)\lib</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libcmt.lib;libcmtd.lib;</IgnoreSpecificDefaultLibraries>
     </Link>
     <ClCompile>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -159,7 +161,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir);$(IntermediateOutputPath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;NDEBUG;NOMINMAX;_CRT_SECURE_NO_DEPRECATE;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
