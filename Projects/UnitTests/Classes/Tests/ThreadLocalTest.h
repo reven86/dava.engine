@@ -31,7 +31,7 @@
 #define __THREADLOCALTEST_TEST_H__
 
 #include "DAVAEngine.h"
-#include "TestTemplate.h"
+#include "Infrastructure/TestTemplate.h"
 
 using namespace DAVA;
 
