@@ -496,7 +496,7 @@ PatchFileReader::PatchFileReader(const FilePath &path, bool beVerbose)
     else
     {
         parseError = ERROR_CANT_READ;
-        curErrno = FileSystem::Instance()->GetErrno();
+        curErrno = errno;
     }
 }
 
@@ -699,7 +699,7 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
         {
             if(!FileSystem::Instance()->CopyFile(origPath, newPath, true))
             {
-                curErrno = FileSystem::Instance()->GetErrno();
+                curErrno = errno;
                 ret = false;
             }
         }
@@ -737,7 +737,7 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                 File* origFile = File::Create(origPath, File::OPEN | File::READ);
                 if(nullptr == origFile)
                 {
-                    curErrno = FileSystem::Instance()->GetErrno();
+                    curErrno = errno;
                     lastError = ERROR_ORIG_READ;
                     ret = false;
                 }
@@ -750,7 +750,7 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                     {
                         if(origSize != origFile->Read(origData, origSize))
                         {
-                            curErrno = FileSystem::Instance()->GetErrno();
+                            curErrno = errno;
                             lastError = ERROR_ORIG_READ;
                             ret = false;
                         }
@@ -785,7 +785,7 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                 {
                     if(FileSystem::DIRECTORY_CANT_CREATE == FileSystem::Instance()->CreateDirectory(newPath, true))
                     {
-                        curErrno = FileSystem::Instance()->GetErrno();
+                        curErrno = errno;
                         lastError = ERROR_NEW_CREATE;
                         ret = false;
                     }
@@ -802,7 +802,7 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                     File* newFile = File::Create(tmpNewPath, File::CREATE | File::WRITE);
                     if(nullptr == newFile)
                     {
-                        curErrno = FileSystem::Instance()->GetErrno();
+                        curErrno = errno;
                         lastError = ERROR_NEW_CREATE;
                         ret = false;
                     }
@@ -818,7 +818,7 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                                 {
                                     if(curInfo.newSize != newFile->Write(newData, curInfo.newSize))
                                     {
-                                        curErrno = FileSystem::Instance()->GetErrno();
+                                        curErrno = errno;
                                         lastError = ERROR_NEW_WRITE;
                                         ret = false;
                                     }
@@ -854,7 +854,7 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                             // this operation should be atomic
                             if(!FileSystem::Instance()->MoveFile(tmpNewPath, newPath, true))
                             {
-                                curErrno = FileSystem::Instance()->GetErrno();
+                                curErrno = errno;
                                 lastError = ERROR_NEW_WRITE;
                                 ret = false;
 
@@ -897,7 +897,7 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                     // delete only empty directory
                     if(!FileSystem::Instance()->DeleteDirectory(newPathToDelete))
                     {
-                        curErrno = FileSystem::Instance()->GetErrno();
+                        curErrno = errno;
                         lastError = ERROR_NEW_WRITE;
                         ret = false;
                     }
@@ -906,7 +906,7 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                 {
                     if(!FileSystem::Instance()->DeleteFile(newPathToDelete))
                     {
-                        curErrno = FileSystem::Instance()->GetErrno();
+                        curErrno = errno;
                         lastError = ERROR_NEW_WRITE;
                         ret = false;
                     }

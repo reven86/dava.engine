@@ -462,7 +462,7 @@ void DLC::StepCheckInfoBegin()
     // write current dlcState into state-file
     if(!WriteUint32(dlcContext.stateInfoStorePath, dlcState))
     {
-        dlcContext.lastErrno = FileSystem::Instance()->GetErrno();
+        dlcContext.lastErrno = errno;
         PostError(DE_WRITE_ERROR);
         return;
     }
@@ -496,7 +496,7 @@ void DLC::StepCheckInfoFinish(const uint32 &id, const DownloadStatus &status)
                 }
                 else
                 {
-                    dlcContext.lastErrno = FileSystem::Instance()->GetErrno();
+                    dlcContext.lastErrno = errno;
                     PostError(DE_READ_ERROR);
                 }
             }
@@ -511,7 +511,7 @@ void DLC::StepCheckInfoFinish(const uint32 &id, const DownloadStatus &status)
                 else if(DLE_FILE_ERROR == downloadError)
                 {
                     // writing file problem
-                    dlcContext.lastErrno = FileSystem::Instance()->GetErrno();
+                    dlcContext.lastErrno = errno;
                     PostError(DE_WRITE_ERROR);
                 }
                 else
@@ -598,7 +598,7 @@ void DLC::StepCheckPatchFinish(const uint32 &id, const DownloadStatus &status)
                     else if(DLE_FILE_ERROR == downloadErrorFull)
                     {
                         // writing file problem
-                        dlcContext.lastErrno = FileSystem::Instance()->GetErrno();
+                        dlcContext.lastErrno = errno;
                         PostError(DE_WRITE_ERROR);
                     }
                     else
@@ -646,7 +646,7 @@ void DLC::StepCheckMetaFinish(const uint32 &id, const DownloadStatus &status)
             else if(DLE_FILE_ERROR == downloadError)
             {
                 // writing file problem
-                dlcContext.lastErrno = FileSystem::Instance()->GetErrno();
+                dlcContext.lastErrno = errno;
                 PostError(DE_WRITE_ERROR);
             }
             else
@@ -669,7 +669,7 @@ void DLC::StepDownloadPatchBegin()
     // write current dlcState into state-file
     if(!WriteUint32(dlcContext.stateInfoStorePath, dlcState))
     {
-        dlcContext.lastErrno = FileSystem::Instance()->GetErrno();
+        dlcContext.lastErrno = errno;
         PostError(DE_WRITE_ERROR);
         return;
     }
@@ -939,7 +939,7 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
         {
             // error, version can't be written
             dlcContext.patchingError = PatchFileReader::ERROR_NEW_WRITE;
-            dlcContext.lastErrno = FileSystem::Instance()->GetErrno();
+            dlcContext.lastErrno = errno;
         }
     }
 

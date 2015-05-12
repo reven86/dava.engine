@@ -874,9 +874,4 @@ bool FileSystem::CompareBinaryFiles(const FilePath &filePath1, const FilePath &f
     return res;
 }
 
-int32 FileSystem::GetErrno() const
-{
-    return errno;
-}
-
 }
