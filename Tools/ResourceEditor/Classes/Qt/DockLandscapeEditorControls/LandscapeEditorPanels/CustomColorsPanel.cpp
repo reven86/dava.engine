@@ -7,7 +7,7 @@
 #include "Constants.h"
 #include "Main/QtUtils.h"
 #include "Qt/DockLandscapeEditorControls/LandscapeEditorShortcutManager.h"
-#include "Tools/QtFileDialog/QtFileDialog.h"
+#include "QtTools/FileDialog/FileDialog.h"
 #include "Tools/PathDescriptor/PathDescriptor.h"
 
 #include <QLayout>
@@ -207,7 +207,7 @@ bool CustomColorsPanel::SaveTexture()
     QString filePath;
     for ( ;; )
     {
-        filePath = QtFileDialog::getSaveFileName( NULL, QString( ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str() ),
+        filePath = FileDialog::getSaveFileName( NULL, QString( ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str() ),
             QString( selectedPathname.GetAbsolutePathname().c_str() ),
             PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 

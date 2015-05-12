@@ -174,11 +174,10 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 	Logger::FrameworkDebug("Packing to separate textures");
 
 	lastPackedPacker = 0;
-	for (List<DefinitionFile*>::iterator dfi = defsList.begin(); dfi != defsList.end(); ++dfi)
+    for (auto& defFile : defsList)
 	{
 		sortVector.clear();
 		
-		DefinitionFile * defFile = *dfi;
 		for (int frame = 0; frame < defFile->frameCount; ++frame)
 		{
 			SizeSortItem sortItem;
@@ -234,7 +233,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 			// Writing 
 			for (int frame = 0; frame < defFile->frameCount; ++frame)
 			{
-				Rect2i *destRect = lastPackedPacker->SearchRectForPtr(&defFile->frameRects[frame]);
+				PackedInfo *destRect = lastPackedPacker->SearchRectForPtr(&defFile->frameRects[frame]);
 				if (!destRect)
 				{
 					AddError(Format("*** ERROR: Can't find rect for frame - %d. Definition - %s.",
@@ -333,7 +332,7 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 			
 			for (int frame = 0; frame < defFile->frameCount; ++frame)
 			{
-				Rect2i *destRect = lastPackedPacker->SearchRectForPtr(&defFile->frameRects[frame]);
+				auto* destRect = lastPackedPacker->SearchRectForPtr(&defFile->frameRects[frame]);
 				if (!destRect)
 				{
 					AddError(Format("*** ERROR: Can't find rect for frame - %d. Definition - %s. ",
@@ -391,9 +390,8 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 	{
 		// try to pack for each resolution
 		float maxValue = 0.0f;
-		//int bestResolution = 1025 * 1025;
 		
-        Logger::FrameworkDebug("* Packing tries started: ");
+        Logger::FrameworkDebug("* Packing attempts started: ");
 		
 		ImagePacker * bestPackerForThisStep = 0;
 		Vector<SizeSortItem> newWorkVector;
@@ -448,16 +446,16 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 		
 		for (int frame = 0; frame < defFile->frameCount; ++frame)
 		{
-			Rect2i * destRect;
+			PackedInfo* packedInfo = nullptr;
 			ImagePacker * foundPacker = 0;
 			int packerIndex = 0;
 			FilePath imagePath;
 			
 			for (packerIndex = 0; packerIndex < (int)packers.size(); ++packerIndex)
 			{
-				destRect = packers[packerIndex]->SearchRectForPtr(&defFile->frameRects[frame]);
+				packedInfo = packers[packerIndex]->SearchRectForPtr(&defFile->frameRects[frame]);
 			
-				if (destRect)
+				if (packedInfo)
 				{
 					foundPacker = packers[packerIndex];
                     FilePath withoutExt(defFile->filename);
@@ -474,7 +472,7 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
                 
 				PngImageExt image;
 				image.Read(imagePath);
-				DrawToFinalImage(*finalImages[packerIndex], image, *destRect, defFile->frameRects[frame]);
+				DrawToFinalImage(*finalImages[packerIndex], image, *packedInfo, defFile->frameRects[frame]);
 			}
 		}
 	}
@@ -501,23 +499,14 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 }
 
 
-Rect2i TexturePacker::ReduceRectToOriginalSize(const Rect2i & _input, uint32 rmargin, uint32 bmargin)
+Rect2i TexturePacker::GetOriginalSizeRect(const PackedInfo& _input)
 {
-	Rect2i r = _input;
-
-	if ( useTwoSideMargin )
-	{
-		r.x+=1;
-		r.y+=1;
-		r.dx-=2;
-		r.dy-=2;
-	}
-	else
-	{
-		r.dx -= rmargin;
-		r.dy -= bmargin;
-	}
-	return r;
+    Rect2i r = _input.rect;
+    r.x += _input.leftMargin;
+    r.y += _input.topMargin;
+    r.dx -= (_input.leftMargin + _input.rightMargin);
+    r.dy -= (_input.topMargin + _input.bottomMargin);
+    return r;
 }
 
 bool TexturePacker::WriteDefinition(const FilePath & /*excludeFolder*/, const FilePath & outputPath, const String & _textureName, DefinitionFile * defFile)
@@ -538,10 +527,8 @@ bool TexturePacker::WriteDefinition(const FilePath & /*excludeFolder*/, const Fi
 	fprintf(fp, "%d\n", defFile->frameCount); 
 	for (int frame = 0; frame < defFile->frameCount; ++frame)
 	{
-		uint32 rmargin = TexturePacker::DEFAULT_MARGIN;
-		uint32 bmargin = TexturePacker::DEFAULT_MARGIN;
-		Rect2i *destRect = lastPackedPacker->SearchRectForPtr(&defFile->frameRects[frame],rmargin,bmargin);
-		if (!destRect)
+		PackedInfo* packedInfo = lastPackedPacker->SearchRectForPtr(&defFile->frameRects[frame]);
+		if (!packedInfo)
 		{
 			AddError(Format("*** ERROR: Can't find rect for frame - %d. Definition - %s. ",
 				frame,
@@ -550,11 +537,11 @@ bool TexturePacker::WriteDefinition(const FilePath & /*excludeFolder*/, const Fi
 		else
 		{
 			Rect2i origRect = defFile->frameRects[frame];
-			Rect2i writeRect = ReduceRectToOriginalSize(*destRect,rmargin,bmargin);
+			Rect2i imageRect = GetOriginalSizeRect(*packedInfo);
             String frameName = defFile->frameNames.size() > 0 ? defFile->frameNames[frame] : String();
-			WriteDefinitionString(fp, writeRect, origRect, 0, frameName);
+			WriteDefinitionString(fp, imageRect, origRect, 0, frameName);
 
-			if(!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), writeRect.GetSize()))
+			if(!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), imageRect.GetSize()))
 			{
 				Logger::Warning("In sprite %s.psd frame %d has size bigger than sprite size. Frame will be cropped.", defFile->filename.GetBasename().c_str(), frame);
 			}
@@ -590,12 +577,12 @@ bool TexturePacker::WriteMultipleDefinition(const FilePath & /*excludeFolder*/, 
 	// find used texture indexes for this sprite
 	for (int frame = 0; frame < defFile->frameCount; ++frame)
 	{
-		Rect2i * destRect = 0;
+		PackedInfo* packedInfo = 0;
 		int packerIndex = 0;
 		for (packerIndex = 0; packerIndex < (int)usedPackers.size(); ++packerIndex)
 		{
-			destRect = usedPackers[packerIndex]->SearchRectForPtr(&defFile->frameRects[frame]);
-			if (destRect)break;
+			packedInfo = usedPackers[packerIndex]->SearchRectForPtr(&defFile->frameRects[frame]);
+			if (packedInfo) break;
 		}
 		// save packer index for frame
 		packerIndexArray[frame] = packerIndex;
@@ -623,19 +610,17 @@ bool TexturePacker::WriteMultipleDefinition(const FilePath & /*excludeFolder*/, 
 	fprintf(fp, "%d\n", defFile->frameCount); 
 	for (int frame = 0; frame < defFile->frameCount; ++frame)
 	{
-		Rect2i * destRect = 0;
-		uint32 rmargin = TexturePacker::DEFAULT_MARGIN;
-		uint32 bmargin = TexturePacker::DEFAULT_MARGIN;
+		PackedInfo* packedInfo = 0;
 		for (int packerIndex = 0; packerIndex < (int)usedPackers.size(); ++packerIndex)
 		{
-			destRect = usedPackers[packerIndex]->SearchRectForPtr(&defFile->frameRects[frame],rmargin,bmargin);
-			if (destRect)break;
+			packedInfo = usedPackers[packerIndex]->SearchRectForPtr(&defFile->frameRects[frame]);
+			if (packedInfo) break;
 		}
 		int packerIndex = packerIndexToFileIndex[packerIndexArray[frame]]; // here get real index in file for our used texture
-		if (destRect)
+		if (packedInfo)
 		{
 			Rect2i origRect = defFile->frameRects[frame];
-            Rect2i writeRect = ReduceRectToOriginalSize(*destRect,rmargin,bmargin);
+            Rect2i writeRect = GetOriginalSizeRect(*packedInfo);
             String frameName = defFile->frameNames.size() > 0 ? defFile->frameNames[frame] : String();
 			WriteDefinitionString(fp, writeRect, origRect, packerIndex, frameName);
 
@@ -826,13 +811,13 @@ bool TexturePacker::CheckFrameSize(const Size2i &spriteSize, const Size2i &frame
     return isSizeCorrect;
 }
 
-void TexturePacker::DrawToFinalImage( PngImageExt & finalImage, PngImageExt & drawedImage, const Rect2i & drawRect, const Rect2i &alphaOffsetRect )
+void TexturePacker::DrawToFinalImage( PngImageExt & finalImage, PngImageExt & drawedImage, const PackedInfo& drawRect, const Rect2i &alphaOffsetRect )
 {
-	finalImage.DrawImage(drawRect, alphaOffsetRect, &drawedImage, useTwoSideMargin);
+	finalImage.DrawImage(drawRect, alphaOffsetRect, &drawedImage);
 
 	if (CommandLineParser::Instance()->IsFlagSet("--debug"))
 	{
-		finalImage.DrawRect(drawRect, 0xFF0000FF);
+		finalImage.DrawRect(drawRect.rect, 0xFF0000FF);
 	}
 }
 

@@ -266,6 +266,8 @@ public:
 	PixelFormat GetFormat() const;
 
     static void SetPixelization(bool value);
+    
+    int32 GetBaseMipMap() const;
 
 protected:
     
@@ -302,7 +304,6 @@ protected:
 #endif //#if defined(__DAVAENGINE_OPENGL__)
     
     bool IsLoadAvailable(const eGPUFamily gpuFamily) const;
-	int32 GetBaseMipMap() const;
 
 	static eGPUFamily GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor *descriptor);
 

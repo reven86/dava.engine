@@ -78,6 +78,7 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
     dlcContext.remoteVerStotePath = workingDir + "RemoteVersion.info";
     dlcContext.remotePatchDownloadId = 0;
     dlcContext.remotePatchSize = 0;
+    dlcContext.remotePatchReadySize = 0;
     dlcContext.remotePatchStorePath = workingDir + "Remote.patch";
     dlcContext.remoteMetaStorePath = workingDir + "Remote.meta";
 
@@ -121,6 +122,9 @@ void DLC::GetProgress(uint64 &cur, uint64 &total) const
     switch(dlcState)
     {
         case DS_READY:
+            total = dlcContext.remotePatchSize;
+            cur = dlcContext.remotePatchReadySize;
+            break;
         case DS_DOWNLOADING:
             total = dlcContext.remotePatchSize;
             DownloadManager::Instance()->GetProgress(dlcContext.remotePatchDownloadId, cur);
@@ -512,8 +516,16 @@ void DLC::StepCheckInfoCancel()
 
 void DLC::StepCheckPatchBegin()
 {
-    dlcContext.remotePatchFullSize = 0;
+    File *f = File::Create(dlcContext.remotePatchStorePath, File::OPEN | File::READ);
+    if(nullptr != f)
+    {
+        dlcContext.remotePatchReadySize = f->GetSize();
+        f->Release();
+    }
+
     dlcContext.remotePatchLiteSize = 0;
+    dlcContext.remotePatchFullSize = 0;
+
     dlcContext.remotePatchFullUrl = dlcContext.remoteUrl + MakePatchUrl(0, dlcContext.remoteVer);
     dlcContext.remotePatchLiteUrl = dlcContext.remoteUrl + MakePatchUrl(dlcContext.localVer, dlcContext.remoteVer);
 
@@ -790,6 +802,8 @@ void DLC::StepPatchFinish()
             PostError(DE_READ_ERROR);
             break;
 
+        case PatchFileReader::ERROR_APPLY:
+        case PatchFileReader::ERROR_NEW_CREATE:
         case PatchFileReader::ERROR_NEW_WRITE:
             PostError(DE_WRITE_ERROR);
             break;
@@ -815,49 +829,84 @@ void DLC::StepPatchFinish()
 void DLC::StepPatchCancel()
 {
     dlcContext.patchInProgress = false;
+    patchingThread->Join();
 }
     
 void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
 {
     PatchFileReader patchReader(dlcContext.remotePatchStorePath);
-    
-    auto applyPatchesIf = [&](std::function<bool (const PatchInfo* info)>  shouldApply)
+
+    bool applySuccess = true;
+    const PatchInfo *patchInfo = nullptr;
+
+    auto applyPatchesFn = [&](bool allowTruncate, std::function<bool(const PatchInfo* info)> conditionFn)
     {
-        if (!dlcContext.patchInProgress || PatchFileReader::ERROR_NO != patchReader.GetLastError())
-            return;
-        
-        bool lastOpSucceeded = patchReader.ReadFirst();
-        while (dlcContext.patchInProgress && lastOpSucceeded)
+        if(applySuccess)
         {
-            if(shouldApply(patchReader.GetCurInfo()))
+            bool truncate = false;
+
+            // To be able to truncate patch-file we should go from last patch to the first one.
+            // If incoming patch-file doesn't support reverse pass we will try to apply it without truncation.
+            // This will allow us to support old patch files.
+            if(allowTruncate && patchReader.ReadLast())
             {
-                lastOpSucceeded = patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath());
-                DVASSERT(lastOpSucceeded || PatchFileReader::ERROR_NO != patchReader.GetLastError())
-                if (lastOpSucceeded)
+                truncate = true;
+            }
+
+            if(!truncate)
+            {
+                patchReader.ReadFirst();
+            }
+
+            // Get current patch info
+            patchInfo = patchReader.GetCurInfo();
+            while(applySuccess && nullptr != patchInfo && dlcContext.patchInProgress)
+            {
+                // Patch will be applied only if it fit condition, specified by caller
+                if(conditionFn(patchInfo))
                 {
-                    dlcContext.appliedPatchCount++;
+                    applySuccess = patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath());
+                    if(applySuccess)
+                    {
+                        dlcContext.appliedPatchCount++;
+                    }
+                }
+
+                // Go to the next patch and check if we need to truncate applied patch
+                if(applySuccess && dlcContext.patchInProgress)
+                {
+                    if(truncate)
+                    {
+                        patchReader.Truncate();
+                        patchReader.ReadPrev();
+                    }
+                    else
+                    {
+                        patchReader.ReadNext();
+                    }
+
+                    patchInfo = patchReader.GetCurInfo();
                 }
             }
-            lastOpSucceeded = lastOpSucceeded && /*only if apply succeeded*/patchReader.ReadNext();
         }
     };
-    
-    //first apply only patches that either reduce or don't change resources size
-    applyPatchesIf([] (const PatchInfo* info)
-                   {
-                       return info->newSize <= info->origSize;
-                   });
-    
-    //then apply patches that increase resources size
-    applyPatchesIf([] (const PatchInfo* info)
-                   {
-                       return info->newSize > info->origSize;
-                   });
-    
-    
+
+    // first step - apply patches, that either reduce or don't change resources size
+    applyPatchesFn(false, 
+        [](const PatchInfo* info) 
+        { 
+            return info->newSize <= info->origSize; 
+        });
+
+    // no errors on first step - continue applying patches, that increase resources size
+    applyPatchesFn(true,
+        [](const PatchInfo* info) 
+        { 
+            return info->newSize > info->origSize; 
+        });
+
     // check if no errors occurred during patching
     dlcContext.patchingError = patchReader.GetLastError();
-    
     if(dlcContext.patchInProgress && PatchFileReader::ERROR_NO == dlcContext.patchingError)
     {
         DVASSERT(dlcContext.appliedPatchCount == dlcContext.totalPatchCount);

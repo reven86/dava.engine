@@ -758,11 +758,13 @@ eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vec
     }
 
     ImageInfo info;
+    
     Size2i size = NvttHelper::GetImageSize(dec);
     info.width = size.dx;
     info.height = size.dy;
     info.format = NvttHelper::GetPixelFormat(dec);
     info.dataSize = NvttHelper::GetDataSize(dec);
+    info.mipmapsCount = NvttHelper::GetMipMapLevelsCount(dec);
 
     return info;
 }

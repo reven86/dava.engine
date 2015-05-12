@@ -57,8 +57,8 @@ WideString GetDeviceName();
 void DisableSleepTimer();
 void EnableSleepTimer();
 	
-//int SplitString(const String& input, const String& delimiter, std::vector<String>& results, bool includeEmpties = true);
-void Split(const String & inputString, const String & delims, Vector<String> & tokens, bool skipDuplicated = false, bool trimNotEmpty = false);
+void Split(const String & inputString, const String & delims, Vector<String> & tokens, bool skipDuplicated = false, bool addEmptyTokens = false);
+void Merge(const Vector<String> & tokens, const char delim, String & outString);
 void ReplaceBundleName(const String &newBundlePath);
     
 template<class T>

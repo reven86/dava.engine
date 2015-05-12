@@ -32,9 +32,11 @@
 #include "Commands2/ParticleEditorCommands.h"
 #include "TextureBrowser/TextureConvertor.h"
 #include "Qt/Settings/SettingsManager.h"
-#include "Tools/QtFileDialog/QtFileDialog.h"
 #include "Project/ProjectManager.h"
 #include "ImageTools/ImageTools.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
+
 
 #include <QHBoxLayout>
 #include <QGraphicsWidget>
@@ -674,7 +676,7 @@ void EmitterLayerWidget::OnSpriteBtn()
 	FilePath projectPath(ProjectManager::Instance()->CurProjectPath());
 	projectPath += "Data/Gfx/Particles/";
     
-	QString filePath = QtFileDialog::getOpenFileName(NULL, QString("Open particle sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Effect File (*.txt)"));
+	QString filePath = FileDialog::getOpenFileName(NULL, QString("Open particle sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Effect File (*.txt)"));
 	if (filePath.isEmpty())
 		return;
 	

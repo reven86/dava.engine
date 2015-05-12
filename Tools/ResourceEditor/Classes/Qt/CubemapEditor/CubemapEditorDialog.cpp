@@ -32,13 +32,12 @@
 #include "CubemapEditor/CubemapUtils.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Qt/Main/QtUtils.h"
-#include "Tools/QtFileDialog/QtFileDialog.h"
 #include "ui_cubemapeditordialog.h"
 #include "Project/ProjectManager.h"
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
 #include "ImageTools/ImageTools.h"
-
+#include "QtTools/FileDialog/FileDialog.h"
 
 #include <QMouseEvent>
 #include <QMessageBox>
@@ -104,7 +103,7 @@ void CubemapEditorDialog::LoadImageFromUserFile(float rotation, int face)
     FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastFaceDir",
                                                             ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname());
 
-    QString fileName = QtFileDialog::getOpenFileName(this,
+    QString fileName = FileDialog::getOpenFileName(this,
                                                      tr("Open Cubemap Face Image"),
                                                      QString::fromStdString(projectPath.GetAbsolutePathname()),
                                                      PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
@@ -528,7 +527,7 @@ void CubemapEditorDialog::OnLoadTexture()
 	
 	if(MB_FLAG_YES == answer)
 	{
-		QString fileName = QtFileDialog::getOpenFileName(this,
+		QString fileName = FileDialog::getOpenFileName(this,
 														tr("Open Cubemap Texture"),
 														rootPath,
 														tr("Tex File (*.tex)"));
