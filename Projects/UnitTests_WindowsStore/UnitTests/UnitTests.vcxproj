@@ -1,0 +1,338 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{82089167-ff09-4c4e-99e0-5bbb33984695}</ProjectGuid>
+    <Keyword>DirectXApp</Keyword>
+    <RootNamespace>WindowsStore</RootNamespace>
+    <DefaultLanguage>ru-RU</DefaultLanguage>
+    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
+    <AppContainerApplication>true</AppContainerApplication>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>8.2</ApplicationTypeRevision>
+    <ProjectName>UnitTests_WindowsStore</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VSINSTALLDIR)\Common7\IDE\Extensions\Microsoft\VsGraphics\ImageContentTask.props" />
+    <Import Project="$(VSINSTALLDIR)\Common7\IDE\Extensions\Microsoft\VsGraphics\MeshContentTask.props" />
+    <Import Project="$(VSINSTALLDIR)\Common7\IDE\Extensions\Microsoft\VsGraphics\ShaderGraphContentTask.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <PackageCertificateKeyFile>UnitTests_TemporaryKey.pfx</PackageCertificateKeyFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>..\..\..\Sources\Internal;..\..\..\Libs\angle-ms-master\include;..\..\..\Libs\include;..\..\..\Projects\UnitTests\Classes\Infrastructure;..\..\..\Sources\Internal\..\Tools;..\..\..\Sources\Internal\..\External;..\..\..\Projects\UnitTests\Classes;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>D:\dava.framework\Sources\Internal\..\Tools;D:\dava.framework\Sources\Internal\..\External;D:\dava.framework\Libs\include;D:\dava.framework\Sources\Internal;D:\dava.framework\Libs\angle-ms-master\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <Link>
+      <AdditionalDependencies>d2d1.lib; d3d11.lib; dxgi.lib; windowscodecs.lib; dwrite.lib; %(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories); $(VCInstallDir)\lib\store\arm; $(VCInstallDir)\lib\arm</AdditionalLibraryDirectories>
+    </Link>
+    <ClCompile>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(IntermediateOutputPath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <Link>
+      <AdditionalDependencies>d2d1.lib; d3d11.lib; dxgi.lib; windowscodecs.lib; dwrite.lib; %(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories); $(VCInstallDir)\lib\store\arm; $(VCInstallDir)\lib\arm</AdditionalLibraryDirectories>
+    </Link>
+    <ClCompile>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(IntermediateOutputPath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Link>
+      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;windowscodecs.lib;dwrite.lib;..\_build\DavaFramework\Debug\DavaFramework.lib;..\_build\DavaTools\Debug\DavaTools.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories); $(VCInstallDir)\lib\store; $(VCInstallDir)\lib</AdditionalLibraryDirectories>
+    </Link>
+    <ClCompile>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(IntermediateOutputPath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Link>
+      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;windowscodecs.lib;dwrite.lib;..\_build\DavaFramework\Release\DavaFramework.lib;..\_build\DavaTools\Release\DavaTools.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories); $(VCInstallDir)\lib\store; $(VCInstallDir)\lib</AdditionalLibraryDirectories>
+    </Link>
+    <ClCompile>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(IntermediateOutputPath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Link>
+      <AdditionalDependencies>d2d1.lib; d3d11.lib; dxgi.lib; windowscodecs.lib; dwrite.lib; %(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories); $(VCInstallDir)\lib\store\amd64; $(VCInstallDir)\lib\amd64</AdditionalLibraryDirectories>
+    </Link>
+    <ClCompile>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(IntermediateOutputPath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Link>
+      <AdditionalDependencies>d2d1.lib; d3d11.lib; dxgi.lib; windowscodecs.lib; dwrite.lib; %(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories); $(VCInstallDir)\lib\store\amd64; $(VCInstallDir)\lib\amd64</AdditionalLibraryDirectories>
+    </Link>
+    <ClCompile>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(IntermediateOutputPath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Image Include="Assets\Logo.scale-100.png" />
+    <Image Include="Assets\SmallLogo.scale-100.png" />
+    <Image Include="Assets\StoreLogo.scale-100.png" />
+    <Image Include="Assets\SplashScreen.scale-100.png" />
+    <Image Include="Assets\WideLogo.scale-100.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\BaseScreen.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\FrameworkMain.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\GameCore.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\TeamCityTestsOutput.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\TextureUtils.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\AlignTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\BiDiTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\CloneTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\ControlRotationTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DeviceInfoTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DFFontTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DLCDownloadTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DPITest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DXTTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\EntityTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\FilePathTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\InputTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\JPEGTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\KeyedArchiveTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\MaterialCompilerTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\OpenGLES30FormatTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\ParseTextTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\PVRTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\RectSpriteTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\SampleTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\SceneSystemTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\SoundTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\StaticTextFieldTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\StaticWebViewTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\TransparentWebViewTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\UIListTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\UIMovieTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\UIParticlesTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\UIScrollViewTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\ComponentsTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\Cpp14.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\DataVaultTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\DateTimeTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\FileListTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\FileSystemTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\FormatsTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\FunctionBindSingalTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\HashMapTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\JNITest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\JobManagerTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\KeyedArchiveYamlTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\LocalizationTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\MathTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\MemoryAllocatorsTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\MemoryManagerTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\NetworkTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\SaveImageTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\SpinLockTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\SplitTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\StringFormatTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\TextSizeTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\ThreadSyncTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\UnlimitedLogOutputTest.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Win32Specific\main_desktop.cpp" />
+    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Win32Specific\main_store.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+    <None Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\TestTemplate.cpp.template" />
+    <None Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\TestTemplate.h.template" />
+    <None Include="UnitTests_TemporaryKey.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\BaseScreen.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\FrameworkMain.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\GameCore.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\TeamCityTestsOutput.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\TestTemplate.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\TextureUtils.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\UITestTemplate.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\AlignTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\BiDiTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\CloneTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\ControlRotationTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DeviceInfoTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DFFontTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DLCDownloadTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DPITest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DXTTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\EntityTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\FilePathTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\InputTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\JPEGTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\KeyedArchiveTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\MaterialCompilerTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\OpenGLES30FormatTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\ParseTextTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\PVRTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\RectSpriteTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\SampleTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\SceneSystemTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\SoundTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\StaticTextFieldTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\StaticWebViewTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\TransparentWebViewTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\UIListTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\UIMovieTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\UIParticlesTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\UIScrollViewTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\ComponentsTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\Cpp14.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\DataVaultTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\DateTimeTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\FileListTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\FileSystemTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\FormatsTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\FunctionBindSingalTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\HashMapTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\JNITest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\JobManagerTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\KeyedArchiveYamlTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\LocalizationTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\MathTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\MemoryAllocatorsTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\MemoryManagerTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\NetworkTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\SaveImageTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\SpinLockTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\SplitTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\StringFormatTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\TextSizeTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\ThreadSyncTest.h" />
+    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\UnlimitedLogOutputTest.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VSINSTALLDIR)\Common7\IDE\Extensions\Microsoft\VsGraphics\ImageContentTask.targets" />
+    <Import Project="$(VSINSTALLDIR)\Common7\IDE\Extensions\Microsoft\VsGraphics\MeshContentTask.targets" />
+    <Import Project="$(VSINSTALLDIR)\Common7\IDE\Extensions\Microsoft\VsGraphics\ShaderGraphContentTask.targets" />
+  </ImportGroup>
+</Project>
