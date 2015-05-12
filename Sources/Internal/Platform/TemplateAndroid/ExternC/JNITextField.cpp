@@ -106,24 +106,20 @@ extern "C"
     {
         if (nullptr != pixels)
         {
+            DAVA::Logger::Error("update texture pixels id:%d, w:%d, h:%d", id, width, height);
             DVASSERT(width > 0);
             DVASSERT(height > 0);
 
             jboolean isCopy = JNI_FALSE;
             jint* rawData = env->GetIntArrayElements(pixels, &isCopy);
 
-            DVASSERT(rawData);
+            static_assert(sizeof(jint) == sizeof(DAVA::int32), "never happen");
+            DVASSERT(rawData != nullptr);
             DVASSERT(env->GetArrayLength(pixels) == width * height); // ARGB
 
             DAVA::uint32 pitch = width * 4; // 4 byte per pixel
 
-            // convert on the same memory
-            DAVA::ImageConvert::ConvertImageDirect(DAVA::FORMAT_BGRA8888,
-                    DAVA::FORMAT_RGBA8888, rawData, width, height, pitch, rawData,
-                    width, height, pitch);
-
-            DAVA::UITextFieldAndroid::TextFieldUpdateTexture(id, rawData, width,
-                    height);
+            DAVA::UITextFieldAndroid::TextFieldUpdateTexture(id, rawData, width, height);
 
             env->ReleaseIntArrayElements(pixels, rawData, 0);
         }

@@ -30,6 +30,8 @@
 
 #include "UITextFieldAndroid.h"
 #include "Utils/UTF8Utils.h"
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageConvert.h"
 
 using namespace DAVA;
 
@@ -542,10 +544,22 @@ void UITextFieldAndroid::TextFieldUpdateTexture(uint32_t id, int32* rawPixels,
     {
         UITextField& textField = *control->textField;
 
-        if (rawPixels)
+        if (nullptr != rawPixels)
         {
-            Texture* tex = Texture::CreateFromData(FORMAT_RGBA8888,
-                    reinterpret_cast<uint8*>(rawPixels), width, height, false);
+            const uint8* data = reinterpret_cast<uint8*>(rawPixels);
+            Image* image = Image::CreateFromData(width, height, FORMAT_RGBA8888, data);
+            SCOPE_EXIT{SafeRelease(image);};
+
+            // convert on the same memory
+            // TODO try skip conversion
+            // x86 and arm are little endian so no difference
+            uint32 pitch = width * 4;
+            uint8* imageData = image->GetData();
+            DAVA::ImageConvert::ConvertImageDirect(DAVA::FORMAT_BGRA8888,
+                    DAVA::FORMAT_RGBA8888, imageData, width, height, pitch, imageData,
+                    width, height, pitch);
+
+            Texture* tex = Texture::CreateFromData(image, false);
             SCOPE_EXIT{SafeRelease(tex);};
 
             Rect rect = textField.GetRect();

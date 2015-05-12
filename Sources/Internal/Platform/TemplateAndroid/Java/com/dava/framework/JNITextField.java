@@ -1,5 +1,7 @@
 package com.dava.framework;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
@@ -265,6 +267,27 @@ public class JNITextField {
                 }
                 // copy ARGB pixels values into our buffer
                 bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+                
+                FileOutputStream out = null;
+                try {
+                    String docPath = JNIApplication.GetApplication().GetDocumentPath();
+                    String doc2Path = JNIActivity.GetActivity().getFilesDir().getAbsolutePath();
+                    Log.e(TAG, "docPath: " + docPath + " doc2Path: " + doc2Path);
+                    out = new FileOutputStream( docPath + "/last_test_pixels.png");
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+                    // PNG is a lossless format, the compression factor (100) is ignored
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        if (out != null) {
+                            out.flush();
+                            out.close();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
                 
                 if (destroyBitmap)
                 {
@@ -941,11 +964,17 @@ public class JNITextField {
 
     public static void SetTextColor(final int id, final float r, final float g,
             final float b, final float a) {
+        Log.e(TAG, "set color: r:"+r+"g:"+g+"b"+b+"a"+a);
         JNIActivity.GetActivity().runOnUiThread(new SafeRunnableNoFilters(id) {
             @Override
             public void safeRun() {
-                text.setTextColor(Color.argb((int) (255 * a), (int) (255 * r),
-                        (int) (255 * g), (int) (255 * b)));
+                int alpha = (int)(255 * a);
+                int red = (int)(255 * r);
+                int green = (int)(255 * g);
+                int blue = (int)(255 * b);
+                int color = 0xFFFF4F00;//Color.argb(alpha, red, green, blue);
+                Log.e(TAG, "set color hex: 0x"+Integer.toHexString(color));
+                text.setTextColor(color);
             }
         });
     }
