@@ -977,9 +977,6 @@ void VegetationRenderObject::CreateRenderData()
 
 bool VegetationRenderObject::ReadyToRender()
 {
-    //RHI_COMPLETE fix render caps
-    return true;
-
     bool renderFlag = IsHardwareCapableToRenderVegetation() && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::VEGETATION_DRAW);
     
 #if defined(__DAVAENGINE_MACOS__)  || defined(__DAVAENGINE_WIN32__)
