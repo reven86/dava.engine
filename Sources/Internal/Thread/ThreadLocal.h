@@ -30,6 +30,7 @@
 #define __DAVAENGINE_THREADLOCAL_H__
 
 #include <type_traits>
+#include <cassert>
 
 #include "Base/BaseTypes.h"
 
@@ -47,7 +48,7 @@ namespace DAVA
         variables of type ThreadLocal can have only static storage duration (global or local static, and static data member)
         if you declare ThreadLocal as automatic object it's your own problems, so don't cry: Houston, we've got a problem
         
-        initialization of 'ThreadLocal<T> tls = value' is not implemented as thread variable will be initialized only
+        initialization of 'ThreadLocal<T> tls = value' is not implemented as in such case thread variable will be initialized only
         in main thread, other threads will have default value
 */
 template<typename T>
@@ -80,6 +81,9 @@ public:
     ThreadLocal& operator = (const T value) DAVA_NOEXCEPT;
     operator T () const DAVA_NOEXCEPT;
 
+    // Method to test whether thread local storage has been successfully created by system
+    bool IsCreated() const DAVA_NOEXCEPT;
+
 private:
     void SetValue(T value) const DAVA_NOEXCEPT;
     T GetValue() const DAVA_NOEXCEPT;
@@ -92,6 +96,7 @@ private:
 
 private:
     KeyType key;
+    bool isCreated = false;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -121,9 +126,15 @@ inline ThreadLocal<T>::operator T () const DAVA_NOEXCEPT
 }
 
 template<typename T>
+inline bool ThreadLocal<T>::IsCreated() const DAVA_NOEXCEPT
+{
+    return isCreated;
+}
+
+template<typename T>
 inline void ThreadLocal<T>::SetValue(T value) const DAVA_NOEXCEPT
 {
-    ValueUnion x;
+    ValueUnion x{};
     x.typedValue = value;
     SetTlsValue(x.voidPtr);
 }
@@ -131,7 +142,7 @@ inline void ThreadLocal<T>::SetValue(T value) const DAVA_NOEXCEPT
 template<typename T>
 inline T ThreadLocal<T>::GetValue() const DAVA_NOEXCEPT
 {
-    ValueUnion x;
+    ValueUnion x{};
     x.voidPtr = GetTlsValue();
     return x.typedValue;
 }
@@ -143,6 +154,8 @@ template<typename T>
 inline void ThreadLocal<T>::CreateTlsKey() DAVA_NOEXCEPT
 {
     key = TlsAlloc();
+    isCreated = key != TLS_OUT_OF_INDEXES;
+    assert(isCreated);
 }
 
 template<typename T>
@@ -168,7 +181,8 @@ inline void* ThreadLocal<T>::GetTlsValue() const DAVA_NOEXCEPT
 template<typename T>
 inline void ThreadLocal<T>::CreateTlsKey() DAVA_NOEXCEPT
 {
-    pthread_key_create(&key, nullptr);
+    isCreated = (0 == pthread_key_create(&key, nullptr));
+    assert(isCreated);
 }
 
 template<typename T>
