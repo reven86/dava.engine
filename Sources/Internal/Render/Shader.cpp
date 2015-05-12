@@ -230,7 +230,7 @@ ShaderDescriptor::ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource
             }
         }
     }
-    vertexSamplerList = vSource->Samplers();
+    vertexSamplerList = vSource->VertexSamplers();
     fragmentSamplerList = fSource->FragmentSamplers();
 }
 }
