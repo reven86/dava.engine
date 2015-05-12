@@ -37,14 +37,12 @@
 #if defined(__DAVAENGINE_MACOS__)
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/errno.h>
 #include <copyfile.h>
 #include <libproc.h>
 #include <libgen.h>
 #elif defined(__DAVAENGINE_IPHONE__)
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/errno.h>
 #include <copyfile.h>
 #include <libgen.h>
 #include <sys/sysctl.h>
@@ -55,14 +53,11 @@
 #include <sys/stat.h>
 #include <Shlobj.h>
 #include <tchar.h>
-#include <errno.h>
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/errno.h>
-
 #endif //PLATFORMS
 
 namespace DAVA
