@@ -269,6 +269,9 @@ elseif( IOS )
         set_xcode_property( ${TARGET} ONLY_ACTIVE_ARCH YES )
     endforeach ()
 
+    # Universal (iPad + iPhone)
+    set_target_properties( ${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2" )
+
 elseif( MACOS )
     set_target_properties ( ${PROJECT_NAME} PROPERTIES
                             MACOSX_BUNDLE_INFO_PLIST "${MACOS_PLIST}" 
