@@ -223,7 +223,7 @@ eGPUFamily GPUFamilyDescriptor::ConvertValueToGPU(const int32 value)
     {
         return static_cast<eGPUFamily>(value);
     }
-    else if (value == -1)
+    else if (value == -1) // -1 is an old value, left for compatibility: some old tex files may conatin gpu = -1
     {
         return GPU_ORIGIN;
     }
