@@ -90,6 +90,91 @@ elseif( MACOS )
 
     list( APPEND LIBRARIES      ${DYLIB_FILES} )
 
+elseif (WINDOWS_PHONE OR WINDOWS_STORE)
+
+	if(MSVC_VERSION GREATER 1899)
+		set(COMPILER_VERSION "14")
+	elseif(MSVC_VERSION GREATER 1700)
+		set(COMPILER_VERSION "12")
+	elseif(MSVC_VERSION GREATER 1600)
+		set(COMPILER_VERSION "11")
+	endif()
+	
+	set (APP_MANIFEST_NAME Package.appxmanifest)
+	if("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsPhone")
+		set(PLATFORM WP)
+		add_definitions("-DPHONE")
+		if("${CMAKE_SYSTEM_VERSION}" STREQUAL "8.0")
+			set(APP_MANIFEST_NAME WMAppManifest.xml)
+			set(WINDOWS_PHONE8 1)
+		endif()
+	elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore")
+		set(PLATFORM STORE)
+	else()
+		set(PLATFORM DESKTOP)
+		message(FATAL_ERROR "This app supports Store / Phone only. Please edit the target platform.")
+	endif()
+	
+	set(SHORT_NAME ${PROJECT_NAME})
+	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+	set(PACKAGE_GUID "6514377e-dfd4-4cdb-80df-4e0366346efc")
+	
+	if (NOT "${PLATFORM}" STREQUAL "DESKTOP")
+		configure_file(
+			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Manifests/Package_vc${COMPILER_VERSION}.${PLATFORM}.appxmanifest.in
+			${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}
+			@ONLY)
+	endif()
+	
+	if (WINDOWS_PHONE8)
+		set(CONTENT_FILES ${CONTENT_FILES}
+			${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}
+			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/FlipCycleTileLarge.png
+			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/FlipCycleTileMedium.png
+			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/FlipCycleTileSmall.png
+			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/IconicTileMediumLarge.png
+			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/IconicTileSmall.png
+			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/ApplicationIcon.png
+		)
+	  # Windows Phone 8.0 needs to copy all the images.
+	  # It doesn't know to use relative paths.
+	  file(COPY
+			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/FlipCycleTileLarge.png
+			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/FlipCycleTileMedium.png
+			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/FlipCycleTileSmall.png
+			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/IconicTileMediumLarge.png
+			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/IconicTileSmall.png
+			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/ApplicationIcon.png
+			DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+		)
+
+	elseif (NOT "${PLATFORM}" STREQUAL "DESKTOP")
+	  set(CONTENT_FILES ${CONTENT_FILES}
+		${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}
+		)
+
+		set(ASSET_FILES ${ASSET_FILES}
+			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Logo.png
+			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/SmallLogo.png
+			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/SplashScreen.png
+			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/StoreLogo.png
+		)
+	endif()
+	
+	set(RESOURCE_FILES
+		${CONTENT_FILES} ${DEBUG_CONTENT_FILES} ${RELEASE_CONTENT_FILES} ${ASSET_FILES} ${STRING_FILES}
+		${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/UnitTests_TemporaryKey.pfx)
+	
+	list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
+
+	set_property(SOURCE ${CONTENT_FILES} PROPERTY VS_DEPLOYMENT_CONTENT 1)
+	set_property(SOURCE ${ASSET_FILES} PROPERTY VS_DEPLOYMENT_CONTENT 1)
+	set_property(SOURCE ${ASSET_FILES} PROPERTY VS_DEPLOYMENT_LOCATION "Assets")
+	set_property(SOURCE ${STRING_FILES} PROPERTY VS_TOOL_OVERRIDE "PRIResource")
+	set_property(SOURCE ${DEBUG_CONTENT_FILES} PROPERTY VS_DEPLOYMENT_CONTENT $<CONFIG:Debug>)
+	set_property(SOURCE ${RELEASE_CONTENT_FILES} PROPERTY
+		VS_DEPLOYMENT_CONTENT $<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>)
+
 endif()
 
 ###
@@ -156,6 +241,10 @@ else()
         ${PROJECT_SOURCE_FILES} 
         ${RESOURCES_LIST}
     )
+	
+	if (WINDOWS_PHONE OR WINDOWS_STORE)
+		set_property(TARGET ${PROJECT_NAME} PROPERTY VS_WINRT_COMPONENT TRUE)
+	endif()
 
 endif()
 
