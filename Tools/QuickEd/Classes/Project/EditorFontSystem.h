@@ -46,7 +46,7 @@ public:
     DAVA::Font* GetFont(const DAVA::String &presetName, const DAVA::String &locale) const;
     void SetFont(const DAVA::String &presetName, const DAVA::String &locale, DAVA::Font *font);
     const QStringList &GetAvailableFontLocales() const;
-    const QStringList &GetDefaultPresetNames();
+    const QStringList &GetDefaultPresetNames() const;
     void LoadLocalizedFonts();
     void SaveLocalizedFonts();
     
@@ -54,8 +54,8 @@ public:
     void CreateNewPreset(const DAVA::String &originalPresetName, const DAVA::String &newPresetName);                      
     
     void SetDefaultFontsPath(const DAVA::FilePath& path);
-    DAVA::FilePath GetLocalizedFontsPath(const DAVA::String &locale);
-    DAVA::FilePath GetDefaultFontsPath();
+    DAVA::FilePath GetLocalizedFontsPath(const DAVA::String &locale) const;
+    DAVA::FilePath GetDefaultFontsPath() const;
 signals:
     void UpdateFontPreset();
 public slots:
@@ -84,7 +84,7 @@ inline const QStringList &EditorFontSystem::GetAvailableFontLocales() const
     return availableFontLocales;
 }
 
-inline const QStringList &EditorFontSystem::GetDefaultPresetNames()
+inline const QStringList &EditorFontSystem::GetDefaultPresetNames() const
 {
     return defaultPresetNames;
 }

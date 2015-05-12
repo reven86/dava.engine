@@ -207,12 +207,12 @@ void EditorFontSystem::SetDefaultFontsPath(const FilePath& path)
     RefreshAvailableFontLocales();
 }
 
-FilePath EditorFontSystem::GetDefaultFontsPath()
+FilePath EditorFontSystem::GetDefaultFontsPath() const
 {
     return defaultFontsPath + "fonts.yaml";
 }
 
-FilePath EditorFontSystem::GetLocalizedFontsPath(const String &locale)
+FilePath EditorFontSystem::GetLocalizedFontsPath(const String &locale) const
 {
     return locale == defaultFontLocale ? GetDefaultFontsPath() : (defaultFontsPath + locale + "/fonts.yaml");
 }
