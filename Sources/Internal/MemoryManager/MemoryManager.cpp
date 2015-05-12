@@ -46,6 +46,7 @@
 
 #include "Base/Hash.h"
 #include "Debug/DVAssert.h"
+#include "Thread/ThreadLocal.h"
 
 #include "MallocHook.h"
 #include "MemoryManager.h"
@@ -56,52 +57,13 @@ namespace DAVA
 namespace
 {
 
-class ThreadLocal final
-{
-#if defined(__DAVAENGINE_WIN32__)
-    using TlsKey = DWORD;
-
-public:
-    ThreadLocal() : key (TlsAlloc()) {
-        //SetValue(nullptr);
-    }
-    ~ThreadLocal() {
-        TlsFree(key);
-    }
-    void* GetValue() const {
-        return TlsGetValue(key);
-    }
-    void SetValue(void* value) {
-        TlsSetValue(key, value);
-    }
-#else
-    using TlsKey = DWORD;
-public:
-    ThreadLocal() : key (...) {
-        //SetValue(nullptr);
-    }
-    ~ThreadLocal() {
-        
-    }
-    void* GetValue() const {
-        return ...;
-    }
-    void SetValue(void* value) {
-        
-    }
-#endif
-
-private:
-    TlsKey key;
-};
-
 struct AllocPoolScopeItem
 {
     AllocPoolScopeItem* next;
     int32 allocPool;
 };
 
-ThreadLocal allocPoolScopeStack;
+ThreadLocal<AllocPoolScopeItem*> allocPoolScopeStack;
 
 }
 
@@ -211,7 +173,7 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, int32 poolIndex)
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
         if (!IsInternalAllocationPool(poolIndex))
         {
-            AllocPoolScopeItem* scopeItem = static_cast<AllocPoolScopeItem*>(allocPoolScopeStack.GetValue());
+            AllocPoolScopeItem* scopeItem = allocPoolScopeStack;
             if (scopeItem != nullptr)
             {
                 block->pool = scopeItem->allocPool;
@@ -293,7 +255,7 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, in
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
         if (!IsInternalAllocationPool(poolIndex))
         {
-            AllocPoolScopeItem* scopeItem = static_cast<AllocPoolScopeItem*>(allocPoolScopeStack.GetValue());
+            AllocPoolScopeItem* scopeItem = allocPoolScopeStack;
             if (scopeItem != nullptr)
             {
                 block->pool = scopeItem->allocPool;
@@ -440,23 +402,19 @@ void MemoryManager::LeaveTagScope(uint32 tag)
 void MemoryManager::EnterAllocPoolScope(int32 allocPool)
 {
     AllocPoolScopeItem* item = new AllocPoolScopeItem;
-    //item->next = allocPoolScopeStack;
-    item->next = static_cast<AllocPoolScopeItem*>(allocPoolScopeStack.GetValue());
+    item->next = allocPoolScopeStack;
     item->allocPool = allocPool;
 
-    //allocPoolScopeStack = item;
-    allocPoolScopeStack.SetValue(item);
+    allocPoolScopeStack = item;
 }
 
 void MemoryManager::LeaveAllocPoolScope(int32 allocPool)
 {
-    //AllocPoolScopeItem* cur = allocPoolScopeStack;
-    AllocPoolScopeItem* cur = static_cast<AllocPoolScopeItem*>(allocPoolScopeStack.GetValue());
+    AllocPoolScopeItem* cur = allocPoolScopeStack;
     assert(cur != nullptr);
     assert(cur->allocPool == allocPool);
 
-    //allocPoolScopeStack = cur->next;
-    allocPoolScopeStack.SetValue(cur->next);
+    allocPoolScopeStack = cur->next;
     delete cur;
 }
 
