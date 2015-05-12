@@ -661,7 +661,44 @@ void
 ShaderSource::Dump() const
 {
     Logger::Info( "src-code:" );
-    Logger::Info( code.c_str() );
+
+    char        src[64*1024];
+    char*       src_line[1024];
+    unsigned    line_cnt        = 0;
+    
+    if( strlen(code.c_str()) < sizeof(src) )
+    {
+        strcpy( src, code.c_str() );
+        memset( src_line, 0, sizeof(src_line) );
+
+        src_line[line_cnt++] = src;
+        for( char* s=src; *s; ++s )
+        {
+            if( *s == '\n'  ||  *s == '\r' )
+            {
+                while( *s  &&  (*s == '\n'  ||  *s == '\r') )
+                {
+                    *s = 0;
+                    ++s;
+                }
+
+                if( !(*s) )
+                    break;
+            
+                src_line[line_cnt] = s;
+                ++line_cnt;
+            }
+        }
+    
+        for( unsigned i=0; i!=line_cnt; ++i )
+        {
+            Logger::Info( "%4u |  %s", 1+i, src_line[i] );
+        }
+    }
+    else
+    {
+        Logger::Info( code.c_str() );
+    }
 
     Logger::Info( "properties (%u) :", prop.size() );
     for( std::vector<ShaderProp>::const_iterator p=prop.begin(),p_end=prop.end(); p!=p_end; ++p )
