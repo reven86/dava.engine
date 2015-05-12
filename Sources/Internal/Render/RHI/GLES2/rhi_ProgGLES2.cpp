@@ -179,7 +179,10 @@ ProgGLES2::GetProgParams( unsigned progUid )
 
         for( unsigned i=0; i!=countof(texunitLoc); ++i )
         {
-            Snprintf( tname[i], countof(tname[i]), "Texture%u", i);
+            if( type == PROG_FRAGMENT )
+                Snprintf( tname[i], countof(tname[i]), "FragmentTexture%u", i );
+            else if( type == PROG_VERTEX )
+                Snprintf( tname[i], countof(tname[i]), "VertexTexture%u", i );
 
             cmd[i].func   = GLCommand::GET_UNIFORM_LOCATION;
             cmd[i].arg[0] = progUid;
@@ -187,15 +190,29 @@ ProgGLES2::GetProgParams( unsigned progUid )
         }
 
         ExecGL( cmd, countof(cmd) );
+        texunitCount = 0;
+
         for( unsigned i=0; i!=countof(texunitLoc); ++i )
         {
             int loc = cmd[i].retval;
             
             texunitLoc[i] = (loc != -1)  ? loc  : InvalidIndex;
+            
+            if( loc != -1 )
+                ++texunitCount;
         }
     }
 
     texunitInited = false;
+}
+
+
+//------------------------------------------------------------------------------
+
+unsigned
+ProgGLES2::SamplerCount() const
+{
+    return texunitCount;
 }
 
 
@@ -238,7 +255,7 @@ ProgGLES2::InstanceConstBuffer( unsigned bufIndex )
 //------------------------------------------------------------------------------
 
 void
-ProgGLES2::SetToRHI() const
+ProgGLES2::SetupTextureUnits( unsigned baseUnit ) const
 {
     GLCommand   cmd[countof(texunitLoc)];
     uint32      cnt = 0;
@@ -249,7 +266,7 @@ ProgGLES2::SetToRHI() const
         {
             cmd[cnt].func   = GLCommand::SET_UNIFORM_1I;
             cmd[cnt].arg[0] = texunitLoc[i];
-            cmd[cnt].arg[1] = i;
+            cmd[cnt].arg[1] = baseUnit + i;
                     
             ++cnt;
         }
@@ -382,13 +399,13 @@ ProgGLES2::ShaderUid() const
 
 
 //------------------------------------------------------------------------------
-
+/*
 unsigned        
 ProgGLES2::TextureLocation( unsigned texunit_i ) const
 {
     return texunitLoc[texunit_i];
 }
-
+*/
 
 //------------------------------------------------------------------------------
 

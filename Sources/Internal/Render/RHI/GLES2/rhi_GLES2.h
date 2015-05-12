@@ -71,6 +71,7 @@ namespace PipelineStateGLES2
 void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle ps, uint32 vdeclUID );
 void        SetVertexDeclToRHI( Handle ps, uint32 vdeclUID );
+uint32      VertexSamplerCount( Handle ps );
 }
 
 namespace DepthStencilStateGLES2

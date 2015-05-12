@@ -100,30 +100,30 @@ FPROG_IN_END
 
 
 #if defined(MATERIAL_TEXTURE)
-    DECL_SAMPLER2D(albedo)
+    DECL_FP_SAMPLER2D(albedo)
 #elif defined(MATERIAL_SKYBOX)
     DECL_SAMPLERCUBE(cubemap)
 #endif
 
 #if defined(MATERIAL_DECAL)
-    DECL_SAMPLER2D(decal)
+    DECL_FP_SAMPLER2D(decal)
 #endif
 
 #if defined(ALPHA_MASK)
-    DECL_SAMPLER2D(alphamask)
+    DECL_FP_SAMPLER2D(alphamask)
 #endif
 
 #if defined(MATERIAL_DETAIL) || defined(MATERIAL_GRASS_BLEND)
-    DECL_SAMPLER2D(detail)
+    DECL_FP_SAMPLER2D(detail)
 #endif
 
 #if defined(MATERIAL_LIGHTMAP)
-    DECL_SAMPLER2D(lightmap)
+    DECL_FP_SAMPLER2D(lightmap)
 #endif
 
 
 #if defined(PIXEL_LIT)
-    DECL_SAMPLER2D(normalmap)
+    DECL_FP_SAMPLER2D(normalmap)
     property float materialSpecularShininess : shared,dynamic : ;
     property float lightIntensity0 : shared,dynamic : ;
     property float inSpecularity : shared,dynamic : ;
@@ -134,8 +134,8 @@ FPROG_IN_END
 
 
 #if defined(TILED_DECAL_MASK)
-    DECL_SAMPLER2D(decalmask)
-    DECL_SAMPLER2D(decaltexture)
+    DECL_FP_SAMPLER2D(decalmask)
+    DECL_FP_SAMPLER2D(decaltexture)
     property /*lowp*/ float4 decalTileColor : shared,dynamic : ;
 #endif
 
