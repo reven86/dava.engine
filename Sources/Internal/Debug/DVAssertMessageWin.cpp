@@ -62,7 +62,7 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 
 bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 {
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__MARKER__
     using namespace Windows::UI::Popups;
     
     WideString contentStr = UTF8Utils::EncodeToWideString(content);
