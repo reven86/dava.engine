@@ -81,7 +81,8 @@ public:
 
     const char*             SourceCode() const;
     const ShaderPropList&   Properties() const;
-    const ShaderSamplerList&Samplers() const;
+    const ShaderSamplerList&FragmentSamplers() const;
+    const ShaderSamplerList&VertexSamplers() const;
     const VertexLayout&     ShaderVertexLayout() const;
     uint32                  ConstBufferCount() const;
     uint32                  ConstBufferSize( uint32 bufIndex ) const;
@@ -112,7 +113,8 @@ private:
     VertexLayout                vdecl;
     std::vector<ShaderProp>     prop;
     std::vector<buf_t>          buf;
-    std::vector<ShaderSampler>  sampler;
+    std::vector<ShaderSampler>  fragmentSampler;
+    std::vector<ShaderSampler>  vertexSampler;
     BlendState                  blending;
 };
 

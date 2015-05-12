@@ -37,7 +37,8 @@ CommandGLES2
     GLES2__SET_CULL_MODE,
     GLES2__SET_VERTEX_PROG_CONST_BUFFER,
     GLES2__SET_FRAGMENT_PROG_CONST_BUFFER,
-    GLES2__SET_TEXTURE,
+    GLES2__SET_VERTEX_TEXTURE,
+    GLES2__SET_FRAGMENT_TEXTURE,
 
     GLES2__SET_DEPTHSTENCIL_STATE,
     GLES2__SET_SAMPLER_STATE,
@@ -262,7 +263,7 @@ static void
 gles2_CommandBuffer_SetVertexTexture( Handle cmdBuf, uint32 unitIndex, Handle tex )
 {
     if( tex != InvalidHandle )
-        CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_TEXTURE, unitIndex, tex );
+        CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_VERTEX_TEXTURE, unitIndex, tex );
 }
 
 
@@ -296,7 +297,7 @@ gles2_CommandBuffer_SetFragmentTexture( Handle cmdBuf, uint32 unitIndex, Handle 
 //    L_ASSERT(tex);
 
     if( tex != InvalidHandle )
-        CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_TEXTURE, unitIndex, tex );
+        CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_FRAGMENT_TEXTURE, unitIndex, tex );
 }
 
 
@@ -534,6 +535,7 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
     Handle      fp_const[MAX_CONST_BUFFER_COUNT];
     const void* fp_const_data[MAX_CONST_BUFFER_COUNT];
     Handle      cur_vb    = InvalidHandle;
+    unsigned    tex_unit_0=0;
 
     for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
     {
@@ -656,6 +658,8 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                     cur_vb    = InvalidHandle;
                 }
 
+                tex_unit_0 = PipelineStateGLES2::VertexSamplerCount( ps );
+
                 c += 2;
             }   break;
             
@@ -731,13 +735,20 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                 c += 3;
             }   break;
 
-            case GLES2__SET_TEXTURE :
+            case GLES2__SET_FRAGMENT_TEXTURE :
             {
                 TextureGLES2::SetToRHI( (Handle)(arg[1]), unsigned(arg[0]) );
                 StatSet::IncStat( stat_SET_TEX, 1 );
                 c += 2;
             }   break;
             
+            case GLES2__SET_VERTEX_TEXTURE :
+            {
+                TextureGLES2::SetToRHI( (Handle)(arg[1]), tex_unit_0+unsigned(arg[0]) );
+                StatSet::IncStat( stat_SET_TEX, 1 );
+                c += 2;
+            }   break;
+
             case GLES2__DRAW_PRIMITIVE :
             {
                 unsigned    v_cnt   = unsigned(arg[1]);

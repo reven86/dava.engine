@@ -367,7 +367,8 @@ SetToRHI( Handle ps, uint32 layoutUID )
     DVASSERT(ps2);
     
     GL_CALL(glUseProgram( ps2->glProg ));
-    ps2->fprog.ProgGLES2::SetToRHI();
+    ps2->vprog.ProgGLES2::SetupTextureUnits();
+    ps2->fprog.ProgGLES2::SetupTextureUnits( ps2->vprog.SamplerCount() );
     
     if( ps2->blendEnabled )
     {
@@ -411,6 +412,14 @@ SetVertexDeclToRHI( Handle ps, uint32 layoutUID )
     }    
     
     ps2->vprog.SetToRHI( layoutUID );
+}
+
+uint32
+VertexSamplerCount( Handle ps )
+{
+    PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
+    
+    return ps2->vprog.SamplerCount();
 }
 
 } // namespace PipelineStateGLES2

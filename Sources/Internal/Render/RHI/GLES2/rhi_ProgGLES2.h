@@ -21,13 +21,14 @@ public:
     void            Destroy();
 
     unsigned        ShaderUid() const;
-    unsigned        TextureLocation( unsigned texunitIndex ) const;
-    const char*     UniformBufferName() const;
+//-    unsigned        TextureLocation( unsigned texunitIndex ) const;
+//-    const char*     UniformBufferName() const;
     void            GetProgParams( unsigned progUid );
+    unsigned        SamplerCount() const;
 
     unsigned        ConstBufferCount() const;
     Handle          InstanceConstBuffer( unsigned bufIndex );
-    void            SetToRHI() const;
+    void            SetupTextureUnits( unsigned baseUnit=0 ) const;
 
 
     static void     InvalidateAllConstBufferInstances();
@@ -102,6 +103,7 @@ private:
     unsigned            shader;
     const ProgType      type;
     mutable unsigned    texunitInited:1;
+    unsigned            texunitCount;
 };
 
 
