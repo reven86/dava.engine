@@ -41,47 +41,43 @@ bool Project::OpenInternal(const QString &path)
 {
     // Attempt to create a project
     YamlParser* parser = YamlParser::Create(path.toStdString());
-    if (!parser)
+    if (nullptr == parser)
+    {
         return false;
-    
+    }
     QDir dir(path);
     dir.cdUp();
-    projectDir = dir.absolutePath();
     
     YamlNode* projectRoot = parser->GetRootNode();
-    if (!projectRoot)
+    if (nullptr == projectRoot)
     {
         SafeRelease(parser);
         return false;
     }
-    
-    // Build the list of file names to be locked.
-    List<QString> fileNames;
-    fileNames.push_back(path);
-    
+    FilePath::RemoveResourcesFolder(projectPath);
     LocalizationSystem::Instance()->Cleanup();
     
-    FilePath bundleName(projectDir.toStdString());
-    bundleName.MakeDirectoryPathname();
+    projectPath = dir.absolutePath().toStdString();
+    projectPath.MakeDirectoryPathname();
     
-    List<FilePath> resFolders = FilePath::GetResourcesFolders();
-    List<FilePath>::const_iterator searchIt = find(resFolders.begin(), resFolders.end(), bundleName);
+    const auto &resFolders = FilePath::GetResourcesFolders();
+    const auto &searchIt = find(resFolders.begin(), resFolders.end(), projectPath);
     
     if(searchIt == resFolders.end())
     {
-        FilePath::AddResourcesFolder(bundleName);
+        FilePath::AddResourcesFolder(projectPath);
     }
     
-    EditorFontManager::Instance()->SetProjectDataPath(bundleName.GetAbsolutePathname() + "Data/");
+    EditorFontManager::Instance()->SetProjectDataPath(projectPath.GetAbsolutePathname() + "Data/");
     
     const YamlNode *font = projectRoot->Get("font");
     
     // Get font node
-    if (font)
+    if (nullptr != font)
     {
         // Get default font node
         const YamlNode *fontPath = font->Get("DefaultFontPath");
-        if (fontPath)
+        if (nullptr != fontPath)
         {
             // Get font values into array
             const Vector<YamlNode*> &fontPathArray = fontPath->AsVector();
@@ -100,7 +96,7 @@ bool Project::OpenInternal(const QString &path)
         }
         
         const YamlNode *localizationFontsPathNode = font->Get("DefaultFontsPath");
-        if(localizationFontsPathNode)
+        if (nullptr != localizationFontsPathNode)
         {
             FilePath localizationFontsPath(localizationFontsPathNode->AsString());
             if(localizationFontsPath.Exists())
@@ -109,14 +105,14 @@ bool Project::OpenInternal(const QString &path)
             }
             else
             {
-                EditorFontManager::Instance()->SetDefaultFontsPath(bundleName.GetAbsolutePathname() + "Data" + localizationFontsPath.GetAbsolutePathname().substr(5));
+                EditorFontManager::Instance()->SetDefaultFontsPath(projectPath.GetAbsolutePathname() + "Data" + localizationFontsPath.GetAbsolutePathname().substr(5));
             }
         }
     }
     
     if(EditorFontManager::Instance()->GetDefaultFontsPath().IsEmpty())
     {
-        EditorFontManager::Instance()->SetDefaultFontsPath(FilePath(bundleName.GetAbsolutePathname() + "Data/UI/Fonts/fonts.yaml"));
+        EditorFontManager::Instance()->SetDefaultFontsPath(FilePath(projectPath.GetAbsolutePathname() + "Data/UI/Fonts/fonts.yaml"));
     }
     EditorFontManager::Instance()->LoadLocalizedFonts();
     FontManager::Instance()->PrepareToSaveFonts(true);
@@ -248,7 +244,7 @@ void Project::SetIsOpen(bool arg)
     isOpen = arg;
     if (arg)
     {
-        ResourcesManageHelper::SetProjectPath(projectDir);
+        ResourcesManageHelper::SetProjectPath(QString::fromStdString(projectPath.GetAbsolutePathname()));
     }
     emit IsOpenChanged(arg);
 }
