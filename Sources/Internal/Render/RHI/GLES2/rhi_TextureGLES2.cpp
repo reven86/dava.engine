@@ -37,6 +37,7 @@ public:
     uint32          isMapped:1;
 
     SamplerState::Descriptor::Sampler   samplerState;
+    uint32                              forceSetSamplerState:1;
 };
 
 
@@ -47,12 +48,34 @@ TextureGLES2_t::TextureGLES2_t()
     height(0),
     isCubeMap(false),
     mappedData(nullptr),
-    isMapped(false)
+    isMapped(false),
+    forceSetSamplerState(true)
 {
 }
 
 typedef Pool<TextureGLES2_t,RESOURCE_TEXTURE>   TextureGLES2Pool;
 RHI_IMPL_POOL(TextureGLES2_t,RESOURCE_TEXTURE);
+
+
+
+//------------------------------------------------------------------------------
+
+static void
+_FlipRGBA4( void* data, uint32 size )
+{
+    // flip RGBA-ARGB order
+    for( uint8* d=(uint8*)data,*d_end=(uint8*)data+size; d!=d_end; d+=2 )
+    {
+        uint8   t0 = d[0];
+        uint8   t1 = d[1];
+
+        t0 = ((t0&0x0F)<<4) | ((t0&0xF0)>>4);
+        t1 = ((t1&0x0F)<<4) | ((t1&0xF0)>>4);
+
+        d[0] = t1;
+        d[1] = t0;
+    }
+}
 
 
 //------------------------------------------------------------------------------
@@ -114,13 +137,14 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
         handle = TextureGLES2Pool::Alloc();
         self   = TextureGLES2Pool::Get( handle );
 
-        self->uid        = uid;
-        self->mappedData = nullptr;
-        self->width      = desc.width;
-        self->height     = desc.height;
-        self->format     = desc.format;
-        self->isCubeMap  = desc.type == TEXTURE_TYPE_CUBE;
-        self->isMapped   = false;
+        self->uid                   = uid;
+        self->mappedData            = nullptr;
+        self->width                 = desc.width;
+        self->height                = desc.height;
+        self->format                = desc.format;
+        self->isCubeMap             = desc.type == TEXTURE_TYPE_CUBE;
+        self->isMapped              = false;
+        self->forceSetSamplerState  = true;
         
         if( desc.isRenderTarget )
         {
@@ -190,6 +214,13 @@ gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
             case TEXTURE_FACE_BOTTOM : self->mappedFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y ; break;
         }
     }
+    
+    if( self->format == TEXTURE_FORMAT_A4R4G4B4 )
+    {
+        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
+        
+        _FlipRGBA4( self->mappedData, ext.dx*ext.dy*sizeof(uint16) );
+    }
 
     return mem;
 }
@@ -209,6 +240,12 @@ gles2_Texture_Unmap( Handle tex )
     GetGLTextureFormat( self->format, &int_fmt, &fmt, &type );
 
     DVASSERT(self->isMapped);
+    if( self->format == TEXTURE_FORMAT_A4R4G4B4 )
+    {
+        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
+        
+        _FlipRGBA4( self->mappedData, ext.dx*ext.dy*sizeof(uint16) );
+    }
 
     GLenum      target = (self->isCubeMap)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
     GLCommand   cmd[]  =
@@ -238,16 +275,27 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
     GetGLTextureFormat( self->format, &int_fmt, &fmt, &type );
     
     DVASSERT(!self->isMapped);
-
-    GLenum      target = (self->isCubeMap)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
-    GLCommand   cmd[]  =
+    if( self->format == TEXTURE_FORMAT_A4R4G4B4 )
     {
-        { GLCommand::BIND_TEXTURE, {target, self->uid} },
-        { GLCommand::TEX_IMAGE2D, {target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, (uint64)(data)} },
-        { GLCommand::BIND_TEXTURE, {target, 0} }
-    };
+        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
+        
+        gles2_Texture_Map( tex, level, face );
+        memcpy( self->mappedData, data, ext.dx*ext.dy*sizeof(uint16) );
+        _FlipRGBA4( self->mappedData, ext.dx*ext.dy*sizeof(uint16) );
+        gles2_Texture_Unmap( tex );
+    }
+    else
+    {
+        GLenum      target = (self->isCubeMap)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
+        GLCommand   cmd[]  =
+        {
+            { GLCommand::BIND_TEXTURE, {target, self->uid} },
+            { GLCommand::TEX_IMAGE2D, {target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, (uint64)(data)} },
+            { GLCommand::BIND_TEXTURE, {target, 0} }
+        };
 
-    ExecGL( cmd, countof(cmd) );
+        ExecGL( cmd, countof(cmd) );
+    }
 }
 
 
@@ -399,7 +447,7 @@ SetToRHI( Handle tex, unsigned unit_i )
     GL_CALL(glBindTexture( GL_TEXTURE_2D, self->uid ));
 
     if(     _CurSamplerState
-        &&  memcmp( &(self->samplerState), _CurSamplerState->sampler+unit_i, sizeof(rhi::SamplerState::Descriptor::Sampler) )
+        &&  (self->forceSetSamplerState  ||  memcmp( &(self->samplerState), _CurSamplerState->sampler+unit_i, sizeof(rhi::SamplerState::Descriptor::Sampler)) )
        )
     {
         const SamplerState::Descriptor::Sampler&    s = _CurSamplerState->sampler[unit_i];
@@ -418,7 +466,8 @@ SetToRHI( Handle tex, unsigned unit_i )
         GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, _AddrMode( TextureAddrMode(s.addrU) ) ));
         GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, _AddrMode( TextureAddrMode(s.addrV) ) ));
         
-        self->samplerState = _CurSamplerState->sampler[unit_i];
+        self->samplerState          = _CurSamplerState->sampler[unit_i];
+        self->forceSetSamplerState  = false;
     }
 }
 
