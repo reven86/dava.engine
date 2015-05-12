@@ -174,7 +174,7 @@ ProgGLES2::GetProgParams( unsigned progUid )
 
     // get texture location
     {
-        char        tname[countof(texunitLoc)][16];
+        char        tname[countof(texunitLoc)][32];
         GLCommand   cmd[countof(texunitLoc)];
 
         for( unsigned i=0; i!=countof(texunitLoc); ++i )

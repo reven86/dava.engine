@@ -284,16 +284,16 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
                 int         sn      = sname.length();
 
-                DVASSERT(fragmentSampler.size()<10);
+                DVASSERT(sampler.size()<10);
                 char ch = line[mbegin+1];
-                int  sl = sprintf( line+mbegin, "%u", (unsigned)(fragmentSampler.size()) );
+                int  sl = sprintf( line+mbegin, "%u", (unsigned)(sampler.size()) );
                 DVASSERT(sn>=sl);
                 line[mbegin+1]=ch;
                 if( sn > sl )
                     memset( line+mbegin+sl, ' ', sn-sl );
-                fragmentSampler.resize( fragmentSampler.size()+1 );
-                fragmentSampler.back().uid  = FastName(sname);
-                fragmentSampler.back().type = TEXTURE_TYPE_2D;
+                sampler.resize( sampler.size()+1 );
+                sampler.back().uid  = FastName(sname);
+                sampler.back().type = TEXTURE_TYPE_2D;
 
                 _AppendLine( line, strlen(line) );
             }
@@ -303,16 +303,16 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
                 int         sn      = sname.length();
 
-                DVASSERT(fragmentSampler.size()<10);
+                DVASSERT(sampler.size()<10);
                 char ch = line[mbegin+1];
-                int  sl = sprintf( line+mbegin, "%u", (unsigned)(fragmentSampler.size()) );
+                int  sl = sprintf( line+mbegin, "%u", (unsigned)(sampler.size()) );
                 DVASSERT(sn>=sl);
                 line[mbegin+1]=ch;
                 if( sn > sl )
                     memset( line+mbegin+sl, ' ', sn-sl );
-                fragmentSampler.resize( fragmentSampler.size()+1 );
-                fragmentSampler.back().uid  = FastName(sname);
-                fragmentSampler.back().type = TEXTURE_TYPE_CUBE;
+                sampler.resize( sampler.size()+1 );
+                sampler.back().uid  = FastName(sname);
+                sampler.back().type = TEXTURE_TYPE_CUBE;
 
                 _AppendLine( line, strlen(line) );
             }
@@ -322,9 +322,9 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
                 FastName    suid    ( sname );
                 
-                for( unsigned s=0; s!=fragmentSampler.size(); ++s )
+                for( unsigned s=0; s!=sampler.size(); ++s )
                 {
-                    if( fragmentSampler[s].uid == suid )
+                    if( sampler[s].uid == suid )
                     {
                         int sl = sprintf( line+mbegin, "%u", s );
                         int sn = sname.length();
@@ -345,16 +345,16 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
                 int         sn      = sname.length();
 
-                DVASSERT(vertexSampler.size()<10);
+                DVASSERT(sampler.size()<10);
                 char ch = line[mbegin+1];
-                int  sl = sprintf( line+mbegin, "%u", (unsigned)(vertexSampler.size()) );
+                int  sl = sprintf( line+mbegin, "%u", (unsigned)(sampler.size()) );
                 DVASSERT(sn>=sl);
                 line[mbegin+1]=ch;
                 if( sn > sl )
                     memset( line+mbegin+sl, ' ', sn-sl );
-                vertexSampler.resize( vertexSampler.size()+1 );
-                vertexSampler.back().uid  = FastName(sname);
-                vertexSampler.back().type = TEXTURE_TYPE_2D;
+                sampler.resize( sampler.size()+1 );
+                sampler.back().uid  = FastName(sname);
+                sampler.back().type = TEXTURE_TYPE_2D;
 
                 _AppendLine( line, strlen(line) );
             }
@@ -364,9 +364,9 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
                 FastName    suid    ( sname );
                 
-                for( unsigned s=0; s!=vertexSampler.size(); ++s )
+                for( unsigned s=0; s!=sampler.size(); ++s )
                 {
-                    if( vertexSampler[s].uid == suid )
+                    if( sampler[s].uid == suid )
                     {
                         int sl = sprintf( line+mbegin, "%u", s );
                         int sn = sname.length();
@@ -387,9 +387,9 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
                 FastName    suid    ( sname );
                 
-                for( unsigned s=0; s!=fragmentSampler.size(); ++s )
+                for( unsigned s=0; s!=sampler.size(); ++s )
                 {
-                    if( fragmentSampler[s].uid == suid )
+                    if( sampler[s].uid == suid )
                     {
                         int sl = sprintf( line+mbegin, "%u", s );
                         int sn = sname.length();
@@ -582,18 +582,9 @@ ShaderSource::Properties() const
 //------------------------------------------------------------------------------
 
 const ShaderSamplerList&
-ShaderSource::FragmentSamplers() const
+ShaderSource::Samplers() const
 {
-    return fragmentSampler;
-}
-
-
-//------------------------------------------------------------------------------
-
-const ShaderSamplerList&
-ShaderSource::VertexSamplers() const
-{
-    return vertexSampler;
+    return sampler;
 }
 
 
@@ -649,8 +640,7 @@ ShaderSource::_Reset()
 {
     vdecl.Clear();
     prop.clear();
-    fragmentSampler.clear();
-    vertexSampler.clear();
+    sampler.clear();
     buf.clear();
     code.clear();
     codeLineCount = 0;
@@ -778,21 +768,12 @@ ShaderSource::Dump() const
     {
         Logger::Info( "vertex-layout:" );
         vdecl.Dump();
-
-        Logger::Info( "samplers (%u) :", vertexSampler.size() );
-        for( unsigned s=0; s!=vertexSampler.size(); ++s )
-        {
-            Logger::Info( "  sampler#%u  \"%s\"", s, vertexSampler[s].uid.c_str() );
-        }
     }
 
-    if( type == PROG_FRAGMENT )
+    Logger::Info( "samplers (%u) :", sampler.size() );
+    for( unsigned s=0; s!=sampler.size(); ++s )
     {
-        Logger::Info( "samplers (%u) :", fragmentSampler.size() );
-        for( unsigned s=0; s!=fragmentSampler.size(); ++s )
-        {
-            Logger::Info( "  sampler#%u  \"%s\"", s, fragmentSampler[s].uid.c_str() );
-        }
+        Logger::Info( "  sampler#%u  \"%s\"", s, sampler[s].uid.c_str() );
     }
 }
 
