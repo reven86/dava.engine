@@ -58,8 +58,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->saveButton, &QPushButton::clicked, this, &MainWindow::OnSaveButtonClicked);
     connect(ui->cancelButton, &QPushButton::clicked, this, &MainWindow::OnCancelButtonClicked);
 
-    connect(ui->startupCheckBox, &QCheckBox::stateChanged, this, &MainWindow::OnStartupChanged);
-
     boxLayout = new QVBoxLayout();
     ui->scrollAreaWidgetContents_2->setLayout(boxLayout);
     ui->scrollAreaWidgetContents_2->layout()->addItem(new QSpacerItem(0, 0, QSizePolicy::Fixed, QSizePolicy::Expanding));
@@ -145,29 +143,8 @@ void MainWindow::OnOpenAction()
 {
     this->raise();
     this->show();
+    trayIcon->hide();
     trayIcon->show();
-}
-
-void MainWindow::OnStartupChanged(int state)
-{
-    if (state == Qt::Checked)
-    {
-#ifdef Q_OS_WIN
-        QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
-                           QSettings::NativeFormat);
-        settings.setValue(QDir::toNativeSeparators(qApp->applicationName()),
-                          QDir::toNativeSeparators(qApp->applicationFilePath()));
-#endif
-    }
-    else if (state == Qt::Unchecked)
-    {
-#ifdef Q_OS_WIN
-        QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
-                           QSettings::NativeFormat);
-        settings.remove(QDir::toNativeSeparators(qApp->applicationName()));
-#endif
-    }
-    VerifyData();
 }
 
 void MainWindow::OnSaveButtonClicked()
@@ -292,18 +269,6 @@ void MainWindow::ReadSettings()
 
     f->Release();
     arch->Release();
-
-#ifdef Q_OS_WIN
-    QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
-                       QSettings::NativeFormat);
-    QString key = settings.value(QDir::toNativeSeparators(qApp->applicationName())).toString();
-    if (!key.isEmpty())
-    {
-        ui->startupCheckBox->blockSignals(true);
-        ui->startupCheckBox->setChecked(true);
-        ui->startupCheckBox->blockSignals(false);
-    }
-#endif
 }
 
 void MainWindow::WriteSettings()
@@ -315,7 +280,7 @@ void MainWindow::WriteSettings()
     File *f = File::Create(path, File::CREATE | File::WRITE);
     if (f == nullptr)
     {
-        Logger::Error("File not open");
+        Logger::Error("File not open. %s. %s", String("MainWindow::ReadSettings").c_str(), path.GetAbsolutePathname().c_str());
         return;
     }
 

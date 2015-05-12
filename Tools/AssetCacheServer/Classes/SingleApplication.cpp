@@ -33,15 +33,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QWidget>
 
 #include "SingleApplication.h"
-#include <QMessageBox>
 
 SingleApplication::SingleApplication(int argc, char *argv[])
     : QApplication(argc, argv)
+    , alreadyExists(false)
 {
     QString uniqueKey(qApp->applicationName());
     sharedMemory.setKey(uniqueKey);
 
-    // when  can create it only if it doesn't exist
     if (sharedMemory.create(maxBufferSize()))
     {
         sharedMemory.lock();
@@ -49,15 +48,12 @@ SingleApplication::SingleApplication(int argc, char *argv[])
         sharedMemory.unlock();
 
         alreadyExists = false;
+        
+        return;
     }
-    // it exits, so we can attach it?!
     else if (sharedMemory.attach())
     {
         alreadyExists = true;
-    }
-    else
-    {
-        // error
     }
 }
 
