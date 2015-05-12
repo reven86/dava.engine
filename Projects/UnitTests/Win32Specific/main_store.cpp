@@ -34,19 +34,7 @@
 [Platform::MTAThread]
 int main(Platform::Array<Platform::String^>^ args)
 {
-    using namespace DAVA;
-
-    //converting unicode args to char* args
-    Vector<String> conv_args(args->Length);
-    Vector<char*> args_array(args->Length);
-
-    for (size_t i = 0; i < conv_args.size(); ++i)
-    {
-        conv_args[i] = UTF8Utils::EncodeToUTF8(args[i]->Data());
-        args_array[i] = &conv_args[i][0];
-    }
-
-    return Core::Run(args->Length, args_array.data());
+    return DAVA::Core::Run(0, 0, 0);
 }
 
 #endif // defined(__DAVAENGINE_WINDOWS_STORE__)
