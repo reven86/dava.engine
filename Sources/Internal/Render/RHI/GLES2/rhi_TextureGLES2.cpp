@@ -63,7 +63,7 @@ RHI_IMPL_POOL(TextureGLES2_t,RESOURCE_TEXTURE);
 static void
 _FlipRGBA4( void* data, uint32 size )
 {
-    // flip RGBA-ARGB order
+    // flip RGBA-ABGR order
     for( uint8* d=(uint8*)data,*d_end=(uint8*)data+size; d!=d_end; d+=2 )
     {
         uint8   t0 = d[0];
@@ -281,7 +281,6 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
         
         gles2_Texture_Map( tex, level, face );
         memcpy( self->mappedData, data, ext.dx*ext.dy*sizeof(uint16) );
-        _FlipRGBA4( self->mappedData, ext.dx*ext.dy*sizeof(uint16) );
         gles2_Texture_Unmap( tex );
     }
     else
