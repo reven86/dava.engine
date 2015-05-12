@@ -554,8 +554,6 @@ static const char* _ShaderDefine_DX9 =
 "#define DECL_FP_SAMPLER2D(unit)    uniform sampler2D FragmentTexture##unit;\n"
 "#define DECL_FP_SAMPLERCUBE(unit)  uniform samplerCube FragmentTexture##unit;\n"
 "#define DECL_VP_SAMPLER2D(unit)    uniform sampler2D VertexTexture##unit;\n"
-    
-"#define VP_TEXTURE2D(unit,uv)   tex2D( VertexTexture##unit, uv )\n"
 
 "#define FP_TEXTURE2D(unit,uv)   tex2D( FragmentTexture##unit, uv )\n"
 "#define FP_TEXTURECUBE(unit,uv) texCube( FragmentTexture##unit, uv )\n"
