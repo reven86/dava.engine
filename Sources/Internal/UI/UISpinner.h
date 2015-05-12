@@ -130,20 +130,20 @@ protected:
     virtual ~UISpinner();
 
 public:
-    virtual UISpinner *Clone() override;
-    virtual void CopyDataFrom(UIControl *srcControl) override;
+    UISpinner *Clone() override;
+    void CopyDataFrom(UIControl *srcControl) override;
 
-    virtual void AddControl(UIControl *control) override;
-    virtual void RemoveControl(UIControl *control) override;
+    void AddControl(UIControl *control) override;
+    void RemoveControl(UIControl *control) override;
 
-    virtual void Input(UIEvent *currentInput) override;
-    virtual void Update(float32 timeElapsed) override;
+    void Input(UIEvent *currentInput) override;
+    void Update(float32 timeElapsed) override;
 
-    virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader) override;
-    virtual void LoadFromYamlNodeCompleted() override;
-    virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader) override;
+    void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader) override;
+    void LoadFromYamlNodeCompleted() override;
+    YamlNode * SaveToYamlNode(UIYamlLoader * loader) override;
 
-    virtual List<UIControl* > GetSubcontrols() override;
+    List<UIControl* > GetSubcontrols() override;
 
     SpinnerAdapter * GetAdater() const { return adapter; }
     void SetAdapter(SpinnerAdapter * adapter);
