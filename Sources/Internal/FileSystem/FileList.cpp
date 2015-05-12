@@ -29,6 +29,7 @@
 
 #include "FileSystem/FileList.h"
 #include "Utils/Utils.h"
+#include "Utils/Utf8Utils.h"
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <dirent.h>
@@ -52,14 +53,19 @@ FileList::FileList(const FilePath & filepath)
     
 	path = filepath;
 
+// Windows Store version doesnt exist
+#if defined(__DAVAENGINE_WINDOWS_STORE__)
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    return;
+
 // Windows version
-#if defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 
 	//char tmp[_MAX_PATH];
 	//_getcwd(tmp, _MAX_PATH);
 	//Path = tmp;
 	FilePath prevDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
-	BOOL res = SetCurrentDirectoryA(path.GetAbsolutePathname().c_str());
+	BOOL res = SetCurrentDirectoryApath.GetAbsolutePathname().c_str());
 
 	if (res)
 	{

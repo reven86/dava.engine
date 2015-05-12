@@ -390,8 +390,12 @@ File *FileSystem::CreateFileForFrameworkPath(const FilePath & frameworkPath, uin
 
 const FilePath & FileSystem::GetCurrentWorkingDirectory()
 {
-	char tempDir[2048];
-#if defined(__DAVAENGINE_WIN32__)
+	char tempDir[2048] = {};
+#if defined(__DAVAENGINE_WINDOWS_STORE__)
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    return currentWorkingDirectory;
+
+#elif defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 	::GetCurrentDirectoryA(2048, tempDir);
 	currentWorkingDirectory = FilePath(tempDir);
 	currentWorkingDirectory.MakeDirectoryPathname();
@@ -402,8 +406,8 @@ const FilePath & FileSystem::GetCurrentWorkingDirectory()
 	currentWorkingDirectory.MakeDirectoryPathname();
 	return currentWorkingDirectory;
 #endif //PLATFORMS
-	currentWorkingDirectory.MakeDirectoryPathname();
-	return currentWorkingDirectory;
+
+	return currentWorkingDirectory.MakeDirectoryPathname();
 }
 
 FilePath FileSystem::GetCurrentExecutableDirectory()
@@ -429,7 +433,10 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath & newWorkingDirectory
 {
     DVASSERT(newWorkingDirectory.IsDirectoryPathname());
     
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS_STORE__)
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    return false;
+#elif defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 	BOOL res = ::SetCurrentDirectoryA(newWorkingDirectory.GetAbsolutePathname().c_str());
 	return (res != 0);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
