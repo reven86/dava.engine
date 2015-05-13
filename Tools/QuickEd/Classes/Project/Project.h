@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include "Model/LegacyEditorUIPackageLoader.h"
+#include "Project/EditorFontSystem.h"
+#include "Project/EditorLocalizationSystem.h"
 
 class PackageNode;
 
@@ -14,14 +16,14 @@ class Project : public QObject
 public:
     Project(QObject *parent = nullptr);
     virtual ~Project();
-
     bool Open(const QString &path);
     bool CheckAndUnlockProject(const QString& projectPath);
 
     DAVA::RefPtr<PackageNode> NewPackage(const QString &path);
     DAVA::RefPtr<PackageNode> OpenPackage(const QString &path);
     bool SavePackage(PackageNode *package);
-
+    EditorFontSystem *GetEditorFontSystem() const;
+    EditorLocalizationSystem *GetEditorLocalizationSystem() const;
 signals:
     void ProjectOpened();
 
@@ -30,7 +32,8 @@ private:
     DAVA::FilePath projectPath;
     
     LegacyControlData *legacyData;
-
+    EditorFontSystem *editorFontSystem;
+    EditorLocalizationSystem *editorLocalizationSystem;
     //properties
 public:
     bool IsOpen() const;
@@ -39,7 +42,18 @@ signals:
 private:
     void SetIsOpen(bool arg);
     bool isOpen;
-
 };
+
+inline EditorFontSystem* Project::GetEditorFontSystem() const
+{
+    return editorFontSystem;
+}
+
+inline EditorLocalizationSystem* Project::GetEditorLocalizationSystem() const
+{
+    return editorLocalizationSystem;
+}
+
+
 
 #endif // QUICKED__PROJECT_H__

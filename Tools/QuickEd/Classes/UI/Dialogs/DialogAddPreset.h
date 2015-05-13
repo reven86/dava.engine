@@ -27,35 +27,20 @@
 =====================================================================================*/
 
 
+#ifndef __DIALOG_ADD_PRESET_H__
+#define __DIALOG_ADD_PRESET_H__
 
-#ifndef __UIEditor__LocalizationSystemHelper__
-#define __UIEditor__LocalizationSystemHelper__
+#include "ui_DialogAddPreset.h"
 
-#include "Base/BaseTypes.h"
-
-namespace DAVA {
-    
-class LocalizationSystemHelper
+class DialogAddPreset : public QDialog, public Ui::DialogAddPreset
 {
+    Q_OBJECT
 public:
-    // Helper to work with Localization System.
-    static int GetSupportedLanguagesCount();
-    static String GetSupportedLanguageID(int index);
-    static String GetSupportedLanguageDesc(int index);
-    static String GetLanguageDescByLanguageID(String languageID);
-    
-protected:
-    // Validate the language index.
-    static bool ValidateLanguageIndex(int index);
-
-    struct LocalizationSystemHelperData
-    {
-        String languageID;
-        String languageDescription;
-    };
-
-    static const LocalizationSystemHelperData helperData[];
+    explicit DialogAddPreset(const QString &originalPresetName, QWidget *parent = nullptr);
+    ~DialogAddPreset() = default;
+private slots:
+    void OnNewPresetNameChanged();
+    void OnAccept();
 };
 
-}
-#endif /* defined(__UIEditor__LocalizationSystemHelper__) */
+#endif // __DIALOG_ADD_PRESET_H__

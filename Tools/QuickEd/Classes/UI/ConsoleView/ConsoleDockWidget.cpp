@@ -2,6 +2,7 @@
 #include "ui_ConsoleDockWidget.h"
 #include "StringUtils.h"
 #include "Utils/QtDavaConvertion.h"
+#include <Classes/Result.h>
 
 ConsoleDockWidget::ConsoleDockWidget(QWidget *parent)
     : QDockWidget(parent)
@@ -25,5 +26,14 @@ void ConsoleDockWidget::Output( DAVA::Logger::eLogLevel ll, const DAVA::char8* t
 
 void ConsoleDockWidget::Output( DAVA::Logger::eLogLevel ll, const QString &rawText ) const
 {
-    ui->plainTextEdit->appendPlainText(rawText.trimmed());
+    QString color;
+    switch (ll)
+    {
+    default:                                color = "black"; break;
+    case DAVA::Logger::LEVEL_DEBUG:         color = "dark green"; break;
+    case DAVA::Logger::LEVEL_INFO:          color = "dark blue"; break;
+    case DAVA::Logger::LEVEL_WARNING:       color = "orange"; break;
+    case DAVA::Logger::LEVEL_ERROR:         color = "red"; break;
+    }
+    ui->plainTextEdit->appendHtml("<font color=\"" + color + "\">" + rawText.trimmed() + "</font>");
 }

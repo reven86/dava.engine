@@ -2,13 +2,11 @@
 
 #include <QDir>
 #include <QApplication>
-#include <QVariant>
 #include <QMessageBox>
 
 #include "Project.h"
-#include "EditorFontManager.h"
+#include "EditorFontSystem.h"
 #include "UI/UIPackageLoader.h"
-#include "UI/DefaultUIPackageBuilder.h"
 #include "Model/EditorUIPackageBuilder.h"
 #include "Model/LegacyEditorUIPackageLoader.h"
 #include "Model/YamlPackageSerializer.h"
@@ -20,6 +18,8 @@ using namespace DAVA;
 
 Project::Project(QObject *parent)
     : QObject(parent)
+    , editorFontSystem(new EditorFontSystem(this))
+    , editorLocalizationSystem(new EditorLocalizationSystem(this))
     , isOpen(false)
 {
     legacyData = new LegacyControlData();
@@ -55,7 +55,7 @@ bool Project::OpenInternal(const QString &path)
         return false;
     }
     FilePath::RemoveResourcesFolder(projectPath);
-    LocalizationSystem::Instance()->Cleanup();
+    editorLocalizationSystem->Cleanup();
     
     projectPath = dir.absolutePath().toStdString();
     projectPath.MakeDirectoryPathname();
@@ -67,55 +67,30 @@ bool Project::OpenInternal(const QString &path)
     {
         FilePath::AddResourcesFolder(projectPath);
     }
-    
-    EditorFontManager::Instance()->SetProjectDataPath(projectPath.GetAbsolutePathname() + "Data/");
-    
-    const YamlNode *font = projectRoot->Get("font");
+      
+    const YamlNode *fontNode = projectRoot->Get("font");
     
     // Get font node
-    if (nullptr != font)
+    if (nullptr != fontNode)
     {
         // Get default font node
-        const YamlNode *fontPath = font->Get("DefaultFontPath");
-        if (nullptr != fontPath)
-        {
-            // Get font values into array
-            const Vector<YamlNode*> &fontPathArray = fontPath->AsVector();
-            EditorFontManager::DefaultFontPath defaultFontPath("", "");
-            // True type font
-            if (fontPathArray.size() == 1)
-            {
-                defaultFontPath.fontPath = FilePath(fontPathArray[0]->AsString());
-            }
-            else if (fontPathArray.size() == 2) // Graphics font
-            {
-                defaultFontPath.fontPath = FilePath(fontPathArray[0]->AsString());
-                defaultFontPath.fontSpritePath = FilePath(fontPathArray[1]->AsString());
-            }
-            EditorFontManager::Instance()->InitDefaultFontFromPath(defaultFontPath);
-        }
-        
-        const YamlNode *localizationFontsPathNode = font->Get("DefaultFontsPath");
-        if (nullptr != localizationFontsPathNode)
-        {
-            FilePath localizationFontsPath(localizationFontsPathNode->AsString());
+        const YamlNode *defaultFontPath = fontNode->Get("DefaultFontsPath");
+        if (nullptr != defaultFontPath)
+        {        
+            FilePath localizationFontsPath(defaultFontPath->AsString());
             if(localizationFontsPath.Exists())
             {
-                EditorFontManager::Instance()->SetDefaultFontsPath(localizationFontsPath.GetAbsolutePathname());
-            }
-            else
-            {
-                EditorFontManager::Instance()->SetDefaultFontsPath(projectPath.GetAbsolutePathname() + "Data" + localizationFontsPath.GetAbsolutePathname().substr(5));
+                editorFontSystem->SetDefaultFontsPath(localizationFontsPath.GetDirectory());
             }
         }
     }
     
-    if(EditorFontManager::Instance()->GetDefaultFontsPath().IsEmpty())
+    if(editorFontSystem->GetDefaultFontsPath().IsEmpty())
     {
-        EditorFontManager::Instance()->SetDefaultFontsPath(FilePath(projectPath.GetAbsolutePathname() + "Data/UI/Fonts/fonts.yaml"));
+        editorFontSystem->SetDefaultFontsPath(FilePath(bundleName.GetAbsolutePathname() + "Data/UI/Fonts/"));
     }
-    EditorFontManager::Instance()->LoadLocalizedFonts();
-    FontManager::Instance()->PrepareToSaveFonts(true);
+
+    editorFontSystem->LoadLocalizedFonts();
     
     const YamlNode* platforms = projectRoot->Get("platforms");
     for (uint32 i = 0; i < platforms->GetCount(); i++)
@@ -161,9 +136,7 @@ bool Project::OpenInternal(const QString &path)
             const YamlNode *localeNode = platform->Get("Locale");
             if (localizationPathNode && localeNode)
             {
-                LocalizationSystem::Instance()->SetDirectory(localizationPathNode->AsString());
-                LocalizationSystem::Instance()->SetCurrentLocale(localeNode->AsString());
-                LocalizationSystem::Instance()->Init();
+                editorLocalizationSystem->InitLanguageWithDirectory(localizationPathNode->AsString(), localeNode->AsString());
             }
         }
     }
