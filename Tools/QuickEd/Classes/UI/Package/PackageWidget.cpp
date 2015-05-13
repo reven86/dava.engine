@@ -1,6 +1,5 @@
 
 #include <QClipboard>
-#include <QFileDialog>
 
 #include "PackageWidget.h"
 #include "PackageModel.h"
@@ -16,6 +15,8 @@
 #include "SharedData.h"
 #include "EditorCore.h"
 #include "Document.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
 
 using namespace DAVA;
 
@@ -328,7 +329,7 @@ void PackageWidget::OnImport()
     {
         return;
     }
-    QStringList fileNames = QFileDialog::getOpenFileNames(
+    QStringList fileNames = FileDialog::getOpenFileNames(
         qApp->activeWindow()
         , tr("Select one or move files to import")
         , QString::fromStdString(sharedData->GetDocument()->GetPackageFilePath().GetDirectory().GetStringValue())
