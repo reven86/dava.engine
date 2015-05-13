@@ -246,12 +246,13 @@ void WayEditSystem::ResetSelection()
 
 void WayEditSystem::ProcessSelection()
 {
+    prevSelectedWaypoints = selectedWaypoints;
+    
     const EntityGroup selection = selectionSystem->GetSelection();
-    if(currentSelection != selection)
+    if (currentSelection != selection)
     {
         currentSelection = selection;
         
-        prevSelectedWaypoints = selectedWaypoints;
         selectedWaypoints.Clear();
         
         const size_t count = currentSelection.Size();
@@ -263,10 +264,6 @@ void WayEditSystem::ProcessSelection()
                 selectedWaypoints.Add(entity);
             }
         }
-    }
-    else
-    {
-        prevSelectedWaypoints = selectedWaypoints;
     }
 }
 
