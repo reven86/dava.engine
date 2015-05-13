@@ -37,6 +37,7 @@
 
 #include "Thread/Spinlock.h"
 #include "Thread/LockGuard.h"
+#include "Thread/ThreadLocal.h"
 
 #include "AllocPools.h"
 #include "MemoryManagerTypes.h"
@@ -51,15 +52,16 @@ class MemoryManager final
 {
     static const uint32 BLOCK_MARK = 0xBA0BAB;
     static const size_t BLOCK_ALIGN = 16;
-    static const size_t BACKTRACE_DEPTH = 64;
+    static const size_t BACKTRACE_DEPTH = 32;
 
 public:
-    static const size_t MAX_ALLOC_POOL_COUNT = 16;
+    static const int32 MAX_ALLOC_POOL_COUNT = 24;
     static const size_t MAX_TAG_COUNT = 32;
 
     struct MemoryBlock;
     struct Backtrace;
     struct GpuBlock;
+    struct AllocPoolScopeItem;
 
 public:
     class AllocPoolScope final
@@ -173,6 +175,8 @@ private:
 
     static MMItemName tagNames[MAX_TAG_COUNT];                // Names of tags
     static MMItemName allocPoolNames[MAX_ALLOC_POOL_COUNT];   // Names of allocation pools
+    
+    static ThreadLocal<AllocPoolScopeItem*> allocPoolScopeStack;
 };
 
 //////////////////////////////////////////////////////////////////////////

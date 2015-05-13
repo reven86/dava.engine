@@ -54,19 +54,6 @@
 namespace DAVA
 {
 
-namespace
-{
-
-struct AllocPoolScopeItem
-{
-    AllocPoolScopeItem* next;
-    int32 allocPool;
-};
-
-ThreadLocal<AllocPoolScopeItem*> allocPoolScopeStack;
-
-}
-
 struct MemoryManager::MemoryBlock
 {
     MemoryBlock* prev;      // Pointer to previous block
@@ -99,6 +86,12 @@ struct MemoryManager::GpuBlock
     uint32 allocSize;
 };
 
+struct MemoryManager::AllocPoolScopeItem
+{
+    AllocPoolScopeItem* next;
+    int32 allocPool;
+};
+
 //////////////////////////////////////////////////////////////////////////
 
 MMItemName MemoryManager::tagNames[MAX_TAG_COUNT];
@@ -122,6 +115,8 @@ MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT] = {
 
 size_t MemoryManager::registeredTagCount = 0;
 size_t MemoryManager::registeredAllocPoolCount = PREDEF_POOL_COUNT;
+
+ThreadLocal<MemoryManager::AllocPoolScopeItem*> MemoryManager::allocPoolScopeStack;
 
 void MemoryManager::RegisterAllocPoolName(int32 index, const char8* name)
 {
@@ -183,10 +178,13 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, int32 poolIndex)
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
         if (!IsInternalAllocationPool(poolIndex))
         {
-            AllocPoolScopeItem* scopeItem = allocPoolScopeStack;
-            if (scopeItem != nullptr)
+            if (allocPoolScopeStack.IsCreated())
             {
-                block->pool = scopeItem->allocPool;
+                AllocPoolScopeItem* scopeItem = allocPoolScopeStack;
+                if (scopeItem != nullptr)
+                {
+                    block->pool = scopeItem->allocPool;
+                }
             }
 
             Backtrace backtrace;
@@ -265,10 +263,13 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, in
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
         if (!IsInternalAllocationPool(poolIndex))
         {
-            AllocPoolScopeItem* scopeItem = allocPoolScopeStack;
-            if (scopeItem != nullptr)
+            if (allocPoolScopeStack.IsCreated())
             {
-                block->pool = scopeItem->allocPool;
+                AllocPoolScopeItem* scopeItem = allocPoolScopeStack;
+                if (scopeItem != nullptr)
+                {
+                    block->pool = scopeItem->allocPool;
+                }
             }
 
             Backtrace backtrace;
