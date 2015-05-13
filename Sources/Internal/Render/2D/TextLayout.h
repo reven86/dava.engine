@@ -94,7 +94,7 @@ public:
      * \brief Returns current cursor position
      * \return current cursor position
      */
-    const uint32 Tell() const;
+    const size_t Tell() const;
     
     /**
      * \brief Checks that text didn't finished yet
@@ -177,7 +177,7 @@ private:
     Vector<float32> characterSizes;
     Vector<uint8> breaks;
     BiDiHelper bidiHelper;
-    uint32 fromPos;
+    size_t fromPos;
 };
 
 inline const WideString& TextLayout::GetPreparedLine() const
@@ -205,7 +205,7 @@ inline const TextLayout::WrapMode TextLayout::GetWrapMode() const
     return wrapMode;
 }
 
-inline const uint32 TextLayout::Tell() const
+inline const size_t TextLayout::Tell() const
 {
     return fromPos;
 }
