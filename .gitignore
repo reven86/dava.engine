@@ -47,3 +47,5 @@ fmod.log
 Projects/UnitTests/android/assets
 
 Projects/UnitTests/android/.settings/*
+.vs
+AppPackages
