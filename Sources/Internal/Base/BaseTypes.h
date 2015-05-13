@@ -78,6 +78,23 @@ typedef wchar_t     char16;
 typedef float       float32;
 typedef double      float64;
 
+//Compile-time checks for size of types
+static_assert(sizeof(int8)   == 1, "Invalid type size!");
+static_assert(sizeof(uint8)  == 1, "Invalid type size!");
+static_assert(sizeof(int16)  == 2, "Invalid type size!");
+static_assert(sizeof(uint16) == 2, "Invalid type size!");
+static_assert(sizeof(int32)  == 4, "Invalid type size!");
+static_assert(sizeof(uint32) == 4, "Invalid type size!");
+static_assert(sizeof(int64)  == 8, "Invalid type size!");
+static_assert(sizeof(uint64) == 8, "Invalid type size!");
+static_assert(sizeof(int_t)  == sizeof(void*), "Invalid type size!");
+static_assert(sizeof(uint_t) == sizeof(void*), "Invalid type size!");
+static_assert(sizeof(pointer_size) == sizeof(void*), "Invalid type size!");
+static_assert(sizeof(char8)  == 1, "Invalid type size!");
+static_assert(sizeof(char16) == 2, "Invalid type size!");
+static_assert(sizeof(float32) == 4, "Invalid type size!");
+static_assert(sizeof(float64) == 8, "Invalid type size!");
+
 #ifndef TRUE
 #define TRUE    1
 #endif

@@ -291,9 +291,6 @@ private:
 	
 	Vector<String> commandLine;
 	bool isConsoleMode;
-    
-    void CheckDataTypeSizes();
-    template <class T> void CheckType(T t, int32 expectedSize, const char * typeString);
 };
     
 inline bool Core::IsActive()

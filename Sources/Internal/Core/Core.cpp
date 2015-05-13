@@ -168,7 +168,6 @@ void Core::CreateSingletons()
     DeviceInfo::InitializeScreenInfo();
     
     RegisterDAVAClasses();
-    CheckDataTypeSizes();
 
     new Net::NetCore();
 
@@ -250,24 +249,6 @@ void Core::SetOptions(KeyedArchive * archiveOfOptions)
 #endif
 }
     
-void Core::CheckDataTypeSizes()
-{
-    CheckType(int8(), 8, "int8");
-    CheckType(uint8(), 8, "uint8");
-    CheckType(int16(), 16, "int16");
-    CheckType(uint16(), 16, "uint16");
-    CheckType(int32(), 32, "int32");
-    CheckType(uint32(), 32, "uint32");
-}
-
-template <class T> void Core::CheckType(T t, int32 expectedSize, const char * typeString)
-{
-    if ((sizeof(t) * 8) != expectedSize)
-    {
-        Logger::Error("Size of %s is incorrect. Expected size: %d. Platform size: %d", typeString, expectedSize, sizeof(t));
-    }
-}
-
 KeyedArchive * Core::GetOptions()
 {
 	return options;
