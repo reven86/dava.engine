@@ -196,7 +196,7 @@ Qt::ItemFlags PackageModel::flags(const QModelIndex &index) const
 
 Qt::DropActions PackageModel::supportedDropActions() const
 {
-    return Qt::CopyAction | Qt::MoveAction;
+    return Qt::CopyAction | Qt::MoveAction  | Qt::LinkAction;
 }
 
 QStringList PackageModel::mimeTypes() const
@@ -251,20 +251,25 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     if (parentNode && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
         const PackageMimeData *controlMimeData = dynamic_cast<const PackageMimeData*>(data);
-        if (!controlMimeData)
+        if (nullptr == controlMimeData)
             return false;
 
         const Vector<ControlNode *> &srcNodes = controlMimeData->GetControlNodes();
         if (srcNodes.empty())
             return false;
-        
-        if (action == Qt::CopyAction)
+        switch (action)
+        {
+        default: return false;
+        case Qt::CopyAction:
             commandExecutor->CopyControls(srcNodes, parentNode, rowIndex);
-        else if (action == Qt::MoveAction)
+            break;
+        case Qt::MoveAction:
             commandExecutor->MoveControls(srcNodes, parentNode, rowIndex);
-        else
-            return false;
-        
+            break;
+        case Qt::LinkAction:
+            return false;//TODO: DF-6471, d_belsky must implement linkControls
+            break;
+        }
         return true;
     }
     else if (data->hasFormat("text/uri-list") && data->hasText())
