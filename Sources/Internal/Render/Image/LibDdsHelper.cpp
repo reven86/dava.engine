@@ -566,7 +566,11 @@ bool NvttHelper::DecompressDxt(const nvtt::Decompressor & dec, DDSInfo info, Vec
 
 bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, PixelFormat format, Vector<Image*> &imageSet, int32 baseMipMap)
 {
-#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS_STORE__)
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    return false;
+
+#elif defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS_DESKTOP__)
 #if defined(__DAVAENGINE_MACOS__)
     if (format == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
     {
@@ -621,8 +625,8 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, Pix
             dstImg.nDataSize = 0;
             dstImg.pData = NULL;
 
-            if (/*Qonvert(&srcImg, &dstImg) != Q_SUCCESS ||
-                dstImg.nDataSize == 0*/false)
+            if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS ||
+                dstImg.nDataSize == 0)
             {
                 Logger::Error("[NvttHelper::DecompressAtc] Reading decompress atc data.");
                 res = false;
@@ -630,7 +634,7 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, Pix
             }
 
             dstImg.pData = new unsigned char[dstImg.nDataSize];
-            if (/*Qonvert(&srcImg, &dstImg) != Q_SUCCESS*/false)
+            if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS)
             {
                 Logger::Error("[NvttHelper::DecompressAtc] Reading decompress atc data.");
                 SafeDeleteArray(dstImg.pData);
@@ -1091,7 +1095,11 @@ bool LibDdsHelper::WriteDxtFile(const FilePath & fileNameOriginal, const Vector<
 
 bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<Image *> &imageSet, PixelFormat compressionFormat)
 {
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_WINDOWS_STORE__)
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    return false;
+
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     DVASSERT_MSG(false, "Qualcomm doesn't provide texture converter library for ios/android");
     return false;
 
@@ -1135,7 +1143,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
         dstImg.nDataSize = 0;
         dstImg.pData = NULL;
 
-        if (/*Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0*/false)
+        if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
         {
             Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
             return false;
@@ -1166,7 +1174,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
         dstImg.pData = tmpBuffer;
         tmpBuffer += dstImg.nDataSize;
 
-        if (/*Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0*/false)
+        if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
         {
             Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
             SafeDeleteArray(buffer);
@@ -1297,7 +1305,11 @@ bool LibDdsHelper::WriteDxtFileAsCubemap(const DAVA::FilePath &fileNameOriginal,
 
 bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath &fileNameOriginal, const Vector<Vector<DAVA::Image *> > &imageSet, DAVA::PixelFormat compressionFormat)
 {
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_WINDOWS_STORE__)
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    return false;
+
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     DVASSERT_MSG(false, "Qualcomm doesn't provide texture converter library for ios/android");
     return false;
 
@@ -1351,7 +1363,7 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath &fileNameOriginal,
             dstImg.nDataSize = 0;
             dstImg.pData = NULL;
 
-            if (/*Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0*/false)
+            if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
             {
                 Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
                 return false;
@@ -1394,7 +1406,7 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath &fileNameOriginal,
             dstImg.pData = tmpBuffer;
             tmpBuffer += dstImg.nDataSize;
 
-            if (/*Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0*/false)
+            if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
             {
                 Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
                 SafeDeleteArray(buffer);
