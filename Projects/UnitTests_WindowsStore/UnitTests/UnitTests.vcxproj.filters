@@ -34,180 +34,180 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Win32Specific\main_desktop.cpp" />
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Win32Specific\main_store.cpp" />
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\ComponentsTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Win32Specific\main_desktop.cpp" />
+    <ClCompile Include="..\..\UnitTests\Win32Specific\main_store.cpp" />
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\ComponentsTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\Cpp14.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\Cpp14.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\DataVaultTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\DataVaultTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\DateTimeTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\DateTimeTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\FileListTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\FileListTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\FileSystemTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\FileSystemTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\FormatsTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\FormatsTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\FunctionBindSingalTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\FunctionBindSingalTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\HashMapTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\HashMapTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\JNITest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\JNITest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\JobManagerTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\JobManagerTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\KeyedArchiveYamlTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\KeyedArchiveYamlTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\LocalizationTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\LocalizationTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\MathTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\MathTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\MemoryAllocatorsTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\MemoryAllocatorsTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\MemoryManagerTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\MemoryManagerTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\NetworkTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\NetworkTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\SaveImageTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\SaveImageTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\SpinLockTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\SpinLockTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\SplitTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\SplitTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\StringFormatTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\StringFormatTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\TextSizeTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\TextSizeTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\ThreadSyncTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\ThreadSyncTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\UnlimitedLogOutputTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\UnlimitedLogOutputTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\AlignTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\AlignTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\BiDiTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\BiDiTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\CloneTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\CloneTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\ControlRotationTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\ControlRotationTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DeviceInfoTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\DeviceInfoTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DFFontTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\DFFontTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DLCDownloadTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\DLCDownloadTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DPITest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\DPITest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DXTTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\DXTTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\EntityTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\EntityTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\FilePathTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\FilePathTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\InputTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\InputTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\JPEGTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\JPEGTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\KeyedArchiveTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\KeyedArchiveTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\MaterialCompilerTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\MaterialCompilerTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\OpenGLES30FormatTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\OpenGLES30FormatTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\ParseTextTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\ParseTextTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\PVRTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\PVRTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\RectSpriteTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\RectSpriteTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\SampleTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\SampleTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\SceneSystemTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\SceneSystemTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\SoundTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\SoundTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\StaticTextFieldTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\StaticTextFieldTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\StaticWebViewTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\StaticWebViewTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\TransparentWebViewTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\TransparentWebViewTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\UIListTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\UIListTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\UIMovieTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\UIMovieTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\UIParticlesTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\UIParticlesTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\UIScrollViewTest.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\OldTests\UIScrollViewTest.cpp">
       <Filter>Classes\OldTests</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\BaseScreen.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Infrastructure\BaseScreen.cpp">
       <Filter>Classes\Infrastructure</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\FrameworkMain.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Infrastructure\FrameworkMain.cpp">
       <Filter>Classes\Infrastructure</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\GameCore.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Infrastructure\GameCore.cpp">
       <Filter>Classes\Infrastructure</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\TeamCityTestsOutput.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Infrastructure\TeamCityTestsOutput.cpp">
       <Filter>Classes\Infrastructure</Filter>
     </ClCompile>
-    <ClCompile Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\TextureUtils.cpp">
+    <ClCompile Include="..\..\UnitTests\Classes\Infrastructure\TextureUtils.cpp">
       <Filter>Classes\Infrastructure</Filter>
     </ClCompile>
   </ItemGroup>
@@ -215,193 +215,193 @@
     <AppxManifest Include="Package.appxmanifest" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\TestTemplate.cpp.template">
+    <None Include="..\..\UnitTests\Classes\Infrastructure\TestTemplate.cpp.template">
       <Filter>Classes\Infrastructure</Filter>
     </None>
-    <None Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\TestTemplate.h.template">
+    <None Include="..\..\UnitTests\Classes\Infrastructure\TestTemplate.h.template">
       <Filter>Classes\Infrastructure</Filter>
     </None>
     <None Include="UnitTests_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\ComponentsTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\ComponentsTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\Cpp14.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\Cpp14.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\DataVaultTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\DataVaultTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\DateTimeTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\DateTimeTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\FileListTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\FileListTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\FileSystemTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\FileSystemTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\FormatsTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\FormatsTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\FunctionBindSingalTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\FunctionBindSingalTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\HashMapTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\HashMapTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\JNITest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\JNITest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\JobManagerTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\JobManagerTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\KeyedArchiveYamlTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\KeyedArchiveYamlTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\LocalizationTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\LocalizationTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\MathTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\MathTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\MemoryAllocatorsTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\MemoryAllocatorsTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\MemoryManagerTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\MemoryManagerTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\NetworkTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\NetworkTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\SaveImageTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\SaveImageTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\SpinLockTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\SpinLockTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\SplitTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\SplitTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\StringFormatTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\StringFormatTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\TextSizeTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\TextSizeTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\ThreadSyncTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\ThreadSyncTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Tests\UnlimitedLogOutputTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\UnlimitedLogOutputTest.h">
       <Filter>Classes\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\AlignTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\AlignTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\BiDiTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\BiDiTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\CloneTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\CloneTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\ControlRotationTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\ControlRotationTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DeviceInfoTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\DeviceInfoTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DFFontTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\DFFontTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DLCDownloadTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\DLCDownloadTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DPITest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\DPITest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\DXTTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\DXTTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\EntityTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\EntityTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\FilePathTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\FilePathTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\InputTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\InputTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\JPEGTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\JPEGTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\KeyedArchiveTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\KeyedArchiveTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\MaterialCompilerTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\MaterialCompilerTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\OpenGLES30FormatTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\OpenGLES30FormatTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\ParseTextTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\ParseTextTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\PVRTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\PVRTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\RectSpriteTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\RectSpriteTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\SampleTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\SampleTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\SceneSystemTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\SceneSystemTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\SoundTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\SoundTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\StaticTextFieldTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\StaticTextFieldTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\StaticWebViewTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\StaticWebViewTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\TransparentWebViewTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\TransparentWebViewTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\UIListTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\UIListTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\UIMovieTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\UIMovieTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\UIParticlesTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\UIParticlesTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\OldTests\UIScrollViewTest.h">
+    <ClInclude Include="..\..\UnitTests\Classes\OldTests\UIScrollViewTest.h">
       <Filter>Classes\OldTests</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\BaseScreen.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Infrastructure\BaseScreen.h">
       <Filter>Classes\Infrastructure</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\FrameworkMain.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Infrastructure\FrameworkMain.h">
       <Filter>Classes\Infrastructure</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\GameCore.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Infrastructure\GameCore.h">
       <Filter>Classes\Infrastructure</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\TeamCityTestsOutput.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Infrastructure\TeamCityTestsOutput.h">
       <Filter>Classes\Infrastructure</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\TestTemplate.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Infrastructure\TestTemplate.h">
       <Filter>Classes\Infrastructure</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\TextureUtils.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Infrastructure\TextureUtils.h">
       <Filter>Classes\Infrastructure</Filter>
     </ClInclude>
-    <ClInclude Include="D:\dava.framework\Projects\UnitTests\Classes\Infrastructure\UITestTemplate.h">
+    <ClInclude Include="..\..\UnitTests\Classes\Infrastructure\UITestTemplate.h">
       <Filter>Classes\Infrastructure</Filter>
     </ClInclude>
   </ItemGroup>
