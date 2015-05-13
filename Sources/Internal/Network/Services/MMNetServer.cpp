@@ -31,7 +31,6 @@
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
 #include "Debug/DVAssert.h"
-#include "FileSystem/DynamicMemoryFile.h"
 #include "DLC/Patcher/ZLibStream.h"
 #include "Platform/SystemTimer.h"
 #include "Utils/Random.h"
@@ -57,7 +56,6 @@ MMNetServer::MMNetServer()
     , periodCounter(0)
     , outHeader(reinterpret_cast<MMNetProto::Header*>(outbuf))
     , outData(OffsetPointer<void>(outbuf, sizeof(MMNetProto::Header)))
-    , zipFile(nullptr)
 {
     sessionId = Random::Instance()->Rand();
     timerBegin = SystemTimer::Instance()->AbsoluteMS();

@@ -40,8 +40,6 @@
 namespace DAVA
 {
 
-class DynamicMemoryFile;
-
 namespace Net
 {
 
@@ -96,7 +94,6 @@ private:
     MMNetProto::Header* outHeader;
     void* outData;
 
-    DynamicMemoryFile* zipFile;
     List<Parcel> queue;
 };
 
