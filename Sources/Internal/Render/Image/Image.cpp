@@ -178,7 +178,7 @@ Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
         if(newWidth > 1) newWidth >>= 1;
         if(newHeight > 1) newHeight >>= 1;
         uint8 * newData = new uint8[newWidth * newHeight * formatSize];
-        memset(newData, 0, newWidth * newHeight * formatSize);
+        Memset(newData, 0, newWidth * newHeight * formatSize);
 
         ImageConvert::DownscaleTwiceBillinear(format, format,
             image0->data, imageWidth, imageHeight, imageWidth * formatSize,
@@ -210,7 +210,7 @@ void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 	{
         const uint32 newDataSize = newWidth * newHeight * formatSize;
 		newData = new uint8[newDataSize];
-		memset(newData, 0, newDataSize);
+		Memset(newData, 0, newDataSize);
 
 		float32 kx = (float32)width / (float32)newWidth;
 		float32 ky = (float32)height / (float32)newHeight;
@@ -262,7 +262,7 @@ void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
     {
         newDataSize = newWidth * newHeight * formatSize;
         newData = new uint8[newDataSize];
-        memset(newData, 0, newDataSize);
+        Memset(newData, 0, newDataSize);
             
         uint32 currentLine = 0;
         uint32 indexOnLine = 0;

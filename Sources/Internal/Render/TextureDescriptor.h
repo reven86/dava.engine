@@ -244,8 +244,8 @@ public:
 	
     bool isCompressedFile:1;
 
-    static std::array<ImageFormat, 3> sourceTextureTypes;
-    static std::array<ImageFormat, 2> compressedTextureTypes;
+    static Array<ImageFormat, 3> sourceTextureTypes;
+    static Array<ImageFormat, 2> compressedTextureTypes;
 };
     
 };

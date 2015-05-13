@@ -120,8 +120,10 @@ void GPUFamilyDescriptor::SetupGPUFormats()
 	gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGBA_INTERPOLATED_ALPHA] = IMAGE_FORMAT_DDS;
     
     gpuData[GPU_ORIGIN].availableFormats[FORMAT_RGBA8888] = IMAGE_FORMAT_UNKNOWN;
+    gpuData[GPU_ORIGIN].availableFormats[FORMAT_RGB888] = IMAGE_FORMAT_UNKNOWN;
+    gpuData[GPU_ORIGIN].availableFormats[FORMAT_RGBA5551] = IMAGE_FORMAT_UNKNOWN;
     gpuData[GPU_ORIGIN].availableFormats[FORMAT_A8] = IMAGE_FORMAT_UNKNOWN;
-
+    gpuData[GPU_ORIGIN].availableFormats[FORMAT_A16] = IMAGE_FORMAT_UNKNOWN;
 }
 
 void GPUFamilyDescriptor::SetupGPUPostfixes()

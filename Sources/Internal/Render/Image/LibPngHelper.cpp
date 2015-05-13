@@ -393,9 +393,6 @@ ImageInfo LibPngHelper::GetImageInfo(File *infile) const
     
 //==== temporary solution for legasy png loading =====
     
-    
-    info.dataSize = info.height * info.width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(info.format);
-
     // Clean up
     png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 
