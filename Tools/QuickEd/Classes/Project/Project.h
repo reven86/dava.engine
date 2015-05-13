@@ -29,7 +29,7 @@ signals:
 
 private:
     bool OpenInternal(const QString &path);
-    QString projectPath;
+    QString projectDir;
     
     LegacyControlData *legacyData;
     EditorFontSystem *editorFontSystem;
