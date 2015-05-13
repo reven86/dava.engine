@@ -212,7 +212,7 @@ void Project::SetIsOpen(bool arg)
 {
     if (isOpen == arg)
     {
-        return;
+        //return; //TODO: implement this after we create CloseProject function
     }
     isOpen = arg;
     if (arg)
