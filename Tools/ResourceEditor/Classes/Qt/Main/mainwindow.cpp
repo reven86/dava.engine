@@ -551,30 +551,22 @@ void QtMainWindow::SetupStatusBar()
 
 	QObject::connect(this, SIGNAL(GlobalInvalidateTimeout()), ui->statusBar, SLOT(UpdateByTimer()));
 
-	QToolButton *gizmoStatusBtn = new QToolButton();
-	gizmoStatusBtn->setDefaultAction(ui->actionShowEditorGizmo);
-	gizmoStatusBtn->setAutoRaise(true);
-	gizmoStatusBtn->setMaximumSize(QSize(16, 16));
-	ui->statusBar->insertPermanentWidget(0, gizmoStatusBtn);
 
-    QToolButton *lighmapCanvasStatusBtn = new QToolButton();
-    lighmapCanvasStatusBtn->setDefaultAction(ui->actionLightmapCanvas);
-    lighmapCanvasStatusBtn->setAutoRaise(true);
-    lighmapCanvasStatusBtn->setMaximumSize(QSize(16, 16));
-    ui->statusBar->insertPermanentWidget(0, lighmapCanvasStatusBtn);
-
-	QToolButton *onSceneSelectStatusBtn = new QToolButton();
-	onSceneSelectStatusBtn->setDefaultAction(ui->actionOnSceneSelection);
-	onSceneSelectStatusBtn->setAutoRaise(true);
-	onSceneSelectStatusBtn->setMaximumSize(QSize(16, 16));
-	ui->statusBar->insertPermanentWidget(0, onSceneSelectStatusBtn);
-
-    QToolButton *staticOcclusionStatusBtn = new QToolButton();
-    staticOcclusionStatusBtn->setDefaultAction(ui->actionShowStaticOcclusion);
-    staticOcclusionStatusBtn->setAutoRaise(true);
-    staticOcclusionStatusBtn->setMaximumSize(QSize(16, 16));
-    ui->statusBar->insertPermanentWidget(0, staticOcclusionStatusBtn);
-
+    auto CreateStatusBarButton = [](QAction *action, QStatusBar *statusBar)
+    {
+        auto *statusBtn = new QToolButton();
+        statusBtn->setDefaultAction(action);
+        statusBtn->setAutoRaise(true);
+        statusBtn->setMaximumSize(QSize(16, 16));
+        statusBar->insertPermanentWidget(0, statusBtn);
+    };
+    
+    CreateStatusBarButton(ui->actionShowEditorGizmo, ui->statusBar);
+    CreateStatusBarButton(ui->actionLightmapCanvas, ui->statusBar);
+    CreateStatusBarButton(ui->actionOnSceneSelection, ui->statusBar);
+    CreateStatusBarButton(ui->actionShowStaticOcclusion, ui->statusBar);
+    CreateStatusBarButton(ui->actionEnableDisableShadows, ui->statusBar);
+    
 	QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int, int)));
 }
 
@@ -668,6 +660,8 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionOnSceneSelection, SIGNAL(toggled(bool)), this, SLOT(OnAllowOnSceneSelectionToggle(bool)));
     QObject::connect(ui->actionShowStaticOcclusion, SIGNAL(toggled(bool)), this, SLOT(OnShowStaticOcclusionToggle(bool)));
 
+    QObject::connect(ui->actionEnableDisableShadows, &QAction::toggled, this, &QtMainWindow::OnEnableDisableShadows);
+    
 	// scene undo/redo
 	QObject::connect(ui->actionUndo, SIGNAL(triggered()), this, SLOT(OnUndo()));
 	QObject::connect(ui->actionRedo, SIGNAL(triggered()), this, SLOT(OnRedo()));
@@ -1319,6 +1313,11 @@ void QtMainWindow::OnShowStaticOcclusionToggle(bool show)
     RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION, show);
 }
 
+void QtMainWindow::OnEnableDisableShadows(bool enable)
+{
+    RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::SHADOWVOLUME_DRAW, enable);
+}
+
 void QtMainWindow::OnReloadTextures()
 {
 	SetGPUFormat(GetGPUFormat());
@@ -1795,6 +1794,9 @@ void QtMainWindow::LoadViewState(SceneEditor2 *scene)
      
         bool viewLMCanvas = SettingsManager::GetValue(Settings::Internal_MaterialsShowLightmapCanvas).AsBool();
         ui->actionLightmapCanvas->setChecked(viewLMCanvas);
+        
+        auto options = RenderManager::Instance()->GetOptions();
+        ui->actionEnableDisableShadows->setChecked(options->IsOptionEnabled(RenderOptions::SHADOWVOLUME_DRAW));
 	}
 }
 
