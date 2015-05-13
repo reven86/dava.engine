@@ -29,12 +29,12 @@
 #ifndef __DAVAENGINE_TCPSOCKETTEMPLATE_H__
 #define __DAVAENGINE_TCPSOCKETTEMPLATE_H__
 
-#include <Base/BaseTypes.h>
-#include <Base/Noncopyable.h>
+#include "Base/BaseTypes.h"
+#include "Base/Noncopyable.h"
 
-#include <Network/Base/IOLoop.h>
-#include <Network/Base/Endpoint.h>
-#include <Network/Base/Buffer.h>
+#include "Network/Base/IOLoop.h"
+#include "Network/Base/Endpoint.h"
+#include "Network/Base/Buffer.h"
 
 namespace DAVA
 {
@@ -126,11 +126,14 @@ int32 TCPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 template <typename T>
 int32 TCPSocketTemplate<T>::RemoteEndpoint(Endpoint& endpoint)
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(true == isOpen && false == isClosing);
     int size = static_cast<int>(endpoint.Size());
-    //UNCOMMENT
-    //return uv_tcp_getpeername(&uvhandle, endpoint.CastToSockaddr(), &size);
-    return 0;
+    return uv_tcp_getpeername(&uvhandle, endpoint.CastToSockaddr(), &size);
+#endif
 }
 
 template <typename T>
@@ -154,9 +157,12 @@ bool TCPSocketTemplate<T>::IsClosing() const
 template <typename T>
 int32 TCPSocketTemplate<T>::DoOpen()
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(false == isOpen && false == isClosing);
-    //UNCOMMENT
-    int32 error = 0;//uv_tcp_init(loop->Handle(), &uvhandle);
+    int32 error = uv_tcp_init(loop->Handle(), &uvhandle);
     if (0 == error)
     {
         isOpen = true;
@@ -166,33 +172,45 @@ int32 TCPSocketTemplate<T>::DoOpen()
         uvshutdown.data = this;
     }
     return error;
+#endif
 }
 
 template <typename T>
 int32 TCPSocketTemplate<T>::DoConnect(const Endpoint& endpoint)
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(false == isClosing);
     int32 error = 0;
     if (false == isOpen)
         error = DoOpen();   // Automatically open on first call
-    //UNCOMMENT
-    //if (0 == error)
-      //  error = uv_tcp_connect(&uvconnect, &uvhandle, endpoint.CastToSockaddr(), &HandleConnectThunk);
+    if (0 == error)
+        error = uv_tcp_connect(&uvconnect, &uvhandle, endpoint.CastToSockaddr(), &HandleConnectThunk);
     return error;
+#endif
 }
 
 template <typename T>
 int32 TCPSocketTemplate<T>::DoStartRead()
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(true == isOpen && false == isClosing);
-    //UNCOMMENT
-    //return uv_read_start(reinterpret_cast<uv_stream_t*>(&uvhandle), &HandleAllocThunk, &HandleReadThunk);
-    return 0;
+    return uv_read_start(reinterpret_cast<uv_stream_t*>(&uvhandle), &HandleAllocThunk, &HandleReadThunk);
+#endif
 }
 
 template <typename T>
 int32 TCPSocketTemplate<T>::DoWrite(const Buffer* buffers, size_t bufferCount)
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(true == isOpen && false == isClosing);
     DVASSERT(buffers != NULL && 0 < bufferCount && bufferCount <= MAX_WRITE_BUFFERS);
     DVASSERT(0 == writeBufferCount);    // Next write is allowed only after previous write completion
@@ -204,28 +222,33 @@ int32 TCPSocketTemplate<T>::DoWrite(const Buffer* buffers, size_t bufferCount)
         writeBuffers[i] = buffers[i];
     }
 
-    //UNCOMMENT
-    //return uv_write(&uvwrite, reinterpret_cast<uv_stream_t*>(&uvhandle), writeBuffers, static_cast<unsigned int>(writeBufferCount), &HandleWriteThunk);
-    return 0;
+    return uv_write(&uvwrite, reinterpret_cast<uv_stream_t*>(&uvhandle), writeBuffers, static_cast<unsigned int>(writeBufferCount), &HandleWriteThunk);
+#endif
 }
 
 template <typename T>
 int32 TCPSocketTemplate<T>::DoShutdown()
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(true == isOpen && false == isClosing);
-    //UNCOMMENT
-    //return uv_shutdown(&uvshutdown, reinterpret_cast<uv_stream_t*>(&uvhandle), &HandleShutdownThunk);
-    return 0;
+    return uv_shutdown(&uvshutdown, reinterpret_cast<uv_stream_t*>(&uvhandle), &HandleShutdownThunk);
+#endif
 }
 
 template <typename T>
 void TCPSocketTemplate<T>::DoClose()
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#else
     DVASSERT(true == isOpen && false == isClosing);
     isOpen = false;
     isClosing = true;
-    //UNCOMMENT
-    //uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
+    uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
+#endif
 }
 
 ///   Thunks   ///////////////////////////////////////////////////////////

@@ -29,10 +29,10 @@
 #ifndef __DAVAENGINE_DEADLINETIMERTEMPLATE_H__
 #define __DAVAENGINE_DEADLINETIMERTEMPLATE_H__
 
-#include <Base/BaseTypes.h>
-#include <Base/Noncopyable.h>
+#include "Base/BaseTypes.h"
+#include "Base/Noncopyable.h"
 
-#include <Network/Base/IOLoop.h>
+#include "Network/Base/IOLoop.h"
 
 namespace DAVA
 {
@@ -92,9 +92,12 @@ DeadlineTimerTemplate<T>::~DeadlineTimerTemplate()
 template<typename T>
 void DeadlineTimerTemplate<T>::CancelWait()
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#else
     DVASSERT(true == isOpen && false == isClosing);
-    //UNCOMMENT
-    //uv_timer_stop(&uvhandle);
+    uv_timer_stop(&uvhandle);
+#endif
 }
 
 template<typename T>
@@ -112,37 +115,49 @@ bool DeadlineTimerTemplate<T>::IsClosing() const
 template<typename T>
 int32 DeadlineTimerTemplate<T>::DoOpen()
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(false == isOpen && false == isClosing);
-    //UNCOMMENT
-    int32 error = 0;//uv_timer_init(loop->Handle(), &uvhandle);
+    int32 error = uv_timer_init(loop->Handle(), &uvhandle);
     if (0 == error)
     {
         isOpen = true;
         uvhandle.data = this;
     }
     return error;
+#endif
 }
 
 template<typename T>
 int32 DeadlineTimerTemplate<T>::DoWait(uint32 timeout)
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(false == isClosing);
     int32 error = 0;
     if (false == isOpen)
         error = DoOpen();   // Automatically open on first call
-    //UNCOMMENT
-    //if (0 == error)
-      //  error = uv_timer_start(&uvhandle, &HandleTimerThunk, timeout, 0);
+    if (0 == error)
+        error = uv_timer_start(&uvhandle, &HandleTimerThunk, timeout, 0);
     return error;
+#endif
 }
 
 template<typename T>
 void DeadlineTimerTemplate<T>::DoClose()
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#else
     DVASSERT(true == isOpen && false == isClosing);
     isOpen = false;
     isClosing = true;
-    //uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
+    uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
+#endif
 }
 
 ///   Thunks   ///////////////////////////////////////////////////////////

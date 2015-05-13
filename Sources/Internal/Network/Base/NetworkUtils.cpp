@@ -27,7 +27,8 @@
 =====================================================================================*/
 
 #include "libuv.h"
-#include <Base/BaseTypes.h>
+#include "Debug/DVAssert.h"
+#include "Base/BaseTypes.h"
 
 namespace DAVA
 {
@@ -36,9 +37,12 @@ namespace Net
 
 const char8* ErrorToString(int32 error)
 {
-    //UNCOMMENT
-    //return uv_strerror(error);
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
     return "";
+#else
+    return uv_strerror(error);
+#endif
 }
 
 }   // namespace Net

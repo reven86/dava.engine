@@ -26,10 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include <Debug/DVAssert.h>
+#include "Debug/DVAssert.h"
 
-#include <Network/Base/Endpoint.h>
-#include <Network/Base/IPAddress.h>
+#include "Network/Base/Endpoint.h"
+#include "Network/Base/IPAddress.h"
 
 namespace DAVA
 {
@@ -44,10 +44,13 @@ IPAddress::IPAddress(const char8* address) : addr(0)
 
 bool IPAddress::ToString(char8* buffer, size_t size) const
 {
-    DVASSERT(buffer != NULL && size > 0);
-    //UNCOMMENT
-    //return 0 == uv_ip4_name(Endpoint(*this, 0).CastToSockaddrIn(), buffer, size);
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
     return false;
+#else
+    DVASSERT(buffer != NULL && size > 0);
+    return 0 == uv_ip4_name(Endpoint(*this, 0).CastToSockaddrIn(), buffer, size);
+#endif
 }
 
 String IPAddress::ToString() const
@@ -59,13 +62,16 @@ String IPAddress::ToString() const
 
 IPAddress IPAddress::FromString(const char8* addr)
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    return IPAddress();
+#else
     DVASSERT(addr != NULL);
 
     Endpoint endp;
-    //UNCOMMENT
-    //if(0 == uv_ip4_addr(addr, 0, endp.CastToSockaddrIn()))
-      //  return endp.Address();
-    return IPAddress();
+    if(0 == uv_ip4_addr(addr, 0, endp.CastToSockaddrIn()))
+        return endp.Address();
+#endif
 }
 
 }   // namespace Net

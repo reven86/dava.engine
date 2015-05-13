@@ -26,11 +26,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include <Base/FunctionTraits.h>
-#include <Thread/LockGuard.h>
-#include <Debug/DVAssert.h>
+#include "Base/FunctionTraits.h"
+#include "Debug/DVAssert.h"
+#include "Thread/LockGuard.h"
 
-#include <Network/Base/IOLoop.h>
+#include "Network/Base/IOLoop.h"
 
 namespace DAVA
 {
@@ -42,8 +42,10 @@ IOLoop::IOLoop(bool useDefaultIOLoop) : uvloop()
                                       , quitFlag(false)
                                       , uvasync()
 {
-    //UNCOMMENT
-    /*if (useDefaultIOLoop)
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#else
+    if (useDefaultIOLoop)
     {
         actualLoop = uv_default_loop();
     }
@@ -55,52 +57,68 @@ IOLoop::IOLoop(bool useDefaultIOLoop) : uvloop()
     actualLoop->data = this;
 
     DVVERIFY(0 == uv_async_init(actualLoop, &uvasync, &HandleAsyncThunk));
-    uvasync.data = this;*/
+    uvasync.data = this;
+#endif
 }
 
 IOLoop::~IOLoop()
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#else
     // We can close default loop too
-    //UNCOMMENT
-    //DVVERIFY(0 == uv_loop_close(actualLoop));
+    DVVERIFY(0 == uv_loop_close(actualLoop));
+#endif
 }
 
 int32 IOLoop::Run(eRunMode runMode)
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    return 0;
+#else
     static const uv_run_mode modes[] = {
         UV_RUN_DEFAULT,
         UV_RUN_ONCE,
         UV_RUN_NOWAIT
     };
     DVASSERT(RUN_DEFAULT == runMode || RUN_ONCE == runMode || RUN_NOWAIT == runMode);
-    //UNCOMMENT
-    //return uv_run(actualLoop, modes[runMode]);
-    return 0;
+    return uv_run(actualLoop, modes[runMode]);
+#endif
 }
 
 void IOLoop::Post(UserHandlerType handler)
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#else
     {
         LockGuard<Mutex> lock(mutex);
         // TODO: maybe do not insert duplicates
         queuedHandlers.push_back(handler);
     }
-    //UNCOMMENT
-    //uv_async_send(&uvasync);
+    uv_async_send(&uvasync);
+#endif
 }
 
 void IOLoop::PostQuit()
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#else
     if (false == quitFlag)
     {
         quitFlag = true;
-        //UNCOMMENT
-        //uv_async_send(&uvasync);
+        uv_async_send(&uvasync);
     }
+#endif
 }
 
 void IOLoop::HandleAsync()
 {
+#ifdef __DAVAENGINE_WINDOWS_STORE__
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#else
     {
         // Steal queued handlers for execution and release mutex
         // Main reason to do so is to avoid deadlocks if executed
@@ -117,9 +135,9 @@ void IOLoop::HandleAsync()
 
     if (true == quitFlag)
     {
-        //UNCOMMENT
-        //uv_close(reinterpret_cast<uv_handle_t*>(&uvasync), NULL);
+        uv_close(reinterpret_cast<uv_handle_t*>(&uvasync), NULL);
     }
+#endif
 }
 
 void IOLoop::HandleAsyncThunk(uv_async_t* handle)
