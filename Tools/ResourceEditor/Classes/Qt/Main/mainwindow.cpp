@@ -1126,7 +1126,10 @@ void QtMainWindow::OnSceneSaveAsInternal(bool saveWithCompressed)
     }
     
     SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
+    if(nullptr == scene)
+    {
+        return;
+    }
     
     auto scenePathname = scene->GetScenePath();
     if(scenePathname.IsEmpty() || scenePathname.GetType() == FilePath::PATH_IN_MEMORY || !scene->IsLoaded())
@@ -1137,7 +1140,9 @@ void QtMainWindow::OnSceneSaveAsInternal(bool saveWithCompressed)
     
     QString path = FileDialog::getExistingDirectory(NULL, QString("Open Folder"), QString("/"));
     if(path.isEmpty())
+    {
         return;
+    }
     
     
     WaitStart("Save with Children", "Please wait...");
