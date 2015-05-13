@@ -264,6 +264,10 @@ void WayEditSystem::ProcessSelection()
             }
         }
     }
+    else
+    {
+        prevSelectedWaypoints = selectedWaypoints;
+    }
 }
 
 void WayEditSystem::Input(DAVA::UIEvent *event)
