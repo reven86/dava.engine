@@ -33,25 +33,20 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "Render/Highlevel/RenderLayer.h"
-#include "Render/Highlevel/RenderFastNames.h"
+#include "Render/Highlevel/RenderPassNames.h"
 
 namespace DAVA
 {
-class RenderPassBatchArray;
 class Camera;
-
 class RenderPass
 {
 public:    
-    RenderPass(const FastName & name, RenderPassID id);
+    RenderPass(const FastName & name);
     virtual ~RenderPass();
     
-    void InitDefaultLayers();
-    
-    inline RenderPassID GetRenderPassID() const;
     inline const FastName & GetName() const;
     
-	void AddRenderLayer(RenderLayer * layer, const FastName & afterLayer);
+    void AddRenderLayer(RenderLayer * layer, RenderLayer::eRenderLayerID afterLayer = RenderLayer::RENDER_LAYER_INVALID_ID);
 	void RemoveRenderLayer(RenderLayer * layer);
 
     virtual void Draw(RenderSystem * renderSystem, uint32 clearBuffers);
@@ -59,39 +54,34 @@ public:
     inline uint32 GetRenderLayerCount() const;
     inline RenderLayer * GetRenderLayer(uint32 index) const;
     
-    
 protected:
-    // TODO: add StaticVector container
-    Vector<RenderLayer*> renderLayers;    
-    FastName name;
-    RenderPassID id;
-    
+    FastName passName;
     rhi::RenderPassConfig passConfig;
 
     /*convinience*/
     void PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSystem);
-    void DrawLayers(Camera *camera);    
+    void PrepareLayersArrays(const Vector<RenderObject *> objectsArray, Camera * camera);
+    void ClearLayersArrays();
 
-	RenderPassBatchArray * renderPassBatchArray;
-	VisibilityArray visibilityArray;
+    void DrawLayers(Camera *camera);
+
+    Vector<RenderLayer*> renderLayers;
+    std::array< RenderBatchArray, RenderLayer::RENDER_LAYER_ID_COUNT > layersBatchArrays;
+    Vector<RenderObject *> visibilityArray;
+
 public:
     
     INTROSPECTION(RenderPass,
         COLLECTION(renderLayers, "Render Layers", I_VIEW | I_EDIT)
-        MEMBER(name, "Name", I_VIEW)
+        MEMBER(passName, "Name", I_VIEW)
     );
 
 	friend class RenderSystem;
 };
 
-inline RenderPassID RenderPass::GetRenderPassID() const
-{
-    return id;
-}
-
 inline const FastName & RenderPass::GetName() const
 {
-    return name;
+    return passName;
 }
 
 inline uint32 RenderPass::GetRenderLayerCount() const
@@ -108,7 +98,7 @@ class WaterPrePass : public RenderPass
 {    
 public:
     inline void SetWaterLevel(float32 level){waterLevel = level;}
-    WaterPrePass(const FastName & name, RenderPassID id);
+    WaterPrePass(const FastName & name);
     ~WaterPrePass();
 protected:
     Camera *passMainCamera, *passDrawCamera;
@@ -117,7 +107,7 @@ protected:
 class WaterReflectionRenderPass  : public WaterPrePass
 {        
 public:    
-    WaterReflectionRenderPass(const FastName & name, RenderPassID id);
+    WaterReflectionRenderPass(const FastName & name);
 	virtual void Draw(RenderSystem * renderSystem, uint32 clearBuffers);	
 private:
     void UpdateCamera(Camera *camera);
@@ -126,16 +116,15 @@ private:
 class WaterRefractionRenderPass  : public WaterPrePass
 {       
 public:
-    WaterRefractionRenderPass(const FastName & name, RenderPassID id);
+    WaterRefractionRenderPass(const FastName & name);
     virtual void Draw(RenderSystem * renderSystem, uint32 clearBuffers);
-
 };
 
 class MainForwardRenderPass : public RenderPass
 {	
 
 public:
-    MainForwardRenderPass(const FastName & name, RenderPassID id);
+    MainForwardRenderPass(const FastName & name);
 	~MainForwardRenderPass();
 	virtual void Draw(RenderSystem * renderSystem, uint32 clearBuffers);
 

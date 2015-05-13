@@ -27,52 +27,42 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_VISIBILITY_ARRAY_H__
-#define	__DAVAENGINE_VISIBILITY_ARRAY_H__
+#ifndef __DAVAENGINE_SCENE3D_SHADOW_VOLUME_RENDER_PASS_H__
+#define	__DAVAENGINE_SCENE3D_SHADOW_VOLUME_RENDER_PASS_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/HashMap.h"
-#include "Base/FastNameMap.h"
+#include "Base/FastName.h"
+#include "Render/Highlevel/RenderPass.h"
 #include "Render/UniqueStateSet.h"
-#include "Base/BaseMath.h"
+#include "Render/Highlevel/ShadowBlendMode.h"
 
 namespace DAVA
 {
-class RenderObject;
-class VisibilityArray
+//class RenderLayer;
+class Camera;
+class ShadowRect;
+class ShadowVolumeRenderLayer : public RenderLayer
 {
 public:
-    inline void Clear();
-	inline void Add(RenderObject * renderObject);
-    inline uint32 GetCount() const;
-    inline RenderObject * Get(uint32 index) const;
+
+    ShadowVolumeRenderLayer(eRenderLayerID id, uint32 sortingFlags);
+    virtual ~ShadowVolumeRenderLayer() override;
+    
+    virtual void Draw(Camera* camera, const RenderBatchArray & renderBatchArray, rhi::HPacketList packetList) override;
+    
+    ShadowRect * GetShadowRect();
+
+	void SetBlendMode(ShadowPassBlendMode::eBlend blendMode);
+	ShadowPassBlendMode::eBlend GetBlendMode() const;
+    
 private:
-    Vector<RenderObject*> visibilityArray;
+    void CreateShadowRect();
+    ShadowRect * shadowRect;
+	ShadowPassBlendMode::eBlend blendMode;
+		
 };
-
-inline void VisibilityArray::Clear()
-{
-    visibilityArray.clear();
-}
     
-inline void VisibilityArray::Add(RenderObject * renderObject)
-{
-    visibilityArray.push_back(renderObject);
-}
-    
-inline uint32 VisibilityArray::GetCount() const
-{
-    return (uint32)visibilityArray.size();
-}
-
-inline RenderObject * VisibilityArray::Get(uint32 index) const
-{
-    return visibilityArray[index];
-}
-
-
-
 } // ns
 
-#endif	/* __DAVAENGINE_VISIBILITY_ARRAY_H__ */
+#endif	/* __DAVAENGINE_SCENE3D_SHADOW_VOLUME_RENDER_PASS_H__ */
 

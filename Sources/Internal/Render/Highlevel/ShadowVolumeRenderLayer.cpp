@@ -27,42 +27,69 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SCENE3D_SHADOW_VOLUME_RENDER_PASS_H__
-#define	__DAVAENGINE_SCENE3D_SHADOW_VOLUME_RENDER_PASS_H__
-
-#include "Base/BaseTypes.h"
-#include "Base/FastName.h"
-#include "Render/Highlevel/RenderPass.h"
-#include "Render/UniqueStateSet.h"
-#include "Render/Highlevel/ShadowBlendMode.h"
+#include "Render/Highlevel/ShadowVolumeRenderLayer.h"
+#include "Render/Highlevel/RenderLayer.h"
+#include "Render/Highlevel/Camera.h"
+#include "Render/Highlevel/ShadowRect.h"
+#include "Render/Highlevel/RenderBatchArray.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
-//class RenderLayer;
-class Camera;
-class ShadowRect;
-class ShadowVolumeRenderLayer : public RenderLayer
+    
+ShadowVolumeRenderLayer::ShadowVolumeRenderLayer(eRenderLayerID id, uint32 sortingFlags) : RenderLayer(id, sortingFlags), 
+    shadowRect(NULL)
 {
-public:
+	blendMode = ShadowPassBlendMode::MODE_BLEND_MULTIPLY;
+}
 
-    ShadowVolumeRenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id);
-    virtual ~ShadowVolumeRenderLayer();
-    
-    virtual void Draw(Camera* camera, RenderLayerBatchArray * renderLayerBatchArray, rhi::HPacketList packetList);
-    
-    ShadowRect * GetShadowRect();
+void ShadowVolumeRenderLayer::CreateShadowRect()
+{
+    shadowRect = ShadowRect::Create();
+}
 
-	void SetBlendMode(ShadowPassBlendMode::eBlend blendMode);
-	ShadowPassBlendMode::eBlend GetBlendMode() const;
+ShadowVolumeRenderLayer::~ShadowVolumeRenderLayer()
+{
+    SafeRelease(shadowRect);
+}
+
+void ShadowVolumeRenderLayer::SetBlendMode(ShadowPassBlendMode::eBlend _blendMode)
+{
+	blendMode = _blendMode;
+}
+
+void ShadowVolumeRenderLayer::Draw(Camera* camera, const RenderBatchArray & renderBatchArray, rhi::HPacketList packetList)
+{	
+    if(!QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW))
+    {
+        return;
+    }
+
+    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SHADOWVOLUME_DRAW) && renderBatchArray.GetRenderBatchCount())
+    {
+        if (!shadowRect)
+        {
+            CreateShadowRect();
+        }    	
+        RenderLayer::Draw(camera, renderBatchArray, packetList);
+		shadowRect->Draw(blendMode);
+	}	
+}
     
-private:
-    void CreateShadowRect();
-    ShadowRect * shadowRect;
-	ShadowPassBlendMode::eBlend blendMode;
-		
+ShadowRect * ShadowVolumeRenderLayer::GetShadowRect()
+{
+    if (!shadowRect)
+    {
+        CreateShadowRect();
+    }
+    return shadowRect;
+}
+
+ShadowPassBlendMode::eBlend ShadowVolumeRenderLayer::GetBlendMode() const
+{
+	return blendMode;
+}
+
+    
 };
-    
-} // ns
-
-#endif	/* __DAVAENGINE_SCENE3D_SHADOW_VOLUME_RENDER_PASS_H__ */
-

@@ -28,8 +28,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FXCache.h"
 #include "Render/ShaderCache.h"
-#include "Render/Highlevel/RenderFastNames.h"
 #include "Render/Material/NMaterialNames.h"
+#include "Render/Highlevel/RenderLayer.h"
+#include "Render/Highlevel/RenderPassNames.h"
 
 #include "Utils/Utils.h"
 #include "FileSystem/YamlParser.h"
@@ -46,7 +47,7 @@ bool initialized = false;
 
 RenderPassDescriptor::RenderPassDescriptor()
     :cullMode(rhi::CULL_NONE)
-    , renderLayer(RENDER_LAYER_INVALID_ID)
+    , renderLayer(RenderLayer::RENDER_LAYER_INVALID_ID)
     , shader(nullptr)
 {
 
@@ -63,7 +64,7 @@ void Initialize()
     initialized = true;
     RenderPassDescriptor defaultPass;
     defaultPass.passName = PASS_FORWARD;
-    defaultPass.renderLayer = RENDER_LAYER_OPAQUE_ID;    
+    defaultPass.renderLayer = RenderLayer::RENDER_LAYER_OPAQUE_ID;
     FastName defShaderName = FastName("~res:/Materials/Shaders/Default/materials");
     HashMap<FastName, int32> defFlags;
     defFlags[FastName("MATERIAL_TEXTURE")] = 1;
@@ -153,14 +154,14 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
     }
 
     FXDescriptor target;
-    eRenderLayerID renderLayer = RENDER_LAYER_OPAQUE_ID;
+    RenderLayer::eRenderLayerID renderLayer = RenderLayer::RENDER_LAYER_OPAQUE_ID;
 
     const YamlNode * layersNode = stateNode->Get("Layers");
     if (layersNode)
     {
         int32 count = layersNode->GetCount();
         DVASSERT(count == 1);
-        renderLayer = GetLayerIdByName(layersNode->Get(0)->AsString().c_str());
+        renderLayer = RenderLayer::GetLayerIDByName(FastName(layersNode->Get(0)->AsString().c_str()));
     }
 
     for (uint32 k = 0; k < stateNode->GetCount(); ++k)

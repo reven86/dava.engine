@@ -32,7 +32,7 @@
 #include "Render/Highlevel/RenderLayer.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/RenderPass.h"
-#include "Render/Highlevel/ShadowVolumeRenderPass.h"
+#include "Render/Highlevel/ShadowVolumeRenderLayer.h"
 #include "Render/Highlevel/ShadowRect.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Scene3D/Components/RenderComponent.h"
@@ -44,8 +44,6 @@
 #include "Render/Highlevel/SpatialTree.h"
 #include "Render/ShaderCache.h"
 
-// TODO: Move class to other place
-#include "Render/Highlevel/RenderFastNames.h"
 #include "Utils/Utils.h"
 #include "Debug/Stats.h"
 
@@ -53,14 +51,13 @@ namespace DAVA
 {
 
 RenderSystem::RenderSystem()
-    :   renderPassManager()
-    ,   forceUpdateLights(false)
+    :   forceUpdateLights(false)
     ,   mainCamera(0)
     ,   drawCamera(0)
     ,   globalMaterial(NULL)
 {
     //mainRenderPass = GetRenderPassManager()->GetRenderPass(PASS_FORWARD);
-    mainRenderPass = new MainForwardRenderPass(PASS_FORWARD, RENDER_PASS_FORWARD_ID);
+    mainRenderPass = new MainForwardRenderPass(PASS_FORWARD);
     //renderPassOrder.push_back(GetRenderPassManager()->GetRenderPass(PASS_SHADOW_VOLUME));
 
     renderHierarchy = new QuadTree(10);
@@ -371,16 +368,12 @@ void RenderSystem::Render(uint32 clearBuffers)
 {
     TIME_PROFILE("RenderSystem::Render");
 
-    
     mainRenderPass->Draw(this, clearBuffers);
-    
-    
-    //Logger::FrameworkDebug("OccludedRenderBatchCount: %d", RenderManager::Instance()->GetStats().occludedRenderBatchCount);
 }
-    
+
 void RenderSystem::SetShadowRectColor(const Color &color)
 {
-    ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(RenderLayerManager::Instance()->GetRenderLayer(LAYER_SHADOW_VOLUME));
+    ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(mainRenderPass->GetRenderLayer(RenderLayer::RENDER_LAYER_SHADOW_VOLUME_ID));
     DVASSERT(shadowVolume);
 
     ShadowRect *shadowRect = shadowVolume->GetShadowRect();
@@ -391,7 +384,7 @@ void RenderSystem::SetShadowRectColor(const Color &color)
     
 const Color & RenderSystem::GetShadowRectColor() const
 {
-    ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(RenderLayerManager::Instance()->GetRenderLayer(LAYER_SHADOW_VOLUME));
+    ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(mainRenderPass->GetRenderLayer(RenderLayer::RENDER_LAYER_SHADOW_VOLUME_ID));
     DVASSERT(shadowVolume);
     
     ShadowRect *shadowRect = shadowVolume->GetShadowRect();
@@ -402,7 +395,7 @@ const Color & RenderSystem::GetShadowRectColor() const
 	
 void RenderSystem::SetShadowBlendMode(ShadowPassBlendMode::eBlend blendMode)
 {
-	ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(RenderLayerManager::Instance()->GetRenderLayer(LAYER_SHADOW_VOLUME));
+    ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(mainRenderPass->GetRenderLayer(RenderLayer::RENDER_LAYER_SHADOW_VOLUME_ID));
     DVASSERT(shadowVolume);
 
 	shadowVolume->SetBlendMode(blendMode);
@@ -410,7 +403,7 @@ void RenderSystem::SetShadowBlendMode(ShadowPassBlendMode::eBlend blendMode)
 	
 ShadowPassBlendMode::eBlend RenderSystem::GetShadowBlendMode()
 {
-	ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(RenderLayerManager::Instance()->GetRenderLayer(LAYER_SHADOW_VOLUME));
+    ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(mainRenderPass->GetRenderLayer(RenderLayer::RENDER_LAYER_SHADOW_VOLUME_ID));
     DVASSERT(shadowVolume);
 
 	return shadowVolume->GetBlendMode();

@@ -42,10 +42,8 @@ class StaticOcclusion;
 class StaticOcclusionRenderPass : public RenderPass
 {
 public:
-    StaticOcclusionRenderPass(const FastName & name, StaticOcclusion * occlusion, RenderPassID id);
+    StaticOcclusionRenderPass(const FastName & name, StaticOcclusion * occlusion);
     ~StaticOcclusionRenderPass();
-
-
 
     inline void SetIndex(int32 side, int32 i, int32 j, int32 k);
     inline void SetOcclusionCamera(Camera * camera);

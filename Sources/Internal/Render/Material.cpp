@@ -40,7 +40,7 @@
 #include "Render/Highlevel/Light.h"
 #include "Render/TextureDescriptor.h"
 #include "Platform/SystemTimer.h"
-#include "Render/Highlevel/RenderFastNames.h"
+#include "Render/Highlevel/RenderLayer.h"
 #include "FileSystem/FileSystem.h"
 
 namespace DAVA 
@@ -277,7 +277,7 @@ Material::Material()
     ,   isWireframe(false)
     //,   renderStateBlock()
     ,   isExportOwnerLayerEnabled(true)
-    ,   ownerLayerName(LAYER_OPAQUE)
+    ,   ownerLayerName(RenderLayer::GetLayerNameByID(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID))
 {
     //Reserve memory for Collection
     names.resize(TEXTURE_COUNT);
@@ -1304,9 +1304,9 @@ const FastName & Material::GetOwnerLayerName()
 {
     if(GetAlphablend())
     {
-        SetOwnerLayerName(LAYER_TRANSLUCENT);
+        SetOwnerLayerName(RenderLayer::GetLayerNameByID(RenderLayer::RENDER_LAYER_AFTER_TRANSLUCENT_ID));
     }
-    else SetOwnerLayerName(LAYER_OPAQUE);
+    else SetOwnerLayerName(RenderLayer::GetLayerNameByID(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID));
 
     return ownerLayerName;
 }

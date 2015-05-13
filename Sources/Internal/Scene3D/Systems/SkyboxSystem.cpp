@@ -30,7 +30,6 @@
 
 #include "Render/Material.h"
 #include "Scene3D/Components/RenderComponent.h"
-#include "Render/Highlevel/RenderFastNames.h"
 #include "Scene3D/Systems/SkyboxSystem.h"
 #include "Scene3D/Entity.h"
 #include "Render/Highlevel/SkyboxRenderObject.h"

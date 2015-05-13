@@ -143,7 +143,6 @@ void Core::CreateSingletons()
     new UIControlSystem();
     new InputSystem();
     new RenderHelper();
-    new RenderLayerManager();
     new PerformanceSettings();
     new VersionInfo();
     new ImageSystem();
@@ -234,7 +233,6 @@ void Core::ReleaseSingletons()
     FileSystem::Instance()->Release();
     SoundSystem::Instance()->Release();
     Random::Instance()->Release();
-    RenderLayerManager::Instance()->Release();
     FrameOcclusionQueryManager::Instance()->Release();
     VirtualCoordinatesSystem::Instance()->Release();
     RenderSystem2D::Instance()->Release();

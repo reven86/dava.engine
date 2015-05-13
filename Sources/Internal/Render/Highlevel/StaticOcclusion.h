@@ -34,7 +34,6 @@
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
 #include "Render/OcclusionQuery.h"
-#include "Render/Highlevel/VisibilityArray.h"
 
 namespace DAVA
 {
@@ -42,7 +41,6 @@ class Camera;
 class StaticOcclusionRenderPass;
 class RenderObject;
 class RenderHierarchy;
-class RenderPassBatchArray;
 class OcclusionQueryPool;
 class RenderBatch;
 class RenderSystem;

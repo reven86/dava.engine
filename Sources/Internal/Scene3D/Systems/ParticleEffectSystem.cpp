@@ -36,7 +36,6 @@
 #include "Platform/SystemTimer.h"
 #include "Utils/Random.h"
 #include "Core/PerformanceSettings.h"
-#include "Render/Highlevel/RenderFastNames.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Systems/LodSystem.h"
 #include "Render/Material/NMaterialNames.h"
