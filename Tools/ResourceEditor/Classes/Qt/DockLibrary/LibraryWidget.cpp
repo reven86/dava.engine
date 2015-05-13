@@ -106,14 +106,14 @@ void LibraryWidget::SetupFileTypes()
     for(auto formatType : DAVA::TextureDescriptor::sourceTextureTypes)
     {
         auto extensions = DAVA::ImageSystem::Instance()->GetExtensionsFor(formatType);
-        for(auto ex : extensions)
+        for(auto& ex : extensions)
         {
             sourceFiles.insert(ex.c_str());
         }
     }
     
     QStringList sourceImagesList;
-    for(auto sf : sourceFiles)
+    for(auto& sf : sourceFiles)
     {
         sourceImagesList << (QString("*") + sf.c_str());
     }
@@ -122,14 +122,14 @@ void LibraryWidget::SetupFileTypes()
     for(auto formatType : DAVA::TextureDescriptor::compressedTextureTypes)
     {
         auto extensions = DAVA::ImageSystem::Instance()->GetExtensionsFor(formatType);
-        for(auto ex : extensions)
+        for(auto& ex : extensions)
         {
             compressedFiles.insert(ex.c_str());
         }
     }
     
     QStringList compressedImagesList;
-    for(auto cf : compressedFiles)
+    for(auto& cf : compressedFiles)
     {
         compressedImagesList << (QString("*") + cf.c_str());
     }

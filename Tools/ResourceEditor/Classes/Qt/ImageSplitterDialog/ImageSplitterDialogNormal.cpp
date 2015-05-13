@@ -49,7 +49,7 @@ ImageSplitterDialogNormal::ImageSplitterDialogNormal(QWidget *parent) :
     imageArreas[2] = ui->blueImgLbl;
     imageArreas[3] = ui->alphaImgLbl;
 
-    for(auto imageArea : imageArreas)
+    for(auto& imageArea : imageArreas)
     {
         imageArea->SetRequestedImageFormat(DAVA::FORMAT_RGBA8888);
     }

@@ -60,7 +60,7 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 		descriptor->GetFacePathnames(faceNames);
         
         files.reserve(faceNames.size());
-		for(auto faceName : faceNames)
+		for(auto& faceName : faceNames)
 		{
             if (!faceName.IsEmpty())
 			    files.push_back(faceName);

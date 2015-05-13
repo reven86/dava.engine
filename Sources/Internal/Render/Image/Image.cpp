@@ -233,7 +233,7 @@ void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 
 
 				offsetOld = (posY * width + posX) * formatSize;
-				memcpy(newData + offset, data + offsetOld, formatSize);
+				Memcpy(newData + offset, data + offsetOld, formatSize);
 
 				xx += kx;
 				offset += formatSize;
@@ -331,7 +331,7 @@ Image* Image::CopyImageRegion(const Image* imageToCopy,
 
 	for (uint32 i = 0; i < newHeight; ++i)
 	{
-		memcpy((newData + newWidth * i * formatSize),
+		Memcpy((newData + newWidth * i * formatSize),
 			   (oldData + (oldWidth * (yOffset + i) + xOffset) * formatSize),
 			   formatSize * newWidth);
 	}
@@ -388,7 +388,7 @@ void Image::InsertImage(const Image* image, uint32 dstX, uint32 dstY,
 
 	for (uint32 i = 0; i < insertHeight; ++i)
 	{
-		memcpy(dstData + (width * (dstY + i) + dstX) * formatSize,
+		Memcpy(dstData + (width * (dstY + i) + dstX) * formatSize,
 			   srcData + (image->GetWidth() * (srcY + i) + srcX) * formatSize,
 			   formatSize * insertWidth);
 	}

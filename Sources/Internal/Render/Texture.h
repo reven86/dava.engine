@@ -110,7 +110,7 @@ public:
 		CUBE_FACE_INVALID = 0xFFFFFFFF
 	};
 
-    static std::array<String, CUBE_FACE_COUNT> FACE_NAME_SUFFIX;
+    static Array<String, CUBE_FACE_COUNT> FACE_NAME_SUFFIX;
 	
 	enum TextureType
 	{

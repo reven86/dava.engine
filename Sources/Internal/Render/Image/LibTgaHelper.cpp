@@ -111,12 +111,12 @@ DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(const FilePath& filepath, TgaInfo& 
 
 DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File *infile, TgaInfo& tgaInfo) const
 {
-    std::array<uint8, 18> fields;
+    Array<uint8, 18> fields;
     size_t bytesRead = infile->Read(&fields, fields.size());
     if (bytesRead != fields.size())
         return ERROR_READ_FAIL;
 
-    static const std::array<uint8, 5> zeroes = {{ 0, 0, 0, 0, 0 }};
+    static const Array<uint8, 5> zeroes = {{ 0, 0, 0, 0, 0 }};
     if (Memcmp(&fields[idlengthOffset], &zeroes[0], 2) != 0 ||
         Memcmp(&fields[colorMapDataOffset], &zeroes[0], 5) != 0)
     {
@@ -328,7 +328,7 @@ eErrorCode LibTgaHelper::ReadUncompressedTga(File *infile, const TgaInfo& tgaInf
 eErrorCode LibTgaHelper::ReadCompressedTga(File *infile, const TgaInfo& tgaInfo, ScopedPtr<Image>& image) const
 {
     uint8 chunkHeader;
-    std::array<uint8, MAX_BYTES_IN_PIXEL> pixelBuffer;
+    Array<uint8, MAX_BYTES_IN_PIXEL> pixelBuffer;
 
     ImageDataWriter dataWriter(image, tgaInfo);
 
@@ -472,7 +472,7 @@ eErrorCode LibTgaHelper::WriteFile(const FilePath & fileName, const Vector<Image
 
 DAVA::eErrorCode LibTgaHelper::WriteTgaHeader(File *dstFile, const TgaInfo& tgaInfo) const
 {
-    std::array<uint8, 18> fields = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+    Array<uint8, 18> fields = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
     fields[imageTypeOffset] = static_cast<uint8>(tgaInfo.imageType);
     Uint16ToLowEndian(tgaInfo.width, &fields[widthOffset]);

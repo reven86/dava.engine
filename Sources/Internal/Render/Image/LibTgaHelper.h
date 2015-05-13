@@ -31,7 +31,6 @@
 #ifndef __DAVAENGINE_TGA_HELPER_H__
 #define __DAVAENGINE_TGA_HELPER_H__
 
-#include <array>
 #include <memory>
 
 #include "Render/Image/ImageFormatInterface.h"

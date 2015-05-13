@@ -45,7 +45,7 @@ namespace DAVA
 {
 static String CUBEMAP_TMP_DIR = "~doc:/ResourceEditor_Cubemap_Tmp/";
 
-static std::array<String, Texture::CUBE_FACE_COUNT> PVRTOOL_FACE_SUFFIXES =
+static Array<String, Texture::CUBE_FACE_COUNT> PVRTOOL_FACE_SUFFIXES =
 {
     String("1"), //pz
     String("2"), //nz
@@ -369,7 +369,7 @@ void PVRConverter::CleanupCubemapAfterConversion(const TextureDescriptor& descri
 	Vector<FilePath> pvrToolFaceNames;
 	descriptor.GenerateFacePathnames(CUBEMAP_TMP_DIR, PVRTOOL_FACE_SUFFIXES, pvrToolFaceNames);
 		
-	for(auto faceName : pvrToolFaceNames)
+	for(auto& faceName : pvrToolFaceNames)
 	{
 		if(FileSystem::Instance()->IsFile(faceName))
 		{

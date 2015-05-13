@@ -278,7 +278,7 @@ void CubemapEditorDialog::UpdateButtonState()
 bool CubemapEditorDialog::AnyFaceLoaded()
 {
 	bool faceLoaded = false;
-	for(auto nextFacePath : facePathes)
+	for(auto& nextFacePath : facePathes)
 	{
 		if(!nextFacePath.IsEmpty())
 		{
@@ -293,7 +293,7 @@ bool CubemapEditorDialog::AnyFaceLoaded()
 bool CubemapEditorDialog::AllFacesLoaded()
 {
 	bool faceLoaded = true;
-    for (auto nextFacePath : facePathes)
+    for (auto& nextFacePath : facePathes)
     {
         if (nextFacePath.IsEmpty())
         {
@@ -308,7 +308,7 @@ bool CubemapEditorDialog::AllFacesLoaded()
 int CubemapEditorDialog::GetLoadedFaceCount()
 {
 	int faceLoaded = 0;
-    for (auto nextFacePath : facePathes)
+    for (auto& nextFacePath : facePathes)
     {
         if (!nextFacePath.IsEmpty())
         {

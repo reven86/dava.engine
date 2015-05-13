@@ -239,7 +239,7 @@ void SceneSaver::CopyTexture(const FilePath &texturePathname)
 		Vector<FilePath> faceNames;
 
 		desc->GetFacePathnames(faceNames);
-		for(auto faceName : faceNames)
+		for(auto& faceName : faceNames)
 		{
             if (!faceName.IsEmpty())
 			    sceneUtils.AddFile(faceName);

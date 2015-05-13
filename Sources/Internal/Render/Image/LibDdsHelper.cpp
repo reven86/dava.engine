@@ -71,13 +71,13 @@ public:
             PairQualcommPixelGLFormat() = delete;
 	};
 	
-    static const std::array<PairQualcommPixelGLFormat, Q_FORMAT_COUNT> formatPair;
+    static const Array<PairQualcommPixelGLFormat, Q_FORMAT_COUNT> formatPair;
 
 	int32 static GetQualcommFormat(PixelFormat format);
 	PixelFormat static GetDavaFormat(int32 qFormat);
 };
 
-const std::array<QualcommHelper::PairQualcommPixelGLFormat, QualcommHelper::Q_FORMAT_COUNT> QualcommHelper::formatPair =
+const Array<QualcommHelper::PairQualcommPixelGLFormat, QualcommHelper::Q_FORMAT_COUNT> QualcommHelper::formatPair =
 {{
     QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_ATC_RGB, FORMAT_ATC_RGB),
     QualcommHelper::PairQualcommPixelGLFormat(Q_FORMAT_ATC_RGBA_EXPLICIT_ALPHA, FORMAT_ATC_RGBA_EXPLICIT_ALPHA),
@@ -350,7 +350,7 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
                         innerImage->cubeFaceID = NvttHelper::GetCubeFaceId(info.faceFlags, faceIndex);
                     }
                     
-                    memcpy(innerImage->data, compressedImges + offset, mipSize);
+                    Memcpy(innerImage->data, compressedImges + offset, mipSize);
                     imageSet.push_back(innerImage);
                 }
                 
@@ -900,8 +900,8 @@ bool LibDdsHelper::DecompressImageToRGBA(const Image & image, Vector<Image*> &im
     nvtt::Decompressor dec;
     
     uint8* compressedImageBuffer = new uint8[realHeaderSize + image.dataSize];
-    memcpy(compressedImageBuffer, imageHeaderBuffer, realHeaderSize);
-    memcpy(compressedImageBuffer + realHeaderSize, image.data, image.dataSize);
+    Memcpy(compressedImageBuffer, imageHeaderBuffer, realHeaderSize);
+    Memcpy(compressedImageBuffer + realHeaderSize, image.data, image.dataSize);
     SafeDeleteArray(imageHeaderBuffer);
     
     bool retValue = NvttHelper::InitDecompressor(dec, compressedImageBuffer, realHeaderSize + image.dataSize);

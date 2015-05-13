@@ -98,7 +98,7 @@ static int32 CUBE_FACE_MAPPING[] =
 	Texture::CUBE_FACE_NEGATIVE_Z
 };
 
-std::array<String, Texture::CUBE_FACE_COUNT> Texture::FACE_NAME_SUFFIX =
+Array<String, Texture::CUBE_FACE_COUNT> Texture::FACE_NAME_SUFFIX =
 {{
     String("_px"),
     String("_nx"),

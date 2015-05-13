@@ -407,7 +407,7 @@ TextureInfo TextureConvertor::GetThumbnailThread(JobItem *item)
 			DAVA::Vector<DAVA::FilePath> cubeFaceNames;
 			descriptor->GetFacePathnames(cubeFaceNames);
 
-			for(auto faceName : cubeFaceNames)
+			for(auto& faceName : cubeFaceNames)
 			{
                 if(faceName.IsEmpty())
                     continue;
@@ -449,7 +449,7 @@ TextureInfo TextureConvertor::GetOriginalThread(JobItem *item)
 			DAVA::Vector<DAVA::FilePath> cubeFaceNames;
 			descriptor->GetFacePathnames(cubeFaceNames);
 			
-			for(auto faceName : cubeFaceNames)
+			for(auto& faceName : cubeFaceNames)
 			{
 				if(faceName.IsEmpty())
                     continue;

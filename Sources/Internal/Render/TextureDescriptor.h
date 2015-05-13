@@ -180,7 +180,7 @@ public:
     FilePath GetSourceTexturePathname() const;
 
     void GetFacePathnames(Vector<FilePath>& faceNames) const;
-    void GenerateFacePathnames(const FilePath & baseName, const std::array<String, Texture::CUBE_FACE_COUNT>& faceNameSuffixes, Vector<FilePath>& faceNames) const;
+    void GenerateFacePathnames(const FilePath & baseName, const Array<String, Texture::CUBE_FACE_COUNT>& faceNameSuffixes, Vector<FilePath>& faceNames) const;
     static void GenerateFacePathnames(const FilePath & baseName, Vector<FilePath>& faceNames, const String &extension);
 
     

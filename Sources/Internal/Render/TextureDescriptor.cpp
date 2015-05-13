@@ -491,7 +491,7 @@ void TextureDescriptor::LoadVersion9(File *file)
     dataSettings.sourceFileFormat = static_cast<ImageFormat>(sourceFileFormat);
     
     uint32 length = 0;
-    std::array<char8, 20> extStr;
+    Array<char8, 20> extStr;
 
     file->Read(&length);
     file->Read(extStr.data(), length);
@@ -578,7 +578,7 @@ void TextureDescriptor::GetFacePathnames(Vector<FilePath>& faceNames) const
     GenerateFacePathnames(pathname, Texture::FACE_NAME_SUFFIX, faceNames);
 }
 
-void TextureDescriptor::GenerateFacePathnames(const FilePath & filePath, const std::array<String, Texture::CUBE_FACE_COUNT>& faceNameSuffixes, Vector<FilePath>& faceNames) const
+void TextureDescriptor::GenerateFacePathnames(const FilePath & filePath, const Array<String, Texture::CUBE_FACE_COUNT>& faceNameSuffixes, Vector<FilePath>& faceNames) const
 {
     faceNames.resize(Texture::CUBE_FACE_COUNT, FilePath());
 
@@ -644,13 +644,13 @@ const TextureDescriptor::Compression * TextureDescriptor::GetCompressionParams(e
     return &compression[gpuFamily];
 }
 
-std::array<ImageFormat, 3> TextureDescriptor::sourceTextureTypes = { { IMAGE_FORMAT_PNG, IMAGE_FORMAT_TGA, IMAGE_FORMAT_JPEG } };
-std::array<ImageFormat, 2> TextureDescriptor::compressedTextureTypes = { { IMAGE_FORMAT_PVR, IMAGE_FORMAT_DDS } };
+Array<ImageFormat, 3> TextureDescriptor::sourceTextureTypes = { { IMAGE_FORMAT_PNG, IMAGE_FORMAT_TGA, IMAGE_FORMAT_JPEG } };
+Array<ImageFormat, 2> TextureDescriptor::compressedTextureTypes = { { IMAGE_FORMAT_PVR, IMAGE_FORMAT_DDS } };
 
 auto IsSupportedFor = [](ImageFormat format, const String& extension)
 {
     auto extensions = ImageSystem::Instance()->GetExtensionsFor(format);
-    for (auto ext : extensions)
+    for (auto& ext : extensions)
     {
         if (CompareCaseInsensitive(ext, extension) == 0)
             return true;
@@ -672,7 +672,7 @@ bool TextureDescriptor::IsSupportedCompressedFormat(ImageFormat imageFormat)
 
 bool TextureDescriptor::IsSourceTextureExtension(const String& extension)
 {
-    for (auto format : sourceTextureTypes)
+    for (auto& format : sourceTextureTypes)
     {
         if (IsSupportedFor(format, extension))
             return true;
@@ -683,7 +683,7 @@ bool TextureDescriptor::IsSourceTextureExtension(const String& extension)
 
 bool TextureDescriptor::IsCompressedTextureExtension(const String& extension)
 {
-    for (auto format : compressedTextureTypes)
+    for (auto& format : compressedTextureTypes)
     {
         if (IsSupportedFor(format, extension))
             return true;

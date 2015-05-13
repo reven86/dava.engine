@@ -410,7 +410,7 @@ bool SceneExporter::ExportTexture(const TextureDescriptor * descriptor, Set<Stri
 		{
 			Vector<FilePath> faceNames;
 			descriptor->GetFacePathnames(faceNames);
-			for(auto faceName : faceNames)
+			for(auto& faceName : faceNames)
 			{
                 if (faceName.IsEmpty())
                     continue;

@@ -91,7 +91,7 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor &descriptor, 
 	Vector<Image*> inputImages;
 	Vector<FilePath> faceNames;
 	descriptor.GetFacePathnames(faceNames);
-	for(auto faceName : faceNames)
+	for(auto& faceName : faceNames)
 	{
         if (faceName.IsEmpty())
             continue;
