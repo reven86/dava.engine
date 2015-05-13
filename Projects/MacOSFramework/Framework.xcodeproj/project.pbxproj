@@ -1487,6 +1487,12 @@
 		CCF00D3F1A42F43D00A577C2 /* EntityFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCF00D391A42F21B00A577C2 /* EntityFamily.cpp */; };
 		CCF00D411A42F63800A577C2 /* EntityFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCF00D391A42F21B00A577C2 /* EntityFamily.cpp */; };
 		D2AAC088055469A000DB518D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
+		D738BD701B01F1BC00989C29 /* RawTimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D738BD6E1B01F1BC00989C29 /* RawTimer.cpp */; };
+		D738BD711B01F1BC00989C29 /* RawTimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D738BD6E1B01F1BC00989C29 /* RawTimer.cpp */; };
+		D738BD721B01F1BC00989C29 /* RawTimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D738BD6E1B01F1BC00989C29 /* RawTimer.cpp */; };
+		D738BD731B01F1BC00989C29 /* RawTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D738BD6F1B01F1BC00989C29 /* RawTimer.h */; };
+		D738BD741B01F1BC00989C29 /* RawTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D738BD6F1B01F1BC00989C29 /* RawTimer.h */; };
+		D738BD751B01F1BC00989C29 /* RawTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D738BD6F1B01F1BC00989C29 /* RawTimer.h */; };
 		D751822119BF1D8800BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751822019BF1D8800BB88E0 /* ThreadPosix.cpp */; };
 		D751822219BF1D8800BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751822019BF1D8800BB88E0 /* ThreadPosix.cpp */; };
 		D751822319BF1D8800BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751822019BF1D8800BB88E0 /* ThreadPosix.cpp */; };
@@ -3158,6 +3164,8 @@
 		CCF00D3A1A42F21B00A577C2 /* EntityFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityFamily.h; sourceTree = "<group>"; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2F7E8BE07B2D77200F64583 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
+		D738BD6E1B01F1BC00989C29 /* RawTimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RawTimer.cpp; path = Timer/RawTimer.cpp; sourceTree = "<group>"; };
+		D738BD6F1B01F1BC00989C29 /* RawTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RawTimer.h; path = Timer/RawTimer.h; sourceTree = "<group>"; };
 		D751822019BF1D8800BB88E0 /* ThreadPosix.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = ThreadPosix.cpp; sourceTree = "<group>"; };
 		D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationImpl.h; sourceTree = "<group>"; };
 		D7C556671A7A158600175ED9 /* DataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorage.h; sourceTree = "<group>"; };
@@ -4154,6 +4162,15 @@
 				CC931B21188EC95F000375F9 /* SwitchToRenerObjectConverter.h */,
 			);
 			name = Converters;
+			sourceTree = "<group>";
+		};
+		D738BD761B01F1C300989C29 /* Timer */ = {
+			isa = PBXGroup;
+			children = (
+				D738BD6E1B01F1BC00989C29 /* RawTimer.cpp */,
+				D738BD6F1B01F1BC00989C29 /* RawTimer.h */,
+			);
+			name = Timer;
 			sourceTree = "<group>";
 		};
 		D7C556621A7A158600175ED9 /* DataStorage */ = {
@@ -5257,6 +5274,7 @@
 		FECFC0A512E87E3000C71562 /* Internal */ = {
 			isa = PBXGroup;
 			children = (
+				D738BD761B01F1C300989C29 /* Timer */,
 				E8989ABD16BD24E400732C04 /* Animation */,
 				E8989ACD16BD24E400732C04 /* Autotesting */,
 				E8989AD916BD24E400732C04 /* Base */,
@@ -5497,6 +5515,7 @@
 				176DE99C174B5561007A983B /* MaterialGraphNode.h in Headers */,
 				E8990B401A288C2000FF71A1 /* WASDControllerComponent.h in Headers */,
 				176DE99D174B5561007A983B /* NMaterial.h in Headers */,
+				D738BD751B01F1BC00989C29 /* RawTimer.h in Headers */,
 				176DE99E174B5561007A983B /* NMaterialConsts.h in Headers */,
 				D7CC263919C43C7C00A3B754 /* LocalNotificationController.h in Headers */,
 				6435963D18C1FA3200862C31 /* AbstractQuadTree.h in Headers */,
@@ -5892,6 +5911,7 @@
 				E8989E7516BD24E500732C04 /* Polygon2.h in Headers */,
 				E8989E7716BD24E500732C04 /* Polygon3.h in Headers */,
 				E8989E7816BD24E500732C04 /* Quaternion.h in Headers */,
+				D738BD731B01F1BC00989C29 /* RawTimer.h in Headers */,
 				E8989E7916BD24E500732C04 /* Ray.h in Headers */,
 				E8989E7A16BD24E500732C04 /* Rect.h in Headers */,
 				E8989E7C16BD24E500732C04 /* RectPacker.h in Headers */,
@@ -6285,6 +6305,7 @@
 				E898A07216BD265400732C04 /* IntrospectionCollection.h in Headers */,
 				E898A07316BD265400732C04 /* IntrospectionFlags.h in Headers */,
 				644C86F519476A7100964F91 /* VegetationRenderData.h in Headers */,
+				D738BD741B01F1BC00989C29 /* RawTimer.h in Headers */,
 				E898A07416BD265400732C04 /* IntrospectionProperty.h in Headers */,
 				E898A07616BD265400732C04 /* Message.h in Headers */,
 				EAADA02A18A2652A001E1AA2 /* UIParticles.h in Headers */,
@@ -7002,6 +7023,7 @@
 				176DEAE3174B5561007A983B /* SwitchComponent.cpp in Sources */,
 				176DEAE4174B5561007A983B /* TransformComponent.cpp in Sources */,
 				50B06922186D4C4C00B44A39 /* RenderLayerManager.cpp in Sources */,
+				D738BD721B01F1BC00989C29 /* RawTimer.cpp in Sources */,
 				E89EDE681A2E16FA0036E993 /* KeyedArchiveSwig.cpp in Sources */,
 				4F53ED4219A23BEE00D3869D /* ZLibStream.cpp in Sources */,
 				176DEAE5174B5561007A983B /* UpdatableComponent.cpp in Sources */,
@@ -7557,6 +7579,7 @@
 				E89EDE691A2E16FA0036E993 /* MongodbUpdateObject.cpp in Sources */,
 				CC24800816DD174E00183D40 /* UserComponent.cpp in Sources */,
 				E9EA496C16DF93FA00C44B6F /* UISpinner.cpp in Sources */,
+				D738BD701B01F1BC00989C29 /* RawTimer.cpp in Sources */,
 				02141407181984D600925E51 /* DAVAClassRegistrator.cpp in Sources */,
 				E8B4F8CF16EF377D0072442A /* UTF8UtilsMac.mm in Sources */,
 				E9E798A916F0BE7600745AF5 /* UISwitch.cpp in Sources */,
@@ -7836,6 +7859,7 @@
 				E898A24116BD265400732C04 /* Texture.cpp in Sources */,
 				E898A24216BD265400732C04 /* TextureDescriptor.cpp in Sources */,
 				E8F43E25186C3D02006796CB /* MaterialSystem.cpp in Sources */,
+				D738BD711B01F1BC00989C29 /* RawTimer.cpp in Sources */,
 				E8FC12F71869726A0095D8FE /* QualitySettingsSystem.cpp in Sources */,
 				B4C29D40199B592D001B83FE /* SceneCache.cpp in Sources */,
 				D751822219BF1D8800BB88E0 /* ThreadPosix.cpp in Sources */,

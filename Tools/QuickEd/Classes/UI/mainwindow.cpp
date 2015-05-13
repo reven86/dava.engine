@@ -29,27 +29,14 @@
 
 #include "mainwindow.h"
 
-#include <QDir>
-#include <QMessageBox>
-#include <QDesktopServices>
-#include <QUrl>
-#include <QSettings>
-#include <QColorDialog>
-#include <QPushButton>
-
 //////////////////////////////////////////////////////////////////////////
 #include "fontmanagerdialog.h"
-#include "FileSystem/FileSystem.h"
 #include "Helpers/ResourcesManageHelper.h"
-#include "Dialogs/localizationeditordialog.h"
-#include "Grid/GridVisualizer.h"
-#include "EditorFontManager.h"
+#include "Dialogs/LocalizationEditorDialog.h"
 //////////////////////////////////////////////////////////////////////////
 
 #include "UI/FileSystemView/FileSystemDockWidget.h"
-#include "UI/UIPackageLoader.h"
 #include "Utils/QtDavaConvertion.h"
-#include "Model/PackageHierarchy/PackageNode.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
 
@@ -71,12 +58,9 @@ MainWindow::MainWindow(QWidget *parent)
     , backgroundFrameSelectCustomColorAction(nullptr)
     , localizationEditorDialog(new LocalizationEditorDialog(this))
 {
-    connect(localizationEditorDialog, &LocalizationEditorDialog::LanguageChanged, this, &MainWindow::LanguageChanged);
-
     setupUi(this);
 
     InitLanguageBox();
-
 
     tabBar->setElideMode(Qt::ElideNone);
     setWindowTitle(ResourcesManageHelper::GetProjectTitle());
@@ -223,7 +207,16 @@ void MainWindow::OnShowHelp()
 void MainWindow::InitLanguageBox()
 {
     QComboBox *comboboxLanguage = new QComboBox();
-    toolBarLanguage->addWidget(comboboxLanguage);
+    comboboxLanguage->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    QLabel *label = new QLabel(tr("language"));
+    label->setBuddy(comboboxLanguage);
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->setMargin(0);
+    layout->addWidget(label);
+    layout->addWidget(comboboxLanguage);
+    QWidget *wrapper = new QWidget();
+    wrapper->setLayout(layout);
+    toolBarLanguage->addWidget(wrapper);
     comboboxLanguage->setModel(localizationEditorDialog->currentLocaleComboBox->model());
     connect(comboboxLanguage, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), localizationEditorDialog->currentLocaleComboBox, &QComboBox::setCurrentIndex);
     connect(localizationEditorDialog->currentLocaleComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), comboboxLanguage, &QComboBox::setCurrentIndex);
@@ -394,7 +387,7 @@ void MainWindow::OnProjectOpened(Result result, QString projectPath)
         RebuildRecentMenu();
         fileSystemDockWidget->SetProjectDir(projectPath);
         fileSystemDockWidget->setEnabled(true);
-        localizationEditorDialog->SetDefaultLanguage();
+        localizationEditorDialog->FillLocaleComboBox();
     }
     else
     {

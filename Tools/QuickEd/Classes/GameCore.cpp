@@ -33,8 +33,6 @@
 #include "Grid/GridVisualizer.h"
 #include "Ruler/RulerController.h"
 
-
-#include "EditorFontManager.h"
 //#include "ScreenManager.h"
 #include "EditorSettings.h"
 #include "Helpers/ResourcesManageHelper.h"
@@ -50,8 +48,6 @@ GameCore::GameCore()
     // Editor Settings might be used by any singleton below during initialization, so
     // initialize it before any other one.
     new EditorSettings();
-
-	new EditorFontManager();
 
     new GridVisualizer();
     new RulerController();
@@ -70,8 +66,7 @@ GameCore::~GameCore()
     GridVisualizer::Instance()->Release();
 
     EditorSettings::Instance()->Release();
-    EditorFontManager::Instance()->Release();
-    
+        
     AutotestingSystem::Instance()->Release();
 }
 

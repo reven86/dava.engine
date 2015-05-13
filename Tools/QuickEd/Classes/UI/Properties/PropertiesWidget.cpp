@@ -24,6 +24,7 @@ void PropertiesWidget::OnDocumentChanged(SharedData *arg)
     sharedData = arg;
     UpdateActivatedControls();
 }
+
 void PropertiesWidget::OnDataChanged(const QByteArray &role)
 {
     if (role == "activatedControls")
