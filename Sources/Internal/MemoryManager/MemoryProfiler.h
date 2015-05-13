@@ -41,6 +41,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MEMORY_PROFILER_ENTER_TAG(tag)                      DAVA::MemoryManager::Instance()->EnterTagScope(tag)
 #define MEMORY_PROFILER_LEAVE_TAG(tag)                      DAVA::MemoryManager::Instance()->LeaveTagScope(tag)
 
+#define MEMORY_PROFILER_GPU_ALLOC(id, size, gpuAllocPool)   DAVA::MemoryManager::Instance()->TrackGpuAlloc(id, size, gpuAllocPool)
+#define MEMORY_PROFILER_GPU_DEALLOC(id, gpuAllocPool)       DAVA::MemoryManager::Instance()->TrackGpuDealloc(id, gpuAllocPool)
+
 #define MEMORY_PROFILER_ALLOC_SCOPE(allocPool)              DAVA::MemoryManager::AllocPoolScope memory_profiler_alloc_scope(allocPool)
 #define MEMORY_PROFILER_CLASS_ALLOC_SCOPE()                 DAVA::MemoryManager::AllocPoolScope memory_profiler_alloc_scope(this_class_allocation_pool)
 
@@ -60,6 +63,9 @@ public:                                                                         
 
 #define MEMORY_PROFILER_ENTER_TAG(tag)
 #define MEMORY_PROFILER_LEAVE_TAG(tag)
+
+#define MEMORY_PROFILER_GPU_ALLOC(id, size, gpuAllocPool)
+#define MEMORY_PROFILER_GPU_DEALLOC(id, gpuAllocPool)
 
 #define MEMORY_PROFILER_ALLOC_SCOPE(allocPool)
 #define MEMORY_PROFILER_CLASS_ALLOC_SCOPE()

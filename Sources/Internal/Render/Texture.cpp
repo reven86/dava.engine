@@ -299,6 +299,7 @@ void Texture::ReleaseTextureDataInternal(uint32 textureType, uint32 textureID, u
     if(textureID)
 	{
         RENDER_VERIFY(glDeleteTextures(1, &textureID));
+        MEMORY_PROFILER_GPU_DEALLOC(textureID, ALLOC_GPU_TEXTURE);
 	}
 	
 #elif defined(__DAVAENGINE_DIRECTX9__)
@@ -357,6 +358,7 @@ void Texture::TexImage(int32 level, uint32 width, uint32 height, const void * _d
         {
             RENDER_VERIFY(glTexImage2D(textureMode, level, formatDescriptor.internalformat, width, height, 0, formatDescriptor.format, formatDescriptor.type, _data));
         }
+        MEMORY_PROFILER_GPU_ALLOC(id, dataSize, ALLOC_GPU_TEXTURE);
     }
 	
 	if(0 != saveId)
@@ -520,8 +522,11 @@ void Texture::GenerateMipmapsInternal()
     Vector<Image *> images = image0->CreateMipMapsImages(texDescriptor->dataSettings.GetIsNormalMap());
     SafeRelease(image0);
 
-    for(uint32 i = 1; i < (uint32)images.size(); ++i)
-        TexImage((images[i]->mipmapLevel != (uint32)-1) ? images[i]->mipmapLevel : i, images[i]->width, images[i]->height, images[i]->data, images[i]->dataSize, images[i]->cubeFaceID);
+    for (size_t i = 1, n = images.size(); i < n; ++i)
+    {
+        TexImage(images[i]->mipmapLevel != (uint32)-1 ? static_cast<int32>(images[i]->mipmapLevel) : static_cast<int32>(i),
+                 images[i]->width, images[i]->height, images[i]->data, images[i]->dataSize, images[i]->cubeFaceID);
+    }
 
     ReleaseImages(&images);
 
@@ -723,11 +728,12 @@ void Texture::FlushDataToRendererInternal(Vector<Image *> * images)
 	id = CreateTextureNative(Vector2((float32)_width, (float32)_height), texture->format, false, 0);
 #endif //#if defined(__DAVAENGINE_OPENGL__)
 
-	for(uint32 i = 0; i < (uint32)images->size(); ++i)
-	{
+    for (size_t i = 0, n = images->size(); i < n; ++i)
+    {
         Image *img = (*images)[i];
-		TexImage((img->mipmapLevel != (uint32)-1) ? img->mipmapLevel : i, img->width, img->height, img->data, img->dataSize, img->cubeFaceID);
-	}
+        TexImage(img->mipmapLevel != (uint32)-1 ? static_cast<int32>(img->mipmapLevel) : static_cast<int32>(i),
+                 img->width, img->height, img->data, img->dataSize, img->cubeFaceID);
+    }
 
 #if defined(__DAVAENGINE_OPENGL__)
 

@@ -114,10 +114,16 @@ RenderDataObject::~RenderDataObject()
 void RenderDataObject::DeleteBuffersInternal(uint32 vboBuffer, uint32 indexBuffer)
 {
 #if defined(__DAVAENGINE_OPENGL__)
-	if(vboBuffer)
-		RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &vboBuffer));
-	if(indexBuffer)
-		RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &indexBuffer));
+    if(vboBuffer)
+    {
+        RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &vboBuffer));
+        MEMORY_PROFILER_GPU_DEALLOC(vboBuffer, ALLOC_GPU_RDO_VERTEX);
+    }
+    if(indexBuffer)
+    {
+        RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &indexBuffer));
+        MEMORY_PROFILER_GPU_DEALLOC(indexBuffer, ALLOC_GPU_RDO_INDEX);
+    }
 #endif
 }
 
@@ -234,6 +240,7 @@ void RenderDataObject::BuildVertexBufferInternal(int32 vertexCount, eBufferDrawT
     savedVertexBufferType = type;
 #endif //#if defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glBufferData(GL_ARRAY_BUFFER, vertexCount * stride, streamArray[0]->pointer, BUFFERDRAWTYPE_MAP[type]));
+    MEMORY_PROFILER_GPU_ALLOC(vboBuffer, static_cast<size_t>(vertexCount * stride), ALLOC_GPU_RDO_VERTEX);
 
     streamArray[0]->pointer = 0;
     for (uint32 k = 1; k < size; ++k)
@@ -291,6 +298,7 @@ void RenderDataObject::BuildIndexBufferInternal(eBufferDrawType type)
     RENDER_VERIFY(glGenBuffersARB(1, &indexBuffer));
     RENDER_VERIFY(glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexBuffer));
     RENDER_VERIFY(glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexCount * INDEX_FORMAT_SIZE[indexFormat], indices, GL_STATIC_DRAW_ARB));
+    MEMORY_PROFILER_GPU_ALLOC(indexBuffer, static_cast<size_t>(indexCount * INDEX_FORMAT_SIZE[indexFormat]), ALLOC_GPU_RDO_INDEX);
 #else
     if (indexBuffer)
     {
@@ -300,6 +308,7 @@ void RenderDataObject::BuildIndexBufferInternal(eBufferDrawType type)
     RENDER_VERIFY(glGenBuffers(1, &indexBuffer));
     RENDER_VERIFY(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer));
     RENDER_VERIFY(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * INDEX_FORMAT_SIZE[indexFormat], indices, GL_STATIC_DRAW));
+    MEMORY_PROFILER_GPU_ALLOC(indexBuffer, static_cast<size_t>(indexCount * INDEX_FORMAT_SIZE[indexFormat]), ALLOC_GPU_RDO_INDEX);
 #endif
     
 #if defined(__DAVAENGINE_OPENGL_ARB_VBO__)

@@ -37,6 +37,9 @@ enum ePredefAllocPools
 {
     ALLOC_POOL_TOTAL = 0,   // Virtual allocation pool for total allocations - sum of all other allocation pools
     ALLOC_POOL_DEFAULT,     // Allocation pool used for all other application memory allocations, except custom if any
+    ALLOC_GPU_TEXTURE,
+    ALLOC_GPU_RDO_VERTEX,
+    ALLOC_GPU_RDO_INDEX,
     ALLOC_POOL_FMOD,
     ALLOC_POOL_BASEOBJECT,
     ALLOC_POOL_POLYGONGROUP,

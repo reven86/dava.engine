@@ -92,6 +92,13 @@ struct MemoryManager::Backtrace
     void* frames[BACKTRACE_DEPTH];
 };
 
+struct MemoryManager::GpuBlock
+{
+    uint32 id;
+    int32 gpuPoolIndex;
+    uint32 allocSize;
+};
+
 //////////////////////////////////////////////////////////////////////////
 
 MMItemName MemoryManager::tagNames[MAX_TAG_COUNT];
@@ -99,6 +106,9 @@ MMItemName MemoryManager::tagNames[MAX_TAG_COUNT];
 MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT] = {
     { "total"          },
     { "default"        },
+    { "gpu texture"    },
+    { "gpu rdo vertex" },
+    { "gpu rdo index"  },
     { "fmod"           },
     { "base object"    },
     { "polygon group"  },
@@ -416,6 +426,64 @@ void MemoryManager::LeaveAllocPoolScope(int32 allocPool)
 
     allocPoolScopeStack = cur->next;
     delete cur;
+}
+
+void MemoryManager::TrackGpuAlloc(uint32 id, size_t size, int32 gpuPoolIndex)
+{
+    if (nullptr == gpuBlockMap)
+    {
+        static GpuBlockMap object;
+        gpuBlockMap = &object;
+    }
+
+    auto iterToList = gpuBlockMap->find(gpuPoolIndex);
+    if (iterToList == gpuBlockMap->end())
+    {
+        auto pair = gpuBlockMap->emplace(gpuPoolIndex, GpuBlockList());
+        iterToList = pair.first;
+    }
+
+    GpuBlockList& blockList = iterToList->second;
+    auto iterToBlock = std::find_if(blockList.begin(), blockList.end(), [id](const GpuBlock& block) -> bool {
+        return block.id == id;
+    });
+
+    if (iterToBlock == blockList.end())
+    {
+        GpuBlock tempBlock;
+        tempBlock.id = id;
+        tempBlock.gpuPoolIndex = gpuPoolIndex;
+        tempBlock.allocSize = 0;
+        blockList.emplace_back(tempBlock);
+        iterToBlock = --blockList.end();
+    }
+
+    GpuBlock& block = *iterToBlock;
+    block.allocSize += static_cast<uint32>(size);
+
+    statAllocPool[gpuPoolIndex].allocByApp += static_cast<uint32>(size);
+    statAllocPool[gpuPoolIndex].allocTotal = statAllocPool[gpuPoolIndex].allocByApp;
+    //statAllocPool[gpuPoolIndex].blockCount += 1;
+}
+
+void MemoryManager::TrackGpuDealloc(uint32 id, int32 gpuPoolIndex)
+{
+    auto iterToList = gpuBlockMap->find(gpuPoolIndex);
+    DVASSERT(iterToList != gpuBlockMap->end());
+
+    GpuBlockList& blockList = iterToList->second;
+    auto iterToBlock = std::find_if(blockList.begin(), blockList.end(), [id](const GpuBlock& block) -> bool {
+        return block.id == id;
+    });
+    DVASSERT(iterToBlock != blockList.end());
+
+    GpuBlock& block = *iterToBlock;
+
+    statAllocPool[gpuPoolIndex].allocByApp -= block.allocSize;
+    statAllocPool[gpuPoolIndex].allocTotal = statAllocPool[block.gpuPoolIndex].allocByApp;
+    //statAllocPool[gpuPoolIndex].blockCount -= 1;
+
+    blockList.erase(iterToBlock);
 }
 
 void MemoryManager::InsertBlock(MemoryBlock* block)

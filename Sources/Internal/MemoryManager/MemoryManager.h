@@ -59,6 +59,7 @@ public:
 
     struct MemoryBlock;
     struct Backtrace;
+    struct GpuBlock;
 
 public:
     class AllocPoolScope final
@@ -86,6 +87,9 @@ public:
 
     void EnterAllocPoolScope(int32 allocPool);
     void LeaveAllocPoolScope(int32 allocPool);
+
+    void TrackGpuAlloc(uint32 id, size_t size, int32 gpuPoolIndex);
+    void TrackGpuDealloc(uint32 id, int32 gpuPoolIndex);
 
     MMStatConfig* GetStatConfig() const;
     MMCurStat* GetCurStat() const;
@@ -154,8 +158,13 @@ private:
     };
     using BacktraceMap = std::unordered_map<uint32, Backtrace, KeyHash, std::equal_to<uint32>, InternalAllocator<std::pair<const uint32, Backtrace>>>;
 
+    //using GpuBlockMap = std::unordered_map<uint32, GpuBlock, std::hash<uint32>, std::equal_to<uint32>, InternalAllocator<std::pair<const uint32, GpuBlock>>>;
+    using GpuBlockList = std::list<GpuBlock, InternalAllocator<GpuBlock>>;
+    using GpuBlockMap = std::unordered_map<int32, GpuBlockList, std::hash<int32>, std::equal_to<int32>, InternalAllocator<std::pair<const int32, GpuBlockList>>>;
+
     BacktraceMap* backtraces;
     SymbolMap* symbols;
+    GpuBlockMap* gpuBlockMap;
 
 private:
     // Make the following data members static to allow initialization of predefined values not in constructor

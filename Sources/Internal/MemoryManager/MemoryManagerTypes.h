@@ -124,7 +124,8 @@ struct MMBlock
     uint32 bktraceHash;     // Unique hash number to identify block backtrace
     int32  pool;            // Allocation pool block belongs to
     uint32 tags;            // Tags block belongs to
-    uint32 padding[2];
+    uint32 type;
+    uint32 padding;
 };
 static_assert(sizeof(MMBlock) % 16 == 0, "sizeof(MMBlock) % 16 == 0");
 
