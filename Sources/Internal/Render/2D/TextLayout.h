@@ -94,7 +94,7 @@ public:
      * \brief Returns current cursor position
      * \return current cursor position
      */
-    const size_t Tell() const;
+    const uint32 Tell() const;
     
     /**
      * \brief Checks that text didn't finished yet
@@ -205,9 +205,9 @@ inline const TextLayout::WrapMode TextLayout::GetWrapMode() const
     return wrapMode;
 }
 
-inline const size_t TextLayout::Tell() const
+inline const uint32 TextLayout::Tell() const
 {
-    return fromPos;
+    return static_cast<uint32>(fromPos);
 }
 
 
