@@ -73,7 +73,7 @@ void TexturePathValidator::FixupInternal(QVariant& v) const
                     DAVA::SafeDelete(texDescriptor);
                 }
 
-				auto texturesMap = DAVA::Texture::GetTextureMap();
+				auto& texturesMap = DAVA::Texture::GetTextureMap();
 				auto found = texturesMap.find(FILEPATH_MAP_KEY(texFile));
 				if(found != texturesMap.end())
 				{
