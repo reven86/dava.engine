@@ -30,7 +30,6 @@ public class JNIWebView {
         private final static int START_DELAY = 50;
         private int delay = 50; //50, 100, 200, 400, 800, 1600
         private String lastLoadedUrl = null;
-        volatile boolean isLoadingData = false;
         
         public WebViewWrapper(Context context, InternalViewClientV14 client) {
             super(context);
@@ -67,29 +66,24 @@ public class JNIWebView {
             client.setVisible(this, client.isVisible());
             // on lock/unlock if webview still was loading we have to call
             // reload() even if in client.isVisible() == false for now
-            if (isLoadingData)
-            {
-                reload();
-            }
+            reload();
+
         }
         @Override
         public void loadUrl(String url)
         {
             lastLoadedUrl = url;
-            isLoadingData = true;
             super.loadUrl(url);
         }
         @Override
         public void loadData(String htmlString, String mimeType, String encoding)
         {
-            isLoadingData = true;
             super.loadData(htmlString, mimeType, encoding);
         }
         @Override
         public void loadDataWithBaseURL(String baseUrl, String data, String mimeType,
                 String encoding, String failUrl)
         {
-            isLoadingData = true;
             super.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, failUrl);
         }
         
