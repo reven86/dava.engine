@@ -390,24 +390,30 @@ File *FileSystem::CreateFileForFrameworkPath(const FilePath & frameworkPath, uin
 
 const FilePath & FileSystem::GetCurrentWorkingDirectory()
 {
-	char tempDir[2048] = {};
+    String path;
+
 #if defined(__DAVAENGINE_WINDOWS_STORE__)
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
-    return currentWorkingDirectory;
+
+    wchar_t tempDir[2048] = {};
+    ::GetCurrentDirectoryW(COUNT_OF(tempDir), tempDir);
+    path = UTF8Utils::EncodeToUTF8(tempDir);
 
 #elif defined(__DAVAENGINE_WINDOWS_DESKTOP__)
-	::GetCurrentDirectoryA(2048, tempDir);
-	currentWorkingDirectory = FilePath(tempDir);
-	currentWorkingDirectory.MakeDirectoryPathname();
-	return currentWorkingDirectory;
+
+    char tempDir[2048] = {};
+    ::GetCurrentDirectoryA(COUNT_OF(tempDir), tempDir);
+    path = tempDir;
+
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-	getcwd(tempDir, 2048);
-	currentWorkingDirectory = FilePath(tempDir);
-	currentWorkingDirectory.MakeDirectoryPathname();
-	return currentWorkingDirectory;
+
+    char tempDir[2048] = {};
+    getcwd(tempDir, COUNT_OF(tempDir));
+    path = tempDir;
+
 #endif //PLATFORMS
 
-	return currentWorkingDirectory.MakeDirectoryPathname();
+    currentWorkingDirectory = FilePath(std::move(path));
+    return currentWorkingDirectory.MakeDirectoryPathname();
 }
 
 FilePath FileSystem::GetCurrentExecutableDirectory()
@@ -423,7 +429,8 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
     proc_pidpath(getpid(), tempDir.data(), tempDir.size());
     currentExecuteDirectory = FilePath(dirname(tempDir.data()));
 #else
-    currentExecuteDirectory = FilePath(Core::Instance()->GetCommandLine().at(0)).GetDirectory();
+    const String& str = Core::Instance()->GetCommandLine().at(0);
+    currentExecuteDirectory = FilePath(str).GetDirectory();
 #endif //PLATFORMS
 
 	return currentExecuteDirectory.MakeDirectoryPathname();

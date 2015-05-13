@@ -61,11 +61,8 @@ FileList::FileList(const FilePath & filepath)
 // Windows version
 #elif defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 
-	//char tmp[_MAX_PATH];
-	//_getcwd(tmp, _MAX_PATH);
-	//Path = tmp;
 	FilePath prevDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
-	BOOL res = SetCurrentDirectoryApath.GetAbsolutePathname().c_str());
+	BOOL res = SetCurrentDirectoryA(path.GetAbsolutePathname().c_str());
 
 	if (res)
 	{

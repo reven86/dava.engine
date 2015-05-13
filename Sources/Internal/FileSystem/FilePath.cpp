@@ -172,13 +172,19 @@ bool operator < (const FilePath& left, const FilePath& right)
 FilePath::FilePath()
 {
     pathType = PATH_EMPTY;
-    absolutePathname = String();
 }
 
 FilePath::FilePath(const FilePath &path)
 {
     pathType = path.pathType;
     absolutePathname = path.absolutePathname;
+}
+
+FilePath::FilePath(FilePath&& path) DAVA_NOEXCEPT
+    : pathType(path.pathType),
+    absolutePathname(std::move(path.absolutePathname))
+{
+    path.pathType = PATH_EMPTY;
 }
     
 FilePath::FilePath(const char * sourcePath)
@@ -330,6 +336,15 @@ FilePath& FilePath::operator=(const FilePath &path)
     this->absolutePathname = path.absolutePathname;
     this->pathType = path.pathType;
     
+    return *this;
+}
+
+FilePath& FilePath::operator=(FilePath&& path) DAVA_NOEXCEPT
+{
+    absolutePathname = std::move(path.absolutePathname);
+    pathType = path.pathType;
+    path.pathType = PATH_EMPTY;
+
     return *this;
 }
     
