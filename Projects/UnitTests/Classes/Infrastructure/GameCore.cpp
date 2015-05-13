@@ -62,7 +62,7 @@
 
 void GameCore::RunOnlyThisTest()
 {
-    //runOnlyThisTest = "StaticTextFieldTest";
+    runOnlyThisTest = "StaticTextFieldTest";
 }
 
 void GameCore::OnError()

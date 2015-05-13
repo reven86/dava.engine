@@ -33,8 +33,6 @@
 #include "DAVAEngine.h"
 #include "Infrastructure/TestTemplate.h"
 
-using namespace DAVA;
-
 class ThreadLocalTest : public TestTemplate < ThreadLocalTest >
 {
 public:

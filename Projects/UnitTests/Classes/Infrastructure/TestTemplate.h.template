@@ -33,8 +33,6 @@
 #include "DAVAEngine.h"
 #include "Infrastructure/TestTemplate.h"
 
-using namespace DAVA;
-
 class $UNITTEST_CLASSNAME$ : public TestTemplate < $UNITTEST_CLASSNAME$ >
 {
 public:

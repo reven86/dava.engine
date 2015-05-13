@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 #include "Platform/Thread.h"
-#include "Thread/ThreadLocal.h"
+#include "Thread/ThreadLocalPtr.h"
 
 #include "ThreadLocalTest.h"
 
@@ -47,11 +47,10 @@ private:
     DAVA::String strValue;
 };
 
-ThreadLocal<int32> tlsInt;              // DAVA::int32 fits in pointer size, so store it as is
-ThreadLocal<float> tlsFloat;            // Float usually fits pointer size
-ThreadLocal<int64*> tlsInt64Ptr;        // DAVA::int64 may or may not fit in pointer size, so store pointer to it
-ThreadLocal<TlsClass*> tlsClassPtr;     // Thread local variable can hold only pointers to class
-ThreadLocal<void*> tlsVoidPtr;          //
+ThreadLocalPtr<int32> tlsInt;
+ThreadLocalPtr<float> tlsFloat;
+ThreadLocalPtr<int64> tlsInt64;
+ThreadLocalPtr<TlsClass> tlsClass;
 
 ThreadLocalTest::ThreadLocalTest ()
     : TestTemplate<ThreadLocalTest> ("ThreadLocalTest")
@@ -62,15 +61,11 @@ ThreadLocalTest::ThreadLocalTest ()
 void ThreadLocalTest::ThreadLocalTestFunc(PerfFuncData * data)
 {
     // Set thread local variables in main thread, 
-    tlsInt = 1;
-    tlsFloat = 4.0f;
-    tlsInt64Ptr = new int64(1010);
-    tlsClassPtr = new TlsClass(4, "Main thread");
+    tlsInt.Reset(new int(1));
+    tlsFloat.Reset(new float(4.0f));
+    tlsInt64.Reset(new int64(1010));
+    tlsClass.Reset(new TlsClass(4, "Main thread"));
     
-    uint8 pattern[10] = {0xAA};
-    tlsVoidPtr = malloc(10);
-    Memcpy(tlsVoidPtr, pattern, 10);
-
     // Run another thread which changes values of thread local variables
     Thread* thread = Thread::Create(Message(this, &ThreadLocalTest::ThreadFunc));
     thread->Start();
@@ -78,40 +73,31 @@ void ThreadLocalTest::ThreadLocalTestFunc(PerfFuncData * data)
     SafeRelease(thread);
 
     // Make check that main thread's local variables didn't changed by another threads
-    TEST_VERIFY(tlsInt == 1);
-    TEST_VERIFY(tlsFloat == 4.0f);
-    TEST_VERIFY(*tlsInt64Ptr == 1010);
+    TEST_VERIFY(*tlsInt == 1);
+    TEST_VERIFY(*tlsFloat == 4.0f);
+    TEST_VERIFY(*tlsInt64 == 1010);
 
-    TlsClass* p = tlsClassPtr;
-    TEST_VERIFY(p->Int() == 4);
-    TEST_VERIFY(p->String() == "Main thread");
-
-    TEST_VERIFY(Memcmp(tlsVoidPtr, pattern, 10) == 0);
+    TEST_VERIFY(tlsClass->Int() == 4);
+    TEST_VERIFY(tlsClass->String() == "Main thread");
 
     // Delete memory occupied by pointer thread local variables
-    delete tlsInt64Ptr;
-    tlsInt64Ptr = nullptr;
-    delete tlsClassPtr;
-    tlsClassPtr = nullptr;
-    free(tlsVoidPtr);
-    tlsVoidPtr = nullptr;
+    tlsInt.Reset();
+    tlsFloat.Reset();
+    tlsInt64.Reset();
+    tlsClass.Reset();
 }
 
 void ThreadLocalTest::ThreadFunc(BaseObject*, void*, void*)
 {
     // Set thread local variables in another thread
-    tlsInt = 333;
-    tlsFloat = 10.0f;
-    tlsInt64Ptr = new int64(100123);
-    tlsClassPtr = new TlsClass(1024, "This is a test");
-    tlsVoidPtr = malloc(10);
-    Memset(tlsVoidPtr, 0xEE, 10);
+    tlsInt.Reset(new int(333));
+    tlsFloat.Reset(new float(10.0f));
+    tlsInt64.Reset(new int64(100123));
+    tlsClass.Reset(new TlsClass(1024, "This is a test"));
 
     // Delete memory occupied by pointer thread local variables
-    delete tlsInt64Ptr;
-    tlsInt64Ptr = nullptr;
-    delete tlsClassPtr;
-    tlsClassPtr = nullptr;
-    free(tlsVoidPtr);
-    tlsVoidPtr = nullptr;
+    tlsInt.Reset();
+    tlsFloat.Reset();
+    tlsInt64.Reset();
+    tlsClass.Reset();
 }
