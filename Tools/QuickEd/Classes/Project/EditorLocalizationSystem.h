@@ -28,24 +28,33 @@
 
 
 
-#ifndef __UIEditor__WidgetSignalsBlocker__
-#define __UIEditor__WidgetSignalsBlocker__
+#ifndef __EDITOR_LOCALIZATION_SYSTEM_H__
+#define __EDITOR_LOCALIZATION_SYSTEM_H__
 
-#include <QWidget>
-namespace DAVA {
-    
-// Helper class to block/unblock signals from the widgets.
-class WidgetSignalsBlocker
+#include <QObject>
+#include <QStringList>
+#include "Base/BaseTypes.h"
+#include "FileSystem/FilePath.h"
+
+class EditorLocalizationSystem: public QObject
 {
+    Q_OBJECT
 public:
-    WidgetSignalsBlocker(QWidget* widget);
-    ~WidgetSignalsBlocker();
-    
+    explicit EditorLocalizationSystem(QObject *parent = nullptr);
+    ~EditorLocalizationSystem() = default;
+    const QStringList& GetAvailableLocales() const;
+    void InitLanguageWithDirectory(const DAVA::FilePath &directoryPath, const DAVA::String &locale);
+    void Cleanup();
+signals:
+    void LocaleChanged(const DAVA::String &locale);
 private:
-    QWidget* widget;
-    bool signalsWereBlocked;
+
+    QStringList availableLocales;
 };
 
-};
+inline const QStringList& EditorLocalizationSystem::GetAvailableLocales() const
+{
+    return availableLocales;
+}
 
-#endif /* defined(__UIEditor__WidgetSignalsBlocker__) */
+#endif //__EDITOR_LOCALIZATION_SYSTEM_H__

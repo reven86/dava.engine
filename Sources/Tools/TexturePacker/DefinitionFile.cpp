@@ -28,7 +28,6 @@
 
 
 #include "TexturePacker/DefinitionFile.h"
-#include "TexturePacker/CommandLineParser.h"
 #include "TexturePacker/PngImage.h"
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -130,12 +129,7 @@ bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pat
 		frameRects[k].dy = reducedRect.dy;
 
         // add borders
-		if ( twoSideMargin )
-		{
-			frameRects[k].dx+=2;
-			frameRects[k].dy+=2;
-		}
-		else
+		if (!twoSideMargin)
 		{
 			frameRects[k].dx += texturesMargin;
 			frameRects[k].dy += texturesMargin;
@@ -169,12 +163,7 @@ bool DefinitionFile::Load(const FilePath & _filename, bool twoSideMargin, uint32
         frameNames[i] = String(frameName);
 		
 		// add borders
-		if ( twoSideMargin )
-		{
-			frameRects[i].dx+=2;
-			frameRects[i].dy+=2;
-		}
-		else
+		if (!twoSideMargin)
 		{
 			frameRects[i].dx += texturesMargin;
 			frameRects[i].dy += texturesMargin;

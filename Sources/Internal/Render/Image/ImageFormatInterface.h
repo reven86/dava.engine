@@ -57,6 +57,7 @@ struct ImageInfo
     uint32 height = 0;
     PixelFormat format = FORMAT_INVALID;
     uint32 dataSize = 0;
+    uint32 mipmapsCount = 0;
 };
 
 
