@@ -107,6 +107,7 @@ public slots:
 	void OnSceneSave();
 	void OnSceneSaveAs();
 	void OnSceneSaveToFolder();
+    void OnSceneSaveToFolderCompressed();
 	void OnRecentFilesTriggered(QAction *recentAction);
     void OnRecentProjectsTriggered(QAction *recentAction);
 	void ExportMenuTriggered(QAction *exportAsAction);
@@ -237,6 +238,8 @@ protected:
 	static void SetActionCheckedSilently(QAction *action, bool checked);
 
     void OpenProject(const DAVA::FilePath & projectPath);
+    
+    void OnSceneSaveAsInternal(bool saveWithCompressed);
     
     
 private slots:

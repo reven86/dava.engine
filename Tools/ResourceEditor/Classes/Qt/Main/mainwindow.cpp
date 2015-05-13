@@ -614,19 +614,20 @@ void QtMainWindow::SetupDocks()
 void QtMainWindow::SetupActions()
 {
 	// scene file actions
-	QObject::connect(ui->actionOpenProject, SIGNAL(triggered()), this, SLOT(OnProjectOpen()));
-    QObject::connect(ui->actionCloseProject, SIGNAL(triggered()), this, SLOT(OnProjectClose()));
-	QObject::connect(ui->actionOpenScene, SIGNAL(triggered()), this, SLOT(OnSceneOpen()));
-	QObject::connect(ui->actionNewScene, SIGNAL(triggered()), this, SLOT(OnSceneNew()));
-	QObject::connect(ui->actionSaveScene, SIGNAL(triggered()), this, SLOT(OnSceneSave()));
-	QObject::connect(ui->actionSaveSceneAs, SIGNAL(triggered()), this, SLOT(OnSceneSaveAs()));
-	QObject::connect(ui->actionSaveToFolder, SIGNAL(triggered()), this, SLOT(OnSceneSaveToFolder()));
+	QObject::connect(ui->actionOpenProject, &QAction::triggered, this, &QtMainWindow::OnProjectOpen);
+    QObject::connect(ui->actionCloseProject, &QAction::triggered, this, &QtMainWindow::OnProjectClose);
+	QObject::connect(ui->actionOpenScene, &QAction::triggered, this, &QtMainWindow::OnSceneOpen);
+	QObject::connect(ui->actionNewScene, &QAction::triggered, this, &QtMainWindow::OnSceneNew);
+	QObject::connect(ui->actionSaveScene, &QAction::triggered, this, &QtMainWindow::OnSceneSave);
+	QObject::connect(ui->actionSaveSceneAs, &QAction::triggered, this, &QtMainWindow::OnSceneSaveAs);
+    QObject::connect(ui->actionOnlyOriginalTextures, &QAction::triggered, this, &QtMainWindow::OnSceneSaveToFolder);
+    QObject::connect(ui->actionWithCompressedTextures, &QAction::triggered, this, &QtMainWindow::OnSceneSaveToFolderCompressed);
 
     QObject::connect(ui->menuFile, &QMenu::triggered, this, &QtMainWindow::OnRecentFilesTriggered);
     QObject::connect(ui->menuRecentProjects, &QMenu::triggered, this, &QtMainWindow::OnRecentProjectsTriggered);
 
 	// export
-	QObject::connect(ui->menuExport, SIGNAL(triggered(QAction *)), this, SLOT(ExportMenuTriggered(QAction *)));
+	QObject::connect(ui->menuExport, &QMenu::triggered, this, &QtMainWindow::ExportMenuTriggered);
     ui->actionExportPVRIOS->setData(GPU_POWERVR_IOS);
 	ui->actionExportPVRAndroid->setData(GPU_POWERVR_ANDROID);
 	ui->actionExportTegra->setData(GPU_TEGRA);
@@ -636,7 +637,7 @@ void QtMainWindow::SetupActions()
 	
 	// import
 #ifdef __DAVAENGINE_SPEEDTREE__
-    QObject::connect(ui->actionImportSpeedTreeXML, SIGNAL(triggered()), this, SLOT(OnImportSpeedTreeXML()));
+    QObject::connect(ui->actionImportSpeedTreeXML, &QAction::triggered, this, &QtMainWindow::OnImportSpeedTreeXML);
 #endif //__DAVAENGINE_SPEEDTREE__
 
 	// reload
@@ -912,7 +913,8 @@ void QtMainWindow::EnableSceneActions(bool enable)
 
 	ui->actionSaveScene->setEnabled(enable);
 	ui->actionSaveSceneAs->setEnabled(enable);
-	ui->actionSaveToFolder->setEnabled(enable);
+    ui->actionOnlyOriginalTextures->setEnabled(enable);
+	ui->actionWithCompressedTextures->setEnabled(enable);
 
 	ui->actionModifySelect->setEnabled(enable);
 	ui->actionModifyMove->setEnabled(enable);
@@ -1108,46 +1110,58 @@ void QtMainWindow::OnSceneSaveAs()
 
 void QtMainWindow::OnSceneSaveToFolder()
 {
-	if (!IsSavingAllowed())
-	{
-		return;
-	}
-
-	SceneEditor2* scene = GetCurrentScene();
-	if(!scene) return;
-
-	FilePath scenePathname = scene->GetScenePath();
-	if(scenePathname.IsEmpty() || scenePathname.GetType() == FilePath::PATH_IN_MEMORY || !scene->IsLoaded())
-	{
-		ShowErrorDialog("Can't save not saved scene.");
-		return;
-	}
-
-	QString path = FileDialog::getExistingDirectory(NULL, QString("Open Folder"), QString("/"));
-	if(path.isEmpty())
-		return;
-
-
-	WaitStart("Save with Children", "Please wait...");
-
-
-	FilePath folder = PathnameToDAVAStyle(path);
-	folder.MakeDirectoryPathname();
-
-	SceneSaver sceneSaver;
-	sceneSaver.SetInFolder(scene->GetScenePath().GetDirectory());
-	sceneSaver.SetOutFolder(folder);
-
-	Set<String> errorsLog;
-
-	SceneEditor2 *sceneForSaving = scene->CreateCopyForExport();
-	sceneSaver.SaveScene(sceneForSaving, scene->GetScenePath(), errorsLog);
-	sceneForSaving->Release();
-
-	WaitStop();
-
-	ShowErrorDialog(errorsLog);
+    OnSceneSaveAsInternal(false);
 }
+
+void QtMainWindow::OnSceneSaveToFolderCompressed()
+{
+    OnSceneSaveAsInternal(true);
+}
+
+void QtMainWindow::OnSceneSaveAsInternal(bool saveWithCompressed)
+{
+    if (!IsSavingAllowed())
+    {
+        return;
+    }
+    
+    SceneEditor2* scene = GetCurrentScene();
+    if(!scene) return;
+    
+    auto scenePathname = scene->GetScenePath();
+    if(scenePathname.IsEmpty() || scenePathname.GetType() == FilePath::PATH_IN_MEMORY || !scene->IsLoaded())
+    {
+        ShowErrorDialog("Can't save not saved scene.");
+        return;
+    }
+    
+    QString path = FileDialog::getExistingDirectory(NULL, QString("Open Folder"), QString("/"));
+    if(path.isEmpty())
+        return;
+    
+    
+    WaitStart("Save with Children", "Please wait...");
+    
+    
+    FilePath folder = PathnameToDAVAStyle(path);
+    folder.MakeDirectoryPathname();
+    
+    SceneSaver sceneSaver;
+    sceneSaver.SetInFolder(scene->GetScenePath().GetDirectory());
+    sceneSaver.SetOutFolder(folder);
+    sceneSaver.EnableCopyConverted(saveWithCompressed);
+    
+    Set<String> errorsLog;
+    
+    SceneEditor2 *sceneForSaving = scene->CreateCopyForExport();
+    sceneSaver.SaveScene(sceneForSaving, scene->GetScenePath(), errorsLog);
+    sceneForSaving->Release();
+    
+    WaitStop();
+    
+    ShowErrorDialog(errorsLog);
+}
+
 
 void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
 {
@@ -2780,7 +2794,8 @@ void QtMainWindow::UpdateConflictingActionsState(bool enable)
 	ui->menuTexturesForGPU->setEnabled(enable);
 	ui->actionReloadTextures->setEnabled(enable);
 	ui->menuExport->setEnabled(enable);
-    ui->actionSaveToFolder->setEnabled(enable);
+    ui->actionOnlyOriginalTextures->setEnabled(enable);
+    ui->actionWithCompressedTextures->setEnabled(enable);
 }
 
 void QtMainWindow::DiableUIForFutureUsing()
