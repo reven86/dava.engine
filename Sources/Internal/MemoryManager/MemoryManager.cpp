@@ -46,7 +46,6 @@
 
 #include "Base/Hash.h"
 #include "Debug/DVAssert.h"
-#include "Thread/ThreadLocal.h"
 
 #include "MallocHook.h"
 #include "MemoryManager.h"
@@ -79,16 +78,9 @@ struct MemoryManager::Backtrace
     void* frames[BACKTRACE_DEPTH];
 };
 
-struct MemoryManager::GpuBlock
+struct MemoryManager::AllocScopeItem
 {
-    uint32 id;
-    int32 gpuPoolIndex;
-    uint32 allocSize;
-};
-
-struct MemoryManager::AllocPoolScopeItem
-{
-    AllocPoolScopeItem* next;
+    AllocScopeItem* next;
     int32 allocPool;
 };
 
@@ -116,7 +108,7 @@ MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT] = {
 size_t MemoryManager::registeredTagCount = 0;
 size_t MemoryManager::registeredAllocPoolCount = PREDEF_POOL_COUNT;
 
-ThreadLocal<MemoryManager::AllocPoolScopeItem*> MemoryManager::allocPoolScopeStack;
+ThreadLocalPtr<MemoryManager::AllocScopeItem> MemoryManager::tlsAllocScopeStack;
 
 void MemoryManager::RegisterAllocPoolName(int32 index, const char8* name)
 {
@@ -178,9 +170,9 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, int32 poolIndex)
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
         if (!IsInternalAllocationPool(poolIndex))
         {
-            if (allocPoolScopeStack.IsCreated())
+            if (tlsAllocScopeStack.IsCreated())
             {
-                AllocPoolScopeItem* scopeItem = allocPoolScopeStack;
+                AllocScopeItem* scopeItem = tlsAllocScopeStack.Get();
                 if (scopeItem != nullptr)
                 {
                     block->pool = scopeItem->allocPool;
@@ -263,9 +255,9 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, in
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
         if (!IsInternalAllocationPool(poolIndex))
         {
-            if (allocPoolScopeStack.IsCreated())
+            if (tlsAllocScopeStack.IsCreated())
             {
-                AllocPoolScopeItem* scopeItem = allocPoolScopeStack;
+                AllocScopeItem* scopeItem = tlsAllocScopeStack.Get();
                 if (scopeItem != nullptr)
                 {
                     block->pool = scopeItem->allocPool;
@@ -410,27 +402,29 @@ void MemoryManager::LeaveTagScope(uint32 tag)
     statGeneral.activeTagCount -= 1;
 }
 
-void MemoryManager::EnterAllocPoolScope(int32 allocPool)
+void MemoryManager::EnterAllocScope(int32 allocPool)
 {
-    AllocPoolScopeItem* item = new AllocPoolScopeItem;
-    item->next = allocPoolScopeStack;
-    item->allocPool = allocPool;
+    AllocScopeItem* newItem = new AllocScopeItem;
+    newItem->next = tlsAllocScopeStack.Release();
+    newItem->allocPool = allocPool;
 
-    allocPoolScopeStack = item;
+    tlsAllocScopeStack.Reset(newItem);
 }
 
-void MemoryManager::LeaveAllocPoolScope(int32 allocPool)
+void MemoryManager::LeaveAllocScope(int32 allocPool)
 {
-    AllocPoolScopeItem* cur = allocPoolScopeStack;
-    assert(cur != nullptr);
-    assert(cur->allocPool == allocPool);
+    AllocScopeItem* topItem = tlsAllocScopeStack.Release();
+    assert(topItem != nullptr);
+    assert(topItem->allocPool == allocPool);
 
-    allocPoolScopeStack = cur->next;
-    delete cur;
+    tlsAllocScopeStack.Reset(topItem->next);
+    delete topItem;
 }
 
 void MemoryManager::TrackGpuAlloc(uint32 id, size_t size, int32 gpuPoolIndex)
 {
+    LockType lock(gpuMutex);
+
     if (nullptr == gpuBlockMap)
     {
         static GpuBlockMap object;
@@ -445,44 +439,72 @@ void MemoryManager::TrackGpuAlloc(uint32 id, size_t size, int32 gpuPoolIndex)
     }
 
     GpuBlockList& blockList = iterToList->second;
-    auto iterToBlock = std::find_if(blockList.begin(), blockList.end(), [id](const GpuBlock& block) -> bool {
-        return block.id == id;
+    auto iterToBlock = std::find_if(blockList.begin(), blockList.end(), [id](const MemoryBlock& block) -> bool {
+        return block.orderNo == id;
     });
 
     if (iterToBlock == blockList.end())
     {
-        GpuBlock tempBlock;
-        tempBlock.id = id;
-        tempBlock.gpuPoolIndex = gpuPoolIndex;
-        tempBlock.allocSize = 0;
-        blockList.emplace_back(tempBlock);
+        MemoryBlock newBlock{};
+        newBlock.orderNo = id;
+        newBlock.pool = gpuPoolIndex;
+
+        blockList.emplace_back(newBlock);
         iterToBlock = --blockList.end();
     }
 
-    GpuBlock& block = *iterToBlock;
-    block.allocSize += static_cast<uint32>(size);
+    MemoryBlock& block = *iterToBlock;
+    block.allocByApp += static_cast<uint32>(size);
+    block.allocTotal  = block.allocByApp;
 
-    statAllocPool[gpuPoolIndex].allocByApp += static_cast<uint32>(size);
-    statAllocPool[gpuPoolIndex].allocTotal = statAllocPool[gpuPoolIndex].allocByApp;
-    //statAllocPool[gpuPoolIndex].blockCount += 1;
+    {
+        LockType lock(mutex);
+        {   // Update total statistics
+            statAllocPool[ALLOC_POOL_TOTAL].allocByApp += static_cast<uint32>(size);
+            statAllocPool[ALLOC_POOL_TOTAL].allocTotal += static_cast<uint32>(size);
+            statAllocPool[ALLOC_POOL_TOTAL].blockCount += 1;
+
+            if (block.allocByApp > statAllocPool[ALLOC_POOL_TOTAL].maxBlockSize)
+                statAllocPool[ALLOC_POOL_TOTAL].maxBlockSize = block.allocByApp;
+        }
+        {   // Update pool statistics
+            statAllocPool[gpuPoolIndex].allocByApp += static_cast<uint32>(size);
+            statAllocPool[gpuPoolIndex].allocTotal += static_cast<uint32>(size);
+            statAllocPool[gpuPoolIndex].blockCount += 1;
+
+            if (block.allocByApp > statAllocPool[gpuPoolIndex].maxBlockSize)
+                statAllocPool[gpuPoolIndex].maxBlockSize = block.allocByApp;
+        }
+    }
 }
 
 void MemoryManager::TrackGpuDealloc(uint32 id, int32 gpuPoolIndex)
 {
+    LockType lock(gpuMutex);
+
     auto iterToList = gpuBlockMap->find(gpuPoolIndex);
     DVASSERT(iterToList != gpuBlockMap->end());
 
     GpuBlockList& blockList = iterToList->second;
-    auto iterToBlock = std::find_if(blockList.begin(), blockList.end(), [id](const GpuBlock& block) -> bool {
-        return block.id == id;
+    auto iterToBlock = std::find_if(blockList.begin(), blockList.end(), [id](const MemoryBlock& block) -> bool {
+        return block.orderNo == id;
     });
     DVASSERT(iterToBlock != blockList.end());
 
-    GpuBlock& block = *iterToBlock;
-
-    statAllocPool[gpuPoolIndex].allocByApp -= block.allocSize;
-    statAllocPool[gpuPoolIndex].allocTotal = statAllocPool[block.gpuPoolIndex].allocByApp;
-    //statAllocPool[gpuPoolIndex].blockCount -= 1;
+    MemoryBlock& block = *iterToBlock;
+    {
+        LockType lock(mutex);
+        {   // Update total statistics
+            statAllocPool[ALLOC_POOL_TOTAL].allocByApp -= block.allocByApp;
+            statAllocPool[ALLOC_POOL_TOTAL].allocTotal -= block.allocTotal;
+            statAllocPool[ALLOC_POOL_TOTAL].blockCount -= 1;
+        }
+        {   // Update pool statistics
+            statAllocPool[gpuPoolIndex].allocByApp -= block.allocByApp;
+            statAllocPool[gpuPoolIndex].allocTotal -= block.allocTotal;
+            statAllocPool[gpuPoolIndex].blockCount -= 1;
+        }
+    }
 
     blockList.erase(iterToBlock);
 }

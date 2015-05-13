@@ -37,7 +37,7 @@
 
 #include "Thread/Spinlock.h"
 #include "Thread/LockGuard.h"
-#include "Thread/ThreadLocal.h"
+#include "Thread/ThreadLocalPtr.h"
 
 #include "AllocPools.h"
 #include "MemoryManagerTypes.h"
@@ -60,15 +60,14 @@ public:
 
     struct MemoryBlock;
     struct Backtrace;
-    struct GpuBlock;
-    struct AllocPoolScopeItem;
+    struct AllocScopeItem;
 
 public:
     class AllocPoolScope final
     {
     public:
-        explicit AllocPoolScope(int32 aPool) : allocPool(aPool) { MemoryManager::Instance()->EnterAllocPoolScope(allocPool); }
-        ~AllocPoolScope() { MemoryManager::Instance()->LeaveAllocPoolScope(allocPool); }
+        explicit AllocPoolScope(int32 aPool) : allocPool(aPool) { MemoryManager::Instance()->EnterAllocScope(allocPool); }
+        ~AllocPoolScope() { MemoryManager::Instance()->LeaveAllocScope(allocPool); }
     private:
         int32 allocPool;
     };
@@ -87,8 +86,8 @@ public:
     void EnterTagScope(uint32 tag);
     void LeaveTagScope(uint32 tag);
 
-    void EnterAllocPoolScope(int32 allocPool);
-    void LeaveAllocPoolScope(int32 allocPool);
+    void EnterAllocScope(int32 allocPool);
+    void LeaveAllocScope(int32 allocPool);
 
     void TrackGpuAlloc(uint32 id, size_t size, int32 gpuPoolIndex);
     void TrackGpuDealloc(uint32 id, int32 gpuPoolIndex);
@@ -145,6 +144,7 @@ private:
     using LockType = LockGuard<MutexType>;
     mutable MutexType mutex;
     mutable MutexType bktraceMutex;
+    mutable MutexType gpuMutex;
 
     template<typename T>
     using InternalAllocator = MemoryManagerAllocator<T, -1>;
@@ -160,8 +160,7 @@ private:
     };
     using BacktraceMap = std::unordered_map<uint32, Backtrace, KeyHash, std::equal_to<uint32>, InternalAllocator<std::pair<const uint32, Backtrace>>>;
 
-    //using GpuBlockMap = std::unordered_map<uint32, GpuBlock, std::hash<uint32>, std::equal_to<uint32>, InternalAllocator<std::pair<const uint32, GpuBlock>>>;
-    using GpuBlockList = std::list<GpuBlock, InternalAllocator<GpuBlock>>;
+    using GpuBlockList = std::list<MemoryBlock, InternalAllocator<MemoryBlock>>;
     using GpuBlockMap = std::unordered_map<int32, GpuBlockList, std::hash<int32>, std::equal_to<int32>, InternalAllocator<std::pair<const int32, GpuBlockList>>>;
 
     BacktraceMap* backtraces;
@@ -176,7 +175,7 @@ private:
     static MMItemName tagNames[MAX_TAG_COUNT];                // Names of tags
     static MMItemName allocPoolNames[MAX_ALLOC_POOL_COUNT];   // Names of allocation pools
     
-    static ThreadLocal<AllocPoolScopeItem*> allocPoolScopeStack;
+    static ThreadLocalPtr<AllocScopeItem> tlsAllocScopeStack;
 };
 
 //////////////////////////////////////////////////////////////////////////
