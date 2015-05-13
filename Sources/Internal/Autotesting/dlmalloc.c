@@ -247,8 +247,9 @@ static FORCEINLINE void* win32mmap(size_t size) {
 /* For direct MMAP, use MEM_TOP_DOWN to minimize interference */
 static FORCEINLINE void* win32direct_mmap(size_t size) {
     void* ptr = VirtualAlloc(0, size, MEM_RESERVE | MEM_COMMIT | MEM_TOP_DOWN,
-        PAGE_READWRITE);
+                             PAGE_READWRITE);
     return (ptr != 0) ? ptr : MFAIL;
+}
 
 #elif defined(__DAVAENGINE_WINDOWS_STORE__)
 

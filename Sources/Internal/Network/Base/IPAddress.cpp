@@ -71,6 +71,7 @@ IPAddress IPAddress::FromString(const char8* addr)
     Endpoint endp;
     if(0 == uv_ip4_addr(addr, 0, endp.CastToSockaddrIn()))
         return endp.Address();
+    return IPAddress();
 #endif
 }
 
