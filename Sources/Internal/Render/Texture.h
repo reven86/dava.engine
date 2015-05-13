@@ -136,7 +136,6 @@ public:
         \param[in] generateMipMaps generate mipmaps or not
      */
 	static Texture * CreateFromData(PixelFormat format, const uint8 *data, uint32 width, uint32 height, bool generateMipMaps);
-
     /**
         \brief Create texture from data arrray stored at Image
         This function creates texture from given image
@@ -283,6 +282,7 @@ protected:
     
 	void SetParamsFromImages(const Vector<Image *> * images);
 	void FlushDataToRendererInternal(Vector<Image *> * images);
+	void FlushDataToRendererInternal2(const void* pixelsData);
 	void FlushDataToRenderer(Vector<Image *> * images);
 	void ReleaseImages(Vector<Image *> * images);
     

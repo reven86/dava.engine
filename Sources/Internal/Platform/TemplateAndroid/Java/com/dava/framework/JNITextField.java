@@ -257,42 +257,19 @@ public class JNITextField {
                 destroyBitmap = true;
             }
 
-            if (bitmap != null) {
-                if (pixels == null 
+            if (pixels == null 
                     || width != bitmap.getWidth()
                     || height != bitmap.getHeight()) {
-                    width = bitmap.getWidth();
-                    height = bitmap.getHeight();
-                    pixels = new int[width * height];
-                }
-                // copy ARGB pixels values into our buffer
-                bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-                
-                FileOutputStream out = null;
-                try {
-                    String docPath = JNIApplication.GetApplication().GetDocumentPath();
-                    String doc2Path = JNIActivity.GetActivity().getFilesDir().getAbsolutePath();
-                    Log.e(TAG, "docPath: " + docPath + " doc2Path: " + doc2Path);
-                    out = new FileOutputStream( docPath + "/last_test_pixels.png");
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
-                    // PNG is a lossless format, the compression factor (100) is ignored
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    try {
-                        if (out != null) {
-                            out.flush();
-                            out.close();
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                
-                if (destroyBitmap)
-                {
-                    bitmap.recycle();
-                }
+                width = bitmap.getWidth();
+                height = bitmap.getHeight();
+                pixels = new int[width * height];
+            }
+            // copy ARGB pixels values into our buffer
+            bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+
+            if (destroyBitmap)
+            {
+                bitmap.recycle();
             }
             JNIActivity activity = JNIActivity.GetActivity();
             UpdateTexture task = new UpdateTexture(id, pixels, width, height);
