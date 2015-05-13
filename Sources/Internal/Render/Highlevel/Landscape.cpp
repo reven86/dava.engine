@@ -221,8 +221,10 @@ int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
     landscapeRDO->SetStream(EVF_TANGENT, TYPE_FLOAT, 3, sizeof(LandscapeVertex), &landscapeVertices[0].tangent);
 #endif
 	
-    landscapeRDO->BuildVertexBuffer((quad->size + 1) * (quad->size + 1));
-//    SafeDeleteArray(landscapeVertices);
+    landscapeRDO->BuildVertexBuffer((quad->size + 1) * (quad->size + 1), BDT_STATIC_DRAW, true);
+#if defined(__DAVAENGINE_IPHONE__)
+    SafeDeleteArray(landscapeVertices);
+#endif
     
     landscapeVerticesArray.push_back(landscapeVertices);
     
