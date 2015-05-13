@@ -128,7 +128,6 @@ void EditorFontSystem::LoadLocalizedFonts()
         }
     }
     defaultPresetNames.sort();
-    
     RegisterCurrentLocaleFonts();
 }
 
