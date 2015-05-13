@@ -183,6 +183,7 @@ void WinStoreFrame::SetWindow(CoreWindow^ window)
 {
 	win_store_frame = window;
 	//init angle
+	RenderManager::Create(Core::RENDERER_ANGLE);
 	RenderManager::Instance()->Create(win_store_frame.Get());
 	RenderSystem2D::Instance()->Init();
 	//FrameworkDidLaunched();

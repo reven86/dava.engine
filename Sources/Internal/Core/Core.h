@@ -111,6 +111,7 @@ public:
         RENDERER_OPENGL_ES_3_0, // 3.0 compatible OpenGL ES. New generation iOS / Android devices.
         RENDERER_OPENGL,        // here we assuming that it's 2.0 compatible. Renderer for MacOS X.
         RENDERER_DIRECTX9,      // only renderer that works on win platforms right now. 
+		RENDERER_ANGLE,
 //        RENDERER_DIRECTX10,   // written for self-motivation
 //        RENDERER_DIRECTX11,   // written for self-motivation
     };
