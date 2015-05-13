@@ -172,9 +172,9 @@ class LocalizationEditorDialog : public QDialog, public Ui::LocalizationEditorDi
 public:
     explicit LocalizationEditorDialog(QWidget *parent = 0);
     ~LocalizationEditorDialog();
-    void SetDefaultLanguage();
-signals:
-    void LanguageChanged();
+    void UpdateDefaultLanguage();
+    void FillLocaleComboBox();
+
 protected:
 	// Setup the Localization Table Model.
 //	void SetupLocalizationTable();
@@ -207,7 +207,6 @@ protected:
 //	void SelectStringItemByKey(const QString& keyToBeSelected);
 
 private:
-    void FillLocaleComboBox();
     
     void ConnectToSignals();
     void DisconnectFromSignals();

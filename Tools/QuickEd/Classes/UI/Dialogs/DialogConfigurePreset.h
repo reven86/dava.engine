@@ -27,35 +27,39 @@
 =====================================================================================*/
 
 
+#ifndef __DIALOG_CONFIGURE_RESET_H__
+#define __DIALOG_CONFIGURE_RESET_H__
 
-#ifndef __UIEditor__LocalizationSystemHelper__
-#define __UIEditor__LocalizationSystemHelper__
-
-#include "Base/BaseTypes.h"
+#include "ui_DialogConfigurePreset.h"
 
 namespace DAVA {
-    
-class LocalizationSystemHelper
+    class Font;
+}
+
+class DialogConfigurePreset : public QDialog, public Ui::DialogConfigurePreset
 {
+    Q_OBJECT
+
 public:
-    // Helper to work with Localization System.
-    static int GetSupportedLanguagesCount();
-    static String GetSupportedLanguageID(int index);
-    static String GetSupportedLanguageDesc(int index);
-    static String GetLanguageDescByLanguageID(String languageID);
-    
-protected:
-    // Validate the language index.
-    static bool ValidateLanguageIndex(int index);
+    explicit DialogConfigurePreset(const QString &originalPresetName, QWidget *parent = nullptr);
+    ~DialogConfigurePreset() = default;
+private slots:
+    void initPreset();
+    void OnDefaultFontChanged(const QString &arg);
+    void OnDefaultFontSizeChanged(int size);
+    void OnLocalizedFontChanged(const QString &arg);
+    void OnLocalizedFontSizeChanged(int size);
 
-    struct LocalizationSystemHelperData
-    {
-        String languageID;
-        String languageDescription;
-    };
-
-    static const LocalizationSystemHelperData helperData[];
+    void OnCurrentLocaleChanged(const QString &arg);
+    void OnResetLocale();
+    void OnApplyToAllLocales();
+    void OnOk();
+    void OnCancel();
+private:
+    void UpdateDefaultFontWidgets();
+    void UpdateLocalizedFontWidgets();
+    void SetFont(const QString &font, const int fontSize, const QString &locale);
+    const QString originalPresetName;
 };
 
-}
-#endif /* defined(__UIEditor__LocalizationSystemHelper__) */
+#endif // __DIALOG_CONFIGURE_RESET_H__

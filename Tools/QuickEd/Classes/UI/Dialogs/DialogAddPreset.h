@@ -27,57 +27,20 @@
 =====================================================================================*/
 
 
-#ifndef EDITFONTDIALOG_H
-#define EDITFONTDIALOG_H
+#ifndef __DIALOG_ADD_PRESET_H__
+#define __DIALOG_ADD_PRESET_H__
 
-#include <QDialog>
+#include "ui_DialogAddPreset.h"
 
-#include <QSpinBox>
-#include <QPushButton>
-#include <QRadioButton>
-#include <QLineEdit>
-#include <QComboBox>
-
-#include "Base/BaseTypes.h"
-
-namespace Ui {
-class EditFontDialog;
-}
-
-class EditFontDialog : public QDialog
+class DialogAddPreset : public QDialog, public Ui::DialogAddPreset
 {
     Q_OBJECT
-
 public:
-    explicit EditFontDialog(const DAVA::String & editFontPresetName, QDialog *parent = 0);
-    ~EditFontDialog();
-    
-private:
-    Ui::EditFontDialog *ui;
-    
-    //ChangeFontPropertyCommandData dialogResult;
-    DAVA::String currentLocale;
-    
-    void ConnectToSignals();
-    void DisconnectFromSignals();
-    
-    virtual void ProcessComboBoxValueChanged(QComboBox *senderWidget, const QString& value);
-    virtual void ProcessPushButtonClicked(QPushButton *senderWidget);
-    
-    void UpdateDefaultFontParams();
-    void UpdateLocalizedFontParams();
-    
-    void UpdateLineEditWidgetWithPropertyValue(QLineEdit *lineEditWidget);
-    void UpdatePushButtonWidgetWithPropertyValue(QPushButton *pushButtonWidget);
-    void UpdateSpinBoxWidgetWithPropertyValue(QSpinBox *spinBoxWidget);
-    void UpdateComboBoxWidgetWithPropertyValue(QComboBox *comboBoxWidget);
-
+    explicit DialogAddPreset(const QString &originalPresetName, QWidget *parent = nullptr);
+    ~DialogAddPreset() = default;
 private slots:
-    void OnOkButtonClicked();
-    void OnRadioButtonClicked();
-    void OnPushButtonClicked();
-    void OnSpinBoxValueChanged(int newValue);
-    void OnComboBoxValueChanged(QString value);
+    void OnNewPresetNameChanged();
+    void OnAccept();
 };
 
-#endif // EDITFONTDIALOG_H
+#endif // __DIALOG_ADD_PRESET_H__
