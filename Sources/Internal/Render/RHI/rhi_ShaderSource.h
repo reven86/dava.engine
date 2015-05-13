@@ -31,15 +31,14 @@
 #define __RHI_SHADERSOURCE_H__
 
     #include "rhi_Type.h"
-    #include "Base/BaseTypes.h"
-    using DAVA::uint32;
-    #include "Base/FastName.h"
-    using DAVA::FastName;
+    #include "Base/BaseTypes.h"    
+    #include "Base/FastName.h"    
 
 
 namespace rhi
 {
-
+    using DAVA::uint32;
+    using DAVA::FastName;
 struct 
 ShaderProp 
 {

@@ -38,7 +38,7 @@ CustomColorsProxy::CustomColorsProxy(int32 size)
     , size(size)
     , changes(0)
 {
-	customColorsRenderTarget = Texture::CreateFBO((float32)size, (float32)size, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+	customColorsRenderTarget = Texture::CreateFBO(size, size, FORMAT_RGBA8888/*, Texture::DEPTH_NONE*/);
 	UpdateSpriteFromConfig();
 }
 
@@ -117,7 +117,7 @@ void CustomColorsProxy::UpdateSpriteFromConfig()
 	{
 		return;
 	}
-	
+#if RHI_COMPLETE_EDITOR
     RenderManager::Instance()->SetRenderTarget(customColorsRenderTarget);
     RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)customColorsRenderTarget->GetWidth(), customColorsRenderTarget->GetHeight()));
 	Vector<Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
@@ -127,4 +127,5 @@ void CustomColorsProxy::UpdateSpriteFromConfig()
 		RenderManager::Instance()->ClearWithColor(color.r, color.g, color.b, color.a);
 	}
     RenderManager::Instance()->SetRenderTarget(0);
+#endif // RHI_COMPLETE_EDITOR
 }

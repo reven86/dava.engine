@@ -70,7 +70,7 @@ void CreatePlaneLODCommand::Redo()
 {
     CreateTextureFiles();
 
-    Texture *t = planeBatch->GetMaterial()->GetTexture(NMaterial::TEXTURE_ALBEDO);
+    Texture *t = planeBatch->GetMaterial()->GetEffectiveTexture(NMaterialTextureName::TEXTURE_ALBEDO);
     t->Reload();
     
     DAVA::Entity *entity = GetEntity();
@@ -110,6 +110,7 @@ DAVA::Entity* CreatePlaneLODCommand::GetEntity() const
 
 void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camera * camera, DAVA::Texture * toTexture, DAVA::int32 fromLodLayer, const DAVA::Rect & viewport /* = DAVA::Rect(0, 0, -1, -1) */, bool clearTarget /* = true */)
 {
+#if RHI_COMPLETE_EDITOR
     DAVA::TexturesMap textures;
     SceneHelper::EnumerateEntityTextures(fromEntity->GetScene(), fromEntity, textures, SceneHelper::EXCLUDE_NULL);
     DAVA::eGPUFamily currentGPU = (DAVA::eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32();
@@ -174,6 +175,7 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
     end = textures.end();
     for(; it != end; ++it)
         it->second->ReloadAs(currentGPU);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void CreatePlaneLODCommand::CreatePlaneImage()
@@ -208,7 +210,7 @@ void CreatePlaneLODCommand::CreatePlaneImage()
         secondSideViewport = Rect(halfSizef, 0, halfSizef, (float32)textureSize);
     }
     
-    Texture * fboTexture = Texture::CreateFBO(textureSize, textureSize, FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER);
+    Texture * fboTexture = Texture::CreateFBO(textureSize, textureSize, FORMAT_RGBA8888);
 
     float32 depth = 0.f;
     //draw 1st side
@@ -225,7 +227,7 @@ void CreatePlaneLODCommand::CreatePlaneImage()
     
     SafeRelease(camera);
 
-    planeImage = fboTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
+    planeImage = fboTexture->CreateImageFromMemory();
     SafeRelease(fboTexture);
 }
 
@@ -370,15 +372,17 @@ void CreatePlaneLODCommand::CreatePlaneBatch()
     planeBatch->SetPolygonGroup(planePG);
     SafeRelease(planePG);
 
+#if RHI_COMPLETE_EDITOR
 	NMaterial* material = NMaterial::CreateMaterialInstance(FastName(Format("%s_planes", fromEntity->GetName().c_str())),
 															NMaterialName::TEXTURED_ALPHATEST,
 															NMaterial::DEFAULT_QUALITY_NAME);
 
 	NMaterialHelper::DisableStateFlags(PASS_FORWARD, material, RenderStateData::STATE_CULL);
-	material->SetTexture(NMaterial::TEXTURE_ALBEDO, TextureDescriptor::GetDescriptorPathname(textureSavePath));
+	material->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, TextureDescriptor::GetDescriptorPathname(textureSavePath));
 	
     planeBatch->SetMaterial(material);
     SafeRelease(material);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 

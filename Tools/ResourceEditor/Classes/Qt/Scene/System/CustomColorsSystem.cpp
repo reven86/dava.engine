@@ -83,7 +83,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 
     selectionSystem->SetLocked(true);
     modifSystem->SetLocked(true);
-    landscapeSize = drawSystem->GetTextureSize(Landscape::TEXTURE_TILE_FULL);
+    landscapeSize = drawSystem->GetTextureSize(Landscape::TEXTURE_NAME_FULL_TILED);
 
 	FilePath filePath = GetCurrentSaveFileName();
 	if (!filePath.IsEmpty())
@@ -223,13 +223,14 @@ Image* CustomColorsSystem::CreateToolImage(int32 sideSize, const FilePath& fileP
 	
 	SafeRelease(toolImageTexture);
     toolImageTexture = toolTexture;
-	toolImageTexture->GeneratePixelesation();
+    toolImageTexture->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
 	
 	return NULL;
 }
 
 void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
 {
+#if RHI_COMPLETE_EDITOR
 	Texture* colorTexture = drawSystem->GetCustomColorsProxy()->GetTexture();
 	
 	Vector2 spriteSize = Vector2(cursorSize, cursorSize);
@@ -249,6 +250,7 @@ void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
 	RenderManager::Instance()->SetColor(Color::White);
 	
     drawSystem->GetLandscapeProxy()->SetCustomColorsTexture(colorTexture);
+#endif  // RHI_COMPLETE_EDITOR
 }
 
 void CustomColorsSystem::ResetAccumulatorRect()
@@ -265,7 +267,7 @@ void CustomColorsSystem::AddRectToAccumulator(const Rect &rect)
 Rect CustomColorsSystem::GetUpdatedRect()
 {
 	Rect r = updatedRectAccumulator;
-	drawSystem->ClampToTexture(Landscape::TEXTURE_TILE_FULL, r);
+	drawSystem->ClampToTexture(Landscape::TEXTURE_NAME_FULL_TILED, r);
 
 	return r;
 }
@@ -295,7 +297,7 @@ void CustomColorsSystem::SetColor(int32 colorIndex)
 void CustomColorsSystem::StoreOriginalState()
 {
 	DVASSERT(originalImage == NULL);
-	originalImage = drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+	originalImage = drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory();
 	ResetAccumulatorRect();
 }
 
@@ -320,7 +322,7 @@ void CustomColorsSystem::SaveTexture(const DAVA::FilePath &filePath)
 
     Texture* customColorsTexture = drawSystem->GetCustomColorsProxy()->GetTexture();
 
-	Image* image = customColorsTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+	Image* image = customColorsTexture->CreateImageFromMemory();
     ImageSystem::Instance()->Save(filePath, image);
 	SafeRelease(image);
 
@@ -337,7 +339,7 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
     ImageSystem::Instance()->Load(filePath, images);
 	if(images.empty())
 		return false;
-
+#if RHI_COMPLETE_EDITOR
 	Image* image = images.front();
 	if(image)
 	{
@@ -372,6 +374,9 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
 	}
 
     return true;
+#else
+    return false;
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void CustomColorsSystem::StoreSaveFileName(const FilePath& filePath)

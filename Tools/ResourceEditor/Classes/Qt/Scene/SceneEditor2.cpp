@@ -66,9 +66,10 @@ SceneEditor2::SceneEditor2()
 	, isLoaded(false)
 	, isHUDVisible(true)
 {
+#if RHI_COMPLETE_EDITOR
     SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
-
-	renderStats.Clear();
+    renderStats.Clear();
+#endif // RHI_COMPLETE_EDITOR	
 
 	EditorCommandNotify *notify = new EditorCommandNotify(this);
 	commandStack.SetNotify(notify);
@@ -397,9 +398,7 @@ void SceneEditor2::SetViewportRect(const DAVA::Rect &newViewportRect)
 }
 
 void SceneEditor2::Draw()
-{
-
-    RenderManager::Instance()->ClearStats();
+{    
 	
 //	NMaterial* global = renderSystem->GetMaterialSystem()->GetMaterial(MATERIAL_FOR_REBIND);
 //	DVASSERT(global);
@@ -411,7 +410,9 @@ void SceneEditor2::Draw()
 	
 	Scene::Draw();
     
+#if RHI_COMPLETE_EDITOR
     renderStats = RenderManager::Instance()->GetStats();
+#endif // RHI_COMPLETE_EDITOR
 
 	if(isHUDVisible)
 	{
@@ -531,11 +532,12 @@ DAVA::ShadowPassBlendMode::eBlend SceneEditor2::GetShadowBlendMode() const
 
 	return DAVA::ShadowPassBlendMode::MODE_BLEND_COUNT;
 }
-
+#if RHI_COMPLETE_EDITOR
 const RenderManager::Stats & SceneEditor2::GetRenderStats() const
 {
     return renderStats;
 }
+#endif // RHI_COMPLETE_EDITOR
 
 void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
 {

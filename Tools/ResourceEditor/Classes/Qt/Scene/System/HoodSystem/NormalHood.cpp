@@ -33,7 +33,6 @@
 #include "Scene/System/TextDrawSystem.h"
 
 // framework
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
 NormalHood::NormalHood() : HoodObject(2.0f)
@@ -46,16 +45,7 @@ NormalHood::NormalHood() : HoodObject(2.0f)
 
 	axisZ = CreateLine(DAVA::Vector3(0, 0, 0), DAVA::Vector3(0, 0, baseSize));
 	axisZ->axis = ST_AXIS_Z;
-	
-    DAVA::RenderStateData hoodStateData;
-    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, hoodStateData);
-    
-	hoodStateData.state =	DAVA::RenderStateData::STATE_BLEND |
-							DAVA::RenderStateData::STATE_COLORMASK_ALL |
-							DAVA::RenderStateData::STATE_DEPTH_WRITE;
-	hoodStateData.sourceFactor = DAVA::BLEND_SRC_ALPHA;
-	hoodStateData.destFactor = DAVA::BLEND_ONE_MINUS_SRC_ALPHA;
-	hoodDrawState = DAVA::RenderManager::Instance()->CreateRenderState(hoodStateData);
+	    
 }
 
 NormalHood::~NormalHood()
@@ -65,6 +55,7 @@ NormalHood::~NormalHood()
 
 void NormalHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem *textDrawSystem)
 {
+#if RHI_COMPLETE_EDITOR
 	// x
 	DAVA::RenderManager::Instance()->SetColor(colorX);
 	DAVA::RenderHelper::Instance()->DrawLine(axisX->curFrom, axisX->curTo, 1.0f, hoodDrawState);
@@ -78,4 +69,5 @@ void NormalHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSyste
 	DAVA::RenderHelper::Instance()->DrawLine(axisZ->curFrom, axisZ->curTo, 1.0f, hoodDrawState);
 
 	DrawAxisText(textDrawSystem, axisX, axisY, axisZ);
+#endif RHI_COMPLETE_EDITOR
 }

@@ -46,10 +46,7 @@ WayEditSystem::WayEditSystem(DAVA::Scene * scene, SceneSelectionSystem *_selecti
 , selectionSystem(_selectionSystem)
 , collisionSystem(_collisionSystem)
 , underCursorPathEntity(NULL)
-{
-    wayDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(
-        DAVA::RenderStateData::STATE_COLORMASK_ALL |
-        DAVA::RenderStateData::STATE_DEPTH_TEST);
+{    
 
     sceneEditor = static_cast<SceneEditor2 *>(GetScene());
 }
@@ -492,6 +489,7 @@ void WayEditSystem::ProcessCommand(const Command2 *command, bool redo)
 
 void WayEditSystem::Draw()
 {
+#if RHI_COMPLETE_EDITOR
     const EntityGroup & selectionGroup = (currentSelection.Size()) ? currentSelection : prevSelectedWaypoints;
 
     const uint32 count = waypointEntities.size();
@@ -536,6 +534,7 @@ void WayEditSystem::Draw()
         DAVA::RenderManager::Instance()->SetColor(DAVA::Color(redValue, greenValue, blueValue, 1.0f));
         DAVA::RenderHelper::Instance()->DrawBox(worldBox, 1.0f, wayDrawState);
     }
+#endif RHI_COMPLETE_EDITOR
 }
 
 void WayEditSystem::EnableWayEdit(bool enable)

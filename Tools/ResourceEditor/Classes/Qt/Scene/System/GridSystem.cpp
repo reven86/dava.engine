@@ -32,7 +32,6 @@
 #include "Qt/Settings/SettingsManager.h"
 
 // framework
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
 #define LOWEST_GRID_STEP 0.1f
@@ -40,11 +39,7 @@
 
 SceneGridSystem::SceneGridSystem(DAVA::Scene * scene)
 	: DAVA::SceneSystem(scene)
-{
-	renderState = DAVA::RenderManager::Instance()->Subclass3DRenderState(
-        DAVA::RenderStateData::STATE_COLORMASK_ALL |
-        DAVA::RenderStateData::STATE_DEPTH_WRITE | 
-        DAVA::RenderStateData::STATE_DEPTH_TEST);
+{	
 }
 
 SceneGridSystem::~SceneGridSystem()
@@ -60,6 +55,7 @@ void SceneGridSystem::Process(float timeElapsed)
 
 void SceneGridSystem::Draw()
 {
+#if RHI_COMPLETE_EDITOR
     float gridStep = SettingsManager::GetValue(Settings::Scene_GridStep).AsFloat();
 	float gridMax = SettingsManager::GetValue(Settings::Scene_GridSize).AsFloat();
 
@@ -92,6 +88,8 @@ void SceneGridSystem::Draw()
 	    rh->DrawLine(DAVA::Vector3(0, -gridMax, 0), DAVA::Vector3(0, gridMax, 0), 1.0f, renderState);
 	    rm->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
+
+#endif RHI_COMPLETE_EDITOR
 }
 
 void SceneGridSystem::ProcessCommand(const Command2 *command, bool redo)

@@ -128,7 +128,7 @@ ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage,
 	this->updatedRect = updatedRect;
 	this->customColorsProxy = SafeRetain(customColorsProxy);
 	
-	Image* currentImage = customColorsProxy->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+	Image* currentImage = customColorsProxy->GetTexture()->CreateImageFromMemory();
 	
 	undoImage = Image::CopyImageRegion(originalImage, updatedRect);
 	redoImage = Image::CopyImageRegion(currentImage, updatedRect);
@@ -157,6 +157,7 @@ void ModifyCustomColorsCommand::Redo()
 
 void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
 {
+#if RHI_COMPLETE_EDITOR
 	Texture* customColorsTarget = customColorsProxy->GetTexture();
 	Texture* texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
 											   image->GetWidth(), image->GetHeight(), false);
@@ -170,6 +171,7 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
 	customColorsProxy->UpdateRect(updatedRect);
 	
 	SafeRelease(texture);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 Entity* ModifyCustomColorsCommand::GetEntity() const

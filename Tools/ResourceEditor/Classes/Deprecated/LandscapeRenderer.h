@@ -61,8 +61,7 @@ protected:
     DAVA::Shader * shader;
     
     DAVA::Vector<DAVA::Landscape::LandscapeVertex> vertices;
-    DAVA::Vector<DAVA::uint32> indices;
-    DAVA::RenderDataObject * landscapeRenderObject;
+    DAVA::Vector<DAVA::uint32> indices;    
     
     DAVA::Heightmap *heightmap;
     DAVA::AABBox3 boundingBox;

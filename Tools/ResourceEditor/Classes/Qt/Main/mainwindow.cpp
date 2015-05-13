@@ -1317,7 +1317,7 @@ void QtMainWindow::OnAllowOnSceneSelectionToggle(bool allow)
 
 void QtMainWindow::OnShowStaticOcclusionToggle(bool show)
 {
-    RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION, show);
+    Renderer::GetOptions()->SetOption(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION, show);
 }
 
 void QtMainWindow::OnReloadTextures()
@@ -1577,6 +1577,7 @@ void QtMainWindow::UnmodalDialogFinished(int)
 
 void QtMainWindow::OnAddLandscape()
 {
+#if RHI_COMPLETE_EDITOR
     Entity* entityToProcess = new Entity();
     entityToProcess->SetName(ResourceEditor::LANDSCAPE_NODE_NAME);
     entityToProcess->SetLocked(true);
@@ -1603,6 +1604,7 @@ void QtMainWindow::OnAddLandscape()
         sceneEditor->Exec(new EntityAddCommand(entityToProcess, sceneEditor));
     }
     SafeRelease(entityToProcess);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void QtMainWindow::OnAddSkybox()
@@ -1984,6 +1986,7 @@ void QtMainWindow::OnSaveHeightmapToPNG()
 
 void QtMainWindow::OnSaveTiledTexture()
 {
+#if RHI_COMPLETE_EDITOR
 	if (!IsSavingAllowed())
 	{
 		return;
@@ -2035,6 +2038,7 @@ void QtMainWindow::OnSaveTiledTexture()
 
 		SafeRelease(landscapeTexture);
 	}
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void QtMainWindow::OnConvertModifiedTextures()
@@ -2978,6 +2982,7 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 
 void QtMainWindow::OnReloadShaders()
 {
+#if RHI_COMPLETE_EDITOR
     ShaderCache::Instance()->Reload();
     
     DAVA::uint32 count = ui->sceneTabWidget->GetTabCount();
@@ -3018,6 +3023,7 @@ void QtMainWindow::OnReloadShaders()
         if(scene->GetGlobalMaterial())
             scene->GetGlobalMaterial()->BuildActiveUniformsCacheParamsCache();
     }
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void QtMainWindow::OnSwitchWithDifferentLODs(bool checked)

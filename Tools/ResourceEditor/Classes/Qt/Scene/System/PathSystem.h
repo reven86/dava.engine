@@ -78,8 +78,6 @@ protected:
     void CollapsePathEntity(const DAVA::Entity*);
 
     SceneEditor2* sceneEditor;
-
-    DAVA::UniqueHandle pathDrawState;
     
     DAVA::Vector<DAVA::Entity *> pathes;
    

@@ -318,6 +318,7 @@ void MaterialEditor::materialSelected(const QItemSelection & selected, const QIt
 
 void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *command, bool redo)
 {
+#if RHI_COMPLETE_EDITOR
     if(scene == QtMainWindow::Instance()->GetCurrentScene())
     {
         int cmdId = command->GetId();
@@ -367,6 +368,7 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
             break;
         }
     }
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void MaterialEditor::OnQualityChanged()
@@ -416,6 +418,7 @@ void MaterialEditor::FillBase()
         }
 
         // fill material group, only for material type
+#if RHI_COMPLETE_EDITOR
         if(material->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_MATERIAL)
         {
             const DAVA::InspMember *groupMember = info->Member("materialGroup");
@@ -435,6 +438,7 @@ void MaterialEditor::FillBase()
                 }
             }
         }
+#endif // RHI_COMPLETE_EDITOR
 
         // fill illumination params
         const DAVA::InspMember *materialIllumination = info->Member("illuminationParams");
@@ -490,10 +494,12 @@ void MaterialEditor::FillDynamicMembers(QtPropertyData *root, DAVA::InspInfoDyna
         }
 
         // update buttons state and enabled/disable state of this data
+#if RHI_COMPLETE_EDITOR
         if(material->GetMaterialType() != DAVA::NMaterial::MATERIALTYPE_GLOBAL)
         {
             UpdateAddRemoveButtonState(dynamicData);
         }
+#endif // RHI_COMPLETE_EDITOR
 
         // merge created dynamic data into specified root
         root->MergeChild(dynamicData, membersList[i].c_str());
@@ -613,11 +619,12 @@ void MaterialEditor::UpdateAllAddRemoveButtons(QtPropertyData *root)
 void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
 {
     initTemplates();
-
+#if RHI_COMPLETE_EDITOR
     const int nMaterials = materials.count();
     bool enableTemplate = ( nMaterials > 0 );
     bool isTemplatesSame = true;
     int rowToSelect = -1;
+
     const QString curMaterialTemplate = ( nMaterials > 0 && NULL != materials[0]->GetMaterialTemplate()) ? materials[0]->GetMaterialTemplate()->name.c_str() : QString();
     QString placeHolder;
 
@@ -663,7 +670,6 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
             }
         }
     }
-
     const bool isTemplateFound = (rowToSelect != -1);
 
     if ( isTemplatesSame )
@@ -685,6 +691,7 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
     setTemplatePlaceholder( placeHolder );
     ui->templateBox->setCurrentIndex( rowToSelect );
     ui->templateBox->setEnabled( enableTemplate );
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void MaterialEditor::OnTemplateChanged(int index)
@@ -796,6 +803,7 @@ void MaterialEditor::OnPropertyEdited(const QModelIndex &index)
 
 void MaterialEditor::OnMaterialAddGlobal(bool checked)
 {
+#if RHI_COMPLETE_EDITOR
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
     if(NULL != curScene)
     {
@@ -806,6 +814,7 @@ void MaterialEditor::OnMaterialAddGlobal(bool checked)
         sceneActivated(curScene);
         SelectMaterial(curScene->GetGlobalMaterial());
     }
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void MaterialEditor::OnMaterialRemoveGlobal(bool checked)
@@ -848,6 +857,7 @@ void MaterialEditor::OnMaterialPropertyEditorContextMenuRequest(const QPoint & p
                 if(NULL != dynamicData)
                 {
                     DAVA::FastName propertyName = dynamicData->name;
+#if RHI_COMPLETE_EDITOR
                     DAVA::NMaterialProperty *property = material->GetMaterialProperty(propertyName);
                     if(NULL != property && NULL != globalMaterial)
                     {
@@ -861,6 +871,7 @@ void MaterialEditor::OnMaterialPropertyEditorContextMenuRequest(const QPoint & p
                             sceneEditor->SetChanged(true);
                         }
                     }
+#endif // RHI_COMPLETE_EDITOR
                 }
             }
         }
@@ -974,6 +985,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
 
 void MaterialEditor::ClearDynamicMembers(DAVA::NMaterial *material, const DAVA::InspMemberDynamic *dynamicMember)
 {
+#if RHI_COMPLETE_EDITOR
 	if(material->GetMaterialType() != DAVA::NMaterial::MATERIALTYPE_GLOBAL && NULL != dynamicMember)
 	{
 		DAVA::InspInfoDynamic *dynamicInfo = dynamicMember->GetDynamicInfo();
@@ -983,6 +995,7 @@ void MaterialEditor::ClearDynamicMembers(DAVA::NMaterial *material, const DAVA::
             dynamicInfo->MemberValueSet(material, membersList[i], DAVA::VariantType());
         }
     }
+#endif // RHI_COMPLETE_EDITOR
 }
 
 DAVA::uint32 MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32 initialState, const QString &inputFile)

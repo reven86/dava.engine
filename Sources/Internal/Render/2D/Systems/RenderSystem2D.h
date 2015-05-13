@@ -62,7 +62,7 @@ struct RenderBatch2D
 
     UniqueHandle renderState;
     UniqueHandle textureHandle;
-    Shader* shader;
+    ShaderDescriptor* shader;
     Rect clipRect;
     ePrimitiveType primitiveType;
     uint32 count;
@@ -112,19 +112,19 @@ public:
     static FastName FLAT_COLOR_SHADER;
     static FastName TEXTURE_FLAT_COLOR_SHADER;
 
-    static Shader * FLAT_COLOR;
-    static Shader * TEXTURE_MUL_FLAT_COLOR;
-    static Shader * TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST;
-    static Shader * TEXTURE_MUL_FLAT_COLOR_IMAGE_A8;
-    static Shader * TEXTURE_ADD_FLAT_COLOR;
-    static Shader * TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST;
-    static Shader * TEXTURE_ADD_FLAT_COLOR_IMAGE_A8;
-    static Shader * TEXTURE_MUL_COLOR;
-    static Shader * TEXTURE_MUL_COLOR_ALPHA_TEST;
-    static Shader * TEXTURE_MUL_COLOR_IMAGE_A8;
-    static Shader * TEXTURE_ADD_COLOR;
-    static Shader * TEXTURE_ADD_COLOR_ALPHA_TEST;
-    static Shader * TEXTURE_ADD_COLOR_IMAGE_A8;
+    static ShaderDescriptor * FLAT_COLOR;
+    static ShaderDescriptor * TEXTURE_MUL_FLAT_COLOR;
+    static ShaderDescriptor * TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST;
+    static ShaderDescriptor * TEXTURE_MUL_FLAT_COLOR_IMAGE_A8;
+    static ShaderDescriptor * TEXTURE_ADD_FLAT_COLOR;
+    static ShaderDescriptor * TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST;
+    static ShaderDescriptor * TEXTURE_ADD_FLAT_COLOR_IMAGE_A8;
+    static ShaderDescriptor * TEXTURE_MUL_COLOR;
+    static ShaderDescriptor * TEXTURE_MUL_COLOR_ALPHA_TEST;
+    static ShaderDescriptor * TEXTURE_MUL_COLOR_IMAGE_A8;
+    static ShaderDescriptor * TEXTURE_ADD_COLOR;
+    static ShaderDescriptor * TEXTURE_ADD_COLOR_ALPHA_TEST;
+    static ShaderDescriptor * TEXTURE_ADD_COLOR_IMAGE_A8;
 
 
     RenderSystem2D();
@@ -144,7 +144,7 @@ public:
      */
     void HardResetBatchingBuffers(uint32 verticesCount, uint32 indicesCount, uint8 buffersCount);
 
-    void PushBatch(UniqueHandle state, UniqueHandle texture, Shader * shader, const Rect& clip,
+    void PushBatch(UniqueHandle state, UniqueHandle texture, ShaderDescriptor * shader, const Rect& clip,
         uint32 vertexCount, const float32* vertexPointer, const float32* texCoordPointer,
         uint32 indexCount, const uint16* indexPointer,
         const Color& color);
@@ -176,7 +176,7 @@ public:
 
 private:
     bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
-    static Shader* GetShaderForBatching(Shader* inputShader);
+    static ShaderDescriptor* GetShaderForBatching(ShaderDescriptor* inputShader);
     
     void Setup2DProjection();
 

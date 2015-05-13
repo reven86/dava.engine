@@ -232,6 +232,7 @@ void TextureProperties::ReloadEnumFormats()
 
 void TextureProperties::ReloadEnumFilters()
 {
+#if RHI_COMPLETE_EDITOR //global enum
 	const EnumMap *globalFormats = GlobalEnumMap<DAVA::Texture::TextureFilter>::Instance();
 
 	enumFiltersMag.UnregistelAll();
@@ -266,16 +267,19 @@ void TextureProperties::ReloadEnumFilters()
 			}
 		}
 	}
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void TextureProperties::ReloadEnumWrap()
 {
+#if RHI_COMPLETE_EDITOR //global enum
 	const EnumMap *globalFormats = GlobalEnumMap<DAVA::Texture::TextureWrap>::Instance();
 
 	enumWpar.UnregistelAll();
 
 	enumWpar.Register(DAVA::Texture::WRAP_REPEAT, globalFormats->ToString(DAVA::Texture::WRAP_REPEAT));
 	enumWpar.Register(DAVA::Texture::WRAP_CLAMP_TO_EDGE, globalFormats->ToString(DAVA::Texture::WRAP_CLAMP_TO_EDGE));
+#endif // RHI_COMPLETE_EDITOR
 }
 
 QtPropertyDataInspMember* TextureProperties::AddPropertyItem(const char *name, DAVA::InspBase *object, const QModelIndex &parent)

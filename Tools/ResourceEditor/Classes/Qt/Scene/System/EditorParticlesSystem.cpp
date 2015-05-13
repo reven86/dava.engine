@@ -38,7 +38,6 @@
 // framework
 #include "Base/BaseTypes.h"
 #include "Entity/Component.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Particles/ParticleEmitter.h"
 #include "Scene3D/Components/RenderComponent.h"
@@ -48,13 +47,7 @@
 
 EditorParticlesSystem::EditorParticlesSystem(DAVA::Scene * scene)
 	: DAVA::SceneSystem(scene)
-{
-	DAVA::RenderManager* rm = DAVA::RenderManager::Instance();
-	
-	renderState = rm->Subclass3DRenderState(DAVA::RenderStateData::STATE_BLEND |
-										  DAVA::RenderStateData::STATE_COLORMASK_ALL |
-										  DAVA::RenderStateData::STATE_DEPTH_TEST);
-
+{	
     selectedEffectEntity = NULL;
     selectedEmitter = NULL;
 }
@@ -72,6 +65,7 @@ EditorParticlesSystem::~EditorParticlesSystem()
 
 void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
 {
+#if RHI_COMPLETE_EDITOR
 	SceneCollisionSystem *collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
 	
 	if (collisionSystem)
@@ -91,10 +85,12 @@ void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
 		
 		DAVA::RenderManager::Instance()->ResetColor();
 	}
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void EditorParticlesSystem::Draw()
 {
+#if RHI_COMPLETE_EDITOR
 	// Draw debug information for non-selected entities
 	for(size_t i = 0; i < entities.size(); ++i)
 	{				
@@ -142,13 +138,12 @@ void EditorParticlesSystem::Draw()
 		
 		DAVA::RenderManager::Instance()->ResetColor();
 	}
-	
-	//DAVA::RenderManager::Instance()->SetBlendMode(oldBlendSrc, oldBlendDst);
-	//DAVA::RenderManager::Instance()->SetState(oldState);
+#endif // RHI_COMPLETE_EDITOR	
 }
 
 void EditorParticlesSystem::DrawSizeCircleShockWave(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center)
 {
+#if RHI_COMPLETE_EDITOR
 	//float32 time = emitter->GetTime();
 	float32 time = GetEffectComponent(effectEntity)->GetCurrTime();
 	float32 emitterRadius = (emitter->radius) ? emitter->radius->GetValue(time) : 0.0f;
@@ -158,10 +153,12 @@ void EditorParticlesSystem::DrawSizeCircleShockWave(DAVA::Entity *effectEntity, 
 
     RenderManager::Instance()->SetDynamicParam(DAVA::PARAM_WORLD, &DAVA::Matrix4::IDENTITY, (DAVA::pointer_size)&DAVA::Matrix4::IDENTITY);
 	DAVA::RenderHelper::Instance()->DrawCircle3D(center, emissionVector, emitterRadius, true, renderState);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void EditorParticlesSystem::DrawSizeCircle(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center)
 {
+#if RHI_COMPLETE_EDITOR
 	float32 emitterRadius = 0.0f;
 	DAVA::Vector3 emitterVector;	
 	float32 time = GetEffectComponent(effectEntity)->GetCurrTime();
@@ -182,10 +179,12 @@ void EditorParticlesSystem::DrawSizeCircle(DAVA::Entity *effectEntity, DAVA::Par
 
     RenderManager::Instance()->SetDynamicParam(DAVA::PARAM_WORLD, &DAVA::Matrix4::IDENTITY, (DAVA::pointer_size)&DAVA::Matrix4::IDENTITY);
 	DAVA::RenderHelper::Instance()->DrawCircle3D(center, emitterVector, emitterRadius, true, renderState);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void EditorParticlesSystem::DrawSizeBox(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center)
 {
+#if RHI_COMPLETE_EDITOR
 	// Default value of emitter size
 	DAVA::Vector3 emitterSize;
 
@@ -264,10 +263,12 @@ void EditorParticlesSystem::DrawSizeBox(DAVA::Entity *effectEntity, DAVA::Partic
 	poly.AddPoint(p[6]);
 	poly.AddPoint(p[7]);
 	RenderHelper::Instance()->FillPolygon(poly, renderState);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void EditorParticlesSystem::DrawVectorArrow(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center)
 {
+#if RHI_COMPLETE_EDITOR
 	DAVA::Vector3 emitterVector(0.f, 0.f, 1.f);
 	DAVA::float32 arrowBaseSize = 5.0f;
 				
@@ -295,6 +296,7 @@ void EditorParticlesSystem::DrawVectorArrow(DAVA::Entity *effectEntity, DAVA::Pa
 	emitterVector = emitterVector * wMat;
 
 	DAVA::RenderHelper::Instance()->FillArrow(center, emitterVector, arrowSize, 1, renderState);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void EditorParticlesSystem::AddEntity(DAVA::Entity * entity)

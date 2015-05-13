@@ -341,6 +341,7 @@ void HoodSystem::Input(DAVA::UIEvent *event)
 
 void HoodSystem::Draw()
 {
+
 	if(NULL != curHood && IsVisible())
 	{
 		TextDrawSystem *textDrawSys = ((SceneEditor2 *) GetScene())->textDrawSystem;
@@ -359,12 +360,12 @@ void HoodSystem::Draw()
 			}
 
 			curHood->Draw(showAsSelected, moseOverAxis, textDrawSys);
-
+#if RHI_COMPLETE_EDITOR
 			// zero pos point
             RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size) &Matrix4::IDENTITY);
 			DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f));
 			DAVA::RenderHelper::Instance()->DrawPoint(GetPosition(), 2.0f, DAVA::RenderState::RENDERSTATE_2D_BLEND);
-			
+#endif // RHI_COMPLETE_EDITOR			
 			// debug draw axis collision word
 			//collWorld->debugDrawWorld();
 		}
@@ -373,6 +374,7 @@ void HoodSystem::Draw()
 			normalHood.Draw(curAxis, ST_AXIS_NONE, textDrawSys);
 		}
 	}
+
 }
 
 void HoodSystem::ProcessCommand(const Command2 *command, bool redo)

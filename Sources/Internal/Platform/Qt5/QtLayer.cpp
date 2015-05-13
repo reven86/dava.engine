@@ -30,7 +30,6 @@
 
 #include "Platform/Qt5/QtLayer.h"
 
-#include "Render/RenderManager.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
@@ -77,9 +76,8 @@ void QtLayer::SetDelegate(QtLayerDelegate *delegate)
     
 void QtLayer::AppStarted()
 {
-    Core::Instance()->SystemAppStarted();
-    
-    RenderManager::Create(Core::RENDERER_OPENGL);
+    Core::Instance()->SystemAppStarted();        
+    Renderer::Initialize(rhi::RHI_GLES2);
     FrameworkDidLaunched();
 }
 
@@ -112,23 +110,30 @@ void QtLayer::OnResume()
     
 void QtLayer::ProcessFrame()
 {
+#if RHI_COMPLETE_EDITOR
     RenderManager::Instance()->Lock();
-    
-    RenderManager::Instance()->SetColor(Color::White);
+#endif // RHI_COMPLETE_EDITOR
+        
     Core::Instance()->SystemProcessFrame();
-    
+
+#if RHI_COMPLETE_EDITOR
     RenderManager::Instance()->Unlock();
+#endif // RHI_COMPLETE_EDITOR
 }
     
 void QtLayer::InitializeGlWindow(uint64 glContextId)
 {
+#if RHI_COMPLETE_EDITOR
     RenderManager::Instance()->SetRenderContextId(glContextId);
+#endif //RHI_COMPLETE_EDITOR
 }
 
 
 void QtLayer::Resize(int32 width, int32 height)
 {
+#if RHI_COMPLETE_EDITOR
     RenderManager::Instance()->Init(width, height);
+#endif // RHI_COMPLETE_EDITOR
     RenderSystem2D::Instance()->Init();
     
     VirtualCoordinatesSystem *vcs = VirtualCoordinatesSystem::Instance();

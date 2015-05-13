@@ -297,9 +297,11 @@ void SceneValidator::ValidateRenderBatch(Entity *ownerNode, RenderBatch *renderB
 
 void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLog)
 {
+#if RHI_COMPLETE_EDITOR
 	DAVA::MaterialSystem *matSystem = scene->GetMaterialSystem();
 	Set<DAVA::NMaterial *> materials;
 	matSystem->BuildMaterialList(scene, materials);
+
 
     const QVector<ProjectManager::AvailableMaterialTemplate> *materialTemplates = 0;
     if (ProjectManager::Instance() != nullptr)
@@ -379,10 +381,12 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
 	{
 		ValidateTexture(it->first, it->second, errorsLog);
 	}
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void SceneValidator::ValidateLandscape(Landscape *landscape, Set<String> &errorsLog)
 {
+#if RHI_COMPLETE_EDITOR
     if (nullptr == landscape)
     {
         return;
@@ -391,7 +395,7 @@ void SceneValidator::ValidateLandscape(Landscape *landscape, Set<String> &errors
     
     for (int32 i = 0; i < Landscape::TEXTURE_COUNT; ++i)
     {
-        Landscape::eTextureLevel texLevel = (Landscape::eTextureLevel)i;
+        const FastName& texLevel = (const FastName&)i;
         if (texLevel == Landscape::TEXTURE_COLOR || texLevel == Landscape::TEXTURE_TILE_MASK || texLevel == Landscape::TEXTURE_TILE0)
         {
             ValidateLandscapeTexture(landscape, texLevel, errorsLog);
@@ -411,10 +415,12 @@ void SceneValidator::ValidateLandscape(Landscape *landscape, Set<String> &errors
         String path = landscape->GetHeightmapPathname().GetRelativePathname(ProjectManager::Instance()->CurProjectDataSourcePath());
         errorsLog.insert(Format("Wrong path of Heightmap: %s. Scene: %s", path.c_str(), sceneName.c_str()));
     }
+#endif // RHI_COMPLETE_EDITOR
 }
 
-void SceneValidator::ValidateLandscapeTexture(Landscape *landscape, Landscape::eTextureLevel texLevel, Set<String> &errorsLog)
+void SceneValidator::ValidateLandscapeTexture(Landscape *landscape, const FastName& texLevel, Set<String> &errorsLog)
 {
+#if RHI_COMPLETE_EDITOR
 	DAVA::FilePath landTexName = landscape->GetTextureName(texLevel);
 	if (!IsTextureDescriptorPath(landTexName) &&
 	    landTexName.GetAbsolutePathname().size() > 0)
@@ -423,11 +429,13 @@ void SceneValidator::ValidateLandscapeTexture(Landscape *landscape, Landscape::e
 	}
 
 	ValidateTexture(landscape->GetTexture(texLevel), Format("Landscape. TextureLevel %d", texLevel), errorsLog);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 
 void SceneValidator::ConvertIlluminationParamsFromProperty(Entity *ownerNode, NMaterial *material)
 {
+#if RHI_COMPLETE_EDITOR
     IlluminationParams *params = material->GetIlluminationParams();
 
     VariantType * variant = nullptr;
@@ -454,6 +462,7 @@ void SceneValidator::ConvertIlluminationParamsFromProperty(Entity *ownerNode, NM
     {
         params->lightmapSize = variant->AsInt32();
     }
+#endif // RHI_COMPLETE_EDITOR
 }
 
 VariantType* SceneValidator::GetCustomPropertyFromParentsTree(Entity *ownerNode, const String & key)

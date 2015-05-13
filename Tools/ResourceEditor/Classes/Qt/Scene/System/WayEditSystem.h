@@ -37,7 +37,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // framework
 #include "UI/UIEvent.h"
 #include "Entity/SceneSystem.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Scene3D/Components/Waypoint/EdgeComponent.h"
 
@@ -95,9 +94,7 @@ protected:
     
     SceneEditor2 *sceneEditor;
     SceneSelectionSystem *selectionSystem;
-    SceneCollisionSystem *collisionSystem;
-
-    DAVA::UniqueHandle wayDrawState;
+    SceneCollisionSystem *collisionSystem;    
     
     DAVA::Vector<DAVA::Entity *> waypointEntities;
     DAVA::Map<DAVA::Entity*, DAVA::Entity*> mapStartPoints; // mapping [path parent -> path start point]

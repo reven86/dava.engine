@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 #include "Render/Material.h"
-#include "Render/UberShader.h"
 #include "Render/Texture.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Utils/StringFormat.h"

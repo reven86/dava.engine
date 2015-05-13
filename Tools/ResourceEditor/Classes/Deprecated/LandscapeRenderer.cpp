@@ -33,10 +33,7 @@ using namespace DAVA;
 
 LandscapeRenderer::LandscapeRenderer(DAVA::Heightmap *heightmap, const DAVA::AABBox3 &box)
     : BaseObject()
-{
-    landscapeRenderObject = new RenderDataObject();
-    DVASSERT(landscapeRenderObject);
-    
+{    
     InitShader();
 
     SetHeightmap(heightmap, box);
@@ -44,16 +41,15 @@ LandscapeRenderer::LandscapeRenderer(DAVA::Heightmap *heightmap, const DAVA::AAB
 
 LandscapeRenderer::~LandscapeRenderer()
 {
-    SafeRelease(shader);
     uniformFogColor = -1;
     uniformFogDensity = -1;
-    
-    SafeRelease(landscapeRenderObject);
+     
     SafeRelease(heightmap);
 }
 
 void LandscapeRenderer::InitShader()
 {
+#if RHI_COMPLETE_EDITOR
     bool isFogEnabled = false;
     
     shader = SafeRetain(ShaderCache::Instance()->Get(FastName("~res:/Materials/Shaders/Landscape/fulltiled_texture"), FastNameSet()));
@@ -68,6 +64,7 @@ void LandscapeRenderer::InitShader()
         uniformFogColor = -1;
         uniformFogDensity = -1;
     }
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void LandscapeRenderer::SetHeightmap(DAVA::Heightmap *heightmap, const DAVA::AABBox3 &box)
@@ -78,10 +75,7 @@ void LandscapeRenderer::SetHeightmap(DAVA::Heightmap *heightmap, const DAVA::AAB
     SetBoundingBox(box);
     
     vertices.resize(heightmap->Size() * heightmap->Size());
-	indices.resize(heightmap->Size() * heightmap->Size() * 6);
-    
-    landscapeRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, sizeof(Landscape::LandscapeVertex), &vertices[0].position);
-	landscapeRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, sizeof(Landscape::LandscapeVertex), &vertices[0].texCoord);
+	indices.resize(heightmap->Size() * heightmap->Size() * 6);        
     
     RebuildVertexes(Rect(0.f, 0.f, (float32)heightmap->Size(), (float32)heightmap->Size()));
     RebuildIndexes();
@@ -149,14 +143,17 @@ void LandscapeRenderer::RebuildIndexes()
 
 void LandscapeRenderer::DrawLandscape()
 {
+#if RHI_COMPLETE_EDITOR
     RenderManager::Instance()->SetRenderData(landscapeRenderObject);
 	RenderManager::Instance()->FlushState();
 	RenderManager::Instance()->AttachRenderData();
 	RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, (heightmap->Size() - 1) * (heightmap->Size() - 1) * 6, EIF_32, &indices.front());
+#endif // RHI_COMPLETE_EDITOR
 }
     
 void LandscapeRenderer::BindMaterial(DAVA::UniqueHandle textureStateHandle)
 {
+#if RHI_COMPLETE_EDITOR
     RenderManager::Instance()->SetTextureState(textureStateHandle);
     
     RenderManager::Instance()->SetShader(shader);
@@ -170,14 +167,12 @@ void LandscapeRenderer::BindMaterial(DAVA::UniqueHandle textureStateHandle)
         shader->SetUniformColor3ByIndex(uniformFogColor, fogColor);
     if (uniformFogDensity != -1)
         shader->SetUniformValueByIndex(uniformFogDensity, fogDensity);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void LandscapeRenderer::UnbindMaterial()
 {
-   // RenderManager::Instance()->SetTexture(0, 0);
-    
-    RenderManager::Instance()->SetShader(NULL);
-    RenderManager::Instance()->FlushState();
+// RHI_COMPLETE_EDITOR - remove function
 }
 
 DAVA::uint32 * LandscapeRenderer::Indicies()

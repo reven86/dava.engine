@@ -49,12 +49,12 @@ VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
 ,	editingIsEnabled(false)
 ,	originalImage(nullptr)
 ,	state(VT_STATE_NORMAL)
-,	textureLevel(Landscape::TEXTURE_TILE_FULL)
+,	textureLevel(Landscape::TEXTURE_NAME_FULL_TILED)
 {
     cursorSize = 120;
 
     crossTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/setPointCursor.tex");
-    crossTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
+    crossTexture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
 }
 
 VisibilityToolSystem::~VisibilityToolSystem()
@@ -230,7 +230,7 @@ void VisibilityToolSystem::SetBrushSize(int32 brushSize)
 void VisibilityToolSystem::StoreOriginalState()
 {
 	DVASSERT(originalImage == NULL);
-	originalImage = drawSystem->GetVisibilityToolProxy()->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+	originalImage = drawSystem->GetVisibilityToolProxy()->GetTexture()->CreateImageFromMemory();
 	ResetAccumulatorRect();
 }
 
@@ -519,12 +519,14 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
             const uint32 matCount = materials.size();
             for(uint32 m = 0; m < matCount; ++m)
             {
+#if RHI_COMPLETE_EDITOR
                 const NMaterialTemplate *matTemplate = materials[m]->GetMaterialTemplate();
                 if((NMaterialName::SKYOBJECT == matTemplate->name)  || (NMaterialName::SKYBOX == matTemplate->name))
                 {
                     needToExclude = true;
                     break;
                 }
+#endif // RHI_COMPLETE_EDITOR
             }
         }
 
@@ -547,6 +549,7 @@ bool VisibilityToolSystem::IsCircleContainsPoint(const Vector2& circleCenter, fl
 
 void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> &points)
 {
+#if RHI_COMPLETE_EDITOR
 	VisibilityToolProxy* visibilityToolProxy = drawSystem->GetVisibilityToolProxy();
 	Texture * visibilityAreaTexture = visibilityToolProxy->GetTexture();
 
@@ -562,6 +565,7 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> 
 
     RenderManager::Instance()->ResetColor();
     RenderManager::Instance()->SetRenderTarget(0);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void VisibilityToolSystem::SaveTexture(const FilePath& filePath)
@@ -573,7 +577,7 @@ void VisibilityToolSystem::SaveTexture(const FilePath& filePath)
 
     Texture* visibilityToolTexture = drawSystem->GetVisibilityToolProxy()->GetTexture();
 
-	Image* image = visibilityToolTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+	Image* image = visibilityToolTexture->CreateImageFromMemory();
     ImageSystem::Instance()->Save(filePath, image);
 	SafeRelease(image);
 }

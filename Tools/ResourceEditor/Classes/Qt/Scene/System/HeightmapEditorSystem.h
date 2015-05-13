@@ -104,9 +104,7 @@ protected:
 	
 	Heightmap* originalHeightmap;
 
-	eHeightmapDrawType activeDrawingType;
-
-	Landscape::eTextureLevel textureLevel;
+	eHeightmapDrawType activeDrawingType;	
 
 	void UpdateToolImage(bool force = false);
 	void UpdateBrushTool(float32 timeElapsed);
@@ -120,8 +118,7 @@ protected:
 	void CreateHeightmapUndo();
 
 	void FinishEditing();
-	
-	UniqueHandle noBlendDrawState;
+		
 };
 
 #endif /* defined(__RESOURCEEDITORQT__HEIGHTMAPEDITORSYSTEM__) */

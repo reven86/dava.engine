@@ -96,26 +96,26 @@ public:
 
     void ProcessCommand(const Command2 *command, bool redo);
 
-	float32 GetTextureSize(Landscape::eTextureLevel level);
+	float32 GetTextureSize(const FastName& level);
 	Vector3 GetLandscapeSize();
 	float32 GetLandscapeMaxHeight();
 	float32 GetHeightAtPoint(const Vector2& point);
-	float32 GetHeightAtTexturePoint(Landscape::eTextureLevel level, const Vector2& point);
+	float32 GetHeightAtTexturePoint(const FastName& level, const Vector2& point);
 	KeyedArchive* GetLandscapeCustomProperties();
 
-	Vector2 HeightmapPointToTexturePoint(Landscape::eTextureLevel level, const Vector2& point);
-	Vector2 TexturePointToHeightmapPoint(Landscape::eTextureLevel level, const Vector2& point);
-	Vector2 TexturePointToLandscapePoint(Landscape::eTextureLevel level, const Vector2& point);
-	Vector2 LandscapePointToTexturePoint(Landscape::eTextureLevel level, const Vector2& point);
+	Vector2 HeightmapPointToTexturePoint(const FastName& level, const Vector2& point);
+	Vector2 TexturePointToHeightmapPoint(const FastName& level, const Vector2& point);
+	Vector2 TexturePointToLandscapePoint(const FastName& level, const Vector2& point);
+	Vector2 LandscapePointToTexturePoint(const FastName& level, const Vector2& point);
 	Vector2 TranslatePoint(const Vector2& point, const Rect& fromRect, const Rect& toRect);
 
-	void ClampToTexture(Landscape::eTextureLevel level, Rect& rect);
+	void ClampToTexture(const FastName& level, Rect& rect);
 	void ClampToHeightmap(Rect& rect);
 
 	virtual void AddEntity(DAVA::Entity * entity);
 	virtual void RemoveEntity(DAVA::Entity * entity);
 
-	Rect GetTextureRect(Landscape::eTextureLevel level);
+	Rect GetTextureRect(const FastName& level);
 	Rect GetHeightmapRect();
 	Rect GetLandscapeRect();
 
@@ -152,8 +152,7 @@ private:
 	void DeinitLandscape();
 
 	eErrorType IsNotPassableTerrainCanBeEnabled();
-	
-	UniqueHandle noBlendDrawState;
+		
 };
 
 #endif /* defined(__RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEM__) */

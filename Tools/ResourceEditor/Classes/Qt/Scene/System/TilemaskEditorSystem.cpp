@@ -57,27 +57,26 @@ TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
 ,	toolTexture(NULL)
 ,	toolSpriteUpdated(false)
 ,	needCreateUndo(false)
-,	textureLevel(Landscape::TEXTURE_TILE_MASK)
+,	textureLevel(Landscape::TEXTURE_NAME_TILEMASK)
 {
     cursorSize = 120;
     
+#if RHI_COMPLETE_EDITOR
     tileMaskEditorShader = SafeRetain(ShaderCache::Instance()->Get(FastName("~res:/Materials/Shaders/Landscape/tilemask-editor"), FastNameSet()));
     tileMaskCopyPasteShader = SafeRetain(ShaderCache::Instance()->Get(FastName("~res:/Materials/Shaders/Landscape/tilemask-editor-copypaste"), FastNameSet()));
 
     spriteRenderObject = new RenderDataObject();
     spriteVertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
     spriteTexCoordStream = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+#endif //RHI_COMPLETE_EDITOR
 }
 
 TilemaskEditorSystem::~TilemaskEditorSystem()
-{
-	SafeRelease(tileMaskEditorShader);
-	SafeRelease(tileMaskCopyPasteShader);
+{	
 	SafeRelease(toolImage);
 	SafeRelease(toolImageTexture);
 	SafeRelease(toolTexture);
-	SafeRelease(stencilTexture);
-    SafeRelease(spriteRenderObject);
+	SafeRelease(stencilTexture);    
 }
 
 LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditing()
@@ -116,8 +115,8 @@ LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditi
 	Texture* srcSprite = drawSystem->GetLandscapeProxy()->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE);
     Texture* dstSprite = drawSystem->GetLandscapeProxy()->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_DESTINATION);
 
-	srcSprite->SetMinMagFilter(Texture::FILTER_LINEAR, Texture::FILTER_LINEAR);
-	dstSprite->SetMinMagFilter(Texture::FILTER_LINEAR, Texture::FILTER_LINEAR);
+    srcSprite->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_NEAREST);
+    dstSprite->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_NEAREST);
 
 	enabled = true;
 	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
@@ -151,6 +150,7 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 		return;
 	}
 	
+#if RHI_COMPLETE_EDITOR
 	if (editingIsEnabled && isIntersectsLandscape)
 	{
 		if (prevCursorPos != cursorPosition)
@@ -215,6 +215,8 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 			AddRectToAccumulator(toolRect);
 		}
 	}
+
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void TilemaskEditorSystem::Input(UIEvent* event)
@@ -337,6 +339,7 @@ void TilemaskEditorSystem::UpdateToolImage(bool force)
 
 void TilemaskEditorSystem::UpdateBrushTool()
 {
+#if RHI_COMPLETE_EDITOR
 	Texture* srcTexture = drawSystem->GetLandscapeProxy()->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE);
     Texture* dstTexture = drawSystem->GetLandscapeProxy()->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_DESTINATION);
 
@@ -407,27 +410,30 @@ void TilemaskEditorSystem::UpdateBrushTool()
 	drawSystem->GetLandscapeProxy()->SwapTilemaskSprites();
 
     RenderManager::Instance()->SetRenderTarget(0);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 Image* TilemaskEditorSystem::CreateToolImage(int32 sideSize, const FilePath& filePath)
 {
-	Texture * dstTex = Texture::CreateFBO(sideSize, sideSize, FORMAT_RGBA8888, Texture::DEPTH_NONE);
-	Texture * srcTex = Texture::CreateFromFile(filePath);
 
+	Texture * dstTex = Texture::CreateFBO(sideSize, sideSize, FORMAT_RGBA8888/*, Texture::DEPTH_NONE*/);
+	Texture * srcTex = Texture::CreateFromFile(filePath);
+#if RHI_COMPLETE_EDITOR
     RenderHelper::Instance()->Set2DRenderTarget(dstTex);
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.0f);
 	RenderManager::Instance()->SetColor(Color::White);
     RenderHelper::Instance()->DrawTexture(srcTex, RenderState::RENDERSTATE_2D_BLEND);
     RenderManager::Instance()->SetRenderTarget(0);
-	
+#endif // RHI_COMPLETE_EDITOR	
 	SafeRelease(toolImageTexture);
     toolImageTexture = SafeRetain(dstTex);
-    Image * retImage = dstTex->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+    Image * retImage = dstTex->CreateImageFromMemory();
 	
 	SafeRelease(srcTex);
     SafeRelease(dstTex);
 	
 	return retImage;
+
 }
 
 void TilemaskEditorSystem::AddRectToAccumulator(const Rect& rect)
@@ -456,38 +462,46 @@ uint32 TilemaskEditorSystem::GetTileTextureCount() const
 
 Texture* TilemaskEditorSystem::GetTileTexture(int32 index)
 {
+#if RHI_COMPLETE_EDITOR
 	if (index < 0 || index >= (int32)GetTileTextureCount())
 	{
 		return NULL;
 	}
 	
-	Landscape::eTextureLevel level = (Landscape::eTextureLevel)(Landscape::TEXTURE_TILE0 + index);
+	const FastName& level = (const FastName&)(Landscape::TEXTURE_TILE0 + index);
 	Texture* texture = drawSystem->GetLandscapeProxy()->GetLandscapeTexture(level);
 	
 	return texture;
+#else
+    return nullptr;
+#endif RHI_COMPLETE_EDITOR
 }
 
 Color TilemaskEditorSystem::GetTileColor(int32 index)
 {
+#if RHI_COMPLETE_EDITOR
 	if (index < 0 || index >= (int32)GetTileTextureCount())
 	{
 		return Color::Black;
 	}
 
-	Landscape::eTextureLevel level = (Landscape::eTextureLevel)(Landscape::TEXTURE_TILE0 + index);
+	const FastName& level = (const FastName&)(Landscape::TEXTURE_TILE0 + index);
 	Color color = drawSystem->GetLandscapeProxy()->GetLandscapeTileColor(level);
-	
+#else
+    Color color;
+#endif // RHI_COMPLETE_EDITOR
 	return color;
 }
 
 void TilemaskEditorSystem::SetTileColor(int32 index, const Color& color)
 {
+#if RHI_COMPLETE_EDITOR
 	if (index < 0 || index >= (int32)GetTileTextureCount())
 	{
 		return;
 	}
 
-	Landscape::eTextureLevel level = (Landscape::eTextureLevel)(Landscape::TEXTURE_TILE0 + index);
+	const FastName& level = (const FastName&)(Landscape::TEXTURE_TILE0 + index);
 	Color curColor = drawSystem->GetLandscapeProxy()->GetLandscapeTileColor(level);
 
 	if (curColor != color)
@@ -495,9 +509,10 @@ void TilemaskEditorSystem::SetTileColor(int32 index, const Color& color)
 		SceneEditor2* scene = (SceneEditor2*)(GetScene());
 		scene->Exec(new SetTileColorCommand(drawSystem->GetLandscapeProxy(), level, color));
 	}
+#endif // RHI_COMPLETE_EDITOR
 }
 
-MetaObjModifyCommand* TilemaskEditorSystem::CreateTileColorCommand(Landscape::eTextureLevel level, const Color& color)
+MetaObjModifyCommand* TilemaskEditorSystem::CreateTileColorCommand(const FastName& level, const Color& color)
 {
 	Landscape* landscape = drawSystem->GetBaseLandscape();
 	const InspMember* inspMember = landscape->GetTypeInfo()->Member("tileColor");
@@ -506,22 +521,27 @@ MetaObjModifyCommand* TilemaskEditorSystem::CreateTileColorCommand(Landscape::eT
 
 	InspColl::Iterator it = inspColl->Begin(object);
 
+#if RHI_COMPLETE_EDITOR
 	int32 i = level;
 	while (i--)
 	{
 		it = inspColl->Next(it);
 	}
+#endif // RHI_COMPLETE_EDITOR
 
 	return new MetaObjModifyCommand(inspColl->ItemType(), inspColl->ItemPointer(it), VariantType(color));
 }
 
 void TilemaskEditorSystem::CreateMaskTexture()
 {
+#if RHI_COMPLETE_EDITOR
 	CreateMaskFromTexture(drawSystem->GetLandscapeProxy()->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK));
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void TilemaskEditorSystem::CreateMaskFromTexture(Texture* texture)
 {
+#if RHI_COMPLETE_EDITOR
     Texture* tilemaskTexture = drawSystem->GetLandscapeProxy()->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE);
 
 	if(texture)
@@ -533,10 +553,12 @@ void TilemaskEditorSystem::CreateMaskFromTexture(Texture* texture)
 	
     tilemaskTexture->GenerateMipmaps();
     drawSystem->GetLandscapeProxy()->SetTilemaskTexture(tilemaskTexture);
+#endif RHI_COMPLETE_EDITOR
 }
 
 void TilemaskEditorSystem::Draw()
 {
+#if RHI_COMPLETE_EDITOR
     Rect oldViewport = RenderManager::Instance()->GetViewport();
     if (!IsLandscapeEditingEnabled())
 	{
@@ -555,6 +577,7 @@ void TilemaskEditorSystem::Draw()
 		needCreateUndo = false;
 	}
     RenderManager::Instance()->SetViewport(oldViewport);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void TilemaskEditorSystem::CreateUndoPoint()
@@ -590,12 +613,12 @@ void TilemaskEditorSystem::InitSprites()
 
 	if (toolTexture == NULL)
 	{
-		toolTexture = Texture::CreateFBO(texSize, texSize, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+		toolTexture = Texture::CreateFBO(texSize, texSize, FORMAT_RGBA8888/*, Texture::DEPTH_NONE*/);
 	}
 
 	if (stencilTexture == NULL)
 	{
-        stencilTexture = Texture::CreateFBO(texSize, texSize, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+        stencilTexture = Texture::CreateFBO(texSize, texSize, FORMAT_RGBA8888/*, Texture::DEPTH_NONE*/);
 	}
 
 	drawSystem->GetLandscapeProxy()->InitTilemaskSprites();

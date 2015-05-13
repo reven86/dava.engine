@@ -43,7 +43,7 @@ GameCore::~GameCore()
 
 void GameCore::OnAppStarted()
 {
-    RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::LAYER_OCCLUSION_STATS, true);
+    Renderer::GetOptions()->SetOption(RenderOptions::LAYER_OCCLUSION_STATS, true);
 }
 
 void GameCore::OnAppFinished()
@@ -67,7 +67,6 @@ void GameCore::OnBackground()
 void GameCore::BeginFrame()
 {
 	ApplicationCore::BeginFrame();
-	RenderManager::Instance()->ClearWithColor(0, 0, 0, 0);
 }
 
 void GameCore::Update(float32 timeElapsed)
