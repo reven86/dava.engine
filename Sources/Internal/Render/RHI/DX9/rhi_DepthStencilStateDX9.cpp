@@ -114,7 +114,7 @@ dx9_DepthStencilState_Create( const DepthStencilState::Descriptor& desc )
     state->stencilBack.writeMask                    = desc.stencilBack.writeMask;
     state->stencilBack.refValue                     = desc.stencilBack.refValue;
     state->stencilBack.failOperation                = _StencilOp( StencilOperation(desc.stencilBack.failOperation) );
-    state->stencilBack.depthFailOperation           = _StencilOp( StencilOperation(desc.stencilBack.failOperation) );
+    state->stencilBack.depthFailOperation           = _StencilOp( StencilOperation(desc.stencilBack.depthFailOperation) );
     state->stencilBack.depthStencilPassOperation    = _StencilOp( StencilOperation(desc.stencilBack.depthStencilPassOperation) );
 
     return handle;
