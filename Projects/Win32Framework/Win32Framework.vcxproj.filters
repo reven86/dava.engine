@@ -1825,6 +1825,9 @@
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextLayout.h">
       <Filter>Internal\Render\2D</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Thread\ThreadLocal.h">
+      <Filter>Internal\Thread</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Timer\RawTimer.h">
       <Filter>Internal\Timer</Filter>
     </ClInclude>

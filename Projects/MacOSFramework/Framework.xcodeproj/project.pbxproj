@@ -887,6 +887,7 @@
 		505EB4111824CEC5009BEA3C /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 505EB40D1824CEC5009BEA3C /* OcclusionQuery.h */; };
 		505EB4121824CEC5009BEA3C /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 505EB40D1824CEC5009BEA3C /* OcclusionQuery.h */; };
 		505EB4131824CEC5009BEA3C /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 505EB40D1824CEC5009BEA3C /* OcclusionQuery.h */; };
+		50780D9E1B00FE280065073A /* ThreadLocal.h in Headers */ = {isa = PBXBuildFile; fileRef = 50780D9D1B00FE280065073A /* ThreadLocal.h */; };
 		509740D816C12EED00631E71 /* IntrospectionBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8CC1BF616C109F1009B49BF /* IntrospectionBase.cpp */; };
 		509740DA16C12EEE00631E71 /* IntrospectionBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8CC1BF616C109F1009B49BF /* IntrospectionBase.cpp */; };
 		50A3043B18575C370082CA8D /* StaticOcclusion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50A3043718575C370082CA8D /* StaticOcclusion.cpp */; };
@@ -2852,6 +2853,7 @@
 		5043DDAA18706828005E3584 /* VisibilityArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VisibilityArray.h; sourceTree = "<group>"; };
 		505EB40C1824CEC5009BEA3C /* OcclusionQuery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OcclusionQuery.cpp; sourceTree = "<group>"; };
 		505EB40D1824CEC5009BEA3C /* OcclusionQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OcclusionQuery.h; sourceTree = "<group>"; };
+		50780D9D1B00FE280065073A /* ThreadLocal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ThreadLocal.h; path = Thread/ThreadLocal.h; sourceTree = "<group>"; };
 		50A3043718575C370082CA8D /* StaticOcclusion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusion.cpp; sourceTree = "<group>"; };
 		50A3043818575C370082CA8D /* StaticOcclusion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusion.h; sourceTree = "<group>"; };
 		50A3043918575C370082CA8D /* StaticOcclusionRenderPass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusionRenderPass.h; sourceTree = "<group>"; };
@@ -5253,6 +5255,7 @@
 		E8C486EA196BC9940082E634 /* Thread */ = {
 			isa = PBXGroup;
 			children = (
+				50780D9D1B00FE280065073A /* ThreadLocal.h */,
 				4F34E1C11A234DF8000681BB /* Semaphore.h */,
 				4F34E1C21A234DF8000681BB /* Spinlock.h */,
 				E8C486EC196BC9AC0082E634 /* LockGuard.h */,
@@ -5850,6 +5853,7 @@
 				50C16DC91A52D7B9003C307A /* ProtoDriver.h in Headers */,
 				E8989DFE16BD24E500732C04 /* Replay.h in Headers */,
 				1146E11819D00874009E5FAB /* AnimationComponent.h in Headers */,
+				50780D9E1B00FE280065073A /* ThreadLocal.h in Headers */,
 				E8989E0016BD24E500732C04 /* Stats.h in Headers */,
 				E8989E0916BD24E500732C04 /* DoxygenDocumenation.h in Headers */,
 				327343C71ACD36D70003F2A8 /* UIControlFamily.h in Headers */,
