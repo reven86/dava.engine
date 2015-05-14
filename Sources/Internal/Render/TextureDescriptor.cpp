@@ -649,7 +649,7 @@ Array<ImageFormat, 2> TextureDescriptor::compressedTextureTypes = { { IMAGE_FORM
 
 auto IsSupportedFor = [](ImageFormat format, const String& extension)
 {
-    auto extensions = ImageSystem::Instance()->GetExtensionsFor(format);
+    auto& extensions = ImageSystem::Instance()->GetExtensionsFor(format);
     for (auto& ext : extensions)
     {
         if (CompareCaseInsensitive(ext, extension) == 0)
