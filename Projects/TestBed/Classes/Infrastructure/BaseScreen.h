@@ -38,7 +38,7 @@ using namespace DAVA;
 class BaseScreen: public UIScreen
 {
 protected:
-    ~BaseScreen(){}
+    virtual ~BaseScreen(){}
 public:
 
     BaseScreen();

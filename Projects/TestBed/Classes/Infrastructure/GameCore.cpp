@@ -139,7 +139,7 @@ void GameCore::RunTests()
     }
     else
     {
-        currentScreen = testListScreen;
+        currentScreen = screens.at(1);
     }
 
     if (nullptr != currentScreen)
@@ -152,12 +152,11 @@ void GameCore::FinishTest()
 {
     if (currentScreen == testListScreen)
     {
-        Core::Instance()->Quit();
+        Core::Instance()->Quit(); 
     }
     else
     {
-        currentScreen = testListScreen;
-        UIScreenManager::Instance()->SetFirst(currentScreen->GetScreenId());
+        ShowStartScreen();
     }
 }
 

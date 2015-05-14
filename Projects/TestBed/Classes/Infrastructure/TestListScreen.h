@@ -38,7 +38,7 @@ class TestListScreen : public BaseScreen
 public:
     TestListScreen();
 protected:
-    ~TestListScreen() {}
+    virtual ~TestListScreen() {}
 
 public:
     void LoadResources() override;
