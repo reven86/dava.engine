@@ -158,6 +158,11 @@ public:
 
 private:
     static ScreenInfo screenInfo;
+
+#if defined (__DAVAENGINE_WINDOWS_STORE__)
+	static void ComputeDisplayRotation();
+#endif //  (__DAVAENGINE_WINDOWS_STORE__)
+
 };
 
 };

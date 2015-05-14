@@ -39,6 +39,10 @@
 #include "winsock2.h"
 #include "Iphlpapi.h"
 
+using namespace Windows::Foundation;
+using namespace Windows::UI::Core;
+using namespace Windows::Graphics::Display;
+
 namespace DAVA
 {
 
@@ -119,7 +123,25 @@ DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
 
 void DeviceInfo::InitializeScreenInfo()
 {
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+	DeviceInfo::ComputeDisplayRotation();
+}
+//to::do add in public
+void DeviceInfo::ComputeDisplayRotation()
+{
+	CoreWindow^ window = CoreWindow::GetForCurrentThread();
+	Size localVal = Size(window->Bounds.Width, window->Bounds.Height);
+	screenInfo.width = localVal.Width;
+	screenInfo.height = localVal.Width;
+	DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
+	DisplayOrientations currentOrientation = currentDisplayInformation->CurrentOrientation;
+	switch (currentOrientation)
+	{
+	case DisplayOrientations::Landscape:
+		screenInfo.scale = 1;
+
+	case DisplayOrientations::Portrait:
+		screenInfo.scale = 0;
+	}
 }
 
 }
