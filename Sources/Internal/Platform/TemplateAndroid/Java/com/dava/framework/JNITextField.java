@@ -1,7 +1,5 @@
 package com.dava.framework;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
@@ -941,7 +939,6 @@ public class JNITextField {
 
     public static void SetTextColor(final int id, final float r, final float g,
             final float b, final float a) {
-        Log.e(TAG, "set color: r:"+r+"g:"+g+"b"+b+"a"+a);
         JNIActivity.GetActivity().runOnUiThread(new SafeRunnableNoFilters(id) {
             @Override
             public void safeRun() {
@@ -949,8 +946,7 @@ public class JNITextField {
                 int red = (int)(255 * r);
                 int green = (int)(255 * g);
                 int blue = (int)(255 * b);
-                int color = 0xFFFF4F00;//Color.argb(alpha, red, green, blue);
-                Log.e(TAG, "set color hex: 0x"+Integer.toHexString(color));
+                int color = Color.argb(alpha, red, green, blue);
                 text.setTextColor(color);
             }
         });

@@ -108,7 +108,6 @@ extern "C"
 
         if (nullptr != pixels)
         {
-            DAVA::Logger::Error("update texture pixels id:%d, w:%d, h:%d", id, width, height);
             DVASSERT(width > 0);
             DVASSERT(height > 0);
 
@@ -118,7 +117,7 @@ extern "C"
             DVASSERT(rawData != nullptr);
             DVASSERT(env->GetArrayLength(pixels) == width * height); // ARGB
 
-            DAVA::int32* pixelsCopy = nullptr;
+            DAVA::int32* pixelsCopy{nullptr};
 
             if(JNI_TRUE == isCopy)
             {
