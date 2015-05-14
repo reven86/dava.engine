@@ -37,6 +37,7 @@ BlendOpFromText( const char* op )
     else if( stricmp( op, "one" ) == 0 )            return rhi::BLENDOP_ONE;
     else if( stricmp( op, "src_alpha" ) == 0 )      return rhi::BLENDOP_SRC_ALPHA;
     else if( stricmp( op, "inv_src_alpha" ) == 0)   return rhi::BLENDOP_INV_SRC_ALPHA;
+    else if( stricmp( op, "src_color" ) == 0)       return rhi::BLENDOP_SRC_COLOR;
     else                                            return rhi::BLENDOP_ONE;
 }
 
