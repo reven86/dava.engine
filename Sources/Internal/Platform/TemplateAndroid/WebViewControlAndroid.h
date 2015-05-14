@@ -111,7 +111,7 @@ public:
 	void SetRenderToTexture(int id, bool renderToTexture);
 	bool IsRenderToTexture(int id);
 
-	static IUIWebViewDelegate::eAction URLChanged(int id, const String& newURL);
+	static IUIWebViewDelegate::eAction URLChanged(int id, const String& newURL, bool isRedirectedByMouseClick);
 	static void PageLoaded(int id, int* rawPixels, int width, int height);
 	static void OnExecuteJScript(int id, const String& result);
 

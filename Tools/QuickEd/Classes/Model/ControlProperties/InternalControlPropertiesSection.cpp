@@ -4,6 +4,7 @@
 #include "UI/UIControl.h"
 #include "Model/PackageSerializer.h"
 #include "LocalizedTextValueProperty.h"
+#include "FontValueProperty.h"
 
 using namespace DAVA;
 
@@ -31,8 +32,20 @@ InternalControlPropertiesSection::InternalControlPropertiesSection(DAVA::UIContr
             
             ValueProperty *sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(member);
 
-            ValueProperty *prop = strcmp(member->Name(), "text") == 0 ? new LocalizedTextValueProperty(internalControl, member, dynamic_cast<LocalizedTextValueProperty*>(sourceProperty), cloneType)
-                                                                      : new IntrospectionProperty(internalControl, member, dynamic_cast<IntrospectionProperty*>(sourceProperty), cloneType);
+            ValueProperty *prop = nullptr;
+            //TODO: move it to fabric class
+            if (strcmp(member->Name(), "text") == 0)
+            {
+                prop = new LocalizedTextValueProperty(internalControl, member, dynamic_cast<LocalizedTextValueProperty*>(sourceProperty), cloneType);
+            }
+            else if (strcmp(member->Name(), "font") == 0)
+            {
+                prop = new FontValueProperty(internalControl, member, dynamic_cast<FontValueProperty*>(sourceProperty), cloneType);
+            }
+            else
+            {
+                prop = new IntrospectionProperty(internalControl, member, dynamic_cast<IntrospectionProperty*>(sourceProperty), cloneType);
+            }
             AddProperty(prop);
             SafeRelease(prop);
         }
@@ -62,8 +75,21 @@ void InternalControlPropertiesSection::CreateInternalControl()
         {
             const InspMember *member = insp->Member(j);
 
-            ValueProperty *prop = strcmp(member->Name(), "text") == 0 ? new LocalizedTextValueProperty(internalControl, member, nullptr, CT_COPY)
-                                                                      : new IntrospectionProperty(internalControl, member, nullptr, CT_COPY);
+            ValueProperty *prop = nullptr;
+            //TODO: move it to fabric class
+            if (strcmp(member->Name(), "text") == 0)
+            {
+                prop = new LocalizedTextValueProperty(internalControl, member, nullptr, CT_COPY);
+            }
+            else if (strcmp(member->Name(), "font") == 0)
+            {
+                prop = new FontValueProperty(internalControl, member, nullptr, CT_COPY);
+            }
+            else
+            {
+                prop = new IntrospectionProperty(internalControl, member, nullptr, CT_COPY);
+            }
+            
             AddProperty(prop);
             SafeRelease(prop);
         }
@@ -87,4 +113,3 @@ void InternalControlPropertiesSection::Serialize(PackageSerializer *serializer) 
         serializer->EndMap();
     }
 }
-

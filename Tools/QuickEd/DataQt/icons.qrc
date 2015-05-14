@@ -10,6 +10,8 @@
     <file>Icons/101.png</file>
     <file>Icons/117.png</file>
     <file>Icons/118.png</file>
+	<file>Icons/add.png</file>
+	<file>Icons/configure.png</file>
     <file>Icons/edit_redo.png</file>
     <file>Icons/edit_undo.png</file>
     <file>Icons/newscene.png</file>

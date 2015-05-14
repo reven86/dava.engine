@@ -27,77 +27,44 @@
 =====================================================================================*/
 
 
-
-
-#include "LocalizationSystemHelper.h"
-#include "FileSystem/Logger.h"
+#include "Project/EditorLocalizationSystem.h"
+#include "FileSystem/LocalizationSystem.h"
+#include "FileSystem/FileList.h"
 
 using namespace DAVA;
 
-const LocalizationSystemHelper::LocalizationSystemHelperData LocalizationSystemHelper::helperData[] =
+EditorLocalizationSystem::EditorLocalizationSystem(QObject* parent)
 {
-    {"en", "English"},
-	{"ru", "Russian"},
-    {"de", "German"},
-    {"es", "Spanish"},
-    {"fr", "French"},
-    {"it", "Italian"},
-    {"cs", "Czech"},
-    {"fi", "Finnish"},
-    {"pl", "Polish"},
-    {"pt", "Portuguese"},
-    {"tr", "Turkish"},
-    {"ja", "Japanese"},
-    {"ko", "Korean"},
-    {"zh-Hant", "Chinese(Traditional)"},
-    {"zh-Hans", "Chinese(Simplified)"}
-    //{"nl", "Dutch"},
-    //{"sv", "Swedish"}
-};
 
-int LocalizationSystemHelper::GetSupportedLanguagesCount()
-{
-    return sizeof(helperData)/sizeof(*helperData);
 }
 
-String LocalizationSystemHelper::GetSupportedLanguageID(int index)
+void EditorLocalizationSystem::InitLanguageWithDirectory(const FilePath &directoryPath, const String &localeId)
 {
-    if (ValidateLanguageIndex(index) == false)
+    LocalizationSystem::Instance()->SetDirectory(directoryPath);
+    if (!directoryPath.IsEmpty())
     {
-        return  helperData[0].languageID;
-    }
-    
-    return helperData[index].languageID;
-}
-
-String LocalizationSystemHelper::GetSupportedLanguageDesc(int index)
-{
-    if (ValidateLanguageIndex(index) == false)
-    {
-        return helperData[0].languageDescription;
-    }
-    
-    return helperData[index].languageDescription;
-}
-
-String LocalizationSystemHelper::GetLanguageDescByLanguageID(String languageID)
-{
-    for (int i = 0; i < GetSupportedLanguagesCount(); ++i)
-    {
-        if (languageID.compare(helperData[i].languageID) == 0) {
-            return helperData[i].languageDescription;
+        FileList * fileList = new FileList(directoryPath);
+        for (auto count = fileList->GetCount(), k = 0; k < count; ++k)
+        {
+            if (!fileList->IsDirectory(k))
+            {
+                availableLocales.push_back(QString::fromStdString(fileList->GetPathname(k).GetBasename()));
+            }
         }
+
+        SafeRelease(fileList);
     }
-    return helperData[0].languageDescription;
+
+    LocalizationSystem::Instance()->SetCurrentLocale(localeId);
+
+    LocalizationSystem::Instance()->Init();
+
+    emit LocaleChanged(LocalizationSystem::Instance()->GetCurrentLocale());
 }
 
-bool LocalizationSystemHelper::ValidateLanguageIndex(int index)
+void EditorLocalizationSystem::Cleanup()
 {
-    if (index < 0 || index >= GetSupportedLanguagesCount())
-    {
-        Logger::Error("Language index %i is out of bounds!", index);
-        return false;
-    }
-    
-    return true;
+    availableLocales.clear();
+    LocalizationSystem::Instance()->Cleanup();
+
 }

@@ -3,6 +3,7 @@
 #include "UI/UIControl.h"
 #include "ValueProperty.h"
 #include "LocalizedTextValueProperty.h"
+#include "FontValueProperty.h"
 
 using namespace DAVA;
 
@@ -19,8 +20,20 @@ ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *aControl, co
             
             ValueProperty *sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(member);
 
-            ValueProperty *prop = strcmp(member->Name(), "text") == 0 ? new LocalizedTextValueProperty(control, member, dynamic_cast<LocalizedTextValueProperty*>(sourceProperty), cloneType)
-                                                                      : new IntrospectionProperty(control, member, dynamic_cast<IntrospectionProperty *>(sourceProperty), cloneType);
+            ValueProperty *prop = nullptr;
+            //TODO: move it to fabric class
+            if (strcmp(member->Name(), "text") == 0)
+            {
+                prop = new LocalizedTextValueProperty(control, member, dynamic_cast<LocalizedTextValueProperty*>(sourceProperty), cloneType);
+            }
+            else if (strcmp(member->Name(), "font") == 0)
+            {
+                prop = new FontValueProperty(control, member, dynamic_cast<FontValueProperty*>(sourceProperty), cloneType);
+            }
+            else
+            {
+                prop = new IntrospectionProperty(control, member, dynamic_cast<IntrospectionProperty *>(sourceProperty), cloneType);
+            }
 
             AddProperty(prop);
             SafeRelease(prop);
