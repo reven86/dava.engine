@@ -209,12 +209,11 @@ int MaterialItem::GetSwitchIndex() const
 
 void MaterialItem::requestPreview()
 {
-#if RHI_COMPLETE_EDITOR
     if(!isPreviewRequested)
     {
         isPreviewRequested = true;
 
-        DAVA::Texture *t = material->GetTexture(DAVA::NMaterial::TEXTURE_ALBEDO);
+        DAVA::Texture *t = material->GetEffectiveTexture(DAVA::NMaterialTextureName::TEXTURE_ALBEDO);
         if(t)
         {
             DAVA::TextureDescriptor *descriptor = t->GetDescriptor();
@@ -222,7 +221,6 @@ void MaterialItem::requestPreview()
             TextureCache::Instance()->getThumbnail(descriptor, this, "onThumbnailReady", itemRef);
         }
     }
-#endif // RHI_COMPLETE_EDITOR
 }
 
 void MaterialItem::onThumbnailReady( QList<QImage> images, QVariant userData )

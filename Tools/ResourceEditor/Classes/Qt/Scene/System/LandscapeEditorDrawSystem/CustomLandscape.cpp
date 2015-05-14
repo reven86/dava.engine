@@ -42,7 +42,7 @@ CustomLandscape::~CustomLandscape()
 #if RHI_COMPLETE_EDITOR
     if(textureState != InvalidUniqueHandle)
         RenderManager::Instance()->ReleaseTextureState(textureState);
-#endif RHI_COMPLETE_EDITOR
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void CustomLandscape::SetRenderer(LandscapeRenderer *renderer)

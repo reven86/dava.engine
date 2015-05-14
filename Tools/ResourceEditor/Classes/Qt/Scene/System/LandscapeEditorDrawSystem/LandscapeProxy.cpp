@@ -52,17 +52,19 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
 		texturesEnabled[i] = false;
 	}
 	    
-#if RHI_COMPLETE_EDITOR
+
 	customLandscape = new CustomLandscape();
+#if RHI_COMPLETE_EDITOR
     customLandscape->Create();
 	customLandscape->SetTexture(Landscape::TEXTURE_TILE_FULL, baseLandscape->GetTexture(Landscape::TEXTURE_TILE_FULL));
+#endif // RHI_COMPLETE_EDITOR
 	customLandscape->SetAABBox(baseLandscape->GetBoundingBox());
 
     customLandscape->SetReflectionVisible(baseLandscape->GetReflectionVisible());
     customLandscape->SetRefractionVisible(baseLandscape->GetRefractionVisible());
 
     displayingTexture = Texture::CreateFBO(2048, 2048, FORMAT_RGBA8888);
-#endif // RHI_COMPLETE_EDITOR
+
 }
 
 LandscapeProxy::~LandscapeProxy()

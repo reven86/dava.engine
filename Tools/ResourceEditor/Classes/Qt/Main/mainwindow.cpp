@@ -1577,13 +1577,15 @@ void QtMainWindow::UnmodalDialogFinished(int)
 
 void QtMainWindow::OnAddLandscape()
 {
-#if RHI_COMPLETE_EDITOR
+
     Entity* entityToProcess = new Entity();
     entityToProcess->SetName(ResourceEditor::LANDSCAPE_NODE_NAME);
     entityToProcess->SetLocked(true);
     
     Landscape* newLandscape = new Landscape();
+#if RHI_COMPLETE_EDITOR
     newLandscape->Create();
+#endif // RHI_COMPLETE_EDITOR
 
     RenderComponent* component = new RenderComponent();
     component->SetRenderObject(newLandscape);
@@ -1604,7 +1606,6 @@ void QtMainWindow::OnAddLandscape()
         sceneEditor->Exec(new EntityAddCommand(entityToProcess, sceneEditor));
     }
     SafeRelease(entityToProcess);
-#endif // RHI_COMPLETE_EDITOR
 }
 
 void QtMainWindow::OnAddSkybox()
