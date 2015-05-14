@@ -414,6 +414,8 @@ void RenderManager::EndFrame()
 	isInsideDraw = false;
 #if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 	::SwapBuffers(hDC);
+#elif defined(__DAVAENGINE_WINDOWS_STORE__)
+    eglSwapBuffers(mEglDisplay, mEglSurface);
 #endif //#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 	
 	RENDER_VERIFY(;);	// verify at the end of the frame
