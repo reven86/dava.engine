@@ -27,57 +27,34 @@
 =====================================================================================*/
 
 
-#ifndef EDITFONTDIALOG_H
-#define EDITFONTDIALOG_H
 
-#include <QDialog>
+#ifndef __EDITOR_LOCALIZATION_SYSTEM_H__
+#define __EDITOR_LOCALIZATION_SYSTEM_H__
 
-#include <QSpinBox>
-#include <QPushButton>
-#include <QRadioButton>
-#include <QLineEdit>
-#include <QComboBox>
-
+#include <QObject>
+#include <QStringList>
 #include "Base/BaseTypes.h"
+#include "FileSystem/FilePath.h"
 
-namespace Ui {
-class EditFontDialog;
-}
-
-class EditFontDialog : public QDialog
+class EditorLocalizationSystem: public QObject
 {
     Q_OBJECT
-
 public:
-    explicit EditFontDialog(const DAVA::String & editFontPresetName, QDialog *parent = 0);
-    ~EditFontDialog();
-    
+    explicit EditorLocalizationSystem(QObject *parent = nullptr);
+    ~EditorLocalizationSystem() = default;
+    const QStringList& GetAvailableLocales() const;
+    void InitLanguageWithDirectory(const DAVA::FilePath &directoryPath, const DAVA::String &locale);
+    void Cleanup();
+signals:
+    void LocaleChanged(const DAVA::String &locale);
 private:
-    Ui::EditFontDialog *ui;
-    
-    //ChangeFontPropertyCommandData dialogResult;
-    DAVA::String currentLocale;
-    
-    void ConnectToSignals();
-    void DisconnectFromSignals();
-    
-    virtual void ProcessComboBoxValueChanged(QComboBox *senderWidget, const QString& value);
-    virtual void ProcessPushButtonClicked(QPushButton *senderWidget);
-    
-    void UpdateDefaultFontParams();
-    void UpdateLocalizedFontParams();
-    
-    void UpdateLineEditWidgetWithPropertyValue(QLineEdit *lineEditWidget);
-    void UpdatePushButtonWidgetWithPropertyValue(QPushButton *pushButtonWidget);
-    void UpdateSpinBoxWidgetWithPropertyValue(QSpinBox *spinBoxWidget);
-    void UpdateComboBoxWidgetWithPropertyValue(QComboBox *comboBoxWidget);
 
-private slots:
-    void OnOkButtonClicked();
-    void OnRadioButtonClicked();
-    void OnPushButtonClicked();
-    void OnSpinBoxValueChanged(int newValue);
-    void OnComboBoxValueChanged(QString value);
+    QStringList availableLocales;
 };
 
-#endif // EDITFONTDIALOG_H
+inline const QStringList& EditorLocalizationSystem::GetAvailableLocales() const
+{
+    return availableLocales;
+}
+
+#endif //__EDITOR_LOCALIZATION_SYSTEM_H__

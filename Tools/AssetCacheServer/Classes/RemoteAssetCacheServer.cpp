@@ -27,77 +27,72 @@
 =====================================================================================*/
 
 
+#include "RemoteAssetCacheServer.h"
+#include "ui_RemoteAssetCacheServer.h"
 
+#include <QValidator>
 
-#include "LocalizationSystemHelper.h"
-#include "FileSystem/Logger.h"
-
-using namespace DAVA;
-
-const LocalizationSystemHelper::LocalizationSystemHelperData LocalizationSystemHelper::helperData[] =
+ServerData::ServerData()
+    : ip("127.0.0.1")
+    , port(80)
 {
-    {"en", "English"},
-	{"ru", "Russian"},
-    {"de", "German"},
-    {"es", "Spanish"},
-    {"fr", "French"},
-    {"it", "Italian"},
-    {"cs", "Czech"},
-    {"fi", "Finnish"},
-    {"pl", "Polish"},
-    {"pt", "Portuguese"},
-    {"tr", "Turkish"},
-    {"ja", "Japanese"},
-    {"ko", "Korean"},
-    {"zh-Hant", "Chinese(Traditional)"},
-    {"zh-Hans", "Chinese(Simplified)"}
-    //{"nl", "Dutch"},
-    //{"sv", "Swedish"}
-};
-
-int LocalizationSystemHelper::GetSupportedLanguagesCount()
-{
-    return sizeof(helperData)/sizeof(*helperData);
 }
 
-String LocalizationSystemHelper::GetSupportedLanguageID(int index)
+ServerData::ServerData(QString newIp, quint16 newPort)
+    : ip(newIp)
+    , port(newPort)
 {
-    if (ValidateLanguageIndex(index) == false)
-    {
-        return  helperData[0].languageID;
-    }
-    
-    return helperData[index].languageID;
 }
 
-String LocalizationSystemHelper::GetSupportedLanguageDesc(int index)
+
+RemoteAssetCacheServer::RemoteAssetCacheServer(QWidget *parent)
+    : QWidget(parent)
+    , ui(new Ui::RemoteAssetCacheServer)
 {
-    if (ValidateLanguageIndex(index) == false)
-    {
-        return helperData[0].languageDescription;
-    }
-    
-    return helperData[index].languageDescription;
+    ui->setupUi(this);
+
+    QRegExp ipRegExp("(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])");
+    QRegExpValidator *ipValidator = new QRegExpValidator(ipRegExp);
+    ui->ipLineEdit->setValidator(ipValidator);
+    ui->ipLineEdit->setText("127.0.0.1");
+
+    connect(ui->removeServerButton, &QPushButton::clicked,
+            this, &RemoteAssetCacheServer::RemoveLater);
+    connect(ui->ipLineEdit, &QLineEdit::textChanged,
+            this, &RemoteAssetCacheServer::OnParametersChanged);
+    connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnParametersChanged()));
 }
 
-String LocalizationSystemHelper::GetLanguageDescByLanguageID(String languageID)
+RemoteAssetCacheServer::RemoteAssetCacheServer(ServerData &newServer, QWidget *parent)
+    : RemoteAssetCacheServer(parent)
 {
-    for (int i = 0; i < GetSupportedLanguagesCount(); ++i)
-    {
-        if (languageID.compare(helperData[i].languageID) == 0) {
-            return helperData[i].languageDescription;
-        }
-    }
-    return helperData[0].languageDescription;
+    ui->ipLineEdit->setText(newServer.ip);
+    ui->portSpinBox->setValue(newServer.port);
 }
 
-bool LocalizationSystemHelper::ValidateLanguageIndex(int index)
+RemoteAssetCacheServer::~RemoteAssetCacheServer()
 {
-    if (index < 0 || index >= GetSupportedLanguagesCount())
+    delete ui;
+}
+
+ServerData RemoteAssetCacheServer::GetServerData() const
+{
+    return ServerData(ui->ipLineEdit->text(), ui->portSpinBox->value());
+}
+
+bool RemoteAssetCacheServer::IsCorrectData()
+{
+    QString ip(ui->ipLineEdit->text());
+    QStringList ipList = ip.split(".", QString::SkipEmptyParts);
+    if (ipList.count() != 4)
     {
-        Logger::Error("Language index %i is out of bounds!", index);
         return false;
     }
-    
+
     return true;
+}
+
+void RemoteAssetCacheServer::OnParametersChanged()
+{
+    emit ParametersChanged();
 }

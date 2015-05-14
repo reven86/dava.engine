@@ -27,28 +27,20 @@
 =====================================================================================*/
 
 
+#ifndef __DIALOG_ADD_PRESET_H__
+#define __DIALOG_ADD_PRESET_H__
 
+#include "ui_DialogAddPreset.h"
 
-#include "WidgetSignalsBlocker.h"
-using namespace DAVA;
-
-WidgetSignalsBlocker::WidgetSignalsBlocker(QWidget* widget)
+class DialogAddPreset : public QDialog, public Ui::DialogAddPreset
 {
-    this->widget = widget;
-    if (this->widget)
-    {
-        // Save the current signals state and block signals.
-        this->signalsWereBlocked = widget->signalsBlocked();
-        widget->blockSignals(true);
-    }
-}
+    Q_OBJECT
+public:
+    explicit DialogAddPreset(const QString &originalPresetName, QWidget *parent = nullptr);
+    ~DialogAddPreset() = default;
+private slots:
+    void OnNewPresetNameChanged();
+    void OnAccept();
+};
 
-
-WidgetSignalsBlocker::~WidgetSignalsBlocker()
-{
-    // Restore the previous signals state.
-    if (this->widget)
-    {
-        this->widget->blockSignals(this->signalsWereBlocked);
-    }
-}
+#endif // __DIALOG_ADD_PRESET_H__

@@ -27,35 +27,49 @@
 =====================================================================================*/
 
 
-
-#ifndef __UIEditor__LocalizationSystemHelper__
-#define __UIEditor__LocalizationSystemHelper__
+#ifndef __DAVAENGINE_RAW_TIMER_H__
+#define __DAVAENGINE_RAW_TIMER_H__
 
 #include "Base/BaseTypes.h"
 
-namespace DAVA {
+namespace  DAVA
+{
     
-class LocalizationSystemHelper
+/*
+ Raw Timer should be used when you need to get elapsed time in miliseconds from calling Start() to calling GetElapsed().
+ It is not thread safe class.
+*/
+
+class RawTimer
 {
 public:
-    // Helper to work with Localization System.
-    static int GetSupportedLanguagesCount();
-    static String GetSupportedLanguageID(int index);
-    static String GetSupportedLanguageDesc(int index);
-    static String GetLanguageDescByLanguageID(String languageID);
+    /* 
+       \brief Starts time calculation. Now GetElapsed() should return nut 0
+     */
+    void Start();
+    /*
+     \brief Stops time calculation. GetElapsed() whould return 0.
+     */
+    void Stop();
+    /*
+     \brief Resumes stopped time calculation. It means that GetElapsed() will return time delta from calling Start().
+     */
+    void Resume();
     
-protected:
-    // Validate the language index.
-    static bool ValidateLanguageIndex(int index);
-
-    struct LocalizationSystemHelperData
-    {
-        String languageID;
-        String languageDescription;
-    };
-
-    static const LocalizationSystemHelperData helperData[];
+    /*
+     \brief Indicates if time calculation is started
+     */
+    bool IsStarted();
+    /*
+     \brief Returns time in ms elapsed from calling Start(). Returns 0 if timer is stopped.
+     */
+    uint64 GetElapsed();
+    
+private:
+    uint64 timerStartTime;
+    bool isStarted = false;
 };
-
+    
 }
-#endif /* defined(__UIEditor__LocalizationSystemHelper__) */
+#endif //__DAVAENGINE_RAW_TIMER_H__
+

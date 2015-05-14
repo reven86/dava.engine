@@ -506,13 +506,34 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
     this->isVisible = isVisible;
     
-    if (!isRenderToTexture)
-    {
-        [(UIWebView*)webViewPtr setHidden:!isVisible];
-    } else
+    if (isRenderToTexture)
     {
         DAVA::Rect r = uiWebView.GetRect();
         SetRect(r);
+    }
+    else
+    {
+        UIWebView *wv = (UIWebView *) webViewPtr;
+        
+        // if we wan't native control to become invisible we ca do it immidiatly
+        // during update process. But when we want it to be visible, it can't be shown
+        // immidiatly, because is cases, when current Update() takes a lot of time and
+        // user will see native webview over old frame during all that time. This can
+        // be treat as webview blinking, so we should care abot it. We will show webview
+        // before next update() call.
+        if(!isVisible)
+        {
+            [wv setHidden:YES];
+        }
+        else
+        {
+            Function<void (UIWebView *)> fn([](UIWebView *_wv)
+            {
+                [_wv setHidden:NO];
+            });
+            
+            JobManager::Instance()->CreateMainJob(Bind(fn, wv), JobManager::JOB_MAINLAZY);
+        }
     }
 }
 

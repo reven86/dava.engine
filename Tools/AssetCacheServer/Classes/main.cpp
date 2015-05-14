@@ -27,25 +27,31 @@
 =====================================================================================*/
 
 
+#include "SingleApplication.h"
 
-#ifndef __UIEditor__WidgetSignalsBlocker__
-#define __UIEditor__WidgetSignalsBlocker__
+#include "DAVAEngine.h"
 
-#include <QWidget>
-namespace DAVA {
-    
-// Helper class to block/unblock signals from the widgets.
-class WidgetSignalsBlocker
+#include "MainWindow.h"
+
+void FrameworkWillTerminate()
 {
-public:
-    WidgetSignalsBlocker(QWidget* widget);
-    ~WidgetSignalsBlocker();
-    
-private:
-    QWidget* widget;
-    bool signalsWereBlocked;
-};
+}
 
-};
+void FrameworkDidLaunched()
+{
+}
 
-#endif /* defined(__UIEditor__WidgetSignalsBlocker__) */
+int main(int argc, char *argv[])
+{
+    DAVA::Core::Run(argc, argv);
+
+    SingleApplication a(argc, argv);
+    if (a.AlreadyExists())
+    {
+        return 0;
+    }
+    MainWindow w;
+    w.show();
+
+    return a.exec();
+}

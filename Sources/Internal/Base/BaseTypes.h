@@ -149,6 +149,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <sstream>
+#include <cerrno>
 
 #if defined(__DAVAENGINE_WIN32__)
 #pragma warning( pop )
