@@ -129,16 +129,24 @@ void DeviceInfo::InitializeScreenInfo()
 void DeviceInfo::ComputeDisplayRotation()
 {
 	CoreWindow^ window = CoreWindow::GetForCurrentThread();
+	if (nullptr == window)
+	{
+		return;
+	}
 	Size localVal = Size(window->Bounds.Width, window->Bounds.Height);
-	screenInfo.width = localVal.Width;
-	screenInfo.height = localVal.Width;
+	screenInfo.width = static_cast<int32>(localVal.Width);
+	screenInfo.height = static_cast<int32>(localVal.Width);
 	DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
+	if (nullptr == currentDisplayInformation)
+	{
+		return;
+	}
 	DisplayOrientations currentOrientation = currentDisplayInformation->CurrentOrientation;
 	switch (currentOrientation)
 	{
 	case DisplayOrientations::Landscape:
 		screenInfo.scale = 1;
-
+		break;
 	case DisplayOrientations::Portrait:
 		screenInfo.scale = 0;
 	}
