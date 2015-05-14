@@ -154,7 +154,8 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
 
                 p.uid       = FastName(uid);
-                p.scope     = ShaderProp::SCOPE_SHARED;
+//                p.scope     = ShaderProp::SCOPE_SHARED;
+                p.storage   = ShaderProp::STORAGE_DYNAMIC;
                 p.type      = ShaderProp::TYPE_FLOAT4;
 
                 if     ( stricmp( type.c_str(), "float" ) == 0 )    p.type = ShaderProp::TYPE_FLOAT1;
@@ -164,26 +165,26 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 else if( stricmp( type.c_str(), "float4x4" ) == 0 ) p.type = ShaderProp::TYPE_FLOAT4X4;
                 
                 {
-                char        scope[128]  = "";
-                char        tag[128]    = "";
-                const char* ss          = strchr( tags.c_str(), ',' );
+                char        storage[128] = "";
+                char        tag[128]     = "";
+                const char* ss           = strchr( tags.c_str(), ',' );
 
                 if( ss )
                 {
                     int n = ss - tags.c_str();
 
-                    strncpy( scope, tags.c_str(), n );
-                    scope[n] = '\0';
+                    strncpy( storage, tags.c_str(), n );
+                    storage[n] = '\0';
                     strcpy( tag, tags.c_str()+n+1 );
                 }
                 else
                 {
-                    strcpy( scope, tags.c_str() );
+                    strcpy( storage, tags.c_str() );
                 }
 
 //                sscanf( tags.c_str(), "%s,%s", scope, tag );
-                if     ( stricmp( scope, "shared" ) == 0 )   p.scope = ShaderProp::SCOPE_SHARED;
-                else if( stricmp( scope, "unique" ) == 0 )   p.scope = ShaderProp::SCOPE_UNIQUE;
+                if     ( stricmp( storage, "static" ) == 0 )    p.storage = ShaderProp::STORAGE_STATIC;
+                else if( stricmp( storage, "dynamic" ) == 0 )   p.storage = ShaderProp::STORAGE_DYNAMIC;
                 p.tag = FastName(tag);
                 }
 
@@ -211,7 +212,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                 for( std::vector<buf_t>::iterator b=buf.begin(),b_end=buf.end(); b!=b_end; ++b )
                 {
-                    if( b->scope == p.scope  &&  b->tag == p.tag )
+                    if( b->storage == p.storage  &&  b->tag == p.tag )
                     {
                         cbuf = &(buf[b-buf.begin()]);
                         break;
@@ -224,7 +225,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                     cbuf = &(buf.back());
 
-                    cbuf->scope     = p.scope;
+                    cbuf->storage   = p.storage;
                     cbuf->tag       = p.tag;
                     cbuf->regCount  = 0;
                 }
@@ -616,11 +617,20 @@ ShaderSource::ConstBufferSize( uint32 bufIndex ) const
 
 
 //------------------------------------------------------------------------------
-
+/*
 ShaderProp::Scope
 ShaderSource::ConstBufferScope( uint32 bufIndex ) const
 {
     return buf[bufIndex].scope;
+}
+*/
+
+//------------------------------------------------------------------------------
+
+ShaderProp::Storage
+ShaderSource::ConstBufferStorage( uint32 bufIndex ) const
+{
+    return buf[bufIndex].storage;
 }
 
 

@@ -44,12 +44,14 @@ struct
 ShaderProp 
 {
     enum Type   { TYPE_FLOAT1, TYPE_FLOAT2, TYPE_FLOAT3, TYPE_FLOAT4, TYPE_FLOAT4X4 };
-    enum Scope  { SCOPE_UNIQUE, SCOPE_SHARED };
+//    enum Scope  { SCOPE_UNIQUE, SCOPE_SHARED };
+    enum Storage  { STORAGE_STATIC, STORAGE_DYNAMIC };
 
     FastName    uid;
     Type        type;
     uint32      arraySize;
-    Scope       scope;
+//    Scope       scope;
+    Storage     storage;
     FastName    tag;
     uint32      bufferindex;
     uint32      bufferReg;
@@ -85,7 +87,8 @@ public:
     const VertexLayout&     ShaderVertexLayout() const;
     uint32                  ConstBufferCount() const;
     uint32                  ConstBufferSize( uint32 bufIndex ) const;
-    ShaderProp::Scope       ConstBufferScope( uint32 bufIndex ) const;
+//    ShaderProp::Scope       ConstBufferScope( uint32 bufIndex ) const;
+    ShaderProp::Storage     ConstBufferStorage( uint32 bufIndex ) const;
     BlendState              Blending();
 
     void                    Dump() const;
@@ -99,7 +102,8 @@ private:
     struct
     buf_t
     {
-        ShaderProp::Scope   scope;
+//        ShaderProp::Scope   scope;
+        ShaderProp::Storage storage;
         FastName            tag;
         uint32              regCount;
         std::vector<int>    avlRegIndex;
