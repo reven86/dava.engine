@@ -330,7 +330,7 @@ Vector<String> ResourcePacker2D::FetchFlags(const FilePath & flagsPathname)
 	}
 
 	String tokenString = file->ReadLine();
-    Split(tokenString, " ", tokens, true);
+    Split(tokenString, " ", tokens, false);
 
     for (auto& token : tokens)
     {
