@@ -40,6 +40,60 @@ std::vector<VDeclDX9>   VDeclDX9::_VDecl;
 static RingBuffer       _DefConstRingBuf;
 
 
+static void
+DumpShaderText( const char* code, unsigned code_sz )
+{
+    char        src[64*1024];
+    char*       src_line[1024];
+    unsigned    line_cnt        = 0;
+    
+    if( code_sz < sizeof(src) )
+    {
+        memcpy( src, code, code_sz );
+        src[code_sz] = '\0';
+        memset( src_line, 0, sizeof(src_line) );
+
+        src_line[line_cnt++] = src;
+        for( char* s=src; *s; )
+        {
+            if( *s == '\n' )
+            {
+                *s = 0;                
+                ++s;
+
+                while( *s  &&  (/**s == '\n'  ||  */*s == '\r') )
+                {
+                    *s = 0;
+                    ++s;
+                }
+
+                if( !(*s) )
+                    break;            
+                
+                src_line[line_cnt] = s;
+                ++line_cnt;
+            }
+            else if( *s == '\r' )
+            {
+                *s = ' ';
+            }
+            else
+            {
+                ++s;
+            }
+        }
+    
+        for( unsigned i=0; i!=line_cnt; ++i )
+        {
+            Logger::Info( "%4u |  %s", 1+i, src_line[i] );
+        }
+    }
+    else
+    {
+        Logger::Info( code );
+    }
+}
+
 
 //------------------------------------------------------------------------------
 
@@ -457,6 +511,8 @@ PipelineStateDX9_t::VertexProgDX9::Construct( const void* bin, unsigned bin_sz, 
         {
             Logger::Info( (const char*)(err->GetBufferPointer()) );
         }
+        Logger::Error( "vertex-shader text:\n" );
+        DumpShaderText( (const char*)bin, bin_sz );
     }
 
     return success;
@@ -601,6 +657,8 @@ PipelineStateDX9_t::FragmentProgDX9::Construct( const void* bin, unsigned bin_sz
         {
             Logger::Info( (const char*)(err->GetBufferPointer()) );
         }
+        Logger::Error( "fragment-shader text:\n" );
+        DumpShaderText( (const char*)bin, bin_sz );
     }
 
     return success;
@@ -669,6 +727,7 @@ dx9_PipelineState_Create(const PipelineState::Descriptor& desc)
             case BLENDOP_ONE            : ps->blendSrc = D3DBLEND_ONE; break;
             case BLENDOP_SRC_ALPHA      : ps->blendSrc = D3DBLEND_SRCALPHA; break;
             case BLENDOP_INV_SRC_ALPHA  : ps->blendSrc = D3DBLEND_INVSRCALPHA; break;
+            case BLENDOP_SRC_COLOR      : ps->blendSrc = D3DBLEND_SRCCOLOR; break;
         }
         
         switch( desc.blending.rtBlend[0].colorDst )
@@ -677,6 +736,7 @@ dx9_PipelineState_Create(const PipelineState::Descriptor& desc)
             case BLENDOP_ONE            : ps->blendDst = D3DBLEND_ONE; break;
             case BLENDOP_SRC_ALPHA      : ps->blendDst = D3DBLEND_SRCALPHA; break;
             case BLENDOP_INV_SRC_ALPHA  : ps->blendDst = D3DBLEND_INVSRCALPHA; break;
+            case BLENDOP_SRC_COLOR      : ps->blendDst = D3DBLEND_SRCCOLOR; break;
         }
     }
     else

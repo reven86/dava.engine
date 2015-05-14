@@ -106,7 +106,7 @@ dx9_DepthStencilState_Create( const DepthStencilState::Descriptor& desc )
     state->stencilFront.writeMask                   = desc.stencilFront.writeMask;
     state->stencilFront.refValue                    = desc.stencilFront.refValue;
     state->stencilFront.failOperation               = _StencilOp( StencilOperation(desc.stencilFront.failOperation) );
-    state->stencilFront.depthFailOperation          = _StencilOp( StencilOperation(desc.stencilFront.failOperation) );
+    state->stencilFront.depthFailOperation          = _StencilOp( StencilOperation(desc.stencilFront.depthFailOperation) );
     state->stencilFront.depthStencilPassOperation   = _StencilOp( StencilOperation(desc.stencilFront.depthStencilPassOperation) );
 
     state->stencilBack.func                         = _CmpFunc( CmpFunc(desc.stencilBack.func) );
@@ -167,13 +167,13 @@ SetToRHI( Handle hstate )
         {
             _D3D9_Device->SetRenderState( D3DRS_TWOSIDEDSTENCILMODE, TRUE );
             
-            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILFUNC, state->stencilFront.func );
+            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILFUNC, state->stencilBack.func );
 //            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILREF, state->stencilFront.refValue );
 //            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILMASK, state->stencilFront.readMask );
 //            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILWRITEMASK, state->stencilFront.writeMask );
-            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILZFAIL, state->stencilFront.depthFailOperation );
-            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILFAIL, state->stencilFront.failOperation );
-            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILPASS, state->stencilFront.depthStencilPassOperation );
+            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILZFAIL, state->stencilBack.depthFailOperation );
+            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILFAIL, state->stencilBack.failOperation );
+            _D3D9_Device->SetRenderState( D3DRS_CCW_STENCILPASS, state->stencilBack.depthStencilPassOperation );
         }
         else
         {
