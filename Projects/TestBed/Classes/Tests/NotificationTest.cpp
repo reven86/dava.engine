@@ -33,25 +33,19 @@
 using namespace DAVA;
 
 NotificationScreen::NotificationScreen()
-    : UITestTemplate<NotificationScreen>("NotificationScreen")
+    : BaseScreen("NotificationScreen")
     , showNotificationText(nullptr)
 	, showNotificationProgress(nullptr)
 	, hideNotificationProgress(nullptr)
-	, returnButton(nullptr)
 	, notificationProgress(nullptr)
 	, notificationText(nullptr)
 	, progress(0)
-{
-    RegisterFunction(this, &NotificationScreen::TestFunction, Format("NotificationScreen test"), nullptr);
-}
-
-void NotificationScreen::TestFunction(TestTemplate<NotificationScreen>::PerfFuncData *data)
 {
 }
 
 void NotificationScreen::LoadResources()
 {
-    UITestTemplate::LoadResources();
+    BaseScreen::LoadResources();
 	Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
 	DVASSERT(font);
 
@@ -98,27 +92,18 @@ void NotificationScreen::LoadResources()
 
 void NotificationScreen::UnloadResources()
 {
-    UITestTemplate::UnloadResources();
+    BaseScreen::UnloadResources();
 
     RemoveAllControls();
-    SafeRelease(returnButton);
     SafeRelease(showNotificationText);
     SafeRelease(showNotificationProgress);
     SafeRelease(hideNotificationProgress);
 }
 
-void NotificationScreen::WillAppear()
-{ 
-}
-
-void NotificationScreen::WillDisappear()
-{ }
-
-
 void NotificationScreen::Update(float32 timeElapsed)
 {
     
-    UITestTemplate::Update(timeElapsed);
+    BaseScreen::Update(timeElapsed);
                                
 	if (nullptr == notificationProgress)
 		return;

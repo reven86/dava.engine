@@ -31,35 +31,9 @@
 #define __BASESCREEN_H__
 
 #include "DAVAEngine.h"
-using namespace DAVA;
-
 #include "GameCore.h"
 
-#define TEST_VERIFY(command) \
-{\
-    bool passed = command;\
-    if (!passed)\
-    {\
-        GameCore::Instance()->RegisterError(#command, __FILE__, __LINE__, &data->testData); \
-    }\
-}
-
-
-class TestData
-{
-public:
-
-    TestData()
-    {
-        name = String("");
-        message = String("");
-        userData = NULL;
-    }
-
-    String name;
-    String message;
-    void * userData;
-};
+using namespace DAVA;
 
 class BaseScreen: public UIScreen
 {
@@ -69,28 +43,26 @@ public:
 
     BaseScreen();
     BaseScreen(const String & screenName, int32 skipBeforeTests = 10);
-    int32 GetScreenId();
-
-    virtual void WillAppear();
-    virtual void DidAppear();
-    virtual void Update(float32 timeElapsed);
     
-    bool ReadyForTests();
+    inline int32 GetScreenId();
     
-    virtual int32 GetTestCount() = 0;
-    virtual TestData * GetTestData(int32 iTest) = 0;
-    virtual const DAVA::String& GetTestName() const = 0;
+protected:
+    void LoadResources() override;
+    void UnloadResources() override;
     
-    virtual bool RunTest(int32 testNum) = 0;
+private:
+    void OnExitButton(BaseObject *obj, void *data, void *callerData);
     
 private:
     static int32 globalScreenId; // 1, on create of screen increment  
     int32 currentScreenId;
-
-    int32 skipCount;
-    int32 skipCounter;
-    bool readyForTests;
+    UIButton *exitButton;
 };
+
+int32 BaseScreen::GetScreenId()
+{
+    return currentScreenId;
+}
 
 
 #endif // __BASESCREEN_H__

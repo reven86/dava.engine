@@ -29,25 +29,19 @@
 #ifndef __NOTIFICATION_SCREEN_H__
 #define __NOTIFICATION_SCREEN_H__
 
-#include "DAVAEngine.h"
-#include "UITestTemplate.h"
+#include "BaseScreen.h"
 
 using namespace DAVA;
 
-class NotificationScreen : public UITestTemplate<NotificationScreen>
+class NotificationScreen : public BaseScreen
 {
 public:
 	NotificationScreen();
 protected:
 	~NotificationScreen() {}
 public:
-    
-    void TestFunction(TestTemplate<NotificationScreen>::PerfFuncData *data);
-    
 	void LoadResources() override;
 	void UnloadResources() override;
-	void WillAppear() override;
-	void WillDisappear() override;
 
 	void Update(float32 timeElapsed) override;
 	void Draw(const UIGeometricData &geometricData) override;
@@ -68,8 +62,6 @@ private:
 	UIButton *hideNotificationText;
 	UIButton *showNotificationProgress;
 	UIButton *hideNotificationProgress;
-
-	UIButton *returnButton;
 
 	LocalNotificationProgress *notificationProgress;
 	LocalNotificationText *notificationText;
