@@ -36,7 +36,6 @@
 #include "Entity/SceneSystem.h"
 #include "Render/Highlevel/IRenderUpdatable.h"
 #include "Render/Highlevel/SpatialTree.h"
-#include "Render/Highlevel/ShadowBlendMode.h"
 
 namespace DAVA
 {
@@ -116,11 +115,6 @@ public:
     Vector<Light*> & GetLights();
     void SetForceUpdateLights();
     
-    void SetShadowRectColor(const Color &color);
-    const Color & GetShadowRectColor() const;
-	void SetShadowBlendMode(ShadowPassBlendMode::eBlend blendMode);
-	ShadowPassBlendMode::eBlend GetShadowBlendMode();
-	
 	void DebugDrawHierarchy(const Matrix4& cameraMatrix);
 
     RenderHierarchy * GetRenderHierarchy(){return renderHierarchy;}

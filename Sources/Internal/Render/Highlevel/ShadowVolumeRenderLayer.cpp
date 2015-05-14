@@ -28,35 +28,51 @@
 
 
 #include "Render/Highlevel/ShadowVolumeRenderLayer.h"
-#include "Render/Highlevel/RenderLayer.h"
 #include "Render/Highlevel/Camera.h"
-#include "Render/Highlevel/ShadowRect.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Render/Renderer.h"
 
 namespace DAVA
 {
-    
-ShadowVolumeRenderLayer::ShadowVolumeRenderLayer(eRenderLayerID id, uint32 sortingFlags) : RenderLayer(id, sortingFlags), 
-    shadowRect(NULL)
-{
-	blendMode = ShadowPassBlendMode::MODE_BLEND_MULTIPLY;
-}
 
-void ShadowVolumeRenderLayer::CreateShadowRect()
+ShadowVolumeRenderLayer::ShadowVolumeRenderLayer(eRenderLayerID id, uint32 sortingFlags) : RenderLayer(id, sortingFlags)
 {
-    shadowRect = ShadowRect::Create();
+    PrepareRenderData();
 }
 
 ShadowVolumeRenderLayer::~ShadowVolumeRenderLayer()
 {
-    SafeRelease(shadowRect);
+    rhi::DeleteVertexBuffer(quadBuffer);
+    SafeRelease(shadowRectMaterial);
 }
 
-void ShadowVolumeRenderLayer::SetBlendMode(ShadowPassBlendMode::eBlend _blendMode)
+void ShadowVolumeRenderLayer::PrepareRenderData()
 {
-	blendMode = _blendMode;
+    std::array<Vector3, 6> quad =
+    {
+        Vector3(-1.f, -1.f, 1.f), Vector3(-1.f, 1.f, 1.f), Vector3(1.f, -1.f, 1.f),
+        Vector3(-1.f,  1.f, 1.f), Vector3( 1.f, 1.f, 1.f), Vector3(1.f, -1.f, 1.f),
+        //Vector3(0.f, 0.f, 1.f), Vector3(0.f, 1.f, 1.f), Vector3(1.f, 0.f, 1.f),
+        //Vector3(0.f, 1.f, 1.f), Vector3(1.f, 1.f, 1.f), Vector3(1.f, 0.f, 1.f),
+    };
+
+    quadBuffer = rhi::CreateVertexBuffer(sizeof(quad));
+    rhi::UpdateVertexBuffer(quadBuffer, quad.data(), 0, sizeof(quad));
+
+    rhi::VertexLayout vxLayout;
+    vxLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
+    shadowRectPacket.vertexLayoutUID = rhi::VertexLayout::UniqueId(vxLayout);
+
+    shadowRectPacket.vertexStreamCount = 1;
+    shadowRectPacket.vertexStream[0] = quadBuffer;
+    shadowRectPacket.primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+    shadowRectPacket.primitiveCount = 2;
+
+
+    shadowRectMaterial = new NMaterial();
+    shadowRectMaterial->SetFXName(NMaterialName::SHADOWRECT);
+    shadowRectMaterial->PreBuildMaterial(PASS_FORWARD);
 }
 
 void ShadowVolumeRenderLayer::Draw(Camera* camera, const RenderBatchArray & renderBatchArray, rhi::HPacketList packetList)
@@ -68,28 +84,11 @@ void ShadowVolumeRenderLayer::Draw(Camera* camera, const RenderBatchArray & rend
 
     if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SHADOWVOLUME_DRAW) && renderBatchArray.GetRenderBatchCount())
     {
-        if (!shadowRect)
-        {
-            CreateShadowRect();
-        }    	
         RenderLayer::Draw(camera, renderBatchArray, packetList);
-		shadowRect->Draw(blendMode);
-	}	
-}
-    
-ShadowRect * ShadowVolumeRenderLayer::GetShadowRect()
-{
-    if (!shadowRect)
-    {
-        CreateShadowRect();
-    }
-    return shadowRect;
-}
 
-ShadowPassBlendMode::eBlend ShadowVolumeRenderLayer::GetBlendMode() const
-{
-	return blendMode;
+        shadowRectMaterial->BindParams(shadowRectPacket);
+        rhi::AddPacket(packetList, shadowRectPacket);
+	}
 }
-
     
 };

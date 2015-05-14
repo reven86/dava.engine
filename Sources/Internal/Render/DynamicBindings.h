@@ -92,6 +92,8 @@ public:
         PARAM_RT_HALF_PIXEL_SIZE,
         PARAM_RT_ASPECT_RATIO,
 
+        PARAM_SHADOW_COLOR,
+
         AUTOBIND_UNIFORMS_END,        
 
         DYNAMIC_PARAMETERS_COUNT = AUTOBIND_UNIFORMS_END,
@@ -131,9 +133,9 @@ private:
     Matrix4 viewProjMatrix;
     Matrix4 worldViewProjMatrix;
     Matrix4 invWorldViewMatrix;
-    Matrix3 normalMatrix;
+    Matrix4 normalMatrix;
     Matrix4 invWorldMatrix;
-    Matrix3 worldInvTransposeMatrix;
+    Matrix4 worldInvTransposeMatrix;
     Vector3 worldScale;
     Vector3 boundingBoxSize;
     Vector3 worldViewObjectCenter;

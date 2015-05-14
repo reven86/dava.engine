@@ -34,32 +34,24 @@
 #include "Base/FastName.h"
 #include "Render/Highlevel/RenderPass.h"
 #include "Render/UniqueStateSet.h"
-#include "Render/Highlevel/ShadowBlendMode.h"
 
 namespace DAVA
 {
-//class RenderLayer;
 class Camera;
-class ShadowRect;
 class ShadowVolumeRenderLayer : public RenderLayer
 {
 public:
-
     ShadowVolumeRenderLayer(eRenderLayerID id, uint32 sortingFlags);
     virtual ~ShadowVolumeRenderLayer() override;
     
     virtual void Draw(Camera* camera, const RenderBatchArray & renderBatchArray, rhi::HPacketList packetList) override;
     
-    ShadowRect * GetShadowRect();
-
-	void SetBlendMode(ShadowPassBlendMode::eBlend blendMode);
-	ShadowPassBlendMode::eBlend GetBlendMode() const;
-    
 private:
-    void CreateShadowRect();
-    ShadowRect * shadowRect;
-	ShadowPassBlendMode::eBlend blendMode;
-		
+    void PrepareRenderData();
+
+    NMaterial * shadowRectMaterial;
+    rhi::Packet shadowRectPacket;
+    rhi::HVertexBuffer quadBuffer;
 };
     
 } // ns
