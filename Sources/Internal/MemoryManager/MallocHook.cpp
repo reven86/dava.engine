@@ -194,6 +194,10 @@ void MallocHook::Install()
     fptr = dlsym(handle, "malloc");
     RealMalloc = reinterpret_cast<void* (*)(size_t)>(fptr);
     assert(fptr != nullptr && "Failed to get 'malloc'");
+
+    fptr = dlsym(handle, "realloc");
+    RealRealloc = reinterpret_cast<void* (*)(void*, size_t)>(fptr);
+    assert(fptr != nullptr && "Failed to get 'realloc'");
     
     fptr = dlsym(handle, "free");
     RealFree = reinterpret_cast<void (*)(void*)>(fptr);
