@@ -133,6 +133,7 @@ ActionSetVisibilityPoint::~ActionSetVisibilityPoint()
 
 void ActionSetVisibilityPoint::Redo()
 {
+#if RHI_COMPLETE_EDITOR
 	Texture * visibilityToolTexture = visibilityToolProxy->GetTexture();
     RenderHelper::Instance()->Set2DRenderTarget(visibilityToolTexture);
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
@@ -142,6 +143,7 @@ void ActionSetVisibilityPoint::Redo()
 	visibilityToolProxy->UpdateVisibilityPointSet(true);
     visibilityToolProxy->UpdateRect(Rect(0.f, 0.f, visibilityToolTexture->GetWidth(), visibilityToolTexture->GetHeight()));
 	visibilityToolProxy->SetVisibilityPoint(redoVisibilityPoint);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 
@@ -150,7 +152,7 @@ ActionSetVisibilityArea::ActionSetVisibilityArea(Image* originalImage,
 												 const Rect& updatedRect)
 :	CommandAction(CMDID_VISIBILITY_TOOL_SET_AREA, "Set Visibility Area")
 {
-	Image* currentImage = visibilityToolProxy->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+	Image* currentImage = visibilityToolProxy->GetTexture()->CreateImageFromMemory();
 
 //	undoImage = Image::CopyImageRegion(originalImage, updatedRect);
 	redoImage = Image::CopyImageRegion(currentImage, updatedRect);
@@ -180,6 +182,7 @@ void ActionSetVisibilityArea::Redo()
 
 void ActionSetVisibilityArea::ApplyImage(DAVA::Image *image)
 {
+#if RHI_COMPLETE_EDITOR
 	Texture* visibilityToolTexture = visibilityToolProxy->GetTexture();
 
 	Texture* texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
@@ -197,4 +200,5 @@ void ActionSetVisibilityArea::ApplyImage(DAVA::Image *image)
 	visibilityToolProxy->UpdateRect(updatedRect);
 
 	SafeRelease(texture);
+#endif // RHI_COMPLETE_EDITOR
 }

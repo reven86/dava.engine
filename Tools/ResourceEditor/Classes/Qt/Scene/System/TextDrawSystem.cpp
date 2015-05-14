@@ -31,7 +31,6 @@
 #include "TextDrawSystem.h"
 
 // framework
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Utils/Utils.h"
@@ -68,6 +67,7 @@ DAVA::Vector2 TextDrawSystem::ToPos2d(const DAVA::Vector3 &pos3d) const
 
 void TextDrawSystem::Draw()
 {
+#if RHI_COMPLETE_EDITOR
 	if(listToDraw.size() > 0)
 	{
 
@@ -130,6 +130,7 @@ void TextDrawSystem::Draw()
 
 		listToDraw.clear();
 	}
+#endif RHI_COMPLETE_EDITOR
 }
 
 void TextDrawSystem::DrawText(int x, int y, const DAVA::String &text, const DAVA::Color &color, Align align)

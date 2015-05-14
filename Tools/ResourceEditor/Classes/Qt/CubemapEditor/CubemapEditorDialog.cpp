@@ -420,7 +420,7 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
     if(!descriptorReady)
     {
         descriptor->SetDefaultValues();
-        descriptor->drawSettings.wrapModeS = descriptor->drawSettings.wrapModeT = Texture::WRAP_CLAMP_TO_EDGE;
+        descriptor->drawSettings.wrapModeS = descriptor->drawSettings.wrapModeT = rhi::TEXADDR_CLAMP;
     }
     
 	descriptor->dataSettings.faceDescription = faceMask;

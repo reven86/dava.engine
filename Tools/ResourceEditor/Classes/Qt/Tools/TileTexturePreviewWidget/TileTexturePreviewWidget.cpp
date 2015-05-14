@@ -325,8 +325,9 @@ Image* TileTexturePreviewWidget::MultiplyImageWithColor(DAVA::Image *image, cons
 
 	Texture* srcTexture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
 												  width, height, false);
-    Texture * dstTexture = Texture::CreateFBO(width, height, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+    Texture * dstTexture = Texture::CreateFBO(width, height, FORMAT_RGBA8888/*, Texture::DEPTH_NONE*/);
 
+#if RHI_COMPLETE_EDITOR
     RenderManager::Instance()->SetColor(color);
     RenderHelper::Instance()->Set2DRenderTarget(dstTexture);
     RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 1.f);
@@ -334,8 +335,9 @@ Image* TileTexturePreviewWidget::MultiplyImageWithColor(DAVA::Image *image, cons
 
 	RenderManager::Instance()->ResetColor();
     RenderManager::Instance()->SetRenderTarget(0);
+#endif // RHI_COMPLETE_EDITOR
 
-    Image* res = dstTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
+    Image* res = dstTexture->CreateImageFromMemory();
 
     SafeRelease(dstTexture);
 	SafeRelease(srcTexture);

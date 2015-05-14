@@ -115,6 +115,7 @@ void ActionDisableTilemaskEditor::Redo()
 ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* landscapeProxy, const Rect& updatedRect)
 :	Command2(CMDID_TILEMASK_MODIFY, "Tile Mask Modification")
 {
+#if RHI_COMPLETE_EDITOR
     RenderManager::Instance()->SetColor(Color::White);
     
 	this->updatedRect = updatedRect;
@@ -125,10 +126,11 @@ ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* landscapeProxy, con
 	undoImageMask = Image::CopyImageRegion(originalMask, updatedRect);
 
     RenderManager::Instance()->SetColor(Color::White);
-    Image* currentImageMask = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK)->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
+    Image* currentImageMask = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK)->CreateImageFromMemory();
 
 	redoImageMask = Image::CopyImageRegion(currentImageMask, updatedRect);
 	SafeRelease(currentImageMask);
+#endif RHI_COMPLETE_EDITOR
 }
 
 ModifyTilemaskCommand::~ModifyTilemaskCommand()
@@ -140,8 +142,9 @@ ModifyTilemaskCommand::~ModifyTilemaskCommand()
 
 void ModifyTilemaskCommand::Undo()
 {
+
     ApplyImageToTexture(undoImageMask, landscapeProxy->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE));
-    ApplyImageToTexture(undoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK));
+    ApplyImageToTexture(undoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_NAME_TILEMASK));
 
 	landscapeProxy->UpdateFullTiledTexture();
 	landscapeProxy->DecreaseTilemaskChanges();
@@ -149,12 +152,13 @@ void ModifyTilemaskCommand::Undo()
 	Rect r = Rect(Vector2(0, 0), Vector2(undoImageMask->GetWidth(), undoImageMask->GetHeight()));
 	Image* mask = landscapeProxy->GetTilemaskImageCopy();
 	mask->InsertImage(undoImageMask, updatedRect.GetPosition(), r);
+
 }
 
 void ModifyTilemaskCommand::Redo()
 {
 	ApplyImageToTexture(redoImageMask, landscapeProxy->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE));
-    ApplyImageToTexture(redoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK));
+    ApplyImageToTexture(redoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_NAME_TILEMASK));
 
 	landscapeProxy->UpdateFullTiledTexture();
 	landscapeProxy->IncreaseTilemaskChanges();
@@ -171,6 +175,7 @@ Entity* ModifyTilemaskCommand::GetEntity() const
 
 void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture * dstTex)
 {
+#if RHI_COMPLETE_EDITOR
     Texture* texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
                                                image->GetWidth(), image->GetHeight(), false);
     
@@ -180,11 +185,12 @@ void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture * dstTex)
     RenderHelper::Instance()->DrawTexture(texture, RenderState::RENDERSTATE_2D_OPAQUE, updatedRect);
     
     RenderManager::Instance()->SetRenderTarget(0);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 
 SetTileColorCommand::SetTileColorCommand(LandscapeProxy* landscapeProxy,
-										 Landscape::eTextureLevel level,
+										 const FastName& level,
 										 const Color& color)
 :	Command2(CMDID_SET_TILE_COLOR, "Set tile color")
 ,	level(level)

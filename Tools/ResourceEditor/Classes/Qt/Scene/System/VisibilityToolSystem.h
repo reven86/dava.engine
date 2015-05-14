@@ -89,7 +89,7 @@ protected:
 
 	Vector2 visibilityPoint;
 
-	Landscape::eTextureLevel textureLevel;
+	const FastName& textureLevel;
 
 	void AddRectToAccumulator(const Rect& rect);
 	void ResetAccumulatorRect();

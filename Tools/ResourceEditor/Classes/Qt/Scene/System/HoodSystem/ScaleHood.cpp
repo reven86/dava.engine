@@ -33,7 +33,6 @@
 #include "Scene/System/TextDrawSystem.h"
 
 // framework
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
 
@@ -59,16 +58,6 @@ ScaleHood::ScaleHood() : HoodObject(4.0f)
 
 	axisYZ = CreateLine(DAVA::Vector3(0, c, 0), DAVA::Vector3(0, 0, c));
 	axisYZ->axis = ST_AXIS_YZ;
-	
-    DAVA::RenderStateData hoodStateData;
-    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, hoodStateData);
-    
-	hoodStateData.state =	DAVA::RenderStateData::STATE_BLEND |
-							DAVA::RenderStateData::STATE_COLORMASK_ALL |
-							DAVA::RenderStateData::STATE_DEPTH_WRITE;
-	hoodStateData.sourceFactor = DAVA::BLEND_SRC_ALPHA;
-	hoodStateData.destFactor = DAVA::BLEND_ONE_MINUS_SRC_ALPHA;
-	hoodDrawState = DAVA::RenderManager::Instance()->CreateRenderState(hoodStateData);
 }
 
 ScaleHood::~ScaleHood()
@@ -78,6 +67,7 @@ ScaleHood::~ScaleHood()
 
 void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem *textDrawSystem)
 {
+#if RHI_COMPLETE_EDITOR
 	// x
 	if(mouseOverAxis) 
 		DAVA::RenderManager::Instance()->SetColor(colorS);
@@ -143,4 +133,5 @@ void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem
 		sprintf(tmp, "[%.2f, %.2f, %.2f]", modifScale, modifScale, modifScale);
 		textDrawSystem->DrawText(topPos, tmp, DAVA::Color(255, 255, 0, 255));
 	}
+#endif // RHI_COMPLETE_EDITOR
 }

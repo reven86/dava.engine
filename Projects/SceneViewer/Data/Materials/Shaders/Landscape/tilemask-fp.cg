@@ -14,15 +14,15 @@ DECL_FP_SAMPLER2D(tileTexture0)
 DECL_FP_SAMPLER2D(tileMask)
 DECL_FP_SAMPLER2D(colorTexture)
 
-property float4 tileColor0 : shared,static : def_value=1,1,1,1;
-property float4 tileColor1 : shared,static : def_value=1,1,1,1;
-property float4 tileColor2 : shared,static : def_value=1,1,1,1;
-property float4 tileColor3 : shared,static : def_value=1,1,1,1;
+property float4 tileColor0 : static,instance : def_value=1,1,1,1;
+property float4 tileColor1 : static,instance : def_value=1,1,1,1;
+property float4 tileColor2 : static,instance : def_value=1,1,1,1;
+property float4 tileColor3 : static,instance : def_value=1,1,1,1;
 #endif
 
 #if CURSOR
 DECL_FP_SAMPLER2D(cursorTexture)
-property float4 cursorCoordSize : shader,static : def_value=0,0,1,1;
+property float4 cursorCoordSize : static,instance : def_value=0,0,1,1;
 #endif
 
 FPROG_BEGIN

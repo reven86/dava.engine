@@ -53,7 +53,7 @@ enum eSpriteModification
 	ESM_VFLIP = 1<<1
 };
 
-class Shader;
+
 class Texture;
 class RenderSystem2D;
 

@@ -31,7 +31,6 @@
 #include "Scene/System/HoodSystem/HoodObject.h"
 #include "Scene/System/TextDrawSystem.h"
 
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
 HoodObject::HoodObject(DAVA::float32 bs)

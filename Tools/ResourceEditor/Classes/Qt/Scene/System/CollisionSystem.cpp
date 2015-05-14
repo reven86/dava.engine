@@ -83,14 +83,7 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene * scene)
 	landDebugDrawer = new SceneCollisionDebugDrawer();
 	landDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 	landCollWorld = new btCollisionWorld(landCollDisp, landBroadphase, landCollConf);
-	landCollWorld->setDebugDrawer(landDebugDrawer);
-
-	renderState = DAVA::RenderManager::Instance()->Subclass3DRenderState(RenderStateData::STATE_COLORMASK_ALL |
-												   RenderStateData::STATE_DEPTH_WRITE |
-												   RenderStateData::STATE_DEPTH_TEST);
-    
-    objectsDebugDrawer->SetRenderState(renderState);
-    landDebugDrawer->SetRenderState(renderState);
+	landCollWorld->setDebugDrawer(landDebugDrawer);	      
 
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
 }
@@ -342,6 +335,7 @@ void SceneCollisionSystem::Input(DAVA::UIEvent *event)
 
 void SceneCollisionSystem::Draw()
 {
+#if RHI_COMPLETE_EDITOR
 	if(drawMode & CS_DRAW_LAND)
 	{
 		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0, 0.5f, 0, 1.0f));
@@ -396,6 +390,7 @@ void SceneCollisionSystem::Draw()
 			}
 		}
 	}
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void SceneCollisionSystem::ProcessCommand(const Command2 *command, bool redo)
@@ -606,38 +601,12 @@ void SceneCollisionSystem::DestroyFromEntity(DAVA::Entity * entity)
 // -----------------------------------------------------------------------------------------------
 
 SceneCollisionDebugDrawer::SceneCollisionDebugDrawer()
-	: dbgMode(0)
-	, manager(DAVA::RenderManager::Instance())
-	, helper(DAVA::RenderHelper::Instance())
-{
-    renderState = DAVA::RenderState::RENDERSTATE_2D_BLEND;
-    manager->RetainRenderState(renderState);
+	: dbgMode(0)	
+{    
 }
 
 SceneCollisionDebugDrawer::~SceneCollisionDebugDrawer()
-{
-    if(InvalidUniqueHandle != renderState)
-    {
-        manager->ReleaseRenderState(renderState);
-    }
-}
-
-void SceneCollisionDebugDrawer::SetRenderState(UniqueHandle _renderState)
-{
-    if(_renderState != renderState)
-    {
-        if(InvalidUniqueHandle != renderState)
-        {
-            manager->ReleaseRenderState(renderState);
-        }
-
-        renderState = _renderState;
-        
-        if(InvalidUniqueHandle != renderState)
-        {
-            manager->RetainRenderState(renderState);
-        }
-    }
+{ 
 }
 
 void SceneCollisionDebugDrawer::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
@@ -645,17 +614,19 @@ void SceneCollisionDebugDrawer::drawLine(const btVector3& from, const btVector3&
 	DAVA::Vector3 davaFrom(from.x(), from.y(), from.z());
 	DAVA::Vector3 davaTo(to.x(), to.y(), to.z());
 	DAVA::Color davaColor(color.x(), color.y(), color.z(), 1.0f);
-
+#if RHI_COMPLETE_EDITOR
 	manager->SetColor(davaColor);
 	helper->DrawLine(davaFrom, davaTo, 1.0f, renderState);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void SceneCollisionDebugDrawer::drawContactPoint( const btVector3& PointOnB,const btVector3& normalOnB,btScalar distance,int lifeTime,const btVector3& color )
 {
 	DAVA::Color davaColor(color.x(), color.y(), color.z(), 1.0f);
-
+#if RHI_COMPLETE_EDITOR
 	manager->SetColor(davaColor);
 	helper->DrawPoint(DAVA::Vector3(PointOnB.x(), PointOnB.y(), PointOnB.z()), 1.0f, renderState);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void SceneCollisionDebugDrawer::reportErrorWarning( const char* warningString )

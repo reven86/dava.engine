@@ -29,7 +29,6 @@
 
 
 #include "CustomLandscape.h"
-#include "Deprecated/LandscapeRenderer.h"
 
 CustomLandscape::CustomLandscape()
 :	landscapeRenderer(NULL)
@@ -40,9 +39,10 @@ CustomLandscape::CustomLandscape()
 CustomLandscape::~CustomLandscape()
 {
 	SafeRelease(landscapeRenderer);
-    
+#if RHI_COMPLETE_EDITOR
     if(textureState != InvalidUniqueHandle)
         RenderManager::Instance()->ReleaseTextureState(textureState);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void CustomLandscape::SetRenderer(LandscapeRenderer *renderer)
@@ -58,6 +58,7 @@ LandscapeRenderer* CustomLandscape::GetRenderer()
 
 void CustomLandscape::UpdateTextureState()
 {
+#if RHI_COMPLETE_EDITOR
 	TextureStateData textureStateData;
 	textureStateData.SetTexture(0, GetTexture(TEXTURE_TILE_FULL));
 	UniqueHandle uniqueHandle = RenderManager::Instance()->CreateTextureState(textureStateData);
@@ -68,10 +69,12 @@ void CustomLandscape::UpdateTextureState()
 	}
 
 	textureState = uniqueHandle;
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void CustomLandscape::Draw(DAVA::Camera *camera)
 {
+#if RHI_COMPLETE_EDITOR
 	if(!landscapeRenderer)
 	{
 		return;
@@ -93,4 +96,5 @@ void CustomLandscape::Draw(DAVA::Camera *camera)
 	}
 	
 	landscapeRenderer->UnbindMaterial();
+#endif // RHI_COMPLETE_EDITOR
 }

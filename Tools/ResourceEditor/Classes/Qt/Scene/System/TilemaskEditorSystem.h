@@ -100,22 +100,14 @@ protected:
 	
 	Texture * stencilTexture;
 	Texture * toolTexture;
-	bool toolSpriteUpdated;
-
-	eBlendMode srcBlendMode;
-	eBlendMode dstBlendMode;
-	Shader* tileMaskEditorShader;
-	Shader* tileMaskCopyPasteShader;
+	bool toolSpriteUpdated;    	
 
     float32 spriteTempVertices[8];
-    float32 spriteTempCoords[8];
-    RenderDataObject * spriteRenderObject;
-    RenderDataStream * spriteVertexStream;
-    RenderDataStream * spriteTexCoordStream;
+    float32 spriteTempCoords[8];    
 
 	bool needCreateUndo;
 
-	Landscape::eTextureLevel textureLevel;
+	const FastName& textureLevel;
 
 	void UpdateToolImage(bool force = false);
 	void UpdateBrushTool();
@@ -134,7 +126,7 @@ protected:
 
 	void FinishEditing();
 
-	MetaObjModifyCommand* CreateTileColorCommand(Landscape::eTextureLevel level,
+	MetaObjModifyCommand* CreateTileColorCommand(const FastName& level,
 												 const Color& color);
 };
 

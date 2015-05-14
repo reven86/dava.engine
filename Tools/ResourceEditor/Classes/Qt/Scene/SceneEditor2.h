@@ -176,7 +176,9 @@ public:
 	void SetShadowBlendMode(DAVA::ShadowPassBlendMode::eBlend blend);
 	DAVA::ShadowPassBlendMode::eBlend GetShadowBlendMode() const;
 
+#if RHI_COMPLETE_EDITOR
     const RenderManager::Stats & GetRenderStats() const;
+#endif // RHI_COMPLETE_EDITOR
 
 	void DisableTools(int32 toolFlags, bool saveChanges = true);
 	bool IsToolsEnabled(int32 toolFlags);
@@ -205,8 +207,9 @@ protected:
 
 	DAVA::FilePath curScenePath;
 	CommandStack commandStack;
-    
+#if RHI_COMPLETE_EDITOR
     RenderManager::Stats renderStats;
+#endif // RHI_COMPLETE_EDITOR
 
 	DAVA::Vector<DAVA::Entity *> editorEntities;
 

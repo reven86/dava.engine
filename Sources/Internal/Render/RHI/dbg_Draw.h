@@ -11,8 +11,7 @@
 //
 //  forward decls:
 
-namespace DAVA { struct Matrix4; }
-using DAVA::Matrix4;
+namespace DAVA { 
 
 
 //==============================================================================
@@ -184,6 +183,7 @@ private:
     rhi::HTextureSet        _texset_small_font;
     rhi::HTextureSet        _texset_normal_font;
 };
+}
 
 
 //==============================================================================

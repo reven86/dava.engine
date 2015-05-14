@@ -163,6 +163,7 @@ void QualitySwitcher::ApplyTx()
 
 void QualitySwitcher::ApplyMa()
 {
+#if RHI_COMPLETE_EDITOR
     SceneTabWidget *tabWidget = QtMainWindow::Instance()->GetSceneWidget();
     for(int tab = 0; tab < tabWidget->GetTabCount(); ++tab)
     {
@@ -185,6 +186,7 @@ void QualitySwitcher::ApplyMa()
 
         sceneEditor->renderSystem->SetForceUpdateLights();
     }
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void QualitySwitcher::UpdateEntitiesToQuality(DAVA::Entity *e)

@@ -100,6 +100,8 @@ public:
     void SetFXName(const FastName & fxName);
     const FastName & GetFXName();
 
+    inline const FastName& GetMaterialName() const;
+
     /*properties*/
     void AddProperty(const FastName& propName, const float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize = 1);
     void RemoveProperty(const FastName& propName);
@@ -127,7 +129,7 @@ public:
 
     inline uint32 GetRenderLayerID() const;
     inline uint32 GetSortingKey() const;
-    inline uint64 GetMaterialKey() const;            
+    inline uint64 GetMaterialKey() const;  
 
     void BindParams(rhi::Packet& target);    
 
@@ -206,7 +208,10 @@ void NMaterialProperty::SetPropertyValue(const float32 *newValue)
     updateSemantic = ++globalPropertyUpdateSemanticCounter;
 }
 
-
+const FastName& NMaterial::GetMaterialName() const
+{
+    return materialName;
+}
 uint32 NMaterial::GetRenderLayerID() const
 {
     if (activeVariantInstance)

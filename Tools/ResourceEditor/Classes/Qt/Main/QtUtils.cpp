@@ -245,7 +245,7 @@ void SaveTextureToFile(DAVA::Texture * texture, const DAVA::FilePath & path)
 {
     if(texture)
     {
-        DAVA::Image * img = texture->CreateImageFromMemory(DAVA::RenderState::RENDERSTATE_2D_OPAQUE);
+        DAVA::Image * img = texture->CreateImageFromMemory();
         SaveImageToFile(img, path);
         img->Release();
     }

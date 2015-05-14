@@ -276,6 +276,7 @@ DAVA::float32 RulerToolSystem::GetLength(const DAVA::Vector3 &startPoint, const 
 
 void RulerToolSystem::DrawPoints()
 {
+#if RHI_COMPLETE_EDITOR
 	if (!drawSystem->GetRulerToolProxy())
 	{
 		return;
@@ -339,6 +340,7 @@ void RulerToolSystem::DrawPoints()
     RenderManager::Instance()->SetRenderTarget(0);
     
 	drawSystem->GetRulerToolProxy()->UpdateTexture();
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void RulerToolSystem::Clear()

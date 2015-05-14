@@ -60,7 +60,8 @@ MaterialItem::MaterialItem(DAVA::NMaterial * _material)
 	
 	setEditable(false);
     setData(QVariant::fromValue<DAVA::NMaterial *>(material));
-    
+
+#if RHI_COMPLETE_EDITOR
 	switch(material->GetMaterialType())
 	{
 		case DAVA::NMaterial::MATERIALTYPE_MATERIAL:
@@ -89,6 +90,10 @@ MaterialItem::MaterialItem(DAVA::NMaterial * _material)
 			setDropEnabled(false);
 			break;
 	}
+#else
+    setDragEnabled(false);
+    setDropEnabled(false);
+#endif RHI_COMPLETE_EDITOR
 
     setColumnCount(3);
 }
@@ -127,7 +132,7 @@ void MaterialItem::SetFlag(MaterialFlag flag, bool set)
 	if((set && !(curFlag & flag)) || (!set && (curFlag & flag)))
 	{
         bool ok = true;
-
+#if RHI_COMPLETE_EDITOR
 		switch(flag)
 		{
 			case IS_MARK_FOR_DELETE:
@@ -164,6 +169,7 @@ void MaterialItem::SetFlag(MaterialFlag flag, bool set)
 
             emitDataChanged();
         }
+#endif // RHI_COMPLETE_EDITOR
 	}
 
 }
@@ -207,7 +213,7 @@ void MaterialItem::requestPreview()
     {
         isPreviewRequested = true;
 
-        DAVA::Texture *t = material->GetTexture(DAVA::NMaterial::TEXTURE_ALBEDO);
+        DAVA::Texture *t = material->GetEffectiveTexture(DAVA::NMaterialTextureName::TEXTURE_ALBEDO);
         if(t)
         {
             DAVA::TextureDescriptor *descriptor = t->GetDescriptor();

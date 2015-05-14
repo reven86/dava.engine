@@ -150,7 +150,9 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 #endif
     glWidget->hide();
 
+#if RHI_COMPLETE_EDITOR //x3
     RenderManager::Instance()->Init( 0, 0 );
+#endif // RHI_COMPLETE_EDITOR
 
     cmdLine.InitalizeTool();
     if ( !cmdLine.IsToolInitialized() )

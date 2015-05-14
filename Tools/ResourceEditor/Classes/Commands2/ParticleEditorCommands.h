@@ -243,8 +243,7 @@ public:
 			  float32 scaleVelocityFactor,
 			  bool isLooped,
 			  Sprite* sprite,
-			  eBlendMode srcFactor,
-			  eBlendMode dstFactor,
+			  eBlending blending,
 			  bool enableFog,
 			  bool enableFrameBlending,
 			  int32 particleOrientation,
@@ -299,7 +298,7 @@ protected:
 	bool inheritPosition;
 	bool isLooped;
 	Sprite* sprite;
-	eBlendMode srcFactor, dstFactor;
+	eBlending blending;
 	bool enableFog;
 	bool enableFrameBlending;
 	int32 particleOrientation;

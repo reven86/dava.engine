@@ -77,8 +77,6 @@ PathSystem::PathSystem(DAVA::Scene * scene)
     , currentPath(NULL)
     , isEditingEnabled(false)
 {
-    pathDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::RenderStateData::STATE_COLORMASK_ALL |
-                                                                          DAVA::RenderStateData::STATE_DEPTH_TEST);
     sceneEditor = static_cast<SceneEditor2 *>(GetScene());
 }
 
@@ -159,6 +157,7 @@ void PathSystem::Draw()
 
 void PathSystem::DrawInEditableMode()
 {
+#if RHI_COMPLETE_EDITOR
     RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
 
     for (DAVA::Entity* path : pathes)
@@ -195,10 +194,12 @@ void PathSystem::DrawInEditableMode()
             }
         }
     }
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void PathSystem::DrawInViewOnlyMode()
 {
+#if RHI_COMPLETE_EDITOR
     RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     const DAVA::float32 boxScale = SettingsManager::GetValue(Settings::Scene_DebugBoxWaypointScale).AsFloat();
 
@@ -242,11 +243,14 @@ void PathSystem::DrawInViewOnlyMode()
             }
         }
     }
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void PathSystem::DrawArrow(const DAVA::Vector3 & start, const DAVA::Vector3 & finish)
 {
+#if RHI_COMPLETE_EDITOR
     RenderHelper::Instance()->DrawArrow(start, finish, (finish - start).Length() / 4.f, 7.f, pathDrawState);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void PathSystem::Process(DAVA::float32 timeElapsed)
