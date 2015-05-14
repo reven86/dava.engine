@@ -64,10 +64,9 @@ public class JNIWebView {
         public void restoreVisibility()
         {
             client.setVisible(this, client.isVisible());
-            // on lock/unlock if webview still was loading we have to call
-            // reload() even if in client.isVisible() == false for now
+            // on unlock we have to call reload() to show webview content 
+            // we have to do that because user may lock phone before webView loading finishes
             reload();
-
         }
         @Override
         public void loadUrl(String url)
