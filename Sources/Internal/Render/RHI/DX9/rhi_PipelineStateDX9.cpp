@@ -728,6 +728,7 @@ dx9_PipelineState_Create(const PipelineState::Descriptor& desc)
             case BLENDOP_SRC_ALPHA      : ps->blendSrc = D3DBLEND_SRCALPHA; break;
             case BLENDOP_INV_SRC_ALPHA  : ps->blendSrc = D3DBLEND_INVSRCALPHA; break;
             case BLENDOP_SRC_COLOR      : ps->blendSrc = D3DBLEND_SRCCOLOR; break;
+            case BLENDOP_DST_COLOR      : ps->blendSrc = D3DBLEND_DESTCOLOR; break;
         }
         
         switch( desc.blending.rtBlend[0].colorDst )
@@ -737,6 +738,7 @@ dx9_PipelineState_Create(const PipelineState::Descriptor& desc)
             case BLENDOP_SRC_ALPHA      : ps->blendDst = D3DBLEND_SRCALPHA; break;
             case BLENDOP_INV_SRC_ALPHA  : ps->blendDst = D3DBLEND_INVSRCALPHA; break;
             case BLENDOP_SRC_COLOR      : ps->blendDst = D3DBLEND_SRCCOLOR; break;
+            case BLENDOP_DST_COLOR      : ps->blendDst = D3DBLEND_DESTCOLOR; break;
         }
     }
     else

@@ -522,6 +522,11 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
                     rp_desc.colorAttachments[0].sourceRGBBlendFactor = MTLBlendFactorSourceColor;
                     rp_desc.colorAttachments[0].sourceAlphaBlendFactor = MTLBlendFactorSourceColor;
                     break;
+                
+                case BLENDOP_DST_COLOR :
+                    rp_desc.colorAttachments[0].sourceRGBBlendFactor = MTLBlendFactorDestinationColor;
+                    rp_desc.colorAttachments[0].sourceAlphaBlendFactor = MTLBlendFactorDestinationColor;
+                    break;
             }
 
             switch( desc.blending.rtBlend[0].colorDst )
@@ -549,6 +554,11 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
                 case BLENDOP_SRC_COLOR :
                     rp_desc.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorSourceColor;
                     rp_desc.colorAttachments[0].destinationAlphaBlendFactor = MTLBlendFactorSourceColor;
+                    break;
+                
+                case BLENDOP_DST_COLOR :
+                    rp_desc.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorDestinationColor;
+                    rp_desc.colorAttachments[0].destinationAlphaBlendFactor = MTLBlendFactorDestinationColor;
                     break;
             }
         }

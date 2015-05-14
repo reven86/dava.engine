@@ -305,6 +305,7 @@ gles2_PipelineState_Create( const PipelineState::Descriptor& desc )
             case BLENDOP_SRC_ALPHA      : ps->blendSrc = GL_SRC_ALPHA; break;
             case BLENDOP_INV_SRC_ALPHA  : ps->blendSrc = GL_ONE_MINUS_SRC_ALPHA; break;
             case BLENDOP_SRC_COLOR      : ps->blendSrc = GL_SRC_COLOR; break;
+            case BLENDOP_DST_COLOR      : ps->blendSrc = GL_DST_COLOR; break;
         }
     
         switch( desc.blending.rtBlend[0].colorDst )
@@ -314,6 +315,7 @@ gles2_PipelineState_Create( const PipelineState::Descriptor& desc )
             case BLENDOP_SRC_ALPHA      : ps->blendDst = GL_SRC_ALPHA; break;
             case BLENDOP_INV_SRC_ALPHA  : ps->blendDst = GL_ONE_MINUS_SRC_ALPHA; break;
             case BLENDOP_SRC_COLOR      : ps->blendDst = GL_SRC_COLOR; break;
+            case BLENDOP_DST_COLOR      : ps->blendDst = GL_DST_COLOR; break;
         }
     }
     else
