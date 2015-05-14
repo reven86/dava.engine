@@ -26,7 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include <cassert>
 #include <Shlwapi.h>
+
 #include "Debug/DVAssertMessage.h"
 #include "FileSystem/Logger.h"
 #include "Utils/UTF8Utils.h"
@@ -85,7 +87,8 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 	msg->CancelCommandIndex = 1;
 
 	//show message and blocking thread
-	msg->ShowAsync();
+	//msg->ShowAsync();
+    assert(false);
 
     return false;
 }
