@@ -186,10 +186,10 @@ static const char* _ShaderHeader_Metal =
 "float3 mul( float3 v, float3x3 m );\n"
 "float3 mul( float3 v, float3x3 m ) { return m*v; }\n"
 
-"float  lerp( float a, float b, float t ) { mix( a, b, t ); }\n"
-"float2 lerp( float2 a, float2 b, float t ) { mix( a, b, t ); }\n"
-"float3 lerp( float3 a, float3 b, float t ) { mix( a, b, t ); }\n"
-"float4 lerp( float4 a, float4 b, float t ) { mix( a, b, t ); }\n"
+"inline float  lerp( float a, float b, float t ) { return mix( a, b, t ); }\n"
+"inline float2 lerp( float2 a, float2 b, float t ) { return mix( a, b, t ); }\n"
+"inline float3 lerp( float3 a, float3 b, float t ) { return mix( a, b, t ); }\n"
+"inline float4 lerp( float4 a, float4 b, float t ) { return mix( a, b, t ); }\n"
 ;
     
 static const char* _ShaderDefine_Metal =
@@ -276,7 +276,7 @@ static const char* _ShaderDefine_Metal =
 "#define VP_IN_BLENDWEIGHT       (float3(IN.blendweight))\n"
 "#define VP_IN_BLENDINDEX        (float3(IN.blendindex))\n"
 
-"#define VP_TEXTURE2D(unit,uv)   tex##unit.sample( tex##unit##_sampler, uv );\n"
+"#define VP_TEXTURE2D(unit,uv)   tex##unit.sample( tex##unit##_sampler, uv, level(0) );\n"
 
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.name\n"
@@ -299,13 +299,16 @@ static const char* _ShaderDefine_Metal =
 "#define FPROG_OUT_COLOR         float4 color [[color(0)]];\n"
 "#define FPROG_OUT_END           };\n"
 
-//"#define DECL_SAMPLER2D(unit)    texture2d<float> Texture##unit [[ texture(unit) ]]; sampler TextureSampler##unit ;\n"
-"#define DECL_SAMPLER2D(unit)    \n"
-"#define DECL_SAMPLERCUBE(unit)  \n"
+"#define DECL_FP_SAMPLER2D(unit)    \n"
+"#define DECL_FP_SAMPLERCUBE(unit)  \n"
 
-"#define FP_TEXTURE2D(unit,uv)   tex##unit.sample( tex##unit##_sampler, uv );\n"
-"#define FP_TEXTURECUBE(unit,uv) tex##unit.sample( tex##unit##_sampler, uv );\n"
+"#define DECL_VP_SAMPLER2D(unit)    \n"
+
+"#define FP_TEXTURE2D(unit,uv)   fp_tex##unit.sample( fp_tex##unit##_sampler, uv );\n"
+"#define FP_TEXTURECUBE(unit,uv) fp_tex##unit.sample( fp_tex##unit##_sampler, uv );\n"
 "#define FP_IN(name)             IN.##name\n"
+
+"#define VP_TEXTURE2D(unit,uv)   vp_tex##unit.sample( vp_tex##unit##_sampler, uv );\n"
 
 "#define FP_OUT_COLOR            OUT.color\n"
 
@@ -359,12 +362,7 @@ static const char* _ShaderHeader_GLES2 =
 "vec4 mul( mat4 m, vec4 v ) { return v*m; }\n"
 "vec3 mul( vec3 v, mat3 m ) { return m*v; }\n"
 
-"float4 tex2D( sampler2D s, vec2 t ) { return texture2D(s,t); }\n"
-
-"float  lerp( float a, float b, float t ) { mix( a, b, t ); }\n"
-"float2 lerp( float2 a, float2 b, float t ) { mix( a, b, t ); }\n"
-"float3 lerp( float3 a, float3 b, float t ) { mix( a, b, t ); }\n"
-"float4 lerp( float4 a, float4 b, float t ) { mix( a, b, t ); }\n"
+"#define lerp(a,b,t) mix( (a), (b), (t) )\n"
 ;
 
 static const char* _ShaderDefine_GLES2 =
@@ -430,7 +428,7 @@ static const char* _ShaderDefine_GLES2 =
 "#define VP_OUT_POSITION         gl_Position\n"
 "#define VP_OUT(name)            var_##name\n"
 
-"#define VP_TEXTURE2D(unit,uv)   texture2D( Texture##unit, uv );\n"
+"#define VP_TEXTURE2D(unit,uv)   texture2DLod( Texture##unit, uv, 0.0 );\n"
 
 
 "#define FPROG_IN_BEGIN          \n"
@@ -450,11 +448,14 @@ static const char* _ShaderDefine_GLES2 =
 "#define FPROG_OUT_COLOR         \n"
 "#define FPROG_OUT_END           \n"
             
-"#define DECL_SAMPLER2D(unit)    uniform sampler2D Texture##unit;\n"
-"#define DECL_SAMPLERCUBE(unit)  uniform samplerCube Texture##unit;\n"
+"#define DECL_FP_SAMPLER2D(unit)    uniform sampler2D FragmentTexture##unit;\n"
+"#define DECL_FP_SAMPLERCUBE(unit)  uniform samplerCube FragmentTexture##unit;\n"
+"#define DECL_VP_SAMPLER2D(unit)    uniform sampler2D VertexTexture##unit;\n"
         
-"#define FP_TEXTURE2D(unit,uv)   texture2D( Texture##unit, uv );\n"
-"#define FP_TEXTURECUBE(unit,uv) textureCube( Texture##unit, uv );\n"
+"#define VP_TEXTURE2D(unit,uv)   texture2D( VertexTexture##unit, uv );\n"
+
+"#define FP_TEXTURE2D(unit,uv)   texture2D( FragmentTexture##unit, uv );\n"
+"#define FP_TEXTURECUBE(unit,uv) textureCube( FragmentTexture##unit, uv );\n"
 "#define FP_IN(name)             var_##name\n"
 
 "#define FP_OUT_COLOR            gl_FragColor\n"
@@ -468,8 +469,7 @@ static const char* _ShaderDefine_GLES2 =
 
 
 static const char* _ShaderHeader_DX9 =
-//"float4 tex2D( sampler2D s, float2 t ) { return texture2D(s,t); }\n"
-""
+"\n"
 ;
 
 static const char* _ShaderDefine_DX9 =
@@ -531,7 +531,7 @@ static const char* _ShaderDefine_DX9 =
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.##name\n"
 
-"#define VP_TEXTURE2D(unit,uv)   tex2D( Texture##unit, uv )\n"
+"#define VP_TEXTURE2D(unit,uv)   tex2Dlod( VertexTexture##unit, float4(uv.x,uv.y,0,0) )\n"
 
 
 "#define FPROG_IN_BEGIN          struct FP_Input {\n"
@@ -551,11 +551,12 @@ static const char* _ShaderDefine_DX9 =
 "#define FPROG_OUT_COLOR         float4 color : COLOR0;\n"
 "#define FPROG_OUT_END           };\n"
 
-"#define DECL_SAMPLER2D(unit)    uniform sampler2D Texture##unit;\n"
-"#define DECL_SAMPLERCUBE(unit)  uniform samplerCube Texture##unit;\n"
-    
-"#define FP_TEXTURE2D(unit,uv)   tex2D( Texture##unit, uv )\n"
-"#define FP_TEXTURECUBE(unit,uv) texCube( Texture##unit, uv )\n"
+"#define DECL_FP_SAMPLER2D(unit)    uniform sampler2D FragmentTexture##unit;\n"
+"#define DECL_FP_SAMPLERCUBE(unit)  uniform samplerCube FragmentTexture##unit;\n"
+"#define DECL_VP_SAMPLER2D(unit)    uniform sampler2D VertexTexture##unit;\n"
+
+"#define FP_TEXTURE2D(unit,uv)   tex2D( FragmentTexture##unit, uv )\n"
+"#define FP_TEXTURECUBE(unit,uv) texCube( FragmentTexture##unit, uv )\n"
 "#define FP_IN(name)             IN.##name\n"
 
 "#define FP_OUT_COLOR            OUT.color\n"
@@ -657,30 +658,30 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
             }
             
             s = srcText;
-            while( (decl = strstr( s, "DECL_SAMPLER2D" )) )
+            while( (decl = strstr( s, "DECL_FP_SAMPLER2D" )) )
             {
                 int i = 0;
 
-                sscanf( decl, "DECL_SAMPLER2D(%i,", &i );
+                sscanf( decl, "DECL_FP_SAMPLER2D(%i,", &i );
 
-                src_len += sprintf( src+src_len, "#define FPROG_IN_TEXTURE_%i  , texture2d<float> tex%i [[ texture(%i) ]]\n", i, i, i );
-                src_len += sprintf( src+src_len, "#define FPROG_SAMPLER_%i    sampler tex%i_sampler; \n", i, i );
+                src_len += sprintf( src+src_len, "#define FPROG_IN_TEXTURE_%i  , texture2d<float> fp_tex%i [[ texture(%i) ]]\n", i, i, i );
+                src_len += sprintf( src+src_len, "#define FPROG_SAMPLER_%i    sampler fp_tex%i_sampler; \n", i, i );
                 fp_tex_declared[i] = true;
 
-                s += strlen("DECL_SAMPLER2D");
+                s += strlen("DECL_FP_SAMPLER2D");
             }
             s = srcText;
-            while( (decl = strstr( s, "DECL_SAMPLERCUBE" )) )
+            while( (decl = strstr( s, "DECL_FP_SAMPLERCUBE" )) )
             {
                 int i = 0;
 
-                sscanf( decl, "DECL_SAMPLERCUBE(%i,", &i );
+                sscanf( decl, "DECL_FP_SAMPLERCUBE(%i,", &i );
 
-                src_len += sprintf( src+src_len, "#define FPROG_IN_TEXTURE_%i  , texturecube<float> tex%i [[ texture(%i) ]]\n", i, i, i );
-                src_len += sprintf( src+src_len, "#define FPROG_SAMPLER_%i    sampler tex%i_sampler; \n", i, i );
+                src_len += sprintf( src+src_len, "#define FPROG_IN_TEXTURE_%i  , texturecube<float> fp_tex%i [[ texture(%i) ]]\n", i, i, i );
+                src_len += sprintf( src+src_len, "#define FPROG_SAMPLER_%i    sampler fp_tex%i_sampler; \n", i, i );
                 fp_tex_declared[i] = true;
 
-                s += strlen("DECL_SAMPLER2D");
+                s += strlen("DECL_FP_SAMPLER2D");
             }
             for( unsigned i=0; i!=countof(fp_tex_declared); ++i )
             {

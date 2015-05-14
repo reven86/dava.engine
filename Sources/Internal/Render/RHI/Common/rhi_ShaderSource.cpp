@@ -88,9 +88,10 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
     {
         std::regex  prop_re(".*property\\s*(float|float2|float3|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
         std::regex  proparr_re(".*property\\s*(float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\[([0-9]+)\\]\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
-        std::regex  sampler2d_re(".*DECL_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
-        std::regex  samplercube_re(".*DECL_SAMPLERCUBE\\s*\\(\\s*(.*)\\s*\\).*");
-        std::regex  texture2d_re(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+        std::regex  fsampler2d_re(".*DECL_FP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
+        std::regex  vsampler2d_re(".*DECL_VP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
+        std::regex  samplercube_re(".*DECL_FP_SAMPLERCUBE\\s*\\(\\s*(.*)\\s*\\).*");
+        std::regex  ftexture2d_re(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
         std::regex  vtexture2d_re(".*VP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
         std::regex  texturecube_re(".*FP_TEXTURECUBE\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
         std::regex  blend_re(".*BLEND_MODE\\s*\\(\\s*(.*)\\s*\\).*");
@@ -153,7 +154,8 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
 
                 p.uid       = FastName(uid);
-                p.scope     = ShaderProp::SCOPE_SHARED;
+//                p.scope     = ShaderProp::SCOPE_SHARED;
+                p.storage   = ShaderProp::STORAGE_DYNAMIC;
                 p.type      = ShaderProp::TYPE_FLOAT4;
 
                 if     ( stricmp( type.c_str(), "float" ) == 0 )    p.type = ShaderProp::TYPE_FLOAT1;
@@ -163,26 +165,26 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 else if( stricmp( type.c_str(), "float4x4" ) == 0 ) p.type = ShaderProp::TYPE_FLOAT4X4;
                 
                 {
-                char        scope[128]  = "";
-                char        tag[128]    = "";
-                const char* ss          = strchr( tags.c_str(), ',' );
+                char        storage[128] = "";
+                char        tag[128]     = "";
+                const char* ss           = strchr( tags.c_str(), ',' );
 
                 if( ss )
                 {
                     int n = ss - tags.c_str();
 
-                    strncpy( scope, tags.c_str(), n );
-                    scope[n] = '\0';
+                    strncpy( storage, tags.c_str(), n );
+                    storage[n] = '\0';
                     strcpy( tag, tags.c_str()+n+1 );
                 }
                 else
                 {
-                    strcpy( scope, tags.c_str() );
+                    strcpy( storage, tags.c_str() );
                 }
 
 //                sscanf( tags.c_str(), "%s,%s", scope, tag );
-                if     ( stricmp( scope, "shared" ) == 0 )   p.scope = ShaderProp::SCOPE_SHARED;
-                else if( stricmp( scope, "unique" ) == 0 )   p.scope = ShaderProp::SCOPE_UNIQUE;
+                if     ( stricmp( storage, "static" ) == 0 )    p.storage = ShaderProp::STORAGE_STATIC;
+                else if( stricmp( storage, "dynamic" ) == 0 )   p.storage = ShaderProp::STORAGE_DYNAMIC;
                 p.tag = FastName(tag);
                 }
 
@@ -210,7 +212,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                 for( std::vector<buf_t>::iterator b=buf.begin(),b_end=buf.end(); b!=b_end; ++b )
                 {
-                    if( b->scope == p.scope  &&  b->tag == p.tag )
+                    if( b->storage == p.storage  &&  b->tag == p.tag )
                     {
                         cbuf = &(buf[b-buf.begin()]);
                         break;
@@ -223,7 +225,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                     cbuf = &(buf.back());
 
-                    cbuf->scope     = p.scope;
+                    cbuf->storage   = p.storage;
                     cbuf->tag       = p.tag;
                     cbuf->regCount  = 0;
                 }
@@ -277,7 +279,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                         cbuf->avlRegIndex.push_back( 4 );
                 }
             }
-            else if( !isComment  &&  std::regex_match( line, match, sampler2d_re ) )
+            else if( !isComment  &&  std::regex_match( line, match, fsampler2d_re ) )
             {
                 std::string sname   = match[1].str();
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
@@ -315,7 +317,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                 _AppendLine( line, strlen(line) );
             }
-            else if( !isComment  &&  std::regex_match( line, match, texture2d_re ) )
+            else if( !isComment  &&  std::regex_match( line, match, ftexture2d_re ) )
             {
                 std::string sname   = match[1].str();
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
@@ -336,6 +338,25 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     }
                 }
                 
+                _AppendLine( line, strlen(line) );
+            }
+            else if( !isComment  &&  std::regex_match( line, match, vsampler2d_re ) )
+            {
+                std::string sname   = match[1].str();
+                int         mbegin  = strstr( line, sname.c_str() ) - line;
+                int         sn      = sname.length();
+
+                DVASSERT(sampler.size()<10);
+                char ch = line[mbegin+1];
+                int  sl = sprintf( line+mbegin, "%u", (unsigned)(sampler.size()) );
+                DVASSERT(sn>=sl);
+                line[mbegin+1]=ch;
+                if( sn > sl )
+                    memset( line+mbegin+sl, ' ', sn-sl );
+                sampler.resize( sampler.size()+1 );
+                sampler.back().uid  = FastName(sname);
+                sampler.back().type = TEXTURE_TYPE_2D;
+
                 _AppendLine( line, strlen(line) );
             }
             else if( !isComment  &&  std::regex_match( line, match, vtexture2d_re ) )
@@ -596,11 +617,20 @@ ShaderSource::ConstBufferSize( uint32 bufIndex ) const
 
 
 //------------------------------------------------------------------------------
-
+/*
 ShaderProp::Scope
 ShaderSource::ConstBufferScope( uint32 bufIndex ) const
 {
     return buf[bufIndex].scope;
+}
+*/
+
+//------------------------------------------------------------------------------
+
+ShaderProp::Storage
+ShaderSource::ConstBufferStorage( uint32 bufIndex ) const
+{
+    return buf[bufIndex].storage;
 }
 
 
@@ -661,7 +691,44 @@ void
 ShaderSource::Dump() const
 {
     Logger::Info( "src-code:" );
-    Logger::Info( code.c_str() );
+
+    char        src[64*1024];
+    char*       src_line[1024];
+    unsigned    line_cnt        = 0;
+    
+    if( strlen(code.c_str()) < sizeof(src) )
+    {
+        strcpy( src, code.c_str() );
+        memset( src_line, 0, sizeof(src_line) );
+
+        src_line[line_cnt++] = src;
+        for( char* s=src; *s; ++s )
+        {
+            if( *s == '\n'  ||  *s == '\r' )
+            {
+                while( *s  &&  (*s == '\n'  ||  *s == '\r') )
+                {
+                    *s = 0;
+                    ++s;
+                }
+
+                if( !(*s) )
+                    break;
+            
+                src_line[line_cnt] = s;
+                ++line_cnt;
+            }
+        }
+    
+        for( unsigned i=0; i!=line_cnt; ++i )
+        {
+            Logger::Info( "%4u |  %s", 1+i, src_line[i] );
+        }
+    }
+    else
+    {
+        Logger::Info( code.c_str() );
+    }
 
     Logger::Info( "properties (%u) :", prop.size() );
     for( std::vector<ShaderProp>::const_iterator p=prop.begin(),p_end=prop.end(); p!=p_end; ++p )
@@ -713,13 +780,10 @@ ShaderSource::Dump() const
         vdecl.Dump();
     }
 
-    if( type == PROG_FRAGMENT )
+    Logger::Info( "samplers (%u) :", sampler.size() );
+    for( unsigned s=0; s!=sampler.size(); ++s )
     {
-        Logger::Info( "samplers (%u) :", sampler.size() );
-        for( unsigned s=0; s!=sampler.size(); ++s )
-        {
-            Logger::Info( "  sampler#%u  \"%s\"", s, sampler[s].uid.c_str() );
-        }
+        Logger::Info( "  sampler#%u  \"%s\"", s, sampler[s].uid.c_str() );
     }
 }
 

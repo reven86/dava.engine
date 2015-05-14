@@ -433,7 +433,6 @@ GL_TextureFormat( TextureFormat format )
         TEXTURE_FORMAT_A1R5G5B5,
         TEXTURE_FORMAT_R5G6B5,
 
-        TEXTURE_FORMAT_A4R4G4B4,
 
         TEXTURE_FORMAT_A16R16G16B16,
         TEXTURE_FORMAT_A32R32G32B32,
@@ -498,6 +497,13 @@ GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* 
             *internalFormat = GL_RGB; 
             *format         = GL_RGB;
             *type           = GL_UNSIGNED_BYTE;
+            success         = true;
+            break;
+        
+        case TEXTURE_FORMAT_A4R4G4B4 :
+            *internalFormat = GL_RGBA;
+            *format         = GL_RGBA;
+            *type           = GL_UNSIGNED_SHORT_4_4_4_4;
             success         = true;
             break;
 

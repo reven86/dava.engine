@@ -63,7 +63,7 @@ const char* fProgText =
 "FPROG_OUT_END\n"
 "\n"
 "\n"
-"DECL_SAMPLER2D(albedo)\n"
+"DECL_FP_SAMPLER2D(albedo)\n"
 "\n"
 "FPROG_BEGIN\n"
 "\n"
