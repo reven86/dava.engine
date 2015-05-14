@@ -67,7 +67,7 @@ String DAVA::UTF8Utils::EncodeToUTF8(const wchar_t * wstring, uint_t lenght)
     }
 
     String result;
-    result.resize(size_t(bufSize));
+    result.resize(size_t(bufSize - 1));
 
     WideCharToMultiByte(CP_UTF8, 0, wstring, lenght, &result[0], bufSize, NULL, NULL);
     return result;
