@@ -23,7 +23,8 @@ public:
 
     DAVA_DEPRECATED(virtual ValueProperty *FindProperty(const DAVA::InspMember *member) const);
 
-    virtual ePropertyType GetType() const {
+    virtual ePropertyType GetType() const
+    {
         return TYPE_HEADER;
     }
 

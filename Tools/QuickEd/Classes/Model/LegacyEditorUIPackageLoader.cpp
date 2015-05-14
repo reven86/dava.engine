@@ -73,12 +73,10 @@ UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
     if (data)
     {
         legacyControl->SetName(data->name);
-        //builder->ProcessProperty(legacyControl->TypeInfo()->Member("name"), VariantType(data->name));
         builder->ProcessProperty(legacyControl->TypeInfo()->Member("size"), VariantType(data->size));
     }
     else
     {
-        //builder->ProcessProperty(legacyControl->TypeInfo()->Member("name"), VariantType(String("LegacyControl")));
         legacyControl->SetName("LegacyControl");
     }
     builder->EndControlPropertiesSection();
@@ -156,7 +154,6 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
         
         control->LoadFromYamlNodeCompleted();
         control->ApplyAlignSettingsForChildren();
-        // yamlLoader->PostLoad(control);
     }
     builder->EndControl(false);
 }

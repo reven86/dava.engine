@@ -180,7 +180,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packa
 
 UIControl *EditorUIPackageBuilder::BeginControlWithPath(const String &pathName)
 {
-    ControlNode *control = NULL;
+    ControlNode *control = nullptr;
     if (!controlsStack.empty())
     {
         control = controlsStack.back().node;
@@ -197,7 +197,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPath(const String &pathName)
     controlsStack.push_back(ControlDescr(SafeRetain(control), false));
 
     if (!control)
-        return NULL;
+        return nullptr;
 
     return control->GetControl();
 }
@@ -205,7 +205,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPath(const String &pathName)
 UIControl *EditorUIPackageBuilder::BeginUnknownControl(const YamlNode *node)
 {
     DVASSERT(false);
-    return NULL;
+    return nullptr;
 }
 
 void EditorUIPackageBuilder::EndControl(bool isRoot)
@@ -252,11 +252,11 @@ void EditorUIPackageBuilder::BeginControlPropertiesSection(const String &name)
 
 void EditorUIPackageBuilder::EndControlPropertiesSection()
 {
-    currentSection = NULL;
-    currentObject = NULL;
+    currentSection = nullptr;
+    currentObject = nullptr;
 }
 
-UIComponent *EditorUIPackageBuilder::BeginComponentPropertiesSecion(uint32 componentType, DAVA::uint32 componentIndex)
+UIComponent *EditorUIPackageBuilder::BeginComponentPropertiesSection(uint32 componentType, DAVA::uint32 componentIndex)
 {
     ControlNode *node = controlsStack.back().node;
     ComponentPropertiesSection * section;
@@ -268,10 +268,10 @@ UIComponent *EditorUIPackageBuilder::BeginComponentPropertiesSecion(uint32 compo
     return section->GetComponent();
 }
 
-void EditorUIPackageBuilder::EndComponentPropertiesSecion()
+void EditorUIPackageBuilder::EndComponentPropertiesSection()
 {
-    currentSection = NULL;
-    currentObject = NULL;
+    currentSection = nullptr;
+    currentObject = nullptr;
 }
 
 UIControlBackground *EditorUIPackageBuilder::BeginBgPropertiesSection(int index, bool sectionHasProperties)
@@ -280,7 +280,7 @@ UIControlBackground *EditorUIPackageBuilder::BeginBgPropertiesSection(int index,
     BackgroundPropertiesSection *section = node->GetRootProperty()->GetBackgroundPropertiesSection(index);
     if (section && sectionHasProperties)
     {
-        if (section->GetBg() == NULL)
+        if (section->GetBg() == nullptr)
             section->CreateControlBackground();
 
         if (section->GetBg())
@@ -291,13 +291,13 @@ UIControlBackground *EditorUIPackageBuilder::BeginBgPropertiesSection(int index,
         }
     }
     
-    return NULL;
+    return nullptr;
 }
 
 void EditorUIPackageBuilder::EndBgPropertiesSection()
 {
-    currentSection = NULL;
-    currentObject = NULL;
+    currentSection = nullptr;
+    currentObject = nullptr;
 }
 
 UIControl *EditorUIPackageBuilder::BeginInternalControlSection(int index, bool sectionHasProperties)
@@ -306,7 +306,7 @@ UIControl *EditorUIPackageBuilder::BeginInternalControlSection(int index, bool s
     InternalControlPropertiesSection *section = node->GetRootProperty()->GetInternalControlPropertiesSection(index);
     if (section && sectionHasProperties)
     {
-        if (section->GetInternalControl() == NULL)
+        if (section->GetInternalControl() == nullptr)
             section->CreateInternalControl();
         
         if (section->GetInternalControl())
@@ -317,13 +317,13 @@ UIControl *EditorUIPackageBuilder::BeginInternalControlSection(int index, bool s
         }
     }
     
-    return NULL;
+    return nullptr;
 }
 
 void EditorUIPackageBuilder::EndInternalControlSection()
 {
-    currentSection = NULL;
-    currentObject = NULL;
+    currentSection = nullptr;
+    currentObject = nullptr;
 }
 
 void EditorUIPackageBuilder::ProcessProperty(const InspMember *member, const VariantType &value)
@@ -344,7 +344,7 @@ RefPtr<PackageNode> EditorUIPackageBuilder::GetPackageNode() const
 ////////////////////////////////////////////////////////////////////////////////
 // ControlDescr
 ////////////////////////////////////////////////////////////////////////////////
-EditorUIPackageBuilder::ControlDescr::ControlDescr() : node(NULL), addToParent(false)
+EditorUIPackageBuilder::ControlDescr::ControlDescr() : node(nullptr), addToParent(false)
 {
 }
 

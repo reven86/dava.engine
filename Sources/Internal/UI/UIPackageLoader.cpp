@@ -260,7 +260,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl *control, co
     Vector<ComponentNode> components = ExtractComponentNodes(node);
     for (auto &nodeDescr : components)
     {
-        UIComponent *component = builder->BeginComponentPropertiesSecion(nodeDescr.type, nodeDescr.index);
+        UIComponent *component = builder->BeginComponentPropertiesSection(nodeDescr.type, nodeDescr.index);
         if (component)
         {
             const InspInfo *insp = component->GetTypeInfo();
@@ -272,7 +272,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl *control, co
             }
         }
         
-        builder->EndComponentPropertiesSecion();
+        builder->EndComponentPropertiesSection();
     }
 }
 

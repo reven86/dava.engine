@@ -78,9 +78,6 @@ int PropertiesModel::rowCount(const QModelIndex &parent) const
 
 int PropertiesModel::columnCount(const QModelIndex &parent) const
 {
-    if (!parent.isValid() || parent.internalPointer() == controlNode->GetRootProperty())
-        return 2;
-    
     return 2;
 }
 
