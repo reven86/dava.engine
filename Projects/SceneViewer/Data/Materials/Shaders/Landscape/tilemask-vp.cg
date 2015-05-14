@@ -9,9 +9,9 @@ VPROG_OUT_BEGIN
     VPROG_OUT_TEXCOORD1(outTexCoordTiled,2)
 VPROG_OUT_END
 
-property float4x4 worldViewProjMatrix : shared,dynamic : ;
+property float4x4 worldViewProjMatrix : dynamic,instance : ;
 
-property float4 textureTiling : shared,static : def_value=50,50,0,0;
+property float4 textureTiling : static,instance : def_value=50,50,0,0;
 
 VPROG_BEGIN
 

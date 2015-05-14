@@ -42,11 +42,10 @@ using UniquePropertyLayout = UniqueHandle;
 
 struct ConstBufferDescriptor
 {
-    enum class Type{ Vertex, Fragment };
-    enum class UpdateType{ Static, Dynamic };
+    enum class Type{ Vertex, Fragment };    
 
     Type type;
-    UpdateType updateType;
+    rhi::ShaderProp::Storage updateType;
     uint32 targetSlot;
 
     UniquePropertyLayout propertyLayoutId;

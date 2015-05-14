@@ -210,6 +210,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                     Split(stateNode->AsString(), "| ", states);                    
                     passDescriptor.depthStateDescriptor.depthTestEnabled = false;
                     passDescriptor.depthStateDescriptor.depthWriteEnabled = false;
+                    passDescriptor.cullMode = rhi::CULL_NONE;
                     for (auto& state : states)
                     {
                         if (state == "STATE_BLEND")
