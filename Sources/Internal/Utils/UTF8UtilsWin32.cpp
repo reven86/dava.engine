@@ -1,4 +1,4 @@
-/*==================================================================================
+﻿/*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
 
@@ -34,44 +34,52 @@
 
 #include <Windows.h>
 
-namespace DAVA 
+namespace DAVA
 {
 
-void  UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & resultString)
-{
-	int32 wstringLen = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, size, NULL, NULL);
-    resultString.resize(wstringLen);
-    if (!wstringLen)
-	{
-		return;
-	}
-
-	int32 convertRes = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, size, &resultString[0], wstringLen);
-	if (!convertRes)
-	{
-		resultString.clear();
-	}
-}
-
-String UTF8Utils::EncodeToUTF8(const WideString& wstring)
-{
-    return EncodeToUTF8(wstring.c_str(), wstring.size());
-}
-
-String DAVA::UTF8Utils::EncodeToUTF8(const wchar_t * wstring, uint_t lenght)
-{
-    int32 bufSize = WideCharToMultiByte(CP_UTF8, 0, wstring, lenght, 0, 0, NULL, NULL);
-    if (bufSize == 0)
+    void  UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & resultString)
     {
-        return "";
+        int32 wstringLen = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, size, NULL, NULL);
+        if (!wstringLen)
+        {
+            return;
+        }
+
+        //we dont need a zero symbol in buffer
+        if (size == -1)
+            wstringLen--;
+
+        resultString.resize(wstringLen);
+        int32 convertRes = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, size, &resultString[0], wstringLen);
+        if (!convertRes)
+        {
+            resultString.clear();
+        }
     }
 
-    String result;
-    result.resize(size_t(bufSize - 1));
+    String UTF8Utils::EncodeToUTF8(const WideString& wstring)
+    {
+        return EncodeToUTF8(wstring.c_str(), wstring.size());
+    }
 
-    WideCharToMultiByte(CP_UTF8, 0, wstring, lenght, &result[0], bufSize, NULL, NULL);
-    return result;
-}
+    String DAVA::UTF8Utils::EncodeToUTF8(const wchar_t * wstring, uint_t lenght)
+    {
+        int32 bufSize = WideCharToMultiByte(CP_UTF8, 0, wstring, lenght, 0, 0, NULL, NULL);
+        if (bufSize == 0)
+        {
+            return "";
+        }
+
+        //we dont need a zero symbol in buffer
+        if (lenght == -1)
+            bufSize--;
+
+        String result;
+        result.resize(uint_t(bufSize));
+
+        WideCharToMultiByte(CP_UTF8, 0, wstring, lenght, &result[0], bufSize, NULL, NULL);
+        return result;
+    }
 
 };
 
