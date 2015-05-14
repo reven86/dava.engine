@@ -2803,7 +2803,7 @@ namespace DAVA
             component->SetControl(this);
             
             uint32 insertIndex = family->GetComponentIndex(component->GetType(), index);
-            components.insert(components.begin() + insertIndex, component);
+            components.insert(components.begin() + insertIndex, SafeRetain(component));
             
             UpdateFamily();
         }

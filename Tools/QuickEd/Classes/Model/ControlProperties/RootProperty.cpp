@@ -418,21 +418,21 @@ AbstractProperty::ePropertyType RootProperty::GetType() const
 
 void RootProperty::AddBaseProperties(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType)
 {
-    classProperty = new ClassProperty(node);
-    baseProperties.push_back(classProperty);
-
-    CustomClassProperty *sourceCustomClassProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetCustomClassProperty();
-    customClassProperty = new CustomClassProperty(node, sourceCustomClassProperty, cloneType);
-    baseProperties.push_back(customClassProperty);
-
-    PrototypeNameProperty *sourcePrototypeProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetPrototypeProperty();
-    prototypeProperty = new PrototypeNameProperty(node, sourcePrototypeProperty, cloneType);
-    baseProperties.push_back(prototypeProperty);
-
     NameProperty *sourceNameProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetNameProperty();
     nameProperty = new NameProperty(node, sourceNameProperty, cloneType);
     baseProperties.push_back(nameProperty);
     
+    PrototypeNameProperty *sourcePrototypeProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetPrototypeProperty();
+    prototypeProperty = new PrototypeNameProperty(node, sourcePrototypeProperty, cloneType);
+    baseProperties.push_back(prototypeProperty);
+    
+    classProperty = new ClassProperty(node);
+    baseProperties.push_back(classProperty);
+    
+    CustomClassProperty *sourceCustomClassProperty = sourceProperties == nullptr ? nullptr : sourceProperties->GetCustomClassProperty();
+    customClassProperty = new CustomClassProperty(node, sourceCustomClassProperty, cloneType);
+    baseProperties.push_back(customClassProperty);
+
     for (ValueProperty *prop : baseProperties)
         prop->SetParent(this);
 }

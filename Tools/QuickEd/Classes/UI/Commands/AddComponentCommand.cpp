@@ -19,6 +19,7 @@ AddComponentCommand::~AddComponentCommand()
 {
     SafeRelease(root);
     SafeRelease(node);
+    SafeRelease(section);
 }
 
 void AddComponentCommand::redo()
