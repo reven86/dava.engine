@@ -37,8 +37,8 @@ BlendOpFromText( const char* op )
     else if( stricmp( op, "one" ) == 0 )            return rhi::BLENDOP_ONE;
     else if( stricmp( op, "src_alpha" ) == 0 )      return rhi::BLENDOP_SRC_ALPHA;
     else if( stricmp( op, "inv_src_alpha" ) == 0)   return rhi::BLENDOP_INV_SRC_ALPHA;
-    else if( stricmp( op, "src_color" ) == 0)       return rhi::BLENDOP_SRC_COLOR;
-    else if( stricmp( op, "dst_color" ) == 0)       return rhi::BLENDOP_DST_COLOR;
+    else if( stricmp( op, "src_color" ) == 0 )      return rhi::BLENDOP_SRC_COLOR;
+    else if( stricmp( op, "dst_color" ) == 0 )      return rhi::BLENDOP_DST_COLOR;
     else                                            return rhi::BLENDOP_ONE;
 }
 
@@ -97,7 +97,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
         std::regex  vtexture2d_re(".*VP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
         std::regex  texturecube_re(".*FP_TEXTURECUBE\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
         std::regex  blend_re(".*BLEND_MODE\\s*\\(\\s*(.*)\\s*\\).*");
-        std::regex  blending2_re(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha)\\s+dst=(zero|one|src_alpha|inv_src_alpha).*");
+        std::regex  blending2_re(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color)\\s+dst=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color).*");
         std::regex  comment_re("\\s*//.*");
 
         _Reset();
