@@ -10,7 +10,7 @@ FPROG_OUT_END
 DECL_FP_SAMPLER2D(albedo)
 
 #if LOD_COLOR
-property float3 lodColor : shared,static : def_value=1,1,1;
+property float3 lodColor : static,instance : def_value=1,1,1;
 #endif
 
 FPROG_BEGIN

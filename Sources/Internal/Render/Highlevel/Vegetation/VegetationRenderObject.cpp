@@ -455,7 +455,7 @@ bool VegetationRenderObject::IsDataLoadNeeded()
     
 void VegetationRenderObject::PrepareToRender(Camera * camera)
 {
-    //if(!ReadyToRender())
+    if(!ReadyToRender())
     {
         return;
     }

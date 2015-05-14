@@ -7,12 +7,12 @@ VPROG_OUT_BEGIN
     VPROG_OUT_POSITION
 VPROG_OUT_END
 
-property float4x4 worldViewProjMatrix : shared,dynamic : ;
-property float4x4 worldViewMatrix : shared,dynamic : ;
-property float4x4 projMatrix : shared,dynamic : ;
-property float4x4 worldViewInvTransposeMatrix : shared,dynamic : ;
+property float4x4 worldViewProjMatrix : dynamic,instance : ;
+property float4x4 worldViewMatrix : dynamic,instance : ;
+property float4x4 projMatrix : dynamic,instance : ;
+property float4x4 worldViewInvTransposeMatrix : dynamic,instance : ;
 
-property float4 lightPosition0 : shared,dynamic : ;
+property float4 lightPosition0 : dynamic,instance : ;
 
 VPROG_BEGIN
 

@@ -7,7 +7,7 @@ FPROG_OUT_BEGIN
     FPROG_OUT_COLOR
 FPROG_OUT_END
 
-property float4 shadowColor : shared,static : def_value=1,0,0,1;
+property float4 shadowColor : static,instance : def_value=1,0,0,1;
 
 FPROG_BEGIN
 

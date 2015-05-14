@@ -14,13 +14,13 @@ VPROG_OUT_END
 DECL_VP_SAMPLER2D(heightmap)
 DECL_VP_SAMPLER2D(vegetationmap)
 
-property float4x4 worldViewProjMatrix : shared,dynamic : ;
-property float3 tilePos : shared,static : ;
-property float3 worldSize : shared,static : ;
-property float2 lodSwitchScale : shared,static : ;
-property float2 heightmapScale : shared,static : ;
-property float4 vegWaveOffsetx : shared,static : ;
-property float4 vegWaveOffsety : shared,static : ;
+property float4x4 worldViewProjMatrix : dynamic,instance : ;
+property float3 tilePos : static,instance : ;
+property float3 worldSize : static,instance : ;
+property float2 lodSwitchScale : static,instance : ;
+property float2 heightmapScale : static,instance : ;
+property float4 vegWaveOffsetx : static,instance : ;
+property float4 vegWaveOffsety : static,instance : ;
 //8 floats: xxxxyyyy (xy per layer)
 
 VPROG_BEGIN
