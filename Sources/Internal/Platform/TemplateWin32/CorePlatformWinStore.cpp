@@ -32,6 +32,9 @@
 #include "CorePlatformWinStore.h"
 #include <angle_windowsstore.h>
 
+extern void FrameworkDidLaunched();
+extern void FrameworkWillTerminate();
+
 namespace DAVA
 {
 
@@ -40,9 +43,6 @@ using namespace Windows::Foundation;
 using namespace Windows::ApplicationModel;
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::ApplicationModel::Activation;
-
-//extern void FrameworkDidLaunched();
-//extern void FrameworkWillTerminate();
 
 //------------------------------------------------------------------------------------------------------
 //                                      Core
@@ -185,7 +185,7 @@ void WinStoreFrame::SetWindow(CoreWindow^ window)
 	RenderManager::Create(Core::RENDERER_ANGLE);
 	RenderManager::Instance()->Create(win_store_frame.Get());
 	RenderSystem2D::Instance()->Init();
-	//FrameworkDidLaunched();
+	FrameworkDidLaunched();
 	//RegisterRawInputDevices(&Rid, 1, sizeof(Rid));
 	//RenderManager::Instance()->ChangeDisplayMode(DisplayMode(800, 600, 16, 0), false);
 	RenderManager::Instance()->Init(800, 600);
@@ -253,7 +253,7 @@ void WinStoreFrame::Run()
 	}
 	Core::Instance()->SystemAppFinished();
 	
-//	FrameworkWillTerminate();
+	FrameworkWillTerminate();
 }
 //------------------------------------------------------------------------------------------------------
 // This method is called before the application exits.
@@ -267,21 +267,23 @@ void WinStoreFrame::OnActivated(CoreApplicationView^ /* applicationView */, IAct
 	CoreWindow::GetForCurrentThread()->Activate();
 	isWindowClosed = FALSE;
 	isWindowVisible = TRUE;
+    Core::Instance()->SetIsActive(true);
 }
 //------------------------------------------------------------------------------------------------------
 void WinStoreFrame::OnSuspending(Platform::Object^ /* sender */, SuspendingEventArgs^ args)
 {
-	isWindowVisible = FALSE;
+    Core::Instance()->SetIsActive(false);
+    isWindowVisible = FALSE;
 }
 //------------------------------------------------------------------------------------------------------
 void WinStoreFrame::OnResuming(Platform::Object^ /* sender */, Platform::Object^ /* args */)
 {
-	isWindowVisible = TRUE;
+    Core::Instance()->SetIsActive(true);
+    isWindowVisible = TRUE;
 }
 //------------------------------------------------------------------------------------------------------
 void WinStoreFrame::OnWindowActivationChanged(CoreWindow^ sender, WindowActivatedEventArgs^ args)
 {
-
 }
 //------------------------------------------------------------------------------------------------------
 void WinStoreFrame::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
