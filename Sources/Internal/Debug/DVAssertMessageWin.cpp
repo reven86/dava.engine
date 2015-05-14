@@ -88,7 +88,7 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 
 	//show message and blocking thread
 	//msg->ShowAsync();
-    assert(false);
+    //assert(false);
 
     return false;
 }
