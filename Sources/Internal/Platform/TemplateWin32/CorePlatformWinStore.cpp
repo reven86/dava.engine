@@ -49,15 +49,10 @@ using namespace Windows::ApplicationModel::Activation;
 //------------------------------------------------------------------------------------------------------
 int Core::Run(int argc, char * argv[], AppHandle handle)
 {
-	CorePlatformWinStore* core = new CorePlatformWinStore();
-	core->InitArgs(); // if need
-	core->CreateSingletons();
 	// create window
 	auto winStoreApplicationSource = ref new WinStoreApplicationSource();
 	CoreApplication::Run(winStoreApplicationSource);
 
-	core->Run();
-	core->ReleaseSingletons();
 	return 0;
 }
 //------------------------------------------------------------------------------------------------------
@@ -163,6 +158,10 @@ WinStoreFrame::WinStoreFrame() : willQuit(true), isWindowClosed(true), isWindowV
 // This method is called on application launch.
 void WinStoreFrame::Initialize(CoreApplicationView^ applicationView)
 {
+    CorePlatformWinStore* core = new CorePlatformWinStore();
+    core->InitArgs(); // if need
+    core->CreateSingletons();
+
 	applicationView->Activated +=
 		ref new TypedEventHandler<CoreApplicationView^, IActivatedEventArgs^>(this, &WinStoreFrame::OnActivated);
 
