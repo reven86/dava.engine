@@ -95,6 +95,7 @@ MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT] = {
     { "gpu rdo vertex" },
     { "gpu rdo index"  },
     { "fmod"           },
+    { "bullet"         },
     { "base object"    },
     { "polygon group"  },
     { "render dataobj" },
