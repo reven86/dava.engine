@@ -561,6 +561,18 @@ namespace DAVA
 		return "";
 	}
 
+	bool AutotestingSystemLua::IsSelected(UIControl* control) const
+	{
+		Logger::Debug("AutotestingSystemLua::IsSelected Check is control %s selected", control->GetName().c_str());
+		UISwitch* switchControl = dynamic_cast<UISwitch*>(control);
+		if (switchControl)
+		{
+			return switchControl->GetIsLeftSelected();
+		}
+		AutotestingSystem::Instance()->OnError(Format("AutotestingSystemLua::IsSelected Couldn't get parameter for '%s'", control->GetName().c_str()));
+		return nullptr;
+	}
+
 	bool AutotestingSystemLua::IsListHorisontal(UIControl* control)
 	{
 		UIList* list = dynamic_cast<UIList*>(control);
@@ -786,6 +798,7 @@ namespace DAVA
 		if (!result)
 		{
 			Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't load buffer %s", luaFilePath.GetAbsolutePathname().c_str());
+			Logger::Error("%s", lua_tostring(luaState, -1));
 			return false;
 		}
 		return true;

@@ -48,6 +48,7 @@
 
 namespace DAVA 
 {
+//TODO: move it to DateTimeWin32 or remove
 const LocalizationSystem::LanguageLocalePair LocalizationSystem::languageLocaleMap[] =
 {
     { "en", "en_US" },
@@ -102,7 +103,7 @@ void LocalizationSystem::Init()
 	LoadStringFile(langId, directoryPath + (langId + ".yaml"));
 }
 
-String LocalizationSystem::GetDeviceLocale()
+String LocalizationSystem::GetDeviceLocale() const
 {
 #if defined(__DAVAENGINE_IPHONE__)
 	return String(LocalizationIPhone::GetDeviceLang());
@@ -113,7 +114,7 @@ String LocalizationSystem::GetDeviceLocale()
 #endif
 }
     
-const String &LocalizationSystem::GetCurrentLocale()
+const String &LocalizationSystem::GetCurrentLocale() const
 {
 	return langId;
 }
@@ -322,8 +323,7 @@ bool LocalizationSystem::SaveToYamlFile(const StringFile* stringFile)
 	}
 
 	YamlNode *node = YamlNode::CreateMapNode(true, YamlNode::MR_BLOCK_REPRESENTATION, YamlNode::SR_DOUBLE_QUOTED_REPRESENTATION);
-	for (Map<WideString, WideString>::const_iterator iter = stringFile->strings.begin();
-		 iter != stringFile->strings.end(); iter ++)
+	for (auto iter = stringFile->strings.begin(); iter != stringFile->strings.end(); ++iter)
 	{
 		node->Add(UTF8Utils::EncodeToUTF8(iter->first), iter->second);
 	}
@@ -348,14 +348,13 @@ void LocalizationSystem::UnloadStringFile(const FilePath & fileName)
 	DVASSERT(0 && "Method do not implemented");
 }
 
-WideString LocalizationSystem::GetLocalizedString(const WideString & key)
+WideString LocalizationSystem::GetLocalizedString(const WideString & key) const
 {
-	//List<StringFile*>::const_reverse_iterator rEnd = stringsList.rend();
-	for (List<StringFile*>::reverse_iterator it = stringsList.rbegin(); it != stringsList.rend(); ++it)
+	for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
 	{
 		StringFile * file = *it;
 
-		Map<WideString, WideString>::iterator res = file->strings.find(key);
+		auto res = file->strings.find(key);
 		if (res != file->strings.end())
 		{
 			return res->second;
@@ -364,15 +363,15 @@ WideString LocalizationSystem::GetLocalizedString(const WideString & key)
 	return key;
 }
 
-WideString LocalizationSystem::GetLocalizedString(const WideString & key, const String &langId)
+WideString LocalizationSystem::GetLocalizedString(const WideString & key, const String &langId) const
 {
-    for (List<StringFile*>::reverse_iterator it = stringsList.rbegin(); it != stringsList.rend(); ++it)
+    for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
     {
         StringFile * file = *it;
 
         if(file->langId.compare(langId) == 0)
         {
-            Map<WideString, WideString>::iterator res = file->strings.find(key);
+            auto res = file->strings.find(key);
             if (res != file->strings.end())
             {
                 return res->second;
@@ -385,7 +384,7 @@ WideString LocalizationSystem::GetLocalizedString(const WideString & key, const 
 void LocalizationSystem::SetLocalizedString(const WideString & key, const WideString & value)
 {
 	// Update in all files currently loaded.
-	for (List<StringFile*>::reverse_iterator it = stringsList.rbegin(); it != stringsList.rend(); ++it)
+    for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
 	{
 		StringFile * file = *it;
 		file->strings[key] = value;
@@ -395,7 +394,7 @@ void LocalizationSystem::SetLocalizedString(const WideString & key, const WideSt
 void LocalizationSystem::RemoveLocalizedString(const WideString & key)
 {
 	// Update in all files currently loaded.
-	for (List<StringFile*>::reverse_iterator it = stringsList.rbegin(); it != stringsList.rend(); ++it)
+    for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
 	{
 		StringFile * file = *it;
 		file->strings.erase(key);
@@ -405,7 +404,7 @@ void LocalizationSystem::RemoveLocalizedString(const WideString & key)
 bool LocalizationSystem::SaveLocalizedStrings()
 {
 	bool saveResult = true;
-	for (List<StringFile*>::reverse_iterator it = stringsList.rbegin(); it != stringsList.rend(); ++it)
+    for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
 	{
 		StringFile * file = *it;
 		saveResult &= SaveToYamlFile(file);
@@ -417,7 +416,7 @@ bool LocalizationSystem::SaveLocalizedStrings()
 void LocalizationSystem::Cleanup()
 {
 	// release all memory allocated by strings
-	for (List<StringFile*>::reverse_iterator it = stringsList.rbegin(); it != stringsList.rend(); ++it)
+    for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
 	{
 		StringFile * file = *it;
 		SafeDelete(file);
@@ -429,10 +428,10 @@ void LocalizationSystem::Cleanup()
 	SafeDeleteArray(dataHolder->data);
 }
 
-bool LocalizationSystem::GetStringsForCurrentLocale(Map<WideString, WideString>& strings)
+bool LocalizationSystem::GetStringsForCurrentLocale(Map<WideString, WideString>& strings) const
 {
-	for (List<StringFile*>::iterator iter = stringsList.begin(); iter != stringsList.end();
-		 iter ++)
+    for (auto iter = stringsList.begin(); iter != stringsList.end();
+		 ++iter)
 	{
 		if ((*iter)->langId == GetCurrentLocale())
 		{

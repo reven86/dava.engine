@@ -77,10 +77,10 @@ void QtLayer::SetDelegate(QtLayerDelegate *delegate)
     
 void QtLayer::AppStarted()
 {
-    Core::Instance()->SystemAppStarted();
-    
     RenderManager::Create(Core::RENDERER_OPENGL);
     FrameworkDidLaunched();
+
+    Core::Instance()->SystemAppStarted();
 }
 
 void QtLayer::AppFinished()
@@ -252,14 +252,17 @@ void QtLayer::MouseEvent(const UIEvent & event)
 
     
 #if defined (__DAVAENGINE_WIN32__)
+
 void* QtLayer::CreateAutoreleasePool()
 {
     return nullptr;
 }
+
 void QtLayer::ReleaseAutoreleasePool(void *pool)
 {
     (void)pool;
 }
+    
 #endif
 
 };

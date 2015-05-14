@@ -226,12 +226,11 @@ void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr)
 {
     ::UIView* view = static_cast<::UIView*>(uiviewPtr);
     DVASSERT(view);
-    CGFloat contentScaleFactor =  [HelperAppDelegate GetScale];
+    DAVA::float32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
     
-    size_t w = view.frame.size.width * contentScaleFactor;
-    size_t h = view.frame.size.height * contentScaleFactor;
+    size_t w = view.frame.size.width * scale;
+    size_t h = view.frame.size.height * scale;
     
-    CGFloat scale = [[::UIScreen mainScreen] scale];
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(w, h), NO, scale);
     CGRect rect = CGRectMake(0, 0, w, h);
     [view drawViewHierarchyInRect:rect afterScreenUpdates:YES];
@@ -489,7 +488,7 @@ void WebViewControl::SetRect(const Rect& rect)
     webViewRect.size.height = physicalRect.dy;
 	
 	// Apply the Retina scale divider, if any.
-    DAVA::float32 scaleDivider = [HelperAppDelegate GetScale];
+    DAVA::float32 scaleDivider = Core::Instance()->GetScreenScaleFactor();
 	webViewRect.origin.x /= scaleDivider;
 	webViewRect.origin.y /= scaleDivider;
 	webViewRect.size.height /= scaleDivider;
@@ -502,13 +501,34 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
     this->isVisible = isVisible;
     
-    if (!isRenderToTexture)
-    {
-        [(UIWebView*)webViewPtr setHidden:!isVisible];
-    } else
+    if (isRenderToTexture)
     {
         DAVA::Rect r = uiWebView.GetRect();
         SetRect(r);
+    }
+    else
+    {
+        UIWebView *wv = (UIWebView *) webViewPtr;
+        
+        // if we wan't native control to become invisible we ca do it immidiatly
+        // during update process. But when we want it to be visible, it can't be shown
+        // immidiatly, because is cases, when current Update() takes a lot of time and
+        // user will see native webview over old frame during all that time. This can
+        // be treat as webview blinking, so we should care abot it. We will show webview
+        // before next update() call.
+        if(!isVisible)
+        {
+            [wv setHidden:YES];
+        }
+        else
+        {
+            Function<void (UIWebView *)> fn([](UIWebView *_wv)
+            {
+                [_wv setHidden:NO];
+            });
+            
+            JobManager::Instance()->CreateMainJob(Bind(fn, wv), JobManager::JOB_MAINLAZY);
+        }
     }
 }
 

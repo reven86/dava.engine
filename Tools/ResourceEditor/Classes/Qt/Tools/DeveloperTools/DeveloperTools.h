@@ -46,6 +46,6 @@ public slots:
     void OnDebugCreateTestSkinnedObject(); //creates
     void OnSpyWidget();
     void OnImageSplitterNormals();
-	
+    void OnReplaceTextureMipmap();
 };
 #endif /* defined(__DEBUG_TOOLS__) */

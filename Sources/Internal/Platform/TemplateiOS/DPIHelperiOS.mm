@@ -31,6 +31,7 @@
 #include "Base/BaseTypes.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"
+#include "Core/Core.h"
 
 #include <UIKit/UIKit.h>
 #include <UIKit/UIDevice.h>
@@ -134,7 +135,8 @@ namespace DAVA
     {
         //due to magnificent api of ios the only way of determination of dpi is hardcode
         CGRect screenRect = [[UIScreen mainScreen] bounds];
-        CGFloat scale = [[UIScreen mainScreen] scale]; //support of retina
+        
+        CGFloat scale = Core::Instance()->GetScreenScaleFactor();
         CGFloat screenWidth = screenRect.size.width * scale;
         CGFloat screenHeight = screenRect.size.height * scale;
         

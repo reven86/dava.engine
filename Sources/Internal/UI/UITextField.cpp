@@ -28,9 +28,6 @@
 
 
 #include "UI/UITextField.h"
-#include "Base/ObjectFactory.h"
-#include "Utils/StringFormat.h"
-#include "Utils/Utils.h"
 #include "Input/KeyboardDevice.h"
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControlSystem.h"
@@ -865,6 +862,7 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
 	
 	cursorBlinkingTime = t->cursorBlinkingTime;
 #if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
+    SafeRelease(staticText);
 	if (t->staticText)
 	{
 		staticText = (UIStaticText*)t->staticText->Clone();

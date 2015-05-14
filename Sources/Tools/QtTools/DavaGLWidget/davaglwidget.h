@@ -104,12 +104,13 @@ public:
     OpenGLWindow *GetGLWindow() const;
     bool IsInitialized() const;
 
+    void MakeInvisible();
+
 public slots:
     void OnWindowExposed();
     
 private:
     void resizeEvent(QResizeEvent *) override;
-    bool eventFilter( QObject * watched, QEvent * event ) override;
 
     void PerformSizeChange();
     

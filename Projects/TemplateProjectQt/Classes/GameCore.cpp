@@ -24,76 +24,29 @@
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
+    =====================================================================================*/
 
 
 #include "GameCore.h"
-#include "AppScreens.h"
-#include "TestScreen.h"
+#include "FileSystem/ResourceArchive.h"
 
 using namespace DAVA;
 
 GameCore::GameCore()
+    : ApplicationCore()
 {
-
 }
 
 GameCore::~GameCore()
 {
-	
 }
 
 void GameCore::OnAppStarted()
 {
-	cursor = 0;
-	RenderManager::Instance()->SetFPS(60);
 
- 	testScreen = new TestScreen();
-	
-	UIScreenManager::Instance()->RegisterScreen(SCREEN_TEST, testScreen);
-
-    UIScreenManager::Instance()->SetFirst(SCREEN_TEST);
 }
 
 void GameCore::OnAppFinished()
 {
-	SafeRelease(cursor);
 
-    SafeRelease(testScreen);
-}
-
-void GameCore::OnSuspend()
-{
-    ApplicationCore::OnSuspend();
-}
-
-void GameCore::OnResume()
-{
-    ApplicationCore::OnResume();
-}
-
-void GameCore::OnBackground()
-{
-	
-}
-
-void GameCore::BeginFrame()
-{
-	ApplicationCore::BeginFrame();
-	RenderManager::Instance()->ClearWithColor(0, 0, 0, 0);
-}
-
-void GameCore::Update(float32 timeElapsed)
-{	
-//	if (!cursor)
-//	{
-//		cursor = Cursor::Create("~res:/Cursor/cursor1.png", Vector2(6, 0));
-//		RenderManager::Instance()->SetCursor(cursor);
-//	}
-	ApplicationCore::Update(timeElapsed);
-}
-
-void GameCore::Draw()
-{
-	ApplicationCore::Draw();
 }
