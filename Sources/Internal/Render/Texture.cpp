@@ -412,10 +412,8 @@ Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint3
 {
     Texture * texture = nullptr;
 
-    if(Thread::IsMainThread())
+    if(Thread::IsMainThread() && nullptr != _data)
     {
-        DVASSERT(nullptr != _data);
-
         texture = new Texture();
         texture->texDescriptor->Initialize(WRAP_CLAMP_TO_EDGE, generateMipMaps);
 

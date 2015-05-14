@@ -130,7 +130,7 @@ public:
         This function creates texture from given format, data pointer and width + height
      
         \param[in] format desired pixel format
-        \param[in] data desired data 
+        \param[in] data desired data (can be null)
         \param[in] width width of new texture
         \param[in] height height of new texture
         \param[in] generateMipMaps generate mipmaps or not
