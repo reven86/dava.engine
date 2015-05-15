@@ -41,6 +41,8 @@ void FrameworkDidLaunched()
     
     KeyedArchive * appOptions = new KeyedArchive();
     
+    appOptions->SetString(String("title"), String("TestBed"));
+    
 #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 	appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT);
     appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_2_0);
@@ -59,7 +61,6 @@ void FrameworkDidLaunched()
 
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
-    appOptions->SetString(String("title"), String("DLC Tests"));
 #endif 
     
     appOptions->SetInt32("width", screenWidth);

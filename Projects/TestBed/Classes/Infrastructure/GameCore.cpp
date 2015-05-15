@@ -86,12 +86,12 @@ void GameCore::RegisterScreen(BaseScreen *screen)
 void GameCore::ShowStartScreen()
 {
     currentScreen = testListScreen;
-    UIScreenManager::Instance()->SetFirst(testListScreen->GetScreenId());
+    UIScreenManager::Instance()->SetScreen(testListScreen->GetScreenId());
 }
 
 void GameCore::CreateDocumentsFolder()
 {
-    FilePath documentsPath = FileSystem::Instance()->GetUserDocumentsPath() + "UnitTests/";
+    FilePath documentsPath = FileSystem::Instance()->GetUserDocumentsPath() + "TestBed/";
     
     FileSystem::Instance()->CreateDirectory(documentsPath, true);
     FileSystem::Instance()->SetCurrentDocumentsDirectory(documentsPath);
@@ -144,7 +144,7 @@ void GameCore::RunTests()
 
     if (nullptr != currentScreen)
     {
-        UIScreenManager::Instance()->SetFirst(currentScreen->GetScreenId());
+        UIScreenManager::Instance()->SetScreen(currentScreen->GetScreenId());
     }
 }
 

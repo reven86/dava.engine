@@ -60,7 +60,7 @@ void BaseScreen::LoadResources()
     exitButton = new UIButton(Rect(screenSize.dx-300, screenSize.dy-30, 300, 30));
     exitButton->SetStateFont(0xFF, font);
     exitButton->SetStateFontColor(0xFF, Color::White);
-    exitButton->SetStateText(0xFF, L"Notify text");
+    exitButton->SetStateText(0xFF, L"Exit From Screen");
 
     exitButton->SetDebugDraw(true);
     exitButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &BaseScreen::OnExitButton));
