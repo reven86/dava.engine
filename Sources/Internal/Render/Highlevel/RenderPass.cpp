@@ -155,7 +155,7 @@ void RenderPass::PrepareLayersArrays(const Vector<RenderObject *> objectsArray, 
 
 void RenderPass::DrawLayers(Camera *camera)
 {    
-    //ShaderCache::Instance()->ClearAllLastBindedCaches();        
+    ShaderDescriptorCache::ClearDynamicBindigs();
 
     rhi::HPacketList pl;
     rhi::HRenderPass pass = rhi::AllocateRenderPass(passConfig, 1, &pl);
