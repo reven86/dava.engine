@@ -325,7 +325,7 @@ gles2_PipelineState_Create( const PipelineState::Descriptor& desc )
 
         ps->maskR = desc.blending.rtBlend[0].writeMask & COLORMASK_R;
         ps->maskG = desc.blending.rtBlend[0].writeMask & COLORMASK_G;
-        ps->maskG = desc.blending.rtBlend[0].writeMask & COLORMASK_B;
+        ps->maskB = desc.blending.rtBlend[0].writeMask & COLORMASK_B;
         ps->maskA = desc.blending.rtBlend[0].writeMask & COLORMASK_A;
     }
     else
