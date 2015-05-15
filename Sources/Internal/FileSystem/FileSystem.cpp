@@ -657,8 +657,6 @@ const FilePath FileSystem::GetUserDocumentsPath()
 
 #elif defined(__DAVAENGINE_WINDOWS_STORE__)
 
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
-
     //take roaming folder as user documents folder
     using namespace Windows::Storage;
     WideString roamingFolder = ApplicationData::Current->RoamingFolder->Path->Data();
@@ -681,8 +679,6 @@ const FilePath FileSystem::GetPublicDocumentsPath()
     return FilePath(str).MakeDirectoryPathname();
 
 #elif defined(__DAVAENGINE_WINDOWS_STORE__)
-
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
 
     //take roaming folder as user documents folder
     using namespace Windows::Storage;
