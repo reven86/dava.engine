@@ -749,13 +749,13 @@ dx9_PipelineState_Create( const PipelineState::Descriptor& desc )
     }
 
     ps->colorMask = 0;
-    if( desc.blending.rtBlend[0].writeMask | COLORMASK_R )
+    if( desc.blending.rtBlend[0].writeMask & COLORMASK_R )
         ps->colorMask |= D3DCOLORWRITEENABLE_RED;
-    if( desc.blending.rtBlend[0].writeMask | COLORMASK_G )
+    if( desc.blending.rtBlend[0].writeMask & COLORMASK_G )
         ps->colorMask |= D3DCOLORWRITEENABLE_GREEN;
-    if( desc.blending.rtBlend[0].writeMask | COLORMASK_B )
+    if( desc.blending.rtBlend[0].writeMask & COLORMASK_B )
         ps->colorMask |= D3DCOLORWRITEENABLE_BLUE;
-    if( desc.blending.rtBlend[0].writeMask | COLORMASK_A )
+    if( desc.blending.rtBlend[0].writeMask & COLORMASK_A )
         ps->colorMask |= D3DCOLORWRITEENABLE_ALPHA;
 
     return handle;

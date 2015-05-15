@@ -323,10 +323,10 @@ gles2_PipelineState_Create( const PipelineState::Descriptor& desc )
             case BLENDOP_DST_COLOR      : ps->blendDst = GL_DST_COLOR; break;
         }
 
-        ps->maskR = desc.blending.rtBlend[0].writeMask | COLORMASK_R;
-        ps->maskG = desc.blending.rtBlend[0].writeMask | COLORMASK_G;
-        ps->maskG = desc.blending.rtBlend[0].writeMask | COLORMASK_B;
-        ps->maskA = desc.blending.rtBlend[0].writeMask | COLORMASK_A;
+        ps->maskR = desc.blending.rtBlend[0].writeMask & COLORMASK_R;
+        ps->maskG = desc.blending.rtBlend[0].writeMask & COLORMASK_G;
+        ps->maskG = desc.blending.rtBlend[0].writeMask & COLORMASK_B;
+        ps->maskA = desc.blending.rtBlend[0].writeMask & COLORMASK_A;
     }
     else
     {
