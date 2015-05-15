@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_THREADLOCAL_H__
-#define __DAVAENGINE_THREADLOCAL_H__
+#ifndef __DAVAENGINE_THREADLOCALPTR_H__
+#define __DAVAENGINE_THREADLOCALPTR_H__
 
 #include <type_traits>
 #include <cassert>
@@ -235,4 +235,4 @@ inline void* ThreadLocalPtr<T>::GetTlsValue() const DAVA_NOEXCEPT
 
 }   // namespace DAVA
 
-#endif  // __DAVAENGINE_THREADLOCAL_H__
+#endif  // __DAVAENGINE_THREADLOCALPTR_H__
