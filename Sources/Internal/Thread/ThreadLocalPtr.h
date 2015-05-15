@@ -236,3 +236,4 @@ inline void* ThreadLocalPtr<T>::GetTlsValue() const DAVA_NOEXCEPT
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_THREADLOCALPTR_H__
+
