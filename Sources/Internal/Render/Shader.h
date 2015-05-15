@@ -76,13 +76,13 @@ public:
     ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource *fSource, rhi::HPipelineState pipelineState);
 
     void UpdateDynamicParams();
+    void ClearDynamicBindings();
 
     uint32 GetVertexConstBuffersCount();
     uint32 GetFragmentConstBuffersCount();
 
     rhi::HConstBuffer GetDynamicBuffer(ConstBufferDescriptor::Type type, uint32 index);
     inline rhi::HPipelineState GetPiplineState(){ return piplineState; }
-
     
 
 private:
