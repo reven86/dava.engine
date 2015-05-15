@@ -27,21 +27,23 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_ASSET_CACHE_SKOPPED_INCLUDE_H__
-#define __DAVAENGINE_ASSET_CACHE_SKOPPED_INCLUDE_H__
+#ifndef __DAVAENGINE_ASSET_CACHE_TEST_H__
+#define __DAVAENGINE_ASSET_CACHE_TEST_H__
 
-#include "AssetCache/AssetCacheClient.h"
-#include "AssetCache/AssetCacheServer.h"
-
-#include "AssetCache/CacheItemKey.h"
-#include "AssetCache/CacheItemParams.h"
-#include "AssetCache/CachedFiles.h"
-
-#include "AssetCache/ClientCacheEntry.h"
-#include "AssetCache/ServerCacheEntry.h"
-
-#include "AssetCache/CacheDB.h"
+#include "AssetCache/AssetCache.h"
 
 
-#endif // __DAVAENGINE_ASSET_CACHE_SKOPPED_INCLUDE_H__
+namespace DAVA
+{
+
+namespace AssetCache
+{
+    
+void RunPackerTest();
+    
+}; // end of namespace AssetCache
+}; // end of namespace DAVA
+
+
+#endif // __DAVAENGINE_ASSET_CACHE_TEST_H__
 

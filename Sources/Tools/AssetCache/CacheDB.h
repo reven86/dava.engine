@@ -74,10 +74,12 @@ class ServerCacheEntry;
     
 class CacheDB
 {
+    static const String DB_FILE_NAME;
+    
 public:
     
-    CacheDB(const FilePath &path);
-    virtual ~CacheDB() = default;
+    CacheDB(const FilePath &folderPath, uint64 size);
+    virtual ~CacheDB();
 
     void Save() const;
     void Load();
@@ -89,16 +91,21 @@ public:
     bool operator < (const CacheDB &right) const;
 
     bool Contains(const CacheItemKey &key) const;
+    ServerCacheEntry Get(const CacheItemKey &key);
+
     void Insert(const CacheItemKey &key, const ServerCacheEntry &entry);
     void Remove(const CacheItemKey &key);
     
+    const FilePath & GetPath() const;
+    const uint64 GetStorageSize() const;
+    const uint64 GetAvailableSize() const;
+    const uint64 GetUsedSize() const;
+    
 private:
     
+    FilePath path;
+    uint64 storageSize = 0;
     
-    
-private:
-    
-    FilePath storagePath;
     UnorderedMap<CacheItemKey, ServerCacheEntry> cache;
 };
     

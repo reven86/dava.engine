@@ -34,7 +34,6 @@
 #include "AssetCache/ServerCacheEntry.h"
 
 #include "FileSystem/File.h"
-#include "FileSystem/FilePath.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Debug/DVAssert.h"
 
@@ -44,33 +43,63 @@ namespace DAVA
 namespace AssetCache
 {
     
-CacheDB::CacheDB(const FilePath &path)
-    : storagePath(path)
+const String CacheDB::DB_FILE_NAME = "cache.dat";
+
+    
+CacheDB::CacheDB(const FilePath &folderPath, uint64 size)
+    : path(folderPath)
+    , storageSize(size)
 {
+    path.MakeDirectoryPathname();
+    path = path + DB_FILE_NAME;
 }
 
+CacheDB::~CacheDB()
+{
+}
  
+    
 void CacheDB::Save() const
 {
-    ScopedPtr<File> file(File::Create(storagePath, File::CREATE | File::WRITE));
+    ScopedPtr<File> file(File::Create(path, File::CREATE | File::WRITE));
     if(static_cast<File*>(file) == nullptr)
     {
-        Logger::Error("[CacheDB::%s] Cannot create file %s", __FUNCTION__, storagePath.GetStringValue().c_str());
+        Logger::Error("[CacheDB::%s] Cannot create file %s", __FUNCTION__, path.GetStringValue().c_str());
         return;
     }
 
+    ScopedPtr<KeyedArchive> header(new KeyedArchive());
+    header->SetString("signature", "cache");
+    header->SetInt32("version", 1);
+    header->SetUInt64("itemsCount", cache.size());
+
+    header->Save(file);
     
 }
 
 void CacheDB::Load()
 {
-    ScopedPtr<File> file(File::Create(storagePath, File::OPEN | File::READ));
+    ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
     if(static_cast<File*>(file) == nullptr)
     {
-        Logger::Error("[CacheDB::%s] Cannot create file %s", __FUNCTION__, storagePath.GetStringValue().c_str());
+        Logger::Error("[CacheDB::%s] Cannot create file %s", __FUNCTION__, path.GetStringValue().c_str());
         return;
     }
     
+    ScopedPtr<KeyedArchive> header(new KeyedArchive());
+    header->Load(file);
+    
+    if(header->GetString("signature") != "cache")
+    {
+        Logger::Error("[CacheDB::%s] Wrong signature %s", __FUNCTION__, header->GetString("signature").c_str());
+        return;
+    }
+
+    if(header->GetInt32("version") != 1)
+    {
+        Logger::Error("[CacheDB::%s] Wrong version %d", __FUNCTION__, header->GetInt32("version"));
+        return;
+    }
     
 }
 
@@ -108,6 +137,18 @@ bool CacheDB::Contains(const CacheItemKey &key) const
     return false;
 }
     
+ServerCacheEntry CacheDB::Get(const CacheItemKey &key)
+{
+    auto found = cache.find(key);
+    if(found != cache.end())
+    {
+        //TODO UpdateTouchTime
+        return found->second;
+    }
+    
+    return ServerCacheEntry();
+}
+
 void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
 {
     cache[key] = entry;
@@ -121,6 +162,27 @@ void CacheDB::Remove(const CacheItemKey &key)
     {
         cache.erase(found);
     }
+}
+
+    
+const FilePath & CacheDB::GetPath() const
+{
+    return path;
+}
+
+const uint64 CacheDB::GetStorageSize() const
+{
+    return storageSize;
+}
+
+const uint64 CacheDB::GetAvailableSize() const
+{
+    return storageSize;
+}
+
+const uint64 CacheDB::GetUsedSize() const
+{
+    return 0;
 }
     
     
