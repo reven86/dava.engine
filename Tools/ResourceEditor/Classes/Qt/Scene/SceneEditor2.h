@@ -135,7 +135,7 @@ public:
 	SceneFileV2::eError Save();
 	bool Export(const DAVA::eGPUFamily newGPU);
 
-	DAVA::FilePath GetScenePath();
+	const DAVA::FilePath &GetScenePath();
 	void SetScenePath(const DAVA::FilePath &newScenePath);
 
 	// commands

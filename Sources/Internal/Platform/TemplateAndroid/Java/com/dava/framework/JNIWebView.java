@@ -2,17 +2,11 @@ package com.dava.framework;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -23,28 +17,28 @@ import android.webkit.CookieManager;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
 public class JNIWebView {
     private static final int MOVE_VIEW_OFFSCREEN_STEP = 10000;
-    private static final String TAG = "JNIWebView";
+    static final String TAG = "JNIWebView";
     private static final Paint paint = new Paint();
 
     public static class WebViewWrapper extends android.webkit.WebView {
-        private InternalViewClient client = null;
+        private InternalViewClientV14 client = null;
         private final static int MAX_DELAY = 1600;
         private final static int START_DELAY = 50;
         private int delay = 50; //50, 100, 200, 400, 800, 1600
-        private volatile boolean isLoadingData = false;
+        private String lastLoadedUrl = null;
+        volatile boolean isLoadingData = false;
         
-        public WebViewWrapper(Context context, InternalViewClient client) {
+        public WebViewWrapper(Context context, InternalViewClientV14 client) {
             super(context);
             this.client = client;
             super.setWebViewClient(client);
         }
 
-        InternalViewClient getInternalViewClient() {
+        InternalViewClientV14 getInternalViewClient() {
             return client;
         }
         
@@ -81,6 +75,7 @@ public class JNIWebView {
         @Override
         public void loadUrl(String url)
         {
+            lastLoadedUrl = url;
             isLoadingData = true;
             super.loadUrl(url);
         }
@@ -108,234 +103,19 @@ public class JNIWebView {
             }
             return super.onKeyPreIme(keyCode, event);
         }
+        /*
+         * HACK to get last known loaded url from any thread
+         * cause standard getUrl method can't be called from chromium thread
+         */
+        public String getLastLoadedUrl()
+        {
+            return lastLoadedUrl;
+        }
     }
 
     static Map<Integer, WebViewWrapper> views = new HashMap<Integer, WebViewWrapper>();
 
-    public static class InternalViewClient extends WebViewClient {
-        int id;
-
-        volatile boolean isRenderToTexture = false;
-        volatile boolean isVisible = true;
-
-        // precache as much as possible
-        Bitmap bitmapCache = null;
-        Canvas canvas = null;
-        int pixels[] = null;
-        int width = 0;
-        int height = 0;
-
-        public boolean isVisible()
-        {
-            return isVisible;
-        }
-
-        public void setVisible(WebViewWrapper view, boolean isVisible)
-        {
-            this.isVisible = isVisible;
-            if (isVisible)
-            {
-                view.setVisibility(View.VISIBLE);
-            }
-            else
-            {
-                view.setVisibility(View.GONE);
-            }
-        }
-
-        public boolean isRenderToTexture() {
-            return isRenderToTexture;
-        }
-
-        public void setRenderToTexture(WebViewWrapper view, boolean isRenderToTexture) {
-            this.isRenderToTexture = isRenderToTexture;
-            // update visibility after update isRenderToTexture
-            view.updateViewRectPosition();
-
-            if (isRenderToTexture) {
-                renderToTexture(view);
-            }
-            else
-            {
-                view.invalidate();
-            }
-        }
-
-        private void renderToTexture(WebViewWrapper view) {
-            renderToBitmapAndCopyPixels(view);
-            JNIActivity activity = JNIActivity.GetActivity();
-            if (!activity.GetIsPausing())
-            {
-                activity.PostEventToGL(new OnPageLoadedNativeRunnable(pixels,
-                    width, height));
-            }
-        }
-
-        public InternalViewClient(int _id) {
-            id = _id;
-        }
-
-        class OnPageLoadedNativeRunnable implements Runnable {
-            int[] pixels;
-            int width;
-            int height;
-
-            OnPageLoadedNativeRunnable(int[] pixels, int width, int height) {
-                this.pixels = pixels;
-                this.width = width;
-                this.height = height;
-            }
-
-            @Override
-            public void run() {
-                // if user lock screen just return - prevent crush in gl thread
-                if(!JNIGLSurfaceView.isPaused())
-                {
-                    OnPageLoaded(id, pixels, width, height);
-                }
-            }
-        }
-
-        @Override
-        public void onPageFinished(final WebView view, final String url) {
-            super.onPageFinished(view, url);
-            
-            WebViewWrapper wrap = (WebViewWrapper)view;
-            // mark web view loaded content so on lock/unlock do not call
-            // reload
-            wrap.isLoadingData = false;
-            
-            JNIActivity activity = JNIActivity.GetActivity();
-            if (null == activity || activity.GetIsPausing()) {
-                return;
-            }
-
-            if (isRenderToTexture) {
-                // first try render into texture as soon as possible
-                wrap.getInternalViewClient().renderToTexture(wrap);
-                // second render with delay
-                // Workaround to fix black/white view
-                startRecursiveRefreshSequence(wrap);
-            } 
-            else 
-            {
-                activity.PostEventToGL(new OnPageLoadedNativeRunnable(null, 0, 0));
-            }
-        }
-
-        private void renderToBitmapAndCopyPixels(WebView view) {
-            Bitmap bitmap = renderWebViewIntoBitmap(view);
-            if (bitmap != null) {
-                if (pixels == null || width != bitmap.getWidth()
-                        || height != bitmap.getHeight()) {
-                    width = bitmap.getWidth();
-                    height = bitmap.getHeight();
-                    pixels = new int[width * height];
-                }
-                // copy ARGB pixels values into our buffer
-                bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-            }
-        }
-
-        private Bitmap renderWebViewIntoBitmap(final WebView view) {
-
-            if (bitmapCache != null) {
-                bitmapCache.recycle();
-            }
-
-            // we need to do it every time because this only works with
-            // scrolling
-            view.setDrawingCacheEnabled(true);
-            view.buildDrawingCache();
-            // Returns an immutable bitmap from the source bitmap.
-            // The new bitmap may be the same object as source, or a copy may
-            // have been made. It is initialized with the same density as the
-            // original bitmap.
-            Bitmap cacheImage = view.getDrawingCache();
-            if (cacheImage == null)
-            {
-                Log.e(TAG, "can't render WebView into bitmap");
-            } 
-            else
-            {
-                bitmapCache = Bitmap.createBitmap(cacheImage);
-            }
-
-            view.setDrawingCacheEnabled(false);
-            return bitmapCache;
-        };
-
-        @Override
-        public void onReceivedError(WebView view, int errorCode,
-                String description, String failingUrl) {
-            Log.e(TAG, "Error in webview errorCode:" + errorCode
-                    + " description:" + description + " failingUrl:"
-                    + failingUrl);
-        }
-
-        @Override
-        public void onLoadResource(WebView view, String url) {
-            String[] urlParts = url.split("/");
-            if (urlParts.length > 0) {
-                String urlPart = urlParts[urlParts.length - 1];
-                if (urlPart.charAt(0) == '?' && !urlPart.contains("."))
-                    PostOnUrlChangeTask(url);
-            }
-
-            super.onLoadResource(view, url);
-        }
-
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, final String url) {
-            if (null == JNIActivity.GetActivity()
-                    || JNIActivity.GetActivity().GetIsPausing())
-                return false;
-
-            FutureTask<Integer> task = PostOnUrlChangeTask(url);
-
-            while (!task.isDone()) {
-                Thread.yield();
-            }
-
-            int res = 0;
-            try {
-                res = task.get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-
-            if (res == 0) {
-                return false;
-            } else if (res == 1) {
-                Intent exWeb = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                JNIActivity.GetActivity().startActivity(exWeb);
-                return true;
-            }
-            else
-            {
-                Log.e(TAG, "unknown result code res = " + res);
-            }
-            return true;
-        }
-
-        FutureTask<Integer> PostOnUrlChangeTask(final String url) {
-            Callable<Integer> urlChanged = new Callable<Integer>() {
-
-                @Override
-                public Integer call() throws Exception {
-                    return OnUrlChange(id, url);
-                }
-            };
-
-            FutureTask<Integer> task = new FutureTask<Integer>(urlChanged);
-
-            JNIActivity.GetActivity().PostEventToGL(task);
-
-            return task;
-        }
-    }
+    
 
     public static void Initialize(final int id, final float x, final float y,
             final float dx, final float dy) {
@@ -351,8 +131,15 @@ public class JNIWebView {
                             "WebView with id %d already initialized", id));
                     return;
                 }
+                InternalViewClientV14 webViewClient = null;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    webViewClient = new InternalViewClientV21(id);
+                } else {
+                    webViewClient = new InternalViewClientV14(id);
+                }
+                
                 final WebViewWrapper webView = new WebViewWrapper(activity, 
-                        new InternalViewClient(id));
+                        webViewClient);
                 
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                         new FrameLayout.MarginLayoutParams((int) (dx + 0.5f),
@@ -629,7 +416,7 @@ public class JNIWebView {
                     return;
                 }
                 WebViewWrapper view = views.get(id);
-                InternalViewClient client = view.getInternalViewClient();
+                InternalViewClientV14 client = view.getInternalViewClient();
                 client.setVisible(view, isVisible);
             }
         });
@@ -649,7 +436,7 @@ public class JNIWebView {
                     return;
                 }
                 WebViewWrapper view = views.get(id);
-                InternalViewClient client = view.getInternalViewClient();
+                InternalViewClientV14 client = view.getInternalViewClient();
                 client.setRenderToTexture(view, renderToTexture);
             }
         });
@@ -661,7 +448,7 @@ public class JNIWebView {
             return false;
         } else {
             WebViewWrapper view = views.get(id);
-            InternalViewClient client = view.getInternalViewClient();
+            InternalViewClientV14 client = view.getInternalViewClient();
             return client.isRenderToTexture();
         }
     }
@@ -750,14 +537,14 @@ public class JNIWebView {
         }
     }
 
-    private static native int OnUrlChange(int id, String url);
+    static native int OnUrlChange(int id, String url, boolean isRedirectedByMouseClick);
 
-    private static native int OnPageLoaded(int id, int[] pixels, int width,
+    static native int OnPageLoaded(int id, int[] pixels, int width,
             int height);
 
-    private static native void OnExecuteJScript(int id, String result);
+    static native void OnExecuteJScript(int id, String result);
 
-    private static void startRecursiveRefreshSequence(WebViewWrapper wrap) {
+    static void startRecursiveRefreshSequence(WebViewWrapper wrap) {
         wrap.delay = WebViewWrapper.START_DELAY; 
         refreshStaticTexture(wrap);
     }

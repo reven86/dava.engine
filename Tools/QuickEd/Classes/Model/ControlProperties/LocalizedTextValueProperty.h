@@ -13,6 +13,7 @@ public:
     BaseProperty *GetProperty(int index) const override;
 
     DAVA::VariantType GetValue() const override;
+    void RefreshLocalizedValue();
 protected:
     void ApplyValue(const DAVA::VariantType &value) override;
     

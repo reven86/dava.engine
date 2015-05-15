@@ -47,7 +47,7 @@
 namespace DAVA
 {
 
-FileList::FileList(const FilePath & filepath)
+FileList::FileList(const FilePath & filepath, bool includeHidden)
 {
     DVASSERT(filepath.IsDirectoryPathname());
     
@@ -76,13 +76,17 @@ FileList::FileList(const FilePath & filepath)
 				entry.path = filepath + c_file.name;
 				entry.name = c_file.name;
 				entry.size = c_file.size;
-				entry.isDirectory = (_A_SUBDIR & c_file.attrib) != 0;
+                entry.isHidden = (_A_HIDDEN & c_file.attrib) != 0;
+                entry.isDirectory = (_A_SUBDIR & c_file.attrib) != 0;
 				if(entry.isDirectory)
 				{
 					entry.path.MakeDirectoryPathname();
 				}
 
-				fileList.push_back(entry);
+                if (!entry.isHidden || includeHidden)
+                {
+                    fileList.push_back(entry);
+                }
 				//Logger::FrameworkDebug("filelist: %s %s", filepath.c_str(), entry.name.c_str());
 			}
 			while( _findnext( hFile, &c_file ) == 0 );
@@ -124,11 +128,17 @@ FileList::FileList(const FilePath & filepath)
             {
                 entry.isDirectory = (DT_DIR == namelist[n]->d_type);
             }
+			entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
             if(entry.isDirectory)
             {
                 entry.path.MakeDirectoryPathname();
             }
-			fileList.push_back(entry);
+
+            if (!entry.isHidden || includeHidden)
+            {
+                fileList.push_back(entry);
+            }
+
 			free(namelist[n]);
 		}
 		free(namelist);
@@ -145,12 +155,17 @@ FileList::FileList(const FilePath & filepath)
 		entry.name = jniEntry.name;
 		entry.size = jniEntry.size;
 		entry.isDirectory = jniEntry.isDirectory;
+        entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
 
 		if(entry.isDirectory)
 		{
 			entry.path.MakeDirectoryPathname();
 		}
-		fileList.push_back(entry);
+
+        if (!entry.isHidden || includeHidden)
+        {
+            fileList.push_back(entry);
+        }
 	}
 #endif //PLATFORMS
 
@@ -219,6 +234,11 @@ bool FileList::IsNavigationDirectory(int32 index) const
 	return false;
 }
 
+bool FileList::IsHidden(int32 index)  const
+{
+    DVASSERT((index >= 0) && (index < (int32)fileList.size()));
+    return fileList[index].isHidden;
+}
 
 //bool FileList::FileEntry::operator< (const FileList::FileEntry &other)
 //{

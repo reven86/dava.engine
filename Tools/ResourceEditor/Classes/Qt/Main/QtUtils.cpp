@@ -30,7 +30,6 @@
 
 #include "QtUtils.h"
 #include "Deprecated/SceneValidator.h"
-#include "Tools/QtFileDialog/QtFileDialog.h"
 
 #include <QMessageBox>
 #include <QToolButton>
@@ -40,6 +39,8 @@
 
 #include "TexturePacker/CommandLineParser.h"
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
 
 #include "DAVAEngine.h"
 #include <QProcess>
@@ -54,7 +55,7 @@ DAVA::FilePath PathnameToDAVAStyle(const QString &convertedPathname)
 
 DAVA::FilePath GetOpenFileName(const DAVA::String &title, const DAVA::FilePath &pathname, const DAVA::String &filter)
 {
-    QString filePath = QtFileDialog::getOpenFileName(NULL, QString(title.c_str()), QString(pathname.GetAbsolutePathname().c_str()),
+    QString filePath = FileDialog::getOpenFileName(NULL, QString(title.c_str()), QString(pathname.GetAbsolutePathname().c_str()),
                                                     QString(filter.c_str()));
     
 	// TODO: mainwindow
@@ -70,6 +71,8 @@ DAVA::FilePath GetOpenFileName(const DAVA::String &title, const DAVA::FilePath &
     
     if(openedPathname.IsEqualToExtension(".png"))
     {
+        DVASSERT(false); // todo to detect using of this code
+        
         //VK: create descriptor only for *.png without paired *.tex
         TextureDescriptorUtils::CreateDescriptorIfNeed(openedPathname);
     }

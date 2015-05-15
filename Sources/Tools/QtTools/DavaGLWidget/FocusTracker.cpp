@@ -5,6 +5,7 @@
 #include <QApplication>
 #include <QLineEdit>
 #include <QSpinBox>
+#include <QDebug>
 
 
 FocusTracker::FocusTracker( DavaGLWidget* _glWidget )
@@ -12,74 +13,53 @@ FocusTracker::FocusTracker( DavaGLWidget* _glWidget )
     , glWidget( _glWidget )
     , glWindow( _glWidget->GetGLWindow() )
     , isFocused( false )
-    , needToRestoreFocus( false )
-{}
+{
+    glWindow->installEventFilter( this );
+}
 
 FocusTracker::~FocusTracker()
 {}
 
+bool FocusTracker::eventFilter( QObject* watched, QEvent* event )
+{
+    if ( watched == glWindow )
+    {
+        switch ( event->type() )
+        {
+        case QEvent::MouseButtonPress:
+            OnClick();
+            break;
+        case QEvent::FocusIn:
+            OnFocusIn();
+            break;
+        case QEvent::FocusOut:
+            OnFocusOut();
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    return QObject::eventFilter( watched, event );
+}
+
 void FocusTracker::OnClick()
 {
-    needToRestoreFocus = false;
     if ( !isFocused )
     {
         glWindow->requestActivate();
     }
 }
 
-void FocusTracker::OnEnter()
-{
-    auto rootWidget = glWidget->window();
-    if ( rootWidget == nullptr )
-        return;
-    
-    needToRestoreFocus = (!isFocused);
-    prevWidget = QApplication::focusWidget();
-    if ( prevWidget.isNull() )
-    {
-        prevWidget = QApplication::activeWindow();
-    }
-    
-    const bool needToSetFocus =
-    !prevWidget.isNull() &&
-    !isEditor( prevWidget ) &&
-    prevWidget->window() == rootWidget;
-    
-    if ( !isFocused && needToSetFocus )
-    {
-        glWindow->requestActivate();
-    }
-}
-
-void FocusTracker::OnLeave()
-{
-    if ( needToRestoreFocus && !prevWidget.isNull() )
-    {
-        prevWidget->setFocus();
-    }
-    
-    needToRestoreFocus = false;
-}
-
 void FocusTracker::OnFocusIn()
 {
     isFocused = true;
+    emit focusIn();
 }
 
 void FocusTracker::OnFocusOut()
 {
     isFocused = false;
-}
-
-bool FocusTracker::isEditor( QWidget* w )
-{
-    if ( w == nullptr )
-        return false;
-    
-    if ( qobject_cast<QLineEdit *> ( w ) != nullptr )
-        return true;
-    if ( qobject_cast<QAbstractSpinBox *>( w ) != nullptr )
-        return true;
-    
-    return false;
+    emit focusOut();
 }

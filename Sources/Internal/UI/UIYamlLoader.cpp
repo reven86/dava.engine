@@ -387,24 +387,22 @@ bool UIYamlLoader::SaveFonts(const FilePath & yamlPathname)
     bool res = false;
 
     //save used fonts
-    const FontManager::TRACKED_FONTS& usedFonts = FontManager::Instance()->GetTrackedFont();
+    const auto& usedFonts = FontManager::Instance()->GetFontMap();
     ScopedPtr<YamlNode> fontsNode( new YamlNode(YamlNode::TYPE_MAP) );
-    for (FontManager::TRACKED_FONTS::const_iterator iter = usedFonts.begin();
+    for (auto iter = usedFonts.begin();
          iter != usedFonts.end();
          ++iter)
     {
-        Font* font = (*iter);
+        Font* font = iter->second;
         if (!font)
             continue;
 
         // The font should be stored once only.
         String fontName = FontManager::Instance()->GetFontName(font);
-        Logger::FrameworkDebug("UIYamlLoader::SaveFonts fontName=%s for font=%p", fontName.c_str(), font);
 
         font = FontManager::Instance()->GetFont(fontName);
         if (!font)
             continue;
-        Logger::FrameworkDebug("UIYamlLoader::SaveFonts font=%p for fontName=%s", font, fontName.c_str());
 
         if (fontsNode->AsMap().find(fontName) == fontsNode->AsMap().end())
         {
@@ -568,6 +566,18 @@ void UIYamlLoader::LoadFontsFromNode(const YamlNode * rootNode)
                 font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt32());
             }
 
+            const YamlNode * fontFontAscendNode = node->Get("ascendScale");
+            if (fontFontAscendNode)
+            {
+                font->SetAscendScale(fontFontAscendNode->AsFloat());
+            }
+
+            const YamlNode * fontFontDescendNode = node->Get("descendScale");
+            if (fontFontDescendNode)
+            {
+                font->SetDescendScale(fontFontDescendNode->AsFloat());
+            }
+
             //fontMap[t->first] = font;
             FontManager::Instance()->SetFontName(font, t->first);
             SafeRelease(font);
@@ -597,6 +607,18 @@ void UIYamlLoader::LoadFontsFromNode(const YamlNode * rootNode)
             if(fontVerticalSpacingNode)
             {
                 font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt32());
+            }
+            
+            const YamlNode * fontFontAscendNode = node->Get("ascendScale");
+            if (fontFontAscendNode)
+            {
+                font->SetAscendScale(fontFontAscendNode->AsFloat());
+            }
+
+            const YamlNode * fontFontDescendNode = node->Get("descendScale");
+            if (fontFontDescendNode)
+            {
+                font->SetDescendScale(fontFontDescendNode->AsFloat());
             }
 
             const YamlNode * fontHorizontalSpacingNode = node->Get("horizontalSpacing");
@@ -631,6 +653,18 @@ void UIYamlLoader::LoadFontsFromNode(const YamlNode * rootNode)
             if(fontVerticalSpacingNode)
             {
                 font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt());
+            }
+
+            const YamlNode * fontFontAscendNode = node->Get("ascendScale");
+            if (fontFontAscendNode)
+            {
+                font->SetAscendScale(fontFontAscendNode->AsFloat());
+            }
+
+            const YamlNode * fontFontDescendNode = node->Get("descendScale");
+            if (fontFontDescendNode)
+            {
+                font->SetDescendScale(fontFontDescendNode->AsFloat());
             }
 
             //fontMap[t->first] = font;

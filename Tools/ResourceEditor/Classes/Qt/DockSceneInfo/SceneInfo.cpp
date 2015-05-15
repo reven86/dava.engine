@@ -308,7 +308,8 @@ uint32 SceneInfo::CalculateTextureSize(const TexturesMap &textures)
             continue;
         }
         
-        textureSize += ImageTools::GetTexturePhysicalSize(tex->GetDescriptor(), (eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
+        auto baseMipmap = tex->GetBaseMipMap();
+        textureSize += ImageTools::GetTexturePhysicalSize(tex->GetDescriptor(), (eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32(), baseMipmap);
     }
 
     return textureSize;
@@ -779,6 +780,11 @@ void SceneInfo::SpritesReloaded()
     particleTexturesSize = CalculateTextureSize(particleTextures);
     
     RefreshSceneGeneralInfo();
+}
+
+void SceneInfo::OnQualityChanged()
+{
+    RefreshAllData(activeScene);
 }
 
 void SceneInfo::InitializeVegetationInfoSection()

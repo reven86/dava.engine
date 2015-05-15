@@ -187,7 +187,7 @@ void SoundUpdateSystem::Deactivate()
         DVASSERT(sound);
         
         auto eventCount = sound->GetEventsCount();
-        for(auto i = 0; i < eventCount; ++i)
+        for(size_t i = 0; i < eventCount; ++i)
         {
             auto soundEvent = sound->GetSoundEvent(i);
             if(soundEvent->IsActive())
