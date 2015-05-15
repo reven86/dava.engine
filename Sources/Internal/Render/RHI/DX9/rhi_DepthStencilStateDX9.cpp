@@ -98,7 +98,7 @@ dx9_DepthStencilState_Create( const DepthStencilState::Descriptor& desc )
     state->depthWriteEnabled         = desc.depthWriteEnabled;
     state->depthFunc                 = _CmpFunc( CmpFunc(desc.depthFunc) );
 
-    state->stencilEnabled            = !(desc.stencilFront.func == CMP_ALWAYS  &&  desc.stencilFront.readMask == 0xFF  && desc.stencilFront.writeMask == 0xFF);
+    state->stencilEnabled            = desc.stencilEnabled;
     state->stencilTwoSided           = desc.stencilTwoSided;
 
     state->stencilFront.func                        = _CmpFunc( CmpFunc(desc.stencilFront.func) );

@@ -217,6 +217,11 @@ public:
     GLenum              blendSrc;
     GLenum              blendDst;
     bool                blendEnabled;
+
+    GLboolean           maskR;
+    GLboolean           maskG;
+    GLboolean           maskB;
+    GLboolean           maskA;
 };
 
 typedef Pool<PipelineStateGLES2_t,RESOURCE_PIPELINE_STATE>  PipelineStateGLES2Pool;
@@ -317,6 +322,11 @@ gles2_PipelineState_Create( const PipelineState::Descriptor& desc )
             case BLENDOP_SRC_COLOR      : ps->blendDst = GL_SRC_COLOR; break;
             case BLENDOP_DST_COLOR      : ps->blendDst = GL_DST_COLOR; break;
         }
+
+        ps->maskR = desc.blending.rtBlend[0].writeMask | COLORMASK_R;
+        ps->maskG = desc.blending.rtBlend[0].writeMask | COLORMASK_G;
+        ps->maskG = desc.blending.rtBlend[0].writeMask | COLORMASK_B;
+        ps->maskA = desc.blending.rtBlend[0].writeMask | COLORMASK_A;
     }
     else
     {
@@ -383,6 +393,8 @@ SetToRHI( Handle ps, uint32 layoutUID )
     {
         GL_CALL(glDisable( GL_BLEND ));
     }
+
+    glColorMask( ps2->maskR, ps2->maskG, ps2->maskB, ps2->maskA );
 }
 
 void

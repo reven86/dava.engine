@@ -420,6 +420,18 @@ Descriptor
 ////////////////////////////////////////////////////////////////////////////////
 // pipeline-state
 
+enum
+ColorMask
+{
+    COLORMASK_NONE  = 0,
+    COLORMASK_R     = (0x1<<0),
+    COLORMASK_G     = (0x1<<1),
+    COLORMASK_B     = (0x1<<2),
+    COLORMASK_A     = (0x1<<3),
+    COLORMASK_ALL   = COLORMASK_R | COLORMASK_G | COLORMASK_B | COLORMASK_A
+};
+
+
 struct
 BlendState
 {
@@ -431,16 +443,16 @@ BlendState
         uint32  alphaFunc:2;
         uint32  alphaSrc:3;
         uint32  alphaDst:3;
-        uint32  writeMask;
+        uint32  writeMask:4;
         uint32  blendEnabled:1;
-        uint32  alphaToCoverage:1;        
+        uint32  alphaToCoverage:1;
     }   rtBlend[MAX_RENDER_TARGET_COUNT];
     
     BlendState()
     {
         for( unsigned i=0; i!=MAX_RENDER_TARGET_COUNT; ++i )
         {
-            rtBlend[i].writeMask        = 0xFFFFFFFFU;
+            rtBlend[i].writeMask        = COLORMASK_ALL;
             rtBlend[i].blendEnabled     = false;
             rtBlend[i].alphaToCoverage  = false;
         }
@@ -546,6 +558,7 @@ Descriptor
     uint32  depthWriteEnabled:1;
     uint32  depthFunc:3;
 
+    uint32  stencilEnabled:1;
     uint32  stencilTwoSided:1;
     struct
     {

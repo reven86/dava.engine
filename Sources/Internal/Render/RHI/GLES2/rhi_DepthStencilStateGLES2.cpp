@@ -97,7 +97,7 @@ gles2_DepthStencilState_Create( const DepthStencilState::Descriptor& desc )
     state->depthMask            = (desc.depthWriteEnabled)  ? GL_TRUE  : GL_FALSE;
     state->depthFunc            = _CmpFunc( CmpFunc(desc.depthFunc) );
     
-    state->stencilEnabled                   = !(desc.stencilFront.func == CMP_ALWAYS  &&  desc.stencilFront.readMask == 0xFF  && desc.stencilFront.writeMask == 0xFF);
+    state->stencilEnabled                   = desc.stencilEnabled;
     state->stencilSeparate                  = desc.stencilTwoSided;
     
     state->stencilFront.failOp              = _StencilOp( StencilOperation(desc.stencilFront.failOperation) );
