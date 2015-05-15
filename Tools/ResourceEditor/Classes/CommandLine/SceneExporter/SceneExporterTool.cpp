@@ -92,8 +92,6 @@ bool SceneExporterTool::InitializeFromCommandLine()
 		quality = Clamp((DAVA::TextureConverter::eConvertQuality)atoi(qualityName.c_str()), DAVA::TextureConverter::ECQ_FASTEST, DAVA::TextureConverter::ECQ_VERY_HIGH);
 	}
 	
-	gpu = CommandLineParser::GetCommandParam(String("-gpu"));
-    
     filename = CommandLineParser::GetCommandParam(String("-processfile"));
     foldername = CommandLineParser::GetCommandParam(String("-processdir"));
     qualityConfigPath = CommandLineParser::GetCommandParam(String("-qualitycfgpath"));
@@ -121,6 +119,14 @@ bool SceneExporterTool::InitializeFromCommandLine()
         commandObject = OBJECT_TEXTURE;
     }
     
+	String gpu = CommandLineParser::GetCommandParam(String("-gpu"));
+	requestedGPU = GPUFamilyDescriptor::GetGPUByName(gpu);
+	if (GPU_INVALID == requestedGPU)
+	{
+		errors.insert(Format("[SceneExporterTool] wrong gpu parameter (%s)", gpu.c_str()));
+		return false;
+	}
+
 	optimizeOnExport = (CommandLineParser::CommandIsFound(String("-saveNormals")) == false);
 
     return true;
@@ -128,7 +134,7 @@ bool SceneExporterTool::InitializeFromCommandLine()
 
 void SceneExporterTool::DumpParams()
 {
-    Logger::Info("Export started with params:\n\tIn folder: %s\n\tOut folder: %s\n\tQuality: %d\n\tGPU: %s\n\tFilename: %s\n\tFoldername: %s", inFolder.GetStringValue().c_str(), outFolder.GetStringValue().c_str(), quality, gpu.c_str(), filename.c_str(), foldername.c_str());
+    Logger::Info("Export started with params:\n\tIn folder: %s\n\tOut folder: %s\n\tQuality: %d\n\tGPU: %d\n\tFilename: %s\n\tFoldername: %s", inFolder.GetStringValue().c_str(), outFolder.GetStringValue().c_str(), quality, requestedGPU, filename.c_str(), foldername.c_str());
 }
 
 void SceneExporterTool::Process()
@@ -137,7 +143,7 @@ void SceneExporterTool::Process()
 
     exporter.SetOutFolder(outFolder);
     exporter.SetInFolder(inFolder);
-    exporter.SetGPUForExporting(gpu);
+	exporter.SetGPUForExporting(requestedGPU);
 	exporter.EnableOptimizations(optimizeOnExport);
 	exporter.SetCompressionQuality(quality);
     

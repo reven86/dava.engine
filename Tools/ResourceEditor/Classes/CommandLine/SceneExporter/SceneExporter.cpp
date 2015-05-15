@@ -65,10 +65,6 @@ void SceneExporter::SetOutFolder(const FilePath &folderPathname)
     sceneUtils.SetOutFolder(folderPathname);
 }
 
-void SceneExporter::SetGPUForExporting(const String &newGPU)
-{
-    SetGPUForExporting(GPUFamilyDescriptor::GetGPUByName(newGPU));
-}
 
 void SceneExporter::SetGPUForExporting(const eGPUFamily newGPU)
 {

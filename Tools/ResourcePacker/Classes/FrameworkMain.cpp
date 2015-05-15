@@ -150,6 +150,10 @@ void ProcessRecourcePacker()
     {
         String gpuName = CommandLineParser::GetCommandParam(String("-gpu"));
         exportForGPU = GPUFamilyDescriptor::GetGPUByName(gpuName);
+		if (GPU_INVALID == exportForGPU)
+		{
+			exportForGPU = GPU_ORIGIN;
+		}
     }
     
     if (CommandLineParser::CommandIsFound(String("-md5mode")))
