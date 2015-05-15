@@ -57,6 +57,7 @@ private:
 private:
     Vector<BaseScreen *> testScreens;
     UIList *testsGrid;
+    float32 cellHeight;
 };
 
 #endif

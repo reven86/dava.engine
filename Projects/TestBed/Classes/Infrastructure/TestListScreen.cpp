@@ -34,6 +34,8 @@ using namespace DAVA;
 
 TestListScreen::TestListScreen()
     : UIScreen()
+    , testsGrid(nullptr)
+    , cellHeight(50)
 {
 }
 
@@ -78,7 +80,7 @@ int32 TestListScreen::ElementsCount(UIList * list)
 
 float32 TestListScreen::CellHeight(UIList * list, int32 index)
 {
-    return static_cast<float32>(50);
+    return cellHeight;
 }
 
 UIListCell *TestListScreen::CellAtIndex(UIList *list, int32 index)
