@@ -295,6 +295,7 @@ public:
     DWORD               blendSrc;
     DWORD               blendDst;
     bool                blendEnabled;
+    DWORD               colorMask;
 };
 
 typedef Pool<PipelineStateDX9_t,RESOURCE_PIPELINE_STATE>            PipelineStateDX9Pool;
@@ -702,7 +703,7 @@ PipelineStateDX9_t::FragmentProgDX9::SetToRHI()
 //==============================================================================
 
 static Handle
-dx9_PipelineState_Create(const PipelineState::Descriptor& desc)
+dx9_PipelineState_Create( const PipelineState::Descriptor& desc )
 {
     Handle                      handle      = PipelineStateDX9Pool::Alloc();
     PipelineStateDX9_t*         ps          = PipelineStateDX9Pool::Get( handle );
@@ -746,6 +747,16 @@ dx9_PipelineState_Create(const PipelineState::Descriptor& desc)
         PipelineStateDX9Pool::Free( handle );
         handle = InvalidHandle;
     }
+
+    ps->colorMask = 0;
+    if( desc.blending.rtBlend[0].writeMask | COLORMASK_R )
+        ps->colorMask |= D3DCOLORWRITEENABLE_RED;
+    if( desc.blending.rtBlend[0].writeMask | COLORMASK_G )
+        ps->colorMask |= D3DCOLORWRITEENABLE_GREEN;
+    if( desc.blending.rtBlend[0].writeMask | COLORMASK_B )
+        ps->colorMask |= D3DCOLORWRITEENABLE_BLUE;
+    if( desc.blending.rtBlend[0].writeMask | COLORMASK_A )
+        ps->colorMask |= D3DCOLORWRITEENABLE_ALPHA;
 
     return handle;
 }
@@ -813,6 +824,8 @@ SetToRHI( Handle ps, uint32 layoutUID )
     {
         _D3D9_Device->SetRenderState( D3DRS_ALPHABLENDENABLE, 0 );
     }
+    
+    _D3D9_Device->SetRenderState( D3DRS_COLORWRITEENABLE, ps9->colorMask );
 }
 
 
