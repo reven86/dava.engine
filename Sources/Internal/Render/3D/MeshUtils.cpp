@@ -97,7 +97,7 @@ uint32 ReleaseGeometryDataRecursive(Entity * forEntity)
     RenderObject * ro = GetRenderObject(forEntity);
     if (ro)
     {
-        uint32 rbCount = ro ? ro->GetRenderBatchCount() : 0;
+        uint32 rbCount = ro->GetRenderBatchCount();
         for (uint32 i = 0; i < rbCount; ++i)
         {
             PolygonGroup * pg = ro->GetRenderBatch(i)->GetPolygonGroup();
