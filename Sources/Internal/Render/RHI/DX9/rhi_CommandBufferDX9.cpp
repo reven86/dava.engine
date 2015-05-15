@@ -515,7 +515,7 @@ SCOPED_FUNCTION_TIMING();
                         int     a     = int(passCfg.colorBuffer[0].clearColor[3] * 255.0f);
                         
                         if( clear_color ) flags |= D3DCLEAR_TARGET;
-                        if( clear_depth ) flags |= D3DCLEAR_ZBUFFER;
+                        if( clear_depth ) flags |= D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL;
 
                         DX9_CALL(_D3D9_Device->Clear( 0,NULL, flags, D3DCOLOR_RGBA(r,g,b,a), passCfg.depthStencilBuffer.clearDepth, 0 ),"Clear");
                     }
