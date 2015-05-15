@@ -107,6 +107,7 @@ struct DownloadTaskDescription
     uint32 id;
     String url;
     FilePath storePath;
+    int32 fileErrno;
     int32 timeout;
     int32 retriesCount;
     int32 retriesLeft;

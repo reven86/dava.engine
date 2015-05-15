@@ -66,8 +66,8 @@ public:
 
     UIStaticText(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 
-    virtual void Draw(const UIGeometricData &geometricData);
-    virtual void SetParentColor(const Color &parentColor);
+    virtual void Draw(const UIGeometricData &geometricData) override;
+    virtual void SetParentColor(const Color &parentColor) override;
     //if requested size is 0 - text creates in the rect with size of the drawRect on draw phase
     //if requested size is >0 - text creates int the rect with the requested size
     //if requested size in <0 - rect creates for the all text size
@@ -109,8 +109,8 @@ public:
 
     Font * GetFont() const { return textBlock->GetFont(); }
 
-    virtual UIStaticText *Clone();
-    virtual void CopyDataFrom(UIControl *srcControl);
+    virtual UIStaticText *Clone() override;
+    virtual void CopyDataFrom(UIControl *srcControl) override;
     TextBlock * GetTextBlock() { return textBlock; }
     const Color &GetTextColor() const;
     const Color &GetShadowColor() const;
@@ -144,8 +144,8 @@ protected:
 #endif
 
 public:
-    void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
-    virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
+    virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader) override;
+    virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader) override;
     
 public:
     void SetTextWithoutRect(const WideString &text) {
@@ -163,7 +163,9 @@ public:
 
     int32 GetMultilineType() const;
     void SetMultilineType(int32 multilineType);
-    
+
+    Vector4 GetMarginsAsVector4() const;
+    void SetMarginsAsVector4(const Vector4 &margins);
     
     INTROSPECTION_EXTEND(UIStaticText, UIControl,
                          PROPERTY("text", "Text", GetText, SetTextWithoutRect, I_SAVE | I_VIEW | I_EDIT)
@@ -180,6 +182,7 @@ public:
                          PROPERTY("fitting", InspDesc("Fitting", GlobalEnumMap<TextBlock::eFitType>::Instance(), InspDesc::T_FLAGS), GetFittingOption, SetFittingOption, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textalign", InspDesc("Text Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetTextAlign, SetTextAlign, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textUseRtlAlign", "Use Rtl Align", GetTextUseRtlAlign, SetTextUseRtlAlign, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("textMargins", "Text margins", GetMarginsAsVector4, SetMarginsAsVector4, I_SAVE | I_VIEW | I_EDIT)
                          );
 
 };

@@ -30,33 +30,35 @@
 #ifndef __GAMECORE_H__
 #define __GAMECORE_H__
 
-#include "DAVAEngine.h"
+#include "Base/BaseTypes.h"
+#include "Render/Cursor.h"
+#include "Core/ApplicationCore.h"
 
 namespace DAVA {
-	
+    
 class GameCore : public DAVA::ApplicationCore
 {
 protected:
-	virtual ~GameCore();
-public:	
-	GameCore();
-	
-	virtual void OnAppStarted();
-	virtual void OnAppFinished();
-	
-	virtual void OnSuspend();
-	virtual void OnResume();
-	virtual void OnBackground();
-	
-	virtual void BeginFrame();
-	virtual void Update(DAVA::float32 update);
-	virtual void Draw();
+    virtual ~GameCore();
+public:    
+    GameCore();
+    
+    virtual void OnAppStarted() override;
+    virtual void OnAppFinished() override;
+    
+    virtual void OnSuspend() override;
+    virtual void OnResume() override;
+    virtual void OnBackground();
+    
+    virtual void BeginFrame() override;
+    virtual void Update(DAVA::float32 update) override;
+    virtual void Draw() override;
 
 protected:
-	void UnpackHelp();
+    void UnpackHelp();
 
 private:
-	Cursor * cursor;
+    Cursor * cursor;
 };
 
 }

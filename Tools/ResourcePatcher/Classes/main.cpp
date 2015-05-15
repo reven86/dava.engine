@@ -293,43 +293,48 @@ protected:
     DAVA::Vector<Option> options;
 };
 
+void PrintError(DAVA::PatchFileReader::PatchError error)
+{
+    switch(error)
+    {
+        case DAVA::PatchFileReader::ERROR_NO:
+            break;
+        case DAVA::PatchFileReader::ERROR_EMPTY_PATCH:
+            printf("ERROR_EMPTY_PATCH\n");
+            break;
+        case DAVA::PatchFileReader::ERROR_ORIG_READ:
+            printf("ERROR_ORIG_PATH\n");
+            break;
+        case DAVA::PatchFileReader::ERROR_ORIG_CRC:
+            printf("ERROR_ORIG_CRC\n");
+            break;
+        case DAVA::PatchFileReader::ERROR_NEW_WRITE:
+            printf("ERROR_NEW_PATH\n");
+            break;
+        case DAVA::PatchFileReader::ERROR_NEW_CRC:
+            printf("ERROR_NEW_CRC\n");
+            break;
+        case DAVA::PatchFileReader::ERROR_CANT_READ:
+            printf("ERROR_CANT_READ\n");
+            break;
+        case DAVA::PatchFileReader::ERROR_CORRUPTED:
+            printf("ERROR_CORRUPTED\n");
+            break;
+        case DAVA::PatchFileReader::ERROR_UNKNOWN:
+        default:
+            printf("ERROR_UNKNOWN\n");
+            break;
+    }
+}
+
 int DoPatch(DAVA::PatchFileReader *reader, const DAVA::FilePath &origBase, const DAVA::FilePath &origPath, const DAVA::FilePath &newBase, const DAVA::FilePath &newPath)
 {
     int ret = 0;
 
     if(!reader->Apply(origBase, origPath, newBase, newPath))
     {
-        DAVA::PatchFileReader::PatchError patchError = reader->GetLastError();
+        PrintError(reader->GetLastError());
         ret = 1;
-
-        switch(patchError)
-        {
-            case DAVA::PatchFileReader::ERROR_EMPTY_PATCH: 
-                printf("ERROR_EMPTY_PATCH"); 
-                break;
-            case DAVA::PatchFileReader::ERROR_ORIG_READ: 
-                printf("ERROR_ORIG_PATH"); 
-                break;
-            case DAVA::PatchFileReader::ERROR_ORIG_CRC: 
-                printf("ERROR_ORIG_CRC"); 
-                break;
-            case DAVA::PatchFileReader::ERROR_NEW_WRITE: 
-                printf("ERROR_NEW_PATH"); 
-                break;
-            case DAVA::PatchFileReader::ERROR_NEW_CRC: 
-                printf("ERROR_NEW_CRC"); 
-                break;
-            case DAVA::PatchFileReader::ERROR_CANT_READ:
-                printf("ERROR_CANT_READ"); 
-                break;
-            case DAVA::PatchFileReader::ERROR_CORRUPTED:
-                printf("ERROR_CORRUPTED"); 
-                break;
-            case DAVA::PatchFileReader::ERROR_UNKNOWN: 
-            default:
-                printf("ERROR_UNKNOWN");
-                break;
-        }
     }
 
     return ret;
@@ -367,6 +372,7 @@ int main(int argc, char *argv[])
     applyAllOptions.AddArgument("PatchFile");
     applyAllOptions.AddOption("-bo", DAVA::VariantType(DAVA::String("")), "Original file base dir.");
     applyAllOptions.AddOption("-bn", DAVA::VariantType(DAVA::String("")), "New file base dir.");
+    applyAllOptions.AddOption("-t", DAVA::VariantType(false), "Truncate patch file, when applying it.");
     applyAllOptions.AddOption("-v", DAVA::VariantType(false), "Verbose output.");
 
     new DAVA::FileSystem;
@@ -458,7 +464,7 @@ int main(int argc, char *argv[])
                         if(origStr.empty()) origStr = "[]";
                         if(newStr.empty()) newStr = "[]";
 
-                        printf("%4u: %s --> %s\n", index, origStr.c_str(), newStr.c_str());
+                        printf("  %4u: %s --> %s\n", index, origStr.c_str(), newStr.c_str());
                         if(verbose)
                         {
                             printf("     OrigSize: %u byte; OrigCRC: 0x%X\n", patchInfo->origSize, patchInfo->origCRC);
@@ -469,6 +475,8 @@ int main(int argc, char *argv[])
                         patchInfo = patchReader.GetCurInfo();
                         index++;
                     }
+                    
+                    PrintError(patchReader.GetLastError());
                 }
             }
         }
@@ -560,7 +568,7 @@ int main(int argc, char *argv[])
                 DAVA::FilePath origBasePath = applyAllOptions.GetOption("-bo").AsString();
                 DAVA::FilePath newBasePath = applyAllOptions.GetOption("-bn").AsString();
                 bool verbose = applyAllOptions.GetOption("-v").AsBool();
-
+                bool truncate = applyAllOptions.GetOption("-t").AsBool();
 
                 if(!patchPath.Exists())
                 {
@@ -583,16 +591,36 @@ int main(int argc, char *argv[])
                 if(0 == ret)
                 {
                     DAVA::PatchFileReader patchReader(patchPath, verbose);
-                    patchReader.ReadFirst();
 
-                    const DAVA::PatchInfo *patchInfo = patchReader.GetCurInfo();
-                    while(NULL != patchInfo && 0 == ret)
+                    // go from last patch to the first one and truncate applied patch
+                    if(truncate)
                     {
-                        ret = DoPatch(&patchReader, origBasePath, DAVA::FilePath(), newBasePath, DAVA::FilePath());
+                        patchReader.ReadLast();
+                        const DAVA::PatchInfo *patchInfo = patchReader.GetCurInfo();
+                        while(NULL != patchInfo && 0 == ret)
+                        {
+                            ret = DoPatch(&patchReader, origBasePath, DAVA::FilePath(), newBasePath, DAVA::FilePath());
 
-                        patchReader.ReadNext();
-                        patchInfo = patchReader.GetCurInfo();
+                            patchReader.Truncate();
+                            patchReader.ReadPrev();
+                            patchInfo = patchReader.GetCurInfo();
+                        }
                     }
+                    // go from first to the last once and apply patch
+                    else
+                    {
+                        patchReader.ReadFirst();
+                        const DAVA::PatchInfo *patchInfo = patchReader.GetCurInfo();
+                        while(NULL != patchInfo && 0 == ret)
+                        {
+                            ret = DoPatch(&patchReader, origBasePath, DAVA::FilePath(), newBasePath, DAVA::FilePath());
+
+                            patchReader.ReadNext();
+                            patchInfo = patchReader.GetCurInfo();
+                        }
+                    }
+
+                    PrintError(patchReader.GetLastError());
                 }
             }
         }
@@ -609,6 +637,5 @@ int main(int argc, char *argv[])
     }
 
     DAVA::FileSystem::Instance()->Release();
-
     return ret;
 }

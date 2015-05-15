@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4F09300D199E3BF9007AF242 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F09300C199E3BF9007AF242 /* main.cpp */; };
+		4F503B971AE95369005C3F89 /* libTextureConverter.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F503B961AE95369005C3F89 /* libTextureConverter.dylib */; };
 		4F81C0CA19585A2500AD364E /* libFramework.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F81C0B2195859D100AD364E /* libFramework.a */; };
 		4F81C0D419585CF900AD364E /* libfmodevent.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F81C0D219585CF900AD364E /* libfmodevent.dylib */; };
 		4F81C0D519585CF900AD364E /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F81C0D319585CF900AD364E /* libfmodex.dylib */; };
@@ -68,6 +69,8 @@
 
 /* Begin PBXFileReference section */
 		4F09300C199E3BF9007AF242 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		4F503B941AE9532B005C3F89 /* TextureConverter.lib */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = TextureConverter.lib; path = ../../Libs/libs/TextureConverter.lib; sourceTree = "<group>"; };
+		4F503B961AE95369005C3F89 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTextureConverter.dylib; path = ../../Libs/lib_CMake/mac/libTextureConverter.dylib; sourceTree = "<group>"; };
 		4F81B2431958565100AD364E /* ResourcePatcher */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ResourcePatcher; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F81C0AA195859D100AD364E /* Framework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Framework.xcodeproj; path = ../../Projects/MacOSFramework/Framework.xcodeproj; sourceTree = "<group>"; };
 		4F81C0CE19585CBB00AD364E /* libfmodevent.so */ = {isa = PBXFileReference; lastKnownFileType = file; name = libfmodevent.so; path = ../../Libs/fmod/lib/libfmodevent.so; sourceTree = "<group>"; };
@@ -92,6 +95,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4F503B971AE95369005C3F89 /* libTextureConverter.dylib in Frameworks */,
 				4F81C0D919585D3800AD364E /* AVFoundation.framework in Frameworks */,
 				4F81C0E519585F2000AD364E /* CoreMedia.framework in Frameworks */,
 				4F81C0DB19585DEE00AD364E /* WebKit.framework in Frameworks */,
@@ -114,6 +118,8 @@
 		4F81B23A1958565100AD364E = {
 			isa = PBXGroup;
 			children = (
+				4F503B961AE95369005C3F89 /* libTextureConverter.dylib */,
+				4F503B941AE9532B005C3F89 /* TextureConverter.lib */,
 				4F81C14C196EDC1E00AD364E /* libcurl.dylib */,
 				4F81C1121958709D00AD364E /* libz.dylib */,
 				4F81C11019586FA100AD364E /* libpng_macos.a */,
@@ -333,8 +339,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
-				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
-				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				HEADER_SEARCH_PATHS = (
 					./../../Sources/Tools,
 					./../../Sources/Internal,
@@ -344,6 +350,8 @@
 					./../../Projects/MacOSFramework,
 					./../../Libs/fmod/lib/macos,
 					./../../dava.framework/Libs/libs,
+					/Users/smile4u/Projects/dava.framework/Libs/libs,
+					/Users/smile4u/Projects/dava.framework/Libs/lib_CMake/mac,
 				);
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -354,8 +362,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
-				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
-				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				HEADER_SEARCH_PATHS = (
 					./../../Sources/Tools,
 					./../../Sources/Internal,
@@ -365,6 +373,8 @@
 					./../../Projects/MacOSFramework,
 					./../../Libs/fmod/lib/macos,
 					./../../dava.framework/Libs/libs,
+					/Users/smile4u/Projects/dava.framework/Libs/libs,
+					/Users/smile4u/Projects/dava.framework/Libs/lib_CMake/mac,
 				);
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

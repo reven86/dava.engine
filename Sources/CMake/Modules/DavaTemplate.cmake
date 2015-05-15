@@ -266,6 +266,9 @@ elseif( IOS )
         set_xcode_property( ${TARGET} ONLY_ACTIVE_ARCH YES )
     endforeach ()
 
+    # Universal (iPad + iPhone)
+    set_target_properties( ${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2" )
+
 elseif( MACOS )
     set_target_properties ( ${PROJECT_NAME} PROPERTIES
                             MACOSX_BUNDLE_INFO_PLIST "${MACOS_PLIST}" 
@@ -376,11 +379,11 @@ if( DEPLOY )
                COMMAND ${CMAKE_COMMAND} -E remove  ${DEPLOY_DIR}/${PROJECT_NAME}.ilk
             )
 
-            foreach ( ITEM fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll )
-                execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
-            endforeach ()
-
         endif()
+
+        foreach ( ITEM fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
+        endforeach ()
 
         set( OUTPUT_DIR "${DEPLOY_DIR}" )
         foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )

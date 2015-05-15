@@ -328,7 +328,7 @@ namespace DAVA
 		Logger::Info("AutotestingSystem::MakeScreenShot");
 		String currentDateTime = GetCurrentTimeString();
 		screenShotName = Format("%s_%s_%s_%d_%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
-		Logger::FrameworkDebug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
+		Logger::Debug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
 		RenderManager::Instance()->RequestGLScreenShot(this);
 	}
 

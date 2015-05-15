@@ -962,6 +962,7 @@
 		50194DCF1A52D92600557DAB /* NetLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 50194D9D1A52D92600557DAB /* NetLogger.h */; };
 		505EB41C18250C53009BEA3C /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 505EB41A18250C53009BEA3C /* OcclusionQuery.cpp */; };
 		505EB41D18250C53009BEA3C /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 505EB41B18250C53009BEA3C /* OcclusionQuery.h */; };
+		50780DA01B00FE3D0065073A /* ThreadLocal.h in Headers */ = {isa = PBXBuildFile; fileRef = 50780D9F1B00FE3D0065073A /* ThreadLocal.h */; };
 		50C7D5FC186082B100D8936D /* StaticOcclusionComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50C7D5FA186082B100D8936D /* StaticOcclusionComponent.cpp */; };
 		50C7D5FD186082B100D8936D /* StaticOcclusionComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 50C7D5FB186082B100D8936D /* StaticOcclusionComponent.h */; };
 		50C7D604186082D600D8936D /* StaticOcclusionRenderPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50C7D600186082D600D8936D /* StaticOcclusionRenderPass.cpp */; };
@@ -1216,6 +1217,10 @@
 		CCEB543F1886FF0C0018491F /* SwitchToRenerObjectConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */; };
 		CCF00D691A443F6200A577C2 /* EntityFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCF00D671A443F6200A577C2 /* EntityFamily.cpp */; };
 		CCF00D6A1A443F6200A577C2 /* EntityFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = CCF00D681A443F6200A577C2 /* EntityFamily.h */; };
+		D738BD7B1B01FCC700989C29 /* RawTimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D738BD791B01FCC700989C29 /* RawTimer.cpp */; };
+		D738BD7C1B01FCC700989C29 /* RawTimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D738BD791B01FCC700989C29 /* RawTimer.cpp */; };
+		D738BD7D1B01FCC700989C29 /* RawTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D738BD7A1B01FCC700989C29 /* RawTimer.h */; };
+		D738BD7E1B01FCC700989C29 /* RawTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D738BD7A1B01FCC700989C29 /* RawTimer.h */; };
 		D751821819BF03E400BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751821719BF03E400BB88E0 /* ThreadPosix.cpp */; };
 		D751821919BF03E400BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751821719BF03E400BB88E0 /* ThreadPosix.cpp */; };
 		D7C556371A7A117000175ED9 /* DataStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C5562B1A7A117000175ED9 /* DataStorage.h */; };
@@ -2075,6 +2080,7 @@
 		50194DD01A52D94B00557DAB /* libuv_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv_ios.a; path = ../../Libs/libs/libuv_ios.a; sourceTree = "<group>"; };
 		505EB41A18250C53009BEA3C /* OcclusionQuery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OcclusionQuery.cpp; sourceTree = "<group>"; };
 		505EB41B18250C53009BEA3C /* OcclusionQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OcclusionQuery.h; sourceTree = "<group>"; };
+		50780D9F1B00FE3D0065073A /* ThreadLocal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadLocal.h; sourceTree = "<group>"; };
 		50C7D5F6186082A600D8936D /* StaticOcclusionSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusionSystem.cpp; sourceTree = "<group>"; };
 		50C7D5F7186082A600D8936D /* StaticOcclusionSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusionSystem.h; sourceTree = "<group>"; };
 		50C7D5FA186082B100D8936D /* StaticOcclusionComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusionComponent.cpp; sourceTree = "<group>"; };
@@ -2280,6 +2286,8 @@
 		CCF00D671A443F6200A577C2 /* EntityFamily.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityFamily.cpp; sourceTree = "<group>"; };
 		CCF00D681A443F6200A577C2 /* EntityFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityFamily.h; sourceTree = "<group>"; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D738BD791B01FCC700989C29 /* RawTimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RawTimer.cpp; path = Timer/RawTimer.cpp; sourceTree = "<group>"; };
+		D738BD7A1B01FCC700989C29 /* RawTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RawTimer.h; path = Timer/RawTimer.h; sourceTree = "<group>"; };
 		D751821719BF03E400BB88E0 /* ThreadPosix.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = ThreadPosix.cpp; sourceTree = "<group>"; };
 		D7C5562B1A7A117000175ED9 /* DataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorage.h; sourceTree = "<group>"; };
 		D7C5562D1A7A117000175ED9 /* DataStorageIOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorageIOS.cpp; sourceTree = "<group>"; };
@@ -3264,6 +3272,15 @@
 				CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */,
 			);
 			path = Converters;
+			sourceTree = "<group>";
+		};
+		D738BD781B01FCB100989C29 /* Timer */ = {
+			isa = PBXGroup;
+			children = (
+				D738BD791B01FCC700989C29 /* RawTimer.cpp */,
+				D738BD7A1B01FCC700989C29 /* RawTimer.h */,
+			);
+			name = Timer;
 			sourceTree = "<group>";
 		};
 		D7C556261A7A117000175ED9 /* DataStorage */ = {
@@ -4359,6 +4376,7 @@
 		E8C486F4196BD2390082E634 /* Thread */ = {
 			isa = PBXGroup;
 			children = (
+				50780D9F1B00FE3D0065073A /* ThreadLocal.h */,
 				4F34E1A91A234D86000681BB /* Semaphore.h */,
 				4F34E1AA1A234D86000681BB /* Spinlock.h */,
 				E8C486F5196BD2390082E634 /* LockGuard.h */,
@@ -4377,6 +4395,7 @@
 		FECFB32D12E5904400C71562 /* Internal */ = {
 			isa = PBXGroup;
 			children = (
+				D738BD781B01FCB100989C29 /* Timer */,
 				E8B3C7A116B9326D002BD35F /* Animation */,
 				E8B3C7B116B9326D002BD35F /* Autotesting */,
 				E8B3C7BD16B9326D002BD35F /* Base */,
@@ -4808,6 +4827,7 @@
 				E8525D1F1A30910400FDF76E /* WASDControllerComponent.h in Headers */,
 				02FD80551924997C007762C0 /* IWebViewControl.h in Headers */,
 				02FD80561924997C007762C0 /* UIWebView.h in Headers */,
+				D738BD7E1B01FCC700989C29 /* RawTimer.h in Headers */,
 				02FD80571924997C007762C0 /* WebViewControliOS.h in Headers */,
 				02FD80581924997C007762C0 /* DPIHelper.h in Headers */,
 				02FD80591924997C007762C0 /* DVAssertMessage.h in Headers */,
@@ -5116,6 +5136,7 @@
 				E8B3CBE816B9326E002BD35F /* Heightmap.h in Headers */,
 				E8B3CBE916B9326E002BD35F /* IRenderUpdatable.h in Headers */,
 				E8B3CBEB16B9326E002BD35F /* LandscapeChunk.h in Headers */,
+				D738BD7D1B01FCC700989C29 /* RawTimer.h in Headers */,
 				E8B3CBED16B9326E002BD35F /* LandscapeCursor.h in Headers */,
 				E8B3CBF316B9326E002BD35F /* Light.h in Headers */,
 				E8B3CBF516B9326E002BD35F /* Mesh.h in Headers */,
@@ -5199,6 +5220,7 @@
 				D7C556371A7A117000175ED9 /* DataStorage.h in Headers */,
 				E8B3CC7916B9326E002BD35F /* SwitchComponent.h in Headers */,
 				E8B3CC7B16B9326E002BD35F /* TransformComponent.h in Headers */,
+				50780DA01B00FE3D0065073A /* ThreadLocal.h in Headers */,
 				E8B3CC7D16B9326E002BD35F /* UpdatableComponent.h in Headers */,
 				E8B3CC7F16B9326E002BD35F /* DataNode.h in Headers */,
 				E8B3CC8016B9326E002BD35F /* Drawable.h in Headers */,
@@ -5710,6 +5732,7 @@
 				02FD81511924997C007762C0 /* TransformComponent.cpp in Sources */,
 				17675C2419472C1400054F8F /* LibJpegHelper.cpp in Sources */,
 				02FD81521924997C007762C0 /* UpdatableComponent.cpp in Sources */,
+				D738BD7C1B01FCC700989C29 /* RawTimer.cpp in Sources */,
 				64493E1119476F4700AB2715 /* VegetationPropertyNames.cpp in Sources */,
 				02FD81531924997C007762C0 /* DataNode.cpp in Sources */,
 				02FD81541924997C007762C0 /* ImposterManager.cpp in Sources */,
@@ -6309,6 +6332,7 @@
 				C70B565B1753CB5E008966FA /* KeyedArchiveSwig.cpp in Sources */,
 				E867917C175F620400C5A6A2 /* GlobalEnum.cpp in Sources */,
 				E8679180175F621E00C5A6A2 /* GPUFamilyDescriptor.cpp in Sources */,
+				D738BD7B1B01FCC700989C29 /* RawTimer.cpp in Sources */,
 				E8679184175F62D600C5A6A2 /* EnumMap.cpp in Sources */,
 				A6E4FDF31761D40200B48E41 /* ActionComponent.cpp in Sources */,
 				A6E4FDF51761D40200B48E41 /* CustomPropertiesComponent.cpp in Sources */,

@@ -31,7 +31,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QTextStream>
 #include <QAction>
 #include <QVariant>
-#include <QFileDialog>
 #include <QGroupBox>
 #include <QDialogButtonBox>
 #include <QDebug>
@@ -56,6 +55,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
+
 
 #define MATERIAL_NAME_LABEL "Name"
 #define MATERIAL_GROUP_LABEL "Group"
@@ -871,7 +873,7 @@ void MaterialEditor::OnMaterialSave(bool checked)
 {
     if(curMaterials.size() == 1)
     {
-        QString outputFile = QFileDialog::getSaveFileName(this, "Save Material Preset", lastSavePath.GetAbsolutePathname().c_str(), "Material Preset (*.mpreset)");
+        QString outputFile = FileDialog::getSaveFileName(this, "Save Material Preset", lastSavePath.GetAbsolutePathname().c_str(), "Material Preset (*.mpreset)");
         SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
 
         if(!outputFile.isEmpty() && NULL != curScene)
@@ -900,7 +902,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
 {
     if(curMaterials.size() > 0)
     {
-        QString inputFile = QFileDialog::getOpenFileName(this, "Load Material Preset", lastSavePath.GetAbsolutePathname().c_str(), "Material Preset (*.mpreset)");
+        QString inputFile = FileDialog::getOpenFileName(this, "Load Material Preset", lastSavePath.GetAbsolutePathname().c_str(), "Material Preset (*.mpreset)");
         SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
         DAVA::NMaterial *material = curMaterials[0];
 
