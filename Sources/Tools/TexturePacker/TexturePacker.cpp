@@ -218,10 +218,12 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 			}
 
         Logger::FrameworkDebug("");
-        
+
+        String fileBasename = defFile->filename.GetBasename() + "_";
+
 		if (packWasSuccessfull)
 		{
-            String fileBasename = defFile->filename.GetBasename();
+            fileBasename.append("0");
             FilePath textureName = outputPath + fileBasename;
             Logger::FrameworkDebug("* Writing final texture (%d x %d): %s", bestXResolution, bestYResolution , textureName.GetAbsolutePathname().c_str());
 			
@@ -263,7 +265,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
         {
             Logger::FrameworkDebug("Can't pack to separate output texture");
             List<DefinitionFile*> defList = {defFile};
-            PackToMultipleTextures(excludeFolder, outputPath, defFile->filename.GetBasename().c_str(), defList, forGPU);
+            PackToMultipleTextures(excludeFolder, outputPath, fileBasename.c_str(), defList, forGPU);
         }
 	}
 }
