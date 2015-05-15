@@ -38,8 +38,8 @@ MemProfWidget::MemProfWidget(QWidget *parent)
 MemProfWidget::MemProfWidget(ProfilingSession* profSession, QWidget *parent)
     : QWidget(parent, Qt::Window)
     , ui(new Ui::MemProfWidget())
-    , profileSession(profSession)
     , realtime(false)
+    , profileSession(profSession)
 {
     Init();
 

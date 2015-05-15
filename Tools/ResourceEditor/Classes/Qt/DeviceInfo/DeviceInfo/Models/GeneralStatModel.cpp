@@ -68,6 +68,7 @@ QVariant GeneralStatModel::headerData(int section, Qt::Orientation orientation, 
         {
             static const char* headers[NROWS] = {
                 "Internal allocation size",
+                "Total internal allocation size",
                 "Internal block count",
                 "Ghost allocation size",
                 "Ghost block count"
@@ -90,6 +91,8 @@ QVariant GeneralStatModel::data(const QModelIndex& index, int role) const
             {
             case ROW_ALLOC_INTERNAL:
                 return FormatNumberWithDigitGroups(curValues.allocInternal).c_str();
+            case ROW_ALLOC_INTERNAL_TOTAL:
+                    return FormatNumberWithDigitGroups(curValues.allocInternalTotal).c_str();
             case ROW_NBLOCKS_INTERNAL:
                 return FormatNumberWithDigitGroups(curValues.internalBlockCount).c_str();
             case ROW_ALLOC_GHOST:

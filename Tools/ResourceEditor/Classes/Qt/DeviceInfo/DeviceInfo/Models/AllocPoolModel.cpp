@@ -92,7 +92,7 @@ QVariant AllocPoolModel::data(const QModelIndex& index, int role) const
             case CLM_ALLOC_APP:
                 return FormatNumberWithDigitGroups(stat.allocByApp).c_str();
             case CLM_ALLOC_TOTAL:
-                return FormatNumberWithDigitGroups(stat.allocTotal - stat.allocByApp).c_str();
+                return FormatNumberWithDigitGroups(stat.allocTotal).c_str();
             case CLM_NBLOCKS:
                 return FormatNumberWithDigitGroups(stat.blockCount).c_str();
             //case CLM_MAX_SIZE:

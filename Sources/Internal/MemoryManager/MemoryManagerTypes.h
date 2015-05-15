@@ -75,7 +75,7 @@ struct GeneralAllocStat
     uint32 internalBlockCount;  // Number of internal memory blocks
     uint32 ghostBlockCount;     // Number of blocks allocated bypassing memory manager
     uint32 ghostSize;           // Size of bypassed memory
-    uint32 padding;
+    uint32 allocInternalTotal;
 };
 static_assert(sizeof(GeneralAllocStat) % 16 == 0, "sizeof(GeneralAllocStat) % 16 != 0");
 

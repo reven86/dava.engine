@@ -46,10 +46,11 @@ public:
     };
     enum {
         ROW_ALLOC_INTERNAL = 0,
+        ROW_ALLOC_INTERNAL_TOTAL,
         ROW_NBLOCKS_INTERNAL,
         ROW_ALLOC_GHOST,
         ROW_NBLOCKS_GHOST,
-        NROWS = 4
+        NROWS = 5
     };
 
 public:

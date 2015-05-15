@@ -210,6 +210,7 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, int32 poolIndex)
             // For internal allocation pool lock is required only for updating statistics
             LockType lock(mutex);
             statGeneral.allocInternal += block->allocByApp;
+            statGeneral.allocInternalTotal += block->allocTotal;
             statGeneral.internalBlockCount += 1;
            
         }
@@ -295,6 +296,7 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, in
             // For internal allocation pool lock is required only for updating statistics
             LockType lock(mutex);
             statGeneral.allocInternal += block->allocByApp;
+            statGeneral.allocInternalTotal += block->allocTotal;
             statGeneral.internalBlockCount += 1;
             
         }
@@ -339,6 +341,11 @@ void MemoryManager::Deallocate(void* ptr)
         {
             if (!IsInternalAllocationPool(block->pool))
             {
+                if (block->realBlockStart != static_cast<void*>(block))
+                {
+                    int bp = 0;
+                    bp += 1;
+                }
                 {
                     // Lock is required only here:
                     //  - updating statistics
@@ -358,6 +365,7 @@ void MemoryManager::Deallocate(void* ptr)
                 // For internal allocation pool lock is required only for updating statistics
                 LockType lock(mutex);
                 statGeneral.allocInternal -= block->allocByApp;
+                statGeneral.allocInternalTotal -= block->allocTotal;
                 statGeneral.internalBlockCount -= 1;
               
             }
@@ -463,7 +471,6 @@ void MemoryManager::TrackGpuAlloc(uint32 id, size_t size, int32 gpuPoolIndex)
         {   // Update total statistics
             statAllocPool[ALLOC_POOL_TOTAL].allocByApp += static_cast<uint32>(size);
             statAllocPool[ALLOC_POOL_TOTAL].allocTotal += static_cast<uint32>(size);
-            statAllocPool[ALLOC_POOL_TOTAL].blockCount += 1;
 
             if (block.allocByApp > statAllocPool[ALLOC_POOL_TOTAL].maxBlockSize)
                 statAllocPool[ALLOC_POOL_TOTAL].maxBlockSize = block.allocByApp;
@@ -498,7 +505,6 @@ void MemoryManager::TrackGpuDealloc(uint32 id, int32 gpuPoolIndex)
         {   // Update total statistics
             statAllocPool[ALLOC_POOL_TOTAL].allocByApp -= block.allocByApp;
             statAllocPool[ALLOC_POOL_TOTAL].allocTotal -= block.allocTotal;
-            statAllocPool[ALLOC_POOL_TOTAL].blockCount -= 1;
         }
         {   // Update pool statistics
             statAllocPool[gpuPoolIndex].allocByApp -= block.allocByApp;
@@ -838,7 +844,6 @@ MMDump* MemoryManager::GetMemoryDump()
         MMBlock* blocks = OffsetPointer<MMBlock>(statBuf, statSize);
         for (size_t i = 0, n = dump->blockCount;i < n;++i)
         {
-            DVASSERT(curBlock != nullptr);
 
             blocks[i].orderNo = curBlock->orderNo;
             blocks[i].allocByApp = curBlock->allocByApp;
