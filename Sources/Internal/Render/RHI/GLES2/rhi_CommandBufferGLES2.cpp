@@ -593,9 +593,10 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                         glClearDepthf( passCfg.depthStencilBuffer.clearDepth );
                         #else
                         glClearDepth( passCfg.depthStencilBuffer.clearDepth );
+                        glClearStencil( 0 );
                         #endif
 
-                        flags |= GL_DEPTH_BUFFER_BIT;
+                        flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
                     }
 
                     glClear( flags );
