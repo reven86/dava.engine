@@ -36,7 +36,6 @@
 #include "EditorSettings.h"
 #include <QtGui>
 #include <QtWidgets>
-#include <QAbstractItemModel>
 
 
 class PackageWidget;
@@ -45,8 +44,8 @@ class LibraryWidget;
 class PreviewWidget;
 
 class LocalizationEditorDialog;
-
 class DavaGLWidget;
+
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
     Q_OBJECT
@@ -65,10 +64,8 @@ public:
 
     ~MainWindow();
     void CreateUndoRedoActions(const QUndoGroup *undoGroup);
-    bool ConfirmClose();
     int CloseTab(int index);
     void SetCurrentTab(int index);
-    int GetTabIndexByPath(const QString &fileName) const;
     void OnProjectOpened(Result result, QString projectPath);
     int AddTab(const QString &tabText);
     void OnCleanChanged(int index, bool val);
@@ -87,7 +84,6 @@ signals:
     void SaveDocument(int index);
     void CurrentTabChanged(int index);
     void CloseRequested();
-    void LanguageChanged();
 public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
@@ -106,7 +102,6 @@ private slots:
     
     // Pixelization.
     void OnPixelizationStateChanged();
-    
 private:
     void InitLanguageBox();
 	void InitMenu();

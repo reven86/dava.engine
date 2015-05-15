@@ -19,13 +19,13 @@ class Document : public QObject
 {
     Q_OBJECT
 public:
-    Document(PackageNode *package, QObject *parent = NULL);
+    Document(PackageNode *package, QObject *parent = nullptr);
 
     virtual ~Document();
-    
+
     const DAVA::FilePath &GetPackageFilePath() const;
     PackageNode *GetPackage() const;
-    
+
     SharedData *GetContext() const;
     PropertiesModel *GetPropertiesModel() const; //TODO: this is deprecated
     PackageModel* GetPackageModel() const; //TODO: this is deprecated
@@ -36,9 +36,11 @@ signals:
     void SharedDataChanged(const QByteArray &role);
 public slots:
     void UpdateLanguage();
+    void UpdateFonts();
 
 private:
     void UpdateLanguageRecursively(ControlNode *node);
+    void UpdateFontsRecursively(ControlNode *node);
     void UpdateControlCanvas();
     void InitSharedData();
 
@@ -56,9 +58,9 @@ inline QUndoStack *Document::GetUndoStack() const
     return undoStack;
 }
 
-inline PackageNode *Document::GetPackage() const 
+inline PackageNode *Document::GetPackage() const
 {
-    return package; 
+    return package;
 }
 
 inline QtModelPackageCommandExecutor *Document::GetCommandExecutor() const
