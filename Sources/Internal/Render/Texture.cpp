@@ -410,35 +410,19 @@ void Texture::TexImage(int32 level, uint32 width, uint32 height, const void * _d
     
 Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint32 _width, uint32 _height, bool generateMipMaps)
 {
-    Texture * texture = nullptr;
+	Image *image = Image::CreateFromData(_width, _height, _format, _data);
+	if(!image) return NULL;
 
-    if(Thread::IsMainThread() && nullptr != _data)
-    {
-        texture = new Texture();
-        texture->texDescriptor->Initialize(WRAP_CLAMP_TO_EDGE, generateMipMaps);
+	Texture * texture = new Texture();
+	texture->texDescriptor->Initialize(WRAP_CLAMP_TO_EDGE, generateMipMaps);
+    
+    Vector<Image *> *images = new Vector<Image *>();
+    images->push_back(image);
+	
+    texture->SetParamsFromImages(images);
+	texture->FlushDataToRenderer(images);
 
-        texture->width = _width;
-        texture->height = _height;
-        texture->texDescriptor->format = _format;
-        texture->textureType = Texture::TEXTURE_2D;
-        texture->state = STATE_DATA_LOADED;
-
-        texture->FlushDataToRendererInternal2(_data);
-    } else
-    {
-        Image *image = Image::CreateFromData(_width, _height, _format, _data);
-        if(!image) return nullptr;
-
-        texture = new Texture();
-        texture->texDescriptor->Initialize(WRAP_CLAMP_TO_EDGE, generateMipMaps);
-
-        Vector<Image *> *images = new Vector<Image *>();
-        images->push_back(image);
-
-        texture->SetParamsFromImages(images);
-        texture->FlushDataToRenderer(images);
-    }
-    return texture;
+	return texture;
 }
     
 Texture * Texture::CreateFromData(Image *image, bool generateMipMaps)
@@ -749,47 +733,6 @@ void Texture::FlushDataToRendererInternal(Vector<Image *> * images)
 
 	ReleaseImages(images);
     SafeDelete(images);
-}
-
-void Texture::FlushDataToRendererInternal2(const void* pixelsData)
-{
-	DVASSERT(pixelsData != nullptr);
-	DVASSERT(Thread::IsMainThread());
-
-#if defined(__DAVAENGINE_OPENGL__)
-	GenerateID();
-#elif defined(__DAVAENGINE_DIRECTX9__)
-	id = CreateTextureNative(Vector2((float32)_width, (float32)_height), texture->format, false, 0);
-#endif //#if defined(__DAVAENGINE_OPENGL__)
-
-	TexImage(0, width, height, pixelsData, width * height * 4, Texture::CUBE_FACE_INVALID);
-
-#if defined(__DAVAENGINE_OPENGL__)
-
-	int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
-
-	RenderManager::Instance()->HWglBindTexture(id, textureType);
-
-	RENDER_VERIFY(glTexParameteri(SELECT_GL_TEXTURE_TYPE(textureType), GL_TEXTURE_WRAP_S, TEXTURE_WRAP_MAP[texDescriptor->drawSettings.wrapModeS]));
-	RENDER_VERIFY(glTexParameteri(SELECT_GL_TEXTURE_TYPE(textureType), GL_TEXTURE_WRAP_T, TEXTURE_WRAP_MAP[texDescriptor->drawSettings.wrapModeT]));
-
-    if (pixelizationFlag)
-    {
-        RENDER_VERIFY(glTexParameteri(SELECT_GL_TEXTURE_TYPE(textureType), GL_TEXTURE_MIN_FILTER, TEXTURE_FILTER_MAP[FILTER_NEAREST]));
-        RENDER_VERIFY(glTexParameteri(SELECT_GL_TEXTURE_TYPE(textureType), GL_TEXTURE_MAG_FILTER, TEXTURE_FILTER_MAP[FILTER_NEAREST]));
-    }
-    else
-    {
-        RENDER_VERIFY(glTexParameteri(SELECT_GL_TEXTURE_TYPE(textureType), GL_TEXTURE_MIN_FILTER, TEXTURE_FILTER_MAP[texDescriptor->drawSettings.minFilter]));
-        RENDER_VERIFY(glTexParameteri(SELECT_GL_TEXTURE_TYPE(textureType), GL_TEXTURE_MAG_FILTER, TEXTURE_FILTER_MAP[texDescriptor->drawSettings.magFilter]));
-    }
-
-	RenderManager::Instance()->HWglBindTexture(saveId, textureType);
-#elif defined(__DAVAENGINE_DIRECTX9__)
-
-#endif //#if defined(__DAVAENGINE_OPENGL__)
-
-	state = STATE_VALID;
 }
 
 bool Texture::CheckImageSize(const Vector<DAVA::Image *> &imageSet)
