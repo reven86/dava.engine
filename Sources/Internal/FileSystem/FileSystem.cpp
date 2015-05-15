@@ -441,8 +441,9 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath & newWorkingDirectory
     DVASSERT(newWorkingDirectory.IsDirectoryPathname());
     
 #if defined(__DAVAENGINE_WINDOWS_STORE__)
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
-    return false;
+    WideString path = UTF8Utils::EncodeToWideString(newWorkingDirectory.GetAbsolutePathname());
+    BOOL res = ::SetCurrentDirectoryW(path.c_str());
+    return (res != 0);
 #elif defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 	BOOL res = ::SetCurrentDirectoryA(newWorkingDirectory.GetAbsolutePathname().c_str());
 	return (res != 0);
