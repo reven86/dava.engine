@@ -98,10 +98,10 @@ void GameCore::RegisterTests()
     new KeyedArchiveYamlTest();
     new JobManagerTest();
     new Cpp14Test();
-    new FormatsTest();
 
 #if !defined(__DAVAENGINE_WINDOWS_STORE__)
     new NetworkTest();
+    new FormatsTest();
 #else
     __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__MARKER__
 #endif
