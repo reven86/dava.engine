@@ -155,7 +155,7 @@ public:
 	void	ReleaseData();
     void    RecalcAABBox();
     
-    void    ReleaseGeometryData();
+    uint32  ReleaseGeometryData();
     
     /*
         Apply matrix to polygon group. If polygon group is used with vertex buffers 

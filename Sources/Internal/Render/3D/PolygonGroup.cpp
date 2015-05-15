@@ -449,17 +449,41 @@ void PolygonGroup::ReleaseData()
 	SafeDeleteArray(cubeTextureCoordArray);
 }
 
-void PolygonGroup::ReleaseGeometryData()
+uint32 PolygonGroup::ReleaseGeometryData()
 {
     if (meshData)
     {
+        SafeDeleteArray(jointCountArray);
         SafeDeleteArray(meshData);
         SafeDeleteArray(indexArray);
+        SafeDeleteArray(textureCoordArray);
+        SafeDeleteArray(cubeTextureCoordArray);
 
-        UpdateDataPointersAndStreams();
+        vertexArray = nullptr;
+        textureCoordArray = nullptr;
+        normalArray = nullptr;
+        tangentArray = nullptr;
+        binormalArray = nullptr;
+        jointIdxArray = nullptr;
+        jointWeightArray = nullptr;
+        cubeTextureCoordArray = nullptr;
+        jointCountArray = nullptr;
+	
+        pivotArray = nullptr;
+        flexArray = nullptr;
+        angleArray = nullptr;
 
-        SafeDeleteArray(jointCountArray);
+        colorArray = nullptr;
+        indexArray = nullptr;
+        meshData = nullptr;
+
+        uint32 ret = vertexStride * vertexCount; //released vertex bytes
+        ret += indexCount * sizeof(uint16); //released index bytes
+
+        return ret;
     }
+
+    return 0;
 }
 
 void PolygonGroup::BuildBuffers()

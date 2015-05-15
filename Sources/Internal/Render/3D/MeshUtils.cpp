@@ -101,11 +101,9 @@ uint32 ReleaseGeometryDataRecursive(Entity * forEntity)
         for (uint32 i = 0; i < rbCount; ++i)
         {
             PolygonGroup * pg = ro->GetRenderBatch(i)->GetPolygonGroup();
-            if (pg)
+            if (pg && pg->renderDataObject && pg->renderDataObject->GetVertexBufferID() && pg->renderDataObject->GetIndexBufferID())
             {
-                ret += pg->vertexStride * pg->vertexCount; //released vertex bytes
-                ret += pg->indexCount * sizeof(uint16); //released index bytes
-                pg->ReleaseGeometryData();
+                ret += pg->ReleaseGeometryData();
             }
         }
     }
