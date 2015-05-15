@@ -390,9 +390,6 @@ void UITextField::SetSize(const DAVA::Vector2 &newSize)
 void UITextField::SetPosition(const DAVA::Vector2 &position)
 {
     UIControl::SetPosition(position);
-#if defined(__DAVAENGINE_IPHONE__)
-    textFieldiPhone->OnSetPosition(position);
-#endif
 }
     
 void UITextField::SetText(const WideString & _text)
