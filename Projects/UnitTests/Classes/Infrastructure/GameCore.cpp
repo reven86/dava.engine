@@ -99,7 +99,13 @@ void GameCore::RegisterTests()
     new JobManagerTest();
     new Cpp14Test();
     new FormatsTest();
+
+#if !defined(__DAVAENGINE_WINDOWS_STORE__)
     new NetworkTest();
+#else
+    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__MARKER__
+#endif
+
     new UnlimitedLogOutputTest();
     new SpinLockTest();
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
