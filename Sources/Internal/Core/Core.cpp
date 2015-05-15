@@ -510,7 +510,11 @@ void Core::SystemProcessFrame()
 		JobManager::Instance()->Update();
 
         // Poll for network I/O events here
+#ifndef __DAVAENGINE_WINDOWS_STORE__
         Net::NetCore::Instance()->Poll();
+#else
+        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__MARKER__
+#endif
 
 		core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();
