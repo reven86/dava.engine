@@ -98,6 +98,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
         std::regex  texturecube_re(".*FP_TEXTURECUBE\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
         std::regex  blend_re(".*BLEND_MODE\\s*\\(\\s*(.*)\\s*\\).*");
         std::regex  blending2_re(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color)\\s+dst=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color).*");
+        std::regex  colormask_re(".*color_mask\\s*\\:\\s*(all|none|rgb|a).*");
         std::regex  comment_re("\\s*//.*");
 
         _Reset();
@@ -428,6 +429,15 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 blending.rtBlend[0].blendEnabled = true;
                 blending.rtBlend[0].colorSrc     = blending.rtBlend[0].alphaSrc = BlendOpFromText( src.c_str() );
                 blending.rtBlend[0].colorDst     = blending.rtBlend[0].alphaDst = BlendOpFromText( dst.c_str() );
+            }
+            else if( !isComment  &&  std::regex_match( line, match, colormask_re ) )
+            {
+                std::string mask  = match[1].str();
+                
+                if     ( stricmp( mask.c_str(), "all" ) == 0 )  blending.rtBlend[0].writeMask = COLORMASK_ALL;
+                else if( stricmp( mask.c_str(), "none" ) == 0 ) blending.rtBlend[0].writeMask = COLORMASK_NONE;
+                else if( stricmp( mask.c_str(), "rgb" ) == 0 )  blending.rtBlend[0].writeMask = COLORMASK_R | COLORMASK_G | COLORMASK_B;
+                else if( stricmp( mask.c_str(), "a" ) == 0 )    blending.rtBlend[0].writeMask = COLORMASK_A;
             }
             else
             {
