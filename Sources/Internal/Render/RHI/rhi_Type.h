@@ -546,6 +546,7 @@ Descriptor
     uint32  depthWriteEnabled:1;
     uint32  depthFunc:3;
 
+    uint32  stencilEnabled:1;
     uint32  stencilTwoSided:1;
     struct
     {
