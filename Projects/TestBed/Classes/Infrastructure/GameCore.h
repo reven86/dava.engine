@@ -67,8 +67,6 @@ public:
     void RegisterScreen(BaseScreen *screen);
     void ShowStartScreen();
     
-    void FinishTest();
-    
 protected:
 #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     virtual void OnBackground() {};
@@ -92,7 +90,7 @@ private:
     String runOnlyThisTest;
 
     BaseScreen *currentScreen;
-    BaseScreen *testListScreen;
+    TestListScreen *testListScreen;
     
     Vector<BaseScreen *> screens;
 };

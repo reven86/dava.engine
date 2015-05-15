@@ -36,6 +36,7 @@ int32 BaseScreen::globalScreenId = 1;
 BaseScreen::BaseScreen(const String & _screenName, int32 skipBeforeTests)
     : UIScreen()
     , currentScreenId(globalScreenId++)
+    , exitButton(nullptr)
 {
     SetName(_screenName);
     
@@ -78,5 +79,5 @@ void BaseScreen::UnloadResources()
 
 void BaseScreen::OnExitButton(BaseObject *obj, void *data, void *callerData)
 {
-    GameCore::Instance()->FinishTest();
+    GameCore::Instance()->ShowStartScreen();
 }

@@ -39,7 +39,7 @@
 
 void GameCore::RunOnlyThisTest()
 {
-    //runOnlyThisTest = "TestClassName";
+    //runOnlyThisTest = "NotificationScreen";
 }
 
 void GameCore::OnError()
@@ -61,6 +61,7 @@ using namespace DAVA;
 void GameCore::OnAppStarted()
 {
     testListScreen = new TestListScreen();
+    UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
     
     RunOnlyThisTest();
     RegisterTests();
@@ -80,13 +81,15 @@ GameCore::~GameCore()
 void GameCore::RegisterScreen(BaseScreen *screen)
 {
     UIScreenManager::Instance()->RegisterScreen(screen->GetScreenId(), screen);
+
     screens.push_back(screen);
+    testListScreen->AddTestScreen(screen);
 }
 
 void GameCore::ShowStartScreen()
 {
-    currentScreen = testListScreen;
-    UIScreenManager::Instance()->SetScreen(testListScreen->GetScreenId());
+    currentScreen = nullptr;
+    UIScreenManager::Instance()->SetScreen(0);
 }
 
 void GameCore::CreateDocumentsFolder()
@@ -139,24 +142,16 @@ void GameCore::RunTests()
     }
     else
     {
-        currentScreen = screens.at(1);
+        currentScreen = nullptr;
     }
 
     if (nullptr != currentScreen)
     {
         UIScreenManager::Instance()->SetScreen(currentScreen->GetScreenId());
     }
-}
-
-void GameCore::FinishTest()
-{
-    if (currentScreen == testListScreen)
-    {
-        Core::Instance()->Quit(); 
-    }
     else
     {
-        ShowStartScreen();
+        UIScreenManager::Instance()->SetScreen(0);
     }
 }
 

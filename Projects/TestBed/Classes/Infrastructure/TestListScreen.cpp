@@ -28,28 +28,87 @@
 
 
 #include "TestListScreen.h"
+#include "Utils/UTF8Utils.h"
 
 using namespace DAVA;
 
 TestListScreen::TestListScreen()
-    : BaseScreen("TestListScreen")
+    : UIScreen()
 {
+}
 
+TestListScreen::~TestListScreen()
+{
+    for(auto screen : testScreens)
+    {
+        SafeRelease(screen);
+    }
+    testScreens.clear();
+}
+
+void TestListScreen::AddTestScreen(BaseScreen *screen)
+{
+    screen->Retain();
+    testScreens.push_back(screen);
 }
 
 void TestListScreen::LoadResources()
 {
-    BaseScreen::LoadResources();
-    Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
-    DVASSERT(font);
+    UIScreen::LoadResources();
     
-    font->SetSize(30);
+    Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
     
-    SafeRelease(font);
+    testsGrid = new UIList(Rect(0, 0, screenSize.dx, screenSize.dy), UIList::ORIENTATION_VERTICAL);
+    testsGrid->SetDelegate(this);
+    AddControl(testsGrid);
 }
 
 void TestListScreen::UnloadResources()
 {
+    UIScreen::UnloadResources();
     RemoveAllControls();
-    BaseScreen::UnloadResources();
+    
+    SafeRelease(testsGrid);
+}
+
+int32 TestListScreen::ElementsCount(UIList * list)
+{
+    return static_cast<int32>(testScreens.size());
+}
+
+float32 TestListScreen::CellHeight(UIList * list, int32 index)
+{
+    return static_cast<float32>(50);
+}
+
+UIListCell *TestListScreen::CellAtIndex(UIList *list, int32 index)
+{
+    UIListCell *c = list->GetReusableCell("TestButtonCell"); //try to get cell from the reusable cells store
+    if(!c)
+    { //if cell of requested type isn't find in the store create new cell
+        c = new UIListCell(Rect(0., 0., static_cast<float32>(list->size.x), CellHeight(list, index)), "TestButtonCell");
+        
+        UIStaticText *buttonText = new UIStaticText(Rect(0., 0., static_cast<float32>(list->size.x), CellHeight(list, index)));
+        c->AddControl(buttonText);
+        
+        Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
+        DVASSERT(font);
+
+        font->SetSize(static_cast<float32>(20));
+        buttonText->SetFont(font);
+        buttonText->SetDebugDraw(true);
+        
+        auto screen = testScreens.at(index);
+        buttonText->SetText(UTF8Utils::EncodeToWideString(screen->GetName()));
+        
+        SafeRelease(font);
+        c->GetBackground()->SetColor(Color(0.75, 0.75, 0.75, 0.5));
+    }
+    
+    return c;//returns cell
+}
+
+void TestListScreen::OnCellSelected(UIList *forList, UIListCell *selectedCell)
+{
+    UIScreenManager::Instance()->SetScreen(selectedCell->GetIndex()+1);
 }
