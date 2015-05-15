@@ -225,7 +225,7 @@ dx9_Initialize()
         _PresentParam.SwapEffect             = D3DSWAPEFFECT_DISCARD;
         _PresentParam.BackBufferCount        = 1;
         _PresentParam.EnableAutoDepthStencil = TRUE;
-        _PresentParam.AutoDepthStencilFormat = D3DFMT_D16;
+        _PresentParam.AutoDepthStencilFormat = D3DFMT_D24S8;
         _PresentParam.PresentationInterval   = (use_vsync) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
 
 
