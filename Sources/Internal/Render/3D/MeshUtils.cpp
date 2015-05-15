@@ -82,6 +82,37 @@ void CopyGroupData(PolygonGroup *srcGroup, PolygonGroup *dstGroup)
     dstGroup->BuildBuffers();
 }
 
+uint32 ReleaseGeometryDataRecursive(Entity * forEntity)
+{
+    if (!forEntity) return 0;
+
+    uint32 ret = 0;
+
+    int32 childrenCount = forEntity->GetChildrenCount();
+    for (int32 i = 0; i < childrenCount; ++i)
+    {
+        ret += ReleaseGeometryDataRecursive(forEntity->GetChild(i));
+    }
+
+    RenderObject * ro = GetRenderObject(forEntity);
+    if (ro)
+    {
+        uint32 rbCount = ro ? ro->GetRenderBatchCount() : 0;
+        for (uint32 i = 0; i < rbCount; ++i)
+        {
+            PolygonGroup * pg = ro->GetRenderBatch(i)->GetPolygonGroup();
+            if (pg)
+            {
+                ret += pg->vertexStride * pg->vertexCount; //released vertex bytes
+                ret += pg->indexCount * sizeof(uint16); //released index bytes
+                pg->ReleaseGeometryData();
+            }
+        }
+    }
+
+    return ret;
+}
+
 void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true*/)
 {
     DVASSERT(group->GetPrimitiveType() == PRIMITIVETYPE_TRIANGLELIST); //only triangle lists for now    

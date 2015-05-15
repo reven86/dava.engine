@@ -448,7 +448,20 @@ void PolygonGroup::ReleaseData()
     SafeDeleteArray(textureCoordArray);
 	SafeDeleteArray(cubeTextureCoordArray);
 }
-	
+
+void PolygonGroup::ReleaseGeometryData()
+{
+    if (meshData)
+    {
+        SafeDeleteArray(meshData);
+        SafeDeleteArray(indexArray);
+
+        UpdateDataPointersAndStreams();
+
+        SafeDeleteArray(jointCountArray);
+    }
+}
+
 void PolygonGroup::BuildBuffers()
 {
     UpdateDataPointersAndStreams();
